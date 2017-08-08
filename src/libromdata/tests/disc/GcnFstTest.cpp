@@ -281,12 +281,34 @@ int GcnFstTest::getFileFromZip(const rp_char *zip_filename,
 	}
 
 	// Read the FST file.
+	// NOTE: zlib and minizip are only guaranteed to be able to
+	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
+	// from https://github.com/nmoinvaz/minizip enforces this.
 	buf.resize((size_t)file_info.uncompressed_size);
-	ret = unzReadCurrentFile(unz, buf.data(), (unsigned int)buf.size());
-	EXPECT_GT(ret, 0);
-	if (ret <= 0) {
+	uint8_t *p = buf.data();
+	size_t size = buf.size();
+	while (size > 0) {
+		int to_read = (int)(size > UINT16_MAX ? UINT16_MAX : size);
+		ret = unzReadCurrentFile(unz, p, to_read);
+		EXPECT_EQ(to_read, ret);
+		if (ret != to_read) {
+			unzClose(unz);
+			return -6;
+		}
+
+		// ret == number of bytes read.
+		p += ret;
+		size -= ret;
+	}
+
+	// Read one more byte to ensure unzReadCurrentFile() returns 0 for EOF.
+	// NOTE: MiniZip will zero out tmp if there's no data available.
+	uint8_t tmp;
+	ret = unzReadCurrentFile(unz, &tmp, 1);
+	EXPECT_EQ(0, ret);
+	if (ret != 0) {
 		unzClose(unz);
-		return -6;
+		return -7;
 	}
 
 	// Close the FST file.
@@ -295,7 +317,7 @@ int GcnFstTest::getFileFromZip(const rp_char *zip_filename,
 	EXPECT_EQ(UNZ_OK, ret);
 	if (ret != UNZ_OK) {
 		unzClose(unz);
-		return -7;
+		return -8;
 	}
 
 	// Close the Zip file.

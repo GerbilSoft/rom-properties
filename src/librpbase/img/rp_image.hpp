@@ -23,7 +23,8 @@
 #define __ROMPROPERTIES_LIBRPBASE_RP_IMAGE_HPP__
 
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "../common.h"
+#include "../byteorder.h"
 
 // C includes.
 #include <stdint.h>
@@ -31,6 +32,25 @@
 // TODO: Make this implicitly shared.
 
 namespace LibRpBase {
+
+// ARGB32 value with byte accessors.
+union argb32_t {
+	struct {
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		uint8_t b;
+		uint8_t g;
+		uint8_t r;
+		uint8_t a;
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		uint8_t a;
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+#endif
+	};
+	uint32_t u32;
+};
+ASSERT_STRUCT(argb32_t, 4);
 
 class rp_image_backend;
 
@@ -217,6 +237,37 @@ class rp_image
 		static const rp_char *getFormatName(Format format);
 
 	public:
+		/** Metadata. **/
+
+		// sBIT struct.
+		// This matches libpng's.
+		struct sBIT_t {
+			uint8_t red;
+			uint8_t green;
+			uint8_t blue;
+			uint8_t gray;
+			uint8_t alpha;	// Set to 0 to write an RGB image in RpPngWriter.
+		};
+
+		/**
+		 * Set the number of significant bits per channel.
+		 * @param sBIT	[in] sBIT_t struct.
+		 */
+		void set_sBIT(const sBIT_t *sBIT);
+
+		/**
+		 * Get the number of significant bits per channel.
+		 * @param sBIT	[out] sBIT_t struct.
+		 * @return 0 on success; non-zero if not set or error.
+		 */
+		int get_sBIT(sBIT_t *sBIT) const;
+
+		/**
+		 * Clear the sBIT data.
+		 */
+		void clear_sBIT(void);
+
+	public:
 		/** Image operations. **/
 
 		/**
@@ -238,9 +289,25 @@ class rp_image
 		 * and/or columns will be added to "square" the image.
 		 * Otherwise, this is the same as dup().
 		 *
-		 * @return New rp_image with a squared version of the original.
+		 * @return New rp_image with a squared version of the original, or nullptr on error.
 		 */
 		rp_image *squared(void) const;
+
+		/**
+		 * Resize the rp_image.
+		 *
+		 * A new rp_image will be created with the specified dimensions,
+		 * and the current image will be copied into the new image.
+		 * If the new dimensions are smaller than the old dimensions,
+		 * the image will be cropped. If the new dimensions are larger,
+		 * the original image will be in the upper-left corner and the
+		 * new space will be empty. (ARGB: 0x00000000)
+		 *
+		 * @param width New width.
+		 * @param height New height.
+		 * @return New rp_image with a resized version of the original, or nullptr on error.
+		 */
+		rp_image *resized(int width, int height) const;
 };
 
 }

@@ -34,15 +34,15 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * 54-byte header used by some standalone saves
  */
-#pragma pack(1)
 typedef struct PACKED _PS1_54_Header {
 	char filename[21];	// Filename from BlockEntry->filename
 	char title[33];		// Title from SC->title converted to ASCII
 } PS1_54_Header;
-#pragma pack()
 ASSERT_STRUCT(PS1_54_Header, 54);
 
 typedef enum {
@@ -59,7 +59,6 @@ typedef enum {
  * Block Entry. Stored in Block 0 of memorycard.
  * Also used as a header for some standalone saves.
  */
-#pragma pack(1)
 typedef struct PACKED _PS1_Block_Entry {
 	uint32_t alloc_flag;	// Type
 	uint32_t filesize;	// Filesize
@@ -68,7 +67,6 @@ typedef struct PACKED _PS1_Block_Entry {
 	uint8_t padding[96];
 	uint8_t checksum;
 } PS1_Block_Entry;
-#pragma pack()
 ASSERT_STRUCT(PS1_Block_Entry, 128);
 
 /**
@@ -93,7 +91,6 @@ typedef enum {
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 #define PS1_SC_MAGIC "SC"
 typedef struct PACKED _PS1_SC_Struct {
 	char magic[2];		// Magic. ("SC")
@@ -115,7 +112,6 @@ typedef struct PACKED _PS1_SC_Struct {
 	uint16_t icon_pal[16];		// Icon palette. (RGB555)
 	uint8_t icon_data[3][16*16/2];	// Icon data. (16x16, 4bpp; up to 3 frames)
 } PS1_SC_Struct;
-#pragma pack()
 ASSERT_STRUCT(PS1_SC_Struct, 512);
 
 /**
@@ -124,7 +120,6 @@ ASSERT_STRUCT(PS1_SC_Struct, 512);
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _PS1_PSV_Header {
 	char magic[8];		// Magic. ("\0VSP\0\0\0\0")
 	uint8_t key_seed[20];	// Key seed.
@@ -148,8 +143,9 @@ typedef struct PACKED _PS1_PSV_Header {
 
 	uint8_t reserved4[12];
 } PS1_PSV_Header;
-#pragma pack()
 ASSERT_STRUCT(PS1_PSV_Header, 0x84);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

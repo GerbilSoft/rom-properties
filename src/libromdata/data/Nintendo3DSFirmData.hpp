@@ -46,11 +46,16 @@ class Nintendo3DSFirmData
 	public:
 		struct FirmBin_t {
 			uint32_t crc;		// FIRM CRC32.
-			uint8_t major;
-			uint8_t minor;
-			uint8_t revision;
+			struct {		// Kernel version.
+				uint8_t major;
+				uint8_t minor;
+				uint8_t revision;
+			} kernel;
+			struct {		// System version.
+				uint8_t major;
+				uint8_t minor;
+			} sys;
 			bool isNew3DS;		// Is this New3DS?
-			char version[8];	// Display version.
 		};
 
 		/**

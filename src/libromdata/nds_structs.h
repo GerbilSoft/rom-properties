@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * Nintendo DS ROM header.
  * This matches the ROM header format exactly.
@@ -37,7 +39,6 @@ extern "C" {
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _NDS_RomHeader {
 	char title[12];
 	union {
@@ -215,7 +216,6 @@ typedef struct PACKED _NDS_RomHeader {
 		uint8_t rsa_sha1[0x80];		// RSA SHA1 signature on 0x000...0xDFF.
 	} dsi;
 } NDS_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(NDS_RomHeader, 4096);
 
 /**
@@ -283,7 +283,7 @@ typedef enum {
 	NDS_LANG_SPANISH	= 5,
 	NDS_LANG_CHINESE	= 6,
 	NDS_LANG_KOREAN		= 7,
-} NDS_Language;
+} NDS_Language_ID;
 
 /**
  * Nintendo DS icon and title struct.
@@ -291,7 +291,6 @@ typedef enum {
  *
  * All fields are little-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _NDS_IconTitleData{
 	uint16_t version;		// known values: 0x0001, 0x0002, 0x0003, 0x0103
 	uint16_t crc16[4];		// CRC16s for the four known versions.
@@ -313,8 +312,9 @@ typedef struct PACKED _NDS_IconTitleData{
 	uint16_t dsi_icon_pal[8][0x10];		// Icon palettes.
 	uint16_t dsi_icon_seq[0x40];		// Icon animation sequence.
 } NDS_IconTitleData;
-#pragma pack()
 ASSERT_STRUCT(NDS_IconTitleData, 9152);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

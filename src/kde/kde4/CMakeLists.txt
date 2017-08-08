@@ -29,8 +29,10 @@ SET(rom-properties-kde4_SRCS
 	RomPropertiesDialogPluginFactoryKDE4.cpp
 	)
 
-# Wrap UI files.
-QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
+IF(COMMAND QT4_WRAP_UI)
+	# Wrap UI files.
+	QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
+ENDIF(COMMAND QT4_WRAP_UI)
 
 #####################
 # Build the plugin. #
@@ -50,6 +52,7 @@ IF(BUILD_KDE4)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 cachemgr16 romdata16 rpbase16)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 ${ZLIB_LIBRARY})

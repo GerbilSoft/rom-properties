@@ -26,6 +26,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "n3ds_structs.h"
+#include "data/NintendoLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -765,7 +766,6 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 				srlFile = new PartitionFile(srlReader, 0, length);
 				if (srlFile->isOpen()) {
 					// Create the NintendoDS object.
-					// TODO: Close it when not needed. (override close()?)
 					srlData = new NintendoDS(srlFile, true);
 				}
 			}
@@ -1794,13 +1794,37 @@ int Nintendo3DS::loadFieldData(void)
 			d->addTitleIdAndProductCodeFields(true);
 		}
 
-		// TODO: Get the system language.
-		d->fields->addField_string(_RP("Title"), utf16le_to_rp_string(
-			d->smdh.header.titles[1].desc_short, ARRAY_SIZE(d->smdh.header.titles[1].desc_short)));
-		d->fields->addField_string(_RP("Full Title"), utf16le_to_rp_string(
-			d->smdh.header.titles[1].desc_long, ARRAY_SIZE(d->smdh.header.titles[1].desc_long)));
-		d->fields->addField_string(_RP("Publisher"), utf16le_to_rp_string(
-			d->smdh.header.titles[1].publisher, ARRAY_SIZE(d->smdh.header.titles[1].publisher)));
+		// Get the system language.
+		// TODO: Verify against the game's region code?
+		int lang = NintendoLanguage::getN3DSLanguage();
+
+		// Check that the field is valid.
+		if (d->smdh.header.titles[lang].desc_short[0] == cpu_to_le16(0)) {
+			// Not valid. Check English.
+			if (d->smdh.header.titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0)) {
+				// English is valid.
+				lang = N3DS_LANG_ENGLISH;
+			} else {
+				// Not valid. Check Japanese.
+				if (d->smdh.header.titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16(0)) {
+					// Japanese is valid.
+					lang = N3DS_LANG_JAPANESE;
+				} else {
+					// Not valid...
+					// TODO: Check other languages?
+					lang = -1;
+				}
+			}
+		}
+
+		if (lang >= 0 && lang < ARRAY_SIZE(d->smdh.header.titles)) {
+			d->fields->addField_string(_RP("Title"), utf16le_to_rp_string(
+				d->smdh.header.titles[1].desc_short, ARRAY_SIZE(d->smdh.header.titles[lang].desc_short)));
+			d->fields->addField_string(_RP("Full Title"), utf16le_to_rp_string(
+				d->smdh.header.titles[1].desc_long, ARRAY_SIZE(d->smdh.header.titles[lang].desc_long)));
+			d->fields->addField_string(_RP("Publisher"), utf16le_to_rp_string(
+				d->smdh.header.titles[1].publisher, ARRAY_SIZE(d->smdh.header.titles[lang].publisher)));
+		}
 
 		// Region code.
 		// Maps directly to the SMDH field.

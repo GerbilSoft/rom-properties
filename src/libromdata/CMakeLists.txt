@@ -24,6 +24,7 @@ SET(libromdata_SRCS
 	Sega8Bit.cpp
 	SegaPVR.cpp
 	DirectDrawSurface.cpp
+	NintendoBadge.cpp
 	Dreamcast.cpp
 	data/SegaPublishers.cpp
 	data/NintendoPublishers.cpp
@@ -33,6 +34,8 @@ SET(libromdata_SRCS
 	data/EXEData.cpp
 	data/WiiUData.cpp
 	data/Nintendo3DSFirmData.cpp
+	data/Nintendo3DSSysTitles.cpp
+	data/NintendoLanguage.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -47,6 +50,7 @@ SET(libromdata_SRCS
 	disc/Cdrom2352Reader.cpp
 	disc/IsoPartition.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
+	utils/SuperMagicDrive.cpp
 	)
 # Headers.
 SET(libromdata_H
@@ -74,6 +78,7 @@ SET(libromdata_H
 	Sega8Bit.hpp
 	SegaPVR.hpp
 	DirectDrawSurface.hpp
+	NintendoBadge.hpp
 	Dreamcast.hpp
 	md_structs.h
 	gcn_structs.h
@@ -93,6 +98,7 @@ SET(libromdata_H
 	sega8_structs.h
 	pvr_structs.h
 	dds_structs.h
+	badge_structs.h
 	cdrom_structs.h
 	iso_structs.h
 	data/SegaPublishers.hpp
@@ -103,6 +109,8 @@ SET(libromdata_H
 	data/EXEData.hpp
 	data/WiiUData.hpp
 	data/Nintendo3DSFirmData.hpp
+	data/Nintendo3DSSysTitles.hpp
+	data/NintendoLanguage.hpp
 	img/TCreateThumbnail.hpp
 	disc/WbfsReader.hpp
 	disc/libwbfs.h
@@ -121,6 +129,7 @@ SET(libromdata_H
 	disc/Cdrom2352Reader.hpp
 	disc/IsoPartition.hpp
 	config/TImageTypesConfig.hpp
+	utils/SuperMagicDrive.hpp
 	)
 
 IF(ENABLE_XML)
@@ -143,6 +152,40 @@ IF(ENABLE_DECRYPTION)
 		)
 ENDIF(ENABLE_DECRYPTION)
 
+# Optimized sources.
+STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	# MSVC does not support MMX intrinsics in 64-bit builds.
+	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
+	# TODO: Disable MMX on all 64-bit builds?
+	IF(NOT MSVC OR NOT CMAKE_CL_64)
+		SET(libromdata_OPTIMIZE_SRCS utils/SuperMagicDrive_mmx.cpp)
+	ENDIF(NOT MSVC OR NOT CMAKE_CL_64)
+	SET(libromdata_OPTIMIZE_SRCS
+		${libromdata_OPTIMIZE_SRCS}
+		utils/SuperMagicDrive_sse2.cpp
+		)
+
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSE2_FLAG "/arch:SSE2")
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		# TODO: Not needed on 64-bit.
+		SET(MMX_FLAG "-mmmx")
+		SET(SSE2_FLAG "-msse2")
+	ENDIF()
+
+	IF(MMX_FLAG)
+		SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_mmx.cpp
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
+	ENDIF(MMX_FLAG)
+	IF(SSE2_FLAG)
+		SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_sse2.cpp
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+	ENDIF(SSE2_FLAG)
+ENDIF()
+UNSET(arch)
+
 ######################
 # Build the library. #
 ######################
@@ -152,6 +195,7 @@ ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_LINK_LIBRARIES(romdata8 rpbase8)
 
@@ -160,6 +204,7 @@ ADD_LIBRARY(romdata16 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_LINK_LIBRARIES(romdata16 rpbase16)
 

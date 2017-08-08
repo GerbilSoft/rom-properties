@@ -97,6 +97,10 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 	, cipher(nullptr)
 #endif /* ENABLE_DECRYPTION */
 {
+#ifndef ENABLE_DECRYPTION
+	RP_UNUSED(tmd_content_index);
+#endif /* ENABLE_DECRYPTION */
+
 	assert(ticket != nullptr);
 	if (!ticket) {
 		// No ticket. Assuming no encryption.
@@ -278,7 +282,12 @@ size_t CIAReader::read(void *ptr, size_t size)
 		size = (size_t)(d->content_length - d->pos);
 	}
 
-	if (!d->cipher) {
+#ifdef ENABLE_DECRYPTION
+	// If decryption isn't available, CIAReader would have
+	// NULLed out this->file if the CIA was encrypted.
+	if (!d->cipher)
+#endif /* ENABLE_DECRYPTION */
+	{
 		// No CIA encryption. Read directly from the file.
 		size_t sz_read = d->file->seekAndRead(d->content_offset + d->pos, ptr, size);
 		if (sz_read != size) {

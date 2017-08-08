@@ -131,6 +131,25 @@ HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize 
 }
 
 /**
+ * Get the size of the specified ImgClass.
+ * @param imgClass	[in] ImgClass object.
+ * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+ * @return 0 on success; non-zero on error.
+ */
+int CreateThumbnail::getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize) const
+{
+	BITMAP bmp;
+	int ret = GetObject(static_cast<HGDIOBJ>(imgClass), sizeof(bmp), &bmp);
+	assert(ret != 0);
+	if (ret) {
+		pOutSize->width = bmp.bmWidth;
+		pOutSize->height = bmp.bmHeight;
+		return 0;
+	}
+	return -1;
+}
+
+/**
  * Get the proxy for the specified URL.
  * @return Proxy, or empty string if no proxy is needed.
  */

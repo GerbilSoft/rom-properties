@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * References:
  * - http://fabiensanglard.net/Mykaruga/tools/segaPVRFormat.txt
@@ -42,14 +44,12 @@ extern "C" {
  * - PVRX: Little-endian.
  * - GVR:  Big-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _PVR_GBIX_Header {
 	char magic[4];		// "GBIX" (or "GCIX" in Wii games)
 	uint32_t length;	// Length of GBIX header. (Should be 8.)
 	uint32_t index;		// Global index.
 	uint8_t reserved[4];
 } PVR_GBIX_Header;
-#pragma pack()
 ASSERT_STRUCT(PVR_GBIX_Header, 16);
 
 /**
@@ -57,7 +57,6 @@ ASSERT_STRUCT(PVR_GBIX_Header, 16);
  * - Dreamcast PVR: All fields are little-endian.
  * - GameCube GVR: All fields are big-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _PVR_Header {
 	char magic[4];		// "PVRT"
 	uint32_t length;	// Length of the file, starting at px_format.
@@ -76,7 +75,6 @@ typedef struct PACKED _PVR_Header {
 	uint16_t width;		// Width
 	uint16_t height;	// Height
 } PVR_Header;
-#pragma pack()
 ASSERT_STRUCT(PVR_Header, 16);
 
 /**
@@ -138,6 +136,8 @@ typedef enum {
 	GVR_IMG_CI8		= 0x09,
 	GVR_IMG_DXT1		= 0x0E,
 } GVR_Image_Data_Type_t;
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

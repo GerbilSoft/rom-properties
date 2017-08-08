@@ -70,7 +70,7 @@ class TImageTypesConfig
 		// Number of image types. (columns)
 		static const int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
 		// Number of systems. (rows)
-		static const int SYS_COUNT = 8;
+		static const int SYS_COUNT = 9;
 
 		/**
 		 * Create the grid of labels and ComboBoxes.

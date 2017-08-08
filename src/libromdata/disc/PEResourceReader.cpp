@@ -396,7 +396,7 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	unsigned int key_len = (unsigned int)u16_strlen(key);
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
 	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
-	keyData_len = ((keyData_len + sizeof(fields) + 3) & ~3) - sizeof(fields);
+	keyData_len = ALIGN(4, keyData_len + sizeof(fields)) - sizeof(fields);
 	unique_ptr<char16_t[]> keyData(new char16_t[keyData_len/sizeof(char16_t)]);
 	size = file->read(keyData.get(), keyData_len);
 	if (size != keyData_len) {
@@ -435,7 +435,7 @@ inline int PEResourceReaderPrivate::alignFileDWORD(IRpFile *file)
 	int ret = 0;
 	int64_t pos = file->tell();
 	if (pos % 4 != 0) {
-		pos = (pos + 3) & ~3LL;
+		pos = ALIGN(4, pos);
 		ret = file->seek(pos);
 	}
 	return ret;
@@ -554,7 +554,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// DWORD alignment is required here.
 		tblPos += ((key_len + 1) * 2);
-		tblPos  = (tblPos + 3) & ~3;
+		tblPos  = ALIGN(4, tblPos);
 
 		// Value must be NULL-terminated.
 		const char16_t *value = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
@@ -574,7 +574,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;
-		tblPos  = (tblPos + 3) & ~3;
+		tblPos  = ALIGN(4, tblPos);
 	}
 
 	// String table loaded successfully.

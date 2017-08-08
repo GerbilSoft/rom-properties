@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * Nintendo 64 ROM header.
  * This matches the ROM header format exactly.
@@ -37,7 +39,6 @@ extern "C" {
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef union PACKED _N64_RomHeader {
 	struct {
 		union {
@@ -66,8 +67,9 @@ typedef union PACKED _N64_RomHeader {
 	uint16_t u16[64/2];
 	uint32_t u32[64/4];
 } N64_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(N64_RomHeader, 64);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

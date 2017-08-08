@@ -76,6 +76,14 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override;
 
 		/**
+		 * Get the size of the specified ImgClass.
+		 * @param imgClass	[in] ImgClass object.
+		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+		 * @return 0 on success; non-zero on error.
+		 */
+		virtual int getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize) const override final;
+
+		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */

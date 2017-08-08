@@ -74,8 +74,10 @@ SET(rom-properties-kde5_SRCS
 	RomPropertiesDialogPluginFactoryKDE5.cpp
 	)
 
-# Wrap UI files.
-QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde5_UIS})
+IF(COMMAND QT5_WRAP_UI)
+	# Wrap UI files.
+	QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde5_UIS})
+ENDIF(COMMAND QT5_WRAP_UI)
 
 #####################
 # Build the plugin. #
@@ -97,6 +99,7 @@ IF(BUILD_KDE5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr16 romdata16 rpbase16)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 ${ZLIB_LIBRARY})

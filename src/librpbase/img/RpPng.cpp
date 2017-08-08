@@ -223,9 +223,12 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 
 	// rp_image's palette data.
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	const int palette_len = img->palette_len();
 	uint32_t *img_palette = img->palette();
+	assert(palette_len > 0);
+	assert(palette_len <= 256);
 	assert(img_palette != nullptr);
-	if (!img_palette)
+	if (!img_palette || palette_len <= 0 || palette_len > 256)
 		return;
 
 	switch (color_type) {
@@ -241,62 +244,56 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			}
 
 			// Combine the 24-bit RGB palette with the transparency information.
-			for (int i = std::min(num_palette, img->palette_len());
-				i > 0; i--, img_palette++, png_palette++)
+			for (int i = std::min(num_palette, palette_len);
+			     i > 0; i--, img_palette++, png_palette++)
 			{
-				uint32_t color = (png_palette->blue << 0) |
-							(png_palette->green << 8) |
-							(png_palette->red << 16);
+				argb32_t color;
+				color.r = png_palette->red;
+				color.g = png_palette->green;
+				color.b = png_palette->blue;
 				if (trans && num_trans > 0) {
 					// Copy the transparency information.
-					color |= (*trans << 24);
+					color.a = *trans;
 					num_trans--;
 				} else {
 					// No transparency information.
 					// Assume the color is opaque.
-					color |= 0xFF000000;
+					color.a = 0xFF;
 				}
 
-				*img_palette = color;
+				*img_palette = color.u32;
 			}
 
-			if (num_palette < img->palette_len()) {
+			if (num_palette < palette_len) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
-				for (int i = img->palette_len()-num_palette;
-				i > 0; i--, img_palette++)
-				{
-					*img_palette = 0;
-				}
+				memset(img_palette, 0, (palette_len - num_palette) * sizeof(uint32_t));
 			}
 			break;
 
-		case PNG_COLOR_TYPE_GRAY:
+		case PNG_COLOR_TYPE_GRAY: {
 			// Create a default grayscale palette.
 			// NOTE: If the palette isn't 256 entries long,
 			// the grayscale values will be incorrect.
 			// TODO: Handle the tRNS chunk?
-			for (int i = 0; i < std::min(256, img->palette_len());
-				i++, img_palette++)
+			uint32_t gray = 0xFF000000;
+			for (int i = 0; i < std::min(256, palette_len);
+			     i++, img_palette++, gray += 0x010101)
 			{
-				uint8_t gray = (uint8_t)i;
-				*img_palette = (gray | gray << 8 | gray << 16);
 				// TODO: tRNS chunk handling.
-				*img_palette |= 0xFF000000;
+				*img_palette = gray;
 			}
 
-			if (img->palette_len() > 256) {
+			if (palette_len > 256) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
-				for (int i = img->palette_len()-256; i > 0;
-					i--, img_palette++)
-				{
-					*img_palette = 0;
-				}
+				memset(img_palette, 0, (palette_len - 256) * sizeof(uint32_t));
 			}
 			break;
+		}
 
 		default:
+			assert(!"Unsupported CI8 palette type.");
 			break;
 	}
 }
@@ -310,7 +307,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 {
 	// Row pointers. (NOTE: Allocated after IHDR is read.)
-	png_byte **row_pointers = nullptr;
+	const png_byte **row_pointers = nullptr;
 	rp_image *img = nullptr;
 
 #ifdef PNG_SETJMP_SUPPORTED
@@ -363,6 +360,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			break;
 		case PNG_COLOR_TYPE_GRAY_ALPHA:
 			// Grayscale+Alpha is handled as ARGB32.
+			// QImage, gdk-pixbuf, cairo, and GDI+ don't support IA8.
 			// TODO: Does this work with 1, 2, and 4-bit grayscale?
 			fmt = rp_image::FORMAT_ARGB32;
 			png_set_gray_to_rgb(png_ptr);
@@ -427,19 +425,21 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	}
 
 	// Allocate the row pointers.
-	row_pointers = (png_byte**)png_malloc(png_ptr, sizeof(png_byte*) * height);
+	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
 	if (!row_pointers) {
 		delete img;
 		return nullptr;
 	}
 
 	// Initialize the row pointers array.
-	for (int y = height-1; y >= 0; y--) {
-		row_pointers[y] = static_cast<png_byte*>(img->scanLine(y));
+	const png_byte *pb = static_cast<const png_byte*>(img->bits());
+	const int stride = img->stride();
+	for (png_uint_32 y = 0; y < height; y++, pb += stride) {
+		row_pointers[y] = pb;
 	}
 
 	// Read the image.
-	png_read_image(png_ptr, row_pointers);
+	png_read_image(png_ptr, const_cast<png_byte**>(row_pointers));
 	png_free(png_ptr, row_pointers);
 
 	// If CI8, read the palette.

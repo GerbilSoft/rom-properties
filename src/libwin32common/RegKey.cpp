@@ -392,10 +392,7 @@ LONG RegKey::write_dword(LPCWSTR lpValueName, DWORD value)
 		return ERROR_INVALID_HANDLE;
 	}
 
-	// Get the string length, add 1 for NULL,
-	// and multiply by sizeof(wchar_t).
 	DWORD cbData = (DWORD)sizeof(value);
-
 	return RegSetValueEx(m_hKey,
 		lpValueName,		// lpValueName
 		0,			// Reserved

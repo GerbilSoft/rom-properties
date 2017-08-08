@@ -108,4 +108,26 @@
 # define unlikely(x)	x
 #endif
 
+// C99 restrict macro.
+// NOTE: gcc only defines restrict in C, not C++,
+// so use __restrict on both gcc and MSVC.
+#define RESTRICT __restrict
+
+// typeof() for MSVC.
+#ifdef _MSC_VER
+#define typeof(x) decltype(x)
+#endif
+
+/**
+ * Alignment macro.
+ * @param a	Alignment value.
+ * @param x	Byte count to align.
+ */
+#define ALIGN(a, x)	(((x)+((a)-1))&~((typeof(x))((a)-1)))
+
+/**
+ * Alignment assertion macro.
+ */
+#define ASSERT_ALIGNMENT(a, ptr)	assert(reinterpret_cast<intptr_t>(ptr) % 16 == 0);
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */

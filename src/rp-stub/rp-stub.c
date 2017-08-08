@@ -26,6 +26,8 @@
  * function from the library.
  */
 #include "config.version.h"
+#include "git.h"
+
 #include "libunixcommon/dll-search.h"
 
 // C includes.
@@ -68,6 +70,12 @@ static void show_version(void)
 		"Copyright (c) 2016-2017 by David Korth.\n"
 		"\n"
 		"rom-properties version: " RP_VERSION_STRING "\n"
+#ifdef RP_GIT_VERSION
+		RP_GIT_VERSION "\n"
+# ifdef RP_GIT_DESCRIBE
+		RP_GIT_DESCRIBE "\n"
+# endif /* RP_GIT_DESCRIBE */
+#endif /* RP_GIT_VERSION */
 		// TODO: git version
 		"\n"
 		"This program is licensed under the GNU GPL v2.\n"
@@ -174,8 +182,7 @@ int main(int argc, char *argv[])
 						"Try '%s --help' for more information.\n",
 						argv[0], optarg, argv[0]);
 					return EXIT_FAILURE;
-				}
-				else if (lTmp <= 0 || lTmp > 1048576) {
+				} else if (lTmp <= 0 || lTmp > 32768) {
 					fprintf(stderr, "%s: size '%s' is out of range\n"
 						"Try '%s --help' for more information.\n",
 						argv[0], optarg, argv[0]);

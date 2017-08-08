@@ -2,12 +2,26 @@
 
 ## v1.2 (released 2017/??/??)
 
+* New features:
+  * rpcli, rp-stub, rp-thumbnailer-dbus: PNG images now have an `sBIT` chunk,
+    which indicates the number of bits per channel that were present in the
+    original image. In addition, RGB images that don't have an alpha channel
+    are now saved as RGB PNGs instead of ARGB PNGs, which usually results in
+    a smaller file.
+  * Some functions are now optimized using SIMD instructions if supported by
+    the host system's CPU:
+    * Sega Mega Drive: SMD format decoding (SSE2)
+    * 24-bit linear RGB image decoding (SSSE3)
+    * 32-bit linear ARGB/xRGB image decoding (SSSE3)
+
 * New systems:
   * Sega PVR and GVR decoding. These are texture files used in Sega games
     on Dreamcast, GameCube, and various PC ports.
   * Microsoft DirectDraw Surface decoding. These are texture files used in
     various PC games. Supports several uncompressed RGB and ARGB formats,
     DXTn, BC4, and BC5.
+  * Nintendo Badge Arcade decoding. Supports both PRBS (badge) and CABS
+    (badge set) files. PRBS decoding supports mega badges as well.
 
 * New system features:
   * Nintendo DS: Detect "Mask ROM" separately from Secure Area encryption.
@@ -17,6 +31,10 @@
     DSiWare and Wii U VC SRLs will have non-zero data here.
   * Game Boy: "Game Boy Color" will now only be shown for GBC-exclusive ROMs
     instead of both GBC-exclusive and GBC-enhanced.
+  * Nintendo 3DS: Display the game title that most closely matches the system
+    language. This was already done for Nintendo DS titles, and is also being
+    done for Nintendo Badge Arcade files, which use a language setup similar
+    to Nintendo 3DS.
 
 * Bug fixes:
   * Fixed decoding of BGR555 images. The lower part of the R channel was
@@ -25,6 +43,21 @@
   * Wii U: Make sure GameCube and Wii magic numbers aren't present in the
     disc header. This ensures that a GCN/Wii disc image with the game ID
     "WUP-" doesn't get detected as a Wii U disc image.
+  * Fixed CIAReader failing to compile in no-crytpto builds.
+
+* Other changes:
+  * The PNG compression level is now set to the default value instead of 5.
+    This corresponds to 6 with libpng-1.6.31 and zlib-1.2.11.
+  * The system text conversion functions are now used for handling Latin-1
+    (ISO-8859-1) encoding instead of our own conversion function. In particular,
+    this means the C1 control characters (0x80-0x9F) are no longer invalid and
+    will be converted to the corresponding Unicode code points.
+  * When comparing byteswapped data to a constant, the byteswapping macro
+    is now used on the constant instead of the variable. This is needed
+    in order to byteswap the constant at compile time in MSVC builds.
+    (gcc does this even if the byteswap is on the variable.)
+  * Updated MiniZip to an unofficial fork: https://github.com/nmoinvaz/minizip
+  * rp-config: Added an "About" tab.
 
 ## v1.1 (released 2017/07/04)
 

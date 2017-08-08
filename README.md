@@ -94,6 +94,7 @@ button.
 | Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       N/A      |
 | Sega PVR Textures             |       Yes      |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |      Image      |       N/A      |
+| Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -145,6 +146,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 * Sega PVR Textures: Dreamcast PVR (\*.pvr), GameCube GVR (\*.gvr)
 * Microsoft DirectDraw Surface: DDS files (\*.dds)
   * Currently supports uncompressed RGB, DXTn, BC4, and BC5.
+* Nintendo Badge Arcade: Badge files (\*.prb), badge set files (\*.cab)
 
 ## External Media Downloads
 
@@ -237,3 +239,7 @@ decrypt data will show an error message instead of the data in question.
   Used for ROM format information for Sega Master System and Game Gear.
 * [Puyo Tools](https://github.com/nickworonekin/puyotools): Information on
   Sega's PVR, GVR, and related texture formats.
+* [Badge Arcade Tool](https://github.com/CaitSith2/BadgeArcadeTool): Information
+  on Nintendo Badge Arcade files.
+* [Advanced Badge Editor](https://github.com/TheMachinumps/Advanced-badge-editor):
+  Information on Nintendo Badge Arcade files.

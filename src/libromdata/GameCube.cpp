@@ -22,10 +22,11 @@
 #include "GameCube.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "data/NintendoPublishers.hpp"
-#include "data/WiiSystemMenuVersion.hpp"
 #include "gcn_structs.h"
 #include "gcn_banner.h"
+#include "data/NintendoPublishers.hpp"
+#include "data/WiiSystemMenuVersion.hpp"
+#include "data/NintendoLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -132,7 +133,7 @@ class GameCubePrivate : public RomDataPrivate
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			uint64_t start;			// Starting address, in bytes.
+			int64_t start;			// Starting address, in bytes.
 			uint32_t type;			// Partition type. (See WiiPartitionType.)
 			WiiPartition *partition;	// Partition object.
 		};
@@ -313,8 +314,8 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Process each volume group.
-	for (int i = 0; i < 4; i++) {
-		uint32_t count = be32_to_cpu(vgtbl.vg[i].count);
+	for (unsigned int i = 0; i < 4; i++) {
+		unsigned int count = be32_to_cpu(vgtbl.vg[i].count);
 		if (count == 0) {
 			continue;
 		} else if (count > ARRAY_SIZE(pt)) {
@@ -322,9 +323,9 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		}
 
 		// Read the partition table entries.
-		uint64_t pt_addr = (uint64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
+		int64_t pt_addr = (int64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
 		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
-		size = discReader->seekAndRead((int64_t)pt_addr, pt, ptSize);
+		size = discReader->seekAndRead(pt_addr, pt, ptSize);
 		if (size != ptSize) {
 			// Error reading the partition table entries.
 			return -EIO;
@@ -332,9 +333,9 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 		// Process each partition table entry.
 		wiiVgTbl[i].resize(count);
-		for (int j = 0; j < (int)count; j++) {
+		for (unsigned int j = 0; j < count; j++) {
 			WiiPartEntry &entry = wiiVgTbl[i].at(j);
-			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
+			entry.start = (int64_t)(be32_to_cpu(pt[j].addr)) << 2;
 			entry.type = be32_to_cpu(pt[j].type);
 			entry.partition = new WiiPartition(discReader, entry.start);
 
@@ -777,7 +778,7 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 	}
 
 	// Verify the IMET magic.
-	if (be32_to_cpu(pBanner->magic) != WII_IMET_MAGIC) {
+	if (pBanner->magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Magic is incorrect.
 		// TODO: Better error code?
 		return -EIO;
@@ -814,33 +815,9 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
 	// BNR2 has language-specific fields.
 	const banner_comment_t *comment = nullptr;
 	if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR2) {
-		// Determine the system language.
-		switch (SystemRegion::getLanguageCode()) {
-			case 'en':
-			default:
-				// English. (default)
-				// Used if the host system language
-				// doesn't match any of the languages
-				// supported by PAL GameCubes.
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ENGLISH];
-				break;
-
-			case 'de':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_GERMAN];
-				break;
-			case 'fr':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_FRENCH];
-				break;
-			case 'es':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_SPANISH];
-				break;
-			case 'it':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ITALIAN];
-				break;
-			case 'nl':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_DUTCH];
-				break;
-		}
+		// Get the system language.
+		const int lang = NintendoLanguage::getGcnPalLanguage();
+		comment = &gcn_opening_bnr->comments[lang];
 
 		// If all of the language-specific fields are empty,
 		// revert to English.
@@ -883,54 +860,24 @@ rp_string GameCubePrivate::wii_getBannerName(void) const
 		}
 	}
 
-	// Determine the system language.
-	int langIdx;
-	switch (SystemRegion::getLanguageCode()) {
-		case 'en':
-		default:
-			// English. (default)
-			// Used if the host system language doesn't match
-			// any of the languages supported by Wii.
-			langIdx = WII_LANG_ENGLISH;
-			break;
-
-		case 'ja':
-			langIdx = WII_LANG_JAPANESE;
-			break;
-		case 'de':
-			langIdx = WII_LANG_GERMAN;
-			break;
-		case 'fr':
-			langIdx = WII_LANG_FRENCH;
-			break;
-		case 'es':
-			langIdx = WII_LANG_SPANISH;
-			break;
-		case 'it':
-			langIdx = WII_LANG_ITALIAN;
-			break;
-		case 'nl':
-			langIdx = WII_LANG_DUTCH;
-			break;
-		case 'ko':
-			langIdx = WII_LANG_KOREAN;
-			break;
-	}
+	// Get the system language.
+	// TODO: Verify against the region code somehow?
+	int lang = NintendoLanguage::getWiiLanguage();
 
 	// If the language-specific name is empty,
 	// revert to English.
-	if (wii_opening_bnr->names[langIdx][0][0] == 0) {
+	if (wii_opening_bnr->names[lang][0][0] == 0) {
 		// Revert to English.
-		langIdx = WII_LANG_ENGLISH;
+		lang = WII_LANG_ENGLISH;
 	}
 
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	rp_string info = utf16be_to_rp_string(wii_opening_bnr->names[langIdx][0], 21);
-	if (wii_opening_bnr->names[langIdx][1][0] != 0) {
+	rp_string info = utf16be_to_rp_string(wii_opening_bnr->names[lang][0], 21);
+	if (wii_opening_bnr->names[lang][1][0] != 0) {
 		info += _RP_CHR('\n');
-		info += utf16be_to_rp_string(wii_opening_bnr->names[langIdx][1], 21);
+		info += utf16be_to_rp_string(wii_opening_bnr->names[lang][1], 21);
 	}
 	return info;
 }
@@ -1082,11 +1029,11 @@ GameCube::GameCube(IRpFile *file)
 		// - CISO doesn't store a copy of the disc header
 		//   in range of the data we read.
 		// - TGC has a 32 KB header before the embedded GCM.
-		if (be32_to_cpu(d->discHeader.magic_wii) == WII_MAGIC) {
+		if (d->discHeader.magic_wii == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image.
 			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
 			d->discType |=  GameCubePrivate::DISC_SYSTEM_WII;
-		} else if (be32_to_cpu(d->discHeader.magic_gcn) == GCN_MAGIC) {
+		} else if (d->discHeader.magic_gcn == cpu_to_be32(GCN_MAGIC)) {
 			// GameCube disc image.
 			// TODO: Check for Triforce?
 			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
@@ -1173,10 +1120,10 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 	// Check for the magic numbers.
 	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
-	if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
+	if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 		// Wii disc image.
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
-	} else if (be32_to_cpu(gcn_header->magic_gcn) == GCN_MAGIC) {
+	} else if (gcn_header->magic_gcn == cpu_to_be32(GCN_MAGIC)) {
 		// GameCube disc image.
 		// TODO: Check for Triforce?
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
@@ -1190,7 +1137,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 	// Check for TGC.
 	const GCN_TGC_Header *const tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
-	if (be32_to_cpu(tgcHeader->tgc_magic) == TGC_MAGIC) {
+	if (tgcHeader->tgc_magic == cpu_to_be32(TGC_MAGIC)) {
 		// TGC images have their own 32 KB header, so we can't
 		// check the actual GCN/Wii header here.
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_TGC);
@@ -1208,7 +1155,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 			// Check for Wii magic.
 			// FIXME: GCN magic too?
 			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
-			if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
+			if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 				// Wii disc image. (WBFS format)
 				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
 			}
@@ -1244,12 +1191,12 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		// TODO: WIA struct when full WIA support is added.
 		uint32_t magic_tmp;
 		memcpy(&magic_tmp, &info->header.pData[0x70], sizeof(magic_tmp));
-		if (be32_to_cpu(magic_tmp) == WII_MAGIC) {
+		if (magic_tmp == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image. (WIA format)
 			return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WIA);
 		}
 		memcpy(&magic_tmp, &info->header.pData[0x74], sizeof(magic_tmp));
-		if (be32_to_cpu(magic_tmp) == GCN_MAGIC) {
+		if (magic_tmp == cpu_to_be32(GCN_MAGIC)) {
 			// GameCube disc image. (WIA format)
 			return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WIA);
 		}

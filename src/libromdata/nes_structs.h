@@ -20,6 +20,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+/**
+ * References:
+ * - https://wiki.nesdev.com/w/index.php/INES
+ * - https://wiki.nesdev.com/w/index.php/NES_2.0
+ * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System
+ */
+
 #ifndef __ROMPROPERTIES_LIBROMDATA_NES_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_NES_STRUCTS_H__
 
@@ -30,12 +37,7 @@
 extern "C" {
 #endif
 
-/**
- * References:
- * - https://wiki.nesdev.com/w/index.php/INES
- * - https://wiki.nesdev.com/w/index.php/NES_2.0
- * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System
- */
+#pragma pack(1)
 
 // Bank sizes for iNES.
 #define INES_PRG_BANK_SIZE 16384
@@ -46,7 +48,6 @@ extern "C" {
 #define TNES_PRG_BANK_SIZE 8192
 #define TNES_CHR_BANK_SIZE 8192
 
-#pragma pack(1)
 typedef struct PACKED _INES_RomHeader {
 	uint8_t magic[4];	// "NES\x1A"
 	uint8_t prg_banks;	// # of 16 KB PRG ROM banks.
@@ -75,7 +76,6 @@ typedef struct PACKED _INES_RomHeader {
 
 	uint8_t reserved[2];
 } INES_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(INES_RomHeader, 16);
 
 // mapper_lo flags.
@@ -134,7 +134,6 @@ typedef enum {
  * TNES ROM header.
  * Used with Nintendo 3DS Virtual Console games.
  */
-#pragma pack(1)
 typedef struct PACKED _TNES_RomHeader {
 	uint8_t magic[4];	// "TNES"
 	uint8_t mapper;
@@ -145,7 +144,6 @@ typedef struct PACKED _TNES_RomHeader {
 	uint8_t vram;		// 00 == no; 01 == yes
 	uint8_t reserved[6];
 } TNES_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(TNES_RomHeader, 16);
 
 /**
@@ -177,19 +175,16 @@ typedef enum {
 /**
  * 3-byte BCD date stamp.
  */
-#pragma pack(1)
 typedef struct PACKED _FDS_BCD_DateStamp {
 	uint8_t year;	// Add 1925 to this.
 	uint8_t mon;	// 1-12
 	uint8_t mday;	// 1-31
 } FDS_BCD_DateStamp;
-#pragma pack()
 ASSERT_STRUCT(FDS_BCD_DateStamp, 3);
 
 /**
  * Famicom Disk System header.
  */
-#pragma pack(1)
 typedef struct PACKED _FDS_DiskHeader {
 	uint8_t block_code;	// 0x01
 	uint8_t magic[14];	// "*NINTENDO-HVC*"
@@ -216,7 +211,6 @@ typedef struct PACKED _FDS_DiskHeader {
 	uint8_t price;
 	uint16_t crc;
 } FDS_DiskHeader;
-#pragma pack()
 ASSERT_STRUCT(FDS_DiskHeader, 58);
 
 typedef enum {
@@ -234,14 +228,14 @@ typedef enum {
  * fwNES FDS header.
  * If present, it's placed before the regular FDS header.
  */
-#pragma pack(1)
 typedef struct PACKED _FDS_DiskHeader_fwNES {
 	uint8_t magic[4];	// "FDS\x1A"
 	uint8_t disk_sides;	// Number of disk sides.
 	uint8_t reserved[11];	// Zero filled.
 } FDS_DiskHeader_fwNES;
-#pragma pack()
 ASSERT_STRUCT(FDS_DiskHeader_fwNES, 16);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

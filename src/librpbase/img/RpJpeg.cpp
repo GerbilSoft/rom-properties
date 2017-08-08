@@ -14,17 +14,20 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
 
 #include "RpJpeg.hpp"
-#include "rp_image.hpp"
+#include "RpJpeg_p.hpp"
 #include "../file/IRpFile.hpp"
 #include "../file/FileSystem.hpp"
+
+#ifdef RPJPEG_HAS_SSSE3
+# include "librpbase/cpuflags_x86.h"
+#endif /* RPJPEG_HAS_SSSE3 */
 
 // C includes.
 #include <stdint.h>
@@ -38,11 +41,6 @@
 #include <memory>
 using std::unique_ptr;
 
-// Image format libraries.
-#include <jpeglib.h>
-#include <jerror.h>
-#include <setjmp.h>
-
 #ifdef _MSC_VER
 // NOTE: jpegint.h does not have extern "C".
 // We're using it for DELAYLOAD verification.
@@ -55,111 +53,11 @@ extern "C" {
 
 namespace LibRpBase {
 
-// ARGB32 value with byte accessors.
-// TODO: Share with ImageDecoder_p.hpp.
-union argb32_t {
-	struct {
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		uint8_t b;
-		uint8_t g;
-		uint8_t r;
-		uint8_t a;
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		uint8_t a;
-		uint8_t r;
-		uint8_t g;
-		uint8_t b;
-#endif
-	};
-	uint32_t u32;
-};
-ASSERT_STRUCT(argb32_t, 4);
-
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 // TODO: jdiv_round_up() uses division. Find a better function?
 DELAYLOAD_TEST_FUNCTION_IMPL2(jdiv_round_up, 0, 1);
 #endif /* _MSC_VER */
-
-class RpJpegPrivate
-{
-	private:
-		// RpJpegPrivate is a static class.
-		RpJpegPrivate();
-		~RpJpegPrivate();
-		RP_DISABLE_COPY(RpJpegPrivate)
-
-	public:
-		/** Error handling functions. **/
-
-		// Error manager.
-		// Based on libjpeg-turbo 1.5.1's read_JPEG_file(). (example.c)
-		struct my_error_mgr {
-			jpeg_error_mgr pub;	// "public" fields
-			jmp_buf setjmp_buffer;	// for return to caller
-		};
-
-		/**
-		 * error_exit replacement for JPEG.
-		 * @param cinfo j_common_ptr
-		 */
-		static void my_error_exit(j_common_ptr cinfo);
-
-		/**
-		 * output_message replacement for JPEG.
-		 * @param cinfo j_common_ptr
-		 */
-		static void my_output_message(j_common_ptr cinfo);
-
-		/** I/O functions. **/
-
-		// JPEG source manager struct.
-		// Based on libjpeg-turbo 1.5.1's jpeg_stdio_src(). (jdatasrc.c)
-		static const unsigned int INPUT_BUF_SIZE = 4096;
-		struct MySourceMgr {
-			jpeg_source_mgr pub;
-
-			IRpFile *infile;	// Source stream.
-			JOCTET *buffer;		// Start of buffer.
-			bool start_of_file;	// Have we gotten any data yet?
-		};
-
-		/**
-		 * Initialize MySourceMgr.
-		 * @param cinfo j_decompress_ptr
-		 */
-		static void init_source(j_decompress_ptr cinfo);
-
-		/**
-		 * Fill the input buffer.
-		 * @param cinfo j_decompress_ptr
-		 * @return TRUE on success. (NOTE: 'boolean' is a JPEG typedef.)
-		 */
-		static boolean fill_input_buffer(j_decompress_ptr cinfo);
-
-		/**
-		 * Terminate the source.
-		 * This is called once all JPEG data has been read.
-		 * Usually a no-op.
-		 *
-		 * @param cinfo j_decompress_ptr
-		 */
-		static void term_source(j_decompress_ptr cinfo);
-
-		/**
-		 * Skip data in the source file.
-		 * @param cinfo j_decompress_ptr
-		 * @param num_bytes Number of bytes to skip.
-		 */
-		static void skip_input_data(j_decompress_ptr cinfo, long num_bytes);
-
-		/**
-		 * Initialize a JPEG source manager for an IRpFile.
-		 * @param cinfo j_decompress_ptr
-		 * @param file IRpFile
-		 */
-		static void jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile);
-};
 
 /** RpJpegPrivate **/
 
@@ -366,7 +264,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	// later used with libjpeg-turbo. Prefixed so it doesn't conflict
 	// with libjpeg-turbo's headers.
 	static const int MY_JCS_EXT_BGRA = 13;
-	bool try_ext_bgra = true;	// True if image is JCS_RGB and we switch it to JCS_EXT_BGRA.
+	bool try_ext_bgra = true;	// True if we should try JCS_EXT_BGRA first.
 	bool tried_ext_bgra = false;	// True if we tried JCS_EXT_BGRA.
 
 	/** Step 1: Allocate and initialize JPEG decompression object. **/
@@ -415,11 +313,11 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 
 	// Sanity check: Don't allow images larger than 32768x32768.
 	assert(cinfo.image_width > 0);
-	assert(cinfo.image_width > 0);
+	assert(cinfo.image_height > 0);
 	assert(cinfo.image_width <= 32768);
-	assert(cinfo.image_width <= 32768);
-	if (cinfo.image_width <= 0 || cinfo.image_width <= 0 ||
-	    cinfo.image_width > 32768 || cinfo.image_width > 32768)
+	assert(cinfo.image_height <= 32768);
+	if (cinfo.image_width <= 0 || cinfo.image_height <= 0 ||
+	    cinfo.image_width > 32768 || cinfo.image_height > 32768)
 	{
 		// Image size is either invalid or too big.
 		jpeg_destroy_decompress(&cinfo);
@@ -587,86 +485,114 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	/** Step 6: while (scan lines remain to be read) jpeg_read_scanlines(...); */
 	row_stride = cinfo.output_width * cinfo.output_components;
 	if (!direct_copy) {
-		// Not a grayscale image, or JCS_EXT_BGRA isn't supported.
-		// Manual image expansion is needed.
+		// NOTE: jmemmgr's memory alignment is sizeof(double), so we'll
+		// need to allocate a bit more to get 16-byte alignment.
 		JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
-			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
-		while (cinfo.output_scanline < cinfo.output_height) {
-			// NOTE: jpeg_read_scanlines() increments the scanline value,
-			// so we have to save the rp_image scanline pointer first.
-			void *const vdest = img->scanLine(cinfo.output_scanline);
-			jpeg_read_scanlines(&cinfo, buffer, 1);
-			switch (cinfo.out_color_space) {
-				case JCS_RGB: {
-					// Convert from 24-bit BGR to 32-bit ARGB.
+			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride + 16, 1);
+		buffer[0] = reinterpret_cast<JSAMPROW>(
+			(ALIGN(16, reinterpret_cast<intptr_t>(buffer[0]))));
 
-					// TODO: Optimized versions using standard C and SSSE3.
-					// The one listed below won't work as-is because libjpeg
-					// uses BGR instead of RGB.
-					// Reference:
-					// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
-					// - https://stackoverflow.com/a/2974266
+		switch (cinfo.out_color_space) {
+			case JCS_RGB: {
+				// Convert from 24-bit BGR to 32-bit ARGB.
+				// NOTE: libjpeg-turbo has SSE2-optimized * to ARGB conversion,
+				// which is preferred because it usually skips an intermediate
+				// conversion step.
+#ifdef RPJPEG_HAS_SSSE3
+				if (RP_CPU_HasSSSE3()) {
+					RpJpegPrivate::decodeBGRtoARGB(img, &cinfo, buffer);
+					break;
+				}
+#endif /* RPJPEG_HAS_SSSE3 */
+
+				argb32_t *dest = static_cast<argb32_t*>(img->bits());
+				const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+				while (cinfo.output_scanline < cinfo.output_height) {
+					jpeg_read_scanlines(&cinfo, buffer, 1);
+					const uint8_t *src = buffer[0];
 
 					// Process 2 pixels per iteration.
-					argb32_t *dest = static_cast<argb32_t*>(vdest);
-					const uint8_t *src = buffer[0];
-					unsigned int x;
-					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 2*3) {
-						dest[0].a = 0xFF;
-						dest[0].r = src[0];
-						dest[0].g = src[1];
+					unsigned int x = cinfo.output_width;
+					for (; x > 1; x -= 2, dest += 2, src += 2*3) {
 						dest[0].b = src[2];
+						dest[0].g = src[1];
+						dest[0].r = src[0];
+						dest[0].a = 0xFF;
 
-						dest[1].a = 0xFF;
-						dest[1].r = src[3];
-						dest[1].g = src[4];
 						dest[1].b = src[5];
+						dest[1].g = src[4];
+						dest[1].r = src[3];
+						dest[1].a = 0xFF;
 					}
 					// Remaining pixels.
 					for (; x > 0; x--, dest++, src += 3) {
-						dest->a = 0xFF;
-						dest->r = src[0];
-						dest->g = src[1];
 						dest->b = src[2];
+						dest->g = src[1];
+						dest->r = src[0];
+						dest->a = 0xFF;
 					}
-					break;
-				}
 
-				case JCS_CMYK: {
-					// Convert from CMYK to 32-bit ARGB.
-					// Reference: https://github.com/qt/qtbase/blob/ffa578faf02226eb53793854ad53107afea4ab91/src/plugins/imageformats/jpeg/qjpeghandler.cpp#L395
-					// TODO: Optimized version?
-					// TODO: Unroll the loop?
-					uint8_t *dest = static_cast<uint8_t*>(vdest);
-					const uint8_t *src = buffer[0];
-					for (unsigned int i = cinfo.output_width; i > 0; i--, dest += 4, src += 4) {
-						unsigned int k = src[3];
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-						dest[3] = 255;			// Alpha
-						dest[2] = k * src[0] / 255;	// Red
-						dest[1] = k * src[1] / 255;	// Green
-						dest[0] = k * src[2] / 255;	// Blue
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-						dest[0] = 255;			// Alpha
-						dest[1] = k * src[0] / 255;	// Red
-						dest[2] = k * src[1] / 255;	// Green
-						dest[3] = k * src[2] / 255;	// Blue
-#endif
-					}
-					break;
+					// Next line.
+					dest += dest_stride_adj;
 				}
-
-				default: {
-					assert(!"Unsupported JPEG colorspace.");
-					jpeg_finish_decompress(&cinfo);
-					jpeg_destroy_decompress(&cinfo);
-					delete img;
-					return nullptr;
-				}
+				break;
 			}
+
+			case JCS_CMYK: {
+				// Convert from CMYK to 32-bit ARGB.
+				// Reference: https://github.com/qt/qtbase/blob/ffa578faf02226eb53793854ad53107afea4ab91/src/plugins/imageformats/jpeg/qjpeghandler.cpp#L395
+				argb32_t *dest = static_cast<argb32_t*>(img->bits());
+				const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+				while (cinfo.output_scanline < cinfo.output_height) {
+					jpeg_read_scanlines(&cinfo, buffer, 1);
+					const uint8_t *src = buffer[0];
+
+					// TODO: Optimized version?
+					unsigned int x;
+					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 8) {
+						unsigned int k = src[3];
+
+						dest[0].b = k * src[2] / 255;	// Blue
+						dest[0].g = k * src[1] / 255;	// Green
+						dest[0].r = k * src[0] / 255;	// Red
+						dest[0].a = 255;		// Alpha
+
+						k = src[7];
+						dest[1].b = k * src[6] / 255;	// Blue
+						dest[1].g = k * src[5] / 255;	// Green
+						dest[1].r = k * src[4] / 255;	// Red
+						dest[1].a = 255;		// Alpha
+					}
+					// Remaining pixels.
+					for (; x > 0; x--, dest++, src += 4) {
+						unsigned int k = src[3];
+						dest->b = k * src[2] / 255;	// Blue
+						dest->g = k * src[1] / 255;	// Green
+						dest->r = k * src[0] / 255;	// Red
+						dest->a = 255;			// Alpha
+					}
+
+					// Next line.
+					dest += dest_stride_adj;
+				}
+				break;
+			}
+
+			default:
+				assert(!"Unsupported JPEG colorspace.");
+				jpeg_finish_decompress(&cinfo);
+				jpeg_destroy_decompress(&cinfo);
+				delete img;
+				return nullptr;
 		}
+
+		// Set the sBIT metadata.
+		// TODO: 10-bit/12-bit JPEGs?
+		static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+		img->set_sBIT(&sBIT);
 	} else {
-		// Grayscale image. Decompress directly to the rp_image.
+		// Grayscale image, or RGB image with libjpeg-turbo's JCS_EXT_BGRA.
+		// Decompress directly to the rp_image.
 		// NOTE: jpeg_read_scanlines() has an option to specify how many
 		// scanlines to read, but it doesn't work. We'll have to read
 		// one scanline at a time.
@@ -674,6 +600,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			uint8_t *dest = static_cast<uint8_t*>(img->scanLine(i));
 			jpeg_read_scanlines(&cinfo, &dest, 1);
 		}
+
+		// Set the sBIT metadata.
+		// NOTE: Setting the grayscale value, though we're
+		// not saving grayscale PNGs at the moment.
+		static const rp_image::sBIT_t sBIT = {8,8,8,8,0};
+		img->set_sBIT(&sBIT);
 	}
 
 	/** Step 7: Finish decompression. **/

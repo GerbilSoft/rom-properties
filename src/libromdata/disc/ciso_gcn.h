@@ -33,6 +33,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#pragma pack(1)
+
 #define CISO_HEADER_SIZE 0x8000
 #define CISO_MAP_SIZE (CISO_HEADER_SIZE - sizeof(uint32_t) - (sizeof(char) * 4))
 
@@ -41,12 +43,12 @@ extern "C" {
 #define CISO_BLOCK_SIZE_MIN (32768)
 #define CISO_BLOCK_SIZE_MAX (16*1024*1024)
 
-#pragma pack(1)
 typedef struct PACKED _CISOHeader {
 	char magic[4];			// "CISO"
 	uint32_t block_size;		// LE32
 	uint8_t map[CISO_MAP_SIZE];	// 0 == unused; 1 == used; other == invalid
 } CISOHeader;
+
 #pragma pack()
 
 #ifdef __cplusplus

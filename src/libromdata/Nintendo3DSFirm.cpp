@@ -313,11 +313,12 @@ int Nintendo3DSFirm::loadFieldData(void)
 	if (firmBin) {
 		// FIRM version.
 		d->fields->addField_string(_RP("FIRM Version"),
-			rp_sprintf("%u.%u.%u", firmBin->major, firmBin->minor, firmBin->revision));
+			rp_sprintf("%u.%u.%u", firmBin->kernel.major,
+				firmBin->kernel.minor, firmBin->kernel.revision));
 
 		// System version.
 		d->fields->addField_string(_RP("System Version"),
-			latin1_to_rp_string(firmBin->version, ARRAY_SIZE(firmBin->version)));
+			rp_sprintf("%u.%u", firmBin->sys.major, firmBin->sys.minor));
 	}
 
 	// Check for ARM9 homebrew.

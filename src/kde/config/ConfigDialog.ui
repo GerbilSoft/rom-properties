@@ -29,6 +29,11 @@
        <string>&amp;Downloads</string>
       </attribute>
      </widget>
+     <widget class="AboutTab" name="tabAbout">
+      <attribute name="title">
+       <string>&amp;About</string>
+      </attribute>
+     </widget>
     </widget>
    </item>
    <item>
@@ -67,6 +72,12 @@
     <slot>loadDefaults()</slot>
     <slot>save()</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>AboutTab</class>
+   <extends>QWidget</extends>
+   <header>config/AboutTab.hpp</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
