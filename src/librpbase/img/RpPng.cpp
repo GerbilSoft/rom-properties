@@ -310,6 +310,11 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	const png_byte **row_pointers = nullptr;
 	rp_image *img = nullptr;
 
+#ifdef PNG_sBIT_SUPPORTED
+	bool has_sBIT = false;
+	png_color_8p png_sBIT = nullptr;
+#endif /* PNG_sBIT_SUPPORTED */
+
 #ifdef PNG_SETJMP_SUPPORTED
 	// WARNING: Do NOT initialize any C++ objects past this point!
 	if (setjmp(png_jmpbuf(png_ptr))) {
@@ -344,6 +349,12 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 		// Image size is either invalid or too big.
 		return nullptr;
 	}
+
+#ifdef PNG_sBIT_SUPPORTED
+	// Read the sBIT chunk.
+	// TODO: Fake sBIT if the PNG doesn't have one?
+	has_sBIT = (png_get_sBIT(png_ptr, info_ptr, &png_sBIT) == PNG_INFO_sBIT);
+#endif /* PNG_sBIT_SUPPORTED */
 
 	// Check the color type.
 	bool is24bit = false;
@@ -446,6 +457,14 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	if (fmt == rp_image::FORMAT_CI8) {
 		Read_CI8_Palette(png_ptr, info_ptr, color_type, img);
 	}
+
+#ifdef PNG_sBIT_SUPPORTED
+	// Set the sBIT metadata.
+	if (has_sBIT && png_sBIT) {
+		// NOTE: rp_image::sBIT_t has the same format as png_color_8.
+		img->set_sBIT(reinterpret_cast<rp_image::sBIT_t*>(png_sBIT));
+	}
+#endif /* PNG_sBIT_SUPPORTED */
 
 	// Done reading the PNG image.
 	return img;
