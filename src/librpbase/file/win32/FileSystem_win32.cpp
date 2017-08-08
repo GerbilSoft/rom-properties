@@ -50,6 +50,16 @@ using std::wstring;
 #include <shlobj.h>
 #include <direct.h>
 
+// FIXME: This is Vista only.
+// On XP, symlink resolution should be disabled.
+extern "C"
+DWORD WINAPI GetFinalPathNameByHandleW(
+  _In_  HANDLE hFile,
+  _Out_ LPWSTR lpszFilePath,
+  _In_  DWORD  cchFilePath,
+  _In_  DWORD  dwFlags
+);
+
 namespace LibRpBase { namespace FileSystem {
 
 // pthread_once() control variable.
@@ -408,6 +418,78 @@ bool is_symlink(const rp_char *filename)
 
 	// Not a reparse point.
 	return false;
+}
+
+// GetFinalPathnameByHandleW() lookup.
+static pthread_once_t once_gfpbhw = PTHREAD_ONCE_INIT;
+typedef DWORD (WINAPI *PFNGETFINALPATHNAMEBYHANDLEW)(
+	_In_  HANDLE hFile,
+	_Out_ LPWSTR lpszFilePath,
+	_In_  DWORD  cchFilePath,
+	_In_  DWORD  dwFlags
+);
+static PFNGETFINALPATHNAMEBYHANDLEW pfnGetFinalPathnameByHandleW = nullptr;
+
+/**
+ * Look up GetFinalPathnameByHandleW().
+ */
+static void LookupGetFinalPathnameByHandleW(void)
+{
+	HMODULE hKernel32 = GetModuleHandle(L"kernel32");
+	if (hKernel32) {
+		pfnGetFinalPathnameByHandleW = (PFNGETFINALPATHNAMEBYHANDLEW)
+			GetProcAddress(hKernel32, "GetFinalPathNameByHandleW");
+	}
+}
+
+/**
+ * Resolve a symbolic link.
+ *
+ * If the specified filename is not a symbolic link,
+ * the filename will be returned as-is.
+ *
+ * @param filename Filename of symbolic link.
+ * @return Resolved symbolic link, or empty string on error.
+ */
+rp_string resolve_symlink(const rp_char *filename)
+{
+	if (unlikely(!filename || filename[0] == 0))
+		return rp_string();
+
+	pthread_once(&once_gfpbhw, LookupGetFinalPathnameByHandleW);
+	if (!pfnGetFinalPathnameByHandleW) {
+		// GetFinalPathnameByHandleW() not available.
+		return rp_string();
+	}
+
+	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
+	// TODO: Enable write sharing in regular IRpFile?
+	HANDLE hFile = CreateFile(RP2W_c(filename),
+		GENERIC_READ,
+		FILE_SHARE_READ|FILE_SHARE_WRITE,
+		nullptr,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		nullptr);
+	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
+		// Unable to open the file.
+		return rp_string();
+	}
+
+	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
+	DWORD cchDeref = pfnGetFinalPathnameByHandleW(hFile, nullptr, 0, VOLUME_NAME_DOS);
+	if (cchDeref == 0) {
+		// Error...
+		CloseHandle(hFile);
+		return rp_string();
+	}
+
+	wchar_t *szDeref = new wchar_t[cchDeref];
+	pfnGetFinalPathnameByHandleW(hFile, szDeref, cchDeref, VOLUME_NAME_DOS);
+	rp_string ret = W2RP_cs(szDeref);	// TODO: len parameter?
+	delete[] szDeref;
+	CloseHandle(hFile);
+	return ret;
 }
 
 } }

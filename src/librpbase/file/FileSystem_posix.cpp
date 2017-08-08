@@ -297,4 +297,28 @@ bool is_symlink(const rp_char *filename)
 	return !!S_ISLNK(buf.st_mode);
 }
 
+/**
+ * Resolve a symbolic link.
+ *
+ * If the specified filename is not a symbolic link,
+ * the filename will be returned as-is.
+ *
+ * @param filename Filename of symbolic link.
+ * @return Resolved symbolic link, or empty string on error.
+ */
+rp_string resolve_symlink(const rp_char *filename)
+{
+	if (unlikely(!filename || filename[0] == 0))
+		return rp_string();
+
+	// NOTE: realpath() might not be available on some systems...
+	rp_string ret;
+	char *const resolved_path = realpath(RP2U8_c(filename), nullptr);
+	if (resolved_path != nullptr) {
+		ret = U82RP_cs(resolved_path);
+		free(resolved_path);
+	}
+	return ret;
+}
+
 } }

@@ -152,6 +152,17 @@ const rp_char *file_ext(const rp_string &filename);
  */
 bool is_symlink(const rp_char *filename);
 
+/**
+ * Resolve a symbolic link.
+ *
+ * If the specified filename is not a symbolic link,
+ * the filename will be returned as-is.
+ *
+ * @param filename Filename of symbolic link.
+ * @return Resolved symbolic link, or empty string on error.
+ */
+rp_string resolve_symlink(const rp_char *filename);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_FILESYSTEM_HPP__ */

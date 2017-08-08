@@ -120,15 +120,10 @@ IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const
 		// Could not open the related file, but the
 		// primary file is a symlink. Dereference the
 		// symlink and check the original directory.
-		// TODO: Windows; move symlink resolution to main FileSystem code.
-#ifndef _WIN32
-		// Use realpath() to get the real path.
-		char *resolved_path = realpath(RP2U8_c(filename), nullptr);
-		if (resolved_path != nullptr) {
-			test_file = openRelatedFile(U82RP_c(resolved_path), basename, ext);
-			free(resolved_path);
+		rp_string deref_filename = FileSystem::resolve_symlink(filename);
+		if (!deref_filename.empty()) {
+			test_file = openRelatedFile(deref_filename.c_str(), basename, ext);
 		}
-#endif
 	}
 	return test_file;
 }
