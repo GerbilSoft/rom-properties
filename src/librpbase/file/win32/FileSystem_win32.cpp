@@ -388,7 +388,7 @@ int delete_file(const rp_char *filename)
 bool is_symlink(const rp_char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
-		return -EINVAL;
+		return false;
 	const wstring filenameW = makeWinPath(filename);
 
 	// Check the reparse point type.
