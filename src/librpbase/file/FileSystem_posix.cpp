@@ -269,7 +269,7 @@ int delete_file(const rp_char *filename)
 	if (!filename || filename[0] == 0)
 		return -EINVAL;
 
-	int ret = unlink(rp_string_to_utf8(filename).c_str());
+	int ret = unlink(RP2U8_c(filename));
 	if (ret != 0) {
 		// Error deleting the file.
 		ret = -errno;
