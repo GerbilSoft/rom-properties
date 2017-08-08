@@ -72,7 +72,7 @@ static rp_string config_dir;
 int rmkdir(const rp_string &path)
 {
 	// Linux (and most other systems) use UTF-8 natively.
-	string path8 = rp_string_to_utf8(path);
+	string path8 = RP2U8_s(path);
 
 	// Find all slashes and ensure the directory component exists.
 	size_t slash_pos = path8.find(DIR_SEP_CHR, 0);
@@ -117,7 +117,7 @@ int rmkdir(const rp_string &path)
 int access(const rp_string &pathname, int mode)
 {
 #if defined(RP_UTF16)
-	string pathname8 = rp_string_to_utf8(pathname);
+	string pathname8 = RP2U8_s(pathname);
 	return ::access(pathname8.c_str(), mode);
 #elif defined(RP_UTF8)
 	return ::access(pathname.c_str(), mode);
@@ -133,7 +133,7 @@ int64_t filesize(const rp_string &filename)
 {
 	struct stat buf;
 #if defined(RP_UTF16)
-	string filename8 = rp_string_to_utf8(filename);
+	string filename8 = RP2U8_s(filename);
 	int ret = stat(filename8.c_str(), &buf);
 #elif defined(RP_UTF8)
 	int ret = stat(filename.c_str(), &buf);
@@ -163,7 +163,7 @@ static void initConfigDirectories(void)
 	// Use LibUnixCommon to get the XDG directories.
 
 	// Cache directory.
-	cache_dir = utf8_to_rp_string(LibUnixCommon::getCacheDirectory());
+	cache_dir = U82RP_s(LibUnixCommon::getCacheDirectory());
 	if (!cache_dir.empty()) {
 		// Add a trailing slash if necessary.
 		if (cache_dir.at(cache_dir.size()-1) != '/')
@@ -173,7 +173,7 @@ static void initConfigDirectories(void)
 	}
 
 	// Config directory.
-	config_dir = utf8_to_rp_string(LibUnixCommon::getConfigDirectory());
+	config_dir = U82RP_s(LibUnixCommon::getConfigDirectory());
 	if (!config_dir.empty()) {
 		// Add a trailing slash if necessary.
 		if (config_dir.at(config_dir.size()-1) != '/')
@@ -230,7 +230,7 @@ int set_mtime(const rp_string &filename, time_t mtime)
 	struct utimbuf utbuf;
 	utbuf.actime = time(nullptr);
 	utbuf.modtime = mtime;
-	int ret = utime(rp_string_to_utf8(filename).c_str(), &utbuf);
+	int ret = utime(RP2U8_s(filename), &utbuf);
 
 	return (ret == 0 ? 0 : -errno);
 }
@@ -250,7 +250,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 	struct stat buf;
-	int ret = stat(rp_string_to_utf8(filename).c_str(), &buf);
+	int ret = stat(RP2U8_s(filename), &buf);
 	if (ret == 0) {
 		// stat() buffer retrieved.
 		*pMtime = buf.st_mtime;
