@@ -63,6 +63,58 @@ static rp_string cache_dir;
 static rp_string config_dir;
 
 /**
+ * Prepend "\\\\?\\" to an absolute Windows path.
+ * This is needed inorder to support filenames longer than MAX_PATH.
+ * @param filename Original Windows filename.
+ * @return Windows filename with "\\\\?\\" prepended.
+ */
+static inline wstring makeWinPath(const rp_char *filename)
+{
+	if (!filename || filename[0] == 0)
+		return wstring();
+
+	wstring filenameW;
+	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += RP2W_c(filename);
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = RP2W_c(filename);
+	}
+	return filenameW;
+}
+
+/**
+ * Prepend "\\\\?\\" to an absolute Windows path.
+ * This is needed inorder to support filenames longer than MAX_PATH.
+ * @param filename Original Windows filename.
+ * @return Windows filename with "\\\\?\\" prepended.
+ */
+static inline wstring makeWinPath(const rp_string &filename)
+{
+	if (filename.empty())
+		return wstring();
+
+	wstring filenameW;
+	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += RP2W_s(filename);
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = RP2W_s(filename);
+	}
+	return filenameW;
+}
+
+/**
  * Recursively mkdir() subdirectories.
  *
  * The last element in the path will be ignored, so if
@@ -85,6 +137,7 @@ int rmkdir(const rp_string &path)
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif
 
+	// TODO: makeWinPath()?
 	wstring path16 = RP2W_s(path);
 	if (path16.size() == 3) {
 		// 3 characters. Root directory is always present.
@@ -130,8 +183,9 @@ int rmkdir(const rp_string &path)
 int access(const rp_string &pathname, int mode)
 {
 	// Windows doesn't recognize X_OK.
+	const wstring pathnameW = makeWinPath(pathname);
 	mode &= ~X_OK;
-	return ::_waccess(RP2W_s(pathname), mode);
+	return ::_waccess(pathnameW.c_str(), mode);
 }
 
 /**
@@ -141,8 +195,9 @@ int access(const rp_string &pathname, int mode)
  */
 int64_t filesize(const rp_string &filename)
 {
+	const wstring filenameW = makeWinPath(filename);
 	struct _stati64 buf;
-	int ret = _wstati64(RP2W_s(filename), &buf);
+	int ret = _wstati64(filenameW.c_str(), &buf);
 
 	if (ret != 0) {
 		// stat() failed.
@@ -254,10 +309,12 @@ int set_mtime(const rp_string &filename, time_t mtime)
 #if _USE_32BIT_TIME_T
 #error 32-bit time_t is not supported. Get a newer compiler.
 #endif
+	const wstring filenameW = makeWinPath(filename);
+
 	struct __utimbuf64 utbuf;
 	utbuf.actime = _time64(nullptr);
 	utbuf.modtime = mtime;
-	int ret = _wutime64(RP2W_s(filename), &utbuf);
+	int ret = _wutime64(filenameW.c_str(), &utbuf);
 
 	return (ret == 0 ? 0 : -errno);
 }
@@ -273,6 +330,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
 	if (!pMtime) {
 		return -EINVAL;
 	}
+	const wstring filenameW = makeWinPath(filename);
 
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -281,7 +339,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
 #error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 	// Use GetFileTime() instead of _stati64().
-	HANDLE hFile = CreateFile(RP2W_s(filename),
+	HANDLE hFile = CreateFile(filenameW.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (!hFile) {
@@ -312,21 +370,7 @@ int delete_file(const rp_char *filename)
 	if (!filename || filename[0] == 0)
 		return -EINVAL;
 	int ret = 0;
-
-	// If this is an absolute path, make sure it starts with
-	// "\\?\" in order to support filenames longer than MAX_PATH.
-	wstring filenameW;
-	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
-	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
-	{
-		// Absolute path. Prepend "\\?\" to the path.
-		filenameW = L"\\\\?\\";
-		filenameW += RP2W_c(filename);
-	} else {
-		// Not an absolute path, or "\\?\" is already
-		// prepended. Use it as-is.
-		filenameW = RP2W_c(filename);
-	}
+	const wstring filenameW = makeWinPath(filename);
 
 	BOOL bRet = DeleteFile(filenameW.c_str());
 	if (!bRet) {
@@ -345,21 +389,7 @@ bool is_symlink(const rp_char *filename)
 {
 	if (!filename || filename[0] == 0)
 		return false;
-
-	// If this is an absolute path, make sure it starts with
-	// "\\?\" in order to support filenames longer than MAX_PATH.
-	wstring filenameW;
-	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
-	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
-	{
-		// Absolute path. Prepend "\\?\" to the path.
-		filenameW = L"\\\\?\\";
-		filenameW += RP2W_c(filename);
-	} else {
-		// Not an absolute path, or "\\?\" is already
-		// prepended. Use it as-is.
-		filenameW = RP2W_c(filename);
-	}
+	const wstring filenameW = makeWinPath(filename);
 
 	// Check the reparse point type.
 	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
