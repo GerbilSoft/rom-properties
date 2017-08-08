@@ -277,6 +277,9 @@ std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, 
 ICONV_FUNCTION_2(cp1252, char, "CP1252//IGNORE", "LATIN1//IGNORE", utf8, char, "UTF-8")
 ICONV_FUNCTION_2(cp1252, char, "CP1252//IGNORE", "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
 
+ICONV_FUNCTION_1(utf8, char, "UTF-8", cp1252, char, "CP1252//IGNORE")
+ICONV_FUNCTION_1(utf16, char16_t, RP_ICONV_UTF16_ENCODING, cp1252, char, "CP1252//IGNORE")
+
 /** Code Page 1252 + Shift-JIS (932) **/
 ICONV_FUNCTION_3(cp1252_sjis, char, "CP932", "CP1252//IGNORE", "LATIN1//IGNORE", utf8, char, "UTF-8")
 ICONV_FUNCTION_3(cp1252_sjis, char, "CP932", "CP1252//IGNORE", "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)

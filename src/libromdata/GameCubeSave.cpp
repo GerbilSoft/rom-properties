@@ -941,7 +941,7 @@ int GameCubeSave::loadFieldData(void)
 
 	// Last Modified timestamp.
 	d->fields->addField_dateTime(_RP("Last Modified"),
-		(int64_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF,
+		(time_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME |
 		RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.

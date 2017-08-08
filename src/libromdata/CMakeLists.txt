@@ -25,7 +25,8 @@ SET(libromdata_SRCS
 	SegaPVR.cpp
 	DirectDrawSurface.cpp
 	NintendoBadge.cpp
-	data/MegaDrivePublishers.cpp
+	Dreamcast.cpp
+	data/SegaPublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
 	data/WiiSystemMenuVersion.cpp
@@ -46,6 +47,8 @@ SET(libromdata_SRCS
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
 	disc/CIAReader.cpp
+	disc/Cdrom2352Reader.cpp
+	disc/IsoPartition.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	utils/SuperMagicDrive.cpp
 	)
@@ -76,6 +79,7 @@ SET(libromdata_H
 	SegaPVR.hpp
 	DirectDrawSurface.hpp
 	NintendoBadge.hpp
+	Dreamcast.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -95,7 +99,9 @@ SET(libromdata_H
 	pvr_structs.h
 	dds_structs.h
 	badge_structs.h
-	data/MegaDrivePublishers.hpp
+	cdrom_structs.h
+	iso_structs.h
+	data/SegaPublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
 	data/WiiSystemMenuVersion.hpp
@@ -120,6 +126,8 @@ SET(libromdata_H
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
 	disc/CIAReader.hpp
+	disc/Cdrom2352Reader.hpp
+	disc/IsoPartition.hpp
 	config/TImageTypesConfig.hpp
 	utils/SuperMagicDrive.hpp
 	)

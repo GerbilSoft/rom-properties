@@ -67,6 +67,7 @@ using std::vector;
 #include "SegaPVR.hpp"
 #include "DirectDrawSurface.hpp"
 #include "NintendoBadge.hpp"
+#include "Dreamcast.hpp"
 
 // Special case for Dreamcast save files.
 #include "dc_structs.h"
@@ -153,6 +154,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SegaPVR, true),
 	GetRomDataFns(DirectDrawSurface, true),
 	GetRomDataFns(NintendoBadge, true),
+	GetRomDataFns(Dreamcast, true),
 
 	// NOTE: EXE has a 16-bit magic number,
 	// so it should go at the end of the

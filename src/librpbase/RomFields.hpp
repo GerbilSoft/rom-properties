@@ -179,7 +179,7 @@ class RomFields
 				// RFT_DATETIME (UNIX format)
 				// NOTE: -1 is used to indicate
 				// an invalid date/time.
-				int64_t date_time;
+				time_t date_time;
 
 				// RFT_AGE_RATINGS
 				// See AgeRatingsCountry for field indexes.

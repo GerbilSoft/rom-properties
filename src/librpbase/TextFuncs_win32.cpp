@@ -330,6 +330,9 @@ string utf16_to_##dest_suffix(const char16_t *wcs, int len) \
 W32U_8TO8_1(cp1252, 1252, utf8, CP_UTF8)
 W32U_8TO16_1(cp1252, 1252)
 
+W32U_8TO8_1(utf8, CP_UTF8, cp1252, 1252)
+W32U_16TO8_1(cp1252, 1252)
+
 /** Code Page 1252 + Shift-JIS (932) **/
 W32U_8TO8_2(cp1252_sjis, 932, 1252, utf8, CP_UTF8)
 W32U_8TO16_2(cp1252_sjis, 932, 1252)

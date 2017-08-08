@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dc_structs.h: Sega Dreamcast data structures.                           *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,15 +19,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#ifndef __ROMPROPERTIES_LIBROMDATA_DC_STRUCTS_H__
+#define __ROMPROPERTIES_LIBROMDATA_DC_STRUCTS_H__
+
 /**
  * References:
  * - http://mc.pp.se/dc/vms/fileheader.html
  * - http://mc.pp.se/dc/vms/vmi.html
  * - http://mc.pp.se/dc/vms/flashmem.html
+ * - http://mc.pp.se/dc/ip0000.bin.html
+ * - http://mc.pp.se/dc/ip.bin.html
  */
-
-#ifndef __ROMPROPERTIES_LIBROMDATA_DC_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_DC_STRUCTS_H__
 
 #include "librpbase/common.h"
 #include <stdint.h>
@@ -242,6 +244,105 @@ typedef enum {
 	DC_VMS_DIRENT_PROTECT_COPY_OK        = 0x00,
 	DC_VMS_DIRENT_PROTECT_COPY_PROTECTED = 0xFF,
 } DC_VMS_DirEnt_Protect;
+
+/** Disc images **/
+
+/**
+ * IP0000.BIN
+ * This is located in the boot sector of GD-ROM track 3.
+ *
+ * Reference: http://mc.pp.se/dc/ip0000.bin.html
+ *
+ * All fields are in little-endian.
+ */
+#define DC_IP0000_BIN_HW_ID	"SEGA SEGAKATANA "
+#define DC_IP0000_BIN_MAKER_ID	"SEGA ENTERPRISES"
+typedef struct PACKED _DC_IP0000_BIN_t {
+	char hw_id[16];			// "SEGA SEGAKATANA "
+	char maker_id[16];		// "SEGA ENTERPRISES"
+	char device_info[16];		// "1234 GD-ROM1/1  "
+	char area_symbols[8];		// "JUE     "
+	char peripherals[8];		// 7-digit hex string, use DC_IP0000_BIN_Peripherals to decode.
+	char product_number[10];	// "HDR-nnnn"
+	char product_version[6];	// "V1.000"
+	char release_date[16];		// "YYYYMMDD        "
+	char boot_filename[16];		// "1ST_READ.BIN    "
+	char publisher[16];		// Name of the company that produced the disc.
+	char title[128];		// Software title. (TODO: Encoding)
+} DC_IP0000_BIN_t;
+ASSERT_STRUCT(DC_IP0000_BIN_t, 256);
+
+/**
+ * Dreamcast peripherals bitfield.
+ * For most items, indicates support for that feature.
+ * For Windows CE, indicates the game uses it.
+ *
+ * For controller buttons, indicates a minimum requirement.
+ * Example: If "Z" is listed, then the game must have a
+ * controller with a "Z" button; otherwise, it won't work.
+ *
+ * Reference: http://mc.pp.se/dc/ip0000.bin.html
+ */
+typedef enum {
+	DCP_WINDOWS_CE		= (1 << 0),	// Uses Windows CE
+	DCP_VGA_BOX		= (1 << 4),	// Supports VGA Box
+
+	// Supported expansion units.
+	DCP_EXP_OTHER		= (1 << 8),	// Other expansions.
+	DCP_PURU_PURU		= (1 << 9),	// Puru Puru pack (Jump Pack)
+	DCP_MICROPHONE		= (1 << 10),	// Microphone
+	DCP_MEMORY_CARD		= (1 << 11),	// Memory Card (VMU)
+
+	// Controller requirements.
+	// If any of these bits are set, the game *requires*
+	// a controller with the specified functionality,
+	DCP_CTRL_START_A_B_DPAD	= (1 << 12),	// Start, A, B, D-Pad
+	DCP_CTRL_C		= (1 << 13),	// C button
+	DCP_CTRL_D		= (1 << 14),	// D button
+	DCP_CTRL_X		= (1 << 15),	// X button
+	DCP_CTRL_Y		= (1 << 16),	// Y button
+	DCP_CTRL_Z		= (1 << 17),	// Z button
+	DCP_CTRL_DPAD_2		= (1 << 18),	// Second D-Pad
+	DCP_CTRL_ANALOG_RT	= (1 << 19),	// Analog R trigger
+	DCP_CTRL_ANALOG_LT	= (1 << 20),	// Analog L trigger
+	DCP_CTRL_ANALOG_H1	= (1 << 21),	// Analog horizontal controller
+	DCP_CTRL_ANALOG_V1	= (1 << 22),	// Analog vertical controller
+	DCP_CTRL_ANALOG_H2	= (1 << 23),	// Analog horizontal controller #2
+	DCP_CTRL_ANALOG_V2	= (1 << 24),	// Analog vertical controller #2
+
+	// Optional expansion peripherals.
+	DCP_CTRL_GUN		= (1 << 25),	// Light Gun
+	DCP_CTRL_KEYBOARD	= (1 << 26),	// Keyboard
+	DCP_CTRL_MOUSE		= (1 << 27),	// Mouse
+} DC_IP0000_BIN_Peripherals;
+
+/**
+ * IP.BIN
+ * This is located in the boot sector of GD-ROM track 3.
+ *
+ * Reference: http://mc.pp.se/dc/ip.bin.html
+ *
+ * All fields are in little-endian.
+ */
+typedef struct PACKED _DC_IP_BIN_t {
+	DC_IP0000_BIN_t meta;			// Meta information. (IP0000.BIN)
+	uint8_t toc[0x200];			// Table of contents.
+	uint8_t license_screen_code[0x3400];	// License screen code.
+
+	// Area symbols. (region lockout)
+	// Contains longer strings indicating the valid areas.
+	// Must match area_syms in DC_IP0000_BIN_t.
+	// NOTE: The first four bytes are a branch instruction.
+	struct {
+		uint16_t branch[2];
+		char text[28];
+	} area_syms[8];
+
+	// Additional bootstrap code.
+	uint8_t bootstrap1[0x2800];
+	uint8_t bootstrap2[0x2000];
+} DC_IP_BIN_t;
+ASSERT_STRUCT(DC_IP_BIN_t, 0x8000);
 
 #pragma pack()
 

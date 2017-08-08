@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * MegaDrivePublishers.cpp: Sega Mega Drive third-party publishers list.   *
+ * SegaPublishers.cpp: Sega third-party publishers list.                   *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,18 +19,46 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "MegaDrivePublishers.hpp"
+#include "SegaPublishers.hpp"
 
 // C includes.
 #include <stdlib.h>
 
 namespace LibRomData {
 
+class SegaPublishersPrivate {
+	private:
+		// Static class.
+		SegaPublishersPrivate();
+		~SegaPublishersPrivate();
+		RP_DISABLE_COPY(SegaPublishersPrivate)
+
+	public:
+		/**
+		 * Sega third-party publisher list.
+		 * Reference: http://segaretro.org/Third-party_T-series_codes
+		 */
+		struct TCodeEntry {
+			unsigned int t_code;
+			const rp_char *publisher;
+		};
+		static const TCodeEntry tcodeList[];
+
+		/**
+		 * Comparison function for bsearch().
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int compar(const void *a, const void *b);
+
+};
+
 /**
- * Sega Mega Drive third-party publisher list.
+ * Sega third-party publisher list.
  * Reference: http://segaretro.org/Third-party_T-series_codes
  */
-const MegaDrivePublishers::ThirdPartyList MegaDrivePublishers::ms_thirdPartyList[] = {
+const SegaPublishersPrivate::TCodeEntry SegaPublishersPrivate::tcodeList[] = {
 	{11,	_RP("Taito")},
 	{12,	_RP("Capcom")},
 	{13,	_RP("Data East")},
@@ -387,10 +415,10 @@ const MegaDrivePublishers::ThirdPartyList MegaDrivePublishers::ms_thirdPartyList
  * @param b
  * @return
  */
-int MegaDrivePublishers::compar(const void *a, const void *b)
+int SegaPublishersPrivate::compar(const void *a, const void *b)
 {
-	unsigned int code1 = static_cast<const ThirdPartyList*>(a)->t_code;
-	unsigned int code2 = static_cast<const ThirdPartyList*>(b)->t_code;
+	unsigned int code1 = static_cast<const TCodeEntry*>(a)->t_code;
+	unsigned int code2 = static_cast<const TCodeEntry*>(b)->t_code;
 	if (code1 < code2) return -1;
 	if (code1 > code2) return 1;
 	return 0;
@@ -401,14 +429,16 @@ int MegaDrivePublishers::compar(const void *a, const void *b)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const rp_char *MegaDrivePublishers::lookup(unsigned int code)
+const rp_char *SegaPublishers::lookup(unsigned int code)
 {
 	// Do a binary search.
-	const ThirdPartyList key = {code, nullptr};
-	const ThirdPartyList *res =
-		static_cast<const ThirdPartyList*>(bsearch(&key,
-			ms_thirdPartyList, ARRAY_SIZE(ms_thirdPartyList)-1,
-			sizeof(ThirdPartyList), compar));
+	const SegaPublishersPrivate::TCodeEntry key = {code, nullptr};
+	const SegaPublishersPrivate::TCodeEntry *res =
+		static_cast<const SegaPublishersPrivate::TCodeEntry*>(bsearch(&key,
+			SegaPublishersPrivate::tcodeList,
+			ARRAY_SIZE(SegaPublishersPrivate::tcodeList)-1,
+			sizeof(SegaPublishersPrivate::TCodeEntry),
+			SegaPublishersPrivate::compar));
 	return (res ? res->publisher : nullptr);
 }
 

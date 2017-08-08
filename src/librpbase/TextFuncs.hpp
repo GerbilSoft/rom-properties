@@ -184,6 +184,26 @@ std::string cp1252_to_utf8(const char *str, int len);
  */
 std::u16string cp1252_to_utf16(const char *str, int len);
 
+/**
+ * Convert UTF-8 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ * Invalid characters will be ignored.
+ * @param str UTF-8 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+std::string utf8_to_cp1252(const char *str, int len);
+
+/**
+ * Convert UTF-16 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ * Invalid characters will be ignored.
+ * @param wcs UTF-16 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+std::string utf16_to_cp1252(const char16_t *wcs, int len);
+
 /** Code Page 1252 + Shift-JIS (932) **/
 
 /**
@@ -247,11 +267,11 @@ std::string utf16_to_latin1(const char16_t *wcs, int len);
 /**
  * Convert UTF-8 text to UTF-16.
  * Trailing NULL bytes will be removed.
- * @param wcs UTF-8 text.
+ * @param str UTF-8 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-std::u16string utf8_to_utf16(const char *wcs, int len);
+std::u16string utf8_to_utf16(const char *str, int len);
 
 /**
  * Convert UTF-16LE text to UTF-8.
@@ -355,6 +375,50 @@ static inline rp_string cp1252_to_rp_string(const char *str, int len)
 	return cp1252_to_utf8(str, len);
 #else
 	return cp1252_to_utf16(str, len);
+#endif
+}
+
+/**
+ * Convert cp1252 text to rp_string.
+ * Trailing NULL bytes will be removed.
+ * @param str cp1252 text.
+ * @return rp_string.
+ */
+static inline rp_string cp1252_to_rp_string(const std::string &str)
+{
+#ifdef RP_UTF8
+	return cp1252_to_utf8(str.data(), (int)str.size());
+#else
+	return cp1252_to_utf16(str.data(), (int)str.size());
+#endif
+}
+
+/**
+ * Convert rp_string to cp1252.
+ * @param str rp_string.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return rp_string.
+ */
+static inline std::string rp_string_to_cp1252(const rp_char *str, int len)
+{
+#ifdef RP_UTF8
+	return utf8_to_cp1252(str, len);
+#else
+	return utf16_to_cp1252(str, len);
+#endif
+}
+
+/**
+ * Convert rp_string to cp1252.
+ * @param rps rp_string.
+ * @return rp_string.
+ */
+static inline std::string rp_string_to_cp1252(const rp_string &rps)
+{
+#ifdef RP_UTF8
+	return utf8_to_cp1252(rps.data(), (int)rps.size());
+#else
+	return utf16_to_cp1252(rps.data(), (int)rps.size());
 #endif
 }
 

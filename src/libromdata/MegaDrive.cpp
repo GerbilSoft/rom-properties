@@ -23,7 +23,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "md_structs.h"
-#include "data/MegaDrivePublishers.hpp"
+#include "data/SegaPublishers.hpp"
 #include "MegaDriveRegions.hpp"
 #include "CopierFormats.h"
 #include "utils/SuperMagicDrive.hpp"
@@ -279,7 +279,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		    endptr < &pRomHeader->copyright[start+3])
 		{
 			// Valid T-code. Look up the publisher.
-			publisher = MegaDrivePublishers::lookup(t_code);
+			publisher = SegaPublishers::lookup(t_code);
 		}
 	}
 

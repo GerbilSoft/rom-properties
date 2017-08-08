@@ -95,6 +95,7 @@ button.
 | Sega PVR Textures             |       Yes      |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |      Image      |       N/A      |
 | Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
+| Sega Dreamcast                |       Yes      |      Media      |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -147,6 +148,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 * Microsoft DirectDraw Surface: DDS files (\*.dds)
   * Currently supports uncompressed RGB, DXTn, BC4, and BC5.
 * Nintendo Badge Arcade: Badge files (\*.prb), badge set files (\*.cab)
+* Sega Dreamcast: Raw disc image files (\*.bin, \*.iso)
 
 ## External Media Downloads
 

@@ -1016,7 +1016,7 @@ int RomFields::addField_listData(const rp_char *name,
  * @param flags Date/Time flags.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int flags)
+int RomFields::addField_dateTime(const rp_char *name, time_t date_time, int flags)
 {
 	RP_D(RomFields);
 
