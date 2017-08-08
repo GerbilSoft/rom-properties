@@ -146,6 +146,12 @@ static inline int delete_file(const rp_string &filename)
  */
 const rp_char *file_ext(const rp_string &filename);
 
+/**
+ * Check if the specified file is a symbolic link.
+ * @return True if the file is a symbolic link; false if not.
+ */
+bool is_symlink(const rp_char *filename);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_FILESYSTEM_HPP__ */

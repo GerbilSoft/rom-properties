@@ -278,4 +278,20 @@ int delete_file(const rp_char *filename)
 	return ret;
 }
 
+/**
+ * Check if the specified file is a symbolic link.
+ * @return True if the file is a symbolic link; false if not.
+ */
+bool is_symlink(const rp_char *filename)
+{
+	struct stat buf;
+	int ret = lstat(RP2U8_c(filename), &buf);
+	if (ret != 0) {
+		// lstat() failed.
+		// Assume this is not a symlink.
+		return false;
+	}
+	return !!S_ISLNK(buf.st_mode);
+}
+
 } }

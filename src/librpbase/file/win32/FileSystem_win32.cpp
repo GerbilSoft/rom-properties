@@ -337,4 +337,47 @@ int delete_file(const rp_char *filename)
 	return ret;
 }
 
+/**
+ * Check if the specified file is a symbolic link.
+ * @return True if the file is a symbolic link; false if not.
+ */
+bool is_symlink(const rp_char *filename)
+{
+	if (!filename || filename[0] == 0)
+		return false;
+
+	// If this is an absolute path, make sure it starts with
+	// "\\?\" in order to support filenames longer than MAX_PATH.
+	wstring filenameW;
+	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += RP2W_c(filename);
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = RP2W_c(filename);
+	}
+
+	// Check the reparse point type.
+	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
+	WIN32_FIND_DATA findFileData;
+	HANDLE hFind = FindFirstFile(filenameW.c_str(), &findFileData);
+	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
+		// Cannot find the file.
+		return false;
+	}
+	FindClose(hFind);
+
+	if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+		// This is a reparse point.
+		return (findFileData.dwReserved0 == IO_REPARSE_TAG_SYMLINK);
+	}
+
+	// Not a reparse point.
+	return false;
+}
+
 } }
