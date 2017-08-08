@@ -82,8 +82,16 @@ class RpFilePrivate
 		unsigned int sector_size;	// Sector size. (bytes per sector)
 
 	public:
+		/**
+		 * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
+		 * @param mode				[in] FileMode
+		 * @param pdwDesiredAccess		[out] dwDesiredAccess
+		 * @param pdwShareMode			[out] dwShareMode
+		 * @param pdwCreationDisposition	[out] dwCreationDisposition
+		 */
 		static inline int mode_to_win32(RpFile::FileMode mode,
 			DWORD *pdwDesiredAccess,
+			DWORD *pdwShareMode,
 			DWORD *pdwCreationDisposition);
 
 		/**
@@ -114,22 +122,33 @@ RpFilePrivate::RpFilePrivate(RpFile *q, const rp_string &filename, RpFile::FileM
 	, sector_size(0)
 { }
 
+/**
+ * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
+ * @param mode				[in] FileMode
+ * @param pdwDesiredAccess		[out] dwDesiredAccess
+ * @param pdwShareMode			[out] dwShareMode
+ * @param pdwCreationDisposition	[out] dwCreationDisposition
+ */
 inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 	DWORD *pdwDesiredAccess,
+	DWORD *pdwShareMode,
 	DWORD *pdwCreationDisposition)
 {
 	switch (mode) {
 		case RpFile::FM_OPEN_READ:
 			*pdwDesiredAccess = GENERIC_READ;
+			*pdwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 			*pdwCreationDisposition = OPEN_EXISTING;
 			break;
 		case RpFile::FM_OPEN_WRITE:
-			*pdwDesiredAccess = GENERIC_READ|GENERIC_WRITE;
+			*pdwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+			*pdwShareMode = FILE_SHARE_READ;
 			*pdwCreationDisposition = OPEN_EXISTING;
 			break;
 		case RpFile::FM_CREATE|RpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
 		case RpFile::FM_CREATE_WRITE:
-			*pdwDesiredAccess = GENERIC_READ|GENERIC_WRITE;
+			*pdwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+			*pdwShareMode = FILE_SHARE_READ;
 			*pdwCreationDisposition = CREATE_ALWAYS;
 			break;
 		default:
@@ -306,8 +325,8 @@ void RpFile::init(void)
 {
 	// Determine the file mode.
 	RP_D(RpFile);
-	DWORD dwDesiredAccess, dwCreationDisposition;
-	if (d->mode_to_win32(d->mode, &dwDesiredAccess, &dwCreationDisposition) != 0) {
+	DWORD dwDesiredAccess, dwShareMode, dwCreationDisposition;
+	if (d->mode_to_win32(d->mode, &dwDesiredAccess, &dwShareMode, &dwCreationDisposition) != 0) {
 		// Invalid mode.
 		m_lastError = EINVAL;
 		return;
@@ -359,8 +378,11 @@ void RpFile::init(void)
 
 	// Open the file.
 	d->file.reset(CreateFile(filenameW.c_str(),
-			dwDesiredAccess, FILE_SHARE_READ, nullptr,
-			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
+			dwDesiredAccess,
+			dwShareMode,
+			nullptr,
+			dwCreationDisposition,
+			FILE_ATTRIBUTE_NORMAL,
 			nullptr), myFile_deleter());
 	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
