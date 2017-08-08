@@ -70,7 +70,7 @@ static rp_string config_dir;
  */
 static inline wstring makeWinPath(const rp_char *filename)
 {
-	if (!filename || filename[0] == 0)
+	if (unlikely(!filename || filename[0] == 0))
 		return wstring();
 
 	wstring filenameW;
@@ -367,7 +367,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
  */
 int delete_file(const rp_char *filename)
 {
-	if (!filename || filename[0] == 0)
+	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
 	int ret = 0;
 	const wstring filenameW = makeWinPath(filename);
@@ -387,8 +387,8 @@ int delete_file(const rp_char *filename)
  */
 bool is_symlink(const rp_char *filename)
 {
-	if (!filename || filename[0] == 0)
-		return false;
+	if (unlikely(!filename || filename[0] == 0))
+		return -EINVAL;
 	const wstring filenameW = makeWinPath(filename);
 
 	// Check the reparse point type.

@@ -266,7 +266,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
  */
 int delete_file(const rp_char *filename)
 {
-	if (!filename || filename[0] == 0)
+	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
 
 	int ret = unlink(RP2U8_c(filename));
@@ -284,6 +284,9 @@ int delete_file(const rp_char *filename)
  */
 bool is_symlink(const rp_char *filename)
 {
+	if (unlikely(!filename || filename[0] == 0))
+		return -EINVAL;
+	
 	struct stat buf;
 	int ret = lstat(RP2U8_c(filename), &buf);
 	if (ret != 0) {
