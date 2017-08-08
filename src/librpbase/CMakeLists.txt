@@ -83,6 +83,7 @@ SET(librpbase_SRCS
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem_common.cpp
+	file/RelatedFile.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/rp_image_ops.cpp
@@ -124,6 +125,7 @@ SET(librpbase_H
 	file/RpFile.hpp
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
+	file/RelatedFile.hpp
 	img/rp_image.hpp
 	img/rp_image_p.hpp
 	img/rp_image_backend.hpp

@@ -29,6 +29,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
+#include "librpbase/file/RelatedFile.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -198,67 +199,33 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	IRpFile *vms_file;
 	IRpFile *vmi_file;
 	IRpFile **other_file;	// Points to vms_file or vmi_file.
-	int ext_idx;
 
-	// File extensions.
-	// Lowercase versions are only used on non-Windows platforms
-	// due to case-sensitive file systems.
-#ifdef _WIN32
-	static const rp_char *const exts[4] = {_RP(".VMI"), nullptr, _RP(".VMS"), nullptr};
-#else /* !_WIN32 */
-	static const rp_char *const exts[4] = {_RP(".VMI"), _RP(".vmi"), _RP(".VMS"), _RP(".vms")};
-#endif
-
+	const rp_char *rel_ext;
 	if (has_dc_vms) {
 		// We have the VMS file.
 		// Find the VMI file.
 		vms_file = file;
 		vmi_file = nullptr;
 		other_file = &vmi_file;
-		ext_idx = 0;
+		rel_ext = _RP(".VMI");
 	} else /*if (has_dc_vmi)*/ {
 		// We have the VMI file.
 		// Find the VMS file.
 		vms_file = nullptr;
 		vmi_file = file;
 		other_file = &vms_file;
-		ext_idx = 2;
+		rel_ext = _RP(".VMS");
 	}
 
 	// Attempt to open the other file in the pair.
 	// TODO: Verify length.
 	// TODO: For .vmi, check the VMS resource name?
 	const rp_string filename = file->filename();
-	rp_string other_filename = filename.substr(0, filename.size() - 4);
-	other_filename += exts[ext_idx];
-	IRpFile *test_file = new RpFile(other_filename, RpFile::FM_OPEN_READ);
-	if (!test_file->isOpen()) {
-		// Error opening the other file.
-		delete test_file;
-#ifdef _WIN32
-		// Windows uses case-insensitive filenames,
-		// so we're done here.
-		test_file = nullptr;
-#else /* !_WIN32 */
-		// Try again with a lowercase extension.
-		// (Non-Windows platforms only.)
-		other_filename.resize(other_filename.size() - 4);
-		other_filename += exts[ext_idx + 1];
-		test_file = new RpFile(other_filename, RpFile::FM_OPEN_READ);
-		if (!test_file->isOpen()) {
-			// Still can't open the other file.
-			delete test_file;
-			test_file = nullptr;
-		}
-#endif
-	}
-
-	if (!test_file) {
+	*other_file = FileSystem::openRelatedFile(filename.c_str(), nullptr, rel_ext);
+	if (!*other_file) {
 		// Can't open the other file.
 		return nullptr;
 	}
-
-	*other_file = test_file;
 
 	// Attempt to create a DreamcastSave using both the
 	// VMS and VMI files.
