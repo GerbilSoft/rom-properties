@@ -54,11 +54,13 @@ IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const
 	// Get the directory portion of the filename.
 	rp_string s_dir = filename;
 	size_t slash_pos = s_dir.find_last_of(_RP_CHR(DIR_SEP_CHR));
-	if (slash_pos == rp_string::npos) {
-		// No directory...
-		return nullptr;
+	if (slash_pos != rp_string::npos) {
+		s_dir.resize(slash_pos+1);
+	} else {
+		// No directory. Probably a filename in the
+		// current directory, e.g. when using `rpcli`.
+		s_dir.clear();
 	}
-	s_dir.resize(slash_pos+1);
 
 	// Get the base name.
 	rp_string s_basename;
