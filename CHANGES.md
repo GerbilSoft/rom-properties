@@ -60,6 +60,14 @@
     (gcc does this even if the byteswap is on the variable.)
   * Updated MiniZip to an unofficial fork: https://github.com/nmoinvaz/minizip
   * rp-config: Added an "About" tab.
+  * Symbolic links are now resolved when searching for related files, e.g.
+    pairs of *.VMI/*.VMS files for Dreamcast saves. For example, if you have
+    `/dir/main.vmi` and `/dir/main.vms`, and a symlink `/save.vmi -> /dir/main.vmi`,
+    the symlink will now be resolved and the VMS file will be loaded. This feature
+    is supported on Linux and Windows (Vista or later).
+    * Note that Windows Explorer appears to automatically dereference symlinks
+      when using IExtractImage, which is what ends up being used anyway because
+      IThumbnailProvider doesn't provide a full path.
 
 ## v1.1 (released 2017/07/04)
 
