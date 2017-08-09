@@ -256,7 +256,7 @@ int Lynx::loadFieldData(void)
 
 	// Lynx ROM header.
 	const Lynx_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	d->fields->addField_string(_RP("Title"),
         latin1_to_rp_string(romHeader->cartname, sizeof(romHeader->cartname)));
@@ -276,9 +276,6 @@ int Lynx::loadFieldData(void)
 	
     d->fields->addField_string(_RP("Bank 1 Size"),
         d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
-
-	d->fields->addField_string_numeric(_RP("Version"),
-		le16_to_cpu(romHeader->version), RomFields::FB_DEC, 2);
 
 	return (int)d->fields->count();
 }
