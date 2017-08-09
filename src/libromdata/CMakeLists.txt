@@ -26,6 +26,7 @@ SET(libromdata_SRCS
 	DirectDrawSurface.cpp
 	NintendoBadge.cpp
 	Dreamcast.cpp
+	Lynx.cpp
 	data/SegaPublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -80,6 +81,7 @@ SET(libromdata_H
 	DirectDrawSurface.hpp
 	NintendoBadge.hpp
 	Dreamcast.hpp
+	Lynx.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -101,6 +103,7 @@ SET(libromdata_H
 	badge_structs.h
 	cdrom_structs.h
 	iso_structs.h
+	lnx_structs.h
 	data/SegaPublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp

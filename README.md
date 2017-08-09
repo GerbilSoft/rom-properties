@@ -96,6 +96,7 @@ button.
 | Microsoft DirectDraw Surface  |       Yes      |      Image      |       N/A      |
 | Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
 | Sega Dreamcast                |       Yes      |      Media      |       N/A      |
+| Atari Lynx                    |       Yes      |       N/A       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -149,6 +150,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
   * Currently supports uncompressed RGB, DXTn, BC4, and BC5.
 * Nintendo Badge Arcade: Badge files (\*.prb), badge set files (\*.cab)
 * Sega Dreamcast: Raw disc image files (\*.bin, \*.iso)
+* Atari Lynx: Headered binary (\*.lnx)
 
 ## External Media Downloads
 
