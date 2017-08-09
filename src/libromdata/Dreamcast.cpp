@@ -407,7 +407,7 @@ const rp_char *Dreamcast::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// GBA has the same name worldwide, so we can
+	// Dreamcast has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Dreamcast::systemName() array index optimization needs to be updated.");

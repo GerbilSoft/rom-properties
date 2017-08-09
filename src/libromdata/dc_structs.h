@@ -261,7 +261,7 @@ typedef struct PACKED _DC_IP0000_BIN_t {
 	char hw_id[16];			// "SEGA SEGAKATANA "
 	char maker_id[16];		// "SEGA ENTERPRISES"
 	char device_info[16];		// "1234 GD-ROM1/1  "
-	char area_symbols[8];		// "JUE     "
+	char area_symbols[8];		// "JUE     " (position-dependent)
 	char peripherals[8];		// 7-digit hex string, use DC_IP0000_BIN_Peripherals to decode.
 	char product_number[10];	// "HDR-nnnn"
 	char product_version[6];	// "V1.000"
@@ -331,7 +331,7 @@ typedef struct PACKED _DC_IP_BIN_t {
 
 	// Area symbols. (region lockout)
 	// Contains longer strings indicating the valid areas.
-	// Must match area_syms in DC_IP0000_BIN_t.
+	// Must match area_symbols in DC_IP0000_BIN_t.
 	// NOTE: The first four bytes are a branch instruction.
 	struct {
 		uint16_t branch[2];
