@@ -789,7 +789,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
  * @param flags Formatting flags.
  * @return Field index.
  */
-int RomFields::addField_string(const rp_char *name, const rp_char *str, int flags)
+int RomFields::addField_string(const rp_char *name, const rp_char *str, unsigned int flags)
 {
 	RP_D(RomFields);
 
@@ -815,7 +815,7 @@ int RomFields::addField_string(const rp_char *name, const rp_char *str, int flag
  * @param flags Formatting flags.
  * @return Field index.
  */
-int RomFields::addField_string(const rp_char *name, const rp_string &str, int flags)
+int RomFields::addField_string(const rp_char *name, const rp_string &str, unsigned int flags)
 {
 	RP_D(RomFields);
 
@@ -845,7 +845,7 @@ int RomFields::addField_string(const rp_char *name, const rp_string &str, int fl
  * @param flags Formatting flags.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base base, int digits, int flags)
+int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base base, int digits, unsigned int flags)
 {
 	const char *fmtstr;
 	switch (base) {
@@ -873,7 +873,7 @@ int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base b
  * @param flags Formatting flags.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_string_hexdump(const rp_char *name, const uint8_t *buf, size_t size, int flags)
+int RomFields::addField_string_hexdump(const rp_char *name, const uint8_t *buf, size_t size, unsigned int flags)
 {
 	if (size == 0) {
 		return addField_string(name, nullptr);
@@ -916,7 +916,7 @@ int RomFields::addField_string_hexdump(const rp_char *name, const uint8_t *buf, 
  */
 int RomFields::addField_string_address_range(const rp_char *name,
 	uint32_t start, uint32_t end,
-	const rp_char *suffix, int digits, int flags)
+	const rp_char *suffix, int digits, unsigned int flags)
 {
 	// Maximum number of digits is 16. (64-bit)
 	assert(digits <= 16);
@@ -984,7 +984,7 @@ int RomFields::addField_bitfield(const rp_char *name,
 int RomFields::addField_listData(const rp_char *name,
 	const std::vector<rp_string> *headers,
 	const std::vector<std::vector<rp_string> > *list_data,
-	int rows_visible, uint32_t flags, uint32_t checkboxes)
+	int rows_visible, unsigned int flags, uint32_t checkboxes)
 {
 	RP_D(RomFields);
 
@@ -1016,7 +1016,7 @@ int RomFields::addField_listData(const rp_char *name,
  * @param flags Date/Time flags.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_dateTime(const rp_char *name, time_t date_time, int flags)
+int RomFields::addField_dateTime(const rp_char *name, time_t date_time, unsigned int flags)
 {
 	RP_D(RomFields);
 

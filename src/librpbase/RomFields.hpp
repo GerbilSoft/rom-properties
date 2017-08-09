@@ -134,7 +134,7 @@ class RomFields
 
 			// Field description.
 			union _desc {
-				uint32_t flags;	// Generic flags. (string, date)
+				unsigned int flags;	// Generic flags. (string, date)
 
 				struct _bitfield {
 					// Number of bits to check. (must be 1-32)
@@ -149,7 +149,7 @@ class RomFields
 				} bitfield;
 				struct _list_data {
 					// Flags.
-					uint32_t flags;
+					unsigned int flags;
 					// Number of visible rows. (0 for "default")
 					int rows_visible;
 					// List field names. (headers)
@@ -338,7 +338,7 @@ class RomFields
 		 * @param flags Formatting flags.
 		 * @return Field index.
 		 */
-		int addField_string(const rp_char *name, const rp_char *str, int flags = 0);
+		int addField_string(const rp_char *name, const rp_char *str, unsigned int flags = 0);
 
 		/**
 		 * Add string field data.
@@ -347,7 +347,7 @@ class RomFields
 		 * @param flags Formatting flags.
 		 * @return Field index.
 		 */
-		int addField_string(const rp_char *name, const rp_string &str, int flags = 0);
+		int addField_string(const rp_char *name, const rp_string &str, unsigned int flags = 0);
 
 		enum Base {
 			FB_DEC,
@@ -364,7 +364,7 @@ class RomFields
 		 * @param flags Formatting flags.
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_string_numeric(const rp_char *name, uint32_t val, Base base = FB_DEC, int digits = 0, int flags = 0);
+		int addField_string_numeric(const rp_char *name, uint32_t val, Base base = FB_DEC, int digits = 0, unsigned int flags = 0);
 
 		/**
 		 * Add a string field formatted like a hex dump
@@ -374,7 +374,7 @@ class RomFields
 		 * @param flags Formatting flags.
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_string_hexdump(const rp_char *name, const uint8_t *buf, size_t size, int flags = 0);
+		int addField_string_hexdump(const rp_char *name, const uint8_t *buf, size_t size, unsigned int flags = 0);
 
 		/**
 		 * Add a string field formatted for an address range.
@@ -388,7 +388,7 @@ class RomFields
 		 */
 		int addField_string_address_range(const rp_char *name,
 			uint32_t start, uint32_t end,
-			const rp_char *suffix, int digits = 8, int flags = 0);
+			const rp_char *suffix, int digits = 8, unsigned int flags = 0);
 
 		/**
 		 * Add a string field formatted for an address range.
@@ -400,7 +400,7 @@ class RomFields
 		 * @return Field index, or -1 on error.
 		 */
 		inline int addField_string_address_range(const rp_char *name,
-			uint32_t start, uint32_t end, int digits = 8, int flags = 0)
+			uint32_t start, uint32_t end, int digits = 8, unsigned int flags = 0)
 		{
 			return addField_string_address_range(name, start, end, nullptr, digits, flags);
 		}
@@ -436,7 +436,7 @@ class RomFields
 		int addField_listData(const rp_char *name,
 			const std::vector<rp_string> *headers,
 			const std::vector<std::vector<rp_string> > *list_data,
-			int rows_visible = 0, uint32_t flags = 0, uint32_t checkboxes = 0);
+			int rows_visible = 0, unsigned int flags = 0, uint32_t checkboxes = 0);
 
 		/**
 		 * Add DateTime.
@@ -445,7 +445,7 @@ class RomFields
 		 * @param flags Date/Time flags.
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_dateTime(const rp_char *name, int64_t date_time, int flags = 0);
+		int addField_dateTime(const rp_char *name, int64_t date_time, unsigned int flags = 0);
 
 		/**
 		 * Add age ratings.
