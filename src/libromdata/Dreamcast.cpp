@@ -609,7 +609,9 @@ int Dreamcast::loadFieldData(void)
 	// Disc number.
 	uint8_t disc_num = 0;
 	uint8_t disc_total = 0;
-	if (!memcmp(&discHeader->device_info[4], " GD-ROM", 7) && discHeader->device_info[12] == '/') {
+	if (!memcmp(&discHeader->device_info[4], " GD-ROM", 7) &&
+	    discHeader->device_info[12] == '/')
+	{
 		// "GD-ROM" is present.
 		if (isdigit(discHeader->device_info[11]) &&
 		    isdigit(discHeader->device_info[13]))
