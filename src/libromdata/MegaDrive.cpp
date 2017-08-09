@@ -90,7 +90,7 @@ class MegaDrivePrivate : public RomDataPrivate
 		 * @param size Size of io_support.
 		 * @return io_support bitfield.
 		 */
-		uint32_t parseIOSupport(const char *io_support, int size);
+		static uint32_t parseIOSupport(const char *io_support, int size);
 
 	public:
 		enum MD_RomType {
