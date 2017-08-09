@@ -791,14 +791,16 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
  */
 int RomFields::addField_string(const rp_char *name, const rp_char *str, unsigned int flags)
 {
-	RP_D(RomFields);
+	assert(name != nullptr);
+	if (!name)
+		return -1;
 
 	// RFT_STRING
+	RP_D(RomFields);
 	int idx = (int)d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	assert(name != nullptr);
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
@@ -817,16 +819,16 @@ int RomFields::addField_string(const rp_char *name, const rp_char *str, unsigned
  */
 int RomFields::addField_string(const rp_char *name, const rp_string &str, unsigned int flags)
 {
-	RP_D(RomFields);
+	assert(name != nullptr);
+	if (!name)
+		return -1;
 
 	// RFT_STRING
+	RP_D(RomFields);
 	int idx = (int)d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	assert(name != nullptr);
-	if (!name)
-		return -1;
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
@@ -847,6 +849,10 @@ int RomFields::addField_string(const rp_char *name, const rp_string &str, unsign
  */
 int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base base, int digits, unsigned int flags)
 {
+	assert(name != nullptr);
+	if (!name)
+		return -1;
+
 	const char *fmtstr;
 	switch (base) {
 		case FB_DEC:
@@ -875,6 +881,10 @@ int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base b
  */
 int RomFields::addField_string_hexdump(const rp_char *name, const uint8_t *buf, size_t size, unsigned int flags)
 {
+	assert(name != nullptr);
+	if (!name)
+		return -1;
+
 	if (size == 0) {
 		return addField_string(name, nullptr);
 	}
@@ -918,6 +928,10 @@ int RomFields::addField_string_address_range(const rp_char *name,
 	uint32_t start, uint32_t end,
 	const rp_char *suffix, int digits, unsigned int flags)
 {
+	assert(name != nullptr);
+	if (!name)
+		return -1;
+
 	// Maximum number of digits is 16. (64-bit)
 	assert(digits <= 16);
 	if (digits > 16) {
@@ -948,17 +962,17 @@ int RomFields::addField_bitfield(const rp_char *name,
 	const std::vector<rp_string> *bit_names,
 	int elemsPerRow, uint32_t bitfield)
 {
-	RP_D(RomFields);
-
-	// RFT_BITFIELD
-	int idx = (int)d->fields.size();
-	d->fields.resize(idx+1);
-	Field &field = d->fields.at(idx);
-
 	assert(name != nullptr);
 	assert(bit_names != nullptr);
 	if (!name || !bit_names)
 		return -1;
+
+	// RFT_BITFIELD
+	RP_D(RomFields);
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_BITFIELD;
 	field.desc.bitfield.elements = (int)bit_names->size();	// TODO: Remove this.
@@ -986,17 +1000,17 @@ int RomFields::addField_listData(const rp_char *name,
 	const std::vector<std::vector<rp_string> > *list_data,
 	int rows_visible, unsigned int flags, uint32_t checkboxes)
 {
-	RP_D(RomFields);
-
-	// RFT_LISTDATA
-	int idx = (int)d->fields.size();
-	d->fields.resize(idx+1);
-	Field &field = d->fields.at(idx);
-
 	assert(name != nullptr);
 	assert(rows_visible >= 0);
 	if (!name || rows_visible < 0)
 		return -1;
+
+	// RFT_LISTDATA
+	RP_D(RomFields);
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_LISTDATA;
 	field.desc.list_data.flags = flags;
@@ -1018,16 +1032,16 @@ int RomFields::addField_listData(const rp_char *name,
  */
 int RomFields::addField_dateTime(const rp_char *name, time_t date_time, unsigned int flags)
 {
-	RP_D(RomFields);
+	assert(name != nullptr);
+	if (!name)
+		return -1;
 
 	// RFT_DATETIME
+	RP_D(RomFields);
 	int idx = (int)d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	assert(name != nullptr);
-	if (!name)
-		return -1;
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_DATETIME;
 	field.desc.flags = flags;
@@ -1046,16 +1060,16 @@ int RomFields::addField_dateTime(const rp_char *name, time_t date_time, unsigned
  */
 int RomFields::addField_ageRatings(const rp_char *name, const age_ratings_t &age_ratings)
 {
-	RP_D(RomFields);
+	assert(name != nullptr);
+	if (!name)
+		return -1;
 
 	// RFT_AGE_RATINGS
+	RP_D(RomFields);
 	int idx = (int)d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	assert(name != nullptr);
-	if (!name)
-		return -1;
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_AGE_RATINGS;
 	field.data.age_ratings = new age_ratings_t(age_ratings);
