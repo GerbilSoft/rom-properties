@@ -578,44 +578,57 @@ int Dreamcast::loadFieldData(void)
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
 	d->fields->reserve(12);	// Maximum of 12 fields.
 
-	// FIXME: The CRC algorithm isn't working right...
-#if 0
-	// Product CRC16.
-	// TODO: Use strtoul().
-	unsigned int crc16_expected = 0;
-	const char *p = discHeader->device_info;
-	for (unsigned int i = 4; i > 0; i--, p++) {
-		if (isxdigit(*p)) {
-			crc16_expected <<= 4;
-			if (isdigit(*p)) {
-				crc16_expected |= (*p & 0xF);
-			} else {
-				crc16_expected |= ((*p & 0xF) + 10);
-			}
-		} else {
-			// Invalid digit.
-			crc16_expected = ~0;
-			break;
+	// Title. (TODO: Encoding?)
+	int len = d->trim_spaces(discHeader->title, (int)sizeof(discHeader->title));
+	d->fields->addField_string(_RP("Title"),
+		(len > 0 ? latin1_to_rp_string(discHeader->title, len) : _RP("Unknown")));
+
+	// Publisher.
+	const rp_char *publisher = nullptr;
+	if (!memcmp(discHeader->publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader->publisher))) {
+		// First-party Sega title.
+		publisher = _RP("Sega");
+	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
+		// This may be a third-party T-code.
+		char *endptr;
+		unsigned int t_code = (unsigned int)strtoul(&discHeader->publisher[10], &endptr, 10);
+		if (t_code != 0 &&
+		    endptr > &discHeader->publisher[10] &&
+		    endptr <= &discHeader->publisher[15])
+		{
+			// Valid T-code. Look up the publisher.
+			publisher = SegaPublishers::lookup(t_code);
 		}
 	}
 
-	uint16_t crc16_actual = d->calcProductCRC16(discHeader);
-	if (crc16_expected < 0x10000) {
-		if (crc16_expected == crc16_actual) {
-			// CRC16 is correct.
-			d->fields->addField_string(_RP("Checksum"),
-				rp_sprintf("0x%04X (valid)", crc16_expected));
-		} else {
-			// CRC16 is incorrect.
-			d->fields->addField_string(_RP(" Checksum"),
-				rp_sprintf("0x%04X (INVALID; should be 0x%04X)", crc16_expected, crc16_actual));
-		}
+	if (publisher) {
+		d->fields->addField_string(_RP("Publisher"), publisher);
 	} else {
-		// CRC16 in header is invalid.
-		d->fields->addField_string(_RP("Product Checksum"),
-			rp_sprintf("0x%04X (HEADER is INVALID: %.4s)", crc16_expected, discHeader->device_info));
+		// Unknown publisher.
+		// List the field as-is.
+		len = d->trim_spaces(discHeader->publisher, (int)sizeof(discHeader->publisher));
+		d->fields->addField_string(_RP("Publisher"),
+			(len > 0 ? latin1_to_rp_string(discHeader->publisher, len) : _RP("Unknown")));
 	}
-#endif
+
+	// TODO: Latin-1, cp1252, or Shift-JIS?
+
+	// Product number.
+	len = d->trim_spaces(discHeader->product_number, (int)sizeof(discHeader->product_number));
+	d->fields->addField_string(_RP("Product #"),
+		(len > 0 ? latin1_to_rp_string(discHeader->product_number, len) : _RP("Unknown")));
+
+	// Product version.
+	len = d->trim_spaces(discHeader->product_version, (int)sizeof(discHeader->product_version));
+	d->fields->addField_string(_RP("Version"),
+		(len > 0 ? latin1_to_rp_string(discHeader->product_version, len) : _RP("Unknown")));
+
+	// Release date.
+	time_t release_date = d->ascii_release_date_to_unix_time(discHeader->release_date);
+	d->fields->addField_dateTime(_RP("Release Date"), release_date,
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_IS_UTC  // Date only.
+	);
 
 	// Disc number.
 	uint8_t disc_num = 0;
@@ -655,62 +668,49 @@ int Dreamcast::loadFieldData(void)
 	d->fields->addField_bitfield(_RP("Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 
-	// TODO: Latin-1, cp1252, or Shift-JIS?
-
-	// Product number.
-	int len = d->trim_spaces(discHeader->product_number, (int)sizeof(discHeader->product_number));
-	d->fields->addField_string(_RP("Product #"),
-		(len > 0 ? latin1_to_rp_string(discHeader->product_number, len) : _RP("Unknown")));
-
-	// Product version.
-	len = d->trim_spaces(discHeader->product_version, (int)sizeof(discHeader->product_version));
-	d->fields->addField_string(_RP("Version"),
-		(len > 0 ? latin1_to_rp_string(discHeader->product_version, len) : _RP("Unknown")));
-
-	// Release date.
-	time_t release_date = d->ascii_release_date_to_unix_time(discHeader->release_date);
-	d->fields->addField_dateTime(_RP("Release Date"), release_date,
-		RomFields::RFT_DATETIME_HAS_DATE |
-		RomFields::RFT_DATETIME_IS_UTC  // Date only.
-	);
-
 	// Boot filename.
 	len = d->trim_spaces(discHeader->boot_filename, (int)sizeof(discHeader->boot_filename));
 	d->fields->addField_string(_RP("Boot Filename"),
 		(len > 0 ? latin1_to_rp_string(discHeader->boot_filename, len) : _RP("Unknown")));
 
-	// Publisher.
-	const rp_char *publisher = nullptr;
-	if (!memcmp(discHeader->publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader->publisher))) {
-		// First-party Sega title.
-		publisher = _RP("Sega");
-	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
-		// This may be a third-party T-code.
-		char *endptr;
-		unsigned int t_code = (unsigned int)strtoul(&discHeader->publisher[10], &endptr, 10);
-		if (t_code != 0 &&
-		    endptr > &discHeader->publisher[10] &&
-		    endptr <= &discHeader->publisher[15])
-		{
-			// Valid T-code. Look up the publisher.
-			publisher = SegaPublishers::lookup(t_code);
+	// FIXME: The CRC algorithm isn't working right...
+#if 0
+	// Product CRC16.
+	// TODO: Use strtoul().
+	unsigned int crc16_expected = 0;
+	const char *p = discHeader->device_info;
+	for (unsigned int i = 4; i > 0; i--, p++) {
+		if (isxdigit(*p)) {
+			crc16_expected <<= 4;
+			if (isdigit(*p)) {
+				crc16_expected |= (*p & 0xF);
+			} else {
+				crc16_expected |= ((*p & 0xF) + 10);
+			}
+		} else {
+			// Invalid digit.
+			crc16_expected = ~0;
+			break;
 		}
 	}
 
-	if (publisher) {
-		d->fields->addField_string(_RP("Publisher"), publisher);
+	uint16_t crc16_actual = d->calcProductCRC16(discHeader);
+	if (crc16_expected < 0x10000) {
+		if (crc16_expected == crc16_actual) {
+			// CRC16 is correct.
+			d->fields->addField_string(_RP("Checksum"),
+				rp_sprintf("0x%04X (valid)", crc16_expected));
+		} else {
+			// CRC16 is incorrect.
+			d->fields->addField_string(_RP(" Checksum"),
+				rp_sprintf("0x%04X (INVALID; should be 0x%04X)", crc16_expected, crc16_actual));
+		}
 	} else {
-		// Unknown publisher.
-		// List the field as-is.
-		len = d->trim_spaces(discHeader->publisher, (int)sizeof(discHeader->publisher));
-		d->fields->addField_string(_RP("Publisher"),
-			(len > 0 ? latin1_to_rp_string(discHeader->publisher, len) : _RP("Unknown")));
+		// CRC16 in header is invalid.
+		d->fields->addField_string(_RP("Product Checksum"),
+			rp_sprintf("0x%04X (HEADER is INVALID: %.4s)", crc16_expected, discHeader->device_info));
 	}
-
-	// Title. (TODO: Encoding?)
-	len = d->trim_spaces(discHeader->title, (int)sizeof(discHeader->title));
-	d->fields->addField_string(_RP("Title"),
-		(len > 0 ? latin1_to_rp_string(discHeader->title, len) : _RP("Unknown")));
+#endif
 
 	/** Peripeherals. **/
 
