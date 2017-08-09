@@ -247,3 +247,5 @@ decrypt data will show an error message instead of the data in question.
   on Nintendo Badge Arcade files.
 * [Advanced Badge Editor](https://github.com/TheMachinumps/Advanced-badge-editor):
   Information on Nintendo Badge Arcade files.
+* [HandyBug Documentation](http://handy.cvs.sourceforge.net/viewvc/handy/win32src/public/handybug/dvreadme.txt):
+  Information on Atari Lynx cartridge format.

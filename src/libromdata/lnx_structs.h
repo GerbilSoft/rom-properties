@@ -36,7 +36,7 @@ extern "C" {
  * Atari Lynx ROM header.
  * This matches the ROM header format exactly.
  * Reference:
- * - http://aminet.net/package/misc/emu/make_lnx
+ * - http://handy.cvs.sourceforge.net/viewvc/handy/win32src/public/handybug/dvreadme.txt
  * 
  * NOTE: Strings are NOT null-terminated!
  */
