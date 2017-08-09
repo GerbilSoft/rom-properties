@@ -111,6 +111,27 @@ typedef struct PACKED _MD_RomHeader {
 } MD_RomHeader;
 ASSERT_STRUCT(MD_RomHeader, 256);
 
+/**
+ * Mega Drive I/O support.
+ * Maps to MD_RomHeader.io_support[] entries.
+ */
+typedef enum {
+	MD_IO_JOYPAD_3		= 'J',
+	MD_IO_JOYPAD_6		= '6',
+	MD_IO_JOYPAD_SMS	= '0',
+	MD_IO_TEAM_PLAYER	= '4',
+	MD_IO_KEYBOARD		= 'K',
+	MD_IO_SERIAL		= 'R',
+	MD_IO_PRINTER		= 'P',
+	MD_IO_TABLET		= 'T',
+	MD_IO_TRACKBALL		= 'B',
+	MD_IO_PADDLE		= 'V',
+	MD_IO_FDD		= 'F',
+	MD_IO_CDROM		= 'C',
+	MD_IO_ACTIVATOR		= 'L',
+	MD_IO_MEGA_MOUSE	= 'M',
+} MD_IO_Support;
+
 #pragma pack()
 
 #ifdef __cplusplus

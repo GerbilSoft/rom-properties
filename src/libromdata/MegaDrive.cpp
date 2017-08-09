@@ -65,21 +65,21 @@ class MegaDrivePrivate : public RomDataPrivate
 		/** RomFields **/
 
 		// I/O support. (RFT_BITFIELD)
-		enum MD_IOSupport {
-			MD_IO_JOYPAD_3		= (1 << 0),	// 3-button joypad
-			MD_IO_JOYPAD_6		= (1 << 1),	// 6-button joypad
-			MD_IO_JOYPAD_SMS	= (1 << 2),	// 2-button joypad (SMS)
-			MD_IO_TEAM_PLAYER	= (1 << 3),	// Team Player
-			MD_IO_KEYBOARD		= (1 << 4),	// Keyboard
-			MD_IO_SERIAL		= (1 << 5),	// Serial (RS-232C)
-			MD_IO_PRINTER		= (1 << 6),	// Printer
-			MD_IO_TABLET		= (1 << 7),	// Tablet
-			MD_IO_TRACKBALL		= (1 << 8),	// Trackball
-			MD_IO_PADDLE		= (1 << 9),	// Paddle
-			MD_IO_FDD		= (1 << 10),	// Floppy Drive
-			MD_IO_CDROM		= (1 << 11),	// CD-ROM
-			MD_IO_ACTIVATOR		= (1 << 12),	// Activator
-			MD_IO_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
+		enum MD_IO_Support_Bitfield {
+			MD_IOBF_JOYPAD_3	= (1 << 0),	// 3-button joypad
+			MD_IOBF_JOYPAD_6	= (1 << 1),	// 6-button joypad
+			MD_IOBF_JOYPAD_SMS	= (1 << 2),	// 2-button joypad (SMS)
+			MD_IOBF_TEAM_PLAYER	= (1 << 3),	// Team Player
+			MD_IOBF_KEYBOARD	= (1 << 4),	// Keyboard
+			MD_IOBF_SERIAL		= (1 << 5),	// Serial (RS-232C)
+			MD_IOBF_PRINTER		= (1 << 6),	// Printer
+			MD_IOBF_TABLET		= (1 << 7),	// Tablet
+			MD_IOBF_TRACKBALL	= (1 << 8),	// Trackball
+			MD_IOBF_PADDLE		= (1 << 9),	// Paddle
+			MD_IOBF_FDD		= (1 << 10),	// Floppy Drive
+			MD_IOBF_CDROM		= (1 << 11),	// CD-ROM
+			MD_IOBF_ACTIVATOR	= (1 << 12),	// Activator
+			MD_IOBF_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
 		};
 
 		/** Internal ROM data. **/
@@ -189,47 +189,47 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {
 		switch (io_support[i]) {
-			case 'J':
-				ret |= MD_IO_JOYPAD_3;
+			case MD_IO_JOYPAD_3:
+				ret |= MD_IOBF_JOYPAD_3;
 				break;
-			case '6':
-				ret |= MD_IO_JOYPAD_6;
+			case MD_IO_JOYPAD_6:
+				ret |= MD_IOBF_JOYPAD_6;
 				break;
-			case '0':
-				ret |= MD_IO_JOYPAD_SMS;
+			case MD_IO_JOYPAD_SMS:
+				ret |= MD_IOBF_JOYPAD_SMS;
 				break;
-			case '4':
-				ret |= MD_IO_TEAM_PLAYER;
+			case MD_IO_TEAM_PLAYER:
+				ret |= MD_IOBF_TEAM_PLAYER;
 				break;
-			case 'K':
-				ret |= MD_IO_KEYBOARD;
+			case MD_IO_KEYBOARD:
+				ret |= MD_IOBF_KEYBOARD;
 				break;
-			case 'R':
-				ret |= MD_IO_SERIAL;
+			case MD_IO_SERIAL:
+				ret |= MD_IOBF_SERIAL;
 				break;
-			case 'P':
-				ret |= MD_IO_PRINTER;
+			case MD_IO_PRINTER:
+				ret |= MD_IOBF_PRINTER;
 				break;
-			case 'T':
-				ret |= MD_IO_TABLET;
+			case MD_IO_TABLET:
+				ret |= MD_IOBF_TABLET;
 				break;
-			case 'B':
-				ret |= MD_IO_TRACKBALL;
+			case MD_IO_TRACKBALL:
+				ret |= MD_IOBF_TRACKBALL;
 				break;
-			case 'V':
-				ret |= MD_IO_PADDLE;
+			case MD_IO_PADDLE:
+				ret |= MD_IOBF_PADDLE;
 				break;
-			case 'F':
-				ret |= MD_IO_FDD;
+			case MD_IO_FDD:
+				ret |= MD_IOBF_FDD;
 				break;
-			case 'C':
-				ret |= MD_IO_CDROM;
+			case MD_IO_CDROM:
+				ret |= MD_IOBF_CDROM;
 				break;
-			case 'L':
-				ret |= MD_IO_ACTIVATOR;
+			case MD_IO_ACTIVATOR:
+				ret |= MD_IOBF_ACTIVATOR;
 				break;
-			case 'M':
-				ret |= MD_IO_MEGA_MOUSE;
+			case MD_IO_MEGA_MOUSE:
+				ret |= MD_IOBF_MEGA_MOUSE;
 				break;
 			default:
 				break;
