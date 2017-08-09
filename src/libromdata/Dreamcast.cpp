@@ -105,14 +105,6 @@ class DreamcastPrivate : public RomDataPrivate
 		static time_t ascii_release_date_to_unix_time(const char *ascii_date);
 
 		/**
-		 * Trim spaces from the end of a string.
-		 * @param str		[in] String.
-		 * @param max_len	[in] Maximum length of `str`.
-		 * @return String length, minus spaces.
-		 */
-		static inline int trim_spaces(const char *str, int max_len);
-
-		/**
 		 * Load 0GDTEX.PVR.
 		 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
 		 */
@@ -216,22 +208,6 @@ time_t DreamcastPrivate::ascii_release_date_to_unix_time(const char *ascii_date)
 
 	// If conversion fails, this will return -1.
 	return timegm(&dctime);
-}
-
-/**
- * Trim spaces from the end of a string.
- * @param str		[in] String.
- * @param max_len	[in] Maximum length of `str`.
- * @return String length, minus spaces.
- */
-inline int DreamcastPrivate::trim_spaces(const char *str, int max_len)
-{
-	const char *p = &str[max_len-1];
-	for (; max_len > 0; max_len--, p--) {
-		if (*p != ' ')
-			break;
-	}
-	return max_len;
 }
 
 /**
@@ -579,9 +555,9 @@ int Dreamcast::loadFieldData(void)
 	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	// Title. (TODO: Encoding?)
-	int len = d->trim_spaces(discHeader->title, (int)sizeof(discHeader->title));
 	d->fields->addField_string(_RP("Title"),
-		(len > 0 ? latin1_to_rp_string(discHeader->title, len) : _RP("Unknown")));
+		latin1_to_rp_string(discHeader->title, sizeof(discHeader->title)),
+		RomFields::STRF_TRIM_END);
 
 	// Publisher.
 	const rp_char *publisher = nullptr;
@@ -606,22 +582,22 @@ int Dreamcast::loadFieldData(void)
 	} else {
 		// Unknown publisher.
 		// List the field as-is.
-		len = d->trim_spaces(discHeader->publisher, (int)sizeof(discHeader->publisher));
 		d->fields->addField_string(_RP("Publisher"),
-			(len > 0 ? latin1_to_rp_string(discHeader->publisher, len) : _RP("Unknown")));
+			latin1_to_rp_string(discHeader->publisher, sizeof(discHeader->publisher)),
+			RomFields::STRF_TRIM_END);
 	}
 
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
 	// Product number.
-	len = d->trim_spaces(discHeader->product_number, (int)sizeof(discHeader->product_number));
 	d->fields->addField_string(_RP("Product #"),
-		(len > 0 ? latin1_to_rp_string(discHeader->product_number, len) : _RP("Unknown")));
+		latin1_to_rp_string(discHeader->product_number, sizeof(discHeader->product_number)),
+		RomFields::STRF_TRIM_END);
 
 	// Product version.
-	len = d->trim_spaces(discHeader->product_version, (int)sizeof(discHeader->product_version));
 	d->fields->addField_string(_RP("Version"),
-		(len > 0 ? latin1_to_rp_string(discHeader->product_version, len) : _RP("Unknown")));
+		latin1_to_rp_string(discHeader->product_version, sizeof(discHeader->product_version)),
+		RomFields::STRF_TRIM_END);
 
 	// Release date.
 	time_t release_date = d->ascii_release_date_to_unix_time(discHeader->release_date);
@@ -669,9 +645,9 @@ int Dreamcast::loadFieldData(void)
 		v_region_code_bitfield_names, 0, region_code);
 
 	// Boot filename.
-	len = d->trim_spaces(discHeader->boot_filename, (int)sizeof(discHeader->boot_filename));
 	d->fields->addField_string(_RP("Boot Filename"),
-		(len > 0 ? latin1_to_rp_string(discHeader->boot_filename, len) : _RP("Unknown")));
+		latin1_to_rp_string(discHeader->boot_filename, sizeof(discHeader->boot_filename)),
+		RomFields::STRF_TRIM_END);
 
 	// FIXME: The CRC algorithm isn't working right...
 #if 0

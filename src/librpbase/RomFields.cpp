@@ -86,6 +86,13 @@ class RomFieldsPrivate
 		 * Deletes allocated strings in this->data.
 		 */
 		void delete_data(void);
+
+		/**
+		 * Remove trailing spaces from a string.
+		 * Used for STRF_TRIM_END.
+		 * @param str String.
+		 */
+		void trimEnd(rp_string &str);
 };
 
 /** RomFieldsPrivate **/
@@ -173,6 +180,23 @@ void RomFieldsPrivate::delete_data(void)
 
 	// Clear the fields vector.
 	this->fields.clear();
+}
+
+/**
+ * Remove trailing spaces from a string.
+ * Used for STRF_TRIM_END.
+ * @param str String.
+ */
+void RomFieldsPrivate::trimEnd(rp_string &str)
+{
+	// FIXME: Use isspace() or iswspace()?
+	size_t sz = str.size();
+	while (sz > 0) {
+		if (str.at(sz-1) != _RP_CHR(' '))
+			break;
+		sz--;
+		str.resize(sz);
+	}
 }
 
 /** RomFields **/
@@ -807,6 +831,11 @@ int RomFields::addField_string(const rp_char *name, const rp_char *str, unsigned
 	field.data.str = (str ? new rp_string(str) : nullptr);
 	field.tabIdx = d->tabIdx;
 	field.isValid = (name != nullptr);
+
+	// Handle string trimming flags.
+	if (field.data.str && (flags & STRF_TRIM_END)) {
+		d->trimEnd(*const_cast<rp_string*>(field.data.str));
+	}
 	return idx;
 }
 
@@ -835,6 +864,11 @@ int RomFields::addField_string(const rp_char *name, const rp_string &str, unsign
 	field.data.str = (!str.empty() ? new rp_string(str) : nullptr);
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
+
+	// Handle string trimming flags.
+	if (field.data.str && (flags & STRF_TRIM_END)) {
+		d->trimEnd(*const_cast<rp_string*>(field.data.str));
+	}
 	return idx;
 }
 

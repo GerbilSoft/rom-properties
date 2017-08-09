@@ -252,9 +252,11 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 {
 	// Read the strings from the header.
 	fields->addField_string(_RP("System"),
-		cp1252_sjis_to_rp_string(pRomHeader->system, sizeof(pRomHeader->system)));
+		cp1252_sjis_to_rp_string(pRomHeader->system, sizeof(pRomHeader->system)),
+			RomFields::STRF_TRIM_END);
 	fields->addField_string(_RP("Copyright"),
-		cp1252_sjis_to_rp_string(pRomHeader->copyright, sizeof(pRomHeader->copyright)));
+		cp1252_sjis_to_rp_string(pRomHeader->copyright, sizeof(pRomHeader->copyright)),
+			RomFields::STRF_TRIM_END);
 
 	// Determine the publisher.
 	// Formats in the copyright line:
@@ -296,11 +298,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 
 	// Titles, serial number, and checksum.
 	fields->addField_string(_RP("Domestic Title"),
-		cp1252_sjis_to_rp_string(pRomHeader->title_domestic, sizeof(pRomHeader->title_domestic)));
+		cp1252_sjis_to_rp_string(pRomHeader->title_domestic, sizeof(pRomHeader->title_domestic)),
+			RomFields::STRF_TRIM_END);
 	fields->addField_string(_RP("Export Title"),
-		cp1252_sjis_to_rp_string(pRomHeader->title_export, sizeof(pRomHeader->title_export)));
+		cp1252_sjis_to_rp_string(pRomHeader->title_export, sizeof(pRomHeader->title_export)),
+			RomFields::STRF_TRIM_END);
 	fields->addField_string(_RP("Serial Number"),
-		cp1252_sjis_to_rp_string(pRomHeader->serial, sizeof(pRomHeader->serial)));
+		cp1252_sjis_to_rp_string(pRomHeader->serial, sizeof(pRomHeader->serial)),
+			RomFields::STRF_TRIM_END);
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
 		fields->addField_string_numeric(_RP("Checksum"),

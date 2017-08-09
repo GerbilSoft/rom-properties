@@ -65,6 +65,9 @@ class RomFields
 			// center-aligned text.
 			// NOTE: Maximum of one STRF_CREDITS per RomData subclass.
 			STRF_CREDITS	= (1 << 2),
+
+			// Trim spaces from the end of strings.
+			STRF_TRIM_END	= (1 << 3),
 		};
 
 		// Display flags for RFT_LISTDATA.
