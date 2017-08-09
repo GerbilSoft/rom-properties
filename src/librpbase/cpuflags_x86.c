@@ -139,7 +139,7 @@ static FORCEINLINE int is_cpuid_supported(void)
 }
 
 // gcc-5.0 no longer permanently reserves %ebx for PIC.
-#if defined(__GNUC__) && defined(__i386__)
+#if defined(__GNUC__) && !defined(__clang__) && defined(__i386__)
 # if __GNUC__ < 5 && defined(__PIC__)
 #  define ASM_RESERVE_EBX 1
 # endif
