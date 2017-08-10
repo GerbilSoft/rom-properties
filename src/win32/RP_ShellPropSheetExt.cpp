@@ -368,6 +368,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 	hbmpIconFrames.fill(nullptr);
 	memset(&ptBanner, 0, sizeof(ptBanner));
+	memset(&szBanner, 0, sizeof(szBanner));
 	memset(&rectIcon, 0, sizeof(rectIcon));
 	memset(&szIcon, 0, sizeof(szIcon));
 
@@ -647,59 +648,16 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 
-	// Banner.
-	const rp_image *banner = nullptr;
-	if (imgbf & RomData::IMGBF_INT_BANNER) {
-		// Get the banner.
-		banner = romData->image(RomData::IMG_INT_BANNER);
-		if (banner && banner->isValid()) {
-			// Save the banner size.
-			if (szBanner.cx == 0) {
-				szBanner.cx = banner->width();
-				szBanner.cy = banner->height();
-				incSizeToMinimum(szBanner);
-			}
+	// Add the banner and icon widths.
 
-			// Add the banner width.
-			// The banner will be assigned to a WC_STATIC control.
-			if (total_widget_width > 0) {
-				total_widget_width += pt_start.x;
-			}
-			total_widget_width += szBanner.cx;
-		} else {
-			// No banner.
-			banner = nullptr;
-		}
-	}
+	// Banner.
+	total_widget_width += szBanner.cx;
 
 	// Icon.
-	const rp_image *icon = nullptr;
-	if (imgbf & RomData::IMGBF_INT_ICON) {
-		// Get the icon.
-		icon = romData->image(RomData::IMG_INT_ICON);
-		if (icon && icon->isValid()) {
-			// Save the icon size.
-			if (szIcon.cx == 0) {
-				szIcon.cx = icon->width();
-				szIcon.cy = icon->height();
-				incSizeToMinimum(szIcon);
-			}
-
-			// Add the icon width.
-			// The icon will be assigned to a WC_STATIC control.
-			if (total_widget_width > 0) {
-				total_widget_width += pt_start.x;
-			}
-			total_widget_width += szIcon.cx;
-
-			// NOTE: Animated icon data is retrieved in loadImages(),
-			// which is called in WM_INITDIALOG. This is needed in order to
-			// ensure that the animated icon timer is initialized properly.
-		} else {
-			// No icon.
-			icon = nullptr;
-		}
+	if (total_widget_width > 0) {
+		total_widget_width += pt_start.x;
 	}
+	total_widget_width += szIcon.cx;
 
 	// Starting point.
 	POINT curPt = {
@@ -719,14 +677,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		curPt.x += sz_lblSysInfo.cx + pt_start.x;
 	}
 
-	// lblBanner
-	if (banner) {
+	// Banner.
+	if (szBanner.cx > 0) {
 		ptBanner = curPt;
 		curPt.x += szBanner.cx + pt_start.x;
 	}
 
-	// lblIcon
-	if (icon) {
+	// Icon.
+	if (szIcon.cx > 0) {
 		SetRect(&rectIcon, curPt.x, curPt.y,
 			curPt.x + szIcon.cx, curPt.y + szIcon.cy);
 		curPt.x += szIcon.cx + pt_start.x;
