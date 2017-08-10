@@ -48,6 +48,8 @@
     disc header. This ensures that a GCN/Wii disc image with the game ID
     "WUP-" doesn't get detected as a Wii U disc image.
   * Fixed CIAReader failing to compile in no-crytpto builds.
+  * (Windows) The icon in the property sheet page is now scaled instead of
+    vertically cropped if it's larger than 32x32.
 
 * Other changes:
   * The PNG compression level is now set to the default value instead of 5.
