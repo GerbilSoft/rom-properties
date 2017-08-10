@@ -76,6 +76,8 @@ class NintendoBadgePrivate : public RomDataPrivate
 			PRBS_LARGE	= 1,	// 64x64
 			PRBS_MEGA_SMALL	= 2,	// Mega Badge: 32x32 tiles
 			PRBS_MEGA_LARGE	= 3,	// Mega Badge: 64x64 tiles
+
+			PRBS_MAX
 		};
 
 		// Badge type.
@@ -89,8 +91,8 @@ class NintendoBadgePrivate : public RomDataPrivate
 			Badge_CABS_Header cabs;
 		} badgeHeader;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded images.
+		rp_image *img[PRBS_MAX];
 
 		/**
 		 * Load the badge image.
@@ -106,15 +108,21 @@ NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
 	: super(q, file)
 	, badgeType(BADGE_TYPE_UNKNOWN)
 	, megaBadge(false)
-	, img(nullptr)
 {
-	// Clear the PVR header structs.
+	// Clear the header structs.
 	memset(&badgeHeader, 0, sizeof(badgeHeader));
+
+	// Clear the decoded images.
+	memset(img, 0, sizeof(img));
 }
 
 NintendoBadgePrivate::~NintendoBadgePrivate()
 {
-	delete img;
+	static_assert(PRBS_MAX == 4, "PRBS_MAX != 4");
+	static_assert(PRBS_MAX == ARRAY_SIZE(img), "PRBS_MAX != ARRAY_SIZE(img)");
+	for (int i = ARRAY_SIZE(img)-1; i >= 0; i--) {
+		delete img[i];
+	}
 }
 
 /**
@@ -124,16 +132,15 @@ NintendoBadgePrivate::~NintendoBadgePrivate()
  */
 const rp_image *NintendoBadgePrivate::loadImage(int idx)
 {
-	assert(idx >= 0 || idx <= 3);
-	if (idx < 0 || idx > 3) {
+	assert(idx >= 0 || idx < ARRAY_SIZE(img));
+	if (idx < 0 || idx >= ARRAY_SIZE(img)) {
 		// Invalid image index.
 		return nullptr;
 	}
 
-	// TODO: img[4] when multiple internal image sizes are supported.
-	if (img) {
+	if (img[idx]) {
 		// Image has already been loaded.
-		return img;
+		return img[idx];
 	} else if (!this->file) {
 		// Can't load the image.
 		return nullptr;
@@ -234,21 +241,21 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 		// Convert to rp_image.
 		if (badge_a4_sz > 0) {
-			img = ImageDecoder::fromN3DSTiledRGB565_A4(
+			img[idx] = ImageDecoder::fromN3DSTiledRGB565_A4(
 				badge_dims, badge_dims,
 				reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
 				&badgeData.get()[badge_rgb_sz], badge_a4_sz);
 		} else {
-			img = ImageDecoder::fromN3DSTiledRGB565(
+			img[idx] = ImageDecoder::fromN3DSTiledRGB565(
 				badge_dims, badge_dims,
 				reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz);
 		}
 
 		if (badgeType == BADGE_TYPE_CABS) {
 			// Need to crop the 64x64 image to 48x48.
-			rp_image *img48 = img->resized(48, 48);
-			delete img;
-			img = img48;
+			rp_image *img48 = img[idx]->resized(48, 48);
+			delete img[idx];
+			img[idx] = img48;
 		}
 	} else {
 		// Mega badge. Need to convert each 64x64 badge
@@ -260,15 +267,15 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		const unsigned int mb_row_bytes = badge_dims * sizeof(uint32_t);
 
 		// Badges are stored vertically, then horizontally.
-		img = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::FORMAT_ARGB32);
+		img[idx] = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::FORMAT_ARGB32);
 		for (unsigned int y = 0; y < mb_height; y++) {
 			const unsigned int my = y*badge_dims;
 			for (unsigned int x = 0; x < mb_width; x++, start_addr += (0x2800+0xA00)) {
 				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 				if (size != badge_sz) {
 					// Seek and/or read error.
-					delete img;
-					img = nullptr;
+					delete img[idx];
+					img[idx] = nullptr;
 					return nullptr;
 				}
 
@@ -281,7 +288,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 				const unsigned int mx = x*badge_dims;
 				for (int py = badge_dims-1; py >= 0; py--) {
 					const uint32_t *src = reinterpret_cast<const uint32_t*>(mb_img->scanLine(py));
-					uint32_t *dest = reinterpret_cast<uint32_t*>(img->scanLine(py+my)) + mx;
+					uint32_t *dest = reinterpret_cast<uint32_t*>(img[idx]->scanLine(py+my)) + mx;
 					memcpy(dest, src, mb_row_bytes);
 				}
 
@@ -291,10 +298,10 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 		// Set the sBIT metadata.
 		static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
-		img->set_sBIT(&sBIT);
+		img[idx]->set_sBIT(&sBIT);
 	}
 
-	return img;
+	return img[idx];
 }
 
 /** NintendoBadge **/
@@ -472,7 +479,7 @@ const rp_char *const *NintendoBadge::supportedFileExtensions(void) const
  */
 uint32_t NintendoBadge::supportedImageTypes_static(void)
 {
-	return IMGBF_INT_IMAGE;
+	return IMGBF_INT_ICON | IMGBF_INT_IMAGE;
 }
 
 /**
@@ -498,7 +505,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 	}
 
 	RP_D(NintendoBadge);
-	if (!d->isValid || imageType != IMG_INT_IMAGE) {
+	if (!d->isValid || (imageType != IMG_INT_ICON && imageType != IMG_INT_IMAGE)) {
 		return vector<ImageSizeDef>();
 	}
 
@@ -507,13 +514,14 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 			// Badges have 32x32 and 64x64 variants.
 			// Mega Badges have multiples of those, but they also
 			// have 32x32 and 64x64 previews.
-			if (!d->megaBadge) {
+			if (imageType == IMG_INT_ICON || !d->megaBadge) {
 				// Not a mega badge.
 				static const ImageSizeDef imgsz[] = {
 					{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, NintendoBadgePrivate::PRBS_SMALL},
 					{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, NintendoBadgePrivate::PRBS_LARGE},
 				};
-				return vector<ImageSizeDef>(imgsz, imgsz + ARRAY_SIZE(imgsz));
+				return vector<ImageSizeDef>(imgsz,
+					imgsz + ARRAY_SIZE(imgsz));
 			}
 
 			// Mega Badge.
@@ -527,7 +535,8 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 				{nullptr, (uint16_t)(BADGE_SIZE_SMALL_W*mb_width), (uint16_t)(BADGE_SIZE_SMALL_H*mb_height), NintendoBadgePrivate::PRBS_MEGA_SMALL},
 				{nullptr, (uint16_t)(BADGE_SIZE_LARGE_W*mb_width), (uint16_t)(BADGE_SIZE_LARGE_H*mb_height), NintendoBadgePrivate::PRBS_MEGA_LARGE},
 			};
-			return vector<ImageSizeDef>(imgsz, imgsz + ARRAY_SIZE(imgsz));
+			return vector<ImageSizeDef>(imgsz,
+				imgsz + ARRAY_SIZE(imgsz));
 		}
 
 		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
@@ -565,15 +574,19 @@ uint32_t NintendoBadge::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by PVR.
-		return 0;
-	}
+	switch (imageType) {
+		case IMG_INT_ICON:
+		case IMG_INT_IMAGE:
+			// Badges are 32x32 and 64x64.
+			// Badge set icons are 48x48.
+			// Always use nearest-neighbor scaling.
+			// TODO: Not for Mega Badges?
+			return IMGPF_RESCALE_NEAREST;
 
-	// Badges are 32x32 and 64x64.
-	// Badge set icons are 48x48.
-	// Always use nearest-neighbor scaling.
-	return IMGPF_RESCALE_NEAREST;
+		default:
+			break;
+	}
+	return 0;
 }
 
 /**
@@ -760,11 +773,7 @@ int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImag
 	}
 
 	RP_D(NintendoBadge);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by PVR.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
+	if (!d->file) {
 		// File isn't open.
 		*pImage = nullptr;
 		return -EBADF;
@@ -774,20 +783,38 @@ int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImag
 		return -EIO;
 	}
 
-	// For CABS: Using index 0.
-	// For PRBS: Using index 1, unless it's a Mega Badge,
-	// in which case we're using index 3.
+	// Check the image type.
 	int idx;
-	switch (d->badgeType) {
-		case NintendoBadgePrivate::BADGE_TYPE_PRBS:
-			idx = (d->megaBadge ? NintendoBadgePrivate::PRBS_MEGA_LARGE : NintendoBadgePrivate::PRBS_LARGE);
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// CABS: Use index 0. (only one available)
+			// PRBS: Use index 1. (no mega badges)
+			// - TODO: Select 64x64 or 32x32 depending on requested size.
+			idx = (d->badgeType == NintendoBadgePrivate::BADGE_TYPE_PRBS
+				? NintendoBadgePrivate::PRBS_LARGE : 0);
 			break;
-		case NintendoBadgePrivate::BADGE_TYPE_CABS:
-			idx = 0;
+
+		case IMG_INT_IMAGE:
+			// CABS: Use index 0.
+			// PRBS: Use index 1 (64x64), unless it's a Mega Badge,
+			// in which case we're using index 3.
+			// - TODO: Select mega large or small depending on requested size.
+			switch (d->badgeType) {
+				case NintendoBadgePrivate::BADGE_TYPE_PRBS:
+					idx = (d->megaBadge ? NintendoBadgePrivate::PRBS_MEGA_LARGE : NintendoBadgePrivate::PRBS_LARGE);
+					break;
+				case NintendoBadgePrivate::BADGE_TYPE_CABS:
+					idx = 0;
+					break;
+				default:
+					// Badge isn't valid.
+					return -EIO;
+			}
 			break;
+
 		default:
-			// Badge isn't valid.
-			return -EIO;
+			// Unsupported image type.
+			return -ENOENT;
 	}
 
 	// Load the image.
