@@ -507,13 +507,13 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 			// Badges have 32x32 and 64x64 variants.
 			// Mega Badges have multiples of those, but they also
 			// have 32x32 and 64x64 previews.
-			if (d->megaBadge) {
+			if (!d->megaBadge) {
 				// Not a mega badge.
 				static const ImageSizeDef imgsz[] = {
 					{nullptr, BADGE_SIZE_SMALL_W, BADGE_SIZE_SMALL_H, NintendoBadgePrivate::PRBS_SMALL},
 					{nullptr, BADGE_SIZE_LARGE_W, BADGE_SIZE_LARGE_H, NintendoBadgePrivate::PRBS_LARGE},
 				};
-				return vector<ImageSizeDef>(imgsz, imgsz + 1);
+				return vector<ImageSizeDef>(imgsz, imgsz + ARRAY_SIZE(imgsz));
 			}
 
 			// Mega Badge.
@@ -527,7 +527,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 				{nullptr, (uint16_t)(BADGE_SIZE_SMALL_W*mb_width), (uint16_t)(BADGE_SIZE_SMALL_H*mb_height), NintendoBadgePrivate::PRBS_MEGA_SMALL},
 				{nullptr, (uint16_t)(BADGE_SIZE_LARGE_W*mb_width), (uint16_t)(BADGE_SIZE_LARGE_H*mb_height), NintendoBadgePrivate::PRBS_MEGA_LARGE},
 			};
-			return vector<ImageSizeDef>(imgsz, imgsz + 1);
+			return vector<ImageSizeDef>(imgsz, imgsz + ARRAY_SIZE(imgsz));
 		}
 
 		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
