@@ -164,6 +164,7 @@ class RP_ShellPropSheetExt_Private
 		HBITMAP hbmpBanner;
 		POINT ptBanner;
 		SIZE szBanner;
+		bool nearest_banner;
 
 		// Tab layout.
 		HWND hTabWidget;
@@ -178,6 +179,7 @@ class RP_ShellPropSheetExt_Private
 		std::array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
 		RECT rectIcon;
 		SIZE szIcon;
+		bool nearest_icon;
 		IconAnimHelper iconAnimHelper;
 		UINT_PTR animTimerID;		// Animation timer ID. (non-zero == running)
 		int last_frame_number;		// Last frame number.
@@ -206,10 +208,12 @@ class RP_ShellPropSheetExt_Private
 
 	private:
 		/**
-		 * Increase an image's size to the minimum size, if necesary.
-		 * @param sz Image size.
+		 * Rescale an image to be as close to the required size as possible.
+		 * @param req_sz	[in] Required size.
+		 * @param sz		[in/out] Image size.
+		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
 		 */
-		void incSizeToMinimum(SIZE &sz);
+		static bool rescaleImage(const SIZE &req_sz, SIZE &sz);
 
 		/**
 		 * Create the header row.
@@ -360,8 +364,10 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, colorAltRow(0)
 	, isFullyInit(false)
 	, hbmpBanner(nullptr)
+	, nearest_banner(true)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
+	, nearest_icon(true)
 	, animTimerID(0)
 	, last_frame_number(0)
 {
@@ -504,12 +510,16 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			if (szBanner.cx == 0) {
 				szBanner.cx = banner->width();
 				szBanner.cy = banner->height();
-				incSizeToMinimum(szBanner);
+				// FIXME: Uncomment once proper aspect ratio scaling has been implemented.
+				// All banners are 96x32 right now.
+				//static const SIZE req_szBanner = {96, 32};
+				//nearest = rescaleImage(req_szBanner, szBanner);
+				nearest_banner = true;
 			}
 
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
-			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor, szBanner, true);
+			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor, szBanner, nearest_banner);
 		}
 	}
 
@@ -530,7 +540,8 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			if (szIcon.cx == 0) {
 				szIcon.cx = icon->width();
 				szIcon.cy = icon->height();
-				incSizeToMinimum(szIcon);
+				static const SIZE req_szIcon = {32, 32};
+				nearest_icon = rescaleImage(req_szIcon, szIcon);
 			}
 
 			// Get the animated icon data.
@@ -540,7 +551,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				for (int i = iconAnimData->count-1; i >= 0; i--) {
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
-						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor, szIcon, true);
+						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor, szIcon, nearest_icon);
 					}
 				}
 
@@ -555,29 +566,39 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				iconAnimHelper.setIconAnimData(nullptr);
 
 				// Convert to HBITMAP using the window background color.
-				hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, true);
+				hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, nearest_icon);
 			}
 		}
 	}
 }
 
 /**
- * Increase an image's size to the minimum size, if necesary.
- * @param sz Image size.
+ * Rescale an image to be as close to the required size as possible.
+ * @param req_sz	[in] Required size.
+ * @param sz		[in/out] Image size.
+ * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
  */
-void RP_ShellPropSheetExt_Private::incSizeToMinimum(SIZE &sz)
+bool RP_ShellPropSheetExt_Private::rescaleImage(const SIZE &req_sz, SIZE &sz)
 {
-	// Minimum image size.
-	// If images are smaller, they will be resized.
-	// TODO: Adjust minimum size for DPI.
-	static const SIZE min_img_size = {32, 32};
-
-	if (sz.cx >= min_img_size.cx && sz.cy >= min_img_size.cy) {
+	// TODO: Adjust req_sz for DPI.
+	if (sz.cx == req_sz.cx && sz.cy == req_sz.cy) {
 		// No resize necessary.
-		return;
+		return true;
 	}
 
-	// Resize the image.
+	// Check if the image is too big.
+	if (sz.cx >= req_sz.cx || sz.cy >= sz.cy == req_sz.cy) {
+		// Image is too big. Shrink it.
+		// FIXME: Assuming the icon is always a power of two.
+		// Move TCreateThumbnail::rescale_aspect() into another file
+		// and make use of that.
+		sz.cx = 32;
+		sz.cy = 32;
+		return false;
+	}
+
+	// Image is too small.
+	// TODO: Ensure dimensions don't exceed req_img_size.
 	SIZE orig_sz = sz;
 	do {
 		// Increase by integer multiples until
@@ -585,7 +606,8 @@ void RP_ShellPropSheetExt_Private::incSizeToMinimum(SIZE &sz)
 		// TODO: Constrain to 32x32?
 		sz.cx += orig_sz.cx;
 		sz.cy += orig_sz.cy;
-	} while (sz.cx < min_img_size.cx && sz.cy < min_img_size.cy);
+	} while (sz.cx < req_sz.cx && sz.cy < req_sz.cy);
+	return true;
 }
 
 /**
