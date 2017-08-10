@@ -23,7 +23,9 @@
   * Nintendo Badge Arcade decoding. Supports both PRBS (badge) and CABS
     (badge set) files. PRBS decoding supports mega badges as well.
   * Sega Dreamcast disc images. Currently supports raw track 03 disc images
-    in 2048-byte and 2352-byte sector format.
+    in 2048-byte and 2352-byte sector formats.
+  * Sega Saturn disc images. Currently supports raw track 01 disc images in
+    2048-byte and 2352-byte sector formats.
 
 * New system features:
   * Nintendo DS: Detect "Mask ROM" separately from Secure Area encryption.
