@@ -302,7 +302,7 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	// Convert the date to an unsigned integer first.
 	unsigned int ymd = 0;
 	for (unsigned int i = 0; i < 8; i++) {
-		if (!isdigit(ascii_date[i])) {
+		if (unlikely(!isdigit(ascii_date[i]))) {
 			// Invalid digit.
 			return -1;
 		}
@@ -313,7 +313,7 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	// Sanity checks:
 	// - Must be higher than 19000101.
 	// - Must be lower than 99991231.
-	if (ymd < 19000101 || ymd > 99991231) {
+	if (unlikely(ymd < 19000101 || ymd > 99991231)) {
 		// Invalid date.
 		return -1;
 	}
