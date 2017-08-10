@@ -53,7 +53,7 @@ class MegaDriveRegions
 		 * @param size Size of region_codes.
 		 * @return MD hexadecimal region code. (See MD_RegionCode.)
 		 */
-		static uint32_t parseRegionCodes(const char *region_codes, int size);
+		static unsigned int parseRegionCodes(const char *region_codes, int size);
 
 		// Branding region.
 		enum MD_BrandingRegion {
@@ -75,7 +75,7 @@ class MegaDriveRegions
 		 * @param md_region MD hexadecimal region code.
 		 * @return MD branding region.
 		 */
-		static MD_BrandingRegion getBrandingRegion(uint32_t md_region);
+		static MD_BrandingRegion getBrandingRegion(unsigned int md_region);
 };
 
 }

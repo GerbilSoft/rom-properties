@@ -35,15 +35,15 @@ namespace LibRomData {
  * @param size Size of region_codes.
  * @return MD hexadecimal region code. (See MD_RegionCode.)
  */
-uint32_t MegaDriveRegions::parseRegionCodes(const char *region_codes, int size)
+unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int size)
 {
 	// Make sure the region codes field is valid.
-	assert(region_codes != nullptr);	// NOT checking this in release builds.
+	assert(region_codes != nullptr);
 	assert(size > 0);
 	if (!region_codes || size <= 0)
 		return 0;
 
-	uint32_t ret = 0;
+	unsigned int ret = 0;
 
 	// Check for a hex code.
 	if (isalnum(region_codes[0]) &&
@@ -115,7 +115,7 @@ uint32_t MegaDriveRegions::parseRegionCodes(const char *region_codes, int size)
  * @param md_region MD hexadecimal region code.
  * @return MD branding region.
  */
-MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(uint32_t md_region)
+MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(unsigned int md_region)
 {
 	if (md_region == 0) {
 		// No region code. Assume "all regions".

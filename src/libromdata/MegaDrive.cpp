@@ -118,7 +118,7 @@ class MegaDrivePrivate : public RomDataPrivate
 		};
 
 		int romType;		// ROM type.
-		uint32_t md_region;	// MD hexadecimal region code.
+		unsigned int md_region;	// MD hexadecimal region code.
 
 		/**
 		 * Is this a disc?
