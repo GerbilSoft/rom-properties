@@ -97,6 +97,7 @@ button.
 | Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
 | Sega Dreamcast                |       Yes      |      Media      |       No       |
 | Sega Saturn                   |       Yes      |       N/A       |       No       |
+| Atari Lynx                    |       Yes      |       N/A       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -151,6 +152,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 * Nintendo Badge Arcade: Badge files (\*.prb), badge set files (\*.cab)
 * Sega Dreamcast: Raw disc image files (\*.bin, \*.iso)
 * Sega Saturn: Raw disc image files (\*.bin, \*.iso)
+* Atari Lynx: Headered binary (\*.lnx)
 
 ## External Media Downloads
 
@@ -247,3 +249,5 @@ decrypt data will show an error message instead of the data in question.
   on Nintendo Badge Arcade files.
 * [Advanced Badge Editor](https://github.com/TheMachinumps/Advanced-badge-editor):
   Information on Nintendo Badge Arcade files.
+* [HandyBug Documentation](http://handy.cvs.sourceforge.net/viewvc/handy/win32src/public/handybug/dvreadme.txt):
+  Information on Atari Lynx cartridge format.
