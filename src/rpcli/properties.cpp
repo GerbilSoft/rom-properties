@@ -565,7 +565,7 @@ public:
 				if (list_data) {
 					uint32_t checkboxes = romField->data.list_checkboxes;
 					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-						if (it != romField->data.list_data->begin()) os << ',';
+						if (it != list_data->cbegin()) os << ',';
 						os << '[';
 						if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
@@ -573,7 +573,7 @@ public:
 							checkboxes >>= 1;
 						}
 						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-							if (jt != it->begin()) os << ',';
+							if (jt != it->cbegin()) os << ',';
 							os << JSONString(jt->c_str());
 						}
 						os << ']';
