@@ -128,6 +128,7 @@ class SegaSaturnPrivate : public RomDataPrivate
 SegaSaturnPrivate::SegaSaturnPrivate(SegaSaturn *q, IRpFile *file)
 	: super(q, file)
 	, discType(DISC_UNKNOWN)
+	, saturn_region(0)
 {
 	// Clear the disc header struct.
 	memset(&discHeader, 0, sizeof(discHeader));
