@@ -804,7 +804,7 @@ int NES::loadFieldData(void)
 		_RP("Dual (NTSC/PAL)"),
 		_RP("Dual (NTSC/PAL)")
 	};
-	if (tv_mode <= ARRAY_SIZE(tv_mode_tbl)) {
+	if (tv_mode < ARRAY_SIZE(tv_mode_tbl)) {
 		d->fields->addField_string(_RP("TV Mode"), tv_mode_tbl[tv_mode]);
 	}
 
