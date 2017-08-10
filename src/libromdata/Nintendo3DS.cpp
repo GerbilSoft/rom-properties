@@ -1239,7 +1239,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		data_row.push_back(latin1_to_rp_string(svc, 8));
 	}
 
-	if (!vv_svc->empty()) {
+	if (likely(!vv_svc->empty())) {
 		fields->addField_listData(_RP("Services"), nullptr, vv_svc, rows_visible, 0);
 	} else {
 		// No services.
