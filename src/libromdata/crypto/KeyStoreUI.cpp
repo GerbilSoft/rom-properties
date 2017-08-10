@@ -244,7 +244,6 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	sections.reserve(ARRAY_SIZE(encKeyFns));
 	keys.clear();
 
-	Section section;
 	int keyIdxStart = 0;
 	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
 		const EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
