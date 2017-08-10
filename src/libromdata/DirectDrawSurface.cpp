@@ -943,7 +943,9 @@ int DirectDrawSurface::loadFieldData(void)
 		} else {
 			d->fields->addField_string(_RP("Pixel Format"),
 				rp_sprintf("%s (%u-bit)",
-					(ddspf.dwFlags & DDPF_ALPHAPIXELS ? "Luminance + Alpha" : "Luminance"),
+					((ddspf.dwFlags & DDPF_ALPHAPIXELS)
+						? "Luminance + Alpha"
+						: "Luminance"),
 					ddspf.dwRGBBitCount));
 		}
 	} else {
