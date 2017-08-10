@@ -97,7 +97,7 @@ button.
 | Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
 | Sega Dreamcast                |       Yes      |      Media      |       No       |
 | Sega Saturn                   |       Yes      |       N/A       |       No       |
-| Atari Lynx                    |       Yes      |       N/A       |       N/A      |
+| Atari Lynx                    |       Yes      |       N/A       |       No       |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.

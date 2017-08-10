@@ -26,7 +26,7 @@
     in 2048-byte and 2352-byte sector formats.
   * Sega Saturn disc images. Currently supports raw track 01 disc images in
     2048-byte and 2352-byte sector formats.
-  * Atari Lynx support.
+  * Atari Lynx ROM images. Currently only supports headered images.
 
 * New system features:
   * Nintendo DS: Detect "Mask ROM" separately from Secure Area encryption.
