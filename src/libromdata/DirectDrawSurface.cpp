@@ -381,6 +381,18 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		return nullptr;
 	}
 
+	// Sanity check: Maximum image dimensions of 32768x32768.
+	assert(ddsHeader.dwWidth > 0);
+	assert(ddsHeader.dwWidth <= 32768);
+	assert(ddsHeader.dwHeight > 0);
+	assert(ddsHeader.dwHeight <= 32768);
+	if (ddsHeader.dwWidth == 0 || ddsHeader.dwWidth > 32768 ||
+	    ddsHeader.dwHeight == 0 || ddsHeader.dwHeight > 32768)
+	{
+		// Invalid image dimensions.
+		return nullptr;
+	}
+
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: DDS files shouldn't be more than 128 MB.
 		return nullptr;
@@ -512,6 +524,9 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			// Invalid stride. Assume stride == width * bytespp.
 			// TODO: Check for stride is too small but non-zero?
 			stride = ddsHeader.dwWidth * bytespp;
+		} else if (stride > (ddsHeader.dwWidth * 16)) {
+			// Stride is too large.
+			return nullptr;
 		}
 		const unsigned int expected_size = ddsHeader.dwHeight * stride;
 

@@ -195,6 +195,18 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		return nullptr;
 	}
 
+	// Sanity check: Maximum image dimensions of 32768x32768.
+	assert(pvrHeader.width > 0);
+	assert(pvrHeader.width <= 32768);
+	assert(pvrHeader.height > 0);
+	assert(pvrHeader.height <= 32768);
+	if (pvrHeader.width == 0 || pvrHeader.width > 32768 ||
+	    pvrHeader.height == 0 || pvrHeader.height > 32768)
+	{
+		// Invalid image dimensions.
+		return nullptr;
+	}
+
 	if (this->file->size() > 128*1024*1024) {
 		// Sanity check: PVR files shouldn't be more than 128 MB.
 		return nullptr;
@@ -240,9 +252,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 			// Get the log2 of the texture width.
 			// FIXME: Make sure it's a power of two.
-			assert(pvrHeader.width > 0);
 			assert(pvrHeader.width == pvrHeader.height);
-			if (pvrHeader.width == 0 || pvrHeader.width != pvrHeader.height)
+			if (pvrHeader.width != pvrHeader.height)
 				return nullptr;
 
 			unsigned int len = uilog2(pvrHeader.width);
@@ -456,6 +467,18 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 		return img;
 	} else if (!this->file || this->pvrType != PVR_TYPE_GVR) {
 		// Can't load the image.
+		return nullptr;
+	}
+
+	// Sanity check: Maximum image dimensions of 32768x32768.
+	assert(pvrHeader.width > 0);
+	assert(pvrHeader.width <= 32768);
+	assert(pvrHeader.height > 0);
+	assert(pvrHeader.height <= 32768);
+	if (pvrHeader.width == 0 || pvrHeader.width > 32768 ||
+	    pvrHeader.height == 0 || pvrHeader.height > 32768)
+	{
+		// Invalid image dimensions.
 		return nullptr;
 	}
 
