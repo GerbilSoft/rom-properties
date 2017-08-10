@@ -121,13 +121,6 @@ class SegaSaturnPrivate : public RomDataPrivate
 
 		// Region code. (Saturn_Region)
 		unsigned int saturn_region;
-
-		/**
-		 * Convert an ASCII release date to Unix time.
-		 * @param ascii_date ASCII date. (Must be at least 8 chars.)
-		 * @return Unix time, or -1 if an error occurred.
-		 */
-		static time_t ascii_release_date_to_unix_time(const char *ascii_date);
 };
 
 /** SegaSaturnPrivate **/
@@ -247,53 +240,6 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
 	}
 
 	return ret;
-}
-
-/**
- * Convert an ASCII release date to Unix time.
- * @param ascii_date ASCII date. (Must be at least 8 chars.)
- * @return Unix time, or -1 if an error occurred.
- */
-time_t SegaSaturnPrivate::ascii_release_date_to_unix_time(const char *ascii_date)
-{
-	// Release date format: "YYYYMMDD"
-
-	// Verify that all characters are digits.
-	for (unsigned int i = 0; i < 8; i++) {
-		if (!isdigit(ascii_date[i])) {
-			// Invalid digit.
-			return -1;
-		}
-	}
-	// TODO: Verify that the remaining spaces are empty?
-
-	// Convert from BCD to Unix time.
-	// NOTE: struct tm has some oddities:
-	// - tm_year: year - 1900
-	// - tm_mon: 0 == January
-	struct tm dctime;
-
-	dctime.tm_year = ((ascii_date[0] & 0xF) * 1000) +
-			 ((ascii_date[1] & 0xF) * 100) +
-			 ((ascii_date[2] & 0xF) * 10) +
-			  (ascii_date[3] & 0xF) - 1900;
-	dctime.tm_mon  = ((ascii_date[4] & 0xF) * 10) +
-			  (ascii_date[5] & 0xF) - 1;
-	dctime.tm_mday = ((ascii_date[6] & 0xF) * 10) +
-			  (ascii_date[7] & 0xF);
-
-	// Time portion is empty.
-	dctime.tm_hour = 0;
-	dctime.tm_min = 0;
-	dctime.tm_sec = 0;
-
-	// tm_wday and tm_yday are output variables.
-	dctime.tm_wday = 0;
-	dctime.tm_yday = 0;
-	dctime.tm_isdst = 0;
-
-	// If conversion fails, this will return -1.
-	return timegm(&dctime);
 }
 
 /** SegaSaturn **/
@@ -561,7 +507,7 @@ int SegaSaturn::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Release date.
-	time_t release_date = d->ascii_release_date_to_unix_time(discHeader->release_date);
+	time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
 	d->fields->addField_dateTime(_RP("Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.

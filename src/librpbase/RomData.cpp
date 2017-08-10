@@ -29,6 +29,7 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <ctime>
 
 // C++ includes.
 #include <vector>
@@ -286,6 +287,53 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 	}
 
 	return ret;
+}
+
+/**
+ * Convert an ASCII release date in YYYYMMDD format to Unix time_t.
+ * This format is used by Sega Saturn and Dreamcast.
+ * @param ascii_date ASCII release date. (Must be 8 characters.)
+ * @return Unix time_t, or -1 on error.
+ */
+time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
+{
+	// Release date format: "YYYYMMDD"
+
+	// Verify that all characters are digits.
+	for (unsigned int i = 0; i < 8; i++) {
+		if (!isdigit(ascii_date[i])) {
+			// Invalid digit.
+			return -1;
+		}
+	}
+
+	// Convert from BCD to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm dctime;
+
+	dctime.tm_year = ((ascii_date[0] & 0xF) * 1000) +
+			 ((ascii_date[1] & 0xF) * 100) +
+			 ((ascii_date[2] & 0xF) * 10) +
+			  (ascii_date[3] & 0xF) - 1900;
+	dctime.tm_mon  = ((ascii_date[4] & 0xF) * 10) +
+			  (ascii_date[5] & 0xF) - 1;
+	dctime.tm_mday = ((ascii_date[6] & 0xF) * 10) +
+			  (ascii_date[7] & 0xF);
+
+	// Time portion is empty.
+	dctime.tm_hour = 0;
+	dctime.tm_min = 0;
+	dctime.tm_sec = 0;
+
+	// tm_wday and tm_yday are output variables.
+	dctime.tm_wday = 0;
+	dctime.tm_yday = 0;
+	dctime.tm_isdst = 0;
+
+	// If conversion fails, this will return -1.
+	return timegm(&dctime);
 }
 
 /** RomData **/

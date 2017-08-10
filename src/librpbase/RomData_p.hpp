@@ -115,6 +115,14 @@ class RomDataPrivate
 		 * @return Image size definition, or nullptr on error.
 		 */
 		static const RomData::ImageSizeDef *selectBestSize(const std::vector<RomData::ImageSizeDef> &sizeDefs, int size);
+
+		/**
+		 * Convert an ASCII release date in YYYYMMDD format to Unix time_t.
+		 * This format is used by Sega Saturn and Dreamcast.
+		 * @param ascii_date ASCII release date. (Must be 8 characters.)
+		 * @return Unix time_t, or -1 on error.
+		 */
+		static time_t ascii_yyyymmdd_to_unix_time(const char *ascii_date);
 };
 
 }
