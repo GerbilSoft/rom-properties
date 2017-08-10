@@ -80,6 +80,14 @@ class SegaSaturnPrivate : public RomDataPrivate
 			SATURN_IOBF_MPEG_CARD		= (1 << 14),	// MPEG Card
 		};
 
+		// Region code.
+		enum SaturnRegion {
+			SATURN_REGION_JAPAN	= (1 << 0),
+			SATURN_REGION_TAIWAN	= (1 << 1),
+			SATURN_REGION_USA	= (1 << 2),
+			SATURN_REGION_EUROPE	= (1 << 3),
+		};
+
 		/** Internal ROM data. **/
 
 		/**
@@ -89,6 +97,14 @@ class SegaSaturnPrivate : public RomDataPrivate
 		 * @return peripherals bitfield.
 		 */
 		static uint32_t parsePeripherals(const char *peripherals, int size);
+
+		/**
+		 * Parse the region codes field from a Sega Saturn disc header.
+		 * @param region_codes Region codes field. (area_symbols)
+		 * @param size Size of region_codes.
+		 * @return SaturnRegion bitfield.
+		 */
+		static unsigned int parseRegionCodes(const char *region_codes, int size);
 
 	public:
 		enum DiscType {
@@ -102,6 +118,9 @@ class SegaSaturnPrivate : public RomDataPrivate
 
 		// Disc header.
 		Saturn_IP0000_BIN_t discHeader;
+
+		// Region code. (Saturn_Region)
+		unsigned int saturn_region;
 
 		/**
 		 * Convert an ASCII release date to Unix time.
@@ -129,6 +148,11 @@ SegaSaturnPrivate::SegaSaturnPrivate(SegaSaturn *q, IRpFile *file)
  */
 uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 {
+	assert(peripherals != nullptr);
+	assert(size > 0);
+	if (!peripherals || size <= 0)
+		return 0;
+
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {
 		switch (peripherals[i]) {
@@ -178,6 +202,44 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 				break;
 			case SATURN_IO_MPEG_CARD:
 				ret |= SATURN_IOBF_MPEG_CARD;
+				break;
+			default:
+				break;
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * Parse the region codes field from a Sega Saturn disc header.
+ * @param region_codes Region codes field.
+ * @param size Size of region_codes.
+ * @return SaturnRegion bitfield.
+ */
+unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int size)
+{
+	assert(region_codes != nullptr);
+	assert(size > 0);
+	if (!region_codes || size <= 0)
+		return 0;
+
+	unsigned int ret = 0;
+	for (int i = 0; i < size; i++) {
+		if (region_codes[i] == 0 || isspace(region_codes[i]))
+			break;
+		switch (region_codes[i]) {
+			case 'J':
+				ret |= SATURN_REGION_JAPAN;
+				break;
+			case 'T':
+				ret |= SATURN_REGION_TAIWAN;
+				break;
+			case 'U':
+				ret |= SATURN_REGION_USA;
+				break;
+			case 'E':
+				ret |= SATURN_REGION_EUROPE;
 				break;
 			default:
 				break;
@@ -298,6 +360,10 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			return;
 	}
 	d->isValid = true;
+
+	// Parse the Saturn region code.
+	d->saturn_region = d->parseRegionCodes(
+		d->discHeader.area_symbols, sizeof(d->discHeader.area_symbols));
 }
 
 /**
@@ -502,23 +568,18 @@ int SegaSaturn::loadFieldData(void)
 	);
 
 	// Region code.
-	// Note that for Sega Saturn, each character is assigned to
-	// a specific position, so European games will be "  E",
-	// not "E  ".
-	// FIXME: This doesn't seem to be correct...
-	unsigned int region_code = 0;
-	region_code  = (discHeader->area_symbols[0] == 'J');
-	region_code |= (discHeader->area_symbols[1] == 'T') << 1;
-	region_code |= (discHeader->area_symbols[2] == 'U') << 1;
-	region_code |= (discHeader->area_symbols[3] == 'E') << 2;
-
+	// Sega Saturn uses position-independent region code flags.
+	// This is similar to older Mega Drive games, but different
+	// compared to Dreamcast. The region code is parsed in the
+	// constructor, since it might be used for branding purposes
+	// later.
 	static const rp_char *const region_code_bitfield_names[] = {
 		_RP("Japan"), _RP("Taiwan"), _RP("USA"), _RP("Europe")
 	};
 	vector<rp_string> *v_region_code_bitfield_names = RomFields::strArrayToVector(
 		region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(_RP("Region Code"),
-		v_region_code_bitfield_names, 0, region_code);
+		v_region_code_bitfield_names, 0, d->saturn_region);
 
 	// Disc number.
 	uint8_t disc_num = 0;
