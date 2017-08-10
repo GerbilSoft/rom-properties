@@ -193,7 +193,12 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
  */
 rp_image_private::rp_image_private(rp_image_backend *backend)
 	: backend(backend)
-{ }
+	, has_sBIT(false)
+{
+	// Clear the metadata.
+	// TODO: Store sBIT in the backend and copy it?
+	memset(&sBIT, 0, sizeof(sBIT));
+}
 
 rp_image_private::~rp_image_private()
 {
