@@ -299,41 +299,47 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 {
 	// Release date format: "YYYYMMDD"
 
-	// Verify that all characters are digits.
+	// Convert the date to an unsigned integer first.
+	unsigned int ymd = 0;
 	for (unsigned int i = 0; i < 8; i++) {
 		if (!isdigit(ascii_date[i])) {
 			// Invalid digit.
 			return -1;
 		}
+		ymd *= 10;
+		ymd += (ascii_date[i] & 0xF);
 	}
 
-	// Convert from BCD to Unix time.
+	// Sanity checks:
+	// - Must be higher than 19000101.
+	// - Must be lower than 99991231.
+	if (ymd < 19000101 || ymd > 99991231) {
+		// Invalid date.
+		return -1;
+	}
+
+	// Convert to Unix time.
 	// NOTE: struct tm has some oddities:
 	// - tm_year: year - 1900
 	// - tm_mon: 0 == January
-	struct tm dctime;
+	struct tm ymdtime;
 
-	dctime.tm_year = ((ascii_date[0] & 0xF) * 1000) +
-			 ((ascii_date[1] & 0xF) * 100) +
-			 ((ascii_date[2] & 0xF) * 10) +
-			  (ascii_date[3] & 0xF) - 1900;
-	dctime.tm_mon  = ((ascii_date[4] & 0xF) * 10) +
-			  (ascii_date[5] & 0xF) - 1;
-	dctime.tm_mday = ((ascii_date[6] & 0xF) * 10) +
-			  (ascii_date[7] & 0xF);
+	ymdtime.tm_year = (ymd / 10000) - 1900;
+	ymdtime.tm_mon  = ((ymd / 100) % 100) - 1;
+	ymdtime.tm_mday = ymd % 100;
 
 	// Time portion is empty.
-	dctime.tm_hour = 0;
-	dctime.tm_min = 0;
-	dctime.tm_sec = 0;
+	ymdtime.tm_hour = 0;
+	ymdtime.tm_min = 0;
+	ymdtime.tm_sec = 0;
 
 	// tm_wday and tm_yday are output variables.
-	dctime.tm_wday = 0;
-	dctime.tm_yday = 0;
-	dctime.tm_isdst = 0;
+	ymdtime.tm_wday = 0;
+	ymdtime.tm_yday = 0;
+	ymdtime.tm_isdst = 0;
 
 	// If conversion fails, this will return -1.
-	return timegm(&dctime);
+	return timegm(&ymdtime);
 }
 
 /** RomData **/
