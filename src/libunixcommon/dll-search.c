@@ -286,7 +286,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 	const uint8_t *prio = &plugin_prio[cur_desktop][0];
 	*ppDll = NULL;
 	*ppfn = NULL;
-	for (unsigned int i = RP_FE_MAX; i > 0; i--, prio++) {
+	for (unsigned int i = RP_FE_MAX-1; i > 0; i--, prio++) {
 		// Attempt to open this plugin.
 		const char *const plugin_path = RP_Extension_Path[*prio];
 		if (!plugin_path)
