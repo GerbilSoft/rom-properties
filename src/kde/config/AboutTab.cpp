@@ -135,10 +135,10 @@ void AboutTabPrivate::initProgramTitleText(void)
 		AboutTab::tr("Shell Extension") + br + br +
 		AboutTab::tr("Version %1")
 			.arg(RP2Q(AboutTabText::prg_version));
-	if (AboutTabText::git_version[0] != 0) {
+	if (AboutTabText::git_version) {
 		sPrgTitle += br + RP2Q(AboutTabText::git_version);
 	}
-	if (AboutTabText::git_describe[0] != 0) {
+	if (AboutTabText::git_describe) {
 		sPrgTitle += br + RP2Q(AboutTabText::git_describe);
 	}
 
