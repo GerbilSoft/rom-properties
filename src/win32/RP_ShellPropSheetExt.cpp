@@ -571,7 +571,7 @@ void RP_ShellPropSheetExt_Private::incSizeToMinimum(SIZE &sz)
 	// TODO: Adjust minimum size for DPI.
 	static const SIZE min_img_size = {32, 32};
 
-	if (sz.cx >= min_img_size.cx && sz.cx >= min_img_size.cy) {
+	if (sz.cx >= min_img_size.cx && sz.cy >= min_img_size.cy) {
 		// No resize necessary.
 		return;
 	}
