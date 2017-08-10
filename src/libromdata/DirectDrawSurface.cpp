@@ -213,10 +213,12 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
  */
 const rp_char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &ddspf)
 {
+#ifndef NDEBUG
 	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
 	assert(((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_LUMINANCE) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_ALPHA));
+#endif /* !NDEBUG */
 
 	const RGB_Format_Table_t *entry = nullptr;
 	if (ddspf.dwFlags & DDPF_RGB) {
@@ -277,10 +279,12 @@ const rp_char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMA
  */
 ImageDecoder::PixelFormat DirectDrawSurfacePrivate::getPixelFormat(const DDS_PIXELFORMAT &ddspf, unsigned int *bytespp)
 {
+#ifndef NDEBUG
 	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
 	assert(((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_LUMINANCE) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_ALPHA));
+#endif /* !NDEBUG */
 
 	const RGB_Format_Table_t *entry = nullptr;
 	if (ddspf.dwFlags & DDPF_RGB) {
