@@ -378,7 +378,10 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
 		for (int i = 0; i < fo.fields.count(); i++) {
-			maxWidth = max(maxWidth, fo.fields.field(i)->name.size());
+			const RomFields::Field *const field = fo.fields.field(i);
+			if (likely(field != nullptr)) {
+				maxWidth = max(maxWidth, field->name.size());
+			}
 		}
 		maxWidth += 2;
 		bool printed_first = false;
