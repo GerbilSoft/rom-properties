@@ -448,7 +448,7 @@ class RomFields
 		 * @param flags Date/Time flags.
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_dateTime(const rp_char *name, int64_t date_time, unsigned int flags = 0);
+		int addField_dateTime(const rp_char *name, time_t date_time, unsigned int flags = 0);
 
 		/**
 		 * Add age ratings.
