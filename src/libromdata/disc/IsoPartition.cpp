@@ -92,6 +92,9 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	, partition_size(0)
 	, session_start_offset(session_start_offset)
 {
+	// Clear the PVD struct.
+	memset(&pvd, 0, sizeof(pvd));
+
 	if (!discReader->isOpen()) {
 		q->m_lastError = discReader->lastError();
 		return;
