@@ -23,6 +23,7 @@
 
 #include "common.h"
 #include "TextFuncs.hpp"
+#include "threads/Atomics.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -65,13 +66,13 @@ class RomFieldsPrivate
 
 		/**
 		 * Is this object currently shared?
-		 * @return True if refCount > 1; false if not.
+		 * @return True if ref_cnt > 1; false if not.
 		 */
 		inline bool isShared(void) const;
 
 	private:
 		// Current reference count.
-		int refCount;
+		volatile int ref_cnt;
 
 	public:
 		// ROM field structs.
@@ -98,7 +99,7 @@ class RomFieldsPrivate
 /** RomFieldsPrivate **/
 
 RomFieldsPrivate::RomFieldsPrivate()
-	: refCount(1)
+	: ref_cnt(1)
 	, tabIdx(0)
 { }
 
@@ -113,7 +114,7 @@ RomFieldsPrivate::~RomFieldsPrivate()
  */
 RomFieldsPrivate *RomFieldsPrivate::ref(void)
 {
-	refCount++;
+	ATOMIC_INC_FETCH(&ref_cnt);
 	return this;
 }
 
@@ -122,21 +123,21 @@ RomFieldsPrivate *RomFieldsPrivate::ref(void)
  */
 void RomFieldsPrivate::unref(void)
 {
-	assert(refCount > 0);
-	if (--refCount == 0) {
-		// All references deleted.
+	assert(ref_cnt > 0);
+	if (ATOMIC_DEC_FETCH(&ref_cnt) <= 0) {
+		// All references removed.
 		delete this;
 	}
 }
 
 /**
  * Is this object currently shared?
- * @return True if refCount > 1; false if not.
+ * @return True if ref_cnt > 1; false if not.
  */
 inline bool RomFieldsPrivate::isShared(void) const
 {
-	assert(refCount > 0);
-	return (refCount > 1);
+	assert(ref_cnt > 0);
+	return (ref_cnt > 1);
 }
 
 /**
