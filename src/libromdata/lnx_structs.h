@@ -37,7 +37,7 @@ extern "C" {
  * This matches the ROM header format exactly.
  * Reference:
  * - http://handy.cvs.sourceforge.net/viewvc/handy/win32src/public/handybug/dvreadme.txt
- * 
+ *
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */

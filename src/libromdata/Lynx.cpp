@@ -46,7 +46,7 @@ class LynxPrivate : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(LynxPrivate)
-        
+
 	public:
 		enum Lynx_RomType {
 			ROM_UNKNOWN	= -1,	// Unknown ROM type.
@@ -146,7 +146,7 @@ int Lynx::isRomSupported_static(const DetectInfo *info)
 	// Check the system name.
 	const Lynx_RomHeader *const romHeader =
 		reinterpret_cast<const Lynx_RomHeader*>(info->header.pData);
-        
+
 	static const char lynxMagic[4] = {'L','Y','N','X'};
 	if (!memcmp(romHeader->magic, lynxMagic, sizeof(lynxMagic))) {
 		// Found a Lynx ROM.
@@ -260,20 +260,20 @@ int Lynx::loadFieldData(void)
 
 	d->fields->addField_string(_RP("Title"),
 		latin1_to_rp_string(romHeader->cartname, sizeof(romHeader->cartname)));
-    
+
 	d->fields->addField_string(_RP("Manufacturer"),
 		latin1_to_rp_string(romHeader->manufname, sizeof(romHeader->manufname)));
-    
+
 	static const rp_char *const rotation_names[] = {
 		_RP("None"), _RP("Left"), _RP("Right")
 	};
-	
+
 	d->fields->addField_string(_RP("Rotaion"),
 		romHeader->rotation < ARRAY_SIZE(rotation_names) ? rotation_names[romHeader->rotation] : _RP("Unknown"));
-    
+
 	d->fields->addField_string(_RP("Bank 0 Size"),
 		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
-	
+
 	d->fields->addField_string(_RP("Bank 1 Size"),
 		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
