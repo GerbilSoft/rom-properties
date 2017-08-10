@@ -81,10 +81,10 @@ class DreamcastPrivate : public RomDataPrivate
 		// Disc header.
 		DC_IP0000_BIN_t discHeader;
 
-		// Session start address.
+		// Track 03 start address.
 		// ISO-9660 directories use physical offsets,
 		// not offsets relative to the start of the track.
-		int session_start_offset;
+		int iso_start_offset;
 
 		// 0GDTEX.PVR image.
 		IRpFile *pvrFile;	// uses discReader
@@ -118,7 +118,7 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
-	, session_start_offset(-1)
+	, iso_start_offset(-1)
 	, pvrFile(nullptr)
 	, pvrData(nullptr)
 {
@@ -227,7 +227,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	// Create the ISO-9660 file system reader if it isn't already opened.
 	// TODO: Support multi-track images.
 	if (!isoPartition) {
-		isoPartition = new IsoPartition(discReader, 0, session_start_offset);
+		isoPartition = new IsoPartition(discReader, 0, iso_start_offset);
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
 			delete isoPartition;
@@ -318,15 +318,15 @@ Dreamcast::Dreamcast(IRpFile *file)
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
-			d->session_start_offset = -1;
+			d->iso_start_offset = -1;
 			d->discReader = new DiscReader(d->file);
 			break;
 		case DreamcastPrivate::DISC_ISO_2352:
 			// 2352-byte sectors.
 			// FIXME: Assuming Mode 1.
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
-			d->session_start_offset = (int)cdrom_msf_to_lba(&sector.msf);
 			d->discReader = new Cdrom2352Reader(d->file);
+			d->iso_start_offset = (int)cdrom_msf_to_lba(&sector.msf);
 			break;
 		default:
 			// Unsupported.
