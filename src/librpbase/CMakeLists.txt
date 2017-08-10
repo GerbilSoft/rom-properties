@@ -106,6 +106,7 @@ SET(librpbase_SRCS
 	crypto/KeyManager.cpp
 	config/ConfReader.cpp
 	config/Config.cpp
+	config/AboutTabText.cpp
 	)
 # Headers.
 SET(librpbase_H
@@ -148,6 +149,7 @@ SET(librpbase_H
 	crypto/KeyManager.hpp
 	config/ConfReader.hpp
 	config/Config.hpp
+	config/AboutTabText.hpp
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))

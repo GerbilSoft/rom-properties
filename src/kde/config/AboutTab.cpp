@@ -14,20 +14,18 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "config.librpbase.h"
 
 #include "AboutTab.hpp"
-#include "config.version.h"
-#include "git.h"
+#include "RpQt.hpp"
 
 // librpbase
-#include "librpbase/config/Config.hpp"
-using LibRpBase::Config;
+#include "librpbase/config/AboutTabText.hpp"
+using LibRpBase::AboutTabText;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -136,13 +134,13 @@ void AboutTabPrivate::initProgramTitleText(void)
 		AboutTab::tr("ROM Properties Page") + b_end + br +
 		AboutTab::tr("Shell Extension") + br + br +
 		AboutTab::tr("Version %1")
-			.arg(QLatin1String(RP_VERSION_STRING));
-#ifdef RP_GIT_VERSION
-	sPrgTitle += br + QString::fromUtf8(RP_GIT_VERSION);
-# ifdef RP_GIT_DESCRIBE
-	sPrgTitle += br + QString::fromUtf8(RP_GIT_DESCRIBE);
-# endif /* RP_GIT_DESCRIBE */
-#endif /* RP_GIT_VERSION */
+			.arg(RP2Q(AboutTabText::prg_version));
+	if (AboutTabText::git_version[0] != 0) {
+		sPrgTitle += br + RP2Q(AboutTabText::git_version);
+	}
+	if (AboutTabText::git_describe[0] != 0) {
+		sPrgTitle += br + RP2Q(AboutTabText::git_describe);
+	}
 
 	ui.lblTitle->setText(sPrgTitle);
 }
@@ -168,41 +166,11 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += br + AboutTab::tr("This program is licensed under the "
 		"<a href='https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later.");
 
-	enum CreditType_t {
-		CT_CONTINUE = 0,	// Continue previous type.
-		CT_DEVELOPER,		// Developer
-		CT_CONTRIBUTOR,		// Contributor
-		CT_TRANSLATOR,		// Translator (TODO)
-
-		CT_MAX
-	};
-
-	struct CreditsData_t {
-		CreditType_t type;
-		const char *name;
-		const char *url;
-		const char *linkText;
-		const char *sub;
-	};
-
-	// Credits data.
-	static const CreditsData_t CreditsData[] = {
-		// Developers
-		{CT_DEVELOPER,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
-		{CT_CONTINUE,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
-
-		// Contributors
-		{CT_CONTRIBUTOR,	"CheatFreak47", nullptr, nullptr, nullptr},
-
-		// End of list
-		{CT_MAX, nullptr, nullptr, nullptr, nullptr}
-	};
-
-	CreditType_t lastCreditType = CT_CONTINUE;
-	for (const CreditsData_t *creditsData = &CreditsData[0];
-	     creditsData->type < CT_MAX; creditsData++)
+	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
+	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
+	     creditsData->type < AboutTabText::CT_MAX; creditsData++)
 	{
-		if (creditsData->type != CT_CONTINUE &&
+		if (creditsData->type != AboutTabText::CT_CONTINUE &&
 		    creditsData->type != lastCreditType)
 		{
 			// New credit type.
@@ -210,20 +178,20 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += b_start;
 
 			switch (creditsData->type) {
-				case CT_DEVELOPER:
+				case AboutTabText::CT_DEVELOPER:
 					sCredits += AboutTab::tr("Developers:");
 					break;
 
-				case CT_CONTRIBUTOR:
+				case AboutTabText::CT_CONTRIBUTOR:
 					sCredits += AboutTab::tr("Contributors:");
 					break;
 
-				case CT_TRANSLATOR:
+				case AboutTabText::CT_TRANSLATOR:
 					sCredits += AboutTab::tr("Translators:");
 					break;
 
-				case CT_CONTINUE:
-				case CT_MAX:
+				case AboutTabText::CT_CONTINUE:
+				case AboutTabText::CT_MAX:
 				default:
 					assert(!"Invalid credit type.");
 					break;
@@ -234,21 +202,21 @@ void AboutTabPrivate::initCreditsTab(void)
 
 		// Append the contributor's name.
 		sCredits += br + sIndent + chrBullet + QChar(L' ');
-		sCredits += QString::fromUtf8(creditsData->name);
+		sCredits += RP2Q(creditsData->name);
 		if (creditsData->url) {
 			sCredits += QLatin1String(" &lt;<a href='") +
-				QLatin1String(creditsData->url) +
+				RP2Q(creditsData->url) +
 				QLatin1String("'>");
 			if (creditsData->linkText) {
-				sCredits += QLatin1String(creditsData->linkText);
+				sCredits += RP2Q(creditsData->linkText);
 			} else {
-				sCredits += QLatin1String(creditsData->url);
+				sCredits += RP2Q(creditsData->url);
 			}
 			sCredits += QLatin1String("</a>&gt;");
 		}
 		if (creditsData->sub) {
 			sCredits += QLatin1String(" (") +
-				QLatin1String(creditsData->sub) +
+				RP2Q(creditsData->sub) +
 				QChar(L')');
 		}
 	}
