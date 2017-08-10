@@ -35,12 +35,12 @@ class AboutTabText {
 
 	public:
 		// Program version string.
-		static const rp_char prg_version[];
+		static const rp_char *const prg_version;
 
 		// git version, or empty string if git was not present.
-		static const rp_char git_version[];
+		static const rp_char *const git_version;
 		// git description, or empty string if git was not present.
-		static const rp_char git_describe[];
+		static const rp_char *const git_describe;
 
 	public:
 		/** Credits. **/
