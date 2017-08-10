@@ -283,12 +283,6 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 				// TODO: tRNS chunk handling.
 				*img_palette = gray;
 			}
-
-			if (palette_len > 256) {
-				// Clear the rest of the palette.
-				// (NOTE: 0 == fully transparent.)
-				memset(img_palette, 0, (palette_len - 256) * sizeof(uint32_t));
-			}
 			break;
 		}
 
