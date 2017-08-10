@@ -231,7 +231,7 @@ RomFields::RomFields(const RomFields &other)
  */
 RomFields &RomFields::operator=(const RomFields &other)
 {
-	RomFieldsPrivate *d_old = this->d_ptr;
+	RomFieldsPrivate *const d_old = this->d_ptr;
 	this->d_ptr = other.d_ptr->ref();
 	d_old->unref();
 	return *this;
@@ -250,8 +250,8 @@ void RomFields::detach(void)
 	}
 
 	// Need to detach.
-	RomFieldsPrivate *d_new = new RomFieldsPrivate();
-	RomFieldsPrivate *d_old = d_ptr;
+	RomFieldsPrivate *const d_new = new RomFieldsPrivate();
+	RomFieldsPrivate *const d_old = d_ptr;
 	d_new->fields.resize(d_old->fields.size());
 	for (int i = (int)(d_old->fields.size() - 1); i >= 0; i--) {
 		const Field &field_old = d_old->fields.at(i);
