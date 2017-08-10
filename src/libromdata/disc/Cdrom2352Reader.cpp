@@ -180,6 +180,8 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 	}
 
 	// Go to the block.
+	// FIXME: Read the whole block so we can determine if this is Mode1 or Mode2.
+	// Mode1 data starts at byte 16; Mode2 data starts at byte 24.
 	const int64_t phys_pos = ((int64_t)blockIdx * d->physBlockSize) + 16 + pos;
 	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = d->file->lastError();
