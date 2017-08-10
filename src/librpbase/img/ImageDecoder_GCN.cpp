@@ -136,6 +136,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
+			delete img;
 			return nullptr;
 	}
 

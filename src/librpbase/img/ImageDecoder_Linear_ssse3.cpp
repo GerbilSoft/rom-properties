@@ -104,6 +104,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 			break;
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
+			delete img;
 			return nullptr;
 	}
 
@@ -155,6 +156,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 
 			default:
 				assert(!"Unsupported 24-bit pixel format.");
+				delete img;
 				return nullptr;
 		} }
 
@@ -271,6 +273,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_HOST_ARGB32:
 			assert(!"ARGB32 is handled separately.");
+			delete img;
 			return nullptr;
 		case PXF_HOST_xRGB32:
 			// TODO: Only apply the alpha mask instead of shuffling.

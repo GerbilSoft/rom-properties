@@ -173,6 +173,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
+			delete img;
 			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
@@ -320,6 +321,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
+			delete img;
 			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
@@ -495,6 +497,7 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 8-bit pixel format.");
+			delete img;
 			return nullptr;
 	}
 
@@ -599,6 +602,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
+			delete img;
 			return nullptr;
 	}
 
@@ -695,6 +699,7 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 24-bit pixel format.");
+			delete img;
 			return nullptr;
 	}
 
@@ -1002,6 +1007,7 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
+			delete img;
 			return nullptr;
 	}
 
