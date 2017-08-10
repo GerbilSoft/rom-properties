@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "ConfigDialog.hpp"
@@ -33,21 +32,20 @@
 extern "C"
 Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 {
-#if QT_VERSION >= 0x050000
-	// Enable High DPI.
-	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-#if QT_VERSION >= 0x050600
-	// Enable High DPI pixmaps.
-	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
-#else
-	// Hardcode the value in case the user upgrades to Qt 5.6 later.
-	// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
-	QApplication::setAttribute((Qt::ApplicationAttribute)13, true);
-#endif /* QT_VERSION >= 0x050600 */
-#endif /* QT_VERSION >= 0x050000 */
-
 	QApplication *rpApp = qApp;
 	if (!rpApp) {
+#if QT_VERSION >= 0x050000
+		// Enable High DPI.
+		QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+#if QT_VERSION >= 0x050600
+		// Enable High DPI pixmaps.
+		QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
+#else
+		// Hardcode the value in case the user upgrades to Qt 5.6 later.
+		// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
+		QApplication::setAttribute((Qt::ApplicationAttribute)13, true);
+#endif /* QT_VERSION >= 0x050600 */
+#endif /* QT_VERSION >= 0x050000 */
 		// Create the QApplication.
 		rpApp = new QApplication(argc, argv);
 	}
@@ -58,5 +56,6 @@ Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 	cfg->show();
 
 	// Run the Qt UI.
+	// FIXME: May need changes if the main loop is already running.
 	return rpApp->exec();
 }
