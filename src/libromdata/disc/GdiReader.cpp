@@ -35,6 +35,7 @@ using namespace LibRpBase;
 #include <cassert>
 #include <cerrno>
 #include <cstring>
+#include <cctype>
 
 // FIXME: Put this in a compatibility header.
 #ifdef _MSC_VER
@@ -265,6 +266,9 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		// Save the track mapping.
 		trackMappings[trackNumber-1] = &blockRange;
 	}
+
+	// Done parsing the GDI.
+	return 0;
 }
 
 /** GdiReader **/
@@ -281,25 +285,36 @@ GdiReader::GdiReader(IRpFile *file)
  */
 int GdiReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 {
-	// TODO
-	return -1;
-#if 0
-	if (szHeader < 2352) {
+	// NOTE: There's no magic number, so we'll just check if the
+	// first line seems to be correct.
+	if (szHeader < 4) {
 		// Not enough data to check.
 		return -1;
 	}
 
-	// Check the CD-ROM sync magic.
-	if (!memcmp(pHeader, GdiReaderPrivate::CDROM_2352_MAGIC,
-	     sizeof(GdiReaderPrivate::CDROM_2352_MAGIC)))
-	{
-		// Valid CD-ROM sync magic.
+	int trackCount = 0;
+	for (int i = 0; i < 4; i++) {
+		if (pHeader[i] == '\r' || pHeader[i] == '\n') {
+			// End of line.
+			break;
+		} else if (isdigit(pHeader[i])) {
+			// Digit.
+			trackCount *= 10;
+			trackCount += (pHeader[i] & 0xF);
+		} else {
+			// Invalid character.
+			trackCount = 0;
+			break;
+		}
+	}
+
+	if (trackCount >= 1 && trackCount <= 99) {
+		// Valid track count.
 		return 0;
 	}
 
-	// Not supported.
+	// Invalid track count.
 	return -1;
-#endif
 }
 
 /**

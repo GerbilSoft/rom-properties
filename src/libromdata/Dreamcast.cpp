@@ -320,8 +320,11 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 		// Check for ".gdi".
 		if (!rp_strcasecmp(info->ext, _RP(".gdi"))) {
 			// This is a GD-ROM cuesheet.
-			// TODO: Check the file format, or don't bother?
-			return DreamcastPrivate::DISC_GDI;
+			// Check the first line.
+			if (GdiReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
+				// This is a supported GD-ROM cuesheet.
+				return DreamcastPrivate::DISC_GDI;
+			}
 		}
 	}
 
