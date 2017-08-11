@@ -39,14 +39,14 @@ extern "C" {
 
 /**
  * Global Index header for all PVR formats.
- * Endianness depends on PVR format:
+ * Index endianness depends on PVR format:
  * - PVR:  Little-endian.
  * - PVRX: Little-endian.
  * - GVR:  Big-endian.
  */
 typedef struct PACKED _PVR_GBIX_Header {
 	char magic[4];		// "GBIX" (or "GCIX" in Wii games)
-	uint32_t length;	// Length of GBIX header.
+	uint32_t length;	// Length of GBIX header. (***ALWAYS*** little-endian!)
 	uint32_t index;		// Global index.
 
 	// NOTE: GBIX may or may not have an extra 4 bytes of padding.

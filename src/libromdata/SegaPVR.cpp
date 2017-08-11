@@ -627,20 +627,26 @@ SegaPVR::SegaPVR(IRpFile *file)
 		// GBIX header.
 		const PVR_GBIX_Header *const gbixHeader =
 			reinterpret_cast<const PVR_GBIX_Header*>(header);
+
+		// GBIX length is *always* in little-endian.
+		d->gbix_len = 8 + le32_to_cpu(gbixHeader->length);
+
 		if (d->pvrType == SegaPVRPrivate::PVR_TYPE_GVR) {
 			// GameCube. GBIX is in big-endian.
-			d->gbix_len = 8 + be32_to_cpu(gbixHeader->length);
 			d->gbix = be32_to_cpu(gbixHeader->index);
 		} else {
 			// Dreamcast, Xbox, or other system.
 			// GBIX is in little-endian.
-			d->gbix_len = 8 + le32_to_cpu(gbixHeader->length);
 			d->gbix = le32_to_cpu(gbixHeader->index);
 		}
 
 		// Sanity check: gbix_len must be in the range [4,128].
+		assert(d->gbix_len >= 4);
+		assert(d->gbix_len <= 128);
 		if (d->gbix_len < 4 || d->gbix_len > 128) {
 			// Invalid GBIX header.
+			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
+			d->isValid = false;
 			return;
 		}
 
