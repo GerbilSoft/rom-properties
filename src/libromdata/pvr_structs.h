@@ -46,11 +46,14 @@ extern "C" {
  */
 typedef struct PACKED _PVR_GBIX_Header {
 	char magic[4];		// "GBIX" (or "GCIX" in Wii games)
-	uint32_t length;	// Length of GBIX header. (Should be 8.)
+	uint32_t length;	// Length of GBIX header.
 	uint32_t index;		// Global index.
-	uint8_t reserved[4];
+
+	// NOTE: GBIX may or may not have an extra 4 bytes of padding.
+	// It usually does, so length == 8.
+	// Otherwise, length == 4.
 } PVR_GBIX_Header;
-ASSERT_STRUCT(PVR_GBIX_Header, 16);
+ASSERT_STRUCT(PVR_GBIX_Header, 12);
 
 /**
  * Common PVR header.
