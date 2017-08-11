@@ -88,7 +88,9 @@ class SegaPVRPrivate : public RomDataPrivate
 #endif
 
 		// Global Index.
-		bool hasGbix;
+		// gbix_len is 0 if it's not present.
+		// Otherwise, may be 16 (common) or 12 (uncommon).
+		unsigned int gbix_len;
 		uint32_t gbix;
 
 		// Decoded image.
@@ -119,7 +121,7 @@ class SegaPVRPrivate : public RomDataPrivate
 SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
 	: super(q, file)
 	, pvrType(PVR_TYPE_UNKNOWN)
-	, hasGbix(false)
+	, gbix_len(0)
 	, gbix(0)
 	, img(nullptr)
 {
@@ -216,7 +218,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	// TODO: Support YUV422, 4-bit, 8-bit, and BUMP formats.
 	// Currently assuming all formats use 16bpp.
 
-	const uint32_t gbixStart = (hasGbix ? 32 : 16);
+	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
 	uint32_t mipmap_size = 0;
 	uint32_t expect_size = 0;
 
@@ -326,12 +328,12 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			return nullptr;
 	}
 
-	if ((gbixStart + mipmap_size + expect_size) > file_sz) {
+	if ((pvrDataStart + mipmap_size + expect_size) > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
 
-	int ret = file->seek(gbixStart + mipmap_size);
+	int ret = file->seek(pvrDataStart + mipmap_size);
 	if (ret != 0) {
 		// Seek error.
 		return nullptr;
@@ -393,7 +395,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// VQ images have a 1024-entry palette.
 			// This is stored before the mipmaps, so we need to read it manually.
 			static const unsigned int pal_siz = 1024*2;
-			ret = file->seek(gbixStart);
+			ret = file->seek(pvrDataStart);
 			if (ret != 0) {
 				// Seek error.
 				return nullptr;
@@ -430,7 +432,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// This is stored before the mipmaps, so we need to read it manually.
 			const unsigned int pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
-			ret = file->seek(gbixStart);
+			ret = file->seek(pvrDataStart);
 			if (ret != 0) {
 				// Seek error.
 				return nullptr;
@@ -488,7 +490,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	}
 	const uint32_t file_sz = (uint32_t)this->file->size();
 
-	const uint32_t start = (hasGbix ? 32 : 16);
+	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
 	uint32_t expect_size = 0;
 
 	switch (pvrHeader.gvr.img_data_type) {
@@ -516,12 +518,12 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			return nullptr;
 	}
 
-	if ((expect_size + start) > file_sz) {
+	if ((expect_size + pvrDataStart) > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
 
-	int ret = file->seek(start);
+	int ret = file->seek(pvrDataStart);
 	if (ret != 0) {
 		// Seek error.
 		return nullptr;
@@ -623,9 +625,12 @@ SegaPVR::SegaPVR(IRpFile *file)
 	    !memcmp(header, "GCIX", 4))
 	{
 		// GBIX header.
-		// TODO: Check the "offset" field?
-		d->hasGbix = true;
-		const PVR_GBIX_Header *const gbixHeader = reinterpret_cast<const PVR_GBIX_Header*>(header);
+		const PVR_GBIX_Header *const gbixHeader =
+			reinterpret_cast<const PVR_GBIX_Header*>(header);
+
+		// GBIX length is *always* in little-endian.
+		d->gbix_len = 8 + le32_to_cpu(gbixHeader->length);
+
 		if (d->pvrType == SegaPVRPrivate::PVR_TYPE_GVR) {
 			// GameCube. GBIX is in big-endian.
 			d->gbix = be32_to_cpu(gbixHeader->index);
@@ -635,8 +640,18 @@ SegaPVR::SegaPVR(IRpFile *file)
 			d->gbix = le32_to_cpu(gbixHeader->index);
 		}
 
+		// Sanity check: gbix_len must be in the range [4,128].
+		assert(d->gbix_len >= 4);
+		assert(d->gbix_len <= 128);
+		if (d->gbix_len < 4 || d->gbix_len > 128) {
+			// Invalid GBIX header.
+			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
+			d->isValid = false;
+			return;
+		}
+
 		// Copy the main header.
-		memcpy(&d->pvrHeader, &header[16], sizeof(d->pvrHeader));
+		memcpy(&d->pvrHeader, &header[d->gbix_len], sizeof(d->pvrHeader));
 	}
 	else
 	{
@@ -678,7 +693,7 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < 32)
+	    info->header.size < sizeof(PVR_Header))
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
@@ -693,8 +708,29 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 	    !memcmp(info->header.pData, "GCIX", 4))
 	{
 		// GBIX header is present.
-		// TODO: Validate offset?
-		pvrHeader = reinterpret_cast<const PVR_Header*>(&info->header.pData[16]);
+		// Length should be between 4 and 16.
+		const PVR_GBIX_Header *const gbixHeader =
+			reinterpret_cast<const PVR_GBIX_Header*>(info->header.pData);
+
+		// Try little-endian.
+		unsigned int gbix_len = le32_to_cpu(gbixHeader->length);
+		if (gbix_len < 4 || gbix_len > 128) {
+			// Try big-endian.
+			gbix_len = be32_to_cpu(gbixHeader->length);
+			if (gbix_len < 4 || gbix_len > 128) {
+				// Invalid GBIX header.
+				return -1;
+			}
+		}
+
+		// Make sure the header size is correct.
+		const unsigned int expected_size = 8 + gbix_len + sizeof(PVR_Header);
+		if (info->header.size < expected_size) {
+			// Header size is too small.
+			return -1;
+		}
+
+		pvrHeader = reinterpret_cast<const PVR_Header*>(&info->header.pData[8+gbix_len]);
 	}
 	else
 	{
@@ -1013,7 +1049,7 @@ int SegaPVR::loadFieldData(void)
 	}
 
 	// Global index (if present).
-	if (d->hasGbix) {
+	if (d->gbix_len > 0) {
 		d->fields->addField_string_numeric(_RP("Global Index"),
 			d->gbix, RomFields::FB_DEC, 0);
 	}

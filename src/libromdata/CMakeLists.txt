@@ -51,6 +51,7 @@ SET(libromdata_SRCS
 	disc/CIAReader.cpp
 	disc/Cdrom2352Reader.cpp
 	disc/IsoPartition.cpp
+	disc/GdiReader.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	utils/SuperMagicDrive.cpp
 	)
@@ -134,6 +135,7 @@ SET(libromdata_H
 	disc/CIAReader.hpp
 	disc/Cdrom2352Reader.hpp
 	disc/IsoPartition.hpp
+	disc/GdiReader.hpp
 	config/TImageTypesConfig.hpp
 	utils/SuperMagicDrive.hpp
 	)

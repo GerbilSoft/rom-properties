@@ -31,6 +31,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/img/rp_image.hpp"
 using namespace LibRpBase;
 
@@ -38,6 +39,7 @@ using namespace LibRpBase;
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/Cdrom2352Reader.hpp"
 #include "disc/IsoPartition.hpp"
+#include "disc/GdiReader.hpp"
 
 // SegaPVR decoder.
 #include "SegaPVR.hpp"
@@ -71,11 +73,15 @@ class DreamcastPrivate : public RomDataPrivate
 			DISC_UNKNOWN		= -1,	// Unknown ROM type.
 			DISC_ISO_2048		= 0,	// ISO-9660, 2048-byte sectors.
 			DISC_ISO_2352		= 1,	// ISO-9660, 2352-byte sectors.
+			DISC_GDI		= 2,	// GD-ROM cuesheet
 		};
 
 		// Disc type and reader.
 		int discType;
-		IDiscReader *discReader;
+		union {
+			IDiscReader *discReader;
+			GdiReader *gdiReader;
+		};
 		IsoPartition *isoPartition;
 
 		// Disc header.
@@ -84,6 +90,7 @@ class DreamcastPrivate : public RomDataPrivate
 		// Track 03 start address.
 		// ISO-9660 directories use physical offsets,
 		// not offsets relative to the start of the track.
+		// NOTE: Not used for GDI.
 		int iso_start_offset;
 
 		// 0GDTEX.PVR image.
@@ -173,7 +180,14 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	// Create the ISO-9660 file system reader if it isn't already opened.
 	// TODO: Support multi-track images.
 	if (!isoPartition) {
-		isoPartition = new IsoPartition(discReader, 0, iso_start_offset);
+		if (discType == DISC_GDI) {
+			// Open track 3 as ISO-9660.
+			isoPartition = gdiReader->openIsoPartition(3);
+		} else {
+			// Standalone track.
+			// Using the ISO start offset calculated earlier.
+			isoPartition = new IsoPartition(discReader, 0, iso_start_offset);
+		}
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
 			delete isoPartition;
@@ -241,18 +255,20 @@ Dreamcast::Dreamcast(IRpFile *file)
 
 	// Read the disc header.
 	// NOTE: Reading 2352 bytes due to CD-ROM sector formats.
+	// NOTE 2: May be smaller if this is a cuesheet.
 	CDROM_2352_Sector_t sector;
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
-	if (size != sizeof(sector))
+	if (size == 0)
 		return;
 
-	// Check if this ROM image is supported.
+	// Check if this disc image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(sector);
+	info.header.size = size;
 	info.header.pData = reinterpret_cast<const uint8_t*>(&sector);
-	info.ext = nullptr;	// Not needed for Dreamcast.
+	const rp_string filename = file->filename();
+	info.ext = FileSystem::file_ext(filename);
 	info.szFile = 0;	// Not needed for Dreamcast.
 	d->discType = isRomSupported_static(&info);
 
@@ -267,6 +283,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			d->iso_start_offset = -1;
 			d->discReader = new DiscReader(d->file);
 			break;
+
 		case DreamcastPrivate::DISC_ISO_2352:
 			// 2352-byte sectors.
 			// FIXME: Assuming Mode 1.
@@ -274,10 +291,27 @@ Dreamcast::Dreamcast(IRpFile *file)
 			d->discReader = new Cdrom2352Reader(d->file);
 			d->iso_start_offset = (int)cdrom_msf_to_lba(&sector.msf);
 			break;
+
+		case DreamcastPrivate::DISC_GDI: {
+			// GD-ROM cuesheet.
+			// iso_start_offset isn't used for GDI.
+			d->gdiReader = new GdiReader(d->file);
+			// Read the actual track 3 disc header.
+			const int lba_track03 = d->gdiReader->startingLBA(3);
+			if (lba_track03 < 0) {
+				// Error getting the track 03 LBA.
+				return;
+			}
+			// TODO: Don't hard-code 2048?
+			d->gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
+			break;
+		}
+
 		default:
 			// Unsupported.
 			return;
 	}
+
 	d->isValid = true;
 }
 
@@ -293,10 +327,28 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(CDROM_2352_Sector_t))
+	    info->header.size == 0)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
+		return -1;
+	}
+
+	if (info->ext && info->ext[0] != 0) {
+		// Check for ".gdi".
+		if (!rp_strcasecmp(info->ext, _RP(".gdi"))) {
+			// This is a GD-ROM cuesheet.
+			// Check the first line.
+			if (GdiReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
+				// This is a supported GD-ROM cuesheet.
+				return DreamcastPrivate::DISC_GDI;
+			}
+		}
+	}
+
+	// For files that aren't cuesheets, check for a minimum file size.
+	if (info->header.size < sizeof(CDROM_2352_Sector_t)) {
+		// Header is too small.
 		return -1;
 	}
 
@@ -383,11 +435,11 @@ const rp_char *const *Dreamcast::supportedFileExtensions_static(void)
 	static const rp_char *const exts[] = {
 		_RP(".iso"),	// ISO-9660 (2048-byte)
 		_RP(".bin"),	// Raw (2352-byte)
+		_RP(".gdi"),	// GD-ROM cuesheet
 
 		// TODO: Add these formats?
 		//_RP(".cdi"),	// DiscJuggler
 		//_RP(".nrg"),	// Nero
-		//_RP(".gdi"),	// GD-ROM cuesheet
 
 		nullptr
 	};

@@ -23,7 +23,7 @@
   * Nintendo Badge Arcade decoding. Supports both PRBS (badge) and CABS
     (badge set) files. PRBS decoding supports mega badges as well.
   * Sega Dreamcast disc images. Currently supports raw track 03 disc images
-    in 2048-byte and 2352-byte sector formats.
+    in 2048-byte and 2352-byte sector formats, and GD-ROM cuesheets (\*.gdi).
   * Sega Saturn disc images. Currently supports raw track 01 disc images in
     2048-byte and 2352-byte sector formats.
   * Atari Lynx ROM images. Currently only supports headered images.
