@@ -48,7 +48,7 @@ class IsoPartitionPrivate
 {
 	public:
 		IsoPartitionPrivate(IsoPartition *q, LibRpBase::IDiscReader *discReader,
-			int64_t partition_offset, int session_start_offset);
+			int64_t partition_offset, int iso_start_offset);
 		~IsoPartitionPrivate();
 
 	private:
@@ -63,9 +63,9 @@ class IsoPartitionPrivate
 		int64_t partition_offset;
 		int64_t partition_size;		// Calculated partition size.
 
-		// Session start offset. (in blocks)
+		// ISO start offset. (in blocks)
 		// -1 == unknown
-		int session_start_offset;
+		int iso_start_offset;
 
 		// ISO primary volume descriptor.
 		ISO_Volume_Descriptor pvd;
@@ -85,12 +85,12 @@ class IsoPartitionPrivate
 /** IsoPartitionPrivate **/
 
 IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReader,
-	int64_t partition_offset, int session_start_offset)
+	int64_t partition_offset, int iso_start_offset)
 	: q_ptr(q)
 	, discReader(discReader)
 	, partition_offset(partition_offset)
 	, partition_size(0)
-	, session_start_offset(session_start_offset)
+	, iso_start_offset(iso_start_offset)
 {
 	// Clear the PVD struct.
 	memset(&pvd, 0, sizeof(pvd));
@@ -157,15 +157,15 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 		return -q->m_lastError;
 	}
 
-	if (session_start_offset >= 0) {
-		// Session start address was already determined.
-		if (rootdir->block.he < ((unsigned int)session_start_offset + 2)) {
+	if (iso_start_offset >= 0) {
+		// ISO start address was already determined.
+		if (rootdir->block.he < ((unsigned int)iso_start_offset + 2)) {
 			// Starting block is invalid.
 			q->m_lastError = EIO;
 			return -q->m_lastError;
 		}
 	} else {
-		// We didn't find the session start address yet.
+		// We didn't find the ISO start address yet.
 		// This might be a 2048-byte single-track image,
 		// in which case, we'll need to assume that the
 		// root directory starts at block 20.
@@ -175,7 +175,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 			q->m_lastError = EIO;
 			return -q->m_lastError;
 		}
-		session_start_offset = (int)(rootdir->block.he - 20);
+		iso_start_offset = (int)(rootdir->block.he - 20);
 	}
 
 	// Load the root directory.
@@ -183,7 +183,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 	// the entire root directory all at once.
 	rootDir_data.resize(rootdir->size.he);
 	const int64_t rootDir_addr = partition_offset +
-		(int64_t)(rootdir->block.he - session_start_offset) * block_size;
+		(int64_t)(rootdir->block.he - iso_start_offset) * block_size;
 	size_t size = discReader->seekAndRead(rootDir_addr, rootDir_data.data(), rootDir_data.size());
 	if (size != rootDir_data.size()) {
 		// Seek and/or read error.
@@ -209,10 +209,10 @@ int IsoPartitionPrivate::loadRootDirectory(void)
  *
  * @param discReader IDiscReader.
  * @param partition_offset Partition start offset.
- * @@param session_start_offset Session start offset, in blocks. (If -1, uses heuristics.)
+ * @@param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
  */
-IsoPartition::IsoPartition(IDiscReader *discReader, int64_t partition_offset, int session_start_offset)
-	: d_ptr(new IsoPartitionPrivate(this, discReader, partition_offset, session_start_offset))
+IsoPartition::IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset)
+	: d_ptr(new IsoPartitionPrivate(this, discReader, partition_offset, iso_start_offset))
 { }
 
 IsoPartition::~IsoPartition()
@@ -518,7 +518,7 @@ IRpFile *IsoPartition::open(const rp_char *filename)
 	const unsigned int block_size = d->pvd.pri.logical_block_size.he;
 
 	// Make sure the file is in bounds.
-	const int64_t file_addr = ((int64_t)dirEntry_found->block.he - d->session_start_offset) * block_size;
+	const int64_t file_addr = ((int64_t)dirEntry_found->block.he - d->iso_start_offset) * block_size;
 	if (file_addr >= d->partition_size + d->partition_offset ||
 	    file_addr > d->partition_size + d->partition_offset - dirEntry_found->size.he)
 	{

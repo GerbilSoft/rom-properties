@@ -43,9 +43,9 @@ class IsoPartition : public LibRpBase::IPartition
 		 *
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
-		 * @@param session_start_offset Session start offset, in blocks. (If -1, uses heuristics.)
+		 * @@param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
 		 */
-		IsoPartition(IDiscReader *discReader, int64_t partition_offset, int session_start_offset = -1);
+		IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset = -1);
 		virtual ~IsoPartition();
 
 	private:
