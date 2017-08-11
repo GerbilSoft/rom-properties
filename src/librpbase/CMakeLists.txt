@@ -334,7 +334,9 @@ FOREACH(_target rpbase8 rpbase16)
 	# Exclude from ALL builds.
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 	# Make sure git_version.h is created before compiling this target.
-	ADD_DEPENDENCIES(${_target} git_version)
+	IF(TARGET git_version)
+		ADD_DEPENDENCIES(${_target} git_version)
+	ENDIF(TARGET git_version)
 
 	# Link in libdl if it's required for dlopen()
 	# and we have a component that uses it.
