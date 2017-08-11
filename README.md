@@ -150,7 +150,8 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 * Microsoft DirectDraw Surface: DDS files (\*.dds)
   * Currently supports uncompressed RGB, DXTn, BC4, and BC5.
 * Nintendo Badge Arcade: Badge files (\*.prb), badge set files (\*.cab)
-* Sega Dreamcast: Raw disc image files (\*.bin, \*.iso)
+* Sega Dreamcast: Raw disc image files (\*.bin, \*.iso), GD-ROM cuesheets
+  (\*.gdi)
 * Sega Saturn: Raw disc image files (\*.bin, \*.iso)
 * Atari Lynx: Headered binary (\*.lnx)
 
