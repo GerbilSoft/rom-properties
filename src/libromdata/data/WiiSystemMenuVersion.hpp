@@ -32,31 +32,7 @@ class WiiSystemMenuVersion
 	private:
 		WiiSystemMenuVersion();
 		~WiiSystemMenuVersion();
-	private:
 		RP_DISABLE_COPY(WiiSystemMenuVersion)
-
-	private:
-		/**
-		 * Nintendo Wii System Menu version list.
-		 * References:
-		 * - http://wiibrew.org/wiki/System_Menu
-		 * - http://wiiubrew.org/wiki/Title_database
-		 * - https://yls8.mtheall.com/ninupdates/reports.php
-		 */
-		struct SysVersionList {
-			unsigned int version;
-			const rp_char *str;
-		};
-		static const SysVersionList ms_sysVersionList[];
-
-	private:
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int compar(const void *a, const void *b);
 
 	public:
 		/**

@@ -25,6 +25,39 @@
 
 namespace LibRomData {
 
+class WiiSystemMenuVersionPrivate {
+	private:
+		// Static class.
+		WiiSystemMenuVersionPrivate();
+		~WiiSystemMenuVersionPrivate();
+		RP_DISABLE_COPY(WiiSystemMenuVersionPrivate)
+
+	public:
+		/**
+		 * Nintendo Wii System Menu version list.
+		 * References:
+		 * - http://wiibrew.org/wiki/System_Menu
+		 * - http://wiiubrew.org/wiki/Title_database
+		 * - https://yls8.mtheall.com/ninupdates/reports.php
+		 */
+		struct SysVersionEntry_t {
+			unsigned int version;
+			const rp_char *str;
+		};
+		static const SysVersionEntry_t sysVersionList[];
+
+	public:
+		/**
+		 * Comparison function for bsearch().
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int compar(const void *a, const void *b);
+};
+
+/** WiiSystemMenuVersionPrivate **/
+
 /**
  * Nintendo Wii System Menu version list.
  * References:
@@ -32,7 +65,7 @@ namespace LibRomData {
  * - http://wiiubrew.org/wiki/Title_database
  * - https://yls8.mtheall.com/ninupdates/reports.php
  */
-const WiiSystemMenuVersion::SysVersionList WiiSystemMenuVersion::ms_sysVersionList[] = {
+const WiiSystemMenuVersionPrivate::SysVersionEntry_t WiiSystemMenuVersionPrivate::sysVersionList[] = {
 	// Wii
 	// Reference: http://wiibrew.org/wiki/System_Menu
 	{ 33, _RP("1.0")},
@@ -69,14 +102,16 @@ const WiiSystemMenuVersion::SysVersionList WiiSystemMenuVersion::ms_sysVersionLi
  * @param b
  * @return
  */
-int WiiSystemMenuVersion::compar(const void *a, const void *b)
+int WiiSystemMenuVersionPrivate::compar(const void *a, const void *b)
 {
-	unsigned int v1 = static_cast<const SysVersionList*>(a)->version;
-	unsigned int v2 = static_cast<const SysVersionList*>(b)->version;
+	unsigned int v1 = static_cast<const SysVersionEntry_t*>(a)->version;
+	unsigned int v2 = static_cast<const SysVersionEntry_t*>(b)->version;
 	if (v1 < v2) return -1;
 	if (v1 > v2) return 1;
 	return 0;
 }
+
+/** WiiSystemMenuVersion **/
 
 /**
  * Look up a Wii System Menu version.
@@ -86,11 +121,13 @@ int WiiSystemMenuVersion::compar(const void *a, const void *b)
 const rp_char *WiiSystemMenuVersion::lookup(unsigned int version)
 {
 	// Do a binary search.
-	const SysVersionList key = {version, nullptr};
-	const SysVersionList *res =
-		static_cast<const SysVersionList*>(bsearch(&key,
-			ms_sysVersionList, ARRAY_SIZE(ms_sysVersionList)-1,
-			sizeof(SysVersionList), compar));
+	const WiiSystemMenuVersionPrivate::SysVersionEntry_t key = {version, nullptr};
+	const WiiSystemMenuVersionPrivate::SysVersionEntry_t *res =
+		static_cast<const WiiSystemMenuVersionPrivate::SysVersionEntry_t*>(bsearch(&key,
+			WiiSystemMenuVersionPrivate::sysVersionList,
+			ARRAY_SIZE(WiiSystemMenuVersionPrivate::sysVersionList)-1,
+			sizeof(WiiSystemMenuVersionPrivate::SysVersionEntry_t),
+			WiiSystemMenuVersionPrivate::compar));
 	return (res ? res->str : nullptr);
 }
 
