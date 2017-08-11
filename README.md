@@ -37,7 +37,6 @@ following platforms:
 * KDE Frameworks 5.x
 * XFCE (GTK+ 2.x)
 * GNOME and Unity (GTK+ 3.x)
-* Windows XP (and later)
 
 For instructions on compiling from source, see doc/COMPILING.md .
 
@@ -58,18 +57,6 @@ After installing, the plugin needs to be enabled in the Dolphin file browser:
 If installed correctly, thumbnails should be generated for the supported
 file type. You can also right-click a file, select Properties, then click
 the "ROM Properties" tab to view more information about the ROM image.
-
-### Windows
-
-Extract the ZIP archive to a directory, then run install.exe. The installer
-requires administrator access, so click "Yes" if requested. In the installer,
-click the "Install" button to register the ROM Properties Page DLL.
-
-Note that this will hard-code the location of the DLL files in the registry,
-so you may want to place the DLLs in a common location.
-
-To uninstall the plugin, run install.exe again, then click the "Uninstall"
-button.
 
 ## Current ROM Feature Support Level
 

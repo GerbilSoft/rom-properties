@@ -13,6 +13,7 @@
     * Sega Mega Drive: SMD format decoding (SSE2)
     * 24-bit linear RGB image decoding (SSSE3)
     * 32-bit linear ARGB/xRGB image decoding (SSSE3)
+  * Removed support for Microsoft Windows.
 
 * New systems:
   * Sega PVR and GVR decoding. These are texture files used in Sega games

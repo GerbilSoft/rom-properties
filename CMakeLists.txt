@@ -3,6 +3,10 @@ PROJECT(rom-properties)
 # CMake 2.8.12 automates adding compile flags for Qt5, e.g. -fPIC on Linux.
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
+IF(WIN32)
+	MESSAGE(FATAL_ERROR "Windows is no longer supported.")
+ENDIF(WIN32)
+
 LIST(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_SOURCE_DIR}/cmake/macros"
 	"${CMAKE_SOURCE_DIR}/cmake/modules"
