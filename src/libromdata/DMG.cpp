@@ -94,8 +94,8 @@ class DMGPrivate : public RomDataPrivate
 		static const rp_char *const dmg_hardware_names[];
 
 		struct dmg_cart_type {
-			DMG_Hardware hardware;
-			uint32_t features; //DMG_Feature
+			uint8_t hardware;	// DMG_Hardware
+			uint8_t features;	// DMG_Feature
 		};
 
 	private:
