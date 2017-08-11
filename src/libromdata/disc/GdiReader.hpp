@@ -29,6 +29,8 @@ namespace LibRpBase {
 
 namespace LibRomData {
 
+class IsoPartition;
+
 class GdiReaderPrivate;
 class GdiReader : public LibRpBase::SparseDiscReader
 {
@@ -82,6 +84,29 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
 		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) override final;
+
+	public:
+		/** GDI-specific functions. **/
+
+		/**
+		 * Get the track count.
+		 * @return Track count.
+		 */
+		int trackCount(void) const;
+
+		/**
+		 * Get the starting LBA of the specified track number.
+		 * @param trackNumber Track number. (1-based)
+		 * @return Starting LBA, or -1 if the track number is invalid.
+		 */
+		int startingLBA(int trackNumber) const;
+
+		/**
+		 * Open a track using IsoPartition.
+		 * @param trackNumber Track number. (1-based)
+		 * @return IsoPartition, or nullptr on error.
+		 */
+		IsoPartition *openIsoPartition(int trackNumber);
 };
 
 }

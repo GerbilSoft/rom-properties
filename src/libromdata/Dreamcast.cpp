@@ -78,7 +78,10 @@ class DreamcastPrivate : public RomDataPrivate
 
 		// Disc type and reader.
 		int discType;
-		IDiscReader *discReader;
+		union {
+			IDiscReader *discReader;
+			GdiReader *gdiReader;
+		};
 		IsoPartition *isoPartition;
 
 		// Disc header.
@@ -178,8 +181,8 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	// TODO: Support multi-track images.
 	if (!isoPartition) {
 		if (discType == DISC_GDI) {
-			// TODO: GdiReader::openIsoPartition().
-			isoPartition = new IsoPartition(discReader, 45000*2048, 45000);
+			// Open track 3 as ISO-9660.
+			isoPartition = gdiReader->openIsoPartition(3);
 		} else {
 			// Standalone track.
 			// Using the ISO start offset calculated earlier.
@@ -289,14 +292,20 @@ Dreamcast::Dreamcast(IRpFile *file)
 			d->iso_start_offset = (int)cdrom_msf_to_lba(&sector.msf);
 			break;
 
-		case DreamcastPrivate::DISC_GDI:
+		case DreamcastPrivate::DISC_GDI: {
 			// GD-ROM cuesheet.
 			// iso_start_offset isn't used for GDI.
-			d->discReader = new GdiReader(d->file);
+			d->gdiReader = new GdiReader(d->file);
 			// Read the actual track 3 disc header.
-			// TODO: Get the track 3 starting position.
-			d->discReader->seekAndRead(45000*2048, &d->discHeader, sizeof(d->discHeader));
+			const int lba_track03 = d->gdiReader->startingLBA(3);
+			if (lba_track03 < 0) {
+				// Error getting the track 03 LBA.
+				return;
+			}
+			// TODO: Don't hard-code 2048?
+			d->gdiReader->seekAndRead(lba_track03*2048, &d->discHeader, sizeof(d->discHeader));
 			break;
+		}
 
 		default:
 			// Unsupported.

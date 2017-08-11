@@ -20,7 +20,9 @@
 
 #include "GdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
+
 #include "../cdrom_structs.h"
+#include "IsoPartition.hpp"
 
 // librpbase
 #include "librpbase/byteswap.h"
@@ -556,6 +558,56 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = blockRange->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);
+}
+
+/** GDI-specific functions. **/
+// TODO: "CdromReader" class?
+
+/**
+ * Get the track count.
+ * @return Track count.
+ */
+int GdiReader::trackCount(void) const
+{
+	RP_D(GdiReader);
+	return (int)d->trackMappings.size();
+}
+
+/**
+ * Get the starting LBA of the specified track number.
+ * @param trackNumber Track number. (1-based)
+ * @return Starting LBA, or -1 if the track number is invalid.
+ */
+int GdiReader::startingLBA(int trackNumber) const
+{
+	assert(trackNumber > 0);
+	assert(trackNumber <= 99);
+
+	RP_D(GdiReader);
+	if (trackNumber <= 0 || trackNumber > (int)d->trackMappings.size())
+		return -1;
+
+	const GdiReaderPrivate::BlockRange *blockRange = d->trackMappings[trackNumber-1];
+	if (!blockRange)
+		return -1;
+
+	return (int)blockRange->blockStart;
+}
+
+/**
+ * Open a track using IsoPartition.
+ * @param trackNumber Track number. (1-based)
+ * @return IsoPartition, or nullptr on error.
+ */
+IsoPartition *GdiReader::openIsoPartition(int trackNumber)
+{
+	int lba = startingLBA(trackNumber);
+	if (lba < 0)
+		return nullptr;
+
+	// Logical block size is 2048.
+	// ISO starting offset is the LBA.
+	return new IsoPartition(this, lba * 2048, lba);
 }
 
 }
