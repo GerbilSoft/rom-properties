@@ -179,7 +179,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	if (!isoPartition) {
 		if (discType == DISC_GDI) {
 			// TODO: GdiReader::openIsoPartition().
-			isoPartition = new IsoPartition(discReader, 0, 45000);
+			isoPartition = new IsoPartition(discReader, 45000*2048, 45000);
 		} else {
 			// Standalone track.
 			// Using the ISO start offset calculated earlier.
