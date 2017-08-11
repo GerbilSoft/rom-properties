@@ -59,8 +59,8 @@ class NESMappersPrivate
 		 */
 		struct SubmapperInfo {
 			uint8_t submapper;	// Submapper number.
-			const rp_char *desc;	// Description.
 			bool deprecated;	// Deprecated. (TODO: Show replacement?)
+			const rp_char *desc;	// Description.
 		};
 
 		// Submappers.
@@ -84,8 +84,8 @@ class NESMappersPrivate
 		 */
 		struct SubmapperEntry {
 			uint16_t mapper;		// Mapper number.
+			uint16_t info_size;		// Number of entries in info.
 			const SubmapperInfo *info;	// Submapper information.
-			int info_size;			// Number of entries in info.
 		};
 		static const SubmapperEntry submappers[];
 
@@ -427,66 +427,66 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 
 // MMC1
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc1_submappers[] = {
-	{1, _RP("SUROM"), true},
-	{2, _RP("SOROM"), true},
-	{3, _RP("MMC1A"), true},
-	{4, _RP("SXROM"), true},
-	{5, _RP("SEROM, SHROM, SH1ROM"), false},
+	{1, true,  _RP("SUROM")},
+	{2, true,  _RP("SOROM")},
+	{3, true,  _RP("MMC1A")},
+	{4, true,  _RP("SXROM")},
+	{5, false,  _RP("SEROM, SHROM, SH1ROM")},
 };
 
 // Discrete logic mappers: UxROM, CNROM, AxROM
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::discrete_logic_submappers[] = {
-	{1, _RP("Bus conflicts do not occur"), false},
-	{2, _RP("Bus conflicts occur, resulting in: bus AND rom"), false},
+	{1, false, _RP("Bus conflicts do not occur")},
+	{2, false, _RP("Bus conflicts occur, resulting in: bus AND rom")},
 };
 
 // MMC3
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc3_submappers[] = {
-	{0, _RP("MMC3C"), false},
-	{1, _RP("MMC6"), false},
-	{2, _RP("MMC3C with hard-wired mirroring"), true},
-	{3, _RP("MC-ACC"), false},
+	{0, false, _RP("MMC3C")},
+	{1, false, _RP("MMC6")},
+	{2, true,  _RP("MMC3C with hard-wired mirroring")},
+	{3, false, _RP("MC-ACC")},
 };
 
 // Irem G101
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::irem_g101_submappers[] = {
 	// TODO: Some field to indicate mirroring override?
-	{0, _RP("Programmable mirroring"), false},
-	{1, _RP("Fixed one-screen mirroring"), false},
+	{0, false, _RP("Programmable mirroring")},
+	{1, false, _RP("Fixed one-screen mirroring")},
 };
 
 // BNROM / NINA-001
 // TODO: Distinguish between these two for iNES ROMs.
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::bnrom_nina001_submappers[] = {
-	{1, _RP("NINA-001"), false},
-	{2, _RP("BNROM"), false},
+	{1, false, _RP("NINA-001")},
+	{2, false, _RP("BNROM")},
 };
 
 // Sunsoft-4
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::sunsoft4_submappers[] = {
-	{1, _RP("Dual Cartridge System (NTB-ROM)"), false},
+	{1, false, _RP("Dual Cartridge System (NTB-ROM)")},
 };
 
 // Codemasters
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::codemasters_submappers[] = {
-	{1, _RP("Programmable one-screen mirroring (Fire Hawk)"), false},
+	{1, false, _RP("Programmable one-screen mirroring (Fire Hawk)")},
 };
 
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper078_submappers[] = {
-	{1, _RP("Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)"), false},
-	{2, _RP("Fixed vertical mirroring + WRAM"), true},
-	{3, _RP("Programmable H/V mirroring (Holy Diver)"), false},
+	{1, false, _RP("Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)")},
+	{2, true,  _RP("Fixed vertical mirroring + WRAM")},
+	{3, false, _RP("Programmable H/V mirroring (Holy Diver)")},
 };
 
 // Namcot 175, 340
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::namcot_175_340_submappers[] = {
-	{1, _RP("Namcot 175 (fixed mirroring)"), false},
-	{2, _RP("Namcot 340 (programmable mirroring)"), false},
+	{1, false, _RP("Namcot 175 (fixed mirroring)")},
+	{2, false, _RP("Namcot 340 (programmable mirroring)")},
 };
 
 // Codemasters Quattro
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::quattro_submappers[] = {
-	{1, _RP("Aladdin Deck Enhancer"), false},
+	{1, false, _RP("Aladdin Deck Enhancer")},
 };
 
 /**
@@ -496,21 +496,22 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::quattro_submapp
  * It may be included if NES 2.0 submapper 0 acts differently from
  * iNES mappers.
  */
+#define NES2_SUBMAPPER(num, arr) {num, (uint16_t)ARRAY_SIZE(arr), arr}
 const NESMappersPrivate::SubmapperEntry NESMappersPrivate::submappers[] = {
-	{  1, mmc1_submappers, ARRAY_SIZE(mmc1_submappers)},				// MMC1
-	{  2, discrete_logic_submappers, ARRAY_SIZE(discrete_logic_submappers)},	// UxROM
-	{  3, discrete_logic_submappers, ARRAY_SIZE(discrete_logic_submappers)},	// CNROM
-	{  4, mmc3_submappers, ARRAY_SIZE(mmc3_submappers)},				// MMC3
-	{  7, discrete_logic_submappers, ARRAY_SIZE(discrete_logic_submappers)},	// AxROM
-	{ 32, irem_g101_submappers, ARRAY_SIZE(irem_g101_submappers)},			// Irem G101
-	{ 34, bnrom_nina001_submappers, ARRAY_SIZE(bnrom_nina001_submappers)},		// BNROM / NINA-001
-	{ 68, sunsoft4_submappers, ARRAY_SIZE(sunsoft4_submappers)},			// Sunsoft-4
-	{ 71, codemasters_submappers, ARRAY_SIZE(codemasters_submappers)},		// Codemasters
-	{ 78, mapper078_submappers, ARRAY_SIZE(mapper078_submappers)},
-	{210, namcot_175_340_submappers, ARRAY_SIZE(namcot_175_340_submappers)},	// Namcot 175, 340
-	{232, quattro_submappers, ARRAY_SIZE(quattro_submappers)},			// Codemasters Quattro
+	NES2_SUBMAPPER(  1, mmc1_submappers),			// MMC1
+	NES2_SUBMAPPER(  2, discrete_logic_submappers),		// UxROM
+	NES2_SUBMAPPER(  3, discrete_logic_submappers),		// CNROM
+	NES2_SUBMAPPER(  4, mmc3_submappers),			// MMC3
+	NES2_SUBMAPPER(  7, discrete_logic_submappers),		// AxROM
+	NES2_SUBMAPPER( 32, irem_g101_submappers),		// Irem G101
+	NES2_SUBMAPPER( 34, bnrom_nina001_submappers),		// BNROM / NINA-001
+	NES2_SUBMAPPER( 68, sunsoft4_submappers),		// Sunsoft-4
+	NES2_SUBMAPPER( 71, codemasters_submappers),		// Codemasters
+	NES2_SUBMAPPER( 78, mapper078_submappers),
+	NES2_SUBMAPPER(210, namcot_175_340_submappers),		// Namcot 175, 340
+	NES2_SUBMAPPER(232, quattro_submappers),		// Codemasters Quattro
 
-	{0, nullptr, 0}
+	{0, 0, nullptr}
 };
 
 /**
@@ -612,7 +613,7 @@ const rp_char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
 	}
 
 	// Do a binary search in submappers[].
-	const NESMappersPrivate::SubmapperEntry key = {(uint16_t)mapper, nullptr, 0};
+	const NESMappersPrivate::SubmapperEntry key = {(uint16_t)mapper, 0, nullptr};
 	const NESMappersPrivate::SubmapperEntry *res =
 		static_cast<const NESMappersPrivate::SubmapperEntry*>(bsearch(&key,
 			NESMappersPrivate::submappers,
@@ -623,7 +624,7 @@ const rp_char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
 		return nullptr;
 
 	// Do a minary search in res->info.
-	const NESMappersPrivate::SubmapperInfo key2 = {(uint8_t)submapper, nullptr, false};
+	const NESMappersPrivate::SubmapperInfo key2 = {(uint8_t)submapper, false, nullptr};
 	const NESMappersPrivate::SubmapperInfo *res2 =
 		static_cast<const NESMappersPrivate::SubmapperInfo*>(bsearch(&key2,
 			res->info, res->info_size,
