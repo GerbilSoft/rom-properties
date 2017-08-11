@@ -26,6 +26,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/RelatedFile.hpp"
 using namespace LibRpBase;
 
 // C includes.
@@ -60,6 +61,13 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 		RP_DISABLE_COPY(GdiReaderPrivate)
 
 	public:
+		// GDI filename.
+		rp_string filename;
+
+		// Number of logical 2048-byte blocks.
+		// Determined by the highest data track.
+		unsigned int blockCount;
+
 		// Block range mapping.
 		// NOTE: This currently *only* contains data tracks.
 		struct BlockRange {
@@ -92,17 +100,28 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int parseGdiFile(char *gdibuf);
+
+		/**
+		 * Open a track.
+		 * @param trackNumber Track number. (starts with 1)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int openTrack(int trackNumber);
 };
 
 /** GdiReaderPrivate **/
 
 GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	: super(q, file)
+	, blockCount(0)
 {
 	if (!this->file) {
 		// File could not be dup()'d.
 		return;
 	}
+
+	// Save the filename for later.
+	filename = this->file->filename();
 
 	// GDI file should be 4k or less.
 	int64_t fileSize = file->size();
@@ -138,6 +157,52 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 		q->m_lastError = EIO;
 		return;
 	}
+
+	// Open track 03 (primary data track) and the last data track.
+	if (trackMappings.size() >= 3) {
+		ret = openTrack(3);
+		if (ret != 0) {
+			// Error opening track 03.
+			close();
+			q->m_lastError = -ret;
+			return;
+		}
+	}
+
+	// Find the last data track.
+	int lastDataTrack = 0;	// 1-based; 0 is invalid.
+	for (int i = trackMappings.size()-1; i >= 0; i--) {
+		const BlockRange *blockRange = trackMappings[i];
+		if (blockRange) {
+			if ((int)blockRange->trackNumber > lastDataTrack) {
+				lastDataTrack = blockRange->trackNumber;
+			}
+		}
+	}
+
+	if (lastDataTrack > 0 && lastDataTrack != 3) {
+		ret = openTrack(lastDataTrack);
+		if (ret != 0) {
+			// Error opening the last data track.
+			close();
+			q->m_lastError = -ret;
+			return;
+		}
+	}
+
+	const BlockRange *const lastBlockRange = trackMappings[lastDataTrack-1];
+	if (!lastBlockRange) {
+		// Should not get here...
+		close();
+		q->m_lastError = EIO;
+		return;
+	}
+
+	// Disc parameters.
+	// A full Dreamcast disc has 549,150 sectors.
+	block_size = 2048;
+	blockCount = lastBlockRange->blockEnd + 1;
+	disc_size = blockCount * 2048;
 }
 
 GdiReaderPrivate::~GdiReaderPrivate()
@@ -268,6 +333,80 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 	}
 
 	// Done parsing the GDI.
+	// TODO: Sort by LBA?
+	return 0;
+}
+
+/**
+ * Open a track.
+ * @param trackNumber Track number. (starts with 1)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GdiReaderPrivate::openTrack(int trackNumber)
+{
+	assert(trackNumber > 0);
+	assert(trackNumber <= 99);
+	if (trackNumber <= 0 || trackNumber > 99) {
+		return -EINVAL;
+	}
+
+	// Check if this track exists.
+	// NOTE: trackNumber starts at 1, not 0.
+	if (trackNumber > (int)trackMappings.size()) {
+		// Track number is out of range.
+		return -ENOENT;
+	}
+
+	BlockRange *const blockRange = trackMappings[trackNumber-1];
+	if (!blockRange) {
+		// No block range. Track either doesn't exist
+		// or is an audio track.
+		return -ENOENT;
+	}
+
+	if (blockRange->file) {
+		// File is already open.
+		return 0;
+	}
+
+	// Separate the file extension.
+	rp_string basename = blockRange->filename;
+	rp_string ext;
+	size_t dotpos = basename.find_last_of(_RP_CHR('.'));
+	if (dotpos != rp_string::npos) {
+		ext = basename.substr(dotpos);
+		basename.resize(dotpos);
+	} else {
+		// No extension. Add one based on sector size.
+		ext = (blockRange->sectorSize == 2048 ? _RP(".iso") : _RP(".bin"));
+	}
+
+	// Open the related file.
+	IRpFile *file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
+	if (!file) {
+		// Unable to open the file.
+		// TODO: Return the actual error.
+		return -ENOENT;
+	}
+
+	// File opened. Get its size and calculate the end block.
+	int64_t fileSize = file->size();
+	if (fileSize <= 0) {
+		// Empty or invalid flie...
+		delete file;
+		return -EIO;
+	}
+
+	// Is the file a multiple of the sector size?
+	if (fileSize % blockRange->sectorSize != 0) {
+		// Not a multiple of the sector size.
+		delete file;
+		return -EIO;
+	}
+
+	// File opened.
+	blockRange->blockEnd = blockRange->blockStart + (unsigned int)(fileSize / blockRange->sectorSize) - 1;
+	blockRange->file = file;
 	return 0;
 }
 
