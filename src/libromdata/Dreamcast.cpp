@@ -87,6 +87,7 @@ class DreamcastPrivate : public RomDataPrivate
 		// Track 03 start address.
 		// ISO-9660 directories use physical offsets,
 		// not offsets relative to the start of the track.
+		// NOTE: Not used for GDI.
 		int iso_start_offset;
 
 		// 0GDTEX.PVR image.
@@ -176,7 +177,14 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	// Create the ISO-9660 file system reader if it isn't already opened.
 	// TODO: Support multi-track images.
 	if (!isoPartition) {
-		isoPartition = new IsoPartition(discReader, 0, iso_start_offset);
+		if (discType == DISC_GDI) {
+			// TODO: GdiReader::openIsoPartition().
+			isoPartition = new IsoPartition(discReader, 0, 45000);
+		} else {
+			// Standalone track.
+			// Using the ISO start offset calculated earlier.
+			isoPartition = new IsoPartition(discReader, 0, iso_start_offset);
+		}
 		if (!isoPartition->isOpen()) {
 			// Unable to open the ISO-9660 partition.
 			delete isoPartition;
@@ -283,10 +291,11 @@ Dreamcast::Dreamcast(IRpFile *file)
 
 		case DreamcastPrivate::DISC_GDI:
 			// GD-ROM cuesheet.
-			// FIXME: Not quite working yet, just testing the class.
+			// iso_start_offset isn't used for GDI.
 			d->discReader = new GdiReader(d->file);
-			delete d->discReader;
-			d->discReader = nullptr;
+			// Read the actual track 3 disc header.
+			// TODO: Get the track 3 starting position.
+			d->discReader->seekAndRead(45000*2048, &d->discHeader, sizeof(d->discHeader));
 			break;
 
 		default:

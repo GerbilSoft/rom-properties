@@ -203,6 +203,9 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	block_size = 2048;
 	blockCount = lastBlockRange->blockEnd + 1;
 	disc_size = blockCount * 2048;
+
+	// Reset the disc position.
+	pos = 0;
 }
 
 GdiReaderPrivate::~GdiReaderPrivate()
@@ -483,9 +486,6 @@ int GdiReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
  */
 int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 {
-	// FIXME: Update for blockRanges.
-	return 0;
-#if 0
 	// Read 'size' bytes of block 'blockIdx', starting at 'pos'.
 	// NOTE: This can only be called by SparseDiscReader,
 	// so the main assertions are already checked there.
@@ -508,14 +508,54 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 		return 0;
 	}
 
+	// Find the block.
+	// TODO: Cache this lookup somewhere or something.
+	const GdiReaderPrivate::BlockRange *blockRange = nullptr;
+	for (auto iter = d->blockRanges.cbegin(); iter != d->blockRanges.cend(); ++iter) {
+		// NOTE: Using volatile because it can change in d->openTrack().
+		const volatile GdiReaderPrivate::BlockRange *const vbr = &(*iter);
+		if (blockIdx < vbr->blockStart) {
+			// Not in this track.
+			continue;
+		}
+
+		// Is the track loaded?
+		if (vbr->blockEnd == 0) {
+			// Track isn't loaded. Load it.
+			int ret = d->openTrack(vbr->trackNumber);
+			if (ret != 0) {
+				// Unable to load the track.
+				// Skip for now.
+				continue;
+			}
+		}
+
+		// Check the end block.
+		if (vbr->blockEnd != 0 && blockIdx <= vbr->blockEnd) {
+			// Found the track.
+			blockRange = (const GdiReaderPrivate::BlockRange*)vbr;
+			break;
+		}
+	}
+
+	if (!blockRange) {
+		// Not found in any block range.
+		return 0;
+	}
+
+	assert(blockRange->file != nullptr);
+	if (!blockRange->file) {
+		// File *still* isn't open...
+		return 0;
+	}
+
 	// Go to the block.
 	// FIXME: Read the whole block so we can determine if this is Mode1 or Mode2.
 	// Mode1 data starts at byte 16; Mode2 data starts at byte 24.
-	const int64_t phys_pos = ((int64_t)blockIdx * d->physBlockSize) + 16 + pos;
-	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
-	m_lastError = d->file->lastError();
+	const int64_t phys_pos = ((int64_t)(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + 16 + pos;
+	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
+	m_lastError = blockRange->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);
-#endif
 }
 
 }
