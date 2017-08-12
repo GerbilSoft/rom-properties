@@ -346,6 +346,15 @@ LRESULT CALLBACK AboutTabPrivate::MultilineEditProc(
 			break;
 		}
 
+		case WM_GETDLGCODE: {
+			// Filter out DLGC_HASSETSEL.
+			// References:
+			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
+			// - https://stackoverflow.com/a/20884852
+			unsigned int code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~DLGC_HASSETSEL);
+		}
+
 		case WM_NCDESTROY:
 			// Remove the window subclass.
 			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
@@ -735,8 +744,6 @@ void AboutTabPrivate::setTabContents(int index)
 	rtfCtx.pos = 0;
 	EDITSTREAM es = { (DWORD_PTR)&rtfCtx, 0, EditStreamCallback };
 	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
-	// FIXME: This doesn't work for the initial setting.
-	Edit_SetSel(hRichEdit, -1, 0);
 }
 
 /**
