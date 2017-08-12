@@ -164,6 +164,11 @@ Files:
 Copyright: 2011-2016 Lee Thomason (www.grinninglizard.com)
 License: Zlib
 
+Files:
+ src/kde/columnresizer/
+Copyright: 2011-2016 Aurélien Gâteau and contributors.
+License: BSD-3-clause
+
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
