@@ -52,6 +52,9 @@ using LibRpBase::AboutTabText;
 #  include "nettle/version.h"
 # endif
 #endif
+#ifdef ENABLE_XML
+# include "tinyxml2.h"
+#endif
 
 #include "ui_AboutTab.h"
 class AboutTabPrivate
@@ -398,6 +401,26 @@ void AboutTabPrivate::initLibrariesTab(void)
 #  endif /* HAVE_NETTLE_3 */
 # endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
+
+	/** TinyXML2 **/
+#ifdef ENABLE_XML
+	sLibraries += brbr;
+	QString sXmlVersion = QLatin1String("TinyXML2 %1.%2.%3");
+	sXmlVersion = sXmlVersion.arg(TIXML2_MAJOR_VERSION)
+			.arg(TIXML2_MINOR_VERSION)
+			.arg(TIXML2_PATCH_VERSION);
+
+#if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
+	sLibraries += sIntCopyOf.arg(sXmlVersion)
+#else
+	// FIXME: Runtime version?
+	sLibraries += sCompiledWith.arg(sXmlVersion);
+#endif
+	sLibraries += br + QLatin1String(
+		"Copyright (C) 2000-2017 Lee Thomason\n"
+		"http://www.grinninglizard.com/\n");
+	sLibraries += sLicense.arg(QLatin1String("zlib license"));
+#endif /* HAVE_ZLIB */
 
 	// We're done building the string.
 	ui.lblLibraries->setText(sLibraries);
