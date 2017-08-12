@@ -877,9 +877,6 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 		if (dwStyle & ES_MULTILINE) {
-			// Store the object pointer so we can reference it later.
-			SetProp(hDlgItem, D_PTR_PROP, static_cast<HANDLE>(this));
-
 			// Subclass the control.
 			// TODO: Error handling?
 			SetWindowSubclass(hDlgItem,
