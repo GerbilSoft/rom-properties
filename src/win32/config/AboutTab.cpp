@@ -679,8 +679,8 @@ void AboutTabPrivate::setTabContents(int index)
 	rtfCtx.pos = 0;
 	EDITSTREAM es = { (DWORD_PTR)&rtfCtx, 0, EditStreamCallback };
 	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
-	// FIXME: Unselect the text. (This isn't working...)
-	Edit_SetSel(hRichEdit, 0, -1);
+	// FIXME: This doesn't work for the initial setting.
+	Edit_SetSel(hRichEdit, -1, 0);
 }
 
 /**
