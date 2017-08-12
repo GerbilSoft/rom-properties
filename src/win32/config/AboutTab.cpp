@@ -71,7 +71,9 @@ using std::wstring;
 #endif
 
 // Useful RTF strings.
+#define RTF_START "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n"
 #define RTF_BR "\\par\n"
+#define RTF_TAB "\\tab "
 #define RTF_BULLET "\\bullet "
 
 class AboutTabPrivate
@@ -150,6 +152,7 @@ class AboutTabPrivate
 		// Tab text. (RichText format)
 		string sCredits;
 		string sLibraries;
+		string sSupport;
 
 		/**
 		 * Initialize the program title text.
@@ -165,6 +168,11 @@ class AboutTabPrivate
 		 * Initialize the "Libraries" tab.
 		 */
 		void initLibrariesTab(void);
+
+		/**
+		 * Initialize the "Support" tab.
+		 */
+		void initSupportTab(void);
 
 		/**
 		 * Set tab contents.
@@ -547,7 +555,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits.reserve(4096);
 
 	// RTF starting sequence.
-	sCredits = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n";
+	sCredits = RTF_START;
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
 	sCredits += "Copyright (c) 2016-2017 by David Korth." RTF_BR
@@ -589,7 +597,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 
 		// Append the contributor's name.
-		sCredits += RTF_BR "\\tab " RTF_BULLET " ";
+		sCredits += RTF_BR RTF_TAB RTF_BULLET " ";
 		sCredits += rtfEscape(creditsData->name);
 		if (creditsData->url) {
 			// FIXME: Figure out how to get hyperlinks working.
@@ -622,7 +630,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries.reserve(4096);
 
 	// RTF starting sequence.
-	sLibraries = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n";
+	sLibraries = RTF_START;
 
 	// NOTE: We're only showing the "compiled with" version here,
 	// since the DLLs are delay-loaded and might not be available.
@@ -675,14 +683,51 @@ void AboutTabPrivate::initLibrariesTab(void)
 }
 
 /**
+ * Initialize the "Support" tab.
+ */
+void AboutTabPrivate::initSupportTab(void)
+{
+	sSupport.clear();
+	sSupport.reserve(4096);
+
+	// RTF starting sequence.
+	sSupport = RTF_START;
+
+	sSupport += "For technical support, you can visit the following websites:" RTF_BR;
+
+	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
+	     supportSite->name != nullptr; supportSite++)
+	{
+		sSupport += RTF_TAB RTF_BULLET " ";
+		sSupport += rtfEscape(supportSite->name);
+		sSupport += " <";
+		sSupport += rtfEscape(supportSite->url);
+		sSupport += '>';
+		sSupport += RTF_BR;
+	}
+
+	// Email the author.
+	sSupport += RTF_BR "You can also email the developer directly:" RTF_BR
+		RTF_TAB RTF_BULLET " David Korth <gerbilsoft@gerbilsoft.com>";
+
+	sSupport += "}";
+
+	// Add the "Support" tab.
+	TCITEM tcItem;
+	tcItem.mask = TCIF_TEXT;
+	tcItem.pszText = L"Support";
+	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 2, &tcItem);
+}
+
+/**
  * Set tab contents.
  * @param index Tab index.
  */
 void AboutTabPrivate::setTabContents(int index)
 {
 	assert(index >= 0);
-	assert(index <= 1);
-	if (unlikely(index < 0 || index > 1))
+	assert(index <= 2);
+	if (unlikely(index < 0 || index > 2))
 		return;
 
 	HWND hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
@@ -705,6 +750,9 @@ void AboutTabPrivate::setTabContents(int index)
 		case 1:
 			rtfCtx.str = &sLibraries;
 			break;
+		case 2:
+			rtfCtx.str = &sSupport;
+			break;
 		default:
 			// Should not get here...
 			assert(!"Invalid tab index.");
@@ -723,6 +771,7 @@ void AboutTabPrivate::init(void)
 	initProgramTitleText();
 	initCreditsTab();
 	initLibrariesTab();
+	initSupportTab();
 
 	// Adjust the RichEdit position.
 	assert(hWndPropSheet != nullptr);
