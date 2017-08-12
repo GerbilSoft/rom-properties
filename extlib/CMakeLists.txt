@@ -189,6 +189,8 @@ IF(USE_INTERNAL_XML)
 	# if they're being installed.
 	SET_EXTLIB_PROPERTIES(tinyxml2_static)
 	#SET_EXTLIB_PROPERTIES(tinyxml2)
+
+	# TODO: Set TinyXML2::tinyxml2 and use it in libromdata?
 ENDIF(USE_INTERNAL_XML)
 
 # Google Test
