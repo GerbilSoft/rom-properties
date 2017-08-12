@@ -137,9 +137,9 @@ void AboutTabPrivate::initProgramTitleText(void)
 			.arg(RP2Q(AboutTabText::prg_version));
 	if (AboutTabText::git_version) {
 		sPrgTitle += br + RP2Q(AboutTabText::git_version);
-	}
-	if (AboutTabText::git_describe) {
-		sPrgTitle += br + RP2Q(AboutTabText::git_describe);
+		if (AboutTabText::git_describe) {
+			sPrgTitle += br + RP2Q(AboutTabText::git_describe);
+		}
 	}
 
 	ui.lblTitle->setText(sPrgTitle);
