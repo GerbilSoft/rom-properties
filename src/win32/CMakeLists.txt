@@ -27,6 +27,7 @@ SET(rom-properties-win32_SRCS
 	config/DownloadsTab.cpp
 	config/CacheTab.cpp
 	config/KeyStore_OwnerDataCallback.cpp
+	config/AboutTab.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
@@ -49,6 +50,7 @@ SET(rom-properties-win32_H
 	config/DownloadsTab.hpp
 	config/CacheTab.hpp
 	config/KeyStore_OwnerDataCallback.hpp
+	config/AboutTab.hpp
 	resource.h
 	)
 

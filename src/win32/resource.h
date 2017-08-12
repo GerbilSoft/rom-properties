@@ -95,6 +95,7 @@
 #define IDD_CONFIG_CACHE                        112
 #define IDD_CONFIG_CACHE_XP                     113
 #define IDD_CONFIG_KEYMANAGER                   114
+#define IDD_CONFIG_ABOUT                        115
 
 // Image type priorities.
 #define IDC_IMAGETYPES_DESC1                    40001
@@ -130,5 +131,12 @@
 #define IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN     30303
 #define IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB      30304
 #endif /* ENABLE_DECRYPTION */
+
+// About
+#define IDC_ABOUT_TABCONTROL                    40401
+#define IDC_ABOUT_ICON                          40402
+#define IDC_ABOUT_LINE1                         40403
+#define IDC_ABOUT_LINE2                         40404
+#define IDC_ABOUT_VERSION                       40405
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */
