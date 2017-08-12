@@ -48,6 +48,15 @@ using std::wstring;
 
 // Windows: RichEdit control.
 #include <richedit.h>
+// NOTE: AURL_ENABLEURL is only defined if _RICHEDIT_VER >= 0x0800
+// but this seems to work on Windows XP.
+// NOTE 2: AURL_ENABLEEMAILADDR might only work on Win8+.
+#ifndef AURL_ENABLEURL
+# define AURL_ENABLEURL 1
+#endif
+#ifndef AURL_ENABLEEMAILADDR
+# define AURL_ENABLEEMAILADDR 2
+#endif
 
 // Other libraries.
 #ifdef HAVE_ZLIB
@@ -496,7 +505,6 @@ void AboutTabPrivate::initProgramTitleText(void)
 		}
 
 		// Adjust the tab control.
-		// TODO: Text control?
 		SetWindowPos(hTabControl, 0,
 			dlgMargin.left, topPos,
 			winRect.right - (dlgMargin.left*2),
@@ -726,6 +734,13 @@ void AboutTabPrivate::init(void)
 		tabRect.right - tabRect.left - (dlgMargin.left*2),
 		tabRect.bottom - tabRect.top - (dlgMargin.top*2),
 		SWP_NOZORDER | SWP_NOOWNERZORDER);
+
+	// Enable links.
+	DWORD eventMask = SendMessage(hRichEdit, EM_GETEVENTMASK, 0, 0);
+	SendMessage(hRichEdit, EM_SETEVENTMASK, 0, (LPARAM)(eventMask | ENM_LINK));
+	SendMessage(hRichEdit, EM_AUTOURLDETECT, AURL_ENABLEURL, 0);
+	// NOTE: Might only work on Win8+.
+	SendMessage(hRichEdit, EM_AUTOURLDETECT, AURL_ENABLEEMAILADDR, 0);
 
 	// Subclass the control.
 	// TODO: Error handling?
