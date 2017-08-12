@@ -40,6 +40,9 @@ class PropSheetIconPrivate
 		static HICON hIcon;
 		static HICON hIconSmall;
 
+		// 128x128 icon for the About tab.
+		static HICON hIcon128;
+
 		/**
 		 * Get the property sheet icons.
 		 * NOTE: This function should be called with pthread_once().
@@ -55,6 +58,9 @@ pthread_once_t PropSheetIconPrivate::once_control = PTHREAD_ONCE_INIT;
 // Property sheet icons.
 HICON PropSheetIconPrivate::hIcon = nullptr;
 HICON PropSheetIconPrivate::hIconSmall = nullptr;
+
+// 128x128 icon for the About tab.
+HICON PropSheetIconPrivate::hIcon128 = nullptr;
 
 /**
  * Get the property sheet icons.
@@ -91,6 +97,13 @@ void PropSheetIconPrivate::getPropSheetIcons(void)
 				GetSystemMetrics(SM_CXSMICON),
 				GetSystemMetrics(SM_CYSMICON), 0));
 
+			// Windows 7 has a 256x256 icon, so it will automatically
+			// select that and downscale.
+			// Windows XP does not, so it will upscale the 48x48 icon.
+			hIcon128 = static_cast<HICON>(LoadImage(
+				hDll, iconDllData[i].pszIcon, IMAGE_ICON,
+				128, 128, 0));
+
 			FreeLibrary(hDll);
 			return;
 		}
@@ -102,6 +115,7 @@ void PropSheetIconPrivate::getPropSheetIcons(void)
 	// No usable icon...
 	hIcon = nullptr;
 	hIconSmall = nullptr;
+	hIcon128 = nullptr;
 
 	// NOTE: pthread_once() has no way to indicate
 	// an error occurred, but that isn't important
@@ -134,4 +148,16 @@ HICON PropSheetIcon::getSmallIcon(void)
 	pthread_once(&PropSheetIconPrivate::once_control,
 		PropSheetIconPrivate::getPropSheetIcons);
 	return PropSheetIconPrivate::hIconSmall;
+}
+
+/**
+ * Get the 128x128 icon.
+ * @return 128x128 icon, or nullptr on error.
+ */
+HICON PropSheetIcon::get128Icon(void)
+{
+	// TODO: Handle errors.
+	pthread_once(&PropSheetIconPrivate::once_control,
+		PropSheetIconPrivate::getPropSheetIcons);
+	return PropSheetIconPrivate::hIcon128;
 }

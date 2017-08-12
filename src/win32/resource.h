@@ -133,10 +133,10 @@
 #endif /* ENABLE_DECRYPTION */
 
 // About
-#define IDC_ABOUT_TABCONTROL                    40401
-#define IDC_ABOUT_ICON                          40402
-#define IDC_ABOUT_LINE1                         40403
-#define IDC_ABOUT_LINE2                         40404
-#define IDC_ABOUT_VERSION                       40405
+#define IDC_ABOUT_ICON                          40401
+#define IDC_ABOUT_LINE1                         40402
+#define IDC_ABOUT_LINE2                         40403
+#define IDC_ABOUT_VERSION                       40404
+#define IDC_ABOUT_TABCONTROL                    40405
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */
