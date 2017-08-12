@@ -420,7 +420,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		"Copyright (C) 2000-2017 Lee Thomason\n"
 		"http://www.grinninglizard.com/\n");
 	sLibraries += sLicense.arg(QLatin1String("zlib license"));
-#endif /* HAVE_ZLIB */
+#endif /* ENABLE_XML */
 
 	// We're done building the string.
 	ui.lblLibraries->setText(sLibraries);
