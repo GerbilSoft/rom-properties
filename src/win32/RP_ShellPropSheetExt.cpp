@@ -875,15 +875,16 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
+		// We're also subclassing single-line EDIT controls to disable the
+		// initial selection. (DLGC_HASSETSEL)
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-		if (dwStyle & ES_MULTILINE) {
-			// Subclass the control.
-			// TODO: Error handling?
-			SetWindowSubclass(hDlgItem,
-				LibWin32Common::MultiLineEditProc,
-				reinterpret_cast<UINT_PTR>(cId),
-				reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
-		}
+		// TODO: Error handling?
+		SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
+			? LibWin32Common::MultiLineEditProc
+			: LibWin32Common::SingleLineEditProc;
+		SetWindowSubclass(hDlgItem, proc,
+			reinterpret_cast<UINT_PTR>(cId),
+			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
 	}
 
 	// Save the control in the appropriate set, if necessary.

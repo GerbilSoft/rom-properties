@@ -123,6 +123,24 @@ LRESULT CALLBACK MultiLineEditProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
+
+/**
+ * Subclass procedure for single-line EDIT and RICHEDIT controls.
+ * This procedure does the following:
+ * - DLGC_HASSETSEL is masked.
+ *
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
+ */
+LRESULT CALLBACK SingleLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 }
 
 #endif /* __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__ */

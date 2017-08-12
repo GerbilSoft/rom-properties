@@ -297,7 +297,7 @@ COLORREF getAltRowColor(void)
 }
 
 /**
- * Subclass procedure for EDIT and RICHEDIT controls.
+ * Subclass procedure for multi-line EDIT and RICHEDIT controls.
  * This procedure does the following:
  * - ENTER and ESCAPE are forwarded to the parent window.
  * - DLGC_HASSETSEL is masked.
@@ -339,6 +339,46 @@ LRESULT CALLBACK MultiLineEditProc(
 			break;
 		}
 
+		case WM_GETDLGCODE: {
+			// Filter out DLGC_HASSETSEL.
+			// References:
+			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
+			// - https://stackoverflow.com/a/20884852
+			unsigned int code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			return (code & ~DLGC_HASSETSEL);
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Subclass procedure for single-line EDIT and RICHEDIT controls.
+ * This procedure does the following:
+ * - DLGC_HASSETSEL is masked.
+ *
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
+ */
+LRESULT CALLBACK SingleLineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
 		case WM_GETDLGCODE: {
 			// Filter out DLGC_HASSETSEL.
 			// References:
