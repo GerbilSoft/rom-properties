@@ -272,16 +272,6 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 					}
 					break;
 
-				case NM_CLICK:
-				case NM_RETURN:
-					// SysLink control notification.
-					if (pHdr->idFrom == IDC_IMAGETYPES_CREDITS) {
-						// Open the URL.
-						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(lParam);
-						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
-					}
-					break;
-
 				case PSN_SETACTIVE:
 					// Enable the "Defaults" button.
 					RpPropSheet_EnableDefaults(GetParent(hDlg), true);
