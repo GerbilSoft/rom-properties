@@ -808,7 +808,7 @@ void AboutTabPrivate::init(void)
 		SWP_NOZORDER | SWP_NOOWNERZORDER);
 
 	// Enable links.
-	DWORD eventMask = SendMessage(hRichEdit, EM_GETEVENTMASK, 0, 0);
+	LRESULT eventMask = SendMessage(hRichEdit, EM_GETEVENTMASK, 0, 0);
 	SendMessage(hRichEdit, EM_SETEVENTMASK, 0, (LPARAM)(eventMask | ENM_LINK));
 	SendMessage(hRichEdit, EM_AUTOURLDETECT, AURL_ENABLEURL, 0);
 	// NOTE: Might only work on Win8+.
