@@ -106,7 +106,7 @@ int findMonospacedFont(LOGFONT *plfFontMono);
 COLORREF getAltRowColor(void);
 
 /**
- * Subclass procedure for EDIT and RICHEDIT controls.
+ * Subclass procedure for multi-line EDIT and RICHEDIT controls.
  * This procedure does the following:
  * - ENTER and ESCAPE are forwarded to the parent window.
  * - DLGC_HASSETSEL is masked.
@@ -118,7 +118,7 @@ COLORREF getAltRowColor(void);
  * @param uIdSubclass	Subclass ID. (usually the control ID)
  * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
  */
-LRESULT CALLBACK MultilineEditProc(
+LRESULT CALLBACK MultiLineEditProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData);

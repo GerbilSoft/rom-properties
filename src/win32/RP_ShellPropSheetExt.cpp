@@ -880,7 +880,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			// Subclass the control.
 			// TODO: Error handling?
 			SetWindowSubclass(hDlgItem,
-				LibWin32Common::MultilineEditProc,
+				LibWin32Common::MultiLineEditProc,
 				reinterpret_cast<UINT_PTR>(cId),
 				reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
 		}

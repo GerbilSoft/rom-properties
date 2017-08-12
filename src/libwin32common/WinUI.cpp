@@ -309,7 +309,7 @@ COLORREF getAltRowColor(void)
  * @param uIdSubclass	Subclass ID. (usually the control ID)
  * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
  */
-LRESULT CALLBACK MultilineEditProc(
+LRESULT CALLBACK MultiLineEditProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -351,7 +351,7 @@ LRESULT CALLBACK MultilineEditProc(
 		case WM_NCDESTROY:
 			// Remove the window subclass.
 			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultilineEditProc, uIdSubclass);
+			RemoveWindowSubclass(hWnd, MultiLineEditProc, uIdSubclass);
 			break;
 
 		default:

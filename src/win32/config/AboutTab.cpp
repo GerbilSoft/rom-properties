@@ -730,7 +730,7 @@ void AboutTabPrivate::init(void)
 	// Subclass the control.
 	// TODO: Error handling?
 	SetWindowSubclass(hRichEdit,
-		LibWin32Common::MultilineEditProc,
+		LibWin32Common::MultiLineEditProc,
 		IDC_ABOUT_RICHEDIT,
 		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
 
