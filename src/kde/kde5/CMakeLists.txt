@@ -104,6 +104,14 @@ IF(BUILD_KDE5)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 ${ZLIB_LIBRARY})
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 KF5::KIOWidgets)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 Qt5::Widgets Qt5::Gui Qt5::Core)
+
+	# Add zlib and png directories for the About tab.
+	IF(HAVE_ZLIB)
+		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde5 PRIVATE ${ZLIB_INCLUDE_DIRS})
+	ENDIF(HAVE_ZLIB)
+	IF(HAVE_PNG)
+		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde5 PRIVATE ${PNG_INCLUDE_DIRS})
+	ENDIF(HAVE_PNG)
 ENDIF(BUILD_KDE5)
 
 # Define -DQT_NO_DEBUG in release builds.
