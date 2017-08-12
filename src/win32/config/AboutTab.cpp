@@ -252,6 +252,28 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 			NMHDR *pHdr = reinterpret_cast<NMHDR*>(lParam);
 			switch (pHdr->code) {
+				case EN_LINK: {
+					// RichEdit link notification.
+					if (pHdr->idFrom != IDC_ABOUT_RICHEDIT)
+						break;
+
+					ENLINK *pENLink = reinterpret_cast<ENLINK*>(pHdr);
+					if (pENLink->msg == WM_LBUTTONUP) {
+						wchar_t urlbuf[256];
+						if ((pENLink->chrg.cpMax - pENLink->chrg.cpMin) >= ARRAY_SIZE(urlbuf)) {
+							// URL is too big.
+							break;
+						}
+						TEXTRANGE range;
+						range.chrg = pENLink->chrg;
+						range.lpstrText = urlbuf;
+						LRESULT lResult = SendMessage(pHdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM)&range);
+						if (lResult > 0 && lResult < ARRAY_SIZE(urlbuf)) {
+							ShellExecute(nullptr, L"open", urlbuf, nullptr, nullptr, SW_SHOW);
+						}
+					}
+				}
+
 				case NM_CLICK:
 				case NM_RETURN:
 					// SysLink control notification.
