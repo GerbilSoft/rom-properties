@@ -279,19 +279,24 @@ void AboutTabPrivate::initProgramTitleText(void)
 	// Set the icon.
 	HWND hStaticIcon = GetDlgItem(hWndPropSheet, IDC_ABOUT_ICON);
 	if (hStaticIcon) {
-		HICON hIcon = PropSheetIcon::get128Icon();
+		HICON hIcon = PropSheetIcon::get96Icon();
 		if (hIcon) {
-			Static_SetIcon(hStaticIcon, hIcon);
-			SetWindowPos(hStaticIcon, 0, 0, 0, 128, 128,
-				SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
-			ShowWindow(hStaticIcon, SW_SHOW);
-
 			// Get the dialog margin.
 			// 7x7 DLU margin is recommended by the Windows UX guidelines.
 			// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 			RECT dlgMargin = {7, 7, 8, 8};
 			MapDialogRect(hWndPropSheet, &dlgMargin);
-			const int leftPos = (dlgMargin.left * 2) + 128;
+			const int leftPos_icon = dlgMargin.left * 2;
+			const int leftPos = leftPos_icon + 96 + dlgMargin.left;
+			const int topPos = (dlgMargin.top * 2) + 96;
+
+			// Set the icon and move it over a bit.
+			Static_SetIcon(hStaticIcon, hIcon);
+			SetWindowPos(hStaticIcon, 0,
+				leftPos_icon, dlgMargin.top,
+				96, 96,
+				SWP_NOZORDER | SWP_NOOWNERZORDER);
+			ShowWindow(hStaticIcon, SW_SHOW);
 
 			// Window rectangle.
 			RECT winRect;
@@ -320,9 +325,9 @@ void AboutTabPrivate::initProgramTitleText(void)
 			assert(hTabControl != nullptr);
 			if (hTabControl) {
 				SetWindowPos(hTabControl, 0,
-					dlgMargin.left, leftPos,
+					dlgMargin.left, topPos,
 					winRect.right - (dlgMargin.left*2),
-					winRect.bottom - leftPos - dlgMargin.left,
+					winRect.bottom - topPos - dlgMargin.top,
 					SWP_NOZORDER | SWP_NOOWNERZORDER);
 			}
 		} else {
