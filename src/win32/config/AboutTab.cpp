@@ -247,93 +247,96 @@ void AboutTabPrivate::initBoldFont(HFONT hFont)
  */
 void AboutTabPrivate::initProgramTitleText(void)
 {
+	// Get the controls.
+	HWND hStaticIcon = GetDlgItem(hWndPropSheet, IDC_ABOUT_ICON);
+	HWND hStaticLine1 = GetDlgItem(hWndPropSheet, IDC_ABOUT_LINE1);
+	HWND hStaticVersion = GetDlgItem(hWndPropSheet, IDC_ABOUT_VERSION);
+	HWND hTabControl = GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL);
+	assert(hStaticIcon != nullptr);
+	assert(hStaticLine1 != nullptr);
+	assert(hStaticVersion != nullptr);
+	assert(hTabControl != nullptr);
+	if (!hStaticIcon || !hStaticLine1 || !hStaticVersion || !hTabControl) {
+		// Something went wrong...
+		return;
+	}
+
 	// Initialize the bold font.
 	HFONT hFontDlg = GetWindowFont(hWndPropSheet);
 	initBoldFont(hFontDlg);
 
 	// Set the bold font for the program title.
-	HWND hStaticLine1 = GetDlgItem(hWndPropSheet, IDC_ABOUT_LINE1);
-	assert(hStaticLine1 != nullptr);
-	if (hStaticLine1 && hFontBold) {
+	assert(hFontBold != nullptr);
+	if (hFontBold) {
 		SetWindowFont(hStaticLine1, hFontBold, FALSE);
 	}
 
 	// Version number.
-	HWND hStaticVersion = GetDlgItem(hWndPropSheet, IDC_ABOUT_VERSION);
-	if (hStaticVersion) {
-		wstring s_version;
-		s_version.reserve(128);
-		s_version= L"Version ";
-		s_version += RP2W_c(AboutTabText::prg_version);
-		if (AboutTabText::git_version) {
+	wstring s_version;
+	s_version.reserve(128);
+	s_version= L"Version ";
+	s_version += RP2W_c(AboutTabText::prg_version);
+	if (AboutTabText::git_version) {
+		s_version += L"\r\n";
+		s_version += RP2W_c(AboutTabText::git_version);
+		if (AboutTabText::git_describe) {
 			s_version += L"\r\n";
-			s_version += RP2W_c(AboutTabText::git_version);
-			if (AboutTabText::git_describe) {
-				s_version += L"\r\n";
-				s_version += RP2W_c(AboutTabText::git_describe);
-			}
+			s_version += RP2W_c(AboutTabText::git_describe);
 		}
-		SetWindowText(hStaticVersion, s_version.c_str());
 	}
+	SetWindowText(hStaticVersion, s_version.c_str());
 
 	// Set the icon.
-	HWND hStaticIcon = GetDlgItem(hWndPropSheet, IDC_ABOUT_ICON);
-	if (hStaticIcon) {
-		HICON hIcon = PropSheetIcon::get96Icon();
-		if (hIcon) {
-			// Get the dialog margin.
-			// 7x7 DLU margin is recommended by the Windows UX guidelines.
-			// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-			RECT dlgMargin = {7, 7, 8, 8};
-			MapDialogRect(hWndPropSheet, &dlgMargin);
-			const int leftPos_icon = dlgMargin.left * 2;
-			const int leftPos = leftPos_icon + 96 + dlgMargin.left;
-			const int topPos = (dlgMargin.top * 2) + 96;
+	HICON hIcon = PropSheetIcon::get96Icon();
+	if (hIcon) {
+		// Get the dialog margin.
+		// 7x7 DLU margin is recommended by the Windows UX guidelines.
+		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+		RECT dlgMargin = {7, 7, 8, 8};
+		MapDialogRect(hWndPropSheet, &dlgMargin);
+		const int leftPos_icon = dlgMargin.left * 2;
+		const int leftPos = leftPos_icon + 96 + dlgMargin.left;
+		const int topPos = (dlgMargin.top * 2) + 96;
 
-			// Set the icon and move it over a bit.
-			Static_SetIcon(hStaticIcon, hIcon);
-			SetWindowPos(hStaticIcon, 0,
-				leftPos_icon, dlgMargin.top,
-				96, 96,
+		// Set the icon and move it over a bit.
+		Static_SetIcon(hStaticIcon, hIcon);
+		SetWindowPos(hStaticIcon, 0,
+			leftPos_icon, dlgMargin.top,
+			96, 96,
+			SWP_NOZORDER | SWP_NOOWNERZORDER);
+		ShowWindow(hStaticIcon, SW_SHOW);
+
+		// Window rectangle.
+		RECT winRect;
+		GetClientRect(hWndPropSheet, &winRect);
+
+		// Adjust the other labels.
+		for (unsigned int id = IDC_ABOUT_LINE1; id <= IDC_ABOUT_VERSION; id++) {
+			HWND hLabel = GetDlgItem(hWndPropSheet, id);
+			assert(hLabel != nullptr);
+			if (!hLabel)
+				continue;
+
+			RECT rect_label;
+			GetClientRect(hLabel, &rect_label);
+			MapWindowPoints(hLabel, hWndPropSheet, (LPPOINT)&rect_label, 2);
+			SetWindowPos(hLabel, 0,
+				leftPos, rect_label.top,
+				winRect.right - leftPos - dlgMargin.left,
+				rect_label.bottom - rect_label.top,
 				SWP_NOZORDER | SWP_NOOWNERZORDER);
-			ShowWindow(hStaticIcon, SW_SHOW);
-
-			// Window rectangle.
-			RECT winRect;
-			GetClientRect(hWndPropSheet, &winRect);
-
-			// Adjust the other labels.
-			for (unsigned int id = IDC_ABOUT_LINE1; id <= IDC_ABOUT_VERSION; id++) {
-				HWND hLabel = GetDlgItem(hWndPropSheet, id);
-				assert(hLabel != nullptr);
-				if (!hLabel)
-					continue;
-
-				RECT rect_label;
-				GetClientRect(hLabel, &rect_label);
-				MapWindowPoints(hLabel, hWndPropSheet, (LPPOINT)&rect_label, 2);
-				SetWindowPos(hLabel, 0,
-					leftPos, rect_label.top,
-					winRect.right - leftPos - dlgMargin.left,
-					rect_label.bottom - rect_label.top,
-					SWP_NOZORDER | SWP_NOOWNERZORDER);
-			}
-
-			// Adjust the tab control.
-			// TODO: Text control?
-			HWND hTabControl = GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL);
-			assert(hTabControl != nullptr);
-			if (hTabControl) {
-				SetWindowPos(hTabControl, 0,
-					dlgMargin.left, topPos,
-					winRect.right - (dlgMargin.left*2),
-					winRect.bottom - topPos - dlgMargin.top,
-					SWP_NOZORDER | SWP_NOOWNERZORDER);
-			}
-		} else {
-			// No icon...
-			ShowWindow(hStaticIcon, SW_HIDE);
 		}
+
+		// Adjust the tab control.
+		// TODO: Text control?
+		SetWindowPos(hTabControl, 0,
+			dlgMargin.left, topPos,
+			winRect.right - (dlgMargin.left*2),
+			winRect.bottom - topPos - dlgMargin.top,
+			SWP_NOZORDER | SWP_NOOWNERZORDER);
+	} else {
+		// No icon...
+		ShowWindow(hStaticIcon, SW_HIDE);
 	}
 }
 
