@@ -138,5 +138,6 @@
 #define IDC_ABOUT_LINE2                         40403
 #define IDC_ABOUT_VERSION                       40404
 #define IDC_ABOUT_TABCONTROL                    40405
+#define IDC_ABOUT_RICHEDIT                      40406
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

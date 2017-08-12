@@ -92,6 +92,7 @@ class AboutTabPrivate
 		void initProgramTitleText(void);
 
 	public:
+
 		/**
 		 * Initialize the dialog.
 		 */
@@ -346,6 +347,40 @@ void AboutTabPrivate::initProgramTitleText(void)
 void AboutTabPrivate::init(void)
 {
 	initProgramTitleText();
+
+	// Adjust the RichEdit position.
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet) {
+		// Something went wrong...
+		return;
+	}
+
+	HWND hTabControl = GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL);
+	HWND hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
+	assert(hTabControl != nullptr);
+	assert(hRichEdit != nullptr);
+	if (!hTabControl || !hRichEdit) {
+		// Something went wrong...
+		return;
+	}
+
+	RECT winRect, tabRect;
+	GetClientRect(hWndPropSheet, &winRect);
+	GetClientRect(hTabControl, &tabRect);
+	MapWindowPoints(hTabControl, hWndPropSheet, (LPPOINT)&tabRect, 2);
+	TabCtrl_AdjustRect(hTabControl, FALSE, &tabRect);
+
+	// Dialog margins.
+	RECT dlgMargin = {7, 7, 8, 8};
+	MapDialogRect(hWndPropSheet, &dlgMargin);
+
+	// Set the RichEdit's position.
+	SetWindowPos(hRichEdit, 0,
+		tabRect.left + dlgMargin.left,
+		tabRect.top + dlgMargin.top,
+		tabRect.right - tabRect.left - (dlgMargin.left*2),
+		tabRect.bottom - tabRect.top - (dlgMargin.top*2),
+		SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
 /** AboutTab **/

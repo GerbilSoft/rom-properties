@@ -97,9 +97,18 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES | ICC_PROGRESS_CLASS;
+	initCommCtrl.dwICC =
+		ICC_LISTVIEW_CLASSES |
+		ICC_LINK_CLASS |
+		ICC_TAB_CLASSES |
+		ICC_PROGRESS_CLASS;
+
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
+
+	// Load RICHED20.DLL for RICHEDIT_CLASS.
+	// TODO: What if this fails?
+	HMODULE hRichEd20 = LoadLibrary(L"RICHED20.DLL");
 
 	// Initialize the property sheet tabs.
 
