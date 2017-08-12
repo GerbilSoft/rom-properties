@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "stdafx.h"
@@ -25,6 +24,7 @@
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using LibRpBase::AboutTabText;
 
@@ -34,10 +34,19 @@ using LibRpBase::AboutTabText;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cstring>
 
 // C++ includes.
 #include <string>
+using std::string;
 using std::wstring;
+
+// Windows: RichEdit control.
+#include <richedit.h>
+
+// Useful RTF strings.
+#define RTF_BR "\\par\n"
+#define RTF_BULLET "\\bullet "
 
 class AboutTabPrivate
 {
@@ -86,10 +95,37 @@ class AboutTabPrivate
 		void initBoldFont(HFONT hFont);
 
 	protected:
+		// Current RichText streaming context.
+		struct RTF_CTX {
+			const string *str;
+			size_t pos;
+		};
+		RTF_CTX rtfCtx;
+
+		/**
+		 * RTF EditStream callback.
+		 * @param dwCookie	[in] Pointer to RTF_CTX.
+		 * @param lpBuff	[out] Output buffer.
+		 * @param cb		[in] Number of bytes to write.
+		 * @param pcb		[out] Number of bytes actually written.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static DWORD CALLBACK EditStreamCallback(_In_ DWORD_PTR dwCookie,
+			_Out_ LPBYTE pbBuff, _In_ LONG cb, _Out_ LONG *pcb);
+
+	protected:
+		// Tab text. (RichText format)
+		string sCredits;
+
 		/**
 		 * Initialize the program title text.
 		 */
 		void initProgramTitleText(void);
+
+		/**
+		 * Initialize the "Credits" tab.
+		 */
+		void initCreditsTab(void);
 
 	public:
 
@@ -105,7 +141,9 @@ AboutTabPrivate::AboutTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, hFontBold(nullptr)
-{ }
+{
+	memset(&rtfCtx, 0, sizeof(rtfCtx));
+}
 
 AboutTabPrivate::~AboutTabPrivate()
 {
@@ -244,6 +282,47 @@ void AboutTabPrivate::initBoldFont(HFONT hFont)
 }
 
 /**
+ * RTF EditStream callback.
+ * @param dwCookie	[in] Pointer to RTF_CTX.
+ * @param lpBuff	[out] Output buffer.
+ * @param cb		[in] Number of bytes to write.
+ * @param pcb		[out] Number of bytes actually written.
+ * @return 0 on success; non-zero on error.
+ */
+DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
+	_In_ DWORD_PTR dwCookie,
+	_Out_ LPBYTE pbBuff,
+	_In_ LONG cb,
+	_Out_ LONG *pcb)
+{
+	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20070110-13/?p=28463
+	RTF_CTX *const rtfCtx = reinterpret_cast<RTF_CTX*>(dwCookie);
+	if (!rtfCtx->str) {
+		// No string.
+		*pcb = 0;
+		return -1;
+	}
+
+	if (rtfCtx->pos >= rtfCtx->str->size()) {
+		// No string data left.
+		*pcb = 0;
+		return 0;
+	}
+
+	// Check how much data we have left.
+	LONG remain = (LONG)(rtfCtx->str->size() - rtfCtx->pos);
+	if (cb > remain) {
+		cb = remain;
+	}
+
+	// Copy the string data.
+	memcpy(pbBuff, &rtfCtx->str->data()[rtfCtx->pos], cb);
+	rtfCtx->pos += cb;
+	*pcb = cb;
+	return 0;
+}
+
+/**
  * Initialize the program title text.
  */
 void AboutTabPrivate::initProgramTitleText(void)
@@ -342,11 +421,89 @@ void AboutTabPrivate::initProgramTitleText(void)
 }
 
 /**
+ * Initialize the "Credits" tab.
+ */
+void AboutTabPrivate::initCreditsTab(void)
+{
+	sCredits.clear();
+	sCredits.reserve(4096);
+
+	// RTF starting sequence.
+	sCredits = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n";
+	// FIXME: Figure out how to get links to work without
+	// resorting to manually adding CFE_LINK data...
+	sCredits += "Copyright (c) 2016-2017 by David Korth." RTF_BR
+		"This program is licensed under the GNU GPL v2 or later." RTF_BR
+		"https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html";
+
+	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
+	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
+	     creditsData->type < AboutTabText::CT_MAX; creditsData++)
+	{
+		if (creditsData->type != AboutTabText::CT_CONTINUE &&
+		    creditsData->type != lastCreditType)
+		{
+			// New credit type.
+			sCredits += RTF_BR RTF_BR;
+			sCredits += "\\b ";
+
+			switch (creditsData->type) {
+				case AboutTabText::CT_DEVELOPER:
+					sCredits += "Developers:";
+					break;
+
+				case AboutTabText::CT_CONTRIBUTOR:
+					sCredits += "Contributors:";
+					break;
+
+				case AboutTabText::CT_TRANSLATOR:
+					sCredits += "Translators:";
+					break;
+
+				case AboutTabText::CT_CONTINUE:
+				case AboutTabText::CT_MAX:
+				default:
+					assert(!"Invalid credit type.");
+					break;
+			}
+
+			sCredits += "\\b0 ";
+		}
+
+		// Append the contributor's name.
+		sCredits += RTF_BR "\\tab " RTF_BULLET " ";
+		// FIXME: Escape UTF-8 for RTF.
+		sCredits += RP2U8_c(creditsData->name);
+		if (creditsData->url) {
+			// FIXME: Figure out how to get hyperlinks working.
+			sCredits += " <";
+			sCredits += RP2U8_c(creditsData->linkText);
+			sCredits += '>';
+		}
+		if (creditsData->sub) {
+			// FIXME: Escape UTF-8 for RTF.
+			sCredits += " (";
+			sCredits += RP2U8_c(creditsData->sub);
+			sCredits += ')';
+		}
+	}
+
+	sCredits += "}";
+
+	// Add the "Credits" tab.
+	TCITEM tcItem;
+	tcItem.mask = TCIF_TEXT;
+	tcItem.pszText = L"Credits";
+	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 0, &tcItem);
+}
+
+/**
  * Initialize the dialog.
  */
 void AboutTabPrivate::init(void)
 {
 	initProgramTitleText();
+	initCreditsTab();
 
 	// Adjust the RichEdit position.
 	assert(hWndPropSheet != nullptr);
@@ -381,6 +538,20 @@ void AboutTabPrivate::init(void)
 		tabRect.right - tabRect.left - (dlgMargin.left*2),
 		tabRect.bottom - tabRect.top - (dlgMargin.top*2),
 		SWP_NOZORDER | SWP_NOOWNERZORDER);
+
+	// FIXME: Figure out how to get links to work without
+	// resorting to manually adding CFE_LINK data...
+
+	// Set credits text by default.
+	// NOTE: EM_SETTEXTEX doesn't seem to work.
+	// We'll need to stream in the text instead.
+	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20070110-13/?p=28463
+	rtfCtx.str = &sCredits;
+	rtfCtx.pos = 0;
+	EDITSTREAM es = { (DWORD_PTR)&rtfCtx, 0, EditStreamCallback };
+	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+	// FIXME: Unselect the text. (This isn't working...)
+	Edit_SetSel(hRichEdit, 0, -1);
 }
 
 /** AboutTab **/
