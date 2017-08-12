@@ -42,9 +42,12 @@ const rp_char *const AboutTabText::git_version = nullptr;
 const rp_char *const AboutTabText::git_describe = nullptr;
 #endif
 
-/** Credits. **/
+/** Credits **/
 
-// Credits data.
+/**
+ * Credits data.
+ * Ends with CT_MAX.
+ */
 const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 	// Developers
 	{CT_DEVELOPER,		_RP("David Korth"), _RP("mailto:gerbilsoft@gerbilsoft.com"), _RP("gerbilsoft@gerbilsoft.com"), nullptr},
@@ -55,6 +58,20 @@ const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 
 	// End of list
 	{CT_MAX, nullptr, nullptr, nullptr, nullptr}
+};
+
+/** Support **/
+
+/**
+ * Support sites.
+ * Ends with nullptr.
+ */
+const AboutTabText::SupportSite_t AboutTabText::SupportSites[] = {
+	{_RP("GitHub: GerbilSoft/rom-properties"), _RP("https://github.com/GerbilSoft/rom-properties")},
+	{_RP("Sonic Retro"), _RP("https://forums.sonicretro.org/index.php?showtopic=35692")},
+	{_RP("GBAtemp"), _RP("https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/")},
+
+	{nullptr, nullptr}
 };
 
 }

@@ -43,7 +43,7 @@ class AboutTabText {
 		static const rp_char *const git_describe;
 
 	public:
-		/** Credits. **/
+		/** Credits **/
 
 		enum CreditType_t {
 			CT_CONTINUE = 0,	// Continue previous type.
@@ -62,9 +62,24 @@ class AboutTabText {
 			const rp_char *sub;
 		};
 
-		// Array of credits.
-		// Ends with CT_MAX.
+		/**
+		 * Credits data.
+		 * Ends with CT_MAX.
+		 */
 		static const CreditsData_t CreditsData[];
+
+		/** Support **/
+
+		struct SupportSite_t {
+			const rp_char *name;
+			const rp_char *url;
+		};
+
+		/**
+		 * Support sites.
+		 * Ends with nullptr.
+		 */
+		static const SupportSite_t SupportSites[];
 };
 
 }

@@ -449,26 +449,13 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport = AboutTab::tr(
 		"For technical support, you can visit the following websites:") + br;
 
-	struct supportSite_t {
-		const char *name;
-		const char *url;
-	};
-
-	// Support sites.
-	const supportSite_t supportSites[] = {
-		{QT_TRANSLATE_NOOP(AboutTab, "GitHub: GerbilSoft/rom-properties"), "https://github.com/GerbilSoft/rom-properties"},
-		{QT_TRANSLATE_NOOP(AboutTab, "Sonic Retro"), "https://forums.sonicretro.org/index.php?showtopic=35692"},
-		{QT_TRANSLATE_NOOP(AboutTab, "GBAtemp"), "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
-		{nullptr, nullptr}
-	};
-
-	for (const supportSite_t *supportSite = &supportSites[0];
+	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
 	     supportSite->name != nullptr; supportSite++)
 	{
 		QString siteUrlHtml = QLatin1String("<a href=\"") +
-					QLatin1String(supportSite->url) +
+					RP2Q(supportSite->url) +
 					QLatin1String("\">") +
-					QLatin1String(supportSite->name) +
+					RP2Q(supportSite->name) +
 					QLatin1String("</a>");
 
 		sSupport += sIndent + chrBullet + QChar(L' ') + siteUrlHtml + br;
