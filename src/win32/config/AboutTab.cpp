@@ -94,6 +94,9 @@ class AboutTabPrivate
 		 */
 		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
+		// Subclass procedure for ES_MULTILINE EDIT controls.
+		static LRESULT CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 	public:
 		// Property sheet.
 		HPROPSHEETPAGE hPropSheetPage;
@@ -301,6 +304,59 @@ UINT CALLBACK AboutTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAG
 	}
 
 	return FALSE;
+}
+
+/**
+ * Subclass procedure for ES_MULTILINE EDIT controls.
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	RP_ShellPropSheetExt*
+ */
+LRESULT CALLBACK AboutTabPrivate::MultilineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	if (!dwRefData) {
+		// No RP_ShellPropSheetExt. Can't do anything...
+		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	}
+	AboutTabPrivate *const d =
+		reinterpret_cast<AboutTabPrivate*>(dwRefData);
+
+	switch (uMsg) {
+		case WM_KEYDOWN: {
+			// Work around Enter/Escape issues.
+			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			switch (wParam) {
+				case VK_RETURN:
+					SendMessage(GetParent(d->hWndPropSheet), WM_COMMAND, IDOK, 0);
+					return TRUE;
+
+				case VK_ESCAPE:
+					SendMessage(GetParent(d->hWndPropSheet), WM_COMMAND, IDCANCEL, 0);
+					return TRUE;
+
+				default:
+					break;
+			}
+			break;
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultilineEditProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /**
@@ -725,6 +781,12 @@ void AboutTabPrivate::init(void)
 		tabRect.right - tabRect.left - (dlgMargin.left*2),
 		tabRect.bottom - tabRect.top - (dlgMargin.top*2),
 		SWP_NOZORDER | SWP_NOOWNERZORDER);
+
+	// Subclass the control.
+	// TODO: Error handling?
+	SetWindowSubclass(hRichEdit, MultilineEditProc,
+		IDC_ABOUT_RICHEDIT,
+		reinterpret_cast<DWORD_PTR>(this));
 
 	// Set tab contents to Credits.
 	setTabContents(0);
