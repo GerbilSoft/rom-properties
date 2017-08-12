@@ -125,6 +125,14 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 TARGET_LINK_LIBRARIES(rom-properties cachemgr16 romdata16 rpbase16 win32common)
 TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32 wtsapi32)
 
+# Add zlib and png directories for the About tab.
+IF(HAVE_ZLIB)
+	TARGET_INCLUDE_DIRECTORIES(rom-properties PRIVATE ${ZLIB_INCLUDE_DIRS})
+ENDIF(HAVE_ZLIB)
+IF(HAVE_PNG)
+	TARGET_INCLUDE_DIRECTORIES(rom-properties PRIVATE ${PNG_INCLUDE_DIRS})
+ENDIF(HAVE_PNG)
+
 # Delay-load some Windows system libraries.
 # TODO: MinGW delay-load?
 IF(MSVC)

@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpbase.h"
+
 #include "AboutTab.hpp"
 #include "resource.h"
 
@@ -43,6 +45,15 @@ using std::wstring;
 
 // Windows: RichEdit control.
 #include <richedit.h>
+
+// Other libraries.
+#ifdef HAVE_ZLIB
+# include <zlib.h>
+#endif
+#ifdef HAVE_PNG
+# include "librpbase/img/APNG_dlopen.h"
+# include <png.h>
+#endif
 
 // Useful RTF strings.
 #define RTF_BR "\\par\n"
@@ -123,6 +134,7 @@ class AboutTabPrivate
 	protected:
 		// Tab text. (RichText format)
 		string sCredits;
+		string sLibraries;
 
 		/**
 		 * Initialize the program title text.
@@ -133,6 +145,17 @@ class AboutTabPrivate
 		 * Initialize the "Credits" tab.
 		 */
 		void initCreditsTab(void);
+
+		/**
+		 * Initialize the "Libraries" tab.
+		 */
+		void initLibrariesTab(void);
+
+		/**
+		 * Set tab contents.
+		 * @param index Tab index.
+		 */
+		void setTabContents(int index);
 
 	public:
 
@@ -224,6 +247,18 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					// Disable the "Defaults" button.
 					RpPropSheet_EnableDefaults(GetParent(hDlg), false);
 					break;
+
+				case TCN_SELCHANGE: {
+					// Tab change. Make sure this is the correct WC_TABCONTROL.
+					HWND hTabControl = GetDlgItem(hDlg, IDC_ABOUT_TABCONTROL);
+					assert(hTabControl != nullptr);
+					if (hTabControl) {
+						// Set the tab contents.
+						int index = TabCtrl_GetCurSel(hTabControl);
+						d->setTabContents(index);
+					}
+					break;
+				}
 
 				default:
 					break;
@@ -543,12 +578,98 @@ void AboutTabPrivate::initCreditsTab(void)
 }
 
 /**
+ * Initialize the "Libraries" tab.
+ */
+void AboutTabPrivate::initLibrariesTab(void)
+{
+	sLibraries.clear();
+	sLibraries.reserve(4096);
+
+	// RTF starting sequence.
+	sLibraries = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n";
+
+	// NOTE: We're only showing the "compiled with" version here,
+	// since the DLLs are delay-loaded and might not be available.
+
+	/** zlib **/
+#ifdef HAVE_ZLIB
+	sLibraries += "Compiled with zlib " ZLIB_VERSION "." RTF_BR
+		"Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler." RTF_BR
+		"http://www.zlib.net/" RTF_BR
+		"License: zlib license";
+#endif /* HAVE_ZLIB */
+
+	/** libpng **/
+#ifdef HAVE_PNG
+	sLibraries += RTF_BR RTF_BR
+		"Compiled with libpng " PNG_LIBPNG_VER_STRING "." RTF_BR
+		"libpng version 1.6.31 - July 27, 2017" RTF_BR
+		"Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson" RTF_BR
+		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
+		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
+		"License: libpng license";
+#endif /* HAVE_PNG */
+
+	sLibraries += "}";
+
+	// Add the "Libraries" tab.
+	TCITEM tcItem;
+	tcItem.mask = TCIF_TEXT;
+	tcItem.pszText = L"Libraries";
+	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 1, &tcItem);
+}
+
+/**
+ * Set tab contents.
+ * @param index Tab index.
+ */
+void AboutTabPrivate::setTabContents(int index)
+{
+	assert(index >= 0);
+	assert(index <= 1);
+	if (index < 0 || index > 1)
+		return;
+
+	HWND hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
+	assert(hRichEdit != nullptr);
+	if (!hRichEdit) {
+		// Something went wrong...
+		return;
+	}
+
+	// FIXME: Figure out how to get links to work without
+	// resorting to manually adding CFE_LINK data...
+
+	// NOTE: EM_SETTEXTEX doesn't seem to work.
+	// We'll need to stream in the text instead.
+	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20070110-13/?p=28463
+	switch (index) {
+		case 0:
+			rtfCtx.str = &sCredits;
+			break;
+		case 1:
+			rtfCtx.str = &sLibraries;
+			break;
+		default:
+			// Should not get here...
+			assert(!"Invalid tab index.");
+			return;
+	}
+	rtfCtx.pos = 0;
+	EDITSTREAM es = { (DWORD_PTR)&rtfCtx, 0, EditStreamCallback };
+	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+	// FIXME: Unselect the text. (This isn't working...)
+	Edit_SetSel(hRichEdit, 0, -1);
+}
+
+/**
  * Initialize the dialog.
  */
 void AboutTabPrivate::init(void)
 {
 	initProgramTitleText();
 	initCreditsTab();
+	initLibrariesTab();
 
 	// Adjust the RichEdit position.
 	assert(hWndPropSheet != nullptr);
@@ -584,19 +705,8 @@ void AboutTabPrivate::init(void)
 		tabRect.bottom - tabRect.top - (dlgMargin.top*2),
 		SWP_NOZORDER | SWP_NOOWNERZORDER);
 
-	// FIXME: Figure out how to get links to work without
-	// resorting to manually adding CFE_LINK data...
-
-	// Set credits text by default.
-	// NOTE: EM_SETTEXTEX doesn't seem to work.
-	// We'll need to stream in the text instead.
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20070110-13/?p=28463
-	rtfCtx.str = &sCredits;
-	rtfCtx.pos = 0;
-	EDITSTREAM es = { (DWORD_PTR)&rtfCtx, 0, EditStreamCallback };
-	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
-	// FIXME: Unselect the text. (This isn't working...)
-	Edit_SetSel(hRichEdit, 0, -1);
+	// Set tab contents to Credits.
+	setTabContents(0);
 }
 
 /** AboutTab **/
