@@ -138,7 +138,8 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 
 ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
-	, colResize0(colResizeCbo)
+	, colResize0(nullptr)
+	, colResizeCbo(nullptr)
 	, cboImageType_lastAdded(nullptr)
 	, mapperCboImageType(new QSignalMapper(q))
 	, pSettings(nullptr)
