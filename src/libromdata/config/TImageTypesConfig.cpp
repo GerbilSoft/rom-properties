@@ -33,6 +33,7 @@
 
 // RomData subclasses with images.
 #include "../Amiibo.hpp"
+#include "../Dreamcast.hpp"
 #include "../DreamcastSave.hpp"
 #include "../GameCube.hpp"
 #include "../GameCubeSave.hpp"
@@ -63,6 +64,7 @@ template<typename ComboBox>
 const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
 	SysDataEntry(Amiibo,		_RP("amiibo")),
 	SysDataEntry(NintendoBadge,	_RP("Badge Arcade")),
+	SysDataEntry(Dreamcast,		_RP("Dreamcast")),
 	SysDataEntry(DreamcastSave,	_RP("Dreamcast Saves")),
 	SysDataEntry(GameCube,		_RP("GameCube / Wii")),
 	SysDataEntry(GameCubeSave,	_RP("GameCube Saves")),
