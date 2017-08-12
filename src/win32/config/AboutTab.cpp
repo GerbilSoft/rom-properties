@@ -609,7 +609,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 #ifdef HAVE_ZLIB
 	sLibraries += "Compiled with zlib " ZLIB_VERSION "." RTF_BR
 		"Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler." RTF_BR
-		"http://www.zlib.net/" RTF_BR
+		"https://zlib.net/" RTF_BR
 		"License: zlib license";
 #endif /* HAVE_ZLIB */
 
@@ -621,6 +621,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		"Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson" RTF_BR
 		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
 		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
+		"http://www.libpng.org/pub/png/libpng.html" RTF_BR
 		"License: libpng license";
 #endif /* HAVE_PNG */
 
