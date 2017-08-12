@@ -252,7 +252,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					// Tab change. Make sure this is the correct WC_TABCONTROL.
 					HWND hTabControl = GetDlgItem(hDlg, IDC_ABOUT_TABCONTROL);
 					assert(hTabControl != nullptr);
-					if (hTabControl) {
+					if (likely(hTabControl)) {
 						// Set the tab contents.
 						int index = TabCtrl_GetCurSel(hTabControl);
 						d->setTabContents(index);
@@ -308,7 +308,7 @@ void AboutTabPrivate::initBoldFont(HFONT hFont)
 {
 	// TODO: Combine with RP_ShellPropSheetExt's version.
 	assert(hFont != nullptr);
-	if (!hFont || hFontBold) {
+	if (unlikely(!hFont) || hFontBold) {
 		// No base font, or the bold font
 		// is already initialized.
 		return;
@@ -372,7 +372,7 @@ DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
 string AboutTabPrivate::rtfEscape(const rp_char *str)
 {
 	assert(str != nullptr);
-	if (!str) {
+	if (unlikely(!str)) {
 		return string();
 	}
 
@@ -418,7 +418,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	assert(hStaticLine1 != nullptr);
 	assert(hStaticVersion != nullptr);
 	assert(hTabControl != nullptr);
-	if (!hStaticIcon || !hStaticLine1 || !hStaticVersion || !hTabControl) {
+	if (unlikely(!hStaticIcon || !hStaticLine1 || !hStaticVersion || !hTabControl)) {
 		// Something went wrong...
 		return;
 	}
@@ -429,7 +429,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 
 	// Set the bold font for the program title.
 	assert(hFontBold != nullptr);
-	if (hFontBold) {
+	if (unlikely(hFontBold)) {
 		SetWindowFont(hStaticLine1, hFontBold, FALSE);
 	}
 
@@ -476,7 +476,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 		for (unsigned int id = IDC_ABOUT_LINE1; id <= IDC_ABOUT_VERSION; id++) {
 			HWND hLabel = GetDlgItem(hWndPropSheet, id);
 			assert(hLabel != nullptr);
-			if (!hLabel)
+			if (unlikely(!hLabel))
 				continue;
 
 			RECT rect_label;
@@ -627,12 +627,12 @@ void AboutTabPrivate::setTabContents(int index)
 {
 	assert(index >= 0);
 	assert(index <= 1);
-	if (index < 0 || index > 1)
+	if (unlikely(index < 0 || index > 1))
 		return;
 
 	HWND hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
 	assert(hRichEdit != nullptr);
-	if (!hRichEdit) {
+	if (unlikely(!hRichEdit)) {
 		// Something went wrong...
 		return;
 	}
@@ -673,7 +673,7 @@ void AboutTabPrivate::init(void)
 
 	// Adjust the RichEdit position.
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet) {
+	if (unlikely(!hWndPropSheet)) {
 		// Something went wrong...
 		return;
 	}
@@ -682,7 +682,7 @@ void AboutTabPrivate::init(void)
 	HWND hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
 	assert(hTabControl != nullptr);
 	assert(hRichEdit != nullptr);
-	if (!hTabControl || !hRichEdit) {
+	if (unlikely(!hTabControl || !hRichEdit)) {
 		// Something went wrong...
 		return;
 	}
@@ -732,7 +732,7 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 {
 	RP_D(AboutTab);
 	assert(d->hPropSheetPage == nullptr);
-	if (d->hPropSheetPage) {
+	if (unlikely(d->hPropSheetPage)) {
 		// Property sheet has already been created.
 		return nullptr;
 	}
