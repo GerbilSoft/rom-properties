@@ -54,6 +54,9 @@ using std::wstring;
 # include "librpbase/img/APNG_dlopen.h"
 # include <png.h>
 #endif
+#ifdef ENABLE_XML
+# include "tinyxml2.h"
+#endif
 
 // Useful RTF strings.
 #define RTF_BR "\\par\n"
@@ -609,6 +612,24 @@ void AboutTabPrivate::initLibrariesTab(void)
 		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
 		"License: libpng license";
 #endif /* HAVE_PNG */
+
+	/** TinyXML2 **/
+#ifdef ENABLE_XML
+	char sXmlVersion[24];
+	snprintf(sXmlVersion, sizeof(sXmlVersion), "TinyXML2 %u.%u.%u",
+		TIXML2_MAJOR_VERSION,
+		TIXML2_MINOR_VERSION,
+		TIXML2_PATCH_VERSION);
+
+	// FIXME: Runtime version?
+	sLibraries += RTF_BR RTF_BR "Compiled with ";
+	sLibraries += sXmlVersion;
+	sLibraries += '.';
+	sLibraries += RTF_BR
+		"Copyright (C) 2000-2017 Lee Thomason" RTF_BR
+		"http://www.grinninglizard.com/" RTF_BR
+		"License: zlib license";
+#endif /* ENABLE_XML */
 
 	sLibraries += "}";
 
