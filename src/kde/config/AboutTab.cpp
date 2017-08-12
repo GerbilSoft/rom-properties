@@ -72,12 +72,6 @@ class AboutTabPrivate
 		void initProgramTitleText(void);
 
 		/**
-		 * Is APNG supported?
-		 * @return True if APNG is supported; false if not.
-		 */
-		static bool is_APNG_supported(void);
-
-		/**
 		 * Initialize the "Credits" tab.
 		 */
 		void initCreditsTab(void);
