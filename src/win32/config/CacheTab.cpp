@@ -360,8 +360,8 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					break;
 
 				case PSN_SETACTIVE:
-					// Enable the "Defaults" button.
-					RpPropSheet_EnableDefaults(GetParent(hDlg), true);
+					// Disable the "Defaults" button.
+					RpPropSheet_EnableDefaults(GetParent(hDlg), false);
 					break;
 
 				default:
