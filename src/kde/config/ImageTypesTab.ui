@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>572</width>
-    <height>156</height>
+    <height>234</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -32,7 +32,7 @@ External images are downloaded from an external image database.
     </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="vboxImageTypes" stretch="0,1">
+    <layout class="QVBoxLayout" name="vboxImageTypes" stretch="0,0">
      <property name="spacing">
       <number>0</number>
      </property>
@@ -47,14 +47,43 @@ External images are downloaded from an external image database.
       </layout>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridImageTypes">
-       <property name="margin">
-        <number>0</number>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="styleSheet">
+        <string notr="true">QAbstractScrollArea {
+	background-color: transparent;
+}
+QWidget#scrollAreaWidgetContents {
+	background-color: transparent;
+} </string>
        </property>
-       <property name="spacing">
-        <number>0</number>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
        </property>
-      </layout>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>558</width>
+          <height>80</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridImageTypes">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+        </layout>
+       </widget>
+      </widget>
      </item>
     </layout>
    </item>

@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_CONFIG_IMAGETYPESTAB_HPP__
@@ -42,6 +41,9 @@ class ImageTypesTab : public ITab
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
 		virtual void changeEvent(QEvent *event) override final;
+
+		// Window show event.
+		virtual void showEvent(QShowEvent *event) override final;
 
 	public slots:
 		/**

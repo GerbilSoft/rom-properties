@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "ImageTypesTab.hpp"
@@ -25,6 +24,7 @@
 // Qt includes.
 #include <QComboBox>
 #include <QLabel>
+#include <QScrollBar>
 #include <QSignalMapper>
 
 // C includes. (C++ namespace)
@@ -132,6 +132,15 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		// Temporary QSettings object.
 		// Set and cleared by ImageTypesTab::save();
 		QSettings *pSettings;
+
+		// Pointers to label and combo box for minimum size.
+		QLabel *lbl_minSize;
+		QComboBox *cbo_minSize;
+
+		/**
+		 * Calculate the scroll area minimum size.
+		 */
+		void recalcScrollAreaMinimumSize(void);
 };
 
 /** ImageTypesTabPrivate **/
@@ -143,6 +152,8 @@ ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	, cboImageType_lastAdded(nullptr)
 	, mapperCboImageType(new QSignalMapper(q))
 	, pSettings(nullptr)
+	, lbl_minSize(nullptr)
+	, cbo_minSize(nullptr)
 {
 	// Connect the QSignalMapper to the ImageTypesTab.
 	QObject::connect(mapperCboImageType, SIGNAL(mapped(int)),
@@ -169,8 +180,6 @@ void ImageTypesTabPrivate::createGridLabels(void)
 {
 	Q_Q(ImageTypesTab);
 
-	// TODO: Make sure that all columns except 0 have equal sizes.
-
 	// Create the image type labels.
 	const QString cssImageType = QLatin1String(
 		"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
@@ -186,6 +195,9 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		"QLabel { margin-right: 0.25em; }");
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		QLabel *const lblSysName = new QLabel(RP2Q(sysData[sys].name), q);
+		if (unlikely(!lbl_minSize)) {
+			lbl_minSize = lblSysName;
+		}
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
 		ui.gridImageTypes->addWidget(lblSysName, sys, 0);
@@ -206,6 +218,9 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// Create the ComboBox.
 	Q_Q(ImageTypesTab);
 	QComboBox *const cbo = new QComboBox(q);
+	if (unlikely(!cbo_minSize)) {
+		cbo_minSize = cbo;
+	}
 	ui.gridImageTypes->addWidget(cbo, sys, imageType+1);
 	cboImageType[sys][imageType] = cbo;
 
@@ -278,7 +293,7 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
 
 	// Columns 1 through n: Combo boxes.
 	colResizeCbo = new ColumnResizer(q);
-	for (int i = ui.gridImageTypeNames->columnCount()-1; i >= 1; i--) {
+	for (int i = ui.gridImageTypeNames->columnCount()-2; i >= 1; i--) {
 		colResizeCbo->addWidgetsFromLayout(ui.gridImageTypeNames, i);
 		colResizeCbo->addWidgetsFromLayout(ui.gridImageTypes, i);
 	}
@@ -360,7 +375,23 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 
 /** Other ImageTypesTabPrivate functions. **/
 
-// TODO
+/**
+ * Calculate the scroll area minimum size.
+ */
+void ImageTypesTabPrivate::recalcScrollAreaMinimumSize(void)
+{
+	// Get the row height.
+	int rowHeight = 0;
+	if (likely(lbl_minSize)) {
+		rowHeight = std::max(rowHeight, lbl_minSize->height());
+	}
+	if (likely(cbo_minSize)) {
+		rowHeight = std::max(rowHeight, cbo_minSize->height());
+	}
+
+	// Should have at least 5 rows.
+	ui.scrollArea->setMinimumSize(0, rowHeight*5);
+}
 
 /** ImageTypesTab **/
 
@@ -386,14 +417,40 @@ ImageTypesTab::~ImageTypesTab()
  */
 void ImageTypesTab::changeEvent(QEvent *event)
 {
-	if (event->type() == QEvent::LanguageChange) {
-		// Retranslate the UI.
-		Q_D(ImageTypesTab);
-		d->ui.retranslateUi(this);
+	Q_D(ImageTypesTab);
+	switch (event->type()) {
+		case QEvent::LanguageChange:
+			// Retranslate the UI.
+			d->ui.retranslateUi(this);
+			break;
+
+		case QEvent::FontChange:
+		case QEvent::StyleChange:
+			// FIXME: Adjustments in response to QEvent::StyleChange
+			// don't seem to work on Kubuntu 16.10...
+			d->recalcScrollAreaMinimumSize();
+			break;
+
+		default:
+			break;
 	}
 
 	// Pass the event to the base class.
 	super::changeEvent(event);
+}
+
+/**
+ * Window is being displayed.
+ * @param event QShowEvent.
+ */
+void ImageTypesTab::showEvent(QShowEvent *event)
+{
+	// Resize the scroll area.
+	Q_D(ImageTypesTab);
+	d->recalcScrollAreaMinimumSize();
+
+	// Pass the event to the superclass.
+	super::showEvent(event);
 }
 
 /**
