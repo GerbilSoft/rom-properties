@@ -113,6 +113,13 @@ class AboutTabPrivate
 		static DWORD CALLBACK EditStreamCallback(_In_ DWORD_PTR dwCookie,
 			_Out_ LPBYTE pbBuff, _In_ LONG cb, _Out_ LONG *pcb);
 
+		/**
+		 * Convert rp_char* to RTF-escaped text.
+		 * @param str rp_char*.
+		 * @return RTF-escaped text.
+		 */
+		static string rtfEscape(const rp_char *str);
+
 	protected:
 		// Tab text. (RichText format)
 		string sCredits;
@@ -323,6 +330,46 @@ DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
 }
 
 /**
+ * Convert rp_char* to RTF-escaped text.
+ * @param str rp_char*.
+ * @return RTF-escaped text.
+ */
+string AboutTabPrivate::rtfEscape(const rp_char *str)
+{
+	assert(str != nullptr);
+	if (!str) {
+		return string();
+	}
+
+	string ret;
+
+#ifdef RP_UTF8
+	// Convert the rp_char to RP_UTF16 first.
+	const u16string u16str = rp_string_to_utf16(str, -1);
+	const char16_t *wcs = u16str.c_str();
+#else /* RP_UTF16 */
+	// We already have RP_UTF16.
+	const char16_t *wcs = str;
+#endif
+
+	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/
+	char buf[12];	// Conversion buffer.
+	for (; *wcs != 0; wcs++) {
+		if (*wcs <= 0x00FF) {
+			// cp1252 is a superset of ISO-8859-1.
+			ret += (char)*wcs;
+		} else {
+			// Convert to a signed 16-bit integer.
+			// Surrogate pairs are encoded as two separate characters.
+			snprintf(buf, sizeof(buf), "\\u%d?", (int16_t)*wcs);
+			ret += buf;
+		}
+	}
+
+	return ret;
+}
+
+/**
  * Initialize the program title text.
  */
 void AboutTabPrivate::initProgramTitleText(void)
@@ -472,18 +519,16 @@ void AboutTabPrivate::initCreditsTab(void)
 
 		// Append the contributor's name.
 		sCredits += RTF_BR "\\tab " RTF_BULLET " ";
-		// FIXME: Escape UTF-8 for RTF.
-		sCredits += RP2U8_c(creditsData->name);
+		sCredits += rtfEscape(creditsData->name);
 		if (creditsData->url) {
 			// FIXME: Figure out how to get hyperlinks working.
 			sCredits += " <";
-			sCredits += RP2U8_c(creditsData->linkText);
+			sCredits += rtfEscape(creditsData->linkText);
 			sCredits += '>';
 		}
 		if (creditsData->sub) {
-			// FIXME: Escape UTF-8 for RTF.
 			sCredits += " (";
-			sCredits += RP2U8_c(creditsData->sub);
+			sCredits += rtfEscape(creditsData->sub);
 			sCredits += ')';
 		}
 	}
