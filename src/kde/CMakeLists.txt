@@ -49,6 +49,10 @@ SET(rom-properties-kde_UIS
 	config/AboutTab.ui
 	)
 
+# Column Resizer.
+SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} columnresizer/columnresizer.cpp)
+SET(rom-properties-kde_H    ${rom-properties-kde_H}    columnresizer/columnresizer.h)
+
 IF(ENABLE_DECRYPTION)
 	SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} config/KeyManagerTab.cpp)
 	SET(rom-properties-kde_H    ${rom-properties-kde_H}    config/KeyManagerTab.hpp)

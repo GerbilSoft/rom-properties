@@ -31,6 +31,9 @@
 #include <cassert>
 #include <cerrno>
 
+// ColumnResizer.
+#include "../columnresizer/columnresizer.h"
+
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/config/TImageTypesConfig.cpp"
@@ -113,6 +116,11 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
 
 	public:
+		// ColumnResizer for column 0. (system names)
+		ColumnResizer *colResize0;
+		// ColumnResizer for all other columns.
+		ColumnResizer *colResizeCbo;
+
 		// Last ComboBox added.
 		// Needed in order to set the correct
 		// tab order for the credits label.
@@ -130,6 +138,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 
 ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
+	, colResize0(colResizeCbo)
 	, cboImageType_lastAdded(nullptr)
 	, mapperCboImageType(new QSignalMapper(q))
 	, pSettings(nullptr)
@@ -168,7 +177,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		QLabel *const lblImageType = new QLabel(RP2Q(imageTypeNames[i]), q);
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
-		ui.gridImageTypes->addWidget(lblImageType, 0, i+1);
+		ui.gridImageTypeNames->addWidget(lblImageType, 0, i+1);
 	}
 
 	// Create the system name labels.
@@ -178,7 +187,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		QLabel *const lblSysName = new QLabel(RP2Q(sysData[sys].name), q);
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
-		ui.gridImageTypes->addWidget(lblSysName, sys+1, 0);
+		ui.gridImageTypes->addWidget(lblSysName, sys, 0);
 	}
 }
 
@@ -196,7 +205,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// Create the ComboBox.
 	Q_Q(ImageTypesTab);
 	QComboBox *const cbo = new QComboBox(q);
-	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
+	ui.gridImageTypes->addWidget(cbo, sys, imageType+1);
 	cboImageType[sys][imageType] = cbo;
 
 	// Connect the signal to the QSignalMapper.
@@ -258,6 +267,20 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
 	Q_Q(ImageTypesTab);
 	q->setTabOrder(cboImageType_lastAdded, ui.lblCredits);
 	cboImageType_lastAdded = nullptr;
+
+	// Initialize the Column Resizers.
+
+	// Column 0: System names.
+	colResize0 = new ColumnResizer(q);
+	colResize0->addWidgetsFromLayout(ui.gridImageTypeNames, 0);
+	colResize0->addWidgetsFromLayout(ui.gridImageTypes, 0);
+
+	// Columns 1 through n: Combo boxes.
+	colResizeCbo = new ColumnResizer(q);
+	for (int i = ui.gridImageTypeNames->columnCount()-1; i >= 1; i--) {
+		colResizeCbo->addWidgetsFromLayout(ui.gridImageTypeNames, i);
+		colResizeCbo->addWidgetsFromLayout(ui.gridImageTypes, i);
+	}
 }
 
 /**
