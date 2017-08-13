@@ -60,8 +60,8 @@ class DMGPrivate : public RomDataPrivate
 		// System. (RFT_BITFIELD)
 		enum DMG_System {
 			DMG_SYSTEM_DMG		= (1 << 0),
-			DMG_SYSTEM_CGB		= (1 << 1),
-			DMG_SYSTEM_SGB		= (1 << 2),
+			DMG_SYSTEM_SGB		= (1 << 1),
+			DMG_SYSTEM_CGB		= (1 << 2),
 		};
 
 		// Cartridge hardware features. (RFT_BITFIELD)
@@ -563,7 +563,7 @@ int DMG::loadFieldData(void)
 	}
 
 	static const rp_char *const system_bitfield_names[] = {
-		_RP("DMG"), _RP("CGB"), _RP("SGB")
+		_RP("DMG"), _RP("SGB"), _RP("CGB")
 	};
 	vector<rp_string> *v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
