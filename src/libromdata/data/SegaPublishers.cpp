@@ -59,6 +59,7 @@ class SegaPublishersPrivate {
  * Reference: http://segaretro.org/Third-party_T-series_codes
  */
 const SegaPublishersPrivate::TCodeEntry SegaPublishersPrivate::tcodeList[] = {
+	{0,	_RP("Sega")},
 	{11,	_RP("Taito")},
 	{12,	_RP("Capcom")},
 	{13,	_RP("Data East")},

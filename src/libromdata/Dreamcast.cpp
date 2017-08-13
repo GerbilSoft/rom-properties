@@ -566,9 +566,9 @@ int Dreamcast::loadFieldData(void)
 		// This may be a third-party T-code.
 		char *endptr;
 		unsigned int t_code = (unsigned int)strtoul(&discHeader->publisher[10], &endptr, 10);
-		if (t_code != 0 &&
-		    endptr > &discHeader->publisher[10] &&
-		    endptr <= &discHeader->publisher[15])
+		if (endptr > &discHeader->publisher[10] &&
+		    endptr <= &discHeader->publisher[15] &&
+		    *endptr == ' ')
 		{
 			// Valid T-code. Look up the publisher.
 			publisher = SegaPublishers::lookup(t_code);
