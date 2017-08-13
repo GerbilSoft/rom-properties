@@ -52,6 +52,9 @@ using LibRpBase::AboutTabText;
 #  include "nettle/version.h"
 # endif
 #endif
+#ifdef ENABLE_XML
+# include "tinyxml2.h"
+#endif
 
 #include "ui_AboutTab.h"
 class AboutTabPrivate
@@ -70,12 +73,6 @@ class AboutTabPrivate
 		 * Initialize the program title text.
 		 */
 		void initProgramTitleText(void);
-
-		/**
-		 * Is APNG supported?
-		 * @return True if APNG is supported; false if not.
-		 */
-		static bool is_APNG_supported(void);
 
 		/**
 		 * Initialize the "Credits" tab.
@@ -137,9 +134,9 @@ void AboutTabPrivate::initProgramTitleText(void)
 			.arg(RP2Q(AboutTabText::prg_version));
 	if (AboutTabText::git_version) {
 		sPrgTitle += br + RP2Q(AboutTabText::git_version);
-	}
-	if (AboutTabText::git_describe) {
-		sPrgTitle += br + RP2Q(AboutTabText::git_describe);
+		if (AboutTabText::git_describe) {
+			sPrgTitle += br + RP2Q(AboutTabText::git_describe);
+		}
 	}
 
 	ui.lblTitle->setText(sPrgTitle);
@@ -262,11 +259,12 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += sIntCopyOf.arg(qtVersion);
 #else
 	QString qtVersionCompiled = QLatin1String("Qt " QT_VERSION_STR);
-	sLibraries += sCompiledWith.arg(qtVersionCompiled) + QChar(L'\n');
+	sLibraries += sCompiledWith.arg(qtVersionCompiled) + br;
 	sLibraries += sUsingDll.arg(qtVersion);
 #endif /* QT_IS_STATIC */
 	sLibraries += br +
 		QLatin1String("Copyright (C) 1995-2017 The Qt Company Ltd. and/or its subsidiaries.");
+	sLibraries += br + QLatin1String("https://www.qt.io/");
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
 	sLibraries += br + sLicenses.arg(QLatin1String("GNU LGPL v2.1+, GNU GPL v2+"));
@@ -281,6 +279,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += sCompiledWith.arg(QLatin1String("KDE Frameworks " KIO_VERSION_STRING));
 	sLibraries += br +
 		QLatin1String("Copyright (C) 1996-2017 KDE contributors.");
+	sLibraries += br + QLatin1String("https://www.kde.org/");
 	sLibraries += br + sLicense.arg(QLatin1String("GNU LGPL v2.1+"));
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	const QString kdeVersion = QLatin1String("KDE Libraries ") + QLatin1String(KDE::versionString());
@@ -304,10 +303,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += sCompiledWith.arg(sZlibVersionCompiled) + br;
 	sLibraries += sUsingDll.arg(sZlibVersion);
 #endif
-	sLibraries += br + QLatin1String(
-			"Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler.\n"
-			"http://www.zlib.net/\n");
-	sLibraries += sLicense.arg(QLatin1String("zlib license"));
+	sLibraries += br +
+		QLatin1String("Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler.");
+	sLibraries += br + QLatin1String("https://zlib.net/");
+	sLibraries += br + sLicense.arg(QLatin1String("zlib license"));
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -321,15 +320,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	}
 
 	const QString pngAPngSuffix = (APNG_is_supported
-			? QLatin1String(" + APNG")
-			: AboutTab::tr(" (No APNG support)"));
+		? QLatin1String(" + APNG")
+		: AboutTab::tr(" (No APNG support)"));
 
 	sLibraries += brbr;
 	const uint32_t png_version_number = png_access_version_number();
 	QString pngVersion = QString::fromLatin1("libpng %1.%2.%3")
-			.arg(png_version_number / 10000)
-			.arg((png_version_number / 100) % 100)
-			.arg(png_version_number % 100);
+		.arg(png_version_number / 10000)
+		.arg((png_version_number / 100) % 100)
+		.arg(png_version_number % 100);
 	pngVersion += pngAPngSuffix;
 
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
@@ -368,6 +367,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		png_copyright.append(QChar(L'\n'));
 	}
 	sLibraries += png_copyright;
+	sLibraries += QLatin1String("http://www.libpng.org/pub/png/libpng.html\n");
 	sLibraries += sLicense.arg(QLatin1String("libpng license"));
 #endif /* HAVE_PNG */
 
@@ -389,21 +389,44 @@ void AboutTabPrivate::initLibrariesTab(void)
 #  endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
 	sLibraries += br +
 		QString::fromUtf8("Copyright (C) 2001-2016 Niels Möller.");
+	sLibraries += br + QLatin1String("https://www.lysator.liu.se/~nisse/nettle/");
 	sLibraries += br + sLicenses.arg(QLatin1String("GNU LGPL v3+, GNU GPL v2+"));
 # else /* !HAVE_NETTLE_VERSION_H */
 #  ifdef HAVE_NETTLE_3
 	sLibraries += sCompiledWith.arg(QLatin1String("GNU Nettle 3.0"));
 	sLibraries += br +
 		QString::fromUtf8("Copyright (C) 2001-2014 Niels Möller.");
+	sLibraries += br + QLatin1String("https://www.lysator.liu.se/~nisse/nettle/");
 	sLibraries += br + sLicense.arg(QLatin1String("GNU LGPL v3+, GNU GPL v2+"));
 #  else /* !HAVE_NETTLE_3 */
 	sLibraries += sCompiledWith.arg(QLatin1String("GNU Nettle 2.x"));
 	sLibraries += br +
 		QString::fromUtf8("Copyright (C) 2001-2013 Niels Möller.");
+	sLibraries += br + QLatin1String("https://www.lysator.liu.se/~nisse/nettle/");
 	sLibraries += br + sLicense.arg(QLatin1String("GNU LGPL v2.1+"));
 #  endif /* HAVE_NETTLE_3 */
 # endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
+
+	/** TinyXML2 **/
+#ifdef ENABLE_XML
+	sLibraries += brbr;
+	QString sXmlVersion = QLatin1String("TinyXML2 %1.%2.%3");
+	sXmlVersion = sXmlVersion.arg(TIXML2_MAJOR_VERSION)
+			.arg(TIXML2_MINOR_VERSION)
+			.arg(TIXML2_PATCH_VERSION);
+
+#if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
+	sLibraries += sIntCopyOf.arg(sXmlVersion)
+#else
+	// FIXME: Runtime version?
+	sLibraries += sCompiledWith.arg(sXmlVersion);
+#endif
+	sLibraries += br + QLatin1String(
+		"Copyright (C) 2000-2017 Lee Thomason\n"
+		"http://www.grinninglizard.com/\n");
+	sLibraries += sLicense.arg(QLatin1String("zlib license"));
+#endif /* ENABLE_XML */
 
 	// We're done building the string.
 	ui.lblLibraries->setText(sLibraries);
@@ -426,26 +449,13 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport = AboutTab::tr(
 		"For technical support, you can visit the following websites:") + br;
 
-	struct supportSite_t {
-		const char *name;
-		const char *url;
-	};
-
-	// Support sites.
-	const supportSite_t supportSites[] = {
-		{QT_TRANSLATE_NOOP(AboutTab, "GitHub: GerbilSoft/rom-properties"), "https://github.com/GerbilSoft/rom-properties"},
-		{QT_TRANSLATE_NOOP(AboutTab, "Sonic Retro"), "https://forums.sonicretro.org/index.php?showtopic=35692"},
-		{QT_TRANSLATE_NOOP(AboutTab, "GBAtemp"), "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
-		{nullptr, nullptr}
-	};
-
-	for (const supportSite_t *supportSite = &supportSites[0];
+	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
 	     supportSite->name != nullptr; supportSite++)
 	{
 		QString siteUrlHtml = QLatin1String("<a href=\"") +
-					QLatin1String(supportSite->url) +
+					RP2Q(supportSite->url) +
 					QLatin1String("\">") +
-					QLatin1String(supportSite->name) +
+					RP2Q(supportSite->name) +
 					QLatin1String("</a>");
 
 		sSupport += sIndent + chrBullet + QChar(L' ') + siteUrlHtml + br;

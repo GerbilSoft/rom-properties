@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * PropSheetIcon.hpp: Property sheet icon.                                 *
+ * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,38 +19,52 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_PROPSHEETICON_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_PROPSHEETICON_HPP__
+#ifndef __ROMPROPERTIES_WIN32_CONFIG_ABOUTTAB_HPP__
+#define __ROMPROPERTIES_WIN32_CONFIG_ABOUTTAB_HPP__
 
-#include "librpbase/common.h"
-#include "libwin32common/RpWin32_sdk.h"
+#include "ITab.hpp"
 
-class PropSheetIcon
+class AboutTabPrivate;
+class AboutTab : public ITab
 {
+	public:
+		AboutTab();
+		virtual ~AboutTab();
+
 	private:
-		// Static class.
-		PropSheetIcon();
-		~PropSheetIcon();
-		RP_DISABLE_COPY(PropSheetIcon)
-	
+		typedef ITab super;
+		RP_DISABLE_COPY(AboutTab)
+	private:
+		friend class AboutTabPrivate;
+		AboutTabPrivate *const d_ptr;
+
 	public:
 		/**
-		 * Get the large property sheet icon.
-		 * @return Large property sheet icon, or nullptr on error.
+		 * Create the HPROPSHEETPAGE for this tab.
+		 *
+		 * NOTE: This function can only be called once.
+		 * Subsequent invocations will return nullptr.
+		 *
+		 * @return HPROPSHEETPAGE.
 		 */
-		static HICON getLargeIcon(void);
+		virtual HPROPSHEETPAGE getHPropSheetPage(void) override final;
 
 		/**
-		 * Get the small property sheet icon.
-		 * @return Small property sheet icon, or nullptr on error.
+		 * Reset the contents of this tab.
 		 */
-		static HICON getSmallIcon(void);
+		virtual void reset(void) override final;
 
 		/**
-		 * Get the 96x96 icon.
-		 * @return 96x96 icon, or nullptr on error.
+		 * Load the default configuration.
+		 * This does NOT save, and will only emit modified()
+		 * if it's different from the current configuration.
 		 */
-		static HICON get96Icon(void);
+		virtual void loadDefaults(void) override final;
+
+		/**
+		 * Save the contents of this tab.
+		 */
+		virtual void save(void) override final;
 };
 
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_PROPSHEETICON_HPP__ */
+#endif /* __ROMPROPERTIES_WIN32_CONFIG_ABOUTTAB_HPP__ */

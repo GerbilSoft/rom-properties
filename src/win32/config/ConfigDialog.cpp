@@ -48,6 +48,7 @@ extern HINSTANCE g_hInstance;
 #ifdef ENABLE_DECRYPTION
 #include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
+#include "AboutTab.hpp"
 
 class ConfigDialogPrivate
 {
@@ -66,9 +67,9 @@ class ConfigDialogPrivate
 	public:
 		// Property sheet variables.
 #ifdef ENABLE_DECRYPTION
-		static const unsigned int TAB_COUNT = 4;
+		static const unsigned int TAB_COUNT = 5;
 #else
-		static const unsigned int TAB_COUNT = 3;
+		static const unsigned int TAB_COUNT = 4;
 #endif
 		ITab *tabs[TAB_COUNT];
 		HPROPSHEETPAGE hpsp[TAB_COUNT];
@@ -96,9 +97,18 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES | ICC_PROGRESS_CLASS;
+	initCommCtrl.dwICC =
+		ICC_LISTVIEW_CLASSES |
+		ICC_LINK_CLASS |
+		ICC_TAB_CLASSES |
+		ICC_PROGRESS_CLASS;
+
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
+
+	// Load RICHED20.DLL for RICHEDIT_CLASS.
+	// TODO: What if this fails?
+	HMODULE hRichEd20 = LoadLibrary(L"RICHED20.DLL");
 
 	// Initialize the property sheet tabs.
 
@@ -119,6 +129,10 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	tabs[3] = new KeyManagerTab();
 	hpsp[3] = tabs[3]->getHPropSheetPage();
 #endif /* ENABLE_DECRYPTION */
+
+	// About.
+	tabs[TAB_COUNT-1] = new AboutTab();
+	hpsp[TAB_COUNT-1] = tabs[TAB_COUNT-1]->getHPropSheetPage();
 
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);

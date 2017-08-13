@@ -123,7 +123,6 @@ class RP_ShellPropSheetExt_Private
 		RomData *romData;
 
 		// Useful window handles.
-		HWND hDlgProps;		// Property dialog. (parent)
 		HWND hDlgSheet;		// Property sheet.
 
 		// Fonts.
@@ -321,9 +320,6 @@ class RP_ShellPropSheetExt_Private
 		static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
-		// Subclass procedure for ES_MULTILINE EDIT controls.
-		static LRESULT CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-
 		/**
 		 * Animated icon timer.
 		 * @param hWnd
@@ -352,7 +348,6 @@ const wchar_t RP_ShellPropSheetExt_Private::D_PTR_PROP[] = L"RP_ShellPropSheetEx
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q)
 	: q_ptr(q)
 	, romData(nullptr)
-	, hDlgProps(nullptr)
 	, hDlgSheet(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
@@ -880,17 +875,16 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
+		// We're also subclassing single-line EDIT controls to disable the
+		// initial selection. (DLGC_HASSETSEL)
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-		if (dwStyle & ES_MULTILINE) {
-			// Store the object pointer so we can reference it later.
-			SetProp(hDlgItem, D_PTR_PROP, static_cast<HANDLE>(this));
-
-			// Subclass the control.
-			// TODO: Error handling?
-			SetWindowSubclass(hDlgItem, MultilineEditProc,
-				reinterpret_cast<UINT_PTR>(cId),
-				reinterpret_cast<DWORD_PTR>(this));
-		}
+		// TODO: Error handling?
+		SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
+			? LibWin32Common::MultiLineEditProc
+			: LibWin32Common::SingleLineEditProc;
+		SetWindowSubclass(hDlgItem, proc,
+			reinterpret_cast<UINT_PTR>(cId),
+			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
 	}
 
 	// Save the control in the appropriate set, if necessary.
@@ -2048,7 +2042,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Store the D object pointer with this particular page dialog.
 			SetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP, static_cast<HANDLE>(d));
 			// Save handles for later.
-			d->hDlgProps = GetParent(hDlg);
 			d->hDlgSheet = hDlg;
 
 			// Dialog initialization is postponed to WM_SHOWWINDOW,
@@ -2410,59 +2403,6 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 	}
 
 	return FALSE;
-}
-
-/**
- * Subclass procedure for ES_MULTILINE EDIT controls.
- * @param hWnd		Control handle.
- * @param uMsg		Message.
- * @param wParam	WPARAM
- * @param lParam	LPARAM
- * @param uIdSubclass	Subclass ID. (usually the control ID)
- * @param dwRefData	RP_ShellPropSheetExt*
- */
-LRESULT CALLBACK RP_ShellPropSheetExt_Private::MultilineEditProc(
-	HWND hWnd, UINT uMsg,
-	WPARAM wParam, LPARAM lParam,
-	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
-	if (!dwRefData) {
-		// No RP_ShellPropSheetExt. Can't do anything...
-		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-	}
-	RP_ShellPropSheetExt_Private *const d =
-		reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
-
-	switch (uMsg) {
-		case WM_KEYDOWN: {
-			// Work around Enter/Escape issues.
-			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-			switch (wParam) {
-				case VK_RETURN:
-					SendMessage(d->hDlgProps, WM_COMMAND, IDOK, 0);
-					return TRUE;
-
-				case VK_ESCAPE:
-					SendMessage(d->hDlgProps, WM_COMMAND, IDCANCEL, 0);
-					return TRUE;
-
-				default:
-					break;
-			}
-			break;
-		}
-
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, MultilineEditProc, uIdSubclass);
-			break;
-
-		default:
-			break;
-	}
-
-	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /**
