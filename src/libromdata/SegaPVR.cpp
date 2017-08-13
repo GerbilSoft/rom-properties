@@ -1029,9 +1029,8 @@ int SegaPVR::loadFieldData(void)
 		}
 	}
 
-	// NOTE: Pixel Format might only be valid for GVR if it's DXT1.
-	const bool hasPxFmt = (d->pvrType != SegaPVRPrivate::PVR_TYPE_GVR ||
-			       img_data_type == GVR_IMG_DXT1);
+	// NOTE: Pixel Format is not valid for GVR.
+	const bool hasPxFmt = (d->pvrType != SegaPVRPrivate::PVR_TYPE_GVR);
 	if (hasPxFmt) {
 		if (pxfmt) {
 			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
