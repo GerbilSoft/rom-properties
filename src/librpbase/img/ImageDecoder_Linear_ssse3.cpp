@@ -243,6 +243,11 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	if (px_format == PXF_HOST_ARGB32) {
 		// Host-endian ARGB32.
 		// We can directly copy the image data without conversions.
+		if (stride == 0) {
+			// Calculate the stride based on image width.
+			stride = width * bytespp;
+		}
+
 		if (stride == img->stride()) {
 			// Stride is identical. Copy the whole image all at once.
 			memcpy(img->bits(), img_buf, stride * height);
@@ -260,8 +265,6 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		img->set_sBIT(&sBIT_32);
 		return img;
 	}
-
-	// TODO: PXF_HOST_xRGB32 - apply alpha mask but no shuffling.
 
 	// SSSE3-optimized version based on:
 	// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
