@@ -444,7 +444,8 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
@@ -539,7 +540,8 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
@@ -645,7 +647,8 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
@@ -746,7 +749,8 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
