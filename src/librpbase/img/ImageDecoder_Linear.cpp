@@ -644,15 +644,14 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
-		// Set src_stride_adj to the number of pixels we need to
+		// Set src_stride_adj to the number of bytes we need to
 		// add to the end of each line to get to the next row.
-		assert(stride % bytespp == 0);
 		assert(stride >= (width * bytespp));
-		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
+		if (unlikely(stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
-		// Byte addressing, so keep it in units of bytespp.
+		// NOTE: Byte addressing, so keep it in units of bytespp.
 		src_stride_adj = (width * bytespp) - stride;
 	}
 

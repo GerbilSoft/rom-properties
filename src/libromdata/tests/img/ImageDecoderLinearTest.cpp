@@ -65,16 +65,19 @@ struct ImageDecoderLinearTest_mode
 
 	uint32_t src_pixel;			// Source pixel.
 	ImageDecoder::PixelFormat src_pxf;	// Source pixel format.
+	int stride;				// Source stride. (0 for default)
 	uint32_t dest_pixel;			// Expected decoded ARGB32 pixel.
 	bool is24;				// If true, the source data is 24-bit.
 
 	ImageDecoderLinearTest_mode(
 		uint32_t src_pixel,
 		ImageDecoder::PixelFormat src_pxf,
+		int stride,
 		uint32_t dest_pixel,
 		bool is24)
 		: src_pixel(src_pixel)
 		, src_pxf(src_pxf)
+		, stride(stride)
 		, dest_pixel(dest_pixel)
 		, is24(is24)
 	{ }
@@ -236,7 +239,9 @@ void ImageDecoderLinearTest::SetUp(void)
 	// Create the 128x128 image data buffer.
 	if (mode.is24) {
 		// 24-bit color.
-		m_img_buf.resize(128*128*3);
+		const int stride = (mode.stride > 0 ? mode.stride : 128*3);
+		ASSERT_GE(stride, 128*3);
+		m_img_buf.resize(128*stride);
 		uint8_t bytes[3];
 		if (!(mode.src_pixel & 0xFF)) {
 			// MSB aligned.
@@ -251,20 +256,31 @@ void ImageDecoderLinearTest::SetUp(void)
 		}
 
 		uint8_t *p = m_img_buf.data();
-		for (unsigned int count = 128*128; count > 0; count--, p += 3) {
-			p[0] = bytes[0];
-			p[1] = bytes[1];
-			p[2] = bytes[2];
+		const int stride_adj = stride - 128*3;
+		for (unsigned int y = 128; y > 0; y--) {
+			for (unsigned int x = 128; x > 0; x--, p += 3) {
+				p[0] = bytes[0];
+				p[1] = bytes[1];
+				p[2] = bytes[2];
+			}
+			p += stride_adj;
 		}
 	} else {
 		// 32-bit color.
-		m_img_buf.resize(128*128*4);
+		const int stride = (mode.stride > 0 ? mode.stride : 128*4);
+		ASSERT_GE(stride, 128*4);
+		m_img_buf.resize(128*stride);
+
 		uint32_t *p = reinterpret_cast<uint32_t*>(m_img_buf.data());
-		for (unsigned int count = 128*128; count > 0; count -= 4, p += 4) {
-			p[0] = mode.src_pixel;
-			p[1] = mode.src_pixel;
-			p[2] = mode.src_pixel;
-			p[3] = mode.src_pixel;
+		const int stride_adj = (stride - 128*4) / 4;
+		for (unsigned int y = 128; y > 0; y--) {
+			for (unsigned int x = 128; x > 0; x -= 4, p += 4) {
+				p[0] = mode.src_pixel;
+				p[1] = mode.src_pixel;
+				p[2] = mode.src_pixel;
+				p[3] = mode.src_pixel;
+			}
+			p += stride_adj;
 		}
 	}
 }
@@ -306,12 +322,12 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 	if (mode.is24) {
 		// 24-bit image.
 		pImg.reset(ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
-			m_img_buf.data(), m_img_buf.size()));
+			m_img_buf.data(), m_img_buf.size(), mode.stride));
 	} else {
 		// 32-bit image.
 		pImg.reset(ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 			reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-			m_img_buf.size()));
+			m_img_buf.size(), mode.stride));
 	}
 
 	ASSERT_TRUE(pImg.get() != nullptr);
@@ -339,12 +355,12 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 	if (mode.is24) {
 		// 24-bit image.
 		pImg.reset(ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
-			m_img_buf.data(), m_img_buf.size()));
+			m_img_buf.data(), m_img_buf.size(), mode.stride));
 	} else {
 		// 32-bit image.
 		pImg.reset(ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 			reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-			m_img_buf.size()));
+			m_img_buf.size(), mode.stride));
 	}
 
 	ASSERT_TRUE(pImg.get() != nullptr);
@@ -369,12 +385,12 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 	if (mode.is24) {
 		// 24-bit image.
 		pImg.reset(ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
-			m_img_buf.data(), m_img_buf.size()));
+			m_img_buf.data(), m_img_buf.size(), mode.stride));
 	} else {
 		// 32-bit image.
 		pImg.reset(ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 			reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-			m_img_buf.size()));
+			m_img_buf.size(), mode.stride));
 	}
 
 	ASSERT_TRUE(pImg.get() != nullptr);
@@ -393,11 +409,13 @@ INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12345678),
 			ImageDecoder::PXF_ARGB8888,
+			0,
 			0x12345678,
 			false),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12785634),
 			ImageDecoder::PXF_ABGR8888,
+			0,
 			0x12345678,
 			false),
 
@@ -405,11 +423,45 @@ INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12345678),
 			ImageDecoder::PXF_xRGB8888,
+			0,
 			0xFF345678,
 			false),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12785634),
 			ImageDecoder::PXF_xBGR8888,
+			0,
+			0xFF345678,
+			false))
+	, ImageDecoderLinearTest::test_case_suffix_generator);
+
+// 32-bit tests. (custom stride)
+INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
+	::testing::Values(
+		// ARGB
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_ARGB8888,
+			640,
+			0x12345678,
+			false),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12785634),
+			ImageDecoder::PXF_ABGR8888,
+			640,
+			0x12345678,
+			false),
+
+		// xRGB
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_xRGB8888,
+			640,
+			0xFF345678,
+			false),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12785634),
+			ImageDecoder::PXF_xBGR8888,
+			640,
 			0xFF345678,
 			false))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
@@ -420,11 +472,30 @@ INSTANTIATE_TEST_CASE_P(fromLinear24, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x123456),
 			ImageDecoder::PXF_RGB888,
+			0,
 			0xFF123456,
 			true),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x563412),
 			ImageDecoder::PXF_BGR888,
+			0,
+			0xFF123456,
+			true))
+	, ImageDecoderLinearTest::test_case_suffix_generator);
+
+// 24-bit tests. (custom stride)
+INSTANTIATE_TEST_CASE_P(fromLinear24_stride512, ImageDecoderLinearTest,
+	::testing::Values(
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x123456),
+			ImageDecoder::PXF_RGB888,
+			512,
+			0xFF123456,
+			true),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x563412),
+			ImageDecoder::PXF_BGR888,
+			512,
 			0xFF123456,
 			true))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
