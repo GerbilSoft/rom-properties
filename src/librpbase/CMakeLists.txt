@@ -133,7 +133,6 @@ SET(librpbase_H
 	img/RpImageLoader.hpp
 	img/ImageDecoder.hpp
 	img/ImageDecoder_p.hpp
-	img/un-premultiply.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/IconAnimData.hpp
