@@ -51,7 +51,6 @@ namespace {
 
 	// Globals
 
-	HINSTANCE g_hInstance; /**< hInstance of this application */
 #ifdef _WIN64
 	constexpr bool g_is64bit = true;	/**< true if running on 64-bit system */
 #else /* !_WIN64 */
@@ -291,7 +290,7 @@ namespace {
 		// Construct arguments
 		wchar_t args[14 + MAX_PATH + 4 + 3 + _countof(str_rp64path)] = L"regsvr32.exe \"";
 		// Construct path to rom-properties.dll inside the arguments
-		DWORD szModuleFn = GetModuleFileName(g_hInstance, &args[14], MAX_PATH);
+		DWORD szModuleFn = GetModuleFileName(HINST_THISCOMPONENT, &args[14], MAX_PATH);
 		assert(szModuleFn != 0);
 		assert(szModuleFn < MAX_PATH);
 		if (szModuleFn == 0 || szModuleFn >= MAX_PATH) {
@@ -749,8 +748,6 @@ namespace {
  */
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmdShow)
 {
-	g_hInstance = hInstance;
-
 	// Set Win32 security options.
 	secoptions_init();
 
@@ -783,11 +780,11 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 
 	// Load the icon.
 	hIconDialog = static_cast<HICON>(LoadImage(
-		g_hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
+		hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
 		GetSystemMetrics(SM_CXICON),
 		GetSystemMetrics(SM_CYICON), 0));
 	hIconDialogSmall = static_cast<HICON>(LoadImage(
-		g_hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
+		hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
 		GetSystemMetrics(SM_CXSMICON),
 		GetSystemMetrics(SM_CYSMICON), 0));
 

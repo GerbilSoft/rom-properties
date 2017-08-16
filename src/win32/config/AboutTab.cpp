@@ -853,12 +853,10 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
-	extern HINSTANCE g_hInstance;
-
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp.hInstance = g_hInstance;
+	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_ABOUT);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = L"About";

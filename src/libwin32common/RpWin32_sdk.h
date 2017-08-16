@@ -122,4 +122,10 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 #define _Outptr_
 #endif
 
+// Current image instance.
+// This is filled in by the linker.
+// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
+
 #endif /* __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__ */

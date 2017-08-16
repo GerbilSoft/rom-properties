@@ -1656,8 +1656,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			auto &tab = tabs[i];
 
 			// Create a child dialog for the tab.
-			extern HINSTANCE g_hInstance;
-			tab.hDlg = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
+			tab.hDlg = CreateDialog(HINST_THISCOMPONENT,
+				MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
 				hDlg, SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr,
 				dlgRect.left, dlgRect.top,
@@ -1965,11 +1965,10 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
 	// Create a property sheet page.
-	extern HINSTANCE g_hInstance;
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp.hInstance = g_hInstance;
+	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_PROPERTY_SHEET);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = L"ROM Properties";

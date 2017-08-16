@@ -1,4 +1,4 @@
-/***************************************************************************
+\/***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
@@ -67,8 +67,6 @@ using std::unique_ptr;
 using std::vector;
 using std::wstring;
 
-extern HINSTANCE g_hInstance;
-HINSTANCE g_hInstance = nullptr;
 extern wchar_t dll_filename[];
 wchar_t dll_filename[MAX_PATH];
 
@@ -87,12 +85,9 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch (dwReason) {
 		case DLL_PROCESS_ATTACH: {
-			// DLL loaded by a process.
-			g_hInstance = hInstance;
-
 			// Get the DLL filename.
 			SetLastError(ERROR_SUCCESS);
-			DWORD dwResult = GetModuleFileName(g_hInstance,
+			DWORD dwResult = GetModuleFileName(hInstance,
 				dll_filename, ARRAY_SIZE(dll_filename));
 			if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 				// Cannot get the DLL filename.

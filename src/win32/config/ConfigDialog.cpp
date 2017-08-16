@@ -38,9 +38,6 @@ using LibRpBase::Config;
 // C includes. (C++ namespace)
 #include <cassert>
 
-// DllMain.cpp
-extern HINSTANCE g_hInstance;
-
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
 #include "DownloadsTab.hpp"
@@ -138,7 +135,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	psh.dwSize = sizeof(psh);
 	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP | PSH_USEHICON;
 	psh.hwndParent = nullptr;
-	psh.hInstance = g_hInstance;
+	psh.hInstance = HINST_THISCOMPONENT;
 	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
 	psh.pszCaption = L"ROM Properties Page Configuration";
 	psh.nPages = ARRAY_SIZE(hpsp);

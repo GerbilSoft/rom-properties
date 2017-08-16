@@ -737,8 +737,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case IDC_KEYMANAGER_IMPORT: {
 					// Show the "Import" popup menu.
 					if (!d->hMenuImport) {
-						extern HINSTANCE g_hInstance;
-						d->hMenuImport = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_KEYMANAGER_IMPORT));
+						d->hMenuImport = LoadMenu(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDR_KEYMANAGER_IMPORT));
 					}
 
 					if (!d->hMenuImport) {
@@ -1391,8 +1390,7 @@ void KeyManagerTabPrivate::loadImages(void)
 
 	// Load hIconGood from our own resource section.
 	// Based on KDE Oxygen 5.35.0's base/16x16/actions/dialog-ok-apply.png
-	extern HINSTANCE g_hInstance;
-	hIconGood = (HICON)LoadImage(g_hInstance,
+	hIconGood = (HICON)LoadImage(HINST_THISCOMPONENT,
 		MAKEINTRESOURCE(IDI_KEY_VALID), IMAGE_ICON,
 		szIcon.cx, szIcon.cy, 0);
 }
@@ -1526,12 +1524,10 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
-	extern HINSTANCE g_hInstance;
-
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp.hInstance = g_hInstance;
+	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_KEYMANAGER);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = L"Key Manager";
