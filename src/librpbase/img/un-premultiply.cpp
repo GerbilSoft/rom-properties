@@ -102,16 +102,18 @@ static FORCEINLINE void un_premultiply_pixel(argb32_t &px)
 int rp_image::un_premultiply(void)
 {
 	RP_D(const rp_image);
-	assert(d->backend->format == rp_image::FORMAT_ARGB32);
-	if (d->backend->format != rp_image::FORMAT_ARGB32) {
+	rp_image_backend *const backend = d->backend;
+	assert(backend->format == rp_image::FORMAT_ARGB32);
+	if (backend->format != rp_image::FORMAT_ARGB32) {
 		// Incorrect format...
 		return -1;
 	}
 
 	// NOTE: SSE2 can't be used for un-premultiply due to lack of division instructions.
-	const int width = d->backend->width;
-	for (int y = d->backend->height-1; y >= 0; y--) {
-		argb32_t *px_dest = static_cast<argb32_t*>(this->scanLine(y));
+	const int width = backend->width;
+	argb32_t *px_dest = static_cast<argb32_t*>(backend->data());
+	int dest_stride_adj = (backend->stride / sizeof(*px_dest)) - width;
+	for (int y = backend->height; y > 0; y--, px_dest += dest_stride_adj) {
 		int x = width;
 		for (; x > 1; x -= 2, px_dest += 2) {
 			un_premultiply_pixel(px_dest[0]);
@@ -119,6 +121,7 @@ int rp_image::un_premultiply(void)
 		}
 		if (x == 1) {
 			un_premultiply_pixel(*px_dest);
+			px_dest++;
 		}
 	}
 	return 0;
