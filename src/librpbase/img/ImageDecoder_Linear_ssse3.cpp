@@ -77,7 +77,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 			return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
 		}
 		// NOTE: Byte addressing, so keep it in units of bytespp.
-		src_stride_adj = (width * bytespp) - stride;
+		src_stride_adj = stride - (width * bytespp);
 	}
 
 	// Create an rp_image.
@@ -229,7 +229,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			// Invalid stride.
 			return nullptr;
 		}
-		src_stride_adj = width - (stride / bytespp);
+		src_stride_adj = (stride / bytespp) - width;
 	}
 
 	// Create an rp_image.
