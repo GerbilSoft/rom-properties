@@ -294,9 +294,72 @@ void ImageDecoderLinearTest::Validate_RpImage(
 }
 
 /**
- * Run an ImageDecoder test.
+ * Test the ImageDecoder::fromLinear*() functions. (Standard version)
  */
-TEST_P(ImageDecoderLinearTest, decodeTest)
+TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
+{
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	unique_ptr<rp_image> pImg;
+	if (mode.is24) {
+		// 24-bit image.
+		pImg.reset(ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
+			m_img_buf.data(), m_img_buf.size()));
+	} else {
+		// 32-bit image.
+		pImg.reset(ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
+			reinterpret_cast<const uint32_t*>(m_img_buf.data()),
+			m_img_buf.size()));
+	}
+
+	ASSERT_TRUE(pImg.get() != nullptr);
+
+	// Validate the image.
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+}
+
+#ifdef IMAGEDECODER_HAS_SSSE3
+/**
+ * Test the ImageDecoder::fromLinear*() functions. (SSSE3-optimized version)
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
+{
+	if (!RP_CPU_HasSSSE3()) {
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	unique_ptr<rp_image> pImg;
+	if (mode.is24) {
+		// 24-bit image.
+		pImg.reset(ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
+			m_img_buf.data(), m_img_buf.size()));
+	} else {
+		// 32-bit image.
+		pImg.reset(ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
+			reinterpret_cast<const uint32_t*>(m_img_buf.data()),
+			m_img_buf.size()));
+	}
+
+	ASSERT_TRUE(pImg.get() != nullptr);
+
+	// Validate the image.
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+}
+#endif /* IMAGEDECODER_HAS_SSSE3 */
+
+// NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
+#ifdef IMAGEDECODER_HAS_SSSE3
+/**
+ * Test the ImageDecoder::fromLinear*() dispatch functions.
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 {
 	// Parameterized test.
 	const ImageDecoderLinearTest_mode &mode = GetParam();
@@ -319,6 +382,7 @@ TEST_P(ImageDecoderLinearTest, decodeTest)
 	// Validate the image.
 	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
 }
+#endif /* IMAGEDECODER_HAS_SSSE3 */
 
 // Test cases.
 
