@@ -443,13 +443,14 @@ void AboutTabPrivate::initSupportTab(void)
 	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
 	     supportSite->name != nullptr; supportSite++)
 	{
-		QString siteUrlHtml = QLatin1String("<a href=\"") +
-					RP2Q(supportSite->url) +
-					QLatin1String("\">") +
-					RP2Q(supportSite->name) +
-					QLatin1String("</a>");
-
-		sSupport += sIndent + chrBullet + QChar(L' ') + siteUrlHtml + br;
+		QString qs_url = RP2Q(supportSite->url);
+		sSupport += sIndent + chrBullet + QChar(L' ') +
+			RP2Q(supportSite->name) +
+			QLatin1String(" &lt;<a href='") +
+			qs_url +
+			QLatin1String("'>") +
+			qs_url +
+			QLatin1String("</a>&gt;") + br;
 	}
 
 	// Email the author.
