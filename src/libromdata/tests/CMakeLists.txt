@@ -68,6 +68,7 @@ ENDFOREACH(test_fst test_fsts)
 ADD_EXECUTABLE(ImageDecoderTest
 	../../librpbase/tests/gtest_init.cpp
 	img/ImageDecoderTest.cpp
+	img/ImageDecoderLinearTest.cpp
 	)
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(ImageDecoderTest win32common)
