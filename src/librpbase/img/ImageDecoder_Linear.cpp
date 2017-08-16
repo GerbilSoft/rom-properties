@@ -785,12 +785,13 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 				memcpy(img->bits(), img_buf, stride * height);
 			} else {
 				// Stride is not identical. Copy each scanline.
+				const int dest_stride = img->stride() / sizeof(argb32_t);
 				uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 				const unsigned int copy_len = (unsigned int)width * bytespp;
 				for (unsigned int y = (unsigned int)height; y > 0; y--) {
 					memcpy(px_dest, img_buf, copy_len);
 					img_buf += (stride / bytespp);
-					px_dest += dest_stride_adj;
+					px_dest += dest_stride;
 				}
 			}
 			// Set the sBIT metadata.

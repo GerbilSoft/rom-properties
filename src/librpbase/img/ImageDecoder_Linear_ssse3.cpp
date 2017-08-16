@@ -239,8 +239,6 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
-	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
-	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 	// sBIT for standard ARGB32.
 	static const rp_image::sBIT_t sBIT_32 = {8,8,8,0,8};
@@ -258,12 +256,13 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			memcpy(img->bits(), img_buf, stride * height);
 		} else {
 			// Stride is not identical. Copy each scanline.
+			const int dest_stride = img->stride() / sizeof(uint32_t);
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			const unsigned int copy_len = (unsigned int)width * bytespp;
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				memcpy(px_dest, img_buf, copy_len);
 				img_buf += (stride / bytespp);
-				px_dest += dest_stride_adj;
+				px_dest += dest_stride;
 			}
 		}
 		// Set the sBIT metadata.
@@ -274,6 +273,8 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	// SSSE3-optimized version based on:
 	// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
 	// - https://stackoverflow.com/a/2974266
+	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
+	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 	// Determine the byte shuffle mask.
 	__m128i shuf_mask;
