@@ -772,6 +772,11 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 		case PXF_HOST_ARGB32:
 			// Host-endian ARGB32.
 			// We can directly copy the image data without conversions.
+			if (stride == 0) {
+				// Calculate the stride based on image width.
+				stride = width * bytespp;
+			}
+
 			if (stride == img->stride()) {
 				// Stride is identical. Copy the whole image all at once.
 				memcpy(img->bits(), img_buf, stride * height);
