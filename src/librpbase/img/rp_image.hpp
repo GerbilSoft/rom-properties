@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_RP_IMAGE_HPP__
@@ -308,6 +307,13 @@ class rp_image
 		 * @return New rp_image with a resized version of the original, or nullptr on error.
 		 */
 		rp_image *resized(int width, int height) const;
+
+		/**
+		 * Un-premultiply this image.
+		 * Image must be ARGB32.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int un_premultiply(void);
 };
 
 }

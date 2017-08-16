@@ -14,17 +14,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "config.librpbase.h"
 
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
-
-#include "un-premultiply.hpp"
 
 // References:
 // - http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
@@ -537,7 +534,7 @@ rp_image *ImageDecoder::fromDXT2(int width, int height,
 	}
 
 	// Un-premultiply the image.
-	int ret = un_premultiply_image(img);
+	int ret = img->un_premultiply();
 	if (ret != 0) {
 		delete img;
 		img = nullptr;
@@ -683,7 +680,7 @@ rp_image *ImageDecoder::fromDXT4(int width, int height,
 	}
 
 	// Un-premultiply the image.
-	int ret = un_premultiply_image(img);
+	int ret = img->un_premultiply();
 	if (ret != 0) {
 		delete img;
 		img = nullptr;

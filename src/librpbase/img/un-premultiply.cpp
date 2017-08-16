@@ -14,18 +14,22 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "un-premultiply.hpp"
 #include "rp_image.hpp"
-#include "ImageDecoder_p.hpp"
+#include "rp_image_p.hpp"
+#include "rp_image_backend.hpp"
+
+#include "ImageDecoder.hpp"
 #include "../common.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
+
+// Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
+#define rp_imagePrivate rp_image_private
 
 namespace LibRpBase {
 
@@ -92,21 +96,22 @@ static FORCEINLINE void un_premultiply_pixel(argb32_t &px)
 
 /**
  * Un-premultiply an ARGB32 rp_image.
- * @param img	[in] rp_image to un-premultiply.
+ * Image must be ARGB32.
  * @return 0 on success; non-zero on error.
  */
-int un_premultiply_image(rp_image *img)
+int rp_image::un_premultiply(void)
 {
-	assert(img->format() == rp_image::FORMAT_ARGB32);
-	if (img->format() != rp_image::FORMAT_ARGB32) {
+	RP_D(const rp_image);
+	assert(d->backend->format == rp_image::FORMAT_ARGB32);
+	if (d->backend->format != rp_image::FORMAT_ARGB32) {
 		// Incorrect format...
 		return -1;
 	}
 
 	// NOTE: SSE2 can't be used for un-premultiply due to lack of division instructions.
-	const int width = img->width();
-	for (int y = img->height()-1; y >= 0; y--) {
-		argb32_t *px_dest = static_cast<argb32_t*>(img->scanLine(y));
+	const int width = d->backend->width;
+	for (int y = d->backend->height-1; y >= 0; y--) {
+		argb32_t *px_dest = static_cast<argb32_t*>(this->scanLine(y));
 		int x = width;
 		for (; x > 1; x -= 2, px_dest += 2) {
 			un_premultiply_pixel(px_dest[0]);
