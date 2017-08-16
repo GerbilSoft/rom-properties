@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase/tests)                  *
+ * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -42,24 +42,23 @@
 #endif
 
 // librpbase
-#include "common.h"
-#include "byteswap.h"
-#include "uvector.h"
-#include "TextFuncs.hpp"
+#include "librpbase/common.h"
+#include "librpbase/byteswap.h"
+#include "librpbase/uvector.h"
+#include "librpbase/TextFuncs.hpp"
 
-#include "file/RpFile.hpp"
-#include "file/RpMemFile.hpp"
-#include "file/FileSystem.hpp"
-#include "img/rp_image.hpp"
-#include "img/RpImageLoader.hpp"
-#include "img/ImageDecoder.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/file/RpMemFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpImageLoader.hpp"
+#include "librpbase/img/ImageDecoder.hpp"
+using namespace LibRpBase;
 
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
 #include "DirectDrawSurface.hpp"
 #include "SegaPVR.hpp"
-using LibRomData::DirectDrawSurface;
-using LibRomData::SegaPVR;
 
 // DirectDraw Surface structs.
 #include "dds_structs.h"
@@ -78,7 +77,11 @@ using LibRomData::SegaPVR;
 using std::string;
 using std::unique_ptr;
 
-namespace LibRpBase { namespace Tests {
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
+
+namespace LibRomData { namespace Tests {
 
 struct ImageDecoderTest_mode
 {
@@ -681,7 +684,7 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibRpBase test suite: RpImageLoader tests.\n\n");
+	fprintf(stderr, "LibRomData test suite: RpImageLoader tests.\n\n");
 	fflush(nullptr);
 
 	// Make sure the CRC32 table is initialized.
