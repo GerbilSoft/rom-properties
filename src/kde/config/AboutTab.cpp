@@ -60,13 +60,22 @@ using LibRpBase::AboutTabText;
 class AboutTabPrivate
 {
 	public:
-		AboutTabPrivate() { }
+		AboutTabPrivate();
 
 	private:
 		Q_DISABLE_COPY(AboutTabPrivate)
 
 	public:
 		Ui::AboutTab ui;
+
+	protected:
+		// Useful strings.
+		const QString br;
+		const QString brbr;
+		const QString b_start;
+		const QString b_end;
+		const QString sIndent;
+		static const QChar chrBullet;
 
 	protected:
 		/**
@@ -98,6 +107,17 @@ class AboutTabPrivate
 
 /** AboutTabPrivate **/
 
+// Useful strings.
+const QChar AboutTabPrivate::chrBullet = 0x2022;  // U+2022: BULLET
+
+AboutTabPrivate::AboutTabPrivate()
+	: br(QLatin1String("<br/>\n"))
+	, brbr(QLatin1String("<br/>\n<br/>\n"))
+	, b_start(QLatin1String("<b>"))
+	, b_end(QLatin1String("</b>"))
+	, sIndent(QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
+{ }
+
 /**
  * Initialize the program title text.
  */
@@ -119,11 +139,6 @@ void AboutTabPrivate::initProgramTitleText(void)
 		ui.lblLogo->hide();
 	}
 #endif /* QT_VERSION >= QT_VERSION_CHECK(4,6,0) */
-
-	// Useful strings.
-	const QString b_start = QLatin1String("<b>");
-	const QString b_end = QLatin1String("</b>");
-	const QString br = QLatin1String("<br/>\n");
 
 	QString sPrgTitle;
 	sPrgTitle.reserve(4096);
@@ -148,15 +163,6 @@ void AboutTabPrivate::initProgramTitleText(void)
 void AboutTabPrivate::initCreditsTab(void)
 {
 	// lblCredits is RichText.
-
-	// Useful strings.
-	const QString br = QLatin1String("<br/>\n");
-	const QString brbr = QLatin1String("<br/>\n<br/>\n");
-	const QString b_start = QLatin1String("<b>");
-	const QString b_end = QLatin1String("</b>");
-	const QString sIndent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-	static const QChar chrBullet = 0x2022;  // U+2022: BULLET
-
 	QString sCredits;
 	sCredits.reserve(4096);
 	sCredits += QLatin1String("Copyright (c) 2016-2017 by David Korth.");
@@ -227,12 +233,7 @@ void AboutTabPrivate::initCreditsTab(void)
  */
 void AboutTabPrivate::initLibrariesTab(void)
 {
-	// lblLibraries is PlainText.
-	// TODO: RichText with links.
-
-	// Useful strings.
-	const QChar br = L'\n';
-	const QString brbr = QLatin1String("\n\n");
+	// lblLibraries is RichText.
 
 	// NOTE: These strings can NOT be static.
 	// Otherwise, they won't be retranslated if the UI language
@@ -262,9 +263,8 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += sCompiledWith.arg(qtVersionCompiled) + br;
 	sLibraries += sUsingDll.arg(qtVersion);
 #endif /* QT_IS_STATIC */
-	sLibraries += br +
-		QLatin1String("Copyright (C) 1995-2017 The Qt Company Ltd. and/or its subsidiaries.");
-	sLibraries += br + QLatin1String("https://www.qt.io/");
+	sLibraries += br + QLatin1String("Copyright (C) 1995-2017 The Qt Company Ltd. and/or its subsidiaries.");
+	sLibraries += br + QLatin1String("<a href='https://www.qt.io/'>https://www.qt.io/</a>");
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
 	sLibraries += br + sLicenses.arg(QLatin1String("GNU LGPL v2.1+, GNU GPL v2+"));
@@ -277,16 +277,14 @@ void AboutTabPrivate::initLibrariesTab(void)
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// NOTE: Can't obtain the runtime version for KDE5 easily...
 	sLibraries += sCompiledWith.arg(QLatin1String("KDE Frameworks " KIO_VERSION_STRING));
-	sLibraries += br +
-		QLatin1String("Copyright (C) 1996-2017 KDE contributors.");
-	sLibraries += br + QLatin1String("https://www.kde.org/");
+	sLibraries += br + QLatin1String("Copyright (C) 1996-2017 KDE contributors.");
+	sLibraries += br + QLatin1String("<a href='https://www.kde.org/'>https://www.kde.org/</a>");
 	sLibraries += br + sLicense.arg(QLatin1String("GNU LGPL v2.1+"));
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	const QString kdeVersion = QLatin1String("KDE Libraries ") + QLatin1String(KDE::versionString());
 	sLibraries += sCompiledWith.arg(QLatin1String("KDE Libraries " KDE_VERSION_STRING));
 	sLibraries += br + sUsingDll.arg(kdeVersion);
-	sLibraries += br +
-		QLatin1String("Copyright (C) 1996-2017 KDE contributors.");
+	sLibraries += br + QLatin1String("Copyright (C) 1996-2017 KDE contributors.");
 	sLibraries += br + sLicense.arg(QLatin1String("GNU LGPL v2.1+"));
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
@@ -305,7 +303,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 #endif
 	sLibraries += br +
 		QLatin1String("Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler.");
-	sLibraries += br + QLatin1String("https://zlib.net/");
+	sLibraries += br + QLatin1String("<a href='https://zlib.net/'>https://zlib.net/</a>");
 	sLibraries += br + sLicense.arg(QLatin1String("zlib license"));
 #endif /* HAVE_ZLIB */
 
@@ -358,17 +356,20 @@ void AboutTabPrivate::initLibrariesTab(void)
 	 */
 	QString png_copyright = QLatin1String(png_get_copyright(nullptr));
 	if (png_copyright.indexOf(QChar(L'\n')) < 0) {
-		// Convert spaces to newlines.
+		// Convert spaces to "<br/>\n".
 		// TODO: QString::simplified() to remove other patterns,
 		// or just assume all versions of libpng have the same
 		// number of spaces?
-		png_copyright.replace(QLatin1String("      "), QLatin1String("\n"));
-		png_copyright.prepend(QChar(L'\n'));
-		png_copyright.append(QChar(L'\n'));
+		png_copyright.replace(QLatin1String("      "), br);
+		png_copyright.prepend(br);
+		png_copyright.append(br);
+	} else {
+		// Replace newlines with "<br/>\n".
+		png_copyright.replace(QChar(L'\n'), br);
 	}
 	sLibraries += png_copyright;
-	sLibraries += QLatin1String("http://www.libpng.org/pub/png/libpng.html\n");
-	sLibraries += sLicense.arg(QLatin1String("libpng license"));
+	sLibraries += QLatin1String("<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>");
+	sLibraries += br + sLicense.arg(QLatin1String("libpng license"));
 #endif /* HAVE_PNG */
 
 	/** nettle **/
@@ -387,22 +388,19 @@ void AboutTabPrivate::initLibrariesTab(void)
 			.arg(nettle_version_major())
 			.arg(nettle_version_minor()));
 #  endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
-	sLibraries += br +
-		QString::fromUtf8("Copyright (C) 2001-2016 Niels Möller.");
-	sLibraries += br + QLatin1String("https://www.lysator.liu.se/~nisse/nettle/");
+	sLibraries += br + QString::fromUtf8("Copyright (C) 2001-2016 Niels Möller.");
+	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
 	sLibraries += br + sLicenses.arg(QLatin1String("GNU LGPL v3+, GNU GPL v2+"));
 # else /* !HAVE_NETTLE_VERSION_H */
 #  ifdef HAVE_NETTLE_3
 	sLibraries += sCompiledWith.arg(QLatin1String("GNU Nettle 3.0"));
-	sLibraries += br +
-		QString::fromUtf8("Copyright (C) 2001-2014 Niels Möller.");
-	sLibraries += br + QLatin1String("https://www.lysator.liu.se/~nisse/nettle/");
+	sLibraries += br + QString::fromUtf8("Copyright (C) 2001-2014 Niels Möller.");
+	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
 	sLibraries += br + sLicense.arg(QLatin1String("GNU LGPL v3+, GNU GPL v2+"));
 #  else /* !HAVE_NETTLE_3 */
 	sLibraries += sCompiledWith.arg(QLatin1String("GNU Nettle 2.x"));
-	sLibraries += br +
-		QString::fromUtf8("Copyright (C) 2001-2013 Niels Möller.");
-	sLibraries += br + QLatin1String("https://www.lysator.liu.se/~nisse/nettle/");
+	sLibraries += br + QString::fromUtf8("Copyright (C) 2001-2013 Niels Möller.");
+	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
 	sLibraries += br + sLicense.arg(QLatin1String("GNU LGPL v2.1+"));
 #  endif /* HAVE_NETTLE_3 */
 # endif /* HAVE_NETTLE_VERSION_H */
@@ -422,10 +420,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// FIXME: Runtime version?
 	sLibraries += sCompiledWith.arg(sXmlVersion);
 #endif
-	sLibraries += br + QLatin1String(
-		"Copyright (C) 2000-2017 Lee Thomason\n"
-		"http://www.grinninglizard.com/\n");
-	sLibraries += sLicense.arg(QLatin1String("zlib license"));
+	sLibraries += br + QLatin1String("Copyright (C) 2000-2017 Lee Thomason");
+	sLibraries += br + QLatin1String("<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>");
+	sLibraries += br + sLicense.arg(QLatin1String("zlib license"));
 #endif /* ENABLE_XML */
 
 	// We're done building the string.
@@ -438,12 +435,6 @@ void AboutTabPrivate::initLibrariesTab(void)
 void AboutTabPrivate::initSupportTab(void)
 {
 	// lblSupport is RichText.
-
-	// Useful strings.
-	const QString br = QLatin1String("<br/>\n");
-	const QString sIndent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-	static const QChar chrBullet = 0x2022;  // U+2022: BULLET
-
 	QString sSupport;
 	sSupport.reserve(4096);
 	sSupport = AboutTab::tr(
