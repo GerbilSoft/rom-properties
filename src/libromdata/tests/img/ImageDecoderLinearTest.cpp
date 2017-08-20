@@ -794,9 +794,10 @@ INSTANTIATE_TEST_CASE_P(fromLinear24_stride512, ImageDecoderLinearTest,
 			24))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
-// 16-bit tests.
+// 15/16-bit tests.
 INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 	::testing::Values(
+		/** 16-bit **/
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x1234),
 			ImageDecoder::PXF_RGB565,
@@ -832,7 +833,21 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			ImageDecoder::PXF_BGRA4444,
 			0,
 			0x11223344,
-			16))
+			16),
+
+		/** 15-bit **/
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RGB555,
+			0,
+			0xFF218CA5,
+			15),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x5224),
+			ImageDecoder::PXF_BGR555,
+			0,
+			0xFF218CA5,
+			15))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 } }
