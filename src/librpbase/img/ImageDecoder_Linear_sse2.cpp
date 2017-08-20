@@ -217,6 +217,9 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		case PXF_RGB565:
 		case PXF_BGR565:
 		case PXF_ARGB4444:
+		case PXF_ABGR4444:
+		case PXF_RGBA4444:
+		case PXF_BGRA4444:
 		case PXF_xRGB4444:
 		case PXF_xBGR4444:
 		case PXF_RGBx4444:
@@ -353,6 +356,78 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Remaining pixels.
 				for (; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_ARGB4444);
+			break;
+
+		case PXF_ABGR4444:
+			// Convert ABGR4444 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_ARGB16_sse2<0, 4, 8, 4, 4, 4, 4, 4, true>(Mask4444_Nyb3, Mask4444_Nyb0, Mask4444_Nyb1, Mask4444_Nyb2, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::ABGR4444_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_ARGB4444);
+			break;
+
+		case PXF_RGBA4444:
+			// Convert RGBA4444 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_ARGB16_sse2<12, 8, 4, 0, 4, 4, 4, 4, false>(Mask4444_Nyb0, Mask4444_Nyb3, Mask4444_Nyb2, Mask4444_Nyb1, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::RGBA4444_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_ARGB4444);
+			break;
+
+		case PXF_BGRA4444:
+			// Convert RGBA4444 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_ARGB16_sse2<12, 0, 4, 8, 4, 4, 4, 4, true>(Mask4444_Nyb0, Mask4444_Nyb1, Mask4444_Nyb2, Mask4444_Nyb3, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::BGRA4444_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
