@@ -104,6 +104,77 @@ static inline void T_RGB16_sse2(
 }
 
 /**
+ * Templated function for 15/16-bit RGB conversion using SSE2. (with alpha channel)
+ * Processes 8 pixels per iteration.
+ * Use this in the inner loop of the main code.
+ *
+ * @tparam Ashift_W	[in] Alpha shift amount in the high word.
+ * @tparam Rshift_W	[in] Red shift amount in the high word.
+ * @tparam Gshift_W	[in] Green shift amount in the low word.
+ * @tparam Bshift_W	[in] Blue shift amount in the low word.
+ * @tparam Abits	[in] Alpha bit count.
+ * @tparam Rbits	[in] Red bit count.
+ * @tparam Gbits	[in] Green bit count.
+ * @tparam Bbits	[in] Blue bit count.
+ * @tparam isBGR	[in] If true, this is BGR instead of RGB.
+ * @param Amask		[in] SSE2 mask for the Alpha channel.
+ * @param Rmask		[in] SSE2 mask for the Red channel.
+ * @param Gmask		[in] SSE2 mask for the Green channel.
+ * @param Bmask		[in] SSE2 mask for the Blue channel.
+ * @param img_buf	[in] 16-bit image buffer.
+ * @param px_dest	[out] Destination image buffer.
+ */
+template<uint8_t Ashift_W, uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
+	uint8_t Abits, uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
+static inline void T_ARGB16_sse2(
+	const __m128i &Amask, const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
+	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
+{
+	// Mask for the high byte for Green and Alpha.
+	static const __m128i MaskAG_Hi8 = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
+
+	const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
+	__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
+
+	// TODO: For ARGB4444, we should be able to optimize out some of the shifts.
+
+	// Mask the G and B components and shift them into place.
+	__m128i sG = _mm_slli_epi16(_mm_and_si128(Gmask, *xmm_src), Gshift_W);
+	__m128i sB;
+	if (isBGR) {
+		sB = _mm_srli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
+	} else {
+		sB = _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
+	}
+	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
+	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
+	// Combine G and B.
+	// NOTE: G low byte has to be masked due to the shift.
+	sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskAG_Hi8));
+
+	// Mask the A and R components and shift them into place.
+	__m128i sA = _mm_slli_epi16(_mm_and_si128(Amask, *xmm_src), Ashift_W);
+	__m128i sR;
+	if (isBGR) {
+		sR = _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
+	} else {
+		sR = _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
+	}
+	sA = _mm_or_si128(sA, _mm_srli_epi16(sA, Abits));
+	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
+	// Combine A and R.
+	// NOTE: A low byte has to be masked due to the shift.
+	sR = _mm_or_si128(sR, _mm_and_si128(sA, MaskAG_Hi8));
+
+	// Unpack AR and GB into DWORDs.
+	__m128i px0 = _mm_unpacklo_epi16(sB, sR);
+	__m128i px1 = _mm_unpackhi_epi16(sB, sR);
+
+	_mm_store_si128(xmm_dest, px0);
+	_mm_store_si128(xmm_dest+1, px1);
+}
+
+/**
  * Convert a linear 16-bit RGB image to rp_image.
  * SSE2-optimized version.
  * @param px_format	[in] 16-bit pixel format.
@@ -126,6 +197,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_RGB565:
 		case PXF_BGR565:
+		case PXF_ARGB4444:
 		case PXF_xRGB4444:
 		case PXF_xBGR4444:
 		case PXF_RGBx4444:
@@ -228,6 +300,30 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Remaining pixels.
 				for (; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::BGR565_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			break;
+
+		/** ARGB4444 **/
+
+		case PXF_ARGB4444:
+			// Convert ARGB4444 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_ARGB16_sse2<0, 4, 8, 4, 4, 4, 4, 4, false>(Mask4444_Nyb3, Mask4444_Nyb2, Mask4444_Nyb1, Mask4444_Nyb0, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
