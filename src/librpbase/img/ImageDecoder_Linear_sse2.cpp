@@ -245,29 +245,19 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 2;
 
-	// FIXME: Add support for more formats.
+	// FIXME: Add support for these formats.
 	// For now, redirect back to the C++ version.
 	switch (px_format) {
-		case PXF_RGB565:
-		case PXF_BGR565:
-		case PXF_ARGB1555:
-		case PXF_ABGR1555:
-		case PXF_RGBA5551:
-		case PXF_BGRA5551:
-		case PXF_ARGB4444:
-		case PXF_ABGR4444:
-		case PXF_RGBA4444:
-		case PXF_BGRA4444:
-		case PXF_xRGB4444:
-		case PXF_xBGR4444:
-		case PXF_RGBx4444:
-		case PXF_BGRx4444:
-		case PXF_RGB555:
-		case PXF_BGR555:
-			break;
+		case PXF_ARGB8332:
+		case PXF_RGB5A3:
+		case PXF_IA8:
+		case PXF_BGR555_PS1:
+		case PXF_L16:
+		case PXF_A8L8:
+			return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
 
 		default:
-			return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
+			break;
 	}
 
 	// Verify parameters.
