@@ -687,8 +687,7 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: RpImageLoader tests.\n\n");
-	fprintf(stderr, "Benchmark iterations: %u\n", LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS);
+	fprintf(stderr, "LibRomData test suite: ImageDecoder tests.\n\n");
 	fflush(nullptr);
 
 	// Make sure the CRC32 table is initialized.

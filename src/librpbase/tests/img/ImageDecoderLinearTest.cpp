@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata/tests)                 *
+ * ROM Properties Page shell extension. (librpbase/tests)                  *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -29,7 +29,6 @@
 
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
-using namespace LibRpBase;
 
 // C includes.
 #include <stdint.h>
@@ -48,7 +47,7 @@ using std::string;
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
 
-namespace LibRomData { namespace Tests {
+namespace LibRpBase { namespace Tests {
 
 struct ImageDecoderLinearTest_mode
 {
@@ -1133,3 +1132,19 @@ INSTANTIATE_TEST_CASE_P(fromLinear16_384, ImageDecoderLinearTest,
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 } }
+
+/**
+ * Test suite main function.
+ * Called by gtest_init.c.
+ */
+extern "C" int gtest_main(int argc, char *argv[])
+{
+	fprintf(stderr, "LibRpBase test suite: ImageDecoder::fromLinear*() tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u\n",
+		LibRpBase::Tests::ImageDecoderLinearTest::BENCHMARK_ITERATIONS);
+	fflush(nullptr);
+
+	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+}
