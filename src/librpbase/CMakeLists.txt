@@ -254,10 +254,26 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
 	SET(librpbase_CPU_H cpuflags_x86.h)
 
-	SET(libromdata_OPTIMIZE_SRCS
+	SET(librpbase_SSE2_SRCS
+		img/ImageDecoder_Linear_sse2.cpp
+		)
+	SET(librpbase_SSSE3_SRCS
 		img/RpJpeg_ssse3.cpp
 		img/ImageDecoder_Linear_ssse3.cpp
 		)
+
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSE2_FLAG "/arch:SSE2")
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		SET(SSE2_FLAG "-msse2")
+	ENDIF()
+	IF(SSE2_FLAG)
+		FOREACH(sse2_file ${librpbase_SSE2_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${sse2_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+		ENDFOREACH(sse2_file ${librpbase_SSE2_SRCS})
+	ENDIF(SSE2_FLAG)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
@@ -266,10 +282,10 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
+		FOREACH(ssse3_file ${librpbase_SSSE3_SRCS})
 			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
+		ENDFOREACH(ssse3_file ${librpbase_SSSE3_SRCS})
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
@@ -298,7 +314,8 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
-	${libromdata_OPTIMIZE_SRCS}
+	${librpbase_SSE2_SRCS}
+	${librpbase_SSSE3_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase8 PUBLIC -DRP_UTF8)
 
@@ -310,7 +327,8 @@ ADD_LIBRARY(rpbase16 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
-	${libromdata_OPTIMIZE_SRCS}
+	${librpbase_SSE2_SRCS}
+	${librpbase_SSSE3_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase16 PUBLIC -DRP_UTF16)
 

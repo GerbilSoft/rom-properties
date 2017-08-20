@@ -508,6 +508,7 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 
 /**
  * Convert a linear 16-bit RGB image to rp_image.
+ * Standard version using regular C++ code.
  * @param px_format	[in] 16-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
@@ -516,7 +517,7 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
+rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *img_buf, int img_siz, int stride)
 {

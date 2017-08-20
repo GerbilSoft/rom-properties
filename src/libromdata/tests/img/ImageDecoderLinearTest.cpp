@@ -370,7 +370,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 		case 15:
 		case 16:
 			// 15/16-bit image.
-			pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+			pImg.reset(ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
 				(int)m_img_buf.size(), mode.stride));
 			break;
@@ -418,7 +418,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 		case 16:
 			// 15/16-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+				pImg.reset(ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
 					(int)m_img_buf.size(), mode.stride));
 			}
@@ -429,6 +429,87 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			return;
 	}
 }
+
+#ifdef IMAGEDECODER_HAS_SSE2
+/**
+ * Test the ImageDecoder::fromLinear*() functions. (SSE2-optimized version)
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
+{
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.\n");
+		return;
+	}
+
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	unique_ptr<rp_image> pImg;
+	switch (mode.bpp) {
+		case 24:
+		case 32:
+			// Not implemented...
+			fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
+
+		case 15:
+		case 16:
+			// 15/16-bit image.
+			pImg.reset(ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
+				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+				(int)m_img_buf.size(), mode.stride));
+			break;
+
+		default:
+			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
+			return;
+	}
+
+	ASSERT_TRUE(pImg.get() != nullptr);
+
+	// Validate the image.
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+}
+
+/**
+ * Benchmark the ImageDecoder::fromLinear*() functions. (SSE2-optimized version)
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
+{
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.\n");
+		return;
+	}
+
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	unique_ptr<rp_image> pImg;
+	switch (mode.bpp) {
+		case 24:
+		case 32:
+			// Not implemented...
+			fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
+
+		case 15:
+		case 16:
+			// 15/16-bit image.
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				pImg.reset(ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
+					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+					(int)m_img_buf.size(), mode.stride));
+			}
+			break;
+
+		default:
+			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
+			return;
+	}
+}
+#endif /* IMAGEDECODER_HAS_SSE2 */
 
 #ifdef IMAGEDECODER_HAS_SSSE3
 /**
@@ -524,7 +605,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
-#ifdef IMAGEDECODER_HAS_SSSE3
+#if defined(IMAGEDECODER_HAS_SSE2) || defined(IMAGEDECODER_HAS_SSSE3)
 /**
  * Test the ImageDecoder::fromLinear*() dispatch functions.
  */
@@ -551,8 +632,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 
 		case 15:
 		case 16:
-			// Not implemented...
-			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			// 15/16-bit image.
+			pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+				(int)m_img_buf.size(), mode.stride));
 			return;
 
 		default:
@@ -596,16 +679,20 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 
 		case 15:
 		case 16:
-			// Not implemented...
-			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
-			return;
+			// 15/16-bit image.
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+					(int)m_img_buf.size(), mode.stride));
+			}
+			break;
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
 			return;
 	}
 }
-#endif /* IMAGEDECODER_HAS_SSSE3 */
+#endif /* IMAGEDECODER_HAS_SSE2 || IMAGEDECODER_HAS_SSSE3 */
 
 // Test cases.
 
