@@ -29,6 +29,13 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 
+// MSVC complains when the high bit is set in hex values
+// when setting SSE2 registers.
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4309)
+#endif
+
 namespace LibRpBase {
 
 /**
@@ -149,3 +156,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 }
 
 }
+
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
