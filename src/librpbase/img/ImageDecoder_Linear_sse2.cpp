@@ -57,11 +57,10 @@ namespace LibRpBase {
  * @param px_dest	[out] Destination image buffer.
  */
 template<uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
-	uint8_t Rbits, uint8_t Gbits, uint8_t Bbits,
-	bool isBGR>
-static FORCEINLINE void T_RGB16_sse2(
+	uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
+static inline void T_RGB16_sse2(
 	const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
-	const uint16_t *img_buf, uint32_t *px_dest)
+	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	// Alpha mask.
 	static const __m128i Mask32_A  = _mm_setr_epi32(0xFF000000,0xFF000000,0xFF000000,0xFF000000);
