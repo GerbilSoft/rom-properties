@@ -114,7 +114,7 @@ static inline void T_RGB16_sse2(
  * Processes 8 pixels per iteration.
  * Use this in the inner loop of the main code.
  *
- * @tparam Ashift_W	[in] Alpha shift amount in the high word. (16 for 1555 alpha handling)
+ * @tparam Ashift_W	[in] Alpha shift amount in the high word. (16 for 1555 alpha handling; 17 for 5551 alpha handling)
  * @tparam Rshift_W	[in] Red shift amount in the high word.
  * @tparam Gshift_W	[in] Green shift amount in the low word.
  * @tparam Bshift_W	[in] Blue shift amount in the low word.
@@ -136,7 +136,7 @@ static inline void T_ARGB16_sse2(
 	const __m128i &Amask, const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
-	static_assert(Ashift_W <= 16, "Ashift_W is invalid.");
+	static_assert(Ashift_W <= 17, "Ashift_W is invalid.");
 	static_assert(Rshift_W < 16, "Rshift_W is invalid.");
 	static_assert(Gshift_W < 16, "Gshift_W is invalid.");
 	static_assert(Bshift_W < 16, "Bshift_W is invalid.");
@@ -189,6 +189,15 @@ static inline void T_ARGB16_sse2(
 		sA = _mm_and_si128(_mm_cmpgt_epi16(*xmm_src, Amask), MaskAG_Hi8);
 		// Combine A and R.
 		sR = _mm_or_si128(sR, sA);
+	} else if (Ashift_W == 17) {
+		// 5551 alpha handling.
+		// Amask has only bit 0 set for each word.
+		// This will mask off bit 0, then compare it to the Amask value.
+		// Any that have bit 0 set will be set to 0xFFFF; otherwise, 0x0000.
+		// We will then mask off the high byte, which will be mixed with R.
+		sA = _mm_and_si128(_mm_cmpeq_epi16(_mm_and_si128(*xmm_src, Amask), Amask), MaskAG_Hi8);
+		// Combine A and R.
+		sR = _mm_or_si128(sR, sA);
 	} else {
 		// Standard alpha handling.
 		sA = _mm_slli_epi16(_mm_and_si128(Amask, *xmm_src), Ashift_W);
@@ -238,6 +247,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		case PXF_BGR565:
 		case PXF_ARGB1555:
 		case PXF_ABGR1555:
+		case PXF_RGBA5551:
 		case PXF_ARGB4444:
 		case PXF_ABGR4444:
 		case PXF_RGBA4444:
@@ -312,6 +322,12 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	static const __m128i Mask1555_Hi5  = _mm_setr_epi16(0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00);
 	static const __m128i Mask1555_Mid5 = _mm_setr_epi16(0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0);
 	static const __m128i Mask1555_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+
+	// AND masks for 5551 channels.
+	static const __m128i Cmp5551_A     = _mm_setr_epi16(0x0001,0x0001,0x0001,0x0001,0x0001,0x0001,0x0001,0x0001);
+	static const __m128i Mask5551_Hi5  = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
+	static const __m128i Mask5551_Mid5 = _mm_setr_epi16(0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0);
+	static const __m128i Mask5551_Lo5  = _mm_setr_epi16(0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E);
 
 	// sBIT metadata.
 	static const rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
@@ -409,6 +425,30 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Remaining pixels.
 				for (; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::ABGR1555_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_ARGB1555);
+			break;
+
+		case PXF_RGBA5551:
+			// Convert ARGB1555 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_ARGB16_sse2<17, 8, 5, 2, 1, 5, 5, 5, false>(Cmp5551_A, Mask5551_Hi5, Mask5551_Mid5, Mask5551_Lo5, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
