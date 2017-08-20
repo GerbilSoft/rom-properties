@@ -810,6 +810,8 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			0,
 			0xFF1045A5,
 			16),
+
+		// ARGB4444
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x1234),
 			ImageDecoder::PXF_ARGB4444,
@@ -833,6 +835,32 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			ImageDecoder::PXF_BGRA4444,
 			0,
 			0x11223344,
+			16),
+
+		// xRGB4444
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_xRGB4444,
+			0,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1432),
+			ImageDecoder::PXF_xBGR4444,
+			0,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x2341),
+			ImageDecoder::PXF_RGBx4444,
+			0,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_BGRx4444,
+			0,
+			0xFF223344,
 			16),
 
 		/** 15-bit **/
