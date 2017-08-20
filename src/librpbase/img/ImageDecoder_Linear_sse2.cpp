@@ -58,7 +58,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 
 	// FIXME: Add support for more formats.
 	// For now, redirect back to the C++ version.
-	if (px_format != PXF_RGB565) {
+	if (px_format != PXF_RGB565 && px_format != PXF_BGR565) {
 		return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
 
@@ -96,55 +96,110 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Alpha mask.
-	__m128i A32_mask = _mm_setr_epi32(0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
-	// AND masks for R, G, and B.
-	__m128i R_mask   = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
-	__m128i G_mask   = _mm_setr_epi16(0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0);
-	__m128i B_mask   = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
-	__m128i Glo_mask = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
-
-	// Convert RGB565 to ARGB32.
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-	for (unsigned int y = (unsigned int)height; y > 0; y--) {
-		// Process 8 pixels per iteration using SSE2.
-		unsigned int x = (unsigned int)width;
-		for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
-			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
-			__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
 
-			// Mask the G and B components and shift them into place.
-			__m128i sG = _mm_slli_epi16(_mm_and_si128(G_mask, *xmm_src), 5);
-			__m128i sB = _mm_slli_epi16(_mm_and_si128(B_mask, *xmm_src), 3);
-			sG = _mm_or_si128(sG, _mm_srli_epi16(sG, 6));
-			sB = _mm_or_si128(sB, _mm_srli_epi16(sB, 5));
-			// Combine G and B.
-			// NOTE: G low byte has to be masked due to the shift.
-			sB = _mm_or_si128(sB, _mm_and_si128(sG, Glo_mask));
+	// Alpha mask.
+	__m128i Mask32_A = _mm_setr_epi32(0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
 
-			// Mask the R component and shift it into place.
-			__m128i sR = _mm_srli_epi16(_mm_and_si128(R_mask, *xmm_src), 8);
-			sR = _mm_or_si128(sR, _mm_srli_epi16(sR, 5));
+	// AND masks for 565 channels.
+	__m128i Mask565_Hi5  = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
+	__m128i Mask565_Mid6 = _mm_setr_epi16(0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0);
+	__m128i Mask565_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+	// Mask for the high byte for Green.
+	__m128i MaskG_Hi8   = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
 
-			// Unpack R and GB into DWORDs.
-			__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), A32_mask);
-			__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), A32_mask);
+	switch (px_format) {
+		case PXF_RGB565:
+			// Convert RGB565 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
+					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
 
-			_mm_store_si128(xmm_dest, px0);
-			_mm_store_si128(xmm_dest+1, px1);
-		}
+					// Mask the G and B components and shift them into place.
+					__m128i sG = _mm_slli_epi16(_mm_and_si128(Mask565_Mid6, *xmm_src), 5);
+					__m128i sB = _mm_slli_epi16(_mm_and_si128(Mask565_Lo5, *xmm_src), 3);
+					sG = _mm_or_si128(sG, _mm_srli_epi16(sG, 6));
+					sB = _mm_or_si128(sB, _mm_srli_epi16(sB, 5));
+					// Combine G and B.
+					// NOTE: G low byte has to be masked due to the shift.
+					sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskG_Hi8));
 
-		// Remaining pixels.
-		for (; x > 0; x--) {
-			*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(*img_buf);
-			img_buf++;
-			px_dest++;
-		}
+					// Mask the R component and shift it into place.
+					__m128i sR = _mm_srli_epi16(_mm_and_si128(Mask565_Hi5, *xmm_src), 8);
+					sR = _mm_or_si128(sR, _mm_srli_epi16(sR, 5));
 
-		// Next line.
-		img_buf += src_stride_adj;
-		px_dest += dest_stride_adj;
+					// Unpack R and GB into DWORDs.
+					__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A);
+					__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A);
+
+					_mm_store_si128(xmm_dest, px0);
+					_mm_store_si128(xmm_dest+1, px1);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			break;
+
+		case PXF_BGR565:
+			// Convert BGR565 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
+					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
+
+					// Mask the G and B components and shift them into place.
+					__m128i sG = _mm_slli_epi16(_mm_and_si128(Mask565_Mid6, *xmm_src), 5);
+					__m128i sB = _mm_srli_epi16(_mm_and_si128(Mask565_Hi5, *xmm_src), 8);
+					sG = _mm_or_si128(sG, _mm_srli_epi16(sG, 6));
+					sB = _mm_or_si128(sB, _mm_srli_epi16(sB, 5));
+					// Combine G and B.
+					// NOTE: G low byte has to be masked due to the shift.
+					sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskG_Hi8));
+
+					// Mask the R component and shift it into place.
+					__m128i sR = _mm_slli_epi16(_mm_and_si128(Mask565_Lo5, *xmm_src), 3);
+					sR = _mm_or_si128(sR, _mm_srli_epi16(sR, 5));
+
+					// Unpack R and GB into DWORDs.
+					__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A);
+					__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A);
+
+					_mm_store_si128(xmm_dest, px0);
+					_mm_store_si128(xmm_dest+1, px1);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::BGR565_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			break;
+
+		default:
+			assert(!"Pixel format not supported.");
+			delete img;
+			return nullptr;
 	}
 
 	// Set the sBIT metadata.
