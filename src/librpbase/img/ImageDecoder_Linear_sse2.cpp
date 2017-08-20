@@ -126,12 +126,12 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_RGB565:
 		case PXF_BGR565:
-		case PXF_RGB555:
-		case PXF_BGR555:
 		case PXF_xRGB4444:
 		case PXF_xBGR4444:
 		case PXF_RGBx4444:
 		case PXF_BGRx4444:
+		case PXF_RGB555:
+		case PXF_BGR555:
 			break;
 
 		default:
@@ -192,7 +192,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	static const __m128i Mask4444_Nyb0 = _mm_setr_epi16(0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F);
 
 	switch (px_format) {
-		/** 16-bit **/
+		/** RGB565 **/
 
 		case PXF_RGB565:
 			// Convert RGB565 to ARGB32.
@@ -238,51 +238,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 			}
 			break;
 
-		/** 15-bit **/
-
-		case PXF_RGB555:
-			// Convert RGB555 to ARGB32.
-			for (unsigned int y = (unsigned int)height; y > 0; y--) {
-				// Process 8 pixels per iteration using SSE2.
-				unsigned int x = (unsigned int)width;
-				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
-					T_RGB16_sse2<7, 6, 3, 5, 5, 5, false>(Mask555_Hi5, Mask555_Mid5, Mask565_Lo5, img_buf, px_dest);
-				}
-
-				// Remaining pixels.
-				for (; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::RGB555_to_ARGB32(*img_buf);
-					img_buf++;
-					px_dest++;
-				}
-
-				// Next line.
-				img_buf += src_stride_adj;
-				px_dest += dest_stride_adj;
-			}
-			break;
-
-		case PXF_BGR555:
-			// Convert BGR555 to ARGB32.
-			for (unsigned int y = (unsigned int)height; y > 0; y--) {
-				// Process 8 pixels per iteration using SSE2.
-				unsigned int x = (unsigned int)width;
-				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
-					T_RGB16_sse2<3, 6, 7, 5, 5, 5, true>(Mask555_Lo5, Mask555_Mid5, Mask565_Hi5, img_buf, px_dest);
-				}
-
-				// Remaining pixels.
-				for (; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::BGR555_to_ARGB32(*img_buf);
-					img_buf++;
-					px_dest++;
-				}
-
-				// Next line.
-				img_buf += src_stride_adj;
-				px_dest += dest_stride_adj;
-			}
-			break;
+		/** xRGB4444 **/
 
 		case PXF_xRGB4444:
 			// Convert xRGB4444 to ARGB32.
@@ -362,6 +318,52 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Remaining pixels.
 				for (; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::BGRx4444_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			break;
+
+		/** RGB555 **/
+
+		case PXF_RGB555:
+			// Convert RGB555 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_RGB16_sse2<7, 6, 3, 5, 5, 5, false>(Mask555_Hi5, Mask555_Mid5, Mask565_Lo5, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::RGB555_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			break;
+
+		case PXF_BGR555:
+			// Convert BGR555 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_RGB16_sse2<3, 6, 7, 5, 5, 5, true>(Mask555_Lo5, Mask555_Mid5, Mask565_Hi5, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::BGR555_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
