@@ -41,10 +41,10 @@ namespace LibRpBase {
 /**
  * Convert a linear 16-bit RGB image to rp_image.
  * SSE2-optimized version.
- * @param px_format	[in] 32-bit pixel format.
+ * @param px_format	[in] 16-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
- * @param img_buf	[in] 32-bit image buffer.(must be byte-addressable)
+ * @param img_buf	[in] 16-bit image buffer.
  * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
