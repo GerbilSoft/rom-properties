@@ -887,7 +887,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			0x00218CA5,
 			16),
 		ImageDecoderLinearTest_mode(
-			le32_to_cpu(0x8234),
+			le32_to_cpu(0x9234),
 			ImageDecoder::PXF_ARGB1555,
 			0,
 			0xFF218CA5,

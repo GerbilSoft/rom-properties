@@ -186,16 +186,21 @@ static inline void T_ARGB16_sse2(
 	__m128i sA;
 	if (Ashift_W == 16) {
 		// 1555 alpha handling.
-		sA = _mm_and_si128(_mm_cmpgt_epi16(*xmm_src, Amask), MaskAG_Hi8);
+		// Using a bytewise comparison so we don't have to mask off the low byte.
+		// NOTE: This comparison is *signed*. Amask must be 0x0080, and we're
+		// checking for less than, which will match:
+		// - < 0x00: 0x80-0xFF
+		// - < 0x80: Nothing
+		sA = _mm_cmplt_epi8(*xmm_src, Amask);
 		// Combine A and R.
 		sR = _mm_or_si128(sR, sA);
 	} else if (Ashift_W == 17) {
 		// 5551 alpha handling.
 		// Amask has only bit 0 set for each word.
 		// This will mask off bit 0, then compare it to the Amask value.
-		// Any that have bit 0 set will be set to 0xFFFF; otherwise, 0x0000.
-		// We will then mask off the high byte, which will be mixed with R.
-		sA = _mm_and_si128(_mm_cmpeq_epi16(_mm_and_si128(*xmm_src, Amask), Amask), MaskAG_Hi8);
+		// Any that have bit 0 set will be set to 0x00FF; otherwise, 0x0000.
+		// This can then be shifted into place.
+		sA = _mm_slli_epi16(_mm_cmpeq_epi8(_mm_and_si128(*xmm_src, Amask), Amask), 8);
 		// Combine A and R.
 		sR = _mm_or_si128(sR, sA);
 	} else {
@@ -318,13 +323,13 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	static const __m128i Mask4444_Nyb0 = _mm_setr_epi16(0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F);
 
 	// AND masks for 1555 channels.
-	static const __m128i Cmp1555_A     = _mm_setr_epi16(0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF);
+	static const __m128i Cmp1555_A     = _mm_setr_epi16(0x0080,0x0080,0x0080,0x0080,0x0080,0x0080,0x0080,0x0080);
 	static const __m128i Mask1555_Hi5  = _mm_setr_epi16(0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00);
 	static const __m128i Mask1555_Mid5 = _mm_setr_epi16(0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0);
 	static const __m128i Mask1555_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
 
 	// AND masks for 5551 channels.
-	static const __m128i Cmp5551_A     = _mm_setr_epi16(0x0001,0x0001,0x0001,0x0001,0x0001,0x0001,0x0001,0x0001);
+	static const __m128i Cmp5551_A     = _mm_setr_epi16(0x0101,0x0101,0x0101,0x0101,0x0101,0x0101,0x0101,0x0101);
 	static const __m128i Mask5551_Hi5  = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
 	static const __m128i Mask5551_Mid5 = _mm_setr_epi16(0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0);
 	static const __m128i Mask5551_Lo5  = _mm_setr_epi16(0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E);
