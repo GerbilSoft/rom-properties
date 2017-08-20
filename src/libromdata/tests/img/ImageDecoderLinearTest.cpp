@@ -735,6 +735,34 @@ INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
 			ImageDecoder::PXF_xBGR8888,
 			0,
 			0xFF345678,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 00)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0x0048459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0x009E4548,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 10)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0xAA48459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0xAA9E4548,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
@@ -767,6 +795,34 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 			ImageDecoder::PXF_xBGR8888,
 			640,
 			0xFF345678,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 00)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0x0048459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0x009E4548,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 10)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0xAA48459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0xAA9E4548,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
