@@ -279,13 +279,34 @@ void ImageDecoderLinearTest::SetUp(void)
 			m_img_buf.resize(128*stride);
 
 			uint32_t *p = reinterpret_cast<uint32_t*>(m_img_buf.data());
-			const int stride_adj = (stride - 128*4) / 4;
+			const int stride_adj = (stride / sizeof(*p)) - 128;
 			for (unsigned int y = 128; y > 0; y--) {
 				for (unsigned int x = 128; x > 0; x -= 4, p += 4) {
 					p[0] = mode.src_pixel;
 					p[1] = mode.src_pixel;
 					p[2] = mode.src_pixel;
 					p[3] = mode.src_pixel;
+				}
+				p += stride_adj;
+			}
+			break;
+		}
+
+		case 15:
+		case 16: {
+			// 15/16-bit color.
+			const int stride = (mode.stride > 0 ? mode.stride : 128*2);
+			ASSERT_GE(stride, 128*2);
+			m_img_buf.resize(128*stride);
+
+			uint16_t *p = reinterpret_cast<uint16_t*>(m_img_buf.data());
+			const int stride_adj = (stride / sizeof(*p)) - 128;
+			for (unsigned int y = 128; y > 0; y--) {
+				for (unsigned int x = 128; x > 0; x -= 4, p += 4) {
+					p[0] = (uint16_t)mode.src_pixel;
+					p[1] = (uint16_t)mode.src_pixel;
+					p[2] = (uint16_t)mode.src_pixel;
+					p[3] = (uint16_t)mode.src_pixel;
 				}
 				p += stride_adj;
 			}
@@ -346,6 +367,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 				m_img_buf.size(), mode.stride));
 			break;
 
+		case 15:
+		case 16:
+			// 15/16-bit image.
+			pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+				m_img_buf.size(), mode.stride));
+			break;
+
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
 			return;
@@ -385,6 +414,16 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			}
 			break;
 
+		case 15:
+		case 16:
+			// 15/16-bit image.
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+					m_img_buf.size(), mode.stride));
+			}
+			break;
+
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
 			return;
@@ -398,7 +437,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 {
 	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
 		return;
 	}
 
@@ -421,6 +460,12 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 				m_img_buf.size(), mode.stride));
 			break;
 
+		case 15:
+		case 16:
+			// Not implemented...
+			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
+
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
 			return;
@@ -438,7 +483,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 {
 	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
 		return;
 	}
 
@@ -464,6 +509,12 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 					m_img_buf.size(), mode.stride));
 			}
 			break;
+
+		case 15:
+		case 16:
+			// Not implemented...
+			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
@@ -497,6 +548,12 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 				reinterpret_cast<const uint32_t*>(m_img_buf.data()),
 				m_img_buf.size(), mode.stride));
 			break;
+
+		case 15:
+		case 16:
+			// Not implemented...
+			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
@@ -536,6 +593,12 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 					m_img_buf.size(), mode.stride));
 			}
 			break;
+
+		case 15:
+		case 16:
+			// Not implemented...
+			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
@@ -642,6 +705,47 @@ INSTANTIATE_TEST_CASE_P(fromLinear24_stride512, ImageDecoderLinearTest,
 			512,
 			0xFF123456,
 			24))
+	, ImageDecoderLinearTest::test_case_suffix_generator);
+
+// 16-bit tests.
+INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
+	::testing::Values(
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RGB565,
+			0,
+			0xFF1045A5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0xA222),
+			ImageDecoder::PXF_BGR565,
+			0,
+			0xFF1045A5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_ARGB4444,
+			0,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1432),
+			ImageDecoder::PXF_ABGR4444,
+			0,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x2341),
+			ImageDecoder::PXF_RGBA4444,
+			0,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_BGRA4444,
+			0,
+			0x11223344,
+			16))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 } }
