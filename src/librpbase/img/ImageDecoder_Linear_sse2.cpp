@@ -546,7 +546,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Process 8 pixels per iteration using SSE2.
 				unsigned int x = (unsigned int)width;
 				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
-					T_RGB16_sse2<7, 6, 3, 5, 5, 5, false>(Mask555_Hi5, Mask555_Mid5, Mask565_Lo5, img_buf, px_dest);
+					T_RGB16_sse2<7, 6, 3, 5, 5, 5, false>(Mask555_Hi5, Mask555_Mid5, Mask555_Lo5, img_buf, px_dest);
 				}
 
 				// Remaining pixels.
@@ -570,7 +570,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Process 8 pixels per iteration using SSE2.
 				unsigned int x = (unsigned int)width;
 				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
-					T_RGB16_sse2<3, 6, 7, 5, 5, 5, true>(Mask555_Lo5, Mask555_Mid5, Mask565_Hi5, img_buf, px_dest);
+					T_RGB16_sse2<3, 6, 7, 5, 5, 5, true>(Mask555_Lo5, Mask555_Mid5, Mask555_Hi5, img_buf, px_dest);
 				}
 
 				// Remaining pixels.
