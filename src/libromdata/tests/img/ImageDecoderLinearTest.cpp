@@ -357,14 +357,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 		case 24:
 			// 24-bit image.
 			pImg.reset(ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
-				m_img_buf.data(), m_img_buf.size(), mode.stride));
+				m_img_buf.data(), (int)m_img_buf.size(), mode.stride));
 			break;
 
 		case 32:
 			// 32-bit image.
 			pImg.reset(ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-				m_img_buf.size(), mode.stride));
+				(int)m_img_buf.size(), mode.stride));
 			break;
 
 		case 15:
@@ -372,7 +372,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 			// 15/16-bit image.
 			pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
-				m_img_buf.size(), mode.stride));
+				(int)m_img_buf.size(), mode.stride));
 			break;
 
 		default:
@@ -401,7 +401,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				pImg.reset(ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
-					m_img_buf.data(), m_img_buf.size(), mode.stride));
+					m_img_buf.data(), (int)m_img_buf.size(), mode.stride));
 			}
 			break;
 
@@ -410,7 +410,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				pImg.reset(ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-					m_img_buf.size(), mode.stride));
+					(int)m_img_buf.size(), mode.stride));
 			}
 			break;
 
@@ -420,7 +420,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
-					m_img_buf.size(), mode.stride));
+					(int)m_img_buf.size(), mode.stride));
 			}
 			break;
 
@@ -450,14 +450,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 		case 24:
 			// 24-bit image.
 			pImg.reset(ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
-				m_img_buf.data(), m_img_buf.size(), mode.stride));
+				m_img_buf.data(), (int)m_img_buf.size(), mode.stride));
 			break;
 
 		case 32:
 			// 32-bit image.
 			pImg.reset(ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-				m_img_buf.size(), mode.stride));
+				(int)m_img_buf.size(), mode.stride));
 			break;
 
 		case 15:
@@ -497,7 +497,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				pImg.reset(ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
-					m_img_buf.data(), m_img_buf.size(), mode.stride));
+					m_img_buf.data(), (int)m_img_buf.size(), mode.stride));
 			}
 			break;
 
@@ -506,7 +506,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				pImg.reset(ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-					m_img_buf.size(), mode.stride));
+					(int)m_img_buf.size(), mode.stride));
 			}
 			break;
 
@@ -539,14 +539,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 		case 24:
 			// 24-bit image.
 			pImg.reset(ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
-				m_img_buf.data(), m_img_buf.size(), mode.stride));
+				m_img_buf.data(), (int)m_img_buf.size(), mode.stride));
 			break;
 
 		case 32:
 			// 32-bit image.
 			pImg.reset(ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-				m_img_buf.size(), mode.stride));
+				(int)m_img_buf.size(), mode.stride));
 			break;
 
 		case 15:
@@ -581,7 +581,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				pImg.reset(ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
-					m_img_buf.data(), m_img_buf.size(), mode.stride));
+					m_img_buf.data(), (int)m_img_buf.size(), mode.stride));
 			}
 			break;
 
@@ -590,7 +590,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				pImg.reset(ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf.data()),
-					m_img_buf.size(), mode.stride));
+					(int)m_img_buf.size(), mode.stride));
 			}
 			break;
 
