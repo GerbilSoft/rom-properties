@@ -83,8 +83,14 @@ static inline void T_RGB16_sse2(
 	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
 	// Combine G and B.
-	// NOTE: G low byte has to be masked due to the shift.
-	sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskG_Hi8));
+	if (Gbits > 4) {
+		// NOTE: G low byte has to be masked due to the shift.
+		sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskG_Hi8));
+	} else {
+		// Not enough Gbits to need masking.
+		// FIXME: If less than 4, need to shift multiple times.
+		sB = _mm_or_si128(sB, sG);
+	}
 
 	// Mask the R component and shift it into place.
 	__m128i sR;
@@ -149,8 +155,14 @@ static inline void T_ARGB16_sse2(
 	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
 	// Combine G and B.
-	// NOTE: G low byte has to be masked due to the shift.
-	sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskAG_Hi8));
+	if (Gbits > 4) {
+		// NOTE: G low byte has to be masked due to the shift.
+		sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskAG_Hi8));
+	} else {
+		// Not enough Gbits to need masking.
+		// FIXME: If less than 4, need to shift multiple times.
+		sB = _mm_or_si128(sB, sG);
+	}
 
 	// Mask the A and R components and shift them into place.
 	__m128i sA = _mm_slli_epi16(_mm_and_si128(Amask, *xmm_src), Ashift_W);
@@ -164,7 +176,14 @@ static inline void T_ARGB16_sse2(
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
 	// Combine A and R.
 	// NOTE: A low byte has to be masked due to the shift.
-	sR = _mm_or_si128(sR, _mm_and_si128(sA, MaskAG_Hi8));
+	if (Abits > 4) {
+		// NOTE: A low byte has to be masked due to the shift.
+		sR = _mm_or_si128(sR, _mm_and_si128(sA, MaskAG_Hi8));
+	} else {
+		// Not enough Abits to need masking.
+		// FIXME: If less than 4, need to shift multiple times.
+		sR = _mm_or_si128(sR, sA);
+	}
 
 	// Unpack AR and GB into DWORDs.
 	__m128i px0 = _mm_unpacklo_epi16(sB, sR);
