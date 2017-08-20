@@ -282,6 +282,12 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	static const __m128i Mask4444_Nyb1 = _mm_setr_epi16(0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0);
 	static const __m128i Mask4444_Nyb0 = _mm_setr_epi16(0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F);
 
+	// sBIT metadata.
+	static const rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
+	static const rp_image::sBIT_t sBIT_RGB555   = {5,5,5,0,0};
+	static const rp_image::sBIT_t sBIT_xRGB4444 = {4,4,4,0,0};
+	static const rp_image::sBIT_t sBIT_ARGB4444 = {4,4,4,0,4};
+
 	switch (px_format) {
 		/** RGB565 **/
 
@@ -305,6 +311,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_RGB565);
 			break;
 
 		case PXF_BGR565:
@@ -327,6 +335,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_RGB565);
 			break;
 
 		/** ARGB4444 **/
@@ -351,6 +361,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_ARGB4444);
 			break;
 
 		/** xRGB4444 **/
@@ -375,6 +387,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_xRGB4444);
 			break;
 
 		case PXF_xBGR4444:
@@ -397,6 +411,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_xRGB4444);
 			break;
 
 		case PXF_RGBx4444:
@@ -419,6 +435,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_xRGB4444);
 			break;
 
 		case PXF_BGRx4444:
@@ -441,6 +459,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_xRGB4444);
 			break;
 
 		/** RGB555 **/
@@ -465,6 +485,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_RGB555);
 			break;
 
 		case PXF_BGR555:
@@ -487,6 +509,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_RGB555);
 			break;
 
 		default:
@@ -494,10 +518,6 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 			delete img;
 			return nullptr;
 	}
-
-	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT_RGB565 = {5,6,5,0,0};
-	img->set_sBIT(&sBIT_RGB565);
 
 	// Image has been converted.
 	return img;
