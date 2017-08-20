@@ -39,6 +39,58 @@
 namespace LibRpBase {
 
 /**
+ * Templated function for 15/16-bit RGB conversion using SSE2. (no alpha channel)
+ * Processes 8 pixels per iteration.
+ * Use this in the inner loop of the main code.
+ *
+ * @tparam Rshift_W	[in] Red shift amount in the high word.
+ * @tparam Gshift_W	[in] Green shift amount in the low word.
+ * @tparam Bshift_W	[in] Blue shift amount in the low word.
+ * @tparam Rbits	[in] Red bit count.
+ * @tparam Gbits	[in] Green bit count.
+ * @tparam Bbits	[in] Blue bit count.
+ * @param Rmask		[in] SSE2 mask for the Red channel.
+ * @param Gmask		[in] SSE2 mask for the Green channel.
+ * @param Bmask		[in] SSE2 mask for the Blue channel.
+ * @param img_buf	[in] 16-bit image buffer.
+ * @param px_dest	[out] Destination image buffer.
+ */
+template<uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
+	uint8_t Rbits, uint8_t Gbits, uint8_t Bbits>
+static FORCEINLINE void T_RGB16_sse2(
+	const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
+	const uint16_t *img_buf, uint32_t *px_dest)
+{
+	// Alpha mask.
+	static const __m128i Mask32_A  = _mm_setr_epi32(0xFF000000,0xFF000000,0xFF000000,0xFF000000);
+	// Mask for the high byte for Green.
+	static const __m128i MaskG_Hi8 = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
+
+	const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
+	__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
+
+	// Mask the G and B components and shift them into place.
+	__m128i sG = _mm_slli_epi16(_mm_and_si128(Gmask, *xmm_src), Gshift_W);
+	__m128i sB = _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
+	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
+	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
+	// Combine G and B.
+	// NOTE: G low byte has to be masked due to the shift.
+	sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskG_Hi8));
+
+	// Mask the R component and shift it into place.
+	__m128i sR = _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
+	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
+
+	// Unpack R and GB into DWORDs.
+	__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A);
+	__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A);
+
+	_mm_store_si128(xmm_dest, px0);
+	_mm_store_si128(xmm_dest+1, px1);
+}
+
+/**
  * Convert a linear 16-bit RGB image to rp_image.
  * SSE2-optimized version.
  * @param px_format	[in] 16-bit pixel format.
@@ -107,19 +159,19 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 	// Alpha mask.
-	__m128i Mask32_A = _mm_setr_epi32(0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+	static const __m128i Mask32_A = _mm_setr_epi32(0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
 	// Mask for the high byte for Green.
-	__m128i MaskG_Hi8   = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
+	static const __m128i MaskG_Hi8   = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
 
 	// AND masks for 565 channels.
-	__m128i Mask565_Hi5  = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
-	__m128i Mask565_Mid6 = _mm_setr_epi16(0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0);
-	__m128i Mask565_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+	static const __m128i Mask565_Hi5  = _mm_setr_epi16(0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800,0xF800);
+	static const __m128i Mask565_Mid6 = _mm_setr_epi16(0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0,0x07E0);
+	static const __m128i Mask565_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
 
 	// AND masks for 555 channels.
-	__m128i Mask555_Hi5  = _mm_setr_epi16(0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00);
-	__m128i Mask555_Mid5 = _mm_setr_epi16(0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0);
-	__m128i Mask555_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+	static const __m128i Mask555_Hi5  = _mm_setr_epi16(0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00);
+	static const __m128i Mask555_Mid5 = _mm_setr_epi16(0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0);
+	static const __m128i Mask555_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
 
 	switch (px_format) {
 		/** 16-bit **/
@@ -130,28 +182,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Process 8 pixels per iteration using SSE2.
 				unsigned int x = (unsigned int)width;
 				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
-					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
-					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
-
-					// Mask the G and B components and shift them into place.
-					__m128i sG = _mm_slli_epi16(_mm_and_si128(Mask565_Mid6, *xmm_src), 5);
-					__m128i sB = _mm_slli_epi16(_mm_and_si128(Mask565_Lo5, *xmm_src), 3);
-					sG = _mm_or_si128(sG, _mm_srli_epi16(sG, 6));
-					sB = _mm_or_si128(sB, _mm_srli_epi16(sB, 5));
-					// Combine G and B.
-					// NOTE: G low byte has to be masked due to the shift.
-					sB = _mm_or_si128(sB, _mm_and_si128(sG, MaskG_Hi8));
-
-					// Mask the R component and shift it into place.
-					__m128i sR = _mm_srli_epi16(_mm_and_si128(Mask565_Hi5, *xmm_src), 8);
-					sR = _mm_or_si128(sR, _mm_srli_epi16(sR, 5));
-
-					// Unpack R and GB into DWORDs.
-					__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A);
-					__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A);
-
-					_mm_store_si128(xmm_dest, px0);
-					_mm_store_si128(xmm_dest+1, px1);
+					T_RGB16_sse2<8, 5, 3, 5, 6, 5>(Mask565_Hi5, Mask565_Mid6, Mask565_Lo5, img_buf, px_dest);
 				}
 
 				// Remaining pixels.
