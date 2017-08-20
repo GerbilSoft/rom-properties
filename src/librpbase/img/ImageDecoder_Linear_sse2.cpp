@@ -253,6 +253,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		case PXF_ARGB1555:
 		case PXF_ABGR1555:
 		case PXF_RGBA5551:
+		case PXF_BGRA5551:
 		case PXF_ARGB4444:
 		case PXF_ABGR4444:
 		case PXF_RGBA4444:
@@ -454,6 +455,30 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				// Remaining pixels.
 				for (; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::RGBA5551_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_ARGB1555);
+			break;
+
+		case PXF_BGRA5551:
+			// Convert BGRA5551 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_ARGB16_sse2<17, 2, 5, 8, 1, 5, 5, 5, true>(Cmp5551_A, Mask5551_Lo5, Mask5551_Mid5, Mask5551_Hi5, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::BGRA5551_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
