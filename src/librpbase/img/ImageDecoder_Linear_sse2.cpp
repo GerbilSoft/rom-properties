@@ -114,7 +114,7 @@ static inline void T_RGB16_sse2(
  * Processes 8 pixels per iteration.
  * Use this in the inner loop of the main code.
  *
- * @tparam Ashift_W	[in] Alpha shift amount in the high word.
+ * @tparam Ashift_W	[in] Alpha shift amount in the high word. (16 for 1555 alpha handling)
  * @tparam Rshift_W	[in] Red shift amount in the high word.
  * @tparam Gshift_W	[in] Green shift amount in the low word.
  * @tparam Bshift_W	[in] Blue shift amount in the low word.
@@ -136,6 +136,16 @@ static inline void T_ARGB16_sse2(
 	const __m128i &Amask, const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
+	static_assert(Ashift_W <= 16, "Ashift_W is invalid.");
+	static_assert(Rshift_W < 16, "Rshift_W is invalid.");
+	static_assert(Gshift_W < 16, "Gshift_W is invalid.");
+	static_assert(Bshift_W < 16, "Bshift_W is invalid.");
+	static_assert(Abits < 16, "Abits is invalid.");
+	static_assert(Rbits < 16, "Rbits is invalid.");
+	static_assert(Gbits < 16, "Gbits is invalid.");
+	static_assert(Bbits < 16, "Bbits is invalid.");
+	static_assert(Abits + Rbits + Gbits + Bbits <= 16, "Total number of bits is invalid.");
+
 	// Mask for the high byte for Green and Alpha.
 	static const __m128i MaskAG_Hi8 = _mm_setr_epi16(0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00,0xFF00);
 
@@ -164,25 +174,35 @@ static inline void T_ARGB16_sse2(
 		sB = _mm_or_si128(sB, sG);
 	}
 
-	// Mask the A and R components and shift them into place.
-	__m128i sA = _mm_slli_epi16(_mm_and_si128(Amask, *xmm_src), Ashift_W);
+	// Mask the R component and shift it into place.
 	__m128i sR;
 	if (isBGR) {
 		sR = _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
 	} else {
 		sR = _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
 	}
-	sA = _mm_or_si128(sA, _mm_srli_epi16(sA, Abits));
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
-	// Combine A and R.
-	// NOTE: A low byte has to be masked due to the shift.
-	if (Abits > 4) {
-		// NOTE: A low byte has to be masked due to the shift.
-		sR = _mm_or_si128(sR, _mm_and_si128(sA, MaskAG_Hi8));
-	} else {
-		// Not enough Abits to need masking.
-		// FIXME: If less than 4, need to shift multiple times.
+	// Mask the A components, shift it into place, and combine with R.
+	__m128i sA;
+	if (Ashift_W == 16) {
+		// 1555 alpha handling.
+		sA = _mm_and_si128(_mm_cmpgt_epi16(*xmm_src, Amask), MaskAG_Hi8);
+		// Combine A and R.
 		sR = _mm_or_si128(sR, sA);
+	} else {
+		// Standard alpha handling.
+		sA = _mm_slli_epi16(_mm_and_si128(Amask, *xmm_src), Ashift_W);
+		sA = _mm_or_si128(sA, _mm_srli_epi16(sA, Abits));
+		// Combine A and R.
+		// NOTE: A low byte has to be masked due to the shift.
+		if (Abits > 4) {
+			// NOTE: A low byte has to be masked due to the shift.
+			sR = _mm_or_si128(sR, _mm_and_si128(sA, MaskAG_Hi8));
+		} else {
+			// Not enough Abits to need masking.
+			// FIXME: If less than 4, need to shift multiple times.
+			sR = _mm_or_si128(sR, sA);
+		}
 	}
 
 	// Unpack AR and GB into DWORDs.
@@ -216,6 +236,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_RGB565:
 		case PXF_BGR565:
+		case PXF_ARGB1555:
 		case PXF_ARGB4444:
 		case PXF_ABGR4444:
 		case PXF_RGBA4444:
@@ -285,11 +306,18 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	static const __m128i Mask4444_Nyb1 = _mm_setr_epi16(0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0,0x00F0);
 	static const __m128i Mask4444_Nyb0 = _mm_setr_epi16(0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F,0x000F);
 
+	// AND masks for 1555 channels.
+	static const __m128i Cmp1555_A     = _mm_setr_epi16(0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF);
+	static const __m128i Mask1555_Hi5  = _mm_setr_epi16(0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00,0x7C00);
+	static const __m128i Mask1555_Mid5 = _mm_setr_epi16(0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0,0x03E0);
+	static const __m128i Mask1555_Lo5  = _mm_setr_epi16(0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F,0x001F);
+
 	// sBIT metadata.
 	static const rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
-	static const rp_image::sBIT_t sBIT_RGB555   = {5,5,5,0,0};
+	static const rp_image::sBIT_t sBIT_ARGB1555 = {5,5,5,0,1};
 	static const rp_image::sBIT_t sBIT_xRGB4444 = {4,4,4,0,0};
 	static const rp_image::sBIT_t sBIT_ARGB4444 = {4,4,4,0,4};
+	static const rp_image::sBIT_t sBIT_RGB555   = {5,5,5,0,0};
 
 	switch (px_format) {
 		/** RGB565 **/
@@ -340,6 +368,32 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 			}
 			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_RGB565);
+			break;
+
+		/** ARGB1555 **/
+
+		case PXF_ARGB1555:
+			// Convert ARGB1555 to ARGB32.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					T_ARGB16_sse2<16, 7, 6, 3, 1, 5, 5, 5, false>(Cmp1555_A, Mask1555_Hi5, Mask1555_Mid5, Mask1555_Lo5, img_buf, px_dest);
+				}
+
+				// Remaining pixels.
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_ARGB1555);
 			break;
 
 		/** ARGB4444 **/
