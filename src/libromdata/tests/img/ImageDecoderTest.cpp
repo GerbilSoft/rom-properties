@@ -149,6 +149,9 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			const rp_image *pImgExpected,
 			const rp_image *pImgActual);
 
+		// Number of iterations for benchmarks.
+		static const unsigned int BENCHMARK_ITERATIONS = 100000;
+
 	public:
 		// Image buffers.
 		ao::uvector<uint8_t> m_dds_buf;
@@ -685,6 +688,7 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
 extern "C" int gtest_main(int argc, char *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: RpImageLoader tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u\n", LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 
 	// Make sure the CRC32 table is initialized.
