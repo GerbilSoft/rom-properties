@@ -443,7 +443,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 			break;
 
 		case PXF_RGBA5551:
-			// Convert ARGB1555 to ARGB32.
+			// Convert RGBA5551 to ARGB32.
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				// Process 8 pixels per iteration using SSE2.
 				unsigned int x = (unsigned int)width;
@@ -453,7 +453,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 
 				// Remaining pixels.
 				for (; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(*img_buf);
+					*px_dest = ImageDecoderPrivate::RGBA5551_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
