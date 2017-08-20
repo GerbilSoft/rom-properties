@@ -940,4 +940,140 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			15))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
+// 15/16-bit tests. (custom stride)
+INSTANTIATE_TEST_CASE_P(fromLinear16_384, ImageDecoderLinearTest,
+	::testing::Values(
+		/** 16-bit **/
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RGB565,
+			384,
+			0xFF1045A5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0xA222),
+			ImageDecoder::PXF_BGR565,
+			384,
+			0xFF1045A5,
+			16),
+
+		// ARGB4444
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_ARGB4444,
+			384,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1432),
+			ImageDecoder::PXF_ABGR4444,
+			384,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x2341),
+			ImageDecoder::PXF_RGBA4444,
+			384,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_BGRA4444,
+			384,
+			0x11223344,
+			16),
+
+		// xRGB4444
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_xRGB4444,
+			384,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1432),
+			ImageDecoder::PXF_xBGR4444,
+			384,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x2341),
+			ImageDecoder::PXF_RGBx4444,
+			384,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_BGRx4444,
+			384,
+			0xFF223344,
+			16),
+
+		// ARGB1555
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_ARGB1555,
+			384,
+			0x00218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x5224),
+			ImageDecoder::PXF_ABGR1555,
+			384,
+			0x00218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x9234),
+			ImageDecoder::PXF_ARGB1555,
+			384,
+			0xFF218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0xD224),
+			ImageDecoder::PXF_ABGR1555,
+			384,
+			0xFF218CA5,
+			16),
+
+		// RGBA1555
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4320),
+			ImageDecoder::PXF_RGBA5551,
+			384,
+			0x00426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8310),
+			ImageDecoder::PXF_BGRA5551,
+			384,
+			0x00426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_RGBA5551,
+			384,
+			0xFF426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8311),
+			ImageDecoder::PXF_BGRA5551,
+			384,
+			0xFF426384,
+			16),
+
+		/** 15-bit **/
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RGB555,
+			384,
+			0xFF218CA5,
+			15),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x5224),
+			ImageDecoder::PXF_BGR555,
+			384,
+			0xFF218CA5,
+			15))
+	, ImageDecoderLinearTest::test_case_suffix_generator);
+
 } }
