@@ -212,7 +212,9 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
  */
 inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderLinearTest_mode& mode)
 {
-	return os << ImageDecoderLinearTest::pxfToString(mode.src_pxf);
+	char buf[16];
+	snprintf(buf, sizeof(buf), "0x%08X", mode.dest_pixel);
+	return os << ImageDecoderLinearTest::pxfToString(mode.src_pxf) << '_' << buf;
 };
 
 /**
@@ -222,7 +224,15 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderLinearTe
  */
 string ImageDecoderLinearTest::test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderLinearTest_mode> &info)
 {
-	return ImageDecoderLinearTest::pxfToString(info.param.src_pxf);
+	char buf[16];
+	snprintf(buf, sizeof(buf), "0x%08X", info.param.dest_pixel);
+
+	string ret;
+	ret.reserve(64);
+	ret = ImageDecoderLinearTest::pxfToString(info.param.src_pxf);
+	ret += '_';
+	ret += buf;
+	return ret;
 }
 
 /**
@@ -875,6 +885,32 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			ImageDecoder::PXF_ABGR1555,
 			0,
 			0x00218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8234),
+			ImageDecoder::PXF_ARGB1555,
+			0,
+			0xFF218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0xD224),
+			ImageDecoder::PXF_ABGR1555,
+			0,
+			0xFF218CA5,
+			16),
+
+		// RGBA1555
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4320),
+			ImageDecoder::PXF_RGBA5551,
+			0,
+			0x00426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8310),
+			ImageDecoder::PXF_BGRA5551,
+			0,
+			0x00426384,
 			16),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x4321),
