@@ -68,6 +68,7 @@ ENDFOREACH(test_fst test_fsts)
 ADD_EXECUTABLE(ImageDecoderTest
 	../../librpbase/tests/gtest_init.cpp
 	img/ImageDecoderTest.cpp
+	img/ImageDecoderLinearTest.cpp
 	)
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(ImageDecoderTest win32common)
@@ -83,7 +84,7 @@ IF(PNG_LIBRARY)
 ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
-ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest)
+ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*benchmark*")
 
 # Copy the reference images to:
 # - bin/ImageDecoder_data/ (TODO: Subdirectory?)
@@ -136,4 +137,4 @@ TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(SuperMagicDriveTest PRIVATE ${ZLIB_DEFINITIONS})
 DO_SPLIT_DEBUG(SuperMagicDriveTest)
 SET_WINDOWS_SUBSYSTEM(SuperMagicDriveTest CONSOLE)
-ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest)
+ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest "--gtest_filter=-*benchmark*")

@@ -65,15 +65,19 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
-		// Set src_stride_adj to the number of pixels we need to
+		// Set src_stride_adj to the number of bytes we need to
 		// add to the end of each line to get to the next row.
-		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride % 16 == 0);
+		if (unlikely(stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
+		} else if (unlikely(stride % 16 != 0)) {
+			// Unaligned stride.
+			// Use the C++ version.
+			return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
 		}
-		// Byte addressing, so keep it in units of bytespp.
-		src_stride_adj = (width * bytespp) - stride;
+		// NOTE: Byte addressing, so keep it in units of bytespp.
+		src_stride_adj = stride - (width * bytespp);
 	}
 
 	// Create an rp_image.
@@ -220,11 +224,12 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
-		src_stride_adj = width - (stride / bytespp);
+		src_stride_adj = (stride / bytespp) - width;
 	}
 
 	// Create an rp_image.
@@ -234,38 +239,40 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
-	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
-	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-
-	// sBIT for standard ARGB32.
-	static const rp_image::sBIT_t sBIT_32 = {8,8,8,0,8};
 
 	if (px_format == PXF_HOST_ARGB32) {
 		// Host-endian ARGB32.
 		// We can directly copy the image data without conversions.
+		if (stride == 0) {
+			// Calculate the stride based on image width.
+			stride = width * bytespp;
+		}
+
 		if (stride == img->stride()) {
 			// Stride is identical. Copy the whole image all at once.
 			memcpy(img->bits(), img_buf, stride * height);
 		} else {
 			// Stride is not identical. Copy each scanline.
+			const int dest_stride = img->stride() / sizeof(uint32_t);
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			const unsigned int copy_len = (unsigned int)width * bytespp;
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				memcpy(px_dest, img_buf, copy_len);
 				img_buf += (stride / bytespp);
-				px_dest += dest_stride_adj;
+				px_dest += dest_stride;
 			}
 		}
 		// Set the sBIT metadata.
-		img->set_sBIT(&sBIT_32);
+		static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
+		img->set_sBIT(&sBIT_A32);
 		return img;
 	}
-
-	// TODO: PXF_HOST_xRGB32 - apply alpha mask but no shuffling.
 
 	// SSSE3-optimized version based on:
 	// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
 	// - https://stackoverflow.com/a/2974266
+	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
+	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 	// Determine the byte shuffle mask.
 	__m128i shuf_mask;

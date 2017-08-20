@@ -444,11 +444,12 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
-		src_stride_adj = width - (stride / bytespp);
+		src_stride_adj = (stride / bytespp) - width;
 	}
 
 	// Create an rp_image.
@@ -539,11 +540,12 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
-		src_stride_adj = width - (stride / bytespp);
+		src_stride_adj = (stride / bytespp) - width;
 	}
 
 	// Create an rp_image.
@@ -642,15 +644,15 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
-		// Set src_stride_adj to the number of pixels we need to
+		// Set src_stride_adj to the number of bytes we need to
 		// add to the end of each line to get to the next row.
-		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
-		// Byte addressing, so keep it in units of bytespp.
-		src_stride_adj = (width * bytespp) - stride;
+		// NOTE: Byte addressing, so keep it in units of bytespp.
+		src_stride_adj = stride - (width * bytespp);
 	}
 
 	// Create an rp_image.
@@ -746,11 +748,12 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
-		if (stride % bytespp != 0) {
+		assert(stride >= (width * bytespp));
+		if (unlikely(stride % bytespp != 0 || stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
 		}
-		src_stride_adj = width - (stride / bytespp);
+		src_stride_adj = (stride / bytespp) - width;
 	}
 
 	// Create an rp_image.
@@ -772,17 +775,23 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 		case PXF_HOST_ARGB32:
 			// Host-endian ARGB32.
 			// We can directly copy the image data without conversions.
+			if (stride == 0) {
+				// Calculate the stride based on image width.
+				stride = width * bytespp;
+			}
+
 			if (stride == img->stride()) {
 				// Stride is identical. Copy the whole image all at once.
 				memcpy(img->bits(), img_buf, stride * height);
 			} else {
 				// Stride is not identical. Copy each scanline.
+				const int dest_stride = img->stride() / sizeof(argb32_t);
 				uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 				const unsigned int copy_len = (unsigned int)width * bytespp;
 				for (unsigned int y = (unsigned int)height; y > 0; y--) {
 					memcpy(px_dest, img_buf, copy_len);
 					img_buf += (stride / bytespp);
-					px_dest += dest_stride_adj;
+					px_dest += dest_stride;
 				}
 			}
 			// Set the sBIT metadata.
