@@ -240,9 +240,6 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// sBIT for standard ARGB32.
-	static const rp_image::sBIT_t sBIT_32 = {8,8,8,0,8};
-
 	if (px_format == PXF_HOST_ARGB32) {
 		// Host-endian ARGB32.
 		// We can directly copy the image data without conversions.
@@ -266,7 +263,8 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			}
 		}
 		// Set the sBIT metadata.
-		img->set_sBIT(&sBIT_32);
+		static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
+		img->set_sBIT(&sBIT_A32);
 		return img;
 	}
 
