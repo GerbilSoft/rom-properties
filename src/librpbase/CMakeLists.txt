@@ -66,6 +66,9 @@ INCLUDE(CheckSymbolExists)
 CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
 CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 
+# Check for C headers.
+CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
+
 # Check if non-capturing lambda functions can be cast to function pointers.
 # NOTE: Used by libromdata, not librpbase, but we're
 # keeping the check here because libromdata doesn't
@@ -262,6 +265,15 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		img/ImageDecoder_Linear_ssse3.cpp
 		)
 
+	# IFUNC requires glibc.
+	# We're not checking for glibc here, but we do have preprocessor
+	# checks, so even if this does get compiled on a non-glibc system,
+	# it won't do anything.
+	# TODO: Might be supported on other Unix-like operating systems...
+	IF(UNIX AND NOT APPLE)
+		SET(librpbase_IFUNC_SRCS ${librpbase_IFUNC_SRCS} img/ImageDecoder_ifunc.cpp)
+	ENDIF(UNIX AND NOT APPLE)
+
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSE2_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
@@ -314,6 +326,7 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
+	${librpbase_IFUNC_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
@@ -327,6 +340,7 @@ ADD_LIBRARY(rpbase16 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
+	${librpbase_IFUNC_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
