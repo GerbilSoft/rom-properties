@@ -23,11 +23,11 @@
 #define __ROMPROPERTIES_LIBROMDATA_UTILS_SUPERMAGICDRIVE_HPP__
 
 #include "librpbase/common.h"
+#include "cpu_dispatch.h"
 
 #include <stdint.h>
 
-#if defined(__i386__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
+#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "librpbase/cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
 /* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
@@ -37,7 +37,7 @@
 # endif
 # define SMD_HAS_SSE2 1
 #endif
-#if defined(__x86_64__) || defined(_M_X64)
+#ifdef RP_CPU_AMD64
 # define SMD_ALWAYS_HAS_SSE2 1
 #endif
 
@@ -95,11 +95,34 @@ class SuperMagicDrive
 		 * @param pDest	[out] Destination block. (Must be 16 KB.)
 		 * @param pSrc	[in] Source block. (Must be 16 KB.)
 		 */
-		static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+		static IFUNC_SSE2_INLINE void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 };
 
 // TODO: Use gcc target-specific function attributes if available?
 // (IFUNC dispatcher, etc.)
+
+/** Dispatch functions. **/
+
+#if defined(RP_HAS_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2)
+
+// System does support IFUNC, but it's always guaranteed to have SSE2.
+// Eliminate the IFUNC dispatch on this system.
+
+/**
+ * Decode a Super Magic Drive interleaved block.
+ * NOTE: Pointers must be 16-byte aligned if using SSE2.
+ * @param dest	[out] Destination block. (Must be 16 KB.)
+ * @param src	[in] Source block. (Must be 16 KB.)
+ */
+inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
+{
+	// amd64 always has SSE2.
+	decodeBlock_sse2(pDest, pSrc);
+}
+
+#endif /* defined(RP_HAS_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2) */
+
+#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
 
 /**
  * Decode a Super Magic Drive interleaved block.
@@ -128,6 +151,8 @@ inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t 
 	}
 #endif /* SMD_ALWAYS_HAS_SSE2 */
 }
+
+#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
 
 }
 

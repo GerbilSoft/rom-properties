@@ -163,14 +163,23 @@ ENDIF(ENABLE_DECRYPTION)
 # Optimized sources.
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	# IFUNC requires glibc.
+	# We're not checking for glibc here, but we do have preprocessor
+	# checks, so even if this does get compiled on a non-glibc system,
+	# it won't do anything.
+	# TODO: Might be supported on other Unix-like operating systems...
+	IF(UNIX AND NOT APPLE)
+		SET(libromdata_IFUNC_SRCS ${libromdata_IFUNC_SRCS} utils/SuperMagicDrive_ifunc.cpp)
+	ENDIF(UNIX AND NOT APPLE)
+
 	# MSVC does not support MMX intrinsics in 64-bit builds.
 	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
 	# TODO: Disable MMX on all 64-bit builds?
 	IF(NOT MSVC OR NOT CMAKE_CL_64)
-		SET(libromdata_OPTIMIZE_SRCS utils/SuperMagicDrive_mmx.cpp)
+		SET(libromdata_SSE2_SRCS utils/SuperMagicDrive_mmx.cpp)
 	ENDIF(NOT MSVC OR NOT CMAKE_CL_64)
-	SET(libromdata_OPTIMIZE_SRCS
-		${libromdata_OPTIMIZE_SRCS}
+	SET(libromdata_SSE2_SRCS
+		${libromdata_SSE2_SRCS}
 		utils/SuperMagicDrive_sse2.cpp
 		)
 
@@ -203,7 +212,8 @@ ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_OPTIMIZE_SRCS}
+	${libromdata_IFUNC_SRCS}
+	${libromdata_SSE2_SRCS}
 	)
 TARGET_LINK_LIBRARIES(romdata8 rpbase8)
 
@@ -212,7 +222,8 @@ ADD_LIBRARY(romdata16 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_OPTIMIZE_SRCS}
+	${libromdata_IFUNC_SRCS}
+	${libromdata_SSE2_SRCS}
 	)
 TARGET_LINK_LIBRARIES(romdata16 rpbase16)
 
