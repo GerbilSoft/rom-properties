@@ -66,6 +66,9 @@ INCLUDE(CheckSymbolExists)
 CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
 CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 
+# Check for C headers.
+CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
+
 # Check if non-capturing lambda functions can be cast to function pointers.
 # NOTE: Used by libromdata, not librpbase, but we're
 # keeping the check here because libromdata doesn't
@@ -254,10 +257,35 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
 	SET(librpbase_CPU_H cpuflags_x86.h)
 
-	SET(libromdata_OPTIMIZE_SRCS
+	SET(librpbase_SSE2_SRCS
+		img/ImageDecoder_Linear_sse2.cpp
+		)
+	SET(librpbase_SSSE3_SRCS
 		img/RpJpeg_ssse3.cpp
 		img/ImageDecoder_Linear_ssse3.cpp
 		)
+
+	# IFUNC requires glibc.
+	# We're not checking for glibc here, but we do have preprocessor
+	# checks, so even if this does get compiled on a non-glibc system,
+	# it won't do anything.
+	# TODO: Might be supported on other Unix-like operating systems...
+	IF(UNIX AND NOT APPLE)
+		SET(librpbase_IFUNC_SRCS ${librpbase_IFUNC_SRCS} img/ImageDecoder_ifunc.cpp)
+	ENDIF(UNIX AND NOT APPLE)
+
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSE2_FLAG "/arch:SSE2")
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		SET(SSE2_FLAG "-msse2")
+	ENDIF()
+	IF(SSE2_FLAG)
+		FOREACH(sse2_file ${librpbase_SSE2_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${sse2_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+		ENDFOREACH(sse2_file ${librpbase_SSE2_SRCS})
+	ENDIF(SSE2_FLAG)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
@@ -266,10 +294,10 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
+		FOREACH(ssse3_file ${librpbase_SSSE3_SRCS})
 			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
+		ENDFOREACH(ssse3_file ${librpbase_SSSE3_SRCS})
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
@@ -298,7 +326,9 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
-	${libromdata_OPTIMIZE_SRCS}
+	${librpbase_IFUNC_SRCS}
+	${librpbase_SSE2_SRCS}
+	${librpbase_SSSE3_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase8 PUBLIC -DRP_UTF8)
 
@@ -310,7 +340,9 @@ ADD_LIBRARY(rpbase16 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
-	${libromdata_OPTIMIZE_SRCS}
+	${librpbase_IFUNC_SRCS}
+	${librpbase_SSE2_SRCS}
+	${librpbase_SSSE3_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase16 PUBLIC -DRP_UTF16)
 

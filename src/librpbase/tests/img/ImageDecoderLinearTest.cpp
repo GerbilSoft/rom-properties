@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata/tests)                 *
+ * ROM Properties Page shell extension. (librpbase/tests)                  *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -29,7 +29,6 @@
 
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
-using namespace LibRpBase;
 
 // C includes.
 #include <stdint.h>
@@ -48,7 +47,7 @@ using std::string;
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
 
-namespace LibRomData { namespace Tests {
+namespace LibRpBase { namespace Tests {
 
 struct ImageDecoderLinearTest_mode
 {
@@ -212,7 +211,9 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
  */
 inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderLinearTest_mode& mode)
 {
-	return os << ImageDecoderLinearTest::pxfToString(mode.src_pxf);
+	char buf[16];
+	snprintf(buf, sizeof(buf), "0x%08X", mode.dest_pixel);
+	return os << ImageDecoderLinearTest::pxfToString(mode.src_pxf) << '_' << buf;
 };
 
 /**
@@ -222,7 +223,15 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderLinearTe
  */
 string ImageDecoderLinearTest::test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderLinearTest_mode> &info)
 {
-	return ImageDecoderLinearTest::pxfToString(info.param.src_pxf);
+	char buf[16];
+	snprintf(buf, sizeof(buf), "0x%08X", info.param.dest_pixel);
+
+	string ret;
+	ret.reserve(64);
+	ret = ImageDecoderLinearTest::pxfToString(info.param.src_pxf);
+	ret += '_';
+	ret += buf;
+	return ret;
 }
 
 /**
@@ -370,7 +379,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 		case 15:
 		case 16:
 			// 15/16-bit image.
-			pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+			pImg.reset(ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
 				(int)m_img_buf.size(), mode.stride));
 			break;
@@ -418,7 +427,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 		case 16:
 			// 15/16-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-				pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+				pImg.reset(ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
 					(int)m_img_buf.size(), mode.stride));
 			}
@@ -429,6 +438,87 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			return;
 	}
 }
+
+#ifdef IMAGEDECODER_HAS_SSE2
+/**
+ * Test the ImageDecoder::fromLinear*() functions. (SSE2-optimized version)
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
+{
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.\n");
+		return;
+	}
+
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	unique_ptr<rp_image> pImg;
+	switch (mode.bpp) {
+		case 24:
+		case 32:
+			// Not implemented...
+			fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
+
+		case 15:
+		case 16:
+			// 15/16-bit image.
+			pImg.reset(ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
+				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+				(int)m_img_buf.size(), mode.stride));
+			break;
+
+		default:
+			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
+			return;
+	}
+
+	ASSERT_TRUE(pImg.get() != nullptr);
+
+	// Validate the image.
+	ASSERT_NO_FATAL_FAILURE(Validate_RpImage(pImg.get(), mode.dest_pixel));
+}
+
+/**
+ * Benchmark the ImageDecoder::fromLinear*() functions. (SSE2-optimized version)
+ */
+TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
+{
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.\n");
+		return;
+	}
+
+	// Parameterized test.
+	const ImageDecoderLinearTest_mode &mode = GetParam();
+
+	// Decode the image.
+	unique_ptr<rp_image> pImg;
+	switch (mode.bpp) {
+		case 24:
+		case 32:
+			// Not implemented...
+			fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			return;
+
+		case 15:
+		case 16:
+			// 15/16-bit image.
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				pImg.reset(ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
+					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+					(int)m_img_buf.size(), mode.stride));
+			}
+			break;
+
+		default:
+			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
+			return;
+	}
+}
+#endif /* IMAGEDECODER_HAS_SSE2 */
 
 #ifdef IMAGEDECODER_HAS_SSSE3
 /**
@@ -524,7 +614,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
-#ifdef IMAGEDECODER_HAS_SSSE3
+#if defined(IMAGEDECODER_HAS_SSE2) || defined(IMAGEDECODER_HAS_SSSE3)
 /**
  * Test the ImageDecoder::fromLinear*() dispatch functions.
  */
@@ -551,8 +641,10 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 
 		case 15:
 		case 16:
-			// Not implemented...
-			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			// 15/16-bit image.
+			pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+				reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+				(int)m_img_buf.size(), mode.stride));
 			return;
 
 		default:
@@ -596,16 +688,20 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 
 		case 15:
 		case 16:
-			// Not implemented...
-			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
-			return;
+			// 15/16-bit image.
+			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+				pImg.reset(ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
+					reinterpret_cast<const uint16_t*>(m_img_buf.data()),
+					(int)m_img_buf.size(), mode.stride));
+			}
+			break;
 
 		default:
 			ASSERT_TRUE(false) << "Invalid bpp: " << mode.bpp;
 			return;
 	}
 }
-#endif /* IMAGEDECODER_HAS_SSSE3 */
+#endif /* IMAGEDECODER_HAS_SSE2 || IMAGEDECODER_HAS_SSSE3 */
 
 // Test cases.
 
@@ -638,6 +734,34 @@ INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
 			ImageDecoder::PXF_xBGR8888,
 			0,
 			0xFF345678,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 00)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0x0048459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0x009E4548,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 10)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0xAA48459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0xAA9E4548,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
@@ -670,6 +794,34 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 			ImageDecoder::PXF_xBGR8888,
 			640,
 			0xFF345678,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 00)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0x0048459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0x009E4548,
+			32),
+
+		// 30-bit RGB with 2-bit alpha (alpha == 10)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2R10G10B10,
+			0,
+			0xAA48459E,
+			32),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x92345678),
+			ImageDecoder::PXF_A2B10G10R10,
+			0,
+			0xAA9E4548,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
@@ -707,9 +859,10 @@ INSTANTIATE_TEST_CASE_P(fromLinear24_stride512, ImageDecoderLinearTest,
 			24))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
-// 16-bit tests.
+// 15/16-bit tests.
 INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 	::testing::Values(
+		/** 16-bit **/
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x1234),
 			ImageDecoder::PXF_RGB565,
@@ -722,6 +875,8 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			0,
 			0xFF1045A5,
 			16),
+
+		// ARGB4444
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x1234),
 			ImageDecoder::PXF_ARGB4444,
@@ -745,7 +900,251 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			ImageDecoder::PXF_BGRA4444,
 			0,
 			0x11223344,
-			16))
+			16),
+
+		// xRGB4444
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_xRGB4444,
+			0,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1432),
+			ImageDecoder::PXF_xBGR4444,
+			0,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x2341),
+			ImageDecoder::PXF_RGBx4444,
+			0,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_BGRx4444,
+			0,
+			0xFF223344,
+			16),
+
+		// ARGB1555
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_ARGB1555,
+			0,
+			0x00218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x5224),
+			ImageDecoder::PXF_ABGR1555,
+			0,
+			0x00218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x9234),
+			ImageDecoder::PXF_ARGB1555,
+			0,
+			0xFF218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0xD224),
+			ImageDecoder::PXF_ABGR1555,
+			0,
+			0xFF218CA5,
+			16),
+
+		// RGBA1555
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4320),
+			ImageDecoder::PXF_RGBA5551,
+			0,
+			0x00426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8310),
+			ImageDecoder::PXF_BGRA5551,
+			0,
+			0x00426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_RGBA5551,
+			0,
+			0xFF426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8311),
+			ImageDecoder::PXF_BGRA5551,
+			0,
+			0xFF426384,
+			16),
+
+		/** 15-bit **/
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RGB555,
+			0,
+			0xFF218CA5,
+			15),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x5224),
+			ImageDecoder::PXF_BGR555,
+			0,
+			0xFF218CA5,
+			15))
+	, ImageDecoderLinearTest::test_case_suffix_generator);
+
+// 15/16-bit tests. (custom stride)
+INSTANTIATE_TEST_CASE_P(fromLinear16_384, ImageDecoderLinearTest,
+	::testing::Values(
+		/** 16-bit **/
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RGB565,
+			384,
+			0xFF1045A5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0xA222),
+			ImageDecoder::PXF_BGR565,
+			384,
+			0xFF1045A5,
+			16),
+
+		// ARGB4444
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_ARGB4444,
+			384,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1432),
+			ImageDecoder::PXF_ABGR4444,
+			384,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x2341),
+			ImageDecoder::PXF_RGBA4444,
+			384,
+			0x11223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_BGRA4444,
+			384,
+			0x11223344,
+			16),
+
+		// xRGB4444
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_xRGB4444,
+			384,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1432),
+			ImageDecoder::PXF_xBGR4444,
+			384,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x2341),
+			ImageDecoder::PXF_RGBx4444,
+			384,
+			0xFF223344,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_BGRx4444,
+			384,
+			0xFF223344,
+			16),
+
+		// ARGB1555
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_ARGB1555,
+			384,
+			0x00218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x5224),
+			ImageDecoder::PXF_ABGR1555,
+			384,
+			0x00218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x9234),
+			ImageDecoder::PXF_ARGB1555,
+			384,
+			0xFF218CA5,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0xD224),
+			ImageDecoder::PXF_ABGR1555,
+			384,
+			0xFF218CA5,
+			16),
+
+		// RGBA1555
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4320),
+			ImageDecoder::PXF_RGBA5551,
+			384,
+			0x00426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8310),
+			ImageDecoder::PXF_BGRA5551,
+			384,
+			0x00426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x4321),
+			ImageDecoder::PXF_RGBA5551,
+			384,
+			0xFF426384,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x8311),
+			ImageDecoder::PXF_BGRA5551,
+			384,
+			0xFF426384,
+			16),
+
+		/** 15-bit **/
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RGB555,
+			384,
+			0xFF218CA5,
+			15),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x5224),
+			ImageDecoder::PXF_BGR555,
+			384,
+			0xFF218CA5,
+			15))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
 } }
+
+/**
+ * Test suite main function.
+ * Called by gtest_init.c.
+ */
+extern "C" int gtest_main(int argc, char *argv[])
+{
+	fprintf(stderr, "LibRpBase test suite: ImageDecoder::fromLinear*() tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u\n",
+		LibRpBase::Tests::ImageDecoderLinearTest::BENCHMARK_ITERATIONS);
+	fflush(nullptr);
+
+	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+}

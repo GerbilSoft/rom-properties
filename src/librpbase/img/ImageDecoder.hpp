@@ -23,14 +23,18 @@
 
 #include "config.librpbase.h"
 #include "common.h"
+#include "cpu_dispatch.h"
 
 // C includes.
 #include <stdint.h>
 
-#if defined(__i386__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
+#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "librpbase/cpuflags_x86.h"
+# define IMAGEDECODER_HAS_SSE2 1
 # define IMAGEDECODER_HAS_SSSE3 1
+#endif
+#ifdef RP_CPU_AMD64
+# define IMAGEDECODER_ALWAYS_HAS_SSE2 1
 #endif
 
 namespace LibRpBase {
@@ -191,6 +195,40 @@ class ImageDecoder
 			int width, int height,
 			const uint8_t *img_buf, int img_siz, int stride);
 
+		/** 16-bit **/
+
+		/**
+		 * Convert a linear 16-bit RGB image to rp_image.
+		 * Standard version using regular C++ code.
+		 * @param px_format	[in] 16-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] 16-bit image buffer.
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromLinear16_cpp(PixelFormat px_format,
+			int width, int height,
+			const uint16_t *img_buf, int img_siz, int stride = 0);
+
+#ifdef IMAGEDECODER_HAS_SSE2
+		/**
+		 * Convert a linear 16-bit RGB image to rp_image.
+		 * SSE2-optimized version.
+		 * @param px_format	[in] 16-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] 16-bit image buffer.
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromLinear16_sse2(PixelFormat px_format,
+			int width, int height,
+			const uint16_t *img_buf, int img_siz, int stride = 0);
+#endif /* IMAGEDECODER_HAS_SSE2 */
+
 		/**
 		 * Convert a linear 16-bit RGB image to rp_image.
 		 * @param px_format	[in] 16-bit pixel format.
@@ -201,9 +239,11 @@ class ImageDecoder
 		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromLinear16(PixelFormat px_format,
+		static IFUNC_SSE2_INLINE rp_image *fromLinear16(PixelFormat px_format,
 			int width, int height,
 			const uint16_t *img_buf, int img_siz, int stride = 0);
+
+		/** 24-bit **/
 
 		/**
 		 * Convert a linear 24-bit RGB image to rp_image.
@@ -247,9 +287,11 @@ class ImageDecoder
 		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		static inline rp_image *fromLinear24(PixelFormat px_format,
+		static IFUNC_INLINE rp_image *fromLinear24(PixelFormat px_format,
 			int width, int height,
 			const uint8_t *img_buf, int img_siz, int stride = 0);
+
+		/** 32-bit **/
 
 		/**
 		 * Convert a linear 32-bit RGB image to rp_image.
@@ -293,7 +335,7 @@ class ImageDecoder
 		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		static inline rp_image *fromLinear32(PixelFormat px_format,
+		static IFUNC_INLINE rp_image *fromLinear32(PixelFormat px_format,
 			int width, int height,
 			const uint32_t *img_buf, int img_siz, int stride = 0);
 
@@ -520,6 +562,86 @@ class ImageDecoder
 };
 
 /**
+ * Get the number of palette entries for Dreamcast SmallVQ textures.
+ * TODO: constexpr?
+ * @param width Texture width.
+ * @return Number of palette entries.
+ */
+inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries(int width)
+{
+	if (width <= 16) {
+		return 64;
+	} else if (width <= 32) {
+		return 256;
+	} else if (width <= 64) {
+		return 512;
+	} else {
+		return 1024;
+	}
+}
+
+/** Dispatch functions. **/
+
+#if defined(RP_HAS_IFUNC) && defined(IMAGEDECODER_ALWAYS_HAS_SSE2)
+
+// System does support IFUNC, but it's always guaranteed to have SSE2.
+// Eliminate the IFUNC dispatch on this system.
+
+/**
+ * Convert a linear 16-bit RGB image to rp_image.
+ * @param px_format	[in] 16-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] Image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+inline rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
+	int width, int height,
+	const uint16_t *img_buf, int img_siz, int stride)
+{
+	// amd64 always has SSE2.
+	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
+}
+
+#endif /* defined(RP_HAS_IFUNC) && defined(IMAGEDECODER_ALWAYS_HAS_SSE2) */
+
+#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
+
+// System does not support IFUNC, or we don't have optimizations for these CPUs.
+// Use standard inline dispatch.
+
+/**
+ * Convert a linear 16-bit RGB image to rp_image.
+ * @param px_format	[in] 16-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] Image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+inline rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
+	int width, int height,
+	const uint16_t *img_buf, int img_siz, int stride)
+{
+#ifdef IMAGEDECODER_ALWAYS_HAS_SSE2
+	// amd64 always has SSE2.
+	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
+#else /* !IMAGEDECODER_ALWAYS_HAS_SSE2 */
+# ifdef IMAGEDECODER_HAS_SSE2
+	if (RP_CPU_HasSSE2()) {
+		return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
+	} else
+# endif /* IMAGEDECODER_HAS_SSE2 */
+	{
+		return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
+	}
+#endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
+}
+
+/**
  * Convert a linear 24-bit RGB image to rp_image.
  * @param px_format	[in] 24-bit pixel format.
  * @param width		[in] Image width.
@@ -533,11 +655,11 @@ inline rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *img_buf, int img_siz, int stride)
 {
-# ifdef IMAGEDECODER_HAS_SSSE3
+#ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		return fromLinear24_ssse3(px_format, width, height, img_buf, img_siz, stride);
 	} else
-# endif /* IMAGEDECODER_HAS_SSSE3 */
+#endif /* IMAGEDECODER_HAS_SSSE3 */
 	{
 		return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
@@ -557,34 +679,17 @@ inline rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *img_buf, int img_siz, int stride)
 {
-# ifdef IMAGEDECODER_HAS_SSSE3
+#ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		return fromLinear32_ssse3(px_format, width, height, img_buf, img_siz, stride);
 	} else
-# endif /* IMAGEDECODER_HAS_SSSE3 */
+#endif /* IMAGEDECODER_HAS_SSSE3 */
 	{
 		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
 }
 
-/**
- * Get the number of palette entries for Dreamcast SmallVQ textures.
- * TODO: constexpr?
- * @param width Texture width.
- * @return Number of palette entries.
- */
-inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries(int width)
-{
-	if (width <= 16) {
-		return 64;
-	} else if (width <= 32) {
-		return 256;
-	} else if (width <= 64) {
-		return 512;
-	} else {
-		return 1024;
-	}
-}
+#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
 
 }
 

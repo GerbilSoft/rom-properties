@@ -106,3 +106,24 @@ TARGET_LINK_LIBRARIES(TextFuncsTest16 gtest)
 DO_SPLIT_DEBUG(TextFuncsTest16)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest16 CONSOLE)
 ADD_TEST(NAME TextFuncsTest16 COMMAND TextFuncsTest16)
+
+# ImageDecoderLinear test.
+ADD_EXECUTABLE(ImageDecoderLinearTest
+	../../librpbase/tests/gtest_init.cpp
+	img/ImageDecoderLinearTest.cpp
+	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(ImageDecoderLinearTest win32common)
+ENDIF(WIN32)
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest romdata8)
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest gtest ${ZLIB_LIBRARY})
+TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${ZLIB_INCLUDE_DIRS})
+TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${ZLIB_DEFINITIONS})
+IF(PNG_LIBRARY)
+	TARGET_LINK_LIBRARIES(ImageDecoderLinearTest ${PNG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${PNG_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${PNG_DEFINITIONS})
+ENDIF(PNG_LIBRARY)
+DO_SPLIT_DEBUG(ImageDecoderLinearTest)
+SET_WINDOWS_SUBSYSTEM(ImageDecoderLinearTest CONSOLE)
+ADD_TEST(NAME ImageDecoderLinearTest COMMAND ImageDecoderLinearTest "--gtest_filter=-*benchmark*")
