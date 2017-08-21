@@ -11,6 +11,7 @@
   * Some functions are now optimized using SIMD instructions if supported by
     the host system's CPU:
     * Sega Mega Drive: SMD format decoding (SSE2)
+    * 15/16-bit linear RGB decoding (SSE2)
     * 24-bit linear RGB image decoding (SSSE3)
     * 32-bit linear ARGB/xRGB image decoding (SSSE3)
 
