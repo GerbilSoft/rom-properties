@@ -30,26 +30,23 @@ using LibRpBase::ImageDecoder;
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {
 
+#ifndef IMAGEDECODER_ALWAYS_HAS_SSE2
 /**
  * IFUNC resolver function for fromLinear16().
  * @return Function pointer.
  */
 static RP_IFUNC_ptr_t fromLinear16_resolve(void)
 {
-#ifdef IMAGEDECODER_ALWAYS_HAS_SSE2
-	// amd64 always has SSE2.
-	return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear16_sse2;
-#else /* !IMAGEDECODER_ALWAYS_HAS_SSE2 */
-# ifdef IMAGEDECODER_HAS_SSE2
+#ifdef IMAGEDECODER_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear16_sse2;
 	} else
-# endif /* IMAGEDECODER_HAS_SSE2 */
+#endif /* IMAGEDECODER_HAS_SSE2 */
 	{
 		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear16_cpp;
 	}
-#endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 }
+#endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 
 /**
  * IFUNC resolver function for fromLinear24().
@@ -85,10 +82,12 @@ static RP_IFUNC_ptr_t fromLinear32_resolve(void)
 
 }
 
+#ifndef IMAGEDECODER_ALWAYS_HAS_SSE2
 rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *img_buf, int img_siz, int stride)
 	IFUNC_ATTR(fromLinear16_resolve);
+#endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 
 rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 	int width, int height,

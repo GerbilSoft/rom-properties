@@ -239,7 +239,7 @@ class ImageDecoder
 		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		static IFUNC_INLINE rp_image *fromLinear16(PixelFormat px_format,
+		static IFUNC_SSE2_INLINE rp_image *fromLinear16(PixelFormat px_format,
 			int width, int height,
 			const uint16_t *img_buf, int img_siz, int stride = 0);
 
@@ -581,6 +581,31 @@ inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries(int width)
 }
 
 /** Dispatch functions. **/
+
+#if defined(RP_HAS_IFUNC) && defined(IMAGEDECODER_ALWAYS_HAS_SSE2)
+
+// System does support IFUNC, but it's always guaranteed to have SSE2.
+// Eliminate the IFUNC dispatch on this system.
+
+/**
+ * Convert a linear 16-bit RGB image to rp_image.
+ * @param px_format	[in] 16-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] Image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+inline rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
+	int width, int height,
+	const uint16_t *img_buf, int img_siz, int stride)
+{
+	// amd64 always has SSE2.
+	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
+}
+
+#endif /* defined(RP_HAS_IFUNC) && defined(IMAGEDECODER_ALWAYS_HAS_SSE2) */
 
 #if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
 
