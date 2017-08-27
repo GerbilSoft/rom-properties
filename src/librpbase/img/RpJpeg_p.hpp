@@ -128,7 +128,7 @@ class RpJpegPrivate
 		 * @param cinfo		[in/out] JPEG decompression struct.
 		 * @param buffer 	[in/out] Line buffer. (Must be 16-byte aligned!)
 		 */
-		static void decodeBGRtoARGB(LibRpBase::rp_image *img, jpeg_decompress_struct *cinfo, JSAMPARRAY buffer);
+		static void decodeBGRtoARGB(LibRpBase::rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer);
 #endif /* RPJPEG_HAS_SSSE3 */
 };
 

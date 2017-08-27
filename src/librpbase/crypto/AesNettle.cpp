@@ -138,7 +138,7 @@ bool AesNettle::isInit(void) const
  * @param len Key length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesNettle::setKey(const uint8_t *key, unsigned int len)
+int AesNettle::setKey(const uint8_t *RESTRICT key, unsigned int len)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
@@ -205,7 +205,7 @@ int AesNettle::setChainingMode(ChainingMode mode)
  * @param len IV/counter length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesNettle::setIV(const uint8_t *iv, unsigned int len)
+int AesNettle::setIV(const uint8_t *RESTRICT iv, unsigned int len)
 {
 	RP_D(AesNettle);
 	if (!iv || len != AES_BLOCK_SIZE ||
@@ -226,7 +226,7 @@ int AesNettle::setIV(const uint8_t *iv, unsigned int len)
  * @param data_len Length of data block.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
+unsigned int AesNettle::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 {
 	if (!data || data_len == 0 || (data_len % AES_BLOCK_SIZE != 0)) {
 		// Invalid parameters.
@@ -305,8 +305,8 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
  * @param iv_len Length of the IV/counter.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len,
-	const uint8_t *iv, unsigned int iv_len)
+unsigned int AesNettle::decrypt(uint8_t *RESTRICT data, unsigned int data_len,
+	const uint8_t *RESTRICT iv, unsigned int iv_len)
 {
 	if (!data || data_len == 0 || (data_len % AES_BLOCK_SIZE != 0) ||
 	    !iv || iv_len != AES_BLOCK_SIZE) {

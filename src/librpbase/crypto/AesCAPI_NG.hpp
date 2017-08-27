@@ -70,7 +70,7 @@ class AesCAPI_NG : public IAesCipher
 		 * @param len Key length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setKey(const uint8_t *key, unsigned int len) override final;
+		virtual int setKey(const uint8_t *RESTRICT key, unsigned int len) override final;
 
 		/**
 		 * Set the cipher chaining mode.
@@ -89,7 +89,7 @@ class AesCAPI_NG : public IAesCipher
 		 * @param len IV/counter length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setIV(const uint8_t *iv, unsigned int len) override final;
+		virtual int setIV(const uint8_t *RESTRICT iv, unsigned int len) override final;
 
 		/**
 		 * Decrypt a block of data.
@@ -97,7 +97,7 @@ class AesCAPI_NG : public IAesCipher
 		 * @param data_len Length of data block.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len) override final;
+		virtual unsigned int decrypt(uint8_t *RESTRICT data, unsigned int data_len) override final;
 
 		/**
 		 * Decrypt a block of data using the specified IV.
@@ -107,8 +107,8 @@ class AesCAPI_NG : public IAesCipher
 		 * @param iv_len Length of the IV/counter.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len,
-			const uint8_t *iv, unsigned int iv_len) override final;
+		virtual unsigned int decrypt(uint8_t *RESTRICT data, unsigned int data_len,
+			const uint8_t *RESTRICT iv, unsigned int iv_len) override final;
 };
 
 }

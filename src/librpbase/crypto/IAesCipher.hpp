@@ -59,7 +59,7 @@ class IAesCipher
 		 * @param len Key length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setKey(const uint8_t *key, unsigned int len) = 0;
+		virtual int setKey(const uint8_t *RESTRICT key, unsigned int len) = 0;
 
 		enum ChainingMode {
 			CM_ECB,
@@ -84,7 +84,7 @@ class IAesCipher
 		 * @param len IV/counter length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setIV(const uint8_t *iv, unsigned int len) = 0;
+		virtual int setIV(const uint8_t *RESTRICT iv, unsigned int len) = 0;
 
 		/**
 		 * Decrypt a block of data.
@@ -92,7 +92,7 @@ class IAesCipher
 		 * @param data_len Length of data block.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len) = 0;
+		virtual unsigned int decrypt(uint8_t *RESTRICT data, unsigned int data_len) = 0;
 
 		/**
 		 * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
@@ -102,8 +102,8 @@ class IAesCipher
 		 * @param iv_len Length of the IV/counter.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len,
-			const uint8_t *iv, unsigned int iv_len) = 0;
+		virtual unsigned int decrypt(uint8_t *RESTRICT data, unsigned int data_len,
+			const uint8_t *RESTRICT iv, unsigned int iv_len) = 0;
 };
 
 /**

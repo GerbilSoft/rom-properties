@@ -42,7 +42,7 @@ namespace LibRpBase {
  * @param cinfo		[in/out] JPEG decompression struct.
  * @param buffer 	[in/out] Line buffer. (Must be 16-byte aligned!)
  */
-void RpJpegPrivate::decodeBGRtoARGB(rp_image *img, jpeg_decompress_struct *cinfo, JSAMPARRAY buffer)
+void RpJpegPrivate::decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer)
 {
 	ASSERT_ALIGNMENT(16, buffer);
 	assert(img->format() == rp_image::FORMAT_ARGB32);

@@ -306,7 +306,7 @@ bool AesCAPI_NG::isInit(void) const
  * @param len Key length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
+int AesCAPI_NG::setKey(const uint8_t *RESTRICT key, unsigned int len)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
@@ -445,7 +445,7 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
  * @param len IV/counter length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
+int AesCAPI_NG::setIV(const uint8_t *RESTRICT iv, unsigned int len)
 {
 	RP_D(AesCAPI_NG);
 	if (!iv || len != 16) {
@@ -489,7 +489,7 @@ int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
  * @param data_len Length of data block.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
+unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 {
 	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
@@ -606,8 +606,8 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
  * @param iv_len Length of the IV/counter.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len,
-	const uint8_t *iv, unsigned int iv_len)
+unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len,
+	const uint8_t *RESTRICT iv, unsigned int iv_len)
 {
 	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
