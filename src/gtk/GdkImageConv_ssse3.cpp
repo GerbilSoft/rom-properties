@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (XFCE)                             *
+ * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
