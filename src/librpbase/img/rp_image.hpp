@@ -189,7 +189,7 @@ class rp_image
 
 		/**
 		 * Get the image data size, in bytes.
-		 * This is width * height * pixel size.
+		 * This is height * stride.
 		 * @return Image data size, in bytes.
 		 */
 		size_t data_len(void) const;

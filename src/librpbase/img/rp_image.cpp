@@ -103,7 +103,8 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	}
 
 	// Allocate memory for the image.
-	// TODO: Don't use the full stride for the last row?
+	// We're using the full stride for the last row
+	// to make it easier to manage.
 	m_data_len = height * stride;
 	assert(m_data_len > 0);
 	if (m_data_len == 0) {
@@ -383,7 +384,7 @@ void *rp_image::scanLine(int i)
 
 /**
  * Get the image data size, in bytes.
- * This is width * height * pixel size.
+ * This is height * stride.
  * @return Image data size, in bytes.
  */
 size_t rp_image::data_len(void) const

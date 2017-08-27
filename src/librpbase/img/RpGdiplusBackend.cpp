@@ -185,7 +185,6 @@ const void *RpGdiplusBackend::data(void) const
 
 size_t RpGdiplusBackend::data_len(void) const
 {
-	// FIXME: Last line might not be the full stride...
 	return this->stride * this->height;
 }
 
@@ -224,6 +223,9 @@ Gdiplus::Status RpGdiplusBackend::lock(void)
 	// TODO: Atomic locking?
 	if (m_isLocked)
 		return Gdiplus::Status::Ok;
+
+	// We're using the full stride for the last row
+	// to make it easier to manage.
 
 	// We're allocating our own image buffer in order to set a custom stride.
 	// Stride should be a multiple of 16 bytes for SSE2 optimization.
