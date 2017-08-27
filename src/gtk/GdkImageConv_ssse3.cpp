@@ -66,6 +66,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 	const int height = img->height();
 	const int rowstride = ALIGN(16, width * sizeof(uint32_t));
 	uint32_t *px_dest = static_cast<uint32_t*>(aligned_malloc(16, height * rowstride));
+	assert(px_dest != nullptr);
 	if (unlikely(!px_dest)) {
 		// Unable to allocate memory.
 		return nullptr;
@@ -145,7 +146,14 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 				break;
 
 			// Get the palette.
-			uint32_t palette[256];
+			static const int dest_pal_len = 256;
+			uint32_t *const palette = static_cast<uint32_t*>(aligned_malloc(16, dest_pal_len*sizeof(uint32_t)));
+			assert(palette != nullptr);
+			if (unlikely(!palette)) {
+				// Unable to allocate memory for the palette.
+				g_object_unref(G_OBJECT(pixbuf));
+				return nullptr;
+			}
 
 			// Process 16 colors per iteration using SSSE3.
 			unsigned int i = (unsigned int)src_pal_len;
@@ -181,8 +189,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 
 			// Zero out the rest of the palette if the new
 			// palette is larger than the old palette.
-			if (src_pal_len < ARRAY_SIZE(palette)) {
-				memset(&palette[src_pal_len], 0, (ARRAY_SIZE(palette) - src_pal_len) * sizeof(uint32_t));
+			if (src_pal_len < dest_pal_len) {
+				memset(dest_pal, 0, (dest_pal_len - src_pal_len) * sizeof(uint32_t));
 			}
 
 			// Convert the image data from CI8 to ARGB32.
@@ -209,6 +217,8 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+
+			aligned_free(palette);
 			break;
 		}
 
