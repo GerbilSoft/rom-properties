@@ -4,6 +4,15 @@ PROJECT(gtk)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 
+# CPU-specific and optimized sources.
+# TODO: Move arch detection to platform.cmake.
+STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	# NOTE: SSSE3 flags are set in subprojects, not here.
+	SET(rom-properties-gtk_SSSE3_SRCS GdkImageConv_ssse3.cpp)
+ENDIF()
+UNSET(arch)
+
 # Sources and headers.
 SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
