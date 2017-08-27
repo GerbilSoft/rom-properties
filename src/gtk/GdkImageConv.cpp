@@ -52,31 +52,39 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 	if (unlikely(!pixbuf))
 		return nullptr;
 
-	uint32_t *dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
-	const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
+	uint32_t *px_dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
+	const int dest_stride_adj = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*px_dest)) - img->width();
 
 	switch (img->format()) {
 		case rp_image::FORMAT_ARGB32: {
 			// Copy the image data.
-			for (int y = 0; y < height; y++, dest += strideDiff) {
-				const uint32_t *src = static_cast<const uint32_t*>(img->scanLine(y));
-				int x;
-				for (x = width; x > 1; x -= 2, dest += 2, src += 2) {
+			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
+			const int src_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
 					// Swap the R and B channels.
-					dest[0] = (src[0] & 0xFF00FF00) |
-						 ((src[0] & 0x00FF0000) >> 16) |
-						 ((src[0] & 0x000000FF) << 16);
-					dest[1] = (src[1] & 0xFF00FF00) |
-						 ((src[1] & 0x00FF0000) >> 16) |
-						 ((src[1] & 0x000000FF) << 16);
+					px_dest[0] = (img_buf[0] & 0xFF00FF00) |
+						    ((img_buf[0] & 0x00FF0000) >> 16) |
+						    ((img_buf[0] & 0x000000FF) << 16);
+					px_dest[1] = (img_buf[1] & 0xFF00FF00) |
+						    ((img_buf[1] & 0x00FF0000) >> 16) |
+						    ((img_buf[1] & 0x000000FF) << 16);
+					img_buf += 2;
+					px_dest += 2;
 				}
 				if (x == 1) {
 					// Last pixel.
-					*dest = (*src & 0xFF00FF00) |
-					       ((*src & 0x00FF0000) >> 16) |
-					       ((*src & 0x000000FF) << 16);
-					dest++;
+					*px_dest = (*img_buf & 0xFF00FF00) |
+						  ((*img_buf & 0x00FF0000) >> 16) |
+						  ((*img_buf & 0x000000FF) << 16);
+					img_buf++;
+					px_dest++;
 				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
 			break;
 		}
@@ -112,19 +120,28 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 			}
 
 			// Copy the image data.
-			for (int y = 0; y < height; y++, dest += strideDiff) {
-				const uint8_t *src = static_cast<const uint8_t*>(img->scanLine(y));
-				int x;
-				for (x = width; x > 3; x -= 4, dest += 4, src += 4) {
-					dest[0] = palette[src[0]];
-					dest[1] = palette[src[1]];
-					dest[2] = palette[src[2]];
-					dest[3] = palette[src[3]];
+			const uint8_t *img_buf = static_cast<const uint8_t*>(img->bits());
+			const int src_stride_adj = img->stride() - width;
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				unsigned int x;
+				for (x = (unsigned int)width; x > 3; x -= 4) {
+					px_dest[0] = palette[img_buf[0]];
+					px_dest[1] = palette[img_buf[1]];
+					px_dest[2] = palette[img_buf[2]];
+					px_dest[3] = palette[img_buf[3]];
+					px_dest += 4;
+					img_buf += 4;
 				}
-				for (; x > 0; x--, dest++, src++) {
+				for (; x > 0; x--, px_dest++, img_buf++) {
 					// Last pixels.
-					*dest = palette[*src];
+					*px_dest = palette[*img_buf];
+					px_dest++;
+					img_buf++;
 				}
+
+				// Next line.
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
 			break;
 		}
