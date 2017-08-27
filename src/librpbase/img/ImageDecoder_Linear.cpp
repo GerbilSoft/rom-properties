@@ -56,8 +56,8 @@ const uint8_t ImageDecoderPrivate::c3_lookup[8] = {
 template<bool msn_left>
 rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -214,12 +214,12 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 // Explicit instantiation.
 template rp_image *ImageDecoder::fromLinearCI4<true>(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz);
 template rp_image *ImageDecoder::fromLinearCI4<false>(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 /**
  * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
@@ -234,8 +234,8 @@ template rp_image *ImageDecoder::fromLinearCI4<false>(PixelFormat px_format,
  */
 rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -348,7 +348,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromLinearMono(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -422,7 +422,7 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
  */
 rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
 {
 	static const int bytespp = 1;
 
@@ -519,7 +519,7 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
  */
 rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz, int stride)
+	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
 {
 	static const int bytespp = 2;
 
@@ -626,7 +626,7 @@ rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
  */
 rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
 {
 	static const int bytespp = 3;
 
@@ -727,7 +727,7 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
  */
 rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *img_buf, int img_siz, int stride)
+	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
 {
 	static const int bytespp = 4;
 

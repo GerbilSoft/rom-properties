@@ -35,7 +35,7 @@ namespace LibRpBase {
  */
 rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -155,8 +155,8 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromGcnCI8(int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);

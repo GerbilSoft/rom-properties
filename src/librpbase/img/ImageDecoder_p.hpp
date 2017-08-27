@@ -50,7 +50,8 @@ class ImageDecoderPrivate
 		 * @param tileY		[in] Vertical tile number.
 		 */
 		template<typename pixel, unsigned int tileW, unsigned int tileH>
-		static inline void BlitTile(rp_image *img, const pixel *tileBuf,
+		static inline void BlitTile(
+			rp_image *RESTRICT img, const pixel *RESTRICT tileBuf,
 			unsigned int tileX, unsigned int tileY);
 
 		/**
@@ -65,7 +66,8 @@ class ImageDecoderPrivate
 		 * @param tileY		[in] Vertical tile number.
 		 */
 		template<unsigned int tileW, unsigned int tileH>
-		static inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf,
+		static inline void BlitTile_CI4_LeftLSN(
+			rp_image *RESTRICT img, const uint8_t *RESTRICT tileBuf,
 			unsigned int tileX, unsigned int tileY);
 
 		/** Color conversion functions. **/
@@ -312,7 +314,8 @@ class ImageDecoderPrivate
  * @param tileY		[in] Vertical tile number.
  */
 template<typename pixel, unsigned int tileW, unsigned int tileH>
-inline void ImageDecoderPrivate::BlitTile(rp_image *img, const pixel *tileBuf,
+inline void ImageDecoderPrivate::BlitTile(
+	rp_image *RESTRICT img, const pixel *RESTRICT tileBuf,
 	unsigned int tileX, unsigned int tileY)
 {
 	switch (sizeof(pixel)) {
@@ -351,7 +354,8 @@ inline void ImageDecoderPrivate::BlitTile(rp_image *img, const pixel *tileBuf,
  * @param tileY		[in] Vertical tile number.
  */
 template<unsigned int tileW, unsigned int tileH>
-inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf,
+inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(
+	rp_image *RESTRICT img, const uint8_t *RESTRICT tileBuf,
 	unsigned int tileX, unsigned int tileY)
 {
 	assert(img->format() == rp_image::FORMAT_CI8);

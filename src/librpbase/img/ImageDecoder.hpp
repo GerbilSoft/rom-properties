@@ -150,8 +150,8 @@ class ImageDecoder
 		template<bool msn_left>
 		static rp_image *fromLinearCI4(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz,
-			const uint16_t *pal_buf, int pal_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz,
+			const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 		/**
 		 * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
@@ -166,8 +166,8 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinearCI8(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz,
-			const uint16_t *pal_buf, int pal_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz,
+			const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 		/**
 		 * Convert a linear monochrome image to rp_image.
@@ -178,7 +178,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromLinearMono(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a linear 8-bit RGB image to rp_image.
@@ -193,7 +193,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear8(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz, int stride);
+			const uint8_t *RESTRICT img_buf, int img_siz, int stride);
 
 		/** 16-bit **/
 
@@ -210,7 +210,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear16_cpp(PixelFormat px_format,
 			int width, int height,
-			const uint16_t *img_buf, int img_siz, int stride = 0);
+			const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 #ifdef IMAGEDECODER_HAS_SSE2
 		/**
@@ -226,7 +226,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear16_sse2(PixelFormat px_format,
 			int width, int height,
-			const uint16_t *img_buf, int img_siz, int stride = 0);
+			const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSE2 */
 
 		/**
@@ -241,7 +241,7 @@ class ImageDecoder
 		 */
 		static IFUNC_SSE2_INLINE rp_image *fromLinear16(PixelFormat px_format,
 			int width, int height,
-			const uint16_t *img_buf, int img_siz, int stride = 0);
+			const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 		/** 24-bit **/
 
@@ -258,7 +258,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear24_cpp(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz, int stride = 0);
+			const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 #ifdef IMAGEDECODER_HAS_SSSE3
 		/**
@@ -274,7 +274,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear24_ssse3(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz, int stride = 0);
+			const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
 		/**
@@ -289,7 +289,7 @@ class ImageDecoder
 		 */
 		static IFUNC_INLINE rp_image *fromLinear24(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz, int stride = 0);
+			const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 		/** 32-bit **/
 
@@ -306,7 +306,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear32_cpp(PixelFormat px_format,
 			int width, int height,
-			const uint32_t *img_buf, int img_siz, int stride = 0);
+			const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 #ifdef IMAGEDECODER_HAS_SSSE3
 		/**
@@ -322,7 +322,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear32_ssse3(PixelFormat px_format,
 			int width, int height,
-			const uint32_t *img_buf, int img_siz, int stride = 0);
+			const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
 		/**
@@ -337,7 +337,7 @@ class ImageDecoder
 		 */
 		static IFUNC_INLINE rp_image *fromLinear32(PixelFormat px_format,
 			int width, int height,
-			const uint32_t *img_buf, int img_siz, int stride = 0);
+			const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 		/** GameCube **/
 
@@ -352,7 +352,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromGcn16(PixelFormat px_format,
 			int width, int height,
-			const uint16_t *img_buf, int img_siz);
+			const uint16_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a GameCube CI8 image to rp_image.
@@ -365,8 +365,8 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromGcnCI8(int width, int height,
-			const uint8_t *img_buf, int img_siz,
-			const uint16_t *pal_buf, int pal_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz,
+			const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 		/** Nintendo DS **/
 
@@ -381,8 +381,8 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromNDS_CI4(int width, int height,
-			const uint8_t *img_buf, int img_siz,
-			const uint16_t *pal_buf, int pal_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz,
+			const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 		/** Nintendo 3DS **/
 
@@ -395,7 +395,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromN3DSTiledRGB565(int width, int height,
-			const uint16_t *img_buf, int img_siz);
+			const uint16_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a Nintendo 3DS RGB565+A4 tiled icon to rp_image.
@@ -408,8 +408,8 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromN3DSTiledRGB565_A4(int width, int height,
-			const uint16_t *img_buf, int img_siz,
-			const uint8_t *alpha_buf, int alpha_siz);
+			const uint16_t *RESTRICT img_buf, int img_siz,
+			const uint8_t *RESTRICT alpha_buf, int alpha_siz);
 
 		/* S3TC */
 
@@ -440,7 +440,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT1_GCN(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a DXT1 image to rp_image.
@@ -451,7 +451,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT1(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a DXT2 image to rp_image.
@@ -462,7 +462,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT2(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a DXT3 image to rp_image.
@@ -473,7 +473,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT3(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a DXT4 image to rp_image.
@@ -484,7 +484,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT4(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a DXT5 image to rp_image.
@@ -495,7 +495,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT5(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a BC4 (ATI1) image to rp_image.
@@ -506,7 +506,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromBC4(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a BC5 (ATI2) image to rp_image.
@@ -517,7 +517,7 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromBC5(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/* Dreamcast */
 
@@ -532,7 +532,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			int width, int height,
-			const uint16_t *img_buf, int img_siz);
+			const uint16_t *RESTRICT img_buf, int img_siz);
 
 		/**
 		 * Convert a Dreamcast vector-quantized image to rp_image.
@@ -549,8 +549,8 @@ class ImageDecoder
 		template<bool smallVQ>
 		static rp_image *fromDreamcastVQ16(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz,
-			const uint16_t *pal_buf, int pal_siz);
+			const uint8_t *RESTRICT img_buf, int img_siz,
+			const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 		/**
 		 * Get the number of palette entries for Dreamcast SmallVQ textures.
@@ -624,7 +624,7 @@ inline rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
  */
 inline rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz, int stride)
+	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
 {
 #ifdef IMAGEDECODER_ALWAYS_HAS_SSE2
 	// amd64 always has SSE2.
@@ -653,7 +653,7 @@ inline rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
  */
 inline rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
@@ -677,7 +677,7 @@ inline rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
  */
 inline rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *img_buf, int img_siz, int stride)
+	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {

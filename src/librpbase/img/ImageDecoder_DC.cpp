@@ -80,7 +80,7 @@ static FORCEINLINE void initDreamcastTwiddleMap(void)
  */
 rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -181,8 +181,8 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 template<bool smallVQ>
 rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -310,12 +310,12 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 template rp_image *ImageDecoder::fromDreamcastVQ16<false>(
 	PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz);
 template rp_image *ImageDecoder::fromDreamcastVQ16<true>(
 	PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 }

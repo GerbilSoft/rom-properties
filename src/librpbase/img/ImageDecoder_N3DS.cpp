@@ -44,7 +44,7 @@ static const uint8_t N3DS_tile_order[] = {
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
-	const uint16_t *img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -111,8 +111,8 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromN3DSTiledRGB565_A4(int width, int height,
-	const uint16_t *img_buf, int img_siz,
-	const uint8_t *alpha_buf, int alpha_siz)
+	const uint16_t *RESTRICT img_buf, int img_siz,
+	const uint8_t *RESTRICT alpha_buf, int alpha_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);

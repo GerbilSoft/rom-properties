@@ -45,7 +45,7 @@ namespace LibRpBase {
  */
 rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
 {
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 3;
@@ -190,7 +190,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
  */
 rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *img_buf, int img_siz, int stride)
+	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
 {
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 4;

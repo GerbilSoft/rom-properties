@@ -240,7 +240,7 @@ static inline void T_ARGB16_sse2(
  */
 rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz, int stride)
+	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
 {
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 2;

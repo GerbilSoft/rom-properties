@@ -35,8 +35,8 @@ namespace LibRpBase {
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
-	const uint8_t *img_buf, int img_siz,
-	const uint16_t *pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint16_t *RESTRICT pal_buf, int pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);

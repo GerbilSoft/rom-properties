@@ -76,7 +76,7 @@ union dxt5_alpha {
  * @param data dxt5_alpha.
  * @return 48-bit code value.
  */
-static FORCEINLINE uint64_t extract48(const dxt5_alpha *data)
+static FORCEINLINE uint64_t extract48(const dxt5_alpha *RESTRICT data)
 {
 	// codes[6] starts at 0x02 within dxt5_alpha.
 	// Hence, we need to lshift it after byteswapping.
@@ -99,7 +99,7 @@ enum DXTn_Palette_Flags {
  * @param dxt1_src	[in] DXT1 block.
  */
 template<uint32_t flags>
-static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t pal[4], const dxt1_block *dxt1_src)
+static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t *RESTRICT pal, const dxt1_block *RESTRICT dxt1_src)
 {
 	// Convert the first two colors from RGB565.
 	uint16_t c0, c1;
@@ -143,7 +143,7 @@ static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t pal[4], const dx
  * @param alpha	2-element alpha array from dxt5_block.
  * @return Alpha channel value.
  */
-static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t alpha[2])
+static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RESTRICT alpha)
 {
 	unsigned int a_ret = 255;
 
@@ -215,7 +215,7 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t alph
  * @param dxt1_src	[in] DXT1 block.
  */
 template<uint32_t flags>
-static inline void decode_DXTn_tile_color_palette_S2TC(argb32_t pal[4], const dxt1_block *dxt1_src)
+static inline void decode_DXTn_tile_color_palette_S2TC(argb32_t *RESTRICT pal, const dxt1_block *RESTRICT dxt1_src)
 {
 	// Convert the first two colors from RGB565.
 	uint16_t c0, c1;
@@ -245,7 +245,7 @@ static inline void decode_DXTn_tile_color_palette_S2TC(argb32_t pal[4], const dx
  * @param c0c1	For S2TC, select c0 or c1.
  * @return Alpha channel value.
  */
-static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t alpha[2], unsigned int c0c1)
+static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t *RESTRICT alpha, unsigned int c0c1)
 {
 	// S2TC fallback.
 	unsigned int a_ret;
@@ -294,7 +294,7 @@ static FORCEINLINE unsigned int S2TC_select_c0c1(unsigned int px_number)
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -417,7 +417,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromDXT1(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -522,7 +522,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromDXT2(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
@@ -551,7 +551,7 @@ rp_image *ImageDecoder::fromDXT2(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromDXT3(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -668,7 +668,7 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromDXT4(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
@@ -697,7 +697,7 @@ rp_image *ImageDecoder::fromDXT4(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromDXT5(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -813,7 +813,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromBC4(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -923,7 +923,7 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromBC5(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
