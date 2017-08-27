@@ -344,7 +344,7 @@ LRESULT CALLBACK MultiLineEditProc(
 			// References:
 			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
 			// - https://stackoverflow.com/a/20884852
-			unsigned int code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			DWORD code = (DWORD)DefSubclassProc(hWnd, uMsg, wParam, lParam);
 			return (code & ~DLGC_HASSETSEL);
 		}
 
@@ -384,7 +384,7 @@ LRESULT CALLBACK SingleLineEditProc(
 			// References:
 			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
 			// - https://stackoverflow.com/a/20884852
-			unsigned int code = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			DWORD code = (DWORD)DefSubclassProc(hWnd, uMsg, wParam, lParam);
 			return (code & ~DLGC_HASSETSEL);
 		}
 

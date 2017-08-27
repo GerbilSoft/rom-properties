@@ -173,7 +173,7 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 
 	// Find the last data track.
 	int lastDataTrack = 0;	// 1-based; 0 is invalid.
-	for (int i = trackMappings.size()-1; i >= 0; i--) {
+	for (int i = (int)trackMappings.size()-1; i >= 0; i--) {
 		const BlockRange *blockRange = trackMappings[i];
 		if (blockRange) {
 			if ((int)blockRange->trackNumber > lastDataTrack) {
