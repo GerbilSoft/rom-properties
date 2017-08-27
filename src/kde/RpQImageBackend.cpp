@@ -21,6 +21,12 @@
 
 #include "RpQImageBackend.hpp"
 
+#if QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0)
+# include "QImageData_qt4.hpp"
+#elif QT_VERSION < QT_VERSION_CHECK(4,0,0)
+# error Unsupported Qt version.
+#endif
+
 // C includes. (C++ namespace)
 #include <cassert>
 
@@ -32,9 +38,6 @@ using LibRpBase::rp_image_backend;
 
 RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	, m_data(nullptr)
-#endif
 {
 	// Initialize the QImage.
 	QImage::Format qfmt;
@@ -89,8 +92,11 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	}
 
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	// Save the image buffer.
-	this->m_data = data;
+	// Trick QImage into thinking it owns the data buffer.
+	// FIXME: NEEDS MASSIVE TESTING.
+	QImage::DataPtr d = m_qImage.data_ptr();
+	d->own_data = true;
+	d->ro_data = false;
 #endif
 
 	// We're using the full stride for the last row
@@ -104,18 +110,6 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 		m_qPalette.resize(256);
 	}
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-RpQImageBackend::~RpQImageBackend()
-{
-	// Delete the image buffer.
-	// NOTE: All QImages obtained using getQImage()
-	// *must* be detached at this point!
-	// TODO: Figure out if there's an easy way to do this.
-	m_qImage = QImage();
-	aligned_free(m_data);
-}
-#endif
 
 /**
  * Creator function for rp_image::setBackendCreatorFn().
