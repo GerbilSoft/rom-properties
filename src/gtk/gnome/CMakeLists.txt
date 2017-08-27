@@ -27,6 +27,7 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_H "${rom-properties
 
 # CPU-specific and optimized sources.
 IF(rom-properties-gtk_SSSE3_SRCS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_IFUNC_SRCS "${rom-properties-gtk_IFUNC_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SSSE3_SRCS "${rom-properties-gtk_SSSE3_SRCS}")
 
 	IF(MSVC AND NOT CMAKE_CL_64)
@@ -50,6 +51,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gnome.h.in" "${CMAKE_CURRENT_
 # Sources and headers. (GNOME-specific)
 SET(rom-properties-gnome_SRCS
 	${rom-properties-gnome_SRCS}
+	${rom-properties-gnome_IFUNC_SRCS}
 	${rom-properties-gnome_SSSE3_SRCS}
 	rom-properties-plugin.c
 	rom-properties-provider.cpp

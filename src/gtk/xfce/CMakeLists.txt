@@ -34,6 +34,7 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H "${rom-properties-
 
 # CPU-specific and optimized sources.
 IF(rom-properties-gtk_SSSE3_SRCS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_IFUNC_SRCS "${rom-properties-gtk_IFUNC_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SSSE3_SRCS "${rom-properties-gtk_SSSE3_SRCS}")
 
 	IF(MSVC AND NOT CMAKE_CL_64)
@@ -54,6 +55,7 @@ UNSET(arch)
 # Sources and headers. (XFCE-specific)
 SET(rom-properties-xfce_SRCS
 	${rom-properties-xfce_SRCS}
+	${rom-properties-xfce_IFUNC_SRCS}
 	${rom-properties-xfce_SSSE3_SRCS}
 	rom-properties-plugin.c
 	rom-properties-provider.cpp

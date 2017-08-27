@@ -68,8 +68,13 @@ class GdkImageConv
 		 * @param img	[in] rp_image.
 		 * @return GdkPixbuf, or nullptr on error.
 		 */
-		static inline GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpBase::rp_image *img);
+		static IFUNC_INLINE GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpBase::rp_image *img);
 };
+
+#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
+
+// System does not support IFUNC, or we don't have optimizations for these CPUs.
+// Use standard inline dispatch.
 
 /**
  * Convert an rp_image to GdkPixbuf.
@@ -87,5 +92,7 @@ inline GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const LibRpBase::rp_image 
 		return rp_image_to_GdkPixbuf_cpp(img);
 	}
 }
+
+#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
 
 #endif /* __ROMPROPERTIES_GTK_GDKIMAGECONV_HPP__ */

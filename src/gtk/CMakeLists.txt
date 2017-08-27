@@ -8,6 +8,15 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 # TODO: Move arch detection to platform.cmake.
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	# IFUNC requires glibc.
+	# We're not checking for glibc here, but we do have preprocessor
+	# checks, so even if this does get compiled on a non-glibc system,
+	# it won't do anything.
+	# TODO: Might be supported on other Unix-like operating systems...
+	IF(UNIX AND NOT APPLE)
+		SET(rom-properties-gtk_IFUNC_SRCS GdkImageConv_ifunc.cpp)
+	ENDIF(UNIX AND NOT APPLE)
+
 	# NOTE: SSSE3 flags are set in subprojects, not here.
 	SET(rom-properties-gtk_SSSE3_SRCS GdkImageConv_ssse3.cpp)
 ENDIF()
