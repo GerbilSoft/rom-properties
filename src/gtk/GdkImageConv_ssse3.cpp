@@ -146,27 +146,46 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 
 			// Get the palette.
 			uint32_t palette[256];
-			int i;
-			for (i = 0; i < src_pal_len; i += 2, src_pal += 2) {
-				// Swap the R and B channels in the palette.
-				palette[i+0] = (src_pal[0] & 0xFF00FF00) |
-					      ((src_pal[0] & 0x00FF0000) >> 16) |
-					      ((src_pal[0] & 0x000000FF) << 16);
-				palette[i+1] = (src_pal[1] & 0xFF00FF00) |
-					      ((src_pal[1] & 0x00FF0000) >> 16) |
-					      ((src_pal[1] & 0x000000FF) << 16);
-			}
-			for (; i < src_pal_len; i++, src_pal++) {
-				// Last color.
-				palette[i] = (*src_pal & 0xFF00FF00) |
-					    ((*src_pal & 0x00FF0000) >> 16) |
-					    ((*src_pal & 0x000000FF) << 16);
-			}
-			if (src_pal_len < 256) {
-				memset(&palette[src_pal_len], 0, (256 - src_pal_len) * sizeof(uint32_t));
+
+			// Process 16 colors per iteration using SSSE3.
+			unsigned int i = (unsigned int)src_pal_len;
+			uint32_t *dest_pal = palette;
+			for (; i > 15; i -= 16, dest_pal += 16, src_pal += 16) {
+				const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src_pal);
+				__m128i *xmm_dest = reinterpret_cast<__m128i*>(dest_pal);
+
+				__m128i sa = _mm_load_si128(xmm_src);
+				__m128i sb = _mm_load_si128(xmm_src+1);
+				__m128i sc = _mm_load_si128(xmm_src+2);
+				__m128i sd = _mm_load_si128(xmm_src+3);
+
+				__m128i val = _mm_shuffle_epi8(sa, shuf_mask);
+				_mm_store_si128(xmm_dest, val);
+
+				val = _mm_shuffle_epi8(sb, shuf_mask);
+				_mm_store_si128(xmm_dest+1, val);
+
+				val = _mm_shuffle_epi8(sc, shuf_mask);
+				_mm_store_si128(xmm_dest+2, val);
+
+				val = _mm_shuffle_epi8(sd, shuf_mask);
+				_mm_store_si128(xmm_dest+3, val);
 			}
 
-			// Copy the image data.
+			// Remaining colors.
+			for (; i > 0; i--, dest_pal++, src_pal++) {
+				*dest_pal = (*src_pal & 0xFF00FF00) |
+					   ((*src_pal & 0x00FF0000) >> 16) |
+					   ((*src_pal & 0x000000FF) << 16);
+			}
+
+			// Zero out the rest of the palette if the new
+			// palette is larger than the old palette.
+			if (src_pal_len < ARRAY_SIZE(palette)) {
+				memset(&palette[src_pal_len], 0, (ARRAY_SIZE(palette) - src_pal_len) * sizeof(uint32_t));
+			}
+
+			// Convert the image data from CI8 to ARGB32.
 			const uint8_t *img_buf = static_cast<const uint8_t*>(img->bits());
 			const int src_stride_adj = img->stride() - width;
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
