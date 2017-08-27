@@ -77,10 +77,17 @@ rp_image *rp_image::dup(void) const
 			return nullptr;
 	}
 
-	for (unsigned int y = (unsigned int)height; y > 0; y--) {
-		memcpy(dest, src, row_bytes);
-		dest += dest_stride;
-		src += src_stride;
+	if (src_stride == dest_stride) {
+		// Copy the entire image all at once.
+		size_t len = d->backend->data_len();
+		memcpy(dest, src, len);
+	} else {
+		// Copy one line at a time.
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			memcpy(dest, src, row_bytes);
+			dest += dest_stride;
+			src += src_stride;
+		}
 	}
 
 	// If CI8, copy the palette.
