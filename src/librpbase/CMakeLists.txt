@@ -271,7 +271,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# it won't do anything.
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
-		SET(librpbase_IFUNC_SRCS ${librpbase_IFUNC_SRCS} img/ImageDecoder_ifunc.cpp)
+		SET(librpbase_IFUNC_SRCS img/ImageDecoder_ifunc.cpp)
 	ENDIF(UNIX AND NOT APPLE)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
