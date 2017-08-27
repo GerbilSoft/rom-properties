@@ -37,6 +37,9 @@ class RpQImageBackend : public LibRpBase::rp_image_backend
 {
 	public:
 		RpQImageBackend(int width, int height, LibRpBase::rp_image::Format format);
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+		virtual ~RpQImageBackend();
+#endif
 
 	private:
 		typedef LibRpBase::rp_image_backend super;
@@ -61,6 +64,13 @@ class RpQImageBackend : public LibRpBase::rp_image_backend
 	public:
 		/**
 		 * Get the underlying QImage.
+		 *
+		 * NOTE: On Qt4, you *must* detach the image if it
+		 * will be used after the rp_image is deleted.
+		 *
+		 * NOTE: Detached QImages may not have the required
+		 * row alignment for rp_image functions.
+		 *
 		 * @return QImage.
 		 */
 		QImage getQImage(void) const;
@@ -68,6 +78,13 @@ class RpQImageBackend : public LibRpBase::rp_image_backend
 	protected:
 		QImage m_qImage;
 		QVector<QRgb> m_qPalette;
+
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+		// Allocated data buffer.
+		// We're managing the data buffer ourselves
+		// in order to use 16-byte row alignment.
+		uint8_t *m_data;
+#endif
 };
 
 #endif /* __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__ */
