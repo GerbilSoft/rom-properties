@@ -115,8 +115,11 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 					    ((*src_pal & 0x00FF0000) >> 16) |
 					    ((*src_pal & 0x000000FF) << 16);
 			}
-			if (src_pal_len < 256) {
-				memset(&palette[src_pal_len], 0, (256 - src_pal_len) * sizeof(uint32_t));
+
+			// Zero out the rest of the palette if the new
+			// palette is larger than the old palette.
+			if (src_pal_len < ARRAY_SIZE(palette)) {
+				memset(&palette[src_pal_len], 0, (ARRAY_SIZE(palette) - src_pal_len) * sizeof(uint32_t));
 			}
 
 			// Copy the image data.
