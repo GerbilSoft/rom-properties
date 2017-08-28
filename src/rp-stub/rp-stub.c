@@ -265,11 +265,12 @@ int main(int argc, char *argv[])
 		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)(argc, argv);
 	}
 
-	if (is_debug) {
-		fprintf(stderr, "%s() returned %d.\n", symname, ret);
-	}
 	dlclose(pDll);
-	if (ret != 0) {
+	if (ret == 0) {
+		if (is_debug) {
+			fprintf(stderr, "%s() returned %d.\n", symname, ret);
+		}
+	} else {
 		fprintf(stderr, "*** ERROR: %s() returned %d.\n", symname, ret);
 	}
 	return ret;
