@@ -169,7 +169,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# it won't do anything.
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
-		SET(libromdata_IFUNC_SRCS ${libromdata_IFUNC_SRCS} utils/SuperMagicDrive_ifunc.cpp)
+		SET(libromdata_IFUNC_SRCS utils/SuperMagicDrive_ifunc.cpp)
 	ENDIF(UNIX AND NOT APPLE)
 
 	# MSVC does not support MMX intrinsics in 64-bit builds.

@@ -32,9 +32,31 @@ ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPix
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS "${rom-properties-gtk_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H "${rom-properties-gtk_H}")
 
+# CPU-specific and optimized sources.
+IF(rom-properties-gtk_SSSE3_SRCS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_IFUNC_SRCS "${rom-properties-gtk_IFUNC_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SSSE3_SRCS "${rom-properties-gtk_SSSE3_SRCS}")
+
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSSE3_FLAG "/arch:SSE2")
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		SET(SSSE3_FLAG "-mssse3")
+	ENDIF()
+	IF(SSSE3_FLAG)
+		FOREACH(ssse3_file ${rom-properties-xfce_SSSE3_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
+		ENDFOREACH(ssse3_file ${rom-properties-xfce_SSSE3_SRCS})
+	ENDIF(SSSE3_FLAG)
+ENDIF()
+UNSET(arch)
+
 # Sources and headers. (XFCE-specific)
 SET(rom-properties-xfce_SRCS
 	${rom-properties-xfce_SRCS}
+	${rom-properties-xfce_IFUNC_SRCS}
+	${rom-properties-xfce_SSSE3_SRCS}
 	rom-properties-plugin.c
 	rom-properties-provider.cpp
 	rom-properties-page.cpp

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,13 +14,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-// NOTE: This class is located in libromdata, not Win32,
-// since RpPng_gdiplus.cpp uses the backend directly.
+// NOTE: This class is located in librpbase, not Win32,
+// since gtest_init.cpp uses the backend directly.
 
 #include "RpGdiplusBackend.hpp"
 #include "../aligned_malloc.h"
@@ -100,15 +99,24 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// modifying the palette, so we have to copy our
 		// palette data every time the underlying image
 		// is requested.
+
+		// NOTE: Gdiplus::ColorPalette has two UINT entries,
+		// followed by the palette. That's 8 extra bytes.
+		static_assert(sizeof(Gdiplus::ColorPalette) == 12, "Need to fix Gdiplus::ColorPalette alignment adjustments!");
 		const size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
-		m_pGdipPalette = (Gdiplus::ColorPalette*)aligned_malloc(16, gdipPalette_sz);
-		if (!m_pGdipPalette) {
+		uint8_t *const pPalData = static_cast<uint8_t*>(aligned_malloc(16, gdipPalette_sz + 8));
+		if (!pPalData) {
 			// ENOMEM
 			delete m_pGdipBmp;
 			m_pGdipBmp = nullptr;
 			clear_properties();
 			return;
 		}
+
+		// Adjust the palette alignment.
+		m_pGdipPalette = reinterpret_cast<Gdiplus::ColorPalette*>(pPalData + 8);
+		ASSERT_ALIGNMENT(16, &m_pGdipPalette->Entries[0]);
+
 		memset(m_pGdipPalette, 0, gdipPalette_sz);
 		m_pGdipPalette->Flags = 0;
 		m_pGdipPalette->Count = 256;
@@ -125,8 +133,14 @@ RpGdiplusBackend::~RpGdiplusBackend()
 		delete m_pGdipBmp;
 	}
 
+	// Palette is adjusted by 8 bytes in order to ensure
+	// that the color table is 16-byte aligned.
+	if (m_pGdipPalette) {
+		uint8_t *pPalData = reinterpret_cast<uint8_t*>(m_pGdipPalette) - 8;
+		aligned_free(pPalData);
+	}
+
 	aligned_free(m_pImgBuf);
-	aligned_free(m_pGdipPalette);
 	GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
 }
 
@@ -301,24 +315,90 @@ Gdiplus::Status RpGdiplusBackend::unlock(void)
  */
 Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 {
-	Gdiplus::Bitmap *pBmp;
+	Gdiplus::Bitmap *pBmp = nullptr;
 	Gdiplus::Status status;
 
-	status = const_cast<RpGdiplusBackend*>(this)->unlock();
-	if (status != Gdiplus::Status::Ok) {
-		return nullptr;
-	}
+	switch (this->format) {
+		case rp_image::FORMAT_CI8: {
+			// FIXME: Since adding custom stride, Bitmap::Clone() seems to
+			// automatically replace CI8 color 8 with white.
+			// Hence, we have to manually copy the image for CI8.
+			pBmp = new Gdiplus::Bitmap(this->width, this->height, PixelFormat32bppARGB);
+			assert(pBmp != nullptr);
+			if (!pBmp) {
+				return nullptr;
+			}
 
-	if (this->format == rp_image::FORMAT_CI8) {
-		// Copy the local palette to the GDI+ image.
-		m_pGdipBmp->SetPalette(m_pGdipPalette);
-	}
+			const Gdiplus::Rect bmpDestRect(0, 0, this->width, this->height);
+			Gdiplus::BitmapData bmpDestData;
+			status = pBmp->LockBits(&bmpDestRect, Gdiplus::ImageLockModeWrite,
+				PixelFormat32bppARGB, &bmpDestData);
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				delete pBmp;
+				return nullptr;
+			}
 
-	pBmp = m_pGdipBmp->Clone(0, 0, this->width, this->height, PixelFormat32bppARGB);
-	status = const_cast<RpGdiplusBackend*>(this)->lock();
-	if (status != Gdiplus::Status::Ok) {
-		delete pBmp;
-		return nullptr;
+			// Convert on a row-by-row basis.
+			// FIXME: Handle upside-down images. (stride is negative)
+			assert(this->stride > 0);
+			if (this->stride <= 0) {
+				pBmp->UnlockBits(&bmpDestData);
+				delete pBmp;
+				return nullptr;
+			}
+
+			const int src_stride_adj = this->stride - this->width;
+			const int dest_stride_adj = (bmpDestData.Stride / sizeof(uint32_t)) - this->width;
+			const uint8_t *src = static_cast<const uint8_t*>(m_pImgBuf);
+			uint32_t *dest = static_cast<uint32_t*>(bmpDestData.Scan0);
+			for (unsigned int y = this->height; y > 0; y--) {
+				// Convert two pixels at a time.
+				unsigned int x = this->width;
+				for (; x > 1; x -= 2) {
+					dest[0] = m_pGdipPalette->Entries[src[0]];
+					dest[1] = m_pGdipPalette->Entries[src[1]];
+					src += 2;
+					dest += 2;
+				}
+				if (x == 1) {
+					*dest = m_pGdipPalette->Entries[*src];
+					src++;
+					dest++;
+				}
+
+				// Next row.
+				src += src_stride_adj;
+				dest += dest_stride_adj;
+			}
+
+			status = pBmp->UnlockBits(&bmpDestData);
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				delete pBmp;
+				return nullptr;
+			}
+			break;
+		}
+
+		case rp_image::FORMAT_ARGB32:
+			status = const_cast<RpGdiplusBackend*>(this)->unlock();
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				return nullptr;
+			}
+
+			pBmp = m_pGdipBmp->Clone(0, 0, this->width, this->height, PixelFormat32bppARGB);
+			status = const_cast<RpGdiplusBackend*>(this)->lock();
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				delete pBmp;
+				return nullptr;
+			}
+			break;
+
+		default:
+			assert(!"Unsupported rp_image::Format.");
 	}
 
 	return pBmp;
@@ -649,14 +729,20 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
 	// HBITMAP stride is a multiple of 4, so we can assume that
 	// it's equal to row_bytes.
-	const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);
 	const size_t row_bytes = pBmpData->Width * 4;
 	const int gdip_stride = pBmpData->Stride;
-	for (int y = (int)pBmpData->Height; y > 0; y--) {
-		memcpy(pvBits, gdip_px, row_bytes);
-		pvBits += row_bytes;
-		gdip_px += gdip_stride;
-	}
+	if (row_bytes == gdip_stride) {
+		// Copy the entire image all at once.
+		memcpy(pvBits, pBmpData->Scan0, gdip_stride * pBmpData->Height);
+	} else {
+		// Copy one line at a time.
+		const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);
+		for (unsigned int y = pBmpData->Height; y > 0; y--) {
+			memcpy(pvBits, gdip_px, row_bytes);
+			pvBits += row_bytes;
+			gdip_px += gdip_stride;
+		}
+	}	
 
 	// Bitmap is ready.
 	return hBitmap;
@@ -709,14 +795,20 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 
 	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
 	// HBITMAP stride is a multiple of 4.
-	const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);
 	const size_t row_bytes = pBmpData->Width;
 	const int hbmp_stride = ALIGN(4, row_bytes);
 	const int gdip_stride = pBmpData->Stride;
-	for (int y = (int)pBmpData->Height; y > 0; y--) {
-		memcpy(pvBits, gdip_px, row_bytes);
-		pvBits += hbmp_stride;
-		gdip_px += pBmpData->Stride;
+	if (hbmp_stride == gdip_stride) {
+		// Copy the entire image all at once.
+		memcpy(pvBits, pBmpData->Scan0, gdip_stride * pBmpData->Height);
+	} else {
+		// Copy one line at a time.
+		const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);
+		for (unsigned int y = pBmpData->Height; y > 0; y--) {
+			memcpy(pvBits, gdip_px, row_bytes);
+			pvBits += hbmp_stride;
+			gdip_px += pBmpData->Stride;
+		}
 	}
 
 	// Bitmap is ready.

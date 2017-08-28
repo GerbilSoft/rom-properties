@@ -95,11 +95,8 @@ rp_image *rp_image::dup(void) const
 		int entries = std::min(img->palette_len(), d->backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
-		if (img->palette_len() < d->backend->palette_len()) {
-			// Zero the remaining entries.
-			int zero_entries = d->backend->palette_len() - img->palette_len();
-			memset(&dest_pal[entries], 0, zero_entries * sizeof(uint32_t));
-		}
+		// Palette is zero-initialized, so we don't need to
+		// zero remaining entries.
 	}
 
 	// Copy sBIT if it's set.
@@ -388,11 +385,8 @@ rp_image *rp_image::resized(int width, int height) const
 		int entries = std::min(img->palette_len(), d->backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
-		if (img->palette_len() < d->backend->palette_len()) {
-			// Zero the remaining entries.
-			int zero_entries = d->backend->palette_len() - img->palette_len();
-			memset(&dest_pal[entries], 0, zero_entries * sizeof(uint32_t));
-		}
+		// Palette is zero-initialized, so we don't need to
+		// zero remaining entries.
 	}
 
 	// Copy sBIT if it's set.

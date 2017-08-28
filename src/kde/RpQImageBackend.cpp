@@ -21,10 +21,17 @@
 
 #include "RpQImageBackend.hpp"
 
+#if QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0)
+# include "QImageData_qt4.hpp"
+#elif QT_VERSION < QT_VERSION_CHECK(4,0,0)
+# error Unsupported Qt version.
+#endif
+
 // C includes. (C++ namespace)
 #include <cassert>
 
 // librpbase
+#include "librpbase/aligned_malloc.h"
 #include "librpbase/img/rp_image.hpp"
 using LibRpBase::rp_image;
 using LibRpBase::rp_image_backend;
@@ -37,9 +44,11 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	switch (format) {
 		case rp_image::FORMAT_CI8:
 			qfmt = QImage::Format_Indexed8;
+			this->stride = ALIGN(16, width);
 			break;
 		case rp_image::FORMAT_ARGB32:
 			qfmt = QImage::Format_ARGB32;
+			this->stride = ALIGN(16, width * sizeof(uint32_t));
 			break;
 		default:
 			assert(!"Unsupported rp_image::Format.");
@@ -50,16 +59,51 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 			return;
 	}
 
-	m_qImage = QImage(width, height, qfmt);
-	if (m_qImage.isNull()) {
-		// Error creating the QImage.
+	// Allocate our own memory buffer.
+	// This is needed in order to use 16-byte row alignment.
+	uint8_t *data = static_cast<uint8_t*>(aligned_malloc(16, height * this->stride));
+	if (!data) {
+		// Error allocating the memory buffer.
 		clear_properties();
 		return;
 	}
 
+	// NOTE: Qt5 allows us to specify a custom deletion function
+	// for the memory buffer. Qt4 does not, so we'll delete the
+	// buffer when rp_image is deleted. Note that this may crash
+	// if QImages aren't detached before the rp_image is deleted.
+
+	// FIXME: Need to test with Qt4 to make sure this doesn't break!
+	// TODO: Manually hack into QImageData and set own_data?
+	// This will call free(), which is usually fine on POSIX systems
+	// when using POSIX aligned memory allocation functions.
+
+	// Create the QImage using the allocated memory buffer.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	m_qImage = QImage(data, width, height, this->stride, qfmt, aligned_free, data);
+#else
+	m_qImage = QImage(data, width, height, this->stride, qfmt);
+#endif
+	if (m_qImage.isNull()) {
+		// Error creating the QImage.
+		aligned_free(data);
+		clear_properties();
+		return;
+	}
+
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	// Trick QImage into thinking it owns the data buffer.
+	// FIXME: NEEDS MASSIVE TESTING.
+	QImage::DataPtr d = m_qImage.data_ptr();
+	d->own_data = true;
+	d->ro_data = false;
+#endif
+
+	// We're using the full stride for the last row
+	// to make it easier to manage. (Qt does this as well.)
+
 	// Make sure we have the correct stride.
-	// This might be larger than width*pxSize in some cases.
-	this->stride = m_qImage.bytesPerLine();
+	assert(this->stride == m_qImage.bytesPerLine());
 
 	if (format == rp_image::FORMAT_CI8) {
 		// Initialize the palette.
@@ -120,6 +164,13 @@ int RpQImageBackend::palette_len(void) const
 
 /**
  * Get the underlying QImage.
+ *
+ * NOTE: On Qt4, you *must* detach the image if it
+ * will be used after the rp_image is deleted.
+ *
+ * NOTE: Detached QImages may not have the required
+ * row alignment for rp_image functions.
+ *
  * @return QImage.
  */
 QImage RpQImageBackend::getQImage(void) const

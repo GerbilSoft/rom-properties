@@ -30,6 +30,7 @@ SET(rom-properties-kde_H
 	RpQt.hpp
 	RpQImageBackend.hpp
 	QTreeWidgetOpt.hpp
+	QImageData_qt4.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp

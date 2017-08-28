@@ -259,13 +259,13 @@ Dreamcast::Dreamcast(IRpFile *file)
 	CDROM_2352_Sector_t sector;
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
-	if (size == 0)
+	if (size == 0 || size > sizeof(sector))
 		return;
 
 	// Check if this disc image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = size;
+	info.header.size = (unsigned int)size;
 	info.header.pData = reinterpret_cast<const uint8_t*>(&sector);
 	const rp_string filename = file->filename();
 	info.ext = FileSystem::file_ext(filename);

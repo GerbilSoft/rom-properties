@@ -61,6 +61,13 @@ class RpQImageBackend : public LibRpBase::rp_image_backend
 	public:
 		/**
 		 * Get the underlying QImage.
+		 *
+		 * NOTE: On Qt4, you *must* detach the image if it
+		 * will be used after the rp_image is deleted.
+		 *
+		 * NOTE: Detached QImages may not have the required
+		 * row alignment for rp_image functions.
+		 *
 		 * @return QImage.
 		 */
 		QImage getQImage(void) const;
