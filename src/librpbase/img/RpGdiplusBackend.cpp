@@ -315,24 +315,90 @@ Gdiplus::Status RpGdiplusBackend::unlock(void)
  */
 Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 {
-	Gdiplus::Bitmap *pBmp;
+	Gdiplus::Bitmap *pBmp = nullptr;
 	Gdiplus::Status status;
 
-	status = const_cast<RpGdiplusBackend*>(this)->unlock();
-	if (status != Gdiplus::Status::Ok) {
-		return nullptr;
-	}
+	switch (this->format) {
+		case rp_image::FORMAT_CI8: {
+			// FIXME: Since adding custom stride, Bitmap::Clone() seems to
+			// automatically replace CI8 color 8 with white.
+			// Hence, we have to manually copy the image for CI8.
+			pBmp = new Gdiplus::Bitmap(this->width, this->height, PixelFormat32bppARGB);
+			assert(pBmp != nullptr);
+			if (!pBmp) {
+				return nullptr;
+			}
 
-	if (this->format == rp_image::FORMAT_CI8) {
-		// Copy the local palette to the GDI+ image.
-		m_pGdipBmp->SetPalette(m_pGdipPalette);
-	}
+			const Gdiplus::Rect bmpDestRect(0, 0, this->width, this->height);
+			Gdiplus::BitmapData bmpDestData;
+			status = pBmp->LockBits(&bmpDestRect, Gdiplus::ImageLockModeWrite,
+				PixelFormat32bppARGB, &bmpDestData);
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				delete pBmp;
+				return nullptr;
+			}
 
-	pBmp = m_pGdipBmp->Clone(0, 0, this->width, this->height, PixelFormat32bppARGB);
-	status = const_cast<RpGdiplusBackend*>(this)->lock();
-	if (status != Gdiplus::Status::Ok) {
-		delete pBmp;
-		return nullptr;
+			// Convert on a row-by-row basis.
+			// FIXME: Handle upside-down images. (stride is negative)
+			assert(this->stride > 0);
+			if (this->stride <= 0) {
+				pBmp->UnlockBits(&bmpDestData);
+				delete pBmp;
+				return nullptr;
+			}
+
+			const int src_stride_adj = this->stride - this->width;
+			const int dest_stride_adj = (bmpDestData.Stride / sizeof(uint32_t)) - this->width;
+			const uint8_t *src = static_cast<const uint8_t*>(m_pImgBuf);
+			uint32_t *dest = static_cast<uint32_t*>(bmpDestData.Scan0);
+			for (unsigned int y = this->height; y > 0; y--) {
+				// Convert two pixels at a time.
+				unsigned int x = this->width;
+				for (; x > 1; x -= 2) {
+					dest[0] = m_pGdipPalette->Entries[src[0]];
+					dest[1] = m_pGdipPalette->Entries[src[1]];
+					src += 2;
+					dest += 2;
+				}
+				if (x == 1) {
+					*dest = m_pGdipPalette->Entries[*src];
+					src++;
+					dest++;
+				}
+
+				// Next row.
+				src += src_stride_adj;
+				dest += dest_stride_adj;
+			}
+
+			status = pBmp->UnlockBits(&bmpDestData);
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				delete pBmp;
+				return nullptr;
+			}
+			break;
+		}
+
+		case rp_image::FORMAT_ARGB32:
+			status = const_cast<RpGdiplusBackend*>(this)->unlock();
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				return nullptr;
+			}
+
+			pBmp = m_pGdipBmp->Clone(0, 0, this->width, this->height, PixelFormat32bppARGB);
+			status = const_cast<RpGdiplusBackend*>(this)->lock();
+			assert(status == Gdiplus::Status::Ok);
+			if (status != Gdiplus::Status::Ok) {
+				delete pBmp;
+				return nullptr;
+			}
+			break;
+
+		default:
+			assert(!"Unsupported rp_image::Format.");
 	}
 
 	return pBmp;
