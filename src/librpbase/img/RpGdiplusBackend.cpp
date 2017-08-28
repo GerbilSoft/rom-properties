@@ -99,15 +99,24 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// modifying the palette, so we have to copy our
 		// palette data every time the underlying image
 		// is requested.
+
+		// NOTE: Gdiplus::ColorPalette has two UINT entries,
+		// followed by the palette. That's 8 extra bytes.
+		static_assert(sizeof(Gdiplus::ColorPalette) == 12, "Need to fix Gdiplus::ColorPalette alignment adjustments!");
 		const size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
-		m_pGdipPalette = (Gdiplus::ColorPalette*)aligned_malloc(16, gdipPalette_sz);
-		if (!m_pGdipPalette) {
+		uint8_t *const pPalData = static_cast<uint8_t*>(aligned_malloc(16, gdipPalette_sz + 8));
+		if (!pPalData) {
 			// ENOMEM
 			delete m_pGdipBmp;
 			m_pGdipBmp = nullptr;
 			clear_properties();
 			return;
 		}
+
+		// Adjust the palette alignment.
+		m_pGdipPalette = reinterpret_cast<Gdiplus::ColorPalette*>(pPalData + 8);
+		ASSERT_ALIGNMENT(16, &m_pGdipPalette->Entries[0]);
+
 		memset(m_pGdipPalette, 0, gdipPalette_sz);
 		m_pGdipPalette->Flags = 0;
 		m_pGdipPalette->Count = 256;
@@ -124,8 +133,14 @@ RpGdiplusBackend::~RpGdiplusBackend()
 		delete m_pGdipBmp;
 	}
 
+	// Palette is adjusted by 8 bytes in order to ensure
+	// that the color table is 16-byte aligned.
+	if (m_pGdipPalette) {
+		uint8_t *pPalData = reinterpret_cast<uint8_t*>(m_pGdipPalette) - 8;
+		aligned_free(pPalData);
+	}
+
 	aligned_free(m_pImgBuf);
-	aligned_free(m_pGdipPalette);
 	GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
 }
 
