@@ -51,16 +51,6 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 	public:
 		/** IUnknown **/
 
-		#if 0
-		// FIXME: This caused crashes. Try implementing it again later?
-		// Call the RP_ComBase functions.
-		// References:
-		// - http://stackoverflow.com/questions/5478669/good-techniques-for-keeping-com-classes-that-implement-multiple-interfaces-manag
-		// - http://stackoverflow.com/a/5480348
-		IFACEMETHODIMP_(ULONG) AddRef(void) { return RP_ComBase::AddRef(); }
-		IFACEMETHODIMP_(ULONG) Release(void) { return RP_ComBase::Release(); }
-		#endif
-
 		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject) override final
 		{
 			if (!ppvObject) {
@@ -109,8 +99,7 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 
 		IFACEMETHODIMP LockServer(BOOL fLock) override final
 		{
-			// Not implemented.
-			RP_UNUSED(fLock);
+			CoLockObjectExternal(this, fLock, TRUE);
 			return S_OK;
 		}
 };
