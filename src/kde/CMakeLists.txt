@@ -44,6 +44,7 @@ SET(rom-properties-kde_H
 	config/MessageWidgetStack.hpp
 	)
 SET(rom-properties-kde_UIS
+	RomDataView.ui
 	config/ConfigDialog.ui
 	config/ImageTypesTab.ui
 	config/DownloadsTab.ui

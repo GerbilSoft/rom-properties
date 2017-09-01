@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__
@@ -44,7 +43,6 @@ class RomDataView : public QWidget
 		typedef QWidget super;
 		RomDataViewPrivate *const d_ptr;
 		Q_DECLARE_PRIVATE(RomDataView)
-	private:
 		Q_DISABLE_COPY(RomDataView)
 
 	protected:
