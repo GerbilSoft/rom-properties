@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>102</width>
-    <height>16</height>
+    <width>141</width>
+    <height>30</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxLayout">
@@ -65,6 +65,13 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>-1</number>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

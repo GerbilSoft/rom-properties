@@ -72,24 +72,16 @@ class RomDataViewPrivate
 
 	public:
 		Ui::RomDataView ui;
-		struct Ui2 {
-			// Animation timer.
-			QTimer *tmrIconAnim;
 
-			// Tab layout.
-			QTabWidget *tabWidget;
-			struct tab {
-				QVBoxLayout *vboxLayout;
-				QFormLayout *formLayout;
-				QLabel *lblCredits;
-			};
-			vector<tab> tabs;
-
-			Ui2()	: tmrIconAnim(nullptr)
-				, tabWidget(nullptr)
-				{ }
+		// Tab contents.
+		struct tab {
+			QVBoxLayout *vboxLayout;
+			QFormLayout *formLayout;
+			QLabel *lblCredits;
 		};
-		Ui2 ui2;
+		vector<tab> tabs;
+
+		// RomData object.
 		RomData *romData;
 
 		// Map of bitfield checkboxes to their values.
@@ -101,6 +93,7 @@ class RomDataViewPrivate
 		bool firstRowHeightInit;
 
 		// Animated icon data.
+		QTimer *tmrIconAnim;
 		std::array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		bool anim_running;		// Animation is running.
@@ -191,6 +184,7 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData->ref())
 	, firstRowHeightInit(false)
+	, tmrIconAnim(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
 {
@@ -334,10 +328,10 @@ void RomDataViewPrivate::initHeaderRow(void)
 					// Initialize the animation.
 					last_frame_number = iconAnimHelper.frameNumber();
 					// Create the animation timer.
-					if (!ui2.tmrIconAnim) {
-						ui2.tmrIconAnim = new QTimer(q);
-						ui2.tmrIconAnim->setSingleShot(true);
-						QObject::connect(ui2.tmrIconAnim, SIGNAL(timeout()),
+					if (!tmrIconAnim) {
+						tmrIconAnim = new QTimer(q);
+						tmrIconAnim->setSingleShot(true);
+						QObject::connect(tmrIconAnim, SIGNAL(timeout()),
 								q, SLOT(tmrIconAnim_timeout()));
 					}
 				}
@@ -452,7 +446,7 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 	}
 
 	// Credits?
-	auto &tab = ui2.tabs[field->tabIdx];
+	auto &tab = tabs[field->tabIdx];
 	if (field->desc.flags & RomFields::STRF_CREDITS) {
 		// Credits row goes at the end.
 		// There should be a maximum of one STRF_CREDITS per tab.
@@ -527,7 +521,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field *f
 			col = 0;
 		}
 	}
-	ui2.tabs[field->tabIdx].formLayout->addRow(lblDesc, gridLayout);
+	tabs[field->tabIdx].formLayout->addRow(lblDesc, gridLayout);
 }
 
 /**
@@ -615,11 +609,11 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 
 	if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 		// Separate rows.
-		ui2.tabs[field->tabIdx].formLayout->addRow(lblDesc);
-		ui2.tabs[field->tabIdx].formLayout->addRow(treeWidget);
+		tabs[field->tabIdx].formLayout->addRow(lblDesc);
+		tabs[field->tabIdx].formLayout->addRow(treeWidget);
 	} else {
 		// Single row.
-		ui2.tabs[field->tabIdx].formLayout->addRow(lblDesc, treeWidget);
+		tabs[field->tabIdx].formLayout->addRow(lblDesc, treeWidget);
 	}
 
 	// Row height is recalculated when the window is first visible
@@ -682,7 +676,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
 		lblDateTime->setText(RomDataView::tr("Unknown"));
-		ui2.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
+		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
 		return;
 	}
 
@@ -720,7 +714,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 
 	if (!str.isEmpty()) {
 		lblDateTime->setText(str);
-		ui2.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
+		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
 	} else {
 		// Invalid date/time.
 		delete lblDateTime;
@@ -747,14 +741,14 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	if (!age_ratings) {
 		// No age ratings data.
 		lblAgeRatings->setText(RomDataView::tr("ERROR"));
-		ui2.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
+		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
 		return;
 	}
 
 	// Convert the age ratings field to a string.
 	QString str = RP2Q(RomFields::ageRatingsDecode(age_ratings));
 	lblAgeRatings->setText(str);
-	ui2.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
+	tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
 }
 
 /**
@@ -765,8 +759,8 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 void RomDataViewPrivate::initDisplayWidgets(void)
 {
 	// Clear the tabs.
-	for (int i = ui2.tabs.size()-1; i >= 0; i--) {
-		auto &tab = ui2.tabs[i];
+	for (int i = tabs.size()-1; i >= 0; i--) {
+		auto &tab = tabs[i];
 		// Delete the credits label if it's present.
 		delete tab.lblCredits;
 		// Delete the QFormLayout if it's present.
@@ -779,9 +773,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			delete tab.vboxLayout;
 		}
 	}
-	ui2.tabs.clear();
-	delete ui2.tabWidget;
-	ui2.tabWidget = nullptr;
+	tabs.clear();
+	ui.tabWidget->clear();
+	ui.tabWidget->hide();
 
 	// Clear the bitfields map.
 	mapBitfields.clear();
@@ -806,8 +800,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// Create the QTabWidget.
 	Q_Q(RomDataView);
 	if (fields->tabCount() > 1) {
-		ui2.tabs.resize(fields->tabCount());
-		ui2.tabWidget = new QTabWidget(q);
+		tabs.resize(fields->tabCount());
+		ui.tabWidget->show();
 		for (int i = 0; i < fields->tabCount(); i++) {
 			// Create a tab.
 			const rp_char *name = fields->tabName(i);
@@ -816,7 +810,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				continue;
 			}
 
-			auto &tab = ui2.tabs[i];
+			auto &tab = tabs[i];
 			QWidget *widget = new QWidget(q);
 
 			// Layouts.
@@ -827,15 +821,14 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			tab.vboxLayout->addLayout(tab.formLayout, 1);
 
 			// Add the tab.
-			ui2.tabWidget->addTab(widget, (name ? RP2Q(name) : QString()));
+			ui.tabWidget->addTab(widget, (name ? RP2Q(name) : QString()));
 		}
-		ui.vboxLayout->addWidget(ui2.tabWidget, 1);
 	} else {
 		// No tabs.
 		// Don't create a QTabWidget, but simulate a single
-		// tab in ui2.tabs[] to make it easier to work with.
-		ui2.tabs.resize(1);
-		auto &tab = ui2.tabs[0];
+		// tab in tabs[] to make it easier to work with.
+		tabs.resize(1);
+		auto &tab = tabs[0];
 
 		// QVBoxLayout
 		// NOTE: Using ui.vboxLayout. We must ensure that
@@ -859,11 +852,11 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 		// Verify the tab index.
 		const int tabIdx = field->tabIdx;
-		assert(tabIdx >= 0 && tabIdx < (int)ui2.tabs.size());
-		if (tabIdx < 0 || tabIdx >= (int)ui2.tabs.size()) {
+		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
+		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
 			// Tab index is out of bounds.
 			continue;
-		} else if (!ui2.tabs[tabIdx].formLayout) {
+		} else if (!tabs[tabIdx].formLayout) {
 			// Tab name is empty. Tab is hidden.
 			continue;
 		}
@@ -924,7 +917,7 @@ void RomDataViewPrivate::startAnimTimer(void)
 	}
 
 	// Sanity check: If these aren't set, something's wrong.
-	assert(ui2.tmrIconAnim != nullptr);
+	assert(tmrIconAnim != nullptr);
 	assert(ui.lblIcon != nullptr);
 
 	// Get the current frame information.
@@ -938,7 +931,7 @@ void RomDataViewPrivate::startAnimTimer(void)
 
 	// Set a single-shot timer for the current frame.
 	anim_running = true;
-	ui2.tmrIconAnim->start(delay);
+	tmrIconAnim->start(delay);
 }
 
 /**
@@ -946,9 +939,9 @@ void RomDataViewPrivate::startAnimTimer(void)
  */
 void RomDataViewPrivate::stopAnimTimer(void)
 {
-	if (ui2.tmrIconAnim) {
+	if (tmrIconAnim) {
 		anim_running = false;
-		ui2.tmrIconAnim->stop();
+		tmrIconAnim->stop();
 	}
 }
 
@@ -1087,7 +1080,7 @@ void RomDataView::tmrIconAnim_timeout(void)
 
 	// Set the single-shot timer.
 	if (d->anim_running) {
-		d->ui2.tmrIconAnim->start(delay);
+		d->tmrIconAnim->start(delay);
 	}
 }
 
