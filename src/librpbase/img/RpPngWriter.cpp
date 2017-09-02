@@ -48,6 +48,16 @@
 	png_set_gray_1_2_4_to_8(png_ptr)
 #endif
 
+// PNGCAPI was added in libpng-1.5.0beta14.
+// Older versions will need this.
+#ifndef PNGCAPI
+# ifdef _MSC_VER
+#  define PNGCAPI __cdecl
+# else
+#  define PNGCAPI
+# endif
+#endif /* !PNGCAPI */
+
 // libpng-1.5.0beta42 marked several function parameters as const.
 // Older versions don't have them marked as const, but they're
 // effectively const anyway.

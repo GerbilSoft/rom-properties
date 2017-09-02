@@ -54,6 +54,16 @@ using std::unique_ptr;
 	png_set_gray_1_2_4_to_8(png_ptr)
 #endif
 
+// PNGCAPI was added in libpng-1.5.0beta14.
+// Older versions will need this.
+#ifndef PNGCAPI
+# ifdef _MSC_VER
+#  define PNGCAPI __cdecl
+# else
+#  define PNGCAPI
+# endif
+#endif /* !PNGCAPI */
+
 // pngcheck()
 #include "pngcheck/pngcheck.hpp"
 
