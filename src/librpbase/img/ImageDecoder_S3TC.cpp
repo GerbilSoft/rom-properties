@@ -349,7 +349,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 
 				// Process the 16 color indexes.
 				// NOTE: The tile indexes are stored "backwards" due to
-				// big endian shenanigans.
+				// big-endian shenanigans.
 				uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
 				for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
 					tileBuf[tile][i] = pal[indexes & 3].u32;
@@ -380,7 +380,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 
 				// Process the 16 color indexes.
 				// NOTE: The tile indexes are stored "backwards" due to
-				// big endian shenanigans.
+				// big-endian shenanigans.
 				uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
 				for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
 					unsigned int sel = indexes & 3;
