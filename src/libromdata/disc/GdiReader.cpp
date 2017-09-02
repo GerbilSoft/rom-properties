@@ -279,13 +279,14 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 
 		int trackNumber, blockStart, type, sectorSize;
 		int reserved;
-		char filename[64];	// Filenames shouldn't be that long...
+		char filename[65];	// Filenames shouldn't be that long...
 		int count = sscanf(linetoken, "%d %d %d %d %64s %d",
 			&trackNumber, &blockStart, &type, &sectorSize, filename, &reserved);
 		if (count != 6) {
 			// Invalid line.
 			return -EIO;
 		}
+		filename[sizeof(filename)-1] = 0;
 
 		// Verify fields.
 		// 2097152 blocks == 4 GB if using 2048-byte sectors.
