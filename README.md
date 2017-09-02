@@ -91,7 +91,7 @@ button.
 | Windows/DOS Executables       |       Yes      |        No       |       N/A      |
 | Nintendo Wii U                |       Yes      |        No       |  Disc, Covers  |
 | Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
-| Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       N/A      |
+| Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       No       |
 | Sega PVR Textures             |       Yes      |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |      Image      |       N/A      |
 | Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
