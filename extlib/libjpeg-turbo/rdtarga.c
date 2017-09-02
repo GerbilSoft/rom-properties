@@ -59,7 +59,7 @@ typedef struct _tga_source_struct {
   JDIMENSION current_row;       /* Current logical row number to read */
 
   /* Pointer to routine to extract next Targa pixel from input file */
-  void (*read_pixel) (tga_source_ptr sinfo);
+  void (JPEGCALL *read_pixel) (tga_source_ptr sinfo);
 
   /* Result of read_pixel is delivered here: */
   U_CHAR tga_pixel[4];

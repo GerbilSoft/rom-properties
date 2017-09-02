@@ -203,14 +203,21 @@ typedef unsigned int JDIMENSION;
  * or code profilers that require it.
  */
 
+/* rom-properties: using stdcall for internal functions */
+#ifdef _MSC_VER
+# define JPEGCALL __cdecl
+#else
+# define JPEGCALL
+#endif
+
 /* a function called through method pointers: */
-#define METHODDEF(type)         static type
+#define METHODDEF(type)         static type JPEGCALL
 /* a function used only in its module: */
-#define LOCAL(type)             static type
+#define LOCAL(type)             static type JPEGCALL
 /* a function referenced thru EXTERNs: */
-#define GLOBAL(type)            type
+#define GLOBAL(type)            type JPEGCALL
 /* a reference to a GLOBAL function: */
-#define EXTERN(type)            extern type
+#define EXTERN(type)            extern type JPEGCALL
 
 
 /* Originally, this macro was used as a way of defining function prototypes
@@ -220,7 +227,7 @@ typedef unsigned int JDIMENSION;
  * software out there that uses it.
  */
 
-#define JMETHOD(type,methodname,arglist)  type (*methodname) arglist
+#define JMETHOD(type,methodname,arglist)  type (*methodname) JPEGCALL arglist
 
 
 /* libjpeg-turbo no longer supports platforms that have far symbols (MS-DOS),

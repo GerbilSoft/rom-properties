@@ -128,7 +128,7 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                        JDIMENSION output_row, int num_rows)
 {
-  void (*sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+  void (JPEGCALL *sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
 
   switch(cinfo->in_color_space) {
     case JCS_EXT_RGB:
@@ -166,7 +166,7 @@ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
                         JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
                         JDIMENSION output_row, int num_rows)
 {
-  void (*sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+  void (JPEGCALL *sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
 
   switch(cinfo->in_color_space) {
     case JCS_EXT_RGB:
@@ -204,7 +204,7 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
                        JSAMPIMAGE input_buf, JDIMENSION input_row,
                        JSAMPARRAY output_buf, int num_rows)
 {
-  void (*sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY, int);
+  void (JPEGCALL *sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY, int);
 
   switch(cinfo->out_color_space) {
     case JCS_EXT_RGB:
@@ -450,7 +450,7 @@ jsimd_h2v2_merged_upsample (j_decompress_ptr cinfo,
                             JDIMENSION in_row_group_ctr,
                             JSAMPARRAY output_buf)
 {
-  void (*sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
+  void (JPEGCALL *sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
 
   switch(cinfo->out_color_space) {
     case JCS_EXT_RGB:
@@ -489,7 +489,7 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
                             JDIMENSION in_row_group_ctr,
                             JSAMPARRAY output_buf)
 {
-  void (*sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
+  void (JPEGCALL *sse2fct)(JDIMENSION, JSAMPIMAGE, JDIMENSION, JSAMPARRAY);
 
   switch(cinfo->out_color_space) {
     case JCS_EXT_RGB:

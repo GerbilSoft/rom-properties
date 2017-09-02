@@ -121,13 +121,13 @@ typedef struct backing_store_struct *backing_store_ptr;
 
 typedef struct backing_store_struct {
   /* Methods for reading/writing/closing this backing-store object */
-  void (*read_backing_store) (j_common_ptr cinfo, backing_store_ptr info,
+  void (JPEGCALL *read_backing_store) (j_common_ptr cinfo, backing_store_ptr info,
                               void *buffer_address, long file_offset,
                               long byte_count);
-  void (*write_backing_store) (j_common_ptr cinfo, backing_store_ptr info,
+  void (JPEGCALL *write_backing_store) (j_common_ptr cinfo, backing_store_ptr info,
                                void *buffer_address, long file_offset,
                                long byte_count);
-  void (*close_backing_store) (j_common_ptr cinfo, backing_store_ptr info);
+  void (JPEGCALL *close_backing_store) (j_common_ptr cinfo, backing_store_ptr info);
 
   /* Private fields for system-dependent backing-store management */
 #ifdef USE_MSDOS_MEMMGR

@@ -57,7 +57,7 @@
 
 
 /* Pointer to routine to downsample a single component */
-typedef void (*downsample1_ptr) (j_compress_ptr cinfo,
+typedef void (JPEGCALL *downsample1_ptr) (j_compress_ptr cinfo,
                                  jpeg_component_info *compptr,
                                  JSAMPARRAY input_data,
                                  JSAMPARRAY output_data);

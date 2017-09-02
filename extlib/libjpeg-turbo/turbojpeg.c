@@ -59,7 +59,7 @@ struct my_error_mgr
 {
 	struct jpeg_error_mgr pub;
 	jmp_buf setjmp_buffer;
-	void (*emit_message)(j_common_ptr, int);
+	void (JPEGCALL *emit_message)(j_common_ptr, int);
 	boolean warning;
 };
 typedef struct my_error_mgr *my_error_ptr;
@@ -1566,8 +1566,8 @@ DLLEXPORT int DLLCALL tjDecodeYUVPlanes(tjhandle handle,
 	unsigned char *rgbBuf=NULL;
 	unsigned char *_dstBuf=NULL;  int _pitch=0;
 	#endif
-	int (*old_read_markers)(j_decompress_ptr);
-	void (*old_reset_marker_reader)(j_decompress_ptr);
+	int (JPEGCALL *old_read_markers)(j_decompress_ptr);
+	void (JPEGCALL *old_reset_marker_reader)(j_decompress_ptr);
 
 	getdinstance(handle);
 
