@@ -67,7 +67,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL2(jdiv_round_up, 0, 1);
  * error_exit replacement for JPEG.
  * @param cinfo j_common_ptr
  */
-void RpJpegPrivate::my_error_exit(j_common_ptr cinfo)
+void JPEGCALL RpJpegPrivate::my_error_exit(j_common_ptr cinfo)
 {
 	// Based on libjpeg-turbo 1.5.1's read_JPEG_file(). (example.c)
 	my_error_mgr *myerr = reinterpret_cast<my_error_mgr*>(cinfo->err);
@@ -86,7 +86,7 @@ void RpJpegPrivate::my_error_exit(j_common_ptr cinfo)
  * output_message replacement for JPEG.
  * @param cinfo j_common_ptr
  */
-void RpJpegPrivate::my_output_message(j_common_ptr cinfo)
+void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
 {
 	// Format the string.
 	char buffer[JMSG_LENGTH_MAX];
@@ -110,7 +110,7 @@ void RpJpegPrivate::my_output_message(j_common_ptr cinfo)
  * Initialize MySourceMgr.
  * @param cinfo j_decompress_ptr
  */
-void RpJpegPrivate::init_source(j_decompress_ptr cinfo)
+void JPEGCALL RpJpegPrivate::init_source(j_decompress_ptr cinfo)
 {
 	MySourceMgr *const src = reinterpret_cast<MySourceMgr*>(cinfo->src);
 
@@ -125,7 +125,7 @@ void RpJpegPrivate::init_source(j_decompress_ptr cinfo)
  * @param cinfo j_decompress_ptr
  * @return TRUE on success. (NOTE: 'boolean' is a JPEG typedef.)
  */
-boolean RpJpegPrivate::fill_input_buffer(j_decompress_ptr cinfo)
+boolean JPEGCALL RpJpegPrivate::fill_input_buffer(j_decompress_ptr cinfo)
 {
 	MySourceMgr *const src = reinterpret_cast<MySourceMgr*>(cinfo->src);
 	size_t nbytes;
@@ -156,7 +156,7 @@ boolean RpJpegPrivate::fill_input_buffer(j_decompress_ptr cinfo)
  * @param cinfo j_decompress_ptr
  * @param num_bytes Number of bytes to skip.
  */
-void RpJpegPrivate::skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+void JPEGCALL RpJpegPrivate::skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
 	jpeg_source_mgr *const src = cinfo->src;
 
@@ -184,7 +184,7 @@ void RpJpegPrivate::skip_input_data(j_decompress_ptr cinfo, long num_bytes)
  *
  * @param cinfo j_decompress_ptr
  */
-void RpJpegPrivate::term_source(j_decompress_ptr cinfo)
+void JPEGCALL RpJpegPrivate::term_source(j_decompress_ptr cinfo)
 {
 	// Nothing to do here...
 	RP_UNUSED(cinfo);

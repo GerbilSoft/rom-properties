@@ -52,7 +52,7 @@ typedef struct {
   struct jpeg_upsampler pub;    /* public fields */
 
   /* Pointer to routine to do actual upsampling/conversion of one row group */
-  void (*upmethod) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
+  void (JPEGCALL *upmethod) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                     JDIMENSION in_row_group_ctr, JSAMPARRAY output_buf);
 
   /* Private state for YCC->RGB conversion */

@@ -28,6 +28,9 @@
 // load() mutex.
 #include "../threads/Mutex.hpp"
 
+// INI parser.
+#include "ini.h"
+
 namespace LibRpBase {
 
 class ConfReader;
@@ -73,7 +76,7 @@ class ConfReaderPrivate
 		 * @param value Value.
 		 * @return 1 on success; 0 on error.
 		 */
-		static int processConfigLine_static(void *user,
+		static int INIHCALL processConfigLine_static(void *user,
 			const char *section, const char *name, const char *value);
 
 		/**

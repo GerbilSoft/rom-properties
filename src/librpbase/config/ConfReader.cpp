@@ -28,9 +28,6 @@
 // Text conversion functions and macros.
 #include "TextFuncs.hpp"
 
-// INI parser.
-#include "ini.h"
-
 // C includes.
 #include <stdlib.h>
 

@@ -58,7 +58,7 @@ class NintendoPublishers
 		 * @param b
 		 * @return
 		 */
-		static int compar(const void *a, const void *b);
+		static int RP_C_API compar(const void *a, const void *b);
 
 	public:
 		/**

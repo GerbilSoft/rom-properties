@@ -441,7 +441,7 @@ const NintendoPublishers::ThirdPartyList NintendoPublishers::ms_thirdPartyList[]
  * @param b
  * @return
  */
-int NintendoPublishers::compar(const void *a, const void *b)
+int RP_C_API NintendoPublishers::compar(const void *a, const void *b)
 {
 	uint16_t code1 = static_cast<const ThirdPartyList*>(a)->code;
 	uint16_t code2 = static_cast<const ThirdPartyList*>(b)->code;

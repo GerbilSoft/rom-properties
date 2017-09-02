@@ -40,7 +40,7 @@ using namespace LibRomData;
 #include "bmp.hpp"
 #include "properties.hpp"
 #ifdef ENABLE_DECRYPTION
-#include "verifykeys.hpp"
+# include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes.
@@ -205,7 +205,7 @@ static void PrintSystemRegion(void)
 	cout << endl;
 }
 
-int main(int argc, char *argv[])
+int RP_C_API main(int argc, char *argv[])
 {
 	// Set the C and C++ locales.
 	locale::global(locale(""));

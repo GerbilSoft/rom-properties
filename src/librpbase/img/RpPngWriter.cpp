@@ -48,6 +48,16 @@
 	png_set_gray_1_2_4_to_8(png_ptr)
 #endif
 
+// PNGCAPI was added in libpng-1.5.0beta14.
+// Older versions will need this.
+#ifndef PNGCAPI
+# ifdef _MSC_VER
+#  define PNGCAPI __cdecl
+# else
+#  define PNGCAPI
+# endif
+#endif /* !PNGCAPI */
+
 // libpng-1.5.0beta42 marked several function parameters as const.
 // Older versions don't have them marked as const, but they're
 // effectively const anyway.
@@ -230,13 +240,13 @@ class RpPngWriterPrivate
 		 * @param data		[in] Data to write.
 		 * @param length	[in] Size of data.
 		 */
-		static void png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
+		static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
 
 		/**
 		 * libpng I/O flush handler for IRpFile.
 		 * @param png_ptr	[in] PNG pointer.
 		 */
-		static void png_io_IRpFile_flush(png_structp png_ptr);
+		static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr);
 
 	public:
 		/** Internal functions. **/
@@ -605,7 +615,7 @@ void RpPngWriterPrivate::close(void)
  * @param data		[in] Data to write.
  * @param length	[in] Size of data.
  */
-void RpPngWriterPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
+void PNGCAPI RpPngWriterPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
@@ -621,7 +631,7 @@ void RpPngWriterPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep dat
  * libpng I/O flush handler for IRpFile.
  * @param png_ptr	[in] PNG pointer.
  */
-void RpPngWriterPrivate::png_io_IRpFile_flush(png_structp png_ptr)
+void PNGCAPI RpPngWriterPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));

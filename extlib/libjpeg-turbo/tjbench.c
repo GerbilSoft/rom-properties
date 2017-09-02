@@ -63,7 +63,7 @@ const char *csName[TJ_NUMCS]=
 const char *subName[TJ_NUMSAMP]={"444", "422", "420", "GRAY", "440", "411"};
 tjscalingfactor *scalingfactors=NULL, sf={1, 1};  int nsf=0;
 int xformop=TJXOP_NONE, xformopt=0;
-int (*customFilter)(short *, tjregion, tjregion, int, int, tjtransform *);
+int (JPEGCALL *customFilter)(short *, tjregion, tjregion, int, int, tjtransform *);
 double benchtime=5.0, warmup=1.0;
 
 

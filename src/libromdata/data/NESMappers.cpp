@@ -95,7 +95,7 @@ class NESMappersPrivate
 		 * @param b
 		 * @return
 		 */
-		static int SubmapperInfo_compar(const void *a, const void *b);
+		static int RP_C_API SubmapperInfo_compar(const void *a, const void *b);
 
 		/**
 		 * bsearch() comparison function for SubmapperEntry.
@@ -103,7 +103,7 @@ class NESMappersPrivate
 		 * @param b
 		 * @return
 		 */
-		static int SubmapperEntry_compar(const void *a, const void *b);
+		static int RP_C_API SubmapperEntry_compar(const void *a, const void *b);
 };
 
 /**
@@ -520,7 +520,7 @@ const NESMappersPrivate::SubmapperEntry NESMappersPrivate::submappers[] = {
  * @param b
  * @return
  */
-int NESMappersPrivate::SubmapperInfo_compar(const void *a, const void *b)
+int RP_C_API NESMappersPrivate::SubmapperInfo_compar(const void *a, const void *b)
 {
 	uint8_t submapper1 = static_cast<const SubmapperInfo*>(a)->submapper;
 	uint8_t submapper2 = static_cast<const SubmapperInfo*>(b)->submapper;
@@ -535,7 +535,7 @@ int NESMappersPrivate::SubmapperInfo_compar(const void *a, const void *b)
  * @param b
  * @return
  */
-int NESMappersPrivate::SubmapperEntry_compar(const void *a, const void *b)
+int RP_C_API NESMappersPrivate::SubmapperEntry_compar(const void *a, const void *b)
 {
 	uint16_t mapper1 = static_cast<const SubmapperEntry*>(a)->mapper;
 	uint16_t mapper2 = static_cast<const SubmapperEntry*>(b)->mapper;

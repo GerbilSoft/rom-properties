@@ -719,16 +719,16 @@ struct jpeg_decompress_struct {
 
 struct jpeg_error_mgr {
   /* Error exit handler: does not return to caller */
-  void (*error_exit) (j_common_ptr cinfo);
+  void (JPEGCALL *error_exit) (j_common_ptr cinfo);
   /* Conditionally emit a trace or warning message */
-  void (*emit_message) (j_common_ptr cinfo, int msg_level);
+  void (JPEGCALL *emit_message) (j_common_ptr cinfo, int msg_level);
   /* Routine that actually outputs a trace or error message */
-  void (*output_message) (j_common_ptr cinfo);
+  void (JPEGCALL *output_message) (j_common_ptr cinfo);
   /* Format a message string for the most recent JPEG error or message */
-  void (*format_message) (j_common_ptr cinfo, char *buffer);
+  void (JPEGCALL *format_message) (j_common_ptr cinfo, char *buffer);
 #define JMSG_LENGTH_MAX  200    /* recommended size of format_message buffer */
   /* Reset error state variables at start of a new image */
-  void (*reset_error_mgr) (j_common_ptr cinfo);
+  void (JPEGCALL *reset_error_mgr) (j_common_ptr cinfo);
 
   /* The message ID code and any parameters are saved here.
    * A message can have one string parameter or up to 8 int parameters.
@@ -776,7 +776,7 @@ struct jpeg_error_mgr {
 /* Progress monitor object */
 
 struct jpeg_progress_mgr {
-  void (*progress_monitor) (j_common_ptr cinfo);
+  void (JPEGCALL *progress_monitor) (j_common_ptr cinfo);
 
   long pass_counter;            /* work units completed in this pass */
   long pass_limit;              /* total number of work units in this pass */
@@ -791,9 +791,9 @@ struct jpeg_destination_mgr {
   JOCTET *next_output_byte;     /* => next byte to write in buffer */
   size_t free_in_buffer;        /* # of byte spaces remaining in buffer */
 
-  void (*init_destination) (j_compress_ptr cinfo);
-  boolean (*empty_output_buffer) (j_compress_ptr cinfo);
-  void (*term_destination) (j_compress_ptr cinfo);
+  void (JPEGCALL *init_destination) (j_compress_ptr cinfo);
+  boolean (JPEGCALL *empty_output_buffer) (j_compress_ptr cinfo);
+  void (JPEGCALL *term_destination) (j_compress_ptr cinfo);
 };
 
 
@@ -803,11 +803,11 @@ struct jpeg_source_mgr {
   const JOCTET *next_input_byte; /* => next byte to read from buffer */
   size_t bytes_in_buffer;       /* # of bytes remaining in buffer */
 
-  void (*init_source) (j_decompress_ptr cinfo);
-  boolean (*fill_input_buffer) (j_decompress_ptr cinfo);
-  void (*skip_input_data) (j_decompress_ptr cinfo, long num_bytes);
-  boolean (*resync_to_restart) (j_decompress_ptr cinfo, int desired);
-  void (*term_source) (j_decompress_ptr cinfo);
+  void (JPEGCALL *init_source) (j_decompress_ptr cinfo);
+  boolean (JPEGCALL *fill_input_buffer) (j_decompress_ptr cinfo);
+  void (JPEGCALL *skip_input_data) (j_decompress_ptr cinfo, long num_bytes);
+  boolean (JPEGCALL *resync_to_restart) (j_decompress_ptr cinfo, int desired);
+  void (JPEGCALL *term_source) (j_decompress_ptr cinfo);
 };
 
 
@@ -832,32 +832,32 @@ typedef struct jvirt_barray_control *jvirt_barray_ptr;
 
 struct jpeg_memory_mgr {
   /* Method pointers */
-  void *(*alloc_small) (j_common_ptr cinfo, int pool_id, size_t sizeofobject);
-  void *(*alloc_large) (j_common_ptr cinfo, int pool_id,
+  void *(JPEGCALL *alloc_small) (j_common_ptr cinfo, int pool_id, size_t sizeofobject);
+  void *(JPEGCALL *alloc_large) (j_common_ptr cinfo, int pool_id,
                         size_t sizeofobject);
-  JSAMPARRAY (*alloc_sarray) (j_common_ptr cinfo, int pool_id,
+  JSAMPARRAY (JPEGCALL *alloc_sarray) (j_common_ptr cinfo, int pool_id,
                               JDIMENSION samplesperrow, JDIMENSION numrows);
-  JBLOCKARRAY (*alloc_barray) (j_common_ptr cinfo, int pool_id,
+  JBLOCKARRAY (JPEGCALL *alloc_barray) (j_common_ptr cinfo, int pool_id,
                                JDIMENSION blocksperrow, JDIMENSION numrows);
-  jvirt_sarray_ptr (*request_virt_sarray) (j_common_ptr cinfo, int pool_id,
+  jvirt_sarray_ptr (JPEGCALL *request_virt_sarray) (j_common_ptr cinfo, int pool_id,
                                            boolean pre_zero,
                                            JDIMENSION samplesperrow,
                                            JDIMENSION numrows,
                                            JDIMENSION maxaccess);
-  jvirt_barray_ptr (*request_virt_barray) (j_common_ptr cinfo, int pool_id,
+  jvirt_barray_ptr (JPEGCALL *request_virt_barray) (j_common_ptr cinfo, int pool_id,
                                            boolean pre_zero,
                                            JDIMENSION blocksperrow,
                                            JDIMENSION numrows,
                                            JDIMENSION maxaccess);
-  void (*realize_virt_arrays) (j_common_ptr cinfo);
-  JSAMPARRAY (*access_virt_sarray) (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
+  void (JPEGCALL *realize_virt_arrays) (j_common_ptr cinfo);
+  JSAMPARRAY (JPEGCALL *access_virt_sarray) (j_common_ptr cinfo, jvirt_sarray_ptr ptr,
                                     JDIMENSION start_row, JDIMENSION num_rows,
                                     boolean writable);
-  JBLOCKARRAY (*access_virt_barray) (j_common_ptr cinfo, jvirt_barray_ptr ptr,
+  JBLOCKARRAY (JPEGCALL *access_virt_barray) (j_common_ptr cinfo, jvirt_barray_ptr ptr,
                                      JDIMENSION start_row, JDIMENSION num_rows,
                                      boolean writable);
-  void (*free_pool) (j_common_ptr cinfo, int pool_id);
-  void (*self_destruct) (j_common_ptr cinfo);
+  void (JPEGCALL *free_pool) (j_common_ptr cinfo, int pool_id);
+  void (JPEGCALL *self_destruct) (j_common_ptr cinfo);
 
   /* Limit on memory allocation for this JPEG object.  (Note that this is
    * merely advisory, not a guaranteed maximum; it only affects the space
@@ -874,7 +874,7 @@ struct jpeg_memory_mgr {
 /* Routine signature for application-supplied marker processing methods.
  * Need not pass marker code since it is stored in cinfo->unread_marker.
  */
-typedef boolean (*jpeg_marker_parser_method) (j_decompress_ptr cinfo);
+typedef boolean (JPEGCALL *jpeg_marker_parser_method) (j_decompress_ptr cinfo);
 
 
 /* Originally, this macro was used as a way of defining function prototypes

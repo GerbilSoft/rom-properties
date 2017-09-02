@@ -48,7 +48,7 @@ class EXEDataPrivate {
 		 * @param b
 		 * @return
 		 */
-		static int MachineType_compar(const void *a, const void *b);
+		static int RP_C_API MachineType_compar(const void *a, const void *b);
 };
 
 // PE machine types.
@@ -110,7 +110,7 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_LE[] = {
  * @param b
  * @return
  */
-int EXEDataPrivate::MachineType_compar(const void *a, const void *b)
+int RP_C_API EXEDataPrivate::MachineType_compar(const void *a, const void *b)
 {
 	const uint16_t cpu1 = static_cast<const MachineType*>(a)->cpu;
 	const uint16_t cpu2 = static_cast<const MachineType*>(b)->cpu;

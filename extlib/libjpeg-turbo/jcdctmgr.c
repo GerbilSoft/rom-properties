@@ -25,19 +25,19 @@
 
 /* Private subobject for this module */
 
-typedef void (*forward_DCT_method_ptr) (DCTELEM *data);
-typedef void (*float_DCT_method_ptr) (FAST_FLOAT *data);
+typedef void (JPEGCALL *forward_DCT_method_ptr) (DCTELEM *data);
+typedef void (JPEGCALL *float_DCT_method_ptr) (FAST_FLOAT *data);
 
-typedef void (*convsamp_method_ptr) (JSAMPARRAY sample_data,
+typedef void (JPEGCALL *convsamp_method_ptr) (JSAMPARRAY sample_data,
                                      JDIMENSION start_col,
                                      DCTELEM *workspace);
-typedef void (*float_convsamp_method_ptr) (JSAMPARRAY sample_data,
+typedef void (JPEGCALL *float_convsamp_method_ptr) (JSAMPARRAY sample_data,
                                            JDIMENSION start_col,
                                            FAST_FLOAT *workspace);
 
-typedef void (*quantize_method_ptr) (JCOEFPTR coef_block, DCTELEM *divisors,
+typedef void (JPEGCALL *quantize_method_ptr) (JCOEFPTR coef_block, DCTELEM *divisors,
                                      DCTELEM *workspace);
-typedef void (*float_quantize_method_ptr) (JCOEFPTR coef_block,
+typedef void (JPEGCALL *float_quantize_method_ptr) (JCOEFPTR coef_block,
                                            FAST_FLOAT *divisors,
                                            FAST_FLOAT *workspace);
 

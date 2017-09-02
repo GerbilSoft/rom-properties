@@ -25,9 +25,17 @@
 // C includes.
 #include <stdlib.h>
 
+// C API declaration for MSVC.
+// Required when using stdcall as the default calling convention.
+#ifdef _MSC_VER
+# define RP_C_API __cdecl
+#else
+# define RP_C_API
+#endif
+
 // TODO: envp[]?
-extern int main(int argc, char *argv[]);
-int wmain(int argc, wchar_t *argv[])
+extern int RP_C_API main(int argc, char *argv[]);
+int RP_C_API wmain(int argc, wchar_t *argv[])
 {
 	char **u8argv;
 	int i, ret;
