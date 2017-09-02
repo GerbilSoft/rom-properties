@@ -50,6 +50,13 @@ ENDFOREACH()
 SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4996 /w34996")
 SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /wd4996 /w34996")
 
+# MSVC 2015 uses thread-safe statics by default.
+# This doesn't work on XP, so disable it.
+IF(MSVC_VERSION GREATER 1899)
+	SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Zc:threadSafeInit-")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:threadSafeInit-")
+ENDIF()
+
 # Disable the RC and MASM "logo".
 # FIXME: Setting CMAKE_RC_FLAGS causes msbuild to fail,
 # since CMake already sets /NOLOGO there.
