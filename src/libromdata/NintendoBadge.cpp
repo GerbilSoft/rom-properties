@@ -676,27 +676,27 @@ int NintendoBadge::loadFieldData(void)
 					rp_sprintf("%08X-%08X",
 						le32_to_cpu(prbs->title_id.hi),
 						le32_to_cpu(prbs->title_id.lo)));
-			}
 
-			// Check if this is a known system title.
-			const rp_char *region = nullptr;
-			const rp_char *title = Nintendo3DSSysTitles::lookup_sys_title(
-				le32_to_cpu(prbs->title_id.hi),
-				le32_to_cpu(prbs->title_id.lo), &region);
-			if (title) {
-				rp_string str = title;
-				if (le32_to_cpu(prbs->title_id.lo) & 0x20000000) {
-					// New3DS-specific.
-					str += _RP(" (New3DS)");
-				}
-				if (region) {
-					// Region code.
-					str += _RP(" (");
-					str += region;
-					str += _RP_CHR(')');
-				}
+				// Check if this is a known system title.
+				const rp_char *region = nullptr;
+				const rp_char *title = Nintendo3DSSysTitles::lookup_sys_title(
+					le32_to_cpu(prbs->title_id.hi),
+					le32_to_cpu(prbs->title_id.lo), &region);
+				if (title) {
+					rp_string str = title;
+					if (le32_to_cpu(prbs->title_id.lo) & 0x20000000) {
+						// New3DS-specific.
+						str += _RP(" (New3DS)");
+					}
+					if (region) {
+						// Region code.
+						str += _RP(" (");
+						str += region;
+						str += _RP_CHR(')');
+					}
 
-				d->fields->addField_string(_RP("Launch Title Name"), str);
+					d->fields->addField_string(_RP("Launch Title Name"), str);
+				}
 			}
 			break;
 		}
