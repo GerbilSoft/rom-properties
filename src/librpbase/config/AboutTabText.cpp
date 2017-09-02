@@ -24,22 +24,24 @@
 
 namespace LibRpBase {
 
-// FIXME: Change to rp_char[]. (MSVC 2010 issue)
+// NOTE: Can't use rp_char here due to MSVC 2010 issues.
+// These strings will have to be converted to rp_char at runtime.
+// These are UTF-8 strings.
 
 // Program version string.
-const rp_char *const AboutTabText::prg_version = _RP(RP_VERSION_STRING);
+const char AboutTabText::prg_version[] = RP_VERSION_STRING;
 
 // git versions.
 #ifdef RP_GIT_VERSION
-const rp_char *const AboutTabText::git_version = _RP(RP_GIT_VERSION);
+const char AboutTabText::git_version[] = RP_GIT_VERSION;
 # ifdef RP_GIT_DESCRIBE
-const rp_char *const AboutTabText::git_describe = _RP(RP_GIT_DESCRIBE);
+const char AboutTabText::git_describe[] = RP_GIT_DESCRIBE;
 # else
-const rp_char *const AboutTabText::git_describe = nullptr;
+const char AboutTabText::git_describe[] = "";
 # endif
 #else
-const rp_char *const AboutTabText::git_version = nullptr;
-const rp_char *const AboutTabText::git_describe = nullptr;
+const char AboutTabText::git_version[] = "";
+const char AboutTabText::git_describe[] = "";
 #endif
 
 /** Credits **/

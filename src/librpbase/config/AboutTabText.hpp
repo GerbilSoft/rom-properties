@@ -34,13 +34,17 @@ class AboutTabText {
 		RP_DISABLE_COPY(AboutTabText);
 
 	public:
+		// NOTE: Can't use rp_char here due to MSVC 2010 issues.
+		// These strings will have to be converted to rp_char at runtime.
+		// These are UTF-8 strings.
+
 		// Program version string.
-		static const rp_char *const prg_version;
+		static const char prg_version[];
 
 		// git version, or empty string if git was not present.
-		static const rp_char *const git_version;
+		static const char git_version[];
 		// git description, or empty string if git was not present.
-		static const rp_char *const git_describe;
+		static const char git_describe[];
 
 	public:
 		/** Credits **/

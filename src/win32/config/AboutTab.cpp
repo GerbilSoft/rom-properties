@@ -482,13 +482,13 @@ void AboutTabPrivate::initProgramTitleText(void)
 	wstring s_version;
 	s_version.reserve(128);
 	s_version= L"Version ";
-	s_version += RP2W_c(AboutTabText::prg_version);
-	if (AboutTabText::git_version) {
+	s_version += RP2W_c(U82RP_c(AboutTabText::prg_version));
+	if (AboutTabText::git_version[0] != 0) {
 		s_version += L"\r\n";
-		s_version += RP2W_c(AboutTabText::git_version);
-		if (AboutTabText::git_describe) {
+		s_version += RP2W_c(U82RP_c(AboutTabText::git_version));
+		if (AboutTabText::git_describe[0] != 0) {
 			s_version += L"\r\n";
-			s_version += RP2W_c(AboutTabText::git_describe);
+			s_version += RP2W_c(U82RP_c(AboutTabText::git_describe));
 		}
 	}
 	SetWindowText(hStaticVersion, s_version.c_str());
