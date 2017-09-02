@@ -30,6 +30,15 @@
 #include <jerror.h>
 #include <setjmp.h>
 
+// JPEGCALL might not be defined if we're using the system libjpeg.
+#ifndef JPEGCALL
+# ifdef _MSC_VER
+#  define JPEGCALL __cdecl
+# else
+#  define JPEGCALL
+# endif
+#endif /* !JPEGCALL */
+
 #if defined(__i386__) || defined(__x86_64__) || \
     defined(_M_IX86) || defined(_M_X64)
 # define RPJPEG_HAS_SSSE3 1
