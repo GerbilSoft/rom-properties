@@ -10,7 +10,7 @@ if(POLICY CMP0022)
 endif()
 
 project(libjpeg-turbo C)
-set(VERSION 1.5.1)
+set(VERSION 1.5.2)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -54,7 +54,9 @@ message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 
 # rom-properties: Replace ${CMAKE_SOURCE_DIR} with ${TOPSRCDIR},
 # since libjpeg-turbo isn't the base project.
+# Likewise for ${CMAKE_BINARY_DIR} and ${TOPBINDIR}.
 SET(TOPSRCDIR ${CMAKE_CURRENT_SOURCE_DIR})
+SET(TOPBINDIR ${CMAKE_CURRENT_BINARY_DIR})
 
 # rom-properties: Set the CMake debug postfix.
 SET(CMAKE_DEBUG_POSTFIX "d")
@@ -415,8 +417,20 @@ if(WITH_12BIT)
   set(MD5_PPM_GRAY_ISLOW 7213c10af507ad467da5578ca5ee1fca)
   set(MD5_PPM_GRAY_ISLOW_RGB e96ee81c30a6ed422d466338bd3de65d)
   set(MD5_JPEG_420S_IFAST_OPT 7af8e60be4d9c227ec63ac9b6630855e)
-  set(MD5_JPEG_3x2_FLOAT_PROG a8c17daf77b457725ec929e215b603f8)
-  set(MD5_PPM_3x2_FLOAT 42876ab9e5c2f76a87d08db5fbd57956)
+  if(64BIT)
+    # Windows/x64 uses SSE for floating point
+    set(MD5_JPEG_3x2_FLOAT_PROG a8c17daf77b457725ec929e215b603f8)
+    set(MD5_PPM_3x2_FLOAT 42876ab9e5c2f76a87d08db5fbd57956)
+  else()
+    # Windows/x86 uses the 387 FPU for floating point
+    if(MSVC)
+      set(MD5_JPEG_3x2_FLOAT_PROG e27840755870fa849872e58aa0cd1400)
+      set(MD5_PPM_3x2_FLOAT 6c2880b83bb1aa41dfe330e7a9768690)
+    else()
+      set(MD5_JPEG_3x2_FLOAT_PROG bc6dbbefac2872f6b9d6c4a0ae60c3c0)
+      set(MD5_PPM_3x2_FLOAT f58119ee294198ac9b4a9f5645a34266)
+    endif()
+  endif()
   set(MD5_PPM_420M_ISLOW_2_1 4ca6be2a6f326ff9eaab63e70a8259c0)
   set(MD5_PPM_420M_ISLOW_15_8 12aa9f9534c1b3d7ba047322226365eb)
   set(MD5_PPM_420M_ISLOW_13_8 f7e22817c7b25e1393e4ec101e9d4e96)
@@ -458,8 +472,18 @@ else()
     set(MD5_JPEG_3x2_FLOAT_PROG 343e3f8caf8af5986ebaf0bdc13b5c71)
     set(MD5_PPM_3x2_FLOAT 1a75f36e5904d6fc3a85a43da9ad89bb)
   else()
-    set(MD5_JPEG_3x2_FLOAT_PROG 9bca803d2042bd1eb03819e2bf92b3e5)
-    set(MD5_PPM_3x2_FLOAT f6bfab038438ed8f5522fbd33595dcdc)
+    if(64BIT)
+      set(MD5_JPEG_3x2_FLOAT_PROG 9bca803d2042bd1eb03819e2bf92b3e5)
+      set(MD5_PPM_3x2_FLOAT f6bfab038438ed8f5522fbd33595dcdc)
+    else()
+      if(MSVC)
+        set(MD5_JPEG_3x2_FLOAT_PROG 7999ce9cd0ee9b6c7043b7351ab7639d)
+        set(MD5_PPM_3x2_FLOAT 28cdc448a6b75e97892f0e0f8d4b21f3)
+      else()
+        set(MD5_JPEG_3x2_FLOAT_PROG 1657664a410e0822c924b54f6f65e6e9)
+        set(MD5_PPM_3x2_FLOAT cb0a1f027f3d2917c902b5640214e025)
+      endif()
+    endif()
   endif()
   set(MD5_JPEG_420_ISLOW_ARI e986fb0a637a8d833d96e8a6d6d84ea1)
   set(MD5_JPEG_444_ISLOW_PROGARI 0a8f1c8f66e113c3cf635df0a475a617)
@@ -892,7 +916,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
 endforeach()
 
-add_custom_target(testclean COMMAND ${MD5CMP} -P
+add_custom_target(testclean COMMAND ${CMAKE_COMMAND} -P
   ${CMAKE_SOURCE_DIR}/cmakescripts/testclean.cmake)
 
 ENDIF(0) # rom-properties
@@ -982,7 +1006,12 @@ install(FILES ${TOPSRCDIR}/README.ijg ${TOPSRCDIR}/README.md
   ${TOPSRCDIR}/wizard.txt
   DESTINATION doc)
 
-install(FILES ${CMAKE_BINARY_DIR}/jconfig.h ${TOPSRCDIR}/jerror.h
+install(FILES ${TOPBINDIR}/jconfig.h ${TOPSRCDIR}/jerror.h
   ${TOPSRCDIR}/jmorecfg.h ${TOPSRCDIR}/jpeglib.h
   DESTINATION include)
+
+configure_file("${CMAKE_SOURCE_DIR}/cmakescripts/cmake_uninstall.cmake.in"
+  "cmake_uninstall.cmake" IMMEDIATE @ONLY)
+
+add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P cmake_uninstall.cmake)
 ENDIF(0) # rom-properties
