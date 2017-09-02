@@ -349,6 +349,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	: q_ptr(q)
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
+	, hFontDlg(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 	, bPrevIsClearType(nullptr)
