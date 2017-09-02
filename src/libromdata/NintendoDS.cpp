@@ -922,6 +922,7 @@ std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageT
 			return vector<ImageSizeDef>(sz_INT_ICON,
 				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
 		}
+#ifdef HAVE_JPEG
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
 				{nullptr, 160, 144, 0},
@@ -942,6 +943,7 @@ std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageT
 			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
 				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
 		}
+#endif /* HAVE_JPEG */
 		case IMG_EXT_BOX: {
 			static const ImageSizeDef sz_EXT_BOX[] = {
 				{nullptr, 240, 216, 0},
