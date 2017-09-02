@@ -1,7 +1,7 @@
 
 /* png.h - header file for PNG reference library
  *
- * libpng version 1.6.31, July 27, 2017
+ * libpng version 1.6.32, August 24, 2017
  *
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
@@ -12,7 +12,7 @@
  * Authors and maintainers:
  *   libpng versions 0.71, May 1995, through 0.88, January 1996: Guy Schalnat
  *   libpng versions 0.89, June 1996, through 0.96, May 1997: Andreas Dilger
- *   libpng versions 0.97, January 1998, through 1.6.31, July 27, 2017:
+ *   libpng versions 0.97, January 1998, through 1.6.32, August 24, 2017:
  *     Glenn Randers-Pehrson.
  *   See also "Contributing Authors", below.
  */
@@ -25,7 +25,7 @@
  *
  * This code is released under the libpng license.
  *
- * libpng versions 1.0.7, July 1, 2000 through 1.6.31, July 27, 2017 are
+ * libpng versions 1.0.7, July 1, 2000 through 1.6.32, August 24, 2017 are
  * Copyright (c) 2000-2002, 2004, 2006-2017 Glenn Randers-Pehrson, are
  * derived from libpng-1.0.6, and are distributed according to the same
  * disclaimer and license as libpng-1.0.6 with the following individuals
@@ -213,7 +213,7 @@
  *    ...
  *    1.5.28                  15    10527  15.so.15.28[.0]
  *    ...
- *    1.6.31                  16    10631  16.so.16.31[.0]
+ *    1.6.32                  16    10632  16.so.16.32[.0]
  *
  *    Henceforth the source version will match the shared-library major
  *    and minor numbers; the shared-library major version number will be
@@ -241,13 +241,13 @@
  * Y2K compliance in libpng:
  * =========================
  *
- *    July 27, 2017
+ *    August 24, 2017
  *
  *    Since the PNG Development group is an ad-hoc body, we can't make
  *    an official declaration.
  *
  *    This is your unofficial assurance that libpng from version 0.71 and
- *    upward through 1.6.31 are Y2K compliant.  It is my belief that
+ *    upward through 1.6.32 are Y2K compliant.  It is my belief that
  *    earlier versions were also Y2K compliant.
  *
  *    Libpng only has two year fields.  One is a 2-byte unsigned integer
@@ -309,8 +309,8 @@
  */
 
 /* Version information for png.h - this should match the version in png.c */
-#define PNG_LIBPNG_VER_STRING "1.6.31"
-#define PNG_HEADER_VERSION_STRING " libpng version 1.6.31 - July 27, 2017\n"
+#define PNG_LIBPNG_VER_STRING "1.6.32"
+#define PNG_HEADER_VERSION_STRING " libpng version 1.6.32 - August 24, 2017\n"
 
 #define PNG_LIBPNG_VER_SONUM   16
 #define PNG_LIBPNG_VER_DLLNUM  16
@@ -318,7 +318,7 @@
 /* These should match the first 3 components of PNG_LIBPNG_VER_STRING: */
 #define PNG_LIBPNG_VER_MAJOR   1
 #define PNG_LIBPNG_VER_MINOR   6
-#define PNG_LIBPNG_VER_RELEASE 31
+#define PNG_LIBPNG_VER_RELEASE 32
 
 /* This should match the numeric part of the final component of
  * PNG_LIBPNG_VER_STRING, omitting any leading zero:
@@ -349,7 +349,7 @@
  * version 1.0.0 was mis-numbered 100 instead of 10000).  From
  * version 1.0.1 it's    xxyyzz, where x=major, y=minor, z=release
  */
-#define PNG_LIBPNG_VER 10631 /* 1.6.31 */
+#define PNG_LIBPNG_VER 10632 /* 1.6.32 */
 
 /* Library configuration: these options cannot be changed after
  * the library has been built.
@@ -474,7 +474,7 @@ extern "C" {
 /* This triggers a compiler error in png.c, if png.c and png.h
  * do not agree upon the version number.
  */
-typedef char* png_libpng_version_1_6_31;
+typedef char* png_libpng_version_1_6_32;
 
 /* Basic control structions.  Read libpng-manual.txt or libpng.3 for more info.
  *
@@ -2037,6 +2037,11 @@ PNG_EXPORT(246, png_uint_32, png_get_eXIf, (png_const_structrp png_ptr,
     png_inforp info_ptr, png_bytep *exif));
 PNG_EXPORT(247, void, png_set_eXIf, (png_const_structrp png_ptr,
     png_inforp info_ptr, const png_bytep exif));
+
+PNG_EXPORT(248, png_uint_32, png_get_eXIf_1, (png_const_structrp png_ptr,
+    png_const_inforp info_ptr, png_uint_32 *num_exif, png_bytep *exif));
+PNG_EXPORT(249, void, png_set_eXIf_1, (png_const_structrp png_ptr,
+    png_inforp info_ptr, const png_uint_32 num_exif, const png_bytep exif));
 #endif
 
 #ifdef PNG_gAMA_SUPPORTED
@@ -3274,70 +3279,70 @@ PNG_EXPORT(244, int, png_set_option, (png_structrp png_ptr, int option,
  *  END OF HARDWARE AND SOFTWARE OPTIONS
  ******************************************************************************/
 #ifdef PNG_APNG_SUPPORTED
-PNG_EXPORT(248, png_uint_32, png_get_acTL, (png_structp png_ptr,
+PNG_EXPORT(250, png_uint_32, png_get_acTL, (png_structp png_ptr,
    png_infop info_ptr, png_uint_32 *num_frames, png_uint_32 *num_plays));
 
-PNG_EXPORT(249, png_uint_32, png_set_acTL, (png_structp png_ptr,
+PNG_EXPORT(251, png_uint_32, png_set_acTL, (png_structp png_ptr,
    png_infop info_ptr, png_uint_32 num_frames, png_uint_32 num_plays));
 
-PNG_EXPORT(250, png_uint_32, png_get_num_frames, (png_structp png_ptr,
+PNG_EXPORT(252, png_uint_32, png_get_num_frames, (png_structp png_ptr,
    png_infop info_ptr));
 
-PNG_EXPORT(251, png_uint_32, png_get_num_plays, (png_structp png_ptr,
+PNG_EXPORT(253, png_uint_32, png_get_num_plays, (png_structp png_ptr,
    png_infop info_ptr));
 
-PNG_EXPORT(252, png_uint_32, png_get_next_frame_fcTL,
+PNG_EXPORT(254, png_uint_32, png_get_next_frame_fcTL,
    (png_structp png_ptr, png_infop info_ptr, png_uint_32 *width,
    png_uint_32 *height, png_uint_32 *x_offset, png_uint_32 *y_offset,
    png_uint_16 *delay_num, png_uint_16 *delay_den, png_byte *dispose_op,
    png_byte *blend_op));
 
-PNG_EXPORT(253, png_uint_32, png_set_next_frame_fcTL,
+PNG_EXPORT(255, png_uint_32, png_set_next_frame_fcTL,
    (png_structp png_ptr, png_infop info_ptr, png_uint_32 width,
    png_uint_32 height, png_uint_32 x_offset, png_uint_32 y_offset,
    png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
    png_byte blend_op));
 
-PNG_EXPORT(254, png_uint_32, png_get_next_frame_width,
+PNG_EXPORT(256, png_uint_32, png_get_next_frame_width,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(255, png_uint_32, png_get_next_frame_height,
+PNG_EXPORT(257, png_uint_32, png_get_next_frame_height,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(256, png_uint_32, png_get_next_frame_x_offset,
+PNG_EXPORT(258, png_uint_32, png_get_next_frame_x_offset,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(257, png_uint_32, png_get_next_frame_y_offset,
+PNG_EXPORT(259, png_uint_32, png_get_next_frame_y_offset,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(258, png_uint_16, png_get_next_frame_delay_num,
+PNG_EXPORT(260, png_uint_16, png_get_next_frame_delay_num,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(259, png_uint_16, png_get_next_frame_delay_den,
+PNG_EXPORT(261, png_uint_16, png_get_next_frame_delay_den,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(260, png_byte, png_get_next_frame_dispose_op,
+PNG_EXPORT(262, png_byte, png_get_next_frame_dispose_op,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(261, png_byte, png_get_next_frame_blend_op,
+PNG_EXPORT(263, png_byte, png_get_next_frame_blend_op,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(262, png_byte, png_get_first_frame_is_hidden,
+PNG_EXPORT(264, png_byte, png_get_first_frame_is_hidden,
    (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(263, png_uint_32, png_set_first_frame_is_hidden,
+PNG_EXPORT(265, png_uint_32, png_set_first_frame_is_hidden,
    (png_structp png_ptr, png_infop info_ptr, png_byte is_hidden));
 
 #ifdef PNG_READ_APNG_SUPPORTED
-PNG_EXPORT(264, void, png_read_frame_head, (png_structp png_ptr,
+PNG_EXPORT(266, void, png_read_frame_head, (png_structp png_ptr,
    png_infop info_ptr));
 #ifdef PNG_PROGRESSIVE_READ_SUPPORTED
-PNG_EXPORT(265, void, png_set_progressive_frame_fn, (png_structp png_ptr,
+PNG_EXPORT(267, void, png_set_progressive_frame_fn, (png_structp png_ptr,
    png_progressive_frame_ptr frame_info_fn,
    png_progressive_frame_ptr frame_end_fn));
 #endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
 #endif /* PNG_READ_APNG_SUPPORTED */
 
 #ifdef PNG_WRITE_APNG_SUPPORTED
-PNG_EXPORT(266, void, png_write_frame_head, (png_structp png_ptr,
+PNG_EXPORT(268, void, png_write_frame_head, (png_structp png_ptr,
    png_infop info_ptr, png_bytepp row_pointers,
    png_uint_32 width, png_uint_32 height,
    png_uint_32 x_offset, png_uint_32 y_offset,
    png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
    png_byte blend_op));
 
-PNG_EXPORT(267, void, png_write_frame_tail, (png_structp png_ptr,
+PNG_EXPORT(269, void, png_write_frame_tail, (png_structp png_ptr,
    png_infop info_ptr));
 #endif /* PNG_WRITE_APNG_SUPPORTED */
 #endif /* PNG_APNG_SUPPORTED */
@@ -3351,9 +3356,9 @@ PNG_EXPORT(267, void, png_write_frame_tail, (png_structp png_ptr,
  */
 #ifdef PNG_EXPORT_LAST_ORDINAL
 #ifdef PNG_APNG_SUPPORTED
-  PNG_EXPORT_LAST_ORDINAL(267);
+  PNG_EXPORT_LAST_ORDINAL(269);
 #else
-  PNG_EXPORT_LAST_ORDINAL(247);
+  PNG_EXPORT_LAST_ORDINAL(249);
 #endif /* PNG_APNG_SUPPORTED */
 #endif
 

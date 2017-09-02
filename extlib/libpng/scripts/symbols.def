@@ -1,4 +1,4 @@
-;Version 1.6.31
+;Version 1.6.32
 ;--------------------------------------------------------------
 ; LIBPNG symbol list as a Win32 DEF file
 ; Contains all the symbols that can be exported from libpng
@@ -252,23 +252,25 @@ EXPORTS
  png_image_write_to_memory @245
  png_get_eXIf @246
  png_set_eXIf @247
- png_get_acTL @248
- png_set_acTL @249
- png_get_num_frames @250
- png_get_num_plays @251
- png_get_next_frame_fcTL @252
- png_set_next_frame_fcTL @253
- png_get_next_frame_width @254
- png_get_next_frame_height @255
- png_get_next_frame_x_offset @256
- png_get_next_frame_y_offset @257
- png_get_next_frame_delay_num @258
- png_get_next_frame_delay_den @259
- png_get_next_frame_dispose_op @260
- png_get_next_frame_blend_op @261
- png_get_first_frame_is_hidden @262
- png_set_first_frame_is_hidden @263
- png_read_frame_head @264
- png_set_progressive_frame_fn @265
- png_write_frame_head @266
- png_write_frame_tail @267
+ png_get_eXIf_1 @248
+ png_set_eXIf_1 @249
+ png_get_acTL @250
+ png_set_acTL @251
+ png_get_num_frames @252
+ png_get_num_plays @253
+ png_get_next_frame_fcTL @254
+ png_set_next_frame_fcTL @255
+ png_get_next_frame_width @256
+ png_get_next_frame_height @257
+ png_get_next_frame_x_offset @258
+ png_get_next_frame_y_offset @259
+ png_get_next_frame_delay_num @260
+ png_get_next_frame_delay_den @261
+ png_get_next_frame_dispose_op @262
+ png_get_next_frame_blend_op @263
+ png_get_first_frame_is_hidden @264
+ png_set_first_frame_is_hidden @265
+ png_read_frame_head @266
+ png_set_progressive_frame_fn @267
+ png_write_frame_head @268
+ png_write_frame_tail @269
