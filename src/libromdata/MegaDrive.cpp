@@ -640,7 +640,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	// Magic strings.
 	static const char sega_magic[4] = {'S','E','G','A'};
 	static const char segacd_magic[16] =
-		{'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};;
+		{'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};
 
 	static const struct {
 		const char system_name[16];
