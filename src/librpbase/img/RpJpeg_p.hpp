@@ -61,13 +61,13 @@ class RpJpegPrivate
 		 * error_exit replacement for JPEG.
 		 * @param cinfo j_common_ptr
 		 */
-		static void my_error_exit(j_common_ptr cinfo);
+		static void JPEGCALL my_error_exit(j_common_ptr cinfo);
 
 		/**
 		 * output_message replacement for JPEG.
 		 * @param cinfo j_common_ptr
 		 */
-		static void my_output_message(j_common_ptr cinfo);
+		static void JPEGCALL my_output_message(j_common_ptr cinfo);
 
 		/** I/O functions. **/
 
@@ -86,14 +86,14 @@ class RpJpegPrivate
 		 * Initialize MySourceMgr.
 		 * @param cinfo j_decompress_ptr
 		 */
-		static void init_source(j_decompress_ptr cinfo);
+		static void JPEGCALL init_source(j_decompress_ptr cinfo);
 
 		/**
 		 * Fill the input buffer.
 		 * @param cinfo j_decompress_ptr
 		 * @return TRUE on success. (NOTE: 'boolean' is a JPEG typedef.)
 		 */
-		static boolean fill_input_buffer(j_decompress_ptr cinfo);
+		static boolean JPEGCALL fill_input_buffer(j_decompress_ptr cinfo);
 
 		/**
 		 * Terminate the source.
@@ -102,14 +102,14 @@ class RpJpegPrivate
 		 *
 		 * @param cinfo j_decompress_ptr
 		 */
-		static void term_source(j_decompress_ptr cinfo);
+		static void JPEGCALL term_source(j_decompress_ptr cinfo);
 
 		/**
 		 * Skip data in the source file.
 		 * @param cinfo j_decompress_ptr
 		 * @param num_bytes Number of bytes to skip.
 		 */
-		static void skip_input_data(j_decompress_ptr cinfo, long num_bytes);
+		static void JPEGCALL skip_input_data(j_decompress_ptr cinfo, long num_bytes);
 
 		/**
 		 * Initialize a JPEG source manager for an IRpFile.

@@ -53,7 +53,7 @@ class WiiSystemMenuVersionPrivate {
 		 * @param b
 		 * @return
 		 */
-		static int compar(const void *a, const void *b);
+		static int RP_C_API compar(const void *a, const void *b);
 };
 
 /** WiiSystemMenuVersionPrivate **/
@@ -102,7 +102,7 @@ const WiiSystemMenuVersionPrivate::SysVersionEntry_t WiiSystemMenuVersionPrivate
  * @param b
  * @return
  */
-int WiiSystemMenuVersionPrivate::compar(const void *a, const void *b)
+int RP_C_API WiiSystemMenuVersionPrivate::compar(const void *a, const void *b)
 {
 	unsigned int v1 = static_cast<const SysVersionEntry_t*>(a)->version;
 	unsigned int v2 = static_cast<const SysVersionEntry_t*>(b)->version;

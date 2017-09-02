@@ -130,4 +130,12 @@
  */
 #define ASSERT_ALIGNMENT(a, ptr)	assert(reinterpret_cast<intptr_t>(ptr) % 16 == 0);
 
+// C API declaration for MSVC.
+// Required when using stdcall as the default calling convention.
+#ifdef _MSC_VER
+# define RP_C_API __cdecl
+#else
+# define RP_C_API
+#endif
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */

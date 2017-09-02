@@ -46,7 +46,7 @@ class Nintendo3DSFirmDataPrivate {
 		 * @param b
 		 * @return
 		 */
-		static int compar(const void *a, const void *b);
+		static int RP_C_API compar(const void *a, const void *b);
 };
 
 /** Nintendo3DSFirmDataPrivate **/
@@ -106,7 +106,7 @@ const Nintendo3DSFirmData::FirmBin_t Nintendo3DSFirmDataPrivate::firmBins[] = {
  * @param b
  * @return
  */
-int Nintendo3DSFirmDataPrivate::compar(const void *a, const void *b)
+int RP_C_API Nintendo3DSFirmDataPrivate::compar(const void *a, const void *b)
 {
 	uint32_t crc_1 = static_cast<const Nintendo3DSFirmData::FirmBin_t*>(a)->crc;
 	uint32_t crc_2 = static_cast<const Nintendo3DSFirmData::FirmBin_t*>(b)->crc;

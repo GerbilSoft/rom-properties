@@ -118,13 +118,21 @@ static const errmap w32_to_posix[] = {
 #define MIN_EACCES_RANGE ERROR_WRITE_PROTECT
 #define MAX_EACCES_RANGE ERROR_SHARING_BUFFER_EXCEEDED
 
+// C API declaration for MSVC.
+// Required when using stdcall as the default calling convention.
+#ifdef _MSC_VER
+# define RP_C_API __cdecl
+#else
+# define RP_C_API
+#endif
+
 /**
  * bsearch() comparison function for the error code table.
  * @param a
  * @param b
  * @return
  */
-static int errmap_compar(const void *a, const void *b)
+static int RP_C_API errmap_compar(const void *a, const void *b)
 {
 	const DWORD err1 = ((const errmap*)a)->w32;
 	const DWORD err2 = ((const errmap*)a)->w32;

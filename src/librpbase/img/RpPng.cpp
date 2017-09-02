@@ -102,7 +102,7 @@ class RpPngPrivate
 		 * @param data		[out] Buffer for the data to read.
 		 * @param length	[in]  Size of data.
 		 */
-		static void png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length);
+		static void PNGCAPI png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length);
 
 		/**
 		 * libpng I/O write handler for IRpFile.
@@ -110,13 +110,13 @@ class RpPngPrivate
 		 * @param data		[in] Data to write.
 		 * @param length	[in] Size of data.
 		 */
-		static void png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
+		static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
 
 		/**
 		 * libpng I/O flush handler for IRpFile.
 		 * @param png_ptr	[in] PNG pointer.
 		 */
-		static void png_io_IRpFile_flush(png_structp png_ptr);
+		static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr);
 
 		/** Read functions. **/
 
@@ -149,7 +149,7 @@ class RpPngPrivate
  * @param data		[out] Buffer for the data to read.
  * @param length	[in]  Size of data.
  */
-void RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length)
+void PNGCAPI RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
@@ -175,7 +175,7 @@ void RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_
  * @param data		[in] Data to write.
  * @param length	[in] Size of data.
  */
-void RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
+void PNGCAPI RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
@@ -191,7 +191,7 @@ void RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png
  * libpng I/O flush handler for IRpFile.
  * @param png_ptr	[in] PNG pointer.
  */
-void RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
+void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));

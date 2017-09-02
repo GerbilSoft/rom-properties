@@ -63,7 +63,7 @@ class WiiUDataPrivate {
 		 * @param b
 		 * @return
 		 */
-		static int compar(const void *a, const void *b);
+		static int RP_C_API compar(const void *a, const void *b);
 };
 
 /** WiiUDataPrivate **/
@@ -332,7 +332,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_region
  * @param b
  * @return
  */
-int WiiUDataPrivate::compar(const void *a, const void *b)
+int RP_C_API WiiUDataPrivate::compar(const void *a, const void *b)
 {
 	unsigned int id4_1 = static_cast<const WiiUDiscPublisher*>(a)->id4;
 	unsigned int id4_2 = static_cast<const WiiUDiscPublisher*>(b)->id4;

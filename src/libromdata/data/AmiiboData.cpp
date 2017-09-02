@@ -144,7 +144,7 @@ class AmiiboDataPrivate {
 		 * @param b
 		 * @return
 		 */
-		static int char_id_t_compar(const void *a, const void *b);
+		static int RP_C_API char_id_t_compar(const void *a, const void *b);
 
 		/** Page 22 (raw offset 0x58): amiibo series **/
 
@@ -1151,7 +1151,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
  * @param b
  * @return
  */
-int AmiiboDataPrivate::char_id_t_compar(const void *a, const void *b)
+int RP_C_API AmiiboDataPrivate::char_id_t_compar(const void *a, const void *b)
 {
 	uint16_t id1 = static_cast<const char_id_t*>(a)->char_id;
 	uint16_t id2 = static_cast<const char_id_t*>(b)->char_id;

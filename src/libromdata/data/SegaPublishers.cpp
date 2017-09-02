@@ -50,7 +50,7 @@ class SegaPublishersPrivate {
 		 * @param b
 		 * @return
 		 */
-		static int compar(const void *a, const void *b);
+		static int RP_C_API compar(const void *a, const void *b);
 
 };
 
@@ -416,7 +416,7 @@ const SegaPublishersPrivate::TCodeEntry SegaPublishersPrivate::tcodeList[] = {
  * @param b
  * @return
  */
-int SegaPublishersPrivate::compar(const void *a, const void *b)
+int RP_C_API SegaPublishersPrivate::compar(const void *a, const void *b)
 {
 	unsigned int code1 = static_cast<const TCodeEntry*>(a)->t_code;
 	unsigned int code2 = static_cast<const TCodeEntry*>(b)->t_code;

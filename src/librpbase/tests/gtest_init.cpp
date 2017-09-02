@@ -23,6 +23,8 @@
 #include <locale>
 using std::locale;
 
+#include "librpbase/common.h"
+
 #ifdef _WIN32
 #include "libwin32common/secoptions.h"
 
@@ -35,7 +37,7 @@ using LibRpBase::rp_image;
 
 extern "C" int gtest_main(int argc, char *argv[]);
 
-int main(int argc, char *argv[])
+int RP_C_API main(int argc, char *argv[])
 {
 #ifdef _WIN32
 	// Set Win32 security options.
