@@ -189,3 +189,14 @@ IF(ENABLE_LTO)
 		MESSAGE(FATAL_ERROR "gcc binutils wrappers not found; cannot enable LTO.")
 	ENDIF()
 ENDIF(ENABLE_LTO)
+
+# Use thin archives on Linux.
+# References:
+# - https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=a5967db9af51a84f5e181600954714a9e4c69f1f
+# - https://bugs.webkit.org/show_bug.cgi?id=108330
+IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> qcT <TARGET> <LINK_FLAGS> <OBJECTS>")
+	SET(CMAKE_C_ARCHIVE_APPEND   "<CMAKE_AR> qT  <TARGET> <LINK_FLAGS> <OBJECTS>")
+	SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcT <TARGET> <LINK_FLAGS> <OBJECTS>")
+	SET(CMAKE_CXX_ARCHIVE_APPEND "<CMAKE_AR> qT  <TARGET> <LINK_FLAGS> <OBJECTS>")
+ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
