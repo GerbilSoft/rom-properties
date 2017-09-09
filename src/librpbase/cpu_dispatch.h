@@ -49,9 +49,12 @@
 // - https://willnewton.name/uncategorized/using-gnu-indirect-functions/
 // - https://reviews.llvm.org/D15524
 #if defined(__clang__)
+/* FIXME: Not working on travis-ci since it upgraded from
+ * clang-3.5.0 to clang-3.9.0.
 # if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 9))
 #  define RP_COMPILER_HAS_IFUNC 1
 # endif
+*/
 #elif defined(__GNUC__)
 # if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
 #  define RP_COMPILER_HAS_IFUNC 1
