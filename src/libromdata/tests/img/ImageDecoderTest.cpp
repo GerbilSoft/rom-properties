@@ -230,7 +230,7 @@ void ImageDecoderTest::SetUp(void)
 	ImageDecoder::EnableS3TC = mode.s3tc;
 #else /* !ENABLE_S3TC */
 	// Can't test S3TC in this build.
-	ASSERT_FALSE(mode.s3tc) << "Cannot test S3TC compression in this build. Recompile with -DENABLE_S3TC"
+	ASSERT_FALSE(mode.s3tc) << "Cannot test S3TC compression in this build. Recompile with -DENABLE_S3TC";
 #endif /* ENABLE_S3TC */
 
 	// Open the gzipped DDS texture file being tested.
