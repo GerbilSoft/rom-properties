@@ -8,19 +8,21 @@ video game ROM and disc images.
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/5lk15ct43jtmhejs/branch/master?svg=true)](https://ci.appveyor.com/project/GerbilSoft/rom-properties/branch/master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)
 
-## So what does it do?
+## v1.2 - The Dreamcast Release
 
-Got a USB hard drive with Wii disc images for USB Loader GX or the Dolphin Emulator? Now you can actually see what those discs are:
+This release adds, among other things, previewing for Dreamcast disc images. ISO (2048-byte sector) and BIN (2352-byte sector) raw tracks are supported, as well as GDI cue sheets.
 
-![Wii disc scans on Windows 7](doc/img/rp.win7.wii-discs.png)
+![Dreamcast disc images on KDE5](doc/img/rp.kde5.Dreamcast.GDI.png)
 
-Or maybe you're using Nintendont for GameCube:
+Along with this, general support for Sega PVR and GVR textures has been added, as well as DirectDraw Surfaces. Note that BC6 and BC7 compression isn't supported yet.
 
-![GCN disc scans on KDE5](doc/img/rp.kde5.gcn-discs.png)
+_TODO: Add image showing PVR and GVR textures._
 
-How about some in-depth information on a GameCube save file? (The icon will be animated if your browser supports APNG.)
+VMU save files have been supported since v0.9-beta2.
 
-![GCI properties on KDE5](doc/img/rp.kde5.GSNE8P.gci.animated.png)
+_TODO: Add image showing VMU save files._
+
+See `CHANGES.MD` for a full list of changes in v1.2.
 
 ## Feedback
 
