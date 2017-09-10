@@ -22,7 +22,7 @@ VMU save files have been supported since v0.9-beta2.
 
 _TODO: Add image showing VMU save files._
 
-See `CHANGES.MD` for a full list of changes in v1.2.
+See `[CHANGES.md](CHANGES.md)` for a full list of changes in v1.2.
 
 ## Feedback
 
