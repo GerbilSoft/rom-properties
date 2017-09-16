@@ -1,8 +1,8 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-Commit: d507f2e7e8b771a76f4eb96d5c5d4dee50988196
-Merge pull request #124 from Coeur/patch-3
+Commit: 5083bef59fd9661f79941c99ff1ecded83d72409
+Merge pull request #138 from Coeur/android
 
 The following changes have been made to the original:
 
