@@ -261,7 +261,7 @@ static RP_Frontend get_active_de(void)
 int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEBUG pfnDebug)
 {
 	// Attempt to open all available plugins.
-	const RP_Frontend cur_desktop = get_active_de();
+	RP_Frontend cur_desktop = get_active_de();
 	assert(cur_desktop >= 0);
 	assert(cur_desktop <= RP_FE_MAX);
 	if (cur_desktop < 0 || cur_desktop > RP_FE_MAX) {
@@ -281,6 +281,11 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		} else {
 			pfnDebug(LEVEL_DEBUG, "Active desktop environment: %s", de_name_tbl[cur_desktop]);
 		}
+	}
+
+	if (cur_desktop == RP_FE_MAX) {
+		// Default to GNOME.
+		cur_desktop = RP_FE_GNOME;
 	}
 
 	const uint8_t *prio = &plugin_prio[cur_desktop][0];
