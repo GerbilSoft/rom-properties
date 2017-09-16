@@ -600,16 +600,18 @@ SegaPVR::SegaPVR(IRpFile *file)
 	}
 
 	// Read the PVR header.
-	uint8_t header[32];
+	// Allow up to 32+128 bytes, since the GBIX header
+	// might be larger than the normal 8 bytes.
+	uint8_t header[32+128];
 	d->file->rewind();
-	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	size_t sz_header = d->file->read(header, sizeof(header));
+	if (sz_header < 32)
 		return;
 
 	// Check if this PVR image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(header);
+	info.header.size = sz_header;
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for PVR.
 	info.szFile = file->size();
@@ -641,9 +643,10 @@ SegaPVR::SegaPVR(IRpFile *file)
 		}
 
 		// Sanity check: gbix_len must be in the range [4,128].
+		// NOTE: sz_header is always 32 or higher.
 		assert(d->gbix_len >= 4);
 		assert(d->gbix_len <= 128);
-		if (d->gbix_len < 4 || d->gbix_len > 128) {
+		if (d->gbix_len < 4 || d->gbix_len > 128 || (d->gbix_len > (sz_header-8))) {
 			// Invalid GBIX header.
 			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
 			d->isValid = false;
