@@ -357,6 +357,7 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::tloz_ganondorf_varian
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::metroid_samus_variants[] = {
 	{0x00, _RP("Samus")},
 	{0x01, _RP("Zero Suit Samus")},
+	{0x02, _RP("Samus Aran")},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::pikmin_olimar_variants[] = {
@@ -1025,12 +1026,14 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Metroid (character series = 0x05C)
 	AMIIBO_CHAR_ID_VAR(0x05C0, _RP("Samus"), metroid_samus_variants),
+	AMIIBO_CHAR_ID_ONE(0x05C1, _RP("Metroid")),
 
 	// F-Zero (character series = 0x060)
 	AMIIBO_CHAR_ID_ONE(0x0600, _RP("Captain Falcon")),
 
 	// Pikmin (character series = 0x064)
 	AMIIBO_CHAR_ID_VAR(0x0640, _RP("Olimar"), pikmin_olimar_variants),
+	AMIIBO_CHAR_ID_ONE(0x0642, _RP("Pikmin")),
 
 	// Punch-Out!! (character series = 0x06C)
 	AMIIBO_CHAR_ID_ONE(0x06C0, _RP("Little Mac")),
@@ -1186,6 +1189,9 @@ const rp_char *const AmiiboDataPrivate::amiibo_series_names[] = {
 	nullptr,					// 0x0E
 	_RP("Monster Hunter"),				// 0x0F
 	_RP("BoxBoy!"),					// 0x10
+	_RP("Pikmin"),					// 0x11
+	_RP("Fire Emblem"),				// 0x12
+	_RP("Metroid"),					// 0x13
 };
 
 // amiibo IDs.
@@ -2108,8 +2114,11 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 61, 10, _RP("Corrin (Player 2)")},		// 0x0363
 	{ 62, 10, _RP("Bayonetta (Player 2)")},		// 0x0364
 
-	// Unused [0x0365-0x0368]
-	{  0, 0, nullptr}, {  0, 0, nullptr},		// 0x0365,0x0366
+	// Metroid [0x365-0x366]
+	{  1, 1, _RP("Samus Aran")},			// 0x0365
+	{  2, 1, _RP("Metroid")},			// 0x0366
+
+	// Unused [0x0367-0x0368]
 	{  0, 0, nullptr}, {  0, 0, nullptr},		// 0x0367,0x0368
 
 	// Splatoon: Wave 3 [0x0369-0x036A]
