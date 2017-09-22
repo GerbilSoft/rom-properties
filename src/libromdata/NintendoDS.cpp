@@ -853,6 +853,7 @@ const rp_char *const *NintendoDS::supportedFileExtensions_static(void)
 	static const rp_char *const exts[] = {
 		_RP(".nds"),	// Nintendo DS
 		_RP(".dsi"),	// Nintendo DSi (devkitARM r46)
+		_RP(".ids"),	// iQue DS (no-intro)
 		_RP(".srl"),	// Official SDK extension
 
 		nullptr
