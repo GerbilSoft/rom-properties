@@ -20,7 +20,7 @@ _TODO: Add image showing PVR and GVR textures._
 
 VMU save files have been supported since v0.9-beta2.
 
-_TODO: Add image showing VMU save files._
+![Dreamcast save files on KDE5](doc/img/rp.kde5.DreamcastSave.png)
 
 See [`CHANGES.md`](CHANGES.md) for a full list of changes in v1.2.
 
