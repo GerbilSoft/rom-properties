@@ -16,7 +16,7 @@ This release adds, among other things, previewing for Dreamcast disc images. ISO
 
 Along with this, general support for Sega PVR and GVR textures has been added, as well as DirectDraw Surfaces. Note that BC6 and BC7 compression isn't supported yet.
 
-_TODO: Add image showing PVR and GVR textures._
+![Sega GVR files on KDE5](doc/img/rp.kde5.SegaPVR.png)
 
 VMU save files have been supported since v0.9-beta2.
 
