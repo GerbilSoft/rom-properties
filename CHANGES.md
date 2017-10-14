@@ -54,6 +54,7 @@
     vertically cropped if it's larger than 32x32.
   * (Windows) The first text field on the properties page is no longer
     automatically selected when the page is first selected.
+  * Nintendo 3DS: Fixed detection of certain truncated CIA files.
 
 * Other changes:
   * The PNG compression level is now set to the default value instead of 5.
