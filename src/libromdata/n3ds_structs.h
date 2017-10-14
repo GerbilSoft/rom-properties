@@ -205,6 +205,9 @@ typedef struct PACKED _N3DS_3DSX_Header_t {
 } N3DS_3DSX_Header_t;
 ASSERT_STRUCT(N3DS_3DSX_Header_t, 44);
 
+// Certificate chain size.
+#define N3DS_CERT_CHAIN_SIZE 0xA00
+
 /**
  * Nintendo 3DS Installable Archive. (.cia)
  * Reference: https://www.3dbrew.org/wiki/CIA

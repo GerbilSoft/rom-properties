@@ -1403,19 +1403,22 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		    cia_header->type == cpu_to_le16(0) &&
 		    cia_header->version == cpu_to_le16(0))
 		{
-			// Add up all the sizes and see if it matches the file.
-			uint32_t sz_min = Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->header_size)) +
-					  Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->cert_chain_size)) +
-					  Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->ticket_size)) +
-					  Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->tmd_size)) +
-					  Nintendo3DSPrivate::toNext64(le32_to_cpu((uint32_t)cia_header->content_size)) +
-					  Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->meta_size));
-			if (info->szFile >= (int64_t)sz_min) {
-				// Allow for 64 KB variance. (TODO needs testing)
-				if (info->szFile <= (int64_t)sz_min + 65536) {
-					// It's a match!
-					return Nintendo3DSPrivate::ROM_TYPE_CIA;
-				}
+			// Validate the various sizes.
+			// TODO: Add some fuzz to some of these?
+			if (cia_header->cert_chain_size == cpu_to_le32(N3DS_CERT_CHAIN_SIZE) &&
+			    le32_to_cpu(cia_header->ticket_size) % 4 == 0 &&
+			    (cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 + 0x200 + 0x3C) ||
+			     cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 + 0x100 + 0x3C) ||
+			     cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 +  0x3C + 0x40)) &&
+			    le32_to_cpu(cia_header->tmd_size) % 4 == 0 &&
+			    (le32_to_cpu(cia_header->tmd_size) >= cpu_to_le32(sizeof(N3DS_TMD_Header_t) + 0x4 + 0x3C + 0x40 + sizeof(N3DS_Content_Info_Record_t)*64 + sizeof(N3DS_Content_Chunk_Record_t)) &&
+			     le32_to_cpu(cia_header->tmd_size) <= cpu_to_le32(sizeof(N3DS_TMD_Header_t) + 0x4 + 0x200 + 0x3C + sizeof(N3DS_Content_Info_Record_t)*64 + sizeof(N3DS_Content_Chunk_Record_t)*64)) &&
+			    (cia_header->meta_size == cpu_to_le32(0) ||
+			     (le32_to_cpu(cia_header->meta_size) % 4 == 0 &&
+			      le32_to_cpu(cia_header->meta_size) >= (sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t)))))
+			{
+				// Sizes appear to be valid.
+				return Nintendo3DSPrivate::ROM_TYPE_CIA;
 			}
 		}
 	}
