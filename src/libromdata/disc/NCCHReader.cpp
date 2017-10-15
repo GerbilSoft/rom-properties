@@ -56,6 +56,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	, pos(0)
 	, headers_loaded(0)
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
+	, nonNcchContentType(NONCCH_UNKNOWN)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
@@ -122,6 +123,24 @@ void NCCHReaderPrivate::init(void)
 	RP_Q(NCCHReader);
 	if (memcmp(ncch_header.hdr.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header.hdr.magic)) != 0) {
 		// NCCH magic number is incorrect.
+		// Check for non-NCCH types.
+		const uint8_t *u8hdr = reinterpret_cast<const uint8_t*>(&ncch_header);
+		if (!memcmp(u8hdr, "NDHT", 4)) {
+			// NDHT. (DS Whitelist)
+			// 0004800F-484E4841
+			verifyResult = KeyManager::VERIFY_OK;
+			nonNcchContentType = NONCCH_NDHT;
+			this->file = nullptr;
+			return;
+		} else if (!memcmp(&u8hdr[0x80], "NARC", 4)) {
+			// NARC. (TWL Version Data)
+			// 0004800F-484E4C41
+			verifyResult = KeyManager::VERIFY_OK;
+			nonNcchContentType = NONCCH_NARC;
+			this->file = nullptr;
+			return;
+		}
+
 		// TODO: Better verifyResult? (May be DSiWare...)
 		verifyResult = KeyManager::VERIFY_WRONG_KEY;
 		if (q->m_lastError == 0) {
@@ -723,7 +742,6 @@ int64_t NCCHReader::partition_size_used(void) const
 const N3DS_NCCH_Header_NoSig_t *NCCHReader::ncchHeader(void) const
 {
 	RP_D(const NCCHReader);
-	assert(isOpen());
 	if (!isOpen()) {
 		//m_lastError = EBADF;
 		return nullptr;
@@ -890,13 +908,29 @@ KeyManager::VerifyResult NCCHReader::verifyResult(void) const
  */
 const rp_char *NCCHReader::contentType(void) const
 {
+	const rp_char *content_type;
+
 	const N3DS_NCCH_Header_NoSig_t *ncch_header = ncchHeader();
 	if (!ncch_header) {
 		// NCCH header is not loaded.
-		return nullptr;
+		// Check if this is another content type.
+		RP_D(NCCHReader);
+		switch (d->nonNcchContentType) {
+			case NCCHReaderPrivate::NONCCH_NDHT:
+				// NDHT (DS Whitelist)
+				content_type = _RP("NDHT");
+				break;
+			case NCCHReaderPrivate::NONCCH_NARC:
+				// NARC (TWL Version Data)
+				content_type = _RP("NARC");
+				break;
+			default:
+				content_type = nullptr;
+				break;
+		}
+		return content_type;
 	}
 
-	const rp_char *content_type;
 	const uint8_t ctype_flag = ncch_header->flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
 	if ((ctype_flag & N3DS_NCCH_CONTENT_TYPE_Child) == N3DS_NCCH_CONTENT_TYPE_Child) {
 		// DLP child

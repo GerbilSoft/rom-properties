@@ -105,6 +105,17 @@ class NCCHReaderPrivate
 		// Encryption key verification result.
 		LibRpBase::KeyManager::VerifyResult verifyResult;
 
+		// Non-NCCH content type.
+		// We won't extract any information from them,
+		// other than the type and the fact that they're
+		// not encrypted.
+		enum NonNCCHContentType {
+			NONCCH_UNKNOWN	= 0,
+			NONCCH_NDHT,
+			NONCCH_NARC,
+		};
+		NonNCCHContentType nonNcchContentType;
+
 		/**
 		 * Read data from the underlying ROM image.
 		 * CIA decryption is automatically handled if set up properly.

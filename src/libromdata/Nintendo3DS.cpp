@@ -2235,8 +2235,17 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(rp_sprintf("%u", i));
 
 			// TODO: Use content_chunk->index?
-			const N3DS_NCCH_Header_NoSig_t *const content_ncch_header =
-				(pNcch && pNcch->isOpen() ? pNcch->ncchHeader() : nullptr);
+			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = nullptr;
+			const rp_char *noncch_cnt_type = nullptr;
+			if (pNcch) {
+				if (pNcch->isOpen()) {
+					content_ncch_header = pNcch->ncchHeader();
+				} else {
+					// This might be a non-NCCH content that
+					// we still recognize.
+					noncch_cnt_type = pNcch->contentType();
+				}
+			}
 			if (!content_ncch_header) {
 				// Invalid content index, or this content isn't an NCCH.
 				// TODO: Are there CIAs with discontiguous content indexes?
@@ -2247,19 +2256,22 @@ int Nintendo3DS::loadFieldData(void)
 					crypto = _RP("CIA");
 				}
 
-				const rp_char *cnt_type;
 				if (i == 0 && d->srlData) {
 					// This is an SRL.
-					cnt_type = _RP("SRL");
+					if (!noncch_cnt_type) {
+						noncch_cnt_type = _RP("SRL");
+					}
 					// TODO: Do SRLs have encryption besides CIA encryption?
 					if (!crypto) {
 						crypto = _RP("NoCrypto");
 					}
 				} else {
 					// Something else...
-					cnt_type = _RP("Unknown");
+					if (!noncch_cnt_type) {
+						noncch_cnt_type = _RP("Unknown");
+					}
 				}
-				data_row.push_back(cnt_type);
+				data_row.push_back(noncch_cnt_type);
 
 				// Encryption.
 				data_row.push_back(crypto ? crypto : _RP("Unknown"));
