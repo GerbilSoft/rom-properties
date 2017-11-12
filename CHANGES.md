@@ -1,6 +1,6 @@
 # Changes
 
-## v1.2 - The Dreamcast Release (released 2017/??/??)
+## v1.2 - The Dreamcast Release (released 2017/11/12)
 
 * New features:
   * rpcli, rp-stub, rp-thumbnailer-dbus: PNG images now have an `sBIT` chunk,
