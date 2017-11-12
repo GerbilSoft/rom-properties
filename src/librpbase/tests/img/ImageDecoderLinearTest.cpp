@@ -94,7 +94,7 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 
 		~ImageDecoderLinearTest()
 		{
-			free(m_img_buf);
+			aligned_free(m_img_buf);
 		}
 
 		virtual void SetUp(void) override final;
