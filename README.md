@@ -126,7 +126,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 
 ## File Types Supported
 
-* Sega Mega Drive: Plain binary (\*.gen, \*.bin), Super Magic Drive (\*.smd)
+* Sega Mega Drive: Plain binary (\*.gen, \*.md, \*.32x, \*.sgd, \*.bin), Super Magic Drive (\*.smd)
 * Sega Dreamcast: Save files (\*.vmi, \*.vms, \*.dci)
 * Nintendo DS(i): Plain binary (\*.nds, \*.dsi, \*.srl)
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [including DiscEx-shrunken images],

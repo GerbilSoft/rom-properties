@@ -848,6 +848,7 @@ const rp_char *const *MegaDrive::supportedFileExtensions_static(void)
 	static const rp_char *const exts[] = {
 		_RP(".gen"), _RP(".smd"),
 		_RP(".32x"), _RP(".pco"),
+		_RP(".sgd"),	// Official extension
 
 		// NOTE: These extensions may cause conflicts on
 		// Windows if fallback handling isn't working.
