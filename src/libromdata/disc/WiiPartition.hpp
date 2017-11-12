@@ -93,7 +93,8 @@ class WiiPartition : public GcnPartition
 			ENCKEY_UNKNOWN = -1,
 			ENCKEY_COMMON = 0,	// Wii common key
 			ENCKEY_KOREAN = 1,	// Korean key
-			ENCKEY_DEBUG = 2,	// RVT-R debug key
+			ENCKEY_VWII = 2,	// vWii common key
+			ENCKEY_DEBUG = 3,	// RVT-R debug key
 		};
 
 		/**
@@ -109,6 +110,7 @@ class WiiPartition : public GcnPartition
 			// Retail
 			Key_Rvl_Common,
 			Key_Rvl_Korean,
+			Key_Wup_vWii_Common,
 			Key_Rvl_SD_AES,
 			Key_Rvl_SD_IV,
 			Key_Rvl_SD_MD5,
