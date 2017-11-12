@@ -75,6 +75,13 @@ struct GcnFstTest_mode
 		: fst_filename(fst_filename)
 		, offsetShift(offsetShift)
 	{ }
+
+	GcnFstTest_mode(
+		const string &fst_filename,
+		uint8_t offsetShift)
+		: fst_filename(fst_filename)
+		, offsetShift(offsetShift)
+	{ }
 };
 
 /**
@@ -542,7 +549,9 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
 		if (file_info.uncompressed_size <= (uLong)MAX_GCN_FST_BIN_FILESIZE) {
 			// Add this filename to the list.
-			GcnFstTest_mode mode(filename, offsetShift);
+			// NOTE: Filename might not be NULL-terminated,
+			// so use the explicit length.
+			GcnFstTest_mode mode(string(filename, file_info.size_filename), offsetShift);
 			files.push_back(mode);
 		}
 
