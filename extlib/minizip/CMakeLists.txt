@@ -26,6 +26,11 @@ if(NOT DEFINED CMAKE_MACOSX_RPATH)
     set(CMAKE_MACOSX_RPATH 0)
 endif()
 
+# rom-properties: libbsd is required.
+IF((UNIX OR LINUX) AND NOT APPLE)
+    FIND_PACKAGE(libbsd REQUIRED)
+ENDIF((UNIX OR LINUX) AND NOT APPLE)
+
 # rom-properties: Disabled installation.
 IF(0)
 set(INSTALL_BIN_DIR "bin" CACHE PATH "Installation directory for executables")
