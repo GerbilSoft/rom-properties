@@ -79,6 +79,7 @@
     * Note that Windows Explorer appears to automatically dereference symlinks
       when using IExtractImage, which is what ends up being used anyway because
       IThumbnailProvider doesn't provide a full path.
+  * rp-config: The key manager can now import keys from Wii U otp.bin files.
 
 ## v1.1 (released 2017/07/04)
 

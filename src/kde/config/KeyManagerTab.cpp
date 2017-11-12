@@ -220,6 +220,7 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	// Create the dropdown menu for the "Import" button.
 	QMenu *menuImport = new QMenu(tr("I&mport"), d->ui.btnImport);
 	menuImport->addAction(d->ui.actionImportWiiKeysBin);
+	menuImport->addAction(d->ui.actionImportWiiUOtpBin);
 	menuImport->addAction(d->ui.actionImport3DSboot9bin);
 	menuImport->addAction(d->ui.actionImport3DSaeskeydb);
 	d->ui.btnImport->setMenu(menuImport);
@@ -322,6 +323,23 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 	Q_D(KeyManagerTab);
 	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiKeysBin(Q2RP(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii keys.bin"), iret);
+}
+
+/**
+ * Import keys from Wii U otp.bin.
+ */
+void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
+{
+	QString filename = QFileDialog::getOpenFileName(this,
+		tr("Select Wii U otp.bin File"),	// caption
+		QString(),				// dir (TODO)
+		tr("otp.bin (otp.bin);;Binary Files (*.bin);;All Files (*.*)"));
+	if (filename.isEmpty())
+		return;
+
+	Q_D(KeyManagerTab);
+	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiUOtpBin(Q2RP(filename));
+	d->showKeyImportReturnStatus(filename, QLatin1String("Wii U otp.bin"), iret);
 }
 
 /**

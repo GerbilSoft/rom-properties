@@ -204,6 +204,11 @@ class KeyManagerTabPrivate
 		void importWiiKeysBin(void);
 
 		/**
+		 * Import keys from Wii U otp.bin.
+		 */
+		void importWiiUOtpBin(void);
+
+		/**
 		 * Import keys from 3DS boot9.bin.
 		 */
 		void import3DSboot9bin(void);
@@ -757,6 +762,9 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 				case IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN:
 					d->importWiiKeysBin();
+					return TRUE;
+				case IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN:
+					d->importWiiUOtpBin();
 					return TRUE;
 				case IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN:
 					d->import3DSboot9bin();
@@ -1428,6 +1436,39 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2RP_c(filename));
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii keys.bin", iret);
+}
+
+/**
+ * Import keys from Wii U otp.bin.
+ */
+void KeyManagerTabPrivate::importWiiUOtpBin(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
+	wchar_t filename[MAX_PATH];
+	filename[0] = 0;
+
+	OPENFILENAME ofn;
+	memset(&ofn, 0, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWndPropSheet;
+	ofn.lpstrFilter = L"otp.bin\0otp.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrCustomFilter = nullptr;
+	ofn.lpstrFile = filename;
+	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrTitle = L"Select Wii U otp.bin File";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+	BOOL bRet = GetOpenFileName(&ofn);
+	if (!bRet || filename[0] == 0)
+		return;
+
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2RP_c(filename));
+	// TODO: Port showKeyImportReturnStatus from the KDE version.
+	//d->showKeyImportReturnStatus(filename, L"Wii U otp.bin", iret);
 }
 
 /**

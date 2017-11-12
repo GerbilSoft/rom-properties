@@ -82,6 +82,11 @@ class KeyManagerTab : public ITab
 		void on_actionImportWiiKeysBin_triggered(void);
 
 		/**
+		 * Import keys from Wii U otp.bin.
+		 */
+		void on_actionImportWiiUOtpBin_triggered(void);
+
+		/**
 		 * Import keys from 3DS boot9.bin.
 		 */
 		void on_actionImport3DSboot9bin_triggered(void);

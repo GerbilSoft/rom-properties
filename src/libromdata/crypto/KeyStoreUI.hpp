@@ -227,21 +227,28 @@ class KeyStoreUI
 		};
 
 		/**
-		 * Import a Wii keys.bin file.
+		 * Import keys from Wii keys.bin. (BootMii format)
 		 * @param filename keys.bin filename.
 		 * @return Key import status.
 		 */
 		ImportReturn importWiiKeysBin(const rp_char *filename);
 
 		/**
-		 * Import a 3DS boot9.bin file.
+		 * Import keys from Wii U otp.bin.
+		 * @param filename otp.bin filename.
+		 * @return Key import status.
+		 */
+		ImportReturn importWiiUOtpBin(const rp_char *filename);
+
+		/**
+		 * Import keys from 3DS boot9.bin.
 		 * @param filename boot9.bin filename.
 		 * @return Key import status.
 		 */
 		ImportReturn import3DSboot9bin(const rp_char *filename);
 
 		/**
-		 * Import a 3DS aeskeydb.bin file.
+		 * Import keys from 3DS aeskeydb.bin.
 		 * @param filename aeskeydb.bin filename.
 		 * @return Key import status.
 		 */

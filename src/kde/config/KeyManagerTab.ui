@@ -63,6 +63,11 @@
     <string>Wii keys.bin</string>
    </property>
   </action>
+  <action name="actionImportWiiUOtpBin">
+   <property name="text">
+    <string>Wii U otp.bin</string>
+   </property>
+  </action>
   <action name="actionImport3DSboot9bin">
    <property name="text">
     <string>3DS boot9.bin</string>

@@ -1066,7 +1066,7 @@ bool KeyStoreUI::hasChanged(void) const
 }
 
 /**
- * Import a Wii keys.bin file.
+ * Import keys from Wii keys.bin. (BootMii format)
  * @param filename keys.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
@@ -1124,7 +1124,75 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const rp_char *filename)
 }
 
 /**
- * Import a 3DS boot9.bin file.
+ * Import keys from Wii U otp.bin.
+ * @param filename otp.bin filename.
+ * @return Key import status.
+ */
+KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const rp_char *filename)
+{
+	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
+
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	if (!file) {
+		iret.status = Import_OpenError;
+		return iret;
+	}
+
+	// File must be 1,024 bytes.
+	if (file->size() != 1024) {
+		iret.status = Import_InvalidFile;
+		return iret;
+	}
+
+	// Read the entire 1,024 bytes.
+	uint8_t buf[1024];
+	size_t size = file->read(buf, sizeof(buf));
+	if (size != 1024) {
+		// Read error.
+		// TODO: file->lastError()?
+		iret.status = Import_ReadError;
+		return iret;
+	}
+	file->close();
+
+	// Verify the vWii Boot1 hash.
+	// TODO: Are there multiple variants of vWii Boot1?
+	static const uint8_t vWii_Boot1_hash[20] = {
+		0xF8,0xB1,0x8E,0xC3,0xFE,0x26,0xB9,0xB1,
+		0x1A,0xD4,0xA4,0xED,0xD3,0xB7,0xA0,0x31,
+		0x11,0x9A,0x79,0xF8
+	};
+	if (memcmp(buf, vWii_Boot1_hash, sizeof(vWii_Boot1_hash)-1) != 0) {
+		iret.status = Import_InvalidFile;
+		return iret;
+	}
+
+	// Key addresses and indexes.
+	// TODO:
+	// - Verify if Wii debug keys are present in otp.bin from CAT-R units.
+	// - SD keys are not present in otp.bin.
+	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
+		{0x014, WiiPartition::Key_Rvl_Common},
+		{0x014, WiiPartition::Key_Rvt_Debug},
+		{0x348, WiiPartition::Key_Rvl_Korean},
+
+		// TODO: Import Wii U keys.
+#if 0
+		{0x090, /* Wii U ancast key */},
+		{0x0E0, /* Wii U common key */},
+#endif
+
+		{0, -1}
+	};
+
+	// Import the keys.
+	RP_D(KeyStoreUI);
+	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_WiiPartition,
+		keyBinAddress, buf, sizeof(buf));
+}
+
+/**
+ * Import keys from 3DS boot9.bin.
  * @param filename boot9.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
@@ -1193,7 +1261,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const rp_char *filename)
 }
 
 /**
- * Import a 3DS aeskeydb.bin file.
+ * Import keys from 3DS aeskeydb.bin.
  * @param filename aeskeydb.bin filename.
  * @return Key import status.
  */
