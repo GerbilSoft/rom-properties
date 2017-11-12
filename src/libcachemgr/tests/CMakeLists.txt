@@ -12,7 +12,7 @@ ADD_EXECUTABLE(FilterCacheKeyTest
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(FilterCacheKeyTest win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(FilterCacheKeyTest romdata8 cachemgr8)
+TARGET_LINK_LIBRARIES(FilterCacheKeyTest rpbase cachemgr)
 TARGET_LINK_LIBRARIES(FilterCacheKeyTest gtest)
 DO_SPLIT_DEBUG(FilterCacheKeyTest)
 SET_WINDOWS_SUBSYSTEM(FilterCacheKeyTest CONSOLE)

@@ -321,8 +321,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURR
 # Build the library. #
 ######################
 
-# UTF-8 version.
-ADD_LIBRARY(rpbase8 STATIC
+ADD_LIBRARY(rpbase STATIC
 	${librpbase_SRCS} ${librpbase_H}
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
@@ -333,90 +332,74 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
-TARGET_COMPILE_DEFINITIONS(rpbase8 PUBLIC -DRP_UTF8)
+# TODO: Get rid of this.
+TARGET_COMPILE_DEFINITIONS(rpbase PUBLIC -DRP_UTF8)
 
-# UTF-16 version.
-ADD_LIBRARY(rpbase16 STATIC
-	${librpbase_SRCS} ${librpbase_H}
-	${librpbase_OS_SRCS} ${librpbase_OS_H}
-	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
-	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
-	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
-	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
-	${librpbase_IFUNC_SRCS}
-	${librpbase_SSE2_SRCS}
-	${librpbase_SSSE3_SRCS}
+# Include paths:
+# - Public: Current source and binary directories.
+# - Private: Parent source and binary directories,
+#            and top-level binary directory for git_version.h.
+TARGET_INCLUDE_DIRECTORIES(rpbase
+	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpbase
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpbase
+	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
-TARGET_COMPILE_DEFINITIONS(rpbase16 PUBLIC -DRP_UTF16)
+IF(MSVC)
+	TARGET_LINK_LIBRARIES(rpbase delayimp)
+ENDIF(MSVC)
+# Exclude from ALL builds.
+SET_TARGET_PROPERTIES(rpbase PROPERTIES EXCLUDE_FROM_ALL TRUE)
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(rpbase git_version)
+ENDIF(TARGET git_version)
 
-# Common properties for rpbase8 and rpbase16.
-FOREACH(_target rpbase8 rpbase16)
-	# Include paths:
-	# - Public: Current source and binary directories.
-	# - Private: Parent source and binary directories,
-	#            and top-level binary directory for git_version.h.
-	TARGET_INCLUDE_DIRECTORIES(${_target}
-		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpbase
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpbase
-		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
-			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
-		)
-	IF(MSVC)
-		TARGET_LINK_LIBRARIES(${_target} delayimp)
-	ENDIF(MSVC)
-	# Exclude from ALL builds.
-	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-	# Make sure git_version.h is created before compiling this target.
-	IF(TARGET git_version)
-		ADD_DEPENDENCIES(${_target} git_version)
-	ENDIF(TARGET git_version)
+# Link in libdl if it's required for dlopen()
+# and we have a component that uses it.
+IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
+	TARGET_LINK_LIBRARIES(rpbase ${CMAKE_DL_LIBS})
+ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
-	# Link in libdl if it's required for dlopen()
-	# and we have a component that uses it.
-	IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(${_target} ${CMAKE_DL_LIBS})
-	ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
-
-	# Other libraries.
-	TARGET_LINK_LIBRARIES(${_target} inih)
-	IF(ICONV_LIBRARY)
-		TARGET_LINK_LIBRARIES(${_target} ${ICONV_LIBRARY})
-	ENDIF(ICONV_LIBRARY)
-	IF(ZLIB_FOUND)
-		TARGET_LINK_LIBRARIES(${_target} ${ZLIB_LIBRARIES})
-		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${ZLIB_INCLUDE_DIRS})
-		TARGET_COMPILE_DEFINITIONS(${_target} PRIVATE ${ZLIB_DEFINITIONS})
-	ENDIF(ZLIB_FOUND)
-	IF(PNG_FOUND)
-		TARGET_LINK_LIBRARIES(${_target} ${PNG_LIBRARY})
-		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${PNG_INCLUDE_DIRS})
-		TARGET_COMPILE_DEFINITIONS(${_target} PRIVATE ${PNG_DEFINITIONS})
-	ENDIF(PNG_FOUND)
-	IF(JPEG_FOUND)
-		TARGET_LINK_LIBRARIES(${_target} ${JPEG_LIBRARY})
-		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${JPEG_INCLUDE_DIRS})
-	ENDIF(JPEG_FOUND)
-	IF(NETTLE_FOUND)
-		TARGET_LINK_LIBRARIES(${_target} ${NETTLE_LIBRARY})
-		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${NETTLE_INCLUDE_DIRS})
-	ENDIF(NETTLE_FOUND)
-	IF(WIN32)
-		# libwin32common
-		TARGET_LINK_LIBRARIES(${_target} win32common)
-		# Windows system libraries
-		TARGET_LINK_LIBRARIES(${_target} gdiplus)
-		IF(ENABLE_DECRYPTION)
-			TARGET_LINK_LIBRARIES(${_target} advapi32)
-		ENDIF(ENABLE_DECRYPTION)
-	ELSE(WIN32)
-		# libunixcommon
-		TARGET_LINK_LIBRARIES(${_target} unixcommon)
-	ENDIF(WIN32)
-	IF(CMAKE_THREAD_LIBS_INIT)
-		TARGET_LINK_LIBRARIES(${_target} ${CMAKE_THREAD_LIBS_INIT})
-	ENDIF(CMAKE_THREAD_LIBS_INIT)
-ENDFOREACH()
+# Other libraries.
+TARGET_LINK_LIBRARIES(rpbase inih)
+IF(ICONV_LIBRARY)
+	TARGET_LINK_LIBRARIES(rpbase ${ICONV_LIBRARY})
+ENDIF(ICONV_LIBRARY)
+IF(ZLIB_FOUND)
+	TARGET_LINK_LIBRARIES(rpbase ${ZLIB_LIBRARIES})
+	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${ZLIB_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(rpbase PRIVATE ${ZLIB_DEFINITIONS})
+ENDIF(ZLIB_FOUND)
+IF(PNG_FOUND)
+	TARGET_LINK_LIBRARIES(rpbase ${PNG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${PNG_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(rpbase PRIVATE ${PNG_DEFINITIONS})
+ENDIF(PNG_FOUND)
+IF(JPEG_FOUND)
+	TARGET_LINK_LIBRARIES(rpbase ${JPEG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${JPEG_INCLUDE_DIRS})
+ENDIF(JPEG_FOUND)
+IF(NETTLE_FOUND)
+	TARGET_LINK_LIBRARIES(rpbase ${NETTLE_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${NETTLE_INCLUDE_DIRS})
+ENDIF(NETTLE_FOUND)
+IF(WIN32)
+	# libwin32common
+	TARGET_LINK_LIBRARIES(rpbase win32common)
+	# Windows system libraries
+	TARGET_LINK_LIBRARIES(rpbase gdiplus)
+	IF(ENABLE_DECRYPTION)
+		TARGET_LINK_LIBRARIES(rpbase advapi32)
+	ENDIF(ENABLE_DECRYPTION)
+ELSE(WIN32)
+	# libunixcommon
+	TARGET_LINK_LIBRARIES(rpbase unixcommon)
+ENDIF(WIN32)
+IF(CMAKE_THREAD_LIBS_INIT)
+	TARGET_LINK_LIBRARIES(rpbase ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

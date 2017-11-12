@@ -10,7 +10,7 @@ IF(ENABLE_DECRYPTION)
 		../../librpbase/tests/gtest_init.cpp
 		CtrKeyScramblerTest.cpp
 		)
-	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest rpbase8 romdata8)
+	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest romdata rpbase)
 	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest gtest)
 	DO_SPLIT_DEBUG(CtrKeyScramblerTest)
 	SET_WINDOWS_SUBSYSTEM(CtrKeyScramblerTest CONSOLE)
@@ -24,7 +24,7 @@ ADD_EXECUTABLE(GcnFstPrint
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstPrint rpbase8 romdata8)
+TARGET_LINK_LIBRARIES(GcnFstPrint romdata rpbase)
 DO_SPLIT_DEBUG(GcnFstPrint)
 SET_WINDOWS_SUBSYSTEM(GcnFstPrint CONSOLE)
 
@@ -35,7 +35,7 @@ ADD_EXECUTABLE(GcnFstTest
 	disc/FstPrint.hpp
 	disc/GcnFstTest.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstTest rpbase8 romdata8)
+TARGET_LINK_LIBRARIES(GcnFstTest romdata rpbase)
 TARGET_LINK_LIBRARIES(GcnFstTest gtest)
 TARGET_LINK_LIBRARIES(GcnFstTest libminizip ${ZLIB_LIBRARY})
 DO_SPLIT_DEBUG(GcnFstTest)
@@ -72,7 +72,7 @@ ADD_EXECUTABLE(ImageDecoderTest
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(ImageDecoderTest win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(ImageDecoderTest romdata8)
+TARGET_LINK_LIBRARIES(ImageDecoderTest romdata rpbase)
 TARGET_LINK_LIBRARIES(ImageDecoderTest gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -129,7 +129,7 @@ ADD_EXECUTABLE(SuperMagicDriveTest
 	utils/SuperMagicDriveTest.cpp
 	utils/SuperMagicDriveTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(SuperMagicDriveTest rpbase8 romdata8)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest romdata rpbase)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest gtest)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})
