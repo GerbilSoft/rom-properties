@@ -1,8 +1,8 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-Commit: 5083bef59fd9661f79941c99ff1ecded83d72409
-Merge pull request #138 from Coeur/android
+Commit: be85b3b4cd50bf1d5c294918dfbb816cb63869b5
+mz_compat.c: Fix zipOpen(), zipOpen64(), and unzOpen64().
 
 The following changes have been made to the original:
 
@@ -10,8 +10,6 @@ The following changes have been made to the original:
   will be used instead.
 
 - Some other functionality not needed by rom-properties has been disabled.
-
-- unzip.c: Removed an extra ';' that caused compile errors on MSVC 2010.
 
 To obtain the original minizip-1.1, visit:
 http://www.winimage.com/zLibDll/minizip.html

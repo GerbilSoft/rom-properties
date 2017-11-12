@@ -1,84 +1,168 @@
-# Minizip zlib contribution fork
+# Minizip 2.2.3
 
-Contains the latest bug fixes that having been found all over the internet including the [old minizip forum](https://web.archive.org/web/20121015065401/http://www.winimage.info/forum/) and zlib developer's mailing list along with some additional features. Based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) and contributed to by many people over the years.
+This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
+
+Dev: ![Dev Branch Status](https://travis-ci.org/nmoinvaz/minizip.svg?branch=dev)
+Master: ![Master Branch Status](https://travis-ci.org/nmoinvaz/minizip.svg?branch=master)
+
+For my older fork of this library checkout the [1.2](https://github.com/nmoinvaz/minizip/tree/1.2) branch.
+For the original work maintained by Mark Adler checkout the zlib minizip  [contrib](https://github.com/madler/zlib/tree/master/contrib/minizip).
+
+## Build
+
+To generate the project files for your platform and IDE download and run cmake in the project directory.
+
+```
+cmake .
+cmake --build .
+```
+
+## Contents
+
+| File(s) | Description | Required |
+|:- |:-|:-:|
+| minizip.c | Sample application | No |
+| mz_compat.\* | Minizip 1.0 compatibility layer | No |
+| mz.h | Error codes and flags | Yes |
+| mz_os\* | OS specific helper functions | Encryption, Disk Splitting |
+| mz_strm.\* | Stream interface | Yes |
+| mz_strm_aes.\* | WinZIP AES stream | No |
+| mz_strm_buf.\* | Buffered stream | No |
+| mz_strm_bzip.\* | BZIP2 stream using libbzip2 | No |
+| mz_strm_crypt.\* | PKWARE traditional encryption stream | No |
+| mz_strm_lzma.\* | LZMA stream using liblzma | No |
+| mz_strm_mem.\* | Memory stream | Yes |
+| mz_strm_split.\* | Disk splitting stream | No |
+| mz_strm_posix.\* | File stream using Posix functions | Non-windows systems |
+| mz_strm_win32.\* | File stream using Win32 API functions | Windows systems |
+| mz_strm_zlib.\* | Deflate stream using zlib | Yes |
+| mz_zip.\* | Zip functionality | Yes |
 
 ## Features
 
-### I/O Memory
+### Compression Methods
 
-To unzip from a zip file in memory use fill_memory_filefunc and supply a proper ourmemory_t structure.
+#### BZIP2
+
++ Requires ``cmake . -DUSE_BZIP2=ON`` or ``#define HAVE_BZIP2``
++ Requires [BZIP2](http://www.bzip.org/) library
+
+#### LZMA
+
++ Requires ``cmake . -DUSE_LZMA=ON`` or ``#define HAVE_LZMA``
++ Requires [liblzma](https://tukaani.org/xz/) library
+
+### Encryption
+
+#### [WinZIP AES Encryption](http://www.winzip.com/aes_info.htm)
+
++ Requires ``cmake . -DUSE_AES=ON`` or ``#define HAVE_AES``
++ Requires [Brian Gladman's](https://github.com/BrianGladman/aes) AES library
+
+When zipping with a password it will always use AES 256-bit encryption.
+When unzipping it will use AES decryption only if necessary.
+
+#### Disabling All Encryption
+
+To disable encryption use the following cmake commands:
+
 ```
-zlib_filefunc_def filefunc32 = {0};
-ourmemory_t unzmem = {0};
-
-unzmem.size = bufsize;
-unzmem.base = (char *)malloc(unzmem.size);
-memcpy(unzmem.base, buffer, unzmem.size);
-    
-fill_memory_filefunc(&filefunc32, &unzmem);
-
-unzOpen2("__notused__", &filefunc32);
+cmake . -DUSE_AES=OFF
+cmake . -DUSE_CRYPT=OFF
 ```
 
-To create a zip file in memory use fill_memory_filefunc and supply a proper ourmemory_t structure. It is important
-not to forget to free zipmem->base when finished. If grow is set, zipmem->base will expand to fit the size of the zip. 
-If grow is not set be sure to fill out zipmem.base and zipmem.size.
+### NTFS Timestamps
+
+Support has been added for UTC last modified, last accessed, and creation dates.
+
+### Streams
+
+This library has been refactored around streams.
+
+#### Memory Streaming
+
+To unzip from a zip file in memory create a memory stream and pass it to the unzip open functions.
+```
+uint8_t *zip_buffer = NULL;
+int32_t zip_buffer_size = 0;
+void *mem_stream = NULL;
+
+// fill zip_buffer with zip contents
+mz_stream_mem_create(&mem_stream);
+mz_stream_mem_set_buffer(mem_stream, zip_buffer, zip_buffer_size);
+mz_stream_open(mem_stream, NULL, MZ_OPEN_MODE_READ);
+
+void *zip_handle = mz_zip_open(mem_stream, MZ_OPEN_MODE_READ);
+// do unzip operations
+
+mz_stream_mem_delete(&mem_stream);
+```
+
+To create a zip file in memory first create a growable memory stream and pass it to the zip open functions.
 
 ```
-zlib_filefunc_def filefunc32 = {0};
-ourmemory_t zipmem = {0};
+void *mem_stream = NULL;
 
-zipmem.grow = 1;
+mz_stream_mem_create(&mem_stream);
+mz_stream_mem_set_grow_size(mem_stream, (128 * 1024));
+mz_stream_open(mem_stream, NULL, MZ_OPEN_MODE_CREATE);
 
-fill_memory_filefunc(&filefunc32, &zipmem);
+void *zip_handle = mz_zip_open(mem_stream, MZ_OPEN_MODE_WRITE);
+// do unzip operations
 
-zipOpen3("__notused__", APPEND_STATUS_CREATE, 0, 0, &filefunc32);
+mz_stream_mem_delete(&mem_stream);
 ```
 
-### BZIP2
+For a complete example, see test_zip_mem() in [test.c](https://github.com/nmoinvaz/minizip/blob/master/test/test.c).
 
-+ Requires #define HAVE_BZIP2
-+ Requires BZIP2 library
+#### Buffered Streaming
+
+By default the library will read bytes typically one at a time. The buffered stream allows for buffered read and write operations to improve I/O performance.
+
+```
+void *stream = NULL;
+void *buf_stream = NULL;
+
+mz_stream_os_create(&stream)
+// do open os stream
+
+mz_stream_buffered_create(&buf_stream);
+mz_stream_buffered_open(buf_stream, NULL, MZ_OPEN_MODE_READ);
+mz_stream_buffered_set_base(buf_stream, stream);
+
+void *zip_handle = mz_zip_open(buf_stream, MZ_OPEN_MODE_READ);
+```
+
+#### Disk Splitting Stream
+
+To create an archive with multiple disks use the disk splitting stream and for zipping supply a disk size value in bytes.
+
+```
+void *stream = NULL;
+void *split_stream = NULL;
+
+mz_stream_os_create(&stream);
+
+mz_stream_split_create(&split_stream);
+mz_stream_split_set_prop_int64(split_stream, MZ_STREAM_PROP_DISK_SIZE, 64 * 1024);
+
+mz_stream_set_base(split_stream, stream);
+
+mz_stream_open(split_stream, path..
+
+handle = mz_zip_open(split_stream, MZ_OPEN_MODE_WRITE);
+```
+
+The central directory is the only data stored in the .zip and doesn't follow disk size restrictions.
+
+When unzipping it will automatically determine when in needs to cross disk boundaries.
 
 ### Windows RT
 
-+ Requires #define IOWIN32_USING_WINRT_API
++ Requires ``#define MZ_USE_WINRT_API``
 
-## Additional Features
+## Limitations
 
-### AES Encryption
-
-+ Requires #define HAVE_AES
-+ Requires AES library files
-
-When zipping with a password it will always use AES 256-bit encryption. 
-When unzipping it will use AES decryption only if necessary. Does not support central directory or local file header encryption.
-
-### PKWARE disk spanning
-
-To create an archive with multiple disks use zipOpen3_64 supplying a disk_size value in bytes.
-
-```
-extern zipFile ZEXPORT zipOpen3_64(const void *pathname, int append, 
-  ZPOS64_T disk_size, zipcharpc* globalcomment, zlib_filefunc64_def* pzlib_filefunc_def);
-```
-The central directory is the only data stored in the .zip and doesn't follow disk_size restrictions.
-
-When unzipping it will automatically determine when in needs to span disks.
-
-### I/O Buffering
-
-Improves I/O performance by buffering read and write operations. 
-```
-zlib_filefunc64_def filefunc64 = {0};
-ourbuffer_t buffered = {0};
-    
-fill_win32_filefunc64(&buffered->filefunc64);
-fill_buffer_filefunc64(&filefunc64, buffered);
-    
-unzOpen2_64(filename, &filefunc64)
-```
-
-### Apple libcompression
-
-+ Requires #define HAVE_APPLE_COMPRESSION
++ Archives are required to have a central directory.
++ Central directory header values should be correct and it is necessary for the compressed size to be accurate for AES encryption.
++ Central directory encryption is not supported due to licensing restrictions mentioned by PKWARE in their zip appnote.

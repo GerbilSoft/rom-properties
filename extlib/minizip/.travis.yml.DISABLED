@@ -1,0 +1,26 @@
+language: c
+
+os:
+    - linux
+
+compiler:
+    - clang
+    - gcc
+
+python:
+    - "2.7"
+
+before_install:
+    - sudo apt-get install libbsd-dev
+    - sudo pip install --upgrade pip
+    - sudo pip install numpy
+
+before_script:
+    - mkdir build
+    - cd build
+    - cmake .. -DBUILD_TEST=ON
+
+script:
+    - make
+    - cd ../test
+    - python test.py --exe_dir=../build

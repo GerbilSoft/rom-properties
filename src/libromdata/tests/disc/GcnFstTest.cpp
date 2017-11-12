@@ -23,13 +23,12 @@
 #include "gtest/gtest.h"
 
 // MiniZip
-#include "unzip.h"
-#ifdef _WIN32
-#include "iowin32.h"
-#endif
+#include "mz_zip.h"
+#include "mz_compat.h"
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
 
@@ -111,7 +110,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 * @param filename Zip filename.
 		 * @return Zip file, or nullptr on error.
 		 */
-		static unzFile openZip(const rp_char *filename);
+		static unzFile openZip(const char *filename);
 
 		/**
 		 * Get a file from a Zip file.
@@ -121,7 +120,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 * @param max_filesize	[in,opt] Maximum file size. (default is MAX_GCN_FST_BIN_FILESIZE)
 		 * @return Number of bytes read, or negative on error.
 		 */
-		static int getFileFromZip(const rp_char *filename,
+		static int getFileFromZip(const char *zip_filename,
 			const char *int_filename,
 			ao::uvector<uint8_t>& buf,
 			int max_filesize = MAX_GCN_FST_BIN_FILESIZE);
@@ -176,13 +175,15 @@ void GcnFstTest::SetUp(void)
 	const GcnFstTest_mode &mode = GetParam();
 
 	// Open the Zip file.
-	const rp_char *zip_filename = nullptr;
+	// NOTE: MiniZip 2.2.3's compatibility functions
+	// take UTF-8 on Windows, not UTF-16.
+	const char *zip_filename = nullptr;
 	switch (mode.offsetShift) {
 		case 0:
-			zip_filename = _RP("GameCube.fst.bin.zip");
+			zip_filename = "GameCube.fst.bin.zip";
 			break;
 		case 2:
-			zip_filename = _RP("Wii.fst.bin.zip");
+			zip_filename = "Wii.fst.bin.zip";
 			break;
 		default:
 			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
@@ -210,22 +211,24 @@ void GcnFstTest::TearDown(void)
  * @param filename Zip filename.
  * @return Zip file, or nullptr on error.
  */
-unzFile GcnFstTest::openZip(const rp_char *filename)
+unzFile GcnFstTest::openZip(const char *filename)
 {
 	// Prepend fst_data.
-	rp_string path = _RP("fst_data");
-	path += _RP_CHR(DIR_SEP_CHR);
+	string path = "fst_data";
+	path += DIR_SEP_CHR;
 	path += filename;
 
 #ifdef _WIN32
+	// NOTE: MiniZip 2.2.3's compatibility functions
+	// take UTF-8 on Windows, not UTF-16.
 	zlib_filefunc64_def ffunc;
 	fill_win32_filefunc64W(&ffunc);
-	return unzOpen2_64(RP2W_s(path), &ffunc);
+	return unzOpen2_64(path.c_str(), &ffunc);
 #else /* !_WIN32 */
 #ifdef RP_UTF8
 	return unzOpen(path.c_str());
 #else /* RP_UTF16 */
-	return unzOpen(rp_string_to_utf8(path));
+	return unzOpen(path.c_str());
 #endif
 #endif /* _WIN32 */
 }
@@ -238,15 +241,17 @@ unzFile GcnFstTest::openZip(const rp_char *filename)
  * @param max_filesize	[in,opt] Maximum file size. (default is MAX_GCN_FST_BIN_FILESIZE)
  * @return Number of bytes read, or negative on error.
  */
-int GcnFstTest::getFileFromZip(const rp_char *zip_filename,
+int GcnFstTest::getFileFromZip(const char *zip_filename,
 	const char *int_filename,
 	ao::uvector<uint8_t>& buf,
 	int max_filesize)
 {
 	// Open the Zip file.
+	// NOTE: MiniZip 2.2.3's compatibility functions
+	// take UTF-8 on Windows, not UTF-16.
 	unzFile unz = openZip(zip_filename);
 	EXPECT_TRUE(unz != nullptr) <<
-		"Could not open '" << rp_string_to_utf8(zip_filename) << "', check the test directory!";
+		"Could not open '" << zip_filename << "', check the test directory!";
 	if (!unz) {
 		return -1;
 	}
@@ -428,13 +433,15 @@ TEST_P(GcnFstTest, FstPrint)
 	const GcnFstTest_mode &mode = GetParam();
 
 	// Open the Zip file.
-	const rp_char *zip_filename = nullptr;
+	// NOTE: MiniZip 2.2.3's compatibility functions
+	// take UTF-8 on Windows, not UTF-16.
+	const char *zip_filename = nullptr;
 	switch (mode.offsetShift) {
 		case 0:
-			zip_filename = _RP("GameCube.fst.txt.zip");
+			zip_filename = "GameCube.fst.txt.zip";
 			break;
 		case 2:
-			zip_filename = _RP("Wii.fst.txt.zip");
+			zip_filename = "Wii.fst.txt.zip";
 			break;
 		default:
 			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
@@ -512,13 +519,15 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 	std::vector<GcnFstTest_mode> files;
 
 	// Open the Zip file.
-	const rp_char *zip_filename;
+	// NOTE: MiniZip 2.2.3's compatibility functions
+	// take UTF-8 on Windows, not UTF-16.
+	const char *zip_filename;
 	switch (offsetShift) {
 		case 0:
-			zip_filename = _RP("GameCube.fst.bin.zip");
+			zip_filename = "GameCube.fst.bin.zip";
 			break;
 		case 2:
-			zip_filename = _RP("Wii.fst.bin.zip");
+			zip_filename = "Wii.fst.bin.zip";
 			break;
 		default:
 			EXPECT_TRUE(false) << "offsetShift is " << (int)offsetShift << "; should be either 0 or 2.";
@@ -527,13 +536,21 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 
 	unzFile unz = openZip(zip_filename);
 	EXPECT_TRUE(unz != nullptr) <<
-		"Could not open '" << rp_string_to_utf8(zip_filename) << "', check the test directory!";
+		"Could not open '" << zip_filename << "', check the test directory!";
 	if (!unz) {
 		return files;
 	}
 
+	// MiniZip 2.x (up to 2.2.3) doesn't automatically go to the first file.
+	// Hence, we'll need to do that here.
+	int ret = unzGoToFirstFile(unz);
+	EXPECT_EQ(0, ret) << "unzGoToFirstFile failed in '" << zip_filename << "'.";
+	if (ret != 0) {
+		unzClose(unz);
+		return files;
+	}
+
 	// Read the filenames.
-	int ret = UNZ_OK;
 	char filename[256];
 	unz_file_info64 file_info;
 	do {
@@ -545,9 +562,16 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 		if (ret != UNZ_OK)
 			break;
 
+		// Make sure the filename isn't empty.
+		EXPECT_GT(file_info.size_filename, 0) << "A filename in the ZIP file has no name. Skipping...";
+
+		// Make sure the file isn't too big.
 		EXPECT_LE(file_info.uncompressed_size, (uLong)MAX_GCN_FST_BIN_FILESIZE) <<
 			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
-		if (file_info.uncompressed_size <= (uLong)MAX_GCN_FST_BIN_FILESIZE) {
+
+		if (file_info.size_filename > 0 &&
+		    file_info.uncompressed_size <= (uLong)MAX_GCN_FST_BIN_FILESIZE)
+		{
 			// Add this filename to the list.
 			// NOTE: Filename might not be NULL-terminated,
 			// so use the explicit length.

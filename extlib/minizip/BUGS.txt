@@ -1,0 +1,9 @@
+FIX BUGS WITH COMPATIBILITY:
+- Filename isn't NULL-terminated.
+- unzGoToFirstFile isn't automatic.
+- unzClose() needs to call mz_stream_close() before mz_stream_delete(); otherwise, file is left hanging open,
+  and sharing is disabled.
+
+For GcnFstTest:
+- Remove rp_char() from ZIP filenames.
+
