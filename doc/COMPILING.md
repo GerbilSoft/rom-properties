@@ -42,7 +42,7 @@ You will need to install the following:
 
 In order to build debug symbol packages, you will need:
 * Debian: debhelper >= 9.20151219
-* Ubuntu: pkg-create-debsym
+* Ubuntu: pkg-create-dbgsym
 
 In the top-level source directory, run this command:
 * ```debuild -i -us -uc -b```
