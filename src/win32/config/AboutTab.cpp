@@ -31,7 +31,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/config/AboutTabText.hpp"
-using LibRpBase::AboutTabText;
+using namespace LibRpBase;
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
@@ -45,6 +45,7 @@ using LibRpBase::AboutTabText;
 #include <string>
 using std::string;
 using std::wstring;
+using std::u16string;
 
 // Windows: RichEdit control.
 #include <richedit.h>

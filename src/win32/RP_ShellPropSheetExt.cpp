@@ -1149,11 +1149,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
 		lvColumn.fmt = LVCFMT_LEFT;
 		for (int i = 0; i < col_count; i++) {
-			const rp_string &name = listDataDesc.names->at(i);
-			if (!name.empty()) {
-				// TODO: Support for RP_UTF8?
+			const wstring wstr = RP2W_s(listDataDesc.names->at(i));
+			if (!wstr.empty()) {
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				lvColumn.pszText = (LPWSTR)(name.c_str());
+				lvColumn.pszText = const_cast<LPWSTR>(wstr.c_str());
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
@@ -1184,9 +1183,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				lvItem.iSubItem = col;
-				// TODO: Support for RP_UTF8?
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				lvItem.pszText = (LPWSTR)iter->c_str();
+				const wstring wstr = RP2W_s(*iter);
+				lvItem.pszText = const_cast<LPWSTR>(wstr.c_str());
 				if (col == 0) {
 					// Column 0: Insert the item.
 					ListView_InsertItem(hDlgItem, &lvItem);
@@ -1523,7 +1522,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	InitCommonControlsEx(&initCommCtrl);
 
 	// Dialog font and device context.
-	hFontDlg = GetWindowFont(hDlg);
+	if (!hFontDlg) {
+		hFontDlg = GetWindowFont(hDlg);
+	}
 	AutoGetDC hDC(hDlg, hFontDlg);
 
 	// Initialize the bold and monospaced fonts.
@@ -1632,7 +1633,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Skip this tab.
 				continue;
 			}
-			tcItem.pszText = const_cast<LPWSTR>(RP2W_c(name));
+			const wstring wstr = RP2W_c(name);
+			tcItem.pszText = const_cast<LPWSTR>(wstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
 			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
 		}
@@ -1926,7 +1928,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file.reset(new RpFile(W2RP_cl(filename, cchFilename-1), RpFile::FM_OPEN_READ));
+	file.reset(new RpFile(W2RP_cl(filename, cchFilename), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -1945,7 +1947,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// tab is clicked, because otherwise the file will be held
 	// open and may block the user from changing attributes.
 	romData->unref();
-	d->filename = W2RP_cl(filename, cchFilename-1);
+	d->filename = W2RP_cl(filename, cchFilename);
 	hr = S_OK;
 
 cleanup:
@@ -2300,6 +2302,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (d) {
+				if (!d->hFontDlg) {
+					// Dialog font hasn't been obtained yet.
+					d->hFontDlg = GetWindowFont(hDlg);
+				}
 				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;
