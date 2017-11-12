@@ -3,6 +3,10 @@ PROJECT(libunixcommon)
 
 # TODO: Mac OS X functionality.
 IF(NOT APPLE)
+	# Qt5 requires "-fpic -fPIC" due to reduced relocations.
+	SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
+
 	# Find the framework libraries in order to determine plugin paths.
 	# FIXME: Remove prefix from KDE4's path.
 	# NOTE: Need to skip the uninstall rule due to conflicts
@@ -71,9 +75,3 @@ TARGET_INCLUDE_DIRECTORIES(unixcommon
 		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 	)
-
-# Add -fpic/-fPIC in order to use this static library in plugins.
-IF(NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
-ENDIF(NOT APPLE)
