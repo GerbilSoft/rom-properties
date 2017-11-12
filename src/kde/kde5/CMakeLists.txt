@@ -16,6 +16,10 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 	# Get rid of the explicit C90 setting.
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
+	# Qt5 requires "-fpic -fPIC" due to reduced relocations.
+	SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
+
 	# Find Qt5.
 	SET(Qt5_NO_LINK_QTMAIN 1)
 	FIND_PACKAGE(Qt5 COMPONENTS Core Gui Widgets)
