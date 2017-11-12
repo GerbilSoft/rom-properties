@@ -156,7 +156,7 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual rp_string proxyForUrl(const rp_string &url) const override final;
+		virtual string proxyForUrl(const string &url) const override final;
 };
 
 /** RomThumbCreatorPrivate **/
@@ -229,16 +229,16 @@ int RomThumbCreatorPrivate::getImgClassSize(const QImage &imgClass, ImgSize *pOu
  * Get the proxy for the specified URL.
  * @return Proxy, or empty string if no proxy is needed.
  */
-rp_string RomThumbCreatorPrivate::proxyForUrl(const rp_string &url) const
+string RomThumbCreatorPrivate::proxyForUrl(const string &url) const
 {
-	QString proxy = KProtocolManager::proxyForUrl(QUrl(RP2Q(url)));
+	QString proxy = KProtocolManager::proxyForUrl(QUrl(U82Q(url)));
 	if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
 		// No proxy.
-		return rp_string();
+		return string();
 	}
 
 	// Proxy is required..
-	return Q2RP(proxy);
+	return Q2U8(proxy);
 }
 
 /** RomThumbCreator **/
@@ -277,7 +277,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	// Assuming width and height are the same.
 	// TODO: What if they aren't?
 	Q_D(RomThumbCreator);
-	int ret = d->getThumbnail(Q2RP(path), width, img);
+	int ret = d->getThumbnail(Q2U8(path), width, img);
 	return (ret == 0);
 }
 

@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
-#include "librpbase/config.librpbase.h"
+#include <string>
 
 namespace LibRpBase {
 	class rp_image;
@@ -32,114 +32,43 @@ namespace LibRpBase {
 #include <QtCore/QString>
 #include <QtGui/QImage>
 
-#if !defined(RP_UTF8) && !defined(RP_UTF16)
-#error Neither RP_UTF8 nor RP_UTF16 has been defined.
-#elif defined(RP_UTF8) && defined(RP_UTF16)
-#error Both RP_UTF8 and RP_UTF16 are defined, but only one should be.
-#endif
-
 /** Text conversion. **/
 
-// NOTE: QChar contains a single field, a ushort ucs value.
-// Hence, we can cast UTF-16 strings to QChar* and use the
-// QString(const QChar*) constructor instead of fromUtf16(),
-// which is "comparatively slow" due to BOM checking.
-
 /**
- * NOTE: Some of the UTF-8 versions return toUtf8().constData()
- * from the QString. Therefore, you *must* assign the
- * the result to an rp_string if storing it, since an
- * rp_char* will result in a dangling pointer.
+ * NOTE: Some of the UTF-8 functions return toUtf8().constData()
+ * from the QString. Therefore, you *must* assign the result to
+ * an std::string if storing it, since storing it as const char*
+ * will result in a dangling pointer.
  */
 
-#ifdef RP_UTF8
-
 /**
- * Convert an rp_string to a QString.
- * @param rps rp_string
+ * Convert an std::string to QString.
+ * @param str std::string
  * @return QString
  */
-static inline QString RP2Q(const LibRpBase::rp_string &rps)
+static inline QString U82Q(const std::string &str)
 {
-	return QString::fromUtf8(rps.data(), (int)rps.size());
+	return QString::fromUtf8(str.data(), (int)str.size());
 }
 
 /**
- * Convert a const rp_char* to a QString.
- * @param str const rp_char*
+ * Convert a const char* to a QString.
+ * @param str const char*
  * @param len Length of str, in characters. (optional; -1 for C string)
  * @return QString
  */
-static inline QString RP2Q(const rp_char *rps, int len = -1)
+static inline QString U82Q(const char *str, int len = -1)
 {
-	return QString::fromUtf8(rps, len);
+	return QString::fromUtf8(str, len);
 }
 
 /**
- * Get const rp_char* from QString.
+ * Get const char* from QString.
+ * NOTE: This is temporary; assign to an std::string immediately.
  * @param qs QString
- * @return const rp_char*
+ * @return const char*
  */
-#define Q2RP(qs) (reinterpret_cast<const rp_char*>(((qs).toUtf8().constData())))
-
-#elif defined(RP_UTF16)
-
-/**
- * Convert an rp_string to a QString.
- * @param rps rp_string
- * @return QString
- */
-static inline QString RP2Q(const LibRpBase::rp_string &rps)
-{
-	return QString(reinterpret_cast<const QChar*>(rps.data()), (int)rps.size());
-}
-
-/**
- * Convert a const rp_char* to a QString.
- * @param rps const rp_char*
- * @param len Length of str, in characters. (optional; -1 for C string)
- * @return QString
- */
-static inline QString RP2Q(const rp_char *rps, int len = -1)
-{
-#if QT_VERSION >= 0x050000
-	return QString(reinterpret_cast<const QChar*>(rps), len);
-#else /* QT_VERSION < 0x050000 */
-	// Qt 4.7 has two separate constructors for const QChar*.
-	// The version with an explicit length does not handle
-	// NULL-terminated strings when len == -1.
-	if (len >= 0) {
-		return QString(reinterpret_cast<const QChar*>(rps), len);
-	} else {
-#if QT_VERSION >= 0x040700
-		// Qt 4.7: Use the constructor without an explicit length.
-		return QString(reinterpret_cast<const QChar*>(rps));
-#else /* QT_VERSION < 0x040700 */
-		// Qt 4.6: No constructor is available for const QChar*
-		// that takes a string without an explicit length.
-		// Figure out the length first.
-		// TODO: Is pointer arithmetic faster?
-		len = 0;
-		while (rps[len] != 0) {
-			len++;
-		}
-		return QString(reinterpret_cast<const QChar*>(rps), len);
-#endif /* QT_VERSION >= 0x040700 */
-	}
-#endif /* QT_VERSION >= 0x050000 */
-}
-
-/**
- * Get const rp_char* from QString.
- * @param qs QString
- * @return const rp_char*
- */
-static inline const rp_char *Q2RP(const QString &qs)
-{
-	return reinterpret_cast<const rp_char*>(qs.utf16());
-}
-
-#endif
+#define Q2U8(qs) (reinterpret_cast<const char*>(((qs).toUtf8().constData())))
 
 /** Image conversion. **/
 

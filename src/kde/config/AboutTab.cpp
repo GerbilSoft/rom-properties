@@ -205,21 +205,21 @@ void AboutTabPrivate::initCreditsTab(void)
 
 		// Append the contributor's name.
 		sCredits += br + sIndent + chrBullet + QChar(L' ');
-		sCredits += RP2Q(creditsData->name);
+		sCredits += U82Q(creditsData->name);
 		if (creditsData->url) {
 			sCredits += QLatin1String(" &lt;<a href='") +
-				RP2Q(creditsData->url) +
+				U82Q(creditsData->url) +
 				QLatin1String("'>");
 			if (creditsData->linkText) {
-				sCredits += RP2Q(creditsData->linkText);
+				sCredits += U82Q(creditsData->linkText);
 			} else {
-				sCredits += RP2Q(creditsData->url);
+				sCredits += U82Q(creditsData->url);
 			}
 			sCredits += QLatin1String("</a>&gt;");
 		}
 		if (creditsData->sub) {
 			sCredits += QLatin1String(" (") +
-				RP2Q(creditsData->sub) +
+				U82Q(creditsData->sub) +
 				QChar(L')');
 		}
 	}
@@ -443,9 +443,9 @@ void AboutTabPrivate::initSupportTab(void)
 	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
 	     supportSite->name != nullptr; supportSite++)
 	{
-		QString qs_url = RP2Q(supportSite->url);
+		QString qs_url = U82Q(supportSite->url);
 		sSupport += sIndent + chrBullet + QChar(L' ') +
-			RP2Q(supportSite->name) +
+			U82Q(supportSite->name) +
 			QLatin1String(" &lt;<a href='") +
 			qs_url +
 			QLatin1String("'>") +

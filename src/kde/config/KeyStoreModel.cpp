@@ -251,7 +251,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 		switch (role) {
 			case Qt::DisplayRole:
-				return RP2Q(d->keyStore->sectName(LOWORD(id)));
+				return U82Q(d->keyStore->sectName(LOWORD(id)));
 			default:
 				break;
 		}
@@ -270,9 +270,9 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 		case Qt::DisplayRole:
 			switch (index.column()) {
 				case COL_KEY_NAME:
-					return RP2Q(key->name);
+					return U82Q(key->name);
 				case COL_VALUE:
-					return RP2Q(key->value);
+					return U82Q(key->value);
 				default:
 					break;
 			}
@@ -281,7 +281,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 		case Qt::EditRole:
 			switch (index.column()) {
 				case COL_VALUE:
-					return RP2Q(key->value);
+					return U82Q(key->value);
 				default:
 					break;
 			}
@@ -383,7 +383,7 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 	// TODO: Make sure it's hexadecimal, and verify the key.
 	// KeyStoreQt::setKey() will emit a signal if the value changes,
 	// which will cause KeyStoreModel to emit dataChanged().
-	d->keyStore->setKey(LOWORD(id), HIWORD(id), Q2RP(value.toString()));
+	d->keyStore->setKey(LOWORD(id), HIWORD(id), Q2U8(value.toString()));
 	return true;
 }
 

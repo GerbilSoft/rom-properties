@@ -26,7 +26,7 @@
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
-// RP2Q()
+// U82Q()
 #include "RpQt.hpp"
 
 // C includes. (C++ namespace)
@@ -292,14 +292,14 @@ void ConfigDialog::apply(void)
 	// Open the configuration file using QSettings.
 	// TODO: Error handling.
 	const Config *const config = Config::instance();
-	const rp_char *filename = config->filename();
+	const char *filename = config->filename();
 	assert(filename != nullptr);
 	if (!filename) {
 		// No configuration filename...
 		return;
 	}
 
-	QSettings settings(RP2Q(filename), QSettings::IniFormat);
+	QSettings settings(U82Q(filename), QSettings::IniFormat);
 	if (!settings.isWritable()) {
 		// Can't write to the file...
 		return;
@@ -316,7 +316,7 @@ void ConfigDialog::apply(void)
 	filename = keyManager->filename();
 	assert(filename != nullptr);
 	if (filename) {
-		QSettings keys_conf(RP2Q(filename), QSettings::IniFormat);
+		QSettings keys_conf(U82Q(filename), QSettings::IniFormat);
 		if (keys_conf.isWritable()) {
 			d->tabKeyManager->save(&keys_conf);
 		}

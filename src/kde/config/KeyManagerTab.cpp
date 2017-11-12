@@ -296,7 +296,7 @@ void KeyManagerTab::save(QSettings *pSettings)
 			continue;
 
 		// Save this key.
-		pSettings->setValue(RP2Q(pKey->name), RP2Q(pKey->value));
+		pSettings->setValue(U82Q(pKey->name), U82Q(pKey->value));
 	}
 
 	// End of [Keys]
@@ -321,7 +321,7 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 		return;
 
 	Q_D(KeyManagerTab);
-	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiKeysBin(Q2RP(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiKeysBin(Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii keys.bin"), iret);
 }
 
@@ -338,7 +338,7 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 		return;
 
 	Q_D(KeyManagerTab);
-	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiUOtpBin(Q2RP(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiUOtpBin(Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii U otp.bin"), iret);
 }
 
@@ -355,7 +355,7 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 		return;
 
 	Q_D(KeyManagerTab);
-	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSboot9bin(Q2RP(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSboot9bin(Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS boot9.bin"), iret);
 }
 
@@ -372,6 +372,6 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 		return;
 
 	Q_D(KeyManagerTab);
-	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSaeskeydb(Q2RP(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSaeskeydb(Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS aeskeydb.bin"), iret);
 }
