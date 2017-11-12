@@ -1,5 +1,7 @@
 # Changes
 
+## v1.3 - The Internationalization Release (released 201?/??/??)
+
 ## v1.2 - The Dreamcast Release (released 2017/11/12)
 
 * New features:
