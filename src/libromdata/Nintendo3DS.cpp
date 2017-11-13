@@ -1981,7 +1981,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// eMMC type.
 			d->fields->addField_string(_RP("Type"),
-				(new3ds ? _RP("New3DS") : _RP("Old3DS / 2DS")));
+				(new3ds ? _RP("New3DS / New2DS") : _RP("Old3DS / 2DS")));
 
 			// Partition type names.
 			// TODO: Show TWL NAND partitions?
