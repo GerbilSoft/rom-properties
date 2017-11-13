@@ -646,7 +646,7 @@ int NintendoBadge::loadFieldData(void)
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE(prbs->name)) {
 				d->fields->addField_string(_RP("Name"),
-					utf16_to_rp_string(prbs->name[lang], sizeof(prbs->name[lang])));
+					utf16le_to_rp_string(prbs->name[lang], sizeof(prbs->name[lang])));
 			}
 
 			// Badge ID.
@@ -729,7 +729,7 @@ int NintendoBadge::loadFieldData(void)
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE(cabs->name)) {
 				d->fields->addField_string(_RP("Name"),
-					utf16_to_rp_string(cabs->name[lang], sizeof(cabs->name[lang])));
+					utf16le_to_rp_string(cabs->name[lang], sizeof(cabs->name[lang])));
 			}
 
 			// Badge ID.
