@@ -31,7 +31,6 @@
 #include "librpbase/file/RpFile.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::RpFile;
-using LibRpBase::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -53,11 +52,11 @@ UrlmonDownloader::UrlmonDownloader()
 	: super()
 { }
 
-UrlmonDownloader::UrlmonDownloader(const rp_char *url)
+UrlmonDownloader::UrlmonDownloader(const char *url)
 	: super(url)
 { }
 
-UrlmonDownloader::UrlmonDownloader(const rp_string &url)
+UrlmonDownloader::UrlmonDownloader(const string &url)
 	: super(url)
 { }
 

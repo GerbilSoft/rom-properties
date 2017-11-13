@@ -24,24 +24,27 @@
 
 // libromdata
 #include "librpbase/TextFuncs.hpp"
-using LibRpBase::rp_string;
 
 // Cache Manager
 #include "../CacheManager.hpp"
+
+// C++ includes.
+#include <string>
+using std::string;
 
 namespace LibCacheMgr { namespace Tests {
 
 struct FilterCacheKeyTest_mode
 {
 	// Cache keys.
-	const rp_char *keyOrig;			// Original key.
-	const rp_char *keyFilteredPosix;	// Filtered key. (POSIX)
-	const rp_char *keyFilteredWin32;	// Filtered key. (Win32)
+	const char *keyOrig;			// Original key.
+	const char *keyFilteredPosix;	// Filtered key. (POSIX)
+	const char *keyFilteredWin32;	// Filtered key. (Win32)
 
 	FilterCacheKeyTest_mode(
-		const rp_char *keyOrig,
-		const rp_char *keyFilteredPosix,
-		const rp_char *keyFilteredWin32)
+		const char *keyOrig,
+		const char *keyFilteredPosix,
+		const char *keyFilteredWin32)
 		: keyOrig(keyOrig)
 		, keyFilteredPosix(keyFilteredPosix)
 		, keyFilteredWin32(keyFilteredWin32)
@@ -77,7 +80,7 @@ TEST_P(FilterCacheKeyTest, filterCacheKey)
 {
 	const FilterCacheKeyTest_mode &mode = GetParam();
 
-	rp_string keyFiltered = CacheManager::filterCacheKey(mode.keyOrig);
+	string keyFiltered = CacheManager::filterCacheKey(mode.keyOrig);
 #ifdef _WIN32
 	EXPECT_EQ(mode.keyFilteredWin32, keyFiltered);
 #else /* !_WIN32 */

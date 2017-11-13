@@ -52,19 +52,19 @@ class CacheManager
 		 * Get the proxy server.
 		 * @return Proxy server URL.
 		 */
-		LibRpBase::rp_string proxyUrl(void) const;
+		std::string proxyUrl(void) const;
 
 		/**
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
 		 */
-		void setProxyUrl(const rp_char *proxyUrl);
+		void setProxyUrl(const char *proxyUrl);
 
 		/**
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
 		 */
-		void setProxyUrl(const LibRpBase::rp_string &proxyUrl);
+		void setProxyUrl(const std::string &proxyUrl);
 
 	protected:
 		/**
@@ -72,7 +72,7 @@ class CacheManager
 		 * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
 		 * @return Cache filename, or empty string on error.
 		 */
-		LibRpBase::rp_string getCacheFilename(const LibRpBase::rp_string &cache_key);
+		std::string getCacheFilename(const std::string &cache_key);
 
 	public:
 		/**
@@ -80,7 +80,7 @@ class CacheManager
 		 * @param cache_key Cache key.
 		 * @return Filtered cache key.
 		 */
-		static LibRpBase::rp_string filterCacheKey(const LibRpBase::rp_string &cache_key);
+		static std::string filterCacheKey(const std::string &cache_key);
 
 	public:
 		/**
@@ -98,19 +98,19 @@ class CacheManager
 		 *
 		 * @return Absolute path to the cached file.
 		 */
-		LibRpBase::rp_string download(
-			const LibRpBase::rp_string &url,
-			const LibRpBase::rp_string &cache_key);
+		std::string download(
+			const std::string &url,
+			const std::string &cache_key);
 
 		/**
 		 * Check if a file has already been cached.
 		 * @param cache_key Cache key.
 		 * @return Filename in the cache, or empty string if not found.
 		 */
-		LibRpBase::rp_string findInCache(const LibRpBase::rp_string &cache_key);
+		std::string findInCache(const std::string &cache_key);
 
 	protected:
-		LibRpBase::rp_string m_proxyUrl;
+		std::string m_proxyUrl;
 		IDownloader *m_downloader;
 
 		// Semaphore used to limit the number of simultaneous downloads.

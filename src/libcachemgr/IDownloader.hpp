@@ -38,8 +38,8 @@ class IDownloader
 {
 	public:
 		IDownloader();
-		explicit IDownloader(const rp_char *url);
-		explicit IDownloader(const LibRpBase::rp_string &url);
+		explicit IDownloader(const char *url);
+		explicit IDownloader(const std::string &url);
 		virtual ~IDownloader();
 
 	private:
@@ -58,19 +58,19 @@ class IDownloader
 		 * Get the current URL.
 		 * @return URL.
 		 */
-		LibRpBase::rp_string url(void) const;
+		std::string url(void) const;
 
 		/**
 		 * Set the URL.
 		 * @param url New URL.
 		 */
-		void setUrl(const rp_char *url);
+		void setUrl(const char *url);
 
 		/**
 		 * Set the URL.
 		 * @param url New URL.
 		 */
-		void setUrl(const LibRpBase::rp_string &url);
+		void setUrl(const std::string &url);
 
 		/**
 		 * Get the maximum buffer size. (0 == unlimited)
@@ -93,19 +93,19 @@ class IDownloader
 		 * Get the proxy server.
 		 * @return Proxy server URL.
 		 */
-		LibRpBase::rp_string proxyUrl(void) const;
+		std::string proxyUrl(void) const;
 
 		/**
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
 		 */
-		void setProxyUrl(const rp_char *proxyUrl);
+		void setProxyUrl(const char *proxyUrl);
 
 		/**
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
 		 */
-		void setProxyUrl(const LibRpBase::rp_string &proxyUrl);
+		void setProxyUrl(const std::string &proxyUrl);
 
 	public:
 		/** Data accessors. **/
@@ -141,8 +141,8 @@ class IDownloader
 		virtual int download(void) = 0;
 
 	protected:
-		LibRpBase::rp_string m_url;
-		LibRpBase::rp_string m_proxyUrl;
+		std::string m_url;
+		std::string m_proxyUrl;
 
 		// Uninitialized vector class.
 		// Reference: http://andreoffringa.org/?q=uvector
