@@ -42,7 +42,7 @@ class NESMappers
 		 * @param mapper Mapper number.
 		 * @return Mapper name, or nullptr if not found.
 		 */
-		static const rp_char *lookup_ines(int mapper);
+		static const char *lookup_ines(int mapper);
 
 		/**
 		 * Convert a TNES mapper number to iNES.
@@ -58,7 +58,7 @@ class NESMappers
 		 * @param submapper Submapper number.
 		 * @return Submapper name, or nullptr if not found.
 		 */
-		static const rp_char *lookup_nes2_submapper(int mapper, int submapper);
+		static const char *lookup_nes2_submapper(int mapper, int submapper);
 };
 
 }

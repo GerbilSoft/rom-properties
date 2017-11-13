@@ -46,7 +46,7 @@ class Nintendo3DSSysTitles
 		 * @param pRegion	[out,opt] Output buffer for pointer to region name.
 		 * @return System title name, or nullptr on error.
 		 */
-		static const rp_char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const rp_char **pRegion);
+		static const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pRegion);
 };
 
 }

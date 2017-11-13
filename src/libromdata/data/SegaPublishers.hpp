@@ -40,7 +40,7 @@ class SegaPublishers
 		 * @param code Company code.
 		 * @return Publisher, or nullptr if not found.
 		 */
-		static const rp_char *lookup(unsigned int code);
+		static const char *lookup(unsigned int code);
 };
 
 }

@@ -47,7 +47,7 @@ class NintendoPublishers
 		 */
 		struct ThirdPartyList {
 			uint16_t code;			// 2-byte code
-			const rp_char *publisher;
+			const char *publisher;
 		};
 		static const ThirdPartyList ms_thirdPartyList[];
 
@@ -66,14 +66,14 @@ class NintendoPublishers
 		 * @param code Company code.
 		 * @return Publisher, or nullptr if not found.
 		 */
-		static const rp_char *lookup(uint16_t code);
+		static const char *lookup(uint16_t code);
 
 		/**
 		 * Look up a company code.
 		 * @param code Company code.
 		 * @return Publisher, or nullptr if not found.
 		 */
-		static const rp_char *lookup(const char *code);
+		static const char *lookup(const char *code);
 
 		/**
 		 * Look up a company code.
@@ -82,7 +82,7 @@ class NintendoPublishers
 		 * @param code Company code.
 		 * @return Publisher, or nullptr if not found.
 		 */
-		static const rp_char *lookup_old(uint8_t code);
+		static const char *lookup_old(uint8_t code);
 };
 
 }
