@@ -38,11 +38,13 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
+#include <string>
 using std::endl;
 using std::left;
 using std::max;
 using std::ostream;
 using std::setw;
+using std::string;
 using std::unique_ptr;
 
 // librpbase
@@ -86,22 +88,22 @@ public:
 };
 class ColonPad {
 	size_t width;
-	const rp_char* str;
+	const char* str;
 public:
-	ColonPad(size_t width, const rp_char* str) :width(width), str(str) {}
+	ColonPad(size_t width, const char* str) :width(width), str(str) {}
 	friend ostream& operator<<(ostream& os, const ColonPad& cp) {
 		StreamStateSaver state(os);
-		os << cp.str << left << setw(max(0, (signed)(cp.width - rp_strlen(cp.str)))) << ':';
+		os << cp.str << left << setw(max(0, (signed)(cp.width - strlen(cp.str)))) << ':';
 		return os;
 	}
 };
 class SafeString {
-	const rp_char* str;
+	const char* str;
 	bool quotes;
 	size_t width;
 public:
-	SafeString(const rp_char* str, bool quotes = true, size_t width=0) :str(str), quotes(quotes), width(width) {}
-	SafeString(const rp_string* str, bool quotes = true, size_t width=0) :quotes(quotes), width(width) {
+	SafeString(const char* str, bool quotes = true, size_t width=0) :str(str), quotes(quotes), width(width) {}
+	SafeString(const string* str, bool quotes = true, size_t width=0) :quotes(quotes), width(width) {
 		this->str = (str ? str->c_str() : nullptr);
 	}
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
@@ -110,16 +112,16 @@ public:
 			return os << "(null)";
 		}
 		
-		rp_string escaped;
-		escaped.reserve(rp_strlen(cp.str));
-		for (const rp_char* str = cp.str; *str != 0; str++) {
+		string escaped;
+		escaped.reserve(strlen(cp.str));
+		for (const char* str = cp.str; *str != 0; str++) {
 			if (cp.width && *str == '\n') {
 				escaped += '\n';
-				escaped.append(cp.width + (cp.quotes?1:0), _RP_CHR(' '));
+				escaped.append(cp.width + (cp.quotes?1:0), ' ');
 			} else if ((unsigned char)*str < 0x20) {
 				// Encode control characters using U+2400 through U+241F.
 				escaped += "\xE2\x90";
-				escaped += (rp_char)(0x80 + (unsigned char)*str);
+				escaped += (char)(0x80 + (unsigned char)*str);
 			} else {
 				escaped += *str;
 			}
@@ -169,7 +171,7 @@ public:
 		// Determine the column widths.
 		int col = 0;
 		for (int bit = 0; bit < count; bit++) {
-			const rp_string &name = bitfieldDesc.names->at(bit);
+			const string &name = bitfieldDesc.names->at(bit);
 			if (name.empty())
 				continue;
 
@@ -186,7 +188,7 @@ public:
 		os << left;
 		col = 0;
 		for (int bit = 0; bit < count; bit++) {
-			const rp_string &name = bitfieldDesc.names->at(bit);
+			const string &name = bitfieldDesc.names->at(bit);
 			if (name.empty())
 				continue;
 
@@ -271,7 +273,7 @@ public:
 				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
 				os << '|' << setw(colSize[i]) << listDataDesc.names->at(i);
 			}
-			os << '|' << endl << Pad(field.width) << rp_string(totalWidth, '-');
+			os << '|' << endl << Pad(field.width) << string(totalWidth, '-');
 			// Don't skip the first newline, since we're
 			// printing headers.
 			skipFirstNL = false;
@@ -365,8 +367,7 @@ public:
 
 		// Convert the age ratings field to a string.
 		const RomFields::age_ratings_t *age_ratings = romField->data.age_ratings;
-		rp_string rps = RomFields::ageRatingsDecode(age_ratings, false);
-		os << RP2U8_s(rps);
+		os << RomFields::ageRatingsDecode(age_ratings, false);
 		return os;
 	}
 };
@@ -433,9 +434,9 @@ public:
 };
 
 class JSONString {
-	const rp_char* str;
+	const char* str;
 public:
-	explicit JSONString(const rp_char* str) :str(str) {}
+	explicit JSONString(const char* str) :str(str) {}
 	friend ostream& operator<<(ostream& os, const JSONString& js) {
 		//assert(js.str); // not all strings can't be null, apparently
 		if (!js.str) {
@@ -445,31 +446,31 @@ public:
 		}
 
 		// Certain characters need to be escaped.
-		const rp_char *str = js.str;
-		rp_string escaped;
-		escaped.reserve(rp_strlen(str));
+		const char *str = js.str;
+		string escaped;
+		escaped.reserve(strlen(str));
 		for (; *str != 0; str++) {
 			switch (*str) {
 				case '\\':
-					escaped += _RP("\\\\");
+					escaped += "\\\\";
 					break;
 				case '"':
-					escaped += _RP("\\");
+					escaped += "\\";
 					break;
 				case '\b':
-					escaped += _RP("\\b");
+					escaped += "\\b";
 					break;
 				case '\f':
-					escaped += _RP("\\f");
+					escaped += "\\f";
 					break;
 				case '\t':
-					escaped += _RP("\\t");
+					escaped += "\\t";
 					break;
 				case '\n':
-					escaped += _RP("\\n");
+					escaped += "\\n";
 					break;
 				case '\r':
-					escaped += _RP("\\r");
+					escaped += "\\r";
 					break;
 				default:
 					escaped += *str;
@@ -528,7 +529,7 @@ public:
 					}
 					bool printedOne = false;
 					for (int bit = 0; bit < count; bit++) {
-						const rp_string &name = bitfieldDesc.names->at(bit);
+						const string &name = bitfieldDesc.names->at(bit);
 						if (name.empty())
 							continue;
 
@@ -654,8 +655,8 @@ public:
 ROMOutput::ROMOutput(const RomData *romdata) : romdata(romdata) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
-	const rp_char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
-	const rp_char *fileType = romdata->fileType_string();
+	const char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const char *fileType = romdata->fileType_string();
 
 	os << "-- " << (sysName ? sysName : "(unknown system)") <<
 	      ' ' << (fileType ? fileType : "(unknown filetype)") <<
@@ -708,8 +709,8 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
 
-	const rp_char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
-	const rp_char *fileType = romdata->fileType_string();
+	const char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const char *fileType = romdata->fileType_string();
 
 	os << "{\"system\":";
 	if (sysName) {

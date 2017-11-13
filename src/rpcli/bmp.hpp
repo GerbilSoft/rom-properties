@@ -30,6 +30,6 @@ namespace LibRpBase {
 #include <ostream>
 
 int rpbmp(std::ostream& os, const LibRpBase::rp_image *img);
-int rpbmp(const rp_char *filename, const LibRpBase::rp_image *img);
+int rpbmp(const char *filename, const LibRpBase::rp_image *img);
 
 #endif /* __ROMPROPERTIES_RPCLI_BMP_HPP__ */
