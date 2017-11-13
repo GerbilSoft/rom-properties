@@ -115,11 +115,11 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		virtual LibRpBase::rp_string filename(void) const override final;
+		virtual std::string filename(void) const override final;
 
 	protected:
 		IStream *m_pStream;
-		LibRpBase::rp_string m_filename;
+		std::string m_filename;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__ */

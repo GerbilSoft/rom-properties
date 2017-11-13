@@ -143,11 +143,11 @@ class AboutTabPrivate
 			_Out_ LPBYTE pbBuff, _In_ LONG cb, _Out_ LONG *pcb);
 
 		/**
-		 * Convert rp_char* to RTF-escaped text.
-		 * @param str rp_char*.
+		 * Convert a UTF-8 string to RTF-escaped text.
+		 * @param str UTF-8 string.
 		 * @return RTF-escaped text.
 		 */
-		static string rtfEscape(const rp_char *str);
+		static string rtfEscape(const char *str);
 
 	protected:
 		// Tab text. (RichText format)
@@ -411,27 +411,23 @@ DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
 }
 
 /**
- * Convert rp_char* to RTF-escaped text.
- * @param str rp_char*.
+ * Convert a UTF-8 string to RTF-escaped text.
+ * @param str UTF-8 string.
  * @return RTF-escaped text.
  */
-string AboutTabPrivate::rtfEscape(const rp_char *str)
+string AboutTabPrivate::rtfEscape(const char *str)
 {
 	assert(str != nullptr);
 	if (unlikely(!str)) {
 		return string();
 	}
 
-	string ret;
-
-#ifdef RP_UTF8
-	// Convert the rp_char to RP_UTF16 first.
-	const u16string u16str = rp_string_to_utf16(str, -1);
+	// Convert the string to RP_UTF16 first.
+	const u16string u16str = utf8_to_utf16(str, -1);
 	const char16_t *wcs = u16str.c_str();
-#else /* RP_UTF16 */
-	// We already have RP_UTF16.
-	const char16_t *wcs = str;
-#endif
+
+	// RTF return string.
+	string ret;
 
 	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/
 	char buf[12];	// Conversion buffer.
@@ -482,14 +478,14 @@ void AboutTabPrivate::initProgramTitleText(void)
 	// Version number.
 	wstring s_version;
 	s_version.reserve(128);
-	s_version= L"Version ";
+	s_version = L"Version ";
 	s_version += RP2W_c(U82RP_c(AboutTabText::prg_version));
 	if (AboutTabText::git_version[0] != 0) {
 		s_version += L"\r\n";
-		s_version += RP2W_c(U82RP_c(AboutTabText::git_version));
+		s_version += RP2W_c(AboutTabText::git_version);
 		if (AboutTabText::git_describe[0] != 0) {
 			s_version += L"\r\n";
-			s_version += RP2W_c(U82RP_c(AboutTabText::git_describe));
+			s_version += RP2W_c(AboutTabText::git_describe);
 		}
 	}
 	SetWindowText(hStaticVersion, s_version.c_str());

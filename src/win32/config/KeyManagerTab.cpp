@@ -586,7 +586,7 @@ void KeyManagerTabPrivate::save(void)
 
 	// NOTE: This may re-check the configuration timestamp.
 	const KeyManager *const keyManager = KeyManager::instance();
-	const rp_char *const filename = keyManager->filename();
+	const char *const filename = keyManager->filename();
 	assert(filename != nullptr);
 	if (!filename) {
 		// No configuration filename...

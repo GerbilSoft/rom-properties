@@ -62,6 +62,7 @@ using LibRomData::RomDataFactory;
 using std::unique_ptr;
 using std::unordered_set;
 using std::wostringstream;
+using std::string;
 using std::wstring;
 using std::vector;
 
@@ -118,7 +119,7 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		// ROM filename.
-		rp_string filename;
+		string filename;
 		// ROM data. (Not opened until the properties tab is shown.)
 		RomData *romData;
 
@@ -623,11 +624,11 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// System name.
 	// TODO: Logo, game icon, and game title?
-	const rp_char *systemName = romData->systemName(
+	const char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 
 	// File type.
-	const rp_char *const fileType = romData->fileType_string();
+	const char *const fileType = romData->fileType_string();
 
 	wstring sysInfo;
 	if (systemName) {
@@ -960,16 +961,17 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			col_widths.resize(elemsPerRow);
 			row = 0; col = 0;
 			for (int j = 0; j < count; j++) {
-				const rp_string &name = bitfieldDesc.names->at(j);
+				const string &name = bitfieldDesc.names->at(j);
 				if (name.empty())
 					continue;
-				// Make sure this is a UTF-16 string.
-				wstring s_name = RP2W_s(name);
+
+				// Convert to UTF-16.
+				wstring wname = RP2W_s(name);
 
 				// Get the width of this specific entry.
 				// TODO: Use measureTextSize()?
 				SIZE textSize;
-				GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+				GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
 				int chk_w = rect_chkbox.right + textSize.cx;
 				if (chk_w > col_widths[col]) {
 					col_widths[col] = chk_w;
@@ -1022,11 +1024,12 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 	row = 0; col = 0;
 	for (int j = 0; j < count; j++) {
-		const rp_string &name = bitfieldDesc.names->at(j);
+		const string &name = bitfieldDesc.names->at(j);
 		if (name.empty())
 			continue;
-		// Make sure this is a UTF-16 string.
-		wstring s_name = RP2W_s(name);
+
+		// Convert to UTF-16.
+		wstring wname = RP2W_s(name);
 
 		// Get the text size.
 		int chk_w;
@@ -1034,7 +1037,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			// Get the width of this specific entry.
 			// TODO: Use measureTextSize()?
 			SIZE textSize;
-			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+			GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
 			if (col == elemsPerRow) {
@@ -1051,7 +1054,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 		// FIXME: Tab ordering?
 		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_BUTTON, s_name.c_str(),
+			WC_BUTTON, wname.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
@@ -1179,7 +1182,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		for (int i = 0; i < row_count; i++) {
 			lvItem.iItem = i;
 
-			const vector<rp_string> &data_row = list_data->at(i);
+			const vector<string> &data_row = list_data->at(i);
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				lvItem.iSubItem = col;
@@ -1393,9 +1396,9 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	}
 
 	// Convert the age ratings field to a string.
-	rp_string rps = RomFields::ageRatingsDecode(age_ratings);
+	string str = RomFields::ageRatingsDecode(age_ratings);
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, RP2W_s(rps));
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, RP2W_s(str));
 }
 
 /**
@@ -1542,14 +1545,15 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			continue;
 		if (field->name.empty())
 			continue;
-		// Make sure this is a UTF-16 string.
-		wstring s_name = RP2W_s(field->name);
+
+		// Convert to UTF-16.
+		wstring wname = RP2W_s(field->name);
 
 		// TODO: Handle STRF_WARNING?
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
-		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+		GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
 		if (textSize.cx > max_text_width) {
 			max_text_width = textSize.cx;
 		}
@@ -1628,7 +1632,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		tcItem.mask = TCIF_TEXT;
 		for (int i = 0; i < fields->tabCount(); i++) {
 			// Create a tab.
-			const rp_char *name = fields->tabName(i);
+			const char *name = fields->tabName(i);
 			if (!name) {
 				// Skip this tab.
 				continue;

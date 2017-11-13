@@ -195,7 +195,7 @@ void DownloadsTabPrivate::save(void)
 
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
-	const rp_char *const filename = config->filename();
+	const char *const filename = config->filename();
 	if (!filename) {
 		// No configuration filename...
 		return;

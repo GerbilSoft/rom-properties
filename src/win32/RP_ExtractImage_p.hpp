@@ -42,7 +42,7 @@ class RP_ExtractImage_Private
 
 	public:
 		// ROM filename from IPersistFile::Load().
-		LibRpBase::rp_string filename;
+		std::string filename;
 
 		// RomData object. Loaded in IPersistFile::Load().
 		LibRpBase::RomData *romData;

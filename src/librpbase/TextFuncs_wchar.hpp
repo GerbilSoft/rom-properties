@@ -23,6 +23,10 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__
 
+#ifndef RP_WIS16
+#error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
+#endif /* RP_WIS16 */
+
 /**
  * NOTE: These are defined outside of the LibRpBase
  * namespace because macros are needed for the UTF-8
@@ -38,8 +42,6 @@
 // Make sure TextFuncs.hpp was included.
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/common.h"
-
-#if defined(RP_UTF8)
 
 /**
  * Get const wchar_t* from const rp_char*.
@@ -106,85 +108,5 @@
 #define W2RP_ss(wcs) \
 	(LibRpBase::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()))
-
-#elif defined(RP_UTF16)
-
-/**
- * Get const wchar_t* from const rp_char*.
- * @param str const rp_char*
- * @return const wchar_t*
- */
-static inline const wchar_t *RP2W_c(const rp_char *str)
-{
-	return reinterpret_cast<const wchar_t*>(str);
-}
-
-/**
- * Get const wchar_t* from rp_string.
- * @param rps rp_string
- * @return const wchar_t*
- */
-static inline const wchar_t *RP2W_s(const LibRpBase::rp_string &rps)
-{
-	return reinterpret_cast<const wchar_t*>(rps.c_str());
-}
-
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @return const rp_char*
- */
-static inline const rp_char *W2RP_c(const wchar_t *wcs)
-{
-	return reinterpret_cast<const rp_char*>(wcs);
-}
-
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @param len Length of wcs.
- * @return const rp_char*
- */
-static inline const rp_char *W2RP_cl(const wchar_t *wcs, int len)
-{
-	RP_UNUSED(len);
-	return reinterpret_cast<const rp_char*>(wcs);
-}
-
-/**
- * Get const rp_char* from std::wstring.
- * @param wcs std::wstring
- * @return const rp_char*
- */
-static inline const rp_char *W2RP_s(const std::wstring &wcs)
-{
-	return reinterpret_cast<const rp_char*>(wcs.c_str());
-}
-
-// FIXME: In-place conversion of std::u16string to std::wstring?
-
-/**
- * Get rp_string from const wchar_t*.
- * @param wcs const wchar_t*
- * @return const rp_char*
- */
-static inline const LibRpBase::rp_string W2RP_cs(const wchar_t *wcs)
-{
-	return LibRpBase::rp_string(
-		reinterpret_cast<const rp_char*>(wcs));
-}
-
-/**
- * Get const rp_char* from std::wstring.
- * @param wcs std::wstring
- * @return const rp_char*
- */
-static inline const LibRpBase::rp_string W2RP_ss(const std::wstring &wcs)
-{
-	return LibRpBase::rp_string(
-		reinterpret_cast<const rp_char*>(wcs.data()), wcs.size());
-}
-
-#endif /* RP_UTF16 */
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__ */

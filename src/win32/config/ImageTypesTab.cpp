@@ -94,7 +94,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+		virtual int saveWriteEntry(const char *sysName, const char *imageTypeList) override final;
 
 		/**
 		 * Close the Save subsystem.
@@ -423,7 +423,7 @@ int ImageTypesTabPrivate::saveStart(void)
 {
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
-	const rp_char *const filename = config->filename();
+	const char *const filename = config->filename();
 	if (!filename) {
 		// No configuration filename...
 		return -ENOENT;
@@ -445,7 +445,7 @@ int ImageTypesTabPrivate::saveStart(void)
  * @param imageTypeList Image type list, comma-separated.
  * @return 0 on success; negative POSIX error code on error.
  */
-int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList)
+int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
 {
 	assert(tmp_conf_filename != nullptr);
 	if (!tmp_conf_filename) {
