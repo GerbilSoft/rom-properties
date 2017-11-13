@@ -76,7 +76,7 @@ class RomDataPrivate
 		 * @param fileSize File size.
 		 * @return Formatted file size.
 		 */
-		static rp_string formatFileSize(int64_t fileSize);
+		static std::string formatFileSize(int64_t fileSize);
 
 		/**
 		 * Get the GameTDB URL for a given game.
@@ -88,7 +88,7 @@ class RomDataPrivate
 		 * TODO: PAL multi-region selection?
 		 * @return GameTDB URL.
 		 */
-		static rp_string getURL_GameTDB(
+		static std::string getURL_GameTDB(
 			const char *system, const char *type,
 			const char *region, const char *gameID,
 			const char *ext);
@@ -103,7 +103,7 @@ class RomDataPrivate
 		 * TODO: PAL multi-region selection?
 		 * @return GameTDB cache key.
 		 */
-		static rp_string getCacheKey_GameTDB(
+		static std::string getCacheKey_GameTDB(
 			const char *system, const char *type,
 			const char *region, const char *gameID,
 			const char *ext);

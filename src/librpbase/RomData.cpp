@@ -32,7 +32,9 @@
 #include <ctime>
 
 // C++ includes.
+#include <string>
 #include <vector>
+using std::string;
 using std::vector;
 
 namespace LibRpBase {
@@ -91,7 +93,7 @@ static inline int calc_frac_part(int64_t size, int64_t mask)
  * @param size File size.
  * @return Formatted file size.
  */
-rp_string RomDataPrivate::formatFileSize(int64_t size)
+string RomDataPrivate::formatFileSize(int64_t size)
 {
 	const char *suffix;
 	// frac_part is always 0 to 100.
@@ -153,7 +155,7 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
 
 	// Should not get here...
 	assert(!"Invalid code path.");
-	return _RP("QUACK");
+	return "QUACK";
 }
 
 /**
@@ -166,7 +168,7 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
  * TODO: PAL multi-region selection?
  * @return GameTDB URL.
  */
-LibRpBase::rp_string RomDataPrivate::getURL_GameTDB(
+string RomDataPrivate::getURL_GameTDB(
 	const char *system, const char *type,
 	const char *region, const char *gameID,
 	const char *ext)
@@ -185,7 +187,7 @@ LibRpBase::rp_string RomDataPrivate::getURL_GameTDB(
  * TODO: PAL multi-region selection?
  * @return GameTDB cache key.
  */
-LibRpBase::rp_string RomDataPrivate::getCacheKey_GameTDB(
+string RomDataPrivate::getCacheKey_GameTDB(
 	const char *system, const char *type,
 	const char *region, const char *gameID,
 	const char *ext)
@@ -468,7 +470,7 @@ RomData::FileType RomData::fileType(void) const
  * Get the general file type as a string.
  * @return General file type as a string, or nullptr if unknown.
  */
-const rp_char *RomData::fileType_string(void) const
+const char *RomData::fileType_string(void) const
 {
 	RP_D(const RomData);
 	assert(d->fileType >= FTYPE_UNKNOWN && d->fileType < FTYPE_LAST);
@@ -476,26 +478,26 @@ const rp_char *RomData::fileType_string(void) const
 		return nullptr;
 	}
 
-	static const rp_char *const fileType_names[] = {
+	static const char *const fileType_names[] = {
 		nullptr,			// FTYPE_UNKNOWN
-		_RP("ROM Image"),		// FTYPE_ROM_IMAGE
-		_RP("Disc Image"),		// FTYPE_DISC_IMAGE
-		_RP("Save File"),		// FTYPE_SAVE_FILE
-		_RP("Embedded Disc Image"),	// FTYPE_EMBEDDED_DISC_IMAGE
-		_RP("Application Package"),	// FTYPE_APPLICATION_PACKAGE
-		_RP("NFC Dump"),		// FTYPE_NFC_DUMP
-		_RP("Disk Image"),		// FTYPE_DISK_IMAGE
-		_RP("Executable"),		// FTYPE_EXECUTABLE
-		_RP("Dynamic Link Library"),	// FTYPE_DLL
-		_RP("Device Driver"),		// FTYPE_DEVICE_DRIVER
-		_RP("Resource Library"),	// FTYPE_RESOURCE_LIBRARY
-		_RP("Icon File"),		// FTYPE_ICON_FILE
-		_RP("Banner File"),		// FTYPE_BANNER_FILE
-		_RP("Homebrew Application"),	// FTYPE_HOMEBREW
-		_RP("eMMC Dump"),		// FTYPE_EMMC_DUMP
-		_RP("Title Contents"),		// FTYPE_TITLE_CONTENTS
-		_RP("Firmware Binary"),		// FTYPE_FIRMWARE_BINARY
-		_RP("Texture File"),		// FTYPE_TEXTURE_FILE
+		"ROM Image",		// FTYPE_ROM_IMAGE
+		"Disc Image",		// FTYPE_DISC_IMAGE
+		"Save File",		// FTYPE_SAVE_FILE
+		"Embedded Disc Image",	// FTYPE_EMBEDDED_DISC_IMAGE
+		"Application Package",	// FTYPE_APPLICATION_PACKAGE
+		"NFC Dump",		// FTYPE_NFC_DUMP
+		"Disk Image",		// FTYPE_DISK_IMAGE
+		"Executable",		// FTYPE_EXECUTABLE
+		"Dynamic Link Library",	// FTYPE_DLL
+		"Device Driver",	// FTYPE_DEVICE_DRIVER
+		"Resource Library",	// FTYPE_RESOURCE_LIBRARY
+		"Icon File",		// FTYPE_ICON_FILE
+		"Banner File",		// FTYPE_BANNER_FILE
+		"Homebrew Application",	// FTYPE_HOMEBREW
+		"eMMC Dump",		// FTYPE_EMMC_DUMP
+		"Title Contents",	// FTYPE_TITLE_CONTENTS
+		"Firmware Binary",	// FTYPE_FIRMWARE_BINARY
+		"Texture File",		// FTYPE_TEXTURE_FILE
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");
@@ -662,12 +664,12 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
  * @param size Size of HTML data.
  * @return Image URL, or empty string if not found or not supported.
  */
-rp_string RomData::scrapeImageURL(const char *html, size_t size) const
+string RomData::scrapeImageURL(const char *html, size_t size) const
 {
 	// Not supported in the base class.
 	RP_UNUSED(html);
 	RP_UNUSED(size);
-	return rp_string();
+	return string();
 }
 
 /**
@@ -675,24 +677,24 @@ rp_string RomData::scrapeImageURL(const char *html, size_t size) const
 * @param imageType Image type.
 * @return String containing user-friendly name of an image type.
 */
-const rp_char *RomData::getImageTypeName(ImageType imageType) {
+const char *RomData::getImageTypeName(ImageType imageType) {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
 		return nullptr;
 	}
 
-	static const rp_char *const image_type_names[] = {
+	static const char *const image_type_names[] = {
 		// Internal
-		_RP("Internal icon"),				// IMG_INT_ICON
-		_RP("Internal banner"),				// IMG_INT_BANNER
-		_RP("Internal media scan"),			// IMG_INT_MEDIA
-		_RP("Internal image"),				// IMG_INT_IMAGE
+		"Internal icon",			// IMG_INT_ICON
+		"Internal banner",			// IMG_INT_BANNER
+		"Internal media scan",			// IMG_INT_MEDIA
+		"Internal image",			// IMG_INT_IMAGE
 		// External
-		_RP("External media scan"),			// IMG_EXT_MEDIA
-		_RP("External cover scan"),			// IMG_EXT_COVER
-		_RP("External cover scan (3D version)"),	// IMG_EXT_COVER_3D
-		_RP("External cover scan (front and back)"),	// IMG_EXT_COVER_FULL
-		_RP("External box scan"),			// IMG_EXT_BOX
+		"External media scan",			// IMG_EXT_MEDIA
+		"External cover scan",			// IMG_EXT_COVER
+		"External cover scan (3D version)",	// IMG_EXT_COVER_3D
+		"External cover scan (front and back)",	// IMG_EXT_COVER_FULL
+		"External box scan",			// IMG_EXT_BOX
 	};
 	static_assert(ARRAY_SIZE(image_type_names) == IMG_EXT_MAX + 1,
 		"image_type_names[] needs to be updated.");

@@ -68,7 +68,7 @@ namespace LibRpBase { namespace FileSystem {
  * @param path Path to recursively mkdir. (last component is ignored)
  * @return 0 on success; non-zero on error.
  */
-int rmkdir(const rp_string &path);
+int rmkdir(const std::string &path);
 
 /**
  * Does a file exist?
@@ -76,14 +76,14 @@ int rmkdir(const rp_string &path);
  * @param mode Mode.
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const rp_string &pathname, int mode);
+int access(const std::string &pathname, int mode);
 
 /**
  * Get a file's size.
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-int64_t filesize(const rp_string &filename);
+int64_t filesize(const std::string &filename);
 
 /**
  * Get the user's cache directory.
@@ -94,7 +94,7 @@ int64_t filesize(const rp_string &filename);
  *
  * @return User's rom-properties cache directory, or empty string on error.
  */
-const rp_string &getCacheDirectory(void);
+const std::string &getCacheDirectory(void);
 
 /**
  * Get the user's rom-properties configuration directory.
@@ -104,7 +104,7 @@ const rp_string &getCacheDirectory(void);
  *
  * @return User's rom-properties configuration directory, or empty string on error.
  */
-const rp_string &getConfigDirectory(void);
+const std::string &getConfigDirectory(void);
 
 /**
  * Set the modification timestamp of a file.
@@ -112,7 +112,7 @@ const rp_string &getConfigDirectory(void);
  * @param mtime Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const rp_string &filename, time_t mtime);
+int set_mtime(const std::string &filename, time_t mtime);
 
 /**
  * Get the modification timestamp of a file.
@@ -120,21 +120,21 @@ int set_mtime(const rp_string &filename, time_t mtime);
  * @param pMtime Buffer for the modification timestamp.
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const rp_string &filename, time_t *pMtime);
+int get_mtime(const std::string &filename, time_t *pMtime);
 
 /**
  * Delete a file.
  * @param filename Filename.
  * @return 0 on success; negative POSIX error code on error.
  */
-int delete_file(const rp_char *filename);
+int delete_file(const char *filename);
 
 /**
  * Delete a file.
  * @param filename Filename.
  * @return 0 on success; negative POSIX error code on error.
  */
-static inline int delete_file(const rp_string &filename)
+static inline int delete_file(const std::string &filename)
 {
 	return delete_file(filename.c_str());
 }
@@ -144,13 +144,13 @@ static inline int delete_file(const rp_string &filename)
  * @param filename Filename.
  * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
  */
-const rp_char *file_ext(const rp_string &filename);
+const char *file_ext(const std::string &filename);
 
 /**
  * Check if the specified file is a symbolic link.
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const rp_char *filename);
+bool is_symlink(const char *filename);
 
 /**
  * Resolve a symbolic link.
@@ -161,7 +161,7 @@ bool is_symlink(const rp_char *filename);
  * @param filename Filename of symbolic link.
  * @return Resolved symbolic link, or empty string on error.
  */
-rp_string resolve_symlink(const rp_char *filename);
+std::string resolve_symlink(const char *filename);
 
 } }
 

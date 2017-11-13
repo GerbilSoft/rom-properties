@@ -31,6 +31,9 @@
 // INI parser.
 #include "ini.h"
 
+// C++ includes.
+#include <string>
+
 namespace LibRpBase {
 
 class ConfReader;
@@ -41,7 +44,7 @@ class ConfReaderPrivate
 		 * Configuration reader.
 		 * @param filename Configuration filename. Relative to ~/.config/rom-properties
 		 */
-		explicit ConfReaderPrivate(const rp_char *filename);
+		explicit ConfReaderPrivate(const char *filename);
 		virtual ~ConfReaderPrivate();
 
 	private:
@@ -52,8 +55,8 @@ class ConfReaderPrivate
 		Mutex mtxLoad;
 
 		// Configuration filename.
-		const rp_char *const conf_rel_filename;	// from ctor
-		rp_string conf_filename;		// alloc()'d in load()
+		const char *const conf_rel_filename;	// from ctor
+		std::string conf_filename;		// alloc()'d in load()
 
 		// rom-properties.conf status.
 		bool conf_was_found;

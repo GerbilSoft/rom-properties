@@ -229,9 +229,9 @@ void AesCipherTest::SetUp(void)
 	static bool printed_impl = false;
 	if (!printed_impl) {
 		// Print the AesCipher implementation name.
-		const rp_char *name = m_cipher->name();
+		const char *name = m_cipher->name();
 		ASSERT_TRUE(name != nullptr);
-		printf("AesCipher implementation: %s\n", rp_string_to_utf8(name, -1).c_str());
+		printf("AesCipher implementation: %s\n", name);
 		printed_impl = true;
 	}
 }

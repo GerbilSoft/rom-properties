@@ -134,7 +134,7 @@ class RomData
 		 */
 		struct DetectInfo {
 			HeaderInfo header;	// ROM header.
-			const rp_char *ext;	// File extension, including leading '.'
+			const char *ext;	// File extension, including leading '.'
 			int64_t szFile;		// File size. (Required for certain types.)
 		};
 
@@ -195,7 +195,7 @@ class RomData
 		 * @param type System name type. (See the SystemNameType enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(unsigned int type) const = 0;
+		virtual const char *systemName(unsigned int type) const = 0;
 
 		/**
 		 * Get the class name for the user configuration.
@@ -238,7 +238,7 @@ class RomData
 		 * Get the general file type as a string.
 		 * @return General file type as a string, or nullptr if unknown.
 		 */
-		const rp_char *fileType_string(void) const;
+		const char *fileType_string(void) const;
 
 		// TODO:
 		// - List of supported systems.
@@ -260,7 +260,7 @@ class RomData
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		virtual const rp_char *const *supportedFileExtensions(void) const = 0;
+		virtual const char *const *supportedFileExtensions(void) const = 0;
 
 		/**
 		 * Image types supported by a RomData subclass.
@@ -418,8 +418,8 @@ class RomData
 		 * plus the expected image size (if available).
 		 */
 		struct ExtURL {
-			rp_string url;		// URL
-			rp_string cache_key;	// Cache key
+			std::string url;	// URL
+			std::string cache_key;	// Cache key
 			uint16_t width;		// Expected image width. (0 for unknown)
 			uint16_t height;	// Expected image height. (0 for unknown)
 
@@ -472,14 +472,14 @@ class RomData
 		 * @param size Size of HTML data.
 		 * @return Image URL, or empty string if not found or not supported.
 		 */
-		virtual rp_string scrapeImageURL(const char *html, size_t size) const;
+		virtual std::string scrapeImageURL(const char *html, size_t size) const;
 
 		/**
 		 * Get name of an image type
 		 * @param imageType Image type.
 		 * @return String containing user-friendly name of an image type.
 		 */
-		static const rp_char *getImageTypeName(ImageType imageType);
+		static const char *getImageTypeName(ImageType imageType);
 
 		/**
 		 * Get the animated icon data.
