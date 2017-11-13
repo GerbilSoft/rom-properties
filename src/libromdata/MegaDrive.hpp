@@ -77,7 +77,7 @@ class MegaDrive : public LibRpBase::RomData
 		 * @param type System name type. (See the SystemName enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(unsigned int type) const override final;
+		virtual const char *systemName(unsigned int type) const override final;
 
 	public:
 		/**
@@ -93,7 +93,7 @@ class MegaDrive : public LibRpBase::RomData
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		static const rp_char *const *supportedFileExtensions_static(void);
+		static const char *const *supportedFileExtensions_static(void);
 
 		/**
 		 * Get a list of all supported file extensions.
@@ -108,7 +108,7 @@ class MegaDrive : public LibRpBase::RomData
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		virtual const rp_char *const *supportedFileExtensions(void) const override final;
+		virtual const char *const *supportedFileExtensions(void) const override final;
 
 	protected:
 		/**

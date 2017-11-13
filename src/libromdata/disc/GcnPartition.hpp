@@ -127,14 +127,14 @@ class GcnPartition : public LibRpBase::IPartition
 		 * @param path	[in] Directory path.
 		 * @return IFst::Dir*, or nullptr on error.
 		 */
-		LibRpBase::IFst::Dir *opendir(const rp_char *path);
+		LibRpBase::IFst::Dir *opendir(const char *path);
 
 		/**
 		 * Open a directory.
 		 * @param path	[in] Directory path.
 		 * @return IFst::Dir*, or nullptr on error.
 		 */
-		inline LibRpBase::IFst::Dir *opendir(const LibRpBase::rp_string &path)
+		inline LibRpBase::IFst::Dir *opendir(const std::string &path)
 		{
 			return opendir(path.c_str());
 		}
@@ -159,7 +159,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		LibRpBase::IRpFile *open(const rp_char *filename);
+		LibRpBase::IRpFile *open(const char *filename);
 };
 
 }

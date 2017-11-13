@@ -64,7 +64,7 @@ class IResourceReader : public LibRpBase::IPartition
 		// StringTable.
 		// - Element 1: Key
 		// - Element 2: Value
-		typedef std::vector<std::pair<LibRpBase::rp_string, LibRpBase::rp_string> > StringTable;
+		typedef std::vector<std::pair<std::string, std::string> > StringTable;
 
 		// StringFileInfo section.
 		// - Key: Langauge ID. (LOWORD = charset, HIWORD = language)

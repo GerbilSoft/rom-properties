@@ -39,8 +39,10 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <vector>
 #include <algorithm>
+#include <string>
+#include <vector>
+using std::string;
 using std::vector;
 
 namespace LibRomData {
@@ -91,7 +93,7 @@ class DMGPrivate : public RomDataPrivate
 			DMG_HW_TAMA5,
 			DMG_HW_CAMERA
 		};
-		static const rp_char *const dmg_hardware_names[];
+		static const char *const dmg_hardware_names[];
 
 		struct dmg_cart_type {
 			uint8_t hardware;	// DMG_Hardware
@@ -155,21 +157,21 @@ class DMGPrivate : public RomDataPrivate
 /** Internal ROM data. **/
 
 // Cartrige hardware.
-const rp_char *const DMGPrivate::dmg_hardware_names[] = {
-	_RP("Unknown"),
-	_RP("ROM"),
-	_RP("MBC1"),
-	_RP("MBC2"),
-	_RP("MBC3"),
-	_RP("MBC4"),
-	_RP("MBC5"),
-	_RP("MBC6"),
-	_RP("MBC7"),
-	_RP("MMM01"),
-	_RP("HuC1"),
-	_RP("HuC3"),
-	_RP("TAMA5"),
-	_RP("POCKET CAMERA"), // ???
+const char *const DMGPrivate::dmg_hardware_names[] = {
+	"Unknown",
+	"ROM",
+	"MBC1",
+	"MBC2",
+	"MBC3",
+	"MBC4",
+	"MBC5",
+	"MBC6",
+	"MBC7",
+	"MMM01",
+	"HuC1",
+	"HuC3",
+	"TAMA5",
+	"POCKET CAMERA", // ???
 };
 
 const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_start[] = {
@@ -383,7 +385,7 @@ int DMG::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *DMG::systemName(unsigned int type) const
+const char *DMG::systemName(unsigned int type) const
 {
 	RP_D(const DMG);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -397,9 +399,9 @@ const rp_char *DMG::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (short, long, abbreviation)
 	// Bit 2: Game Boy Color. (DMG-specific)
-	static const rp_char *const sysNames[8] = {
-		_RP("Nintendo Game Boy"), _RP("Game Boy"), _RP("GB"), nullptr,
-		_RP("Nintendo Game Boy Color"), _RP("Game Boy Color"), _RP("GBC"), nullptr
+	static const char *const sysNames[8] = {
+		"Nintendo Game Boy", "Game Boy", "GB", nullptr,
+		"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr
 	};
 
 	unsigned int idx = (d->romType << 2) | (type & SYSNAME_TYPE_MASK);
@@ -424,11 +426,11 @@ const rp_char *DMG::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *DMG::supportedFileExtensions_static(void)
+const char *const *DMG::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".gb"), _RP(".sgb"), _RP(".sgb2"),
-		_RP(".gbc"), _RP(".cgb"),
+	static const char *const exts[] = {
+		".gb",  ".sgb", ".sgb2",
+		".gbc", ".cgb",
 
 		nullptr
 	};
@@ -448,7 +450,7 @@ const rp_char *const *DMG::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *DMG::supportedFileExtensions(void) const
+const char *const *DMG::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -488,10 +490,10 @@ int DMG::loadFieldData(void)
 	 */
 	if (romHeader->cgbflag < 0x80) {
 		// Assuming 16-character title for non-CGB.
-		d->fields->addField_string(_RP("Title"),
-			latin1_to_rp_string(romHeader->title16, sizeof(romHeader->title16)));
+		d->fields->addField_string("Title",
+			latin1_to_utf8(romHeader->title16, sizeof(romHeader->title16)));
 		// Game ID is not present.
-		d->fields->addField_string(_RP("Game ID"), _RP("Unknown"));
+		d->fields->addField_string("Game ID", "Unknown");
 	} else {
 		// Check if CGB flag is present.
 		bool isGameID;
@@ -512,8 +514,8 @@ int DMG::loadFieldData(void)
 
 		if (isGameID) {
 			// Game ID is present.
-			d->fields->addField_string(_RP("Title"),
-				latin1_to_rp_string(romHeader->title11, sizeof(romHeader->title11)));
+			d->fields->addField_string("Title",
+				latin1_to_utf8(romHeader->title11, sizeof(romHeader->title11)));
 
 			// Append the publisher code to make an ID6.
 			char id6[6];
@@ -533,13 +535,13 @@ int DMG::loadFieldData(void)
 				id6[4] = hex_lookup[romHeader->old_publisher_code >> 4];
 				id6[5] = hex_lookup[romHeader->old_publisher_code & 0x0F];
 			}
-			d->fields->addField_string(_RP("Game ID"),
-				latin1_to_rp_string(id6, sizeof(id6)));
+			d->fields->addField_string("Game ID",
+				latin1_to_utf8(id6, sizeof(id6)));
 		} else {
 			// Game ID is not present.
-			d->fields->addField_string(_RP("Title"),
-				latin1_to_rp_string(romHeader->title15, sizeof(romHeader->title15)));
-			d->fields->addField_string(_RP("Title"), _RP("Unknown"));
+			d->fields->addField_string("Title",
+				latin1_to_utf8(romHeader->title15, sizeof(romHeader->title15)));
+			d->fields->addField_string("Title", "Unknown");
 		}
 	}
 
@@ -562,81 +564,81 @@ int DMG::loadFieldData(void)
 		dmg_system |= DMGPrivate::DMG_SYSTEM_SGB;
 	}
 
-	static const rp_char *const system_bitfield_names[] = {
-		_RP("DMG"), _RP("SGB"), _RP("CGB")
+	static const char *const system_bitfield_names[] = {
+		"DMG", "SGB", "CGB"
 	};
-	vector<rp_string> *v_system_bitfield_names = RomFields::strArrayToVector(
+	vector<string> *v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
-	d->fields->addField_bitfield(_RP("System"),
+	d->fields->addField_bitfield("System",
 		v_system_bitfield_names, 0, dmg_system);
 
 	// Entry Point
 	if(romHeader->entry[0] == 0 && romHeader->entry[1] == 0xC3){
 		// this is the "standard" way of doing the entry point
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
-		d->fields->addField_string_numeric(_RP("Entry Point"),
+		d->fields->addField_string_numeric("Entry Point",
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	}
 	else{
-		d->fields->addField_string_hexdump(_RP("Entry Point"),
+		d->fields->addField_string_hexdump("Entry Point",
 			romHeader->entry, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Publisher
-	const rp_char* publisher;
+	const char* publisher;
 	if (romHeader->old_publisher_code == 0x33) {
 		publisher = NintendoPublishers::lookup(romHeader->new_publisher_code);
 	} else {
 		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
 	}
-	d->fields->addField_string(_RP("Publisher"),
-		publisher ? publisher : _RP("Unknown"));
+	d->fields->addField_string("Publisher",
+		publisher ? publisher : "Unknown");
 
 	// Hardware
-	d->fields->addField_string(_RP("Hardware"),
+	d->fields->addField_string("Hardware",
 		DMGPrivate::dmg_hardware_names[DMGPrivate::CartType(romHeader->cart_type).hardware]);
 
 	// Features
-	static const rp_char *const feature_bitfield_names[] = {
-		_RP("RAM"), _RP("Battery"), _RP("Timer"), _RP("Rumble")
+	static const char *const feature_bitfield_names[] = {
+		"RAM", "Battery", "Timer", "Rumble"
 	};
-	vector<rp_string> *v_feature_bitfield_names = RomFields::strArrayToVector(
+	vector<string> *v_feature_bitfield_names = RomFields::strArrayToVector(
 		feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
-	d->fields->addField_bitfield(_RP("Features"),
+	d->fields->addField_bitfield("Features",
 		v_feature_bitfield_names, 0, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	// ROM Size
 	int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
 	if (rom_size < 0) {
-		d->fields->addField_string(_RP("ROM Size"), _RP("Unknown"));
+		d->fields->addField_string("ROM Size", "Unknown");
 	} else {
 		if (rom_size > 32) {
-			d->fields->addField_string(_RP("ROM Size"),
+			d->fields->addField_string("ROM Size",
 				rp_sprintf("%u KiB (%u banks)", (unsigned int)rom_size, (unsigned int)rom_size/16));
 		} else {
-			d->fields->addField_string(_RP("ROM Size"),
+			d->fields->addField_string("ROM Size",
 				rp_sprintf("%u KiB", (unsigned int)rom_size));
 		}
 	}
 
 	// RAM Size
 	if (romHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)) {
-		d->fields->addField_string(_RP("RAM Size"), _RP("Unknown"));
+		d->fields->addField_string("RAM Size", "Unknown");
 	} else {
 		uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
 		if (ram_size == 0 &&
 		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_HW_MBC2)
 		{
 			// Not really RAM, but whatever
-			d->fields->addField_string(_RP("RAM Size"), _RP("512 x 4 bits"));
+			d->fields->addField_string("RAM Size", "512 x 4 bits");
 		} else if(ram_size == 0) {
-			d->fields->addField_string(_RP("RAM Size"), _RP("No RAM"));
+			d->fields->addField_string("RAM Size", "No RAM");
 		} else {
 			if (ram_size > 8) {
-				d->fields->addField_string(_RP("RAM Size"),
+				d->fields->addField_string("RAM Size",
 					rp_sprintf("%u KiB (%u banks)", ram_size, ram_size/8));
 			} else {
-				d->fields->addField_string(_RP("RAM Size"),
+				d->fields->addField_string("RAM Size",
 					rp_sprintf("%u KiB", ram_size));
 			}
 		}
@@ -645,20 +647,20 @@ int DMG::loadFieldData(void)
 	// Region
 	switch (romHeader->region) {
 		case 0:
-			d->fields->addField_string(_RP("Region"), _RP("Japanese"));
+			d->fields->addField_string("Region", "Japanese");
 			break;
 		case 1:
-			d->fields->addField_string(_RP("Region"), _RP("Non-Japanese"));
+			d->fields->addField_string("Region", "Non-Japanese");
 			break;
 		default:
 			// Invalid value.
-			d->fields->addField_string(_RP("Region"),
+			d->fields->addField_string("Region",
 				rp_sprintf("0x%02X (INVALID)", romHeader->region));
 			break;
 	}
 
 	// Revision
-	d->fields->addField_string_numeric(_RP("Revision"),
+	d->fields->addField_string_numeric("Revision",
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// Header checksum.
@@ -672,11 +674,11 @@ int DMG::loadFieldData(void)
 	}
 
 	if (checksum - romHeader->header_checksum) {
-		d->fields->addField_string(_RP("Checksum"),
+		d->fields->addField_string("Checksum",
 			rp_sprintf("0x%02X (INVALID; should be 0x%02X)",
 				romHeader->header_checksum, checksum));
 	} else {
-		d->fields->addField_string(_RP("Checksum"),
+		d->fields->addField_string("Checksum",
 			rp_sprintf("0x%02X (valid)", checksum));
 	}
 

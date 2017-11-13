@@ -361,7 +361,7 @@ int64_t IsoPartition::partition_size_used(void) const
  * @param path	[in] Directory path.
  * @return IFst::Dir*, or nullptr on error.
  */
-IFst::Dir *IsoPartition::opendir(const rp_char *path)
+IFst::Dir *IsoPartition::opendir(const char *path)
 {
 	RP_D(IsoPartition);
 	if (!d->fst) {
@@ -415,7 +415,7 @@ int IsoPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *IsoPartition::open(const rp_char *filename)
+IRpFile *IsoPartition::open(const char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because PartitionFile is a separate class.
@@ -429,7 +429,7 @@ IRpFile *IsoPartition::open(const rp_char *filename)
 	}
 
 	// Remove leading slashes.
-	while (*filename == _RP_CHR('/')) {
+	while (*filename == '/') {
 		filename++;
 	}
 	if (filename[0] == 0) {
@@ -439,7 +439,7 @@ IRpFile *IsoPartition::open(const rp_char *filename)
 
 	// TODO: Which encoding?
 	// Assuming cp1252...
-	string s_filename = rp_string_to_cp1252(filename, -1);
+	string s_filename = utf8_to_cp1252(filename, -1);
 
 	RP_D(IsoPartition);
 	if (d->rootDir_data.empty()) {

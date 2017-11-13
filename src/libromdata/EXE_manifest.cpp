@@ -41,7 +41,9 @@ using namespace tinyxml2;
 
 // C++ includes.
 #include <memory>
+#include <string>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -74,17 +76,17 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// Manifest resource IDs
 	struct ManifestResourceID_t {
 		uint16_t id;
-		const rp_char *name;
+		const char *name;
 	};
 
 	static const ManifestResourceID_t resource_ids[] = {
-		{CREATEPROCESS_MANIFEST_RESOURCE_ID, _RP("CreateProcess")},
-		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, _RP("Isolation-Aware")},
-		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, _RP("Isolation-Aware, No Static Import")},
+		{CREATEPROCESS_MANIFEST_RESOURCE_ID, "CreateProcess"},
+		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, "Isolation-Aware"},
+		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, "Isolation-Aware, No Static Import"},
 
 		// Windows XP's explorer.exe uses resource ID 123.
 		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
-		{XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID, _RP("Visual Style")},
+		{XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID, "Visual Style"},
 	};
 
 	// Search for a PE manifest resource.
@@ -154,10 +156,10 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// Add the manifest fields.
-	fields->addTab(_RP("Manifest"));
+	fields->addTab("Manifest");
 
 	// Manifest ID.
-	fields->addField_string(_RP("Manifest ID"), resource_ids[id_idx].name);
+	fields->addField_string("Manifest ID", resource_ids[id_idx].name);
 
 	#define FIRST_CHILD_ELEMENT_NS(var, parent_elem, child_elem_name, namespace) \
 		const XMLElement *var = parent_elem->FirstChildElement(child_elem_name); \
@@ -172,7 +174,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	#define ADD_ATTR(elem, attr_name, desc) do { \
 		const char *const attr = elem->Attribute(attr_name); \
 		if (attr) { \
-			fields->addField_string(_RP(desc), utf8_to_rp_string(attr, -1)); \
+			fields->addField_string((desc), attr); \
 		} \
 	} while (0)
 
@@ -181,7 +183,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		if (child_elem) { \
 			const char *const text = child_elem->GetText(); \
 			if (text) { \
-				fields->addField_string(_RP(desc), utf8_to_rp_string(text, -1)); \
+				fields->addField_string((desc), text); \
 			} \
 		} \
 	} while (0)
@@ -232,14 +234,14 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		Setting_ultraHighResolutionScrollingAware	= (1 << 6),
 	} WindowsSettings_t;
 
-	static const rp_char *const WindowsSettings_names[] = {
-		_RP("Auto Elevate"),
-		_RP("Disable Theming"),
-		_RP("Disable Window Filter"),
-		_RP("High-Res Scroll"),
-		_RP("Magic Future Setting"),
-		_RP("Printer Driver Isolation"),
-		_RP("Ultra High-Res Scroll"),
+	static const char *const WindowsSettings_names[] = {
+		"Auto Elevate",
+		"Disable Theming",
+		"Disable Window Filter",
+		"High-Res Scroll",
+		"Magic Future Setting",
+		"Printer Driver Isolation",
+		"Ultra High-Res Scroll",
 	};
 
 	// Windows settings.
@@ -271,9 +273,9 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			ADD_SETTING(settings, windowsSettings, ultraHighResolutionScrollingAware);
 
 			// Show the bitfield.
-			vector<rp_string> *const v_WindowsSettings_names = RomFields::strArrayToVector(
+			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector(
 				WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
-			fields->addField_bitfield(_RP("Settings"),
+			fields->addField_bitfield("Settings",
 				v_WindowsSettings_names, 2, settings);
 
 			// DPI Aware.
@@ -300,13 +302,13 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		OS_LongPathAware	= (1 << 5),
 	} OS_Compatibility_t;
 
-	static const rp_char *const OS_Compatibility_names[] = {
-		_RP("Windows Vista"),
-		_RP("Windows 7"),
-		_RP("Windows 8"),
-		_RP("Windows 8.1"),
-		_RP("Windows 10"),
-		_RP("Long Path Aware"),
+	static const char *const OS_Compatibility_names[] = {
+		"Windows Vista",
+		"Windows 7",
+		"Windows 8",
+		"Windows 8.1",
+		"Windows 10",
+		"Long Path Aware",
 	};
 
 	FIRST_CHILD_ELEMENT_NS(compatibility, assembly, "compatibility", "asmv1");
@@ -350,9 +352,9 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			}
 
 			// Show the bitfield.
-			vector<rp_string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(
+			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(
 				OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
-			fields->addField_bitfield(_RP("Compatibility"),
+			fields->addField_bitfield("Compatibility",
 				v_OS_Compatibility_names, 2, compat);
 		}
 	}

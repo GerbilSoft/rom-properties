@@ -172,7 +172,7 @@ int Lynx::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *Lynx::systemName(unsigned int type) const
+const char *Lynx::systemName(unsigned int type) const
 {
 	RP_D(const Lynx);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -182,8 +182,8 @@ const rp_char *Lynx::systemName(unsigned int type) const
 		"Lynx::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
-		_RP("Atari Lynx"), _RP("Lynx"), _RP("LNX"), nullptr,
+	static const char *const sysNames[4] = {
+		"Atari Lynx", "Lynx", "LNX", nullptr,
 	};
 
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
@@ -208,10 +208,10 @@ const rp_char *Lynx::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *Lynx::supportedFileExtensions_static(void)
+const char *const *Lynx::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".lnx"),
+	static const char *const exts[] = {
+		".lnx",
 		nullptr
 	};
 	return exts;
@@ -230,7 +230,7 @@ const rp_char *const *Lynx::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *Lynx::supportedFileExtensions(void) const
+const char *const *Lynx::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -258,23 +258,23 @@ int Lynx::loadFieldData(void)
 	const Lynx_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
-	d->fields->addField_string(_RP("Title"),
-		latin1_to_rp_string(romHeader->cartname, sizeof(romHeader->cartname)));
+	d->fields->addField_string("Title",
+		latin1_to_utf8(romHeader->cartname, sizeof(romHeader->cartname)));
 
-	d->fields->addField_string(_RP("Manufacturer"),
-		latin1_to_rp_string(romHeader->manufname, sizeof(romHeader->manufname)));
+	d->fields->addField_string("Manufacturer",
+		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
-	static const rp_char *const rotation_names[] = {
-		_RP("None"), _RP("Left"), _RP("Right")
+	static const char *const rotation_names[] = {
+		"None", "Left", "Right"
 	};
 
-	d->fields->addField_string(_RP("Rotaion"),
-		romHeader->rotation < ARRAY_SIZE(rotation_names) ? rotation_names[romHeader->rotation] : _RP("Unknown"));
+	d->fields->addField_string("Rotaion",
+		romHeader->rotation < ARRAY_SIZE(rotation_names) ? rotation_names[romHeader->rotation] : "Unknown");
 
-	d->fields->addField_string(_RP("Bank 0 Size"),
+	d->fields->addField_string("Bank 0 Size",
 		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
-	d->fields->addField_string(_RP("Bank 1 Size"),
+	d->fields->addField_string("Bank 1 Size",
 		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
 	return (int)d->fields->count();

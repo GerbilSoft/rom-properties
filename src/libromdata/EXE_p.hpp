@@ -113,7 +113,7 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 
 		// NE target OSes.
 		// Also used for LE.
-		static const rp_char *const NE_TargetOSes[];
+		static const char *const NE_TargetOSes[];
 
 		/**
 		 * Load the NE resource table.

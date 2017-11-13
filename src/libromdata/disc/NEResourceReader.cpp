@@ -487,9 +487,9 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		}
 
 		// FIXME: Proper codepage conversion.
-		st.push_back(std::pair<rp_string, rp_string>(
-			latin1_to_rp_string(key, key_len),
-			latin1_to_rp_string(value, value_len)));
+		st.push_back(std::pair<string, string>(
+			latin1_to_utf8(key, key_len),
+			latin1_to_utf8(value, value_len)));
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;

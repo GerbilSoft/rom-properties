@@ -52,13 +52,13 @@ namespace LibRomData {
 
 // NE target OSes.
 // Also used for LE.
-const rp_char *const EXEPrivate::NE_TargetOSes[] = {
+const char *const EXEPrivate::NE_TargetOSes[] = {
 	nullptr,			// NE_OS_UNKNOWN
-	_RP("IBM OS/2"),		// NE_OS_OS2
-	_RP("Microsoft Windows"),	// NE_OS_WIN
-	_RP("European MS-DOS 4.x"),	// NE_OS_DOS4
-	_RP("Microsoft Windows (386)"),	// NE_OS_WIN386 (TODO)
-	_RP("Borland Operating System Services"),	// NE_OS_BOSS
+	"IBM OS/2",			// NE_OS_OS2
+	"Microsoft Windows",		// NE_OS_WIN
+	"European MS-DOS 4.x",		// NE_OS_DOS4
+	"Microsoft Windows (386)",	// NE_OS_WIN386 (TODO)
+	"Borland Operating System Services",	// NE_OS_BOSS
 };
 
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
@@ -94,7 +94,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		return;
 
 	// File version.
-	fields->addField_string(_RP("File Version"),
+	fields->addField_string("File Version",
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwFileVersionMS >> 16,
 			pVsFfi->dwFileVersionMS & 0xFFFF,
@@ -102,7 +102,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwFileVersionLS & 0xFFFF));
 
 	// Product version.
-	fields->addField_string(_RP("Product Version"),
+	fields->addField_string("Product Version",
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwFileVersionMS >> 16,
 			pVsFfi->dwFileVersionMS & 0xFFFF,
@@ -110,57 +110,57 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwFileVersionLS & 0xFFFF));
 
 	// File flags.
-	static const rp_char *const file_flags_names[] = {
-		_RP("Debug"), _RP("Prerelease"), _RP("Patched"),
-		_RP("Private Build"), _RP("Info Inferred"), _RP("Special Build")
+	static const char *const file_flags_names[] = {
+		"Debug", "Prerelease", "Patched",
+		"Private Build", "Info Inferred", "Special Build"
 	};
-	vector<rp_string> *v_file_flags_names = RomFields::strArrayToVector(
+	vector<string> *v_file_flags_names = RomFields::strArrayToVector(
 		file_flags_names, ARRAY_SIZE(file_flags_names));
-	fields->addField_bitfield(_RP("File Flags"),
+	fields->addField_bitfield("File Flags",
 		v_file_flags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
 
 	// File OS.
-	const rp_char *file_os;
+	const char *file_os;
 	switch (pVsFfi->dwFileOS) {
 		case VOS_DOS:
-			file_os = _RP("MS-DOS");
+			file_os = "MS-DOS";
 			break;
 		case VOS_NT:
-			file_os = _RP("Windows NT");
+			file_os = "Windows NT";
 			break;
 		case VOS__WINDOWS16:
-			file_os = _RP("Windows (16-bit)");
+			file_os = "Windows (16-bit)";
 			break;
 		case VOS__WINDOWS32:
-			file_os = _RP("Windows (32-bit)");
+			file_os = "Windows (32-bit)";
 			break;
 		case VOS_OS216:
-			file_os = _RP("OS/2 (16-bit)");
+			file_os = "OS/2 (16-bit)";
 			break;
 		case VOS_OS232:
-			file_os = _RP("OS/2 (32-bit)");
+			file_os = "OS/2 (32-bit)";
 			break;
 		case VOS__PM16:
-			file_os = _RP("Presentation Manager (16-bit)");
+			file_os = "Presentation Manager (16-bit)";
 			break;
 		case VOS__PM32:
-			file_os = _RP("Presentation Manager (32-bit)");
+			file_os = "Presentation Manager (32-bit)";
 			break;
 
 		case VOS_DOS_WINDOWS16:
-			file_os = _RP("Windows on MS-DOS (16-bit)");
+			file_os = "Windows on MS-DOS (16-bit)";
 			break;
 		case VOS_DOS_WINDOWS32:
-			file_os = _RP("Windows 9x (32-bit)");
+			file_os = "Windows 9x (32-bit)";
 			break;
 		case VOS_NT_WINDOWS32:
-			file_os = _RP("Windows NT");
+			file_os = "Windows NT";
 			break;
 		case VOS_OS216_PM16:
-			file_os = _RP("OS/2 with Presentation Manager (16-bit)");
+			file_os = "OS/2 with Presentation Manager (16-bit)";
 			break;
 		case VOS_OS232_PM32:
-			file_os = _RP("OS/2 with Presentation Manager (32-bit)");
+			file_os = "OS/2 with Presentation Manager (32-bit)";
 			break;
 
 		case VOS_UNKNOWN:
@@ -170,53 +170,53 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	if (file_os) {
-		fields->addField_string(_RP("File OS"), file_os);
+		fields->addField_string("File OS", file_os);
 	} else {
-		fields->addField_string(_RP("File OS"),
+		fields->addField_string("File OS",
 			rp_sprintf("Unknown (0x%08X)", pVsFfi->dwFileOS));
 	}
 
 	// File type.
-	static const rp_char *const fileTypes[] = {
+	static const char *const fileTypes[] = {
 		nullptr,			// VFT_UNKNOWN
-		_RP("Application"),		// VFT_APP
-		_RP("DLL"),			// VFT_DLL
-		_RP("Device Driver"),		// VFT_DRV
-		_RP("Font"),			// VFT_FONT,
-		_RP("Virtual Device Driver"),	// VFT_VXD
+		"Application",			// VFT_APP
+		"DLL",				// VFT_DLL
+		"Device Driver",		// VFT_DRV
+		"Font",				// VFT_FONT,
+		"Virtual Device Driver",	// VFT_VXD
 		nullptr,
-		_RP("Static Library"),		// VFT_STATIC_LIB
+		"Static Library",		// VFT_STATIC_LIB
 	};
-	const rp_char *fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes)
+	const char *fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes)
 					? fileTypes[pVsFfi->dwFileType]
 					: nullptr);
 	if (fileType) {
-		fields->addField_string(_RP("File Type"), fileType);
+		fields->addField_string("File Type", fileType);
 	} else {
-		fields->addField_string(_RP("File Type"),
+		fields->addField_string("File Type",
 			rp_sprintf("Unknown (0x%08X)", pVsFfi->dwFileType));
 	}
 
 	// File subtype.
 	bool hasSubtype = false;
-	const rp_char *fileSubtype = nullptr;
+	const char *fileSubtype = nullptr;
 	switch (pVsFfi->dwFileType) {
 		case VFT_DRV: {
 			hasSubtype = true;
-			static const rp_char *const fileSubtypes_DRV[] = {
-				nullptr,			// VFT2_UNKNOWN
-				_RP("Printer"),			// VFT2_DRV_PRINTER
-				_RP("Keyboard"),		// VFT2_DRV_KEYBOARD
-				_RP("Language"),		// VFT2_DRV_LANGUAGE
-				_RP("Display"),			// VFT2_DRV_DISPLAY
-				_RP("Mouse"),			// VFT2_DRV_MOUSE
-				_RP("Network"),			// VFT2_DRV_NETWORK
-				_RP("System"),			// VFT2_DRV_SYSTEM
-				_RP("Installable"),		// VFT2_DRV_INSTALLABLE
-				_RP("Sound"),			// VFT2_DRV_SOUND
-				_RP("Communications"),		// VFT2_DRV_COMM
-				_RP("Input Method"),		// VFT2_DRV_INPUTMETHOD
-				_RP("Versioned Printer"),	// VFT2_DRV_VERSIONED_PRINTER
+			static const char *const fileSubtypes_DRV[] = {
+				nullptr,		// VFT2_UNKNOWN
+				"Printer",		// VFT2_DRV_PRINTER
+				"Keyboard",		// VFT2_DRV_KEYBOARD
+				"Language",		// VFT2_DRV_LANGUAGE
+				"Display",		// VFT2_DRV_DISPLAY
+				"Mouse",		// VFT2_DRV_MOUSE
+				"Network",		// VFT2_DRV_NETWORK
+				"System",		// VFT2_DRV_SYSTEM
+				"Installable",		// VFT2_DRV_INSTALLABLE
+				"Sound",		// VFT2_DRV_SOUND
+				"Communications",	// VFT2_DRV_COMM
+				"Input Method",		// VFT2_DRV_INPUTMETHOD
+				"Versioned Printer",	// VFT2_DRV_VERSIONED_PRINTER
 			};
 			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)
 						? fileSubtypes_DRV[pVsFfi->dwFileSubtype]
@@ -226,11 +226,11 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 		case VFT_FONT: {
 			hasSubtype = true;
-			static const rp_char *const fileSubtypes_FONT[] = {
-				nullptr,		// VFT2_UNKNOWN
-				_RP("Raster"),		// VFT2_FONT_RASTER
-				_RP("Vector"),		// VFT2_FONT_VECTOR
-				_RP("TrueType"),	// VFT2_FONT_TRUETYPE
+			static const char *const fileSubtypes_FONT[] = {
+				nullptr,	// VFT2_UNKNOWN
+				"Raster",	// VFT2_FONT_RASTER
+				"Vector",	// VFT2_FONT_VECTOR
+				"TrueType",	// VFT2_FONT_TRUETYPE
 			};
 			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)
 						? fileSubtypes_FONT[pVsFfi->dwFileSubtype]
@@ -244,9 +244,9 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	if (hasSubtype) {
 		if (fileSubtype) {
-			fields->addField_string(_RP("File Subtype"), fileSubtype);
+			fields->addField_string("File Subtype", fileSubtype);
 		} else {
-			fields->addField_string(_RP("File Subtype"),
+			fields->addField_string("File Subtype",
 				rp_sprintf("Unknown (%08X)", pVsFfi->dwFileSubtype));
 		}
 	}
@@ -264,7 +264,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		#define HECTONANOSEC_PER_SEC 10000000LL
 #endif
 		time_t fileTimeUnix = (time_t)((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
-		fields->addField_dateTime(_RP("File Time"), fileTimeUnix,
+		fields->addField_dateTime("File Time", fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
 			);
@@ -281,7 +281,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// random due to unordered_map<>.
 	// TODO: Show certain entries as their own fields?
 	const auto &st = pVsSfi->begin()->second;
-	auto data = new vector<vector<rp_string> >();
+	auto data = new vector<vector<string> >();
 	data->resize(st.size());
 	for (unsigned int i = 0; i < (unsigned int)st.size(); i++) {
 		const auto &st_row = st.at(i);
@@ -292,14 +292,14 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	// Fields.
-	static const rp_char *const field_names[] = {
-		_RP("Key"), _RP("Value")
+	static const char *const field_names[] = {
+		"Key", "Value"
 	};
-	vector<rp_string> *v_field_names = RomFields::strArrayToVector(
+	vector<string> *v_field_names = RomFields::strArrayToVector(
 		field_names, ARRAY_SIZE(field_names));
 
 	// Add the StringFileInfo.
-	fields->addField_listData(_RP("StringFileInfo"), v_field_names, data);
+	fields->addField_listData("StringFileInfo", v_field_names, data);
 }
 
 /** MZ-specific **/
@@ -314,15 +314,17 @@ void EXEPrivate::addFields_MZ(void)
 	if (mz.e_cblp != 0) {
 		program_size -= 512 - le16_to_cpu(mz.e_cblp);
 	}
-	fields->addField_string(_RP("Program Size"), formatFileSize(program_size));
+	fields->addField_string("Program Size", formatFileSize(program_size));
 
 	// Min/Max allocated memory
-	fields->addField_string(_RP("Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
-	fields->addField_string(_RP("Max. Memory"), formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+	fields->addField_string("Min. Memory", formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
+	fields->addField_string("Max. Memory", formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
 
 	// Initial CS:IP/SS:SP
-	fields->addField_string(_RP("Inital CS:IP"), rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
-	fields->addField_string(_RP("Inital SS:SP"), rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
+	fields->addField_string("Inital CS:IP",
+		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
+	fields->addField_string("Inital SS:SP",
+		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
 }
 
 /** NE-specific **/
@@ -414,11 +416,11 @@ void EXEPrivate::addFields_NE(void)
 	fields->reserveTabs(3);
 
 	// NE Header
-	fields->setTabName(0, _RP("NE Header"));
+	fields->setTabName(0, "NE Header");
 	fields->setTabIndex(0);
 
 	// Target OS.
-	const rp_char *targetOS = (hdr.ne.targOS < ARRAY_SIZE(NE_TargetOSes))
+	const char *targetOS = (hdr.ne.targOS < ARRAY_SIZE(NE_TargetOSes))
 					? NE_TargetOSes[hdr.ne.targOS]
 					: nullptr;
 	if (!targetOS) {
@@ -431,63 +433,63 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	if (targetOS) {
-		fields->addField_string(_RP("Target OS"), targetOS);
+		fields->addField_string("Target OS", targetOS);
 	} else {
-		fields->addField_string(_RP("Target OS"),
+		fields->addField_string("Target OS",
 			rp_sprintf("Unknown (0x%02X)", hdr.ne.targOS));
 	}
 
 	// DGroup type.
-	static const rp_char *const dgroupTypes[] = {
-		_RP("None"), _RP("Single Shared"), _RP("Multiple"), _RP("(null)")
+	static const char *const dgroupTypes[] = {
+		"None", "Single Shared", "Multiple", "(null)"
 	};
-	fields->addField_string(_RP("DGroup Type"), dgroupTypes[hdr.ne.ProgFlags & 3]);
+	fields->addField_string("DGroup Type", dgroupTypes[hdr.ne.ProgFlags & 3]);
 
 	// Program flags.
-	static const rp_char *const ProgFlags_names[] = {
+	static const char *const ProgFlags_names[] = {
 		nullptr, nullptr,	// DGroup Type
-		_RP("Global Init"), _RP("Protected Mode Only"),
-		_RP("8086 insns"), _RP("80286 insns"),
-		_RP("80386 insns"), _RP("FPU insns")
+		"Global Init", "Protected Mode Only",
+		"8086 insns", "80286 insns",
+		"80386 insns", "FPU insns"
 	};
-	vector<rp_string> *v_ProgFlags_names = RomFields::strArrayToVector(
+	vector<string> *v_ProgFlags_names = RomFields::strArrayToVector(
 		ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
-	fields->addField_bitfield(_RP("Program Flags"),
+	fields->addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
 
 	// Application type.
 	if (hdr.ne.targOS == NE_OS_OS2) {
 		// Only mentioning Presentation Manager for OS/2 executables.
-		static const rp_char *const applTypes_OS2[] = {
-			_RP("None"),
-			_RP("Full Screen (not aware of Presentation Manager)"),
-			_RP("Presentation Manager compatible"),
-			_RP("Presentation Manager application")
+		static const char *const applTypes_OS2[] = {
+			"None",
+			"Full Screen (not aware of Presentation Manager)",
+			"Presentation Manager compatible",
+			"Presentation Manager application"
 		};
-		fields->addField_string(_RP("Application Type"),
+		fields->addField_string("Application Type",
 			applTypes_OS2[hdr.ne.ApplFlags & 3]);
 	} else {
 		// Assume Windows for everything else.
-		static const rp_char *const applTypes_Win[] = {
-			_RP("None"),
-			_RP("Full Screen (not aware of Windows)"),
-			_RP("Windows compatible"),
-			_RP("Windows application")
+		static const char *const applTypes_Win[] = {
+			"None",
+			"Full Screen (not aware of Windows)",
+			"Windows compatible",
+			"Windows application"
 		};
-		fields->addField_string(_RP("Application Type"),
+		fields->addField_string("Application Type",
 			applTypes_Win[hdr.ne.ApplFlags & 3]);
 	}
 
 	// Application flags.
-	static const rp_char *const ApplFlags_names[] = {
+	static const char *const ApplFlags_names[] = {
 		nullptr, nullptr,	// Application type
-		nullptr, _RP("OS/2 Application"),
-		nullptr, _RP("Image Error"),
-		_RP("Non-Conforming"), _RP("DLL")
+		nullptr, "OS/2 Application",
+		nullptr, "Image Error",
+		"Non-Conforming", "DLL"
 	};
-	vector<rp_string> *v_ApplFlags_names = RomFields::strArrayToVector(
+	vector<string> *v_ApplFlags_names = RomFields::strArrayToVector(
 		ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
-	fields->addField_bitfield(_RP("Application Flags"),
+	fields->addField_bitfield("Application Flags",
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
 	// Other flags.
@@ -496,19 +498,19 @@ void EXEPrivate::addFields_NE(void)
 	// References:
 	// - http://wiki.osdev.org/NE
 	// - http://www.program-transformation.org/Transform/PcExeFormat
-	static const rp_char *const other_flags_names[] = {
-		_RP("Long File Names"), _RP("Protected Mode"),
-		_RP("Proportional Fonts"), _RP("Gangload Area"),
+	static const char *const other_flags_names[] = {
+		"Long File Names", "Protected Mode",
+		"Proportional Fonts", "Gangload Area",
 	};
-	vector<rp_string> *v_other_flags_names = RomFields::strArrayToVector(
+	vector<string> *v_other_flags_names = RomFields::strArrayToVector(
 		other_flags_names, ARRAY_SIZE(other_flags_names));
-	fields->addField_bitfield(_RP("Other Flags"),
+	fields->addField_bitfield("Other Flags",
 		v_other_flags_names, 2, hdr.ne.OS2EXEFlags);
 
 	// Expected Windows version.
 	// TODO: Is this used in OS/2 executables?
 	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
-		fields->addField_string(_RP("Windows Version"),
+		fields->addField_string("Windows Version",
 			rp_sprintf("%u.%u", hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
@@ -532,7 +534,7 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// Add the version fields.
-	fields->setTabName(1, _RP("Version"));
+	fields->setTabName(1, "Version");
 	fields->setTabIndex(1);
 	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 }
@@ -551,29 +553,29 @@ void EXEPrivate::addFields_LE(void)
 	fields->reserveTabs(2);
 
 	// LE Header
-	fields->setTabName(0, _RP("LE Header"));
+	fields->setTabName(0, "LE Header");
 	fields->setTabIndex(0);
 
 	// CPU.
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
-	const rp_char *const cpu = EXEData::lookup_le_cpu(cpu_type);
+	const char *const cpu = EXEData::lookup_le_cpu(cpu_type);
 	if (cpu) {
-		fields->addField_string(_RP("CPU"), cpu);
+		fields->addField_string("CPU", cpu);
 	} else {
-		fields->addField_string(_RP("CPU"),
+		fields->addField_string("CPU",
 			rp_sprintf("Unknown (0x%04X)", cpu_type));
 	}
 
 	// Target OS.
 	// NOTE: Same as NE.
 	const uint16_t targOS = le16_to_cpu(hdr.le.targOS);
-	const rp_char *const targetOS = (targOS < ARRAY_SIZE(NE_TargetOSes))
+	const char *const targetOS = (targOS < ARRAY_SIZE(NE_TargetOSes))
 					? NE_TargetOSes[targOS]
 					: nullptr;
 	if (targetOS) {
-		fields->addField_string(_RP("Target OS"), targetOS);
+		fields->addField_string("Target OS", targetOS);
 	} else {
-		fields->addField_string(_RP("Target OS"),
+		fields->addField_string("Target OS",
 			rp_sprintf("Unknown (0x%02X)", targOS));
 	}
 }
@@ -725,7 +727,7 @@ void EXEPrivate::addFields_PE(void)
 	fields->reserveTabs(4);
 
 	// PE Header
-	fields->setTabName(0, _RP("PE Header"));
+	fields->setTabName(0, "PE Header");
 	fields->setTabIndex(0);
 
 	const uint16_t machine = le16_to_cpu(hdr.pe.FileHeader.Machine);
@@ -757,8 +759,8 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// CPU. (Also .NET status.)
-	rp_string s_cpu;
-	const rp_char *const cpu = EXEData::lookup_pe_cpu(machine);
+	string s_cpu;
+	const char *const cpu = EXEData::lookup_pe_cpu(machine);
 	if (cpu != nullptr) {
 		s_cpu = cpu;
 	} else {
@@ -766,12 +768,12 @@ void EXEPrivate::addFields_PE(void)
 	}
 	if (dotnet) {
 		// .NET executable.
-		s_cpu += _RP(" (.NET)");
+		s_cpu += " (.NET)";
 	}
-	fields->addField_string(_RP("CPU"), s_cpu);
+	fields->addField_string("CPU", s_cpu);
 
 	// OS version.
-	fields->addField_string(_RP("OS Version"),
+	fields->addField_string("OS Version",
 		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
 	// Subsystem names.
@@ -794,7 +796,7 @@ void EXEPrivate::addFields_PE(void)
 	};
 
 	// Subsystem name and version.
-	fields->addField_string(_RP("Subsystem"),
+	fields->addField_string("Subsystem",
 		rp_sprintf("%s %u.%u",
 			(pe_subsystem < ARRAY_SIZE(subsysNames)
 				? subsysNames[pe_subsystem]
@@ -803,31 +805,31 @@ void EXEPrivate::addFields_PE(void)
 
 	// PE flags. (characteristics)
 	// NOTE: Only important flags will be listed.
-	static const rp_char *const pe_flags_names[] = {
-		nullptr, _RP("Executable"), nullptr,
-		nullptr, nullptr, _RP(">2GB addressing"),
+	static const char *const pe_flags_names[] = {
+		nullptr, "Executable", nullptr,
+		nullptr, nullptr, ">2GB addressing",
 		nullptr, nullptr, nullptr,
 		nullptr, nullptr, nullptr,
-		nullptr, _RP("DLL"), nullptr,
+		nullptr, "DLL", nullptr,
 		nullptr
 	};
-	vector<rp_string> *v_pe_flags_names = RomFields::strArrayToVector(
+	vector<string> *v_pe_flags_names = RomFields::strArrayToVector(
 		pe_flags_names, ARRAY_SIZE(pe_flags_names));
-	fields->addField_bitfield(_RP("PE Flags"),
+	fields->addField_bitfield("PE Flags",
 		v_pe_flags_names, 3, pe_flags);
 
 	// DLL flags. (characteristics)
-	static const rp_char *const dll_flags_names[] = {
+	static const char *const dll_flags_names[] = {
 		nullptr, nullptr, nullptr,
-		nullptr, nullptr, _RP("High Entropy VA"),
-		_RP("Dynamic Base"), _RP("Force Integrity"), _RP("NX Compatible"),
-		_RP("No Isolation"), _RP("No SEH"), _RP("No Bind"),
-		_RP("AppContainer"), _RP("WDM Driver"), _RP("Control Flow Guard"),
-		_RP("TS Aware"),
+		nullptr, nullptr, "High Entropy VA",
+		"Dynamic Base", "Force Integrity", "NX Compatible",
+		"No Isolation", "No SEH", "No Bind",
+		"AppContainer", "WDM Driver", "Control Flow Guard",
+		"TS Aware",
 	};
-	vector<rp_string> *v_dll_flags_names = RomFields::strArrayToVector(
+	vector<string> *v_dll_flags_names = RomFields::strArrayToVector(
 		dll_flags_names, ARRAY_SIZE(dll_flags_names));
-	fields->addField_bitfield(_RP("DLL Flags"),
+	fields->addField_bitfield("DLL Flags",
 		v_dll_flags_names, 3, dll_flags);
 
 	// Load resources.
@@ -850,7 +852,7 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// Add the version fields.
-	fields->setTabName(1, _RP("Version"));
+	fields->setTabName(1, "Version");
 	fields->setTabIndex(1);
 	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 
@@ -1109,31 +1111,31 @@ int EXE::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *EXE::systemName(unsigned int type) const
+const char *EXE::systemName(unsigned int type) const
 {
 	RP_D(const EXE);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	static const rp_char *const sysNames_Windows[4] = {
-		_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr
+	static const char *const sysNames_Windows[4] = {
+		"Microsoft Windows", "Windows", "Windows", nullptr
 	};
 
 	// New Executable (and Linear Executable) operating systems.
-	static const rp_char *const sysNames_NE[6][4] = {
-		{nullptr, nullptr, nullptr, nullptr},						// NE_OS_UNKNOWN
-		{_RP("IBM OS/2"), _RP("OS/2"), _RP("OS/2"), nullptr},				// NE_OS_OS2
-		{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN
-		{_RP("European MS-DOS 4.x"), _RP("EuroDOS 4.x"), _RP("EuroDOS 4.x"), nullptr},	// NE_OS_DOS4
-		{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN386 (TODO)
-		{_RP("Borland Operating System Services"), _RP("BOSS"), _RP("BOSS"), nullptr},	// NE_OS_BOSS
+	static const char *const sysNames_NE[6][4] = {
+		{nullptr, nullptr, nullptr, nullptr},				// NE_OS_UNKNOWN
+		{"IBM OS/2", "OS/2", "OS/2", nullptr},				// NE_OS_OS2
+		{"Microsoft Windows", "Windows", "Windows", nullptr},		// NE_OS_WIN
+		{"European MS-DOS 4.x", "EuroDOS 4.x", "EuroDOS 4.x", nullptr},	// NE_OS_DOS4
+		{"Microsoft Windows", "Windows", "Windows", nullptr},		// NE_OS_WIN386 (TODO)
+		{"Borland Operating System Services", "BOSS", "BOSS", nullptr},	// NE_OS_BOSS
 	};
 
 	switch (d->exeType) {
 		case EXEPrivate::EXE_TYPE_MZ: {
 			// DOS executable.
-			static const rp_char *const sysNames_DOS[4] = {
-				_RP("Microsoft MS-DOS"), _RP("MS-DOS"), _RP("DOS"), nullptr
+			static const char *const sysNames_DOS[4] = {
+				"Microsoft MS-DOS", "MS-DOS", "DOS", nullptr
 			};
 			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
 		}
@@ -1143,9 +1145,9 @@ const rp_char *EXE::systemName(unsigned int type) const
 			if (d->hdr.ne.targOS > NE_OS_BOSS) {
 				// Check for Phar Lap 286 extenders.
 				// Reference: https://github.com/weheartwebsites/exeinfo/blob/master/exeinfo.cpp
-				static const rp_char *const sysNames_NE_PharLap[2][4] = {
-					{_RP("Phar Lap 286|DOS Extender, OS/2"), _RP("Phar Lap 286 OS/2"), _RP("Phar Lap 286 OS/2"), nullptr},	// 0x81
-					{_RP("Phar Lap 286|DOS Extender, Windows"), _RP("Phar Lap 286 Windows"), _RP("Phar Lap 286 Windows"), nullptr},	// 0x82
+				static const char *const sysNames_NE_PharLap[2][4] = {
+					{"Phar Lap 286|DOS Extender, OS/2", "Phar Lap 286 OS/2", "Phar Lap 286 OS/2", nullptr},	// 0x81
+					{"Phar Lap 286|DOS Extender, Windows", "Phar Lap 286 Windows", "Phar Lap 286 Windows", nullptr},	// 0x82
 				};
 				if (d->hdr.ne.targOS == 0x81) {
 					return sysNames_NE_PharLap[0][type & SYSNAME_TYPE_MASK];
@@ -1188,16 +1190,16 @@ const rp_char *EXE::systemName(unsigned int type) const
 				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_ROM: {
 					// EFI executable.
-					static const rp_char *const sysNames_EFI[4] = {
-						_RP("Extensible Firmware Interface"), _RP("EFI"), _RP("EFI"), nullptr
+					static const char *const sysNames_EFI[4] = {
+						"Extensible Firmware Interface", "EFI", "EFI", nullptr
 					};
 					return sysNames_EFI[type & SYSNAME_TYPE_MASK];
 				}
 
 				case IMAGE_SUBSYSTEM_XBOX: {
 					// TODO: Which Xbox?
-					static const rp_char *const sysNames_Xbox[4] = {
-						_RP("Microsoft Xbox"), _RP("Xbox"), _RP("Xbox"), nullptr
+					static const char *const sysNames_Xbox[4] = {
+						"Microsoft Xbox", "Xbox", "Xbox", nullptr
 					};
 					return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
 				}
@@ -1214,7 +1216,7 @@ const rp_char *EXE::systemName(unsigned int type) const
 
 	// Should not get here...
 	assert(!"Unknown EXE type.");
-	return _RP("Unknown EXE type");
+	return "Unknown EXE type";
 }
 
 /**
@@ -1230,24 +1232,24 @@ const rp_char *EXE::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *EXE::supportedFileExtensions_static(void)
+const char *const *EXE::supportedFileExtensions_static(void)
 {
 	// References:
 	// - https://en.wikipedia.org/wiki/Portable_Executable
-	static const rp_char *const exts[] = {
+	static const char *const exts[] = {
 		// PE extensions
-		_RP(".exe"), _RP(".dll"),
-		_RP(".acm"), _RP(".ax"),
-		_RP(".cpl"), _RP(".drv"),
-		_RP(".efi"), _RP(".mui"),
-		_RP(".ocx"), _RP(".scr"),
-		_RP(".sys"), _RP(".tsp"),
+		".exe", ".dll",
+		".acm", ".ax",
+		".cpl", ".drv",
+		".efi", ".mui",
+		".ocx", ".scr",
+		".sys", ".tsp",
 
 		// NE extensions
-		_RP(".fon"), _RP(".icl"),
+		".fon", ".icl",
 
 		// LE extensions
-		_RP("*.vxd"), _RP(".386"),
+		"*.vxd", ".386",
 
 		nullptr
 	};
@@ -1267,7 +1269,7 @@ const rp_char *const *EXE::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *EXE::supportedFileExtensions(void) const
+const char *const *EXE::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -1299,19 +1301,19 @@ int EXE::loadFieldData(void)
 	d->fields->reserve(24);
 
 	// Executable type.
-	static const rp_char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
-		_RP("MS-DOS Executable"),		// EXE_TYPE_MZ
-		_RP("16-bit New Executable"),		// EXE_TYPE_NE
-		_RP("Mixed-Mode Linear Executable"),	// EXE_TYPE_LE
-		_RP("Windows/386 Kernel"),		// EXE_TYPE_W3
-		_RP("32-bit Linear Executable"),	// EXE_TYPE_LX
-		_RP("32-bit Portable Executable"),	// EXE_TYPE_PE
-		_RP("64-bit Portable Executable"),	// EXE_TYPE_PE32PLUS
+	static const char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
+		"MS-DOS Executable",		// EXE_TYPE_MZ
+		"16-bit New Executable",	// EXE_TYPE_NE
+		"Mixed-Mode Linear Executable",	// EXE_TYPE_LE
+		"Windows/386 Kernel",		// EXE_TYPE_W3
+		"32-bit Linear Executable",	// EXE_TYPE_LX
+		"32-bit Portable Executable",	// EXE_TYPE_PE
+		"64-bit Portable Executable",	// EXE_TYPE_PE32PLUS
 	};
 	if (d->exeType >= EXEPrivate::EXE_TYPE_MZ && d->exeType < EXEPrivate::EXE_TYPE_LAST) {
-		d->fields->addField_string(_RP("Type"), exeTypes[d->exeType]);
+		d->fields->addField_string("Type", exeTypes[d->exeType]);
 	} else {
-		d->fields->addField_string(_RP("Type"), _RP("Unknown"));
+		d->fields->addField_string("Type", "Unknown");
 	}
 
 	switch (d->exeType) {
@@ -1340,7 +1342,7 @@ int EXE::loadFieldData(void)
 
 	// Add MZ tab for non-MZ executables
 	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
-		d->fields->addTab(_RP("MZ Header")); // NOTE: doesn't actually create a separate tab for non implemented types.
+		d->fields->addTab("MZ Header"); // NOTE: doesn't actually create a separate tab for non implemented types.
 		d->addFields_MZ();
 	}
 

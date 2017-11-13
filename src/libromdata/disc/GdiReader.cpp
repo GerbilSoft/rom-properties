@@ -47,7 +47,9 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <memory>
+#include <string>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -64,7 +66,7 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 
 	public:
 		// GDI filename.
-		rp_string filename;
+		string filename;
 
 		// Number of logical 2048-byte blocks.
 		// Determined by the highest data track.
@@ -80,7 +82,7 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 			uint8_t reserved;
 			// TODO: Mode1/Mode2 designation?
 			// TODO: Data vs. audio?
-			rp_string filename;		// Relative to the .gdi file. Cleared on error.
+			string filename;		// Relative to the .gdi file. Cleared on error.
 			IRpFile *file;
 		};
 		vector<BlockRange> blockRanges;
@@ -331,7 +333,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		blockRange.reserved = 0;
 		// FIXME: UTF-8 or Latin-1?
 		filename[sizeof(filename)-1] = 0;
-		blockRange.filename = latin1_to_rp_string(filename, -1);
+		blockRange.filename = latin1_to_utf8(filename, -1);
 		blockRange.file = nullptr;
 
 		// Save the track mapping.
@@ -376,15 +378,15 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Separate the file extension.
-	rp_string basename = blockRange->filename;
-	rp_string ext;
-	size_t dotpos = basename.find_last_of(_RP_CHR('.'));
-	if (dotpos != rp_string::npos) {
+	string basename = blockRange->filename;
+	string ext;
+	size_t dotpos = basename.find_last_of('.');
+	if (dotpos != string::npos) {
 		ext = basename.substr(dotpos);
 		basename.resize(dotpos);
 	} else {
 		// No extension. Add one based on sector size.
-		ext = (blockRange->sectorSize == 2048 ? _RP(".iso") : _RP(".bin"));
+		ext = (blockRange->sectorSize == 2048 ? ".iso" : ".bin");
 	}
 
 	// Open the related file.

@@ -40,7 +40,9 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <memory>
+#include <string>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -163,7 +165,7 @@ int Nintendo3DSFirm::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *Nintendo3DSFirm::systemName(unsigned int type) const
+const char *Nintendo3DSFirm::systemName(unsigned int type) const
 {
 	RP_D(const Nintendo3DSFirm);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -171,8 +173,8 @@ const rp_char *Nintendo3DSFirm::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (short, long, abbreviation)
 	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles.
-	static const rp_char *const sysNames[4] = {
-		_RP("Nintendo 3DS"), _RP("Nintendo 3DS"), _RP("3DS"), nullptr
+	static const char *const sysNames[4] = {
+		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -191,11 +193,11 @@ const rp_char *Nintendo3DSFirm::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *Nintendo3DSFirm::supportedFileExtensions_static(void)
+const char *const *Nintendo3DSFirm::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".firm"),	// boot9strap
-		_RP(".bin"),	// older
+	static const char *const exts[] = {
+		".firm",	// boot9strap
+		".bin",		// older
 
 		nullptr
 	};
@@ -215,7 +217,7 @@ const rp_char *const *Nintendo3DSFirm::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *Nintendo3DSFirm::supportedFileExtensions(void) const
+const char *const *Nintendo3DSFirm::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -263,7 +265,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 	const Nintendo3DSFirmData::FirmBin_t *firmBin = nullptr;
 	const uint32_t arm11_entrypoint = le32_to_cpu(firmHeader->arm11_entrypoint);
 	const uint32_t arm9_entrypoint = le32_to_cpu(firmHeader->arm9_entrypoint);
-	const rp_char *firmBinDesc = nullptr;
+	const char *firmBinDesc = nullptr;
 	bool checkCustomFIRM = false;	// Check for a custom FIRM, e.g. Boot9Strap.
 	bool checkARM9 = false;		// Check for ARM9 homebrew.
 	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
@@ -273,7 +275,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
 				// Official firmware binary.
-				firmBinDesc = (firmBin->isNew3DS ? _RP("New3DS FIRM") : _RP("Old3DS FIRM"));
+				firmBinDesc = (firmBin->isNew3DS ? "New3DS FIRM" : "Old3DS FIRM");
 			} else {
 				// Check for a custom FIRM.
 				checkCustomFIRM = true;
@@ -281,11 +283,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 		}
 	} else if (arm11_entrypoint == 0 && arm9_entrypoint != 0) {
 		// ARM9 homebrew.
-		firmBinDesc = _RP("ARM9 Homebrew");
+		firmBinDesc = "ARM9 Homebrew";
 		checkARM9 = true;
 	} else if (arm11_entrypoint != 0 && arm9_entrypoint == 0) {
 		// ARM11 homebrew. (Not a thing...)
-		firmBinDesc = _RP("ARM11 Homebrew");
+		firmBinDesc = "ARM11 Homebrew";
 	}
 
 	if (checkCustomFIRM) {
@@ -294,30 +296,30 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Check for "B9S" at 0x3D.
 		if (!memcmp(&firmHeader->reserved[0x2D], "B9S", 3)) {
 			// This is Boot9Strap.
-			firmBinDesc = _RP("Boot9Strap");
+			firmBinDesc = "Boot9Strap";
 		} else if (firmBuf) {
 			// Check for sighax installer.
 			// NOTE: String has a NULL terminator.
 			static const char sighax_magic[] = "3DS BOOTHAX INS";
 			if (!memcmp(&firmBuf[0x208], sighax_magic, sizeof(sighax_magic))) {
 				// Found derrek's sighax installer.
-				firmBinDesc = _RP("sighax installer");
+				firmBinDesc = "sighax installer";
 			}
 		}
 	}
 
-	d->fields->addField_string(_RP("Type"),
-		(firmBinDesc ? firmBinDesc : _RP("Unknown")));
+	d->fields->addField_string("Type",
+		(firmBinDesc ? firmBinDesc : "Unknown"));
 
 	// Official firmware binary fields.
 	if (firmBin) {
 		// FIRM version.
-		d->fields->addField_string(_RP("FIRM Version"),
+		d->fields->addField_string("FIRM Version",
 			rp_sprintf("%u.%u.%u", firmBin->kernel.major,
 				firmBin->kernel.minor, firmBin->kernel.revision));
 
 		// System version.
-		d->fields->addField_string(_RP("System Version"),
+		d->fields->addField_string("System Version",
 			rp_sprintf("%u.%u", firmBin->sys.major, firmBin->sys.minor));
 	}
 
@@ -325,15 +327,15 @@ int Nintendo3DSFirm::loadFieldData(void)
 	if (checkARM9) {
 		// Version strings.
 		struct Arm9VerStr_t {
-			const rp_char *title;	// Application title.
+			const char *title;	// Application title.
 			const char *searchstr;	// Search string.
 			unsigned int searchlen;	// Search string length, without the NULL terminator.
 		};
 		static const Arm9VerStr_t arm9VerStr[] = {
-			{_RP("Luma3DS"), "Luma3DS v", 9},
-			{_RP("GodMode9"), "GodMode9 Explorer v", 19},
-			{_RP("Decrypt9WIP"), "Decrypt9WIP (", 13},
-			{_RP("Hourglass9"), "Hourglass9 v", 12},
+			{"Luma3DS", "Luma3DS v", 9},
+			{"GodMode9", "GodMode9 Explorer v", 19},
+			{"Decrypt9WIP", "Decrypt9WIP (", 13},
+			{"Hourglass9", "Hourglass9 v", 12},
 		};
 
 		for (unsigned int i = 0; i < ARRAY_SIZE(arm9VerStr); i++) {
@@ -342,7 +344,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			if (!verstr)
 				continue;
 
-			d->fields->addField_string(_RP("Title"), arm9VerStr[i].title);
+			d->fields->addField_string("Title", arm9VerStr[i].title);
 
 			// Version does NOT include the 'v' character.
 			verstr += arm9VerStr[i].searchlen;
@@ -356,8 +358,8 @@ int Nintendo3DSFirm::loadFieldData(void)
 			}
 			if (count > 0) {
 				// NOTE: Most ARM9 homebrew uses UTF-8 strings.
-				d->fields->addField_string(_RP("Version"),
-					utf8_to_rp_string(verstr, count));
+				d->fields->addField_string("Version",
+					string(verstr, count));
 			}
 
 			// We're done here.
@@ -367,11 +369,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	// Entry Points
 	if (arm11_entrypoint != 0) {
-		d->fields->addField_string_numeric(_RP("ARM11 Entry Point"),
+		d->fields->addField_string_numeric("ARM11 Entry Point",
 			arm11_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 	}
 	if (arm9_entrypoint != 0) {
-		d->fields->addField_string_numeric(_RP("ARM9 Entry Point"),
+		d->fields->addField_string_numeric("ARM9 Entry Point",
 			arm9_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 	}
 

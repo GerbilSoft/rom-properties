@@ -226,15 +226,15 @@ int N64::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *N64::systemName(unsigned int type) const
+const char *N64::systemName(unsigned int type) const
 {
 	RP_D(const N64);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
-		_RP("Nintendo 64"), _RP("Nintendo 64"), _RP("N64"), nullptr
+	static const char *const sysNames[4] = {
+		"Nintendo 64", "Nintendo 64", "N64", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -253,11 +253,10 @@ const rp_char *N64::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *N64::supportedFileExtensions_static(void)
+const char *const *N64::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".z64"), _RP(".n64"), _RP(".v64"),
-
+	static const char *const exts[] = {
+		".z64", ".n64", ".v64",
 		nullptr
 	};
 	return exts;
@@ -276,7 +275,7 @@ const rp_char *const *N64::supportedFileExtensions_static(void)
  *
  * @return List of all supported file extensions.
  */
-const rp_char *const *N64::supportedFileExtensions(void) const
+const char *const *N64::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -306,9 +305,8 @@ int N64::loadFieldData(void)
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addField_string(_RP("Title"),
-		cp1252_sjis_to_rp_string(
-			romHeader->title, sizeof(romHeader->title)));
+	d->fields->addField_string("Title",
+		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -319,19 +317,19 @@ int N64::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	d->fields->addField_string(_RP("Game ID"),
-		latin1_to_rp_string(id4, 4));
+	d->fields->addField_string("Game ID",
+		latin1_to_utf8(id4, 4));
 
 	// Revision.
-	d->fields->addField_string_numeric(_RP("Revision"),
+	d->fields->addField_string_numeric("Revision",
 		romHeader->revision, RomFields::FB_DEC, 2);
 
 	// Entry point.
-	d->fields->addField_string_numeric(_RP("Entry Point"),
+	d->fields->addField_string_numeric("Entry Point",
 		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 
 	// Checksum.
-	d->fields->addField_string_hexdump(_RP("Checksum"),
+	d->fields->addField_string_hexdump("Checksum",
 		reinterpret_cast<const uint8_t*>(&romHeader->checksum),
 		sizeof(romHeader->checksum), RomFields::STRF_MONOSPACE);
 

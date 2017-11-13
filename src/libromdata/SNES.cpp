@@ -310,13 +310,13 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 	// SNES ROMs don't necessarily have a header at the start of the file.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		const rp_char *const *exts = supportedFileExtensions_static();
+		const char *const *exts = supportedFileExtensions_static();
 		if (!exts) {
 			// Should not happen...
 			return -1;
 		}
 		for (; *exts != nullptr; exts++) {
-			if (!rp_strcasecmp(info->ext, *exts)) {
+			if (!strcasecmp(info->ext, *exts)) {
 				// File extension is supported.
 				return 0;
 			}
@@ -359,7 +359,7 @@ int SNES::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *SNES::systemName(unsigned int type) const
+const char *SNES::systemName(unsigned int type) const
 {
 	RP_D(const SNES);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -370,13 +370,13 @@ const rp_char *SNES::systemName(unsigned int type) const
 	// - Bits 2-3: Region.
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 
-	static const rp_char *const sysNames[16] = {
+	static const char *const sysNames[16] = {
 		// Japan: Super Famicom
-		_RP("Nintendo Super Famicom"), _RP("Super Famicom"), _RP("SFC"), nullptr,
+		"Nintendo Super Famicom", "Super Famicom", "SFC", nullptr,
 		// South Korea: Super Comboy
-		_RP("Hyundai Super Comboy"), _RP("Super Comboy"), _RP("SCB"), nullptr,
+		"Hyundai Super Comboy", "Super Comboy", "SCB", nullptr,
 		// Worldwide: Super NES
-		_RP("Super Nintendo Entertainment System"), _RP("Super NES"), _RP("SNES"), nullptr,
+		"Super Nintendo Entertainment System", "Super NES", "SNES", nullptr,
 		// Reserved.
 		nullptr, nullptr, nullptr, nullptr
 	};
@@ -438,11 +438,11 @@ const rp_char *SNES::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *SNES::supportedFileExtensions_static(void)
+const char *const *SNES::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".smc"), _RP(".swc"), _RP(".sfc"),
-		_RP(".fig"), _RP(".ufo"),
+	static const char *const exts[] = {
+		".smc", ".swc", ".sfc",
+		".fig", ".ufo",
 
 		nullptr
 	};
@@ -462,7 +462,7 @@ const rp_char *const *SNES::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *SNES::supportedFileExtensions(void) const
+const char *const *SNES::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -492,8 +492,8 @@ int SNES::loadFieldData(void)
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addField_string(_RP("Title"),
-		latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	d->fields->addField_string("Title",
+		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
 	// NOTE: Only valid if the old publisher code is 0x33.
@@ -508,104 +508,104 @@ int SNES::loadFieldData(void)
 			// Append the publisher.
 			id6.append(romHeader->ext.new_publisher_code, sizeof(romHeader->ext.new_publisher_code));
 		}
-		d->fields->addField_string(_RP("Game ID"),
-			latin1_to_rp_string(id6.data(), (int)id6.size()));
+		d->fields->addField_string("Game ID",
+			latin1_to_utf8(id6.data(), (int)id6.size()));
 	} else {
 		// No game ID.
-		d->fields->addField_string(_RP("Game ID"), _RP("Unknown"));
+		d->fields->addField_string("Game ID", "Unknown");
 	}
 
 	// Publisher.
-	const rp_char* publisher;
+	const char* publisher;
 	if (romHeader->old_publisher_code == 0x33) {
 		publisher = NintendoPublishers::lookup(romHeader->ext.new_publisher_code);
 	} else {
 		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
 	}
-	d->fields->addField_string(_RP("Publisher"), publisher ? publisher : _RP("Unknown"));
+	d->fields->addField_string("Publisher", publisher ? publisher : "Unknown");
 
 	// ROM mapping.
-	const rp_char *rom_mapping;
+	const char *rom_mapping;
 	switch (romHeader->rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
-			rom_mapping = _RP("LoROM");
+			rom_mapping = "LoROM";
 			break;
 		case SNES_ROMMAPPING_HiROM:
-			rom_mapping = _RP("HiROM");
+			rom_mapping = "HiROM";
 			break;
 		case SNES_ROMMAPPING_LoROM_FastROM:
-			rom_mapping = _RP("LoROM+FastROM");
+			rom_mapping = "LoROM+FastROM";
 			break;
 		case SNES_ROMMAPPING_HiROM_FastROM:
-			rom_mapping = _RP("HiROM+FastROM");
+			rom_mapping = "HiROM+FastROM";
 			break;
 		case SNES_ROMMAPPING_ExLoROM:
-			rom_mapping = _RP("ExLoROM");
+			rom_mapping = "ExLoROM";
 			break;
 		case SNES_ROMMAPPING_ExHiROM:
-			rom_mapping = _RP("ExHiROM");
+			rom_mapping = "ExHiROM";
 			break;
 		default:
 			rom_mapping = nullptr;
 			break;
 	}
 	if (rom_mapping) {
-		d->fields->addField_string(_RP("ROM Mapping"), rom_mapping);
+		d->fields->addField_string("ROM Mapping", rom_mapping);
 	} else {
 		// Unknown ROM mapping.
-		d->fields->addField_string(_RP("ROM Mapping"),
+		d->fields->addField_string("ROM Mapping",
 			rp_sprintf("Unknown (0x%02X)", romHeader->rom_mapping));
 	}
 
 	// Cartridge HW.
-	static const rp_char *const hw_base_tbl[16] = {
-		_RP("ROM"), _RP("ROM, RAM"), _RP("ROM, RAM, Battery"),
-		_RP("ROM, "), _RP("ROM, RAM, "), _RP("ROM, RAM, Battery, "),
-		_RP("ROM, Battery, "), nullptr,
+	static const char *const hw_base_tbl[16] = {
+		"ROM", "ROM, RAM", "ROM, RAM, Battery",
+		"ROM, ", "ROM, RAM, ", "ROM, RAM, Battery, ",
+		"ROM, Battery, ", nullptr,
 
 		nullptr, nullptr, nullptr, nullptr,
 		nullptr, nullptr, nullptr, nullptr
 	};
-	static const rp_char *const hw_enh_tbl[16] = {
-		_RP("DSP-1"), _RP("Super FX"), _RP("OBC-1"), _RP("SA-1"),
-		_RP("S-DD1"), _RP("Unknown"), _RP("Unknown"), _RP("Unknown"),
-		_RP("Unknown"), _RP("Unknown"), _RP("Unknown"), _RP("Unknown"),
-		_RP("Unknown"), _RP("Unknown"), _RP("Other"), _RP("Custom Chip")
+	static const char *const hw_enh_tbl[16] = {
+		"DSP-1", "Super FX", "OBC-1", "SA-1",
+		"S-DD1", "Unknown", "Unknown", "Unknown",
+		"Unknown", "Unknown", "Unknown", "Unknown",
+		"Unknown", "Unknown", "Other", "Custom Chip"
 	};
 
-	const rp_char *const hw_base = hw_base_tbl[romHeader->rom_type & SNES_ROMTYPE_ROM_MASK];
+	const char *const hw_base = hw_base_tbl[romHeader->rom_type & SNES_ROMTYPE_ROM_MASK];
 	if (hw_base) {
 		if ((romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
 			// Enhancement chip.
-			const rp_char *const hw_enh = hw_enh_tbl[(romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
-			rp_string rps(hw_base);
-			rps.append(hw_enh);
-			d->fields->addField_string(_RP("Cartridge HW"), rps);
+			const char *const hw_enh = hw_enh_tbl[(romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+			string str(hw_base);
+			str.append(hw_enh);
+			d->fields->addField_string("Cartridge HW", str);
 		} else {
 			// No enhancement chip.
-			d->fields->addField_string(_RP("Cartridge HW"), hw_base);
+			d->fields->addField_string("Cartridge HW", hw_base);
 		}
 	} else {
 		// Unknown cartridge HW.
-		d->fields->addField_string(_RP("Cartridge HW"), _RP("Unknown"));
+		d->fields->addField_string("Cartridge HW", "Unknown");
 	}
 
 	// Region
-	static const rp_char *const region_tbl[0x15] = {
-		_RP("Japan"), _RP("North America"), _RP("Europe"), _RP("Scandinavia"),
-		nullptr, nullptr, _RP("France"), _RP("Netherlands"),
-		_RP("Spain"), _RP("Germany"), _RP("Italy"), _RP("China"),
-		nullptr, _RP("South Korea"), _RP("All"), _RP("Canada"),
-		_RP("Brazil"), _RP("Australia"), _RP("Other"), _RP("Other"),
-		_RP("Other")
+	static const char *const region_tbl[0x15] = {
+		"Japan", "North America", "Europe", "Scandinavia",
+		nullptr, nullptr, "France", "Netherlands",
+		"Spain", "Germany", "Italy", "China",
+		nullptr, "South Korea", "All", "Canada",
+		"Brazil", "Australia", "Other", "Other",
+		"Other"
 	};
-	const rp_char *region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
+	const char *region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
 		? region_tbl[romHeader->destination_code]
 		: nullptr);
-	d->fields->addField_string(_RP("Region"), region ? region : _RP("Unknown"));
+	d->fields->addField_string("Region", region ? region : "Unknown");
 
 	// Revision
-	d->fields->addField_string_numeric(_RP("Revision"),
+	d->fields->addField_string_numeric("Revision",
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// TODO: Other fields.

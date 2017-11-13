@@ -36,7 +36,10 @@ using namespace LibRpBase;
 #include <cassert>
 
 // C++ includes.
+#include <string>
 #include <unordered_map>
+#include <vector>
+using std::string;
 using std::unordered_map;
 using std::vector;
 
@@ -88,7 +91,7 @@ class RomDataFactoryPrivate
 
 	public:
 		typedef int (*pFnIsRomSupported)(const RomData::DetectInfo *info);
-		typedef const rp_char *const * (*pFnSupportedFileExtensions)(void);
+		typedef const char *const * (*pFnSupportedFileExtensions)(void);
 
 #ifdef HAVE_LAMBDA_AS_FUNCTION_POINTER
 		typedef RomData* (*pFnNewRomData)(IRpFile *file);
@@ -204,27 +207,27 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	IRpFile *vmi_file;
 	IRpFile **other_file;	// Points to vms_file or vmi_file.
 
-	const rp_char *rel_ext;
+	const char *rel_ext;
 	if (has_dc_vms) {
 		// We have the VMS file.
 		// Find the VMI file.
 		vms_file = file;
 		vmi_file = nullptr;
 		other_file = &vmi_file;
-		rel_ext = _RP(".VMI");
+		rel_ext = ".VMI";
 	} else /*if (has_dc_vmi)*/ {
 		// We have the VMI file.
 		// Find the VMS file.
 		vms_file = nullptr;
 		vmi_file = file;
 		other_file = &vms_file;
-		rel_ext = _RP(".VMS");
+		rel_ext = ".VMS";
 	}
 
 	// Attempt to open the other file in the pair.
 	// TODO: Verify length.
 	// TODO: For .vmi, check the VMS resource name?
-	const rp_string filename = file->filename();
+	const string filename = file->filename();
 	*other_file = FileSystem::openRelatedFile(filename.c_str(), nullptr, rel_ext);
 	if (!*other_file) {
 		// Can't open the other file.
@@ -283,15 +286,15 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 
 	// Get the file extension.
 	info.ext = nullptr;
-	const rp_string filename = file->filename();
+	const string filename = file->filename();
 	if (!filename.empty()) {
 		info.ext = FileSystem::file_ext(filename);
 	}
 
 	// Special handling for Dreamcast .VMI+.VMS pairs.
 	if (info.ext != nullptr &&
-	    (!rp_strcasecmp(info.ext, _RP(".vms")) ||
-	     !rp_strcasecmp(info.ext, _RP(".vmi"))))
+	    (!strcasecmp(info.ext, ".vms") ||
+	     !strcasecmp(info.ext, ".vmi")))
 	{
 		// Dreamcast .VMI+.VMS pair.
 		// Attempt to open the other file in the pair.
@@ -330,8 +333,8 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 			if (info.ext == nullptr) {
 				// No file extension...
 				break;
-			} else if (rp_strcasecmp(info.ext, _RP(".sms")) != 0 &&
-				   rp_strcasecmp(info.ext, _RP(".gg")) != 0)
+			} else if (strcasecmp(info.ext, ".sms") != 0 &&
+				   strcasecmp(info.ext, ".gg") != 0)
 			{
 				// Not SMS or Game Gear.
 				break;
@@ -393,7 +396,7 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 		// Do we have a matching extension?
 		// FIXME: Instead of hard-coded, check supportedFileExtensions.
 		// Currently only supports VirtualBoy.
-		if (!info.ext || rp_strcasecmp(info.ext, _RP(".vb")) != 0) {
+		if (!info.ext || strcasecmp(info.ext, ".vb") != 0) {
 			// Extension doesn't match.
 			continue;
 		}
@@ -440,14 +443,14 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	// an unordered_map. If any of the handlers for a
 	// given extension support thumbnails, then the
 	// thumbnail handlers will be registered.
-	// FIXME: May need to use rp_string instead of rp_char*
+	// FIXME: May need to use string instead of char*
 	// for proper hashing.
-	unordered_map<const rp_char*, bool> exts;
+	unordered_map<const char*, bool> exts;
 
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const rp_char *const *sys_exts = fns->supportedFileExtensions();
+		const char *const *sys_exts = fns->supportedFileExtensions();
 		if (!sys_exts)
 			continue;
 
@@ -461,7 +464,7 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 
 	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const rp_char *const *sys_exts = fns->supportedFileExtensions();
+		const char *const *sys_exts = fns->supportedFileExtensions();
 		if (!sys_exts)
 			continue;
 
