@@ -416,8 +416,9 @@ void KeyManagerTabPrivate::initUI(void)
 			lvGroup.mask = LVGF_ALIGN | LVGF_GROUPID | LVGF_HEADER | LVGF_ITEMS;
 			lvGroup.uAlign = LVGA_HEADER_LEFT;
 			for (int sectIdx = 0; sectIdx < keyStore->sectCount(); sectIdx++) {
+				const wstring sectName = RP2W_c(keyStore->sectName(sectIdx));
 				lvGroup.iGroupId = sectIdx;
-				lvGroup.pszHeader = const_cast<LPWSTR>(RP2W_c(keyStore->sectName(sectIdx)));
+				lvGroup.pszHeader = const_cast<LPWSTR>(sectName.c_str());
 				lvGroup.cItems = keyStore->keyCount(sectIdx);
 				ListView_InsertGroup(hListView, sectIdx, &lvGroup);
 			}
