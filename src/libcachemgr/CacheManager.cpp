@@ -161,7 +161,7 @@ string CacheManager::filterCacheKey(const string &cache_key)
 	// Quick check: Ensure the cache key is not empty and
 	// that it doesn't start with a path separator.
 	if (cache_key.empty() ||
-	    cache_key[0] == _RP_CHR('/') || cache_key[0] == _RP_CHR('\\'))
+	    cache_key[0] == '/' || cache_key[0] == '\\')
 	{
 		// Cache key is either empty or starts with
 		// a path separator.
@@ -203,7 +203,7 @@ string CacheManager::filterCacheKey(const string &cache_key)
 			case 0:
 			default:
 				// Invalid character.
-				*iter = _RP_CHR('_');
+				*iter = '_';
 				foundSlash = false;
 				break;
 
@@ -228,7 +228,7 @@ string CacheManager::filterCacheKey(const string &cache_key)
 				// Slash.
 #ifdef _WIN32
 				// Convert to backslash on Windows.
-				*iter = _RP_CHR('\\');
+				*iter = '\\';
 #endif /* _WIN32 */
 				foundSlash = true;
 				dotCount = 0;

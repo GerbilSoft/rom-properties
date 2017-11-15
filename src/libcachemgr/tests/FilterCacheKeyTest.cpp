@@ -93,42 +93,42 @@ INSTANTIATE_TEST_CASE_P(CacheManagerTest, FilterCacheKeyTest,
 	::testing::Values(
 		// Known-good cache key.
 		FilterCacheKeyTest_mode(
-			_RP("wii/disc/US/GALE01.png"),
-			_RP("wii/disc/US/GALE01.png"),
-			_RP("wii\\disc\\US\\GALE01.png")),
+			"wii/disc/US/GALE01.png",
+			"wii/disc/US/GALE01.png",
+			"wii\\disc\\US\\GALE01.png"),
 
 		// Simple ".." traversal.
 		FilterCacheKeyTest_mode(
-			_RP("../../../../etc/passwd"),
-			_RP(""),
-			_RP("")),
+			"../../../../etc/passwd",
+			"",
+			""),
 
 		// "..." traversal, which isn't actually traversal,
 		// but is filtered out anyway.
 		FilterCacheKeyTest_mode(
-			_RP(".../.../.../.../etc/passwd"),
-			_RP(""),
-			_RP("")),
+			".../.../.../.../etc/passwd",
+			"",
+			""),
 
 		// Unix-style absolute path. (blocked due to leading '/')
 		FilterCacheKeyTest_mode(
-			_RP("/etc/passwd"),
-			_RP(""),
-			_RP("")),
+			"/etc/passwd",
+			"",
+			""),
 
 		// Windows-style absolute path. (blocked due to ':')
 		FilterCacheKeyTest_mode(
-			_RP("C:/Windows/System32/config/SAM"),
-			_RP(""),
-			_RP("")),
+			"C:/Windows/System32/config/SAM",
+			"",
+			""),
 
 		// Filter out bad characters.
 		// These characters are converted to '_', unlike '\\' and ':',
 		// which abort processing and return an empty string.
 		FilterCacheKeyTest_mode(
-			_RP("lol/\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x20\"*<>?|_!"),
-			_RP("lol/_______________________________ _______!"),
-			_RP("lol\\_______________________________ _______!"))
+			"lol/\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x20\"*<>?|_!",
+			"lol/_______________________________ _______!",
+			"lol\\_______________________________ _______!")
 	));
 } }
 
