@@ -125,7 +125,7 @@ const char KeyManager::verifyTestString[] = {
 #endif /* ENABLE_DECRYPTION */
 
 KeyManagerPrivate::KeyManagerPrivate()
-	: super(_RP("keys.conf"))
+	: super("keys.conf")
 { }
 
 /**
@@ -229,29 +229,29 @@ KeyManager::KeyManager()
  * @param res VerifyResult.
  * @return Description, or nullptr if invalid.
  */
-const rp_char *KeyManager::verifyResultToString(VerifyResult res)
+const char *KeyManager::verifyResultToString(VerifyResult res)
 {
-	static const rp_char *const errTbl[] = {
+	static const char *const errTbl[] = {
 		// VERIFY_OK
-		_RP("Something happened."),
+		"Something happened.",
 		// VERIFY_INVALID_PARAMS
-		_RP("Invalid parameters. (THIS IS A BUG!)"),
+		"Invalid parameters. (THIS IS A BUG!)",
 		// VERIFY_NO_SUPPORT
-		_RP("Decryption is not supported in this build."),
+		"Decryption is not supported in this build.",
 		// VERIFY_KEY_DB_NOT_LOADED
-		_RP("keys.conf was not found."),
+		"keys.conf was not found.",
 		// VERIFY_KEY_DB_ERROR
-		_RP("keys.conf has an error and could not be loaded."),
+		"keys.conf has an error and could not be loaded.",
 		// VERIFY_KEY_NOT_FOUND
-		_RP("Required key was not found in keys.conf."),
+		"Required key was not found in keys.conf.",
 		// VERIFY_KEY_INVALID
-		_RP("The key in keys.conf is not a valid key."),
+		"The key in keys.conf is not a valid key.",
 		// VERFIY_IAESCIPHER_INIT_ERR
-		_RP("AES decryption could not be initialized."),
+		"AES decryption could not be initialized.",
 		// VERIFY_IAESCIPHER_DECRYPT_ERR
-		_RP("AES decryption failed."),
+		"AES decryption failed.",
 		// VERIFY_WRONG_KEY
-		_RP("The key in keys.conf is incorrect."),
+		"The key in keys.conf is incorrect.",
 	};
 	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
 
@@ -466,9 +466,6 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 
 // Explicit instantiation of hexStringToBytes().
 template int KeyManager::hexStringToBytes<char>(const char *str, uint8_t *buf, unsigned int len);
-#ifdef RP_UTF16
-template int KeyManager::hexStringToBytes<rp_char>(const rp_char *str, uint8_t *buf, unsigned int len);
-#endif
 
 #endif /* ENABLE_DECRYPTION */
 

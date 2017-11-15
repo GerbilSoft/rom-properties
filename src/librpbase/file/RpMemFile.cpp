@@ -25,6 +25,10 @@
 #include <cerrno>
 #include <cstring>
 
+// C++ includes.
+#include <string>
+using std::string;
+
 namespace LibRpBase {
 
 /**
@@ -234,10 +238,10 @@ int64_t RpMemFile::size(void)
  * Get the filename.
  * @return Filename. (May be empty if the filename is not available.)
  */
-rp_string RpMemFile::filename(void) const
+string RpMemFile::filename(void) const
 {
 	// TODO: Implement this?
-	return rp_string();
+	return string();
 }
 
 }

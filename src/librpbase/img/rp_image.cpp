@@ -462,17 +462,17 @@ void rp_image::set_tr_idx(int tr_idx)
 * @param format Format.
 * @return String containing the user-friendly name of a format.
 */
-const rp_char *rp_image::getFormatName(Format format)
+const char *rp_image::getFormatName(Format format)
 {
 	assert(format >= FORMAT_NONE && format < FORMAT_LAST);
 	if (format < FORMAT_NONE || format >= FORMAT_LAST) {
 		return nullptr;
 	}
 
-	static const rp_char *format_names[] = {
-		_RP("None"),
-		_RP("CI8"),
-		_RP("ARGB32"),
+	static const char *format_names[] = {
+		"None",
+		"CI8",
+		"ARGB32",
 	};
 	static_assert(ARRAY_SIZE(format_names) == FORMAT_LAST,
 		"format_names[] needs to be updated.");

@@ -157,9 +157,9 @@ AesCAPI::~AesCAPI()
  * Get the name of the AesCipher implementation.
  * @return Name.
  */
-const rp_char *AesCAPI::name(void) const
+const char *AesCAPI::name(void) const
 {
-	return _RP("CryptoAPI");
+	return "CryptoAPI";
 }
 
 /**

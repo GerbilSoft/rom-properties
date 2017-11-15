@@ -83,7 +83,7 @@ static inline const mode_str_t *mode_to_str(RpFile::FileMode mode)
  * @param filename Filename.
  * @param mode File mode.
  */
-RpFile::RpFile(const rp_char *filename, FileMode mode)
+RpFile::RpFile(const char *filename, FileMode mode)
 	: super()
 	, m_file(nullptr)
 	, m_filename(filename)
@@ -98,7 +98,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
  * @param filename Filename.
  * @param mode File mode.
  */
-RpFile::RpFile(const rp_string &filename, FileMode mode)
+RpFile::RpFile(const string &filename, FileMode mode)
 	: super()
 	, m_file(nullptr)
 	, m_filename(filename)
@@ -122,14 +122,14 @@ void RpFile::init(void)
 	// TODO: On Windows, prepend "\\\\?\\" for super-long filenames?
 
 #if defined(_WIN32)
-	// Windows: Use RP2W() to convert the filename to wchar_t.
+	// Windows: Use RP2W_s() to convert the filename to wchar_t.
 
 	// If this is an absolute path, make sure it starts with
 	// "\\?\" in order to support filenames longer than MAX_PATH.
 	wstring filenameW;
 	if (m_filename.size() > 3 &&
-	    iswascii(m_filename[0]) && iswalpha(m_filename[0]) &&
-	    m_filename[1] == _RP_CHR(':') && m_filename[2] == _RP_CHR('\\'))
+	    isascii(m_filename[0]) && isalpha(m_filename[0]) &&
+	    m_filename[1] == ':' && m_filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
@@ -142,13 +142,8 @@ void RpFile::init(void)
 
 	m_file.reset(_wfopen(filenameW.c_str(), mode_str), myFile_deleter());
 #else /* !_WIN32 */
-	// Linux: Use UTF-8 filenames.
-#if defined(RP_UTF8)
+	// Linux: Use UTF-8 filenames directly.
 	m_file.reset(fopen(m_filename.c_str(), mode_str), myFile_deleter());
-#elif defined(RP_UTF16)
-	string u8_filename = rp_string_to_utf8(m_filename);
-	m_file.reset(fopen(u8_filename.c_str(), mode_str), myFile_deleter());
-#endif /* RP_UTF8, RP_UTF16 */
 #endif /* _WIN32 */
 
 	if (!m_file) {
@@ -384,7 +379,7 @@ int64_t RpFile::size(void)
  * Get the filename.
  * @return Filename. (May be empty if the filename is not available.)
  */
-rp_string RpFile::filename(void) const
+string RpFile::filename(void) const
 {
 	return m_filename;
 }

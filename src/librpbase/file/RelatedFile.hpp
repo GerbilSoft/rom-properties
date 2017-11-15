@@ -44,7 +44,7 @@ namespace LibRpBase { namespace FileSystem {
  * @param ext		[in] New extension, including leading dot.
  * @return IRpFile*, or nullptr if not found.
  */
-LibRpBase::IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const rp_char *ext);
+LibRpBase::IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext);
 
 } }
 

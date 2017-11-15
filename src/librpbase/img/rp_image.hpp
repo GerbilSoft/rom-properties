@@ -233,7 +233,7 @@ class rp_image
 		 * @param format Format.
 		 * @return String containing the user-friendly name of a format.
 		 */
-		static const rp_char *getFormatName(Format format);
+		static const char *getFormatName(Format format);
 
 	public:
 		/** Metadata. **/

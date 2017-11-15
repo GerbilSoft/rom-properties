@@ -32,7 +32,7 @@ namespace LibRpBase { namespace FileSystem {
  * @param filename Filename.
  * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
  */
-const rp_char *file_ext(const string &filename)
+const char *file_ext(const string &filename)
 {
 	size_t dotpos = filename.find_last_of('.');
 	size_t slashpos = filename.find_last_of(DIR_SEP_CHR);

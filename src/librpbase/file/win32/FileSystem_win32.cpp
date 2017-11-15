@@ -74,7 +74,7 @@ static string config_dir;
 
 /**
  * Prepend "\\\\?\\" to an absolute Windows path.
- * This is needed inorder to support filenames longer than MAX_PATH.
+ * This is needed in order to support filenames longer than MAX_PATH.
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */
@@ -84,7 +84,7 @@ static inline wstring makeWinPath(const char *filename)
 		return wstring();
 
 	wstring filenameW;
-	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	if (isascii(filename[0]) && isalpha(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
@@ -100,7 +100,7 @@ static inline wstring makeWinPath(const char *filename)
 
 /**
  * Prepend "\\\\?\\" to an absolute Windows path.
- * This is needed inorder to support filenames longer than MAX_PATH.
+ * This is needed in order to support filenames longer than MAX_PATH.
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */

@@ -31,6 +31,9 @@
 // C includes. (C++ namespace)
 #include <cstddef>	/* for size_t */
 
+// C++ includes.
+#include <string>
+
 namespace LibRpBase {
 
 class IRpFile
@@ -137,7 +140,7 @@ class IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		virtual rp_string filename(void) const = 0;
+		virtual std::string filename(void) const = 0;
 
 	public:
 		/** Convenience functions implemented for all IRpFile classes. **/

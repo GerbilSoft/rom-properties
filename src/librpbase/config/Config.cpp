@@ -131,7 +131,7 @@ const uint8_t ConfigPrivate::defImgTypePrio[] = {
 };
 
 ConfigPrivate::ConfigPrivate()
-	: super(_RP("rom-properties.conf"))
+	: super("rom-properties.conf")
 	/* Download options */
 	, extImgDownloadEnabled(true)
 	, useIntIconForSmallSizes(true)

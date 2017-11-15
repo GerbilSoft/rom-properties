@@ -93,8 +93,8 @@ struct RpPngFormatTest_mode
 	// TODO: Verify PNG bit depth and color type.
 
 	RpPngFormatTest_mode(
-		const rp_char *png_filename,
-		const rp_char *bmp_gz_filename,
+		const char *png_filename,
+		const char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
 		const BITMAPINFOHEADER &bih,
 		const tRNS_CI8_t &bmp_tRNS,
@@ -109,8 +109,8 @@ struct RpPngFormatTest_mode
 	{ }
 
 	RpPngFormatTest_mode(
-		const rp_char *png_filename,
-		const rp_char *bmp_gz_filename,
+		const char *png_filename,
+		const char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
 		const BITMAPINFOHEADER &bih,
 		rp_image::Format rp_format)
@@ -1001,14 +1001,14 @@ string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInf
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	for (int i = (int)suffix.size()-1; i >= 0; i--) {
-		rp_char chr = suffix[i];
+		char chr = suffix[i];
 		if (!isalnum(chr) && chr != '_') {
 			suffix[i] = '_';
 		}
 	}
 
-	// TODO: rp_string_to_ascii()?
-	return rp_string_to_utf8(suffix);
+	// TODO: Convert to ASCII?
+	return suffix;
 }
 
 // Test cases.

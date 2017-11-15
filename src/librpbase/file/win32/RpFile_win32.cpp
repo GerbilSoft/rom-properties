@@ -60,8 +60,8 @@ struct myFile_deleter {
 class RpFilePrivate
 {
 	public:
-		RpFilePrivate(RpFile *q, const rp_char *filename, RpFile::FileMode mode);
-		RpFilePrivate(RpFile *q, const rp_string &filename, RpFile::FileMode mode);
+		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode);
+		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode);
 
 	private:
 		RP_DISABLE_COPY(RpFilePrivate)
@@ -72,7 +72,7 @@ class RpFilePrivate
 		// work correctly with pointer types as the
 		// template parameter.
 		std::shared_ptr<void> file;
-		rp_string filename;
+		string filename;
 		RpFile::FileMode mode;
 
 		// Block device parameters.
@@ -106,7 +106,7 @@ class RpFilePrivate
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, const rp_char *filename, RpFile::FileMode mode)
+RpFilePrivate::RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 	: q_ptr(q)
 	, filename(filename)
 	, mode(mode)
@@ -114,7 +114,7 @@ RpFilePrivate::RpFilePrivate(RpFile *q, const rp_char *filename, RpFile::FileMod
 	, sector_size(0)
 { }
 
-RpFilePrivate::RpFilePrivate(RpFile *q, const rp_string &filename, RpFile::FileMode mode)
+RpFilePrivate::RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
 	: q_ptr(q)
 	, filename(filename)
 	, mode(mode)
@@ -297,7 +297,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
  * @param filename Filename.
  * @param mode File mode.
  */
-RpFile::RpFile(const rp_char *filename, FileMode mode)
+RpFile::RpFile(const char *filename, FileMode mode)
 	: super()
 	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
@@ -310,7 +310,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
  * @param filename Filename.
  * @param mode File mode.
  */
-RpFile::RpFile(const rp_string &filename, FileMode mode)
+RpFile::RpFile(const string &filename, FileMode mode)
 	: super()
 	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
@@ -338,8 +338,8 @@ void RpFile::init(void)
 	// Check if the path starts with a drive letter.
 	bool isBlockDevice = false;
 	if (d->filename.size() >= 3 &&
-	    iswascii(d->filename[0]) && iswalpha(d->filename[0]) &&
-	    d->filename[1] == _RP_CHR(':') && d->filename[2] == _RP_CHR('\\'))
+	    isascii(d->filename[0]) && isalpha(d->filename[0]) &&
+	    d->filename[1] == ':' && d->filename[2] == '\\')
 	{
 		// Is it only a drive letter?
 		if (d->filename.size() == 3) {
@@ -718,7 +718,7 @@ int64_t RpFile::size(void)
  * Get the filename.
  * @return Filename. (May be empty if the filename is not available.)
  */
-rp_string RpFile::filename(void) const
+string RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return d->filename;

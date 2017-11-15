@@ -58,8 +58,8 @@ class RpFile : public IRpFile
 		 * @param filename Filename.
 		 * @param mode File mode.
 		 */
-		RpFile(const rp_char *filename, FileMode mode);
-		RpFile(const rp_string &filename, FileMode mode);
+		RpFile(const char *filename, FileMode mode);
+		RpFile(const std::string &filename, FileMode mode);
 	private:
 		void init(void);
 	public:
@@ -151,7 +151,7 @@ class RpFile : public IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		virtual rp_string filename(void) const override final;
+		virtual std::string filename(void) const override final;
 
 #ifndef _WIN32
 	protected:
@@ -159,7 +159,7 @@ class RpFile : public IRpFile
 		// TODO: Move to a private class?
 		std::shared_ptr<FILE> m_file;
 
-		rp_string m_filename;
+		std::string m_filename;
 		FileMode m_mode;
 #endif /* !_WIN32 */
 };
