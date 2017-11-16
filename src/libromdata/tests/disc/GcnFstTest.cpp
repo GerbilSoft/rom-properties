@@ -134,7 +134,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 * Recursively check a subdirectory for duplicate filenames.
 		 * @param subdir Subdirectory path.
 		 */
-		void checkNoDuplicateFilenames(const rp_char *subdir);
+		void checkNoDuplicateFilenames(const char *subdir);
 
 		/**
 		 * Print a uint32_t using en_US formatting.
@@ -341,10 +341,10 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
  * Recursively check a subdirectory for duplicate filenames.
  * @param subdir Subdirectory path.
  */
-void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
+void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 {
-	unordered_set<rp_string> filenames;
-	unordered_set<rp_string> subdirs;
+	unordered_set<string> filenames;
+	unordered_set<string> subdirs;
 
 	IFst::Dir *dirp = m_fst->opendir(subdir);
 	ASSERT_TRUE(dirp != nullptr) <<
@@ -355,7 +355,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 		// Make sure we haven't seen this filename in
 		// the current subdirectory yet.
 		EXPECT_TRUE(filenames.find(dirent->name) == filenames.end()) <<
-			"Directory '" << rp_string_to_utf8(subdir) << "' has duplicate filename '" << dirent->name << "'.";
+			"Directory '" << subdir << "' has duplicate filename '" << dirent->name << "'.";
 
 		// Filename has been seen now.
 		filenames.insert(dirent->name);
@@ -371,9 +371,9 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 
 	// Check subdirectories.
 	for (auto iter = subdirs.cbegin(); iter != subdirs.cend(); ++iter) {
-		rp_string path = subdir;
+		string path = subdir;
 		if (!path.empty() && path[path.size()-1] != '/') {
-			path += _RP_CHR('/');
+			path += '/';
 		}
 		path += iter->c_str();
 		checkNoDuplicateFilenames(path.c_str());
@@ -420,7 +420,7 @@ void GcnFstTest::print_uint32_en_US(ostream &os, uint32_t val)
  */
 TEST_P(GcnFstTest, NoDuplicateFilenames)
 {
-	ASSERT_NO_FATAL_FAILURE(checkNoDuplicateFilenames(_RP("/")));
+	ASSERT_NO_FATAL_FAILURE(checkNoDuplicateFilenames("/"));
 	EXPECT_FALSE(m_fst->hasErrors());
 }
 

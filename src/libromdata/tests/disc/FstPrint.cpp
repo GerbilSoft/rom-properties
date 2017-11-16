@@ -42,9 +42,11 @@ using namespace LibRpBase;
 // C++ includes.
 #include <iomanip>
 #include <sstream>
+#include <string>
 #include <vector>
 using std::ostream;
 using std::setw;
+using std::string;
 using std::vector;
 
 namespace LibRomData {
@@ -59,7 +61,7 @@ namespace LibRomData {
  * @param fc		[out] File count.
  * @return 0 on success; negative POSIX error code on error.
  */
-static int fstPrint(IFst *fst, ostream &os, const rp_string &path,
+static int fstPrint(IFst *fst, ostream &os, const string &path,
 	int level, vector<uint8_t> &tree_lines, FstFileCount &fc)
 {
 	// Open the root path in the FST.
@@ -105,11 +107,11 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path,
 			// Subdirectory.
 			fc.dirs++;
 
-			rp_string name = dirent->name;
-			rp_string subdir = path;
-			if (path.empty() || (path[path.size()-1] != _RP_CHR('/'))) {
+			string name = dirent->name;
+			string subdir = path;
+			if (path.empty() || (path[path.size()-1] != '/')) {
 				// Append a trailing slash.
-				subdir += _RP_CHR('/');
+				subdir += '/';
 			}
 			subdir += name;
 
@@ -144,14 +146,14 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path,
 			fc.files++;
 
 			// Save the filename.
-			rp_string name = dirent->name;
+			string name = dirent->name;
 
 			// Tree + name length.
 			// - Tree is 4 characters per level.
 			// - Attrs should start at column 40.
 			// TODO: Handle full-width and non-BMP Unicode characters correctly.
 			const int tree_name_length = ((level+1)*4) + 1 +
-					(int)rp_string_to_utf16(name).size();
+					(int)name.size();
 			int attr_spaces;
 			if (tree_name_length < 40) {
 				// Pad it to 40 columns.
@@ -209,7 +211,7 @@ int fstPrint(IFst *fst, ostream &os, FstFileCount *fc)
 	tree_lines.reserve(16);
 
 	FstFileCount fc_tmp = {0, 0};
-	int ret = fstPrint(fst, os, _RP("/"), 0, tree_lines, fc_tmp);
+	int ret = fstPrint(fst, os, "/", 0, tree_lines, fc_tmp);
 	if (ret != 0) {
 		return ret;
 	}

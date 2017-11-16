@@ -338,7 +338,7 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 
 	if (info->ext && info->ext[0] != 0) {
 		// Check for ".gdi".
-		if (!rp_strcasecmp(info->ext, ".gdi")) {
+		if (!strcasecmp(info->ext, ".gdi")) {
 			// This is a GD-ROM cuesheet.
 			// Check the first line.
 			if (GdiReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {

@@ -47,31 +47,31 @@ namespace LibRomData {
 
 // Image type names.
 template<typename ComboBox>
-const rp_char *const TImageTypesConfig<ComboBox>::imageTypeNames[] = {
-	_RP("Internal\nIcon"),
-	_RP("Internal\nBanner"),
-	_RP("Internal\nMedia"),
-	_RP("Internal\nImage"),
-	_RP("External\nMedia"),
-	_RP("External\nCover"),
-	_RP("External\n3D Cover"),
-	_RP("External\nFull Cover"),
-	_RP("External\nBox"),
+const char *const TImageTypesConfig<ComboBox>::imageTypeNames[] = {
+	"Internal\nIcon",
+	"Internal\nBanner",
+	"Internal\nMedia",
+	"Internal\nImage",
+	"External\nMedia",
+	"External\nCover",
+	"External\n3D Cover",
+	"External\nFull Cover",
+	"External\nBox",
 };
 
 // System data.
 template<typename ComboBox>
 const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
-	SysDataEntry(Amiibo,		_RP("amiibo")),
-	SysDataEntry(NintendoBadge,	_RP("Badge Arcade")),
-	SysDataEntry(Dreamcast,		_RP("Dreamcast")),
-	SysDataEntry(DreamcastSave,	_RP("Dreamcast Saves")),
-	SysDataEntry(GameCube,		_RP("GameCube / Wii")),
-	SysDataEntry(GameCubeSave,	_RP("GameCube Saves")),
-	SysDataEntry(NintendoDS,	_RP("Nintendo DS(i)")),
-	SysDataEntry(Nintendo3DS,	_RP("Nintendo 3DS")),
-	SysDataEntry(PlayStationSave,	_RP("PlayStation Saves")),
-	SysDataEntry(WiiU,		_RP("Wii U")),
+	SysDataEntry(Amiibo,		"amiibo"),
+	SysDataEntry(NintendoBadge,	"Badge Arcade"),
+	SysDataEntry(Dreamcast,		"Dreamcast"),
+	SysDataEntry(DreamcastSave,	"Dreamcast Saves"),
+	SysDataEntry(GameCube,		"GameCube / Wii"),
+	SysDataEntry(GameCubeSave,	"GameCube Saves"),
+	SysDataEntry(NintendoDS,	"Nintendo DS(i)"),
+	SysDataEntry(Nintendo3DS,	"Nintendo 3DS"),
+	SysDataEntry(PlayStationSave,	"PlayStation Saves"),
+	SysDataEntry(WiiU,		"Wii U"),
 };
 
 template<typename ComboBox>
@@ -167,7 +167,7 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		if (!loadDefaults) {
 			// Get the image priority.
-			LibRpBase::Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
+			LibRpBase::Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].className, &imgTypePrio);
 			bool no_thumbs = false;
 			switch (res) {
 				case LibRpBase::Config::IMGTR_SUCCESS:
@@ -290,16 +290,15 @@ int TImageTypesConfig<ComboBox>::save(void)
 	// Image types are stored in the imageTypes[] array.
 	const uint8_t *pImageTypes = imageTypes[0];
 
-	// NOTE: Using an rp_string with reserved storage
-	// instead of ostringstream, since we had problems
-	// with u16string ostringstream before.
-	LibRpBase::rp_string imageTypeList;
+	// TODO: Switch back to std::ostringstream since everything's
+	// using UTF-8 now? (u16string ostringstream didn't work.)
+	std::string imageTypeList;
 	imageTypeList.reserve(128);
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// Is this system using the default configuration?
 		if (sysIsDefault[sys]) {
 			// Default configuration. Write an empty string.
-			ret = saveWriteEntry(sysData[sys].classNameRP, _RP(""));
+			ret = saveWriteEntry(sysData[sys].className, "");
 			if (ret != 0) {
 				// Error...
 				saveFinish();
@@ -331,16 +330,16 @@ int TImageTypesConfig<ComboBox>::save(void)
 
 		// Convert the image type priority to strings.
 		// TODO: Export the string data from Config.
-		static const rp_char *const conf_imageTypeNames[] = {
-			_RP("IntIcon"),
-			_RP("IntBanner"),
-			_RP("IntMedia"),
-			_RP("IntImage"),
-			_RP("ExtMedia"),
-			_RP("ExtCover"),
-			_RP("ExtCover3D"),
-			_RP("ExtCoverFull"),
-			_RP("ExtBox"),
+		static const char *const conf_imageTypeNames[] = {
+			"IntIcon",
+			"IntBanner",
+			"IntMedia",
+			"IntImage",
+			"ExtMedia",
+			"ExtCover",
+			"ExtCover3D",
+			"ExtCoverFull",
+			"ExtBox",
 		};
 		static_assert(ARRAY_SIZE(conf_imageTypeNames) == IMG_TYPE_COUNT, "conf_imageTypeNames[] is the wrong size.");
 
@@ -349,7 +348,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 			const uint8_t imageType = imgTypePrio[i];
 			if (imageType < IMG_TYPE_COUNT) {
 				if (hasOne)
-					imageTypeList += _RP_CHR(',');
+					imageTypeList += ',';
 				hasOne = true;
 				imageTypeList += conf_imageTypeNames[imageType];
 			}
@@ -357,10 +356,10 @@ int TImageTypesConfig<ComboBox>::save(void)
 
 		if (hasOne) {
 			// At least one image type is enabled.
-			ret = saveWriteEntry(sysData[sys].classNameRP, imageTypeList.c_str());
+			ret = saveWriteEntry(sysData[sys].className, imageTypeList.c_str());
 		} else {
 			// All image types are disabled.
-			ret = saveWriteEntry(sysData[sys].classNameRP, _RP("No"));
+			ret = saveWriteEntry(sysData[sys].className, "No");
 		}
 		if (ret != 0) {
 			// Error...

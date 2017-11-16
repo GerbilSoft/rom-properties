@@ -1054,7 +1054,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 	if (info->szFile == 108) {
 		// File size is correct for VMI files.
 		// Check the file extension.
-		if (!rp_strcasecmp(info->ext, ".vmi")) {
+		if (!strcasecmp(info->ext, ".vmi")) {
 			// It's a match!
 			return DreamcastSavePrivate::SAVE_TYPE_VMI;
 		}
@@ -1065,7 +1065,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 	{
 		// File size is correct for VMS files.
 		// Check the file extension.
-		if (!rp_strcasecmp(info->ext, ".vms")) {
+		if (!strcasecmp(info->ext, ".vms")) {
 			// It's a match!
 			return DreamcastSavePrivate::SAVE_TYPE_VMS;
 		}
@@ -1083,7 +1083,7 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 			if (*pData == 0x00 || *pData == 0x33 || *pData == 0xCC) {
 				// First byte is correct.
 				// Check the file extension.
-				if (!rp_strcasecmp(info->ext, ".dci")) {
+				if (!strcasecmp(info->ext, ".dci")) {
 					// It's a match!
 					return DreamcastSavePrivate::SAVE_TYPE_DCI;
 				}

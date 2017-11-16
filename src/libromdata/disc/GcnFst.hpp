@@ -69,7 +69,7 @@ class GcnFst : public LibRpBase::IFst
 		 * @param path	[in] Directory path.
 		 * @return Dir*, or nullptr on error.
 		 */
-		virtual Dir *opendir(const rp_char *path) override final;
+		virtual Dir *opendir(const char *path) override final;
 
 		/**
 		 * Read a directory entry.
@@ -92,7 +92,7 @@ class GcnFst : public LibRpBase::IFst
 		 * @param dirent	[out] Pointer to DirEnt buffer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int find_file(const rp_char *filename, DirEnt *dirent) override final;
+		virtual int find_file(const char *filename, DirEnt *dirent) override final;
 
 	public:
 		/**

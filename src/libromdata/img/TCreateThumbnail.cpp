@@ -157,7 +157,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	CacheManager cache;
 	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
-		rp_string proxy = proxyForUrl(extURL.url);
+		std::string proxy = proxyForUrl(extURL.url);
 		cache.setProxyUrl(!proxy.empty() ? proxy.c_str() : nullptr);
 
 		// Should we attempt to download the image,
@@ -171,7 +171,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		}
 
 		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename;
+		std::string cache_filename;
 		if (download) {
 			// Attempt to download the image if it isn't already
 			// present in the rom-properties cache.
@@ -434,7 +434,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgCla
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
+int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
 {
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
