@@ -45,7 +45,7 @@ class AesCAPI : public IAesCipher
 		 * Get the name of the AesCipher implementation.
 		 * @return Name.
 		 */
-		virtual const rp_char *name(void) const override final;
+		virtual const char *name(void) const override final;
 
 		/**
 		 * Has the cipher been initialized properly?
