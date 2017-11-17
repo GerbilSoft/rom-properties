@@ -487,7 +487,7 @@ int Amiibo::loadFieldData(void)
 
 	// amiibo ID.
 	// Represents the character and amiibo series.
-	// TODO: Link to http://amiibo.life/nfc/%08X-%08X
+	// TODO: Link to https://amiibo.life/nfc/%08X-%08X
 	d->fields->addField_string("amiibo ID",
 		rp_sprintf("%08X-%08X", char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
@@ -536,7 +536,7 @@ int Amiibo::loadFieldData(void)
 
 	// Credits.
 	d->fields->addField_string("Credits",
-		"amiibo images provided by <a href=\"http://amiibo.life/\">amiibo.life</a>,\n"
+		"amiibo images provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,\n"
 		"the Unofficial amiibo Database.",
 		RomFields::STRF_CREDITS);
 
@@ -608,9 +608,9 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	extURL.cache_key += ".png";
 
 	// URL.
-	// Format: http://amiibo.life/nfc/[Page21]-[Page22]/image
+	// Format: https://amiibo.life/nfc/[Page21]-[Page22]/image
 	extURL.url.reserve(48);
-	extURL.url = "http://amiibo.life/nfc/";
+	extURL.url = "https://amiibo.life/nfc/";
 	extURL.url += amiibo_id;
 	extURL.url += "/image";
 
