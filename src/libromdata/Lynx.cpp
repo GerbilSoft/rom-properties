@@ -268,7 +268,7 @@ int Lynx::loadFieldData(void)
 		"None", "Left", "Right"
 	};
 
-	d->fields->addField_string("Rotaion",
+	d->fields->addField_string("Rotation",
 		romHeader->rotation < ARRAY_SIZE(rotation_names) ? rotation_names[romHeader->rotation] : "Unknown");
 
 	d->fields->addField_string("Bank 0 Size",
