@@ -541,7 +541,7 @@ int DMG::loadFieldData(void)
 			// Game ID is not present.
 			d->fields->addField_string("Title",
 				latin1_to_utf8(romHeader->title15, sizeof(romHeader->title15)));
-			d->fields->addField_string("Title", "Unknown");
+			d->fields->addField_string("Game ID", "Unknown");
 		}
 	}
 
