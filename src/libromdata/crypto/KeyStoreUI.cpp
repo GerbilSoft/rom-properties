@@ -27,6 +27,7 @@
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/file/RpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -174,7 +175,7 @@ class KeyStoreUIPrivate
 		 */
 		int getAesKeyDB_key(u128_t *pKey) const;
 
-	private:
+	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
 		typedef int (*pfnKeyCount_t)(void);
@@ -185,14 +186,12 @@ class KeyStoreUIPrivate
 			pfnKeyCount_t pfnKeyCount;
 			pfnKeyName_t pfnKeyName;
 			pfnVerifyData_t pfnVerifyData;
-			const char *sectName;
 		};
 
-		#define ENCKEYFNS(klass, sectName) { \
+		#define ENCKEYFNS(klass) { \
 			klass::encryptionKeyCount_static, \
 			klass::encryptionKeyName_static, \
-			klass::encryptionVerifyData_static, \
-			sectName \
+			klass::encryptionVerifyData_static \
 		}
 
 		static const EncKeyFns_t encKeyFns[];
@@ -213,9 +212,9 @@ class KeyStoreUIPrivate
 /** KeyStoreUIPrivate **/
 
 const KeyStoreUIPrivate::EncKeyFns_t KeyStoreUIPrivate::encKeyFns[] = {
-	ENCKEYFNS(WiiPartition,    "Nintendo Wii AES Keys"),
-	ENCKEYFNS(CtrKeyScrambler, "Nintendo 3DS Key Scrambler Constants"),
-	ENCKEYFNS(N3DSVerifyKeys,  "Nintendo 3DS AES Keys"),
+	ENCKEYFNS(WiiPartition),
+	ENCKEYFNS(CtrKeyScrambler),
+	ENCKEYFNS(N3DSVerifyKeys),
 };
 
 // Hexadecimal lookup table.
@@ -257,7 +256,6 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 		// Set up the section.
 		sections.resize(sections.size()+1);
 		auto &section = sections[sections.size()-1];
-		section.name = encSys->sectName;
 		section.keyIdxStart = keyIdxStart;
 		section.keyCount = keyCount;
 
@@ -837,9 +835,19 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
 	assert(sectIdx < (int)d->sections.size());
-	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
+	assert(sectIdx < ARRAY_SIZE(d->encKeyFns));
+	if (sectIdx < 0 || sectIdx >= (int)d->sections.size() || sectIdx >= ARRAY_SIZE(d->encKeyFns))
 		return nullptr;
-	return d->sections[sectIdx].name.c_str();
+
+	static const char *const sectNames[] = {
+		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
+		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
+		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
+	};
+	static_assert(ARRAY_SIZE(sectNames) == ARRAY_SIZE(d->encKeyFns),
+		"sectNames[] is out of sync with d->encKeyFns[].");
+
+	return dpgettext_expr(RP_I18N_DOMAIN, "KeyStoreUI|Section", sectNames[sectIdx]);
 }
 
 /**

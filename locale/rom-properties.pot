@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 15:00-0500\n"
+"POT-Creation-Date: 2017-11-18 15:11-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -231,6 +231,21 @@ msgstr ""
 #: ../src/libromdata/config/TImageTypesConfig.cpp:423
 msgctxt "TImageTypesConfig|SysName"
 msgid "Wii U"
+msgstr ""
+
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:844
+msgctxt "KeyStoreUI|Section"
+msgid "Nintendo Wii AES Keys"
+msgstr ""
+
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:845
+msgctxt "KeyStoreUI|Section"
+msgid "Nintendo 3DS Key Scrambler Constants"
+msgstr ""
+
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:846
+msgctxt "KeyStoreUI|Section"
+msgid "Nintendo 3DS AES Keys"
 msgstr ""
 
 #: ../src/libromdata/DirectDrawSurface.cpp:902
