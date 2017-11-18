@@ -26,6 +26,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -82,19 +83,25 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 			auto image = romData->image((RomData::ImageType)it->image_type);
 			if (image && image->isValid()) {
 				found = true;
-				cerr << "-- Extracting " << RomData::getImageTypeName((RomData::ImageType)it->image_type) << " into '" << it->filename << "'" << endl;
+				cerr << "-- " <<
+					rp_sprintf(C_("rpcli", "Extracting %s into '%s'"),
+						RomData::getImageTypeName((RomData::ImageType)it->image_type),
+						it->filename) << endl;
 				if (it->is_bmp) {
 					if (rpbmp(it->filename, image)) {
-						cerr << "   Couldn't create file " << it->filename << endl;
+						// TODO: Error code.
+						cerr << "   " << rp_sprintf(C_("rpcli", "Couldn't create file '%s'"), it->filename) << endl;
+					} else {
+						cerr << "   " << C_("rpcli", "Done") << endl;
 					}
-					else cerr << "   Done" << endl;
-				}
-				else {
+				} else {
 					int errcode = RpPng::save(it->filename, image);
 					if (errcode != 0) {
-						cerr << "   Couldn't create file " << it->filename << " : " << strerror(-errcode) << endl;
+						cerr << rp_sprintf(C_("rpcli", "Couldn't create file '%s': %s"),
+							it->filename, strerror(-errcode)) << endl;
+					} else {
+						cerr << "   " << C_("rpcli", "Done") << endl;
 					}
-					else cerr << "   Done" << endl;
 				}
 			}
 		}
@@ -104,25 +111,29 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				cerr << "-- Extracting animated icon into " << it->filename << endl;
+				cerr << "-- " << rp_sprintf(C_("rpcli", "Extracting animated icon into '%s'"), it->filename) << endl;
 				int errcode = RpPng::save(it->filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
-					cerr << "   APNG not supported, extracting only the first frame" << endl;
+					cerr << "   " << C_("rpcli", "APNG not supported, extracting only the first frame") << endl;
 					// falling back to outputting the first frame
 					errcode = RpPng::save(it->filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
-					cerr << "   Couldn't create file " << it->filename << " : " << strerror(-errcode) << endl;
+					cerr << "   " <<
+						rp_sprintf(C_("rpcli", "Couldn't create file '%s': %s"),
+							it->filename, strerror(-errcode)) << endl;
+				} else {
+					cerr << "   " << C_("rpcli", "Done") << endl;
 				}
-				else cerr << "   Done" << endl;
 			}
 		}
 		if (!found) {
 			if (it->image_type == -1) {
-				cerr << "-- Animated icon not found" << endl;
-			}
-			else {
-				cerr << "-- Image '" << RomData::getImageTypeName((RomData::ImageType)it->image_type) << "' not found" << endl;
+				cerr << "-- " << C_("rpcli", "Animated icon not found") << endl;
+			} else {
+				cerr << "-- " <<
+					rp_sprintf(C_("rpcli", "Image '%s' not found"),
+						RomData::getImageTypeName((RomData::ImageType)it->image_type)) << endl;
 			}
 		}
 	}
@@ -135,13 +146,13 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 * @param extract Vector of image extraction parameters
 */
 static void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract){
-	cerr << "== Reading file '" << filename << "'..." << endl;
-	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
+	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
+	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);
 	if (file->isOpen()) {
 		RomData *romData = RomDataFactory::create(file);
 		if (romData && romData->isValid()) {
 			if (json) {
-				cerr << "-- Outputting JSON data" << endl;
+				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
 				cout << JSONROMOutput(romData) << endl;
 			} else {
 				cout << ROMOutput(romData) << endl;
@@ -149,7 +160,7 @@ static void DoFile(const char *filename, bool json, std::vector<ExtractParam>& e
 
 			ExtractImages(romData, extract);
 		} else {
-			cerr << "-- ROM is not supported" << endl;
+			cerr << "-- " << C_("rpcli", "ROM is not supported") << endl;
 			if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
 		}
 
@@ -157,8 +168,8 @@ static void DoFile(const char *filename, bool json, std::vector<ExtractParam>& e
 			romData->unref();
 		}
 	} else {
-		cerr << "-- Couldn't open file... : " << strerror(file->lastError()) << endl;
-		if (json) cout << "{\"error\":\"couldn't open file\"}" << endl;
+		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
+		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
 	}
 	delete file;
 }
@@ -209,6 +220,17 @@ int RP_C_API main(int argc, char *argv[])
 {
 	// Set the C and C++ locales.
 	locale::global(locale(""));
+
+#if defined(ENABLE_NLS) && defined(HAVE_GETTEXT)
+	// TODO: Better location for this?
+#ifdef DIR_INSTALL_LOCALE
+	rp_i18n_init(DIR_INSTALL_LOCALE);
+#else
+	// Use the current directory.
+	// TODO: On Windows, use the DLL directory.
+	rp_i18n_init("locale");
+#endif
+#endif /* ENABLE_NLS && HAVE_GETTEXT */
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
@@ -266,7 +288,7 @@ int RP_C_API main(int argc, char *argv[])
 				ep.is_bmp = argv[i][2] == 'b';
 				long num = atol(argv[i] + (ep.is_bmp ? 3 : 2));
 				if (num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX) {
-					cerr << "Warning: skipping unknown image type " << num << endl;
+					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
 				}
 				ep.image_type = num;
@@ -285,7 +307,7 @@ int RP_C_API main(int argc, char *argv[])
 			case 'j': // do nothing
 				break;
 			default:
-				cerr << "Warning: skipping unknown switch '" << argv[i][1] << "'" << endl;
+				cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]) << endl;
 				break;
 			}
 		}

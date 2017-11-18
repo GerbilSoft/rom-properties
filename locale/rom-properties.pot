@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 15:21-0500\n"
+"POT-Creation-Date: 2017-11-18 15:25-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3952,4 +3952,119 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:755
 msgctxt "RomData|ImageType"
 msgid "External box scan"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:87
+#, c-format
+msgctxt "rpcli"
+msgid "Extracting %s into '%s'"
+msgstr ""
+
+#. TODO: Error code.
+#: ../src/rpcli/rpcli.cpp:93
+#, c-format
+msgctxt "rpcli"
+msgid "Couldn't create file '%s'"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:95 ../src/rpcli/rpcli.cpp:103
+#: ../src/rpcli/rpcli.cpp:126
+msgctxt "rpcli"
+msgid "Done"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:100 ../src/rpcli/rpcli.cpp:123
+#, c-format
+msgctxt "rpcli"
+msgid "Couldn't create file '%s': %s"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:114
+#, c-format
+msgctxt "rpcli"
+msgid "Extracting animated icon into '%s'"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:117
+msgctxt "rpcli"
+msgid "APNG not supported, extracting only the first frame"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:132
+msgctxt "rpcli"
+msgid "Animated icon not found"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:135
+#, c-format
+msgctxt "rpcli"
+msgid "Image '%s' not found"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:149
+#, c-format
+msgctxt "rpcli"
+msgid "Reading file '%s'..."
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:155
+msgctxt "rpcli"
+msgid "Outputting JSON data"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:163
+msgctxt "rpcli"
+msgid "ROM is not supported"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:171
+#, c-format
+msgctxt "rpcli"
+msgid "Couldn't open file: %s"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:291
+#, c-format
+msgctxt "rpcli"
+msgid "Warning: skipping unknown image type %ld"
+msgstr ""
+
+#: ../src/rpcli/rpcli.cpp:310
+#, c-format
+msgctxt "rpcli"
+msgid "Warning: skipping unknown switch '%c'"
+msgstr ""
+
+#: ../src/rpcli/verifykeys.cpp:89
+msgctxt "rpcli"
+msgid "ERROR initializing KeyManager. Cannot verify keys."
+msgstr ""
+
+#: ../src/rpcli/verifykeys.cpp:102
+#, c-format
+msgctxt "rpcli"
+msgid "Checking encryption keys from '%s'..."
+msgstr ""
+
+#: ../src/rpcli/verifykeys.cpp:108
+#, c-format
+msgctxt "rpcli"
+msgid "WARNING: Key %d has no name. Skipping..."
+msgstr ""
+
+#: ../src/rpcli/verifykeys.cpp:117
+#, c-format
+msgctxt "rpcli"
+msgid "WARNING: Key '%s' has no verification data. Skipping..."
+msgstr ""
+
+#: ../src/rpcli/verifykeys.cpp:126
+msgctxt "rpcli"
+msgid "OK"
+msgstr ""
+
+#: ../src/rpcli/verifykeys.cpp:128
+#, c-format
+msgctxt "rpcli"
+msgid "ERROR: %s"
 msgstr ""
