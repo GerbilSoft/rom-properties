@@ -172,37 +172,37 @@ class AmiiboDataPrivate {
  */
 const char *const AmiiboDataPrivate::char_series_names[] = {
 	"Super Mario Bros.",	// 0x000
-	nullptr,			// 0x004
-	"Yoshi",			// 0x008
-	nullptr,			// 0x00C
+	nullptr,		// 0x004
+	"Yoshi",		// 0x008
+	nullptr,		// 0x00C
 	"The Legend of Zelda",	// 0x010
 	"The Legend of Zelda",	// 0x014
 
 	// Animal Crossing
-	"Animal Crossing",		// 0x018
-	"Animal Crossing",		// 0x01C
-	"Animal Crossing",		// 0x020
-	"Animal Crossing",		// 0x024
-	"Animal Crossing",		// 0x028
-	"Animal Crossing",		// 0x02C
-	"Animal Crossing",		// 0x030
-	"Animal Crossing",		// 0x034
-	"Animal Crossing",		// 0x038
-	"Animal Crossing",		// 0x03C
-	"Animal Crossing",		// 0x040
-	"Animal Crossing",		// 0x044
-	"Animal Crossing",		// 0x048
-	"Animal Crossing",		// 0x04C
-	"Animal Crossing",		// 0x050
+	"Animal Crossing",	// 0x018
+	"Animal Crossing",	// 0x01C
+	"Animal Crossing",	// 0x020
+	"Animal Crossing",	// 0x024
+	"Animal Crossing",	// 0x028
+	"Animal Crossing",	// 0x02C
+	"Animal Crossing",	// 0x030
+	"Animal Crossing",	// 0x034
+	"Animal Crossing",	// 0x038
+	"Animal Crossing",	// 0x03C
+	"Animal Crossing",	// 0x040
+	"Animal Crossing",	// 0x044
+	"Animal Crossing",	// 0x048
+	"Animal Crossing",	// 0x04C
+	"Animal Crossing",	// 0x050
 
-	nullptr,			// 0x054
+	nullptr,		// 0x054
 	"Star Fox",		// 0x058
-	"Metroid",			// 0x05C
-	"F-Zero",			// 0x060
-	"Pikmin",			// 0x064
-	nullptr,			// 0x068
+	"Metroid",		// 0x05C
+	"F-Zero",		// 0x060
+	"Pikmin",		// 0x064
+	nullptr,		// 0x068
 	"Punch-Out!!",		// 0x06C
-	"Wii Fit",			// 0x070
+	"Wii Fit",		// 0x070
 	"Kid Icarus",		// 0x074
 	"Classic Nintendo",	// 0x078
 	"Mii",			// 0x07C
@@ -239,18 +239,18 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 
 	nullptr, nullptr, nullptr, nullptr,	// 0x1C0
 
-	"Pokk\xC3\xA9n Tournament",	// 0x1D0
+	"Pokk\xC3\xA9n Tournament",		// 0x1D0
 	nullptr, nullptr, nullptr,		// 0x1D4
 	nullptr, nullptr, nullptr, nullptr,	// 0x1E0
 	"Kirby",				// 0x1F0
 	nullptr, nullptr, nullptr,		// 0x1F4
 	nullptr, nullptr, nullptr, nullptr,	// 0x200
-	"Fire Emblem",			// 0x210
+	"Fire Emblem",				// 0x210
 	nullptr, nullptr, nullptr,		// 0x214
 	nullptr,				// 0x220
-	"Xenoblade",			// 0x224
-	"Earthbound",			// 0x228
-	"Chibi-Robo!",			// 0x22C
+	"Xenoblade",				// 0x224
+	"Earthbound",				// 0x228
+	"Chibi-Robo!",				// 0x22C
 
 	// 0x230 - 0x31C
 	nullptr, nullptr, nullptr, nullptr,	// 0x230
@@ -269,8 +269,8 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr, nullptr, nullptr, nullptr,	// 0x300
 	nullptr, nullptr, nullptr, nullptr,	// 0x310
 
-	"Sonic the Hedgehog",		// 0x320
-	"Bayonetta",			// 0x324
+	"Sonic the Hedgehog",			// 0x320
+	"Bayonetta",				// 0x324
 	nullptr,				// 0x328
 	nullptr,				// 0x32C
 	nullptr,				// 0x330
@@ -279,7 +279,7 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x33C
 	nullptr,				// 0x340
 	nullptr,				// 0x344
-	"Mega Man",			// 0x348
+	"Mega Man",				// 0x348
 	"Street Fighter",			// 0x34C
 	"Monster Hunter",			// 0x350
 	nullptr,				// 0x354
