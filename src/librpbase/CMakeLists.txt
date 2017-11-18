@@ -314,12 +314,15 @@ IF(NOT HAVE_MSVC_ALIGNED_MALLOC AND NOT HAVE_ALIGNED_ALLOC AND NOT HAVE_POSIX_ME
 	MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
 ENDIF()
 
+MESSAGE(STATUS "ENABLE_NLS == ${ENABLE_NLS}")
 IF(ENABLE_NLS)
 	# Find gettext.
 	# Intl == runtime library
 	# Gettext == compile-time tools
 	FIND_PACKAGE(Intl REQUIRED)
 	FIND_PACKAGE(Gettext REQUIRED)
+	MESSAGE(STATUS "INTL_FOUND == ${INTL_FOUND}")
+	MESSAGE(STATUS "GETTEXT_FOUND == ${GETTEXT_FOUND}")
 	IF(INTL_FOUND AND GETTEXT_FOUND)
 		SET(HAVE_GETTEXT 1)
 		SET(librpbase_I18N_SRCS i18n.cpp)
@@ -329,6 +332,7 @@ IF(ENABLE_NLS)
 	# if NLS is disabled.
 	SET(librpbase_I18N_H i18n.hpp)
 ENDIF(ENABLE_NLS)
+MESSAGE(STATUS "HAVE_GETTEXT == ${HAVE_GETTEXT}")
 
 # Write the config.h file.
 INCLUDE(DirInstallPaths)
