@@ -40,12 +40,11 @@ namespace LibRomData {
 // problems if it's embedded inside of a templated class.
 typedef uint32_t (*pFnSupportedImageTypes)(void);
 struct SysData_t {
-	const char *name;			// System name.
 	const char *className;			// Class name in Config. (ASCII)
 	pFnSupportedImageTypes getTypes;	// Get supported image types.
 };
-#define SysDataEntry(klass, name) \
-	{name, #klass, LibRomData::klass::supportedImageTypes_static}
+#define SysDataEntry(klass) \
+	{#klass, LibRomData::klass::supportedImageTypes_static}
 
 template<typename ComboBox>
 class TImageTypesConfig
@@ -95,11 +94,22 @@ class TImageTypesConfig
 		int save(void);
 
 	public:
-		// Image type data. (IMG_TYPE_COUNT)
-		static const char *const imageTypeNames[];
+		/**
+		 * Get an image type name.
+		 * @param imageType Image type ID.
+		 * @return Image type name, or nullptr if invalid.
+		 */
+		static const char *imageTypeName(unsigned int imageType);
 
 		// System data. (SYS_COUNT)
 		static const SysData_t sysData[];
+
+		/**
+		 * Get a system name.
+		 * @param sys System ID.
+		 * @return System name, or nullptr if invalid.
+		 */
+		static const char *sysName(unsigned int sys);
 
 	public:
 		/**

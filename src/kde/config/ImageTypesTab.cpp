@@ -165,7 +165,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const QString cssImageType = QLatin1String(
 		"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
 	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
-		QLabel *const lblImageType = new QLabel(U82Q(imageTypeNames[i]), q);
+		QLabel *const lblImageType = new QLabel(U82Q(imageTypeName(i)), q);
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
 		ui.gridImageTypes->addWidget(lblImageType, 0, i+1);
@@ -175,7 +175,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const QString cssSysName = QLatin1String(
 		"QLabel { margin-right: 0.25em; }");
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
-		QLabel *const lblSysName = new QLabel(U82Q(sysData[sys].name), q);
+		QLabel *const lblSysName = new QLabel(U82Q(sysName(sys)), q);
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
 		ui.gridImageTypes->addWidget(lblSysName, sys+1, 0);

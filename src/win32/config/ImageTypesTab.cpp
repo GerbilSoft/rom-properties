@@ -229,7 +229,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblImageType = {0, 0};
 	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeNames[i]), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeName(i)), &szCur);
 		if (szCur.cx > sz_lblImageType.cx) {
 			sz_lblImageType.cx = szCur.cx;
 		}
@@ -242,7 +242,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblSysName = {0, 0};
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysData[sys].name), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysName(sys)), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
 			sz_lblSysName.cx = szCur.cx;
 		}
@@ -273,7 +273,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		rect_lblDesc2.bottom + dlgMargin.bottom};
 	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, RP2W_c(imageTypeNames[i]),
+			WC_STATIC, RP2W_c(imageTypeName(i)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
 			curPt.x, curPt.y, sz_lblImageType.cx, sz_lblImageType.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
@@ -298,7 +298,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, RP2W_c(sysData[sys].name),
+			WC_STATIC, RP2W_c(sysName(sys)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
 			curPt.x, curPt.y,
 			sz_lblSysName.cx, sz_lblSysName.cy,
