@@ -655,8 +655,8 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for SAV. (MaxDrive)
-	static const uint8_t sav_magic[] = {'D','A','T','E','L','G','C','_','S','A','V','E',0,0,0,0};
-	if (!memcmp(info->header.pData, sav_magic, sizeof(sav_magic))) {
+	static const uint8_t sav_magic[] = "DATELGC_SAVE\x00\x00\x00\x00";
+	if (!memcmp(info->header.pData, sav_magic, sizeof(sav_magic)-1)) {
 		// Is the size correct?
 		// SAVE files are a multiple of 8 KB, plus 192 bytes:
 		// - 128 bytes: SAV-specific header.

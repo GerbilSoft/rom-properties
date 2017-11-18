@@ -414,20 +414,20 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for FDS.
-	static const uint8_t fwNES_magic[4] = {'F','D','S',0x1A};
-	static const uint8_t fds_magic[] = {'*','N','I','N','T','E','N','D','O','-','H','V','C','*'};
+	static const uint8_t fwNES_magic[] = "FDS\x1A";
+	static const uint8_t fds_magic[] = "*NINTENDO-HVC*";
 
 	// Check for headered FDS.
 	const FDS_DiskHeader_fwNES *fwNESHeader =
 		reinterpret_cast<const FDS_DiskHeader_fwNES*>(info->header.pData);
-	if (!memcmp(fwNESHeader->magic, fwNES_magic, sizeof(fwNESHeader->magic))) {
+	if (!memcmp(fwNESHeader->magic, fwNES_magic, sizeof(fwNESHeader->magic)-1)) {
 		// fwNES header is present.
 		// TODO: Check required NULL bytes.
 		// For now, assume this is correct.
 		const FDS_DiskHeader *fdsHeader =
 			reinterpret_cast<const FDS_DiskHeader*>(&info->header.pData[16]);
 		if (fdsHeader->block_code == 0x01 &&
-		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
+		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)-1))
 		{
 			// This is an FDS disk image.
 			return NESPrivate::ROM_FORMAT_FDS_FWNES |
@@ -438,7 +438,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		const FDS_DiskHeader *fdsHeader =
 			reinterpret_cast<const FDS_DiskHeader*>(info->header.pData);
 		if (fdsHeader->block_code == 0x01 &&
-		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
+		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)-1))
 		{
 			// This is an FDS disk image.
 			return NESPrivate::ROM_FORMAT_FDS |
