@@ -22,11 +22,18 @@
 
 /**
  * Initialize the internationalization subsystem.
- * @param dirname Directory name.
  * @return 0 on success; non-zero on error.
  */
-int rp_i18n_init(const char *dirname)
+int rp_i18n_init(void)
 {
+#ifdef DIR_INSTALL_LOCALE
+	static const char dirname[] = DIR_INSTALL_LOCALE;
+#else
+	// Use the current directory.
+	// TODO: On Windows, use the DLL directory.
+	static const char dirname[] = "locale";
+#endif
+
 	const char *base = bindtextdomain(RP_I18N_DOMAIN, dirname);
 	if (!base) {
 		// bindtextdomain() failed.

@@ -221,16 +221,8 @@ int RP_C_API main(int argc, char *argv[])
 	// Set the C and C++ locales.
 	locale::global(locale(""));
 
-#if defined(ENABLE_NLS) && defined(HAVE_GETTEXT)
-	// TODO: Better location for this?
-#ifdef DIR_INSTALL_LOCALE
-	rp_i18n_init(DIR_INSTALL_LOCALE);
-#else
-	// Use the current directory.
-	// TODO: On Windows, use the DLL directory.
-	rp_i18n_init("locale");
-#endif
-#endif /* ENABLE_NLS && HAVE_GETTEXT */
+	// Initialize i18n.
+	rp_i18n_init();
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION

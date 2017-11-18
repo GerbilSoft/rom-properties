@@ -56,14 +56,19 @@ extern "C" {
 
 /**
  * Initialize the internationalization subsystem.
- * @param dirname Directory name.
  * @return 0 on success; non-zero on error.
  */
-int rp_i18n_init(const char *dirname);
+int rp_i18n_init(void);
 
 #ifdef __cplusplus
 }
 #endif
+
+#else
+/**
+ * Dummy macro for rp_i18n_init() that does nothing.
+ */
+#define rp_i18n_init() do { } while (0)
 #endif /* HAVE_GETTEXT */
 
 // Positional printf().
