@@ -691,18 +691,26 @@ int NintendoBadge::loadFieldData(void)
 					le32_to_cpu(prbs->title_id.hi),
 					le32_to_cpu(prbs->title_id.lo), &region);
 				if (title) {
-					string str = title;
-					if (le32_to_cpu(prbs->title_id.lo) & 0x20000000) {
-						// New3DS-specific.
-						str += " (New3DS)";
+					// Add optional fields.
+					// TODO: Positional arguments.
+					string str;
+					bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
+					if (isN3DS) {
+						if (region) {
+							// 1: Title name; 2: Region
+							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS) (%s)"), title, region);
+						} else {
+							// 1: Title name
+							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"), title);
+						}
+					} else {
+						if (region) {
+							// 1: Title name; 2: Region
+							str = rp_sprintf(C_("NintendoBadge", "%s (%s)"), title, region);
+						} else {
+							str = title;
+						}
 					}
-					if (region) {
-						// Region code.
-						str += " (";
-						str += region;
-						str += ')';
-					}
-
 					d->fields->addField_string(C_("NintendoBadge", "Launch Title Name"), str);
 				}
 			}

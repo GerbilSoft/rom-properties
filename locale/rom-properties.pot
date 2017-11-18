@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 16:25-0500\n"
+"POT-Creation-Date: 2017-11-18 16:36-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3055,8 +3055,8 @@ msgid "ARM9 Entry Point"
 msgstr ""
 
 #: ../src/libromdata/NintendoBadge.cpp:626
-#: ../src/libromdata/NintendoBadge.cpp:713
-#: ../src/libromdata/NintendoBadge.cpp:755
+#: ../src/libromdata/NintendoBadge.cpp:721
+#: ../src/libromdata/NintendoBadge.cpp:763
 msgctxt "NintendoBadge"
 msgid "Type"
 msgstr ""
@@ -3072,7 +3072,7 @@ msgid "Individual Badge"
 msgstr ""
 
 #: ../src/libromdata/NintendoBadge.cpp:654
-#: ../src/libromdata/NintendoBadge.cpp:739
+#: ../src/libromdata/NintendoBadge.cpp:747
 msgctxt "NintendoBadge"
 msgid "Name"
 msgstr ""
@@ -3091,7 +3091,7 @@ msgstr ""
 
 #. Set name.
 #: ../src/libromdata/NintendoBadge.cpp:667
-#: ../src/libromdata/NintendoBadge.cpp:747
+#: ../src/libromdata/NintendoBadge.cpp:755
 msgctxt "NintendoBadge"
 msgid "Set Name"
 msgstr ""
@@ -3114,23 +3114,44 @@ msgctxt "NintendoBadge"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/NintendoBadge.cpp:706
+#. 1: Title name; 2: Region
+#: ../src/libromdata/NintendoBadge.cpp:701
+#, c-format
+msgctxt "NintendoBadge"
+msgid "%s (New3DS) (%s)"
+msgstr ""
+
+#. 1: Title name
+#: ../src/libromdata/NintendoBadge.cpp:704
+#, c-format
+msgctxt "NintendoBadge"
+msgid "%s (New3DS)"
+msgstr ""
+
+#. 1: Title name; 2: Region
+#: ../src/libromdata/NintendoBadge.cpp:709
+#, c-format
+msgctxt "NintendoBadge"
+msgid "%s (%s)"
+msgstr ""
+
+#: ../src/libromdata/NintendoBadge.cpp:714
 msgctxt "NintendoBadge"
 msgid "Launch Title Name"
 msgstr ""
 
-#: ../src/libromdata/NintendoBadge.cpp:713
+#: ../src/libromdata/NintendoBadge.cpp:721
 msgctxt "NintendoBadge"
 msgid "Badge Set"
 msgstr ""
 
 #. Badge ID.
-#: ../src/libromdata/NintendoBadge.cpp:744
+#: ../src/libromdata/NintendoBadge.cpp:752
 msgctxt "NintendoBadge"
 msgid "Set ID"
 msgstr ""
 
-#: ../src/libromdata/NintendoBadge.cpp:755
+#: ../src/libromdata/NintendoBadge.cpp:763
 msgctxt "NintendoBadge"
 msgid "Unknown"
 msgstr ""
