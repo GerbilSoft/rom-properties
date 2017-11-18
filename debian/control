@@ -24,7 +24,8 @@ Build-Depends:
  libthunarx-2-dev,
  libgtk-3-dev,
  libnautilus-extension-dev,
- libbsd-dev
+ libbsd-dev,
+ gettext
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
