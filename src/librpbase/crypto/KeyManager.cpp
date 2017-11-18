@@ -23,7 +23,7 @@
 
 #include "KeyManager.hpp"
 #include "config/ConfReader_p.hpp"
-#include "i18n.hpp"
+#include "libi18n/i18n.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

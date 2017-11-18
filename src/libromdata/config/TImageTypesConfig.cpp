@@ -31,7 +31,7 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/RomData.hpp"	// for IMG_* constants
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // RomData subclasses with images.

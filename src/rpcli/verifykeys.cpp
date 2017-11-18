@@ -32,7 +32,7 @@
 // librpbase
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // libromdata

@@ -27,7 +27,7 @@
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // libromdata

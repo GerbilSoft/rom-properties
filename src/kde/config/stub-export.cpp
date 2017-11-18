@@ -26,7 +26,7 @@
 // i18n
 // TODO: Also localize rp-stub?
 // (Will require moving gettext out of librpbase.)
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 
 /**
  * Exported function for the rp-config stub.

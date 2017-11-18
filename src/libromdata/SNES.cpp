@@ -32,7 +32,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)

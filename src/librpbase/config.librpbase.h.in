@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                       *
- * config.librpbase.h.in: LibRpBase configuration. (source file)          *
+ * ROM Properties Page shell extension. (librpbase)                        *
+ * config.librpbase.h.in: LibRpBase configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_CONFIG_H__
@@ -111,17 +110,6 @@
 
 /* Define to 1 if S3TC decompression should be enabled. */
 #cmakedefine ENABLE_S3TC 1
-
-/* Define to 1 if NLS should be enabled. */
-#cmakedefine ENABLE_NLS 1
-
-/* Define to 1 if you have gettext. */
-#cmakedefine HAVE_GETTEXT 1
-
-/* Define to the system locale directory on Unix and Unix-like systems. */
-#ifndef _WIN32
-#cmakedefine DIR_INSTALL_LOCALE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_LOCALE@"
-#endif
 
 /** Aligned malloc() functions. **/
 

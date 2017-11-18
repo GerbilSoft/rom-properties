@@ -27,7 +27,7 @@
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
 #include "threads/Atomics.h"
-#include "i18n.hpp"
+#include "libi18n/i18n.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

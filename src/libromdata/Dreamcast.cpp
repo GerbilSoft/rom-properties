@@ -33,7 +33,7 @@
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/img/rp_image.hpp"
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // DiscReader

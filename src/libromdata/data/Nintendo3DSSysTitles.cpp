@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 #include "Nintendo3DSSysTitles.hpp"
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 
 // C includes.
 #include <stdlib.h>

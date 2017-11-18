@@ -26,7 +26,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/i18n.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // libromdata
