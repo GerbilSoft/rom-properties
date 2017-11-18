@@ -11,7 +11,6 @@
  * All strings should be compile-time constants.
  */
 #ifdef HAVE_GETTEXT
-# define ENABLE_NLS 1
 # include "gettext.h"
 # define _(msgid)				dgettext(RP_I18N_DOMAIN, msgid)
 # define C_(msgctxt, msgid)			dpgettext(RP_I18N_DOMAIN, msgctxt, msgid)
