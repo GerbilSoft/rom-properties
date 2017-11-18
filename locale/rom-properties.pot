@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 15:25-0500\n"
+"POT-Creation-Date: 2017-11-18 16:25-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -246,6 +246,177 @@ msgstr ""
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:845
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:74
+msgctxt "Nintendo3DSSysTitles"
+msgid "System Settings"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:75
+msgctxt "Nintendo3DSSysTitles"
+msgid "Download Play"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:76
+msgctxt "Nintendo3DSSysTitles"
+msgid "Activity Log"
+msgstr ""
+
+#. New 3DS
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:77
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:92
+msgctxt "Nintendo3DSSysTitles"
+msgid "Health and Safety Information"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:78
+msgctxt "Nintendo3DSSysTitles"
+msgid "Nintendo 3DS Camera"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:79
+msgctxt "Nintendo3DSSysTitles"
+msgid "Nintendo 3DS Sound"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:80
+msgctxt "Nintendo3DSSysTitles"
+msgid "Mii Maker"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:81
+msgctxt "Nintendo3DSSysTitles"
+msgid "StreetPass Mii Plaza"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:82
+msgctxt "Nintendo3DSSysTitles"
+msgid "eShop"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:83
+msgctxt "Nintendo3DSSysTitles"
+msgid "System Transfer"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:84
+msgctxt "Nintendo3DSSysTitles"
+msgid "Nintendo Zone"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:85
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:93
+msgctxt "Nintendo3DSSysTitles"
+msgid "Face Raiders"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:86
+msgctxt "Nintendo3DSSysTitles"
+msgid "AR Games"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:87
+msgctxt "Nintendo3DSSysTitles"
+msgid "System Updater (SAFE_MODE)"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:88
+msgctxt "Nintendo3DSSysTitles"
+msgid "Promotional Video (v1.1.0)"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:89
+msgctxt "Nintendo3DSSysTitles"
+msgid "Nintendo Network ID Settings"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:94
+msgctxt "Nintendo3DSSysTitles"
+msgid "microSD Management"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:101
+msgctxt "Nintendo3DSSysTitles"
+msgid "HOME Menu"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:102
+msgctxt "Nintendo3DSSysTitles"
+msgid "Camera"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:103
+msgctxt "Nintendo3DSSysTitles"
+msgid "Instruction Manual"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:104
+msgctxt "Nintendo3DSSysTitles"
+msgid "Game Notes"
+msgstr ""
+
+#. New 3DS
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:105
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:119
+msgctxt "Nintendo3DSSysTitles"
+msgid "Internet Browser"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:106
+msgctxt "Nintendo3DSSysTitles"
+msgid "Friend List"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:107
+msgctxt "Nintendo3DSSysTitles"
+msgid "Notificaitons"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:108
+msgctxt "Nintendo3DSSysTitles"
+msgid "Software Keyboard"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:109
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:120
+msgctxt "Nintendo3DSSysTitles"
+msgid "Software Keyboard (SAFE_MODE)"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:110
+msgctxt "Nintendo3DSSysTitles"
+msgid "Mii picker"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:111
+msgctxt "Nintendo3DSSysTitles"
+msgid "Picture picker"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:112
+msgctxt "Nintendo3DSSysTitles"
+msgid "Voice memo picker"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:113
+msgctxt "Nintendo3DSSysTitles"
+msgid "eShop applet"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:114
+msgctxt "Nintendo3DSSysTitles"
+msgid "Miiverse"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:115
+msgctxt "Nintendo3DSSysTitles"
+msgid "Miiverse posting applet"
+msgstr ""
+
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:116
+msgctxt "Nintendo3DSSysTitles"
+msgid "amiibo Settings"
 msgstr ""
 
 #: ../src/libromdata/DirectDrawSurface.cpp:902
