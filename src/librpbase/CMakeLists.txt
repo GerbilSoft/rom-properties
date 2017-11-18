@@ -331,7 +331,6 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_IFUNC_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
-	${librpbase_I18N_SRCS} ${librpbase_I18N_H}
 	)
 # TODO: Get rid of this.
 TARGET_COMPILE_DEFINITIONS(rpbase PUBLIC -DRP_UTF8)
