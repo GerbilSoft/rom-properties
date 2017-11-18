@@ -425,7 +425,7 @@ const char *TImageTypesConfig<ComboBox>::sysName(unsigned int sys)
 	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
 		"sysNames[] needs to be updated.");
 
-	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|SysName", sysNames[imageType]);
+	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|SysName", sysNames[sys]);
 }
 
 /**
