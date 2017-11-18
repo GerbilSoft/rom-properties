@@ -23,6 +23,7 @@
 
 #include "KeyManager.hpp"
 #include "config/ConfReader_p.hpp"
+#include "i18n.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -233,31 +234,33 @@ const char *KeyManager::verifyResultToString(VerifyResult res)
 {
 	static const char *const errTbl[] = {
 		// VERIFY_OK
-		"Something happened.",
+		NOP_C_("KeyManager|VerifyResult", "Something happened."),
 		// VERIFY_INVALID_PARAMS
-		"Invalid parameters. (THIS IS A BUG!)",
+		NOP_C_("KeyManager|VerifyResult", "Invalid parameters. (THIS IS A BUG!)"),
 		// VERIFY_NO_SUPPORT
-		"Decryption is not supported in this build.",
+		NOP_C_("KeyManager|VerifyResult", "Decryption is not supported in this build."),
 		// VERIFY_KEY_DB_NOT_LOADED
-		"keys.conf was not found.",
+		NOP_C_("KeyManager|VerifyResult", "keys.conf was not found."),
 		// VERIFY_KEY_DB_ERROR
-		"keys.conf has an error and could not be loaded.",
+		NOP_C_("KeyManager|VerifyResult", "keys.conf has an error and could not be loaded."),
 		// VERIFY_KEY_NOT_FOUND
-		"Required key was not found in keys.conf.",
+		NOP_C_("KeyManager|VerifyResult", "Required key was not found in keys.conf."),
 		// VERIFY_KEY_INVALID
-		"The key in keys.conf is not a valid key.",
+		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is not a valid key."),
 		// VERFIY_IAESCIPHER_INIT_ERR
-		"AES decryption could not be initialized.",
+		NOP_C_("KeyManager|VerifyResult", "AES decryption could not be initialized."),
 		// VERIFY_IAESCIPHER_DECRYPT_ERR
-		"AES decryption failed.",
+		NOP_C_("KeyManager|VerifyResult", "AES decryption failed."),
 		// VERIFY_WRONG_KEY
-		"The key in keys.conf is incorrect.",
+		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is incorrect."),
 	};
 	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
 
 	assert(res >= 0);
 	assert(res < ARRAY_SIZE(errTbl));
-	return ((res >= 0 && res < ARRAY_SIZE(errTbl)) ? errTbl[res] : nullptr);
+	return ((res >= 0 && res < ARRAY_SIZE(errTbl))
+		? dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", errTbl[res])
+		: nullptr);
 }
 
 #ifdef ENABLE_DECRYPTION

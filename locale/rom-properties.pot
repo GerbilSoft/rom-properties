@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 15:11-0500\n"
+"POT-Creation-Date: 2017-11-18 15:21-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -233,17 +233,17 @@ msgctxt "TImageTypesConfig|SysName"
 msgid "Wii U"
 msgstr ""
 
-#: ../src/libromdata/crypto/KeyStoreUI.cpp:844
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:843
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo Wii AES Keys"
 msgstr ""
 
-#: ../src/libromdata/crypto/KeyStoreUI.cpp:845
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:844
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS Key Scrambler Constants"
 msgstr ""
 
-#: ../src/libromdata/crypto/KeyStoreUI.cpp:846
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:845
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
 msgstr ""
@@ -3690,6 +3690,66 @@ msgstr ""
 #: ../src/libromdata/WiiU.cpp:423
 msgctxt "WiiU"
 msgid "Region"
+msgstr ""
+
+#. VERIFY_OK
+#: ../src/librpbase/crypto/KeyManager.cpp:237
+msgctxt "KeyManager|VerifyResult"
+msgid "Something happened."
+msgstr ""
+
+#. VERIFY_INVALID_PARAMS
+#: ../src/librpbase/crypto/KeyManager.cpp:239
+msgctxt "KeyManager|VerifyResult"
+msgid "Invalid parameters. (THIS IS A BUG!)"
+msgstr ""
+
+#. VERIFY_NO_SUPPORT
+#: ../src/librpbase/crypto/KeyManager.cpp:241
+msgctxt "KeyManager|VerifyResult"
+msgid "Decryption is not supported in this build."
+msgstr ""
+
+#. VERIFY_KEY_DB_NOT_LOADED
+#: ../src/librpbase/crypto/KeyManager.cpp:243
+msgctxt "KeyManager|VerifyResult"
+msgid "keys.conf was not found."
+msgstr ""
+
+#. VERIFY_KEY_DB_ERROR
+#: ../src/librpbase/crypto/KeyManager.cpp:245
+msgctxt "KeyManager|VerifyResult"
+msgid "keys.conf has an error and could not be loaded."
+msgstr ""
+
+#. VERIFY_KEY_NOT_FOUND
+#: ../src/librpbase/crypto/KeyManager.cpp:247
+msgctxt "KeyManager|VerifyResult"
+msgid "Required key was not found in keys.conf."
+msgstr ""
+
+#. VERIFY_KEY_INVALID
+#: ../src/librpbase/crypto/KeyManager.cpp:249
+msgctxt "KeyManager|VerifyResult"
+msgid "The key in keys.conf is not a valid key."
+msgstr ""
+
+#. VERFIY_IAESCIPHER_INIT_ERR
+#: ../src/librpbase/crypto/KeyManager.cpp:251
+msgctxt "KeyManager|VerifyResult"
+msgid "AES decryption could not be initialized."
+msgstr ""
+
+#. VERIFY_IAESCIPHER_DECRYPT_ERR
+#: ../src/librpbase/crypto/KeyManager.cpp:253
+msgctxt "KeyManager|VerifyResult"
+msgid "AES decryption failed."
+msgstr ""
+
+#. VERIFY_WRONG_KEY
+#: ../src/librpbase/crypto/KeyManager.cpp:255
+msgctxt "KeyManager|VerifyResult"
+msgid "The key in keys.conf is incorrect."
 msgstr ""
 
 #: ../src/librpbase/RomData.cpp:125
