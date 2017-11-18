@@ -29,6 +29,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -300,12 +301,13 @@ int N64::loadFieldData(void)
 	}
 
 	// ROM file header is read and byteswapped in the constructor.
+	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("N64", "Title"),
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
@@ -317,19 +319,19 @@ int N64::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	d->fields->addField_string("Game ID",
+	d->fields->addField_string(C_("N64", "Game ID"),
 		latin1_to_utf8(id4, 4));
 
 	// Revision.
-	d->fields->addField_string_numeric("Revision",
+	d->fields->addField_string_numeric(C_("N64", "Revision"),
 		romHeader->revision, RomFields::FB_DEC, 2);
 
 	// Entry point.
-	d->fields->addField_string_numeric("Entry Point",
+	d->fields->addField_string_numeric(C_("N64", "Entry Point"),
 		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 
 	// Checksum.
-	d->fields->addField_string_hexdump("Checksum",
+	d->fields->addField_string_hexdump(C_("N64", "Checksum"),
 		reinterpret_cast<const uint8_t*>(&romHeader->checksum),
 		sizeof(romHeader->checksum), RomFields::STRF_MONOSPACE);
 

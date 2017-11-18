@@ -31,6 +31,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -367,38 +368,38 @@ int VirtualBoy::loadFieldData(void)
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Title
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("VirtualBoy", "Title"),
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
 	id6.append(romHeader->publisher, sizeof(romHeader->publisher));
-	d->fields->addField_string("Game ID",
+	d->fields->addField_string(C_("VirtualBoy", "Game ID"),
 		latin1_to_utf8(id6.data(), (int)id6.size()));
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(romHeader->publisher);
-	d->fields->addField_string("Publisher",
-		publisher ? publisher : "Unknown");
+	d->fields->addField_string(C_("VirtualBoy", "Publisher"),
+		publisher ? publisher : C_("VirtualBoy", "Unknown"));
 
 	// Revision
-	d->fields->addField_string_numeric("Revision",
+	d->fields->addField_string_numeric(C_("VirtualBoy", "Revision"),
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// Region
 	const char *region;
 	switch (romHeader->gameid[3]) {
 		case 'J':
-			region = "Japan";
+			region = C_("VirtualBoy|Region", "Japan");
 			break;
 		case 'E':
-			region = "USA";
+			region = C_("VirtualBoy|Region", "USA");
 			break;
 		default:
-			region = "Unknown";
+			region = C_("VirtualBoy", "Unknown");
 			break;
 	}
-	d->fields->addField_string("Region", region);
+	d->fields->addField_string(C_("VirtualBoy", "Region"), region);
 
 	return (int)d->fields->count();
 }

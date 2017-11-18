@@ -327,6 +327,18 @@ class RomFields
 		static std::vector<std::string> *strArrayToVector(const char *const *strArray, int count = -1);
 
 		/**
+		 * Convert an array of char strings to a vector of std::string.
+		 * This can be used for addField_bitfield() and addField_listData().
+		 * @param msgctxt i18n context.
+		 * @param strArray Array of strings.
+		 * @param count Number of strings, or -1 for a NULL-terminated array.
+		 * NOTE: The array will be terminated at NULL regardless of count,
+		 * so a -1 count is only useful if the size isn't known.
+		 * @return Allocated std::vector<std::string>.
+		 */
+		static std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, int count = -1);
+
+		/**
 		 * Add fields from another RomFields object.
 		 * @param other Source RomFields object.
 		 * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)

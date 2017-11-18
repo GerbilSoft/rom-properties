@@ -29,8 +29,11 @@
 #include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
+
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -896,17 +899,18 @@ int DirectDrawSurface::loadFieldData(void)
 
 	// Texture size.
 	if (ddsHeader->dwFlags & DDSD_DEPTH) {
-		d->fields->addField_string("Texture Size",
+		d->fields->addField_string(C_("DirectDrawSurface", "Texture Size"),
 			rp_sprintf("%ux%ux%u", ddsHeader->dwWidth, ddsHeader->dwHeight, ddsHeader->dwDepth));
 	} else {
-		d->fields->addField_string("Texture Size",
+		d->fields->addField_string(C_("DirectDrawSurface", "Texture Size"),
 			rp_sprintf("%ux%u", ddsHeader->dwWidth, ddsHeader->dwHeight));
 	}
 
 	// Pitch (uncompressed)
 	// Linear size (compressed)
-	const char *pitch_name;
-	pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE) ? "Linear Size" : "Pitch";
+	const char *const pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE)
+		? C_("DirectDrawSurface", "Linear Size")
+		: C_("DirectDrawSurface", "Pitch");
 	d->fields->addField_string_numeric(pitch_name,
 		ddsHeader->dwPitchOrLinearSize, RomFields::FB_DEC, 0);
 
@@ -919,7 +923,8 @@ int DirectDrawSurface::loadFieldData(void)
 	const DDS_PIXELFORMAT &ddspf = ddsHeader->ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
-		d->fields->addField_string("Pixel Format",
+		// TODO: Union of uint32_t and char?
+		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
 			rp_sprintf("%c%c%c%c",
 				 ddspf.dwFourCC        & 0xFF,
 				(ddspf.dwFourCC >>  8) & 0xFF,
@@ -929,40 +934,40 @@ int DirectDrawSurface::loadFieldData(void)
 		// Uncompressed RGB data.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string("Pixel Format", pxfmt);
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string("Pixel Format",
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
 				rp_sprintf("RGB (%u-bit)", ddspf.dwRGBBitCount));
 		}
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string("Pixel Format", pxfmt);
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string("Pixel Format",
-				rp_sprintf("Alpha (%u-bit)", ddspf.dwRGBBitCount));
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+				rp_sprintf(C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount));
 		}
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
-		d->fields->addField_string("Pixel Format",
-			rp_sprintf("YUV (%u-bit)", ddspf.dwRGBBitCount));
+		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+			rp_sprintf(C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount));
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string("Pixel Format", pxfmt);
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string("Pixel Format",
-				rp_sprintf("%s (%u-bit)",
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+				rp_sprintf(C_("DirectDrawSurface", "%s (%u-bit)"),
 					((ddspf.dwFlags & DDPF_ALPHAPIXELS)
-						? "Luminance + Alpha"
-						: "Luminance"),
+						? C_("DirectDrawSurface", "Luminance + Alpha")
+						: C_("DirectDrawSurface", "Luminance")),
 					ddspf.dwRGBBitCount));
 		}
 	} else {
 		// Unknown pixel format.
-		d->fields->addField_string("Pixel Format", "Unknown");
+		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), C_("DirectDrawSurface", "Unknown"));
 	}
 
 	if (ddspf.dwFourCC == DDPF_FOURCC_DX10) {
@@ -1038,50 +1043,87 @@ int DirectDrawSurface::loadFieldData(void)
 		} else if (dxt10Header->dxgiFormat == DXGI_FORMAT_FORCE_UINT) {
 			texFormat = "FORCE_UINT";
 		}
-		d->fields->addField_string("DX10 Format",
-			(texFormat ? texFormat : rp_sprintf("Unknown (0x%08X)", dxt10Header->dxgiFormat)));
+		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
+			(texFormat ? texFormat :
+				rp_sprintf(C_("DirectDrawSurface", "Unknown (0x%08X)"), dxt10Header->dxgiFormat)));
 	}
 
 	// dwFlags
 	static const char *const dwFlags_names[] = {
-		"Caps", "Height", "Width", "Pitch",			// 0x1-0x8
-		nullptr, nullptr, nullptr, nullptr,			// 0x10-0x80
-		nullptr, nullptr, nullptr, nullptr,			// 0x100-0x800
-		"Pixel Format", nullptr, nullptr, nullptr,		// 0x1000-0x8000
-		nullptr, "Mipmap Count", nullptr, "Linear Size",	// 0x10000-0x80000
-		nullptr, nullptr, nullptr, "Depth"			// 0x100000-0x800000
+		// 0x1-0x8
+		NOP_C_("DirectDrawSurface|dwFlags", "Caps"),
+		NOP_C_("DirectDrawSurface|dwFlags", "Height"),
+		NOP_C_("DirectDrawSurface|dwFlags", "Width"),
+		NOP_C_("DirectDrawSurface|dwFlags", "Pitch"),
+		// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100-0x800
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x1000-0x8000
+		NOP_C_("DirectDrawSurface|dwFlags", "Pixel Format"),
+		nullptr, nullptr, nullptr,
+		// 0x10000-0x80000
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwFlags", "Mipmap Count"),
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwFlags", "Linear Size"),
+		// 0x100000-0x800000
+		nullptr, nullptr, nullptr,
+		NOP_C_("DirectDrawSurface|dwFlags", "Depth"),
 	};
-	vector<string> *v_dwFlags_names = RomFields::strArrayToVector(
-		dwFlags_names, ARRAY_SIZE(dwFlags_names));
-	d->fields->addField_bitfield("Flags",
+	vector<string> *v_dwFlags_names = RomFields::strArrayToVector_i18n(
+		"DirectDrawSurface|dwFlags", dwFlags_names, ARRAY_SIZE(dwFlags_names));
+	d->fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
 
 	// dwCaps
 	static const char *const dwCaps_names[] = {
-		nullptr, nullptr, nullptr, "Complex",	// 0x1-0x8
-		nullptr, nullptr, nullptr, nullptr,	// 0x10-0x80
-		nullptr, nullptr, nullptr, nullptr,	// 0x100-0x800
-		"Texture", nullptr, nullptr, nullptr,	// 0x1000-0x8000
-		nullptr, nullptr, nullptr, nullptr,	// 0x10000-0x80000
-		nullptr, nullptr, "Mipmap"		// 0x100000-0x400000
+		// 0x1-0x8
+		nullptr, nullptr, nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps", "Complex"),
+		// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100-0x800
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x1000-0x8000
+		NOP_C_("DirectDrawSurface|dwCaps", "Texture"),
+		nullptr, nullptr, nullptr,
+		// 0x10000-0x80000
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100000-0x400000
+		nullptr, nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
 	};
-	vector<string> *v_dwCaps_names = RomFields::strArrayToVector(
-		dwCaps_names, ARRAY_SIZE(dwCaps_names));
-	d->fields->addField_bitfield("Caps",
+	vector<string> *v_dwCaps_names = RomFields::strArrayToVector_i18n(
+		"DirectDrawSurface|dwFlags", dwCaps_names, ARRAY_SIZE(dwCaps_names));
+	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 
 	// dwCaps2
 	static const char *const dwCaps2_names[] = {
-		nullptr, nullptr, nullptr, nullptr,	// 0x1-0x8
-		nullptr, nullptr, nullptr, nullptr,	// 0x10-0x80
-		nullptr, "Cubemap", "+X", "-X",		// 0x100-0x800
-		"+Y", "-Y", "+Z", "-Z",			// 0x1000-0x8000
-		nullptr, nullptr, nullptr, nullptr,	// 0x10000-0x80000
-		nullptr, "Volume"			// 0x100000-0x200000
+		// 0x1-0x8
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100-0x800
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps2", "Cubemap"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "+X"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "-X"),
+		// 0x1000-0x8000
+		NOP_C_("DirectDrawSurface|dwCaps2", "+Y"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "-Y"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "+Z"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "-Z"),
+		// 0x10000-0x80000
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100000-0x200000
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps2", "Volume"),
 	};
-	vector<string> *v_dwCaps2_names = RomFields::strArrayToVector(
-		dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
-	d->fields->addField_bitfield("Caps2",
+	vector<string> *v_dwCaps2_names = RomFields::strArrayToVector_i18n(
+		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
+	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, ddsHeader->dwCaps2);
 
 	// Finished reading the field data.

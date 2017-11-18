@@ -23,6 +23,7 @@
 #include "common.h"
 #include "TextFuncs.hpp"
 #include "threads/Atomics.h"
+#include "i18n.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -701,9 +702,9 @@ void RomFields::reserve(int n)
  * so a -1 count is only useful if the size isn't known.
  * @return Allocated std::vector<std::string>.
  */
-std::vector<string> *RomFields::strArrayToVector(const char *const *strArray, int count)
+vector<string> *RomFields::strArrayToVector(const char *const *strArray, int count)
 {
-	std::vector<string> *pVec = new std::vector<string>();
+	vector<string> *pVec = new vector<string>();
 	if (count < 0) {
 		count = std::numeric_limits<int>::max();
 	} else {
@@ -713,6 +714,37 @@ std::vector<string> *RomFields::strArrayToVector(const char *const *strArray, in
 	for (; strArray != nullptr && count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
 		pVec->push_back(*strArray ? *strArray : "");
+	}
+
+	return pVec;
+}
+
+/**
+ * Convert an array of char strings to a vector of std::string.
+ * This can be used for addField_bitfield() and addField_listData().
+ * @param msgctxt i18n context.
+ * @param strArray Array of strings.
+ * @param count Number of strings, or -1 for a NULL-terminated array.
+ * NOTE: The array will be terminated at NULL regardless of count,
+ * so a -1 count is only useful if the size isn't known.
+ * @return Allocated std::vector<std::string>.
+ */
+vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, int count)
+{
+	vector<string> *pVec = new vector<string>();
+	if (count < 0) {
+		count = std::numeric_limits<int>::max();
+	} else {
+		pVec->reserve(count);
+	}
+
+	for (; strArray != nullptr && count > 0; strArray++, count--) {
+		// nullptr will be handled as empty strings.
+		if (*strArray) {
+			pVec->push_back(dpgettext_expr(RP_I18N_DOMAIN, msgctxt, *strArray));
+		} else {
+			pVec->push_back(string());
+		}
 	}
 
 	return pVec;

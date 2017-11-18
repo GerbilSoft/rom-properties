@@ -29,6 +29,7 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // TinyXML2
@@ -156,10 +157,10 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// Add the manifest fields.
-	fields->addTab("Manifest");
+	fields->addTab(C_("EXE", "Manifest"));
 
 	// Manifest ID.
-	fields->addField_string("Manifest ID", resource_ids[id_idx].name);
+	fields->addField_string(C_("EXE|Manifest", "Manifest ID"), resource_ids[id_idx].name);
 
 	#define FIRST_CHILD_ELEMENT_NS(var, parent_elem, child_elem_name, namespace) \
 		const XMLElement *var = parent_elem->FirstChildElement(child_elem_name); \
@@ -191,17 +192,17 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// Assembly identity.
 	FIRST_CHILD_ELEMENT(assemblyIdentity, assembly, "assemblyIdentity");
 	if (assemblyIdentity) {
-		ADD_ATTR(assemblyIdentity, "type", "Type");
-		ADD_ATTR(assemblyIdentity, "name", "Name");
-		ADD_ATTR(assemblyIdentity, "language", "Language");
-		ADD_ATTR(assemblyIdentity, "version", "Version");
+		ADD_ATTR(assemblyIdentity, "type", C_("EXE|Manifest", "Type"));
+		ADD_ATTR(assemblyIdentity, "name", C_("EXE|Manifest", "Name"));
+		ADD_ATTR(assemblyIdentity, "language", C_("EXE|Manifest", "Language"));
+		ADD_ATTR(assemblyIdentity, "version", C_("EXE|Manifest", "Version"));
 		// TODO: Replace "*" with "Any"?
-		ADD_ATTR(assemblyIdentity, "processorArchitecture", "CPU Arch");
-		ADD_ATTR(assemblyIdentity, "publicKeyToken", "publicKeyToken");
+		ADD_ATTR(assemblyIdentity, "processorArchitecture", C_("EXE|Manifest", "CPU Arch"));
+		ADD_ATTR(assemblyIdentity, "publicKeyToken", C_("EXE|Manifest", "publicKeyToken"));
 	}
 
 	// Description.
-	ADD_TEXT(assembly, "description", "Description");
+	ADD_TEXT(assembly, "description", C_("EXE|Manifest", "Description"));
 
 	// Trust info.
 	// TODO: Fine-grained permissions?
@@ -214,8 +215,8 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			if (requestedPrivileges) {
 				FIRST_CHILD_ELEMENT_NS(requestedExecutionLevel, requestedPrivileges, "requestedExecutionLevel", "asmv2");
 				if (requestedExecutionLevel) {
-					ADD_ATTR(requestedExecutionLevel, "level", "Execution Level");
-					ADD_ATTR(requestedExecutionLevel, "uiAccess", "UI Access");
+					ADD_ATTR(requestedExecutionLevel, "level", C_("EXE|Manifest", "Execution Level"));
+					ADD_ATTR(requestedExecutionLevel, "uiAccess", C_("EXE|Manifest", "UI Access"));
 				}
 			}
 		}
@@ -235,13 +236,13 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	} WindowsSettings_t;
 
 	static const char *const WindowsSettings_names[] = {
-		"Auto Elevate",
-		"Disable Theming",
-		"Disable Window Filter",
-		"High-Res Scroll",
-		"Magic Future Setting",
-		"Printer Driver Isolation",
-		"Ultra High-Res Scroll",
+		C_("EXE|Manifest|WinSettings", "Auto Elevate"),
+		C_("EXE|Manifest|WinSettings", "Disable Theming"),
+		C_("EXE|Manifest|WinSettings", "Disable Window Filter"),
+		C_("EXE|Manifest|WinSettings", "High-Res Scroll"),
+		C_("EXE|Manifest|WinSettings", "Magic Future Setting"),
+		C_("EXE|Manifest|WinSettings", "Printer Driver Isolation"),
+		C_("EXE|Manifest|WinSettings", "Ultra High-Res Scroll"),
 	};
 
 	// Windows settings.
@@ -273,18 +274,18 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			ADD_SETTING(settings, windowsSettings, ultraHighResolutionScrollingAware);
 
 			// Show the bitfield.
-			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector(
-				WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
-			fields->addField_bitfield("Settings",
+			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector_i18n(
+				"EXE|Manifest|WinSettings", WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
+			fields->addField_bitfield(C_("EXE|Manifest", "Settings"),
 				v_WindowsSettings_names, 2, settings);
 
 			// DPI Aware.
 			// TODO: Test 10/1607 and improve descriptions.
 			// TODO: Decode strings to more useful values.
 			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191(v=vs.85).aspx
-			ADD_TEXT(windowsSettings, "dpiAware", "DPI Aware");
+			ADD_TEXT(windowsSettings, "dpiAware", C_("EXE|Manifest", "DPI Aware"));
 			// DPI Awareness. (Win10/1607)
-			ADD_TEXT(windowsSettings, "dpiAwareness", "DPI Awareness");
+			ADD_TEXT(windowsSettings, "dpiAwareness", C_("EXE|Manifest", "DPI Awareness"));
 		}
 	}
 
@@ -302,6 +303,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		OS_LongPathAware	= (1 << 5),
 	} OS_Compatibility_t;
 
+	// TODO: Make at least "Long Path Aware" translatable?
 	static const char *const OS_Compatibility_names[] = {
 		"Windows Vista",
 		"Windows 7",
@@ -354,7 +356,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			// Show the bitfield.
 			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(
 				OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
-			fields->addField_bitfield("Compatibility",
+			fields->addField_bitfield(C_("EXE|Manifest", "Compatibility"),
 				v_OS_Compatibility_names, 2, compat);
 		}
 	}

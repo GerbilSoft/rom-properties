@@ -26,6 +26,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -94,7 +95,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		return;
 
 	// File version.
-	fields->addField_string("File Version",
+	fields->addField_string(C_("EXE", "File Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwFileVersionMS >> 16,
 			pVsFfi->dwFileVersionMS & 0xFFFF,
@@ -102,7 +103,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwFileVersionLS & 0xFFFF));
 
 	// Product version.
-	fields->addField_string("Product Version",
+	fields->addField_string(C_("EXE", "Product Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwFileVersionMS >> 16,
 			pVsFfi->dwFileVersionMS & 0xFFFF,
@@ -110,14 +111,18 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwFileVersionLS & 0xFFFF));
 
 	// File flags.
-	static const char *const file_flags_names[] = {
-		"Debug", "Prerelease", "Patched",
-		"Private Build", "Info Inferred", "Special Build"
+	static const char *const FileFlags_names[] = {
+		NOP_C_("EXE|FileFlags", "Debug"),
+		NOP_C_("EXE|FileFlags", "Prerelease"),
+		NOP_C_("EXE|FileFlags", "Patched"),
+		NOP_C_("EXE|FileFlags", "Private Build"),
+		NOP_C_("EXE|FileFlags", "Info Inferred"),
+		NOP_C_("EXE|FileFlags", "Special Build"),
 	};
-	vector<string> *v_file_flags_names = RomFields::strArrayToVector(
-		file_flags_names, ARRAY_SIZE(file_flags_names));
-	fields->addField_bitfield("File Flags",
-		v_file_flags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
+	vector<string> *v_FileFlags_names = RomFields::strArrayToVector_i18n(
+		"EXE|FileFlags", FileFlags_names, ARRAY_SIZE(FileFlags_names));
+	fields->addField_bitfield(C_("EXE", "File Flags"),
+		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
 
 	// File OS.
 	const char *file_os;
@@ -170,53 +175,54 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	if (file_os) {
-		fields->addField_string("File OS", file_os);
+		fields->addField_string(C_("EXE", "File OS"), file_os);
 	} else {
-		fields->addField_string("File OS",
-			rp_sprintf("Unknown (0x%08X)", pVsFfi->dwFileOS));
+		fields->addField_string(C_("EXE", "File OS"),
+			rp_sprintf(C_("EXE", "Unknown (0x%08X)"), pVsFfi->dwFileOS));
 	}
 
 	// File type.
 	static const char *const fileTypes[] = {
-		nullptr,			// VFT_UNKNOWN
-		"Application",			// VFT_APP
-		"DLL",				// VFT_DLL
-		"Device Driver",		// VFT_DRV
-		"Font",				// VFT_FONT,
-		"Virtual Device Driver",	// VFT_VXD
+		nullptr,						// VFT_UNKNOWN
+		NOP_C_("EXE|FileType", "Application"),			// VFT_APP
+		NOP_C_("EXE|FileType", "DLL"),				// VFT_DLL
+		NOP_C_("EXE|FileType", "Device Driver"),		// VFT_DRV
+		NOP_C_("EXE|FileType", "Font"),				// VFT_FONT,
+		NOP_C_("EXE|FileType", "Virtual Device Driver"),	// VFT_VXD
 		nullptr,
-		"Static Library",		// VFT_STATIC_LIB
+		NOP_C_("EXE|FileType", "Static Library"),		// VFT_STATIC_LIB
 	};
 	const char *fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes)
 					? fileTypes[pVsFfi->dwFileType]
 					: nullptr);
 	if (fileType) {
-		fields->addField_string("File Type", fileType);
+		fields->addField_string(C_("EXE", "File Type"),
+			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileType));
 	} else {
-		fields->addField_string("File Type",
-			rp_sprintf("Unknown (0x%08X)", pVsFfi->dwFileType));
+		fields->addField_string(C_("EXE", "File Type"),
+			rp_sprintf(C_("EXE", "Unknown (0x%08X)"), pVsFfi->dwFileType));
 	}
 
 	// File subtype.
 	bool hasSubtype = false;
-	const char *fileSubtype = nullptr;
+	const char *fileSubtype;
 	switch (pVsFfi->dwFileType) {
 		case VFT_DRV: {
 			hasSubtype = true;
 			static const char *const fileSubtypes_DRV[] = {
-				nullptr,		// VFT2_UNKNOWN
-				"Printer",		// VFT2_DRV_PRINTER
-				"Keyboard",		// VFT2_DRV_KEYBOARD
-				"Language",		// VFT2_DRV_LANGUAGE
-				"Display",		// VFT2_DRV_DISPLAY
-				"Mouse",		// VFT2_DRV_MOUSE
-				"Network",		// VFT2_DRV_NETWORK
-				"System",		// VFT2_DRV_SYSTEM
-				"Installable",		// VFT2_DRV_INSTALLABLE
-				"Sound",		// VFT2_DRV_SOUND
-				"Communications",	// VFT2_DRV_COMM
-				"Input Method",		// VFT2_DRV_INPUTMETHOD
-				"Versioned Printer",	// VFT2_DRV_VERSIONED_PRINTER
+				nullptr,					// VFT2_UNKNOWN
+				NOP_C_("EXE|FileSubType", "Printer"),		// VFT2_DRV_PRINTER
+				NOP_C_("EXE|FileSubType", "Keyboard"),		// VFT2_DRV_KEYBOARD
+				NOP_C_("EXE|FileSubType", "Language"),		// VFT2_DRV_LANGUAGE
+				NOP_C_("EXE|FileSubType", "Display"),		// VFT2_DRV_DISPLAY
+				NOP_C_("EXE|FileSubType", "Mouse"),		// VFT2_DRV_MOUSE
+				NOP_C_("EXE|FileSubType", "Network"),		// VFT2_DRV_NETWORK
+				NOP_C_("EXE|FileSubType", "System"),		// VFT2_DRV_SYSTEM
+				NOP_C_("EXE|FileSubType", "Installable"),	// VFT2_DRV_INSTALLABLE
+				NOP_C_("EXE|FileSubType", "Sound"),		// VFT2_DRV_SOUND
+				NOP_C_("EXE|FileSubType", "Communications"),	// VFT2_DRV_COMM
+				NOP_C_("EXE|FileSubType", "Input Method"),	// VFT2_DRV_INPUTMETHOD
+				NOP_C_("EXE|FileSubType", "Versioned Printer"),	// VFT2_DRV_VERSIONED_PRINTER
 			};
 			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)
 						? fileSubtypes_DRV[pVsFfi->dwFileSubtype]
@@ -227,10 +233,10 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		case VFT_FONT: {
 			hasSubtype = true;
 			static const char *const fileSubtypes_FONT[] = {
-				nullptr,	// VFT2_UNKNOWN
-				"Raster",	// VFT2_FONT_RASTER
-				"Vector",	// VFT2_FONT_VECTOR
-				"TrueType",	// VFT2_FONT_TRUETYPE
+				nullptr,				// VFT2_UNKNOWN
+				NOP_C_("EXE|FileSubType", "Raster"),	// VFT2_FONT_RASTER
+				NOP_C_("EXE|FileSubType", "Vector"),	// VFT2_FONT_VECTOR
+				NOP_C_("EXE|FileSubType", "TrueType"),	// VFT2_FONT_TRUETYPE
 			};
 			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)
 						? fileSubtypes_FONT[pVsFfi->dwFileSubtype]
@@ -244,10 +250,11 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	if (hasSubtype) {
 		if (fileSubtype) {
-			fields->addField_string("File Subtype", fileSubtype);
+			fields->addField_string(C_("EXE", "File Subtype"),
+				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", fileType));
 		} else {
-			fields->addField_string("File Subtype",
-				rp_sprintf("Unknown (%08X)", pVsFfi->dwFileSubtype));
+			fields->addField_string(C_("EXE", "File Subtype"),
+				rp_sprintf(C_("EXE", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));
 		}
 	}
 
@@ -264,7 +271,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		#define HECTONANOSEC_PER_SEC 10000000LL
 #endif
 		time_t fileTimeUnix = (time_t)((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
-		fields->addField_dateTime("File Time", fileTimeUnix,
+		fields->addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
 			);
@@ -314,16 +321,16 @@ void EXEPrivate::addFields_MZ(void)
 	if (mz.e_cblp != 0) {
 		program_size -= 512 - le16_to_cpu(mz.e_cblp);
 	}
-	fields->addField_string("Program Size", formatFileSize(program_size));
+	fields->addField_string(C_("EXE", "Program Size"), formatFileSize(program_size));
 
 	// Min/Max allocated memory
-	fields->addField_string("Min. Memory", formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
-	fields->addField_string("Max. Memory", formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+	fields->addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
+	fields->addField_string(C_("EXE", "Max. Memory"), formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
 
 	// Initial CS:IP/SS:SP
-	fields->addField_string("Initial CS:IP",
+	fields->addField_string(C_("EXE", "Initial CS:IP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
-	fields->addField_string("Initial SS:SP",
+	fields->addField_string(C_("EXE", "Initial SS:SP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
 }
 
@@ -416,7 +423,7 @@ void EXEPrivate::addFields_NE(void)
 	fields->reserveTabs(3);
 
 	// NE Header
-	fields->setTabName(0, "NE Header");
+	fields->setTabName(0, C_("EXE", "NE Header"));
 	fields->setTabIndex(0);
 
 	// Target OS.
@@ -433,63 +440,74 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	if (targetOS) {
-		fields->addField_string("Target OS", targetOS);
+		fields->addField_string(C_("EXE", "Target OS"), targetOS);
 	} else {
-		fields->addField_string("Target OS",
-			rp_sprintf("Unknown (0x%02X)", hdr.ne.targOS));
+		fields->addField_string(C_("EXE", "Target OS"),
+			rp_sprintf(C_("EXE", "Unknown (0x%02X)"), hdr.ne.targOS));
 	}
 
 	// DGroup type.
 	static const char *const dgroupTypes[] = {
-		"None", "Single Shared", "Multiple", "(null)"
+		NOP_C_("EXE|DGroupType", "None"),
+		NOP_C_("EXE|DGroupType", "Single Shared"),
+		NOP_C_("EXE|DGroupType", "Multiple"),
+		NOP_C_("EXE|DGroupType", "(null)"),
 	};
-	fields->addField_string("DGroup Type", dgroupTypes[hdr.ne.ProgFlags & 3]);
+	fields->addField_string("DGroup Type",
+		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
 
 	// Program flags.
 	static const char *const ProgFlags_names[] = {
 		nullptr, nullptr,	// DGroup Type
-		"Global Init", "Protected Mode Only",
-		"8086 insns", "80286 insns",
-		"80386 insns", "FPU insns"
+		NOP_C_("EXE|ProgFlags", "Global Init"),
+		NOP_C_("EXE|ProgFlags", "Protected Mode Only"),
+		NOP_C_("EXE|ProgFlags", "8086 insns"),
+		NOP_C_("EXE|ProgFlags", "80286 insns"),
+		NOP_C_("EXE|ProgFlags", "80386 insns"),
+		NOP_C_("EXE|ProgFlags", "FPU insns"),
 	};
-	vector<string> *v_ProgFlags_names = RomFields::strArrayToVector(
-		ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
+	vector<string> *v_ProgFlags_names = RomFields::strArrayToVector_i18n(
+		"EXE|ProgFlags", ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
 	fields->addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
 
 	// Application type.
+	const char *applType;
 	if (hdr.ne.targOS == NE_OS_OS2) {
 		// Only mentioning Presentation Manager for OS/2 executables.
 		static const char *const applTypes_OS2[] = {
-			"None",
-			"Full Screen (not aware of Presentation Manager)",
-			"Presentation Manager compatible",
-			"Presentation Manager application"
+			NOP_C_("EXE|ApplType", "None"),
+			NOP_C_("EXE|ApplType", "Full Screen (not aware of Presentation Manager)"),
+			NOP_C_("EXE|ApplType", "Presentation Manager compatible"),
+			NOP_C_("EXE|ApplType", "Presentation Manager application"),
 		};
-		fields->addField_string("Application Type",
-			applTypes_OS2[hdr.ne.ApplFlags & 3]);
+		applType = applTypes_OS2[hdr.ne.ApplFlags & 3];
 	} else {
 		// Assume Windows for everything else.
 		static const char *const applTypes_Win[] = {
-			"None",
-			"Full Screen (not aware of Windows)",
-			"Windows compatible",
-			"Windows application"
+			NOP_C_("EXE|ApplType", "None"),
+			NOP_C_("EXE|ApplType", "Full Screen (not aware of Windows)"),
+			NOP_C_("EXE|ApplType", "Windows compatible"),
+			NOP_C_("EXE|ApplType", "Windows application"),
 		};
-		fields->addField_string("Application Type",
-			applTypes_Win[hdr.ne.ApplFlags & 3]);
+		applType = applTypes_Win[hdr.ne.ApplFlags & 3];
 	}
+	fields->addField_string(C_("EXE", "Application Type"),
+		dpgettext_expr(RP_I18N_DOMAIN, "EXE|ApplType", applType));
 
 	// Application flags.
 	static const char *const ApplFlags_names[] = {
 		nullptr, nullptr,	// Application type
-		nullptr, "OS/2 Application",
-		nullptr, "Image Error",
-		"Non-Conforming", "DLL"
+		nullptr,
+		NOP_C_("EXE|ApplFlags", "OS/2 Application"),
+		nullptr,
+		NOP_C_("EXE|ApplFlags", "Image Error"),
+		NOP_C_("EXE|ApplFlags", "Non-Conforming"),
+		NOP_C_("EXE|ApplFlags", "DLL"),
 	};
-	vector<string> *v_ApplFlags_names = RomFields::strArrayToVector(
-		ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
-	fields->addField_bitfield("Application Flags",
+	vector<string> *v_ApplFlags_names = RomFields::strArrayToVector_i18n(
+		"EXE|ApplFlags", ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
+	fields->addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
 	// Other flags.
@@ -498,19 +516,21 @@ void EXEPrivate::addFields_NE(void)
 	// References:
 	// - http://wiki.osdev.org/NE
 	// - http://www.program-transformation.org/Transform/PcExeFormat
-	static const char *const other_flags_names[] = {
-		"Long File Names", "Protected Mode",
-		"Proportional Fonts", "Gangload Area",
+	static const char *const OtherFlags_names[] = {
+		NOP_C_("EXE|OtherFlags", "Long File Names"),
+		NOP_C_("EXE|OtherFlags", "Protected Mode"),
+		NOP_C_("EXE|OtherFlags", "Proportional Fonts"),
+		NOP_C_("EXE|OtherFlags", "Gangload Area"),
 	};
-	vector<string> *v_other_flags_names = RomFields::strArrayToVector(
-		other_flags_names, ARRAY_SIZE(other_flags_names));
-	fields->addField_bitfield("Other Flags",
-		v_other_flags_names, 2, hdr.ne.OS2EXEFlags);
+	vector<string> *v_OtherFlags_names = RomFields::strArrayToVector_i18n(
+		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
+	fields->addField_bitfield(C_("EXE", "Other Flags"),
+		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
 
 	// Expected Windows version.
 	// TODO: Is this used in OS/2 executables?
 	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
-		fields->addField_string("Windows Version",
+		fields->addField_string(C_("EXE", "Windows Version"),
 			rp_sprintf("%u.%u", hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
@@ -534,7 +554,7 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// Add the version fields.
-	fields->setTabName(1, "Version");
+	fields->setTabName(1, C_("EXE", "Version"));
 	fields->setTabIndex(1);
 	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 }
@@ -553,17 +573,17 @@ void EXEPrivate::addFields_LE(void)
 	fields->reserveTabs(2);
 
 	// LE Header
-	fields->setTabName(0, "LE Header");
+	fields->setTabName(0, C_("EXE", "LE Header"));
 	fields->setTabIndex(0);
 
 	// CPU.
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
 	const char *const cpu = EXEData::lookup_le_cpu(cpu_type);
 	if (cpu) {
-		fields->addField_string("CPU", cpu);
+		fields->addField_string(C_("EXE", "CPU"), cpu);
 	} else {
-		fields->addField_string("CPU",
-			rp_sprintf("Unknown (0x%04X)", cpu_type));
+		fields->addField_string(C_("EXE", "CPU"),
+			rp_sprintf(C_("EXE", "Unknown (0x%04X)"), cpu_type));
 	}
 
 	// Target OS.
@@ -573,10 +593,10 @@ void EXEPrivate::addFields_LE(void)
 					? NE_TargetOSes[targOS]
 					: nullptr;
 	if (targetOS) {
-		fields->addField_string("Target OS", targetOS);
+		fields->addField_string(C_("EXE", "Target OS"), targetOS);
 	} else {
-		fields->addField_string("Target OS",
-			rp_sprintf("Unknown (0x%02X)", targOS));
+		fields->addField_string(C_("EXE", "Target OS"),
+			rp_sprintf(C_("EXE", "Unknown (0x%02X)"), targOS));
 	}
 }
 
@@ -727,7 +747,7 @@ void EXEPrivate::addFields_PE(void)
 	fields->reserveTabs(4);
 
 	// PE Header
-	fields->setTabName(0, "PE Header");
+	fields->setTabName(0, C_("EXE", "PE Header"));
 	fields->setTabIndex(0);
 
 	const uint16_t machine = le16_to_cpu(hdr.pe.FileHeader.Machine);
@@ -764,72 +784,81 @@ void EXEPrivate::addFields_PE(void)
 	if (cpu != nullptr) {
 		s_cpu = cpu;
 	} else {
-		s_cpu = rp_sprintf("Unknown (0x%04X)", machine);
+		s_cpu = rp_sprintf(C_("EXE", "Unknown (0x%04X)"), machine);
 	}
 	if (dotnet) {
 		// .NET executable.
 		s_cpu += " (.NET)";
 	}
-	fields->addField_string("CPU", s_cpu);
+	fields->addField_string(C_("EXE", "CPU"), s_cpu);
 
 	// OS version.
-	fields->addField_string("OS Version",
+	fields->addField_string(C_("EXE", "OS Version"),
 		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
 	// Subsystem names.
 	static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
-		nullptr,			// IMAGE_SUBSYSTEM_UNKNOWN
-		"Native",			// IMAGE_SUBSYSTEM_NATIVE
-		"Windows",			// IMAGE_SUBSYSTEM_WINDOWS_GUI
-		"Console",			// IMAGE_SUBSYSTEM_WINDOWS_CUI
+		nullptr,						// IMAGE_SUBSYSTEM_UNKNOWN
+		NOP_C_("EXE|Subsystem", "Native"),			// IMAGE_SUBSYSTEM_NATIVE
+		NOP_C_("EXE|Subsystem", "Windows"),			// IMAGE_SUBSYSTEM_WINDOWS_GUI
+		NOP_C_("EXE|Subsystem", "Console"),			// IMAGE_SUBSYSTEM_WINDOWS_CUI
 		nullptr,
-		"OS/2 Console",			// IMAGE_SUBSYSTEM_OS2_CUI
+		NOP_C_("EXE|Subsystem", "OS/2 Console"),		// IMAGE_SUBSYSTEM_OS2_CUI
 		nullptr,
-		"POSIX Console",		// IMAGE_SUBSYSTEM_POSIX_CUI
-		"Win9x Native Driver",		// IMAGE_SUBSYSTEM_NATIVE_WINDOWS
-		"Windows CE",			// IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
-		"EFI Application",		// IMAGE_SUBSYSTEM_EFI_APPLICATION
-		"EFI Boot Service Driver",	// IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
-		"EFI Runtime Driver",		// IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
-		"EFI ROM Image",		// IMAGE_SUBSYSTEM_EFI_ROM
-		"Xbox",				// IMAGE_SUBSYSTEM_XBOX
+		NOP_C_("EXE|Subsystem", "POSIX Console"),		// IMAGE_SUBSYSTEM_POSIX_CUI
+		NOP_C_("EXE|Subsystem", "Win9x Native Driver"),		// IMAGE_SUBSYSTEM_NATIVE_WINDOWS
+		NOP_C_("EXE|Subsystem", "Windows CE"),			// IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
+		NOP_C_("EXE|Subsystem", "EFI Application"),		// IMAGE_SUBSYSTEM_EFI_APPLICATION
+		NOP_C_("EXE|Subsystem", "EFI Boot Service Driver"),	// IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
+		NOP_C_("EXE|Subsystem", "EFI Runtime Driver"),		// IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
+		NOP_C_("EXE|Subsystem", "EFI ROM Image"),		// IMAGE_SUBSYSTEM_EFI_ROM
+		NOP_C_("EXE|Subsystem", "Xbox"),			// IMAGE_SUBSYSTEM_XBOX
 	};
 
 	// Subsystem name and version.
 	fields->addField_string("Subsystem",
 		rp_sprintf("%s %u.%u",
 			(pe_subsystem < ARRAY_SIZE(subsysNames)
-				? subsysNames[pe_subsystem]
-				: "Unknown"),
+				? dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem])
+				: C_("EXE", "Unknown")),
 			subsystem_ver_major, subsystem_ver_minor));
 
 	// PE flags. (characteristics)
 	// NOTE: Only important flags will be listed.
 	static const char *const pe_flags_names[] = {
-		nullptr, "Executable", nullptr,
-		nullptr, nullptr, ">2GB addressing",
+		nullptr,
+		NOP_C_("EXE|PEFlags", "Executable"),
+		nullptr, nullptr, nullptr,
+		NOP_C_("EXE|PEFlags", ">2GB addressing"),
 		nullptr, nullptr, nullptr,
 		nullptr, nullptr, nullptr,
-		nullptr, "DLL", nullptr,
-		nullptr
+		nullptr,
+		NOP_C_("EXE|PEFlags", "DLL"),
+		nullptr, nullptr,
 	};
-	vector<string> *v_pe_flags_names = RomFields::strArrayToVector(
-		pe_flags_names, ARRAY_SIZE(pe_flags_names));
-	fields->addField_bitfield("PE Flags",
+	vector<string> *v_pe_flags_names = RomFields::strArrayToVector_i18n(
+		"EXE|PEFlags", pe_flags_names, ARRAY_SIZE(pe_flags_names));
+	fields->addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
 	// DLL flags. (characteristics)
 	static const char *const dll_flags_names[] = {
-		nullptr, nullptr, nullptr,
-		nullptr, nullptr, "High Entropy VA",
-		"Dynamic Base", "Force Integrity", "NX Compatible",
-		"No Isolation", "No SEH", "No Bind",
-		"AppContainer", "WDM Driver", "Control Flow Guard",
-		"TS Aware",
+		nullptr, nullptr, nullptr, nullptr, nullptr,
+		NOP_C_("EXE|DLLFlags", "High Entropy VA"),
+		NOP_C_("EXE|DLLFlags", "Dynamic Base"),
+		NOP_C_("EXE|DLLFlags", "Force Integrity"),
+		NOP_C_("EXE|DLLFlags", "NX Compatible"),
+		NOP_C_("EXE|DLLFlags", "No Isolation"),
+		NOP_C_("EXE|DLLFlags", "No SEH"),
+		NOP_C_("EXE|DLLFlags", "No Bind"),
+		NOP_C_("EXE|DLLFlags", "AppContainer"),
+		NOP_C_("EXE|DLLFlags", "WDM Driver"),
+		NOP_C_("EXE|DLLFlags", "Control Flow Guard"),
+		NOP_C_("EXE|DLLFlags", "TS Aware"),
 	};
-	vector<string> *v_dll_flags_names = RomFields::strArrayToVector(
-		dll_flags_names, ARRAY_SIZE(dll_flags_names));
-	fields->addField_bitfield("DLL Flags",
+	vector<string> *v_dll_flags_names = RomFields::strArrayToVector_i18n(
+		"EXE|DLLFlags", dll_flags_names, ARRAY_SIZE(dll_flags_names));
+	fields->addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
 	// Load resources.
@@ -852,7 +881,7 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// Add the version fields.
-	fields->setTabName(1, "Version");
+	fields->setTabName(1, C_("EXE", "Version"));
 	fields->setTabIndex(1);
 	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 
@@ -1301,6 +1330,7 @@ int EXE::loadFieldData(void)
 	d->fields->reserve(24);
 
 	// Executable type.
+	// NOTE: Not translatable.
 	static const char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
 		"MS-DOS Executable",		// EXE_TYPE_MZ
 		"16-bit New Executable",	// EXE_TYPE_NE
@@ -1311,9 +1341,9 @@ int EXE::loadFieldData(void)
 		"64-bit Portable Executable",	// EXE_TYPE_PE32PLUS
 	};
 	if (d->exeType >= EXEPrivate::EXE_TYPE_MZ && d->exeType < EXEPrivate::EXE_TYPE_LAST) {
-		d->fields->addField_string("Type", exeTypes[d->exeType]);
+		d->fields->addField_string(C_("EXE", "Type"), exeTypes[d->exeType]);
 	} else {
-		d->fields->addField_string("Type", "Unknown");
+		d->fields->addField_string(C_("EXE", "Type"), C_("EXE", "Unknown"));
 	}
 
 	switch (d->exeType) {
@@ -1342,7 +1372,7 @@ int EXE::loadFieldData(void)
 
 	// Add MZ tab for non-MZ executables
 	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
-		d->fields->addTab("MZ Header"); // NOTE: doesn't actually create a separate tab for non implemented types.
+		d->fields->addTab(C_("EXE", "MZ Header")); // NOTE: doesn't actually create a separate tab for non implemented types.
 		d->addFields_MZ();
 	}
 

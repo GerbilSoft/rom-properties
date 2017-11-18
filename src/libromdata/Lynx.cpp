@@ -29,6 +29,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -258,23 +259,26 @@ int Lynx::loadFieldData(void)
 	const Lynx_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("Lynx", "Title"),
 		latin1_to_utf8(romHeader->cartname, sizeof(romHeader->cartname)));
 
-	d->fields->addField_string("Manufacturer",
+	d->fields->addField_string(C_("Lynx", "Manufacturer"),
 		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
 	static const char *const rotation_names[] = {
-		"None", "Left", "Right"
+		NOP_C_("Lynx|Rotation", "None"),
+		NOP_C_("Lynx|Rotation", "Left"),
+		NOP_C_("Lynx|Rotation", "Right"),
 	};
-
 	d->fields->addField_string("Rotation",
-		romHeader->rotation < ARRAY_SIZE(rotation_names) ? rotation_names[romHeader->rotation] : "Unknown");
+		(romHeader->rotation < ARRAY_SIZE(rotation_names)
+			? dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation", rotation_names[romHeader->rotation])
+			: C_("Lynx", "Unknown")));
 
-	d->fields->addField_string("Bank 0 Size",
+	d->fields->addField_string(C_("Lynx", "Bank 0 Size"),
 		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
-	d->fields->addField_string("Bank 1 Size",
+	d->fields->addField_string(C_("Lynx", "Bank 1 Size"),
 		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
 	return (int)d->fields->count();

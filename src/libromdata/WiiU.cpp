@@ -33,8 +33,8 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-
 #include "librpbase/img/rp_image.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -402,17 +402,17 @@ int WiiU::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Game ID.
-	d->fields->addField_string("Game ID",
+	d->fields->addField_string(C_("WiiU", "Game ID"),
 		latin1_to_utf8(d->discHeader.id, sizeof(d->discHeader.id)));
 
 	// Game version.
 	// TODO: Validate the version characters.
-	d->fields->addField_string("Version",
+	d->fields->addField_string(C_("WiiU", "Version"),
 		latin1_to_utf8(d->discHeader.version, sizeof(d->discHeader.version)));
 
 	// OS version.
 	// TODO: Validate the version characters.
-	d->fields->addField_string("OS Version",
+	d->fields->addField_string(C_("WiiU", "OS Version"),
 		rp_sprintf("%c.%c.%c",
 			d->discHeader.os_version[0],
 			d->discHeader.os_version[1],
@@ -420,7 +420,7 @@ int WiiU::loadFieldData(void)
 
 	// Region.
 	// TODO: Compare against list of regions and show the fancy name.
-	d->fields->addField_string("Region",
+	d->fields->addField_string(C_("WiiU", "Region"),
 		latin1_to_utf8(d->discHeader.region, sizeof(d->discHeader.region)));
 
 	// Finished reading the field data.

@@ -31,8 +31,11 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
+
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -620,8 +623,9 @@ int NintendoBadge::loadFieldData(void)
 	// Type.
 	switch (d->badgeType) {
 		case NintendoBadgePrivate::BADGE_TYPE_PRBS: {
-			d->fields->addField_string("Type",
-				d->megaBadge ? "Mega Badge" : "Individual Badge");
+			d->fields->addField_string(C_("NintendoBadge", "Type"),
+				d->megaBadge ? C_("NintendoBadge|Type", "Mega Badge")
+				             : C_("NintendoBadge|Type", "Individual Badge"));
 
 			// PRBS-specific fields.
 			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
@@ -647,34 +651,36 @@ int NintendoBadge::loadFieldData(void)
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE(prbs->name)) {
-				d->fields->addField_string("Name",
+				d->fields->addField_string(C_("NintendoBadge", "Name"),
 					utf16le_to_utf8(prbs->name[lang], sizeof(prbs->name[lang])));
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric("Badge ID", le32_to_cpu(prbs->badge_id));
+			d->fields->addField_string_numeric(C_("NintendoBadge", "Badge ID"),
+				le32_to_cpu(prbs->badge_id));
 
 			// Badge filename.
-			d->fields->addField_string("Filename",
+			d->fields->addField_string(C_("NintendoBadge", "Filename"),
 				latin1_to_utf8(prbs->filename, sizeof(prbs->filename)));
 
 			// Set name.
-			d->fields->addField_string("Set Name",
+			d->fields->addField_string(C_("NintendoBadge", "Set Name"),
 				latin1_to_utf8(prbs->setname, sizeof(prbs->setname)));
 
 			// Mega badge size.
 			if (d->megaBadge) {
-				d->fields->addField_string("Mega Badge Size",
+				d->fields->addField_string(C_("NintendoBadge", "Mega Badge Size"),
 					rp_sprintf("%ux%u", prbs->mb_width, prbs->mb_height));
 			}
 
 			// Title ID.
 			if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
 				// No title ID.
-				d->fields->addField_string("Launch Title ID", "None");
+				d->fields->addField_string(C_("NintendoBadge", "Launch Title ID"),
+					C_("NintendoBadge", "None"));
 			} else {
 				// Title ID is present.
-				d->fields->addField_string("Launch Title ID",
+				d->fields->addField_string(C_("NintendoBadge", "Launch Title ID"),
 					rp_sprintf("%08X-%08X",
 						le32_to_cpu(prbs->title_id.hi),
 						le32_to_cpu(prbs->title_id.lo)));
@@ -697,14 +703,14 @@ int NintendoBadge::loadFieldData(void)
 						str += ')';
 					}
 
-					d->fields->addField_string("Launch Title Name", str);
+					d->fields->addField_string(C_("NintendoBadge", "Launch Title Name"), str);
 				}
 			}
 			break;
 		}
 
 		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
-			d->fields->addField_string("Type", "Badge Set");
+			d->fields->addField_string(C_("NintendoBadge", "Type"), C_("NintendoBadge", "Badge Set"));
 
 			// CABS-specific fields.
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
@@ -730,15 +736,15 @@ int NintendoBadge::loadFieldData(void)
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE(cabs->name)) {
-				d->fields->addField_string("Name",
+				d->fields->addField_string(C_("NintendoBadge", "Name"),
 					utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric("Set ID", le32_to_cpu(cabs->set_id));
+			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), le32_to_cpu(cabs->set_id));
 
 			// Set name.
-			d->fields->addField_string("Set Name",
+			d->fields->addField_string(C_("NintendoBadge", "Set Name"),
 				latin1_to_utf8(cabs->setname, sizeof(cabs->setname)));
 			break;
 		}
@@ -746,7 +752,7 @@ int NintendoBadge::loadFieldData(void)
 		default:
 			// Unknown.
 			assert(!"Unknown badge type. (Should not get here!)");
-			d->fields->addField_string("Type", "Unknown");
+			d->fields->addField_string(C_("NintendoBadge", "Type"), C_("NintendoBadge", "Unknown"));
 			break;
 	}
 

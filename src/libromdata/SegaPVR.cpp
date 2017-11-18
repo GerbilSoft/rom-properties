@@ -28,8 +28,11 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
+
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -938,7 +941,7 @@ int SegaPVR::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Texture size.
-	d->fields->addField_string("Texture Size",
+	d->fields->addField_string(C_("SegaPVR", "Texture Size"),
 		rp_sprintf("%ux%u", pvrHeader->width, pvrHeader->height));
 
 	// Pixel format.
@@ -1036,23 +1039,23 @@ int SegaPVR::loadFieldData(void)
 	const bool hasPxFmt = (d->pvrType != SegaPVRPrivate::PVR_TYPE_GVR);
 	if (hasPxFmt) {
 		if (pxfmt) {
-			d->fields->addField_string("Pixel Format", pxfmt);
+			d->fields->addField_string(C_("SegaPVR", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string("Pixel Format",
-				rp_sprintf("Unknown (0x%02X)", px_format));
+			d->fields->addField_string(C_("SegaPVR", "Pixel Format"),
+				rp_sprintf(C_("SegaPVR", "Unknown (0x%02X)"), px_format));
 		}
 	}
 
 	if (idt) {
-		d->fields->addField_string("Image Data Type", idt);
+		d->fields->addField_string(C_("SegaPVR", "Image Data Type"), idt);
 	} else {
-		d->fields->addField_string("Image Data Type",
-			rp_sprintf("Unknown (0x%02X)", img_data_type));
+		d->fields->addField_string(C_("SegaPVR", "Image Data Type"),
+			rp_sprintf(C_("SegaPVR", "Unknown (0x%02X)"), img_data_type));
 	}
 
 	// Global index (if present).
 	if (d->gbix_len > 0) {
-		d->fields->addField_string_numeric("Global Index",
+		d->fields->addField_string_numeric(C_("SegaPVR", "Global Index"),
 			d->gbix, RomFields::FB_DEC, 0);
 	}
 

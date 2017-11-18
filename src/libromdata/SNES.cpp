@@ -32,6 +32,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -492,7 +493,7 @@ int SNES::loadFieldData(void)
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("SNES", "Title"),
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
@@ -508,11 +509,11 @@ int SNES::loadFieldData(void)
 			// Append the publisher.
 			id6.append(romHeader->ext.new_publisher_code, sizeof(romHeader->ext.new_publisher_code));
 		}
-		d->fields->addField_string("Game ID",
+		d->fields->addField_string(C_("SNES", "Game ID"),
 			latin1_to_utf8(id6.data(), (int)id6.size()));
 	} else {
 		// No game ID.
-		d->fields->addField_string("Game ID", "Unknown");
+		d->fields->addField_string(C_("SNES", "Game ID"), C_("SNES", "Unknown"));
 	}
 
 	// Publisher.
@@ -522,42 +523,44 @@ int SNES::loadFieldData(void)
 	} else {
 		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
 	}
-	d->fields->addField_string("Publisher", publisher ? publisher : "Unknown");
+	d->fields->addField_string(C_("SNES", "Publisher"),
+		publisher ? publisher : C_("SNES", "Unknown"));
 
 	// ROM mapping.
 	const char *rom_mapping;
 	switch (romHeader->rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
-			rom_mapping = "LoROM";
+			rom_mapping = C_("SNES|ROMMapping", "LoROM");
 			break;
 		case SNES_ROMMAPPING_HiROM:
-			rom_mapping = "HiROM";
+			rom_mapping = C_("SNES|ROMMapping", "HiROM");
 			break;
 		case SNES_ROMMAPPING_LoROM_FastROM:
-			rom_mapping = "LoROM+FastROM";
+			rom_mapping = C_("SNES|ROMMapping", "LoROM+FastROM");
 			break;
 		case SNES_ROMMAPPING_HiROM_FastROM:
-			rom_mapping = "HiROM+FastROM";
+			rom_mapping = C_("SNES|ROMMapping", "HiROM+FastROM");
 			break;
 		case SNES_ROMMAPPING_ExLoROM:
-			rom_mapping = "ExLoROM";
+			rom_mapping = C_("SNES|ROMMapping", "ExLoROM");
 			break;
 		case SNES_ROMMAPPING_ExHiROM:
-			rom_mapping = "ExHiROM";
+			rom_mapping = C_("SNES|ROMMapping", "ExHiROM");
 			break;
 		default:
 			rom_mapping = nullptr;
 			break;
 	}
 	if (rom_mapping) {
-		d->fields->addField_string("ROM Mapping", rom_mapping);
+		d->fields->addField_string(C_("SNES", "ROM Mapping"), rom_mapping);
 	} else {
 		// Unknown ROM mapping.
-		d->fields->addField_string("ROM Mapping",
-			rp_sprintf("Unknown (0x%02X)", romHeader->rom_mapping));
+		d->fields->addField_string(C_("SNES", "ROM Mapping"),
+			rp_sprintf(C_("SNES", "Unknown (0x%02X)"), romHeader->rom_mapping));
 	}
 
 	// Cartridge HW.
+	// TODO: Make this translatable.
 	static const char *const hw_base_tbl[16] = {
 		"ROM", "ROM, RAM", "ROM, RAM, Battery",
 		"ROM, ", "ROM, RAM, ", "ROM, RAM, Battery, ",
@@ -580,32 +583,47 @@ int SNES::loadFieldData(void)
 			const char *const hw_enh = hw_enh_tbl[(romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
 			string str(hw_base);
 			str.append(hw_enh);
-			d->fields->addField_string("Cartridge HW", str);
+			d->fields->addField_string(C_("SNES", "Cartridge HW"), str);
 		} else {
 			// No enhancement chip.
-			d->fields->addField_string("Cartridge HW", hw_base);
+			d->fields->addField_string(C_("SNES", "Cartridge HW"), hw_base);
 		}
 	} else {
 		// Unknown cartridge HW.
-		d->fields->addField_string("Cartridge HW", "Unknown");
+		d->fields->addField_string(C_("SNES", "Cartridge HW"), C_("SNES", "Unknown"));
 	}
 
-	// Region
+ 	// Region
 	static const char *const region_tbl[0x15] = {
-		"Japan", "North America", "Europe", "Scandinavia",
-		nullptr, nullptr, "France", "Netherlands",
-		"Spain", "Germany", "Italy", "China",
-		nullptr, "South Korea", "All", "Canada",
-		"Brazil", "Australia", "Other", "Other",
-		"Other"
+		NOP_C_("SNES|Region", "Japan"),
+		NOP_C_("SNES|Region", "North America"),
+		NOP_C_("SNES|Region", "Europe"),
+		NOP_C_("SNES|Region", "Scandinavia"),
+		nullptr, nullptr,
+		NOP_C_("SNES|Region", "France"),
+		NOP_C_("SNES|Region", "Netherlands"),
+		NOP_C_("SNES|Region", "Spain"),
+		NOP_C_("SNES|Region", "Germany"),
+		NOP_C_("SNES|Region", "Italy"),
+		NOP_C_("SNES|Region", "China"),
+		nullptr,
+		NOP_C_("SNES|Region", "South Korea"),
+		NOP_C_("SNES|Region", "All"),
+		NOP_C_("SNES|Region", "Canada"),
+		NOP_C_("SNES|Region", "Brazil"),
+		NOP_C_("SNES|Region", "Australia"),
+		NOP_C_("SNES|Region", "Other"),
+		NOP_C_("SNES|Region", "Other"),
+		NOP_C_("SNES|Region", "Other"),
 	};
-	const char *region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
-		? region_tbl[romHeader->destination_code]
+	const char *const region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
+		? dpgettext_expr(RP_I18N_DOMAIN, "SNES|Region", region_tbl[romHeader->destination_code])
 		: nullptr);
-	d->fields->addField_string("Region", region ? region : "Unknown");
+	d->fields->addField_string(C_("SNES", "Region"),
+		region ? region : C_("SNES", "Unknown"));
 
 	// Revision
-	d->fields->addField_string_numeric("Revision",
+	d->fields->addField_string_numeric(C_("SNES", "Revision"),
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// TODO: Other fields.

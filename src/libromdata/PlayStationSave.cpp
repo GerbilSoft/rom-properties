@@ -38,6 +38,8 @@
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
 #include "librpbase/img/IconAnimData.hpp"
+
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -556,11 +558,12 @@ int PlayStationSave::loadFieldData(void)
 	}
 
 	if (filename) {
-		d->fields->addField_string("Filename", cp1252_sjis_to_utf8(filename, 20));
+		d->fields->addField_string(C_("PlayStationSave", "Filename"),
+			cp1252_sjis_to_utf8(filename, 20));
 	}
 
 	// Description.
-	d->fields->addField_string("Description",
+	d->fields->addField_string(C_("PlayStationSave", "Description"),
 		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
 
 	// TODO: Moar fields.

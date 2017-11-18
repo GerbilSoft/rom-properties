@@ -33,6 +33,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
  // C includes. (C++ namespace)
@@ -633,7 +634,7 @@ int NES::loadFieldData(void)
 	unsigned int prg_ram_battery_size = 0;	// PRG RAM with battery (save RAM)
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 		case NESPrivate::ROM_FORMAT_OLD_INES:
-			rom_format = "Archaic iNES";
+			rom_format = C_("NES|Format", "Archaic iNES");
 			mapper = (d->header.ines.mapper_lo >> 4);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
 			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
@@ -647,7 +648,7 @@ int NES::loadFieldData(void)
 			break;
 
 		case NESPrivate::ROM_FORMAT_INES:
-			rom_format = "iNES";
+			rom_format = C_("NES|Format", "iNES");
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
@@ -674,7 +675,7 @@ int NES::loadFieldData(void)
 			break;
 
 		case NESPrivate::ROM_FORMAT_NES2:
-			rom_format = "NES 2.0";
+			rom_format = C_("NES|Format", "NES 2.0");
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0) |
 				 ((d->header.ines.nes2.mapper_hi2 & 0x0F) << 8);
@@ -705,7 +706,7 @@ int NES::loadFieldData(void)
 			break;
 
 		case NESPrivate::ROM_FORMAT_TNES:
-			rom_format = "TNES (Nintendo 3DS Virtual Console)";
+			rom_format = C_("NES|Format", "TNES (Nintendo 3DS Virtual Console)");
 			tnes_mapper = d->header.tnes.mapper;
 			mapper = NESMappers::tnesMapperToInesMapper(tnes_mapper);
 			prg_rom_size = d->header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
@@ -716,17 +717,17 @@ int NES::loadFieldData(void)
 		// NOTE: FDS fields are handled later.
 		// We're just obtaining the ROM format name here.
 		case NESPrivate::ROM_FORMAT_FDS:
-			rom_format = "FDS disk image";
+			rom_format = C_("NES|Format", "FDS disk image");
 			break;
 		case NESPrivate::ROM_FORMAT_FDS_FWNES:
-			rom_format = "FDS disk image (with fwNES header)";
+			rom_format = C_("NES|Format", "FDS disk image (with fwNES header)");
 			break;
 		case NESPrivate::ROM_FORMAT_FDS_TNES:
-			rom_format = "TDS (Nintendo 3DS Virtual Console)";
+			rom_format = C_("NES|Format", "TDS (Nintendo 3DS Virtual Console)");
 			break;
 
 		default:
-			rom_format = "Unknown";
+			rom_format = C_("NES", "Unknown");
 			romOK = false;
 			break;
 	}
@@ -740,13 +741,14 @@ int NES::loadFieldData(void)
 		    romFormat <= NESPrivate::ROM_FORMAT_NES2)
 		{
 			string str = rom_format;
-			str += " (Wii U Virtual Console)";
-			d->fields->addField_string("Format", str);
+			str += ' ';
+			str += C_("NES|Format", "(Wii U Virtual Console)");
+			d->fields->addField_string(C_("NES", "Format"), str);
 		} else {
-			d->fields->addField_string("Format", rom_format);
+			d->fields->addField_string(C_("NES", "Format"), rom_format);
 		}
 	} else {
-		d->fields->addField_string("Format", rom_format);
+		d->fields->addField_string(C_("NES", "Format"), rom_format);
 	}
 
 	// Display the fields.
@@ -756,98 +758,103 @@ int NES::loadFieldData(void)
 	}
 
 	if (mapper >= 0) {
-		string s_mapper = rp_sprintf("%u", (unsigned int)mapper);
-		s_mapper.reserve(64);
-
 		// Look up the mapper name.
+		string s_mapper;
+		s_mapper.reserve(64);
 		const char *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
-			s_mapper += " - ";
-			s_mapper += mapper_name;
+			// Print the mapper ID followed by the mapper name.
+			s_mapper = rp_sprintf(C_("NES|Mapper", "%u - %s"), (unsigned int)mapper, mapper_name);
+		} else {
+			// Print only the mapper ID.
+			s_mapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)mapper);
 		}
-		d->fields->addField_string("Mapper", s_mapper);
+		d->fields->addField_string(C_("NES", "Mapper"), s_mapper);
 	} else {
 		// No mapper. If this isn't TNES,
 		// then it's probably an FDS image.
 		if (tnes_mapper >= 0) {
 			// This has a TNES mapper.
 			// It *should* map to an iNES mapper...
-			d->fields->addField_string("Mapper", "MISSING TNES MAPPING");
+			d->fields->addField_string(C_("NES", "Mapper"), "MISSING TNES MAPPING");
 		}
 	}
 
 	if (submapper >= 0) {
 		// Submapper. (NES 2.0 only)
-		string s_submapper = rp_sprintf("%u", (unsigned int)submapper);
+		string s_submapper;
 		s_submapper.reserve(64);
 
 		// Look up the submapper name.
 		// TODO: Needs testing.
 		const char *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
 		if (submapper_name) {
-			s_submapper += " - ";
-			s_submapper += submapper_name;
+			// Print the submapper ID followed by the submapper name.
+			s_submapper = rp_sprintf(C_("NES|Mapper", "%u - %s"), (unsigned int)submapper, submapper_name);
+		} else {
+			// Print only the submapper ID.
+			s_submapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)submapper);
 		}
-
-		d->fields->addField_string("Submapper", s_submapper);
+		d->fields->addField_string(C_("NES", "Submapper"), s_submapper);
 	}
 
 	if (tnes_mapper >= 0) {
 		// TNES mapper.
 		// TODO: Look up the name.
-		d->fields->addField_string_numeric("TNES Mapper",
+		d->fields->addField_string_numeric(C_("NES", "TNES Mapper"),
 			tnes_mapper, RomFields::FB_DEC);
 	}
 
 	// TV mode.
 	// NOTE: Dendy PAL isn't supported in any headers at the moment.
 	const char *const tv_mode_tbl[] = {
-		"NTSC", "PAL",
-		"Dual (NTSC/PAL)",
-		"Dual (NTSC/PAL)"
+		NOP_C_("NES|TVMode", "NTSC"),
+		NOP_C_("NES|TVMode", "PAL"),
+		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
+		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
 	};
 	if (tv_mode < ARRAY_SIZE(tv_mode_tbl)) {
-		d->fields->addField_string("TV Mode", tv_mode_tbl[tv_mode]);
+		d->fields->addField_string("TV Mode", dpgettext_expr(RP_I18N_DOMAIN, "NES|TVMode", tv_mode_tbl[tv_mode]));
 	}
 
 	// ROM features.
 	const char *rom_features = nullptr;
 	if (prg_ram_battery_size > 0 && has_trainer) {
-		rom_features = "Save RAM, Trainer";
+		rom_features = C_("NES|Features", "Save RAM, Trainer");
 	} else if (prg_ram_battery_size > 0 && !has_trainer) {
-		rom_features = "Save RAM";
+		rom_features = C_("NES|Features", "Save RAM");
 	} else if (prg_ram_battery_size == 0 && has_trainer) {
-		rom_features = "Trainer";
+		rom_features = C_("NES|Features", "Trainer");
 	}
 	if (rom_features) {
-		d->fields->addField_string("Features", rom_features);
+		d->fields->addField_string(C_("NES", "Features"), rom_features);
 	}
 
 	// ROM sizes.
 	if (prg_rom_size > 0) {
-		d->fields->addField_string("PRG ROM",
+		d->fields->addField_string(C_("NES", "PRG ROM"),
 			d->formatBankSizeKB(prg_rom_size));
 	}
 	if (chr_rom_size > 0) {
-		d->fields->addField_string("CHR ROM",
+		d->fields->addField_string(C_("NES", "CHR ROM"),
 			d->formatBankSizeKB(chr_rom_size));
 	}
 
 	// RAM sizes.
 	if (chr_ram_size > 0) {
-		d->fields->addField_string("CHR RAM",
+		d->fields->addField_string(C_("NES", "CHR RAM"),
 			d->formatBankSizeKB(chr_ram_size));
 	}
 	if (chr_ram_battery_size > 0) {
-		d->fields->addField_string("CHR RAM (backed up)",
+		d->fields->addField_string(C_("NES", "CHR RAM (backed up)"),
 			d->formatBankSizeKB(chr_ram_battery_size));
 	}
 	if (prg_ram_size > 0) {
-		d->fields->addField_string("PRG RAM",
+		d->fields->addField_string(C_("NES", "PRG RAM"),
 			d->formatBankSizeKB(prg_ram_size));
 	}
 	if (prg_ram_battery_size > 0) {
-		d->fields->addField_string("Save RAM (backed up)",
+		d->fields->addField_string(C_("NES", "Save RAM (backed up)"),
 			d->formatBankSizeKB(prg_ram_battery_size));
 	}
 
@@ -855,7 +862,7 @@ int NES::loadFieldData(void)
 	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
 		// Game ID.
 		// TODO: Check for invalid characters?
-		d->fields->addField_string("Game ID",
+		d->fields->addField_string(C_("NES", "Game ID"),
 			rp_sprintf("%s-%.3s",
 				(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
 				d->header.fds.game_id));
@@ -865,16 +872,16 @@ int NES::loadFieldData(void)
 		// https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
 		const char* publisher =
 			NintendoPublishers::lookup_old(d->header.fds.publisher_code);
-		d->fields->addField_string("Publisher",
-			publisher ? publisher : "Unknown");
+		d->fields->addField_string(C_("NES", "Publisher"),
+			publisher ? publisher : C_("NES", "Unknown"));
 
 		// Revision.
-		d->fields->addField_string_numeric("Revision",
+		d->fields->addField_string_numeric(C_("NES", "Revision"),
 			d->header.fds.revision, RomFields::FB_DEC, 2);
 
 		// Manufacturing Date.
 		time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&d->header.fds.mfr_date);
-		d->fields->addField_dateTime("Manufacturing Date", mfr_date,
+		d->fields->addField_dateTime(C_("NES", "Manufacturing Date"), mfr_date,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // Date only.
 		);
@@ -893,13 +900,13 @@ int NES::loadFieldData(void)
 				// TODO: Also One Screen, e.g. AxROM.
 				if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
 					// Four screens using extra VRAM.
-					mirroring = "Four Screens";
+					mirroring = C_("NES|Mirroring", "Four Screens");
 				} else {
 					// TODO: There should be a "one screen" option...
 					if (d->header.ines.mapper_lo & INES_F6_MIRROR_VERT) {
-						mirroring = "Vertical";
+						mirroring = C_("NES|Mirroring", "Vertical");
 					} else {
-						mirroring = "Horizontal";
+						mirroring = C_("NES|Mirroring", "Horizontal");
 					}
 				}
 
@@ -907,6 +914,7 @@ int NES::loadFieldData(void)
 				    (NESPrivate::ROM_FORMAT_NES2 | NESPrivate::ROM_SYSTEM_VS))
 				{
 					// Check the VS. PPU type.
+					// NOTE: Not translatable!
 					static const char *vs_ppu_types[16] = {
 						"RP2C03B",     "RP2C03G",
 						"RP2C04-0001", "RP2C04-0002",
@@ -930,19 +938,19 @@ int NES::loadFieldData(void)
 						// For all mappers except AxROM, this is programmable.
 						// For AxROM, this is One Screen.
 						if (tnes_mapper == TNES_MAPPER_AxROM) {
-							mirroring = "One Screen";
+							mirroring = C_("NES|Mirroring", "One Screen");
 						} else {
-							mirroring = "Programmable";
+							mirroring = C_("NES|Mirroring", "Programmable");
 						}
 						break;
 					case TNES_MIRRORING_HORIZONTAL:
-						mirroring = "Horizontal";
+						mirroring = C_("NES|Mirroring", "Horizontal");
 						break;
 					case TNES_MIRRORING_VERTICAL:
-						mirroring = "Vertical";
+						mirroring = C_("NES|Mirroring", "Vertical");
 						break;
 					default:
-						mirroring = "Unknown";
+						mirroring = C_("NES", "Unknown");
 						break;
 				}
 				break;
@@ -952,10 +960,10 @@ int NES::loadFieldData(void)
 		}
 
 		if (mirroring) {
-			d->fields->addField_string("Mirroring", mirroring);
+			d->fields->addField_string(C_("NES", "Mirroring"), mirroring);
 		}
 		if (vs_ppu) {
-			d->fields->addField_string("VS. PPU", vs_ppu);
+			d->fields->addField_string(C_("NES", "VS. PPU"), vs_ppu);
 		}
 	}
 

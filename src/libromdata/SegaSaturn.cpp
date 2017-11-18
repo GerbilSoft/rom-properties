@@ -30,6 +30,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // CD-ROM reader.
@@ -465,7 +466,7 @@ int SegaSaturn::loadFieldData(void)
 	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Title. (TODO: Encoding?)
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("SegaSaturn", "Title"),
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomFields::STRF_TRIM_END);
 
@@ -488,11 +489,11 @@ int SegaSaturn::loadFieldData(void)
 	}
 
 	if (publisher) {
-		d->fields->addField_string("Publisher", publisher);
+		d->fields->addField_string(C_("SegaSaturn", "Publisher"), publisher);
 	} else {
 		// Unknown publisher.
 		// List the field as-is.
-		d->fields->addField_string("Publisher",
+		d->fields->addField_string(C_("SegaSaturn", "Publisher"),
 			latin1_to_utf8(discHeader->maker_id, sizeof(discHeader->maker_id)),
 			RomFields::STRF_TRIM_END);
 	}
@@ -500,18 +501,18 @@ int SegaSaturn::loadFieldData(void)
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
 	// Product number.
-	d->fields->addField_string("Product #",
+	d->fields->addField_string(C_("SegaSaturn", "Product #"),
 		latin1_to_utf8(discHeader->product_number, sizeof(discHeader->product_number)),
 		RomFields::STRF_TRIM_END);
 
 	// Product version.
-	d->fields->addField_string("Version",
+	d->fields->addField_string(C_("SegaSaturn", "Version"),
 		latin1_to_utf8(discHeader->product_version, sizeof(discHeader->product_version)),
 		RomFields::STRF_TRIM_END);
 
 	// Release date.
 	time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
-	d->fields->addField_dateTime("Release Date", release_date,
+	d->fields->addField_dateTime(C_("SegaSaturn", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
 	);
@@ -523,11 +524,14 @@ int SegaSaturn::loadFieldData(void)
 	// constructor, since it might be used for branding purposes
 	// later.
 	static const char *const region_code_bitfield_names[] = {
-		"Japan", "Taiwan", "USA", "Europe"
+		NOP_C_("SegaSaturn|Region", "Japan"),
+		NOP_C_("SegaSaturn|Region", "Taiwan"),
+		NOP_C_("SegaSaturn|Region", "USA"),
+		NOP_C_("SegaSaturn|Region", "Europe"),
 	};
-	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector(
-		region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	d->fields->addField_bitfield("Region Code",
+	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+		"SegaSaturn|Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+	d->fields->addField_bitfield(C_("SegaSaturn", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
 	// Disc number.
@@ -547,25 +551,36 @@ int SegaSaturn::loadFieldData(void)
 	}
 
 	if (disc_num != 0) {
-		d->fields->addField_string("Disc #",
-			rp_sprintf("%u of %u", disc_num, disc_total));
+		d->fields->addField_string(C_("SegaSaturn", "Disc #"),
+			rp_sprintf(C_("SegaSaturn|Disc", "%u of %u"), disc_num, disc_total));
 	} else {
-		d->fields->addField_string("Disc #", "Unknown");
+		d->fields->addField_string(C_("SegaSaturn", "Disc #"),
+			C_("SegaSaturn", "Unknown"));
 	}
 
 	// Peripherals.
 	static const char *const peripherals_bitfield_names[] = {
-		"Control Pad", "Analog Controller", "Mouse",
-		"Keyboard", "Steering Controller", "Multi-Tap",
-		"Light Gun", "RAM Cartridge", "3D Controller",
-		"Link Cable", "NetLink", "Pachinko",
-		"Floppy Drive", "ROM Cartridge", "MPEG Card",
+		NOP_C_("SegaSaturn|Peripherals", "Control Pad"),
+		NOP_C_("SegaSaturn|Peripherals", "Analog Controller"),
+		NOP_C_("SegaSaturn|Peripherals", "Mouse"),
+		NOP_C_("SegaSaturn|Peripherals", "Keyboard"),
+		NOP_C_("SegaSaturn|Peripherals", "Steering Controller"),
+		NOP_C_("SegaSaturn|Peripherals", "Multi-Tap"),
+		NOP_C_("SegaSaturn|Peripherals", "Light Gun"),
+		NOP_C_("SegaSaturn|Peripherals", "RAM Cartridge"),
+		NOP_C_("SegaSaturn|Peripherals", "3D Controller"),
+		NOP_C_("SegaSaturn|Peripherals", "Link Cable"),
+		NOP_C_("SegaSaturn|Peripherals", "NetLink"),
+		NOP_C_("SegaSaturn|Peripherals", "Pachinko"),
+		NOP_C_("SegaSaturn|Peripherals", "Floppy Drive"),
+		NOP_C_("SegaSaturn|Peripherals", "ROM Cartridge"),
+		NOP_C_("SegaSaturn|Peripherals", "MPEG Card"),
 	};
-	vector<string> *v_peripherals_bitfield_names = RomFields::strArrayToVector(
-		peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
+	vector<string> *v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
+		"SegaSaturn|Peripherals", peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
 	// Parse peripherals.
 	uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
-	d->fields->addField_bitfield("Peripherals",
+	d->fields->addField_bitfield(C_("SegaSaturn", "Peripherals"),
 		v_peripherals_bitfield_names, 3, peripherals);
 
 	// Finished reading the field data.

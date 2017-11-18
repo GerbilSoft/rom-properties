@@ -37,6 +37,8 @@
 
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
+
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // DiscReader
@@ -383,17 +385,17 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			switch (idRegion) {
 				case 'J':	// Japan
 				default:
-					return "Japan";
+					return C_("GameCube|Region", "Japan");
 
 				case 'W':	// Taiwan
-					return "Taiwan (JPN)";
+					return C_("GameCube|Region", "Taiwan (JPN)");
 				case 'K':	// South Korea
 				case 'T':	// South Korea with Japanese language
 				case 'Q':	// South Korea with English language
 					// FIXME: Is this combination possible?
-					return "South Korea (JPN)";
+					return C_("GameCube|Region", "South Korea (JPN)");
 				case 'C':	// China (unofficial?)
-					return "China (JPN)";
+					return C_("GameCube|Region", "China (JPN)");
 			}
 
 		case GCN_REGION_PAL:
@@ -404,22 +406,22 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 				case 'L':	// Japanese import to PAL regions
 				case 'M':	// Japanese import to PAL regions
 				default:
-					return "Europe / Australia (PAL)";
+					return C_("GameCube|Region", "Europe / Australia (PAL)");
 
 				case 'D':	// Germany
-					return "Germany (PAL)";
+					return C_("GameCube|Region", "Germany (PAL)");
 				case 'F':	// France
-					return "France (PAL)";
+					return C_("GameCube|Region", "France (PAL)");
 				case 'H':	// Netherlands
-					return "Netherlands (PAL)";
+					return C_("GameCube|Region", "Netherlands (PAL)");
 				case 'I':	// Italy
-					return "Italy (PAL)";
+					return C_("GameCube|Region", "Italy (PAL)");
 				case 'R':	// Russia
-					return "Russia (PAL)";
+					return C_("GameCube|Region", "Russia (PAL)");
 				case 'S':	// Spain
-					return "Spain (PAL)";
+					return C_("GameCube|Region", "Spain (PAL)");
 				case 'U':	// Australia
-					return "Australia (PAL)";
+					return C_("GameCube|Region", "Australia (PAL)");
 			}
 
 		// USA and South Korea regions don't have separate
@@ -430,14 +432,14 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			// - N: Japanese import to USA and other NTSC regions.
 			// - Z: Prince of Persia - The Forgotten Sands (Wii)
 			// - B: Ufouria: The Saga (Virtual Console)
-			return "USA";
+			return C_("GameCube|Region", "USA");
 
 		case GCN_REGION_SOUTH_KOREA:
 			// Possible game ID regions:
 			// - K: South Korea
 			// - Q: South Korea with Japanese language
 			// - T: South Korea with English language
-			return "South Korea";
+			return C_("GameCube|Region", "South Korea");
 
 		default:
 			break;
@@ -898,13 +900,13 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 		// This may be an invalid key index.
 		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
 			// Invalid key index.
-			return "ERROR: Invalid common key index.";
+			return C_("GameCube", "ERROR: Invalid common key index.");
 		}
 	}
 
 	const char *err = KeyManager::verifyResultToString(res);
 	if (!err) {
-		err = "ERROR: Unknown error. (THIS IS A BUG!)";
+		err = C_("GameCube", "ERROR: Unknown error. (THIS IS A BUG!)");
 	}
 	return err;
 }
@@ -1459,7 +1461,7 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_PAL:
 		default:
 			// USA/PAL uses cp1252.
-			d->fields->addField_string("Title",
+			d->fields->addField_string(C_("GameCube", "Title"),
 				cp1252_to_utf8(
 					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
@@ -1467,7 +1469,7 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_JAPAN:
 		case GCN_REGION_SOUTH_KOREA:
 			// Japan uses Shift-JIS.
-			d->fields->addField_string("Title",
+			d->fields->addField_string(C_("GameCube", "Title"),
 				cp1252_sjis_to_utf8(
 					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
@@ -1487,13 +1489,13 @@ int GameCube::loadFieldData(void)
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(discHeader->company);
-	d->fields->addField_string("Publisher",
-		publisher ? publisher : "Unknown");
+	d->fields->addField_string(C_("GameCube", "Publisher"),
+		publisher ? publisher : C_("GameCube", "Unknown"));
 
 	// Other fields.
-	d->fields->addField_string_numeric("Disc #",
+	d->fields->addField_string_numeric(C_("GameCube", "Disc #"),
 		discHeader->disc_number+1, RomFields::FB_DEC);
-	d->fields->addField_string_numeric("Revision",
+	d->fields->addField_string_numeric(C_("GameCube", "Revision"),
 		discHeader->revision, RomFields::FB_DEC, 2);
 
 	// The remaining fields are not located in the disc header.
@@ -1510,11 +1512,11 @@ int GameCube::loadFieldData(void)
 	// and the region code is stored in d->gcnRegion.
 	const char *region = d->gcnRegionToString(d->gcnRegion, discHeader->id4[3]);
 	if (region) {
-		d->fields->addField_string("Region", region);
+		d->fields->addField_string(C_("GameCube", "Region"), region);
 	} else {
 		// Invalid region code.
-		d->fields->addField_string("Region",
-			rp_sprintf("Unknown (0x%08X)", d->gcnRegion));
+		d->fields->addField_string(C_("GameCube", "Region"),
+			rp_sprintf(C_("GameCube", "Unknown (0x%08X)"), d->gcnRegion));
 	}
 
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
@@ -1581,14 +1583,14 @@ int GameCube::loadFieldData(void)
 					case GCN_REGION_PAL:
 					default:
 						// USA/PAL uses cp1252.
-						d->fields->addField_string("Game Info",
+						d->fields->addField_string(C_("GameCube", "Game Info"),
 							cp1252_to_utf8(comment_data.data(), (int)comment_data.size()));
 						break;
 
 					case GCN_REGION_JAPAN:
 					case GCN_REGION_SOUTH_KOREA:
 						// Japan uses Shift-JIS.
-						d->fields->addField_string("Game Info",
+						d->fields->addField_string(C_("GameCube", "Game Info"),
 							cp1252_sjis_to_utf8(comment_data.data(), (int)comment_data.size()));
 						break;
 				}
@@ -1645,7 +1647,7 @@ int GameCube::loadFieldData(void)
 		// Get the game name from opening.bnr.
 		string game_name = d->wii_getBannerName();
 		if (!game_name.empty()) {
-			d->fields->addField_string("Game Info", game_name);
+			d->fields->addField_string(C_("GameCube", "Game Info"), game_name);
 		} else {
 			// Empty game name may be either because it's
 			// homebrew, a prototype, or a key error.
@@ -1653,7 +1655,7 @@ int GameCube::loadFieldData(void)
 				// Key error.
 				string err("ERROR: ");
 				err += d->wii_getCryptoStatus(d->gamePartition);
-				d->fields->addField_string("Game Info", err);
+				d->fields->addField_string(C_("GameCube", "Game Info"), err);
 			}
 		}
 
@@ -1681,12 +1683,12 @@ int GameCube::loadFieldData(void)
 
 		if (!sysMenu) {
 			if (!d->updatePartition) {
-				sysMenu = "None";
+				sysMenu = C_("GameCube", "None");
 			} else {
 				sysMenu = d->wii_getCryptoStatus(d->updatePartition);
 			}
 		}
-		d->fields->addField_string("Update", sysMenu);
+		d->fields->addField_string(C_("GameCube", "Update"), sysMenu);
 
 		// Partition table.
 		auto partitions = new std::vector<std::vector<string> >();
@@ -1712,12 +1714,12 @@ int GameCube::loadFieldData(void)
 				// Partition type.
 				string str;
 				static const char *const part_type_tbl[3] = {
-					"Game",		// GameCubePrivate::PARTITION_GAME
-					"Update",	// GameCubePrivate::PARTITION_UPDATE
-					"Channel",	// GameCubePrivate::PARTITION_CHANNEL
+					NOP_C_("GameCube|Partition", "Game"),		// GameCubePrivate::PARTITION_GAME
+					NOP_C_("GameCube|Partition", "Update"),		// GameCubePrivate::PARTITION_UPDATE
+					NOP_C_("GameCube|Partition", "Channel"),	// GameCubePrivate::PARTITION_CHANNEL
 				};
 				if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
-					str = part_type_tbl[entry.type];
+					str = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
 				} else {
 					// If all four bytes are ASCII letters and/or numbers,
 					// print it as-is. (SSBB demo channel)
@@ -1737,27 +1739,29 @@ int GameCube::loadFieldData(void)
 						// Non-ASCII data. Print the hex values instead.
 						str = rp_sprintf("%08X", entry.type);
 					}
+					break;
 				}
 				data_row.push_back(str);
 
 				// Encryption key.
+				// TODO: Use a string table?
 				const char *key_name;
 				switch (entry.partition->encKey()) {
 					case WiiPartition::ENCKEY_UNKNOWN:
 					default:
-						key_name = "Unknown";
+						key_name = C_("GameCube|KeyIdx", "Unknown");
 						break;
 					case WiiPartition::ENCKEY_COMMON:
-						key_name = "Retail";
+						key_name = C_("GameCube|KeyIdx", "Retail");
 						break;
 					case WiiPartition::ENCKEY_KOREAN:
-						key_name = "Korean";
+						key_name = C_("GameCube|KeyIdx", "Korean");
 						break;
 					case WiiPartition::ENCKEY_VWII:
-						key_name = "vWii";
+						key_name = C_("GameCube|KeyIdx", "vWii");
 						break;
 					case WiiPartition::ENCKEY_DEBUG:
-						key_name = "Debug";
+						key_name = C_("GameCube|KeyIdx", "Debug");
 						break;
 				}
 				data_row.push_back(key_name);
@@ -1772,13 +1776,14 @@ int GameCube::loadFieldData(void)
 
 		// Fields.
 		static const char *const partitions_names[] = {
-			"#", "Type", "Key",
-			"Used Size", "Total Size"
+			NOP_C_("GameCube|Partition", "#"),
+			NOP_C_("GameCube|Partition", "Type"),
+			NOP_C_("GameCube|Partition", "Key"),
+			NOP_C_("GameCube|Partition", "Used Size"),
+			NOP_C_("GameCube|Partition", "Total Size"),
 		};
-		vector<string> *v_partitions_names = RomFields::strArrayToVector(
-			partitions_names, ARRAY_SIZE(partitions_names));
-
-		// Add the partitions list data.
+		vector<string> *v_partitions_names = RomFields::strArrayToVector_i18n(
+			"GameCube|Partition", partitions_names, ARRAY_SIZE(partitions_names));
 		d->fields->addField_listData("Partitions", v_partitions_names, partitions);
 	} else {
 		// Could not load partition tables.

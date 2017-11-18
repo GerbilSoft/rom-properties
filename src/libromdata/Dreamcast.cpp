@@ -33,6 +33,7 @@
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/img/rp_image.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // DiscReader
@@ -555,7 +556,7 @@ int Dreamcast::loadFieldData(void)
 	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	// Title. (TODO: Encoding?)
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("Dreamcast", "Title"),
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomFields::STRF_TRIM_END);
 
@@ -578,11 +579,11 @@ int Dreamcast::loadFieldData(void)
 	}
 
 	if (publisher) {
-		d->fields->addField_string("Publisher", publisher);
+		d->fields->addField_string(C_("Dreamcast", "Publisher"), publisher);
 	} else {
 		// Unknown publisher.
 		// List the field as-is.
-		d->fields->addField_string("Publisher",
+		d->fields->addField_string(C_("Dreamcast", "Publisher"),
 			latin1_to_utf8(discHeader->publisher, sizeof(discHeader->publisher)),
 			RomFields::STRF_TRIM_END);
 	}
@@ -590,18 +591,18 @@ int Dreamcast::loadFieldData(void)
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
 	// Product number.
-	d->fields->addField_string("Product #",
+	d->fields->addField_string(C_("Dreamcast", "Product #"),
 		latin1_to_utf8(discHeader->product_number, sizeof(discHeader->product_number)),
 		RomFields::STRF_TRIM_END);
 
 	// Product version.
-	d->fields->addField_string("Version",
+	d->fields->addField_string(C_("Dreamcast", "Version"),
 		latin1_to_utf8(discHeader->product_version, sizeof(discHeader->product_version)),
 		RomFields::STRF_TRIM_END);
 
 	// Release date.
 	time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
-	d->fields->addField_dateTime("Release Date", release_date,
+	d->fields->addField_dateTime(C_("Dreamcast", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
 	);
@@ -623,10 +624,11 @@ int Dreamcast::loadFieldData(void)
 	}
 
 	if (disc_num != 0) {
-		d->fields->addField_string("Disc #",
-			rp_sprintf("%u of %u", disc_num, disc_total));
+		d->fields->addField_string(C_("Dreamcast", "Disc #"),
+			rp_sprintf(C_("Dreamcast|Disc", "%u of %u"), disc_num, disc_total));
 	} else {
-		d->fields->addField_string("Disc #", "Unknown");
+		d->fields->addField_string(C_("Dreamcast", "Disc #"),
+			C_("Dreamcast", "Unknown"));
 	}
 
 	// Region code.
@@ -639,15 +641,17 @@ int Dreamcast::loadFieldData(void)
 	region_code |= (discHeader->area_symbols[2] == 'E') << 2;
 
 	static const char *const region_code_bitfield_names[] = {
-		"Japan", "USA", "Europe"
+		NOP_C_("Dreamcast|Region", "Japan"),
+		NOP_C_("Dreamcast|Region", "USA"),
+		NOP_C_("Dreamcast|Region", "Europe"),
 	};
-	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector(
-		region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	d->fields->addField_bitfield("Region Code",
+	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+		"Dreamcast|Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+	d->fields->addField_bitfield(C_("Dreamcast", "Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 
 	// Boot filename.
-	d->fields->addField_string("Boot Filename",
+	d->fields->addField_string(C_("Dreamcast", "Boot Filename"),
 		latin1_to_utf8(discHeader->boot_filename, sizeof(discHeader->boot_filename)),
 		RomFields::STRF_TRIM_END);
 
@@ -676,17 +680,17 @@ int Dreamcast::loadFieldData(void)
 	if (crc16_expected < 0x10000) {
 		if (crc16_expected == crc16_actual) {
 			// CRC16 is correct.
-			d->fields->addField_string("Checksum",
-				rp_sprintf("0x%04X (valid)", crc16_expected));
+			d->fields->addField_string(C_("Dreamcast", "Checksum"),
+				rp_sprintf(C_("Dreamcast", "0x%04X (valid)"), crc16_expected));
 		} else {
 			// CRC16 is incorrect.
 			d->fields->addField_string("Checksum",
-				rp_sprintf("0x%04X (INVALID; should be 0x%04X)", crc16_expected, crc16_actual));
+				rp_sprintf(C_("Dreamcast", "0x%04X (INVALID; should be 0x%04X)") crc16_expected, crc16_actual));
 		}
 	} else {
 		// CRC16 in header is invalid.
-		d->fields->addField_string("Checksum",
-			rp_sprintf("0x%04X (HEADER is INVALID: %.4s)", crc16_expected, discHeader->device_info));
+		d->fields->addField_string(C_("Dreamcast", "Checksum"),
+			rp_sprintf(C_("Dreamcast", "0x%04X (HEADER is INVALID: %.4s)"), crc16_expected, discHeader->device_info));
 	}
 #endif
 
@@ -701,41 +705,57 @@ int Dreamcast::loadFieldData(void)
 		// Peripherals decoded.
 		// OS support.
 		static const char *const os_bitfield_names[] = {
-			"Windows CE", nullptr, nullptr, nullptr, "VGA Box"
+			NOP_C_("Dreamcast|OSSupport", "Windows CE"),
+			nullptr, nullptr, nullptr,
+			NOP_C_("Dreamcast|OSSupport", "VGA Box"),
 		};
-		vector<string> *v_os_bitfield_names = RomFields::strArrayToVector(
-			os_bitfield_names, ARRAY_SIZE(os_bitfield_names));
-		d->fields->addField_bitfield("OS Support",
+		vector<string> *v_os_bitfield_names = RomFields::strArrayToVector_i18n(
+			"Dreamcast|OSSupport", os_bitfield_names, ARRAY_SIZE(os_bitfield_names));
+		d->fields->addField_bitfield(C_("Dreamcast", "OS Support"),
 			v_os_bitfield_names, 0, peripherals);
 
 		// Supported expansion units.
 		static const char *const expansion_bitfield_names[] = {
-			"Other", "Jump Pack", "Microphone", "VMU"
+			NOP_C_("Dreamcast|Expansion", "Other"),
+			NOP_C_("Dreamcast|Expansion", "Jump Pack"),
+			NOP_C_("Dreamcast|Expansion", "Microphone"),
+			NOP_C_("Dreamcast|Expansion", "VMU"),
 		};
-		vector<string> *v_expansion_bitfield_names = RomFields::strArrayToVector(
-			expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
-		d->fields->addField_bitfield("Expansion Units",
+		vector<string> *v_expansion_bitfield_names = RomFields::strArrayToVector_i18n(
+			"Dreamcast|Expansion", expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
+		d->fields->addField_bitfield(C_("Dreamcast", "Expansion Units"),
 			v_expansion_bitfield_names, 0, peripherals >> 8);
 
 		// Required controller features.
 		static const char *const req_controller_bitfield_names[] = {
-			"Start, A, B, D-Pad", "C Button", "D Button",
-			"X Button", "Y Button", "Z Button",
-			"Second D-Pad", "Analog L Trigger", "Analog R Trigger",
-			"Analog H1", "Analog V1", "Analog H2", "Analog V2"
+			NOP_C_("Dreamcast|ReqCtrl", "Start, A, B, D-Pad"),
+			NOP_C_("Dreamcast|ReqCtrl", "C Button"),
+			NOP_C_("Dreamcast|ReqCtrl", "D Button"),
+			NOP_C_("Dreamcast|ReqCtrl", "X Button"),
+			NOP_C_("Dreamcast|ReqCtrl", "Y Button"),
+			NOP_C_("Dreamcast|ReqCtrl", "Z Button"),
+			NOP_C_("Dreamcast|ReqCtrl", "Second D-Pad"),
+			NOP_C_("Dreamcast|ReqCtrl", "Analog L Trigger"),
+			NOP_C_("Dreamcast|ReqCtrl", "Analog R Trigger"),
+			NOP_C_("Dreamcast|ReqCtrl", "Analog H1"),
+			NOP_C_("Dreamcast|ReqCtrl", "Analog V1"),
+			NOP_C_("Dreamcast|ReqCtrl", "Analog H2"),
+			NOP_C_("Dreamcast|ReqCtrl", "Analog V2"),
 		};
-		vector<string> *v_req_controller_bitfield_names = RomFields::strArrayToVector(
-			req_controller_bitfield_names, ARRAY_SIZE(req_controller_bitfield_names));
-		d->fields->addField_bitfield("Req. Controller",
+		vector<string> *v_req_controller_bitfield_names = RomFields::strArrayToVector_i18n(
+			"Dreamcast|ReqCtrl", req_controller_bitfield_names, ARRAY_SIZE(req_controller_bitfield_names));
+		d->fields->addField_bitfield(C_("Dreamcast", "Req. Controller"),
 			v_req_controller_bitfield_names, 3, peripherals >> 12);
 
 		// Optional controller features.
 		static const char *const opt_controller_bitfield_names[] = {
-			"Light Gun", "Keyboard", "Mouse"
+			NOP_C_("Dreamcast|OptCtrl", "Light Gun"),
+			NOP_C_("Dreamcast|OptCtrl", "Keyboard"),
+			NOP_C_("Dreamcast|OptCtrl", "Mouse"),
 		};
-		vector<string> *v_opt_controller_bitfield_names = RomFields::strArrayToVector(
-			opt_controller_bitfield_names, ARRAY_SIZE(opt_controller_bitfield_names));
-		d->fields->addField_bitfield("Opt. Controller",
+		vector<string> *v_opt_controller_bitfield_names = RomFields::strArrayToVector_i18n(
+			"Dreamcast|OptCtrl", opt_controller_bitfield_names, ARRAY_SIZE(opt_controller_bitfield_names));
+		d->fields->addField_bitfield(C_("Dreamcast", "Opt. Controller"),
 			v_opt_controller_bitfield_names, 0, peripherals >> 25);
 	}
 

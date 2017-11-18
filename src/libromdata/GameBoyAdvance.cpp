@@ -30,6 +30,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -288,7 +289,7 @@ int GameBoyAdvance::loadFieldData(void)
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Game title.
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("GameBoyAdvance", "Title"),
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
@@ -301,15 +302,15 @@ int GameBoyAdvance::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string("Game ID", latin1_to_utf8(id6, 6));
+	d->fields->addField_string(C_("GameBoyAdvance", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(romHeader->company);
-	d->fields->addField_string("Publisher",
-		publisher ? publisher : "Unknown");
+	d->fields->addField_string(C_("GameBoyAdvance", "Publisher"),
+		publisher ? publisher : C_("GameBoyAdvance", "Unknown"));
 
 	// ROM version.
-	d->fields->addField_string_numeric("Revision",
+	d->fields->addField_string_numeric(C_("GameBoyAdvance", "Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Entry point.
@@ -325,12 +326,12 @@ int GameBoyAdvance::loadFieldData(void)
 				if (entry_point & 0x02000000) {
 					entry_point |= 0xFC000000;
 				}
-				d->fields->addField_string_numeric("Entry Point",
+				d->fields->addField_string_numeric(C_("GameBoyAdvance", "Entry Point"),
 					entry_point, RomFields::FB_HEX, 8,
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Non-standard entry point instruction.
-				d->fields->addField_string_hexdump("Entry Point",
+				d->fields->addField_string_hexdump(C_("GameBoyAdvance", "Entry Point"),
 					romHeader->entry_point_bytes, 4,
 					RomFields::STRF_MONOSPACE);
 			}
@@ -338,13 +339,14 @@ int GameBoyAdvance::loadFieldData(void)
 
 		case GameBoyAdvancePrivate::ROM_NDS_EXP:
 			// Not bootable.
-			d->fields->addField_string("Entry Point",
-				"Not bootable (Nintendo DS expansion)");
+			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
+				C_("GameBoyAdvance", "Not bootable (Nintendo DS expansion)"));
 			break;
 
 		default:
 			// Unknown ROM type type.
-			d->fields->addField_string("Entry Point", "Unknown");
+			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
+				C_("GameBoyAdvance", "Unknown"));
 			break;
 	}
 

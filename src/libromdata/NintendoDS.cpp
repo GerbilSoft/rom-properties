@@ -36,6 +36,8 @@
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
 #include "librpbase/img/IconAnimData.hpp"
+
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -458,18 +460,18 @@ const char *NintendoDSPrivate::checkNDSSecureArea(void)
 	if (le32_to_cpu(romHeader.arm9.rom_offset) < 0x4000) {
 		// ARM9 secure area is not present.
 		// This is only valid for homebrew.
-		secType = "Homebrew";
+		secType = C_("NintendoDS|SecureArea", "Homebrew");
 	} else if (secure_area[0] == cpu_to_le32(0x00000000) && secure_area[1] == cpu_to_le32(0x00000000)) {
 		// Secure area is empty. (DS Download Play)
-		secType = "Multiboot";
+		secType = C_("NintendoDS|SecureArea", "Multiboot");
 	} else if (secure_area[0] == cpu_to_le32(0xE7FFDEFF) && secure_area[1] == cpu_to_le32(0xE7FFDEFF)) {
 		// Secure area is decrypted.
 		// Probably dumped using wooddumper or Decrypt9WIP.
-		secType = "Decrypted";
+		secType = C_("NintendoDS|SecureArea", "Decrypted");
 		//needs_encryption = true;	// CRC requires encryption.
 	} else {
 		// Secure area is encrypted.
-		secType = "Encrypted";
+		secType = C_("NintendoDS|SecureArea", "Encrypted");
 	}
 
 	// TODO: Verify the CRC?
@@ -1064,46 +1066,46 @@ int NintendoDS::loadFieldData(void)
 				break;
 		}
 	}
-	d->fields->addField_string("Type", nds_romType);
+	d->fields->addField_string(C_("NintendoDS", "Type"), nds_romType);
 
 	// Game title.
-	d->fields->addField_string("Title",
+	d->fields->addField_string(C_("NintendoDS", "Title"),
 		latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title)));
 
 	// Full game title.
 	// TODO: Where should this go?
 	int lang = d->getTitleIndex();
 	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
-		d->fields->addField_string("Full Title",
+		d->fields->addField_string(C_("NintendoDS", "Full Title"),
 			utf16le_to_utf8(d->nds_icon_title.title[lang],
 				ARRAY_SIZE(d->nds_icon_title.title[lang])));
 	}
 
 	// Game ID and publisher.
-	d->fields->addField_string("Game ID",
+	d->fields->addField_string(C_("NintendoDS", "Game ID"),
 		latin1_to_utf8(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(romHeader->company);
-	d->fields->addField_string("Publisher",
-		publisher ? publisher : "Unknown");
+	d->fields->addField_string(C_("NintendoDS", "Publisher"),
+		publisher ? publisher : C_("NintendoDS", "Unknown"));
 
 	// ROM version.
-	d->fields->addField_string_numeric("Revision",
+	d->fields->addField_string_numeric(C_("NintendoDS", "Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Is this a Mask ROM?
 	// TODO: Better way to represent a boolean.
-	d->fields->addField_string("Mask ROM",
+	d->fields->addField_string(C_("NintendoDS", "Mask ROM"),
 		d->checkNDSMaskROMArea() ? "Yes" : "No");
 
 	// Secure Area.
 	// TODO: Verify the CRC.
 	const char *secure_area = d->checkNDSSecureArea();
 	if (secure_area) {
-		d->fields->addField_string("Secure Area", secure_area);
+		d->fields->addField_string(C_("NintendoDS", "Secure Area"), secure_area);
 	} else {
-		d->fields->addField_string("Secure Area", "Unknown");
+		d->fields->addField_string(C_("NintendoDS", "Secure Area"), C_("NintendoDS", "Unknown"));
 	}
 
 	// Hardware type.
@@ -1120,7 +1122,7 @@ int NintendoDS::loadFieldData(void)
 		};
 		vector<string> *v_hw_bitfield_names = RomFields::strArrayToVector(
 			hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
-		d->fields->addField_bitfield("Hardware",
+		d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
 			v_hw_bitfield_names, 0, hw_type);
 
 		// NDS Region.
@@ -1140,10 +1142,12 @@ int NintendoDS::loadFieldData(void)
 		}
 
 		static const char *const nds_region_bitfield_names[] = {
-			"Region-Free", "South Korea", "China"
+			NOP_C_("NintendoDS|Region", "Region-Free"),
+			NOP_C_("NintendoDS|Region", "South Korea"),
+			NOP_C_("NintendoDS|Region", "China"),
 		};
-		vector<string> *v_nds_region_bitfield_names = RomFields::strArrayToVector(
-			nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+		vector<string> *v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
+			"NintendoDS|Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
 		d->fields->addField_bitfield("DS Region",
 			v_nds_region_bitfield_names, 0, nds_region);
 	}
@@ -1151,46 +1155,51 @@ int NintendoDS::loadFieldData(void)
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
 		const char *const region_code_name = (d->cia
-				? "Region Code"
-				: "DSi Region");
+				? C_("NintendoDS", "Region Code")
+				: C_("NintendoDS", "DSi Region"));
 
 		// DSi Region.
 		// Maps directly to the header field.
 		static const char *const dsi_region_bitfield_names[] = {
-			"Japan", "USA", "Europe",
-			"Australia", "China", "South Korea"
+			NOP_C_("NintendoDS|Region", "Japan"),
+			NOP_C_("NintendoDS|Region", "USA"),
+			NOP_C_("NintendoDS|Region", "Europe"),
+			NOP_C_("NintendoDS|Region", "Australia"),
+			NOP_C_("NintendoDS|Region", "China"),
+			NOP_C_("NintendoDS|Region", "South Korea"),
 		};
-		vector<string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector(
-			dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
+		vector<string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
+			"NintendoDS|Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
 		d->fields->addField_bitfield(region_code_name,
 			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
 		// Title ID.
-		d->fields->addField_string("Title ID",
+		d->fields->addField_string(C_("NintendoDS", "Title ID"),
 			rp_sprintf("%08X-%08X",
 				le32_to_cpu(romHeader->dsi.title_id.hi),
 				le32_to_cpu(romHeader->dsi.title_id.lo)));
 
 		// DSi filetype.
+		// TODO: String table?
 		const char *filetype = nullptr;
 		switch (romHeader->dsi.filetype) {
 			case DSi_FTYPE_CARTRIDGE:
-				filetype = "Cartridge";
+				filetype = C_("NintendoDS", "Cartridge");
 				break;
 			case DSi_FTYPE_DSiWARE:
-				filetype = "DSiWare";
+				filetype = C_("NintendoDS", "DSiWare");
 				break;
 			case DSi_FTYPE_SYSTEM_FUN_TOOL:
-				filetype = "System Fun Tool";
+				filetype = C_("NintendoDS", "System Fun Tool");
 				break;
 			case DSi_FTYPE_NONEXEC_DATA:
-				filetype = "Non-Executable Data File";
+				filetype = C_("NintendoDS", "Non-Executable Data File");
 				break;
 			case DSi_FTYPE_SYSTEM_BASE_TOOL:
-				filetype = "System Base Tool";
+				filetype = C_("NintendoDS", "System Base Tool");
 				break;
 			case DSi_FTYPE_SYSTEM_MENU:
-				filetype = "System Menu";
+				filetype = C_("NintendoDS", "System Menu");
 				break;
 			default:
 				break;
@@ -1198,11 +1207,11 @@ int NintendoDS::loadFieldData(void)
 
 		// TODO: Is the field name too long?
 		if (filetype) {
-			d->fields->addField_string("DSi ROM Type", filetype);
+			d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"), filetype);
 		} else {
 			// Invalid file type.
-			d->fields->addField_string("DSi ROM Type",
-				rp_sprintf("Unknown (0x%02X)", romHeader->dsi.filetype));
+			d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"),
+				rp_sprintf(C_("NintendoDS", "Unknown (0x%02X)"), romHeader->dsi.filetype));
 		}
 
 		// Age rating(s).
@@ -1240,7 +1249,7 @@ int NintendoDS::loadFieldData(void)
 				age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
 			}
 		}
-		d->fields->addField_ageRatings("Age Rating", age_ratings);
+		d->fields->addField_ageRatings(C_("NintendoDS", "Age Rating"), age_ratings);
 	}
 
 	// Finished reading the field data.

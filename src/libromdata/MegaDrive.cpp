@@ -34,6 +34,7 @@
 #include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/i18n.hpp"
 using namespace LibRpBase;
 
 // C includes.
@@ -253,10 +254,10 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 {
 	// Read the strings from the header.
-	fields->addField_string("System",
+	fields->addField_string(C_("MegaDrive", "System"),
 		cp1252_sjis_to_utf8(pRomHeader->system, sizeof(pRomHeader->system)),
 			RomFields::STRF_TRIM_END);
-	fields->addField_string("Copyright",
+	fields->addField_string(C_("MegaDrive", "Copyright"),
 		cp1252_sjis_to_utf8(pRomHeader->copyright, sizeof(pRomHeader->copyright)),
 			RomFields::STRF_TRIM_END);
 
@@ -289,56 +290,65 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 
 	if (publisher) {
 		// Publisher identified.
-		fields->addField_string("Publisher", publisher);
+		fields->addField_string(C_("MegaDrive", "Publisher"), publisher);
 	} else if (t_code > 0) {
 		// Unknown publisher, but there is a valid T code.
-		fields->addField_string("Publisher", rp_sprintf("T-%u", t_code));
+		fields->addField_string(C_("MegaDrive", "Publisher"), rp_sprintf("T-%u", t_code));
 	} else {
 		// Unknown publisher.
-		fields->addField_string("Publisher", "Unknown");
+		fields->addField_string(C_("MegaDrive", "Publisher"), "Unknown");
 	}
 
 	// Titles, serial number, and checksum.
-	fields->addField_string("Domestic Title",
+	fields->addField_string(C_("MegaDrive", "Domestic Title"),
 		cp1252_sjis_to_utf8(pRomHeader->title_domestic, sizeof(pRomHeader->title_domestic)),
 			RomFields::STRF_TRIM_END);
-	fields->addField_string("Export Title",
+	fields->addField_string(C_("MegaDrive", "Export Title"),
 		cp1252_sjis_to_utf8(pRomHeader->title_export, sizeof(pRomHeader->title_export)),
 			RomFields::STRF_TRIM_END);
-	fields->addField_string("Serial Number",
+	fields->addField_string(C_("MegaDrive", "Serial Number"),
 		cp1252_sjis_to_utf8(pRomHeader->serial, sizeof(pRomHeader->serial)),
 			RomFields::STRF_TRIM_END);
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
-		fields->addField_string_numeric("Checksum",
+		fields->addField_string_numeric(C_("MegaDrive", "Checksum"),
 			be16_to_cpu(pRomHeader->checksum), RomFields::FB_HEX, 4,
 			RomFields::STRF_MONOSPACE);
 	}
 
 	// I/O support bitfield.
 	static const char *const io_bitfield_names[] = {
-		"Joypad", "6-button", "SMS Joypad",
-		"Team Player", "Keyboard", "Serial I/O",
-		"Printer", "Tablet", "Trackball",
-		"Paddle", "Floppy Drive", "CD-ROM",
-		"Activator", "Mega Mouse"
+		NOP_C_("MegaDrive|I/O", "Joypad"),
+		NOP_C_("MegaDrive|I/O", "6-button"),
+		NOP_C_("MegaDrive|I/O", "SMS Joypad"),
+		NOP_C_("MegaDrive|I/O", "Team Player"),
+		NOP_C_("MegaDrive|I/O", "Keyboard"),
+		NOP_C_("MegaDrive|I/O", "Serial I/O"),
+		NOP_C_("MegaDrive|I/O", "Printer"),
+		NOP_C_("MegaDrive|I/O", "Tablet"),
+		NOP_C_("MegaDrive|I/O", "Trackball"),
+		NOP_C_("MegaDrive|I/O", "Paddle"),
+		NOP_C_("MegaDrive|I/O", "Floppy Drive"),
+		NOP_C_("MegaDrive|I/O", "CD-ROM"),
+		NOP_C_("MegaDrive|I/O", "Activator"),
+		NOP_C_("MegaDrive|I/O", "Mega Mouse"),
 	};
-	vector<string> *v_io_bitfield_names = RomFields::strArrayToVector(
-		io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
+	vector<string> *v_io_bitfield_names = RomFields::strArrayToVector_i18n(
+		"MegaDrive|I/O", io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
 	// Parse I/O support.
 	uint32_t io_support = parseIOSupport(pRomHeader->io_support, sizeof(pRomHeader->io_support));
-	fields->addField_bitfield("I/O Support",
+	fields->addField_bitfield(C_("MegaDrive", "I/O Support"),
 		v_io_bitfield_names, 3, io_support);
 
 	if (!isDisc()) {
 		// ROM range.
-		fields->addField_string_address_range("ROM Range",
+		fields->addField_string_address_range(C_("MegaDrive", "ROM Range"),
 				be32_to_cpu(pRomHeader->rom_start),
 				be32_to_cpu(pRomHeader->rom_end), 8,
 				RomFields::STRF_MONOSPACE);
 
 		// RAM range.
-		fields->addField_string_address_range("RAM Range",
+		fields->addField_string_address_range(C_("MegaDrive", "RAM Range"),
 				be32_to_cpu(pRomHeader->ram_start),
 				be32_to_cpu(pRomHeader->ram_end), 8,
 				RomFields::STRF_MONOSPACE);
@@ -354,23 +364,23 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 			const char *suffix;
 			switch ((sram_info >> (8+3)) & 0x03) {
 				case 2:
-					suffix = "(even only)";
+					suffix = C_("MegaDrive", "(even only)");
 					break;
 				case 3:
-					suffix = "(odd only)";
+					suffix = C_("MegaDrive", "(odd only)");
 					break;
 				default:
 					// TODO: Are both alternates 16-bit?
-					suffix = "(16-bit)";
+					suffix = C_("MegaDrive", "(16-bit)");
 					break;
 			}
 
-			fields->addField_string_address_range("SRAM Range",
+			fields->addField_string_address_range(C_("MegaDrive", "SRAM Range"),
 				be32_to_cpu(pRomHeader->sram_start),
 				be32_to_cpu(pRomHeader->sram_end),
 				suffix, 8, RomFields::STRF_MONOSPACE);
 		} else {
-			fields->addField_string("SRAM Range", "None");
+			fields->addField_string(C_("MegaDrive", "SRAM Range"), C_("MegaDrive", "None"));
 		}
 
 		// Check for an extra ROM chip.
@@ -385,7 +395,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 			const uint32_t extrom_end   = (pRomHeader->extrom.data[3] << 16) |
 						      (pRomHeader->extrom.data[4] <<  8) |
 						       pRomHeader->extrom.data[5];
-			fields->addField_string_address_range("ExtROM Range",
+			fields->addField_string_address_range(C_("MegaDrive", "ExtROM Range"),
 				extrom_start, extrom_end, nullptr, 8,
 				RomFields::STRF_MONOSPACE);
 		}
@@ -394,12 +404,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 	// Region code.
 	// TODO: Validate the Mega CD security program?
 	static const char *const region_code_bitfield_names[] = {
-		"Japan", "Asia",
-		"USA", "Europe"
+		NOP_C_("MegaDrive|Region", "Japan"),
+		NOP_C_("MegaDrive|Region", "Asia"),
+		NOP_C_("MegaDrive|Region", "USA"),
+		NOP_C_("MegaDrive|Region", "Europe"),
 	};
-	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector(
-		region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	fields->addField_bitfield("Region Code",
+	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+		"MegaDrive|Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+	fields->addField_bitfield(C_("MegaDrive", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region);
 }
 
@@ -479,13 +491,14 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	}
 
 	static const char *const vectors_headers[] = {
-		"#",
-		"Vector",
-		"Address",
+		NOP_C_("MegaDrive|VectorTable", "#"),
+		NOP_C_("MegaDrive|VectorTable", "Vector"),
+		NOP_C_("MegaDrive|VectorTable", "Address"),
 	};
-	vector<string> *v_vectors_headers = RomFields::strArrayToVector(
-		vectors_headers, ARRAY_SIZE(vectors_headers));
-	fields->addField_listData("Vector Table", v_vectors_headers, vectors_info,
+	vector<string> *v_vectors_headers = RomFields::strArrayToVector_i18n(
+		"MegaDrive|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+	fields->addField_listData(C_("MegaDrive", "Vector Table"),
+		v_vectors_headers, vectors_info,
 		8, RomFields::RFT_LISTDATA_SEPARATE_ROW);
 }
 
@@ -911,12 +924,12 @@ int MegaDrive::loadFieldData(void)
 	d->fields->reserveTabs(2);
 
 	// ROM Header.
-	d->fields->setTabName(0, "ROM Header");
+	d->fields->setTabName(0, C_("MegaDrive", "ROM Header"));
 	d->addFields_romHeader(&d->romHeader);
 
 	if (!d->isDisc()) {
 		// Vector table. (MD only; not valid for Mega CD.)
-		d->fields->addTab("Vector Table");
+		d->fields->addTab(C_("MegaDrive", "Vector Table"));
 		d->addFields_vectorTable(&d->vectors);
 	}
 
@@ -963,7 +976,7 @@ int MegaDrive::loadFieldData(void)
 				// Show the ROM header.
 				const MD_RomHeader *const lockon_header =
 					reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
-				d->fields->addTab("Locked-On ROM Header");
+				d->fields->addTab(C_("MegaDrive", "Locked-On ROM Header"));
 				d->addFields_romHeader(lockon_header);
 			}
 		}
