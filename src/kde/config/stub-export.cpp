@@ -23,6 +23,11 @@
 // Qt includes.
 #include <QApplication>
 
+// i18n
+// TODO: Also localize rp-stub?
+// (Will require moving gettext out of librpbase.)
+#include "librpbase/i18n.hpp"
+
 /**
  * Exported function for the rp-config stub.
  * @param argc
@@ -49,6 +54,17 @@ Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 		// Create the QApplication.
 		rpApp = new QApplication(argc, argv);
 	}
+
+#if defined(ENABLE_NLS) && defined(HAVE_GETTEXT)
+	// TODO: Better location for this?
+#ifdef DIR_INSTALL_LOCALE
+	rp_i18n_init(DIR_INSTALL_LOCALE);
+#else
+	// Use the current directory.
+	// TODO: On Windows, use the DLL directory.
+	rp_i18n_init("locale");
+#endif
+#endif /* ENABLE_NLS && HAVE_GETTEXT */
 
 	// Create and run the ConfigDialog.
 	// TODO: Get the return value?
