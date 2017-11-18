@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 17:00-0500\n"
+"POT-Creation-Date: 2017-11-18 18:36-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3826,204 +3826,204 @@ msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is incorrect."
 msgstr ""
 
-#: ../src/librpbase/RomData.cpp:125
+#: ../src/librpbase/RomData.cpp:117
 msgctxt "RomData|FileSize"
 msgid "byte"
 msgid_plural "bytes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/librpbase/RomData.cpp:129
+#: ../src/librpbase/RomData.cpp:121
 msgctxt "RomData|FileSize"
 msgid "KB"
 msgstr ""
 
-#: ../src/librpbase/RomData.cpp:133
+#: ../src/librpbase/RomData.cpp:125
 msgctxt "RomData|FileSize"
 msgid "MB"
 msgstr ""
 
-#: ../src/librpbase/RomData.cpp:137
+#: ../src/librpbase/RomData.cpp:129
 msgctxt "RomData|FileSize"
 msgid "GB"
 msgstr ""
 
-#: ../src/librpbase/RomData.cpp:141
+#: ../src/librpbase/RomData.cpp:133
 msgctxt "RomData|FileSize"
 msgid "TB"
 msgstr ""
 
-#: ../src/librpbase/RomData.cpp:145
+#: ../src/librpbase/RomData.cpp:137
 msgctxt "RomData|FileSize"
 msgid "PB"
 msgstr ""
 
 #. if (size < (2ULL << 70))
-#: ../src/librpbase/RomData.cpp:149
+#: ../src/librpbase/RomData.cpp:141
 msgctxt "RomData|FileSize"
 msgid "EB"
 msgstr ""
 
 #. FTYPE_ROM_IMAGE
-#: ../src/librpbase/RomData.cpp:508
+#: ../src/librpbase/RomData.cpp:500
 msgctxt "RomData|FileType"
 msgid "ROM Image"
 msgstr ""
 
 #. FTYPE_DISC_IMAGE
-#: ../src/librpbase/RomData.cpp:510
+#: ../src/librpbase/RomData.cpp:502
 msgctxt "RomData|FileType"
 msgid "Disc Image"
 msgstr ""
 
 #. FTYPE_SAVE_FILE
-#: ../src/librpbase/RomData.cpp:512
+#: ../src/librpbase/RomData.cpp:504
 msgctxt "RomData|FileType"
 msgid "Save File"
 msgstr ""
 
 #. FTYPE_EMBEDDED_DISC_IMAGE
-#: ../src/librpbase/RomData.cpp:514
+#: ../src/librpbase/RomData.cpp:506
 msgctxt "RomData|FileType"
 msgid "Embedded Disc Image"
 msgstr ""
 
 #. FTYPE_APPLICATION_PACKAGE
-#: ../src/librpbase/RomData.cpp:516
+#: ../src/librpbase/RomData.cpp:508
 msgctxt "RomData|FileType"
 msgid "Application Package"
 msgstr ""
 
 #. FTYPE_NFC_DUMP
-#: ../src/librpbase/RomData.cpp:518
+#: ../src/librpbase/RomData.cpp:510
 msgctxt "RomData|FileType"
 msgid "NFC Dump"
 msgstr ""
 
 #. FTYPE_DISK_IMAGE
-#: ../src/librpbase/RomData.cpp:520
+#: ../src/librpbase/RomData.cpp:512
 msgctxt "RomData|FileType"
 msgid "Disk Image"
 msgstr ""
 
 #. FTYPE_EXECUTABLE
-#: ../src/librpbase/RomData.cpp:522
+#: ../src/librpbase/RomData.cpp:514
 msgctxt "RomData|FileType"
 msgid "Executable"
 msgstr ""
 
 #. FTYPE_DLL
-#: ../src/librpbase/RomData.cpp:524
+#: ../src/librpbase/RomData.cpp:516
 msgctxt "RomData|FileType"
 msgid "Dynamic Link Library"
 msgstr ""
 
 #. FTYPE_DEVICE_DRIVER
-#: ../src/librpbase/RomData.cpp:526
+#: ../src/librpbase/RomData.cpp:518
 msgctxt "RomData|FileType"
 msgid "Device Driver"
 msgstr ""
 
 #. FTYPE_RESOURCE_LIBRARY
-#: ../src/librpbase/RomData.cpp:528
+#: ../src/librpbase/RomData.cpp:520
 msgctxt "RomData|FileType"
 msgid "Resource Library"
 msgstr ""
 
 #. FTYPE_ICON_FILE
-#: ../src/librpbase/RomData.cpp:530
+#: ../src/librpbase/RomData.cpp:522
 msgctxt "RomData|FileType"
 msgid "Icon File"
 msgstr ""
 
 #. FTYPE_BANNER_FILE
-#: ../src/librpbase/RomData.cpp:532
+#: ../src/librpbase/RomData.cpp:524
 msgctxt "RomData|FileType"
 msgid "Banner File"
 msgstr ""
 
 #. FTYPE_HOMEBREW
-#: ../src/librpbase/RomData.cpp:534
+#: ../src/librpbase/RomData.cpp:526
 msgctxt "RomData|FileType"
 msgid "Homebrew Application"
 msgstr ""
 
 #. FTYPE_EMMC_DUMP
-#: ../src/librpbase/RomData.cpp:536
+#: ../src/librpbase/RomData.cpp:528
 msgctxt "RomData|FileType"
 msgid "eMMC Dump"
 msgstr ""
 
 #. FTYPE_TITLE_CONTENTS
-#: ../src/librpbase/RomData.cpp:538
+#: ../src/librpbase/RomData.cpp:530
 msgctxt "RomData|FileType"
 msgid "Title Contents"
 msgstr ""
 
 #. FTYPE_FIRMWARE_BINARY
-#: ../src/librpbase/RomData.cpp:540
+#: ../src/librpbase/RomData.cpp:532
 msgctxt "RomData|FileType"
 msgid "Firmware Binary"
 msgstr ""
 
 #. FTYPE_TEXTURE_FILE
-#: ../src/librpbase/RomData.cpp:542
+#: ../src/librpbase/RomData.cpp:534
 msgctxt "RomData|FileType"
 msgid "Texture File"
 msgstr ""
 
 #. * Internal *
 #. IMG_INT_ICON
-#: ../src/librpbase/RomData.cpp:736
+#: ../src/librpbase/RomData.cpp:728
 msgctxt "RomData|ImageType"
 msgid "Internal icon"
 msgstr ""
 
 #. IMG_INT_BANNER
-#: ../src/librpbase/RomData.cpp:738
+#: ../src/librpbase/RomData.cpp:730
 msgctxt "RomData|ImageType"
 msgid "Internal banner"
 msgstr ""
 
 #. IMG_INT_MEDIA
-#: ../src/librpbase/RomData.cpp:740
+#: ../src/librpbase/RomData.cpp:732
 msgctxt "RomData|ImageType"
 msgid "Internal media scan"
 msgstr ""
 
 #. IMG_INT_IMAGE
-#: ../src/librpbase/RomData.cpp:742
+#: ../src/librpbase/RomData.cpp:734
 msgctxt "RomData|ImageType"
 msgid "Internal image"
 msgstr ""
 
 #. * External *
 #. IMG_EXT_MEDIA
-#: ../src/librpbase/RomData.cpp:747
+#: ../src/librpbase/RomData.cpp:739
 msgctxt "RomData|ImageType"
 msgid "External media scan"
 msgstr ""
 
 #. IMG_EXT_COVER
-#: ../src/librpbase/RomData.cpp:749
+#: ../src/librpbase/RomData.cpp:741
 msgctxt "RomData|ImageType"
 msgid "External cover scan"
 msgstr ""
 
 #. IMG_EXT_COVER_3D
-#: ../src/librpbase/RomData.cpp:751
+#: ../src/librpbase/RomData.cpp:743
 msgctxt "RomData|ImageType"
 msgid "External cover scan (3D version)"
 msgstr ""
 
 #. IMG_EXT_COVER_FULL
-#: ../src/librpbase/RomData.cpp:753
+#: ../src/librpbase/RomData.cpp:745
 msgctxt "RomData|ImageType"
 msgid "External cover scan (front and back)"
 msgstr ""
 
 #. IMG_EXT_BOX
-#: ../src/librpbase/RomData.cpp:755
+#: ../src/librpbase/RomData.cpp:747
 msgctxt "RomData|ImageType"
 msgid "External box scan"
 msgstr ""
@@ -4097,13 +4097,13 @@ msgctxt "rpcli"
 msgid "Couldn't open file: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:291
+#: ../src/rpcli/rpcli.cpp:283
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type %ld"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:310
+#: ../src/rpcli/rpcli.cpp:302
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '%c'"
@@ -4141,4 +4141,121 @@ msgstr ""
 #, c-format
 msgctxt "rpcli"
 msgid "ERROR: %s"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:71
+msgctxt "rp_stub"
+msgid ""
+"Shared library stub program.\n"
+"Copyright (c) 2016-2017 by David Korth."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:74
+#, c-format
+msgctxt "rp-stub"
+msgid "rom-properties version: %s"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:84
+msgctxt "rp-stub"
+msgid ""
+"This program is licensed under the GNU GPL v2.\n"
+"See http://www.gnu.org/licenses/gpl-2.0.html for more information."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:94
+#, c-format
+msgctxt "rp-stub"
+msgid "Usage: %s [-s size] source_file output_file"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:98
+msgctxt "rp-stub"
+msgid ""
+"If source_file is a supported ROM image, a thumbnail is\n"
+"extracted and saved as output_file.\n"
+"\n"
+"Options:\n"
+"  -s, --size\t\tMaximum thumbnail size. (default is 256px)\n"
+"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
+"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
+"  -h, --help\t\tDisplay this help and exit.\n"
+"  -V, --version\t\tOutput version information and exit."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:108
+#, c-format
+msgctxt "rp-stub"
+msgid "Usage: %s"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:112
+msgctxt "rp-stub"
+msgid ""
+"When invoked as rp-config, this program will open the configuration dialog\n"
+"using an installed plugin that most closely matches the currently running\n"
+"desktop environment."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:193
+#, c-format
+msgctxt "rp-stub"
+msgid "%s: invalid size '%s'"
+msgstr ""
+
+#. Unrecognized option.
+#: ../src/rp-stub/rp-stub.c:195 ../src/rp-stub/rp-stub.c:201
+#: ../src/rp-stub/rp-stub.c:230 ../src/rp-stub/rp-stub.c:241
+#: ../src/rp-stub/rp-stub.c:247 ../src/rp-stub/rp-stub.c:253
+#, c-format
+msgctxt "rp-stub"
+msgid "Try '%s --help' for more information."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:199
+#, c-format
+msgctxt "rp-stub"
+msgid "%s: size '%s' is out of range"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:239
+#, c-format
+msgctxt "rp-stub"
+msgid "%s: missing source and output file parameters"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:245
+#, c-format
+msgctxt "rp-stub"
+msgid "%s: missing output file parameter"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:251
+#, c-format
+msgctxt "rp-stub"
+msgid "%s: too many parameters specified"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:273
+#, c-format
+msgctxt "rp-stub"
+msgid "Calling function: %s(\"%s\", \"%s\", %d);"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:281
+#, c-format
+msgctxt "rp-stub"
+msgid "Calling function: %s();"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:291
+#, c-format
+msgctxt "rp-stub"
+msgid "%s() returned %d."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:295
+#, c-format
+msgctxt "rp-stub"
+msgid "*** ERROR: %s() returned %d."
 msgstr ""
