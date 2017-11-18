@@ -1,0 +1,221 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR David Korth
+# This file is distributed under the same license as the rom-properties package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: rom-properties 1.2+\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-11-18 13:53-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: ../src/librpbase/RomData.cpp:125
+msgctxt "RomData|FileSize"
+msgid "byte"
+msgid_plural "bytes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/librpbase/RomData.cpp:129
+msgctxt "RomData|FileSize"
+msgid "KB"
+msgstr ""
+
+#: ../src/librpbase/RomData.cpp:133
+msgctxt "RomData|FileSize"
+msgid "MB"
+msgstr ""
+
+#: ../src/librpbase/RomData.cpp:137
+msgctxt "RomData|FileSize"
+msgid "GB"
+msgstr ""
+
+#: ../src/librpbase/RomData.cpp:141
+msgctxt "RomData|FileSize"
+msgid "TB"
+msgstr ""
+
+#: ../src/librpbase/RomData.cpp:145
+msgctxt "RomData|FileSize"
+msgid "PB"
+msgstr ""
+
+#. if (size < (2ULL << 70))
+#: ../src/librpbase/RomData.cpp:149
+msgctxt "RomData|FileSize"
+msgid "EB"
+msgstr ""
+
+#. FTYPE_ROM_IMAGE
+#: ../src/librpbase/RomData.cpp:508
+msgctxt "RomData|FileType"
+msgid "ROM Image"
+msgstr ""
+
+#. FTYPE_DISC_IMAGE
+#: ../src/librpbase/RomData.cpp:510
+msgctxt "RomData|FileType"
+msgid "Disc Image"
+msgstr ""
+
+#. FTYPE_SAVE_FILE
+#: ../src/librpbase/RomData.cpp:512
+msgctxt "RomData|FileType"
+msgid "Save File"
+msgstr ""
+
+#. FTYPE_EMBEDDED_DISC_IMAGE
+#: ../src/librpbase/RomData.cpp:514
+msgctxt "RomData|FileType"
+msgid "Embedded Disc Image"
+msgstr ""
+
+#. FTYPE_APPLICATION_PACKAGE
+#: ../src/librpbase/RomData.cpp:516
+msgctxt "RomData|FileType"
+msgid "Application Package"
+msgstr ""
+
+#. FTYPE_NFC_DUMP
+#: ../src/librpbase/RomData.cpp:518
+msgctxt "RomData|FileType"
+msgid "NFC Dump"
+msgstr ""
+
+#. FTYPE_DISK_IMAGE
+#: ../src/librpbase/RomData.cpp:520
+msgctxt "RomData|FileType"
+msgid "Disk Image"
+msgstr ""
+
+#. FTYPE_EXECUTABLE
+#: ../src/librpbase/RomData.cpp:522
+msgctxt "RomData|FileType"
+msgid "Executable"
+msgstr ""
+
+#. FTYPE_DLL
+#: ../src/librpbase/RomData.cpp:524
+msgctxt "RomData|FileType"
+msgid "Dynamic Link Library"
+msgstr ""
+
+#. FTYPE_DEVICE_DRIVER
+#: ../src/librpbase/RomData.cpp:526
+msgctxt "RomData|FileType"
+msgid "Device Driver"
+msgstr ""
+
+#. FTYPE_RESOURCE_LIBRARY
+#: ../src/librpbase/RomData.cpp:528
+msgctxt "RomData|FileType"
+msgid "Resource Library"
+msgstr ""
+
+#. FTYPE_ICON_FILE
+#: ../src/librpbase/RomData.cpp:530
+msgctxt "RomData|FileType"
+msgid "Icon File"
+msgstr ""
+
+#. FTYPE_BANNER_FILE
+#: ../src/librpbase/RomData.cpp:532
+msgctxt "RomData|FileType"
+msgid "Banner File"
+msgstr ""
+
+#. FTYPE_HOMEBREW
+#: ../src/librpbase/RomData.cpp:534
+msgctxt "RomData|FileType"
+msgid "Homebrew Application"
+msgstr ""
+
+#. FTYPE_EMMC_DUMP
+#: ../src/librpbase/RomData.cpp:536
+msgctxt "RomData|FileType"
+msgid "eMMC Dump"
+msgstr ""
+
+#. FTYPE_TITLE_CONTENTS
+#: ../src/librpbase/RomData.cpp:538
+msgctxt "RomData|FileType"
+msgid "Title Contents"
+msgstr ""
+
+#. FTYPE_FIRMWARE_BINARY
+#: ../src/librpbase/RomData.cpp:540
+msgctxt "RomData|FileType"
+msgid "Firmware Binary"
+msgstr ""
+
+#. FTYPE_TEXTURE_FILE
+#: ../src/librpbase/RomData.cpp:542
+msgctxt "RomData|FileType"
+msgid "Texture File"
+msgstr ""
+
+#. * Internal *
+#. IMG_INT_ICON
+#: ../src/librpbase/RomData.cpp:736
+msgctxt "RomData|ImageType"
+msgid "Internal icon"
+msgstr ""
+
+#. IMG_INT_BANNER
+#: ../src/librpbase/RomData.cpp:738
+msgctxt "RomData|ImageType"
+msgid "Internal banner"
+msgstr ""
+
+#. IMG_INT_MEDIA
+#: ../src/librpbase/RomData.cpp:740
+msgctxt "RomData|ImageType"
+msgid "Internal media scan"
+msgstr ""
+
+#. IMG_INT_IMAGE
+#: ../src/librpbase/RomData.cpp:742
+msgctxt "RomData|ImageType"
+msgid "Internal image"
+msgstr ""
+
+#. * External *
+#. IMG_EXT_MEDIA
+#: ../src/librpbase/RomData.cpp:747
+msgctxt "RomData|ImageType"
+msgid "External media scan"
+msgstr ""
+
+#. IMG_EXT_COVER
+#: ../src/librpbase/RomData.cpp:749
+msgctxt "RomData|ImageType"
+msgid "External cover scan"
+msgstr ""
+
+#. IMG_EXT_COVER_3D
+#: ../src/librpbase/RomData.cpp:751
+msgctxt "RomData|ImageType"
+msgid "External cover scan (3D version)"
+msgstr ""
+
+#. IMG_EXT_COVER_FULL
+#: ../src/librpbase/RomData.cpp:753
+msgctxt "RomData|ImageType"
+msgid "External cover scan (front and back)"
+msgstr ""
+
+#. IMG_EXT_BOX
+#: ../src/librpbase/RomData.cpp:755
+msgctxt "RomData|ImageType"
+msgid "External box scan"
+msgstr ""
