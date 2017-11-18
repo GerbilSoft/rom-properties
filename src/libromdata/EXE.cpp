@@ -205,7 +205,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// File subtype.
 	bool hasSubtype = false;
-	const char *fileSubtype;
+	const char *fileSubtype = nullptr;
 	switch (pVsFfi->dwFileType) {
 		case VFT_DRV: {
 			hasSubtype = true;
