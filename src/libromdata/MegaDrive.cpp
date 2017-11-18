@@ -404,13 +404,13 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 	// Region code.
 	// TODO: Validate the Mega CD security program?
 	static const char *const region_code_bitfield_names[] = {
-		NOP_C_("MegaDrive|Region", "Japan"),
-		NOP_C_("MegaDrive|Region", "Asia"),
-		NOP_C_("MegaDrive|Region", "USA"),
-		NOP_C_("MegaDrive|Region", "Europe"),
+		NOP_C_("Region", "Japan"),
+		NOP_C_("Region", "Asia"),
+		NOP_C_("Region", "USA"),
+		NOP_C_("Region", "Europe"),
 	};
 	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"MegaDrive|Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	fields->addField_bitfield(C_("MegaDrive", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region);
 }

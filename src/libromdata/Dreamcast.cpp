@@ -641,12 +641,12 @@ int Dreamcast::loadFieldData(void)
 	region_code |= (discHeader->area_symbols[2] == 'E') << 2;
 
 	static const char *const region_code_bitfield_names[] = {
-		NOP_C_("Dreamcast|Region", "Japan"),
-		NOP_C_("Dreamcast|Region", "USA"),
-		NOP_C_("Dreamcast|Region", "Europe"),
+		NOP_C_("Region", "Japan"),
+		NOP_C_("Region", "USA"),
+		NOP_C_("Region", "Europe"),
 	};
 	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Dreamcast|Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(C_("Dreamcast", "Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 

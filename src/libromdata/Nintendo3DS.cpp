@@ -1839,16 +1839,16 @@ int Nintendo3DS::loadFieldData(void)
 		// Region code.
 		// Maps directly to the SMDH field.
 		static const char *const n3ds_region_bitfield_names[] = {
-			NOP_C_("Nintendo3DS|Region", "Japan"),
-			NOP_C_("Nintendo3DS|Region", "USA"),
-			NOP_C_("Nintendo3DS|Region", "Europe"),
-			NOP_C_("Nintendo3DS|Region", "Australia"),
-			NOP_C_("Nintendo3DS|Region", "China"),
-			NOP_C_("Nintendo3DS|Region", "South Korea"),
-			NOP_C_("Nintendo3DS|Region", "Taiwan"),
+			NOP_C_("Region", "Japan"),
+			NOP_C_("Region", "USA"),
+			NOP_C_("Region", "Europe"),
+			NOP_C_("Region", "Australia"),
+			NOP_C_("Region", "China"),
+			NOP_C_("Region", "South Korea"),
+			NOP_C_("Region", "Taiwan"),
 		};
 		vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Nintendo3DS|Region", n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
+			"Region", n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
 		d->fields->addField_bitfield(C_("Nintendo3DS", "Region Code"),
 			v_n3ds_region_bitfield_names, 3, le32_to_cpu(d->smdh.header.settings.region_code));
 

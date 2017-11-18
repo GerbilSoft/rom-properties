@@ -385,17 +385,17 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			switch (idRegion) {
 				case 'J':	// Japan
 				default:
-					return C_("GameCube|Region", "Japan");
+					return C_("Region", "Japan");
 
 				case 'W':	// Taiwan
-					return C_("GameCube|Region", "Taiwan (JPN)");
+					return C_("Region|GameCube", "Taiwan (JPN)");
 				case 'K':	// South Korea
 				case 'T':	// South Korea with Japanese language
 				case 'Q':	// South Korea with English language
 					// FIXME: Is this combination possible?
-					return C_("GameCube|Region", "South Korea (JPN)");
+					return C_("Region|GameCube", "South Korea (JPN)");
 				case 'C':	// China (unofficial?)
-					return C_("GameCube|Region", "China (JPN)");
+					return C_("Region|GameCube", "China (JPN)");
 			}
 
 		case GCN_REGION_PAL:
@@ -406,22 +406,22 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 				case 'L':	// Japanese import to PAL regions
 				case 'M':	// Japanese import to PAL regions
 				default:
-					return C_("GameCube|Region", "Europe / Australia (PAL)");
+					return C_("Region|GameCube", "Europe / Australia (PAL)");
 
 				case 'D':	// Germany
-					return C_("GameCube|Region", "Germany (PAL)");
+					return C_("Region|GameCube", "Germany (PAL)");
 				case 'F':	// France
-					return C_("GameCube|Region", "France (PAL)");
+					return C_("Region|GameCube", "France (PAL)");
 				case 'H':	// Netherlands
-					return C_("GameCube|Region", "Netherlands (PAL)");
+					return C_("Region|GameCube", "Netherlands (PAL)");
 				case 'I':	// Italy
-					return C_("GameCube|Region", "Italy (PAL)");
+					return C_("Region|GameCube", "Italy (PAL)");
 				case 'R':	// Russia
-					return C_("GameCube|Region", "Russia (PAL)");
+					return C_("Region|GameCube", "Russia (PAL)");
 				case 'S':	// Spain
-					return C_("GameCube|Region", "Spain (PAL)");
+					return C_("Region|GameCube", "Spain (PAL)");
 				case 'U':	// Australia
-					return C_("GameCube|Region", "Australia (PAL)");
+					return C_("Region|GameCube", "Australia (PAL)");
 			}
 
 		// USA and South Korea regions don't have separate
@@ -432,14 +432,14 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			// - N: Japanese import to USA and other NTSC regions.
 			// - Z: Prince of Persia - The Forgotten Sands (Wii)
 			// - B: Ufouria: The Saga (Virtual Console)
-			return C_("GameCube|Region", "USA");
+			return C_("Region", "USA");
 
 		case GCN_REGION_SOUTH_KOREA:
 			// Possible game ID regions:
 			// - K: South Korea
 			// - Q: South Korea with Japanese language
 			// - T: South Korea with English language
-			return C_("GameCube|Region", "South Korea");
+			return C_("Region", "South Korea");
 
 		default:
 			break;

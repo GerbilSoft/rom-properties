@@ -595,29 +595,29 @@ int SNES::loadFieldData(void)
 
  	// Region
 	static const char *const region_tbl[0x15] = {
-		NOP_C_("SNES|Region", "Japan"),
-		NOP_C_("SNES|Region", "North America"),
-		NOP_C_("SNES|Region", "Europe"),
-		NOP_C_("SNES|Region", "Scandinavia"),
+		NOP_C_("Region", "Japan"),
+		NOP_C_("Region", "North America"),
+		NOP_C_("Region", "Europe"),
+		NOP_C_("Region", "Scandinavia"),
 		nullptr, nullptr,
-		NOP_C_("SNES|Region", "France"),
-		NOP_C_("SNES|Region", "Netherlands"),
-		NOP_C_("SNES|Region", "Spain"),
-		NOP_C_("SNES|Region", "Germany"),
-		NOP_C_("SNES|Region", "Italy"),
-		NOP_C_("SNES|Region", "China"),
+		NOP_C_("Region", "France"),
+		NOP_C_("Region", "Netherlands"),
+		NOP_C_("Region", "Spain"),
+		NOP_C_("Region", "Germany"),
+		NOP_C_("Region", "Italy"),
+		NOP_C_("Region", "China"),
 		nullptr,
-		NOP_C_("SNES|Region", "South Korea"),
-		NOP_C_("SNES|Region", "All"),
-		NOP_C_("SNES|Region", "Canada"),
-		NOP_C_("SNES|Region", "Brazil"),
-		NOP_C_("SNES|Region", "Australia"),
-		NOP_C_("SNES|Region", "Other"),
-		NOP_C_("SNES|Region", "Other"),
-		NOP_C_("SNES|Region", "Other"),
+		NOP_C_("Region", "South Korea"),
+		NOP_C_("Region", "All"),
+		NOP_C_("Region", "Canada"),
+		NOP_C_("Region", "Brazil"),
+		NOP_C_("Region", "Australia"),
+		NOP_C_("Region", "Other"),
+		NOP_C_("Region", "Other"),
+		NOP_C_("Region", "Other"),
 	};
 	const char *const region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
-		? dpgettext_expr(RP_I18N_DOMAIN, "SNES|Region", region_tbl[romHeader->destination_code])
+		? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->destination_code])
 		: nullptr);
 	d->fields->addField_string(C_("SNES", "Region"),
 		region ? region : C_("SNES", "Unknown"));

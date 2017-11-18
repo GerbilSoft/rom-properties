@@ -390,10 +390,10 @@ int VirtualBoy::loadFieldData(void)
 	const char *region;
 	switch (romHeader->gameid[3]) {
 		case 'J':
-			region = C_("VirtualBoy|Region", "Japan");
+			region = C_("Region", "Japan");
 			break;
 		case 'E':
-			region = C_("VirtualBoy|Region", "USA");
+			region = C_("Region", "USA");
 			break;
 		default:
 			region = C_("VirtualBoy", "Unknown");

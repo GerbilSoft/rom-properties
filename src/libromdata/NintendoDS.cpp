@@ -1142,12 +1142,12 @@ int NintendoDS::loadFieldData(void)
 		}
 
 		static const char *const nds_region_bitfield_names[] = {
-			NOP_C_("NintendoDS|Region", "Region-Free"),
-			NOP_C_("NintendoDS|Region", "South Korea"),
-			NOP_C_("NintendoDS|Region", "China"),
+			NOP_C_("Region", "Region-Free"),
+			NOP_C_("Region", "South Korea"),
+			NOP_C_("Region", "China"),
 		};
 		vector<string> *v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"NintendoDS|Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+			"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
 		d->fields->addField_bitfield("DS Region",
 			v_nds_region_bitfield_names, 0, nds_region);
 	}
@@ -1161,15 +1161,15 @@ int NintendoDS::loadFieldData(void)
 		// DSi Region.
 		// Maps directly to the header field.
 		static const char *const dsi_region_bitfield_names[] = {
-			NOP_C_("NintendoDS|Region", "Japan"),
-			NOP_C_("NintendoDS|Region", "USA"),
-			NOP_C_("NintendoDS|Region", "Europe"),
-			NOP_C_("NintendoDS|Region", "Australia"),
-			NOP_C_("NintendoDS|Region", "China"),
-			NOP_C_("NintendoDS|Region", "South Korea"),
+			NOP_C_("Region", "Japan"),
+			NOP_C_("Region", "USA"),
+			NOP_C_("Region", "Europe"),
+			NOP_C_("Region", "Australia"),
+			NOP_C_("Region", "China"),
+			NOP_C_("Region", "South Korea"),
 		};
 		vector<string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"NintendoDS|Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
+			"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
 		d->fields->addField_bitfield(region_code_name,
 			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 

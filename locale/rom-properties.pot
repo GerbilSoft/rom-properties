@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 16:36-0500\n"
+"POT-Creation-Date: 2017-11-18 17:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -715,12 +715,12 @@ msgid "Region"
 msgstr ""
 
 #: ../src/libromdata/DMG.cpp:653
-msgctxt "DMG|Region"
+msgctxt "Region|DMG"
 msgid "Japanese"
 msgstr ""
 
 #: ../src/libromdata/DMG.cpp:656
-msgctxt "DMG|Region"
+msgctxt "Region|DMG"
 msgid "Non-Japanese"
 msgstr ""
 
@@ -801,18 +801,31 @@ msgctxt "Dreamcast"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:644
-msgctxt "Dreamcast|Region"
+#: ../src/libromdata/Dreamcast.cpp:644 ../src/libromdata/GameCube.cpp:388
+#: ../src/libromdata/MegaDrive.cpp:407 ../src/libromdata/Nintendo3DS.cpp:1842
+#: ../src/libromdata/NintendoDS.cpp:1164 ../src/libromdata/SegaSaturn.cpp:527
+#: ../src/libromdata/SNES.cpp:598 ../src/libromdata/VirtualBoy.cpp:393
+msgctxt "Region"
 msgid "Japan"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:645
-msgctxt "Dreamcast|Region"
+#. Possible game ID regions:
+#. - E: USA
+#. - N: Japanese import to USA and other NTSC regions.
+#. - Z: Prince of Persia - The Forgotten Sands (Wii)
+#. - B: Ufouria: The Saga (Virtual Console)
+#: ../src/libromdata/Dreamcast.cpp:645 ../src/libromdata/GameCube.cpp:435
+#: ../src/libromdata/MegaDrive.cpp:409 ../src/libromdata/Nintendo3DS.cpp:1843
+#: ../src/libromdata/NintendoDS.cpp:1165 ../src/libromdata/SegaSaturn.cpp:529
+#: ../src/libromdata/VirtualBoy.cpp:396
+msgctxt "Region"
 msgid "USA"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:646
-msgctxt "Dreamcast|Region"
+#: ../src/libromdata/Dreamcast.cpp:646 ../src/libromdata/MegaDrive.cpp:410
+#: ../src/libromdata/Nintendo3DS.cpp:1844 ../src/libromdata/NintendoDS.cpp:1166
+#: ../src/libromdata/SegaSaturn.cpp:530 ../src/libromdata/SNES.cpp:600
+msgctxt "Region"
 msgid "Europe"
 msgstr ""
 
@@ -1861,14 +1874,9 @@ msgctxt "GameBoyAdvance"
 msgid "Not bootable (Nintendo DS expansion)"
 msgstr ""
 
-#: ../src/libromdata/GameCube.cpp:388
-msgctxt "GameCube|Region"
-msgid "Japan"
-msgstr ""
-
 #. Taiwan
 #: ../src/libromdata/GameCube.cpp:391
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Taiwan (JPN)"
 msgstr ""
 
@@ -1877,79 +1885,71 @@ msgstr ""
 #. South Korea with English language
 #. FIXME: Is this combination possible?
 #: ../src/libromdata/GameCube.cpp:396
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "South Korea (JPN)"
 msgstr ""
 
 #. China (unofficial?)
 #: ../src/libromdata/GameCube.cpp:398
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "China (JPN)"
 msgstr ""
 
 #: ../src/libromdata/GameCube.cpp:409
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Europe / Australia (PAL)"
 msgstr ""
 
 #. Germany
 #: ../src/libromdata/GameCube.cpp:412
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Germany (PAL)"
 msgstr ""
 
 #. France
 #: ../src/libromdata/GameCube.cpp:414
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "France (PAL)"
 msgstr ""
 
 #. Netherlands
 #: ../src/libromdata/GameCube.cpp:416
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Netherlands (PAL)"
 msgstr ""
 
 #. Italy
 #: ../src/libromdata/GameCube.cpp:418
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Italy (PAL)"
 msgstr ""
 
 #. Russia
 #: ../src/libromdata/GameCube.cpp:420
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Russia (PAL)"
 msgstr ""
 
 #. Spain
 #: ../src/libromdata/GameCube.cpp:422
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Spain (PAL)"
 msgstr ""
 
 #. Australia
 #: ../src/libromdata/GameCube.cpp:424
-msgctxt "GameCube|Region"
+msgctxt "Region|GameCube"
 msgid "Australia (PAL)"
-msgstr ""
-
-#. Possible game ID regions:
-#. - E: USA
-#. - N: Japanese import to USA and other NTSC regions.
-#. - Z: Prince of Persia - The Forgotten Sands (Wii)
-#. - B: Ufouria: The Saga (Virtual Console)
-#: ../src/libromdata/GameCube.cpp:435
-msgctxt "GameCube|Region"
-msgid "USA"
 msgstr ""
 
 #. Possible game ID regions:
 #. - K: South Korea
 #. - Q: South Korea with Japanese language
 #. - T: South Korea with English language
-#: ../src/libromdata/GameCube.cpp:442
-msgctxt "GameCube|Region"
+#: ../src/libromdata/GameCube.cpp:442 ../src/libromdata/Nintendo3DS.cpp:1847
+#: ../src/libromdata/NintendoDS.cpp:1146 ../src/libromdata/NintendoDS.cpp:1169
+#: ../src/libromdata/SNES.cpp:610
+msgctxt "Region"
 msgid "South Korea"
 msgstr ""
 
@@ -2340,24 +2340,9 @@ msgctxt "MegaDrive"
 msgid "ExtROM Range"
 msgstr ""
 
-#: ../src/libromdata/MegaDrive.cpp:407
-msgctxt "MegaDrive|Region"
-msgid "Japan"
-msgstr ""
-
 #: ../src/libromdata/MegaDrive.cpp:408
-msgctxt "MegaDrive|Region"
+msgctxt "Region"
 msgid "Asia"
-msgstr ""
-
-#: ../src/libromdata/MegaDrive.cpp:409
-msgctxt "MegaDrive|Region"
-msgid "USA"
-msgstr ""
-
-#: ../src/libromdata/MegaDrive.cpp:410
-msgctxt "MegaDrive|Region"
-msgid "Europe"
 msgstr ""
 
 #: ../src/libromdata/MegaDrive.cpp:414
@@ -2704,38 +2689,20 @@ msgctxt "Nintendo3DS"
 msgid "Publisher"
 msgstr ""
 
-#: ../src/libromdata/Nintendo3DS.cpp:1842
-msgctxt "Nintendo3DS|Region"
-msgid "Japan"
-msgstr ""
-
-#: ../src/libromdata/Nintendo3DS.cpp:1843
-msgctxt "Nintendo3DS|Region"
-msgid "USA"
-msgstr ""
-
-#: ../src/libromdata/Nintendo3DS.cpp:1844
-msgctxt "Nintendo3DS|Region"
-msgid "Europe"
-msgstr ""
-
-#: ../src/libromdata/Nintendo3DS.cpp:1845
-msgctxt "Nintendo3DS|Region"
+#: ../src/libromdata/Nintendo3DS.cpp:1845 ../src/libromdata/NintendoDS.cpp:1167
+#: ../src/libromdata/SNES.cpp:614
+msgctxt "Region"
 msgid "Australia"
 msgstr ""
 
-#: ../src/libromdata/Nintendo3DS.cpp:1846
-msgctxt "Nintendo3DS|Region"
+#: ../src/libromdata/Nintendo3DS.cpp:1846 ../src/libromdata/NintendoDS.cpp:1147
+#: ../src/libromdata/NintendoDS.cpp:1168 ../src/libromdata/SNES.cpp:608
+msgctxt "Region"
 msgid "China"
 msgstr ""
 
-#: ../src/libromdata/Nintendo3DS.cpp:1847
-msgctxt "Nintendo3DS|Region"
-msgid "South Korea"
-msgstr ""
-
-#: ../src/libromdata/Nintendo3DS.cpp:1848
-msgctxt "Nintendo3DS|Region"
+#: ../src/libromdata/Nintendo3DS.cpp:1848 ../src/libromdata/SegaSaturn.cpp:528
+msgctxt "Region"
 msgid "Taiwan"
 msgstr ""
 
@@ -3238,18 +3205,8 @@ msgid "Hardware"
 msgstr ""
 
 #: ../src/libromdata/NintendoDS.cpp:1145
-msgctxt "NintendoDS|Region"
+msgctxt "Region"
 msgid "Region-Free"
-msgstr ""
-
-#: ../src/libromdata/NintendoDS.cpp:1146 ../src/libromdata/NintendoDS.cpp:1169
-msgctxt "NintendoDS|Region"
-msgid "South Korea"
-msgstr ""
-
-#: ../src/libromdata/NintendoDS.cpp:1147 ../src/libromdata/NintendoDS.cpp:1168
-msgctxt "NintendoDS|Region"
-msgid "China"
 msgstr ""
 
 #: ../src/libromdata/NintendoDS.cpp:1158
@@ -3260,26 +3217,6 @@ msgstr ""
 #: ../src/libromdata/NintendoDS.cpp:1159
 msgctxt "NintendoDS"
 msgid "DSi Region"
-msgstr ""
-
-#: ../src/libromdata/NintendoDS.cpp:1164
-msgctxt "NintendoDS|Region"
-msgid "Japan"
-msgstr ""
-
-#: ../src/libromdata/NintendoDS.cpp:1165
-msgctxt "NintendoDS|Region"
-msgid "USA"
-msgstr ""
-
-#: ../src/libromdata/NintendoDS.cpp:1166
-msgctxt "NintendoDS|Region"
-msgid "Europe"
-msgstr ""
-
-#: ../src/libromdata/NintendoDS.cpp:1167
-msgctxt "NintendoDS|Region"
-msgid "Australia"
 msgstr ""
 
 #. Title ID.
@@ -3524,26 +3461,6 @@ msgctxt "SegaSaturn"
 msgid "Release Date"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:527
-msgctxt "SegaSaturn|Region"
-msgid "Japan"
-msgstr ""
-
-#: ../src/libromdata/SegaSaturn.cpp:528
-msgctxt "SegaSaturn|Region"
-msgid "Taiwan"
-msgstr ""
-
-#: ../src/libromdata/SegaSaturn.cpp:529
-msgctxt "SegaSaturn|Region"
-msgid "USA"
-msgstr ""
-
-#: ../src/libromdata/SegaSaturn.cpp:530
-msgctxt "SegaSaturn|Region"
-msgid "Europe"
-msgstr ""
-
 #: ../src/libromdata/SegaSaturn.cpp:534
 msgctxt "SegaSaturn"
 msgid "Region Code"
@@ -3720,84 +3637,59 @@ msgctxt "SNES"
 msgid "Cartridge HW"
 msgstr ""
 
-#: ../src/libromdata/SNES.cpp:598
-msgctxt "SNES|Region"
-msgid "Japan"
-msgstr ""
-
 #: ../src/libromdata/SNES.cpp:599
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "North America"
 msgstr ""
 
-#: ../src/libromdata/SNES.cpp:600
-msgctxt "SNES|Region"
-msgid "Europe"
-msgstr ""
-
 #: ../src/libromdata/SNES.cpp:601
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Scandinavia"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:603
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "France"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:604
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Netherlands"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:605
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Spain"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:606
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Germany"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:607
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Italy"
 msgstr ""
 
-#: ../src/libromdata/SNES.cpp:608
-msgctxt "SNES|Region"
-msgid "China"
-msgstr ""
-
-#: ../src/libromdata/SNES.cpp:610
-msgctxt "SNES|Region"
-msgid "South Korea"
-msgstr ""
-
 #: ../src/libromdata/SNES.cpp:611
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "All"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:612
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Canada"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:613
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Brazil"
-msgstr ""
-
-#: ../src/libromdata/SNES.cpp:614
-msgctxt "SNES|Region"
-msgid "Australia"
 msgstr ""
 
 #: ../src/libromdata/SNES.cpp:615 ../src/libromdata/SNES.cpp:616
 #: ../src/libromdata/SNES.cpp:617
-msgctxt "SNES|Region"
+msgctxt "Region"
 msgid "Other"
 msgstr ""
 
@@ -3838,16 +3730,6 @@ msgstr ""
 #: ../src/libromdata/VirtualBoy.cpp:386
 msgctxt "VirtualBoy"
 msgid "Revision"
-msgstr ""
-
-#: ../src/libromdata/VirtualBoy.cpp:393
-msgctxt "VirtualBoy|Region"
-msgid "Japan"
-msgstr ""
-
-#: ../src/libromdata/VirtualBoy.cpp:396
-msgctxt "VirtualBoy|Region"
-msgid "USA"
 msgstr ""
 
 #: ../src/libromdata/VirtualBoy.cpp:402

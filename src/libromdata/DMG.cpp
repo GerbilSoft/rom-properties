@@ -650,10 +650,10 @@ int DMG::loadFieldData(void)
 	// Region
 	switch (romHeader->region) {
 		case 0:
-			d->fields->addField_string(C_("DMG", "Region"), C_("DMG|Region", "Japanese"));
+			d->fields->addField_string(C_("DMG", "Region"), C_("Region|DMG", "Japanese"));
 			break;
 		case 1:
-			d->fields->addField_string(C_("DMG", "Region"), C_("DMG|Region", "Non-Japanese"));
+			d->fields->addField_string(C_("DMG", "Region"), C_("Region|DMG", "Non-Japanese"));
 			break;
 		default:
 			// Invalid value.

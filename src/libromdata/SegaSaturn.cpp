@@ -524,13 +524,13 @@ int SegaSaturn::loadFieldData(void)
 	// constructor, since it might be used for branding purposes
 	// later.
 	static const char *const region_code_bitfield_names[] = {
-		NOP_C_("SegaSaturn|Region", "Japan"),
-		NOP_C_("SegaSaturn|Region", "Taiwan"),
-		NOP_C_("SegaSaturn|Region", "USA"),
-		NOP_C_("SegaSaturn|Region", "Europe"),
+		NOP_C_("Region", "Japan"),
+		NOP_C_("Region", "Taiwan"),
+		NOP_C_("Region", "USA"),
+		NOP_C_("Region", "Europe"),
 	};
 	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"SegaSaturn|Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(C_("SegaSaturn", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
