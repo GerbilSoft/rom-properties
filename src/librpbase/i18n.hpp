@@ -22,6 +22,8 @@
 # define C_(msgctxt, msgid)			(msgid)
 # define N_(msgid1, msgid2, n)			((n) == 1 ? (msgid1) : (msgid2))
 # define NC_(msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
+# define dpgettext_expr(domain, msgctxt, msgid)			(msgid)
+# define dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
 #endif
 
 /* No-op formats that are translated later. */
