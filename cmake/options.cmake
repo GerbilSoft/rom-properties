@@ -80,3 +80,11 @@ ENDIF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 
 # Enable coverage checking. (gcc/clang only)
 OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)
+
+# Enable NLS. (internationalization)
+# TODO: Get this working on Windows.
+IF(NOT WIN32)
+OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
+ELSE()
+SET(ENABLE_NLS OFF)
+ENDIF()

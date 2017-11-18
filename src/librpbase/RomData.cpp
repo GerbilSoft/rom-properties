@@ -19,12 +19,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 #include "RomData.hpp"
 #include "RomData_p.hpp"
 
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
 #include "threads/Atomics.h"
+#include "i18n.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -58,6 +61,17 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	, className(nullptr)
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
+#ifdef ENABLE_NLS
+	// TODO: Better location for this?
+#ifdef DIR_INSTALL_LOCALE
+	rp_i18n_init(DIR_INSTALL_LOCALE);
+#else
+	// Use the current directory.
+	// TODO: On Windows, use the DLL directory.
+	rp_i18n_init("locale");
+#endif
+#endif /* ENABLE_NLS */
+
 	if (!file)
 		return;
 

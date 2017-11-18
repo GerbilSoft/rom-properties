@@ -106,6 +106,12 @@ INCLUDE(CheckPNG)
 INCLUDE(CheckJPEG)
 INCLUDE(CheckTinyXML2)
 
+# TODO: Internal copy of gettext for Windows.
+IF(ENABLE_NLS)
+	FIND_PACKAGE(Intl)
+	FIND_PACKAGE(Gettext)
+ENDIF(ENABLE_NLS)
+
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)
 ADD_SUBDIRECTORY(src)

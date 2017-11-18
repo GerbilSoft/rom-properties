@@ -314,7 +314,24 @@ IF(NOT HAVE_MSVC_ALIGNED_MALLOC AND NOT HAVE_ALIGNED_ALLOC AND NOT HAVE_POSIX_ME
 	MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
 ENDIF()
 
+IF(ENABLE_NLS)
+	# Find gettext.
+	# Intl == runtime library
+	# Gettext == compile-time tools
+	FIND_PACKAGE(Intl REQUIRED)
+	FIND_PACKAGE(Gettext REQUIRED)
+	IF(INTL_FOUND AND GETTEXT_FOUND)
+		SET(HAVE_GETTEXT 1)
+		SET(librpbase_I18N_SRCS i18n.cpp)
+	ENDIF(INTL_FOUND AND GETTEXT_FOUND)
+
+	# Always include i18n.hpp, since it has NOP macros
+	# if NLS is disabled.
+	SET(librpbase_I18N_H i18n.hpp)
+ENDIF(ENABLE_NLS)
+
 # Write the config.h file.
+INCLUDE(DirInstallPaths)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
 
 ######################
@@ -331,6 +348,7 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_IFUNC_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
+	${librpbase_I18N_SRCS} ${librpbase_I18N_H}
 	)
 # TODO: Get rid of this.
 TARGET_COMPILE_DEFINITIONS(rpbase PUBLIC -DRP_UTF8)
@@ -400,6 +418,11 @@ ENDIF(WIN32)
 IF(CMAKE_THREAD_LIBS_INIT)
 	TARGET_LINK_LIBRARIES(rpbase ${CMAKE_THREAD_LIBS_INIT})
 ENDIF(CMAKE_THREAD_LIBS_INIT)
+
+IF(ENABLE_NLS AND INTL_FOUND AND GETTEXT_FOUND)
+	TARGET_LINK_LIBRARIES(rpbase ${Intl_LIBRARIES})
+	TARGET_INCLUDE_DIRECTORIES(rpbase PUBLIC ${Intl_INCLUDE_DIR})
+ENDIF(ENABLE_NLS AND INTL_FOUND AND GETTEXT_FOUND)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
