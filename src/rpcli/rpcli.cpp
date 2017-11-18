@@ -54,12 +54,14 @@ using namespace LibRomData;
 #include <fstream>
 #include <iostream>
 #include <locale>
+#include <string>
 #include <vector>
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::locale;
 using std::ofstream;
+using std::string;
 
 struct ExtractParam {
 	int image_type; // Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
@@ -179,37 +181,32 @@ static void DoFile(const char *filename, bool json, std::vector<ExtractParam>& e
  */
 static void PrintSystemRegion(void)
 {
-	uint32_t lc = SystemRegion::getLanguageCode();
-	cout << "System language code: ";
-	if (lc == 0) {
-		cout << "0 (this is a bug!)";
-	}
-	else {
-		// Print the language code, left-to-right.
-		// TODO: Optimize this.
-		lc = __swab32(lc);
+	string buf;
+	buf.reserve(8);
+
+	uint32_t lc = __swab32(SystemRegion::getLanguageCode());
+	if (lc != 0) {
 		for (unsigned int i = 4; i > 0; i--, lc >>= 8) {
 			if ((lc & 0xFF) == 0)
 				continue;
-			cout << (char)(lc & 0xFF);
+			buf += (char)(lc & 0xFF);
 		}
 	}
+	cout << rp_sprintf(C_("rpcli", "System language code: %s"),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
 	cout << endl;
 
-	uint32_t cc = SystemRegion::getCountryCode();
-	cout << "System country code:  ";
-	if (cc == 0) {
-		cout << "0 (this is a bug!)";
-	} else {
-		// Print the country code, left-to-right.
-		// TODO: Optimize this.
-		cc = __swab32(cc);
+	uint32_t cc = __swab32(SystemRegion::getCountryCode());
+	buf.clear();
+	if (cc != 0) {
 		for (unsigned int i = 4; i > 0; i--, cc >>= 8) {
 			if ((cc & 0xFF) == 0)
 				continue;
-			cout << (char)(cc & 0xFF);
+			buf += (char)(cc & 0xFF);
 		}
 	}
+	cout << rp_sprintf(C_("rpcli", "System country code: %s"),
+		(!buf.empty() ? buf.c_str() : C_("rpcli", "0 (this is a bug!)")));
 	cout << endl;
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
@@ -226,22 +223,22 @@ int RP_C_API main(int argc, char *argv[])
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
-		cerr << "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]..." << endl;
-		cerr << "  -k:   Verify encryption keys in keys.conf." << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]...") << endl;
+		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << endl;
 #else /* !ENABLE_DECRYPTION */
-		cerr << "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..." << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-j] [[-x[b]N outfile]... filename]...") << endl;
 #endif /* ENABLE_DECRYPTION */
-		cerr << "  -c:   Print system region information." << endl;
-		cerr << "  -j:   Use JSON output format." << endl;
-		cerr << "  -xN:  Extract image N to outfile in PNG format." << endl;
-		cerr << "  -xbN: Extract image N to outfile in BMP format." << endl;
-		cerr << "  -a:   Extract the animated icon to outfile in APNG format." << endl;
+		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << endl;
+		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << endl;
+		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
+		cerr << "  -xbN: " << C_("rpcli", "Extract image N to outfile in BMP format.") << endl;
+		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
 		cerr << endl;
-		cerr << "Examples:" << endl;
+		cerr << C_("rpcli", "Examples:") << endl;
 		cerr << "* rpcli s3.gen" << endl;
-		cerr << "\t displays info about s3.gen" << endl;
-		cerr << "* rpcli -x0 icon.png ~/pokeb2.nds" << endl;
-		cerr << "\t extracts icon from ~/pokeb2.nds" << endl;
+		cerr << "\t " << C_("rpcli", "displays info about s3.gen") << endl;
+		cerr << "* rpcli -x0 icon.png pokeb2.nds" << endl;
+		cerr << "\t " << C_("rpcli", "extracts icon from pokeb2.nds") << endl;
 	}
 	
 	assert(RomData::IMG_INT_MIN == 0);
