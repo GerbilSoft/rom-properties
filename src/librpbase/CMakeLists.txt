@@ -323,7 +323,7 @@ IF(ENABLE_NLS)
 	IF(Intl_FOUND AND GETTEXT_FOUND)
 		SET(HAVE_GETTEXT 1)
 		SET(librpbase_I18N_SRCS i18n.cpp)
-	ENDIF(INTL_FOUND AND GETTEXT_FOUND)
+	ENDIF(Intl_FOUND AND GETTEXT_FOUND)
 
 	# Always include i18n.hpp, since it has NOP macros
 	# if NLS is disabled.
