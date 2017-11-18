@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 14:00-0500\n"
+"POT-Creation-Date: 2017-11-18 15:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,6 +107,130 @@ msgstr ""
 #: ../src/libromdata/Amiibo.cpp:543
 msgctxt "Amiibo"
 msgid "Credits"
+msgstr ""
+
+#. * Internal *
+#. IMG_INT_ICON
+#: ../src/libromdata/config/TImageTypesConfig.cpp:377
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"Internal\n"
+"Icon"
+msgstr ""
+
+#. IMG_INT_BANNER
+#: ../src/libromdata/config/TImageTypesConfig.cpp:379
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"Internal\n"
+"Banner"
+msgstr ""
+
+#. IMG_INT_MEDIA
+#: ../src/libromdata/config/TImageTypesConfig.cpp:381
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"Internal\n"
+"Media"
+msgstr ""
+
+#. IMG_INT_IMAGE
+#: ../src/libromdata/config/TImageTypesConfig.cpp:383
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"Internal\n"
+"Image"
+msgstr ""
+
+#. * External *
+#. IMG_EXT_MEDIA
+#: ../src/libromdata/config/TImageTypesConfig.cpp:388
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"External\n"
+"Media"
+msgstr ""
+
+#. IMG_EXT_COVER
+#: ../src/libromdata/config/TImageTypesConfig.cpp:390
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"External\n"
+"Cover"
+msgstr ""
+
+#. IMG_EXT_COVER_3D
+#: ../src/libromdata/config/TImageTypesConfig.cpp:392
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"External\n"
+"3D Cover"
+msgstr ""
+
+#. IMG_EXT_COVER_FULL
+#: ../src/libromdata/config/TImageTypesConfig.cpp:394
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"External\n"
+"Full Cover"
+msgstr ""
+
+#. IMG_EXT_BOX
+#: ../src/libromdata/config/TImageTypesConfig.cpp:396
+msgctxt "TImageTypesConfig|ImageTypeDisp"
+msgid ""
+"External\n"
+"Box"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:414
+msgctxt "TImageTypesConfig|SysName"
+msgid "amiibo"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:415
+msgctxt "TImageTypesConfig|SysName"
+msgid "Badge Arcade"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:416
+msgctxt "TImageTypesConfig|SysName"
+msgid "Dreamcast"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:417
+msgctxt "TImageTypesConfig|SysName"
+msgid "Dreamcast Saves"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:418
+msgctxt "TImageTypesConfig|SysName"
+msgid "GameCube / Wii"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:419
+msgctxt "TImageTypesConfig|SysName"
+msgid "GameCube Saves"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:420
+msgctxt "TImageTypesConfig|SysName"
+msgid "Nintendo DS(i)"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:421
+msgctxt "TImageTypesConfig|SysName"
+msgid "Nintendo 3DS"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:422
+msgctxt "TImageTypesConfig|SysName"
+msgid "PlayStation Saves"
+msgstr ""
+
+#: ../src/libromdata/config/TImageTypesConfig.cpp:423
+msgctxt "TImageTypesConfig|SysName"
+msgid "Wii U"
 msgstr ""
 
 #: ../src/libromdata/DirectDrawSurface.cpp:902
