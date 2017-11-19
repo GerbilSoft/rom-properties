@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 22:22-0500\n"
+"POT-Creation-Date: 2017-11-18 22:33-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4497,8 +4497,59 @@ msgctxt "AboutTab"
 msgid "About"
 msgstr ""
 
+#: ../src/win32/config/CacheTab.cpp:160
+#, c-format
+msgctxt "CacheTab|Win32"
+msgid "ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:184
+msgctxt "CacheTab|Win32"
+msgid "ERROR: No fixed HDDs or SSDs detected."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:194
+#, c-format
+msgctxt "CacheTab|Win32"
+msgid "ERROR: Thumbnail Cache cleaner not found. (res == %ld)"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:206 ../src/win32/config/CacheTab.cpp:215
+msgctxt "CacheTab|Win32"
+msgid "ERROR: Thumbnail Cache cleaner CLSID is invalid."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:229
+#, c-format
+msgctxt "CacheTab|Win32"
+msgid "ERROR: CoCreateInstance() failed. (hr == 0x%08X)"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:277
+#, c-format
+msgctxt "CacheTab|Win32"
+msgid ""
+"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:291
+#, c-format
+msgctxt "CacheTab|Win32"
+msgid "ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:307
+msgctxt "CacheTab"
+msgid "System thumbnail cache cleared successfully."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:309
+msgctxt "CacheTab"
+msgid "System thumbnail cache is already empty. Nothing to do here."
+msgstr ""
+
 #. Tab title.
-#: ../src/win32/config/CacheTab.cpp:468
+#: ../src/win32/config/CacheTab.cpp:479
 msgctxt "Cache Tab"
 msgid "Thumbnail Cache"
 msgstr ""
