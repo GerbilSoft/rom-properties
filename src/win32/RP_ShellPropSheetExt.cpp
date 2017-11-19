@@ -1293,7 +1293,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
 		return initString(hDlg, hWndTab, pt_start, idx, size, field,
-			RP2W_c(C_("RomDataView", "Unknown")).c_str());
+			RP2W_c(C_("RomDataView", "Unknown")));
 	}
 
 	// Format the date/time using the system locale.
@@ -1399,7 +1399,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	if (!age_ratings) {
 		// No age ratings data.
 		return initString(hDlg, hWndTab, pt_start, idx, size, field,
-			RP2W_c(C_("RomDataView", "ERROR")).c_str());
+			RP2W_c(C_("RomDataView", "ERROR")));
 	}
 
 	// Convert the age ratings field to a string.
@@ -1718,7 +1718,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		auto &tab = tabs[tabIdx];
 
 		// Field description label.
-		wstring txt = RP2W_s(rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str()));
+		wstring desc_text = RP2W_s(rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str()));
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
