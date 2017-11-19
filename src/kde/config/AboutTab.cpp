@@ -69,7 +69,7 @@ using std::string;
 class AboutTabPrivate
 {
 	public:
-		AboutTabPrivate();
+		AboutTabPrivate() { };
 
 	private:
 		Q_DISABLE_COPY(AboutTabPrivate)
@@ -79,12 +79,12 @@ class AboutTabPrivate
 
 	protected:
 		// Useful strings.
-		const QString br;
-		const QString brbr;
-		const QString b_start;
-		const QString b_end;
-		const QString sIndent;
-		static const QChar chrBullet;
+		static const char br[];
+		static const char brbr[];
+		static const char b_start[];
+		static const char b_end[];
+		static const char sIndent[];
+		static const char chrBullet[];
 
 	protected:
 		/**
@@ -117,15 +117,12 @@ class AboutTabPrivate
 /** AboutTabPrivate **/
 
 // Useful strings.
-const QChar AboutTabPrivate::chrBullet = 0x2022;  // U+2022: BULLET
-
-AboutTabPrivate::AboutTabPrivate()
-	: br(QLatin1String("<br/>\n"))
-	, brbr(QLatin1String("<br/>\n<br/>\n"))
-	, b_start(QLatin1String("<b>"))
-	, b_end(QLatin1String("</b>"))
-	, sIndent(QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
-{ }
+const char AboutTabPrivate::br[] = "<br/>\n";
+const char AboutTabPrivate::brbr[] = "<br/>\n<br/>\n";
+const char AboutTabPrivate::b_start[] = "<b>";
+const char AboutTabPrivate::b_end[] = "</b>";
+const char AboutTabPrivate::sIndent[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+const char AboutTabPrivate::chrBullet[] = "\xE2\x80\xA2";	// U+2022: BULLET
 
 /**
  * Initialize the program title text.
@@ -149,21 +146,27 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 #endif /* QT_VERSION >= QT_VERSION_CHECK(4,6,0) */
 
-	QString sPrgTitle;
+	string sPrgTitle;
 	sPrgTitle.reserve(1024);
-	sPrgTitle = b_start +
-		U82Q(C_("AboutTab", "ROM Properties Page")) + b_end + br +
-		U82Q(C_("AboutTab", "Shell Extension")) + br + br +
-		U82Q(rp_sprintf(C_("AboutTab", "Version %s"),
-			AboutTabText::prg_version).c_str());
+	sPrgTitle += b_start;
+	sPrgTitle += C_("AboutTab", "ROM Properties Page");
+	sPrgTitle += b_end;
+	sPrgTitle += br;
+	sPrgTitle += C_("AboutTab", "Shell Extension");
+	sPrgTitle += br;
+	sPrgTitle += br;
+	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"),
+			AboutTabText::prg_version);
 	if (AboutTabText::git_version[0] != 0) {
-		sPrgTitle += br + U82Q(AboutTabText::git_version);
+		sPrgTitle += br;
+		sPrgTitle += AboutTabText::git_version;
 		if (AboutTabText::git_describe[0] != 0) {
-			sPrgTitle += br + U82Q(AboutTabText::git_describe);
+			sPrgTitle += br;
+			sPrgTitle += AboutTabText::git_describe;
 		}
 	}
 
-	ui.lblTitle->setText(sPrgTitle);
+	ui.lblTitle->setText(U82Q(sPrgTitle));
 }
 
 /**
@@ -172,12 +175,13 @@ void AboutTabPrivate::initProgramTitleText(void)
 void AboutTabPrivate::initCreditsTab(void)
 {
 	// lblCredits is RichText.
-	QString sCredits;
+	string sCredits;
 	sCredits.reserve(4096);
-	sCredits += U82Q(C_("AboutTab|Credits", "Copyright (c) 2016-2017 by David Korth."));
-	sCredits += br + U82Q(C_("AboutTab|Credits",
+	sCredits += C_("AboutTab|Credits", "Copyright (c) 2016-2017 by David Korth.");
+	sCredits += br;
+	sCredits += C_("AboutTab|Credits",
 		"This program is licensed under the "
-		"<a href='https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later."));
+		"<a href='https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later.");
 
 	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
@@ -192,13 +196,13 @@ void AboutTabPrivate::initCreditsTab(void)
 
 			switch (creditsData->type) {
 				case AboutTabText::CT_DEVELOPER:
-					sCredits += U82Q(C_("AboutTab|Credits", "Developers:"));
+					sCredits += C_("AboutTab|Credits", "Developers:");
 					break;
 				case AboutTabText::CT_CONTRIBUTOR:
-					sCredits += U82Q(C_("AboutTab|Credits", "Contributors:"));
+					sCredits += C_("AboutTab|Credits", "Contributors:");
 					break;
 				case AboutTabText::CT_TRANSLATOR:
-					sCredits += U82Q(C_("AboutTab|Credits", "Translators:"));
+					sCredits += C_("AboutTab|Credits", "Translators:");
 					break;
 
 				case AboutTabText::CT_CONTINUE:
@@ -212,28 +216,31 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 
 		// Append the contributor's name.
-		sCredits += br + sIndent + chrBullet + QChar(L' ');
-		sCredits += U82Q(creditsData->name);
+		sCredits += br;
+		sCredits += sIndent;
+		sCredits += chrBullet;
+		sCredits += ' ';
+		sCredits += creditsData->name;
 		if (creditsData->url) {
-			sCredits += QLatin1String(" &lt;<a href='") +
-				U82Q(creditsData->url) +
-				QLatin1String("'>");
+			sCredits += " &lt;<a href='";
+			sCredits += creditsData->url;
+			sCredits += "'>";
 			if (creditsData->linkText) {
-				sCredits += U82Q(creditsData->linkText);
+				sCredits += creditsData->linkText;
 			} else {
-				sCredits += U82Q(creditsData->url);
+				sCredits += creditsData->url;
 			}
-			sCredits += QLatin1String("</a>&gt;");
+			sCredits += "</a>&gt;";
 		}
 		if (creditsData->sub) {
 			// Sub-credit.
-			sCredits += U82Q(rp_sprintf(C_("AboutTab|Credits", " (%s)"),
-				creditsData->sub));
+			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
+				creditsData->sub);
 		}
 	}
 
 	// We're done building the string.
-	ui.lblCredits->setText(sCredits);
+	ui.lblCredits->setText(U82Q(sCredits));
 }
 
 /**
@@ -265,42 +272,52 @@ void AboutTabPrivate::initLibrariesTab(void)
 	RP_UNUSED(sUsingDll);
 
 	// Included libraries string.
-	QString sLibraries;
+	string sLibraries;
 	sLibraries.reserve(4096);
 
 	/** Qt **/
 	string qtVersion = "Qt ";
 	qtVersion += qVersion();
 #ifdef QT_IS_STATIC
-	sLibraries += U82Q(rp_sprintf(sIntCopyOf, qtVersion.c_str()));
+	sLibraries += rp_sprintf(sIntCopyOf, qtVersion.c_str());
 #else
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, "Qt " QT_VERSION_STR)) + br;
-	sLibraries += U82Q(rp_sprintf(sUsingDll, qtVersion.c_str()));
+	sLibraries += rp_sprintf(sCompiledWith, "Qt " QT_VERSION_STR) + br;
+	sLibraries += rp_sprintf(sUsingDll, qtVersion.c_str());
 #endif /* QT_IS_STATIC */
-	sLibraries += br + QLatin1String("Copyright (C) 1995-2017 The Qt Company Ltd. and/or its subsidiaries.");
-	sLibraries += br + QLatin1String("<a href='https://www.qt.io/'>https://www.qt.io/</a>");
+	sLibraries += br;
+	sLibraries += "Copyright (C) 1995-2017 The Qt Company Ltd. and/or its subsidiaries.";
+	sLibraries += br;
+	sLibraries += "<a href='https://www.qt.io/'>https://www.qt.io/</a>";
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
-	sLibraries += br + U82Q(rp_sprintf(sLicenses, "GNU LGPL v2.1+, GNU GPL v2+"));
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v2.1+, GNU GPL v2+");
 #else
-	sLibraries += br + U82Q(rp_sprintf(sLicense, "GNU GPL v2+"));
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicense, "GNU GPL v2+");
 #endif /* QT_VERSION */
 
 	/** KDE **/
 	sLibraries += brbr;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// NOTE: Can't obtain the runtime version for KDE5 easily...
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, "KDE Frameworks " KIO_VERSION_STRING));
-	sLibraries += br + QLatin1String("Copyright (C) 1996-2017 KDE contributors.");
-	sLibraries += br + QLatin1String("<a href='https://www.kde.org/'>https://www.kde.org/</a>");
-	sLibraries += br + U82Q(rp_sprintf(sLicense, "GNU LGPL v2.1+"));
+	sLibraries += rp_sprintf(sCompiledWith, "KDE Frameworks " KIO_VERSION_STRING);
+	sLibraries += br;
+	sLibraries += "Copyright (C) 1996-2017 KDE contributors.";
+	sLibraries += br;
+	sLibraries += "<a href='https://www.kde.org/'>https://www.kde.org/</a>";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	string kdeVersion = "KDE Libraries ";
 	kdeVersion += KDE::versionString();
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, "KDE Libraries " KDE_VERSION_STRING));
-	sLibraries += br + U82Q(rp_sprintf(sUsingDll, kdeVersion.c_str()));
-	sLibraries += br + QLatin1String("Copyright (C) 1996-2017 KDE contributors.");
-	sLibraries += br + U82Q(rp_sprintf(sLicense, "GNU LGPL v2.1+"));
+	sLibraries += rp_sprintf(sCompiledWith, "KDE Libraries " KDE_VERSION_STRING);
+	sLibraries += br;
+	sLibraries += rp_sprintf(sUsingDll, kdeVersion.c_str());
+	sLibraries += br;
+	sLibraries += "Copyright (C) 1996-2017 KDE contributors.";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 	/** zlib **/
@@ -310,16 +327,18 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sZlibVersion += zlibVersion();
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += U82Q(rp_sprintf(sIntCopyOf, sZlibVersion.c_str()));
+	sLibraries += rp_sprintf(sIntCopyOf, sZlibVersion.c_str());
 #else
-	QString sZlibVersionCompiled = QLatin1String("zlib " ZLIB_VERSION);
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION));
-	sLibraries += br + U82Q(rp_sprintf(sUsingDll, sZlibVersion.c_str()));
+	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION);
+	sLibraries += br;
+	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
 #endif
-	sLibraries += br +
-		QLatin1String("Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler.");
-	sLibraries += br + QLatin1String("<a href='https://zlib.net/'>https://zlib.net/</a>");
-	sLibraries += br + U82Q(rp_sprintf(sLicense, "zlib license"));
+	sLibraries += br;
+	sLibraries += "Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler.";
+	sLibraries += br;
+	sLibraries += "<a href='https://zlib.net/'>https://zlib.net/</a>";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -350,7 +369,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	}
 
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += U82Q(rp_sprintf(sIntCopyOf, fullPngVersion.c_str()));
+	sLibraries += rp_sprintf(sIntCopyOf, fullPngVersion.c_str());
 #else
 	// NOTE: Gentoo's libpng has "+apng" at the end of
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
@@ -373,8 +392,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 		fullPngVersionCompiled = rp_sprintf("%s (No APNG support)", pngVersionCompiled.c_str());
 	}
 
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str())) + br;
-	sLibraries += U82Q(rp_sprintf(sUsingDll, fullPngVersion.c_str()));
+	sLibraries += rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str());
+	sLibraries += br;
+	sLibraries += rp_sprintf(sUsingDll, fullPngVersion.c_str());
 #endif
 
 	/**
@@ -384,21 +404,23 @@ void AboutTabPrivate::initLibrariesTab(void)
 	 * will be replaced with groups of 6 spaces.
 	 */
 	QString png_copyright = QLatin1String(png_get_copyright(nullptr));
+	const QString qs_br = QLatin1String(br);
 	if (png_copyright.indexOf(QChar(L'\n')) < 0) {
 		// Convert spaces to "<br/>\n".
 		// TODO: QString::simplified() to remove other patterns,
 		// or just assume all versions of libpng have the same
 		// number of spaces?
-		png_copyright.replace(QLatin1String("      "), br);
-		png_copyright.prepend(br);
-		png_copyright.append(br);
+		png_copyright.replace(QLatin1String("      "), qs_br);
+		png_copyright.prepend(qs_br);
+		png_copyright.append(qs_br);
 	} else {
 		// Replace newlines with "<br/>\n".
-		png_copyright.replace(QChar(L'\n'), br);
+		png_copyright.replace(QChar(L'\n'), qs_br);
 	}
-	sLibraries += png_copyright;
-	sLibraries += QLatin1String("<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>");
-	sLibraries += br + U82Q(rp_sprintf(sLicense, "libpng license"));
+	sLibraries += png_copyright.toUtf8().constData();
+	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicense, "libpng license");
 #endif /* HAVE_PNG */
 
 	/** nettle **/
@@ -408,27 +430,37 @@ void AboutTabPrivate::initLibrariesTab(void)
 	char nettle_build_version[32];
 	snprintf(nettle_build_version, sizeof(nettle_build_version),
 		"GNU Nettle %u.%u", NETTLE_VERSION_MAJOR, NETTLE_VERSION_MINOR);
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, nettle_build_version));
+	sLibraries += rp_sprintf(sCompiledWith, nettle_build_version);
 #  ifdef HAVE_NETTLE_VERSION_FUNCTIONS
 	char nettle_runtime_version[32];
 	snprintf(nettle_runtime_version, sizeof(nettle_runtime_version),
 		"GNU Nettle %u.%u", nettle_version_major(), nettle_version_minor());
-	sLibraries += br + U82Q(rp_sprintf(sUsingDll, nettle_runtime_version));
+	sLibraries += br;
+	sLibraries += rp_sprintf(sUsingDll, nettle_runtime_version);
 #  endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
-	sLibraries += br + QString::fromUtf8("Copyright (C) 2001-2016 Niels Möller.");
-	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
-	sLibraries += br + U82Q(rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+"));
+	sLibraries += br;
+	sLibraries += "Copyright (C) 2001-2016 Niels Möller.";
+	sLibraries += br;
+	sLibraries += "<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
 # else /* !HAVE_NETTLE_VERSION_H */
 #  ifdef HAVE_NETTLE_3
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, "GNU Nettle 3.0"));
-	sLibraries += br + QString::fromUtf8("Copyright (C) 2001-2014 Niels Möller.");
-	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
-	sLibraries += br + U82Q(rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+"));
+	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 3.0");
+	sLibraries += br;
+	sLibraries += "Copyright (C) 2001-2014 Niels Möller.";
+	sLibraries += br;
+	sLibraries += "<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
 #  else /* !HAVE_NETTLE_3 */
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, "GNU Nettle 2.x"));
-	sLibraries += br + QString::fromUtf8("Copyright (C) 2001-2013 Niels Möller.");
-	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
-	sLibraries += br + U82Q(rp_sprintf(sLicense, "GNU LGPL v2.1+"));
+	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 2.x");
+	sLibraries += br;
+	sLibraries += "Copyright (C) 2001-2013 Niels Möller.";
+	sLibraries += br;
+	sLibraries += "<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #  endif /* HAVE_NETTLE_3 */
 # endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
@@ -442,18 +474,21 @@ void AboutTabPrivate::initLibrariesTab(void)
 		TIXML2_PATCH_VERSION);
 
 #if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
-	sLibraries += U82Q(rp_sprintf(sIntCopyOf, sXmlVersion));
+	sLibraries += rp_sprintf(sIntCopyOf, sXmlVersion);
 #else
 	// FIXME: Runtime version?
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, sXmlVersion));
+	sLibraries += rp_sprintf(sCompiledWith, sXmlVersion);
 #endif
-	sLibraries += br + QLatin1String("Copyright (C) 2000-2017 Lee Thomason");
-	sLibraries += br + QLatin1String("<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>");
-	sLibraries += br + U82Q(rp_sprintf(sLicense, "zlib license"));
+	sLibraries += br;
+	sLibraries += "Copyright (C) 2000-2017 Lee Thomason";
+	sLibraries += br;
+	sLibraries += "<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>";
+	sLibraries += br;
+	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* ENABLE_XML */
 
 	// We're done building the string.
-	ui.lblLibraries->setText(sLibraries);
+	ui.lblLibraries->setText(U82Q(sLibraries));
 }
 
 /**
@@ -462,33 +497,39 @@ void AboutTabPrivate::initLibrariesTab(void)
 void AboutTabPrivate::initSupportTab(void)
 {
 	// lblSupport is RichText.
-	QString sSupport;
+	string sSupport;
 	sSupport.reserve(4096);
-	sSupport = U82Q(C_("AboutTab|Support",
-		"For technical support, you can visit the following websites:")) + br;
+	sSupport = C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:");
+	sSupport += br;
 
 	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
 	     supportSite->name != nullptr; supportSite++)
 	{
-		QString qs_url = U82Q(supportSite->url);
-		sSupport += sIndent + chrBullet + QChar(L' ') +
-			U82Q(supportSite->name) +
-			QLatin1String(" &lt;<a href='") +
-			qs_url +
-			QLatin1String("'>") +
-			qs_url +
-			QLatin1String("</a>&gt;") + br;
+		sSupport += sIndent;
+		sSupport += chrBullet;
+		sSupport += ' ';
+		sSupport += supportSite->name;
+		sSupport += " &lt;<a href='";
+		sSupport += supportSite->url;
+		sSupport += "'>";
+		sSupport += supportSite->url;
+		sSupport += "</a>&gt;";
+		sSupport += br;
 	}
 
 	// Email the author.
-	sSupport += br + U82Q(C_("AboutTab|Support",
-		"You can also email the developer directly:")) + br +
-		sIndent + chrBullet + QChar(L' ') +
-			QLatin1String("<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
-			"David Korth &lt;gerbilsoft@gerbilsoft.com&gt;</a>");
+	sSupport += br;
+	sSupport += C_("AboutTab|Support", "You can also email the developer directly:");
+	sSupport += br;
+	sSupport += sIndent;
+	sSupport += chrBullet;
+	sSupport += ' ';
+	sSupport += "<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
+		"David Korth &lt;gerbilsoft@gerbilsoft.com&gt;</a>";
 
 	// We're done building the string.
-	ui.lblSupport->setText(sSupport);
+	ui.lblSupport->setText(U82Q(sSupport));
 }
 
 /**
