@@ -345,7 +345,7 @@ void KeyManagerTabPrivate::initUI(void)
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
-		SetWindowText(hBtnImport, L"Import...");
+		SetWindowText(hBtnImport, RP2W_c(C_("KeyManagerTab", "Import...")));
 	}
 
 	// Initialize the ListView.
@@ -364,21 +364,26 @@ void KeyManagerTabPrivate::initUI(void)
 	ListView_SetItemCountEx(hListView, keyStore->totalKeyCount(),
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
+	// Column title.
+	wstring wsColTitle;
+
 	// Column 0: Key Name.
+	wsColTitle = RP2W_c(C_("KeyManagerTab", "Key Name"));
 	LVCOLUMN lvCol;
 	memset(&lvCol, 0, sizeof(lvCol));
 	lvCol.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
 	lvCol.fmt = LVCFMT_LEFT;
-	lvCol.pszText = L"Key Name";
+	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 0, &lvCol);
 
 	// Column 1: Value.
-	lvCol.pszText = L"Value";
+	wsColTitle = RP2W_c(C_("KeyManagerTab", "Value"));
+	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 1, &lvCol);
 
 	// Column 2: Verification status.
-	// TODO: Draw an icon.
-	lvCol.pszText = L"Valid?";
+	wsColTitle = RP2W_c(C_("KeyManagerTab", "Valid?"));
+	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
 	if (isComCtl32_610) {
@@ -1422,6 +1427,9 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1430,7 +1438,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select Wii keys.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
@@ -1455,6 +1463,9 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1463,7 +1474,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select Wii U otp.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
@@ -1488,6 +1499,9 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1496,7 +1510,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select 3DS boot9.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
@@ -1521,6 +1535,9 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1529,7 +1546,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select 3DS aeskeydb.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
