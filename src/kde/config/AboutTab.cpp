@@ -154,8 +154,8 @@ void AboutTabPrivate::initProgramTitleText(void)
 	sPrgTitle = b_start +
 		U82Q(C_("AboutTab", "ROM Properties Page")) + b_end + br +
 		U82Q(C_("AboutTab", "Shell Extension")) + br + br +
-		U82Q(rp_sprintf(C_("AboutTab", "Version %1"),
-					AboutTabText::prg_version).c_str());
+		U82Q(rp_sprintf(C_("AboutTab", "Version %s"),
+			AboutTabText::prg_version).c_str());
 	if (AboutTabText::git_version[0] != 0) {
 		sPrgTitle += br + U82Q(AboutTabText::git_version);
 		if (AboutTabText::git_describe[0] != 0) {
