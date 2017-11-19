@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 22:49-0500\n"
+"POT-Creation-Date: 2017-11-18 23:13-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -151,6 +151,152 @@ msgstr ""
 #: ../src/kde/config/AboutTab.cpp:485 ../src/win32/config/AboutTab.cpp:716
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
+msgstr ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:132
+msgctxt "KeyManagerTab"
+msgid ""
+"An invalid parameter was passed to the key importer.\n"
+"THIS IS A BUG; please report this to the developers!"
+msgstr ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:140
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "An error occurred while opening '%s'."
+msgstr ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:148
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "An error occurred while reading '%s'."
+msgstr ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:155
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "The file '%1$s' is not a valid %2$s file."
+msgstr ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:163
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "No keys were imported from '%s'."
+msgstr ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:173
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "%u key was imported from '%s'."
+msgid_plural "%u keys were imported from '%s'."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:189
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "%u key already exists in the Key Manager."
+msgid_plural "%u keys already exist in the Key Manager."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:196
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "%u key was not imported because it is incorrect."
+msgid_plural "%u keys were not imported because they are incorrect."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:203
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "%u key was not imported because it isn't used by rom-properties."
+msgid_plural ""
+"%u keys were not imported because they aren't used by rom-properties."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:210
+#, c-format
+msgctxt "KeyManagerTab"
+msgid ""
+"%u key was not imported because it is encrypted and the key isn't available."
+msgid_plural ""
+"%u keys were not imported because they are encrypted and the key isn't "
+"available."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:217
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "%u key has been imported and verified as correct."
+msgid_plural "%u keys have been imported and verified as correct."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/kde/config/KeyManagerTab.cpp:224
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "%u key has been imported without verification."
+msgid_plural "%u keys have been imported without verification."
+msgstr[0] ""
+msgstr[1] ""
+
+#. Create the dropdown menu for the "Import" button.
+#: ../src/kde/config/KeyManagerTab.cpp:258
+msgctxt "KeyManagerTab"
+msgid "I&mport"
+msgstr ""
+
+#. Dialog title.
+#: ../src/kde/config/KeyManagerTab.cpp:354
+#: ../src/win32/config/KeyManagerTab.cpp:1431
+msgctxt "KeyManagerTab"
+msgid "Select Wii keys.bin File"
+msgstr ""
+
+#. Dialog title.
+#: ../src/kde/config/KeyManagerTab.cpp:371
+#: ../src/win32/config/KeyManagerTab.cpp:1467
+msgctxt "KeyManagerTab"
+msgid "Select Wii U otp.bin File"
+msgstr ""
+
+#. Dialog title.
+#: ../src/kde/config/KeyManagerTab.cpp:388
+#: ../src/win32/config/KeyManagerTab.cpp:1503
+msgctxt "KeyManagerTab"
+msgid "Select 3DS boot9.bin File"
+msgstr ""
+
+#. Dialog title.
+#: ../src/kde/config/KeyManagerTab.cpp:405
+#: ../src/win32/config/KeyManagerTab.cpp:1539
+msgctxt "KeyManagerTab"
+msgid "Select 3DS aeskeydb.bin File"
+msgstr ""
+
+#. Column 0: Key Name.
+#: ../src/kde/config/KeyStoreModel.cpp:425
+#: ../src/win32/config/KeyManagerTab.cpp:371
+msgctxt "KeyManagerTab"
+msgid "Key Name"
+msgstr ""
+
+#. Column 1: Value.
+#: ../src/kde/config/KeyStoreModel.cpp:427
+#: ../src/win32/config/KeyManagerTab.cpp:380
+msgctxt "KeyManagerTab"
+msgid "Value"
+msgstr ""
+
+#. Column 2: Verification status.
+#: ../src/kde/config/KeyStoreModel.cpp:429
+#: ../src/win32/config/KeyManagerTab.cpp:385
+msgctxt "KeyManagerTab"
+msgid "Valid?"
 msgstr ""
 
 #: ../src/libromdata/Amiibo.cpp:481
@@ -4572,48 +4718,6 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:348
 msgctxt "KeyManagerTab"
 msgid "Import..."
-msgstr ""
-
-#. Column 0: Key Name.
-#: ../src/win32/config/KeyManagerTab.cpp:371
-msgctxt "KeyManagerTab"
-msgid "Key Name"
-msgstr ""
-
-#. Column 1: Value.
-#: ../src/win32/config/KeyManagerTab.cpp:380
-msgctxt "KeyManagerTab"
-msgid "Value"
-msgstr ""
-
-#. Column 2: Verification status.
-#: ../src/win32/config/KeyManagerTab.cpp:385
-msgctxt "KeyManagerTab"
-msgid "Valid?"
-msgstr ""
-
-#. Dialog title.
-#: ../src/win32/config/KeyManagerTab.cpp:1431
-msgctxt "KeyManagerTab"
-msgid "Select Wii keys.bin File"
-msgstr ""
-
-#. Dialog title.
-#: ../src/win32/config/KeyManagerTab.cpp:1467
-msgctxt "KeyManagerTab"
-msgid "Select Wii U otp.bin File"
-msgstr ""
-
-#. Dialog title.
-#: ../src/win32/config/KeyManagerTab.cpp:1503
-msgctxt "KeyManagerTab"
-msgid "Select 3DS boot9.bin File"
-msgstr ""
-
-#. Dialog title.
-#: ../src/win32/config/KeyManagerTab.cpp:1539
-msgctxt "KeyManagerTab"
-msgid "Select 3DS aeskeydb.bin File"
 msgstr ""
 
 #. Tab title.

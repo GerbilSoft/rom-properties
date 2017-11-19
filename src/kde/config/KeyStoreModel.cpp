@@ -23,6 +23,9 @@
 #include "KeyStoreQt.hpp"
 #include "RpQt.hpp"
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // Qt includes.
 #include <QtGui/QFont>
 #include <QtGui/QFontMetrics>
@@ -418,9 +421,12 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 	switch (role) {
 		case Qt::DisplayRole:
 			switch (section) {
-				case COL_KEY_NAME:	return tr("Key Name");
-				case COL_VALUE:		return tr("Value");
-				case COL_ISVALID:	return tr("Valid?");
+				case COL_KEY_NAME:
+					return U82Q(C_("KeyManagerTab", "Key Name"));
+				case COL_VALUE:
+					return U82Q(C_("KeyManagerTab", "Value"));
+				case COL_ISVALID:
+					return U82Q(C_("KeyManagerTab", "Valid?"));
 
 				default:
 					break;
