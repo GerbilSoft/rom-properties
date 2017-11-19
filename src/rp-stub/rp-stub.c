@@ -190,13 +190,13 @@ int main(int argc, char *argv[])
 				errno = 0;
 				long lTmp = (int)strtol(optarg, &endptr, 10);
 				if (errno == ERANGE || *endptr != 0) {
-					fprintf(stderr, C_("rp-stub", "%s: invalid size '%s'"), argv[0], optarg);
+					fprintf_p(stderr, C_("rp-stub", "%1$s: invalid size '%2$s'"), argv[0], optarg);
 					putc('\n', stderr);
 					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
 					putc('\n', stderr);
 					return EXIT_FAILURE;
 				} else if (lTmp <= 0 || lTmp > 32768) {
-					fprintf(stderr, C_("rp-stub", "%s: size '%s' is out of range"), argv[0], optarg);
+					fprintf_p(stderr, C_("rp-stub", "%1$s: size '%2$s' is out of range"), argv[0], optarg);
 					putc('\n', stderr);
 					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
 					putc('\n', stderr);
@@ -270,6 +270,7 @@ int main(int argc, char *argv[])
 		const char *const source_file = argv[optind];
 		const char *const output_file = argv[optind+1];
 		if (is_debug) {
+			// NOTE: Not positional. Don't change argument positions!
 			fprintf(stderr, C_("rp-stub", "Calling function: %s(\"%s\", \"%s\", %d);"),
 				symname, source_file, output_file, maximum_size);
 			putc('\n', stderr);
@@ -288,11 +289,11 @@ int main(int argc, char *argv[])
 	dlclose(pDll);
 	if (ret == 0) {
 		if (is_debug) {
-			fprintf(stderr, C_("rp-stub", "%s() returned %d."), symname, ret);
+			fprintf_p(stderr, C_("rp-stub", "%1$s() returned %2$d."), symname, ret);
 			putc('\n', stderr);
 		}
 	} else {
-		fprintf(stderr, C_("rp-stub", "*** ERROR: %s() returned %d."), symname, ret);
+		fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d."), symname, ret);
 		putc('\n', stderr);
 	}
 	return ret;

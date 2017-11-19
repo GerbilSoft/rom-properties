@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 19:24-0500\n"
+"POT-Creation-Date: 2017-11-18 19:45-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -467,7 +467,7 @@ msgstr ""
 #: ../src/libromdata/DirectDrawSurface.cpp:962
 #, c-format
 msgctxt "DirectDrawSurface"
-msgid "%s (%u-bit)"
+msgid "%1$s (%2$u-bit)"
 msgstr ""
 
 #: ../src/libromdata/DirectDrawSurface.cpp:964
@@ -628,7 +628,7 @@ msgstr ""
 
 #: ../src/libromdata/DMG.cpp:497 ../src/libromdata/DMG.cpp:545
 #: ../src/libromdata/DMG.cpp:595 ../src/libromdata/DMG.cpp:616
-#: ../src/libromdata/DMG.cpp:629
+#: ../src/libromdata/DMG.cpp:630
 msgctxt "DMG"
 msgid "Unknown"
 msgstr ""
@@ -678,76 +678,76 @@ msgctxt "DMG"
 msgid "ROM Size"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:620 ../src/libromdata/DMG.cpp:642
+#: ../src/libromdata/DMG.cpp:620 ../src/libromdata/DMG.cpp:643
 #, c-format
 msgctxt "DMG"
-msgid "%u KiB (%u banks)"
+msgid "%1$u KiB (%2$u banks)"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:623 ../src/libromdata/DMG.cpp:645
+#: ../src/libromdata/DMG.cpp:624 ../src/libromdata/DMG.cpp:647
 #, c-format
 msgctxt "DMG"
 msgid "%u KiB"
 msgstr ""
 
 #. Not really RAM, but whatever
-#: ../src/libromdata/DMG.cpp:629 ../src/libromdata/DMG.cpp:636
-#: ../src/libromdata/DMG.cpp:638
+#: ../src/libromdata/DMG.cpp:630 ../src/libromdata/DMG.cpp:637
+#: ../src/libromdata/DMG.cpp:639
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:636
+#: ../src/libromdata/DMG.cpp:637
 msgctxt "DMG"
 msgid "512 x 4 bits"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:638
+#: ../src/libromdata/DMG.cpp:639
 msgctxt "DMG"
 msgid "No RAM"
 msgstr ""
 
 #. Invalid value.
-#: ../src/libromdata/DMG.cpp:653 ../src/libromdata/DMG.cpp:656
-#: ../src/libromdata/DMG.cpp:660
+#: ../src/libromdata/DMG.cpp:655 ../src/libromdata/DMG.cpp:658
+#: ../src/libromdata/DMG.cpp:662
 msgctxt "DMG"
 msgid "Region"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:653
+#: ../src/libromdata/DMG.cpp:655
 msgctxt "Region|DMG"
 msgid "Japanese"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:656
+#: ../src/libromdata/DMG.cpp:658
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:661
+#: ../src/libromdata/DMG.cpp:663
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (INVALID)"
 msgstr ""
 
 #. Revision
-#: ../src/libromdata/DMG.cpp:666
+#: ../src/libromdata/DMG.cpp:668
 msgctxt "DMG"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:680 ../src/libromdata/DMG.cpp:684
+#: ../src/libromdata/DMG.cpp:682 ../src/libromdata/DMG.cpp:686
 msgctxt "DMG"
 msgid "Checksum"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:681
+#: ../src/libromdata/DMG.cpp:683
 #, c-format
 msgctxt "DMG"
-msgid "0x%02X (INVALID; should be 0x%02X)"
+msgid "0x%1$02X (INVALID; should be 0x%2$02X)"
 msgstr ""
 
-#: ../src/libromdata/DMG.cpp:685
+#: ../src/libromdata/DMG.cpp:687
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (valid)"
@@ -785,7 +785,7 @@ msgctxt "Dreamcast"
 msgid "Release Date"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:627 ../src/libromdata/Dreamcast.cpp:630
+#: ../src/libromdata/Dreamcast.cpp:627 ../src/libromdata/Dreamcast.cpp:631
 msgctxt "Dreamcast"
 msgid "Disc #"
 msgstr ""
@@ -793,15 +793,15 @@ msgstr ""
 #: ../src/libromdata/Dreamcast.cpp:628
 #, c-format
 msgctxt "Dreamcast|Disc"
-msgid "%u of %u"
+msgid "%1$u of %2$u"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:631
+#: ../src/libromdata/Dreamcast.cpp:632
 msgctxt "Dreamcast"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:644 ../src/libromdata/GameCube.cpp:388
+#: ../src/libromdata/Dreamcast.cpp:645 ../src/libromdata/GameCube.cpp:388
 #: ../src/libromdata/MegaDrive.cpp:407 ../src/libromdata/Nintendo3DS.cpp:1842
 #: ../src/libromdata/NintendoDS.cpp:1164 ../src/libromdata/SegaSaturn.cpp:527
 #: ../src/libromdata/SNES.cpp:598 ../src/libromdata/VirtualBoy.cpp:393
@@ -814,7 +814,7 @@ msgstr ""
 #. - N: Japanese import to USA and other NTSC regions.
 #. - Z: Prince of Persia - The Forgotten Sands (Wii)
 #. - B: Ufouria: The Saga (Virtual Console)
-#: ../src/libromdata/Dreamcast.cpp:645 ../src/libromdata/GameCube.cpp:435
+#: ../src/libromdata/Dreamcast.cpp:646 ../src/libromdata/GameCube.cpp:435
 #: ../src/libromdata/MegaDrive.cpp:409 ../src/libromdata/Nintendo3DS.cpp:1843
 #: ../src/libromdata/NintendoDS.cpp:1165 ../src/libromdata/SegaSaturn.cpp:529
 #: ../src/libromdata/VirtualBoy.cpp:396
@@ -822,175 +822,175 @@ msgctxt "Region"
 msgid "USA"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:646 ../src/libromdata/MegaDrive.cpp:410
+#: ../src/libromdata/Dreamcast.cpp:647 ../src/libromdata/MegaDrive.cpp:410
 #: ../src/libromdata/Nintendo3DS.cpp:1844 ../src/libromdata/NintendoDS.cpp:1166
 #: ../src/libromdata/SegaSaturn.cpp:530 ../src/libromdata/SNES.cpp:600
 msgctxt "Region"
 msgid "Europe"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:650
+#: ../src/libromdata/Dreamcast.cpp:651
 msgctxt "Dreamcast"
 msgid "Region Code"
 msgstr ""
 
 #. Boot filename.
-#: ../src/libromdata/Dreamcast.cpp:654
+#: ../src/libromdata/Dreamcast.cpp:655
 msgctxt "Dreamcast"
 msgid "Boot Filename"
 msgstr ""
 
 #. CRC16 is correct.
 #. CRC16 in header is invalid.
-#: ../src/libromdata/Dreamcast.cpp:683 ../src/libromdata/Dreamcast.cpp:692
+#: ../src/libromdata/Dreamcast.cpp:684 ../src/libromdata/Dreamcast.cpp:694
 msgctxt "Dreamcast"
 msgid "Checksum"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:684
+#: ../src/libromdata/Dreamcast.cpp:685
 #, c-format
 msgctxt "Dreamcast"
 msgid "0x%04X (valid)"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:688
+#: ../src/libromdata/Dreamcast.cpp:689
 #, c-format
 msgctxt "Dreamcast"
-msgid "0x%04X (INVALID; should be 0x%04X)"
+msgid "0x%1$04X (INVALID; should be 0x%2$04X)"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:693
+#: ../src/libromdata/Dreamcast.cpp:695
 #, c-format
 msgctxt "Dreamcast"
-msgid "0x%04X (HEADER is INVALID: %.4s)"
+msgid "0x%1$04X (HEADER is INVALID: %2$.4s)"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:708
+#: ../src/libromdata/Dreamcast.cpp:711
 msgctxt "Dreamcast|OSSupport"
 msgid "Windows CE"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:710
+#: ../src/libromdata/Dreamcast.cpp:713
 msgctxt "Dreamcast|OSSupport"
 msgid "VGA Box"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:714
+#: ../src/libromdata/Dreamcast.cpp:717
 msgctxt "Dreamcast"
 msgid "OS Support"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:719
+#: ../src/libromdata/Dreamcast.cpp:722
 msgctxt "Dreamcast|Expansion"
 msgid "Other"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:720
+#: ../src/libromdata/Dreamcast.cpp:723
 msgctxt "Dreamcast|Expansion"
 msgid "Jump Pack"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:721
+#: ../src/libromdata/Dreamcast.cpp:724
 msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:722
+#: ../src/libromdata/Dreamcast.cpp:725
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:726
+#: ../src/libromdata/Dreamcast.cpp:729
 msgctxt "Dreamcast"
 msgid "Expansion Units"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:731
+#: ../src/libromdata/Dreamcast.cpp:734
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Start, A, B, D-Pad"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:732
+#: ../src/libromdata/Dreamcast.cpp:735
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:733
+#: ../src/libromdata/Dreamcast.cpp:736
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:734
+#: ../src/libromdata/Dreamcast.cpp:737
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:735
+#: ../src/libromdata/Dreamcast.cpp:738
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:736
+#: ../src/libromdata/Dreamcast.cpp:739
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:737
+#: ../src/libromdata/Dreamcast.cpp:740
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Second D-Pad"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:738
+#: ../src/libromdata/Dreamcast.cpp:741
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:739
+#: ../src/libromdata/Dreamcast.cpp:742
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:740
+#: ../src/libromdata/Dreamcast.cpp:743
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H1"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:741
+#: ../src/libromdata/Dreamcast.cpp:744
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V1"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:742
+#: ../src/libromdata/Dreamcast.cpp:745
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H2"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:743
+#: ../src/libromdata/Dreamcast.cpp:746
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V2"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:747
+#: ../src/libromdata/Dreamcast.cpp:750
 msgctxt "Dreamcast"
 msgid "Req. Controller"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:752
+#: ../src/libromdata/Dreamcast.cpp:755
 msgctxt "Dreamcast|OptCtrl"
 msgid "Light Gun"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:753
+#: ../src/libromdata/Dreamcast.cpp:756
 msgctxt "Dreamcast|OptCtrl"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:754
+#: ../src/libromdata/Dreamcast.cpp:757
 msgctxt "Dreamcast|OptCtrl"
 msgid "Mouse"
 msgstr ""
 
-#: ../src/libromdata/Dreamcast.cpp:758
+#: ../src/libromdata/Dreamcast.cpp:761
 msgctxt "Dreamcast"
 msgid "Opt. Controller"
 msgstr ""
@@ -2448,8 +2448,8 @@ msgctxt "NES|Format"
 msgid "TDS (Nintendo 3DS Virtual Console)"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:730 ../src/libromdata/NES.cpp:876
-#: ../src/libromdata/NES.cpp:953
+#: ../src/libromdata/NES.cpp:730 ../src/libromdata/NES.cpp:878
+#: ../src/libromdata/NES.cpp:955
 msgctxt "NES"
 msgid "Unknown"
 msgstr ""
@@ -2467,15 +2467,15 @@ msgstr ""
 
 #. Print the mapper ID followed by the mapper name.
 #. Print the submapper ID followed by the submapper name.
-#: ../src/libromdata/NES.cpp:767 ../src/libromdata/NES.cpp:793
+#: ../src/libromdata/NES.cpp:767 ../src/libromdata/NES.cpp:794
 #, c-format
 msgctxt "NES|Mapper"
-msgid "%u - %s"
+msgid "%1$u - %2$s"
 msgstr ""
 
 #. Print only the mapper ID.
 #. Print only the submapper ID.
-#: ../src/libromdata/NES.cpp:770 ../src/libromdata/NES.cpp:796
+#: ../src/libromdata/NES.cpp:771 ../src/libromdata/NES.cpp:798
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%u"
@@ -2483,143 +2483,143 @@ msgstr ""
 
 #. This has a TNES mapper.
 #. It *should* map to an iNES mapper...
-#: ../src/libromdata/NES.cpp:772 ../src/libromdata/NES.cpp:779
+#: ../src/libromdata/NES.cpp:773 ../src/libromdata/NES.cpp:780
 msgctxt "NES"
 msgid "Mapper"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:798
+#: ../src/libromdata/NES.cpp:800
 msgctxt "NES"
 msgid "Submapper"
 msgstr ""
 
 #. TNES mapper.
 #. TODO: Look up the name.
-#: ../src/libromdata/NES.cpp:804
+#: ../src/libromdata/NES.cpp:806
 msgctxt "NES"
 msgid "TNES Mapper"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:811
+#: ../src/libromdata/NES.cpp:813
 msgctxt "NES|TVMode"
 msgid "NTSC"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:812
+#: ../src/libromdata/NES.cpp:814
 msgctxt "NES|TVMode"
 msgid "PAL"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:813 ../src/libromdata/NES.cpp:814
+#: ../src/libromdata/NES.cpp:815 ../src/libromdata/NES.cpp:816
 msgctxt "NES|TVMode"
 msgid "Dual (NTSC/PAL)"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:823
+#: ../src/libromdata/NES.cpp:825
 msgctxt "NES|Features"
 msgid "Save RAM, Trainer"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:825
+#: ../src/libromdata/NES.cpp:827
 msgctxt "NES|Features"
 msgid "Save RAM"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:827
+#: ../src/libromdata/NES.cpp:829
 msgctxt "NES|Features"
 msgid "Trainer"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:830
+#: ../src/libromdata/NES.cpp:832
 msgctxt "NES"
 msgid "Features"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:835
+#: ../src/libromdata/NES.cpp:837
 msgctxt "NES"
 msgid "PRG ROM"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:839
+#: ../src/libromdata/NES.cpp:841
 msgctxt "NES"
 msgid "CHR ROM"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:845
+#: ../src/libromdata/NES.cpp:847
 msgctxt "NES"
 msgid "CHR RAM"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:849
+#: ../src/libromdata/NES.cpp:851
 msgctxt "NES"
 msgid "CHR RAM (backed up)"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:853
+#: ../src/libromdata/NES.cpp:855
 msgctxt "NES"
 msgid "PRG RAM"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:857
+#: ../src/libromdata/NES.cpp:859
 msgctxt "NES"
 msgid "Save RAM (backed up)"
 msgstr ""
 
 #. Game ID.
 #. TODO: Check for invalid characters?
-#: ../src/libromdata/NES.cpp:865
+#: ../src/libromdata/NES.cpp:867
 msgctxt "NES"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:875
+#: ../src/libromdata/NES.cpp:877
 msgctxt "NES"
 msgid "Publisher"
 msgstr ""
 
 #. Revision.
-#: ../src/libromdata/NES.cpp:879
+#: ../src/libromdata/NES.cpp:881
 msgctxt "NES"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:884
+#: ../src/libromdata/NES.cpp:886
 msgctxt "NES"
 msgid "Manufacturing Date"
 msgstr ""
 
 #. Four screens using extra VRAM.
-#: ../src/libromdata/NES.cpp:903
+#: ../src/libromdata/NES.cpp:905
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:907 ../src/libromdata/NES.cpp:950
+#: ../src/libromdata/NES.cpp:909 ../src/libromdata/NES.cpp:952
 msgctxt "NES|Mirroring"
 msgid "Vertical"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:909 ../src/libromdata/NES.cpp:947
+#: ../src/libromdata/NES.cpp:911 ../src/libromdata/NES.cpp:949
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:941
+#: ../src/libromdata/NES.cpp:943
 msgctxt "NES|Mirroring"
 msgid "One Screen"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:943
+#: ../src/libromdata/NES.cpp:945
 msgctxt "NES|Mirroring"
 msgid "Programmable"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:963
+#: ../src/libromdata/NES.cpp:965
 msgctxt "NES"
 msgid "Mirroring"
 msgstr ""
 
-#: ../src/libromdata/NES.cpp:966
+#: ../src/libromdata/NES.cpp:968
 msgctxt "NES"
 msgid "VS. PPU"
 msgstr ""
@@ -2811,7 +2811,7 @@ msgstr ""
 #: ../src/libromdata/Nintendo3DS.cpp:2070
 #, c-format
 msgctxt "Nintendo3DS|CDev"
-msgid "Unknown (SDK2=0x%02X, SDK3=0x%02X)"
+msgid "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"
 msgstr ""
 
 #. Card revision.
@@ -3085,7 +3085,7 @@ msgstr ""
 #: ../src/libromdata/NintendoBadge.cpp:701
 #, c-format
 msgctxt "NintendoBadge"
-msgid "%s (New3DS) (%s)"
+msgid "%1$s (New3DS) (%2$s)"
 msgstr ""
 
 #. 1: Title name
@@ -3099,7 +3099,7 @@ msgstr ""
 #: ../src/libromdata/NintendoBadge.cpp:709
 #, c-format
 msgctxt "NintendoBadge"
-msgid "%s (%s)"
+msgid "%1$s (%2$s)"
 msgstr ""
 
 #: ../src/libromdata/NintendoBadge.cpp:714
@@ -3466,7 +3466,7 @@ msgctxt "SegaSaturn"
 msgid "Region Code"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:554 ../src/libromdata/SegaSaturn.cpp:557
+#: ../src/libromdata/SegaSaturn.cpp:554 ../src/libromdata/SegaSaturn.cpp:558
 msgctxt "SegaSaturn"
 msgid "Disc #"
 msgstr ""
@@ -3474,90 +3474,90 @@ msgstr ""
 #: ../src/libromdata/SegaSaturn.cpp:555
 #, c-format
 msgctxt "SegaSaturn|Disc"
-msgid "%u of %u"
+msgid "%1$u of %2$u"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:558
+#: ../src/libromdata/SegaSaturn.cpp:559
 msgctxt "SegaSaturn"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:563
+#: ../src/libromdata/SegaSaturn.cpp:564
 msgctxt "SegaSaturn|Peripherals"
 msgid "Control Pad"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:564
+#: ../src/libromdata/SegaSaturn.cpp:565
 msgctxt "SegaSaturn|Peripherals"
 msgid "Analog Controller"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:565
+#: ../src/libromdata/SegaSaturn.cpp:566
 msgctxt "SegaSaturn|Peripherals"
 msgid "Mouse"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:566
+#: ../src/libromdata/SegaSaturn.cpp:567
 msgctxt "SegaSaturn|Peripherals"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:567
+#: ../src/libromdata/SegaSaturn.cpp:568
 msgctxt "SegaSaturn|Peripherals"
 msgid "Steering Controller"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:568
+#: ../src/libromdata/SegaSaturn.cpp:569
 msgctxt "SegaSaturn|Peripherals"
 msgid "Multi-Tap"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:569
+#: ../src/libromdata/SegaSaturn.cpp:570
 msgctxt "SegaSaturn|Peripherals"
 msgid "Light Gun"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:570
+#: ../src/libromdata/SegaSaturn.cpp:571
 msgctxt "SegaSaturn|Peripherals"
 msgid "RAM Cartridge"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:571
+#: ../src/libromdata/SegaSaturn.cpp:572
 msgctxt "SegaSaturn|Peripherals"
 msgid "3D Controller"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:572
+#: ../src/libromdata/SegaSaturn.cpp:573
 msgctxt "SegaSaturn|Peripherals"
 msgid "Link Cable"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:573
+#: ../src/libromdata/SegaSaturn.cpp:574
 msgctxt "SegaSaturn|Peripherals"
 msgid "NetLink"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:574
+#: ../src/libromdata/SegaSaturn.cpp:575
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:575
+#: ../src/libromdata/SegaSaturn.cpp:576
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:576
+#: ../src/libromdata/SegaSaturn.cpp:577
 msgctxt "SegaSaturn|Peripherals"
 msgid "ROM Cartridge"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:577
+#: ../src/libromdata/SegaSaturn.cpp:578
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
 msgstr ""
 
-#: ../src/libromdata/SegaSaturn.cpp:583
+#: ../src/libromdata/SegaSaturn.cpp:584
 msgctxt "SegaSaturn"
 msgid "Peripherals"
 msgstr ""
@@ -4272,7 +4272,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:193
 #, c-format
 msgctxt "rp-stub"
-msgid "%s: invalid size '%s'"
+msgid "%1$s: invalid size '%2$s'"
 msgstr ""
 
 #. Unrecognized option.
@@ -4287,7 +4287,7 @@ msgstr ""
 #: ../src/rp-stub/rp-stub.c:199
 #, c-format
 msgctxt "rp-stub"
-msgid "%s: size '%s' is out of range"
+msgid "%1$s: size '%2$s' is out of range"
 msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:239
@@ -4308,26 +4308,27 @@ msgctxt "rp-stub"
 msgid "%s: too many parameters specified"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:273
+#. NOTE: Not positional. Don't change argument positions!
+#: ../src/rp-stub/rp-stub.c:274
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s(\"%s\", \"%s\", %d);"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:281
+#: ../src/rp-stub/rp-stub.c:282
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s();"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:291
+#: ../src/rp-stub/rp-stub.c:292
 #, c-format
 msgctxt "rp-stub"
-msgid "%s() returned %d."
+msgid "%1$s() returned %2$d."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:295
+#: ../src/rp-stub/rp-stub.c:296
 #, c-format
 msgctxt "rp-stub"
-msgid "*** ERROR: %s() returned %d."
+msgid "*** ERROR: %1$s() returned %2$d."
 msgstr ""

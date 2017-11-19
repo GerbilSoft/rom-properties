@@ -552,7 +552,8 @@ int SegaSaturn::loadFieldData(void)
 
 	if (disc_num != 0) {
 		d->fields->addField_string(C_("SegaSaturn", "Disc #"),
-			rp_sprintf(C_("SegaSaturn|Disc", "%u of %u"), disc_num, disc_total));
+			rp_sprintf_p(C_("SegaSaturn|Disc", "%1$u of %2$u"),
+				disc_num, disc_total));
 	} else {
 		d->fields->addField_string(C_("SegaSaturn", "Disc #"),
 			C_("SegaSaturn", "Unknown"));

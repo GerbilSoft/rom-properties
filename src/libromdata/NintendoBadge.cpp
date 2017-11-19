@@ -698,7 +698,7 @@ int NintendoBadge::loadFieldData(void)
 					if (isN3DS) {
 						if (region) {
 							// 1: Title name; 2: Region
-							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS) (%s)"), title, region);
+							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (New3DS) (%2$s)"), title, region);
 						} else {
 							// 1: Title name
 							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"), title);
@@ -706,7 +706,7 @@ int NintendoBadge::loadFieldData(void)
 					} else {
 						if (region) {
 							// 1: Title name; 2: Region
-							str = rp_sprintf(C_("NintendoBadge", "%s (%s)"), title, region);
+							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (%2$s)"), title, region);
 						} else {
 							str = title;
 						}

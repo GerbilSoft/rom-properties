@@ -617,7 +617,8 @@ int DMG::loadFieldData(void)
 	} else {
 		if (rom_size > 32) {
 			d->fields->addField_string("ROM Size",
-				rp_sprintf(C_("DMG", "%u KiB (%u banks)"), (unsigned int)rom_size, (unsigned int)rom_size/16));
+				rp_sprintf_p(C_("DMG", "%1$u KiB (%2$u banks)"),
+					(unsigned int)rom_size, (unsigned int)rom_size/16));
 		} else {
 			d->fields->addField_string("ROM Size",
 				rp_sprintf(C_("DMG", "%u KiB"), (unsigned int)rom_size));
@@ -639,7 +640,8 @@ int DMG::loadFieldData(void)
 		} else {
 			if (ram_size > 8) {
 				d->fields->addField_string("RAM Size",
-					rp_sprintf(C_("DMG", "%u KiB (%u banks)"), ram_size, ram_size/8));
+					rp_sprintf_p(C_("DMG", "%1$u KiB (%2$u banks)"),
+						ram_size, ram_size/8));
 			} else {
 				d->fields->addField_string("RAM Size",
 					rp_sprintf(C_("DMG", "%u KiB"), ram_size));
@@ -676,9 +678,9 @@ int DMG::loadFieldData(void)
 		checksum -= romHeader8[i];
 	}
 
-	if (checksum - romHeader->header_checksum) {
+	if (checksum - romHeader->header_checksum != 0) {
 		d->fields->addField_string(C_("DMG", "Checksum"),
-			rp_sprintf(C_("DMG", "0x%02X (INVALID; should be 0x%02X)"),
+			rp_sprintf_p(C_("DMG", "0x%1$02X (INVALID; should be 0x%2$02X)"),
 				romHeader->header_checksum, checksum));
 	} else {
 		d->fields->addField_string(C_("DMG", "Checksum"),

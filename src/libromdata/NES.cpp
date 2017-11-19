@@ -764,7 +764,8 @@ int NES::loadFieldData(void)
 		const char *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
 			// Print the mapper ID followed by the mapper name.
-			s_mapper = rp_sprintf(C_("NES|Mapper", "%u - %s"), (unsigned int)mapper, mapper_name);
+			s_mapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
+				(unsigned int)mapper, mapper_name);
 		} else {
 			// Print only the mapper ID.
 			s_mapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)mapper);
@@ -790,7 +791,8 @@ int NES::loadFieldData(void)
 		const char *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
 		if (submapper_name) {
 			// Print the submapper ID followed by the submapper name.
-			s_submapper = rp_sprintf(C_("NES|Mapper", "%u - %s"), (unsigned int)submapper, submapper_name);
+			s_submapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
+				(unsigned int)submapper, submapper_name);
 		} else {
 			// Print only the submapper ID.
 			s_submapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)submapper);

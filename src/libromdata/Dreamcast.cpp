@@ -625,7 +625,8 @@ int Dreamcast::loadFieldData(void)
 
 	if (disc_num != 0) {
 		d->fields->addField_string(C_("Dreamcast", "Disc #"),
-			rp_sprintf(C_("Dreamcast|Disc", "%u of %u"), disc_num, disc_total));
+			rp_sprintf_p(C_("Dreamcast|Disc", "%1$u of %2$u"),
+				disc_num, disc_total));
 	} else {
 		d->fields->addField_string(C_("Dreamcast", "Disc #"),
 			C_("Dreamcast", "Unknown"));
@@ -685,12 +686,14 @@ int Dreamcast::loadFieldData(void)
 		} else {
 			// CRC16 is incorrect.
 			d->fields->addField_string("Checksum",
-				rp_sprintf(C_("Dreamcast", "0x%04X (INVALID; should be 0x%04X)") crc16_expected, crc16_actual));
+				rp_sprintf_p(C_("Dreamcast", "0x%1$04X (INVALID; should be 0x%2$04X)"),
+					crc16_expected, crc16_actual));
 		}
 	} else {
 		// CRC16 in header is invalid.
 		d->fields->addField_string(C_("Dreamcast", "Checksum"),
-			rp_sprintf(C_("Dreamcast", "0x%04X (HEADER is INVALID: %.4s)"), crc16_expected, discHeader->device_info));
+			rp_sprintf_p(C_("Dreamcast", "0x%1$04X (HEADER is INVALID: %2$.4s)"),
+				crc16_expected, discHeader->device_info));
 	}
 #endif
 

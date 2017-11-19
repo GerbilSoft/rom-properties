@@ -2067,7 +2067,7 @@ int Nintendo3DS::loadFieldData(void)
 					dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|CDev", card_dev_tbl[card_dev_id]));
 			} else {
 				d->fields->addField_string(C_("Nintendo3DS", "Card Device"),
-					rp_sprintf(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x%02X, SDK3=0x%02X)"),
+					rp_sprintf_p(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"),
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));
 			}
