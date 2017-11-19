@@ -28,8 +28,15 @@
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // C includes. (C++ namespace)
 #include <cassert>
+
+// C++ includes.
+#include <string>
+using std::wstring;
 
 class DownloadsTabPrivate
 {
@@ -389,13 +396,16 @@ HPROPSHEETPAGE DownloadsTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("DownloadsTab", "Downloads"));
+
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_DOWNLOADS);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"Downloads";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = DownloadsTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

@@ -614,10 +614,10 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += '}';
 
 	// Add the "Credits" tab.
-	const wstring wsCreditsTitle = RP2W_c(C_("AboutTab", "Credits"));
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Credits"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = const_cast<LPWSTR>(wsCreditsTitle.c_str());
+	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 0, &tcItem);
 }
 
@@ -677,10 +677,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += "}";
 
 	// Add the "Libraries" tab.
-	const wstring wsLibrariesTitle = RP2W_c(C_("AboutTab", "Libraries"));
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Libraries"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = const_cast<LPWSTR>(wsLibrariesTitle.c_str());
+	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 1, &tcItem);
 }
 
@@ -718,10 +718,10 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport += '}';
 
 	// Add the "Support" tab.
-	const wstring wsSupportTitle = RP2W_c(C_("AboutTab", "Support"));
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Support"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = const_cast<LPWSTR>(wsSupportTitle.c_str());
+	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 2, &tcItem);
 }
 
@@ -859,13 +859,16 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "About"));
+
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_ABOUT);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"About";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = AboutTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

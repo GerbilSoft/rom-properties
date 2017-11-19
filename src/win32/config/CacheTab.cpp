@@ -26,6 +26,12 @@
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
+// librpbase
+#include "librpbase/TextFuncs_wchar.hpp"
+
+// libi18n
+#include "libi18n/i18n.h"
+
 #include "resource.h"
 
 // IEmptyVolumeCacheCallBack implementation.
@@ -458,12 +464,15 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("Cache Tab", "Thumbnail Cache"));
+
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"Thumbnail Cache";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = CacheTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 21:52-0500\n"
+"POT-Creation-Date: 2017-11-18 22:22-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,13 +61,16 @@ msgctxt "AboutTab"
 msgid "Shell Extension"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:157
+#. Version number.
+#: ../src/kde/config/AboutTab.cpp:157 ../src/win32/config/AboutTab.cpp:482
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:177
+#. FIXME: Figure out how to get links to work without
+#. resorting to manually adding CFE_LINK data...
+#: ../src/kde/config/AboutTab.cpp:177 ../src/win32/config/AboutTab.cpp:560
 msgctxt "AboutTab|Credits"
 msgid "Copyright (c) 2016-2017 by David Korth."
 msgstr ""
@@ -79,23 +82,23 @@ msgid ""
 "licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later."
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:195
+#: ../src/kde/config/AboutTab.cpp:195 ../src/win32/config/AboutTab.cpp:579
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:198
+#: ../src/kde/config/AboutTab.cpp:198 ../src/win32/config/AboutTab.cpp:582
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:201
+#: ../src/kde/config/AboutTab.cpp:201 ../src/win32/config/AboutTab.cpp:585
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr ""
 
 #. Sub-credit.
-#: ../src/kde/config/AboutTab.cpp:230
+#: ../src/kde/config/AboutTab.cpp:230 ../src/win32/config/AboutTab.cpp:609
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
@@ -140,12 +143,12 @@ msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:468
+#: ../src/kde/config/AboutTab.cpp:468 ../src/win32/config/AboutTab.cpp:699
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:485
+#: ../src/kde/config/AboutTab.cpp:485 ../src/win32/config/AboutTab.cpp:716
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
@@ -4463,4 +4466,57 @@ msgstr ""
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
+msgstr ""
+
+#: ../src/win32/config/AboutTab.cpp:562
+msgctxt "AboutTab|Credits"
+msgid "This program is licensed under the GNU GPL v2 or later."
+msgstr ""
+
+#. Add the "Credits" tab.
+#: ../src/win32/config/AboutTab.cpp:617
+msgctxt "AboutTab"
+msgid "Credits"
+msgstr ""
+
+#. Add the "Libraries" tab.
+#: ../src/win32/config/AboutTab.cpp:680
+msgctxt "AboutTab"
+msgid "Libraries"
+msgstr ""
+
+#. Add the "Support" tab.
+#: ../src/win32/config/AboutTab.cpp:721
+msgctxt "AboutTab"
+msgid "Support"
+msgstr ""
+
+#. Tab title.
+#: ../src/win32/config/AboutTab.cpp:863
+msgctxt "AboutTab"
+msgid "About"
+msgstr ""
+
+#. Tab title.
+#: ../src/win32/config/CacheTab.cpp:468
+msgctxt "Cache Tab"
+msgid "Thumbnail Cache"
+msgstr ""
+
+#. Tab title.
+#: ../src/win32/config/DownloadsTab.cpp:400
+msgctxt "DownloadsTab"
+msgid "Downloads"
+msgstr ""
+
+#. Tab title.
+#: ../src/win32/config/ImageTypesTab.cpp:709
+msgctxt "ImageTypesTab"
+msgid "Image Types"
+msgstr ""
+
+#. Tab title.
+#: ../src/win32/config/KeyManagerTab.cpp:1573
+msgctxt "KeyManagerTab"
+msgid "Key Manager"
 msgstr ""

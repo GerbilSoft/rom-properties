@@ -39,6 +39,9 @@
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/disc/WiiPartition.hpp"
 #include "libromdata/crypto/CtrKeyScrambler.hpp"
@@ -1566,13 +1569,16 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("KeyManagerTab", "Key Manager"));
+
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_KEYMANAGER);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"Key Manager";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = KeyManagerTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;
