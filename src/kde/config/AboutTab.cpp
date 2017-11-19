@@ -425,7 +425,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
 	sLibraries += br + U82Q(rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+"));
 #  else /* !HAVE_NETTLE_3 */
-	sLibraries += U82Q(rp_sprintf(sCompiledWith, "GNU Nettle 2.x"))
+	sLibraries += U82Q(rp_sprintf(sCompiledWith, "GNU Nettle 2.x"));
 	sLibraries += br + QString::fromUtf8("Copyright (C) 2001-2013 Niels Möller.");
 	sLibraries += br + QLatin1String("<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>");
 	sLibraries += br + U82Q(rp_sprintf(sLicense, "GNU LGPL v2.1+"));
