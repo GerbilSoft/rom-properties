@@ -43,6 +43,11 @@ using LibWin32Common::AutoGetDC;
 #include "librpbase/img/rp_image.hpp"
 using namespace LibRpBase;
 
+// libi18n
+// NOTE: Using "RomDataView" for the context, since that
+// matches what's used for the KDE and GTK+ frontends.
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -1287,7 +1292,8 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"Unknown");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field,
+			RP2W_c(C_("RomDataView", "Unknown")).c_str());
 	}
 
 	// Format the date/time using the system locale.
@@ -1392,7 +1398,8 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"ERROR");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field,
+			RP2W_c(C_("RomDataView", "ERROR")).c_str());
 	}
 
 	// Convert the age ratings field to a string.
@@ -1710,10 +1717,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Current tab.
 		auto &tab = tabs[tabIdx];
 
-		// Append a ":" to the description.
-		// TODO: Localization.
-		wstring desc_text = RP2W_s(field->name);
-		desc_text += L':';
+		// Field description label.
+		wstring txt = RP2W_s(rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str()));
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
@@ -1971,6 +1976,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
+	// Tab title.
+	wstring wsTabTitle = RP2W_c(C_("RomDataView", "ROM Properties"));
+
 	// Create a property sheet page.
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
@@ -1978,7 +1986,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_PROPERTY_SHEET);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"ROM Properties";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = RP_ShellPropSheetExt_Private::DlgProc;
 	psp.pcRefParent = nullptr;
 	psp.pfnCallback = RP_ShellPropSheetExt_Private::CallbackProc;

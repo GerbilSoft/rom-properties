@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 19:45-0500\n"
+"POT-Creation-Date: 2017-11-18 20:02-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,39 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#. Based on CppShellExtPropSheetHandler.
+#. https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
+#. Tab title.
+#: ../src/gtk/gnome/rom-properties-provider.cpp:136
+#: ../src/gtk/xfce/rom-properties-page.cpp:158
+#: ../src/kde/RomPropertiesDialogPlugin.cpp:84
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1980
+msgctxt "RomDataView"
+msgid "ROM Properties"
+msgstr ""
+
+#. Invalid date/time.
+#: ../src/gtk/RomDataView.cpp:1099 ../src/kde/RomDataView.cpp:683
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1296
+msgctxt "RomDataView"
+msgid "Unknown"
+msgstr ""
+
+#. No age ratings data.
+#: ../src/gtk/RomDataView.cpp:1169 ../src/kde/RomDataView.cpp:748
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1402
+msgctxt "RomDataView"
+msgid "ERROR"
+msgstr ""
+
+#. Field description label.
+#: ../src/gtk/RomDataView.cpp:1359 ../src/kde/RomDataView.cpp:870
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1721
+#, c-format
+msgctxt "RomDataView"
+msgid "%s:"
+msgstr ""
 
 #: ../src/libromdata/Amiibo.cpp:481
 msgctxt "Amiibo"

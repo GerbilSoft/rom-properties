@@ -36,6 +36,9 @@
 #include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -130,7 +133,7 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 		// Create the NautilusPropertyPage.
 		NautilusPropertyPage *page = nautilus_property_page_new(
 			"RomPropertiesPage::property_page",
-			gtk_label_new("ROM Properties"),
+			gtk_label_new(C_("RomDataView", "ROM Properties")),
 			romDataView);
 
 		/* Add the page to the pages provided by this plugin */

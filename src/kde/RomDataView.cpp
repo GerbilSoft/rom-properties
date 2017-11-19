@@ -31,6 +31,9 @@
 #include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // C includes. (C++ namespace)
 #include <cassert>
 
@@ -677,7 +680,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		lblDateTime->setText(RomDataView::tr("Unknown"));
+		lblDateTime->setText(QString::fromUtf8(C_("RomDataView", "Unknown")));
 		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
 		return;
 	}
@@ -742,7 +745,7 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		lblAgeRatings->setText(RomDataView::tr("ERROR"));
+		lblAgeRatings->setText(QString::fromUtf8(C_("RomDataView", "ERROR")));
 		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
 		return;
 	}
@@ -863,10 +866,11 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			continue;
 		}
 
-		QLabel *lblDesc = new QLabel(q);
+		// Field description label.
+		string txt = rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str());
+		QLabel *lblDesc = new QLabel(QString::fromUtf8(txt.c_str()), q);
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
-		lblDesc->setText(RomDataView::tr("%1:").arg(U82Q(field->name)));
 
 		switch (field->type) {
 			case RomFields::RFT_INVALID:

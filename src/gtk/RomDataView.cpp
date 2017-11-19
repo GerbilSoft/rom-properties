@@ -33,6 +33,9 @@
 #include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -1093,7 +1096,7 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		gtk_label_set_text(GTK_LABEL(widget), "Unknown");
+		gtk_label_set_text(GTK_LABEL(widget), C_("RomDataView", "Unknown"));
 		return widget;
 	}
 
@@ -1163,7 +1166,7 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		gtk_label_set_text(GTK_LABEL(widget), "ERROR");
+		gtk_label_set_text(GTK_LABEL(widget), C_("RomDataView", "ERROR"));
 		return widget;
 	}
 
@@ -1352,12 +1355,9 @@ rom_data_view_update_display(RomDataView *page)
 			// Add the widget to the table.
 			auto &tab = page->tabs->at(tabIdx);
 
-			// TODO: Localization.
-			std::string gtkdesc = field->name;
-			gtkdesc += ':';
-
-			// Description label.
-			GtkWidget *lblDesc = gtk_label_new(gtkdesc.c_str());
+			// Field description label.
+			string txt = rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str());
+			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
 			gtk_size_group_add_widget(size_group, lblDesc);
