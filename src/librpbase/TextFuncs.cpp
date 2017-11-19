@@ -204,6 +204,48 @@ string rp_sprintf(const char *fmt, ...)
 	return (len == len2 ? string(buf.get(), len) : string());
 }
 
+#ifdef _MSC_VER
+/**
+ * sprintf()-style function for std::string.
+ * This version supports positional format string arguments.
+ *
+ * @param fmt Format string.
+ * @param ... Arguments.
+ * @return rp_string.
+ */
+std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
+{
+	// Local buffer optimization to reduce memory allocation.
+	char locbuf[128];
+	va_list ap;
+
+	// _vsprintf_p() isn't C99 compliant.
+	// Use the non-standard _vscprintf_p() to count characters.
+	va_start(ap, fmt);
+	int len = _vscprintf_p(fmt, ap);
+	va_end(ap);
+	if (len <= 0) {
+		// Nothing to format...
+		return string();
+	} else if (len < (int)sizeof(locbuf)) {
+		// The string fits in the local buffer.
+		va_start(ap, fmt);
+		_vsprintf_p(locbuf, sizeof(locbuf), fmt, ap);
+		va_end(ap);
+		return string(locbuf, len);
+	}
+
+	// Temporarily allocate a buffer large enough for the string,
+	// then call vsnprintf() again.
+	unique_ptr<char[]> buf(new char[len+1]);
+	va_start(ap, fmt);
+	int len2 = _vsprintf_p(buf.get(), len+1, fmt, ap);
+	va_end(ap);
+	assert(len == len2);
+	return (len == len2 ? string(buf.get(), len) : string());
+}
+#endif /* _MSC_VER */
+
 }
 
 /** Reimplementations of libc functions that aren't present on this system. **/

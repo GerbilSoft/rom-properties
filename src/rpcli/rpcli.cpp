@@ -86,7 +86,7 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 			if (image && image->isValid()) {
 				found = true;
 				cerr << "-- " <<
-					rp_sprintf(C_("rpcli", "Extracting %s into '%s'"),
+					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
 						RomData::getImageTypeName((RomData::ImageType)it->image_type),
 						it->filename) << endl;
 				if (it->is_bmp) {
@@ -99,7 +99,7 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 				} else {
 					int errcode = RpPng::save(it->filename, image);
 					if (errcode != 0) {
-						cerr << rp_sprintf(C_("rpcli", "Couldn't create file '%s': %s"),
+						cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
 							it->filename, strerror(-errcode)) << endl;
 					} else {
 						cerr << "   " << C_("rpcli", "Done") << endl;
@@ -122,7 +122,7 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 				}
 				if (errcode != 0) {
 					cerr << "   " <<
-						rp_sprintf(C_("rpcli", "Couldn't create file '%s': %s"),
+						rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
 							it->filename, strerror(-errcode)) << endl;
 				} else {
 					cerr << "   " << C_("rpcli", "Done") << endl;

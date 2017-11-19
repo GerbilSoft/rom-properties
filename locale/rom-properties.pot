@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 18:48-0500\n"
+"POT-Creation-Date: 2017-11-18 19:24-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4031,7 +4031,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:89
 #, c-format
 msgctxt "rpcli"
-msgid "Extracting %s into '%s'"
+msgid "Extracting %1$s into '%2$s'"
 msgstr ""
 
 #. TODO: Error code.
@@ -4050,7 +4050,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:102 ../src/rpcli/rpcli.cpp:125
 #, c-format
 msgctxt "rpcli"
-msgid "Couldn't create file '%s': %s"
+msgid "Couldn't create file '%1$s': %2$s"
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:116

@@ -74,13 +74,13 @@ int rp_i18n_init(void);
 // Positional printf().
 // TODO: cmake verification?
 #ifdef _MSC_VER
-# define printf_i18n(fmt, ...)			_printf_p((fmt), __VA_ARGS__)
-# define fprintf_i18n(fp, fmt, ...)		_fprintf_p((fp), (fmt), __VA_ARGS__)
-# define snprintf_i18n(buf, sz, fmt, ...)	_sprintf_p((buf), (sz), (fmt), __VA_ARGS__)
+# define printf_p(fmt, ...)			_printf_p((fmt), __VA_ARGS__)
+# define fprintf_p(fp, fmt, ...)		_fprintf_p((fp), (fmt), __VA_ARGS__)
+# define snprintf_p(buf, sz, fmt, ...)		_sprintf_p((buf), (sz), (fmt), __VA_ARGS__)
 #else
-# define printf_i18n(fmt, ...)			printf((fmt), ##__VA_ARGS__)
-# define fprintf_i18n(fp, fmt, ...)		fprintf((fp), (fmt), ##__VA_ARGS__)
-# define snprintf_i18n(buf, sz, fmt, ...)	snprintf((buf), (sz), (fmt), ##__VA_ARGS__)
+# define printf_p(fmt, ...)			printf((fmt), ##__VA_ARGS__)
+# define fprintf_p(fp, fmt, ...)		fprintf((fp), (fmt), ##__VA_ARGS__)
+# define snprintf_p(buf, sz, fmt, ...)		snprintf((buf), (sz), (fmt), ##__VA_ARGS__)
 #endif
 
 #endif /* __ROMPROPERTIES_LIBI18N_H__ */
