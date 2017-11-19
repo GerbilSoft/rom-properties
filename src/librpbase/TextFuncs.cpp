@@ -153,16 +153,13 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 #endif /* RP_UTF16 && !RP_WIS16 */
 
 /**
- * sprintf()-style function for rp_string.
- *
- * NOTE: All parameters *must* use UTF-8, since we can't
- * rely on snwprintf() using 16-bit wchar_t.
+ * sprintf()-style function for std::string.
  *
  * @param fmt Format string.
  * @param ... Arguments.
  * @return rp_string.
  */
-rp_string rp_sprintf(const char *fmt, ...)
+string rp_sprintf(const char *fmt, ...)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
@@ -179,10 +176,10 @@ rp_string rp_sprintf(const char *fmt, ...)
 	va_end(ap);
 	if (len <= 0) {
 		// Nothing to format...
-		return rp_string();
+		return string();
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
-		return utf8_to_rp_string(locbuf, len);
+		return string(locbuf, len);
 	}
 
 	// Temporarily allocate a buffer large enough for the string,
@@ -192,7 +189,7 @@ rp_string rp_sprintf(const char *fmt, ...)
 	int len2 = vsnprintf(buf.get(), len+1, fmt, ap);
 	va_end(ap);
 	assert(len == len2);
-	return (len == len2 ? utf8_to_rp_string(buf.get(), len) : rp_string());
+	return (len == len2 ? string(buf.get(), len) : string());
 }
 
 }

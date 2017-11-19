@@ -780,16 +780,13 @@ static inline int rp_strcasecmp(const rp_char *str1, const rp_char *str2)
 }
 
 /**
- * sprintf()-style function for rp_string.
- *
- * NOTE: All parameters *must* use UTF-8, since we can't
- * rely on snwprintf() using 16-bit wchar_t.
+ * sprintf()-style function for std::string.
  *
  * @param fmt Format string.
  * @param ... Arguments.
  * @return rp_string.
  */
-rp_string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
+std::string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
 
 }
 
