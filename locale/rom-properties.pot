@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 22:33-0500\n"
+"POT-Creation-Date: 2017-11-18 22:49-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4566,8 +4566,58 @@ msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr ""
 
+#. COMCTL32 is older than v6.10. Use a regular button.
+#. NOTE: The Unicode down arrow doesn't show on on Windows XP.
+#. Maybe we *should* use ownerdraw...
+#: ../src/win32/config/KeyManagerTab.cpp:348
+msgctxt "KeyManagerTab"
+msgid "Import..."
+msgstr ""
+
+#. Column 0: Key Name.
+#: ../src/win32/config/KeyManagerTab.cpp:371
+msgctxt "KeyManagerTab"
+msgid "Key Name"
+msgstr ""
+
+#. Column 1: Value.
+#: ../src/win32/config/KeyManagerTab.cpp:380
+msgctxt "KeyManagerTab"
+msgid "Value"
+msgstr ""
+
+#. Column 2: Verification status.
+#: ../src/win32/config/KeyManagerTab.cpp:385
+msgctxt "KeyManagerTab"
+msgid "Valid?"
+msgstr ""
+
+#. Dialog title.
+#: ../src/win32/config/KeyManagerTab.cpp:1431
+msgctxt "KeyManagerTab"
+msgid "Select Wii keys.bin File"
+msgstr ""
+
+#. Dialog title.
+#: ../src/win32/config/KeyManagerTab.cpp:1467
+msgctxt "KeyManagerTab"
+msgid "Select Wii U otp.bin File"
+msgstr ""
+
+#. Dialog title.
+#: ../src/win32/config/KeyManagerTab.cpp:1503
+msgctxt "KeyManagerTab"
+msgid "Select 3DS boot9.bin File"
+msgstr ""
+
+#. Dialog title.
+#: ../src/win32/config/KeyManagerTab.cpp:1539
+msgctxt "KeyManagerTab"
+msgid "Select 3DS aeskeydb.bin File"
+msgstr ""
+
 #. Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1573
+#: ../src/win32/config/KeyManagerTab.cpp:1590
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr ""
