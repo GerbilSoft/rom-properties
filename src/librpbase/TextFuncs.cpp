@@ -164,27 +164,18 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
  */
 rp_string rp_sprintf(const char *fmt, ...)
 {
-#if defined(_WIN32) && (!defined(_MSC_VER) || _MSC_VER < 1900)
-	// MSVC 2013 or older, or some other Windows compiler.
-	// vsnprintf() in MSVCRT is not C99 compliant, so we
-	// can't use the local buffer optimization.
-	va_list ap;
-	va_start(ap, fmt);
-	int len = vsnprintf(nullptr, 0, fmt, ap);
-	va_end(ap);
-	if (len <= 0) {
-		// Nothing to format...
-		return rp_string();
-	}
-#else
-	// gcc, or MSVC 2015 or later.
-	// vsnprintf() is C99 compliant, so use a local buffer
-	// to reduce memory allocations.
-	// TODO: cmake check for C99 vsnprintf().
+	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
 	va_list ap;
 	va_start(ap, fmt);
+#if defined(_MSC_VER) && _MSC_VER < 1900
+	// MSVC 2013 and older isn't C99 compliant.
+	// Use the non-standard _vscprintf() to count characters.
+	int len = _vscprintf(fmt, ap);
+#else
+	// C99-compliant vsnprintf().
 	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
+#endif
 	va_end(ap);
 	if (len <= 0) {
 		// Nothing to format...
@@ -193,7 +184,6 @@ rp_string rp_sprintf(const char *fmt, ...)
 		// The string fits in the local buffer.
 		return utf8_to_rp_string(locbuf, len);
 	}
-#endif
 
 	// Temporarily allocate a buffer large enough for the string,
 	// then call vsnprintf() again.
