@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 20:02-0500\n"
+"POT-Creation-Date: 2017-11-18 21:32-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,6 +49,104 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:155
+msgctxt "AboutTab"
+msgid "ROM Properties Page"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:156
+msgctxt "AboutTab"
+msgid "Shell Extension"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:157
+msgctxt "AboutTab"
+msgid "Version %1"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:177
+msgctxt "AboutTab|Credits"
+msgid "Copyright (c) 2016-2017 by David Korth."
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:179
+msgctxt "AboutTab|Credits"
+msgid ""
+"This program is licensed under the <a href='https://www.gnu.org/licenses/old-"
+"licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later."
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:195
+msgctxt "AboutTab|Credits"
+msgid "Developers:"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:198
+msgctxt "AboutTab|Credits"
+msgid "Contributors:"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:201
+msgctxt "AboutTab|Credits"
+msgid "Translators:"
+msgstr ""
+
+#. Sub-credit.
+#: ../src/kde/config/AboutTab.cpp:230
+#, c-format
+msgctxt "AboutTab|Credits"
+msgid " (%s)"
+msgstr ""
+
+#. lblLibraries is RichText.
+#. NOTE: These strings can NOT be static.
+#. Otherwise, they won't be retranslated if the UI language
+#. is changed at runtime.
+#. Using an internal copy of a library.
+#: ../src/kde/config/AboutTab.cpp:251
+#, c-format
+msgctxt "AboutTab|Libraries"
+msgid "Internal copy of %s."
+msgstr ""
+
+#. Compiled with a specific version of an external library.
+#: ../src/kde/config/AboutTab.cpp:253
+#, c-format
+msgctxt "AboutTab|Libraries"
+msgid "Compiled with %s."
+msgstr ""
+
+#. Using an external library, e.g. libpcre.so
+#: ../src/kde/config/AboutTab.cpp:255
+#, c-format
+msgctxt "AboutTab|Libraries"
+msgid "Using %s."
+msgstr ""
+
+#. License: (libraries with only a single license)
+#: ../src/kde/config/AboutTab.cpp:257
+#, c-format
+msgctxt "AboutTab|Libraries"
+msgid "License: %s"
+msgstr ""
+
+#. Licenses: (libraries with multiple licenses)
+#: ../src/kde/config/AboutTab.cpp:259
+#, c-format
+msgctxt "AboutTab|Libraries"
+msgid "Licenses: %s"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:468
+msgctxt "AboutTab|Support"
+msgid "For technical support, you can visit the following websites:"
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:485
+msgctxt "AboutTab|Support"
+msgid "You can also email the developer directly:"
 msgstr ""
 
 #: ../src/libromdata/Amiibo.cpp:481
