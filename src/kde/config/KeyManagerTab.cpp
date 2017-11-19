@@ -176,7 +176,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		if (iret.keysCantDecrypt > 0) {
 			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
 				KeyManagerTab::tr("%Ln key(s) were not imported because they are encrypted and the key isn't available.",
-					nullptr, iret.keysNotUsed);
+					nullptr, iret.keysCantDecrypt);
 		}
 		if (iret.keysImportedVerify > 0) {
 			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
