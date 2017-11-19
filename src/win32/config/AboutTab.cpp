@@ -644,10 +644,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
+	// FIXME: Use png_get_copyright().
 #ifdef HAVE_PNG
 	sLibraries += RTF_BR RTF_BR
 		"Compiled with libpng " PNG_LIBPNG_VER_STRING "." RTF_BR
-		"libpng version 1.6.31 - July 27, 2017" RTF_BR
+		"libpng version 1.6.34 - September 29, 2017" RTF_BR
 		"Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson" RTF_BR
 		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
 		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
