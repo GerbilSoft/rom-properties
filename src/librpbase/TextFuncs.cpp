@@ -164,15 +164,26 @@ string rp_sprintf(const char *fmt, ...)
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
 	va_list ap;
-	va_start(ap, fmt);
 #if defined(_MSC_VER) && _MSC_VER < 1900
 	// MSVC 2013 and older isn't C99 compliant.
 	// Use the non-standard _vscprintf() to count characters.
+	va_start(ap, fmt);
 	int len = _vscprintf(fmt, ap);
+	va_end(ap);
+	if (len <= 0) {
+		// Nothing to format...
+		return string();
+	} else if (len < (int)sizeof(locbuf)) {
+		// The string fits in the local buffer.
+		va_start(ap, fmt);
+		vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
+		va_end(ap);
+		return string(locbuf, len);
+	}
 #else
 	// C99-compliant vsnprintf().
+	va_start(ap, fmt);
 	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
-#endif
 	va_end(ap);
 	if (len <= 0) {
 		// Nothing to format...
@@ -181,6 +192,7 @@ string rp_sprintf(const char *fmt, ...)
 		// The string fits in the local buffer.
 		return string(locbuf, len);
 	}
+#endif
 
 	// Temporarily allocate a buffer large enough for the string,
 	// then call vsnprintf() again.
