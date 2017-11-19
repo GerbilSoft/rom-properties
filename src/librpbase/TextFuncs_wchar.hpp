@@ -23,10 +23,6 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__
 
-#ifndef RP_WIS16
-#error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
-#endif /* RP_WIS16 */
-
 /**
  * NOTE: These are defined outside of the LibRpBase
  * namespace because macros are needed for the UTF-8
@@ -42,6 +38,10 @@
 // Make sure TextFuncs.hpp was included.
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/common.h"
+
+#ifndef RP_WIS16
+#error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
+#endif /* RP_WIS16 */
 
 /**
  * Get const wchar_t* from const rp_char*.
