@@ -33,6 +33,9 @@
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
@@ -476,19 +479,18 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 
 	// Version number.
-	wstring s_version;
-	s_version.reserve(128);
-	s_version = L"Version ";
-	s_version += RP2W_c(U82RP_c(AboutTabText::prg_version));
+	string s_version = rp_sprintf(C_("AboutTab", "Version %s"),
+		AboutTabText::prg_version);
+	s_version.reserve(1024);
 	if (AboutTabText::git_version[0] != 0) {
-		s_version += L"\r\n";
-		s_version += RP2W_c(AboutTabText::git_version);
+		s_version += "\r\n";
+		s_version += AboutTabText::git_version;
 		if (AboutTabText::git_describe[0] != 0) {
-			s_version += L"\r\n";
-			s_version += RP2W_c(AboutTabText::git_describe);
+			s_version += "\r\n";
+			s_version += AboutTabText::git_describe;
 		}
 	}
-	SetWindowText(hStaticVersion, s_version.c_str());
+	SetWindowText(hStaticVersion, RP2W_s(s_version));
 
 	// Set the icon.
 	HICON hIcon = PropSheetIcon::get96Icon();
@@ -555,9 +557,11 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits = RTF_START;
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
-	sCredits += "Copyright (c) 2016-2017 by David Korth." RTF_BR
-		"This program is licensed under the GNU GPL v2 or later." RTF_BR
-		"https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html";
+	sCredits += C_("AboutTab|Credits", "Copyright (c) 2016-2017 by David Korth.");
+	sCredits += RTF_BR;
+	sCredits += C_("AboutTab|Credits", "This program is licensed under the GNU GPL v2 or later.");
+	sCredits += RTF_BR;
+	sCredits += "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html";
 
 	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
@@ -572,15 +576,13 @@ void AboutTabPrivate::initCreditsTab(void)
 
 			switch (creditsData->type) {
 				case AboutTabText::CT_DEVELOPER:
-					sCredits += "Developers:";
+					sCredits += C_("AboutTab|Credits", "Developers:");
 					break;
-
 				case AboutTabText::CT_CONTRIBUTOR:
-					sCredits += "Contributors:";
+					sCredits += C_("AboutTab|Credits", "Contributors:");
 					break;
-
 				case AboutTabText::CT_TRANSLATOR:
-					sCredits += "Translators:";
+					sCredits += C_("AboutTab|Credits", "Translators:");
 					break;
 
 				case AboutTabText::CT_CONTINUE:
@@ -603,18 +605,19 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += '>';
 		}
 		if (creditsData->sub) {
-			sCredits += " (";
-			sCredits += rtfEscape(creditsData->sub);
-			sCredits += ')';
+			// Sub-credit.
+			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
+				rtfEscape(creditsData->sub));
 		}
 	}
 
-	sCredits += "}";
+	sCredits += '}';
 
 	// Add the "Credits" tab.
+	const wstring wsCreditsTitle = RP2W_c(C_("AboutTab", "Credits"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = L"Credits";
+	tcItem.pszText = const_cast<LPWSTR>(wsCreditsTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 0, &tcItem);
 }
 
@@ -673,9 +676,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += "}";
 
 	// Add the "Libraries" tab.
+	const wstring wsLibrariesTitle = RP2W_c(C_("AboutTab", "Libraries"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = L"Libraries";
+	tcItem.pszText = const_cast<LPWSTR>(wsLibrariesTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 1, &tcItem);
 }
 
@@ -690,7 +694,9 @@ void AboutTabPrivate::initSupportTab(void)
 	// RTF starting sequence.
 	sSupport = RTF_START;
 
-	sSupport += "For technical support, you can visit the following websites:" RTF_BR;
+	sSupport += C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:");
+	sSupport += RTF_BR;
 
 	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
 	     supportSite->name != nullptr; supportSite++)
@@ -704,15 +710,17 @@ void AboutTabPrivate::initSupportTab(void)
 	}
 
 	// Email the author.
-	sSupport += RTF_BR "You can also email the developer directly:" RTF_BR
-		RTF_TAB RTF_BULLET " David Korth <gerbilsoft@gerbilsoft.com>";
-
-	sSupport += "}";
+	sSupport += RTF_BR;
+	sSupport += C_("AboutTab|Support",
+		"You can also email the developer directly:");
+	sSupport += RTF_BR RTF_TAB RTF_BULLET " David Korth <gerbilsoft@gerbilsoft.com>";
+	sSupport += '}';
 
 	// Add the "Support" tab.
+	const wstring wsSupportTitle = RP2W_c(C_("AboutTab", "Support"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = L"Support";
+	tcItem.pszText = const_cast<LPWSTR>(wsSupportTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 2, &tcItem);
 }
 
