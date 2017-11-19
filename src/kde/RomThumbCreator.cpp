@@ -388,7 +388,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	kv.push_back(std::make_pair("Software", sw));
 
 	// Modification time.
-	const QString qs_source_file = QString::fromUtf8(source_file);
+	const QString qs_source_file = U82Q(source_file);
 	QFileInfo fi_src(qs_source_file);
 	int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 	if (mtime > 0) {

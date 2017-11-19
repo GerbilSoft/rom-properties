@@ -680,7 +680,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		lblDateTime->setText(QString::fromUtf8(C_("RomDataView", "Unknown")));
+		lblDateTime->setText(U82Q(C_("RomDataView", "Unknown")));
 		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
 		return;
 	}
@@ -745,7 +745,7 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		lblAgeRatings->setText(QString::fromUtf8(C_("RomDataView", "ERROR")));
+		lblAgeRatings->setText(U82Q(C_("RomDataView", "ERROR")));
 		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
 		return;
 	}
@@ -868,7 +868,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 		// Field description label.
 		string txt = rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str());
-		QLabel *lblDesc = new QLabel(QString::fromUtf8(txt.c_str()), q);
+		QLabel *lblDesc = new QLabel(U82Q(txt.c_str()), q);
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
 
