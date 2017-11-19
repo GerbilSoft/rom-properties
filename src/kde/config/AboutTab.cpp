@@ -150,7 +150,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 #endif /* QT_VERSION >= QT_VERSION_CHECK(4,6,0) */
 
 	QString sPrgTitle;
-	sPrgTitle.reserve(4096);
+	sPrgTitle.reserve(1024);
 	sPrgTitle = b_start +
 		U82Q(C_("AboutTab", "ROM Properties Page")) + b_end + br +
 		U82Q(C_("AboutTab", "Shell Extension")) + br + br +
