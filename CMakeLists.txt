@@ -110,6 +110,7 @@ INCLUDE(CheckTinyXML2)
 IF(ENABLE_NLS)
 	FIND_PACKAGE(Intl)
 	FIND_PACKAGE(Gettext)
+	ADD_SUBDIRECTORY(locale)
 ENDIF(ENABLE_NLS)
 
 # Project subdirectories.

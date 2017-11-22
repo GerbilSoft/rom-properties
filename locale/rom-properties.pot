@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-18 23:21-0500\n"
+"POT-Creation-Date: 2017-11-21 21:55-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,18 +51,18 @@ msgctxt "RomDataView"
 msgid "%s:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:155
+#: ../src/kde/config/AboutTab.cpp:152
 msgctxt "AboutTab"
 msgid "ROM Properties Page"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:156
+#: ../src/kde/config/AboutTab.cpp:155
 msgctxt "AboutTab"
 msgid "Shell Extension"
 msgstr ""
 
 #. Version number.
-#: ../src/kde/config/AboutTab.cpp:157 ../src/win32/config/AboutTab.cpp:482
+#: ../src/kde/config/AboutTab.cpp:158 ../src/win32/config/AboutTab.cpp:482
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
@@ -70,35 +70,35 @@ msgstr ""
 
 #. FIXME: Figure out how to get links to work without
 #. resorting to manually adding CFE_LINK data...
-#: ../src/kde/config/AboutTab.cpp:177 ../src/win32/config/AboutTab.cpp:560
+#: ../src/kde/config/AboutTab.cpp:180 ../src/win32/config/AboutTab.cpp:560
 msgctxt "AboutTab|Credits"
 msgid "Copyright (c) 2016-2017 by David Korth."
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:179
+#: ../src/kde/config/AboutTab.cpp:183
 msgctxt "AboutTab|Credits"
 msgid ""
 "This program is licensed under the <a href='https://www.gnu.org/licenses/old-"
 "licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later."
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:195 ../src/win32/config/AboutTab.cpp:579
+#: ../src/kde/config/AboutTab.cpp:199 ../src/win32/config/AboutTab.cpp:579
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:198 ../src/win32/config/AboutTab.cpp:582
+#: ../src/kde/config/AboutTab.cpp:202 ../src/win32/config/AboutTab.cpp:582
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:201 ../src/win32/config/AboutTab.cpp:585
+#: ../src/kde/config/AboutTab.cpp:205 ../src/win32/config/AboutTab.cpp:585
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr ""
 
 #. Sub-credit.
-#: ../src/kde/config/AboutTab.cpp:230 ../src/win32/config/AboutTab.cpp:609
+#: ../src/kde/config/AboutTab.cpp:237 ../src/win32/config/AboutTab.cpp:609
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
@@ -109,46 +109,46 @@ msgstr ""
 #. Otherwise, they won't be retranslated if the UI language
 #. is changed at runtime.
 #. Using an internal copy of a library.
-#: ../src/kde/config/AboutTab.cpp:251
+#: ../src/kde/config/AboutTab.cpp:258
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of %s."
 msgstr ""
 
 #. Compiled with a specific version of an external library.
-#: ../src/kde/config/AboutTab.cpp:253
+#: ../src/kde/config/AboutTab.cpp:260
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with %s."
 msgstr ""
 
 #. Using an external library, e.g. libpcre.so
-#: ../src/kde/config/AboutTab.cpp:255
+#: ../src/kde/config/AboutTab.cpp:262
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Using %s."
 msgstr ""
 
 #. License: (libraries with only a single license)
-#: ../src/kde/config/AboutTab.cpp:257
+#: ../src/kde/config/AboutTab.cpp:264
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "License: %s"
 msgstr ""
 
 #. Licenses: (libraries with multiple licenses)
-#: ../src/kde/config/AboutTab.cpp:259
+#: ../src/kde/config/AboutTab.cpp:266
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:468 ../src/win32/config/AboutTab.cpp:699
+#: ../src/kde/config/AboutTab.cpp:503 ../src/win32/config/AboutTab.cpp:699
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:485 ../src/win32/config/AboutTab.cpp:716
+#: ../src/kde/config/AboutTab.cpp:523 ../src/win32/config/AboutTab.cpp:716
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
