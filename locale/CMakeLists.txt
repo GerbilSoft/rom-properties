@@ -10,5 +10,5 @@ SET(LINGUAS it)
 # Convert the .po files to .mo files.
 SET(LINGUAS it)
 FOREACH(_lingua ${LINGUAS})
-	GETTEXT_CREATE_TRANSLATIONS(rom-properties.pot ${_lingua}.po)
+	GETTEXT_CREATE_TRANSLATIONS(rom-properties.pot ALL ${_lingua}.po)
 ENDFOREACH()
