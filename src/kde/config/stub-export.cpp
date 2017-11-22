@@ -25,6 +25,9 @@
 
 // i18n
 #include "libi18n/i18n.h"
+#ifdef ENABLE_NLS
+# include "../GettextTranslator.hpp"
+#endif
 
 /**
  * Exported function for the rp-config stub.
@@ -51,10 +54,17 @@ Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 #endif /* QT_VERSION >= 0x050000 */
 		// Create the QApplication.
 		rpApp = new QApplication(argc, argv);
-	}
 
-	// Initialize i18n.
-	rp_i18n_init();
+#ifdef ENABLE_NLS
+		// Install the translator for Gettext translations.
+		rp_i18n_init();
+		rpApp->installTranslator(new GettextTranslator());
+#endif /* ENABLE_NLS */
+	} else {
+		// Initialize base i18n.
+		// TODO: Install the translator even if we're reusing the QApplication?
+		rp_i18n_init();
+	}
 
 	// Create and run the ConfigDialog.
 	// TODO: Get the return value?
