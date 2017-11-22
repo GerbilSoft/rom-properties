@@ -16,9 +16,18 @@ SET(MSGID_BUGS_ADDRESS "gerbilsoft@gerbilsoft.com")
 SET(LINGUAS it)
 
 SET(LINGUAS it)
+SET(_gmoFiles)
 FOREACH(_lingua ${LINGUAS})
 	# Convert the .po files to .mo files.
-	GETTEXT_CREATE_TRANSLATIONS(${DOMAIN}.pot ALL ${_lingua}.po)
+	# TODO: ${_lingua}@quot
+	SET(_gmoFile ${CMAKE_CURRENT_BINARY_DIR}/${_lingua}.gmo)
+	SET(_poFile ${CMAKE_CURRENT_SOURCE_DIR}/${_lingua}.po)
+
+	ADD_CUSTOM_COMMAND(OUTPUT ${_gmoFile}
+		COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${_gmoFile} ${_poFile}
+		DEPENDS ${_poFile}
+		)
+	SET(_gmoFiles ${_gmoFiles} ${_gmoFile})
 
 	# Custom target to initialize a new .po file.
 	# Use this after adding the language code to LINGUAS.
@@ -54,6 +63,7 @@ ENDFOREACH()
 # NOTE: Don't run init-all.po unless you know what you're doing!
 #ADD_CUSTOM_TARGET(init-all.po DEPENDS ${INIT_ALL_PO_TARGETS})
 ADD_CUSTOM_TARGET(update-all.po DEPENDS ${UPDATE_ALL_PO_TARGETS})
+ADD_CUSTOM_TARGET(translations ALL DEPENDS ${_gmoFiles})
 
 # Create the POTFILES file. (Requires a Unix-like `find` command.)
 ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/POTFILES"
