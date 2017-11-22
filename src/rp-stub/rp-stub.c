@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
 		const char *const source_file = argv[optind];
 		const char *const output_file = argv[optind+1];
 		if (is_debug) {
-			// NOTE: Not positional. Don't change argument positions!
+			// tr: NOTE: Not positional. Don't change argument positions!
 			fprintf(stderr, C_("rp-stub", "Calling function: %s(\"%s\", \"%s\", %d);"),
 				symname, source_file, output_file, maximum_size);
 			putc('\n', stderr);

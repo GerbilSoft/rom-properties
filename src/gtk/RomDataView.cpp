@@ -1095,7 +1095,7 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	GTK_WIDGET_HALIGN_LEFT(widget);
 
 	if (field->data.date_time == -1) {
-		// Invalid date/time.
+		// tr: Invalid date/time.
 		gtk_label_set_text(GTK_LABEL(widget), C_("RomDataView", "Unknown"));
 		return widget;
 	}
@@ -1165,7 +1165,7 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
 	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
-		// No age ratings data.
+		// tr: No age ratings data.
 		gtk_label_set_text(GTK_LABEL(widget), C_("RomDataView", "ERROR"));
 		return widget;
 	}
@@ -1355,7 +1355,7 @@ rom_data_view_update_display(RomDataView *page)
 			// Add the widget to the table.
 			auto &tab = page->tabs->at(tabIdx);
 
-			// Field description label.
+			// tr: Field description label.
 			string txt = rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);

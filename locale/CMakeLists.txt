@@ -65,12 +65,11 @@ ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/POTFILES"
 	)
 
 # Regenerate the rom-properties.pot file.
-# TODO: --add-comments=TRANSLATORS:
 ADD_CUSTOM_TARGET(rom-properties.pot
 	COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE}
 		-o ${DOMAIN}.pot
 		--default-domain=${DOMAIN}
-		--add-comments
+		--add-comments=tr:
 		--keyword=_ --keyword=C_:1c,2 --keyword=N_:1,2 --keyword=NC_:1c,2,3
 		--keyword=NOP_ --keyword=NOP_C_:1c,2 --keyword=NOP_N_:1,2 --keyword=NOP_NC_:1c,2,3
 		--language=C++

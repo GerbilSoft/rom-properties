@@ -396,7 +396,7 @@ HPROPSHEETPAGE DownloadsTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
-	// Tab title.
+	// tr: Tab title.
 	const wstring wsTabTitle = RP2W_c(C_("DownloadsTab", "Downloads"));
 
 	PROPSHEETPAGE psp;

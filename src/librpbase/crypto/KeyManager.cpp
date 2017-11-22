@@ -233,25 +233,25 @@ KeyManager::KeyManager()
 const char *KeyManager::verifyResultToString(VerifyResult res)
 {
 	static const char *const errTbl[] = {
-		// VERIFY_OK
+		// tr: VERIFY_OK
 		NOP_C_("KeyManager|VerifyResult", "Something happened."),
-		// VERIFY_INVALID_PARAMS
+		// tr: VERIFY_INVALID_PARAMS
 		NOP_C_("KeyManager|VerifyResult", "Invalid parameters. (THIS IS A BUG!)"),
-		// VERIFY_NO_SUPPORT
+		// tr: VERIFY_NO_SUPPORT
 		NOP_C_("KeyManager|VerifyResult", "Decryption is not supported in this build."),
-		// VERIFY_KEY_DB_NOT_LOADED
+		// tr: VERIFY_KEY_DB_NOT_LOADED
 		NOP_C_("KeyManager|VerifyResult", "keys.conf was not found."),
-		// VERIFY_KEY_DB_ERROR
+		// tr: VERIFY_KEY_DB_ERROR
 		NOP_C_("KeyManager|VerifyResult", "keys.conf has an error and could not be loaded."),
-		// VERIFY_KEY_NOT_FOUND
+		// tr: VERIFY_KEY_NOT_FOUND
 		NOP_C_("KeyManager|VerifyResult", "Required key was not found in keys.conf."),
-		// VERIFY_KEY_INVALID
+		// tr: VERIFY_KEY_INVALID
 		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is not a valid key."),
-		// VERFIY_IAESCIPHER_INIT_ERR
+		// tr: VERFIY_IAESCIPHER_INIT_ERR
 		NOP_C_("KeyManager|VerifyResult", "AES decryption could not be initialized."),
-		// VERIFY_IAESCIPHER_DECRYPT_ERR
+		// tr: VERIFY_IAESCIPHER_DECRYPT_ERR
 		NOP_C_("KeyManager|VerifyResult", "AES decryption failed."),
-		// VERIFY_WRONG_KEY
+		// tr: VERIFY_WRONG_KEY
 		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is incorrect."),
 	};
 	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");

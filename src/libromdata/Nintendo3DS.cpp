@@ -2381,10 +2381,14 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Application type. (resource limit category)
 		static const char *const appl_type_tbl[4] = {
-			NOP_C_("Nintendo3DS|ApplType", "Application"),		// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
-			NOP_C_("Nintendo3DS|ApplType", "System Applet"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
-			NOP_C_("Nintendo3DS|ApplType", "Library Applet"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
-			NOP_C_("Nintendo3DS|ApplType", "SysModule"),		// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
+			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
+			NOP_C_("Nintendo3DS|ApplType", "Application"),
+			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
+			NOP_C_("Nintendo3DS|ApplType", "System Applet"),
+			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
+			NOP_C_("Nintendo3DS|ApplType", "Library Applet"),
+			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
+			NOP_C_("Nintendo3DS|ApplType", "SysModule"),
 		};
 		const uint8_t appl_type = ncch_exheader->aci.arm11_local.res_limit_category;
 		if (appl_type < ARRAY_SIZE(appl_type_tbl)) {

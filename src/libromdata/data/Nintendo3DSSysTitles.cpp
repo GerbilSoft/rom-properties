@@ -71,6 +71,7 @@ const char *const Nintendo3DSSysTitlesPrivate::regions[6] = {
  * System applications. (tid hi == 0x00040010)
  */
 const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_title_00040010[] = {
+	/** Common titles **/
 	{{0x00020000, 0x00021000, 0x00022000, 0x00026000, 0x00027000, 0x00028000}, NOP_C_("Nintendo3DSSysTitles", "System Settings")},
 	{{0x00020100, 0x00021100, 0x00022100, 0x00026100, 0x00027100, 0x00028100}, NOP_C_("Nintendo3DSSysTitles", "Download Play")},
 	{{0x00020200, 0x00021200, 0x00022200, 0x00026200, 0x00027200, 0x00028200}, NOP_C_("Nintendo3DSSysTitles", "Activity Log")},
@@ -88,7 +89,7 @@ const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_tit
 	{{0x00023000, 0x00024000, 0x00025000,          0,          0,          0}, NOP_C_("Nintendo3DSSysTitles", "Promotional Video (v1.1.0)")},
 	{{0x0002BF00, 0x0002C000, 0x0002C100,          0,          0,          0}, NOP_C_("Nintendo3DSSysTitles", "Nintendo Network ID Settings")},
 
-	// New 3DS
+	/** New 3DS exclusive **/
 	{{0x20020300, 0x20021300, 0x20022300,          0, 0x20027300,          0}, NOP_C_("Nintendo3DSSysTitles", "Health and Safety Information")},
 	{{0x20020D00, 0x20021D00, 0x20022D00,          0, 0x20027D00,          0}, NOP_C_("Nintendo3DSSysTitles", "Face Raiders")},
 	{{0x20023100, 0x20024100, 0x20025100,          0,          0,          0}, NOP_C_("Nintendo3DSSysTitles", "microSD Management")},
@@ -98,6 +99,7 @@ const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_tit
  * System applets. (tid hi == 0x00040030)
  */
 const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_title_00040030[] = {
+	/** Common titles **/
 	{{0x00008202, 0x00008F02, 0x00009802, 0x0000A102, 0x0000A902, 0x0000B102}, NOP_C_("Nintendo3DSSysTitles", "HOME Menu")},
 	{{0x00008402, 0x00009002, 0x00009902, 0x0000A202, 0x0000AA02, 0x0000B202}, NOP_C_("Nintendo3DSSysTitles", "Camera")},
 	{{0x00008602, 0x00009202, 0x00009B02, 0x0000A402, 0x0000AC02, 0x0000B402}, NOP_C_("Nintendo3DSSysTitles", "Instruction Manual")},
@@ -115,7 +117,7 @@ const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_tit
 	{{0x00008302, 0x00008B02, 0x0000BA02,          0,          0,          0}, NOP_C_("Nintendo3DSSysTitles", "Miiverse posting applet")},
 	{{0x00009502, 0x00009E02, 0x0000B902,          0, 0x00008C02, 0x0000BF02}, NOP_C_("Nintendo3DSSysTitles", "amiibo Settings")},
 
-	// New 3DS
+	/** New 3DS exclusive **/
 	{{0x20008802, 0x20009402, 0x20009D02,          0, 0x2000AE02,          0}, NOP_C_("Nintendo3DSSysTitles", "Internet Browser")},
 	{{0x2000C003, 0x2000C803, 0x2000D003,          0, 0x2000DE03,          0}, NOP_C_("Nintendo3DSSysTitles", "Software Keyboard (SAFE_MODE)")},
 };

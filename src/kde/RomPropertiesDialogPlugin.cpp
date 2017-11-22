@@ -81,6 +81,7 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 
 	// ROM is supported. Show the properties.
 	RomDataView *romDataView = new RomDataView(romData, props);
+	// tr: Tab title.
 	props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
 
 	// Make sure the underlying file handle is closed,

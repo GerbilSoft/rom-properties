@@ -705,7 +705,7 @@ HPROPSHEETPAGE ImageTypesTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
-	// Tab title.
+	// tr: Tab title.
 	const wstring wsTabTitle = RP2W_c(C_("ImageTypesTab", "Image Types"));
 
 	PROPSHEETPAGE psp;

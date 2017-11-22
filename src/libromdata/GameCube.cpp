@@ -1714,9 +1714,12 @@ int GameCube::loadFieldData(void)
 				// Partition type.
 				string str;
 				static const char *const part_type_tbl[3] = {
-					NOP_C_("GameCube|Partition", "Game"),		// GameCubePrivate::PARTITION_GAME
-					NOP_C_("GameCube|Partition", "Update"),		// GameCubePrivate::PARTITION_UPDATE
-					NOP_C_("GameCube|Partition", "Channel"),	// GameCubePrivate::PARTITION_CHANNEL
+					// tr: GameCubePrivate::PARTITION_GAME
+					NOP_C_("GameCube|Partition", "Game"),
+					// tr: GameCubePrivate::PARTITION_UPDATE
+					NOP_C_("GameCube|Partition", "Update"),
+					// tr: GameCubePrivate::PARTITION_CHANNEL
+					NOP_C_("GameCube|Partition", "Channel"),
 				};
 				if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
 					str = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);

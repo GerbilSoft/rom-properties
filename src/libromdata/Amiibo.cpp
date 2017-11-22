@@ -486,18 +486,20 @@ int Amiibo::loadFieldData(void)
 	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
 	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
 
-	// amiibo ID.
-	// Represents the character and amiibo series.
+	// tr: amiibo ID. Represents the character and amiibo series.
 	// TODO: Link to https://amiibo.life/nfc/%08X-%08X
 	d->fields->addField_string(C_("Amiibo", "amiibo ID"),
 		rp_sprintf("%08X-%08X", char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
 
-	// amiibo type.
+	// tr: amiibo type.
 	static const char *const amiibo_type_tbl[3] = {
-		NOP_C_("Amiibo|Type", "Figurine"),	// NFP_TYPE_FIGURINE
-		NOP_C_("Amiibo|Type", "Card"),		// NFP_TYPE_CARD
-		NOP_C_("Amiibo|Type", "Yarn"),		// NFP_TYPE_YARN
+		// tr: NFP_TYPE_FIGURINE == standard amiibo
+		NOP_C_("Amiibo|Type", "Figurine"),
+		// tr: NFP_TYPE_CARD == amiibo card
+		NOP_C_("Amiibo|Type", "Card"),
+		// tr: NFP_TYPE_YARN == yarn amiibo
+		NOP_C_("Amiibo|Type", "Yarn"),
 	};
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
 		d->fields->addField_string(C_("Amiibo", "amiibo Type"),
@@ -536,7 +538,7 @@ int Amiibo::loadFieldData(void)
 		}
 	}
 
-	// Credits.
+	// tr: Credits for amiibo image downloads.
 	const string credits = rp_sprintf(
 		C_("Amiibo", "amiibo images provided by %s,\nthe Unofficial amiibo Database."),
 		"<a href=\"http://amiibo.life/\">amiibo.life</a>");

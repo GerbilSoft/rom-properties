@@ -422,10 +422,13 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 		case Qt::DisplayRole:
 			switch (section) {
 				case COL_KEY_NAME:
+					// tr: Column 0: Key Name.
 					return U82Q(C_("KeyManagerTab", "Key Name"));
 				case COL_VALUE:
+					// tr: Column 1: Value.
 					return U82Q(C_("KeyManagerTab", "Value"));
 				case COL_ISVALID:
+					// tr: Column 2: Verification status.
 					return U82Q(C_("KeyManagerTab", "Valid?"));
 
 				default:

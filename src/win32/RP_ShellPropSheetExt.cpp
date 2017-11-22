@@ -1976,7 +1976,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
-	// Tab title.
+	// tr: Tab title.
 	const wstring wsTabTitle = RP2W_c(C_("RomDataView", "ROM Properties"));
 
 	// Create a property sheet page.

@@ -1314,24 +1314,24 @@ int DreamcastSave::loadFieldData(void)
 		case DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
 		case DreamcastSavePrivate::DC_HAVE_VMI |
 		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
-			// VMS is missing.
 			d->fields->addField_string(C_("DreamcastSave", "Warning"),
+				// tr: VMS file is missing.
 				C_("DreamcastSave", "The VMS file was not found."),
 				RomFields::STRF_WARNING);
 			break;
 
 		case DreamcastSavePrivate::DC_HAVE_VMS:
 		case DreamcastSavePrivate::DC_IS_ICONDATA_VMS:
-			// VMI is missing.
 			d->fields->addField_string(C_("DreamcastSave", "Warning"),
+				// tr: VMI file is missing.
 				C_("DreamcastSave", "The VMI file was not found."),
 				RomFields::STRF_WARNING);
 			break;
 
 		default:
-			// Should not happen...
 			assert(!"DreamcastSave: Unrecognized VMS/VMI combination.");
 			d->fields->addField_string(C_("DreamcastSave", "Warning"),
+				// tr: Should not happen...
 				C_("DreamcastSave", "Unrecognized VMS/VMI combination."),
 				RomFields::STRF_WARNING);
 			break;
@@ -1350,18 +1350,21 @@ int DreamcastSave::loadFieldData(void)
 	// File type.
 	const char *filetype;
 	if (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS) {
-		// ICONDATA_VMS
+		// tr: ICONDATA_VMS
 		filetype = C_("DreamcastSave", "Icon Data");
 	} else if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
 		// Use the type from the directory entry.
 		switch (d->vms_dirent.filetype) {
 			case DC_VMS_DIRENT_FTYPE_NONE:
+				// tr: No file type entry.
 				filetype = C_("DreamcastSave", "None");
 				break;
 			case DC_VMS_DIRENT_FTYPE_DATA:
+				// tr: Save file.
 				filetype = C_("DreamcastSave", "Save Data");
 				break;
 			case DC_VMS_DIRENT_FTYPE_GAME:
+				// tr: VMU game file.
 				filetype = C_("DreamcastSave", "VMU Game");
 				break;
 			default:
@@ -1372,9 +1375,11 @@ int DreamcastSave::loadFieldData(void)
 		// Determine the type based on the VMS header offset.
 		switch (d->vms_header_offset) {
 			case 0:
+				// tr: Save file.
 				filetype = C_("DreamcastSave", "Save Data");
 				break;
 			case DC_VMS_BLOCK_SIZE:
+				// tr: VMU game file.
 				filetype = C_("DreamcastSave", "VMU Game");
 				break;
 			default:

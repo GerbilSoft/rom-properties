@@ -373,26 +373,26 @@ const char *TImageTypesConfig<ComboBox>::imageTypeName(unsigned int imageType)
 	static const char *const imageType_names[] = {
 		/** Internal **/
 
-		// IMG_INT_ICON
+		// tr: IMG_INT_ICON
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nIcon"),
-		// IMG_INT_BANNER
+		// tr: IMG_INT_BANNER
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nBanner"),
-		// IMG_INT_MEDIA
+		// tr: IMG_INT_MEDIA
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nMedia"),
-		// IMG_INT_IMAGE
+		// tr: IMG_INT_IMAGE
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nImage"),
 
 		/** External **/
 
-		// IMG_EXT_MEDIA
+		// tr: IMG_EXT_MEDIA
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nMedia"),
-		// IMG_EXT_COVER
+		// tr: IMG_EXT_COVER
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nCover"),
-		// IMG_EXT_COVER_3D
+		// tr: IMG_EXT_COVER_3D
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\n3D Cover"),
-		// IMG_EXT_COVER_FULL
+		// tr: IMG_EXT_COVER_FULL
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nFull Cover"),
-		// IMG_EXT_BOX
+		// tr: IMG_EXT_BOX
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nBox"),
 	};
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
@@ -411,15 +411,25 @@ const char *TImageTypesConfig<ComboBox>::sysName(unsigned int sys)
 {
 	// System names.
 	static const char *const sysNames[] = {
+		// tr: amiibo
 		NOP_C_("TImageTypesConfig|SysName", "amiibo"),
+		// tr: NintendoBadge
 		NOP_C_("TImageTypesConfig|SysName", "Badge Arcade"),
+		// tr: Dreamcast
 		NOP_C_("TImageTypesConfig|SysName", "Dreamcast"),
+		// tr: DreamcastSave
 		NOP_C_("TImageTypesConfig|SysName", "Dreamcast Saves"),
+		// tr: GameCube
 		NOP_C_("TImageTypesConfig|SysName", "GameCube / Wii"),
+		// tr: GameCubeSave
 		NOP_C_("TImageTypesConfig|SysName", "GameCube Saves"),
+		// tr: NintendoDS
 		NOP_C_("TImageTypesConfig|SysName", "Nintendo DS(i)"),
+		// tr: Nintendo3DS
 		NOP_C_("TImageTypesConfig|SysName", "Nintendo 3DS"),
+		// tr: PlayStationSave
 		NOP_C_("TImageTypesConfig|SysName", "PlayStation Saves"),
+		// tr: WiiU
 		NOP_C_("TImageTypesConfig|SysName", "Wii U"),
 	};
 	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,

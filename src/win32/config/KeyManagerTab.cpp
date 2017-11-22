@@ -367,7 +367,7 @@ void KeyManagerTabPrivate::initUI(void)
 	// Column title.
 	wstring wsColTitle;
 
-	// Column 0: Key Name.
+	// tr: Column 0: Key Name.
 	wsColTitle = RP2W_c(C_("KeyManagerTab", "Key Name"));
 	LVCOLUMN lvCol;
 	memset(&lvCol, 0, sizeof(lvCol));
@@ -376,12 +376,12 @@ void KeyManagerTabPrivate::initUI(void)
 	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 0, &lvCol);
 
-	// Column 1: Value.
+	// tr: Column 1: Value.
 	wsColTitle = RP2W_c(C_("KeyManagerTab", "Value"));
 	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 1, &lvCol);
 
-	// Column 2: Verification status.
+	// tr: Column 2: Verification status.
 	wsColTitle = RP2W_c(C_("KeyManagerTab", "Valid?"));
 	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 2, &lvCol);
@@ -1427,7 +1427,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// Dialog title.
+	// tr: Dialog title.
 	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
 
 	OPENFILENAME ofn;
@@ -1463,7 +1463,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// Dialog title.
+	// tr: Dialog title.
 	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
 
 	OPENFILENAME ofn;
@@ -1499,7 +1499,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// Dialog title.
+	// tr: Dialog title.
 	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
 
 	OPENFILENAME ofn;
@@ -1535,7 +1535,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// Dialog title.
+	// tr: Dialog title.
 	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
 
 	OPENFILENAME ofn;
@@ -1586,7 +1586,7 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
-	// Tab title.
+	// tr: Tab title.
 	const wstring wsTabTitle = RP2W_c(C_("KeyManagerTab", "Key Manager"));
 
 	PROPSHEETPAGE psp;

@@ -114,30 +114,37 @@ string RomDataPrivate::formatFileSize(int64_t size)
 		whole_part = (int)size;
 		frac_part = 0;
 	} else if (size < (2LL << 10)) {
+		// tr: Bytes (< 1,024)
 		suffix = NC_("RomData|FileSize", "byte", "bytes", (int)size);
 		whole_part = (int)size;
 		frac_part = 0;
 	} else if (size < (2LL << 20)) {
+		// tr: Kilobytes
 		suffix = C_("RomData|FileSize", "KB");
 		whole_part = (int)(size >> 10);
 		frac_part = calc_frac_part(size, (1LL << 10));
 	} else if (size < (2LL << 30)) {
+		// tr: Megabytes
 		suffix = C_("RomData|FileSize", "MB");
 		whole_part = (int)(size >> 20);
 		frac_part = calc_frac_part(size, (1LL << 20));
 	} else if (size < (2LL << 40)) {
+		// tr: Gigabytes
 		suffix = C_("RomData|FileSize", "GB");
 		whole_part = (int)(size >> 30);
 		frac_part = calc_frac_part(size, (1LL << 30));
 	} else if (size < (2LL << 50)) {
+		// tr: Terabytes
 		suffix = C_("RomData|FileSize", "TB");
 		whole_part = (int)(size >> 40);
 		frac_part = calc_frac_part(size, (1LL << 40));
 	} else if (size < (2LL << 60)) {
+		// tr: Petabytes
 		suffix = C_("RomData|FileSize", "PB");
 		whole_part = (int)(size >> 50);
 		frac_part = calc_frac_part(size, (1LL << 50));
 	} else /*if (size < (2ULL << 70))*/ {
+		// tr: Exabytes
 		suffix = C_("RomData|FileSize", "EB");
 		whole_part = (int)(size >> 60);
 		frac_part = calc_frac_part(size, (1LL << 60));
@@ -496,41 +503,41 @@ const char *RomData::fileType_string(void) const
 	static const char *const fileType_names[] = {
 		// FTYPE_UNKNOWN
 		nullptr,
-		// FTYPE_ROM_IMAGE
+		// tr: FTYPE_ROM_IMAGE
 		NOP_C_("RomData|FileType", "ROM Image"),
-		// FTYPE_DISC_IMAGE
+		// tr: FTYPE_DISC_IMAGE
 		NOP_C_("RomData|FileType", "Disc Image"),
-		// FTYPE_SAVE_FILE
+		// tr: FTYPE_SAVE_FILE
 		NOP_C_("RomData|FileType", "Save File"),
-		// FTYPE_EMBEDDED_DISC_IMAGE
+		// tr: FTYPE_EMBEDDED_DISC_IMAGE
 		NOP_C_("RomData|FileType", "Embedded Disc Image"),
-		// FTYPE_APPLICATION_PACKAGE
+		// tr: FTYPE_APPLICATION_PACKAGE
 		NOP_C_("RomData|FileType", "Application Package"),
-		// FTYPE_NFC_DUMP
+		// tr: FTYPE_NFC_DUMP
 		NOP_C_("RomData|FileType", "NFC Dump"),
-		// FTYPE_DISK_IMAGE
+		// tr: FTYPE_DISK_IMAGE
 		NOP_C_("RomData|FileType", "Disk Image"),
-		// FTYPE_EXECUTABLE
+		// tr: FTYPE_EXECUTABLE
 		NOP_C_("RomData|FileType", "Executable"),
-		// FTYPE_DLL
+		// tr: FTYPE_DLL
 		NOP_C_("RomData|FileType", "Dynamic Link Library"),
-		// FTYPE_DEVICE_DRIVER
+		// tr: FTYPE_DEVICE_DRIVER
 		NOP_C_("RomData|FileType", "Device Driver"),
-		// FTYPE_RESOURCE_LIBRARY
+		// tr: FTYPE_RESOURCE_LIBRARY
 		NOP_C_("RomData|FileType", "Resource Library"),
-		// FTYPE_ICON_FILE
+		// tr: FTYPE_ICON_FILE
 		NOP_C_("RomData|FileType", "Icon File"),
-		// FTYPE_BANNER_FILE
+		// tr: FTYPE_BANNER_FILE
 		NOP_C_("RomData|FileType", "Banner File"),
-		// FTYPE_HOMEBREW
+		// tr: FTYPE_HOMEBREW
 		NOP_C_("RomData|FileType", "Homebrew Application"),
-		// FTYPE_EMMC_DUMP
+		// tr: FTYPE_EMMC_DUMP
 		NOP_C_("RomData|FileType", "eMMC Dump"),
-		// FTYPE_TITLE_CONTENTS
+		// tr: FTYPE_TITLE_CONTENTS
 		NOP_C_("RomData|FileType", "Title Contents"),
-		// FTYPE_FIRMWARE_BINARY
+		// tr: FTYPE_FIRMWARE_BINARY
 		NOP_C_("RomData|FileType", "Firmware Binary"),
-		// FTYPE_TEXTURE_FILE
+		// tr: FTYPE_TEXTURE_FILE
 		NOP_C_("RomData|FileType", "Texture File"),
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
@@ -724,26 +731,26 @@ const char *RomData::getImageTypeName(ImageType imageType) {
 	static const char *const imageType_names[] = {
 		/** Internal **/
 
-		// IMG_INT_ICON
+		// tr: IMG_INT_ICON
 		NOP_C_("RomData|ImageType", "Internal icon"),
-		// IMG_INT_BANNER
+		// tr: IMG_INT_BANNER
 		NOP_C_("RomData|ImageType", "Internal banner"),
-		// IMG_INT_MEDIA
+		// tr: IMG_INT_MEDIA
 		NOP_C_("RomData|ImageType", "Internal media scan"),
-		// IMG_INT_IMAGE
+		// tr: IMG_INT_IMAGE
 		NOP_C_("RomData|ImageType", "Internal image"),
 
 		/** External **/
 
-		// IMG_EXT_MEDIA
+		// tr: IMG_EXT_MEDIA
 		NOP_C_("RomData|ImageType", "External media scan"),
-		// IMG_EXT_COVER
+		// tr: IMG_EXT_COVER
 		NOP_C_("RomData|ImageType", "External cover scan"),
-		// IMG_EXT_COVER_3D
+		// tr: IMG_EXT_COVER_3D
 		NOP_C_("RomData|ImageType", "External cover scan (3D version)"),
-		// IMG_EXT_COVER_FULL
+		// tr: IMG_EXT_COVER_FULL
 		NOP_C_("RomData|ImageType", "External cover scan (front and back)"),
-		// IMG_EXT_BOX
+		// tr: IMG_EXT_BOX
 		NOP_C_("RomData|ImageType", "External box scan"),
 	};
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_EXT_MAX + 1,

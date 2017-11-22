@@ -633,8 +633,9 @@ int DMG::loadFieldData(void)
 		if (ram_size == 0 &&
 		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_HW_MBC2)
 		{
-			// Not really RAM, but whatever
-			d->fields->addField_string(C_("DMG", "RAM Size"), C_("DMG", "512 x 4 bits"));
+			d->fields->addField_string(C_("DMG", "RAM Size"),
+				// tr: MBC2 internal memory - Not really RAM, but whatever.
+				C_("DMG", "512 x 4 bits"));
 		} else if(ram_size == 0) {
 			d->fields->addField_string(C_("DMG", "RAM Size"), C_("DMG", "No RAM"));
 		} else {

@@ -152,10 +152,12 @@ rom_properties_page_finalize(GObject *object)
 RomPropertiesPage*
 rom_properties_page_new(void)
 {
+	// tr: Tab title.
+	const char *const tabTitle = C_("RomDataView", "ROM Properties");
+
 	RomPropertiesPage *page = static_cast<RomPropertiesPage*>(
 		g_object_new(TYPE_ROM_PROPERTIES_PAGE, nullptr));
-	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page),
-		C_("RomDataView", "ROM Properties"));
+	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page), tabTitle)
 	return page;
 }
 

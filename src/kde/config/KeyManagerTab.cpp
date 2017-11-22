@@ -351,7 +351,8 @@ void KeyManagerTab::save(QSettings *pSettings)
 void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 {
 	QString filename = QFileDialog::getOpenFileName(this,
-		U82Q(C_("KeyManagerTab", "Select Wii keys.bin File")),	// caption
+		// tr: Dialog title.
+		U82Q(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		QString(),			// dir (TODO)
 		tr("keys.bin (keys.bin);;Binary Files (*.bin);;All Files (*.*)"));
 	if (filename.isEmpty())
@@ -368,7 +369,8 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 {
 	QString filename = QFileDialog::getOpenFileName(this,
-		U82Q(C_("KeyManagerTab", "Select Wii U otp.bin File")),	// caption
+		// tr: Dialog title.
+		U82Q(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		QString(),				// dir (TODO)
 		tr("otp.bin (otp.bin);;Binary Files (*.bin);;All Files (*.*)"));
 	if (filename.isEmpty())
@@ -385,7 +387,8 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 {
 	QString filename = QFileDialog::getOpenFileName(this,
-		U82Q(C_("KeyManagerTab", "Select 3DS boot9.bin File")),	// caption
+		// tr: Dialog title.
+		U82Q(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		QString(),			// dir (TODO)
 		tr("boot9.bin (boot9.bin);;Binary Files (*.bin);;All Files (*.*)"));
 	if (filename.isEmpty())
@@ -402,7 +405,8 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 {
 	QString filename = QFileDialog::getOpenFileName(this,
-		U82Q(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),	// caption
+		// tr: Dialog title.
+		U82Q(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		QString(),				// dir (TODO)
 		tr("aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)"));
 	if (filename.isEmpty())

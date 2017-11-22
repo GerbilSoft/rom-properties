@@ -475,7 +475,7 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
-	// Tab title.
+	// tr: Tab title.
 	const wstring wsTabTitle = RP2W_c(C_("Cache Tab", "Thumbnail Cache"));
 
 	PROPSHEETPAGE psp;

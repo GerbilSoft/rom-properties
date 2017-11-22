@@ -183,14 +183,21 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// File type.
 	static const char *const fileTypes[] = {
-		nullptr,						// VFT_UNKNOWN
-		NOP_C_("EXE|FileType", "Application"),			// VFT_APP
-		NOP_C_("EXE|FileType", "DLL"),				// VFT_DLL
-		NOP_C_("EXE|FileType", "Device Driver"),		// VFT_DRV
-		NOP_C_("EXE|FileType", "Font"),				// VFT_FONT,
-		NOP_C_("EXE|FileType", "Virtual Device Driver"),	// VFT_VXD
+		// VFT_UNKNOWN
 		nullptr,
-		NOP_C_("EXE|FileType", "Static Library"),		// VFT_STATIC_LIB
+		// tr: VFT_APP
+		NOP_C_("EXE|FileType", "Application"),
+		// tr: VFT_DLL
+		NOP_C_("EXE|FileType", "DLL"),
+		// tr: VFT_DRV
+		NOP_C_("EXE|FileType", "Device Driver"),
+		// tr: VFT_FONT
+		NOP_C_("EXE|FileType", "Font"),
+		// tr: VFT_VXD
+		NOP_C_("EXE|FileType", "Virtual Device Driver"),
+		nullptr,
+		// tr: VFT_STATIC_LIB
+		NOP_C_("EXE|FileType", "Static Library"),
 	};
 	const char *fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes)
 					? fileTypes[pVsFfi->dwFileType]
@@ -210,19 +217,32 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		case VFT_DRV: {
 			hasSubtype = true;
 			static const char *const fileSubtypes_DRV[] = {
-				nullptr,					// VFT2_UNKNOWN
-				NOP_C_("EXE|FileSubType", "Printer"),		// VFT2_DRV_PRINTER
-				NOP_C_("EXE|FileSubType", "Keyboard"),		// VFT2_DRV_KEYBOARD
-				NOP_C_("EXE|FileSubType", "Language"),		// VFT2_DRV_LANGUAGE
-				NOP_C_("EXE|FileSubType", "Display"),		// VFT2_DRV_DISPLAY
-				NOP_C_("EXE|FileSubType", "Mouse"),		// VFT2_DRV_MOUSE
-				NOP_C_("EXE|FileSubType", "Network"),		// VFT2_DRV_NETWORK
-				NOP_C_("EXE|FileSubType", "System"),		// VFT2_DRV_SYSTEM
-				NOP_C_("EXE|FileSubType", "Installable"),	// VFT2_DRV_INSTALLABLE
-				NOP_C_("EXE|FileSubType", "Sound"),		// VFT2_DRV_SOUND
-				NOP_C_("EXE|FileSubType", "Communications"),	// VFT2_DRV_COMM
-				NOP_C_("EXE|FileSubType", "Input Method"),	// VFT2_DRV_INPUTMETHOD
-				NOP_C_("EXE|FileSubType", "Versioned Printer"),	// VFT2_DRV_VERSIONED_PRINTER
+				// VFT2_UNKNOWN
+				nullptr,
+				// tr: VFT2_DRV_PRINTER
+				NOP_C_("EXE|FileSubType", "Printer"),
+				// tr: VFT2_DRV_KEYBOARD
+				NOP_C_("EXE|FileSubType", "Keyboard"),
+				// tr: VFT2_DRV_LANGUAGE
+				NOP_C_("EXE|FileSubType", "Language"),
+				// tr: VFT2_DRV_DISPLAY
+				NOP_C_("EXE|FileSubType", "Display"),
+				// tr: VFT2_DRV_MOUSE
+				NOP_C_("EXE|FileSubType", "Mouse"),
+				// tr: VFT2_DRV_NETWORK
+				NOP_C_("EXE|FileSubType", "Network"),
+				// tr: VFT2_DRV_SYSTEM
+				NOP_C_("EXE|FileSubType", "System"),
+				// tr: VFT2_DRV_INSTALLABLE
+				NOP_C_("EXE|FileSubType", "Installable"),
+				// tr: VFT2_DRV_SOUND
+				NOP_C_("EXE|FileSubType", "Sound"),
+				// tr: VFT2_DRV_COMM
+				NOP_C_("EXE|FileSubType", "Communications"),
+				// tr: VFT2_DRV_INPUTMETHOD
+				NOP_C_("EXE|FileSubType", "Input Method"),
+				// tr: VFT2_DRV_VERSIONED_PRINTER
+				NOP_C_("EXE|FileSubType", "Versioned Printer"),
 			};
 			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)
 						? fileSubtypes_DRV[pVsFfi->dwFileSubtype]
@@ -233,10 +253,14 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		case VFT_FONT: {
 			hasSubtype = true;
 			static const char *const fileSubtypes_FONT[] = {
-				nullptr,				// VFT2_UNKNOWN
-				NOP_C_("EXE|FileSubType", "Raster"),	// VFT2_FONT_RASTER
-				NOP_C_("EXE|FileSubType", "Vector"),	// VFT2_FONT_VECTOR
-				NOP_C_("EXE|FileSubType", "TrueType"),	// VFT2_FONT_TRUETYPE
+				// VFT2_UNKNOWN
+				nullptr,
+				// tr: VFT2_FONT_RASTER
+				NOP_C_("EXE|FileSubType", "Raster"),
+				// tr: VFT2_FONT_VECTOR
+				NOP_C_("EXE|FileSubType", "Vector"),
+				// tr: VFT2_FONT_TRUETYPE
+				NOP_C_("EXE|FileSubType", "TrueType"),
 			};
 			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)
 						? fileSubtypes_FONT[pVsFfi->dwFileSubtype]
@@ -798,21 +822,34 @@ void EXEPrivate::addFields_PE(void)
 
 	// Subsystem names.
 	static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
-		nullptr,						// IMAGE_SUBSYSTEM_UNKNOWN
-		NOP_C_("EXE|Subsystem", "Native"),			// IMAGE_SUBSYSTEM_NATIVE
-		NOP_C_("EXE|Subsystem", "Windows"),			// IMAGE_SUBSYSTEM_WINDOWS_GUI
-		NOP_C_("EXE|Subsystem", "Console"),			// IMAGE_SUBSYSTEM_WINDOWS_CUI
+		// IMAGE_SUBSYSTEM_UNKNOWN
 		nullptr,
-		NOP_C_("EXE|Subsystem", "OS/2 Console"),		// IMAGE_SUBSYSTEM_OS2_CUI
+		// tr: IMAGE_SUBSYSTEM_NATIVE
+		NOP_C_("EXE|Subsystem", "Native"),
+		// tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
+		NOP_C_("EXE|Subsystem", "Windows"),
+		// tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
+		NOP_C_("EXE|Subsystem", "Console"),
 		nullptr,
-		NOP_C_("EXE|Subsystem", "POSIX Console"),		// IMAGE_SUBSYSTEM_POSIX_CUI
-		NOP_C_("EXE|Subsystem", "Win9x Native Driver"),		// IMAGE_SUBSYSTEM_NATIVE_WINDOWS
-		NOP_C_("EXE|Subsystem", "Windows CE"),			// IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
-		NOP_C_("EXE|Subsystem", "EFI Application"),		// IMAGE_SUBSYSTEM_EFI_APPLICATION
-		NOP_C_("EXE|Subsystem", "EFI Boot Service Driver"),	// IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
-		NOP_C_("EXE|Subsystem", "EFI Runtime Driver"),		// IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
-		NOP_C_("EXE|Subsystem", "EFI ROM Image"),		// IMAGE_SUBSYSTEM_EFI_ROM
-		NOP_C_("EXE|Subsystem", "Xbox"),			// IMAGE_SUBSYSTEM_XBOX
+		// tr: IMAGE_SUBSYSTEM_OS2_CUI
+		NOP_C_("EXE|Subsystem", "OS/2 Console"),
+		nullptr,
+		// tr: IMAGE_SUBSYSTEM_POSIX_CUI
+		NOP_C_("EXE|Subsystem", "POSIX Console"),
+		// tr: IMAGE_SUBSYSTEM_NATIVE_WINDOWS
+		NOP_C_("EXE|Subsystem", "Win9x Native Driver"),
+		// tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
+		NOP_C_("EXE|Subsystem", "Windows CE"),
+		// tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
+		NOP_C_("EXE|Subsystem", "EFI Application"),
+		// tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
+		NOP_C_("EXE|Subsystem", "EFI Boot Service Driver"),
+		// tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
+		NOP_C_("EXE|Subsystem", "EFI Runtime Driver"),
+		// tr: IMAGE_SUBSYSTEM_EFI_ROM
+		NOP_C_("EXE|Subsystem", "EFI ROM Image"),
+		// tr: IMAGE_SUBSYSTEM_XBOX
+		NOP_C_("EXE|Subsystem", "Xbox"),
 	};
 
 	// Subsystem name and version.

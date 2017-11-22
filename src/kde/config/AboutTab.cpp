@@ -233,7 +233,7 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += "</a>&gt;";
 		}
 		if (creditsData->sub) {
-			// Sub-credit.
+			// tr: Sub-credit.
 			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
 				creditsData->sub);
 		}
@@ -254,15 +254,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// Otherwise, they won't be retranslated if the UI language
 	// is changed at runtime.
 
-	// Using an internal copy of a library.
+	// tr: Using an internal copy of a library.
 	const char *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
-	// Compiled with a specific version of an external library.
+	// tr: Compiled with a specific version of an external library.
 	const char *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
-	// Using an external library, e.g. libpcre.so
+	// tr: Using an external library, e.g. libpcre.so
 	const char *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
-	// License: (libraries with only a single license)
+	// tr: License: (libraries with only a single license)
 	const char *const sLicense = C_("AboutTab|Libraries", "License: %s");
-	// Licenses: (libraries with multiple licenses)
+	// tr: Licenses: (libraries with multiple licenses)
 	const char *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
 
 	// Suppress "unused variable" warnings.
