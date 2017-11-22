@@ -157,7 +157,7 @@ rom_properties_page_new(void)
 
 	RomPropertiesPage *page = static_cast<RomPropertiesPage*>(
 		g_object_new(TYPE_ROM_PROPERTIES_PAGE, nullptr));
-	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page), tabTitle)
+	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page), tabTitle);
 	return page;
 }
 
