@@ -52,7 +52,7 @@ ENDFOREACH()
 
 # "ALL" targets.
 # NOTE: Don't run init-all.po unless you know what you're doing!
-ADD_CUSTOM_TARGET(init-all.po DEPENDS ${INIT_ALL_PO_TARGETS})
+#ADD_CUSTOM_TARGET(init-all.po DEPENDS ${INIT_ALL_PO_TARGETS})
 ADD_CUSTOM_TARGET(update-all.po DEPENDS ${UPDATE_ALL_PO_TARGETS})
 
 # Create the POTFILES file. (Requires a Unix-like `find` command.)
