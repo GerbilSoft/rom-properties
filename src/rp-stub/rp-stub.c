@@ -35,6 +35,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <getopt.h>
+#include <locale.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
