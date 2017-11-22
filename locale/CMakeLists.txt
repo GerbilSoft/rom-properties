@@ -6,6 +6,7 @@ FIND_PACKAGE(Gettext REQUIRED)
 FIND_PROGRAM(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
 FIND_PROGRAM(FIND find)
 FIND_PROGRAM(SORT sort)
+FIND_PROGRAM(SED sed)
 
 # Variables for xgettext.
 SET(DOMAIN "rom-properties")
@@ -43,6 +44,9 @@ ADD_CUSTOM_TARGET(rom-properties.pot
 		--files-from=${CMAKE_CURRENT_BINARY_DIR}/POTFILES
 		--package-version=${VERSION_STRING}
 		--package-name=${CMAKE_PROJECT_NAME}
+	# Set the character set to UTF-8.
+	# Reference: Reference: http://mingw-users.1079350.n2.nabble.com/Getting-rid-of-xgettext-s-quot-CHARSET-quot-warning-td5620533.html
+	COMMAND ${SED} -i -e "s/CHARSET/UTF-8/" ${DOMAIN}.pot
 	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/POTFILES"
 	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 	VERBATIM
