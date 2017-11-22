@@ -101,8 +101,6 @@ class RomDataView : public QWidget
 		 *
 		 * If a RomData object is already set, it is unref()'d.
 		 * The new RomData object is ref()'d when set.
-		 *
-		 * @return RomData object.
 		 */
 		void setRomData(LibRpBase::RomData *romData);
 
