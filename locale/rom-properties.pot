@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2017-11-22 15:50-0500\n"
+"POT-Creation-Date: 2017-11-24 15:36-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4297,33 +4297,33 @@ msgctxt "rpcli"
 msgid "ERROR: %s"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:71
+#: ../src/rp-stub/rp-stub.c:72
 msgctxt "rp_stub"
 msgid ""
 "Shared library stub program.\n"
 "Copyright (c) 2016-2017 by David Korth."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:74
+#: ../src/rp-stub/rp-stub.c:75
 #, c-format
 msgctxt "rp-stub"
 msgid "rom-properties version: %s"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:84
+#: ../src/rp-stub/rp-stub.c:85
 msgctxt "rp-stub"
 msgid ""
 "This program is licensed under the GNU GPL v2.\n"
 "See http://www.gnu.org/licenses/gpl-2.0.html for more information."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:94
+#: ../src/rp-stub/rp-stub.c:95
 #, c-format
 msgctxt "rp-stub"
 msgid "Usage: %s [-s size] source_file output_file"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:98
+#: ../src/rp-stub/rp-stub.c:99
 msgctxt "rp-stub"
 msgid ""
 "If source_file is a supported ROM image, a thumbnail is\n"
@@ -4337,13 +4337,13 @@ msgid ""
 "  -V, --version\t\tOutput version information and exit."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:108
+#: ../src/rp-stub/rp-stub.c:109
 #, c-format
 msgctxt "rp-stub"
 msgid "Usage: %s"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:112
+#: ../src/rp-stub/rp-stub.c:113
 msgctxt "rp-stub"
 msgid ""
 "When invoked as rp-config, this program will open the configuration dialog\n"
@@ -4351,64 +4351,64 @@ msgid ""
 "desktop environment."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:193
+#: ../src/rp-stub/rp-stub.c:194
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s: invalid size '%2$s'"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:195 ../src/rp-stub/rp-stub.c:201
-#: ../src/rp-stub/rp-stub.c:230 ../src/rp-stub/rp-stub.c:241
-#: ../src/rp-stub/rp-stub.c:247 ../src/rp-stub/rp-stub.c:253
+#: ../src/rp-stub/rp-stub.c:196 ../src/rp-stub/rp-stub.c:202
+#: ../src/rp-stub/rp-stub.c:231 ../src/rp-stub/rp-stub.c:242
+#: ../src/rp-stub/rp-stub.c:248 ../src/rp-stub/rp-stub.c:254
 #, c-format
 msgctxt "rp-stub"
 msgid "Try '%s --help' for more information."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:199
+#: ../src/rp-stub/rp-stub.c:200
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s: size '%2$s' is out of range"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:239
+#: ../src/rp-stub/rp-stub.c:240
 #, c-format
 msgctxt "rp-stub"
 msgid "%s: missing source and output file parameters"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:245
+#: ../src/rp-stub/rp-stub.c:246
 #, c-format
 msgctxt "rp-stub"
 msgid "%s: missing output file parameter"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:251
+#: ../src/rp-stub/rp-stub.c:252
 #, c-format
 msgctxt "rp-stub"
 msgid "%s: too many parameters specified"
 msgstr ""
 
 #. tr: NOTE: Not positional. Don't change argument positions!
-#: ../src/rp-stub/rp-stub.c:274
+#: ../src/rp-stub/rp-stub.c:275
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s(\"%s\", \"%s\", %d);"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:282
+#: ../src/rp-stub/rp-stub.c:283
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s();"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:292
+#: ../src/rp-stub/rp-stub.c:293
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s() returned %2$d."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:296
+#: ../src/rp-stub/rp-stub.c:297
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."

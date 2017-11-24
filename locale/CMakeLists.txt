@@ -15,7 +15,6 @@ SET(COPYRIGHT_HOLDER "David Korth")
 SET(MSGID_BUGS_ADDRESS "gerbilsoft@gerbilsoft.com")
 SET(LINGUAS it)
 
-SET(LINGUAS it)
 SET(_gmoFiles)
 FOREACH(_lingua ${LINGUAS})
 	# Convert the .po files to .mo files.
