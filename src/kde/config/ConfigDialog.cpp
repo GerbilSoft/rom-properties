@@ -26,6 +26,9 @@
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // U82Q()
 #include "RpQt.hpp"
 
@@ -94,16 +97,6 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 ConfigDialogPrivate::~ConfigDialogPrivate()
 { }
 
-// Qt4 has an extra parameter specifying the encoding for 8-bit strings.
-// Qt5 removes that parameter because all 8-bit strings are assumed to be UTF-8.
-#if QT_VERSION >= 0x050000
-#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
-	QApplication::translate((context), (sourceText), (disambiguation))
-#else /* QT_VERSION < 0x050000 */
-#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
-	QApplication::translate((context), (sourceText), (disambiguation), QApplication::UnicodeUTF8)
-#endif
-
 #ifdef ENABLE_DECRYPTION
 /**
  * Retranslate parts of the UI that aren't present in the .ui file.
@@ -111,7 +104,7 @@ ConfigDialogPrivate::~ConfigDialogPrivate()
 void ConfigDialogPrivate::retranslateUi_nonDesigner(void)
 {
 	ui.tabWidget->setTabText(ui.tabWidget->indexOf(tabKeyManager),
-		QAPPLICATION_TRANSLATE("ConfigDialog", "&Key Manager", nullptr));
+		U82Q(C_("ConfigDialog", "&Key Manager")));
 }
 #endif /* ENABLE_DECRYPTION */
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2017-11-25 15:18-0500\n"
+"POT-Creation-Date: 2017-11-25 15:23-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -257,6 +257,11 @@ msgstr ""
 #: ../src/kde/config/AboutTab.cpp:523 ../src/win32/config/AboutTab.cpp:716
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
+msgstr ""
+
+#: ../src/kde/config/ConfigDialog.cpp:107
+msgctxt "ConfigDialog"
+msgid "&Key Manager"
 msgstr ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:132
