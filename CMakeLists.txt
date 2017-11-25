@@ -122,6 +122,15 @@ ADD_SUBDIRECTORY(doc)
 # (Some other project had something like this...)
 # TODO: Fail if no plugins are being built.
 
+# Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
+########### Add uninstall target ###############
+CONFIGURE_FILE(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
+	IMMEDIATE @ONLY)
+ADD_CUSTOM_TARGET(uninstall
+	"${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
+
 # CPack settings.
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${DESCRIPTION}")
 SET(CPACK_PACKAGE_NAME "${PACKAGE_NAME}")

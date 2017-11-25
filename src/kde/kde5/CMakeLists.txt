@@ -4,6 +4,9 @@ PROJECT(rom-properties-kde5)
 # Find KDE5 Extra CMake Modules.
 FIND_PACKAGE(ECM 0.0.11 NO_MODULE)
 IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
+	# Make sure ECM's CMake files don't create an uninstall rule.
+	SET(KDE_SKIP_UNINSTALL_TARGET TRUE)
+
 	# Don't add KDE tests to the CTest build.
 	SET(KDE_SKIP_TEST_SETTINGS TRUE)
 
