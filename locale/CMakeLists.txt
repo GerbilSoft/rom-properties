@@ -15,6 +15,9 @@ SET(COPYRIGHT_HOLDER "David Korth")
 SET(MSGID_BUGS_ADDRESS "gerbilsoft@gerbilsoft.com")
 SET(LINGUAS it)
 
+# Installation.
+INCLUDE(DirInstallPaths)
+
 SET(_gmoFiles)
 FOREACH(_lingua ${LINGUAS})
 	# Convert the .po files to .mo files.
@@ -56,6 +59,13 @@ FOREACH(_lingua ${LINGUAS})
 		VERBATIM
 		)
 	SET(UPDATE_ALL_PO_TARGETS ${UPDATE_ALL_PO_TARGETS} update-${_lingua}.po)
+
+	# Install the .mo file.
+	INSTALL(FILES ${_gmoFile}
+		DESTINATION ${DIR_INSTALL_LOCALE}/${_lingua}/LC_MESSAGES
+		RENAME ${DOMAIN}.mo
+		COMPONENT "i18n"
+		)
 ENDFOREACH()
 
 # "ALL" targets.
