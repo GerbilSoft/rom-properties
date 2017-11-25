@@ -81,6 +81,7 @@ SET(rom-properties-kde5_SRCS
 IF(COMMAND QT5_WRAP_UI)
 	# Wrap UI files.
 	QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde5_UIS})
+	ADD_CUSTOM_TARGET(kde5_generate_ui_h DEPENDS ${rom-properties-kde5_UIS_H})
 ENDIF(COMMAND QT5_WRAP_UI)
 
 #####################

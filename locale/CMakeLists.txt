@@ -64,12 +64,38 @@ ENDFOREACH()
 ADD_CUSTOM_TARGET(update-all.po DEPENDS ${UPDATE_ALL_PO_TARGETS})
 ADD_CUSTOM_TARGET(translations ALL DEPENDS ${_gmoFiles})
 
-# Create the POTFILES file. (Requires a Unix-like `find` command.)
-ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/POTFILES"
+# Determine the Qt UI target.
+IF(BUILD_KDE5)
+	SET(QT_UI_TARGET kde5_generate_ui_h)
+ELSEIF(BUILD_KDE4)
+	SET(QT_UI_TARGET kde4_generate_ui_h)
+ENDIF()
+
+# Create the POTFILES.unsort file. (Requires a Unix-like `find` command.)
+ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/POTFILES.unsort"
 	COMMAND ${FIND} "../src/" -type f
-		( -name *.c -or -name *.h -or -name *.cpp -or -name *.hpp ) | ${SORT}
-		> "${CMAKE_CURRENT_BINARY_DIR}/POTFILES"
+		( -name *.c -or -name *.h -or -name *.cpp -or -name *.hpp )
+		> "${CMAKE_CURRENT_BINARY_DIR}/POTFILES.unsort"
 	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	VERBATIM
+	)
+
+# Create the UIHFILES.unsort file. (Requires a Unix-like `find` command.)
+FILE(RELATIVE_PATH RELBINDIR ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/UIHFILES.unsort"
+	COMMAND ${FIND} "${RELBINDIR}/src/" -type f -name ui_*.h
+		> "${CMAKE_CURRENT_BINARY_DIR}/UIHFILES.unsort"
+	DEPENDS ${QT_UI_TARGET}
+	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	VERBATIM
+	)
+
+# Create the POTFILES file.
+ADD_CUSTOM_COMMAND(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/POTFILES"
+	COMMAND ${SORT} -u POTFILES.unsort UIHFILES.unsort > POTFILES
+	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/POTFILES.unsort"
+		"${CMAKE_CURRENT_BINARY_DIR}/UIHFILES.unsort"
+	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	VERBATIM
 	)
 
@@ -81,6 +107,7 @@ ADD_CUSTOM_TARGET(rom-properties.pot
 		--add-comments=tr:
 		--keyword=_ --keyword=C_:1c,2 --keyword=N_:1,2 --keyword=NC_:1c,2,3
 		--keyword=NOP_ --keyword=NOP_C_:1c,2 --keyword=NOP_N_:1,2 --keyword=NOP_NC_:1c,2,3
+		--keyword=translate:1c,2
 		--language=C++
 		--copyright-holder=${COPYRIGHT_HOLDER}
 		--msgid-bugs-address=${MSGID_BUGS_ADDRESS}

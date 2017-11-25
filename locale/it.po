@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2017-11-24 15:36-0500\n"
+"POT-Creation-Date: 2017-11-25 15:18-0500\n"
 "PO-Revision-Date: 2017-11-24 15:36-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,6 +16,121 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../build/src/kde/kde4/ui_AboutTab.h:254
+#: ../build/src/kde/kde5/ui_AboutTab.h:254
+msgctxt "AboutTab"
+msgid "C&redits"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_AboutTab.h:255
+#: ../build/src/kde/kde5/ui_AboutTab.h:255
+msgctxt "AboutTab"
+msgid "&Libraries"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_AboutTab.h:256
+#: ../build/src/kde/kde5/ui_AboutTab.h:256
+msgctxt "AboutTab"
+msgid "&Support"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_ConfigDialog.h:78
+#: ../build/src/kde/kde5/ui_ConfigDialog.h:78
+msgctxt "ConfigDialog"
+msgid "ROM Properties Page Configuration"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_ConfigDialog.h:79
+#: ../build/src/kde/kde5/ui_ConfigDialog.h:79
+msgctxt "ConfigDialog"
+msgid "&Image Types"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_ConfigDialog.h:80
+#: ../build/src/kde/kde5/ui_ConfigDialog.h:80
+msgctxt "ConfigDialog"
+msgid "&Downloads"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_ConfigDialog.h:81
+#: ../build/src/kde/kde5/ui_ConfigDialog.h:81
+msgctxt "ConfigDialog"
+msgid "&About"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_DownloadsTab.h:70
+#: ../build/src/kde/kde5/ui_DownloadsTab.h:70
+msgctxt "DownloadsTab"
+msgid "Enable external image downloads."
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_DownloadsTab.h:71
+#: ../build/src/kde/kde5/ui_DownloadsTab.h:71
+msgctxt "DownloadsTab"
+msgid "Always use the internal icon (if present) for small sizes."
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_DownloadsTab.h:72
+#: ../build/src/kde/kde5/ui_DownloadsTab.h:72
+msgctxt "DownloadsTab"
+msgid ""
+"Download high-resolution scans if viewing large thumbnails.\n"
+"This may increase bandwidth usage."
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_ImageTypesTab.h:84
+#: ../build/src/kde/kde5/ui_ImageTypesTab.h:84
+msgctxt "ImageTypesTab"
+msgid ""
+"Select the image types you would like to use for each system as its "
+"thumbnail image.\n"
+"Internal images are contained within the ROM file.\n"
+"External images are downloaded from an external image database.\n"
+"\n"
+"1 = highest priority; 2 = second highest priority; No = ignore"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_ImageTypesTab.h:89
+#: ../build/src/kde/kde5/ui_ImageTypesTab.h:89
+msgctxt "ImageTypesTab"
+msgid ""
+"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images<br/>are "
+"provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
+"amiibo images are provided by <a href=\"http://amiibo.life/\">amiibo.life</"
+"a>, the Unofficial amiibo Database."
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_KeyManagerTab.h:93
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:93
+msgctxt "KeyManagerTab"
+msgid "Wii keys.bin"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_KeyManagerTab.h:94
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:94
+msgctxt "KeyManagerTab"
+msgid "Wii U otp.bin"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_KeyManagerTab.h:95
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:95
+msgctxt "KeyManagerTab"
+msgid "3DS boot9.bin"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_KeyManagerTab.h:96
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:96
+msgctxt "KeyManagerTab"
+msgid "3DS aeskeydb.bin"
+msgstr ""
+
+#: ../build/src/kde/kde4/ui_KeyManagerTab.h:97
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:97
+#: ../src/kde/config/KeyManagerTab.cpp:258
+msgctxt "KeyManagerTab"
+msgid "I&mport"
+msgstr ""
 
 #. tr: Tab title.
 #: ../src/gtk/gnome/rom-properties-provider.cpp:134
@@ -233,11 +348,6 @@ msgid "%u key has been imported without verification."
 msgid_plural "%u keys have been imported without verification."
 msgstr[0] ""
 msgstr[1] ""
-
-#: ../src/kde/config/KeyManagerTab.cpp:258
-msgctxt "KeyManagerTab"
-msgid "I&mport"
-msgstr ""
 
 #. tr: Dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:355

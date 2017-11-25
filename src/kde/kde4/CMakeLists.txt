@@ -32,6 +32,7 @@ SET(rom-properties-kde4_SRCS
 IF(COMMAND QT4_WRAP_UI)
 	# Wrap UI files.
 	QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
+	ADD_CUSTOM_TARGET(kde4_generate_ui_h DEPENDS ${rom-properties-kde4_UIS_H})
 ENDIF(COMMAND QT4_WRAP_UI)
 
 #####################
