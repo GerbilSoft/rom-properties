@@ -1,4 +1,4 @@
-\/***************************************************************************
+/***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
