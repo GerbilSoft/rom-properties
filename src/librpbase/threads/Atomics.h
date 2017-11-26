@@ -62,15 +62,15 @@
 #  define ATOMIC_DEC_FETCH(ptr)			__atomic_sub_fetch(ptr, 1, __ATOMIC_SEQ_CST)
 #  define ATOMIC_OR_FETCH(ptr, val)		__atomic_or_fetch(ptr, val, __ATOMIC_SEQ_CST)
    /* NOTE: C11 version of cmpxchg requires pointers, so we'll use the Itanium-style version. */
-#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg);
-#  define ATOMIC_EXCHANGE(ptr, val)		__atomic_exchange(ptr, val);
+#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg)
+#  define ATOMIC_EXCHANGE(ptr, val)		__sync_lock_test_and_set(ptr, val)
 # else
    /* gcc-4.6 and earlier: Use Itanium-style atomics. */
 #  define ATOMIC_INC_FETCH(ptr)			__sync_add_and_fetch(ptr, 1)
 #  define ATOMIC_DEC_FETCH(ptr)			__sync_sub_and_fetch(ptr, 1)
 #  define ATOMIC_OR_FETCH(ptr, val)		__sync_or_and_fetch(ptr, val)
-#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg);
-#  define ATOMIC_EXCHANGE(ptr, val)		__sync_lock_test_and_set(ptr, val);
+#  define ATOMIC_CMPXCHG(ptr, cmp, xchg)	__sync_val_compare_and_swap(ptr, cmp, xchg)
+#  define ATOMIC_EXCHANGE(ptr, val)		__sync_lock_test_and_set(ptr, val)
 # endif
 #elif defined(_MSC_VER)
 # include <intrin.h>
