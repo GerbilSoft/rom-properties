@@ -731,6 +731,11 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, int cou
  */
 vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, int count)
 {
+#ifndef ENABLE_NLS
+	// Mark msgctxt as unused here.
+	RP_UNUSED(msgctxt);
+#endif /* ENABLE_NLS */
+
 	vector<string> *pVec = new vector<string>();
 	if (count < 0) {
 		count = std::numeric_limits<int>::max();

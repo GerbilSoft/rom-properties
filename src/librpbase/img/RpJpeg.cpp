@@ -41,6 +41,11 @@
 #include <memory>
 using std::unique_ptr;
 
+#ifdef _WIN32
+// For OutputDebugStringA().
+#include <windows.h>
+#endif /* _WIN32 */
+
 #ifdef _MSC_VER
 // NOTE: jpegint.h does not have extern "C".
 // We're using it for DELAYLOAD verification.
