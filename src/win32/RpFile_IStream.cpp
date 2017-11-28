@@ -323,7 +323,7 @@ string RpFile_IStream::filename(void) const
 
 		if (statstg.pwcsName) {
 			// Save the filename.
-			const_cast<RpFile_IStream*>(this)->m_filename = W2RP_c(statstg.pwcsName);
+			const_cast<RpFile_IStream*>(this)->m_filename = W2U8(statstg.pwcsName);
 			CoTaskMemFree(statstg.pwcsName);
 		}
 	}

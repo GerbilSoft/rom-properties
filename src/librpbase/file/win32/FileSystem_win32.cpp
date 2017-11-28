@@ -241,7 +241,7 @@ static void initConfigDirectories(void)
 	hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
 		nullptr, SHGFP_TYPE_CURRENT, path);
 	if (hr == S_OK) {
-		cache_dir = W2RP_c(path);
+		cache_dir = W2U8(path);
 		if (!cache_dir.empty()) {
 			// Add a trailing backslash if necessary.
 			if (cache_dir.at(cache_dir.size()-1) != '\\') {
@@ -261,7 +261,7 @@ static void initConfigDirectories(void)
 	hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
 		nullptr, SHGFP_TYPE_CURRENT, path);
 	if (hr == S_OK) {
-		config_dir = W2RP_c(path);
+		config_dir = W2U8(path);
 		if (!config_dir.empty()) {
 			// Add a trailing backslash if necessary.
 			if (config_dir.at(config_dir.size()-1) != '\\') {
@@ -484,9 +484,9 @@ string resolve_symlink(const char *filename)
 		return string();
 	}
 
-	wchar_t *szDeref = new wchar_t[cchDeref];
-	pfnGetFinalPathnameByHandleW(hFile, szDeref, cchDeref, VOLUME_NAME_DOS);
-	string ret = W2RP_cs(szDeref);	// TODO: len parameter?
+	wchar_t *szDeref = new wchar_t[cchDeref+1];
+	pfnGetFinalPathnameByHandleW(hFile, szDeref, cchDeref+1, VOLUME_NAME_DOS);
+	string ret = W2U8(szDeref, cchDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;

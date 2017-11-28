@@ -61,52 +61,29 @@
 	(reinterpret_cast<const wchar_t*>( \
 		LibRpBase::rp_string_to_utf16(rps).c_str()))
 
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @return const rp_char*
- */
-#define W2RP_c(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), -1).c_str())
-
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @param len Length of wcs.
- * @return const rp_char*
- */
-#define W2RP_cl(wcs, len) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), len).c_str())
-
-/**
- * Get const rp_char* from std::wstring.
- * @param wcs std::wstring
- * @return const rp_char*
- */
-#define W2RP_s(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()).c_str())
-
 // FIXME: In-place conversion of std::u16string to std::wstring?
 
 /**
- * Get rp_string from const wchar_t*.
+ * Get std::string (UTF-8) from const wchar_t*.
  * @param wcs const wchar_t*
- * @return rp_string
+ * @param len Length. (If -1, assuming this is a C string.)
+ * @return std::string (UTF-8)
  */
-#define W2RP_cs(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), -1))
+static inline std::string W2U8(const wchar_t *wcs, int len = -1)
+{
+	return LibRpBase::utf16_to_rp_string(
+		reinterpret_cast<const char16_t*>(wcs), len);
+}
 
 /**
- * Get rp_string from std::wstring.
+ * Get std::string (UTF-8) from std::wstring.
  * @param wcs std::wstring
- * @return rp_string
+ * @return std::string (UTF-8)
  */
-#define W2RP_ss(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()))
+static inline std::string W2U8(const std::wstring &wcs)
+{
+	return LibRpBase::utf16_to_rp_string(
+		reinterpret_cast<const char16_t*>(wcs.data()), wcs.size());
+}
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__ */

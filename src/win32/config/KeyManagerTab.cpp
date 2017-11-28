@@ -1074,7 +1074,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			wchar_t buf[128];
 			buf[0] = 0;
 			GetWindowText(hWnd, buf, ARRAY_SIZE(buf));
-			d->keyStore->setKey(d->iEditItem, W2RP_cs(buf));
+			d->keyStore->setKey(d->iEditItem, W2U8(buf));
 
 			// Item is no longer being edited.
 			d->iEditItem = -1;
@@ -1445,7 +1445,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii keys.bin", iret);
 }
@@ -1481,7 +1481,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii U otp.bin", iret);
 }
@@ -1517,7 +1517,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS boot9.bin", iret);
 }
@@ -1553,7 +1553,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS aeskeydb.bin", iret);
 }

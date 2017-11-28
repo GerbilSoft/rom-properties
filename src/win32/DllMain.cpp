@@ -392,7 +392,7 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
-	string progID_u8 = W2RP_s(progID);
+	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info = {
 		progID_u8.c_str(),
 		ext_info.hasThumbnail
@@ -471,7 +471,7 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
-	string progID_u8 = W2RP_s(progID);
+	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info = {
 		progID_u8.c_str(),
 		ext_info.hasThumbnail

@@ -1911,13 +1911,12 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	cchFilename++;	// Add one for the NULL terminator.
-	filename = (wchar_t*)malloc(cchFilename * sizeof(wchar_t));
+	filename = (wchar_t*)malloc((cchFilename+1) * sizeof(wchar_t));
 	if (!filename) {
 		// Memory allocation failed.
 		goto cleanup;
 	}
-	cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename);
+	cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
 		goto cleanup;
@@ -1938,7 +1937,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file.reset(new RpFile(W2RP_cl(filename, cchFilename), RpFile::FM_OPEN_READ));
+	file.reset(new RpFile(W2U8(filename, cchFilename), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -1957,7 +1956,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// tab is clicked, because otherwise the file will be held
 	// open and may block the user from changing attributes.
 	romData->unref();
-	d->filename = W2RP_cl(filename, cchFilename);
+	d->filename = W2U8(filename, cchFilename);
 	hr = S_OK;
 
 cleanup:
