@@ -28,6 +28,7 @@ SET(libromdata_SRCS
 	Dreamcast.cpp
 	SegaSaturn.cpp
 	Lynx.cpp
+	KhronosKTX.cpp
 	data/SegaPublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -85,6 +86,7 @@ SET(libromdata_H
 	Dreamcast.hpp
 	SegaSaturn.hpp
 	Lynx.hpp
+	KhronosKTX.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -108,6 +110,7 @@ SET(libromdata_H
 	iso_structs.h
 	saturn_structs.h
 	lnx_structs.h
+	ktx_structs.h
 	data/SegaPublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp

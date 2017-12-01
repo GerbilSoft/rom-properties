@@ -74,6 +74,7 @@ using std::vector;
 #include "Dreamcast.hpp"
 #include "SegaSaturn.hpp"
 #include "Lynx.hpp"
+#include "KhronosKTX.hpp"
 
 // Special case for Dreamcast save files.
 #include "dc_structs.h"
@@ -163,6 +164,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(Dreamcast, true),
 	GetRomDataFns(SegaSaturn, false),
 	GetRomDataFns(Lynx, false),
+	GetRomDataFns(KhronosKTX, true),
 
 	// NOTE: EXE has a 16-bit magic number,
 	// so it should go at the end of the
