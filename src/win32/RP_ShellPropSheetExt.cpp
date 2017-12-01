@@ -949,6 +949,19 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	GetClientRect(hWndTab, &rectDlg);
 	const int max_width = rectDlg.right - pt_start.x;
 
+	// Convert the bitfield description names to UTF-16 once.
+	vector<wstring> wnames;
+	wnames.reserve(count);
+	for (int j = 0; j < count; j++) {
+		const string &name = bitfieldDesc.names->at(j);
+		if (name.empty()) {
+			// Skip RP2W_s() for empty strings.
+			wnames.push_back(wstring());
+		} else {
+			wnames.push_back(RP2W_s(name));
+		}
+	}
+
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
 	std::vector<int> col_widths;
@@ -966,12 +979,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			col_widths.resize(elemsPerRow);
 			row = 0; col = 0;
 			for (int j = 0; j < count; j++) {
-				const string &name = bitfieldDesc.names->at(j);
-				if (name.empty())
+				const wstring &wname = wnames.at(j);
+				if (wname.empty())
 					continue;
-
-				// Convert to UTF-16.
-				wstring wname = RP2W_s(name);
 
 				// Get the width of this specific entry.
 				// TODO: Use measureTextSize()?
@@ -1029,12 +1039,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 	row = 0; col = 0;
 	for (int j = 0; j < count; j++) {
-		const string &name = bitfieldDesc.names->at(j);
-		if (name.empty())
+		const wstring &wname = wnames.at(j);
+		if (wname.empty())
 			continue;
-
-		// Convert to UTF-16.
-		wstring wname = RP2W_s(name);
 
 		// Get the text size.
 		int chk_w;
@@ -1157,18 +1164,20 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
 		lvColumn.fmt = LVCFMT_LEFT;
 		for (int i = 0; i < col_count; i++) {
-			const wstring wstr = RP2W_s(listDataDesc.names->at(i));
-			if (!wstr.empty()) {
+			const string &str = listDataDesc.names->at(i);
+			if (!str.empty()) {
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
+				const wstring wstr = RP2W_s(str);
 				lvColumn.pszText = const_cast<LPWSTR>(wstr.c_str());
+				ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
 				lvColumn.pszText = L"";
 				lvColumn.mask |= LVCF_WIDTH;
 				lvColumn.cx = 0;
+				ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			}
-			ListView_InsertColumn(hDlgItem, i, &lvColumn);
 		}
 	} else {
 		lvColumn.mask = LVCF_FMT;
@@ -1541,6 +1550,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	initBoldFont(hFontDlg);
 	initMonospacedFont(hFontDlg);
 
+	// Convert the field description labels to UTF-16 once.
+	vector<wstring> w_desc_text;
+	w_desc_text.reserve(count);
+
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
 	int max_text_width = 0;
@@ -1548,27 +1561,33 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	for (int i = 0; i < count; i++) {
 		const RomFields::Field *field = fields->field(i);
 		assert(field != nullptr);
-		if (!field || !field->isValid)
+		if (!field || !field->isValid) {
+			w_desc_text.push_back(wstring());
 			continue;
-		if (field->name.empty())
+		} else if (field->name.empty()) {
+			w_desc_text.push_back(wstring());
 			continue;
+		}
 
-		// Convert to UTF-16.
-		wstring wname = RP2W_s(field->name);
+		// tr: Field description label.
+		w_desc_text.push_back(RP2W_s(rp_sprintf(
+			C_("RomDataView", "%s:"), field->name.c_str())));
+		const wstring& desc_text = w_desc_text.at(i);
 
 		// TODO: Handle STRF_WARNING?
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
-		GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
+		GetTextExtentPoint32(hDC, desc_text.data(), (int)desc_text.size(), &textSize);
 		if (textSize.cx > max_text_width) {
 			max_text_width = textSize.cx;
 		}
 	}
 
-	// Add additional spacing for the ':'.
+	// Add additional spacing between the ':' and the field.
 	// TODO: Use measureTextSize()?
-	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
+	// TODO: Reduce to 1 space?
+	GetTextExtentPoint32(hDC, L"  ", 2, &textSize);
 	max_text_width += textSize.cx;
 
 	// Create the ROM field widgets.
@@ -1717,12 +1736,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Current tab.
 		auto &tab = tabs[tabIdx];
 
-		// Field description label.
-		wstring desc_text = RP2W_s(rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str()));
-
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, desc_text.c_str(),
+			WC_STATIC, w_desc_text.at(idx).c_str(),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
