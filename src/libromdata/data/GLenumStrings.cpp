@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GLTypeStrings.hpp: OpenGL string tables.                                *
+ * GLenumStrings.cpp: OpenGL string tables.                                *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "GLTypeStrings.hpp"
+#include "GLenumStrings.hpp"
 #include "../ktx_structs.h"
 
 // C includes.
@@ -27,13 +27,13 @@
 
 namespace LibRomData {
 
-class GLTypeStringsPrivate
+class GLenumStringsPrivate
 {
 	private:
 		// Static class.
-		GLTypeStringsPrivate();
-		~GLTypeStringsPrivate();
-		RP_DISABLE_COPY(GLTypeStringsPrivate)
+		GLenumStringsPrivate();
+		~GLenumStringsPrivate();
+		RP_DISABLE_COPY(GLenumStringsPrivate)
 
 	public:
 		// String tables.
@@ -46,50 +46,20 @@ class GLTypeStringsPrivate
 		};
 
 		/**
-		* Comparison function for bsearch().
-		* @param a
-		* @param b
-		* @return
-		*/
+		 * Comparison function for bsearch().
+		 * @param a
+		 * @param b
+		 * @return
+		 */
 		static int RP_C_API compar(const void *a, const void *b);
 
 		/**
-		 * glType
-		 *
-		 * See the OpenGL 4.4 specification, table 8.2:
-		 * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.2
+		 * OpenGL enumerations.
 		 */
-		static const StrTbl glType_tbl[];
-
-		/**
-		 * glFormat
-		 *
-		 * See the OpenGL 4.4 specification, table 8.3:
-		 * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.3
-		 */
-		static const StrTbl glFormat_tbl[];
-
-		/**
-		 * glInternalFormat
-		 *
-		 * For uncompressed textures, see the OpenGL 4.4 specification, tables 8.12 and 8.13:
-		 * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.14
-		 *
-		 * For compressed textures, see the OpenGL 4.4 specification, table 8.14:
-		 * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.14
-		 */
-		static const StrTbl glInternalFormat_tbl[];
-
-		/**
-		 * glBaseInternalFormat
-		 *
-		 * See the OpenGL 4.4 specification, table 8.11:
-		 * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.11
-		 */
-		static const StrTbl glBaseInternalFormat_tbl[];
+		static const StrTbl glEnum_tbl[];
 };
 
-/** GLTypeStringsPrivate **/
+/** GLenumStringsPrivate **/
 
 /**
  * Comparison function for bsearch().
@@ -97,7 +67,7 @@ class GLTypeStringsPrivate
  * @param b
  * @return
  */
-int RP_C_API GLTypeStringsPrivate::compar(const void *a, const void *b)
+int RP_C_API GLenumStringsPrivate::compar(const void *a, const void *b)
 {
 	unsigned int id1 = static_cast<const StrTbl*>(a)->id;
 	unsigned int id2 = static_cast<const StrTbl*>(b)->id;
@@ -107,12 +77,9 @@ int RP_C_API GLTypeStringsPrivate::compar(const void *a, const void *b)
 }
 
 /**
- * glType
- *
- * See the OpenGL 4.4 specification, table 8.2:
- * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.2
+ * OpenGL enumerations.
  */
-const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glType_tbl[] = {
+const GLenumStringsPrivate::StrTbl GLenumStringsPrivate::glEnum_tbl[] = {
 	STRTBL_ENTRY(BYTE),
 	STRTBL_ENTRY(UNSIGNED_BYTE),
 	STRTBL_ENTRY(SHORT),
@@ -121,67 +88,24 @@ const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glType_tbl[] = {
 	STRTBL_ENTRY(UNSIGNED_INT),
 	STRTBL_ENTRY(FLOAT),
 	STRTBL_ENTRY(HALF_FLOAT),
+	STRTBL_ENTRY(STENCIL_INDEX),
+	STRTBL_ENTRY(STENCIL_INDEX),
+	STRTBL_ENTRY(DEPTH_COMPONENT),
+	STRTBL_ENTRY(DEPTH_COMPONENT),
+	STRTBL_ENTRY(RED),
+	STRTBL_ENTRY(RED),
+	STRTBL_ENTRY(GREEN),
+	STRTBL_ENTRY(BLUE),
+	STRTBL_ENTRY(RGB),
+	STRTBL_ENTRY(RGB),
+	STRTBL_ENTRY(RGBA),
+	STRTBL_ENTRY(RGBA),
+	STRTBL_ENTRY(R3_G3_B2),
 	STRTBL_ENTRY(UNSIGNED_BYTE_3_3_2),
 	STRTBL_ENTRY(UNSIGNED_SHORT_4_4_4_4),
 	STRTBL_ENTRY(UNSIGNED_SHORT_5_5_5_1),
 	STRTBL_ENTRY(UNSIGNED_INT_8_8_8_8),
 	STRTBL_ENTRY(UNSIGNED_INT_10_10_10_2),
-	STRTBL_ENTRY(UNSIGNED_BYTE_2_3_3_REV),
-	STRTBL_ENTRY(UNSIGNED_SHORT_5_6_5),
-	STRTBL_ENTRY(UNSIGNED_SHORT_5_6_5_REV),
-	STRTBL_ENTRY(UNSIGNED_SHORT_4_4_4_4_REV),
-	STRTBL_ENTRY(UNSIGNED_SHORT_1_5_5_5_REV),
-	STRTBL_ENTRY(UNSIGNED_INT_8_8_8_8_REV),
-	STRTBL_ENTRY(UNSIGNED_INT_2_10_10_10_REV),
-	STRTBL_ENTRY(UNSIGNED_INT_24_8),
-	STRTBL_ENTRY(UNSIGNED_INT_10F_11F_11F_REV),
-	STRTBL_ENTRY(UNSIGNED_INT_5_9_9_9_REV),
-	STRTBL_ENTRY(FLOAT_32_UNSIGNED_INT_24_8_REV),
-
-	{0, nullptr}
-};
-
-/**
- * glFormat
- *
- * See the OpenGL 4.4 specification, table 8.3:
- * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.3
- */
-const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glFormat_tbl[] = {
-	STRTBL_ENTRY(STENCIL_INDEX),
-	STRTBL_ENTRY(DEPTH_COMPONENT),
-	STRTBL_ENTRY(RED),
-	STRTBL_ENTRY(GREEN),
-	STRTBL_ENTRY(BLUE),
-	STRTBL_ENTRY(RGB),
-	STRTBL_ENTRY(RGBA),
-	STRTBL_ENTRY(BGR),
-	STRTBL_ENTRY(BGRA),
-	STRTBL_ENTRY(RG),
-	STRTBL_ENTRY(RG_INTEGER),
-	STRTBL_ENTRY(DEPTH_STENCIL),
-	STRTBL_ENTRY(RED_INTEGER),
-	STRTBL_ENTRY(GREEN_INTEGER),
-	STRTBL_ENTRY(BLUE_INTEGER),
-	STRTBL_ENTRY(RGB_INTEGER),
-	STRTBL_ENTRY(RGBA_INTEGER),
-	STRTBL_ENTRY(BGR_INTEGER),
-	STRTBL_ENTRY(BGRA_INTEGER),
-
-	{0, nullptr}
-};
-
-/**
- * glInternalFormat
- *
- * For uncompressed textures, see the OpenGL 4.4 specification, tables 8.12 and 8.13:
- * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.14
- *
- * For compressed textures, see the OpenGL 4.4 specification, table 8.14:
- * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.14
- */
-const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glInternalFormat_tbl[] = {
-	STRTBL_ENTRY(R3_G3_B2),
 	STRTBL_ENTRY(RGB4),
 	STRTBL_ENTRY(RGB5),
 	STRTBL_ENTRY(RGB8),
@@ -195,11 +119,16 @@ const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glInternalFormat_tbl[] 
 	STRTBL_ENTRY(RGB10_A2),
 	STRTBL_ENTRY(RGBA12),
 	STRTBL_ENTRY(RGBA16),
+	STRTBL_ENTRY(BGR),
+	STRTBL_ENTRY(BGRA),
 	STRTBL_ENTRY(DEPTH_COMPONENT16),
 	STRTBL_ENTRY(DEPTH_COMPONENT24),
 	STRTBL_ENTRY(DEPTH_COMPONENT32),
 	STRTBL_ENTRY(COMPRESSED_RED),
 	STRTBL_ENTRY(COMPRESSED_RG),
+	STRTBL_ENTRY(RG),
+	STRTBL_ENTRY(RG),
+	STRTBL_ENTRY(RG_INTEGER),
 	STRTBL_ENTRY(R8),
 	STRTBL_ENTRY(R16),
 	STRTBL_ENTRY(RG8),
@@ -220,15 +149,27 @@ const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glInternalFormat_tbl[] 
 	STRTBL_ENTRY(RG16UI),
 	STRTBL_ENTRY(RG32I),
 	STRTBL_ENTRY(RG32UI),
+	STRTBL_ENTRY(UNSIGNED_BYTE_2_3_3_REV),
+	STRTBL_ENTRY(UNSIGNED_SHORT_5_6_5),
+	STRTBL_ENTRY(UNSIGNED_SHORT_5_6_5_REV),
+	STRTBL_ENTRY(UNSIGNED_SHORT_4_4_4_4_REV),
+	STRTBL_ENTRY(UNSIGNED_SHORT_1_5_5_5_REV),
+	STRTBL_ENTRY(UNSIGNED_INT_8_8_8_8_REV),
+	STRTBL_ENTRY(UNSIGNED_INT_2_10_10_10_REV),
 	STRTBL_ENTRY(COMPRESSED_RGB),
 	STRTBL_ENTRY(COMPRESSED_RGBA),
+	STRTBL_ENTRY(DEPTH_STENCIL),
+	STRTBL_ENTRY(DEPTH_STENCIL),
+	STRTBL_ENTRY(UNSIGNED_INT_24_8),
 	STRTBL_ENTRY(RGBA32F),
 	STRTBL_ENTRY(RGB32F),
 	STRTBL_ENTRY(RGBA16F),
 	STRTBL_ENTRY(RGB16F),
 	STRTBL_ENTRY(DEPTH24_STENCIL8),
 	STRTBL_ENTRY(R11F_G11F_B10F),
+	STRTBL_ENTRY(UNSIGNED_INT_10F_11F_11F_REV),
 	STRTBL_ENTRY(RGB9_E5),
+	STRTBL_ENTRY(UNSIGNED_INT_5_9_9_9_REV),
 	STRTBL_ENTRY(SRGB8),
 	STRTBL_ENTRY(SRGB8_ALPHA8),
 	STRTBL_ENTRY(COMPRESSED_SRGB),
@@ -240,7 +181,7 @@ const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glInternalFormat_tbl[] 
 	STRTBL_ENTRY(STENCIL_INDEX8),
 	STRTBL_ENTRY(STENCIL_INDEX16),
 	STRTBL_ENTRY(RGB565),
-	STRTBL_ENTRY(ETC1_RGB8_OES),	// ETC1
+	STRTBL_ENTRY(ETC1_RGB8_OES),
 	STRTBL_ENTRY(RGBA32UI),
 	STRTBL_ENTRY(RGB32UI),
 	STRTBL_ENTRY(RGBA16UI),
@@ -253,6 +194,14 @@ const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glInternalFormat_tbl[] 
 	STRTBL_ENTRY(RGB16I),
 	STRTBL_ENTRY(RGBA8I),
 	STRTBL_ENTRY(RGB8I),
+	STRTBL_ENTRY(RED_INTEGER),
+	STRTBL_ENTRY(GREEN_INTEGER),
+	STRTBL_ENTRY(BLUE_INTEGER),
+	STRTBL_ENTRY(RGB_INTEGER),
+	STRTBL_ENTRY(RGBA_INTEGER),
+	STRTBL_ENTRY(BGR_INTEGER),
+	STRTBL_ENTRY(BGRA_INTEGER),
+	STRTBL_ENTRY(FLOAT_32_UNSIGNED_INT_24_8_REV),
 	STRTBL_ENTRY(COMPRESSED_RED_RGTC1),
 	STRTBL_ENTRY(COMPRESSED_SIGNED_RED_RGTC1),
 	STRTBL_ENTRY(COMPRESSED_RG_RGTC2),
@@ -280,9 +229,6 @@ const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glInternalFormat_tbl[] 
 	STRTBL_ENTRY(COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2),
 	STRTBL_ENTRY(COMPRESSED_RGBA8_ETC2_EAC),
 	STRTBL_ENTRY(COMPRESSED_SRGB8_ALPHA8_ETC2_EAC),
-
-	// GL_KHR_texture_compression_astc_hdr
-	// GL_KHR_texture_compression_astc_ldr
 	STRTBL_ENTRY(COMPRESSED_RGBA_ASTC_4x4_KHR),
 	STRTBL_ENTRY(COMPRESSED_RGBA_ASTC_5x4_KHR),
 	STRTBL_ENTRY(COMPRESSED_RGBA_ASTC_5x5_KHR),
@@ -315,98 +261,23 @@ const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glInternalFormat_tbl[] 
 	{0, nullptr}
 };
 
-/**
- * glBaseInternalFormat
- *
- * See the OpenGL 4.4 specification, table 8.11:
- * - https://www.khronos.org/registry/OpenGL/specs/gl/glspec44.core.pdf#nameddest=table-8.11
- */
-const GLTypeStringsPrivate::StrTbl GLTypeStringsPrivate::glBaseInternalFormat_tbl[] = {
-	STRTBL_ENTRY(STENCIL_INDEX),
-	STRTBL_ENTRY(DEPTH_COMPONENT),
-	STRTBL_ENTRY(RED),
-	STRTBL_ENTRY(RGB),
-	STRTBL_ENTRY(RGBA),
-	STRTBL_ENTRY(RG),
-	STRTBL_ENTRY(DEPTH_STENCIL),
-
-	{0, nullptr}
-};
-
-/** GLTypeStrings **/
+/** GLenumStrings **/
 
 /**
- * Look up an OpenGL glType string.
- * @param glType	[in] glType
+ * Look up an OpenGL GLenum string.
+ * @param glEnum	[in] glEnum
  * @return String, or nullptr if not found.
  */
-const char *GLTypeStrings::lookup_glType(unsigned int glType)
+const char *GLenumStrings::lookup_glEnum(unsigned int glEnum)
 {
 	// Do a binary search.
-	const GLTypeStringsPrivate::StrTbl key = {glType, nullptr};
-	const GLTypeStringsPrivate::StrTbl *res =
-		static_cast<const GLTypeStringsPrivate::StrTbl*>(bsearch(&key,
-			GLTypeStringsPrivate::glType_tbl,
-			ARRAY_SIZE(GLTypeStringsPrivate::glType_tbl)-1,
-			sizeof(GLTypeStringsPrivate::StrTbl),
-			GLTypeStringsPrivate::compar));
-
-	return (res ? res->str : 0);
-}
-
-/**
- * Look up an OpenGL glFormat string.
- * @param glFormat	[in] glFormat
- * @return String, or nullptr if not found.
- */
-const char *GLTypeStrings::lookup_glFormat(unsigned int glFormat)
-{
-	// Do a binary search.
-	const GLTypeStringsPrivate::StrTbl key = {glFormat, nullptr};
-	const GLTypeStringsPrivate::StrTbl *res =
-		static_cast<const GLTypeStringsPrivate::StrTbl*>(bsearch(&key,
-			GLTypeStringsPrivate::glFormat_tbl,
-			ARRAY_SIZE(GLTypeStringsPrivate::glFormat_tbl)-1,
-			sizeof(GLTypeStringsPrivate::StrTbl),
-			GLTypeStringsPrivate::compar));
-
-	return (res ? res->str : 0);
-}
-
-/**
- * Look up an OpenGL glInternalFormat string.
- * @param glInternalFormat	[in] glInternalFormat
- * @return String, or nullptr if not found.
- */
-const char *GLTypeStrings::lookup_glInternalFormat(unsigned int glInternalFormat)
-{
-	// Do a binary search.
-	const GLTypeStringsPrivate::StrTbl key = {glInternalFormat, nullptr};
-	const GLTypeStringsPrivate::StrTbl *res =
-		static_cast<const GLTypeStringsPrivate::StrTbl*>(bsearch(&key,
-			GLTypeStringsPrivate::glInternalFormat_tbl,
-			ARRAY_SIZE(GLTypeStringsPrivate::glInternalFormat_tbl)-1,
-			sizeof(GLTypeStringsPrivate::StrTbl),
-			GLTypeStringsPrivate::compar));
-
-	return (res ? res->str : 0);
-}
-
-/**
- * Look up an OpenGL glBaseInternalFormat string.
- * @param glBaseInternalFormat	[in] glBaseInternalFormat
- * @return String, or nullptr if not found.
- */
-const char *GLTypeStrings::lookup_glBaseInternalFormat(unsigned int glBaseInternalFormat)
-{
-	// Do a binary search.
-	const GLTypeStringsPrivate::StrTbl key = {glBaseInternalFormat, nullptr};
-	const GLTypeStringsPrivate::StrTbl *res =
-		static_cast<const GLTypeStringsPrivate::StrTbl*>(bsearch(&key,
-			GLTypeStringsPrivate::glBaseInternalFormat_tbl,
-			ARRAY_SIZE(GLTypeStringsPrivate::glBaseInternalFormat_tbl)-1,
-			sizeof(GLTypeStringsPrivate::StrTbl),
-			GLTypeStringsPrivate::compar));
+	const GLenumStringsPrivate::StrTbl key = {glEnum, nullptr};
+	const GLenumStringsPrivate::StrTbl *res =
+		static_cast<const GLenumStringsPrivate::StrTbl*>(bsearch(&key,
+			GLenumStringsPrivate::glEnum_tbl,
+			ARRAY_SIZE(GLenumStringsPrivate::glEnum_tbl)-1,
+			sizeof(GLenumStringsPrivate::StrTbl),
+			GLenumStringsPrivate::compar));
 
 	return (res ? res->str : 0);
 }

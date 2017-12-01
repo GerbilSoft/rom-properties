@@ -22,7 +22,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "ktx_structs.h"
-#include "data/GLTypeStrings.hpp"
+#include "data/GLenumStrings.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -420,7 +420,7 @@ int KhronosKTX::loadFieldData(void)
 	// TODO: String lookups.
 
 	// glType
-	const char *glType_str = GLTypeStrings::lookup_glType(ktxHeader->glType);
+	const char *glType_str = GLenumStrings::lookup_glEnum(ktxHeader->glType);
 	if (glType_str) {
 		d->fields->addField_string("glType", glType_str);
 	} else {
@@ -428,7 +428,7 @@ int KhronosKTX::loadFieldData(void)
 	}
 
 	// glFormat
-	const char *glFormat_str = GLTypeStrings::lookup_glFormat(ktxHeader->glFormat);
+	const char *glFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glFormat);
 	if (glFormat_str) {
 		d->fields->addField_string("glFormat", glFormat_str);
 	} else {
@@ -436,7 +436,7 @@ int KhronosKTX::loadFieldData(void)
 	}
 
 	// glInternalFormat
-	const char *glInternalFormat_str = GLTypeStrings::lookup_glInternalFormat(ktxHeader->glInternalFormat);
+	const char *glInternalFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glInternalFormat);
 	if (glInternalFormat_str) {
 		d->fields->addField_string("glInternalFormat", glInternalFormat_str);
 	} else {
@@ -447,7 +447,7 @@ int KhronosKTX::loadFieldData(void)
 	// glBaseInternalFormat (only if != glFormat)
 	if (ktxHeader->glBaseInternalFormat != ktxHeader->glFormat) {
 		const char *glBaseInternalFormat_str =
-			GLTypeStrings::lookup_glBaseInternalFormat(ktxHeader->glBaseInternalFormat);
+			GLenumStrings::lookup_glEnum(ktxHeader->glBaseInternalFormat);
 		if (glBaseInternalFormat_str) {
 			d->fields->addField_string("glBaseInternalFormat", glBaseInternalFormat_str);
 		} else {
