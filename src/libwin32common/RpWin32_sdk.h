@@ -86,10 +86,10 @@
 
 #include <windows.h>
 
-#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
+#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502 && defined(__cplusplus)
 /**
  * MinGW-w64 only defines ULONG overloads for the various atomic functions
- * if _WIN32_WINNT > 0x0502.
+ * if _WIN32_WINNT >= 0x0502.
  */
 static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
 {
@@ -99,7 +99,7 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 {
 	return (ULONG)(InterlockedDecrement((LONG volatile*)Addend));
 }
-#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
+#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 && __cplusplus */
 
 // UUID attribute.
 #ifdef _MSC_VER

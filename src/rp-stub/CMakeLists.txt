@@ -14,6 +14,10 @@ TARGET_INCLUDE_DIRECTORIES(rp-stub
 # dll-search.c is in libunixcommon.
 TARGET_LINK_LIBRARIES(rp-stub unixcommon)
 
+IF(ENABLE_NLS)
+	TARGET_LINK_LIBRARIES(rp-stub i18n)
+ENDIF(ENABLE_NLS)
+
 # Link in libdl if it's required for dlopen().
 IF(CMAKE_DL_LIBS)
 	TARGET_LINK_LIBRARIES(rp-stub ${CMAKE_DL_LIBS})

@@ -62,7 +62,7 @@ class RomDataFactory
 		static LibRpBase::RomData *create(LibRpBase::IRpFile *file, bool thumbnail = false);
 
 		struct ExtInfo {
-			const rp_char *ext;
+			const char *ext;
 			bool hasThumbnail;
 		};
 

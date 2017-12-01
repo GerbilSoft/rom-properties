@@ -29,6 +29,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -38,7 +39,9 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <string>
 #include <vector>
+using std::string;
 using std::vector;
 
 namespace LibRomData {
@@ -260,7 +263,7 @@ int Amiibo::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *Amiibo::systemName(unsigned int type) const
+const char *Amiibo::systemName(unsigned int type) const
 {
 	RP_D(const Amiibo);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -275,10 +278,10 @@ const rp_char *Amiibo::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Amiibo::systemName() array index optimization needs to be updated.");
 
-	static const rp_char *const sysNames[4] = {
-		_RP("Nintendo Figurine Platform"),
-		_RP("Nintendo Figurine Platform"),
-		_RP("NFP"),
+	static const char *const sysNames[4] = {
+		"Nintendo Figurine Platform",
+		"Nintendo Figurine Platform",
+		"NFP",
 		nullptr
 	};
 
@@ -298,18 +301,17 @@ const rp_char *Amiibo::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *Amiibo::supportedFileExtensions_static(void)
+const char *const *Amiibo::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
+	static const char *const exts[] = {
 		// NOTE: These extensions may cause conflicts on
 		// Windows if fallback handling isn't working.
-		_RP(".bin"),	// too generic
+		".bin",	// too generic
 
 		// NOTE: The following extensions are listed
 		// for testing purposes on Windows, and may
 		// be removed later.
-		_RP(".nfc"),
-		_RP(".nfp"),
+		".nfc", ".nfp",
 
 		nullptr
 	};
@@ -329,7 +331,7 @@ const rp_char *const *Amiibo::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *Amiibo::supportedFileExtensions(void) const
+const char *const *Amiibo::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -476,67 +478,71 @@ int Amiibo::loadFieldData(void)
 	len += (7*2);
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
-	d->fields->addField_string(_RP("NTAG215 Serial"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP(""),
+	d->fields->addField_string(C_("Amiibo", "NTAG215 Serial"),
+		len > 0 ? latin1_to_utf8(buf, len) : "",
 		RomFields::STRF_MONOSPACE);
 
 	// NFP data.
 	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
 	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
 
-	// amiibo ID.
-	// Represents the character and amiibo series.
-	// TODO: Link to http://amiibo.life/nfc/%08X-%08X
-	d->fields->addField_string(_RP("amiibo ID"),
+	// tr: amiibo ID. Represents the character and amiibo series.
+	// TODO: Link to https://amiibo.life/nfc/%08X-%08X
+	d->fields->addField_string(C_("Amiibo", "amiibo ID"),
 		rp_sprintf("%08X-%08X", char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
 
-	// amiibo type.
-	static const rp_char *const amiibo_type_tbl[3] = {
-		_RP("Figurine"),	// NFP_TYPE_FIGURINE
-		_RP("Card"),		// NFP_TYPE_CARD
-		_RP("Yarn"),		// NFP_TYPE_YARN
+	// tr: amiibo type.
+	static const char *const amiibo_type_tbl[3] = {
+		// tr: NFP_TYPE_FIGURINE == standard amiibo
+		NOP_C_("Amiibo|Type", "Figurine"),
+		// tr: NFP_TYPE_CARD == amiibo card
+		NOP_C_("Amiibo|Type", "Card"),
+		// tr: NFP_TYPE_YARN == yarn amiibo
+		NOP_C_("Amiibo|Type", "Yarn"),
 	};
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
-		d->fields->addField_string(_RP("amiibo Type"), amiibo_type_tbl[char_id & 0xFF]);
+		d->fields->addField_string(C_("Amiibo", "amiibo Type"),
+			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", amiibo_type_tbl[char_id & 0xFF]));
 	} else {
 		// Invalid amiibo type.
-		d->fields->addField_string(_RP("amiibo Type"),
-			rp_sprintf("Unknown (0x%02X)", (char_id & 0xFF)));
+		d->fields->addField_string(C_("Amiibo", "amiibo Type"),
+			rp_sprintf(C_("Amiibo", "Unknown (0x%02X)"), (char_id & 0xFF)));
 	}
 
 	// Character series.
-	const rp_char *const char_series = AmiiboData::lookup_char_series_name(char_id);
-	d->fields->addField_string(_RP("Character Series"),
-		char_series ? char_series : _RP("Unknown"));
+	const char *const char_series = AmiiboData::lookup_char_series_name(char_id);
+	d->fields->addField_string(C_("Amiibo", "Character Series"),
+		char_series ? char_series : C_("Amiibo", "Unknown"));
 
 	// Character name.
-	const rp_char *const char_name = AmiiboData::lookup_char_name(char_id);
-	d->fields->addField_string(_RP("Character Name"),
-		char_name ? char_name : _RP("Unknown"));
+	const char *const char_name = AmiiboData::lookup_char_name(char_id);
+	d->fields->addField_string(C_("Amiibo", "Character Name"),
+		char_name ? char_name : C_("Amiibo", "Unknown"));
 
 	// amiibo series.
-	const rp_char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
-	d->fields->addField_string(_RP("amiibo Series"),
-		amiibo_series ? amiibo_series : _RP("Unknown"));
+	const char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
+	d->fields->addField_string(C_("Amiibo", "amiibo Series"),
+		amiibo_series ? amiibo_series : C_("Amiibo", "Unknown"));
 
 	// amiibo name, wave number, and release number.
 	int wave_no, release_no;
-	const rp_char *const amiibo_name = AmiiboData::lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
+	const char *const amiibo_name = AmiiboData::lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
-		d->fields->addField_string(_RP("amiibo Name"), amiibo_name);
+		d->fields->addField_string(C_("Amiibo", "amiibo Name"), amiibo_name);
 		if (wave_no != 0) {
-			d->fields->addField_string_numeric(_RP("amiibo Wave #"), wave_no);
+			d->fields->addField_string_numeric(C_("Amiibo", "amiibo Wave #"), wave_no);
 		}
 		if (release_no != 0) {
-			d->fields->addField_string_numeric(_RP("amiibo Release #"), release_no);
+			d->fields->addField_string_numeric(C_("Amiibo", "amiibo Release #"), release_no);
 		}
 	}
 
-	// Credits.
-	d->fields->addField_string(_RP("Credits"),
-		_RP("amiibo images provided by <a href=\"http://amiibo.life/\">amiibo.life</a>,\nthe Unofficial amiibo Database."),
-		RomFields::STRF_CREDITS);
+	// tr: Credits for amiibo image downloads.
+	const string credits = rp_sprintf(
+		C_("Amiibo", "amiibo images provided by %s,\nthe Unofficial amiibo Database."),
+		"<a href=\"http://amiibo.life/\">amiibo.life</a>");
+	d->fields->addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
@@ -596,21 +602,21 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	auto &extURL = pExtURLs->at(0);
 
 	// Amiibo ID.
-	const rp_string amiibo_id = rp_sprintf("%08X-%08X",
+	const string amiibo_id = rp_sprintf("%08X-%08X",
 		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id));
 
 	// Cache key. (amiibo ID)
 	extURL.cache_key.reserve(32);
-	extURL.cache_key = _RP("amiibo/");
+	extURL.cache_key = "amiibo/";
 	extURL.cache_key += amiibo_id;
-	extURL.cache_key += _RP(".png");
+	extURL.cache_key += ".png";
 
 	// URL.
-	// Format: http://amiibo.life/nfc/[Page21]-[Page22]/image
+	// Format: https://amiibo.life/nfc/[Page21]-[Page22]/image
 	extURL.url.reserve(48);
-	extURL.url = _RP("http://amiibo.life/nfc/");
+	extURL.url = "https://amiibo.life/nfc/";
 	extURL.url += amiibo_id;
-	extURL.url += _RP("/image");
+	extURL.url += "/image";
 
 	// Size may vary depending on amiibo.
 	extURL.width = 0;

@@ -21,7 +21,6 @@
 
 #include "CurlDownloader.hpp"
 #include "librpbase/TextFuncs.hpp"
-using LibRpBase::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -41,11 +40,11 @@ CurlDownloader::CurlDownloader()
 	: super()
 { }
 
-CurlDownloader::CurlDownloader(const rp_char *url)
+CurlDownloader::CurlDownloader(const char *url)
 	: super(url)
 { }
 
-CurlDownloader::CurlDownloader(const rp_string &url)
+CurlDownloader::CurlDownloader(const string &url)
 	: super(url)
 { }
 
@@ -190,21 +189,15 @@ int CurlDownloader::download(void)
 		return -1;	// TODO: Better error?
 	}
 
-	// Convert the URL to UTF-8.
-	// TODO: Only if not RP_UTF8?
-	string url8 = LibRpBase::rp_string_to_utf8(m_url);
-
 	// Proxy settings.
 	if (!m_proxyUrl.empty()) {
-		// TODO: Only if not RP_UTF8?
-		string proxyUrl8 = LibRpBase::rp_string_to_utf8(m_proxyUrl);
-		curl_easy_setopt(curl, CURLOPT_PROXY, proxyUrl8.c_str());
+		curl_easy_setopt(curl, CURLOPT_PROXY, m_proxyUrl.c_str());
 	}
 
 	// TODO: Send a HEAD request first?
 
 	// Set options for curl's "easy" mode.
-	curl_easy_setopt(curl, CURLOPT_URL, url8.c_str());
+	curl_easy_setopt(curl, CURLOPT_URL, m_url.c_str());
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
 	// Fail on HTTP errors. (>= 400)
 	curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);

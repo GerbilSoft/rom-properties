@@ -91,7 +91,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+		virtual int saveWriteEntry(const char *sysName, const char *imageTypeList) override final;
 
 		/**
 		 * Close the Save subsystem.
@@ -165,7 +165,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const QString cssImageType = QLatin1String(
 		"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
 	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
-		QLabel *const lblImageType = new QLabel(RP2Q(imageTypeNames[i]), q);
+		QLabel *const lblImageType = new QLabel(U82Q(imageTypeName(i)), q);
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
 		ui.gridImageTypes->addWidget(lblImageType, 0, i+1);
@@ -175,7 +175,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const QString cssSysName = QLatin1String(
 		"QLabel { margin-right: 0.25em; }");
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
-		QLabel *const lblSysName = new QLabel(RP2Q(sysData[sys].name), q);
+		QLabel *const lblSysName = new QLabel(U82Q(sysName(sys)), q);
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
 		ui.gridImageTypes->addWidget(lblSysName, sys+1, 0);
@@ -282,7 +282,7 @@ int ImageTypesTabPrivate::saveStart(void)
  * @param imageTypeList Image type list, comma-separated.
  * @return 0 on success; negative POSIX error code on error.
  */
-int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList)
+int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
 {
 	assert(pSettings != nullptr);
 	if (!pSettings) {
@@ -292,7 +292,7 @@ int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *
 	// NOTE: QSettings stores comma-separated strings with
 	// double-quotes, which may be a bit confusing.
 	// Config will simply ignore the double-quotes.
-	pSettings->setValue(RP2Q(sysName), RP2Q(imageTypeList));
+	pSettings->setValue(U82Q(sysName), U82Q(imageTypeList));
 	return 0;
 }
 

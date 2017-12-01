@@ -40,22 +40,11 @@ namespace LibRomData {
 // problems if it's embedded inside of a templated class.
 typedef uint32_t (*pFnSupportedImageTypes)(void);
 struct SysData_t {
-	const rp_char *name;			// System name.
-	const char *classNameA;			// Class name in Config. (ASCII)
-#if defined(RP_UTF16)
-	const rp_char *classNameRP;		// Clas name in Config. (rp_char)
-#else /* defined(RP_UTF8) */
-	#define classNameRP classNameA
-#endif /* _WIN32 */
+	const char *className;			// Class name in Config. (ASCII)
 	pFnSupportedImageTypes getTypes;	// Get supported image types.
 };
-#if defined(RP_UTF16)
-#define SysDataEntry(klass, name) \
-	{name, #klass, _RP(#klass), LibRomData::klass::supportedImageTypes_static}
-#else /* defined(RP_UTF8) */
-#define SysDataEntry(klass, name) \
-	{name, #klass, LibRomData::klass::supportedImageTypes_static}
-#endif
+#define SysDataEntry(klass) \
+	{#klass, LibRomData::klass::supportedImageTypes_static}
 
 template<typename ComboBox>
 class TImageTypesConfig
@@ -105,11 +94,22 @@ class TImageTypesConfig
 		int save(void);
 
 	public:
-		// Image type data. (IMG_TYPE_COUNT)
-		static const rp_char *const imageTypeNames[];
+		/**
+		 * Get an image type name.
+		 * @param imageType Image type ID.
+		 * @return Image type name, or nullptr if invalid.
+		 */
+		static const char *imageTypeName(unsigned int imageType);
 
 		// System data. (SYS_COUNT)
 		static const SysData_t sysData[];
+
+		/**
+		 * Get a system name.
+		 * @param sys System ID.
+		 * @return System name, or nullptr if invalid.
+		 */
+		static const char *sysName(unsigned int sys);
 
 	public:
 		/**
@@ -226,7 +226,7 @@ class TImageTypesConfig
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) = 0;
+		virtual int saveWriteEntry(const char *sysName, const char *imageTypeList) = 0;
 
 		/**
 		 * Close the Save subsystem.

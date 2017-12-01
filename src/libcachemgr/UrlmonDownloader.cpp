@@ -31,7 +31,6 @@
 #include "librpbase/file/RpFile.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::RpFile;
-using LibRpBase::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -53,11 +52,11 @@ UrlmonDownloader::UrlmonDownloader()
 	: super()
 { }
 
-UrlmonDownloader::UrlmonDownloader(const rp_char *url)
+UrlmonDownloader::UrlmonDownloader(const char *url)
 	: super(url)
 { }
 
-UrlmonDownloader::UrlmonDownloader(const rp_string &url)
+UrlmonDownloader::UrlmonDownloader(const string &url)
 	: super(url)
 { }
 
@@ -85,7 +84,7 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Open the cached file.
-	unique_ptr<IRpFile> file(new RpFile(W2RP_c(szFileName), RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(W2U8(szFileName), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		return -1;

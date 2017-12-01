@@ -82,6 +82,9 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 #include "librpbase/RomData.hpp"
 #include "librpbase/img/rp_image.hpp"
 
+// C++ includes.
+#include <string>
+
 namespace LibRpBase {
 	class IRpFile;
 	class RomData;
@@ -164,7 +167,7 @@ class TCreateThumbnail
 		 * @param sBIT		[out,opt] sBIT metadata.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img,
+		int getThumbnail(const char *filename, int req_size, ImgClass &ret_img,
 			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
 
 	protected:
@@ -229,7 +232,7 @@ class TCreateThumbnail
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual LibRpBase::rp_string proxyForUrl(const LibRpBase::rp_string &url) const = 0;
+		virtual std::string proxyForUrl(const std::string &url) const = 0;
 };
 
 }

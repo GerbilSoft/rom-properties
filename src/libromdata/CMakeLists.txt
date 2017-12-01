@@ -142,9 +142,9 @@ SET(libromdata_H
 
 IF(ENABLE_XML)
 	SET(libromdata_SRCS ${libromdata_SRCS} EXE_manifest.cpp)
-	IF(WIN32 AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
+	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 		SET(libromdata_SRCS ${libromdata_SRCS} EXE_delayload.cpp)
-	ENDIF(WIN32 AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
+	ENDIF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 ENDIF(ENABLE_XML)
 
 IF(ENABLE_DECRYPTION)
@@ -207,51 +207,37 @@ UNSET(arch)
 # Build the library. #
 ######################
 
-# UTF-8 version.
-ADD_LIBRARY(romdata8 STATIC
+ADD_LIBRARY(romdata STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
 	${libromdata_IFUNC_SRCS}
 	${libromdata_SSE2_SRCS}
 	)
-TARGET_LINK_LIBRARIES(romdata8 rpbase8)
+TARGET_LINK_LIBRARIES(romdata rpbase)
 
-# UTF-16 version.
-ADD_LIBRARY(romdata16 STATIC
-	${libromdata_SRCS} ${libromdata_H}
-	${libromdata_OS_SRCS} ${libromdata_OS_H}
-	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_IFUNC_SRCS}
-	${libromdata_SSE2_SRCS}
+# Include paths:
+# - Public: Current source and binary directories.
+# - Private: Parent source and binary directories,
+#            and top-level binary directory for git_version.h.
+TARGET_INCLUDE_DIRECTORIES(romdata
+	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libromdata
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# libromdata
+	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
 	)
-TARGET_LINK_LIBRARIES(romdata16 rpbase16)
+IF(MSVC)
+	TARGET_LINK_LIBRARIES(romdata delayimp)
+ENDIF(MSVC)
+# Exclude from ALL builds.
+SET_TARGET_PROPERTIES(romdata PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-# Common properties for romdata8 and romdata16.
-FOREACH(_target romdata8 romdata16)
-	# Include paths:
-	# - Public: Current source and binary directories.
-	# - Private: Parent source and binary directories,
-	#            and top-level binary directory for git_version.h.
-	TARGET_INCLUDE_DIRECTORIES(${_target}
-		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libromdata
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# libromdata
-		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
-			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
-		)
-	IF(MSVC)
-		TARGET_LINK_LIBRARIES(${_target} delayimp)
-	ENDIF(MSVC)
-	# Exclude from ALL builds.
-	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-
-	# Other libraries.
-	TARGET_LINK_LIBRARIES(${_target} ${ZLIB_LIBRARY})
-	IF(ENABLE_XML AND TinyXML2_FOUND)
-		TARGET_LINK_LIBRARIES(${_target} ${TinyXML2_LIBRARY})
-	ENDIF(ENABLE_XML AND TinyXML2_FOUND)
-ENDFOREACH()
+# Other libraries.
+TARGET_LINK_LIBRARIES(romdata ${ZLIB_LIBRARY})
+IF(ENABLE_XML AND TinyXML2_FOUND)
+	TARGET_LINK_LIBRARIES(romdata ${TinyXML2_LIBRARY})
+ENDIF(ENABLE_XML AND TinyXML2_FOUND)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

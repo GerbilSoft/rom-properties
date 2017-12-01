@@ -23,6 +23,7 @@
 
 #include "KeyManager.hpp"
 #include "config/ConfReader_p.hpp"
+#include "libi18n/i18n.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -125,7 +126,7 @@ const char KeyManager::verifyTestString[] = {
 #endif /* ENABLE_DECRYPTION */
 
 KeyManagerPrivate::KeyManagerPrivate()
-	: super(_RP("keys.conf"))
+	: super("keys.conf")
 { }
 
 /**
@@ -229,35 +230,37 @@ KeyManager::KeyManager()
  * @param res VerifyResult.
  * @return Description, or nullptr if invalid.
  */
-const rp_char *KeyManager::verifyResultToString(VerifyResult res)
+const char *KeyManager::verifyResultToString(VerifyResult res)
 {
-	static const rp_char *const errTbl[] = {
-		// VERIFY_OK
-		_RP("Something happened."),
-		// VERIFY_INVALID_PARAMS
-		_RP("Invalid parameters. (THIS IS A BUG!)"),
-		// VERIFY_NO_SUPPORT
-		_RP("Decryption is not supported in this build."),
-		// VERIFY_KEY_DB_NOT_LOADED
-		_RP("keys.conf was not found."),
-		// VERIFY_KEY_DB_ERROR
-		_RP("keys.conf has an error and could not be loaded."),
-		// VERIFY_KEY_NOT_FOUND
-		_RP("Required key was not found in keys.conf."),
-		// VERIFY_KEY_INVALID
-		_RP("The key in keys.conf is not a valid key."),
-		// VERFIY_IAESCIPHER_INIT_ERR
-		_RP("AES decryption could not be initialized."),
-		// VERIFY_IAESCIPHER_DECRYPT_ERR
-		_RP("AES decryption failed."),
-		// VERIFY_WRONG_KEY
-		_RP("The key in keys.conf is incorrect."),
+	static const char *const errTbl[] = {
+		// tr: VERIFY_OK
+		NOP_C_("KeyManager|VerifyResult", "Something happened."),
+		// tr: VERIFY_INVALID_PARAMS
+		NOP_C_("KeyManager|VerifyResult", "Invalid parameters. (THIS IS A BUG!)"),
+		// tr: VERIFY_NO_SUPPORT
+		NOP_C_("KeyManager|VerifyResult", "Decryption is not supported in this build."),
+		// tr: VERIFY_KEY_DB_NOT_LOADED
+		NOP_C_("KeyManager|VerifyResult", "keys.conf was not found."),
+		// tr: VERIFY_KEY_DB_ERROR
+		NOP_C_("KeyManager|VerifyResult", "keys.conf has an error and could not be loaded."),
+		// tr: VERIFY_KEY_NOT_FOUND
+		NOP_C_("KeyManager|VerifyResult", "Required key was not found in keys.conf."),
+		// tr: VERIFY_KEY_INVALID
+		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is not a valid key."),
+		// tr: VERFIY_IAESCIPHER_INIT_ERR
+		NOP_C_("KeyManager|VerifyResult", "AES decryption could not be initialized."),
+		// tr: VERIFY_IAESCIPHER_DECRYPT_ERR
+		NOP_C_("KeyManager|VerifyResult", "AES decryption failed."),
+		// tr: VERIFY_WRONG_KEY
+		NOP_C_("KeyManager|VerifyResult", "The key in keys.conf is incorrect."),
 	};
 	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
 
 	assert(res >= 0);
 	assert(res < ARRAY_SIZE(errTbl));
-	return ((res >= 0 && res < ARRAY_SIZE(errTbl)) ? errTbl[res] : nullptr);
+	return ((res >= 0 && res < ARRAY_SIZE(errTbl))
+		? dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", errTbl[res])
+		: nullptr);
 }
 
 #ifdef ENABLE_DECRYPTION
@@ -466,9 +469,6 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 
 // Explicit instantiation of hexStringToBytes().
 template int KeyManager::hexStringToBytes<char>(const char *str, uint8_t *buf, unsigned int len);
-#ifdef RP_UTF16
-template int KeyManager::hexStringToBytes<rp_char>(const rp_char *str, uint8_t *buf, unsigned int len);
-#endif
 
 #endif /* ENABLE_DECRYPTION */
 

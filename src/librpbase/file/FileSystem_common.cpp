@@ -21,6 +21,10 @@
 
 #include "FileSystem.hpp"
 
+// C++ includes.
+#include <string>
+using std::string;
+
 namespace LibRpBase { namespace FileSystem {
 
 /**
@@ -28,13 +32,13 @@ namespace LibRpBase { namespace FileSystem {
  * @param filename Filename.
  * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
  */
-const rp_char *file_ext(const rp_string &filename)
+const char *file_ext(const string &filename)
 {
-	size_t dotpos = filename.find_last_of(_RP_CHR('.'));
-	size_t slashpos = filename.find_last_of(_RP_CHR(DIR_SEP_CHR));
-	if (dotpos == rp_string::npos ||
+	size_t dotpos = filename.find_last_of('.');
+	size_t slashpos = filename.find_last_of(DIR_SEP_CHR);
+	if (dotpos == string::npos ||
 	    dotpos >= filename.size()-1 ||
-	    (slashpos != rp_string::npos && dotpos <= slashpos))
+	    (slashpos != string::npos && dotpos <= slashpos))
 	{
 		// Invalid or missing file extension.
 		return nullptr;

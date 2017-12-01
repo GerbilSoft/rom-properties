@@ -52,9 +52,9 @@ static pthread_once_t once_control = PTHREAD_ONCE_INIT;
 // Configuration directories.
 
 // User's cache directory.
-static rp_string cache_dir;
+static string cache_dir;
 // User's configuration directory.
-static rp_string config_dir;
+static string config_dir;
 
 /**
  * Recursively mkdir() subdirectories.
@@ -69,7 +69,7 @@ static rp_string config_dir;
  * @param path Path to recursively mkdir. (last component is ignored)
  * @return 0 on success; negative POSIX error code on error.
  */
-int rmkdir(const rp_string &path)
+int rmkdir(const string &path)
 {
 	// Linux (and most other systems) use UTF-8 natively.
 	string path8 = RP2U8_s(path);
@@ -114,14 +114,9 @@ int rmkdir(const rp_string &path)
  * @param mode Mode.
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const rp_string &pathname, int mode)
+int access(const string &pathname, int mode)
 {
-#if defined(RP_UTF16)
-	string pathname8 = RP2U8_s(pathname);
-	return ::access(pathname8.c_str(), mode);
-#elif defined(RP_UTF8)
 	return ::access(pathname.c_str(), mode);
-#endif
 }
 
 /**
@@ -129,16 +124,10 @@ int access(const rp_string &pathname, int mode)
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-int64_t filesize(const rp_string &filename)
+int64_t filesize(const string &filename)
 {
 	struct stat buf;
-#if defined(RP_UTF16)
-	string filename8 = RP2U8_s(filename);
-	int ret = stat(filename8.c_str(), &buf);
-#elif defined(RP_UTF8)
 	int ret = stat(filename.c_str(), &buf);
-#endif
-
 	if (ret != 0) {
 		// stat() failed.
 		ret = -errno;
@@ -167,9 +156,9 @@ static void initConfigDirectories(void)
 	if (!cache_dir.empty()) {
 		// Add a trailing slash if necessary.
 		if (cache_dir.at(cache_dir.size()-1) != '/')
-			cache_dir += _RP_CHR('/');
+			cache_dir += '/';
 		// Append "rom-properties".
-		cache_dir += _RP("rom-properties");
+		cache_dir += "rom-properties";
 	}
 
 	// Config directory.
@@ -177,9 +166,9 @@ static void initConfigDirectories(void)
 	if (!config_dir.empty()) {
 		// Add a trailing slash if necessary.
 		if (config_dir.at(config_dir.size()-1) != '/')
-			config_dir += _RP_CHR('/');
+			config_dir += '/';
 		// Append "rom-properties".
-		config_dir += _RP("rom-properties");
+		config_dir += "rom-properties";
 	}
 
 	// Directories have been initialized.
@@ -194,7 +183,7 @@ static void initConfigDirectories(void)
  *
  * @return User's rom-properties cache directory, or empty string on error.
  */
-const rp_string &getCacheDirectory(void)
+const string &getCacheDirectory(void)
 {
 	// TODO: Handle errors.
 	pthread_once(&once_control, initConfigDirectories);
@@ -209,7 +198,7 @@ const rp_string &getCacheDirectory(void)
  *
  * @return User's rom-properties configuration directory, or empty string on error.
  */
-const rp_string &getConfigDirectory(void)
+const string &getConfigDirectory(void)
 {
 	// TODO: Handle errors.
 	pthread_once(&once_control, initConfigDirectories);
@@ -222,7 +211,7 @@ const rp_string &getConfigDirectory(void)
  * @param mtime Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const rp_string &filename, time_t mtime)
+int set_mtime(const string &filename, time_t mtime)
 {
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -241,7 +230,7 @@ int set_mtime(const rp_string &filename, time_t mtime)
  * @param pMtime Buffer for the modification timestamp.
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const rp_string &filename, time_t *pMtime)
+int get_mtime(const string &filename, time_t *pMtime)
 {
 	if (!pMtime)
 		return -EINVAL;
@@ -264,7 +253,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
  * @param filename Filename.
  * @return 0 on success; negative POSIX error code on error.
  */
-int delete_file(const rp_char *filename)
+int delete_file(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
@@ -282,7 +271,7 @@ int delete_file(const rp_char *filename)
  * Check if the specified file is a symbolic link.
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const rp_char *filename)
+bool is_symlink(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
@@ -306,13 +295,13 @@ bool is_symlink(const rp_char *filename)
  * @param filename Filename of symbolic link.
  * @return Resolved symbolic link, or empty string on error.
  */
-rp_string resolve_symlink(const rp_char *filename)
+string resolve_symlink(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
-		return rp_string();
+		return string();
 
 	// NOTE: realpath() might not be available on some systems...
-	rp_string ret;
+	string ret;
 	char *const resolved_path = realpath(RP2U8_c(filename), nullptr);
 	if (resolved_path != nullptr) {
 		ret = U82RP_cs(resolved_path);

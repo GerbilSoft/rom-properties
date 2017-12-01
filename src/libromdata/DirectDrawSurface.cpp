@@ -29,8 +29,11 @@
 #include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
+
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -40,7 +43,9 @@ using namespace LibRpBase;
 // C++ includes.
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -78,17 +83,13 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		const rp_image *loadImage(void);
 
 	public:
-		// TODO: Convert const rp_char* to rp_char[10].
-		// Can't do that right now due to issues with _RP() on
-		// MSVC versions older than 2015.
-
 		// Supported uncompressed RGB formats.
 		struct RGB_Format_Table_t {
 			uint32_t Rmask;
 			uint32_t Gmask;
 			uint32_t Bmask;
 			uint32_t Amask;
-			const rp_char *desc;
+			char desc[15];
 			uint8_t px_format;	// ImageDecoder::PixelFormat
 		};
 		static const RGB_Format_Table_t rgb_fmt_tbl_16[];	// 16-bit RGB
@@ -102,7 +103,7 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		 * @param ddspf DDS_PIXELFORMAT
 		 * @return Format name, or nullptr if not supported.
 		 */
-		static const rp_char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
+		static const char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
 
 		/**
 		 * Get the ImageDecoder::PixelFormat of an RGB(A) DirectDraw surface pixel format.
@@ -118,92 +119,92 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 // Supported 16-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_16[] = {
 	// 5-bit per channel, plus alpha.
-	{0x7C00, 0x03E0, 0x001F, 0x8000, _RP("ARGB1555"), ImageDecoder::PXF_ARGB1555},
-	{0x001F, 0x03E0, 0x007C, 0x8000, _RP("ABGR1555"), ImageDecoder::PXF_ABGR1555},
-	{0xF800, 0x07C0, 0x003E, 0x0001, _RP("RGBA5551"), ImageDecoder::PXF_RGBA5551},
-	{0x003E, 0x03E0, 0x00F8, 0x0001, _RP("BGRA5551"), ImageDecoder::PXF_BGRA5551},
+	{0x7C00, 0x03E0, 0x001F, 0x8000, "ARGB1555", ImageDecoder::PXF_ARGB1555},
+	{0x001F, 0x03E0, 0x007C, 0x8000, "ABGR1555", ImageDecoder::PXF_ABGR1555},
+	{0xF800, 0x07C0, 0x003E, 0x0001, "RGBA5551", ImageDecoder::PXF_RGBA5551},
+	{0x003E, 0x03E0, 0x00F8, 0x0001, "BGRA5551", ImageDecoder::PXF_BGRA5551},
 
 	// 5-bit per RB channel, 6-bit per G channel, without alpha.
-	{0xF800, 0x07E0, 0x001F, 0x0000, _RP("RGB565"), ImageDecoder::PXF_RGB565},
-	{0x001F, 0x07E0, 0xF800, 0x0000, _RP("BGR565"), ImageDecoder::PXF_BGR565},
+	{0xF800, 0x07E0, 0x001F, 0x0000, "RGB565", ImageDecoder::PXF_RGB565},
+	{0x001F, 0x07E0, 0xF800, 0x0000, "BGR565", ImageDecoder::PXF_BGR565},
 
 	// 5-bit per channel, without alpha.
 	// (Technically 15-bit, but DDS usually lists it as 16-bit.)
-	{0x7C00, 0x03E0, 0x001F, 0x0000, _RP("RGB555"), ImageDecoder::PXF_RGB555},
-	{0x001F, 0x03E0, 0x7C00, 0x0000, _RP("BGR555"), ImageDecoder::PXF_BGR555},
+	{0x7C00, 0x03E0, 0x001F, 0x0000, "RGB555", ImageDecoder::PXF_RGB555},
+	{0x001F, 0x03E0, 0x7C00, 0x0000, "BGR555", ImageDecoder::PXF_BGR555},
 
 	// 4-bit per channel formats. (uncommon nowadays) (alpha)
-	{0x0F00, 0x00F0, 0x000F, 0xF000, _RP("ARGB4444"), ImageDecoder::PXF_ARGB4444},
-	{0x000F, 0x00F0, 0x0F00, 0xF000, _RP("ABGR4444"), ImageDecoder::PXF_ABGR4444},
-	{0xF000, 0x0F00, 0x00F0, 0x000F, _RP("RGBA4444"), ImageDecoder::PXF_RGBA4444},
-	{0x00F0, 0x0F00, 0xF000, 0x000F, _RP("BGRA4444"), ImageDecoder::PXF_BGRA4444},
+	{0x0F00, 0x00F0, 0x000F, 0xF000, "ARGB4444", ImageDecoder::PXF_ARGB4444},
+	{0x000F, 0x00F0, 0x0F00, 0xF000, "ABGR4444", ImageDecoder::PXF_ABGR4444},
+	{0xF000, 0x0F00, 0x00F0, 0x000F, "RGBA4444", ImageDecoder::PXF_RGBA4444},
+	{0x00F0, 0x0F00, 0xF000, 0x000F, "BGRA4444", ImageDecoder::PXF_BGRA4444},
 	// 4-bit per channel formats. (uncommon nowadays) (no alpha)
-	{0x0F00, 0x00F0, 0x000F, 0x0000, _RP("xRGB4444"), ImageDecoder::PXF_xRGB4444},
-	{0x000F, 0x00F0, 0x0F00, 0x0000, _RP("xBGR4444"), ImageDecoder::PXF_xBGR4444},
-	{0xF000, 0x0F00, 0x00F0, 0x0000, _RP("RGBx4444"), ImageDecoder::PXF_RGBx4444},
-	{0x00F0, 0x0F00, 0xF000, 0x0000, _RP("BGRx4444"), ImageDecoder::PXF_BGRx4444},
+	{0x0F00, 0x00F0, 0x000F, 0x0000, "xRGB4444", ImageDecoder::PXF_xRGB4444},
+	{0x000F, 0x00F0, 0x0F00, 0x0000, "xBGR4444", ImageDecoder::PXF_xBGR4444},
+	{0xF000, 0x0F00, 0x00F0, 0x0000, "RGBx4444", ImageDecoder::PXF_RGBx4444},
+	{0x00F0, 0x0F00, 0xF000, 0x0000, "BGRx4444", ImageDecoder::PXF_BGRx4444},
 
 	// Other uncommon 16-bit formats.
-	{0x00E0, 0x001C, 0x0003, 0xFF00, _RP("ARGB8332"), ImageDecoder::PXF_ARGB8332},
+	{0x00E0, 0x001C, 0x0003, 0xFF00, "ARGB8332", ImageDecoder::PXF_ARGB8332},
 
 	// end
-	{0, 0, 0, 0, nullptr, 0}
+	{0, 0, 0, 0, "", 0}
 };
 
 // Supported 24-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_24[] = {
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, _RP("RGB888"), ImageDecoder::PXF_RGB888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, _RP("BGR888"), ImageDecoder::PXF_BGR888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGB888", ImageDecoder::PXF_RGB888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGR888", ImageDecoder::PXF_BGR888},
 
 	// end
-	{0, 0, 0, 0, nullptr, 0}
+	{0, 0, 0, 0, "", 0}
 };
 
 // Supported 32-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_32[] = {
 	// Alpha
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, _RP("ARGB8888"), ImageDecoder::PXF_ARGB8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, _RP("ABGR8888"), ImageDecoder::PXF_ABGR8888},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, _RP("RGBA8888"), ImageDecoder::PXF_RGBA8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, _RP("BGRA8888"), ImageDecoder::PXF_BGRA8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, "ARGB8888", ImageDecoder::PXF_ARGB8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, "ABGR8888", ImageDecoder::PXF_ABGR8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, "RGBA8888", ImageDecoder::PXF_RGBA8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, "BGRA8888", ImageDecoder::PXF_BGRA8888},
 
 	// No alpha
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, _RP("xRGB8888"), ImageDecoder::PXF_xRGB8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, _RP("xBGR8888"), ImageDecoder::PXF_xBGR8888},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, _RP("RGBx8888"), ImageDecoder::PXF_RGBx8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, _RP("BGRx8888"), ImageDecoder::PXF_BGRx8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "xRGB8888", ImageDecoder::PXF_xRGB8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "xBGR8888", ImageDecoder::PXF_xBGR8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGBx8888", ImageDecoder::PXF_RGBx8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGRx8888", ImageDecoder::PXF_BGRx8888},
 
 	// Uncommon 32-bit formats.
-	{0x0000FFFF, 0xFFFF0000, 0x00000000, 0x00000000, _RP("G16R16"), ImageDecoder::PXF_G16R16},
+	{0x0000FFFF, 0xFFFF0000, 0x00000000, 0x00000000, "G16R16", ImageDecoder::PXF_G16R16},
 
-	{0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000, _RP("A2R10G10B10"), ImageDecoder::PXF_A2R10G10B10},
-	{0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000, _RP("A2B10G10R10"), ImageDecoder::PXF_A2B10G10R10},
+	{0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000, "A2R10G10B10", ImageDecoder::PXF_A2R10G10B10},
+	{0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000, "A2B10G10R10", ImageDecoder::PXF_A2B10G10R10},
 
 	// end
-	{0, 0, 0, 0, nullptr, 0}
+	{0, 0, 0, 0, "", 0}
 };
 
 // Supported luminance formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_luma[] = {
 	// 8-bit
-	{0x00FF, 0x0000, 0x0000, 0x0000, _RP("L8"), ImageDecoder::PXF_L8},
-	{0x000F, 0x0000, 0x0000, 0x00F0, _RP("A4L4"), ImageDecoder::PXF_A4L4},
+	{0x00FF, 0x0000, 0x0000, 0x0000, "L8",   ImageDecoder::PXF_L8},
+	{0x000F, 0x0000, 0x0000, 0x00F0, "A4L4", ImageDecoder::PXF_A4L4},
 
 	// 16-bit
-	{0xFFFF, 0x0000, 0x0000, 0x0000, _RP("L16"), ImageDecoder::PXF_L16},
-	{0x00FF, 0x0000, 0x0000, 0xFF00, _RP("A8L8"), ImageDecoder::PXF_A8L8},
+	{0xFFFF, 0x0000, 0x0000, 0x0000, "L16",  ImageDecoder::PXF_L16},
+	{0x00FF, 0x0000, 0x0000, 0xFF00, "A8L8", ImageDecoder::PXF_A8L8},
 
 	// end
-	{0, 0, 0, 0, nullptr, 0}
+	{0, 0, 0, 0, "", 0}
 };
 
 // Supported alpha formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_alpha[] = {
 	// 8-bit
-	{0x0000, 0x0000, 0x0000, 0x00FF, _RP("A8"), ImageDecoder::PXF_A8},
+	{0x0000, 0x0000, 0x0000, 0x00FF, "A8", ImageDecoder::PXF_A8},
 
 	// end
-	{0, 0, 0, 0, nullptr, 0}
+	{0, 0, 0, 0, "", 0}
 };
 
 /**
@@ -211,7 +212,7 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
  * @param ddspf DDS_PIXELFORMAT
  * @return Format name, or nullptr if not supported.
  */
-const rp_char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &ddspf)
+const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &ddspf)
 {
 #ifndef NDEBUG
 	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
@@ -745,15 +746,15 @@ int DirectDrawSurface::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *DirectDrawSurface::systemName(unsigned int type) const
+const char *DirectDrawSurface::systemName(unsigned int type) const
 {
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
-		_RP("DirectDraw Surface"), _RP("DirectDraw Surface"), _RP("DDS"), nullptr
+	static const char *const sysNames[4] = {
+		"DirectDraw Surface", "DirectDraw Surface", "DDS", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -772,11 +773,10 @@ const rp_char *DirectDrawSurface::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *DirectDrawSurface::supportedFileExtensions_static(void)
+const char *const *DirectDrawSurface::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".dds"),	// DirectDraw Surface
-
+	static const char *const exts[] = {
+		".dds",	// DirectDraw Surface
 		nullptr
 	};
 	return exts;
@@ -795,7 +795,7 @@ const rp_char *const *DirectDrawSurface::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *DirectDrawSurface::supportedFileExtensions(void) const
+const char *const *DirectDrawSurface::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -899,30 +899,32 @@ int DirectDrawSurface::loadFieldData(void)
 
 	// Texture size.
 	if (ddsHeader->dwFlags & DDSD_DEPTH) {
-		d->fields->addField_string(_RP("Texture Size"),
+		d->fields->addField_string(C_("DirectDrawSurface", "Texture Size"),
 			rp_sprintf("%ux%ux%u", ddsHeader->dwWidth, ddsHeader->dwHeight, ddsHeader->dwDepth));
 	} else {
-		d->fields->addField_string(_RP("Texture Size"),
+		d->fields->addField_string(C_("DirectDrawSurface", "Texture Size"),
 			rp_sprintf("%ux%u", ddsHeader->dwWidth, ddsHeader->dwHeight));
 	}
 
 	// Pitch (uncompressed)
 	// Linear size (compressed)
-	const rp_char *pitch_name;
-	pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE) ? _RP("Linear Size") : _RP("Pitch");
+	const char *const pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE)
+		? C_("DirectDrawSurface", "Linear Size")
+		: C_("DirectDrawSurface", "Pitch");
 	d->fields->addField_string_numeric(pitch_name,
 		ddsHeader->dwPitchOrLinearSize, RomFields::FB_DEC, 0);
 
 	// Mipmap count.
 	// NOTE: DDSD_MIPMAPCOUNT might not be accurate, so ignore it.
-	d->fields->addField_string_numeric(_RP("Mipmap Count"),
+	d->fields->addField_string_numeric("Mipmap Count",
 		ddsHeader->dwMipMapCount, RomFields::FB_DEC, 0);
 
 	// Pixel format.
 	const DDS_PIXELFORMAT &ddspf = ddsHeader->ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
-		d->fields->addField_string(_RP("Pixel Format"),
+		// TODO: Union of uint32_t and char?
+		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
 			rp_sprintf("%c%c%c%c",
 				 ddspf.dwFourCC        & 0xFF,
 				(ddspf.dwFourCC >>  8) & 0xFF,
@@ -930,42 +932,42 @@ int DirectDrawSurface::loadFieldData(void)
 				(ddspf.dwFourCC >> 24) & 0xFF));
 	} else if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
-		const rp_char *pxfmt = d->getPixelFormatName(ddspf);
+		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string(_RP("Pixel Format"),
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
 				rp_sprintf("RGB (%u-bit)", ddspf.dwRGBBitCount));
 		}
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
-		const rp_char *pxfmt = d->getPixelFormatName(ddspf);
+		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string(_RP("Pixel Format"),
-				rp_sprintf("Alpha (%u-bit)", ddspf.dwRGBBitCount));
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+				rp_sprintf(C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount));
 		}
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
-		d->fields->addField_string(_RP("Pixel Format"),
-			rp_sprintf("YUV (%u-bit)", ddspf.dwRGBBitCount));
+		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+			rp_sprintf(C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount));
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
-		const rp_char *pxfmt = d->getPixelFormatName(ddspf);
+		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string(_RP("Pixel Format"),
-				rp_sprintf("%s (%u-bit)",
+			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+				rp_sprintf_p(C_("DirectDrawSurface", "%1$s (%2$u-bit)"),
 					((ddspf.dwFlags & DDPF_ALPHAPIXELS)
-						? "Luminance + Alpha"
-						: "Luminance"),
+						? C_("DirectDrawSurface", "Luminance + Alpha")
+						: C_("DirectDrawSurface", "Luminance")),
 					ddspf.dwRGBBitCount));
 		}
 	} else {
 		// Unknown pixel format.
-		d->fields->addField_string(_RP("Pixel Format"), _RP("Unknown"));
+		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), C_("DirectDrawSurface", "Unknown"));
 	}
 
 	if (ddspf.dwFourCC == DDPF_FOURCC_DX10) {
@@ -973,118 +975,155 @@ int DirectDrawSurface::loadFieldData(void)
 		const DDS_HEADER_DXT10 *const dxt10Header = &d->dxt10Header;
 
 		// Texture format.
-		static const rp_char *const dx10_texFormat_tbl[] = {
-			nullptr, _RP("R32G32B32A32_TYPELESS"),				// 0,1
-			_RP("R32G32B32A32_FLOAT"), _RP("R32G32B32A32_UINT"),		// 2,3
-			_RP("R32G32B32A32_SINT"), _RP("R32G32B32_TYPELESS"),		// 4,5
-			_RP("R32G32B32_FLOAT"),	_RP("R32G32B32_UINT"),			// 6,7
-			_RP("R32G32B32_SINT"), _RP("R16G16B16A16_TYPELESS"),		// 8,9
-			_RP("R16G16B16A16_FLOAT"), _RP("R16G16B16A16_UNORM"),		// 10,11
-			_RP("R16G16B16A16_UINT"), _RP("R16G16B16A16_SNORM"),		// 12,13
-			_RP("R16G16B16A16_SINT"), _RP("R32G32_TYPELESS"),		// 14,15
-			_RP("R32G32_FLOAT"), _RP("R32G32_UINT"),			// 16,17
-			_RP("R32G32_SINT"), _RP("R32G8X24_TYPELESS"),			// 18,19
-			_RP("D32_FLOAT_S8X24_UINT"), _RP("R32_FLOAT_X8X24_TYPELESS"),	// 20,21
-			_RP("X32_TYPELESS_G8X24_UINT"),	_RP("R10G10B10A2_TYPELESS"),	// 22,23
-			_RP("R10G10B10A2_UNORM"), _RP("R10G10B10A2_UINT"),		// 24,25
-			_RP("R11G11B10_FLOAT"), _RP("R8G8B8A8_TYPELESS"),		// 26,27
-			_RP("R8G8B8A8_UNORM"), _RP("R8G8B8A8_UNORM_SRGB"),		// 28,29
-			_RP("R8G8B8A8_UINT"), _RP("R8G8B8A8_SNORM"),			// 30,31
-			_RP("R8G8B8A8_SINT"), _RP("R16G16_TYPELESS"),			// 32,33
-			_RP("R16G16_FLOAT"), _RP("R16G16_UNORM"),			// 34,35
-			_RP("R16G16_UINT"), _RP("R16G16_SNORM"),			// 36,37
-			_RP("R16G16_SINT"), _RP("R32_TYPELESS"),			// 38,39
-			_RP("D32_FLOAT"), _RP("R32_FLOAT"),				// 40,41
-			_RP("R32_UINT"), _RP("R32_SINT"),				// 42,43
-			_RP("R24G8_TYPELESS"), _RP("D24_UNORM_S8_UINT"),		// 44,45
-			_RP("R24_UNORM_X8_TYPELESS"), _RP("X24_TYPELESS_G8_UINT"),	// 46,47
-			_RP("R8G8_TYPELESS"), _RP("R8G8_UNORM"),			// 48,49
-			_RP("R8G8_UINT"), _RP("R8G8_SNORM"),				// 50,51
-			_RP("R8G8_SINT"), _RP("R16_TYPELESS"),				// 52,53
-			_RP("R16_FLOAT"), _RP("D16_UNORM"),				// 54,55
-			_RP("R16_UNORM"), _RP("R16_UINT"),				// 56,57
-			_RP("R16_SNORM"), _RP("R16_SINT"),				// 58,59
-			_RP("R8_TYPELESS"), _RP("R8_UNORM"),				// 60,61
-			_RP("R8_UINT"), _RP("R8_SNORM"),				// 62,63
-			_RP("R8_SINT"), _RP("A8_UNORM"),				// 64,65
-			_RP("R1_UNORM"), _RP("R9G9B9E5_SHAREDEXP"),			// 66,67
-			_RP("R8G8_B8G8_UNORM"), _RP("G8R8_G8B8_UNORM"),			// 68,69
-			_RP("BC1_TYPELESS"), _RP("BC1_UNORM"),				// 70,71
-			_RP("BC1_UNORM_SRGB"), _RP("BC2_TYPELESS"),			// 72,73
-			_RP("BC2_UNORM"), _RP("BC2_UNORM_SRGB"),			// 74,75
-			_RP("BC3_TYPELESS"), _RP("BC3_UNORM"),				// 76,77
-			_RP("BC3_UNORM_SRGB"), _RP("BC4_TYPELESS"),			// 78,79
-			_RP("BC4_UNORM"), _RP("BC4_SNORM"),				// 80,81
-			_RP("BC5_TYPELESS"), _RP("BC5_UNORM"),				// 82,83
-			_RP("BC5_SNORM"), _RP("B5G6R5_UNORM"),				// 84,85
-			_RP("B5G5R5A1_UNORM"), _RP("B8G8R8A8_UNORM"),			// 86,87
-			_RP("B8G8R8X8_UNORM"), _RP("R10G10B10_XR_BIAS_A2_UNORM"),	// 88,89
-			_RP("B8G8R8A8_TYPELESS"), _RP("B8G8R8A8_UNORM_SRGB"),		// 90,91
-			_RP("B8G8R8X8_TYPELESS"), _RP("B8G8R8X8_UNORM_SRGB"),		// 92,93
-			_RP("BC6H_TYPELESS"), _RP("BC6H_UF16"),				// 94,95
-			_RP("BC6H_SF16"), _RP("BC7_TYPELESS"),				// 96,97
-			_RP("BC7_UNORM"), _RP("BC7_UNORM_SRGB"),			// 98,99
-			_RP("AYUV"), _RP("Y410"), _RP("Y416"), _RP("NV12"),		// 100-103
-			_RP("P010"), _RP("P016"), _RP("420_OPAQUE"), _RP("YUY2"),	// 104-107
-			_RP("Y210"), _RP("Y216"), _RP("NV11"), _RP("AI44"),		// 108-111
-			_RP("IA44"), _RP("P8"), _RP("A8P8"), _RP("B4G4R4A4_UNORM"),	// 112-115
-			nullptr, nullptr, nullptr, nullptr,				// 116-119
-			nullptr, nullptr, nullptr, nullptr,				// 120-123
-			nullptr, nullptr, nullptr, nullptr,				// 124-127
-			nullptr, nullptr,						// 128,129
-			_RP("P208"), _RP("V208"), _RP("V408"),				// 130-132
+		static const char *const dx10_texFormat_tbl[] = {
+			nullptr, "R32G32B32A32_TYPELESS",			// 0,1
+			"R32G32B32A32_FLOAT", "R32G32B32A32_UINT",		// 2,3
+			"R32G32B32A32_SINT", "R32G32B32_TYPELESS",		// 4,5
+			"R32G32B32_FLOAT", "R32G32B32_UINT",			// 6,7
+			"R32G32B32_SINT", "R16G16B16A16_TYPELESS",		// 8,9
+			"R16G16B16A16_FLOAT", "R16G16B16A16_UNORM",		// 10,11
+			"R16G16B16A16_UINT", "R16G16B16A16_SNORM",		// 12,13
+			"R16G16B16A16_SINT", "R32G32_TYPELESS",			// 14,15
+			"R32G32_FLOAT", "R32G32_UINT",				// 16,17
+			"R32G32_SINT", "R32G8X24_TYPELESS",			// 18,19
+			"D32_FLOAT_S8X24_UINT", "R32_FLOAT_X8X24_TYPELESS",	// 20,21
+			"X32_TYPELESS_G8X24_UINT", "R10G10B10A2_TYPELESS",	// 22,23
+			"R10G10B10A2_UNORM", "R10G10B10A2_UINT",		// 24,25
+			"R11G11B10_FLOAT", "R8G8B8A8_TYPELESS",			// 26,27
+			"R8G8B8A8_UNORM", "R8G8B8A8_UNORM_SRGB",		// 28,29
+			"R8G8B8A8_UINT", "R8G8B8A8_SNORM",			// 30,31
+			"R8G8B8A8_SINT", "R16G16_TYPELESS",			// 32,33
+			"R16G16_FLOAT", "R16G16_UNORM",				// 34,35
+			"R16G16_UINT", "R16G16_SNORM",				// 36,37
+			"R16G16_SINT", "R32_TYPELESS",				// 38,39
+			"D32_FLOAT", "R32_FLOAT",				// 40,41
+			"R32_UINT", "R32_SINT",					// 42,43
+			"R24G8_TYPELESS", "D24_UNORM_S8_UINT",			// 44,45
+			"R24_UNORM_X8_TYPELESS", "X24_TYPELESS_G8_UINT",	// 46,47
+			"R8G8_TYPELESS", "R8G8_UNORM",				// 48,49
+			"R8G8_UINT", "R8G8_SNORM",				// 50,51
+			"R8G8_SINT", "R16_TYPELESS",				// 52,53
+			"R16_FLOAT", "D16_UNORM",				// 54,55
+			"R16_UNORM", "R16_UINT",				// 56,57
+			"R16_SNORM", "R16_SINT",				// 58,59
+			"R8_TYPELESS", "R8_UNORM",				// 60,61
+			"R8_UINT", "R8_SNORM",					// 62,63
+			"R8_SINT", "A8_UNORM",					// 64,65
+			"R1_UNORM", "R9G9B9E5_SHAREDEXP",			// 66,67
+			"R8G8_B8G8_UNORM", "G8R8_G8B8_UNORM",			// 68,69
+			"BC1_TYPELESS", "BC1_UNORM",				// 70,71
+			"BC1_UNORM_SRGB", "BC2_TYPELESS",			// 72,73
+			"BC2_UNORM", "BC2_UNORM_SRGB",				// 74,75
+			"BC3_TYPELESS", "BC3_UNORM",				// 76,77
+			"BC3_UNORM_SRGB", "BC4_TYPELESS",			// 78,79
+			"BC4_UNORM", "BC4_SNORM",				// 80,81
+			"BC5_TYPELESS", "BC5_UNORM",				// 82,83
+			"BC5_SNORM", "B5G6R5_UNORM",				// 84,85
+			"B5G5R5A1_UNORM", "B8G8R8A8_UNORM",			// 86,87
+			"B8G8R8X8_UNORM", "R10G10B10_XR_BIAS_A2_UNORM",		// 88,89
+			"B8G8R8A8_TYPELESS", "B8G8R8A8_UNORM_SRGB",		// 90,91
+			"B8G8R8X8_TYPELESS", "B8G8R8X8_UNORM_SRGB",		// 92,93
+			"BC6H_TYPELESS", "BC6H_UF16",				// 94,95
+			"BC6H_SF16", "BC7_TYPELESS",				// 96,97
+			"BC7_UNORM", "BC7_UNORM_SRGB",				// 98,99
+			"AYUV", "Y410", "Y416", "NV12",				// 100-103
+			"P010", "P016", "420_OPAQUE", "YUY2",			// 104-107
+			"Y210", "Y216", "NV11", "AI44",				// 108-111
+			"IA44", "P8", "A8P8", "B4G4R4A4_UNORM",			// 112-115
+			nullptr, nullptr, nullptr, nullptr,			// 116-119
+			nullptr, nullptr, nullptr, nullptr,			// 120-123
+			nullptr, nullptr, nullptr, nullptr,			// 124-127
+			nullptr, nullptr,					// 128,129
+			"P208", "V208", "V408",					// 130-132
 		};
 
-		const rp_char *texFormat = nullptr;
+		const char *texFormat = nullptr;
 		if (dxt10Header->dxgiFormat > 0 && dxt10Header->dxgiFormat < ARRAY_SIZE(dx10_texFormat_tbl)) {
 			texFormat = dx10_texFormat_tbl[dxt10Header->dxgiFormat];
 		} else if (dxt10Header->dxgiFormat == DXGI_FORMAT_FORCE_UINT) {
-			texFormat = _RP("FORCE_UINT");
+			texFormat = "FORCE_UINT";
 		}
-		d->fields->addField_string(_RP("DX10 Format"),
-			(texFormat ? texFormat : rp_sprintf("Unknown (0x%08X)", dxt10Header->dxgiFormat)));
+		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
+			(texFormat ? texFormat :
+				rp_sprintf(C_("DirectDrawSurface", "Unknown (0x%08X)"), dxt10Header->dxgiFormat)));
 	}
 
 	// dwFlags
-	static const rp_char *const dwFlags_names[] = {
-		_RP("Caps"), _RP("Height"), _RP("Width"), _RP("Pitch"),		// 0x1-0x8
-		nullptr, nullptr, nullptr, nullptr,				// 0x10-0x80
-		nullptr, nullptr, nullptr, nullptr,				// 0x100-0x800
-		_RP("Pixel Format"), nullptr, nullptr, nullptr,			// 0x1000-0x8000
-		nullptr, _RP("Mipmap Count"), nullptr, _RP("Linear Size"),	// 0x10000-0x80000
-		nullptr, nullptr, nullptr, _RP("Depth")				// 0x100000-0x800000
+	static const char *const dwFlags_names[] = {
+		// 0x1-0x8
+		NOP_C_("DirectDrawSurface|dwFlags", "Caps"),
+		NOP_C_("DirectDrawSurface|dwFlags", "Height"),
+		NOP_C_("DirectDrawSurface|dwFlags", "Width"),
+		NOP_C_("DirectDrawSurface|dwFlags", "Pitch"),
+		// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100-0x800
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x1000-0x8000
+		NOP_C_("DirectDrawSurface|dwFlags", "Pixel Format"),
+		nullptr, nullptr, nullptr,
+		// 0x10000-0x80000
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwFlags", "Mipmap Count"),
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwFlags", "Linear Size"),
+		// 0x100000-0x800000
+		nullptr, nullptr, nullptr,
+		NOP_C_("DirectDrawSurface|dwFlags", "Depth"),
 	};
-	vector<rp_string> *v_dwFlags_names = RomFields::strArrayToVector(
-		dwFlags_names, ARRAY_SIZE(dwFlags_names));
-	d->fields->addField_bitfield(_RP("Flags"),
+	vector<string> *v_dwFlags_names = RomFields::strArrayToVector_i18n(
+		"DirectDrawSurface|dwFlags", dwFlags_names, ARRAY_SIZE(dwFlags_names));
+	d->fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
 
 	// dwCaps
-	static const rp_char *const dwCaps_names[] = {
-		nullptr, nullptr, nullptr, _RP("Complex"),	// 0x1-0x8
-		nullptr, nullptr, nullptr, nullptr,		// 0x10-0x80
-		nullptr, nullptr, nullptr, nullptr,		// 0x100-0x800
-		_RP("Texture"), nullptr, nullptr, nullptr,	// 0x1000-0x8000
-		nullptr, nullptr, nullptr, nullptr,		// 0x10000-0x80000
-		nullptr, nullptr, _RP("Mipmap")			// 0x100000-0x400000
+	static const char *const dwCaps_names[] = {
+		// 0x1-0x8
+		nullptr, nullptr, nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps", "Complex"),
+		// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100-0x800
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x1000-0x8000
+		NOP_C_("DirectDrawSurface|dwCaps", "Texture"),
+		nullptr, nullptr, nullptr,
+		// 0x10000-0x80000
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100000-0x400000
+		nullptr, nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
 	};
-	vector<rp_string> *v_dwCaps_names = RomFields::strArrayToVector(
-		dwCaps_names, ARRAY_SIZE(dwCaps_names));
-	d->fields->addField_bitfield(_RP("Caps"),
+	vector<string> *v_dwCaps_names = RomFields::strArrayToVector_i18n(
+		"DirectDrawSurface|dwFlags", dwCaps_names, ARRAY_SIZE(dwCaps_names));
+	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 
 	// dwCaps2
-	static const rp_char *const dwCaps2_names[] = {
-		nullptr, nullptr, nullptr, nullptr,		// 0x1-0x8
-		nullptr, nullptr, nullptr, nullptr,		// 0x10-0x80
-		nullptr, _RP("Cubemap"), _RP("+X"), _RP("-X"),	// 0x100-0x800
-		_RP("+Y"), _RP("-Y"), _RP("+Z"), _RP("-Z"),	// 0x1000-0x8000
-		nullptr, nullptr, nullptr, nullptr,		// 0x10000-0x80000
-		nullptr, _RP("Volume")				// 0x100000-0x200000
+	static const char *const dwCaps2_names[] = {
+		// 0x1-0x8
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100-0x800
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps2", "Cubemap"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "+X"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "-X"),
+		// 0x1000-0x8000
+		NOP_C_("DirectDrawSurface|dwCaps2", "+Y"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "-Y"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "+Z"),
+		NOP_C_("DirectDrawSurface|dwCaps2", "-Z"),
+		// 0x10000-0x80000
+		nullptr, nullptr, nullptr, nullptr,
+		// 0x100000-0x200000
+		nullptr,
+		NOP_C_("DirectDrawSurface|dwCaps2", "Volume"),
 	};
-	vector<rp_string> *v_dwCaps2_names = RomFields::strArrayToVector(
-		dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
-	d->fields->addField_bitfield(_RP("Caps2"),
+	vector<string> *v_dwCaps2_names = RomFields::strArrayToVector_i18n(
+		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
+	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, ddsHeader->dwCaps2);
 
 	// Finished reading the field data.

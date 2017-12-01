@@ -3,7 +3,7 @@
 ## Linux
 
 On Ubuntu, you will need build-essential and the following development packages:
-* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev
+* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev gettext
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules kio-dev
 * XFCE: libglib2.0-dev libgtk2.0-dev libthunarx-2-dev

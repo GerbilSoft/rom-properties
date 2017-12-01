@@ -48,9 +48,9 @@ class NESMappersPrivate
 	public:
 		// iNES mapper list.
 		struct MapperEntry {
-			const rp_char *name;
+			const char *name;
 			// TODO: Add manufacturers.
-			//const rp_char *manufacturer;
+			//const char *manufacturer;
 		};
 		static const MapperEntry mappers[];
 
@@ -60,7 +60,7 @@ class NESMappersPrivate
 		struct SubmapperInfo {
 			uint8_t submapper;	// Submapper number.
 			bool deprecated;	// Deprecated. (TODO: Show replacement?)
-			const rp_char *desc;	// Description.
+			const char *desc;	// Description.
 		};
 
 		// Submappers.
@@ -115,148 +115,148 @@ class NESMappersPrivate
  */
 const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	// Mappers 0-9
-	{_RP("NROM")},
-	{_RP("SxROM (MMC1)")},
-	{_RP("UxROM")},
-	{_RP("CNROM")},
-	{_RP("TxROM (MMC3, MMC6)")},
-	{_RP("ExROM (MMC5)")},
-	{_RP("FFE #6")},
-	{_RP("AxROM")},
-	{_RP("FFE #8")},
-	{_RP("PxROM (MMC2)")},
+	{"NROM"},
+	{"SxROM (MMC1)"},
+	{"UxROM"},
+	{"CNROM"},
+	{"TxROM (MMC3, MMC6)"},
+	{"ExROM (MMC5)"},
+	{"FFE #6"},
+	{"AxROM"},
+	{"FFE #8"},
+	{"PxROM (MMC2)"},
 
 	// Mappers 10-19
-	{_RP("FxROM (MMC4)")},
-	{_RP("Color Dreams")},
-	{_RP("MMC3 clone")}, // this is also marked as another FFE mapper. conflict?
-	{_RP("CPROM")},
-	{_RP("MMC3 clone")},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("FCG-x")},
-	{_RP("FFE #17")},
-	{_RP("Jaleco SS88006")},
-	{_RP("Namco 129/163")},
+	{"FxROM (MMC4)"},
+	{"Color Dreams"},
+	{"MMC3 clone"}, // this is also marked as another FFE mapper. conflict?
+	{"CPROM"},
+	{"MMC3 clone"},
+	{"Multicart (unlicensed)"},
+	{"FCG-x"},
+	{"FFE #17"},
+	{"Jaleco SS88006"},
+	{"Namco 129/163"},
 
 	// Mappers 20-29
-	{_RP("Famicom Disk System")}, // this isn't actually used, as FDS roms are stored in their own format.
-	{_RP("VRC4a, VRC4c")},
-	{_RP("VRC2a")},
-	{_RP("VRC4e, VRC4f, VRC2b")},
-	{_RP("VRC6a")},
-	{_RP("VRC4b, VRC4d")},
-	{_RP("VRC6b")},
-	{_RP("VRC4 variant")}, //investigate
-	{_RP("Multicart/Homebrew")},
-	{_RP("Homebrew")},
+	{"Famicom Disk System"}, // this isn't actually used, as FDS roms are stored in their own format.
+	{"VRC4a, VRC4c"},
+	{"VRC2a"},
+	{"VRC4e, VRC4f, VRC2b"},
+	{"VRC6a"},
+	{"VRC4b, VRC4d"},
+	{"VRC6b"},
+	{"VRC4 variant"}, //investigate
+	{"Multicart/Homebrew"},
+	{"Homebrew"},
 
 	// Mappers 30-39
-	{_RP("UNROM 512 (Homebrew)")},
-	{_RP("NSF (Homebrew)")},
-	{_RP("Irem G-101")},
-	{_RP("Taito TC0190")},
-	{_RP("BNROM, NINA-001")},
-	{_RP("JY Company subset")},
-	{_RP("TXC PCB 01-22000-400")},
-	{_RP("MMC3 multicart (official)")},
-	{_RP("GNROM variant")},
-	{_RP("BNROM variant")},
+	{"UNROM 512 (Homebrew)"},
+	{"NSF (Homebrew)"},
+	{"Irem G-101"},
+	{"Taito TC0190"},
+	{"BNROM, NINA-001"},
+	{"JY Company subset"},
+	{"TXC PCB 01-22000-400"},
+	{"MMC3 multicart (official)"},
+	{"GNROM variant"},
+	{"BNROM variant"},
 
 	// Mappers 40-49
-	{_RP("CD4020 (FDS conversion) (unlicensed)")},
-	{_RP("Caltron 6-in-1")},
-	{_RP("FDS conversion (unlicensed)")},
-	{_RP("FDS conversion (unlicensed)")},
-	{_RP("MMC3 clone")},
-	{_RP("MMC3 multicart (unlicensed)")},
-	{_RP("Rumble Station")},
-	{_RP("MMC3 multicart (official)")},
-	{_RP("Taito TC0690")},
-	{_RP("MMC3 multicart (unlicensed)")},
+	{"CD4020 (FDS conversion) (unlicensed)"},
+	{"Caltron 6-in-1"},
+	{"FDS conversion (unlicensed)"},
+	{"FDS conversion (unlicensed)"},
+	{"MMC3 clone"},
+	{"MMC3 multicart (unlicensed)"},
+	{"Rumble Station"},
+	{"MMC3 multicart (official)"},
+	{"Taito TC0690"},
+	{"MMC3 multicart (unlicensed)"},
 
 	// Mappers 50-59
-	{_RP("FDS conversion (unlicensed)")},
+	{"FDS conversion (unlicensed)"},
 	{nullptr},
-	{_RP("MMC3 clone")},
+	{"MMC3 clone"},
 	{nullptr},
-	{_RP("Novel Diamond")},	// conflicting information
+	{"Novel Diamond"},	// conflicting information
 	{nullptr},
 	{nullptr},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Multicart (unlicensed)")},
+	{"Multicart (unlicensed)"},
+	{"Multicart (unlicensed)"},
 	{nullptr},
 
 	// Mappers 60-69
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Multicart (unlicensed)")},
+	{"Multicart (unlicensed)"},
+	{"Multicart (unlicensed)"},
+	{"Multicart (unlicensed)"},
 	{nullptr},
-	{_RP("Tengen RAMBO-1")},
-	{_RP("Irem H3001")},
-	{_RP("GxROM, MHROM")},
-	{_RP("Sunsoft-3")},
-	{_RP("Sunsoft-4")},
-	{_RP("Sunsoft FME-7")},
+	{"Tengen RAMBO-1"},
+	{"Irem H3001"},
+	{"GxROM, MHROM"},
+	{"Sunsoft-3"},
+	{"Sunsoft-4"},
+	{"Sunsoft FME-7"},
 
 	// Mappers 70-79
-	{_RP("Family Trainer")},
-	{_RP("Codemasters (UNROM clone)")},
-	{_RP("Jaleco JF-17")},
-	{_RP("Konami VRC3")},
-	{_RP("MMC3 clone")},
-	{_RP("Konami VRC1")},
-	{_RP("Namcot 108 variant")},
+	{"Family Trainer"},
+	{"Codemasters (UNROM clone)"},
+	{"Jaleco JF-17"},
+	{"Konami VRC3"},
+	{"MMC3 clone"},
+	{"Konami VRC1"},
+	{"Namcot 108 variant"},
 	{nullptr},
-	{_RP("Holy Diver; Uchuusen - Cosmo Carrier")},
-	{_RP("NINA-03, NINA-06")},
+	{"Holy Diver; Uchuusen - Cosmo Carrier"},
+	{"NINA-03, NINA-06"},
 
 	// Mappers 80-89
-	{_RP("Taito X1-005")},
+	{"Taito X1-005"},
 	{nullptr},
-	{_RP("Taito X1-017")},
-	{_RP("Cony Soft")},
-	{_RP("PC-SMB2J")},
-	{_RP("Konami VRC7")},
-	{_RP("Jaleco JF-13")},
+	{"Taito X1-017"},
+	{"Cony Soft"},
+	{"PC-SMB2J"},
+	{"Konami VRC7"},
+	{"Jaleco JF-13"},
 	{nullptr},
-	{_RP("Namcot 118 variant")},
-	{_RP("Sunsoft-2 (Sunsoft-3 board)")},	
+	{"Namcot 118 variant"},
+	{"Sunsoft-2 (Sunsoft-3 board)"},	
 
 	// Mappers 90-99
-	{_RP("JY Company (simple nametable control)")},
+	{"JY Company (simple nametable control)"},
 	{nullptr},
 	{nullptr},
-	{_RP("Sunsoft-2 (Sunsoft-3R board)")},
-	{_RP("HVC-UN1ROM")},
-	{_RP("NAMCOT-3425")},
-	{_RP("Oeka Kids")},
-	{_RP("Irem TAM-S1")},
+	{"Sunsoft-2 (Sunsoft-3R board)"},
+	{"HVC-UN1ROM"},
+	{"NAMCOT-3425"},
+	{"Oeka Kids"},
+	{"Irem TAM-S1"},
 	{nullptr},
-	{_RP("CNROM (Vs. System)")},
+	{"CNROM (Vs. System)"},
 
 	// Mappers 100-109
-	{_RP("MMC3 variant (hacked ROMs)")},	// Also used for UNIF
-	{_RP("Jaleco JF-10 (misdump)")},
+	{"MMC3 variant (hacked ROMs)"},	// Also used for UNIF
+	{"Jaleco JF-10 (misdump)"},
 	{nullptr},
 	{nullptr},
 	{nullptr},
-	{_RP("NES-EVENT (Nintendo World Championships 1990)")},
+	{"NES-EVENT (Nintendo World Championships 1990)"},
 	{nullptr},
-	{_RP("Magic Dragon")},
+	{"Magic Dragon"},
 	{nullptr},
 	{nullptr},
 
 	// Mappers 110-119
 	{nullptr},
-	{_RP("Cheapocabra GT-ROM 512k flash board")},	// Membler Industries
-	{_RP("Namcot 118 variant")},
-	{_RP("NINA-03/06 multicart")},
+	{"Cheapocabra GT-ROM 512k flash board"},	// Membler Industries
+	{"Namcot 118 variant"},
+	{"NINA-03/06 multicart"},
 	{nullptr},
-	{_RP("MMC3 clone (Carson)")},
-	{_RP("Copy-protected bootleg mapper")},
+	{"MMC3 clone (Carson)"},
+	{"Copy-protected bootleg mapper"},
 	{nullptr},
-	{_RP("TxSROM")},
-	{_RP("TQROM")},
+	{"TxSROM"},
+	{"TQROM"},
 
 	// Mappers 120-129
 	{nullptr},
@@ -274,152 +274,152 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 	{nullptr},
 	{nullptr},
 	{nullptr},
-	{_RP("Sachen Jovial Race")},
+	{"Sachen Jovial Race"},
 	{nullptr},
 	{nullptr},
 	{nullptr},
-	{_RP("Sachen 8259D")},
-	{_RP("Sachen 8259B")},
-	{_RP("Sachen 8259C")},
+	{"Sachen 8259D"},
+	{"Sachen 8259B"},
+	{"Sachen 8259C"},
 
 	// Mappers 140-149
-	{_RP("Jaleco JF-11, JF-14 (GNROM variant)")},
-	{_RP("Sachen 8259A")},
+	{"Jaleco JF-11, JF-14 (GNROM variant)"},
+	{"Sachen 8259A"},
 	{nullptr},
-	{_RP("Copy-protected NROM")},
-	{_RP("Death Race (Color Dreams variant)")},
-	{_RP("Sidewinder (CNROM clone)")},
-	{_RP("Galactic Crusader (NINA-06 clone)")},
-	{_RP("Sachen Challenge of the Dragon")},
-	{_RP("NINA-06 variant")},
-	{_RP("SA-0036 (CNROM clone)")},
+	{"Copy-protected NROM"},
+	{"Death Race (Color Dreams variant)"},
+	{"Sidewinder (CNROM clone)"},
+	{"Galactic Crusader (NINA-06 clone)"},
+	{"Sachen Challenge of the Dragon"},
+	{"NINA-06 variant"},
+	{"SA-0036 (CNROM clone)"},
 
 	// Mappers 150-159
-	{_RP("Sachen 74LS374N (corrected)")},
-	{_RP("VRC1 (Vs. System)")},
+	{"Sachen 74LS374N (corrected)"},
+	{"VRC1 (Vs. System)"},
 	{nullptr},
-	{_RP("Bandai LZ93D50 with SRAM")},
-	{_RP("NAMCOT-3453")},
-	{_RP("MMC1A")},
-	{_RP("DIS23C01")},
-	{_RP("Datach Joint ROM System")},
-	{_RP("Tengen 800037")},
-	{_RP("Bandai LZ93D50 with 24C01")},
+	{"Bandai LZ93D50 with SRAM"},
+	{"NAMCOT-3453"},
+	{"MMC1A"},
+	{"DIS23C01"},
+	{"Datach Joint ROM System"},
+	{"Tengen 800037"},
+	{"Bandai LZ93D50 with 24C01"},
 
 	// Mappers 160-169
 	{nullptr},
 	{nullptr},
 	{nullptr},
-	{_RP("Nanjing")},
+	{"Nanjing"},
 	{nullptr},
 	{nullptr},
-	{_RP("SUBOR")},
-	{_RP("SUBOR")},
-	{_RP("Racermate Challenge 2")},
-	{_RP("Yuxing")},
+	{"SUBOR"},
+	{"SUBOR"},
+	{"Racermate Challenge 2"},
+	{"Yuxing"},
 
 	// Mappers 170-179
 	{nullptr},
 	{nullptr},
 	{nullptr},
 	{nullptr},
-	{_RP("Multicart (unlicensed)")},
+	{"Multicart (unlicensed)"},
 	{nullptr},
-	{_RP("WaiXing (BMCFK23C?)")},
+	{"WaiXing (BMCFK23C?)"},
 	{nullptr},
-	{_RP("Education / WaiXing / HengGe")},
+	{"Education / WaiXing / HengGe"},
 	{nullptr},
 
 	// Mappers 180-189
-	{_RP("Crazy Climber (UNROM clone)")},
+	{"Crazy Climber (UNROM clone)"},
 	{nullptr},
-	{_RP("MMC3 variant")},
-	{_RP("Suikan Pipe (VRC4e clone)")},
-	{_RP("Sunsoft-1")},
-	{_RP("CNROM with weak copy protection")},
-	{_RP("Study Box")},
+	{"MMC3 variant"},
+	{"Suikan Pipe (VRC4e clone)"},
+	{"Sunsoft-1"},
+	{"CNROM with weak copy protection"},
+	{"Study Box"},
 	{nullptr},
-	{_RP("Bandai Karaoke Studio")},
-	{_RP("Thunder Warrior (MMC3 clone)")},
+	{"Bandai Karaoke Studio"},
+	{"Thunder Warrior (MMC3 clone)"},
 
 	// Mappers 190-199
 	{nullptr},
-	{_RP("MMC3 clone")},
-	{_RP("MMC3 clone")},
-	{_RP("NTDEC TC-112")},
-	{_RP("MMC3 clone")},	// same as 195 on NES 2.0
-	{_RP("MMC3 clone")},	// same as 194 on NES 2.0
-	{_RP("MMC3 clone")},
+	{"MMC3 clone"},
+	{"MMC3 clone"},
+	{"NTDEC TC-112"},
+	{"MMC3 clone"},	// same as 195 on NES 2.0
+	{"MMC3 clone"},	// same as 194 on NES 2.0
+	{"MMC3 clone"},
 	{nullptr},
 	{nullptr},
 	{nullptr},
 
 	// Mappers 200-209
-	{_RP("Multicart (unlicensed)")},
-	{_RP("NROM-256 multicart (unlicensed)")},
-	{_RP("150-in-1 multicart (unlicensed)")},
-	{_RP("35-in-1 multicart (unlicensed)")},
+	{"Multicart (unlicensed)"},
+	{"NROM-256 multicart (unlicensed)"},
+	{"150-in-1 multicart (unlicensed)"},
+	{"35-in-1 multicart (unlicensed)"},
 	{nullptr},
-	{_RP("MMC3 multicart (unlicensed)")},
-	{_RP("DxROM (Tengen MIMIC-1, Namcot 118)")},
-	{_RP("Fudou Myouou Den")},
+	{"MMC3 multicart (unlicensed)"},
+	{"DxROM (Tengen MIMIC-1, Namcot 118)"},
+	{"Fudou Myouou Den"},
 	{nullptr},
-	{_RP("JY Company (MMC2/MMC4 clone)")},
+	{"JY Company (MMC2/MMC4 clone)"},
 
 	// Mappers 210-219
-	{_RP("Namcot 175, 340")},
-	{_RP("JY Company (extended nametable control)")},
+	{"Namcot 175, 340"},
+	{"JY Company (extended nametable control)"},
 	{nullptr},
 	{nullptr},
 	{nullptr},
-	{_RP("MMC3 clone")},
+	{"MMC3 clone"},
 	{nullptr},
 	{nullptr},
-	{_RP("Magic Floor (homebrew)")},
-	{_RP("UNL A9746")},
+	{"Magic Floor (homebrew)"},
+	{"UNL A9746"},
 
 	// Mappers 220-229
-	{_RP("Summer Carnival '92 - Recca")},
+	{"Summer Carnival '92 - Recca"},
 	{nullptr},
-	{_RP("CTC-31 (VRC2 + 74xx)")},
+	{"CTC-31 (VRC2 + 74xx)"},
 	{nullptr},
 	{nullptr},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Active Enterprises")},
-	{_RP("BMC 31-IN-1")},
+	{"Multicart (unlicensed)"},
+	{"Multicart (unlicensed)"},
+	{"Multicart (unlicensed)"},
+	{"Active Enterprises"},
+	{"BMC 31-IN-1"},
 
 	// Mappers 230-239
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Codemasters Quattro")},
-	{_RP("Multicart (unlicensed)")},
-	{_RP("Maxi 15 multicart")},
+	{"Multicart (unlicensed)"},
+	{"Multicart (unlicensed)"},
+	{"Codemasters Quattro"},
+	{"Multicart (unlicensed)"},
+	{"Maxi 15 multicart"},
 	{nullptr},
 	{nullptr},
-	{_RP("Teletubbies 420-in-1 multicart")},
+	{"Teletubbies 420-in-1 multicart"},
 	{nullptr},
 	{nullptr},
 
 	// Mappers 240-249
-	{_RP("Multicart (unlicensed)")},
-	{_RP("BNROM (similar to 034)")},
-	{_RP("Unlicensed")},
-	{_RP("Sachen 74LS374N")},
+	{"Multicart (unlicensed)"},
+	{"BNROM (similar to 034)"},
+	{"Unlicensed"},
+	{"Sachen 74LS374N"},
 	{nullptr},
-	{_RP("MMC3 clone")},
-	{_RP("Feng Shen Bang - Zhu Lu Zhi Zhan")},
+	{"MMC3 clone"},
+	{"Feng Shen Bang - Zhu Lu Zhi Zhan"},
 	{nullptr},
-	{_RP("Incorrect assignment (should be 115)")},
+	{"Incorrect assignment (should be 115)"},
 	{nullptr},
 
 	// Mappers 250-255
-	{_RP("Nitra (MMC3 clone)")},
+	{"Nitra (MMC3 clone)"},
 	{nullptr},
-	{_RP("WaiXing - Sangokushi")},
+	{"WaiXing - Sangokushi"},
 	{nullptr},
-	{_RP("Pikachu Y2K of crypted ROMs")},
+	{"Pikachu Y2K of crypted ROMs"},
 	{nullptr},
 };
 
@@ -427,66 +427,66 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers[] = {
 
 // MMC1
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc1_submappers[] = {
-	{1, true,  _RP("SUROM")},
-	{2, true,  _RP("SOROM")},
-	{3, true,  _RP("MMC1A")},
-	{4, true,  _RP("SXROM")},
-	{5, false,  _RP("SEROM, SHROM, SH1ROM")},
+	{1, true,  "SUROM"},
+	{2, true,  "SOROM"},
+	{3, true,  "MMC1A"},
+	{4, true,  "SXROM"},
+	{5, false,  "SEROM, SHROM, SH1ROM"},
 };
 
 // Discrete logic mappers: UxROM, CNROM, AxROM
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::discrete_logic_submappers[] = {
-	{1, false, _RP("Bus conflicts do not occur")},
-	{2, false, _RP("Bus conflicts occur, resulting in: bus AND rom")},
+	{1, false, "Bus conflicts do not occur"},
+	{2, false, "Bus conflicts occur, resulting in: bus AND rom"},
 };
 
 // MMC3
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc3_submappers[] = {
-	{0, false, _RP("MMC3C")},
-	{1, false, _RP("MMC6")},
-	{2, true,  _RP("MMC3C with hard-wired mirroring")},
-	{3, false, _RP("MC-ACC")},
+	{0, false, "MMC3C"},
+	{1, false, "MMC6"},
+	{2, true,  "MMC3C with hard-wired mirroring"},
+	{3, false, "MC-ACC"},
 };
 
 // Irem G101
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::irem_g101_submappers[] = {
 	// TODO: Some field to indicate mirroring override?
-	{0, false, _RP("Programmable mirroring")},
-	{1, false, _RP("Fixed one-screen mirroring")},
+	{0, false, "Programmable mirroring"},
+	{1, false, "Fixed one-screen mirroring"},
 };
 
 // BNROM / NINA-001
 // TODO: Distinguish between these two for iNES ROMs.
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::bnrom_nina001_submappers[] = {
-	{1, false, _RP("NINA-001")},
-	{2, false, _RP("BNROM")},
+	{1, false, "NINA-001"},
+	{2, false, "BNROM"},
 };
 
 // Sunsoft-4
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::sunsoft4_submappers[] = {
-	{1, false, _RP("Dual Cartridge System (NTB-ROM)")},
+	{1, false, "Dual Cartridge System (NTB-ROM)"},
 };
 
 // Codemasters
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::codemasters_submappers[] = {
-	{1, false, _RP("Programmable one-screen mirroring (Fire Hawk)")},
+	{1, false, "Programmable one-screen mirroring (Fire Hawk)"},
 };
 
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper078_submappers[] = {
-	{1, false, _RP("Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)")},
-	{2, true,  _RP("Fixed vertical mirroring + WRAM")},
-	{3, false, _RP("Programmable H/V mirroring (Holy Diver)")},
+	{1, false, "Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)"},
+	{2, true,  "Fixed vertical mirroring + WRAM"},
+	{3, false, "Programmable H/V mirroring (Holy Diver)"},
 };
 
 // Namcot 175, 340
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::namcot_175_340_submappers[] = {
-	{1, false, _RP("Namcot 175 (fixed mirroring)")},
-	{2, false, _RP("Namcot 340 (programmable mirroring)")},
+	{1, false, "Namcot 175 (fixed mirroring)"},
+	{2, false, "Namcot 340 (programmable mirroring)"},
 };
 
 // Codemasters Quattro
 const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::quattro_submappers[] = {
-	{1, false, _RP("Aladdin Deck Enhancer")},
+	{1, false, "Aladdin Deck Enhancer"},
 };
 
 /**
@@ -551,7 +551,7 @@ int RP_C_API NESMappersPrivate::SubmapperEntry_compar(const void *a, const void 
  * @param mapper Mapper number.
  * @return Mapper name, or nullptr if not found.
  */
-const rp_char *NESMappers::lookup_ines(int mapper)
+const char *NESMappers::lookup_ines(int mapper)
 {
 	static_assert(sizeof(NESMappersPrivate::mappers) == (256 * sizeof(NESMappersPrivate::MapperEntry)),
 		"NESMappersPrivate::mappers[] doesn't have 256 entries.");
@@ -600,7 +600,7 @@ int NESMappers::tnesMapperToInesMapper(int tnes_mapper)
  * @param submapper Submapper number.
  * @return Submapper name, or nullptr if not found.
  */
-const rp_char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
+const char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
 {
 	assert(mapper >= 0);
 	assert(mapper < ARRAY_SIZE(NESMappersPrivate::mappers));

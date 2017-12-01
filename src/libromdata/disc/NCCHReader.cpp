@@ -906,9 +906,9 @@ KeyManager::VerifyResult NCCHReader::verifyResult(void) const
  * Get the content type as a string.
  * @return Content type, or nullptr on error.
  */
-const rp_char *NCCHReader::contentType(void) const
+const char *NCCHReader::contentType(void) const
 {
-	const rp_char *content_type;
+	const char *content_type;
 
 	const N3DS_NCCH_Header_NoSig_t *ncch_header = ncchHeader();
 	if (!ncch_header) {
@@ -918,11 +918,11 @@ const rp_char *NCCHReader::contentType(void) const
 		switch (d->nonNcchContentType) {
 			case NCCHReaderPrivate::NONCCH_NDHT:
 				// NDHT (DS Whitelist)
-				content_type = _RP("NDHT");
+				content_type = "NDHT";
 				break;
 			case NCCHReaderPrivate::NONCCH_NARC:
 				// NARC (TWL Version Data)
-				content_type = _RP("NARC");
+				content_type = "NARC";
 				break;
 			default:
 				content_type = nullptr;
@@ -934,22 +934,22 @@ const rp_char *NCCHReader::contentType(void) const
 	const uint8_t ctype_flag = ncch_header->flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
 	if ((ctype_flag & N3DS_NCCH_CONTENT_TYPE_Child) == N3DS_NCCH_CONTENT_TYPE_Child) {
 		// DLP child
-		content_type = _RP("Download Play");
+		content_type = "Download Play";
 	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Trial) {
 		// Demo
-		content_type = _RP("Demo");
+		content_type = "Demo";
 	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Executable) {
 		// CXI
-		content_type = _RP("CXI");
+		content_type = "CXI";
 	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Manual) {
 		// Manual
-		content_type = _RP("Manual");
+		content_type = "Manual";
 	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_SystemUpdate) {
 		// System Update
-		content_type = _RP("Update");
+		content_type = "Update";
 	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Data) {
 		// CFA
-		content_type = _RP("CFA");
+		content_type = "CFA";
 	} else {
 		// Unknown.
 		content_type = nullptr;

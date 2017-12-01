@@ -22,6 +22,13 @@
 #ifndef __ROMPROPERTIES_RPCLI_STDAFX_H__
 #define __ROMPROPERTIES_RPCLI_STDAFX_H__
 
+// Time functions, with workaround for systems
+// that don't have reentrant versions.
+// NOTE: This defines _POSIX_C_SOURCE, which is
+// required for *_r() functions on MinGW-w64,
+// so it needs to be before other includes.
+#include "time_r.h"
+
 #ifdef __cplusplus
 // C includes. (C++ namespace)
 #include <cassert>

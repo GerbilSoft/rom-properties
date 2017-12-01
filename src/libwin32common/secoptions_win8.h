@@ -26,6 +26,12 @@
 #error secoptions_win8.h should not be included directly - include secoptions.h instead
 #endif
 
+/* NOTE: MinGW-w64 v5.0.3 has ProcessDynamicCodePolicy
+ * defined as ProcessReserved1MitigationPolicy. */
+#ifdef __GNUC__
+#define ProcessDynamicCodePolicy ProcessReserved1MitigationPolicy
+#endif
+
 /**
  * NOTE: The Windows 8, 8.1, and 10 SDKs don't guard these
  * against _WIN32_WINNT < 0x0602, so we should only include
@@ -103,7 +109,10 @@ typedef struct _PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY {
 		} DUMMYSTRUCTNAME;
 	} DUMMYUNIONNAME;
 } PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY, *PPROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY;
+#endif /* !_WIN32_WINNT_WIN8 */
 
+/* NOTE: Not defined on MinGW-w64 v5.0.3. */
+#if !defined(_WIN32_WINNT_WIN8) || defined(__GNUC__)
 typedef struct _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY {
 	union {
 		DWORD Flags;
@@ -114,9 +123,10 @@ typedef struct _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY {
 		} DUMMYSTRUCTNAME;
 	} DUMMYUNIONNAME;
 } PROCESS_MITIGATION_DYNAMIC_CODE_POLICY, *PPROCESS_MITIGATION_DYNAMIC_CODE_POLICY;
-#endif /* !_WIN32_WINNT_WIN8 */
+#endif /* !_WIN32_WINNT_WIN8 || defined(__GNUC__) */
 
-#ifndef _WIN32_WINNT_WINBLUE
+/* NOTE: Not defined on MinGW-w64 v5.0.3. */
+#if !defined(_WIN32_WINNT_WINBLUE) || defined(__GNUC__)
 // Windows 8.1
 #define ProcessReserved1Policy	((PROCESS_MITIGATION_POLICY)(ProcessExtensionPointDisablePolicy+1))
 #define ProcessSignaturePolicy	((PROCESS_MITIGATION_POLICY)(ProcessExtensionPointDisablePolicy+2))
@@ -132,7 +142,7 @@ typedef struct _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY {
 		} DUMMYSTRUCTNAME;
 	} DUMMYUNIONNAME;
 } PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY, *PPROCESS_MITIGATION_BINARY_SIGNATURE_POLICY;
-#endif /* !_WIN32_WINNT_WINBLUE */
+#endif /* !_WIN32_WINNT_WINBLUE || defined(__GNUC__) */
 
 #ifndef _WIN32_WINNT_WIN10
 // Windows 10

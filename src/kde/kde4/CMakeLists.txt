@@ -4,6 +4,9 @@ PROJECT(rom-properties-kde4)
 SET(QT4_NO_LINK_QTMAIN 1)
 FIND_PACKAGE(Qt4 4.6.0 COMPONENTS QtCore QtGui)
 IF(QT4_FOUND)
+	# Make sure KDE4's CMake files don't create an uninstall rule.
+	SET(_kde4_uninstall_rule_created TRUE)
+
 	# Find KDE4. (TODO: Version?)
 	FIND_PACKAGE(KDE4)
 	IF(NOT KDE4_FOUND)
@@ -32,6 +35,7 @@ SET(rom-properties-kde4_SRCS
 IF(COMMAND QT4_WRAP_UI)
 	# Wrap UI files.
 	QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
+	ADD_CUSTOM_TARGET(kde4_generate_ui_h DEPENDS ${rom-properties-kde4_UIS_H})
 ENDIF(COMMAND QT4_WRAP_UI)
 
 #####################
@@ -53,7 +57,7 @@ IF(BUILD_KDE4)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kde4 cachemgr16 romdata16 rpbase16)
+	TARGET_LINK_LIBRARIES(rom-properties-kde4 cachemgr romdata rpbase)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 ${ZLIB_LIBRARY})
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 ${KDE4_KFILE_LIBRARY})
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 Qt4::QtGui Qt4::QtCore)

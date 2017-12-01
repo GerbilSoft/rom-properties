@@ -31,6 +31,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -284,7 +285,7 @@ int VirtualBoy::isRomSupported(const DetectInfo *info) const
  * Get the name of the system the loaded ROM is designed for.
  * @return System name, or nullptr if not supported.
  */
-const rp_char *VirtualBoy::systemName(unsigned int type) const
+const char *VirtualBoy::systemName(unsigned int type) const
 {
 	RP_D(const VirtualBoy);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -293,8 +294,8 @@ const rp_char *VirtualBoy::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"VirtualBoy::systemName() array index optimization needs to be updated.");
 	
-	static const rp_char *const sysNames[4] = {
-		_RP("Nintendo Virtual Boy"), _RP("Virtual Boy"), _RP("VB"), nullptr,
+	static const char *const sysNames[4] = {
+		"Nintendo Virtual Boy", "Virtual Boy", "VB", nullptr,
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -313,12 +314,12 @@ const rp_char *VirtualBoy::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *VirtualBoy::supportedFileExtensions_static(void)
+const char *const *VirtualBoy::supportedFileExtensions_static(void)
 {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
-	static const rp_char *const exts[] = {
-		_RP(".vb"),	// Visual Basic .NET source files
+	static const char *const exts[] = {
+		".vb",	// Visual Basic .NET source files
 
 		nullptr
 	};
@@ -338,7 +339,7 @@ const rp_char *const *VirtualBoy::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *VirtualBoy::supportedFileExtensions(void) const
+const char *const *VirtualBoy::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -367,38 +368,38 @@ int VirtualBoy::loadFieldData(void)
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Title
-	d->fields->addField_string(_RP("Title"),
-		cp1252_sjis_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	d->fields->addField_string(C_("VirtualBoy", "Title"),
+		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
 	id6.append(romHeader->publisher, sizeof(romHeader->publisher));
-	d->fields->addField_string(_RP("Game ID"),
-		latin1_to_rp_string(id6.data(), (int)id6.size()));
+	d->fields->addField_string(C_("VirtualBoy", "Game ID"),
+		latin1_to_utf8(id6.data(), (int)id6.size()));
 
 	// Look up the publisher.
-	const rp_char* publisher = NintendoPublishers::lookup(romHeader->publisher);
-	d->fields->addField_string(_RP("Publisher"),
-		publisher ? publisher : _RP("Unknown"));
+	const char *publisher = NintendoPublishers::lookup(romHeader->publisher);
+	d->fields->addField_string(C_("VirtualBoy", "Publisher"),
+		publisher ? publisher : C_("VirtualBoy", "Unknown"));
 
 	// Revision
-	d->fields->addField_string_numeric(_RP("Revision"),
+	d->fields->addField_string_numeric(C_("VirtualBoy", "Revision"),
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// Region
-	const rp_char* region;
+	const char *region;
 	switch (romHeader->gameid[3]) {
 		case 'J':
-			region = _RP("Japan");
+			region = C_("Region", "Japan");
 			break;
 		case 'E':
-			region = _RP("USA");
+			region = C_("Region", "USA");
 			break;
 		default:
-			region = _RP("Unknown");
+			region = C_("VirtualBoy", "Unknown");
 			break;
 	}
-	d->fields->addField_string(_RP("Region"), region);
+	d->fields->addField_string(C_("VirtualBoy", "Region"), region);
 
 	return (int)d->fields->count();
 }

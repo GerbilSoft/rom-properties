@@ -72,7 +72,7 @@ class KeyManager : public ConfReader
 		 * @param res VerifyResult.
 		 * @return Description, or nullptr if invalid.
 		 */
-		static const rp_char *verifyResultToString(VerifyResult res);
+		static const char *verifyResultToString(VerifyResult res);
 
 #ifdef ENABLE_DECRYPTION
 	public:

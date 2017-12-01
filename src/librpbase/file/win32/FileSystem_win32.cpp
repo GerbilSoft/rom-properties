@@ -68,24 +68,24 @@ static pthread_once_t once_control = PTHREAD_ONCE_INIT;
 // Configuration directories.
 
 // User's cache directory.
-static rp_string cache_dir;
+static string cache_dir;
 // User's configuration directory.
-static rp_string config_dir;
+static string config_dir;
 
 /**
  * Prepend "\\\\?\\" to an absolute Windows path.
- * This is needed inorder to support filenames longer than MAX_PATH.
+ * This is needed in order to support filenames longer than MAX_PATH.
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */
-static inline wstring makeWinPath(const rp_char *filename)
+static inline wstring makeWinPath(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
 		return wstring();
 
 	wstring filenameW;
-	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
-	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	if (isascii(filename[0]) && isalpha(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
@@ -100,18 +100,18 @@ static inline wstring makeWinPath(const rp_char *filename)
 
 /**
  * Prepend "\\\\?\\" to an absolute Windows path.
- * This is needed inorder to support filenames longer than MAX_PATH.
+ * This is needed in order to support filenames longer than MAX_PATH.
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */
-static inline wstring makeWinPath(const rp_string &filename)
+static inline wstring makeWinPath(const string &filename)
 {
 	if (filename.empty())
 		return wstring();
 
 	wstring filenameW;
-	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
-	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	if (isascii(filename[0]) && isalpha(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
@@ -137,7 +137,7 @@ static inline wstring makeWinPath(const rp_string &filename)
  * @param path Path to recursively mkdir. (last component is ignored)
  * @return 0 on success; negative POSIX error code on error.
  */
-int rmkdir(const rp_string &path)
+int rmkdir(const string &path)
 {
 	// Windows uses UTF-16 natively, so handle as UTF-16.
 #ifdef RP_WIS16
@@ -190,7 +190,7 @@ int rmkdir(const rp_string &path)
  * @param mode Mode.
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const rp_string &pathname, int mode)
+int access(const string &pathname, int mode)
 {
 	// Windows doesn't recognize X_OK.
 	const wstring pathnameW = makeWinPath(pathname);
@@ -203,7 +203,7 @@ int access(const rp_string &pathname, int mode)
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-int64_t filesize(const rp_string &filename)
+int64_t filesize(const string &filename)
 {
 	const wstring filenameW = makeWinPath(filename);
 	struct _stati64 buf;
@@ -241,15 +241,15 @@ static void initConfigDirectories(void)
 	hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
 		nullptr, SHGFP_TYPE_CURRENT, path);
 	if (hr == S_OK) {
-		cache_dir = W2RP_c(path);
+		cache_dir = W2U8(path);
 		if (!cache_dir.empty()) {
 			// Add a trailing backslash if necessary.
-			if (cache_dir.at(cache_dir.size()-1) != _RP_CHR('\\')) {
-				cache_dir += _RP_CHR('\\');
+			if (cache_dir.at(cache_dir.size()-1) != '\\') {
+				cache_dir += '\\';
 			}
 
 			// Append "rom-properties\\cache".
-			cache_dir += _RP("rom-properties\\cache");
+			cache_dir += "rom-properties\\cache";
 		}
 	}
 
@@ -261,15 +261,15 @@ static void initConfigDirectories(void)
 	hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
 		nullptr, SHGFP_TYPE_CURRENT, path);
 	if (hr == S_OK) {
-		config_dir = W2RP_c(path);
+		config_dir = W2U8(path);
 		if (!config_dir.empty()) {
 			// Add a trailing backslash if necessary.
-			if (config_dir.at(config_dir.size()-1) != _RP_CHR('\\')) {
-				config_dir += _RP_CHR('\\');
+			if (config_dir.at(config_dir.size()-1) != '\\') {
+				config_dir += '\\';
 			}
 
 			// Append "rom-properties".
-			config_dir += _RP("rom-properties");
+			config_dir += "rom-properties";
 		}
 	}
 }
@@ -283,7 +283,7 @@ static void initConfigDirectories(void)
  *
  * @return User's rom-properties cache directory, or empty string on error.
  */
-const rp_string &getCacheDirectory(void)
+const string &getCacheDirectory(void)
 {
 	// TODO: Handle errors.
 	pthread_once(&once_control, initConfigDirectories);
@@ -298,7 +298,7 @@ const rp_string &getCacheDirectory(void)
  *
  * @return User's rom-properties configuration directory, or empty string on error.
  */
-const rp_string &getConfigDirectory(void)
+const string &getConfigDirectory(void)
 {
 	// TODO: Handle errors.
 	pthread_once(&once_control, initConfigDirectories);
@@ -311,7 +311,7 @@ const rp_string &getConfigDirectory(void)
  * @param mtime Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const rp_string &filename, time_t mtime)
+int set_mtime(const string &filename, time_t mtime)
 {
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -335,7 +335,7 @@ int set_mtime(const rp_string &filename, time_t mtime)
  * @param pMtime Buffer for the modification timestamp.
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const rp_string &filename, time_t *pMtime)
+int get_mtime(const string &filename, time_t *pMtime)
 {
 	if (!pMtime) {
 		return -EINVAL;
@@ -375,7 +375,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
  * @param filename Filename.
  * @return 0 on success; negative POSIX error code on error.
  */
-int delete_file(const rp_char *filename)
+int delete_file(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
@@ -395,7 +395,7 @@ int delete_file(const rp_char *filename)
  * Check if the specified file is a symbolic link.
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const rp_char *filename)
+bool is_symlink(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
 		return false;
@@ -451,15 +451,15 @@ static void LookupGetFinalPathnameByHandleW(void)
  * @param filename Filename of symbolic link.
  * @return Resolved symbolic link, or empty string on error.
  */
-rp_string resolve_symlink(const rp_char *filename)
+string resolve_symlink(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
-		return rp_string();
+		return string();
 
 	pthread_once(&once_gfpbhw, LookupGetFinalPathnameByHandleW);
 	if (!pfnGetFinalPathnameByHandleW) {
 		// GetFinalPathnameByHandleW() not available.
-		return rp_string();
+		return string();
 	}
 
 	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
@@ -473,7 +473,7 @@ rp_string resolve_symlink(const rp_char *filename)
 		nullptr);
 	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
 		// Unable to open the file.
-		return rp_string();
+		return string();
 	}
 
 	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
@@ -481,12 +481,12 @@ rp_string resolve_symlink(const rp_char *filename)
 	if (cchDeref == 0) {
 		// Error...
 		CloseHandle(hFile);
-		return rp_string();
+		return string();
 	}
 
-	wchar_t *szDeref = new wchar_t[cchDeref];
-	pfnGetFinalPathnameByHandleW(hFile, szDeref, cchDeref, VOLUME_NAME_DOS);
-	rp_string ret = W2RP_cs(szDeref);	// TODO: len parameter?
+	wchar_t *szDeref = new wchar_t[cchDeref+1];
+	pfnGetFinalPathnameByHandleW(hFile, szDeref, cchDeref+1, VOLUME_NAME_DOS);
+	string ret = W2U8(szDeref, cchDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;

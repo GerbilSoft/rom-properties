@@ -21,7 +21,7 @@ ADD_EXECUTABLE(RpImageLoaderTest
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(RpImageLoaderTest win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest rpbase8)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest rpbase)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -62,7 +62,7 @@ IF(ENABLE_DECRYPTION)
 		gtest_init.cpp
 		AesCipherTest.cpp
 		)
-	TARGET_LINK_LIBRARIES(AesCipherTest rpbase8)
+	TARGET_LINK_LIBRARIES(AesCipherTest rpbase)
 	TARGET_LINK_LIBRARIES(AesCipherTest gtest)
 	IF(WIN32)
 		TARGET_LINK_LIBRARIES(AesCipherTest win32common)
@@ -77,37 +77,23 @@ IF(ENABLE_DECRYPTION)
 	ADD_TEST(NAME AesCipherTest COMMAND AesCipherTest)
 ENDIF(ENABLE_DECRYPTION)
 
-# TextFuncsTest. (librpbase8)
-ADD_EXECUTABLE(TextFuncsTest8
+# TextFuncsTest.
+ADD_EXECUTABLE(TextFuncsTest
 	gtest_init.cpp
 	TextFuncsTest.cpp
 	TextFuncsTest_data.hpp
 	)
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(TextFuncsTest8 win32common)
+	TARGET_LINK_LIBRARIES(TextFuncsTest win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(TextFuncsTest8 rpbase8)
-TARGET_LINK_LIBRARIES(TextFuncsTest8 gtest)
-DO_SPLIT_DEBUG(TextFuncsTest8)
-SET_WINDOWS_SUBSYSTEM(TextFuncsTest8 CONSOLE)
-ADD_TEST(NAME TextFuncsTest8 COMMAND TextFuncsTest8)
-
-# TextFuncsTest. (librpbase16)
-ADD_EXECUTABLE(TextFuncsTest16
-	gtest_init.cpp
-	TextFuncsTest.cpp
-	TextFuncsTest_data.hpp
-	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(TextFuncsTest16 win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(TextFuncsTest16 rpbase16)
-TARGET_LINK_LIBRARIES(TextFuncsTest16 gtest)
-DO_SPLIT_DEBUG(TextFuncsTest16)
-SET_WINDOWS_SUBSYSTEM(TextFuncsTest16 CONSOLE)
-ADD_TEST(NAME TextFuncsTest16 COMMAND TextFuncsTest16)
+TARGET_LINK_LIBRARIES(TextFuncsTest rpbase)
+TARGET_LINK_LIBRARIES(TextFuncsTest gtest)
+DO_SPLIT_DEBUG(TextFuncsTest)
+SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
+ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
 
 # ImageDecoderLinear test.
+# TODO: Move to libromdata, or move libromdata stuff here?
 ADD_EXECUTABLE(ImageDecoderLinearTest
 	../../librpbase/tests/gtest_init.cpp
 	img/ImageDecoderLinearTest.cpp
@@ -115,7 +101,7 @@ ADD_EXECUTABLE(ImageDecoderLinearTest
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(ImageDecoderLinearTest win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest romdata8)
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest romdata)
 TARGET_LINK_LIBRARIES(ImageDecoderLinearTest gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${ZLIB_DEFINITIONS})

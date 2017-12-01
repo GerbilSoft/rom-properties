@@ -46,6 +46,8 @@ using LibRomData::TCreateThumbnail;
 
 // C++ includes.
 #include <memory>
+#include <string>
+using std::string;
 using std::unique_ptr;
 
 // glib
@@ -121,7 +123,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual rp_string proxyForUrl(const rp_string &url) const override final;
+		virtual string proxyForUrl(const string &url) const override final;
 };
 
 CreateThumbnailPrivate::CreateThumbnailPrivate()
@@ -195,12 +197,12 @@ int CreateThumbnailPrivate::getImgClassSize(const PGDKPIXBUF &imgClass, ImgSize 
  * Get the proxy for the specified URL.
  * @return Proxy, or empty string if no proxy is needed.
  */
-rp_string CreateThumbnailPrivate::proxyForUrl(const rp_string &url) const
+string CreateThumbnailPrivate::proxyForUrl(const string &url) const
 {
 	// TODO: Optimizations.
 	// TODO: Support multiple proxies?
 	gchar **proxies = g_proxy_resolver_lookup(proxy_resolver,
-		rp_string_to_utf8(url).c_str(), nullptr, nullptr);
+		url.c_str(), nullptr, nullptr);
 	gchar *proxy = nullptr;
 	if (proxies) {
 		// Check if the first proxy is "direct://".
@@ -210,7 +212,7 @@ rp_string CreateThumbnailPrivate::proxyForUrl(const rp_string &url) const
 		}
 	}
 
-	rp_string ret = (proxy ? utf8_to_rp_string(proxy, -1) : rp_string());
+	string ret = (proxy ? string(proxy, -1) : string());
 	g_strfreev(proxies);
 	return ret;
 }
@@ -249,7 +251,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// Attempt to open the ROM file.
 	// TODO: RpGVfsFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(utf8_to_rp_string(source_file), RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(source_file, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
 		return RPCT_SOURCE_FILE_ERROR;
@@ -299,7 +301,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
 	// TODO: Verify channels, etc.?
-	RpPngWriter *pngWriter = new RpPngWriter(U82RP_c(output_file),
+	RpPngWriter *pngWriter = new RpPngWriter(output_file,
 		gdk_pixbuf_get_width(ret_img), height,
 		rp_image::FORMAT_ARGB32);
 	if (!pngWriter->isOpen()) {

@@ -53,6 +53,13 @@ typedef struct PACKED _Lynx_RomHeader {
 } Lynx_RomHeader;
 ASSERT_STRUCT(Lynx_RomHeader, 64);
 
+// Rotation values.
+typedef enum {
+	LYNX_ROTATE_NONE	= 0,
+	LYNX_ROTATE_LEFT	= 1,
+	LYNX_ROTATE_RIGHT	= 2,
+} Lynx_Rotation;
+
 #pragma pack()
 
 #ifdef __cplusplus

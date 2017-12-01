@@ -29,11 +29,13 @@
 #include "git.h"
 
 #include "libunixcommon/dll-search.h"
+#include "libi18n/i18n.h"
 
 // C includes.
 #include <dlfcn.h>
 #include <errno.h>
 #include <getopt.h>
+#include <locale.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -65,30 +67,35 @@ static uint8_t is_debug = 0;
 
 static void show_version(void)
 {
-	puts(RP_DESCRIPTION "\n"
+	puts(RP_DESCRIPTION);
+	puts(C_("rp_stub",
 		"Shared library stub program.\n"
-		"Copyright (c) 2016-2017 by David Korth.\n"
-		"\n"
-		"rom-properties version: " RP_VERSION_STRING "\n"
+		"Copyright (c) 2016-2017 by David Korth."));
+	putchar('\n');
+	printf(C_("rp-stub", "rom-properties version: %s"), RP_VERSION_STRING);
+	putchar('\n');
 #ifdef RP_GIT_VERSION
-		RP_GIT_VERSION "\n"
+	puts(RP_GIT_VERSION);
 # ifdef RP_GIT_DESCRIBE
-		RP_GIT_DESCRIBE "\n"
+	puts(RP_GIT_DESCRIBE);
 # endif /* RP_GIT_DESCRIBE */
 #endif /* RP_GIT_VERSION */
-		// TODO: git version
-		"\n"
+	putchar('\n');
+	printf("%s", C_("rp-stub",
 		"This program is licensed under the GNU GPL v2.\n"
-		"See http://www.gnu.org/licenses/gpl-2.0.html for more information.");
+		"See http://www.gnu.org/licenses/gpl-2.0.html for more information."));
+	putchar('\n');
 }
 
 static void show_help(const char *argv0)
 {
 	show_version();
+	putchar('\n');
 	if (!is_rp_config) {
-		printf("\n"
-			"Usage: %s [-s size] source_file output_file\n"
-			"\n"
+		printf(C_("rp-stub", "Usage: %s [-s size] source_file output_file"), argv0);
+		putchar('\n');
+		putchar('\n');
+		puts(C_("rp-stub",
 			"If source_file is a supported ROM image, a thumbnail is\n"
 			"extracted and saved as output_file.\n"
 			"\n"
@@ -97,16 +104,15 @@ static void show_help(const char *argv0)
 			"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
 			"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
 			"  -h, --help\t\tDisplay this help and exit.\n"
-			"  -V, --version\t\tOutput version information and exit.\n"
-			, argv0);
+			"  -V, --version\t\tOutput version information and exit."));
 	} else {
-		printf("\n"
-			"Usage: %s\n"
-			"\n"
+		printf(C_("rp-stub", "Usage: %s"), argv0);
+		putchar('\n');
+		putchar('\n');
+		puts(C_("rp-stub",
 			"When invoked as rp-config, this program will open the configuration dialog\n"
 			"using an installed plugin that most closely matches the currently running\n"
-			"desktop environment.\n"
-			, argv0);
+			"desktop environment."));
 	}
 }
 
@@ -144,6 +150,13 @@ int main(int argc, char *argv[])
 	 * TODO: Support URIs in addition to paths?
 	 */
 
+	// Set the C locale.
+	// TODO: Stub may need to set the C++ locale.
+	setlocale(LC_ALL, "");
+
+	// Initialize i18n.
+	rp_i18n_init();
+
 	// Check if we were invoked as 'rp-config'.
 	const char *argv0 = argv[0];
 	const char *slash = strrchr(argv0, '/');
@@ -178,14 +191,16 @@ int main(int argc, char *argv[])
 				errno = 0;
 				long lTmp = (int)strtol(optarg, &endptr, 10);
 				if (errno == ERANGE || *endptr != 0) {
-					fprintf(stderr, "%s: invalid size '%s'\n"
-						"Try '%s --help' for more information.\n",
-						argv[0], optarg, argv[0]);
+					fprintf_p(stderr, C_("rp-stub", "%1$s: invalid size '%2$s'"), argv[0], optarg);
+					putc('\n', stderr);
+					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+					putc('\n', stderr);
 					return EXIT_FAILURE;
 				} else if (lTmp <= 0 || lTmp > 32768) {
-					fprintf(stderr, "%s: size '%s' is out of range\n"
-						"Try '%s --help' for more information.\n",
-						argv[0], optarg, argv[0]);
+					fprintf_p(stderr, C_("rp-stub", "%1$s: size '%2$s' is out of range"), argv[0], optarg);
+					putc('\n', stderr);
+					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+					putc('\n', stderr);
 					return EXIT_FAILURE;
 				}
 				maximum_size = (int)lTmp;
@@ -213,7 +228,8 @@ int main(int argc, char *argv[])
 			case '?':
 			default:
 				// Unrecognized option.
-				fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
+				fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+				putc('\n', stderr);
 				return EXIT_FAILURE;
 		}
 	}
@@ -221,19 +237,22 @@ int main(int argc, char *argv[])
 	if (!config) {
 		// We must have 2 filenames specified.
 		if (optind == argc) {
-			fprintf(stderr, "%s: missing source and output file parameters\n"
-				"Try '%s --help' for more information.\n",
-				argv[0], argv[0]);
+			fprintf(stderr, C_("rp-stub", "%s: missing source and output file parameters"), argv[0]);
+			putc('\n', stderr);
+			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+			putc('\n', stderr);
 			return EXIT_FAILURE;
 		} else if (optind+1 == argc) {
-			fprintf(stderr, "%s: missing output file parameter\n"
-				"Try '%s --help' for more information.\n",
-				argv[0], argv[0]);
+			fprintf(stderr, C_("rp-stub", "%s: missing output file parameter"), argv[0]);
+			putc('\n', stderr);
+			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+			putc('\n', stderr);
 			return EXIT_FAILURE;
 		} else if (optind+3 < argc) {
-			fprintf(stderr, "%s: too many parameters specified\n"
-				"Try '%s --help' for more information.\n",
-				argv[0], argv[0]);
+			fprintf(stderr, C_("rp-stub", "%s: too many parameters specified"), argv[0]);
+			putc('\n', stderr);
+			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
+			putc('\n', stderr);
 			return EXIT_FAILURE;
 		}
 	}
@@ -252,14 +271,17 @@ int main(int argc, char *argv[])
 		const char *const source_file = argv[optind];
 		const char *const output_file = argv[optind+1];
 		if (is_debug) {
-			fprintf(stderr, "Calling function: %s(\"%s\", \"%s\", %d);\n",
+			// tr: NOTE: Not positional. Don't change argument positions!
+			fprintf(stderr, C_("rp-stub", "Calling function: %s(\"%s\", \"%s\", %d);"),
 				symname, source_file, output_file, maximum_size);
+			putc('\n', stderr);
 		}
 		ret = ((PFN_RP_CREATE_THUMBNAIL)pfn)(source_file, output_file, maximum_size);
 	} else {
 		// Show the configuration dialog.
 		if (is_debug) {
-			fprintf(stderr, "Calling function: %s();\n", symname);
+			fprintf(stderr, C_("rp-stub", "Calling function: %s();"), symname);
+			putc('\n', stderr);
 		}
 		// FIXME: argc/argv may be manipulated by getopt().
 		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)(argc, argv);
@@ -268,10 +290,12 @@ int main(int argc, char *argv[])
 	dlclose(pDll);
 	if (ret == 0) {
 		if (is_debug) {
-			fprintf(stderr, "%s() returned %d.\n", symname, ret);
+			fprintf_p(stderr, C_("rp-stub", "%1$s() returned %2$d."), symname, ret);
+			putc('\n', stderr);
 		}
 	} else {
-		fprintf(stderr, "*** ERROR: %s() returned %d.\n", symname, ret);
+		fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d."), symname, ret);
+		putc('\n', stderr);
 	}
 	return ret;
 }

@@ -31,7 +31,10 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/config/AboutTabText.hpp"
-using LibRpBase::AboutTabText;
+using namespace LibRpBase;
+
+// libi18n
+#include "libi18n/i18n.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
@@ -45,6 +48,7 @@ using LibRpBase::AboutTabText;
 #include <string>
 using std::string;
 using std::wstring;
+using std::u16string;
 
 // Windows: RichEdit control.
 #include <richedit.h>
@@ -142,11 +146,11 @@ class AboutTabPrivate
 			_Out_ LPBYTE pbBuff, _In_ LONG cb, _Out_ LONG *pcb);
 
 		/**
-		 * Convert rp_char* to RTF-escaped text.
-		 * @param str rp_char*.
+		 * Convert a UTF-8 string to RTF-escaped text.
+		 * @param str UTF-8 string.
 		 * @return RTF-escaped text.
 		 */
-		static string rtfEscape(const rp_char *str);
+		static string rtfEscape(const char *str);
 
 	protected:
 		// Tab text. (RichText format)
@@ -410,27 +414,23 @@ DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
 }
 
 /**
- * Convert rp_char* to RTF-escaped text.
- * @param str rp_char*.
+ * Convert a UTF-8 string to RTF-escaped text.
+ * @param str UTF-8 string.
  * @return RTF-escaped text.
  */
-string AboutTabPrivate::rtfEscape(const rp_char *str)
+string AboutTabPrivate::rtfEscape(const char *str)
 {
 	assert(str != nullptr);
 	if (unlikely(!str)) {
 		return string();
 	}
 
-	string ret;
-
-#ifdef RP_UTF8
-	// Convert the rp_char to RP_UTF16 first.
-	const u16string u16str = rp_string_to_utf16(str, -1);
+	// Convert the string to RP_UTF16 first.
+	const u16string u16str = utf8_to_utf16(str, -1);
 	const char16_t *wcs = u16str.c_str();
-#else /* RP_UTF16 */
-	// We already have RP_UTF16.
-	const char16_t *wcs = str;
-#endif
+
+	// RTF return string.
+	string ret;
 
 	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/
 	char buf[12];	// Conversion buffer.
@@ -479,19 +479,18 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 
 	// Version number.
-	wstring s_version;
-	s_version.reserve(128);
-	s_version= L"Version ";
-	s_version += RP2W_c(U82RP_c(AboutTabText::prg_version));
+	string s_version = rp_sprintf(C_("AboutTab", "Version %s"),
+		AboutTabText::prg_version);
+	s_version.reserve(1024);
 	if (AboutTabText::git_version[0] != 0) {
-		s_version += L"\r\n";
-		s_version += RP2W_c(U82RP_c(AboutTabText::git_version));
+		s_version += "\r\n";
+		s_version += AboutTabText::git_version;
 		if (AboutTabText::git_describe[0] != 0) {
-			s_version += L"\r\n";
-			s_version += RP2W_c(U82RP_c(AboutTabText::git_describe));
+			s_version += "\r\n";
+			s_version += AboutTabText::git_describe;
 		}
 	}
-	SetWindowText(hStaticVersion, s_version.c_str());
+	SetWindowText(hStaticVersion, RP2W_s(s_version));
 
 	// Set the icon.
 	HICON hIcon = PropSheetIcon::get96Icon();
@@ -558,9 +557,11 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits = RTF_START;
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
-	sCredits += "Copyright (c) 2016-2017 by David Korth." RTF_BR
-		"This program is licensed under the GNU GPL v2 or later." RTF_BR
-		"https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html";
+	sCredits += C_("AboutTab|Credits", "Copyright (c) 2016-2017 by David Korth.");
+	sCredits += RTF_BR;
+	sCredits += C_("AboutTab|Credits", "This program is licensed under the GNU GPL v2 or later.");
+	sCredits += RTF_BR;
+	sCredits += "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html";
 
 	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
@@ -575,15 +576,13 @@ void AboutTabPrivate::initCreditsTab(void)
 
 			switch (creditsData->type) {
 				case AboutTabText::CT_DEVELOPER:
-					sCredits += "Developers:";
+					sCredits += C_("AboutTab|Credits", "Developers:");
 					break;
-
 				case AboutTabText::CT_CONTRIBUTOR:
-					sCredits += "Contributors:";
+					sCredits += C_("AboutTab|Credits", "Contributors:");
 					break;
-
 				case AboutTabText::CT_TRANSLATOR:
-					sCredits += "Translators:";
+					sCredits += C_("AboutTab|Credits", "Translators:");
 					break;
 
 				case AboutTabText::CT_CONTINUE:
@@ -606,18 +605,19 @@ void AboutTabPrivate::initCreditsTab(void)
 			sCredits += '>';
 		}
 		if (creditsData->sub) {
-			sCredits += " (";
-			sCredits += rtfEscape(creditsData->sub);
-			sCredits += ')';
+			// Sub-credit.
+			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
+				rtfEscape(creditsData->sub));
 		}
 	}
 
-	sCredits += "}";
+	sCredits += '}';
 
 	// Add the "Credits" tab.
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Credits"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = L"Credits";
+	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 0, &tcItem);
 }
 
@@ -644,10 +644,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
+	// FIXME: Use png_get_copyright().
 #ifdef HAVE_PNG
 	sLibraries += RTF_BR RTF_BR
 		"Compiled with libpng " PNG_LIBPNG_VER_STRING "." RTF_BR
-		"libpng version 1.6.31 - July 27, 2017" RTF_BR
+		"libpng version 1.6.34 - September 29, 2017" RTF_BR
 		"Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson" RTF_BR
 		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
 		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
@@ -676,9 +677,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += "}";
 
 	// Add the "Libraries" tab.
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Libraries"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = L"Libraries";
+	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 1, &tcItem);
 }
 
@@ -693,7 +695,9 @@ void AboutTabPrivate::initSupportTab(void)
 	// RTF starting sequence.
 	sSupport = RTF_START;
 
-	sSupport += "For technical support, you can visit the following websites:" RTF_BR;
+	sSupport += C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:");
+	sSupport += RTF_BR;
 
 	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
 	     supportSite->name != nullptr; supportSite++)
@@ -707,15 +711,17 @@ void AboutTabPrivate::initSupportTab(void)
 	}
 
 	// Email the author.
-	sSupport += RTF_BR "You can also email the developer directly:" RTF_BR
-		RTF_TAB RTF_BULLET " David Korth <gerbilsoft@gerbilsoft.com>";
-
-	sSupport += "}";
+	sSupport += RTF_BR;
+	sSupport += C_("AboutTab|Support",
+		"You can also email the developer directly:");
+	sSupport += RTF_BR RTF_TAB RTF_BULLET " David Korth <gerbilsoft@gerbilsoft.com>";
+	sSupport += '}';
 
 	// Add the "Support" tab.
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Support"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = L"Support";
+	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 2, &tcItem);
 }
 
@@ -853,13 +859,16 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// tr: Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "About"));
+
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_ABOUT);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"About";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = AboutTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

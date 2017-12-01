@@ -51,11 +51,11 @@ class KeyStoreUI
 				Status_OK,		// Key is OK.
 			};
 
-			LibRpBase::rp_string name;	// Key name.
-			LibRpBase::rp_string value;	// Key value. (as rp-string for display purposes)
-			uint8_t status;			// Key status. (See the Status enum.)
-			bool modified;			// True if the key has been modified since last reset() or allKeysSaved().
-			bool allowKanji;		// Allow kanji for UTF-16LE + BOM.
+			std::string name;	// Key name.
+			std::string value;	// Key value. (as rp-string for display purposes)
+			uint8_t status;		// Key status. (See the Status enum.)
+			bool modified;		// True if the key has been modified since last reset() or allKeysSaved().
+			bool allowKanji;	// Allow kanji for UTF-16LE + BOM.
 		};
 
 	public:
@@ -117,7 +117,7 @@ class KeyStoreUI
 		 * @param sectIdx Section index.
 		 * @return Section name, or nullptr on error.
 		 */
-		const rp_char *sectName(int sectIdx) const;
+		const char *sectName(int sectIdx) const;
 
 		/**
 		 * Get the number of keys in a given section.
@@ -164,7 +164,7 @@ class KeyStoreUI
 		 * @param value New value.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int sectIdx, int keyIdx, const LibRpBase::rp_string &value);
+		int setKey(int sectIdx, int keyIdx, const std::string &value);
 
 		/**
 		 * Set a key's value.
@@ -175,7 +175,7 @@ class KeyStoreUI
 		 * @param value New value.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int idx, const LibRpBase::rp_string &value);
+		int setKey(int idx, const std::string &value);
 
 	public /*slots*/:
 		/**
@@ -231,28 +231,28 @@ class KeyStoreUI
 		 * @param filename keys.bin filename.
 		 * @return Key import status.
 		 */
-		ImportReturn importWiiKeysBin(const rp_char *filename);
+		ImportReturn importWiiKeysBin(const char *filename);
 
 		/**
 		 * Import keys from Wii U otp.bin.
 		 * @param filename otp.bin filename.
 		 * @return Key import status.
 		 */
-		ImportReturn importWiiUOtpBin(const rp_char *filename);
+		ImportReturn importWiiUOtpBin(const char *filename);
 
 		/**
 		 * Import keys from 3DS boot9.bin.
 		 * @param filename boot9.bin filename.
 		 * @return Key import status.
 		 */
-		ImportReturn import3DSboot9bin(const rp_char *filename);
+		ImportReturn import3DSboot9bin(const char *filename);
 
 		/**
 		 * Import keys from 3DS aeskeydb.bin.
 		 * @param filename aeskeydb.bin filename.
 		 * @return Key import status.
 		 */
-		ImportReturn import3DSaeskeydb(const rp_char *filename);
+		ImportReturn import3DSaeskeydb(const char *filename);
 };
 
 }

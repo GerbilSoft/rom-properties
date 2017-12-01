@@ -26,7 +26,10 @@
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
-// RP2Q()
+// libi18n
+#include "libi18n/i18n.h"
+
+// U82Q()
 #include "RpQt.hpp"
 
 // C includes. (C++ namespace)
@@ -94,16 +97,6 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 ConfigDialogPrivate::~ConfigDialogPrivate()
 { }
 
-// Qt4 has an extra parameter specifying the encoding for 8-bit strings.
-// Qt5 removes that parameter because all 8-bit strings are assumed to be UTF-8.
-#if QT_VERSION >= 0x050000
-#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
-	QApplication::translate((context), (sourceText), (disambiguation))
-#else /* QT_VERSION < 0x050000 */
-#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
-	QApplication::translate((context), (sourceText), (disambiguation), QApplication::UnicodeUTF8)
-#endif
-
 #ifdef ENABLE_DECRYPTION
 /**
  * Retranslate parts of the UI that aren't present in the .ui file.
@@ -111,7 +104,7 @@ ConfigDialogPrivate::~ConfigDialogPrivate()
 void ConfigDialogPrivate::retranslateUi_nonDesigner(void)
 {
 	ui.tabWidget->setTabText(ui.tabWidget->indexOf(tabKeyManager),
-		QAPPLICATION_TRANSLATE("ConfigDialog", "&Key Manager", nullptr));
+		U82Q(C_("ConfigDialog", "&Key Manager")));
 }
 #endif /* ENABLE_DECRYPTION */
 
@@ -292,14 +285,14 @@ void ConfigDialog::apply(void)
 	// Open the configuration file using QSettings.
 	// TODO: Error handling.
 	const Config *const config = Config::instance();
-	const rp_char *filename = config->filename();
+	const char *filename = config->filename();
 	assert(filename != nullptr);
 	if (!filename) {
 		// No configuration filename...
 		return;
 	}
 
-	QSettings settings(RP2Q(filename), QSettings::IniFormat);
+	QSettings settings(U82Q(filename), QSettings::IniFormat);
 	if (!settings.isWritable()) {
 		// Can't write to the file...
 		return;
@@ -316,7 +309,7 @@ void ConfigDialog::apply(void)
 	filename = keyManager->filename();
 	assert(filename != nullptr);
 	if (filename) {
-		QSettings keys_conf(RP2Q(filename), QSettings::IniFormat);
+		QSettings keys_conf(U82Q(filename), QSettings::IniFormat);
 		if (keys_conf.isWritable()) {
 			d->tabKeyManager->save(&keys_conf);
 		}

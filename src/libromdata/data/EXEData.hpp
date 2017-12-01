@@ -44,14 +44,14 @@ class EXEData
 		 * @param cpu PE machine type.
 		 * @return Machine type name, or nullptr if not found.
 		 */
-		static const rp_char *lookup_pe_cpu(uint16_t cpu);
+		static const char *lookup_pe_cpu(uint16_t cpu);
 
 		/**
 		 * Look up an LE machine type. (CPU)
 		 * @param cpu LE machine type.
 		 * @return Machine type name, or nullptr if not found.
 		 */
-		static const rp_char *lookup_le_cpu(uint16_t cpu);
+		static const char *lookup_le_cpu(uint16_t cpu);
 };
 
 }

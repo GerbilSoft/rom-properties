@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__
 #define __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__
 
-#include "RpWin32_sdk.h"
+#include "../RpWin32_sdk.h"
 #include <shlwapi.h>
 
 #ifdef __cplusplus

@@ -238,7 +238,7 @@ int64_t GcnPartition::partition_size_used(void) const
  * @param path	[in] Directory path.
  * @return IFst::Dir*, or nullptr on error.
  */
-IFst::Dir *GcnPartition::opendir(const rp_char *path)
+IFst::Dir *GcnPartition::opendir(const char *path)
 {
 	RP_D(GcnPartition);
 	if (!d->fst) {
@@ -291,7 +291,7 @@ int GcnPartition::closedir(IFst::Dir *dirp)
  * @param filename Filename.
  * @return IRpFile*, or nullptr on error.
  */
-IRpFile *GcnPartition::open(const rp_char *filename)
+IRpFile *GcnPartition::open(const char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because GcnFile is a separate class.

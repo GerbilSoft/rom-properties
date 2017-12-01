@@ -321,7 +321,7 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 	if (filename.empty()) {
 		return ERROR_FILE_NOT_FOUND;
 	}
-	const rp_char *file_ext = FileSystem::file_ext(filename);
+	const char *file_ext = FileSystem::file_ext(filename);
 	if (!file_ext) {
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;

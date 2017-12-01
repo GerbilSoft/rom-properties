@@ -27,6 +27,7 @@
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/file/RpFile.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // libromdata
@@ -45,7 +46,9 @@ using namespace LibRomData;
 
 // C++ includes.
 #include <memory>
+#include <string>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -83,7 +86,7 @@ class KeyStoreUIPrivate
 
 		// Sections.
 		struct Section {
-			rp_string name;
+			string name;
 			int keyIdxStart;	// Starting index in keys.
 			int keyCount;		// Number of keys.
 		};
@@ -122,7 +125,7 @@ class KeyStoreUIPrivate
 		 * @param str String.
 		 * @return Converted string, or empty string on error.
 		 */
-		static rp_string convertKanjiToHex(const rp_string &str);
+		static string convertKanjiToHex(const string &str);
 
 	public:
 		/**
@@ -172,7 +175,7 @@ class KeyStoreUIPrivate
 		 */
 		int getAesKeyDB_key(u128_t *pKey) const;
 
-	private:
+	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
 		typedef int (*pfnKeyCount_t)(void);
@@ -183,14 +186,12 @@ class KeyStoreUIPrivate
 			pfnKeyCount_t pfnKeyCount;
 			pfnKeyName_t pfnKeyName;
 			pfnVerifyData_t pfnVerifyData;
-			const rp_char *sectName;
 		};
 
-		#define ENCKEYFNS(klass, sectName) { \
+		#define ENCKEYFNS(klass) { \
 			klass::encryptionKeyCount_static, \
 			klass::encryptionKeyName_static, \
-			klass::encryptionVerifyData_static, \
-			sectName \
+			klass::encryptionVerifyData_static \
 		}
 
 		static const EncKeyFns_t encKeyFns[];
@@ -205,15 +206,15 @@ class KeyStoreUIPrivate
 		 * @param len	[in] Length of binary key, in bytes.
 		 * @return Hexadecimal string.
 		 */
-		static rp_string binToHexStr(const uint8_t *data, unsigned int len);
+		static string binToHexStr(const uint8_t *data, unsigned int len);
 };
 
 /** KeyStoreUIPrivate **/
 
 const KeyStoreUIPrivate::EncKeyFns_t KeyStoreUIPrivate::encKeyFns[] = {
-	ENCKEYFNS(WiiPartition,    _RP("Nintendo Wii AES Keys")),
-	ENCKEYFNS(CtrKeyScrambler, _RP("Nintendo 3DS Key Scrambler Constants")),
-	ENCKEYFNS(N3DSVerifyKeys,  _RP("Nintendo 3DS AES Keys")),
+	ENCKEYFNS(WiiPartition),
+	ENCKEYFNS(CtrKeyScrambler),
+	ENCKEYFNS(N3DSVerifyKeys),
 };
 
 // Hexadecimal lookup table.
@@ -255,7 +256,6 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 		// Set up the section.
 		sections.resize(sections.size()+1);
 		auto &section = sections[sections.size()-1];
-		section.name = encSys->sectName;
 		section.keyIdxStart = keyIdxStart;
 		section.keyCount = keyCount;
 
@@ -275,14 +275,14 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 
 			keys.resize(keys.size()+1);
 			auto &key = keys[keys.size()-1];
-			key.name = latin1_to_rp_string(keyName, -1);
+			key.name = latin1_to_utf8(keyName, -1);
 
 			// Key is empty initially.
 			key.status = KeyStoreUI::Key::Status_Empty;
 			key.modified = false;
 
 			// Allow kanji for twl-scrambler.
-			key.allowKanji = (key.name == _RP("twl-scrambler"));
+			key.allowKanji = (key.name == "twl-scrambler");
 		}
 	}
 
@@ -348,7 +348,7 @@ void KeyStoreUIPrivate::reset(void)
 					assert(keyData.length > 0);
 					assert(keyData.length <= 32);
 					if (keyData.key != nullptr && keyData.length > 0 && keyData.length <= 32) {
-						rp_string value = binToHexStr(keyData.key, keyData.length);
+						string value = binToHexStr(keyData.key, keyData.length);
 						if (pKey->value != value) {
 							pKey->value = value;
 							hasChanged = true;
@@ -506,7 +506,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 		if (!verifyData) {
 			// Can't verify this key...
 			// Import it anyway.
-			const rp_string new_value = binToHexStr(keyData, 16);
+			const string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
 				pKey->value = new_value;
 				pKey->status = KeyStoreUI::Key::Status_Unknown;
@@ -526,7 +526,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 		int ret = verifyKeyData(keyData, verifyData, 16);
 		if (ret == 0) {
 			// Found a match!
-			const rp_string new_value = binToHexStr(keyData, 16);
+			const string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
 				pKey->value = binToHexStr(keyData, 16);
 				pKey->status = KeyStoreUI::Key::Status_OK;
@@ -605,12 +605,12 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
  * @param str String.
  * @return Converted string, or empty string on error.
  */
-rp_string KeyStoreUIPrivate::convertKanjiToHex(const rp_string &str)
+string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 {
 	// Check for non-ASCII characters.
 	// TODO: Also check for non-hex digits?
 	bool hasNonAscii = false;
-	for (const rp_char *p = str.c_str(); *p != 0; p++) {
+	for (const char *p = str.c_str(); *p != 0; p++) {
 		// The following check works for both UTF-8 and UTF-16.
 		// If the character value is >= 128, it's non-ASCII.
 		if (((unsigned int)*p) >= 128) {
@@ -628,19 +628,15 @@ rp_string KeyStoreUIPrivate::convertKanjiToHex(const rp_string &str)
 	// We're expecting 7 kanji symbols,
 	// but we'll take any length.
 
-#ifdef RP_UTF8
 	// Convert to UTF-16 first.
-	const std::u16string u16str = rp_string_to_utf16(str);
-#else /* RP_UTF16 */
-	// Already in UTF-16.
-	const std::u16string &u16str = str;
-#endif
+	// FIXME: std::string overload for utf8_to_utf16().
+	const std::u16string u16str = utf8_to_utf16(str.data(), (int)str.size());
 
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
-	rp_string hexstr;
+	string hexstr;
 	hexstr.reserve(4+(u16str.size()*4));
-	hexstr += _RP("FFFE");
+	hexstr += "FFFE";
 	for (const char16_t *p = u16str.c_str(); *p != 0; p++) {
 		const char16_t u16 = *p;
 		hexstr += (char16_t)hex_lookup[(u16 >>  4) & 0x0F];
@@ -751,19 +747,19 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
  * @param len	[in] Length of binary key, in bytes.
  * @return Hexadecimal string.
  */
-rp_string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
+string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
 {
 	assert(data != nullptr);
 	assert(len > 0);
 	assert(len <= 64);
 	if (!data || len == 0 || len > 64)
-		return rp_string();
+		return string();
 
-	rp_string hexstr;
+	string hexstr;
 	hexstr.reserve(len*2);
 	for (; len > 0; len--, data++) {
-		hexstr += (rp_char)hex_lookup[*data >> 4];
-		hexstr += (rp_char)hex_lookup[*data & 0x0F];
+		hexstr += hex_lookup[*data >> 4];
+		hexstr += hex_lookup[*data & 0x0F];
 	}
 
 	return hexstr;
@@ -834,14 +830,24 @@ int KeyStoreUI::sectCount(void) const
  * @param sectIdx Section index.
  * @return Section name, or nullptr on error.
  */
-const rp_char *KeyStoreUI::sectName(int sectIdx) const
+const char *KeyStoreUI::sectName(int sectIdx) const
 {
 	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
 	assert(sectIdx < (int)d->sections.size());
-	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
+	assert(sectIdx < ARRAY_SIZE(d->encKeyFns));
+	if (sectIdx < 0 || sectIdx >= (int)d->sections.size() || sectIdx >= ARRAY_SIZE(d->encKeyFns))
 		return nullptr;
-	return d->sections[sectIdx].name.c_str();
+
+	static const char *const sectNames[] = {
+		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
+		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
+		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
+	};
+	static_assert(ARRAY_SIZE(sectNames) == ARRAY_SIZE(d->encKeyFns),
+		"sectNames[] is out of sync with d->encKeyFns[].");
+
+	return dpgettext_expr(RP_I18N_DOMAIN, "KeyStoreUI|Section", sectNames[sectIdx]);
 }
 
 /**
@@ -925,7 +931,7 @@ const KeyStoreUI::Key *KeyStoreUI::getKey(int idx) const
  * @param value New value.
  * @return 0 on success; non-zero on error.
  */
-int KeyStoreUI::setKey(int sectIdx, int keyIdx, const rp_string &value)
+int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 {
 	RP_D(KeyStoreUI);
 	int idx = d->sectKeyToIdx(sectIdx, keyIdx);
@@ -935,13 +941,13 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const rp_string &value)
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
 	Key &key = d->keys[idx];
-	rp_string new_value;
+	string new_value;
 	if (key.allowKanji) {
 		// Convert kanji to hexadecimal if needed.
 		// NOTE: convertKanjiToHex() returns an empty string on error,
 		// so if the original string is empty, don't do anything.
 		if (!value.empty()) {
-			rp_string convKey = d->convertKanjiToHex(value);
+			string convKey = d->convertKanjiToHex(value);
 			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;
@@ -984,7 +990,7 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const rp_string &value)
  * @param value New value.
  * @return 0 on success; non-zero on error.
  */
-int KeyStoreUI::setKey(int idx, const rp_string &value)
+int KeyStoreUI::setKey(int idx, const string &value)
 {
 	RP_D(KeyStoreUI);
 	assert(idx >= 0);
@@ -993,13 +999,13 @@ int KeyStoreUI::setKey(int idx, const rp_string &value)
 		return -ERANGE;
 
 	Key &key = d->keys[idx];
-	rp_string new_value;
+	string new_value;
 	if (key.allowKanji) {
 		// Convert kanji to hexadecimal if needed.
 		// NOTE: convertKanjiToHex() returns an empty string on error,
 		// so if the original string is empty, don't do anything.
 		if (!value.empty()) {
-			rp_string convKey = KeyStoreUIPrivate::convertKanjiToHex(value);
+			string convKey = KeyStoreUIPrivate::convertKanjiToHex(value);
 			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;
@@ -1070,7 +1076,7 @@ bool KeyStoreUI::hasChanged(void) const
  * @param filename keys.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
-KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const rp_char *filename)
+KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 {
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
@@ -1128,7 +1134,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const rp_char *filename)
  * @param filename otp.bin filename.
  * @return Key import status.
  */
-KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const rp_char *filename)
+KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 {
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
@@ -1197,7 +1203,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const rp_char *filename)
  * @param filename boot9.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
-KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const rp_char *filename)
+KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 {
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
@@ -1266,7 +1272,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const rp_char *filename)
  * @param filename aeskeydb.bin filename.
  * @return Key import status.
  */
-KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const rp_char *filename)
+KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 {
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
@@ -1461,7 +1467,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const rp_char *filename)
 				int ret = d->verifyKeyData(aesKey->key, verifyData, 16);
 				if (ret == 0) {
 					// Found a match!
-					const rp_string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
+					const string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
 					if (pKey->value != new_value) {
 						pKey->value = new_value;
 						pKey->status = KeyStoreUI::Key::Status_OK;
@@ -1482,7 +1488,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const rp_char *filename)
 			} else {
 				// Can't verify this key...
 				// Import it anyway.
-				const rp_string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
+				const string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
 				if (pKey->value != new_value) {
 					pKey->value = new_value;
 					pKey->status = KeyStoreUI::Key::Status_Unknown;

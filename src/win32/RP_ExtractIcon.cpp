@@ -125,7 +125,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	d->filename = W2RP_cs(pszFileName);
+	d->filename = W2U8(pszFileName);
 
 	// Attempt to open the ROM file.
 	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));

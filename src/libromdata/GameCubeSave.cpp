@@ -34,6 +34,8 @@
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
 #include "librpbase/img/IconAnimData.hpp"
+
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -653,8 +655,8 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for SAV. (MaxDrive)
-	static const uint8_t sav_magic[] = {'D','A','T','E','L','G','C','_','S','A','V','E',0,0,0,0};
-	if (!memcmp(info->header.pData, sav_magic, sizeof(sav_magic))) {
+	static const uint8_t sav_magic[] = "DATELGC_SAVE\x00\x00\x00\x00";
+	if (!memcmp(info->header.pData, sav_magic, sizeof(sav_magic)-1)) {
 		// Is the size correct?
 		// SAVE files are a multiple of 8 KB, plus 192 bytes:
 		// - 128 bytes: SAV-specific header.
@@ -705,16 +707,16 @@ int GameCubeSave::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *GameCubeSave::systemName(unsigned int type) const
+const char *GameCubeSave::systemName(unsigned int type) const
 {
 	RP_D(const GameCubeSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		// FIXME: "NGC" in Japan?
-		_RP("Nintendo GameCube"), _RP("GameCube"), _RP("GCN"), nullptr
+		"Nintendo GameCube", "GameCube", "GCN", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -733,12 +735,12 @@ const rp_char *GameCubeSave::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *GameCubeSave::supportedFileExtensions_static(void)
+const char *const *GameCubeSave::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".gci"),	// USB Memory Adapter
-		_RP(".gcs"),	// GameShark
-		_RP(".sav"),	// MaxDrive (TODO: Too generic?)
+	static const char *const exts[] = {
+		".gci",	// USB Memory Adapter
+		".gcs",	// GameShark
+		".sav",	// MaxDrive (TODO: Too generic?)
 
 		nullptr
 	};
@@ -758,7 +760,7 @@ const rp_char *const *GameCubeSave::supportedFileExtensions_static(void)
  *
  * @return List of all supported file extensions.
  */
-const rp_char *const *GameCubeSave::supportedFileExtensions(void) const
+const char *const *GameCubeSave::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -895,17 +897,17 @@ int GameCubeSave::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string(_RP("Game ID"), latin1_to_rp_string(id6, 6));
+	d->fields->addField_string(C_("GameCubeSave", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Look up the publisher.
-	const rp_char *publisher = NintendoPublishers::lookup(d->direntry.company);
-	d->fields->addField_string(_RP("Publisher"),
-		publisher ? publisher : _RP("Unknown"));
+	const char *publisher = NintendoPublishers::lookup(d->direntry.company);
+	d->fields->addField_string(C_("GameCubeSave", "Publisher"),
+		publisher ? publisher : C_("GameCubeSave", "Unknown"));
 
 	// Filename.
 	// TODO: Remove trailing spaces.
-	d->fields->addField_string(_RP("Filename"),
-		cp1252_sjis_to_rp_string(
+	d->fields->addField_string(C_("GameCubeSave", "Filename"),
+		cp1252_sjis_to_utf8(
 			d->direntry.filename, sizeof(d->direntry.filename)));
 
 	// Description.
@@ -925,8 +927,8 @@ int GameCubeSave::loadFieldData(void)
 			// Found a NULL byte.
 			desc_len = (int)(null_pos - desc_buf);
 		}
-		rp_string desc = cp1252_sjis_to_rp_string(desc_buf, desc_len);
-		desc += _RP_CHR('\n');
+		string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
+		desc += '\n';
 
 		// Check for a NULL byte in the file description.
 		null_pos = static_cast<const char*>(memchr(&desc_buf[32], 0, 32));
@@ -934,13 +936,13 @@ int GameCubeSave::loadFieldData(void)
 			// Found a NULL byte.
 			desc_len = (int)(null_pos - desc_buf - 32);
 		}
-		desc += cp1252_sjis_to_rp_string(&desc_buf[32], desc_len);
+		desc += cp1252_sjis_to_utf8(&desc_buf[32], desc_len);
 
-		d->fields->addField_string(_RP("Description"), desc);
+		d->fields->addField_string(C_("GameCubeSave", "Description"), desc);
 	}
 
 	// Last Modified timestamp.
-	d->fields->addField_dateTime(_RP("Last Modified"),
+	d->fields->addField_dateTime(C_("GameCubeSave", "Last Modified"),
 		(time_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME |
@@ -948,18 +950,18 @@ int GameCubeSave::loadFieldData(void)
 		);
 
 	// File mode.
-	rp_char file_mode[5];
-	file_mode[0] = ((d->direntry.permission & CARD_ATTRIB_GLOBAL) ? _RP_CHR('G') : _RP_CHR('-'));
-	file_mode[1] = ((d->direntry.permission & CARD_ATTRIB_NOMOVE) ? _RP_CHR('M') : _RP_CHR('-'));
-	file_mode[2] = ((d->direntry.permission & CARD_ATTRIB_NOCOPY) ? _RP_CHR('C') : _RP_CHR('-'));
-	file_mode[3] = ((d->direntry.permission & CARD_ATTRIB_PUBLIC) ? _RP_CHR('P') : _RP_CHR('-'));
+	char file_mode[5];
+	file_mode[0] = ((d->direntry.permission & CARD_ATTRIB_GLOBAL) ? 'G' : '-');
+	file_mode[1] = ((d->direntry.permission & CARD_ATTRIB_NOMOVE) ? 'M' : '-');
+	file_mode[2] = ((d->direntry.permission & CARD_ATTRIB_NOCOPY) ? 'C' : '-');
+	file_mode[3] = ((d->direntry.permission & CARD_ATTRIB_PUBLIC) ? 'P' : '-');
 	file_mode[4] = 0;
-	d->fields->addField_string(_RP("Mode"), file_mode, RomFields::STRF_MONOSPACE);
+	d->fields->addField_string(C_("GameCubeSave", "Mode"), file_mode, RomFields::STRF_MONOSPACE);
 
 	// Copy count.
-	d->fields->addField_string_numeric(_RP("Copy Count"), d->direntry.copytimes);
+	d->fields->addField_string_numeric(C_("GameCubeSave", "Copy Count"), d->direntry.copytimes);
 	// Blocks.
-	d->fields->addField_string_numeric(_RP("Blocks"), d->direntry.length);
+	d->fields->addField_string_numeric(C_("GameCubeSave", "Blocks"), d->direntry.length);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();

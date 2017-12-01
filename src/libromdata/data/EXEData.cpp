@@ -37,7 +37,7 @@ class EXEDataPrivate {
 	public:
 		struct MachineType {
 			uint16_t cpu;
-			const rp_char *name;
+			const char *name;
 		};
 		static const MachineType machineTypes_PE[];
 		static const MachineType machineTypes_LE[];
@@ -54,36 +54,36 @@ class EXEDataPrivate {
 // PE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
 const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_PE[] = {
-	{IMAGE_FILE_MACHINE_I386,	_RP("Intel i386")},
-	{IMAGE_FILE_MACHINE_R3000_BE,	_RP("MIPS R3000 (big-endian)")},
-	{IMAGE_FILE_MACHINE_R3000,	_RP("MIPS R3000")},
-	{IMAGE_FILE_MACHINE_R4000,	_RP("MIPS R4000")},
-	{IMAGE_FILE_MACHINE_R10000,	_RP("MIPS R10000")},
-	{IMAGE_FILE_MACHINE_WCEMIPSV2,	_RP("MIPS (WCE v2)")},
-	{IMAGE_FILE_MACHINE_ALPHA,	_RP("DEC Alpha AXP")},
-	{IMAGE_FILE_MACHINE_SH3,	_RP("Hitachi SH3")},
-	{IMAGE_FILE_MACHINE_SH3DSP,	_RP("Hitachi SH3 DSP")},
-	{IMAGE_FILE_MACHINE_SH3E,	_RP("Hitachi SH3E")},
-	{IMAGE_FILE_MACHINE_SH4,	_RP("Hitachi SH4")},
-	{IMAGE_FILE_MACHINE_SH5,	_RP("Hitachi SH5")},
-	{IMAGE_FILE_MACHINE_ARM,	_RP("ARM")},
-	{IMAGE_FILE_MACHINE_THUMB,	_RP("ARM Thumb")},
-	{IMAGE_FILE_MACHINE_ARMNT,	_RP("ARM Thumb-2")},
-	{IMAGE_FILE_MACHINE_AM33,	_RP("Matsushita AM33")},
-	{IMAGE_FILE_MACHINE_POWERPC,	_RP("PowerPC")},
-	{IMAGE_FILE_MACHINE_POWERPCFP,	_RP("PowerPC with FPU")},
-	{IMAGE_FILE_MACHINE_IA64,	_RP("Intel Itanium")},
-	{IMAGE_FILE_MACHINE_MIPS16,	_RP("MIPS16")},
-	{IMAGE_FILE_MACHINE_ALPHA64,	_RP("DEC Alpha AXP (64-bit)")},
-	{IMAGE_FILE_MACHINE_MIPSFPU,	_RP("MIPS with FPU")},
-	{IMAGE_FILE_MACHINE_MIPSFPU16,	_RP("MIPS16 with FPU")},
-	{IMAGE_FILE_MACHINE_TRICORE,	_RP("Infineon TriCore")},
-	{IMAGE_FILE_MACHINE_CEF,	_RP("Common Executable Format")},
-	{IMAGE_FILE_MACHINE_EBC,	_RP("EFI Byte Code")},
-	{IMAGE_FILE_MACHINE_AMD64,	_RP("AMD64")},
-	{IMAGE_FILE_MACHINE_M32R,	_RP("Mitsubishi M32R")},
-	{IMAGE_FILE_MACHINE_ARM64,	_RP("ARM (64-bit)")},
-	{IMAGE_FILE_MACHINE_CEE,	_RP("MSIL")},
+	{IMAGE_FILE_MACHINE_I386,	"Intel i386"},
+	{IMAGE_FILE_MACHINE_R3000_BE,	"MIPS R3000 (big-endian)"},
+	{IMAGE_FILE_MACHINE_R3000,	"MIPS R3000"},
+	{IMAGE_FILE_MACHINE_R4000,	"MIPS R4000"},
+	{IMAGE_FILE_MACHINE_R10000,	"MIPS R10000"},
+	{IMAGE_FILE_MACHINE_WCEMIPSV2,	"MIPS (WCE v2)"},
+	{IMAGE_FILE_MACHINE_ALPHA,	"DEC Alpha AXP"},
+	{IMAGE_FILE_MACHINE_SH3,	"Hitachi SH3"},
+	{IMAGE_FILE_MACHINE_SH3DSP,	"Hitachi SH3 DSP"},
+	{IMAGE_FILE_MACHINE_SH3E,	"Hitachi SH3E"},
+	{IMAGE_FILE_MACHINE_SH4,	"Hitachi SH4"},
+	{IMAGE_FILE_MACHINE_SH5,	"Hitachi SH5"},
+	{IMAGE_FILE_MACHINE_ARM,	"ARM"},
+	{IMAGE_FILE_MACHINE_THUMB,	"ARM Thumb"},
+	{IMAGE_FILE_MACHINE_ARMNT,	"ARM Thumb-2"},
+	{IMAGE_FILE_MACHINE_AM33,	"Matsushita AM33"},
+	{IMAGE_FILE_MACHINE_POWERPC,	"PowerPC"},
+	{IMAGE_FILE_MACHINE_POWERPCFP,	"PowerPC with FPU"},
+	{IMAGE_FILE_MACHINE_IA64,	"Intel Itanium"},
+	{IMAGE_FILE_MACHINE_MIPS16,	"MIPS16"},
+	{IMAGE_FILE_MACHINE_ALPHA64,	"DEC Alpha AXP (64-bit)"},
+	{IMAGE_FILE_MACHINE_MIPSFPU,	"MIPS with FPU"},
+	{IMAGE_FILE_MACHINE_MIPSFPU16,	"MIPS16 with FPU"},
+	{IMAGE_FILE_MACHINE_TRICORE,	"Infineon TriCore"},
+	{IMAGE_FILE_MACHINE_CEF,	"Common Executable Format"},
+	{IMAGE_FILE_MACHINE_EBC,	"EFI Byte Code"},
+	{IMAGE_FILE_MACHINE_AMD64,	"AMD64"},
+	{IMAGE_FILE_MACHINE_M32R,	"Mitsubishi M32R"},
+	{IMAGE_FILE_MACHINE_ARM64,	"ARM (64-bit)"},
+	{IMAGE_FILE_MACHINE_CEE,	"MSIL"},
 
 	{0, nullptr}
 };
@@ -91,15 +91,15 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_PE[] = {
 // LE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
 const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_LE[] = {
-	{LE_CPU_80286,		_RP("Intel i286")},
-	{LE_CPU_80386,		_RP("Intel i386")},
-	{LE_CPU_80486,		_RP("Intel i486")},
-	{LE_CPU_80586,		_RP("Intel Pentium")},
-	{LE_CPU_i860_N10,	_RP("Intel i860 XR (N10)")},
-	{LE_CPU_i860_N11,	_RP("Intel i860 XP (N11)")},
-	{LE_CPU_MIPS_I,		_RP("MIPS Mark I (R2000, R3000")},
-	{LE_CPU_MIPS_II,	_RP("MIPS Mark II (R6000)")},
-	{LE_CPU_MIPS_III,	_RP("MIPS Mark III (R4000)")},
+	{LE_CPU_80286,		"Intel i286"},
+	{LE_CPU_80386,		"Intel i386"},
+	{LE_CPU_80486,		"Intel i486"},
+	{LE_CPU_80586,		"Intel Pentium"},
+	{LE_CPU_i860_N10,	"Intel i860 XR (N10)"},
+	{LE_CPU_i860_N11,	"Intel i860 XP (N11)"},
+	{LE_CPU_MIPS_I,		"MIPS Mark I (R2000, R3000"},
+	{LE_CPU_MIPS_II,	"MIPS Mark II (R6000)"},
+	{LE_CPU_MIPS_III,	"MIPS Mark III (R4000)"},
 
 	{0, nullptr}
 };
@@ -124,7 +124,7 @@ int RP_C_API EXEDataPrivate::MachineType_compar(const void *a, const void *b)
  * @param cpu PE machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const rp_char *EXEData::lookup_pe_cpu(uint16_t cpu)
+const char *EXEData::lookup_pe_cpu(uint16_t cpu)
 {
 	// Do a binary search.
 	const EXEDataPrivate::MachineType key = {cpu, nullptr};
@@ -142,7 +142,7 @@ const rp_char *EXEData::lookup_pe_cpu(uint16_t cpu)
  * @param cpu LE machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const rp_char *EXEData::lookup_le_cpu(uint16_t cpu)
+const char *EXEData::lookup_le_cpu(uint16_t cpu)
 {
 	// Do a binary search.
 	const EXEDataPrivate::MachineType key = {cpu, nullptr};

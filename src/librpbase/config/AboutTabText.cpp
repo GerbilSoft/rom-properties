@@ -24,10 +24,6 @@
 
 namespace LibRpBase {
 
-// NOTE: Can't use rp_char here due to MSVC 2010 issues.
-// These strings will have to be converted to rp_char at runtime.
-// These are UTF-8 strings.
-
 // Program version string.
 const char AboutTabText::prg_version[] = RP_VERSION_STRING;
 
@@ -52,11 +48,11 @@ const char AboutTabText::git_describe[] = "";
  */
 const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 	// Developers
-	{CT_DEVELOPER,		_RP("David Korth"), _RP("mailto:gerbilsoft@gerbilsoft.com"), _RP("gerbilsoft@gerbilsoft.com"), nullptr},
-	{CT_CONTINUE,		_RP("Egor"), _RP("mailto:egor@opensrc.club"), _RP("egor@opensrc.club"), nullptr},
+	{CT_DEVELOPER,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
+	{CT_CONTINUE,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
 
 	// Contributors
-	{CT_CONTRIBUTOR,	_RP("CheatFreak47"), nullptr, nullptr, nullptr},
+	{CT_CONTRIBUTOR,	"CheatFreak47", nullptr, nullptr, nullptr},
 
 	// End of list
 	{CT_MAX, nullptr, nullptr, nullptr, nullptr}
@@ -69,9 +65,9 @@ const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
  * Ends with nullptr.
  */
 const AboutTabText::SupportSite_t AboutTabText::SupportSites[] = {
-	{_RP("GitHub: GerbilSoft/rom-properties"), _RP("https://github.com/GerbilSoft/rom-properties")},
-	{_RP("Sonic Retro"), _RP("https://forums.sonicretro.org/index.php?showtopic=35692")},
-	{_RP("GBAtemp"), _RP("https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/")},
+	{"GitHub: GerbilSoft/rom-properties", "https://github.com/GerbilSoft/rom-properties"},
+	{"Sonic Retro", "https://forums.sonicretro.org/index.php?showtopic=35692"},
+	{"GBAtemp", "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
 
 	{nullptr, nullptr}
 };

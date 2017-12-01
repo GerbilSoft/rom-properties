@@ -29,6 +29,8 @@
 
 // C++ includes.
 #include <algorithm>
+#include <string>
+using std::string;
 
 namespace LibRpBase { namespace FileSystem {
 
@@ -47,15 +49,15 @@ namespace LibRpBase { namespace FileSystem {
  * @param ext		[in] New extension, including leading dot.
  * @return IRpFile*, or nullptr if not found.
  */
-IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const rp_char *ext)
+IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext)
 {
 	if (!filename || !ext)
 		return nullptr;
 
 	// Get the directory portion of the filename.
-	rp_string s_dir = filename;
-	size_t slash_pos = s_dir.find_last_of(_RP_CHR(DIR_SEP_CHR));
-	if (slash_pos != rp_string::npos) {
+	string s_dir = filename;
+	size_t slash_pos = s_dir.find_last_of(DIR_SEP_CHR);
+	if (slash_pos != string::npos) {
 		s_dir.resize(slash_pos+1);
 	} else {
 		// No directory. Probably a filename in the
@@ -64,21 +66,21 @@ IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const
 	}
 
 	// Get the base name.
-	rp_string s_basename;
+	string s_basename;
 	if (basename) {
 		s_basename = basename;
 	} else {
 		s_basename = &filename[slash_pos+1];
 
 		// Check for any dots.
-		size_t dot_pos = s_basename.find_last_of(_RP_CHR('.'));
-		if (dot_pos != rp_string::npos) {
+		size_t dot_pos = s_basename.find_last_of('.');
+		if (dot_pos != string::npos) {
 			// Remove the extension.
 			s_basename.resize(dot_pos);
 		}
 	}
 
-	rp_string s_ext = ext;
+	string s_ext = ext;
 #ifndef _WIN32
 	// Check for uppercase extensions first.
 # ifdef RP_UTF16
@@ -89,7 +91,7 @@ IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const
 #endif /* !_WIN32 */
 
 	// Attempt to open the related file.
-	rp_string rel_filename = s_dir + s_basename + s_ext;
+	string rel_filename = s_dir + s_basename + s_ext;
 	IRpFile *test_file = new RpFile(rel_filename, RpFile::FM_OPEN_READ);
 	if (!test_file->isOpen()) {
 		// Error opening the related file.
@@ -120,7 +122,7 @@ IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const
 		// Could not open the related file, but the
 		// primary file is a symlink. Dereference the
 		// symlink and check the original directory.
-		rp_string deref_filename = FileSystem::resolve_symlink(filename);
+		string deref_filename = FileSystem::resolve_symlink(filename);
 		if (!deref_filename.empty()) {
 			test_file = openRelatedFile(deref_filename.c_str(), basename, ext);
 		}

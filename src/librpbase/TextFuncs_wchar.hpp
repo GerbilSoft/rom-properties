@@ -39,7 +39,9 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/common.h"
 
-#if defined(RP_UTF8)
+#ifndef RP_WIS16
+#error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
+#endif /* RP_WIS16 */
 
 /**
  * Get const wchar_t* from const rp_char*.
@@ -59,132 +61,29 @@
 	(reinterpret_cast<const wchar_t*>( \
 		LibRpBase::rp_string_to_utf16(rps).c_str()))
 
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @return const rp_char*
- */
-#define W2RP_c(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), -1).c_str())
-
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @param len Length of wcs.
- * @return const rp_char*
- */
-#define W2RP_cl(wcs, len) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), len).c_str())
-
-/**
- * Get const rp_char* from std::wstring.
- * @param wcs std::wstring
- * @return const rp_char*
- */
-#define W2RP_s(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()).c_str())
-
 // FIXME: In-place conversion of std::u16string to std::wstring?
 
 /**
- * Get rp_string from const wchar_t*.
+ * Get std::string (UTF-8) from const wchar_t*.
  * @param wcs const wchar_t*
- * @return rp_string
+ * @param len Length. (If -1, assuming this is a C string.)
+ * @return std::string (UTF-8)
  */
-#define W2RP_cs(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), -1))
+static inline std::string W2U8(const wchar_t *wcs, int len = -1)
+{
+	return LibRpBase::utf16_to_rp_string(
+		reinterpret_cast<const char16_t*>(wcs), len);
+}
 
 /**
- * Get rp_string from std::wstring.
+ * Get std::string (UTF-8) from std::wstring.
  * @param wcs std::wstring
- * @return rp_string
+ * @return std::string (UTF-8)
  */
-#define W2RP_ss(wcs) \
-	(LibRpBase::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()))
-
-#elif defined(RP_UTF16)
-
-/**
- * Get const wchar_t* from const rp_char*.
- * @param str const rp_char*
- * @return const wchar_t*
- */
-static inline const wchar_t *RP2W_c(const rp_char *str)
+static inline std::string W2U8(const std::wstring &wcs)
 {
-	return reinterpret_cast<const wchar_t*>(str);
+	return LibRpBase::utf16_to_rp_string(
+		reinterpret_cast<const char16_t*>(wcs.data()), wcs.size());
 }
-
-/**
- * Get const wchar_t* from rp_string.
- * @param rps rp_string
- * @return const wchar_t*
- */
-static inline const wchar_t *RP2W_s(const LibRpBase::rp_string &rps)
-{
-	return reinterpret_cast<const wchar_t*>(rps.c_str());
-}
-
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @return const rp_char*
- */
-static inline const rp_char *W2RP_c(const wchar_t *wcs)
-{
-	return reinterpret_cast<const rp_char*>(wcs);
-}
-
-/**
- * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*
- * @param len Length of wcs.
- * @return const rp_char*
- */
-static inline const rp_char *W2RP_cl(const wchar_t *wcs, int len)
-{
-	RP_UNUSED(len);
-	return reinterpret_cast<const rp_char*>(wcs);
-}
-
-/**
- * Get const rp_char* from std::wstring.
- * @param wcs std::wstring
- * @return const rp_char*
- */
-static inline const rp_char *W2RP_s(const std::wstring &wcs)
-{
-	return reinterpret_cast<const rp_char*>(wcs.c_str());
-}
-
-// FIXME: In-place conversion of std::u16string to std::wstring?
-
-/**
- * Get rp_string from const wchar_t*.
- * @param wcs const wchar_t*
- * @return const rp_char*
- */
-static inline const LibRpBase::rp_string W2RP_cs(const wchar_t *wcs)
-{
-	return LibRpBase::rp_string(
-		reinterpret_cast<const rp_char*>(wcs));
-}
-
-/**
- * Get const rp_char* from std::wstring.
- * @param wcs std::wstring
- * @return const rp_char*
- */
-static inline const LibRpBase::rp_string W2RP_ss(const std::wstring &wcs)
-{
-	return LibRpBase::rp_string(
-		reinterpret_cast<const rp_char*>(wcs.data()), wcs.size());
-}
-
-#endif /* RP_UTF16 */
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__ */

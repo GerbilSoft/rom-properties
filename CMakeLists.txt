@@ -106,6 +106,13 @@ INCLUDE(CheckPNG)
 INCLUDE(CheckJPEG)
 INCLUDE(CheckTinyXML2)
 
+# TODO: Internal copy of gettext for Windows.
+IF(ENABLE_NLS)
+	FIND_PACKAGE(Intl)
+	FIND_PACKAGE(Gettext)
+	ADD_SUBDIRECTORY(locale)
+ENDIF(ENABLE_NLS)
+
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)
 ADD_SUBDIRECTORY(src)
@@ -114,6 +121,15 @@ ADD_SUBDIRECTORY(doc)
 # TODO: Print build summary indicating what plugins will be built.
 # (Some other project had something like this...)
 # TODO: Fail if no plugins are being built.
+
+# Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
+########### Add uninstall target ###############
+CONFIGURE_FILE(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
+	IMMEDIATE @ONLY)
+ADD_CUSTOM_TARGET(uninstall
+	"${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
 
 # CPack settings.
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${DESCRIPTION}")
@@ -169,11 +185,12 @@ ELSEIF(WIN32)
 ENDIF()
 
 # Components.
-SET(CPACK_COMPONENTS_ALL dll program debug doc)
+SET(CPACK_COMPONENTS_ALL dll program debug doc i18n)
 SET(CPACK_COMPONENT_DLL_DISPLAY_NAME "DLLs")
 SET(CPACK_COMPONENT_PROGRAM_DISPLAY_NAME "Programs")
 SET(CPACK_COMPONENT_DEBUG_DISPLAY_NAME "Debugging Symbols")
 SET(CPACK_COMPONENT_DOC_DISPLAY_NAME "Documents")
+SET(CPACK_COMPONENT_I18N_DISPLAY_NAME "Internationalization")
 
 # Initialize CPack.
 INCLUDE(CPack)

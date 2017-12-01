@@ -1,4 +1,4 @@
-\/***************************************************************************
+/***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
@@ -63,6 +63,7 @@ using LibRomData::RomDataFactory;
 #include <vector>
 #include <list>
 using std::list;
+using std::string;
 using std::unique_ptr;
 using std::vector;
 using std::wstring;
@@ -324,7 +325,7 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
  * @param ext File extension.
  * @return Overridden file association ProgID, or empty string if none.
  */
-static wstring GetUserFileAssoc(const wstring &sid, const rp_char *ext)
+static wstring GetUserFileAssoc(const wstring &sid, const char *ext)
 {
 	// Check if the user has already associated this file extension.
 	// TODO: Check all users.
@@ -391,8 +392,9 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
+	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info = {
-		(const rp_char*)progID.c_str(),
+		progID_u8.c_str(),
 		ext_info.hasThumbnail
 	};
 
@@ -469,8 +471,9 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
+	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info = {
-		(const rp_char*)progID.c_str(),
+		progID_u8.c_str(),
 		ext_info.hasThumbnail
 	};
 

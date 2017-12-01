@@ -28,8 +28,11 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
+
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -772,7 +775,7 @@ int SegaPVR::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *SegaPVR::systemName(unsigned int type) const
+const char *SegaPVR::systemName(unsigned int type) const
 {
 	RP_D(const SegaPVR);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -783,10 +786,10 @@ const rp_char *SegaPVR::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SegaPVR::systemName() array index optimization needs to be updated.");
 
-	static const rp_char *const sysNames[12] = {
-		_RP("Sega Dreamcast PVR"), _RP("Sega PVR"), _RP("PVR"), nullptr,
-		_RP("Sega GVR for GameCube"), _RP("Sega GVR"), _RP("GVR"), nullptr,
-		_RP("Sega PVRX for Xbox"), _RP("Sega PVRX"), _RP("PVRX"), nullptr,
+	static const char *const sysNames[12] = {
+		"Sega Dreamcast PVR", "Sega PVR", "PVR", nullptr,
+		"Sega GVR for GameCube", "Sega GVR", "GVR", nullptr,
+		"Sega PVRX for Xbox", "Sega PVRX", "PVRX", nullptr,
 	};
 
 	unsigned int idx = (d->pvrType << 2) | (type & SYSNAME_TYPE_MASK);
@@ -811,11 +814,11 @@ const rp_char *SegaPVR::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *SegaPVR::supportedFileExtensions_static(void)
+const char *const *SegaPVR::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".pvr"),	// Sega Dreamcast PVR
-		_RP(".gvr"),	// GameCube GVR
+	static const char *const exts[] = {
+		".pvr",	// Sega Dreamcast PVR
+		".gvr",	// GameCube GVR
 
 		nullptr
 	};
@@ -835,7 +838,7 @@ const rp_char *const *SegaPVR::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *SegaPVR::supportedFileExtensions(void) const
+const char *const *SegaPVR::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -938,19 +941,19 @@ int SegaPVR::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Texture size.
-	d->fields->addField_string(_RP("Texture Size"),
+	d->fields->addField_string(C_("SegaPVR", "Texture Size"),
 		rp_sprintf("%ux%u", pvrHeader->width, pvrHeader->height));
 
 	// Pixel format.
-	static const rp_char *const pxfmt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][8] = {
+	static const char *const pxfmt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][8] = {
 		// Sega Dreamcast PVR
-		{_RP("ARGB1555"), _RP("RGB565"),
-		 _RP("ARGB4444"), _RP("YUV422"),
-		 _RP("BUMP"), _RP("4-bit per pixel"),
-		 _RP("8-bit per pixel"), nullptr},
+		{"ARGB1555", "RGB565",
+		 "ARGB4444", "YUV422",
+		 "BUMP", "4-bit per pixel",
+		 "8-bit per pixel", nullptr},
 
 		// GameCube GVR
-		{_RP("IA8"), _RP("RGB565"), _RP("RGB5A3"),
+		{"IA8", "RGB565", "RGB5A3",
 		 nullptr, nullptr, nullptr, nullptr, nullptr},
 
 		// Xbox PVRX (TODO)
@@ -959,45 +962,45 @@ int SegaPVR::loadFieldData(void)
 	};
 
 	// Image data type.
-	static const rp_char *const idt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][0x13] = {
+	static const char *const idt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][0x13] = {
 		// Sega Dreamcast PVR
 		{
-			nullptr,					// 0x00
-			_RP("Square (Twiddled)"),			// 0x01
-			_RP("Square (Twiddled, Mipmap)"),		// 0x02
-			_RP("Vector Quantized"),			// 0x03
-			_RP("Vector Quantized (Mipmap)"),		// 0x04
-			_RP("8-bit Paletted (Twiddled)"),		// 0x05
-			_RP("4-bit Paletted (Twiddled)"),		// 0x06
-			_RP("8-bit (Twiddled)"),			// 0x07
-			_RP("4-bit (Twiddled)"),			// 0x08
-			_RP("Rectangle"),				// 0x09
-			nullptr,					// 0x0A
-			_RP("Rectangle (Stride)"),			// 0x0B
-			nullptr,					// 0x0C
-			_RP("Rectangle (Twiddled)"),			// 0x0D
-			nullptr,					// 0x0E
-			nullptr,					// 0x0F
-			_RP("Small VQ"),				// 0x10
-			_RP("Small VQ (Mipmap)"),			// 0x11
-			_RP("Square (Twiddled, Mipmap) (Alt)"),		// 0x12
+			nullptr,				// 0x00
+			"Square (Twiddled)",			// 0x01
+			"Square (Twiddled, Mipmap)",		// 0x02
+			"Vector Quantized",			// 0x03
+			"Vector Quantized (Mipmap)",		// 0x04
+			"8-bit Paletted (Twiddled)",		// 0x05
+			"4-bit Paletted (Twiddled)",		// 0x06
+			"8-bit (Twiddled)",			// 0x07
+			"4-bit (Twiddled)",			// 0x08
+			"Rectangle",				// 0x09
+			nullptr,				// 0x0A
+			"Rectangle (Stride)",			// 0x0B
+			nullptr,				// 0x0C
+			"Rectangle (Twiddled)",			// 0x0D
+			nullptr,				// 0x0E
+			nullptr,				// 0x0F
+			"Small VQ",				// 0x10
+			"Small VQ (Mipmap)",			// 0x11
+			"Square (Twiddled, Mipmap) (Alt)",	// 0x12
 		},
 
 		// GameCube GVR
 		{
-			_RP("I4"),		// 0x00
-			_RP("I8"),		// 0x01
-			_RP("IA4"),		// 0x02
-			_RP("IA8"),		// 0x03
-			_RP("RGB565"),		// 0x04
-			_RP("RGB5A3"),		// 0x05
-			_RP("ARGB8888"),	// 0x06
+			"I4",			// 0x00
+			"I8",			// 0x01
+			"IA4",			// 0x02
+			"IA8",			// 0x03
+			"RGB565",		// 0x04
+			"RGB5A3",		// 0x05
+			"ARGB8888",		// 0x06
 			nullptr,		// 0x07
-			_RP("CI4"),		// 0x08
-			_RP("CI8"),		// 0x09
+			"CI4",			// 0x08
+			"CI8",			// 0x09
 			nullptr, nullptr,	// 0x0A,0x0B
 			nullptr, nullptr,	// 0x0C,0x0D
-			_RP("DXT1"),		// 0x0E
+			"DXT1",			// 0x0E
 			nullptr, nullptr,	// 0x0F,0x10
 			nullptr, nullptr, 	// 0x11,0x12
 		},
@@ -1021,8 +1024,8 @@ int SegaPVR::loadFieldData(void)
 		img_data_type = pvrHeader->pvr.img_data_type;
 	}
 
-	const rp_char *pxfmt = nullptr;
-	const rp_char *idt = nullptr;
+	const char *pxfmt = nullptr;
+	const char *idt = nullptr;
 	if (d->pvrType >= 0 && d->pvrType < SegaPVRPrivate::PVR_TYPE_MAX) {
 		if (px_format < 8) {
 			pxfmt = pxfmt_tbl[d->pvrType][px_format];
@@ -1036,23 +1039,23 @@ int SegaPVR::loadFieldData(void)
 	const bool hasPxFmt = (d->pvrType != SegaPVRPrivate::PVR_TYPE_GVR);
 	if (hasPxFmt) {
 		if (pxfmt) {
-			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
+			d->fields->addField_string(C_("SegaPVR", "Pixel Format"), pxfmt);
 		} else {
-			d->fields->addField_string(_RP("Pixel Format"),
-				rp_sprintf("Unknown (0x%02X)", px_format));
+			d->fields->addField_string(C_("SegaPVR", "Pixel Format"),
+				rp_sprintf(C_("SegaPVR", "Unknown (0x%02X)"), px_format));
 		}
 	}
 
 	if (idt) {
-		d->fields->addField_string(_RP("Image Data Type"), idt);
+		d->fields->addField_string(C_("SegaPVR", "Image Data Type"), idt);
 	} else {
-		d->fields->addField_string(_RP("Image Data Type"),
-			rp_sprintf("Unknown (0x%02X)", img_data_type));
+		d->fields->addField_string(C_("SegaPVR", "Image Data Type"),
+			rp_sprintf(C_("SegaPVR", "Unknown (0x%02X)"), img_data_type));
 	}
 
 	// Global index (if present).
 	if (d->gbix_len > 0) {
-		d->fields->addField_string_numeric(_RP("Global Index"),
+		d->fields->addField_string_numeric(C_("SegaPVR", "Global Index"),
 			d->gbix, RomFields::FB_DEC, 0);
 	}
 

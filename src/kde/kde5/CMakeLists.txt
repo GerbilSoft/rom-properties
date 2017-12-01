@@ -4,6 +4,9 @@ PROJECT(rom-properties-kde5)
 # Find KDE5 Extra CMake Modules.
 FIND_PACKAGE(ECM 0.0.11 NO_MODULE)
 IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
+	# Make sure ECM's CMake files don't create an uninstall rule.
+	SET(KDE_SKIP_UNINSTALL_TARGET TRUE)
+
 	# Don't add KDE tests to the CTest build.
 	SET(KDE_SKIP_TEST_SETTINGS TRUE)
 
@@ -81,6 +84,7 @@ SET(rom-properties-kde5_SRCS
 IF(COMMAND QT5_WRAP_UI)
 	# Wrap UI files.
 	QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde5_UIS})
+	ADD_CUSTOM_TARGET(kde5_generate_ui_h DEPENDS ${rom-properties-kde5_UIS_H})
 ENDIF(COMMAND QT5_WRAP_UI)
 
 #####################
@@ -104,7 +108,7 @@ IF(BUILD_KDE5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr16 romdata16 rpbase16)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr romdata rpbase)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 ${ZLIB_LIBRARY})
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 KF5::KIOWidgets)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 Qt5::Widgets Qt5::Gui Qt5::Core)

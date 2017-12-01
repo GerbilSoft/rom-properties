@@ -38,6 +38,8 @@
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
 #include "librpbase/img/IconAnimData.hpp"
+
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -358,16 +360,16 @@ int PlayStationSave::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *PlayStationSave::systemName(unsigned int type) const
+const char *PlayStationSave::systemName(unsigned int type) const
 {
 	RP_D(const PlayStationSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
+	static const char *const sysNames[4] = {
 		// TODO: PS1 or PSX?
-		_RP("Sony PlayStation"), _RP("PlayStation"), _RP("PS1"), nullptr
+		"Sony PlayStation", "PlayStation", "PS1", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -386,12 +388,13 @@ const rp_char *PlayStationSave::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *PlayStationSave::supportedFileExtensions_static(void)
+const char *const *PlayStationSave::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".psv"),
-		_RP(".mcb"), _RP(".mcx"), _RP(".pda"), _RP(".psx"),
-		_RP(".mcs"), _RP(".ps1"),
+	static const char *const exts[] = {
+		".psv",
+		".mcb", ".mcx", ".pda", ".psx",
+		".mcs", ".ps1",
+
 		// TODO: support RAW?
 		nullptr
 	};
@@ -411,7 +414,7 @@ const rp_char *const *PlayStationSave::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *PlayStationSave::supportedFileExtensions(void) const
+const char *const *PlayStationSave::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -555,12 +558,13 @@ int PlayStationSave::loadFieldData(void)
 	}
 
 	if (filename) {
-		d->fields->addField_string(_RP("Filename"), cp1252_sjis_to_rp_string(filename, 20));
+		d->fields->addField_string(C_("PlayStationSave", "Filename"),
+			cp1252_sjis_to_utf8(filename, 20));
 	}
 
 	// Description.
-	d->fields->addField_string(_RP("Description"),
-		cp1252_sjis_to_rp_string(scHeader->title, sizeof(scHeader->title)));
+	d->fields->addField_string(C_("PlayStationSave", "Description"),
+		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
 
 	// TODO: Moar fields.
 

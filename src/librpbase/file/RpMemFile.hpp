@@ -123,7 +123,7 @@ class RpMemFile : public IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		virtual rp_string filename(void) const override final;
+		virtual std::string filename(void) const override final;
 
 	protected:
 		const void *m_buf;	// Memory buffer.

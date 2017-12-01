@@ -39,6 +39,9 @@
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/disc/WiiPartition.hpp"
 #include "libromdata/crypto/CtrKeyScrambler.hpp"
@@ -342,7 +345,7 @@ void KeyManagerTabPrivate::initUI(void)
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
-		SetWindowText(hBtnImport, L"Import...");
+		SetWindowText(hBtnImport, RP2W_c(C_("KeyManagerTab", "Import...")));
 	}
 
 	// Initialize the ListView.
@@ -361,21 +364,26 @@ void KeyManagerTabPrivate::initUI(void)
 	ListView_SetItemCountEx(hListView, keyStore->totalKeyCount(),
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
-	// Column 0: Key Name.
+	// Column title.
+	wstring wsColTitle;
+
+	// tr: Column 0: Key Name.
+	wsColTitle = RP2W_c(C_("KeyManagerTab", "Key Name"));
 	LVCOLUMN lvCol;
 	memset(&lvCol, 0, sizeof(lvCol));
 	lvCol.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
 	lvCol.fmt = LVCFMT_LEFT;
-	lvCol.pszText = L"Key Name";
+	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 0, &lvCol);
 
-	// Column 1: Value.
-	lvCol.pszText = L"Value";
+	// tr: Column 1: Value.
+	wsColTitle = RP2W_c(C_("KeyManagerTab", "Value"));
+	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 1, &lvCol);
 
-	// Column 2: Verification status.
-	// TODO: Draw an icon.
-	lvCol.pszText = L"Valid?";
+	// tr: Column 2: Verification status.
+	wsColTitle = RP2W_c(C_("KeyManagerTab", "Valid?"));
+	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
 	if (isComCtl32_610) {
@@ -416,8 +424,9 @@ void KeyManagerTabPrivate::initUI(void)
 			lvGroup.mask = LVGF_ALIGN | LVGF_GROUPID | LVGF_HEADER | LVGF_ITEMS;
 			lvGroup.uAlign = LVGA_HEADER_LEFT;
 			for (int sectIdx = 0; sectIdx < keyStore->sectCount(); sectIdx++) {
+				const wstring sectName = RP2W_c(keyStore->sectName(sectIdx));
 				lvGroup.iGroupId = sectIdx;
-				lvGroup.pszHeader = const_cast<LPWSTR>(RP2W_c(keyStore->sectName(sectIdx)));
+				lvGroup.pszHeader = const_cast<LPWSTR>(sectName.c_str());
 				lvGroup.cItems = keyStore->keyCount(sectIdx);
 				ListView_InsertGroup(hListView, sectIdx, &lvGroup);
 			}
@@ -586,7 +595,7 @@ void KeyManagerTabPrivate::save(void)
 
 	// NOTE: This may re-check the configuration timestamp.
 	const KeyManager *const keyManager = KeyManager::instance();
-	const rp_char *const filename = keyManager->filename();
+	const char *const filename = keyManager->filename();
 	assert(filename != nullptr);
 	if (!filename) {
 		// No configuration filename...
@@ -1065,7 +1074,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			wchar_t buf[128];
 			buf[0] = 0;
 			GetWindowText(hWnd, buf, ARRAY_SIZE(buf));
-			d->keyStore->setKey(d->iEditItem, W2RP_cs(buf));
+			d->keyStore->setKey(d->iEditItem, W2U8(buf));
 
 			// Item is no longer being edited.
 			d->iEditItem = -1;
@@ -1418,6 +1427,9 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// tr: Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1426,14 +1438,14 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select Wii keys.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii keys.bin", iret);
 }
@@ -1451,6 +1463,9 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// tr: Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1459,14 +1474,14 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select Wii U otp.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii U otp.bin", iret);
 }
@@ -1484,6 +1499,9 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// tr: Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1492,14 +1510,14 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select 3DS boot9.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS boot9.bin", iret);
 }
@@ -1517,6 +1535,9 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
+	// tr: Dialog title.
+	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
+
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
@@ -1525,14 +1546,14 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrTitle = L"Select 3DS aeskeydb.bin File";
+	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
 
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2RP_c(filename));
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS aeskeydb.bin", iret);
 }
@@ -1565,13 +1586,16 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// tr: Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("KeyManagerTab", "Key Manager"));
+
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_KEYMANAGER);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"Key Manager";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = KeyManagerTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

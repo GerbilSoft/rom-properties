@@ -37,6 +37,9 @@
 using LibRpBase::RomData;
 using LibRpBase::RpFile;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -54,36 +57,41 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 #else /* QT_VERSION < 0x050000 */
 	KUrl url = props->kurl();
 #endif
-	if (url.isValid() && url.isLocalFile()) {
-		// Single file, and it's local.
-		// Open it and read the first 65536+512 bytes.
-		// TODO: Use KIO and transparent decompression?
-		QString filename = url.toLocalFile();
-		if (!filename.isEmpty()) {
-			// TODO: RpQFile wrapper.
-			// For now, using RpFile, which is an stdio wrapper.
-			unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
-			if (file && file->isOpen()) {
-				// Get the appropriate RomData class for this ROM.
-				// file is dup()'d by RomData.
-				RomData *romData = RomDataFactory::create(file.get());
-				if (romData) {
-					// ROM is supported. Show the properties.
-					RomDataView *romDataView = new RomDataView(romData, props);
-					props->addPage(romDataView, tr("ROM Properties"));
+	if (!url.isValid() || !url.isLocalFile())
+		return;
 
-					// Make sure the underlying file handle is closed,
-					// since we don't need it once the RomData has been
-					// loaded by RomDataView.
-					romData->close();
+	// Single file, and it's local.
+	// Open it and read the first 65536+512 bytes.
+	// TODO: Use KIO and transparent decompression?
+	QString filename = url.toLocalFile();
+	if (filename.isEmpty())
+		return;
 
-					// RomDataView takes a reference to the RomData object.
-					// We don't need to hold on to it.
-					romData->unref();
-				}
-			}
-		}
-	}
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen())
+		return;
+
+	// Get the appropriate RomData class for this ROM.
+	// file is dup()'d by RomData.
+	RomData *romData = RomDataFactory::create(file.get());
+	if (!romData)
+		return;
+
+	// ROM is supported. Show the properties.
+	RomDataView *romDataView = new RomDataView(romData, props);
+	// tr: Tab title.
+	props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
+
+	// Make sure the underlying file handle is closed,
+	// since we don't need it once the RomData has been
+	// loaded by RomDataView.
+	romData->close();
+
+	// RomDataView takes a reference to the RomData object.
+	// We don't need to hold on to it.
+	romData->unref();
 }
 
 RomPropertiesDialogPlugin::~RomPropertiesDialogPlugin()

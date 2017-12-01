@@ -94,7 +94,7 @@ CacheManager::~CacheManager()
  * Get the proxy server.
  * @return Proxy server URL.
  */
-rp_string CacheManager::proxyUrl(void) const
+string CacheManager::proxyUrl(void) const
 {
 	return m_proxyUrl;
 }
@@ -103,7 +103,7 @@ rp_string CacheManager::proxyUrl(void) const
  * Set the proxy server.
  * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
  */
-void CacheManager::setProxyUrl(const rp_char *proxyUrl)
+void CacheManager::setProxyUrl(const char *proxyUrl)
 {
 	if (proxyUrl) {
 		m_proxyUrl = proxyUrl;
@@ -116,7 +116,7 @@ void CacheManager::setProxyUrl(const rp_char *proxyUrl)
  * Set the proxy server.
  * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
  */
-void CacheManager::setProxyUrl(const rp_string &proxyUrl)
+void CacheManager::setProxyUrl(const string &proxyUrl)
 {
 	m_proxyUrl = proxyUrl;
 }
@@ -126,21 +126,21 @@ void CacheManager::setProxyUrl(const rp_string &proxyUrl)
  * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
-rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
+string CacheManager::getCacheFilename(const string &cache_key)
 {
 	// Filter invalid characters from the cache key.
-	const rp_string filtered_cache_key = filterCacheKey(cache_key);
+	const string filtered_cache_key = filterCacheKey(cache_key);
 	if (filtered_cache_key.empty()) {
 		// Invalid cache key.
-		return rp_string();
+		return string();
 	}
 
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	rp_string cache_filename = getCacheDirectory();
+	string cache_filename = getCacheDirectory();
 
 	if (cache_filename.empty())
-		return rp_string();
+		return string();
 	if (cache_filename.at(cache_filename.size()-1) != DIR_SEP_CHR)
 		cache_filename += DIR_SEP_CHR;
 
@@ -156,19 +156,19 @@ rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
  * @param cache_key Cache key.
  * @return Filtered cache key.
  */
-rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
+string CacheManager::filterCacheKey(const string &cache_key)
 {
 	// Quick check: Ensure the cache key is not empty and
 	// that it doesn't start with a path separator.
 	if (cache_key.empty() ||
-	    cache_key[0] == _RP_CHR('/') || cache_key[0] == _RP_CHR('\\'))
+	    cache_key[0] == '/' || cache_key[0] == '\\')
 	{
 		// Cache key is either empty or starts with
 		// a path separator.
-		return rp_string();
+		return string();
 	}
 
-	rp_string filtered_cache_key = cache_key;
+	string filtered_cache_key = cache_key;
 	bool foundSlash = true;
 	int dotCount = 0;
 	for (auto iter = filtered_cache_key.begin(); iter != filtered_cache_key.end(); ++iter) {
@@ -203,7 +203,7 @@ rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
 			case 0:
 			default:
 				// Invalid character.
-				*iter = _RP_CHR('_');
+				*iter = '_';
 				foundSlash = false;
 				break;
 
@@ -219,7 +219,7 @@ rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
 					dotCount++;
 					if (dotCount >= 2) {
 						// Invalid cache key.
-						return rp_string();
+						return string();
 					}
 				}
 				break;
@@ -228,7 +228,7 @@ rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
 				// Slash.
 #ifdef _WIN32
 				// Convert to backslash on Windows.
-				*iter = _RP_CHR('\\');
+				*iter = '\\';
 #endif /* _WIN32 */
 				foundSlash = true;
 				dotCount = 0;
@@ -237,7 +237,7 @@ rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
 			case 4:
 				// Backslash or colon.
 				// Not allowed at all.
-				return rp_string();
+				return string();
 		}
 	}
 
@@ -259,15 +259,15 @@ rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
  *
  * @return Absolute path to the cached file.
  */
-rp_string CacheManager::download(
-	const rp_string &url,
-	const rp_string &cache_key)
+string CacheManager::download(
+	const string &url,
+	const string &cache_key)
 {
 	// Check the main cache key.
-	rp_string cache_filename = getCacheFilename(cache_key);
+	string cache_filename = getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
-		return rp_string();
+		return string();
 	}
 
 	// Lock the semaphore to make sure we don't
@@ -287,20 +287,20 @@ rp_string CacheManager::download(
 			// TODO: How should we handle errors?
 			time_t filetime;
 			if (get_mtime(cache_filename, &filetime) != 0)
-				return rp_string();
+				return string();
 
 			struct timeval systime;
 			if (gettimeofday(&systime, nullptr) != 0)
-				return rp_string();
+				return string();
 			if ((systime.tv_sec - filetime) < (86400*7)) {
 				// Less than a week old.
-				return rp_string();
+				return string();
 			}
 
 			// More than a week old.
 			// Delete the cache file and redownload it.
 			if (delete_file(cache_filename) != 0)
-				return rp_string();
+				return string();
 		} else if (sz > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was cached successfully.
@@ -314,7 +314,7 @@ rp_string CacheManager::download(
 		// Blank URL. Don't try to download anything.
 		// Don't mark the file as unavailable by creating a
 		// 0-byte dummy file, either.
-		return rp_string();
+		return string();
 	}
 
 	// Make sure the subdirectories exist.
@@ -322,7 +322,7 @@ rp_string CacheManager::download(
 	// since the last component is ignored by rmkdir().
 	if (rmkdir(cache_filename) != 0) {
 		// Error creating subdirectories.
-		return rp_string();
+		return string();
 	}
 
 	// TODO: Keep-alive cURL connections (one per server)?
@@ -340,7 +340,7 @@ rp_string CacheManager::download(
 		// TODO: Only keep a negative cache if it's a 404.
 		// Keep the cached file as a 0-byte file to indicate
 		// a "negative" hit, but return an empty filename.
-		return rp_string();
+		return string();
 	}
 
 	// Write the file.
@@ -363,17 +363,17 @@ rp_string CacheManager::download(
  * @param cache_key Cache key.
  * @return Filename in the cache, or empty string if not found.
  */
-rp_string CacheManager::findInCache(const rp_string &cache_key)
+string CacheManager::findInCache(const string &cache_key)
 {
 	// Get the cache key filename.
-	rp_string cache_filename = getCacheFilename(cache_key);
+	string cache_filename = getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
-		return rp_string();
+		return string();
 	}
 
 	// Return the filename if the file exists.
-	return (!access(cache_filename, R_OK) ? cache_filename : rp_string());
+	return (!access(cache_filename, R_OK) ? cache_filename : string());
 }
 
 }

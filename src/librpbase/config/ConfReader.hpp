@@ -79,7 +79,7 @@ class ConfReader
 		 *
 		 * @return Configuration filename, or nullptr on error.
 		 */
-		const rp_char *filename(void) const;
+		const char *filename(void) const;
 };
 
 }

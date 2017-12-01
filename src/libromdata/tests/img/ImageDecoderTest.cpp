@@ -85,13 +85,13 @@ namespace LibRomData { namespace Tests {
 
 struct ImageDecoderTest_mode
 {
-	rp_string dds_gz_filename;	// Source texture to test.
-	rp_string png_filename;		// PNG image for comparison.
-	bool s3tc;			// Enable S3TC.
+	string dds_gz_filename;	// Source texture to test.
+	string png_filename;	// PNG image for comparison.
+	bool s3tc;		// Enable S3TC.
 
 	ImageDecoderTest_mode(
-		const rp_char *dds_gz_filename,
-		const rp_char *png_filename,
+		const char *dds_gz_filename,
+		const char *png_filename,
 #ifdef ENABLE_S3TC
 		bool s3tc = true
 #else /* !ENABLE_S3TC */
@@ -190,7 +190,7 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
  */
 inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderTest_mode& mode)
 {
-	return os << rp_string_to_utf8(mode.dds_gz_filename);
+	return os << mode.dds_gz_filename;
 };
 
 /**
@@ -234,13 +234,13 @@ void ImageDecoderTest::SetUp(void)
 #endif /* ENABLE_S3TC */
 
 	// Open the gzipped DDS texture file being tested.
-	rp_string path = _RP("ImageDecoder_data");
-	path += _RP_CHR(DIR_SEP_CHR);
+	string path = "ImageDecoder_data";
+	path += DIR_SEP_CHR;
 	path += mode.dds_gz_filename;
 	replace_slashes(path);
-	m_gzDds = gzopen(rp_string_to_utf8(path).c_str(), "rb");
+	m_gzDds = gzopen(path.c_str(), "rb");
 	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the DDS file: "
-		<< rp_string_to_utf8(mode.dds_gz_filename);
+		<< mode.dds_gz_filename;
 
 	// Get the decompressed file size.
 	// gzseek() does not support SEEK_END.
@@ -270,7 +270,7 @@ void ImageDecoderTest::SetUp(void)
 	m_gzDds = nullptr;
 
 	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: "
-		<< rp_string_to_utf8(mode.dds_gz_filename);
+		<< mode.dds_gz_filename;
 
 	// Open the PNG image file being tested.
 	path.resize(18);	// Back to "ImageDecoder_data/".
@@ -289,7 +289,7 @@ void ImageDecoderTest::SetUp(void)
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
 	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: "
-		<< rp_string_to_utf8(mode.png_filename);
+		<< mode.png_filename;
 }
 
 /**
@@ -433,19 +433,19 @@ TEST_P(ImageDecoderTest, decodeTest)
  */
 string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamInfo<ImageDecoderTest_mode> &info)
 {
-	rp_string suffix = info.param.dds_gz_filename;
+	string suffix = info.param.dds_gz_filename;
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	for (int i = (int)suffix.size()-1; i >= 0; i--) {
-		rp_char chr = suffix[i];
+		char chr = suffix[i];
 		if (!isalnum(chr) && chr != '_') {
 			suffix[i] = '_';
 		}
 	}
 
-	// TODO: rp_string_to_ascii()?
-	return rp_string_to_utf8(suffix);
+	// TODO: Convert to ASCII?
+	return suffix;
 }
 
 // Test cases.
@@ -455,38 +455,38 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt1-rgb.dds.gz"),
-			_RP("S3TC/dxt1-rgb.s3tc.png")),
+			"S3TC/dxt1-rgb.dds.gz",
+			"S3TC/dxt1-rgb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt2-rgb.dds.gz"),
-			_RP("S3TC/dxt2-rgb.s3tc.png")),
+			"S3TC/dxt2-rgb.dds.gz",
+			"S3TC/dxt2-rgb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt2-argb.dds.gz"),
-			_RP("S3TC/dxt2-argb.s3tc.png")),
+			"S3TC/dxt2-argb.dds.gz",
+			"S3TC/dxt2-argb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt3-rgb.dds.gz"),
-			_RP("S3TC/dxt3-rgb.s3tc.png")),
+			"S3TC/dxt3-rgb.dds.gz",
+			"S3TC/dxt3-rgb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt3-argb.dds.gz"),
-			_RP("S3TC/dxt3-argb.s3tc.png")),
+			"S3TC/dxt3-argb.dds.gz",
+			"S3TC/dxt3-argb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt4-rgb.dds.gz"),
-			_RP("S3TC/dxt4-rgb.s3tc.png")),
+			"S3TC/dxt4-rgb.dds.gz",
+			"S3TC/dxt4-rgb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt4-argb.dds.gz"),
-			_RP("S3TC/dxt4-argb.s3tc.png")),
+			"S3TC/dxt4-argb.dds.gz",
+			"S3TC/dxt4-argb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt5-rgb.dds.gz"),
-			_RP("S3TC/dxt5-rgb.s3tc.png")),
+			"S3TC/dxt5-rgb.dds.gz",
+			"S3TC/dxt5-rgb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt5-argb.dds.gz"),
-			_RP("S3TC/dxt5-argb.s3tc.png")),
+			"S3TC/dxt5-argb.dds.gz",
+			"S3TC/dxt5-argb.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/bc4.dds.gz"),
-			_RP("S3TC/bc4.s3tc.png")),
+			"S3TC/bc4.dds.gz",
+			"S3TC/bc4.s3tc.png"),
 		ImageDecoderTest_mode(
-			_RP("S3TC/bc5.dds.gz"),
-			_RP("S3TC/bc5.s3tc.png")))
+			"S3TC/bc5.dds.gz",
+			"S3TC/bc5.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_S3TC */
 
@@ -494,95 +494,95 @@ INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
 INSTANTIATE_TEST_CASE_P(DDS_S2TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt1-rgb.dds.gz"),
-			_RP("S3TC/dxt1-rgb.s2tc.png"), false),
+			"S3TC/dxt1-rgb.dds.gz",
+			"S3TC/dxt1-rgb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt2-rgb.dds.gz"),
-			_RP("S3TC/dxt2-rgb.s2tc.png"), false),
+			"S3TC/dxt2-rgb.dds.gz",
+			"S3TC/dxt2-rgb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt2-argb.dds.gz"),
-			_RP("S3TC/dxt2-argb.s2tc.png"), false),
+			"S3TC/dxt2-argb.dds.gz",
+			"S3TC/dxt2-argb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt3-rgb.dds.gz"),
-			_RP("S3TC/dxt3-rgb.s2tc.png"), false),
+			"S3TC/dxt3-rgb.dds.gz",
+			"S3TC/dxt3-rgb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt3-argb.dds.gz"),
-			_RP("S3TC/dxt3-argb.s2tc.png"), false),
+			"S3TC/dxt3-argb.dds.gz",
+			"S3TC/dxt3-argb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt4-rgb.dds.gz"),
-			_RP("S3TC/dxt4-rgb.s2tc.png"), false),
+			"S3TC/dxt4-rgb.dds.gz",
+			"S3TC/dxt4-rgb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt4-argb.dds.gz"),
-			_RP("S3TC/dxt4-argb.s2tc.png"), false),
+			"S3TC/dxt4-argb.dds.gz",
+			"S3TC/dxt4-argb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt5-rgb.dds.gz"),
-			_RP("S3TC/dxt5-rgb.s2tc.png"), false),
+			"S3TC/dxt5-rgb.dds.gz",
+			"S3TC/dxt5-rgb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/dxt5-argb.dds.gz"),
-			_RP("S3TC/dxt5-argb.s2tc.png"), false),
+			"S3TC/dxt5-argb.dds.gz",
+			"S3TC/dxt5-argb.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/bc4.dds.gz"),
-			_RP("S3TC/bc4.s2tc.png"), false),
+			"S3TC/bc4.dds.gz",
+			"S3TC/bc4.s2tc.png", false),
 		ImageDecoderTest_mode(
-			_RP("S3TC/bc5.dds.gz"),
-			_RP("S3TC/bc5.s2tc.png"), false))
+			"S3TC/bc5.dds.gz",
+			"S3TC/bc5.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 16-bit RGB)
 INSTANTIATE_TEST_CASE_P(DDS_RGB16, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("RGB/RGB565.dds.gz"),
-			_RP("RGB/RGB565.png")),
+			"RGB/RGB565.dds.gz",
+			"RGB/RGB565.png"),
 		ImageDecoderTest_mode(
-			_RP("RGB/xRGB4444.dds.gz"),
-			_RP("RGB/xRGB4444.png")))
+			"RGB/xRGB4444.dds.gz",
+			"RGB/xRGB4444.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 16-bit ARGB)
 INSTANTIATE_TEST_CASE_P(DDS_ARGB16, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("ARGB/ARGB1555.dds.gz"),
-			_RP("ARGB/ARGB1555.png")),
+			"ARGB/ARGB1555.dds.gz",
+			"ARGB/ARGB1555.png"),
 		ImageDecoderTest_mode(
-			_RP("ARGB/ARGB4444.dds.gz"),
-			_RP("ARGB/ARGB4444.png")),
+			"ARGB/ARGB4444.dds.gz",
+			"ARGB/ARGB4444.png"),
 		ImageDecoderTest_mode(
-			_RP("ARGB/ARGB8332.dds.gz"),
-			_RP("ARGB/ARGB8332.png")))
+			"ARGB/ARGB8332.dds.gz",
+			"ARGB/ARGB8332.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 15-bit RGB)
 INSTANTIATE_TEST_CASE_P(DDS_RGB15, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("RGB/RGB565.dds.gz"),
-			_RP("RGB/RGB565.png")))
+			"RGB/RGB565.dds.gz",
+			"RGB/RGB565.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 24-bit RGB)
 INSTANTIATE_TEST_CASE_P(DDS_RGB24, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("RGB/RGB888.dds.gz"),
-			_RP("RGB/RGB888.png")))
+			"RGB/RGB888.dds.gz",
+			"RGB/RGB888.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 32-bit RGB)
 INSTANTIATE_TEST_CASE_P(DDS_RGB32, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("RGB/xRGB8888.dds.gz"),
-			_RP("RGB/xRGB8888.png")),
+			"RGB/xRGB8888.dds.gz",
+			"RGB/xRGB8888.png"),
 		ImageDecoderTest_mode(
-			_RP("RGB/xBGR8888.dds.gz"),
-			_RP("RGB/xBGR8888.png")),
+			"RGB/xBGR8888.dds.gz",
+			"RGB/xBGR8888.png"),
 
 		// Uncommon formats.
 		ImageDecoderTest_mode(
-			_RP("RGB/G16R16.dds.gz"),
-			_RP("RGB/G16R16.png")))
+			"RGB/G16R16.dds.gz",
+			"RGB/G16R16.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 32-bit ARGB)
@@ -590,93 +590,93 @@ INSTANTIATE_TEST_CASE_P(DDS_ARGB32, ImageDecoderTest,
 	::testing::Values(
 		// 32-bit
 		ImageDecoderTest_mode(
-			_RP("ARGB/ARGB8888.dds.gz"),
-			_RP("ARGB/ARGB8888.png")),
+			"ARGB/ARGB8888.dds.gz",
+			"ARGB/ARGB8888.png"),
 		ImageDecoderTest_mode(
-			_RP("ARGB/ABGR8888.dds.gz"),
-			_RP("ARGB/ABGR8888.png")),
+			"ARGB/ABGR8888.dds.gz",
+			"ARGB/ABGR8888.png"),
 
 		// Uncommon formats.
 		ImageDecoderTest_mode(
-			_RP("ARGB/A2R10G10B10.dds.gz"),
-			_RP("ARGB/A2R10G10B10.png")),
+			"ARGB/A2R10G10B10.dds.gz",
+			"ARGB/A2R10G10B10.png"),
 		ImageDecoderTest_mode(
-			_RP("ARGB/A2B10G10R10.dds.gz"),
-			_RP("ARGB/A2B10G10R10.png")))
+			"ARGB/A2B10G10R10.dds.gz",
+			"ARGB/A2B10G10R10.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Luminance)
 INSTANTIATE_TEST_CASE_P(DDS_Luma, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("Luma/L8.dds.gz"),
-			_RP("Luma/L8.png")),
+			"Luma/L8.dds.gz",
+			"Luma/L8.png"),
 		ImageDecoderTest_mode(
-			_RP("Luma/A4L4.dds.gz"),
-			_RP("Luma/A4L4.png")),
+			"Luma/A4L4.dds.gz",
+			"Luma/A4L4.png"),
 		ImageDecoderTest_mode(
-			_RP("Luma/L16.dds.gz"),
-			_RP("Luma/L16.png")),
+			"Luma/L16.dds.gz",
+			"Luma/L16.png"),
 		ImageDecoderTest_mode(
-			_RP("Luma/A8L8.dds.gz"),
-			_RP("Luma/A8L8.png")))
+			"Luma/A8L8.dds.gz",
+			"Luma/A8L8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Alpha)
 INSTANTIATE_TEST_CASE_P(DDS_Alpha, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("Alpha/A8.dds.gz"),
-			_RP("Alpha/A8.png")))
+			"Alpha/A8.dds.gz",
+			"Alpha/A8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // PVR tests. (square twiddled)
 INSTANTIATE_TEST_CASE_P(PVR_SqTwiddled, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("PVR/bg_00.pvr.gz"),
-			_RP("PVR/bg_00.png")))
+			"PVR/bg_00.pvr.gz",
+			"PVR/bg_00.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // PVR tests. (VQ)
 INSTANTIATE_TEST_CASE_P(PVR_VQ, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("PVR/mr_128k_huti.pvr.gz"),
-			_RP("PVR/mr_128k_huti.png")))
+			"PVR/mr_128k_huti.pvr.gz",
+			"PVR/mr_128k_huti.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // PVR tests. (Small VQ)
 INSTANTIATE_TEST_CASE_P(PVR_SmallVQ, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("PVR/drumfuta1.pvr.gz"),
-			_RP("PVR/drumfuta1.png")),
+			"PVR/drumfuta1.pvr.gz",
+			"PVR/drumfuta1.png"),
 		ImageDecoderTest_mode(
-			_RP("PVR/drum_ref.pvr.gz"),
-			_RP("PVR/drum_ref.png")))
+			"PVR/drum_ref.pvr.gz",
+			"PVR/drum_ref.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // GVR tests. (RGB5A3)
 INSTANTIATE_TEST_CASE_P(GVR_RGB5A3, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("GVR/zanki_sonic.gvr.gz"),
-			_RP("GVR/zanki_sonic.png")))
+			"GVR/zanki_sonic.gvr.gz",
+			"GVR/zanki_sonic.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // GVR tests. (DXT1)
 INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			_RP("GVR/paldam_off.gvr.gz"),
-			_RP("GVR/paldam_off.png")),
+			"GVR/paldam_off.gvr.gz",
+			"GVR/paldam_off.png"),
 		ImageDecoderTest_mode(
-			_RP("GVR/paldam_on.gvr.gz"),
-			_RP("GVR/paldam_on.png")),
+			"GVR/paldam_on.gvr.gz",
+			"GVR/paldam_on.png"),
 		ImageDecoderTest_mode(
-			_RP("GVR/weeklytitle.gvr.gz"),
-			_RP("GVR/weeklytitle.png")))
+			"GVR/weeklytitle.gvr.gz",
+			"GVR/weeklytitle.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }

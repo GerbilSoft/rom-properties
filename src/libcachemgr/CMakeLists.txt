@@ -29,39 +29,27 @@ ENDIF(WIN32)
 # Build the library. #
 ######################
 
-# UTF-8 version.
-ADD_LIBRARY(cachemgr8 STATIC
+ADD_LIBRARY(cachemgr STATIC
 	${libcachemgr_SRCS} ${libcachemgr_H}
 	${libcachemgr_OS_SRCS} ${libcachemgr_OS_H}
 	${libcachemgr_THREAD_SRCS} ${libcachemgr_THREAD_H}
 	)
-TARGET_LINK_LIBRARIES(cachemgr8 rpbase8)
+TARGET_LINK_LIBRARIES(cachemgr rpbase)
 
-# UTF-16 version.
-ADD_LIBRARY(cachemgr16 STATIC
-	${libcachemgr_SRCS} ${libcachemgr_H}
-	${libcachemgr_OS_SRCS} ${libcachemgr_OS_H}
-	${libcachemgr_THREAD_SRCS} ${libcachemgr_THREAD_H}
+TARGET_INCLUDE_DIRECTORIES(cachemgr
+	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 	)
-TARGET_LINK_LIBRARIES(cachemgr16 rpbase16)
-
-# Common properties for cachemgr8 and cachemgr16.
-FOREACH(_target cachemgr8 cachemgr16)
-	TARGET_INCLUDE_DIRECTORIES(${_target}
-		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-		)
-	# Exclude from ALL builds.
-	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-	IF(WIN32)
-		TARGET_LINK_LIBRARIES(${_target} win32common)
-		TARGET_LINK_LIBRARIES(${_target} urlmon wininet)
-	ELSE(WIN32)
-		TARGET_LINK_LIBRARIES(${_target} ${CURL_LIBRARIES})
-	ENDIF(WIN32)
-ENDFOREACH()
+# Exclude from ALL builds.
+SET_TARGET_PROPERTIES(cachemgr PROPERTIES EXCLUDE_FROM_ALL TRUE)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(cachemgr win32common)
+	TARGET_LINK_LIBRARIES(cachemgr urlmon wininet)
+ELSE(WIN32)
+	TARGET_LINK_LIBRARIES(cachemgr ${CURL_LIBRARIES})
+ENDIF(WIN32)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

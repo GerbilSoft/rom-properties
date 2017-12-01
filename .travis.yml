@@ -28,6 +28,7 @@ addons:
       - libgtk-3-dev
       - libnautilus-extension-dev
       - libbsd-dev
+      - gettext
 
 # Run the build script.
 script: ./travis.sh

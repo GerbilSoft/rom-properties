@@ -24,6 +24,10 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <string>
+using std::string;
+
 namespace LibCacheMgr {
 
 IDownloader::IDownloader()
@@ -32,14 +36,14 @@ IDownloader::IDownloader()
 	, m_maxSize(0)
 { }
 
-IDownloader::IDownloader(const rp_char *url)
+IDownloader::IDownloader(const char *url)
 	: m_url(url)
 	, m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
 { }
 
-IDownloader::IDownloader(const LibRpBase::rp_string &url)
+IDownloader::IDownloader(const string &url)
 	: m_url(url)
 	, m_mtime(-1)
 	, m_inProgress(false)
@@ -64,7 +68,7 @@ bool IDownloader::isInProgress(void) const
  * Get the current URL.
  * @return URL.
  */
-LibRpBase::rp_string IDownloader::url(void) const
+string IDownloader::url(void) const
 {
 	return m_url;
 }
@@ -73,7 +77,7 @@ LibRpBase::rp_string IDownloader::url(void) const
  * Set the URL.
  * @param url New URL.
  */
-void IDownloader::setUrl(const rp_char *url)
+void IDownloader::setUrl(const char *url)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
@@ -84,7 +88,7 @@ void IDownloader::setUrl(const rp_char *url)
  * Set the URL.
  * @param url New URL.
  */
-void IDownloader::setUrl(const LibRpBase::rp_string &url)
+void IDownloader::setUrl(const string &url)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
@@ -119,7 +123,7 @@ void IDownloader::setMaxSize(size_t maxSize)
  * Get the proxy server.
  * @return Proxy server URL.
  */
-LibRpBase::rp_string IDownloader::proxyUrl(void) const
+string IDownloader::proxyUrl(void) const
 {
 	return m_proxyUrl;
 }
@@ -128,7 +132,7 @@ LibRpBase::rp_string IDownloader::proxyUrl(void) const
  * Set the proxy server.
  * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
  */
-void IDownloader::setProxyUrl(const rp_char *proxyUrl)
+void IDownloader::setProxyUrl(const char *proxyUrl)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
@@ -143,7 +147,7 @@ void IDownloader::setProxyUrl(const rp_char *proxyUrl)
  * Set the proxy server.
  * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
  */
-void IDownloader::setProxyUrl(const LibRpBase::rp_string &proxyUrl)
+void IDownloader::setProxyUrl(const string &proxyUrl)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?

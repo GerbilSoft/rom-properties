@@ -33,8 +33,8 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-
 #include "librpbase/img/rp_image.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -219,15 +219,15 @@ int WiiU::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *WiiU::systemName(unsigned int type) const
+const char *WiiU::systemName(unsigned int type) const
 {
 	RP_D(const WiiU);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
-		_RP("Nintendo Wii U"), _RP("Wii U"), _RP("Wii U"), nullptr
+	static const char *const sysNames[4] = {
+		"Nintendo Wii U", "Wii U", "Wii U", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -246,14 +246,14 @@ const rp_char *WiiU::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *WiiU::supportedFileExtensions_static(void)
+const char *const *WiiU::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".wud"),
+	static const char *const exts[] = {
+		".wud",
 
 		// NOTE: May cause conflicts on Windows
 		// if fallback handling isn't working.
-		_RP(".iso"),
+		".iso",
 
 		nullptr
 	};
@@ -273,7 +273,7 @@ const rp_char *const *WiiU::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *WiiU::supportedFileExtensions(void) const
+const char *const *WiiU::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -402,17 +402,17 @@ int WiiU::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Game ID.
-	d->fields->addField_string(_RP("Game ID"),
-		latin1_to_rp_string(d->discHeader.id, sizeof(d->discHeader.id)));
+	d->fields->addField_string(C_("WiiU", "Game ID"),
+		latin1_to_utf8(d->discHeader.id, sizeof(d->discHeader.id)));
 
 	// Game version.
 	// TODO: Validate the version characters.
-	d->fields->addField_string(_RP("Version"),
-		latin1_to_rp_string(d->discHeader.version, sizeof(d->discHeader.version)));
+	d->fields->addField_string(C_("WiiU", "Version"),
+		latin1_to_utf8(d->discHeader.version, sizeof(d->discHeader.version)));
 
 	// OS version.
 	// TODO: Validate the version characters.
-	d->fields->addField_string(_RP("OS Version"),
+	d->fields->addField_string(C_("WiiU", "OS Version"),
 		rp_sprintf("%c.%c.%c",
 			d->discHeader.os_version[0],
 			d->discHeader.os_version[1],
@@ -420,8 +420,8 @@ int WiiU::loadFieldData(void)
 
 	// Region.
 	// TODO: Compare against list of regions and show the fancy name.
-	d->fields->addField_string(_RP("Region"),
-		latin1_to_rp_string(d->discHeader.region, sizeof(d->discHeader.region)));
+	d->fields->addField_string(C_("WiiU", "Region"),
+		latin1_to_utf8(d->discHeader.region, sizeof(d->discHeader.region)));
 
 	// Finished reading the field data.
 	return (int)d->fields->count();

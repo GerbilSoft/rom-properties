@@ -79,8 +79,8 @@ struct tRNS_CI8_t
 
 struct RpPngFormatTest_mode
 {
-	rp_string png_filename;		// PNG image to test.
-	rp_string bmp_gz_filename;	// Gzipped BMP image for comparison.
+	string png_filename;		// PNG image to test.
+	string bmp_gz_filename;		// Gzipped BMP image for comparison.
 
 	// Expected PNG and BMP parameters.
 	PNG_IHDR_t ihdr;		// FIXME: Making this const& causes problems.
@@ -93,8 +93,8 @@ struct RpPngFormatTest_mode
 	// TODO: Verify PNG bit depth and color type.
 
 	RpPngFormatTest_mode(
-		const rp_char *png_filename,
-		const rp_char *bmp_gz_filename,
+		const char *png_filename,
+		const char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
 		const BITMAPINFOHEADER &bih,
 		const tRNS_CI8_t &bmp_tRNS,
@@ -109,8 +109,8 @@ struct RpPngFormatTest_mode
 	{ }
 
 	RpPngFormatTest_mode(
-		const rp_char *png_filename,
-		const rp_char *bmp_gz_filename,
+		const char *png_filename,
+		const char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
 		const BITMAPINFOHEADER &bih,
 		rp_image::Format rp_format)
@@ -298,7 +298,7 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
  */
 inline ::std::ostream& operator<<(::std::ostream& os, const RpPngFormatTest_mode& mode)
 {
-	return os << rp_string_to_utf8(mode.png_filename);
+	return os << mode.png_filename;
 };
 
 /**
@@ -316,8 +316,8 @@ void RpPngFormatTest::SetUp(void)
 	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
-	rp_string path = _RP("png_data");
-	path += _RP_CHR(DIR_SEP_CHR);
+	string path = "png_data";
+	path += DIR_SEP_CHR;
 	path += mode.png_filename;
 	unique_ptr<IRpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file.get() != nullptr);
@@ -332,14 +332,14 @@ void RpPngFormatTest::SetUp(void)
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
 	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: "
-		<< rp_string_to_utf8(mode.png_filename);
+		<< mode.png_filename;
 
 	// Open the gzipped BMP image file being tested.
 	path.resize(9);	// Back to "png_data/".
 	path += mode.bmp_gz_filename;
-	m_gzBmp = gzopen(rp_string_to_utf8(path).c_str(), "rb");
+	m_gzBmp = gzopen(path.c_str(), "rb");
 	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
-		<< rp_string_to_utf8(mode.bmp_gz_filename);
+		<< mode.bmp_gz_filename;
 
 	// Get the decompressed file size.
 	// gzseek() does not support SEEK_END.
@@ -369,7 +369,7 @@ void RpPngFormatTest::SetUp(void)
 	m_gzBmp = nullptr;
 
 	ASSERT_EQ(bmpSize, (uint32_t)sz) << "Error loading BMP image file: "
-		<< rp_string_to_utf8(mode.bmp_gz_filename);
+		<< mode.bmp_gz_filename;
 }
 
 /**
@@ -996,19 +996,19 @@ TEST_P(RpPngFormatTest, loadTest)
  */
 string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInfo<RpPngFormatTest_mode> &info)
 {
-	rp_string suffix = info.param.png_filename;
+	string suffix = info.param.png_filename;
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	for (int i = (int)suffix.size()-1; i >= 0; i--) {
-		rp_char chr = suffix[i];
+		char chr = suffix[i];
 		if (!isalnum(chr) && chr != '_') {
 			suffix[i] = '_';
 		}
 	}
 
-	// TODO: rp_string_to_ascii()?
-	return rp_string_to_utf8(suffix);
+	// TODO: Convert to ASCII?
+	return suffix;
 }
 
 // Test cases.
@@ -1059,32 +1059,32 @@ static const BITMAPINFOHEADER gl_triangle_gray_alpha_BIH =
 INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
-			_RP("gl_triangle.RGB24.png"),
-			_RP("gl_triangle.RGB24.bmp.gz"),
+			"gl_triangle.RGB24.png",
+			"gl_triangle.RGB24.bmp.gz",
 			gl_triangle_RGB24_IHDR,
 			gl_triangle_RGB24_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
-			_RP("gl_triangle.RGB24.tRNS.png"),
-			_RP("gl_triangle.RGB24.tRNS.bmp.gz"),
+			"gl_triangle.RGB24.tRNS.png",
+			"gl_triangle.RGB24.tRNS.bmp.gz",
 			gl_triangle_RGB24_IHDR,
 			gl_triangle_RGB24_tRNS_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
-			_RP("gl_triangle.ARGB32.png"),
-			_RP("gl_triangle.ARGB32.bmp.gz"),
+			"gl_triangle.ARGB32.png",
+			"gl_triangle.ARGB32.bmp.gz",
 			gl_triangle_ARGB32_IHDR,
 			gl_triangle_ARGB32_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
-			_RP("gl_triangle.gray.png"),
-			_RP("gl_triangle.gray.bmp.gz"),
+			"gl_triangle.gray.png",
+			"gl_triangle.gray.bmp.gz",
 			gl_triangle_gray_IHDR,
 			gl_triangle_gray_BIH,
 			rp_image::FORMAT_CI8),
 		RpPngFormatTest_mode(
-			_RP("gl_triangle.gray.alpha.png"),
-			_RP("gl_triangle.gray.alpha.bmp.gz"),
+			"gl_triangle.gray.alpha.png",
+			"gl_triangle.gray.alpha.bmp.gz",
 			gl_triangle_gray_alpha_IHDR,
 			gl_triangle_gray_alpha_BIH,
 			rp_image::FORMAT_ARGB32)
@@ -1128,32 +1128,32 @@ static const BITMAPINFOHEADER gl_quad_gray_alpha_BIH =
 INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
-			_RP("gl_quad.RGB24.png"),
-			_RP("gl_quad.RGB24.bmp.gz"),
+			"gl_quad.RGB24.png",
+			"gl_quad.RGB24.bmp.gz",
 			gl_quad_RGB24_IHDR,
 			gl_quad_RGB24_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
-			_RP("gl_quad.RGB24.tRNS.png"),
-			_RP("gl_quad.RGB24.tRNS.bmp.gz"),
+			"gl_quad.RGB24.tRNS.png",
+			"gl_quad.RGB24.tRNS.bmp.gz",
 			gl_quad_RGB24_IHDR,
 			gl_quad_RGB24_tRNS_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
-			_RP("gl_quad.ARGB32.png"),
-			_RP("gl_quad.ARGB32.bmp.gz"),
+			"gl_quad.ARGB32.png",
+			"gl_quad.ARGB32.bmp.gz",
 			gl_quad_ARGB32_IHDR,
 			gl_quad_ARGB32_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
-			_RP("gl_quad.gray.png"),
-			_RP("gl_quad.gray.bmp.gz"),
+			"gl_quad.gray.png",
+			"gl_quad.gray.bmp.gz",
 			gl_quad_gray_IHDR,
 			gl_quad_gray_BIH,
 			rp_image::FORMAT_CI8),
 		RpPngFormatTest_mode(
-			_RP("gl_quad.gray.alpha.png"),
-			_RP("gl_quad.gray.alpha.bmp.gz"),
+			"gl_quad.gray.alpha.png",
+			"gl_quad.gray.alpha.bmp.gz",
 			gl_quad_gray_alpha_IHDR,
 			gl_quad_gray_alpha_BIH,
 			rp_image::FORMAT_ARGB32)
@@ -1212,8 +1212,8 @@ static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
 INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
-			_RP("xterm-256color.CI8.png"),
-			_RP("xterm-256color.CI8.bmp.gz"),
+			"xterm-256color.CI8.png",
+			"xterm-256color.CI8.bmp.gz",
 			xterm_256color_CI8_IHDR,
 			xterm_256color_CI8_BIH,
 			rp_image::FORMAT_CI8)
@@ -1227,8 +1227,8 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
-			_RP("xterm-256color.CI8.tRNS.png"),
-			_RP("xterm-256color.CI8.tRNS.bmp.gz"),
+			"xterm-256color.CI8.tRNS.png",
+			"xterm-256color.CI8.tRNS.bmp.gz",
 			xterm_256color_CI8_tRNS_IHDR,
 			xterm_256color_CI8_tRNS_BIH,
 			xterm_256color_CI8_tRNS_bmp_tRNS,
@@ -1239,8 +1239,8 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
-			_RP("xterm-256color.CI8.tRNS.png"),
-			_RP("xterm-256color.CI8.tRNS.gdip.bmp.gz"),
+			"xterm-256color.CI8.tRNS.png",
+			"xterm-256color.CI8.tRNS.gdip.bmp.gz",
 			xterm_256color_CI8_tRNS_IHDR,
 			xterm_256color_CI8_tRNS_gdip_BIH,
 			rp_image::FORMAT_ARGB32)
@@ -1269,8 +1269,8 @@ INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 	::testing::Values(
 		// TODO: Use a CI4 BMP?
 		RpPngFormatTest_mode(
-			_RP("odd-width.16color.CI4.png"),
-			_RP("odd-width.16color.CI8.bmp.gz"),
+			"odd-width.16color.CI4.png",
+			"odd-width.16color.CI8.bmp.gz",
 			odd_width_16color_CI4_IHDR,
 			odd_width_16color_CI8_BIH,
 			rp_image::FORMAT_CI8)
@@ -1301,16 +1301,16 @@ INSTANTIATE_TEST_CASE_P(happy_mac_mono_png, RpPngFormatTest,
 	::testing::Values(
 		// Full 512x342 version.
 		RpPngFormatTest_mode(
-			_RP("happy-mac.mono.png"),
-			_RP("happy-mac.mono.bmp.gz"),
+			"happy-mac.mono.png",
+			"happy-mac.mono.bmp.gz",
 			happy_mac_mono_IHDR,
 			happy_mac_mono_BIH,
 			rp_image::FORMAT_CI8),
 
 		// Cropped 75x73 version.
 		RpPngFormatTest_mode(
-			_RP("happy-mac.mono.odd-size.png"),
-			_RP("happy-mac.mono.odd-size.bmp.gz"),
+			"happy-mac.mono.odd-size.png",
+			"happy-mac.mono.odd-size.bmp.gz",
 			happy_mac_mono_odd_size_IHDR,
 			happy_mac_mono_odd_size_BIH,
 			rp_image::FORMAT_CI8)

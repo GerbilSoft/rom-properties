@@ -112,13 +112,13 @@ AesNettle::~AesNettle()
  * Get the name of the AesCipher implementation.
  * @return Name.
  */
-const rp_char *AesNettle::name(void) const
+const char *AesNettle::name(void) const
 {
 	// TODO: Use NETTLE_VERSION_MAJOR and NETTLE_VERSION_MINOR if available.
 #ifdef HAVE_NETTLE_3
-	return _RP("GNU Nettle 3.x");
+	return "GNU Nettle 3.x";
 #else
-	return _RP("GNU Nettle 2.x");
+	return "GNU Nettle 2.x";
 #endif
 }
 

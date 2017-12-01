@@ -31,8 +31,11 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
+
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -42,8 +45,10 @@ using namespace LibRpBase;
 // C++ includes.
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 using std::unique_ptr;
+using std::string;
 using std::vector;
 
 #ifdef _MSC_VER
@@ -413,7 +418,7 @@ int NintendoBadge::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *NintendoBadge::systemName(unsigned int type) const
+const char *NintendoBadge::systemName(unsigned int type) const
 {
 	RP_D(const NintendoBadge);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -424,8 +429,8 @@ const rp_char *NintendoBadge::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NintendoBadge::systemName() array index optimization needs to be updated.");
 
-	static const rp_char *const sysNames[4] = {
-		_RP("Nintendo Badge Arcade"), _RP("Badge Arcade"), _RP("Badge"), nullptr,
+	static const char *const sysNames[4] = {
+		"Nintendo Badge Arcade", "Badge Arcade", "Badge", nullptr,
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -444,11 +449,11 @@ const rp_char *NintendoBadge::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *NintendoBadge::supportedFileExtensions_static(void)
+const char *const *NintendoBadge::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".prb"),	// PRBS file
-		_RP(".cab"),	// CABS file (NOTE: Conflicts with Microsoft CAB)
+	static const char *const exts[] = {
+		".prb",	// PRBS file
+		".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB)
 
 		nullptr
 	};
@@ -468,7 +473,7 @@ const rp_char *const *NintendoBadge::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *NintendoBadge::supportedFileExtensions(void) const
+const char *const *NintendoBadge::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -618,8 +623,9 @@ int NintendoBadge::loadFieldData(void)
 	// Type.
 	switch (d->badgeType) {
 		case NintendoBadgePrivate::BADGE_TYPE_PRBS: {
-			d->fields->addField_string(_RP("Type"),
-				d->megaBadge ? _RP("Mega Badge") : _RP("Individual Badge"));
+			d->fields->addField_string(C_("NintendoBadge", "Type"),
+				d->megaBadge ? C_("NintendoBadge|Type", "Mega Badge")
+				             : C_("NintendoBadge|Type", "Individual Badge"));
 
 			// PRBS-specific fields.
 			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
@@ -645,64 +651,74 @@ int NintendoBadge::loadFieldData(void)
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE(prbs->name)) {
-				d->fields->addField_string(_RP("Name"),
-					utf16_to_rp_string(prbs->name[lang], sizeof(prbs->name[lang])));
+				d->fields->addField_string(C_("NintendoBadge", "Name"),
+					utf16le_to_utf8(prbs->name[lang], sizeof(prbs->name[lang])));
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric(_RP("Badge ID"), le32_to_cpu(prbs->badge_id));
+			d->fields->addField_string_numeric(C_("NintendoBadge", "Badge ID"),
+				le32_to_cpu(prbs->badge_id));
 
 			// Badge filename.
-			d->fields->addField_string(_RP("Filename"),
-				latin1_to_rp_string(prbs->filename, sizeof(prbs->filename)));
+			d->fields->addField_string(C_("NintendoBadge", "Filename"),
+				latin1_to_utf8(prbs->filename, sizeof(prbs->filename)));
 
 			// Set name.
-			d->fields->addField_string(_RP("Set Name"),
-				latin1_to_rp_string(prbs->setname, sizeof(prbs->setname)));
+			d->fields->addField_string(C_("NintendoBadge", "Set Name"),
+				latin1_to_utf8(prbs->setname, sizeof(prbs->setname)));
 
 			// Mega badge size.
 			if (d->megaBadge) {
-				d->fields->addField_string(_RP("Mega Badge Size"),
+				d->fields->addField_string(C_("NintendoBadge", "Mega Badge Size"),
 					rp_sprintf("%ux%u", prbs->mb_width, prbs->mb_height));
 			}
 
 			// Title ID.
 			if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
 				// No title ID.
-				d->fields->addField_string(_RP("Launch Title ID"), _RP("None"));
+				d->fields->addField_string(C_("NintendoBadge", "Launch Title ID"),
+					C_("NintendoBadge", "None"));
 			} else {
 				// Title ID is present.
-				d->fields->addField_string(_RP("Launch Title ID"),
+				d->fields->addField_string(C_("NintendoBadge", "Launch Title ID"),
 					rp_sprintf("%08X-%08X",
 						le32_to_cpu(prbs->title_id.hi),
 						le32_to_cpu(prbs->title_id.lo)));
 
 				// Check if this is a known system title.
-				const rp_char *region = nullptr;
-				const rp_char *title = Nintendo3DSSysTitles::lookup_sys_title(
+				const char *region = nullptr;
+				const char *title = Nintendo3DSSysTitles::lookup_sys_title(
 					le32_to_cpu(prbs->title_id.hi),
 					le32_to_cpu(prbs->title_id.lo), &region);
 				if (title) {
-					rp_string str = title;
-					if (le32_to_cpu(prbs->title_id.lo) & 0x20000000) {
-						// New3DS-specific.
-						str += _RP(" (New3DS)");
+					// Add optional fields.
+					// TODO: Positional arguments.
+					string str;
+					bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
+					if (isN3DS) {
+						if (region) {
+							// tr: 1: Title name; 2: Region
+							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (New3DS) (%2$s)"), title, region);
+						} else {
+							// tr: 1: Title name
+							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"), title);
+						}
+					} else {
+						if (region) {
+							// tr: 1: Title name; 2: Region
+							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (%2$s)"), title, region);
+						} else {
+							str = title;
+						}
 					}
-					if (region) {
-						// Region code.
-						str += _RP(" (");
-						str += region;
-						str += _RP_CHR(')');
-					}
-
-					d->fields->addField_string(_RP("Launch Title Name"), str);
+					d->fields->addField_string(C_("NintendoBadge", "Launch Title Name"), str);
 				}
 			}
 			break;
 		}
 
 		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
-			d->fields->addField_string(_RP("Type"), _RP("Badge Set"));
+			d->fields->addField_string(C_("NintendoBadge", "Type"), C_("NintendoBadge", "Badge Set"));
 
 			// CABS-specific fields.
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
@@ -728,23 +744,23 @@ int NintendoBadge::loadFieldData(void)
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE(cabs->name)) {
-				d->fields->addField_string(_RP("Name"),
-					utf16_to_rp_string(cabs->name[lang], sizeof(cabs->name[lang])));
+				d->fields->addField_string(C_("NintendoBadge", "Name"),
+					utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric(_RP("Set ID"), le32_to_cpu(cabs->set_id));
+			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), le32_to_cpu(cabs->set_id));
 
 			// Set name.
-			d->fields->addField_string(_RP("Set Name"),
-				latin1_to_rp_string(cabs->setname, sizeof(cabs->setname)));
+			d->fields->addField_string(C_("NintendoBadge", "Set Name"),
+				latin1_to_utf8(cabs->setname, sizeof(cabs->setname)));
 			break;
 		}
 
 		default:
 			// Unknown.
 			assert(!"Unknown badge type. (Should not get here!)");
-			d->fields->addField_string(_RP("Type"), _RP("Unknown"));
+			d->fields->addField_string(C_("NintendoBadge", "Type"), C_("NintendoBadge", "Unknown"));
 			break;
 	}
 

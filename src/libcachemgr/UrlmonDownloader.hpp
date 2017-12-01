@@ -30,8 +30,8 @@ class UrlmonDownloader : public IDownloader
 {
 	public:
 		UrlmonDownloader();
-		explicit UrlmonDownloader(const rp_char *url);
-		explicit UrlmonDownloader(const LibRpBase::rp_string &url);
+		explicit UrlmonDownloader(const char *url);
+		explicit UrlmonDownloader(const std::string &url);
 
 	private:
 		typedef IDownloader super;

@@ -39,7 +39,7 @@ namespace LibRpBase {
 
 /** ConfReaderPrivate **/
 
-ConfReaderPrivate::ConfReaderPrivate(const rp_char *filename)
+ConfReaderPrivate::ConfReaderPrivate(const char *filename)
 	: conf_rel_filename(filename)
 	, conf_was_found(false)
 	, conf_mtime(0)
@@ -147,8 +147,8 @@ int ConfReader::load(bool force)
 		// Get the configuration filename.
 		d->conf_filename = FileSystem::getConfigDirectory();
 		if (!d->conf_filename.empty()) {
-			if (d->conf_filename.at(d->conf_filename.size()-1) != _RP_CHR(DIR_SEP_CHR)) {
-				d->conf_filename += _RP_CHR(DIR_SEP_CHR);
+			if (d->conf_filename.at(d->conf_filename.size()-1) != DIR_SEP_CHR) {
+				d->conf_filename += DIR_SEP_CHR;
 			}
 			d->conf_filename += d->conf_rel_filename;
 		}
@@ -193,7 +193,7 @@ int ConfReader::load(bool force)
 			ConfReaderPrivate::processConfigLine_static, d);
 #else /* !_WIN32 */
 	// Linux or other systems: Use ini_parse().
-	int ret = ini_parse(rp_string_to_utf8(d->conf_filename).c_str(),
+	int ret = ini_parse(d->conf_filename.c_str(),
 			ConfReaderPrivate::processConfigLine_static, d);
 #endif /* _WIN32 */
 	if (ret != 0) {
@@ -230,7 +230,7 @@ int ConfReader::load(bool force)
  *
  * @return Configuration filename, or nullptr on error.
  */
-const rp_char *ConfReader::filename(void) const
+const char *ConfReader::filename(void) const
 {
 	RP_D(const ConfReader);
 	if (d->conf_filename.empty()) {

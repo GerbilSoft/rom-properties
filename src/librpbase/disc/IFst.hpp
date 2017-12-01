@@ -66,7 +66,7 @@ class IFst
 			int64_t offset;		// Starting address.
 			int64_t size;		// File size.
 			uint8_t type;		// File type. (See d_type.h)
-			const rp_char *name;	// Filename.
+			const char *name;	// Filename.
 
 			// TODO: Additional placeholders?
 			int idx;		// File index.
@@ -83,14 +83,14 @@ class IFst
 		 * @param path	[in] Directory path.
 		 * @return Dir*, or nullptr on error.
 		 */
-		virtual Dir *opendir(const rp_char *path) = 0;
+		virtual Dir *opendir(const char *path) = 0;
 
 		/**
 		 * Open a directory.
 		 * @param path	[in] Directory path.
 		 * @return Dir*, or nullptr on error.
 		 */
-		inline Dir *opendir(const LibRpBase::rp_string &path)
+		inline Dir *opendir(const std::string &path)
 		{
 			return opendir(path.c_str());
 		}
@@ -116,7 +116,7 @@ class IFst
 		 * @param dirent	[out] Pointer to DirEnt buffer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int find_file(const rp_char *filename, DirEnt *dirent) = 0;
+		virtual int find_file(const char *filename, DirEnt *dirent) = 0;
 };
 
 /**

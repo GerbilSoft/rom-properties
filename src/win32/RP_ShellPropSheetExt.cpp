@@ -43,6 +43,11 @@ using LibWin32Common::AutoGetDC;
 #include "librpbase/img/rp_image.hpp"
 using namespace LibRpBase;
 
+// libi18n
+// NOTE: Using "RomDataView" for the context, since that
+// matches what's used for the KDE and GTK+ frontends.
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -62,6 +67,7 @@ using LibRomData::RomDataFactory;
 using std::unique_ptr;
 using std::unordered_set;
 using std::wostringstream;
+using std::string;
 using std::wstring;
 using std::vector;
 
@@ -118,7 +124,7 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		// ROM filename.
-		rp_string filename;
+		string filename;
 		// ROM data. (Not opened until the properties tab is shown.)
 		RomData *romData;
 
@@ -623,11 +629,11 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// System name.
 	// TODO: Logo, game icon, and game title?
-	const rp_char *systemName = romData->systemName(
+	const char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 
 	// File type.
-	const rp_char *const fileType = romData->fileType_string();
+	const char *const fileType = romData->fileType_string();
 
 	wstring sysInfo;
 	if (systemName) {
@@ -943,6 +949,19 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	GetClientRect(hWndTab, &rectDlg);
 	const int max_width = rectDlg.right - pt_start.x;
 
+	// Convert the bitfield description names to UTF-16 once.
+	vector<wstring> wnames;
+	wnames.reserve(count);
+	for (int j = 0; j < count; j++) {
+		const string &name = bitfieldDesc.names->at(j);
+		if (name.empty()) {
+			// Skip RP2W_s() for empty strings.
+			wnames.push_back(wstring());
+		} else {
+			wnames.push_back(RP2W_s(name));
+		}
+	}
+
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
 	std::vector<int> col_widths;
@@ -960,16 +979,14 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			col_widths.resize(elemsPerRow);
 			row = 0; col = 0;
 			for (int j = 0; j < count; j++) {
-				const rp_string &name = bitfieldDesc.names->at(j);
-				if (name.empty())
+				const wstring &wname = wnames.at(j);
+				if (wname.empty())
 					continue;
-				// Make sure this is a UTF-16 string.
-				wstring s_name = RP2W_s(name);
 
 				// Get the width of this specific entry.
 				// TODO: Use measureTextSize()?
 				SIZE textSize;
-				GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+				GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
 				int chk_w = rect_chkbox.right + textSize.cx;
 				if (chk_w > col_widths[col]) {
 					col_widths[col] = chk_w;
@@ -1022,11 +1039,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 	row = 0; col = 0;
 	for (int j = 0; j < count; j++) {
-		const rp_string &name = bitfieldDesc.names->at(j);
-		if (name.empty())
+		const wstring &wname = wnames.at(j);
+		if (wname.empty())
 			continue;
-		// Make sure this is a UTF-16 string.
-		wstring s_name = RP2W_s(name);
 
 		// Get the text size.
 		int chk_w;
@@ -1034,7 +1049,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			// Get the width of this specific entry.
 			// TODO: Use measureTextSize()?
 			SIZE textSize;
-			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+			GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
 			if (col == elemsPerRow) {
@@ -1051,7 +1066,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 		// FIXME: Tab ordering?
 		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_BUTTON, s_name.c_str(),
+			WC_BUTTON, wname.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
@@ -1149,19 +1164,20 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
 		lvColumn.fmt = LVCFMT_LEFT;
 		for (int i = 0; i < col_count; i++) {
-			const rp_string &name = listDataDesc.names->at(i);
-			if (!name.empty()) {
-				// TODO: Support for RP_UTF8?
+			const string &str = listDataDesc.names->at(i);
+			if (!str.empty()) {
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				lvColumn.pszText = (LPWSTR)(name.c_str());
+				const wstring wstr = RP2W_s(str);
+				lvColumn.pszText = const_cast<LPWSTR>(wstr.c_str());
+				ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
 				lvColumn.pszText = L"";
 				lvColumn.mask |= LVCF_WIDTH;
 				lvColumn.cx = 0;
+				ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			}
-			ListView_InsertColumn(hDlgItem, i, &lvColumn);
 		}
 	} else {
 		lvColumn.mask = LVCF_FMT;
@@ -1180,13 +1196,13 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		for (int i = 0; i < row_count; i++) {
 			lvItem.iItem = i;
 
-			const vector<rp_string> &data_row = list_data->at(i);
+			const vector<string> &data_row = list_data->at(i);
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				lvItem.iSubItem = col;
-				// TODO: Support for RP_UTF8?
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				lvItem.pszText = (LPWSTR)iter->c_str();
+				const wstring wstr = RP2W_s(*iter);
+				lvItem.pszText = const_cast<LPWSTR>(wstr.c_str());
 				if (col == 0) {
 					// Column 0: Insert the item.
 					ListView_InsertItem(hDlgItem, &lvItem);
@@ -1285,7 +1301,8 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"Unknown");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field,
+			RP2W_c(C_("RomDataView", "Unknown")));
 	}
 
 	// Format the date/time using the system locale.
@@ -1390,13 +1407,14 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"ERROR");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field,
+			RP2W_c(C_("RomDataView", "ERROR")));
 	}
 
 	// Convert the age ratings field to a string.
-	rp_string rps = RomFields::ageRatingsDecode(age_ratings);
+	string str = RomFields::ageRatingsDecode(age_ratings);
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, RP2W_s(rps));
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, RP2W_s(str));
 }
 
 /**
@@ -1523,12 +1541,18 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	InitCommonControlsEx(&initCommCtrl);
 
 	// Dialog font and device context.
-	hFontDlg = GetWindowFont(hDlg);
+	if (!hFontDlg) {
+		hFontDlg = GetWindowFont(hDlg);
+	}
 	AutoGetDC hDC(hDlg, hFontDlg);
 
 	// Initialize the bold and monospaced fonts.
 	initBoldFont(hFontDlg);
 	initMonospacedFont(hFontDlg);
+
+	// Convert the field description labels to UTF-16 once.
+	vector<wstring> w_desc_text;
+	w_desc_text.reserve(count);
 
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
@@ -1537,26 +1561,33 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	for (int i = 0; i < count; i++) {
 		const RomFields::Field *field = fields->field(i);
 		assert(field != nullptr);
-		if (!field || !field->isValid)
+		if (!field || !field->isValid) {
+			w_desc_text.push_back(wstring());
 			continue;
-		if (field->name.empty())
+		} else if (field->name.empty()) {
+			w_desc_text.push_back(wstring());
 			continue;
-		// Make sure this is a UTF-16 string.
-		wstring s_name = RP2W_s(field->name);
+		}
+
+		// tr: Field description label.
+		w_desc_text.push_back(RP2W_s(rp_sprintf(
+			C_("RomDataView", "%s:"), field->name.c_str())));
+		const wstring& desc_text = w_desc_text.at(i);
 
 		// TODO: Handle STRF_WARNING?
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
-		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+		GetTextExtentPoint32(hDC, desc_text.data(), (int)desc_text.size(), &textSize);
 		if (textSize.cx > max_text_width) {
 			max_text_width = textSize.cx;
 		}
 	}
 
-	// Add additional spacing for the ':'.
+	// Add additional spacing between the ':' and the field.
 	// TODO: Use measureTextSize()?
-	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
+	// TODO: Reduce to 1 space?
+	GetTextExtentPoint32(hDC, L"  ", 2, &textSize);
 	max_text_width += textSize.cx;
 
 	// Create the ROM field widgets.
@@ -1627,12 +1658,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		tcItem.mask = TCIF_TEXT;
 		for (int i = 0; i < fields->tabCount(); i++) {
 			// Create a tab.
-			const rp_char *name = fields->tabName(i);
+			const char *name = fields->tabName(i);
 			if (!name) {
 				// Skip this tab.
 				continue;
 			}
-			tcItem.pszText = const_cast<LPWSTR>(RP2W_c(name));
+			const wstring wstr = RP2W_c(name);
+			tcItem.pszText = const_cast<LPWSTR>(wstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
 			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
 		}
@@ -1704,14 +1736,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Current tab.
 		auto &tab = tabs[tabIdx];
 
-		// Append a ":" to the description.
-		// TODO: Localization.
-		wstring desc_text = RP2W_s(field->name);
-		desc_text += L':';
-
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, desc_text.c_str(),
+			WC_STATIC, w_desc_text.at(idx).c_str(),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
@@ -1882,6 +1909,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	UINT nFiles, cchFilename;
 	wchar_t *filename = nullptr;
 	unique_ptr<IRpFile> file;
+	RomData *romData = nullptr;
 
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
@@ -1899,13 +1927,12 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	cchFilename++;	// Add one for the NULL terminator.
-	filename = (wchar_t*)malloc(cchFilename * sizeof(wchar_t));
+	filename = (wchar_t*)malloc((cchFilename+1) * sizeof(wchar_t));
 	if (!filename) {
 		// Memory allocation failed.
 		goto cleanup;
 	}
-	cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename);
+	cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
 		goto cleanup;
@@ -1926,7 +1953,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file.reset(new RpFile(W2RP_cl(filename, cchFilename-1), RpFile::FM_OPEN_READ));
+	file.reset(new RpFile(W2U8(filename, cchFilename), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -1934,7 +1961,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	RomData *romData = RomDataFactory::create(file.get());
+	romData = RomDataFactory::create(file.get());
 	if (!romData) {
 		// Could not open the RomData object.
 		goto cleanup;
@@ -1945,7 +1972,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// tab is clicked, because otherwise the file will be held
 	// open and may block the user from changing attributes.
 	romData->unref();
-	d->filename = W2RP_cl(filename, cchFilename-1);
+	d->filename = W2U8(filename, cchFilename);
 	hr = S_OK;
 
 cleanup:
@@ -1965,6 +1992,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
+	// tr: Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("RomDataView", "ROM Properties"));
+
 	// Create a property sheet page.
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
@@ -1972,7 +2002,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_PROPERTY_SHEET);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"ROM Properties";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = RP_ShellPropSheetExt_Private::DlgProc;
 	psp.pcRefParent = nullptr;
 	psp.pfnCallback = RP_ShellPropSheetExt_Private::CallbackProc;
@@ -2300,6 +2330,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (d) {
+				if (!d->hFontDlg) {
+					// Dialog font hasn't been obtained yet.
+					d->hFontDlg = GetWindowFont(hDlg);
+				}
 				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;

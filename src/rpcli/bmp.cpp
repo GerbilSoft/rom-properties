@@ -91,7 +91,7 @@ int rpbmp(std::ostream& os, const rp_image *img)
 	return 0;
 }
 
-int rpbmp(const rp_char *filename, const rp_image *img)
+int rpbmp(const char *filename, const rp_image *img)
 {
 	std::ofstream file(filename, std::ios::out | std::ios::binary);
 	if (!file.is_open()) {

@@ -45,7 +45,7 @@ class IAesCipher
 		 * Get the name of the AesCipher implementation.
 		 * @return Name.
 		 */
-		virtual const rp_char *name(void) const = 0;
+		virtual const char *name(void) const = 0;
 
 		/**
 		 * Has the cipher been initialized properly?

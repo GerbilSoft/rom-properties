@@ -58,13 +58,13 @@ class GcnFstPrivate
 		uint32_t fstData_sz;
 
 		// String table. (Pointer into d->fstData.)
-		const char *string_table;
+		const char *string_table_ptr;
 		uint32_t string_table_sz;
 
 		// String table, converted to Unicode.
 		// - Key: String offset in the FST string table.
-		// - Value: rp_string.
-		unordered_map<uint32_t, rp_string> rp_string_table;
+		// - Value: string.
+		unordered_map<uint32_t, string> u8_string_table;
 
 		// Offset shift.
 		uint8_t offsetShift;
@@ -83,7 +83,7 @@ class GcnFstPrivate
 		 * @param fst_entry FST entry.
 		 * @return Name, or nullptr if an error occurred.
 		 */
-		inline const rp_char *entry_name(const GCN_FST_Entry *fst_entry) const;
+		inline const char *entry_name(const GCN_FST_Entry *fst_entry) const;
 
 		/**
 		 * Get an FST entry.
@@ -95,14 +95,14 @@ class GcnFstPrivate
 		 * @param ppszName	[out, opt] Entry name. (Do not free this!)
 		 * @return FST entry, or nullptr on error.
 		 */
-		const GCN_FST_Entry *entry(int idx, const rp_char **ppszName = nullptr) const;
+		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
 
 		/**
 		 * Find a path.
 		 * @param path Path. (Absolute paths only!)
 		 * @return fst_entry if found, or nullptr if not.
 		 */
-		const GCN_FST_Entry *find_path(const rp_char *path) const;
+		const GCN_FST_Entry *find_path(const char *path) const;
 };
 
 /** GcnFstPrivate **/
@@ -111,7 +111,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	: hasErrors(false)
 	, fstData(nullptr)
 	, fstData_sz(len)
-	, string_table(nullptr)
+	, string_table_ptr(nullptr)
 	, string_table_sz(0)
 	, offsetShift(offsetShift)
 	, fstDirCount(0)
@@ -154,13 +154,13 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	this->fstData = reinterpret_cast<GCN_FST_Entry*>(fst8);
 
 	// Save a pointer to the string table.
-	string_table = reinterpret_cast<char*>(&fst8[string_table_offset]);
+	string_table_ptr = reinterpret_cast<char*>(&fst8[string_table_offset]);
 	string_table_sz = fstData_sz - string_table_offset;
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 	// Reserve space in the string table.
 	// NOTE: file_count includes the root directory entry.
-	rp_string_table.reserve(file_count - 1);
+	u8_string_table.reserve(file_count - 1);
 #endif
 }
 
@@ -184,7 +184,7 @@ inline bool GcnFstPrivate::is_dir(const GCN_FST_Entry *fst_entry)
  * @param fst_entry FST entry.
  * @return Name, or nullptr if an error occurred.
  */
-inline const rp_char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
+inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
 {
 	// FIXME: Is returning c_str from the iterator valid?
 
@@ -195,19 +195,19 @@ inline const rp_char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) 
 		return nullptr;
 	}
 
-	// Has this name already been converted to rp_string?
-	unordered_map<uint32_t, rp_string>::const_iterator iter = rp_string_table.find(offset);
-	if (iter != rp_string_table.end()) {
+	// Has this name already been converted to UTF-8?
+	unordered_map<uint32_t, string>::const_iterator iter = u8_string_table.find(offset);
+	if (iter != u8_string_table.end()) {
 		// Name has already been converted.
 		return iter->second.c_str();
 	}
 
 	// Name has not been converted.
 	// Do the conversion now.
-	const char *str = &string_table[offset];
+	const char *str = &string_table_ptr[offset];
 	int len = (int)strlen(str);	// TODO: Bounds checking.
-	rp_string rps = cp1252_sjis_to_rp_string(str, len);
-	iter = const_cast<GcnFstPrivate*>(this)->rp_string_table.insert(std::make_pair(offset, rps)).first;
+	string u8str = cp1252_sjis_to_utf8(str, len);
+	iter = const_cast<GcnFstPrivate*>(this)->u8_string_table.insert(std::make_pair(offset, u8str)).first;
 	return iter->second.c_str();
 }
 
@@ -221,7 +221,7 @@ inline const rp_char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) 
  * @param ppszName	[out, opt] Entry name. (Do not free this!)
  * @return FST entry, or nullptr on error.
  */
-const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const rp_char **ppszName) const
+const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
 {
 	if (!fstData || idx < 0) {
 		// No FST, or idx is invalid.
@@ -252,7 +252,7 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const rp_char **ppszName) con
  * @param path Path. (Absolute paths only!)
  * @return fst_entry if found, or nullptr if not.
  */
-const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
+const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 {
 	// TODO: Combine multiple slashes together.
 
@@ -265,23 +265,23 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 		return this->entry(0, nullptr);
 	}
 
-	// Store the path as a temporary rp_string.
-	rp_string rp_path;
-	if (path[0] != 0 && path[0] != _RP_CHR('/')) {
+	// Store the path as a temporary string.
+	string s_path;
+	if (path[0] != 0 && path[0] != '/') {
 		// Prepend a slash.
 		// (Relative paths aren't supported.)
-		rp_path = _RP_CHR('/');
+		s_path = '/';
 	}
-	rp_path.append(path);
+	s_path.append(path);
 
-	if (rp_path.empty()) {
+	if (s_path.empty()) {
 		// Invalid path.
 		return nullptr;
 	}
 
 	// If there's a trailing slash, remove it.
-	if (rp_path[rp_path.size()-1] == '/') {
-		rp_path.resize(rp_path.size()-1);
+	if (s_path[s_path.size()-1] == '/') {
+		s_path.resize(s_path.size()-1);
 	}
 
 	// Get the root directory.
@@ -292,8 +292,8 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 	}
 
 	// Should not have "" or "/" here.
-	assert(!rp_path.empty());
-	assert(rp_path != _RP("/"));
+	assert(!s_path.empty());
+	assert(s_path != "/");
 
 	// Skip the initial slash.
 	int idx = 1;	// Ignore the root directory.
@@ -301,13 +301,13 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 	int last_fst_idx = be32_to_cpu(fst_entry->root_dir.file_count);
 	size_t slash_pos = 0;
 	do {
-		size_t next_slash_pos = rp_path.find(_RP_CHR('/'), slash_pos + 1);
-		rp_string path_component;
+		size_t next_slash_pos = s_path.find('/', slash_pos + 1);
+		string path_component;
 		bool are_more_slashes = true;
 		if (next_slash_pos == string::npos) {
 			// No more slashes.
 			are_more_slashes = false;
-			path_component = rp_path.substr(slash_pos + 1);
+			path_component = s_path.substr(slash_pos + 1);
 		} else {
 			// Found another slash.
 			int sz = (int)(next_slash_pos - slash_pos - 1);
@@ -316,7 +316,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 				slash_pos = next_slash_pos;
 				continue;
 			}
-			path_component = rp_path.substr(slash_pos + 1, (size_t)sz);
+			path_component = s_path.substr(slash_pos + 1, (size_t)sz);
 		}
 
 		if (path_component.empty()) {
@@ -328,7 +328,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 		// Search this directory for a matching path component.
 		bool found = false;
 		for (; idx < last_fst_idx; idx++) {
-			const rp_char *pName;
+			const char *pName;
 			fst_entry = this->entry(idx, &pName);
 			if (!fst_entry) {
 				// Invalid path.
@@ -336,7 +336,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 			}
 
 			// TODO: Is GCN/Wii case-sensitive?
-			if (pName && !rp_strcmp(path_component.c_str(), pName)) {
+			if (pName && !strcmp(path_component.c_str(), pName)) {
 				// Found a match.
 				found = true;
 				break;
@@ -400,7 +400,7 @@ GcnFst::~GcnFst()
  */
 bool GcnFst::isOpen(void) const
 {
-	return (d->string_table != nullptr);
+	return (d->string_table_ptr != nullptr);
 }
 
 /**
@@ -419,7 +419,7 @@ bool GcnFst::hasErrors(void) const
  * @param path	[in] Directory path.
  * @return IFst::Dir*, or nullptr on error.
  */
-IFst::Dir *GcnFst::opendir(const rp_char *path)
+IFst::Dir *GcnFst::opendir(const char *path)
 {
 	// TODO: Ignoring path right now.
 	// Always reading the root directory.
@@ -512,7 +512,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 		return nullptr;
 	}
 
-	const rp_char *pName;
+	const char *pName;
 	fst_entry = d->entry(idx, &pName);
 	dirp->entry.idx = idx;
 	if (!fst_entry) {
@@ -577,7 +577,7 @@ int GcnFst::closedir(IFst::Dir *dirp)
  * @param dirent	[out] Pointer to DirEnt buffer.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GcnFst::find_file(const rp_char *filename, DirEnt *dirent)
+int GcnFst::find_file(const char *filename, DirEnt *dirent)
 {
 	if (!filename || !dirent) {
 		// Invalid parameters.

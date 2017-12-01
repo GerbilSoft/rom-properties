@@ -34,10 +34,6 @@ class AboutTabText {
 		RP_DISABLE_COPY(AboutTabText);
 
 	public:
-		// NOTE: Can't use rp_char here due to MSVC 2010 issues.
-		// These strings will have to be converted to rp_char at runtime.
-		// These are UTF-8 strings.
-
 		// Program version string.
 		static const char prg_version[];
 
@@ -60,10 +56,10 @@ class AboutTabText {
 
 		struct CreditsData_t {
 			CreditType_t type;
-			const rp_char *name;
-			const rp_char *url;
-			const rp_char *linkText;
-			const rp_char *sub;
+			const char *name;
+			const char *url;
+			const char *linkText;
+			const char *sub;
 		};
 
 		/**
@@ -75,8 +71,8 @@ class AboutTabText {
 		/** Support **/
 
 		struct SupportSite_t {
-			const rp_char *name;
-			const rp_char *url;
+			const char *name;
+			const char *url;
 		};
 
 		/**

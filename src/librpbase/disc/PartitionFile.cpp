@@ -25,6 +25,10 @@
 // C includes. (C++ namespace)
 #include <cerrno>
 
+// C++ includes.
+#include <string>
+using std::string;
+
 namespace LibRpBase {
 
 /**
@@ -243,10 +247,10 @@ int64_t PartitionFile::size(void)
  * Get the filename.
  * @return Filename. (May be empty if the filename is not available.)
  */
-rp_string PartitionFile::filename(void) const
+string PartitionFile::filename(void) const
 {
 	// TODO: Implement this.
-	return rp_string();
+	return string();
 }
 
 }

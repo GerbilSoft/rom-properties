@@ -153,45 +153,44 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 #endif /* RP_UTF16 && !RP_WIS16 */
 
 /**
- * sprintf()-style function for rp_string.
- *
- * NOTE: All parameters *must* use UTF-8, since we can't
- * rely on snwprintf() using 16-bit wchar_t.
+ * sprintf()-style function for std::string.
  *
  * @param fmt Format string.
  * @param ... Arguments.
  * @return rp_string.
  */
-rp_string rp_sprintf(const char *fmt, ...)
+string rp_sprintf(const char *fmt, ...)
 {
-#if defined(_WIN32) && (!defined(_MSC_VER) || _MSC_VER < 1900)
-	// MSVC 2013 or older, or some other Windows compiler.
-	// vsnprintf() in MSVCRT is not C99 compliant, so we
-	// can't use the local buffer optimization.
+	// Local buffer optimization to reduce memory allocation.
+	char locbuf[128];
 	va_list ap;
+#if defined(_MSC_VER) && _MSC_VER < 1900
+	// MSVC 2013 and older isn't C99 compliant.
+	// Use the non-standard _vscprintf() to count characters.
 	va_start(ap, fmt);
-	int len = vsnprintf(nullptr, 0, fmt, ap);
+	int len = _vscprintf(fmt, ap);
 	va_end(ap);
 	if (len <= 0) {
 		// Nothing to format...
-		return rp_string();
+		return string();
+	} else if (len < (int)sizeof(locbuf)) {
+		// The string fits in the local buffer.
+		va_start(ap, fmt);
+		vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
+		va_end(ap);
+		return string(locbuf, len);
 	}
 #else
-	// gcc, or MSVC 2015 or later.
-	// vsnprintf() is C99 compliant, so use a local buffer
-	// to reduce memory allocations.
-	// TODO: cmake check for C99 vsnprintf().
-	char locbuf[128];
-	va_list ap;
+	// C99-compliant vsnprintf().
 	va_start(ap, fmt);
 	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
 	va_end(ap);
 	if (len <= 0) {
 		// Nothing to format...
-		return rp_string();
+		return string();
 	} else if (len < (int)sizeof(locbuf)) {
 		// The string fits in the local buffer.
-		return utf8_to_rp_string(locbuf, len);
+		return string(locbuf, len);
 	}
 #endif
 
@@ -202,8 +201,50 @@ rp_string rp_sprintf(const char *fmt, ...)
 	int len2 = vsnprintf(buf.get(), len+1, fmt, ap);
 	va_end(ap);
 	assert(len == len2);
-	return (len == len2 ? utf8_to_rp_string(buf.get(), len) : rp_string());
+	return (len == len2 ? string(buf.get(), len) : string());
 }
+
+#ifdef _MSC_VER
+/**
+ * sprintf()-style function for std::string.
+ * This version supports positional format string arguments.
+ *
+ * @param fmt Format string.
+ * @param ... Arguments.
+ * @return rp_string.
+ */
+std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
+{
+	// Local buffer optimization to reduce memory allocation.
+	char locbuf[128];
+	va_list ap;
+
+	// _vsprintf_p() isn't C99 compliant.
+	// Use the non-standard _vscprintf_p() to count characters.
+	va_start(ap, fmt);
+	int len = _vscprintf_p(fmt, ap);
+	va_end(ap);
+	if (len <= 0) {
+		// Nothing to format...
+		return string();
+	} else if (len < (int)sizeof(locbuf)) {
+		// The string fits in the local buffer.
+		va_start(ap, fmt);
+		_vsprintf_p(locbuf, sizeof(locbuf), fmt, ap);
+		va_end(ap);
+		return string(locbuf, len);
+	}
+
+	// Temporarily allocate a buffer large enough for the string,
+	// then call vsnprintf() again.
+	unique_ptr<char[]> buf(new char[len+1]);
+	va_start(ap, fmt);
+	int len2 = _vsprintf_p(buf.get(), len+1, fmt, ap);
+	va_end(ap);
+	assert(len == len2);
+	return (len == len2 ? string(buf.get(), len) : string());
+}
+#endif /* _MSC_VER */
 
 }
 

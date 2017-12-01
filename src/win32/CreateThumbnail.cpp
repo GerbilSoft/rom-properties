@@ -29,6 +29,8 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <memory>
+#include <string>
+using std::string;
 using std::unique_ptr;
 
 /** CreateThumbnail **/
@@ -153,11 +155,11 @@ int CreateThumbnail::getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize)
  * Get the proxy for the specified URL.
  * @return Proxy, or empty string if no proxy is needed.
  */
-rp_string CreateThumbnail::proxyForUrl(const rp_string &url) const
+string CreateThumbnail::proxyForUrl(const string &url) const
 {
 	// libcachemgr uses urlmon on Windows, which
 	// always uses the system proxy.
-	return rp_string();
+	return string();
 }
 
 /** CreateThumbnailNoAlpha **/

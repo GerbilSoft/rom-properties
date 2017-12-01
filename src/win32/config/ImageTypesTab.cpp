@@ -29,10 +29,17 @@
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 #include "resource.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
+
+// C++ includes.
+#include <string>
+using std::wstring;
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
@@ -94,7 +101,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+		virtual int saveWriteEntry(const char *sysName, const char *imageTypeList) override final;
 
 		/**
 		 * Close the Save subsystem.
@@ -229,7 +236,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblImageType = {0, 0};
 	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeNames[i]), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeName(i)), &szCur);
 		if (szCur.cx > sz_lblImageType.cx) {
 			sz_lblImageType.cx = szCur.cx;
 		}
@@ -242,7 +249,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblSysName = {0, 0};
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysData[sys].name), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysName(sys)), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
 			sz_lblSysName.cx = szCur.cx;
 		}
@@ -273,7 +280,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		rect_lblDesc2.bottom + dlgMargin.bottom};
 	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, RP2W_c(imageTypeNames[i]),
+			WC_STATIC, RP2W_c(imageTypeName(i)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
 			curPt.x, curPt.y, sz_lblImageType.cx, sz_lblImageType.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
@@ -298,7 +305,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, RP2W_c(sysData[sys].name),
+			WC_STATIC, RP2W_c(sysName(sys)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
 			curPt.x, curPt.y,
 			sz_lblSysName.cx, sz_lblSysName.cy,
@@ -423,7 +430,7 @@ int ImageTypesTabPrivate::saveStart(void)
 {
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
-	const rp_char *const filename = config->filename();
+	const char *const filename = config->filename();
 	if (!filename) {
 		// No configuration filename...
 		return -ENOENT;
@@ -445,7 +452,7 @@ int ImageTypesTabPrivate::saveStart(void)
  * @param imageTypeList Image type list, comma-separated.
  * @return 0 on success; negative POSIX error code on error.
  */
-int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList)
+int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
 {
 	assert(tmp_conf_filename != nullptr);
 	if (!tmp_conf_filename) {
@@ -698,13 +705,16 @@ HPROPSHEETPAGE ImageTypesTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// tr: Tab title.
+	const wstring wsTabTitle = RP2W_c(C_("ImageTypesTab", "Image Types"));
+
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_IMAGETYPES);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"Image Types";
+	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = ImageTypesTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

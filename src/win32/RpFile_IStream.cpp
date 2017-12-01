@@ -25,8 +25,7 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-using LibRpBase::IRpFile;
-using LibRpBase::rp_string;
+using namespace LibRpBase;
 
 // C++ includes.
 #include <string>
@@ -308,7 +307,7 @@ int64_t RpFile_IStream::size(void)
  * Get the filename.
  * @return Filename. (May be empty if the filename is not available.)
  */
-rp_string RpFile_IStream::filename(void) const
+string RpFile_IStream::filename(void) const
 {
 	if (m_filename.empty()) {
 		// Get the filename.
@@ -319,12 +318,12 @@ rp_string RpFile_IStream::filename(void) const
 		HRESULT hr = m_pStream->Stat(&statstg, STATFLAG_DEFAULT);
 		if (FAILED(hr)) {
 			// Stat() failed.
-			return rp_string();
+			return string();
 		}
 
 		if (statstg.pwcsName) {
 			// Save the filename.
-			const_cast<RpFile_IStream*>(this)->m_filename = W2RP_c(statstg.pwcsName);
+			const_cast<RpFile_IStream*>(this)->m_filename = W2U8(statstg.pwcsName);
 			CoTaskMemFree(statstg.pwcsName);
 		}
 	}

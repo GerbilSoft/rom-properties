@@ -19,18 +19,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+/**
+ * References:
+ * - audio-tags plugin
+ * - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
+ */
+
 #include "rom-properties-page.hpp"
 #include "../RomDataView.hpp"
+
+// libi18n
+#include "libi18n/i18n.h"
 
 // C++ includes.
 #include <string>
 #include <vector>
 using std::string;
 using std::vector;
-
-// References:
-// - audio-tags plugin
-// - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
 
 /* Property identifiers */
 enum {
@@ -147,8 +152,12 @@ rom_properties_page_finalize(GObject *object)
 RomPropertiesPage*
 rom_properties_page_new(void)
 {
-	RomPropertiesPage *page = static_cast<RomPropertiesPage*>(g_object_new(TYPE_ROM_PROPERTIES_PAGE, nullptr));
-	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page), "ROM Properties");
+	// tr: Tab title.
+	const char *const tabTitle = C_("RomDataView", "ROM Properties");
+
+	RomPropertiesPage *page = static_cast<RomPropertiesPage*>(
+		g_object_new(TYPE_ROM_PROPERTIES_PAGE, nullptr));
+	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page), tabTitle);
 	return page;
 }
 

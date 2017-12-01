@@ -36,6 +36,9 @@
 #include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -127,11 +130,13 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 		gtk_widget_show(romDataView);
 		g_free(filename);
 
+		// tr: Tab title.
+		const char *const tabTitle = C_("RomDataView", "ROM Properties");
+
 		// Create the NautilusPropertyPage.
 		NautilusPropertyPage *page = nautilus_property_page_new(
 			"RomPropertiesPage::property_page",
-			gtk_label_new("ROM Properties"),
-			romDataView);
+			gtk_label_new(tabTitle), romDataView);
 
 		/* Add the page to the pages provided by this plugin */
 		pages = g_list_prepend(pages, page);
@@ -160,7 +165,7 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 	// TODO: Check file extensions and/or MIME types?
 
 	// Open the ROM file.
-	RpFile *file = new RpFile(U82RP_c(filename), RpFile::FM_OPEN_READ);
+	RpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);
 	if (file->isOpen()) {
 		// Is this ROM file supported?
 		// NOTE: We have to create an instance here in order to

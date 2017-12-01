@@ -40,7 +40,7 @@ class WiiSystemMenuVersion
 		 * @param version Version number.
 		 * @return Display version, or nullptr if not found.
 		 */
-		static const rp_char *lookup(unsigned int version);
+		static const char *lookup(unsigned int version);
 };
 
 }

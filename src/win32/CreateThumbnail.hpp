@@ -87,7 +87,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual LibRpBase::rp_string proxyForUrl(const LibRpBase::rp_string &url) const override final;
+		virtual std::string proxyForUrl(const std::string &url) const override final;
 };
 
 /**

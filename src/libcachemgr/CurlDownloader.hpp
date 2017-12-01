@@ -30,8 +30,8 @@ class CurlDownloader : public IDownloader
 {
 	public:
 		CurlDownloader();
-		explicit CurlDownloader(const rp_char *url);
-		explicit CurlDownloader(const LibRpBase::rp_string &url);
+		explicit CurlDownloader(const char *url);
+		explicit CurlDownloader(const std::string &url);
 
 	private:
 		typedef IDownloader super;

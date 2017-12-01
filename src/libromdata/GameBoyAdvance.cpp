@@ -30,6 +30,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -199,7 +200,7 @@ int GameBoyAdvance::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *GameBoyAdvance::systemName(unsigned int type) const
+const char *GameBoyAdvance::systemName(unsigned int type) const
 {
 	RP_D(const GameBoyAdvance);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -210,10 +211,10 @@ const rp_char *GameBoyAdvance::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameBoyAdvance::systemName() array index optimization needs to be updated.");
 
-	static const rp_char *const sysNames[4] = {
-		_RP("Nintendo Game Boy Advance"),
-		_RP("Game Boy Advance"),
-		_RP("GBA"),
+	static const char *const sysNames[4] = {
+		"Nintendo Game Boy Advance",
+		"Game Boy Advance",
+		"GBA",
 		nullptr
 	};
 
@@ -233,13 +234,13 @@ const rp_char *GameBoyAdvance::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *GameBoyAdvance::supportedFileExtensions_static(void)
+const char *const *GameBoyAdvance::supportedFileExtensions_static(void)
 {
-	static const rp_char *const exts[] = {
-		_RP(".gba"),	// Most common
-		_RP(".agb"),	// Less common
-		_RP(".mb"),	// Multiboot (may conflict with AutoDesk Maya)
-		_RP(".srl"),	// Official SDK extension
+	static const char *const exts[] = {
+		".gba",	// Most common
+		".agb",	// Less common
+		".mb",	// Multiboot (may conflict with AutoDesk Maya)
+		".srl",	// Official SDK extension
 
 		nullptr
 	};
@@ -259,7 +260,7 @@ const rp_char *const *GameBoyAdvance::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const rp_char *const *GameBoyAdvance::supportedFileExtensions(void) const
+const char *const *GameBoyAdvance::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }
@@ -288,8 +289,8 @@ int GameBoyAdvance::loadFieldData(void)
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Game title.
-	d->fields->addField_string(_RP("Title"),
-		latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	d->fields->addField_string(C_("GameBoyAdvance", "Title"),
+		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -301,15 +302,15 @@ int GameBoyAdvance::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string(_RP("Game ID"), latin1_to_rp_string(id6, 6));
+	d->fields->addField_string(C_("GameBoyAdvance", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Look up the publisher.
-	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
-	d->fields->addField_string(_RP("Publisher"),
-		publisher ? publisher : _RP("Unknown"));
+	const char *publisher = NintendoPublishers::lookup(romHeader->company);
+	d->fields->addField_string(C_("GameBoyAdvance", "Publisher"),
+		publisher ? publisher : C_("GameBoyAdvance", "Unknown"));
 
 	// ROM version.
-	d->fields->addField_string_numeric(_RP("Revision"),
+	d->fields->addField_string_numeric(C_("GameBoyAdvance", "Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Entry point.
@@ -325,12 +326,12 @@ int GameBoyAdvance::loadFieldData(void)
 				if (entry_point & 0x02000000) {
 					entry_point |= 0xFC000000;
 				}
-				d->fields->addField_string_numeric(_RP("Entry Point"),
+				d->fields->addField_string_numeric(C_("GameBoyAdvance", "Entry Point"),
 					entry_point, RomFields::FB_HEX, 8,
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Non-standard entry point instruction.
-				d->fields->addField_string_hexdump(_RP("Entry Point"),
+				d->fields->addField_string_hexdump(C_("GameBoyAdvance", "Entry Point"),
 					romHeader->entry_point_bytes, 4,
 					RomFields::STRF_MONOSPACE);
 			}
@@ -338,13 +339,14 @@ int GameBoyAdvance::loadFieldData(void)
 
 		case GameBoyAdvancePrivate::ROM_NDS_EXP:
 			// Not bootable.
-			d->fields->addField_string(_RP("Entry Point"),
-				_RP("Not bootable (Nintendo DS expansion)"));
+			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
+				C_("GameBoyAdvance", "Not bootable (Nintendo DS expansion)"));
 			break;
 
 		default:
 			// Unknown ROM type type.
-			d->fields->addField_string(_RP("Entry Point"), _RP("Unknown"));
+			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
+				C_("GameBoyAdvance", "Unknown"));
 			break;
 	}
 

@@ -82,7 +82,7 @@ class RpPng
 		 * @param img rp_image to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int save(const rp_char *filename, const rp_image *img);
+		static int save(const char *filename, const rp_image *img);
 
 		/**
 		 * Save an animated image in APNG format to an IRpFile.
@@ -120,7 +120,7 @@ class RpPng
 		 * @param iconAnimData Animated image data to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int save(const rp_char *filename, const IconAnimData *iconAnimData);
+		static int save(const char *filename, const IconAnimData *iconAnimData);
 };
 
 }
