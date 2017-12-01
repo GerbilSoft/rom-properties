@@ -2,6 +2,20 @@
 
 ## v1.3 - The Internationalization Release (released 201?/??/??)
 
+* New features:
+  * Most strings are now localizable. The gettext utilities and libintl
+    library are used to provide localization support.
+  * TODO: gettext/libintl is not currently provided for Windows.
+  * TODO: Consider using boost::locale instead of libintl. Has the ability
+    to select a different locale for rom-properties instead of using the
+    system-wide locale, but has a 1 MB runtime library.
+  * All builds now use UTF-8 for text encoding. This increases overhead
+    slightly on Windows due to required UTF-8 to UTF-16 conversion, but it
+    reduces the DLL size. (Qt build doesn't have much overhead difference,
+    since it has to copy char16_t data into QString before using it anyway.)
+    * The `rp_char` and `rp_string` typedefs are now deprecated. Most uses
+      of these typedefs have been removed.
+
 ## v1.2 - The Dreamcast Release (released 2017/11/12)
 
 * New features:
