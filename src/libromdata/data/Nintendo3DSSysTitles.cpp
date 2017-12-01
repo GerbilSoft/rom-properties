@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * Nintendo3DSSysTitles.hpp: Nintendo Wii U publisher data.                            *
+ * Nintendo3DSSysTitles.cpp: Nintendo 3DS system title lookup.             *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
