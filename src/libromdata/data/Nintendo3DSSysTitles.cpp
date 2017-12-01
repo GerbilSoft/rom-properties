@@ -27,7 +27,8 @@
 
 namespace LibRomData {
 
-class Nintendo3DSSysTitlesPrivate {
+class Nintendo3DSSysTitlesPrivate
+{
 	private:
 		// Static class.
 		Nintendo3DSSysTitlesPrivate();
