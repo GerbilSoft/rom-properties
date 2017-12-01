@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * ktx_structs.h: Khronos KTX texture format data structures.              *
+ * GLTypeStrings.hpp: OpenGL string tables.                                *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -19,56 +19,55 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_KTX_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_KTX_STRUCTS_H__
+#ifndef __ROMPROPERTIES_LIBROMDATA_GLTYPESTRINGS_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_GLTYPESTRINGS_HPP__
 
+#include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
+
+// C includes.
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace LibRomData {
 
-#pragma pack(1)
+class GLTypeStrings
+{
+	private:
+		// Static class.
+		GLTypeStrings();
+		~GLTypeStrings();
+		RP_DISABLE_COPY(GLTypeStrings)
 
-/**
- * References:
- * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
- */
+	public:
+		/**
+		 * Look up an OpenGL glType string.
+		 * @param glType	[in] glType
+		 * @return String, or nullptr if not found.
+		 */
+		static const char *lookup_glType(unsigned int glType);
 
-#include "gl_defs.h"
+		/**
+		 * Look up an OpenGL glFormat string.
+		 * @param glFormat	[in] glFormat
+		 * @return String, or nullptr if not found.
+		 */
+		static const char *lookup_glFormat(unsigned int glFormat);
 
-/**
- * Khronos KTX: File header.
- * Reference: https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
- *
- * Endianness depends on the value of the `endianness` field.
- * This field contains KTX_ENDIAN_MAGIC if the proper endianness is used.
- */
-#define KTX_IDENTIFIER "\xABKTX 11\xBB\r\n\x1A\n"
-#define KTX_ENDIAN_MAGIC 0x04030201
-typedef struct PACKED _KTX_Header {
-	uint8_t identifier[12];		// KTX_IDENTIFIER
-	uint32_t endianness;		// KTX_ENDIAN_MAGIC
-	uint32_t glType;
-	uint32_t glTypeSize;
-	uint32_t glFormat;
-	uint32_t glInternalFormat;
-	uint32_t glBaseInternalFormat;
-	uint32_t pixelWidth;
-	uint32_t pixelHeight;
-	uint32_t pixelDepth;
-	uint32_t numberOfArrayElements;
-	uint32_t numberOfFaces;
-	uint32_t numberOfMipmapLevels;
-	uint32_t bytesOfKeyValueData;
-} KTX_Header;
-ASSERT_STRUCT(KTX_Header, 64);
+		/**
+		 * Look up an OpenGL glInternalFormat string.
+		 * @param glInternalFormat	[in] glInternalFormat
+		 * @return String, or nullptr if not found.
+		 */
+		static const char *lookup_glInternalFormat(unsigned int glInternalFormat);
 
-#pragma pack()
+		/**
+		 * Look up an OpenGL glBaseInternalFormat string.
+		 * @param glBaseInternalFormat	[in] glBaseInternalFormat
+		 * @return String, or nullptr if not found.
+		 */
+		static const char *lookup_glBaseInternalFormat(unsigned int glBaseInternalFormat);
+};
 
-#ifdef __cplusplus
 }
-#endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_KTX_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_GLTYPESTRINGS_HPP__ */

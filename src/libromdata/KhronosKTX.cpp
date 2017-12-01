@@ -22,6 +22,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "ktx_structs.h"
+#include "data/GLTypeStrings.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -419,17 +420,41 @@ int KhronosKTX::loadFieldData(void)
 	// TODO: String lookups.
 
 	// glType
-	d->fields->addField_string_numeric("glType", ktxHeader->glType, RomFields::FB_HEX);
+	const char *glType_str = GLTypeStrings::lookup_glType(ktxHeader->glType);
+	if (glType_str) {
+		d->fields->addField_string("glType", glType_str);
+	} else {
+		d->fields->addField_string_numeric("glType", ktxHeader->glType, RomFields::FB_HEX);
+	}
+
 	// glFormat
-	d->fields->addField_string_numeric("glFormat", ktxHeader->glFormat, RomFields::FB_HEX);
-	// glInternalFormat (only if != glFormat)
-	if (ktxHeader->glInternalFormat != ktxHeader->glFormat) {
+	const char *glFormat_str = GLTypeStrings::lookup_glFormat(ktxHeader->glFormat);
+	if (glFormat_str) {
+		d->fields->addField_string("glFormat", glFormat_str);
+	} else {
+		d->fields->addField_string_numeric("glFormat", ktxHeader->glFormat, RomFields::FB_HEX);
+	}
+
+	// glInternalFormat
+	const char *glInternalFormat_str = GLTypeStrings::lookup_glInternalFormat(ktxHeader->glInternalFormat);
+	if (glInternalFormat_str) {
+		d->fields->addField_string("glInternalFormat", glInternalFormat_str);
+	} else {
 		d->fields->addField_string_numeric("glInternalFormat",
 			ktxHeader->glInternalFormat, RomFields::FB_HEX);
 	}
-	// glBaseInternalFormat
-	d->fields->addField_string_numeric("glBaseInternalFormat",
-		ktxHeader->glBaseInternalFormat, RomFields::FB_HEX);
+
+	// glBaseInternalFormat (only if != glFormat)
+	if (ktxHeader->glBaseInternalFormat != ktxHeader->glFormat) {
+		const char *glBaseInternalFormat_str =
+			GLTypeStrings::lookup_glBaseInternalFormat(ktxHeader->glBaseInternalFormat);
+		if (glBaseInternalFormat_str) {
+			d->fields->addField_string("glBaseInternalFormat", glBaseInternalFormat_str);
+		} else {
+			d->fields->addField_string_numeric("glBaseInternalFormat",
+				ktxHeader->glBaseInternalFormat, RomFields::FB_HEX);
+		}
+	}
 
 	// # of array elements (for texture arrays)
 	if (ktxHeader->numberOfArrayElements > 0) {
