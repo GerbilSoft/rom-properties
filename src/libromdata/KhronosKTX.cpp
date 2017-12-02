@@ -52,10 +52,6 @@ using namespace LibRpBase;
 using std::string;
 using std::vector;
 
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
-
 namespace LibRomData {
 
 class KhronosKTXPrivate : public RomDataPrivate
