@@ -373,7 +373,7 @@ void ImageDecoderTest::Compare_RpImage(
 	// TODO: rp_image::operator==()?
 	const uint8_t *pBitsExpected = static_cast<const uint8_t*>(pImgExpected->bits());
 	const uint8_t *pBitsActual   = static_cast<const uint8_t*>(pImgActual->bits());
-	const int row_bytes = pImgExpected->width() * sizeof(uint32_t);
+	const int row_bytes = pImgExpected->row_bytes();
 	const int stride_expected = pImgExpected->stride();
 	const int stride_actual   = pImgActual->stride();
 	for (unsigned int y = (unsigned int)pImgExpected->height(); y > 0; y--) {

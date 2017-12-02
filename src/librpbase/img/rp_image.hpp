@@ -148,10 +148,18 @@ class rp_image
 		bool isSquare(void) const;
 
 		/**
-		 * Get the number of bytes per line.
+		 * Get the total number of bytes per line.
+		 * This includes memory alignment padding.
 		 * @return Bytes per line.
 		 */
 		int stride(void) const;
+
+		/**
+		 * Get the number of active bytes per line.
+		 * This does not include memory alignment padding.
+		 * @return Number of active bytes per line.
+		 */
+		int row_bytes(void) const;
 
 		/**
 		 * Get the image format.

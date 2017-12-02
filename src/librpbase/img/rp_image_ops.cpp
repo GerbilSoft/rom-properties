@@ -60,22 +60,9 @@ rp_image *rp_image::dup(void) const
 	// NOTE: Using uint8_t* because stride is measured in bytes.
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
 	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const int row_bytes = img->row_bytes();
 	const int dest_stride = img->stride();
 	const int src_stride = d->backend->stride;
-
-	int row_bytes;
-	switch (format) {
-		case rp_image::FORMAT_CI8:
-			row_bytes = width;
-			break;
-		case rp_image::FORMAT_ARGB32:
-			row_bytes = width * sizeof(uint32_t);
-			break;
-		default:
-			assert(!"Unsupported rp_image::Format.");
-			delete img;
-			return nullptr;
-	}
 
 	if (src_stride == dest_stride) {
 		// Copy the entire image all at once.
@@ -238,7 +225,7 @@ rp_image *rp_image::squared(void) const
 		dest += (addToTop * dest_stride);
 
 		// Copy the image data.
-		const int row_bytes = width * sizeof(uint32_t);
+		const int row_bytes = sq_img->row_bytes();
 		for (unsigned int y = height; y > 0; y--) {
 			memcpy(dest, src, row_bytes);
 			dest += dest_stride;
@@ -247,7 +234,7 @@ rp_image *rp_image::squared(void) const
 
 		// Clear the bottom rows.
 		// NOTE: Last row may not be the full stride.
-		memset(dest, 0, ((addToBottom-1) * dest_stride) + (width * sizeof(uint32_t)));
+		memset(dest, 0, ((addToBottom-1) * dest_stride) + sq_img->row_bytes());
 	} else if (width < height) {
 		// Image is taller. Add columns to the left and right.
 		// TODO: 8bpp support?
@@ -274,7 +261,7 @@ rp_image *rp_image::squared(void) const
 		uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
 		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
 		// "Blanking" area is right border, potential unused space from stride, then left border.
-		const int dest_blanking = sq_img->stride() - (width * sizeof(uint32_t));
+		const int dest_blanking = sq_img->stride() - sq_img->row_bytes();
 		const int dest_stride = sq_img->stride();
 		const int src_stride = d->backend->stride;
 
@@ -283,7 +270,7 @@ rp_image *rp_image::squared(void) const
 		dest += (addToLeft * sizeof(uint32_t));
 
 		// Copy and clear all but the last line.
-		const int row_bytes = width * sizeof(uint32_t);
+		const int row_bytes = sq_img->row_bytes();
 		for (unsigned int y = (height-1); y > 0; y--) {
 			memcpy(dest, src, row_bytes);
 			memset(&dest[row_bytes], 0, dest_blanking);
@@ -360,18 +347,9 @@ rp_image *rp_image::resized(int width, int height) const
 	const int src_stride = d->backend->stride;
 
 	// We want to copy the minimum of new vs. old width.
-	int row_bytes;
-	switch (format) {
-		case rp_image::FORMAT_CI8:
-			row_bytes = std::min(width, orig_width);
-			break;
-		case rp_image::FORMAT_ARGB32:
-			row_bytes = std::min(width, orig_width) * sizeof(uint32_t);
-			break;
-		default:
-			assert(!"Unsupported rp_image::Format.");
-			delete img;
-			return nullptr;
+	int row_bytes = std::min(width, orig_width);
+	if (format == rp_image::FORMAT_ARGB32) {
+		row_bytes *= sizeof(uint32_t);
 	}
 
 	for (unsigned int y = (unsigned int)std::min(height, orig_height); y > 0; y--) {

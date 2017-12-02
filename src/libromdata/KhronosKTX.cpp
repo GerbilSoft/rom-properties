@@ -256,23 +256,10 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	// TODO: Split into rp_image_ops.cpp?
 	if (isVFlipNeeded && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
-		int row_bytes;
-		switch (img->format()) {
-			case rp_image::FORMAT_CI8:
-				row_bytes = ktxHeader.pixelWidth;
-				break;
-			case rp_image::FORMAT_ARGB32:
-				row_bytes = ktxHeader.pixelWidth * sizeof(uint32_t);
-				break;
-			default:
-				assert(!"Unsupported rp_image::Format.");
-				delete img;
-				return nullptr;
-		}
-
 		rp_image *flipimg = new rp_image(ktxHeader.pixelWidth, height, img->format());
 		const uint8_t *src = static_cast<const uint8_t*>(img->bits());
 		uint8_t *dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
+		const int row_bytes = img->row_bytes();
 		const int src_stride = img->stride();
 		const int dest_stride = flipimg->stride();
 
