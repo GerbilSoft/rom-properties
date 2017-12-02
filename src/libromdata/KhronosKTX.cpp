@@ -74,6 +74,12 @@ class KhronosKTXPrivate : public RomDataPrivate
 		// (KTX file has the opposite endianness.)
 		bool isByteswapNeeded;
 
+		// Is HFlip/VFlip needed?
+		// Some textures may be stored upside-down due to
+		// the way GL texture coordinates are interpreted.
+		bool isHFlipNeeded;
+		bool isVFlipNeeded;
+
 		// Texture data start address.
 		uint32_t texDataStartAddr;
 
@@ -103,6 +109,8 @@ class KhronosKTXPrivate : public RomDataPrivate
 KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, IRpFile *file)
 	: super(q, file)
 	, isByteswapNeeded(false)
+	, isHFlipNeeded(false)
+	, isVFlipNeeded(true)
 	, texDataStartAddr(0)
 	, img(nullptr)
 {
@@ -243,6 +251,43 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			return nullptr;
 	}
 
+	// Post-processing: Check if VFlip is needed.
+	// TODO: Handle HFlip too?
+	// TODO: Split into rp_image_ops.cpp?
+	if (isVFlipNeeded && height > 1) {
+		// TODO: Assert that img dimensions match ktxHeader?
+		int row_bytes;
+		switch (img->format()) {
+			case rp_image::FORMAT_CI8:
+				row_bytes = ktxHeader.pixelWidth;
+				break;
+			case rp_image::FORMAT_ARGB32:
+				row_bytes = ktxHeader.pixelWidth * sizeof(uint32_t);
+				break;
+			default:
+				assert(!"Unsupported rp_image::Format.");
+				delete img;
+				return nullptr;
+		}
+
+		rp_image *flipimg = new rp_image(ktxHeader.pixelWidth, height, img->format());
+		const uint8_t *src = static_cast<const uint8_t*>(img->bits());
+		uint8_t *dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
+		const int src_stride = img->stride();
+		const int dest_stride = flipimg->stride();
+
+		for (int i = height; i > 0; i--) {
+			memcpy(dest, src, row_bytes);
+			src += src_stride;
+			dest -= dest_stride;
+		}
+
+		// Swap the images.
+		std::swap(img, flipimg);
+		// Delete the original image.
+		delete flipimg;
+	}
+
 	aligned_free(buf);
 	return img;
 }
@@ -277,6 +322,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 	// - Byte: valuePadding (4-byte alignment)
 	const char *p = buf.get();
 	const char *const p_end = p + ktxHeader.bytesOfKeyValueData;
+	bool hasKTXorientation = false;
 
 	while (p < p_end) {
 		// Check the next key/value size.
@@ -321,6 +367,32 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 		data_row.push_back(string(p, k_end - p));
 		data_row.push_back(string(k_end + 1, kv_end - k_end - 2));
 		kv_data.push_back(data_row);
+
+		// Check if this is KTXorientation.
+		// NOTE: Only the first instance is used.
+		if (!hasKTXorientation && !strcmp(p, "KTXorientation")) {
+			hasKTXorientation = true;
+			// Check for known values.
+			// NOTE: Ignoring the R component.
+			const char *const v = k_end + 1;
+			if (!strncmp(v, "S=r,T=d", 7)) {
+				// Origin is upper-left.
+				isHFlipNeeded = false;
+				isVFlipNeeded = false;
+			} else if (!strncmp(v, "S=r,T=u", 7)) {
+				// Origin is lower-left.
+				isHFlipNeeded = false;
+				isVFlipNeeded = true;
+			} else if (!strncmp(v, "S=l,T=d", 7)) {
+				// Origin is upper-right.
+				isHFlipNeeded = true;
+				isVFlipNeeded = false;
+			} else if (!strncmp(v, "S=l,T=u", 7)) {
+				// Origin is lower-right.
+				isHFlipNeeded = true;
+				isVFlipNeeded = true;
+			}
+		}
 
 		// Next key/value pair.
 		p += ALIGN(4, sz);
@@ -396,6 +468,11 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 		// Texture data start address.
 		// NOTE: Always 4-byte aligned.
 		d->texDataStartAddr = ALIGN(4, sizeof(d->ktxHeader) + d->ktxHeader.bytesOfKeyValueData);
+
+		// Load key/value data.
+		// This function also checks for KTXorientation
+		// and sets the HFlip/VFlip values as necessary.
+		d->loadKeyValueData();
 	}
 }
 
@@ -676,8 +753,6 @@ int KhronosKTX::loadFieldData(void)
 		ktxHeader->numberOfMipmapLevels);
 
 	// Key/Value data.
-	// NOTE: KTX keys may be needed for proper image display,
-	// so they should be loaded in the constructor.
 	d->loadKeyValueData();
 	if (!d->kv_data.empty()) {
 		static const char *const kv_field_names[] = {
