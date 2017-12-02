@@ -47,9 +47,11 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -78,11 +80,22 @@ class KhronosKTXPrivate : public RomDataPrivate
 		// Decoded image.
 		rp_image *img;
 
+		// Key/Value data.
+		// NOTE: Stored as vector<vector<string> > instead of
+		// vector<pair<string, string> > for compatibility with
+		// RFT_LISTDATA.
+		vector<vector<string> > kv_data;
+
 		/**
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadImage(void);
+
+		/**
+		 * Load key/value data.
+		 */
+		void loadKeyValueData(void);
 };
 
 /** KhronosKTXPrivate **/
@@ -214,6 +227,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// TODO: Byteswapping.
+	// TODO: KTXorientation handling.
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
@@ -231,6 +245,86 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 	aligned_free(buf);
 	return img;
+}
+
+/**
+ * Load key/value data.
+ */
+void KhronosKTXPrivate::loadKeyValueData(void)
+{
+	if (!kv_data.empty()) {
+		// Key/value data is already loaded.
+		return;
+	} else if (ktxHeader.bytesOfKeyValueData == 0) {
+		// No key/value data is present.
+		return;
+	} else if (ktxHeader.bytesOfKeyValueData > 512*1024) {
+		// Sanity check: More than 512 KB is usually wrong.
+		return;
+	}
+
+	// Load the data.
+	unique_ptr<char[]> buf(new char[ktxHeader.bytesOfKeyValueData]);
+	size_t size = file->seekAndRead(sizeof(ktxHeader), buf.get(), ktxHeader.bytesOfKeyValueData);
+	if (size != ktxHeader.bytesOfKeyValueData) {
+		// Seek and/or read error.
+		return;
+	}
+
+	// Key/value data format:
+	// - uint32_t: keyAndValueByteSize
+	// - Byte: keyAndValue[keyAndValueByteSize] (UTF-8)
+	// - Byte: valuePadding (4-byte alignment)
+	const char *p = buf.get();
+	const char *const p_end = p + ktxHeader.bytesOfKeyValueData;
+
+	while (p < p_end) {
+		// Check the next key/value size.
+		uint32_t sz = *((const uint32_t*)p);
+		if (isByteswapNeeded) {
+			sz = __swab32(sz);
+		}
+		if (p + 4 + sz > p_end) {
+			// Out of range.
+			// TODO: Show an error?
+			break;
+		}
+
+		p += 4;
+
+		// keyAndValue consists of two sections:
+		// - key: UTF-8 string terminated by a NUL byte.
+		// - value: Arbitrary data terminated by a NUL byte. (usually UTF-8)
+
+		// kv_end: Points past the end of the string.
+		const char *const kv_end = p + sz;
+
+		// Find the key.
+		const char *const k_end = static_cast<const char*>(memchr(p, 0, kv_end - p));
+		if (!k_end) {
+			// NUL byte not found.
+			// TODO: Show an error?
+			break;
+		}
+
+		// Make sure the value ends at kv_end - 1.
+		const char *const v_end = static_cast<const char*>(memchr(k_end + 1, 0, kv_end - k_end - 1));
+		if (v_end != kv_end - 1) {
+			// Either the NUL byte was not found,
+			// or it's not at the end of the value.
+			// TODO: Show an error?
+			break;
+		}
+
+		vector<string> data_row;
+		data_row.reserve(2);
+		data_row.push_back(string(p, k_end - p));
+		data_row.push_back(string(k_end + 1, kv_end - k_end - 2));
+		kv_data.push_back(data_row);
+
+		// Next key/value pair.
+		p += ALIGN(4, sz);
+	}
 }
 
 /** KhronosKTX **/
@@ -509,7 +603,7 @@ int KhronosKTX::loadFieldData(void)
 
 	// KTX header.
 	const KTX_Header *const ktxHeader = &d->ktxHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->reserve(9);	// Maximum of 9 fields.
 
 	// Texture size.
 	if (ktxHeader->pixelDepth > 0) {
@@ -581,7 +675,22 @@ int KhronosKTX::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("KhronosKTX", "# of Mipmap Levels"),
 		ktxHeader->numberOfMipmapLevels);
 
-	// TODO: Key/Value data.
+	// Key/Value data.
+	// NOTE: KTX keys may be needed for proper image display,
+	// so they should be loaded in the constructor.
+	d->loadKeyValueData();
+	if (!d->kv_data.empty()) {
+		static const char *const kv_field_names[] = {
+			NOP_C_("KhronosKTX|KeyValue", "Key"),
+			NOP_C_("KhronosKTX|KeyValue", "Value"),
+		};
+
+		// NOTE: Making a copy.
+		vector<vector<string> > *p_kv_data = new vector<vector<string> >(d->kv_data);
+		vector<string> *v_kv_field_names = RomFields::strArrayToVector_i18n(
+			"KhronosKTX|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
+		d->fields->addField_listData("Key/Value Data", v_kv_field_names, p_kv_data);
+	}
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
