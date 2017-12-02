@@ -18,6 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
+/**
+ * References:
+ * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+ */
+
 #include "KhronosKTX.hpp"
 #include "librpbase/RomData_p.hpp"
 
@@ -70,6 +75,13 @@ class KhronosKTXPrivate : public RomDataPrivate
 		// KTX header.
 		KTX_Header ktxHeader;
 
+		// Is byteswapping needed?
+		// (KTX file has the opposite endianness.)
+		bool isByteswapNeeded;
+
+		// Texture data start address.
+		uint32_t texDataStartAddr;
+
 		// Decoded image.
 		rp_image *img;
 
@@ -84,6 +96,8 @@ class KhronosKTXPrivate : public RomDataPrivate
 
 KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, IRpFile *file)
 	: super(q, file)
+	, isByteswapNeeded(false)
+	, texDataStartAddr(0)
 	, img(nullptr)
 {
 	// Clear the KTX header struct.
@@ -121,14 +135,102 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		return nullptr;
 	}
 
+	// Texture cannot start inside of the KTX header.
+	assert(texDataStartAddr >= sizeof(ktxHeader));
+	if (texDataStartAddr < sizeof(ktxHeader)) {
+		// Invalid texture data start address.
+		return nullptr;
+	}
+
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: KTX files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	//const uint32_t file_sz = (uint32_t)file->size();
+	const uint32_t file_sz = (uint32_t)file->size();
 
-	// TODO
-	return nullptr;
+	// Seek to the start of the texture data.
+	int ret = file->seek(texDataStartAddr);
+	if (ret != 0) {
+		// Seek error.
+		return nullptr;
+	}
+
+	// NOTE: Mipmaps are stored *after* the main image.
+	// Hence, no mipmap processing is necessary.
+
+	// Handle a 1D texture as a "width x 1" 2D texture.
+	// NOTE: Handling a 3D texture as a single 2D texture.
+	const int height = (ktxHeader.pixelHeight > 0 ? ktxHeader.pixelHeight : 1);
+
+	// Calculate the expected size.
+	// NOTE: Scanlines are 4-byte aligned.
+	uint32_t expected_size;
+	switch (ktxHeader.glFormat) {
+		case GL_RGB: {
+			// 24-bit RGB.
+			unsigned int pitch = ALIGN(4, ktxHeader.pixelWidth * 3);
+			expected_size = pitch * ktxHeader.pixelHeight;
+			break;
+		}
+
+		case GL_RGBA:
+			// 32-bit RGBA.
+			expected_size = ktxHeader.pixelWidth * ktxHeader.pixelHeight * 4;
+			break;
+
+		case 0:
+		default:
+			// May be a compressed format.
+			// TODO
+			return nullptr;
+	}
+
+	// Verify file size.
+	if (expected_size >= file_sz + texDataStartAddr) {
+		// File is too small.
+		return nullptr;
+	}
+
+	// Read the image size field.
+	uint32_t imageSize;
+	size_t size = file->read(&imageSize, sizeof(imageSize));
+	if (size != sizeof(imageSize)) {
+		// Unable to read the image size field.
+		return nullptr;
+	}
+	if (isByteswapNeeded) {
+		imageSize = __swab32(imageSize);
+	}
+	if (imageSize != expected_size) {
+		// Size is incorrect.
+		return nullptr;
+	}
+
+	// Read the texture data.
+	unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
+	size = file->read(buf.get(), expected_size);
+	if (size != expected_size) {
+		// Read error.
+		return nullptr;
+	}
+
+	// TODO: Byteswapping.
+	switch (ktxHeader.glFormat) {
+		case GL_RGB:
+			// 24-bit RGB.
+			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
+				ktxHeader.pixelWidth, height,
+				buf.get(), expected_size);
+			break;
+
+		case 0:
+		default:
+			// May be a compressed format.
+			// TODO
+			return nullptr;
+	}
+
+	return img;
 }
 
 /** KhronosKTX **/
@@ -192,7 +294,14 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 			d->ktxHeader.numberOfFaces		= __swab32(d->ktxHeader.numberOfFaces);
 			d->ktxHeader.numberOfMipmapLevels	= __swab32(d->ktxHeader.numberOfMipmapLevels);
 			d->ktxHeader.bytesOfKeyValueData	= __swab32(d->ktxHeader.bytesOfKeyValueData);
+
+			// Convenience flag.
+			d->isByteswapNeeded = true;
 		}
+
+		// Texture data start address.
+		// NOTE: Always 4-byte aligned.
+		d->texDataStartAddr = ALIGN(4, sizeof(d->ktxHeader) + d->ktxHeader.bytesOfKeyValueData);
 	}
 }
 
