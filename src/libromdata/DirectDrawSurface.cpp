@@ -394,6 +394,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		return nullptr;
 	}
 
+	// Texture cannot start inside of the DDS header.
+	// TODO: Also dxt10Header for DX10?
+	assert(texDataStartAddr >= sizeof(ddsHeader));
+	if (texDataStartAddr < sizeof(ddsHeader)) {
+		// Invalid texture data start address.
+		return nullptr;
+	}
+
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: DDS files shouldn't be more than 128 MB.
 		return nullptr;
