@@ -187,6 +187,42 @@
 #define GL_INT_2_10_10_10_REV 0x8D9F
 #endif
 
+// GL_S3_s3tc
+// from GLEW 1.13.0
+#ifndef GL_RGB_S3TC
+#define GL_RGB_S3TC 0x83A0
+#endif
+#ifndef GL_RGB4_S3TC
+#define GL_RGB4_S3TC 0x83A1
+#endif
+#ifndef GL_RGBA_S3TC
+#define GL_RGBA_S3TC 0x83A2
+#endif
+#ifndef GL_RGBA4_S3TC
+#define GL_RGBA4_S3TC 0x83A3
+#endif
+#ifndef GL_RGBA_DXT5_S3TC
+#define GL_RGBA_DXT5_S3TC 0x83A4
+#endif
+#ifndef GL_RGBA4_DXT5_S3TC
+#define GL_RGBA4_DXT5_S3TC 0x83A5
+#endif
+
+// GL_EXT_texture_compression_s3tc
+// from GLEW 1.13.0
+#ifndef GL_COMPRESSED_RGB_S3TC_DXT1_EXT
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0x83F0
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT 0x83F1
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
+#endif
+
 // GL_VERSION_1_3
 // from GLEW 1.13.0
 #ifndef GL_COMPRESSED_ALPHA
@@ -338,6 +374,9 @@
 #endif
 #ifndef GL_BLUE_INTEGER
 #define GL_BLUE_INTEGER 0x8D96
+#endif
+#ifndef GL_ALPHA_INTEGER
+#define GL_ALPHA_INTEGER 0x8D97
 #endif
 #ifndef GL_RGB_INTEGER
 #define GL_RGB_INTEGER 0x8D98
