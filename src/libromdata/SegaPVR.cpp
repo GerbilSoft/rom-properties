@@ -26,6 +26,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 
@@ -40,7 +41,6 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <algorithm>
 #include <memory>
 #include <vector>
 using std::unique_ptr;
@@ -223,7 +223,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
 	uint32_t mipmap_size = 0;
-	uint32_t expect_size = 0;
+	uint32_t expected_size = 0;
 
 	// Do we need to skip mipmap data?
 	switch (pvrHeader.pvr.img_data_type) {
@@ -283,7 +283,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				case PVR_PX_ARGB1555:
 				case PVR_PX_RGB565:
 				case PVR_PX_ARGB4444:
-					expect_size = ((pvrHeader.width * pvrHeader.height) * 2);
+					expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
 					break;
 
 				default:
@@ -295,7 +295,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_VQ:
 			// VQ images have 1024 palette entries,
 			// and the image data is 2bpp.
-			expect_size = (1024*2) + ((pvrHeader.width * pvrHeader.height) / 4);
+			expected_size = (1024*2) + ((pvrHeader.width * pvrHeader.height) / 4);
 			break;
 
 		case PVR_IMG_VQ_MIPMAP:
@@ -303,7 +303,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// and the image data is 2bpp.
 			// Skip the palette, since that's handled later.
 			mipmap_size += (1024*2);
-			expect_size = (pvrHeader.width * pvrHeader.height) / 4;
+			expected_size = (pvrHeader.width * pvrHeader.height) / 4;
 			break;
 
 		case PVR_IMG_SMALL_VQ: {
@@ -311,7 +311,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// and the image data is 2bpp.
 			const unsigned int pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
-			expect_size = pal_siz + ((pvrHeader.width * pvrHeader.height) / 4);
+			expected_size = pal_siz + ((pvrHeader.width * pvrHeader.height) / 4);
 			break;
 		}
 
@@ -322,7 +322,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			const unsigned int pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
 			mipmap_size += pal_siz;
-			expect_size = ((pvrHeader.width * pvrHeader.height) / 4);
+			expected_size = ((pvrHeader.width * pvrHeader.height) / 4);
 			break;
 		}
 
@@ -331,7 +331,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			return nullptr;
 	}
 
-	if ((pvrDataStart + mipmap_size + expect_size) > file_sz) {
+	if ((pvrDataStart + mipmap_size + expected_size) > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
@@ -341,10 +341,18 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		// Seek error.
 		return nullptr;
 	}
-	unique_ptr<uint8_t> buf(new uint8_t[expect_size]);
-	size_t size = file->read(buf.get(), expect_size);
-	if (size != expect_size) {
+
+	// Read the texture data.
+	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
+	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+	if (!buf) {
+		// Memory allocation failure.
+		return nullptr;
+	}
+	size_t size = file->read(buf, expected_size);
+	if (size != expected_size) {
 		// Read error.
+		aligned_free(buf);
 		return nullptr;
 	}
 
@@ -372,21 +380,21 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 			img = ImageDecoder::fromDreamcastSquareTwiddled16(px_format,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
 
 		case PVR_IMG_RECTANGLE:
 			img = ImageDecoder::fromLinear16(px_format,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
 
 		case PVR_IMG_VQ: {
 			// VQ images have a 1024-entry palette.
 			static const unsigned int pal_siz = 1024*2;
-			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
-			const uint8_t *const img_buf = buf.get() + pal_siz;
-			const unsigned int img_siz = expect_size - pal_siz;
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf);
+			const uint8_t *const img_buf = buf + pal_siz;
+			const unsigned int img_siz = expected_size - pal_siz;
 
 			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
 				pvrHeader.width, pvrHeader.height,
@@ -401,18 +409,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			ret = file->seek(pvrDataStart);
 			if (ret != 0) {
 				// Seek error.
+				aligned_free(buf);
 				return nullptr;
 			}
 			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
 			size = file->read(pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
+				aligned_free(buf);
 				return nullptr;
 			}
 
 			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
 				pvrHeader.width, pvrHeader.height,
-				buf.get(), expect_size, pal_buf.get(), pal_siz);
+				buf, expected_size, pal_buf.get(), pal_siz);
 			break;
 		}
 
@@ -420,9 +430,9 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// Small VQ images have up to 1024 palette entries based on width.
 			const unsigned int pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
-			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
-			const uint8_t *const img_buf = buf.get() + pal_siz;
-			const unsigned int img_siz = expect_size - pal_siz;
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf);
+			const uint8_t *const img_buf = buf + pal_siz;
+			const unsigned int img_siz = expected_size - pal_siz;
 
 			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
@@ -438,26 +448,29 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			ret = file->seek(pvrDataStart);
 			if (ret != 0) {
 				// Seek error.
+				aligned_free(buf);
 				return nullptr;
 			}
 			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
 			size = file->read(pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
+				aligned_free(buf);
 				return nullptr;
 			}
 
 			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
-				buf.get(), expect_size, pal_buf.get(), pal_siz);
+				buf, expected_size, pal_buf.get(), pal_siz);
 			break;
 		}
 
 		default:
 			// TODO: Other formats.
-			return nullptr;
+			break;
 	}
 
+	aligned_free(buf);
 	return img;
 }
 
@@ -494,26 +507,26 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	const uint32_t file_sz = (uint32_t)this->file->size();
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
-	uint32_t expect_size = 0;
+	uint32_t expected_size = 0;
 
 	switch (pvrHeader.gvr.img_data_type) {
 		case GVR_IMG_I4:
-			expect_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
 		case GVR_IMG_I8:
 		case GVR_IMG_IA4:
-			expect_size = (pvrHeader.width * pvrHeader.height);
+			expected_size = (pvrHeader.width * pvrHeader.height);
 			break;
 		case GVR_IMG_IA8:
 		case GVR_IMG_RGB565:
 		case GVR_IMG_RGB5A3:
-			expect_size = ((pvrHeader.width * pvrHeader.height) * 2);
+			expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
 			break;
 		case GVR_IMG_ARGB8888:
-			expect_size = ((pvrHeader.width * pvrHeader.height) * 4);
+			expected_size = ((pvrHeader.width * pvrHeader.height) * 4);
 			break;
 		case GVR_IMG_DXT1:
-			expect_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
 
 		default:
@@ -521,7 +534,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			return nullptr;
 	}
 
-	if ((expect_size + pvrDataStart) > file_sz) {
+	if ((expected_size + pvrDataStart) > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
@@ -531,10 +544,18 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 		// Seek error.
 		return nullptr;
 	}
-	unique_ptr<uint8_t> buf(new uint8_t[expect_size]);
-	size_t size = file->read(buf.get(), expect_size);
-	if (size != expect_size) {
+
+	// Read the texture data.
+	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
+	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+	if (!buf) {
+		// Memory allocation failure.
+		return nullptr;
+	}
+	size_t size = file->read(buf, expected_size);
+	if (size != expected_size) {
 		// Read error.
+		aligned_free(buf);
 		return nullptr;
 	}
 
@@ -543,34 +564,35 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			// FIXME: Untested.
 			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_IA8,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
 
 		case GVR_IMG_RGB565:
 			// FIXME: Untested.
 			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB565,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
 
 		case GVR_IMG_RGB5A3:
 			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+				reinterpret_cast<uint16_t*>(buf), expected_size);
 			break;
 
 		case GVR_IMG_DXT1:
 			// TODO: Determine if color 3 should be black or transparent.
 			img = ImageDecoder::fromDXT1_GCN(
 				pvrHeader.width, pvrHeader.height,
-				buf.get(), expect_size);
+				buf, expected_size);
 			break;
 
 		default:
 			// TODO: Other types.
-			return nullptr;
+			break;
 	}
 
+	aligned_free(buf);
 	return img;
 }
 

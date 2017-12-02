@@ -47,12 +47,9 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <algorithm>
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 #ifdef _MSC_VER
@@ -207,10 +204,16 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// Read the texture data.
-	unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
-	size = file->read(buf.get(), expected_size);
+	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
+	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+	if (!buf) {
+		// Memory allocation failure.
+		return nullptr;
+	}
+	size = file->read(buf, expected_size);
 	if (size != expected_size) {
 		// Read error.
+		aligned_free(buf);
 		return nullptr;
 	}
 
@@ -220,7 +223,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// 24-bit RGB.
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
 				ktxHeader.pixelWidth, height,
-				buf.get(), expected_size);
+				buf, expected_size);
 			break;
 
 		case 0:
@@ -230,6 +233,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			return nullptr;
 	}
 
+	aligned_free(buf);
 	return img;
 }
 

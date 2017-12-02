@@ -41,12 +41,9 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <algorithm>
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 #ifdef _MSC_VER
@@ -415,6 +412,10 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		return nullptr;
 	}
 
+	// Aligned memory buffer.
+	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
+	uint8_t *buf = nullptr;
+
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
 	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
@@ -454,10 +455,15 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Read the texture data.
-		unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
-		size_t size = file->read(buf.get(), expected_size);
+		buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+		if (!buf) {
+			// Memory allocation failure.
+			return nullptr;
+		}
+		size_t size = file->read(buf, expected_size);
 		if (size != expected_size) {
 			// Read error.
+			aligned_free(buf);
 			return nullptr;
 		}
 
@@ -465,50 +471,50 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DDPF_FOURCC_DXT1:
 				img = ImageDecoder::fromDXT1(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT2:
 				img = ImageDecoder::fromDXT2(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT3:
 				img = ImageDecoder::fromDXT3(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT4:
 				img = ImageDecoder::fromDXT4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT5:
 				img = ImageDecoder::fromDXT5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_ATI1:
 			case DDPF_FOURCC_BC4U:
 				img = ImageDecoder::fromBC4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_ATI2:
 			case DDPF_FOURCC_BC5U:
 				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			default:
 				// Not supported.
-				return nullptr;
+				break;
 		}
 	} else {
 		// Uncompressed linear image data.
@@ -546,8 +552,11 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Read the texture data.
-		// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
-		uint8_t *buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+		buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+		if (!buf) {
+			// Memory allocation failure.
+			return nullptr;
+		}
 		size_t size = file->read(buf, expected_size);
 		if (size != expected_size) {
 			// Read error.
@@ -591,10 +600,9 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				assert(!"Unsupported pixel format.");
 				break;
 		}
-
-		aligned_free(buf);
 	}
 
+	aligned_free(buf);
 	return img;
 }
 
