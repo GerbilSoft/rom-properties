@@ -667,7 +667,7 @@ int KhronosKTX::loadFieldData(void)
 
 	// KTX header.
 	const KTX_Header *const ktxHeader = &d->ktxHeader;
-	d->fields->reserve(9);	// Maximum of 9 fields.
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// Texture size.
 	if (ktxHeader->pixelDepth > 0) {
@@ -682,6 +682,26 @@ int KhronosKTX::loadFieldData(void)
 	} else {
 		d->fields->addField_string_numeric(C_("KhronosKTX", "Texture Size"), ktxHeader->pixelWidth);
 	}
+
+	// Endianness.
+	// TODO: Save big vs. little in the constructor instead of just "needs byteswapping"?
+	const char *endian_str;
+	if (ktxHeader->endianness == KTX_ENDIAN_MAGIC) {
+		// Matches host-endian.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		endian_str = C_("KhronosKTX", "Little-Endian");
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		endian_str = C_("KhronosKTX", "Big-Endian");
+#endif
+	} else {
+		// Does not match host-endian.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		endian_str = C_("KhronosKTX", "Big-Endian");
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		endian_str = C_("KhronosKTX", "Little-Endian");
+#endif
+	}
+	d->fields->addField_string(C_("KhronosKTX", "Endianness"), endian_str);
 
 	// NOTE: GL field names should not be localized.
 	// TODO: String lookups.
