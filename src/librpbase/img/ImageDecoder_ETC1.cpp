@@ -30,48 +30,24 @@
 namespace LibRpBase {
 
 // ETC1 block format.
-// NOTE: Blocks are stored in big-endian.
-union etc1_block {
-	struct {
-		// Low DWORD is the same regardless of diffbit.
-		uint16_t lsb;
-		uint16_t msb;
+// NOTE: Layout maps to on-disk format, which is big-endian.
+struct etc1_block {
+	// Base colors
+	// Byte layout:
+	// - diffbit == 0: 4 MSB == base 1, 4 LSB == base 2
+	// - diffbit == 1: 5 MSB == base, 3 LSB == differential
+	uint8_t R, G, B;
 
-		// High DWORD is different depending on diffbit.
+	// Control byte:
+	// - 3 MSB:  table code word 1
+	// - 3 next: table code word 2
+	// - 1 bit:  diff bit
+	// - 1 LSB:  flip bit
+	uint8_t control;
 
-		// Common byte.
-		struct {
-			uint8_t flip	:1;
-			uint8_t diff	:1;
-			uint8_t tbl_cw2	:3;
-			uint8_t tbl_cw1	:3;
-		} common;
-
-		union {
-			// diffbit == 0
-			struct {
-				uint8_t base_B2	:4;
-				uint8_t base_B1	:4;
-				uint8_t base_G2	:4;
-				uint8_t base_G1	:4;
-				uint8_t base_R2	:4;
-				uint8_t base_R1	:4;
-			} indiv;
-
-			// diffbit == 1
-			struct {
-				int8_t  dcol_B2	:3;
-				uint8_t base_B1	:5;
-				int8_t  dcol_G2	:3;
-				uint8_t base_G1	:5;
-				int8_t  dcol_R2	:3;
-				uint8_t base_R1	:5;
-			} diff;
-		};
-	};
-
-	// 64-bit data. (big-endian)
-	uint64_t u64;
+	// Pixel index bits. (big-endian)
+	uint16_t msb;
+	uint16_t lsb;
 };
 ASSERT_STRUCT(etc1_block, 8);
 
@@ -220,32 +196,40 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
-		// Byteswap the block first.
-		etc1_block block;
-		block.u64 = be64_to_cpu(etc1_src->u64);
-
 		// Determine the base colors for the two subblocks.
 		// NOTE: These are kept as separate RGB components,
 		// since we have to manipulate and clamp them manually.
 		ColorRGB base_color[2];
-		if (!block.common.diff) {
+		// control, bit 1: diffbit
+		if (!(etc1_src->control & 0x02)) {
 			// Individual mode.
-			base_color[0].R = extend_4to8bits(block.indiv.base_R1);
-			base_color[0].G = extend_4to8bits(block.indiv.base_G1);
-			base_color[0].B = extend_4to8bits(block.indiv.base_B1);
-			base_color[1].R = extend_4to8bits(block.indiv.base_R2);
-			base_color[1].G = extend_4to8bits(block.indiv.base_G2);
-			base_color[1].B = extend_4to8bits(block.indiv.base_B2);
+			// TODO: Optimize the extend function by assuming the value is MSB-aligned.
+			base_color[0].R = extend_4to8bits(etc1_src->R >> 4);
+			base_color[0].G = extend_4to8bits(etc1_src->G >> 4);
+			base_color[0].B = extend_4to8bits(etc1_src->B >> 4);
+			base_color[1].R = extend_4to8bits(etc1_src->R & 0x0F);
+			base_color[1].G = extend_4to8bits(etc1_src->G & 0x0F);
+			base_color[1].B = extend_4to8bits(etc1_src->B & 0x0F);
 		} else {
 			// Differential mode.
-			base_color[0].R = extend_5to8bits(block.diff.base_R1);
-			base_color[0].G = extend_5to8bits(block.diff.base_G1);
-			base_color[0].B = extend_5to8bits(block.diff.base_B1);
+			// TODO: Optimize the extend function by assuming the value is MSB-aligned.
+			base_color[0].R = extend_5to8bits(etc1_src->R >> 3);
+			base_color[0].G = extend_5to8bits(etc1_src->G >> 3);
+			base_color[0].B = extend_5to8bits(etc1_src->B >> 3);
+
 			// Differential colors are 3-bit two's complement.
-			// TODO: Verify that signed bitfields work.
-			base_color[1].R = extend_5to8bits(block.diff.base_R1 + block.diff.dcol_R2);
-			base_color[1].G = extend_5to8bits(block.diff.base_G1 + block.diff.dcol_G2);
-			base_color[1].B = extend_5to8bits(block.diff.base_B1 + block.diff.dcol_B2);
+			int8_t dR2 = etc1_src->R & 0x07;
+			if (dR2 & 0x04)
+				dR2 |= 0xF8;
+			int8_t dG2 = etc1_src->G & 0x07;
+			if (dG2 & 0x04)
+				dG2 |= 0xF8;
+			int8_t dB2 = etc1_src->B & 0x07;
+			if (dB2 & 0x04)
+				dB2 |= 0xF8;
+			base_color[1].R = extend_5to8bits((etc1_src->R & 0xF8) + dR2);
+			base_color[1].G = extend_5to8bits((etc1_src->G & 0xF8) + dG2);
+			base_color[1].B = extend_5to8bits((etc1_src->B & 0xF8) + dB2);
 		}
 
 		// Tile arrangement:
@@ -258,14 +242,14 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 
 		// Intensities for the table codewords.
 		const int16_t *const tbl[2] = {
-			etc1_intensity[block.common.tbl_cw1],
-			etc1_intensity[block.common.tbl_cw2]
+			etc1_intensity[etc1_src->control >> 5],
+			etc1_intensity[(etc1_src->control >> 2) & 0x07]
 		};
 
 		// Process the 16 pixel indexes.
 		// TODO: Use SSE2 for saturated arithmetic?
-		uint16_t px_msb = block.msb;
-		uint16_t px_lsb = block.lsb;
+		uint16_t px_msb = be16_to_cpu(etc1_src->msb);
+		uint16_t px_lsb = be16_to_cpu(etc1_src->lsb);
 		for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1) {
 			ColorRGB color;
 			unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
