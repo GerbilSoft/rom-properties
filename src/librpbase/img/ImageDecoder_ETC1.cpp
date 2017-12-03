@@ -227,9 +227,9 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 			int8_t dB2 = etc1_src->B & 0x07;
 			if (dB2 & 0x04)
 				dB2 |= 0xF8;
-			base_color[1].R = extend_5to8bits((etc1_src->R & 0xF8) + dR2);
-			base_color[1].G = extend_5to8bits((etc1_src->G & 0xF8) + dG2);
-			base_color[1].B = extend_5to8bits((etc1_src->B & 0xF8) + dB2);
+			base_color[1].R = extend_5to8bits((etc1_src->R >> 3) + dR2);
+			base_color[1].G = extend_5to8bits((etc1_src->G >> 3) + dG2);
+			base_color[1].B = extend_5to8bits((etc1_src->B >> 3) + dB2);
 		}
 
 		// Tile arrangement:
