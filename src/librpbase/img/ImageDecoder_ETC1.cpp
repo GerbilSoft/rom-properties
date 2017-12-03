@@ -97,13 +97,13 @@ static const uint8_t etc1_mapping[16] = {
 
 // ETC1 subblock mapping.
 // Index: flip bit
-// Value: 16-bit bitfield; bit 0 == linear pixel 0. (TODO: ETC1 pixel index instead?)
+// Value: 16-bit bitfield; bit 0 == ETC1-arranged pixel 0.
 static const uint16_t etc1_subblock_mapping[2] = {
 	// flip == 0: 2x4
-	0xCCCC,
+	0xFF00,
 
 	// flip == 1: 4x2
-	0xFF00,
+	0xCCCC,
 };
 
 // 3-bit 2's complement lookup table.
