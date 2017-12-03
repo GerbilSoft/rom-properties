@@ -398,8 +398,8 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 			// If all of the sums are within [0,31], ETC1 differential mode is used.
 			// Otherwise, a new ETC2 mode is used, which may discard some of the above values.
 			int sR = (etc1_src->id.R >> 3) + dR2;
-			int sG = (etc1_src->id.R >> 3) + dG2;
-			int sB = (etc1_src->id.R >> 3) + dB2;
+			int sG = (etc1_src->id.G >> 3) + dG2;
+			int sB = (etc1_src->id.B >> 3) + dB2;
 			if ((sR & ~0x1F) != 0) {
 				// 'T' mode.
 				// Base colors are arranged differently compared to ETC1,
