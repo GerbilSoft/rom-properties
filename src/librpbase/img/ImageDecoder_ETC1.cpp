@@ -434,13 +434,13 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 				const uint8_t d = etc2_dist_tbl[((etc1_src->control & 0x0C) >> 1) |
 								 (etc1_src->control & 0x01)];
 				ColorRGB tmp;
-				tmp.R = base_color[0].R + d;
-				tmp.G = base_color[0].G + d;
-				tmp.B = base_color[0].B + d;
-				paint_color[1] = clamp_ColorRGB(tmp);
 				tmp.R = base_color[1].R + d;
 				tmp.G = base_color[1].G + d;
 				tmp.B = base_color[1].B + d;
+				paint_color[1] = clamp_ColorRGB(tmp);
+				tmp.R = base_color[1].R - d;
+				tmp.G = base_color[1].G - d;
+				tmp.B = base_color[1].B - d;
 				paint_color[3] = clamp_ColorRGB(tmp);
 			} else if ((sG & ~0x1F) != 0) {
 				// 'H' mode.
