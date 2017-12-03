@@ -740,6 +740,9 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
  */
 static void decodeBlock_ETC2_alpha(uint32_t tileBuf[4*4], const etc2_alpha *alpha)
 {
+	// argb32_t for alpha channel handling.
+	argb32_t *const pArgb = reinterpret_cast<argb32_t*>(tileBuf);
+
 	// Get the base codeword and multiplier.
 	// NOTE: mult == 0 is not allowed to be used by the encoder,
 	// but the specification requires decoders to handle it.
@@ -763,10 +766,8 @@ static void decodeBlock_ETC2_alpha(uint32_t tileBuf[4*4], const etc2_alpha *alph
 			A = 0;
 		}
 
-		// Apply the new alpha value.
-		uint32_t *const p = &tileBuf[etc1_mapping[i]];
-		*p &= ~0xFF000000U;
-		*p |= (A << 24);
+		// Set the new alpha value.
+		pArgb[etc1_mapping[i]].a = (uint8_t)A;
 	}
 }
 
