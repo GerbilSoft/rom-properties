@@ -559,6 +559,19 @@ class ImageDecoder
 		 * @return Number of palette entries.
 		 */
 		static inline int calcDreamcastSmallVQPaletteEntries(int width);
+
+		/* ETC1 */
+
+		/**
+		 * Convert an ETC1 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf DXT1 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromETC1(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
 };
 
 /**

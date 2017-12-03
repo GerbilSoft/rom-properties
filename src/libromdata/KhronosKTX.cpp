@@ -199,8 +199,18 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		case 0:
 		default:
 			// May be a compressed format.
-			// TODO
-			return nullptr;
+			switch (ktxHeader.glInternalFormat) {
+				case GL_ETC1_RGB8_OES:
+					// ETC1 compressed texture.
+					// 16 pixels compressed into 64 bits. (4bpp)
+					expected_size = (ktxHeader.pixelWidth * ktxHeader.pixelHeight) / 2;
+					break;
+
+				default:
+					// Not supported.
+					return nullptr;
+			}
+			break;
 	}
 
 	// Verify file size.
@@ -261,12 +271,23 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				ktxHeader.pixelWidth, height,
 				buf, expected_size, ALIGN(4, ktxHeader.pixelWidth));
 			break;
-			
+
 		case 0:
 		default:
 			// May be a compressed format.
-			// TODO
-			return nullptr;
+			switch (ktxHeader.glInternalFormat) {
+				case GL_ETC1_RGB8_OES:
+					// ETC1 compressed texture.
+					img = ImageDecoder::fromETC1(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
+				default:
+					// Not supported.
+					return nullptr;
+			}
+			break;
 	}
 
 	// Post-processing: Check if VFlip is needed.
