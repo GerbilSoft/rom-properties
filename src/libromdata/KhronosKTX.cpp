@@ -77,6 +77,7 @@ class KhronosKTXPrivate : public RomDataPrivate
 		// Is HFlip/VFlip needed?
 		// Some textures may be stored upside-down due to
 		// the way GL texture coordinates are interpreted.
+		// Default without KTXorientation is HFlip=false, VFlip=true
 		bool isHFlipNeeded;
 		bool isVFlipNeeded;
 
@@ -235,7 +236,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// TODO: Byteswapping.
-	// TODO: KTXorientation handling.
+	// TODO: Handle variants.
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
