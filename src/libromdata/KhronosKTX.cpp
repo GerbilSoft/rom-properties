@@ -245,6 +245,13 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				buf, expected_size);
 			break;
 
+		case GL_RGBA:
+			// 32-bit RGBA.
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
+				ktxHeader.pixelWidth, height,
+				reinterpret_cast<const uint32_t*>(buf), expected_size);
+			break;
+
 		case 0:
 		default:
 			// May be a compressed format.
