@@ -309,6 +309,14 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						buf, expected_size);
 					break;
 
+				case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+					// ETC2-compressed RGB texture
+					// with punchthrough alpha.
+					img = ImageDecoder::fromETC2_RGB_A1(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
 				case GL_COMPRESSED_RGBA8_ETC2_EAC:
 					// ETC2-compressed RGB texture
 					// with EAC-compressed alpha channel.

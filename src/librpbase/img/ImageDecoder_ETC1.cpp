@@ -160,6 +160,26 @@ static const int16_t etc1_intensity[8][4] = {
 	{47, 183, -47, -183},
 };
 
+/**
+ * Intensity modifier sets. (ETC2 with punchthrough alpha if opaque == 0)
+ * Index 0 is the table codeword.
+ * Index 1 is the pixel index value.
+ *
+ * NOTE: This table was rearranged to match the pixel
+ * index values in ascending two-bit value order as
+ * listed above instead of mapping to ETC1 table 3.17.2.
+ */
+static const int16_t etc2_intensity_a1[8][4] = {
+	{0,   8, 0,   -8},
+	{0,  17, 0,  -17},
+	{0,  29, 0,  -29},
+	{0,  42, 0,  -42},
+	{0,  60, 0,  -60},
+	{0,  80, 0,  -80},
+	{0, 106, 0, -106},
+	{0, 183, 0, -183},
+};
+
 // ETC1 arranges pixels by column, then by row.
 // This table maps it back to linear.
 static const uint8_t etc1_mapping[16] = {
@@ -299,6 +319,9 @@ enum ETC_Decoding_Mode {
 	ETC_DM_ETC1 = (0 << 0),	// ETC1
 	ETC_DM_ETC2 = (1 << 0),	// ETC2
 	ETC_DM_MASK12 = (1 << 0),
+
+	// Bit 1: ETC2 punchthrough alpha
+	ETC2_DM_A1 = (1 << 1),
 };
 
 /**
@@ -307,9 +330,12 @@ enum ETC_Decoding_Mode {
  * @param tileBuf	[out] Destination tile buffer.
  * @param src		[in] Source RGB block.
  */
-template<ETC_Decoding_Mode mode>
+template</* ETC_Decoding_Mode */ unsigned int mode>
 static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_src)
 {
+	// Prevent invalid combinations from being used.
+	static_assert(mode != (ETC_DM_ETC1 | ETC2_DM_A1), "Cannot use ETC1 with punchthrough alpha.");
+
 	// Base colors.
 	// For ETC1 mode, these are used as base colors for the two subblocks.
 	// For 'T' and 'H' mode, these are used to calculate the paint colors.
@@ -327,7 +353,9 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 	// TODO: Optimize the extend function by assuming the value is MSB-aligned.
 
 	// control, bit 1: diffbit
-	if (!(etc1_src->control & 0x02)) {
+	// NOTE: If using punchthrough alpha, this is repurposed as the opaque bit.
+	// Hence, individual mode is unavailable.
+	if (!(mode & ETC2_DM_A1) && !(etc1_src->control & 0x02)) {
 		// Individual mode.
 		block_mode = ETC2_BLOCK_MODE_ETC1;
 		base_color[0].R = extend_4to8bits(etc1_src->id.R >> 4);
@@ -490,27 +518,42 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 			// ETC1 block mode.
 
 			// Intensities for the table codewords.
-			const int16_t *const tbl[2] = {
-				etc1_intensity[ etc1_src->control >> 5],
-				etc1_intensity[(etc1_src->control >> 2) & 0x07]
-			};
+			const int16_t *tbl[2];
+			if ((mode & ETC2_DM_A1) && !(etc1_src->control & 0x02)) {
+				// ETC2, punchthrough alpha: Opaque bit is unset.
+				tbl[0] = etc2_intensity_a1[ etc1_src->control >> 5];
+				tbl[1] = etc2_intensity_a1[(etc1_src->control >> 2) & 0x07];
+			} else {
+				// All other versions.
+				tbl[0] = etc1_intensity[ etc1_src->control >> 5];
+				tbl[1] = etc1_intensity[(etc1_src->control >> 2) & 0x07];
+			}
 
 			// control, bit 0: flip
 			uint16_t subblock = etc1_subblock_mapping[etc1_src->control & 0x01];
 			for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1, subblock >>= 1) {
-				ColorRGB color;
-				unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
+				uint32_t *const p = &tileBuf[etc1_mapping[i]];
+				const unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
+
+				if ((mode & ETC2_DM_A1) && !(etc1_src->control & 0x02)) {
+					// ETC2 punchthrough alpha: opaque bit is 0.
+					if (px_idx == 2) {
+						// Pixel is completely transparent.
+						*p = 0;
+						continue;
+					}
+				}
 
 				// Select the table codeword based on the current subblock.
 				const uint8_t cur_sub = subblock & 1;
 				const int adj = tbl[cur_sub][px_idx];
-				color = base_color[cur_sub];
+				ColorRGB color = base_color[cur_sub];
 				color.R += adj;
 				color.G += adj;
 				color.B += adj;
 
 				// Clamp the color components and save it to the tile buffer.
-				tileBuf[etc1_mapping[i]] = clamp_ColorRGB(color);
+				*p = clamp_ColorRGB(color);
 			}
 			break;
 		}
@@ -518,9 +561,20 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 		case ETC2_BLOCK_MODE_TH: {
 			// ETC2 'T' or 'H' mode.
 			for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1) {
+				uint32_t *const p = &tileBuf[etc1_mapping[i]];
+				const unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
+
+				if ((mode & ETC2_DM_A1) && !(etc1_src->control & 0x02)) {
+					// ETC2 punchthrough alpha: opaque bit is 0.
+					if (px_idx == 2) {
+						// Pixel is completely transparent.
+						*p = 0;
+						continue;
+					}
+				}
+
 				// Pixel index indicates the paint color to use.
-				unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
-				tileBuf[etc1_mapping[i]] = paint_color[px_idx];
+				*p = paint_color[px_idx];
 			}
 			break;
 		}
@@ -776,6 +830,68 @@ rp_image *ImageDecoder::fromETC2_RGBA(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert an ETC2 RGB+A1 (punchthrough alpha) image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ETC2 RGB+A1 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromETC2_RGB_A1(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 2))
+	{
+		return nullptr;
+	}
+
+	// ETC2 uses 4x4 tiles.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
+
+	// Temporary tile buffer.
+	uint32_t tileBuf[4*4];
+
+	for (unsigned int y = 0; y < tilesY; y++) {
+	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
+		// Decode the ETC2 RGB block.
+		decodeBlock_ETC_RGB<ETC_DM_ETC2 | ETC2_DM_A1>(tileBuf, etc1_src);
+
+		// Blit the tile to the main image buffer.
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+	} }
+
+	// Set the sBIT metadata.
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
