@@ -95,6 +95,17 @@ static const uint8_t etc1_mapping[16] = {
 	3, 7, 11, 15,
 };
 
+// ETC1 subblock mapping.
+// Index: flip bit
+// Value: 16-bit bitfield; bit 0 == linear pixel 0. (TODO: ETC1 pixel index instead?)
+static const uint16_t etc1_subblock_mapping[2] = {
+	// flip == 0: 2x4
+	0xCCCC,
+
+	// flip == 1: 4x2
+	0xFF00,
+};
+
 /**
  * Extend a 4-bit color component to 8-bit color.
  * @param value 4-bit color component.
@@ -250,14 +261,16 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 		// TODO: Use SSE2 for saturated arithmetic?
 		uint16_t px_msb = be16_to_cpu(etc1_src->msb);
 		uint16_t px_lsb = be16_to_cpu(etc1_src->lsb);
-		for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1) {
+		// control, bit 0: flip
+		uint16_t subblock = etc1_subblock_mapping[etc1_src->control & 0x01];
+		for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1, subblock >>= 1) {
 			ColorRGB color;
 			unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
 
-			// TODO: Select tbl[0] or tbl[1] using subblocks.
-			// For now, assuming subblock 0.
-			const int adj = tbl[0][px_idx];
-			color = base_color[0];
+			// Select the table codeword based on the current subblock.
+			const uint8_t cur_sub = subblock & 1;
+			const int adj = tbl[cur_sub][px_idx];
+			color = base_color[cur_sub];
 			color.R += adj;
 			color.G += adj;
 			color.B += adj;
