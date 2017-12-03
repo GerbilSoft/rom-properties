@@ -112,7 +112,7 @@ static inline uint8_t extend_4to8bits(uint8_t value)
  */
 static inline uint8_t extend_5to8bits(uint8_t value)
 {
-	return (value << 5) | (value >> 2);
+	return (value << 3) | (value >> 2);
 }
 
 // Temporary RGB structure that allows us to clamp it later.
