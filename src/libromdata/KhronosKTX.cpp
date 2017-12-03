@@ -181,16 +181,19 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	// NOTE: Scanlines are 4-byte aligned.
 	uint32_t expected_size;
 	switch (ktxHeader.glFormat) {
-		case GL_RGB: {
+		case GL_RGB:
 			// 24-bit RGB.
-			unsigned int pitch = ALIGN(4, ktxHeader.pixelWidth * 3);
-			expected_size = pitch * ktxHeader.pixelHeight;
+			expected_size = ALIGN(4, ktxHeader.pixelWidth * 3) * ktxHeader.pixelHeight;
 			break;
-		}
 
 		case GL_RGBA:
 			// 32-bit RGBA.
 			expected_size = ktxHeader.pixelWidth * ktxHeader.pixelHeight * 4;
+			break;
+
+		case GL_LUMINANCE:
+			// 8-bit luminance.
+			expected_size = ALIGN(4, ktxHeader.pixelWidth) * ktxHeader.pixelHeight;
 			break;
 
 		case 0:
@@ -236,7 +239,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// TODO: Byteswapping.
-	// TODO: Handle variants.
+	// TODO: Handle variants. Check for channel sizes in glInternalFormat?
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
@@ -252,6 +255,13 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				reinterpret_cast<const uint32_t*>(buf), expected_size);
 			break;
 
+		case GL_LUMINANCE:
+			// 8-bit Luminance.
+			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
+				ktxHeader.pixelWidth, height,
+				buf, expected_size, ALIGN(4, ktxHeader.pixelWidth));
+			break;
+			
 		case 0:
 		default:
 			// May be a compressed format.
