@@ -106,6 +106,11 @@ static const uint16_t etc1_subblock_mapping[2] = {
 	0xFF00,
 };
 
+// 3-bit 2's complement lookup table.
+static const int8_t etc1_3bit_diff_tbl[8] = {
+	0, 1, 2, 3, -4, -3, -2, -1
+};
+
 /**
  * Extend a 4-bit color component to 8-bit color.
  * @param value 4-bit color component.
@@ -229,15 +234,9 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 			base_color[0].B = extend_5to8bits(etc1_src->B >> 3);
 
 			// Differential colors are 3-bit two's complement.
-			int8_t dR2 = etc1_src->R & 0x07;
-			if (dR2 & 0x04)
-				dR2 |= 0xF8;
-			int8_t dG2 = etc1_src->G & 0x07;
-			if (dG2 & 0x04)
-				dG2 |= 0xF8;
-			int8_t dB2 = etc1_src->B & 0x07;
-			if (dB2 & 0x04)
-				dB2 |= 0xF8;
+			int8_t dR2 = etc1_3bit_diff_tbl[etc1_src->R & 0x07];
+			int8_t dG2 = etc1_3bit_diff_tbl[etc1_src->G & 0x07];
+			int8_t dB2 = etc1_3bit_diff_tbl[etc1_src->B & 0x07];
 			base_color[1].R = extend_5to8bits((etc1_src->R >> 3) + dR2);
 			base_color[1].G = extend_5to8bits((etc1_src->G >> 3) + dG2);
 			base_color[1].B = extend_5to8bits((etc1_src->B >> 3) + dB2);
