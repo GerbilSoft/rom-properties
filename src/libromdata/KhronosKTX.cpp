@@ -201,7 +201,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// May be a compressed format.
 			switch (ktxHeader.glInternalFormat) {
 				case GL_ETC1_RGB8_OES:
-					// ETC1 compressed texture.
+				case GL_COMPRESSED_RGB8_ETC2:
+					// ETC1 or ETC2 compressed RGB texture.
 					// 16 pixels compressed into 64 bits. (4bpp)
 					expected_size = (ktxHeader.pixelWidth * ktxHeader.pixelHeight) / 2;
 					break;
@@ -279,6 +280,13 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_ETC1_RGB8_OES:
 					// ETC1 compressed texture.
 					img = ImageDecoder::fromETC1(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
+				case GL_COMPRESSED_RGB8_ETC2:
+					// ETC2 compressed RGB texture.
+					img = ImageDecoder::fromETC2_RGB(
 						ktxHeader.pixelWidth, height,
 						buf, expected_size);
 					break;
