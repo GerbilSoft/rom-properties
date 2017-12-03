@@ -141,7 +141,7 @@ struct ColorRGB {
  */
 static inline uint32_t clamp_ColorRGB(const ColorRGB &color)
 {
-	uint32_t xrgb32;
+	uint32_t xrgb32 = 0;
 	if (color.B > 255) {
 		xrgb32 = 255;
 	} else if (color.B > 0) {
