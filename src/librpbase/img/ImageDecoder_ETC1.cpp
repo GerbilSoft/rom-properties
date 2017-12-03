@@ -381,7 +381,9 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 		ColorRGB base_color[2];
 
 		// 'T','H' modes: Paint colors are used instead of base colors.
-		ColorRGB paint_color[4];
+		// Intensity modifications are not supported, so we'll store the
+		// final xRGB32 values instead of ColorRGB.
+		uint32_t paint_color[4];
 		etc2_mode mode;
 
 		// control, bit 1: diffbit
@@ -425,18 +427,21 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 				base_color[1].B = extend_4to8bits(etc1_src->control >> 4);
 
 				// Determine the paint colors.
-				paint_color[0] = base_color[0];
-				paint_color[2] = base_color[1];
+				paint_color[0] = clamp_ColorRGB(base_color[0]);
+				paint_color[2] = clamp_ColorRGB(base_color[1]);
 
 				// Paint colors 1 and 3 are adjusted using the distance table.
 				const uint8_t d = etc2_dist_tbl[((etc1_src->control & 0x0C) >> 1) |
 								 (etc1_src->control & 0x01)];
-				paint_color[1].R = base_color[0].R + d;
-				paint_color[1].G = base_color[0].G + d;
-				paint_color[1].B = base_color[0].B + d;
-				paint_color[3].R = base_color[1].R + d;
-				paint_color[3].G = base_color[1].G + d;
-				paint_color[3].B = base_color[1].B + d;
+				ColorRGB tmp;
+				tmp.R = base_color[0].R + d;
+				tmp.G = base_color[0].G + d;
+				tmp.B = base_color[0].B + d;
+				paint_color[1] = clamp_ColorRGB(tmp);
+				tmp.R = base_color[1].R + d;
+				tmp.G = base_color[1].G + d;
+				tmp.B = base_color[1].B + d;
+				paint_color[3] = clamp_ColorRGB(tmp);
 			} else if ((sG & ~0x1F) != 0) {
 				// 'H' mode.
 				// Base colors are arranged differently compared to ETC1,
@@ -460,18 +465,23 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 				d_idx |= (clamp_ColorRGB(base_color[0]) >= clamp_ColorRGB(base_color[1]));
 
 				const uint8_t d = etc2_dist_tbl[d_idx];
-				paint_color[0].R = base_color[0].R + d;
-				paint_color[0].G = base_color[0].G + d;
-				paint_color[0].B = base_color[0].B + d;
-				paint_color[1].R = base_color[0].R - d;
-				paint_color[1].G = base_color[0].G - d;
-				paint_color[1].B = base_color[0].B - d;
-				paint_color[2].R = base_color[1].R + d;
-				paint_color[2].G = base_color[1].G + d;
-				paint_color[2].B = base_color[1].B + d;
-				paint_color[3].R = base_color[1].R - d;
-				paint_color[3].G = base_color[1].G - d;
-				paint_color[3].B = base_color[1].B - d;
+				ColorRGB tmp;
+				tmp.R = base_color[0].R + d;
+				tmp.G = base_color[0].G + d;
+				tmp.B = base_color[0].B + d;
+				paint_color[0] = clamp_ColorRGB(tmp);
+				tmp.R = base_color[0].R - d;
+				tmp.G = base_color[0].G - d;
+				tmp.B = base_color[0].B - d;
+				paint_color[1] = clamp_ColorRGB(tmp);
+				tmp.R = base_color[1].R + d;
+				tmp.G = base_color[1].G + d;
+				tmp.B = base_color[1].B + d;
+				paint_color[2] = clamp_ColorRGB(tmp);
+				tmp.R = base_color[1].R - d;
+				tmp.G = base_color[1].G - d;
+				tmp.B = base_color[1].B - d;
+				paint_color[3] = clamp_ColorRGB(tmp);
 			} else if ((sB & ~0x1F) != 0) {
 				// 'Planar' mode. [TODO]
 				mode = ETC2_MODE_PLANAR;
@@ -537,16 +547,9 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 			case ETC2_MODE_TH: {
 				// ETC2 'T' or 'H' mode.
 				for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1) {
-					ColorRGB color;
-					unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
-
 					// Pixel index indicates the paint color to use.
-					color = paint_color[px_idx];
-
-					// Clamp the color components and save it to the tile buffer.
-					// TODO: If the intensity table isn't used, optimize this by
-					// storing the paint color as xRGB32.
-					tileBuf[etc1_mapping[i]] = clamp_ColorRGB(color);
+					unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
+					tileBuf[etc1_mapping[i]] = paint_color[px_idx];
 				}
 				break;
 			}
