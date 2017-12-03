@@ -475,12 +475,6 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 	// c g | k o        c g   k o
 	// d h | l p        d h   l p
 
-	// Intensities for the table codewords.
-	const int16_t *const tbl[2] = {
-		etc1_intensity[etc1_src->control >> 5],
-		etc1_intensity[(etc1_src->control >> 2) & 0x07]
-	};
-
 	// Process the 16 pixel indexes.
 	// TODO: Use SSE2 for saturated arithmetic?
 	uint16_t px_msb = be16_to_cpu(etc1_src->msb);
@@ -494,6 +488,13 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
 
 		case ETC2_BLOCK_MODE_ETC1: {
 			// ETC1 block mode.
+
+			// Intensities for the table codewords.
+			const int16_t *const tbl[2] = {
+				etc1_intensity[ etc1_src->control >> 5],
+				etc1_intensity[(etc1_src->control >> 2) & 0x07]
+			};
+
 			// control, bit 0: flip
 			uint16_t subblock = etc1_subblock_mapping[etc1_src->control & 0x01];
 			for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1, subblock >>= 1) {
