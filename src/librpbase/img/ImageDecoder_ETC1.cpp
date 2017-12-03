@@ -50,7 +50,17 @@ struct etc1_block {
 			uint8_t R1;
 			uint8_t G1B1;
 			uint8_t R2G2;
+			// B2 is in `control`.
 		} t;
+
+		// ETC2 'H' mode
+		struct {
+			uint8_t R1G1a;
+			uint8_t G1bB1aB1b;
+			uint8_t B1bR2G2;
+			// Part of G2 is in `control`.
+			// B2 is in `control`.
+		} h;
 	};
 
 	// Control byte: [ETC1]
@@ -406,7 +416,8 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 				// and R1 is calculated differently.
 				// Note that G and B are arranged slightly differently.
 				mode = ETC2_MODE_TH;
-				base_color[0].R = extend_4to8bits(((etc1_src->t.R1 & 0x18) >> 1) | (etc1_src->t.R1 & 0x03));
+				base_color[0].R = extend_4to8bits(((etc1_src->t.R1 & 0x18) >> 1) |
+								   (etc1_src->t.R1 & 0x03));
 				base_color[0].G = extend_4to8bits(etc1_src->t.G1B1 >> 4);
 				base_color[0].B = extend_4to8bits(etc1_src->t.G1B1 & 0x0F);
 				base_color[1].R = extend_4to8bits(etc1_src->t.R2G2 >> 4);
@@ -418,7 +429,8 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 				paint_color[2] = base_color[1];
 
 				// Paint colors 1 and 3 are adjusted using the distance table.
-				const uint8_t d = etc2_dist_tbl[((etc1_src->control & 0x0C) >> 1) | (etc1_src->control & 0x01)];
+				const uint8_t d = etc2_dist_tbl[((etc1_src->control & 0x0C) >> 1) |
+								 (etc1_src->control & 0x01)];
 				paint_color[1].R = base_color[0].R + d;
 				paint_color[1].G = base_color[0].G + d;
 				paint_color[1].B = base_color[0].B + d;
@@ -426,11 +438,40 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 				paint_color[3].G = base_color[1].G + d;
 				paint_color[3].B = base_color[1].B + d;
 			} else if ((sG & ~0x1F) != 0) {
-				// 'H' mode. [TODO]
-				// Base color 1 = extend_4to8bits(R1, (G1a << 1) | G1b, (B1a << 3) | B1b);
-				// Base color 2 = extend_4to8bits(R2, G2, B2);
-				mode = ETC2_MODE_PLANAR;
-				memset(paint_color, 0, sizeof(paint_color));
+				// 'H' mode.
+				// Base colors are arranged differently compared to ETC1,
+				// and G1 and B1 are calculated differently.
+				mode = ETC2_MODE_TH;
+				base_color[0].R = extend_4to8bits(etc1_src->h.R1G1a >> 3);
+				base_color[0].G = extend_4to8bits(((etc1_src->h.R1G1a & 0x07) << 1) |
+								  ((etc1_src->h.G1bB1aB1b >> 4) & 0x01));
+				base_color[0].B = extend_4to8bits( (etc1_src->h.G1bB1aB1b & 0x08) |
+								  ((etc1_src->h.G1bB1aB1b & 0x03) << 1) |
+								   (etc1_src->h.B1bR2G2 >> 7));
+				base_color[1].R = extend_4to8bits(etc1_src->h.B1bR2G2 >> 3);
+				base_color[1].G = extend_4to8bits(((etc1_src->h.B1bR2G2 & 0x07) << 1) |
+								  (etc1_src->control >> 7));
+				base_color[1].B = extend_4to8bits((etc1_src->control >> 3) & 0x0F);
+
+				// Determine the paint colors.
+				// All paint colors in 'H' mode are adjusted using the distance table.
+				uint8_t d_idx = (etc1_src->control & 0x04) | ((etc1_src->control & 0x01) << 1);
+				// d_idx LSB is determined by comparing the base colors in xRGB32 format.
+				d_idx |= (clamp_ColorRGB(base_color[0]) >= clamp_ColorRGB(base_color[1]));
+
+				const uint8_t d = etc2_dist_tbl[d_idx];
+				paint_color[0].R = base_color[0].R + d;
+				paint_color[0].G = base_color[0].G + d;
+				paint_color[0].B = base_color[0].B + d;
+				paint_color[1].R = base_color[0].R - d;
+				paint_color[1].G = base_color[0].G - d;
+				paint_color[1].B = base_color[0].B - d;
+				paint_color[2].R = base_color[1].R + d;
+				paint_color[2].G = base_color[1].G + d;
+				paint_color[2].B = base_color[1].B + d;
+				paint_color[3].R = base_color[1].R - d;
+				paint_color[3].G = base_color[1].G - d;
+				paint_color[3].B = base_color[1].B - d;
 			} else if ((sB & ~0x1F) != 0) {
 				// 'Planar' mode. [TODO]
 				mode = ETC2_MODE_PLANAR;
