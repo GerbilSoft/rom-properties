@@ -583,6 +583,17 @@ class ImageDecoder
 		 */
 		static rp_image *fromETC2_RGB(int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert an ETC2 RGBA image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf ETC2 RGBA image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromETC2_RGBA(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
 };
 
 /**

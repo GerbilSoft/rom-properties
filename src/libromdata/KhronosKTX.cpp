@@ -201,10 +201,27 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// May be a compressed format.
 			switch (ktxHeader.glInternalFormat) {
 				case GL_ETC1_RGB8_OES:
+				case GL_COMPRESSED_R11_EAC:
+				case GL_COMPRESSED_SIGNED_R11_EAC:
 				case GL_COMPRESSED_RGB8_ETC2:
-					// ETC1 or ETC2 compressed RGB texture.
+				case GL_COMPRESSED_SRGB8_ETC2:
+				case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+				case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+					// ETC1 or ETC2-compressed RGB texture,
+					// or one-channel EAC-compressed texture.
 					// 16 pixels compressed into 64 bits. (4bpp)
 					expected_size = (ktxHeader.pixelWidth * ktxHeader.pixelHeight) / 2;
+					break;
+
+				case GL_COMPRESSED_RG11_EAC:
+				case GL_COMPRESSED_SIGNED_RG11_EAC:
+				case GL_COMPRESSED_RGBA8_ETC2_EAC:
+				case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+					// ETC2-compressed RGB texture with
+					// EAC-compressed alpha channel, or
+					// two-channel EAC-compressed texture.
+					// 16 pixels compressed into 128 bits. (8bpp)
+					expected_size = ktxHeader.pixelWidth * ktxHeader.pixelHeight;
 					break;
 
 				default:
@@ -276,17 +293,26 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		case 0:
 		default:
 			// May be a compressed format.
+			// TODO: sRGB post-processing for sRGB formats?
 			switch (ktxHeader.glInternalFormat) {
 				case GL_ETC1_RGB8_OES:
-					// ETC1 compressed texture.
+					// ETC1-compressed texture.
 					img = ImageDecoder::fromETC1(
 						ktxHeader.pixelWidth, height,
 						buf, expected_size);
 					break;
 
 				case GL_COMPRESSED_RGB8_ETC2:
-					// ETC2 compressed RGB texture.
+					// ETC2-compressed RGB texture.
 					img = ImageDecoder::fromETC2_RGB(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
+				case GL_COMPRESSED_RGBA8_ETC2_EAC:
+					// ETC2-compressed RGB texture
+					// with EAC-compressed alpha channel.
+					img = ImageDecoder::fromETC2_RGBA(
 						ktxHeader.pixelWidth, height,
 						buf, expected_size);
 					break;

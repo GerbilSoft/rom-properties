@@ -91,6 +91,40 @@ union etc1_block {
 };
 ASSERT_STRUCT(etc1_block, 8);
 
+// ETC2 alpha block format.
+// NOTE: Layout maps to on-disk format, which is big-endian.
+union etc2_alpha {
+	struct {
+		uint8_t base_codeword;	// Base codeword.
+		uint8_t mult_tbl_idx;	// Multiplier (high 4); table index (low 4)
+		uint8_t values[6];	// Alpha values. (48-bit unsigned; 3-bit per pixel)
+	};
+	uint64_t u64;				// Access the 48-bit alpha value directly. (Requires shifting.)
+};
+ASSERT_STRUCT(etc2_alpha, 8);
+
+// ETC2 RGBA block format.
+// NOTE: Layout maps to on-disk format, which is big-endian.
+struct etc2_rgba_block {
+	etc1_block etc1;
+	etc2_alpha alpha;
+};
+ASSERT_STRUCT(etc2_rgba_block, 16);
+
+/**
+ * Extract the 48-bit code value from etc2_alpha.
+ * @param data etc2_alpha.
+ * @return 48-bit code value.
+ */
+static FORCEINLINE uint64_t extract48(const etc2_alpha *RESTRICT data)
+{
+	// values[6] starts at 0x02 within etc2_alpha.
+	// Hence, we need to mask it after byteswapping.
+	// TODO: constexpr?
+	// TODO: Verify on big-endian.
+	return be64_to_cpu(data->u64) & 0x0000FFFFFFFFFFFFULL;
+}
+
 /**
  * Pixel index values:
  * msb lsb
@@ -162,6 +196,26 @@ enum etc2_mode {
 static const uint8_t etc2_dist_tbl[8] = {
 	 3,  6, 11, 16,
 	23, 32, 41, 64,
+};
+
+// ETC2 alpha modifiers table.
+static const int8_t etc2_alpha_tbl[16][8] = {
+	{-3, -6,  -9, -15, 2, 5, 8, 14},
+	{-3, -7, -10, -13, 2, 6, 9, 12},
+	{-2, -5,  -8, -13, 1, 4, 7, 12},
+	{-2, -4,  -6, -13, 1, 3, 5, 12},
+	{-3, -6,  -8, -12, 2, 5, 7, 11},
+	{-3, -7,  -9, -11, 2, 6, 8, 10},
+	{-4, -7,  -8, -11, 3, 6, 7, 10},
+	{-3, -5,  -8, -11, 2, 4, 7, 10},
+	{-2, -6,  -8, -10, 1, 5, 7,  9},
+	{-2, -5,  -8, -10, 1, 4, 7,  9},
+	{-2, -4,  -8, -10, 1, 3, 7,  9},
+	{-2, -5,  -7, -10, 1, 4, 6,  9},
+	{-3, -4,  -7, -10, 2, 3, 6,  9},
+	{-1, -2,  -3, -10, 0, 1, 2,  9},
+	{-4, -6,  -8,  -9, 3, 5, 7,  8},
+	{-3, -5,  -7,  -9, 2, 4, 6,  8},
 };
 
 /**
@@ -366,7 +420,7 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 /**
  * Decode an ETC2 RGB block.
  * @param tileBuf	[out] Destination tile buffer.
- * @param src		[in] Source block.
+ * @param src		[in] Source RGB block.
  */
 static void decodeBlock_ETC2_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_src)
 {
@@ -662,6 +716,109 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 
 	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Decode an ETC2 alpha block.
+ * @param tileBuf	[out] Destination tile buffer.
+ * @param src		[in] Source alpha block.
+ */
+static void decodeBlock_ETC2_alpha(uint32_t tileBuf[4*4], const etc2_alpha *alpha)
+{
+	// Get the base codeword and multiplier.
+	// NOTE: mult == 0 is not allowed to be used by the encoder,
+	// but the specification requires decoders to handle it.
+	const uint8_t base = alpha->base_codeword;
+	const uint8_t mult = (alpha->mult_tbl_idx >> 4);
+
+	// Table pointer.
+	const int8_t *const tbl = etc2_alpha_tbl[alpha->mult_tbl_idx & 0x0F];
+
+	// TODO: Zero out the alpha channel in the entire tile using SIMD.
+
+	// Pixel index.
+	uint64_t alpha48 = extract48(alpha);
+
+	for (unsigned int i = 0; i < 16; i++, alpha48 >>= 3) {
+		// Calculate the alpha value for this pixel.
+		int A = base + (tbl[alpha48 & 0x07] * mult);
+		if (A > 255) {
+			A = 255;
+		} else if (A < 0) {
+			A = 0;
+		}
+
+		// Apply the new alpha value.
+		uint32_t *const p = &tileBuf[etc1_mapping[i]];
+		*p &= ~0xFF000000U;
+		*p |= (A << 24);
+	}
+}
+
+/**
+ * Convert an ETC2 RGBA image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ETC2 RGBA image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromETC2_RGBA(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (width * height));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (width * height))
+	{
+		return nullptr;
+	}
+
+	// ETC2 uses 4x4 tiles.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	const etc2_rgba_block *etc2_src = reinterpret_cast<const etc2_rgba_block*>(img_buf);
+
+	// Temporary tile buffer.
+	uint32_t tileBuf[4*4];
+
+	for (unsigned int y = 0; y < tilesY; y++) {
+	for (unsigned int x = 0; x < tilesX; x++, etc2_src++) {
+		// Decode the ETC2 RGB block.
+		decodeBlock_ETC2_RGB(tileBuf, &etc2_src->etc1);
+
+		// Decode the ETC2 alpha block.
+		// TODO: Don't fill in the alpha channel in decodeBlock_ETC2_RGB()?
+		decodeBlock_ETC2_alpha(tileBuf, &etc2_src->alpha);
+
+		// Blit the tile to the main image buffer.
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+	} }
+
+	// Set the sBIT metadata.
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
