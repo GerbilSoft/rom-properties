@@ -364,6 +364,249 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 }
 
 /**
+ * Decode an ETC2 RGB block.
+ * @param tileBuf	[out] Destination tile buffer.
+ * @param src		[in] Source block.
+ */
+static void decodeBlock_ETC2_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_src)
+{
+	// Base colors.
+	// For ETC1 mode, these are used as base colors for the two subblocks.
+	// For 'T' and 'H' mode, these are used to calculate the paint colors.
+	// For 'Planar' mode, three colors are used as 'O', 'H', and 'V'.
+	ColorRGB base_color[3];
+
+	// 'T', 'H' modes: Paint colors are used instead of base colors.
+	// Intensity modifications are not supported, so we'll store the
+	// final xRGB32 values instead of ColorRGB.
+	uint32_t paint_color[4];
+
+	// ETC2 mode.
+	etc2_mode mode;
+
+	// TODO: Optimize the extend function by assuming the value is MSB-aligned.
+
+	// control, bit 1: diffbit
+	if (!(etc1_src->control & 0x02)) {
+		// Individual mode.
+		mode = ETC2_MODE_ETC1;
+		base_color[0].R = extend_4to8bits(etc1_src->id.R >> 4);
+		base_color[0].G = extend_4to8bits(etc1_src->id.G >> 4);
+		base_color[0].B = extend_4to8bits(etc1_src->id.B >> 4);
+		base_color[1].R = extend_4to8bits(etc1_src->id.R & 0x0F);
+		base_color[1].G = extend_4to8bits(etc1_src->id.G & 0x0F);
+		base_color[1].B = extend_4to8bits(etc1_src->id.B & 0x0F);
+	} else {
+		// Other mode.
+
+		// Differential colors are 3-bit two's complement.
+		int8_t dR2 = etc1_3bit_diff_tbl[etc1_src->id.R & 0x07];
+		int8_t dG2 = etc1_3bit_diff_tbl[etc1_src->id.G & 0x07];
+		int8_t dB2 = etc1_3bit_diff_tbl[etc1_src->id.B & 0x07];
+
+		// Sums of R+dR2, G+dG2, and B+dB2 are used to determine the mode.
+		// If all of the sums are within [0,31], ETC1 differential mode is used.
+		// Otherwise, a new ETC2 mode is used, which may discard some of the above values.
+		int sR = (etc1_src->id.R >> 3) + dR2;
+		int sG = (etc1_src->id.G >> 3) + dG2;
+		int sB = (etc1_src->id.B >> 3) + dB2;
+		if ((sR & ~0x1F) != 0) {
+			// 'T' mode.
+			// Base colors are arranged differently compared to ETC1,
+			// and R1 is calculated differently.
+			// Note that G and B are arranged slightly differently.
+			mode = ETC2_MODE_TH;
+			base_color[0].R = extend_4to8bits(((etc1_src->t.R1 & 0x18) >> 1) |
+							   (etc1_src->t.R1 & 0x03));
+			base_color[0].G = extend_4to8bits(etc1_src->t.G1B1 >> 4);
+			base_color[0].B = extend_4to8bits(etc1_src->t.G1B1 & 0x0F);
+			base_color[1].R = extend_4to8bits(etc1_src->t.R2G2 >> 4);
+			base_color[1].G = extend_4to8bits(etc1_src->t.R2G2 & 0x0F);
+			base_color[1].B = extend_4to8bits(etc1_src->control >> 4);
+
+			// Determine the paint colors.
+			paint_color[0] = clamp_ColorRGB(base_color[0]);
+			paint_color[2] = clamp_ColorRGB(base_color[1]);
+
+			// Paint colors 1 and 3 are adjusted using the distance table.
+			const uint8_t d = etc2_dist_tbl[((etc1_src->control & 0x0C) >> 1) |
+							 (etc1_src->control & 0x01)];
+			ColorRGB tmp;
+			tmp.R = base_color[1].R + d;
+			tmp.G = base_color[1].G + d;
+			tmp.B = base_color[1].B + d;
+			paint_color[1] = clamp_ColorRGB(tmp);
+			tmp.R = base_color[1].R - d;
+			tmp.G = base_color[1].G - d;
+			tmp.B = base_color[1].B - d;
+			paint_color[3] = clamp_ColorRGB(tmp);
+		} else if ((sG & ~0x1F) != 0) {
+			// 'H' mode.
+			// Base colors are arranged differently compared to ETC1,
+			// and G1 and B1 are calculated differently.
+			mode = ETC2_MODE_TH;
+			base_color[0].R = extend_4to8bits(etc1_src->h.R1G1a >> 3);
+			base_color[0].G = extend_4to8bits(((etc1_src->h.R1G1a & 0x07) << 1) |
+							  ((etc1_src->h.G1bB1aB1b >> 4) & 0x01));
+			base_color[0].B = extend_4to8bits( (etc1_src->h.G1bB1aB1b & 0x08) |
+							  ((etc1_src->h.G1bB1aB1b & 0x03) << 1) |
+							   (etc1_src->h.B1bR2G2 >> 7));
+			base_color[1].R = extend_4to8bits(etc1_src->h.B1bR2G2 >> 3);
+			base_color[1].G = extend_4to8bits(((etc1_src->h.B1bR2G2 & 0x07) << 1) |
+							  (etc1_src->control >> 7));
+			base_color[1].B = extend_4to8bits((etc1_src->control >> 3) & 0x0F);
+
+			// Determine the paint colors.
+			// All paint colors in 'H' mode are adjusted using the distance table.
+			uint8_t d_idx = (etc1_src->control & 0x04) | ((etc1_src->control & 0x01) << 1);
+			// d_idx LSB is determined by comparing the base colors in xRGB32 format.
+			d_idx |= (clamp_ColorRGB(base_color[0]) >= clamp_ColorRGB(base_color[1]));
+
+			const uint8_t d = etc2_dist_tbl[d_idx];
+			ColorRGB tmp;
+			tmp.R = base_color[0].R + d;
+			tmp.G = base_color[0].G + d;
+			tmp.B = base_color[0].B + d;
+			paint_color[0] = clamp_ColorRGB(tmp);
+			tmp.R = base_color[0].R - d;
+			tmp.G = base_color[0].G - d;
+			tmp.B = base_color[0].B - d;
+			paint_color[1] = clamp_ColorRGB(tmp);
+			tmp.R = base_color[1].R + d;
+			tmp.G = base_color[1].G + d;
+			tmp.B = base_color[1].B + d;
+			paint_color[2] = clamp_ColorRGB(tmp);
+			tmp.R = base_color[1].R - d;
+			tmp.G = base_color[1].G - d;
+			tmp.B = base_color[1].B - d;
+			paint_color[3] = clamp_ColorRGB(tmp);
+		} else if ((sB & ~0x1F) != 0) {
+			// 'Planar' mode.
+			// TODO: Needs testing - I don't have a sample file with 'Planar' encoding.
+			mode = ETC2_MODE_PLANAR;
+
+			// 'O' color.
+			base_color[0].R = extend_6to8bits((etc1_src->planar.RO_GO1 >> 1) & 0x3F);
+			base_color[0].G = extend_7to8bits(((etc1_src->planar.RO_GO1 << 6) & 0x40) |
+							  ((etc1_src->planar.GO2_BO1 >> 1) & 0x3F));
+			base_color[0].B = extend_6to8bits(((etc1_src->planar.GO2_BO1 << 5) & 0x20) |
+							   (etc1_src->planar.BO2_BO3 & 0x18) |
+							  ((etc1_src->planar.BO2_BO3 << 1) & 0x06) |
+							   (etc1_src->planar.BO3_RH >> 7));
+
+			// 'H' color.
+			base_color[1].R = extend_6to8bits(((etc1_src->planar.BO3_RH >> 1) & 0x3C) |
+							   (etc1_src->planar.BO3_RH & 0x01));
+			base_color[1].G = extend_7to8bits(etc1_src->planar.GH_BH >> 1);
+			base_color[1].B = extend_6to8bits(((etc1_src->planar.GH_BH << 5) & 0x20) |
+							   (etc1_src->planar.BH_RV >> 3));
+
+			// 'V' color.
+			base_color[2].R = extend_6to8bits(((etc1_src->planar.BH_RV << 3) & 0x38) |
+							   (etc1_src->planar.RV_GV >> 5));
+			base_color[2].G = extend_7to8bits(((etc1_src->planar.RV_GV << 2) & 0x7C) |
+							   (etc1_src->planar.GV_BV >> 6));
+			base_color[2].B = extend_6to8bits(etc1_src->planar.GV_BV & 0x3F);
+		} else {
+			// ETC1 differential mode.
+			mode = ETC2_MODE_ETC1;
+			base_color[0].R = extend_5to8bits(etc1_src->id.R >> 3);
+			base_color[0].G = extend_5to8bits(etc1_src->id.G >> 3);
+			base_color[0].B = extend_5to8bits(etc1_src->id.B >> 3);
+			base_color[1].R = extend_5to8bits(sR);
+			base_color[1].G = extend_5to8bits(sG);
+			base_color[1].B = extend_5to8bits(sB);
+		}
+	}
+
+	// Tile arrangement:
+	// flip == 0        flip == 1
+	// a e | i m        a e   i m
+	// b f | j n        b f   j n
+	//     |            ---------
+	// c g | k o        c g   k o
+	// d h | l p        d h   l p
+
+	// Intensities for the table codewords.
+	const int16_t *const tbl[2] = {
+		etc1_intensity[etc1_src->control >> 5],
+		etc1_intensity[(etc1_src->control >> 2) & 0x07]
+	};
+
+	// Process the 16 pixel indexes.
+	// TODO: Use SSE2 for saturated arithmetic?
+	uint16_t px_msb = be16_to_cpu(etc1_src->msb);
+	uint16_t px_lsb = be16_to_cpu(etc1_src->lsb);
+	switch (mode) {
+		default:
+			// TODO: Return an error code?
+			assert(!"Invalid ETC2 mode.");
+			memset(tileBuf, 0, 4*4*sizeof(uint32_t));
+			break;
+
+		case ETC2_MODE_ETC1: {
+			// ETC1 mode.
+			// control, bit 0: flip
+			uint16_t subblock = etc1_subblock_mapping[etc1_src->control & 0x01];
+			for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1, subblock >>= 1) {
+				ColorRGB color;
+				unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
+
+				// Select the table codeword based on the current subblock.
+				const uint8_t cur_sub = subblock & 1;
+				const int adj = tbl[cur_sub][px_idx];
+				color = base_color[cur_sub];
+				color.R += adj;
+				color.G += adj;
+				color.B += adj;
+
+				// Clamp the color components and save it to the tile buffer.
+				tileBuf[etc1_mapping[i]] = clamp_ColorRGB(color);
+			}
+			break;
+		}
+
+		case ETC2_MODE_TH: {
+			// ETC2 'T' or 'H' mode.
+			for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1) {
+				// Pixel index indicates the paint color to use.
+				unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
+				tileBuf[etc1_mapping[i]] = paint_color[px_idx];
+			}
+			break;
+		}
+
+		case ETC2_MODE_PLANAR: {
+			// ETC2 'Planar' mode.
+			// Each pixel is interpolated using the three RGB676 colors.
+			for (unsigned int i = 0; i < 16; i++) {
+				// NOTE: Using ETC1 pixel arrangement.
+				// Rows first, then columns.
+				const int pX = i / 4;
+				const int pY = i % 4;
+
+				// Color order: 0, 1, 2 => 'O', 'H', 'V'
+				// TODO: SIMD optimization?
+				ColorRGB tmp;
+				tmp.R = ((pX * (base_color[1].R - base_color[0].R)) +
+					 (pY * (base_color[2].R - base_color[0].R)) +
+					  (4 *  base_color[0].R) + 2) >> 2;
+				tmp.G = ((pX * (base_color[1].G - base_color[0].G)) +
+					 (pY * (base_color[2].G - base_color[0].G)) +
+					  (4 *  base_color[0].G) + 2) >> 2;
+				tmp.B = ((pX * (base_color[1].B - base_color[0].B)) +
+					 (pY * (base_color[2].B - base_color[0].B)) +
+					  (4 *  base_color[0].B) + 2) >> 2;
+
+				// Clamp the color components and save it to the tile buffer.
+				tileBuf[etc1_mapping[i]] = clamp_ColorRGB(tmp);
+			}
+			break;
+		}
+	}
+}
+
+/**
  * Convert an ETC2 RGB image to rp_image.
  * @param width Image width.
  * @param height Image height.
@@ -410,237 +653,8 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, etc1_src++) {
-		// Determine the base colors for the two subblocks.
-		// NOTE: These are kept as separate RGB components,
-		// since we have to manipulate and clamp them manually.
-		// NOTE: base_color[2] is for 'Planar' mode only.
-		ColorRGB base_color[3];
-
-		// 'T','H' modes: Paint colors are used instead of base colors.
-		// Intensity modifications are not supported, so we'll store the
-		// final xRGB32 values instead of ColorRGB.
-		uint32_t paint_color[4];
-		etc2_mode mode;
-
-		// control, bit 1: diffbit
-		if (!(etc1_src->control & 0x02)) {
-			// Individual mode.
-			// TODO: Optimize the extend function by assuming the value is MSB-aligned.
-			mode = ETC2_MODE_ETC1;
-			base_color[0].R = extend_4to8bits(etc1_src->id.R >> 4);
-			base_color[0].G = extend_4to8bits(etc1_src->id.G >> 4);
-			base_color[0].B = extend_4to8bits(etc1_src->id.B >> 4);
-			base_color[1].R = extend_4to8bits(etc1_src->id.R & 0x0F);
-			base_color[1].G = extend_4to8bits(etc1_src->id.G & 0x0F);
-			base_color[1].B = extend_4to8bits(etc1_src->id.B & 0x0F);
-		} else {
-			// Other mode.
-			// TODO: Optimize the extend function by assuming the value is MSB-aligned.
-
-			// Differential colors are 3-bit two's complement.
-			int8_t dR2 = etc1_3bit_diff_tbl[etc1_src->id.R & 0x07];
-			int8_t dG2 = etc1_3bit_diff_tbl[etc1_src->id.G & 0x07];
-			int8_t dB2 = etc1_3bit_diff_tbl[etc1_src->id.B & 0x07];
-
-			// Sums of R+dR2, G+dG2, and B+dB2 are used to determine the mode.
-			// If all of the sums are within [0,31], ETC1 differential mode is used.
-			// Otherwise, a new ETC2 mode is used, which may discard some of the above values.
-			int sR = (etc1_src->id.R >> 3) + dR2;
-			int sG = (etc1_src->id.G >> 3) + dG2;
-			int sB = (etc1_src->id.B >> 3) + dB2;
-			if ((sR & ~0x1F) != 0) {
-				// 'T' mode.
-				// Base colors are arranged differently compared to ETC1,
-				// and R1 is calculated differently.
-				// Note that G and B are arranged slightly differently.
-				mode = ETC2_MODE_TH;
-				base_color[0].R = extend_4to8bits(((etc1_src->t.R1 & 0x18) >> 1) |
-								   (etc1_src->t.R1 & 0x03));
-				base_color[0].G = extend_4to8bits(etc1_src->t.G1B1 >> 4);
-				base_color[0].B = extend_4to8bits(etc1_src->t.G1B1 & 0x0F);
-				base_color[1].R = extend_4to8bits(etc1_src->t.R2G2 >> 4);
-				base_color[1].G = extend_4to8bits(etc1_src->t.R2G2 & 0x0F);
-				base_color[1].B = extend_4to8bits(etc1_src->control >> 4);
-
-				// Determine the paint colors.
-				paint_color[0] = clamp_ColorRGB(base_color[0]);
-				paint_color[2] = clamp_ColorRGB(base_color[1]);
-
-				// Paint colors 1 and 3 are adjusted using the distance table.
-				const uint8_t d = etc2_dist_tbl[((etc1_src->control & 0x0C) >> 1) |
-								 (etc1_src->control & 0x01)];
-				ColorRGB tmp;
-				tmp.R = base_color[1].R + d;
-				tmp.G = base_color[1].G + d;
-				tmp.B = base_color[1].B + d;
-				paint_color[1] = clamp_ColorRGB(tmp);
-				tmp.R = base_color[1].R - d;
-				tmp.G = base_color[1].G - d;
-				tmp.B = base_color[1].B - d;
-				paint_color[3] = clamp_ColorRGB(tmp);
-			} else if ((sG & ~0x1F) != 0) {
-				// 'H' mode.
-				// Base colors are arranged differently compared to ETC1,
-				// and G1 and B1 are calculated differently.
-				mode = ETC2_MODE_TH;
-				base_color[0].R = extend_4to8bits(etc1_src->h.R1G1a >> 3);
-				base_color[0].G = extend_4to8bits(((etc1_src->h.R1G1a & 0x07) << 1) |
-								  ((etc1_src->h.G1bB1aB1b >> 4) & 0x01));
-				base_color[0].B = extend_4to8bits( (etc1_src->h.G1bB1aB1b & 0x08) |
-								  ((etc1_src->h.G1bB1aB1b & 0x03) << 1) |
-								   (etc1_src->h.B1bR2G2 >> 7));
-				base_color[1].R = extend_4to8bits(etc1_src->h.B1bR2G2 >> 3);
-				base_color[1].G = extend_4to8bits(((etc1_src->h.B1bR2G2 & 0x07) << 1) |
-								  (etc1_src->control >> 7));
-				base_color[1].B = extend_4to8bits((etc1_src->control >> 3) & 0x0F);
-
-				// Determine the paint colors.
-				// All paint colors in 'H' mode are adjusted using the distance table.
-				uint8_t d_idx = (etc1_src->control & 0x04) | ((etc1_src->control & 0x01) << 1);
-				// d_idx LSB is determined by comparing the base colors in xRGB32 format.
-				d_idx |= (clamp_ColorRGB(base_color[0]) >= clamp_ColorRGB(base_color[1]));
-
-				const uint8_t d = etc2_dist_tbl[d_idx];
-				ColorRGB tmp;
-				tmp.R = base_color[0].R + d;
-				tmp.G = base_color[0].G + d;
-				tmp.B = base_color[0].B + d;
-				paint_color[0] = clamp_ColorRGB(tmp);
-				tmp.R = base_color[0].R - d;
-				tmp.G = base_color[0].G - d;
-				tmp.B = base_color[0].B - d;
-				paint_color[1] = clamp_ColorRGB(tmp);
-				tmp.R = base_color[1].R + d;
-				tmp.G = base_color[1].G + d;
-				tmp.B = base_color[1].B + d;
-				paint_color[2] = clamp_ColorRGB(tmp);
-				tmp.R = base_color[1].R - d;
-				tmp.G = base_color[1].G - d;
-				tmp.B = base_color[1].B - d;
-				paint_color[3] = clamp_ColorRGB(tmp);
-			} else if ((sB & ~0x1F) != 0) {
-				// 'Planar' mode.
-				// TODO: Needs testing - I don't have a sample file with 'Planar' encoding.
-				mode = ETC2_MODE_PLANAR;
-
-				// 'O' color.
-				base_color[0].R = extend_6to8bits((etc1_src->planar.RO_GO1 >> 1) & 0x3F);
-				base_color[0].G = extend_7to8bits(((etc1_src->planar.RO_GO1 << 6) & 0x40) |
-								  ((etc1_src->planar.GO2_BO1 >> 1) & 0x3F));
-				base_color[0].B = extend_6to8bits(((etc1_src->planar.GO2_BO1 << 5) & 0x20) |
-								   (etc1_src->planar.BO2_BO3 & 0x18) |
-								  ((etc1_src->planar.BO2_BO3 << 1) & 0x06) |
-								   (etc1_src->planar.BO3_RH >> 7));
-
-				// 'H' color.
-				base_color[1].R = extend_6to8bits(((etc1_src->planar.BO3_RH >> 1) & 0x3C) |
-								   (etc1_src->planar.BO3_RH & 0x01));
-				base_color[1].G = extend_7to8bits(etc1_src->planar.GH_BH >> 1);
-				base_color[1].B = extend_6to8bits(((etc1_src->planar.GH_BH << 5) & 0x20) |
-								   (etc1_src->planar.BH_RV >> 3));
-
-				// 'V' color.
-				base_color[2].R = extend_6to8bits(((etc1_src->planar.BH_RV << 3) & 0x38) |
-								   (etc1_src->planar.RV_GV >> 5));
-				base_color[2].G = extend_7to8bits(((etc1_src->planar.RV_GV << 2) & 0x7C) |
-								   (etc1_src->planar.GV_BV >> 6));
-				base_color[2].B = extend_6to8bits(etc1_src->planar.GV_BV & 0x3F);
-			} else {
-				// ETC1 differential mode.
-				mode = ETC2_MODE_ETC1;
-				base_color[0].R = extend_5to8bits(etc1_src->id.R >> 3);
-				base_color[0].G = extend_5to8bits(etc1_src->id.G >> 3);
-				base_color[0].B = extend_5to8bits(etc1_src->id.B >> 3);
-				base_color[1].R = extend_5to8bits(sR);
-				base_color[1].G = extend_5to8bits(sG);
-				base_color[1].B = extend_5to8bits(sB);
-			}
-		}
-
-		// Tile arrangement:
-		// flip == 0        flip == 1
-		// a e | i m        a e   i m
-		// b f | j n        b f   j n
-		//     |            ---------
-		// c g | k o        c g   k o
-		// d h | l p        d h   l p
-
-		// Intensities for the table codewords.
-		const int16_t *const tbl[2] = {
-			etc1_intensity[etc1_src->control >> 5],
-			etc1_intensity[(etc1_src->control >> 2) & 0x07]
-		};
-
-		// Process the 16 pixel indexes.
-		// TODO: Use SSE2 for saturated arithmetic?
-		uint16_t px_msb = be16_to_cpu(etc1_src->msb);
-		uint16_t px_lsb = be16_to_cpu(etc1_src->lsb);
-		switch (mode) {
-			default:
-				assert(!"Invalid ETC2 mode.");
-				delete img;
-				return nullptr;
-
-			case ETC2_MODE_ETC1: {
-				// ETC1 mode.
-				// control, bit 0: flip
-				uint16_t subblock = etc1_subblock_mapping[etc1_src->control & 0x01];
-				for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1, subblock >>= 1) {
-					ColorRGB color;
-					unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
-
-					// Select the table codeword based on the current subblock.
-					const uint8_t cur_sub = subblock & 1;
-					const int adj = tbl[cur_sub][px_idx];
-					color = base_color[cur_sub];
-					color.R += adj;
-					color.G += adj;
-					color.B += adj;
-
-					// Clamp the color components and save it to the tile buffer.
-					tileBuf[etc1_mapping[i]] = clamp_ColorRGB(color);
-				}
-				break;
-			}
-
-			case ETC2_MODE_TH: {
-				// ETC2 'T' or 'H' mode.
-				for (unsigned int i = 0; i < 16; i++, px_msb >>= 1, px_lsb >>= 1) {
-					// Pixel index indicates the paint color to use.
-					unsigned int px_idx = ((px_msb & 1) << 1) | (px_lsb & 1);
-					tileBuf[etc1_mapping[i]] = paint_color[px_idx];
-				}
-				break;
-			}
-
-			case ETC2_MODE_PLANAR: {
-				// ETC2 'Planar' mode.
-				// Each pixel is interpolated using the three RGB676 colors.
-				for (unsigned int i = 0; i < 16; i++) {
-					// NOTE: Using ETC1 pixel arrangement.
-					// Rows first, then columns.
-					const int pX = i / 4;
-					const int pY = i % 4;
-
-					// Color order: 0, 1, 2 => 'O', 'H', 'V'
-					// TODO: SIMD optimization?
-					ColorRGB tmp;
-					tmp.R = ((pX * (base_color[1].R - base_color[0].R)) +
-						 (pY * (base_color[2].R - base_color[0].R)) +
-						  (4 *  base_color[0].R) + 2) >> 2;
-					tmp.G = ((pX * (base_color[1].G - base_color[0].G)) +
-						 (pY * (base_color[2].G - base_color[0].G)) +
-						  (4 *  base_color[0].G) + 2) >> 2;
-					tmp.B = ((pX * (base_color[1].B - base_color[0].B)) +
-						 (pY * (base_color[2].B - base_color[0].B)) +
-						  (4 *  base_color[0].B) + 2) >> 2;
-
-					// Clamp the color components and save it to the tile buffer.
-					tileBuf[etc1_mapping[i]] = clamp_ColorRGB(tmp);
-				}
-				break;
-			}
-		}
+		// Decode the ETC2 RGB block.
+		decodeBlock_ETC2_RGB(tileBuf, etc1_src);
 
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
