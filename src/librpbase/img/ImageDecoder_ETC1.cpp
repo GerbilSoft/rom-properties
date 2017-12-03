@@ -32,47 +32,62 @@ namespace LibRpBase {
 
 // ETC1 block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
-struct etc1_block {
-	// Base colors
-	// Byte layout:
-	// - diffbit == 0: 4 MSB == base 1, 4 LSB == base 2
-	// - diffbit == 1: 5 MSB == base, 3 LSB == differential
-	union {
-		// Indiv/Diff
-		struct {
-			uint8_t R;
-			uint8_t G;
-			uint8_t B;
-		} id;
+union etc1_block {
+	struct {
+		// Base colors
+		// Byte layout:
+		// - diffbit == 0: 4 MSB == base 1, 4 LSB == base 2
+		// - diffbit == 1: 5 MSB == base, 3 LSB == differential
+		union {
+			// Indiv/Diff
+			struct {
+				uint8_t R;
+				uint8_t G;
+				uint8_t B;
+			} id;
 
-		// ETC2 'T' mode
-		struct {
-			uint8_t R1;
-			uint8_t G1B1;
-			uint8_t R2G2;
-			// B2 is in `control`.
-		} t;
+			// ETC2 'T' mode
+			struct {
+				uint8_t R1;
+				uint8_t G1B1;
+				uint8_t R2G2;
+				// B2 is in `control`.
+			} t;
 
-		// ETC2 'H' mode
-		struct {
-			uint8_t R1G1a;
-			uint8_t G1bB1aB1b;
-			uint8_t B1bR2G2;
-			// Part of G2 is in `control`.
-			// B2 is in `control`.
-		} h;
+			// ETC2 'H' mode
+			struct {
+				uint8_t R1G1a;
+				uint8_t G1bB1aB1b;
+				uint8_t B1bR2G2;
+				// Part of G2 is in `control`.
+				// B2 is in `control`.
+			} h;
+		};
+
+		// Control byte: [ETC1]
+		// - 3 MSB:  table code word 1
+		// - 3 next: table code word 2
+		// - 1 bit:  diff bit
+		// - 1 LSB:  flip bit
+		uint8_t control;
+
+		// Pixel index bits. (big-endian)
+		uint16_t msb;
+		uint16_t lsb;
 	};
 
-	// Control byte: [ETC1]
-	// - 3 MSB:  table code word 1
-	// - 3 next: table code word 2
-	// - 1 bit:  diff bit
-	// - 1 LSB:  flip bit
-	uint8_t control;
-
-	// Pixel index bits. (big-endian)
-	uint16_t msb;
-	uint16_t lsb;
+	struct {
+		// Planar mode has 3 colors in RGB676 format.
+		// Colors are labelled 'O', 'H', and 'V'.
+		uint8_t RO_GO1;		// 6-1: RO;     0: GO1
+		uint8_t GO2_BO1;	// 6-1: GO2;    0: BO1
+		uint8_t BO2_BO3;	// 4-3: BO2;  1-0: BO3a
+		uint8_t BO3_RH;		//   7: BO3b; 6-2: RH1; 0: RH2
+		uint8_t GH_BH;		// 7-1: GH;     0: BH
+		uint8_t BH_RV;		// 7-3: BH;   2-0: RV
+		uint8_t RV_GV;		// 7-5: RV;   4-0: GV
+		uint8_t GV_BV;		// 7-6: GV;   5-0: BV
+	} planar;
 };
 ASSERT_STRUCT(etc1_block, 8);
 
@@ -167,6 +182,26 @@ static inline uint8_t extend_4to8bits(uint8_t value)
 static inline uint8_t extend_5to8bits(uint8_t value)
 {
 	return (value << 3) | (value >> 2);
+}
+
+/**
+ * Extend a 6-bit color component to 8-bit color.
+ * @param value 6-bit color component.
+ * @return 8-bit color value.
+ */
+static inline uint8_t extend_6to8bits(uint8_t value)
+{
+	return (value << 2) | (value >> 4);
+}
+
+/**
+ * Extend a 7-bit color component to 8-bit color.
+ * @param value 7-bit color component.
+ * @return 7-bit color value.
+ */
+static inline uint8_t extend_7to8bits(uint8_t value)
+{
+	return (value << 1) | (value >> 6);
 }
 
 // Temporary RGB structure that allows us to clamp it later.
@@ -378,7 +413,8 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 		// Determine the base colors for the two subblocks.
 		// NOTE: These are kept as separate RGB components,
 		// since we have to manipulate and clamp them manually.
-		ColorRGB base_color[2];
+		// NOTE: base_color[2] is for 'Planar' mode only.
+		ColorRGB base_color[3];
 
 		// 'T','H' modes: Paint colors are used instead of base colors.
 		// Intensity modifications are not supported, so we'll store the
@@ -483,9 +519,32 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 				tmp.B = base_color[1].B - d;
 				paint_color[3] = clamp_ColorRGB(tmp);
 			} else if ((sB & ~0x1F) != 0) {
-				// 'Planar' mode. [TODO]
+				// 'Planar' mode.
+				// TODO: Needs testing - I don't have a sample file with 'Planar' encoding.
 				mode = ETC2_MODE_PLANAR;
-				memset(paint_color, 0, sizeof(paint_color));
+
+				// 'O' color.
+				base_color[0].R = extend_6to8bits((etc1_src->planar.RO_GO1 >> 1) & 0x3F);
+				base_color[0].G = extend_7to8bits(((etc1_src->planar.RO_GO1 << 6) & 0x40) |
+								  ((etc1_src->planar.GO2_BO1 >> 1) & 0x3F));
+				base_color[0].B = extend_6to8bits(((etc1_src->planar.GO2_BO1 << 5) & 0x20) |
+								   (etc1_src->planar.BO2_BO3 & 0x18) |
+								  ((etc1_src->planar.BO2_BO3 << 1) & 0x06) |
+								   (etc1_src->planar.BO3_RH >> 7));
+
+				// 'H' color.
+				base_color[1].R = extend_6to8bits(((etc1_src->planar.BO3_RH >> 1) & 0x3C) |
+								   (etc1_src->planar.BO3_RH & 0x01));
+				base_color[1].G = extend_7to8bits(etc1_src->planar.GH_BH >> 1);
+				base_color[1].B = extend_6to8bits(((etc1_src->planar.GH_BH << 5) & 0x20) |
+								   (etc1_src->planar.BH_RV >> 3));
+
+				// 'V' color.
+				base_color[2].R = extend_6to8bits(((etc1_src->planar.BH_RV << 3) & 0x38) |
+								   (etc1_src->planar.RV_GV >> 5));
+				base_color[2].G = extend_7to8bits(((etc1_src->planar.RV_GV << 2) & 0x7C) |
+								   (etc1_src->planar.GV_BV >> 6));
+				base_color[2].B = extend_6to8bits(etc1_src->planar.GV_BV & 0x3F);
 			} else {
 				// ETC1 differential mode.
 				mode = ETC2_MODE_ETC1;
@@ -556,7 +615,29 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 
 			case ETC2_MODE_PLANAR: {
 				// ETC2 'Planar' mode.
-				memset(tileBuf, 0, sizeof(tileBuf));
+				// Each pixel is interpolated using the three RGB676 colors.
+				for (unsigned int i = 0; i < 16; i++) {
+					// NOTE: Using ETC1 pixel arrangement.
+					// Rows first, then columns.
+					const int pX = i / 4;
+					const int pY = i % 4;
+
+					// Color order: 0, 1, 2 => 'O', 'H', 'V'
+					// TODO: SIMD optimization?
+					ColorRGB tmp;
+					tmp.R = ((pX * (base_color[1].R - base_color[0].R)) +
+						 (pY * (base_color[2].R - base_color[0].R)) +
+						  (4 *  base_color[0].R) + 2) >> 2;
+					tmp.G = ((pX * (base_color[1].G - base_color[0].G)) +
+						 (pY * (base_color[2].G - base_color[0].G)) +
+						  (4 *  base_color[0].G) + 2) >> 2;
+					tmp.B = ((pX * (base_color[1].B - base_color[0].B)) +
+						 (pY * (base_color[2].B - base_color[0].B)) +
+						  (4 *  base_color[0].B) + 2) >> 2;
+
+					// Clamp the color components and save it to the tile buffer.
+					tileBuf[etc1_mapping[i]] = clamp_ColorRGB(tmp);
+				}
 				break;
 			}
 		}
