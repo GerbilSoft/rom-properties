@@ -465,7 +465,9 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 		switch (ddspf.dwFourCC) {
 			case DDPF_FOURCC_DXT1:
-				img = ImageDecoder::fromDXT1(
+				// TODO: With or without 1-bit transparency?
+				// Assuming with 1-bit transparency for now...
+				img = ImageDecoder::fromDXT1_A1(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf, expected_size);
 				break;

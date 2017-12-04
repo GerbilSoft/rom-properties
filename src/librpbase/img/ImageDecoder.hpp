@@ -433,6 +433,8 @@ class ImageDecoder
 		/**
 		 * Convert a GameCube DXT1 image to rp_image.
 		 * The GameCube variant has 2x2 block tiling in addition to 4x4 pixel tiling.
+		 * S3TC palette index 3 will be interpreted as fully transparent.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf DXT1 image buffer.
@@ -444,6 +446,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a DXT1 image to rp_image.
+		 * S3TC palette index 3 will be interpreted as black.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf DXT1 image buffer.
@@ -451,6 +455,19 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT1(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert a DXT1 image to rp_image.
+		 * S3TC palette index 3 will be interpreted as fully transparent.
+		 *
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf DXT1 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDXT1_A1(int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**

@@ -307,10 +307,16 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			switch (ktxHeader.glInternalFormat) {
 				case GL_RGB_S3TC:
 				case GL_RGB4_S3TC:
-				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:	// TODO: No alpha.
-				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
 					// DXT1-compressed texture.
 					img = ImageDecoder::fromDXT1(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
+				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+					// DXT1-compressed texture with 1-bit alpha.
+					img = ImageDecoder::fromDXT1_A1(
 						ktxHeader.pixelWidth, height,
 						buf, expected_size);
 					break;
