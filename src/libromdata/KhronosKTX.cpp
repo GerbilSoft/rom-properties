@@ -200,6 +200,10 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		default:
 			// May be a compressed format.
 			switch (ktxHeader.glInternalFormat) {
+				case GL_RGB_S3TC:
+				case GL_RGB4_S3TC:
+				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 				case GL_ETC1_RGB8_OES:
 				case GL_COMPRESSED_R11_EAC:
 				case GL_COMPRESSED_SIGNED_R11_EAC:
@@ -207,18 +211,24 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SRGB8_ETC2:
 				case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
 				case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-					// ETC1 or ETC2-compressed RGB texture,
+					// DXT1, ETC1, or ETC2-compressed RGB texture,
 					// or one-channel EAC-compressed texture.
 					// 16 pixels compressed into 64 bits. (4bpp)
 					expected_size = (ktxHeader.pixelWidth * ktxHeader.pixelHeight) / 2;
 					break;
 
+				//case GL_RGBA_S3TC:	// TODO
+				//case GL_RGBA4_S3TC:	// TODO
+				case GL_RGBA_DXT5_S3TC:
+				case GL_RGBA4_DXT5_S3TC:
+				case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+				case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
 				case GL_COMPRESSED_RG11_EAC:
 				case GL_COMPRESSED_SIGNED_RG11_EAC:
 				case GL_COMPRESSED_RGBA8_ETC2_EAC:
 				case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-					// ETC2-compressed RGB texture with
-					// EAC-compressed alpha channel, or
+					// DXT3, DXT5, ETC2-compressed RGB texture
+					// with EAC-compressed alpha channel, or
 					// two-channel EAC-compressed texture.
 					// 16 pixels compressed into 128 bits. (8bpp)
 					expected_size = ktxHeader.pixelWidth * ktxHeader.pixelHeight;
@@ -295,6 +305,32 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// May be a compressed format.
 			// TODO: sRGB post-processing for sRGB formats?
 			switch (ktxHeader.glInternalFormat) {
+				case GL_RGB_S3TC:
+				case GL_RGB4_S3TC:
+				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:	// TODO: No alpha.
+				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+					// DXT1-compressed texture.
+					img = ImageDecoder::fromDXT1(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
+				case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+					// DXT3-compressed texture.
+					img = ImageDecoder::fromDXT3(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
+				case GL_RGBA_DXT5_S3TC:
+				case GL_RGBA4_DXT5_S3TC:
+				case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+					// DXT5-compressed texture.
+					img = ImageDecoder::fromDXT5(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					break;
+
 				case GL_ETC1_RGB8_OES:
 					// ETC1-compressed texture.
 					img = ImageDecoder::fromETC1(
