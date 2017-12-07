@@ -183,17 +183,17 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
-			expected_size = ALIGN(4, ktxHeader.pixelWidth * 3) * ktxHeader.pixelHeight;
+			expected_size = ALIGN(4, ktxHeader.pixelWidth * 3) * height;
 			break;
 
 		case GL_RGBA:
 			// 32-bit RGBA.
-			expected_size = ktxHeader.pixelWidth * ktxHeader.pixelHeight * 4;
+			expected_size = ktxHeader.pixelWidth * height * 4;
 			break;
 
 		case GL_LUMINANCE:
 			// 8-bit luminance.
-			expected_size = ALIGN(4, ktxHeader.pixelWidth) * ktxHeader.pixelHeight;
+			expected_size = ALIGN(4, ktxHeader.pixelWidth) * height;
 			break;
 
 		case 0:
@@ -214,7 +214,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// DXT1, ETC1, or ETC2-compressed RGB texture,
 					// or one-channel EAC-compressed texture.
 					// 16 pixels compressed into 64 bits. (4bpp)
-					expected_size = (ktxHeader.pixelWidth * ktxHeader.pixelHeight) / 2;
+					expected_size = (ktxHeader.pixelWidth * height) / 2;
 					break;
 
 				//case GL_RGBA_S3TC:	// TODO
@@ -231,7 +231,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// with EAC-compressed alpha channel, or
 					// two-channel EAC-compressed texture.
 					// 16 pixels compressed into 128 bits. (8bpp)
-					expected_size = ktxHeader.pixelWidth * ktxHeader.pixelHeight;
+					expected_size = ktxHeader.pixelWidth * height;
 					break;
 
 				default:
