@@ -139,12 +139,12 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
+	// NOTE: `pixelHeight == 0` is allowed here. (1D texture)
 	assert(ktxHeader.pixelWidth > 0);
 	assert(ktxHeader.pixelWidth <= 32768);
-	assert(ktxHeader.pixelHeight > 0);
 	assert(ktxHeader.pixelHeight <= 32768);
 	if (ktxHeader.pixelWidth == 0 || ktxHeader.pixelWidth > 32768 ||
-	    ktxHeader.pixelHeight == 0 || ktxHeader.pixelHeight > 32768)
+	    ktxHeader.pixelHeight > 32768)
 	{
 		// Invalid image dimensions.
 		return nullptr;
