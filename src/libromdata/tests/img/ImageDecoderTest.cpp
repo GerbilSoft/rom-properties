@@ -703,7 +703,17 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 		// Orientation: Down (same as "normal")
 		ImageDecoderTest_mode(
 			"KTX/Khronos/down-reference.ktx.gz",
-			"KTX/Khronos/up.png"))
+			"KTX/Khronos/up.png"),
+
+		// Luminance (unsized: GL_LUMINANCE)
+		ImageDecoderTest_mode(
+			"KTX/Khronos/luminance_unsized_reference.ktx.gz",
+			"KTX/Khronos/luminance.png"),
+		// Luminance (sized: GL_LUMINANCE8)
+		ImageDecoderTest_mode(
+			"KTX/Khronos/luminance_sized_reference.ktx.gz",
+			"KTX/Khronos/luminance.png"))
+
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
