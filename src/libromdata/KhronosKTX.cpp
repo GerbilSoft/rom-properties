@@ -369,6 +369,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 				default:
 					// Not supported.
+					aligned_free(buf);
 					return nullptr;
 			}
 			break;
