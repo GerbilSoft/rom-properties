@@ -827,7 +827,6 @@ int KhronosKTX::loadFieldData(void)
 	d->fields->addField_string(C_("KhronosKTX", "Endianness"), endian_str);
 
 	// NOTE: GL field names should not be localized.
-	// TODO: String lookups.
 
 	// glType
 	const char *glType_str = GLenumStrings::lookup_glEnum(ktxHeader->glType);
