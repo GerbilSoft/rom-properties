@@ -64,12 +64,12 @@ typedef struct PACKED _Badge_PRBS_Header {
 	char filename[48];	// [0x044] Image filename. (Latin-1?)
 	char setname[48];	// [0x074] Set name. (Latin-1?)
 	union {
-		// Title ID for program launch.
+		// [0x0A4] Title ID for program launch.
 		// If no program is assigned, this is all 0xFF.
-		uint64_t id;
+		uint64_t id;		// [0x0A4]
 		struct {
-			uint32_t lo;
-			uint32_t hi;
+			uint32_t lo;	// [0x0A4]
+			uint32_t hi;	// [0x0A8]
 		};
 	} title_id;
 	uint8_t reserved3[12];	// [0x0AC] Unknown
