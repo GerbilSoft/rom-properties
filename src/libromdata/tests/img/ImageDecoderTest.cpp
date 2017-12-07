@@ -712,7 +712,12 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 		// Luminance (sized: GL_LUMINANCE8)
 		ImageDecoderTest_mode(
 			"KTX/Khronos/luminance_sized_reference.ktx.gz",
-			"KTX/Khronos/luminance.png"))
+			"KTX/Khronos/luminance.png"),
+
+		// ETC1
+		ImageDecoderTest_mode(
+			"KTX/Khronos/etc1.ktx.gz",
+			"KTX/Khronos/etc1.png"))
 
 	, ImageDecoderTest::test_case_suffix_generator);
 
