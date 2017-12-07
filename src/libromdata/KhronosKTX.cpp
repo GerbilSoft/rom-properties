@@ -512,7 +512,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 /** KhronosKTX **/
 
 /**
- * Read a DirectDraw Surface image file.
+ * Read a Khronos KTX image file.
  *
  * A ROM image must be opened by the caller. The file handle
  * will be dup()'d and must be kept open in order to load
