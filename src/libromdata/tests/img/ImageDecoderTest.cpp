@@ -59,6 +59,7 @@ using namespace LibRpBase;
 // from the RomData subclass?
 #include "DirectDrawSurface.hpp"
 #include "SegaPVR.hpp"
+#include "KhronosKTX.hpp"
 
 // DirectDraw Surface structs.
 #include "dds_structs.h"
@@ -412,6 +413,11 @@ TEST_P(ImageDecoderTest, decodeTest)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
 		// PVR/GVR image.
 		m_romData = new SegaPVR(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
+		// Khronos KTX image.
+		// TODO: Use .zktx format instead of .ktx.gz.
+		// Needs GzFile, a gzip-decompressing IRpFile subclass.
+		m_romData = new KhronosKTX(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -677,6 +683,27 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"GVR/weeklytitle.gvr.gz",
 			"GVR/weeklytitle.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// KTX tests.
+INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
+	::testing::Values(
+		// RGB reference image.
+		ImageDecoderTest_mode(
+			"KTX/Khronos/rgb-reference.ktx.gz",
+			"KTX/Khronos/rgb.png"),
+		// RGB reference image, mipmap levels == 0
+		ImageDecoderTest_mode(
+			"KTX/Khronos/rgb-amg-reference.ktx.gz",
+			"KTX/Khronos/rgb.png"),
+		// Orientation: Up (upside-down compared to "normal")
+		ImageDecoderTest_mode(
+			"KTX/Khronos/up-reference.ktx.gz",
+			"KTX/Khronos/up.png"),
+		// Orientation: Down (same as "normal")
+		ImageDecoderTest_mode(
+			"KTX/Khronos/down-reference.ktx.gz",
+			"KTX/Khronos/up.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
