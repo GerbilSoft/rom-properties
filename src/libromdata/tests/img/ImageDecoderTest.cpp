@@ -690,34 +690,34 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 	::testing::Values(
 		// RGB reference image.
 		ImageDecoderTest_mode(
-			"KTX/Khronos/rgb-reference.ktx.gz",
-			"KTX/Khronos/rgb.png"),
+			"KTX/rgb-reference.ktx.gz",
+			"KTX/rgb.png"),
 		// RGB reference image, mipmap levels == 0
 		ImageDecoderTest_mode(
-			"KTX/Khronos/rgb-amg-reference.ktx.gz",
-			"KTX/Khronos/rgb.png"),
+			"KTX/rgb-amg-reference.ktx.gz",
+			"KTX/rgb.png"),
 		// Orientation: Up (upside-down compared to "normal")
 		ImageDecoderTest_mode(
-			"KTX/Khronos/up-reference.ktx.gz",
-			"KTX/Khronos/up.png"),
+			"KTX/up-reference.ktx.gz",
+			"KTX/up.png"),
 		// Orientation: Down (same as "normal")
 		ImageDecoderTest_mode(
-			"KTX/Khronos/down-reference.ktx.gz",
-			"KTX/Khronos/up.png"),
+			"KTX/down-reference.ktx.gz",
+			"KTX/up.png"),
 
 		// Luminance (unsized: GL_LUMINANCE)
 		ImageDecoderTest_mode(
-			"KTX/Khronos/luminance_unsized_reference.ktx.gz",
-			"KTX/Khronos/luminance.png"),
+			"KTX/luminance_unsized_reference.ktx.gz",
+			"KTX/luminance.png"),
 		// Luminance (sized: GL_LUMINANCE8)
 		ImageDecoderTest_mode(
-			"KTX/Khronos/luminance_sized_reference.ktx.gz",
-			"KTX/Khronos/luminance.png"),
+			"KTX/luminance_sized_reference.ktx.gz",
+			"KTX/luminance.png"),
 
 		// ETC1
 		ImageDecoderTest_mode(
-			"KTX/Khronos/etc1.ktx.gz",
-			"KTX/Khronos/etc1.png"))
+			"KTX/etc1.ktx.gz",
+			"KTX/etc1.png"))
 
 	, ImageDecoderTest::test_case_suffix_generator);
 
