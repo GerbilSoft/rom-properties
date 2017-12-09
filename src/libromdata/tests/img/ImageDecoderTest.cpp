@@ -60,6 +60,7 @@ using namespace LibRpBase;
 #include "Texture/DirectDrawSurface.hpp"
 #include "Texture/SegaPVR.hpp"
 #include "Texture/KhronosKTX.hpp"
+#include "Texture/ValveVTF.hpp"
 
 // DirectDraw Surface structs.
 #include "Texture/dds_structs.h"
@@ -419,6 +420,9 @@ TEST_P(ImageDecoderTest, decodeTest)
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// Needs GzFile, a gzip-decompressing IRpFile subclass.
 		m_romData = new KhronosKTX(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
+		// Valve Texture File.
+		m_romData = new ValveVTF(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -725,6 +729,67 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 			"KTX/rgba-reference.ktx.gz",
 			"KTX/rgba.png"))
 
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Valve VTF tests. (all formats)
+INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
+	::testing::Values(
+		// NOTE: VTF channel ordering is usually backwards from ImageDecoder.
+
+		// 32-bit ARGB
+		ImageDecoderTest_mode(
+			"VTF/ABGR8888.vtf.gz",
+			"argb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/ARGB8888.vtf.gz",	// NOTE: Actually RABG8888.
+			"argb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/BGRA8888.vtf.gz",
+			"argb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGBA8888.vtf.gz",
+			"argb-reference.png"),
+
+		// 32-bit xRGB
+		ImageDecoderTest_mode(
+			"VTF/BGRx8888.vtf.gz",
+			"rgb-reference.png"),
+
+		// 24-bit RGB
+		ImageDecoderTest_mode(
+			"VTF/BGR888.vtf.gz",
+			"rgb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGB888.vtf.gz",
+			"rgb-reference.png"),
+
+		// 16-bit RGB (565)
+		// FIXME: Tests are failing.
+		ImageDecoderTest_mode(
+			"VTF/BGR565.vtf.gz",
+			"RGB/RGB565.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGB565.vtf.gz",
+			"RGB/RGB565.png"),
+
+		// 15-bit RGB (555)
+		ImageDecoderTest_mode(
+			"VTF/BGRx5551.vtf.gz",
+			"RGB/RGB555.png"),
+
+		// 16-bit ARGB (4444)
+		ImageDecoderTest_mode(
+			"VTF/BGRA4444.vtf.gz",
+			"ARGB/ARGB4444.png"),
+
+		// Intensity formats
+		// FIXME: Tests are failing.
+		ImageDecoderTest_mode(
+			"VTF/I8.vtf.gz",
+			"Luma/L8.png"),
+		ImageDecoderTest_mode(
+			"VTF/IA88.vtf.gz",
+			"Luma/A8L8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
