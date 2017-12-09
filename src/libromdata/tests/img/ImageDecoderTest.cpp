@@ -270,8 +270,8 @@ void ImageDecoderTest::SetUp(void)
 	gzclose_r(m_gzDds);
 	m_gzDds = nullptr;
 
-	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: "
-		<< mode.dds_gz_filename;
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: " <<
+		mode.dds_gz_filename << " - short read";
 
 	// Open the PNG image file being tested.
 	path.resize(18);	// Back to "ImageDecoder_data/".
@@ -279,7 +279,8 @@ void ImageDecoderTest::SetUp(void)
 	replace_slashes(path);
 	unique_ptr<IRpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file.get() != nullptr);
-	ASSERT_TRUE(file->isOpen());
+	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " <<
+		mode.png_filename << " - " << strerror(file->lastError());
 
 	// Maximum image size.
 	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
@@ -289,8 +290,8 @@ void ImageDecoderTest::SetUp(void)
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: "
-		<< mode.png_filename;
+	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: " <<
+		mode.png_filename << " - short read";
 }
 
 /**
