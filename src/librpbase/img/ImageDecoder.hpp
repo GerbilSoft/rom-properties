@@ -193,7 +193,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear8(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *RESTRICT img_buf, int img_siz, int stride);
+			const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 		/** 16-bit **/
 
