@@ -984,6 +984,12 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		uint32_t checkboxes = field->data.list_checkboxes;
 		for (int i = 0; i < row_count; i++) {
 			const vector<string> &data_row = list_data->at(i);
+			if (hasCheckboxes && data_row.empty()) {
+				// Skip this row.
+				checkboxes >>= 1;
+				continue;
+			}
+
 			GtkTreeIter treeIter;
 			gtk_list_store_insert_before(listStore, &treeIter, nullptr);
 			int col = col_start;
