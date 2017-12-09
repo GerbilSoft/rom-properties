@@ -394,6 +394,8 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	switch (vtfHeader.highResImageFormat) {
 		/* 32-bit */
 		case VTF_IMAGE_FORMAT_RGBA8888:
+		case VTF_IMAGE_FORMAT_UVWQ8888:	// handling as RGBA8888
+		case VTF_IMAGE_FORMAT_UVLX8888:	// handling as RGBA8888
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
 				vtfHeader.width, height,
 				reinterpret_cast<const uint32_t*>(buf), expected_size);
@@ -482,6 +484,10 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 				vtfHeader.width, height,
 				reinterpret_cast<const uint16_t*>(buf), expected_size);
 			break;
+		case VTF_IMAGE_FORMAT_UV88:
+			// We're handling this as an RG88 texture.
+			// TODO: Not supported...
+			break;
 
 		/* 8-bit */
 		case VTF_IMAGE_FORMAT_I8:
@@ -521,11 +527,8 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 			break;
 
 		case VTF_IMAGE_FORMAT_P8:
-		case VTF_IMAGE_FORMAT_UV88:
-		case VTF_IMAGE_FORMAT_UVWQ8888:
 		case VTF_IMAGE_FORMAT_RGBA16161616F:
 		case VTF_IMAGE_FORMAT_RGBA16161616:
-		case VTF_IMAGE_FORMAT_UVLX8888:
 		default:
 			// Not supported.
 			break;
