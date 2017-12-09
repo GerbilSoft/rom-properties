@@ -299,7 +299,7 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	}
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
-	// NOTE: `pixelHeight == 0` is allowed here. (1D texture)
+	// NOTE: `height == 0` is allowed here. (1D texture)
 	assert(vtfHeader.width > 0);
 	assert(vtfHeader.width <= 32768);
 	assert(vtfHeader.height <= 32768);
