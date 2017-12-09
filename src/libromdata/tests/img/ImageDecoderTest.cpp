@@ -792,6 +792,36 @@ INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
 			"Luma/A8L8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+#ifdef ENABLE_S3TC
+// Valve VTF tests. (S3TC)
+INSTANTIATE_TEST_CASE_P(VTF_S3TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"VTF/DXT1.vtf.gz",
+			"S3TC/dxt1-rgb.s3tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT3.vtf.gz",
+			"S3TC/dxt3-argb.s3tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT5.vtf.gz",
+			"S3TC/dxt5-argb.s3tc.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_S3TC */
+
+// Valve VTF tests. (S2TC)
+INSTANTIATE_TEST_CASE_P(VTF_S2TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"VTF/DXT1.vtf.gz",
+			"S3TC/dxt1-rgb.s2tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT3.vtf.gz",
+			"S3TC/dxt3-argb.s2tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT5.vtf.gz",
+			"S3TC/dxt5-argb.s2tc.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 } }
 
 /**
