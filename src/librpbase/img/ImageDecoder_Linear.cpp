@@ -988,7 +988,6 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 			// VTF "ARGB8888", which is actually RABG.
 			// TODO: This might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
 			// TODO: Verify on big-endian.
-			printf("moo\n");
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
