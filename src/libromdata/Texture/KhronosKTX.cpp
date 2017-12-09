@@ -242,7 +242,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// Verify file size.
-	if (expected_size >= file_sz + texDataStartAddr) {
+	if (texDataStartAddr + expected_size > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
