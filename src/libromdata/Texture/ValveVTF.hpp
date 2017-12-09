@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * KhronosVTF.hpp: Valve VTF image reader.                                 *
+ * ValveVTF.hpp: Valve VTF image reader.                                   *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
