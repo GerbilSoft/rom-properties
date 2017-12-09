@@ -717,7 +717,12 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 		// ETC1
 		ImageDecoderTest_mode(
 			"KTX/etc1.ktx.gz",
-			"KTX/etc1.png"))
+			"KTX/etc1.png"),
+
+		// RGBA reference image.
+		ImageDecoderTest_mode(
+			"KTX/rgba-reference.ktx.gz",
+			"KTX/rgba.png"))
 
 	, ImageDecoderTest::test_case_suffix_generator);
 
