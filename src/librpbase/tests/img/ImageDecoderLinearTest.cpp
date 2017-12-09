@@ -205,6 +205,10 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 		CASE(PXF_A2R10G10B10)
 		CASE(PXF_A2B10G10R10)
 
+		// Uncommon 16-bit formats.
+		CASE(PXF_RG88)
+		CASE(PXF_GR88)
+
 		// VTFEdit uses this as "ARGB8888".
 		// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
 		CASE(PXF_RABG8888)
@@ -1022,6 +1026,20 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			0xFF426384,
 			16),
 
+		// RG88
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RG88,
+			0,
+			0xFF123400,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x3412),
+			ImageDecoder::PXF_GR88,
+			0,
+			0xFF123400,
+			16),
+
 		/** 15-bit **/
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x1234),
@@ -1156,6 +1174,20 @@ INSTANTIATE_TEST_CASE_P(fromLinear16_384, ImageDecoderLinearTest,
 			ImageDecoder::PXF_BGRA5551,
 			384,
 			0xFF426384,
+			16),
+
+		// RG88
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RG88,
+			384,
+			0xFF123400,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x3412),
+			ImageDecoder::PXF_GR88,
+			384,
+			0xFF123400,
 			16),
 
 		/** 15-bit **/
