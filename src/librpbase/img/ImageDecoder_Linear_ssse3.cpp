@@ -200,7 +200,6 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_A2R10G10B10:
 		case PXF_A2B10G10R10:
-		case PXF_RABG8888: // TODO
 			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 
 		default:
@@ -311,6 +310,11 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			// NOTE: Truncates to G8R8.
 			shuf_mask = _mm_setr_epi8(-1,3,1,-1, -1,7,5,-1, -1,11,9,-1, -1,15,13,-1);
 			has_alpha = false;
+			break;
+
+		case PXF_RABG8888:
+			shuf_mask = _mm_setr_epi8(1,0,3,2, 5,4,7,6, 9,8,11,10, 13,12,15,14);
+			has_alpha = true;
 			break;
 
 		default:
