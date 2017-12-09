@@ -113,8 +113,86 @@ ValveVTF3Private::~ValveVTF3Private()
  */
 const rp_image *ValveVTF3Private::loadImage(void)
 {
-	// TODO
-	return nullptr;
+	if (img) {
+		// Image has already been loaded.
+		return img;
+	} else if (!this->file || !this->isValid) {
+		// Can't load the image.
+		return nullptr;
+	}
+
+	// Sanity check: Maximum image dimensions of 32768x32768.
+	// NOTE: `height == 0` is allowed here. (1D texture)
+	assert(vtf3Header.width > 0);
+	assert(vtf3Header.width <= 32768);
+	assert(vtf3Header.height <= 32768);
+	if (vtf3Header.width == 0 || vtf3Header.width > 32768 ||
+	    vtf3Header.height > 32768)
+	{
+		// Invalid image dimensions.
+		return nullptr;
+	}
+
+	if (file->size() > 128*1024*1024) {
+		// Sanity check: VTF files shouldn't be more than 128 MB.
+		return nullptr;
+	}
+	const uint32_t file_sz = (uint32_t)file->size();
+
+	// Handle a 1D texture as a "width x 1" 2D texture.
+	// NOTE: Handling a 3D texture as a single 2D texture.
+	const int height = (vtf3Header.height > 0 ? vtf3Header.height : 1);
+
+	// Assuming DXT1 for textures.
+	// TODO: Some use DXT5.
+
+	// Calculate the expected size.
+	const unsigned int expected_size = (vtf3Header.width * vtf3Header.height / 2);
+	if (expected_size == 0 || expected_size > file_sz) {
+		// Invalid image size.
+		return nullptr;
+	}
+
+	// TODO: Adjust for mipmaps.
+	// For now, assuming the main texture is at the end of the file.
+	const unsigned int texDataStartAddr = file_sz - expected_size;
+
+	// Texture cannot start inside of the VTF header.
+	assert(texDataStartAddr >= sizeof(vtf3Header));
+	if (texDataStartAddr < sizeof(vtf3Header)) {
+		// Invalid texture data start address.
+		return nullptr;
+	}
+
+	// Seek to the start of the texture data.
+	int ret = file->seek(texDataStartAddr);
+	if (ret != 0) {
+		// Seek error.
+		return nullptr;
+	}
+
+	// Read the texture data.
+	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
+	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+	if (!buf) {
+		// Memory allocation failure.
+		return nullptr;
+	}
+	size_t size = file->read(buf, expected_size);
+	if (size != expected_size) {
+		// Read error.
+		aligned_free(buf);
+		return nullptr;
+	}
+
+	// Decode the image.
+	// TODO: Determine the format.
+	img = ImageDecoder::fromDXT1(
+		vtf3Header.width, height,
+		buf, expected_size);
+
+	aligned_free(buf);
+	return img;
 }
 
 /** ValveVTF3 **/
@@ -355,15 +433,6 @@ uint32_t ValveVTF3::imgpf(ImageType imageType) const
  */
 int ValveVTF3::loadFieldData(void)
 {
-	// TODO: Move to RomFields?
-#ifdef _WIN32
-	// Windows: 6 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 6;
-#else
-	// Linux: 4 visible rows per RFT_LISTDATA.
-	static const int rows_visible = 4;
-#endif
-
 	RP_D(ValveVTF3);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
