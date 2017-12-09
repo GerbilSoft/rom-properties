@@ -23,7 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
 
 #include "librpbase/disc/IFst.hpp"
-#include "../gcn_structs.h"
+#include "../Console/gcn_structs.h"
 
 namespace LibRomData {
 

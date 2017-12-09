@@ -25,7 +25,6 @@
 
 #include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
-#include "n3ds_structs.h"
 
 // librpbase
 #include "librpbase/byteswap.h"

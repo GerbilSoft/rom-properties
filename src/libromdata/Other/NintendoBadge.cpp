@@ -22,7 +22,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "badge_structs.h"
-#include "n3ds_structs.h"
+#include "Handheld/n3ds_structs.h"
 #include "data/Nintendo3DSSysTitles.hpp"
 #include "data/NintendoLanguage.hpp"
 

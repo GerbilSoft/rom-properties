@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "NEResourceReader.hpp"
-#include "../exe_structs.h"
 
 // librpbase
 #include "librpbase/common.h"

@@ -31,7 +31,7 @@
 #include "librpbase/byteswap.h"
 
 #include "librpbase/crypto/KeyManager.hpp"
-#include "n3ds_structs.h"
+#include "../Handheld/n3ds_structs.h"
 
 namespace LibRomData {
 

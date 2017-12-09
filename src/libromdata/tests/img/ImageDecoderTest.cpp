@@ -57,12 +57,12 @@ using namespace LibRpBase;
 
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
-#include "DirectDrawSurface.hpp"
-#include "SegaPVR.hpp"
-#include "KhronosKTX.hpp"
+#include "Texture/DirectDrawSurface.hpp"
+#include "Texture/SegaPVR.hpp"
+#include "Texture/KhronosKTX.hpp"
 
 // DirectDraw Surface structs.
-#include "dds_structs.h"
+#include "Texture/dds_structs.h"
 
 // C includes.
 #include <stdint.h>

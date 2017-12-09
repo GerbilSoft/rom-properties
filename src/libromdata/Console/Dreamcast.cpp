@@ -43,7 +43,7 @@ using namespace LibRpBase;
 #include "disc/GdiReader.hpp"
 
 // SegaPVR decoder.
-#include "SegaPVR.hpp"
+#include "Texture/SegaPVR.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

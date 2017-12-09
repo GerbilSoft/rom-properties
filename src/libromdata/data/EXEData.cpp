@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 #include "EXEData.hpp"
-#include "../exe_structs.h"
+#include "Other/exe_structs.h"
 
 // C includes.
 #include <stdlib.h>

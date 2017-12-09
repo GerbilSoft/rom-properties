@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 #include "GLenumStrings.hpp"
-#include "../ktx_structs.h"
+#include "Texture/gl_defs.h"
 
 // C includes.
 #include <stdlib.h>
