@@ -782,6 +782,11 @@ INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
 			"VTF/BGRA4444.vtf.gz",
 			"ARGB/ARGB4444.png"),
 
+		// UV88 (handled as RG88)
+		ImageDecoderTest_mode(
+			"VTF/UV88.vtf.gz",
+			"rg-reference.png"),
+
 		// Intensity formats
 		// FIXME: Tests are failing.
 		ImageDecoderTest_mode(
