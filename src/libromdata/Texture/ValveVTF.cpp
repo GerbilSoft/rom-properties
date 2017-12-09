@@ -520,8 +520,6 @@ int ValveVTF::loadFieldData(void)
 		auto &data_row = vv_flags->at(i);
 		if (flags_names[i]) {
 			data_row.push_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", flags_names[i]));
-		} else {
-			data_row.push_back(string());
 		}
 	}
 
