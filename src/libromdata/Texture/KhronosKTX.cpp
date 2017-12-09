@@ -82,7 +82,7 @@ class KhronosKTXPrivate : public RomDataPrivate
 		bool isVFlipNeeded;
 
 		// Texture data start address.
-		uint32_t texDataStartAddr;
+		unsigned int texDataStartAddr;
 
 		// Decoded image.
 		rp_image *img;
