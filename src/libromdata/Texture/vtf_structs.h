@@ -45,31 +45,31 @@ typedef struct PACKED _VTFHEADER {
 	uint32_t version[2];		// Version number. (current version is 7.2)
 	uint32_t headerSize;		// Header size (16-byte aligned)
 					// For 7.3, includes size of resources dictionary.
-	uint16_t width;			// Width of largest mipmap. (must be a power of 2)
-	uint16_t height;		// Height of largest mipmap. (must be a power of 2)
-	uint32_t flags;
+	uint16_t width;			// [0x010] Width of largest mipmap. (must be a power of 2)
+	uint16_t height;		// [0x012] Height of largest mipmap. (must be a power of 2)
+	uint32_t flags;			// [0x014]
 
-	uint16_t frames;		// Number of frames, if animated. (1 for no animation.
-	uint16_t firstFrame;		// First frame in animation. (0-based)
+	uint16_t frames;		// [0x018] Number of frames, if animated. (1 for no animation.
+	uint16_t firstFrame;		// [0x01A] First frame in animation. (0-based)
 
-	uint8_t padding0[4];		// reflectivity padding (16-byte alignment)
-	float reflectivity[3];		// reflectivity vector
-	uint8_t padding1[4];		// reflectivity padding (8-byte packing)
+	uint8_t padding0[4];		// [0x01C] reflectivity padding (16-byte alignment)
+	float reflectivity[3];		// [0x020] reflectivity vector
+	uint8_t padding1[4];		// [0x02C] reflectivity padding (8-byte packing)
 
-	float bumpmapScale;			// Bumpmap scale.
-	unsigned int highResImageFormat;	// High resolution image format.
-	uint8_t mipmapCount;			// Number of mipmaps.
-	unsigned int lowResImageFormat;		// Low resolution image format. (always DXT1)
-	uint8_t lowResImageWidth;		// Low resolution image width.
-	uint8_t lowResImageHeight;		// Low resolution image height.
+	float bumpmapScale;			// [0x030] Bumpmap scale.
+	unsigned int highResImageFormat;	// [0x034] High resolution image format.
+	uint8_t mipmapCount;			// [0x038] Number of mipmaps.
+	unsigned int lowResImageFormat;		// [0x039] Low resolution image format. (always DXT1)
+	uint8_t lowResImageWidth;		// [0x03D] Low resolution image width.
+	uint8_t lowResImageHeight;		// [0x03E] Low resolution image height.
 
 	// 7.2+
-	uint16_t depth;			// Depth of largest mipmap. Must be a power of 2.
+	uint16_t depth;			// [0x03F] Depth of largest mipmap. Must be a power of 2.
 					// Can be 0 or 1 for a 2D texture.
 
 	// 7.3+
-	uint8_t padding2[3];		// depth padding (4-byte alignment)
-	uint32_t numResources;		// Number of resources this VTF has.
+	uint8_t padding2[3];		// [0x041] depth padding (4-byte alignment)
+	uint32_t numResources;		// [0x044] Number of resources this VTF has.
 } VTFHEADER;
 // FIXME: Not sure if 72 is correct.
 ASSERT_STRUCT(VTFHEADER, 72);
@@ -95,9 +95,9 @@ typedef enum {
 	VTF_IMAGE_FORMAT_DXT1,
 	VTF_IMAGE_FORMAT_DXT3,
 	VTF_IMAGE_FORMAT_DXT5,
-	VTF_IMAGE_FORMAT_BGRX8888,
+	VTF_IMAGE_FORMAT_BGRx8888,
 	VTF_IMAGE_FORMAT_BGR565,
-	VTF_IMAGE_FORMAT_BGRX5551,
+	VTF_IMAGE_FORMAT_BGRx5551,
 	VTF_IMAGE_FORMAT_BGRA4444,
 	VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA,
 	VTF_IMAGE_FORMAT_BGRA5551,
