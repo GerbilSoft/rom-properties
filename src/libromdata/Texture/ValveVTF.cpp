@@ -85,6 +85,13 @@ class ValveVTFPrivate : public RomDataPrivate
 		static unsigned int calcImageSize(VTF_IMAGE_FORMAT format, unsigned int width, unsigned int height);
 
 		/**
+		 * Get the minimum block size for the specified format.
+		 * @param format VTF image format.
+		 * @return Minimum block size, or 0 if invalid.
+		 */
+		static unsigned int getMinBlockSize(VTF_IMAGE_FORMAT format);
+
+		/**
 		 * Load the image.
 		 * @return Image, or nullptr on error.
 		 */
@@ -142,6 +149,8 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 		case VTF_IMAGE_FORMAT_ARGB8888:
 		case VTF_IMAGE_FORMAT_BGRA8888:
 		case VTF_IMAGE_FORMAT_BGRx8888:
+		case VTF_IMAGE_FORMAT_UVWQ8888:
+		case VTF_IMAGE_FORMAT_UVLX8888:
 			// 32-bit color formats.
 			expected_size *= 4;
 			break;
@@ -160,6 +169,7 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 		case VTF_IMAGE_FORMAT_BGRx5551:
 		case VTF_IMAGE_FORMAT_BGRA4444:
 		case VTF_IMAGE_FORMAT_BGRA5551:
+		case VTF_IMAGE_FORMAT_UV88:
 			// 16-bit color formats.
 			expected_size *= 2;
 			break;
@@ -181,11 +191,12 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 			// 16 pixels compressed into 128 bits. (8bpp)
 			break;
 
-		case VTF_IMAGE_FORMAT_UV88:
-		case VTF_IMAGE_FORMAT_UVWQ8888:
 		case VTF_IMAGE_FORMAT_RGBA16161616F:
 		case VTF_IMAGE_FORMAT_RGBA16161616:
-		case VTF_IMAGE_FORMAT_UVLX8888:
+			// 64-bit color formats.
+			expected_size *= 8;
+			break;
+
 		default:
 			// Not supported.
 			expected_size = 0;
@@ -193,6 +204,82 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 	}
 
 	return expected_size;
+}
+
+/**
+* Get the minimum block size for the specified format.
+* @param format VTF image format.
+* @return Minimum block size, or 0 if invalid.
+*/
+unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
+{
+	unsigned int minBlockSize;
+
+	switch (format) {
+		case VTF_IMAGE_FORMAT_RGBA8888:
+		case VTF_IMAGE_FORMAT_ABGR8888:
+		case VTF_IMAGE_FORMAT_ARGB8888:
+		case VTF_IMAGE_FORMAT_BGRA8888:
+		case VTF_IMAGE_FORMAT_BGRx8888:
+		case VTF_IMAGE_FORMAT_UVWQ8888:
+		case VTF_IMAGE_FORMAT_UVLX8888:
+			// 32-bit color formats.
+			minBlockSize = 4;
+			break;
+
+		case VTF_IMAGE_FORMAT_RGB888:
+		case VTF_IMAGE_FORMAT_BGR888:
+		case VTF_IMAGE_FORMAT_RGB888_BLUESCREEN:
+		case VTF_IMAGE_FORMAT_BGR888_BLUESCREEN:
+			// 24-bit color formats.
+			minBlockSize = 3;
+			break;
+
+		case VTF_IMAGE_FORMAT_RGB565:
+		case VTF_IMAGE_FORMAT_IA88:
+		case VTF_IMAGE_FORMAT_BGR565:
+		case VTF_IMAGE_FORMAT_BGRx5551:
+		case VTF_IMAGE_FORMAT_BGRA4444:
+		case VTF_IMAGE_FORMAT_BGRA5551:
+		case VTF_IMAGE_FORMAT_UV88:
+			// 16-bit color formats.
+			minBlockSize = 2;
+			break;
+
+		case VTF_IMAGE_FORMAT_I8:
+		case VTF_IMAGE_FORMAT_P8:
+		case VTF_IMAGE_FORMAT_A8:
+			// 8-bit color formats.
+			minBlockSize = 1;
+			break;
+
+		case VTF_IMAGE_FORMAT_DXT1:
+		case VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA:
+			// 16 pixels compressed into 64 bits. (4bpp)
+			// Minimum block size is 8 bytes.
+			minBlockSize = 8;
+			break;
+
+		case VTF_IMAGE_FORMAT_DXT3:
+		case VTF_IMAGE_FORMAT_DXT5:
+			// 16 pixels compressed into 128 bits. (8bpp)
+			// Minimum block size is 16 bytes.
+			minBlockSize = 16;
+			break;
+
+		case VTF_IMAGE_FORMAT_RGBA16161616F:
+		case VTF_IMAGE_FORMAT_RGBA16161616:
+			// 64-bit color formats.
+			minBlockSize = 8;
+			break;
+
+		default:
+			// Not supported.
+			minBlockSize = 0;
+			break;
+	}
+
+	return minBlockSize;
 }
 
 /**
@@ -247,9 +334,16 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	// NOTE: Dimensions must be powers of two.
 	unsigned int texDataStartAddr_adj = texDataStartAddr;
 	unsigned int mipmap_size = expected_size;
+	const unsigned int minBlockSize = getMinBlockSize((VTF_IMAGE_FORMAT)vtfHeader.highResImageFormat);
 	for (unsigned int mipmapLevel = vtfHeader.mipmapCount; mipmapLevel > 1; mipmapLevel--) {
 		mipmap_size /= 4;
-		texDataStartAddr_adj += mipmap_size;
+		if (mipmap_size >= minBlockSize) {
+			texDataStartAddr_adj += mipmap_size;
+		} else {
+			// Mipmap is smaller than the minimum block size
+			// for this format.
+			texDataStartAddr_adj += minBlockSize;
+		}
 	}
 
 	// Low-resolution image size.
