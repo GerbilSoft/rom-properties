@@ -369,8 +369,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 				default:
 					// Not supported.
-					aligned_free(buf);
-					return nullptr;
+					break;
 			}
 			break;
 	}
@@ -378,7 +377,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	// Post-processing: Check if VFlip is needed.
 	// TODO: Handle HFlip too?
 	// TODO: Split into rp_image_ops.cpp?
-	if (isVFlipNeeded && height > 1) {
+	if (img && isVFlipNeeded && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
 		rp_image *flipimg = new rp_image(ktxHeader.pixelWidth, height, img->format());
 		const uint8_t *src = static_cast<const uint8_t*>(img->bits());

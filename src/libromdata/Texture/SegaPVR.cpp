@@ -371,6 +371,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		default:
 			// Unsupported pixel format.
+			aligned_free(buf);
 			return nullptr;
 	}
 
@@ -409,15 +410,13 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			ret = file->seek(pvrDataStart);
 			if (ret != 0) {
 				// Seek error.
-				aligned_free(buf);
-				return nullptr;
+				break;
 			}
 			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
 			size = file->read(pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
-				aligned_free(buf);
-				return nullptr;
+				break;
 			}
 
 			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
@@ -448,15 +447,13 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			ret = file->seek(pvrDataStart);
 			if (ret != 0) {
 				// Seek error.
-				aligned_free(buf);
-				return nullptr;
+				break;
 			}
 			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
 			size = file->read(pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
-				aligned_free(buf);
-				return nullptr;
+				break;
 			}
 
 			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
