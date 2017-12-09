@@ -485,8 +485,10 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 				reinterpret_cast<const uint16_t*>(buf), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_UV88:
-			// We're handling this as an RG88 texture.
-			// TODO: Not supported...
+			// We're handling this as a GR88 texture.
+			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_GR88,
+				vtfHeader.width, height,
+				reinterpret_cast<const uint16_t*>(buf), expected_size);
 			break;
 
 		/* 8-bit */

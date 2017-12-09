@@ -104,6 +104,10 @@ class ImageDecoder
 			PXF_A2R10G10B10,
 			PXF_A2B10G10R10,
 
+			// Uncommon 16-bit formats.
+			PXF_RG88,
+			PXF_GR88,
+
 			// VTFEdit uses this as "ARGB8888".
 			// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
 			PXF_RABG8888,

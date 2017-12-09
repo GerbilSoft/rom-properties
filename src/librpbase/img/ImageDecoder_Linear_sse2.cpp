@@ -252,6 +252,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		case PXF_RGB5A3:
 		case PXF_IA8:
 		case PXF_BGR555_PS1:
+		case PXF_RG88:
+		case PXF_GR88:
 		case PXF_L16:
 		case PXF_A8L8:
 			return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);

@@ -603,6 +603,10 @@ rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
 		fromLinear16_convert(L16, 8,8,8,8,0);
 		fromLinear16_convert(A8L8, 8,8,8,8,8);
 
+		// RG formats.
+		fromLinear16_convert(RG88, 8,8,1,0,0);
+		fromLinear16_convert(GR88, 8,8,1,0,0);
+
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
 			delete img;
