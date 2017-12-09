@@ -48,13 +48,22 @@ typedef struct PACKED _VTF3HEADER {
 	uint32_t signature;		// [0x000] VTF3_SIGNATURE
 	uint8_t unknown1[12];		// [0x004]
 
-	uint32_t unk_img_param;		// [0x010] Unknown image parameter.
+	uint32_t flags;			// [0x010] See VTF3_FLAGS.
 	uint16_t width;			// [0x014] Width of largest mipmap. (must be a power of 2)
 	uint16_t height;		// [0x016] Height of largest mipmap. (must be a power of 2)
 	uint8_t unknown2[8];		// [0x018]
 } VTF3HEADER;
 // FIXME: Not sure if 32 is correct.
 ASSERT_STRUCT(VTF3HEADER, 32);
+
+/**
+ * Flags
+ */
+typedef enum {
+	VTF3_FLAG_0x0080	= 0x0080,	// TODO: What does this do?
+	VTF3_FLAG_ALPHA		= 0x2000,	// If set, has alpha (DXT5).
+						// Otherwise, no alpha. (DXT1)
+} VTF3_IMAGE_FORMAT;
 
 #pragma pack()
 

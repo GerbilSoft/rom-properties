@@ -143,11 +143,14 @@ const rp_image *ValveVTF3Private::loadImage(void)
 	// NOTE: Handling a 3D texture as a single 2D texture.
 	const int height = (vtf3Header.height > 0 ? vtf3Header.height : 1);
 
-	// Assuming DXT1 for textures.
-	// TODO: Some use DXT5.
-
 	// Calculate the expected size.
-	const unsigned int expected_size = (vtf3Header.width * vtf3Header.height / 2);
+	unsigned int expected_size = vtf3Header.width * height;
+	if (!(vtf3Header.flags & VTF3_FLAG_ALPHA)) {
+		// Image does not have an alpha channel,
+		// which means it's DXT1 and thus 4bpp.
+		expected_size /= 2;
+	}
+
 	if (expected_size == 0 || expected_size > file_sz) {
 		// Invalid image size.
 		return nullptr;
@@ -186,10 +189,19 @@ const rp_image *ValveVTF3Private::loadImage(void)
 	}
 
 	// Decode the image.
-	// TODO: Determine the format.
-	img = ImageDecoder::fromDXT1(
-		vtf3Header.width, height,
-		buf, expected_size);
+	if (vtf3Header.flags & VTF3_FLAG_ALPHA) {
+		// Image has an alpha channel.
+		// Encoded using DXT5.
+		img = ImageDecoder::fromDXT5(
+			vtf3Header.width, height,
+			buf, expected_size);
+	} else {
+		// Image does not have an alpha channel.
+		// Encoded using DXT1.
+		img = ImageDecoder::fromDXT1(
+			vtf3Header.width, height,
+			buf, expected_size);
+	}
 
 	aligned_free(buf);
 	return img;
@@ -243,6 +255,7 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 		// Header is stored in big-endian, so it always
 		// needs to be byteswapped on little-endian.
 		d->vtf3Header.signature		= be32_to_cpu(d->vtf3Header.signature);
+		d->vtf3Header.flags		= be32_to_cpu(d->vtf3Header.flags);
 		d->vtf3Header.width		= be16_to_cpu(d->vtf3Header.width);
 		d->vtf3Header.height		= be16_to_cpu(d->vtf3Header.height);
 #endif
@@ -447,7 +460,7 @@ int ValveVTF3::loadFieldData(void)
 
 	// VTF3 header.
 	const VTF3HEADER *const vtf3Header = &d->vtf3Header;
-	d->fields->reserve(1);	// Maximum of 1 field.
+	d->fields->reserve(2);	// Maximum of 2 fields.
 
 	// TODO: More fields.
 
@@ -461,6 +474,12 @@ int ValveVTF3::loadFieldData(void)
 	} else {
 		d->fields->addField_string_numeric(C_("ValveVTF3", "Texture Size"), vtf3Header->width);
 	}
+
+	// Image format.
+	d->fields->addField_string(C_("ValveVTF3", "Image Format"),
+		(vtf3Header->flags & VTF3_FLAG_ALPHA ? "DXT5" : "DXT1"));
+
+	// TODO: Flags.
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
