@@ -807,13 +807,16 @@ INSTANTIATE_TEST_CASE_P(VTF_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"VTF/DXT1.vtf.gz",
-			"S3TC/dxt1-rgb.s3tc.png"),
+			"VTF/DXT1.s3tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT1_A1.vtf.gz",
+			"VTF/DXT1_A1.s3tc.png"),
 		ImageDecoderTest_mode(
 			"VTF/DXT3.vtf.gz",
-			"S3TC/dxt3-argb.s3tc.png"),
+			"VTF/DXT3.s3tc.png"),
 		ImageDecoderTest_mode(
 			"VTF/DXT5.vtf.gz",
-			"S3TC/dxt5-argb.s3tc.png"))
+			"VTF/DXT5.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_S3TC */
 
@@ -822,13 +825,16 @@ INSTANTIATE_TEST_CASE_P(VTF_S2TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"VTF/DXT1.vtf.gz",
-			"S3TC/dxt1-rgb.s2tc.png"),
+			"VTF/DXT1.s2tc.png", false),
+		ImageDecoderTest_mode(
+			"VTF/DXT1_A1.vtf.gz",
+			"VTF/DXT1_A1.s2tc.png", false),
 		ImageDecoderTest_mode(
 			"VTF/DXT3.vtf.gz",
-			"S3TC/dxt3-argb.s2tc.png"),
+			"VTF/DXT3.s2tc.png", false),
 		ImageDecoderTest_mode(
 			"VTF/DXT5.vtf.gz",
-			"S3TC/dxt5-argb.s2tc.png"))
+			"VTF/DXT5.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
