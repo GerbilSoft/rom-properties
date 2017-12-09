@@ -633,7 +633,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	// Check if this PVR image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sz_header;
+	info.header.size = (uint32_t)sz_header;
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for PVR.
 	info.szFile = file->size();
