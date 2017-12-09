@@ -788,13 +788,17 @@ INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
 			"rg-reference.png"),
 
 		// Intensity formats
-		// FIXME: Tests are failing.
 		ImageDecoderTest_mode(
 			"VTF/I8.vtf.gz",
 			"Luma/L8.png"),
 		ImageDecoderTest_mode(
 			"VTF/IA88.vtf.gz",
-			"Luma/A8L8.png"))
+			"Luma/A8L8.png"),
+
+		// Alpha format (A8)
+		ImageDecoderTest_mode(
+			"VTF/A8.vtf.gz",
+			"Alpha/A8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 #ifdef ENABLE_S3TC
