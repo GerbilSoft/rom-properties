@@ -662,7 +662,11 @@ int ValveVTF::loadFieldData(void)
 
 	// VTF header.
 	const VTFHEADER *const vtfHeader = &d->vtfHeader;
-	d->fields->reserve(11);	// Maximum of 11 fields.
+	d->fields->reserve(12);	// Maximum of 12 fields.
+
+	// VTF version.
+	d->fields->addField_string(C_("ValveVTF", "VTF Version"),
+		rp_sprintf("%u.%u", vtfHeader->version[0], vtfHeader->version[1]));
 
 	// Texture size.
 	// 7.2+ supports 3D textures.
