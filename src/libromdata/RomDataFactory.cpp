@@ -76,6 +76,7 @@ using std::vector;
 #include "Texture/DirectDrawSurface.hpp"
 #include "Texture/KhronosKTX.hpp"
 #include "Texture/SegaPVR.hpp"
+#include "Texture/ValveVTF.hpp"
 
 // RomData subclasses: Other
 #include "Other/Amiibo.hpp"
@@ -174,6 +175,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(DirectDrawSurface, true),
 	GetRomDataFns(KhronosKTX, true),
 	GetRomDataFns(SegaPVR, true),
+	GetRomDataFns(ValveVTF, true),
 
 	// Other
 	GetRomDataFns(Amiibo, true),

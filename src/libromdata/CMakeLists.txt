@@ -29,6 +29,7 @@ SET(libromdata_SRCS
 	Texture/DirectDrawSurface.cpp
 	Texture/KhronosKTX.cpp
 	Texture/SegaPVR.cpp
+	Texture/ValveVTF.cpp
 
 	Other/Amiibo.cpp
 	Other/EXE.cpp
@@ -113,10 +114,12 @@ SET(libromdata_H
 	Texture/DirectDrawSurface.hpp
 	Texture/KhronosKTX.hpp
 	Texture/SegaPVR.hpp
+	Texture/ValveVTF.hpp
 
 	Texture/dds_structs.h
 	Texture/ktx_structs.h
 	Texture/pvr_structs.h
+	Texture/vtf_structs.h
 
 	Other/Amiibo.hpp
 	Other/EXE.hpp
