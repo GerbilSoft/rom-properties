@@ -834,13 +834,13 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12345678),
 			ImageDecoder::PXF_A2R10G10B10,
-			0,
+			640,
 			0x0048459E,
 			32),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12345678),
 			ImageDecoder::PXF_A2B10G10R10,
-			0,
+			640,
 			0x009E4548,
 			32),
 
@@ -848,13 +848,13 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x92345678),
 			ImageDecoder::PXF_A2R10G10B10,
-			0,
+			640,
 			0xAA48459E,
 			32),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x92345678),
 			ImageDecoder::PXF_A2B10G10R10,
-			0,
+			640,
 			0xAA9E4548,
 			32),
 
@@ -862,7 +862,7 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12345678),
 			ImageDecoder::PXF_RABG8888,
-			0,
+			640,
 			0x34127856,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
