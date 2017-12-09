@@ -149,6 +149,7 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 			mode_str = #pxf; \
 			break;
 
+	// TODO: Use a string table instead of switch/case.
 	const char *mode_str;
 	switch (pxf) {
 		case ImageDecoder::PXF_UNKNOWN:
@@ -203,6 +204,10 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 		CASE(PXF_G16R16)
 		CASE(PXF_A2R10G10B10)
 		CASE(PXF_A2B10G10R10)
+
+		// VTFEdit uses this as "ARGB8888".
+		// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
+		CASE(PXF_RABG8888)
 
 		// Luminance formats.
 		CASE(PXF_L8)
@@ -783,6 +788,14 @@ INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
 			ImageDecoder::PXF_A2B10G10R10,
 			0,
 			0xAA9E4548,
+			32),
+
+		// PXF_RABG8888 (Valve VTF ARGB8888)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_RABG8888,
+			0,
+			0x34127856,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
@@ -843,6 +856,14 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 			ImageDecoder::PXF_A2B10G10R10,
 			0,
 			0xAA9E4548,
+			32),
+
+		// PXF_RABG8888 (Valve VTF ARGB8888)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_RABG8888,
+			0,
+			0x34127856,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
