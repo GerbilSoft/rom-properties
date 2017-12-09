@@ -404,7 +404,9 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 				reinterpret_cast<const uint32_t*>(buf), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_ARGB8888:
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_BGRA8888,
+			// This is stored as RAGB for some reason...
+			// FIXME: May be a bug in VTFEdit. (Tested versions: 1.2.5, 1.3.3)
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RABG8888,
 				vtfHeader.width, height,
 				reinterpret_cast<const uint32_t*>(buf), expected_size);
 			break;

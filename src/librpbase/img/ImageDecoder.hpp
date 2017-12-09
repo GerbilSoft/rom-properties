@@ -104,6 +104,10 @@ class ImageDecoder
 			PXF_A2R10G10B10,
 			PXF_A2B10G10R10,
 
+			// VTFEdit uses this as "ARGB8888".
+			// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
+			PXF_RABG8888,
+
 			// Luminance formats.
 			PXF_L8,		// LLLLLLLL
 			PXF_A4L4,	// AAAAllll

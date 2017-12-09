@@ -200,6 +200,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_A2R10G10B10:
 		case PXF_A2B10G10R10:
+		case PXF_RABG8888: // TODO
 			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 
 		default:
