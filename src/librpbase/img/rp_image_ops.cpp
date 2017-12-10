@@ -174,7 +174,7 @@ rp_image *rp_image::dup_ARGB32(void) const
  * and/or columns will be added to "square" the image.
  * Otherwise, this is the same as dup().
  *
- * @return New rp_image with a squared version of the original, , or nullptr on error.
+ * @return New rp_image with a squared version of the original, or nullptr on error.
  */
 rp_image *rp_image::squared(void) const
 {
@@ -375,6 +375,60 @@ rp_image *rp_image::resized(int width, int height) const
 
 	// Image resized.
 	return img;
+}
+
+/**
+ * Convert a chroma-keyed image to standard ARGB32.
+ *
+ * This operates on the image itself, and does not return
+ * a duplicated image with the adjusted image.
+ *
+ * NOTE: The image *must* be ARGB32.
+ *
+ * @param key Chroma key color.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::apply_chroma_key(uint32_t key)
+{
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+	assert(backend->format == FORMAT_ARGB32);
+	if (backend->format != FORMAT_ARGB32) {
+		// ARGB32 only.
+		return -EINVAL;
+	}
+
+	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
+	uint32_t *data = reinterpret_cast<uint32_t*>(backend->data());
+	for (unsigned int y = (unsigned int)backend->height; y > 0; y--) {
+		unsigned int x;
+		for (x = (unsigned int)backend->width; x > 1; x -= 2, data += 2) {
+			// Check for chroma key pixels.
+			if (data[0] == key) {
+				data[0] = 0;
+			}
+			if (data[1] == key) {
+				data[1] = 0;
+			}
+		}
+
+		if (x == 1) {
+			*data = 0;
+			data++;
+		}
+
+		// Next row.
+		data += diff;
+	}
+
+	// Adjust sBIT.
+	// TODO: Only if transparent pixels were found.
+	if (d->has_sBIT && d->sBIT.alpha == 0) {
+		d->sBIT.alpha = 1;
+	}
+
+	// Chroma key applied.
+	return 0;
 }
 
 }

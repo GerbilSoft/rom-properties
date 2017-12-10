@@ -322,6 +322,19 @@ class rp_image
 		 * @return 0 on success; non-zero on error.
 		 */
 		int un_premultiply(void);
+
+		/**
+		 * Convert a chroma-keyed image to standard ARGB32.
+		 *
+		 * This operates on the image itself, and does not return
+		 * a duplicated image with the adjusted image.
+		 *
+		 * NOTE: The image *must* be ARGB32.
+		 *
+		 * @param key Chroma key color.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int apply_chroma_key(uint32_t key);
 };
 
 }

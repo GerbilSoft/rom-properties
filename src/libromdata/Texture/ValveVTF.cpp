@@ -435,16 +435,16 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 				buf, expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_RGB888_BLUESCREEN:
-			// TODO: Bluescreen handling.
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
 				vtfHeader.width, height,
 				buf, expected_size);
+			img->apply_chroma_key(0xFF0000FF);
 			break;
 		case VTF_IMAGE_FORMAT_BGR888_BLUESCREEN:
-			// TODO: Bluescreen handling.
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_RGB888,
 				vtfHeader.width, height,
 				buf, expected_size);
+			img->apply_chroma_key(0xFF0000FF);
 			break;
 
 		/* 16-bit */
