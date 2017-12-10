@@ -399,26 +399,28 @@ int rp_image::apply_chroma_key(uint32_t key)
 	}
 
 	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
-	uint32_t *data = reinterpret_cast<uint32_t*>(backend->data());
+	uint32_t *img_buf = reinterpret_cast<uint32_t*>(backend->data());
 	for (unsigned int y = (unsigned int)backend->height; y > 0; y--) {
-		unsigned int x;
-		for (x = (unsigned int)backend->width; x > 1; x -= 2, data += 2) {
+		unsigned int x = (unsigned int)backend->width;
+		for (; x > 1; x -= 2, img_buf += 2) {
 			// Check for chroma key pixels.
-			if (data[0] == key) {
-				data[0] = 0;
+			if (img_buf[0] == key) {
+				img_buf[0] = 0;
 			}
-			if (data[1] == key) {
-				data[1] = 0;
+			if (img_buf[1] == key) {
+				img_buf[1] = 0;
 			}
 		}
 
 		if (x == 1) {
-			*data = 0;
-			data++;
+			if (*img_buf == key) {
+				*img_buf = 0;
+			}
+			img_buf++;
 		}
 
 		// Next row.
-		data += diff;
+		img_buf += diff;
 	}
 
 	// Adjust sBIT.
