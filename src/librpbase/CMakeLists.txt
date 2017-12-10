@@ -260,6 +260,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
 	SET(librpbase_SSE2_SRCS
 		img/ImageDecoder_Linear_sse2.cpp
+		img/rp_image_ops_sse2.cpp
 		)
 	SET(librpbase_SSSE3_SRCS
 		img/RpJpeg_ssse3.cpp

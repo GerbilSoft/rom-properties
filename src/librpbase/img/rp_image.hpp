@@ -24,9 +24,18 @@
 #include "librpbase/config.librpbase.h"
 #include "../common.h"
 #include "../byteorder.h"
+#include "cpu_dispatch.h"
 
 // C includes.
 #include <stdint.h>
+
+#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
+# include "librpbase/cpuflags_x86.h"
+# define RP_IMAGE_HAS_SSE2 1
+#endif
+#ifdef RP_CPU_AMD64
+# define RP_IMAGE_ALWAYS_HAS_SSE2 1
+#endif
 
 // TODO: Make this implicitly shared.
 
@@ -325,6 +334,36 @@ class rp_image
 
 		/**
 		 * Convert a chroma-keyed image to standard ARGB32.
+		 * Standard version using regular C++ code.
+		 *
+		 * This operates on the image itself, and does not return
+		 * a duplicated image with the adjusted image.
+		 *
+		 * NOTE: The image *must* be ARGB32.
+		 *
+		 * @param key Chroma key color.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int apply_chroma_key_cpp(uint32_t key);
+
+#ifdef RP_IMAGE_HAS_SSE2
+		/**
+		 * Convert a chroma-keyed image to standard ARGB32.
+		 * SSE2-optimized version.
+		 *
+		 * This operates on the image itself, and does not return
+		 * a duplicated image with the adjusted image.
+		 *
+		 * NOTE: The image *must* be ARGB32.
+		 *
+		 * @param key Chroma key color.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int apply_chroma_key_sse2(uint32_t key);
+#endif /* RP_IMAGE_HAS_SSE2 */
+
+		/**
+		 * Convert a chroma-keyed image to standard ARGB32.
 		 *
 		 * This operates on the image itself, and does not return
 		 * a duplicated image with the adjusted image.
@@ -336,6 +375,34 @@ class rp_image
 		 */
 		int apply_chroma_key(uint32_t key);
 };
+
+/**
+ * Convert a chroma-keyed image to standard ARGB32.
+ *
+ * This operates on the image itself, and does not return
+ * a duplicated image with the adjusted image.
+ *
+ * NOTE: The image *must* be ARGB32.
+ *
+ * @param key Chroma key color.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+inline int rp_image::apply_chroma_key(uint32_t key)
+{
+#ifdef RP_IMAGE_ALWAYS_HAS_SSE2
+	// amd64 always has SSE2.
+	return apply_chroma_key_sse2(key);
+#else /* !RP_IMAGE_ALWAYS_HAS_SSE2 */
+# ifdef RP_IMAGE_HAS_SSE2
+	if (RP_CPU_HasSSE2()) {
+		return apply_chroma_key_sse2(key);
+	} else
+# endif /* RP_IMAGE_HAS_SSE2 */
+	{
+		return apply_chroma_key_cpp(key);
+	}
+#endif /* RP_IMAGE_ALWAYS_HAS_SSE2 */
+}
 
 }
 

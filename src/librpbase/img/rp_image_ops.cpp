@@ -379,6 +379,7 @@ rp_image *rp_image::resized(int width, int height) const
 
 /**
  * Convert a chroma-keyed image to standard ARGB32.
+ * Standard version using regular C++ code.
  *
  * This operates on the image itself, and does not return
  * a duplicated image with the adjusted image.
@@ -388,7 +389,7 @@ rp_image *rp_image::resized(int width, int height) const
  * @param key Chroma key color.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_image::apply_chroma_key(uint32_t key)
+int rp_image::apply_chroma_key_cpp(uint32_t key)
 {
 	RP_D(rp_image);
 	rp_image_backend *const backend = d->backend;
@@ -400,6 +401,7 @@ int rp_image::apply_chroma_key(uint32_t key)
 
 	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	uint32_t *img_buf = reinterpret_cast<uint32_t*>(backend->data());
+
 	for (unsigned int y = (unsigned int)backend->height; y > 0; y--) {
 		unsigned int x = (unsigned int)backend->width;
 		for (; x > 1; x -= 2, img_buf += 2) {
