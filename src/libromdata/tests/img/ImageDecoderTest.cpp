@@ -763,6 +763,14 @@ INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
 			"VTF/RGB888.vtf.gz",
 			"rgb-reference.png"),
 
+		// 24-bit RGB + bluescreen
+		ImageDecoderTest_mode(
+			"VTF/BGR888_bluescreen.vtf.gz",
+			"VTF/BGR888_bluescreen.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGB888_bluescreen.vtf.gz",
+			"VTF/BGR888_bluescreen.png"),
+
 		// 16-bit RGB (565)
 		// FIXME: Tests are failing.
 		ImageDecoderTest_mode(
