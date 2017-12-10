@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "PEResourceReader.hpp"
-#include "../exe_structs.h"
 
 // librpbase
 #include "librpbase/common.h"

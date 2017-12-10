@@ -191,6 +191,20 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t ARGB8332_to_ARGB32(uint16_t px16);
 
+		/**
+		 * Convert an RG88 pixel to ARGB32.
+		 * @param px16 RG88 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RG88_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert a GR88 pixel to ARGB32.
+		 * @param px16 GR88 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t GR88_to_ARGB32(uint16_t px16);
+
 		// GameCube-specific 16-bit RGB
 
 		/**
@@ -499,23 +513,6 @@ inline uint32_t ImageDecoderPrivate::BGRA5551_to_ARGB32(uint16_t px16)
 }
 
 /**
- * Convert an ARGB8332 pixel to ARGB32.
- * @param px16 ARGB8332 pixel.
- * @return ARGB32 pixel.
- */
-inline uint32_t ImageDecoderPrivate::ARGB8332_to_ARGB32(uint16_t px16)
-{
-	// ARGB8332: AAAAAAAA RRRGGGBB
-	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t px32;
-	px32 = (c3_lookup[(px16 >> 5) & 7] << 16) |	// Red
-	       (c3_lookup[(px16 >> 2) & 7] <<  8) |	// Green
-	       (c2_lookup[ px16       & 3]      ) |	// Blue
-	       ((px16 << 16) & 0xFF000000);		// Alpha
-	return px32;
-}
-
-/**
  * Convert an ARGB4444 pixel to ARGB32.
  * @param px16 ARGB4444 pixel.
  * @return ARGB32 pixel.
@@ -653,6 +650,47 @@ inline uint32_t ImageDecoderPrivate::BGRx4444_to_ARGB32(uint16_t px16)
 	px32 |= ((px16 & 0xF000) >> 12);	// B
 	px32 |=  (px32 << 4);			// Copy to the top nybble.
 	return px32;
+}
+
+/**
+ * Convert an ARGB8332 pixel to ARGB32.
+ * @param px16 ARGB8332 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ARGB8332_to_ARGB32(uint16_t px16)
+{
+	// ARGB8332: AAAAAAAA RRRGGGBB
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
+	px32 = (c3_lookup[(px16 >> 5) & 7] << 16) |	// Red
+	       (c3_lookup[(px16 >> 2) & 7] <<  8) |	// Green
+	       (c2_lookup[ px16       & 3]      ) |	// Blue
+	       ((px16 << 16) & 0xFF000000);		// Alpha
+	return px32;
+}
+
+/**
+ * Convert an RG88 pixel to ARGB32.
+ * @param px16 RG88 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::RG88_to_ARGB32(uint16_t px16)
+{
+	// RG88:     RRRRRRRR GGGGGGGG
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	return 0xFF000000 | ((uint32_t)px16 << 8);
+}
+
+/**
+ * Convert a GR88 pixel to ARGB32.
+ * @param px16 GR88 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::GR88_to_ARGB32(uint16_t px16)
+{
+	// GR88:     GGGGGGGG RRRRRRRR
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	return 0xFF000000 | ((uint32_t)__swab16(px16) << 8);
 }
 
 // GameCube-specific 16-bit RGB

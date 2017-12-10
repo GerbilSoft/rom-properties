@@ -97,6 +97,7 @@ SET(librpbase_SRCS
 	img/ImageDecoder_N3DS.cpp
 	img/ImageDecoder_S3TC.cpp
 	img/ImageDecoder_DC.cpp
+	img/ImageDecoder_ETC1.cpp
 	img/un-premultiply.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -259,6 +260,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
 	SET(librpbase_SSE2_SRCS
 		img/ImageDecoder_Linear_sse2.cpp
+		img/rp_image_ops_sse2.cpp
 		)
 	SET(librpbase_SSSE3_SRCS
 		img/RpJpeg_ssse3.cpp

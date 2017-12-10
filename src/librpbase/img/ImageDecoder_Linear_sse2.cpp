@@ -325,6 +325,12 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	static const __m128i Mask5551_Mid5 = _mm_setr_epi16(0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0,0x07C0);
 	static const __m128i Mask5551_Lo5  = _mm_setr_epi16(0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E,0x003E);
 
+	// Alpha mask.
+	static const __m128i Mask32_A  = _mm_setr_epi32(0xFF000000,0xFF000000,0xFF000000,0xFF000000);
+
+	// GR88 mask.
+	static const __m128i MaskGR88  = _mm_setr_epi32(0x00FFFF00,0x00FFFF00,0x00FFFF00,0x00FFFF00);
+
 	// sBIT metadata.
 	static const rp_image::sBIT_t sBIT_RGB565   = {5,6,5,0,0};
 	static const rp_image::sBIT_t sBIT_ARGB1555 = {5,5,5,0,1};
@@ -410,6 +416,100 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		/** RGB555 **/
 		fromLinear16_convert(RGB555, sBIT_RGB555, 7, 6, 3, 5, 5, 5, false, Mask555_Hi5, Mask555_Mid5, Mask555_Lo5);
 		fromLinear16_convert(BGR555, sBIT_RGB555, 3, 6, 7, 5, 5, 5, true,  Mask555_Lo5, Mask555_Mid5, Mask555_Hi5);
+
+		/** RG88 **/
+		case PXF_RG88: {
+			// Components are already 8-bit, so we need to
+			// expand them to DWORD and add the alpha channel.
+			__m128i reg_zero = _mm_setzero_si128();
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				/* Process 8 pixels per iteration using SSE2. */
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
+					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
+
+					// Registers now contain: [00 00 RR GG]
+					__m128i px0 = _mm_unpacklo_epi16(*xmm_src, reg_zero);
+					__m128i px1 = _mm_unpackhi_epi16(*xmm_src, reg_zero);
+
+					// Shift to [00 RR GG 00].
+					px0 = _mm_slli_epi32(px0, 8);
+					px1 = _mm_slli_epi32(px1, 8);
+
+					// Apply the alpha channel.
+					px0 = _mm_or_si128(px0, Mask32_A);
+					px1 = _mm_or_si128(px1, Mask32_A);
+
+					// Write the pixels to the destination image buffer.
+					_mm_store_si128(xmm_dest, px0);
+					_mm_store_si128(xmm_dest+1, px1);
+				}
+
+				/* Remaining pixels. */
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::RG88_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				/* Next line. */
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+
+			/* Set the sBIT metadata. */
+			static const rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
+			img->set_sBIT(&sBIT_RG88);
+			break;
+		}
+
+		/** GR88 **/
+		case PXF_GR88: {
+			// Components are already 8-bit, so we need to
+			// expand them to DWORD and add the alpha channel.
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				/* Process 8 pixels per iteration using SSE2. */
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
+					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
+					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
+
+					// Registers now contain: [GG RR GG RR]
+					__m128i px0 = _mm_unpacklo_epi16(*xmm_src, *xmm_src);
+					__m128i px1 = _mm_unpackhi_epi16(*xmm_src, *xmm_src);
+
+					// Mask off the low and high bytes.
+					// Registers now contain: [00 RR GG 00]
+					px0 = _mm_and_si128(px0, MaskGR88);
+					px1 = _mm_and_si128(px1, MaskGR88);
+
+					// Apply the alpha channel.
+					px0 = _mm_or_si128(px0, Mask32_A);
+					px1 = _mm_or_si128(px1, Mask32_A);
+
+					// Write the pixels to the destination image buffer.
+					_mm_store_si128(xmm_dest, px0);
+					_mm_store_si128(xmm_dest+1, px1);
+				}
+
+				/* Remaining pixels. */
+				for (; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::RG88_to_ARGB32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+
+				/* Next line. */
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+
+			/* Set the sBIT metadata. */
+			static const rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
+			img->set_sBIT(&sBIT_RG88);
+			break;
+		}
 
 		default:
 			assert(!"Pixel format not supported.");

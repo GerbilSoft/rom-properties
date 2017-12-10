@@ -35,16 +35,18 @@
 using namespace LibRpBase;
 
 // RomData subclasses with images.
-#include "../Amiibo.hpp"
-#include "../Dreamcast.hpp"
-#include "../DreamcastSave.hpp"
-#include "../GameCube.hpp"
-#include "../GameCubeSave.hpp"
-#include "../NintendoBadge.hpp"
-#include "../NintendoDS.hpp"
-#include "../Nintendo3DS.hpp"
-#include "../PlayStationSave.hpp"
-#include "../WiiU.hpp"
+// Does not include texture files, since those are always
+// thumbnailed using IMG_INT_IMAGE.
+#include "Other/Amiibo.hpp"
+#include "Console/Dreamcast.hpp"
+#include "Console/DreamcastSave.hpp"
+#include "Console/GameCube.hpp"
+#include "Console/GameCubeSave.hpp"
+#include "Other/NintendoBadge.hpp"
+#include "Handheld/NintendoDS.hpp"
+#include "Handheld/Nintendo3DS.hpp"
+#include "Console/PlayStationSave.hpp"
+#include "Console/WiiU.hpp"
 
 namespace LibRomData {
 

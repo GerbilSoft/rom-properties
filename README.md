@@ -42,6 +42,10 @@ following platforms:
 * GNOME and Unity (GTK+ 3.x)
 * Windows XP (and later)
 
+On Windows, you will need the MSVC 2017 runtime:
+* 32-bit: https://go.microsoft.com/fwlink/?LinkId=746571
+* 64-bit: https://go.microsoft.com/fwlink/?LinkId=746572
+
 For instructions on compiling from source, see doc/COMPILING.md .
 
 ### Linux

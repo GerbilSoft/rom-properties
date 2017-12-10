@@ -26,9 +26,9 @@ using LibRpBase::SystemRegion;
 // C includes.
 #include <cassert>
 
-#include "gcn_banner.h"
-#include "nds_structs.h"
-#include "n3ds_structs.h"
+#include "Console/gcn_banner.h"
+#include "Handheld/nds_structs.h"
+#include "Handheld/n3ds_structs.h"
 
 namespace LibRomData {
 

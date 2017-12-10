@@ -98,7 +98,7 @@ enum DXTn_Palette_Flags {
  * @param pal		[out] Array of four argb32_t values.
  * @param dxt1_src	[in] DXT1 block.
  */
-template<uint32_t flags>
+template<unsigned int flags>
 static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t *RESTRICT pal, const dxt1_block *RESTRICT dxt1_src)
 {
 	// Convert the first two colors from RGB565.
@@ -214,7 +214,7 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RES
  * @param pal		[out] Array of four argb32_t values.
  * @param dxt1_src	[in] DXT1 block.
  */
-template<uint32_t flags>
+template<unsigned int flags>
 static inline void decode_DXTn_tile_color_palette_S2TC(argb32_t *RESTRICT pal, const dxt1_block *RESTRICT dxt1_src)
 {
 	// Convert the first two colors from RGB565.
@@ -287,6 +287,8 @@ static FORCEINLINE unsigned int S2TC_select_c0c1(unsigned int px_number)
 /**
  * Convert a GameCube DXT1 image to rp_image.
  * The GameCube variant has 2x2 block tiling in addition to 4x4 pixel tiling.
+ * S3TC palette index 3 will be interpreted as fully transparent.
+ *
  * @param width Image width.
  * @param height Image height.
  * @param img_buf DXT1 image buffer.
@@ -410,13 +412,15 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 
 /**
  * Convert a DXT1 image to rp_image.
+ * @param palflags decode_DXTn_tile_color_palette_S3TC<>() flags.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf DXT1 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT1(int width, int height,
+template<unsigned int palflags>
+static rp_image *T_fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -454,7 +458,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 	uint32_t tileBuf[4*4];
 
 #ifdef ENABLE_S3TC
-	if (likely(EnableS3TC)) {
+	if (likely(ImageDecoder::EnableS3TC)) {
 		// S3TC version.
 		for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
@@ -464,7 +468,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 			// Assuming transparent for now, since black can be
 			// specified using a color value.
 			argb32_t pal[4];
-			decode_DXTn_tile_color_palette_S3TC<DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
+			decode_DXTn_tile_color_palette_S3TC<palflags>(pal, dxt1_src);
 
 			// Process the 16 color indexes.
 			uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
@@ -511,6 +515,38 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 
 	// Image has been converted.
 	return img;
+}
+
+/**
+ * Convert a DXT1 image to rp_image.
+ * S3TC palette index 3 will be interpreted as black.
+ *
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf DXT1 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDXT1(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz)
+{
+	return T_fromDXT1<0>(width, height, img_buf, img_siz);
+}
+
+/**
+ * Convert a DXT1 image to rp_image.
+ * S3TC palette index 3 will be interpreted as fully transparent.
+ *
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf DXT1 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDXT1_A1(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz)
+{
+	return T_fromDXT1<DXTn_PALETTE_COLOR3_ALPHA>(width, height, img_buf, img_siz);
 }
 
 /**
@@ -1025,6 +1061,84 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 
 	// Image has been converted.
 	return img;
+}
+
+/**
+ * Convert a Red image to Luminance.
+ * Use with fromBC4() to decode an LATC1 texture.
+ * @param img rp_image to convert in-place.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageDecoder::fromRed8ToL8(rp_image *img)
+{
+	assert(img != nullptr);
+	assert(img->format() == rp_image::FORMAT_ARGB32);
+	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+		return -EINVAL;
+
+	// TODO: Optimize with SSE2/SSSE3?
+	const unsigned int width = (unsigned int)img->width();
+	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
+	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
+	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
+		unsigned int x = width;
+		for (; x > 1; x -= 2, line += 2) {
+			line[0].a = 0xFF;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+
+			line[1].a = 0xFF;
+			line[1].b = line[1].r;
+			line[1].g = line[1].r;
+		}
+		if (x == 1) {
+			line[0].a = 0xFF;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+			line++;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Convert a Red+Green image to Luminance+Alpha.
+ * Use with fromBC5() to decode an LATC2 texture.
+ * @param img rp_image to convert in-place.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageDecoder::fromRG8ToLA8(rp_image *img)
+{
+	assert(img != nullptr);
+	assert(img->format() == rp_image::FORMAT_ARGB32);
+	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+		return -EINVAL;
+
+	// TODO: Optimize with SSE2/SSSE3?
+	const unsigned int width = (unsigned int)img->width();
+	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
+	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
+	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
+		unsigned int x = width;
+		for (; x > 1; x -= 2, line += 2) {
+			line[0].a = line[0].g;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+
+			line[1].a = line[1].g;
+			line[1].b = line[1].r;
+			line[1].g = line[1].r;
+		}
+		if (x == 1) {
+			line[0].a = line[0].g;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+			line++;
+		}
+	}
+
+	return 0;
 }
 
 }

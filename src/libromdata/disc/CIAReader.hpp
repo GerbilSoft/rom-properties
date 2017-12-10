@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CIAREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_CIAREADER_HPP__
 
-#include "../n3ds_structs.h"
+#include "../Handheld/n3ds_structs.h"
 
 // librpbase
 #include "librpbase/disc/IPartition.hpp"

@@ -311,13 +311,36 @@ bool rp_image::isSquare(void) const
 }
 
 /**
- * Get the number of bytes per line.
+ * Get the total number of bytes per line.
+ * This includes memory alignment padding.
  * @return Bytes per line.
  */
 int rp_image::stride(void) const
 {
 	RP_D(const rp_image);
 	return d->backend->stride;
+}
+
+/**
+ * Get the number of active bytes per line.
+ * This does not include memory alignment padding.
+ * @return Number of active bytes per line.
+ */
+int rp_image::row_bytes(void) const
+{
+	RP_D(const rp_image);
+	switch (d->backend->format) {
+		case FORMAT_CI8:
+			return d->backend->width;
+		case rp_image::FORMAT_ARGB32:
+			return d->backend->width * sizeof(uint32_t);
+		default:
+			assert(!"Unsupported rp_image::Format.");
+			break;
+	}
+
+	// Should not get here...
+	return 0;
 }
 
 /**

@@ -49,34 +49,43 @@ using std::vector;
 #include <functional>
 #endif
 
-// RomData subclasses.
-#include "MegaDrive.hpp"
-#include "GameCube.hpp"
-#include "NintendoDS.hpp"
-#include "DMG.hpp"
-#include "VirtualBoy.hpp"
-#include "GameBoyAdvance.hpp"
-#include "GameCubeSave.hpp"
-#include "N64.hpp"
-#include "SNES.hpp"
-#include "DreamcastSave.hpp"
-#include "PlayStationSave.hpp"
-#include "Amiibo.hpp"
-#include "NES.hpp"
-#include "WiiU.hpp"
-#include "EXE.hpp"
-#include "Nintendo3DS.hpp"
-#include "Nintendo3DSFirm.hpp"
-#include "Sega8Bit.hpp"
-#include "SegaPVR.hpp"
-#include "DirectDrawSurface.hpp"
-#include "NintendoBadge.hpp"
-#include "Dreamcast.hpp"
-#include "SegaSaturn.hpp"
-#include "Lynx.hpp"
+// RomData subclasses: Consoles
+#include "Console/Dreamcast.hpp"
+#include "Console/DreamcastSave.hpp"
+#include "Console/GameCube.hpp"
+#include "Console/GameCubeSave.hpp"
+#include "Console/MegaDrive.hpp"
+#include "Console/N64.hpp"
+#include "Console/NES.hpp"
+#include "Console/PlayStationSave.hpp"
+#include "Console/Sega8Bit.hpp"
+#include "Console/SegaSaturn.hpp"
+#include "Console/SNES.hpp"
+#include "Console/WiiU.hpp"
+
+// RomData subclasses: Handhelds
+#include "Handheld/DMG.hpp"
+#include "Handheld/GameBoyAdvance.hpp"
+#include "Handheld/Lynx.hpp"
+#include "Handheld/Nintendo3DS.hpp"
+#include "Handheld/Nintendo3DSFirm.hpp"
+#include "Handheld/NintendoDS.hpp"
+#include "Handheld/VirtualBoy.hpp"
+
+// RomData subclasses: Textures
+#include "Texture/DirectDrawSurface.hpp"
+#include "Texture/KhronosKTX.hpp"
+#include "Texture/SegaPVR.hpp"
+#include "Texture/ValveVTF.hpp"
+#include "Texture/ValveVTF3.hpp"
+
+// RomData subclasses: Other
+#include "Other/Amiibo.hpp"
+#include "Other/EXE.hpp"
+#include "Other/NintendoBadge.hpp"
 
 // Special case for Dreamcast save files.
-#include "dc_structs.h"
+#include "Console/dc_structs.h"
 
 namespace LibRomData {
 
@@ -143,32 +152,40 @@ class RomDataFactoryPrivate
 /** RomDataFactoryPrivate **/
 
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
-	GetRomDataFns(MegaDrive, false),
+	// Consoles
+	GetRomDataFns(Dreamcast, true),
+	GetRomDataFns(DreamcastSave, true),
 	GetRomDataFns(GameCube, true),
-	GetRomDataFns(NintendoDS, true),
+	GetRomDataFns(GameCubeSave, true),
+	GetRomDataFns(MegaDrive, false),
+	GetRomDataFns(N64, false),
+	GetRomDataFns(NES, false),
+	GetRomDataFns(SNES, false),
+	GetRomDataFns(SegaSaturn, false),
+	GetRomDataFns(WiiU, true),
+
+	// Handhelds
 	GetRomDataFns(DMG, false),
 	GetRomDataFns(GameBoyAdvance, false),
-	GetRomDataFns(GameCubeSave, true),
-	GetRomDataFns(N64, false),
-	GetRomDataFns(SNES, false),
-	GetRomDataFns(DreamcastSave, true),
-	GetRomDataFns(Amiibo, true),
-	GetRomDataFns(NES, false),
-	GetRomDataFns(WiiU, true),
+	GetRomDataFns(Lynx, false),
 	GetRomDataFns(Nintendo3DS, true),
 	GetRomDataFns(Nintendo3DSFirm, false),
-	GetRomDataFns(SegaPVR, true),
-	GetRomDataFns(DirectDrawSurface, true),
-	GetRomDataFns(NintendoBadge, true),
-	GetRomDataFns(Dreamcast, true),
-	GetRomDataFns(SegaSaturn, false),
-	GetRomDataFns(Lynx, false),
+	GetRomDataFns(NintendoDS, true),
 
-	// NOTE: EXE has a 16-bit magic number,
-	// so it should go at the end of the
-	// address=0 section.
-	// TODO: Thumbnailing on non-Windows platforms.
-	GetRomDataFns(EXE, false),
+	// Textures
+	GetRomDataFns(DirectDrawSurface, true),
+	GetRomDataFns(KhronosKTX, true),
+	GetRomDataFns(SegaPVR, true),
+	GetRomDataFns(ValveVTF, true),
+	GetRomDataFns(ValveVTF3, true),
+
+	// Other
+	GetRomDataFns(Amiibo, true),
+	GetRomDataFns(NintendoBadge, true),
+
+	// The following formats have 16-bit magic numbers,
+	// so they should go at the end of the address=0 section.
+	GetRomDataFns(EXE, false),	// TODO: Thumbnailing on non-Windows platforms.
 	GetRomDataFns(PlayStationSave, true),
 
 	// Headers with non-zero addresses.

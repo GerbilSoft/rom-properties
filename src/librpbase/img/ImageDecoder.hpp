@@ -104,6 +104,14 @@ class ImageDecoder
 			PXF_A2R10G10B10,
 			PXF_A2B10G10R10,
 
+			// Uncommon 16-bit formats.
+			PXF_RG88,
+			PXF_GR88,
+
+			// VTFEdit uses this as "ARGB8888".
+			// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
+			PXF_RABG8888,
+
 			// Luminance formats.
 			PXF_L8,		// LLLLLLLL
 			PXF_A4L4,	// AAAAllll
@@ -193,7 +201,7 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinear8(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *RESTRICT img_buf, int img_siz, int stride);
+			const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
 
 		/** 16-bit **/
 
@@ -433,6 +441,8 @@ class ImageDecoder
 		/**
 		 * Convert a GameCube DXT1 image to rp_image.
 		 * The GameCube variant has 2x2 block tiling in addition to 4x4 pixel tiling.
+		 * S3TC palette index 3 will be interpreted as fully transparent.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf DXT1 image buffer.
@@ -444,6 +454,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a DXT1 image to rp_image.
+		 * S3TC palette index 3 will be interpreted as black.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf DXT1 image buffer.
@@ -451,6 +463,19 @@ class ImageDecoder
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromDXT1(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert a DXT1 image to rp_image.
+		 * S3TC palette index 3 will be interpreted as fully transparent.
+		 *
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf DXT1 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDXT1_A1(int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz);
 
 		/**
@@ -499,6 +524,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a BC4 (ATI1) image to rp_image.
+		 * Color component is Red.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf BC4 image buffer.
@@ -510,6 +537,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a BC5 (ATI2) image to rp_image.
+		 * Color components are Red and Green.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf BC4 image buffer.
@@ -518,6 +547,22 @@ class ImageDecoder
 		 */
 		static rp_image *fromBC5(int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert a Red image to Luminance.
+		 * Use with fromBC4() to decode an LATC1 texture.
+		 * @param img rp_image to convert in-place.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int fromRed8ToL8(rp_image *img);
+
+		/**
+		 * Convert a Red+Green image to Luminance+Alpha.
+		 * Use with fromBC5() to decode an LATC2 texture.
+		 * @param img rp_image to convert in-place.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		 static int fromRG8ToLA8(rp_image *img);
 
 		/* Dreamcast */
 
@@ -559,6 +604,52 @@ class ImageDecoder
 		 * @return Number of palette entries.
 		 */
 		static inline int calcDreamcastSmallVQPaletteEntries(int width);
+
+		/* ETC1 */
+
+		/**
+		 * Convert an ETC1 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf ETC1 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromETC1(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert an ETC2 RGB image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf ETC2 RGB image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromETC2_RGB(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert an ETC2 RGBA image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf ETC2 RGBA image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromETC2_RGBA(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert an ETC2 RGB+A1 (punchthrough alpha) image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf ETC2 RGB+A1 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromETC2_RGB_A1(int width, int height,
+			const uint8_t *RESTRICT img_buf, int img_siz);
 };
 
 /**

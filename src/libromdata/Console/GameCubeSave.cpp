@@ -28,6 +28,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 
@@ -45,11 +46,9 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -369,10 +368,15 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
-	unique_ptr<uint8_t[]> icondata(new uint8_t[iconsizetotal]);
-	size_t size = file->seekAndRead(dataOffset + iconaddr, icondata.get(), iconsizetotal);
+	uint8_t *const icondata = static_cast<uint8_t*>(aligned_malloc(16, iconsizetotal));
+	if (!icondata) {
+		// Memory allocation failure.
+		return nullptr;
+	}
+	size_t size = file->seekAndRead(dataOffset + iconaddr, icondata, iconsizetotal);
 	if (size != iconsizetotal) {
 		// Seek and/or read error.
+		aligned_free(icondata);
 		return nullptr;
 	}
 
@@ -448,7 +452,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 	}
 
 	// Free the icon data.
-	icondata.reset(nullptr);
+	aligned_free(icondata);
 
 	// NOTE: We're not deleting iconAnimData even if we only have
 	// a single icon because iconAnimData() will call loadIcon()

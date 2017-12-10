@@ -60,22 +60,9 @@ rp_image *rp_image::dup(void) const
 	// NOTE: Using uint8_t* because stride is measured in bytes.
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
 	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const int row_bytes = img->row_bytes();
 	const int dest_stride = img->stride();
 	const int src_stride = d->backend->stride;
-
-	int row_bytes;
-	switch (format) {
-		case rp_image::FORMAT_CI8:
-			row_bytes = width;
-			break;
-		case rp_image::FORMAT_ARGB32:
-			row_bytes = width * sizeof(uint32_t);
-			break;
-		default:
-			assert(!"Unsupported rp_image::Format.");
-			delete img;
-			return nullptr;
-	}
 
 	if (src_stride == dest_stride) {
 		// Copy the entire image all at once.
@@ -187,7 +174,7 @@ rp_image *rp_image::dup_ARGB32(void) const
  * and/or columns will be added to "square" the image.
  * Otherwise, this is the same as dup().
  *
- * @return New rp_image with a squared version of the original, , or nullptr on error.
+ * @return New rp_image with a squared version of the original, or nullptr on error.
  */
 rp_image *rp_image::squared(void) const
 {
@@ -238,7 +225,7 @@ rp_image *rp_image::squared(void) const
 		dest += (addToTop * dest_stride);
 
 		// Copy the image data.
-		const int row_bytes = width * sizeof(uint32_t);
+		const int row_bytes = sq_img->row_bytes();
 		for (unsigned int y = height; y > 0; y--) {
 			memcpy(dest, src, row_bytes);
 			dest += dest_stride;
@@ -247,7 +234,7 @@ rp_image *rp_image::squared(void) const
 
 		// Clear the bottom rows.
 		// NOTE: Last row may not be the full stride.
-		memset(dest, 0, ((addToBottom-1) * dest_stride) + (width * sizeof(uint32_t)));
+		memset(dest, 0, ((addToBottom-1) * dest_stride) + sq_img->row_bytes());
 	} else if (width < height) {
 		// Image is taller. Add columns to the left and right.
 		// TODO: 8bpp support?
@@ -274,7 +261,7 @@ rp_image *rp_image::squared(void) const
 		uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
 		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
 		// "Blanking" area is right border, potential unused space from stride, then left border.
-		const int dest_blanking = sq_img->stride() - (width * sizeof(uint32_t));
+		const int dest_blanking = sq_img->stride() - sq_img->row_bytes();
 		const int dest_stride = sq_img->stride();
 		const int src_stride = d->backend->stride;
 
@@ -283,7 +270,7 @@ rp_image *rp_image::squared(void) const
 		dest += (addToLeft * sizeof(uint32_t));
 
 		// Copy and clear all but the last line.
-		const int row_bytes = width * sizeof(uint32_t);
+		const int row_bytes = sq_img->row_bytes();
 		for (unsigned int y = (height-1); y > 0; y--) {
 			memcpy(dest, src, row_bytes);
 			memset(&dest[row_bytes], 0, dest_blanking);
@@ -360,18 +347,9 @@ rp_image *rp_image::resized(int width, int height) const
 	const int src_stride = d->backend->stride;
 
 	// We want to copy the minimum of new vs. old width.
-	int row_bytes;
-	switch (format) {
-		case rp_image::FORMAT_CI8:
-			row_bytes = std::min(width, orig_width);
-			break;
-		case rp_image::FORMAT_ARGB32:
-			row_bytes = std::min(width, orig_width) * sizeof(uint32_t);
-			break;
-		default:
-			assert(!"Unsupported rp_image::Format.");
-			delete img;
-			return nullptr;
+	int row_bytes = std::min(width, orig_width);
+	if (format == rp_image::FORMAT_ARGB32) {
+		row_bytes *= sizeof(uint32_t);
 	}
 
 	for (unsigned int y = (unsigned int)std::min(height, orig_height); y > 0; y--) {
@@ -397,6 +375,64 @@ rp_image *rp_image::resized(int width, int height) const
 
 	// Image resized.
 	return img;
+}
+
+/**
+ * Convert a chroma-keyed image to standard ARGB32.
+ * Standard version using regular C++ code.
+ *
+ * This operates on the image itself, and does not return
+ * a duplicated image with the adjusted image.
+ *
+ * NOTE: The image *must* be ARGB32.
+ *
+ * @param key Chroma key color.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::apply_chroma_key_cpp(uint32_t key)
+{
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+	assert(backend->format == FORMAT_ARGB32);
+	if (backend->format != FORMAT_ARGB32) {
+		// ARGB32 only.
+		return -EINVAL;
+	}
+
+	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
+	uint32_t *img_buf = reinterpret_cast<uint32_t*>(backend->data());
+
+	for (unsigned int y = (unsigned int)backend->height; y > 0; y--) {
+		unsigned int x = (unsigned int)backend->width;
+		for (; x > 1; x -= 2, img_buf += 2) {
+			// Check for chroma key pixels.
+			if (img_buf[0] == key) {
+				img_buf[0] = 0;
+			}
+			if (img_buf[1] == key) {
+				img_buf[1] = 0;
+			}
+		}
+
+		if (x == 1) {
+			if (*img_buf == key) {
+				*img_buf = 0;
+			}
+			img_buf++;
+		}
+
+		// Next row.
+		img_buf += diff;
+	}
+
+	// Adjust sBIT.
+	// TODO: Only if transparent pixels were found.
+	if (d->has_sBIT && d->sBIT.alpha == 0) {
+		d->sBIT.alpha = 1;
+	}
+
+	// Chroma key applied.
+	return 0;
 }
 
 }

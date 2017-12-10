@@ -603,6 +603,10 @@ rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
 		fromLinear16_convert(L16, 8,8,8,8,0);
 		fromLinear16_convert(A8L8, 8,8,8,8,8);
 
+		// RG formats.
+		fromLinear16_convert(RG88, 8,8,1,0,0);
+		fromLinear16_convert(GR88, 8,8,1,0,0);
+
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
 			delete img;
@@ -973,6 +977,44 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 				if (x == 1) {
 					// Extra pixel.
 					*px_dest = (__swab32(*img_buf) >> 8) | 0xFF000000;
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
+			}
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_x32);
+			break;
+		}
+
+		case PXF_RABG8888: {
+			// VTF "ARGB8888", which is actually RABG.
+			// TODO: This might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
+			// TODO: Verify on big-endian.
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0]  = (img_buf[0] >> 8) & 0xFF;
+					px_dest[0] |= (img_buf[0] & 0xFF) << 8;
+					px_dest[0] |= (img_buf[0] << 8) & 0xFF000000;
+					px_dest[0] |= (img_buf[0] >> 8) & 0x00FF0000;
+
+					px_dest[1]  = (img_buf[1] >> 8) & 0xFF;
+					px_dest[1] |= (img_buf[1] & 0xFF) << 8;
+					px_dest[1] |= (img_buf[1] << 8) & 0xFF000000;
+					px_dest[1] |= (img_buf[1] >> 8) & 0x00FF0000;
+
+					img_buf += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					*px_dest  = (*img_buf >> 8) & 0xFF;
+					*px_dest |= (*img_buf & 0xFF) << 8;
+					*px_dest |= (*img_buf << 8) & 0xFF000000;
+					*px_dest |= (*img_buf >> 8) & 0x00FF0000;
 					img_buf++;
 					px_dest++;
 				}

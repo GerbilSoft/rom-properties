@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
 
-#include "../exe_structs.h"
+#include "../Other/exe_structs.h"
 
 // librpbase
 #include "librpbase/config.librpbase.h"

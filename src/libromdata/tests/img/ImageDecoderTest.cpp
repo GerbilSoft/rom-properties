@@ -57,11 +57,13 @@ using namespace LibRpBase;
 
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
-#include "DirectDrawSurface.hpp"
-#include "SegaPVR.hpp"
+#include "Texture/DirectDrawSurface.hpp"
+#include "Texture/SegaPVR.hpp"
+#include "Texture/KhronosKTX.hpp"
+#include "Texture/ValveVTF.hpp"
 
 // DirectDraw Surface structs.
-#include "dds_structs.h"
+#include "Texture/dds_structs.h"
 
 // C includes.
 #include <stdint.h>
@@ -269,8 +271,8 @@ void ImageDecoderTest::SetUp(void)
 	gzclose_r(m_gzDds);
 	m_gzDds = nullptr;
 
-	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: "
-		<< mode.dds_gz_filename;
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: " <<
+		mode.dds_gz_filename << " - short read";
 
 	// Open the PNG image file being tested.
 	path.resize(18);	// Back to "ImageDecoder_data/".
@@ -278,7 +280,8 @@ void ImageDecoderTest::SetUp(void)
 	replace_slashes(path);
 	unique_ptr<IRpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file.get() != nullptr);
-	ASSERT_TRUE(file->isOpen());
+	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " <<
+		mode.png_filename << " - " << strerror(file->lastError());
 
 	// Maximum image size.
 	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
@@ -288,8 +291,8 @@ void ImageDecoderTest::SetUp(void)
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: "
-		<< mode.png_filename;
+	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: " <<
+		mode.png_filename << " - short read";
 }
 
 /**
@@ -373,7 +376,7 @@ void ImageDecoderTest::Compare_RpImage(
 	// TODO: rp_image::operator==()?
 	const uint8_t *pBitsExpected = static_cast<const uint8_t*>(pImgExpected->bits());
 	const uint8_t *pBitsActual   = static_cast<const uint8_t*>(pImgActual->bits());
-	const int row_bytes = pImgExpected->width() * sizeof(uint32_t);
+	const int row_bytes = pImgExpected->row_bytes();
 	const int stride_expected = pImgExpected->stride();
 	const int stride_actual   = pImgActual->stride();
 	for (unsigned int y = (unsigned int)pImgExpected->height(); y > 0; y--) {
@@ -412,6 +415,14 @@ TEST_P(ImageDecoderTest, decodeTest)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
 		// PVR/GVR image.
 		m_romData = new SegaPVR(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
+		// Khronos KTX image.
+		// TODO: Use .zktx format instead of .ktx.gz.
+		// Needs GzFile, a gzip-decompressing IRpFile subclass.
+		m_romData = new KhronosKTX(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
+		// Valve Texture File.
+		m_romData = new ValveVTF(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -677,6 +688,161 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"GVR/weeklytitle.gvr.gz",
 			"GVR/weeklytitle.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// KTX tests.
+INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
+	::testing::Values(
+		// RGB reference image.
+		ImageDecoderTest_mode(
+			"KTX/rgb-reference.ktx.gz",
+			"KTX/rgb.png"),
+		// RGB reference image, mipmap levels == 0
+		ImageDecoderTest_mode(
+			"KTX/rgb-amg-reference.ktx.gz",
+			"KTX/rgb.png"),
+		// Orientation: Up (upside-down compared to "normal")
+		ImageDecoderTest_mode(
+			"KTX/up-reference.ktx.gz",
+			"KTX/up.png"),
+		// Orientation: Down (same as "normal")
+		ImageDecoderTest_mode(
+			"KTX/down-reference.ktx.gz",
+			"KTX/up.png"),
+
+		// Luminance (unsized: GL_LUMINANCE)
+		ImageDecoderTest_mode(
+			"KTX/luminance_unsized_reference.ktx.gz",
+			"KTX/luminance.png"),
+		// Luminance (sized: GL_LUMINANCE8)
+		ImageDecoderTest_mode(
+			"KTX/luminance_sized_reference.ktx.gz",
+			"KTX/luminance.png"),
+
+		// ETC1
+		ImageDecoderTest_mode(
+			"KTX/etc1.ktx.gz",
+			"KTX/etc1.png"),
+
+		// RGBA reference image.
+		ImageDecoderTest_mode(
+			"KTX/rgba-reference.ktx.gz",
+			"KTX/rgba.png"))
+
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Valve VTF tests. (all formats)
+INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
+	::testing::Values(
+		// NOTE: VTF channel ordering is usually backwards from ImageDecoder.
+
+		// 32-bit ARGB
+		ImageDecoderTest_mode(
+			"VTF/ABGR8888.vtf.gz",
+			"argb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/ARGB8888.vtf.gz",	// NOTE: Actually RABG8888.
+			"argb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/BGRA8888.vtf.gz",
+			"argb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGBA8888.vtf.gz",
+			"argb-reference.png"),
+
+		// 32-bit xRGB
+		ImageDecoderTest_mode(
+			"VTF/BGRx8888.vtf.gz",
+			"rgb-reference.png"),
+
+		// 24-bit RGB
+		ImageDecoderTest_mode(
+			"VTF/BGR888.vtf.gz",
+			"rgb-reference.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGB888.vtf.gz",
+			"rgb-reference.png"),
+
+		// 24-bit RGB + bluescreen
+		ImageDecoderTest_mode(
+			"VTF/BGR888_bluescreen.vtf.gz",
+			"VTF/BGR888_bluescreen.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGB888_bluescreen.vtf.gz",
+			"VTF/BGR888_bluescreen.png"),
+
+		// 16-bit RGB (565)
+		// FIXME: Tests are failing.
+		ImageDecoderTest_mode(
+			"VTF/BGR565.vtf.gz",
+			"RGB/RGB565.png"),
+		ImageDecoderTest_mode(
+			"VTF/RGB565.vtf.gz",
+			"RGB/RGB565.png"),
+
+		// 15-bit RGB (555)
+		ImageDecoderTest_mode(
+			"VTF/BGRx5551.vtf.gz",
+			"RGB/RGB555.png"),
+
+		// 16-bit ARGB (4444)
+		ImageDecoderTest_mode(
+			"VTF/BGRA4444.vtf.gz",
+			"ARGB/ARGB4444.png"),
+
+		// UV88 (handled as RG88)
+		ImageDecoderTest_mode(
+			"VTF/UV88.vtf.gz",
+			"rg-reference.png"),
+
+		// Intensity formats
+		ImageDecoderTest_mode(
+			"VTF/I8.vtf.gz",
+			"Luma/L8.png"),
+		ImageDecoderTest_mode(
+			"VTF/IA88.vtf.gz",
+			"Luma/A8L8.png"),
+
+		// Alpha format (A8)
+		ImageDecoderTest_mode(
+			"VTF/A8.vtf.gz",
+			"Alpha/A8.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+#ifdef ENABLE_S3TC
+// Valve VTF tests. (S3TC)
+INSTANTIATE_TEST_CASE_P(VTF_S3TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"VTF/DXT1.vtf.gz",
+			"VTF/DXT1.s3tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT1_A1.vtf.gz",
+			"VTF/DXT1_A1.s3tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT3.vtf.gz",
+			"VTF/DXT3.s3tc.png"),
+		ImageDecoderTest_mode(
+			"VTF/DXT5.vtf.gz",
+			"VTF/DXT5.s3tc.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_S3TC */
+
+// Valve VTF tests. (S2TC)
+INSTANTIATE_TEST_CASE_P(VTF_S2TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"VTF/DXT1.vtf.gz",
+			"VTF/DXT1.s2tc.png", false),
+		ImageDecoderTest_mode(
+			"VTF/DXT1_A1.vtf.gz",
+			"VTF/DXT1_A1.s2tc.png", false),
+		ImageDecoderTest_mode(
+			"VTF/DXT3.vtf.gz",
+			"VTF/DXT3.s2tc.png", false),
+		ImageDecoderTest_mode(
+			"VTF/DXT5.vtf.gz",
+			"VTF/DXT5.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }

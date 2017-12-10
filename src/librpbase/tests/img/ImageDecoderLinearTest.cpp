@@ -149,6 +149,7 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 			mode_str = #pxf; \
 			break;
 
+	// TODO: Use a string table instead of switch/case.
 	const char *mode_str;
 	switch (pxf) {
 		case ImageDecoder::PXF_UNKNOWN:
@@ -203,6 +204,14 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 		CASE(PXF_G16R16)
 		CASE(PXF_A2R10G10B10)
 		CASE(PXF_A2B10G10R10)
+
+		// Uncommon 16-bit formats.
+		CASE(PXF_RG88)
+		CASE(PXF_GR88)
+
+		// VTFEdit uses this as "ARGB8888".
+		// TODO: Might be a VTFEdit bug. (Tested versions: 1.2.5, 1.3.3)
+		CASE(PXF_RABG8888)
 
 		// Luminance formats.
 		CASE(PXF_L8)
@@ -783,6 +792,14 @@ INSTANTIATE_TEST_CASE_P(fromLinear32, ImageDecoderLinearTest,
 			ImageDecoder::PXF_A2B10G10R10,
 			0,
 			0xAA9E4548,
+			32),
+
+		// PXF_RABG8888 (Valve VTF ARGB8888)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_RABG8888,
+			0,
+			0x34127856,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
@@ -821,13 +838,13 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12345678),
 			ImageDecoder::PXF_A2R10G10B10,
-			0,
+			640,
 			0x0048459E,
 			32),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x12345678),
 			ImageDecoder::PXF_A2B10G10R10,
-			0,
+			640,
 			0x009E4548,
 			32),
 
@@ -835,14 +852,22 @@ INSTANTIATE_TEST_CASE_P(fromLinear32_stride640, ImageDecoderLinearTest,
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x92345678),
 			ImageDecoder::PXF_A2R10G10B10,
-			0,
+			640,
 			0xAA48459E,
 			32),
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x92345678),
 			ImageDecoder::PXF_A2B10G10R10,
-			0,
+			640,
 			0xAA9E4548,
+			32),
+
+		// PXF_RABG8888 (Valve VTF ARGB8888)
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x12345678),
+			ImageDecoder::PXF_RABG8888,
+			640,
+			0x34127856,
 			32))
 	, ImageDecoderLinearTest::test_case_suffix_generator);
 
@@ -1001,6 +1026,20 @@ INSTANTIATE_TEST_CASE_P(fromLinear16, ImageDecoderLinearTest,
 			0xFF426384,
 			16),
 
+		// RG88
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RG88,
+			0,
+			0xFF123400,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x3412),
+			ImageDecoder::PXF_GR88,
+			0,
+			0xFF123400,
+			16),
+
 		/** 15-bit **/
 		ImageDecoderLinearTest_mode(
 			le32_to_cpu(0x1234),
@@ -1135,6 +1174,20 @@ INSTANTIATE_TEST_CASE_P(fromLinear16_384, ImageDecoderLinearTest,
 			ImageDecoder::PXF_BGRA5551,
 			384,
 			0xFF426384,
+			16),
+
+		// RG88
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x1234),
+			ImageDecoder::PXF_RG88,
+			384,
+			0xFF123400,
+			16),
+		ImageDecoderLinearTest_mode(
+			le32_to_cpu(0x3412),
+			ImageDecoder::PXF_GR88,
+			384,
+			0xFF123400,
 			16),
 
 		/** 15-bit **/

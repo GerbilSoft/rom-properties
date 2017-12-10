@@ -22,7 +22,7 @@
 #include "librpbase/config.librpbase.h"
 #include "GcnPartition.hpp"
 
-#include "gcn_structs.h"
+#include "Console/gcn_structs.h"
 #include "GcnFst.hpp"
 
 // librpbase

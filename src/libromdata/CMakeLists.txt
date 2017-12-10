@@ -2,32 +2,40 @@ PROJECT(libromdata)
 
 # Sources.
 SET(libromdata_SRCS
-	MegaDrive.cpp
-	MegaDriveRegions.cpp
-	GameCube.cpp
-	NintendoDS.cpp
 	RomDataFactory.cpp
-	DMG.cpp
-	GameBoyAdvance.cpp
-	GameCubeSave.cpp
-	N64.cpp
-	SNES.cpp
-	DreamcastSave.cpp
-	PlayStationSave.cpp
-	VirtualBoy.cpp
-	Amiibo.cpp
-	NES.cpp
-	EXE.cpp
-	WiiU.cpp
-	Nintendo3DS.cpp
-	Nintendo3DSFirm.cpp
-	Sega8Bit.cpp
-	SegaPVR.cpp
-	DirectDrawSurface.cpp
-	NintendoBadge.cpp
-	Dreamcast.cpp
-	SegaSaturn.cpp
-	Lynx.cpp
+
+	Console/MegaDrive.cpp
+	Console/MegaDriveRegions.cpp
+	Console/Dreamcast.cpp
+	Console/DreamcastSave.cpp
+	Console/GameCube.cpp
+	Console/GameCubeSave.cpp
+	Console/N64.cpp
+	Console/NES.cpp
+	Console/Sega8Bit.cpp
+	Console/SegaSaturn.cpp
+	Console/SNES.cpp
+	Console/PlayStationSave.cpp
+	Console/WiiU.cpp
+
+	Handheld/DMG.cpp
+	Handheld/Lynx.cpp
+	Handheld/GameBoyAdvance.cpp
+	Handheld/Nintendo3DS.cpp
+	Handheld/Nintendo3DSFirm.cpp
+	Handheld/NintendoDS.cpp
+	Handheld/VirtualBoy.cpp
+
+	Texture/DirectDrawSurface.cpp
+	Texture/KhronosKTX.cpp
+	Texture/SegaPVR.cpp
+	Texture/ValveVTF.cpp
+	Texture/ValveVTF3.cpp
+
+	Other/Amiibo.cpp
+	Other/EXE.cpp
+	Other/NintendoBadge.cpp
+
 	data/SegaPublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -38,6 +46,7 @@ SET(libromdata_SRCS
 	data/Nintendo3DSFirmData.cpp
 	data/Nintendo3DSSysTitles.cpp
 	data/NintendoLanguage.cpp
+	data/GLenumStrings.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -57,57 +66,73 @@ SET(libromdata_SRCS
 	)
 # Headers.
 SET(libromdata_H
-	MegaDrive.hpp
-	MegaDriveRegions.hpp
-	GameCube.hpp
-	NintendoDS.hpp
 	RomDataFactory.hpp
-	DMG.hpp
-	GameBoyAdvance.hpp
 	CopierFormats.h
-	GameCubeSave.hpp
-	PlayStationSave.hpp
-	N64.hpp
-	SNES.hpp
-	DreamcastSave.hpp
-	VirtualBoy.hpp
-	Amiibo.hpp
-	NES.hpp
-	EXE.hpp
-	EXE_p.hpp
-	WiiU.hpp
-	Nintendo3DS.hpp
-	Nintendo3DSFirm.hpp
-	Sega8Bit.hpp
-	SegaPVR.hpp
-	DirectDrawSurface.hpp
-	NintendoBadge.hpp
-	Dreamcast.hpp
-	SegaSaturn.hpp
-	Lynx.hpp
-	md_structs.h
-	gcn_structs.h
-	gcn_card.h
-	nds_structs.h
-	n64_structs.h
-	dmg_structs.h
-	gba_structs.h
-	ps1_structs.h
-	snes_structs.h
-	dc_structs.h
-	vb_structs.h
-	nfp_structs.h
-	nes_structs.h
-	wiiu_structs.h
-	n3ds_structs.h
-	sega8_structs.h
-	pvr_structs.h
-	dds_structs.h
-	badge_structs.h
 	cdrom_structs.h
 	iso_structs.h
-	saturn_structs.h
-	lnx_structs.h
+
+	Console/Dreamcast.hpp
+	Console/DreamcastSave.hpp
+	Console/GameCube.hpp
+	Console/GameCubeSave.hpp
+	Console/MegaDrive.hpp
+	Console/MegaDriveRegions.hpp
+	Console/N64.hpp
+	Console/NES.hpp
+	Console/PlayStationSave.hpp
+	Console/Sega8Bit.hpp
+	Console/SegaSaturn.hpp
+	Console/SNES.hpp
+	Console/WiiU.hpp
+
+	Console/dc_structs.h
+	Console/gcn_structs.h
+	Console/gcn_card.h
+	Console/md_structs.h
+	Console/n64_structs.h
+	Console/nes_structs.h
+	Console/ps1_structs.h
+	Console/saturn_structs.h
+	Console/sega8_structs.h
+	Console/snes_structs.h
+	Console/wiiu_structs.h
+
+	Handheld/DMG.hpp
+	Handheld/Lynx.hpp
+	Handheld/GameBoyAdvance.hpp
+	Handheld/Nintendo3DS.hpp
+	Handheld/Nintendo3DSFirm.hpp
+	Handheld/NintendoDS.hpp
+	Handheld/VirtualBoy.hpp
+
+	Handheld/dmg_structs.h
+	Handheld/gba_structs.h
+	Handheld/n3ds_structs.h
+	Handheld/nds_structs.h
+	Handheld/lnx_structs.h
+	Handheld/vb_structs.h
+
+	Texture/DirectDrawSurface.hpp
+	Texture/KhronosKTX.hpp
+	Texture/SegaPVR.hpp
+	Texture/ValveVTF.hpp
+	Texture/ValveVTF3.hpp
+
+	Texture/dds_structs.h
+	Texture/ktx_structs.h
+	Texture/pvr_structs.h
+	Texture/vtf_structs.h
+	Texture/vtf3_structs.h
+
+	Other/Amiibo.hpp
+	Other/EXE.hpp
+	Other/EXE_p.hpp
+	Other/NintendoBadge.hpp
+
+	Other/badge_structs.h
+	Other/exe_structs
+	Other/nfp_structs.h
+
 	data/SegaPublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
@@ -118,6 +143,7 @@ SET(libromdata_H
 	data/Nintendo3DSFirmData.hpp
 	data/Nintendo3DSSysTitles.hpp
 	data/NintendoLanguage.hpp
+	data/GLenumStrings.hpp
 	img/TCreateThumbnail.hpp
 	disc/WbfsReader.hpp
 	disc/libwbfs.h
@@ -141,9 +167,9 @@ SET(libromdata_H
 	)
 
 IF(ENABLE_XML)
-	SET(libromdata_SRCS ${libromdata_SRCS} EXE_manifest.cpp)
+	SET(libromdata_SRCS ${libromdata_SRCS} Other/EXE_manifest.cpp)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
-		SET(libromdata_SRCS ${libromdata_SRCS} EXE_delayload.cpp)
+		SET(libromdata_SRCS ${libromdata_SRCS} Other/EXE_delayload.cpp)
 	ENDIF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 ENDIF(ENABLE_XML)
 

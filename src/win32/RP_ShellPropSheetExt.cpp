@@ -1193,10 +1193,16 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		uint32_t checkboxes = field->data.list_checkboxes;
 		LVITEM lvItem;
 		lvItem.mask = LVIF_TEXT;
+		int row_num = 0;
 		for (int i = 0; i < row_count; i++) {
-			lvItem.iItem = i;
-
 			const vector<string> &data_row = list_data->at(i);
+			if (hasCheckboxes && data_row.empty()) {
+				// Skip this row.
+				checkboxes >>= 1;
+				continue;
+			}
+
+			lvItem.iItem = row_num;
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				lvItem.iSubItem = col;
@@ -1209,7 +1215,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 					// Set the checkbox state after inserting the item.
 					// Setting the state when inserting it doesn't seem to work...
 					if (hasCheckboxes) {
-						ListView_SetCheckState(hDlgItem, i, (checkboxes & 1));
+						ListView_SetCheckState(hDlgItem, row_num, (checkboxes & 1));
 						checkboxes >>= 1;
 					}
 				} else {
@@ -1217,6 +1223,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 					ListView_SetItem(hDlgItem, &lvItem);
 				}
 			}
+
+			// Next row.
+			row_num++;
 		}
 	}
 

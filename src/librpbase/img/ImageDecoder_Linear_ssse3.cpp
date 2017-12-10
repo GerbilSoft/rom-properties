@@ -312,6 +312,11 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			has_alpha = false;
 			break;
 
+		case PXF_RABG8888:
+			shuf_mask = _mm_setr_epi8(1,0,3,2, 5,4,7,6, 9,8,11,10, 13,12,15,14);
+			has_alpha = true;
+			break;
+
 		default:
 			assert(!"Unsupported 32-bit pixel format.");
 			delete img;

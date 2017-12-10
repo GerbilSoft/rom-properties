@@ -589,6 +589,12 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 		uint32_t checkboxes = field->data.list_checkboxes;
 		for (int i = 0; i < row_count; i++) {
 			const vector<string> &data_row = list_data->at(i);
+			if (hasCheckboxes && data_row.empty()) {
+				// Skip this row.
+				checkboxes >>= 1;
+				continue;
+			}
+
 			QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
 			if (hasCheckboxes) {
 				// The checkbox will only show up if setCheckState()

@@ -41,17 +41,10 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <algorithm>
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
 
 namespace LibRomData {
 
@@ -71,7 +64,7 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		DDS_HEADER_DXT10 dxt10Header;
 
 		// Texture data start address.
-		uint32_t texDataStartAddr;
+		unsigned int texDataStartAddr;
 
 		// Decoded image.
 		rp_image *img;
@@ -394,6 +387,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		return nullptr;
 	}
 
+	// Texture cannot start inside of the DDS header.
+	// TODO: Also dxt10Header for DX10?
+	assert(texDataStartAddr >= sizeof(ddsHeader));
+	if (texDataStartAddr < sizeof(ddsHeader)) {
+		// Invalid texture data start address.
+		return nullptr;
+	}
+
 	if (file->size() > 128*1024*1024) {
 		// Sanity check: DDS files shouldn't be more than 128 MB.
 		return nullptr;
@@ -406,6 +407,10 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		// Seek error.
 		return nullptr;
 	}
+
+	// Aligned memory buffer.
+	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
+	uint8_t *buf = nullptr;
 
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
@@ -446,61 +451,68 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Read the texture data.
-		unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
-		size_t size = file->read(buf.get(), expected_size);
+		buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+		if (!buf) {
+			// Memory allocation failure.
+			return nullptr;
+		}
+		size_t size = file->read(buf, expected_size);
 		if (size != expected_size) {
 			// Read error.
+			aligned_free(buf);
 			return nullptr;
 		}
 
 		switch (ddspf.dwFourCC) {
 			case DDPF_FOURCC_DXT1:
-				img = ImageDecoder::fromDXT1(
+				// TODO: With or without 1-bit transparency?
+				// Assuming with 1-bit transparency for now...
+				img = ImageDecoder::fromDXT1_A1(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT2:
 				img = ImageDecoder::fromDXT2(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT3:
 				img = ImageDecoder::fromDXT3(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT4:
 				img = ImageDecoder::fromDXT4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT5:
 				img = ImageDecoder::fromDXT5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_ATI1:
 			case DDPF_FOURCC_BC4U:
 				img = ImageDecoder::fromBC4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			case DDPF_FOURCC_ATI2:
 			case DDPF_FOURCC_BC5U:
 				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size);
+					buf, expected_size);
 				break;
 
 			default:
 				// Not supported.
-				return nullptr;
+				break;
 		}
 	} else {
 		// Uncompressed linear image data.
@@ -538,8 +550,11 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Read the texture data.
-		// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
-		uint8_t *buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+		buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+		if (!buf) {
+			// Memory allocation failure.
+			return nullptr;
+		}
 		size_t size = file->read(buf, expected_size);
 		if (size != expected_size) {
 			// Read error.
@@ -583,10 +598,9 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				assert(!"Unsupported pixel format.");
 				break;
 		}
-
-		aligned_free(buf);
 	}
 
+	aligned_free(buf);
 	return img;
 }
 

@@ -23,7 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITIONPRIVATE_HPP__
 
 #include <stdint.h>
-#include "../gcn_structs.h"
+#include "../Console/gcn_structs.h"
 
 namespace LibRpBase {
 	class IDiscReader;
