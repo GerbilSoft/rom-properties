@@ -477,7 +477,7 @@ int ValveVTF3::loadFieldData(void)
 
 	// Image format.
 	d->fields->addField_string(C_("ValveVTF3", "Image Format"),
-		(vtf3Header->flags & VTF3_FLAG_ALPHA ? "DXT5" : "DXT1"));
+		((vtf3Header->flags & VTF3_FLAG_ALPHA) ? "DXT5" : "DXT1"));
 
 	// TODO: Flags.
 
