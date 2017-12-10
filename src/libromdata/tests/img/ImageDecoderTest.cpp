@@ -845,6 +845,48 @@ INSTANTIATE_TEST_CASE_P(VTF_S2TC, ImageDecoderTest,
 			"VTF/DXT5.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// Test images from texture-compressor.
+// Reference: https://github.com/TimvanScherpenzeel/texture-compressor
+INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"tctest/example-etc1.ktx.gz",
+			"tctest/example-etc1.ktx.png"),
+		ImageDecoderTest_mode(
+			"tctest/example-etc2.ktx.gz",
+			"tctest/example-etc2.ktx.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+#ifdef ENABLE_S3TC
+// texture-compressor tests. (S3TC)
+INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"tctest/example-dxt1.dds.gz",
+			"tctest/example-dxt1.s3tc.dds.png"),
+		ImageDecoderTest_mode(
+			"tctest/example-dxt3.dds.gz",
+			"tctest/example-dxt5.s3tc.dds.png"),
+		ImageDecoderTest_mode(
+			"tctest/example-dxt5.dds.gz",
+			"tctest/example-dxt5.s3tc.dds.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_S3TC */
+
+// texture-compressor tests. (S2TC)
+INSTANTIATE_TEST_CASE_P(TCtest_S2TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"tctest/example-dxt1.dds.gz",
+			"tctest/example-dxt1.s2tc.dds.png", false),
+		ImageDecoderTest_mode(
+			"tctest/example-dxt3.dds.gz",
+			"tctest/example-dxt5.s2tc.dds.png", false),
+		ImageDecoderTest_mode(
+			"tctest/example-dxt5.dds.gz",
+			"tctest/example-dxt5.s2tc.dds.png", false))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 } }
 
 /**
