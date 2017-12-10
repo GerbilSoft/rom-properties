@@ -524,6 +524,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a BC4 (ATI1) image to rp_image.
+		 * Color component is Red.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf BC4 image buffer.
@@ -535,6 +537,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a BC5 (ATI2) image to rp_image.
+		 * Color components are Red and Green.
+		 *
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf BC4 image buffer.
@@ -543,6 +547,22 @@ class ImageDecoder
 		 */
 		static rp_image *fromBC5(int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/**
+		 * Convert a Red image to Luminance.
+		 * Use with fromBC4() to decode an LATC1 texture.
+		 * @param img rp_image to convert in-place.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int fromRed8ToL8(rp_image *img);
+
+		/**
+		 * Convert a Red+Green image to Luminance+Alpha.
+		 * Use with fromBC5() to decode an LATC2 texture.
+		 * @param img rp_image to convert in-place.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		 static int fromRG8ToLA8(rp_image *img);
 
 		/* Dreamcast */
 

@@ -1063,4 +1063,82 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 	return img;
 }
 
+/**
+ * Convert a Red image to Luminance.
+ * Use with fromBC4() to decode an LATC1 texture.
+ * @param img rp_image to convert in-place.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageDecoder::fromRed8ToL8(rp_image *img)
+{
+	assert(img != nullptr);
+	assert(img->format() == rp_image::FORMAT_ARGB32);
+	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+		return -EINVAL;
+
+	// TODO: Optimize with SSE2/SSSE3?
+	const unsigned int width = (unsigned int)img->width();
+	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
+	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
+	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
+		unsigned int x = width;
+		for (; x > 1; x -= 2, line += 2) {
+			line[0].a = 0xFF;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+
+			line[1].a = 0xFF;
+			line[1].b = line[1].r;
+			line[1].g = line[1].r;
+		}
+		if (x == 1) {
+			line[0].a = 0xFF;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+			line++;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Convert a Red+Green image to Luminance+Alpha.
+ * Use with fromBC5() to decode an LATC2 texture.
+ * @param img rp_image to convert in-place.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageDecoder::fromRG8ToLA8(rp_image *img)
+{
+	assert(img != nullptr);
+	assert(img->format() == rp_image::FORMAT_ARGB32);
+	if (!img || img->format() != rp_image::FORMAT_ARGB32)
+		return -EINVAL;
+
+	// TODO: Optimize with SSE2/SSSE3?
+	const unsigned int width = (unsigned int)img->width();
+	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
+	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
+	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
+		unsigned int x = width;
+		for (; x > 1; x -= 2, line += 2) {
+			line[0].a = line[0].g;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+
+			line[1].a = line[1].g;
+			line[1].b = line[1].r;
+			line[1].g = line[1].r;
+		}
+		if (x == 1) {
+			line[0].a = line[0].g;
+			line[0].b = line[0].r;
+			line[0].g = line[0].r;
+			line++;
+		}
+	}
+
+	return 0;
+}
+
 }

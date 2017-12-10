@@ -213,6 +213,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
 				case GL_COMPRESSED_RED_RGTC1:
 				case GL_COMPRESSED_SIGNED_RED_RGTC1:
+				case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+				case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
 					// 16 pixels compressed into 64 bits. (4bpp)
 					expected_size = (ktxHeader.pixelWidth * height) / 2;
 					break;
@@ -229,6 +231,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
 				case GL_COMPRESSED_RG_RGTC2:
 				case GL_COMPRESSED_SIGNED_RG_RGTC2:
+				case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+				case GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT:
 					// 16 pixels compressed into 128 bits. (8bpp)
 					expected_size = ktxHeader.pixelWidth * height;
 					break;
@@ -382,6 +386,28 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					img = ImageDecoder::fromBC5(
 						ktxHeader.pixelWidth, height,
 						buf, expected_size);
+					break;
+
+				case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+				case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
+					// LATC, one component. (BC4)
+					// TODO: Handle signed properly.
+					img = ImageDecoder::fromBC4(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					// TODO: If this fails, return it anyway or return nullptr?
+					ImageDecoder::fromRed8ToL8(img);
+					break;
+
+				case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+				case GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT:
+					// LATC, two components. (BC5)
+					// TODO: Handle signed properly.
+					img = ImageDecoder::fromBC5(
+						ktxHeader.pixelWidth, height,
+						buf, expected_size);
+					// TODO: If this fails, return it anyway or return nullptr?
+					ImageDecoder::fromRG8ToLA8(img);
 					break;
 
 				default:
