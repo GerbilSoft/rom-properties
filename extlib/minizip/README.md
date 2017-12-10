@@ -1,4 +1,4 @@
-# Minizip 2.2.3
+# Minizip 2.2.4
 
 This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -57,7 +57,7 @@ cmake --build .
 #### [WinZIP AES Encryption](http://www.winzip.com/aes_info.htm)
 
 + Requires ``cmake . -DUSE_AES=ON`` or ``#define HAVE_AES``
-+ Requires [Brian Gladman's](https://github.com/BrianGladman/aes) AES library
++ Requires Brian Gladman's [AES](https://github.com/BrianGladman/aes) and [SHA](https://github.com/BrianGladman/sha) libraries
 
 When zipping with a password it will always use AES 256-bit encryption.
 When unzipping it will use AES decryption only if necessary.

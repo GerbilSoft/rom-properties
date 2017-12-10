@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.2.3, October 27th, 2017
+   Version 2.2.4, November 15th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -21,8 +21,10 @@
 #  include <unistd.h>
 #  include <utime.h>
 #endif
-#if defined unix
+#if defined __linux__
 #  include <bsd/stdlib.h>
+#else
+#  include <stdlib.h>
 #endif
 
 #include "mz.h"

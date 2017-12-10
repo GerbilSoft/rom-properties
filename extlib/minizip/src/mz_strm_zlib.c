@@ -1,5 +1,5 @@
 /* mz_strm_zlib.c -- Stream for zlib inflate/deflate
-   Version 2.2.3, October 27th, 2017
+   Version 2.2.4, November 15th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -369,7 +369,12 @@ void *mz_stream_zlib_get_interface(void)
     return (void *)&mz_stream_zlib_vtbl;
 }
 
+int32_t mz_stream_zlib_crc32(int32_t value, const void *buf, int32_t size)
+{
+    return crc32(value, buf, size);
+}
+
 void *mz_stream_zlib_get_crc32_update(void)
 {
-    return (void *)crc32;
+    return (void *)mz_stream_zlib_crc32;
 }

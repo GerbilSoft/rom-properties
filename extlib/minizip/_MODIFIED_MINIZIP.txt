@@ -1,8 +1,8 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-Commit: be85b3b4cd50bf1d5c294918dfbb816cb63869b5
-mz_compat.c: Fix zipOpen(), zipOpen64(), and unzOpen64().
+Commit: 18a30653b1eb5e9f96ebc5ec1d93313d229bc731
+Verify decrypted header to detect wrong password for Traditional PKZIP.
 
 The following changes have been made to the original:
 

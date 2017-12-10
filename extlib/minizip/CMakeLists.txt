@@ -37,7 +37,7 @@ ENDIF(0)
 
 project("minizip")
 
-set(VERSION "2.2.3")
+set(VERSION "2.2.4")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -113,10 +113,12 @@ if(UNIX)
 
     find_package(PkgConfig REQUIRED)
 
-    pkg_check_modules(LIBBSD libbsd)
-    IF(NOT LIBBSD_FOUND)
-        MESSAGE(FATAL_ERROR "libbsd not found; install libbsd-dev")
-    ENDIF(NOT LIBBSD_FOUND)
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        pkg_check_modules(LIBBSD libbsd REQUIRED)
+
+        include_directories(${LIBBSD_INCLUDE_DIRS})
+        link_directories(${LIBBSD_LIBRARY_DIRS})
+    endif()
 
     include_directories(${LIBBSD_INCLUDE_DIRS})
     link_directories(${LIBBSD_LIBRARY_DIRS})
@@ -140,7 +142,6 @@ if(USE_AES)
         lib/aes/aeskey.c
         lib/aes/aestab.c
         lib/aes/aes_ni.c
-        lib/aes/fileenc.c
         lib/aes/hmac.c
         lib/aes/pwd2key.c
         lib/aes/sha1.c)
@@ -152,7 +153,6 @@ if(USE_AES)
         lib/aes/aestab.h
         lib/aes/brg_endian.h
         lib/aes/brg_types.h
-        lib/aes/fileenc.h
         lib/aes/hmac.h
         lib/aes/pwd2key.h
         lib/aes/sha1.h)
@@ -236,7 +236,8 @@ if(USE_LZMA)
     set(LZMA_CHECK_HEADERS
         lib/liblzma/check/check.h
         lib/liblzma/check/crc32_table_be.h
-        lib/liblzma/check/crc32_table_le.h)
+        lib/liblzma/check/crc32_table_le.h
+        lib/liblzma/check/crc_macros.h)
     set(LZMA_COMMON_HEADERS
         lib/liblzma/common/alone_decoder.h
         lib/liblzma/common/common.h

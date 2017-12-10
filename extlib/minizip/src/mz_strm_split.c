@@ -1,5 +1,5 @@
 /* mz_strm_split.c -- Stream for split files
-   Version 2.2.3, October 27th, 2017
+   Version 2.2.4, November 15th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -24,7 +24,7 @@
 #define MZ_ZIP_MAGIC_DISKHEADER         (0x08074b50)
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
-# define snprintf _snprintf
+#  define snprintf _snprintf
 #endif
 
 /***************************************************************************/
