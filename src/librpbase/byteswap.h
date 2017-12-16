@@ -144,6 +144,14 @@ void __byte_swap_32_array_c(uint32_t *ptr, unsigned int n);
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 void __byte_swap_16_array_mmx(uint16_t *ptr, unsigned int n);
+
+/**
+ * 32-bit byteswap function.
+ * MMX-optimized version.
+ * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
+ */
+void __byte_swap_32_array_mmx(uint32_t *ptr, unsigned int n);
 #endif /* BYTESWAP_HAS_MMX */
 
 #ifdef BYTESWAP_HAS_SSE2
@@ -258,6 +266,13 @@ static inline void __byte_swap_32_array(uint32_t *ptr, unsigned int n)
 		__byte_swap_32_array_sse2(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_SSE2 */
+#  if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
+#  ifdef BYTESWAP_HAS_MMX
+	if (RP_CPU_HasMMX()) {
+		__byte_swap_32_array_mmx(ptr, n);
+	} else
+#  endif /* BYTESWAP_HAS_MMX */
+#  endif /* 0 */
 	{
 		__byte_swap_32_array_c(ptr, n);
 	}

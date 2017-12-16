@@ -78,6 +78,13 @@ static RP_IFUNC_ptr_t __byte_swap_32_array_resolve(void)
 		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_sse2;
 	} else
 # endif /* BYTESWAP_HAS_SSE2 */
+# if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
+# ifdef BYTESWAP_HAS_MMX
+	if (RP_CPU_HasMMX()) {
+		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_mmx;
+	} else
+# endif /* BYTESWAP_HAS_MMX */
+# endif /* 0 */
 	{
 		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_c;
 	}
