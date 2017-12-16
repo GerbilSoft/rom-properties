@@ -10,7 +10,7 @@ video game ROM and disc images.
 
 ## v1.3 - The Internationalization Release
 
-This release adds support for internationalization. Now you can have the ROM Properties fields displayed in your own native language.
+This release adds support for internationalization. Now you can have the ROM Properties fields displayed in your own native language. (Currently not supported on Windows; this will be fixed before release.)
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
