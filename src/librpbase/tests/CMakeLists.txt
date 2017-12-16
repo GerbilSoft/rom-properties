@@ -113,3 +113,18 @@ ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderLinearTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderLinearTest CONSOLE)
 ADD_TEST(NAME ImageDecoderLinearTest COMMAND ImageDecoderLinearTest "--gtest_filter=-*benchmark*")
+
+# ByteswapTest.
+ADD_EXECUTABLE(ByteswapTest
+	gtest_init.cpp
+	ByteswapTest.cpp
+	ByteswapTest_data.hpp
+	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(ByteswapTest win32common)
+ENDIF(WIN32)
+TARGET_LINK_LIBRARIES(ByteswapTest rpbase)
+TARGET_LINK_LIBRARIES(ByteswapTest gtest)
+DO_SPLIT_DEBUG(ByteswapTest)
+SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
+ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest)
