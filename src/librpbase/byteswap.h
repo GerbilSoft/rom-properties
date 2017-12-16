@@ -206,20 +206,26 @@ static inline void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
 		__byte_swap_16_array_ssse3(ptr, n);
 	} else
 # endif /* BYTESWAP_HAS_SSSE3 */
-# ifdef BYTESWAP_HAS_SSE2
+# ifdef BYTESWAP_ALWAYS_HAS_SSE2
+	{
+		__byte_swap_16_array_sse2(ptr, n);
+	}
+# else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#  ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		__byte_swap_16_array_sse2(ptr, n);
 	} else
-# endif /* BYTESWAP_HAS_SSE2 */
-# ifdef BYTESWAP_HAS_MMX
+#  endif /* BYTESWAP_HAS_SSE2 */
+#  ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
 		__byte_swap_16_array_mmx(ptr, n);
 	} else
-# endif /* BYTESWAP_HAS_MMX */
+#  endif /* BYTESWAP_HAS_MMX */
 	// TODO: MMX-optimized version?
 	{
 		__byte_swap_16_array_c(ptr, n);
 	}
+# endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
 /**
