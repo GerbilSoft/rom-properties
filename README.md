@@ -116,7 +116,7 @@ button.
 
 |             System            | Properties Tab | Internal Images | External Scans |
 |:-----------------------------:|:--------------:|:---------------:|:--------------:|
-| Nintendo amiibo               |       Yes      |        No       |      Media     |
+| Nintendo amiibo               |       Yes      |       N/A       |      Media     |
 | Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
 | Windows/DOS Executables       |       Yes      |        No       |       N/A      |
 
