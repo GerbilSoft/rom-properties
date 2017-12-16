@@ -279,6 +279,40 @@ TEST_F(ByteswapTest, __byte_swap_16_array_sse2_benchmark)
 		__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
+
+/**
+ * Test the SSE2-optimized 32-bit array byteswap function.
+ */
+TEST_F(ByteswapTest, __byte_swap_32_array_sse2_test)
+{
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	__byte_swap_32_array_sse2(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
+}
+
+/**
+ * Benchmark the SSE2-optimized 32-bit array byteswap function.
+ */
+TEST_F(ByteswapTest, __byte_swap_32_array_sse2_benchmark)
+{
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		__byte_swap_32_array_sse2(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
+	}
+}
 #endif /* BYTESWAP_HAS_SSE2 */
 
 #ifdef BYTESWAP_HAS_SSSE3

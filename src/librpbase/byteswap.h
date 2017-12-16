@@ -154,6 +154,14 @@ void __byte_swap_16_array_mmx(uint16_t *ptr, unsigned int n);
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n);
+
+/**
+ * 32-bit byteswap function.
+ * SSE2-optimized version.
+ * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
+ */
+void __byte_swap_32_array_sse2(uint32_t *ptr, unsigned int n);
 #endif /* BYTESWAP_HAS_SSE2 */
 
 #ifdef BYTESWAP_HAS_SSSE3
@@ -240,9 +248,20 @@ static inline void __byte_swap_32_array(uint32_t *ptr, unsigned int n)
 		__byte_swap_32_array_ssse3(ptr, n);
 	} else
 # endif /* BYTESWAP_HAS_SSSE3 */
+# ifdef BYTESWAP_ALWAYS_HAS_SSE2
+	{
+		__byte_swap_32_array_sse2(ptr, n);
+	}
+# else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+#  ifdef BYTESWAP_HAS_SSE2
+	if (RP_CPU_HasSSE2()) {
+		__byte_swap_32_array_sse2(ptr, n);
+	} else
+#  endif /* BYTESWAP_HAS_SSE2 */
 	{
 		__byte_swap_32_array_c(ptr, n);
 	}
+# endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
 #endif /* RP_HAS_IFUNC */

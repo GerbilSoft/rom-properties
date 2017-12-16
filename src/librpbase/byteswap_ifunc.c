@@ -63,11 +63,25 @@ static RP_IFUNC_ptr_t __byte_swap_16_array_resolve(void)
  */
 static RP_IFUNC_ptr_t __byte_swap_32_array_resolve(void)
 {
+#ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
 		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_ssse3;
-	} else {
+	} else
+#endif /* BYTESWAP_HAS_SSSE3 */
+#ifdef BYTESWAP_ALWAYS_HAS_SSE2
+	{
+		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_sse2;
+	}
+#else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+# ifdef BYTESWAP_HAS_SSE2
+	if (RP_CPU_HasSSE2()) {
+		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_sse2;
+	} else
+# endif /* BYTESWAP_HAS_SSE2 */
+	{
 		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_c;
 	}
+#endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
 void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
