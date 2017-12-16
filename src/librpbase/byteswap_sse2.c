@@ -57,14 +57,20 @@ void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n)
 
 		__m128i xmm0 = _mm_load_si128(&xmm_ptr[0]);
 		__m128i xmm1 = _mm_load_si128(&xmm_ptr[1]);
-		__m128i xmm2 = xmm0;
-		__m128i xmm3 = xmm1;
-		xmm0 = _mm_slli_epi16(xmm0, 8);
-		xmm1 = _mm_slli_epi16(xmm1, 8);
-		xmm2 = _mm_srli_epi16(xmm2, 8);
-		xmm3 = _mm_srli_epi16(xmm3, 8);
-		_mm_store_si128(&xmm_ptr[0], _mm_or_si128(xmm0, xmm2));
-		_mm_store_si128(&xmm_ptr[1], _mm_or_si128(xmm1, xmm3));
+
+		// Original WORD: AA BB
+
+		// Shift WORDs by 8 bits:
+		// - xmm0 == BB 00
+		// - xmm2 == 00 AA
+		// - OR'd == BB AA
+		__m128i xmm2 = _mm_srli_epi16(xmm0, 8);
+		__m128i xmm3 = _mm_srli_epi16(xmm1, 8);
+		xmm0 = _mm_or_si128(_mm_slli_epi16(xmm0, 8), xmm2);
+		xmm1 = _mm_or_si128(_mm_slli_epi16(xmm1, 8), xmm3);
+
+		_mm_store_si128(&xmm_ptr[0], xmm0);
+		_mm_store_si128(&xmm_ptr[1], xmm1);
 	}
 
 	// Process the remaining data, one WORD at a time.

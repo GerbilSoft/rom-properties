@@ -50,29 +50,30 @@ void __byte_swap_16_array_mmx(uint16_t *ptr, unsigned int n)
 	for (; n >= 32; n -= 32, ptr += 16) {
 		__m64 *mm_ptr = (__m64*)ptr;
 
-		// TODO: Benchmark 16 WORDs vs. 8 WORDs.
 		__m64 mm0 = mm_ptr[0];
 		__m64 mm1 = mm_ptr[1];
 		__m64 mm2 = mm_ptr[2];
 		__m64 mm3 = mm_ptr[3];
-		__m64 mm4 = mm0;
-		__m64 mm5 = mm1;
-		__m64 mm6 = mm2;
-		__m64 mm7 = mm3;
 
-		mm0 = _mm_slli_pi16(mm0, 8);
-		mm1 = _mm_slli_pi16(mm1, 8);
-		mm2 = _mm_slli_pi16(mm2, 8);
-		mm3 = _mm_slli_pi16(mm3, 8);
-		mm4 = _mm_srli_pi16(mm4, 8);
-		mm5 = _mm_srli_pi16(mm5, 8);
-		mm6 = _mm_srli_pi16(mm6, 8);
-		mm7 = _mm_srli_pi16(mm7, 8);
+		// Original WORD: AA BB
 
-		mm_ptr[0] = _mm_or_si64(mm0, mm4);
-		mm_ptr[1] = _mm_or_si64(mm1, mm5);
-		mm_ptr[2] = _mm_or_si64(mm2, mm6);
-		mm_ptr[3] = _mm_or_si64(mm3, mm7);
+		// Shift WORDs by 8 bits:
+		// -  mm0 == BB 00
+		// -  mm2 == 00 AA
+		// - OR'd == BB AA
+		__m64 mm4 = _mm_srli_pi16(mm0, 8);
+		__m64 mm5 = _mm_srli_pi16(mm1, 8);
+		__m64 mm6 = _mm_srli_pi16(mm2, 8);
+		__m64 mm7 = _mm_srli_pi16(mm3, 8);
+		mm0 = _mm_or_si64(_mm_slli_pi16(mm0, 8), mm4);
+		mm1 = _mm_or_si64(_mm_slli_pi16(mm1, 8), mm5);
+		mm2 = _mm_or_si64(_mm_slli_pi16(mm2, 8), mm6);
+		mm3 = _mm_or_si64(_mm_slli_pi16(mm3, 8), mm7);
+
+		mm_ptr[0] = mm0;
+		mm_ptr[1] = mm1;
+		mm_ptr[2] = mm2;
+		mm_ptr[3] = mm3;
 	}
 
 	// `emms` instruction.
