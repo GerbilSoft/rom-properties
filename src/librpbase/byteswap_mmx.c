@@ -149,8 +149,8 @@ void __byte_swap_32_array_mmx(uint32_t *ptr, unsigned int n)
 	// `emms` instruction.
 	_mm_empty();
 
-	// Process the remaining data, one WORD at a time.
-	for (; n > 0; n -= 2, ptr++) {
-		*ptr = __swab16(*ptr);
+	// Process the remaining data, one DWORD at a time.
+	for (; n > 0; n -= 4, ptr++) {
+		*ptr = __swab32(*ptr);
 	}
 }
