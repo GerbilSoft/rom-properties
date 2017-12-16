@@ -106,6 +106,17 @@ INCLUDE(CheckPNG)
 INCLUDE(CheckJPEG)
 INCLUDE(CheckTinyXML2)
 
+# Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
+########### Add uninstall target ###############
+CONFIGURE_FILE(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
+	IMMEDIATE @ONLY)
+ADD_CUSTOM_TARGET(uninstall
+	"${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
+
+### Subdirectories. ###
+
 # TODO: Internal copy of gettext for Windows.
 IF(ENABLE_NLS)
 	FIND_PACKAGE(Intl)
@@ -121,15 +132,6 @@ ADD_SUBDIRECTORY(doc)
 # TODO: Print build summary indicating what plugins will be built.
 # (Some other project had something like this...)
 # TODO: Fail if no plugins are being built.
-
-# Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
-########### Add uninstall target ###############
-CONFIGURE_FILE(
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
-	IMMEDIATE @ONLY)
-ADD_CUSTOM_TARGET(uninstall
-	"${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
 
 # CPack settings.
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${DESCRIPTION}")

@@ -46,11 +46,6 @@ class SuperMagicDriveTest : public ::testing::Test
 			: align_buf(nullptr)
 		{ }
 
-		virtual ~SuperMagicDriveTest()
-		{
-			aligned_free(align_buf);
-		}
-
 	public:
 		// Output block size. (+64 for zlib)
 		static const unsigned int OUT_BLOCK_UNZ_SIZE = SuperMagicDrive::SMD_BLOCK_SIZE+64;
@@ -92,6 +87,10 @@ class SuperMagicDriveTest : public ::testing::Test
 		static int decompress(void);
 
 	public:
+		virtual void SetUp(void) override final;
+		virtual void TearDown(void) override final;
+
+	public:
 		// Temporary aligned memory buffer.
 		// Automatically freed in teardown().
 		uint8_t *align_buf;
@@ -103,6 +102,26 @@ class SuperMagicDriveTest : public ::testing::Test
 // Uncompressed data buffers.
 uint8_t *SuperMagicDriveTest::m_bin_data = nullptr;
 uint8_t *SuperMagicDriveTest::m_smd_data = nullptr;
+
+/**
+ * SetUp() function.
+ * Run before each test.
+ */
+void SuperMagicDriveTest::SetUp(void)
+{
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	ASSERT_TRUE(align_buf != nullptr);
+}
+
+/**
+ * TearDown() function.
+ * Run after each test.
+ */
+void SuperMagicDriveTest::TearDown(void)
+{
+	aligned_free(align_buf);
+	align_buf = nullptr;
+}
 
 /**
  * Decompress a data block.
@@ -200,7 +219,7 @@ int SuperMagicDriveTest::decompress(void)
 	m_bin_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
 	int ret = decompress(m_bin_data, OUT_BLOCK_UNZ_SIZE, bin_data_gz, (unsigned int)sizeof(bin_data_gz));
 	if (ret != 0) {
-		free(m_bin_data);
+		aligned_free(m_bin_data);
 		m_bin_data = nullptr;
 		return ret;
 	}
@@ -208,7 +227,7 @@ int SuperMagicDriveTest::decompress(void)
 	m_smd_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
 	ret = decompress(m_smd_data, OUT_BLOCK_UNZ_SIZE, smd_data_gz, (unsigned int)sizeof(smd_data_gz));
 	if (ret != 0) {
-		free(m_smd_data);
+		aligned_free(m_smd_data);
 		m_smd_data = nullptr;
 	}
 	return ret;
@@ -219,7 +238,6 @@ int SuperMagicDriveTest::decompress(void)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
 {
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	SuperMagicDrive::decodeBlock_cpp(align_buf, m_smd_data);
 	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
 }
@@ -229,7 +247,6 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_cpp_benchmark)
 {
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		SuperMagicDrive::decodeBlock_cpp(align_buf, m_smd_data);
 	}
@@ -246,7 +263,6 @@ TEST_F(SuperMagicDriveTest, decodeBlock_mmx_test)
 		return;
 	}
 
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	SuperMagicDrive::decodeBlock_mmx(align_buf, m_smd_data);
 	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
 }
@@ -261,12 +277,11 @@ TEST_F(SuperMagicDriveTest, decodeBlock_mmx_benchmark)
 		return;
 	}
 
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		SuperMagicDrive::decodeBlock_mmx(align_buf, m_smd_data);
 	}
 }
-#endif /* SMD_HAS_SSE2 */
+#endif /* SMD_HAS_MMX */
 
 #ifdef SMD_HAS_SSE2
 /**
@@ -279,7 +294,6 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
 		return;
 	}
 
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
 	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
 }
@@ -294,7 +308,6 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 		return;
 	}
 
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
 	}
@@ -308,8 +321,6 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_test)
 {
-	// TODO: Check for SSE2 capabilities.
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
 	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
 }
@@ -319,8 +330,6 @@ TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_test)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
 {
-	// TODO: Check for SSE2 capabilities.
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
 	}

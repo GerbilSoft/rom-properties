@@ -15,6 +15,8 @@
     since it has to copy char16_t data into QString before using it anyway.)
     * The `rp_char` and `rp_string` typedefs are now deprecated. Most uses
       of these typedefs have been removed.
+  * The 16-bit and 32-bit array byteswapping functions have been optimized
+    using MMX, SSE2, and SSSE3.
 
 * New texture formats:
   * Khronos KTX textures: https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
