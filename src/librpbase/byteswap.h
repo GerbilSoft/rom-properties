@@ -32,6 +32,7 @@
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "librpbase/cpuflags_x86.h"
 # define BYTESWAP_HAS_SSE2 1
+# define BYTESWAP_HAS_SSSE3 1
 #endif
 #ifdef RP_CPU_AMD64
 # define BYTESWAP_ALWAYS_HAS_SSE2 1
@@ -139,22 +140,25 @@ void __byte_swap_32_array_c(uint32_t *ptr, unsigned int n);
 void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n);
 #endif /* BYTESWAP_HAS_SSE2 */
 
-#ifdef BYTESWAP_ALWAYS_HAS_SSE2
-/* System always has SSE2. No IFUNC necessary. */
-
+#ifdef BYTESWAP_HAS_SSSE3
 /**
  * 16-bit byteswap function.
+ * SSSE3-optimized version.
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-static inline void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
-{
-	__byte_swap_16_array_sse2(ptr, n);
-}
+void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n);
 
-#else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
+/**
+ * 32-bit byteswap function.
+ * SSSE3-optimized version.
+ * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
+ */
+void __byte_swap_32_array_ssse3(uint32_t *ptr, unsigned int n);
+#endif /* BYTESWAP_HAS_SSSE3 */
 
-# if defined(RP_HAS_IFUNC)
+#if defined(RP_HAS_IFUNC)
 /* System has IFUNC. Use it for dispatching. */
 
 /**
@@ -163,7 +167,15 @@ static inline void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 void __byte_swap_16_array(uint16_t *ptr, unsigned int n);
-# else /* !RP_HAS_IFUNC */
+
+/**
+ * 32-bit byteswap function.
+ * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
+ */
+void __byte_swap_32_array(uint32_t *ptr, unsigned int n);
+
+#else /* !RP_HAS_IFUNC */
 /* System does not have IFUNC. Use inline dispatch functions. */
 
 /**
@@ -173,30 +185,40 @@ void __byte_swap_16_array(uint16_t *ptr, unsigned int n);
  */
 static inline void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
 {
-#  ifdef BYTESWAP_HAS_SSE2
+# ifdef BYTESWAP_HAS_SSSE3
+	if (RP_CPU_HasSSSE3()) {
+		__byte_swap_16_array_ssse3(ptr, n);
+	} else
+# endif /* BYTESWAP_HAS_SSSE3 */
+# ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		__byte_swap_16_array_sse2(ptr, n);
 	} else
-#  endif /* BYTESWAP_HAS_SSE2 */
+# endif /* BYTESWAP_HAS_SSE2 */
+	// TODO: MMX-optimized version?
 	{
 		__byte_swap_16_array_c(ptr, n);
 	}
 }
-# endif /* RP_HAS_IFUNC */
 
-#endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
-
-// TODO: SSSE3-optimized 32-bit byteswap.
-// Also MMX versions?
 /**
- * 16-bit byteswap function.
- * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
- * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
+ * 32-bit byteswap function.
+ * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
 static inline void __byte_swap_32_array(uint32_t *ptr, unsigned int n)
 {
-	__byte_swap_32_array_c(ptr, n);
+# ifdef BYTESWAP_HAS_SSSE3
+	if (RP_CPU_HasSSSE3()) {
+		__byte_swap_32_array_ssse3(ptr, n);
+	} else
+# endif /* BYTESWAP_HAS_SSSE3 */
+	{
+		__byte_swap_32_array_c(ptr, n);
+	}
 }
+
+#endif /* RP_HAS_IFUNC */
 
 #ifdef __cplusplus
 }

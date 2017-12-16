@@ -25,13 +25,17 @@
 
 #include "byteswap.h"
 
-#ifndef BYTESWAP_ALWAYS_HAS_SSE2
 /**
  * IFUNC resolver function for __byte_swap_16_array().
  * @return Function pointer.
  */
 static RP_IFUNC_ptr_t __byte_swap_16_array_resolve(void)
 {
+#ifdef BYTESWAP_HAS_SSSE3
+	if (RP_CPU_HasSSSE3()) {
+		return (RP_IFUNC_ptr_t)&__byte_swap_16_array_ssse3;
+	} else
+#endif /* BYTESWAP_HAS_SSSE3 */
 #ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		return (RP_IFUNC_ptr_t)&__byte_swap_16_array_sse2;
@@ -42,8 +46,22 @@ static RP_IFUNC_ptr_t __byte_swap_16_array_resolve(void)
 	}
 }
 
+/**
+ * IFUNC resolver function for __byte_swap_32_array().
+ * @return Function pointer.
+ */
+static RP_IFUNC_ptr_t __byte_swap_32_array_resolve(void)
+{
+	if (RP_CPU_HasSSSE3()) {
+		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_ssse3;
+	} else {
+		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_c;
+	}
+}
+
 void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
 	IFUNC_ATTR(__byte_swap_16_array_resolve);
-#endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
+void __byte_swap_32_array(uint32_t *ptr, unsigned int n)
+	IFUNC_ATTR(__byte_swap_32_array_resolve);
 
 #endif /* RP_HAS_IFUNC */
