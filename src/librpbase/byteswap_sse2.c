@@ -110,21 +110,19 @@ void __byte_swap_32_array_sse2(uint32_t *ptr, unsigned int n)
 
 		// Original DWORD: AA BB CC DD
 
-		// Shift DWORDs by 16 bits:
-		// - xmm0 == CC DD 00 00
-		// - xmm2 == 00 00 AA BB
-		// - OR'd == CC DD AA BB
-		__m128i xmm2 = _mm_srli_epi32(xmm0, 16);
-		__m128i xmm3 = _mm_srli_epi32(xmm1, 16);
-		xmm0 = _mm_or_si128(_mm_slli_epi32(xmm0, 16), xmm2);
-		xmm1 = _mm_or_si128(_mm_slli_epi32(xmm1, 16), xmm3);
+		// Wordswap the DWORDs.
+		// - xmm0 == CC DD AA BB
+		xmm0 = _mm_shufflelo_epi16(xmm0, 0xB1);
+		xmm1 = _mm_shufflelo_epi16(xmm1, 0xB1);
+		xmm0 = _mm_shufflehi_epi16(xmm0, 0xB1);
+		xmm1 = _mm_shufflehi_epi16(xmm1, 0xB1);
 
 		// Shift WORDs by 8 bits:
 		// - xmm0 == DD 00 BB 00
 		// - xmm2 == 00 CC 00 AA
 		// - OR'd == DD CC BB AA
-		xmm2 = _mm_srli_epi16(xmm0, 8);
-		xmm3 = _mm_srli_epi16(xmm1, 8);
+		__m128i xmm2 = _mm_srli_epi16(xmm0, 8);
+		__m128i xmm3 = _mm_srli_epi16(xmm1, 8);
 		xmm0 = _mm_or_si128(_mm_slli_epi16(xmm0, 8), xmm2);
 		xmm1 = _mm_or_si128(_mm_slli_epi16(xmm1, 8), xmm3);
 		
