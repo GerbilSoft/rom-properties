@@ -41,6 +41,11 @@ static RP_IFUNC_ptr_t __byte_swap_16_array_resolve(void)
 		return (RP_IFUNC_ptr_t)&__byte_swap_16_array_sse2;
 	} else
 #endif /* BYTESWAP_HAS_SSE2 */
+#ifdef BYTESWAP_HAS_MMX
+	if (RP_CPU_HasMMX()) {
+		return (RP_IFUNC_ptr_t)&__byte_swap_16_array_mmx;
+	} else
+#endif /* BYTESWAP_HAS_MMX */
 	{
 		return (RP_IFUNC_ptr_t)&__byte_swap_16_array_c;
 	}

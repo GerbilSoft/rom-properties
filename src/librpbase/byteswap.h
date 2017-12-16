@@ -31,6 +31,12 @@
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "librpbase/cpuflags_x86.h"
+/* MSVC does not support MMX intrinsics in 64-bit builds. */
+/* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
+/* TODO: Disable MMX on all 64-bit builds? */
+# if !defined(_MSC_VER) || (defined(_M_IX86) && !defined(_M_X64))
+#  define BYTESWAP_HAS_MMX 1
+# endif
 # define BYTESWAP_HAS_SSE2 1
 # define BYTESWAP_HAS_SSSE3 1
 #endif
@@ -130,6 +136,16 @@ void __byte_swap_16_array_c(uint16_t *ptr, unsigned int n);
  */
 void __byte_swap_32_array_c(uint32_t *ptr, unsigned int n);
 
+#ifdef BYTESWAP_HAS_MMX
+/**
+ * 16-bit byteswap function.
+ * MMX-optimized version.
+ * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
+ * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
+ */
+void __byte_swap_16_array_mmx(uint16_t *ptr, unsigned int n);
+#endif /* BYTESWAP_HAS_MMX */
+
 #ifdef BYTESWAP_HAS_SSE2
 /**
  * 16-bit byteswap function.
@@ -195,6 +211,11 @@ static inline void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
 		__byte_swap_16_array_sse2(ptr, n);
 	} else
 # endif /* BYTESWAP_HAS_SSE2 */
+# ifdef BYTESWAP_HAS_MMX
+	if (RP_CPU_HasMMX()) {
+		__byte_swap_16_array_mmx(ptr, n);
+	} else
+# endif /* BYTESWAP_HAS_MMX */
 	// TODO: MMX-optimized version?
 	{
 		__byte_swap_16_array_c(ptr, n);

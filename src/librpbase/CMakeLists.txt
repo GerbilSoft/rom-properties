@@ -258,6 +258,13 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
 	SET(librpbase_CPU_H cpuflags_x86.h)
 
+	# MSVC does not support MMX intrinsics in 64-bit builds.
+	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
+	# TODO: Disable MMX on all 64-bit builds?
+	IF(NOT MSVC OR NOT CMAKE_CL_64)
+		SET(librpbase_MMX_SRCS byteswap_mmx.c)
+	ENDIF(NOT MSVC OR NOT CMAKE_CL_64)
+
 	SET(librpbase_SSE2_SRCS
 		byteswap_sse2.c
 		img/ImageDecoder_Linear_sse2.cpp
@@ -283,28 +290,33 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSE2_FLAG "/arch:SSE2")
+		SET(SSSE3_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
 		# TODO: Other compilers?
+		SET(MMX_FLAG "-mmmx")
 		SET(SSE2_FLAG "-msse2")
+		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
+
+	IF(MMX_FLAG)
+		FOREACH(mmx_file ${librpbase_MMX_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${mmx_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
+		ENDFOREACH()
+	ENDIF(MMX_FLAG)
+
 	IF(SSE2_FLAG)
 		FOREACH(sse2_file ${librpbase_SSE2_SRCS})
 			SET_SOURCE_FILES_PROPERTIES(${sse2_file}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
-		ENDFOREACH(sse2_file ${librpbase_SSE2_SRCS})
+		ENDFOREACH()
 	ENDIF(SSE2_FLAG)
 
-	IF(MSVC AND NOT CMAKE_CL_64)
-		SET(SSSE3_FLAG "/arch:SSE2")
-	ELSEIF(NOT MSVC)
-		# TODO: Other compilers?
-		SET(SSSE3_FLAG "-mssse3")
-	ENDIF()
 	IF(SSSE3_FLAG)
 		FOREACH(ssse3_file ${librpbase_SSSE3_SRCS})
 			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH(ssse3_file ${librpbase_SSSE3_SRCS})
+		ENDFOREACH()
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
@@ -336,6 +348,7 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
 	${librpbase_IFUNC_SRCS}
+	${librpbase_MMX_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
