@@ -71,6 +71,7 @@ class ByteswapTest : public ::testing::Test
 	public:
 		// Temporary aligned memory buffer.
 		// Automatically freed in teardown().
+		static const unsigned int ALIGN_BUF_SIZE = TEST_ARRAY_SIZE * 16;
 		uint8_t *align_buf;
 };
 
@@ -83,9 +84,17 @@ class ByteswapTest : public ::testing::Test
  */
 void ByteswapTest::SetUp(void)
 {
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, TEST_ARRAY_SIZE));
+	static_assert(ALIGN_BUF_SIZE >= TEST_ARRAY_SIZE, "ALIGN_BUF_SIZE is too small.");
+	static_assert(ALIGN_BUF_SIZE % TEST_ARRAY_SIZE == 0, "ALIGN_BUF_SIZE is not a multiple of TEST_ARRAY_SIZE.");
+
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, ALIGN_BUF_SIZE));
 	ASSERT_TRUE(align_buf != nullptr);
-	memcpy(align_buf, bswap_orig, TEST_ARRAY_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		memcpy(ptr, bswap_orig, TEST_ARRAY_SIZE);
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -115,8 +124,13 @@ TEST_F(ByteswapTest, macroTest)
  */
 TEST_F(ByteswapTest, __byte_swap_16_array_c_test)
 {
-	__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_16b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -125,7 +139,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_c_test)
 TEST_F(ByteswapTest, __byte_swap_16_array_c_benchmark)
 {
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 
@@ -134,8 +148,13 @@ TEST_F(ByteswapTest, __byte_swap_16_array_c_benchmark)
  */
 TEST_F(ByteswapTest, __byte_swap_32_array_c_test)
 {
-	__byte_swap_32_array_c(reinterpret_cast<uint32_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_32b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_32_array_c(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -144,7 +163,7 @@ TEST_F(ByteswapTest, __byte_swap_32_array_c_test)
 TEST_F(ByteswapTest, __byte_swap_32_array_c_benchmark)
 {
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array_c(reinterpret_cast<uint32_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_32_array_c(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 
@@ -159,8 +178,13 @@ TEST_F(ByteswapTest, __byte_swap_16_array_mmx_test)
 		return;
 	}
 
-	__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_16b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -174,7 +198,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_mmx_benchmark)
 	}
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 #endif /* BYTESWAP_HAS_MMX */
@@ -190,8 +214,13 @@ TEST_F(ByteswapTest, __byte_swap_16_array_sse2_test)
 		return;
 	}
 
-	__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_16b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -205,7 +234,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_sse2_benchmark)
 	}
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 #endif /* BYTESWAP_HAS_SSE2 */
@@ -221,8 +250,13 @@ TEST_F(ByteswapTest, __byte_swap_16_array_ssse3_test)
 		return;
 	}
 
-	__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_16b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -236,7 +270,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_ssse3_benchmark)
 	}
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 
@@ -250,8 +284,13 @@ TEST_F(ByteswapTest, __byte_swap_32_array_ssse3_test)
 		return;
 	}
 
-	__byte_swap_32_array_ssse3(reinterpret_cast<uint32_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_32b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_32_array_ssse3(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -265,7 +304,7 @@ TEST_F(ByteswapTest, __byte_swap_32_array_ssse3_benchmark)
 	}
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array_ssse3(reinterpret_cast<uint32_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_32_array_ssse3(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 #endif /* BYTESWAP_HAS_SSSE3 */
@@ -277,8 +316,13 @@ TEST_F(ByteswapTest, __byte_swap_32_array_ssse3_benchmark)
  */
 TEST_F(ByteswapTest, __byte_swap_16_array_dispatch_test)
 {
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_16b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_16_array(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -287,7 +331,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_dispatch_test)
 TEST_F(ByteswapTest, __byte_swap_16_array_dispatch_test_benchmark)
 {
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array(reinterpret_cast<uint16_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_16_array(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 
@@ -296,8 +340,13 @@ TEST_F(ByteswapTest, __byte_swap_16_array_dispatch_test_benchmark)
  */
 TEST_F(ByteswapTest, __byte_swap_32_array_dispatch_test)
 {
-	__byte_swap_32_array(reinterpret_cast<uint32_t*>(align_buf), TEST_ARRAY_SIZE);
-	EXPECT_EQ(0, memcmp(bswap_32b, align_buf, TEST_ARRAY_SIZE));
+	__byte_swap_32_array(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
+
+	uint8_t *ptr = align_buf;
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
+		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
+		ptr += TEST_ARRAY_SIZE;
+	}
 }
 
 /**
@@ -306,7 +355,7 @@ TEST_F(ByteswapTest, __byte_swap_32_array_dispatch_test)
 TEST_F(ByteswapTest, __byte_swap_32_array_dispatch_test_benchmark)
 {
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array(reinterpret_cast<uint32_t*>(align_buf), TEST_ARRAY_SIZE);
+		__byte_swap_32_array(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
 	}
 }
 #endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 */
