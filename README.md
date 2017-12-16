@@ -8,21 +8,15 @@ video game ROM and disc images.
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/5lk15ct43jtmhejs/branch/master?svg=true)](https://ci.appveyor.com/project/GerbilSoft/rom-properties/branch/master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)
 
-## v1.2 - The Dreamcast Release
+## v1.3 - The Internationalization Release
 
-This release adds, among other things, previewing for Dreamcast disc images. ISO (2048-byte sector) and BIN (2352-byte sector) raw tracks are supported, as well as GDI cue sheets.
+This release adds support for internationalization. Now you can have the ROM Properties fields displayed in your own native language.
 
-![Dreamcast disc images on KDE5](doc/img/rp.kde5.Dreamcast.GDI.png)
+Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-Along with this, general support for Sega PVR and GVR textures has been added, as well as DirectDraw Surfaces. Note that BC6 and BC7 compression isn't supported yet.
+This release also adds support for several new texture file formats, including Khornos KTX and Valve VTF. It also adds support for ETCn-compressed textures.
 
-![Sega GVR files on KDE5](doc/img/rp.kde5.SegaPVR.png)
-
-VMU save files have been supported since v0.9-beta2.
-
-![Dreamcast save files on KDE5](doc/img/rp.kde5.DreamcastSave.png)
-
-See [`CHANGES.md`](CHANGES.md) for a full list of changes in v1.2.
+See [`CHANGES.md`](CHANGES.md) for a full list of changes in v1.3.
 
 ## Feedback
 
@@ -78,33 +72,53 @@ so you may want to place the DLLs in a common location.
 To uninstall the plugin, run install.exe again, then click the "Uninstall"
 button.
 
-## Current ROM Feature Support Level
+## Current File Support Level
+
+### Game Consoles
 
 |             System            | Properties Tab | Internal Images | External Scans |
 |:-----------------------------:|:--------------:|:---------------:|:--------------:|
-| Sega Mega Drive               |       Yes      |       N/A       |       No       |
-| Sega Dreamcast Saves          |       Yes      |   Icon, Banner  |       No       |
-| Nintendo DS(i)                |       Yes      |       Icon      |  Covers, Box   |
+| Nintendo Entertainment System |       Yes      |       N/A       |       No       |
+| Nintendo 64                   |       Yes      |       N/A       |       No       |
 | Nintendo GameCube             |       Yes      |      Banner     |      Disc      |
 | Nintendo GameCube Saves       |       Yes      |       Icon      |       N/A      |
 | Nintendo Wii                  |       Yes      |        No       |  Disc, Covers  |
-| Nintendo Game Boy (Color)     |       Yes      |       N/A       |       No       |
-| Nintendo Game Boy Advance     |       Yes      |       N/A       |       No       |
-| Nintendo 64                   |       Yes      |       N/A       |       No       |
-| Nintendo Virtual Boy          |       Yes      |       N/A       |       No       |
-| Sony PlayStation Saves        |       Yes      |       Icon      |       N/A      |
-| Nintendo amiibo               |       Yes      |        No       |      Media     |
-| Nintendo Entertainment System |       Yes      |       N/A       |       No       |
-| Windows/DOS Executables       |       Yes      |        No       |       N/A      |
 | Nintendo Wii U                |       Yes      |        No       |  Disc, Covers  |
-| Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
 | Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       No       |
+| Sega Mega Drive               |       Yes      |       N/A       |       No       |
+| Sega Dreamcast                |       Yes      |      Media      |       No       |
+| Sega Dreamcast Saves          |       Yes      |   Icon, Banner  |       No       |
+| Sega Saturn                   |       Yes      |       N/A       |       No       |
+| Sony PlayStation Saves        |       Yes      |       Icon      |       N/A      |
+
+### Handhelds
+
+|             System            | Properties Tab | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:---------------:|:--------------:|
+| Atari Lynx                    |       Yes      |       N/A       |       No       |
+| Nintendo Game Boy (Color)     |       Yes      |       N/A       |       No       |
+| Nintendo Virtual Boy          |       Yes      |       N/A       |       No       |
+| Nintendo Game Boy Advance     |       Yes      |       N/A       |       No       |
+| Nintendo DS(i)                |       Yes      |       Icon      |  Covers, Box   |
+| Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
+
+### Texture Formats
+
+|             System            | Properties Tab | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:---------------:|:--------------:|
 | Sega PVR Textures             |       Yes      |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |      Image      |       N/A      |
+| Khronos KTX Textures          |       Yes      |      Image      |       N/A      |
+| Valve VTF Textures            |       Yes      |      Image      |       N/A      |
+| Valve VTF3 (PS3) Textures     |       Yes      |      Image      |       N/A      |
+
+### Other
+
+|             System            | Properties Tab | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:---------------:|:--------------:|
+| Nintendo amiibo               |       Yes      |        No       |      Media     |
 | Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
-| Sega Dreamcast                |       Yes      |      Media      |       No       |
-| Sega Saturn                   |       Yes      |       N/A       |       No       |
-| Atari Lynx                    |       Yes      |       N/A       |       No       |
+| Windows/DOS Executables       |       Yes      |        No       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -128,48 +142,12 @@ thumbnails on each system. The functionality is available on Linux as well, but
 the UI hasn't been ported over yet. See `doc/rom-properties.conf.example` for
 an example configuration file, which can be placed in `~/.config/rom-properties`.
 
-## File Types Supported
-
-* Sega Mega Drive: Plain binary (\*.gen, \*.md, \*.32x, \*.sgd, \*.bin), Super Magic Drive (\*.smd)
-* Sega Dreamcast: Save files (\*.vmi, \*.vms, \*.dci)
-* Nintendo DS(i): Plain binary (\*.nds, \*.dsi, \*.srl)
-* Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [including DiscEx-shrunken images],
-  CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc), save files (\*.gci, \*.gcs, \*.sav)
-* Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs),
-  CISO disc image (\*.ciso), WIA disc image (\*.wia)
-* Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
-* Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb, \*.srl)
-* Nintendo 64: Various byteswap formats (\*.z64, \*.n64, \*.v64)
-* Nintendo Virtual Boy: Plain binary (\*.vb)
-* Sony PlayStation: Save files (\*.psv, \*.mcb, \*.mcx, \*.pda, \*.psx, \*.mcs, \*.ps1)
-* Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
-* Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds, \*.qd),
-  3DS Virtual Console dumps (\*.tds)
-* Windows/DOS: Executables (\*.exe, \*.dll, others)
-* Nintendo Wii U: 1:1 disc image (\*.wud)
-* Nintendo 3DS: Icon files (\*.smdh), homebrew (\*.3dsx), cartridge images
-  (\*.3ds, \*.cci), importable archives (\*.cia), eMMC dumps (\*.bin),
-  title contents (\*.ncch, \*.app), and firmware binaries (\*.firm, \*.bin)
-  * Encryption keys are needed for encrypted cartridge images, importable
-    archives, and title contents.
-* Sega 8-bit: Sega Master System and Game Gear ROM images (\*.sms, \*.gg)
-* Sega PVR Textures: Dreamcast PVR (\*.pvr), GameCube GVR (\*.gvr)
-* Microsoft DirectDraw Surface: DDS files (\*.dds)
-  * Currently supports uncompressed RGB, DXTn, BC4, and BC5.
-* Nintendo Badge Arcade: Badge files (\*.prb), badge set files (\*.cab)
-* Sega Dreamcast: Raw disc image files (\*.bin, \*.iso), GD-ROM cuesheets
-  (\*.gdi)
-* Sega Saturn: Raw disc image files (\*.bin, \*.iso)
-* Atari Lynx: Headered binary (\*.lnx)
-
 ## External Media Downloads
 
 Certain parsers support the use of external media scans through an online
-database, e.g. GameTDB.com. The current release of the ROM Properties Page
-shell extension will always attempt to download images from GameTDB.com if
-thumbnail preview is enabled in the file browser and a supported file is
-present in the current directory. An option to disable automatic downloads
-will be added in a future version.
+database, e.g. GameTDB.com. This is enabled by default, but you can customize
+which scans are downloaded for which systems by running the configuration
+program, `rp-config.exe`.
 
 Downloaded images are cached to the following directory:
 * Linux: `~/.cache/rom-properties/`
@@ -215,6 +193,12 @@ In this example, both keys are AES-128, so the hexadecimal strings should be
 NOTE: If a key is incorrect, any properties dialog that uses the key to
 decrypt data will show an error message instead of the data in question.
 
+## Unsupported File?
+
+If you have a file that you believe should be supported by ROM Propeties, or
+would like to see support added for a new type, file an issue on GitHub:
+https://github.com/GerbilSoft/rom-properties/issues
+
 ## Credits
 
 ### Developers
@@ -226,18 +210,15 @@ decrypt data will show an error message instead of the data in question.
 ### Websites
 
 * [GBATEK](http://problemkaputt.de/gbatek.htm): Game Boy Advance, Nintendo DS,
-  and Nintendo DSi technical information. Used for ROM format information for
-  those systems.
+  and Nintendo DSi technical information.
 * [WiiBrew](http://wiibrew.org/wiki/Main_Page): Wii homebrew and reverse
   engineering. Used for Wii and GameCube disc format information.
 * [GameTDB](http://www.gametdb.com/): Database of games for various game
   consoles. Used for automatic downloading of disc scans for Wii and GameCube.
 * [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
-  Super Game Boy technical information. Used for ROM format information for
-  those systems.
+  Super Game Boy technical information.
 * [Virtual Boy Programmers Manual](http://www.goliathindustries.com/vb/download/vbprog.pdf):
-  Virtual Boy technical information. Used for ROM format information for that
-  system.
+  Virtual Boy technical information.
 * [Sega Retro](http://www.segaretro.org/Main_Page): Sega Mega Drive technical
   information, plus information for other Sega systems that will be supported
   in a future release.
@@ -250,7 +231,6 @@ decrypt data will show an error message instead of the data in question.
 * [3dbrew](https://www.3dbrew.org): Nintendo 3DS homebrew and reverse
   engineering. Used for Nintendo 3DS file format information.
 * [SMS Power](http://www.smspower.org): Sega 8-bit technical information.
-  Used for ROM format information for Sega Master System and Game Gear.
 * [Puyo Tools](https://github.com/nickworonekin/puyotools): Information on
   Sega's PVR, GVR, and related texture formats.
 * [Badge Arcade Tool](https://github.com/CaitSith2/BadgeArcadeTool): Information
@@ -259,3 +239,7 @@ decrypt data will show an error message instead of the data in question.
   Information on Nintendo Badge Arcade files.
 * [HandyBug Documentation](http://handy.cvs.sourceforge.net/viewvc/handy/win32src/public/handybug/dvreadme.txt):
   Information on Atari Lynx cartridge format.
+* [Khronos KTX File Format Specification](https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/):
+  Information on the Khornos KTX texture file format.
+* [Valve Texture Format](https://developer.valvesoftware.com/wiki/Valve_Texture_Format):
+  Information on the Valve VTF texture file format.
