@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase/tests)                  *
+ * ROM Properties Page shell extension. (libromdata/tests)                 *
  * SuperMagicDriveTest_data.hpp: Data for SuperMagicDriveTest.             *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
