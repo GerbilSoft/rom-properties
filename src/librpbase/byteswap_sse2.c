@@ -51,15 +51,20 @@ void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n)
 		*ptr = __swab16(*ptr);
 	}
 
-	// Process 8 WORDs per iteration using SSE2.
-	for (; n >= 16; n -= 16, ptr += 8) {
+	// Process 16 WORDs per iteration using SSE2.
+	for (; n >= 32; n -= 32, ptr += 16) {
 		__m128i *xmm_ptr = (__m128i*)ptr;
 
-		__m128i xmm0 = _mm_load_si128(xmm_ptr);
-		__m128i xmm1 = xmm0;
+		__m128i xmm0 = _mm_load_si128(&xmm_ptr[0]);
+		__m128i xmm1 = _mm_load_si128(&xmm_ptr[1]);
+		__m128i xmm2 = xmm0;
+		__m128i xmm3 = xmm1;
 		xmm0 = _mm_slli_epi16(xmm0, 8);
-		xmm1 = _mm_srli_epi16(xmm1, 8);
-		_mm_store_si128(xmm_ptr, _mm_or_si128(xmm0, xmm1));
+		xmm1 = _mm_slli_epi16(xmm1, 8);
+		xmm2 = _mm_srli_epi16(xmm2, 8);
+		xmm3 = _mm_srli_epi16(xmm3, 8);
+		_mm_store_si128(&xmm_ptr[0], _mm_or_si128(xmm0, xmm2));
+		_mm_store_si128(&xmm_ptr[1], _mm_or_si128(xmm1, xmm3));
 	}
 
 	// Process the remaining data, one WORD at a time.
