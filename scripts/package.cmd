@@ -74,23 +74,23 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio 14.0\VC\bin\cl.exe" (
 	SET "CMAKE_GENERATOR=14 2015"
 	SET CMAKE_TOOLSET=v140_xp
 )
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503\bin\HostX86\x86\cl.exe" (
-	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.11.25503"
-	SET MSVC_VERSION=14.11
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827"
+	SET MSVC_VERSION=14.12
 	SET MSVC_YEAR=2017
 	SET "CMAKE_GENERATOR=15 2017"
 	SET CMAKE_TOOLSET=v141_xp
 )
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.11.25503\bin\HostX86\x86\cl.exe" (
-	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.11.25503"
-	SET MSVC_VERSION=14.11
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.12.25827\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.12.25827"
+	SET MSVC_VERSION=14.12
 	SET MSVC_YEAR=2017
 	SET "CMAKE_GENERATOR=15 2017"
 	SET CMAKE_TOOLSET=v141_xp
 )
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\HostX86\x86\cl.exe" (
-	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503"
-	SET MSVC_VERSION=14.11
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.12.25827\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.12.25827"
+	SET MSVC_VERSION=14.12
 	SET MSVC_YEAR=2017
 	SET "CMAKE_GENERATOR=15 2017"
 	SET CMAKE_TOOLSET=v141_xp
