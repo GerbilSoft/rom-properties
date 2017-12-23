@@ -157,8 +157,10 @@ typedef struct PACKED _SNES_RomHeader {
 			char title[16];			// [0x7FC0] Shift-JIS
 			uint32_t block_alloc;		// [0x7FD0] Block allocation flags.
 			uint16_t limited_starts;	// [0x7FD4] Limited starts
-			uint8_t month;			// [0x7FD6] Month
-			uint8_t day;			// [0x7FD7] Day
+			struct {
+				uint8_t month;		// [0x7FD6] Month
+				uint8_t day;		// [0x7FD7] Day
+			} date;
 			uint8_t rom_mapping;		// [0x7FD8] LoROM, HiROM
 			uint8_t file_type;		// [0x7FD9] File/Execution type
 			uint8_t old_publisher_code;	// [0x7FDA] 0x33 if valid; 0x00 if deleted.

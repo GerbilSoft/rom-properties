@@ -41,6 +41,7 @@ using namespace LibRpBase;
 #include <cctype>
 #include <cerrno>
 #include <cstring>
+#include <ctime>
 
 // C++ includes.
 #include <string>
@@ -838,20 +839,70 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
-	if (d->romType == SNESPrivate::ROM_SNES) {
-		const char *const region = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
-			? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->snes.destination_code])
-			: nullptr);
-		d->fields->addField_string(C_("SNES", "Region"),
-			region ? region : C_("SNES", "Unknown"));
 
-		// Revision
-		// TODO: BS-X version.
-		d->fields->addField_string_numeric(C_("SNES", "Revision"),
-			romHeader->snes.version, RomFields::FB_DEC, 2);
+	switch (d->romType) {
+		case SNESPrivate::ROM_SNES: {
+			// Region
+			const char *const region = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
+				? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->snes.destination_code])
+				: nullptr);
+			d->fields->addField_string(C_("SNES", "Region"),
+				region ? region : C_("SNES", "Unknown"));
+
+			// Revision
+			d->fields->addField_string_numeric(C_("SNES", "Revision"),
+				romHeader->snes.version, RomFields::FB_DEC, 2);
+
+			break;
+		}
+
+		case SNESPrivate::ROM_BSX: {
+			// Date.
+			// Verify that the date field is valid.
+			// NOTE: Not verifying the low bits. (should be 0)
+			time_t unixtime = -1;
+			const uint8_t month = romHeader->bsx.date.month >> 4;
+			const uint8_t day = romHeader->bsx.date.day >> 3;
+			if (month > 0 && month <= 12 && day > 0 && day <= 31) {
+				// Date field is valid.
+				// Convert to Unix time.
+				// NOTE: struct tm has some oddities:
+				// - tm_year: year - 1900
+				// - tm_mon: 0 == January
+				struct tm bsxtime;
+				bsxtime.tm_year = 1980 - 1900;	// Use 1980 to make errors more obvious.
+				bsxtime.tm_mon = month - 1;
+				bsxtime.tm_mday = day;
+
+				bsxtime.tm_hour = 0;
+				bsxtime.tm_min = 0;
+				bsxtime.tm_sec = 0;
+
+				// tm_wday and tm_yday are output variables.
+				bsxtime.tm_wday = 0;
+				bsxtime.tm_yday = 0;
+				bsxtime.tm_isdst = 0;
+
+				// Convert to Unix time.
+				// If this fails, unixtime will be equal to -1.
+				unixtime = timegm(&bsxtime);
+			}
+
+			d->fields->addField_dateTime(C_("SNES", "Date"), unixtime,
+				RomFields::RFT_DATETIME_HAS_DATE |	// Date only.
+				RomFields::RFT_DATETIME_IS_UTC   |	// No timezone.
+				RomFields::RFT_DATETIME_NO_YEAR		// No year.
+			);
+			break;
+		}
+
+		default:
+			// Should not get here...
+			assert(!"Invalid ROM type.");
+			return 0;
 	}
 
-	// TODO: BS-X fields, e.g. date.
+
 	// TODO: Other fields.
 
 	// Finished reading the field data.

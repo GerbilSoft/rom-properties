@@ -698,23 +698,39 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 	dateTime.setMSecsSinceEpoch(field->data.date_time * 1000);
 
 	QString str;
-	switch (field->desc.flags &
-		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
-	{
+	switch (field->desc.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
 		case RomFields::RFT_DATETIME_HAS_DATE:
 			// Date only.
 			str = dateTime.date().toString(Qt::DefaultLocaleShortDate);
 			break;
 
 		case RomFields::RFT_DATETIME_HAS_TIME:
+		case RomFields::RFT_DATETIME_HAS_TIME |
+		     RomFields::RFT_DATETIME_NO_YEAR:
 			// Time only.
 			str = dateTime.time().toString(Qt::DefaultLocaleShortDate);
 			break;
 
 		case RomFields::RFT_DATETIME_HAS_DATE |
-			RomFields::RFT_DATETIME_HAS_TIME:
+		     RomFields::RFT_DATETIME_HAS_TIME:
 			// Date and time.
 			str = dateTime.toString(Qt::DefaultLocaleShortDate);
+			break;
+
+		case RomFields::RFT_DATETIME_HAS_DATE |
+		     RomFields::RFT_DATETIME_NO_YEAR:
+			// Date only. (No year)
+			// TODO: Localize this.
+			str = dateTime.date().toString(QLatin1String("MMM d"));
+			break;
+
+		case RomFields::RFT_DATETIME_HAS_DATE |
+		     RomFields::RFT_DATETIME_HAS_TIME |
+		     RomFields::RFT_DATETIME_NO_YEAR:
+			// Date and time. (No year)
+			// TODO: Localize this.
+			str = dateTime.date().toString(QLatin1String("MMM d")) + QChar(L' ') +
+			      dateTime.time().toString();
 			break;
 
 		default:

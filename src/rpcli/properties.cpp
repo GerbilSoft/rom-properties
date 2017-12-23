@@ -333,15 +333,21 @@ public:
 			return os;
 		}
 
-		static const char *formats[4] = {
-			"Invalid DateTime",
-			"%x", // Date
-			"%X", // Time
-			"%x %X", // Date Time
+		static const char *const formats[8] = {
+			"Invalid DateTime",	// No date or time.
+			"%x",			// Date
+			"%X",			// Time
+			"%x %X",		// Date Time
+
+			// TODO: Better localization here.
+			"Invalid DateTime",	// No date or time.
+			"%b %d",		// Date (no year)
+			"%X",			// Time
+			"%b %d %X",		// Date Time (no year)
 		};
 
 		char str[128];
-		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_MASK], &timestamp);
+		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK], &timestamp);
 		os << str;
 		return os;
 	}

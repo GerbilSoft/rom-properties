@@ -88,13 +88,17 @@ class RomFields
 			// Show the time value.
 			RFT_DATETIME_HAS_TIME = (1 << 1),
 
+			// Date does not have a valid year value.
+			RFT_DATETIME_NO_YEAR = (1 << 2),
+
 			// Mask for date/time display values.
 			RFT_DATETIME_HAS_DATETIME_MASK = RFT_DATETIME_HAS_DATE | RFT_DATETIME_HAS_TIME,
+			RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK = RFT_DATETIME_HAS_DATE | RFT_DATETIME_HAS_TIME | RFT_DATETIME_NO_YEAR,
 
 			// Show the timestamp as UTC instead of the local timezone.
 			// This is useful for timestamps that aren't actually
 			// adjusted for the local timezone.
-			RFT_DATETIME_IS_UTC = (1 << 2),
+			RFT_DATETIME_IS_UTC = (1 << 3),
 		};
 
 		// Age Ratings indexes.
