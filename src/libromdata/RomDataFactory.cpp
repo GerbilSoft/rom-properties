@@ -81,6 +81,7 @@ using std::vector;
 
 // RomData subclasses: Other
 #include "Other/Amiibo.hpp"
+#include "Other/ELF.hpp"
 #include "Other/EXE.hpp"
 #include "Other/NintendoBadge.hpp"
 
@@ -181,6 +182,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Other
 	GetRomDataFns(Amiibo, true),
+	GetRomDataFns(ELF, false),
 	GetRomDataFns(NintendoBadge, true),
 
 	// The following formats have 16-bit magic numbers,
