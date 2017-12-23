@@ -120,7 +120,8 @@ typedef struct PACKED _SNES_RomHeader {
 			struct {
 				char new_publisher_code[2];	// [0x7FB0]
 				char id4[4];			// [0x7FB2]
-				uint8_t reserved[7];		// [0x7FB6] Always 0x00.
+				uint8_t reserved[6];		// [0x7FB6] Always 0x00.
+				uint8_t exp_flash_size;		// [0x7FBC] Expansion FLASH size.
 				uint8_t exp_ram_size;		// [0x7FBD] Expansion RAM size.
 				uint8_t special_version;	// [0x7FBE]
 				uint8_t cart_type;		// [0x7FBF]
