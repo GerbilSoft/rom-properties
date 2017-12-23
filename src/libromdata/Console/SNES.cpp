@@ -32,6 +32,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
@@ -60,14 +61,31 @@ class SNESPrivate : public RomDataPrivate
 
 	public:
 		/**
-		 * Is the specified ROM header valid?
-		 * @param romHeader SNES ROM header to check.
+		 * Is the specified SNES/SFC ROM header valid?
+		 * @param romHeader SNES/SFC ROM header to check.
 		 * @param isHiROM True if the header was read from a HiROM address; false if not.
-		 * @return True if the ROM header is valid; false if not.
+		 * @return True if the SNES/SFC ROM header is valid; false if not.
 		 */
-		static bool isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
+		static bool isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
+
+		/**
+		 * Is the specified BS-X ROM header valid?
+		 * @param romHeader BS-X ROM header to check.
+		 * @param isHiROM True if the header was read from a HiROM address; false if not.
+		 * @return True if the BS-X ROM header is valid; false if not.
+		 */
+		static bool isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
 
 	public:
+		enum SNES_RomType {
+			ROM_UNKNOWN = -1,	// Unknown ROM type.
+			ROM_SNES = 0,		// SNES/SFC ROM image.
+			ROM_BSX = 1,		// BS-X ROM image.
+		};
+
+		// ROM type.
+		int romType;
+
 		// ROM header.
 		// NOTE: Must be byteswapped on access.
 		SNES_RomHeader romHeader;
@@ -78,6 +96,7 @@ class SNESPrivate : public RomDataPrivate
 
 SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
 	: super(q, file)
+	, romType(ROM_UNKNOWN)
 	, header_address(0)
 {
 	// Clear the ROM header struct.
@@ -85,23 +104,23 @@ SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
 }
 
 /**
- * Is the specified ROM header valid?
- * @param romHeader SNES ROM header to check.
+ * Is the specified SNES/SFC ROM header valid?
+ * @param romHeader SNES/SFC ROM header to check.
  * @param isHiROM True if the header was read from a HiROM address; false if not.
- * @return True if the ROM header is valid; false if not.
+ * @return True if the SNES/SFC ROM header is valid; false if not.
  */
-bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM)
+bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM)
 {
 	// Game title: Should be ASCII.
-	for (int i = 0; i < ARRAY_SIZE(romHeader->title); i++) {
-		if (romHeader->title[i] & 0x80) {
+	for (int i = 0; i < ARRAY_SIZE(romHeader->snes.title); i++) {
+		if (romHeader->snes.title[i] & 0x80) {
 			// Invalid character.
 			return false;
 		}
 	}
 
 	// Is the ROM mapping byte valid?
-	switch (romHeader->rom_mapping) {
+	switch (romHeader->snes.rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
 		case SNES_ROMMAPPING_LoROM_FastROM:
 		case SNES_ROMMAPPING_ExLoROM:
@@ -132,32 +151,32 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM
 
 	// Is the ROM type byte valid?
 	// TODO: Check if any other types exist.
-	if ( (romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_BATT_ENH ||
-	    ((romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x50 &&
-	     (romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
+	if ( (romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_BATT_ENH ||
+	    ((romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x50 &&
+	     (romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
 	{
 		// Not a valid ROM type.
 		return false;
 	}
 
 	// Check the extended header.
-	if (romHeader->old_publisher_code == 0x33) {
+	if (romHeader->snes.old_publisher_code == 0x33) {
 		// Extended header should be present.
 		// New publisher code and game ID must be alphanumeric.
-		if (!isalnum(romHeader->ext.new_publisher_code[0]) ||
-		    !isalnum(romHeader->ext.new_publisher_code[1]))
+		if (!isalnum(romHeader->snes.ext.new_publisher_code[0]) ||
+		    !isalnum(romHeader->snes.ext.new_publisher_code[1]))
 		{
 			// New publisher code is invalid.
 			return false;
 		}
 
 		// Game ID must contain alphanumeric characters or a space.
-		for (int i = 0; i < ARRAY_SIZE(romHeader->ext.id4); i++) {
+		for (int i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4); i++) {
 			// ID4 should be in the format "SMWJ" or "MW  ".
-			if (isalnum(romHeader->ext.id4[i])) {
+			if (isalnum(romHeader->snes.ext.id4[i])) {
 				// Alphanumeric character.
 				continue;
-			} else if (romHeader->ext.id4[i] == ' ' && i >= 2) {
+			} else if (romHeader->snes.ext.id4[i] == ' ' && i >= 2) {
 				// Some game IDs are two characters,
 				// and the remaining characters are spaces.
 				continue;
@@ -169,6 +188,74 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM
 	}
 
 	// ROM header appears to be valid.
+	return true;
+}
+
+/**
+ * Is the specified BS-X ROM header valid?
+ * @param romHeader BS-X ROM header to check.
+ * @param isHiROM True if the header was read from a HiROM address; false if not.
+ * @return True if the BS-X ROM header is valid; false if not.
+ */
+bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM)
+{
+	// TODO: Game title may be ASCII or Shift-JIS.
+	// For now, just make sure the first byte isn't 0.
+	if (romHeader->bsx.title[0] == 0) {
+		// Title is empty.
+		return false;
+	}
+
+	// Is the ROM mapping byte valid?
+	switch (romHeader->bsx.rom_mapping) {
+		case SNES_ROMMAPPING_LoROM:
+		case SNES_ROMMAPPING_LoROM_FastROM:
+			if (isHiROM) {
+				// LoROM mapping at a HiROM address.
+				// Not valid.
+				return false;
+			}
+			// Valid ROM mapping byte.
+			break;
+
+		case SNES_ROMMAPPING_HiROM:
+		case SNES_ROMMAPPING_HiROM_FastROM:
+			if (!isHiROM) {
+				// HiROM mapping at a LoROM address.
+				// Not valid.
+				return false;
+			}
+
+			// Valid ROM mapping byte.
+			break;
+
+		case SNES_ROMMAPPING_ExLoROM:
+		case SNES_ROMMAPPING_ExHiROM:
+		default:
+			// Not valid.
+			// (ExLoROM/ExHiROM is not valid for BS-X.)
+			return false;
+	}
+
+	// Old publisher code must be either 0x33 or 0x00.
+	// 0x00 indicates the file was deleted.
+	if (romHeader->bsx.old_publisher_code != 0x33 &&
+	    romHeader->bsx.old_publisher_code != 0x00)
+	{
+		// Invalid old publisher code.
+		return false;
+	}
+
+	// New publisher code must be alphanumeric.
+	if (!isalnum(romHeader->bsx.ext.new_publisher_code[0]) ||
+	    !isalnum(romHeader->bsx.ext.new_publisher_code[1]))
+	{
+		// New publisher code is invalid.
+		return false;
+	}
+
+	// ROM header appears to be valid.
+	// TODO: Check other BS-X fields.
 	return true;
 }
 
@@ -199,59 +286,76 @@ SNES::SNES(IRpFile *file)
 	}
 
 	// TODO: Only allow supported file extensions.
-
-	// SNES ROMs don't necessarily have a header at the start of the file.
-	// Therefore, we need to do a few reads and guessing.
-
-	// Check if a copier header is present.
-	SMD_Header smdHeader;
-	d->file->rewind();
-	size_t size = d->file->read(&smdHeader, sizeof(smdHeader));
-	if (size != sizeof(smdHeader))
-		return;
-
 	bool isCopierHeader = false;
-	if (smdHeader.id[0] == 0xAA && smdHeader.id[1] == 0xBB) {
-		// TODO: Check page count?
 
-		// Check that reserved fields are 0.
-		bool areFieldsZero = true;
-		for (int i = ARRAY_SIZE(smdHeader.reserved1)-1; i >= 0; i--) {
-			if (smdHeader.reserved1[i] != 0) {
-				areFieldsZero = false;
-				break;
-			}
+	// TODO: BS-X heuristics.
+	// For now, assuming that if the file extension starts with
+	// ".b", it's a BS-X ROM image.
+	const string filename = file->filename();
+	if (!filename.empty()) {
+		const char *ext = FileSystem::file_ext(filename);
+		if (ext[0] == '.' && tolower(ext[1]) == 'b') {
+			// BS-X ROM image.
+			d->romType = SNESPrivate::ROM_BSX;
 		}
-		if (!areFieldsZero) {
-			for (int i = ARRAY_SIZE(smdHeader.reserved2)-1; i >= 0; i--) {
-				if (smdHeader.reserved2[i] != 0) {
+	}
+
+	if (d->romType == SNESPrivate::ROM_UNKNOWN) {
+		// SNES ROMs don't necessarily have a header at the start of the file.
+		// Therefore, we need to do a few reads and guessing.
+
+		// Check if a copier header is present.
+		SMD_Header smdHeader;
+		d->file->rewind();
+		size_t size = d->file->read(&smdHeader, sizeof(smdHeader));
+		if (size != sizeof(smdHeader))
+			return;
+
+		if (smdHeader.id[0] == 0xAA && smdHeader.id[1] == 0xBB) {
+			// TODO: Check page count?
+
+			// Check that reserved fields are 0.
+			bool areFieldsZero = true;
+			for (int i = ARRAY_SIZE(smdHeader.reserved1)-1; i >= 0; i--) {
+				if (smdHeader.reserved1[i] != 0) {
 					areFieldsZero = false;
 					break;
 				}
 			}
+			if (!areFieldsZero) {
+				for (int i = ARRAY_SIZE(smdHeader.reserved2)-1; i >= 0; i--) {
+					if (smdHeader.reserved2[i] != 0) {
+						areFieldsZero = false;
+						break;
+					}
+				}
+			}
+
+			// If the fields are zero, this is a copier header.
+			isCopierHeader = areFieldsZero;
 		}
 
-		// If the fields are zero, this is a copier header.
-		isCopierHeader = areFieldsZero;
-	}
-
-	if (!isCopierHeader) {
-		// Check for "GAME DOCTOR SF ".
-		// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
-		static const char gdsf3[] = "GAME DOCTOR SF ";
-		if (!memcmp(&smdHeader, gdsf3, sizeof(gdsf3)-1)) {
-			// Game Doctor ROM header.
-			isCopierHeader = true;
-		} else {
-			// Check for "SUPERUFO".
-			static const char superufo[] = "SUPERUFO";
-			const uint8_t *u8ptr = reinterpret_cast<const uint8_t*>(&smdHeader);
-			if (!memcmp(&u8ptr[8], superufo, sizeof(superufo)-8)) {
-				// Super UFO ROM header.
+		if (!isCopierHeader) {
+			// Check for "GAME DOCTOR SF ".
+			// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
+			static const char gdsf3[] = "GAME DOCTOR SF ";
+			if (!memcmp(&smdHeader, gdsf3, sizeof(gdsf3)-1)) {
+				// Game Doctor ROM header.
 				isCopierHeader = true;
+			} else {
+				// Check for "SUPERUFO".
+				static const char superufo[] = "SUPERUFO";
+				const uint8_t *u8ptr = reinterpret_cast<const uint8_t*>(&smdHeader);
+				if (!memcmp(&u8ptr[8], superufo, sizeof(superufo)-8)) {
+					// Super UFO ROM header.
+					isCopierHeader = true;
+				}
 			}
 		}
 	}
+
+	// TODO: BS-X memory pack ROMs have the following at 0x7F00 or 0xFF00:
+	// {'M', 0, 'P', 0, 0, 0, 0x79}
 
 	// Header addresses to check.
 	// If a copier header is detected, use index 1,
@@ -269,21 +373,33 @@ SNES::SNES(IRpFile *file)
 		if (*pHeaderAddress == 0)
 			break;
 
-		size = d->file->seekAndRead(*pHeaderAddress, &d->romHeader, sizeof(d->romHeader));
+		size_t size = d->file->seekAndRead(*pHeaderAddress, &d->romHeader, sizeof(d->romHeader));
 		if (size != sizeof(d->romHeader)) {
 			// Seek and/or read error.
 			continue;
 		}
 
-		if (d->isRomHeaderValid(&d->romHeader, (i & 1))) {
-			// ROM header is valid.
-			d->header_address = *pHeaderAddress;
-			break;
+		if (d->romType == SNESPrivate::ROM_BSX) {
+			// Check for a valid BS-X ROM header.
+			if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
+				// ROM header is valid.
+				d->header_address = *pHeaderAddress;
+				break;
+			}
+		} else {
+			// Check for a valid SNES/SFC ROM header.
+			if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
+				// ROM header is valid.
+				d->header_address = *pHeaderAddress;
+				d->romType = SNESPrivate::ROM_SNES;
+				break;
+			}
 		}
 	}
 
 	if (d->header_address == 0) {
 		// No ROM header.
+		d->romType = SNESPrivate::ROM_UNKNOWN;
 		d->isValid = false;
 		return;
 	}
@@ -314,15 +430,23 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 		const char *const *exts = supportedFileExtensions_static();
 		if (!exts) {
 			// Should not happen...
-			return -1;
+			return SNESPrivate::ROM_UNKNOWN;
 		}
 		for (; *exts != nullptr; exts++) {
 			if (!strcasecmp(info->ext, *exts)) {
 				// File extension is supported.
-				return 0;
+				if (*exts[1] == 'b') {
+					// BS-X extension.
+					return SNESPrivate::ROM_BSX;
+				} else {
+					// SNES/SFC extension.
+					return SNESPrivate::ROM_SNES;
+				}
 			}
 		}
 	}
+
+	// TODO: BS-X heuristics.
 
 	if (info->header.addr == 0 && info->header.size >= 0x200) {
 		// Check for "GAME DOCTOR SF ".
@@ -371,6 +495,7 @@ const char *SNES::systemName(unsigned int type) const
 	// - Bits 2-3: Region.
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 
+	// Localized SNES/SFC system names.
 	static const char *const sysNames[16] = {
 		// Japan: Super Famicom
 		"Nintendo Super Famicom", "Super Famicom", "SFC", nullptr,
@@ -382,8 +507,26 @@ const char *SNES::systemName(unsigned int type) const
 		nullptr, nullptr, nullptr, nullptr
 	};
 
+	// BS-X system names.
+	static const char *const sysNames_BSX[4] = {
+		"Satellaview BS-X", "Satellaview", "BS-X", nullptr
+	};
+
+	switch (d->romType) {
+		case SNESPrivate::ROM_SNES:
+			// SNES/SFC ROM image. Handled later.
+			break;
+		case SNESPrivate::ROM_BSX:
+			// BS-X was only released in Japan, so no
+			// localization is necessary.
+			return sysNames_BSX[idx];
+		default:
+			// Unknown.
+			return nullptr;
+	}
+
 	bool foundRegion = false;
-	switch (d->romHeader.destination_code) {
+	switch (d->romHeader.snes.destination_code) {
 		case SNES_DEST_JAPAN:
 			idx |= (0 << 2);
 			foundRegion = true;
@@ -401,7 +544,7 @@ const char *SNES::systemName(unsigned int type) const
 			break;
 
 		default: 
-			if (d->romHeader.destination_code <= SNES_DEST_AUSTRALIA) {
+			if (d->romHeader.snes.destination_code <= SNES_DEST_AUSTRALIA) {
 				idx |= (2 << 2);
 				foundRegion = true;
 			}
@@ -444,6 +587,9 @@ const char *const *SNES::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".smc", ".swc", ".sfc",
 		".fig", ".ufo",
+
+		// BS-X
+		".bs", ".bsx",
 
 		nullptr
 	};
@@ -494,20 +640,20 @@ int SNES::loadFieldData(void)
 	// Title.
 	// TODO: Space elimination.
 	d->fields->addField_string(C_("SNES", "Title"),
-		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
+		latin1_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title)));
 
 	// Game ID.
 	// NOTE: Only valid if the old publisher code is 0x33.
-	if (romHeader->old_publisher_code == 0x33) {
-		string id6(romHeader->ext.id4, sizeof(romHeader->ext.id4));
-		if (romHeader->ext.id4[2] == ' ' && romHeader->ext.id4[3] == ' ') {
+	if (romHeader->snes.old_publisher_code == 0x33) {
+		string id6(romHeader->snes.ext.id4, sizeof(romHeader->snes.ext.id4));
+		if (romHeader->snes.ext.id4[2] == ' ' && romHeader->snes.ext.id4[3] == ' ') {
 			// Two-character ID.
 			// Don't append the publisher.
 			id6.resize(2);
 		} else {
 			// Four-character ID.
 			// Append the publisher.
-			id6.append(romHeader->ext.new_publisher_code, sizeof(romHeader->ext.new_publisher_code));
+			id6.append(romHeader->snes.ext.new_publisher_code, sizeof(romHeader->snes.ext.new_publisher_code));
 		}
 		d->fields->addField_string(C_("SNES", "Game ID"),
 			latin1_to_utf8(id6.data(), (int)id6.size()));
@@ -518,17 +664,17 @@ int SNES::loadFieldData(void)
 
 	// Publisher.
 	const char* publisher;
-	if (romHeader->old_publisher_code == 0x33) {
-		publisher = NintendoPublishers::lookup(romHeader->ext.new_publisher_code);
+	if (romHeader->snes.old_publisher_code == 0x33) {
+		publisher = NintendoPublishers::lookup(romHeader->snes.ext.new_publisher_code);
 	} else {
-		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
+		publisher = NintendoPublishers::lookup_old(romHeader->snes.old_publisher_code);
 	}
 	d->fields->addField_string(C_("SNES", "Publisher"),
 		publisher ? publisher : C_("SNES", "Unknown"));
 
 	// ROM mapping.
 	const char *rom_mapping;
-	switch (romHeader->rom_mapping) {
+	switch (romHeader->snes.rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
 			rom_mapping = C_("SNES|ROMMapping", "LoROM");
 			break;
@@ -556,7 +702,7 @@ int SNES::loadFieldData(void)
 	} else {
 		// Unknown ROM mapping.
 		d->fields->addField_string(C_("SNES", "ROM Mapping"),
-			rp_sprintf(C_("SNES", "Unknown (0x%02X)"), romHeader->rom_mapping));
+			rp_sprintf(C_("SNES", "Unknown (0x%02X)"), romHeader->snes.rom_mapping));
 	}
 
 	// Cartridge HW.
@@ -576,11 +722,11 @@ int SNES::loadFieldData(void)
 		"Unknown", "Unknown", "Other", "Custom Chip"
 	};
 
-	const char *const hw_base = hw_base_tbl[romHeader->rom_type & SNES_ROMTYPE_ROM_MASK];
+	const char *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
 	if (hw_base) {
-		if ((romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
+		if ((romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
 			// Enhancement chip.
-			const char *const hw_enh = hw_enh_tbl[(romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+			const char *const hw_enh = hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
 			string str(hw_base);
 			str.append(hw_enh);
 			d->fields->addField_string(C_("SNES", "Cartridge HW"), str);
@@ -616,15 +762,15 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
-	const char *const region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
-		? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->destination_code])
+	const char *const region = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
+		? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->snes.destination_code])
 		: nullptr);
 	d->fields->addField_string(C_("SNES", "Region"),
 		region ? region : C_("SNES", "Unknown"));
 
 	// Revision
 	d->fields->addField_string_numeric(C_("SNES", "Revision"),
-		romHeader->version, RomFields::FB_DEC, 2);
+		romHeader->snes.version, RomFields::FB_DEC, 2);
 
 	// TODO: Other fields.
 
