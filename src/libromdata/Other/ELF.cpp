@@ -56,6 +56,32 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(ELFPrivate)
 
 	public:
+		// ELF format.
+		enum Elf_Format {
+			ELF_FORMAT_UNKNOWN	= -1,
+			ELF_FORMAT_32LSB	= 0,
+			ELF_FORMAT_64LSB	= 1,
+			ELF_FORMAT_32MSB	= 2,
+			ELF_FORMAT_64MSB	= 3,
+
+			// Host/swap endian formats.
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			ELF_FORMAT_32HOST	= ELF_FORMAT_32LSB,
+			ELF_FORMAT_64HOST	= ELF_FORMAT_64LSB,
+			ELF_FORMAT_32SWAP	= ELF_FORMAT_32MSB,
+			ELF_FORMAT_64SWAP	= ELF_FORMAT_64MSB,
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			ELF_FORMAT_32HOST	= ELF_FORMAT_32MSB,
+			ELF_FORMAT_64HOST	= ELF_FORMAT_64MSB,
+			ELF_FORMAT_32SWAP	= ELF_FORMAT_32LSB,
+			ELF_FORMAT_64SWAP	= ELF_FORMAT_64LSB,
+#endif
+
+			ELF_FORMAT_MAX
+		};
+		int elfFormat;
+
 		// ELF header.
 		union {
 			Elf_PrimaryEhdr primary;
@@ -68,6 +94,7 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	: super(q, file)
+	, elfFormat(ELF_FORMAT_UNKNOWN)
 {
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
@@ -117,14 +144,65 @@ ELF::ELF(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->Elf_Header);
 	info.ext = nullptr;	// Not needed for ELF.
 	info.szFile = 0;	// Not needed for ELF.
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->elfFormat = isRomSupported_static(&info);
 
+	d->isValid = (d->elfFormat >= 0);
 	if (!d->isValid) {
 		// Not an ELF executable.
 		return;
 	}
 
-	// TODO: Swap endianness if needed.
+	// Swap endianness if needed.
+	switch (d->elfFormat) {
+		default:
+			// Unsupported...
+			d->isValid = false;
+			d->elfFormat = ELFPrivate::ELF_FORMAT_UNKNOWN;
+			return;
+
+		case ELFPrivate::ELF_FORMAT_32HOST:
+		case ELFPrivate::ELF_FORMAT_64HOST:
+			// Host-endian. Nothing to do.
+			break;
+
+		case ELFPrivate::ELF_FORMAT_32SWAP: {
+			// 32-bit, swapped endian.
+			Elf32_Ehdr *const elf32 = &d->Elf_Header.elf32;
+			elf32->e_type		= __swab16(elf32->e_type);
+			elf32->e_machine	= __swab16(elf32->e_machine);
+			elf32->e_version	= __swab32(elf32->e_version);
+			elf32->e_entry		= __swab32(elf32->e_entry);
+			elf32->e_phoff		= __swab32(elf32->e_phoff);
+			elf32->e_shoff		= __swab32(elf32->e_shoff);
+			elf32->e_flags		= __swab32(elf32->e_flags);
+			elf32->e_ehsize		= __swab16(elf32->e_ehsize);
+			elf32->e_phentsize	= __swab16(elf32->e_phentsize);
+			elf32->e_phnum		= __swab16(elf32->e_phnum);
+			elf32->e_shentsize	= __swab16(elf32->e_shentsize);
+			elf32->e_shnum		= __swab16(elf32->e_shnum);
+			elf32->e_shstrndx	= __swab16(elf32->e_shstrndx);
+			break;
+		}
+
+		case ELFPrivate::ELF_FORMAT_64SWAP: {
+			// 64-bit, swapped endian.
+			Elf64_Ehdr *const elf64 = &d->Elf_Header.elf64;
+			elf64->e_type		= __swab16(elf64->e_type);
+			elf64->e_machine	= __swab16(elf64->e_machine);
+			elf64->e_version	= __swab32(elf64->e_version);
+			elf64->e_entry		= __swab64(elf64->e_entry);
+			elf64->e_phoff		= __swab64(elf64->e_phoff);
+			elf64->e_shoff		= __swab64(elf64->e_shoff);
+			elf64->e_flags		= __swab32(elf64->e_flags);
+			elf64->e_ehsize		= __swab16(elf64->e_ehsize);
+			elf64->e_phentsize	= __swab16(elf64->e_phentsize);
+			elf64->e_phnum		= __swab16(elf64->e_phnum);
+			elf64->e_shentsize	= __swab16(elf64->e_shentsize);
+			elf64->e_shnum		= __swab16(elf64->e_shnum);
+			elf64->e_shstrndx	= __swab16(elf64->e_shstrndx);
+			break;
+		}
+	}
 
 	// Determine the file type.
 	switch (d->Elf_Header.primary.e_type) {
@@ -177,11 +255,40 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	if (!memcmp(pHdr->e_magic, ELF_MAGIC, sizeof(pHdr->e_magic))) {
 		// Verify the bitness and endianness fields.
-		if ((pHdr->e_bitness == 1 || pHdr->e_bitness == 2) &&
-		    (pHdr->e_endianness == 1 || pHdr->e_endianness == 2))
-		{
-			// Bitness and endianness are valid.
-			return 0;
+		switch (pHdr->e_endianness) {
+			case ELF_ENDIANNESS_LSB:
+				// Little-endian.
+				switch (pHdr->e_bitness) {
+					case ELF_BITNESS_32BIT:
+						// 32-bit LSB.
+						return ELFPrivate::ELF_FORMAT_32LSB;
+					case ELF_BITNESS_64BIT:
+						// 64-bit LSB.
+						return ELFPrivate::ELF_FORMAT_64LSB;
+					default:
+						// Unknown bitness.
+						break;
+				}
+				break;
+
+			case ELF_ENDIANNESS_MSB:
+				// Big-endian.
+				switch (pHdr->e_bitness) {
+					case ELF_BITNESS_32BIT:
+						// 32-bit MSB.
+						return ELFPrivate::ELF_FORMAT_32MSB;
+					case ELF_BITNESS_64BIT:
+						// 64-bit MSB.
+						return ELFPrivate::ELF_FORMAT_64MSB;
+					default:
+						// Unknown bitness.
+						break;
+				}
+				break;
+
+			default:
+				// Unknown endianness.
+				break;
 		}
 	}
 
@@ -303,18 +410,19 @@ int ELF::loadFieldData(void)
 	}
 
 	// Bitness/Endianness. (consolidated as "format")
-	// NOTE: We already check for valid bitness/endianness in isRomSupported(),
-	// so we'll use some fancy arithmetic to optimize this.
 	static const char *const elf_formats[] = {
 		"32-bit Little-Endian",
 		"64-bit Little-Endian",
 		"32-bit Big-Endian",
 		"64-bit Big-Endian",
 	};
-	const unsigned int fmt = (primary->e_bitness - 1) | ((primary->e_endianness - 1) << 1);
-	if (fmt < ARRAY_SIZE(elf_formats)) {
-		d->fields->addField_string(C_("ELF", "Format"), elf_formats[fmt]);
-	} else {
+	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
+	    d->elfFormat < ARRAY_SIZE(elf_formats))
+	{
+		d->fields->addField_string(C_("ELF", "Format"), elf_formats[d->elfFormat]);
+	}
+	else
+	{
 		// TODO: Show individual values.
 		// NOTE: This shouldn't happen...
 		d->fields->addField_string(C_("ELF", "Format"), C_("ELF", "Unknown"));
