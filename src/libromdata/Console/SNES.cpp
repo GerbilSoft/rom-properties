@@ -77,6 +77,13 @@ class SNESPrivate : public RomDataPrivate
 		 */
 		static bool isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
 
+		/**
+		 * Population count function.
+		 * @param n Value.
+		 * @return Population count.
+		 */
+		static inline unsigned int popcount(unsigned int n);
+
 	public:
 		enum SNES_RomType {
 			ROM_UNKNOWN = -1,	// Unknown ROM type.
@@ -264,6 +271,24 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// ROM header appears to be valid.
 	// TODO: Check other BS-X fields.
 	return true;
+}
+
+/**
+ * Population count function.
+ * @param n Value.
+ * @return Population count.
+ */
+inline unsigned int SNESPrivate::popcount(unsigned int n)
+{
+#if defined(__GNUC__)
+	return __builtin_popcount(n);
+#else
+	unsigned int ret = 0;
+	for (; n != 0; n >>= 1) {
+		ret += (n & 1);
+	}
+	return ret;
+#endif
 }
 
 /** SNES **/
@@ -642,7 +667,7 @@ int SNES::loadFieldData(void)
 
 	// ROM file header is read and byteswapped in the constructor.
 	const SNES_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(7); // Maximum of 7 fields.
+	d->fields->reserve(8); // Maximum of 8 fields.
 
 	// Cartridge HW.
 	// TODO: Make this translatable.
@@ -730,8 +755,6 @@ int SNES::loadFieldData(void)
 
 			// NOTE: Game ID isn't available.
 			gameID[0] = 0;
-
-			// TODO: BS-X fields.
 
 			// Publisher.
 			// NOTE: Old publisher code is always 0x33 or 0x00,
@@ -893,6 +916,48 @@ int SNES::loadFieldData(void)
 				RomFields::RFT_DATETIME_IS_UTC   |	// No timezone.
 				RomFields::RFT_DATETIME_NO_YEAR		// No year.
 			);
+
+			// Program type.
+			const char *program_type;
+			switch (le32_to_cpu(romHeader->bsx.ext.program_type)) {
+				case SNES_BSX_PRG_65c816:
+					program_type = "65c816";
+					break;
+				case SNES_BSX_PRG_SCRIPT:
+					program_type = C_("SNES", "BS-X Script");
+					break;
+				case SNES_BSX_PRG_SA_1:
+					program_type = C_("SNES", "SA-1");
+					break;
+				default:
+					program_type = nullptr;
+					break;
+			}
+			if (program_type) {
+				d->fields->addField_string(C_("SNES", "Program Type"), program_type);
+			} else {
+				d->fields->addField_string(C_("SNES", "Program Type"),
+					rp_sprintf("Unknown (0x%08X)", le32_to_cpu(romHeader->bsx.ext.program_type)));
+			}
+
+			// TODO: block_alloc
+
+			// Limited starts.
+			// Bit 15: 0 for unlimited; 1 for limited.
+			// If limited:
+			// - Bits 14-0: 1 for playthrough allowed, 0 for not.
+			// - Each bit counts as a playthrough, so up to 15
+			//   plays are possible. After bootup, the bits are
+			//   cleared in MSB to LSB order.
+			const uint16_t limited_starts = le16_to_cpu(romHeader->bsx.limited_starts);
+			if (limited_starts & 0x8000) {
+				// Limited.
+				unsigned int n = d->popcount(limited_starts & ~0x8000);
+				d->fields->addField_string_numeric(C_("SNES", "Limited Starts"), n);
+			} else {
+				// Unlimited.
+				d->fields->addField_string(C_("SNES", "Limited Starts"), C_("SNES", "Unlimited"));
+			}
 			break;
 		}
 

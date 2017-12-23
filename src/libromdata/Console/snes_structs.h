@@ -92,8 +92,8 @@ typedef enum {
 	SNES_ROMTYPE_ENH_DSP1		= 0x00,
 	SNES_ROMTYPE_ENH_SUPERFX	= 0x10,
 	SNES_ROMTYPE_ENH_OBC1		= 0x20,	// Metal Combat: Falcon's Revenge
-	SNES_ROMTYPE_ENH_SA1		= 0x30,
-	SNES_ROMTYPE_ENH_SDD1		= 0x40,	// Star Ocean, Street Fighter Alpha 2
+	SNES_ROMTYPE_ENH_SA_1		= 0x30,
+	SNES_ROMTYPE_ENH_S_DD1		= 0x40,	// Star Ocean, Street Fighter Alpha 2
 	SNES_ROMTYPE_ENH_OTHER		= 0xE0,
 	SNES_ROMTYPE_ENH_CUSTOM		= 0xF0,
 	SNES_ROMTYPE_ENH_MASK		= 0xF0,
@@ -229,7 +229,7 @@ typedef enum {
 typedef enum {
 	SNES_BSX_PRG_65c816	= 0x00000000,	// 65c816 program
 	SNES_BSX_PRG_SCRIPT	= 0x00000100,	// BS-X script
-	SNES_BSX_PRG_SA1	= 0x00000200,	// SA-1 program
+	SNES_BSX_PRG_SA_1	= 0x00000200,	// SA-1 program
 } SNES_BSX_Program_Type;
 
 #pragma pack()
