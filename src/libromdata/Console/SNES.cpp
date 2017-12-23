@@ -660,7 +660,8 @@ int SNES::loadFieldData(void)
 		"Unknown", "Unknown", "Other", "Custom Chip"
 	};
 
-	string title, gameID, cart_hw;
+	string title, cart_hw;
+	char gameID[7];
 	const char *publisher = nullptr;
 	uint8_t rom_mapping;
 
@@ -676,19 +677,21 @@ int SNES::loadFieldData(void)
 			// Game ID.
 			// NOTE: Only valid if the old publisher code is 0x33.
 			if (romHeader->snes.old_publisher_code == 0x33) {
-				gameID = string(romHeader->snes.ext.id4, sizeof(romHeader->snes.ext.id4));
+				memcpy(gameID, romHeader->snes.ext.id4, 4);
 				if (romHeader->snes.ext.id4[2] == ' ' && romHeader->snes.ext.id4[3] == ' ') {
 					// Two-character ID.
 					// Don't append the publisher.
-					gameID.resize(2);
+					gameID[2] = 0;
 				} else {
 					// Four-character ID.
 					// Append the publisher.
-					gameID.append(romHeader->snes.ext.new_publisher_code, sizeof(romHeader->snes.ext.new_publisher_code));
+					gameID[4] = romHeader->snes.ext.new_publisher_code[0];
+					gameID[5] = romHeader->snes.ext.new_publisher_code[1];
+					gameID[6] = 0;
 				}
 			} else {
 				// No game ID.
-				gameID = C_("SNES", "Unknown");
+				gameID[0] = 0;
 			}
 
 			// Publisher.
@@ -724,6 +727,9 @@ int SNES::loadFieldData(void)
 			// TODO: Space elimination?
 			title = cp1252_sjis_to_utf8(romHeader->bsx.title, sizeof(romHeader->bsx.title));
 
+			// NOTE: Game ID isn't available.
+			gameID[0] = 0;
+
 			// TODO: BS-X fields.
 
 			// Publisher.
@@ -749,8 +755,11 @@ int SNES::loadFieldData(void)
 	d->fields->addField_string(C_("SNES", "Title"), title);
 
 	// Game ID.
-	if (!gameID.empty()) {
+	if (gameID[0] != 0) {
 		d->fields->addField_string(C_("SNES", "Game ID"), gameID);
+	} else if (d->romType == SNESPrivate::ROM_SNES) {
+		// Unknown game ID.
+		d->fields->addField_string(C_("SNES", "Game ID"), C_("SNES", "Unknown"));
 	}
 
 	// Publisher.
