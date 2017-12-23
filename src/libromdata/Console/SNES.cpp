@@ -388,18 +388,28 @@ SNES::SNES(IRpFile *file)
 		}
 
 		if (d->romType == SNESPrivate::ROM_BSX) {
-			// Check for a valid BS-X ROM header.
+			// Check for a valid BS-X ROM header first.
 			if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
-				// ROM header is valid.
+				// BS-X ROM header is valid.
 				d->header_address = *pHeaderAddress;
+				break;
+			} else if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
+				// SNES/SFC ROM header is valid.
+				d->header_address = *pHeaderAddress;
+				d->romType = SNESPrivate::ROM_SNES;
 				break;
 			}
 		} else {
 			// Check for a valid SNES/SFC ROM header.
 			if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
-				// ROM header is valid.
+				// SNES/SFC ROM header is valid.
 				d->header_address = *pHeaderAddress;
 				d->romType = SNESPrivate::ROM_SNES;
+				break;
+			} else if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
+				// BS-X ROM header is valid.
+				d->header_address = *pHeaderAddress;
+				d->romType = SNESPrivate::ROM_BSX;
 				break;
 			}
 		}
