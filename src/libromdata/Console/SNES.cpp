@@ -643,83 +643,6 @@ int SNES::loadFieldData(void)
 	const SNES_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(7); // Maximum of 7 fields.
 
-	// Title.
-	// TODO: Space elimination.
-	d->fields->addField_string(C_("SNES", "Title"),
-		latin1_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title)));
-
-	// Game ID.
-	// NOTE: Only valid if the old publisher code is 0x33.
-	if (romHeader->snes.old_publisher_code == 0x33) {
-		string id6(romHeader->snes.ext.id4, sizeof(romHeader->snes.ext.id4));
-		if (romHeader->snes.ext.id4[2] == ' ' && romHeader->snes.ext.id4[3] == ' ') {
-			// Two-character ID.
-			// Don't append the publisher.
-			id6.resize(2);
-		} else {
-			// Four-character ID.
-			// Append the publisher.
-			id6.append(romHeader->snes.ext.new_publisher_code, sizeof(romHeader->snes.ext.new_publisher_code));
-		}
-		d->fields->addField_string(C_("SNES", "Game ID"),
-			latin1_to_utf8(id6.data(), (int)id6.size()));
-	} else {
-		// No game ID.
-		d->fields->addField_string(C_("SNES", "Game ID"), C_("SNES", "Unknown"));
-	}
-
-	// Publisher.
-	const char* publisher;
-	if (romHeader->snes.old_publisher_code == 0x33) {
-		publisher = NintendoPublishers::lookup(romHeader->snes.ext.new_publisher_code);
-	} else {
-		publisher = NintendoPublishers::lookup_old(romHeader->snes.old_publisher_code);
-	}
-	d->fields->addField_string(C_("SNES", "Publisher"),
-		publisher ? publisher : C_("SNES", "Unknown"));
-
-	// ROM mapping.
-	const char *rom_mapping;
-	switch (romHeader->snes.rom_mapping) {
-		case SNES_ROMMAPPING_LoROM:
-			rom_mapping = C_("SNES|ROMMapping", "LoROM");
-			break;
-		case SNES_ROMMAPPING_HiROM:
-			rom_mapping = C_("SNES|ROMMapping", "HiROM");
-			break;
-		case SNES_ROMMAPPING_LoROM_S_DD1:
-			rom_mapping = C_("SNES|ROMMapping", "LoROM+S-DD1");
-			break;
-		case SNES_ROMMAPPING_LoROM_SA_1:
-			rom_mapping = C_("SNES|ROMMapping", "LoROM+SA-1");
-			break;
-		case SNES_ROMMAPPING_ExHiROM:
-			rom_mapping = C_("SNES|ROMMapping", "ExHiROM");
-			break;
-		case SNES_ROMMAPPING_LoROM_FastROM:
-			rom_mapping = C_("SNES|ROMMapping", "LoROM+FastROM");
-			break;
-		case SNES_ROMMAPPING_HiROM_FastROM:
-			rom_mapping = C_("SNES|ROMMapping", "HiROM+FastROM");
-			break;
-		case SNES_ROMMAPPING_ExLoROM_FastROM:
-			rom_mapping = C_("SNES|ROMMapping", "ExLoROM+FastROM");
-			break;
-		case SNES_ROMMAPPING_ExHiROM_FastROM:
-			rom_mapping = C_("SNES|ROMMapping", "ExHiROM+FastROM");
-			break;
-		default:
-			rom_mapping = nullptr;
-			break;
-	}
-	if (rom_mapping) {
-		d->fields->addField_string(C_("SNES", "ROM Mapping"), rom_mapping);
-	} else {
-		// Unknown ROM mapping.
-		d->fields->addField_string(C_("SNES", "ROM Mapping"),
-			rp_sprintf(C_("SNES", "Unknown (0x%02X)"), romHeader->snes.rom_mapping));
-	}
-
 	// Cartridge HW.
 	// TODO: Make this translatable.
 	static const char *const hw_base_tbl[16] = {
@@ -737,24 +660,152 @@ int SNES::loadFieldData(void)
 		"Unknown", "Unknown", "Other", "Custom Chip"
 	};
 
-	const char *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
-	if (hw_base) {
-		if ((romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
-			// Enhancement chip.
-			const char *const hw_enh = hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
-			string str(hw_base);
-			str.append(hw_enh);
-			d->fields->addField_string(C_("SNES", "Cartridge HW"), str);
-		} else {
-			// No enhancement chip.
-			d->fields->addField_string(C_("SNES", "Cartridge HW"), hw_base);
+	string title, gameID, cart_hw;
+	const char *publisher = nullptr;
+	uint8_t rom_mapping;
+
+	// Get the field data based on ROM type.
+	switch (d->romType) {
+		case SNESPrivate::ROM_SNES: {
+			// Super NES / Super Famicom ROM image.
+
+			// Title.
+			// TODO: Space elimination, Shift-JIS?
+			title = latin1_to_utf8(romHeader->snes.title, sizeof(romHeader->snes.title));
+
+			// Game ID.
+			// NOTE: Only valid if the old publisher code is 0x33.
+			if (romHeader->snes.old_publisher_code == 0x33) {
+				gameID = string(romHeader->snes.ext.id4, sizeof(romHeader->snes.ext.id4));
+				if (romHeader->snes.ext.id4[2] == ' ' && romHeader->snes.ext.id4[3] == ' ') {
+					// Two-character ID.
+					// Don't append the publisher.
+					gameID.resize(2);
+				} else {
+					// Four-character ID.
+					// Append the publisher.
+					gameID.append(romHeader->snes.ext.new_publisher_code, sizeof(romHeader->snes.ext.new_publisher_code));
+				}
+			} else {
+				// No game ID.
+				gameID = C_("SNES", "Unknown");
+			}
+
+			// Publisher.
+			if (romHeader->snes.old_publisher_code == 0x33) {
+				publisher = NintendoPublishers::lookup(romHeader->snes.ext.new_publisher_code);
+			} else {
+				publisher = NintendoPublishers::lookup_old(romHeader->snes.old_publisher_code);
+			}
+
+			// ROM mapping.
+			rom_mapping = romHeader->snes.rom_mapping;
+
+			// Cartridge HW.
+			const char *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
+			if (hw_base) {
+				cart_hw = hw_base;
+				if ((romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
+					// Enhancement chip.
+					cart_hw += hw_enh_tbl[(romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+				}
+			} else {
+				// Unknown cartridge HW.
+				cart_hw = C_("SNES", "Unknown");
+			}
+
+			break;
 		}
-	} else {
-		// Unknown cartridge HW.
-		d->fields->addField_string(C_("SNES", "Cartridge HW"), C_("SNES", "Unknown"));
+
+		case SNESPrivate::ROM_BSX: {
+			// Satellaview BS-X ROM image.
+
+			// Title.
+			// TODO: Space elimination?
+			title = cp1252_sjis_to_utf8(romHeader->bsx.title, sizeof(romHeader->bsx.title));
+
+			// TODO: BS-X fields.
+
+			// Publisher.
+			// NOTE: Old publisher code is always 0x33 or 0x00,
+			// so use the new publisher code.
+			publisher = NintendoPublishers::lookup(romHeader->bsx.ext.new_publisher_code);
+
+			// ROM mapping.
+			rom_mapping = romHeader->bsx.rom_mapping;
+
+			break;
+		}
+
+		default:
+			// Should not get here...
+			assert(!"Invalid ROM type.");
+			return 0;
 	}
 
- 	// Region
+	/** Add the field data. **/
+
+	// Title.
+	d->fields->addField_string(C_("SNES", "Title"), title);
+
+	// Game ID.
+	if (!gameID.empty()) {
+		d->fields->addField_string(C_("SNES", "Game ID"), gameID);
+	}
+
+	// Publisher.
+	d->fields->addField_string(C_("SNES", "Publisher"),
+		publisher ? publisher : C_("SNES", "Unknown"));
+
+	// ROM mapping.
+	const char *s_rom_mapping;
+	switch (rom_mapping) {
+		case SNES_ROMMAPPING_LoROM:
+			s_rom_mapping = C_("SNES|ROMMapping", "LoROM");
+			break;
+		case SNES_ROMMAPPING_HiROM:
+			s_rom_mapping = C_("SNES|ROMMapping", "HiROM");
+			break;
+		case SNES_ROMMAPPING_LoROM_S_DD1:
+			s_rom_mapping = C_("SNES|ROMMapping", "LoROM+S-DD1");
+			break;
+		case SNES_ROMMAPPING_LoROM_SA_1:
+			s_rom_mapping = C_("SNES|ROMMapping", "LoROM+SA-1");
+			break;
+		case SNES_ROMMAPPING_ExHiROM:
+			s_rom_mapping = C_("SNES|ROMMapping", "ExHiROM");
+			break;
+		case SNES_ROMMAPPING_LoROM_FastROM:
+			s_rom_mapping = C_("SNES|ROMMapping", "LoROM+FastROM");
+			break;
+		case SNES_ROMMAPPING_HiROM_FastROM:
+			s_rom_mapping = C_("SNES|ROMMapping", "HiROM+FastROM");
+			break;
+		case SNES_ROMMAPPING_ExLoROM_FastROM:
+			s_rom_mapping = C_("SNES|ROMMapping", "ExLoROM+FastROM");
+			break;
+		case SNES_ROMMAPPING_ExHiROM_FastROM:
+			s_rom_mapping = C_("SNES|ROMMapping", "ExHiROM+FastROM");
+			break;
+		default:
+			s_rom_mapping = nullptr;
+			break;
+	}
+	if (s_rom_mapping) {
+		d->fields->addField_string(C_("SNES", "ROM Mapping"), s_rom_mapping);
+	} else {
+		// Unknown ROM mapping.
+		d->fields->addField_string(C_("SNES", "ROM Mapping"),
+			rp_sprintf(C_("SNES", "Unknown (0x%02X)"), rom_mapping));
+	}
+
+	// Cartridge HW.
+	if (!cart_hw.empty()) {
+		d->fields->addField_string(C_("SNES", "Cartridge HW"), cart_hw);
+	}
+
+	// Region.
+	// NOTE: Not listed for BS-X because BS-X is Japan only.
 	static const char *const region_tbl[0x15] = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "North America"),
@@ -777,16 +828,20 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
-	const char *const region = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
-		? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->snes.destination_code])
-		: nullptr);
-	d->fields->addField_string(C_("SNES", "Region"),
-		region ? region : C_("SNES", "Unknown"));
+	if (d->romType == SNESPrivate::ROM_SNES) {
+		const char *const region = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
+			? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->snes.destination_code])
+			: nullptr);
+		d->fields->addField_string(C_("SNES", "Region"),
+			region ? region : C_("SNES", "Unknown"));
 
-	// Revision
-	d->fields->addField_string_numeric(C_("SNES", "Revision"),
-		romHeader->snes.version, RomFields::FB_DEC, 2);
+		// Revision
+		// TODO: BS-X version.
+		d->fields->addField_string_numeric(C_("SNES", "Revision"),
+			romHeader->snes.version, RomFields::FB_DEC, 2);
+	}
 
+	// TODO: BS-X fields, e.g. date.
 	// TODO: Other fields.
 
 	// Finished reading the field data.
