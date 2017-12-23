@@ -76,20 +76,21 @@ button.
 
 ### Game Consoles
 
-|             System            | Properties Tab | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:---------------:|:--------------:|
-| Nintendo Entertainment System |       Yes      |       N/A       |       No       |
-| Nintendo 64                   |       Yes      |       N/A       |       No       |
-| Nintendo GameCube             |       Yes      |      Banner     |      Disc      |
-| Nintendo GameCube Saves       |       Yes      |       Icon      |       N/A      |
-| Nintendo Wii                  |       Yes      |        No       |  Disc, Covers  |
-| Nintendo Wii U                |       Yes      |        No       |  Disc, Covers  |
-| Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       No       |
-| Sega Mega Drive               |       Yes      |       N/A       |       No       |
-| Sega Dreamcast                |       Yes      |      Media      |       No       |
-| Sega Dreamcast Saves          |       Yes      |   Icon, Banner  |       No       |
-| Sega Saturn                   |       Yes      |       N/A       |       No       |
-| Sony PlayStation Saves        |       Yes      |       Icon      |       N/A      |
+|          System         | Properties Tab | Internal Images | External Scans |
+|:-----------------------:|:--------------:|:---------------:|:--------------:|
+| NES                     |       Yes      |       N/A       |       No       |
+| Super NES               |       Yes      |       N/A       |       No       |
+| Nintendo 64             |       Yes      |       N/A       |       No       |
+| Nintendo GameCube       |       Yes      |      Banner     |      Disc      |
+| Nintendo GameCube Saves |       Yes      |       Icon      |       N/A      |
+| Nintendo Wii            |       Yes      |        No       |  Disc, Covers  |
+| Nintendo Wii U          |       Yes      |        No       |  Disc, Covers  |
+| Sega 8-bit (SMS, GG)    |       Yes      |       N/A       |       No       |
+| Sega Mega Drive         |       Yes      |       N/A       |       No       |
+| Sega Dreamcast          |       Yes      |      Media      |       No       |
+| Sega Dreamcast Saves    |       Yes      |   Icon, Banner  |       No       |
+| Sega Saturn             |       Yes      |       N/A       |       No       |
+| Sony PlayStation Saves  |       Yes      |       Icon      |       N/A      |
 
 ### Handhelds
 
@@ -243,3 +244,5 @@ https://github.com/GerbilSoft/rom-properties/issues
   Information on the Khornos KTX texture file format.
 * [Valve Texture Format](https://developer.valvesoftware.com/wiki/Valve_Texture_Format):
   Information on the Valve VTF texture file format.
+* [nocash SNES hardware specifications](http://problemkaputt.de/fullsnes.htm):
+  Super NES and Satellaview BS-X technical information.

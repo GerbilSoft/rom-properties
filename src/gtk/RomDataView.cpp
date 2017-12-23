@@ -1113,41 +1113,39 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		dateTime = g_date_time_new_from_unix_local(field->data.date_time);
 	}
 
-	gchar *str = nullptr;
-	switch (field->desc.flags &
-		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
-	{
-		case RomFields::RFT_DATETIME_HAS_DATE:
-			// Date only.
-			str = g_date_time_format(dateTime, "%x");
-			break;
+	static const char *const formats[8] = {
+		nullptr,	// No date or time.
+		"%x",		// Date
+		"%X",		// Time
+		"%x %X",	// Date Time
 
-		case RomFields::RFT_DATETIME_HAS_TIME:
-			// Time only.
-			str = g_date_time_format(dateTime, "%X");
-			break;
+		// TODO: Better localization here.
+		nullptr,	// No date or time.
+		"%b %d",	// Date (no year)
+		"%X",		// Time
+		"%b %d %X",	// Date Time (no year)
+	};
 
-		case RomFields::RFT_DATETIME_HAS_DATE |
-			RomFields::RFT_DATETIME_HAS_TIME:
-			// Date and time.
-			str = g_date_time_format(dateTime, "%x %X");
-			break;
+	const char *const format = formats[field->desc.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK];
+	assert(format != nullptr);
+	if (format) {
+		gchar *str = g_date_time_format(dateTime, format);
 
-		default:
-			// Invalid combination.
-			assert(!"Invalid Date/Time formatting.");
-			break;
-	}
-	g_date_time_unref(dateTime);
-
-	if (str) {
-		gtk_label_set_text(GTK_LABEL(widget), str);
-		g_free(str);
+		if (str) {
+			gtk_label_set_text(GTK_LABEL(widget), str);
+			g_free(str);
+		} else {
+			// Invalid date/time.
+			gtk_widget_destroy(widget);
+			widget = nullptr;
+		}
 	} else {
-		// Invalid date/time.
+		// Invalid format.
 		gtk_widget_destroy(widget);
 		widget = nullptr;
 	}
+
+	g_date_time_unref(dateTime);
 	return widget;
 }
 

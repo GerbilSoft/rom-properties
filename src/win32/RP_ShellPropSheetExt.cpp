@@ -1339,10 +1339,19 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 	if (field->desc.flags & RomFields::RFT_DATETIME_HAS_DATE) {
 		// Format the date.
-		int ret = GetDateFormat(
-			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-			DATE_SHORTDATE,
-			&st, nullptr, &dateTimeStr[start_pos], cchBuf);
+		int ret;
+		if (field->desc.flags & RomFields::RFT_DATETIME_NO_YEAR) {
+			// TODO: Localize this.
+			// TODO: Windows 10 has DATE_MONTHDAY.
+			ret = GetDateFormat(
+				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
+				0, &st, L"MMM d", &dateTimeStr[start_pos], cchBuf);
+		} else {
+			ret = GetDateFormat(
+				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
+				DATE_SHORTDATE,
+				&st, nullptr, &dateTimeStr[start_pos], cchBuf);
+		}
 		if (ret <= 0) {
 			// Error!
 			return 0;

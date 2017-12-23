@@ -23,6 +23,9 @@
   * Valve VTF textures: https://developer.valvesoftware.com/wiki/Valve_Texture_Format
   * Valve VTF3 (PS3) textures: Reverse-engineered from Portal for PS3.
 
+* New system features:
+  * Super NES: Satellaview BS-X ROM headers are now decoded properly.
+
 * New compressed texture formats:
   * Ericsson ETC1 and ETC2
   * Variations of S3TC compression in different texture formats, including
