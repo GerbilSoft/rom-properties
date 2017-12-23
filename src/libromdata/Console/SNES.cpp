@@ -122,8 +122,10 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	// Is the ROM mapping byte valid?
 	switch (romHeader->snes.rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
+		case SNES_ROMMAPPING_LoROM_S_DD1:
+		case SNES_ROMMAPPING_LoROM_SA_1:
 		case SNES_ROMMAPPING_LoROM_FastROM:
-		case SNES_ROMMAPPING_ExLoROM:
+		case SNES_ROMMAPPING_ExLoROM_FastROM:
 			if (isHiROM) {
 				// LoROM mapping at a HiROM address.
 				// Not valid.
@@ -135,6 +137,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		case SNES_ROMMAPPING_HiROM:
 		case SNES_ROMMAPPING_HiROM_FastROM:
 		case SNES_ROMMAPPING_ExHiROM:
+		case SNES_ROMMAPPING_ExHiROM_FastROM:
 			if (!isHiROM) {
 				// HiROM mapping at a LoROM address.
 				// Not valid.
@@ -209,6 +212,8 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// Is the ROM mapping byte valid?
 	switch (romHeader->bsx.rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
+		case SNES_ROMMAPPING_LoROM_S_DD1:
+		case SNES_ROMMAPPING_LoROM_SA_1:
 		case SNES_ROMMAPPING_LoROM_FastROM:
 			if (isHiROM) {
 				// LoROM mapping at a HiROM address.
@@ -229,8 +234,9 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 			// Valid ROM mapping byte.
 			break;
 
-		case SNES_ROMMAPPING_ExLoROM:
 		case SNES_ROMMAPPING_ExHiROM:
+		case SNES_ROMMAPPING_ExLoROM_FastROM:
+		case SNES_ROMMAPPING_ExHiROM_FastROM:
 		default:
 			// Not valid.
 			// (ExLoROM/ExHiROM is not valid for BS-X.)
@@ -681,17 +687,26 @@ int SNES::loadFieldData(void)
 		case SNES_ROMMAPPING_HiROM:
 			rom_mapping = C_("SNES|ROMMapping", "HiROM");
 			break;
+		case SNES_ROMMAPPING_LoROM_S_DD1:
+			rom_mapping = C_("SNES|ROMMapping", "LoROM+S-DD1");
+			break;
+		case SNES_ROMMAPPING_LoROM_SA_1:
+			rom_mapping = C_("SNES|ROMMapping", "LoROM+SA-1");
+			break;
+		case SNES_ROMMAPPING_ExHiROM:
+			rom_mapping = C_("SNES|ROMMapping", "ExHiROM");
+			break;
 		case SNES_ROMMAPPING_LoROM_FastROM:
 			rom_mapping = C_("SNES|ROMMapping", "LoROM+FastROM");
 			break;
 		case SNES_ROMMAPPING_HiROM_FastROM:
 			rom_mapping = C_("SNES|ROMMapping", "HiROM+FastROM");
 			break;
-		case SNES_ROMMAPPING_ExLoROM:
-			rom_mapping = C_("SNES|ROMMapping", "ExLoROM");
+		case SNES_ROMMAPPING_ExLoROM_FastROM:
+			rom_mapping = C_("SNES|ROMMapping", "ExLoROM+FastROM");
 			break;
-		case SNES_ROMMAPPING_ExHiROM:
-			rom_mapping = C_("SNES|ROMMapping", "ExHiROM");
+		case SNES_ROMMAPPING_ExHiROM_FastROM:
+			rom_mapping = C_("SNES|ROMMapping", "ExHiROM+FastROM");
 			break;
 		default:
 			rom_mapping = nullptr;
