@@ -309,6 +309,34 @@ SNES::SNES(IRpFile *file)
 	}
 
 	if (d->romType == SNESPrivate::ROM_UNKNOWN) {
+		// Check for BS-X "Memory Pack" headers.
+		static const uint16_t bsx_addrs[2] = {0x7F00, 0xFF00};
+		static const uint8_t bsx_mempack_magic[6] = {'M', 0, 'P', 0, 0, 0};
+		uint8_t buf[7];
+
+		for (unsigned int i = 0; i < 2; i++) {
+			size_t size = d->file->seekAndRead(bsx_addrs[i], buf, sizeof(buf));
+			if (size != sizeof(buf)) {
+				// Read error.
+				return;
+			}
+
+			if (!memcmp(buf, bsx_mempack_magic, sizeof(bsx_mempack_magic))) {
+				// Found BS-X memory pack magic.
+				// Check the memory pack type.
+				// (7 is ROM; 1 to 4 is FLASH.)
+				if ((buf[6] & 0xF0) == 0x70) {
+					// ROM cartridge
+					// TODO: Use the size value.
+					// Size is (1024 << (buf[6] & 0x0F))
+					d->romType = SNESPrivate::ROM_BSX;
+					break;
+				}
+			}
+		}
+	}
+
+	if (d->romType == SNESPrivate::ROM_UNKNOWN) {
 		// SNES ROMs don't necessarily have a header at the start of the file.
 		// Therefore, we need to do a few reads and guessing.
 
@@ -361,9 +389,6 @@ SNES::SNES(IRpFile *file)
 			}
 		}
 	}
-
-	// TODO: BS-X memory pack ROMs have the following at 0x7F00 or 0xFF00:
-	// {'M', 0, 'P', 0, 0, 0, 0x79}
 
 	// Header addresses to check.
 	// If a copier header is detected, use index 1,
