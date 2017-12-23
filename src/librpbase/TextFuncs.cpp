@@ -259,12 +259,10 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
  */
 size_t strnlen(const char *str, size_t maxlen)
 {
-	size_t rv = 0;
-	for (rv = 0; rv < len; rv++) {
-		if (!*(str++))
-			break;
-	}
-	return rv;
+	const char *ptr = memchr(str, 0, maxlen);
+	if (!ptr)
+		return maxlen;
+	return ptr - str;
 }
 #endif /* HAVE_STRNLEN */
 
