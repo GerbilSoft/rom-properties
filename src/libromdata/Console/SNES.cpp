@@ -758,34 +758,35 @@ int SNES::loadFieldData(void)
 		publisher ? publisher : C_("SNES", "Unknown"));
 
 	// ROM mapping.
+	// NOTE: Not translatable!
 	const char *s_rom_mapping;
 	switch (rom_mapping) {
 		case SNES_ROMMAPPING_LoROM:
-			s_rom_mapping = C_("SNES|ROMMapping", "LoROM");
+			s_rom_mapping = "LoROM";
 			break;
 		case SNES_ROMMAPPING_HiROM:
-			s_rom_mapping = C_("SNES|ROMMapping", "HiROM");
+			s_rom_mapping = "HiROM";
 			break;
 		case SNES_ROMMAPPING_LoROM_S_DD1:
-			s_rom_mapping = C_("SNES|ROMMapping", "LoROM+S-DD1");
+			s_rom_mapping = "LoROM + S-DD1";
 			break;
 		case SNES_ROMMAPPING_LoROM_SA_1:
-			s_rom_mapping = C_("SNES|ROMMapping", "LoROM+SA-1");
+			s_rom_mapping = "LoROM + SA-1";
 			break;
 		case SNES_ROMMAPPING_ExHiROM:
-			s_rom_mapping = C_("SNES|ROMMapping", "ExHiROM");
+			s_rom_mapping = "ExHiROM";
 			break;
 		case SNES_ROMMAPPING_LoROM_FastROM:
-			s_rom_mapping = C_("SNES|ROMMapping", "LoROM+FastROM");
+			s_rom_mapping = "LoROM + FastROM";
 			break;
 		case SNES_ROMMAPPING_HiROM_FastROM:
-			s_rom_mapping = C_("SNES|ROMMapping", "HiROM+FastROM");
+			s_rom_mapping = "HiROM + FastROM";
 			break;
 		case SNES_ROMMAPPING_ExLoROM_FastROM:
-			s_rom_mapping = C_("SNES|ROMMapping", "ExLoROM+FastROM");
+			s_rom_mapping = "ExLoROM + FastROM";
 			break;
 		case SNES_ROMMAPPING_ExHiROM_FastROM:
-			s_rom_mapping = C_("SNES|ROMMapping", "ExHiROM+FastROM");
+			s_rom_mapping = "ExHiROM + FastROM";
 			break;
 		default:
 			s_rom_mapping = nullptr;
