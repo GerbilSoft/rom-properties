@@ -126,6 +126,7 @@ SET(librpbase_H
 	RomData_p.hpp
 	RomFields.hpp
 	SystemRegion.hpp
+	bitstuff.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp

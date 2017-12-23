@@ -29,6 +29,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/bitstuff.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
@@ -76,13 +77,6 @@ class SNESPrivate : public RomDataPrivate
 		 * @return True if the BS-X ROM header is valid; false if not.
 		 */
 		static bool isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
-
-		/**
-		 * Population count function.
-		 * @param x Value.
-		 * @return Population count.
-		 */
-		static inline unsigned int popcount(unsigned int x);
 
 	public:
 		enum SNES_RomType {
@@ -271,27 +265,6 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	// ROM header appears to be valid.
 	// TODO: Check other BS-X fields.
 	return true;
-}
-
-/**
- * Population count function.
- * @param x Value.
- * @return Population count.
- */
-inline unsigned int SNESPrivate::popcount(unsigned int x)
-{
-#if defined(__GNUC__)
-	return __builtin_popcount(x);
-#else
-	// References:
-	// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=36041
-	// - https://gcc.gnu.org/bugzilla/attachment.cgi?id=15529
-	// - https://gcc.gnu.org/viewcvs/gcc?view=revision&revision=200506
-	x = (x & 0x55555555U) + ((x >> 1) & 0x55555555U);
-	x = (x & 0x33333333U) + ((x >> 2) & 0x33333333U);
-	x = (x & 0x0F0F0F0FU) + ((x >> 4) & 0x0F0F0F0FU);
-	return (x * 0x01010101U) >> 24;
-#endif
 }
 
 /** SNES **/
@@ -955,7 +928,7 @@ int SNES::loadFieldData(void)
 			const uint16_t limited_starts = le16_to_cpu(romHeader->bsx.limited_starts);
 			if (limited_starts & 0x8000) {
 				// Limited.
-				unsigned int n = d->popcount(limited_starts & ~0x8000);
+				const unsigned int n = popcount(limited_starts & ~0x8000);
 				d->fields->addField_string_numeric(C_("SNES", "Limited Starts"), n);
 			} else {
 				// Unlimited.

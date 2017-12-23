@@ -26,6 +26,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/bitstuff.h"
 #include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
@@ -45,10 +46,6 @@ using namespace LibRpBase;
 #include <vector>
 using std::unique_ptr;
 using std::vector;
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
 
 namespace LibRomData {
 
@@ -98,13 +95,6 @@ class SegaPVRPrivate : public RomDataPrivate
 
 		// Decoded image.
 		rp_image *img;
-
-		/**
-		 * Unsigned integer log2(n).
-		 * @param n Value
-		 * @return uilog2(n)
-		 */
-		static inline unsigned int uilog2(unsigned int n);
 
 		/**
 		 * Load the PVR image.
@@ -162,29 +152,6 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
 	gvr->height = be16_to_cpu(gvr->height);
 }
 #endif
-
-/**
- * Unsigned integer log2(n).
- * @param n Value
- * @return uilog2(n)
- */
-inline unsigned int SegaPVRPrivate::uilog2(unsigned int n)
-{
-#if defined(__GNUC__)
-	return (n == 0 ? 0 : __builtin_ctz(n));
-#elif defined(_MSC_VER)
-	if (n == 0)
-		return 0;
-	unsigned long index;
-	unsigned char x = _BitScanReverse(&index, n);
-	return (x ? index : 0);
-#else
-	unsigned int ret = 0;
-	while (n >>= 1)
-		ret++;
-	return ret;
-#endif
-}
 
 /**
  * Load the PVR image.
