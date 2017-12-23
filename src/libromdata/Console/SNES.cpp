@@ -79,10 +79,10 @@ class SNESPrivate : public RomDataPrivate
 
 		/**
 		 * Population count function.
-		 * @param n Value.
+		 * @param x Value.
 		 * @return Population count.
 		 */
-		static inline unsigned int popcount(unsigned int n);
+		static inline unsigned int popcount(unsigned int x);
 
 	public:
 		enum SNES_RomType {
@@ -275,19 +275,22 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 
 /**
  * Population count function.
- * @param n Value.
+ * @param x Value.
  * @return Population count.
  */
-inline unsigned int SNESPrivate::popcount(unsigned int n)
+inline unsigned int SNESPrivate::popcount(unsigned int x)
 {
 #if defined(__GNUC__)
-	return __builtin_popcount(n);
+	return __builtin_popcount(x);
 #else
-	unsigned int ret = 0;
-	for (; n != 0; n >>= 1) {
-		ret += (n & 1);
-	}
-	return ret;
+	// References:
+	// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=36041
+	// - https://gcc.gnu.org/bugzilla/attachment.cgi?id=15529
+	// - https://gcc.gnu.org/viewcvs/gcc?view=revision&revision=200506
+	x = (x & 0x55555555U) + ((x >> 1) & 0x55555555U);
+	x = (x & 0x33333333U) + ((x >> 2) & 0x33333333U);
+	x = (x & 0x0F0F0F0FU) + ((x >> 4) & 0x0F0F0F0FU);
+	return (x * 0x01010101U) >> 24;
 #endif
 }
 
