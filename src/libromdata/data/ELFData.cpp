@@ -35,12 +35,16 @@ class ELFDataPrivate {
 		RP_DISABLE_COPY(ELFDataPrivate)
 
 	public:
+		// CPUs
 		struct MachineType {
 			uint16_t cpu;
 			const char *name;
 		};
 		static const char *const machineTypes_low[];
 		static const MachineType machineTypes_other[];
+
+		// OS ABIs
+		static const char *const osabi_names[];
 
 		/**
 		 * bsearch() comparison function for MachineType.
@@ -322,6 +326,34 @@ const ELFDataPrivate::MachineType ELFDataPrivate::machineTypes_other[] = {
 	{0, nullptr}
 };
 
+// ELF OS ABI names.
+// Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
+const char *const ELFDataPrivate::osabi_names[] = {
+	// 0
+	"UNIX System V",
+	"HP-UX",
+	"NetBSD",
+	"GNU/Linux",
+	"GNU/Hurd",
+	"86Open",
+	"Solaris",
+	"Monterey",
+	"IRIX",
+	"FreeBSD",
+
+	// 10
+	"Tru64",
+	"Novell Modesto",
+	"OpenBSD",
+	"OpenVMS",
+	"HP NonStop Kernel",
+	"AROS Research Operating System",
+	"FenixOS",
+	"Nuxi CloudABI",
+
+	nullptr
+};
+
 /**
  * bsearch() comparison function for MachineType.
  * @param a
@@ -361,6 +393,29 @@ const char *ELFData::lookup_cpu(uint16_t cpu)
 			sizeof(ELFDataPrivate::MachineType),
 			ELFDataPrivate::MachineType_compar));
 	return (res ? res->name : nullptr);
+}
+
+/**
+ * Look up an ELF OS ABI.
+ * @param cpu ELF OS ABI.
+ * @return OS ABI name, or nullptr if not found.
+ */
+const char *ELFData::lookup_osabi(uint8_t osabi)
+{
+	if (osabi < ARRAY_SIZE(ELFDataPrivate::osabi_names)-1) {
+		// OS ABI ID is in the array.
+		return ELFDataPrivate::osabi_names[osabi];
+	}
+
+	switch (osabi) {
+		case 64:	return "ARM EABI";
+		case 97:	return "ARM";
+		case 255:	return "Embedded";
+		default:	break;
+	}
+
+	// Unknown OS ABI...
+	return nullptr;
 }
 
 }

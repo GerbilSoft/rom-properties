@@ -45,6 +45,13 @@ class ELFData
 		 * @return Machine type name, or nullptr if not found.
 		 */
 		static const char *lookup_cpu(uint16_t cpu);
+
+		/**
+		 * Look up an ELF OS ABI.
+		 * @param cpu ELF OS ABI.
+		 * @return OS ABI name, or nullptr if not found.
+		 */
+		static const char *lookup_osabi(uint8_t osabi);
 };
 
 }

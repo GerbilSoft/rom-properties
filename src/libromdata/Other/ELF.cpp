@@ -490,7 +490,7 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields->reserve(3);	// Maximum of 3 fields.
 
 	// NOTE: Executable type is used as File Type.
 	// TODO: Add more fields.
@@ -502,6 +502,15 @@ int ELF::loadFieldData(void)
 	} else {
 		d->fields->addField_string(C_("ELF", "CPU"),
 			rp_sprintf(C_("ELF", "Unknown (0x%04X)"), primary->e_machine));
+	}
+
+	// ABI.
+	const char *const osabi = ELFData::lookup_osabi(primary->e_osabi);
+	if (osabi) {
+		d->fields->addField_string(C_("ELF", "OS ABI"), osabi);
+	} else {
+		d->fields->addField_string(C_("ELF", "OS ABI"),
+			rp_sprintf(C_("ELF", "Unknown (%u)"), primary->e_osabi));
 	}
 
 	// Bitness/Endianness. (consolidated as "format")
