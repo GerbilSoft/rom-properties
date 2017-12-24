@@ -38,10 +38,10 @@ extern "C" {
 static inline unsigned int uilog2(unsigned int n)
 {
 #if defined(__GNUC__)
-	return (n == 0 ? 0 : __builtin_ctz(n));
+	// NOTE: XOR is needed to return the bit index
+	// instead of the number of leading zeroes.
+	return (n == 0 ? 0 : 31^__builtin_clz(n));
 #elif defined(_MSC_VER)
-	if (n == 0)
-		return 0;
 	unsigned long index;
 	unsigned char x = _BitScanReverse(&index, n);
 	return (x ? index : 0);
