@@ -560,9 +560,9 @@ int ELF::loadFieldData(void)
 
 	// CPU flags.
 	// TODO: Needs testing.
-	const unsigned int flags = (primary->e_class == ELFCLASS32
-				? d->Elf_Header.elf32.e_flags
-				: d->Elf_Header.elf64.e_flags);
+	const unsigned int flags = (primary->e_class == ELFCLASS64
+				? d->Elf_Header.elf64.e_flags
+				: d->Elf_Header.elf32.e_flags);
 	switch (primary->e_machine) {
 		case EM_SPARC: {
 			// TODO: Low 2 bits indicate memory management.
