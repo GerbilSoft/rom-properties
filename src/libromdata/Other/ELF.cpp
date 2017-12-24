@@ -565,7 +565,17 @@ int ELF::loadFieldData(void)
 			: d->Elf_Header.elf32.e_flags);
 	switch (primary->e_machine) {
 		case EM_SPARC: {
-			// TODO: Low 2 bits indicate memory management.
+			// SPARC memory ordering.
+			static const char *const sparc_mm[] = {
+				NOP_C_("ELF|SPARC_MM", "Total Store Ordering"),
+				NOP_C_("ELF|SPARC_MM", "Partial Store Ordering"),
+				NOP_C_("ELF|SPARC_MM", "Relaxed Memory Ordering"),
+				NOP_C_("ELF|SPARC_MM", "Invalid"),
+			};
+			d->fields->addField_string(C_("ELF", "Memory Ordering"),
+				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[flags & 3]));
+
+			// SPARC CPU flags.
 			static const char *const sparc_flags_names[] = {
 				// 0x1-0x8
 				nullptr, nullptr, nullptr, nullptr,
@@ -608,7 +618,7 @@ int ELF::loadFieldData(void)
 					rp_sprintf(C_("ELF", "Unknown (0x%02X)"), level));
 			}
 
-			// Other flags.
+			// MIPS CPU flags.
 			static const char *const mips_flags_names[] = {
 				// 0x1-0x8
 				NOP_C_("ELF|MIPSFlags", "No Reorder"),
