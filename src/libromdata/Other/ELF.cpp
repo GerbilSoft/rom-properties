@@ -364,6 +364,7 @@ ELF::ELF(IRpFile *file)
 	    primary->e_machine == EM_PPC)
 	{
 		// Assuming this is a Wii U executable.
+		// TODO: Also verify that there's no program headers?
 		d->isWiiU = true;
 		d->isDynamic = true;	// TODO: Properly check this.
 
