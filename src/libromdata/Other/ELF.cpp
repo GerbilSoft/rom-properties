@@ -36,6 +36,7 @@ using namespace LibRpBase;
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <cinttypes>
 #include <cstring>
 
 // C++ includes.
@@ -543,7 +544,7 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	// NOTE: Executable type is used as File Type.
 	// TODO: Add more fields.
@@ -594,6 +595,24 @@ int ELF::loadFieldData(void)
 	// Interpreter.
 	if (!d->interpreter.empty()) {
 		d->fields->addField_string(C_("ELF", "Interpreter"), d->interpreter);
+	}
+
+	// Entry point.
+	// Also indicates PIE.
+	// NOTE: Formatting using 8 digits, since 64-bit executables
+	// usually have entry points within the first 4 GB.
+	if (d->fileType == FTYPE_EXECUTABLE) {
+		string entry_point;
+		if (primary->e_class == ELFCLASS64) {
+			entry_point = rp_sprintf("0x%08" PRIX64, d->Elf_Header.elf64.e_entry);
+		} else {
+			entry_point = rp_sprintf("0x%08X", d->Elf_Header.elf32.e_entry);
+		}
+		if (d->isPie) {
+			// tr: Entry point, then "Position-Independent".
+			entry_point = rp_sprintf("%s (Position-Independent)", entry_point.c_str());
+		}
+		d->fields->addField_string(C_("ELF", "Entry Point"), entry_point);
 	}
 
 	// Finished reading the field data.
