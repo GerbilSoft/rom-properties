@@ -67,11 +67,13 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 			// Host/swap endian formats.
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			#define ELFDATAHOST ELFDATA2LSB
 			ELF_FORMAT_32HOST	= ELF_FORMAT_32LSB,
 			ELF_FORMAT_64HOST	= ELF_FORMAT_64LSB,
 			ELF_FORMAT_32SWAP	= ELF_FORMAT_32MSB,
 			ELF_FORMAT_64SWAP	= ELF_FORMAT_64MSB,
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			#define ELFDATAHOST ELFDATA2MSB
 			ELF_FORMAT_32HOST	= ELF_FORMAT_32MSB,
 			ELF_FORMAT_64HOST	= ELF_FORMAT_64MSB,
 			ELF_FORMAT_32SWAP	= ELF_FORMAT_32LSB,
@@ -88,6 +90,16 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 			Elf32_Ehdr elf32;
 			Elf64_Ehdr elf64;
 		} Elf_Header;
+
+		// Position-independent executable.
+		bool isPie;
+		bool hasCheckedPie;
+
+		/**
+		 * Is this a position-independent executable?
+		 * @return True if it is; false if it isn't.
+		 */
+		bool checkForPie(void);
 };
 
 /** ELFPrivate **/
@@ -95,9 +107,91 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	: super(q, file)
 	, elfFormat(ELF_FORMAT_UNKNOWN)
+	, isPie(false)
+	, hasCheckedPie(false)
 {
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
+}
+
+/**
+ * Is this a position-independent executable?
+ * @return True if it is; false if it isn't.
+ */
+bool ELFPrivate::checkForPie(void)
+{
+	if (hasCheckedPie) {
+		return isPie;
+	}
+
+	if (Elf_Header.primary.e_type != ET_DYN) {
+		// Not a shared object file.
+		// Cannot be a PIE executable.
+		isPie = false;
+		hasCheckedPie = true;
+		return false;
+	}
+
+	// Read the program headers.
+	// PIE executables have a PT_INTERP header.
+	// Shared libraries do not.
+	// (NOTE: glibc's libc.so.6 *does* have PT_INTERP...)
+	int64_t e_phoff;
+	unsigned int e_phnum;
+	unsigned int phsize;
+	uint8_t phbuf[sizeof(Elf64_Phdr)];
+
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		e_phoff = (int64_t)Elf_Header.elf64.e_phoff;
+		e_phnum = Elf_Header.elf64.e_phnum;
+		phsize = sizeof(Elf64_Phdr);
+	} else {
+		e_phoff = (int64_t)Elf_Header.elf32.e_phoff;
+		e_phnum = Elf_Header.elf32.e_phnum;
+		phsize = sizeof(Elf32_Phdr);
+	}
+
+	int ret = file->seek(e_phoff);
+	if (ret != 0) {
+		// Seek error.
+		isPie = false;
+		hasCheckedPie = true;
+		return false;
+	}
+
+	// Read all of the program header entries.
+	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
+	for (; e_phnum > 0; e_phnum--) {
+		size_t size = file->read(phbuf, phsize);
+		if (size != phsize) {
+			// Read error.
+			break;
+		}
+
+		// Check the type.
+		uint32_t p_type;
+		memcpy(&p_type, phbuf, sizeof(p_type));
+		if (isHostEndian) {
+			// No byteswapping required.
+			if (p_type == PT_INTERP) {
+				// PT_INTERP header found.
+				// This is a PIE executable.
+				isPie = true;
+				break;
+			}
+		} else {
+			// Check the byteswapped version.
+			if (p_type == __swab32(PT_INTERP)) {
+				// PT_INTERP header found.
+				// This is a PIE executable.
+				isPie = true;
+				break;
+			}
+		}
+	}
+
+	hasCheckedPie = true;
+	return isPie;
 }
 
 /** ELF **/
@@ -216,8 +310,9 @@ ELF::ELF(IRpFile *file)
 			d->fileType = FTYPE_EXECUTABLE;
 			break;
 		case ET_DYN:
-			// TODO: Detect PIE.
-			d->fileType = FTYPE_SHARED_LIBRARY;
+			// This may either be a shared library or a
+			// position-independent executable.
+			d->fileType = (d->checkForPie() ? FTYPE_EXECUTABLE : FTYPE_SHARED_LIBRARY);
 			break;
 		case ET_CORE:
 			d->fileType = FTYPE_CORE_DUMP;

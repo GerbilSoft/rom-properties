@@ -23,6 +23,7 @@
 // - http://wiki.osdev.org/ELF
 // - http://www.mcs.anl.gov/OpenAD/OpenADFortTkExtendedDox/elf_8h_source.html
 // - https://github.com/file/file/blob/master/magic/Magdir/elf
+// - http://www.sco.com/developers/gabi/latest/ch5.pheader.html
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
@@ -185,6 +186,57 @@ typedef struct PACKED _Elf64_Ehdr {
 	Elf64_Half e_shstrndx;	// [0x03E] Section header string table index
 } Elf64_Ehdr;
 ASSERT_STRUCT(Elf64_Ehdr, 64);
+
+/**
+ * ELF 32-bit program header.
+ */
+typedef struct PACKED _Elf32_Phdr {
+	Elf32_Word p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
+	Elf32_Off p_offset;	// [0x004] Offset of segment from the beginning of the file
+	Elf32_Addr p_vaddr;	// [0x008] Virtual address
+	Elf32_Addr p_paddr;	// [0x00C] Physical address
+	Elf32_Word p_filesz;	// [0x010] Size of file image, in bytes
+	Elf32_Word p_memsz;	// [0x014] Size of memory image, in bytes
+	Elf32_Word p_flags;	// [0x018] Flags
+	Elf32_Word p_align;	// [0x01C] Alignment value
+} Elf32_Phdr;
+ASSERT_STRUCT(Elf32_Phdr, 32);
+
+/**
+ * ELF 64-bit program header.
+ */
+typedef struct PACKED _Elf64_Phdr {
+	Elf64_Word p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
+	Elf64_Word p_flags;	// [0x004] Flags
+	Elf64_Off p_offset;	// [0x008] Offset of segment from the beginning of the file
+	Elf64_Addr p_vaddr;	// [0x010] Virtual address
+	Elf64_Addr p_paddr;	// [0x018] Physical address
+	Elf64_Xword p_filesz;	// [0x020] Size of file image, in bytes
+	Elf64_Xword p_memsz;	// [0x028] Size of memory image, in bytes
+	Elf64_Xword p_align;	// [0x030] Alignment value
+} Elf64_Phdr;
+ASSERT_STRUCT(Elf64_Phdr, 56);
+
+/**
+ * ELF program header types.
+ */
+typedef enum {
+	PT_NULL		= 0,
+	PT_LOAD		= 1,
+	PT_DYNAMIC	= 2,
+	PT_INTERP	= 3,
+	PT_NOTE		= 4,
+	PT_SHLIB	= 5,
+	PT_PHDR		= 6,
+	PT_TLS		= 7,
+
+	// OS-specific
+	PT_LOOS		= 0x60000000,
+	PT_HIOS		= 0x6FFFFFFF,
+	// CPU-specific
+	PT_LOPROC	= 0x70000000,
+	PT_HIPROC	= 0x7FFFFFFF,
+} Elf_Phdr_Type;
 
 #pragma pack()
 
