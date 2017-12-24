@@ -37,8 +37,8 @@ following platforms:
 * Windows XP (and later)
 
 On Windows, you will need the MSVC 2017 runtime:
-* 32-bit: https://go.microsoft.com/fwlink/?LinkId=746571
-* 64-bit: https://go.microsoft.com/fwlink/?LinkId=746572
+* 32-bit: https://aka.ms/vs/15/release/vc_redist.x86.exe
+* 64-bit: https://aka.ms/vs/15/release/vc_redist.x64.exe
 
 For instructions on compiling from source, see doc/COMPILING.md .
 
