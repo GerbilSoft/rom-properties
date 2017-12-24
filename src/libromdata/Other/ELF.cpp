@@ -359,7 +359,7 @@ ELF::ELF(IRpFile *file)
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
 
 	// Is this a Wii U executable?
-	if (primary->e_osabi == 202 &&
+	if (primary->e_osabi == ELFOSABI_CAFEOS &&
 	    d->elfFormat == ELFPrivate::ELF_FORMAT_32MSB &&
 	    primary->e_machine == EM_PPC)
 	{

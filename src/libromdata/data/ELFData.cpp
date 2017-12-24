@@ -408,11 +408,11 @@ const char *ELFData::lookup_osabi(uint8_t osabi)
 	}
 
 	switch (osabi) {
-		case 64:	return "ARM EABI";
-		case 97:	return "ARM";
-		case 202:	return "Cafe OS";	// Wii U
-		case 255:	return "Embedded";
-		default:	break;
+		case ELFOSABI_ARM_AEABI:	return "ARM EABI";
+		case ELFOSABI_ARM:		return "ARM";
+		case ELFOSABI_CAFEOS:		return "Cafe OS";	// Wii U
+		case ELFOSABI_STANDALONE:	return "Embedded";
+		default:			break;
 	}
 
 	// Unknown OS ABI...

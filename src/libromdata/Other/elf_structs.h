@@ -79,7 +79,7 @@ typedef struct PACKED _Elf_PrimaryEhdr {
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
 	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version
-	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V
+	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V (see Elf_OSABI)
 	uint8_t padding[8];	// [0x008]
 
 	Elf32_Half e_type;	// [0x010] Executable type (see Elf_Type)
@@ -107,6 +107,30 @@ typedef enum {
 	ELFDATA2MSB	= 2,	/* 2's complement, big endian */
 	ELFDATANUM	= 3,
 } Elf_Endianness;
+
+/**
+ * OS ABI.
+ * This list isn't comprehensive; see ELFData.cpp for more.
+ */
+typedef enum {
+	ELFOSABI_NONE		= 0,	/* UNIX System V ABI */
+	ELFOSABI_SYSV		= 0,	/* Alias.  */
+	ELFOSABI_HPUX		= 1,	/* HP-UX */
+	ELFOSABI_NETBSD		= 2,	/* NetBSD.  */
+	ELFOSABI_GNU		= 3,	/* Object uses GNU ELF extensions.  */
+	ELFOSABI_LINUX		= ELFOSABI_GNU,	/* Compatibility alias.  */
+	ELFOSABI_SOLARIS	= 6,	/* Sun Solaris.  */
+	ELFOSABI_AIX		= 7,	/* IBM AIX.  */
+	ELFOSABI_IRIX		= 8,	/* SGI Irix.  */
+	ELFOSABI_FREEBSD	= 9,	/* FreeBSD.  */
+	ELFOSABI_TRU64		= 10,	/* Compaq TRU64 UNIX.  */
+	ELFOSABI_MODESTO	= 11,	/* Novell Modesto.  */
+	ELFOSABI_OPENBSD	= 12,	/* OpenBSD.  */
+	ELFOSABI_ARM_AEABI	= 64,	/* ARM EABI */
+	ELFOSABI_ARM		= 97,	/* ARM */
+	ELFOSABI_CAFEOS		= 202,	/* Nintendo Wii U */
+	ELFOSABI_STANDALONE	= 255,	/* Standalone (embedded) application */
+} Elf_OSABI;
 
 /**
  * Executable type.
@@ -163,11 +187,11 @@ typedef struct PACKED _Elf32_Ehdr {
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
 	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version
-	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V
+	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V (see Elf_OSABI)
 	uint8_t padding[8];	// [0x008]
 
 	Elf32_Half e_type;	// [0x010] Executable type (see Elf_Type)
-	Elf32_Half e_machine;	// [0x012] Machine type
+	Elf32_Half e_machine;	// [0x012] Machine type (see Elf_Machine)
 	Elf32_Word e_version;	// [0x014] Object file version
 
 	// 32-bit header.
@@ -194,11 +218,11 @@ typedef struct PACKED _Elf64_Ehdr {
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
 	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version
-	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V
+	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V (see Elf_OSABI)
 	uint8_t padding[8];	// [0x008]
 
 	Elf64_Half e_type;	// [0x010] Executable type (see Elf_Type)
-	Elf64_Half e_machine;	// [0x012] Machine type
+	Elf64_Half e_machine;	// [0x012] Machine type (see Elf_Machine)
 	Elf64_Word e_version;	// [0x014] Object file version
 
 	// 64-bit header.
