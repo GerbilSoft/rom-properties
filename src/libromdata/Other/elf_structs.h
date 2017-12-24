@@ -83,7 +83,7 @@ typedef struct PACKED _Elf_PrimaryEhdr {
 	uint8_t padding[8];	// [0x008]
 
 	Elf32_Half e_type;	// [0x010] Executable type (see Elf_Type)
-	Elf32_Half e_machine;	// [0x012] Machine type
+	Elf32_Half e_machine;	// [0x012] Machine type (see Elf_Machine)
 	Elf32_Word e_version;	// [0x014] Object file version
 } Elf_PrimaryEhdr;
 ASSERT_STRUCT(Elf_PrimaryEhdr, 24);
@@ -124,6 +124,26 @@ typedef enum {
 	ET_LOPROC	= 0xFF00,	/* Processor-specific range start */
 	ET_HIPROC	= 0xFFFF,	/* Processor-specific range end */
 } Elf_Type;
+
+/**
+ * Machine type.
+ * This list isn't comprehensive; see ELFData.cpp for more.
+ */
+typedef enum {
+	EM_NONE		= 0,	/* No machine */
+	EM_M32		= 1,	/* AT&T WE 32100 */
+	EM_SPARC	= 2,	/* SUN SPARC */
+	EM_386		= 3,	/* Intel 80386 */
+	EM_68K		= 4,	/* Motorola m68k family */
+	EM_88K		= 5,	/* Motorola m88k family */
+	EM_IAMCU	= 6,	/* Intel MCU */
+	EM_860		= 7,	/* Intel 80860 */
+	EM_MIPS		= 8,	/* MIPS R3000 big-endian */
+	EM_S370		= 9,	/* IBM System/370 */
+	EM_MIPS_RS3_LE	= 10,	/* MIPS R3000 little-endian */
+				/* reserved 11-14 */
+	EM_PARISC	= 15,	/* HPPA */
+} Elf_Machine;
 
 /**
  * ELF 32-bit header.

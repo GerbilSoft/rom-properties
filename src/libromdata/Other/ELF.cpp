@@ -544,7 +544,7 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// NOTE: Executable type is used as File Type.
 	// TODO: Add more fields.
@@ -556,6 +556,94 @@ int ELF::loadFieldData(void)
 	} else {
 		d->fields->addField_string(C_("ELF", "CPU"),
 			rp_sprintf(C_("ELF", "Unknown (0x%04X)"), primary->e_machine));
+	}
+
+	// CPU flags.
+	// TODO: Needs testing.
+	const unsigned int flags = (primary->e_class == ELFCLASS32
+				? d->Elf_Header.elf32.e_flags
+				: d->Elf_Header.elf64.e_flags);
+	switch (primary->e_machine) {
+		case EM_SPARC: {
+			// TODO: Low 2 bits indicate memory management.
+			static const char *const sparc_flags_names[] = {
+				// 0x1-0x8
+				nullptr, nullptr, nullptr, nullptr,
+				// 0x10-0x80
+				nullptr, nullptr, nullptr, nullptr,
+				// 0x100-0x800
+				NOP_C_("ELF|SPARCFlags", "SPARC V8+"),
+				NOP_C_("ELF|SPARCFlags", "UltraSPARC I"),
+				NOP_C_("ELF|SPARCFlags", "HaL R1"),
+				NOP_C_("ELF|SPARCFlags", "UltraSPARC III"),
+				// 0x1000-0x8000
+				nullptr, nullptr, nullptr, nullptr,
+				// 0x10000-0x80000
+				nullptr, nullptr, nullptr, nullptr,
+				// 0x100000-0x800000
+				nullptr, nullptr, nullptr,
+				// tr: Little-Endian Data
+				NOP_C_("ELF|SPARCFlags", "LE Data")
+			};
+			vector<string> *v_sparc_flags_names = RomFields::strArrayToVector_i18n(
+				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_sparc_flags_names, 4, flags);
+			break;
+		}
+
+		case EM_MIPS:
+		case EM_MIPS_RS3_LE: {
+			// MIPS architecture level.
+			static const char *const mips_levels[] = {
+				"MIPS-I", "MIPS-II", "MIPS-III", "MIPS-IV",
+				"MIPS-V", "MIPS32", "MIPS64", "MIPS32 rel2",
+				"MIPS64 rel2", "MIPS32 rel6", "MIPS64 rel6"
+			};
+			const unsigned int level = (flags >> 28);
+			if (level < ARRAY_SIZE(mips_levels)) {
+				d->fields->addField_string(C_("ELF", "CPU Level"), mips_levels[level]);
+			} else {
+				d->fields->addField_string(C_("ELF", "CPU Level"),
+					rp_sprintf(C_("ELF", "Unknown (0x%02X)"), level));
+			}
+
+			// Other flags.
+			static const char *const mips_flags_names[] = {
+				// 0x1-0x8
+				NOP_C_("ELF|MIPSFlags", "No Reorder"),
+				NOP_C_("ELF|MIPSFlags", "PIC"),
+				NOP_C_("ELF|MIPSFlags", "CPIC"),
+				NOP_C_("ELF|MIPSFlags", "XGOT"),
+				// 0x10-0x80
+				NOP_C_("ELF|MIPSFlags", "64-bit Whirl"),
+				NOP_C_("ELF|MIPSFlags", "ABI2"),
+				NOP_C_("ELF|MIPSFlags", "ABI ON32"),
+				nullptr,
+				// 0x100-0x400
+				nullptr,
+				NOP_C_("ELF|MIPSFlags", "FP64"),
+				NOP_C_("ELF|MIPSFlags", "NaN 2008"),
+			};
+			vector<string> *v_mips_flags_names = RomFields::strArrayToVector_i18n(
+				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
+			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+				v_mips_flags_names, 4, (flags & ~0xF0000000));
+			break;
+		}
+
+		case EM_PARISC: {
+			// Flags indicate PA-RISC version.
+			d->fields->addField_string(C_("ELF", "PA-RISC Version"),
+				rp_sprintf("%s%s",
+					(flags >> 16 == 0x0214) ? "2.0" : "1.0",
+					(flags & 0x0008) ? " (LP64)" : ""));
+			break;
+		}
+
+		default:
+			// No flags.
+			break;
 	}
 
 	// ABI.
