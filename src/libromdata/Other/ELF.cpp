@@ -597,10 +597,9 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->reserve(9);	// Maximum of 9 fields.
 
 	// NOTE: Executable type is used as File Type.
-	// TODO: Add more fields.
 
 	// CPU.
 	const char *const cpu = ELFData::lookup_cpu(primary->e_machine);
@@ -672,6 +671,12 @@ int ELF::loadFieldData(void)
 
 		case EM_MIPS:
 		case EM_MIPS_RS3_LE: {
+			// 32-bit: O32 vs. N32
+			if (primary->e_class == ELFCLASS32) {
+				d->fields->addField_string(C_("ELF", "MIPS ABI"),
+					d->Elf_Header.elf32.e_flags & 0x20 ? "N32" : "O32");
+			}
+
 			// MIPS architecture level.
 			static const char *const mips_levels[] = {
 				"MIPS-I", "MIPS-II", "MIPS-III", "MIPS-IV",
@@ -716,6 +721,45 @@ int ELF::loadFieldData(void)
 				rp_sprintf("%s%s",
 					(flags >> 16 == 0x0214) ? "2.0" : "1.0",
 					(flags & 0x0008) ? " (LP64)" : ""));
+			break;
+		}
+
+		case EM_ARM: {
+			if (primary->e_class != ELFCLASS32) {
+				// 32-bit only.
+				break;
+			}
+
+			// ARM EABI
+			string arm_eabi;
+			switch (d->Elf_Header.elf32.e_flags >> 24) {
+				case 0x04:
+					arm_eabi = "EABI4";
+					break;
+				case 0x05:
+					arm_eabi = "EABI5";
+					break;
+				default:
+					break;
+			}
+
+			if (d->Elf_Header.elf32.e_flags & 0x00800000) {
+				if (!arm_eabi.empty()) {
+					arm_eabi += ' ';
+				}
+				arm_eabi += "BE8";
+			}
+
+			if (d->Elf_Header.elf32.e_flags & 0x00400000) {
+				if (!arm_eabi.empty()) {
+					arm_eabi += ' ';
+				}
+				arm_eabi += "LE8";
+			}
+
+			if (!arm_eabi.empty()) {
+				d->fields->addField_string(C_("ELF", "ARM EABI"), arm_eabi);
+			}
 			break;
 		}
 
