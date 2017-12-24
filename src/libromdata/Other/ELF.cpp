@@ -96,6 +96,8 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 		bool isPie;		// Is this a position-independent executable?
 		bool isDynamic;		// Is this program dynamically linked?
 
+		string interpreter;	// PT_INTERP value
+
 		/**
 		 * Check program headers.
 		 * @return 0 on success; non-zero on error.
@@ -172,13 +174,61 @@ int ELFPrivate::checkProgramHeaders(void)
 		}
 
 		switch (p_type) {
-			case PT_INTERP:
+			case PT_INTERP: {
 				// If the file type is ET_DYN, this is a PIE executable.
-				if (Elf_Header.primary.e_type == ET_DYN) {
-					// This is a PIE executable.
-					isPie = true;
+				isPie = (Elf_Header.primary.e_type == ET_DYN);
+
+				// Get the interpreter name.
+				int64_t int_addr;
+				uint64_t int_size;
+				if (Elf_Header.primary.e_class == ELFCLASS64) {
+					const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
+					if (Elf_Header.primary.e_data == ELFDATAHOST) {
+						int_addr = phdr->p_offset;
+						int_size = phdr->p_filesz;
+					} else {
+						int_addr = __swab64(phdr->p_offset);
+						int_size = __swab64(phdr->p_filesz);
+					}
+				} else {
+					const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
+					if (Elf_Header.primary.e_data == ELFDATAHOST) {
+						int_addr = phdr->p_offset;
+						int_size = phdr->p_filesz;
+					} else {
+						int_addr = __swab32(phdr->p_offset);
+						int_size = __swab32(phdr->p_filesz);
+					}
 				}
+
+				// Sanity check: Interpreter must be 256 characters or less.
+				// NOTE: Interpreter should be NULL-terminated.
+				if (int_size <= 256) {
+					char buf[256];
+					const int64_t prevoff = file->tell();
+					size = file->seekAndRead(int_addr, buf, int_size);
+					if (size != int_size) {
+						// Seek and/or read error.
+						return -EIO;
+					}
+					ret = file->seek(prevoff);
+					if (ret != 0) {
+						// Seek error.
+						return ret;
+					}
+
+					// Remove trailing NULLs.
+					while (int_size > 0 && buf[int_size-1] == 0) {
+						int_size--;
+					}
+
+					if (int_size > 0) {
+						interpreter.assign(buf, int_size);
+					}
+				}
+
 				break;
+			}
 
 			case PT_DYNAMIC:
 				// Executable is dynamically linked.
@@ -493,7 +543,7 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(4);	// Maximum of 3 fields.
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// NOTE: Executable type is used as File Type.
 	// TODO: Add more fields.
@@ -540,6 +590,11 @@ int ELF::loadFieldData(void)
 		d->isDynamic
 			? C_("ELF|Linkage", "Dynamic")
 			: C_("ELF|Linkage", "Static"));
+
+	// Interpreter.
+	if (!d->interpreter.empty()) {
+		d->fields->addField_string(C_("ELF", "Interpreter"), d->interpreter);
+	}
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
