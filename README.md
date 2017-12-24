@@ -115,11 +115,12 @@ button.
 
 ### Other
 
-|             System            | Properties Tab | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:---------------:|:--------------:|
-| Nintendo amiibo               |       Yes      |       N/A       |      Media     |
-| Nintendo Badge Arcade         |       Yes      |      Image      |       N/A      |
-| Windows/DOS Executables       |       Yes      |        No       |       N/A      |
+|             System             | Properties Tab | Internal Images | External Scans |
+|:------------------------------:|:--------------:|:---------------:|:--------------:|
+| Executable and Linkable Format |       Yes      |       N/A       |       N/A      |
+| Nintendo amiibo                |       Yes      |       N/A       |      Media     |
+| Nintendo Badge Arcade          |       Yes      |      Image      |       N/A      |
+| Windows/DOS Executables        |       Yes      |        No       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
