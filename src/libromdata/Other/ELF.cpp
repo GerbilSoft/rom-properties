@@ -206,21 +206,21 @@ ELF::ELF(IRpFile *file)
 
 	// Determine the file type.
 	switch (d->Elf_Header.primary.e_type) {
-		case ELF_TYPE_RELOCATABLE:
+		default:
+			// Should not happen...
+			break;
+		case ET_REL:
 			d->fileType = FTYPE_RELOCATABLE_OBJECT;
 			break;
-		case ELF_TYPE_EXECUTABLE:
+		case ET_EXEC:
 			d->fileType = FTYPE_EXECUTABLE;
 			break;
-		case ELF_TYPE_SHARED:
+		case ET_DYN:
 			// TODO: Detect PIE.
 			d->fileType = FTYPE_SHARED_LIBRARY;
 			break;
-		case ELF_TYPE_CORE:
+		case ET_CORE:
 			d->fileType = FTYPE_CORE_DUMP;
-			break;
-		default:
-			// Should not happen...
 			break;
 	}
 }
@@ -255,14 +255,14 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	if (!memcmp(pHdr->e_magic, ELF_MAGIC, sizeof(pHdr->e_magic))) {
 		// Verify the bitness and endianness fields.
-		switch (pHdr->e_endianness) {
-			case ELF_ENDIANNESS_LSB:
+		switch (pHdr->e_data) {
+			case ELFDATA2LSB:
 				// Little-endian.
-				switch (pHdr->e_bitness) {
-					case ELF_BITNESS_32BIT:
+				switch (pHdr->e_class) {
+					case ELFCLASS32:
 						// 32-bit LSB.
 						return ELFPrivate::ELF_FORMAT_32LSB;
-					case ELF_BITNESS_64BIT:
+					case ELFCLASS64:
 						// 64-bit LSB.
 						return ELFPrivate::ELF_FORMAT_64LSB;
 					default:
@@ -271,13 +271,13 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 				}
 				break;
 
-			case ELF_ENDIANNESS_MSB:
+			case ELFDATA2MSB:
 				// Big-endian.
-				switch (pHdr->e_bitness) {
-					case ELF_BITNESS_32BIT:
+				switch (pHdr->e_class) {
+					case ELFCLASS32:
 						// 32-bit MSB.
 						return ELFPrivate::ELF_FORMAT_32MSB;
-					case ELF_BITNESS_64BIT:
+					case ELFCLASS64:
 						// 64-bit MSB.
 						return ELFPrivate::ELF_FORMAT_64MSB;
 					default:

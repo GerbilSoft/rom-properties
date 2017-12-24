@@ -75,8 +75,8 @@ typedef uint64_t Elf64_Symndx;
 #define ELF_MAGIC "\177ELF"
 typedef struct PACKED _Elf_PrimaryEhdr {
 	char e_magic[4];	// [0x000] "\x7FELF"
-	uint8_t e_bitness;	// [0x004] Bitness (see Elf_Bitness)
-	uint8_t e_endianness;	// [0x005] Endianness (see Elf_Endianness)
+	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
+	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version
 	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V
 	uint8_t padding[8];	// [0x008]
@@ -91,35 +91,37 @@ ASSERT_STRUCT(Elf_PrimaryEhdr, 24);
  * Bitness.
  */
 typedef enum {
-	ELF_BITNESS_UNKNOWN	= 0,
-	ELF_BITNESS_32BIT	= 1,
-	ELF_BITNESS_64BIT	= 2,
-
-	ELF_BITNESS_MAX
+	ELFCLASSNONE	= 0,	/* Invalid class */
+	ELFCLASS32	= 1,	/* 32-bit objects */
+	ELFCLASS64	= 2,	/* 64-bit objects */
+	ELFCLASSNUM	= 3,
 } Elf_Bitness;
 
 /**
  * Endianness.
  */
 typedef enum {
-	ELF_ENDIANNESS_UNKNOWN	= 0,
-	ELF_ENDIANNESS_LSB	= 1,
-	ELF_ENDIANNESS_MSB	= 2,
-
-	ELF_ENDIANNESS_MAX
+	ELFDATANONE	= 0,	/* Invalid data encoding */
+	ELFDATA2LSB	= 1,	/* 2's complement, little endian */
+	ELFDATA2MSB	= 2,	/* 2's complement, big endian */
+	ELFDATANUM	= 3,
 } Elf_Endianness;
 
 /**
  * Executable type.
  */
 typedef enum {
-	ELF_TYPE_UNKNOWN	= 0,
-	ELF_TYPE_RELOCATABLE	= 1,
-	ELF_TYPE_EXECUTABLE	= 2,
-	ELF_TYPE_SHARED		= 3,
-	ELF_TYPE_CORE		= 4,
+	ET_NONE		= 0,	/* No file type */
+	ET_REL		= 1,	/* Relocatable file */
+	ET_EXEC		= 2,	/* Executable file */
+	ET_DYN		= 3,	/* Shared object file */
+	ET_CORE		= 4,	/* Core file */
+	ET_NUM		= 5,	/* Number of defined types */
 
-	ELF_TYPE_MAX
+	ET_LOOS		= 0xFE00,	/* OS-specific range start */
+	ET_HIOS		= 0xFEFF,	/* OS-specific range end */
+	ET_LOPROC	= 0xFF00,	/* Processor-specific range start */
+	ET_HIPROC	= 0xFFFF,	/* Processor-specific range end */
 } Elf_Type;
 
 /**
@@ -129,8 +131,8 @@ typedef enum {
 typedef struct PACKED _Elf32_Ehdr {
 	// Primary header. (Same as Elf_PrimaryEhdr)
 	char e_magic[4];	// [0x000] "\x7FELF"
-	uint8_t e_bitness;	// [0x004] Bitness (see Elf_Bitness)
-	uint8_t e_endianness;	// [0x005] Endianness (see Elf_Endianness)
+	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
+	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version
 	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V
 	uint8_t padding[8];	// [0x008]
@@ -160,8 +162,8 @@ ASSERT_STRUCT(Elf32_Ehdr, 52);
 typedef struct PACKED _Elf64_Ehdr {
 	// Primary header. (Same as Elf_PrimaryEhdr)
 	char e_magic[4];	// [0x000] "\x7FELF"
-	uint8_t e_bitness;	// [0x004] Bitness (see Elf_Bitness)
-	uint8_t e_endianness;	// [0x005] Endianness (see Elf_Endianness)
+	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
+	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version
 	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V
 	uint8_t padding[8];	// [0x008]
