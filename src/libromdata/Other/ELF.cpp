@@ -616,6 +616,32 @@ int ELF::loadFieldData(void)
 			? d->Elf_Header.elf64.e_flags
 			: d->Elf_Header.elf32.e_flags);
 	switch (primary->e_machine) {
+		case EM_68K: {
+			if (primary->e_class != ELFCLASS32) {
+				// M68K is 32-bit only.
+				break;
+			}
+
+			// Instruction set.
+			// NOTE: `file` can show both 68000 and CPU32
+			// at the same time, but that doesn't make sense.
+			const char *m68k_insn;
+			if (d->Elf_Header.elf32.e_flags == 0) {
+				m68k_insn = "68020";
+			} else if (d->Elf_Header.elf32.e_flags & 0x01000000) {
+				m68k_insn = "68000";
+			} else if (d->Elf_Header.elf32.e_flags & 0x00810000) {
+				m68k_insn = "CPU32";
+			} else {
+				m68k_insn = nullptr;
+			}
+
+			if (m68k_insn) {
+				d->fields->addField_string(C_("ELF", "Instruction Set"), m68k_insn);
+			}
+			break;
+		}
+
 		case EM_SPARC32PLUS:
 		case EM_SPARCV9: {
 			// Verify bitness.
