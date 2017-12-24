@@ -175,6 +175,14 @@ typedef enum {
 	EM_PPC64	= 21,	/* PowerPC 64-bit */
 	EM_S390		= 22,	/* IBM S390 */
 	EM_SPU		= 23,	/* IBM SPU/SPC */
+	EM_V800		= 36,	/* NEC V800 series */
+	EM_FR20		= 37,	/* Fujitsu FR20 */
+	EM_RH32		= 38,	/* TRW RH-32 */
+	EM_RCE		= 39,	/* Motorola RCE */
+	EM_ARM		= 40,	/* ARM */
+	EM_FAKE_ALPHA	= 41,	/* Digital Alpha */
+	EM_SH		= 42,	/* Hitachi SH */
+	EM_SPARCV9	= 43,	/* SPARC v9 64-bit */
 } Elf_Machine;
 
 /**

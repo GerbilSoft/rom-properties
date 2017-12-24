@@ -616,7 +616,22 @@ int ELF::loadFieldData(void)
 			? d->Elf_Header.elf64.e_flags
 			: d->Elf_Header.elf32.e_flags);
 	switch (primary->e_machine) {
-		case EM_SPARC: {
+		case EM_SPARC32PLUS:
+		case EM_SPARCV9: {
+			// Verify bitness.
+			if (primary->e_machine == EM_SPARC32PLUS &&
+			    primary->e_class != ELFCLASS32)
+			{
+				// SPARC32PLUS must be 32-bit.
+				break;
+			}
+			else if (primary->e_machine == EM_SPARCV9 &&
+				 primary->e_class != ELFCLASS64)
+			{
+				// SPARCV9 must be 64-bit.
+				break;
+			}
+
 			// SPARC memory ordering.
 			static const char *const sparc_mm[] = {
 				NOP_C_("ELF|SPARC_MM", "Total Store Ordering"),
