@@ -91,15 +91,16 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 			Elf64_Ehdr elf64;
 		} Elf_Header;
 
-		// Position-independent executable.
-		bool isPie;
-		bool hasCheckedPie;
+		// Information identified from program headers.
+		bool hasCheckedPH;	// Have we checked program headers yet?
+		bool isPie;		// Is this a position-independent executable?
+		bool isDynamic;		// Is this program dynamically linked?
 
 		/**
-		 * Is this a position-independent executable?
-		 * @return True if it is; false if it isn't.
+		 * Check program headers.
+		 * @return 0 on success; non-zero on error.
 		 */
-		bool checkForPie(void);
+		int checkProgramHeaders(void);
 };
 
 /** ELFPrivate **/
@@ -107,30 +108,27 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	: super(q, file)
 	, elfFormat(ELF_FORMAT_UNKNOWN)
+	, hasCheckedPH(false)
 	, isPie(false)
-	, hasCheckedPie(false)
+	, isDynamic(false)
 {
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
 }
 
 /**
- * Is this a position-independent executable?
- * @return True if it is; false if it isn't.
+ * Check program headers.
+ * @return 0 on success; non-zero on error.
  */
-bool ELFPrivate::checkForPie(void)
+int ELFPrivate::checkProgramHeaders(void)
 {
-	if (hasCheckedPie) {
-		return isPie;
+	if (hasCheckedPH) {
+		// Already checked.
+		return 0;
 	}
 
-	if (Elf_Header.primary.e_type != ET_DYN) {
-		// Not a shared object file.
-		// Cannot be a PIE executable.
-		isPie = false;
-		hasCheckedPie = true;
-		return false;
-	}
+	// Now checking...
+	hasCheckedPH = true;
 
 	// Read the program headers.
 	// PIE executables have a PT_INTERP header.
@@ -154,9 +152,7 @@ bool ELFPrivate::checkForPie(void)
 	int ret = file->seek(e_phoff);
 	if (ret != 0) {
 		// Seek error.
-		isPie = false;
-		hasCheckedPie = true;
-		return false;
+		return ret;
 	}
 
 	// Read all of the program header entries.
@@ -171,27 +167,31 @@ bool ELFPrivate::checkForPie(void)
 		// Check the type.
 		uint32_t p_type;
 		memcpy(&p_type, phbuf, sizeof(p_type));
-		if (isHostEndian) {
-			// No byteswapping required.
-			if (p_type == PT_INTERP) {
-				// PT_INTERP header found.
-				// This is a PIE executable.
-				isPie = true;
+		if (!isHostEndian) {
+			p_type = __swab32(p_type);
+		}
+
+		switch (p_type) {
+			case PT_INTERP:
+				// If the file type is ET_DYN, this is a PIE executable.
+				if (Elf_Header.primary.e_type == ET_DYN) {
+					// This is a PIE executable.
+					isPie = true;
+				}
 				break;
-			}
-		} else {
-			// Check the byteswapped version.
-			if (p_type == __swab32(PT_INTERP)) {
-				// PT_INTERP header found.
-				// This is a PIE executable.
-				isPie = true;
+
+			case PT_DYNAMIC:
+				// Executable is dynamically linked.
+				isDynamic = true;
 				break;
-			}
+
+			default:
+				break;
 		}
 	}
 
-	hasCheckedPie = true;
-	return isPie;
+	// Program headers checked.
+	return 0;
 }
 
 /** ELF **/
@@ -298,6 +298,9 @@ ELF::ELF(IRpFile *file)
 		}
 	}
 
+	// Check program headers.
+	d->checkProgramHeaders();
+
 	// Determine the file type.
 	switch (d->Elf_Header.primary.e_type) {
 		default:
@@ -312,7 +315,7 @@ ELF::ELF(IRpFile *file)
 		case ET_DYN:
 			// This may either be a shared library or a
 			// position-independent executable.
-			d->fileType = (d->checkForPie() ? FTYPE_EXECUTABLE : FTYPE_SHARED_LIBRARY);
+			d->fileType = (d->isPie ? FTYPE_EXECUTABLE : FTYPE_SHARED_LIBRARY);
 			break;
 		case ET_CORE:
 			d->fileType = FTYPE_CORE_DUMP;
@@ -490,7 +493,7 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields->reserve(4);	// Maximum of 3 fields.
 
 	// NOTE: Executable type is used as File Type.
 	// TODO: Add more fields.
@@ -531,6 +534,12 @@ int ELF::loadFieldData(void)
 		// NOTE: This shouldn't happen...
 		d->fields->addField_string(C_("ELF", "Format"), C_("ELF", "Unknown"));
 	}
+
+	// Linkage.
+	d->fields->addField_string(C_("ELF", "Linkage"),
+		d->isDynamic
+			? C_("ELF|Linkage", "Dynamic")
+			: C_("ELF|Linkage", "Static"));
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
