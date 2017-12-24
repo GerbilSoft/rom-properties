@@ -96,6 +96,7 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 		bool hasCheckedPH;	// Have we checked program headers yet?
 		bool isPie;		// Is this a position-independent executable?
 		bool isDynamic;		// Is this program dynamically linked?
+		bool isWiiU;		// Is this a Wii U executable?
 
 		string interpreter;	// PT_INTERP value
 
@@ -150,6 +151,11 @@ int ELFPrivate::checkProgramHeaders(void)
 		e_phoff = (int64_t)Elf_Header.elf32.e_phoff;
 		e_phnum = Elf_Header.elf32.e_phnum;
 		phsize = sizeof(Elf32_Phdr);
+	}
+
+	if (e_phoff == 0 && e_phnum == 0) {
+		// No program headers. Can't determine anything...
+		return 0;
 	}
 
 	int ret = file->seek(e_phoff);
@@ -349,28 +355,52 @@ ELF::ELF(IRpFile *file)
 		}
 	}
 
-	// Check program headers.
-	d->checkProgramHeaders();
+	// Primary ELF header.
+	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
 
-	// Determine the file type.
-	switch (d->Elf_Header.primary.e_type) {
-		default:
-			// Should not happen...
-			break;
-		case ET_REL:
-			d->fileType = FTYPE_RELOCATABLE_OBJECT;
-			break;
-		case ET_EXEC:
-			d->fileType = FTYPE_EXECUTABLE;
-			break;
-		case ET_DYN:
-			// This may either be a shared library or a
-			// position-independent executable.
-			d->fileType = (d->isPie ? FTYPE_EXECUTABLE : FTYPE_SHARED_LIBRARY);
-			break;
-		case ET_CORE:
-			d->fileType = FTYPE_CORE_DUMP;
-			break;
+	// Is this a Wii U executable?
+	if (primary->e_osabi == 202 &&
+	    d->elfFormat == ELFPrivate::ELF_FORMAT_32MSB &&
+	    primary->e_machine == EM_PPC)
+	{
+		// Assuming this is a Wii U executable.
+		d->isWiiU = true;
+		d->isDynamic = true;	// TODO: Properly check this.
+
+		// TODO: Determine different RPX/RPL file types.
+		switch (primary->e_type) {
+			case 0xFE01:
+				// This matches some homebrew software.
+				d->fileType = RomData::FTYPE_EXECUTABLE;
+				break;
+			default:
+				break;
+		}
+	} else {
+		// Standard ELF executable.
+		// Check program headers.
+		d->checkProgramHeaders();
+
+		// Determine the file type.
+		switch (d->Elf_Header.primary.e_type) {
+			default:
+				// Should not happen...
+				break;
+			case ET_REL:
+				d->fileType = FTYPE_RELOCATABLE_OBJECT;
+				break;
+			case ET_EXEC:
+				d->fileType = FTYPE_EXECUTABLE;
+				break;
+			case ET_DYN:
+				// This may either be a shared library or a
+				// position-independent executable.
+				d->fileType = (d->isPie ? FTYPE_EXECUTABLE : FTYPE_SHARED_LIBRARY);
+				break;
+			case ET_CORE:
+				d->fileType = FTYPE_CORE_DUMP;
+				break;
+		}
 	}
 }
 
@@ -470,11 +500,29 @@ const char *ELF::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"ELF::systemName() array index optimization needs to be updated.");
 
+	type &= SYSNAME_TYPE_MASK;
+
+	if (d->isWiiU) {
+		// This is a Wii U RPX/RPL executable.
+		if (d->fileType == FTYPE_SHARED_LIBRARY) {
+			static const char *const sysNames_RPL[4] = {
+				"Nintendo Wii U RPL", "RPL", "RPL", nullptr
+			};
+			return sysNames_RPL[type];
+		} else {
+			static const char *const sysNames_RPX[4] = {
+				"Nintendo Wii U RPX", "RPX", "RPX", nullptr
+			};
+			return sysNames_RPX[type];
+		}
+	}
+
+	// Standard ELF executable.
 	static const char *const sysNames[4] = {
 		"Executable and Linkable Format", "ELF", "ELF", nullptr
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	return sysNames[type];
 }
 
 /**
@@ -499,6 +547,10 @@ const char *const *ELF::supportedFileExtensions_static(void)
 		".o",		// Relocatable object files.
 		".core",	// Core dumps.
 		".debug",	// Split debug files.
+
+		// Wii U
+		".rpx",		// Cafe OS executable
+		".rpl",		// Cafe OS library
 
 		nullptr
 	};

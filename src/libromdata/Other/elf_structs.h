@@ -143,6 +143,14 @@ typedef enum {
 	EM_MIPS_RS3_LE	= 10,	/* MIPS R3000 little-endian */
 				/* reserved 11-14 */
 	EM_PARISC	= 15,	/* HPPA */
+				/* reserved 16 */
+	EM_VPP500	= 17,	/* Fujitsu VPP500 */
+	EM_SPARC32PLUS	= 18,	/* Sun's "v8plus" */
+	EM_960		= 19,	/* Intel 80960 */
+	EM_PPC		= 20,	/* PowerPC */
+	EM_PPC64	= 21,	/* PowerPC 64-bit */
+	EM_S390		= 22,	/* IBM S390 */
+	EM_SPU		= 23,	/* IBM SPU/SPC */
 } Elf_Machine;
 
 /**

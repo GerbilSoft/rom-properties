@@ -410,6 +410,7 @@ const char *ELFData::lookup_osabi(uint8_t osabi)
 	switch (osabi) {
 		case 64:	return "ARM EABI";
 		case 97:	return "ARM";
+		case 202:	return "Cafe OS";	// Wii U
 		case 255:	return "Embedded";
 		default:	break;
 	}
