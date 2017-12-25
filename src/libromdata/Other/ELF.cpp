@@ -92,7 +92,7 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 			Elf64_Ehdr elf64;
 		} Elf_Header;
 
-		// Information identified from program headers.
+		// Program Header information.
 		bool hasCheckedPH;	// Have we checked program headers yet?
 		bool isPie;		// Is this a position-independent executable?
 		bool isDynamic;		// Is this program dynamically linked?
@@ -100,11 +100,28 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 
 		string interpreter;	// PT_INTERP value
 
+		// Section Header information.
+		bool hasCheckedSH;	// Have we checked section headers yet?
+		string osVersion;	// Operating system version.
+
+		/**
+		 * Byteswap a uint32_t value from ELF to CPU.
+		 * @param x Value to swap.
+		 * @return Swapped value.
+		 */
+		inline uint32_t elf32_to_cpu(uint32_t x);
+
 		/**
 		 * Check program headers.
 		 * @return 0 on success; non-zero on error.
 		 */
 		int checkProgramHeaders(void);
+
+		/**
+		 * Check section headers.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int checkSectionHeaders(void);
 };
 
 /** ELFPrivate **/
@@ -116,9 +133,28 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	, isPie(false)
 	, isDynamic(false)
 	, isWiiU(false)
+	, hasCheckedSH(false)
 {
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
+}
+
+/**
+ * Byteswap a uint32_t value from ELF to CPU.
+ * @param x Value to swap.
+ * @return Swapped value.
+ */
+inline uint32_t ELFPrivate::elf32_to_cpu(uint32_t x)
+{
+	if (Elf_Header.primary.e_data == ELFDATAHOST) {
+		return x;
+	} else {
+		return __swab32(x);
+	}
+
+	// Should not get here...
+	assert(!"Should not get here...");
+	return ~0;
 }
 
 /**
@@ -154,7 +190,7 @@ int ELFPrivate::checkProgramHeaders(void)
 		phsize = sizeof(Elf32_Phdr);
 	}
 
-	if (e_phoff == 0 && e_phnum == 0) {
+	if (e_phoff == 0 || e_phnum == 0) {
 		// No program headers. Can't determine anything...
 		return 0;
 	}
@@ -241,6 +277,174 @@ int ELFPrivate::checkProgramHeaders(void)
 			case PT_DYNAMIC:
 				// Executable is dynamically linked.
 				isDynamic = true;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	// Program headers checked.
+	return 0;
+}
+
+/**
+ * Check section headers.
+ * @return 0 on success; non-zero on error.
+ */
+int ELFPrivate::checkSectionHeaders(void)
+{
+	if (hasCheckedSH) {
+		// Already checked.
+		return 0;
+	}
+
+	// Now checking...
+	hasCheckedSH = true;
+
+	// Read the section headers.
+	int64_t e_shoff;
+	unsigned int e_shnum;
+	unsigned int shsize;
+	uint8_t shbuf[sizeof(Elf64_Shdr)];
+
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		e_shoff = (int64_t)Elf_Header.elf64.e_shoff;
+		e_shnum = Elf_Header.elf64.e_shnum;
+		shsize = sizeof(Elf64_Shdr);
+	} else {
+		e_shoff = (int64_t)Elf_Header.elf32.e_shoff;
+		e_shnum = Elf_Header.elf32.e_shnum;
+		shsize = sizeof(Elf32_Shdr);
+	}
+
+	if (e_shoff == 0 || e_shnum == 0) {
+		// No section headers. Can't determine anything...
+		return 0;
+	}
+
+	int ret = file->seek(e_shoff);
+	if (ret != 0) {
+		// Seek error.
+		return ret;
+	}
+
+	// Read all of the section header entries.
+	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
+	for (; e_shnum > 0; e_shnum--) {
+		size_t size = file->read(shbuf, shsize);
+		if (size != shsize) {
+			// Read error.
+			break;
+		}
+
+		// Check the type.
+		uint32_t s_type;
+		memcpy(&s_type, &shbuf[4], sizeof(s_type));
+		if (!isHostEndian) {
+			s_type = __swab32(s_type);
+		}
+
+		// Only NOTEs are supported right now.
+		if (s_type != SHT_NOTE)
+			continue;
+
+		// Get the note address and size.
+		int64_t int_addr;
+		uint64_t int_size;
+		if (Elf_Header.primary.e_class == ELFCLASS64) {
+			const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
+			if (Elf_Header.primary.e_data == ELFDATAHOST) {
+				int_addr = shdr->sh_offset;
+				int_size = shdr->sh_size;
+			} else {
+				int_addr = __swab64(shdr->sh_offset);
+				int_size = __swab64(shdr->sh_size);
+			}
+		} else {
+			const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
+			if (Elf_Header.primary.e_data == ELFDATAHOST) {
+				int_addr = shdr->sh_offset;
+				int_size = shdr->sh_size;
+			} else {
+				int_addr = __swab32(shdr->sh_offset);
+				int_size = __swab32(shdr->sh_size);
+			}
+		}
+
+		// Sanity check: Note must be 256 bytes or less,
+		// and must be greater than sizeof(Elf32_Nhdr).
+		// NOTE: Elf32_Nhdr and Elf64_Nhdr are identical.
+		if (int_size < sizeof(Elf32_Nhdr) || int_size > 256) {
+			// Out of range. Ignore it.
+			continue;
+		}
+
+		uint8_t buf[256];
+		const int64_t prevoff = file->tell();
+		size = file->seekAndRead(int_addr, buf, int_size);
+		if (size != int_size) {
+			// Seek and/or read error.
+			return -EIO;
+		}
+		ret = file->seek(prevoff);
+		if (ret != 0) {
+			// Seek error.
+			return ret;
+		}
+
+		// Parse the note.
+		Elf32_Nhdr *const nhdr = reinterpret_cast<Elf32_Nhdr*>(buf);
+		if (Elf_Header.primary.e_data != ELFDATAHOST) {
+			// Byteswap the fields.
+			nhdr->n_namesz = __swab32(nhdr->n_namesz);
+			nhdr->n_descsz = __swab32(nhdr->n_descsz);
+			nhdr->n_type   = __swab32(nhdr->n_type);
+		}
+
+		if (nhdr->n_namesz == 0 || nhdr->n_descsz == 0) {
+			// No name or description...
+			continue;
+		}
+
+		if (int_size < sizeof(Elf32_Nhdr) + nhdr->n_namesz + nhdr->n_descsz) {
+			// Section is too small.
+			continue;
+		}
+
+		const char *const pName = reinterpret_cast<const char*>(&buf[sizeof(Elf32_Nhdr)]);
+		const uint8_t *const pData = &buf[sizeof(Elf32_Nhdr) + nhdr->n_namesz];
+		switch (nhdr->n_type) {
+			case NT_GNU_ABI_TAG:
+				// GNU ABI tag.
+				if (nhdr->n_namesz == 5 && !strcmp(pName, "SuSE")) {
+					// SuSE Linux
+					osVersion = rp_sprintf("SuSE Linux %u.%u", pData[0], pData[1]);
+				} else if (nhdr->n_namesz == 4 && !strcmp(pName, ELF_NOTE_GNU)) {
+					// GNU system
+					if (nhdr->n_descsz < sizeof(uint32_t)*4) {
+						// Header is too small...
+						break;
+					}
+					uint32_t desc[4];
+					memcpy(desc, pData, sizeof(desc));
+
+					const uint32_t os_id = elf32_to_cpu(desc[0]);
+					const char *const os_tbl[] = {
+						"Linux", "Hurd", "Solaris", "kFreeBSD", "kNetBSD"
+					};
+
+					const char *s_os;
+					if (os_id < ARRAY_SIZE(os_tbl)) {
+						s_os = os_tbl[os_id];
+					} else {
+						s_os = "<unknown>";
+					}
+
+					osVersion = rp_sprintf("GNU/%s %u.%u.%u",
+						s_os, elf32_to_cpu(desc[1]),
+						elf32_to_cpu(desc[2]), elf32_to_cpu(desc[3]));
+				}
 				break;
 
 			default:
@@ -380,8 +584,9 @@ ELF::ELF(IRpFile *file)
 		}
 	} else {
 		// Standard ELF executable.
-		// Check program headers.
+		// Check program and section headers.
 		d->checkProgramHeaders();
+		d->checkSectionHeaders();
 
 		// Determine the file type.
 		switch (d->Elf_Header.primary.e_type) {
@@ -832,6 +1037,11 @@ int ELF::loadFieldData(void)
 	// Interpreter.
 	if (!d->interpreter.empty()) {
 		d->fields->addField_string(C_("ELF", "Interpreter"), d->interpreter);
+	}
+
+	// Operating system.
+	if (!d->osVersion.empty()) {
+		d->fields->addField_string(C_("ELF", "OS Version"), d->osVersion);
 	}
 
 	// Entry point.

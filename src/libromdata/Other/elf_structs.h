@@ -204,8 +204,8 @@ typedef struct PACKED _Elf32_Ehdr {
 
 	// 32-bit header.
 	Elf32_Addr e_entry;	// [0x018] Entry point virtual address
-	Elf32_Off e_phoff;	// [0x01C] Program header table file offset
-	Elf32_Off e_shoff;	// [0x020] Section header table file offset
+	Elf32_Off  e_phoff;	// [0x01C] Program header table file offset
+	Elf32_Off  e_shoff;	// [0x020] Section header table file offset
 	Elf32_Word e_flags;	// [0x024] Processor-specific flags
 	Elf32_Half e_ehsize;	// [0x028] ELF header size in bytes
 	Elf32_Half e_phentsize;	// [0x02A] Program header table entry size
@@ -235,8 +235,8 @@ typedef struct PACKED _Elf64_Ehdr {
 
 	// 64-bit header.
 	Elf64_Addr e_entry;	// [0x018] Entry point virtual address
-	Elf64_Off e_phoff;	// [0x020] Program header table file offset
-	Elf64_Off e_shoff;	// [0x028] Section header table file offset
+	Elf64_Off  e_phoff;	// [0x020] Program header table file offset
+	Elf64_Off  e_shoff;	// [0x028] Section header table file offset
 	Elf64_Word e_flags;	// [0x030] Processor-specific flags
 	Elf64_Half e_ehsize;	// [0x034] ELF header size in bytes
 	Elf64_Half e_phentsize;	// [0x036] Program header table entry size
@@ -252,7 +252,7 @@ ASSERT_STRUCT(Elf64_Ehdr, 64);
  */
 typedef struct PACKED _Elf32_Phdr {
 	Elf32_Word p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
-	Elf32_Off p_offset;	// [0x004] Offset of segment from the beginning of the file
+	Elf32_Off  p_offset;	// [0x004] Offset of segment from the beginning of the file
 	Elf32_Addr p_vaddr;	// [0x008] Virtual address
 	Elf32_Addr p_paddr;	// [0x00C] Physical address
 	Elf32_Word p_filesz;	// [0x010] Size of file image, in bytes
@@ -266,11 +266,11 @@ ASSERT_STRUCT(Elf32_Phdr, 32);
  * ELF 64-bit program header.
  */
 typedef struct PACKED _Elf64_Phdr {
-	Elf64_Word p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
-	Elf64_Word p_flags;	// [0x004] Flags
-	Elf64_Off p_offset;	// [0x008] Offset of segment from the beginning of the file
-	Elf64_Addr p_vaddr;	// [0x010] Virtual address
-	Elf64_Addr p_paddr;	// [0x018] Physical address
+	Elf64_Word  p_type;	// [0x000] Program header type (see Elf_Phdr_Type)
+	Elf64_Word  p_flags;	// [0x004] Flags
+	Elf64_Off   p_offset;	// [0x008] Offset of segment from the beginning of the file
+	Elf64_Addr  p_vaddr;	// [0x010] Virtual address
+	Elf64_Addr  p_paddr;	// [0x018] Physical address
 	Elf64_Xword p_filesz;	// [0x020] Size of file image, in bytes
 	Elf64_Xword p_memsz;	// [0x028] Size of memory image, in bytes
 	Elf64_Xword p_align;	// [0x030] Alignment value
@@ -297,6 +297,148 @@ typedef enum {
 	PT_LOPROC	= 0x70000000,
 	PT_HIPROC	= 0x7FFFFFFF,
 } Elf_Phdr_Type;
+
+/**
+ * ELF 32-bit section header.
+ */
+typedef struct _Elf32_Shdr {
+	Elf32_Word sh_name;		/* [0x000] Section name (string tbl index) */
+	Elf32_Word sh_type;		/* [0x004] Section type */
+	Elf32_Word sh_flags;		/* [0x008] Section flags */
+	Elf32_Addr sh_addr;		/* [0x00C] Section virtual addr at execution */
+	Elf32_Off  sh_offset;		/* [0x010] Section file offset */
+	Elf32_Word sh_size;		/* [0x014] Section size in bytes */
+	Elf32_Word sh_link;		/* [0x018] Link to another section */
+	Elf32_Word sh_info;		/* [0x01C] Additional section information */
+	Elf32_Word sh_addralign;	/* [0x020] Section alignment */
+	Elf32_Word sh_entsize;		/* [0x024] Entry size if section holds table */
+} Elf32_Shdr;
+ASSERT_STRUCT(Elf32_Shdr, 40);
+
+/**
+ * ELF 64-bit section header.
+ */
+typedef struct {
+	Elf64_Word  sh_name;		/* [0x000] Section name (string tbl index) */
+	Elf64_Word  sh_type;		/* [0x004] Section type */
+	Elf64_Xword sh_flags;		/* [0x008] Section flags */
+	Elf64_Addr  sh_addr;		/* [0x010] Section virtual addr at execution */
+	Elf64_Off   sh_offset;		/* [0x018] Section file offset */
+	Elf64_Xword sh_size;		/* [0x020] Section size in bytes */
+	Elf64_Word  sh_link;		/* [0x028] Link to another section */
+	Elf64_Word  sh_info;		/* [0x02C] Additional section information */
+	Elf64_Xword sh_addralign;	/* [0x030] Section alignment */
+	Elf64_Xword sh_entsize;		/* [0x038] Entry size if section holds table */
+} Elf64_Shdr;
+ASSERT_STRUCT(Elf64_Shdr, 64);
+
+/**
+ * ELF section header types.
+ */
+typedef enum {
+	SHT_NULL	  = 0,		/* Section header table entry unused */
+	SHT_PROGBITS	  = 1,		/* Program data */
+	SHT_SYMTAB	  = 2,		/* Symbol table */
+	SHT_STRTAB	  = 3,		/* String table */
+	SHT_RELA	  = 4,		/* Relocation entries with addends */
+	SHT_HASH	  = 5,		/* Symbol hash table */
+	SHT_DYNAMIC	  = 6,		/* Dynamic linking information */
+	SHT_NOTE	  = 7,		/* Notes */
+	SHT_NOBITS	  = 8,		/* Program space with no data (bss) */
+	SHT_REL		  = 9,		/* Relocation entries, no addends */
+	SHT_SHLIB	  = 10,		/* Reserved */
+	SHT_DYNSYM	  = 11,		/* Dynamic linker symbol table */
+	SHT_INIT_ARRAY	  = 14,		/* Array of constructors */
+	SHT_FINI_ARRAY	  = 15,		/* Array of destructors */
+	SHT_PREINIT_ARRAY = 16,		/* Array of pre-constructors */
+	SHT_GROUP	  = 17,		/* Section group */
+	SHT_SYMTAB_SHNDX  = 18,		/* Extended section indeces */
+	SHT_NUM		  = 19,		/* Number of defined types.  */
+	SHT_LOOS	  = 0x60000000,	/* Start OS-specific.  */
+	SHT_GNU_ATTRIBUTES = 0x6ffffff5,	/* Object attributes.  */
+	SHT_GNU_HASH	  = 0x6ffffff6,	/* GNU-style hash table.  */
+	SHT_GNU_LIBLIST	  = 0x6ffffff7,	/* Prelink library list */
+	SHT_CHECKSUM	  = 0x6ffffff8,	/* Checksum for DSO content.  */
+	SHT_LOSUNW	  = 0x6ffffffa,	/* Sun-specific low bound.  */
+	SHT_SUNW_move	  = 0x6ffffffa,
+	SHT_SUNW_COMDAT   = 0x6ffffffb,
+	SHT_SUNW_syminfo  = 0x6ffffffc,
+	SHT_GNU_verdef	  = 0x6ffffffd,	/* Version definition section.  */
+	SHT_GNU_verneed	  = 0x6ffffffe,	/* Version needs section.  */
+	SHT_GNU_versym	  = 0x6fffffff,	/* Version symbol table.  */
+	SHT_HISUNW	  = 0x6fffffff,	/* Sun-specific high bound.  */
+	SHT_HIOS	  = 0x6fffffff,	/* End OS-specific type */
+	SHT_LOPROC	  = 0x70000000,	/* Start of processor-specific */
+	SHT_HIPROC	  = 0x7fffffff,	/* End of processor-specific */
+	SHT_LOUSER	  = 0x80000000,	/* Start of application-specific */
+	SHT_HIUSER	  = 0x8fffffff,	/* End of application-specific */
+} Elf_Shdr_Type;
+
+/* Note section contents.  Each entry in the note section begins with
+   a header of a fixed form.  */
+
+typedef struct _Elf32_Nhdr {
+	Elf32_Word n_namesz;	/* Length of the note's name.  */
+	Elf32_Word n_descsz;	/* Length of the note's descriptor.  */
+	Elf32_Word n_type;	/* Type of the note.  */
+} Elf32_Nhdr;
+
+typedef struct _Elf64_Nhdr {
+	Elf64_Word n_namesz;	/* Length of the note's name.  */
+	Elf64_Word n_descsz;	/* Length of the note's descriptor.  */
+	Elf64_Word n_type;	/* Type of the note.  */
+} Elf64_Nhdr;
+
+/* Known names of notes.  */
+
+/* Solaris entries in the note section have this name.  */
+#define ELF_NOTE_SOLARIS	"SUNW Solaris"
+
+/* Note entries for GNU systems have this name.  */
+#define ELF_NOTE_GNU		"GNU"
+
+
+/* Defined types of notes for Solaris.  */
+
+/* Value of descriptor (one word) is desired pagesize for the binary.  */
+#define ELF_NOTE_PAGESIZE_HINT	1
+
+
+/* Defined note types for GNU systems.  */
+
+/* ABI information.  The descriptor consists of words:
+   word 0: OS descriptor
+   word 1: major version of the ABI
+   word 2: minor version of the ABI
+   word 3: subminor version of the ABI
+*/
+#define NT_GNU_ABI_TAG	1
+#define ELF_NOTE_ABI	NT_GNU_ABI_TAG /* Old name.  */
+
+/* Known OSes.  These values can appear in word 0 of an
+   NT_GNU_ABI_TAG note section entry.  */
+typedef enum _Elf_GNU_OS {
+	ELF_NOTE_OS_LINUX	= 0,
+	ELF_NOTE_OS_GNU		= 1,
+	ELF_NOTE_OS_SOLARIS2	= 2,
+	ELF_NOTE_OS_FREEBSD	= 3,
+	ELF_NOTE_OS_NETBSD	= 4,
+} Elf_GNU_OS;
+
+/* Synthetic hwcap information.  The descriptor begins with two words:
+   word 0: number of entries
+   word 1: bitmask of enabled entries
+   Then follow variable-length entries, one byte followed by a
+   '\0'-terminated hwcap name string.  The byte gives the bit
+   number to test if enabled, (1U << bit) & bitmask.  */
+#define NT_GNU_HWCAP	2
+
+/* Build ID bits as generated by ld --build-id.
+   The descriptor consists of any nonzero number of bytes.  */
+#define NT_GNU_BUILD_ID	3
+
+/* Version note generated by GNU gold containing a version string.  */
+#define NT_GNU_GOLD_VERSION	4
 
 #pragma pack()
 
