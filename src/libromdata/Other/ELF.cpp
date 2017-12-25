@@ -419,6 +419,10 @@ int ELFPrivate::checkSectionHeaders(void)
 				// GNU ABI tag.
 				if (nhdr->n_namesz == 5 && !strcmp(pName, "SuSE")) {
 					// SuSE Linux
+					if (nhdr->n_descsz < 2) {
+						// Header is too small...
+						break;
+					}
 					osVersion = rp_sprintf("SuSE Linux %u.%u", pData[0], pData[1]);
 				} else if (nhdr->n_namesz == 4 && !strcmp(pName, ELF_NOTE_GNU)) {
 					// GNU system
@@ -444,6 +448,90 @@ int ELFPrivate::checkSectionHeaders(void)
 					osVersion = rp_sprintf("GNU/%s %u.%u.%u",
 						s_os, elf32_to_cpu(desc[1]),
 						elf32_to_cpu(desc[2]), elf32_to_cpu(desc[3]));
+				} else if (nhdr->n_namesz == 7 && !strcmp(pName, "NetBSD")) {
+					// Check if the version number is valid.
+					// Older versions kept this as 199905.
+					// Newer versions use __NetBSD_Version__.
+					if (nhdr->n_descsz < sizeof(uint32_t)) {
+						// Header is too small...
+						break;
+					}
+
+					uint32_t desc;
+					memcpy(&desc, pData, sizeof(desc));
+					desc = elf32_to_cpu(desc);
+
+					if (desc > 100000000U) {
+						const uint32_t ver_patch = (desc / 100) % 100;
+						uint32_t ver_rel = (desc / 10000) % 100;
+						const uint32_t ver_min = (desc / 1000000) % 100;
+						const uint32_t ver_maj = desc / 100000000;
+						osVersion = rp_sprintf("NetBSD %u.%u", ver_maj, ver_min);
+						if (ver_rel == 0 && ver_patch != 0) {
+							osVersion += rp_sprintf(".%u", ver_patch);
+						} else if (ver_rel != 0) {
+							while (ver_rel > 26) {
+								osVersion += 'Z';
+								ver_rel -= 26;
+							}
+							osVersion += ('A' + ver_rel - 1);
+						}
+					} else {
+						// No version number.
+						osVersion = "NetBSD";
+					}
+				} else if (nhdr->n_namesz == 8 && !strcmp(pName, "FreeBSD")) {
+					if (nhdr->n_descsz < sizeof(uint32_t)) {
+						// Header is too small...
+						break;
+					}
+
+					uint32_t desc;
+					memcpy(&desc, pData, sizeof(desc));
+					desc = elf32_to_cpu(desc);
+
+					if (desc == 460002) {
+						osVersion = "FreeBSD 4.6.2";
+					} else if (desc < 460100) {
+						osVersion = rp_sprintf("FreeBSD %u.%u",
+							desc / 100000, desc / 10000 % 10);
+						if (desc / 1000 % 10 > 0) {
+							osVersion += rp_sprintf(".%u", desc / 1000 % 10);
+						}
+						if ((desc % 1000 > 0) || (desc % 100000 == 0)) {
+							osVersion += rp_sprintf(" (%u)", desc);
+						}
+					} else if (desc < 500000) {
+						osVersion = rp_sprintf("FreeBSD %u.%u",
+							desc / 100000, desc / 10000 % 10 + desc / 1000 % 10);
+						if (desc / 100 % 10 > 0) {
+							osVersion += rp_sprintf(" (%u)", desc);
+						} else if (desc / 10 % 10 > 0) {
+							osVersion += rp_sprintf(".%u", desc / 10 % 10);
+						}
+					} else {
+						osVersion = rp_sprintf("FreeBSD %u.%u",
+							desc / 100000, desc / 1000 % 100);
+						if ((desc / 100 % 10 > 0) || (desc % 100000 / 100 == 0)) {
+							osVersion += rp_sprintf(" (%u)", desc);
+						} else if (desc / 10 % 10 > 0) {
+							osVersion += rp_sprintf(".%u", desc / 10 % 10);
+						}
+					}
+				} else if (nhdr->n_namesz == 8 && !strcmp(pName, "OpenBSD")) {
+					osVersion = "OpenBSD";
+				} else if (nhdr->n_namesz == 10 && !strcmp(pName, "DragonFly")) {
+					if (nhdr->n_descsz < sizeof(uint32_t)) {
+						// Header is too small...
+						break;
+					}
+
+					uint32_t desc;
+					memcpy(&desc, pData, sizeof(desc));
+					desc = elf32_to_cpu(desc);
+
+					osVersion = rp_sprintf("DragonFlyBSD %u.%u.%u",
+						desc / 100000, desc / 10000 % 10, desc % 10000);
 				}
 				break;
 
