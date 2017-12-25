@@ -115,6 +115,7 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	, hasCheckedPH(false)
 	, isPie(false)
 	, isDynamic(false)
+	, isWiiU(false)
 {
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
