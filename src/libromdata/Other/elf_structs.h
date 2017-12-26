@@ -80,7 +80,8 @@ typedef struct PACKED _Elf_PrimaryEhdr {
 	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version
 	uint8_t e_osabi;	// [0x007] OS ABI - usually 0 for System V (see Elf_OSABI)
-	uint8_t padding[8];	// [0x008]
+	uint8_t e_osabiversion;	// [0x008] OS ABI version
+	uint8_t padding[7];	// [0x009]
 
 	Elf32_Half e_type;	// [0x010] Executable type (see Elf_Type)
 	Elf32_Half e_machine;	// [0x012] Machine type (see Elf_Machine)

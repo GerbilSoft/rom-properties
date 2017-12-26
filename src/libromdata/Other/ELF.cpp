@@ -653,9 +653,11 @@ ELF::ELF(IRpFile *file)
 
 	// Is this a Wii U executable?
 	if (primary->e_osabi == ELFOSABI_CAFEOS &&
+	    primary->e_osabiversion == 0xFE &&
 	    d->elfFormat == ELFPrivate::ELF_FORMAT_32MSB &&
 	    primary->e_machine == EM_PPC)
 	{
+		// OS ABI and version is 0xCAFE.
 		// Assuming this is a Wii U executable.
 		// TODO: Also verify that there's no program headers?
 		d->isWiiU = true;
@@ -1088,13 +1090,19 @@ int ELF::loadFieldData(void)
 			break;
 	}
 
-	// ABI.
+	// OS ABI.
 	const char *const osabi = ELFData::lookup_osabi(primary->e_osabi);
 	if (osabi) {
 		d->fields->addField_string(C_("ELF", "OS ABI"), osabi);
 	} else {
 		d->fields->addField_string(C_("ELF", "OS ABI"),
 			rp_sprintf(C_("ELF", "Unknown (%u)"), primary->e_osabi));
+	}
+
+	// ABI version.
+	if (!d->isWiiU) {
+		d->fields->addField_string_numeric(C_("ELF", "ABI Version"),
+			primary->e_osabiversion);
 	}
 
 	// Bitness/Endianness. (consolidated as "format")
