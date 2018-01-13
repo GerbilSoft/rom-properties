@@ -161,447 +161,181 @@ TEST_F(ByteswapTest, nonHostEndianMacroTest)
 #endif
 }
 
-/**
- * Test the standard 16-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_c_test)
-{
-	__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+#define __byte_swap_16_array_dispatch(ptr, n) __byte_swap_16_array(ptr, n)
+#define __byte_swap_32_array_dispatch(ptr, n) __byte_swap_32_array(ptr, n)
 
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
+/**
+ * Macro for testing a 16-bit byteswap function.
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
+ */
+#define DO_ARRAY_16_TEST(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_16_array_##opt##_test) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE); \
+	uint8_t *ptr = align_buf; \
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
+		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE)); \
+		ptr += TEST_ARRAY_SIZE; \
+	} \
 }
 
 /**
- * Benchmark the standard 16-bit array byteswap function.
+ * Macro for benchmarking a 16-bit byteswap function.
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
  */
-TEST_F(ByteswapTest, __byte_swap_16_array_c_benchmark)
-{
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
+#define DO_ARRAY_16_BENCHMARK(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_16_array_##opt##_benchmark) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
+		__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE); \
+	} \
 }
 
 /**
- * Test the standard 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
+ * Macro for testing a 16-bit byteswap function.
+ *
+ * This version has data that is 16-bit aligned, but not 32-bit aligned,
+ * and the block has an odd number of words at the end.
+ *
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
  */
-TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_c_test)
-{
-	__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-
-	uint8_t *ptr = &align_buf[2];
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
-		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
-		ptr += TEST_ARRAY_SIZE;
-	}
+#define DO_ARRAY_16_unDWORD_TEST(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_test) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2); \
+	uint8_t *ptr = &align_buf[2]; \
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) { \
+		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2)); \
+		ptr += TEST_ARRAY_SIZE; \
+	} \
 }
 
 /**
- * Benchmark the standard 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
+ * Macro for benchmarking a 16-bit byteswap function.
+ *
+ * This version has data that is 16-bit aligned, but not 32-bit aligned,
+ * and the block has an odd number of words at the end.
+ *
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
  */
-TEST_F(ByteswapTest, __byte_swap_16_array_c_unDWORD_benchmark)
-{
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-	}
+#define DO_ARRAY_16_unDWORD_BENCHMARK(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_benchmark) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
+		__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2); \
+	} \
 }
 
 /**
- * Test the standard 32-bit array byteswap function.
+ * Macro for testing a 32-bit byteswap function.
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
  */
-TEST_F(ByteswapTest, __byte_swap_32_array_c_test)
-{
-	__byte_swap_32_array_c(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
+#define DO_ARRAY_32_TEST(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_32_array_##opt##_test) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE); \
+	uint8_t *ptr = align_buf; \
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
+		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE)); \
+		ptr += TEST_ARRAY_SIZE; \
+	} \
 }
 
 /**
- * Benchmark the standard 32-bit array byteswap function.
+ * Macro for benchmarking a 32-bit byteswap function.
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
  */
-TEST_F(ByteswapTest, __byte_swap_32_array_c_benchmark)
-{
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array_c(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
+#define DO_ARRAY_32_BENCHMARK(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_32_array_##opt##_benchmark) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
+		__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE); \
+	} \
 }
+
+// Standard tests.
+DO_ARRAY_16_TEST		(c, true, "")
+DO_ARRAY_16_BENCHMARK		(c, true, "")
+DO_ARRAY_16_unDWORD_TEST	(c, true, "")
+DO_ARRAY_16_unDWORD_BENCHMARK	(c, true, "")
+DO_ARRAY_32_TEST		(c, true, "")
+DO_ARRAY_32_BENCHMARK		(c, true, "")
 
 #ifdef BYTESWAP_HAS_MMX
-/**
- * Test the MMX-optimized 16-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_mmx_test)
-{
-	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the MMX-optimized 16-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_mmx_benchmark)
-{
-	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
-
-/**
- * Test the MMX-optimized 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_mmx_test)
-{
-	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-
-	uint8_t *ptr = &align_buf[2];
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
-		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the MMX-optimized 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_mmx_unDWORD_benchmark)
-{
-	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-	}
-}
-
-/**
- * Test the MMX-optimized 32-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_mmx_test)
-{
-	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_32_array_mmx(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the MMX-optimized 32-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_mmx_benchmark)
-{
-	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array_mmx(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
+// MMX-optimized tests.
+DO_ARRAY_16_TEST		(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_MMX */
 
 #ifdef BYTESWAP_HAS_SSE2
-/**
- * Test the SSE2-optimized 16-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_sse2_test)
-{
-	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the SSE2-optimized 16-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_sse2_benchmark)
-{
-	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
-
-/**
- * Test the SSE2-optimized 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_sse2_test)
-{
-	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-
-	uint8_t *ptr = &align_buf[2];
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
-		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the SSE2-optimized 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_sse2_unDWORD_benchmark)
-{
-	if (!RP_CPU_HasMMX()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-	}
-}
-
-/**
- * Test the SSE2-optimized 32-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_sse2_test)
-{
-	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_32_array_sse2(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the SSE2-optimized 32-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_sse2_benchmark)
-{
-	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array_sse2(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
+// SSE2-optimized tests.
+DO_ARRAY_16_TEST		(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_SSE2 */
 
 #ifdef BYTESWAP_HAS_SSSE3
-/**
- * Test the SSSE3-optimized 16-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_ssse3_test)
-{
-	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the SSSE3-optimized 16-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_ssse3_benchmark)
-{
-	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
-
-/**
- * Test the SSSE3-optimized 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_ssse3_test)
-{
-	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-
-	uint8_t *ptr = &align_buf[2];
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
-		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the SSSE3-optimized 16-bit array byteswap function.
- * Data is 16-bit aligned, but not 32-bit aligned.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_ssse3_unDWORD_benchmark)
-{
-	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
-	}
-}
-
-/**
- * Test the SSSE3-optimized 32-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_ssse3_test)
-{
-	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	__byte_swap_32_array_ssse3(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the SSSE3-optimized 32-bit array byteswap function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_ssse3_benchmark)
-{
-	if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
-		return;
-	}
-
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array_ssse3(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
+// SSSE3-optimized tests.
+DO_ARRAY_16_TEST		(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_BENCHMARK		(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_TEST	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_16_unDWORD_BENCHMARK	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_TEST		(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_BENCHMARK		(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_SSSE3 */
 
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
 #if defined(BYTESWAP_HAS_MMX) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_SSSE3)
-/**
- * Test the __byte_swap_16_array() dispatch function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_dispatch_test)
-{
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the __byte_swap_16_array() dispatch function.
- */
-TEST_F(ByteswapTest, __byte_swap_16_array_dispatch_test_benchmark)
-{
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_16_array(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
-
-/**
- * Test the __byte_swap_32_array() dispatch function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_dispatch_test)
-{
-	__byte_swap_32_array(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-
-	uint8_t *ptr = align_buf;
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) {
-		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE));
-		ptr += TEST_ARRAY_SIZE;
-	}
-}
-
-/**
- * Benchmark the __byte_swap_32_array() dispatch function.
- */
-TEST_F(ByteswapTest, __byte_swap_32_array_dispatch_test_benchmark)
-{
-	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		__byte_swap_32_array(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE);
-	}
-}
+// Dispatch functions.
+DO_ARRAY_16_TEST		(dispatch, true, "")
+DO_ARRAY_16_BENCHMARK		(dispatch, true, "")
+DO_ARRAY_16_unDWORD_TEST	(dispatch, true, "")
+DO_ARRAY_16_unDWORD_BENCHMARK	(dispatch, true, "")
+DO_ARRAY_32_TEST		(dispatch, true, "")
+DO_ARRAY_32_BENCHMARK		(dispatch, true, "")
 #endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 */
 
 } }
