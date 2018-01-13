@@ -33,6 +33,7 @@ SET(libromdata_SRCS
 	Texture/ValveVTF3.cpp
 
 	Other/Amiibo.cpp
+	Other/ELF.cpp
 	Other/EXE.cpp
 	Other/NintendoBadge.cpp
 
@@ -47,6 +48,7 @@ SET(libromdata_SRCS
 	data/Nintendo3DSSysTitles.cpp
 	data/NintendoLanguage.cpp
 	data/GLenumStrings.cpp
+	data/ELFData.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -125,12 +127,14 @@ SET(libromdata_H
 	Texture/vtf3_structs.h
 
 	Other/Amiibo.hpp
+	Other/ELF.hpp
 	Other/EXE.hpp
 	Other/EXE_p.hpp
 	Other/NintendoBadge.hpp
 
 	Other/badge_structs.h
-	Other/exe_structs
+	Other/elf_structs.h
+	Other/exe_structs.h
 	Other/nfp_structs.h
 
 	data/SegaPublishers.hpp
@@ -144,6 +148,7 @@ SET(libromdata_H
 	data/Nintendo3DSSysTitles.hpp
 	data/NintendoLanguage.hpp
 	data/GLenumStrings.hpp
+	data/ELFData.hpp
 	img/TCreateThumbnail.hpp
 	disc/WbfsReader.hpp
 	disc/libwbfs.h

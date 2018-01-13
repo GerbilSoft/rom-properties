@@ -926,7 +926,7 @@ int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base
 			fmtstr = "%0*u";
 			break;
 		case FB_HEX:
-			fmtstr = "0x%0*X";
+			fmtstr = (!(flags & STRF_HEX_LOWER)) ? "0x%0*X" : "0x%0*x";
 			break;
 		case FB_OCT:
 			fmtstr = "0%0*o";
@@ -961,20 +961,37 @@ int RomFields::addField_string_hexdump(const char *name, const uint8_t *buf, siz
 	char *pStr = str.get();
 
 	// Hexadecimal lookup table.
-	static const char hex_lookup[16] = {
-		'0','1','2','3','4','5','6','7',
-		'8','9','A','B','C','D','E','F'
+	static const char hex_lookup[2][16] = {
+		// Uppercase
+		{'0','1','2','3','4','5','6','7',
+		 '8','9','A','B','C','D','E','F'},
+
+		// Lowercase
+		{'0','1','2','3','4','5','6','7',
+		 '8','9','a','b','c','d','e','f'},
 	};
+	const char *const tbl = (!(flags & STRF_HEX_LOWER) ? hex_lookup[0] : hex_lookup[1]);
 
 	// Print the hexdump.
-	for (; size > 0; size--, buf++, pStr += 3) {
-		pStr[0] = hex_lookup[*buf >> 4];
-		pStr[1] = hex_lookup[*buf & 0x0F];
-		pStr[2] = ' ';
+	if (!(flags & STRF_HEXDUMP_NO_SPACES)) {
+		// Spaces.
+		for (; size > 0; size--, buf++, pStr += 3) {
+			pStr[0] = tbl[*buf >> 4];
+			pStr[1] = tbl[*buf & 0x0F];
+			pStr[2] = ' ';
+		}
+		// Remove the trailing space.
+		*(pStr-1) = 0;
+	} else {
+		// No spaces.
+		for (; size > 0; size--, buf++, pStr += 2) {
+			pStr[0] = tbl[*buf >> 4];
+			pStr[1] = tbl[*buf & 0x0F];
+		}
+		// NULL-terminate the string.
+		*pStr = 0;
 	}
 
-	// Remove the trailing space.
-	*(pStr-1) = 0;
 	return addField_string(name, str.get(), flags);
 }
 
@@ -1003,7 +1020,9 @@ int RomFields::addField_string_address_range(const char *name,
 	}
 
 	// Address range.
-	string str = rp_sprintf("0x%0*X - 0x%0*X", digits, start, digits, end);
+	string str = rp_sprintf(
+		(!(flags & STRF_HEX_LOWER)) ? "0x%0*X - 0x%0*X" : "0x%0*x - 0x%0*x",
+		digits, start, digits, end);
 	if (suffix && suffix[0] != 0) {
 		// Append a space and the specified suffix.
 		str += ' ';

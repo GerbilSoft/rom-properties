@@ -539,6 +539,12 @@ const char *RomData::fileType_string(void) const
 		NOP_C_("RomData|FileType", "Firmware Binary"),
 		// tr: FTYPE_TEXTURE_FILE
 		NOP_C_("RomData|FileType", "Texture File"),
+		// tr: FTYPE_RELOCATABLE_OBJECT
+		NOP_C_("RomData|FileType", "Relocatable Object File"),
+		// tr: FTYPE_SHARED_LIBRARY
+		NOP_C_("RomData|FileType", "Shared Library"),
+		// tr: FTYPE_CORE_DUMP
+		NOP_C_("RomData|FileType", "Core Dump"),
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");

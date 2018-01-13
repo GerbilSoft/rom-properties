@@ -23,6 +23,11 @@
   * Valve VTF textures: https://developer.valvesoftware.com/wiki/Valve_Texture_Format
   * Valve VTF3 (PS3) textures: Reverse-engineered from Portal for PS3.
 
+* New systems:
+  * ELF: Executable and Linkable Format. Used by Linux, most Unix systems,
+    and many other platforms, including GameCube and Wii. A modified version,
+    RPX/RPL, is used on Wii U and is also supported.
+
 * New system features:
   * Super NES: Satellaview BS-X ROM headers are now decoded properly.
 

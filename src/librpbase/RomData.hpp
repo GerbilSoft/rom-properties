@@ -224,6 +224,9 @@ class RomData
 			FTYPE_TITLE_CONTENTS,		// Title contents, e.g. NCCH.
 			FTYPE_FIRMWARE_BINARY,		// Firmware binary, e.g. 3DS FIRM.
 			FTYPE_TEXTURE_FILE,		// Texture file, e.g. Sega PVR.
+			FTYPE_RELOCATABLE_OBJECT,	// Relocatable Object File (*.o)
+			FTYPE_SHARED_LIBRARY,		// Shared Library (similar to DLLs)
+			FTYPE_CORE_DUMP,		// Core Dump
 
 			FTYPE_LAST			// End of FileType.
 		};
