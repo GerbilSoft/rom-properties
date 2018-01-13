@@ -186,6 +186,32 @@ TEST_F(ByteswapTest, __byte_swap_16_array_c_benchmark)
 }
 
 /**
+ * Test the standard 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_c_test)
+{
+	__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
+
+	uint8_t *ptr = &align_buf[2];
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
+		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
+		ptr += TEST_ARRAY_SIZE;
+	}
+}
+
+/**
+ * Benchmark the standard 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_c_unDWORD_benchmark)
+{
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		__byte_swap_16_array_c(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
+	}
+}
+
+/**
  * Test the standard 32-bit array byteswap function.
  */
 TEST_F(ByteswapTest, __byte_swap_32_array_c_test)
@@ -241,6 +267,42 @@ TEST_F(ByteswapTest, __byte_swap_16_array_mmx_benchmark)
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+	}
+}
+
+/**
+ * Test the MMX-optimized 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_mmx_test)
+{
+	if (!RP_CPU_HasMMX()) {
+		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
+
+	uint8_t *ptr = &align_buf[2];
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
+		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
+		ptr += TEST_ARRAY_SIZE;
+	}
+}
+
+/**
+ * Benchmark the MMX-optimized 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_mmx_unDWORD_benchmark)
+{
+	if (!RP_CPU_HasMMX()) {
+		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		__byte_swap_16_array_mmx(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
 	}
 }
 
@@ -315,6 +377,42 @@ TEST_F(ByteswapTest, __byte_swap_16_array_sse2_benchmark)
 }
 
 /**
+ * Test the SSE2-optimized 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_sse2_test)
+{
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
+
+	uint8_t *ptr = &align_buf[2];
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
+		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
+		ptr += TEST_ARRAY_SIZE;
+	}
+}
+
+/**
+ * Benchmark the SSE2-optimized 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_sse2_unDWORD_benchmark)
+{
+	if (!RP_CPU_HasMMX()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		__byte_swap_16_array_sse2(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
+	}
+}
+
+/**
  * Test the SSE2-optimized 32-bit array byteswap function.
  */
 TEST_F(ByteswapTest, __byte_swap_32_array_sse2_test)
@@ -381,6 +479,42 @@ TEST_F(ByteswapTest, __byte_swap_16_array_ssse3_benchmark)
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE);
+	}
+}
+
+/**
+ * Test the SSSE3-optimized 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_ssse3_test)
+{
+	if (!RP_CPU_HasSSSE3()) {
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
+
+	uint8_t *ptr = &align_buf[2];
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) {
+		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2));
+		ptr += TEST_ARRAY_SIZE;
+	}
+}
+
+/**
+ * Benchmark the SSSE3-optimized 16-bit array byteswap function.
+ * Data is 16-bit aligned, but not 32-bit aligned.
+ */
+TEST_F(ByteswapTest, __byte_swap_16_array_ssse3_unDWORD_benchmark)
+{
+	if (!RP_CPU_HasSSSE3()) {
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		__byte_swap_16_array_ssse3(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2);
 	}
 }
 
