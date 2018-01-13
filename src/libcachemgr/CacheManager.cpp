@@ -193,9 +193,40 @@ string CacheManager::filterCacheKey(const string &cache_key)
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
 		};
-		unsigned int chr = (unsigned int)*iter;
-		if (chr >= 0x80) {
-			// Non-ASCII characters are allowed.
+		uint8_t chr = (uint8_t)*iter;
+		if (chr & 0x80) {
+			// Start of UTF-8 sequence.
+			// Verify that the sequence is valid.
+			// TODO: Verify overlong.
+			// NOTE: NULL check isn't needed, since these tests will all
+			// fail if a NULL byte is encountered.
+			if (((iter[0] & 0xE0) == 0xC0) &&
+			    ((iter[1] & 0xC0) == 0x80))
+			{
+				// Two-byte sequence.
+				iter++;
+				continue;
+			}
+			else if (((iter[0] & 0xF0) == 0xE0) &&
+				 ((iter[1] & 0xC0) == 0x80) &&
+				 ((iter[2] & 0xC0) == 0x80))
+			{
+				// Three-byte sequence.
+				iter += 2;
+				continue;
+			}
+			else if (((iter[0] & 0xF8) == 0xF0) &&
+				 ((iter[1] & 0xC0) == 0x80) &&
+				 ((iter[2] & 0xC0) == 0x80) &&
+				 ((iter[3] & 0xC0) == 0x80))
+			{
+				// Four-byte sequence.
+				iter += 3;
+				continue;
+			}
+
+			// Invalid UTF-8 sequence.
+			*iter = '_';
 			continue;
 		}
 
