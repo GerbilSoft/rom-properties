@@ -416,6 +416,21 @@ void GcnFstTest::print_uint32_en_US(ostream &os, uint32_t val)
 }
 
 /**
+ * Verify that '/' is collapsed correctly.
+ */
+TEST_P(GcnFstTest, RootDirectoryCollapse)
+{
+	char path_buf[17];
+	memset(path_buf, 0, sizeof(path_buf));
+	for (unsigned int i = 0; i < sizeof(path_buf)-1; i++) {
+		path_buf[i] = '/';
+		IFst::Dir *rootdir = m_fst->opendir(path_buf);
+		EXPECT_TRUE(rootdir != nullptr);
+		m_fst->closedir(rootdir);
+	}
+}
+
+/**
  * Make sure there aren't any duplicate filenames in all subdirectories.
  */
 TEST_P(GcnFstTest, NoDuplicateFilenames)

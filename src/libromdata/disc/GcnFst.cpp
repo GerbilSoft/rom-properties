@@ -254,34 +254,9 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
  */
 const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 {
-	// TODO: Combine multiple slashes together.
-
 	if (!path) {
 		// Invalid path.
 		return nullptr;
-	} else if (!path[0] || (path[0] == '/' && !path[1])) {
-		// Empty path or "/".
-		// Return the root directory.
-		return this->entry(0, nullptr);
-	}
-
-	// Store the path as a temporary string.
-	string s_path;
-	if (path[0] != 0 && path[0] != '/') {
-		// Prepend a slash.
-		// (Relative paths aren't supported.)
-		s_path = '/';
-	}
-	s_path.append(path);
-
-	if (s_path.empty()) {
-		// Invalid path.
-		return nullptr;
-	}
-
-	// If there's a trailing slash, remove it.
-	if (s_path[s_path.size()-1] == '/') {
-		s_path.resize(s_path.size()-1);
 	}
 
 	// Get the root directory.
@@ -291,9 +266,29 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 		return nullptr;
 	}
 
-	// Should not have "" or "/" here.
-	assert(!s_path.empty());
-	assert(s_path != "/");
+	if (!path[0] || (path[0] == '/' && !path[1])) {
+		// Empty path or "/".
+		// Return the root directory.
+		return fst_entry;
+	}
+
+	// Store the path as a temporary string.
+	string s_path;
+	if (path[0] != '/') {
+		// Prepend a slash.
+		// (Relative paths aren't supported.)
+		s_path = '/';
+	}
+	s_path.append(path);
+
+	// Remove trailing slashes.
+	while (!s_path.size() > 1 && s_path[s_path.size()-1] == '/') {
+		s_path.resize(s_path.size()-1);
+	}
+	if (s_path.empty() || s_path == "/") {
+		// After removing all trailing slashes, we have the root directory.
+		return fst_entry;
+	}
 
 	// Skip the initial slash.
 	int idx = 1;	// Ignore the root directory.
