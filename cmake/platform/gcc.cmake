@@ -83,7 +83,7 @@ IF(ENABLE_COVERAGE)
 
 	# Create a code coverage target.
 	FOREACH(_program gcov lcov genhtml)
-		FIND_PROGRAM(${_program}_PATH gcov)
+		FIND_PROGRAM(${_program}_PATH ${_program})
 		IF(NOT ${_program}_PATH)
 			MESSAGE(FATAL_ERROR "${_program} not found; cannot enable code coverage testing.")
 		ENDIF(NOT ${_program}_PATH)
