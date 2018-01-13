@@ -31,7 +31,7 @@ fi
 
 # Capturing lcov counters and generating report.
 lcov --directory . --capture --output-file ${coverage_info}
-lcov --remove ${coverage_info} 'tests/*' '/usr/*' 'extlib/*' --output-file ${coverage_cleaned}
+lcov --remove ${coverage_info} '*/tests/*' '/usr/*' '*/extlib/*' --output-file ${coverage_cleaned}
 genhtml -o ${outputname} ${coverage_cleaned}
 rm -f ${coverage_info} ${coverage_cleaned}
 exit 0
