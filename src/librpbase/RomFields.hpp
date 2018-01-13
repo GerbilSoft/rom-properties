@@ -68,6 +68,12 @@ class RomFields
 
 			// Trim spaces from the end of strings.
 			STRF_TRIM_END	= (1 << 3),
+
+			// Numeric formatting: Use lowercase letters for hexadecimal.
+			STRF_HEX_LOWER	= (1 << 4),
+
+			// Hexdump: No spaces.
+			STRF_HEXDUMP_NO_SPACES	= (1 << 5),
 		};
 
 		// Display flags for RFT_LISTDATA.

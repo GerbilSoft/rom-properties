@@ -45,6 +45,10 @@ using namespace LibRpBase;
 using std::string;
 using std::vector;
 
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
+
 namespace LibRomData {
 
 class ELFPrivate : public LibRpBase::RomDataPrivate
@@ -104,6 +108,9 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 		bool hasCheckedSH;	// Have we checked section headers yet?
 		string osVersion;	// Operating system version.
 
+		ao::uvector<uint8_t> build_id;	// GNU `ld` build ID. (raw data)
+		const char *build_id_type;	// Build ID type.
+
 		/**
 		 * Byteswap a uint32_t value from ELF to CPU.
 		 * @param x Value to swap.
@@ -134,6 +141,7 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	, isDynamic(false)
 	, isWiiU(false)
 	, hasCheckedSH(false)
+	, build_id_type(nullptr)
 {
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
@@ -535,6 +543,33 @@ int ELFPrivate::checkSectionHeaders(void)
 				}
 				break;
 
+			case NT_GNU_BUILD_ID:
+				if (nhdr->n_namesz != 4 || strcmp(pName, ELF_NOTE_GNU) != 0) {
+					// Not a GNU note.
+					break;
+				}
+
+				// Build ID.
+				switch (nhdr->n_descsz) {
+					case 8:
+						build_id_type = "xxHash";
+						break;
+					case 16:
+						build_id_type = "md5/uuid";
+						break;
+					case 20:
+						build_id_type = "sha1";
+						break;
+					default:
+						build_id_type = nullptr;
+						break;
+				}
+
+				// Hexdump will be done when parsing the data.
+				build_id.resize(nhdr->n_descsz);
+				memcpy(build_id.data(), pData, nhdr->n_descsz);
+				break;
+
 			default:
 				break;
 		}
@@ -893,7 +928,7 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(9);	// Maximum of 9 fields.
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// NOTE: Executable type is used as File Type.
 
@@ -1157,6 +1192,16 @@ int ELF::loadFieldData(void)
 				entry_point.c_str());
 		}
 		d->fields->addField_string(C_("ELF", "Entry Point"), entry_point);
+	}
+
+	// Build ID.
+	if (!d->build_id.empty()) {
+		// TODO: Put the build ID type in the field itself.
+		// Using field name for now.
+		const string fieldName = rp_sprintf("BuildID[%s]", (d->build_id_type ? d->build_id_type : "unknown"));
+		d->fields->addField_string_hexdump(fieldName.c_str(),
+			d->build_id.data(), d->build_id.size(),
+			RomFields::STRF_HEX_LOWER | RomFields::STRF_HEXDUMP_NO_SPACES);
 	}
 
 	// Finished reading the field data.
