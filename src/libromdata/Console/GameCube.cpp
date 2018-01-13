@@ -1666,34 +1666,59 @@ int GameCube::loadFieldData(void)
 
 		// Update version.
 		const char *sysMenu = nullptr;
+		unsigned int ios_slot = 0, ios_major = 0, ios_minor = 0;
+		bool isDebugIOS = false;
 		if (d->updatePartition) {
-			// Find the RVL-WiiSystemmenu-v*.wad file.
+			// Find the System Menu version.
+			// - Retail: RVL-WiiSystemmenu-v*.wad file.
+			// - Debug: firmware.64.56.21.29.wad
+			//   - 64: Memory configuration (64 or 128)
+			//   - 56: IOS slot
+			//   - 21.29: IOS version. (21.29 == v5405)
 			IFst::Dir *dirp = d->updatePartition->opendir("/_sys/");
 			if (dirp) {
 				IFst::DirEnt *dirent;
 				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
-					if (dirent->name && dirent->type == DT_REG) {
-						// Check if this filename matches the expected pattern.
-						unsigned int version;
-						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
-						if (ret == 1) {
-							sysMenu = WiiSystemMenuVersion::lookup(version);
-							break;
-						}
+					if (!dirent->name || dirent->type != DT_REG)
+						continue;
+
+					// Check for a retail System Menu.
+					unsigned int version;
+					int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
+					if (ret == 1) {
+						// Found a retail System Menu.
+						sysMenu = WiiSystemMenuVersion::lookup(version);
+						break;
+					}
+
+					// Check for a debug IOS.
+					unsigned int ios_mem;
+					ret = sscanf(dirent->name, "firmware.%u.%u.%u.%u.wad",
+						&ios_mem, &ios_slot, &ios_major, &ios_minor);
+					if (ret == 4 && (ios_mem == 64 || ios_mem == 128)) {
+						// Found a debug IOS.
+						isDebugIOS = true;
+						break;
 					}
 				}
 				d->updatePartition->closedir(dirp);
 			}
 		}
 
-		if (!sysMenu) {
-			if (!d->updatePartition) {
-				sysMenu = C_("GameCube", "None");
-			} else {
-				sysMenu = d->wii_getCryptoStatus(d->updatePartition);
+		if (isDebugIOS) {
+			d->fields->addField_string(C_("GameCube", "Update"),
+				rp_sprintf("IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
+					(ios_major << 8) | ios_minor));
+		} else {
+			if (!sysMenu) {
+				if (!d->updatePartition) {
+					sysMenu = C_("GameCube", "None");
+				} else {
+					sysMenu = d->wii_getCryptoStatus(d->updatePartition);
+				}
 			}
+			d->fields->addField_string(C_("GameCube", "Update"), sysMenu);
 		}
-		d->fields->addField_string(C_("GameCube", "Update"), sysMenu);
 
 		// Partition table.
 		auto partitions = new std::vector<std::vector<string> >();
