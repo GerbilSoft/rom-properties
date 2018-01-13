@@ -898,6 +898,20 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
+	// Timestamp.
+	// TODO: Windows 10 modules have hashes here instead of timestamps.
+	// We should detect that by checking for obviously out-of-range values.
+	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
+	uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
+	if (timestamp != 0) {
+		fields->addField_dateTime(C_("EXE", "Timestamp"),
+			(time_t)timestamp,
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_HAS_TIME);
+	} else {
+		fields->addField_string(C_("EXE", "Timestamp"), C_("EXE", "Not set"));
+	}
+
 	// Load resources.
 	int ret = loadPEResourceTypes();
 	if (ret != 0 || !rsrcReader) {
@@ -1361,10 +1375,10 @@ int EXE::loadFieldData(void)
 
 	// Maximum number of fields:
 	// - NE: 6
-	// - PE: 6
+	// - PE: 7
 	//   - PE Version: +6
 	//   - PE Manifest: +12
-	d->fields->reserve(24);
+	d->fields->reserve(25);
 
 	// Executable type.
 	// NOTE: Not translatable.
