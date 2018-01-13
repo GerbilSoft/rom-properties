@@ -48,7 +48,8 @@ lcov -a ${coverage_base_info} -a ${coverage_test_info} -o ${coverage_info}
 lcov -o ${coverage_cleaned} -r ${coverage_info} \
 	'*/tests/*' '/usr/*' '*/extlib/*' \
 	'*/moc_*.cpp' '*.moc' '*/ui_*.h' \
-	'*/SpecializedThumbnailer1.c'
+	'*/SpecializedThumbnailer1.c' \
+	'*/src/librpbase/img/pngcheck/pngcheck.cpp'
 
 # Generate the HTML report.
 genhtml -o ${outputname} ${coverage_cleaned}
