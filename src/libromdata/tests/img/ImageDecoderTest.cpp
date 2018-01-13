@@ -676,18 +676,32 @@ INSTANTIATE_TEST_CASE_P(GVR_RGB5A3, ImageDecoderTest,
 			"GVR/zanki_sonic.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// GVR tests. (DXT1)
-INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
+// GVR tests. (DXT1, S3TC)
+INSTANTIATE_TEST_CASE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"GVR/paldam_off.gvr.gz",
-			"GVR/paldam_off.png"),
+			"GVR/paldam_off.s3tc.png"),
 		ImageDecoderTest_mode(
 			"GVR/paldam_on.gvr.gz",
-			"GVR/paldam_on.png"),
+			"GVR/paldam_on.s3tc.png"),
 		ImageDecoderTest_mode(
 			"GVR/weeklytitle.gvr.gz",
-			"GVR/weeklytitle.png"))
+			"GVR/weeklytitle.s3tc.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// GVR tests. (DXT1, S2TC)
+INSTANTIATE_TEST_CASE_P(GVR_DXT1_S2TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"GVR/paldam_off.gvr.gz",
+			"GVR/paldam_off.s2tc.png", false),
+		ImageDecoderTest_mode(
+			"GVR/paldam_on.gvr.gz",
+			"GVR/paldam_on.s2tc.png", false),
+		ImageDecoderTest_mode(
+			"GVR/weeklytitle.gvr.gz",
+			"GVR/weeklytitle.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // KTX tests.
