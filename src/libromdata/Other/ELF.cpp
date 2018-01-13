@@ -996,7 +996,7 @@ int ELF::loadFieldData(void)
 			// 32-bit: O32 vs. N32
 			if (primary->e_class == ELFCLASS32) {
 				d->fields->addField_string(C_("ELF", "MIPS ABI"),
-					d->Elf_Header.elf32.e_flags & 0x20 ? "N32" : "O32");
+					(d->Elf_Header.elf32.e_flags & 0x20) ? "N32" : "O32");
 			}
 
 			// MIPS architecture level.
