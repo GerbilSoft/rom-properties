@@ -207,7 +207,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_##opt##_benchmark) \
  * Macro for testing a 16-bit byteswap function.
  *
  * This version has data that is 16-bit aligned, but not 32-bit aligned,
- * and the block has an odd number of words at the end.
+ * and the block has an odd number of WORDs at the end.
  *
  * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
  * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
@@ -232,7 +232,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_test) \
  * Macro for benchmarking a 16-bit byteswap function.
  *
  * This version has data that is 16-bit aligned, but not 32-bit aligned,
- * and the block has an odd number of words at the end.
+ * and the block has an odd number of WORDs at the end.
  *
  * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
  * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
@@ -289,6 +289,53 @@ TEST_F(ByteswapTest, __byte_swap_32_array_##opt##_benchmark) \
 	} \
 }
 
+/**
+ * Macro for testing a 32-bit byteswap function.
+ *
+ * This version has data that is 32-bit aligned, but not 64-bit aligned,
+ * and the block has an odd number of DWORDs at the end.
+ *
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
+ */
+#define DO_ARRAY_32_unQWORD_TEST(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_32_array_unQWORD_##opt##_test) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(&align_buf[4]), ALIGN_BUF_SIZE-8); \
+	uint8_t *ptr = &align_buf[4]; \
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 8; i--) { \
+		EXPECT_EQ(0, memcmp(ptr, &bswap_32b[4], TEST_ARRAY_SIZE-8)); \
+		ptr += TEST_ARRAY_SIZE; \
+	} \
+}
+
+/**
+ * Macro for benchmarking a 32-bit byteswap function.
+ *
+ * This version has data that is 32-bit aligned, but not 64-bit aligned,
+ * and the block has an odd number of DWORDs at the end.
+ *
+ * @param opt		Byteswap function optimization. (c, mmx, sse2, ssse3; dispatch for the dispatch function)
+ * @param expr		Expression to check if this optimization can be used. (Use `true` for c.)
+ * @param errmsg	Error message to display if the optimization cannot be used.
+ */
+#define DO_ARRAY_32_unQWORD_BENCHMARK(opt, expr, errmsg) \
+TEST_F(ByteswapTest, __byte_swap_32_array_unQWORD_##opt##_benchmark) \
+{ \
+	if (!(expr)) { \
+		fputs(errmsg, stderr); \
+		return; \
+	} \
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
+		__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(&align_buf[4]), ALIGN_BUF_SIZE-8); \
+	} \
+}
+
 // Standard tests.
 DO_ARRAY_16_TEST		(c, true, "")
 DO_ARRAY_16_BENCHMARK		(c, true, "")
@@ -296,6 +343,8 @@ DO_ARRAY_16_unDWORD_TEST	(c, true, "")
 DO_ARRAY_16_unDWORD_BENCHMARK	(c, true, "")
 DO_ARRAY_32_TEST		(c, true, "")
 DO_ARRAY_32_BENCHMARK		(c, true, "")
+DO_ARRAY_32_unQWORD_TEST	(c, true, "")
+DO_ARRAY_32_unQWORD_BENCHMARK	(c, true, "")
 
 #ifdef BYTESWAP_HAS_MMX
 // MMX-optimized tests.
@@ -305,6 +354,8 @@ DO_ARRAY_16_unDWORD_TEST	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on thi
 DO_ARRAY_16_unDWORD_BENCHMARK	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
 DO_ARRAY_32_TEST		(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
 DO_ARRAY_32_BENCHMARK		(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(mmx, RP_CPU_HasMMX(), "*** MMX is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_MMX */
 
 #ifdef BYTESWAP_HAS_SSE2
@@ -315,6 +366,8 @@ DO_ARRAY_16_unDWORD_TEST	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on 
 DO_ARRAY_16_unDWORD_BENCHMARK	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
 DO_ARRAY_32_TEST		(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
 DO_ARRAY_32_BENCHMARK		(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(sse2, RP_CPU_HasSSE2(), "*** SSE2 is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_SSE2 */
 
 #ifdef BYTESWAP_HAS_SSSE3
@@ -325,6 +378,8 @@ DO_ARRAY_16_unDWORD_TEST	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported 
 DO_ARRAY_16_unDWORD_BENCHMARK	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 DO_ARRAY_32_TEST		(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 DO_ARRAY_32_BENCHMARK		(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_TEST	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
+DO_ARRAY_32_unQWORD_BENCHMARK	(ssse3, RP_CPU_HasSSSE3(), "*** SSSE3 is not supported on this CPU. Skipping test.\n")
 #endif /* BYTESWAP_HAS_SSSE3 */
 
 // NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
@@ -336,6 +391,8 @@ DO_ARRAY_16_unDWORD_TEST	(dispatch, true, "")
 DO_ARRAY_16_unDWORD_BENCHMARK	(dispatch, true, "")
 DO_ARRAY_32_TEST		(dispatch, true, "")
 DO_ARRAY_32_BENCHMARK		(dispatch, true, "")
+DO_ARRAY_32_unQWORD_TEST	(dispatch, true, "")
+DO_ARRAY_32_unQWORD_BENCHMARK	(dispatch, true, "")
 #endif /* BYTESWAP_HAS_MMX || BYTESWAP_HAS_SSE2 || BYTESWAP_HAS_SSSE3 */
 
 } }

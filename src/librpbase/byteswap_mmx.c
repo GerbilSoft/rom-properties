@@ -93,8 +93,8 @@ void __byte_swap_16_array_mmx(uint16_t *ptr, unsigned int n)
  */
 void __byte_swap_32_array_mmx(uint32_t *ptr, unsigned int n)
 {
-	// Verify the block is 16-bit aligned
-	// and is a multiple of 2 bytes.
+	// Verify the block is 32-bit aligned
+	// and is a multiple of 4 bytes.
 	assert(((uintptr_t)ptr & 3) == 0);
 	assert((n & 3) == 0);
 	n &= ~3;
