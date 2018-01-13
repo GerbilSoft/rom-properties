@@ -516,19 +516,20 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 	// TODO: Consolidate this code and optimize it.
 	size_t ret = 0;
+	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
+
+	// Are we already at the end of the file?
+	if (d->pos_7C00 >= d->data_size)
+		return 0;
+
+	// Make sure d->pos_7C00 + size <= d->data_size.
+	// If it isn't, we'll do a short read.
+	if (d->pos_7C00 + (int64_t)size >= d->data_size) {
+		size = (size_t)(d->data_size - d->pos_7C00);
+	}
+
 	if (d->noCrypt) {
 		// No encryption.
-		uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
-
-		// Are we already at the end of the file?
-		if (d->pos_7C00 >= d->data_size)
-			return 0;
-
-		// Make sure d->pos_7C00 + size <= d->data_size.
-		// If it isn't, we'll do a short read.
-		if (d->pos_7C00 + (int64_t)size >= d->data_size) {
-			size = (size_t)(d->data_size - d->pos_7C00);
-		}
 
 		// Check if we're not starting on a block boundary.
 		const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_ENCRYPTED;
@@ -609,19 +610,6 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			return -m_lastError;
 	}
 
-	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
-	size_t ret = 0;
-
-	// Are we already at the end of the file?
-	if (d->pos_7C00 >= d->data_size)
-		return 0;
-
-	// Make sure d->pos_7C00 + size <= d->data_size.
-	// If it isn't, we'll do a short read.
-	if (d->pos_7C00 + (int64_t)size >= d->data_size) {
-		size = (size_t)(d->data_size - d->pos_7C00);
-	}
-
 	// Check if we're not starting on a block boundary.
 	const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_DECRYPTED;
 	if (blockStartOffset != 0) {
@@ -680,8 +668,6 @@ size_t WiiPartition::read(void *ptr, size_t size)
 	// Finished reading the data.
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not enabled.
-	RP_UNUSED(ptr);
-	RP_UNUSED(size);
 	m_lastError = EIO;
 	ret = 0;
 #endif /* ENABLE_DECRYPTION */
