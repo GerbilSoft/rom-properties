@@ -315,6 +315,11 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		return -errno;
 	}
 
+	// Check for NoCrypt.
+	// TODO: Check both hash_verify and disc_noCrypt.
+	// Dolphin only checks hash_verify.
+	const bool noCrypt = (discHeader.hash_verify != 0);
+
 	// Process each volume group.
 	for (unsigned int i = 0; i < 4; i++) {
 		unsigned int count = be32_to_cpu(vgtbl.vg[i].count);
@@ -339,7 +344,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 			WiiPartEntry &entry = wiiVgTbl[i].at(j);
 			entry.start = (int64_t)(be32_to_cpu(pt[j].addr)) << 2;
 			entry.type = be32_to_cpu(pt[j].type);
-			entry.partition = new WiiPartition(discReader, entry.start);
+			entry.partition = new WiiPartition(discReader, entry.start, noCrypt);
 
 			if (entry.type == PARTITION_UPDATE && !updatePartition) {
 				// System Update partition.
@@ -1765,6 +1770,9 @@ int GameCube::loadFieldData(void)
 						break;
 					case WiiPartition::ENCKEY_DEBUG:
 						key_name = C_("GameCube|KeyIdx", "Debug");
+						break;
+					case WiiPartition::ENCKEY_NONE:
+						key_name = C_("GameCube|KeyIdx", "None");
 						break;
 				}
 				data_row.push_back(key_name);

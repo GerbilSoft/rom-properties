@@ -42,8 +42,9 @@ class WiiPartition : public GcnPartition
 		 *
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
+		 * @param noCrypt If true, disc image is not encrypted. (RVT-H)
 		 */
-		WiiPartition(IDiscReader *discReader, int64_t partition_offset);
+		WiiPartition(IDiscReader *discReader, int64_t partition_offset, bool noCrypt = false);
 		~WiiPartition();
 
 	private:
@@ -95,6 +96,7 @@ class WiiPartition : public GcnPartition
 			ENCKEY_KOREAN = 1,	// Korean key
 			ENCKEY_VWII = 2,	// vWii common key
 			ENCKEY_DEBUG = 3,	// RVT-R debug key
+			ENCKEY_NONE = 4,	// No encryption (RVT-H)
 		};
 
 		/**
