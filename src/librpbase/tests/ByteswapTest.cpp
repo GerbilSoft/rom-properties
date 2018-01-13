@@ -220,10 +220,10 @@ TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_test) \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
-	__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2); \
+	__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-6); \
 	uint8_t *ptr = &align_buf[2]; \
-	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 2; i--) { \
-		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-2)); \
+	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 6; i--) { \
+		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-6)); \
 		ptr += TEST_ARRAY_SIZE; \
 	} \
 }
@@ -246,7 +246,7 @@ TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_benchmark) \
 		return; \
 	} \
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
-		__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-2); \
+		__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-6); \
 	} \
 }
 
