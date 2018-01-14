@@ -197,30 +197,66 @@ string CacheManager::filterCacheKey(const string &cache_key)
 		if (chr & 0x80) {
 			// Start of UTF-8 sequence.
 			// Verify that the sequence is valid.
-			// TODO: Verify overlong.
+			// TODO: Remove extra bytes?
 			// NOTE: NULL check isn't needed, since these tests will all
 			// fail if a NULL byte is encountered.
-			if (((iter[0] & 0xE0) == 0xC0) &&
+			if (((chr     & 0xE0) == 0xC0) &&
 			    ((iter[1] & 0xC0) == 0x80))
 			{
 				// Two-byte sequence.
+				// Verify that it is not overlong.
+				const unsigned int uchr2 =
+					((chr     & 0x1F) <<  6) |
+					 (iter[1] & 0x3F);
+				if (uchr2 < 0x80) {
+					// Overlong sequence. Not allowed.
+					*iter = '_';
+					continue;
+				}
+
+				// Sequence is not overlong.
 				iter++;
 				continue;
 			}
-			else if (((iter[0] & 0xF0) == 0xE0) &&
+			else if (((chr     & 0xF0) == 0xE0) &&
 				 ((iter[1] & 0xC0) == 0x80) &&
 				 ((iter[2] & 0xC0) == 0x80))
 			{
 				// Three-byte sequence.
+				// Verify that it is not overlong.
+				const unsigned int uchr3 =
+					((chr     & 0x0F) << 12) |
+					((iter[1] & 0x3F) <<  6) |
+					 (iter[2] & 0x3F);
+				if (uchr3 < 0x800) {
+					// Overlong sequence. Not allowed.
+					*iter = '_';
+					continue;
+				}
+
+				// Sequence is not overlong.
 				iter += 2;
 				continue;
 			}
-			else if (((iter[0] & 0xF8) == 0xF0) &&
+			else if (((chr     & 0xF8) == 0xF0) &&
 				 ((iter[1] & 0xC0) == 0x80) &&
 				 ((iter[2] & 0xC0) == 0x80) &&
 				 ((iter[3] & 0xC0) == 0x80))
 			{
 				// Four-byte sequence.
+				// Verify that it is not overlong.
+				const unsigned int uchr4 =
+					((chr     & 0x07) << 18) |
+					((iter[1] & 0x3F) << 12) |
+					((iter[2] & 0x3F) <<  6) |
+					 (iter[3] & 0x3F);
+				if (uchr4 < 0x10000) {
+					// Overlong sequence. Not allowed.
+					*iter = '_';
+					continue;
+				}
+
+				// Sequence is not overlong.
 				iter += 3;
 				continue;
 			}

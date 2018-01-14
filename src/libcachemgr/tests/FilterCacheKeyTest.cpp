@@ -145,10 +145,13 @@ INSTANTIATE_TEST_CASE_P(CacheManagerTest, FilterCacheKeyTest,
 		// Disallow invalid UTF-8 sequences.
 		// Reference: https://en.wikipedia.org/wiki/UTF-8
 		// - Invalid sequence: \x80\xC0\xE0\xF0\xF8
+		// - Overlong encoding: U+0000 -> \xC0\x80 (Modified UTF-8)
+		// - Overlong encoding: U+0020 -> \xE0\x80\xA0
+		// - Overlong encoding: U+20AC -> \xF0\x82\x82\xAC
 		FilterCacheKeyTest_mode(
-			"\xC2\xA9\x80\xC0\xE0\xF0\xF8",
-			"\xC2\xA9_____",
-			"\xC2\xA9_____")
+			"\xC2\xA9\x80\xC0\xE0\xF0\xF8\xC0\x80\xE0\x80\xA0\xF0\x82\x82\xAC",
+			"\xC2\xA9______________",
+			"\xC2\xA9______________")
 	));
 } }
 
