@@ -197,6 +197,9 @@ string CacheManager::filterCacheKey(const string &cache_key)
 		if (chr & 0x80) {
 			// Start of UTF-8 sequence.
 			// Verify that the sequence is valid.
+			// NOTE: Checking for 0x80 first because most cache keys
+			// will be ASCII, not UTF-8.
+
 			// TODO: Remove extra bytes?
 			// NOTE: NULL check isn't needed, since these tests will all
 			// fail if a NULL byte is encountered.
