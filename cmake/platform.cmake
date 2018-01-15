@@ -49,6 +49,13 @@ IF(WIN32)
 	INCLUDE(cmake/platform/win32.cmake)
 ENDIF(WIN32)
 
+# Check what flag is needed for stack smashing protection.
+INCLUDE(CheckStackProtectorCompilerFlag)
+CHECK_STACK_PROTECTOR_COMPILER_FLAG(RP_STACK_CFLAG)
+SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${RP_STACK_CFLAG}")
+SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${RP_STACK_CFLAG}")
+UNSET(RP_STACK_CFLAG)
+
 # Check for Large File Support.
 INCLUDE(CheckLargeFileSupport)
 CHECK_LARGE_FILE_SUPPORT()
