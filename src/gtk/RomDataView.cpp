@@ -47,12 +47,10 @@ using LibRomData::RomDataFactory;
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 using std::ostringstream;
 using std::string;
 using std::unordered_map;
-using std::unordered_set;
 using std::vector;
 
 // GTK+ 2.x compatibility macros.
@@ -179,7 +177,6 @@ struct _RomDataView {
 	// Description labels.
 	RpDescFormatType		desc_format_type;
 	vector<GtkWidget*>		*vecDescLabels;
-	unordered_set<GtkWidget*>	*setDescLabelIsWarning;
 
 	// GtkTreeViews with minimum row counts.
 	unordered_map<GtkTreeView*, int> *map_listDataRowCounts;
@@ -244,12 +241,12 @@ rom_data_view_class_init(RomDataViewClass *klass)
  * @param desc_format_type Format type.
  */
 static inline void
-set_label_format_type(RomDataView *page, GtkLabel *label, RpDescFormatType desc_format_type)
+set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 {
 	PangoAttrList *attr_lst = pango_attr_list_new();
 
-	auto iter = page->setDescLabelIsWarning->find(GTK_WIDGET(label));
-	const bool is_warning = (iter != page->setDescLabelIsWarning->end());
+	// Check if this label has the "Warning" flag set.
+	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(label), "RFT_STRING_warning"));
 	if (is_warning) {
 		// Use the "Warning" format.
 		PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
@@ -325,7 +322,6 @@ rom_data_view_init(RomDataView *page)
 
 	page->desc_format_type = RP_DFT_XFCE;
 	page->vecDescLabels = new vector<GtkWidget*>();
-	page->setDescLabelIsWarning = new unordered_set<GtkWidget*>();
 	page->map_listDataRowCounts = new unordered_map<GtkTreeView*, int>();
 
 	// Animation timer.
@@ -419,7 +415,6 @@ rom_data_view_dispose(GObject *object)
 	page->tabs->clear();
 	page->tabWidget = nullptr;
 	page->vecDescLabels->clear();
-	page->setDescLabelIsWarning->clear();
 	page->map_listDataRowCounts->clear();
 
 	// Call the superclass dispose() function.
@@ -438,7 +433,6 @@ rom_data_view_finalize(GObject *object)
 	delete page->iconAnimHelper;
 	delete page->tabs;
 	delete page->vecDescLabels;
-	delete page->setDescLabelIsWarning;
 	delete page->map_listDataRowCounts;
 
 	// Unreference romData.
@@ -590,7 +584,6 @@ rom_data_view_set_filename(RomDataView	*page,
 
 		// Clear the various widget references.
 		page->vecDescLabels->clear();
-		page->setDescLabelIsWarning->clear();
 		page->map_listDataRowCounts->clear();
 	}
 
@@ -645,7 +638,7 @@ rom_data_view_desc_format_type_changed(RpDescFormatType	desc_format_type,
 	for (auto iter = page->vecDescLabels->cbegin();
 	     iter != page->vecDescLabels->cend(); ++iter)
 	{
-		set_label_format_type(page, GTK_LABEL(*iter), desc_format_type);
+		set_label_format_type(GTK_LABEL(*iter), desc_format_type);
 	}
 }
 
@@ -1201,7 +1194,6 @@ rom_data_view_update_display(RomDataView *page)
 
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
-	page->setDescLabelIsWarning->clear();
 
 	if (!page->romData) {
 		// No ROM data...
@@ -1357,13 +1349,13 @@ rom_data_view_update_display(RomDataView *page)
 			page->vecDescLabels->push_back(lblDesc);
 
 			// Check if this is an RFT_STRING with warning set.
-			if (field->type == RomFields::RFT_STRING &&
-			    field->desc.flags & RomFields::STRF_WARNING)
-			{
-				// Description label should use the "warning" style.
-				page->setDescLabelIsWarning->insert(lblDesc);
-			}
-			set_label_format_type(page, GTK_LABEL(lblDesc), page->desc_format_type);
+			// If it is, set the "RFT_STRING_warning" flag.
+			const gboolean is_warning = (field->type == RomFields::RFT_STRING &&
+						     field->desc.flags & RomFields::STRF_WARNING);
+			g_object_set_data(G_OBJECT(lblDesc), "RFT_STRING_warning", GUINT_TO_POINTER((guint)is_warning));
+
+			// Set the label format type.
+			set_label_format_type(GTK_LABEL(lblDesc), page->desc_format_type);
 
 			// Value widget.
 			int &row = tabRowCount[tabIdx];
