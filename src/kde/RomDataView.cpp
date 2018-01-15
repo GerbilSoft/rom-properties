@@ -87,10 +87,6 @@ class RomDataViewPrivate
 		// RomData object.
 		RomData *romData;
 
-		// QTreeWidgets with minimum row counts.
-		QVector<QPair<QTreeWidget*, int> > listDataRowCounts;
-		bool firstRowHeightInit;
-
 		// Animated icon data.
 		QTimer *tmrIconAnim;
 		std::array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
@@ -130,11 +126,6 @@ class RomDataViewPrivate
 		 * @param field RomFields::Field
 		 */
 		void initListData(QLabel *lblDesc, const RomFields::Field *field);
-
-		/**
-		 * Recalculate RFT_LISTDATA row heights.
-		 */
-		void recalcListDataRowHeights(void);
 
 		/**
 		 * Initialize a Date/Time field.
@@ -182,7 +173,6 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData->ref())
-	, firstRowHeightInit(false)
 	, tmrIconAnim(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
@@ -612,7 +602,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 	treeWidget->resizeColumnToContents(col_count);
 
-	if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
+	if (listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 		// Separate rows.
 		tabs[field->tabIdx].formLayout->addRow(lblDesc);
 		tabs[field->tabIdx].formLayout->addRow(treeWidget);
@@ -625,43 +615,10 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	// and/or the system theme is changed.
 	// TODO: Set an actual default number of rows, or let Qt handle it?
 	// (Windows uses 5.)
-	if (field->desc.list_data.rows_visible > 0) {
-		listDataRowCounts.append(QPair<QTreeWidget*, int>(treeWidget, field->desc.list_data.rows_visible));
-	}
-}
+	treeWidget->setProperty("RFT_LISTDATA_rows_visible", listDataDesc.rows_visible);
 
-/**
- * Recalculate RFT_LISTDATA row heights.
- */
-void RomDataViewPrivate::recalcListDataRowHeights(void)
-{
-	for (auto iter = listDataRowCounts.constBegin(); iter != listDataRowCounts.constEnd(); ++iter) {
-		QTreeWidget *const treeWidget = iter->first;
-		if (treeWidget->topLevelItemCount() <= 0)
-			continue;
-
-		// Get the height of the first item.
-		QTreeWidgetItem *const item = treeWidget->topLevelItem(0);
-		assert(item != 0);
-		if (!item)
-			continue;
-
-		QRect rect = treeWidget->visualItemRect(item);
-		if (rect.height() <= 0)
-			continue;
-
-		// Multiply the height by the requested number of visible rows.
-		int height = rect.height() * iter->second;
-		// Add the header.
-		if (treeWidget->header()->isVisibleTo(treeWidget)) {
-			height += treeWidget->header()->height();
-		}
-		// Add QTreeWidget borders.
-		height += (treeWidget->frameWidth() * 2);
-		// Set the QTreeWidget height.
-		treeWidget->setMinimumHeight(height);
-		treeWidget->setMaximumHeight(height);
-	}
+	// Install the event filter.
+	treeWidget->installEventFilter(q);
 }
 
 /**
@@ -995,30 +952,6 @@ RomDataView::~RomDataView()
 /** QWidget overridden functions. **/
 
 /**
- * State change handler.
- *
- * Used to determine if the system font or theme
- * changes, in which case the ListData row heights
- * need to be recalculated.
- *
- * @param event QEvent.
- */
-void RomDataView::changeEvent(QEvent *event)
-{
-	Q_D(RomDataView);
-	switch (event->type()) {
-		case QEvent::FontChange:
-		case QEvent::StyleChange:
-			// FIXME: Adjustments in response to QEvent::StyleChange
-			// don't seem to work on Kubuntu 16.10...
-			d->recalcListDataRowHeights();
-			break;
-		default:
-			break;
-	}
-}
-
-/**
  * Window has been hidden.
  * This means that this tab has been selected.
  * @param event QShowEvent.
@@ -1028,10 +961,6 @@ void RomDataView::showEvent(QShowEvent *event)
 	// Start the icon animation.
 	Q_D(RomDataView);
 	d->startAnimTimer();
-	if (!d->firstRowHeightInit) {
-		d->recalcListDataRowHeights();
-		d->firstRowHeightInit = true;
-	}
 
 	// Pass the event to the superclass.
 	super::showEvent(event);
@@ -1050,6 +979,75 @@ void RomDataView::hideEvent(QHideEvent *event)
 
 	// Pass the event to the superclass.
 	super::hideEvent(event);
+}
+
+/**
+ * Event filter for recalculating RFT_LISTDATA row heights.
+ * @param object QObject.
+ * @param event Event.
+ * @return True to filter the event; false to pass it through.
+ */
+bool RomDataView::eventFilter(QObject *object, QEvent *event)
+{
+	// Check the event type.
+	switch (event->type()) {
+		case QEvent::LayoutRequest:	// Main event we want to handle.
+		case QEvent::FontChange:
+		case QEvent::StyleChange:
+			// FIXME: Adjustments in response to QEvent::StyleChange
+			// don't seem to work on Kubuntu 16.10...
+			break;
+
+		default:
+			// We don't care about this event.
+			return false;
+	}
+
+	// Make sure this is a QTreeWidget.
+	QTreeWidget *treeWidget = qobject_cast<QTreeWidget*>(object);
+	if (!treeWidget) {
+		// Not a QTreeWidget.
+		return false;
+	}
+
+	// Get the requested minimum number of rows.
+	// Recalculate the row heights for this GtkTreeView.
+	const int rows_visible = treeWidget->property("RFT_LISTDATA_rows_visible").toInt();
+	if (rows_visible <= 0) {
+		// This QTreeWidget doesn't have a fixed number of rows.
+		// Let Qt decide how to manage its layout.
+		return false;
+	}
+
+	// Get the height of the first item.
+	QTreeWidgetItem *const item = treeWidget->topLevelItem(0);
+	assert(item != 0);
+	if (!item) {
+		// No items...
+		return false;
+	}
+
+	QRect rect = treeWidget->visualItemRect(item);
+	if (rect.height() <= 0) {
+		// Item has no height?!
+		return false;
+	}
+
+	// Multiply the height by the requested number of visible rows.
+	int height = rect.height() * rows_visible;
+	// Add the header.
+	if (treeWidget->header()->isVisibleTo(treeWidget)) {
+		height += treeWidget->header()->height();
+	}
+	// Add QTreeWidget borders.
+	height += (treeWidget->frameWidth() * 2);
+
+	// Set the QTreeWidget height.
+	treeWidget->setMinimumHeight(height);
+	treeWidget->setMaximumHeight(height);
+
+	// Allow the event to propagate.
+	return false;
 }
 
 /** Widget slots. **/
