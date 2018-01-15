@@ -46,11 +46,9 @@ using LibRomData::RomDataFactory;
 // C++ includes.
 #include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
 using std::ostringstream;
 using std::string;
-using std::unordered_map;
 using std::vector;
 
 // GTK+ 2.x compatibility macros.
@@ -177,9 +175,6 @@ struct _RomDataView {
 	// Description labels.
 	RpDescFormatType		desc_format_type;
 	vector<GtkWidget*>		*vecDescLabels;
-
-	// GtkTreeViews with minimum row counts.
-	unordered_map<GtkTreeView*, int> *map_listDataRowCounts;
 };
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -322,7 +317,6 @@ rom_data_view_init(RomDataView *page)
 
 	page->desc_format_type = RP_DFT_XFCE;
 	page->vecDescLabels = new vector<GtkWidget*>();
-	page->map_listDataRowCounts = new unordered_map<GtkTreeView*, int>();
 
 	// Animation timer.
 	page->tmrIconAnim = 0;
@@ -415,7 +409,6 @@ rom_data_view_dispose(GObject *object)
 	page->tabs->clear();
 	page->tabWidget = nullptr;
 	page->vecDescLabels->clear();
-	page->map_listDataRowCounts->clear();
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rom_data_view_parent_class)->dispose(object);
@@ -433,7 +426,6 @@ rom_data_view_finalize(GObject *object)
 	delete page->iconAnimHelper;
 	delete page->tabs;
 	delete page->vecDescLabels;
-	delete page->map_listDataRowCounts;
 
 	// Unreference romData.
 	if (page->romData) {
@@ -584,7 +576,6 @@ rom_data_view_set_filename(RomDataView	*page,
 
 		// Clear the various widget references.
 		page->vecDescLabels->clear();
-		page->map_listDataRowCounts->clear();
 	}
 
 	// Filename has been changed.
@@ -1057,8 +1048,8 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// and/or the system theme is changed.
 	// TODO: Set an actual default number of rows, or let Qt handle it?
 	// (Windows uses 5.)
-	if (field->desc.list_data.rows_visible > 0) {
-		page->map_listDataRowCounts->insert(std::make_pair(GTK_TREE_VIEW(treeView), field->desc.list_data.rows_visible));
+	g_object_set_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible", GINT_TO_POINTER(listDataDesc.rows_visible));
+	if (listDataDesc.rows_visible > 0) {
 		g_signal_connect(treeView, "realize",
 			reinterpret_cast<GCallback>(tree_view_realize_signal_handler), page);
 	}
@@ -1501,18 +1492,13 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 				 RomDataView	*page)
 {
 	// TODO: Redo this if the system font and/or style changes.
+	// TODO: Remove the `page` parameter?
+	RP_UNUSED(page);
 
 	// Recalculate the row heights for this GtkTreeView.
-	auto iter = page->map_listDataRowCounts->find(treeView);
-	assert(iter != page->map_listDataRowCounts->end());
-	if (iter == page->map_listDataRowCounts->end()) {
-		// This GtkTreeView doesn't have a fixed number of rows.
-		return;
-	}
-
-	const int rows_visible = iter->second;
+	const int rows_visible = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible"));
 	if (rows_visible <= 0) {
-		// Nothing to do...
+		// This GtkTreeView doesn't have a fixed number of rows.
 		return;
 	}
 
