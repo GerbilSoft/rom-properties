@@ -214,7 +214,7 @@ public:
 		// NOTE: listDataDesc.names can be nullptr,
 		// which means we don't have any column headers.
 
-		auto list_data = romField->data.list_data;
+		const auto list_data = romField->data.list_data;
 		assert(list_data != nullptr);
 		if (!list_data) {
 			return os << "[ERROR: No list data.]";
@@ -563,7 +563,7 @@ public:
 					os << ",\"names\":[]";
 				}
 				os << "},\"data\":[";
-				auto list_data = romField->data.list_data;
+				const auto list_data = romField->data.list_data;
 				assert(list_data != nullptr);
 				if (list_data) {
 					uint32_t checkboxes = romField->data.list_checkboxes;

@@ -535,7 +535,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	auto list_data = field->data.list_data;
+	const auto list_data = field->data.list_data;
 	assert(list_data != nullptr);
 
 	int col_count = 1;

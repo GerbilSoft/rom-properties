@@ -914,7 +914,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	auto list_data = field->data.list_data;
+	const auto list_data = field->data.list_data;
 	assert(list_data != nullptr);
 
 	int col_count = 1;

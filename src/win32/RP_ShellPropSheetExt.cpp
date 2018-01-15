@@ -1115,7 +1115,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	auto list_data = field->data.list_data;
+	const auto list_data = field->data.list_data;
 	assert(list_data != nullptr);
 
 	// Create a ListView widget.
