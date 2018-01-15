@@ -40,10 +40,8 @@ using namespace LibRpBase;
 // C++ includes.
 #include <array>
 #include <string>
-#include <unordered_map>
 #include <vector>
 using std::string;
-using std::unordered_map;
 using std::vector;
 
 #include <QtCore/QDateTime>
@@ -88,10 +86,6 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
-
-		// Map of bitfield checkboxes to their values.
-		// Used to prevent the user from changing the values.
-		unordered_map<QAbstractButton*, bool> mapBitfields;
 
 		// QTreeWidgets with minimum row counts.
 		QVector<QPair<QTreeWidget*, int> > listDataRowCounts;
@@ -510,8 +504,8 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field *f
 		bool value = !!(field->data.bitfield & (1 << bit));
 		checkBox->setChecked(value);
 
-		// Save the bitfield checkbox in the map.
-		mapBitfields.insert(std::make_pair(checkBox, value));
+		// Save the bitfield checkbox's value in the QObject.
+		checkBox->setProperty("RFT_BITFIELD_value", value);
 
 		// Disable user modifications.
 		// TODO: Prevent the initial mousebutton down from working;
@@ -804,9 +798,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	ui.tabWidget->clear();
 	ui.tabWidget->hide();
 
-	// Clear the bitfields map.
-	mapBitfields.clear();
-
 	// Initialize the header row.
 	initHeaderRow();
 
@@ -1072,15 +1063,11 @@ void RomDataView::bitfield_toggled_slot(bool checked)
 	if (!sender)
 		return;
 
-	Q_D(RomDataView);
-	auto iter = d->mapBitfields.find(sender);
-	if (iter != d->mapBitfields.end()) {
-		// Check if the status is correct.
-		bool value = iter->second;
-		if (checked != value) {
-			// Toggle this box.
-			sender->setChecked(!checked);
-		}
+	// Get the saved RFT_BITFIELD value.
+	const bool value = sender->property("RFT_BITFIELD_value").toBool();
+	if (checked != value) {
+		// Toggle this box.
+		sender->setChecked(value);
 	}
 }
 

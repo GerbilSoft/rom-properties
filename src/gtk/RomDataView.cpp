@@ -181,9 +181,6 @@ struct _RomDataView {
 	vector<GtkWidget*>		*vecDescLabels;
 	unordered_set<GtkWidget*>	*setDescLabelIsWarning;
 
-	// Bitfield checkboxes.
-	unordered_map<GtkWidget*, gboolean> *mapBitfields;
-
 	// GtkTreeViews with minimum row counts.
 	unordered_map<GtkTreeView*, int> *map_listDataRowCounts;
 };
@@ -329,7 +326,6 @@ rom_data_view_init(RomDataView *page)
 	page->desc_format_type = RP_DFT_XFCE;
 	page->vecDescLabels = new vector<GtkWidget*>();
 	page->setDescLabelIsWarning = new unordered_set<GtkWidget*>();
-	page->mapBitfields = new unordered_map<GtkWidget*, gboolean>();
 	page->map_listDataRowCounts = new unordered_map<GtkTreeView*, int>();
 
 	// Animation timer.
@@ -424,7 +420,6 @@ rom_data_view_dispose(GObject *object)
 	page->tabWidget = nullptr;
 	page->vecDescLabels->clear();
 	page->setDescLabelIsWarning->clear();
-	page->mapBitfields->clear();
 	page->map_listDataRowCounts->clear();
 
 	// Call the superclass dispose() function.
@@ -444,7 +439,6 @@ rom_data_view_finalize(GObject *object)
 	delete page->tabs;
 	delete page->vecDescLabels;
 	delete page->setDescLabelIsWarning;
-	delete page->mapBitfields;
 	delete page->map_listDataRowCounts;
 
 	// Unreference romData.
@@ -597,7 +591,6 @@ rom_data_view_set_filename(RomDataView	*page,
 		// Clear the various widget references.
 		page->vecDescLabels->clear();
 		page->setDescLabelIsWarning->clear();
-		page->mapBitfields->clear();
 		page->map_listDataRowCounts->clear();
 	}
 
@@ -878,9 +871,6 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 #endif
 	gtk_widget_show(widget);
 
-	// Reserve space in the bitfield widget map.
-	page->mapBitfields->reserve(page->mapBitfields->size() + bitfieldDesc.elements);
-
 	int count = bitfieldDesc.elements;
 	assert(count <= (int)bitfieldDesc.names->size());
 	if (count > (int)bitfieldDesc.names->size()) {
@@ -898,8 +888,8 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 		gboolean value = !!(field->data.bitfield & (1 << bit));
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
 
-		// Save the bitfield checkbox in the map.
-		page->mapBitfields->insert(std::make_pair(checkBox, value));
+		// Save the bitfield checkbox's value in the GObject.
+		g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
 
 		// Disable user modifications.
 		// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
@@ -1212,7 +1202,6 @@ rom_data_view_update_display(RomDataView *page)
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
 	page->setDescLabelIsWarning->clear();
-	page->mapBitfields->clear();
 
 	if (!page->romData) {
 		// No ROM data...
@@ -1475,17 +1464,12 @@ checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 				  gpointer		 user_data)
 {
 	RP_UNUSED(user_data);
-	RomDataView *page = static_cast<RomDataView*>(user_data);
 
-	// Check if this GtkToggleButton is present in the map.
-	auto iter = page->mapBitfields->find(GTK_WIDGET(togglebutton));
-	if (iter != page->mapBitfields->end()) {
-		// Check if the status is correct.
-		gboolean status = iter->second;
-		if (gtk_toggle_button_get_active(togglebutton) != status) {
-			// Toggle this box.
-			gtk_toggle_button_set_active(togglebutton, status);
-		}
+	// Get the saved RFT_BITFIELD value.
+	const gboolean value = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(togglebutton), "RFT_BITFIELD_value"));
+	if (gtk_toggle_button_get_active(togglebutton) != value) {
+		// Toggle this box.
+		gtk_toggle_button_set_active(togglebutton, value);
 	}
 }
 
