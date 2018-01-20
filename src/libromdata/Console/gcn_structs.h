@@ -262,11 +262,9 @@ typedef struct PACKED _RVL_PartitionHeader {
 	uint34_rshift2_t h3_table_offset;	// [0x2B4] H3 table offset, rshifted by 2. (Size is always 0x18000.)
 	uint34_rshift2_t data_offset;		// [0x2B8] Data offset, rshifted by 2.
 	uint34_rshift2_t data_size;		// [0x2BC] Data size, rshifted by 2.
-
-	// 0x2C0
-	uint8_t tmd[0x1FD40];			// TMD, variable length up to data_offset.
+	uint8_t tmd[0x7D40];			// [0x2C0] TMD, variable length up to data_offset.
 } RVL_PartitionHeader;
-ASSERT_STRUCT(RVL_PartitionHeader, 0x20000);
+ASSERT_STRUCT(RVL_PartitionHeader, 0x8000);
 
 /**
  * Country indexes in RVL_RegionSetting.ratings[].
