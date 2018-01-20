@@ -220,7 +220,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		if (bRet == 0 || bytesRead != sector_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());
-			return (bytesRead > 0 ? bytesRead : 0);
+			return bytesRead;
 		}
 
 		// Copy the data from the sector buffer.
@@ -258,7 +258,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		if (bRet == 0 || bytesRead != sector_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());
-			return ret + (bytesRead > 0 ? bytesRead : 0);
+			return ret + bytesRead;
 		}
 	}
 
@@ -276,7 +276,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		if (bRet == 0 || bytesRead != sector_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());
-			return ret + (bytesRead > 0 ? bytesRead : 0);
+			return ret + bytesRead;
 		}
 
 		// Copy the data from the sector buffer.
