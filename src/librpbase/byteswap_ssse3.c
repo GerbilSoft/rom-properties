@@ -38,6 +38,8 @@
  */
 void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n)
 {
+	const __m128i shuf_mask = _mm_setr_epi8(1,0, 3,2, 5,4, 7,6, 9,8, 11,10, 13,12, 15,14);
+
 	// Verify the block is 16-bit aligned
 	// and is a multiple of 2 bytes.
 	assert(((uintptr_t)ptr & 1) == 0);
@@ -53,7 +55,6 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n)
 	}
 
 	// Process 16 WORDs per iteration using SSSE3.
-	const __m128i shuf_mask = _mm_setr_epi8(1,0, 3,2, 5,4, 7,6, 9,8, 11,10, 13,12, 15,14);
 	for (; n >= 32; n -= 32, ptr += 16) {
 		__m128i *xmm_ptr = (__m128i*)ptr;
 
@@ -78,6 +79,8 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n)
  */
 void __byte_swap_32_array_ssse3(uint32_t *ptr, unsigned int n)
 {
+	const __m128i shuf_mask = _mm_setr_epi8(3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12);
+
 	// Verify the block is 32-bit aligned
 	// and is a multiple of 4 bytes.
 	assert(((uintptr_t)ptr & 3) == 0);
@@ -93,7 +96,6 @@ void __byte_swap_32_array_ssse3(uint32_t *ptr, unsigned int n)
 	}
 
 	// Process 8 DWORDs per iteration using SSSE3.
-	const __m128i shuf_mask = _mm_setr_epi8(3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12);
 	for (; n >= 32; n -= 32, ptr += 8) {
 		__m128i *xmm_ptr = (__m128i*)ptr;
 

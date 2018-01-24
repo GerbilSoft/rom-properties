@@ -107,6 +107,7 @@ void __byte_swap_32_array_sse2(uint32_t *ptr, unsigned int n)
 
 		__m128i xmm0 = _mm_load_si128(&xmm_ptr[0]);
 		__m128i xmm1 = _mm_load_si128(&xmm_ptr[1]);
+		__m128i xmm2, xmm3;
 
 		// Original DWORD: AA BB CC DD
 
@@ -121,8 +122,8 @@ void __byte_swap_32_array_sse2(uint32_t *ptr, unsigned int n)
 		// - xmm0 == DD 00 BB 00
 		// - xmm2 == 00 CC 00 AA
 		// - OR'd == DD CC BB AA
-		__m128i xmm2 = _mm_srli_epi16(xmm0, 8);
-		__m128i xmm3 = _mm_srli_epi16(xmm1, 8);
+		xmm2 = _mm_srli_epi16(xmm0, 8);
+		xmm3 = _mm_srli_epi16(xmm1, 8);
 		xmm0 = _mm_or_si128(_mm_slli_epi16(xmm0, 8), xmm2);
 		xmm1 = _mm_or_si128(_mm_slli_epi16(xmm1, 8), xmm3);
 		
