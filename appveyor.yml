@@ -2,7 +2,7 @@
 version: '1.2.0.{build}'
 
 # Build worker image (VM template)
-image: Visual Studio 2010
+image: Visual Studio 2013
 
 # scripts that are called at very beginning, before repo cloning
 init:
