@@ -31,7 +31,7 @@ configuration:
   - Release
 
 environment:
-  NASM_URL: http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/win64/nasm-2.13.02-installer-x64.exe
+  NASM_URL: http://www.nasm.us/pub/nasm/releasebuilds/2.12.02/win64/nasm-2.12.02-installer-x64.exe
 
 # Install NASM, then run CMake.
 before_build:
