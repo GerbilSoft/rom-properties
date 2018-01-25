@@ -21,6 +21,9 @@
 #ifdef _MSC_VER
 #if _MSC_VER < 1900
 #define noexcept
+// Allocator traits were first supported in MSVC 2012.
+// NOTE: Not working in MSVC 2013...
+#define CXX_NO_ALLOCATOR_TRAITS
 #endif
 #if _MSC_VER < 1800
 #define CXX_NO_INITIALIZER_LIST
@@ -30,8 +33,6 @@
 // MSVC 2010 partially spuports std::is_standard_layout,
 // but it doesn't work in static_assert().
 #define CXX_NO_IS_STANDARD_LAYOUT
-// Allocator traits were first supported in MSVC 2012.
-#define CXX_NO_ALLOCATOR_TRAITS
 #endif
 
 // FIXME: std::is_standard_layout isn't working on MSVC 2015...
