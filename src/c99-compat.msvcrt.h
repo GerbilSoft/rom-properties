@@ -33,16 +33,14 @@
  * the number of characters (minus NULL terminator) required.
  */
 
-/** snprintf(), vsnprintf() **/
+/** snprintf() **/
 #ifdef _MSC_VER
 # if _MSC_VER < 1400
 /* MSVC 2003 and older. Don't use variadic macros. */
 #  define snprintf  _snprintf
-#  define vsnprintf _vsnprintf
 # elif _MSC_VER < 1900
 /* MSVC 2005 through MSVC 2013. Use variadic macros. */
 #  define snprintf(str, size, format, ...)  _snprintf(str, size, format, __VA_ARGS__)
-#  define vsnprintf(str, size, format, ...) _vsnprintf(str, size, format, __VA_ARGS__)
 # endif
 #endif /* _MSC_VER */
 
