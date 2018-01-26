@@ -405,7 +405,7 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 	// make a temporary copy.
 	unique_ptr<uint8_t[]> tmpData(new uint8_t[verifyLen]);
 	memcpy(tmpData.get(), pVerifyData, verifyLen);
-	unsigned int size = cipher->decrypt(tmpData.get(), verifyLen);
+	size_t size = cipher->decrypt(tmpData.get(), verifyLen);
 	if (size != verifyLen) {
 		// Decryption failed.
 		return VERIFY_IAESCIPHER_DECRYPT_ERR;

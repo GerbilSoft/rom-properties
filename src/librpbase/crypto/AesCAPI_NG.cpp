@@ -302,18 +302,18 @@ bool AesCAPI_NG::isInit(void) const
 
 /**
  * Set the encryption key.
- * @param key Key data.
- * @param len Key length, in bytes.
+ * @param pKey	[in] Key data.
+ * @param size	[in] Size of pKey, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCAPI_NG::setKey(const uint8_t *RESTRICT key, unsigned int len)
+int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
 	RP_D(AesCAPI_NG);
-	if (!key) {
+	if (!pKey) {
 		// No key specified.
 		return -EINVAL;
 	} else if (!d->hBcryptDll || !d->hAesAlg) {
@@ -321,7 +321,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT key, unsigned int len)
 		return -EBADF;
 	}
 
-	if (len != 16 && len != 24 && len != 32) {
+	if (size != 16 && size != 24 && size != 32) {
 		// Invalid key length.
 		return -EINVAL;
 	}
@@ -353,7 +353,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT key, unsigned int len)
 		d->hAesAlg,
 		&hKey,
 		pbKeyObject, cbKeyObject,
-		(PBYTE)key, len, 0);
+		(PBYTE)pKey, (ULONG)size, 0);
 	if (!NT_SUCCESS(status)) {
 		// Error generating the key.
 		free(pbKeyObject);
@@ -377,10 +377,8 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT key, unsigned int len)
 	}
 
 	// Save the key data.
-	if (d->key != key) {
-		memcpy(d->key, key, len);
-		d->key_len = len;
-	}
+	memcpy(d->key, pKey, size);
+	d->key_len = size;
 	return 0;
 }
 
@@ -441,14 +439,14 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 
 /**
  * Set the IV (CBC mode) or counter (CTR mode).
- * @param iv IV/counter data.
- * @param len IV/counter length, in bytes.
+ * @param pIV	[in] IV/counter data.
+ * @param size	[in] Size of pIV, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCAPI_NG::setIV(const uint8_t *RESTRICT iv, unsigned int len)
+int AesCAPI_NG::setIV(const uint8_t *RESTRICT pIV, size_t size)
 {
 	RP_D(AesCAPI_NG);
-	if (!iv || len != 16) {
+	if (!pIV || size != 16) {
 		return -EINVAL;
 	} else if (!d->hBcryptDll || !d->hAesAlg) {
 		// Algorithm is not available.
@@ -479,17 +477,19 @@ int AesCAPI_NG::setIV(const uint8_t *RESTRICT iv, unsigned int len)
 
 	// Set the IV.
 	assert(sizeof(d->iv) == 16);
-	memcpy(d->iv, iv, sizeof(d->iv));
+	memcpy(d->iv, pIV, sizeof(d->iv));
 	return 0;
 }
 
 /**
  * Decrypt a block of data.
- * @param data Data block.
- * @param data_len Length of data block.
+ * Key and IV/counter must be set before calling this function.
+ *
+ * @param pData	[in/out] Data block.
+ * @param size	[in] Length of data block. (Must be a multiple of 16.)
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
+size_t AesCAPI_NG::decrypt(uint8_t *RESTRICT pData, size_t size)
 {
 	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
@@ -516,9 +516,9 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 		return 0;
 	}
 
-	// data_len must be a multiple of the block length.
-	assert(data_len % cbBlockLen == 0);
-	if (data_len % cbBlockLen != 0) {
+	// size must be a multiple of the block length.
+	assert(size % cbBlockLen == 0);
+	if (size % cbBlockLen != 0) {
 		// Invalid data length.
 		return 0;
 	}
@@ -527,19 +527,19 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 	switch (d->chainingMode) {
 		case CM_ECB:
 			status = d->pBCryptDecrypt(d->hKey,
-						data, data_len,
+						pData, (ULONG)size,
 						nullptr,
 						nullptr, 0,
-						data, data_len,
+						pData, (ULONG)size,
 						&cbResult, 0);
 			break;
 
 		case CM_CBC:
 			status = d->pBCryptDecrypt(d->hKey,
-						data, data_len,
+						pData, (ULONG)size,
 						nullptr,
-						d->iv, sizeof(d->iv),
-						data, data_len,
+						d->iv, (ULONG)sizeof(d->iv),
+						pData, (ULONG)size,
 						&cbResult, 0);
 			break;
 
@@ -557,10 +557,10 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 
 			// TODO: Verify data alignment.
 			ctr_block ctr_crypt;
-			ctr_block *ctr_data = reinterpret_cast<ctr_block*>(data);
+			ctr_block *ctr_data = reinterpret_cast<ctr_block*>(pData);
 			ULONG cbTmpResult;
 			cbResult = 0;
-			for (; data_len > 0; data_len -= 16, ctr_data++) {
+			for (; size > 0; size -= 16, ctr_data++) {
 				// Encrypt the current counter.
 				memcpy(ctr_crypt.u8, d->iv, sizeof(ctr_crypt.u8));
 				status = d->pBCryptEncrypt(d->hKey,
@@ -596,35 +596,6 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 	}
 	
 	return (NT_SUCCESS(status) ? cbResult : 0);
-}
-
-/**
- * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
- * @param data Data block.
- * @param data_len Length of data block.
- * @param iv IV/counter for the data block.
- * @param iv_len Length of the IV/counter.
- * @return Number of bytes decrypted on success; 0 on error.
- */
-unsigned int AesCAPI_NG::decrypt(uint8_t *RESTRICT data, unsigned int data_len,
-	const uint8_t *RESTRICT iv, unsigned int iv_len)
-{
-	RP_D(AesCAPI_NG);
-	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
-		// Algorithm is not available,
-		// or the key hasn't been set.
-		return 0;
-	} else if (!iv || iv_len != 16) {
-		// Invalid IV.
-		return 0;
-	}
-
-	// Set the IV.
-	assert(sizeof(d->iv) == 16);
-	memcpy(d->iv, iv, sizeof(d->iv));
-
-	// Use the regular decrypt() function.
-	return decrypt(data, data_len);
 }
 
 }

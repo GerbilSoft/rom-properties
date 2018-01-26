@@ -55,11 +55,11 @@ class IAesCipher
 
 		/**
 		 * Set the encryption key.
-		 * @param key Key data.
-		 * @param len Key length, in bytes.
+		 * @param pKey	[in] Key data.
+		 * @param size	[in] Size of pKey, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setKey(const uint8_t *RESTRICT key, unsigned int len) = 0;
+		virtual int setKey(const uint8_t *RESTRICT pKey, size_t size) = 0;
 
 		enum ChainingMode {
 			CM_ECB,
@@ -80,30 +80,34 @@ class IAesCipher
 
 		/**
 		 * Set the IV (CBC mode) or counter (CTR mode).
-		 * @param iv IV/counter data.
-		 * @param len IV/counter length, in bytes.
+		 * @param pIV	[in] IV/counter data.
+		 * @param size	[in] Size of pIV, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setIV(const uint8_t *RESTRICT iv, unsigned int len) = 0;
+		virtual int setIV(const uint8_t *RESTRICT pIV, size_t size) = 0;
 
 		/**
 		 * Decrypt a block of data.
-		 * @param data Data block.
-		 * @param data_len Length of data block.
+		 * Key and IV/counter must be set before calling this function.
+		 *
+		 * @param pData	[in/out] Data block.
+		 * @param size	[in] Length of data block. (Must be a multiple of 16.)
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *RESTRICT data, unsigned int data_len) = 0;
+		virtual size_t decrypt(uint8_t *RESTRICT pData, size_t size) = 0;
 
 		/**
-		 * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
-		 * @param data Data block.
-		 * @param data_len Length of data block.
-		 * @param iv IV/counter for the data block.
-		 * @param iv_len Length of the IV/counter.
+		 * Decrypt a block of data.
+		 * Key must be set before calling this function.
+		 *
+		 * @param pData		[in/out] Data block.
+		 * @param size		[in] Length of data block. (Must be a multiple of 16.)
+		 * @param pIV		[in] IV/counter for the data block.
+		 * @param size_iv	[in] Size of pIV, in bytes.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *RESTRICT data, unsigned int data_len,
-			const uint8_t *RESTRICT iv, unsigned int iv_len) = 0;
+		inline size_t decrypt(uint8_t *RESTRICT pData, size_t size,
+			const uint8_t *RESTRICT pIV, size_t size_iv);
 };
 
 /**
@@ -112,6 +116,26 @@ class IAesCipher
  * declared as pure-virtual.
  */
 inline IAesCipher::~IAesCipher() { }
+
+/**
+ * Decrypt a block of data.
+ * Key must be set before calling this function.
+ *
+ * @param pData		[in/out] Data block.
+ * @param size		[in] Length of data block. (Must be a multiple of 16.)
+ * @param pIV		[in] IV/counter for the data block.
+ * @param size_iv	[in] Size of pIV, in bytes.
+ * @return Number of bytes decrypted on success; 0 on error.
+ */
+inline size_t IAesCipher::decrypt(uint8_t *RESTRICT pData, size_t size,
+	const uint8_t *RESTRICT pIV, size_t size_iv)
+{
+	int ret = setIV(pIV, size_iv);
+	if (ret != 0) {
+		return 0;
+	}
+	return decrypt(pData, size);
+}
 
 }
 

@@ -174,18 +174,18 @@ bool AesCAPI::isInit(void) const
 
 /**
  * Set the encryption key.
- * @param key Key data.
- * @param len Key length, in bytes.
+ * @param pKey	[in] Key data.
+ * @param size	[in] Size of pKey, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCAPI::setKey(const uint8_t *RESTRICT key, unsigned int len)
+int AesCAPI::setKey(const uint8_t *RESTRICT pKey, size_t size)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
 	RP_D(AesCAPI);
-	if (!key) {
+	if (!pKey) {
 		// No key specified.
 		return -EINVAL;
 	} else if (d->hProvider == 0) {
@@ -194,7 +194,7 @@ int AesCAPI::setKey(const uint8_t *RESTRICT key, unsigned int len)
 	}
 
 	ALG_ID alg_id;
-	switch (len) {
+	switch (size) {
 		case 16:
 			alg_id = CALG_AES_128;
 			break;
@@ -220,12 +220,12 @@ int AesCAPI::setKey(const uint8_t *RESTRICT key, unsigned int len)
 	blob.hdr.bVersion = CUR_BLOB_VERSION;
 	blob.hdr.reserved = 0;
 	blob.hdr.aiKeyAlg = alg_id;
-	blob.keySize = len;
-	memcpy(blob.bytes, key, len);
+	blob.keySize = size;
+	memcpy(blob.bytes, pKey, size);
 
 	// Calculate the blob size based on the
 	// specified key size.
-	const DWORD blobSize = (DWORD)(sizeof(BLOBHEADER)+sizeof(DWORD)+len);
+	const DWORD blobSize = (DWORD)(sizeof(blob.hdr) + sizeof(blob.keySize) + size);
 
 	// Load the key.
 	HCRYPTKEY hNewKey;
@@ -284,14 +284,14 @@ int AesCAPI::setChainingMode(ChainingMode mode)
 
 /**
  * Set the IV (CBC mode) or counter (CTR mode).
- * @param iv IV/counter data.
- * @param len IV/counter length, in bytes.
+ * @param pIV	[in] IV/counter data.
+ * @param size	[in] Size of pIV, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCAPI::setIV(const uint8_t *RESTRICT iv, unsigned int len)
+int AesCAPI::setIV(const uint8_t *RESTRICT pIV, size_t size)
 {
 	RP_D(AesCAPI);
-	if (!iv || len != 16) {
+	if (!pIV || size != 16) {
 		return -EINVAL;
 	} else if (d->hKey == 0) {
 		// Key hasn't been set.
@@ -305,14 +305,14 @@ int AesCAPI::setIV(const uint8_t *RESTRICT iv, unsigned int len)
 			return -EINVAL;
 		case CM_CBC:
 			// Set the IV.
-			if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
+			if (!CryptSetKeyParam(d->hKey, KP_IV, pIV, 0)) {
 				// Error setting the IV.
 				return -w32err_to_posix(GetLastError());
 			}
 			break;
 		case CM_CTR:
 			// Set the counter.
-			memcpy(d->ctr, iv, len);
+			memcpy(d->ctr, pIV, size);
 			break;
 	}
 
@@ -321,11 +321,13 @@ int AesCAPI::setIV(const uint8_t *RESTRICT iv, unsigned int len)
 
 /**
  * Decrypt a block of data.
- * @param data Data block.
- * @param data_len Length of data block.
+ * Key and IV/counter must be set before calling this function.
+ *
+ * @param pData	[in/out] Data block.
+ * @param size	[in] Length of data block. (Must be a multiple of 16.)
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCAPI::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
+size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 {
 	RP_D(AesCAPI);
 	if (d->hKey == 0) {
@@ -366,9 +368,9 @@ unsigned int AesCAPI::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 
 		// TODO: Verify data alignment.
 		ctr_block ctr_crypt;
-		ctr_block *ctr_data = reinterpret_cast<ctr_block*>(data);
+		ctr_block *ctr_data = reinterpret_cast<ctr_block*>(pData);
 		dwLen = 0;
-		for (; data_len > 0; data_len -= 16, ctr_data++) {
+		for (; size > 0; size -= 16, ctr_data++) {
 			// Encrypt the current counter.
 			memcpy(ctr_crypt.u8, d->ctr, sizeof(ctr_crypt.u8));
 			DWORD dwTempLen = 16;
@@ -393,42 +395,12 @@ unsigned int AesCAPI::decrypt(uint8_t *RESTRICT data, unsigned int data_len)
 		}
 	} else {
 		// EBC and/or CBC.
-		dwLen = data_len;
-		bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, data, &dwLen);
+		dwLen = (DWORD)size;
+		bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, pData, &dwLen);
 		CryptDestroyKey(hMyKey);
 	}
 
 	return (bRet ? dwLen : 0);
-}
-
-/**
- * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
- * @param data Data block.
- * @param data_len Length of data block.
- * @param iv IV/counter for the data block.
- * @param iv_len Length of the IV/counter.
- * @return Number of bytes decrypted on success; 0 on error.
- */
-unsigned int AesCAPI::decrypt(uint8_t *RESTRICT data, unsigned int data_len,
-	const uint8_t *RESTRICT iv, unsigned int iv_len)
-{
-	RP_D(AesCAPI);
-	if (!iv || iv_len != 16) {
-		// Invalid IV.
-		return 0;
-	} else if (d->hKey == 0) {
-		// Key hasn't been set.
-		return 0;
-	}
-
-	// Set the IV.
-	if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
-		// Error setting the IV.
-		return 0;
-	}
-
-	// Use the regular decrypt() function.
-	return decrypt(data, data_len);
 }
 
 }
