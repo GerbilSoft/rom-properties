@@ -546,7 +546,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
-			memcpy(ptr8, d->sector_buf, read_sz);
+			memcpy(ptr8, &d->sector_buf[blockStartOffset], read_sz);
 
 			// Starting block read.
 			size -= read_sz;
@@ -580,7 +580,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
-			memcpy(ptr8, d->sector_buf, size);
+			memcpy(ptr8, &d->sector_buf[blockStartOffset], size);
 
 			ret += size;
 			d->pos_7C00 += size;
@@ -691,7 +691,6 @@ int WiiPartition::seek(int64_t pos)
 		return -1;
 	}
 
-#ifdef ENABLE_DECRYPTION
 	// Handle out-of-range cases.
 	// TODO: How does POSIX behave?
 	if (pos < 0)
@@ -701,12 +700,6 @@ int WiiPartition::seek(int64_t pos)
 	else
 		d->pos_7C00 = pos;
 	return 0;
-#else /* !ENABLE_DECRYPTION */
-	// Decryption is not enabled.
-	RP_UNUSED(pos);
-	m_lastError = EIO;
-	return -1;
-#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -723,13 +716,7 @@ int64_t WiiPartition::tell(void)
 		return -1;
 	}
 
-#ifdef ENABLE_DECRYPTION
 	return d->pos_7C00;
-#else /* !ENABLE_DECRYPTION */
-	// Decryption is not enabled.
-	m_lastError = EIO;
-	return -1;
-#endif /* ENABLE_DECRYPTION */
 }
 
 /** WiiPartition **/
