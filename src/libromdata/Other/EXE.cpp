@@ -105,10 +105,10 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// Product version.
 	fields->addField_string(C_("EXE", "Product Version"),
 		rp_sprintf("%u.%u.%u.%u",
-			pVsFfi->dwFileVersionMS >> 16,
-			pVsFfi->dwFileVersionMS & 0xFFFF,
-			pVsFfi->dwFileVersionLS >> 16,
-			pVsFfi->dwFileVersionLS & 0xFFFF));
+			pVsFfi->dwProductVersionMS >> 16,
+			pVsFfi->dwProductVersionMS & 0xFFFF,
+			pVsFfi->dwProductVersionLS >> 16,
+			pVsFfi->dwProductVersionLS & 0xFFFF));
 
 	// File flags.
 	static const char *const FileFlags_names[] = {
