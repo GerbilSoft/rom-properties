@@ -2,7 +2,7 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
 	<assemblyIdentity
 		type="win32"
-		name="ROM Properties Page shell extension"
+		name="com.gerbilsoft.rom-properties.dll"
 		version="@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@.@VERSION_DEVEL@"
 		processorArchitecture="@WIN32_MANIFEST_PROCESSOR_ARCHITECTURE@"
 	/>
