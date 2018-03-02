@@ -25,10 +25,12 @@
 extern "C" {
 #endif
 
-#if defined(_MSC_VER) && !defined(inline)
+#ifdef _MSC_VER
 # include <intrin.h>
-# define inline __inline
-#endif
+# ifndef inline
+#  define inline __inline
+# endif /* !inline */
+#endif /* _MSC_VER */
 
 /**
  * Unsigned integer log2(n).
