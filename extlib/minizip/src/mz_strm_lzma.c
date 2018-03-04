@@ -1,8 +1,8 @@
 /* mz_strm_lzma.c -- Stream for lzma inflate/deflate
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
       https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as lzma.
@@ -147,7 +147,7 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
 
 
     lzma->lstream.next_out = (uint8_t*)buf;
-    lzma->lstream.avail_out = (uint16_t)size;
+    lzma->lstream.avail_out = (size_t)size;
 
     do
     {
@@ -207,7 +207,7 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
     return total_out;
 }
 
-int32_t mz_stream_lzma_flush(void *stream)
+static int32_t mz_stream_lzma_flush(void *stream)
 {
     mz_stream_lzma *lzma = (mz_stream_lzma *)stream;
     if (mz_stream_write(lzma->stream.base, lzma->buffer, lzma->buffer_len) != lzma->buffer_len)
@@ -215,7 +215,7 @@ int32_t mz_stream_lzma_flush(void *stream)
     return MZ_OK;
 }
 
-int32_t mz_stream_lzma_code(void *stream, int32_t flush)
+static int32_t mz_stream_lzma_code(void *stream, int32_t flush)
 {
     mz_stream_lzma *lzma = (mz_stream_lzma *)stream;
     uint64_t total_out_before = 0;
@@ -266,7 +266,7 @@ int32_t mz_stream_lzma_write(void *stream, const void *buf, int32_t size)
 
 
     lzma->lstream.next_in = (uint8_t*)buf;
-    lzma->lstream.avail_in = size;
+    lzma->lstream.avail_in = (size_t)size;
 
     mz_stream_lzma_code(stream, LZMA_RUN);
 
@@ -383,7 +383,7 @@ void *mz_stream_lzma_get_interface(void)
     return (void *)&mz_stream_lzma_vtbl;
 }
 
-int32_t mz_stream_lzma_crc32(int32_t value, const void *buf, int32_t size)
+static int32_t mz_stream_lzma_crc32(int32_t value, const void *buf, int32_t size)
 {
     return lzma_crc32(buf, size, value);
 }

@@ -1,8 +1,8 @@
 /* mz_strm_zlib.c -- Stream for zlib inflate/deflate
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
       https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -128,8 +128,8 @@ int32_t mz_stream_zlib_read(void *stream, void *buf, int32_t size)
     int32_t err = Z_OK;
 
 
-    zlib->zstream.next_out = (uint8_t*)buf;
-    zlib->zstream.avail_out = (uint16_t)size;
+    zlib->zstream.next_out = (Bytef*)buf;
+    zlib->zstream.avail_out = (uInt)size;
 
     do
     {
@@ -195,7 +195,7 @@ int32_t mz_stream_zlib_read(void *stream, void *buf, int32_t size)
     return total_out;
 }
 
-int32_t mz_stream_zlib_flush(void *stream)
+static int32_t mz_stream_zlib_flush(void *stream)
 {
     mz_stream_zlib *zlib = (mz_stream_zlib *)stream;
     if (mz_stream_write(zlib->stream.base, zlib->buffer, zlib->buffer_len) != zlib->buffer_len)
@@ -203,7 +203,7 @@ int32_t mz_stream_zlib_flush(void *stream)
     return MZ_OK;
 }
 
-int32_t mz_stream_zlib_deflate(void *stream, int flush)
+static int32_t mz_stream_zlib_deflate(void *stream, int flush)
 {
     mz_stream_zlib *zlib = (mz_stream_zlib *)stream;
     uint64_t total_out_before = 0;
@@ -234,16 +234,18 @@ int32_t mz_stream_zlib_deflate(void *stream, int flush)
 
         out_bytes = (uint32_t)(total_out_after - total_out_before);
 
-        if (err != Z_OK && err != Z_STREAM_END)
+        zlib->buffer_len += out_bytes;
+        zlib->total_out += out_bytes;
+
+        if (err == Z_STREAM_END)
+            break;
+        if (err != Z_OK)
         {
             zlib->error = err;
             return MZ_STREAM_ERROR;
         }
-
-        zlib->buffer_len += out_bytes;
-        zlib->total_out += out_bytes;
     }
-    while (zlib->zstream.avail_in > 0);
+    while ((zlib->zstream.avail_in > 0) || (flush == Z_FINISH && err == Z_OK));
 
     return MZ_OK;
 }
@@ -253,8 +255,8 @@ int32_t mz_stream_zlib_write(void *stream, const void *buf, int32_t size)
     mz_stream_zlib *zlib = (mz_stream_zlib *)stream;
 
 
-    zlib->zstream.next_in = (uint8_t*)buf;
-    zlib->zstream.avail_in = size;
+    zlib->zstream.next_in = (Bytef*)buf;
+    zlib->zstream.avail_in = (uInt)size;
 
     mz_stream_zlib_deflate(stream, Z_NO_FLUSH);
 
@@ -369,7 +371,7 @@ void *mz_stream_zlib_get_interface(void)
     return (void *)&mz_stream_zlib_vtbl;
 }
 
-int32_t mz_stream_zlib_crc32(int32_t value, const void *buf, int32_t size)
+static int32_t mz_stream_zlib_crc32(int32_t value, const void *buf, int32_t size)
 {
     return crc32(value, buf, size);
 }

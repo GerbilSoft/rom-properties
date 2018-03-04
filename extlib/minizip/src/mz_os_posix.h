@@ -1,8 +1,8 @@
 /* mz_os_posix.h -- System functions for posix
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -23,9 +23,9 @@ extern "C" {
 /***************************************************************************/
 
 #if defined(__APPLE__)
-#define MZ_VERSION_MADEBY (19)
+#define MZ_VERSION_MADEBY_HOST_SYSTEM (19)
 #elif defined(unix)
-#define MZ_VERSION_MADEBY (3)
+#define MZ_VERSION_MADEBY_HOST_SYSTEM (3)
 #endif
 
 /***************************************************************************/

@@ -1,8 +1,8 @@
 /* mz_strm_split.c -- Stream for split files
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -66,14 +66,13 @@ typedef struct mz_stream_split_s {
 
 /***************************************************************************/
 
-int32_t mz_stream_split_open_disk(void *stream, int32_t number_disk)
+static int32_t mz_stream_split_open_disk(void *stream, int32_t number_disk)
 {
     mz_stream_split *split = (mz_stream_split *)stream;
     uint32_t magic = 0;
     int32_t i = 0;
     int32_t err = MZ_OK;
     int16_t disk_part = 0;
-    int16_t read_disk_part = 0;
 
 
     // Check if we are reading or writing a disk part or the cd disk
@@ -140,7 +139,7 @@ int32_t mz_stream_split_open_disk(void *stream, int32_t number_disk)
     return err;
 }
 
-int32_t mz_stream_split_close_disk(void *stream)
+static int32_t mz_stream_split_close_disk(void *stream)
 {
     mz_stream_split *split = (mz_stream_split *)stream;
 
@@ -150,7 +149,7 @@ int32_t mz_stream_split_close_disk(void *stream)
     return mz_stream_close(split->stream.base);
 }
 
-int32_t mz_stream_split_goto_disk(void *stream, int32_t number_disk)
+static int32_t mz_stream_split_goto_disk(void *stream, int32_t number_disk)
 {
     mz_stream_split *split = (mz_stream_split *)stream;
     int32_t err = MZ_OK;

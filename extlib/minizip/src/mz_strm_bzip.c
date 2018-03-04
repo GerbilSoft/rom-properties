@@ -1,8 +1,8 @@
 /* mz_strm_bzip.c -- Stream for bzip inflate/deflate
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
       https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as bzip.
@@ -125,7 +125,7 @@ int32_t mz_stream_bzip_read(void *stream, void *buf, int32_t size)
         return 0;
 
     bzip->bzstream.next_out = (char *)buf;
-    bzip->bzstream.avail_out = (uint16_t)size;
+    bzip->bzstream.avail_out = (unsigned int)size;
 
     do
     {
@@ -190,7 +190,7 @@ int32_t mz_stream_bzip_read(void *stream, void *buf, int32_t size)
     return total_out;
 }
 
-int32_t mz_stream_bzip_flush(void *stream)
+static int32_t mz_stream_bzip_flush(void *stream)
 {
     mz_stream_bzip *bzip = (mz_stream_bzip *)stream;
     if (mz_stream_write(bzip->stream.base, bzip->buffer, bzip->buffer_len) != bzip->buffer_len)
@@ -198,7 +198,7 @@ int32_t mz_stream_bzip_flush(void *stream)
     return MZ_OK;
 }
 
-int32_t mz_stream_bzip_compress(void *stream, int flush)
+static int32_t mz_stream_bzip_compress(void *stream, int flush)
 {
     mz_stream_bzip *bzip = (mz_stream_bzip *)stream;
     uint64_t total_out_before = 0;
@@ -232,14 +232,16 @@ int32_t mz_stream_bzip_compress(void *stream, int flush)
 
         out_bytes = (uint32_t)(total_out_after - total_out_before);
 
+        bzip->buffer_len += out_bytes;
+        bzip->total_out += out_bytes;
+
+        if (err == BZ_STREAM_END)
+            break;
         if (err < 0)
         {
             bzip->error = err;
             return MZ_STREAM_ERROR;
         }
-
-        bzip->buffer_len += out_bytes;
-        bzip->total_out += out_bytes;
     }
     while ((bzip->bzstream.avail_in > 0) || (flush == BZ_FINISH && err == BZ_FINISH_OK));
 
@@ -252,7 +254,7 @@ int32_t mz_stream_bzip_write(void *stream, const void *buf, int32_t size)
 
 
     bzip->bzstream.next_in = (char *)buf;
-    bzip->bzstream.avail_in = size;
+    bzip->bzstream.avail_in = (unsigned int)size;
 
     mz_stream_bzip_compress(stream, BZ_RUN);
 

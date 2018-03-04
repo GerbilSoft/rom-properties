@@ -1,8 +1,8 @@
 /* mz_strm_win32.c -- Stream for filesystem access for windows
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
    Copyright (C) 2009-2010 Mathias Svensson
      Modifications for Zip64 support
@@ -82,7 +82,6 @@ int32_t mz_stream_win32_open(void *stream, const char *path, int32_t mode)
     {
         desired_access = GENERIC_READ;
         creation_disposition = OPEN_EXISTING;
-        share_mode &= FILE_SHARE_WRITE;
     }
     else if (mode & MZ_OPEN_MODE_APPEND)
     {

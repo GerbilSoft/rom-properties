@@ -1,8 +1,8 @@
 /* mz_strm_posix.c -- Stream for filesystem access for posix/linux
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
    Modifications for Zip64 support
      Copyright (C) 2009-2010 Mathias Svensson
@@ -113,9 +113,9 @@ int32_t mz_stream_posix_read(void *stream, void *buf, int32_t size)
 {
     mz_stream_posix *posix = (mz_stream_posix*)stream;
     int32_t read = (int32_t)fread(buf, 1, (size_t)size, posix->handle);
-    if (read < 0)
+    if (read < size && ferror(posix->handle))
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
     return read;
@@ -125,9 +125,9 @@ int32_t mz_stream_posix_write(void *stream, const void *buf, int32_t size)
 {
     mz_stream_posix *posix = (mz_stream_posix*)stream;
     int32_t written = (int32_t)fwrite(buf, 1, (size_t)size, posix->handle);
-    if (written < 0)
+    if (written < size && ferror(posix->handle))
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
     return written;
@@ -139,7 +139,7 @@ int64_t mz_stream_posix_tell(void *stream)
     int64_t position = ftello64(posix->handle);
     if (position == -1)
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
     return position;
@@ -167,7 +167,7 @@ int32_t mz_stream_posix_seek(void *stream, int64_t offset, int32_t origin)
 
     if (fseeko64(posix->handle, offset, fseek_origin) != 0)
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
 
@@ -177,8 +177,12 @@ int32_t mz_stream_posix_seek(void *stream, int64_t offset, int32_t origin)
 int32_t mz_stream_posix_close(void *stream)
 {
     mz_stream_posix *posix = (mz_stream_posix*)stream;
-    int32_t closed = fclose(posix->handle);
-    posix->handle = NULL;
+    int32_t closed = 0;
+    if (posix->handle != NULL)
+    {
+        closed = fclose(posix->handle);
+        posix->handle = NULL;
+    }
     if (closed != 0)
     {
         posix->error = errno;
@@ -199,10 +203,13 @@ void *mz_stream_posix_create(void **stream)
 
     posix = (mz_stream_posix *)malloc(sizeof(mz_stream_posix));
     if (posix != NULL)
+    {
+        memset(posix, 0, sizeof(mz_stream_posix));
         posix->stream.vtbl = &mz_stream_posix_vtbl;
+    }
     if (stream != NULL)
         *stream = posix;
-
+ 
     return posix;
 }
 

@@ -1,8 +1,8 @@
 /* mz_os_win32.h -- System functions for Windows
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -20,7 +20,7 @@ extern "C" {
 
 /***************************************************************************/
 
-#define MZ_VERSION_MADEBY (10)
+#define MZ_VERSION_MADEBY_HOST_SYSTEM (10)
 
 /***************************************************************************/
 

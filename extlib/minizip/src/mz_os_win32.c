@@ -1,8 +1,8 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
-   Copyright (C) 2012-2017 Nathan Moinvaziri
+   Copyright (C) 2010-2018 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
 
    This program is distributed under the terms of the same license as zlib.
@@ -113,7 +113,6 @@ int64_t mz_win32_get_file_size(const char *path)
     HANDLE handle = NULL;
     LARGE_INTEGER large_size;
     wchar_t *path_wide = NULL;
-    int32_t err = MZ_OK;
 
 
     path_wide = mz_win32_unicode_path_create(path);

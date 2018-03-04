@@ -12,7 +12,7 @@ option(USE_BZIP2 "Enables building with BZIP2 library" ON)
 option(USE_LZMA "Enables building with LZMA library" ON)
 option(USE_CRYPT "Enables building with PKWARE traditional encryption" ON)
 option(USE_AES "Enables building with AES library" ON)
-option(BUILD_TEST "Enables building of executables. Requires ZLIB!" OFF)
+option(BUILD_TEST "Enables building of minizip executable." OFF)
 ENDIF(0)
 
 # rom-properties: Using ZLIB.
@@ -26,18 +26,21 @@ if(NOT DEFINED CMAKE_MACOSX_RPATH)
     set(CMAKE_MACOSX_RPATH 0)
 endif()
 
-# rom-properties: Disabled installation.
-IF(0)
-set(INSTALL_BIN_DIR "bin" CACHE PATH "Installation directory for executables")
-set(INSTALL_LIB_DIR "lib" CACHE PATH "Installation directory for libraries")
-set(INSTALL_INC_DIR "include" CACHE PATH "Installation directory for headers")
-set(INSTALL_MAN_DIR "share/man" CACHE PATH "Installation directory for manual pages")
-set(INSTALL_PKGCONFIG_DIR "share/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
-ENDIF(0)
-
 project("minizip")
 
-set(VERSION "2.2.4")
+# rom-properties: Disabled installation.
+IF(0)
+include(GNUInstallDirs)
+
+set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
+set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
+set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for headers")
+set(INSTALL_MAN_DIR ${CMAKE_INSTALL_MANDIR} CACHE PATH "Installation directory for manual pages")
+set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installation directory for pkgconfig (.pc) files")
+set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
+ENDIF(0)
+
+set(VERSION "2.2.7")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -103,13 +106,23 @@ if(UNIX)
     list(APPEND MINIZIP_SRC "src/mz_os_posix.c")
     list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_os_posix.h")
 
-    # rom-properties: These are already set by CheckLargeFileSupport.cmake.
-    IF(0)
-    add_definitions(-D__USE_FILE_OFFSET64)
-    add_definitions(-D__USE_LARGEFILE64)
-    add_definitions(-D_LARGEFILE64_SOURCE)
-    add_definitions(-D_FILE_OFFSET_BIT=64)
-    ENDIF(0)
+    # rom-properties: LFS is already set by CheckLargeFileSupport.cmake.
+    #set(define_lfs_macros TRUE)
+
+    if(ANDROID)
+        string(REGEX REPLACE "android-([0-9+])" "\\1"
+            android_api "${ANDROID_PLATFORM}")
+        if(${android_api} LESS 24)
+            set(define_lfs_macros FALSE)
+        endif()
+    endif()
+
+    if(define_lfs_macros)
+        add_definitions(-D__USE_FILE_OFFSET64)
+        add_definitions(-D__USE_LARGEFILE64)
+        add_definitions(-D_LARGEFILE64_SOURCE)
+        add_definitions(-D_FILE_OFFSET_BITS=64)
+    endif()
 
     find_package(PkgConfig REQUIRED)
 
@@ -119,9 +132,6 @@ if(UNIX)
         include_directories(${LIBBSD_INCLUDE_DIRS})
         link_directories(${LIBBSD_LIBRARY_DIRS})
     endif()
-
-    include_directories(${LIBBSD_INCLUDE_DIRS})
-    link_directories(${LIBBSD_LIBRARY_DIRS})
 endif()
 
 if(USE_CRYPT)
@@ -164,6 +174,18 @@ endif()
 
 if(USE_ZLIB)
     add_definitions(-DHAVE_ZLIB)
+
+    # rom-properties: Disabled for now.
+    IF(0)
+    include(CheckFunctionExists)
+    set(CMAKE_REQUIRED_LIBRARIES ZLIB::ZLIB)
+    CHECK_FUNCTION_EXISTS(z_get_crc_table
+        NEEDS_Z_PREFIX)
+
+    if(NEEDS_Z_PREFIX)
+        add_definitions(-DZ_PREFIX)
+    endif()
+    ENDIF(0)
 endif()
 if(USE_BZIP2)
     add_definitions(-DHAVE_BZIP2)
@@ -298,9 +320,23 @@ if(USE_LZMA)
     source_group("LZMA\\RangeCoder" FILES ${LZMA_RANGECODER_SRC} ${LZMA_RANGECODER_HEADERS})
 endif()
 
+# Enable x86 optimizations if supported
+# rom-properties: TODO
+IF(0)
 if(CMAKE_C_COMPILER MATCHES ".*clang")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse3 -msse4.1 -maes")
+    include(CheckCCompilerFlag)
+    macro(enable_option_if_supported option variable)
+        check_c_compiler_flag("-Werror=unused-command-line-argument ${option}" ${variable})
+        if(${variable})
+            add_compile_options(${option})
+        endif()
+    endmacro()
+
+    enable_option_if_supported(-msse3 check_opt_sse3)
+    enable_option_if_supported(-msse4.1 check_opt_sse41)
+    enable_option_if_supported(-maes check_opt_aes)
 endif()
+ENDIF(0)
 
 # Create minizip library
 source_group("Minizip" FILES ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS})
@@ -311,7 +347,8 @@ add_library(${PROJECT_NAME}
                 ${BZIP2_SRC} ${BZIP2_PUBLIC_HEADERS}
                 ${LZMA_SRC} ${LZMA_PUBLIC_HEADERS})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C PREFIX "")
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C PREFIX ""
+                      POSITION_INDEPENDENT_CODE 1)
 # rom-properties: Link to ${ZLIB_LIBRARY}.
 IF(0)
 if(USE_ZLIB)
@@ -343,7 +380,7 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
 
 install(EXPORT ${PROJECT_NAME}
-        DESTINATION "cmake"
+        DESTINATION "${INSTALL_CMAKE_DIR}"
         NAMESPACE "MINIZIP::")
 
 install(FILES ${MINIZIP_PUBLIC_HEADERS} DESTINATION "${INSTALL_INC_DIR}")
