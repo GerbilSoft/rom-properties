@@ -59,7 +59,7 @@ struct djpeg_dest_struct {
      does not support partial image decompression (BMP and RLE, in particular,
      cannot support partial decompression because they use an inversion buffer
      to write the image in bottom-up order.) */
-  void (*calc_buffer_dimensions) (j_decompress_ptr cinfo,
+  void (JPEGCALL *calc_buffer_dimensions) (j_decompress_ptr cinfo,
                                   djpeg_dest_ptr dinfo);
 
   /* Target file spec; filled in by djpeg.c after object is created. */

@@ -321,7 +321,7 @@ read_and_discard_scanlines (j_decompress_ptr cinfo, JDIMENSION num_lines)
   void (JPEGCALL *color_convert) (j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
                          JDIMENSION input_row, JSAMPARRAY output_buf,
                          int num_rows);
-  void (*color_quantize) (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+  void (JPEGCALL *color_quantize) (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
                           JSAMPARRAY output_buf, int num_rows) = NULL;
 
   color_convert = cinfo->cconvert->color_convert;
