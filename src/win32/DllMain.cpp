@@ -186,7 +186,7 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 	LONG lResult;
 
 	// Register the filetype in HKCR.
-	wstring ext = RP2W_c(extInfo.ext);
+	wstring ext = U82W_c(extInfo.ext);
 	RegKey *pHkey_fileType;
 	lResult = RegKey::RegisterFileType(ext.c_str(), &pHkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
@@ -242,7 +242,7 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 	LONG lResult;
 
 	// Open the file type key if it's present.
-	wstring ext = RP2W_c(extInfo.ext);
+	wstring ext = U82W_c(extInfo.ext);
 	RegKey hkey_fileType(hkcr, ext.c_str(), KEY_READ|KEY_WRITE, false);
 	if (!hkey_fileType.isOpen()) {
 		// Not open...
@@ -340,7 +340,7 @@ static wstring GetUserFileAssoc(const wstring &sid, const char *ext)
 	wchar_t regPath[288];
 	int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
 		L"%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s\\UserChoice",
-		sid.c_str(), RP2W_c(ext));
+		sid.c_str(), U82W_c(ext));
 	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
 		// Buffer isn't large enough...
 		return wstring();

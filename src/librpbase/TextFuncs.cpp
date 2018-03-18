@@ -72,7 +72,7 @@ u16string utf16_bswap(const char16_t *str, int len)
 
 /** Miscellaneous functions. **/
 
-#if !defined(RP_WIS16)
+#ifndef RP_WIS16
 /**
  * char16_t strlen().
  * @param wcs 16-bit string.
@@ -150,14 +150,14 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 
 	return ((int)towupper(*wcs1) - (int)towupper(*wcs2));
 }
-#endif /* RP_UTF16 && !RP_WIS16 */
+#endif /* !RP_WIS16 */
 
 /**
  * sprintf()-style function for std::string.
  *
  * @param fmt Format string.
  * @param ... Arguments.
- * @return rp_string.
+ * @return std::string
  */
 string rp_sprintf(const char *fmt, ...)
 {
@@ -211,7 +211,7 @@ string rp_sprintf(const char *fmt, ...)
  *
  * @param fmt Format string.
  * @param ... Arguments.
- * @return rp_string.
+ * @return std::string
  */
 std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
 {

@@ -36,11 +36,6 @@
 #else
 # define RP_ICONV_UTF16_ENCODING "UTF-16LE"
 #endif
-#if defined(RP_UTF8)
-# define RP_ICONV_ENCODING "UTF-8"
-#elif defined(RP_UTF16)
-# define RP_ICONV_ENCODING RP_ICONV_UTF16_ENCODING
-#endif
 
 // iconv
 #include <iconv.h>

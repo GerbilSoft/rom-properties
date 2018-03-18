@@ -141,7 +141,7 @@ HRESULT RP_ExtractImage_Private::Fallback(HBITMAP *phBmpImage)
 	}
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, RP2W_c(file_ext), KEY_READ, false);
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82W_c(file_ext), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}

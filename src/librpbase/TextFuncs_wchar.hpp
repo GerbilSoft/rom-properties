@@ -30,7 +30,7 @@
  *
  * NOTE 2: The UTF-8 versions return c_str() from
  * temporary strings. Therefore, you *must* assign
- * the result to an std::wstring or rp_string if
+ * the result to an std::wstring or std::string if
  * storing it, since a wchar_t* or rp_char* will
  * result in a dangling pointer.
  */
@@ -44,22 +44,22 @@
 #endif /* RP_WIS16 */
 
 /**
- * Get const wchar_t* from const rp_char*.
+ * Get const wchar_t* from const char*.
  * @param str const rp_char*
  * @return const wchar_t*
  */
-#define RP2W_c(str) \
+#define U82W_c(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRpBase::rp_string_to_utf16(str, -1).c_str()))
+		LibRpBase::utf8_to_utf16(str, -1).c_str()))
 
 /**
- * Get const wchar_t* from rp_string.
- * @param rps rp_string
+ * Get const wchar_t* from std::string.
+ * @param str std::string
  * @return const wchar_t*
  */
-#define RP2W_s(rps) \
+#define U82W_s(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRpBase::rp_string_to_utf16(rps).c_str()))
+		LibRpBase::utf8_to_utf16(str).c_str()))
 
 // FIXME: In-place conversion of std::u16string to std::wstring?
 
@@ -71,7 +71,7 @@
  */
 static inline std::string W2U8(const wchar_t *wcs, int len = -1)
 {
-	return LibRpBase::utf16_to_rp_string(
+	return LibRpBase::utf16_to_utf8(
 		reinterpret_cast<const char16_t*>(wcs), len);
 }
 
@@ -82,7 +82,7 @@ static inline std::string W2U8(const wchar_t *wcs, int len = -1)
  */
 static inline std::string W2U8(const std::wstring &wcs)
 {
-	return LibRpBase::utf16_to_rp_string(
+	return LibRpBase::utf16_to_utf8(
 		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size());
 }
 

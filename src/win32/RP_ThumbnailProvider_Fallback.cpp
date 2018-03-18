@@ -26,7 +26,6 @@
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
@@ -142,7 +141,7 @@ HRESULT RP_ThumbnailProvider_Private::Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPH
 	}
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, RP2W_c(file_ext), KEY_READ, false);
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82W_c(file_ext), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}

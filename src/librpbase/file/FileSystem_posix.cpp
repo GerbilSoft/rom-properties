@@ -23,7 +23,8 @@
 
 // libunixcommon
 #include "libunixcommon/userdirs.hpp"
-// libromdata
+// librpbase
+#include "common.h"
 #include "TextFuncs.hpp"
 
 // One-time initialization.
@@ -72,7 +73,7 @@ static string config_dir;
 int rmkdir(const string &path)
 {
 	// Linux (and most other systems) use UTF-8 natively.
-	string path8 = RP2U8_s(path);
+	string path8 = path;
 
 	// Find all slashes and ensure the directory component exists.
 	size_t slash_pos = path8.find(DIR_SEP_CHR, 0);
@@ -152,7 +153,7 @@ static void initConfigDirectories(void)
 	// Use LibUnixCommon to get the XDG directories.
 
 	// Cache directory.
-	cache_dir = U82RP_s(LibUnixCommon::getCacheDirectory());
+	cache_dir = LibUnixCommon::getCacheDirectory();
 	if (!cache_dir.empty()) {
 		// Add a trailing slash if necessary.
 		if (cache_dir.at(cache_dir.size()-1) != '/')
@@ -162,7 +163,7 @@ static void initConfigDirectories(void)
 	}
 
 	// Config directory.
-	config_dir = U82RP_s(LibUnixCommon::getConfigDirectory());
+	config_dir = LibUnixCommon::getConfigDirectory();
 	if (!config_dir.empty()) {
 		// Add a trailing slash if necessary.
 		if (config_dir.at(config_dir.size()-1) != '/')
@@ -219,7 +220,7 @@ int set_mtime(const string &filename, time_t mtime)
 	struct utimbuf utbuf;
 	utbuf.actime = time(nullptr);
 	utbuf.modtime = mtime;
-	int ret = utime(RP2U8_s(filename), &utbuf);
+	int ret = utime(filename.c_str(), &utbuf);
 
 	return (ret == 0 ? 0 : -errno);
 }
@@ -239,7 +240,7 @@ int get_mtime(const string &filename, time_t *pMtime)
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 	struct stat buf;
-	int ret = stat(RP2U8_s(filename), &buf);
+	int ret = stat(filename.c_str(), &buf);
 	if (ret == 0) {
 		// stat() buffer retrieved.
 		*pMtime = buf.st_mtime;
@@ -258,7 +259,7 @@ int delete_file(const char *filename)
 	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
 
-	int ret = unlink(RP2U8_c(filename));
+	int ret = unlink(filename);
 	if (ret != 0) {
 		// Error deleting the file.
 		ret = -errno;
@@ -277,7 +278,7 @@ bool is_symlink(const char *filename)
 		return -EINVAL;
 	
 	struct stat buf;
-	int ret = lstat(RP2U8_c(filename), &buf);
+	int ret = lstat(filename, &buf);
 	if (ret != 0) {
 		// lstat() failed.
 		// Assume this is not a symlink.
@@ -302,9 +303,9 @@ string resolve_symlink(const char *filename)
 
 	// NOTE: realpath() might not be available on some systems...
 	string ret;
-	char *const resolved_path = realpath(RP2U8_c(filename), nullptr);
+	char *const resolved_path = realpath(filename, nullptr);
 	if (resolved_path != nullptr) {
-		ret = U82RP_cs(resolved_path);
+		ret = resolved_path;
 		free(resolved_path);
 	}
 	return ret;

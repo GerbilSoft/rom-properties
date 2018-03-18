@@ -315,7 +315,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(U82RP_cs(source_file), RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(source_file, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
 		return RPCT_SOURCE_FILE_ERROR;
@@ -374,7 +374,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 			return RPCT_OUTPUT_FILE_FAILED;
 	}
 
-	RpPngWriter *pngWriter = new RpPngWriter(U82RP_c(output_file),
+	RpPngWriter *pngWriter = new RpPngWriter(output_file,
 		ret_img.width(), height, format);
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.

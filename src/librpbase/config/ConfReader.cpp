@@ -189,7 +189,7 @@ int ConfReader::load(bool force)
 	// manage the file itself.
 #ifdef _WIN32
 	// Win32: Use ini_parse_w().
-	int ret = ini_parse_w(RP2W_s(d->conf_filename),
+	int ret = ini_parse_w(U82W_s(d->conf_filename),
 			ConfReaderPrivate::processConfigLine_static, d);
 #else /* !_WIN32 */
 	// Linux or other systems: Use ini_parse().

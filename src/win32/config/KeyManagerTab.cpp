@@ -345,7 +345,7 @@ void KeyManagerTabPrivate::initUI(void)
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
-		SetWindowText(hBtnImport, RP2W_c(C_("KeyManagerTab", "Import...")));
+		SetWindowText(hBtnImport, U82W_c(C_("KeyManagerTab", "Import...")));
 	}
 
 	// Initialize the ListView.
@@ -368,7 +368,7 @@ void KeyManagerTabPrivate::initUI(void)
 	wstring wsColTitle;
 
 	// tr: Column 0: Key Name.
-	wsColTitle = RP2W_c(C_("KeyManagerTab", "Key Name"));
+	wsColTitle = U82W_c(C_("KeyManagerTab", "Key Name"));
 	LVCOLUMN lvCol;
 	memset(&lvCol, 0, sizeof(lvCol));
 	lvCol.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
@@ -377,12 +377,12 @@ void KeyManagerTabPrivate::initUI(void)
 	ListView_InsertColumn(hListView, 0, &lvCol);
 
 	// tr: Column 1: Value.
-	wsColTitle = RP2W_c(C_("KeyManagerTab", "Value"));
+	wsColTitle = U82W_c(C_("KeyManagerTab", "Value"));
 	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 1, &lvCol);
 
 	// tr: Column 2: Verification status.
-	wsColTitle = RP2W_c(C_("KeyManagerTab", "Valid?"));
+	wsColTitle = U82W_c(C_("KeyManagerTab", "Valid?"));
 	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
@@ -424,7 +424,7 @@ void KeyManagerTabPrivate::initUI(void)
 			lvGroup.mask = LVGF_ALIGN | LVGF_GROUPID | LVGF_HEADER | LVGF_ITEMS;
 			lvGroup.uAlign = LVGA_HEADER_LEFT;
 			for (int sectIdx = 0; sectIdx < keyStore->sectCount(); sectIdx++) {
-				const wstring sectName = RP2W_c(keyStore->sectName(sectIdx));
+				const wstring sectName = U82W_c(keyStore->sectName(sectIdx));
 				lvGroup.iGroupId = sectIdx;
 				lvGroup.pszHeader = const_cast<LPWSTR>(sectName.c_str());
 				lvGroup.cItems = keyStore->keyCount(sectIdx);
@@ -462,13 +462,13 @@ void KeyManagerTabPrivate::initUI(void)
 			continue;
 
 		int tmp_width[2];
-		tmp_width[0] = ListView_GetStringWidth(hListView, RP2W_s(key->name)) + column_padding[0];
-		//tmp_width[1] = ListView_GetStringWidth(hListView, RP2W_s(key->value)) + column_padding[1];
+		tmp_width[0] = ListView_GetStringWidth(hListView, U82W_s(key->name)) + column_padding[0];
+		//tmp_width[1] = ListView_GetStringWidth(hListView, U82W_s(key->value)) + column_padding[1];
 
 		column_width[0] = std::max(column_width[0], tmp_width[0]);
 		//column_width[1] = std::max(column_width[1], tmp_width[1]);
 
-		int ret = LibWin32Common::measureTextSize(hListView, hFontMono, RP2W_s(key->value), &szValue);
+		int ret = LibWin32Common::measureTextSize(hListView, hFontMono, U82W_s(key->value), &szValue);
 		assert(ret == 0);
 		if (ret == 0) {
 			column_width[1] = std::max(column_width[1], (int)szValue.cx + column_padding[1]);
@@ -611,7 +611,7 @@ void KeyManagerTabPrivate::save(void)
 			continue;
 
 		// Save this key.
-		WritePrivateProfileString(L"Keys", RP2W_s(pKey->name), RP2W_s(pKey->value), RP2W_c(filename));
+		WritePrivateProfileString(L"Keys", U82W_s(pKey->name), U82W_s(pKey->value), U82W_c(filename));
 	}
 
 	// Clear the modified status.
@@ -698,11 +698,11 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 						switch (plvItem->iSubItem) {
 							case 0:
 								// Key name.
-								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, RP2W_s(key->name));
+								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82W_s(key->name));
 								return TRUE;
 							case 1:
 								// Value.
-								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, RP2W_s(key->value));
+								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82W_s(key->value));
 								return TRUE;
 							default:
 								// No text for "Valid?".
@@ -1428,7 +1428,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	filename[0] = 0;
 
 	// tr: Dialog title.
-	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
+	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
@@ -1464,7 +1464,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	filename[0] = 0;
 
 	// tr: Dialog title.
-	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
+	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
@@ -1500,7 +1500,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	filename[0] = 0;
 
 	// tr: Dialog title.
-	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
+	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
@@ -1536,7 +1536,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	filename[0] = 0;
 
 	// tr: Dialog title.
-	const wstring wsDlgTitle = RP2W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
+	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
@@ -1587,7 +1587,7 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = RP2W_c(C_("KeyManagerTab", "Key Manager"));
+	const wstring wsTabTitle = U82W_c(C_("KeyManagerTab", "Key Manager"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);

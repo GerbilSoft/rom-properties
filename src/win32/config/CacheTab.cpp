@@ -158,7 +158,7 @@ int CacheTabPrivate::clearCacheVista(void)
 		DWORD dwErr = GetLastError();
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"), dwErr);
-		SetWindowText(hStatusLabel, RP2W_c(errbuf));
+		SetWindowText(hStatusLabel, U82W_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 1;
 	}
@@ -180,7 +180,7 @@ int CacheTabPrivate::clearCacheVista(void)
 	}
 	if (driveLetters == 0) {
 		// No fixed hard drives detected...
-		SetWindowText(hStatusLabel, RP2W_c(C_("CacheTab|Win32",
+		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab|Win32",
 			"ERROR: No fixed HDDs or SSDs detected.")));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 2;
@@ -193,7 +193,7 @@ int CacheTabPrivate::clearCacheVista(void)
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 			"ERROR: Thumbnail Cache cleaner not found. (res == %ld)"),
 			hKey.lOpenRes());
-		SetWindowText(hStatusLabel, RP2W_c(errbuf));
+		SetWindowText(hStatusLabel, U82W_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 3;
 	}
@@ -202,7 +202,7 @@ int CacheTabPrivate::clearCacheVista(void)
 	wstring s_clsidThumbnailCacheCleaner = hKey.read(nullptr);
 	if (s_clsidThumbnailCacheCleaner.size() != 38) {
 		// Not a CLSID.
-		SetWindowText(hStatusLabel, RP2W_c(C_("CacheTab|Win32",
+		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab|Win32",
 			"ERROR: Thumbnail Cache cleaner CLSID is invalid.")));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 4;
@@ -211,7 +211,7 @@ int CacheTabPrivate::clearCacheVista(void)
 	HRESULT hr = CLSIDFromString(s_clsidThumbnailCacheCleaner.c_str(), &clsidThumbnailCacheCleaner);
 	if (FAILED(hr)) {
 		// Failed to convert the CLSID from string.
-		SetWindowText(hStatusLabel, RP2W_c(C_("CacheTab|Win32",
+		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab|Win32",
 			"ERROR: Thumbnail Cache cleaner CLSID is invalid.")));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 5;
@@ -227,7 +227,7 @@ int CacheTabPrivate::clearCacheVista(void)
 		// Failed...
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)"), hr);
-		SetWindowText(hStatusLabel, RP2W_c(errbuf));
+		SetWindowText(hStatusLabel, U82W_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 6;
 	}
@@ -276,7 +276,7 @@ int CacheTabPrivate::clearCacheVista(void)
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"),
 				(char)szDrivePath[0], hr);
-			SetWindowText(hStatusLabel, RP2W_c(errbuf));
+			SetWindowText(hStatusLabel, U82W_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
 			return 7;
@@ -290,7 +290,7 @@ int CacheTabPrivate::clearCacheVista(void)
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"),
 				(char)szDrivePath[0], hr);
-			SetWindowText(hStatusLabel, RP2W_c(errbuf));
+			SetWindowText(hStatusLabel, U82W_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
 		}
@@ -308,7 +308,7 @@ int CacheTabPrivate::clearCacheVista(void)
 	} else {
 		success_message = C_("CacheTab", "System thumbnail cache is already empty. Nothing to do here.");
 	}
-	SetWindowText(hStatusLabel, RP2W_c(success_message));
+	SetWindowText(hStatusLabel, U82W_c(success_message));
 	pCallback->Release();
 	return 0;
 }
@@ -476,7 +476,7 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = RP2W_c(C_("Cache Tab", "Thumbnail Cache"));
+	const wstring wsTabTitle = U82W_c(C_("Cache Tab", "Thumbnail Cache"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	

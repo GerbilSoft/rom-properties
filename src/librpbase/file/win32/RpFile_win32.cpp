@@ -347,7 +347,7 @@ void RpFile::init(void)
 			// Only CD-ROM (and similar) drives are supported.
 			// TODO: Verify if opening by drive letter works,
 			// or if we have to resolve the physical device name.
-			if (GetDriveType(RP2W_s(d->filename)) != DRIVE_CDROM) {
+			if (GetDriveType(U82W_s(d->filename)) != DRIVE_CDROM) {
 				// Not a CD-ROM drive.
 				m_lastError = ENOTSUP;
 				return;
@@ -362,12 +362,12 @@ void RpFile::init(void)
 			// Absolute path.
 			// Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			filenameW = L"\\\\?\\";
-			filenameW += RP2W_s(d->filename);
+			filenameW += U82W_s(d->filename);
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = RP2W_s(d->filename);
+		filenameW = U82W_s(d->filename);
 	}
 
 	if (isBlockDevice && (d->mode & FM_WRITE)) {
@@ -398,7 +398,7 @@ void RpFile::init(void)
 		DWORD dwSectorsPerCluster, dwBytesPerSector;
 		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
 		DWORD w32err = 0;
-		BOOL bRet = GetDiskFreeSpace(RP2W_s(d->filename),
+		BOOL bRet = GetDiskFreeSpace(U82W_s(d->filename),
 			&dwSectorsPerCluster, &dwBytesPerSector,
 			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
 		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {

@@ -83,11 +83,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 	string s_ext = ext;
 #ifndef _WIN32
 	// Check for uppercase extensions first.
-# ifdef RP_UTF16
-	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::towupper);
-# else /* RP_UTF8 */
 	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::toupper);
-# endif
 #endif /* !_WIN32 */
 
 	// Attempt to open the related file.
@@ -103,11 +99,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 #else /* _WIN32 */
 		// Try again with a lowercase extension.
 		// (Non-Windows platforms only.)
-# ifdef RP_UTF16
-		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::towlower);
-# else /* RP_UTF8 */
 		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::tolower);
-# endif
 		rel_filename.replace(rel_filename.size() - s_ext.size(), s_ext.size(), s_ext);
 		test_file = new RpFile(rel_filename, RpFile::FM_OPEN_READ);
 		if (!test_file->isOpen()) {

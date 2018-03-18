@@ -89,11 +89,11 @@ static inline wstring makeWinPath(const char *filename)
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += RP2W_c(filename);
+		filenameW += U82W_c(filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = RP2W_c(filename);
+		filenameW = U82W_c(filename);
 	}
 	return filenameW;
 }
@@ -115,11 +115,11 @@ static inline wstring makeWinPath(const string &filename)
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += RP2W_s(filename);
+		filenameW += U82W_s(filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = RP2W_s(filename);
+		filenameW = U82W_s(filename);
 	}
 	return filenameW;
 }
@@ -148,7 +148,7 @@ int rmkdir(const string &path)
 #endif
 
 	// TODO: makeWinPath()?
-	wstring path16 = RP2W_s(path);
+	wstring path16 = U82W_s(path);
 	if (path16.size() == 3) {
 		// 3 characters. Root directory is always present.
 		return 0;
@@ -464,7 +464,7 @@ string resolve_symlink(const char *filename)
 
 	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
 	// TODO: Enable write sharing in regular IRpFile?
-	HANDLE hFile = CreateFile(RP2W_c(filename),
+	HANDLE hFile = CreateFile(U82W_c(filename),
 		GENERIC_READ,
 		FILE_SHARE_READ|FILE_SHARE_WRITE,
 		nullptr,

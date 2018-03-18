@@ -209,13 +209,13 @@ void DownloadsTabPrivate::save(void)
 	}
 
 	const wchar_t *bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
-	WritePrivateProfileString(L"Downloads", L"ExtImageDownload", bstr, RP2W_c(filename));
+	WritePrivateProfileString(L"Downloads", L"ExtImageDownload", bstr, U82W_c(filename));
 
 	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
-	WritePrivateProfileString(L"Downloads", L"UseIntIconForSmallSizes", bstr, RP2W_c(filename));
+	WritePrivateProfileString(L"Downloads", L"UseIntIconForSmallSizes", bstr, U82W_c(filename));
 
 	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
-	WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, RP2W_c(filename));
+	WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, U82W_c(filename));
 
 	// No longer changed.
 	changed = false;
@@ -397,7 +397,7 @@ HPROPSHEETPAGE DownloadsTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = RP2W_c(C_("DownloadsTab", "Downloads"));
+	const wstring wsTabTitle = U82W_c(C_("DownloadsTab", "Downloads"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	

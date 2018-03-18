@@ -117,7 +117,7 @@ extern "C" int gtest_main(int argc, char *argv[])
 	// Reference: https://lists.gnu.org/archive/html/bug-gnulib/2013-01/msg00007.html
 	if (isatty(fileno(stdout))) {
 		// Convert to wchar_t, then print it.
-		wprintf(L"%s", RP2W_s(fst_str));
+		wprintf(L"%s", U82W_s(fst_str));
 	} else {
 		// Writing to file. Print the original UTF-8.
 		printf("%s", fst_str.c_str());

@@ -29,7 +29,6 @@
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
@@ -425,7 +424,7 @@ string AboutTabPrivate::rtfEscape(const char *str)
 		return string();
 	}
 
-	// Convert the string to RP_UTF16 first.
+	// Convert the string to UTF-16 first.
 	const u16string u16str = utf8_to_utf16(str, -1);
 	const char16_t *wcs = u16str.c_str();
 
@@ -490,7 +489,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 			s_version += AboutTabText::git_describe;
 		}
 	}
-	SetWindowText(hStaticVersion, RP2W_s(s_version));
+	SetWindowText(hStaticVersion, U82W_s(s_version));
 
 	// Set the icon.
 	HICON hIcon = PropSheetIcon::get96Icon();
@@ -614,7 +613,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += '}';
 
 	// Add the "Credits" tab.
-	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Credits"));
+	const wstring wsTabTitle = U82W_c(C_("AboutTab", "Credits"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
@@ -677,7 +676,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += "}";
 
 	// Add the "Libraries" tab.
-	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Libraries"));
+	const wstring wsTabTitle = U82W_c(C_("AboutTab", "Libraries"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
@@ -718,7 +717,7 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport += '}';
 
 	// Add the "Support" tab.
-	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "Support"));
+	const wstring wsTabTitle = U82W_c(C_("AboutTab", "Support"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
@@ -860,7 +859,7 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = RP2W_c(C_("AboutTab", "About"));
+	const wstring wsTabTitle = U82W_c(C_("AboutTab", "About"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	

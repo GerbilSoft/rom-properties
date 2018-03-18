@@ -120,7 +120,6 @@ SET(librpbase_H
 	uvector.h
 	aligned_malloc.h
 	TextFuncs.hpp
-	TextFuncs_utf8.hpp
 	TextFuncs_wchar.hpp
 	RomData.hpp
 	RomData_p.hpp
@@ -353,8 +352,6 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
-# TODO: Get rid of this.
-TARGET_COMPILE_DEFINITIONS(rpbase PUBLIC -DRP_UTF8)
 
 # Include paths:
 # - Public: Current source and binary directories.

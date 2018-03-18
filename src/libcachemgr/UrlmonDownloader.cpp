@@ -74,7 +74,7 @@ int UrlmonDownloader::download(void)
 	// Buffer for cache filename.
 	wchar_t szFileName[MAX_PATH];
 
-	HRESULT hr = URLDownloadToCacheFile(nullptr, RP2W_s(m_url),
+	HRESULT hr = URLDownloadToCacheFile(nullptr, U82W_s(m_url),
 		szFileName, sizeof(szFileName)/sizeof(szFileName[0]),
 		0, nullptr /* TODO */);
 
@@ -92,7 +92,7 @@ int UrlmonDownloader::download(void)
 
 	// Get the cache information.
 	DWORD cbCacheEntryInfo = 0;
-	BOOL bRet = GetUrlCacheEntryInfo(RP2W_s(m_url), nullptr, &cbCacheEntryInfo);
+	BOOL bRet = GetUrlCacheEntryInfo(U82W_s(m_url), nullptr, &cbCacheEntryInfo);
 	if (bRet) {
 		uint8_t *pCacheEntryInfoBuf =
 			static_cast<uint8_t*>(malloc(cbCacheEntryInfo));
@@ -102,7 +102,7 @@ int UrlmonDownloader::download(void)
 		}
 		INTERNET_CACHE_ENTRY_INFO *pCacheEntryInfo =
 			reinterpret_cast<INTERNET_CACHE_ENTRY_INFO*>(pCacheEntryInfoBuf);
-		bRet = GetUrlCacheEntryInfo(RP2W_s(m_url), pCacheEntryInfo, &cbCacheEntryInfo);
+		bRet = GetUrlCacheEntryInfo(U82W_s(m_url), pCacheEntryInfo, &cbCacheEntryInfo);
 		if (bRet) {
 			// Convert from Win32 FILETIME to Unix time.
 			m_mtime = FileTimeToUnixTime(&pCacheEntryInfo->LastModifiedTime);

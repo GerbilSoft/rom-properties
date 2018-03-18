@@ -44,7 +44,6 @@ using std::unique_ptr;
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 using namespace LibRpBase;

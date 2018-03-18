@@ -637,13 +637,13 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	wstring sysInfo;
 	if (systemName) {
-		sysInfo = RP2W_c(systemName);
+		sysInfo = U82W_c(systemName);
 	}
 	if (fileType) {
 		if (!sysInfo.empty()) {
 			sysInfo += L"\r\n";
 		}
-		sysInfo += RP2W_c(fileType);
+		sysInfo += U82W_c(fileType);
 	}
 
 	// Label size.
@@ -754,7 +754,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 
 		// TODO: NULL string == empty string?
 		if (field->data.str) {
-			wstr = LibWin32Common::unix2dos(RP2W_s(*(field->data.str)), &lf_count);
+			wstr = LibWin32Common::unix2dos(U82W_s(*(field->data.str)), &lf_count);
 		}
 	} else {
 		// Use the specified string.
@@ -955,10 +955,10 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	for (int j = 0; j < count; j++) {
 		const string &name = bitfieldDesc.names->at(j);
 		if (name.empty()) {
-			// Skip RP2W_s() for empty strings.
+			// Skip U82W_s() for empty strings.
 			wnames.push_back(wstring());
 		} else {
-			wnames.push_back(RP2W_s(name));
+			wnames.push_back(U82W_s(name));
 		}
 	}
 
@@ -1167,7 +1167,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			const string &str = listDataDesc.names->at(i);
 			if (!str.empty()) {
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				const wstring wstr = RP2W_s(str);
+				const wstring wstr = U82W_s(str);
 				lvColumn.pszText = const_cast<LPWSTR>(wstr.c_str());
 				ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			} else {
@@ -1207,7 +1207,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				lvItem.iSubItem = col;
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				const wstring wstr = RP2W_s(*iter);
+				const wstring wstr = U82W_s(*iter);
 				lvItem.pszText = const_cast<LPWSTR>(wstr.c_str());
 				if (col == 0) {
 					// Column 0: Insert the item.
@@ -1311,7 +1311,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
 		return initString(hDlg, hWndTab, pt_start, idx, size, field,
-			RP2W_c(C_("RomDataView", "Unknown")));
+			U82W_c(C_("RomDataView", "Unknown")));
 	}
 
 	// Format the date/time using the system locale.
@@ -1426,13 +1426,13 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	if (!age_ratings) {
 		// No age ratings data.
 		return initString(hDlg, hWndTab, pt_start, idx, size, field,
-			RP2W_c(C_("RomDataView", "ERROR")));
+			U82W_c(C_("RomDataView", "ERROR")));
 	}
 
 	// Convert the age ratings field to a string.
 	string str = RomFields::ageRatingsDecode(age_ratings);
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, RP2W_s(str));
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, U82W_s(str));
 }
 
 /**
@@ -1588,7 +1588,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// tr: Field description label.
-		w_desc_text.push_back(RP2W_s(rp_sprintf(
+		w_desc_text.push_back(U82W_s(rp_sprintf(
 			C_("RomDataView", "%s:"), field->name.c_str())));
 		const wstring& desc_text = w_desc_text.at(i);
 
@@ -1681,7 +1681,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Skip this tab.
 				continue;
 			}
-			const wstring wstr = RP2W_c(name);
+			const wstring wstr = U82W_c(name);
 			tcItem.pszText = const_cast<LPWSTR>(wstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
 			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
@@ -2011,7 +2011,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
 	// tr: Tab title.
-	const wstring wsTabTitle = RP2W_c(C_("RomDataView", "ROM Properties"));
+	const wstring wsTabTitle = U82W_c(C_("RomDataView", "ROM Properties"));
 
 	// Create a property sheet page.
 	PROPSHEETPAGE psp;

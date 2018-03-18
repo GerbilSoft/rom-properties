@@ -28,7 +28,6 @@
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_utf8.hpp"
 #include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
 
@@ -225,11 +224,7 @@ unzFile GcnFstTest::openZip(const char *filename)
 	fill_win32_filefunc64W(&ffunc);
 	return unzOpen2_64(path.c_str(), &ffunc);
 #else /* !_WIN32 */
-#ifdef RP_UTF8
 	return unzOpen(path.c_str());
-#else /* RP_UTF16 */
-	return unzOpen(path.c_str());
-#endif
 #endif /* _WIN32 */
 }
 

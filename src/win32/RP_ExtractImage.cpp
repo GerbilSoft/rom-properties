@@ -267,7 +267,7 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
 	}
 
 	// open the file and get last write time
-	HANDLE hFile = CreateFile(RP2W_s(d->filename),
+	HANDLE hFile = CreateFile(U82W_s(d->filename),
 		GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (!hFile) {
