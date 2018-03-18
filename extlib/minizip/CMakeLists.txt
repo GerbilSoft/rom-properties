@@ -40,7 +40,7 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 ENDIF(0)
 
-set(VERSION "2.2.7")
+set(VERSION "2.2.8")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -124,9 +124,9 @@ if(UNIX)
         add_definitions(-D_FILE_OFFSET_BITS=64)
     endif()
 
-    find_package(PkgConfig REQUIRED)
-
     if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        find_package(PkgConfig REQUIRED)
+
         pkg_check_modules(LIBBSD libbsd REQUIRED)
 
         include_directories(${LIBBSD_INCLUDE_DIRS})
@@ -346,6 +346,10 @@ add_library(${PROJECT_NAME}
                 ${AES_SRC} ${AES_PUBLIC_HEADERS}
                 ${BZIP2_SRC} ${BZIP2_PUBLIC_HEADERS}
                 ${LZMA_SRC} ${LZMA_PUBLIC_HEADERS})
+
+if (MINGW AND BUILD_SHARED_LIBS)
+  set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_NAME "minizip")
+endif ()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C PREFIX ""
                       POSITION_INDEPENDENT_CODE 1)
