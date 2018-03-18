@@ -135,6 +135,9 @@ class AmiiboDataPrivate {
 		static const char_variant_t mh_barioth_ayuria_variants[];
 		static const char_variant_t mh_qurupeco_dan_variants[];
 
+		// Cereal
+		static const char_variant_t cereal_smb_variants[];
+
 		// Character IDs.
 		static const char_id_t char_ids[];
 
@@ -286,6 +289,11 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x358
 	"Shovel Knight",			// 0x35C
 	"Final Fantasy",			// 0x360
+	nullptr,				// 0x364
+	nullptr,				// 0x368
+	nullptr,				// 0x36C
+	nullptr,				// 0x370
+	"Cereal",				// 0x374
 };
 
 // Character variants.
@@ -512,6 +520,12 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_qurupeco_dan_varia
 	{0x01, "Qurupeco and Dan"},
 };
 
+// Cereal
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::cereal_smb_variants[] = {
+	{0x00, "Super Mario Cereal"},	// NOTE: Not actually assigned.
+	{0x01, "Super Mario Cereal"},
+};
+
 #define AMIIBO_CHAR_ID_ONE(id, name) {id, 0, name, nullptr}
 #define AMIIBO_CHAR_ID_VAR(id, name, vararray) {id, (uint8_t)ARRAY_SIZE(vararray), name, vararray}
 
@@ -531,7 +545,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x000A, "Toad"),
 	AMIIBO_CHAR_ID_ONE(0x0013, "Daisy"),
 	AMIIBO_CHAR_ID_ONE(0x0014, "Waluigi"),
+	AMIIBO_CHAR_ID_ONE(0x0015, "Goomba"),
 	AMIIBO_CHAR_ID_ONE(0x0017, "Boo"),
+	AMIIBO_CHAR_ID_ONE(0x0023, "Koopa Troopa"),
 
 	// Yoshi (character series = 0x008)
 	AMIIBO_CHAR_ID_VAR(0x0080, "Poochy", yoshi_poochy_variants),
@@ -541,6 +557,10 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_VAR(0x0101, "Zelda", tloz_zelda_variants),
 	AMIIBO_CHAR_ID_VAR(0x0102, "Ganondorf", tloz_ganondorf_variants),
 	AMIIBO_CHAR_ID_ONE(0x0103, "Midna & Wolf Link"),
+	AMIIBO_CHAR_ID_ONE(0x0105, "Daruk"),
+	AMIIBO_CHAR_ID_ONE(0x0106, "Urbosa"),
+	AMIIBO_CHAR_ID_ONE(0x0107, "Mipha"),
+	AMIIBO_CHAR_ID_ONE(0x0108, "Revali"),
 	// The Legend of Zelda (character series = 0x014)
 	AMIIBO_CHAR_ID_ONE(0x0141, "Bokoblin"),
 
@@ -1086,6 +1106,8 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_VAR(0x2105, "Corrin", fe_corrin_variants),
 	AMIIBO_CHAR_ID_ONE(0x2106, "Alm"),
 	AMIIBO_CHAR_ID_ONE(0x2107, "Celica"),
+	AMIIBO_CHAR_ID_ONE(0x2108, "Chrom"),
+	AMIIBO_CHAR_ID_ONE(0x2109, "Tiki"),
 
 	// Xenoblade (character series = 0x224)
 	AMIIBO_CHAR_ID_ONE(0x2240, "Shulk"),
@@ -1124,6 +1146,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Final Fantasy (character series = 0x360)
 	AMIIBO_CHAR_ID_ONE(0x3600, "Cloud"),
+
+	// Cereal (character series = 0x374)
+	AMIIBO_CHAR_ID_VAR(0x3740, "Super Mario Cereal", cereal_smb_variants),
 };
 
 /**
@@ -1166,6 +1191,7 @@ const char *const AmiiboDataPrivate::amiibo_series_names[] = {
 	"Pikmin",				// 0x11
 	"Fire Emblem",				// 0x12
 	"Metroid",				// 0x13
+	"Cereal",				// 0x14
 };
 
 // amiibo IDs.
@@ -2055,11 +2081,13 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 3, "Link (Rider)"},		// 0x0354
 	{  0, 3, "Guardian"},			// 0x0355
 	{  0, 3, "Zelda"},			// 0x0356
-	// Unused [0x0357-0x35B]
-	{  0, 0, nullptr},			// 0x0357
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0358,0x0359
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x035A,0x035B
-	// The Legend of Zelda: Breath of the Wild Series (continued)
+	{  0, 0, nullptr},			// 0x0357 (???)
+	// The Legend of Zelda: Breath of the Wild Series (Champions)
+	{  0, 4, "Daruk"},			// 0x0358
+	{  0, 4, "Urbosa"},			// 0x0359
+	{  0, 4, "Mipha"},			// 0x035A
+	{  0, 4, "Revali"},			// 0x035B
+	// The Legend of Zelda: Breath of the Wild Series (Wave 3, continued)
 	{  0, 3, "Bokoblin"},			// 0x035C
 
 	// Yarn Yoshi: Poochy [0x035D]
@@ -2072,8 +2100,8 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 0, nullptr},			// 0x035F
 
 	// Fire Emblem [0x0360-0x0361]
-	{  0, 0, "Alm"},			// 0x0360
-	{  0, 0, "Celica"},			// 0x0361
+	{  1, 0, "Alm"},			// 0x0360
+	{  2, 0, "Celica"},			// 0x0361
 
 	// SSB: Wave 10 [0x0362-0x0364]
 	{ 60, 10, "Cloud (Player 2)"},		// 0x0362
@@ -2084,13 +2112,30 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  1, 1, "Samus Aran"},			// 0x0365
 	{  2, 1, "Metroid"},			// 0x0366
 
-	// Unused [0x0367-0x0368]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0367,0x0368
+	// SMB: Wave 3 [0x0367-0x0368]
+	{ 16, 3, "Goomba"},			// 0x0367
+	{ 17, 3, "Koopa Troopa"},		// 0x0368
 
-	// Splatoon: Wave 3 [0x0369-0x036A]
+	// Splatoon: Wave 3 [0x0369-0x036B]
 	{  0, 3, "Inkling Girl (Neon Pink)"},	// 0x0369
 	{  0, 3, "Inkling Boy (Neon Green)"},	// 0x036A
 	{  0, 3, "Inkling Squid (Neon Purple)"},// 0x036B
+
+	// Unused [0x36C-0x0370]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x036C-0x036D
+	{  0, 0, nullptr},			// 0x036E
+
+	// Fire Emblem [0x036F-0x0370]
+	{  3, 0, "Chrom"},			// 0x036F
+	{  4, 0, "Tiki"},			// 0x0370
+
+	// SMB: Wave 4 (Super Mario Odyssey) [0x0371-0x373]
+	{ 18, 4, "Mario - Wedding"},		// 0x0371
+	{ 19, 4, "Peach - Wedding"},		// 0x0372
+	{ 20, 4, "Bowser - Wedding"},		// 0x0373
+
+	// Cereal [0x374]
+	{  0, 0, "Super Mario Cereal"},		// 0x0374
 
 #if 0
 	// TODO: Not released yet.
@@ -2114,7 +2159,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
  */
 const char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x360/4)+1,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x374/4)+1,
 		"char_series_names[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (char_id >> 22) & 0x3FF;
@@ -2184,7 +2229,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x036B)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0374)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
