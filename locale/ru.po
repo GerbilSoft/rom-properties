@@ -1,22 +1,22 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR David Korth
+# Russian translations for rom-properties package.
+# Copyright (C) 2018 David Korth
 # This file is distributed under the same license as the rom-properties package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Automatically generated, 2018.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2018-03-18 16:17-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2018-03-18 16:17-0400\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: ../build/src/kde/kde4/ui_AboutTab.h:254
 #: ../build/src/kde/kde5/ui_AboutTab.h:254
@@ -302,6 +302,7 @@ msgid "%u key was imported from '%s'."
 msgid_plural "%u keys were imported from '%s'."
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:189
 #, c-format
@@ -310,6 +311,7 @@ msgid "%u key already exists in the Key Manager."
 msgid_plural "%u keys already exist in the Key Manager."
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:196
 #, c-format
@@ -318,6 +320,7 @@ msgid "%u key was not imported because it is incorrect."
 msgid_plural "%u keys were not imported because they are incorrect."
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:203
 #, c-format
@@ -327,6 +330,7 @@ msgid_plural ""
 "%u keys were not imported because they aren't used by rom-properties."
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:210
 #, c-format
@@ -338,6 +342,7 @@ msgid_plural ""
 "available."
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:217
 #, c-format
@@ -346,6 +351,7 @@ msgid "%u key has been imported and verified as correct."
 msgid_plural "%u keys have been imported and verified as correct."
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/kde/config/KeyManagerTab.cpp:224
 #, c-format
@@ -354,6 +360,7 @@ msgid "%u key has been imported without verification."
 msgid_plural "%u keys have been imported without verification."
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #. tr: Dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:355
@@ -4390,6 +4397,7 @@ msgid "byte"
 msgid_plural "bytes"
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #. tr: Kilobytes
 #: ../src/librpbase/RomData.cpp:123
