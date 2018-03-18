@@ -57,12 +57,15 @@ SET(rom-properties-rpcli_SRCS
 	rpcli.cpp
 	properties.cpp
 	bmp.cpp
-	resource.rc
 	)
 SET(rom-properties-rpcli_H
 	properties.hpp
 	bmp.hpp
 	)
+
+IF(WIN32)
+	SET(rom-properties-rpcli_RC resource.rc)
+ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
 	SET(rom-properties-rpcli_CRYPTO_SRCS verifykeys.cpp)
@@ -98,6 +101,7 @@ ADD_EXECUTABLE(rpcli
 	${rom-properties-rpcli-DELAY_LOAD_H}
 	${rom-properties-rpcli_SRCS}
 	${rom-properties-rpcli_H}
+	${rom-properties-rpcli_RC}
 	${rom-properties-rpcli_CRYPTO_SRCS}
 	${rom-properties-rpcli_CRYPTO_H}
 	)
