@@ -616,9 +616,10 @@ int DMG::loadFieldData(void)
 		d->fields->addField_string(C_("DMG", "ROM Size"), C_("DMG", "Unknown"));
 	} else {
 		if (rom_size > 32) {
+			const int banks = rom_size / 16;
 			d->fields->addField_string("ROM Size",
-				rp_sprintf_p(C_("DMG", "%1$u KiB (%2$u banks)"),
-					(unsigned int)rom_size, (unsigned int)rom_size/16));
+				rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
+					(unsigned int)rom_size, (unsigned int)banks));
 		} else {
 			d->fields->addField_string("ROM Size",
 				rp_sprintf(C_("DMG", "%u KiB"), (unsigned int)rom_size));
@@ -640,9 +641,10 @@ int DMG::loadFieldData(void)
 			d->fields->addField_string(C_("DMG", "RAM Size"), C_("DMG", "No RAM"));
 		} else {
 			if (ram_size > 8) {
+				const int banks = ram_size / 16;
 				d->fields->addField_string("RAM Size",
-					rp_sprintf_p(C_("DMG", "%1$u KiB (%2$u banks)"),
-						ram_size, ram_size/8));
+					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
+						(unsigned int)ram_size, (unsigned int)banks));
 			} else {
 				d->fields->addField_string("RAM Size",
 					rp_sprintf(C_("DMG", "%u KiB"), ram_size));

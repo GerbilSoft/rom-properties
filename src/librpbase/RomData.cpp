@@ -120,32 +120,32 @@ string RomDataPrivate::formatFileSize(int64_t size)
 		frac_part = 0;
 	} else if (size < (2LL << 20)) {
 		// tr: Kilobytes
-		suffix = C_("RomData|FileSize", "KB");
+		suffix = C_("RomData|FileSize", "KiB");
 		whole_part = (int)(size >> 10);
 		frac_part = calc_frac_part(size, (1LL << 10));
 	} else if (size < (2LL << 30)) {
 		// tr: Megabytes
-		suffix = C_("RomData|FileSize", "MB");
+		suffix = C_("RomData|FileSize", "MiB");
 		whole_part = (int)(size >> 20);
 		frac_part = calc_frac_part(size, (1LL << 20));
 	} else if (size < (2LL << 40)) {
 		// tr: Gigabytes
-		suffix = C_("RomData|FileSize", "GB");
+		suffix = C_("RomData|FileSize", "GiB");
 		whole_part = (int)(size >> 30);
 		frac_part = calc_frac_part(size, (1LL << 30));
 	} else if (size < (2LL << 50)) {
 		// tr: Terabytes
-		suffix = C_("RomData|FileSize", "TB");
+		suffix = C_("RomData|FileSize", "TiB");
 		whole_part = (int)(size >> 40);
 		frac_part = calc_frac_part(size, (1LL << 40));
 	} else if (size < (2LL << 60)) {
 		// tr: Petabytes
-		suffix = C_("RomData|FileSize", "PB");
+		suffix = C_("RomData|FileSize", "PiB");
 		whole_part = (int)(size >> 50);
 		frac_part = calc_frac_part(size, (1LL << 50));
 	} else /*if (size < (2ULL << 70))*/ {
 		// tr: Exabytes
-		suffix = C_("RomData|FileSize", "EB");
+		suffix = C_("RomData|FileSize", "EiB");
 		whole_part = (int)(size >> 60);
 		frac_part = calc_frac_part(size, (1LL << 60));
 	}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-03-18 16:17-0400\n"
+"POT-Creation-Date: 2018-03-21 20:04-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -174,13 +174,13 @@ msgctxt "AboutTab"
 msgid "Shell Extension"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:158 ../src/win32/config/AboutTab.cpp:482
+#: ../src/kde/config/AboutTab.cpp:158 ../src/win32/config/AboutTab.cpp:481
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:180 ../src/win32/config/AboutTab.cpp:560
+#: ../src/kde/config/AboutTab.cpp:180 ../src/win32/config/AboutTab.cpp:559
 msgctxt "AboutTab|Credits"
 msgid "Copyright (c) 2016-2017 by David Korth."
 msgstr ""
@@ -192,23 +192,23 @@ msgid ""
 "licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later."
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:199 ../src/win32/config/AboutTab.cpp:579
+#: ../src/kde/config/AboutTab.cpp:199 ../src/win32/config/AboutTab.cpp:578
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:202 ../src/win32/config/AboutTab.cpp:582
+#: ../src/kde/config/AboutTab.cpp:202 ../src/win32/config/AboutTab.cpp:581
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:205 ../src/win32/config/AboutTab.cpp:585
+#: ../src/kde/config/AboutTab.cpp:205 ../src/win32/config/AboutTab.cpp:584
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr ""
 
 #. tr: Sub-credit.
-#: ../src/kde/config/AboutTab.cpp:237 ../src/win32/config/AboutTab.cpp:609
+#: ../src/kde/config/AboutTab.cpp:237 ../src/win32/config/AboutTab.cpp:608
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
@@ -249,12 +249,12 @@ msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:503 ../src/win32/config/AboutTab.cpp:699
+#: ../src/kde/config/AboutTab.cpp:503 ../src/win32/config/AboutTab.cpp:698
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:523 ../src/win32/config/AboutTab.cpp:716
+#: ../src/kde/config/AboutTab.cpp:523 ../src/win32/config/AboutTab.cpp:715
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
@@ -2198,7 +2198,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:545
 #: ../src/libromdata/Handheld/DMG.cpp:595
 #: ../src/libromdata/Handheld/DMG.cpp:616
-#: ../src/libromdata/Handheld/DMG.cpp:630
+#: ../src/libromdata/Handheld/DMG.cpp:631
 msgctxt "DMG"
 msgid "Unknown"
 msgstr ""
@@ -2249,79 +2249,82 @@ msgctxt "DMG"
 msgid "ROM Size"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:620
-#: ../src/libromdata/Handheld/DMG.cpp:644
+#: ../src/libromdata/Handheld/DMG.cpp:621
+#: ../src/libromdata/Handheld/DMG.cpp:646
 #, c-format
 msgctxt "DMG"
-msgid "%1$u KiB (%2$u banks)"
-msgstr ""
+msgid "%1$u KiB (%2$u bank)"
+msgid_plural "%1$u KiB (%2$u banks)"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:624
-#: ../src/libromdata/Handheld/DMG.cpp:648
+#: ../src/libromdata/Handheld/DMG.cpp:625
+#: ../src/libromdata/Handheld/DMG.cpp:650
 #, c-format
 msgctxt "DMG"
 msgid "%u KiB"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:630
-#: ../src/libromdata/Handheld/DMG.cpp:636
-#: ../src/libromdata/Handheld/DMG.cpp:640
+#: ../src/libromdata/Handheld/DMG.cpp:631
+#: ../src/libromdata/Handheld/DMG.cpp:637
+#: ../src/libromdata/Handheld/DMG.cpp:641
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr ""
 
 #. tr: MBC2 internal memory - Not really RAM, but whatever.
-#: ../src/libromdata/Handheld/DMG.cpp:638
+#: ../src/libromdata/Handheld/DMG.cpp:639
 msgctxt "DMG"
 msgid "512 x 4 bits"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:640
+#: ../src/libromdata/Handheld/DMG.cpp:641
 msgctxt "DMG"
 msgid "No RAM"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:656
-#: ../src/libromdata/Handheld/DMG.cpp:659
-#: ../src/libromdata/Handheld/DMG.cpp:663
+#: ../src/libromdata/Handheld/DMG.cpp:658
+#: ../src/libromdata/Handheld/DMG.cpp:661
+#: ../src/libromdata/Handheld/DMG.cpp:665
 msgctxt "DMG"
 msgid "Region"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:656
+#: ../src/libromdata/Handheld/DMG.cpp:658
 msgctxt "Region|DMG"
 msgid "Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:659
+#: ../src/libromdata/Handheld/DMG.cpp:661
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:664
+#: ../src/libromdata/Handheld/DMG.cpp:666
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (INVALID)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:669
+#: ../src/libromdata/Handheld/DMG.cpp:671
 msgctxt "DMG"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:683
-#: ../src/libromdata/Handheld/DMG.cpp:687
+#: ../src/libromdata/Handheld/DMG.cpp:685
+#: ../src/libromdata/Handheld/DMG.cpp:689
 msgctxt "DMG"
 msgid "Checksum"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:684
+#: ../src/libromdata/Handheld/DMG.cpp:686
 #, c-format
 msgctxt "DMG"
 msgid "0x%1$02X (INVALID; should be 0x%2$02X)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:688
+#: ../src/libromdata/Handheld/DMG.cpp:690
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (valid)"
@@ -3023,6 +3026,212 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:545
 msgctxt "Amiibo"
 msgid "Credits"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:938 ../src/libromdata/Other/ELF.cpp:940
+msgctxt "ELF"
+msgid "CPU"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:941
+#, c-format
+msgctxt "ELF"
+msgid "Unknown (0x%04X)"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:971
+msgctxt "ELF"
+msgid "Instruction Set"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:994
+msgctxt "ELF|SPARC_MM"
+msgid "Total Store Ordering"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:995
+msgctxt "ELF|SPARC_MM"
+msgid "Partial Store Ordering"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:996
+msgctxt "ELF|SPARC_MM"
+msgid "Relaxed Memory Ordering"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:997
+msgctxt "ELF|SPARC_MM"
+msgid "Invalid"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:999
+msgctxt "ELF"
+msgid "Memory Ordering"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1009
+msgctxt "ELF|SPARCFlags"
+msgid "SPARC V8+"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1010
+msgctxt "ELF|SPARCFlags"
+msgid "UltraSPARC I"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1011
+msgctxt "ELF|SPARCFlags"
+msgid "HaL R1"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1012
+msgctxt "ELF|SPARCFlags"
+msgid "UltraSPARC III"
+msgstr ""
+
+#. tr: Little-Endian Data
+#: ../src/libromdata/Other/ELF.cpp:1020
+msgctxt "ELF|SPARCFlags"
+msgid "LE Data"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1024 ../src/libromdata/Other/ELF.cpp:1070
+msgctxt "ELF"
+msgid "CPU Flags"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1033
+msgctxt "ELF"
+msgid "MIPS ABI"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1045 ../src/libromdata/Other/ELF.cpp:1047
+msgctxt "ELF"
+msgid "CPU Level"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1048
+#, c-format
+msgctxt "ELF"
+msgid "Unknown (0x%02X)"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1054
+msgctxt "ELF|MIPSFlags"
+msgid "No Reorder"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1055
+msgctxt "ELF|MIPSFlags"
+msgid "PIC"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1056
+msgctxt "ELF|MIPSFlags"
+msgid "CPIC"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1057
+msgctxt "ELF|MIPSFlags"
+msgid "XGOT"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1059
+msgctxt "ELF|MIPSFlags"
+msgid "64-bit Whirl"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1060
+msgctxt "ELF|MIPSFlags"
+msgid "ABI2"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1061
+msgctxt "ELF|MIPSFlags"
+msgid "ABI ON32"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1065
+msgctxt "ELF|MIPSFlags"
+msgid "FP64"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1066
+msgctxt "ELF|MIPSFlags"
+msgid "NaN 2008"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1077
+msgctxt "ELF"
+msgid "PA-RISC Version"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1118
+msgctxt "ELF"
+msgid "ARM EABI"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1131 ../src/libromdata/Other/ELF.cpp:1133
+msgctxt "ELF"
+msgid "OS ABI"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1134
+#, c-format
+msgctxt "ELF"
+msgid "Unknown (%u)"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1139
+msgctxt "ELF"
+msgid "ABI Version"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1153 ../src/libromdata/Other/ELF.cpp:1159
+msgctxt "ELF"
+msgid "Format"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1159
+msgctxt "ELF"
+msgid "Unknown"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1163
+msgctxt "ELF"
+msgid "Linkage"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1165
+msgctxt "ELF|Linkage"
+msgid "Dynamic"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1166
+msgctxt "ELF|Linkage"
+msgid "Static"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1170
+msgctxt "ELF"
+msgid "Interpreter"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1175
+msgctxt "ELF"
+msgid "OS Version"
+msgstr ""
+
+#. tr: Entry point, then "Position-Independent".
+#: ../src/libromdata/Other/ELF.cpp:1191
+#, c-format
+msgctxt "ELF"
+msgid "%s (Position-Independent)"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1194
+msgctxt "ELF"
+msgid "Entry Point"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE.cpp:98
@@ -4402,37 +4611,37 @@ msgstr[2] ""
 #. tr: Kilobytes
 #: ../src/librpbase/RomData.cpp:123
 msgctxt "RomData|FileSize"
-msgid "KB"
+msgid "KiB"
 msgstr ""
 
 #. tr: Megabytes
 #: ../src/librpbase/RomData.cpp:128
 msgctxt "RomData|FileSize"
-msgid "MB"
+msgid "MiB"
 msgstr ""
 
 #. tr: Gigabytes
 #: ../src/librpbase/RomData.cpp:133
 msgctxt "RomData|FileSize"
-msgid "GB"
+msgid "GiB"
 msgstr ""
 
 #. tr: Terabytes
 #: ../src/librpbase/RomData.cpp:138
 msgctxt "RomData|FileSize"
-msgid "TB"
+msgid "TiB"
 msgstr ""
 
 #. tr: Petabytes
 #: ../src/librpbase/RomData.cpp:143
 msgctxt "RomData|FileSize"
-msgid "PB"
+msgid "PiB"
 msgstr ""
 
 #. tr: Exabytes
 #: ../src/librpbase/RomData.cpp:148
 msgctxt "RomData|FileSize"
-msgid "EB"
+msgid "EiB"
 msgstr ""
 
 #. tr: FTYPE_ROM_IMAGE
@@ -4918,28 +5127,28 @@ msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:562
+#: ../src/win32/config/AboutTab.cpp:561
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the GNU GPL v2 or later."
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:617
+#: ../src/win32/config/AboutTab.cpp:616
 msgctxt "AboutTab"
 msgid "Credits"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:680
+#: ../src/win32/config/AboutTab.cpp:679
 msgctxt "AboutTab"
 msgid "Libraries"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:721
+#: ../src/win32/config/AboutTab.cpp:720
 msgctxt "AboutTab"
 msgid "Support"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/AboutTab.cpp:863
+#: ../src/win32/config/AboutTab.cpp:862
 msgctxt "AboutTab"
 msgid "About"
 msgstr ""
