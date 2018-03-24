@@ -1834,7 +1834,13 @@ int GameCube::loadFieldData(void)
 			data_row.push_back(key_name);
 
 			// Used size.
-			data_row.push_back(d->formatFileSize(entry.partition->partition_size_used()));
+			const int64_t used_size = entry.partition->partition_size_used();
+			if (used_size >= 0) {
+				data_row.push_back(d->formatFileSize(used_size));
+			} else {
+				// Unknown used size.
+				data_row.push_back(C_("GameCube|Partition", "Unknown"));
+			}
 
 			// Partition size.
 			data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
