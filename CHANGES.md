@@ -30,6 +30,7 @@
 
 * New system features:
   * Super NES: Satellaview BS-X ROM headers are now decoded properly.
+  * Wii: Unencrypted images from RVT-H Reader systems are now supported.
 
 * New compressed texture formats:
   * Ericsson ETC1 and ETC2
