@@ -181,7 +181,7 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	// Is the value empty?
 	if (!value || value[0] == 0) {
 		// Value is empty.
-		mapInvalidKeyNames.insert(std::make_pair(string(name), KeyManager::VERIFY_KEY_INVALID));
+		// Treat it as if the key wasn't found.
 		return 1;
 	}
 

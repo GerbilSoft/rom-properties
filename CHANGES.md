@@ -44,6 +44,8 @@
   * EXE: "Product Version" was showing the same value as "File Version".
     It's usually the same, but there are cases where these version numbers
     are different, e.g. wrapper EXEs for interpreted programs.
+  * rp-config: If a key is present in keys.conf but has no value, it was
+    previously listed as invalid. It's now listed as empty.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.
