@@ -377,18 +377,19 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 	// Check for special statuses.
 	const char *s_rating = nullptr;
 	if (rating & RomFields::AGEBF_PROHIBITED) {
-		// Prohibited.
 		// TODO: Better description?
-		s_rating = "No";
+		// tr: Prohibited.
+		s_rating = C_("RomFields|AgeRating", "No");
 	} else if (rating & RomFields::AGEBF_PENDING) {
 		// Rating is pending.
 		s_rating = "RP";
 	} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
-		// No age restriction.
-		s_rating = "All";
+		// tr: No age restriction.
+		s_rating = C_("RomFields|AgeRating", "All");
 	} else {
 		// Use the age rating.
 		// TODO: Verify these.
+		// TODO: Check for <= instead of exact matches?
 		switch (country) {
 			case AGE_JAPAN:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
@@ -534,8 +535,8 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	}
 
 	if (ratings_count == 0) {
-		// No age ratings.
-		str = "None";
+		// tr: No age ratings.
+		str = C_("RomFields|AgeRating", "None");
 	}
 
 	return str;

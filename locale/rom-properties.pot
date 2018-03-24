@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-03-24 12:11-0400\n"
+"POT-Creation-Date: 2018-03-24 14:50-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -665,7 +665,7 @@ msgid "Unknown"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:645
-#: ../src/libromdata/Console/GameCube.cpp:388
+#: ../src/libromdata/Console/GameCube.cpp:430
 #: ../src/libromdata/Console/MegaDrive.cpp:407
 #: ../src/libromdata/Console/SegaSaturn.cpp:527
 #: ../src/libromdata/Console/SNES.cpp:855
@@ -677,7 +677,7 @@ msgid "Japan"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:646
-#: ../src/libromdata/Console/GameCube.cpp:435
+#: ../src/libromdata/Console/GameCube.cpp:477
 #: ../src/libromdata/Console/MegaDrive.cpp:409
 #: ../src/libromdata/Console/SegaSaturn.cpp:529
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1843
@@ -976,62 +976,62 @@ msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:391
+#: ../src/libromdata/Console/GameCube.cpp:433
 msgctxt "Region|GameCube"
 msgid "Taiwan (JPN)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:396
+#: ../src/libromdata/Console/GameCube.cpp:438
 msgctxt "Region|GameCube"
 msgid "South Korea (JPN)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:398
+#: ../src/libromdata/Console/GameCube.cpp:440
 msgctxt "Region|GameCube"
 msgid "China (JPN)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:409
+#: ../src/libromdata/Console/GameCube.cpp:451
 msgctxt "Region|GameCube"
 msgid "Europe / Australia (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:412
+#: ../src/libromdata/Console/GameCube.cpp:454
 msgctxt "Region|GameCube"
 msgid "Germany (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:414
+#: ../src/libromdata/Console/GameCube.cpp:456
 msgctxt "Region|GameCube"
 msgid "France (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:416
+#: ../src/libromdata/Console/GameCube.cpp:458
 msgctxt "Region|GameCube"
 msgid "Netherlands (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:418
+#: ../src/libromdata/Console/GameCube.cpp:460
 msgctxt "Region|GameCube"
 msgid "Italy (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:420
+#: ../src/libromdata/Console/GameCube.cpp:462
 msgctxt "Region|GameCube"
 msgid "Russia (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:422
+#: ../src/libromdata/Console/GameCube.cpp:464
 msgctxt "Region|GameCube"
 msgid "Spain (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:424
+#: ../src/libromdata/Console/GameCube.cpp:466
 msgctxt "Region|GameCube"
 msgid "Australia (PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:442
+#: ../src/libromdata/Console/GameCube.cpp:484
 #: ../src/libromdata/Console/SNES.cpp:867
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1847
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1146
@@ -1040,136 +1040,147 @@ msgctxt "Region"
 msgid "South Korea"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:903
+#: ../src/libromdata/Console/GameCube.cpp:945
 msgctxt "GameCube"
 msgid "ERROR: Invalid common key index."
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:909
+#: ../src/libromdata/Console/GameCube.cpp:951
 msgctxt "GameCube"
 msgid "ERROR: Unknown error. (THIS IS A BUG!)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1464
-#: ../src/libromdata/Console/GameCube.cpp:1472
+#: ../src/libromdata/Console/GameCube.cpp:1506
+#: ../src/libromdata/Console/GameCube.cpp:1514
 msgctxt "GameCube"
 msgid "Title"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1492
+#: ../src/libromdata/Console/GameCube.cpp:1534
 msgctxt "GameCube"
 msgid "Publisher"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1493
+#: ../src/libromdata/Console/GameCube.cpp:1535
 msgctxt "GameCube"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1496
+#: ../src/libromdata/Console/GameCube.cpp:1538
 msgctxt "GameCube"
 msgid "Disc #"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1498
+#: ../src/libromdata/Console/GameCube.cpp:1540
 msgctxt "GameCube"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1515
-#: ../src/libromdata/Console/GameCube.cpp:1518
+#: ../src/libromdata/Console/GameCube.cpp:1557
+#: ../src/libromdata/Console/GameCube.cpp:1560
 msgctxt "GameCube"
 msgid "Region"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1519
+#: ../src/libromdata/Console/GameCube.cpp:1561
 #, c-format
 msgctxt "GameCube"
 msgid "Unknown (0x%08X)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1586
-#: ../src/libromdata/Console/GameCube.cpp:1593
-#: ../src/libromdata/Console/GameCube.cpp:1650
-#: ../src/libromdata/Console/GameCube.cpp:1658
+#: ../src/libromdata/Console/GameCube.cpp:1628
+#: ../src/libromdata/Console/GameCube.cpp:1635
+#: ../src/libromdata/Console/GameCube.cpp:1692
+#: ../src/libromdata/Console/GameCube.cpp:1700
 msgctxt "GameCube"
 msgid "Game Info"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1686
-msgctxt "GameCube"
-msgid "None"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:1691
+#: ../src/libromdata/Console/GameCube.cpp:1746
+#: ../src/libromdata/Console/GameCube.cpp:1757
 msgctxt "GameCube"
 msgid "Update"
 msgstr ""
 
+#: ../src/libromdata/Console/GameCube.cpp:1752
+msgctxt "GameCube"
+msgid "None"
+msgstr ""
+
 #. tr: GameCubePrivate::PARTITION_GAME
-#: ../src/libromdata/Console/GameCube.cpp:1718
+#: ../src/libromdata/Console/GameCube.cpp:1779
 msgctxt "GameCube|Partition"
 msgid "Game"
 msgstr ""
 
 #. tr: GameCubePrivate::PARTITION_UPDATE
-#: ../src/libromdata/Console/GameCube.cpp:1720
+#: ../src/libromdata/Console/GameCube.cpp:1781
 msgctxt "GameCube|Partition"
 msgid "Update"
 msgstr ""
 
 #. tr: GameCubePrivate::PARTITION_CHANNEL
-#: ../src/libromdata/Console/GameCube.cpp:1722
+#: ../src/libromdata/Console/GameCube.cpp:1783
 msgctxt "GameCube|Partition"
 msgid "Channel"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1755
+#: ../src/libromdata/Console/GameCube.cpp:1816
 msgctxt "GameCube|KeyIdx"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1758
+#: ../src/libromdata/Console/GameCube.cpp:1819
 msgctxt "GameCube|KeyIdx"
 msgid "Retail"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1761
+#: ../src/libromdata/Console/GameCube.cpp:1822
 msgctxt "GameCube|KeyIdx"
 msgid "Korean"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1764
+#: ../src/libromdata/Console/GameCube.cpp:1825
 msgctxt "GameCube|KeyIdx"
 msgid "vWii"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1767
+#: ../src/libromdata/Console/GameCube.cpp:1828
 msgctxt "GameCube|KeyIdx"
 msgid "Debug"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1782
+#: ../src/libromdata/Console/GameCube.cpp:1831
+msgctxt "GameCube|KeyIdx"
+msgid "None"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:1842
+msgctxt "GameCube|Partition"
+msgid "Unknown"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:1851
 msgctxt "GameCube|Partition"
 msgid "#"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1783
+#: ../src/libromdata/Console/GameCube.cpp:1852
 msgctxt "GameCube|Partition"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1784
+#: ../src/libromdata/Console/GameCube.cpp:1853
 msgctxt "GameCube|Partition"
 msgid "Key"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1785
+#: ../src/libromdata/Console/GameCube.cpp:1854
 msgctxt "GameCube|Partition"
 msgid "Used Size"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1786
+#: ../src/libromdata/Console/GameCube.cpp:1855
 msgctxt "GameCube|Partition"
 msgid "Total Size"
 msgstr ""
@@ -4907,6 +4918,24 @@ msgstr ""
 #: ../src/librpbase/RomData.cpp:760
 msgctxt "RomData|ImageType"
 msgid "External box scan"
+msgstr ""
+
+#. tr: Prohibited.
+#: ../src/librpbase/RomFields.cpp:382
+msgctxt "RomFields|AgeRating"
+msgid "No"
+msgstr ""
+
+#. tr: No age restriction.
+#: ../src/librpbase/RomFields.cpp:388
+msgctxt "RomFields|AgeRating"
+msgid "All"
+msgstr ""
+
+#. tr: No age ratings.
+#: ../src/librpbase/RomFields.cpp:539
+msgctxt "RomFields|AgeRating"
+msgid "None"
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:89
