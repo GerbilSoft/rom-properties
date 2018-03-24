@@ -41,26 +41,31 @@ extern "C" {
 #define WII_MAGIC 0x5D1C9EA3
 typedef struct PACKED _GCN_DiscHeader {
 	union {
-		char id6[6];	// Game code. (ID6)
+		char id6[6];	// [0x000] Game code. (ID6)
 		struct {
-			char id4[4];		// Game code. (ID4)
-			char company[2];	// Company code.
+			char id4[4];		// [0x000] Game code. (ID4)
+			char company[2];	// [0x004] Company code.
 		};
 	};
 
-	uint8_t disc_number;		// Disc number.
-	uint8_t revision;		// Revision.
-	uint8_t audio_streaming;	// Audio streaming flag.
-	uint8_t stream_buffer_size;	// Streaming buffer size.
+	uint8_t disc_number;		// [0x006] Disc number.
+	uint8_t revision;		// [0x007] Revision.
+	uint8_t audio_streaming;	// [0x008] Audio streaming flag.
+	uint8_t stream_buffer_size;	// [0x009] Streaming buffer size.
 
-	uint8_t reserved1[14];
+	uint8_t reserved1[14];		// [0x00A]
 
-	uint32_t magic_wii;		// Wii magic. (0x5D1C9EA3)
-	uint32_t magic_gcn;		// GameCube magic. (0xC2339F3D)
+	uint32_t magic_wii;		// [0x018] Wii magic. (0x5D1C9EA3)
+	uint32_t magic_gcn;		// [0x01C] GameCube magic. (0xC2339F3D)
 
-	char game_title[64];		// Game title.
+	char game_title[64];		// [0x020] Game title.
+
+	// Wii: Disc encryption status.
+	// Normally 0 on retail and RVT-R (indicating the disc is encrypted).
+	uint8_t hash_verify;		// [0x060] If non-zero, disable hash verification.
+	uint8_t disc_noCrypt;		// [0x061] If non-zero, disable disc encryption.
 } GCN_DiscHeader;
-ASSERT_STRUCT(GCN_DiscHeader, 96);
+ASSERT_STRUCT(GCN_DiscHeader, 98);
 
 /**
  * GameCube region codes.

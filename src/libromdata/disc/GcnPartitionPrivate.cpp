@@ -160,11 +160,11 @@ int GcnPartitionPrivate::loadFst(void)
 		// Sanity check: FST larger than 1 MB is invalid.
 		// TODO: What is the actual largest FST?
 		q->m_lastError = EIO;
-		return -q->m_lastError;
+		return -EIO;
 	} else if (bootBlock.fst_size > bootBlock.fst_max_size) {
 		// FST is invalid.
 		q->m_lastError = EIO;
-		return -q->m_lastError;
+		return -EIO;
 	}
 
 	// Seek to the beginning of the FST.
@@ -181,19 +181,26 @@ int GcnPartitionPrivate::loadFst(void)
 	if (!fstData) {
 		// malloc() failed.
 		q->m_lastError = ENOMEM;
-		return -q->m_lastError;
+		return -ENOMEM;
 	}
 	size_t size = q->read(fstData, fstData_len);
 	if (size != fstData_len) {
 		// Short read.
 		free(fstData);
 		q->m_lastError = EIO;
-		return -q->m_lastError;
+		return -EIO;
 	}
 
 	// Create the GcnFst.
-	fst = new GcnFst(fstData, fstData_len, offsetShift);
+	GcnFst *const gcnFst = new GcnFst(fstData, fstData_len, offsetShift);
 	free(fstData);	// TODO: Eliminate the extra copy?
+	if (gcnFst->hasErrors()) {
+		// FST has errors.
+		delete fst;
+		q->m_lastError = EIO;
+		return -EIO;
+	}
+	this->fst = gcnFst;
 	return 0;
 }
 
