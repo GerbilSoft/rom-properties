@@ -560,7 +560,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += RTF_BR;
 	sCredits += C_("AboutTab|Credits", "This program is licensed under the GNU GPL v2 or later.");
 	sCredits += RTF_BR;
-	sCredits += "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html";
+	sCredits += C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html");
 
 	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];

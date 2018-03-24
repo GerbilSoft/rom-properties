@@ -763,11 +763,11 @@ int NES::loadFieldData(void)
 		s_mapper.reserve(64);
 		const char *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
-			// Print the mapper ID followed by the mapper name.
+			// tr: Print the mapper ID followed by the mapper name.
 			s_mapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
 				(unsigned int)mapper, mapper_name);
 		} else {
-			// Print only the mapper ID.
+			// tr: Print only the mapper ID.
 			s_mapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)mapper);
 		}
 		d->fields->addField_string(C_("NES", "Mapper"), s_mapper);
@@ -777,7 +777,8 @@ int NES::loadFieldData(void)
 		if (tnes_mapper >= 0) {
 			// This has a TNES mapper.
 			// It *should* map to an iNES mapper...
-			d->fields->addField_string(C_("NES", "Mapper"), "MISSING TNES MAPPING");
+			d->fields->addField_string(C_("NES", "Mapper"),
+				C_("NES", "[Missing TNES mapping!]"));
 		}
 	}
 
@@ -790,11 +791,11 @@ int NES::loadFieldData(void)
 		// TODO: Needs testing.
 		const char *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
 		if (submapper_name) {
-			// Print the submapper ID followed by the submapper name.
+			// tr: Print the submapper ID followed by the submapper name.
 			s_submapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
 				(unsigned int)submapper, submapper_name);
 		} else {
-			// Print only the submapper ID.
+			// tr: Print only the submapper ID.
 			s_submapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)submapper);
 		}
 		d->fields->addField_string(C_("NES", "Submapper"), s_submapper);

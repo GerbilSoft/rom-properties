@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-03-21 20:04-0400\n"
+"POT-Creation-Date: 2018-03-24 12:11-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -264,6 +264,66 @@ msgctxt "ConfigDialog"
 msgid "&Key Manager"
 msgstr ""
 
+#: ../src/kde/config/ImageTypesTab.cpp:235
+#: ../src/win32/config/ImageTypesTab.cpp:386
+msgctxt "ImageTypesTab|Values"
+msgid "No"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:236
+#: ../src/win32/config/ImageTypesTab.cpp:387
+msgctxt "ImageTypesTab|Values"
+msgid "1"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:237
+#: ../src/win32/config/ImageTypesTab.cpp:388
+msgctxt "ImageTypesTab|Values"
+msgid "2"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:238
+#: ../src/win32/config/ImageTypesTab.cpp:389
+msgctxt "ImageTypesTab|Values"
+msgid "3"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:239
+#: ../src/win32/config/ImageTypesTab.cpp:390
+msgctxt "ImageTypesTab|Values"
+msgid "4"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:240
+#: ../src/win32/config/ImageTypesTab.cpp:391
+msgctxt "ImageTypesTab|Values"
+msgid "5"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:241
+#: ../src/win32/config/ImageTypesTab.cpp:392
+msgctxt "ImageTypesTab|Values"
+msgid "6"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:242
+#: ../src/win32/config/ImageTypesTab.cpp:393
+msgctxt "ImageTypesTab|Values"
+msgid "7"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:243
+#: ../src/win32/config/ImageTypesTab.cpp:394
+msgctxt "ImageTypesTab|Values"
+msgid "8"
+msgstr ""
+
+#: ../src/kde/config/ImageTypesTab.cpp:244
+#: ../src/win32/config/ImageTypesTab.cpp:395
+msgctxt "ImageTypesTab|Values"
+msgid "9"
+msgstr ""
+
 #: ../src/kde/config/KeyManagerTab.cpp:132
 msgctxt "KeyManagerTab"
 msgid ""
@@ -362,32 +422,57 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#. tr: Dialog title.
+#. tr: Wii keys.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:355
 #: ../src/win32/config/KeyManagerTab.cpp:1431
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
 msgstr ""
 
-#. tr: Dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:373
-#: ../src/win32/config/KeyManagerTab.cpp:1467
+#. tr: Wii keys.bin file filter. (Qt)
+#: ../src/kde/config/KeyManagerTab.cpp:358
+msgctxt "KeyManagerTab"
+msgid "keys.bin (keys.bin);;Binary Files (*.bin);;All Files (*.*)"
+msgstr ""
+
+#. tr: Wii U otp.bin dialog title.
+#: ../src/kde/config/KeyManagerTab.cpp:374
+#: ../src/win32/config/KeyManagerTab.cpp:1469
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
 msgstr ""
 
-#. tr: Dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:391
-#: ../src/win32/config/KeyManagerTab.cpp:1503
+#. tr: Wii U otp.bin file filter. (Qt)
+#: ../src/kde/config/KeyManagerTab.cpp:377
+msgctxt "KeyManagerTab"
+msgid "otp.bin (otp.bin);;Binary Files (*.bin);;All Files (*.*)"
+msgstr ""
+
+#. tr: 3DS boot9.bin dialog title.
+#: ../src/kde/config/KeyManagerTab.cpp:393
+#: ../src/win32/config/KeyManagerTab.cpp:1507
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
 msgstr ""
 
-#. tr: Dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:409
-#: ../src/win32/config/KeyManagerTab.cpp:1539
+#. tr: 3DS boot9.bin file filter. (Qt)
+#: ../src/kde/config/KeyManagerTab.cpp:396
+msgctxt "KeyManagerTab"
+msgid "boot9.bin (boot9.bin);;Binary Files (*.bin);;All Files (*.*)"
+msgstr ""
+
+#. tr: 3DS aeskeydb.bin dialog title.
+#. tr: aeskeydb.bin dialog title.
+#: ../src/kde/config/KeyManagerTab.cpp:412
+#: ../src/win32/config/KeyManagerTab.cpp:1545
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
+msgstr ""
+
+#. tr: 3DS aeskeydb.bin file filter. (Qt)
+#: ../src/kde/config/KeyManagerTab.cpp:415
+msgctxt "KeyManagerTab"
+msgid "aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: Column 0: Key Name.
@@ -1395,8 +1480,8 @@ msgctxt "NES|Format"
 msgid "TDS (Nintendo 3DS Virtual Console)"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:730 ../src/libromdata/Console/NES.cpp:878
-#: ../src/libromdata/Console/NES.cpp:955
+#: ../src/libromdata/Console/NES.cpp:730 ../src/libromdata/Console/NES.cpp:879
+#: ../src/libromdata/Console/NES.cpp:956
 msgctxt "NES"
 msgid "Unknown"
 msgstr ""
@@ -1412,13 +1497,17 @@ msgctxt "NES"
 msgid "Format"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:767 ../src/libromdata/Console/NES.cpp:794
+#. tr: Print the mapper ID followed by the mapper name.
+#. tr: Print the submapper ID followed by the submapper name.
+#: ../src/libromdata/Console/NES.cpp:767 ../src/libromdata/Console/NES.cpp:795
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%1$u - %2$s"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:771 ../src/libromdata/Console/NES.cpp:798
+#. tr: Print only the mapper ID.
+#. tr: Print only the submapper ID.
+#: ../src/libromdata/Console/NES.cpp:771 ../src/libromdata/Console/NES.cpp:799
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%u"
@@ -1429,132 +1518,137 @@ msgctxt "NES"
 msgid "Mapper"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:800
+#: ../src/libromdata/Console/NES.cpp:781
+msgctxt "NES"
+msgid "[Missing TNES mapping!]"
+msgstr ""
+
+#: ../src/libromdata/Console/NES.cpp:801
 msgctxt "NES"
 msgid "Submapper"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:806
+#: ../src/libromdata/Console/NES.cpp:807
 msgctxt "NES"
 msgid "TNES Mapper"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:813
+#: ../src/libromdata/Console/NES.cpp:814
 msgctxt "NES|TVMode"
 msgid "NTSC"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:814
+#: ../src/libromdata/Console/NES.cpp:815
 msgctxt "NES|TVMode"
 msgid "PAL"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:815 ../src/libromdata/Console/NES.cpp:816
+#: ../src/libromdata/Console/NES.cpp:816 ../src/libromdata/Console/NES.cpp:817
 msgctxt "NES|TVMode"
 msgid "Dual (NTSC/PAL)"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:825
+#: ../src/libromdata/Console/NES.cpp:826
 msgctxt "NES|Features"
 msgid "Save RAM, Trainer"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:827
+#: ../src/libromdata/Console/NES.cpp:828
 msgctxt "NES|Features"
 msgid "Save RAM"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:829
+#: ../src/libromdata/Console/NES.cpp:830
 msgctxt "NES|Features"
 msgid "Trainer"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:832
+#: ../src/libromdata/Console/NES.cpp:833
 msgctxt "NES"
 msgid "Features"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:837
+#: ../src/libromdata/Console/NES.cpp:838
 msgctxt "NES"
 msgid "PRG ROM"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:841
+#: ../src/libromdata/Console/NES.cpp:842
 msgctxt "NES"
 msgid "CHR ROM"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:847
+#: ../src/libromdata/Console/NES.cpp:848
 msgctxt "NES"
 msgid "CHR RAM"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:851
+#: ../src/libromdata/Console/NES.cpp:852
 msgctxt "NES"
 msgid "CHR RAM (backed up)"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:855
+#: ../src/libromdata/Console/NES.cpp:856
 msgctxt "NES"
 msgid "PRG RAM"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:859
+#: ../src/libromdata/Console/NES.cpp:860
 msgctxt "NES"
 msgid "Save RAM (backed up)"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:867
+#: ../src/libromdata/Console/NES.cpp:868
 msgctxt "NES"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:877
+#: ../src/libromdata/Console/NES.cpp:878
 msgctxt "NES"
 msgid "Publisher"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:881
+#: ../src/libromdata/Console/NES.cpp:882
 msgctxt "NES"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:886
+#: ../src/libromdata/Console/NES.cpp:887
 msgctxt "NES"
 msgid "Manufacturing Date"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:905
+#: ../src/libromdata/Console/NES.cpp:906
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:909 ../src/libromdata/Console/NES.cpp:952
+#: ../src/libromdata/Console/NES.cpp:910 ../src/libromdata/Console/NES.cpp:953
 msgctxt "NES|Mirroring"
 msgid "Vertical"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:911 ../src/libromdata/Console/NES.cpp:949
+#: ../src/libromdata/Console/NES.cpp:912 ../src/libromdata/Console/NES.cpp:950
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:943
+#: ../src/libromdata/Console/NES.cpp:944
 msgctxt "NES|Mirroring"
 msgid "One Screen"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:945
+#: ../src/libromdata/Console/NES.cpp:946
 msgctxt "NES|Mirroring"
 msgid "Programmable"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:965
+#: ../src/libromdata/Console/NES.cpp:966
 msgctxt "NES"
 msgid "Mirroring"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:968
+#: ../src/libromdata/Console/NES.cpp:969
 msgctxt "NES"
 msgid "VS. PPU"
 msgstr ""
@@ -5132,6 +5226,11 @@ msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the GNU GPL v2 or later."
 msgstr ""
 
+#: ../src/win32/config/AboutTab.cpp:563
+msgctxt "AboutTab|Credits"
+msgid "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"
+msgstr ""
+
 #: ../src/win32/config/AboutTab.cpp:616
 msgctxt "AboutTab"
 msgid "Credits"
@@ -5217,7 +5316,7 @@ msgid "Downloads"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:709
+#: ../src/win32/config/ImageTypesTab.cpp:719
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr ""
@@ -5227,8 +5326,32 @@ msgctxt "KeyManagerTab"
 msgid "Import..."
 msgstr ""
 
+#. tr: Wii keys.bin file filter. (Win32)
+#: ../src/win32/config/KeyManagerTab.cpp:1433
+msgctxt "KeyManagerTab"
+msgid "keys.bin"
+msgstr ""
+
+#. tr: Wii U otp.bin file filter. (Win32)
+#: ../src/win32/config/KeyManagerTab.cpp:1471
+msgctxt "KeyManagerTab"
+msgid "otp.bin"
+msgstr ""
+
+#. tr: 3DS boot9.bin file filter. (Win32)
+#: ../src/win32/config/KeyManagerTab.cpp:1509
+msgctxt "KeyManagerTab"
+msgid "boot9.bin"
+msgstr ""
+
+#. tr: aeskeydb.bin file filter. (Win32)
+#: ../src/win32/config/KeyManagerTab.cpp:1547
+msgctxt "KeyManagerTab"
+msgid "aeskeydb.bin"
+msgstr ""
+
 #. tr: Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1590
+#: ../src/win32/config/KeyManagerTab.cpp:1598
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr ""

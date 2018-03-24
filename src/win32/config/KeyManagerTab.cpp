@@ -1427,14 +1427,16 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// tr: Dialog title.
+	// tr: Wii keys.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
+	// tr: Wii keys.bin file filter. (Win32)
+	const wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "keys.bin\0keys.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = L"keys.bin\0keys.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrFilter = wsFileFilter.c_str();
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
@@ -1463,14 +1465,16 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// tr: Dialog title.
+	// tr: Wii U otp.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
+	// tr: Wii U otp.bin file filter. (Win32)
+	const wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "otp.bin\0otp.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = L"otp.bin\0otp.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrFilter = wsFileFilter.c_str();
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
@@ -1499,14 +1503,16 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// tr: Dialog title.
+	// tr: 3DS boot9.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
+	// tr: 3DS boot9.bin file filter. (Win32)
+	const wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "boot9.bin\0boot9.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = L"boot9.bin\0boot9.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrFilter = wsFileFilter.c_str();
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
@@ -1535,14 +1541,16 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	wchar_t filename[MAX_PATH];
 	filename[0] = 0;
 
-	// tr: Dialog title.
+	// tr: aeskeydb.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
+	// tr: aeskeydb.bin file filter. (Win32)
+	const wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "aeskeydb.bin\0aeskeydb.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"));
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = L"aeskeydb.bin\0aeskeydb.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrFilter = wsFileFilter.c_str();
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
