@@ -1813,21 +1813,27 @@ int GameCube::loadFieldData(void)
 			switch (entry.partition->encKey()) {
 				case WiiPartition::ENCKEY_UNKNOWN:
 				default:
+					// tr: Unknown encryption key.
 					key_name = C_("GameCube|KeyIdx", "Unknown");
 					break;
 				case WiiPartition::ENCKEY_COMMON:
+					// tr: Retail encryption key.
 					key_name = C_("GameCube|KeyIdx", "Retail");
 					break;
 				case WiiPartition::ENCKEY_KOREAN:
+					// tr: Korean encryption key.
 					key_name = C_("GameCube|KeyIdx", "Korean");
 					break;
 				case WiiPartition::ENCKEY_VWII:
+					// tr: vWii-specific encryption key.
 					key_name = C_("GameCube|KeyIdx", "vWii");
 					break;
 				case WiiPartition::ENCKEY_DEBUG:
+					// tr: Debug encryption key.
 					key_name = C_("GameCube|KeyIdx", "Debug");
 					break;
 				case WiiPartition::ENCKEY_NONE:
+					// tr: No encryption.
 					key_name = C_("GameCube|KeyIdx", "None");
 					break;
 			}
@@ -1838,7 +1844,7 @@ int GameCube::loadFieldData(void)
 			if (used_size >= 0) {
 				data_row.push_back(d->formatFileSize(used_size));
 			} else {
-				// Unknown used size.
+				// tr: Unknown used size.
 				data_row.push_back(C_("GameCube|Partition", "Unknown"));
 			}
 
@@ -1848,10 +1854,15 @@ int GameCube::loadFieldData(void)
 
 		// Fields.
 		static const char *const partitions_names[] = {
+			// tr: Partition number.
 			NOP_C_("GameCube|Partition", "#"),
+			// tr: Partition type.
 			NOP_C_("GameCube|Partition", "Type"),
+			// tr: Encryption key.
 			NOP_C_("GameCube|Partition", "Key"),
+			// tr: Actual data used within the partition.
 			NOP_C_("GameCube|Partition", "Used Size"),
+			// tr: Total size of the partition.
 			NOP_C_("GameCube|Partition", "Total Size"),
 		};
 		vector<string> *v_partitions_names = RomFields::strArrayToVector_i18n(

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-03-24 14:50-0400\n"
+"POT-Creation-Date: 2018-03-24 14:54-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -1132,62 +1132,74 @@ msgctxt "GameCube|Partition"
 msgid "Channel"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1816
+#. tr: Unknown encryption key.
+#: ../src/libromdata/Console/GameCube.cpp:1817
 msgctxt "GameCube|KeyIdx"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1819
+#. tr: Retail encryption key.
+#: ../src/libromdata/Console/GameCube.cpp:1821
 msgctxt "GameCube|KeyIdx"
 msgid "Retail"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1822
+#. tr: Korean encryption key.
+#: ../src/libromdata/Console/GameCube.cpp:1825
 msgctxt "GameCube|KeyIdx"
 msgid "Korean"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1825
+#. tr: vWii-specific encryption key.
+#: ../src/libromdata/Console/GameCube.cpp:1829
 msgctxt "GameCube|KeyIdx"
 msgid "vWii"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1828
+#. tr: Debug encryption key.
+#: ../src/libromdata/Console/GameCube.cpp:1833
 msgctxt "GameCube|KeyIdx"
 msgid "Debug"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1831
+#. tr: No encryption.
+#: ../src/libromdata/Console/GameCube.cpp:1837
 msgctxt "GameCube|KeyIdx"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1842
+#. tr: Unknown used size.
+#: ../src/libromdata/Console/GameCube.cpp:1848
 msgctxt "GameCube|Partition"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1851
+#. tr: Partition number.
+#: ../src/libromdata/Console/GameCube.cpp:1858
 msgctxt "GameCube|Partition"
 msgid "#"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1852
+#. tr: Partition type.
+#: ../src/libromdata/Console/GameCube.cpp:1860
 msgctxt "GameCube|Partition"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1853
+#. tr: Encryption key.
+#: ../src/libromdata/Console/GameCube.cpp:1862
 msgctxt "GameCube|Partition"
 msgid "Key"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1854
+#. tr: Actual data used within the partition.
+#: ../src/libromdata/Console/GameCube.cpp:1864
 msgctxt "GameCube|Partition"
 msgid "Used Size"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1855
+#. tr: Total size of the partition.
+#: ../src/libromdata/Console/GameCube.cpp:1866
 msgctxt "GameCube|Partition"
 msgid "Total Size"
 msgstr ""
