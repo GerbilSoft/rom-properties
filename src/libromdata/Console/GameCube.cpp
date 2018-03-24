@@ -135,22 +135,26 @@ class GameCubePrivate : public RomDataPrivate
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			int64_t start;			// Starting address, in bytes.
-			uint32_t type;			// Partition type. (See WiiPartitionType.)
+			uint8_t vg;		// Volume group number.
+			uint8_t pt;		// Partition number.
+
+			int64_t start;		// Starting address, in bytes.
+			int64_t size;		// Estimated partition size, in bytes.
+
+			uint32_t type;		// Partition type. (See WiiPartitionType.)
 			WiiPartition *partition;	// Partition object.
 		};
 
-		typedef std::vector<WiiPartEntry> WiiPartTable;
-		WiiPartTable wiiVgTbl[4];	// Volume group table.
-		bool wiiVgTblLoaded;
+		std::vector<WiiPartEntry> wiiPtbl;
+		bool wiiPtblLoaded;
 
-		// Pointers to specific partitions within WiiPartTable.
+		// Pointers to specific partitions within wiiPtbl.
 		WiiPartition *updatePartition;
 		WiiPartition *gamePartition;
 
 		/**
 		 * Load the Wii volume group and partition tables.
-		 * Partition tables are loaded into wiiVgTbl[].
+		 * Partition tables are loaded into wiiPtbl.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadWiiPartitionTables(void);
@@ -239,7 +243,7 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	, gcn_opening_bnr(nullptr)
 	, wii_opening_bnr(nullptr)
 	, gcnRegion(~0)
-	, wiiVgTblLoaded(false)
+	, wiiPtblLoaded(false)
 	, updatePartition(nullptr)
 	, gamePartition(nullptr)
 {
@@ -256,13 +260,11 @@ GameCubePrivate::~GameCubePrivate()
 	updatePartition = nullptr;
 	gamePartition = nullptr;
 
-	// Delete partition objects in wiiVgTbl[].
-	// TODO: Check wiiVgTblLoaded?
-	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
-		for (auto iter = wiiVgTbl[i].begin(); iter != wiiVgTbl[i].end(); ++iter) {
-			delete iter->partition;
-		}
+	// Clear the existing partition table vector.
+	for (auto iter = wiiPtbl.cbegin(); iter != wiiPtbl.cend(); ++iter) {
+		delete iter->partition;
 	}
+	wiiPtbl.clear();
 
 	delete gcn_opening_bnr;
 	delete wii_opening_bnr;
@@ -271,12 +273,12 @@ GameCubePrivate::~GameCubePrivate()
 
 /**
  * Load the Wii volume group and partition tables.
- * Partition tables are loaded into wiiVgTbl[].
+ * Partition tables are loaded into wiiPtbl.
  * @return 0 on success; negative POSIX error code on error.
  */
 int GameCubePrivate::loadWiiPartitionTables(void)
 {
-	if (wiiVgTblLoaded) {
+	if (wiiPtblLoaded) {
 		// Partition tables have already been loaded.
 		return 0;
 	} else if (!this->file || !this->file->isOpen() || !this->discReader) {
@@ -287,10 +289,11 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		return -EIO;
 	}
 
-	// Clear the existing partition tables.
-	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
-		wiiVgTbl[i].clear();
+	// Clear the existing partition table vector.
+	for (auto iter = wiiPtbl.cbegin(); iter != wiiPtbl.cend(); ++iter) {
+		delete iter->partition;
 	}
+	wiiPtbl.clear();
 
 	// Assuming a maximum of 128 partitions per table.
 	// (This is a rather high estimate.)
@@ -339,10 +342,15 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		}
 
 		// Process each partition table entry.
-		wiiVgTbl[i].resize(count);
-		for (unsigned int j = 0; j < count; j++) {
-			WiiPartEntry &entry = wiiVgTbl[i].at(j);
+		size_t idx = wiiPtbl.size();
+		wiiPtbl.resize(wiiPtbl.size() + count);
+		for (unsigned int j = 0; j < count; j++, idx++) {
+			WiiPartEntry &entry = wiiPtbl.at(idx);
+
+			entry.vg = (uint8_t)i;
+			entry.pt = (uint8_t)j;
 			entry.start = (int64_t)(be32_to_cpu(pt[j].addr)) << 2;
+			entry.size = 0;	// TODO: Calculate later.
 			entry.type = be32_to_cpu(pt[j].type);
 			entry.partition = new WiiPartition(discReader, entry.start, noCrypt);
 
@@ -1722,92 +1730,85 @@ int GameCube::loadFieldData(void)
 
 		// Partition table.
 		auto partitions = new std::vector<std::vector<string> >();
-		int partition_count = 0;
-		for (int i = 0; i < 4; i++) {
-			partition_count += (int)d->wiiVgTbl[i].size();
-		}
-		partitions->resize(partition_count);
+		partitions->resize(d->wiiPtbl.size());
 
-		partition_count = 0;
-		for (int i = 0; i < 4; i++) {
-			const int count = (int)d->wiiVgTbl[i].size();
-			for (int j = 0; j < count; j++, partition_count++) {
-				vector<string> &data_row = partitions->at(partition_count);
-				data_row.reserve(5);	// 5 fields per row.
+		unsigned int ptidx = 0;
+		for (auto iter = partitions->begin(); iter != partitions->end(); ++iter, ptidx++) {
+			vector<string> &data_row = *iter;
+			data_row.reserve(5);	// 5 fields per row.
 
-				// Partition entry.
-				const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
+			// Partition entry.
+			const GameCubePrivate::WiiPartEntry &entry = d->wiiPtbl[ptidx];
 
-				// Partition number.
-				data_row.push_back(rp_sprintf("%dp%d", i, j));
+			// Partition number.
+			data_row.push_back(rp_sprintf("%dp%d", entry.vg, entry.pt));
 
-				// Partition type.
-				string str;
-				static const char *const part_type_tbl[3] = {
-					// tr: GameCubePrivate::PARTITION_GAME
-					NOP_C_("GameCube|Partition", "Game"),
-					// tr: GameCubePrivate::PARTITION_UPDATE
-					NOP_C_("GameCube|Partition", "Update"),
-					// tr: GameCubePrivate::PARTITION_CHANNEL
-					NOP_C_("GameCube|Partition", "Channel"),
-				};
-				if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
-					str = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
+			// Partition type.
+			string str;
+			static const char *const part_type_tbl[3] = {
+				// tr: GameCubePrivate::PARTITION_GAME
+				NOP_C_("GameCube|Partition", "Game"),
+				// tr: GameCubePrivate::PARTITION_UPDATE
+				NOP_C_("GameCube|Partition", "Update"),
+				// tr: GameCubePrivate::PARTITION_CHANNEL
+				NOP_C_("GameCube|Partition", "Channel"),
+			};
+			if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
+				str = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|Partition", part_type_tbl[entry.type]);
+			} else {
+				// If all four bytes are ASCII letters and/or numbers,
+				// print it as-is. (SSBB demo channel)
+				// Otherwise, print the hexadecimal value.
+				// NOTE: Must be BE32 for proper display.
+				union {
+					uint32_t be32_type;
+					char chr[4];
+				} part_type;
+				part_type.be32_type = cpu_to_be32(entry.type);
+				if (isalnum(part_type.chr[0]) && isalnum(part_type.chr[1]) &&
+				    isalnum(part_type.chr[2]) && isalnum(part_type.chr[3]))
+				{
+					// All four bytes are ASCII letters and/or numbers.
+					str = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
 				} else {
-					// If all four bytes are ASCII letters and/or numbers,
-					// print it as-is. (SSBB demo channel)
-					// Otherwise, print the hexadecimal value.
-					// NOTE: Must be BE32 for proper display.
-					union {
-						uint32_t be32_type;
-						char chr[4];
-					} part_type;
-					part_type.be32_type = cpu_to_be32(entry.type);
-					if (isalnum(part_type.chr[0]) && isalnum(part_type.chr[1]) &&
-					    isalnum(part_type.chr[2]) && isalnum(part_type.chr[3]))
-					{
-						// All four bytes are ASCII letters and/or numbers.
-						str = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
-					} else {
-						// Non-ASCII data. Print the hex values instead.
-						str = rp_sprintf("%08X", entry.type);
-					}
-					break;
+					// Non-ASCII data. Print the hex values instead.
+					str = rp_sprintf("%08X", entry.type);
 				}
-				data_row.push_back(str);
-
-				// Encryption key.
-				// TODO: Use a string table?
-				const char *key_name;
-				switch (entry.partition->encKey()) {
-					case WiiPartition::ENCKEY_UNKNOWN:
-					default:
-						key_name = C_("GameCube|KeyIdx", "Unknown");
-						break;
-					case WiiPartition::ENCKEY_COMMON:
-						key_name = C_("GameCube|KeyIdx", "Retail");
-						break;
-					case WiiPartition::ENCKEY_KOREAN:
-						key_name = C_("GameCube|KeyIdx", "Korean");
-						break;
-					case WiiPartition::ENCKEY_VWII:
-						key_name = C_("GameCube|KeyIdx", "vWii");
-						break;
-					case WiiPartition::ENCKEY_DEBUG:
-						key_name = C_("GameCube|KeyIdx", "Debug");
-						break;
-					case WiiPartition::ENCKEY_NONE:
-						key_name = C_("GameCube|KeyIdx", "None");
-						break;
-				}
-				data_row.push_back(key_name);
-
-				// Used size.
-				data_row.push_back(d->formatFileSize(entry.partition->partition_size_used()));
-
-				// Partition size.
-				data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
+				break;
 			}
+			data_row.push_back(str);
+
+			// Encryption key.
+			// TODO: Use a string table?
+			const char *key_name;
+			switch (entry.partition->encKey()) {
+				case WiiPartition::ENCKEY_UNKNOWN:
+				default:
+					key_name = C_("GameCube|KeyIdx", "Unknown");
+					break;
+				case WiiPartition::ENCKEY_COMMON:
+					key_name = C_("GameCube|KeyIdx", "Retail");
+					break;
+				case WiiPartition::ENCKEY_KOREAN:
+					key_name = C_("GameCube|KeyIdx", "Korean");
+					break;
+				case WiiPartition::ENCKEY_VWII:
+					key_name = C_("GameCube|KeyIdx", "vWii");
+					break;
+				case WiiPartition::ENCKEY_DEBUG:
+					key_name = C_("GameCube|KeyIdx", "Debug");
+					break;
+				case WiiPartition::ENCKEY_NONE:
+					key_name = C_("GameCube|KeyIdx", "None");
+					break;
+			}
+			data_row.push_back(key_name);
+
+			// Used size.
+			data_row.push_back(d->formatFileSize(entry.partition->partition_size_used()));
+
+			// Partition size.
+			data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
 		}
 
 		// Fields.
