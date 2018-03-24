@@ -55,6 +55,7 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -350,17 +351,45 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 			entry.vg = (uint8_t)i;
 			entry.pt = (uint8_t)j;
 			entry.start = (int64_t)(be32_to_cpu(pt[j].addr)) << 2;
-			entry.size = 0;	// TODO: Calculate later.
 			entry.type = be32_to_cpu(pt[j].type);
-			entry.partition = new WiiPartition(discReader, entry.start, noCrypt);
+		}
+	}
 
-			if (entry.type == PARTITION_UPDATE && !updatePartition) {
-				// System Update partition.
-				updatePartition = entry.partition;
-			} else if (entry.type == PARTITION_GAME && !gamePartition) {
-				// Game partition.
-				gamePartition = entry.partition;
-			}
+	// Sort partitions by starting address in order to calculate the sizes.
+	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
+		[](const WiiPartEntry &a, const WiiPartEntry &b) {
+			return (a.start < b.start);
+		}
+	);
+
+	// Calculate the size values.
+	// Technically not needed for retail and RVT-R images, but unencrypted
+	// images on RVT-H systems don't have the partition size set in the
+	// partition header.
+	size_t pt_idx;
+	for (pt_idx = 0; pt_idx < wiiPtbl.size()-1; pt_idx++) {
+		wiiPtbl[pt_idx].size = wiiPtbl[pt_idx+1].start - wiiPtbl[pt_idx].size;
+	}
+	// Last partition.
+	wiiPtbl[pt_idx].size = discSize - wiiPtbl[pt_idx].start;
+
+	// Restore the original sorting order. (VG#, then PT#)
+	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
+		[](const WiiPartEntry &a, const WiiPartEntry &b) {
+			return (a.vg < b.vg || a.pt < b.pt);
+		}
+	);
+
+	// Create the WiiPartition objects.
+	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl.end(); ++iter) {
+		iter->partition = new WiiPartition(discReader, iter->start, iter->size, noCrypt);
+
+		if (iter->type == PARTITION_UPDATE && !updatePartition) {
+			// System Update partition.
+			updatePartition = iter->partition;
+		} else if (iter->type == PARTITION_GAME && !gamePartition) {
+			// Game partition.
+			gamePartition = iter->partition;
 		}
 	}
 

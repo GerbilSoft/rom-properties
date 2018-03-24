@@ -55,7 +55,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 {
 	public:
 		WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader,
-			int64_t partition_offset, bool noCrypt);
+			int64_t partition_offset, int64_t partition_size, bool noCrypt);
 		virtual ~WiiPartitionPrivate();
 
 	private:
@@ -173,7 +173,8 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 #endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
-		IDiscReader *discReader, int64_t partition_offset, bool noCrypt)
+		IDiscReader *discReader, int64_t partition_offset,
+		int64_t partition_size, bool noCrypt)
 	: super(q, discReader, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
@@ -195,9 +196,9 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 
 	// Clear data set by GcnPartition in case the
 	// partition headers can't be read.
-	data_offset = -1;
-	data_size = -1;
-	partition_size = -1;
+	this->data_offset = -1;
+	this->data_size = -1;
+	this->partition_size = -1;
 
 	// Clear the partition header struct.
 	memset(&partitionHeader, 0, sizeof(partitionHeader));
@@ -229,12 +230,11 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	data_offset     = (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
 	data_size       = (int64_t)be32_to_cpu(partitionHeader.data_size) << 2;
 	if (data_size == 0) {
-		// FIXME: NoCrypt RVT-H images sometimes have this set to 0.
-		// Calculate the partition size using the FST.
-		// For now, assume "10 GB".
-		data_size = 10LL * 1024 * 1024 * 1024;
+		// NoCrypt RVT-H images sometimes have this set to 0.
+		// Use the calculated partition size.
+		data_size = partition_size - data_offset;
 	}
-	partition_size  = data_size + ((int64_t)be32_to_cpu(partitionHeader.data_offset) << 2);
+	this->partition_size  = data_size + data_offset;
 #ifdef ENABLE_DECRYPTION
 	pos_7C00	= 0;
 #endif /* ENABLE_DECRYPTION */
@@ -489,8 +489,9 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * @param discReader IDiscReader.
  * @param partition_offset Partition start offset.
  */
-WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset, bool noCrypt)
-	: super(new WiiPartitionPrivate(this, discReader, partition_offset, noCrypt))
+WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
+		int64_t partition_size, bool noCrypt)
+	: super(new WiiPartitionPrivate(this, discReader, partition_offset, partition_size, noCrypt))
 { }
 
 WiiPartition::~WiiPartition()

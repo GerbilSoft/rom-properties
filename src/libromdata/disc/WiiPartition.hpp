@@ -42,9 +42,11 @@ class WiiPartition : public GcnPartition
 		 *
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
+		 * @param partition_size Calculated partition size. Used if the size in the header is 0.
 		 * @param noCrypt If true, disc image is not encrypted. (RVT-H)
 		 */
-		WiiPartition(IDiscReader *discReader, int64_t partition_offset, bool noCrypt = false);
+		WiiPartition(IDiscReader *discReader, int64_t partition_offset,
+			int64_t partition_size, bool noCrypt = false);
 		~WiiPartition();
 
 	private:
