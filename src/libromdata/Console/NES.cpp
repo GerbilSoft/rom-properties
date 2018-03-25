@@ -871,7 +871,7 @@ int NES::loadFieldData(void)
 				d->header.fds.game_id));
 
 		// Publisher.
-		const char* publisher =
+		const char *const publisher =
 			NintendoPublishers::lookup_fds(d->header.fds.publisher_code);
 		d->fields->addField_string(C_("NES", "Publisher"),
 			publisher ? publisher :

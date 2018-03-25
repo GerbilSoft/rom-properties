@@ -1530,7 +1530,7 @@ int GameCube::loadFieldData(void)
 		latin1_to_utf8(discHeader->id6, ARRAY_SIZE(discHeader->id6)));
 
 	// Look up the publisher.
-	const char *publisher = NintendoPublishers::lookup(discHeader->company);
+	const char *const publisher = NintendoPublishers::lookup(discHeader->company);
 	d->fields->addField_string(C_("GameCube", "Publisher"),
 		publisher ? publisher :
 			rp_sprintf(C_("GameCube", "Unknown (%.2s)"), discHeader->company));

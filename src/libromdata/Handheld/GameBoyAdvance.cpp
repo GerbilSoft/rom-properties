@@ -305,7 +305,7 @@ int GameBoyAdvance::loadFieldData(void)
 	d->fields->addField_string(C_("GameBoyAdvance", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Look up the publisher.
-	const char *publisher = NintendoPublishers::lookup(romHeader->company);
+	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
 	d->fields->addField_string(C_("GameBoyAdvance", "Publisher"),
 		publisher ? publisher :
 			rp_sprintf(C_("GameBoyAdvance", "Unknown (%.2s)"), romHeader->company));
