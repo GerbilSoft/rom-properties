@@ -145,6 +145,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
 	{'ALRx', '00WR'},	// LEGO Marvel's Avengers
 	{'ALVx', '00YF'},	// Luv Me Buddies Wonderland
 	{'ALZx', '0001'},	// The Legend of Zelda: Breath of the Wild
+	{'AM7x', '0008'},	// Monster Hunter Frontier G7 Premium Package
 	{'AM8x', '0008'},	// Monster Hunter Frontier G8 Premium Package
 	{'AM9x', '0052'},	// The Amazing Spider-Man 2
 	{'AMAx', '0001'},	// Super Mario Maker
@@ -233,6 +234,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
 	{'BEDx', '0078'},	// Darksiders - Warmastered Edition
 	{'BENx', '008X'},	// Runbow Deluxe
 	{'BFNx', '00VZ'},	// Adventure Time: Finn & Jake Investigations
+	{'BH9x', '0008'},	// Monster Hunter Frontier G9 Premium Package
 	{'BJ7x', '0041'},	// Just Dance 2017
 	{'BJDx', '0041'},	// Just Dance 2015
 	{'BK7x', '0052'},	// Skylanders: Trap Team
