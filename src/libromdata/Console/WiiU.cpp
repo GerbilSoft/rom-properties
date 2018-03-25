@@ -24,6 +24,7 @@
 #include "WiiU.hpp"
 #include "librpbase/RomData_p.hpp"
 
+#include "data/NintendoPublishers.hpp"
 #include "wiiu_structs.h"
 #include "gcn_structs.h"
 #include "data/WiiUData.hpp"
@@ -404,6 +405,27 @@ int WiiU::loadFieldData(void)
 	// Game ID.
 	d->fields->addField_string(C_("WiiU", "Game ID"),
 		latin1_to_utf8(d->discHeader.id, sizeof(d->discHeader.id)));
+
+	// Publisher.
+	// Look up the publisher ID.
+	uint32_t publisher_id = WiiUData::lookup_disc_publisher(d->discHeader.id4);
+	char publisher_code[5];
+	publisher_code[0] = (publisher_id >> 24) & 0xFF;
+	publisher_code[1] = (publisher_id >> 16) & 0xFF;
+	publisher_code[2] = (publisher_id >>  8) & 0xFF;
+	publisher_code[3] =  publisher_id & 0xFF;
+	publisher_code[4] = 0;
+	if (publisher_id != 0 && (publisher_id & 0xFFFF0000) == 0x30300000) {
+		// Publisher ID is a valid two-character ID.
+		const char *const publisher = NintendoPublishers::lookup(&publisher_code[2]);
+		d->fields->addField_string(C_("WiiU", "Publisher"),
+			publisher ? publisher :
+				rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code));
+	} else {
+		// 4-character ID. No entries for this right now.
+		d->fields->addField_string(C_("WiiU", "Publisher"),
+			rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code));
+	}
 
 	// Game version.
 	// TODO: Validate the version characters.
