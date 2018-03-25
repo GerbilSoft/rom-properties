@@ -574,9 +574,30 @@ int DMG::loadFieldData(void)
 		v_system_bitfield_names, 0, dmg_system);
 
 	// Entry Point
-	if(romHeader->entry[0] == 0 && romHeader->entry[1] == 0xC3){
-		// this is the "standard" way of doing the entry point
+	if ((romHeader->entry[0] == 0x00 ||	// NOP
+	     romHeader->entry[0] == 0xF3 ||	// DI
+	     romHeader->entry[0] == 0x7F ||	// LD A,A
+	     romHeader->entry[0] == 0x3F) &&	// CCF
+	    romHeader->entry[1] == 0xC3)	// JP nnnn
+	{
+		// NOP; JP nnnn
+		// This is the "standard" way of doing the entry point.
+		// NOTE: Some titles use a different opcode instead of NOP.
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
+		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+	} else if (romHeader->entry[0] == 0xC3) {
+		// JP nnnn without a NOP.
+		const uint16_t entry_address = (romHeader->entry[1] | (romHeader->entry[2] << 8));
+		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+	} else if (romHeader->entry[0] == 0x18) {
+		// JR nnnn
+		// Found in many homebrew ROMs.
+		const int8_t disp = (int8_t)romHeader->entry[1];
+		// Current PC: 0x100
+		// Add displacement, plus 2.
+		const uint16_t entry_address = 0x100 + disp + 2;
 		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	} else {
