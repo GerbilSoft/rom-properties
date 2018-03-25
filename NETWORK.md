@@ -3,7 +3,17 @@
 The ROM Properties Page Shell Extension has functions to access various
 Internet databases in order to download artwork.
 
-This functionality can be disabled by using the `rp-config` utility.
+This functionality can be disabled by using the `rp-config` utility,
+or by setting the following value in the configuration file:
+
+```
+[Downloads]
+ExtImageDownload=false
+```
+
+The configuration file is located at:
+* Windows: %APPDATA%\rom-properties\rom-properties.conf
+* Linux: ~/.config/rom-properties/rom-properties.conf
 
 ## Domains accessed:
 
