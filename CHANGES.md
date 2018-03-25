@@ -13,8 +13,7 @@
     slightly on Windows due to required UTF-8 to UTF-16 conversion, but it
     reduces the DLL size. (The Qt build doesn't have much overhead difference,
     since it has to copy char16_t data into QString before using it anyway.)
-    * The `rp_char` and `rp_string` typedefs are now deprecated. Most uses
-      of these typedefs have been removed.
+    * The `rp_char` and `rp_string` typedefs have been removed.
   * The 16-bit and 32-bit array byteswapping functions have been optimized
     using MMX, SSE2, and SSSE3.
 
