@@ -671,7 +671,7 @@ int KeyStoreUIPrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *veri
 		// Error setting the key.
 		return -EIO;
 	}
-	unsigned int size = cipher->decrypt(testData, sizeof(testData));
+	size_t size = cipher->decrypt(testData, sizeof(testData));
 	if (size != sizeof(testData)) {
 		// Error decrypting the data.
 		return -EIO;
@@ -1428,16 +1428,16 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 
 		if (aesKey->isEncrypted) {
 			// Key is encrypted.
-			int ret = -1;
+			size = 0;
 			if (cipher) {
 				// Counter is the first 12 bytes of the AesKeyInfo struct.
 				u128_t ctr;
 				memcpy(ctr.u8, aesKey, 12);
 				memset(&ctr.u8[12], 0, 4);
-				ret = cipher->decrypt(aesKey->key, sizeof(aesKey->key),
+				size = cipher->decrypt(aesKey->key, sizeof(aesKey->key),
 					ctr.u8, sizeof(ctr.u8));
 			}
-			if (ret != sizeof(aesKey->key)) {
+			if (size != sizeof(aesKey->key)) {
 				// Unable to decrypt the key.
 				// FIXME: This might result in the wrong number of
 				// keys being reported in total.

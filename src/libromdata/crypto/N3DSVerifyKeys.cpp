@@ -173,7 +173,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 		// make a temporary copy.
 		unique_ptr<uint8_t[]> tmpData(new uint8_t[16]);
 		memcpy(tmpData.get(), keyNormal_verify, 16);
-		unsigned int size = cipher->decrypt(tmpData.get(), 16);
+		size_t size = cipher->decrypt(tmpData.get(), 16);
 		if (size != 16) {
 			// Decryption failed.
 			return KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR;
