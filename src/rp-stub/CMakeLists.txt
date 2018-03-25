@@ -37,12 +37,12 @@ INSTALL(TARGETS rp-stub
 # CMake doesn't really like this, and in the Debian package build,
 # it results in errors due to attempting to create a symlink in
 # the real file system instead of the fakeroot.
-INSTALL(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
+INSTALL(PROGRAMS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
 	DESTINATION "${DIR_INSTALL_LIBEXEC}"
 	RENAME "rp-thumbnail"
 	COMPONENT "plugin"
 	)
-INSTALL(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
+INSTALL(PROGRAMS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
 	DESTINATION "${DIR_INSTALL_EXE}"
 	RENAME "rp-config"
 	COMPONENT "plugin"
