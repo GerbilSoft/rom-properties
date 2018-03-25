@@ -1116,6 +1116,7 @@ int NintendoDS::loadFieldData(void)
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
 
+	// TODO: Also hide this for DSiWare SRLs?
 	if (!d->cia) {
 		static const char *const hw_bitfield_names[] = {
 			"Nintendo DS", "Nintendo DSi"
