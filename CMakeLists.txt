@@ -177,10 +177,10 @@ ENDIF(BUILD_TESTING)
 MESSAGE("
 *** rom-properties build summary ***
 
-- Building the following UI frontends: ${UI_FRONTENDS}
+- Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
 
-- Building the following third-party libraries from extlib:
+- Building these third-party libraries from extlib:
 ${EXTLIB_BUILD}")
 
 IF(NOT UI_FRONTENDS)
