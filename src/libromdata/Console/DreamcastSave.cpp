@@ -495,7 +495,8 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
 	// Make sure the file is big enough.
-	uint32_t sz_reserved = (uint32_t)sizeof(vms_header) +
+	uint32_t sz_reserved = vms_header_offset +
+		(uint32_t)sizeof(vms_header) +
 		DC_VMS_ICON_PALETTE_SIZE +
 		(icon_count * DC_VMS_ICON_DATA_SIZE);
 	if (vms_header.eyecatch_type <= 3) {
