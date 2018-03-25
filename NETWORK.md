@@ -12,8 +12,8 @@ ExtImageDownload=false
 ```
 
 The configuration file is located at:
-* Windows: %APPDATA%\rom-properties\rom-properties.conf
-* Linux: ~/.config/rom-properties/rom-properties.conf
+* Windows: `%APPDATA%\rom-properties\rom-properties.conf`
+* Linux: `~/.config/rom-properties/rom-properties.conf`
 
 ## Domains accessed:
 
