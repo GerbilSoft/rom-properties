@@ -301,8 +301,8 @@ SNES::SNES(IRpFile *file)
 	// ".b", it's a BS-X ROM image.
 	const string filename = file->filename();
 	if (!filename.empty()) {
-		const char *ext = FileSystem::file_ext(filename);
-		if (ext[0] == '.' && tolower(ext[1]) == 'b') {
+		const char *const ext = FileSystem::file_ext(filename);
+		if (ext && ext[0] == '.' && tolower(ext[1]) == 'b') {
 			// BS-X ROM image.
 			d->romType = SNESPrivate::ROM_BSX;
 		}
@@ -873,12 +873,15 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
+	const char *region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
+					? region_tbl[romHeader->snes.destination_code]
+					: nullptr);
 
 	switch (d->romType) {
 		case SNESPrivate::ROM_SNES: {
 			// Region
-			const char *const region = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
-				? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_tbl[romHeader->snes.destination_code])
+			const char *const region = (region_lkup
+				? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup)
 				: nullptr);
 			d->fields->addField_string(C_("SNES", "Region"),
 				region ? region : C_("SNES", "Unknown"));
@@ -969,6 +972,9 @@ int SNES::loadFieldData(void)
 				// Unlimited.
 				d->fields->addField_string(C_("SNES", "Limited Starts"), C_("SNES", "Unlimited"));
 			}
+
+			// TODO: Show region == Japan?
+			// (Implied by BS-X, which was only released in Japan.)
 			break;
 		}
 
