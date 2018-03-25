@@ -41,6 +41,8 @@ class NintendoPublishersPrivate {
 
 		/**
 		 * Nintendo third-party publisher list.
+		 * This list is valid for most Nintendo systems.
+		 *
 		 * References:
 		 * - http://www.gametdb.com/Wii
 		 * - http://www.gametdb.com/Wii/Downloads
@@ -49,21 +51,52 @@ class NintendoPublishersPrivate {
 
 		/**
 		 * Comparison function for bsearch().
+		 * For use with ThirdPartyEntry.
+		 *
 		 * @param a
 		 * @param b
 		 * @return
 		 */
 		static int RP_C_API compar(const void *a, const void *b);
+
+	public:
+		struct ThirdPartyEntry_fds {
+			uint8_t code;			// Old publisher code
+			const char *publisher_en;
+			const char *publisher_jp;
+		};
+
+		/**
+		 * Nintendo third-party publisher list.
+		 * This list is valid for Famicom Disk System only.
+		 *
+		 * References:
+		 * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
+		 */
+		static const ThirdPartyEntry_fds thirdPartyList_fds[];
+
+		/**
+		 * Comparison function for bsearch().
+		 * For use with ThirdPartyEntry_fds.
+		 *
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int RP_C_API compar_fds(const void *a, const void *b);
 };
 
 /**
  * Nintendo third-party publisher list.
+ * This list is valid for most Nintendo systems.
+ *
  * References:
  * - http://www.gametdb.com/Wii
  * - http://www.gametdb.com/Wii/Downloads
  * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
  */
 const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thirdPartyList[] = {
+	{'00',	"<unlicensed>"},
 	{'01',	"Nintendo"},
 	{'02',	"Rocket Games / Ajinomoto"},
 	{'03',	"Imagineer-Zoom"},
@@ -145,7 +178,8 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'44',	"Life Fitness"},
 	{'46',	"System 3"},
 	{'47',	"Spectrum Holobyte"},
-	{'49',	"IREM"},
+	{'49',	"Irem"},
+	{'4A',	"Gakken"},	// FDS
 	{'4B',	"Raya Systems"},
 	{'4C',	"Renovation Products"},
 	{'4D',	"Malibu Games"},
@@ -270,10 +304,12 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'9Q',	"Hands-On Entertainment"},
 	{'A0',	"Telenet"},
 	{'A1',	"Hori"},
+	{'A2',	"Scorpion Soft"},	// FDS
 	{'A4',	"Konami"},
 	{'A5',	"K.Amusement Leasing Co."},
-	{'A6',	"Kawada"},
+	{'A6',	"Kawada Co., Ltd."},
 	{'A7',	"Takara"},
+	{'A8',	"Royal Industries"},	// FDS
 	{'A9',	"Technos Japan Corp."},
 	{'AA',	"JVC / Victor"},
 	{'AC',	"Toei Animation"},
@@ -288,8 +324,9 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'AQ',	"Kiratto. Ludic Inc"},
 	{'AY',	"Yacht Club Games"},
 	{'B0',	"Acclaim Japan"},
-	{'B1',	"ASCII"},
+	{'B1',	"ASCII Corporation"},
 	{'B2',	"Bandai"},
+	{'B3',	"Soft Pro Inc."},	// FDS
 	{'B4',	"Enix"},
 	{'B6',	"HAL Laboratory"},
 	{'B7',	"SNK"},
@@ -307,15 +344,17 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'BP',	"Global A Entertainment"},
 	{'BQ',	"Fuuki"},
 	{'C0',	"Taito"},
+	{'C1',	"Sunsoft / Ask Co., Ltd."},	// FDS
 	{'C2',	"Kemco"},
 	{'C3',	"Square"},
 	{'C4',	"Tokuma Shoten"},
 	{'C5',	"Data East"},
 	{'C6',	"Tonkin House / Tokyo Shoseki"},
+	{'C7',	"East Cube"},	// FDS
 	{'C8',	"Koei"},
 	{'CA',	"Konami / Ultra / Palcom"},
 	{'CB',	"NTVIC / VAP"},
-	{'CC',	"Use Co.,Ltd."},
+	{'CC',	"Use Co., Ltd."},
 	{'CD',	"Meldac"},
 	{'CE',	"Pony Canyon / FCI"},
 	{'CF',	"Angel / Sotsu Agency / Sunrise"},
@@ -468,6 +507,8 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 
 /**
  * Comparison function for bsearch().
+ * For use with ThirdPartyEntry.
+ *
  * @param a
  * @param b
  * @return
@@ -480,6 +521,78 @@ int RP_C_API NintendoPublishersPrivate::compar(const void *a, const void *b)
 	if (code1 > code2) return 1;
 	return 0;
 }
+
+/**
+ * Nintendo third-party publisher list.
+ * This list is valid for Famicom Disk System only.
+ *
+ * References:
+ * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
+ */
+const NintendoPublishersPrivate::ThirdPartyEntry_fds NintendoPublishersPrivate::thirdPartyList_fds[] = {
+	{0x00,	"<unlicensed>",			"<非公認>"},
+	{0x01,	"Nintendo",			"任天堂"},
+	{0x08,	"Capcom",			"カプコン"},
+	{0x0A,	"Jaleco",			"ジャレコ"},
+	{0x18,	"Hudson Soft",			"ハドソン"},
+	{0x49,	"Irem",				"アイレム"},
+	{0x4A,	"Gakken",			"学習研究社"},
+	{0x8B,	"BulletProof Software (BPS)",	"BPS"},
+	{0x99,	"Pack-In-Video",		"パックインビデオ"},
+	{0x9B,	"Tecmo",			"テクモ"},
+	{0x9C,	"Imagineer",			"イマジニア"},
+	{0xA2,	"Scorpion Soft",		"スコーピオンソフト"},
+	{0xA4,	"Konami",			"コナミ"},
+	{0xA6,	"Kawada Co., Ltd.",		"河田"},
+	{0xA7,	"Takara",			"タカラ"},
+	{0xA8,	"Royal Industries",		"ロイヤル工業"},
+	{0xAC,	"Toei Animation",		"東映動画"},
+	{0xAF,	"Namco",			"ナムコ"},
+	{0xB1,	"ASCII Corporation",		"アスキー"},
+	{0xB2,	"Bandai",			"バンダイ"},
+	{0xB3,	"Soft Pro Inc.",		"ソフトプロ"},
+	{0xB6,	"HAL Laboratory",		"HAL研究所"},
+	{0xBB,	"Sunsoft",			"サンソフト"},
+	{0xBC,	"Toshiba EMI",			"東芝EMI"},
+	{0xC0,	"Taito",			"タイトー"},
+	{0xC1,	"Sunsoft / Ask Co., Ltd.",	"サンソフト アスク講談社"},
+	{0xC2,	"Kemco",			"ケムコ"},
+	{0xC3,	"Square",			"スクウェア"},
+	{0xC4,	"Tokuma Shoten",		"徳間書店"},
+	{0xC5,	"Data East",			"データイースト"},
+	{0xC6,	"Tonkin House / Tokyo Shoseki",	"トンキンハウス"},
+	{0xC7,	"East Cube",			"イーストキューブ"},
+	{0xCA,	"Konami / Ultra / Palcom",	"コナミ"},
+	{0xCB,	"NTVIC / VAP",			"バップ"},
+	{0xCC,	"Use Co., Ltd.",		"ユース"},
+	{0xCE,	"Pony Canyon / FCI",		"ポニーキャニオン"},
+	{0xD1,	"Sofel",			"ソフエル"},
+	{0xD2,	"Bothtec, Inc.",		"ボーステック"},
+	{0xDB,	"Hiro Co., Ltd.",		"ヒロ"},
+	{0xE7,	"Athena",			"アテナ"},
+	{0xEB,	"Atlus",			"アトラス"},
+
+	{0, nullptr, nullptr}
+};
+
+/**
+ * Comparison function for bsearch().
+ * For use with ThirdPartyEntry.
+ *
+ * @param a
+ * @param b
+ * @return
+ */
+int RP_C_API NintendoPublishersPrivate::compar_fds(const void *a, const void *b)
+{
+	uint8_t code1 = static_cast<const ThirdPartyEntry_fds*>(a)->code;
+	uint8_t code2 = static_cast<const ThirdPartyEntry_fds*>(b)->code;
+	if (code1 < code2) return -1;
+	if (code1 > code2) return 1;
+	return 0;
+}
+
+/** Public functions **/
 
 /**
  * Look up a company code.
@@ -529,6 +642,26 @@ const char *NintendoPublishers::lookup_old(uint8_t code)
 	uint16_t code16 = (hex_lookup[code >> 4] << 8) |
 			   hex_lookup[code & 0x0F];
 	return lookup(code16);
+}
+
+/**
+ * Look up a company code for FDS titles.
+ * This uses the *old* company code format.
+ * @param code Company code.
+ * @return Publisher, or nullptr if not found.
+ */
+const char *NintendoPublishers::lookup_fds(uint8_t code)
+{
+	// Do a binary search.
+	// TODO: Option to return the Japanese publisher.
+	const NintendoPublishersPrivate::ThirdPartyEntry_fds key = {code, nullptr, nullptr};
+	const NintendoPublishersPrivate::ThirdPartyEntry_fds *res =
+		static_cast<const NintendoPublishersPrivate::ThirdPartyEntry_fds*>(bsearch(&key,
+			NintendoPublishersPrivate::thirdPartyList_fds,
+			ARRAY_SIZE(NintendoPublishersPrivate::thirdPartyList_fds)-1,
+			sizeof(NintendoPublishersPrivate::ThirdPartyEntry_fds),
+			NintendoPublishersPrivate::compar_fds));
+	return (res ? res->publisher_en : nullptr);
 }
 
 }

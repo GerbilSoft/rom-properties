@@ -61,6 +61,14 @@ class NintendoPublishers
 		 * @return Publisher, or nullptr if not found.
 		 */
 		static const char *lookup_old(uint8_t code);
+
+		/**
+		 * Look up a company code for FDS titles.
+		 * This uses the *old* company code format.
+		 * @param code Company code.
+		 * @return Publisher, or nullptr if not found.
+		 */
+		static const char *lookup_fds(uint8_t code);
 };
 
 }

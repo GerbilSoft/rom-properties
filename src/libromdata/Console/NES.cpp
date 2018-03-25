@@ -871,10 +871,8 @@ int NES::loadFieldData(void)
 				d->header.fds.game_id));
 
 		// Publisher.
-		// NOTE: Verify that the FDS list matches NintendoPublishers.
-		// https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
 		const char* publisher =
-			NintendoPublishers::lookup_old(d->header.fds.publisher_code);
+			NintendoPublishers::lookup_fds(d->header.fds.publisher_code);
 		d->fields->addField_string(C_("NES", "Publisher"),
 			publisher ? publisher : C_("NES", "Unknown"));
 
