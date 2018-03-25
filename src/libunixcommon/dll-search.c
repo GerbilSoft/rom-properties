@@ -167,6 +167,10 @@ static RP_Frontend walk_proc_tree(void)
  */
 static inline RP_Frontend check_xdg_desktop_name(const char *name)
 {
+	// References:
+	// - https://askubuntu.com/questions/72549/how-to-determine-which-window-manager-is-running
+	// - https://askubuntu.com/a/227669
+
 	// TODO: Check other values for $XDG_CURRENT_DESKTOP.
 	if (!strcasecmp(name, "KDE")) {
 		// KDE.
@@ -178,11 +182,16 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 			ret = RP_FE_KDE5;
 		}
 		return ret;
-	} else if (!strcasecmp(name, "GNOME") || !strcasecmp(name, "Unity")) {
-		// GNOME and/or Unity.
+	} else if (!strcasecmp(name, "GNOME") ||
+		   !strcasecmp(name, "Unity") ||
+		   !strcasecmp(name, "X-Cinnamon"))
+	{
+		// GTK3-based desktop environment.
 		return RP_FE_GNOME;
-	} else if (!strcasecmp(name, "XFCE")) {
-		// XFCE.
+	} else if (!strcasecmp(name, "XFCE") ||
+		   !strcasecmp(name, "LXDE"))
+	{
+		// GTK2-based desktop environment.
 		return RP_FE_XFCE;
 	}
 
