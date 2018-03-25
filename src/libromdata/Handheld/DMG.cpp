@@ -586,13 +586,25 @@ int DMG::loadFieldData(void)
 
 	// Publisher
 	const char* publisher;
+	string s_publisher;
 	if (romHeader->old_publisher_code == 0x33) {
 		publisher = NintendoPublishers::lookup(romHeader->new_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
+				romHeader->new_publisher_code);
+		}
 	} else {
 		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X)"),
+				romHeader->old_publisher_code);
+		}
 	}
-	d->fields->addField_string(C_("DMG", "Publisher"),
-		publisher ? publisher : C_("DMG", "Unknown"));
+	d->fields->addField_string(C_("DMG", "Publisher"), s_publisher);
 
 	// Hardware
 	d->fields->addField_string("Hardware",

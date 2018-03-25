@@ -798,6 +798,7 @@ int SNES::loadFieldData(void)
 	}
 
 	// Publisher.
+	// TODO: Print the publisher code if the lookup returns nullptr.
 	d->fields->addField_string(C_("SNES", "Publisher"),
 		publisher ? publisher : C_("SNES", "Unknown"));
 

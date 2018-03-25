@@ -380,7 +380,8 @@ int VirtualBoy::loadFieldData(void)
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(romHeader->publisher);
 	d->fields->addField_string(C_("VirtualBoy", "Publisher"),
-		publisher ? publisher : C_("VirtualBoy", "Unknown"));
+		publisher ? publisher :
+			rp_sprintf(C_("VirtualBoy", "Unknown (%.2s)"), romHeader->publisher));
 
 	// Revision
 	d->fields->addField_string_numeric(C_("VirtualBoy", "Revision"),
