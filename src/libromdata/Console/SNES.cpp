@@ -884,7 +884,8 @@ int SNES::loadFieldData(void)
 				? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup)
 				: nullptr);
 			d->fields->addField_string(C_("SNES", "Region"),
-				region ? region : C_("SNES", "Unknown"));
+				region ? region : rp_sprintf(C_("SNES", "Unknown (0x%02X)"),
+					romHeader->snes.destination_code));
 
 			// Revision
 			d->fields->addField_string_numeric(C_("SNES", "Revision"),

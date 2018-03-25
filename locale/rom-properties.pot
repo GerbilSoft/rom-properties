@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-03-24 14:54-0400\n"
+"POT-Creation-Date: 2018-03-24 22:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1934,7 +1934,6 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:754
 #: ../src/libromdata/Console/SNES.cpp:797
 #: ../src/libromdata/Console/SNES.cpp:802
-#: ../src/libromdata/Console/SNES.cpp:884
 msgctxt "SNES"
 msgid "Unknown"
 msgstr ""
@@ -1962,6 +1961,7 @@ msgid "ROM Mapping"
 msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:844
+#: ../src/libromdata/Console/SNES.cpp:887
 #, c-format
 msgctxt "SNES"
 msgid "Unknown (0x%02X)"
@@ -2044,44 +2044,44 @@ msgctxt "Region"
 msgid "Other"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:883
+#: ../src/libromdata/Console/SNES.cpp:886
 msgctxt "SNES"
 msgid "Region"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:887
+#: ../src/libromdata/Console/SNES.cpp:891
 msgctxt "SNES"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:925
+#: ../src/libromdata/Console/SNES.cpp:929
 msgctxt "SNES"
 msgid "Date"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:938
+#: ../src/libromdata/Console/SNES.cpp:942
 msgctxt "SNES"
 msgid "BS-X Script"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:941
+#: ../src/libromdata/Console/SNES.cpp:945
 msgctxt "SNES"
 msgid "SA-1"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:948
-#: ../src/libromdata/Console/SNES.cpp:950
+#: ../src/libromdata/Console/SNES.cpp:952
+#: ../src/libromdata/Console/SNES.cpp:954
 msgctxt "SNES"
 msgid "Program Type"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:967
-#: ../src/libromdata/Console/SNES.cpp:970
+#: ../src/libromdata/Console/SNES.cpp:971
+#: ../src/libromdata/Console/SNES.cpp:974
 msgctxt "SNES"
 msgid "Limited Starts"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:970
+#: ../src/libromdata/Console/SNES.cpp:974
 msgctxt "SNES"
 msgid "Unlimited"
 msgstr ""
