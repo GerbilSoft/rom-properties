@@ -33,32 +33,10 @@ namespace LibRomData {
 class NintendoPublishers
 {
 	private:
+		// Static class.
 		NintendoPublishers();
 		~NintendoPublishers();
-	private:
 		RP_DISABLE_COPY(NintendoPublishers)
-
-	private:
-		/**
-		 * Nintendo third-party publisher list.
-		 * References:
-		 * - http://www.gametdb.com/Wii
-		 * - http://www.gametdb.com/Wii/Downloads
-		 */
-		struct ThirdPartyList {
-			uint16_t code;			// 2-byte code
-			const char *publisher;
-		};
-		static const ThirdPartyList ms_thirdPartyList[];
-
-	private:
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar(const void *a, const void *b);
 
 	public:
 		/**

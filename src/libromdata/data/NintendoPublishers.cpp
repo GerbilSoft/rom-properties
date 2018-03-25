@@ -26,13 +26,44 @@
 
 namespace LibRomData {
 
+class NintendoPublishersPrivate {
+	private:
+		// Static class.
+		NintendoPublishersPrivate();
+		~NintendoPublishersPrivate();
+		RP_DISABLE_COPY(NintendoPublishersPrivate)
+
+	public:
+		struct ThirdPartyEntry {
+			uint16_t code;			// 2-byte code
+			const char *publisher;
+		};
+
+		/**
+		 * Nintendo third-party publisher list.
+		 * References:
+		 * - http://www.gametdb.com/Wii
+		 * - http://www.gametdb.com/Wii/Downloads
+		 */
+		static const ThirdPartyEntry thirdPartyList[];
+
+		/**
+		 * Comparison function for bsearch().
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int RP_C_API compar(const void *a, const void *b);
+};
+
 /**
  * Nintendo third-party publisher list.
  * References:
  * - http://www.gametdb.com/Wii
  * - http://www.gametdb.com/Wii/Downloads
+ * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
  */
-const NintendoPublishers::ThirdPartyList NintendoPublishers::ms_thirdPartyList[] = {
+const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thirdPartyList[] = {
 	{'01',	"Nintendo"},
 	{'02',	"Rocket Games / Ajinomoto"},
 	{'03',	"Imagineer-Zoom"},
@@ -441,10 +472,10 @@ const NintendoPublishers::ThirdPartyList NintendoPublishers::ms_thirdPartyList[]
  * @param b
  * @return
  */
-int RP_C_API NintendoPublishers::compar(const void *a, const void *b)
+int RP_C_API NintendoPublishersPrivate::compar(const void *a, const void *b)
 {
-	uint16_t code1 = static_cast<const ThirdPartyList*>(a)->code;
-	uint16_t code2 = static_cast<const ThirdPartyList*>(b)->code;
+	uint16_t code1 = static_cast<const ThirdPartyEntry*>(a)->code;
+	uint16_t code2 = static_cast<const ThirdPartyEntry*>(b)->code;
 	if (code1 < code2) return -1;
 	if (code1 > code2) return 1;
 	return 0;
@@ -458,11 +489,13 @@ int RP_C_API NintendoPublishers::compar(const void *a, const void *b)
 const char *NintendoPublishers::lookup(uint16_t code)
 {
 	// Do a binary search.
-	const ThirdPartyList key = {code, nullptr};
-	const ThirdPartyList *res =
-		static_cast<const ThirdPartyList*>(bsearch(&key,
-			ms_thirdPartyList, ARRAY_SIZE(ms_thirdPartyList)-1,
-			sizeof(ThirdPartyList), compar));
+	const NintendoPublishersPrivate::ThirdPartyEntry key = {code, nullptr};
+	const NintendoPublishersPrivate::ThirdPartyEntry *res =
+		static_cast<const NintendoPublishersPrivate::ThirdPartyEntry*>(bsearch(&key,
+			NintendoPublishersPrivate::thirdPartyList,
+			ARRAY_SIZE(NintendoPublishersPrivate::thirdPartyList)-1,
+			sizeof(NintendoPublishersPrivate::ThirdPartyEntry),
+			NintendoPublishersPrivate::compar));
 	return (res ? res->publisher : nullptr);
 }
 
