@@ -18,6 +18,14 @@
 #ifndef _LIBGETTEXT_H
 #define _LIBGETTEXT_H 1
 
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+/* Disable -Wvla warnings enabled by KDE5's extra-cmake-modules. */
+# if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic push
+# endif
+# pragma GCC diagnostic ignored "-Wvla"
+#endif
+
 /* NLS can be disabled through the configure --disable-nls option.  */
 #if ENABLE_NLS
 
@@ -288,5 +296,9 @@ dcnpgettext_expr (const char *domain,
     }
   return (n == 1 ? msgid : msgid_plural);
 }
+
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+# pragma GCC diagnostic pop
+#endif
 
 #endif /* _LIBGETTEXT_H */
