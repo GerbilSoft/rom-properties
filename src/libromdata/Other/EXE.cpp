@@ -1320,7 +1320,7 @@ const char *const *EXE::supportedFileExtensions_static(void)
 		".fon", ".icl",
 
 		// LE extensions
-		"*.vxd", ".386",
+		".vxd", ".386",
 
 		nullptr
 	};

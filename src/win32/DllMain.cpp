@@ -591,6 +591,28 @@ STDAPI DllRegisterServer(void)
 		}
 	}
 
+	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
+	// Manually deleting it here.
+	lResult = hkcr.deleteSubKey(L"*.vxd");
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+		return SELFREG_E_CLASS;
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+		wchar_t regPath[288];
+		int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
+			L"%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts",
+			sid_iter->c_str());
+		if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+			// Buffer isn't large enough...
+			continue;
+		}
+
+		RegKey hku(HKEY_USERS, regPath, KEY_WRITE, false);
+		if (!hku.isOpen()) return SELFREG_E_CLASS;
+		lResult = hku.deleteSubKey(L"*.vxd");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+			return SELFREG_E_CLASS;
+	}
+
 	// Register RP_ShellPropSheetExt for all file types.
 	// Fixes an issue where it doesn't show up for .dds if
 	// Visual Studio 2017 is installed.
@@ -652,6 +674,28 @@ STDAPI DllUnregisterServer(void)
 			lResult = UnregisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
+	}
+
+	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
+	// Manually deleting it here.
+	lResult = hkcr.deleteSubKey(L"*.vxd");
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+		return SELFREG_E_CLASS;
+	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+		wchar_t regPath[288];
+		int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
+			L"%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts",
+			sid_iter->c_str());
+		if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+			// Buffer isn't large enough...
+			continue;
+		}
+
+		RegKey hku(HKEY_USERS, regPath, KEY_WRITE, false);
+		if (!hku.isOpen()) return SELFREG_E_CLASS;
+		lResult = hku.deleteSubKey(L"*.vxd");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+			return SELFREG_E_CLASS;
 	}
 
 	// Unregister RP_ShellPropSheetExt for all file types.
