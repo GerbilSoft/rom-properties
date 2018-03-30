@@ -24,7 +24,6 @@
 #include "librpbase/common.h"
 
 #include "RomData_decl.hpp"
-#include "RomFields.hpp"
 
 // C includes.
 #include <stdint.h>
@@ -37,6 +36,7 @@
 namespace LibRpBase {
 
 class IRpFile;
+class RomFields;
 class rp_image;
 struct IconAnimData;
 
