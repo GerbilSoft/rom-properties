@@ -30,7 +30,6 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
-#include <csetjmp>
 #include <cstring>
 
 // C++ includes.
