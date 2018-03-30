@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ImageDecoder_ETC1.cpp: Image decoding functions. (ETC1)                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -106,8 +106,8 @@ ASSERT_STRUCT(etc2_alpha, 8);
 // ETC2 RGBA block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
 struct etc2_rgba_block {
-	etc1_block etc1;
 	etc2_alpha alpha;
+	etc1_block etc1;
 };
 ASSERT_STRUCT(etc2_rgba_block, 16);
 
@@ -892,7 +892,7 @@ rp_image *ImageDecoder::fromETC2_RGB_A1(int width, int height,
 	} }
 
 	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
 	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
