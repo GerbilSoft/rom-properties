@@ -1,5 +1,25 @@
 PROJECT(libromdata)
 
+# Check for gl.h.
+# FIXME: This check is failing with MSVC...
+IF(NOT MSVC)
+	IF(APPLE)
+		SET(GL_H_FILENAME "OpenGL/gl.h")
+	ELSE(APPLE)
+		SET(GL_H_FILENAME "GL/gl.h")
+	ENDIF(APPLE)
+	CHECK_INCLUDE_FILES(${GL_H_FILENAME} HAVE_GL_H)
+	IF(NOT HAVE_GL_H)
+		SET(ERR_MSG "gl.h not found. (Required for Khronos KTX.)")
+		IF(UNIX AND NOT APPLE)
+			SET(ERR_MSG "${ERR_MSG} Install one of these packages:
+  - Debian/Ubuntu: mesa-common-dev
+  - Red Hat/Fedora: mesa-libGL-devel")
+		ENDIF(UNIX AND NOT APPLE)
+		MESSAGE(FATAL_ERROR "${ERR_MSG}")
+	ENDIF(NOT HAVE_GL_H)
+ENDIF(NOT MSVC)
+
 # Sources.
 SET(libromdata_SRCS
 	RomDataFactory.cpp

@@ -19,6 +19,14 @@ IF(NOT APPLE)
 	# Get rid of the explicit C90 setting. (set by KDE4)
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
+	# Find the qtpaths executable.
+	FIND_PROGRAM(QTPATHS qtpaths)
+	IF(NOT QTPATHS)
+		MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
+  - Debian/Ubuntu: qttools5-dev-tools
+  - Red Hat/Fedora: qt5-qttools")
+	ENDIF(NOT QTPATHS)
+
 	# Get the plugin directory and Qt prefix.
 	# Prefix will be removed from the plugin directory if necessary.
 	EXEC_PROGRAM(qtpaths ARGS --plugin-dir OUTPUT_VARIABLE KDE5_PLUGIN_INSTALL_DIR)

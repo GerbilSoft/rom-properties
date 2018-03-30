@@ -43,6 +43,14 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		# - Actual:   (FIXME)
 		#
 
+		# Find the qtpaths executable.
+		FIND_PROGRAM(QTPATHS qtpaths)
+		IF(NOT QTPATHS)
+			MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
+  - Debian/Ubuntu: qttools5-dev-tools
+  - Red Hat/Fedora: qt5-qttools")
+		ENDIF(NOT QTPATHS)
+
 		# Get the plugin directory and Qt prefix.
 		# Prefix will be removed from the plugin directory if necessary.
 		EXEC_PROGRAM(qtpaths ARGS --plugin-dir OUTPUT_VARIABLE PLUGIN_INSTALL_DIR)
