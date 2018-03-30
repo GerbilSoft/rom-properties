@@ -23,28 +23,21 @@
 # include "libwin32common/RpWin32_sdk.h"
 #endif
 
+#ifdef _WIN32
 /**
  * Initialize the internationalization subsystem.
+ * (Windows version)
+ *
  * @return 0 on success; non-zero on error.
  */
 int rp_i18n_init(void)
 {
-	const char *base;
-
-#ifndef _WIN32
-	// Unix/Linux: Use the system-wide locale directory.
-	base = bindtextdomain(RP_I18N_DOMAIN, DIR_INSTALL_LOCALE);
-	if (!base) {
-		// bindtextdomain() failed.
-		return -1;
-	}
-	return 0;
-#else /* _WIN32 */
 	// Windows: Use the application-specific locale directory.
 	wchar_t dll_fullpath[MAX_PATH+16];
 	wchar_t *bs;
 	unsigned int path_len;
 	DWORD dwAttrs;
+	const char *base;
 
 	// Get the current module filename.
 	// NOTE: Delay-load only supports ANSI module names.
@@ -104,5 +97,24 @@ int rp_i18n_init(void)
 
 	// Initialized.
 	return 0;
-#endif
 }
+
+#else /* !_WIN32 */
+
+/**
+ * Initialize the internationalization subsystem.
+ * (Unix/Linux version)
+ *
+ * @return 0 on success; non-zero on error.
+ */
+int rp_i18n_init(void)
+{
+	// Unix/Linux: Use the system-wide locale directory.
+	const char *const base = bindtextdomain(RP_I18N_DOMAIN, DIR_INSTALL_LOCALE);
+	if (!base) {
+		// bindtextdomain() failed.
+		return -1;
+	}
+	return 0;
+}
+#endif /* _WIN32 */
