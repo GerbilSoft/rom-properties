@@ -36,22 +36,22 @@ namespace LibWin32Common {
 /**
  * Convert UNIX line endings to DOS line endings.
  * TODO: Move to RpWin32?
- * @param wstr_unix	[in] wstring with UNIX line endings.
+ * @param wstr_unix	[in] Wide string with UNIX line endings.
  * @param lf_count	[out,opt] Number of LF characters found.
  * @return wstring with DOS line endings.
  */
-wstring unix2dos(const wstring &wstr_unix, int *lf_count)
+wstring unix2dos(const wchar_t *wstr_unix, int *lf_count)
 {
 	// TODO: Optimize this!
 	wstring wstr_dos;
-	wstr_dos.reserve(wstr_unix.size());
+	wstr_dos.reserve(wcslen(wstr_unix));
 	int lf = 0;
-	for (size_t i = 0; i < wstr_unix.size(); i++) {
-		if (wstr_unix[i] == L'\n') {
+	for (; *wstr_unix != L'\0'; wstr_unix++) {
+		if (*wstr_unix == L'\n') {
 			wstr_dos += L"\r\n";
 			lf++;
 		} else {
-			wstr_dos += wstr_unix[i];
+			wstr_dos += *wstr_unix;
 		}
 	}
 	if (lf_count) {

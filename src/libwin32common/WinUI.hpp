@@ -32,11 +32,11 @@ namespace LibWin32Common {
 
 /**
  * Convert UNIX line endings to DOS line endings.
- * @param wstr_unix	[in] wstring with UNIX line endings.
+ * @param wstr_unix	[in] Wide string with UNIX line endings.
  * @param lf_count	[out,opt] Number of LF characters found.
  * @return wstring with DOS line endings.
  */
-std::wstring unix2dos(const std::wstring &wstr_unix, int *lf_count);
+std::wstring unix2dos(const wchar_t *wstr_unix, int *lf_count);
 
 /**
  * Measure text size using GDI.

@@ -758,7 +758,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		}
 	} else {
 		// Use the specified string.
-		wstr = LibWin32Common::unix2dos(wstring(wcs), &lf_count);
+		wstr = LibWin32Common::unix2dos(wcs, &lf_count);
 	}
 
 	// Field height.
