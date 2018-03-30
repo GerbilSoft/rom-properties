@@ -51,6 +51,8 @@
   * KhronosKTX: Copy sBIT if the image needs to be vertically flipped.
   * Win32: The Properties tab sometimes didn't show up if another program
     claimed ownership of the file extension, e.g. VS2017 handling .dds files.
+    The tab is now registered to handle all files, though it will only show
+    up if the file is actually supported by rom-properties.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.
