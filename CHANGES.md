@@ -48,6 +48,7 @@
     are different, e.g. wrapper EXEs for interpreted programs.
   * rp-config: If a key is present in keys.conf but has no value, it was
     previously listed as invalid. It's now listed as empty.
+  * KhronosKTX: Copy sBIT if the image needs to be vertically flipped.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.

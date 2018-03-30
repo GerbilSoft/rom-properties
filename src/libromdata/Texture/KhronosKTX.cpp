@@ -435,6 +435,13 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			dest -= dest_stride;
 		}
 
+		// Copy sBIT.
+		rp_image::sBIT_t sBIT;
+		const bool has_sBIT = (img->get_sBIT(&sBIT) == 0);
+		if (has_sBIT) {
+			flipimg->set_sBIT(&sBIT);
+		}
+
 		// Swap the images.
 		std::swap(img, flipimg);
 		// Delete the original image.
