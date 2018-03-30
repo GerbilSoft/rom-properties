@@ -2,12 +2,26 @@
 
 ## Linux
 
-On Ubuntu, you will need build-essential and the following development packages:
-* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev gettext
+On Debian/Ubuntu, you will need build-essential and the following development
+packages:
+* All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev mesa-common-dev gettext
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules kio-dev
 * XFCE: libglib2.0-dev libgtk2.0-dev libthunarx-2-dev
-* GNOME: libgtk-3-dev libnautilus-extension-dev
+* GNOME: libglib2.0-dev libgtk-3-dev libnautilus-extension-dev
+
+On Fedora, you will need to install "C Development Tools and Libraries" and the
+following development packages:
+* All: cmake libcurl-devel zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel mesa-libGL-devel gettext
+* KDE 4.x: qt-devel kdelibs-devel
+* KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel
+* XFCE: glib2-devel gtk2-devel Thunar-devel
+* GNOME: glib2-devel gtk3-devel nautilus-devel
+
+NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
+installed in order to create thumbnails.
+* Debian/Ubuntu: tumbler
+* Fedora: tumbler
 
 Clone the repository, then:
 * cd rom-properties
@@ -81,10 +95,6 @@ Caveats:
 * CMake does not support building for multiple architectures at once. For
   Win64, a 64-bit build will work for Windows Explorer, but will not work
   in any 32-bit programs.
-* Due to file extension conflicts, the Windows version currently only
-  registers itself for a subset of extensions. This does not include
-  .iso or .bin. A future update may change extension registration to
-  handle "all files".
 
 See README.md for general usage information.
 
