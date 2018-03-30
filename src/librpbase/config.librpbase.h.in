@@ -91,9 +91,6 @@
 /* Define to 1 if nettle version functions are present. */
 #cmakedefine HAVE_NETTLE_VERSION_FUNCTIONS
 
-/* Define to 1 if lambda functions can be cast to function pointers. */
-#cmakedefine HAVE_LAMBDA_AS_FUNCTION_POINTER 1
-
 /* Define to 1 if XML parsing is enabled. */
 #cmakedefine ENABLE_XML 1
 

@@ -19,8 +19,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
-
 #include "RomDataFactory.hpp"
 
 // librpbase
@@ -43,12 +41,6 @@ using namespace LibRpBase;
 using std::string;
 using std::unordered_map;
 using std::vector;
-
-#ifndef HAVE_LAMBDA_AS_FUNCTION_POINTER
-// Using std::function<> if lambdas cannot be
-// cast to function pointers.
-#include <functional>
-#endif
 
 // RomData subclasses: Consoles
 #include "Console/Dreamcast.hpp"
@@ -103,12 +95,7 @@ class RomDataFactoryPrivate
 	public:
 		typedef int (*pFnIsRomSupported)(const RomData::DetectInfo *info);
 		typedef const char *const * (*pFnSupportedFileExtensions)(void);
-
-#ifdef HAVE_LAMBDA_AS_FUNCTION_POINTER
 		typedef RomData* (*pFnNewRomData)(IRpFile *file);
-#else
-		typedef std::function<RomData*(IRpFile*)> pFnNewRomData;
-#endif
 
 		struct RomDataFns {
 			pFnIsRomSupported isRomSupported;
@@ -122,16 +109,24 @@ class RomDataFactoryPrivate
 			uint32_t size;
 		};
 
-// MSVC 2010 complains if we don't specify the full namespace
-// for the RomData subclass in the lambda expression.
+		/**
+		 * Templated function to construct a new RomData subclass.
+		 * @param klass Class name.
+		 */
+		template<typename klass>
+		static LibRpBase::RomData *RomData_ctor(LibRpBase::IRpFile *file)
+		{
+			return new klass(file);
+		}
+
 #define GetRomDataFns(sys, hasThumbnail) \
 	{sys::isRomSupported_static, \
-	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
+	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::supportedFileExtensions_static, \
 	 hasThumbnail, 0, 0}
 #define GetRomDataFns_addr(sys, hasThumbnail, address, size) \
 	{sys::isRomSupported_static, \
-	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
+	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::supportedFileExtensions_static, \
 	 hasThumbnail, address, size}
 

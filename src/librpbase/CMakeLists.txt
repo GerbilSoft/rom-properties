@@ -69,13 +69,6 @@ CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
 
-# Check if non-capturing lambda functions can be cast to function pointers.
-# NOTE: Used by libromdata, not librpbase, but we're
-# keeping the check here because libromdata doesn't
-# have any other unique checks.
-INCLUDE(CheckCXX11LambdaAsFunctionPointer)
-CHECK_CXX11_LAMBDA_AS_FUNCTION_POINTER(HAVE_LAMBDA_AS_FUNCTION_POINTER)
-
 # Sources.
 SET(librpbase_SRCS
 	byteswap.c
