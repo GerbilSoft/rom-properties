@@ -10,8 +10,8 @@ packages:
 * XFCE: libglib2.0-dev libgtk2.0-dev libthunarx-2-dev
 * GNOME: libglib2.0-dev libgtk-3-dev libnautilus-extension-dev
 
-On Fedora, you will need to install "C Development Tools and Libraries" and the
-following development packages:
+On Red Hat/Fedora, you will need to install "C Development Tools and Libraries"
+and the following development packages:
 * All: cmake libcurl-devel zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel mesa-libGL-devel gettext
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel
@@ -21,7 +21,7 @@ following development packages:
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.
 * Debian/Ubuntu: tumbler
-* Fedora: tumbler
+* Red Hat/Fedora: tumbler
 
 Clone the repository, then:
 * cd rom-properties
