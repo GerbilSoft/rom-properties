@@ -6,4 +6,7 @@ Comment=ROM Properties Page thumbnailer for the D-Bus thumbnailing spceification
 
 # NOTE: all/all doesn't work; use application/octet-stream.
 # TODO: Remove application/octet-stream and only use more-specific types?
-MimeTypes=application/octet-stream;application/x-genesis-rom;application/x-gamecube-rom;application/x-wii-rom;application/x-nintendo-ds-rom;application/x-gameboy-rom;application/x-gba-rom;image/x-dds;image/vnd.ms-dds;
+# NOTE: MS CAB is listed for Nintendo Badge Arcade .cab files.
+# NOTE: model/x.stl-binary and image/x-3ds are listed for Nintendo 3DS files.
+# TODO: More MIME types for Fedora.
+MimeType=application/octet-stream;application/x-genesis-rom;application/x-gamecube-rom;application/x-wii-rom;application/x-nintendo-ds-rom;application/x-gameboy-rom;application/x-gba-rom;application/x-sms-rom;image/x-dds;image/vnd.ms-dds;application/vnd.ms-cab-compressed;image/ktx;image/vnd.valve.source.texture;model/x.stl-binary;image/x-3ds;
