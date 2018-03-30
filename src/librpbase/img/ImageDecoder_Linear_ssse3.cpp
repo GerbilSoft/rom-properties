@@ -67,7 +67,6 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 	if (stride > 0) {
 		// Set src_stride_adj to the number of bytes we need to
 		// add to the end of each line to get to the next row.
-		assert(stride % 16 == 0);
 		if (unlikely(stride < (width * bytespp))) {
 			// Invalid stride.
 			return nullptr;
@@ -78,6 +77,14 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 		}
 		// NOTE: Byte addressing, so keep it in units of bytespp.
 		src_stride_adj = stride - (width * bytespp);
+	} else {
+		// Calculate stride and make sure it's a multiple of 16.
+		stride = width * bytespp;
+		if (unlikely(stride % 16 != 0)) {
+			// Unaligned stride.
+			// Use the C++ version.
+			return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
+		}
 	}
 
 	// Create an rp_image.
@@ -230,6 +237,16 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			return nullptr;
 		}
 		src_stride_adj = (stride / bytespp) - width;
+	} else {
+		// Calculate stride and make sure it's a multiple of 16.
+		// Exception: If the pixel format is PXF_HOST_ARGB32,
+		// we're using memcpy(), so alignment isn't required.
+		stride = width * bytespp;
+		if (unlikely((stride % 16 != 0) && px_format != PXF_HOST_ARGB32)) {
+			// Unaligned stride.
+			// Use the C++ version.
+			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
+		}
 	}
 
 	// Create an rp_image.
@@ -243,11 +260,6 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	if (px_format == PXF_HOST_ARGB32) {
 		// Host-endian ARGB32.
 		// We can directly copy the image data without conversions.
-		if (stride == 0) {
-			// Calculate the stride based on image width.
-			stride = width * bytespp;
-		}
-
 		if (stride == img->stride()) {
 			// Stride is identical. Copy the whole image all at once.
 			memcpy(img->bits(), img_buf, stride * height);
