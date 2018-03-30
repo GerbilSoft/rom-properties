@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
- * Copyright (c) 2016-2017 by Egor.                                        *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "DMG.hpp"
@@ -613,8 +612,16 @@ int DMG::loadFieldData(void)
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
-				romHeader->new_publisher_code);
+			if (isalnum(romHeader->new_publisher_code[0]) &&
+			    isalnum(romHeader->new_publisher_code[1]))
+			{
+				s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
+					romHeader->new_publisher_code);
+			} else {
+				s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X %02X)"),
+					(uint8_t)romHeader->new_publisher_code[0],
+					(uint8_t)romHeader->new_publisher_code[1]);
+			}
 		}
 	} else {
 		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);

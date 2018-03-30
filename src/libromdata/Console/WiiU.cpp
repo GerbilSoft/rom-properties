@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiU.cpp: Nintendo Wii U disc image reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
@@ -408,8 +407,11 @@ int WiiU::loadFieldData(void)
 
 	// Publisher.
 	// Look up the publisher ID.
-	uint32_t publisher_id = WiiUData::lookup_disc_publisher(d->discHeader.id4);
 	char publisher_code[5];
+	const char *publisher = nullptr;
+	string s_publisher;
+
+	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(d->discHeader.id4);
 	publisher_code[0] = (publisher_id >> 24) & 0xFF;
 	publisher_code[1] = (publisher_id >> 16) & 0xFF;
 	publisher_code[2] = (publisher_id >>  8) & 0xFF;
@@ -417,15 +419,22 @@ int WiiU::loadFieldData(void)
 	publisher_code[4] = 0;
 	if (publisher_id != 0 && (publisher_id & 0xFFFF0000) == 0x30300000) {
 		// Publisher ID is a valid two-character ID.
-		const char *const publisher = NintendoPublishers::lookup(&publisher_code[2]);
-		d->fields->addField_string(C_("WiiU", "Publisher"),
-			publisher ? publisher :
-				rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code));
-	} else {
-		// 4-character ID. No entries for this right now.
-		d->fields->addField_string(C_("WiiU", "Publisher"),
-			rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code));
+		publisher = NintendoPublishers::lookup(&publisher_code[2]);
 	}
+	if (publisher) {
+		s_publisher = publisher;
+	} else {
+		if (isalnum(publisher_code[0]) && isalnum(publisher_code[1]) &&
+		    isalnum(publisher_code[2]) && isalnum(publisher_code[3]))
+		{
+			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code);
+		} else {
+			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%02X %02X %02X %02X)"),
+				(uint8_t)publisher_code[0], (uint8_t)publisher_code[1],
+				(uint8_t)publisher_code[2], (uint8_t)publisher_code[3]);
+		}
+	}
+	d->fields->addField_string(C_("WiiU", "Publisher"), s_publisher);
 
 	// Game version.
 	// TODO: Validate the version characters.

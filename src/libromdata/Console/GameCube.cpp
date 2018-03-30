@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "GameCube.hpp"
@@ -1531,9 +1530,22 @@ int GameCube::loadFieldData(void)
 
 	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(discHeader->company);
-	d->fields->addField_string(C_("GameCube", "Publisher"),
-		publisher ? publisher :
-			rp_sprintf(C_("GameCube", "Unknown (%.2s)"), discHeader->company));
+	string s_publisher;
+	if (publisher) {
+		s_publisher = publisher;
+	} else {
+		if (isalnum(discHeader->company[0]) &&
+		    isalnum(discHeader->company[1]))
+		{
+			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
+				discHeader->company);
+		} else {
+			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
+				(uint8_t)discHeader->company[0],
+				(uint8_t)discHeader->company[1]);
+		}
+	}
+	d->fields->addField_string(C_("GameCube", "Publisher"), s_publisher);
 
 	// Other fields.
 	d->fields->addField_string_numeric(C_("GameCube", "Disc #"),
