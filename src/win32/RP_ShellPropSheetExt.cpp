@@ -2292,20 +2292,18 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 
 			// Draw the banner.
 			if (d->hbmpBanner) {
-				HBITMAP hbmOld = SelectBitmap(hdcMem, d->hbmpBanner);
+				SelectBitmap(hdcMem, d->hbmpBanner);
 				BitBlt(hdc, d->ptBanner.x, d->ptBanner.y,
 					d->szBanner.cx, d->szBanner.cy,
 					hdcMem, 0, 0, SRCCOPY);
-				SelectBitmap(hdcMem, hbmOld);
 			}
 
 			// Draw the icon.
 			if (d->hbmpIconFrames[d->last_frame_number]) {
-				HBITMAP hbmOld = SelectBitmap(hdcMem, d->hbmpIconFrames[d->last_frame_number]);
+				SelectBitmap(hdcMem, d->hbmpIconFrames[d->last_frame_number]);
 				BitBlt(hdc, d->rectIcon.left, d->rectIcon.top,
 					d->szIcon.cx, d->szIcon.cy,
 					hdcMem, 0, 0, SRCCOPY);
-				SelectBitmap(hdcMem, hbmOld);
 			}
 
 			DeleteDC(hdcMem);
@@ -2521,6 +2519,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			return TRUE;
 		}
 	}
+
 	// Dummy callback procedure that does nothing.
 	return FALSE; // Let system deal with other messages
 }
