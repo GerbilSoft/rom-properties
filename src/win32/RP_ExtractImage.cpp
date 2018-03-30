@@ -105,7 +105,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 IFACEMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
 {
 	if (!pClassID) {
-		return E_FAIL;
+		return E_POINTER;
 	}
 	*pClassID = CLSID_RP_ExtractImage;
 	return S_OK;

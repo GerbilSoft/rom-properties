@@ -101,7 +101,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 IFACEMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
 {
 	if (!pClassID) {
-		return E_FAIL;
+		return E_POINTER;
 	}
 	*pClassID = CLSID_RP_ExtractIcon;
 	return S_OK;
