@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension installer. (svrplus)                *
  * svrplus.rc: Win32 installer for rom-properties.                         *
  *                                                                         *
- * Copyright (c) 2017 by Egor.                                             *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by Egor.                                        *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // C includes. (C++ namespace)
@@ -583,7 +582,7 @@ namespace {
 				// 32-bit MSVCRT is missing.
 				line1 = L"The 32-bit MSVC 2017 runtime is not installed.";
 				line2 = L"You can download the 32-bit MSVC 2017 runtime at:\n"
-					L"\x2022 <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>";
+					L"\x2022 <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">https://aka.ms/vs/15/release/vc_redist.x86.exe</a>";
 			}
 		} else
 #endif /* !_WIN64 */
@@ -594,18 +593,18 @@ namespace {
 				// Both 32-bit and 64-bit MSVCRT are missing.
 				line1 = L"The 32-bit and 64-bit MSVC 2017 runtimes are not installed.";
 				line2 = L"You can download the MSVC 2017 runtime at:\n"
-					L"\x2022 32-bit: <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>\n"
-					L"\x2022 64-bit: <a href=\"https://go.microsoft.com/fwlink/?LinkId=746572\">https://go.microsoft.com/fwlink/?LinkId=746572</a>";
+					L"\x2022 32-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">https://aka.ms/vs/15/release/vc_redist.x86.exe</a>\n"
+					L"\x2022 64-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">https://aka.ms/vs/15/release/vc_redist.x64.exe</a>";
 			} else if (!hasMsvc32 && hasMsvc64) {
 				// 32-bit MSVCRT is missing.
 				line1 = L"The 32-bit MSVC 2017 runtime is not installed.";
 				line2 = L"You can download the 32-bit MSVC 2017 runtime at:\n"
-					L"\x2022 <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>";
+					L"\x2022 <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">https://aka.ms/vs/15/release/vc_redist.x86.exe</a>";
 			} else if (hasMsvc32 && !hasMsvc64) {
 				// 64-bit MSVCRT is missing.
 				line1 = L"The 64-bit MSVC 2017 runtime is not installed.";
 				line2 = L"You can download the 64-bit MSVC 2017 runtime at:\n"
-					L"\x2022 <a href=\"https://go.microsoft.com/fwlink/?LinkId=746572\">https://go.microsoft.com/fwlink/?LinkId=746572</a>";
+					L"\x2022 <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">https://aka.ms/vs/15/release/vc_redist.x64.exe</a>";
 			}
 		}
 
