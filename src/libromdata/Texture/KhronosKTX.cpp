@@ -180,25 +180,30 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	// Calculate the expected size.
 	// NOTE: Scanlines are 4-byte aligned.
 	uint32_t expected_size;
+	int stride = 0;
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
-			expected_size = ALIGN(4, ktxHeader.pixelWidth * 3) * height;
+			stride = ALIGN(4, ktxHeader.pixelWidth * 3);
+			expected_size = (unsigned int)stride * height;
 			break;
 
 		case GL_RGBA:
 			// 32-bit RGBA.
-			expected_size = ktxHeader.pixelWidth * height * 4;
+			stride = ktxHeader.pixelWidth * 4;
+			expected_size = (unsigned int)stride * height;
 			break;
 
 		case GL_LUMINANCE:
 			// 8-bit luminance.
-			expected_size = ALIGN(4, ktxHeader.pixelWidth) * height;
+			stride = ALIGN(4, ktxHeader.pixelWidth);
+			expected_size = (unsigned int)stride * height;
 			break;
 
 		case 0:
 		default:
 			// May be a compressed format.
+			// TODO: Stride calculations?
 			switch (ktxHeader.glInternalFormat) {
 				case GL_RGB_S3TC:
 				case GL_RGB4_S3TC:
@@ -286,21 +291,21 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// 24-bit RGB.
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
 				ktxHeader.pixelWidth, height,
-				buf, expected_size);
+				buf, expected_size, stride);
 			break;
 
 		case GL_RGBA:
 			// 32-bit RGBA.
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
 				ktxHeader.pixelWidth, height,
-				reinterpret_cast<const uint32_t*>(buf), expected_size);
+				reinterpret_cast<const uint32_t*>(buf), expected_size, stride);
 			break;
 
 		case GL_LUMINANCE:
 			// 8-bit Luminance.
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
 				ktxHeader.pixelWidth, height,
-				buf, expected_size, ALIGN(4, ktxHeader.pixelWidth));
+				buf, expected_size, stride);
 			break;
 
 		case 0:

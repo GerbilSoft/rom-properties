@@ -748,6 +748,14 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 			"KTX/etc2-rgba8.ktx.gz",
 			"KTX/etc2-rgba8.png"),
 
+		// BGR888 (Hi Corp)
+		ImageDecoderTest_mode(
+			"KTX/hi_mark.ktx.gz",
+			"KTX/hi_mark.png"),
+		ImageDecoderTest_mode(
+			"KTX/hi_mark_sq.ktx.gz",
+			"KTX/hi_mark_sq.png"),
+
 		// RGBA reference image.
 		ImageDecoderTest_mode(
 			"KTX/rgba-reference.ktx.gz",
