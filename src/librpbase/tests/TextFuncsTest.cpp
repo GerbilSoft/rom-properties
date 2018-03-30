@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TextFuncsTest.cpp: TextFuncs class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // Google Test
@@ -798,9 +797,11 @@ TEST_F(TextFuncsTest, u16_strcmp)
 	// On all other systems, it's a simple implementation.
 
 	// Three test strings.
-	static const char16_t u16_str1[] = {'a','b','c',0};
-	static const char16_t u16_str2[] = {'a','b','d',0};
-	static const char16_t u16_str3[] = {'d','e','f',0};
+	// TODO: Update these strings so they would fail if tested
+	// using u16_strcasecmp().
+	static const char16_t u16_str1[] = {'a','b','c','d','e','f','g',0};
+	static const char16_t u16_str2[] = {'a','b','d','e','f','g','h',0};
+	static const char16_t u16_str3[] = {'d','e','f','g','h','i','j',0};
 
 	// Compare strings to themselves.
 	EXPECT_EQ(0, u16_strcmp(u16_str1, u16_str1));
@@ -814,6 +815,33 @@ TEST_F(TextFuncsTest, u16_strcmp)
 	EXPECT_LT(u16_strcmp(u16_str2, u16_str3), 0);
 	EXPECT_GT(u16_strcmp(u16_str3, u16_str1), 0);
 	EXPECT_GT(u16_strcmp(u16_str3, u16_str2), 0);
+}
+
+/**
+ * Test u16_strcasecmp().
+ */
+TEST_F(TextFuncsTest, u16_strcasecmp)
+{
+	// NOTE: u16_strcasecmp() is a wrapper for wcsicmp() on Windows.
+	// On all other systems, it's a simple implementation.
+
+	// Three test strings.
+	static const char16_t u16_str1[] = {'A','b','C','d','E','f','G',0};
+	static const char16_t u16_str2[] = {'a','B','d','E','f','G','h',0};
+	static const char16_t u16_str3[] = {'D','e','F','g','H','i','J',0};
+
+	// Compare strings to themselves.
+	EXPECT_EQ(0, u16_strcasecmp(u16_str1, u16_str1));
+	EXPECT_EQ(0, u16_strcasecmp(u16_str2, u16_str2));
+	EXPECT_EQ(0, u16_strcasecmp(u16_str3, u16_str3));
+
+	// Compare strings to each other.
+	EXPECT_LT(u16_strcasecmp(u16_str1, u16_str2), 0);
+	EXPECT_LT(u16_strcasecmp(u16_str1, u16_str3), 0);
+	EXPECT_GT(u16_strcasecmp(u16_str2, u16_str1), 0);
+	EXPECT_LT(u16_strcasecmp(u16_str2, u16_str3), 0);
+	EXPECT_GT(u16_strcasecmp(u16_str3, u16_str1), 0);
+	EXPECT_GT(u16_strcasecmp(u16_str3, u16_str2), 0);
 }
 
 } }
