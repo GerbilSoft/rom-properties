@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "ELF.hpp"
@@ -36,8 +35,21 @@ using namespace LibRpBase;
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
-#include <cinttypes>
 #include <cstring>
+
+// cinttypes was added in MSVC 2013.
+// For older versions, we'll need to manually define PRIX64.
+// TODO: Split into a separate header file?
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+# include <cinttypes>
+#else
+# ifndef PRIx64
+#  define PRIx64 "I64x"
+# endif
+# ifndef PRIX64
+#  define PRIX64 "I64X"
+# endif
+#endif
 
 // C++ includes.
 #include <string>
