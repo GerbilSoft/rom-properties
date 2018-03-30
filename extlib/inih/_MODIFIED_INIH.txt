@@ -1,4 +1,4 @@
-This copy of inih-r40 is a modified version of the original.
+This copy of inih-r41 is a modified version of the original.
 
 The following changes have been made to the original:
 
@@ -7,5 +7,5 @@ The following changes have been made to the original:
 
 - INI files are opened in binary mode instead of text mode.
 
-To obtain the original inih-r40, visit:
+To obtain the original inih-r41, visit:
 https://github.com/benhoyt/inih
