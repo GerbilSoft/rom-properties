@@ -49,6 +49,8 @@
   * rp-config: If a key is present in keys.conf but has no value, it was
     previously listed as invalid. It's now listed as empty.
   * KhronosKTX: Copy sBIT if the image needs to be vertically flipped.
+  * Win32: The Properties tab sometimes didn't show up if another program
+    claimed ownership of the file extension, e.g. VS2017 handling .dds files.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.

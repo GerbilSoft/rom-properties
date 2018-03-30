@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // Based on "The Complete Idiot's Guide to Writing Shell Extensions" - Part V
@@ -204,8 +203,9 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 	}
 	delete pHkey_fileType;
 
-	// Register the property page handler.
-	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, ext.c_str());
+	// Unregister the property page handler.
+	// We're now registering it for all files instead. ("*")
+	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	if (extInfo.hasThumbnail) {
@@ -591,18 +591,16 @@ STDAPI DllRegisterServer(void)
 		}
 	}
 
+	// Register RP_ShellPropSheetExt for all file types.
+	// Fixes an issue where it doesn't show up for .dds if
+	// Visual Studio 2017 is installed.
+	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, L"*");
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
 	// Register RP_ShellPropSheetExt for disk drives.
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, L"Drive");
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
-	// Delete the rom-properties ProgID,
-	// since it's no longer used.
-	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
-	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-		// Error deleting the ProgID.
-		return SELFREG_E_CLASS;
-	}
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
@@ -656,18 +654,14 @@ STDAPI DllUnregisterServer(void)
 		}
 	}
 
+	// Unregister RP_ShellPropSheetExt for all file types.
+	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, L"*");
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
 	// Unregister RP_ShellPropSheetExt for disk drives.
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, L"Drive");
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
-	// Delete the rom-properties ProgID,
-	// since it's no longer used.
-	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
-	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-		// Error deleting the ProgID.
-		return SELFREG_E_CLASS;
-	}
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
