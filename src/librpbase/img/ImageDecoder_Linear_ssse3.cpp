@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -22,11 +22,7 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
 // SSSE3 headers.
-#include <xmmintrin.h>
 #include <emmintrin.h>
 #include <tmmintrin.h>
 

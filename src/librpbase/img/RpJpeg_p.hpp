@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg_p.hpp: JPEG image handler. (Private class)                       *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -26,6 +26,8 @@
 
 // JPEG header.
 #include <jpeglib.h>
+#include <jerror.h>
+#include <jmorecfg.h>
 // JPEG error handler.
 #include <jerror.h>
 #include <setjmp.h>

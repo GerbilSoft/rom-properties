@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AboutTabText.hpp: About tab for rp-config. (Common text)                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -21,7 +21,6 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_CONFIG_ABOUTTABTEXT_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_CONFIG_ABOUTTABTEXT_HPP__
 
-#include "librpbase/config.librpbase.h"
 #include "../common.h"
 
 namespace LibRpBase {

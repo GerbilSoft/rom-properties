@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.h: Internationalization support code.                              *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -31,6 +31,7 @@
  * All strings should be compile-time constants.
  */
 #ifdef HAVE_GETTEXT
+# include <locale.h>
 # include "gettext.h"
 # define _(msgid)				dgettext(RP_I18N_DOMAIN, msgid)
 # define C_(msgctxt, msgid)			dpgettext(RP_I18N_DOMAIN, msgctxt, msgid)

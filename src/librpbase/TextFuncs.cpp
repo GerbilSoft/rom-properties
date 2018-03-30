@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.cpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2016 by David Korth.                                 *
+ * Copyright (c) 2009-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,14 +14,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "config.librpbase.h"
 #include "TextFuncs.hpp"
 #include "byteswap.h"
+
+// C includes.
+#include <stdlib.h>
 
 // C includes. (C++ namespace)
 #include <cassert>

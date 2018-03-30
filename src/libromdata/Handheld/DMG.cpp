@@ -39,7 +39,6 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;

@@ -1,9 +1,9 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
- * SSE2-optimized version.                                                *
+ * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -22,11 +22,7 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
 // SSE2 intrinsics.
-#include <xmmintrin.h>
 #include <emmintrin.h>
 
 // MSVC complains when the high bit is set in hex values

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RelatedFile.hpp: Open a related file.                                   *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -21,11 +21,9 @@
 #include "RelatedFile.hpp"
 #include "FileSystem.hpp"
 #include "RpFile.hpp"
-#include "TextFuncs.hpp"
 
 // C includes. (C++ namespace)
 #include <cctype>
-#include <cwctype>
 
 // C++ includes.
 #include <algorithm>

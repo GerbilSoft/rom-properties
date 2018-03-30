@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * CacheManager.cpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,18 +14,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifdef _WIN32
-#include "stdafx.h"
+# include "stdafx.h"
 #endif
 #include "CacheManager.hpp"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
@@ -33,20 +31,17 @@ using namespace LibRpBase::FileSystem;
 
 // Windows includes.
 #ifdef _WIN32
-#include "libwin32common/RpWin32_sdk.h"
+# include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
 // gettimeofday()
 // NOTE: MSVC doesn't actually have gettimeofday().
 // We have our own version in msvc_common.h.
 #ifdef _MSC_VER
-#include "libwin32common/msvc_common.h"
+# include "libwin32common/msvc_common.h"
 #else /* !_MSC_VER */
-#include <sys/time.h>
+# include <sys/time.h>
 #endif /* _MSC_VER */
-
-// C includes. (C++ namespace)
-#include <cctype>
 
 // C++ includes.
 #include <memory>
@@ -56,9 +51,9 @@ using std::string;
 
 // TODO: DownloaderFactory?
 #ifdef _WIN32
-#include "UrlmonDownloader.hpp"
+# include "UrlmonDownloader.hpp"
 #else
-#include "CurlDownloader.hpp"
+# include "CurlDownloader.hpp"
 #endif
 
 namespace LibCacheMgr {

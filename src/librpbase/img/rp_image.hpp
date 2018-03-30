@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -27,6 +27,7 @@
 #include "cpu_dispatch.h"
 
 // C includes.
+#include <stddef.h>	/* size_t */
 #include <stdint.h>
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)

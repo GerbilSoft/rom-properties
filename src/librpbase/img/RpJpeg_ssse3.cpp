@@ -3,7 +3,7 @@
  * RpJpeg.cpp: JPEG image handler.                                         *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -27,8 +27,7 @@ using LibRpBase::rp_image;
 // C includes. (C++ namespace)
 #include <cassert>
 
-// SSSE3 headers.
-#include <xmmintrin.h>
+// SSSE3 intrinsics.
 #include <emmintrin.h>
 #include <tmmintrin.h>
 

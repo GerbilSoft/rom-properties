@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * APNG_dlopen.hpp: APNG dlopen()'d function pointers.                     *
  *                                                                         *
- * Copyright (c) 2014-2017 by David Korth.                                 *
+ * Copyright (c) 2014-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include <png.h>
@@ -26,18 +25,18 @@
 // C includes.
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>	/* MSVC _countof() */
 
 #include "threads/Atomics.h"
 
 #ifndef _WIN32
 // Unix dlopen()
-#include <dlfcn.h>
+# include <dlfcn.h>
 #else
 // Windows LoadLibrary()
-#include "libwin32common/RpWin32_sdk.h"
-#define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
-#define dlclose(handle)		FreeLibrary(handle)
+# include "libwin32common/RpWin32_sdk.h"
+# define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
+# define dlclose(handle)	FreeLibrary(handle)
 #endif
 
 // DLL handle.

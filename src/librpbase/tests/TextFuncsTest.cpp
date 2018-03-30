@@ -27,6 +27,7 @@
 
 // C includes. (C++ namespace)
 #include <cstdio>
+#include <cstring>
 
 // C++ includes.
 #include <string>

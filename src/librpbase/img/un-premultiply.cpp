@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * un-premultiply.cpp: Un-premultiply function.                            *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -22,7 +22,6 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
-#include "ImageDecoder.hpp"
 #include "../common.h"
 
 // C includes. (C++ namespace)

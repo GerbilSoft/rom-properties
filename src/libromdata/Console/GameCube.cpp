@@ -56,14 +56,11 @@ using namespace LibRpBase;
 // C++ includes.
 #include <algorithm>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 using std::string;
 using std::unique_ptr;
 using std::vector;
-
-#include "librpbase/SystemRegion.hpp"
 
 namespace LibRomData {
 
