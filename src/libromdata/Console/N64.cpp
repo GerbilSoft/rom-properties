@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "N64.hpp"
@@ -45,6 +44,8 @@ using std::string;
 using std::vector;
 
 namespace LibRomData {
+
+ROMDATA_IMPL(N64)
 
 class N64Private : public RomDataPrivate
 {
@@ -213,16 +214,6 @@ int N64::isRomSupported_static(const DetectInfo *info)
 }
 
 /**
- * Is a ROM image supported by this object?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int N64::isRomSupported(const DetectInfo *info) const
-{
-	return isRomSupported_static(info);
-}
-
-/**
  * Get the name of the system the loaded ROM is designed for.
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
@@ -261,24 +252,6 @@ const char *const *N64::supportedFileExtensions_static(void)
 		nullptr
 	};
 	return exts;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
- *
- * @return List of all supported file extensions.
- */
-const char *const *N64::supportedFileExtensions(void) const
-{
-	return supportedFileExtensions_static();
 }
 
 /**

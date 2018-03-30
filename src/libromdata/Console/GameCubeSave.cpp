@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "GameCubeSave.hpp"
@@ -52,6 +51,9 @@ using std::string;
 using std::vector;
 
 namespace LibRomData {
+
+ROMDATA_IMPL(GameCubeSave)
+ROMDATA_IMPL_IMG(GameCubeSave)
 
 class GameCubeSavePrivate : public RomDataPrivate
 {
@@ -697,16 +699,6 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 }
 
 /**
- * Is a ROM image supported by this object?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int GameCubeSave::isRomSupported(const DetectInfo *info) const
-{
-	return isRomSupported_static(info);
-}
-
-/**
  * Get the name of the system the loaded ROM is designed for.
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
@@ -752,39 +744,12 @@ const char *const *GameCubeSave::supportedFileExtensions_static(void)
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
- *
- * @return List of all supported file extensions.
- */
-const char *const *GameCubeSave::supportedFileExtensions(void) const
-{
-	return supportedFileExtensions_static();
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
 uint32_t GameCubeSave::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_ICON | IMGBF_INT_BANNER;
-}
-
-/**
- * Get a bitfield of image types this class can retrieve.
- * @return Bitfield of supported image types. (ImageTypesBF)
- */
-uint32_t GameCubeSave::supportedImageTypes(void) const
-{
-	return supportedImageTypes_static();
 }
 
 /**
@@ -825,20 +790,6 @@ std::vector<RomData::ImageSizeDef> GameCubeSave::supportedImageSizes_static(Imag
 
 	// Unsupported image type.
 	return std::vector<ImageSizeDef>();
-}
-
-/**
- * Get a list of all available image sizes for the specified image type.
- *
- * The first item in the returned vector is the "default" size.
- * If the width/height is 0, then an image exists, but the size is unknown.
- *
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
- */
-std::vector<RomData::ImageSizeDef> GameCubeSave::supportedImageSizes(ImageType imageType) const
-{
-	return supportedImageSizes_static(imageType);
 }
 
 /**

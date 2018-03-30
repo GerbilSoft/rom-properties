@@ -47,6 +47,8 @@ using std::vector;
 
 namespace LibRomData {
 
+ROMDATA_IMPL(VirtualBoy)
+
 class VirtualBoyPrivate : public RomDataPrivate
 {
 	public:
@@ -271,16 +273,6 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 }
 
 /**
- * Is a ROM image supported by this object?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int VirtualBoy::isRomSupported(const DetectInfo *info) const
-{
-	return isRomSupported_static(info);
-}
-
-/**
  * Get the name of the system the loaded ROM is designed for.
  * @return System name, or nullptr if not supported.
  */
@@ -323,24 +315,6 @@ const char *const *VirtualBoy::supportedFileExtensions_static(void)
 		nullptr
 	};
 	return exts;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *VirtualBoy::supportedFileExtensions(void) const
-{
-	return supportedFileExtensions_static();
 }
 
 /**

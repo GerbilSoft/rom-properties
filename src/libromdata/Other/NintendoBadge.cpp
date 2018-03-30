@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -50,6 +50,9 @@ using std::string;
 using std::vector;
 
 namespace LibRomData {
+
+ROMDATA_IMPL(NintendoBadge)
+ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
 
 class NintendoBadgePrivate : public RomDataPrivate
 {
@@ -402,16 +405,6 @@ int NintendoBadge::isRomSupported_static(const DetectInfo *info)
 }
 
 /**
- * Is a ROM image supported by this object?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int NintendoBadge::isRomSupported(const DetectInfo *info) const
-{
-	return isRomSupported_static(info);
-}
-
-/**
  * Get the name of the system the loaded ROM is designed for.
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
@@ -459,39 +452,12 @@ const char *const *NintendoBadge::supportedFileExtensions_static(void)
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NintendoBadge::supportedFileExtensions(void) const
-{
-	return supportedFileExtensions_static();
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
 uint32_t NintendoBadge::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_ICON | IMGBF_INT_IMAGE;
-}
-
-/**
- * Get a bitfield of image types this class can retrieve.
- * @return Bitfield of supported image types. (ImageTypesBF)
- */
-uint32_t NintendoBadge::supportedImageTypes(void) const
-{
-	return supportedImageTypes_static();
 }
 
 /**

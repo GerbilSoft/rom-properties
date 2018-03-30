@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
@@ -69,6 +68,9 @@ using std::vector;
 #include <zlib.h>
 
 namespace LibRomData {
+
+ROMDATA_IMPL(Nintendo3DS)
+ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
 
 class Nintendo3DSPrivate : public RomDataPrivate
 {
@@ -1485,16 +1487,6 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 }
 
 /**
- * Is a ROM image supported by this object?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int Nintendo3DS::isRomSupported(const DetectInfo *info) const
-{
-	return isRomSupported_static(info);
-}
-
-/**
  * Get the name of the system the loaded ROM is designed for.
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
@@ -1545,24 +1537,6 @@ const char *const *Nintendo3DS::supportedFileExtensions_static(void)
 		nullptr
 	};
 	return exts;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
- *
- * @return List of all supported file extensions.
- */
-const char *const *Nintendo3DS::supportedFileExtensions(void) const
-{
-	return supportedFileExtensions_static();
 }
 
 /**
@@ -1658,29 +1632,6 @@ std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(Image
 
 	// Unsupported image type.
 	return std::vector<ImageSizeDef>();
-}
-
-/**
- * Get a list of all available image sizes for the specified image type.
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
- */
-std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes(ImageType imageType) const
-{
-	RP_D(const Nintendo3DS);
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
-		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
-		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
-		}
-		if (d->srlData) {
-			// This is a DSiWare SRL.
-			// Get the image information from the underlying SRL.
-			return d->srlData->supportedImageSizes(imageType);
-		}
-	}
-
-	return supportedImageSizes_static(imageType);
 }
 
 /**

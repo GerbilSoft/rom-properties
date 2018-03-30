@@ -63,6 +63,8 @@ using std::vector;
 
 namespace LibRomData {
 
+ROMDATA_IMPL(ELF)
+
 class ELFPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
@@ -820,16 +822,6 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 }
 
 /**
- * Is a ROM image supported by this object?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int ELF::isRomSupported(const DetectInfo *info) const
-{
-	return isRomSupported_static(info);
-}
-
-/**
  * Get the name of the system the loaded ROM is designed for.
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
@@ -899,24 +891,6 @@ const char *const *ELF::supportedFileExtensions_static(void)
 		nullptr
 	};
 	return exts;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ELF::supportedFileExtensions(void) const
-{
-	return supportedFileExtensions_static();
 }
 
 /**

@@ -54,6 +54,9 @@ using std::vector;
 
 namespace LibRomData {
 
+ROMDATA_IMPL(WiiU)
+ROMDATA_IMPL_IMG(WiiU)
+
 class WiiUPrivate : public RomDataPrivate
 {
 	public:
@@ -205,16 +208,6 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 }
 
 /**
- * Is a ROM image supported by this object?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int WiiU::isRomSupported(const DetectInfo *info) const
-{
-	return isRomSupported_static(info);
-}
-
-/**
  * Get the name of the system the loaded ROM is designed for.
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
@@ -261,24 +254,6 @@ const char *const *WiiU::supportedFileExtensions_static(void)
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiU::supportedFileExtensions(void) const
-{
-	return supportedFileExtensions_static();
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -291,15 +266,6 @@ uint32_t WiiU::supportedImageTypes_static(void)
 #else /* !HAVE_JPEG */
 	return IMGBF_EXT_MEDIA | IMGBF_EXT_COVER_3D;
 #endif /* HAVE_JPEG */
-}
-
-/**
- * Get a bitfield of image types this class can retrieve.
- * @return Bitfield of supported image types. (ImageTypesBF)
- */
-uint32_t WiiU::supportedImageTypes(void) const
-{
-	return supportedImageTypes_static();
 }
 
 /**
@@ -363,20 +329,6 @@ std::vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType im
 
 	// Unsupported image type.
 	return std::vector<ImageSizeDef>();
-}
-
-/**
- * Get a list of all available image sizes for the specified image type.
- *
- * The first item in the returned vector is the "default" size.
- * If the width/height is 0, then an image exists, but the size is unknown.
- *
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
- */
-std::vector<RomData::ImageSizeDef> WiiU::supportedImageSizes(ImageType imageType) const
-{
-	return supportedImageSizes_static(imageType);
 }
 
 /**

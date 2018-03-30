@@ -115,6 +115,7 @@ SET(librpbase_H
 	TextFuncs.hpp
 	TextFuncs_wchar.hpp
 	RomData.hpp
+	RomData_decl.hpp
 	RomData_p.hpp
 	RomFields.hpp
 	SystemRegion.hpp
