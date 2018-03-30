@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
@@ -130,6 +129,31 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
 	d->filename = W2U8(pszFileName);
+
+	// Check if this is a drive letter.
+	// TODO: Move to GetLocation()?
+	if (iswalpha(pszFileName[0]) &&
+	    pszFileName[1] == ':' && pszFileName[2] == '\\')
+	{
+		// This is a drive letter.
+		// Only CD-ROM (and similar) drives are supported.
+		// TODO: Verify if opening by drive letter works,
+		// or if we have to resolve the physical device name.
+		if (GetDriveType(pszFileName) != DRIVE_CDROM) {
+			// Not a CD-ROM drive.
+			return E_UNEXPECTED;
+		}
+	} else {
+		// Make sure this isn't a directory.
+		// TODO: Other checks?
+		DWORD dwAttr = GetFileAttributes(pszFileName);
+		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
+		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			// File cannot be opened or is a directory.
+			return E_UNEXPECTED;
+		}
+	}
 
 	// Attempt to open the ROM file.
 	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));

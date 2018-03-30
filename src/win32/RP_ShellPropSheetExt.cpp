@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // References:
@@ -1966,6 +1965,17 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		// or if we have to resolve the physical device name.
 		if (GetDriveType(filename) != DRIVE_CDROM) {
 			// Not a CD-ROM drive.
+			goto cleanup;
+		}
+	} else {
+		// Make sure this isn't a directory.
+		// TODO: Other checks?
+		// TODO BEFORE COMMIT: check if it's actually called for dirs
+		DWORD dwAttr = GetFileAttributes(filename);
+		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
+		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			// File cannot be opened or is a directory.
 			goto cleanup;
 		}
 	}
