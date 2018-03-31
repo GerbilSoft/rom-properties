@@ -38,6 +38,7 @@ extern "C" {
  * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943983(v=vs.85).aspx (DDS_HEADER_DX10)
  * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943984(v=vs.85).aspx (DDS_PIXELFORMAT)
  * - https://github.com/Microsoft/DirectXTK/wiki/XboxDDSTextureLoader (DDS_HEADER_XBOX)
+ * - https://github.com/Microsoft/DirectXTex
  */
 
 // NOTE: This header may conflict with the official DirectX SDK.
@@ -270,10 +271,26 @@ typedef enum {
 	DXGI_FORMAT_P8				= 113,
 	DXGI_FORMAT_A8P8			= 114,
 	DXGI_FORMAT_B4G4R4A4_UNORM		= 115,
+
+	// Xbox One formats.
+	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
+	XBOX_DXGI_FORMAT_R10G10B10_7E3_A2_FLOAT	= 116,
+	XBOX_DXGI_FORMAT_R10G10B10_6E4_A2_FLOAT	= 117,
+	XBOX_DXGI_FORMAT_D16_UNORM_S8_UINT	= 118,
+	XBOX_DXGI_FORMAT_R16_UNORM_X8_TYPELESS	= 119,
+	XBOX_DXGI_FORMAT_X16_TYPELESS_G8_UINT	= 120,
+
+	// Windows 10 formats.
+	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
 	DXGI_FORMAT_P208			= 130,
 	DXGI_FORMAT_V208			= 131,
 	DXGI_FORMAT_V408			= 132,
 	DXGI_FORMAT_FORCE_UINT			= 0xffffffff,
+
+	// Additional Xbox One formats.
+	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
+	XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM	= 189,
+	XBOX_DXGI_FORMAT_R4G4_UNORM			= 190,
 } DXGI_FORMAT;
 
 /**

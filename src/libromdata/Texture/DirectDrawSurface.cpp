@@ -1040,18 +1040,33 @@ int DirectDrawSurface::loadFieldData(void)
 			"P010", "P016", "420_OPAQUE", "YUY2",			// 104-107
 			"Y210", "Y216", "NV11", "AI44",				// 108-111
 			"IA44", "P8", "A8P8", "B4G4R4A4_UNORM",			// 112-115
-			nullptr, nullptr, nullptr, nullptr,			// 116-119
-			nullptr, nullptr, nullptr, nullptr,			// 120-123
-			nullptr, nullptr, nullptr, nullptr,			// 124-127
-			nullptr, nullptr,					// 128,129
+			"XBOX_R10G10B10_7E2_A2_FLOAT",				// 116
+			"XBOX_R10G10B10_6E4_A2_FLOAT",				// 117
+			"XBOX_D16_UNORM_S8_UINT", "XBOX_R6_UNORM_X8_TYPELESS",	// 118-119
+			"XBOX_DXGI_FORMAT_X16_TYPELESS_G8_UINT",		// 120
+			nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,	// 121-126
+			nullptr, nullptr, nullptr,				// 127-129
 			"P208", "V208", "V408",					// 130-132
 		};
+		static_assert(ARRAY_SIZE(dx10_texFormat_tbl) == DXGI_FORMAT_V408+1, "dx10_texFormat_tbl size is incorrect.");
 
 		const char *texFormat = nullptr;
 		if (dxt10Header->dxgiFormat > 0 && dxt10Header->dxgiFormat < ARRAY_SIZE(dx10_texFormat_tbl)) {
 			texFormat = dx10_texFormat_tbl[dxt10Header->dxgiFormat];
-		} else if (dxt10Header->dxgiFormat == DXGI_FORMAT_FORCE_UINT) {
-			texFormat = "FORCE_UINT";
+		} else {
+			switch (dxt10Header->dxgiFormat) {
+				case XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM:
+					texFormat = "XBOX_R10G10B10_SNORM_A2_UNORM";
+					break;
+				case XBOX_DXGI_FORMAT_R4G4_UNORM:
+					texFormat = "XBOX_R4G4_UNORM";
+					break;
+				case DXGI_FORMAT_FORCE_UINT:
+					texFormat = "FORCE_UINT";
+					break;
+				default:
+					break;
+			}
 		}
 		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
