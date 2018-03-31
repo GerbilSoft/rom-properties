@@ -95,6 +95,12 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		static const RGB_Format_Table_t rgb_fmt_tbl_luma[];	// Luminance
 		static const RGB_Format_Table_t rgb_fmt_tbl_alpha[];	// Alpha
 
+		// Image format identifiers.
+		uint8_t pxf_uncomp;	// Pixel format for uncompressed images. (If 0, compressed.)
+		uint8_t bytespp;	// Bytes per pixel. (Uncompressed only; set to 0 for compressed.)
+		uint8_t dxgi_format;	// DXGI_FORMAT for compressed images. (If 0, uncompressed.)
+		bool is_premult;	// If true, alpha is premultiplied. (DXT2/DXT4)
+
 		/**
 		 * Get the format name of an uncompressed DirectDraw surface pixel format.
 		 * @param ddspf DDS_PIXELFORMAT
@@ -103,12 +109,15 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		static const char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
 
 		/**
-		 * Get the ImageDecoder::PixelFormat of an RGB(A) DirectDraw surface pixel format.
-		 * @param ddspf	[in] DDS_PIXELFORMAT
-		 * @param bpp	[out,opt] Bytes per pixel. (15/16 becomes 2)
-		 * @return ImageDecoder::PixelFormat, or ImageDecoder::PXF_UNKNOWN if not supported.
+		 * Get the pixel formats of the DDS texture.
+		 * DDS texture headers must have been loaded.
+		 *
+		 * If uncompressed, this sets pxf_uncomp and bytespp.
+		 * If compressed, this sets dxgi_format.
+		 *
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static ImageDecoder::PixelFormat getPixelFormat(const DDS_PIXELFORMAT &ddspf, unsigned int *bytespp);
+		int updatePixelFormat(void);
 };
 
 /** DirectDrawSurfacePrivate **/
@@ -270,90 +279,223 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 }
 
 /**
- * Get the ImageDecoder::PixelFormat of an uncompressed DirectDraw surface pixel format.
- * @param ddspf	[in] DDS_PIXELFORMAT
- * @param bpp	[out,opt] Bytes per pixel. (15/16 becomes 2)
- * @return ImageDecoder::PixelFormat, or ImageDecoder::PXF_UNKNOWN if not supported.
+ * Get the pixel formats of the DDS texture.
+ * DDS texture headers must have been loaded.
+ *
+ * If uncompressed, this sets pxf_uncomp and bytespp.
+ * If compressed, this sets dxgi_format.
+ *
+ * @return 0 on success; negative POSIX error code on error.
  */
-ImageDecoder::PixelFormat DirectDrawSurfacePrivate::getPixelFormat(const DDS_PIXELFORMAT &ddspf, unsigned int *bytespp)
+int DirectDrawSurfacePrivate::updatePixelFormat(void)
 {
+	// This should only be called once.
+	assert(pxf_uncomp == 0);
+	assert(bytespp == 0);
+	assert(dxgi_format == 0);
+
+	pxf_uncomp = 0;
+	bytespp = 0;
+	dxgi_format = 0;
+	is_premult = false;
+
+	int ret = 0;
+	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
 #ifndef NDEBUG
 	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
-	assert(((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
+	assert(((ddspf.dwFlags & FORMATS) == DDPF_FOURCC) ||
+	       ((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_LUMINANCE) ||
 	       ((ddspf.dwFlags & FORMATS) == DDPF_ALPHA));
 #endif /* !NDEBUG */
 
-	const RGB_Format_Table_t *entry = nullptr;
-	if (ddspf.dwFlags & DDPF_RGB) {
-		switch (ddspf.dwRGBBitCount) {
-			case 15:
-			case 16:
-				// 16-bit.
-				entry = rgb_fmt_tbl_16;
+	// Check if a FourCC is specified.
+	if (ddspf.dwFourCC != 0) {
+		// FourCC is specified.
+		switch (ddspf.dwFourCC) {
+			case DDPF_FOURCC_DXT1:
+				dxgi_format = DXGI_FORMAT_BC1_UNORM;
 				break;
-			case 24:
-				// 24-bit.
-				entry = rgb_fmt_tbl_24;
+			case DDPF_FOURCC_DXT2:
+				dxgi_format = DXGI_FORMAT_BC2_UNORM;
+				is_premult = true;
 				break;
-			case 32:
-				// 32-bit.
-				entry = rgb_fmt_tbl_32;
+			case DDPF_FOURCC_DXT3:
+				dxgi_format = DXGI_FORMAT_BC2_UNORM;
 				break;
-			default:
-				// Unsupported.
-				if (bytespp) {
-					*bytespp = 0;
+			case DDPF_FOURCC_DXT4:
+				dxgi_format = DXGI_FORMAT_BC3_UNORM;
+				is_premult = true;
+				break;
+			case DDPF_FOURCC_DXT5:
+				dxgi_format = DXGI_FORMAT_BC3_UNORM;
+				break;
+
+			case DDPF_FOURCC_ATI1:
+			case DDPF_FOURCC_BC4U:
+				dxgi_format = DXGI_FORMAT_BC4_UNORM;
+				break;
+
+			case DDPF_FOURCC_ATI2:
+			case DDPF_FOURCC_BC5U:
+				dxgi_format = DXGI_FORMAT_BC5_UNORM;
+				break;
+
+			case DDPF_FOURCC_DX10:
+			case DDPF_FOURCC_XBOX:
+				// Check the DX10 format.
+				// TODO: Handle typeless, signed, sRGB, float.
+				// TODO: Make this a lookup table with three fields?
+				switch (dxt10Header.dxgiFormat) {
+					case DXGI_FORMAT_R10G10B10A2_TYPELESS:
+					case DXGI_FORMAT_R10G10B10A2_UNORM:
+					case DXGI_FORMAT_R10G10B10A2_UINT:
+						pxf_uncomp = ImageDecoder::PXF_A2B10G10R10;
+						bytespp = 4;
+						break;
+
+					case DXGI_FORMAT_R8G8B8A8_TYPELESS:
+					case DXGI_FORMAT_R8G8B8A8_UNORM:
+					case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+					case DXGI_FORMAT_R8G8B8A8_UINT:
+					case DXGI_FORMAT_R8G8B8A8_SNORM:
+					case DXGI_FORMAT_R8G8B8A8_SINT:
+						pxf_uncomp = ImageDecoder::PXF_ABGR8888;
+						bytespp = 4;
+						break;
+
+					case DXGI_FORMAT_R16G16_TYPELESS:
+					case DXGI_FORMAT_R16G16_FLOAT:
+					case DXGI_FORMAT_R16G16_UNORM:
+					case DXGI_FORMAT_R16G16_UINT:
+					case DXGI_FORMAT_R16G16_SNORM:
+					case DXGI_FORMAT_R16G16_SINT:
+						pxf_uncomp = ImageDecoder::PXF_G16R16;
+						bytespp = 4;
+						break;
+
+					case DXGI_FORMAT_R8G8_TYPELESS:
+					case DXGI_FORMAT_R8G8_UNORM:
+					case DXGI_FORMAT_R8G8_UINT:
+					case DXGI_FORMAT_R8G8_SNORM:
+					case DXGI_FORMAT_R8G8_SINT:
+						pxf_uncomp = ImageDecoder::PXF_GR88;
+						bytespp = 2;
+						break;
+
+					case DXGI_FORMAT_A8_UNORM:
+						pxf_uncomp = ImageDecoder::PXF_A8;
+						bytespp = 1;
+						break;
+
+					case DXGI_FORMAT_B5G6R5_UNORM:
+						pxf_uncomp = ImageDecoder::PXF_RGB565;
+						bytespp = 2;
+						break;
+
+					case DXGI_FORMAT_B5G5R5A1_UNORM:
+						pxf_uncomp = ImageDecoder::PXF_ARGB1555;
+						bytespp = 2;
+						break;
+
+					case DXGI_FORMAT_B8G8R8A8_UNORM:
+					case DXGI_FORMAT_B8G8R8A8_TYPELESS:
+					case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+						pxf_uncomp = ImageDecoder::PXF_ARGB8888;
+						bytespp = 4;
+						break;
+
+					case DXGI_FORMAT_B8G8R8X8_UNORM:
+					case DXGI_FORMAT_B8G8R8X8_TYPELESS:
+					case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+						pxf_uncomp = ImageDecoder::PXF_xRGB8888;
+						bytespp = 4;
+						break;
+
+					case DXGI_FORMAT_B4G4R4A4_UNORM:
+						pxf_uncomp = ImageDecoder::PXF_ARGB4444;
+						bytespp = 2;
+						break;
+
+					default:
+						// Use the DX10 format as-is. (Assume it's compressed.)
+						dxgi_format = dxt10Header.dxgiFormat;
+						break;
 				}
-				return ImageDecoder::PXF_UNKNOWN;
+				break;
+
+			default:
+				// Unsupported FourCC.
+				ret = -ENOTSUP;
+				break;
 		}
-	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
-		// Luminance.
-		entry = rgb_fmt_tbl_luma;
-	} else if (ddspf.dwFlags & DDPF_ALPHA) {
-		// Alpha.
-		entry = rgb_fmt_tbl_alpha;
 	} else {
-		// Unsupported.
-		if (bytespp) {
-			*bytespp = 0;
-		}
-		return ImageDecoder::PXF_UNKNOWN;
-	}
-
-	if (!entry) {
-		// No table...
-		if (bytespp) {
-			*bytespp = 0;
-		}
-		return ImageDecoder::PXF_UNKNOWN;
-	}
-
-	for (; entry->desc[0] != '\0'; entry++) {
-		if (ddspf.dwRBitMask == entry->Rmask &&
-		    ddspf.dwGBitMask == entry->Gmask &&
-		    ddspf.dwBBitMask == entry->Bmask &&
-		    ddspf.dwABitMask == entry->Amask)
-		{
-			// Found a match!
-			if (bytespp) {
-				*bytespp = (ddspf.dwRGBBitCount == 15 ? 2 : (ddspf.dwRGBBitCount / 8));
+		// No FourCC.
+		// Determine the pixel format by looking at the bit masks.
+		const RGB_Format_Table_t *entry = nullptr;
+		if (ddspf.dwFlags & DDPF_RGB) {
+			switch (ddspf.dwRGBBitCount) {
+				case 15:
+				case 16:
+					// 16-bit.
+					entry = rgb_fmt_tbl_16;
+					break;
+				case 24:
+					// 24-bit.
+					entry = rgb_fmt_tbl_24;
+					break;
+				case 32:
+					// 32-bit.
+					entry = rgb_fmt_tbl_32;
+					break;
+				default:
+					// Unsupported.
+					return -ENOTSUP;
 			}
-			return (ImageDecoder::PixelFormat)entry->px_format;
+		} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
+			// Luminance.
+			entry = rgb_fmt_tbl_luma;
+		} else if (ddspf.dwFlags & DDPF_ALPHA) {
+			// Alpha.
+			entry = rgb_fmt_tbl_alpha;
+		} else {
+			// Unsupported.
+			return -ENOTSUP;
 		}
+
+		if (!entry) {
+			// No table...
+			return -ENOTSUP;
+		}
+
+		for (; entry->desc[0] != '\0'; entry++) {
+			if (ddspf.dwRBitMask == entry->Rmask &&
+			    ddspf.dwGBitMask == entry->Gmask &&
+			    ddspf.dwBBitMask == entry->Bmask &&
+			    ddspf.dwABitMask == entry->Amask)
+			{
+				// Found a match!
+				pxf_uncomp = entry->px_format;
+				bytespp = (ddspf.dwRGBBitCount == 15 ? 2 : (ddspf.dwRGBBitCount / 8));
+				return 0;
+			}
+		}
+
+		// Format not found.
+		ret = -ENOTSUP;
 	}
 
-	// Format not found.
-	if (bytespp) {
-		*bytespp = 0;
-	}
-	return ImageDecoder::PXF_UNKNOWN;
+	return ret;
 }
 
 DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file)
 	: super(q, file)
 	, texDataStartAddr(0)
 	, img(nullptr)
+	, pxf_uncomp(0)
+	, bytespp(0)
+	, dxgi_format(0)
+	, is_premult(false)
 {
 	// Clear the DDS header structs.
 	memset(&ddsHeader, 0, sizeof(ddsHeader));
@@ -420,63 +562,34 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
-	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
-	if (ddspf.dwFlags & DDPF_FOURCC) {
+	if (dxgi_format != 0) {
 		// Compressed RGB data.
 
 		// NOTE: dwPitchOrLinearSize is not necessarily correct.
 		// Calculate the expected size.
 		uint32_t expected_size;
-		switch (ddspf.dwFourCC) {
-			case DDPF_FOURCC_DXT1:
-			case DDPF_FOURCC_ATI1:
-			case DDPF_FOURCC_BC4U:
+		switch (dxgi_format) {
+			case DXGI_FORMAT_BC1_TYPELESS:
+			case DXGI_FORMAT_BC1_UNORM:
+			case DXGI_FORMAT_BC1_UNORM_SRGB:
+			case DXGI_FORMAT_BC4_TYPELESS:
+			case DXGI_FORMAT_BC4_UNORM:
+			case DXGI_FORMAT_BC4_SNORM:
 				// 16 pixels compressed into 64 bits. (4bpp)
 				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
 				break;
 
-			case DDPF_FOURCC_DXT2:
-			case DDPF_FOURCC_DXT3:
-			case DDPF_FOURCC_DXT4:
-			case DDPF_FOURCC_DXT5:
-			case DDPF_FOURCC_ATI2:
-			case DDPF_FOURCC_BC5U:
+			case DXGI_FORMAT_BC2_TYPELESS:
+			case DXGI_FORMAT_BC2_UNORM:
+			case DXGI_FORMAT_BC2_UNORM_SRGB:
+			case DXGI_FORMAT_BC3_TYPELESS:
+			case DXGI_FORMAT_BC3_UNORM:
+			case DXGI_FORMAT_BC3_UNORM_SRGB:
+			case DXGI_FORMAT_BC5_TYPELESS:
+			case DXGI_FORMAT_BC5_UNORM:
+			case DXGI_FORMAT_BC5_SNORM:
 				// 16 pixels compressed into 128 bits. (8bpp)
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
-				break;
-
-			case DDPF_FOURCC_DX10:
-			case DDPF_FOURCC_XBOX:
-				// Check the DX10 format.
-				// TODO: Handle uncompressed formats.
-				switch (dxt10Header.dxgiFormat) {
-					case DXGI_FORMAT_BC1_TYPELESS:
-					case DXGI_FORMAT_BC1_UNORM:
-					case DXGI_FORMAT_BC1_UNORM_SRGB:
-					case DXGI_FORMAT_BC4_TYPELESS:
-					case DXGI_FORMAT_BC4_UNORM:
-					case DXGI_FORMAT_BC4_SNORM:
-						// 16 pixels compressed into 64 bits. (4bpp)
-						expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
-						break;
-
-					case DXGI_FORMAT_BC2_TYPELESS:
-					case DXGI_FORMAT_BC2_UNORM:
-					case DXGI_FORMAT_BC2_UNORM_SRGB:
-					case DXGI_FORMAT_BC3_TYPELESS:
-					case DXGI_FORMAT_BC3_UNORM:
-					case DXGI_FORMAT_BC3_UNORM_SRGB:
-					case DXGI_FORMAT_BC5_TYPELESS:
-					case DXGI_FORMAT_BC5_UNORM:
-					case DXGI_FORMAT_BC5_SNORM:
-						// 16 pixels compressed into 128 bits. (8bpp)
-						expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
-						break;
-
-					default:
-						// Not supported.
-						return nullptr;
-				}
 				break;
 
 			default:
@@ -503,8 +616,11 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			return nullptr;
 		}
 
-		switch (ddspf.dwFourCC) {
-			case DDPF_FOURCC_DXT1:
+		// TODO: Handle typeless, signed, sRGB, float.
+		switch (dxgi_format) {
+			case DXGI_FORMAT_BC1_TYPELESS:
+			case DXGI_FORMAT_BC1_UNORM:
+			case DXGI_FORMAT_BC1_UNORM_SRGB:
 				// TODO: With or without 1-bit transparency?
 				// Assuming with 1-bit transparency for now...
 				img = ImageDecoder::fromDXT1_A1(
@@ -512,97 +628,48 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					buf, expected_size);
 				break;
 
-			case DDPF_FOURCC_DXT2:
-				img = ImageDecoder::fromDXT2(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size);
+			case DXGI_FORMAT_BC2_TYPELESS:
+			case DXGI_FORMAT_BC2_UNORM:
+			case DXGI_FORMAT_BC2_UNORM_SRGB:
+				if (is_premult) {
+					img = ImageDecoder::fromDXT2(
+						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						buf, expected_size);
+				} else {
+					img = ImageDecoder::fromDXT3(
+						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						buf, expected_size);
+				}
 				break;
 
-			case DDPF_FOURCC_DXT3:
-				img = ImageDecoder::fromDXT3(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size);
+			case DXGI_FORMAT_BC3_TYPELESS:
+			case DXGI_FORMAT_BC3_UNORM:
+			case DXGI_FORMAT_BC3_UNORM_SRGB:
+				if (is_premult) {
+					img = ImageDecoder::fromDXT4(
+						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						buf, expected_size);
+				} else {
+					img = ImageDecoder::fromDXT5(
+						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						buf, expected_size);
+				}
 				break;
 
-			case DDPF_FOURCC_DXT4:
-				img = ImageDecoder::fromDXT4(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size);
-				break;
-
-			case DDPF_FOURCC_DXT5:
-				img = ImageDecoder::fromDXT5(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size);
-				break;
-
-			case DDPF_FOURCC_ATI1:
-			case DDPF_FOURCC_BC4U:
+			case DXGI_FORMAT_BC4_TYPELESS:
+			case DXGI_FORMAT_BC4_UNORM:
+			case DXGI_FORMAT_BC4_SNORM:
 				img = ImageDecoder::fromBC4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf, expected_size);
 				break;
 
-			case DDPF_FOURCC_ATI2:
-			case DDPF_FOURCC_BC5U:
+			case DXGI_FORMAT_BC5_TYPELESS:
+			case DXGI_FORMAT_BC5_UNORM:
+			case DXGI_FORMAT_BC5_SNORM:
 				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf, expected_size);
-				break;
-
-			case DDPF_FOURCC_DX10:
-			case DDPF_FOURCC_XBOX:
-				// Check the DX10 format.
-				// TODO: Handle uncompressed formats.
-				// TODO: Handle typeless, SNORM, sRGB.
-				// TODO: Handle XBOX tiling.
-				switch (dxt10Header.dxgiFormat) {
-					case DXGI_FORMAT_BC1_TYPELESS:
-					case DXGI_FORMAT_BC1_UNORM:
-					case DXGI_FORMAT_BC1_UNORM_SRGB:
-						// TODO: With or without 1-bit transparency?
-						// Assuming with 1-bit transparency for now...
-						img = ImageDecoder::fromDXT1_A1(
-							ddsHeader.dwWidth, ddsHeader.dwHeight,
-							buf, expected_size);
-						break;
-
-					case DXGI_FORMAT_BC2_TYPELESS:
-					case DXGI_FORMAT_BC2_UNORM:
-					case DXGI_FORMAT_BC2_UNORM_SRGB:
-						img = ImageDecoder::fromDXT3(
-							ddsHeader.dwWidth, ddsHeader.dwHeight,
-							buf, expected_size);
-						break;
-
-					case DXGI_FORMAT_BC3_TYPELESS:
-					case DXGI_FORMAT_BC3_UNORM:
-					case DXGI_FORMAT_BC3_UNORM_SRGB:
-						img = ImageDecoder::fromDXT3(
-							ddsHeader.dwWidth, ddsHeader.dwHeight,
-							buf, expected_size);
-						break;
-
-					case DXGI_FORMAT_BC4_TYPELESS:
-					case DXGI_FORMAT_BC4_UNORM:
-					case DXGI_FORMAT_BC4_SNORM:
-						img = ImageDecoder::fromBC4(
-							ddsHeader.dwWidth, ddsHeader.dwHeight,
-							buf, expected_size);
-						break;
-
-					case DXGI_FORMAT_BC5_TYPELESS:
-					case DXGI_FORMAT_BC5_UNORM:
-					case DXGI_FORMAT_BC5_SNORM:
-						img = ImageDecoder::fromBC5(
-							ddsHeader.dwWidth, ddsHeader.dwHeight,
-							buf, expected_size);
-						break;
-
-					default:
-						// Not supported.
-						break;
-				}
 				break;
 
 			default:
@@ -611,10 +678,10 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 	} else {
 		// Uncompressed linear image data.
-		unsigned int bytespp = 0;
-		ImageDecoder::PixelFormat px_format = getPixelFormat(ddspf, &bytespp);
-		if (px_format == ImageDecoder::PXF_UNKNOWN || bytespp == 0) {
-			// Unknown pixel format.
+		assert(pxf_uncomp != 0);
+		assert(bytespp != 0);
+		if (pxf_uncomp == 0 || bytespp == 0) {
+			// Pixel format wasn't updated...
 			return nullptr;
 		}
 
@@ -660,14 +727,16 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		switch (bytespp) {
 			case sizeof(uint8_t):
 				// 8-bit image. (Usually luminance or alpha.)
-				img = ImageDecoder::fromLinear8(px_format,
+				img = ImageDecoder::fromLinear8(
+					(ImageDecoder::PixelFormat)pxf_uncomp,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf, expected_size, stride);
 				break;
 
 			case sizeof(uint16_t):
 				// 16-bit RGB image.
-				img = ImageDecoder::fromLinear16(px_format,
+				img = ImageDecoder::fromLinear16(
+					(ImageDecoder::PixelFormat)pxf_uncomp,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint16_t*>(buf),
 					expected_size, stride);
@@ -676,13 +745,15 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case 24/8:
 				// 24-bit RGB image.
 				img = ImageDecoder::fromLinear24(
-					px_format, ddsHeader.dwWidth, ddsHeader.dwHeight,
+					(ImageDecoder::PixelFormat)pxf_uncomp,
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf, expected_size, stride);
 				break;
 
 			case sizeof(uint32_t):
 				// 32-bit RGB image.
-				img = ImageDecoder::fromLinear32(px_format,
+				img = ImageDecoder::fromLinear32(
+					(ImageDecoder::PixelFormat)pxf_uncomp,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint32_t*>(buf),
 					expected_size, stride);
@@ -825,6 +896,9 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		ddspf.dwBBitMask	= le32_to_cpu(ddspf.dwBBitMask);
 		ddspf.dwABitMask	= le32_to_cpu(ddspf.dwABitMask);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+		// Update the pixel format.
+		d->updatePixelFormat();
 	}
 }
 
