@@ -445,6 +445,40 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
 				break;
 
+			case DDPF_FOURCC_DX10:
+			case DDPF_FOURCC_XBOX:
+				// Check the DX10 format.
+				// TODO: Handle uncompressed formats.
+				switch (dxt10Header.dxgiFormat) {
+					case DXGI_FORMAT_BC1_TYPELESS:
+					case DXGI_FORMAT_BC1_UNORM:
+					case DXGI_FORMAT_BC1_UNORM_SRGB:
+					case DXGI_FORMAT_BC4_TYPELESS:
+					case DXGI_FORMAT_BC4_UNORM:
+					case DXGI_FORMAT_BC4_SNORM:
+						// 16 pixels compressed into 64 bits. (4bpp)
+						expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
+						break;
+
+					case DXGI_FORMAT_BC2_TYPELESS:
+					case DXGI_FORMAT_BC2_UNORM:
+					case DXGI_FORMAT_BC2_UNORM_SRGB:
+					case DXGI_FORMAT_BC3_TYPELESS:
+					case DXGI_FORMAT_BC3_UNORM:
+					case DXGI_FORMAT_BC3_UNORM_SRGB:
+					case DXGI_FORMAT_BC5_TYPELESS:
+					case DXGI_FORMAT_BC5_UNORM:
+					case DXGI_FORMAT_BC5_SNORM:
+						// 16 pixels compressed into 128 bits. (8bpp)
+						expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
+						break;
+
+					default:
+						// Not supported.
+						return nullptr;
+				}
+				break;
+
 			default:
 				// Not supported.
 				return nullptr;
@@ -514,6 +548,61 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf, expected_size);
+				break;
+
+			case DDPF_FOURCC_DX10:
+			case DDPF_FOURCC_XBOX:
+				// Check the DX10 format.
+				// TODO: Handle uncompressed formats.
+				// TODO: Handle typeless, SNORM, sRGB.
+				// TODO: Handle XBOX tiling.
+				switch (dxt10Header.dxgiFormat) {
+					case DXGI_FORMAT_BC1_TYPELESS:
+					case DXGI_FORMAT_BC1_UNORM:
+					case DXGI_FORMAT_BC1_UNORM_SRGB:
+						// TODO: With or without 1-bit transparency?
+						// Assuming with 1-bit transparency for now...
+						img = ImageDecoder::fromDXT1_A1(
+							ddsHeader.dwWidth, ddsHeader.dwHeight,
+							buf, expected_size);
+						break;
+
+					case DXGI_FORMAT_BC2_TYPELESS:
+					case DXGI_FORMAT_BC2_UNORM:
+					case DXGI_FORMAT_BC2_UNORM_SRGB:
+						img = ImageDecoder::fromDXT3(
+							ddsHeader.dwWidth, ddsHeader.dwHeight,
+							buf, expected_size);
+						break;
+
+					case DXGI_FORMAT_BC3_TYPELESS:
+					case DXGI_FORMAT_BC3_UNORM:
+					case DXGI_FORMAT_BC3_UNORM_SRGB:
+						img = ImageDecoder::fromDXT3(
+							ddsHeader.dwWidth, ddsHeader.dwHeight,
+							buf, expected_size);
+						break;
+
+					case DXGI_FORMAT_BC4_TYPELESS:
+					case DXGI_FORMAT_BC4_UNORM:
+					case DXGI_FORMAT_BC4_SNORM:
+						img = ImageDecoder::fromBC4(
+							ddsHeader.dwWidth, ddsHeader.dwHeight,
+							buf, expected_size);
+						break;
+
+					case DXGI_FORMAT_BC5_TYPELESS:
+					case DXGI_FORMAT_BC5_UNORM:
+					case DXGI_FORMAT_BC5_SNORM:
+						img = ImageDecoder::fromBC5(
+							ddsHeader.dwWidth, ddsHeader.dwHeight,
+							buf, expected_size);
+						break;
+
+					default:
+						// Not supported.
+						break;
+				}
 				break;
 
 			default:
