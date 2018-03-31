@@ -65,6 +65,7 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		// DDS header.
 		DDS_HEADER ddsHeader;
 		DDS_HEADER_DXT10 dxt10Header;
+		DDS_HEADER_XBOX xb1Header;
 
 		// Texture data start address.
 		unsigned int texDataStartAddr;
@@ -357,6 +358,7 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile
 	// Clear the DDS header structs.
 	memset(&ddsHeader, 0, sizeof(ddsHeader));
 	memset(&dxt10Header, 0, sizeof(dxt10Header));
+	memset(&xb1Header, 0, sizeof(xb1Header));
 }
 
 DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
@@ -392,6 +394,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 	// Texture cannot start inside of the DDS header.
 	// TODO: Also dxt10Header for DX10?
+	// TODO: ...and xb1Header for XBOX?
 	assert(texDataStartAddr >= sizeof(ddsHeader));
 	if (texDataStartAddr < sizeof(ddsHeader)) {
 		// Invalid texture data start address.
@@ -603,6 +606,8 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 	}
 
+	// TODO: Untile textures for XBOX format.
+
 	aligned_free(buf);
 	return img;
 }
@@ -636,7 +641,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	}
 
 	// Read the DDS magic number and header.
-	uint8_t header[4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)];
+	uint8_t header[4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX)];
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 4+sizeof(DDS_HEADER))
@@ -652,17 +657,33 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (d->isValid) {
-		// Is this a DXT10 image?
+		// Is this a DXT10 texture?
 		const DDS_HEADER *const pSrcHeader = reinterpret_cast<const DDS_HEADER*>(&header[4]);
-		if (le32_to_cpu(pSrcHeader->ddspf.dwFourCC) == DDPF_FOURCC_DX10) {
-			if (size < sizeof(header)) {
-				// DXT10 header wasn't read.
+		if (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_DX10) ||
+		    pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX))
+		{
+			const bool isXbox = (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX));
+			// Verify the size.
+			unsigned int headerSize;
+			if (!isXbox) {
+				// DX10 texture.
+				headerSize = (unsigned int)(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
+			} else {
+				// Xbox One texture.
+				headerSize = (unsigned int)(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
+			}
+			if (size < headerSize) {
+				// Extra headers weren't read.
 				d->isValid = false;
 				return;
 			}
 
 			// Save the DXT10 header.
 			memcpy(&d->dxt10Header, &header[4+sizeof(DDS_HEADER)], sizeof(d->dxt10Header));
+			if (isXbox) {
+				// Save the Xbox One header.
+				memcpy(&d->xb1Header, &header[4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)], sizeof(d->xb1Header));
+			}
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 			// Byteswap the DXT10 header.
@@ -671,10 +692,17 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 			d->dxt10Header.miscFlag   = le32_to_cpu(d->dxt10Header.miscFlag);
 			d->dxt10Header.arraySize  = le32_to_cpu(d->dxt10Header.arraySize);
 			d->dxt10Header.miscFlags2 = le32_to_cpu(d->dxt10Header.miscFlags2);
+			if (isXbox) {
+				// Byteswap the Xbox One header.
+				d->xb1Header.tileMode		= le32_to_cpu(d->xb1Header.tileMode);
+				d->xb1Header.baseAlignment	= le32_to_cpu(d->xb1Header.baseAlignment);
+				d->xb1Header.dataSize		= le32_to_cpu(d->xb1Header.dataSize);
+				d->xb1Header.xdkVer		= le32_to_cpu(d->xb1Header.xdkVer);
+			}
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 			// Texture data start address.
-			d->texDataStartAddr = sizeof(header);
+			d->texDataStartAddr = headerSize;
 		} else {
 			// No DXT10 header.
 			d->texDataStartAddr = 4+sizeof(DDS_HEADER);
@@ -875,7 +903,7 @@ int DirectDrawSurface::loadFieldData(void)
 
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	// Texture size.
 	if (ddsHeader->dwFlags & DDSD_DEPTH) {
@@ -950,7 +978,9 @@ int DirectDrawSurface::loadFieldData(void)
 		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), C_("DirectDrawSurface", "Unknown"));
 	}
 
-	if (ddspf.dwFourCC == DDPF_FOURCC_DX10) {
+	if (ddspf.dwFourCC == DDPF_FOURCC_DX10 ||
+	    ddspf.dwFourCC == DDPF_FOURCC_XBOX)
+	{
 		// DX10 texture.
 		const DDS_HEADER_DXT10 *const dxt10Header = &d->dxt10Header;
 
@@ -1105,6 +1135,18 @@ int DirectDrawSurface::loadFieldData(void)
 		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
 	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, ddsHeader->dwCaps2);
+
+	if (ddspf.dwFourCC == DDPF_FOURCC_XBOX) {
+		// Xbox One texture.
+		const DDS_HEADER_XBOX *const xb1Header = &d->xb1Header;
+
+		d->fields->addField_string_numeric(C_("DirectDrawSurface", "Tile Mode"), xb1Header->tileMode);
+		d->fields->addField_string_numeric(C_("DirectDrawSurface", "Base Alignment"), xb1Header->baseAlignment);
+		// TODO: Not needed?
+		d->fields->addField_string_numeric(C_("DirectDrawSurface", "Data Size"), xb1Header->dataSize);
+		// TODO: Parse this.
+		d->fields->addField_string_numeric(C_("DirectDrawSurface", "XDK Version"), xb1Header->xdkVer);
+	}
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
