@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dds_structs.h: DirectDraw Surface texture format data structures.       *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_DDS_STRUCTS_H__
@@ -38,6 +37,8 @@ extern "C" {
  * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx (DDS_HEADER)
  * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943983(v=vs.85).aspx (DDS_HEADER_DX10)
  * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943984(v=vs.85).aspx (DDS_PIXELFORMAT)
+ * - https://github.com/Microsoft/DirectXTK/wiki/XboxDDSTextureLoader (DDS_HEADER_XBOX)
+ * - https://github.com/Microsoft/DirectXTex
  */
 
 // NOTE: This header may conflict with the official DirectX SDK.
@@ -89,6 +90,7 @@ typedef enum {
 	DDPF_FOURCC_BC5S	= 0x53354342,	// "BC5S" (TODO: BC5 with signed values?)
 
 	DDPF_FOURCC_DX10	= 0x30315844,	// "DX10"
+	DDPF_FOURCC_XBOX	= 0x584F4258,	// "XBOX"
 } DDS_PIXELFORMAT_FOURCC;
 
 /**
@@ -269,10 +271,26 @@ typedef enum {
 	DXGI_FORMAT_P8				= 113,
 	DXGI_FORMAT_A8P8			= 114,
 	DXGI_FORMAT_B4G4R4A4_UNORM		= 115,
+
+	// Xbox One formats.
+	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
+	XBOX_DXGI_FORMAT_R10G10B10_7E3_A2_FLOAT	= 116,
+	XBOX_DXGI_FORMAT_R10G10B10_6E4_A2_FLOAT	= 117,
+	XBOX_DXGI_FORMAT_D16_UNORM_S8_UINT	= 118,
+	XBOX_DXGI_FORMAT_R16_UNORM_X8_TYPELESS	= 119,
+	XBOX_DXGI_FORMAT_X16_TYPELESS_G8_UINT	= 120,
+
+	// Windows 10 formats.
+	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
 	DXGI_FORMAT_P208			= 130,
 	DXGI_FORMAT_V208			= 131,
 	DXGI_FORMAT_V408			= 132,
 	DXGI_FORMAT_FORCE_UINT			= 0xffffffff,
+
+	// Additional Xbox One formats.
+	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
+	XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM	= 189,
+	XBOX_DXGI_FORMAT_R4G4_UNORM			= 190,
 } DXGI_FORMAT;
 
 /**
@@ -297,9 +315,9 @@ typedef enum {
 typedef struct PACKED _DDS_HEADER_DXT10 {
 	DXGI_FORMAT dxgiFormat;
 	D3D10_RESOURCE_DIMENSION resourceDimension;
-	unsigned int miscFlag;		// See DDS_DXT10_MISC_FLAG.
-	unsigned int arraySize;
-	unsigned int miscFlags2;	// See DDS_DXT10_MISC_FLAGS2.
+	uint32_t miscFlag;	// See DDS_DXT10_MISC_FLAG.
+	uint32_t arraySize;
+	uint32_t miscFlags2;	// See DDS_DXT10_MISC_FLAGS2.
 } DDS_HEADER_DXT10;
 ASSERT_STRUCT(DDS_HEADER_DXT10, 20);
 
@@ -316,6 +334,21 @@ typedef enum {
 	DDS_ALPHA_MODE_OPAQUE		= 0x3,
 	DDS_ALPHA_MODE_CUSTOM		= 0x4,
 } DDS_DXT10_MISC_FLAGS2;
+
+/**
+ * Xbox One variant. (FourCC: 'XBOX')
+ *
+ * NOTE: XBOX DDS files have DDS_HEADER_DXT10
+ * right before DDS_HEADER_XBOX.
+ *
+ * All fields are in little-endian.
+ */
+typedef struct PACKED _DDS_HEADER_XBOX {
+	uint32_t tileMode;		// See DDS_XBOX_TILE_MODE. [TODO]
+	uint32_t baseAlignment;
+	uint32_t dataSize;
+	uint32_t xdkVer;		// _XDK_VER
+} DDS_HEADER_XBOX;
 
 #pragma pack()
 

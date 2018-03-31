@@ -333,7 +333,7 @@ int GameBoyAdvance::loadFieldData(void)
 			break;
 
 		default:
-			// Unknown ROM type type.
+			// Unknown ROM type.
 			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
 				C_("GameBoyAdvance", "Unknown"));
 			break;
