@@ -634,14 +634,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC1_TYPELESS:
 			case DXGI_FORMAT_BC1_UNORM:
 			case DXGI_FORMAT_BC1_UNORM_SRGB:
-				if (dxgi_alpha == DDS_ALPHA_MODE_OPAQUE) {
-					// No alpha channel.
-					img = ImageDecoder::fromDXT1(
+				if (likely(dxgi_alpha != DDS_ALPHA_MODE_OPAQUE)) {
+					// 1-bit alpha.
+					img = ImageDecoder::fromDXT1_A1(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				} else {
-					// 1-bit alpha.
-					img = ImageDecoder::fromDXT1_A1(
+					// No alpha channel.
+					img = ImageDecoder::fromDXT1(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				}
@@ -650,14 +650,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC2_TYPELESS:
 			case DXGI_FORMAT_BC2_UNORM:
 			case DXGI_FORMAT_BC2_UNORM_SRGB:
-				if (dxgi_alpha == DDS_ALPHA_MODE_PREMULTIPLIED) {
-					// Premultiplied alpha: DXT2
-					img = ImageDecoder::fromDXT2(
+				if (likely(dxgi_alpha != DDS_ALPHA_MODE_PREMULTIPLIED)) {
+					// Standard alpha: DXT3
+					img = ImageDecoder::fromDXT3(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				} else {
-					// Standard alpha: DXT3
-					img = ImageDecoder::fromDXT3(
+					// Premultiplied alpha: DXT2
+					img = ImageDecoder::fromDXT2(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				}
@@ -666,14 +666,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC3_TYPELESS:
 			case DXGI_FORMAT_BC3_UNORM:
 			case DXGI_FORMAT_BC3_UNORM_SRGB:
-				if (dxgi_alpha == DDS_ALPHA_MODE_PREMULTIPLIED) {
-					// Premultiplied alpha: DXT4
-					img = ImageDecoder::fromDXT4(
+				if (likely(dxgi_alpha != DDS_ALPHA_MODE_PREMULTIPLIED)) {
+					// Standard alpha: DXT5
+					img = ImageDecoder::fromDXT5(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				} else {
-					// Standard alpha: DXT5
-					img = ImageDecoder::fromDXT5(
+					// Premultiplied alpha: DXT4
+					img = ImageDecoder::fromDXT4(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				}
