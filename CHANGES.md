@@ -33,6 +33,7 @@
   * NES: Improved publisher lookup for FDS titles.
   * Wii U: Display game publishers.
   * DMG: Added more entry point formats.
+  * DirectDrawSurface: Untested support for Xbox One textures.
 
 * New compressed texture formats:
   * Ericsson ETC1 and ETC2
