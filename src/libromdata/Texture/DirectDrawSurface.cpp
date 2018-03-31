@@ -254,7 +254,7 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 		return nullptr;
 	}
 
-	for (; entry->desc != nullptr; entry++) {
+	for (; entry->desc[0] != '\0'; entry++) {
 		if (ddspf.dwRBitMask == entry->Rmask &&
 		    ddspf.dwGBitMask == entry->Gmask &&
 		    ddspf.dwBBitMask == entry->Bmask &&
@@ -329,7 +329,7 @@ ImageDecoder::PixelFormat DirectDrawSurfacePrivate::getPixelFormat(const DDS_PIX
 		return ImageDecoder::PXF_UNKNOWN;
 	}
 
-	for (; entry->desc != nullptr; entry++) {
+	for (; entry->desc[0] != '\0'; entry++) {
 		if (ddspf.dwRBitMask == entry->Rmask &&
 		    ddspf.dwGBitMask == entry->Gmask &&
 		    ddspf.dwBBitMask == entry->Bmask &&
