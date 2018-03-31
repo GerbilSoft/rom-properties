@@ -1145,7 +1145,8 @@ int DirectDrawSurface::loadFieldData(void)
 		// TODO: Not needed?
 		d->fields->addField_string_numeric(C_("DirectDrawSurface", "Data Size"), xb1Header->dataSize);
 		// TODO: Parse this.
-		d->fields->addField_string_numeric(C_("DirectDrawSurface", "XDK Version"), xb1Header->xdkVer);
+		d->fields->addField_string_numeric(C_("DirectDrawSurface", "XDK Version"),
+			xb1Header->xdkVer, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.
