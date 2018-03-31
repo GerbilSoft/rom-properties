@@ -99,7 +99,7 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		uint8_t pxf_uncomp;	// Pixel format for uncompressed images. (If 0, compressed.)
 		uint8_t bytespp;	// Bytes per pixel. (Uncompressed only; set to 0 for compressed.)
 		uint8_t dxgi_format;	// DXGI_FORMAT for compressed images. (If 0, uncompressed.)
-		bool is_premult;	// If true, alpha is premultiplied. (DXT2/DXT4)
+		uint8_t dxgi_alpha;	// DDS_DXT10_MISC_FLAGS2 - alpha format.
 
 		/**
 		 * Get the format name of an uncompressed DirectDraw surface pixel format.
@@ -293,11 +293,12 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	assert(pxf_uncomp == 0);
 	assert(bytespp == 0);
 	assert(dxgi_format == 0);
+	assert(dxgi_alpha == DDS_ALPHA_MODE_UNKNOWN);
 
 	pxf_uncomp = 0;
 	bytespp = 0;
 	dxgi_format = 0;
-	is_premult = false;
+	dxgi_alpha = DDS_ALPHA_MODE_STRAIGHT;	// assume a standard alpha channel
 
 	int ret = 0;
 	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
@@ -318,14 +319,14 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				break;
 			case DDPF_FOURCC_DXT2:
 				dxgi_format = DXGI_FORMAT_BC2_UNORM;
-				is_premult = true;
+				dxgi_alpha = DDS_ALPHA_MODE_PREMULTIPLIED;
 				break;
 			case DDPF_FOURCC_DXT3:
 				dxgi_format = DXGI_FORMAT_BC2_UNORM;
 				break;
 			case DDPF_FOURCC_DXT4:
 				dxgi_format = DXGI_FORMAT_BC3_UNORM;
-				is_premult = true;
+				dxgi_alpha = DDS_ALPHA_MODE_PREMULTIPLIED;
 				break;
 			case DDPF_FOURCC_DXT5:
 				dxgi_format = DXGI_FORMAT_BC3_UNORM;
@@ -346,6 +347,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				// Check the DX10 format.
 				// TODO: Handle typeless, signed, sRGB, float.
 				// TODO: Make this a lookup table with three fields?
+				dxgi_alpha = dxt10Header.miscFlags2;
 				switch (dxt10Header.dxgiFormat) {
 					case DXGI_FORMAT_R10G10B10A2_TYPELESS:
 					case DXGI_FORMAT_R10G10B10A2_UNORM:
@@ -455,16 +457,20 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 		} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 			// Luminance.
 			entry = rgb_fmt_tbl_luma;
+			// TODO: Set to standard alpha if it's Luma+Alpha?
+			dxgi_alpha = DDS_ALPHA_MODE_OPAQUE;
 		} else if (ddspf.dwFlags & DDPF_ALPHA) {
 			// Alpha.
 			entry = rgb_fmt_tbl_alpha;
 		} else {
 			// Unsupported.
+			dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
 			return -ENOTSUP;
 		}
 
 		if (!entry) {
 			// No table...
+			dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
 			return -ENOTSUP;
 		}
 
@@ -477,11 +483,13 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				// Found a match!
 				pxf_uncomp = entry->px_format;
 				bytespp = (ddspf.dwRGBBitCount == 15 ? 2 : (ddspf.dwRGBBitCount / 8));
+				dxgi_alpha = (ddspf.dwABitMask != 0 ? DDS_ALPHA_MODE_STRAIGHT : DDS_ALPHA_MODE_OPAQUE);
 				return 0;
 			}
 		}
 
 		// Format not found.
+		dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
 		ret = -ENOTSUP;
 	}
 
@@ -495,7 +503,7 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile
 	, pxf_uncomp(0)
 	, bytespp(0)
 	, dxgi_format(0)
-	, is_premult(false)
+	, dxgi_alpha(DDS_ALPHA_MODE_UNKNOWN)
 {
 	// Clear the DDS header structs.
 	memset(&ddsHeader, 0, sizeof(ddsHeader));
@@ -560,6 +568,11 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
 	uint8_t *buf = nullptr;
 
+	// TODO: Handle DX10 alpha processing.
+	// Currently, we're assuming straight alpha for formats
+	// that have an alpha channel, except for DXT2 and DXT4,
+	// which use premultiplied alpha.
+
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
 	if (dxgi_format != 0) {
@@ -621,21 +634,29 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC1_TYPELESS:
 			case DXGI_FORMAT_BC1_UNORM:
 			case DXGI_FORMAT_BC1_UNORM_SRGB:
-				// TODO: With or without 1-bit transparency?
-				// Assuming with 1-bit transparency for now...
-				img = ImageDecoder::fromDXT1_A1(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size);
+				if (dxgi_alpha == DDS_ALPHA_MODE_OPAQUE) {
+					// No alpha channel.
+					img = ImageDecoder::fromDXT1(
+						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						buf, expected_size);
+				} else {
+					// 1-bit alpha.
+					img = ImageDecoder::fromDXT1_A1(
+						ddsHeader.dwWidth, ddsHeader.dwHeight,
+						buf, expected_size);
+				}
 				break;
 
 			case DXGI_FORMAT_BC2_TYPELESS:
 			case DXGI_FORMAT_BC2_UNORM:
 			case DXGI_FORMAT_BC2_UNORM_SRGB:
-				if (is_premult) {
+				if (dxgi_alpha == DDS_ALPHA_MODE_PREMULTIPLIED) {
+					// Premultiplied alpha: DXT2
 					img = ImageDecoder::fromDXT2(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				} else {
+					// Standard alpha: DXT3
 					img = ImageDecoder::fromDXT3(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
@@ -645,11 +666,13 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC3_TYPELESS:
 			case DXGI_FORMAT_BC3_UNORM:
 			case DXGI_FORMAT_BC3_UNORM_SRGB:
-				if (is_premult) {
+				if (dxgi_alpha == DDS_ALPHA_MODE_PREMULTIPLIED) {
+					// Premultiplied alpha: DXT4
 					img = ImageDecoder::fromDXT4(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
 				} else {
+					// Standard alpha: DXT5
 					img = ImageDecoder::fromDXT5(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf, expected_size);
