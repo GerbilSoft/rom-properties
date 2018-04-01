@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RpQImageBackend.hpp: rp_image_backend using QImage.                     *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__
@@ -49,14 +48,14 @@ class RpQImageBackend : public LibRpBase::rp_image_backend
 		static LibRpBase::rp_image_backend *creator_fn(int width, int height, LibRpBase::rp_image::Format format);
 
 		// Image data.
-		virtual void *data(void) override final;
-		virtual const void *data(void) const override final;
-		virtual size_t data_len(void) const override final;
+		void *data(void) final;
+		const void *data(void) const final;
+		size_t data_len(void) const final;
 
 		// Image palette.
-		virtual uint32_t *palette(void) override final;
-		virtual const uint32_t *palette(void) const override final;
-		virtual int palette_len(void) const override final;
+		uint32_t *palette(void) final;
+		const uint32_t *palette(void) const final;
+		int palette_len(void) const final;
 
 	public:
 		/**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * MessageWidget.hpp: Message widget.                                      *
  *                                                                         *
- * Copyright (c) 2014-2017 by David Korth.                                 *
+ * Copyright (c) 2014-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_CONFIG_MESSAGEWIDGET_HPP__
@@ -60,13 +59,13 @@ class MessageWidget : public QWidget
 		 * Paint event.
 		 * @param event QPaintEvent.
 		 */
-		virtual void paintEvent(QPaintEvent *event) override final;
+		void paintEvent(QPaintEvent *event) final;
 
 		/**
 		 * Hide event.
 		 * @param event QHideEvent.
 		 */
-		virtual void showEvent(QShowEvent *event) override final;
+		void showEvent(QShowEvent *event) final;
 
 	public slots:
 		/**

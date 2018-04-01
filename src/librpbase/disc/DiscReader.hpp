@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -16,9 +16,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_DISCREADER_HPP__
@@ -72,7 +71,7 @@ class DiscReader : public IDiscReader
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override;
+		int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override;
 
 	public:
 		/**
@@ -80,7 +79,7 @@ class DiscReader : public IDiscReader
 		 * This usually only returns false if an error occurred.
 		 * @return True if the disc image is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const override;
+		bool isOpen(void) const override;
 
 		/**
 		 * Read data from the disc image.
@@ -88,31 +87,31 @@ class DiscReader : public IDiscReader
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		size_t read(void *ptr, size_t size) override;
 
 		/**
 		 * Set the disc image position.
 		 * @param pos Disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
+		int seek(int64_t pos) override;
 
 		/**
 		 * Seek to the beginning of the disc image.
 		 */
-		virtual void rewind(void) override;
+		void rewind(void) override;
 
 		/**
 		 * Get the disc image position.
 		 * @return Disc image position on success; -1 on error.
 		 */
-		virtual int64_t tell(void) override final;
+		int64_t tell(void) final;
 
 		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		virtual int64_t size(void) override;
+		int64_t size(void) override;
 
 	protected:
 		IRpFile *m_file;

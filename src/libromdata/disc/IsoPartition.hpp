@@ -63,7 +63,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * This usually only returns false if an error occurred.
 		 * @return True if the partition is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const override final;
+		bool isOpen(void) const final;
 
 		/**
 		 * Read data from the partition.
@@ -71,25 +71,25 @@ class IsoPartition : public LibRpBase::IPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		size_t read(void *ptr, size_t size) override;
 
 		/**
 		 * Set the partition position.
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
+		int seek(int64_t pos) override;
 
 		/**
 		 * Seek to the beginning of the partition.
 		 */
-		virtual void rewind(void) override final;
+		void rewind(void) final;
 
 		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
-		virtual int64_t tell(void) override;
+		int64_t tell(void) override;
 
 		/**
 		 * Get the data size.
@@ -97,7 +97,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		virtual int64_t size(void) override final;
+		int64_t size(void) final;
 
 		/** IPartition **/
 
@@ -106,7 +106,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		virtual int64_t partition_size(void) const override final;
+		int64_t partition_size(void) const final;
 
 		/**
 		 * Get the used partition size.
@@ -114,7 +114,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 * but does not include "empty" sectors.
 		 * @return Used partition size, or -1 on error.
 		 */
-		virtual int64_t partition_size_used(void) const override final;
+		int64_t partition_size_used(void) const final;
 
 		/** IFst wrapper functions. **/
 

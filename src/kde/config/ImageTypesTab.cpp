@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ImageTypesTab.cpp: Image Types tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "ImageTypesTab.hpp"
@@ -57,25 +56,25 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		/**
 		 * Create the labels in the grid.
 		 */
-		virtual void createGridLabels(void) override final;
+		void createGridLabels(void) final;
 
 		/**
 		 * Create a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 */
-		virtual void createComboBox(unsigned int cbid) override final;
+		void createComboBox(unsigned int cbid) final;
 
 		/**
 		 * Add strings to a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
-		virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
+		void addComboBoxStrings(unsigned int cbid, int max_prio) final;
 
 		/**
 		 * Finish adding the ComboBoxes.
 		 */
-		virtual void finishComboBoxes(void) override final;
+		void finishComboBoxes(void) final;
 
 		/**
 		 * Initialize the Save subsystem.
@@ -83,7 +82,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveStart(void) override final;
+		int saveStart(void) final;
 
 		/**
 		 * Write an ImageType configuration entry.
@@ -91,7 +90,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveWriteEntry(const char *sysName, const char *imageTypeList) override final;
+		int saveWriteEntry(const char *sysName, const char *imageTypeList) final;
 
 		/**
 		 * Close the Save subsystem.
@@ -99,7 +98,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveFinish(void) override final;
+		int saveFinish(void) final;
 
 	protected:
 		/** TImageTypesConfig functions. (public) **/
@@ -110,7 +109,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * @param cbid ComboBox ID.
 		 * @param prio New priority value. (0xFF == no)
 		 */
-		virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
+		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
 	public:
 		// Last ComboBox added.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GettextTranslator.hpp: QTranslator class using GNU Gettext.             *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -38,11 +38,11 @@ class GettextTranslator : public QTranslator
 	public:
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 		// Qt5: Single virtual function that takes a plural parameter.
-		virtual QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr, int n = -1) const override;
+		QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr, int n = -1) const final;
 #else
 		// Qt4: Virtual function with no plurals; non-virtual function with plurals.
 		QString translate(const char *context, const char *sourceText, const char *disambiguation, int n) const;
-		virtual QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr) const override;
+		QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr) const final;
 #endif
 };
 

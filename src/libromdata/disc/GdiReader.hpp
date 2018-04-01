@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -66,7 +66,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override final;
+		int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
 
 	protected:
 		/** SparseDiscReader functions. **/
@@ -83,7 +83,7 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) override final;
+		int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) final;
 
 	public:
 		/** GDI-specific functions. **/

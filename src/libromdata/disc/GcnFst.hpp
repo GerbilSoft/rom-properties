@@ -51,13 +51,13 @@ class GcnFst : public LibRpBase::IFst
 		 * Is the FST open?
 		 * @return True if open; false if not.
 		 */
-		virtual bool isOpen(void) const override final;
+		bool isOpen(void) const final;
 
 		/**
 		 * Have any errors been detected in the FST?
 		 * @return True if yes; false if no.
 		 */
-		virtual bool hasErrors(void) const override final;
+		bool hasErrors(void) const final;
 
 	public:
 		/** opendir() interface. **/
@@ -67,7 +67,7 @@ class GcnFst : public LibRpBase::IFst
 		 * @param path	[in] Directory path.
 		 * @return Dir*, or nullptr on error.
 		 */
-		virtual Dir *opendir(const char *path) override final;
+		Dir *opendir(const char *path) final;
 
 		/**
 		 * Read a directory entry.
@@ -75,14 +75,14 @@ class GcnFst : public LibRpBase::IFst
 		 * @return DirEnt*, or nullptr if end of directory or on error.
 		 * (TODO: Add lastError()?)
 		 */
-		virtual DirEnt *readdir(Dir *dirp) override final;
+		DirEnt *readdir(Dir *dirp) final;
 
 		/**
 		 * Close an opened directory.
 		 * @param dirp Dir pointer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int closedir(Dir *dirp) override final;
+		int closedir(Dir *dirp) final;
 
 		/**
 		 * Get the directory entry for the specified file.
@@ -90,7 +90,7 @@ class GcnFst : public LibRpBase::IFst
 		 * @param dirent	[out] Pointer to DirEnt buffer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int find_file(const char *filename, DirEnt *dirent) override final;
+		int find_file(const char *filename, DirEnt *dirent) final;
 
 	public:
 		/**

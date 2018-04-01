@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyStore_OwnerDataCallback.hpp: LVS_OWNERDATA callback for Vista.       *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // Reference: https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features#virtualgroups
@@ -40,16 +39,16 @@ class KeyStore_OwnerDataCallback : public LibWin32Common::ComBase<IOwnerDataCall
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
 	public:
 		// IOwnerDataCallback
-		virtual IFACEMETHODIMP GetItemPosition(int itemIndex, LPPOINT pPosition) override final;
-		virtual IFACEMETHODIMP SetItemPosition(int itemIndex, POINT position) override final;
-		virtual IFACEMETHODIMP GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) override final;
-		virtual IFACEMETHODIMP GetItemGroup(int itemIndex, int occurenceIndex, PINT pGroupIndex) override final;
-		virtual IFACEMETHODIMP GetItemGroupCount(int itemIndex, PINT pOccurenceCount) override final;
-		virtual IFACEMETHODIMP OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) override final;
+		IFACEMETHODIMP GetItemPosition(int itemIndex, LPPOINT pPosition) final;
+		IFACEMETHODIMP SetItemPosition(int itemIndex, POINT position) final;
+		IFACEMETHODIMP GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) final;
+		IFACEMETHODIMP GetItemGroup(int itemIndex, int occurenceIndex, PINT pGroupIndex) final;
+		IFACEMETHODIMP GetItemGroupCount(int itemIndex, PINT pOccurenceCount) final;
+		IFACEMETHODIMP OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) final;
 
 	private:
 		const KeyStoreWin32 *m_keyStore;

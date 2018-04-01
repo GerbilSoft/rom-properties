@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_HPP__
@@ -55,7 +54,7 @@ RP_ExtractImage : public LibWin32Common::ComBase2<IPersistFile, IExtractImage2>
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
 	public:
 		/**
@@ -88,21 +87,21 @@ RP_ExtractImage : public LibWin32Common::ComBase2<IPersistFile, IExtractImage2>
 
 	public:
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) override final;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) override final;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override final;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override final;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override final;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override final;
+		IFACEMETHODIMP IsDirty(void) final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
 
 		// IExtractImage
 		IFACEMETHODIMP GetLocation(LPWSTR pszPathBuffer, DWORD cchMax,
 			DWORD *pdwPriority, const SIZE *prgSize,
-			DWORD dwRecClrDepth, DWORD *pdwFlags) override final;
-		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) override final;
+			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
+		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
 		// IExtractImage2
-		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) override final;
+		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) final;
 };
 
 #ifdef __CRT_UUID_DECL

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_CONFIG_ABOUTTAB_HPP__
@@ -49,30 +48,30 @@ class AboutTab : public ITab
 		 *
 		 * @return True to enable; false to disable.
 		 */
-		virtual bool hasDefaults(void) const override final { return false; }
+		bool hasDefaults(void) const final { return false; }
 
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
-		virtual void changeEvent(QEvent *event) override final;
+		void changeEvent(QEvent *event) final;
 
 	public slots:
 		/**
 		 * Reset the configuration.
 		 */
-		virtual void reset(void) override final;
+		void reset(void) final;
 
 		/**
 		 * Load the default configuration.
 		 * This does NOT save, and will only emit modified()
 		 * if it's different from the current configuration.
 		 */
-		virtual void loadDefaults(void) override final;
+		void loadDefaults(void) final;
 
 		/**
 		 * Save the configuration.
 		 * @param pSettings QSettings object.
 		 */
-		virtual void save(QSettings *pSettings) override final;
+		void save(QSettings *pSettings) final;
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_ABOUTTAB_HPP__ */

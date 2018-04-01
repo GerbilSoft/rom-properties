@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesNettle.hpp: AES decryption class using GNU Nettle.                   *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_CRYPTO_AESNETTLE_HPP__
@@ -45,13 +44,13 @@ class AesNettle : public IAesCipher
 		 * Get the name of the AesCipher implementation.
 		 * @return Name.
 		 */
-		virtual const char *name(void) const override final;
+		const char *name(void) const final;
 
 		/**
 		 * Has the cipher been initialized properly?
 		 * @return True if initialized; false if not.
 		 */
-		virtual bool isInit(void) const override final;
+		bool isInit(void) const final;
 
 		/**
 		 * Set the encryption key.
@@ -59,7 +58,7 @@ class AesNettle : public IAesCipher
 		 * @param size	[in] Size of pKey, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setKey(const uint8_t *RESTRICT pKey, size_t size) override final;
+		int setKey(const uint8_t *RESTRICT pKey, size_t size) final;
 
 		/**
 		 * Set the cipher chaining mode.
@@ -70,7 +69,7 @@ class AesNettle : public IAesCipher
 		 * @param mode Cipher chaining mode.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setChainingMode(ChainingMode mode) override final;
+		int setChainingMode(ChainingMode mode) final;
 
 		/**
 		 * Set the IV (CBC mode) or counter (CTR mode).
@@ -78,7 +77,7 @@ class AesNettle : public IAesCipher
 		 * @param size	[in] Size of pIV, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setIV(const uint8_t *RESTRICT pIV, size_t size) override final;
+		int setIV(const uint8_t *RESTRICT pIV, size_t size) final;
 
 		/**
 		 * Decrypt a block of data.
@@ -88,7 +87,7 @@ class AesNettle : public IAesCipher
 		 * @param size	[in] Length of data block. (Must be a multiple of 16.)
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual size_t decrypt(uint8_t *RESTRICT pData, size_t size) override final;
+		size_t decrypt(uint8_t *RESTRICT pData, size_t size) final;
 };
 
 }

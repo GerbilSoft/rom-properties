@@ -89,8 +89,8 @@ class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 		AesCipherTest()
 			: m_cipher(nullptr) { }
 
-		virtual void SetUp(void) override final;
-		virtual void TearDown(void) override final;
+		void SetUp(void) final;
+		void TearDown(void) final;
 
 	public:
 		IAesCipher *m_cipher;

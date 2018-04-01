@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ClassFactory.hpp: IClassFactory implementation.                      *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_HPP__
@@ -51,7 +50,7 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 	public:
 		/** IUnknown **/
 
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject) override final
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject) final
 		{
 			if (!ppvObject) {
 				return E_POINTER;
@@ -72,7 +71,7 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 
 		/** IClassFactory **/
 
-		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) override final
+		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) final
 		{
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObject)
@@ -97,7 +96,7 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 			return hr;
 		}
 
-		IFACEMETHODIMP LockServer(BOOL fLock) override final
+		IFACEMETHODIMP LockServer(BOOL fLock) final
 		{
 			CoLockObjectExternal(this, fLock, TRUE);
 			return S_OK;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -97,7 +97,7 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 			aligned_free(m_img_buf);
 		}
 
-		virtual void SetUp(void) override final;
+		void SetUp(void) final;
 
 	public:
 		/**

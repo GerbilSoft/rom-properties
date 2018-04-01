@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "GdkImageConv.hpp"
@@ -82,26 +81,26 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual PGDKPIXBUF rpImageToImgClass(const rp_image *img) const override final;
+		PGDKPIXBUF rpImageToImgClass(const rp_image *img) const final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		virtual bool isImgClassValid(const PGDKPIXBUF &imgClass) const override final;
+		bool isImgClassValid(const PGDKPIXBUF &imgClass) const final;
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		virtual PGDKPIXBUF getNullImgClass(void) const override final;
+		PGDKPIXBUF getNullImgClass(void) const final;
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		virtual void freeImgClass(PGDKPIXBUF &imgClass) const override final;
+		void freeImgClass(PGDKPIXBUF &imgClass) const final;
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -109,7 +108,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual PGDKPIXBUF rescaleImgClass(const PGDKPIXBUF &imgClass, const ImgSize &sz) const override final;
+		PGDKPIXBUF rescaleImgClass(const PGDKPIXBUF &imgClass, const ImgSize &sz) const final;
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -117,13 +116,13 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		virtual int getImgClassSize(const PGDKPIXBUF &imgClass, ImgSize *pOutSize) const override final;
+		int getImgClassSize(const PGDKPIXBUF &imgClass, ImgSize *pOutSize) const final;
 
 		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual string proxyForUrl(const string &url) const override final;
+		string proxyForUrl(const string &url) const final;
 };
 
 CreateThumbnailPrivate::CreateThumbnailPrivate()

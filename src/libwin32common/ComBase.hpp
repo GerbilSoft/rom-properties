@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * ComBase.hpp: Base class for COM objects.                                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_COMBASE_HPP__
@@ -69,14 +68,14 @@ static inline bool ComBase_isReferenced(void)
 	\
 	public: \
 		/** IUnknown **/ \
-		IFACEMETHODIMP_(ULONG) AddRef(void) override final \
+		IFACEMETHODIMP_(ULONG) AddRef(void) final \
 		{ \
 			incRpGlobalRefCount(); \
 			InterlockedIncrement(&m_ulRefCount); \
 			return m_ulRefCount; \
 		} \
 		\
-		IFACEMETHODIMP_(ULONG) Release(void) override final \
+		IFACEMETHODIMP_(ULONG) Release(void) final \
 		{ \
 			ULONG ulRefCount = InterlockedDecrement(&m_ulRefCount); \
 			if (ulRefCount == 0) { \

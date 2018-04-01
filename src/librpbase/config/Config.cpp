@@ -64,7 +64,7 @@ class ConfigPrivate : public ConfReaderPrivate
 		/**
 		 * Reset the configuration to the default values.
 		 */
-		void reset(void) override final;
+		void reset(void) final;
 
 		/**
 		 * Process a configuration line.
@@ -76,7 +76,7 @@ class ConfigPrivate : public ConfReaderPrivate
 		 * @return 1 on success; 0 on error.
 		 */
 		int processConfigLine(const char *section,
-			const char *name, const char *value) override final;
+			const char *name, const char *value) final;
 
 	public:
 		/**

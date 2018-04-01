@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.hpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2017 by David Korth.                                 *
+ * Copyright (c) 2012-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_KDE_CONFIG_KEYSTOREMODEL_HPP__
@@ -53,20 +52,20 @@ class KeyStoreModel : public QAbstractItemModel
 		};
 
 		// Qt Model/View interface.
-		virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override final;
-		virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override final;
+		int rowCount(const QModelIndex& parent = QModelIndex()) const final;
+		int columnCount(const QModelIndex& parent = QModelIndex()) const final;
 
-		virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const final;
-		virtual QModelIndex parent(const QModelIndex& index) const final;
+		QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const final;
+		QModelIndex parent(const QModelIndex& index) const final;
 
 		// Custom role for "allowKanji".
 		static const int AllowKanjiRole = Qt::UserRole;
 
-		virtual QVariant data(const QModelIndex& index, int role) const override final;
-		virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override final;
-		virtual Qt::ItemFlags flags(const QModelIndex &index) const override final;
+		QVariant data(const QModelIndex& index, int role) const final;
+		bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) final;
+		Qt::ItemFlags flags(const QModelIndex &index) const final;
 
-		virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override final;
+		QVariant headerData(int section, Qt::Orientation orientation, int role) const final;
 
 	public:
 		/**

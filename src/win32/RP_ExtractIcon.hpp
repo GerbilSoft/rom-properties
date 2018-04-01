@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.hpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
@@ -56,7 +55,7 @@ RP_ExtractIcon : public LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IE
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
 	public:
 		/**
@@ -89,27 +88,27 @@ RP_ExtractIcon : public LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IE
 
 	public:
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) override final;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) override final;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override final;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override final;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override final;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override final;
+		IFACEMETHODIMP IsDirty(void) final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
 
 		// IExtractIconW
 		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPWSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) override final;
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
 		IFACEMETHODIMP Extract(LPCWSTR pszFile, UINT nIconIndex,
 			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) override final;
+			UINT nIconSize) final;
 
 		// IExtractIconA
 		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) override final;
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
 		IFACEMETHODIMP Extract(LPCSTR pszFile, UINT nIconIndex,
 			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) override final;
+			UINT nIconSize) final;
 };
 
 #ifdef __CRT_UUID_DECL

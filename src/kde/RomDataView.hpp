@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RomDataView.hpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -53,14 +53,14 @@ class RomDataView : public QWidget
 		 * This means that this tab has been selected.
 		 * @param event QShowEvent.
 		 */
-		virtual void showEvent(QShowEvent *event) override final;
+		void showEvent(QShowEvent *event) final;
 
 		/**
 		 * Window has been hidden.
 		 * This means that a different tab has been selected.
 		 * @param event QHideEvent.
 		 */
-		virtual void hideEvent(QHideEvent *event) override final;
+		void hideEvent(QHideEvent *event) final;
 
 		/**
 		 * Event filter for recalculating RFT_LISTDATA row heights.
@@ -68,7 +68,7 @@ class RomDataView : public QWidget
 		 * @param event Event.
 		 * @return True to filter the event; false to pass it through.
 		 */
-		virtual bool eventFilter(QObject *object, QEvent *event) override final;
+		bool eventFilter(QObject *object, QEvent *event) final;
 
 	protected slots:
 		/** Widget slots. **/

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_DISC_PARTITIONFILE_HPP__
@@ -55,7 +54,7 @@ class PartitionFile : public IRpFile
 		 * This usually only returns false if an error occurred.
 		 * @return True if the file is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const override final;
+		bool isOpen(void) const final;
 
 		/**
 		 * dup() the file handle.
@@ -68,12 +67,12 @@ class PartitionFile : public IRpFile
 		 *
 		 * @return dup()'d file, or nullptr on error.
 		 */
-		virtual IRpFile *dup(void) override final;
+		IRpFile *dup(void) final;
 
 		/**
 		 * Close the file.
 		 */
-		virtual void close(void) override final;
+		void close(void) final;
 
 		/**
 		 * Read data from the file.
@@ -81,7 +80,7 @@ class PartitionFile : public IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override final;
+		size_t read(void *ptr, size_t size) final;
 
 		/**
 		 * Write data to the file.
@@ -90,27 +89,27 @@ class PartitionFile : public IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
-		virtual size_t write(const void *ptr, size_t size) override final;
+		size_t write(const void *ptr, size_t size) final;
 
 		/**
 		 * Set the file position.
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override final;
+		int seek(int64_t pos) final;
 
 		/**
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		virtual int64_t tell(void) override final;
+		int64_t tell(void) final;
 
 		/**
 		 * Truncate the file.
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int truncate(int64_t size = 0) override final;
+		int truncate(int64_t size = 0) final;
 
 	public:
 		/** File properties. **/
@@ -119,13 +118,13 @@ class PartitionFile : public IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		virtual int64_t size(void) override final;
+		int64_t size(void) final;
 
 		/**
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		virtual std::string filename(void) const override final;
+		std::string filename(void) const final;
 
 	protected:
 		IDiscReader *m_partition;
