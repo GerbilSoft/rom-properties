@@ -303,14 +303,14 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		OS_LongPathAware	= (1 << 5),
 	} OS_Compatibility_t;
 
-	// TODO: Make at least "Long Path Aware" translatable?
+	// NOTE: OS names aren't translatable, but "Long Path Aware" is.
 	static const char *const OS_Compatibility_names[] = {
 		"Windows Vista",
 		"Windows 7",
 		"Windows 8",
 		"Windows 8.1",
 		"Windows 10",
-		"Long Path Aware",
+		NOP_C_("EXE|Manifest|OSCompatibility", "Long Path Aware"),
 	};
 
 	FIRST_CHILD_ELEMENT_NS(compatibility, assembly, "compatibility", "asmv1");
@@ -354,8 +354,8 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			}
 
 			// Show the bitfield.
-			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(
-				OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
+			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector_i18n(
+				"EXE|Manifest|OSCompatibility", OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
 			fields->addField_bitfield(C_("EXE|Manifest", "Compatibility"),
 				v_OS_Compatibility_names, 2, compat);
 		}
