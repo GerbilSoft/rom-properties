@@ -478,7 +478,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|DGroupType", "Multiple"),
 		NOP_C_("EXE|DGroupType", "(null)"),
 	};
-	fields->addField_string("DGroup Type",
+	fields->addField_string(C_("EXE", "DGroup Type"),
 		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
 
 	// Program flags.
@@ -854,7 +854,7 @@ void EXEPrivate::addFields_PE(void)
 	};
 
 	// Subsystem name and version.
-	fields->addField_string("Subsystem",
+	fields->addField_string(C_("EXE", "Subsystem"),
 		rp_sprintf("%s %u.%u",
 			(pe_subsystem < ARRAY_SIZE(subsysNames)
 				? dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem])
