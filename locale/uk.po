@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-03-31 12:10-0400\n"
+"POT-Creation-Date: 2018-04-03 23:29-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -264,62 +264,62 @@ msgctxt "ConfigDialog"
 msgid "&Key Manager"
 msgstr ""
 
+#: ../src/kde/config/ImageTypesTab.cpp:234
+#: ../src/win32/config/ImageTypesTab.cpp:385
+msgctxt "ImageTypesTab|Values"
+msgid "No"
+msgstr ""
+
 #: ../src/kde/config/ImageTypesTab.cpp:235
 #: ../src/win32/config/ImageTypesTab.cpp:386
 msgctxt "ImageTypesTab|Values"
-msgid "No"
+msgid "1"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:236
 #: ../src/win32/config/ImageTypesTab.cpp:387
 msgctxt "ImageTypesTab|Values"
-msgid "1"
+msgid "2"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:237
 #: ../src/win32/config/ImageTypesTab.cpp:388
 msgctxt "ImageTypesTab|Values"
-msgid "2"
+msgid "3"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:238
 #: ../src/win32/config/ImageTypesTab.cpp:389
 msgctxt "ImageTypesTab|Values"
-msgid "3"
+msgid "4"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:239
 #: ../src/win32/config/ImageTypesTab.cpp:390
 msgctxt "ImageTypesTab|Values"
-msgid "4"
+msgid "5"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:240
 #: ../src/win32/config/ImageTypesTab.cpp:391
 msgctxt "ImageTypesTab|Values"
-msgid "5"
+msgid "6"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:241
 #: ../src/win32/config/ImageTypesTab.cpp:392
 msgctxt "ImageTypesTab|Values"
-msgid "6"
+msgid "7"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:242
 #: ../src/win32/config/ImageTypesTab.cpp:393
 msgctxt "ImageTypesTab|Values"
-msgid "7"
+msgid "8"
 msgstr ""
 
 #: ../src/kde/config/ImageTypesTab.cpp:243
 #: ../src/win32/config/ImageTypesTab.cpp:394
-msgctxt "ImageTypesTab|Values"
-msgid "8"
-msgstr ""
-
-#: ../src/kde/config/ImageTypesTab.cpp:244
-#: ../src/win32/config/ImageTypesTab.cpp:395
 msgctxt "ImageTypesTab|Values"
 msgid "9"
 msgstr ""
@@ -424,7 +424,7 @@ msgstr[2] ""
 
 #. tr: Wii keys.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:355
-#: ../src/win32/config/KeyManagerTab.cpp:1431
+#: ../src/win32/config/KeyManagerTab.cpp:1449
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
 msgstr ""
@@ -437,7 +437,7 @@ msgstr ""
 
 #. tr: Wii U otp.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:374
-#: ../src/win32/config/KeyManagerTab.cpp:1469
+#: ../src/win32/config/KeyManagerTab.cpp:1488
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
 msgstr ""
@@ -450,7 +450,7 @@ msgstr ""
 
 #. tr: 3DS boot9.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:393
-#: ../src/win32/config/KeyManagerTab.cpp:1507
+#: ../src/win32/config/KeyManagerTab.cpp:1527
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
 msgstr ""
@@ -464,7 +464,7 @@ msgstr ""
 #. tr: 3DS aeskeydb.bin dialog title.
 #. tr: aeskeydb.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:412
-#: ../src/win32/config/KeyManagerTab.cpp:1545
+#: ../src/win32/config/KeyManagerTab.cpp:1566
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
 msgstr ""
@@ -477,21 +477,21 @@ msgstr ""
 
 #. tr: Column 0: Key Name.
 #: ../src/kde/config/KeyStoreModel.cpp:426
-#: ../src/win32/config/KeyManagerTab.cpp:371
+#: ../src/win32/config/KeyManagerTab.cpp:389
 msgctxt "KeyManagerTab"
 msgid "Key Name"
 msgstr ""
 
 #. tr: Column 1: Value.
 #: ../src/kde/config/KeyStoreModel.cpp:429
-#: ../src/win32/config/KeyManagerTab.cpp:380
+#: ../src/win32/config/KeyManagerTab.cpp:398
 msgctxt "KeyManagerTab"
 msgid "Value"
 msgstr ""
 
 #. tr: Column 2: Verification status.
 #: ../src/kde/config/KeyStoreModel.cpp:432
-#: ../src/win32/config/KeyManagerTab.cpp:385
+#: ../src/win32/config/KeyManagerTab.cpp:403
 msgctxt "KeyManagerTab"
 msgid "Valid?"
 msgstr ""
@@ -3681,6 +3681,11 @@ msgctxt "EXE|DGroupType"
 msgid "(null)"
 msgstr ""
 
+#: ../src/libromdata/Other/EXE.cpp:481
+msgctxt "EXE"
+msgid "DGroup Type"
+msgstr ""
+
 #: ../src/libromdata/Other/EXE.cpp:487
 msgctxt "EXE|ProgFlags"
 msgid "Global Init"
@@ -3910,6 +3915,11 @@ msgctxt "EXE|Subsystem"
 msgid "Xbox"
 msgstr ""
 
+#: ../src/libromdata/Other/EXE.cpp:857
+msgctxt "EXE"
+msgid "Subsystem"
+msgstr ""
+
 #: ../src/libromdata/Other/EXE.cpp:861 ../src/libromdata/Other/EXE.cpp:1370
 msgctxt "EXE"
 msgid "Unknown"
@@ -4118,6 +4128,11 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_manifest.cpp:288
 msgctxt "EXE|Manifest"
 msgid "DPI Awareness"
+msgstr ""
+
+#: ../src/libromdata/Other/EXE_manifest.cpp:313
+msgctxt "EXE|Manifest|OSCompatibility"
+msgid "Long Path Aware"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:359
@@ -5447,42 +5462,43 @@ msgid "Downloads"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:719
+#: ../src/win32/config/ImageTypesTab.cpp:718
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr ""
 
-#: ../src/win32/config/KeyManagerTab.cpp:348
+#: ../src/win32/config/KeyManagerTab.cpp:366
 msgctxt "KeyManagerTab"
 msgid "Import..."
 msgstr ""
 
-#. tr: Wii keys.bin file filter. (Win32)
-#: ../src/win32/config/KeyManagerTab.cpp:1433
+#. tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+#: ../src/win32/config/KeyManagerTab.cpp:1451
 msgctxt "KeyManagerTab"
-msgid "keys.bin"
+msgid "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
-#. tr: Wii U otp.bin file filter. (Win32)
-#: ../src/win32/config/KeyManagerTab.cpp:1471
+#. tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+#: ../src/win32/config/KeyManagerTab.cpp:1490
 msgctxt "KeyManagerTab"
-msgid "otp.bin"
+msgid "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
-#. tr: 3DS boot9.bin file filter. (Win32)
-#: ../src/win32/config/KeyManagerTab.cpp:1509
+#. tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+#: ../src/win32/config/KeyManagerTab.cpp:1529
 msgctxt "KeyManagerTab"
-msgid "boot9.bin"
+msgid "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
-#. tr: aeskeydb.bin file filter. (Win32)
-#: ../src/win32/config/KeyManagerTab.cpp:1547
+#. tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+#: ../src/win32/config/KeyManagerTab.cpp:1568
 msgctxt "KeyManagerTab"
-msgid "aeskeydb.bin"
+msgid ""
+"aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1598
+#: ../src/win32/config/KeyManagerTab.cpp:1620
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr ""
