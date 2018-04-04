@@ -1,4 +1,4 @@
-This copy of tinyxml2-5.0.1 is a modified version of the original.
+This copy of tinyxml2-6.0.0 is a modified version of the original.
 
 The following changes have been made to the original:
 
@@ -12,8 +12,5 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
-- Added fall-through comments for gcc-7.1's -Wimplicit-fallthrough
-  warning, which is enabled by default.
-
-To obtain the original tinyxml2-5.0.1, visit:
+To obtain the original tinyxml2-6.0.0, visit:
 https://github.com/leethomason/tinyxml2

@@ -1,8 +1,8 @@
 # rom-properties:
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
+	SET(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS} -fpic -fPIC")
+	SET(CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -fpic -fPIC")
 ENDIF(UNIX AND NOT APPLE)
 
 IF(BIICODE)
@@ -16,7 +16,7 @@ ENDIF(BIICODE)
 #cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 #cmake_policy(VERSION 2.6)
 #if(POLICY CMP0063)
-#       cmake_policy(SET CMP0063 OLD)
+#	cmake_policy(SET CMP0063 OLD)
 #endif()
 
 project(tinyxml2)
@@ -30,8 +30,8 @@ project(tinyxml2)
 ################################
 # set lib version here
 
-set(GENERIC_LIB_VERSION "5.0.1")
-set(GENERIC_LIB_SOVERSION "5")
+set(GENERIC_LIB_VERSION "6.0.0")
+set(GENERIC_LIB_SOVERSION "6")
 
 ################################
 # Add definitions
@@ -54,11 +54,8 @@ option(BUILD_STATIC_LIBS "build as static library" OFF)
 option(BUILD_TESTS "build xmltest (deprecated: Use BUILD_TESTING)" ON)
 ENDIF(0) # rom-properties
 
-# rom-properties: Disabled; handled in the main project.
-IF(0)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
-ENDIF(0) # rom-properties
 
 # to distinguish between debug and release lib
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -106,14 +103,16 @@ export(TARGETS tinyxml2
 ENDIF(0) # rom-properties
 
 # rom-properties:
-# - Disabled installation of import libraries.
+# - Disabled installation of export files and import libraries.
 # - Use the correct RUNTIME destination.
 # - Install PDB files.
 install(TARGETS tinyxml2
-	RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-	#LIBRARY DESTINATION ${INSTALL_LIB_DIR}
-	#ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
-	FRAMEWORK DESTINATION ${INSTALL_LIB_DIR})
+        #EXPORT ${CMAKE_PROJECT_NAME}Targets
+        RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+        #LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+        #ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
+	)
+
 # rom-properties: Split debug functionality; Windows subsystem.
 DO_SPLIT_DEBUG(tinyxml2)
 SET_WINDOWS_SUBSYSTEM(tinyxml2 WIN32)
