@@ -593,9 +593,8 @@ STDAPI DllRegisterServer(void)
 
 	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
 	// Manually deleting it here.
-	lResult = hkcr.deleteSubKey(L"*.vxd");
-	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
-		return SELFREG_E_CLASS;
+	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
+	hkcr.deleteSubKey(L"*.vxd");
 	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 		wchar_t regPath[288];
 		int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
@@ -606,11 +605,10 @@ STDAPI DllRegisterServer(void)
 			continue;
 		}
 
-		RegKey hku(HKEY_USERS, regPath, KEY_WRITE, false);
-		if (!hku.isOpen()) return SELFREG_E_CLASS;
-		lResult = hku.deleteSubKey(L"*.vxd");
-		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
-			return SELFREG_E_CLASS;
+		RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
+		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
+			continue;
+		hkuvxd.deleteSubKey(L"*.vxd");
 	}
 
 	// Register RP_ShellPropSheetExt for all file types.
@@ -678,9 +676,8 @@ STDAPI DllUnregisterServer(void)
 
 	// NOTE: "*.vxd" was accidentally used in LibRomData::EXE.
 	// Manually deleting it here.
-	lResult = hkcr.deleteSubKey(L"*.vxd");
-	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
-		return SELFREG_E_CLASS;
+	// NOTE: Ignoring any errors to prevent `regsvr32` from failing.
+	hkcr.deleteSubKey(L"*.vxd");
 	for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 		wchar_t regPath[288];
 		int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
@@ -691,11 +688,10 @@ STDAPI DllUnregisterServer(void)
 			continue;
 		}
 
-		RegKey hku(HKEY_USERS, regPath, KEY_WRITE, false);
-		if (!hku.isOpen()) return SELFREG_E_CLASS;
-		lResult = hku.deleteSubKey(L"*.vxd");
-		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
-			return SELFREG_E_CLASS;
+		RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
+		if (!hkuvxd.isOpen() || hkuvxd.lOpenRes() == ERROR_FILE_NOT_FOUND)
+			continue;
+		hkuvxd.deleteSubKey(L"*.vxd");
 	}
 
 	// Unregister RP_ShellPropSheetExt for all file types.
