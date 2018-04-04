@@ -61,7 +61,11 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_DEBUG_POSTFIX "d")
 
 if(BUILD_SHARED_LIBS)
-add_library(tinyxml2 SHARED tinyxml2.cpp tinyxml2.h)
+# rom-properties: Add the custom .rc file in Windows DLL builds.
+IF(WIN32)
+	SET(TINYXML2_RC "tinyxml2.rc")
+ENDIF(WIN32)
+add_library(tinyxml2 SHARED tinyxml2.cpp tinyxml2.h ${TINYXML2_RC})
 
 set_target_properties(tinyxml2 PROPERTIES
         #COMPILE_DEFINITIONS "TINYXML2_EXPORT"

@@ -1,0 +1,47 @@
+#include <windows.h>
+
+#define TINYXML2_VERSION_NUMERIC 6,0,0,0
+#define TINYXML2_VERSION_STRING "6.0.0"
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+VS_VERSION_INFO		VERSIONINFO
+  FILEVERSION		TINYXML2_VERSION_NUMERIC
+  PRODUCTVERSION	TINYXML2_VERSION_NUMERIC
+  FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+  FILEFLAGS		VS_FF_DEBUG
+#else
+  FILEFLAGS		0
+#endif
+  FILEOS		VOS__WINDOWS32
+  FILETYPE		VFT_DLL
+  FILESUBTYPE		0	// not used
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    //language ID = U.S. English, char set = Unicode
+    BEGIN
+      VALUE "FileDescription",	"TinyXML-2\0"
+      VALUE "FileVersion",	TINYXML2_VERSION_STRING "\0"
+#ifdef _DEBUG
+      VALUE "InternalName",	"tinyxml2d.dll\0"
+#else
+      VALUE "InternalName",	"tinyxml2.dll\0"
+#endif
+      VALUE "LegalCopyright",	"(C) 2000-2017 Lee Thomason\0"
+#ifdef _DEBUG
+      VALUE "OriginalFilename",	"tinyxml2d.dll\0"
+#else
+      VALUE "OriginalFilename",	"tinyxml2.dll\0"
+#endif
+      VALUE "ProductName",	"TinyXML-2\0"
+      VALUE "ProductVersion",	TINYXML2_VERSION_STRING "\0"
+      VALUE "Comments",		"For more information visit https://github.com/leethomason/tinyxml2\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 1252
+  END
+END

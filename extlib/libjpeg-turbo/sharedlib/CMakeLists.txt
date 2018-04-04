@@ -28,11 +28,16 @@ if(WITH_SIMD)
   set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
 endif()
 
+# rom-properties: Add the custom .rc file in Windows DLL builds.
+IF(WIN32)
+	SET(LIBJPEG_TUBRO_RC "libjpeg-turbo.rc")
+ENDIF(WIN32)
+
 if(WITH_MEM_SRCDST AND NOT WITH_JPEG8)
-  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
+  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS} ${LIBJPEG_TUBRO_RC}
     ${TOPSRCDIR}/win/jpeg${DLL_VERSION}-memsrcdst.def)
 else()
-  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS}
+  add_library(jpeg SHARED ${JPEG_SRCS} ${SIMD_OBJS} ${LIBJPEG_TUBRO_RC}
     ${TOPSRCDIR}/win/jpeg${DLL_VERSION}.def)
 endif()
 set_target_properties(jpeg PROPERTIES SOVERSION ${DLL_VERSION}

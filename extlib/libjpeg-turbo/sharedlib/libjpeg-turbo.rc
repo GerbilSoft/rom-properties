@@ -1,0 +1,47 @@
+#include <windows.h>
+
+#define LIBJPEG_TURBO_VERSION_NUMERIC 1,5,3,0
+#define LIBJPEG_TURBO_VERSION_STRING "1.5.3"
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+VS_VERSION_INFO		VERSIONINFO
+  FILEVERSION		LIBJPEG_TURBO_VERSION_NUMERIC
+  PRODUCTVERSION	LIBJPEG_TURBO_VERSION_NUMERIC
+  FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+  FILEFLAGS		VS_FF_DEBUG
+#else
+  FILEFLAGS		0
+#endif
+  FILEOS		VOS__WINDOWS32
+  FILETYPE		VFT_DLL
+  FILESUBTYPE		0	// not used
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    //language ID = U.S. English, char set = Unicode
+    BEGIN
+      VALUE "FileDescription",	"libjpeg-turbo\0"
+      VALUE "FileVersion",	LIBJPEG_TURBO_VERSION_STRING "\0"
+#ifdef _DEBUG
+      VALUE "InternalName",	"jpeg62d.dll\0"
+#else
+      VALUE "InternalName",	"jpeg62.dll\0"
+#endif
+      VALUE "LegalCopyright",	"(C) 1991-2017 libjpeg(-turbo) contributors\0"
+#ifdef _DEBUG
+      VALUE "OriginalFilename",	"jpeg62d.dll\0"
+#else
+      VALUE "OriginalFilename",	"jpeg62.dll\0"
+#endif
+      VALUE "ProductName",	"libjpeg-turbo\0"
+      VALUE "ProductVersion",	LIBJPEG_TURBO_VERSION_STRING "\0"
+      VALUE "Comments",		"For more information visit https://libjpeg-turbo.org/\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 1252
+  END
+END
