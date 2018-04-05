@@ -1153,6 +1153,7 @@ int DirectDrawSurface::loadFieldData(void)
 			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
 		} else {
 			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+				// tr: %1$s == pixel format name; %2$u == bits per pixel
 				rp_sprintf_p(C_("DirectDrawSurface", "%1$s (%2$u-bit)"),
 					((ddspf.dwFlags & DDPF_ALPHAPIXELS)
 						? C_("DirectDrawSurface", "Luminance + Alpha")

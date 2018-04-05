@@ -2,7 +2,8 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
- * Copyright (c) 2016-2017 by Egor.                                        *
+ * Copyright (c) 2016-2018 by Egor.                                        *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "stdafx.h"
@@ -86,12 +86,14 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 			if (image && image->isValid()) {
 				found = true;
 				cerr << "-- " <<
+					// tr: %1$s == image type name, %2$s == output filename
 					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
 						RomData::getImageTypeName((RomData::ImageType)it->image_type),
 						it->filename) << endl;
 				if (it->is_bmp) {
 					if (rpbmp(it->filename, image)) {
 						// TODO: Error code.
+						// tr: Filename
 						cerr << "   " << rp_sprintf(C_("rpcli", "Couldn't create file '%s'"), it->filename) << endl;
 					} else {
 						cerr << "   " << C_("rpcli", "Done") << endl;
@@ -99,6 +101,7 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 				} else {
 					int errcode = RpPng::save(it->filename, image);
 					if (errcode != 0) {
+						// tr: %1$s == filename, %2%s == error message
 						cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
 							it->filename, strerror(-errcode)) << endl;
 					} else {

@@ -37,7 +37,9 @@ using namespace LibRpBase;
 #include <cassert>
 
 // C++ includes.
+#include <sstream>
 #include <string>
+using std::ostringstream;
 using std::string;
 
 // Qt includes.
@@ -137,6 +139,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		case KeyStoreQt::Import_OpenError:
 			// TODO: Show the actual error.
 			msg = rp_sprintf(C_("KeyManagerTab",
+				// tr: %s == filename
 				"An error occurred while opening '%s'."),
 				QFileInfo(filename).fileName().toUtf8().constData());
 			icon = MessageWidget::ICON_CRITICAL;
@@ -145,6 +148,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		case KeyStoreQt::Import_ReadError:
 			// TODO: Show the actual error.
 			msg = rp_sprintf(C_("KeyManagerTab",
+				// tr: %s == filename
 				"An error occurred while reading '%s'."),
 				QFileInfo(filename).fileName().toUtf8().constData());
 			icon = MessageWidget::ICON_CRITICAL;
@@ -152,6 +156,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreQt::Import_InvalidFile:
 			msg = rp_sprintf_p(C_("KeyManagerTab",
+				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
 				QFileInfo(filename).fileName().toUtf8().constData(),
 				keyType.toUtf8().constData());
@@ -160,70 +165,98 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreQt::Import_NoKeysImported:
 			msg = rp_sprintf(C_("KeyManagerTab",
+				// tr: %s == filename
 				"No keys were imported from '%s'."),
 				QFileInfo(filename).fileName().toUtf8().constData());
 			icon = MessageWidget::ICON_WARNING;
 			showKeyStats = true;
 			break;
 
-		case KeyStoreQt::Import_KeysImported:
-			// TODO: printf() formatting for localized numbers.
+		case KeyStoreQt::Import_KeysImported: {
+			// NOTE: Formatting numbers using ostringstream() because
+			// MSVC's printf() doesn't support thousands separators.
+			// TODO: CMake checks?
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
+			ostringstream s_keyCount;
+			s_keyCount << keyCount;
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
-				"%u key was imported from '%s'.",
-				"%u keys were imported from '%s'.",
-				keyCount), keyCount,
+				// tr: %1$s == number of keys (formatted), %2$u == filename
+				"%1$s key was imported from '%2$s'.",
+				"%1$s keys were imported from '%2$s'.",
+				keyCount), s_keyCount.str().c_str(),
 				QFileInfo(filename).fileName().toUtf8().constData());
 			icon = MessageWidget::ICON_INFORMATION;
 			showKeyStats = true;
 			break;
+		}
 	}
 
 	// U+2022 (BULLET) == \xE2\x80\xA2
 	static const char nl_bullet[] = "\n\xE2\x80\xA2 ";
 
 	if (showKeyStats) {
+		// NOTE: Formatting numbers using ostringstream() because
+		// MSVC's printf() doesn't support thousands separators.
+		// TODO: CMake checks?
+		ostringstream s_num;
+
 		if (iret.keysExist > 0) {
+			s_num << (unsigned int)iret.keysExist;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				"%u key already exists in the Key Manager.",
-				"%u keys already exist in the Key Manager.",
-				iret.keysExist), iret.keysExist);
+				// tr: %s == number of keys (formatted)
+				"%s key already exists in the Key Manager.",
+				"%s keys already exist in the Key Manager.",
+				iret.keysExist), s_num.str().c_str());
 		}
 		if (iret.keysInvalid > 0) {
+			s_num.str("");
+			s_num << (unsigned int)iret.keysInvalid;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				"%u key was not imported because it is incorrect.",
-				"%u keys were not imported because they are incorrect.",
-				iret.keysInvalid), iret.keysInvalid);
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is incorrect.",
+				"%s keys were not imported because they are incorrect.",
+				iret.keysInvalid), s_num.str().c_str());
 		}
 		if (iret.keysNotUsed > 0) {
+			s_num.str("");
+			s_num << (unsigned int)iret.keysNotUsed;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				"%u key was not imported because it isn't used by rom-properties.",
-				"%u keys were not imported because they aren't used by rom-properties.",
-				iret.keysNotUsed), iret.keysNotUsed);
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it isn't used by rom-properties.",
+				"%s keys were not imported because they aren't used by rom-properties.",
+				iret.keysNotUsed), s_num.str().c_str());
 		}
 		if (iret.keysCantDecrypt > 0) {
+			s_num.str("");
+			s_num << (unsigned int)iret.keysCantDecrypt;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				"%u key was not imported because it is encrypted and the key isn't available.",
-				"%u keys were not imported because they are encrypted and the key isn't available.",
-				iret.keysCantDecrypt), iret.keysCantDecrypt);
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is encrypted and the master key isn't available.",
+				"%s keys were not imported because they are encrypted and the master key isn't available.",
+				iret.keysCantDecrypt), s_num.str().c_str());
 		}
 		if (iret.keysImportedVerify > 0) {
+			s_num.str("");
+			s_num << (unsigned int)iret.keysImportedVerify;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				"%u key has been imported and verified as correct.",
-				"%u keys have been imported and verified as correct.",
-				iret.keysImportedVerify), iret.keysImportedVerify);
+				// tr: %s == number of keys (formatted)
+				"%s key has been imported and verified as correct.",
+				"%s keys have been imported and verified as correct.",
+				iret.keysImportedVerify), s_num.str().c_str());
 		}
 		if (iret.keysImportedNoVerify > 0) {
+			s_num.str("");
+			s_num << (unsigned int)iret.keysImportedNoVerify;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				"%u key has been imported without verification.",
-				"%u keys have been imported without verification.",
-				iret.keysImportedNoVerify), iret.keysImportedNoVerify);
+				"%s key has been imported without verification.",
+				"%s keys have been imported without verification.",
+				iret.keysImportedNoVerify), s_num.str().c_str());
 		}
 	}
 

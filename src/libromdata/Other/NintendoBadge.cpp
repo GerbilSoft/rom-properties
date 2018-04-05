@@ -661,15 +661,15 @@ int NintendoBadge::loadFieldData(void)
 					bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
 					if (isN3DS) {
 						if (region) {
-							// tr: 1: Title name; 2: Region
+							// tr: %1$s == Title name, %2$s == Region
 							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (New3DS) (%2$s)"), title, region);
 						} else {
-							// tr: 1: Title name
+							// tr: Title name
 							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"), title);
 						}
 					} else {
 						if (region) {
-							// tr: 1: Title name; 2: Region
+							// tr: %1$s == Title name, %2$s == Region
 							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (%2$s)"), title, region);
 						} else {
 							str = title;

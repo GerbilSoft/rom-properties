@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-04 22:36-0400\n"
+"POT-Creation-Date: 2018-04-04 22:57-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -128,7 +128,7 @@ msgstr ""
 
 #: ../build/src/kde/kde4/ui_KeyManagerTab.h:97
 #: ../build/src/kde/kde5/ui_KeyManagerTab.h:97
-#: ../src/kde/config/KeyManagerTab.cpp:258
+#: ../src/kde/config/KeyManagerTab.cpp:291
 msgctxt "KeyManagerTab"
 msgid "I&mport"
 msgstr ""
@@ -325,146 +325,157 @@ msgctxt "ImageTypesTab|Values"
 msgid "9"
 msgstr ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:132
+#: ../src/kde/config/KeyManagerTab.cpp:134
 msgctxt "KeyManagerTab"
 msgid ""
 "An invalid parameter was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
 msgstr ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:140
+#. tr: %s == filename
+#: ../src/kde/config/KeyManagerTab.cpp:143
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '%s'."
 msgstr ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:148
+#. tr: %s == filename
+#: ../src/kde/config/KeyManagerTab.cpp:152
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '%s'."
 msgstr ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:155
+#. tr: %1$s == filename, %2$s == type of file
+#: ../src/kde/config/KeyManagerTab.cpp:160
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "The file '%1$s' is not a valid %2$s file."
 msgstr ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:163
+#. tr: %s == filename
+#: ../src/kde/config/KeyManagerTab.cpp:169
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '%s'."
 msgstr ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:173
+#. tr: %1$s == number of keys (formatted), %2$u == filename
+#: ../src/kde/config/KeyManagerTab.cpp:184
 #, c-format
 msgctxt "KeyManagerTab"
-msgid "%u key was imported from '%s'."
-msgid_plural "%u keys were imported from '%s'."
+msgid "%1$s key was imported from '%2$s'."
+msgid_plural "%1$s keys were imported from '%2$s'."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:189
+#. tr: %s == number of keys (formatted)
+#: ../src/kde/config/KeyManagerTab.cpp:208
 #, c-format
 msgctxt "KeyManagerTab"
-msgid "%u key already exists in the Key Manager."
-msgid_plural "%u keys already exist in the Key Manager."
+msgid "%s key already exists in the Key Manager."
+msgid_plural "%s keys already exist in the Key Manager."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:196
+#. tr: %s == number of keys (formatted)
+#: ../src/kde/config/KeyManagerTab.cpp:218
 #, c-format
 msgctxt "KeyManagerTab"
-msgid "%u key was not imported because it is incorrect."
-msgid_plural "%u keys were not imported because they are incorrect."
+msgid "%s key was not imported because it is incorrect."
+msgid_plural "%s keys were not imported because they are incorrect."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:203
+#. tr: %s == number of keys (formatted)
+#: ../src/kde/config/KeyManagerTab.cpp:228
 #, c-format
 msgctxt "KeyManagerTab"
-msgid "%u key was not imported because it isn't used by rom-properties."
+msgid "%s key was not imported because it isn't used by rom-properties."
 msgid_plural ""
-"%u keys were not imported because they aren't used by rom-properties."
+"%s keys were not imported because they aren't used by rom-properties."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:210
+#. tr: %s == number of keys (formatted)
+#: ../src/kde/config/KeyManagerTab.cpp:238
 #, c-format
 msgctxt "KeyManagerTab"
 msgid ""
-"%u key was not imported because it is encrypted and the key isn't available."
-msgid_plural ""
-"%u keys were not imported because they are encrypted and the key isn't "
+"%s key was not imported because it is encrypted and the master key isn't "
 "available."
+msgid_plural ""
+"%s keys were not imported because they are encrypted and the master key "
+"isn't available."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:217
+#. tr: %s == number of keys (formatted)
+#: ../src/kde/config/KeyManagerTab.cpp:248
 #, c-format
 msgctxt "KeyManagerTab"
-msgid "%u key has been imported and verified as correct."
-msgid_plural "%u keys have been imported and verified as correct."
+msgid "%s key has been imported and verified as correct."
+msgid_plural "%s keys have been imported and verified as correct."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:224
+#: ../src/kde/config/KeyManagerTab.cpp:257
 #, c-format
 msgctxt "KeyManagerTab"
-msgid "%u key has been imported without verification."
-msgid_plural "%u keys have been imported without verification."
+msgid "%s key has been imported without verification."
+msgid_plural "%s keys have been imported without verification."
 msgstr[0] ""
 msgstr[1] ""
 
 #. tr: Wii keys.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:355
+#: ../src/kde/config/KeyManagerTab.cpp:388
 #: ../src/win32/config/KeyManagerTab.cpp:1449
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
 msgstr ""
 
 #. tr: Wii keys.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:358
+#: ../src/kde/config/KeyManagerTab.cpp:391
 msgctxt "KeyManagerTab"
 msgid "keys.bin (keys.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: Wii U otp.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:374
+#: ../src/kde/config/KeyManagerTab.cpp:407
 #: ../src/win32/config/KeyManagerTab.cpp:1488
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
 msgstr ""
 
 #. tr: Wii U otp.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:377
+#: ../src/kde/config/KeyManagerTab.cpp:410
 msgctxt "KeyManagerTab"
 msgid "otp.bin (otp.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: 3DS boot9.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:393
+#: ../src/kde/config/KeyManagerTab.cpp:426
 #: ../src/win32/config/KeyManagerTab.cpp:1527
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
 msgstr ""
 
 #. tr: 3DS boot9.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:396
+#: ../src/kde/config/KeyManagerTab.cpp:429
 msgctxt "KeyManagerTab"
 msgid "boot9.bin (boot9.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: 3DS aeskeydb.bin dialog title.
 #. tr: aeskeydb.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:412
+#: ../src/kde/config/KeyManagerTab.cpp:445
 #: ../src/win32/config/KeyManagerTab.cpp:1566
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
 msgstr ""
 
 #. tr: 3DS aeskeydb.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:415
+#: ../src/kde/config/KeyManagerTab.cpp:448
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
@@ -649,23 +660,24 @@ msgid "Release Date"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:569
-#: ../src/libromdata/Console/Dreamcast.cpp:573
+#: ../src/libromdata/Console/Dreamcast.cpp:574
 msgctxt "Dreamcast"
 msgid "Disc #"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:570
+#. tr: Disc X of Y (for multi-disc games)
+#: ../src/libromdata/Console/Dreamcast.cpp:571
 #, c-format
 msgctxt "Dreamcast|Disc"
 msgid "%1$u of %2$u"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:574
+#: ../src/libromdata/Console/Dreamcast.cpp:575
 msgctxt "Dreamcast"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:587
+#: ../src/libromdata/Console/Dreamcast.cpp:588
 #: ../src/libromdata/Console/GameCube.cpp:429
 #: ../src/libromdata/Console/MegaDrive.cpp:408
 #: ../src/libromdata/Console/SegaSaturn.cpp:500
@@ -677,7 +689,7 @@ msgctxt "Region"
 msgid "Japan"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:588
+#: ../src/libromdata/Console/Dreamcast.cpp:589
 #: ../src/libromdata/Console/GameCube.cpp:476
 #: ../src/libromdata/Console/MegaDrive.cpp:410
 #: ../src/libromdata/Console/SegaSaturn.cpp:502
@@ -688,7 +700,7 @@ msgctxt "Region"
 msgid "USA"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:589
+#: ../src/libromdata/Console/Dreamcast.cpp:590
 #: ../src/libromdata/Console/MegaDrive.cpp:411
 #: ../src/libromdata/Console/SegaSaturn.cpp:503
 #: ../src/libromdata/Console/SNES.cpp:831
@@ -698,166 +710,166 @@ msgctxt "Region"
 msgid "Europe"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:593
+#: ../src/libromdata/Console/Dreamcast.cpp:594
 msgctxt "Dreamcast"
 msgid "Region Code"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:597
+#: ../src/libromdata/Console/Dreamcast.cpp:598
 msgctxt "Dreamcast"
 msgid "Boot Filename"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:626
-#: ../src/libromdata/Console/Dreamcast.cpp:636
+#: ../src/libromdata/Console/Dreamcast.cpp:627
+#: ../src/libromdata/Console/Dreamcast.cpp:637
 msgctxt "Dreamcast"
 msgid "Checksum"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:627
+#: ../src/libromdata/Console/Dreamcast.cpp:628
 #, c-format
 msgctxt "Dreamcast"
 msgid "0x%04X (valid)"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:631
+#: ../src/libromdata/Console/Dreamcast.cpp:632
 #, c-format
 msgctxt "Dreamcast"
 msgid "0x%1$04X (INVALID; should be 0x%2$04X)"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:637
+#: ../src/libromdata/Console/Dreamcast.cpp:638
 #, c-format
 msgctxt "Dreamcast"
 msgid "0x%1$04X (HEADER is INVALID: %2$.4s)"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:653
+#: ../src/libromdata/Console/Dreamcast.cpp:654
 msgctxt "Dreamcast|OSSupport"
 msgid "Windows CE"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:655
+#: ../src/libromdata/Console/Dreamcast.cpp:656
 msgctxt "Dreamcast|OSSupport"
 msgid "VGA Box"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:659
+#: ../src/libromdata/Console/Dreamcast.cpp:660
 msgctxt "Dreamcast"
 msgid "OS Support"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:664
+#: ../src/libromdata/Console/Dreamcast.cpp:665
 msgctxt "Dreamcast|Expansion"
 msgid "Other"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:665
+#: ../src/libromdata/Console/Dreamcast.cpp:666
 msgctxt "Dreamcast|Expansion"
 msgid "Jump Pack"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:666
+#: ../src/libromdata/Console/Dreamcast.cpp:667
 msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:667
+#: ../src/libromdata/Console/Dreamcast.cpp:668
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:671
+#: ../src/libromdata/Console/Dreamcast.cpp:672
 msgctxt "Dreamcast"
 msgid "Expansion Units"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:676
+#: ../src/libromdata/Console/Dreamcast.cpp:677
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Start, A, B, D-Pad"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:677
+#: ../src/libromdata/Console/Dreamcast.cpp:678
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:678
+#: ../src/libromdata/Console/Dreamcast.cpp:679
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:679
+#: ../src/libromdata/Console/Dreamcast.cpp:680
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:680
+#: ../src/libromdata/Console/Dreamcast.cpp:681
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:681
+#: ../src/libromdata/Console/Dreamcast.cpp:682
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:682
+#: ../src/libromdata/Console/Dreamcast.cpp:683
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Second D-Pad"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:683
+#: ../src/libromdata/Console/Dreamcast.cpp:684
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:684
+#: ../src/libromdata/Console/Dreamcast.cpp:685
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:685
+#: ../src/libromdata/Console/Dreamcast.cpp:686
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H1"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:686
+#: ../src/libromdata/Console/Dreamcast.cpp:687
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V1"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:687
+#: ../src/libromdata/Console/Dreamcast.cpp:688
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H2"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:688
+#: ../src/libromdata/Console/Dreamcast.cpp:689
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V2"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:692
+#: ../src/libromdata/Console/Dreamcast.cpp:693
 msgctxt "Dreamcast"
 msgid "Req. Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:697
+#: ../src/libromdata/Console/Dreamcast.cpp:698
 msgctxt "Dreamcast|OptCtrl"
 msgid "Light Gun"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:698
+#: ../src/libromdata/Console/Dreamcast.cpp:699
 msgctxt "Dreamcast|OptCtrl"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:699
+#: ../src/libromdata/Console/Dreamcast.cpp:700
 msgctxt "Dreamcast|OptCtrl"
 msgid "Mouse"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:703
+#: ../src/libromdata/Console/Dreamcast.cpp:704
 msgctxt "Dreamcast"
 msgid "Opt. Controller"
 msgstr ""
@@ -1848,98 +1860,99 @@ msgid "Region Code"
 msgstr ""
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:527
-#: ../src/libromdata/Console/SegaSaturn.cpp:531
+#: ../src/libromdata/Console/SegaSaturn.cpp:532
 msgctxt "SegaSaturn"
 msgid "Disc #"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:528
+#. tr: Disc X of Y (for multi-disc games)
+#: ../src/libromdata/Console/SegaSaturn.cpp:529
 #, c-format
 msgctxt "SegaSaturn|Disc"
 msgid "%1$u of %2$u"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:532
+#: ../src/libromdata/Console/SegaSaturn.cpp:533
 msgctxt "SegaSaturn"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:537
+#: ../src/libromdata/Console/SegaSaturn.cpp:538
 msgctxt "SegaSaturn|Peripherals"
 msgid "Control Pad"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:538
+#: ../src/libromdata/Console/SegaSaturn.cpp:539
 msgctxt "SegaSaturn|Peripherals"
 msgid "Analog Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:539
+#: ../src/libromdata/Console/SegaSaturn.cpp:540
 msgctxt "SegaSaturn|Peripherals"
 msgid "Mouse"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:540
+#: ../src/libromdata/Console/SegaSaturn.cpp:541
 msgctxt "SegaSaturn|Peripherals"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:541
+#: ../src/libromdata/Console/SegaSaturn.cpp:542
 msgctxt "SegaSaturn|Peripherals"
 msgid "Steering Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:542
+#: ../src/libromdata/Console/SegaSaturn.cpp:543
 msgctxt "SegaSaturn|Peripherals"
 msgid "Multi-Tap"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:543
+#: ../src/libromdata/Console/SegaSaturn.cpp:544
 msgctxt "SegaSaturn|Peripherals"
 msgid "Light Gun"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:544
+#: ../src/libromdata/Console/SegaSaturn.cpp:545
 msgctxt "SegaSaturn|Peripherals"
 msgid "RAM Cartridge"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:545
+#: ../src/libromdata/Console/SegaSaturn.cpp:546
 msgctxt "SegaSaturn|Peripherals"
 msgid "3D Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:546
+#: ../src/libromdata/Console/SegaSaturn.cpp:547
 msgctxt "SegaSaturn|Peripherals"
 msgid "Link Cable"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:547
+#: ../src/libromdata/Console/SegaSaturn.cpp:548
 msgctxt "SegaSaturn|Peripherals"
 msgid "NetLink"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:548
+#: ../src/libromdata/Console/SegaSaturn.cpp:549
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:549
+#: ../src/libromdata/Console/SegaSaturn.cpp:550
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:550
+#: ../src/libromdata/Console/SegaSaturn.cpp:551
 msgctxt "SegaSaturn|Peripherals"
 msgid "ROM Cartridge"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:551
+#: ../src/libromdata/Console/SegaSaturn.cpp:552
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:557
+#: ../src/libromdata/Console/SegaSaturn.cpp:558
 msgctxt "SegaSaturn"
 msgid "Peripherals"
 msgstr ""
@@ -4188,21 +4201,21 @@ msgctxt "NintendoBadge"
 msgid "None"
 msgstr ""
 
-#. tr: 1: Title name; 2: Region
+#. tr: %1$s == Title name, %2$s == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:665
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (New3DS) (%2$s)"
 msgstr ""
 
-#. tr: 1: Title name
+#. tr: Title name
 #: ../src/libromdata/Other/NintendoBadge.cpp:668
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%s (New3DS)"
 msgstr ""
 
-#. tr: 1: Title name; 2: Region
+#. tr: %1$s == Title name, %2$s == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:673
 #, c-format
 msgctxt "NintendoBadge"
@@ -4324,7 +4337,7 @@ msgstr ""
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1147
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1153
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1155
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1164
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1165
 msgctxt "DirectDrawSurface"
 msgid "Pixel Format"
 msgstr ""
@@ -4341,164 +4354,165 @@ msgctxt "DirectDrawSurface"
 msgid "YUV (%u-bit)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1156
+#. tr: %1$s == pixel format name; %2$u == bits per pixel
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1157
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "%1$s (%2$u-bit)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1158
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1159
 msgctxt "DirectDrawSurface"
 msgid "Luminance + Alpha"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1159
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1160
 msgctxt "DirectDrawSurface"
 msgid "Luminance"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1164
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1165
 msgctxt "DirectDrawSurface"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1257
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1258
 msgctxt "DirectDrawSurface"
 msgid "DX10 Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1259
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1260
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Unknown (0x%08X)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1265
-msgctxt "DirectDrawSurface|dwFlags"
-msgid "Caps"
-msgstr ""
-
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1266
 msgctxt "DirectDrawSurface|dwFlags"
-msgid "Height"
+msgid "Caps"
 msgstr ""
 
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1267
 msgctxt "DirectDrawSurface|dwFlags"
-msgid "Width"
+msgid "Height"
 msgstr ""
 
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1268
 msgctxt "DirectDrawSurface|dwFlags"
+msgid "Width"
+msgstr ""
+
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1269
+msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1274
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1275
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1278
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1279
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Mipmap Count"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1280
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1281
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1283
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1284
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Depth"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1287
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1288
 msgctxt "DirectDrawSurface"
 msgid "Flags"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1294
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1295
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Complex"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1300
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1301
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1306
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1307
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Mipmap"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1310
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1311
 msgctxt "DirectDrawSurface"
 msgid "Caps"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1321
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1322
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Cubemap"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1322
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1323
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1323
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1324
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1325
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1326
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1326
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1327
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1327
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1328
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1328
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1329
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1333
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1334
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1337
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1338
 msgctxt "DirectDrawSurface"
 msgid "Caps2"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1344
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1345
 msgctxt "DirectDrawSurface"
 msgid "Tile Mode"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1345
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1346
 msgctxt "DirectDrawSurface"
 msgid "Base Alignment"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1347
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1348
 msgctxt "DirectDrawSurface"
 msgid "Data Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1349
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1350
 msgctxt "DirectDrawSurface"
 msgid "XDK Version"
 msgstr ""
@@ -5127,153 +5141,156 @@ msgctxt "RomFields|AgeRating"
 msgid "None"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:89
+#. tr: %1$s == image type name, %2$s == output filename
+#: ../src/rpcli/rpcli.cpp:90
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting %1$s into '%2$s'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:95
+#. tr: Filename
+#: ../src/rpcli/rpcli.cpp:97
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't create file '%s'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:97 ../src/rpcli/rpcli.cpp:105
-#: ../src/rpcli/rpcli.cpp:128
+#: ../src/rpcli/rpcli.cpp:99 ../src/rpcli/rpcli.cpp:108
+#: ../src/rpcli/rpcli.cpp:131
 msgctxt "rpcli"
 msgid "Done"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:102 ../src/rpcli/rpcli.cpp:125
+#. tr: %1$s == filename, %2%s == error message
+#: ../src/rpcli/rpcli.cpp:105 ../src/rpcli/rpcli.cpp:128
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't create file '%1$s': %2$s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:116
+#: ../src/rpcli/rpcli.cpp:119
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting animated icon into '%s'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:119
+#: ../src/rpcli/rpcli.cpp:122
 msgctxt "rpcli"
 msgid "APNG not supported, extracting only the first frame"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:134
+#: ../src/rpcli/rpcli.cpp:137
 msgctxt "rpcli"
 msgid "Animated icon not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:137
+#: ../src/rpcli/rpcli.cpp:140
 #, c-format
 msgctxt "rpcli"
 msgid "Image '%s' not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:151
+#: ../src/rpcli/rpcli.cpp:154
 #, c-format
 msgctxt "rpcli"
 msgid "Reading file '%s'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:157
+#: ../src/rpcli/rpcli.cpp:160
 msgctxt "rpcli"
 msgid "Outputting JSON data"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:165
+#: ../src/rpcli/rpcli.cpp:168
 msgctxt "rpcli"
 msgid "ROM is not supported"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:173
+#: ../src/rpcli/rpcli.cpp:176
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't open file: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:195
+#: ../src/rpcli/rpcli.cpp:198
 #, c-format
 msgctxt "rpcli"
 msgid "System language code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:196 ../src/rpcli/rpcli.cpp:209
+#: ../src/rpcli/rpcli.cpp:199 ../src/rpcli/rpcli.cpp:212
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:208
+#: ../src/rpcli/rpcli.cpp:211
 #, c-format
 msgctxt "rpcli"
 msgid "System country code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:226
+#: ../src/rpcli/rpcli.cpp:229
 msgctxt "rpcli"
 msgid "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:227
+#: ../src/rpcli/rpcli.cpp:230
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:229
+#: ../src/rpcli/rpcli.cpp:232
 msgctxt "rpcli"
 msgid "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:231
+#: ../src/rpcli/rpcli.cpp:234
 msgctxt "rpcli"
 msgid "Print system region information."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:232
+#: ../src/rpcli/rpcli.cpp:235
 msgctxt "rpcli"
 msgid "Use JSON output format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:233
+#: ../src/rpcli/rpcli.cpp:236
 msgctxt "rpcli"
 msgid "Extract image N to outfile in PNG format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:234
+#: ../src/rpcli/rpcli.cpp:237
 msgctxt "rpcli"
 msgid "Extract image N to outfile in BMP format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:235
+#: ../src/rpcli/rpcli.cpp:238
 msgctxt "rpcli"
 msgid "Extract the animated icon to outfile in APNG format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:237
+#: ../src/rpcli/rpcli.cpp:240
 msgctxt "rpcli"
 msgid "Examples:"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:239
+#: ../src/rpcli/rpcli.cpp:242
 msgctxt "rpcli"
 msgid "displays info about s3.gen"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:241
+#: ../src/rpcli/rpcli.cpp:244
 msgctxt "rpcli"
 msgid "extracts icon from pokeb2.nds"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:280
+#: ../src/rpcli/rpcli.cpp:283
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type %ld"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:299
+#: ../src/rpcli/rpcli.cpp:302
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '%c'"
@@ -5367,64 +5384,73 @@ msgid ""
 "desktop environment."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:194
+#. tr: %1$s == program name, %2%s == invalid size
+#: ../src/rp-stub/rp-stub.c:195
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s: invalid size '%2$s'"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:196 ../src/rp-stub/rp-stub.c:202
-#: ../src/rp-stub/rp-stub.c:231 ../src/rp-stub/rp-stub.c:242
-#: ../src/rp-stub/rp-stub.c:248 ../src/rp-stub/rp-stub.c:254
+#. tr: %s == program name
+#: ../src/rp-stub/rp-stub.c:198 ../src/rp-stub/rp-stub.c:206
+#: ../src/rp-stub/rp-stub.c:235 ../src/rp-stub/rp-stub.c:248
+#: ../src/rp-stub/rp-stub.c:256 ../src/rp-stub/rp-stub.c:264
 #, c-format
 msgctxt "rp-stub"
 msgid "Try '%s --help' for more information."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:200
+#. tr: %1$s == program name, %2%s == invalid size
+#: ../src/rp-stub/rp-stub.c:203
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s: size '%2$s' is out of range"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:240
+#. tr: %s == program name
+#: ../src/rp-stub/rp-stub.c:245
 #, c-format
 msgctxt "rp-stub"
 msgid "%s: missing source and output file parameters"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:246
+#. tr: %s == program name
+#: ../src/rp-stub/rp-stub.c:253
 #, c-format
 msgctxt "rp-stub"
 msgid "%s: missing output file parameter"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:252
+#. tr: %s == program name
+#: ../src/rp-stub/rp-stub.c:261
 #, c-format
 msgctxt "rp-stub"
 msgid "%s: too many parameters specified"
 msgstr ""
 
 #. tr: NOTE: Not positional. Don't change argument positions!
-#: ../src/rp-stub/rp-stub.c:275
+#. tr: Only localize "Calling function:".
+#: ../src/rp-stub/rp-stub.c:286
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s(\"%s\", \"%s\", %d);"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:283
+#: ../src/rp-stub/rp-stub.c:294
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s();"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:293
+#. tr: %1$s == function name, %2$d == return value
+#: ../src/rp-stub/rp-stub.c:305
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s() returned %2$d."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:297
+#. tr: %1$s == function name, %2$d == return value
+#: ../src/rp-stub/rp-stub.c:310
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."

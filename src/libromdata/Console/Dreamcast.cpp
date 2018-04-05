@@ -567,6 +567,7 @@ int Dreamcast::loadFieldData(void)
 
 	if (disc_num != 0) {
 		d->fields->addField_string(C_("Dreamcast", "Disc #"),
+			// tr: Disc X of Y (for multi-disc games)
 			rp_sprintf_p(C_("Dreamcast|Disc", "%1$u of %2$u"),
 				disc_num, disc_total));
 	} else {

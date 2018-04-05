@@ -191,14 +191,18 @@ int main(int argc, char *argv[])
 				errno = 0;
 				long lTmp = (int)strtol(optarg, &endptr, 10);
 				if (errno == ERANGE || *endptr != 0) {
+					// tr: %1$s == program name, %2%s == invalid size
 					fprintf_p(stderr, C_("rp-stub", "%1$s: invalid size '%2$s'"), argv[0], optarg);
 					putc('\n', stderr);
+					// tr: %s == program name
 					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
 					putc('\n', stderr);
 					return EXIT_FAILURE;
 				} else if (lTmp <= 0 || lTmp > 32768) {
+					// tr: %1$s == program name, %2%s == invalid size
 					fprintf_p(stderr, C_("rp-stub", "%1$s: size '%2$s' is out of range"), argv[0], optarg);
 					putc('\n', stderr);
+					// tr: %s == program name
 					fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
 					putc('\n', stderr);
 					return EXIT_FAILURE;
@@ -237,20 +241,26 @@ int main(int argc, char *argv[])
 	if (!config) {
 		// We must have 2 filenames specified.
 		if (optind == argc) {
+			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "%s: missing source and output file parameters"), argv[0]);
 			putc('\n', stderr);
+			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
 		} else if (optind+1 == argc) {
+			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "%s: missing output file parameter"), argv[0]);
 			putc('\n', stderr);
+			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
 		} else if (optind+3 < argc) {
+			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "%s: too many parameters specified"), argv[0]);
 			putc('\n', stderr);
+			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
@@ -272,6 +282,7 @@ int main(int argc, char *argv[])
 		const char *const output_file = argv[optind+1];
 		if (is_debug) {
 			// tr: NOTE: Not positional. Don't change argument positions!
+			// tr: Only localize "Calling function:".
 			fprintf(stderr, C_("rp-stub", "Calling function: %s(\"%s\", \"%s\", %d);"),
 				symname, source_file, output_file, maximum_size);
 			putc('\n', stderr);
@@ -290,10 +301,12 @@ int main(int argc, char *argv[])
 	dlclose(pDll);
 	if (ret == 0) {
 		if (is_debug) {
+			// tr: %1$s == function name, %2$d == return value
 			fprintf_p(stderr, C_("rp-stub", "%1$s() returned %2$d."), symname, ret);
 			putc('\n', stderr);
 		}
 	} else {
+		// tr: %1$s == function name, %2$d == return value
 		fprintf_p(stderr, C_("rp-stub", "*** ERROR: %1$s() returned %2$d."), symname, ret);
 		putc('\n', stderr);
 	}
