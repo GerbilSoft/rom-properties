@@ -19,7 +19,6 @@ ENDIF(ENABLE_DECRYPTION)
 
 # GcnFstPrint. (Not a test, but a useful program.)
 ADD_EXECUTABLE(GcnFstPrint
-	../../librpbase/tests/gtest_init.cpp
 	disc/FstPrint.cpp
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp

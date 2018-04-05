@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstPrint.cpp: GameCube/Wii FST printer.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "disc/GcnFst.hpp"
@@ -31,21 +30,32 @@ using LibRomData::GcnFst;
 #include <cstring>
 
 // C++ includes.
+#include <locale>
 #include <sstream>
 #include <string>
+using std::locale;
 using std::ostream;
 using std::ostringstream;
 using std::string;
 
 #ifdef _WIN32
-#include "libwin32common/RpWin32_sdk.h"
-#include <io.h>
-#include "librpbase/TextFuncs.hpp"
+# include "libwin32common/RpWin32_sdk.h"
+# include "libwin32common/secoptions.h"
+# include <io.h>
+# include "librpbase/TextFuncs.hpp"
 using std::u16string;
 #endif /* _WIN32 */
 
-extern "C" int gtest_main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
+#ifdef _WIN32
+	// Set Win32 security options.
+	secoptions_init();
+#endif /* _WIN32 */
+
+	// Set the C and C++ locales.
+	locale::global(locale(""));
+
 	if (argc < 2 || argc > 3) {
 		printf("Syntax: %s fst.bin [offsetShift]\n", argv[0]);
 		printf("offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)\n");
