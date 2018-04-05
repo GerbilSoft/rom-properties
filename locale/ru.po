@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-03 23:29-0400\n"
+"POT-Creation-Date: 2018-04-04 22:16-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -4234,6 +4234,79 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:727
 msgctxt "NintendoBadge"
 msgid "Unknown"
+msgstr ""
+
+#. tr: Parameter is a number; it's formatted elsewhere.
+#: ../src/libromdata/tests/disc/FstPrint.cpp:231
+#, c-format
+msgctxt "FstPrint"
+msgid "%s directory"
+msgid_plural "%s directories"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. tr: Parameter is a number; it's formatted elsewhere.
+#: ../src/libromdata/tests/disc/FstPrint.cpp:233
+#, c-format
+msgctxt "FstPrint"
+msgid "%s file"
+msgid_plural "%s files"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:66
+#, c-format
+msgctxt "GcnFstPrint"
+msgid "Syntax: %s fst.bin [offsetShift]"
+msgstr ""
+
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:68
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:80
+msgctxt "GcnFstPrint"
+msgid "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"
+msgstr ""
+
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:78
+#, c-format
+msgctxt "GcnFstPrint"
+msgid "Invalid offset shift '%s' specified."
+msgstr ""
+
+#. tr: %1$s == filename, %2$s == error message
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:90
+#, c-format
+msgctxt "GcnFstPrint"
+msgid "Error opening '%1$s': '%2$s'"
+msgstr ""
+
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:99
+msgctxt "GcnFstPrint"
+msgid "ERROR: FST is too big. (Maximum of 16 MB.)"
+msgstr ""
+
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:108
+#, c-format
+msgctxt "GcnFstPrint"
+msgid "ERROR: malloc(%u) failed."
+msgstr ""
+
+#. tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:117
+#, c-format
+msgctxt "GcnFstPrint"
+msgid "ERROR: Read %1$u bytes, expected %2$u bytes."
+msgstr ""
+
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:129
+msgctxt "GcnFstPrint"
+msgid "*** ERROR: Could not open a GcnFst."
+msgstr ""
+
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:156
+msgctxt "GcnFstPrint"
+msgid "*** WARNING: FST has errors and may be unusable."
 msgstr ""
 
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1096

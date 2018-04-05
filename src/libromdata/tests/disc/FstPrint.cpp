@@ -23,6 +23,7 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/disc/IFst.hpp"
+#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // C includes.
@@ -44,6 +45,7 @@ using namespace LibRpBase;
 #include <string>
 #include <vector>
 using std::ostream;
+using std::ostringstream;
 using std::setw;
 using std::string;
 using std::vector;
@@ -217,10 +219,18 @@ int fstPrint(IFst *fst, ostream &os)
 	}
 
 	// Print the file count.
-	// TODO: i18n?
+	// NOTE: Formatting numbers using ostringstream() because 
+	// MSVC's printf() doesn't support thousands separators.
+	// TODO: CMake checks?
+	ostringstream dircount, filecount;
+	dircount << fc.dirs;
+	filecount << fc.files;
+
 	os << '\n' <<
-		fc.dirs << ' ' << (fc.dirs == 1 ? "directory" : "directories") << ", " <<
-		fc.files << ' ' << (fc.files == 1 ? "file" : "files") << '\n';
+		// tr: Parameter is a number; it's formatted elsewhere.
+		rp_sprintf(NC_("FstPrint", "%s directory", "%s directories", fc.dirs), dircount.str().c_str()) << ", " <<
+		// tr: Parameter is a number; it's formatted elsewhere.
+		rp_sprintf(NC_("FstPrint", "%s file", "%s files", fc.files), filecount.str().c_str()) << '\n';
 
 	os.flush();
 	return 0;

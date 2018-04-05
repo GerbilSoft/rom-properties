@@ -22,6 +22,9 @@
 #include "FstPrint.hpp"
 using LibRomData::GcnFst;
 
+// i18n
+#include "libi18n/i18n.h"
+
 // C includes.
 #include <stdlib.h>
 
@@ -56,9 +59,13 @@ int main(int argc, char *argv[])
 	// Set the C and C++ locales.
 	locale::global(locale(""));
 
+	// Initialize i18n.
+	rp_i18n_init();
+
 	if (argc < 2 || argc > 3) {
-		printf("Syntax: %s fst.bin [offsetShift]\n", argv[0]);
-		printf("offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)\n");
+		printf(C_("GcnFstPrint", "Syntax: %s fst.bin [offsetShift]"), argv[0]);
+		putchar('\n');
+		puts(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
 		return EXIT_FAILURE;
 	}
 
@@ -68,8 +75,9 @@ int main(int argc, char *argv[])
 		char *endptr = nullptr;
 		long ltmp = strtol(argv[2], &endptr, 10);
 		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
-			printf("Invalid offset shift '%s' specified.\n", argv[2]);
-			printf("offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)\n");
+			printf(C_("GcnFstPrint", "Invalid offset shift '%s' specified."), argv[2]);
+			putchar('\n');
+			puts(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
 			return EXIT_FAILURE;
 		}
 		offsetShift = (uint8_t)ltmp;
@@ -78,7 +86,9 @@ int main(int argc, char *argv[])
 	// Open and read the FST file.
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
-		printf("Error opening '%s': '%s'\n", argv[1], strerror(errno));
+		// tr: %1$s == filename, %2$s == error message
+		printf_p(C_("GcnFstPrint", "Error opening '%1$s': '%2$s'"), argv[1], strerror(errno));
+		putchar('\n');
 		return EXIT_FAILURE;
 	}
 
@@ -86,7 +96,7 @@ int main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_END);
 	int64_t filesize = ftello(f);
 	if (filesize > (16*1024*1024)) {
-		printf("ERROR: FST is too big. (Maximum of 16 MB.)\n");
+		puts(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
 		fclose(f);
 		return EXIT_FAILURE;
 	}
@@ -95,14 +105,18 @@ int main(int argc, char *argv[])
 	// Read the FST into memory.
 	uint8_t *fstData = static_cast<uint8_t*>(malloc(filesize));
 	if (!fstData) {
-		printf("ERROR: malloc(%u) failed.\n", (uint32_t)filesize);
+		printf(C_("GcnFstPrint", "ERROR: malloc(%u) failed."), (unsigned int)filesize);
+		putchar('\n');
 		fclose(f);
 		return EXIT_FAILURE;
 	}
 	size_t rd_size = fread(fstData, 1, filesize, f);
 	fclose(f);
 	if (rd_size != (size_t)filesize) {
-		printf("ERROR: Read %u bytes, expected %u bytes.\n", (uint32_t)rd_size, (uint32_t)filesize);
+		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
+		printf_p(C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
+			(unsigned int)rd_size, (unsigned int)filesize);
+		putchar('\n');
 		free(fstData);
 		return EXIT_FAILURE;
 	}
@@ -112,7 +126,7 @@ int main(int argc, char *argv[])
 	// "look" like an FST?
 	GcnFst *fst = new GcnFst(fstData, (uint32_t)filesize, offsetShift);
 	if (!fst->isOpen()) {
-		printf("*** ERROR: Could not open a GcnFst.\n");
+		puts(C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));
 		free(fstData);
 		return EXIT_FAILURE;
 	}
@@ -127,18 +141,19 @@ int main(int argc, char *argv[])
 	// Reference: https://lists.gnu.org/archive/html/bug-gnulib/2013-01/msg00007.html
 	if (isatty(fileno(stdout))) {
 		// Convert to wchar_t, then print it.
-		wprintf(L"%s", U82W_s(fst_str));
+		fputws(U82W_s(fst_str), stdout);
 	} else {
 		// Writing to file. Print the original UTF-8.
-		printf("%s", fst_str.c_str());
+		fputs(fst_str.c_str(), stdout);
 	}
 #else /* !_WIN32 */
 	// Print the FST.
-	printf("%s", fst_str.c_str());
+	fputs(fst_str.c_str(), stdout);
 #endif
 
 	if (fst->hasErrors()) {
-		printf("\n*** WARNING: FST has errors and may be unusable.\n");
+		putchar('\n');
+		puts(C_("GcnFstPrint", "*** WARNING: FST has errors and may be unusable."));
 	}
 
 	// Cleanup.
