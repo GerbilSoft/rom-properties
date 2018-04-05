@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FstPrint.cpp: FST printer.                                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "FstPrint.hpp"
@@ -50,6 +49,11 @@ using std::string;
 using std::vector;
 
 namespace LibRomData {
+
+struct FstFileCount {
+	unsigned int dirs;
+	unsigned int files;
+};
 
 /**
  * Print an FST to an ostream.
@@ -193,14 +197,10 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
  * Print an FST to an ostream.
  * @param fst	[in] FST to print.
  * @param os	[in,out] ostream.
- * @param fc	[out,opt] Pointer to FstFileCount struct.
- *
- * If fc is nullptr, file count is printed to os.
- * Otherwise, file count is stored in fc.
  *
  * @return 0 on success; negative POSIX error code on error.
  */
-int fstPrint(IFst *fst, ostream &os, FstFileCount *fc)
+int fstPrint(IFst *fst, ostream &os)
 {
 	if (!fst) {
 		// Invalid parameters.
@@ -210,21 +210,17 @@ int fstPrint(IFst *fst, ostream &os, FstFileCount *fc)
 	std::vector<uint8_t> tree_lines;
 	tree_lines.reserve(16);
 
-	FstFileCount fc_tmp = {0, 0};
-	int ret = fstPrint(fst, os, "/", 0, tree_lines, fc_tmp);
+	FstFileCount fc = {0, 0};
+	int ret = fstPrint(fst, os, "/", 0, tree_lines, fc);
 	if (ret != 0) {
 		return ret;
 	}
 
-	if (fc) {
-		// Return the file count.
-		*fc = fc_tmp;
-	} else {
-		// Print the file count.
-		os << '\n' <<
-			fc_tmp.dirs << ' ' << (fc_tmp.dirs == 1 ? "directory" : "directories") << ", " <<
-			fc_tmp.files << ' ' << (fc_tmp.files == 1 ? "file" : "files") << '\n';
-	}
+	// Print the file count.
+	// TODO: i18n?
+	os << '\n' <<
+		fc.dirs << ' ' << (fc.dirs == 1 ? "directory" : "directories") << ", " <<
+		fc.files << ' ' << (fc.files == 1 ? "file" : "files") << '\n';
 
 	os.flush();
 	return 0;

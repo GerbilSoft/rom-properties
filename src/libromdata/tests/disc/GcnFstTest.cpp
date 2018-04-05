@@ -134,16 +134,6 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 */
 		void checkNoDuplicateFilenames(const char *subdir);
 
-		/**
-		 * Print a uint32_t using en_US formatting.
-		 * This is needed in order to work around issues
-		 * caused by locales with number formatting that
-		 * doesn't match en_US.
-		 * @param os	[out] ostream.
-		 * @param val	[in] Number.
-		 */
-		static void print_uint32_en_US(ostream &os, uint32_t val);
-
 	public:
 		/** Test case parameters. **/
 
@@ -378,38 +368,6 @@ void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 }
 
 /**
- * Print a uint32_t using en_US formatting.
- * This is needed in order to work around issues
- * caused by locales with number formatting that
- * doesn't match en_US.
- * @param os	[out] ostream.
- * @param val	[in] Number.
- */
-void GcnFstTest::print_uint32_en_US(ostream &os, uint32_t val)
-{
-	char buf[16];
-	char *p = &buf[0];
-	unsigned int digits = 0;
-	do {
-		if (digits > 0 && (digits % 3 == 0)) {
-			// en_US thousands separator.
-			*p++ = ',';
-		}
-		assert(p < &buf[sizeof(buf)]);
-		*p++ = '0' + (val % 10);
-		val /= 10;
-		digits++;
-	} while (val != 0);
-	assert(p < &buf[sizeof(buf)]);
-	*p = 0;
-
-	// Number is formatted, but it's in reverse-order.
-	while (p > &buf[0]) {
-		os << *--p;
-	}
-}
-
-/**
  * Verify that '/' is collapsed correctly.
  */
 TEST_P(GcnFstTest, RootDirectoryCollapse)
@@ -473,17 +431,8 @@ TEST_P(GcnFstTest, FstPrint)
 		string(reinterpret_cast<const char*>(fst_txt_buf.data()), fst_txt_buf.size()));
 
 	// Print the FST.bin to a new stringstream.
-	FstFileCount fc = {0, 0};
 	stringstream fst_text_actual;
-	fstPrint(m_fst, fst_text_actual, &fc);
-
-	// Print the directory/file count manually in order to
-	// avoid locale issues. (Test data uses en_US.)
-	fst_text_actual << '\n';
-	print_uint32_en_US(fst_text_actual, fc.dirs);
-	fst_text_actual << ' ' << (fc.dirs == 1 ? "directory" : "directories") << ", ";
-	print_uint32_en_US(fst_text_actual, fc.files);
-	fst_text_actual << ' ' << (fc.files == 1 ? "file" : "files") << '\n';
+	fstPrint(m_fst, fst_text_actual);
 
 	// Compare the two stringstreams.
 	// NOTE: Only Unix line endings are supported.
