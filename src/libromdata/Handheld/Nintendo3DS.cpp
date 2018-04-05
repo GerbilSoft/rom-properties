@@ -1736,7 +1736,8 @@ int Nintendo3DS::loadFieldData(void)
 				if (!err) {
 					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
 				}
-				d->fields->addField_string("Warning", err, RomFields::STRF_WARNING);
+				d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+					err, RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
 		}
@@ -1889,7 +1890,8 @@ int Nintendo3DS::loadFieldData(void)
 				if (!err) {
 					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
 				}
-				d->fields->addField_string("Warning", err, RomFields::STRF_WARNING);
+				d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+					err, RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
 		}

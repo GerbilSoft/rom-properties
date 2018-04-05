@@ -713,10 +713,9 @@ int NES::loadFieldData(void)
 		if (romFormat >= NESPrivate::ROM_FORMAT_OLD_INES &&
 		    romFormat <= NESPrivate::ROM_FORMAT_NES2)
 		{
-			string str = rom_format;
-			str += ' ';
-			str += C_("NES|Format", "(Wii U Virtual Console)");
-			d->fields->addField_string(C_("NES", "Format"), str);
+			d->fields->addField_string(C_("NES", "Format"),
+				// tr: ROM format, e.g. iNES or FDS disk image.
+				rp_sprintf(C_("NES|Format", "%s (Wii U Virtual Console)"), rom_format));
 		} else {
 			d->fields->addField_string(C_("NES", "Format"), rom_format);
 		}
@@ -790,7 +789,8 @@ int NES::loadFieldData(void)
 		NOP_C_("NES|TVMode", "Dual (NTSC/PAL)"),
 	};
 	if (tv_mode < ARRAY_SIZE(tv_mode_tbl)) {
-		d->fields->addField_string("TV Mode", dpgettext_expr(RP_I18N_DOMAIN, "NES|TVMode", tv_mode_tbl[tv_mode]));
+		d->fields->addField_string(C_("NES", "TV Mode"),
+			dpgettext_expr(RP_I18N_DOMAIN, "NES|TVMode", tv_mode_tbl[tv_mode]));
 	}
 
 	// ROM features.

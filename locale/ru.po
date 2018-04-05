@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-04 22:57-0400\n"
+"POT-Creation-Date: 2018-04-04 23:11-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -689,7 +689,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:408
 #: ../src/libromdata/Console/SegaSaturn.cpp:500
 #: ../src/libromdata/Console/SNES.cpp:829
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1793
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1794
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1119
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:380
 msgctxt "Region"
@@ -700,7 +700,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:476
 #: ../src/libromdata/Console/MegaDrive.cpp:410
 #: ../src/libromdata/Console/SegaSaturn.cpp:502
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1794
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1795
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1120
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:383
 msgctxt "Region"
@@ -711,7 +711,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:411
 #: ../src/libromdata/Console/SegaSaturn.cpp:503
 #: ../src/libromdata/Console/SNES.cpp:831
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1795
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1796
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1121
 msgctxt "Region"
 msgid "Europe"
@@ -728,6 +728,7 @@ msgid "Boot Filename"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:627
+#: ../src/libromdata/Console/Dreamcast.cpp:631
 #: ../src/libromdata/Console/Dreamcast.cpp:637
 msgctxt "Dreamcast"
 msgid "Checksum"
@@ -1053,7 +1054,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:483
 #: ../src/libromdata/Console/SNES.cpp:841
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1798
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1799
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1101
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1124
 msgctxt "Region"
@@ -1074,6 +1075,11 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1462
 msgctxt "GameCube"
 msgid "Title"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:1477
+msgctxt "GameCube"
+msgid "Game ID"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1489
@@ -1528,20 +1534,22 @@ msgctxt "NES"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:718
-msgctxt "NES|Format"
-msgid "(Wii U Virtual Console)"
-msgstr ""
-
-#: ../src/libromdata/Console/NES.cpp:719 ../src/libromdata/Console/NES.cpp:721
-#: ../src/libromdata/Console/NES.cpp:724
+#: ../src/libromdata/Console/NES.cpp:716 ../src/libromdata/Console/NES.cpp:720
+#: ../src/libromdata/Console/NES.cpp:723
 msgctxt "NES"
 msgid "Format"
 msgstr ""
 
+#. tr: ROM format, e.g. iNES or FDS disk image.
+#: ../src/libromdata/Console/NES.cpp:718
+#, c-format
+msgctxt "NES|Format"
+msgid "%s (Wii U Virtual Console)"
+msgstr ""
+
 #. tr: Print the mapper ID followed by the mapper name.
 #. tr: Print the submapper ID followed by the submapper name.
-#: ../src/libromdata/Console/NES.cpp:740 ../src/libromdata/Console/NES.cpp:768
+#: ../src/libromdata/Console/NES.cpp:739 ../src/libromdata/Console/NES.cpp:767
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%1$u - %2$s"
@@ -1549,45 +1557,50 @@ msgstr ""
 
 #. tr: Print only the mapper ID.
 #. tr: Print only the submapper ID.
-#: ../src/libromdata/Console/NES.cpp:744 ../src/libromdata/Console/NES.cpp:772
+#: ../src/libromdata/Console/NES.cpp:743 ../src/libromdata/Console/NES.cpp:771
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%u"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:746 ../src/libromdata/Console/NES.cpp:753
+#: ../src/libromdata/Console/NES.cpp:745 ../src/libromdata/Console/NES.cpp:752
 msgctxt "NES"
 msgid "Mapper"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:754
+#: ../src/libromdata/Console/NES.cpp:753
 msgctxt "NES"
 msgid "[Missing TNES mapping!]"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:774
+#: ../src/libromdata/Console/NES.cpp:773
 msgctxt "NES"
 msgid "Submapper"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:780
+#: ../src/libromdata/Console/NES.cpp:779
 msgctxt "NES"
 msgid "TNES Mapper"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:787
+#: ../src/libromdata/Console/NES.cpp:786
 msgctxt "NES|TVMode"
 msgid "NTSC"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:788
+#: ../src/libromdata/Console/NES.cpp:787
 msgctxt "NES|TVMode"
 msgid "PAL"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:789 ../src/libromdata/Console/NES.cpp:790
+#: ../src/libromdata/Console/NES.cpp:788 ../src/libromdata/Console/NES.cpp:789
 msgctxt "NES|TVMode"
 msgid "Dual (NTSC/PAL)"
+msgstr ""
+
+#: ../src/libromdata/Console/NES.cpp:792
+msgctxt "NES"
+msgid "TV Mode"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:799
@@ -1856,7 +1869,7 @@ msgid "Release Date"
 msgstr ""
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:501
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1799
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
 msgctxt "Region"
 msgid "Taiwan"
 msgstr ""
@@ -2041,7 +2054,7 @@ msgid "Italy"
 msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:839
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1797
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1798
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1102
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1123
 msgctxt "Region"
@@ -2064,7 +2077,7 @@ msgid "Brazil"
 msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:845
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1796
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1797
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1122
 msgctxt "Region"
 msgid "Australia"
@@ -2398,6 +2411,11 @@ msgctxt "DMG"
 msgid "Publisher"
 msgstr ""
 
+#: ../src/libromdata/Handheld/DMG.cpp:611
+msgctxt "DMG"
+msgid "Hardware"
+msgstr ""
+
 #: ../src/libromdata/Handheld/DMG.cpp:616
 msgctxt "DMG|Features"
 msgid "RAM"
@@ -2424,6 +2442,8 @@ msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:629
+#: ../src/libromdata/Handheld/DMG.cpp:633
+#: ../src/libromdata/Handheld/DMG.cpp:637
 msgctxt "DMG"
 msgid "ROM Size"
 msgstr ""
@@ -2448,6 +2468,8 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:644
 #: ../src/libromdata/Handheld/DMG.cpp:650
 #: ../src/libromdata/Handheld/DMG.cpp:654
+#: ../src/libromdata/Handheld/DMG.cpp:658
+#: ../src/libromdata/Handheld/DMG.cpp:662
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr ""
@@ -2584,6 +2606,11 @@ msgctxt "Lynx|Rotation"
 msgid "Right"
 msgstr ""
 
+#: ../src/libromdata/Handheld/Lynx.cpp:246
+msgctxt "Lynx"
+msgid "Rotation"
+msgstr ""
+
 #: ../src/libromdata/Handheld/Lynx.cpp:249
 msgctxt "Lynx"
 msgid "Unknown"
@@ -2641,267 +2668,273 @@ msgid "Services"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1737
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1890
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1891
 msgctxt "Nintendo3DS"
 msgid "Unknown error. (THIS IS A BUG!)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1782
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1739
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1893
+msgctxt "Nintendo3DS"
+msgid "Warning"
+msgstr ""
+
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1783
 msgctxt "Nintendo3DS"
 msgid "Title"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1784
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1785
 msgctxt "Nintendo3DS"
 msgid "Full Title"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1786
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1787
 msgctxt "Nintendo3DS"
 msgid "Publisher"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1803
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1804
 msgctxt "Nintendo3DS"
 msgid "Region Code"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1841
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1842
 msgctxt "Nintendo3DS"
 msgid "Age Rating"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1846
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1847
 msgctxt "Nintendo3DS"
 msgid "DSiWare"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1936
-msgctxt "Nintendo3DS|CCI"
-msgid "#"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1937
-msgctxt "Nintendo3DS|CCI"
-msgid "Type"
-msgstr ""
-
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1938
 msgctxt "Nintendo3DS|CCI"
-msgid "Encryption"
+msgid "#"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1939
 msgctxt "Nintendo3DS|CCI"
-msgid "Version"
+msgid "Type"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1940
 msgctxt "Nintendo3DS|CCI"
+msgid "Encryption"
+msgstr ""
+
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1941
+msgctxt "Nintendo3DS|CCI"
+msgid "Version"
+msgstr ""
+
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1942
+msgctxt "Nintendo3DS|CCI"
 msgid "Size"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1948
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1961
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1950
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1963
 msgctxt "Nintendo3DS|eMMC"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1960
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1962
 msgctxt "Nintendo3DS|eMMC"
 msgid "#"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1962
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1964
 msgctxt "Nintendo3DS|eMMC"
 msgid "Keyslot"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1963
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1965
 msgctxt "Nintendo3DS|eMMC"
 msgid "Size"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1984
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1987
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1986
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1989
 msgctxt "Nintendo3DS"
 msgid "Media Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1988
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1990
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "Unknown (0x%02X)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1993
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1995
 msgctxt "Nintendo3DS"
 msgid "Card2 RW Address"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2012
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2014
 msgctxt "Nintendo3DS|CDev"
 msgid "NOR Flash"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2013
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2015
 msgctxt "Nintendo3DS|CDev"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2014
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2016
 msgctxt "Nintendo3DS|CDev"
 msgid "Bluetooth"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2017
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2020
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2019
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2022
 msgctxt "Nintendo3DS"
 msgid "Card Device"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2021
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2023
 #, c-format
 msgctxt "Nintendo3DS|CDev"
 msgid "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2027
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2029
 msgctxt "Nintendo3DS"
 msgid "Card Revision"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2127
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2129
 msgctxt "Nintendo3DS"
 msgid "Partitions"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2151
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2153
 msgctxt "Nintendo3DS"
 msgid "Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2162
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2164
 msgctxt "Nintendo3DS"
 msgid "Retail"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2165
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2167
 msgctxt "Nintendo3DS"
 msgid "Debug"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2172
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2174
 msgctxt "Nintendo3DS"
 msgid "Issuer"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2175
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2177
 msgctxt "Nintendo3DS"
 msgid "Ticket Issuer"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2182
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2184
 msgctxt "Nintendo3DS"
 msgid "Demo Use Limit"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2310
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2312
 msgctxt "Nintendo3DS|CtNames"
 msgid "#"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2311
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2313
 msgctxt "Nintendo3DS|CtNames"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2312
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
 msgctxt "Nintendo3DS|CtNames"
 msgid "Encryption"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2313
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
 msgctxt "Nintendo3DS|CtNames"
 msgid "Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2316
 msgctxt "Nintendo3DS|CtNames"
 msgid "Size"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2320
 msgctxt "Nintendo3DS"
 msgid "Contents"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2330
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2332
 msgctxt "Nintendo3DS"
 msgid "Process Name"
 msgstr ""
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2336
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2338
 msgctxt "Nintendo3DS|ApplType"
 msgid "Application"
 msgstr ""
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2338
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2340
 msgctxt "Nintendo3DS|ApplType"
 msgid "System Applet"
 msgstr ""
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2340
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2342
 msgctxt "Nintendo3DS|ApplType"
 msgid "Library Applet"
 msgstr ""
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2342
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2344
 msgctxt "Nintendo3DS|ApplType"
 msgid "SysModule"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2346
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2349
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2348
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2351
 msgctxt "Nintendo3DS"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2350
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2383
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2401
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2352
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2385
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2403
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "Invalid (0x%02X)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2379
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2382
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2381
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2384
 msgctxt "Nintendo3DS"
 msgid "Old3DS Sys Mode"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2397
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2400
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2399
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2402
 msgctxt "Nintendo3DS"
 msgid "New3DS Sys Mode"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2406
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2408
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "L2 Cache"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2407
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2409
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "804 MHz"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2421
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2423
 msgctxt "Nintendo3DS"
 msgid "Permissions"
 msgstr ""

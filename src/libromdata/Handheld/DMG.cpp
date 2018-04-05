@@ -608,7 +608,7 @@ int DMG::loadFieldData(void)
 	d->fields->addField_string(C_("DMG", "Publisher"), s_publisher);
 
 	// Hardware
-	d->fields->addField_string("Hardware",
+	d->fields->addField_string(C_("DMG", "Hardware"),
 		DMGPrivate::dmg_hardware_names[DMGPrivate::CartType(romHeader->cart_type).hardware]);
 
 	// Features
@@ -630,11 +630,11 @@ int DMG::loadFieldData(void)
 	} else {
 		if (rom_size > 32) {
 			const int banks = rom_size / 16;
-			d->fields->addField_string("ROM Size",
+			d->fields->addField_string(C_("DMG", "ROM Size"),
 				rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 					(unsigned int)rom_size, (unsigned int)banks));
 		} else {
-			d->fields->addField_string("ROM Size",
+			d->fields->addField_string(C_("DMG", "ROM Size"),
 				rp_sprintf(C_("DMG", "%u KiB"), (unsigned int)rom_size));
 		}
 	}
@@ -655,11 +655,11 @@ int DMG::loadFieldData(void)
 		} else {
 			if (ram_size > 8) {
 				const int banks = ram_size / 16;
-				d->fields->addField_string("RAM Size",
+				d->fields->addField_string(C_("DMG", "RAM Size"),
 					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 						(unsigned int)ram_size, (unsigned int)banks));
 			} else {
-				d->fields->addField_string("RAM Size",
+				d->fields->addField_string(C_("DMG", "RAM Size"),
 					rp_sprintf(C_("DMG", "%u KiB"), ram_size));
 			}
 		}

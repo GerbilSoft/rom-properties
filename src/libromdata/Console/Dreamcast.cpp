@@ -628,7 +628,7 @@ int Dreamcast::loadFieldData(void)
 				rp_sprintf(C_("Dreamcast", "0x%04X (valid)"), crc16_expected));
 		} else {
 			// CRC16 is incorrect.
-			d->fields->addField_string("Checksum",
+			d->fields->addField_string(C_("Dreamcast", "Checksum"),
 				rp_sprintf_p(C_("Dreamcast", "0x%1$04X (INVALID; should be 0x%2$04X)"),
 					crc16_expected, crc16_actual));
 		}

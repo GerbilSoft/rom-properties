@@ -243,7 +243,7 @@ int Lynx::loadFieldData(void)
 		NOP_C_("Lynx|Rotation", "Left"),
 		NOP_C_("Lynx|Rotation", "Right"),
 	};
-	d->fields->addField_string("Rotation",
+	d->fields->addField_string(C_("Lynx", "Rotation"),
 		(romHeader->rotation < ARRAY_SIZE(rotation_names)
 			? dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation", rotation_names[romHeader->rotation])
 			: C_("Lynx", "Unknown")));
