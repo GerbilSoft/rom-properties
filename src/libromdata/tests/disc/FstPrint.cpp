@@ -219,7 +219,7 @@ int fstPrint(IFst *fst, ostream &os)
 	}
 
 	// Print the file count.
-	// NOTE: Formatting numbers using ostringstream() because 
+	// NOTE: Formatting numbers using ostringstream() because
 	// MSVC's printf() doesn't support thousands separators.
 	// TODO: CMake checks?
 	ostringstream dircount, filecount;
