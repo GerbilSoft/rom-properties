@@ -649,22 +649,16 @@ rom_data_view_init_header_row(RomDataView *page)
 	}
 
 	// System name and file type.
+	// TODO: System logo and/or game title?
 	const char *const systemName = page->romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const char *const fileType = page->romData->fileType_string();
+	assert(systemName != nullptr);
+	assert(fileType != nullptr);
 
-	string sysInfo;
-	sysInfo.reserve(128);
-	if (systemName) {
-		sysInfo = systemName;
-	}
-	if (fileType) {
-		if (!sysInfo.empty()) {
-			sysInfo += '\n';
-		}
-		sysInfo += fileType;
-	}
-
+	const string sysInfo = rp_sprintf_p(
+		// tr: %1$s == system name, %2$s == file type
+		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType);
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
 
 	// Supported image types.

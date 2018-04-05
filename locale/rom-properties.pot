@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-04 22:24-0400\n"
+"POT-Creation-Date: 2018-04-04 22:36-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -137,28 +137,38 @@ msgstr ""
 #: ../src/gtk/gnome/rom-properties-provider.cpp:134
 #: ../src/gtk/xfce/rom-properties-page.cpp:156
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:85
-#: ../src/win32/RP_ShellPropSheetExt.cpp:2024
+#: ../src/win32/RP_ShellPropSheetExt.cpp:2018
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr ""
 
+#. tr: %1$s == system name, %2$s == file type
+#: ../src/gtk/RomDataView.cpp:661 ../src/kde/RomDataView.cpp:254
+#: ../src/win32/RP_ShellPropSheetExt.cpp:639
+#, c-format
+msgctxt "RomDataView"
+msgid ""
+"%1$s\n"
+"%2$s"
+msgstr ""
+
 #. tr: Invalid date/time.
-#: ../src/gtk/RomDataView.cpp:1079 ../src/kde/RomDataView.cpp:640
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1313
+#: ../src/gtk/RomDataView.cpp:1073 ../src/kde/RomDataView.cpp:628
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1307
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr ""
 
 #. tr: No age ratings data.
-#: ../src/gtk/RomDataView.cpp:1147 ../src/kde/RomDataView.cpp:721
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1428
+#: ../src/gtk/RomDataView.cpp:1141 ../src/kde/RomDataView.cpp:709
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1422
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr ""
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1335 ../src/kde/RomDataView.cpp:840
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1591
+#: ../src/gtk/RomDataView.cpp:1329 ../src/kde/RomDataView.cpp:828
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1585
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"

@@ -626,24 +626,18 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// Total widget width.
 	int total_widget_width = 0;
 
-	// System name.
-	// TODO: Logo, game icon, and game title?
-	const char *systemName = romData->systemName(
+	// System name and file type.
+	// TODO: System logo and/or game title?
+	const char *const systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-
-	// File type.
 	const char *const fileType = romData->fileType_string();
+	assert(systemName != nullptr);
+	assert(fileType != nullptr);
 
-	wstring sysInfo;
-	if (systemName) {
-		sysInfo = U82W_c(systemName);
-	}
-	if (fileType) {
-		if (!sysInfo.empty()) {
-			sysInfo += L"\r\n";
-		}
-		sysInfo += U82W_c(fileType);
-	}
+	const string sysInfo = rp_sprintf_p(
+		// tr: %1$s == system name, %2$s == file type
+		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType);
+	const wstring wSysInfo = LibWin32Common::unix2dos(U82W_s(sysInfo));
 
 	// Label size.
 	SIZE sz_lblSysInfo = {0, 0};
@@ -656,7 +650,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	if (!sysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = LibWin32Common::measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
+		int ret = LibWin32Common::measureTextSize(hDlg, hFont, wSysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
@@ -691,7 +685,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// lblSysInfo
 	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
 		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, sysInfo.c_str(),
+			WC_STATIC, wSysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,

@@ -241,31 +241,19 @@ void RomDataViewPrivate::initHeaderRow(void)
 		return;
 	}
 
-	// System name.
+	// System name and file type.
 	// TODO: System logo and/or game title?
-	const char *systemName = romData->systemName(
+	const char *const systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-
-	// File type.
 	const char *const fileType = romData->fileType_string();
+	assert(systemName != nullptr);
+	assert(fileType != nullptr);
 
-	QString sysInfo;
-	if (systemName) {
-		sysInfo = U82Q(systemName);
-	}
-	if (fileType) {
-		if (!sysInfo.isEmpty()) {
-			sysInfo += QChar(L'\n');
-		}
-		sysInfo += U82Q(fileType);
-	}
-
-	if (!sysInfo.isEmpty()) {
-		ui.lblSysInfo->setText(sysInfo);
-		ui.lblSysInfo->show();
-	} else {
-		ui.lblSysInfo->hide();
-	}
+	QString sysInfo = U82Q(rp_sprintf_p(
+		// tr: %1$s == system name, %2$s == file type
+		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType));
+	ui.lblSysInfo->setText(sysInfo);
+	ui.lblSysInfo->show();
 
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();

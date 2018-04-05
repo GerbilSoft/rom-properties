@@ -36,7 +36,7 @@ namespace LibWin32Common {
  * @param lf_count	[out,opt] Number of LF characters found.
  * @return wstring with DOS line endings.
  */
-std::wstring unix2dos(const wchar_t *wstr_unix, int *lf_count);
+std::wstring unix2dos(const wchar_t *wstr_unix, int *lf_count = nullptr);
 
 /**
  * Measure text size using GDI.
