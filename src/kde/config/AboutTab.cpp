@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -148,15 +148,12 @@ void AboutTabPrivate::initProgramTitleText(void)
 
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
-	sPrgTitle += b_start;
-	sPrgTitle += C_("AboutTab", "ROM Properties Page");
-	sPrgTitle += b_end;
-	sPrgTitle += br;
-	sPrgTitle += C_("AboutTab", "Shell Extension");
+	// tr: Uses Qt's HTML subset for formatting.
+	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b><br>Shell Extension");
 	sPrgTitle += br;
 	sPrgTitle += br;
 	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"),
-			AboutTabText::prg_version);
+		AboutTabText::prg_version);
 	if (AboutTabText::git_version[0] != 0) {
 		sPrgTitle += br;
 		sPrgTitle += AboutTabText::git_version;
@@ -177,8 +174,8 @@ void AboutTabPrivate::initCreditsTab(void)
 	// lblCredits is RichText.
 	string sCredits;
 	sCredits.reserve(4096);
-	sCredits += C_("AboutTab|Credits", "Copyright (c) 2016-2017 by David Korth.");
-	sCredits += br;
+	// NOTE: Copyright is NOT localized.
+	sCredits += "Copyright (c) 2016-2018 by David Korth.<br/>";
 	sCredits += C_("AboutTab|Credits",
 		"This program is licensed under the "
 		"<a href='https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later.");

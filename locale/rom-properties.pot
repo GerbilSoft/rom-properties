@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-04 22:16-0400\n"
+"POT-Creation-Date: 2018-04-04 22:24-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -164,97 +164,88 @@ msgctxt "RomDataView"
 msgid "%s:"
 msgstr ""
 
+#. tr: Uses Qt's HTML subset for formatting.
 #: ../src/kde/config/AboutTab.cpp:152
 msgctxt "AboutTab"
-msgid "ROM Properties Page"
+msgid "<b>ROM Properties Page</b><br>Shell Extension"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:155
-msgctxt "AboutTab"
-msgid "Shell Extension"
-msgstr ""
-
-#: ../src/kde/config/AboutTab.cpp:158 ../src/win32/config/AboutTab.cpp:481
+#: ../src/kde/config/AboutTab.cpp:155 ../src/win32/config/AboutTab.cpp:481
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:180 ../src/win32/config/AboutTab.cpp:559
-msgctxt "AboutTab|Credits"
-msgid "Copyright (c) 2016-2017 by David Korth."
-msgstr ""
-
-#: ../src/kde/config/AboutTab.cpp:183
+#: ../src/kde/config/AboutTab.cpp:180
 msgctxt "AboutTab|Credits"
 msgid ""
 "This program is licensed under the <a href='https://www.gnu.org/licenses/old-"
 "licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later."
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:199 ../src/win32/config/AboutTab.cpp:578
+#: ../src/kde/config/AboutTab.cpp:196 ../src/win32/config/AboutTab.cpp:579
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:202 ../src/win32/config/AboutTab.cpp:581
+#: ../src/kde/config/AboutTab.cpp:199 ../src/win32/config/AboutTab.cpp:582
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:205 ../src/win32/config/AboutTab.cpp:584
+#: ../src/kde/config/AboutTab.cpp:202 ../src/win32/config/AboutTab.cpp:585
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr ""
 
 #. tr: Sub-credit.
-#: ../src/kde/config/AboutTab.cpp:237 ../src/win32/config/AboutTab.cpp:608
+#: ../src/kde/config/AboutTab.cpp:234 ../src/win32/config/AboutTab.cpp:609
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
 msgstr ""
 
 #. tr: Using an internal copy of a library.
-#: ../src/kde/config/AboutTab.cpp:258
+#: ../src/kde/config/AboutTab.cpp:255
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of %s."
 msgstr ""
 
 #. tr: Compiled with a specific version of an external library.
-#: ../src/kde/config/AboutTab.cpp:260
+#: ../src/kde/config/AboutTab.cpp:257
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with %s."
 msgstr ""
 
 #. tr: Using an external library, e.g. libpcre.so
-#: ../src/kde/config/AboutTab.cpp:262
+#: ../src/kde/config/AboutTab.cpp:259
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Using %s."
 msgstr ""
 
 #. tr: License: (libraries with only a single license)
-#: ../src/kde/config/AboutTab.cpp:264
+#: ../src/kde/config/AboutTab.cpp:261
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "License: %s"
 msgstr ""
 
 #. tr: Licenses: (libraries with multiple licenses)
-#: ../src/kde/config/AboutTab.cpp:266
+#: ../src/kde/config/AboutTab.cpp:263
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:503 ../src/win32/config/AboutTab.cpp:698
+#: ../src/kde/config/AboutTab.cpp:500 ../src/win32/config/AboutTab.cpp:699
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:523 ../src/win32/config/AboutTab.cpp:715
+#: ../src/kde/config/AboutTab.cpp:520 ../src/win32/config/AboutTab.cpp:716
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
@@ -5429,33 +5420,33 @@ msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:561
+#: ../src/win32/config/AboutTab.cpp:562
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the GNU GPL v2 or later."
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:563
+#: ../src/win32/config/AboutTab.cpp:564
 msgctxt "AboutTab|Credits"
 msgid "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:616
+#: ../src/win32/config/AboutTab.cpp:617
 msgctxt "AboutTab"
 msgid "Credits"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:679
+#: ../src/win32/config/AboutTab.cpp:680
 msgctxt "AboutTab"
 msgid "Libraries"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:720
+#: ../src/win32/config/AboutTab.cpp:721
 msgctxt "AboutTab"
 msgid "Support"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/AboutTab.cpp:862
+#: ../src/win32/config/AboutTab.cpp:863
 msgctxt "AboutTab"
 msgid "About"
 msgstr ""

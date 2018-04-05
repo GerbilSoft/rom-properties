@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -556,7 +556,8 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits = RTF_START;
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
-	sCredits += C_("AboutTab|Credits", "Copyright (c) 2016-2017 by David Korth.");
+	// NOTE: Copyright is NOT localized.
+	sCredits += "Copyright (c) 2016-2018 by David Korth." RTF_BR;
 	sCredits += RTF_BR;
 	sCredits += C_("AboutTab|Credits", "This program is licensed under the GNU GPL v2 or later.");
 	sCredits += RTF_BR;
