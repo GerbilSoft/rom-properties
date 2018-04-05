@@ -66,6 +66,17 @@ INCLUDE(CheckSymbolExists)
 CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
 CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 
+# Check for reentrant C library functions.
+INCLUDE(CheckSymbolExistsOrInline)
+# putenv(), setenv(), and related.
+# setenv() is preferred, so if it's found, skip everything else.
+# NOTE: putenv()-like functions may be inline on Windows for Unicode support.
+CHECK_SYMBOL_EXISTS_OR_INLINE(putenv "stdlib.h" "putenv(\"abc123=def456\");" HAVE_PUTENV)
+CHECK_SYMBOL_EXISTS_OR_INLINE(setenv "stdlib.h" "setenv(\"abc123\", \"def456\", 1);" HAVE_SETENV)
+# Windows-specific: Unicode only.
+CHECK_SYMBOL_EXISTS_OR_INLINE(_wputenv "stdlib.h" "_wputenv(L\"abc123=def456\");" HAVE__WPUTENV)
+CHECK_SYMBOL_EXISTS_OR_INLINE(_wputenv_s "stdlib.h" "_wputenv_s(L\"abc123\", \"def456\");" HAVE__WPUTENV_S)
+
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
 
