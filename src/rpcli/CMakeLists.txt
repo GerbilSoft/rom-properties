@@ -97,6 +97,9 @@ TARGET_INCLUDE_DIRECTORIES(rpcli
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rpcli romdata rpbase)
+IF(ENABLE_NLS)
+	TARGET_LINK_LIBRARIES(rpcli i18n)
+ENDIF(ENABLE_NLS)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)

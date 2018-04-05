@@ -266,6 +266,9 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_SSE2_SRCS}
 	)
 TARGET_LINK_LIBRARIES(romdata rpbase)
+IF(ENABLE_NLS)
+	TARGET_LINK_LIBRARIES(romdata i18n)
+ENDIF(ENABLE_NLS)
 
 # Include paths:
 # - Public: Current source and binary directories.

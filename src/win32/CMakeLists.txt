@@ -123,6 +123,9 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rom-properties cachemgr romdata rpbase win32common)
+IF(ENABLE_NLS)
+	TARGET_LINK_LIBRARIES(rom-properties i18n)
+ENDIF(ENABLE_NLS)
 TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32 wtsapi32)
 
 # Add zlib and png directories for the About tab.

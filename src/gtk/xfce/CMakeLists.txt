@@ -110,6 +110,9 @@ IF(BUILD_XFCE)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce PUBLIC ${GTK2_INCLUDE_DIRS})
 
 	TARGET_LINK_LIBRARIES(rom-properties-xfce cachemgr romdata rpbase)
+	IF(ENABLE_NLS)
+		TARGET_LINK_LIBRARIES(rom-properties-xfce i18n)
+	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce Xfce::thunarx-2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce ${GTK2_LIBRARIES} GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
 	# TODO: Move GTK2_DEFINITIONS to TARGET_COMPILE_DEFINITIONS.
