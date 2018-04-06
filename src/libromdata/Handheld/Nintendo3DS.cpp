@@ -1926,7 +1926,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		const char *const *pt_types;
 		const uint8_t *keyslots = nullptr;
-		vector<string> *v_partitions_names = new vector<string>();
+		vector<string> *v_partitions_names;
 		if (!emmc) {
 			// CCI (3DS cartridge dump)
 

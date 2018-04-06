@@ -276,7 +276,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (hasSubtype) {
 		if (fileSubtype) {
 			fields->addField_string(C_("EXE", "File Subtype"),
-				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", fileType));
+				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", fileSubtype));
 		} else {
 			fields->addField_string(C_("EXE", "File Subtype"),
 				rp_sprintf(C_("EXE", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));
