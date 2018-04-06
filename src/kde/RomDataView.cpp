@@ -385,23 +385,24 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		lblString->setOpenExternalLinks(true);
 		lblString->setTextInteractionFlags(
 			Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-		lblString->setFocusPolicy(Qt::StrongFocus);
 		if (field->data.str) {
 			// Replace newlines with "<br/>".
 			QString text = U82Q(*(field->data.str)).replace(QChar(L'\n'), QLatin1String("<br/>"));
 			lblString->setText(text);
 		}
 	} else {
-		// Standard text with no formatting.
+		// tr: Standard text with no formatting.
 		lblString->setTextInteractionFlags(
 			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-		lblString->setFocusPolicy(Qt::StrongFocus);
 		lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblString->setTextFormat(Qt::PlainText);
 		if (field->data.str) {
 			lblString->setText(U82Q(*(field->data.str)));
 		}
 	}
+
+	// Enable strong focus so we can tab into the label.
+	lblString->setFocusPolicy(Qt::StrongFocus);
 
 	// Check for any formatting options.
 
@@ -621,7 +622,9 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 	QLabel *lblDateTime = new QLabel(q);
 	lblDateTime->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 	lblDateTime->setTextFormat(Qt::PlainText);
-	lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+	lblDateTime->setTextInteractionFlags(
+		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+	lblDateTime->setFocusPolicy(Qt::StrongFocus);
 
 	if (field->data.date_time == -1) {
 		// tr: Invalid date/time.
@@ -700,7 +703,9 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	QLabel *lblAgeRatings = new QLabel(q);
 	lblAgeRatings->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 	lblAgeRatings->setTextFormat(Qt::PlainText);
-	lblAgeRatings->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+	lblAgeRatings->setTextInteractionFlags(
+		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+	lblAgeRatings->setFocusPolicy(Qt::StrongFocus);
 
 	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
 	assert(age_ratings != nullptr);
