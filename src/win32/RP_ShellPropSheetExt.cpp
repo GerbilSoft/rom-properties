@@ -320,6 +320,11 @@ class RP_ShellPropSheetExt_Private
 		 */
 		void initDialog(HWND hDlg);
 
+	private:
+		// Internal functions used by the callback functions.
+		INT_PTR DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr);
+		INT_PTR DlgProc_WM_PAINT(HWND hDlg);
+
 	public:
 		// Property sheet callback functions.
 		static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -2068,6 +2073,152 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETP
 
 /** Property sheet callback functions. **/
 
+/**
+ * WM_NOTIFY handler for the property sheet.
+ * @param hDlg Dialog window.
+ * @param pHdr NMHDR
+ * @return Return value.
+ */
+INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
+{
+	INT_PTR ret = FALSE;
+
+	switch (pHdr->code) {
+		case PSN_SETACTIVE:
+			startAnimTimer();
+			break;
+
+		case PSN_KILLACTIVE:
+			stopAnimTimer();
+			break;
+
+		case NM_CLICK:
+		case NM_RETURN: {
+			// Check if this is a SysLink control.
+			if (hwndSysLinkControls.find(pHdr->hwndFrom) !=
+			    hwndSysLinkControls.end())
+			{
+				// It's a SysLink control.
+				// Open the URL.
+				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
+				ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+			}
+			break;
+		}
+
+		case TCN_SELCHANGE: {
+			// Tab change. Make sure this is the correct WC_TABCONTROL.
+			if (hTabWidget != nullptr && hTabWidget == pHdr->hwndFrom) {
+				// Tab widget. Show the selected tab.
+				int newTabIndex = TabCtrl_GetCurSel(hTabWidget);
+				ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
+				curTabIndex = newTabIndex;
+				ShowWindow(tabs[newTabIndex].hDlg, SW_SHOW);
+			}
+			break;
+		}
+
+		case NM_CUSTOMDRAW: {
+			// Custom drawing notification.
+			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+				break;
+
+			// NOTE: Since this is a DlgProc, we can't simply return
+			// the CDRF code. It has to be set as DWLP_MSGRESULT.
+			// References:
+			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+			// - https://stackoverflow.com/a/40552426
+			NMLVCUSTOMDRAW *const plvcd = reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr);
+			int result = CDRF_DODEFAULT;
+			switch (plvcd->nmcd.dwDrawStage) {
+				case CDDS_PREPAINT:
+					// Request notifications for individual ListView items.
+					result = CDRF_NOTIFYITEMDRAW;
+					break;
+
+				case CDDS_ITEMPREPAINT: {
+					// Set the background color for alternating row colors.
+					if (plvcd->nmcd.dwItemSpec % 2) {
+						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+						// not the actual default background color.
+						// FIXME: On Windows 7:
+						// - Standard row colors are 19px high.
+						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+						plvcd->clrTextBk = colorAltRow;
+						result = CDRF_NEWFONT;
+					}
+					break;
+				}
+			}
+			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+			ret = TRUE;
+			break;
+		}
+
+		case LVN_ITEMCHANGING: {
+			// If the window is fully initialized,
+			// disable modification of checkboxes.
+			// Reference: https://groups.google.com/forum/embed/#!topic/microsoft.public.vc.mfc/e9cbkSsiImA
+			if (!isFullyInit)
+				break;
+			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+				break;
+
+			NMLISTVIEW *const pnmlv = reinterpret_cast<NMLISTVIEW*>(pHdr);
+			const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
+			// Set result to TRUE if the state difference is non-zero (i.e. it's changed).
+			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
+			ret = TRUE;
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return ret;
+}
+
+/**
+ * WM_PAINT handler for the property sheet.
+ * @param hDlg Dialog window.
+ * @return Return value.
+ */
+INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
+{
+	if (!hbmpBanner && !hbmpIconFrames[0]) {
+		// Nothing to draw...
+		return FALSE;
+	}
+
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint(hDlg, &ps);
+
+	// Memory DC for BitBlt.
+	HDC hdcMem = CreateCompatibleDC(hdc);
+
+	// Draw the banner.
+	if (hbmpBanner) {
+		SelectBitmap(hdcMem, hbmpBanner);
+		BitBlt(hdc, ptBanner.x, ptBanner.y,
+			szBanner.cx, szBanner.cy,
+			hdcMem, 0, 0, SRCCOPY);
+	}
+
+	// Draw the icon.
+	if (hbmpIconFrames[last_frame_number]) {
+		SelectBitmap(hdcMem, hbmpIconFrames[last_frame_number]);
+		BitBlt(hdc, rectIcon.left, rectIcon.top,
+			szIcon.cx, szIcon.cy,
+			hdcMem, 0, 0, SRCCOPY);
+	}
+
+	DeleteDC(hdcMem);
+	EndPaint(hDlg, &ps);
+
+	return TRUE;
+}
+
 //
 //   FUNCTION: FilePropPageDlgProc
 //
@@ -2179,100 +2330,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				return FALSE;
 			}
 
-			NMHDR *const pHdr = reinterpret_cast<NMHDR*>(lParam);
-			switch (pHdr->code) {
-				case PSN_SETACTIVE:
-					d->startAnimTimer();
-					break;
-
-				case PSN_KILLACTIVE:
-					d->stopAnimTimer();
-					break;
-
-				case NM_CLICK:
-				case NM_RETURN: {
-					// Check if this is a SysLink control.
-					if (d->hwndSysLinkControls.find(pHdr->hwndFrom) !=
-					    d->hwndSysLinkControls.end())
-					{
-						// It's a SysLink control.
-						// Open the URL.
-						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
-						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
-					}
-					break;
-				}
-
-				case TCN_SELCHANGE: {
-					// Tab change. Make sure this is the correct WC_TABCONTROL.
-					if (d->hTabWidget != nullptr && d->hTabWidget == pHdr->hwndFrom) {
-						// Tab widget. Show the selected tab.
-						int newTabIndex = TabCtrl_GetCurSel(d->hTabWidget);
-						ShowWindow(d->tabs[d->curTabIndex].hDlg, SW_HIDE);
-						d->curTabIndex = newTabIndex;
-						ShowWindow(d->tabs[newTabIndex].hDlg, SW_SHOW);
-					}
-					break;
-				}
-
-				case NM_CUSTOMDRAW: {
-					// Custom drawing notification.
-					if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
-						break;
-
-					// NOTE: Since this is a DlgProc, we can't simply return
-					// the CDRF code. It has to be set as DWLP_MSGRESULT.
-					// References:
-					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
-					// - https://stackoverflow.com/a/40552426
-					NMLVCUSTOMDRAW *const plvcd = reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr);
-					int result = CDRF_DODEFAULT;
-					switch (plvcd->nmcd.dwDrawStage) {
-						case CDDS_PREPAINT:
-							// Request notifications for individual ListView items.
-							result = CDRF_NOTIFYITEMDRAW;
-							break;
-
-						case CDDS_ITEMPREPAINT: {
-							// Set the background color for alternating row colors.
-							if (plvcd->nmcd.dwItemSpec % 2) {
-								// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
-								// not the actual default background color.
-								// FIXME: On Windows 7:
-								// - Standard row colors are 19px high.
-								// - Alternate row colors are 17px high. (top and bottom lines ignored?)
-								plvcd->clrTextBk = d->colorAltRow;
-								result = CDRF_NEWFONT;
-							}
-							break;
-						}
-					}
-					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-					return TRUE;
-				}
-
-				case LVN_ITEMCHANGING: {
-					// If the window is fully initialized,
-					// disable modification of checkboxes.
-					// Reference: https://groups.google.com/forum/embed/#!topic/microsoft.public.vc.mfc/e9cbkSsiImA
-					if (!d->isFullyInit)
-						break;
-					if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
-						break;
-
-					NMLISTVIEW *pnmlv = reinterpret_cast<NMLISTVIEW*>(pHdr);
-					const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
-					// Set result to TRUE if the state difference is non-zero (i.e. it's changed).
-					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
-					return TRUE;
-				}
-
-				default:
-					break;
-			}
-
-			// Continue normal processing.
-			break;
+			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
 		}
 
 		case WM_PAINT: {
@@ -2282,38 +2340,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
 			}
-
-			if (!d->hbmpBanner && !d->hbmpIconFrames[0]) {
-				// Nothing to draw...
-				break;
-			}
-
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(hDlg, &ps);
-
-			// Memory DC for BitBlt.
-			HDC hdcMem = CreateCompatibleDC(hdc);
-
-			// Draw the banner.
-			if (d->hbmpBanner) {
-				SelectBitmap(hdcMem, d->hbmpBanner);
-				BitBlt(hdc, d->ptBanner.x, d->ptBanner.y,
-					d->szBanner.cx, d->szBanner.cy,
-					hdcMem, 0, 0, SRCCOPY);
-			}
-
-			// Draw the icon.
-			if (d->hbmpIconFrames[d->last_frame_number]) {
-				SelectBitmap(hdcMem, d->hbmpIconFrames[d->last_frame_number]);
-				BitBlt(hdc, d->rectIcon.left, d->rectIcon.top,
-					d->szIcon.cx, d->szIcon.cy,
-					hdcMem, 0, 0, SRCCOPY);
-			}
-
-			DeleteDC(hdcMem);
-			EndPaint(hDlg, &ps);
-
-			return TRUE;
+			return d->DlgProc_WM_PAINT(hDlg);
 		}
 
 		case WM_SYSCOLORCHANGE:
