@@ -132,8 +132,8 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Check if this is a drive letter.
 	// TODO: Move to GetLocation()?
-	if (iswalpha(pszFileName[0]) &&
-	    pszFileName[1] == ':' && pszFileName[2] == '\\')
+	if (iswalpha(pszFileName[0]) && pszFileName[1] == L':' &&
+	    pszFileName[2] == L'\\' && pszFileName[3] == L'\0')
 	{
 		// This is a drive letter.
 		// Only CD-ROM (and similar) drives are supported.
