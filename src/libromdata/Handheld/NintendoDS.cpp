@@ -1384,15 +1384,6 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 			return -ENOENT;
 	}
 
-	// Determine the GameTDB region code(s).
-	vector<const char*> tdb_regions = d->ndsRegionToGameTDB(
-		d->romHeader.nds_region,
-		((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi)
-			? le32_to_cpu(d->romHeader.dsi.region_code)
-			: 0 /* not a DSi-enhanced/exclusive ROM */
-			),
-		d->romHeader.id4[3]);
-
 	// Game ID. (GameTDB uses ID4 for Nintendo DS.)
 	// The ID4 cannot have non-printable characters.
 	char id4[5];
@@ -1406,6 +1397,15 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	// NULL-terminated ID4 is needed for the
 	// GameTDB URL functions.
 	id4[4] = 0;
+
+	// Determine the GameTDB region code(s).
+	vector<const char*> tdb_regions = d->ndsRegionToGameTDB(
+		d->romHeader.nds_region,
+		((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi)
+			? le32_to_cpu(d->romHeader.dsi.region_code)
+			: 0 /* not a DSi-enhanced/exclusive ROM */
+			),
+		d->romHeader.id4[3]);
 
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has

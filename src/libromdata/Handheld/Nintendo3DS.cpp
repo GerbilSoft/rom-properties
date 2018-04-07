@@ -2618,6 +2618,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Make sure the ID4 has only printable characters.
+	// NOTE: We're checking for NULL termination above.
 	const char *id4 = &ncch_header->product_code[6];
 	for (int i = 3; i >= 0; i--) {
 		if (!isprint(id4[i])) {
