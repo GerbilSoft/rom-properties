@@ -679,6 +679,7 @@ namespace {
 						EnableButtons(hDlg, true);
 						g_inProgress = false;
 						DlgUpdateCursor();
+						delete params;
 						return TRUE;
 					} else {
 						// We don't need to keep the thread handle open.
