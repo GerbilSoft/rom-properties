@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-04 23:11-0400\n"
+"POT-Creation-Date: 2018-04-07 13:56-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -137,14 +137,14 @@ msgstr ""
 #: ../src/gtk/gnome/rom-properties-provider.cpp:134
 #: ../src/gtk/xfce/rom-properties-page.cpp:156
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:85
-#: ../src/win32/RP_ShellPropSheetExt.cpp:2018
+#: ../src/win32/RP_ShellPropSheetExt.cpp:2023
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr ""
 
 #. tr: %1$s == system name, %2$s == file type
 #: ../src/gtk/RomDataView.cpp:661 ../src/kde/RomDataView.cpp:254
-#: ../src/win32/RP_ShellPropSheetExt.cpp:639
+#: ../src/win32/RP_ShellPropSheetExt.cpp:644
 #, c-format
 msgctxt "RomDataView"
 msgid ""
@@ -153,22 +153,22 @@ msgid ""
 msgstr ""
 
 #. tr: Invalid date/time.
-#: ../src/gtk/RomDataView.cpp:1073 ../src/kde/RomDataView.cpp:628
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1307
+#: ../src/gtk/RomDataView.cpp:1073 ../src/kde/RomDataView.cpp:631
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1312
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr ""
 
 #. tr: No age ratings data.
-#: ../src/gtk/RomDataView.cpp:1141 ../src/kde/RomDataView.cpp:709
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1422
+#: ../src/gtk/RomDataView.cpp:1141 ../src/kde/RomDataView.cpp:714
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1427
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr ""
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1329 ../src/kde/RomDataView.cpp:828
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1585
+#: ../src/gtk/RomDataView.cpp:1329 ../src/kde/RomDataView.cpp:833
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1590
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
@@ -679,7 +679,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:588
 #: ../src/libromdata/Console/GameCube.cpp:429
-#: ../src/libromdata/Console/MegaDrive.cpp:408
+#: ../src/libromdata/Console/MegaDrive.cpp:409
 #: ../src/libromdata/Console/SegaSaturn.cpp:500
 #: ../src/libromdata/Console/SNES.cpp:829
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1794
@@ -691,7 +691,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:589
 #: ../src/libromdata/Console/GameCube.cpp:476
-#: ../src/libromdata/Console/MegaDrive.cpp:410
+#: ../src/libromdata/Console/MegaDrive.cpp:411
 #: ../src/libromdata/Console/SegaSaturn.cpp:502
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1795
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1120
@@ -701,7 +701,7 @@ msgid "USA"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:590
-#: ../src/libromdata/Console/MegaDrive.cpp:411
+#: ../src/libromdata/Console/MegaDrive.cpp:412
 #: ../src/libromdata/Console/SegaSaturn.cpp:503
 #: ../src/libromdata/Console/SNES.cpp:831
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1796
@@ -905,87 +905,87 @@ msgctxt "DreamcastSave"
 msgid "VMI Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1303
+#: ../src/libromdata/Console/DreamcastSave.cpp:1304
 msgctxt "DreamcastSave"
 msgid "VMI Copyright"
 msgstr ""
 
 #. tr: ICONDATA_VMS
-#: ../src/libromdata/Console/DreamcastSave.cpp:1312
+#: ../src/libromdata/Console/DreamcastSave.cpp:1314
 msgctxt "DreamcastSave"
 msgid "Icon Data"
 msgstr ""
 
 #. tr: No file type entry.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1318
+#: ../src/libromdata/Console/DreamcastSave.cpp:1320
 msgctxt "DreamcastSave"
 msgid "None"
 msgstr ""
 
 #. tr: Save file.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1322
-#: ../src/libromdata/Console/DreamcastSave.cpp:1337
+#: ../src/libromdata/Console/DreamcastSave.cpp:1324
+#: ../src/libromdata/Console/DreamcastSave.cpp:1339
 msgctxt "DreamcastSave"
 msgid "Save Data"
 msgstr ""
 
 #. tr: VMU game file.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1326
-#: ../src/libromdata/Console/DreamcastSave.cpp:1341
+#: ../src/libromdata/Console/DreamcastSave.cpp:1328
+#: ../src/libromdata/Console/DreamcastSave.cpp:1343
 msgctxt "DreamcastSave"
 msgid "VMU Game"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1350
-#: ../src/libromdata/Console/DreamcastSave.cpp:1353
+#: ../src/libromdata/Console/DreamcastSave.cpp:1352
+#: ../src/libromdata/Console/DreamcastSave.cpp:1355
 msgctxt "DreamcastSave"
 msgid "File Type"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1365
+#: ../src/libromdata/Console/DreamcastSave.cpp:1367
 msgctxt "DreamcastSave"
 msgid "Copy OK"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1368
+#: ../src/libromdata/Console/DreamcastSave.cpp:1370
 msgctxt "DreamcastSave"
 msgid "Copy Protected"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1373
-#: ../src/libromdata/Console/DreamcastSave.cpp:1376
+#: ../src/libromdata/Console/DreamcastSave.cpp:1375
+#: ../src/libromdata/Console/DreamcastSave.cpp:1378
 msgctxt "DreamcastSave"
 msgid "Copy Protect"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1377
+#: ../src/libromdata/Console/DreamcastSave.cpp:1379
 #, c-format
 msgctxt "DreamcastSave"
 msgid "Unknown (0x%02X)"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1382
+#: ../src/libromdata/Console/DreamcastSave.cpp:1384
 msgctxt "DreamcastSave"
 msgid "Filename"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1387
+#: ../src/libromdata/Console/DreamcastSave.cpp:1389
 msgctxt "DreamcastSave"
 msgid "Creation Time"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1399
-#: ../src/libromdata/Console/DreamcastSave.cpp:1410
+#: ../src/libromdata/Console/DreamcastSave.cpp:1401
+#: ../src/libromdata/Console/DreamcastSave.cpp:1413
 msgctxt "DreamcastSave"
 msgid "VMS Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1415
+#: ../src/libromdata/Console/DreamcastSave.cpp:1419
 msgctxt "DreamcastSave"
 msgid "DC Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1423
+#: ../src/libromdata/Console/DreamcastSave.cpp:1428
 msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr ""
@@ -1285,179 +1285,184 @@ msgctxt "MegaDrive"
 msgid "Publisher"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:304
+#: ../src/libromdata/Console/MegaDrive.cpp:301
+msgctxt "MegaDrive"
+msgid "Unknown"
+msgstr ""
+
+#: ../src/libromdata/Console/MegaDrive.cpp:305
 msgctxt "MegaDrive"
 msgid "Domestic Title"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:307
+#: ../src/libromdata/Console/MegaDrive.cpp:308
 msgctxt "MegaDrive"
 msgid "Export Title"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:310
+#: ../src/libromdata/Console/MegaDrive.cpp:311
 msgctxt "MegaDrive"
 msgid "Serial Number"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:315
+#: ../src/libromdata/Console/MegaDrive.cpp:316
 msgctxt "MegaDrive"
 msgid "Checksum"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:322
+#: ../src/libromdata/Console/MegaDrive.cpp:323
 msgctxt "MegaDrive|I/O"
 msgid "Joypad"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:323
+#: ../src/libromdata/Console/MegaDrive.cpp:324
 msgctxt "MegaDrive|I/O"
 msgid "6-button"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:324
+#: ../src/libromdata/Console/MegaDrive.cpp:325
 msgctxt "MegaDrive|I/O"
 msgid "SMS Joypad"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:325
+#: ../src/libromdata/Console/MegaDrive.cpp:326
 msgctxt "MegaDrive|I/O"
 msgid "Team Player"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:326
+#: ../src/libromdata/Console/MegaDrive.cpp:327
 msgctxt "MegaDrive|I/O"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:327
+#: ../src/libromdata/Console/MegaDrive.cpp:328
 msgctxt "MegaDrive|I/O"
 msgid "Serial I/O"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:328
+#: ../src/libromdata/Console/MegaDrive.cpp:329
 msgctxt "MegaDrive|I/O"
 msgid "Printer"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:329
+#: ../src/libromdata/Console/MegaDrive.cpp:330
 msgctxt "MegaDrive|I/O"
 msgid "Tablet"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:330
+#: ../src/libromdata/Console/MegaDrive.cpp:331
 msgctxt "MegaDrive|I/O"
 msgid "Trackball"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:331
+#: ../src/libromdata/Console/MegaDrive.cpp:332
 msgctxt "MegaDrive|I/O"
 msgid "Paddle"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:332
+#: ../src/libromdata/Console/MegaDrive.cpp:333
 msgctxt "MegaDrive|I/O"
 msgid "Floppy Drive"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:333
+#: ../src/libromdata/Console/MegaDrive.cpp:334
 msgctxt "MegaDrive|I/O"
 msgid "CD-ROM"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:334
+#: ../src/libromdata/Console/MegaDrive.cpp:335
 msgctxt "MegaDrive|I/O"
 msgid "Activator"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:335
+#: ../src/libromdata/Console/MegaDrive.cpp:336
 msgctxt "MegaDrive|I/O"
 msgid "Mega Mouse"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:341
+#: ../src/libromdata/Console/MegaDrive.cpp:342
 msgctxt "MegaDrive"
 msgid "I/O Support"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:346
+#: ../src/libromdata/Console/MegaDrive.cpp:347
 msgctxt "MegaDrive"
 msgid "ROM Range"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:352
+#: ../src/libromdata/Console/MegaDrive.cpp:353
 msgctxt "MegaDrive"
 msgid "RAM Range"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:368
+#: ../src/libromdata/Console/MegaDrive.cpp:369
 msgctxt "MegaDrive"
 msgid "(even only)"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:371
+#: ../src/libromdata/Console/MegaDrive.cpp:372
 msgctxt "MegaDrive"
 msgid "(odd only)"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:375
+#: ../src/libromdata/Console/MegaDrive.cpp:376
 msgctxt "MegaDrive"
 msgid "(16-bit)"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:379
-#: ../src/libromdata/Console/MegaDrive.cpp:384
+#: ../src/libromdata/Console/MegaDrive.cpp:380
+#: ../src/libromdata/Console/MegaDrive.cpp:385
 msgctxt "MegaDrive"
 msgid "SRAM Range"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:384
+#: ../src/libromdata/Console/MegaDrive.cpp:385
 msgctxt "MegaDrive"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:399
+#: ../src/libromdata/Console/MegaDrive.cpp:400
 msgctxt "MegaDrive"
 msgid "ExtROM Range"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:409
+#: ../src/libromdata/Console/MegaDrive.cpp:410
 msgctxt "Region"
 msgid "Asia"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:415
+#: ../src/libromdata/Console/MegaDrive.cpp:416
 msgctxt "MegaDrive"
 msgid "Region Code"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:495
+#: ../src/libromdata/Console/MegaDrive.cpp:496
 msgctxt "MegaDrive|VectorTable"
 msgid "#"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:496
+#: ../src/libromdata/Console/MegaDrive.cpp:497
 msgctxt "MegaDrive|VectorTable"
 msgid "Vector"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:497
+#: ../src/libromdata/Console/MegaDrive.cpp:498
 msgctxt "MegaDrive|VectorTable"
 msgid "Address"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:501
-#: ../src/libromdata/Console/MegaDrive.cpp:905
+#: ../src/libromdata/Console/MegaDrive.cpp:502
+#: ../src/libromdata/Console/MegaDrive.cpp:906
 msgctxt "MegaDrive"
 msgid "Vector Table"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:900
+#: ../src/libromdata/Console/MegaDrive.cpp:901
 msgctxt "MegaDrive"
 msgid "ROM Header"
 msgstr ""
 
-#: ../src/libromdata/Console/MegaDrive.cpp:952
+#: ../src/libromdata/Console/MegaDrive.cpp:953
 msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr ""
@@ -4932,246 +4937,253 @@ msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is incorrect."
 msgstr ""
 
+#. tr: FTYPE_ROM_IMAGE
+#: ../src/librpbase/RomData.cpp:407
+msgctxt "RomData|FileType"
+msgid "ROM Image"
+msgstr ""
+
+#. tr: FTYPE_DISC_IMAGE
+#: ../src/librpbase/RomData.cpp:409
+msgctxt "RomData|FileType"
+msgid "Disc Image"
+msgstr ""
+
+#. tr: FTYPE_SAVE_FILE
+#: ../src/librpbase/RomData.cpp:411
+msgctxt "RomData|FileType"
+msgid "Save File"
+msgstr ""
+
+#. tr: FTYPE_EMBEDDED_DISC_IMAGE
+#: ../src/librpbase/RomData.cpp:413
+msgctxt "RomData|FileType"
+msgid "Embedded Disc Image"
+msgstr ""
+
+#. tr: FTYPE_APPLICATION_PACKAGE
+#: ../src/librpbase/RomData.cpp:415
+msgctxt "RomData|FileType"
+msgid "Application Package"
+msgstr ""
+
+#. tr: FTYPE_NFC_DUMP
+#: ../src/librpbase/RomData.cpp:417
+msgctxt "RomData|FileType"
+msgid "NFC Dump"
+msgstr ""
+
+#. tr: FTYPE_DISK_IMAGE
+#: ../src/librpbase/RomData.cpp:419
+msgctxt "RomData|FileType"
+msgid "Disk Image"
+msgstr ""
+
+#. tr: FTYPE_EXECUTABLE
+#: ../src/librpbase/RomData.cpp:421
+msgctxt "RomData|FileType"
+msgid "Executable"
+msgstr ""
+
+#. tr: FTYPE_DLL
+#: ../src/librpbase/RomData.cpp:423
+msgctxt "RomData|FileType"
+msgid "Dynamic Link Library"
+msgstr ""
+
+#. tr: FTYPE_DEVICE_DRIVER
+#: ../src/librpbase/RomData.cpp:425
+msgctxt "RomData|FileType"
+msgid "Device Driver"
+msgstr ""
+
+#. tr: FTYPE_RESOURCE_LIBRARY
+#: ../src/librpbase/RomData.cpp:427
+msgctxt "RomData|FileType"
+msgid "Resource Library"
+msgstr ""
+
+#. tr: FTYPE_ICON_FILE
+#: ../src/librpbase/RomData.cpp:429
+msgctxt "RomData|FileType"
+msgid "Icon File"
+msgstr ""
+
+#. tr: FTYPE_BANNER_FILE
+#: ../src/librpbase/RomData.cpp:431
+msgctxt "RomData|FileType"
+msgid "Banner File"
+msgstr ""
+
+#. tr: FTYPE_HOMEBREW
+#: ../src/librpbase/RomData.cpp:433
+msgctxt "RomData|FileType"
+msgid "Homebrew Application"
+msgstr ""
+
+#. tr: FTYPE_EMMC_DUMP
+#: ../src/librpbase/RomData.cpp:435
+msgctxt "RomData|FileType"
+msgid "eMMC Dump"
+msgstr ""
+
+#. tr: FTYPE_TITLE_CONTENTS
+#: ../src/librpbase/RomData.cpp:437
+msgctxt "RomData|FileType"
+msgid "Title Contents"
+msgstr ""
+
+#. tr: FTYPE_FIRMWARE_BINARY
+#: ../src/librpbase/RomData.cpp:439
+msgctxt "RomData|FileType"
+msgid "Firmware Binary"
+msgstr ""
+
+#. tr: FTYPE_TEXTURE_FILE
+#: ../src/librpbase/RomData.cpp:441
+msgctxt "RomData|FileType"
+msgid "Texture File"
+msgstr ""
+
+#. tr: FTYPE_RELOCATABLE_OBJECT
+#: ../src/librpbase/RomData.cpp:443
+msgctxt "RomData|FileType"
+msgid "Relocatable Object File"
+msgstr ""
+
+#. tr: FTYPE_SHARED_LIBRARY
+#: ../src/librpbase/RomData.cpp:445
+msgctxt "RomData|FileType"
+msgid "Shared Library"
+msgstr ""
+
+#. tr: FTYPE_CORE_DUMP
+#: ../src/librpbase/RomData.cpp:447
+msgctxt "RomData|FileType"
+msgid "Core Dump"
+msgstr ""
+
+#. tr: IMG_INT_ICON
+#: ../src/librpbase/RomData.cpp:641
+msgctxt "RomData|ImageType"
+msgid "Internal icon"
+msgstr ""
+
+#. tr: IMG_INT_BANNER
+#: ../src/librpbase/RomData.cpp:643
+msgctxt "RomData|ImageType"
+msgid "Internal banner"
+msgstr ""
+
+#. tr: IMG_INT_MEDIA
+#: ../src/librpbase/RomData.cpp:645
+msgctxt "RomData|ImageType"
+msgid "Internal media scan"
+msgstr ""
+
+#. tr: IMG_INT_IMAGE
+#: ../src/librpbase/RomData.cpp:647
+msgctxt "RomData|ImageType"
+msgid "Internal image"
+msgstr ""
+
+#. tr: IMG_EXT_MEDIA
+#: ../src/librpbase/RomData.cpp:652
+msgctxt "RomData|ImageType"
+msgid "External media scan"
+msgstr ""
+
+#. tr: IMG_EXT_COVER
+#: ../src/librpbase/RomData.cpp:654
+msgctxt "RomData|ImageType"
+msgid "External cover scan"
+msgstr ""
+
+#. tr: IMG_EXT_COVER_3D
+#: ../src/librpbase/RomData.cpp:656
+msgctxt "RomData|ImageType"
+msgid "External cover scan (3D version)"
+msgstr ""
+
+#. tr: IMG_EXT_COVER_FULL
+#: ../src/librpbase/RomData.cpp:658
+msgctxt "RomData|ImageType"
+msgid "External cover scan (front and back)"
+msgstr ""
+
+#. tr: IMG_EXT_BOX
+#: ../src/librpbase/RomData.cpp:660
+msgctxt "RomData|ImageType"
+msgid "External box scan"
+msgstr ""
+
+#. tr: Prohibited.
+#: ../src/librpbase/RomFields.cpp:385
+msgctxt "RomFields|AgeRating"
+msgid "No"
+msgstr ""
+
+#. tr: No age restriction.
+#: ../src/librpbase/RomFields.cpp:391
+msgctxt "RomFields|AgeRating"
+msgid "All"
+msgstr ""
+
+#. tr: No age ratings.
+#: ../src/librpbase/RomFields.cpp:542
+msgctxt "RomFields|AgeRating"
+msgid "None"
+msgstr ""
+
 #. tr: Bytes (< 1,024)
-#: ../src/librpbase/RomData.cpp:117
-msgctxt "RomData|FileSize"
+#: ../src/librpbase/TextFuncs.cpp:298
+msgctxt "TextFuncs|FileSize"
 msgid "byte"
 msgid_plural "bytes"
 msgstr[0] ""
 msgstr[1] ""
 
 #. tr: Kilobytes
-#: ../src/librpbase/RomData.cpp:122
-msgctxt "RomData|FileSize"
+#: ../src/librpbase/TextFuncs.cpp:303
+msgctxt "TextFuncs|FileSize"
 msgid "KiB"
 msgstr ""
 
 #. tr: Megabytes
-#: ../src/librpbase/RomData.cpp:127
-msgctxt "RomData|FileSize"
+#: ../src/librpbase/TextFuncs.cpp:308
+msgctxt "TextFuncs|FileSize"
 msgid "MiB"
 msgstr ""
 
 #. tr: Gigabytes
-#: ../src/librpbase/RomData.cpp:132
-msgctxt "RomData|FileSize"
+#: ../src/librpbase/TextFuncs.cpp:313
+msgctxt "TextFuncs|FileSize"
 msgid "GiB"
 msgstr ""
 
 #. tr: Terabytes
-#: ../src/librpbase/RomData.cpp:137
-msgctxt "RomData|FileSize"
+#: ../src/librpbase/TextFuncs.cpp:318
+msgctxt "TextFuncs|FileSize"
 msgid "TiB"
 msgstr ""
 
 #. tr: Petabytes
-#: ../src/librpbase/RomData.cpp:142
-msgctxt "RomData|FileSize"
+#: ../src/librpbase/TextFuncs.cpp:323
+msgctxt "TextFuncs|FileSize"
 msgid "PiB"
 msgstr ""
 
 #. tr: Exabytes
-#: ../src/librpbase/RomData.cpp:147
-msgctxt "RomData|FileSize"
+#: ../src/librpbase/TextFuncs.cpp:328
+msgctxt "TextFuncs|FileSize"
 msgid "EiB"
 msgstr ""
 
-#. tr: FTYPE_ROM_IMAGE
-#: ../src/librpbase/RomData.cpp:506
-msgctxt "RomData|FileType"
-msgid "ROM Image"
-msgstr ""
-
-#. tr: FTYPE_DISC_IMAGE
-#: ../src/librpbase/RomData.cpp:508
-msgctxt "RomData|FileType"
-msgid "Disc Image"
-msgstr ""
-
-#. tr: FTYPE_SAVE_FILE
-#: ../src/librpbase/RomData.cpp:510
-msgctxt "RomData|FileType"
-msgid "Save File"
-msgstr ""
-
-#. tr: FTYPE_EMBEDDED_DISC_IMAGE
-#: ../src/librpbase/RomData.cpp:512
-msgctxt "RomData|FileType"
-msgid "Embedded Disc Image"
-msgstr ""
-
-#. tr: FTYPE_APPLICATION_PACKAGE
-#: ../src/librpbase/RomData.cpp:514
-msgctxt "RomData|FileType"
-msgid "Application Package"
-msgstr ""
-
-#. tr: FTYPE_NFC_DUMP
-#: ../src/librpbase/RomData.cpp:516
-msgctxt "RomData|FileType"
-msgid "NFC Dump"
-msgstr ""
-
-#. tr: FTYPE_DISK_IMAGE
-#: ../src/librpbase/RomData.cpp:518
-msgctxt "RomData|FileType"
-msgid "Disk Image"
-msgstr ""
-
-#. tr: FTYPE_EXECUTABLE
-#: ../src/librpbase/RomData.cpp:520
-msgctxt "RomData|FileType"
-msgid "Executable"
-msgstr ""
-
-#. tr: FTYPE_DLL
-#: ../src/librpbase/RomData.cpp:522
-msgctxt "RomData|FileType"
-msgid "Dynamic Link Library"
-msgstr ""
-
-#. tr: FTYPE_DEVICE_DRIVER
-#: ../src/librpbase/RomData.cpp:524
-msgctxt "RomData|FileType"
-msgid "Device Driver"
-msgstr ""
-
-#. tr: FTYPE_RESOURCE_LIBRARY
-#: ../src/librpbase/RomData.cpp:526
-msgctxt "RomData|FileType"
-msgid "Resource Library"
-msgstr ""
-
-#. tr: FTYPE_ICON_FILE
-#: ../src/librpbase/RomData.cpp:528
-msgctxt "RomData|FileType"
-msgid "Icon File"
-msgstr ""
-
-#. tr: FTYPE_BANNER_FILE
-#: ../src/librpbase/RomData.cpp:530
-msgctxt "RomData|FileType"
-msgid "Banner File"
-msgstr ""
-
-#. tr: FTYPE_HOMEBREW
-#: ../src/librpbase/RomData.cpp:532
-msgctxt "RomData|FileType"
-msgid "Homebrew Application"
-msgstr ""
-
-#. tr: FTYPE_EMMC_DUMP
-#: ../src/librpbase/RomData.cpp:534
-msgctxt "RomData|FileType"
-msgid "eMMC Dump"
-msgstr ""
-
-#. tr: FTYPE_TITLE_CONTENTS
-#: ../src/librpbase/RomData.cpp:536
-msgctxt "RomData|FileType"
-msgid "Title Contents"
-msgstr ""
-
-#. tr: FTYPE_FIRMWARE_BINARY
-#: ../src/librpbase/RomData.cpp:538
-msgctxt "RomData|FileType"
-msgid "Firmware Binary"
-msgstr ""
-
-#. tr: FTYPE_TEXTURE_FILE
-#: ../src/librpbase/RomData.cpp:540
-msgctxt "RomData|FileType"
-msgid "Texture File"
-msgstr ""
-
-#. tr: FTYPE_RELOCATABLE_OBJECT
-#: ../src/librpbase/RomData.cpp:542
-msgctxt "RomData|FileType"
-msgid "Relocatable Object File"
-msgstr ""
-
-#. tr: FTYPE_SHARED_LIBRARY
-#: ../src/librpbase/RomData.cpp:544
-msgctxt "RomData|FileType"
-msgid "Shared Library"
-msgstr ""
-
-#. tr: FTYPE_CORE_DUMP
-#: ../src/librpbase/RomData.cpp:546
-msgctxt "RomData|FileType"
-msgid "Core Dump"
-msgstr ""
-
-#. tr: IMG_INT_ICON
-#: ../src/librpbase/RomData.cpp:740
-msgctxt "RomData|ImageType"
-msgid "Internal icon"
-msgstr ""
-
-#. tr: IMG_INT_BANNER
-#: ../src/librpbase/RomData.cpp:742
-msgctxt "RomData|ImageType"
-msgid "Internal banner"
-msgstr ""
-
-#. tr: IMG_INT_MEDIA
-#: ../src/librpbase/RomData.cpp:744
-msgctxt "RomData|ImageType"
-msgid "Internal media scan"
-msgstr ""
-
-#. tr: IMG_INT_IMAGE
-#: ../src/librpbase/RomData.cpp:746
-msgctxt "RomData|ImageType"
-msgid "Internal image"
-msgstr ""
-
-#. tr: IMG_EXT_MEDIA
-#: ../src/librpbase/RomData.cpp:751
-msgctxt "RomData|ImageType"
-msgid "External media scan"
-msgstr ""
-
-#. tr: IMG_EXT_COVER
-#: ../src/librpbase/RomData.cpp:753
-msgctxt "RomData|ImageType"
-msgid "External cover scan"
-msgstr ""
-
-#. tr: IMG_EXT_COVER_3D
-#: ../src/librpbase/RomData.cpp:755
-msgctxt "RomData|ImageType"
-msgid "External cover scan (3D version)"
-msgstr ""
-
-#. tr: IMG_EXT_COVER_FULL
-#: ../src/librpbase/RomData.cpp:757
-msgctxt "RomData|ImageType"
-msgid "External cover scan (front and back)"
-msgstr ""
-
-#. tr: IMG_EXT_BOX
-#: ../src/librpbase/RomData.cpp:759
-msgctxt "RomData|ImageType"
-msgid "External box scan"
-msgstr ""
-
-#. tr: Prohibited.
-#: ../src/librpbase/RomFields.cpp:382
-msgctxt "RomFields|AgeRating"
-msgid "No"
-msgstr ""
-
-#. tr: No age restriction.
-#: ../src/librpbase/RomFields.cpp:388
-msgctxt "RomFields|AgeRating"
-msgid "All"
-msgstr ""
-
-#. tr: No age ratings.
-#: ../src/librpbase/RomFields.cpp:539
-msgctxt "RomFields|AgeRating"
-msgid "None"
+#. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
+#: ../src/librpbase/TextFuncs.cpp:366
+#, c-format
+msgctxt "TextFuncs|FileSize"
+msgid "%1$s %2$s"
 msgstr ""
 
 #. tr: %1$s == image type name, %2$s == output filename
