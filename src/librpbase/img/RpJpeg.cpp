@@ -18,12 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "config.librpbase.h"
 
 #include "RpJpeg.hpp"
 #include "RpJpeg_p.hpp"
 #include "../file/IRpFile.hpp"
 #include "../file/FileSystem.hpp"
+
+// libi18n
+#include "libi18n/i18n.h"
 
 #ifdef RPJPEG_HAS_SSSE3
 # include "librpbase/cpuflags_x86.h"
@@ -102,12 +105,14 @@ void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
 #ifdef _WIN32
 	// The default libjpeg error handler uses MessageBox() on Windows.
 	// This is bad design, so we'll use OutputDebugStringA() instead.
-	OutputDebugStringA("libjpeg error: ");
-	OutputDebugStringA(buffer);
+	char txtbuf[JMSG_LENGTH_MAX+64];
+	snprintf(txtbuf, sizeof(txtbuf), "libjpeg error: %s", buffer);
+	OutputDebugStringA(txtbuf);
 	OutputDebugStringA("\n");
 #else
 	// Print to stderr.
-	fprintf(stderr, "libjpeg error: %s\n", buffer);
+	fprintf(stderr, C_("RpJpeg", "libjpeg error: %s"), buffer);
+	fputc('\n', stderr);
 #endif
 }
 

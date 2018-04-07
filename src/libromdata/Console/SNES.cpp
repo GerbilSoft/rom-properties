@@ -926,7 +926,8 @@ int SNES::loadFieldData(void)
 				d->fields->addField_string(C_("SNES", "Program Type"), program_type);
 			} else {
 				d->fields->addField_string(C_("SNES", "Program Type"),
-					rp_sprintf("Unknown (0x%08X)", le32_to_cpu(romHeader->bsx.ext.program_type)));
+					rp_sprintf(C_("SNES", "Unknown (0x%08X)"),
+						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
 
 			// TODO: block_alloc

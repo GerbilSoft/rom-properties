@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-07 13:56-0400\n"
+"POT-Creation-Date: 2018-04-07 17:31-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -942,50 +942,51 @@ msgctxt "DreamcastSave"
 msgid "File Type"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1367
-msgctxt "DreamcastSave"
-msgid "Copy OK"
-msgstr ""
-
-#: ../src/libromdata/Console/DreamcastSave.cpp:1370
-msgctxt "DreamcastSave"
-msgid "Copy Protected"
-msgstr ""
-
-#: ../src/libromdata/Console/DreamcastSave.cpp:1375
-#: ../src/libromdata/Console/DreamcastSave.cpp:1378
-msgctxt "DreamcastSave"
-msgid "Copy Protect"
-msgstr ""
-
-#: ../src/libromdata/Console/DreamcastSave.cpp:1379
+#: ../src/libromdata/Console/DreamcastSave.cpp:1356
+#: ../src/libromdata/Console/DreamcastSave.cpp:1380
 #, c-format
 msgctxt "DreamcastSave"
 msgid "Unknown (0x%02X)"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1384
+#: ../src/libromdata/Console/DreamcastSave.cpp:1368
+msgctxt "DreamcastSave"
+msgid "Copy OK"
+msgstr ""
+
+#: ../src/libromdata/Console/DreamcastSave.cpp:1371
+msgctxt "DreamcastSave"
+msgid "Copy Protected"
+msgstr ""
+
+#: ../src/libromdata/Console/DreamcastSave.cpp:1376
+#: ../src/libromdata/Console/DreamcastSave.cpp:1379
+msgctxt "DreamcastSave"
+msgid "Copy Protect"
+msgstr ""
+
+#: ../src/libromdata/Console/DreamcastSave.cpp:1385
 msgctxt "DreamcastSave"
 msgid "Filename"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1389
+#: ../src/libromdata/Console/DreamcastSave.cpp:1390
 msgctxt "DreamcastSave"
 msgid "Creation Time"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1401
-#: ../src/libromdata/Console/DreamcastSave.cpp:1413
+#: ../src/libromdata/Console/DreamcastSave.cpp:1402
+#: ../src/libromdata/Console/DreamcastSave.cpp:1414
 msgctxt "DreamcastSave"
 msgid "VMS Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1419
+#: ../src/libromdata/Console/DreamcastSave.cpp:1420
 msgctxt "DreamcastSave"
 msgid "DC Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1428
+#: ../src/libromdata/Console/DreamcastSave.cpp:1429
 msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr ""
@@ -2119,13 +2120,19 @@ msgctxt "SNES"
 msgid "Program Type"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:945
-#: ../src/libromdata/Console/SNES.cpp:948
+#: ../src/libromdata/Console/SNES.cpp:929
+#, c-format
+msgctxt "SNES"
+msgid "Unknown (0x%08X)"
+msgstr ""
+
+#: ../src/libromdata/Console/SNES.cpp:946
+#: ../src/libromdata/Console/SNES.cpp:949
 msgctxt "SNES"
 msgid "Limited Starts"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:948
+#: ../src/libromdata/Console/SNES.cpp:949
 msgctxt "SNES"
 msgid "Unlimited"
 msgstr ""
@@ -4367,190 +4374,195 @@ msgctxt "DirectDrawSurface"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1121
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1131
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1133
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1140
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1142
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1147
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1153
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1155
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1165
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1114
+msgctxt "DirectDrawSurface"
+msgid "Mipmap Count"
+msgstr ""
+
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1122
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1132
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1134
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1141
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1143
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1148
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1154
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1156
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1166
 msgctxt "DirectDrawSurface"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1143
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1144
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Alpha (%u-bit)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1148
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1149
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "YUV (%u-bit)"
 msgstr ""
 
 #. tr: %1$s == pixel format name; %2$u == bits per pixel
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1157
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1158
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "%1$s (%2$u-bit)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1159
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1160
 msgctxt "DirectDrawSurface"
 msgid "Luminance + Alpha"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1160
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1161
 msgctxt "DirectDrawSurface"
 msgid "Luminance"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1165
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1166
 msgctxt "DirectDrawSurface"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1258
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1259
 msgctxt "DirectDrawSurface"
 msgid "DX10 Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1260
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1261
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Unknown (0x%08X)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1266
-msgctxt "DirectDrawSurface|dwFlags"
-msgid "Caps"
-msgstr ""
-
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1267
 msgctxt "DirectDrawSurface|dwFlags"
-msgid "Height"
+msgid "Caps"
 msgstr ""
 
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1268
 msgctxt "DirectDrawSurface|dwFlags"
-msgid "Width"
+msgid "Height"
 msgstr ""
 
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1269
 msgctxt "DirectDrawSurface|dwFlags"
+msgid "Width"
+msgstr ""
+
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1270
+msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1275
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1276
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1279
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1280
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Mipmap Count"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1281
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1282
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1284
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1285
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Depth"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1288
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1289
 msgctxt "DirectDrawSurface"
 msgid "Flags"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1295
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1296
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Complex"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1301
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1302
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1307
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1308
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Mipmap"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1311
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1312
 msgctxt "DirectDrawSurface"
 msgid "Caps"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1322
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1323
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Cubemap"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1323
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1324
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1324
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1325
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1326
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1327
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1327
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1328
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1328
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1329
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1329
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1330
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1334
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1335
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1338
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1339
 msgctxt "DirectDrawSurface"
 msgid "Caps2"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1345
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1346
 msgctxt "DirectDrawSurface"
 msgid "Tile Mode"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1346
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1347
 msgctxt "DirectDrawSurface"
 msgid "Base Alignment"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1348
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1349
 msgctxt "DirectDrawSurface"
 msgid "Data Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1350
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1351
 msgctxt "DirectDrawSurface"
 msgid "XDK Version"
 msgstr ""
@@ -4935,6 +4947,12 @@ msgstr ""
 #: ../src/librpbase/crypto/KeyManager.cpp:255
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is incorrect."
+msgstr ""
+
+#: ../src/librpbase/img/RpJpeg.cpp:114
+#, c-format
+msgctxt "RpJpeg"
+msgid "libjpeg error: %s"
 msgstr ""
 
 #. tr: FTYPE_ROM_IMAGE

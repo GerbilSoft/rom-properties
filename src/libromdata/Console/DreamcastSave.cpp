@@ -1353,7 +1353,8 @@ int DreamcastSave::loadFieldData(void)
 	} else {
 		// Unknown file type.
 		d->fields->addField_string(C_("DreamcastSave", "File Type"),
-			rp_sprintf("Unknown (0x%02X)", d->vms_dirent.filetype));
+			rp_sprintf(C_("DreamcastSave", "Unknown (0x%02X)"),
+				d->vms_dirent.filetype));
 	}
 
 	// DC VMS directory entry.

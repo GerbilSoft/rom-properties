@@ -1105,12 +1105,13 @@ int DirectDrawSurface::loadFieldData(void)
 	const char *const pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE)
 		? C_("DirectDrawSurface", "Linear Size")
 		: C_("DirectDrawSurface", "Pitch");
-	d->fields->addField_string_numeric(pitch_name,
+	d->fields->addField_string_numeric(
+		dpgettext_expr(RP_I18N_DOMAIN, "DirectDrawSurface", pitch_name),
 		ddsHeader->dwPitchOrLinearSize, RomFields::FB_DEC, 0);
 
 	// Mipmap count.
 	// NOTE: DDSD_MIPMAPCOUNT might not be accurate, so ignore it.
-	d->fields->addField_string_numeric("Mipmap Count",
+	d->fields->addField_string_numeric(C_("DirectDrawSurface", "Mipmap Count"),
 		ddsHeader->dwMipMapCount, RomFields::FB_DEC, 0);
 
 	// Pixel format.
