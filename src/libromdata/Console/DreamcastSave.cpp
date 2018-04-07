@@ -1299,10 +1299,12 @@ int DreamcastSave::loadFieldData(void)
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMI) {
 		d->fields->addField_string(C_("DreamcastSave", "VMI Description"),
 			cp1252_sjis_to_utf8(
-				d->vmi_header.description, sizeof(d->vmi_header.description)));
+				d->vmi_header.description, sizeof(d->vmi_header.description)),
+				RomFields::STRF_TRIM_END);
 		d->fields->addField_string(C_("DreamcastSave", "VMI Copyright"),
 			cp1252_sjis_to_utf8(
-				d->vmi_header.copyright, sizeof(d->vmi_header.copyright)));
+				d->vmi_header.copyright, sizeof(d->vmi_header.copyright)),
+				RomFields::STRF_TRIM_END);
 	}
 
 	// File type.
@@ -1398,7 +1400,8 @@ int DreamcastSave::loadFieldData(void)
 		// VMS description.
 		d->fields->addField_string(C_("DreamcastSave", "VMS Description"),
 			cp1252_sjis_to_utf8(
-				icondata_vms->vms_description, sizeof(icondata_vms->vms_description)));
+				icondata_vms->vms_description, sizeof(icondata_vms->vms_description)),
+				RomFields::STRF_TRIM_END);
 
 		// Other VMS fields aren't used here.
 		// TODO: Indicate if both a mono and color icon are present?
@@ -1409,12 +1412,14 @@ int DreamcastSave::loadFieldData(void)
 		// VMS description.
 		d->fields->addField_string(C_("DreamcastSave", "VMS Description"),
 			cp1252_sjis_to_utf8(
-				vms_header->vms_description, sizeof(vms_header->vms_description)));
+				vms_header->vms_description, sizeof(vms_header->vms_description)),
+				RomFields::STRF_TRIM_END);
 
 		// DC description.
 		d->fields->addField_string(C_("DreamcastSave", "DC Description"),
 			cp1252_sjis_to_utf8(
-				vms_header->dc_description, sizeof(vms_header->dc_description)));
+				vms_header->dc_description, sizeof(vms_header->dc_description)),
+				RomFields::STRF_TRIM_END);
 
 		// Game Title.
 		// NOTE: This is used as the "sort key" on DC file management,
