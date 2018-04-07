@@ -42,32 +42,10 @@
 // C++ includes.
 #include <string>
 
-/** Reimplementations of libc functions that aren't present on this system. **/
+// Reimplementations of libc functions that aren't present on this system.
+#include "TextFuncs_libc.h"
 
-#ifndef HAVE_STRNLEN
-/**
- * String length with limit. (8-bit strings)
- * @param str The string itself
- * @param maxlen Maximum length of the string
- * @returns equivivalent to min(strlen(str), maxlen) without buffer overruns
- */
-extern "C"
-size_t strnlen(const char *str, size_t maxlen);
-#endif /* HAVE_STRNLEN */
-
-#ifndef HAVE_MEMMEM
-/**
- * Find a string within a block of memory.
- * @param haystack Block of memory.
- * @param haystacklen Length of haystack.
- * @param needle String to search for.
- * @param needlelen Length of needle.
- * @return Location of needle in haystack, or nullptr if not found.
- */
-void *memmem(const void *haystack, size_t haystacklen,
-	     const void *needle, size_t needlelen);
-#endif /* HAVE_MEMMEM */
-
+#ifdef __cplusplus
 namespace LibRpBase {
 
 /** UTF-16 string functions. **/
@@ -385,7 +363,17 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
 #define rp_sprintf_p(fmt, ...) rp_sprintf(fmt, ##__VA_ARGS__)
 #endif
 
+/** Other useful text functions **/
+
+/**
+ * Format a file size.
+ * @param fileSize File size.
+ * @return Formatted file size.
+ */
+std::string formatFileSize(int64_t fileSize);
+
 }
+#endif /* __cplusplus */
 
 #ifdef _WIN32
 // wchar_t text conversion macros.

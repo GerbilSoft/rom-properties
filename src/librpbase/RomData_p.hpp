@@ -74,13 +74,6 @@ class RomDataPrivate
 		/** Convenience functions. **/
 
 		/**
-		 * Format a file size.
-		 * @param fileSize File size.
-		 * @return Formatted file size.
-		 */
-		static std::string formatFileSize(int64_t fileSize);
-
-		/**
 		 * Get the GameTDB URL for a given game.
 		 * @param system System name.
 		 * @param type Image type.

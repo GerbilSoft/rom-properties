@@ -1804,14 +1804,14 @@ int GameCube::loadFieldData(void)
 			// Used size.
 			const int64_t used_size = entry.partition->partition_size_used();
 			if (used_size >= 0) {
-				data_row.push_back(d->formatFileSize(used_size));
+				data_row.push_back(LibRpBase::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
 				data_row.push_back(C_("GameCube|Partition", "Unknown"));
 			}
 
 			// Partition size.
-			data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
+			data_row.push_back(LibRpBase::formatFileSize(entry.partition->partition_size()));
 		}
 
 		// Fields.

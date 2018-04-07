@@ -22,6 +22,9 @@
 #include "TextFuncs.hpp"
 #include "byteswap.h"
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // C includes.
 #include <stdlib.h>
 
@@ -248,64 +251,105 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
 }
 #endif /* _MSC_VER */
 
+/** Other useful text functions **/
+
+static inline int calc_frac_part(int64_t size, int64_t mask)
+{
+	float f = (float)(size & (mask - 1)) / (float)mask;
+	int frac_part = (int)(f * 1000.0f);
+
+	// MSVC added round() and roundf() in MSVC 2013.
+	// Use our own rounding code instead.
+	int round_adj = (frac_part % 10 > 5);
+	frac_part /= 10;
+	frac_part += round_adj;
+	return frac_part;
 }
 
-/** Reimplementations of libc functions that aren't present on this system. **/
-
-#ifndef HAVE_STRNLEN
 /**
- * String length with limit. (8-bit strings)
- * @param str The string itself
- * @param maxlen Maximum length of the string
- * @returns equivivalent to min(strlen(str), maxlen) without buffer overruns
+ * Format a file size.
+ * @param size File size.
+ * @return Formatted file size.
  */
-size_t strnlen(const char *str, size_t maxlen)
+string formatFileSize(int64_t size)
 {
-	const char *ptr = memchr(str, 0, maxlen);
-	if (!ptr)
-		return maxlen;
-	return ptr - str;
-}
-#endif /* HAVE_STRNLEN */
+	const char *suffix;
+	// frac_part is always 0 to 100.
+	// If whole_part >= 10, frac_part is divided by 10.
+	int whole_part, frac_part;
 
-#ifndef HAVE_MEMMEM
-/**
- * Find a string within a block of memory.
- * @param haystack Block of memory.
- * @param haystacklen Length of haystack.
- * @param needle String to search for.
- * @param needlelen Length of needle.
- * @return Location of needle in haystack, or nullptr if not found.
- */
-void *memmem(const void *haystack, size_t haystacklen,
-	     const void *needle, size_t needlelen)
-{
-	// Reference: https://opensource.apple.com/source/Libc/Libc-1044.1.2/string/FreeBSD/memmem.c
-	// NOTE: haystack was originally 'l'; needle was originally 's'.
-	register const char *cur, *last;
-	const char *cl = (const char *)haystack;
-	const char *cs = (const char *)needle;
-
-	/* we need something to compare */
-	if (haystacklen == 0 || needlelen == 0)
-		return nullptr;
-
-	/* "s" must be smaller or equal to "l" */
-	if (haystacklen < needlelen)
-		return nullptr;
-
-	/* special case where s_len == 1 */
-	if (needlelen == 1)
-		return (void*)memchr(haystack, (int)*cs, needlelen);
-
-	/* the last position where its possible to find "s" in "l" */
-	last = (char *)cl + haystacklen - needlelen;
-
-	for (cur = (const char *)cl; cur <= last; cur++) {
-		if (cur[0] == cs[0] && memcmp(cur, cs, needlelen) == 0)
-			return (void*)cur;
+	// TODO: Optimize this?
+	// TODO: Localize this?
+	if (size < 0) {
+		// Invalid size. Print the value as-is.
+		suffix = nullptr;
+		whole_part = (int)size;
+		frac_part = 0;
+	} else if (size < (2LL << 10)) {
+		// tr: Bytes (< 1,024)
+		suffix = NC_("TextFuncs|FileSize", "byte", "bytes", (int)size);
+		whole_part = (int)size;
+		frac_part = 0;
+	} else if (size < (2LL << 20)) {
+		// tr: Kilobytes
+		suffix = C_("TextFuncs|FileSize", "KiB");
+		whole_part = (int)(size >> 10);
+		frac_part = calc_frac_part(size, (1LL << 10));
+	} else if (size < (2LL << 30)) {
+		// tr: Megabytes
+		suffix = C_("TextFuncs|FileSize", "MiB");
+		whole_part = (int)(size >> 20);
+		frac_part = calc_frac_part(size, (1LL << 20));
+	} else if (size < (2LL << 40)) {
+		// tr: Gigabytes
+		suffix = C_("TextFuncs|FileSize", "GiB");
+		whole_part = (int)(size >> 30);
+		frac_part = calc_frac_part(size, (1LL << 30));
+	} else if (size < (2LL << 50)) {
+		// tr: Terabytes
+		suffix = C_("TextFuncs|FileSize", "TiB");
+		whole_part = (int)(size >> 40);
+		frac_part = calc_frac_part(size, (1LL << 40));
+	} else if (size < (2LL << 60)) {
+		// tr: Petabytes
+		suffix = C_("TextFuncs|FileSize", "PiB");
+		whole_part = (int)(size >> 50);
+		frac_part = calc_frac_part(size, (1LL << 50));
+	} else /*if (size < (2ULL << 70))*/ {
+		// tr: Exabytes
+		suffix = C_("TextFuncs|FileSize", "EiB");
+		whole_part = (int)(size >> 60);
+		frac_part = calc_frac_part(size, (1LL << 60));
 	}
 
-	return nullptr;	
+	if (size < (2LL << 10)) {
+		// Bytes or negative value. No fractional part.
+		if (suffix) {
+			return rp_sprintf("%d %s", whole_part, suffix);
+		} else {
+			return rp_sprintf("%d", whole_part);
+		}
+	} else {
+		// TODO: Localized decimal point?
+		int frac_digits = 2;
+		if (whole_part >= 10) {
+			int round_adj = (frac_part % 10 > 5);
+			frac_part /= 10;
+			frac_part += round_adj;
+			frac_digits = 1;
+		}
+		if (suffix) {
+			return rp_sprintf("%d.%0*d %s",
+				whole_part, frac_digits, frac_part, suffix);
+		} else {
+			return rp_sprintf("%d.%0*d",
+				whole_part, frac_digits, frac_part);
+		}
+	}
+
+	// Should not get here...
+	assert(!"Invalid code path.");
+	return "QUACK";
 }
-#endif /* HAVE_MEMMEM */
+
+}

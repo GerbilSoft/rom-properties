@@ -2120,7 +2120,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Partition size.
 			const int64_t length_bytes = (int64_t)length << d->media_unit_shift;
-			data_row.push_back(d->formatFileSize(length_bytes));
+			data_row.push_back(LibRpBase::formatFileSize(length_bytes));
 
 			delete pNcch;
 		}
@@ -2253,7 +2253,7 @@ int Nintendo3DS::loadFieldData(void)
 
 				// Content size.
 				if (i < d->content_count) {
-					data_row.push_back(d->formatFileSize(be64_to_cpu(content_chunk->size)));
+					data_row.push_back(LibRpBase::formatFileSize(be64_to_cpu(content_chunk->size)));
 				} else {
 					data_row.push_back("");
 				}
@@ -2302,7 +2302,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(d->n3dsVersionToString(version));
 
 			// Content size.
-			data_row.push_back(d->formatFileSize(pNcch->partition_size()));
+			data_row.push_back(LibRpBase::formatFileSize(pNcch->partition_size()));
 
 			delete pNcch;
 		}

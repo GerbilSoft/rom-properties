@@ -86,6 +86,7 @@ CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
 SET(librpbase_SRCS
 	byteswap.c
 	TextFuncs.cpp
+	TextFuncs_libc.c
 	RomData.cpp
 	RomFields.cpp
 	SystemRegion.cpp
@@ -127,6 +128,7 @@ SET(librpbase_H
 	aligned_malloc.h
 	TextFuncs.hpp
 	TextFuncs_wchar.hpp
+	TextFuncs_libc.h
 	RomData.hpp
 	RomData_decl.hpp
 	RomData_p.hpp

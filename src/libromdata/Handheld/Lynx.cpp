@@ -249,10 +249,10 @@ int Lynx::loadFieldData(void)
 			: C_("Lynx", "Unknown")));
 
 	d->fields->addField_string(C_("Lynx", "Bank 0 Size"),
-		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
+		LibRpBase::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
 	d->fields->addField_string(C_("Lynx", "Bank 1 Size"),
-		d->formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
+		LibRpBase::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
 	return (int)d->fields->count();
 }
