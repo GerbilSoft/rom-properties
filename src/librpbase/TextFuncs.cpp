@@ -36,8 +36,12 @@
 #include <cwctype>
 
 // C++ includes.
+#include <iomanip>
+#include <locale>
 #include <memory>
+#include <sstream>
 #include <string>
+using std::ostringstream;
 using std::string;
 using std::u16string;
 using std::unique_ptr;
@@ -322,15 +326,12 @@ string formatFileSize(int64_t size)
 		frac_part = calc_frac_part(size, (1LL << 60));
 	}
 
-	if (size < (2LL << 10)) {
-		// Bytes or negative value. No fractional part.
-		if (suffix) {
-			return rp_sprintf("%d %s", whole_part, suffix);
-		} else {
-			return rp_sprintf("%d", whole_part);
-		}
-	} else {
-		// TODO: Localized decimal point?
+	// Localize the whole part.
+	ostringstream s_value;
+	s_value << whole_part;
+
+	if (size >= (2LL << 10)) {
+		// Fractional part.
 		int frac_digits = 2;
 		if (whole_part >= 10) {
 			int round_adj = (frac_part % 10 > 5);
@@ -338,13 +339,22 @@ string formatFileSize(int64_t size)
 			frac_part += round_adj;
 			frac_digits = 1;
 		}
-		if (suffix) {
-			return rp_sprintf("%d.%0*d %s",
-				whole_part, frac_digits, frac_part, suffix);
-		} else {
-			return rp_sprintf("%d.%0*d",
-				whole_part, frac_digits, frac_part);
-		}
+
+		// Get the localized decimal point.
+		// Reference: http://www.cplusplus.com/reference/locale/numpunct/decimal_point/
+		// FIXME: Maybe use wchar_t and convert to UTF-8?
+		s_value << std::use_facet<std::numpunct<char>>(s_value.getloc()).decimal_point();
+
+		// Append the fractional part using the required number of digits.
+		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
+	}
+
+	if (suffix) {
+		// tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
+		return rp_sprintf_p(C_("TextFuncs|FileSize", "%1$s %2$s"),
+			s_value.str().c_str(), suffix);
+	} else {
+		return s_value.str();
 	}
 
 	// Should not get here...
