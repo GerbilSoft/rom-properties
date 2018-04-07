@@ -49,7 +49,7 @@ using std::string;
 using std::u16string;
 #endif /* _WIN32 */
 
-int main(int argc, char *argv[])
+int RP_C_API main(int argc, char *argv[])
 {
 #ifdef _WIN32
 	// Set Win32 security options.
