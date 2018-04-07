@@ -65,6 +65,10 @@ ENDIF(NOT WIN32)
 INCLUDE(CheckSymbolExists)
 CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
 CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
+# MSVCRT doesn't have nl_langinfo() and probably never will.
+IF(NOT WIN32)
+	CHECK_SYMBOL_EXISTS(nl_langinfo "langinfo.h" HAVE_NL_LANGINFO)
+ENDIF(NOT WIN32)
 
 # Check for reentrant C library functions.
 INCLUDE(CheckSymbolExistsOrInline)

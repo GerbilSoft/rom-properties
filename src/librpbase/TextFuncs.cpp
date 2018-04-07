@@ -27,9 +27,13 @@
 
 // C includes.
 #include <stdlib.h>
+#ifdef HAVE_NL_LANGINFO
+# include <langinfo.h>
+#endif /* HAVE_NL_LANGINFO */
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <clocale>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -341,9 +345,17 @@ string formatFileSize(int64_t size)
 		}
 
 		// Get the localized decimal point.
-		// Reference: http://www.cplusplus.com/reference/locale/numpunct/decimal_point/
-		// FIXME: Maybe use wchar_t and convert to UTF-8?
-		s_value << std::use_facet<std::numpunct<char>>(s_value.getloc()).decimal_point();
+#if defined(_WIN32)
+		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
+		s_value << W2U8(localeconv()->_W_decimal_point);
+#elif defined(HAVE_NL_LANGINFO)
+		// Use nl_langinfo().
+		// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
+		s_value << nl_langinfo(DECIMAL_POINT);
+#else
+		// Use localeconv(). (Assuming UTF-8)
+		s_value << localeconv()->decimal_point;
+#endif
 
 		// Append the fractional part using the required number of digits.
 		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
