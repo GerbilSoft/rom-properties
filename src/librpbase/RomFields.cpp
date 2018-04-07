@@ -189,14 +189,17 @@ void RomFieldsPrivate::delete_data(void)
  */
 void RomFieldsPrivate::trimEnd(string &str)
 {
-	// FIXME: Use isspace() or iswspace()?
+	// NOTE: No str.empty() check because that's usually never the case here.
+	// TODO: Check for U+3000? (UTF-8: "\xE3\x80\x80")
+	// TODO: Move to TextFuncs and add unit tests?
 	size_t sz = str.size();
-	while (sz > 0) {
-		if (str.at(sz-1) != ' ')
+	const char *p_start = str.c_str();
+	for (const char *p = p_start + sz - 1; p >= p_start; p--) {
+		if (*p != ' ')
 			break;
 		sz--;
-		str.resize(sz);
 	}
+	str.resize(sz);
 }
 
 /** RomFields **/
@@ -858,16 +861,17 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
+	string *const nstr = (str ? new string(str) : nullptr);
 	field.name = (name ? name : "");
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
-	field.data.str = (str ? new string(str) : nullptr);
+	field.data.str = nstr;
 	field.tabIdx = d->tabIdx;
 	field.isValid = (name != nullptr);
 
 	// Handle string trimming flags.
 	if (field.data.str && (flags & STRF_TRIM_END)) {
-		d->trimEnd(*const_cast<string*>(field.data.str));
+		d->trimEnd(*nstr);
 	}
 	return idx;
 }
@@ -891,16 +895,17 @@ int RomFields::addField_string(const char *name, const string &str, unsigned int
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
+	string *const nstr = (!str.empty() ? new string(str) : nullptr);
 	field.name = (name ? name : "");
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
-	field.data.str = (!str.empty() ? new string(str) : nullptr);
+	field.data.str = nstr;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 
 	// Handle string trimming flags.
-	if (field.data.str && (flags & STRF_TRIM_END)) {
-		d->trimEnd(*const_cast<string*>(field.data.str));
+	if (nstr && (flags & STRF_TRIM_END)) {
+		d->trimEnd(*nstr);
 	}
 	return idx;
 }
