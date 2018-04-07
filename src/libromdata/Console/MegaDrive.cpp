@@ -297,7 +297,8 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		fields->addField_string(C_("MegaDrive", "Publisher"), rp_sprintf("T-%u", t_code));
 	} else {
 		// Unknown publisher.
-		fields->addField_string(C_("MegaDrive", "Publisher"), "Unknown");
+		fields->addField_string(C_("MegaDrive", "Publisher"),
+			C_("MegaDrive", "Unknown"));
 	}
 
 	// Titles, serial number, and checksum.
