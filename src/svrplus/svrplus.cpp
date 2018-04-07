@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension installer. (svrplus)                *
- * svrplus.rc: Win32 installer for rom-properties.                         *
+ * svrplus.cpp: Win32 installer for rom-properties.                        *
  *                                                                         *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * Copyright (c) 2017-2018 by David Korth.                                 *
@@ -18,6 +18,9 @@
  * You should have received a copy of the GNU General Public License       *
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
+
+// C includes.
+#include <stdlib.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -42,6 +45,18 @@ using std::wstring;
 
 // Application resources.
 #include "resource.h"
+
+/**
+ * Number of elements in an array.
+ * (from librpbase/common.h)
+ *
+ * Includes a static check for pointers to make sure
+ * a dynamically-allocated array wasn't specified.
+ * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
+ */
+#define ARRAY_SIZE(x) \
+	((int)(((sizeof(x) / sizeof(x[0]))) / \
+		(size_t)(!(sizeof(x) % sizeof(x[0])))))
 
 namespace {
 	// File paths
@@ -146,26 +161,6 @@ namespace {
 	{
 		EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
 		EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), enable);
-	}
-
-	/**
-	 * Formats a wide string. C++-ism for swprintf.
-	 *
-	 * @param format the format string
-	 * @returns formated string
-	 */
-	wstring Format(const wchar_t *format, ...) {
-		// NOTE: There's no standard "dry-run" version of swprintf, and even the msvc
-		// extension is deprecated by _s version which doesn't allow dry-running.
-		va_list args;
-		va_start(args, format);
-		int count = _vsnwprintf((wchar_t*)nullptr, 0, format, args); // cast is nescessary for VS2015, because template overloads
-		wchar_t *buf = new wchar_t[count + 1];
-		_vsnwprintf(buf, count + 1, format, args);
-		wstring rv(buf);
-		delete[] buf;
-		va_end(args);
-		return rv;
 	}
 
 	/**
@@ -367,9 +362,13 @@ namespace {
 		InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
 
 		const wchar_t *const dll_path = (is64 ? str_rp64path : str_rp32path);
-		const wchar_t *const entry_point = (isUninstall ? L"DllUnregisterServer" : L"DllRegisterServer");
+		const wchar_t *const entry_point = (isUninstall
+			? L"DllUnregisterServer"
+			: L"DllRegisterServer");
 
-		wstring msg;
+		wchar_t sbuf[32];	// swprintf() buffer.
+		wstring msg;		// Returned string.
+
 		switch (res) {
 			case ISR_OK:
 				// No error.
@@ -383,7 +382,10 @@ namespace {
 				msg += L" is missing.";
 				break;
 			case ISR_CREATEPROCESS_FAILED:
-				msg = Format(L"Could not start REGSVR32.exe. (Err:%u)", errorCode);
+				swprintf(sbuf, ARRAY_SIZE(sbuf), L"%u", errorCode);
+				msg = L"Could not start REGSVR32.exe. (Err:";
+				msg += wstring(sbuf);
+				msg += L')';
 				break;
 			case ISR_PROCESS_STILL_ACTIVE:
 				msg = L"The REGSVR32 process never completed.";
@@ -413,7 +415,10 @@ namespace {
 						msg += L" returned an error.";
 						break;
 					default:
-						msg = Format(L"REGSVR32 failed: Unknown exit code %u.", errorCode);
+						swprintf(sbuf, ARRAY_SIZE(sbuf), L"%u", errorCode);
+						msg = L"REGSVR32 failed: Unknown exit code ";
+						msg += wstring(sbuf);
+						msg += '.';
 						break;
 				}
 				break;
@@ -498,7 +503,8 @@ namespace {
 	/**
 	 * Changes the cursor depending on wether installation is in progress.
 	 */
-	inline void DlgUpdateCursor() {
+	inline void DlgUpdateCursor(void)
+	{
 		SetCursor(LoadCursor(nullptr, g_inProgress ? IDC_WAIT : IDC_ARROW));
 	}
 
@@ -665,8 +671,10 @@ namespace {
 					HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, params, 0, nullptr);
 					if (!hThread) {
 						// Couldn't start the worker thread.
-						const wstring threadErr = Format(L"\x2022 Win32 error code: %u", GetLastError());
-						ShowStatusMessage(hDlg, L"An error occurred while starting the worker thread.", threadErr.c_str(), MB_ICONSTOP);
+						wchar_t threadErr[128];
+						swprintf(threadErr, ARRAY_SIZE(threadErr),
+							L"\x2022 Win32 error code: %u", GetLastError());
+						ShowStatusMessage(hDlg, L"An error occurred while starting the worker thread.", threadErr, MB_ICONSTOP);
 						MessageBeep(MB_ICONSTOP);
 						EnableButtons(hDlg, true);
 						g_inProgress = false;
@@ -715,8 +723,11 @@ namespace {
 					int ret = (int)(INT_PTR)ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
 					if (ret <= 32) {
 						// ShellExecute() failed.
-						wstring err = Format(L"Could not open the URL.\n\nWin32 error code: %d", ret);
-						MessageBox(hDlg, err.c_str(), L"Could not open URL", MB_ICONERROR);
+						wchar_t err[128];
+						swprintf(err, ARRAY_SIZE(err),
+							L"Could not open the URL.\n\n"
+							L"Win32 error code: %d", ret);
+						MessageBox(hDlg, err, L"Could not open URL", MB_ICONERROR);
 					}
 					return TRUE;
 				}
@@ -758,7 +769,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 	HMODULE kernel32 = GetModuleHandle(L"kernel32");
 	if (!kernel32) {
 		DebugBreak();
-		return 1;
+		return EXIT_FAILURE;
 	}
 	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
 	PFNISWOW64PROCESS pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(kernel32, "IsWow64Process");
@@ -771,7 +782,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 		BOOL bWow;
 		if (!pfnIsWow64Process(GetCurrentProcess(), &bWow)) {
 			DebugBreak();
-			return 1;
+			return EXIT_FAILURE;
 		}
 		g_is64bit = !!bWow;
 	}
@@ -798,5 +809,5 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 		DestroyIcon(hIconDialogSmall);
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }
