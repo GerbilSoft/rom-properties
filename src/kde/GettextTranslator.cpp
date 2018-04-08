@@ -25,9 +25,6 @@ GettextTranslator::GettextTranslator(QObject *parent)
 	: super(parent)
 { }
 
-GettextTranslator::~GettextTranslator()
-{ }
-
 QString GettextTranslator::translate(const char *context,
 	const char *sourceText, const char *disambiguation, int n) const
 {

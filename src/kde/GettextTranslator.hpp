@@ -28,8 +28,7 @@ class GettextTranslator : public QTranslator
 	Q_OBJECT
 
 	public:
-		GettextTranslator(QObject *parent = nullptr);
-		virtual ~GettextTranslator();
+		explicit GettextTranslator(QObject *parent = nullptr);
 
 	private:
 		typedef QTranslator super;
