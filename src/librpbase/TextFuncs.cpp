@@ -352,8 +352,8 @@ string formatFileSize(int64_t size)
 		s_value << W2U8(localeconv()->_W_decimal_point);
 # else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 		// MinGW: `struct lconv` does not have wchar_t fields.
-		// TODO: Convert from "ANSI".
-		s_value << localeconv()->decimal_point;
+		// NOTE: The `char` fields are ANSI.
+		s_value << ansi_to_utf8(localeconv()->decimal_point);
 # endif /* HAVE_STRUCT_LCONV_WCHAR_T */
 #elif defined(HAVE_NL_LANGINFO)
 		// Use nl_langinfo().

@@ -290,4 +290,50 @@ ICONV_FUNCTION_1(utf8, char, "UTF-8", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
 ICONV_FUNCTION_1(utf16le, char16_t, "UTF-16LE", utf8, char, "UTF-8")
 ICONV_FUNCTION_1(utf16be, char16_t, "UTF-16BE", utf8, char, "UTF-8")
 
+/** Generic code page functions. **/
+
+/**
+ * Convert ANSI text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] ANSI text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string ansi_to_utf8(const char *str, int len)
+{
+	// FIXME: Determine the correct 8-bit encoding on non-Windows systems.
+	// Assuming Latin-1. (ISO-8859-1)
+	return latin1_to_utf8(str, len);
+}
+
+/**
+ * Convert 8-bit text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ *
+ * The specified code page number will be used.
+ * Invalid characters will be ignored.
+ *
+ * @param cp	[in] Code page number.
+ * @param str	[in] ANSI text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string cpN_to_utf8(unsigned int cp, const char *str, int len)
+{
+	len = check_NULL_terminator(str, len);
+
+	// Create the iconv encoding name.
+	char cp_name[32];
+	snprintf(cp_name, sizeof(cp_name), "CP%u//IGNORE", cp);
+
+	std::string ret;
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len, cp_name, "UTF-8"));
+	if (mbs) {
+		ret = mbs;
+		free(mbs);
+	}
+
+	return ret;
+}
+
 }

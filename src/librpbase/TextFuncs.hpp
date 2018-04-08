@@ -338,6 +338,33 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 #endif
 }
 
+/** Generic code page functions. **/
+
+/**
+ * Convert ANSI text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] ANSI text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string ansi_to_utf8(const char *str, int len);
+
+/**
+ * Convert 8-bit text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ *
+ * The specified code page number will be used.
+ * Invalid characters will be ignored.
+ *
+ * @param cp	[in] Code page number.
+ * @param str	[in] ANSI text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string cpN_to_utf8(unsigned int cp, const char *str, int len);
+
+/** sprintf() **/
+
 /**
  * sprintf()-style function for std::string.
  *

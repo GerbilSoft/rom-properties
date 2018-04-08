@@ -392,4 +392,46 @@ string utf16be_to_utf8(const char16_t *wcs, int len)
 	return utf16le_to_utf8(bwcs.data(), (int)bwcs.size());
 }
 
+/** Generic code page functions. **/
+
+W32U_8TO8_1(ansi, CP_ACP, utf8, CP_UTF8)
+
+/**
+ * Convert 8-bit text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ *
+ * The specified code page number will be used.
+ * Invalid characters will be ignored.
+ *
+ * @param cp	[in] Code page number.
+ * @param str	[in] ANSI text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string cpN_to_utf8(unsigned int cp, const char *str, int len)
+{
+	len = check_NULL_terminator(str, len);
+
+	/* Convert from `cp` to UTF-16. */
+	string ret;
+	int cchWcs;
+	char16_t *wcs = W32U_mbs_to_UTF16(str, len, cp, &cchWcs, 0);
+	if (wcs && cchWcs > 0) {
+		/* Convert from UTF-16 to UTF-8. */
+		int cbMbs;
+		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, CP_UTF8, &cbMbs);
+		if (mbs && cbMbs > 0) {
+			/* Remove the NULL terminator if present. */
+			if (mbs[cbMbs-1] == 0) {
+				cbMbs--;
+			}
+			ret.assign(mbs, cbMbs);
+		}
+		free(mbs);
+	}
+
+	free(wcs);
+	return ret;
+}
+
 }
