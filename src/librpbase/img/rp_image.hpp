@@ -375,6 +375,16 @@ class rp_image
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int apply_chroma_key(uint32_t key);
+
+		/**
+		 * Vertically flip the image.
+		 *
+		 * This function returns a *new* image and leaves the
+		 * original image unmodified.
+		 *
+		 * @return Vertically-flipped image, or nullptr on error.
+		 */
+		rp_image *vflip(void) const;
 };
 
 /**

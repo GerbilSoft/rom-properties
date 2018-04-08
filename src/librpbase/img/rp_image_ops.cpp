@@ -435,4 +435,46 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 	return 0;
 }
 
+/**
+ * Vertically flip the image.
+ *
+ * This function returns a *new* image and leaves the
+ * original image unmodified.
+ *
+ * @return Vertically-flipped image, or nullptr on error.
+ */
+rp_image *rp_image::vflip(void) const
+{
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+	const int height = backend->height;
+
+	assert(backend->width > 0 && height > 0);
+	if (backend->width <= 0 || height <= 0) {
+		return nullptr;
+	}
+
+
+	rp_image *flipimg = new rp_image(backend->width, height, backend->format);
+	const uint8_t *src = static_cast<const uint8_t*>(backend->data());
+	uint8_t *dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
+
+	const int row_bytes = this->row_bytes();
+	const int src_stride = d->backend->stride;
+	const int dest_stride = flipimg->stride();
+
+	for (int i = height; i > 0; i--) {
+		memcpy(dest, src, row_bytes);
+		src += src_stride;
+		dest -= dest_stride;
+	}
+
+	// Copy sBIT.
+	if (d->has_sBIT) {
+		flipimg->set_sBIT(&d->sBIT);
+	}
+
+	return flipimg;
+}
+
 }

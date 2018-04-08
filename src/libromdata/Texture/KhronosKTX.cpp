@@ -429,33 +429,15 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 	// Post-processing: Check if VFlip is needed.
 	// TODO: Handle HFlip too?
-	// TODO: Split into rp_image_ops.cpp?
 	if (img && isVFlipNeeded && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
-		rp_image *flipimg = new rp_image(ktxHeader.pixelWidth, height, img->format());
-		const uint8_t *src = static_cast<const uint8_t*>(img->bits());
-		uint8_t *dest = static_cast<uint8_t*>(flipimg->scanLine(height - 1));
-		const int row_bytes = img->row_bytes();
-		const int src_stride = img->stride();
-		const int dest_stride = flipimg->stride();
-
-		for (int i = height; i > 0; i--) {
-			memcpy(dest, src, row_bytes);
-			src += src_stride;
-			dest -= dest_stride;
+		rp_image *flipimg = img->vflip();
+		if (flipimg) {
+			// Swap the images.
+			std::swap(img, flipimg);
+			// Delete the original image.
+			delete flipimg;
 		}
-
-		// Copy sBIT.
-		rp_image::sBIT_t sBIT;
-		const bool has_sBIT = (img->get_sBIT(&sBIT) == 0);
-		if (has_sBIT) {
-			flipimg->set_sBIT(&sBIT);
-		}
-
-		// Swap the images.
-		std::swap(img, flipimg);
-		// Delete the original image.
-		delete flipimg;
 	}
 
 	aligned_free(buf);
