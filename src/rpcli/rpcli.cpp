@@ -265,6 +265,7 @@ int RP_C_API main(int argc, char *argv[])
 				// Verify encryption keys.
 				static bool hasVerifiedKeys = false;
 				if (!hasVerifiedKeys) {
+					hasVerifiedKeys = true;
 					ret = VerifyKeys();
 				}
 				break;
