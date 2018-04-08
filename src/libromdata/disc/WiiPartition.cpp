@@ -175,10 +175,10 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		IDiscReader *discReader, int64_t partition_offset,
 		int64_t partition_size, bool noCrypt)
 	: super(q, discReader, partition_offset, 2)
+	, noCrypt(noCrypt)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
 	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, noCrypt(noCrypt)
 	, aes_title(nullptr)
 	, pos_7C00(-1)
 	, sector_num(~0)
