@@ -453,7 +453,7 @@ typedef struct _ThreadParams {
  *
  * @param lpParameter ptr to parameters of type ThreadPrams. Owned by this thread.
  */
-static DWORD WINAPI ThreadProc(LPVOID lpParameter)
+static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 {
 	wchar_t msg32[256], msg64[256];
 	InstallServerResult res32 = ISR_OK, res64 = ISR_OK;
@@ -534,7 +534,7 @@ static inline void DlgUpdateCursor(void)
  * Initialize the dialog.
  * @param hDlg Dialog handle.
  */
-inline void InitDialog(HWND hDlg)
+static void InitDialog(HWND hDlg)
 {
 	// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
 	static const SIZE szIcon = {16, 16};
