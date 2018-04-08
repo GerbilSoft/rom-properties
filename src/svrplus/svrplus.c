@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
+// MSVCRT-specific
+#include <process.h>
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
@@ -713,7 +715,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// The installation is done on a separate thread so that we don't lock the message loop
 					params->hWnd = hDlg;
 					params->isUninstall = isUninstall;
-					hThread = CreateThread(NULL, 0, ThreadProc, params, 0, NULL);
+					hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, params, 0, NULL);
 					if (!hThread) {
 						// Couldn't start the worker thread.
 						wchar_t threadErr[128];
