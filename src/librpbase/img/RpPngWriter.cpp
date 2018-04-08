@@ -897,7 +897,6 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	// Free the PNG structs and close the file.
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 	delete file;
-	file = nullptr;
 	return 0;
 }
 
