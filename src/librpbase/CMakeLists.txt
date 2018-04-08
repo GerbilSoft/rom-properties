@@ -63,11 +63,17 @@ ENDIF(NOT WIN32)
 
 # Check for C library functions.
 INCLUDE(CheckSymbolExists)
+INCLUDE(CheckStructHasMember)
 CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
 CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 # MSVCRT doesn't have nl_langinfo() and probably never will.
 IF(NOT WIN32)
 	CHECK_SYMBOL_EXISTS(nl_langinfo "langinfo.h" HAVE_NL_LANGINFO)
+ELSE(NOT WIN32)
+	# Win32: MinGW's `struct lconv` doesn't have wchar_t fields.
+	CHECK_STRUCT_HAS_MEMBER("struct lconv" _W_decimal_point "locale.h"
+		HAVE_STRUCT_LCONV_WCHAR_T
+		LANGUAGE C)
 ENDIF(NOT WIN32)
 
 # Check for reentrant C library functions.

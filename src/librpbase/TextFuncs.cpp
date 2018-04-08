@@ -347,7 +347,14 @@ string formatFileSize(int64_t size)
 		// Get the localized decimal point.
 #if defined(_WIN32)
 		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
+# if defined(HAVE_STRUCT_LCONV_WCHAR_T)
+		// MSVCRT: `struct lconv` has wchar_t fields.
 		s_value << W2U8(localeconv()->_W_decimal_point);
+# else /* !HAVE_STRUCT_LCONV_WCHAR_T */
+		// MinGW: `struct lconv` does not have wchar_t fields.
+		// TODO: Convert from "ANSI".
+		s_value << localeconv()->decimal_point;
+# endif /* HAVE_STRUCT_LCONV_WCHAR_T */
 #elif defined(HAVE_NL_LANGINFO)
 		// Use nl_langinfo().
 		// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
