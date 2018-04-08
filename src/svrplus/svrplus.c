@@ -79,14 +79,14 @@ bool g_inProgress = false;		/**< true if currently (un)installing the DLLs */
 #define WM_APP_ENDTASK WM_APP
 
 // Icons. (NOTE: These MUST be deleted after use!)
-static HICON hIconDialog = nullptr;
-static HICON hIconDialogSmall = nullptr;
+static HICON hIconDialog = NULL;
+static HICON hIconDialogSmall = NULL;
 
 // System 16x16 icons. (Do NOT delete these!)
-static HICON hIconExclaim = nullptr;	// USER32.dll,-101
-//static HICON hIconQuestion = nullptr;	// USER32.dll,-102
-static HICON hIconCritical = nullptr;	// USER32.dll,-103
-static HICON hIconInfo = nullptr;	// USER32.dll,-104
+static HICON hIconExclaim = NULL;	// USER32.dll,-101
+//static HICON hIconQuestion = NULL;	// USER32.dll,-102
+static HICON hIconCritical = NULL;	// USER32.dll,-103
+static HICON hIconInfo = NULL;		// USER32.dll,-104
 
 // IDC_STATIC_STATUS1 rectangles with and without the exclamation point icon.
 static RECT rectStatus1_noIcon;
@@ -95,7 +95,7 @@ static RECT rectStatus1_icon;
 /**
  * Show a status message.
  * @param hDlg Dialog.
- * @param line1 Line 1. (If nullptr, status message will be hidden.)
+ * @param line1 Line 1. (If NULL, status message will be hidden.)
  * @param line2 Line 2. (May contain up to 3 lines and have links.)
  * @param uType Icon type. (Use MessageBox constants.)
  */
@@ -129,11 +129,11 @@ static void ShowStatusMessage(HWND hDlg, const wchar_t *line1, const wchar_t *li
 			hIcon = hIconExclaim;
 			break;
 		default:
-			hIcon = nullptr;
+			hIcon = NULL;
 			break;
 	}
 
-	if (hIcon != nullptr) {
+	if (hIcon != NULL) {
 		// Show the icon.
 		sw_status = SW_SHOW;
 		rect = &rectStatus1_icon;
@@ -146,7 +146,7 @@ static void ShowStatusMessage(HWND hDlg, const wchar_t *line1, const wchar_t *li
 
 	// Adjust the icon and Status1 rectangle.
 	ShowWindow(hStaticIcon, sw_status);
-	SetWindowPos(hStatus1, nullptr, rect->left, rect->top,
+	SetWindowPos(hStatus1, NULL, rect->left, rect->top,
 		rect->right - rect->left, rect->bottom - rect->top,
 		SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER);
 
@@ -328,7 +328,7 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	memset(&pi, 0, sizeof(pi));
 	si.cb = sizeof(si);
 
-	if (!CreateProcess(regsvr32_path, args, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
+	if (!CreateProcess(regsvr32_path, args, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
 		if (pErrorCode) {
 			*pErrorCode = GetLastError();
 		}
@@ -525,7 +525,7 @@ static DWORD WINAPI ThreadProc(LPVOID lpParameter)
  */
 static inline void DlgUpdateCursor(void)
 {
-	SetCursor(LoadCursor(nullptr, g_inProgress ? IDC_WAIT : IDC_ARROW));
+	SetCursor(LoadCursor(NULL, g_inProgress ? IDC_WAIT : IDC_ARROW));
 }
 
 /**
@@ -551,7 +551,7 @@ inline void InitDialog(HWND hDlg)
 	HWND hStatus1, hExclaim;
 	HMODULE hUser32;
 	bool bHasMsvc32, bErr;
-	const wchar_t *line1 = nullptr, *line2 = nullptr;
+	const wchar_t *line1 = NULL, *line2 = NULL;
 
 	if (hIconDialog) {
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIconDialog);
@@ -574,7 +574,7 @@ inline void InitDialog(HWND hDlg)
 	// NOTE: Using IDI_EXCLAMATION will only return the 32x32 icon.
 	// Need to get the icon from USER32 directly.
 	hUser32 = GetModuleHandle(L"user32");
-	assert(hUser32 != nullptr);
+	assert(hUser32 != NULL);
 	if (hUser32) {
 		hIconExclaim = (HICON)LoadImage(hUser32,
 			MAKEINTRESOURCE(101), IMAGE_ICON,
@@ -592,11 +592,11 @@ inline void InitDialog(HWND hDlg)
 
 	// Initialize the icon control.
 	hExclaim = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-		WC_STATIC, nullptr,
+		WC_STATIC, NULL,
 		WS_CHILD | WS_CLIPSIBLINGS | SS_ICON,
 		rectStatus1_noIcon.left, rectStatus1_noIcon.top-1,
 		szIcon.cx, szIcon.cy,
-		hDlg, (HMENU)IDC_STATIC_ICON, nullptr, nullptr);
+		hDlg, (HMENU)IDC_STATIC_ICON, NULL, NULL);
 
 	// FIXME: Figure out the SysLink styles. (0x50010000?)
 	ShowWindow(GetDlgItem(hDlg, IDC_STATIC_STATUS2), SW_HIDE);
@@ -650,7 +650,7 @@ inline void InitDialog(HWND hDlg)
 	// Show the status message.
 	// If line1 is set, an error occurred, so we should
 	// show the exclamation icon and disable the buttons.
-	bErr = (line1 != nullptr);
+	bErr = (line1 != NULL);
 	ShowStatusMessage(hDlg, line1, line2, (bErr ? MB_ICONEXCLAMATION : 0));
 	EnableButtons(hDlg, !bErr);
 }
@@ -713,7 +713,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// The installation is done on a separate thread so that we don't lock the message loop
 					params->hWnd = hDlg;
 					params->isUninstall = isUninstall;
-					hThread = CreateThread(nullptr, 0, ThreadProc, params, 0, nullptr);
+					hThread = CreateThread(NULL, 0, ThreadProc, params, 0, NULL);
 					if (!hThread) {
 						// Couldn't start the worker thread.
 						wchar_t threadErr[128];
@@ -752,7 +752,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 		case WM_NOTIFY: {
 			const NMHDR *const pHdr = (const NMHDR*)lParam;
-			assert(pHdr != nullptr);
+			assert(pHdr != NULL);
 			switch (pHdr->code) {
 				case NM_CLICK:
 				case NM_RETURN: {
@@ -768,7 +768,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153(v=vs.85).aspx
 					// - https://blogs.msdn.microsoft.com/oldnewthing/20061108-05/?p=29083
 					pNMLink = (const NMLINK*)pHdr;
-					ret = (int)(INT_PTR)ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					ret = (int)(INT_PTR)ShellExecute(NULL, L"open", pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
 					if (ret <= 32) {
 						// ShellExecute() failed.
 						wchar_t err[128];
@@ -851,7 +851,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		GetSystemMetrics(SM_CYSMICON), 0);
 
 	// Run the dialog
-	DialogBox(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), nullptr, DialogProc);
+	DialogBox(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), NULL, DialogProc);
 
 	// Delete the icons.
 	if (hIconDialog) {
