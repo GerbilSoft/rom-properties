@@ -1,4 +1,4 @@
-This copy of tinyxml2-6.0.0 is a modified version of the original.
+This copy of tinyxml2-6.2.0 is a modified version of the original.
 
 The following changes have been made to the original:
 
@@ -12,5 +12,5 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
-To obtain the original tinyxml2-6.0.0, visit:
+To obtain the original tinyxml2-6.2.0, visit:
 https://github.com/leethomason/tinyxml2

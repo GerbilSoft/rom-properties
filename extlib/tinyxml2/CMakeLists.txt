@@ -13,11 +13,13 @@ IF(BIICODE)
     RETURN()
 ENDIF(BIICODE)
 # rom-properties: Disabled; use the main project policies.
-#cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-#cmake_policy(VERSION 2.6)
-#if(POLICY CMP0063)
-#	cmake_policy(SET CMP0063 OLD)
-#endif()
+IF(0)
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_policy(VERSION 2.6)
+if(POLICY CMP0063)
+	cmake_policy(SET CMP0063 OLD)
+endif()
+ENDIF(0) # rom-properties
 
 project(tinyxml2)
 # rom-properties: Disabled.
@@ -30,13 +32,13 @@ project(tinyxml2)
 ################################
 # set lib version here
 
-set(GENERIC_LIB_VERSION "6.0.0")
+set(GENERIC_LIB_VERSION "6.2.0")
 set(GENERIC_LIB_SOVERSION "6")
 
 ################################
 # Add definitions
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTINYXML2_DEBUG")
 
 ################################
 # Add targets
@@ -215,7 +217,7 @@ if(BUILD_TESTING AND BUILD_TESTS)
     COMMENT "Configuring xmltest resources directory: ${CMAKE_BINARY_DIR}/resources"
   )
 
-  add_test(NAME xmltest COMMAND xmltest)
+  add_test(NAME xmltest COMMAND xmltest WORKING_DIRECTORY $<TARGET_FILE_DIR:xmltest>)
 endif()
 
 install(FILES tinyxml2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -250,8 +252,8 @@ file(WRITE
 
 install(FILES
         ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
-        DESTINATION lib/cmake/${CMAKE_PROJECT_NAME})
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
 
 install(EXPORT ${CMAKE_PROJECT_NAME}Targets
-        DESTINATION lib/cmake/${CMAKE_PROJECT_NAME})
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
 ENDIF(0) # rom-properties

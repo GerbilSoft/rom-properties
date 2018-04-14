@@ -112,7 +112,7 @@ int example_1()
 
 	return doc.ErrorID();
 }
-/** @page Example-1 Load an XML File
+/** @page Example_1 Load an XML File
  *  @dontinclude ./xmltest.cpp
  *  Basic XML file loading.
  *  The basic syntax to load an XML file from
@@ -131,7 +131,7 @@ int example_2()
 
 	return doc.ErrorID();
 }
-/** @page Example-2 Parse an XML from char buffer
+/** @page Example_2 Parse an XML from char buffer
  *  @dontinclude ./xmltest.cpp
  *  Basic XML string parsing.
  *  The basic syntax to parse an XML for
@@ -164,7 +164,7 @@ int example_3()
 
 	return doc.ErrorID();
 }
-/** @page Example-3 Get information out of XML
+/** @page Example_3 Get information out of XML
 	@dontinclude ./xmltest.cpp
 	In this example, we navigate a simple XML
 	file, and read some interesting text. Note
@@ -255,7 +255,7 @@ bool example_4()
 
 	return !doc.Error() && ( v0 == v1 );
 }
-/** @page Example-4 Read attributes and text information.
+/** @page Example_4 Read attributes and text information.
 	@dontinclude ./xmltest.cpp
 
 	There are fundamentally 2 ways of writing a key-value
@@ -292,7 +292,7 @@ bool example_4()
 
 int main( int argc, const char ** argv )
 {
-	#if defined( _MSC_VER ) && defined( DEBUG )
+	#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )
 		_CrtMemCheckpoint( &startMemState );
 		// Enable MS Visual C++ debug heap memory leaks dump on exit
 		_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
@@ -338,10 +338,10 @@ int main( int argc, const char ** argv )
 	}
 	fclose( fp );
 
-	XMLTest( "Example-1", 0, example_1() );
-	XMLTest( "Example-2", 0, example_2() );
-	XMLTest( "Example-3", 0, example_3() );
-	XMLTest( "Example-4", true, example_4() );
+	XMLTest( "Example_1", 0, example_1() );
+	XMLTest( "Example_2", 0, example_2() );
+	XMLTest( "Example_3", 0, example_3() );
+	XMLTest( "Example_4", true, example_4() );
 
 	/* ------ Example 2: Lookup information. ---- */
 
@@ -535,7 +535,7 @@ int main( int argc, const char ** argv )
 
 		XMLTest( "Dream", "xml version=\"1.0\"",
 						  doc.FirstChild()->ToDeclaration()->Value() );
-		XMLTest( "Dream", true, doc.FirstChild()->NextSibling()->ToUnknown() ? true : false );
+		XMLTest( "Dream", true, doc.FirstChild()->NextSibling()->ToUnknown() != 0 );
 		XMLTest( "Dream", "DOCTYPE PLAY SYSTEM \"play.dtd\"",
 						  doc.FirstChild()->NextSibling()->ToUnknown()->Value() );
 		XMLTest( "Dream", "And Robin shall restore amends.",
@@ -548,7 +548,7 @@ int main( int argc, const char ** argv )
 		XMLTest( "Load dreamout.xml", false, doc2.Error() );
 		XMLTest( "Dream-out", "xml version=\"1.0\"",
 						  doc2.FirstChild()->ToDeclaration()->Value() );
-		XMLTest( "Dream-out", true, doc2.FirstChild()->NextSibling()->ToUnknown() ? true : false );
+		XMLTest( "Dream-out", true, doc2.FirstChild()->NextSibling()->ToUnknown() != 0 );
 		XMLTest( "Dream-out", "DOCTYPE PLAY SYSTEM \"play.dtd\"",
 						  doc2.FirstChild()->NextSibling()->ToUnknown()->Value() );
 		XMLTest( "Dream-out", "And Robin shall restore amends.",
@@ -567,6 +567,10 @@ int main( int argc, const char ** argv )
 		XMLDocument doc;
 		doc.Parse( error );
 		XMLTest( "Bad XML", XML_ERROR_PARSING_ATTRIBUTE, doc.ErrorID() );
+		const char* errorStr = doc.ErrorStr();
+		XMLTest("Formatted error string",
+			"Error=XML_ERROR_PARSING_ATTRIBUTE ErrorID=8 (0x8) Line number=3: XMLElement name=wrong",
+			errorStr);
 	}
 
 	{
@@ -826,6 +830,14 @@ int main( int argc, const char ** argv )
 				int queryResult = element->QueryAttribute("attrib", &v);
 				XMLTest("Attribute: unsigned", (int)XML_SUCCESS, queryResult, true);
 				XMLTest("Attribute: unsigned", unsigned(100), v, true);
+			}
+			{
+				const char* v = "failed";
+				XMLError queryResult = element->QueryStringAttribute("not-attrib", &v);
+				XMLTest("Attribute: string default", false, queryResult == XML_SUCCESS);
+				queryResult = element->QueryStringAttribute("attrib", &v);
+				XMLTest("Attribute: string", XML_SUCCESS, queryResult, true);
+				XMLTest("Attribute: string", "100", v);
 			}
 			XMLTest("Attribute: unsigned", unsigned(100), element->UnsignedAttribute("attrib"), true);
 		}
@@ -1160,6 +1172,12 @@ int main( int argc, const char ** argv )
 		XMLDocument doc;
 		doc.Parse( str );
 		XMLTest( "Empty document error", XML_ERROR_EMPTY_DOCUMENT, doc.ErrorID() );
+
+		// But be sure there is an error string!
+		const char* errorStr = doc.ErrorStr();
+		XMLTest("Error string should be set",
+			"Error=XML_ERROR_EMPTY_DOCUMENT ErrorID=15 (0xf) Line number=0",
+			errorStr);
 	}
 
 	{
@@ -1452,28 +1470,31 @@ int main( int argc, const char ** argv )
 		static const char* xml = "<element attrib='bar'><sub>Text</sub></element>";
 		XMLDocument doc;
 		doc.Parse( xml );
-		XMLTest( "Parse element with attribute and nested element round 1", false, doc.Error() );
+		XMLTest( "Handle, parse element with attribute and nested element", false, doc.Error() );
 
-		XMLElement* ele = XMLHandle( doc ).FirstChildElement( "element" ).FirstChild().ToElement();
-		XMLTest( "Handle, success, mutable", "sub", ele->Value() );
+		{
+			XMLElement* ele = XMLHandle( doc ).FirstChildElement( "element" ).FirstChild().ToElement();
+			XMLTest( "Handle, non-const, element is found", true, ele != 0 );
+			XMLTest( "Handle, non-const, element name matches", "sub", ele->Value() );
+		}
 
-		XMLHandle docH( doc );
-		ele = docH.FirstChildElement( "none" ).FirstChildElement( "element" ).ToElement();
-		XMLTest( "Handle, dne, mutable", true, ele == 0 );
-	}
+		{
+			XMLHandle docH( doc );
+			XMLElement* ele = docH.FirstChildElement( "noSuchElement" ).FirstChildElement( "element" ).ToElement();
+			XMLTest( "Handle, non-const, element not found", true, ele == 0 );
+		}
 
-	{
-		static const char* xml = "<element attrib='bar'><sub>Text</sub></element>";
-		XMLDocument doc;
-		doc.Parse( xml );
-		XMLTest( "Parse element with attribute and nested element round 2", false, doc.Error() );
-		XMLConstHandle docH( doc );
+		{
+			const XMLElement* ele = XMLConstHandle( doc ).FirstChildElement( "element" ).FirstChild().ToElement();
+			XMLTest( "Handle, const, element is found", true, ele != 0 );
+			XMLTest( "Handle, const, element name matches", "sub", ele->Value() );
+		}
 
-		const XMLElement* ele = docH.FirstChildElement( "element" ).FirstChild().ToElement();
-		XMLTest( "Handle, success, const", "sub", ele->Value() );
-
-		ele = docH.FirstChildElement( "none" ).FirstChildElement( "element" ).ToElement();
-		XMLTest( "Handle, dne, const", true, ele == 0 );
+		{
+			XMLConstHandle docH( doc );
+			const XMLElement* ele = docH.FirstChildElement( "noSuchElement" ).FirstChildElement( "element" ).ToElement();
+			XMLTest( "Handle, const, element not found", true, ele == 0 );
+		}
 	}
 	{
 		// Default Declaration & BOM
@@ -1843,7 +1864,7 @@ int main( int argc, const char ** argv )
     }
     
     {
-        // If this doesn't assert in DEBUG, all is well.
+        // If this doesn't assert in TINYXML2_DEBUG, all is well.
         tinyxml2::XMLDocument doc;
         tinyxml2::XMLElement *pRoot = doc.NewElement("Root");
         doc.DeleteNode(pRoot);
@@ -1858,7 +1879,7 @@ int main( int argc, const char ** argv )
     }
 
     {
-        // If this doesn't assert in DEBUG, all is well.
+        // If this doesn't assert in TINYXML2_DEBUG, all is well.
         XMLDocument doc;
         XMLElement* unlinkedRoot = doc.NewElement( "Root" );
         XMLElement* linkedRoot = doc.NewElement( "Root" );
@@ -1868,7 +1889,7 @@ int main( int argc, const char ** argv )
     }
 
 	{
-		// Should not assert in DEBUG
+		// Should not assert in TINYXML2_DEBUG
 		XMLPrinter printer;
 	}
 
@@ -1936,7 +1957,7 @@ int main( int argc, const char ** argv )
 	    doc.Parse(xml1);
 	    XMLTest("Test that the second declaration is allowed", false, doc.Error() );
 	    doc.Parse(xml2);
-	    XMLTest("Test that declaration after a child is not allowed", XML_ERROR_PARSING_DECLARATION, doc.ErrorID() );
+	    XMLTest("Test that declaration after self-closed child is not allowed", XML_ERROR_PARSING_DECLARATION, doc.ErrorID() );
 	    doc.Parse(xml3);
 	    XMLTest("Test that declaration after a child is not allowed", XML_ERROR_PARSING_DECLARATION, doc.ErrorID() );
 	    doc.Parse(xml4);
@@ -1963,8 +1984,14 @@ int main( int argc, const char ** argv )
 		for( int i = 0; i < XML_ERROR_COUNT; i++ ) {
 			const XMLError error = static_cast<XMLError>(i);
 			const char* name = XMLDocument::ErrorIDToName(error);
-			XMLTest( "ErrorName() after ClearError()", true, name != 0 );
-			XMLTest( "ErrorName() after ClearError()", true, strlen(name) > 0 );
+			XMLTest( "ErrorName() not null after ClearError()", true, name != 0 );
+			if( name == 0 ) {
+				// passing null pointer into strlen() is undefined behavior, so
+				// compiler is allowed to optimise away the null test above if it's
+				// as reachable as the strlen() call
+				continue;
+			}
+			XMLTest( "ErrorName() not empty after ClearError()", true, strlen(name) > 0 );
 		}
 	}
 
@@ -1998,6 +2025,20 @@ int main( int argc, const char ** argv )
 		}
 	}
 
+	{
+		// Bad bad crash. Parsing error results in stack overflow, if uncaught.
+		const char* TESTS[] = {
+			"./resources/xmltest-5330.xml",
+			"./resources/xmltest-4636783552757760.xml",
+			"./resources/xmltest-5720541257269248.xml",
+			0
+		};
+		for (int i=0; TESTS[i]; ++i) {
+			XMLDocument doc;
+			doc.LoadFile(TESTS[i]);
+			XMLTest("Stack overflow prevented.", XML_ELEMENT_DEPTH_EXCEEDED, doc.ErrorID());
+		}
+	}
 	{
 		// Crashing reported via email.
 		const char* xml =
@@ -2248,7 +2289,7 @@ int main( int argc, const char ** argv )
 		delete[] mem;
 
 		static const char* note =
-#ifdef DEBUG
+#ifdef TINYXML2_DEBUG
 			"DEBUG";
 #else
 			"Release";
@@ -2262,7 +2303,7 @@ int main( int argc, const char ** argv )
 		printf("\nParsing dream.xml (%s): %.3f milli-seconds\n", note, duration);
 	}
 
-#if defined( _MSC_VER ) &&  defined( DEBUG )
+#if defined( _MSC_VER ) &&  defined( TINYXML2_DEBUG )
 	{
 		_CrtMemCheckpoint( &endMemState );
 

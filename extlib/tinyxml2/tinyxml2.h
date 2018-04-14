@@ -47,15 +47,15 @@ distribution.
 */
 /*
 	gcc:
-        g++ -Wall -DDEBUG tinyxml2.cpp xmltest.cpp -o gccxmltest.exe
+        g++ -Wall -DTINYXML2_DEBUG tinyxml2.cpp xmltest.cpp -o gccxmltest.exe
 
     Formatting, Artistic Style:
         AStyle.exe --style=1tbs --indent-switches --break-closing-brackets --indent-preprocessor tinyxml2.cpp tinyxml2.h
 */
 
 #if defined( _DEBUG ) || defined (__DEBUG__)
-#   ifndef DEBUG
-#       define DEBUG
+#   ifndef TINYXML2_DEBUG
+#       define TINYXML2_DEBUG
 #   endif
 #endif
 
@@ -79,7 +79,7 @@ distribution.
 #endif
 
 
-#if defined(DEBUG)
+#if defined(TINYXML2_DEBUG)
 #   if defined(_MSC_VER)
 #       // "(void)0," is for suppressing C4127 warning in "assert(false)", "assert(true)" and the like
 #       define TIXMLASSERT( x )           if ( !((void)0,(x))) { __debugbreak(); }
@@ -99,8 +99,19 @@ distribution.
 	http://semver.org/
 */
 static const int TIXML2_MAJOR_VERSION = 6;
-static const int TIXML2_MINOR_VERSION = 0;
+static const int TIXML2_MINOR_VERSION = 2;
 static const int TIXML2_PATCH_VERSION = 0;
+
+#define TINYXML2_MAJOR_VERSION 6
+#define TINYXML2_MINOR_VERSION 2
+#define TINYXML2_PATCH_VERSION 0
+
+// A fixed element depth limit is problematic. There needs to be a 
+// limit to avoid a stack overflow. However, that limit varies per 
+// system, and the capacity of the stack. On the other hand, it's a trivial 
+// attack that can result from ill, malicious, or even correctly formed XML, 
+// so there needs to be a limit in place.
+static const int TINYXML2_MAX_ELEMENT_DEPTH = 100;
 
 namespace tinyxml2
 {
@@ -391,7 +402,7 @@ public:
         }
         --_currentAllocs;
         Item* item = static_cast<Item*>( mem );
-#ifdef DEBUG
+#ifdef TINYXML2_DEBUG
         memset( item, 0xfe, sizeof( *item ) );
 #endif
         item->next = _root;
@@ -528,6 +539,7 @@ enum XMLError {
     XML_ERROR_PARSING,
     XML_CAN_NOT_CONVERT_TEXT,
     XML_NO_TEXT_NODE,
+	XML_ELEMENT_DEPTH_EXCEEDED,
 
 	XML_ERROR_COUNT
 };
@@ -1361,6 +1373,17 @@ public:
         return a->QueryFloatValue( value );
     }
 
+	/// See QueryIntAttribute()
+	XMLError QueryStringAttribute(const char* name, const char** value) const {
+		const XMLAttribute* a = FindAttribute(name);
+		if (!a) {
+			return XML_NO_ATTRIBUTE;
+		}
+		*value = a->Value();
+		return XML_SUCCESS;
+	}
+
+
 	
     /** Given an attribute name, QueryAttribute() returns
     	XML_SUCCESS, XML_WRONG_ATTRIBUTE_TYPE if the conversion
@@ -1635,7 +1658,7 @@ enum Whitespace {
 class TINYXML2_LIB XMLDocument : public XMLNode
 {
     friend class XMLElement;
-    // Gives access to SetError, but over-access for everything else.
+    // Gives access to SetError and Push/PopDepth, but over-access for everything else.
     // Wishing C++ had "internal" scope.
     friend class XMLNode;       
     friend class XMLText;
@@ -1859,6 +1882,7 @@ private:
     int             _errorLineNum;
     char*			_charBuffer;
     int				_parseCurLineNum;
+	int				_parsingDepth;
 	// Memory tracking does add some overhead.
 	// However, the code assumes that you don't
 	// have a bunch of unlinked nodes around.
@@ -1877,6 +1901,24 @@ private:
     void Parse();
 
     void SetError( XMLError error, int lineNum, const char* format, ... );
+
+	// Something of an obvious security hole, once it was discovered.
+	// Either an ill-formed XML or an excessively deep one can overflow
+	// the stack. Track stack depth, and error out if needed.
+	class DepthTracker {
+	public:
+		DepthTracker(XMLDocument * document) { 
+			this->_document = document; 
+			document->PushDepth();
+		}
+		~DepthTracker() {
+			_document->PopDepth();
+		}
+	private:
+		XMLDocument * _document;
+	};
+	void PushDepth();
+	void PopDepth();
 
     template<class NodeType, int PoolElementSize>
     NodeType* CreateUnlinkedNode( MemPoolT<PoolElementSize>& pool );
