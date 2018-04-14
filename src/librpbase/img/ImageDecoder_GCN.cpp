@@ -54,10 +54,6 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -65,6 +61,10 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -177,12 +177,13 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	if (width % 8 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 8);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
 
 	// Convert the palette.
 	// TODO: Optimize using pointers instead of indexes?
@@ -209,6 +210,10 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 		}
 	}
 	img->set_tr_idx(tr_idx);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 8);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Tile pointer.
 	const uint8_t *tileBuf = img_buf;

@@ -637,10 +637,6 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -650,6 +646,10 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
 	}
 
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -699,10 +699,6 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -712,6 +708,10 @@ rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
 	}
 
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -799,10 +799,6 @@ rp_image *ImageDecoder::fromETC2_RGBA(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -812,6 +808,10 @@ rp_image *ImageDecoder::fromETC2_RGBA(int width, int height,
 	}
 
 	const etc2_rgba_block *etc2_src = reinterpret_cast<const etc2_rgba_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -865,10 +865,6 @@ rp_image *ImageDecoder::fromETC2_RGB_A1(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -878,6 +874,10 @@ rp_image *ImageDecoder::fromETC2_RGB_A1(int width, int height,
 	}
 
 	const etc1_block *etc1_src = reinterpret_cast<const etc1_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];

@@ -57,10 +57,6 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	if (width % 8 != 0 || height % 8 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 8);
-	const unsigned int tilesY = (unsigned int)(height / 8);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
 	if (!img->isValid()) {
@@ -86,9 +82,12 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 		palette[i+0] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
 		palette[i+1] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 	}
-
 	// NOTE: rp_image initializes the palette to 0,
 	// so we don't need to clear the remaining colors.
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 8);
+	const unsigned int tilesY = (unsigned int)(height / 8);
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {

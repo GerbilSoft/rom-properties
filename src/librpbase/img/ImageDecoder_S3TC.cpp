@@ -315,10 +315,6 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 	if (width % 8 != 0 || height % 8 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -328,6 +324,10 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 	}
 
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary 4-tile buffer.
 	uint32_t tileBuf[4][4*4];
@@ -440,10 +440,6 @@ static rp_image *T_fromDXT1(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -453,6 +449,10 @@ static rp_image *T_fromDXT1(int width, int height,
 	}
 
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -606,10 +606,6 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -625,6 +621,10 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 	};
 	ASSERT_STRUCT(dxt3_block, 16);
 	const dxt3_block *dxt3_src = reinterpret_cast<const dxt3_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -752,10 +752,6 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -771,6 +767,10 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 	};
 	ASSERT_STRUCT(dxt5_block, 16);
 	const dxt5_block *dxt5_src = reinterpret_cast<const dxt5_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -868,10 +868,6 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -886,6 +882,10 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 	};
 	ASSERT_STRUCT(bc4_block, 8);
 	const bc4_block *bc4_src = reinterpret_cast<const bc4_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -978,10 +978,6 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
-	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
-
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
@@ -997,6 +993,10 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 	};
 	ASSERT_STRUCT(bc5_block, 16);
 	const bc5_block *bc5_src = reinterpret_cast<const bc5_block*>(img_buf);
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
