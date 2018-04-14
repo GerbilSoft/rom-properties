@@ -52,21 +52,26 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	: super(props)
 {
 	// Check if a single file was specified.
-#if QT_VERSION >= 0x050000
-	QUrl url = props->url();
-#else /* QT_VERSION < 0x050000 */
-	KUrl url = props->kurl();
-#endif
-	if (!url.isValid() || !url.isLocalFile())
+	KFileItemList items = props->items();
+	if (items.size() != 1) {
+		// Either zero items or more than one item.
+		return;
+	}
+
+	// Get the local path. This is needed in order to
+	// support files on the local file system that
+	// don't have a file:/ URL, e.g. desktop:/.
+	// References:
+	// - https://bugs.kde.org/show_bug.cgi?id=392100
+	// - https://cgit.kde.org/kio.git/commit/?id=7d6e4965dfcd7fc12e8cba7b1506dde22de5d2dd
+	const KFileItem &item = items.at(0);
+	QString filename = item.localPath();
+	if (filename.isEmpty())
 		return;
 
 	// Single file, and it's local.
 	// Open it and read the first 65536+512 bytes.
 	// TODO: Use KIO and transparent decompression?
-	QString filename = url.toLocalFile();
-	if (filename.isEmpty())
-		return;
-
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
 	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ));

@@ -55,6 +55,8 @@
     The tab is now registered to handle all files, though it will only show
     up if the file is actually supported by rom-properties.
   * DreamcastSave: Trim spaces from the end of text fields.
+  * KDE frontends: Enabled the "ROM Properties" tab on files located on the
+    desktop.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.
