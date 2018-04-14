@@ -25,7 +25,11 @@
 
 // librpbase
 #include "librpbase/config/Config.hpp"
+#include "librpbase/TextFuncs.hpp"
 using LibRpBase::Config;
+
+// libi18n
+#include "libi18n/i18n.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
@@ -36,6 +40,10 @@ using LibRpBase::Config;
 
 // C includes. (C++ namespace)
 #include <cassert>
+
+// C++ includes.
+#include <string>
+using std::wstring;
 
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
@@ -104,7 +112,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 
 	// Load RICHED20.DLL for RICHEDIT_CLASS.
 	// TODO: What if this fails?
-	HMODULE hRichEd20 = LoadLibrary(L"RICHED20.DLL");
+	LoadLibrary(L"RICHED20.DLL");
 
 	// Initialize the property sheet tabs.
 
@@ -136,7 +144,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	psh.hwndParent = nullptr;
 	psh.hInstance = HINST_THISCOMPONENT;
 	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
-	psh.pszCaption = L"ROM Properties Page Configuration";
+	psh.pszCaption = nullptr;			// will be set in WM_SHOWWINDOW
 	psh.nPages = ARRAY_SIZE(hpsp);
 	psh.nStartPage = 0;
 	psh.phpage = hpsp;
@@ -215,6 +223,10 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 {
 	switch (uMsg) {
 		case WM_SHOWWINDOW: {
+			// tr: Dialog title.
+			const wstring wsTitle = U82W_c(C_("ConfigDialog", "ROM Properties Page Configuration"));
+			SetWindowText(hWnd, wsTitle.c_str());
+
 			// Create the "Reset" and "Defaults" buttons.
 			if (GetDlgItem(hWnd, IDC_RP_RESET) != nullptr) {
 				// "Reset" button is already created.
@@ -252,8 +264,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				rect_btnOK.bottom - rect_btnOK.top
 			};
 
-			HWND hBtnReset = CreateWindowEx(0,
-				WC_BUTTON, L"Reset",
+			HWND hBtnReset = CreateWindowEx(0, WC_BUTTON,
+				// tr: "Reset" button.
+				U82W_c(C_("ConfigDialog", "Reset")),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
 				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_RESET, nullptr, nullptr);
@@ -269,8 +282,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			// Create the "Defaults" button.
 			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
-			HWND hBtnDefaults = CreateWindowEx(0,
-				WC_BUTTON, L"Defaults",
+			HWND hBtnDefaults = CreateWindowEx(0, WC_BUTTON,
+				// tr: "Defaults" button.
+				U82W_c(C_("ConfigDialog", "Defaults")),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
 				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_DEFAULTS, nullptr, nullptr);
@@ -296,7 +310,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				case IDC_RP_RESET: {
 					// "Reset" was clicked.
 					// Reset all of the tabs.
-					for (unsigned int i = 0; i < TAB_COUNT; i++) {
+					for (int i = TAB_COUNT-1; i >= 0; i--) {
 						HWND hwndPropSheet = PropSheet_IndexToHwnd(hWnd, i);
 						if (hwndPropSheet) {
 							SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_RESET, 0, 0);
