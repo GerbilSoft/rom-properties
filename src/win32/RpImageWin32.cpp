@@ -122,9 +122,9 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 				uint8_t *dest = pvBits;
 				for (int y = image->height()-1; y >= 0; y--) {
 					const uint8_t *src = static_cast<const uint8_t*>(image->scanLine(y));
-					for (int x = width; x > 0; x -= 8) {
+					for (unsigned int x = (unsigned int)width; x > 0; x -= 8) {
 						uint8_t pxMono = 0;
-						for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
+						for (unsigned int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
 							// MSB == left-most pixel.
 							pxMono <<= 1;
 							pxMono |= (*src != tr_idx);
@@ -150,9 +150,9 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 			uint8_t *dest = pvBits;
 			for (int y = image->height()-1; y >= 0; y--) {
 				const uint32_t *src = static_cast<const uint32_t*>(image->scanLine(y));
-				for (int x = image->width(); x > 0; x -= 8) {
+				for (unsigned int x = (unsigned int)image->width(); x > 0; x -= 8) {
 					uint8_t pxMono = 0;
-					for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
+					for (unsigned int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
 						// MSB == left-most pixel.
 						pxMono <<= 1;
 						pxMono |= ((*src & 0xFF000000) != 0);
@@ -245,7 +245,7 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor,
  */
 HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image)
 {
-	const SIZE size = {0, 0};
+	static const SIZE size = {0, 0};
 	return toHBITMAP_alpha(image, size, false);
 }
 
@@ -293,6 +293,11 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image, const SIZE &size, b
  */
 HICON RpImageWin32::toHICON(const rp_image *image)
 {
+	HBITMAP hBitmap = nullptr;
+	HBITMAP hbmMask = nullptr;
+	HICON hIcon = nullptr;
+	ICONINFO ii;
+
 	assert(image != nullptr);
 	if (!image || !image->isValid()) {
 		// Invalid image.
@@ -310,22 +315,17 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 
 	// Convert to HBITMAP first.
 	// TODO: Const-ness stuff.
-	HBITMAP hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
-	if (!hBitmap) {
-		// Error converting to HBITMAP.
-		return nullptr;
-	}
+	hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	if (!hBitmap)
+		goto cleanup;
 
 	// Convert the image to an icon mask.
-	HBITMAP hbmMask = toHBITMAP_mask(image);
-	if (!hbmMask) {
-		DeleteObject(hBitmap);
-		return nullptr;
-	}
+	hbmMask = toHBITMAP_mask(image);
+	if (!hbmMask)
+		goto cleanup;
 
 	// Convert to an icon.
 	// Reference: http://forums.codeguru.com/showthread.php?441251-CBitmap-to-HICON-or-HICON-from-HBITMAP&p=1661856#post1661856
-	ICONINFO ii;
 	ii.fIcon = TRUE;
 	ii.xHotspot = 0;
 	ii.yHotspot = 0;
@@ -333,11 +333,14 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 	ii.hbmMask = hbmMask;
 
 	// Create the icon.
-	HICON hIcon = CreateIconIndirect(&ii);
+	hIcon = CreateIconIndirect(&ii);
 
+cleanup:
 	// Delete the original bitmaps and we're done.
-	DeleteObject(hBitmap);
-	DeleteObject(hbmMask);
+	if (hBitmap)
+		DeleteBitmap(hBitmap);
+	if (hbmMask)
+		DeleteBitmap(hbmMask);
 	return hIcon;
 }
 
@@ -407,7 +410,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	}
 
 	// Copy the data into a new rp_image.
-	rp_image *img = new rp_image(bm.bmWidth, height, format);
+	rp_image *const img = new rp_image(bm.bmWidth, height, format);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -415,8 +418,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	}
 
 	// TODO: Copy the palette for 8-bit.
-
-	// The image might be upside-down.
+	// TODO: The image might be upside-down.
 
 	// Copy the image data.
 	const uint8_t *src = pBits.get();
@@ -476,6 +478,6 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	HICON hIcon = CreateIconIndirect(&ii);
 
 	// Delete the icon mask bitmap and we're done.
-	DeleteObject(hbmMask);
+	DeleteBitmap(hbmMask);
 	return hIcon;
 }
