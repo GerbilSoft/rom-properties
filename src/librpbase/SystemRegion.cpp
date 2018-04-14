@@ -24,12 +24,13 @@
 // One-time initialization.
 #include "threads/pthread_once.h"
 
+// C includes. (C++ namespace)
+#include <cctype>
+#include <clocale>
+#include <cstring>
+
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
-#else
-# include <cctype>
-# include <clocale>
-# include <cstring>
 #endif
 
 namespace LibRpBase {
@@ -54,6 +55,23 @@ class SystemRegionPrivate
 		static pthread_once_t once_control;
 
 		/**
+		 * Get the LC_MESSAGES or LC_ALL environment variable.
+		 * @return Value, or nullptr if not found.
+		 */
+		static const char *get_LC_MESSAGES(void);
+
+		/**
+		 * Get the system region information from a Unix-style language code.
+		 *
+		 * @param locale LC_MESSAGES value.
+		 * @return 0 on success; non-zero on error.
+		 *
+		 * Country code will be stored in 'cc'.
+		 * Language code will be stored in 'lc'.
+		 */
+		static int getSystemRegion_LC_MESSAGES(const char *locale);
+
+		/**
 		 * Get the system region information.
 		 * Called by pthread_once().
 		 * Country code will be stored in 'cc'.
@@ -69,93 +87,57 @@ uint32_t SystemRegionPrivate::lc = 0;
 // pthread_once() control variable.
 pthread_once_t SystemRegionPrivate::once_control = PTHREAD_ONCE_INIT;
 
-#ifdef _WIN32
 /**
- * Get the system region information.
- * Called by pthread_once().
- * (Windows version)
- *
- * Country code will be stored in 'cc'.
- * Language code will be stored in 'lc'.
+ * Get the LC_MESSAGES or LC_ALL environment variable.
+ * @return Value, or nullptr if not found.
  */
-void SystemRegionPrivate::getSystemRegion(void)
-{
-	// References:
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
-
-	// NOTE: LOCALE_SISO3166CTRYNAME might not work on some old versions
-	// of Windows, but our minimum is Windows XP.
-	// FIXME: Non-ASCII locale names will break!
-	wchar_t locale[16];
-	int ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, locale, ARRAY_SIZE(locale));
-	switch (ret) {
-		case 3:
-			// 2-character country code.
-			// (ret == 3 due to the NULL terminator.)
-			cc = (((towupper(locale[0]) & 0xFF) << 8) |
-			       (towupper(locale[1]) & 0xFF));
-			break;
-		case 4:
-			// 3-character country code.
-			// (ret == 4 due to the NULL terminator.)
-			cc = (((towupper(locale[0]) & 0xFF) << 16) |
-			      ((towupper(locale[1]) & 0xFF) << 8) |
-			       (towupper(locale[2]) & 0xFF));
-			break;
-
-		default:
-			// Unsupported. (MSDN says the string could be up to 9 characters!)
-			cc = 0;
-			break;
-	}
-
-	// NOTE: LOCALE_SISO639LANGNAME might not work on some old versions
-	// of Windows, but our minimum is Windows XP.
-	// FIXME: Non-ASCII locale names will break!
-	ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, locale, ARRAY_SIZE(locale));
-	switch (ret) {
-		case 3:
-			// 2-character language code.
-			// (ret == 3 due to the NULL terminator.)
-			lc = (((towlower(locale[0]) & 0xFF) << 8) |
-			       (towlower(locale[1]) & 0xFF));
-			break;
-		case 4:
-			// 3-character language code.
-			// (ret == 4 due to the NULL terminator.)
-			lc = (((towlower(locale[0]) & 0xFF) << 16) |
-			      ((towlower(locale[1]) & 0xFF) << 8) |
-			       (towlower(locale[2]) & 0xFF));
-			break;
-
-		default:
-			// Unsupported. (MSDN says the string could be up to 9 characters!)
-			lc = 0;
-			break;
-	}
-}
-
-#else /* !_WIN32 */
-
-/**
- * Get the system region information.
- * Called by pthread_once().
- * (Unix/Linux version)
- *
- * Country code will be stored in 'cc'.
- * Language code will be stored in 'lc'.
- */
-void SystemRegionPrivate::getSystemRegion(void)
+const char *SystemRegionPrivate::get_LC_MESSAGES(void)
 {
 	// TODO: Check the C++ locale if this fails?
-	const char *const locale = setlocale(LC_ALL, nullptr);
-	if (!locale) {
-		// Unable to get the locale.
+	// TODO: On Windows startup in main() functions, get LC_ALL/LC_MESSAGES vars if msvc doesn't?
+
+	// Environment variables override the system defaults.
+	const char *locale = getenv("LC_MESSAGES");
+	if (!locale || locale[0] == '\0') {
+		locale = getenv("LC_ALL");
+	}
+#ifndef _WIN32
+	// NOTE: MSVCRT doesn't support LC_MESSAGES.
+	if (!locale || locale[0] == '\0') {
+		locale = setlocale(LC_MESSAGES, nullptr);
+	}
+#endif /* _WIN32 */
+	if (!locale || locale[0] == '\0') {
+		locale = setlocale(LC_ALL, nullptr);
+	}
+
+	if (!locale || locale[0] == '\0') {
+		// Unable to get the LC_MESSAGES or LC_ALL variables.
+		return nullptr;
+	}
+
+	return locale;
+}
+
+/**
+ * Get the system region information from a Unix-style language code.
+ *
+ * @param locale LC_MESSAGES value.
+ * @return 0 on success; non-zero on error.
+ *
+ * Country code will be stored in 'cc'.
+ * Language code will be stored in 'lc'.
+ */
+int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
+{
+	if (!locale || locale[0] == '\0') {
+		// No locale...
 		cc = 0;
 		lc = 0;
-		return;
+		return -1;
 	}
+
+	int ret = -1;
 
 	// Language code: Read up to the first non-alphabetic character.
 	if (isalpha(locale[0]) && isalpha(locale[1])) {
@@ -182,7 +164,7 @@ void SystemRegionPrivate::getSystemRegion(void)
 	if (!underscore) {
 		// No country code...
 		cc = 0;
-		return;
+		return ret;
 	}
 
 	// Found an underscore.
@@ -191,11 +173,13 @@ void SystemRegionPrivate::getSystemRegion(void)
 			// 2-character country code.
 			cc = ((toupper(underscore[1]) << 8) |
 			       toupper(underscore[2]));
+			ret = 0;
 		} else if (isalpha(underscore[3]) && !isalpha(underscore[4])) {
 			// 3-character country code.
 			cc = ((toupper(underscore[1]) << 16) |
 			      (toupper(underscore[2]) << 8) |
 			       toupper(underscore[3]));
+			ret = 0;
 		} else {
 			// Invalid country code.
 			cc = 0;
@@ -204,6 +188,111 @@ void SystemRegionPrivate::getSystemRegion(void)
 		// Invalid country code.
 		cc = 0;
 	}
+
+	return ret;
+}
+
+#ifdef _WIN32
+/**
+ * Get the system region information.
+ * Called by pthread_once().
+ * (Windows version)
+ *
+ * Country code will be stored in 'cc'.
+ * Language code will be stored in 'lc'.
+ */
+void SystemRegionPrivate::getSystemRegion(void)
+{
+	wchar_t locale[16];
+	int ret;
+
+	// Check if LC_MESSAGES or LC_ALL is set.
+	const char *const locale_var = get_LC_MESSAGES();
+	if (locale_var != nullptr && locale_var[0] != '\0') {
+		ret = getSystemRegion_LC_MESSAGES(locale_var);
+		if (ret == 0) {
+			// LC_MESSAGES or LC_ALL is set and is valid.
+			return;
+		}
+
+		// LC_MESSAGES or LC_ALL is not set or is invalid.
+		// Continue with the Windows-specific code.
+
+		// NOTE: If LC_MESSAGE or LC_ALL had a language code
+		// but not a region code, we'll keep that portion.
+	}
+
+	// References:
+	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
+
+	// NOTE: LOCALE_SISO3166CTRYNAME might not work on some old versions
+	// of Windows, but our minimum is Windows XP.
+	// FIXME: Non-ASCII locale names will break!
+	if (cc == 0) {
+		ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, locale, ARRAY_SIZE(locale));
+		switch (ret) {
+			case 3:
+				// 2-character country code.
+				// (ret == 3 due to the NULL terminator.)
+				cc = (((towupper(locale[0]) & 0xFF) << 8) |
+				       (towupper(locale[1]) & 0xFF));
+				break;
+			case 4:
+				// 3-character country code.
+				// (ret == 4 due to the NULL terminator.)
+				cc = (((towupper(locale[0]) & 0xFF) << 16) |
+				      ((towupper(locale[1]) & 0xFF) << 8) |
+				       (towupper(locale[2]) & 0xFF));
+				break;
+
+			default:
+				// Unsupported. (MSDN says the string could be up to 9 characters!)
+				cc = 0;
+				break;
+		}
+	}
+
+	// NOTE: LOCALE_SISO639LANGNAME might not work on some old versions
+	// of Windows, but our minimum is Windows XP.
+	// FIXME: Non-ASCII locale names will break!
+	if (lc == 0) {
+		ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, locale, ARRAY_SIZE(locale));
+		switch (ret) {
+			case 3:
+				// 2-character language code.
+				// (ret == 3 due to the NULL terminator.)
+				lc = (((towlower(locale[0]) & 0xFF) << 8) |
+				       (towlower(locale[1]) & 0xFF));
+				break;
+			case 4:
+				// 3-character language code.
+				// (ret == 4 due to the NULL terminator.)
+				lc = (((towlower(locale[0]) & 0xFF) << 16) |
+				      ((towlower(locale[1]) & 0xFF) << 8) |
+				       (towlower(locale[2]) & 0xFF));
+				break;
+
+			default:
+				// Unsupported. (MSDN says the string could be up to 9 characters!)
+				lc = 0;
+				break;
+		}
+	}
+}
+
+#else /* !_WIN32 */
+
+/**
+ * Get the system region information.
+ * Called by pthread_once().
+ * (Unix/Linux version)
+ *
+ * Country code will be stored in 'cc'.
+ * Language code will be stored in 'lc'.
+ */
+inline void SystemRegionPrivate::getSystemRegion(void)
+{
+	getSystemRegion_LC_MESSAGES(get_LC_MESSAGES());
 }
 #endif /* _WIN32 */
 
