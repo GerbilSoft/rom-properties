@@ -126,8 +126,8 @@ static INLINE int secoptions_init(void)
 			PROCESS_MITIGATION_DYNAMIC_CODE_POLICY dynamic_code;
 			PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY strict_handle_check;
 			//PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable;
-			//PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable;
-			//PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard;	// MSVC 2015+: /guard:cf
+			PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable;
+			PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard;	// MSVC 2015+: /guard:cf
 			//PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY binary_signature;
 			//PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable;
 			PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load;
@@ -141,34 +141,63 @@ static INLINE int secoptions_init(void)
 		policy.dep.Enable = 1;
 		policy.dep.DisableAtlThunkEmulation = 1;
 		policy.dep.Permanent = TRUE;
-		pfnSetProcessMitigationPolicy(ProcessDEPPolicy, &policy.dep, sizeof(policy.dep));
+		pfnSetProcessMitigationPolicy(ProcessDEPPolicy,
+			&policy.dep, sizeof(policy.dep));
 
 		// Set ASLR policy.
 		policy.flags = 0;
 		policy.aslr.EnableBottomUpRandomization = 1;
 		policy.aslr.EnableForceRelocateImages = 1;
 		policy.aslr.EnableHighEntropy = 1;
-		policy.aslr.DisallowStrippedImages = 0;	// TODO?
-		pfnSetProcessMitigationPolicy(ProcessASLRPolicy, &policy.aslr, sizeof(policy.aslr));
+		policy.aslr.DisallowStrippedImages = 1;
+		pfnSetProcessMitigationPolicy(ProcessASLRPolicy,
+			&policy.aslr, sizeof(policy.aslr));
 
 		// Set dynamic code policy.
 		policy.flags = 0;
 		policy.dynamic_code.ProhibitDynamicCode = 1;
-		//policy.dynamic_code.AllowThreadOptOut = 0;	// Win10
-		pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy, &policy.dynamic_code, sizeof(policy.dynamic_code));
+#if 0
+		// Added in Windows 10.0.14393 (v1607)
+		// TODO: Figure out how to detect the SDK build version.
+		policy.dynamic_code.AllowThreadOptOut = 0;	// Win10
+		policy.dynamic_code.AllowRemoteDowngrade = 0;	// Win10
+#endif
+		pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy,
+			&policy.dynamic_code, sizeof(policy.dynamic_code));
 
 		// Set strict handle check policy.
 		policy.flags = 0;
 		policy.strict_handle_check.RaiseExceptionOnInvalidHandleReference = 1;
 		policy.strict_handle_check.HandleExceptionsPermanentlyEnabled = 1;
-		pfnSetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &policy.strict_handle_check, sizeof(policy.strict_handle_check));
+		pfnSetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy,
+			&policy.strict_handle_check, sizeof(policy.strict_handle_check));
+
+		// Set extension point disable policy.
+		// Extension point DLLs are some weird MFC-specific thing.
+		// https://msdn.microsoft.com/en-us/library/h5f7ck28.aspx
+		policy.flags = 0;
+		policy.extension_point_disable.DisableExtensionPoints = 1;
+		pfnSetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy,
+			&policy.extension_point_disable, sizeof(policy.extension_point_disable));
 
 		// Set image load policy.
 		policy.flags = 0;
 		policy.image_load.NoRemoteImages = 0;	// TODO
 		policy.image_load.NoLowMandatoryLabelImages = 1;
 		policy.image_load.PreferSystem32Images = 1;
-		pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy, &policy.image_load, sizeof(policy.image_load));
+		pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy,
+			&policy.image_load, sizeof(policy.image_load));
+
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+		// Set control flow guard policy.
+		// TODO: Enable export suppression? May not be available on
+		// certain Windows versions, so if we enable it, fall back
+		// to not-enabled if it didn't work.
+		policy.flags = 0;
+		policy.control_flow_guard.EnableControlFlowGuard = 1;
+		pfnSetProcessMitigationPolicy(ProcessControlFlowGuardPolicy,
+			&policy.control_flow_guard, sizeof(policy.control_flow_guard));
+#endif /* defined(_MSC_VER) && _MSC_VER >= 1900 */
 	} else {
 		// Use the old functions if they're available.
 		PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;

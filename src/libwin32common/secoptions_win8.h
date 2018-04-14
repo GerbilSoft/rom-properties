@@ -119,6 +119,7 @@ typedef struct _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY {
 		struct {
 			DWORD ProhibitDynamicCode : 1;	// Win81
 			DWORD AllowThreadOptOut : 1;	// Win10
+			DWORD AllowRemoteDowngrade : 1;	// Win10
 			DWORD ReservedFlags : 30;
 		} DUMMYSTRUCTNAME;
 	} DUMMYUNIONNAME;
@@ -155,7 +156,9 @@ typedef struct _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY {
 		DWORD Flags;
 		struct {
 			DWORD EnableControlFlowGuard : 1;
-			DWORD ReservedFlags : 31;
+			DWORD EnableExportSuppression : 1;
+			DWORD StrictMode : 1;
+			DWORD ReservedFlags : 29;
 		} DUMMYSTRUCTNAME;
 	} DUMMYUNIONNAME;
 } PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY, *PPROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY;
