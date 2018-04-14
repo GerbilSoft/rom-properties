@@ -366,14 +366,17 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 			const char *suffix;
 			switch ((sram_info >> (8+3)) & 0x03) {
 				case 2:
-					suffix = C_("MegaDrive", "(even only)");
+					// tr: SRAM format: Even bytes only.
+					suffix = C_("MegaDrive|SRAM", "(even only)");
 					break;
 				case 3:
-					suffix = C_("MegaDrive", "(odd only)");
+					// tr: SRAM format: Odd bytes only.
+					suffix = C_("MegaDrive|SRAM", "(odd only)");
 					break;
 				default:
 					// TODO: Are both alternates 16-bit?
-					suffix = C_("MegaDrive", "(16-bit)");
+					// tr: SRAM format: 16-bit.
+					suffix = C_("MegaDrive|SRAM", "(16-bit)");
 					break;
 			}
 
