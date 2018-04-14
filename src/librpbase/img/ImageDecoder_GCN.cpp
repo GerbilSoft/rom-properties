@@ -87,6 +87,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 			// Set the sBIT metadata.
 			// NOTE: Pixels may be RGB555 or ARGB4444.
 			// We'll use 555 for RGB, and 4 for alpha.
+			// TODO: Set alpha to 0 if no translucent pixels were found.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
 			img->set_sBIT(&sBIT);
 			break;
@@ -229,6 +230,7 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	// Set the sBIT metadata.
 	// NOTE: Pixels may be RGB555 or ARGB4444.
 	// We'll use 555 for RGB, and 4 for alpha.
+	// TODO: Set alpha to 0 if no translucent pixels were found.
 	static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
 	img->set_sBIT(&sBIT);
 
