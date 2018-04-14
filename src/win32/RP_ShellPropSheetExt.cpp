@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RpImageWin32.hpp"
-#include "resource.h"
+#include "res/resource.h"
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"

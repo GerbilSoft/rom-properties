@@ -1,7 +1,7 @@
 PROJECT(rom-properties-win32)
 
 # Create the manifest file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.dll.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.dll.manifest" @ONLY)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/res/rom-properties.dll.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/res/rom-properties.dll.manifest" @ONLY)
 
 # Sources and headers.
 SET(rom-properties-win32_SRCS
@@ -28,7 +28,6 @@ SET(rom-properties-win32_SRCS
 	config/CacheTab.cpp
 	config/KeyStore_OwnerDataCallback.cpp
 	config/AboutTab.cpp
-	resource.rc
 	)
 SET(rom-properties-win32_H
 	RP_ExtractIcon.hpp
@@ -51,7 +50,11 @@ SET(rom-properties-win32_H
 	config/CacheTab.hpp
 	config/KeyStore_OwnerDataCallback.hpp
 	config/AboutTab.hpp
-	resource.h
+	res/resource.h
+	)
+SET(rom-properties-win32_RC
+	res/resource.rc
+	res/rp-en_US.rc
 	)
 
 IF(ENABLE_DECRYPTION)
@@ -100,6 +103,7 @@ ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32-DELAY_LOAD_SRC} ${rom-properties-win32-DELAY_LOAD_H}
 	${rom-properties-win32_SRCS} ${rom-properties-win32_H}
 	${rom-properties-win32_CRYPTO_SRCS} ${rom-properties-win32_CRYPTO_H}
+	${rom-properties-win32_RC}
 	)
 # NOTE: Only enabling PCH for MSVC.
 IF(MSVC)

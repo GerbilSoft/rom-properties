@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "ImageTypesTab.hpp"
+#include "res/resource.h"
 
 // libwin32common
 #include "libwin32common/WinUI.hpp"
@@ -30,8 +31,6 @@ using LibRpBase::Config;
 
 // libi18n
 #include "libi18n/i18n.h"
-
-#include "resource.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

@@ -22,7 +22,7 @@
 #include "config.librpbase.h"
 
 #include "AboutTab.hpp"
-#include "resource.h"
+#include "res/resource.h"
 
 // libwin32common
 #include "libwin32common/WinUI.hpp"
