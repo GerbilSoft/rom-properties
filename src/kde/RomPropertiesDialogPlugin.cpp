@@ -70,7 +70,6 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		return;
 
 	// Single file, and it's local.
-	// Open it and read the first 65536+512 bytes.
 	// TODO: Use KIO and transparent decompression?
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
