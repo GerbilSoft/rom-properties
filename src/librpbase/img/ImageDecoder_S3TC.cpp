@@ -463,10 +463,6 @@ static rp_image *T_fromDXT1(int width, int height,
 		for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
 			// Decode the DXT1 tile palette.
-			// TODO: Color 3 may be either black or transparent.
-			// Figure out if there's a way to specify that in DDS.
-			// Assuming transparent for now, since black can be
-			// specified using a color value.
 			argb32_t pal[4];
 			decode_DXTn_tile_color_palette_S3TC<palflags>(pal, dxt1_src);
 
@@ -486,12 +482,8 @@ static rp_image *T_fromDXT1(int width, int height,
 		for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
 			// Decode the DXT1 tile palette.
-			// TODO: Color 3 may be either black or transparent.
-			// Figure out if there's a way to specify that in DDS.
-			// Assuming transparent for now, since black can be
-			// specified using a color value.
 			argb32_t pal[4];
-			decode_DXTn_tile_color_palette_S2TC<DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
+			decode_DXTn_tile_color_palette_S2TC<palflags>(pal, dxt1_src);
 
 			// Process the 16 color indexes.
 			uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
