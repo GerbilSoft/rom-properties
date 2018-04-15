@@ -400,7 +400,7 @@ int Amiibo::loadFieldData(void)
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
 	};
-	char buf[64]; char *pBuf = buf;
+	char buf[32]; char *pBuf = buf;
 	for (int i = 0; i < 8; i++, pBuf += 2) {
 		if (i == 3) {
 			// Byte 3 is CB0.
@@ -409,28 +409,10 @@ int Amiibo::loadFieldData(void)
 		pBuf[0] = hex_lookup[d->nfpData.serial[i] >> 4];
 		pBuf[1] = hex_lookup[d->nfpData.serial[i] & 0x0F];
 	}
+	*pBuf = 0;
 
-	// Verify the check bytes.
-	// TODO: Show calculated check bytes?
-	uint8_t cb0, cb1;
-	int len;
-	if (d->calcCheckBytes(d->nfpData.serial, &cb0, &cb1)) {
-		// Check bytes are valid.
-		len = snprintf(pBuf, sizeof(buf) - (7*2), " (check: %02X %02X)",
-			d->nfpData.serial[3], d->nfpData.serial[8]);
-	} else {
-		// Check bytes are NOT valid.
-		// NOTE: Shouldn't show up anymore because invalid
-		// serial numbers are discarded in isRomSupported_static().
-		len = snprintf(pBuf, sizeof(buf) - (7*2), " (check ERR: %02X %02X)",
-			d->nfpData.serial[3], d->nfpData.serial[8]);
-	}
-
-	len += (7*2);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
 	d->fields->addField_string(C_("Amiibo", "NTAG215 Serial"),
-		len > 0 ? latin1_to_utf8(buf, len) : "",
+		latin1_to_utf8(buf, 7*2),
 		RomFields::STRF_MONOSPACE);
 
 	// NFP data.
