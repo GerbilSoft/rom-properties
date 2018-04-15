@@ -265,6 +265,9 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_IFUNC_SRCS}
 	${libromdata_SSE2_SRCS}
 	)
+INCLUDE(SetMSVCDebugPath)
+SET_MSVC_DEBUG_PATH(romdata)
+
 TARGET_LINK_LIBRARIES(romdata rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata i18n)

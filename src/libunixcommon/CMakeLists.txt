@@ -72,6 +72,8 @@ ADD_LIBRARY(unixcommon STATIC
 	${libunixcommon_SRCS}
 	${libunixcommon_H}
 	)
+INCLUDE(SetMSVCDebugPath)
+SET_MSVC_DEBUG_PATH(unixcommon)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(unixcommon PROPERTIES EXCLUDE_FROM_ALL TRUE)
 

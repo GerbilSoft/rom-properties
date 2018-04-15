@@ -34,6 +34,8 @@ ADD_LIBRARY(cachemgr STATIC
 	${libcachemgr_OS_SRCS} ${libcachemgr_OS_H}
 	${libcachemgr_THREAD_SRCS} ${libcachemgr_THREAD_H}
 	)
+INCLUDE(SetMSVCDebugPath)
+SET_MSVC_DEBUG_PATH(cachemgr)
 TARGET_LINK_LIBRARIES(cachemgr rpbase)
 
 TARGET_INCLUDE_DIRECTORIES(cachemgr

@@ -371,6 +371,8 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
 	)
+INCLUDE(SetMSVCDebugPath)
+SET_MSVC_DEBUG_PATH(rpbase)
 
 # Include paths:
 # - Public: Current source and binary directories.

@@ -47,5 +47,7 @@ ADD_LIBRARY(win32common STATIC
 	${libwin32common_SRCS}
 	${libwin32common_H}
 	)
+INCLUDE(SetMSVCDebugPath)
+SET_MSVC_DEBUG_PATH(win32common)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(win32common PROPERTIES EXCLUDE_FROM_ALL TRUE)
