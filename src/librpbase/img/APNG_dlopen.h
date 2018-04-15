@@ -237,7 +237,7 @@ PNG_EXPORT(264, void, png_write_frame_tail, (png_structp png_ptr,
 	APNG_png_read_frame_head(png_ptr, info_ptr)
 #ifdef PNG_PROGRESSIVE_READ_SUPPORTED
 #define png_set_progressive_frame_fn(png_ptr, frame_info_fn, frame_end_fn) \
-	APNG_png_set_progressive_frame_fnpng_ptr, frame_info_fn, frame_end_fn)
+	APNG_png_set_progressive_frame_fn(png_ptr, frame_info_fn, frame_end_fn)
 #endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
 #endif /* PNG_READ_APNG_SUPPORTED */
 
