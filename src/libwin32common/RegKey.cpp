@@ -731,9 +731,11 @@ LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCWSTR description)
 		return ERROR_INVALID_PARAMETER;
 
 	// Open the approved shell extensions key.
+	// NOTE: This key might not exist on ReactOS, so we should
+	// create it if it's not there.
 	RegKey hklm_Approved(HKEY_LOCAL_MACHINE,
 		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
-		KEY_WRITE, false);
+		KEY_WRITE, true);
 	if (!hklm_Approved.isOpen())
 		return hklm_Approved.lOpenRes();
 
