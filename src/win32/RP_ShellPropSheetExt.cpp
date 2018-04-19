@@ -1868,8 +1868,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 /** RP_ShellPropSheetExt **/
 
 RP_ShellPropSheetExt::RP_ShellPropSheetExt()
-	: d_ptr(new RP_ShellPropSheetExt_Private(this))
-{ }
+	: d_ptr(nullptr)
+{
+	// NOTE: d_ptr is not initialized until we receive a valid
+	// ROM file. This reduces overhead in cases where there are
+	// lots of files with ROM-like file extensions but aren't
+	// actually supported by rom-properties.
+}
 
 RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 {
@@ -1920,7 +1925,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		return E_FAIL;
 	}
 
-	RP_D(RP_ShellPropSheetExt);
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
 	wchar_t *filename = nullptr;
@@ -1999,7 +2003,13 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// tab is clicked, because otherwise the file will be held
 	// open and may block the user from changing attributes.
 	romData->unref();
-	d->filename = W2U8(filename, cchFilename);
+
+	// Save the filename in the private class for later.
+	if (!d_ptr) {
+		d_ptr = new RP_ShellPropSheetExt_Private(this);
+	}
+	d_ptr->filename = W2U8(filename, cchFilename);
+
 	hr = S_OK;
 
 cleanup:
@@ -2018,6 +2028,10 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 {
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
+	if (!d_ptr) {
+		// Not initialized.
+		return E_FAIL;
+	}
 
 	// tr: Tab title.
 	const wstring wsTabTitle = U82W_c(C_("RomDataView", "ROM Properties"));

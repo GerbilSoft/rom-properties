@@ -57,7 +57,7 @@ RP_ShellPropSheetExt : public LibWin32Common::ComBase2<IShellExtInit, IShellProp
 		RP_DISABLE_COPY(RP_ShellPropSheetExt)
 	private:
 		friend class RP_ShellPropSheetExt_Private;
-		RP_ShellPropSheetExt_Private *const d_ptr;
+		RP_ShellPropSheetExt_Private *d_ptr;
 
 	public:
 		// IUnknown
