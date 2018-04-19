@@ -2,13 +2,13 @@ PROJECT(rom-properties-kde4)
 
 # Find Qt4.
 SET(QT4_NO_LINK_QTMAIN 1)
-FIND_PACKAGE(Qt4 4.6.0 COMPONENTS QtCore QtGui)
+FIND_PACKAGE(Qt4 ${REQUIRE_KDE4} 4.6.0 COMPONENTS QtCore QtGui)
 IF(QT4_FOUND)
 	# Make sure KDE4's CMake files don't create an uninstall rule.
 	SET(_kde4_uninstall_rule_created TRUE)
 
 	# Find KDE4. (TODO: Version?)
-	FIND_PACKAGE(KDE4)
+	FIND_PACKAGE(KDE4 ${REQUIRE_KDE4})
 	IF(NOT KDE4_FOUND)
 		# KDE4 not found.
 		SET(BUILD_KDE4 OFF CACHE "" INTERNAL FORCE)

@@ -5,23 +5,32 @@
 # that plugin will not be built. There doesn't seem to
 # be a way to have "yes, no, auto" like in autotools.
 
+# NOTE: OPTION() only supports BOOL values.
+# Reference: https://cmake.org/pipermail/cmake/2016-October/064342.html
+MACRO(OPTION_UI _pkg _desc)
+	SET(BUILD_${_pkg} AUTO CACHE STRING "${_desc}")
+	SET_PROPERTY(CACHE BUILD_${_pkg} PROPERTY STRINGS AUTO ON OFF)
+
+	IF(BUILD_${_pkg} STREQUAL "AUTO")
+		SET(REQUIRE_${_pkg} "")
+	ELSEIF(BUILD_${_pkg})
+		SET(REQUIRE_${_pkg} "REQUIRED")
+	ELSE()
+		SET(REQUIRE_${_pkg} "")
+	ENDIF()
+ENDMACRO(OPTION_UI)
+
 IF(UNIX AND NOT APPLE)
-	OPTION(BUILD_KDE4 "Build the KDE4 plugin." ON)
-	OPTION(BUILD_KDE5 "Build the KDE5 plugin." ON)
-	OPTION(BUILD_XFCE "Build the XFCE (GTK+ 2.x) plugin." ON)
-	OPTION(BUILD_GNOME "Build the GNOME (GTK+ 3.x) plugin." ON)
+	# NOTE: OPTION() only supports BOOL values.
+	# Reference: https://cmake.org/pipermail/cmake/2016-October/064342.html
+	OPTION_UI(KDE4 "Build the KDE4 plugin.")
+	OPTION_UI(KDE5 "Build the KDE5 plugin.")
+	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin.")
+	OPTION_UI(GNOME "Build the GNOME (GTK+ 3.x) plugin.")
 
 	# Set BUILD_GTK2 and/or BUILD_GTK3 depending on frontends.
-	IF(BUILD_XFCE)
-		SET(BUILD_GTK2 ON CACHE "Check for GTK+ 2.x." INTERNAL FORCE)
-	ELSE(BUILD_XFCE)
-		SET(BUILD_GTK2 OFF CACHE "Check for GTK+ 2.x." INTERNAL FORCE)
-	ENDIF(BUILD_XFCE)
-	IF(BUILD_GNOME)
-		SET(BUILD_GTK3 ON CACHE "Check for GTK+ 3.x." INTERNAL FORCE)
-	ELSE(BUILD_GNOME)
-		SET(BUILD_GTK3 OFF CACHE "Check for GTK+ 3.x." INTERNAL FORCE)
-	ENDIF(BUILD_GNOME)
+	SET(BUILD_GTK2 ${BUILD_XFCE} CACHE "Check for GTK+ 2.x." INTERNAL FORCE)
+	SET(BUILD_GTK3 ${BUILD_GNOME} CACHE "Check for GTK+ 3.x." INTERNAL FORCE)
 ELSEIF(WIN32)
 	SET(BUILD_WIN32 ON)
 ENDIF()

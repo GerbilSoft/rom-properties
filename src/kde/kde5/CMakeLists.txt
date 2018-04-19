@@ -2,7 +2,7 @@ PROJECT(rom-properties-kde5)
 
 # Reference: http://www.proli.net/2014/06/21/porting-your-project-to-qt5kf5/
 # Find KDE5 Extra CMake Modules.
-FIND_PACKAGE(ECM 0.0.11 NO_MODULE)
+FIND_PACKAGE(ECM ${REQUIRE_KDE5} 0.0.11 NO_MODULE)
 IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 	# Make sure ECM's CMake files don't create an uninstall rule.
 	SET(KDE_SKIP_UNINSTALL_TARGET TRUE)
@@ -25,7 +25,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 
 	# Find Qt5.
 	SET(Qt5_NO_LINK_QTMAIN 1)
-	FIND_PACKAGE(Qt5 COMPONENTS Core Gui Widgets)
+	FIND_PACKAGE(Qt5 ${REQUIRE_KDE5} COMPONENTS Core Gui Widgets)
 	IF(Qt5Core_FOUND AND Qt5Gui_FOUND AND Qt5Widgets_FOUND)
 		# NOTE: QT_PLUGIN_INSTALL_DIR is missing the 'qt5' directory.
 		# Use `qtpaths` instead to get the actual path.
@@ -64,7 +64,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(QT_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
 
 		# Find KDE5. (TODO: Version?)
-		FIND_PACKAGE(KF5 COMPONENTS KIO)
+		FIND_PACKAGE(KF5 ${REQUIRE_KDE5} COMPONENTS KIO)
 		IF(NOT KF5KIO_FOUND)
 			# KDE5 not found.
 			SET(BUILD_KDE5 OFF CACHE "" INTERNAL FORCE)

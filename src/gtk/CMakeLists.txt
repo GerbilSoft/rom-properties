@@ -48,7 +48,7 @@ ENDIF(NOT GLib2_FOUND OR NOT GObject2_FOUND OR NOT GdkPixbuf2_FOUND)
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)
 	# GTK2 minimum is 2.0.0, so no version check is needed.
-	FIND_PACKAGE(GTK2 COMPONENTS gtk)
+	FIND_PACKAGE(GTK2 ${REQUIRE_GTK2} COMPONENTS gtk)
 	IF(GTK2_FOUND)
 		ADD_SUBDIRECTORY(xfce)
 	ELSE(GTK2_FOUND)
@@ -63,7 +63,7 @@ ENDIF(BUILD_GTK2)
 # Build GTK+ 3.x frontends.
 IF(BUILD_GTK3)
 	# GTK3 minimum is 3.0.0, so no version check is needed.
-	FIND_PACKAGE(GTK3)
+	FIND_PACKAGE(GTK3 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gnome)
 	ELSE(GTK3_FOUND)
