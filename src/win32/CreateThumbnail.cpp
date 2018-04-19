@@ -33,6 +33,13 @@ using namespace LibRpBase;
 using std::string;
 using std::unique_ptr;
 
+// TCreateThumbnail is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/img/TCreateThumbnail.cpp"
+
+// Explicitly instantiate TCreateThumbnail<HBITMAP>.
+template class LibRomData::TCreateThumbnail<HBITMAP>;
+
 /** CreateThumbnail **/
 
 /**

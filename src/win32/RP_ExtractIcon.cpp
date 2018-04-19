@@ -53,10 +53,6 @@ const CLSID CLSID_RP_ExtractIcon =
 /** RP_ExtractIcon_Private **/
 #include "RP_ExtractIcon_p.hpp"
 
-// TCreateThumbnail is a templated class,
-// so we have to #include the .cpp file here.
-#include "libromdata/img/TCreateThumbnail.cpp"
-
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 	: romData(nullptr)
 { }
@@ -227,8 +223,6 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
-	// TODO: Use TCreateThumbnail()?
-
 	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	// TODO: Validate them to make sure they're the same values
 	// we returned in GetIconLocation()?

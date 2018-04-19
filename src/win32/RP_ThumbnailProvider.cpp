@@ -56,10 +56,6 @@ const CLSID CLSID_RP_ThumbnailProvider =
 /** RP_ThumbnailProvider_Private **/
 #include "RP_ThumbnailProvider_p.hpp"
 
-// TCreateThumbnail is a templated class,
-// so we have to #include the .cpp file here.
-#include "libromdata/img/TCreateThumbnail.cpp"
-
 /** RP_ThumbnailProvider_Private **/
 
 RP_ThumbnailProvider_Private::RP_ThumbnailProvider_Private()

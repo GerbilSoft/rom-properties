@@ -52,10 +52,6 @@ const CLSID CLSID_RP_ExtractImage =
 /** RP_ExtractImage_Private **/
 #include "RP_ExtractImage_p.hpp"
 
-// TCreateThumbnail is a templated class,
-// so we have to #include the .cpp file here.
-#include "libromdata/img/TCreateThumbnail.cpp"
-
 RP_ExtractImage_Private::RP_ExtractImage_Private()
 	: romData(nullptr)
 	, dwRecClrDepth(0)
