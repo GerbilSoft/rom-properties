@@ -658,18 +658,22 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	const uint8_t *const pHeader = info->header.pData;
 
 	// Magic strings.
-	static const char sega_magic[4] = {'S','E','G','A'};
-	static const char segacd_magic[16] =
-		{'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};
+	static const char sega_magic[4+1] = "SEGA";
+	static const char segacd_magic[16+1] = "SEGADISCSYSTEM  ";
 
 	static const struct {
-		const char system_name[16];
+		const char sys_name[20];
+		uint8_t sys_name_len_100h;	// Length to check at $100
+		uint8_t sys_name_len_101h;	// Length to check at $101
 		uint32_t system_id;
 	} cart_magic[] = {
-		{{'S','E','G','A',' ','P','I','C','O',' ',' ',' ',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_PICO},
-		{{'S','E','G','A',' ','3','2','X',' ',' ',' ',' ',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_32X},
-		{{'S','E','G','A',' ','M','E','G','A',' ','D','R','I','V','E',' '}, MegaDrivePrivate::ROM_SYSTEM_MD},
-		{{'S','E','G','A',' ','G','E','N','E','S','I','S',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_MD},
+		{"SEGA PICO       ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_PICO},
+		{"SEGA 32X        ", 16, 15, MegaDrivePrivate::ROM_SYSTEM_32X},
+		// NOTE: Previously, we were checking for
+		// "SEGA MEGA DRIVE" and "SEGA GENESIS".
+		// For broader compatibility with unlicensed ROMs,
+		// just check for "SEGA". (Required for TMSS.)
+		{"SEGA",              4,  4, MegaDrivePrivate::ROM_SYSTEM_MD},
 	};
 
 	if (info->header.size >= 0x200) {
@@ -712,8 +716,8 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 		// Check for other MD-based cartridge formats.
 		for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
-			if (!memcmp(&pHeader[0x100], cart_magic[i].system_name, 16) ||
-			    !memcmp(&pHeader[0x101], cart_magic[i].system_name, 15))
+			if (!memcmp(&pHeader[0x100], cart_magic[i].sys_name, cart_magic[i].sys_name_len_100h) ||
+			    !memcmp(&pHeader[0x101], cart_magic[i].sys_name, cart_magic[i].sys_name_len_101h))
 			{
 				// Found a matching system name.
 				return MegaDrivePrivate::ROM_FORMAT_CART_BIN | cart_magic[i].system_id;

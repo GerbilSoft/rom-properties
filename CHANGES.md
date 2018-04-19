@@ -57,6 +57,8 @@
   * DreamcastSave: Trim spaces from the end of text fields.
   * KDE frontends: Enabled the "ROM Properties" tab on files located on the
     desktop.
+  * MegaDrive: Fixed detection of some unlicensed ROMs that have extra text
+    in the "System" field.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.
