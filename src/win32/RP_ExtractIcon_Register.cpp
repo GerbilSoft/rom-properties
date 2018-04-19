@@ -137,6 +137,21 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 		}
 	}
 
+	// Remove "OpenWithProgids/rom-properties" if it's present.
+	// This was used in some test builds but was never committed.
+	// On Windows 7, it caused the IExtractIcon implementation
+	// to be ignored. (Windows XP had no issues.)
+	RegKey hkcr_OpenWithProgids(hkey_Assoc, L"OpenWithProgids", KEY_READ|KEY_WRITE, false);
+	if (hkcr_OpenWithProgids.lOpenRes() == ERROR_SUCCESS) {
+		extern const wchar_t RP_ProgID[];
+		hkcr_OpenWithProgids.deleteValue(RP_ProgID);
+		if (hkcr_OpenWithProgids.isKeyEmpty()) {
+			// OpenWithProgids is empty. Delete it.
+			hkcr_OpenWithProgids.close();
+			hkey_Assoc.deleteSubKey(L"OpenWithProgids");
+		}
+	}
+
 	// NOTE: We're not skipping this even if the IconHandler
 	// is correct, just in case some setting needs to
 	// be refreshed.
@@ -313,6 +328,21 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		lResult = hkcr_RP_Fallback.deleteValue(L"IconHandler");
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			lResult = ERROR_SUCCESS;
+		}
+	}
+
+	// Remove "OpenWithProgids/rom-properties" if it's present.
+	// This was used in some test builds but was never committed.
+	// On Windows 7, it caused the IExtractIcon implementation
+	// to be ignored. (Windows XP had no issues.)
+	RegKey hkcr_OpenWithProgids(hkey_Assoc, L"OpenWithProgids", KEY_READ|KEY_WRITE, false);
+	if (hkcr_OpenWithProgids.lOpenRes() == ERROR_SUCCESS) {
+		extern const wchar_t RP_ProgID[];
+		hkcr_OpenWithProgids.deleteValue(RP_ProgID);
+		if (hkcr_OpenWithProgids.isKeyEmpty()) {
+			// OpenWithProgids is empty. Delete it.
+			hkcr_OpenWithProgids.close();
+			hkey_Assoc.deleteSubKey(L"OpenWithProgids");
 		}
 	}
 
