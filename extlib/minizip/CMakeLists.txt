@@ -40,7 +40,7 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 ENDIF(0)
 
-set(VERSION "2.2.8")
+set(VERSION "2.2.9")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -54,6 +54,7 @@ if(USE_ZLIB)
     if(ZLIB_FOUND)
         include_directories(${ZLIB_INCLUDE_DIRS})
     endif()
+    add_definitions(-DHAVE_ZLIB)
 endif()
 ENDIF(0)
 
@@ -66,31 +67,31 @@ ENDIF(0)
 set(PROJECT_NAME libminizip)
 
 set(MINIZIP_SRC
-    src/mz_os.c
-    src/mz_compat.c
-    src/mz_strm.c
-    src/mz_strm_buf.c
-    src/mz_strm_mem.c
-    src/mz_strm_posix.c
-    src/mz_strm_split.c
-    src/mz_strm_zlib.c
-    src/mz_zip.c)
+    mz_os.c
+    mz_compat.c
+    mz_strm.c
+    mz_strm_buf.c
+    mz_strm_mem.c
+    mz_strm_posix.c
+    mz_strm_split.c
+    mz_strm_zlib.c
+    mz_zip.c)
 
 set(MINIZIP_PUBLIC_HEADERS
-    src/mz.h
-    src/mz_os.h
-    src/mz_compat.h
-    src/mz_strm.h
-    src/mz_strm_buf.h
-    src/mz_strm_mem.h
-    src/mz_strm_posix.h
-    src/mz_strm_split.h
-    src/mz_strm_zlib.h
-    src/mz_zip.h)
+    mz.h
+    mz_os.h
+    mz_compat.h
+    mz_strm.h
+    mz_strm_buf.h
+    mz_strm_mem.h
+    mz_strm_posix.h
+    mz_strm_split.h
+    mz_strm_zlib.h
+    mz_zip.h)
 
 if(WIN32)
-    list(APPEND MINIZIP_SRC "src/mz_os_win32.c" "src/mz_strm_win32.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_os_win32.h" "src/mz_strm_win32.h")
+    list(APPEND MINIZIP_SRC "mz_os_win32.c" "mz_strm_win32.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_os_win32.h" "mz_strm_win32.h")
 
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
@@ -100,11 +101,10 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
 endif()
 
 if(UNIX)
-    # rom-properties: Also set -fpic.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -fPIC -O3")
+    add_compile_options(-O3)
 
-    list(APPEND MINIZIP_SRC "src/mz_os_posix.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_os_posix.h")
+    list(APPEND MINIZIP_SRC "mz_os_posix.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_os_posix.h")
 
     # rom-properties: LFS is already set by CheckLargeFileSupport.cmake.
     #set(define_lfs_macros TRUE)
@@ -137,15 +137,15 @@ endif()
 if(USE_CRYPT)
     add_definitions(-DHAVE_CRYPT)
 
-    list(APPEND MINIZIP_SRC "src/mz_strm_crypt.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_strm_crypt.h")
+    list(APPEND MINIZIP_SRC "mz_strm_crypt.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_crypt.h")
 endif()
 
 if(USE_AES)
     add_definitions(-DHAVE_AES)
 
-    list(APPEND MINIZIP_SRC "src/mz_strm_aes.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_strm_aes.h")
+    list(APPEND MINIZIP_SRC "mz_strm_aes.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_aes.h")
 
     set(AES_SRC
         lib/aes/aescrypt.c
@@ -191,8 +191,8 @@ if(USE_BZIP2)
     add_definitions(-DHAVE_BZIP2)
     add_definitions(-DBZ_NO_STDIO)
 
-    list(APPEND MINIZIP_SRC "src/mz_strm_bzip.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_strm_bzip.h")
+    list(APPEND MINIZIP_SRC "mz_strm_bzip.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_bzip.h")
 
     set(BZIP2_SRC
         lib/bzip2/blocksort.c
@@ -217,8 +217,8 @@ if(USE_LZMA)
     add_definitions(-DHAVE_CONFIG_H)
     add_definitions(-DLZMA_API_STATIC)
 
-    list(APPEND MINIZIP_SRC "src/mz_strm_lzma.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_strm_lzma.h")
+    list(APPEND MINIZIP_SRC "mz_strm_lzma.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_lzma.h")
 
     set(LZMA_CHECK_SRC
         lib/liblzma/check/check.c
@@ -391,7 +391,7 @@ install(FILES ${MINIZIP_PUBLIC_HEADERS} DESTINATION "${INSTALL_INC_DIR}")
 install(FILES ${MINIZIP_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
 
 if(BUILD_TEST)
-    add_executable(minizip "src/minizip.c")
+    add_executable(minizip "minizip.c")
     target_link_libraries(minizip ${PROJECT_NAME})
 
     install(TARGETS minizip
