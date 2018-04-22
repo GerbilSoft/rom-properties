@@ -810,7 +810,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 		// DSi-exclusive game.
 		idx |= (1 << 2);
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if ((d->romHeader.dsi.region_code & cpu_to_le32(DSi_REGION_CHINA)) ||
+			if ((d->romHeader.dsi.region_code == cpu_to_le32(DSi_REGION_CHINA)) ||
 			    (d->romHeader.nds_region & 0x80))
 			{
 				// iQue DSi.
