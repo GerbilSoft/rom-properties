@@ -139,16 +139,17 @@ class NintendoDSPrivate : public RomDataPrivate
 		int getTitleIndex(void) const;
 
 		/**
-		 * Check the NDS Mask ROM area.
+		 * Check the NDS security data and segment3 area.
 		 *
 		 * $1000-$3FFF is normally unreadable on hardware, so this
 		 * area is usually blank in dumped ROMs. However, the official
-		 * SDK puts unknown pseudo-random data here, so DSiWare and
-		 * Wii U VC SRLs will have non-zero data here.
+		 * SDK has security data in here, which is required for official
+		 * flash carts and mask ROM hardware, so DSiWare and Wii U VC
+		 * SRLs will have non-zero data here.
 		 *
-		 * @return True if the mask ROM area has non-zero data; false if not.
+		 * @return True if the security data area has non-zero data; false if not.
 		 */
-		bool checkNDSMaskROMArea(void);
+		bool checkNDSSecurityDataArea(void);
 
 		/**
 		 * Check the NDS Secure Area type.
@@ -403,16 +404,17 @@ int NintendoDSPrivate::getTitleIndex(void) const
 }
 
 /**
- * Check the NDS Mask ROM area.
+ * Check the NDS security data and segment3 area.
  *
  * $1000-$3FFF is normally unreadable on hardware, so this
  * area is usually blank in dumped ROMs. However, the official
- * SDK puts unknown pseudo-random data here, so DSiWare and
- * Wii U VC SRLs will have non-zero data here.
+ * SDK has security data in here, which is required for official
+ * flash carts and mask ROM hardware, so DSiWare and Wii U VC
+ * SRLs will have non-zero data here.
  *
- * @return True if the mask ROM area has non-zero data; false if not.
+ * @return True if the security data area has non-zero data; false if not.
  */
-bool NintendoDSPrivate::checkNDSMaskROMArea(void)
+bool NintendoDSPrivate::checkNDSSecurityDataArea(void)
 {
 	// Make sure 0x1000-0x3FFF is blank.
 	// NOTE: ndstool checks 0x0200-0x0FFF, but this may
@@ -1051,10 +1053,9 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("NintendoDS", "Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
-	// Is this a Mask ROM?
-	// TODO: Better way to represent a boolean.
-	d->fields->addField_string(C_("NintendoDS", "Mask ROM"),
-		d->checkNDSMaskROMArea() ? "Yes" : "No");
+	// Is the security data present?
+	d->fields->addField_string(C_("NintendoDS", "Security Data"),
+		d->checkNDSSecurityDataArea() ? "Present" : "Missing");
 
 	// Secure Area.
 	// TODO: Verify the CRC.
