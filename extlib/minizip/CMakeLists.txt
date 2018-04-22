@@ -372,7 +372,7 @@ endif()
 
 # rom-properties: Set include directory to the source path; enable ZLIB_CONST.
 #target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ZLIB_CONST)
 
 # rom-properties: Disable installation and tests.
