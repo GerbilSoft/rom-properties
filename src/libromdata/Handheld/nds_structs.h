@@ -132,7 +132,7 @@ typedef struct PACKED _NDS_RomHeader {
 		uint32_t access_control;	// ???
 		uint32_t arm7_scfg_mask;
 		uint8_t reserved1[3];		// Unknown flags. (always 0)
-		uint8_t flags;			// Usually 0x01. (Browser: 0x0B) (bit 2: custom icon: 0=normal, 1=banner.sav)
+		uint8_t flags;			// See DSi_Flags.
 
 		// 0x1C0
 		struct {
@@ -229,6 +229,20 @@ typedef enum {
 	DSi_REGION_CHINA	= (1 << 4),
 	DSi_REGION_SKOREA	= (1 << 5),
 } DSi_Region;
+
+/**
+ * Nintendo DSi Flags. (0x1BF)
+ */
+typedef enum {
+	DSi_FLAGS_TOUCHSCREEN_MODE	= (1 << 0),	// 0 == NDS; 1 == DSi
+	DSi_FLAGS_REQUIRE_EULA		= (1 << 1),
+	DSi_FLAGS_CUSTOM_ICON		= (1 << 2),	// 0 == normal; 1 == banner.sav
+	DSi_FLAGS_NINTENDO_WFC		= (1 << 3),	// Show Nintendo WFC icon in launcher
+	DSi_FLAGS_DS_WIRELESS		= (1 << 4),	// Show DS Wireless icon in launcher
+	DSi_FLAGS_NDS_ICON_SHA1		= (1 << 5),	// NDS cart with icon SHA-1 (DSi FW v1.4+)
+	DSi_FLAGS_NDS_HEADER_RSA	= (1 << 6),	// NDS cart with header RSA (DSi FW v1.0+)
+	DSi_FLAGS_DEVELOPER		= (1 << 7),	// Developer application
+} DSi_Flags;
 
 /**
  * Nintendo DSi file type.

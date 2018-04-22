@@ -992,6 +992,9 @@ int NintendoDS::loadFieldData(void)
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(13);	// Maximum of 13 fields.
 
+	// NDS common fields.
+	d->fields->setTabName(0, "NDS");
+
 	// Type.
 	// TODO:
 	// - Show PassMe fields?
@@ -1109,30 +1112,13 @@ int NintendoDS::loadFieldData(void)
 
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
-		const char *const region_code_name = (d->cia
-				? C_("NintendoDS", "Region Code")
-				: C_("NintendoDS", "DSi Region"));
-
-		// DSi Region.
-		// Maps directly to the header field.
-		static const char *const dsi_region_bitfield_names[] = {
-			NOP_C_("Region", "Japan"),
-			NOP_C_("Region", "USA"),
-			NOP_C_("Region", "Europe"),
-			NOP_C_("Region", "Australia"),
-			NOP_C_("Region", "China"),
-			NOP_C_("Region", "South Korea"),
-		};
-		vector<string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
-		d->fields->addField_bitfield(region_code_name,
-			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
+		d->fields->addTab("DSi");
 
 		// Title ID.
+		const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
 		d->fields->addField_string(C_("NintendoDS", "Title ID"),
 			rp_sprintf("%08X-%08X",
-				le32_to_cpu(romHeader->dsi.title_id.hi),
-				le32_to_cpu(romHeader->dsi.title_id.lo)));
+				tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 
 		// DSi filetype.
 		// TODO: String table?
@@ -1168,6 +1154,42 @@ int NintendoDS::loadFieldData(void)
 			d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"),
 				rp_sprintf(C_("NintendoDS", "Unknown (0x%02X)"), romHeader->dsi.filetype));
 		}
+
+		// Key index. Determined by title ID.
+		int key_idx;
+		if (tid_hi & 0x00000010) {
+			// System application.
+			key_idx = 2;
+		} else if (tid_hi & 0x00000001) {
+			// Applet.
+			key_idx = 1;
+		} else {
+			// Cartridge and/or DSiWare.
+			key_idx = 3;
+		}
+
+		// TODO: Keyset is determined by the system.
+		// There might be some indicator in the cartridge header...
+		d->fields->addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
+
+		const char *const region_code_name = (d->cia
+				? C_("NintendoDS", "Region Code")
+				: C_("NintendoDS", "DSi Region"));
+
+		// DSi Region.
+		// Maps directly to the header field.
+		static const char *const dsi_region_bitfield_names[] = {
+			NOP_C_("Region", "Japan"),
+			NOP_C_("Region", "USA"),
+			NOP_C_("Region", "Europe"),
+			NOP_C_("Region", "Australia"),
+			NOP_C_("Region", "China"),
+			NOP_C_("Region", "South Korea"),
+		};
+		vector<string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
+			"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
+		d->fields->addField_bitfield(region_code_name,
+			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
 		// Age rating(s).
 		// Note that not all 16 fields are present on DSi,
@@ -1205,6 +1227,22 @@ int NintendoDS::loadFieldData(void)
 			}
 		}
 		d->fields->addField_ageRatings(C_("NintendoDS", "Age Rating"), age_ratings);
+
+		// Flags.
+		static const char *const dsi_flags_bitfield_names[] = {
+			NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
+			NOP_C_("NintendoDS|DSi_Flags", "Require EULA"),
+			NOP_C_("NintendoDS|DSi_Flags", "Custom Icon"),
+			NOP_C_("NintendoDS|DSi_Flags", "Nintendo WFC"),
+			NOP_C_("NintendoDS|DSi_Flags", "DS Wireless"),
+			NOP_C_("NintendoDS|DSi_Flags", "NDS Icon SHA-1"),
+			NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
+			NOP_C_("NintendoDS|DSi_Flags", "Developer"),
+		};
+		vector<string> *v_dsi_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+			"NintendoDS|DSi_Flags", dsi_flags_bitfield_names, ARRAY_SIZE(dsi_flags_bitfield_names));
+		d->fields->addField_bitfield("DSi Flags",
+			v_dsi_flags_bitfield_names, 3, le32_to_cpu(romHeader->dsi.flags));
 	}
 
 	// Finished reading the field data.

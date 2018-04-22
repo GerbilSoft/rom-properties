@@ -34,6 +34,7 @@
   * Wii U: Display game publishers.
   * DMG: Added more entry point formats.
   * DirectDrawSurface: Untested support for Xbox One textures.
+  * NintendoDS: Improved DSi flag decoding; added key index decoding.
 
 * New compressed texture formats:
   * Ericsson ETC1 and ETC2
