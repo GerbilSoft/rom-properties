@@ -379,14 +379,14 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 {
 	// Find the last block that's used on the disc.
 	// NOTE: This is in WBFS blocks, not Wii blocks.
-	int lastBlock = disc->p->n_wbfs_sec_per_disc - 1;
+	const wbfs_t *const p = disc->p;
+	int lastBlock = p->n_wbfs_sec_per_disc - 1;
 	for (; lastBlock >= 0; lastBlock--) {
 		if (wlba_table[lastBlock] != cpu_to_be16(0))
 			break;
 	}
 
 	// lastBlock+1 * WBFS block size == filesize.
-	const wbfs_t *p = disc->p;
 	return (int64_t)(lastBlock + 1) * (int64_t)(p->wbfs_sec_sz);
 }
 
