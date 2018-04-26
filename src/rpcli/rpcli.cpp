@@ -38,6 +38,12 @@ using namespace LibRpBase;
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRomData;
 
+#ifdef _WIN32
+// libwin32common
+# include "libwin32common/RpWin32_sdk.h"
+# include "libwin32common/secoptions.h"
+#endif /* _WIN32 */
+
 #include "bmp.hpp"
 #include "properties.hpp"
 #ifdef ENABLE_DECRYPTION
@@ -218,6 +224,11 @@ static void PrintSystemRegion(void)
 
 int RP_C_API main(int argc, char *argv[])
 {
+#ifdef _WIN32
+	// Set Win32 security options.
+	secoptions_init();
+#endif /* _WIN32 */
+
 	// Set the C and C++ locales.
 	locale::global(locale(""));
 
