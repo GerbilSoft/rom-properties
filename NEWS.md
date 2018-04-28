@@ -29,7 +29,8 @@
 
 * New system features:
   * Super NES: Satellaview BS-X ROM headers are now decoded properly.
-  * Wii: Unencrypted images from RVT-H Reader systems are now supported.
+  * Wii: Added support for unencrypted images from debug systems and GCM
+    images with SDK headers.
   * NES: Improved publisher lookup for FDS titles.
   * Wii U: Display game publishers.
   * DMG: Added more entry point formats.

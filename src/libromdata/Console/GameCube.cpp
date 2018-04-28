@@ -97,10 +97,11 @@ class GameCubePrivate : public RomDataPrivate
 
 			// High byte: Image format.
 			DISC_FORMAT_RAW  = (0 << 8),	// Raw image. (ISO, GCM)
-			DISC_FORMAT_TGC  = (1 << 8),	// TGC (embedded disc image) (GCN only?)
-			DISC_FORMAT_WBFS = (2 << 8),	// WBFS image. (Wii only)
-			DISC_FORMAT_CISO = (3 << 8),	// CISO image.
-			DISC_FORMAT_WIA  = (4 << 8),	// WIA image. (Header only!)
+			DISC_FORMAT_SDK  = (1 << 8),	// Raw image with SDK header.
+			DISC_FORMAT_TGC  = (2 << 8),	// TGC (embedded disc image) (GCN only?)
+			DISC_FORMAT_WBFS = (3 << 8),	// WBFS image. (Wii only)
+			DISC_FORMAT_CISO = (4 << 8),	// CISO image.
+			DISC_FORMAT_WIA  = (5 << 8),	// WIA image. (Header only!)
 			DISC_FORMAT_UNKNOWN = (0xFF << 8),
 			DISC_FORMAT_MASK = (0xFF << 8),
 		};
@@ -1002,6 +1003,10 @@ GameCube::GameCube(IRpFile *file)
 			case GameCubePrivate::DISC_FORMAT_RAW:
 				d->discReader = new DiscReader(d->file);
 				break;
+			case GameCubePrivate::DISC_FORMAT_SDK:
+				// Skip the SDK header.
+				d->discReader = new DiscReader(d->file, 32768, -1);
+				break;
 			case GameCubePrivate::DISC_FORMAT_TGC: {
 				d->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
 
@@ -1072,6 +1077,7 @@ GameCube::GameCube(IRpFile *file)
 		// - CISO doesn't store a copy of the disc header
 		//   in range of the data we read.
 		// - TGC has a 32 KB header before the embedded GCM.
+		// - SDK has a 32 KB SDK header before the disc image.
 		if (d->discHeader.magic_wii == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image.
 			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
@@ -1176,6 +1182,23 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(gcn_header, GameCubePrivate::nddemo_header, sizeof(GameCubePrivate::nddemo_header))) {
 		// NDDEMO disc.
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
+	}
+
+	// Check for SDK headers.
+	// TODO: More comprehensive?
+	// TODO: Checksum at 0x0830. (For GCN, makeGCM always puts 0xAB0B here...)
+	static const uint8_t sdk_0x0000[4] = {0xFF,0xFF,0x00,0x00};
+	static const uint8_t sdk_0x082C[4] = {0x00,0x00,0xE0,0x06};
+	if (!memcmp(&info->header.pData[0x0000], sdk_0x0000, sizeof(sdk_0x0000))) {
+		if (info->header.size < 0x0830) {
+			// Can't check 0x082C, so assume it has the SDK headers.
+			return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_SDK);
+		}
+
+		if (!memcmp(&info->header.pData[0x082C], sdk_0x082C, sizeof(sdk_0x082C))) {
+			// This is a valid GCN/Wii SDK disc image header.
+			return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_SDK);
+		}
 	}
 
 	// Check for TGC.
@@ -1443,6 +1466,7 @@ int GameCube::loadFieldData(void)
 
 	// TODO: Trim the titles. (nulls, spaces)
 	// NOTE: The titles are dup()'d as C strings, so maybe not nulls.
+	// TODO: Display the disc image format?
 
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
