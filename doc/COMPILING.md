@@ -59,7 +59,7 @@ In order to build debug symbol packages, you will need:
 * Ubuntu: pkg-create-dbgsym
 
 In the top-level source directory, run this command:
-* ```debuild -i -us -uc -b```
+* `debuild -i -us -uc -b`
 
 Assuming everything builds correctly, the .deb packages should be built in
 the directory above the top-level source directory.

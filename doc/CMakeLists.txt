@@ -20,6 +20,7 @@ INSTALL(FILES
 # the root directory on Windows.
 INSTALL(FILES
 	../README.md
+	../NEWS.md
 	../LICENSE
 	DESTINATION "${DIR_INSTALL_DOC_ROOT}"
 	COMPONENT "doc"
