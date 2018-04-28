@@ -163,8 +163,8 @@ N64::N64(IRpFile *file)
 	d->romHeader.init_pi	= be32_to_cpu(d->romHeader.init_pi);
 	d->romHeader.clockrate	= be32_to_cpu(d->romHeader.clockrate);
 	d->romHeader.entrypoint	= be32_to_cpu(d->romHeader.entrypoint);
-	d->romHeader.release	= be32_to_cpu(d->romHeader.release);
-	d->romHeader.checksum	= be64_to_cpu(d->romHeader.checksum);
+	d->romHeader.crc[0]     = be32_to_cpu(d->romHeader.crc[0]);
+	d->romHeader.crc[1]     = be32_to_cpu(d->romHeader.crc[1]);
 }
 
 /** ROM detection functions. **/
@@ -273,10 +273,13 @@ int N64::loadFieldData(void)
 		return -EIO;
 	}
 
+	// snprintf() buffer.
+	char buf[32];
+
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	// Title.
 	// TODO: Space elimination.
@@ -303,10 +306,17 @@ int N64::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("N64", "Entry Point"),
 		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 
-	// Checksum.
-	d->fields->addField_string_hexdump(C_("N64", "Checksum"),
-		reinterpret_cast<const uint8_t*>(&romHeader->checksum),
-		sizeof(romHeader->checksum), RomFields::STRF_MONOSPACE);
+	// Release. (OS version)
+	// TODO: Verify that the bytes are valid.
+	snprintf(buf, sizeof(buf), "OS %u%c",
+		romHeader->release[2], romHeader->release[3]);
+	d->fields->addField_string(C_("N64", "Release"), buf);
+
+	// CRCs.
+	snprintf(buf, sizeof(buf), "0x%08X 0x%08X",
+		romHeader->crc[0], romHeader->crc[1]);
+	d->fields->addField_string(C_("N64", "CRCs"),
+		buf, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
