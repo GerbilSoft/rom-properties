@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-04-22 15:27-0400\n"
+"POT-Creation-Date: 2018-04-28 10:22-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -670,7 +670,7 @@ msgid "Unknown"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:588
-#: ../src/libromdata/Console/GameCube.cpp:429
+#: ../src/libromdata/Console/GameCube.cpp:430
 #: ../src/libromdata/Console/MegaDrive.cpp:412
 #: ../src/libromdata/Console/SegaSaturn.cpp:500
 #: ../src/libromdata/Console/SNES.cpp:829
@@ -682,7 +682,7 @@ msgid "Japan"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:589
-#: ../src/libromdata/Console/GameCube.cpp:476
+#: ../src/libromdata/Console/GameCube.cpp:477
 #: ../src/libromdata/Console/MegaDrive.cpp:414
 #: ../src/libromdata/Console/SegaSaturn.cpp:502
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1795
@@ -983,62 +983,15 @@ msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:432
-msgctxt "Region|GameCube"
-msgid "Taiwan (JPN)"
+#: ../src/libromdata/Console/GameCube.cpp:433
+#: ../src/libromdata/Console/SegaSaturn.cpp:501
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
+msgctxt "Region"
+msgid "Taiwan"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:437
-msgctxt "Region|GameCube"
-msgid "South Korea (JPN)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:439
-msgctxt "Region|GameCube"
-msgid "China (JPN)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:450
-msgctxt "Region|GameCube"
-msgid "Europe / Australia (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:453
-msgctxt "Region|GameCube"
-msgid "Germany (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:455
-msgctxt "Region|GameCube"
-msgid "France (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:457
-msgctxt "Region|GameCube"
-msgid "Netherlands (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:459
-msgctxt "Region|GameCube"
-msgid "Italy (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:461
-msgctxt "Region|GameCube"
-msgid "Russia (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:463
-msgctxt "Region|GameCube"
-msgid "Spain (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:465
-msgctxt "Region|GameCube"
-msgid "Australia (PAL)"
-msgstr ""
-
-#: ../src/libromdata/Console/GameCube.cpp:483
+#: ../src/libromdata/Console/GameCube.cpp:438
+#: ../src/libromdata/Console/GameCube.cpp:484
 #: ../src/libromdata/Console/SNES.cpp:841
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1799
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1105
@@ -1047,171 +1000,228 @@ msgctxt "Region"
 msgid "South Korea"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:944
+#: ../src/libromdata/Console/GameCube.cpp:440
+#: ../src/libromdata/Console/SNES.cpp:839
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1798
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1106
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1187
+msgctxt "Region"
+msgid "China"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:451
+msgctxt "Region"
+msgid "Europe / Australia"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:454
+#: ../src/libromdata/Console/SNES.cpp:837
+msgctxt "Region"
+msgid "Germany"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:456
+#: ../src/libromdata/Console/SNES.cpp:834
+msgctxt "Region"
+msgid "France"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:458
+#: ../src/libromdata/Console/SNES.cpp:835
+msgctxt "Region"
+msgid "Netherlands"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:460
+#: ../src/libromdata/Console/SNES.cpp:838
+msgctxt "Region"
+msgid "Italy"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:462
+msgctxt "Region"
+msgid "Russia"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:464
+#: ../src/libromdata/Console/SNES.cpp:836
+msgctxt "Region"
+msgid "Spain"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:466
+#: ../src/libromdata/Console/SNES.cpp:845
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1797
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1186
+msgctxt "Region"
+msgid "Australia"
+msgstr ""
+
+#: ../src/libromdata/Console/GameCube.cpp:945
 msgctxt "GameCube"
 msgid "ERROR: Invalid common key index."
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:950
+#: ../src/libromdata/Console/GameCube.cpp:951
 msgctxt "GameCube"
 msgid "ERROR: Unknown error. (THIS IS A BUG!)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1454
-#: ../src/libromdata/Console/GameCube.cpp:1462
+#: ../src/libromdata/Console/GameCube.cpp:1478
+#: ../src/libromdata/Console/GameCube.cpp:1486
 msgctxt "GameCube"
 msgid "Title"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1477
+#: ../src/libromdata/Console/GameCube.cpp:1501
 msgctxt "GameCube"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1489
+#: ../src/libromdata/Console/GameCube.cpp:1513
 #, c-format
 msgctxt "GameCube"
 msgid "Unknown (%.2s)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1492
+#: ../src/libromdata/Console/GameCube.cpp:1516
 #, c-format
 msgctxt "GameCube"
 msgid "Unknown (%02X %02X)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1497
+#: ../src/libromdata/Console/GameCube.cpp:1521
 msgctxt "GameCube"
 msgid "Publisher"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1500
+#: ../src/libromdata/Console/GameCube.cpp:1524
 msgctxt "GameCube"
 msgid "Disc #"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1502
+#: ../src/libromdata/Console/GameCube.cpp:1526
 msgctxt "GameCube"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1519
-#: ../src/libromdata/Console/GameCube.cpp:1522
+#: ../src/libromdata/Console/GameCube.cpp:1570
+#: ../src/libromdata/Console/GameCube.cpp:1573
 msgctxt "GameCube"
 msgid "Region"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1523
+#: ../src/libromdata/Console/GameCube.cpp:1574
 #, c-format
 msgctxt "GameCube"
 msgid "Unknown (0x%08X)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1590
-#: ../src/libromdata/Console/GameCube.cpp:1597
-#: ../src/libromdata/Console/GameCube.cpp:1654
-#: ../src/libromdata/Console/GameCube.cpp:1662
+#: ../src/libromdata/Console/GameCube.cpp:1641
+#: ../src/libromdata/Console/GameCube.cpp:1648
+#: ../src/libromdata/Console/GameCube.cpp:1705
+#: ../src/libromdata/Console/GameCube.cpp:1713
 msgctxt "GameCube"
 msgid "Game Info"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1708
-#: ../src/libromdata/Console/GameCube.cpp:1719
+#: ../src/libromdata/Console/GameCube.cpp:1759
+#: ../src/libromdata/Console/GameCube.cpp:1770
 msgctxt "GameCube"
 msgid "Update"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1714
+#: ../src/libromdata/Console/GameCube.cpp:1765
 msgctxt "GameCube"
 msgid "None"
 msgstr ""
 
 #. tr: GameCubePrivate::PARTITION_GAME
-#: ../src/libromdata/Console/GameCube.cpp:1741
+#: ../src/libromdata/Console/GameCube.cpp:1792
 msgctxt "GameCube|Partition"
 msgid "Game"
 msgstr ""
 
 #. tr: GameCubePrivate::PARTITION_UPDATE
-#: ../src/libromdata/Console/GameCube.cpp:1743
+#: ../src/libromdata/Console/GameCube.cpp:1794
 msgctxt "GameCube|Partition"
 msgid "Update"
 msgstr ""
 
 #. tr: GameCubePrivate::PARTITION_CHANNEL
-#: ../src/libromdata/Console/GameCube.cpp:1745
+#: ../src/libromdata/Console/GameCube.cpp:1796
 msgctxt "GameCube|Partition"
 msgid "Channel"
 msgstr ""
 
 #. tr: Unknown encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1779
+#: ../src/libromdata/Console/GameCube.cpp:1830
 msgctxt "GameCube|KeyIdx"
 msgid "Unknown"
 msgstr ""
 
 #. tr: Retail encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1783
+#: ../src/libromdata/Console/GameCube.cpp:1834
 msgctxt "GameCube|KeyIdx"
 msgid "Retail"
 msgstr ""
 
 #. tr: Korean encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1787
+#: ../src/libromdata/Console/GameCube.cpp:1838
 msgctxt "GameCube|KeyIdx"
 msgid "Korean"
 msgstr ""
 
 #. tr: vWii-specific encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1791
+#: ../src/libromdata/Console/GameCube.cpp:1842
 msgctxt "GameCube|KeyIdx"
 msgid "vWii"
 msgstr ""
 
 #. tr: Debug encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1795
+#: ../src/libromdata/Console/GameCube.cpp:1846
 msgctxt "GameCube|KeyIdx"
 msgid "Debug"
 msgstr ""
 
 #. tr: No encryption.
-#: ../src/libromdata/Console/GameCube.cpp:1799
+#: ../src/libromdata/Console/GameCube.cpp:1850
 msgctxt "GameCube|KeyIdx"
 msgid "None"
 msgstr ""
 
 #. tr: Unknown used size.
-#: ../src/libromdata/Console/GameCube.cpp:1810
+#: ../src/libromdata/Console/GameCube.cpp:1861
 msgctxt "GameCube|Partition"
 msgid "Unknown"
 msgstr ""
 
 #. tr: Partition number.
-#: ../src/libromdata/Console/GameCube.cpp:1820
+#: ../src/libromdata/Console/GameCube.cpp:1871
 msgctxt "GameCube|Partition"
 msgid "#"
 msgstr ""
 
 #. tr: Partition type.
-#: ../src/libromdata/Console/GameCube.cpp:1822
+#: ../src/libromdata/Console/GameCube.cpp:1873
 msgctxt "GameCube|Partition"
 msgid "Type"
 msgstr ""
 
 #. tr: Encryption key.
-#: ../src/libromdata/Console/GameCube.cpp:1824
+#: ../src/libromdata/Console/GameCube.cpp:1875
 msgctxt "GameCube|Partition"
 msgid "Key"
 msgstr ""
 
 #. tr: Actual data used within the partition.
-#: ../src/libromdata/Console/GameCube.cpp:1826
+#: ../src/libromdata/Console/GameCube.cpp:1877
 msgctxt "GameCube|Partition"
 msgid "Used Size"
 msgstr ""
 
 #. tr: Total size of the partition.
-#: ../src/libromdata/Console/GameCube.cpp:1828
+#: ../src/libromdata/Console/GameCube.cpp:1879
 msgctxt "GameCube|Partition"
 msgid "Total Size"
 msgstr ""
@@ -1463,29 +1473,34 @@ msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:283
+#: ../src/libromdata/Console/N64.cpp:286
 msgctxt "N64"
 msgid "Title"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:295
+#: ../src/libromdata/Console/N64.cpp:298
 msgctxt "N64"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:299
+#: ../src/libromdata/Console/N64.cpp:302
 msgctxt "N64"
 msgid "Revision"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:303
+#: ../src/libromdata/Console/N64.cpp:306
 msgctxt "N64"
 msgid "Entry Point"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:307
+#: ../src/libromdata/Console/N64.cpp:313
 msgctxt "N64"
-msgid "Checksum"
+msgid "Release"
+msgstr ""
+
+#: ../src/libromdata/Console/N64.cpp:318
+msgctxt "N64"
+msgid "CRCs"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:610
@@ -1862,12 +1877,6 @@ msgctxt "SegaSaturn"
 msgid "Release Date"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:501
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
-msgctxt "Region"
-msgid "Taiwan"
-msgstr ""
-
 #: ../src/libromdata/Console/SegaSaturn.cpp:507
 msgctxt "SegaSaturn"
 msgid "Region Code"
@@ -2022,39 +2031,6 @@ msgctxt "Region"
 msgid "Scandinavia"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:834
-msgctxt "Region"
-msgid "France"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:835
-msgctxt "Region"
-msgid "Netherlands"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:836
-msgctxt "Region"
-msgid "Spain"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:837
-msgctxt "Region"
-msgid "Germany"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:838
-msgctxt "Region"
-msgid "Italy"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:839
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1798
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1106
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1187
-msgctxt "Region"
-msgid "China"
-msgstr ""
-
 #: ../src/libromdata/Console/SNES.cpp:842
 msgctxt "Region"
 msgid "All"
@@ -2068,13 +2044,6 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:844
 msgctxt "Region"
 msgid "Brazil"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:845
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1797
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1186
-msgctxt "Region"
-msgid "Australia"
 msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:846
@@ -5249,155 +5218,155 @@ msgid "%1$s %2$s"
 msgstr ""
 
 #. tr: %1$s == image type name, %2$s == output filename
-#: ../src/rpcli/rpcli.cpp:90
+#: ../src/rpcli/rpcli.cpp:96
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting %1$s into '%2$s'"
 msgstr ""
 
 #. tr: Filename
-#: ../src/rpcli/rpcli.cpp:97
+#: ../src/rpcli/rpcli.cpp:103
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't create file '%s'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:99 ../src/rpcli/rpcli.cpp:108
-#: ../src/rpcli/rpcli.cpp:131
+#: ../src/rpcli/rpcli.cpp:105 ../src/rpcli/rpcli.cpp:114
+#: ../src/rpcli/rpcli.cpp:137
 msgctxt "rpcli"
 msgid "Done"
 msgstr ""
 
 #. tr: %1$s == filename, %2%s == error message
-#: ../src/rpcli/rpcli.cpp:105 ../src/rpcli/rpcli.cpp:128
+#: ../src/rpcli/rpcli.cpp:111 ../src/rpcli/rpcli.cpp:134
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't create file '%1$s': %2$s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:119
+#: ../src/rpcli/rpcli.cpp:125
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting animated icon into '%s'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:122
+#: ../src/rpcli/rpcli.cpp:128
 msgctxt "rpcli"
 msgid "APNG not supported, extracting only the first frame"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:137
+#: ../src/rpcli/rpcli.cpp:143
 msgctxt "rpcli"
 msgid "Animated icon not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:140
+#: ../src/rpcli/rpcli.cpp:146
 #, c-format
 msgctxt "rpcli"
 msgid "Image '%s' not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:154
+#: ../src/rpcli/rpcli.cpp:160
 #, c-format
 msgctxt "rpcli"
 msgid "Reading file '%s'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:160
+#: ../src/rpcli/rpcli.cpp:166
 msgctxt "rpcli"
 msgid "Outputting JSON data"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:168
+#: ../src/rpcli/rpcli.cpp:174
 msgctxt "rpcli"
 msgid "ROM is not supported"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:176
+#: ../src/rpcli/rpcli.cpp:182
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't open file: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:198
+#: ../src/rpcli/rpcli.cpp:204
 #, c-format
 msgctxt "rpcli"
 msgid "System language code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:199 ../src/rpcli/rpcli.cpp:212
+#: ../src/rpcli/rpcli.cpp:205 ../src/rpcli/rpcli.cpp:218
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:211
+#: ../src/rpcli/rpcli.cpp:217
 #, c-format
 msgctxt "rpcli"
 msgid "System country code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:229
+#: ../src/rpcli/rpcli.cpp:240
 msgctxt "rpcli"
 msgid "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:230
+#: ../src/rpcli/rpcli.cpp:241
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:232
+#: ../src/rpcli/rpcli.cpp:243
 msgctxt "rpcli"
 msgid "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:234
+#: ../src/rpcli/rpcli.cpp:245
 msgctxt "rpcli"
 msgid "Print system region information."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:235
+#: ../src/rpcli/rpcli.cpp:246
 msgctxt "rpcli"
 msgid "Use JSON output format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:236
+#: ../src/rpcli/rpcli.cpp:247
 msgctxt "rpcli"
 msgid "Extract image N to outfile in PNG format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:237
+#: ../src/rpcli/rpcli.cpp:248
 msgctxt "rpcli"
 msgid "Extract image N to outfile in BMP format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:238
+#: ../src/rpcli/rpcli.cpp:249
 msgctxt "rpcli"
 msgid "Extract the animated icon to outfile in APNG format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:240
+#: ../src/rpcli/rpcli.cpp:251
 msgctxt "rpcli"
 msgid "Examples:"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:242
+#: ../src/rpcli/rpcli.cpp:253
 msgctxt "rpcli"
 msgid "displays info about s3.gen"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:244
+#: ../src/rpcli/rpcli.cpp:255
 msgctxt "rpcli"
 msgid "extracts icon from pokeb2.nds"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:284
+#: ../src/rpcli/rpcli.cpp:295
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type %ld"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:303
+#: ../src/rpcli/rpcli.cpp:314
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '%c'"
