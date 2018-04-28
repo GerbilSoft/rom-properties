@@ -72,10 +72,10 @@ ASSERT_STRUCT(GCN_DiscHeader, 98);
  * Used in bi2.bin (GameCube) and RVL_RegionSetting.
  */
 typedef enum {
-	GCN_REGION_JAPAN = 0,		// Japan / Taiwan
-	GCN_REGION_USA = 1,		// USA
-	GCN_REGION_PAL = 2,		// Europe / Australia
-	GCN_REGION_SOUTH_KOREA = 4,	// South Korea
+	GCN_REGION_JPN = 0,	// Japan / Taiwan
+	GCN_REGION_USA = 1,	// USA
+	GCN_REGION_EUR = 2,	// Europe / Australia
+	GCN_REGION_KOR = 4,	// South Korea
 } GCN_Region_Code;
 
 /**

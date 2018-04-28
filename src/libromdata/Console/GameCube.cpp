@@ -423,24 +423,24 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
 	 */
 	switch (gcnRegion) {
-		case GCN_REGION_JAPAN:
+		case GCN_REGION_JPN:
 			switch (idRegion) {
 				case 'J':	// Japan
 				default:
 					return C_("Region", "Japan");
 
 				case 'W':	// Taiwan
-					return C_("Region|GameCube", "Taiwan (JPN)");
+					return C_("Region", "Taiwan");
 				case 'K':	// South Korea
 				case 'T':	// South Korea with Japanese language
 				case 'Q':	// South Korea with English language
 					// FIXME: Is this combination possible?
-					return C_("Region|GameCube", "South Korea (JPN)");
+					return C_("Region", "South Korea");
 				case 'C':	// China (unofficial?)
-					return C_("Region|GameCube", "China (JPN)");
+					return C_("Region", "China");
 			}
 
-		case GCN_REGION_PAL:
+		case GCN_REGION_EUR:
 			switch (idRegion) {
 				case 'P':	// PAL
 				case 'X':	// Multi-language release
@@ -448,22 +448,22 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 				case 'L':	// Japanese import to PAL regions
 				case 'M':	// Japanese import to PAL regions
 				default:
-					return C_("Region|GameCube", "Europe / Australia (PAL)");
+					return C_("Region", "Europe / Australia");
 
 				case 'D':	// Germany
-					return C_("Region|GameCube", "Germany (PAL)");
+					return C_("Region", "Germany");
 				case 'F':	// France
-					return C_("Region|GameCube", "France (PAL)");
+					return C_("Region", "France");
 				case 'H':	// Netherlands
-					return C_("Region|GameCube", "Netherlands (PAL)");
+					return C_("Region", "Netherlands");
 				case 'I':	// Italy
-					return C_("Region|GameCube", "Italy (PAL)");
+					return C_("Region", "Italy");
 				case 'R':	// Russia
-					return C_("Region|GameCube", "Russia (PAL)");
+					return C_("Region", "Russia");
 				case 'S':	// Spain
-					return C_("Region|GameCube", "Spain (PAL)");
+					return C_("Region", "Spain");
 				case 'U':	// Australia
-					return C_("Region|GameCube", "Australia (PAL)");
+					return C_("Region", "Australia");
 			}
 
 		// USA and South Korea regions don't have separate
@@ -476,7 +476,7 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			// - B: Ufouria: The Saga (Virtual Console)
 			return C_("Region", "USA");
 
-		case GCN_REGION_SOUTH_KOREA:
+		case GCN_REGION_KOR:
 			// Possible game ID regions:
 			// - K: South Korea
 			// - Q: South Korea with Japanese language
@@ -523,7 +523,7 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 	vector<const char*> ret;
 
 	switch (gcnRegion) {
-		case GCN_REGION_JAPAN:
+		case GCN_REGION_JPN:
 			switch (idRegion) {
 				case 'J':
 					break;
@@ -552,7 +552,7 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 			ret.push_back("JA");
 			break;
 
-		case GCN_REGION_PAL:
+		case GCN_REGION_EUR:
 			switch (idRegion) {
 				case 'P':	// PAL
 				case 'X':	// Multi-language release
@@ -622,7 +622,7 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 			ret.push_back("US");
 			break;
 
-		case GCN_REGION_SOUTH_KOREA:
+		case GCN_REGION_KOR:
 			// Possible game ID regions:
 			// - K: South Korea
 			// - Q: South Korea with Japanese language
@@ -1472,7 +1472,7 @@ int GameCube::loadFieldData(void)
 	// TODO: Is Shift-JIS actually permissible here?
 	switch (d->gcnRegion) {
 		case GCN_REGION_USA:
-		case GCN_REGION_PAL:
+		case GCN_REGION_EUR:
 		default:
 			// USA/PAL uses cp1252.
 			d->fields->addField_string(C_("GameCube", "Title"),
@@ -1480,8 +1480,8 @@ int GameCube::loadFieldData(void)
 					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
 
-		case GCN_REGION_JAPAN:
-		case GCN_REGION_SOUTH_KOREA:
+		case GCN_REGION_JPN:
+		case GCN_REGION_KOR:
 			// Japan uses Shift-JIS.
 			d->fields->addField_string(C_("GameCube", "Title"),
 				cp1252_sjis_to_utf8(
@@ -1540,6 +1540,33 @@ int GameCube::loadFieldData(void)
 	// and the region code is stored in d->gcnRegion.
 	const char *region = d->gcnRegionToString(d->gcnRegion, discHeader->id4[3]);
 	if (region) {
+		// Append the GCN region name (USA/JPN/EUR/KOR) if
+		// the ID6 value differs.
+		const char *suffix = nullptr;
+		switch (d->gcnRegion) {
+			case GCN_REGION_JPN:
+				if (discHeader->id4[3] != 'J') {
+					suffix = "JPN";
+				}
+				break;
+			case GCN_REGION_EUR:
+				if (discHeader->id4[3] != 'E') {
+					suffix = "EUR";
+				}
+				break;
+			default:
+				// No suffix for USA or South Korea.
+				break;
+		}
+
+		string s_region;
+		if (suffix) {
+			// tr: %1%s == full region name, %2$s == abbreviation
+			s_region = rp_sprintf_p("%1$s (%2$s)", region, suffix);
+		} else {
+			s_region = region;
+		}
+
 		d->fields->addField_string(C_("GameCube", "Region"), region);
 	} else {
 		// Invalid region code.
@@ -1608,15 +1635,15 @@ int GameCube::loadFieldData(void)
 				// Show the comment data.
 				switch (d->gcnRegion) {
 					case GCN_REGION_USA:
-					case GCN_REGION_PAL:
+					case GCN_REGION_EUR:
 					default:
 						// USA/PAL uses cp1252.
 						d->fields->addField_string(C_("GameCube", "Game Info"),
 							cp1252_to_utf8(comment_data.data(), (int)comment_data.size()));
 						break;
 
-					case GCN_REGION_JAPAN:
-					case GCN_REGION_SOUTH_KOREA:
+					case GCN_REGION_JPN:
+					case GCN_REGION_KOR:
 						// Japan uses Shift-JIS.
 						d->fields->addField_string(C_("GameCube", "Game Info"),
 							cp1252_sjis_to_utf8(comment_data.data(), (int)comment_data.size()));
