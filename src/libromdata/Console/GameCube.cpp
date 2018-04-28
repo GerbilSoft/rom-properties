@@ -1550,7 +1550,7 @@ int GameCube::loadFieldData(void)
 				}
 				break;
 			case GCN_REGION_EUR:
-				if (discHeader->id4[3] != 'E') {
+				if (discHeader->id4[3] != 'P') {
 					suffix = "EUR";
 				}
 				break;
