@@ -307,10 +307,20 @@ int N64::loadFieldData(void)
 		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 
 	// Release. (OS version)
-	// TODO: Verify that the bytes are valid.
-	snprintf(buf, sizeof(buf), "OS %u%c",
-		romHeader->release[2], romHeader->release[3]);
-	d->fields->addField_string(C_("N64", "Release"), buf);
+	if (romHeader->release[0] == 0x00 &&
+	    romHeader->release[1] == 0x00 &&
+	    isalpha(romHeader->release[3]))
+	{
+		// TODO: isalpha(), or isupper()?
+		snprintf(buf, sizeof(buf), "OS %u%c",
+			romHeader->release[2], romHeader->release[3]);
+		d->fields->addField_string(C_("N64", "Release"), buf);
+	} else {
+		// Unrecognized Release field.
+		d->fields->addField_string_hexdump(C_("N64", "Release"),
+			romHeader->release, sizeof(romHeader->release),
+			RomFields::STRF_MONOSPACE);
+	}
 
 	// CRCs.
 	snprintf(buf, sizeof(buf), "0x%08X 0x%08X",
