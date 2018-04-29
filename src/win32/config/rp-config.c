@@ -224,10 +224,11 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 			if (cchExpand == 0) {
 				// Error expanding the string.
 				free(wbuf);
+			} else {
+				// String has been expanded.
+				free(dll_filename);
+				dll_filename = wbuf;
 			}
-			// String has been expanded.
-			free(dll_filename);
-			dll_filename = wbuf;
 		}
 
 		// Attempt to load this DLL.
