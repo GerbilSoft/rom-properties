@@ -862,7 +862,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	Field &field = d->fields.at(idx);
 
 	string *const nstr = (str ? new string(str) : nullptr);
-	field.name = (name ? name : "");
+	field.name = name;
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = nstr;
@@ -896,7 +896,7 @@ int RomFields::addField_string(const char *name, const string &str, unsigned int
 	Field &field = d->fields.at(idx);
 
 	string *const nstr = (!str.empty() ? new string(str) : nullptr);
-	field.name = (name ? name : "");
+	field.name = name;
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = nstr;
@@ -1062,7 +1062,7 @@ int RomFields::addField_bitfield(const char *name,
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? name : "");
+	field.name = name;
 	field.type = RFT_BITFIELD;
 	field.desc.bitfield.elements = (int)bit_names->size();	// TODO: Remove this.
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
@@ -1100,7 +1100,7 @@ int RomFields::addField_listData(const char *name,
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? name : "");
+	field.name = name;
 	field.type = RFT_LISTDATA;
 	field.desc.list_data.flags = flags;
 	field.desc.list_data.rows_visible = rows_visible;
@@ -1131,7 +1131,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? name : "");
+	field.name = name;
 	field.type = RFT_DATETIME;
 	field.desc.flags = flags;
 	field.data.date_time = date_time;
@@ -1159,7 +1159,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? name : "");
+	field.name = name;
 	field.type = RFT_AGE_RATINGS;
 	field.data.age_ratings = new age_ratings_t(age_ratings);
 	field.tabIdx = d->tabIdx;
