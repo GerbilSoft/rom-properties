@@ -35,6 +35,15 @@
 	((int)(((sizeof(x) / sizeof(x[0]))) / \
 		(size_t)(!(sizeof(x) % sizeof(x[0])))))
 
+// Architecture name.
+#if defined(_M_X64) || defined(__amd64__)
+# define ARCH_NAME L"amd64"
+#elif defined(_M_IX86) || defined(__i386__)
+# define ARCH_NAME L"i386"
+#else
+# error Unsupported CPU architecture.
+#endif
+
 #ifdef _WIN32
 /**
  * Initialize the internationalization subsystem.
@@ -79,12 +88,17 @@ int rp_i18n_init(void)
 	{
 		// Not found, or not a directory.
 		// Try one level up.
-		// TODO: Only if the current subdirectory is
-		// amd64/ or i386/.
 		*bs = 0;
 		bs = wcsrchr(pathnameW, L'\\');
 		if (!bs) {
 			// No backslashes...
+			return -1;
+		}
+
+		// Make sure the current subdirectory matches
+		// the DLL architecture.
+		if (wcscmp(bs+1, ARCH_NAME) != 0) {
+			// Not a match.
 			return -1;
 		}
 
