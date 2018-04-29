@@ -1562,7 +1562,7 @@ int GameCube::loadFieldData(void)
 		string s_region;
 		if (suffix) {
 			// tr: %1%s == full region name, %2$s == abbreviation
-			s_region = rp_sprintf_p("%1$s (%2$s)", region, suffix);
+			s_region = rp_sprintf_p(C_("GameCube", "%1$s (%2$s)"), region, suffix);
 		} else {
 			s_region = region;
 		}
