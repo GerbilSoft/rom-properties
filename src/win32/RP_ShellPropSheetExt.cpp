@@ -673,13 +673,17 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// Add the banner and icon widths.
 
 	// Banner.
+	// TODO: Spacing between banner and text?
+	// Doesn't seem to be needed with Dreamcast saves...
 	total_widget_width += szBanner.cx;
 
 	// Icon.
-	if (total_widget_width > 0) {
-		total_widget_width += pt_start.x;
+	if (szIcon.cx > 0) {
+		if (total_widget_width > 0) {
+			total_widget_width += pt_start.x;
+		}
+		total_widget_width += szIcon.cx;
 	}
-	total_widget_width += szIcon.cx;
 
 	// Starting point.
 	POINT curPt = {
