@@ -56,7 +56,7 @@ int rp_i18n_init(void)
 	// Windows: Use the application-specific locale directory.
 	DWORD dwResult, dwAttrs;
 	wchar_t pathnameW[MAX_PATH+16];
-	char pathnameA[MAX_PATH+16];
+	char pathnameU8[MAX_PATH+16];
 	wchar_t *bs;
 	const char *base;
 
@@ -115,9 +115,10 @@ int rp_i18n_init(void)
 
 	// Found the locale subdirectory.
 	// Bind the gettext domain.
-	// FIXME: Does gettext support Unicode filenames?
-	WideCharToMultiByte(CP_ACP, 0, pathnameW, -1, pathnameA, ARRAY_SIZE(pathnameA), NULL, NULL);
-	base = bindtextdomain(RP_I18N_DOMAIN, pathnameA);
+	// NOTE: The bundled copy of gettext supports UTF-8 paths.
+	// Results with other versions may vary.
+	WideCharToMultiByte(CP_UTF8, 0, pathnameW, -1, pathnameU8, ARRAY_SIZE(pathnameU8), NULL, NULL);
+	base = bindtextdomain(RP_I18N_DOMAIN, pathnameU8);
 	if (!base) {
 		// bindtextdomain() failed.
 		return -1;
