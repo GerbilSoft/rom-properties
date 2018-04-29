@@ -23,6 +23,7 @@ SET(rom-properties-win32_SRCS
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
+	config/ITab.cpp
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
 	config/CacheTab.cpp
@@ -55,6 +56,7 @@ SET(rom-properties-win32_H
 SET(rom-properties-win32_RC
 	res/resource.rc
 	res/rp-en_US.rc
+	res/rp-ru_RU.rc
 	)
 
 IF(ENABLE_DECRYPTION)

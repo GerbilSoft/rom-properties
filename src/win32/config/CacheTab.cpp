@@ -478,7 +478,7 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
-	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszIcon = nullptr;
 	psp.pszTitle = wsTabTitle.c_str();
@@ -488,9 +488,9 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 	psp.pfnCallback = CacheTabPrivate::callbackProc;
 
 	if (d->isVista) {
-		psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
+		psp.pResource = LoadDialog_i18n(IDD_CONFIG_CACHE);
 	} else {
-		psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
+		psp.pResource = LoadDialog_i18n(IDD_CONFIG_CACHE_XP);
 	}
 
 	d->hPropSheetPage = CreatePropertySheetPage(&psp);

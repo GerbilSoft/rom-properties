@@ -400,9 +400,9 @@ HPROPSHEETPAGE DownloadsTab::getHPropSheetPage(void)
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
-	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
-	psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_DOWNLOADS);
+	psp.pResource = LoadDialog_i18n(IDD_CONFIG_DOWNLOADS);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = wsTabTitle.c_str();
 	psp.pfnDlgProc = DownloadsTabPrivate::dlgProc;
