@@ -593,7 +593,7 @@ bool RP_ShellPropSheetExt_Private::rescaleImage(const SIZE &req_sz, SIZE &sz)
 	}
 
 	// Check if the image is too big.
-	if (sz.cx >= req_sz.cx || sz.cy >= sz.cy == req_sz.cy) {
+	if (sz.cx >= req_sz.cx || sz.cy >= req_sz.cy) {
 		// Image is too big. Shrink it.
 		// FIXME: Assuming the icon is always a power of two.
 		// Move TCreateThumbnail::rescale_aspect() into another file
