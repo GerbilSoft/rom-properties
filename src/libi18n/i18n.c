@@ -23,6 +23,18 @@
 # include "libwin32common/RpWin32_sdk.h"
 #endif
 
+/**
+ * Number of elements in an array.
+ * (from librpbase/common.h)
+ *
+ * Includes a static check for pointers to make sure
+ * a dynamically-allocated array wasn't specified.
+ * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
+ */
+#define ARRAY_SIZE(x) \
+	((int)(((sizeof(x) / sizeof(x[0]))) / \
+		(size_t)(!(sizeof(x) % sizeof(x[0])))))
+
 #ifdef _WIN32
 /**
  * Initialize the internationalization subsystem.
@@ -33,18 +45,18 @@
 int rp_i18n_init(void)
 {
 	// Windows: Use the application-specific locale directory.
-	wchar_t dll_fullpath[MAX_PATH+16];
+	DWORD dwResult, dwAttrs;
+	wchar_t pathnameW[MAX_PATH+16];
+	char pathnameA[MAX_PATH+16];
 	wchar_t *bs;
-	unsigned int path_len;
-	DWORD dwAttrs;
 	const char *base;
 
 	// Get the current module filename.
 	// NOTE: Delay-load only supports ANSI module names.
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
 	SetLastError(ERROR_SUCCESS);
-	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
-		dll_fullpath, _countof(dll_fullpath));
+	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+		pathnameW, ARRAY_SIZE(pathnameW));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
@@ -52,8 +64,8 @@ int rp_i18n_init(void)
 		return -1;
 	}
 
-	// Find the last backslash in dll_fullpath[].
-	bs = wcsrchr(dll_fullpath, L'\\');
+	// Find the last backslash in pathnameW[].
+	bs = wcsrchr(pathnameW, L'\\');
 	if (!bs) {
 		// No backslashes...
 		return -1;
@@ -61,7 +73,7 @@ int rp_i18n_init(void)
 
 	// Append the "locale" subdirectory.
 	wcscpy(bs+1, L"locale");
-	dwAttrs = GetFileAttributes(dll_fullpath);
+	dwAttrs = GetFileAttributes(pathnameW);
 	if (dwAttrs == INVALID_FILE_ATTRIBUTES ||
 	    !(dwAttrs & FILE_ATTRIBUTE_DIRECTORY))
 	{
@@ -70,7 +82,7 @@ int rp_i18n_init(void)
 		// TODO: Only if the current subdirectory is
 		// amd64/ or i386/.
 		*bs = 0;
-		bs = wcsrchr(dll_fullpath, L'\\');
+		bs = wcsrchr(pathnameW, L'\\');
 		if (!bs) {
 			// No backslashes...
 			return -1;
@@ -78,7 +90,7 @@ int rp_i18n_init(void)
 
 		// Append the "locale" subdirectory.
 		wcscpy(bs+1, L"locale");
-		dwAttrs = GetFileAttributes(dll_fullpath);
+		dwAttrs = GetFileAttributes(pathnameW);
 		if (dwAttrs == INVALID_FILE_ATTRIBUTES ||
 		    !(dwAttrs & FILE_ATTRIBUTE_DIRECTORY))
 		{
@@ -89,7 +101,9 @@ int rp_i18n_init(void)
 
 	// Found the locale subdirectory.
 	// Bind the gettext domain.
-	base = bindtextdomain(RP_I18N_DOMAIN, dirname);
+	// FIXME: Does gettext support Unicode filenames?
+	WideCharToMultiByte(CP_ACP, 0, pathnameW, -1, pathnameA, ARRAY_SIZE(pathnameA), NULL, NULL);
+	base = bindtextdomain(RP_I18N_DOMAIN, pathnameA);
 	if (!base) {
 		// bindtextdomain() failed.
 		return -1;

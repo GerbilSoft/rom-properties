@@ -3,14 +3,10 @@ PROJECT(libi18n C)
 
 # NOTE: This subdirectory is always built, even if NLS is disabled,
 # since config.libi18n.h is included by i18n.h.
-
 IF(ENABLE_NLS)
 	# Find gettext.
-	# Intl == runtime library
-	# Gettext == compile-time tools
-	FIND_PACKAGE(Intl REQUIRED)
-	FIND_PACKAGE(Gettext REQUIRED)
-	SET(HAVE_GETTEXT 1)
+	INCLUDE(CheckGettext)
+	CHECK_GETTEXT()
 ENDIF(ENABLE_NLS)
 
 # Write the config.h file.

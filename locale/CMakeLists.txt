@@ -1,10 +1,12 @@
 # Localization files.
 PROJECT(locale)
 
-# Find Gettext.
-FIND_PACKAGE(Gettext REQUIRED)
-FIND_PROGRAM(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
-FIND_PROGRAM(GETTEXT_MSGINIT_EXECUTABLE msginit)
+# Find gettext.
+INCLUDE(CheckGettext)
+CHECK_GETTEXT()
+
+# Find standard Unix utilities.
+# On Windows, these are included with git.
 FIND_PROGRAM(FIND find)
 FIND_PROGRAM(SORT sort)
 FIND_PROGRAM(SED sed)
