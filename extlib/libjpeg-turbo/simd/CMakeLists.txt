@@ -23,7 +23,8 @@ IF(WIN32)
 		# and %ProgramW6432% for 64-bit.
 		SET(MYENV "ProgramFiles(x86)")
 		SET(ProgramFilesX86 "$ENV{${MYENV}}")
-		SET(ProgramFiles "$ENV{ProgramFilesW6432}")
+		SET(ProgramFiles "$ENV{ProgramW6432}")
+		UNSET(MYENV)
 	ELSE(DEFINED ENV{ProgramW6432})
 		# 32-bit Windows. Use %ProgramFiles% directly.
 		SET(ProgramFiles "$ENV{ProgramFiles}")
