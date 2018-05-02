@@ -62,15 +62,22 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 	switch (img->format()) {
 		case rp_image::FORMAT_ARGB32: {
 			// Copy the image data.
-			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
 			const int dest_stride = cairo_image_surface_get_stride(surface) / sizeof(uint32_t);
 			const int src_stride = img->stride() / sizeof(uint32_t);
-			const int row_bytes = img->row_bytes();
 
-			for (unsigned int y = (unsigned int)height; y > 0; y--) {
-				memcpy(px_dest, img_buf, row_bytes);
-				px_dest += dest_stride;
-				img_buf += src_stride;
+			if (dest_stride == src_stride) {
+				// Stride is identical. Copy the whole image all at once.
+				// TODO: Partial copy for the last line?
+				memcpy(px_dest, img->bits(), dest_stride * height * sizeof(uint32_t));
+			} else {
+				// Stride is not identical. Copy each scanline.
+				const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
+				const int row_bytes = img->row_bytes();
+				for (unsigned int y = (unsigned int)height; y > 0; y--) {
+					memcpy(px_dest, img_buf, row_bytes);
+					px_dest += dest_stride;
+					img_buf += src_stride;
+				}
 			}
 
 			// Mark the surface as dirty.
