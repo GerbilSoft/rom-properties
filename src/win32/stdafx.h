@@ -44,9 +44,13 @@
 #include <shlobj.h>
 #include <shellapi.h>
 #include <shlwapi.h>
-#include <comdef.h>
 #include <shlwapi.h>
 #include <commdlg.h>
+
+// Native COM support. (C++ only!)
+#ifdef __cplusplus
+# include <comdef.h>
+#endif
 
 // IEmptyVolumeCache and related.
 #include <emptyvc.h>
