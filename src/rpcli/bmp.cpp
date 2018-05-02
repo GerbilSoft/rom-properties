@@ -29,13 +29,8 @@
 #include "librpbase/img/rp_image.hpp"
 using LibRpBase::rp_image;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
 // C++ includes.
 #include <ostream>
-#include <fstream>
 using std::ostream;
 
 int rpbmp(std::ostream& os, const rp_image *img)
