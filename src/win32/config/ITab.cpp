@@ -62,14 +62,12 @@ LPCDLGTEMPLATE ITab::LoadDialog_i18n(DWORD dwResId)
 
 	// Search for the requested language.
 	if (wLanguage != 0) {
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT,
-				MAKEINTRESOURCE(RT_DIALOG),
+		hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
 				MAKEINTRESOURCE(dwResId),
 				wLanguage);
 		if (!hRsrc && wLanguageFallback != 0) {
 			// Try the fallback language.
-			hRsrc = FindResourceEx(HINST_THISCOMPONENT,
-					MAKEINTRESOURCE(RT_DIALOG),
+			hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
 					MAKEINTRESOURCE(dwResId),
 					wLanguageFallback);
 		}
@@ -77,16 +75,14 @@ LPCDLGTEMPLATE ITab::LoadDialog_i18n(DWORD dwResId)
 
 	if (!hRsrc) {
 		// Try en_US.
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT,
-				MAKEINTRESOURCE(RT_DIALOG),
+		hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
 				MAKEINTRESOURCE(dwResId),
 				MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 	}
 
 	if (!hRsrc) {
 		// Try without specifying a language ID.
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT,
-				MAKEINTRESOURCE(RT_DIALOG),
+		hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
 				MAKEINTRESOURCE(dwResId),
 				MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 	}
