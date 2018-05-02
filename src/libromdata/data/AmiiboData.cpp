@@ -244,7 +244,7 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 
 	nullptr, nullptr, nullptr, nullptr,	// 0x1C0
 
-	"Pokk\xC3\xA9n Tournament",		// 0x1D0
+	"Special Pok\xC3\xA9mon",		// 0x1D0
 	nullptr, nullptr, nullptr,		// 0x1D4
 	nullptr, nullptr, nullptr, nullptr,	// 0x1E0
 	"Kirby",				// 0x1F0
@@ -1087,8 +1087,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x1900+448, "Lucario"),
 	AMIIBO_CHAR_ID_ONE(0x1900+658, "Greninja"),
 
-	// Pokkén Tournament (character series = 0x1D00)
+	// Special Pokémon (character series = 0x1D0)
 	AMIIBO_CHAR_ID_ONE(0x1D00, "Shadow Mewtwo"),
+	AMIIBO_CHAR_ID_ONE(0x1D01, "Detective Pikachu"),
 
 	// Kirby (character series = 0x1F0)
 	AMIIBO_CHAR_ID_ONE(0x1F00, "Kirby"),
@@ -1186,7 +1187,7 @@ const char *const AmiiboDataPrivate::amiibo_series_names[] = {
 	"Shovel Knight",			// 0x0A
 	nullptr,				// 0x0B
 	"Kirby",				// 0x0C
-	"Pokk\xC3\xA9n Tournament",		// 0x0D
+	"Special Pok\xC3\xA9mon",		// 0x0D
 	nullptr,				// 0x0E
 	"Monster Hunter",			// 0x0F
 	"BoxBoy!",				// 0x10
@@ -1838,7 +1839,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 58, 10, "Corrin"},		// 0x025A
 	{ 59, 10, "Bayonetta"},		// 0x025B
 
-	// Pokkén Tournament [0x025C]
+	// Special Pokémon [0x025C]
 	{  0, 0, "Shadow Mewtwo"},	// 0x025C
 
 	// Splatoon: Wave 2 [0x025D-0x0261]
@@ -2139,17 +2140,8 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Cereal [0x374]
 	{  0, 0, "Super Mario Cereal"},		// 0x0374
 
-#if 0
-	// TODO: Not released yet.
-
-	// The Legend of Zelda
-	{  0,  0, "Link (Majora's Mask)"},	// 0x0xxx
-	{  0,  0, "Link (Twilight Princess)"},	// 0x0xxx
-	{  0,  0, "Link (Skyward Sword)"},	// 0x0xxx
-
-	// Pikmin
-	{  0, 0, "Pikmin"},			// 0x0xxx
-#endif
+	// Special Pokémon [0x0375]
+	{  0, 0, "Detective Pikachu"},		// 0x0375
 };
 
 /** AmiiboData **/
@@ -2231,7 +2223,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0374)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0375)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
