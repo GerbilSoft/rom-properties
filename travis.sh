@@ -7,8 +7,10 @@ cmake --version
 case "$OSTYPE" in
 	darwin*)
 		# Mac OS X. Disable JPEG and gettext for now.
+		# Also disable split debug due to lack of `objcopy`.
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
+			-DSPLIT_DEBUG=OFF \
 			-DENABLE_LTO=OFF \
 			-DBUILD_TESTING=ON \
 			-DENABLE_JPEG=OFF \

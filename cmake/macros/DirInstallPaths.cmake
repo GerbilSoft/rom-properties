@@ -50,8 +50,18 @@ IF(UNIX AND NOT APPLE)
 ELSEIF(APPLE)
 	# Mac OS X-style install paths.
 	# Install should be relative to the application bundle.
-	# TODO: Not supported...
-	MESSAGE(STATUS "WARNING: Mac OS X is not officially supported yet.")
+	# TODO: Optimize for bundles. For now, using the same layout as Linux.
+	SET(DIR_INSTALL_EXE "${CMAKE_INSTALL_BINDIR}")
+	SET(DIR_INSTALL_DLL "${CMAKE_INSTALL_LIBDIR}")
+	SET(DIR_INSTALL_LIB "${CMAKE_INSTALL_LIBDIR}")
+	SET(DIR_INSTALL_LIBEXEC "${CMAKE_INSTALL_LIBEXECDIR}")
+	SET(DIR_INSTALL_LOCALE "share/locale")
+	SET(DIR_INSTALL_DOC "share/doc/${PACKAGE_NAME}")
+	SET(DIR_INSTALL_DOC_ROOT "${DIR_INSTALL_DOC}")
+	SET(DIR_INSTALL_EXE_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}")
+	SET(DIR_INSTALL_DLL_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_DLL}")
+	SET(DIR_INSTALL_LIB_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}")
+	SET(DIR_INSTALL_LIBEXEC_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIBEXEC}")
 ELSEIF(WIN32)
 	# Win32-style install paths.
 	# Files are installed relative to root, since the
