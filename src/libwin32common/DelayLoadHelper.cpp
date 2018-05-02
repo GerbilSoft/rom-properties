@@ -41,11 +41,12 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
 	// DLL whitelist: First byte is an explicit length.
-	static const char prefix_whitelist[][12] = {
+	static const char prefix_whitelist[][16] = {
 		"\x05" "zlib1",
 		"\x06" "libpng",
 		"\x04" "jpeg",
 		"\x08" "tinyxml2",
+		"\x0C" "libgnuintl-8",
 	};
 
 	bool match = false;
