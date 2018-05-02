@@ -20,6 +20,9 @@
 
 #include "CurlDownloader.hpp"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cctype>
 #include <cstring>
