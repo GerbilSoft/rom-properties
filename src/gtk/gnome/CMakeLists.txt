@@ -3,10 +3,10 @@ PROJECT(rom-properties-gnome)
 # GNOME (Nautilus) frontend for rom-properties.
 FIND_PACKAGE(GLib2 ${REQUIRE_GNOME} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_GNOME} 2.26.0)
-FIND_PACKAGE(GdkPixbuf2)
-# GTK3 minimum is 3.0.0, so no version check is needed.
-FIND_PACKAGE(GTK3)
-IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+FIND_PACKAGE(Cairo)
+# GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
+FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GNOME})
+IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# Find the Nautilus extension library.
 	# TODO: Minimum version, and ensure it's 3, not 4?
 	FIND_PACKAGE(LibNautilusExtension ${REQUIRE_GNOME} 3.0.0)
@@ -15,20 +15,22 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 		# Disable the GNOME frontend.
 		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
 	ENDIF(NOT LibNautilusExtension_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
 	SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS "${rom-properties-gtk_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_H "${rom-properties-gtk_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS  "${rom-properties-gtk_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS2 "${rom-properties-gtk3_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_H     "${rom-properties-gtk_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_H2    "${rom-properties-gtk3_H}")
 
 # CPU-specific and optimized sources.
-IF(rom-properties-gtk_SSSE3_SRCS)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_IFUNC_SRCS "${rom-properties-gtk_IFUNC_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SSSE3_SRCS "${rom-properties-gtk_SSSE3_SRCS}")
+IF(rom-properties-gtk3_SSSE3_SRCS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_IFUNC_SRCS "${rom-properties-gtk3_IFUNC_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SSSE3_SRCS "${rom-properties-gtk3_SSSE3_SRCS}")
 
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
@@ -50,14 +52,14 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gnome.h.in" "${CMAKE_CURRENT_
 
 # Sources and headers. (GNOME-specific)
 SET(rom-properties-gnome_SRCS
-	${rom-properties-gnome_SRCS}
+	${rom-properties-gnome_SRCS} ${rom-properties-gnome_SRCS2}
 	${rom-properties-gnome_IFUNC_SRCS}
 	${rom-properties-gnome_SSSE3_SRCS}
 	rom-properties-plugin.c
 	rom-properties-provider.cpp
 	)
 SET(rom-properties-gnome_H
-	${rom-properties-gnome_H}
+	${rom-properties-gnome_H} ${rom-properties-gnome_H2}
 	rom-properties-provider.hpp
 	)
 
@@ -84,7 +86,7 @@ IF(BUILD_GNOME)
 		TARGET_LINK_LIBRARIES(rom-properties-gnome i18n)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome Gnome::libnautilus-extension)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 Cairo::cairo GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-gnome\")
 ENDIF(BUILD_GNOME)
 

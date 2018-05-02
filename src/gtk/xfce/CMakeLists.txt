@@ -29,13 +29,15 @@ ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixb
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS "${rom-properties-gtk_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H "${rom-properties-gtk_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS  "${rom-properties-gtk_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS2 "${rom-properties-gtk2_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H     "${rom-properties-gtk_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H2    "${rom-properties-gtk2_H}")
 
 # CPU-specific and optimized sources.
-IF(rom-properties-gtk_SSSE3_SRCS)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_IFUNC_SRCS "${rom-properties-gtk_IFUNC_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SSSE3_SRCS "${rom-properties-gtk_SSSE3_SRCS}")
+IF(rom-properties-gtk2_SSSE3_SRCS)
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_IFUNC_SRCS "${rom-properties-gtk2_IFUNC_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SSSE3_SRCS "${rom-properties-gtk2_SSSE3_SRCS}")
 
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
@@ -54,7 +56,7 @@ UNSET(arch)
 
 # Sources and headers. (XFCE-specific)
 SET(rom-properties-xfce_SRCS
-	${rom-properties-xfce_SRCS}
+	${rom-properties-xfce_SRCS} ${rom-properties-xfce_SRCS2}
 	${rom-properties-xfce_IFUNC_SRCS}
 	${rom-properties-xfce_SSSE3_SRCS}
 	rom-properties-plugin.c
@@ -62,7 +64,7 @@ SET(rom-properties-xfce_SRCS
 	rom-properties-page.cpp
 	)
 SET(rom-properties-xfce_H
-	${rom-properties-xfce_H}
+	${rom-properties-xfce_H} ${rom-properties-xfce_H2}
 	rom-properties-provider.hpp
 	rom-properties-page.hpp
 	)

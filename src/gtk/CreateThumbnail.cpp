@@ -18,8 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "GdkImageConv.hpp"
-
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/RomData.hpp"
@@ -53,21 +51,18 @@ using std::unique_ptr;
 #include <glib.h>
 #include <glib-object.h>
 
-// GdkPixbuf
-#include <gdk-pixbuf/gdk-pixbuf.h>
+// PIMGTYPE
+#include "PIMGTYPE.hpp"
 
 /** CreateThumbnailPrivate **/
 
-// Typedef to fix issues when using references to pointers.
-typedef GdkPixbuf *PGDKPIXBUF;
-
-class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
+class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 {
 	public:
 		CreateThumbnailPrivate();
 
 	private:
-		typedef TCreateThumbnail<PGDKPIXBUF> super;
+		typedef TCreateThumbnail<PIMGTYPE> super;
 		RP_DISABLE_COPY(CreateThumbnailPrivate)
 
 	private:
@@ -81,26 +76,26 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		PGDKPIXBUF rpImageToImgClass(const rp_image *img) const final;
+		PIMGTYPE rpImageToImgClass(const rp_image *img) const final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		bool isImgClassValid(const PGDKPIXBUF &imgClass) const final;
+		bool isImgClassValid(const PIMGTYPE &imgClass) const final;
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		PGDKPIXBUF getNullImgClass(void) const final;
+		PIMGTYPE getNullImgClass(void) const final;
 
 		/**
 		 * Free an ImgClass object.
 		 * @param imgClass ImgClass object.
 		 */
-		void freeImgClass(PGDKPIXBUF &imgClass) const final;
+		void freeImgClass(PIMGTYPE &imgClass) const final;
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -108,7 +103,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		PGDKPIXBUF rescaleImgClass(const PGDKPIXBUF &imgClass, const ImgSize &sz) const final;
+		PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const final;
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -116,7 +111,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getImgClassSize(const PGDKPIXBUF &imgClass, ImgSize *pOutSize) const final;
+		int getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const final;
 
 		/**
 		 * Get the proxy for the specified URL.
@@ -134,9 +129,9 @@ CreateThumbnailPrivate::CreateThumbnailPrivate()
  * @param img rp_image
  * @return ImgClass.
  */
-PGDKPIXBUF CreateThumbnailPrivate::rpImageToImgClass(const rp_image *img) const
+PIMGTYPE CreateThumbnailPrivate::rpImageToImgClass(const rp_image *img) const
 {
-	return GdkImageConv::rp_image_to_GdkPixbuf(img);
+	return rp_image_to_PIMGTYPE(img);
 }
 
 /**
@@ -144,7 +139,7 @@ PGDKPIXBUF CreateThumbnailPrivate::rpImageToImgClass(const rp_image *img) const
  * @param imgClass ImgClass
  * @return True if valid; false if not.
  */
-bool CreateThumbnailPrivate::isImgClassValid(const PGDKPIXBUF &imgClass) const
+bool CreateThumbnailPrivate::isImgClassValid(const PIMGTYPE &imgClass) const
 {
 	return (imgClass != nullptr);
 }
@@ -153,7 +148,7 @@ bool CreateThumbnailPrivate::isImgClassValid(const PGDKPIXBUF &imgClass) const
  * Wrapper function to get a "null" ImgClass.
  * @return "Null" ImgClass.
  */
-PGDKPIXBUF CreateThumbnailPrivate::getNullImgClass(void) const
+PIMGTYPE CreateThumbnailPrivate::getNullImgClass(void) const
 {
 	return nullptr;
 }
@@ -162,9 +157,9 @@ PGDKPIXBUF CreateThumbnailPrivate::getNullImgClass(void) const
  * Free an ImgClass object.
  * @param imgClass ImgClass object.
  */
-void CreateThumbnailPrivate::freeImgClass(PGDKPIXBUF &imgClass) const
+void CreateThumbnailPrivate::freeImgClass(PIMGTYPE &imgClass) const
 {
-	g_object_unref(imgClass);
+	PIMGTYPE_destroy(imgClass);
 }
 
 /**
@@ -173,10 +168,15 @@ void CreateThumbnailPrivate::freeImgClass(PGDKPIXBUF &imgClass) const
  * @param sz New size.
  * @return Rescaled ImgClass.
  */
-PGDKPIXBUF CreateThumbnailPrivate::rescaleImgClass(const PGDKPIXBUF &imgClass, const ImgSize &sz) const
+PIMGTYPE CreateThumbnailPrivate::rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const
 {
+#ifdef RP_GTK_USE_CAIRO
+	// TODO: Cairo version.
+	return cairo_surface_reference(imgClass);
+#else /* !RP_GTK_USE_CAIRO */
 	// TODO: Interpolation option?
 	return gdk_pixbuf_scale_simple(imgClass, sz.width, sz.height, GDK_INTERP_NEAREST);
+#endif
 }
 
 /**
@@ -185,10 +185,16 @@ PGDKPIXBUF CreateThumbnailPrivate::rescaleImgClass(const PGDKPIXBUF &imgClass, c
  * @param pOutSize	[out] Pointer to ImgSize to store the image size.
  * @return 0 on success; non-zero on error.
  */
-int CreateThumbnailPrivate::getImgClassSize(const PGDKPIXBUF &imgClass, ImgSize *pOutSize) const
+int CreateThumbnailPrivate::getImgClassSize(const PIMGTYPE &imgClass, ImgSize *pOutSize) const
 {
+#ifdef RP_GTK_USE_CAIRO
+	// TODO: Verify that this is an image surface.
+	pOutSize->width = cairo_image_surface_get_width(imgClass);
+	pOutSize->height = cairo_image_surface_get_height(imgClass);
+#else /* !RP_GTK_USE_CAIRO */
 	pOutSize->width = gdk_pixbuf_get_width(imgClass);
 	pOutSize->height = gdk_pixbuf_get_height(imgClass);
+#endif
 	return 0;
 }
 
@@ -267,23 +273,23 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// Create the thumbnail.
 	// TODO: If image is larger than maximum_size, resize down.
-	CreateThumbnailPrivate *d = new CreateThumbnailPrivate();
-	GdkPixbuf *ret_img = nullptr;
+	unique_ptr<CreateThumbnailPrivate> d(new CreateThumbnailPrivate());
+	PIMGTYPE ret_img = nullptr;
 	rp_image::sBIT_t sBIT;
 	int ret = d->getThumbnail(romData, maximum_size, ret_img, &sBIT);
-	delete d;
 
-	if (ret != 0 || !ret_img) {
+	if (ret != 0 || !d->isImgClassValid(ret_img)) {
 		// No image.
 		if (ret_img) {
-			g_object_unref(ret_img);
+			d->freeImgClass(ret_img);
 		}
 		romData->unref();
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// Save the image using RpPngWriter.
-	const int height = gdk_pixbuf_get_height(ret_img);
+	TCreateThumbnail<PIMGTYPE>::ImgSize imgSz;
+	d->getImgClassSize(ret_img, &imgSz);
 	unique_ptr<const uint8_t*[]> row_pointers;
 	guchar *pixels;
 	int rowstride;
@@ -300,9 +306,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
 	// TODO: Verify channels, etc.?
-	RpPngWriter *pngWriter = new RpPngWriter(output_file,
-		gdk_pixbuf_get_width(ret_img), height,
-		rp_image::FORMAT_ARGB32);
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
+		imgSz.width, imgSz.height, rp_image::FORMAT_ARGB32));
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		ret = RPCT_OUTPUT_FILE_FAILED;
@@ -417,15 +422,27 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	/** IDAT chunk. **/
 
 	// Initialize the row pointers.
-	row_pointers.reset(new const uint8_t*[height]);
+	row_pointers.reset(new const uint8_t*[imgSz.height]);
+#ifdef RP_GTK_USE_CAIRO
+	pixels = cairo_image_surface_get_data(ret_img);
+	rowstride = cairo_image_surface_get_stride(ret_img);
+#else /* !RP_GTK_USE_CAIRO */
 	pixels = gdk_pixbuf_get_pixels(ret_img);
 	rowstride = gdk_pixbuf_get_rowstride(ret_img);
-	for (int y = 0; y < height; y++, pixels += rowstride) {
+#endif
+	for (int y = 0; y < imgSz.height; y++, pixels += rowstride) {
 		row_pointers[y] = pixels;
 	}
 
 	// Write the IDAT section.
-	pwRet = pngWriter->write_IDAT(row_pointers.get(), true);
+#ifdef RP_GTK_USE_CAIRO
+	// Cairo uses ARGB32.
+	static const bool is_abgr = false;
+#else /* !RP_GTK_USE_CAIRO */
+	// GdkPixbuf uses ABGR32.
+	static const bool is_abgr = true;
+#endif
+	pwRet = pngWriter->write_IDAT(row_pointers.get(), is_abgr);
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.
@@ -434,8 +451,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 cleanup:
-	delete pngWriter;
-	g_object_unref(ret_img);
+	d->freeImgClass(ret_img);
 	romData->unref();
 	return ret;
 }

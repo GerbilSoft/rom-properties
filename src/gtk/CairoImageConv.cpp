@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
+ * CairoImageConv.cpp: Helper functions to convert from rp_image to Cairo. *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "GdkImageConv.hpp"
+#include "CairoImageConv.hpp"
 
 // C includes.
 #include <stdint.h>
@@ -32,99 +32,67 @@
 using LibRpBase::rp_image;
 
 /**
- * Convert an rp_image to GdkPixbuf.
- * Standard version using regular C++ code.
+ * Convert an rp_image to cairo_surface_t.
  * @param img	[in] rp_image.
  * @return GdkPixbuf, or nullptr on error.
  */
-GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
+cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img)
 {
 	assert(img != nullptr);
 	if (unlikely(!img || !img->isValid()))
 		return nullptr;
 
-	// NOTE: GdkPixbuf's convenience functions don't do a
-	// deep copy, so we can't use them directly.
+	// NOTE: cairo_image_surface_create_for_data() doesn't do a
+	// deep copy, so we can't use it.
+	// NOTE 2: cairo_image_surface_create() always returns a valid
+	// pointer, but the status may be CAIRO_STATUS_NULL_POINTER if
+	// it failed to create a surface. We'll still check for nullptr.
 	const int width = img->width();
 	const int height = img->height();
-	GdkPixbuf *pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, width, height);
-	assert(pixbuf != nullptr);
-	if (unlikely(!pixbuf))
+	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+	assert(surface != nullptr);
+	assert(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS);
+	if (unlikely(!surface || cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)) {
 		return nullptr;
+	}
 
-	uint32_t *px_dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
-	const int dest_stride_adj = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*px_dest)) - width;
+	uint32_t *px_dest = reinterpret_cast<uint32_t*>(cairo_image_surface_get_data(surface));
+	assert(px_dest != nullptr);
 
 	switch (img->format()) {
 		case rp_image::FORMAT_ARGB32: {
 			// Copy the image data.
 			const uint32_t *img_buf = static_cast<const uint32_t*>(img->bits());
-			const int src_stride_adj = (img->stride() / sizeof(uint32_t)) - width;
-			for (unsigned int y = (unsigned int)height; y > 0; y--) {
-				unsigned int x;
-				for (x = (unsigned int)width; x > 1; x -= 2) {
-					// Swap the R and B channels.
-					px_dest[0] = (img_buf[0] & 0xFF00FF00) |
-						    ((img_buf[0] & 0x00FF0000) >> 16) |
-						    ((img_buf[0] & 0x000000FF) << 16);
-					px_dest[1] = (img_buf[1] & 0xFF00FF00) |
-						    ((img_buf[1] & 0x00FF0000) >> 16) |
-						    ((img_buf[1] & 0x000000FF) << 16);
-					img_buf += 2;
-					px_dest += 2;
-				}
-				if (x == 1) {
-					// Last pixel.
-					*px_dest = (*img_buf & 0xFF00FF00) |
-						  ((*img_buf & 0x00FF0000) >> 16) |
-						  ((*img_buf & 0x000000FF) << 16);
-					img_buf++;
-					px_dest++;
-				}
+			const int dest_stride = cairo_image_surface_get_stride(surface) / sizeof(uint32_t);
+			const int src_stride = img->stride() / sizeof(uint32_t);
+			const int row_bytes = img->row_bytes();
 
-				// Next line.
-				img_buf += src_stride_adj;
-				px_dest += dest_stride_adj;
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+				memcpy(px_dest, img_buf, row_bytes);
+				px_dest += dest_stride;
+				img_buf += src_stride;
 			}
+
+			// Mark the surface as dirty.
+			cairo_surface_mark_dirty(surface);
 			break;
 		}
 
 		case rp_image::FORMAT_CI8: {
-			const uint32_t *src_pal = img->palette();
-			const int src_pal_len = img->palette_len();
-			assert(src_pal != nullptr);
-			assert(src_pal_len > 0);
-			if (!src_pal || src_pal_len <= 0)
+			const uint32_t *palette = img->palette();
+			const int palette_len = img->palette_len();
+			assert(palette != nullptr);
+			assert(palette_len > 0);
+			if (!palette || palette_len <= 0)
 				break;
 
-			// Get the palette.
-			uint32_t palette[256];
-			int i;
-			for (i = 0; i < src_pal_len; i += 2, src_pal += 2) {
-				// Swap the R and B channels in the palette.
-				palette[i+0] = (src_pal[0] & 0xFF00FF00) |
-					      ((src_pal[0] & 0x00FF0000) >> 16) |
-					      ((src_pal[0] & 0x000000FF) << 16);
-				palette[i+1] = (src_pal[1] & 0xFF00FF00) |
-					      ((src_pal[1] & 0x00FF0000) >> 16) |
-					      ((src_pal[1] & 0x000000FF) << 16);
-			}
-			for (; i < src_pal_len; i++, src_pal++) {
-				// Last color.
-				palette[i] = (*src_pal & 0xFF00FF00) |
-					    ((*src_pal & 0x00FF0000) >> 16) |
-					    ((*src_pal & 0x000000FF) << 16);
-			}
-
-			// Zero out the rest of the palette if the new
-			// palette is larger than the old palette.
-			if (src_pal_len < ARRAY_SIZE(palette)) {
-				memset(&palette[src_pal_len], 0, (ARRAY_SIZE(palette) - src_pal_len) * sizeof(uint32_t));
-			}
+			// FIXME: Verify that the palette is 256 colors.
 
 			// Copy the image data.
 			const uint8_t *img_buf = static_cast<const uint8_t*>(img->bits());
+			const int dest_stride_adj = (cairo_image_surface_get_stride(surface) / sizeof(uint32_t)) - width;
 			const int src_stride_adj = img->stride() - width;
+
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 3; x -= 4) {
@@ -146,16 +114,19 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
+
+			// Mark the surface as dirty.
+			cairo_surface_mark_dirty(surface);
 			break;
 		}
 
 		default:
 			// Unsupported image format.
 			assert(!"Unsupported rp_image::Format.");
-			g_object_unref(pixbuf);
-			pixbuf = nullptr;
+			cairo_surface_destroy(surface);
+			surface = nullptr;
 			break;
 	}
 
-	return pixbuf;
+	return surface;
 }
