@@ -358,7 +358,8 @@ string formatFileSize(int64_t size)
 #elif defined(HAVE_NL_LANGINFO)
 		// Use nl_langinfo().
 		// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
-		s_value << nl_langinfo(DECIMAL_POINT);
+		// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
+		s_value << nl_langinfo(RADIXCHAR);
 #else
 		// Use localeconv(). (Assuming UTF-8)
 		s_value << localeconv()->decimal_point;
