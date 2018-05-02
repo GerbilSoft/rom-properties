@@ -33,6 +33,7 @@
 
 // C includes. (C++ namespace)
 #include <cerrno>
+#include <cmath>
 #include <ctime>
 
 namespace LibRpBase {
