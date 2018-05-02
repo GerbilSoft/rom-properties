@@ -24,6 +24,9 @@
 // One-time initialization.
 #include "threads/pthread_once.h"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cctype>
 #include <clocale>
