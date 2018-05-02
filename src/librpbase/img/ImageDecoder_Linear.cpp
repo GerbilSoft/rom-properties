@@ -768,7 +768,8 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
-	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+	int dest_stride = img->stride();
+	const int dest_stride_adj = (dest_stride / sizeof(argb32_t)) - img->width();
 
 	// sBIT for standard ARGB32.
 	static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
@@ -785,17 +786,19 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 				stride = width * bytespp;
 			}
 
-			if (stride == img->stride()) {
+			if (stride == dest_stride) {
 				// Stride is identical. Copy the whole image all at once.
+				// TODO: Partial copy for the last line?
 				memcpy(img->bits(), img_buf, stride * height);
 			} else {
 				// Stride is not identical. Copy each scanline.
-				const int dest_stride = img->stride() / sizeof(argb32_t);
+				stride /= bytespp;
+				dest_stride /= bytespp;
 				uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 				const unsigned int copy_len = (unsigned int)width * bytespp;
 				for (unsigned int y = (unsigned int)height; y > 0; y--) {
 					memcpy(px_dest, img_buf, copy_len);
-					img_buf += (stride / bytespp);
+					img_buf += stride;
 					px_dest += dest_stride;
 				}
 			}
