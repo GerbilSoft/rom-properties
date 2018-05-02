@@ -30,6 +30,8 @@
 #include "time_r.h"
 
 #ifdef __cplusplus
+// C includes.
+# include <sys/types.h>
 // C includes. (C++ namespace)
 # include <cassert>
 # include <cstdio>
