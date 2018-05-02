@@ -109,20 +109,24 @@ export(TARGETS tinyxml2
 ENDIF(0) # rom-properties
 
 # rom-properties:
+# - Only install on Windows.
+#  - TODO: Install .dylib/.so into macOS bundle.
 # - Disabled installation of export files and import libraries.
 # - Use the correct RUNTIME destination.
 # - Install PDB files.
-install(TARGETS tinyxml2
-        #EXPORT ${CMAKE_PROJECT_NAME}Targets
-        RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-        #LIBRARY DESTINATION ${INSTALL_LIB_DIR}
-        #ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
+IF(WIN32)
+	install(TARGETS tinyxml2
+		#EXPORT ${CMAKE_PROJECT_NAME}Targets
+		RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+		#LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+		#ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
 	)
+ENDIF(WIN32)
 
 # rom-properties: Split debug functionality; Windows subsystem.
 DO_SPLIT_DEBUG(tinyxml2)
 SET_WINDOWS_SUBSYSTEM(tinyxml2 WIN32)
-IF(INSTALL_DEBUG)
+IF(WIN32 AND INSTALL_DEBUG)
 	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 	INCLUDE(DirInstallPaths)
 	# TODO: Test on MinGW.
