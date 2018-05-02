@@ -6,12 +6,13 @@ cmake --version
 
 case "$OSTYPE" in
 	darwin*)
-		# Mac OS X. Disable JPEG for now.
+		# Mac OS X. Disable JPEG and gettext for now.
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DENABLE_LTO=OFF \
-			-DENABLE_JPEG=OFF \
 			-DBUILD_TESTING=ON \
+			-DENABLE_JPEG=OFF \
+			-DENABLE_NLS=OFF \
 			|| exit 1
 		;;
 	*)
@@ -21,8 +22,9 @@ case "$OSTYPE" in
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DENABLE_LTO=OFF \
-			-DENABLE_JPEG=ON \
 			-DBUILD_TESTING=ON \
+			-DENABLE_JPEG=ON \
+			-DENABLE_NLS=ON \
 			-DBUILD_KDE4=ON \
 			-DBUILD_KDE5=OFF \
 			-DBUILD_XFCE=ON \
