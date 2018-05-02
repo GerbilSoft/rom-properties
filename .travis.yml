@@ -5,11 +5,16 @@ compiler:
   - clang
   - gcc
 
+# Operating system.
+os:
+  - linux
+  - osx
+
 # Use Ubuntu 14.04 as the build environment.
 sudo: required
 dist: trusty
 
-# Build dependencies.
+# Build dependencies. (Linux)
 # NOTE: KF5 is not available on Ubuntu 14.04,
 # so we can't build the KDE5 plugin.
 addons:
