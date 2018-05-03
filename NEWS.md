@@ -62,6 +62,8 @@
     desktop.
   * MegaDrive: Fixed detection of some unlicensed ROMs that have extra text
     in the "System" field.
+  * GameCube: Fixed a crash when reading a Wii disc image that has no game
+    partition.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.

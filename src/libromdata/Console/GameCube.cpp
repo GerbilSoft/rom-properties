@@ -1706,11 +1706,16 @@ int GameCube::loadFieldData(void)
 		} else {
 			// Empty game name may be either because it's
 			// homebrew, a prototype, or a key error.
-			if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
+			if (!d->gamePartition) {
+				// No game partition.
+				d->fields->addField_string(C_("GameCube", "Game Info"),
+					C_("GameCube", "ERROR: No game partition was found."));
+			} else if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
 				// Key error.
-				string err("ERROR: ");
-				err += d->wii_getCryptoStatus(d->gamePartition);
-				d->fields->addField_string(C_("GameCube", "Game Info"), err);
+				const char *status = d->wii_getCryptoStatus(d->gamePartition);
+				d->fields->addField_string(C_("GameCube", "Game Info"),
+					rp_sprintf(C_("GameCube", "ERROR: %s"),
+						(status ? status : C_("GameCube", "Unknown"))));
 			}
 		}
 
