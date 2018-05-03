@@ -119,10 +119,7 @@ ADD_CUSTOM_TARGET(uninstall
 
 ### Subdirectories. ###
 
-# TODO: Internal copy of gettext for Windows.
 IF(ENABLE_NLS)
-	FIND_PACKAGE(Intl)
-	FIND_PACKAGE(Gettext)
 	ADD_SUBDIRECTORY(locale)
 ENDIF(ENABLE_NLS)
 

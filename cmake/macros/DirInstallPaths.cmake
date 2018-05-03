@@ -83,5 +83,3 @@ ELSEIF(WIN32)
 ELSE()
 	MESSAGE(WARNING "Installation paths have not been set up for this system.")
 ENDIF()
-
-UNSET(arch)

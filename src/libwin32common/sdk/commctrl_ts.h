@@ -1256,7 +1256,7 @@ static FORCEINLINE LRESULT Button_SetElevationRequiredState(_In_ HWND hwnd, _In_
 static FORCEINLINE BOOL Edit_SetCueBannerText(_In_ HWND hwnd, _In_ LPCWSTR lpcwText)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, EM_SETCUEBANNER, 0, REINTERPRET_CAST(LPARAM)(lpcwText)))); }
 #undef Edit_SetCueBannerTextFocused
-static FORCEINLINE BOOL Edit_SetCueBannerText(_In_ HWND hwnd, _In_ LPCWSTR lpcwText, _In_ BOOL fDrawFocused)
+static FORCEINLINE BOOL Edit_SetCueBannerTextFocused(_In_ HWND hwnd, _In_ LPCWSTR lpcwText, _In_ BOOL fDrawFocused)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, EM_SETCUEBANNER, STATIC_CAST(WPARAM)(fDrawFocused), REINTERPRET_CAST(LPARAM)(lpcwText)))); }
 #undef Edit_GetCueBannerText
 static FORCEINLINE BOOL Edit_GetCueBannerText(_In_ HWND hwnd, _Out_ LPWSTR lpwText, _In_ int cchText)
@@ -1291,7 +1291,7 @@ static FORCEINLINE BOOL ComboBox_SetMinVisible(_In_ HWND hwnd, _In_ int iMinVisi
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, CB_SETMINVISIBLE, STATIC_CAST(WPARAM)(iMinVisible), 0))); }
 
 #undef ComboBox_GetMinVisible
-static FORCEINLINE int ComboBox_SetMinVisible(_In_ HWND hwnd)
+static FORCEINLINE int ComboBox_GetMinVisible(_In_ HWND hwnd)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwnd, CB_GETMINVISIBLE, 0, 0))); }
 
 #undef ComboBox_SetCueBannerText

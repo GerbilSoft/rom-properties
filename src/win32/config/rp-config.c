@@ -56,11 +56,11 @@ typedef int (CALLBACK *PFNRPSHOWCONFIGDIALOG)(HWND hWnd, HINSTANCE hInstance, LP
 
 // Architecture-specific subdirectory.
 #if defined(__i386__) || defined(_M_IX86)
-static const wchar_t rp_subdir[] = L"i386/";
+static const wchar_t rp_subdir[] = L"i386\\";
 #elif defined(__amd64__) || defined(_M_X64)
-static const wchar_t rp_subdir[] = L"amd64/";
+static const wchar_t rp_subdir[] = L"amd64\\";
 #else
-#error Unsupported CPU architecture.
+# error Unsupported CPU architecture.
 #endif
 
 // NOTE: We're using strings because we have to use strings when

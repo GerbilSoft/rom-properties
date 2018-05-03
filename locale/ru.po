@@ -2988,7 +2988,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1028
 msgctxt "NintendoDS"
 msgid "Type"
-msgstr ""
+msgstr "omgwtflolbbq"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1031
 msgctxt "NintendoDS"

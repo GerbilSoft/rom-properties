@@ -41,12 +41,14 @@ IF(MSVC)
 	# Precompiled headers.
 	# NOTE: Only enabling PCH for MSVC builds.
 	INCLUDE(PrecompiledHeader)
-	SET(rom-properties-rpcli_PCH_SRC stdafx.cpp)
+	SET(rom-properties-rpcli_PCH_C stdafx.c)
+	SET(rom-properties-rpcli_PCH_CXX stdafx.cpp)
+	SET(rom-properties-rpcli_PCH_SRC ${rom-properties-rpcli_PCH_C} ${rom-properties-rpcli_PCH_CXX})
 	SET(rom-properties-rpcli_PCH_H stdafx.h)
 
 	# Delay-load sources.
-	SET(rom-properties-rpcli-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.cpp)
-	SET(rom-properties-rpcli-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.hpp)
+	SET(rom-properties-rpcli-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.c)
+	SET(rom-properties-rpcli-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #########################
@@ -73,7 +75,8 @@ ADD_EXECUTABLE(rpcli
 # NOTE: Only enabling PCH for MSVC.
 IF(MSVC)
 	ADD_PRECOMPILED_HEADER(rpcli ${rom-properties-rpcli_PCH_H}
-		SOURCE_CXX ${rom-properties-rpcli_PCH_SRC}
+		SOURCE_C ${rom-properties-rpcli_PCH_C}
+		SOURCE_CXX ${rom-properties-rpcli_PCH_CXX}
 		)
 ENDIF(MSVC)
 SET_TARGET_PROPERTIES(rpcli PROPERTIES PREFIX "")

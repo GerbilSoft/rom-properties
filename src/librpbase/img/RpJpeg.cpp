@@ -58,7 +58,7 @@ extern "C" {
 #include <jpegint.h>
 }
 // MSVC: Exception handling for /DELAYLOAD.
-#include "libwin32common/DelayLoadHelper.hpp"
+#include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
 namespace LibRpBase {

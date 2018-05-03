@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libwin32common)                   *
- * DelayLoadHelper.cpp: DelayLoad helper functions and macros.             *
+ * DelayLoadHelper.c: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,22 +14,41 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // Reference: http://otb.manusoft.com/2013/01/using-delayload-to-specify-dependent-dll-path.htm
 #include "stdafx.h"
-#include "DelayLoadHelper.hpp"
+#include "DelayLoadHelper.h"
 
 // C includes.
 #include <stdlib.h>
 
+// TODO: Move to our own stdboolx.h file.
+#ifndef __cplusplus
+# if defined(_MSC_VER) && _MSC_VER >= 1800
+#  include <stdbool.h>
+# else
+typedef unsigned char bool;
+#  define true 1
+#  define false 0
+# endif
+#endif /* __cplusplus */
+
 // ImageBase for GetModuleFileName().
 // Reference: https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
+
+// Architecture-specific subdirectory.
+#if defined(__i386__) || defined(_M_IX86)
+static const wchar_t rp_subdir[] = L"i386\\";
+#elif defined(__amd64__) || defined(_M_X64)
+static const wchar_t rp_subdir[] = L"amd64\\";
+#else
+# error Unsupported CPU architecture.
+#endif
 
 /**
  * Explicit LoadLibrary() for delay-load.
@@ -41,15 +60,26 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
 	// DLL whitelist: First byte is an explicit length.
-	static const char prefix_whitelist[][12] = {
+	static const char prefix_whitelist[][16] = {
 		"\x05" "zlib1",
 		"\x06" "libpng",
 		"\x04" "jpeg",
 		"\x08" "tinyxml2",
+		"\x0C" "libgnuintl-8",
 	};
 
+	wchar_t dll_fullpath[MAX_PATH+64];
+	const wchar_t *bs;
+	wchar_t *dest;
+	LPCSTR pszDll;
+	HMODULE hDll;
+	
+	DWORD dwResult;
+	unsigned int path_len;
+	unsigned int i;
 	bool match = false;
-	for (unsigned int i = 0; i < _countof(prefix_whitelist); i++) {
+
+	for (i = 0; i < _countof(prefix_whitelist); i++) {
 		if (!strncasecmp(pszModuleName, &prefix_whitelist[i][1],
 		     (unsigned int)prefix_whitelist[i][0]))
 		{
@@ -65,9 +95,8 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 
 	// NOTE: Delay-load only supports ANSI module names.
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
-	wchar_t dll_fullpath[MAX_PATH+64];
 	SetLastError(ERROR_SUCCESS);
-	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 		dll_fullpath, _countof(dll_fullpath));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the current module filename.
@@ -77,17 +106,17 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	}
 
 	// Find the last backslash in dll_fullpath[].
-	const wchar_t *bs = wcsrchr(dll_fullpath, L'\\');
+	bs = wcsrchr(dll_fullpath, L'\\');
 	if (!bs) {
 		// No backslashes...
 		return nullptr;
 	}
 
 	// Append the module name.
-	unsigned int path_len = (unsigned int)(bs - &dll_fullpath[0] + 1);
-	wchar_t *dest = &dll_fullpath[path_len];
-	LPCSTR pszDll = pszModuleName;
-	for (; *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
+	path_len = (unsigned int)(bs - &dll_fullpath[0] + 1);
+	dest = &dll_fullpath[path_len];
+	for (pszDll = pszModuleName;
+	     *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
 	     dest++, pszDll++)
 	{
 		*dest = (wchar_t)(unsigned int)*pszDll;
@@ -95,24 +124,19 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	HMODULE hDLL = LoadLibrary(dll_fullpath);
-	if (hDLL != nullptr)
-		return hDLL;
+	hDll = LoadLibrary(dll_fullpath);
+	if (hDll != nullptr) {
+		// DLL loaded successfully.
+		return hDll;
+	}
 
 	// Check the architecture-specific subdirectory.
-#if defined(__i386__) || defined(_M_IX86)
-	wcscpy(&dll_fullpath[path_len], L"i386\\");
-	path_len += 5;
-#elif defined(__amd64__) || defined(_M_X64)
-	wcscpy(&dll_fullpath[path_len], L"amd64\\");
-	path_len += 6;
-#else
-# error CPU architecture not supported.
-#endif
+	wcscpy(&dll_fullpath[path_len], rp_subdir);
+	path_len += _countof(rp_subdir) - 1;
 
 	dest = &dll_fullpath[path_len];
-	pszDll = pszModuleName;
-	for (; *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
+	for (pszDll = pszModuleName;
+	     *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
 	     dest++, pszDll++)
 	{
 		*dest = (wchar_t)(unsigned int)*pszDll;
@@ -143,11 +167,9 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 
 // Set the delay-load notification hook.
 // NOTE: MSVC 2015 Update 3 makes this a const variable.
-// This version also introduced the _MSVC_LANG macro,
-// so we can use that to determine if const is needed.
 // Reference: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
-#if _MSC_VER > 1900 || (_MSC_VER == 1900 && defined(_MSVC_LANG))
-extern "C" const PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
+#if _MSC_VER > 1900 || (_MSC_VER == 1900 && _MSC_FULL_VER >= 190024210)
+const PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
 #else
-extern "C" PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
+PfnDliHook __pfnDliNotifyHook2 = rp_dliNotifyHook;
 #endif
