@@ -14,7 +14,7 @@ SET(libwin32common_SRCS
 	WinUI.cpp
 	w32err.c
 	ComBase.cpp
-	sdk/win_iid.cpp
+	sdk/win_iid.c
 	)
 SET(libwin32common_H
 	RpWin32_sdk.h
