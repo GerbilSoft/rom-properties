@@ -23,6 +23,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+// C includes. (C++ namespace)
+#include <cerrno>
+
 // References:
 // - http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
 // - http://www.fsdeveloper.com/wiki/index.php?title=DXT_compression_explained

@@ -291,9 +291,14 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		)
 	SET(librpbase_SSSE3_SRCS
 		byteswap_ssse3.c
-		img/RpJpeg_ssse3.cpp
 		img/ImageDecoder_Linear_ssse3.cpp
 		)
+	IF(JPEG_FOUND)
+		SET(librpbase_SSSE3_SRCS
+			${librpbase_SSSE3_SRCS}
+			img/RpJpeg_ssse3.cpp
+			)
+	ENDIF(JPEG_FOUND)
 
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor

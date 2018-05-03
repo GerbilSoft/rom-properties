@@ -25,8 +25,14 @@
 // This is usually encoded as UTF-8.
 #include "userdirs.hpp"
 
-// Reference: https://fossies.org/dox/wxWidgets-3.1.0/stdpaths_8mm_source.html
-#import <CoreFoundation/CoreFoundation.h>
+// Reference: https://fossies.org/dox/wxWidgets-3.1.1/stdpaths_8mm_source.html
+// NOTE: Foundation is needed for NSFileManager and other types.
+// CoreFoundation doesn't include it.
+#import <Foundation/Foundation.h>
+
+// C++ includes.
+#include <string>
+using std::string;
 
 namespace LibUnixCommon {
 

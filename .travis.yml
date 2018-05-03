@@ -1,15 +1,16 @@
 language: cpp
 
-# Compiler selection.
-compiler:
-  - clang
-  - gcc
+# Build matrix.
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      compiler: gcc
+    - os: osx
+      compiler: clang
 
-# Use Ubuntu 14.04 as the build environment.
-sudo: required
-dist: trusty
-
-# Build dependencies.
+# Build dependencies. (Linux)
 # NOTE: KF5 is not available on Ubuntu 14.04,
 # so we can't build the KDE5 plugin.
 addons:

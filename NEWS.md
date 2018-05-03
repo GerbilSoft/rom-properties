@@ -66,6 +66,7 @@
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.
     This currently includes "Console", "Handheld", "Texture", and "Other".
+  * rpcli no longer supports BMP output. Use PNG output instead.
 
 ## v1.2 - The Dreamcast Release (released 2017/11/12)
 

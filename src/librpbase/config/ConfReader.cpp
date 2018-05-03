@@ -33,6 +33,7 @@
 
 // C includes. (C++ namespace)
 #include <cerrno>
+#include <cmath>
 #include <ctime>
 
 namespace LibRpBase {
@@ -114,7 +115,7 @@ int ConfReader::load(bool force)
 		// Have we checked the timestamp recently?
 		// TODO: Define the threshold somewhere.
 		const time_t cur_time = time(nullptr);
-		if (abs(cur_time - d->conf_last_checked) < 2) {
+		if (llabs(cur_time - d->conf_last_checked) < 2) {
 			// We checked it recently. Assume it's up to date.
 			return 0;
 		}

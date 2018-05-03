@@ -164,9 +164,10 @@ SET_EXTLIB_PROPERTIES(inih)
 # tinyxml2
 IF(USE_INTERNAL_XML)
 	# Use the internal copy of TinyXML2.
-	# On Windows and Mac OS X, this will build DLLs.
+	# On Windows, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	IF(WIN32 OR APPLE)
+	# TODO: Build a dylib for Mac OS X.
+	IF(WIN32)
 		SET(ENABLE_SHARED ON)
 		SET(ENABLE_STATIC OFF)
 		SET(SKIP_INSTALL_LIBRARIES OFF)

@@ -133,6 +133,9 @@
 /* Define to 1 if you have iconv() in either libc or libiconv. */
 #cmakedefine HAVE_ICONV 1
 
+/* Define to 1 if iconv() is defined in libiconv. */
+#cmakedefine HAVE_ICONV_LIBICONV 1
+
 /** Threading model **/
 
 /* Define to 1 if the system uses Win32 threads. */

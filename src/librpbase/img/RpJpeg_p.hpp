@@ -26,8 +26,6 @@
 
 // JPEG header.
 #include <jpeglib.h>
-#include <jerror.h>
-#include <jmorecfg.h>
 // JPEG error handler.
 #include <jerror.h>
 #include <setjmp.h>

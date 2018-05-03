@@ -30,21 +30,25 @@
 #include "time_r.h"
 
 #ifdef __cplusplus
+// C includes.
+# include <sys/types.h>
 // C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
+# include <cassert>
+# include <cstdio>
+# include <cstring>
 // C++ includes.
-#include <algorithm>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <locale>
-#include <memory>
-#include <vector>
+# include <algorithm>
+# include <fstream>
+# include <iomanip>
+# include <iostream>
+# include <locale>
+# include <memory>
+# include <vector>
 #else /* !__cplusplus */
 // C includes.
-#include <assert.h>
-#include <string.h>
+# include <assert.h>
+# include <stdio.h>
+# include <string.h>
 #endif /* __cplusplus */
 
 #endif /* __ROMPROPERTIES_RPCLI_STDAFX_H__ */

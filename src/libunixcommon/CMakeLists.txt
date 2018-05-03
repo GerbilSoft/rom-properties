@@ -58,7 +58,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libunixcommon.h.in" "${CMAKE_
 # Sources and headers.
 IF(APPLE)
 	SET(libunixcommon_SRCS userdirs_mac.mm)
-	SET(libunixcommon_H userdirs.h)
+	SET(libunixcommon_H userdirs.hpp)
 ELSE(APPLE)
 	SET(libunixcommon_SRCS userdirs.cpp dll-search.c)
 	SET(libunixcommon_H userdirs.hpp dll-search.h)
@@ -76,6 +76,9 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(unixcommon)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(unixcommon PROPERTIES EXCLUDE_FROM_ALL TRUE)
+IF(APPLE)
+	TARGET_LINK_LIBRARIES(unixcommon "-framework Foundation")
+ENDIF(APPLE)
 
 TARGET_INCLUDE_DIRECTORIES(unixcommon
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

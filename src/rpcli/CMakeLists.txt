@@ -23,11 +23,9 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_
 SET(rom-properties-rpcli_SRCS
 	rpcli.cpp
 	properties.cpp
-	bmp.cpp
 	)
 SET(rom-properties-rpcli_H
 	properties.hpp
-	bmp.hpp
 	)
 
 IF(WIN32)

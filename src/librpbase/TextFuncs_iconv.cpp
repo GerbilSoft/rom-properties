@@ -44,6 +44,7 @@
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstring>
 
 // C++ includes.
@@ -226,6 +227,47 @@ std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, 
 }
 
 /**
+ * libiconv: Convert U+301C (Wave Dash) to U+FF5E (Fullwidth Tilde).
+ * libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
+ * behavior for Shift-JIS, but cp932 should map it to U+FF5E.
+ * @param dest_type Destination type.
+ * @param buf String buffer. (Must be NULL-terminated.)
+ */
+#ifdef HAVE_ICONV_LIBICONV
+# define ICONV_SJIS_POSTPROCESS(dest_type, buf) do { \
+	if (buf.empty()) \
+		break; \
+	\
+	auto p = (buf).begin(); \
+	if (sizeof(dest_type) == 1) { \
+		/* UTF-8 version. */ \
+		for (; p != (buf).end(); ++p) { \
+			if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) { \
+				/* Found a wave dash. */ \
+				p[0] = (dest_type)0xEF; \
+				p[1] = (dest_type)0xBD; \
+				p[2] = (dest_type)0x9E; \
+				p += 2; \
+			} \
+		} \
+	} else if (sizeof(dest_type) == 2) { \
+		/* UTF-16 version. */ \
+		for (; p != (buf).end(); ++p) { \
+			if (*p == 0x301C) { \
+				/* Found a wave dash. */ \
+				*p = (dest_type)0xFF5E; \
+			} \
+		} \
+	} else { \
+		/* Should not get here... */ \
+		assert(!"Not UTF-8 or UTF-16."); \
+	} \
+} while (0)
+#else
+# define ICONV_SJIS_POSTPROCESS(dest_type, buf) do { } while (0)
+#endif
+
+/**
  * Convert from one encoding to another.
  * Two encoding fallbacks are provided.
  * Trailing NULL bytes will be removed.
@@ -265,6 +307,7 @@ std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, 
 		} \
 	} \
 	\
+	ICONV_SJIS_POSTPROCESS(dest_type, ret); \
 	return ret; \
 }
 

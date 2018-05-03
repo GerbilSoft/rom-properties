@@ -31,10 +31,9 @@ IF(USE_INTERNAL_XML)
 	# so we don't need to set the variables.
 	SET(TinyXML2_FOUND 1)
 	SET(HAVE_XML 1)
-	IF(WIN32 OR APPLE)
-		# Using DLLs on Windows and Mac OS X.
-		# NOTE: libjpeg-turbo 1.5.1's CMakeLists only builds
-		# a DLL version of turbojpeg, not libjpeg.
+	IF(WIN32)
+		# Using DLLs on Windows.
+		# TODO: Build a dylib for Mac OS X.
 		SET(USE_INTERNAL_XML_DLL ON)
 		SET(TinyXML2_LIBRARY tinyxml2 CACHE "TinyXML2 library." INTERNAL FORCE)
 	ELSE()
