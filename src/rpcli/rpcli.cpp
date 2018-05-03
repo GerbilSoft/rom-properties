@@ -44,7 +44,6 @@ using namespace LibRomData;
 # include "libwin32common/secoptions.h"
 #endif /* _WIN32 */
 
-#include "bmp.hpp"
 #include "properties.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "verifykeys.hpp"
@@ -71,7 +70,6 @@ using std::string;
 
 struct ExtractParam {
 	int image_type; // Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
-	bool is_bmp; // If true, extract as BMP, otherwise as PNG. n/a for iconAnimData
 	const char* filename; // Target filename. Can be null due to argv[argc]
 };
 
@@ -96,23 +94,13 @@ static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) 
 					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
 						RomData::getImageTypeName((RomData::ImageType)it->image_type),
 						it->filename) << endl;
-				if (it->is_bmp) {
-					if (rpbmp(it->filename, image)) {
-						// TODO: Error code.
-						// tr: Filename
-						cerr << "   " << rp_sprintf(C_("rpcli", "Couldn't create file '%s'"), it->filename) << endl;
-					} else {
-						cerr << "   " << C_("rpcli", "Done") << endl;
-					}
+				int errcode = RpPng::save(it->filename, image);
+				if (errcode != 0) {
+					// tr: %1$s == filename, %2%s == error message
+					cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
+						it->filename, strerror(-errcode)) << endl;
 				} else {
-					int errcode = RpPng::save(it->filename, image);
-					if (errcode != 0) {
-						// tr: %1$s == filename, %2%s == error message
-						cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
-							it->filename, strerror(-errcode)) << endl;
-					} else {
-						cerr << "   " << C_("rpcli", "Done") << endl;
-					}
+					cerr << "   " << C_("rpcli", "Done") << endl;
 				}
 			}
 		}
@@ -245,7 +233,6 @@ int RP_C_API main(int argc, char *argv[])
 		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << endl;
 		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << endl;
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
-		cerr << "  -xbN: " << C_("rpcli", "Extract image N to outfile in BMP format.") << endl;
 		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
 		cerr << endl;
 		cerr << C_("rpcli", "Examples:") << endl;
@@ -289,8 +276,7 @@ int RP_C_API main(int argc, char *argv[])
 			}
 			case 'x': {
 				ExtractParam ep;
-				ep.is_bmp = argv[i][2] == 'b';
-				long num = atol(argv[i] + (ep.is_bmp ? 3 : 2));
+				long num = atol(argv[i] + 2);
 				if (num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX) {
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
@@ -303,7 +289,6 @@ int RP_C_API main(int argc, char *argv[])
 			case 'a': {
 				ExtractParam ep;
 				ep.image_type = -1;
-				ep.is_bmp = false;
 				ep.filename = argv[++i];
 				extract.push_back(ep);
 				break;
