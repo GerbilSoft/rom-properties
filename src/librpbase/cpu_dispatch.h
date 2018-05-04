@@ -86,7 +86,6 @@
 #  define IFUNC_SSE2_INLINE
 # endif
 # define IFUNC_ATTR(func) __attribute__((ifunc(#func)))
-typedef void (*RP_IFUNC_ptr_t)(void);
 #else
 # define IFUNC_INLINE inline
 # define IFUNC_SSE2_INLINE inline

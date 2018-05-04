@@ -34,15 +34,15 @@ extern "C" {
  * IFUNC resolver function for fromLinear16().
  * @return Function pointer.
  */
-static RP_IFUNC_ptr_t fromLinear16_resolve(void)
+static __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
-		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear16_sse2;
+		return &ImageDecoder::fromLinear16_sse2;
 	} else
 #endif /* IMAGEDECODER_HAS_SSE2 */
 	{
-		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear16_cpp;
+		return &ImageDecoder::fromLinear16_cpp;
 	}
 }
 #endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
@@ -51,15 +51,15 @@ static RP_IFUNC_ptr_t fromLinear16_resolve(void)
  * IFUNC resolver function for fromLinear24().
  * @return Function pointer.
  */
-static RP_IFUNC_ptr_t fromLinear24_resolve(void)
+static __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
-		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear24_ssse3;
+		return &ImageDecoder::fromLinear24_ssse3;
 	} else
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 	{
-		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear24_cpp;
+		return &ImageDecoder::fromLinear24_cpp;
 	}
 }
 
@@ -67,15 +67,15 @@ static RP_IFUNC_ptr_t fromLinear24_resolve(void)
  * IFUNC resolver function for fromLinear32().
  * @return Function pointer.
  */
-static RP_IFUNC_ptr_t fromLinear32_resolve(void)
+static __typeof__(&ImageDecoder::fromLinear32_cpp) fromLinear32_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
-		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear32_ssse3;
+		return &ImageDecoder::fromLinear32_ssse3;
 	} else
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 	{
-		return (RP_IFUNC_ptr_t)&ImageDecoder::fromLinear32_cpp;
+		return &ImageDecoder::fromLinear32_cpp;
 	}
 }
 

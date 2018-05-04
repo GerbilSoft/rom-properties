@@ -33,15 +33,15 @@ extern "C" {
  * IFUNC resolver function for rp_image_to_GdkPixbuf().
  * @return Function pointer.
  */
-static RP_IFUNC_ptr_t rp_image_to_GdkPixbuf_resolve(void)
+static __typeof__(&GdkImageConv::rp_image_to_GdkPixbuf_cpp) rp_image_to_GdkPixbuf_resolve(void)
 {
 #ifdef GDKIMAGECONV_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
-		return (RP_IFUNC_ptr_t)&GdkImageConv::rp_image_to_GdkPixbuf_ssse3;
+		return &GdkImageConv::rp_image_to_GdkPixbuf_ssse3;
 	} else
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
 	{
-		return (RP_IFUNC_ptr_t)&GdkImageConv::rp_image_to_GdkPixbuf_cpp;
+		return &GdkImageConv::rp_image_to_GdkPixbuf_cpp;
 	}
 }
 
