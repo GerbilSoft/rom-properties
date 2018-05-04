@@ -190,7 +190,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n);
 void __byte_swap_32_array_ssse3(uint32_t *ptr, unsigned int n);
 #endif /* BYTESWAP_HAS_SSSE3 */
 
-#if defined(RP_HAS_IFUNC)
+#if defined(RP_HAS_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
 /* System has IFUNC. Use it for dispatching. */
 
 /**
