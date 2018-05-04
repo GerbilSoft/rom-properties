@@ -162,17 +162,10 @@ struct _RpThumbnailer {
 // NOTE: We can't use G_DEFINE_DYNAMIC_TYPE() here because
 // that requires a GTypeModule, which we don't have.
 
-static void     rp_thumbnailer_init		(RpThumbnailer      *thumbnailer);
-static void     rp_thumbnailer_class_init		(RpThumbnailerClass *klass);
+static void	rp_thumbnailer_class_init	(gpointer g_class, gpointer class_data);
+static void	rp_thumbnailer_init		(GTypeInstance *instance, gpointer g_class);
 
 static gpointer rp_thumbnailer_parent_class = nullptr;
-
-static void
-rp_thumbnailer_class_intern_init(gpointer klass)
-{
-	  rp_thumbnailer_parent_class = g_type_class_peek_parent(klass);
-	  rp_thumbnailer_class_init(static_cast<RpThumbnailerClass*>(klass));
-}
 
 GType
 rp_thumbnailer_get_type(void)
@@ -183,12 +176,12 @@ rp_thumbnailer_get_type(void)
 			sizeof(RpThumbnailerClass),	// class_size
 			nullptr,			// base_init
 			nullptr,			// base_finalize
-			(GClassInitFunc)rp_thumbnailer_class_intern_init,
+			rp_thumbnailer_class_init,	// class_init
 			nullptr,			// class_finalize
 			nullptr,			// class_data
 			sizeof(RpThumbnailer),		// instance_size
 			0,				// n_preallocs
-			(GInstanceInitFunc)rp_thumbnailer_init,
+			rp_thumbnailer_init,		// instance_init
 			nullptr				// value_table
 		};
 		rp_thumbnailer_type_id = g_type_register_static(G_TYPE_OBJECT,
@@ -202,14 +195,19 @@ rp_thumbnailer_get_type(void)
 /** End type information. **/
 
 static void
-rp_thumbnailer_class_init(RpThumbnailerClass *klass)
+rp_thumbnailer_class_init(gpointer g_class, gpointer class_data)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	RP_UNUSED(class_data);	// TODO: Store this somewhere?
+	rp_thumbnailer_parent_class = g_type_class_peek_parent(g_class);
+
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(g_class);
 	gobject_class->dispose = rp_thumbnailer_dispose;
 	gobject_class->finalize = rp_thumbnailer_finalize;
 	gobject_class->constructed = rp_thumbnailer_constructed;
 	gobject_class->get_property = rp_thumbnailer_get_property;
 	gobject_class->set_property = rp_thumbnailer_set_property;
+
+	RpThumbnailerClass *const klass = reinterpret_cast<RpThumbnailerClass*>(gobject_class);
 
 	// Register signals.
 	klass->signal_ids[SIGNAL_0] = 0;
@@ -237,8 +235,11 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass)
 }
 
 static void
-rp_thumbnailer_init(RpThumbnailer *thumbnailer)
+rp_thumbnailer_init(GTypeInstance *instance, gpointer g_class)
 {
+	RP_UNUSED(g_class);
+	RpThumbnailer *const thumbnailer = reinterpret_cast<RpThumbnailer*>(instance);
+
 	thumbnailer->skeleton = nullptr;
 	thumbnailer->shutdown_emitted = false;
 	thumbnailer->timeout_id = 0;

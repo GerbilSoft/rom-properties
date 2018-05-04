@@ -194,9 +194,7 @@ static GParamSpec *properties[PROP_LAST];
 static void
 rom_data_view_class_init(RomDataViewClass *klass)
 {
-	GObjectClass *gobject_class;
-
-	gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rom_data_view_dispose;
 	gobject_class->finalize = rom_data_view_finalize;
 	gobject_class->get_property = rom_data_view_get_property;
