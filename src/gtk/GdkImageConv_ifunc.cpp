@@ -41,7 +41,7 @@ static RP_IFUNC_ptr_t rp_image_to_GdkPixbuf_resolve(void)
 	} else
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
 	{
-		return (RP_IFUNC_ptr_t)&GdkImageConv::rp_image_to_GdkPixbuf_ssse3;
+		return (RP_IFUNC_ptr_t)&GdkImageConv::rp_image_to_GdkPixbuf_cpp;
 	}
 }
 

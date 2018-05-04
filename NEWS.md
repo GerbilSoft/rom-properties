@@ -60,6 +60,8 @@
     in the "System" field.
   * GameCube: Fixed a crash when reading a Wii disc image that has no game
     partition.
+  * GTK+: Fixed a potential crash if running on a system that doesn't support
+    SSSE3 instructions.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.
