@@ -83,20 +83,8 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		// If true, the disc image is not encrypted. (RVT-H)
 		bool noCrypt;
 
-#ifdef ENABLE_DECRYPTION
-	public:
-		// AES cipher for this partition's title key.
-		IAesCipher *aes_title;
-		// Decrypted title key.
-		uint8_t title_key[16];
-
-		/**
-		 * Initialize decryption.
-		 * @return VerifyResult.
-		 */
-		KeyManager::VerifyResult initDecryption(void);
-
 		// Decrypted read position. (0x7C00 bytes out of 0x8000)
+		// NOTE: Actual read position if noCrypt is true.
 		int64_t pos_7C00;
 
 		// Decrypted sector cache.
@@ -113,6 +101,19 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int readSector(uint32_t sector_num);
+
+#ifdef ENABLE_DECRYPTION
+	public:
+		// AES cipher for this partition's title key.
+		IAesCipher *aes_title;
+		// Decrypted title key.
+		uint8_t title_key[16];
+
+		/**
+		 * Initialize decryption.
+		 * @return VerifyResult.
+		 */
+		KeyManager::VerifyResult initDecryption(void);
 
 	public:
 		// Verification key names.
@@ -179,13 +180,15 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
 	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
 	, noCrypt(noCrypt)
-	, aes_title(nullptr)
 	, pos_7C00(-1)
 	, sector_num(~0)
+	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, verifyResult(KeyManager::VERIFY_NO_SUPPORT)
 	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
 	, noCrypt(noCrypt)
+	, pos_7C00(-1)
+	, sector_num(~0)
 #endif /* ENABLE_DECRYPTION */
 {
 	if (noCrypt) {
@@ -424,7 +427,6 @@ WiiPartitionPrivate::~WiiPartitionPrivate()
 #endif /* ENABLE_DECRYPTION */
 }
 
-#ifdef ENABLE_DECRYPTION
 /**
  * Read and decrypt a sector.
  * The decrypted sector is stored in sector_buf.
@@ -439,13 +441,21 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 		return 0;
 	}
 
+	RP_Q(WiiPartition);
+#ifndef ENABLE_DECRYPTION
+	if (!noCrypt) {
+		// Decryption is disabled.
+		q->m_lastError = EIO;
+		return -1;
+	}
+#endif /* !ENABLE_DECRYPTION */
+
 	// NOTE: This function doesn't check verifyResult,
 	// since it's called by initDecryption() before
 	// verifyResult is set.
 	int64_t sector_addr = partition_offset + data_offset;
 	sector_addr += ((int64_t)sector_num * SECTOR_SIZE_ENCRYPTED);
 
-	RP_Q(WiiPartition);
 	int ret = discReader->seek(sector_addr);
 	if (ret != 0) {
 		q->m_lastError = discReader->lastError();
@@ -460,6 +470,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 		return -1;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	if (!noCrypt) {
 		// Decrypt the sector.
 		if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
@@ -471,12 +482,12 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 			return -1;
 		}
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// Sector read and decrypted.
 	this->sector_num = sector_num;
 	return 0;
 }
-#endif /* ENABLE_DECRYPTION */
 
 /** WiiPartition **/
 
