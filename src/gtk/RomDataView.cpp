@@ -1638,18 +1638,27 @@ static gboolean anim_timer_func(RomDataView *page)
 /** RpDescFormatType **/
 
 // TODO: Use glib-mkenums to generate the enum type functions.
-// Reference: https://arosenfeld.wordpress.com/2010/08/11/glib-mkenums/
+// References:
+// - https://arosenfeld.wordpress.com/2010/08/11/glib-mkenums/
+// - https://github.com/Kurento/kms-cmake-utils/blob/master/CMake/FindGLIB-MKENUMS.cmake
+// - https://github.com/Kurento/kms-cmake-utils/blob/master/CMake/GLibHelpers.cmake
+// - https://developer.gnome.org/gobject/stable/glib-mkenums.html
 GType rp_desc_format_type_get_type(void)
 {
-	static GType etype = 0;
-	if (etype == 0) {
+	static volatile gsize g_enum_type_id__volatile = 0;
+
+	if (g_once_init_enter(&g_enum_type_id__volatile)) {
 		static const GEnumValue values[] = {
 			{ RP_DFT_XFCE, "RP_DFT_XFCE", "XFCE style (default)" },
 			{ RP_DFT_GNOME, "RP_DFT_GNOME", "GNOME style" },
 			{ RP_DFT_LAST, "RP_DFT_LAST", "last" },
 			{ 0, NULL, NULL }
 		};
-		etype = g_enum_register_static ("RpDescFormatType", values);
+		GType g_enum_type_id =
+			g_enum_register_static("RpDescFormatType", values);
+
+		g_once_init_leave(&g_enum_type_id__volatile, g_enum_type_id);
 	}
-	return etype;
+
+	return g_enum_type_id__volatile;
 }
