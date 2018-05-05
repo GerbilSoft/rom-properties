@@ -1,5 +1,5 @@
 /* mz_strm_aes.c -- Stream for WinZip AES encryption
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -38,7 +38,7 @@
 
 /***************************************************************************/
 
-mz_stream_vtbl mz_stream_aes_vtbl = {
+static mz_stream_vtbl mz_stream_aes_vtbl = {
     mz_stream_aes_open,
     mz_stream_aes_is_open,
     mz_stream_aes_read,
@@ -49,7 +49,8 @@ mz_stream_vtbl mz_stream_aes_vtbl = {
     mz_stream_aes_error,
     mz_stream_aes_create,
     mz_stream_aes_delete,
-    mz_stream_aes_get_prop_int64
+    mz_stream_aes_get_prop_int64,
+    NULL
 };
 
 /***************************************************************************/
@@ -66,7 +67,7 @@ typedef struct mz_stream_aes_s {
     const char      *password;
     aes_encrypt_ctx encr_ctx[1];
     hmac_ctx        auth_ctx[1];
-    uint8_t         nonce[AES_BLOCK_SIZE]; 
+    uint8_t         nonce[AES_BLOCK_SIZE];
     uint8_t         encr_bfr[AES_BLOCK_SIZE];
     uint32_t        encr_pos;
 } mz_stream_aes;
@@ -299,10 +300,10 @@ int32_t mz_stream_aes_get_prop_int64(void *stream, int32_t prop, int64_t *value)
     mz_stream_aes *aes = (mz_stream_aes *)stream;
     switch (prop)
     {
-    case MZ_STREAM_PROP_TOTAL_IN: 
+    case MZ_STREAM_PROP_TOTAL_IN:
         *value = aes->total_in;
         return MZ_OK;
-    case MZ_STREAM_PROP_TOTAL_OUT: 
+    case MZ_STREAM_PROP_TOTAL_OUT:
         *value = aes->total_out;
         return MZ_OK;
     case MZ_STREAM_PROP_HEADER_SIZE:
@@ -319,7 +320,7 @@ void *mz_stream_aes_create(void **stream)
 {
     mz_stream_aes *aes = NULL;
 
-    aes = (mz_stream_aes *)malloc(sizeof(mz_stream_aes));
+    aes = (mz_stream_aes *)MZ_ALLOC(sizeof(mz_stream_aes));
     if (aes != NULL)
     {
         memset(aes, 0, sizeof(mz_stream_aes));
@@ -339,7 +340,7 @@ void mz_stream_aes_delete(void **stream)
         return;
     aes = (mz_stream_aes *)*stream;
     if (aes != NULL)
-        free(aes);
+        MZ_FREE(aes);
     *stream = NULL;
 }
 

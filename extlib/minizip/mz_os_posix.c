@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -69,7 +69,6 @@ int32_t mz_posix_get_file_date(const char *path, time_t *modified_date, time_t *
     size_t len = 0;
     int32_t err = MZ_INTERNAL_ERROR;
 
-
     memset(&stat_info, 0, sizeof(stat_info));
 
     if (strcmp(path, "-") != 0)
@@ -108,11 +107,34 @@ int32_t mz_posix_set_file_date(const char *path, time_t modified_date, time_t ac
     ut.actime = accessed_date;
     ut.modtime = modified_date;
     // Creation date not supported
+    (void)creation_date;
 
     if (utime(path, &ut) != 0)
         return MZ_INTERNAL_ERROR;
 
     return MZ_OK;
+}
+
+int32_t mz_posix_get_file_attribs(const char *path, int32_t *attributes)
+{
+    struct stat stat_info;
+    int32_t err = MZ_OK;
+
+    memset(&stat_info, 0, sizeof(stat_info));
+    if (stat(path, &stat_info) == -1)
+        err = MZ_INTERNAL_ERROR;
+    *attributes = stat_info.st_mode;
+    return err;
+}
+
+int32_t mz_posix_set_file_attribs(const char *path, int32_t attributes)
+{
+    int32_t err = MZ_OK;
+
+    if (chmod(path, attributes) == -1)
+        err = MZ_INTERNAL_ERROR;
+
+    return err;
 }
 
 int32_t mz_posix_make_dir(const char *path)

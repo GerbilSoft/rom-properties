@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -40,7 +40,7 @@ int32_t mz_make_dir(const char *path)
     if (len <= 0)
         return 0;
 
-    current_dir = (char *)malloc(len + 1);
+    current_dir = (char *)MZ_ALLOC(len + 1);
     if (current_dir == NULL)
         return MZ_MEM_ERROR;
 
@@ -71,7 +71,7 @@ int32_t mz_make_dir(const char *path)
         }
     }
 
-    free(current_dir);
+    MZ_FREE(current_dir);
     return err;
 }
 

@@ -1,5 +1,5 @@
 /* mz_strm_posix.c -- Stream for filesystem access for posix/linux
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -50,7 +50,7 @@
 
 /***************************************************************************/
 
-mz_stream_vtbl mz_stream_posix_vtbl = {
+static mz_stream_vtbl mz_stream_posix_vtbl = {
     mz_stream_posix_open,
     mz_stream_posix_is_open,
     mz_stream_posix_read,
@@ -60,7 +60,9 @@ mz_stream_vtbl mz_stream_posix_vtbl = {
     mz_stream_posix_close,
     mz_stream_posix_error,
     mz_stream_posix_create,
-    mz_stream_posix_delete
+    mz_stream_posix_delete,
+    NULL,
+    NULL
 };
 
 /***************************************************************************/
@@ -201,7 +203,7 @@ void *mz_stream_posix_create(void **stream)
 {
     mz_stream_posix *posix = NULL;
 
-    posix = (mz_stream_posix *)malloc(sizeof(mz_stream_posix));
+    posix = (mz_stream_posix *)MZ_ALLOC(sizeof(mz_stream_posix));
     if (posix != NULL)
     {
         memset(posix, 0, sizeof(mz_stream_posix));
@@ -209,7 +211,7 @@ void *mz_stream_posix_create(void **stream)
     }
     if (stream != NULL)
         *stream = posix;
- 
+
     return posix;
 }
 
@@ -220,7 +222,7 @@ void mz_stream_posix_delete(void **stream)
         return;
     posix = (mz_stream_posix *)*stream;
     if (posix != NULL)
-        free(posix);
+        MZ_FREE(posix);
     *stream = NULL;
 }
 

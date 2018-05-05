@@ -1,5 +1,5 @@
 /* mz_strm_lzma.c -- Stream for lzma inflate/deflate
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -28,7 +28,7 @@
 
 /***************************************************************************/
 
-mz_stream_vtbl mz_stream_lzma_vtbl = {
+static mz_stream_vtbl mz_stream_lzma_vtbl = {
     mz_stream_lzma_open,
     mz_stream_lzma_is_open,
     mz_stream_lzma_read,
@@ -66,10 +66,14 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
 {
     mz_stream_lzma *lzma = (mz_stream_lzma *)stream;
     lzma_filter filters[LZMA_FILTERS_MAX + 1];
-    lzma_options_lzma opt_lzma = { 0 };
+    lzma_options_lzma opt_lzma;
     uint32_t size = 0;
     uint8_t major = 0;
     uint8_t minor = 0;
+
+    MZ_UNUSED(path);
+
+    memset(&opt_lzma, 0, sizeof(opt_lzma));
 
     lzma->lstream.total_in = 0;
     lzma->lstream.total_out = 0;
@@ -92,7 +96,7 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
         filters[1].id = LZMA_VLI_UNKNOWN;
 
         lzma_properties_size(&size, (lzma_filter *)&filters);
-        
+
         mz_stream_write_uint8(lzma->stream.base, LZMA_VERSION_MAJOR);
         mz_stream_write_uint8(lzma->stream.base, LZMA_VERSION_MINOR);
         mz_stream_write_uint16(lzma->stream.base, (uint16_t)size);
@@ -114,7 +118,7 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
 
         lzma->error = lzma_alone_decoder(&lzma->lstream, UINT64_MAX);
     }
-    
+
     if (lzma->error != LZMA_OK)
         return MZ_STREAM_ERROR;
 
@@ -160,7 +164,7 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
                 if ((lzma->max_total_in - lzma->total_in) < sizeof(lzma->buffer))
                     bytes_to_read = (int32_t)(lzma->max_total_in - lzma->total_in);
             }
-            
+
             read = mz_stream_read(lzma->stream.base, lzma->buffer, bytes_to_read);
 
             if (read < 0)
@@ -182,9 +186,9 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
 
         total_in_after = lzma->lstream.avail_in;
         total_out_after = lzma->lstream.total_out;
-        if (lzma->max_total_out != -1 && total_out_after > lzma->max_total_out)
+        if ((lzma->max_total_out != -1) && (int64_t)total_out_after > lzma->max_total_out)
             total_out_after = lzma->max_total_out;
-        
+
         in_bytes = (uint32_t)(total_in_before - total_in_after);
         out_bytes = (uint32_t)(total_out_after - total_out_before);
 
@@ -280,11 +284,17 @@ int32_t mz_stream_lzma_write(void *stream, const void *buf, int32_t size)
 
 int64_t mz_stream_lzma_tell(void *stream)
 {
+    MZ_UNUSED(stream);
+
     return MZ_STREAM_ERROR;
 }
 
 int32_t mz_stream_lzma_seek(void *stream, int64_t offset, int32_t origin)
 {
+    MZ_UNUSED(stream);
+    MZ_UNUSED(offset);
+    MZ_UNUSED(origin);
+
     return MZ_STREAM_ERROR;
 }
 
@@ -362,7 +372,7 @@ void *mz_stream_lzma_create(void **stream)
 {
     mz_stream_lzma *lzma = NULL;
 
-    lzma = (mz_stream_lzma *)malloc(sizeof(mz_stream_lzma));
+    lzma = (mz_stream_lzma *)MZ_ALLOC(sizeof(mz_stream_lzma));
     if (lzma != NULL)
     {
         memset(lzma, 0, sizeof(mz_stream_lzma));
@@ -383,7 +393,7 @@ void mz_stream_lzma_delete(void **stream)
         return;
     lzma = (mz_stream_lzma *)*stream;
     if (lzma != NULL)
-        free(lzma);
+        MZ_FREE(lzma);
     *stream = NULL;
 }
 

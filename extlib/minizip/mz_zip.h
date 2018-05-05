@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -30,9 +30,9 @@ extern "C" {
 
 typedef struct mz_zip_file_s
 {
-    uint16_t version_madeby;            // version made by 
+    uint16_t version_madeby;            // version made by
     uint16_t version_needed;            // version needed to extract
-    uint16_t flag;                      // general purpose bit flag 
+    uint16_t flag;                      // general purpose bit flag
     uint16_t compression_method;        // compression method
     time_t   modified_date;             // last modified date in unix time
     time_t   accessed_date;             // last accessed date in unix time
@@ -47,6 +47,7 @@ typedef struct mz_zip_file_s
     uint64_t disk_offset;               // relative offset of local header
     uint16_t internal_fa;               // internal file attributes
     uint32_t external_fa;               // external file attributes
+    uint16_t zip64;                     // zip64 extension mode
 
     char     *filename;                 // filename string
     uint8_t  *extrafield;               // extrafield data
@@ -108,21 +109,30 @@ extern int32_t mz_zip_entry_close(void *handle);
 extern int32_t mz_zip_get_number_entry(void *handle, int64_t *number_entry);
 // Get the total number of entries
 
-extern int32_t mz_zip_get_disk_number_with_cd(void *handle, int32_t *disk_number_with_cd);
+extern int32_t mz_zip_get_disk_number_with_cd(void *handle, uint32_t *disk_number_with_cd);
 // Get the the disk number containing the central directory record
 
+extern int64_t mz_zip_get_entry(void *handle);
+// Return offset of the current entry in the zip file
+
+extern int32_t mz_zip_goto_entry(void *handle, uint64_t cd_pos);
+// Go to specified entry in the zip file
+
 extern int32_t mz_zip_goto_first_entry(void *handle);
-// Go to the first entry in the zip file 
+// Go to the first entry in the zip file
 
 extern int32_t mz_zip_goto_next_entry(void *handle);
 // Go to the next entry in the zip file or MZ_END_OF_LIST if reaching the end
 
 typedef int32_t (*mz_filename_compare_cb)(void *handle, const char *filename1, const char *filename2);
-extern int32_t mz_zip_locate_entry(void *handle, const char *filename, 
+extern int32_t mz_zip_locate_entry(void *handle, const char *filename,
     mz_filename_compare_cb filename_compare_cb);
 // Locate the file with the specified name in the zip file or MZ_END_LIST if not found
 
 /***************************************************************************/
+
+int32_t  mz_zip_attrib_is_dir(int32_t attributes, int32_t version_madeby);
+// Checks to see if the attribute is a directory based on platform
 
 int32_t  mz_zip_dosdate_to_tm(uint64_t dos_date, struct tm *ptm);
 // Convert dos date/time format to struct tm
@@ -131,7 +141,7 @@ time_t   mz_zip_dosdate_to_time_t(uint64_t dos_date);
 // Convert dos date/time format to time_t
 
 int32_t  mz_zip_time_t_to_tm(time_t unix_time, struct tm *ptm);
-// Convert time_t to time struct 
+// Convert time_t to time struct
 
 uint32_t mz_zip_time_t_to_dos_date(time_t unix_time);
 // Convert time_t to dos date/time format

@@ -1,5 +1,5 @@
 /* mz.h -- Errors codes, zip flags and magic
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -19,7 +19,7 @@ extern "C" {
 /***************************************************************************/
 
 // MZ_VERSION
-#define MZ_VERSION                      ("2.2.9")
+#define MZ_VERSION                      ("2.3.0")
 
 // MZ_ERROR
 #define MZ_OK                           (0)
@@ -71,11 +71,32 @@ extern "C" {
                                          MZ_ZIP_FLAG_DEFLATE_MAX)
 #define MZ_ZIP_FLAG_DATA_DESCRIPTOR     (1 << 3)
 
+// MZ_ZIP64
+#define MZ_ZIP64_AUTO                   (0)
+#define MZ_ZIP64_FORCE                  (1)
+#define MZ_ZIP64_DISABLE                (2)
+
+// MZ_HOST_SYSTEM
+#define MZ_HOST_SYSTEM_MSDOS            (0)
+#define MZ_HOST_SYSTEM_UNIX             (3)
+#define MZ_HOST_SYSTEM_WINDOWS_NTFS     (10)
+#define MZ_HOST_SYSTEM_OSX_DARWIN       (19)
+
 // MZ_AES
 #define MZ_AES_VERSION                  (1)
 #define MZ_AES_ENCRYPTION_MODE_128      (0x01)
 #define MZ_AES_ENCRYPTION_MODE_192      (0x02)
 #define MZ_AES_ENCRYPTION_MODE_256      (0x03)
+
+// MZ_UTILITY
+#define MZ_UNUSED(SYMBOL)               ((void)SYMBOL)
+
+#ifndef MZ_CUSTOM_ALLOC
+#define MZ_ALLOC(SIZE)                  (malloc(SIZE))
+#endif
+#ifndef MZ_CUSTOM_FREE
+#define MZ_FREE(PTR)                    (free(PTR))
+#endif
 
 /***************************************************************************/
 

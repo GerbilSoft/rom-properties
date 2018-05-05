@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.2.9, April 18th, 2018
+   Version 2.3.0, May 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -85,7 +85,7 @@ typedef struct mz_zip_s
     uint64_t cd_offset;             // offset of start of central directory
     uint64_t cd_size;               // size of the central directory
 
-    uint16_t entry_scanned; 
+    uint16_t entry_scanned;
     uint16_t entry_opened;          // 1 if a file in the zip is currently writ.
     uint64_t entry_read;
 
@@ -312,7 +312,7 @@ static int32_t mz_zip_read_cd(void *handle)
 
     if ((err == MZ_OK) && (comment_size > 0))
     {
-        zip->comment = (char *)malloc(comment_size + 1);
+        zip->comment = (char *)MZ_ALLOC(comment_size + 1);
         if (zip->comment)
         {
             if (mz_stream_read(zip->stream, zip->comment, comment_size) != comment_size)
@@ -336,7 +336,7 @@ static int32_t mz_zip_write_cd(void *handle)
 
     if (zip == NULL)
         return MZ_PARAM_ERROR;
-    
+
     if (mz_stream_get_prop_int64(zip->stream, MZ_STREAM_PROP_DISK_NUMBER, &disk_number) == MZ_OK)
         zip->disk_number_with_cd = (uint32_t)disk_number;
     if (mz_stream_get_prop_int64(zip->stream, MZ_STREAM_PROP_DISK_SIZE, &disk_size) == MZ_OK && disk_size > 0)
@@ -347,7 +347,7 @@ static int32_t mz_zip_write_cd(void *handle)
     mz_stream_seek(zip->cd_mem_stream, 0, MZ_SEEK_END);
     zip->cd_size = (uint32_t)mz_stream_tell(zip->cd_mem_stream);
     mz_stream_seek(zip->cd_mem_stream, 0, MZ_SEEK_SET);
-    
+
     err = mz_stream_copy(zip->stream, zip->cd_mem_stream, (int32_t)zip->cd_size);
 
     // Write the ZIP64 central directory header
@@ -400,7 +400,7 @@ static int32_t mz_zip_write_cd(void *handle)
 
     // Write the central directory header
 
-    // Signature 
+    // Signature
     if (err == MZ_OK)
         err = mz_stream_write_uint32(zip->stream, MZ_ZIP_MAGIC_ENDHEADER);
     // Number of this disk
@@ -456,7 +456,7 @@ extern void* mz_zip_open(void *stream, int32_t mode)
     int32_t err = MZ_OK;
 
 
-    zip = (mz_zip *)malloc(sizeof(mz_zip));
+    zip = (mz_zip *)MZ_ALLOC(sizeof(mz_zip));
     if (zip == NULL)
         return NULL;
 
@@ -558,9 +558,9 @@ extern int32_t mz_zip_close(void *handle)
     }
 
     if (zip->comment)
-        free(zip->comment);
+        MZ_FREE(zip->comment);
 
-    free(zip);
+    MZ_FREE(zip);
 
     return err;
 }
@@ -583,9 +583,9 @@ extern int32_t mz_zip_set_comment(void *handle, const char *comment)
     if (zip == NULL || comment == NULL)
         return MZ_PARAM_ERROR;
     if (zip->comment != NULL)
-        free(zip->comment);
+        MZ_FREE(zip->comment);
     comment_size = (uint16_t)(strlen(comment) + 1);
-    zip->comment = (char *)malloc(comment_size);
+    zip->comment = (char *)MZ_ALLOC(comment_size);
     strncpy(zip->comment, comment, comment_size);
     return MZ_OK;
 }
@@ -606,27 +606,6 @@ extern int32_t mz_zip_set_version_madeby(void *handle, uint16_t version_madeby)
         return MZ_PARAM_ERROR;
     zip->version_madeby = version_madeby;
     return MZ_OK;
-}
-
-static int16_t mz_zip_entry_get_version_needed(int16_t zip64, mz_zip_file *file_info)
-{
-    int16_t version_needed = 20;
-
-    if (file_info == NULL)
-        return MZ_PARAM_ERROR;
-    if (file_info->version_needed > 0)
-        version_needed = file_info->version_needed;
-    if (zip64)
-        version_needed = 45;
-#ifdef HAVE_AES
-    if ((file_info->flag & MZ_ZIP_FLAG_ENCRYPTED) && (file_info->aes_version))
-        version_needed = 51;
-#endif
-#ifdef HAVE_LZMA
-    if (file_info->compression_method == MZ_COMPRESS_METHOD_LZMA)
-        version_needed = 63;
-#endif
-    return version_needed;
 }
 
 // Get info about the current file in the zip file
@@ -662,7 +641,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
         err = MZ_FORMAT_ERROR;
     else if ((!local) && (magic != MZ_ZIP_MAGIC_CENTRALHEADER))
         err = MZ_FORMAT_ERROR;
-    
+
     // Read header fields
     if (err == MZ_OK)
     {
@@ -852,13 +831,16 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
     uint16_t extrafield_zip64_size = 0;
     uint16_t extrafield_ntfs_size = 0;
     uint16_t filename_size = 0;
+    uint16_t filename_length = 0;
     uint16_t comment_size = 0;
+    uint16_t version_needed = 0;
     uint8_t zip64 = 0;
     int32_t err = MZ_OK;
 
     if (file_info == NULL)
         return MZ_PARAM_ERROR;
 
+    // Calculate extra field sizes
     extrafield_size = file_info->extrafield_size;
 
     if (file_info->uncompressed_size >= UINT32_MAX)
@@ -868,8 +850,19 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
     if (file_info->disk_offset >= UINT32_MAX)
         extrafield_zip64_size += 8;
 
-    // Use 64-bit data descriptor if we don't know uncompressed size ahead of time
-    zip64 = (local && file_info->uncompressed_size == 0) || (extrafield_zip64_size > 0);
+    if (file_info->zip64 == MZ_ZIP64_AUTO)
+    {
+        // If uncompressed size is unknown, assume zip64 for 64-bit data descriptors
+        zip64 = (local && file_info->uncompressed_size == 0) || (extrafield_zip64_size > 0);
+    }
+    else if (file_info->zip64 == MZ_ZIP64_FORCE)
+        zip64 = 1;
+    else if (file_info->zip64 == MZ_ZIP64_DISABLE)
+    {
+        // Zip64 extension is required to zip file
+        if (extrafield_zip64_size > 0)
+            return MZ_PARAM_ERROR;
+    }
 
     if (zip64)
     {
@@ -890,8 +883,6 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
         extrafield_size += extrafield_ntfs_size;
     }
 
-    file_info->version_needed = mz_zip_entry_get_version_needed(zip64, file_info);
-
     if (local)
         err = mz_stream_write_uint32(stream, MZ_ZIP_MAGIC_LOCALHEADER);
     else
@@ -901,8 +892,26 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
             err = mz_stream_write_uint16(stream, file_info->version_madeby);
     }
 
+    // Calculate version needed to extract
     if (err == MZ_OK)
-        err = mz_stream_write_uint16(stream, file_info->version_needed);
+    {
+        version_needed = file_info->version_needed;
+        if (version_needed == 0)
+        {
+            version_needed = 20;
+            if (zip64)
+                version_needed = 45;
+#ifdef HAVE_AES
+            if ((file_info->flag & MZ_ZIP_FLAG_ENCRYPTED) && (file_info->aes_version))
+                version_needed = 51;
+#endif
+#ifdef HAVE_LZMA
+            if (file_info->compression_method == MZ_COMPRESS_METHOD_LZMA)
+                version_needed = 63;
+#endif
+        }
+        err = mz_stream_write_uint16(stream, version_needed);
+    }
     if (err == MZ_OK)
         err = mz_stream_write_uint16(stream, file_info->flag);
     if (err == MZ_OK)
@@ -938,9 +947,20 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
             err = mz_stream_write_uint32(stream, (uint32_t)file_info->uncompressed_size);
     }
 
-    filename_size = (uint16_t)strlen(file_info->filename);
+    filename_length = (uint16_t)strlen(file_info->filename);
     if (err == MZ_OK)
+    {
+        filename_size = filename_length;
+        if (mz_zip_attrib_is_dir(file_info->external_fa, file_info->version_madeby) == MZ_OK)
+        {
+            if ((file_info->filename[filename_length - 1] == '/') || 
+                (file_info->filename[filename_length - 1] == '\\'))
+                filename_length -= 1;
+            else
+                filename_size += 1;
+        }
         err = mz_stream_write_uint16(stream, filename_size);
+    }
     if (err == MZ_OK)
         err = mz_stream_write_uint16(stream, extrafield_size);
 
@@ -967,8 +987,14 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
 
     if (err == MZ_OK)
     {
-        if (mz_stream_write(stream, file_info->filename, filename_size) != filename_size)
+        if (mz_stream_write(stream, file_info->filename, filename_length) != filename_length)
             err = MZ_STREAM_ERROR;
+        if (err == MZ_OK)
+        {
+            // Ensure that directories have a slash appended to them for compatibility
+            if (mz_zip_attrib_is_dir(file_info->external_fa, file_info->version_madeby) == MZ_OK)
+                err = mz_stream_write_uint8(stream, '/');
+        }
     }
     if (err == MZ_OK)
     {
@@ -1073,10 +1099,10 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
         return MZ_PARAM_ERROR;
     }
 
-    if ((zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && (password == NULL))
+    if ((zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && (password == NULL) && (zip->compression_method != MZ_COMPRESS_METHOD_RAW))
         return MZ_PARAM_ERROR;
 
-    if ((err == MZ_OK) && (zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED))
+    if ((err == MZ_OK) && (zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && (zip->compression_method != MZ_COMPRESS_METHOD_RAW))
     {
 #ifdef HAVE_AES
         if (zip->file_info.aes_version)
@@ -1215,7 +1241,7 @@ extern int32_t mz_zip_entry_read_open(void *handle, int16_t raw, const char *pas
         return MZ_PARAM_ERROR;
     if (zip->entry_scanned == 0)
         return MZ_PARAM_ERROR;
-    if ((zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && (password == NULL))
+    if ((zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && (password == NULL) && (!raw))
         return MZ_PARAM_ERROR;
 
     if (zip->file_info.disk_number == zip->disk_number_with_cd)
@@ -1237,8 +1263,7 @@ extern int32_t mz_zip_entry_read_open(void *handle, int16_t raw, const char *pas
     return err;
 }
 
-extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info,
-    int16_t compress_level, const char *password)
+extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info, int16_t compress_level, const char *password)
 {
     mz_zip *zip = (mz_zip *)handle;
     int64_t disk_number = 0;
@@ -1263,8 +1288,6 @@ extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_inf
     memcpy(&zip->file_info, file_info, sizeof(mz_zip_file));
 
     compression_method = zip->file_info.compression_method;
-    if (compress_level == 0)
-        compression_method = MZ_COMPRESS_METHOD_RAW;
 
     if (compression_method == MZ_COMPRESS_METHOD_DEFLATE)
     {
@@ -1298,6 +1321,9 @@ extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_inf
     if (zip->file_info.aes_version && zip->file_info.aes_encryption_mode == 0)
         zip->file_info.aes_encryption_mode = MZ_AES_ENCRYPTION_MODE_256;
 #endif
+
+    if ((compress_level == 0) || (mz_zip_attrib_is_dir(zip->file_info.external_fa, zip->file_info.version_madeby) == MZ_OK))
+        compression_method = MZ_COMPRESS_METHOD_RAW;
 
     if (err == MZ_OK)
         err = mz_zip_entry_write_header(zip->stream, 1, &zip->file_info);
@@ -1449,7 +1475,7 @@ static int32_t mz_zip_goto_next_entry_int(void *handle)
     zip->entry_scanned = 0;
 
     mz_stream_set_prop_int64(zip->cd_stream, MZ_STREAM_PROP_DISK_NUMBER, -1);
-    
+
     err = mz_stream_seek(zip->cd_stream, zip->cd_current_pos, MZ_SEEK_SET);
     if (err == MZ_OK)
         err = mz_zip_entry_read_header(zip->cd_stream, 0, &zip->file_info, zip->file_info_stream);
@@ -1467,13 +1493,38 @@ extern int32_t mz_zip_get_number_entry(void *handle, int64_t *number_entry)
     return MZ_OK;
 }
 
-extern int32_t mz_zip_get_disk_number_with_cd(void *handle, int32_t *disk_number_with_cd)
+extern int32_t mz_zip_get_disk_number_with_cd(void *handle, uint32_t *disk_number_with_cd)
 {
     mz_zip *zip = (mz_zip *)handle;
     if (zip == NULL || disk_number_with_cd == NULL)
         return MZ_PARAM_ERROR;
     *disk_number_with_cd = zip->disk_number_with_cd;
     return MZ_OK;
+}
+
+extern int64_t mz_zip_get_entry(void *handle)
+{
+    mz_zip *zip = (mz_zip *)handle;
+
+    if (zip == NULL)
+        return MZ_PARAM_ERROR;
+
+    return zip->cd_current_pos;
+}
+
+extern int32_t mz_zip_goto_entry(void *handle, uint64_t cd_pos)
+{
+    mz_zip *zip = (mz_zip *)handle;
+
+    if (zip == NULL)
+        return MZ_PARAM_ERROR;
+
+    if (cd_pos < zip->cd_start_pos || cd_pos > zip->cd_start_pos + zip->cd_size)
+        return MZ_PARAM_ERROR;
+
+    zip->cd_current_pos = cd_pos;
+
+    return mz_zip_goto_next_entry_int(handle);
 }
 
 extern int32_t mz_zip_goto_first_entry(void *handle)
@@ -1529,10 +1580,30 @@ extern int32_t mz_zip_locate_entry(void *handle, const char *filename, mz_filena
 
 /***************************************************************************/
 
+int32_t mz_zip_attrib_is_dir(int32_t attributes, int32_t version_madeby)
+{
+    int32_t host_system = (uint8_t)(version_madeby >> 8);
+
+    if (host_system == MZ_HOST_SYSTEM_MSDOS || host_system == MZ_HOST_SYSTEM_WINDOWS_NTFS)
+    {
+        if ((attributes & 0x10) == 0x10) // FILE_ATTRIBUTE_DIRECTORY
+            return MZ_OK;
+    }
+    else if (host_system == MZ_HOST_SYSTEM_UNIX || host_system == MZ_HOST_SYSTEM_OSX_DARWIN)
+    {
+        if ((attributes & 00170000) == 0040000) // S_ISDIR
+            return MZ_OK;
+    }
+
+    return MZ_EXIST_ERROR;
+}
+
+/***************************************************************************/
+
 static int32_t mz_zip_invalid_date(const struct tm *ptm)
 {
 #define datevalue_in_range(min, max, value) ((min) <= (value) && (value) <= (max))
-    return (!datevalue_in_range(0, 207, ptm->tm_year) ||
+    return (!datevalue_in_range(0, 127 + 80, ptm->tm_year) ||  // 1980-based year, allow 80 extra
             !datevalue_in_range(0, 11, ptm->tm_mon) ||
             !datevalue_in_range(1, 31, ptm->tm_mday) ||
             !datevalue_in_range(0, 23, ptm->tm_hour) ||
@@ -1582,9 +1653,13 @@ int32_t mz_zip_time_t_to_tm(time_t unix_time, struct tm *ptm)
     struct tm *ltm = NULL;
     if (ptm == NULL)
         return MZ_PARAM_ERROR;
-    ltm = localtime(&unix_time);
+    ltm = localtime(&unix_time);  // Returns a 1900-based year
     if (ltm == NULL)
+    {
+        // Invalid date stored, so don't return it
+        memset(ptm, 0, sizeof(struct tm));
         return MZ_INTERNAL_ERROR;
+    }
     memcpy(ptm, ltm, sizeof(struct tm));
     return MZ_OK;
 }
@@ -1598,7 +1673,7 @@ uint32_t mz_zip_time_t_to_dos_date(time_t unix_time)
 
 uint32_t mz_zip_tm_to_dosdate(const struct tm *ptm)
 {
-    struct tm fixed_tm = { 0 };
+    struct tm fixed_tm;
 
     // Years supported:
 
@@ -1610,12 +1685,12 @@ uint32_t mz_zip_tm_to_dosdate(const struct tm *ptm)
     memcpy(&fixed_tm, ptm, sizeof(struct tm));
     if (fixed_tm.tm_year >= 1980) // range [1980, 2107]
         fixed_tm.tm_year -= 1980;
-    else if (fixed_tm.tm_year >= 80) // range [80, 99]
+    else if (fixed_tm.tm_year >= 80) // range [80, 207]
         fixed_tm.tm_year -= 80;
     else // range [00, 79]
         fixed_tm.tm_year += 20;
 
-    if (mz_zip_invalid_date(ptm))
+    if (mz_zip_invalid_date(&fixed_tm))
         return 0;
 
     return (uint32_t)(((fixed_tm.tm_mday) + (32 * (fixed_tm.tm_mon + 1)) + (512 * fixed_tm.tm_year)) << 16) |
