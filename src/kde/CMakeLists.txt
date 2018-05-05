@@ -17,9 +17,6 @@ SET(rom-properties-kde_SRCS
 	config/DownloadsTab.cpp
 	config/AboutTab.cpp
 	config/QTreeViewOpt.cpp
-	config/KeyStoreQt.cpp
-	config/KeyStoreModel.cpp
-	config/KeyStoreItemDelegate.cpp
 	config/MessageWidget.cpp
 	config/MessageWidgetStack.cpp
 	)
@@ -37,9 +34,6 @@ SET(rom-properties-kde_H
 	config/DownloadsTab.hpp
 	config/AboutTab.hpp
 	config/QTreeViewOpt.hpp
-	config/KeyStoreQt.hpp
-	config/KeyStoreModel.hpp
-	config/KeyStoreItemDelegate.hpp
 	config/MessageWidget.hpp
 	config/MessageWidgetStack.hpp
 	)
@@ -52,9 +46,24 @@ SET(rom-properties-kde_UIS
 	)
 
 IF(ENABLE_DECRYPTION)
-	SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} config/KeyManagerTab.cpp)
-	SET(rom-properties-kde_H    ${rom-properties-kde_H}    config/KeyManagerTab.hpp)
-	SET(rom-properties-kde_UIS  ${rom-properties-kde_UIS}  config/KeyManagerTab.ui)
+	SET(rom-properties-kde_SRCS
+		${rom-properties-kde_SRCS}
+		config/KeyManagerTab.cpp
+		config/KeyStoreQt.cpp
+		config/KeyStoreModel.cpp
+		config/KeyStoreItemDelegate.cpp
+		)
+	SET(rom-properties-kde_H
+		${rom-properties-kde_H}
+		config/KeyManagerTab.hpp
+		config/KeyStoreQt.hpp
+		config/KeyStoreModel.hpp
+		config/KeyStoreItemDelegate.hpp
+		)
+	SET(rom-properties-kde_UIS
+		${rom-properties-kde_UIS}
+		config/KeyManagerTab.ui
+		)
 ENDIF(ENABLE_DECRYPTION)
 
 IF(ENABLE_NLS)

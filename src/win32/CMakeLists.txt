@@ -27,7 +27,6 @@ SET(rom-properties-win32_SRCS
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
 	config/CacheTab.cpp
-	config/KeyStore_OwnerDataCallback.cpp
 	config/AboutTab.cpp
 	)
 SET(rom-properties-win32_H
@@ -49,7 +48,6 @@ SET(rom-properties-win32_H
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
 	config/CacheTab.hpp
-	config/KeyStore_OwnerDataCallback.hpp
 	config/AboutTab.hpp
 	res/resource.h
 	)
@@ -63,10 +61,12 @@ IF(ENABLE_DECRYPTION)
 	SET(rom-properties-win32_CRYPTO_SRCS
 		config/KeyManagerTab.cpp
 		config/KeyStoreWin32.cpp
+		config/KeyStore_OwnerDataCallback.cpp
 		)
 	SET(rom-properties-win32_CRYPTO_H
 		config/KeyManagerTab.hpp
 		config/KeyStoreWin32.hpp
+		config/KeyStore_OwnerDataCallback.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 
