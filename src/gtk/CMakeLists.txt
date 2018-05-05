@@ -4,6 +4,14 @@ PROJECT(gtk)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 
+# Disable deprecated GTK+ 2.x functionality that isn't available in GTK+ 3.x.
+# Reference: https://developer.gnome.org/gtk3/stable/gtk-migrating-2-to-3.html
+# NOTE: Debug builds only! Release builds should have these disabled because
+# they could cause breakage with earlier versions of GTK+.
+SET(GTK_DEPRECATED_FLAGS "-DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE")
+SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${GTK_DEPRECATED_FLAGS}")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${GTK_DEPRECATED_FLAGS}")
+
 # CPU-specific and optimized sources.
 # TODO: Move arch detection to platform.cmake.
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
