@@ -319,10 +319,10 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		return -errno;
 	}
 
-	// Check for NoCrypt.
-	// TODO: Check both hash_verify and disc_noCrypt.
+	// Check for NoCrypto.
+	// TODO: Check both hash_verify and disc_noCrypto.
 	// Dolphin only checks hash_verify.
-	const bool noCrypt = (discHeader.hash_verify != 0);
+	const bool noCrypto = (discHeader.hash_verify != 0);
 
 	// Process each volume group.
 	for (unsigned int i = 0; i < 4; i++) {
@@ -382,7 +382,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Create the WiiPartition objects.
 	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl.end(); ++iter) {
-		iter->partition = new WiiPartition(discReader, iter->start, iter->size, noCrypt);
+		iter->partition = new WiiPartition(discReader, iter->start, iter->size, noCrypto);
 
 		if (iter->type == PARTITION_UPDATE && !updatePartition) {
 			// System Update partition.

@@ -39,13 +39,13 @@ class WiiPartition : public GcnPartition
 		 * NOTE: The IDiscReader *must* remain valid while this
 		 * WiiPartition is open.
 		 *
-		 * @param discReader IDiscReader.
-		 * @param partition_offset Partition start offset.
-		 * @param partition_size Calculated partition size. Used if the size in the header is 0.
-		 * @param noCrypt If true, disc image is not encrypted. (RVT-H)
+		 * @param discReader		[in] IDiscReader.
+		 * @param partition_offset	[in] Partition start offset.
+		 * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
+		 * @param noCrypto		[in] If true, disc image is not encrypted. (RVT-H)
 		 */
 		WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-			int64_t partition_size, bool noCrypt = false);
+			int64_t partition_size, bool noCrypto = false);
 		~WiiPartition();
 
 	private:

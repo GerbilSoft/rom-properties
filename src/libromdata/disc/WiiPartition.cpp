@@ -54,7 +54,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 {
 	public:
 		WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader,
-			int64_t partition_offset, int64_t partition_size, bool noCrypt);
+			int64_t partition_offset, int64_t partition_size, bool noCrypto);
 		virtual ~WiiPartitionPrivate();
 
 	private:
@@ -81,10 +81,10 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 	public:
 		// If true, the disc image is not encrypted. (RVT-H)
-		bool noCrypt;
+		bool noCrypto;
 
 		// Decrypted read position. (0x7C00 bytes out of 0x8000)
-		// NOTE: Actual read position if noCrypt is true.
+		// NOTE: Actual read position if noCrypto is true.
 		int64_t pos_7C00;
 
 		// Decrypted sector cache.
@@ -174,24 +174,24 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		IDiscReader *discReader, int64_t partition_offset,
-		int64_t partition_size, bool noCrypt)
+		int64_t partition_size, bool noCrypto)
 	: super(q, discReader, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
 	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, noCrypt(noCrypt)
+	, noCrypto(noCrypto)
 	, pos_7C00(-1)
 	, sector_num(~0)
 	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, verifyResult(KeyManager::VERIFY_NO_SUPPORT)
 	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, noCrypt(noCrypt)
+	, noCrypto(noCrypto)
 	, pos_7C00(-1)
 	, sector_num(~0)
 #endif /* ENABLE_DECRYPTION */
 {
-	if (noCrypt) {
+	if (noCrypto) {
 		// No encryption. (RVT-H)
 		verifyResult = KeyManager::VERIFY_OK;
 		m_encKey = WiiPartition::ENCKEY_NONE;
@@ -233,7 +233,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	data_offset     = (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
 	data_size       = (int64_t)be32_to_cpu(partitionHeader.data_size) << 2;
 	if (data_size == 0) {
-		// NoCrypt RVT-H images sometimes have this set to 0.
+		// NoCrypto RVT-H images sometimes have this set to 0.
 		// Use the calculated partition size.
 		data_size = partition_size - data_offset;
 	}
@@ -443,7 +443,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 
 	RP_Q(WiiPartition);
 #ifndef ENABLE_DECRYPTION
-	if (!noCrypt) {
+	if (!noCrypto) {
 		// Decryption is disabled.
 		q->m_lastError = EIO;
 		return -1;
@@ -471,7 +471,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	}
 
 #ifdef ENABLE_DECRYPTION
-	if (!noCrypt) {
+	if (!noCrypto) {
 		// Decrypt the sector.
 		if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
 		    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
@@ -497,12 +497,14 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * NOTE: The IDiscReader *must* remain valid while this
  * WiiPartition is open.
  *
- * @param discReader IDiscReader.
- * @param partition_offset Partition start offset.
+ * @param discReader		[in] IDiscReader.
+ * @param partition_offset	[in] Partition start offset.
+ * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
+ * @param noCrypto		[in] If true, disc image is not encrypted. (RVT-H)
  */
 WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-		int64_t partition_size, bool noCrypt)
-	: super(new WiiPartitionPrivate(this, discReader, partition_offset, partition_size, noCrypt))
+		int64_t partition_size, bool noCrypto)
+	: super(new WiiPartitionPrivate(this, discReader, partition_offset, partition_size, noCrypto))
 { }
 
 WiiPartition::~WiiPartition()
@@ -540,7 +542,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		size = (size_t)(d->data_size - d->pos_7C00);
 	}
 
-	if (d->noCrypt) {
+	if (d->noCrypto) {
 		// No encryption.
 
 		// Check if we're not starting on a block boundary.

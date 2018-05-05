@@ -63,7 +63,7 @@ typedef struct PACKED _GCN_DiscHeader {
 	// Wii: Disc encryption status.
 	// Normally 0 on retail and RVT-R (indicating the disc is encrypted).
 	uint8_t hash_verify;		// [0x060] If non-zero, disable hash verification.
-	uint8_t disc_noCrypt;		// [0x061] If non-zero, disable disc encryption.
+	uint8_t disc_noCrypto;		// [0x061] If non-zero, disable disc encryption.
 } GCN_DiscHeader;
 ASSERT_STRUCT(GCN_DiscHeader, 98);
 
