@@ -114,7 +114,7 @@ inline int Semaphore::obtain(void)
  */
 inline int Semaphore::release(void)
 {
-	if (!m_sem)
+	if (!m_isInit)
 		return -EBADF;
 
 	// TODO: What error to return?
