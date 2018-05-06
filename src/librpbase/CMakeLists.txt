@@ -257,16 +257,10 @@ SET(librpbase_THREAD_H
 IF(CMAKE_USE_WIN32_THREADS_INIT)
 	SET(HAVE_WIN32_THREADS 1)
 	SET(librpbase_THREAD_SRCS
-		threads/SemaphoreWin32.cpp
-		threads/MutexWin32.cpp
 		threads/pthread_once.c
 		)
 ELSEIF(CMAKE_USE_PTHREADS_INIT)
 	SET(HAVE_PTHREADS 1)
-	SET(librpbase_THREAD_SRCS
-		threads/SemaphorePosix.cpp
-		threads/MutexPosix.cpp
-		)
 ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()
