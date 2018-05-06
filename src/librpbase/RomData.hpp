@@ -223,7 +223,7 @@ class RomData
 			FTYPE_BANNER_FILE,		// Banner file, e.g. GameCube opening.bnr.
 			FTYPE_HOMEBREW,			// Homebrew application, e.g. 3DSX.
 			FTYPE_EMMC_DUMP,		// eMMC dump
-			FTYPE_TITLE_CONTENTS,		// Title contents, e.g. NCCH.
+			FTYPE_CONTAINER_FILE,		// Container file, e.g. NCCH.
 			FTYPE_FIRMWARE_BINARY,		// Firmware binary, e.g. 3DS FIRM.
 			FTYPE_TEXTURE_FILE,		// Texture file, e.g. Sega PVR.
 			FTYPE_RELOCATABLE_OBJECT,	// Relocatable Object File (*.o)

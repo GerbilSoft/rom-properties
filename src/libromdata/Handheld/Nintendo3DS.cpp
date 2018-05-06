@@ -1349,7 +1349,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 		case Nintendo3DSPrivate::ROM_TYPE_NCCH:
 			// NCCH reader will be created when loadNCCH() is called.
 			// TODO: Better type.
-			d->fileType = FTYPE_TITLE_CONTENTS;
+			d->fileType = FTYPE_CONTAINER_FILE;
 			break;
 
 		default:

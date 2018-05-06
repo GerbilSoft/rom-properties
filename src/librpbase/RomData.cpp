@@ -433,8 +433,8 @@ const char *RomData::fileType_string(void) const
 		NOP_C_("RomData|FileType", "Homebrew Application"),
 		// tr: FTYPE_EMMC_DUMP
 		NOP_C_("RomData|FileType", "eMMC Dump"),
-		// tr: FTYPE_TITLE_CONTENTS
-		NOP_C_("RomData|FileType", "Title Contents"),
+		// tr: FTYPE_CONTAINER_FILE
+		NOP_C_("RomData|FileType", "Container File"),
 		// tr: FTYPE_FIRMWARE_BINARY
 		NOP_C_("RomData|FileType", "Firmware Binary"),
 		// tr: FTYPE_TEXTURE_FILE
