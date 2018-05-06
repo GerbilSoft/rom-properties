@@ -691,6 +691,7 @@ int Dreamcast::loadFieldData(void)
 		};
 		vector<string> *v_req_controller_bitfield_names = RomFields::strArrayToVector_i18n(
 			"Dreamcast|ReqCtrl", req_controller_bitfield_names, ARRAY_SIZE(req_controller_bitfield_names));
+		// tr: Required controller features.
 		d->fields->addField_bitfield(C_("Dreamcast", "Req. Controller"),
 			v_req_controller_bitfield_names, 3, peripherals >> 12);
 
@@ -702,6 +703,7 @@ int Dreamcast::loadFieldData(void)
 		};
 		vector<string> *v_opt_controller_bitfield_names = RomFields::strArrayToVector_i18n(
 			"Dreamcast|OptCtrl", opt_controller_bitfield_names, ARRAY_SIZE(opt_controller_bitfield_names));
+		// tr: Optional controller features.
 		d->fields->addField_bitfield(C_("Dreamcast", "Opt. Controller"),
 			v_opt_controller_bitfield_names, 0, peripherals >> 25);
 	}
