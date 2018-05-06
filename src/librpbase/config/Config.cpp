@@ -22,8 +22,8 @@
 #include "ConfReader_p.hpp"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cstring>
 
 // C++ includes.
@@ -257,12 +257,12 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			}
 
 			// Check for spaces at the start of the string.
-			while (isspace(*pos) && len > 0) {
+			while (ISSPACE(*pos) && len > 0) {
 				pos++;
 				len--;
 			}
 			// Check for spaces at the end of the string.
-			while (len > 0 && isspace(pos[len-1])) {
+			while (len > 0 && ISSPACE(pos[len-1])) {
 				len--;
 			}
 

@@ -50,8 +50,8 @@ using namespace LibRpBase;
 #include "disc/CIAReader.hpp"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
@@ -2621,7 +2621,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	// NOTE: We're checking for NULL termination above.
 	const char *id4 = &ncch_header->product_code[6];
 	for (int i = 3; i >= 0; i--) {
-		if (!isprint(id4[i])) {
+		if (!ISPRINT(id4[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}

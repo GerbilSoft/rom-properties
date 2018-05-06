@@ -32,8 +32,8 @@ using namespace LibRpBase;
 #include "libi18n/i18n.h"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 
 // C++ includes.
 #include <string>
@@ -375,7 +375,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	while (!pngVersionCompiled.empty()) {
 		size_t idx = pngVersionCompiled.size() - 1;
 		char chr = pngVersionCompiled[idx];
-		if (isdigit(chr))
+		if (ISDIGIT(chr))
 			break;
 		pngVersionCompiled.resize(idx);
 	}

@@ -53,7 +53,6 @@ using LibRomData::RomDataFactory;
 
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cctype>
 #include <cstring>
 
 // C++ includes.

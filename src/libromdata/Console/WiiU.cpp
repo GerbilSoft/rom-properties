@@ -38,8 +38,8 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
@@ -376,8 +376,8 @@ int WiiU::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (isalnum(publisher_code[0]) && isalnum(publisher_code[1]) &&
-		    isalnum(publisher_code[2]) && isalnum(publisher_code[3]))
+		if (ISALNUM(publisher_code[0]) && ISALNUM(publisher_code[1]) &&
+		    ISALNUM(publisher_code[2]) && ISALNUM(publisher_code[3]))
 		{
 			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code);
 		} else {
@@ -518,7 +518,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// (GameCube NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (int i = 0; i < 4; i++) {
-		id6[i] = (isprint(d->discHeader.id4[i])
+		id6[i] = (ISPRINT(d->discHeader.id4[i])
 			? d->discHeader.id4[i]
 			: '_');
 	}

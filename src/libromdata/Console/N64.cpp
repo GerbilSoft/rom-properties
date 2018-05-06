@@ -32,8 +32,8 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstring>
 
@@ -290,7 +290,7 @@ int N64::loadFieldData(void)
 	// Replace any non-printable characters with underscores.
 	char id4[5];
 	for (int i = 0; i < 4; i++) {
-		id4[i] = (isprint(romHeader->id4[i])
+		id4[i] = (ISPRINT(romHeader->id4[i])
 			? romHeader->id4[i]
 			: '_');
 	}
@@ -307,11 +307,11 @@ int N64::loadFieldData(void)
 		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 
 	// Release. (OS version)
+	// TODO: ISALPHA(), or ISUPPER()?
 	if (romHeader->release[0] == 0x00 &&
 	    romHeader->release[1] == 0x00 &&
-	    isalpha(romHeader->release[3]))
+	    ISALPHA(romHeader->release[3]))
 	{
-		// TODO: isalpha(), or isupper()?
 		snprintf(buf, sizeof(buf), "OS %u%c",
 			romHeader->release[2], romHeader->release[3]);
 		d->fields->addField_string(C_("N64", "Release"), buf);

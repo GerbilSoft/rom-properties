@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_Win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "../RpFile.hpp"
@@ -27,8 +26,8 @@
 #include "libwin32common/w32err.h"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 
 // C++ includes.
 #include <memory>
@@ -338,7 +337,7 @@ void RpFile::init(void)
 	// Check if the path starts with a drive letter.
 	bool isBlockDevice = false;
 	if (d->filename.size() >= 3 &&
-	    isascii(d->filename[0]) && isalpha(d->filename[0]) &&
+	    ISASCII(d->filename[0]) && ISALPHA(d->filename[0]) &&
 	    d->filename[1] == ':' && d->filename[2] == '\\')
 	{
 		// Is it only a drive letter?

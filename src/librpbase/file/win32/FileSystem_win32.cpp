@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * FileSystem_posix.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "../FileSystem.hpp"
@@ -31,9 +30,9 @@
 #include <sys/utime.h>
 
 // C includes. (C++ namespace)
+#include "librphase/ctypex.h"
 #include <cstring>
 #include <ctime>
-#include <cwctype>
 
 // C++ includes.
 #include <string>
@@ -84,7 +83,7 @@ static inline wstring makeWinPath(const char *filename)
 		return wstring();
 
 	wstring filenameW;
-	if (isascii(filename[0]) && isalpha(filename[0]) &&
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
@@ -110,7 +109,7 @@ static inline wstring makeWinPath(const string &filename)
 		return wstring();
 
 	wstring filenameW;
-	if (isascii(filename[0]) && isalpha(filename[0]) &&
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.

@@ -47,9 +47,9 @@ using namespace LibRpBase;
 #include "disc/WiiPartition.hpp"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
-#include <cctype>
 #include <cstdio>
 #include <cstring>
 
@@ -1493,7 +1493,7 @@ int GameCube::loadFieldData(void)
 	// The ID6 cannot have non-printable characters.
 	// (NDDEMO has ID6 "00\0E01".)
 	for (int i = ARRAY_SIZE(discHeader->id6)-1; i >= 0; i--) {
-		if (!isprint(discHeader->id6[i])) {
+		if (!ISPRINT(discHeader->id6[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}
@@ -1507,8 +1507,8 @@ int GameCube::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (isalnum(discHeader->company[0]) &&
-		    isalnum(discHeader->company[1]))
+		if (ISALNUM(discHeader->company[0]) &&
+		    ISALNUM(discHeader->company[1]))
 		{
 			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
 				discHeader->company);
@@ -1812,8 +1812,8 @@ int GameCube::loadFieldData(void)
 					char chr[4];
 				} part_type;
 				part_type.be32_type = cpu_to_be32(entry.type);
-				if (isalnum(part_type.chr[0]) && isalnum(part_type.chr[1]) &&
-				    isalnum(part_type.chr[2]) && isalnum(part_type.chr[3]))
+				if (ISALNUM(part_type.chr[0]) && ISALNUM(part_type.chr[1]) &&
+				    ISALNUM(part_type.chr[2]) && ISALNUM(part_type.chr[3]))
 				{
 					// All four bytes are ASCII letters and/or numbers.
 					str = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
@@ -2074,7 +2074,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (int i = 0; i < 6; i++) {
-		id6[i] = (isprint(d->discHeader.id6[i])
+		id6[i] = (ISPRINT(d->discHeader.id6[i])
 			? d->discHeader.id6[i]
 			: '_');
 	}

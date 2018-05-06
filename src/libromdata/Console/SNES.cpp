@@ -37,8 +37,8 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstring>
 #include <ctime>
@@ -169,8 +169,8 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	if (romHeader->snes.old_publisher_code == 0x33) {
 		// Extended header should be present.
 		// New publisher code and game ID must be alphanumeric.
-		if (!isalnum(romHeader->snes.ext.new_publisher_code[0]) ||
-		    !isalnum(romHeader->snes.ext.new_publisher_code[1]))
+		if (!ISALNUM(romHeader->snes.ext.new_publisher_code[0]) ||
+		    !ISALNUM(romHeader->snes.ext.new_publisher_code[1]))
 		{
 			// New publisher code is invalid.
 			return false;
@@ -179,7 +179,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		// Game ID must contain alphanumeric characters or a space.
 		for (int i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4); i++) {
 			// ID4 should be in the format "SMWJ" or "MW  ".
-			if (isalnum(romHeader->snes.ext.id4[i])) {
+			if (ISALNUM(romHeader->snes.ext.id4[i])) {
 				// Alphanumeric character.
 				continue;
 			} else if (romHeader->snes.ext.id4[i] == ' ' && i >= 2) {
@@ -256,8 +256,8 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 	}
 
 	// New publisher code must be alphanumeric.
-	if (!isalnum(romHeader->bsx.ext.new_publisher_code[0]) ||
-	    !isalnum(romHeader->bsx.ext.new_publisher_code[1]))
+	if (!ISALNUM(romHeader->bsx.ext.new_publisher_code[0]) ||
+	    !ISALNUM(romHeader->bsx.ext.new_publisher_code[1]))
 	{
 		// New publisher code is invalid.
 		return false;

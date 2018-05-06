@@ -39,8 +39,8 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstring>
 
@@ -200,7 +200,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 	// TODO: NDDEMO has a NULL in the game ID, but I don't think
 	// it has save files.
 	for (int i = 6-1; i >= 0; i--) {
-		if (!isalnum(direntry->id6[i])) {
+		if (!ISALNUM(direntry->id6[i])) {
 			// Non-alphanumeric character.
 			return false;
 		}
@@ -847,7 +847,7 @@ int GameCubeSave::loadFieldData(void)
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (int i = 0; i < 6; i++) {
-		id6[i] = (isprint(d->direntry.id6[i])
+		id6[i] = (ISPRINT(d->direntry.id6[i])
 			? d->direntry.id6[i]
 			: '_');
 	}

@@ -33,8 +33,8 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstring>
 
@@ -272,7 +272,7 @@ int GameBoyAdvance::loadFieldData(void)
 	// (Action Replay has ID6 "\0\0\0\001".)
 	char id6[7];
 	for (int i = 0; i < 6; i++) {
-		id6[i] = (isprint(romHeader->id6[i])
+		id6[i] = (ISPRINT(romHeader->id6[i])
 			? romHeader->id6[i]
 			: '_');
 	}
@@ -285,8 +285,8 @@ int GameBoyAdvance::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (isalnum(romHeader->company[0]) &&
-		    isalnum(romHeader->company[1]))
+		if (ISALNUM(romHeader->company[0]) &&
+		    ISALNUM(romHeader->company[1]))
 		{
 			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%.2s)"),
 				romHeader->company);

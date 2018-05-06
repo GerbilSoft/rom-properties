@@ -40,8 +40,8 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstring>
 
@@ -1427,7 +1427,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	// The ID4 cannot have non-printable characters.
 	char id4[5];
 	for (int i = ARRAY_SIZE(d->romHeader.id4)-1; i >= 0; i--) {
-		if (!isprint(d->romHeader.id4[i])) {
+		if (!ISPRINT(d->romHeader.id4[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}

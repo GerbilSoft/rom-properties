@@ -34,6 +34,7 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -325,7 +326,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
 			while (verstr < end && verstr[count] != 0 &&
-			       !isspace(verstr[count]) && verstr[count] != ')' &&
+			       !ISSPACE(verstr[count]) && verstr[count] != ')' &&
 			       count < 32)
 			{
 				count++;

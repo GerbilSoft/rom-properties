@@ -136,6 +136,7 @@ SET(librpbase_H
 	common.h
 	uvector.h
 	aligned_malloc.h
+	ctypex.h
 	TextFuncs.hpp
 	TextFuncs_wchar.hpp
 	TextFuncs_libc.h

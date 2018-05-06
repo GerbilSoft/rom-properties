@@ -43,7 +43,7 @@ using LibRomData::GcnFst;
 #include "FstPrint.hpp"
 
 // C includes. (C++ namespace)
-#include <cctype>
+#include "librpbase/ctypex.h"
 
 // C++ includes.
 #include <sstream>
@@ -564,7 +564,7 @@ string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<Gcn
 	// See gtest-param-util.h::IsValidParamName().
 	for (int i = (int)suffix.size()-1; i >= 0; i--) {
 		char chr = suffix[i];
-		if (!isalnum(chr) && chr != '_') {
+		if (!ISALNUM(chr) && chr != '_') {
 			suffix[i] = '_';
 		}
 	}

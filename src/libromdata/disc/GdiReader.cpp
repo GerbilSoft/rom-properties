@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -35,10 +35,10 @@ using namespace LibRpBase;
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstring>
-#include <cctype>
 
 // FIXME: Put this in a compatibility header.
 #ifdef _MSC_VER
@@ -444,7 +444,7 @@ int GdiReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 		if (pHeader[i] == '\r' || pHeader[i] == '\n') {
 			// End of line.
 			break;
-		} else if (isdigit(pHeader[i])) {
+		} else if (ISDIGIT(pHeader[i])) {
 			// Digit.
 			trackCount *= 10;
 			trackCount += (pHeader[i] & 0xF);

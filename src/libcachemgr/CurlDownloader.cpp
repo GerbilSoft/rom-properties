@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
-#include <cctype>
+#include "librpbase/ctypex.h"
 #include <cstring>
 
 // C++ includes.
@@ -130,7 +130,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		int64_t fileSize = strtoll(s_val, &endptr, 10);
 
 		// *endptr should be \0 or a whitespace character.
-		if (*endptr != '\0' && !isspace(*endptr)) {
+		if (*endptr != '\0' && !ISSPACE(*endptr)) {
 			// Content-Length is invalid.
 			return 0;
 		} else if (curlDL->m_maxSize > 0 &&

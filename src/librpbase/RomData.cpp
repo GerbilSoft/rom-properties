@@ -27,8 +27,8 @@
 #include "libi18n/i18n.h"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <ctime>
 
@@ -226,7 +226,7 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	// Convert the date to an unsigned integer first.
 	unsigned int ymd = 0;
 	for (unsigned int i = 0; i < 8; i++) {
-		if (unlikely(!isdigit(ascii_date[i]))) {
+		if (unlikely(!ISDIGIT(ascii_date[i]))) {
 			// Invalid digit.
 			return -1;
 		}

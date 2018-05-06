@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDriveRegions.cpp: Sega Mega Drive region code detection.            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,17 +14,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "MegaDriveRegions.hpp"
 #include "librpbase/SystemRegion.hpp"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cstring>
 
 namespace LibRomData {
@@ -46,8 +45,8 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 	unsigned int ret = 0;
 
 	// Check for a hex code.
-	if (isalnum(region_codes[0]) &&
-	    (region_codes[1] == 0 || isspace(region_codes[1])))
+	if (ISALNUM(region_codes[0]) &&
+	    (region_codes[1] == 0 || ISSPACE(region_codes[1])))
 	{
 		// Single character region code.
 		// Assume it's a hex code, *unless* it's 'E'.
@@ -87,7 +86,7 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 			// Check for old-style JUE region codes.
 			// (J counts as both Japan and Asia.)
 			for (int i = 0; i < size; i++) {
-				if (region_codes[i] == 0 || isspace(region_codes[i]))
+				if (region_codes[i] == 0 || ISSPACE(region_codes[i]))
 					break;
 				switch (region_codes[i]) {
 					case 'J':

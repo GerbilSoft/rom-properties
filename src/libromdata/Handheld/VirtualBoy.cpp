@@ -34,8 +34,8 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <cstring>
 
@@ -112,7 +112,7 @@ bool inline VirtualBoyPrivate::isPublisherID(char c){
 	// Valid characters:
 	// - Uppercase letters
 	// - Digits
-	return (isupper(c) || isdigit(c));
+	return (ISUPPER(c) || ISDIGIT(c));
 }
 
 /**
@@ -126,7 +126,7 @@ bool inline VirtualBoyPrivate::isGameID(char c){
 	// - Digits
 	// - Space (' ')
 	// - Hyphen ('-')
-	return (isupper(c) || isdigit(c) || c == ' ' || c == '-');
+	return (ISUPPER(c) || ISDIGIT(c) || c == ' ' || c == '-');
 }
 
 /** VirtualBoy **/
@@ -356,8 +356,8 @@ int VirtualBoy::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
-		if (isalnum(romHeader->publisher[0]) &&
-		    isalnum(romHeader->publisher[1]))
+		if (ISALNUM(romHeader->publisher[0]) &&
+		    ISALNUM(romHeader->publisher[1]))
 		{
 			s_publisher = rp_sprintf(C_("VirtualBoy", "Unknown (%.2s)"),
 				romHeader->publisher);

@@ -45,9 +45,9 @@ using namespace LibRpBase;
 #include "Texture/SegaPVR.hpp"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
-#include <cctype>
 #include <cstring>
 
 // C++ includes.
@@ -557,8 +557,8 @@ int Dreamcast::loadFieldData(void)
 	    discHeader->device_info[12] == '/')
 	{
 		// "GD-ROM" is present.
-		if (isdigit(discHeader->device_info[11]) &&
-		    isdigit(discHeader->device_info[13]))
+		if (ISDIGIT(discHeader->device_info[11]) &&
+		    ISDIGIT(discHeader->device_info[13]))
 		{
 			// Disc digits are present.
 			disc_num = discHeader->device_info[11] & 0x0F;
@@ -607,9 +607,9 @@ int Dreamcast::loadFieldData(void)
 	unsigned int crc16_expected = 0;
 	const char *p = discHeader->device_info;
 	for (unsigned int i = 4; i > 0; i--, p++) {
-		if (isxdigit(*p)) {
+		if (ISXDIGIT(*p)) {
 			crc16_expected <<= 4;
-			if (isdigit(*p)) {
+			if (ISDIGIT(*p)) {
 				crc16_expected |= (*p & 0xF);
 			} else {
 				crc16_expected |= ((*p & 0xF) + 10);

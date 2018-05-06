@@ -28,7 +28,7 @@
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
-#include <cctype>
+#include "librpbase/ctypex.h"
 #include <clocale>
 #include <cstring>
 
@@ -143,16 +143,16 @@ int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
 	int ret = -1;
 
 	// Language code: Read up to the first non-alphabetic character.
-	if (isalpha(locale[0]) && isalpha(locale[1])) {
-		if (!isalpha(locale[2])) {
+	if (ISALPHA(locale[0]) && ISALPHA(locale[1])) {
+		if (!ISALPHA(locale[2])) {
 			// 2-character language code.
-			lc = ((tolower(locale[0]) << 8) |
-			       tolower(locale[1]));
-		} else if (isalpha(locale[2]) && !isalpha(locale[3])) {
+			lc = ((TOLOWER(locale[0]) << 8) |
+			       TOLOWER(locale[1]));
+		} else if (ISALPHA(locale[2]) && !ISALPHA(locale[3])) {
 			// 3-character language code.
-			lc = ((tolower(locale[0]) << 16) |
-			      (tolower(locale[1]) << 8) |
-			       tolower(locale[2]));
+			lc = ((TOLOWER(locale[0]) << 16) |
+			      (TOLOWER(locale[1]) << 8) |
+			       TOLOWER(locale[2]));
 		} else {
 			// Invalid language code.
 			lc = 0;
@@ -171,17 +171,17 @@ int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
 	}
 
 	// Found an underscore.
-	if (isalpha(underscore[1]) && isalpha(underscore[2])) {
-		if (!isalpha(underscore[3])) {
+	if (ISALPHA(underscore[1]) && ISALPHA(underscore[2])) {
+		if (!ISALPHA(underscore[3])) {
 			// 2-character country code.
-			cc = ((toupper(underscore[1]) << 8) |
-			       toupper(underscore[2]));
+			cc = ((TOUPPER(underscore[1]) << 8) |
+			       TOUPPER(underscore[2]));
 			ret = 0;
-		} else if (isalpha(underscore[3]) && !isalpha(underscore[4])) {
+		} else if (ISALPHA(underscore[3]) && !ISALPHA(underscore[4])) {
 			// 3-character country code.
-			cc = ((toupper(underscore[1]) << 16) |
-			      (toupper(underscore[2]) << 8) |
-			       toupper(underscore[3]));
+			cc = ((TOUPPER(underscore[1]) << 16) |
+			      (TOUPPER(underscore[2]) << 8) |
+			       TOUPPER(underscore[3]));
 			ret = 0;
 		} else {
 			// Invalid country code.

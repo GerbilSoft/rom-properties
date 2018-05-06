@@ -33,9 +33,9 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
-#include <cctype>
 #include <cstring>
 
 // C++ includes.
@@ -474,7 +474,7 @@ int DMG::loadFieldData(void)
 		// Check if a Game ID is present.
 			isGameID = true;
 			for (int i = 11; i < 15; i++) {
-				if (!isalnum(romHeader->title15[i])) {
+				if (!ISALNUM(romHeader->title15[i])) {
 					// Not a Game ID.
 					isGameID = false;
 					break;
@@ -585,8 +585,8 @@ int DMG::loadFieldData(void)
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			if (isalnum(romHeader->new_publisher_code[0]) &&
-			    isalnum(romHeader->new_publisher_code[1]))
+			if (ISALNUM(romHeader->new_publisher_code[0]) &&
+			    ISALNUM(romHeader->new_publisher_code[1]))
 			{
 				s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
 					romHeader->new_publisher_code);
