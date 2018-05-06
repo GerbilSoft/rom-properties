@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Mutex.hpp: System-specific mutex implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_MUTEX_HPP__
@@ -24,56 +23,18 @@
 
 #include "common.h"
 
+// NOTE: The .cpp files are #included here in order to inline the functions.
+// Do NOT compile them separately!
+
+// Each .cpp file defines the Mutex class itself, with required fields.
+
 #ifdef _WIN32
-#include "libwin32common/RpWin32_sdk.h"
+# include "MutexWin32.cpp"
 #else /* !_WIN32 */
-#include <pthread.h>
+# include "MutexPosix.cpp"
 #endif
 
 namespace LibRpBase {
-
-class Mutex
-{
-	public:
-		/**
-		 * Create a mutex.
-		 */
-		explicit Mutex();
-
-		/**
-		 * Delete the mutex.
-		 * WARNING: Mutex MUST be unlocked!
-		 */
-		~Mutex();
-
-	private:
-		RP_DISABLE_COPY(Mutex)
-
-	public:
-		/**
-		 * Lock the mutex.
-		 * If the mutex is locked, this function will block until
-		 * the previous locker unlocks it.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int lock(void);
-
-		/**
-		 * Unlock the mutex.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int unlock(void);
-
-	private:
-#ifdef _WIN32
-		// NOTE: Windows implementation uses critical sections,
-		// since they have less overhead than mutexes.
-		CRITICAL_SECTION m_criticalSection;
-#else
-		pthread_mutex_t m_mutex;
-#endif
-		bool m_isInit;
-};
 
 /**
  * Automatic mutex locker/unlocker class.
@@ -83,13 +44,13 @@ class Mutex
 class MutexLocker
 {
 	public:
-		explicit MutexLocker(Mutex &mutex)
+		inline explicit MutexLocker(Mutex &mutex)
 			: m_mutex(mutex)
 		{
 			m_mutex.lock();
 		}
 
-		~MutexLocker()
+		inline ~MutexLocker()
 		{
 			m_mutex.unlock();
 		}

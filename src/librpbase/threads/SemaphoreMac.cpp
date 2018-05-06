@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * SemaphoreWin32.cpp: Win32 semaphore implementation.                     *
+ * SemaphoreMac.cpp: Mac OS X semaphore implementation.                    *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -19,11 +19,18 @@
  ***************************************************************************/
 
 #include "Semaphore.hpp"
-#include "libwin32common/RpWin32_sdk.h"
+
+#include <mach/mach.h>
+#include <mach/mach_traps.h>
+#include <mach/semaphore.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+
+// References:
+// - https://developer.apple.com/library/content/documentation/Darwin/Conceptual/KernelProgramming/synchronization/synchronization.html
+// - https://gist.github.com/kazupon/3843288
 
 namespace LibRpBase {
 
@@ -61,7 +68,7 @@ class Semaphore
 		inline int release(void);
 
 	private:
-		HANDLE m_sem;
+		semaphore_t m_sem;
 };
 
 /**
@@ -69,12 +76,12 @@ class Semaphore
  * @param count Number of times the semaphore can be obtained before blocking.
  */
 inline Semaphore::Semaphore(int count)
+	: m_sem(0)
 {
-	m_sem = CreateSemaphore(nullptr, count, count, nullptr);
-	assert(m_sem != nullptr);
-	if (!m_sem) {
-		// FIXME: Do something if an error occurred here...
-	}
+	kern_return_t ret = semaphore_create(mach_task_self(), &m_sem, SYNC_POLICY_FIFO, count);
+	assert(ret == KERN_SUCCESS);
+	assert(m_sem != 0);
+	// FIXME: Do something if an error occurred here...
 }
 
 /**
@@ -83,8 +90,8 @@ inline Semaphore::Semaphore(int count)
  */
 inline Semaphore::~Semaphore()
 {
-	if (m_sem) {
-		CloseHandle(m_sem);
+	if (m_sem != 0) {
+		semaphore_destroy(mach_task_self(), m_sem);
 	}
 }
 
@@ -96,15 +103,10 @@ inline Semaphore::~Semaphore()
  */
 inline int Semaphore::obtain(void)
 {
-	if (!m_sem)
+	if (m_sem != 0)
 		return -EBADF;
 
-	DWORD dwWaitResult = WaitForSingleObject(m_sem, INFINITE);
-	if (dwWaitResult == WAIT_OBJECT_0)
-		return 0;
-
-	// TODO: What error to return?
-	return -1;
+	return semaphore_wait(m_sem);
 }
 
 /**
@@ -113,15 +115,11 @@ inline int Semaphore::obtain(void)
  */
 inline int Semaphore::release(void)
 {
-	if (!m_sem)
+	if (m_sem != 0)
 		return -EBADF;
 
-	BOOL bRet = ReleaseSemaphore(m_sem, 1, nullptr);
-	if (bRet != 0)
-		return 0;
-
 	// TODO: What error to return?
-	return -1;
+	return semaphore_signal(m_sem);
 }
 
 }
