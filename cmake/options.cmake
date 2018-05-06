@@ -63,6 +63,7 @@ ENDIF()
 # supports APNG.
 
 # Enable decryption for newer ROM and disc images.
+# TODO: Tri-state like UI frontends.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
 # Enable S3TC decompression. If disabled, uses S2TC.
