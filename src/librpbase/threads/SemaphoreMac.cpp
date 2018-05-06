@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "Semaphore.hpp"
+#include <mach/mach_traps.h>
 #include <mach/semaphore.h>
 
 // C includes. (C++ namespace)
@@ -66,7 +67,6 @@ class Semaphore
 
 	private:
 		semaphore_t m_sem;
-		bool m_isInit;
 };
 
 /**
@@ -74,15 +74,12 @@ class Semaphore
  * @param count Number of times the semaphore can be obtained before blocking.
  */
 inline Semaphore::Semaphore(int count)
-	: m_sem(nullptr)
+	: m_sem(0)
 {
 	kern_return_t ret = semaphore_create(mach_task_self(), &m_sem, SYNC_POLICY_FIFO, count);
 	assert(ret == KERN_SUCCESS);
-	if (ret == KERN_SUCCESS) {
-		m_isInit = true;
-	} else {
-		// FIXME: Do something if an error occurred here...
-	}
+	assert(m_sem != 0);
+	// FIXME: Do something if an error occurred here...
 }
 
 /**
@@ -91,7 +88,7 @@ inline Semaphore::Semaphore(int count)
  */
 inline Semaphore::~Semaphore()
 {
-	if (m_isInit) {
+	if (m_sem != 0) {
 		semaphore_destroy(mach_task_self(), m_sem);
 	}
 }
@@ -104,7 +101,7 @@ inline Semaphore::~Semaphore()
  */
 inline int Semaphore::obtain(void)
 {
-	if (!m_isInit)
+	if (m_sem != 0)
 		return -EBADF;
 
 	return semaphore_wait(m_sem);
@@ -116,7 +113,7 @@ inline int Semaphore::obtain(void)
  */
 inline int Semaphore::release(void)
 {
-	if (!m_isInit)
+	if (m_sem != 0)
 		return -EBADF;
 
 	// TODO: What error to return?
