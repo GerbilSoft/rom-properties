@@ -19,18 +19,15 @@
  ***************************************************************************/
 
 #include "Semaphore.hpp"
-#include <dispatch/dispatch.h>
+#include <mach/semaphore.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
 
-// NOTE: GCD was introduced with Mac OS X 10.6.
-// TODO: Get an unnamed semaphore implementation that works on earlier versions.
-// POSIX semaphore functions are defined, but return ENOSYS.
 // References:
-// - https://stackoverflow.com/questions/27736618/why-are-sem-init-sem-getvalue-sem-destroy-deprecated-on-mac-os-x-and-w
-// - https://stackoverflow.com/a/27847103
+// - https://developer.apple.com/library/content/documentation/Darwin/Conceptual/KernelProgramming/synchronization/synchronization.html
+// - https://gist.github.com/kazupon/3843288
 
 namespace LibRpBase {
 
@@ -68,7 +65,8 @@ class Semaphore
 		inline int release(void);
 
 	private:
-		dispatch_semaphore_t m_sem;
+		semaphore_t m_sem;
+		bool m_isInit;
 };
 
 /**
@@ -78,9 +76,13 @@ class Semaphore
 inline Semaphore::Semaphore(int count)
 	: m_sem(nullptr)
 {
-	m_sem = dispatch_semaphore_create(count);
-	assert(m_sem != nullptr);
-	// FIXME: Do something if an error occurred here...
+	kern_return_t ret = semaphore_create(mach_task_self(), &m_sem, SYNC_POLICY_FIFO, count);
+	assert(ret == KERN_SUCCESS);
+	if (ret == KERN_SUCCESS) {
+		m_isInit = true;
+	} else {
+		// FIXME: Do something if an error occurred here...
+	}
 }
 
 /**
@@ -89,8 +91,8 @@ inline Semaphore::Semaphore(int count)
  */
 inline Semaphore::~Semaphore()
 {
-	if (m_sem) {
-		dispatch_release(m_sem);
+	if (m_isInit) {
+		semaphore_destroy(mach_task_self(), m_sem);
 	}
 }
 
@@ -102,10 +104,10 @@ inline Semaphore::~Semaphore()
  */
 inline int Semaphore::obtain(void)
 {
-	if (!m_sem)
+	if (!m_isInit)
 		return -EBADF;
 
-	return dispatch_semaphore_wait(m_sem, DISPATCH_TIME_FOREVER);
+	return semaphore_wait(m_sem);
 }
 
 /**
@@ -118,7 +120,7 @@ inline int Semaphore::release(void)
 		return -EBADF;
 
 	// TODO: What error to return?
-	return dispatch_semaphore_signal(m_sem);
+	return semaphore_signal(m_sem);
 }
 
 }
