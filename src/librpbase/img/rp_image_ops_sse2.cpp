@@ -64,7 +64,7 @@ int rp_image::apply_chroma_key_sse2(uint32_t key)
 
 	// SSE2 constants.
 	const __m128i xmm_key = _mm_setr_epi32(key, key, key, key);
-	static const __m128i xmm_ones = _mm_setr_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF);
+	const __m128i xmm_ones = _mm_setr_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF);
 
 	for (unsigned int y = (unsigned int)backend->height; y > 0; y--) {
 		// Process 4 pixels per iteration with SSE2.

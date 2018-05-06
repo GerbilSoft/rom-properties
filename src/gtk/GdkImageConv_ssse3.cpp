@@ -88,7 +88,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 	const int dest_stride_adj = (rowstride / sizeof(*px_dest)) - img->width();
 
 	// ABGR shuffle mask.
-	static const __m128i shuf_mask = _mm_setr_epi8(2,1,0,3, 6,5,4,7, 10,9,8,11, 14,13,12,15);
+	const __m128i shuf_mask = _mm_setr_epi8(2,1,0,3, 6,5,4,7, 10,9,8,11, 14,13,12,15);
 
 	switch (img->format()) {
 		case rp_image::FORMAT_ARGB32: {
