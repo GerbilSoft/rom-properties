@@ -85,7 +85,6 @@ inline Semaphore::~Semaphore()
 {
 	if (m_sem) {
 		CloseHandle(m_sem);
-		m_sem = nullptr;
 	}
 }
 

@@ -90,7 +90,6 @@ inline Semaphore::~Semaphore()
 	if (m_isInit) {
 		// TODO: Error checking.
 		sem_destroy(&m_sem);
-		m_isInit = false;
 	}
 }
 

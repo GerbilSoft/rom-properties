@@ -89,7 +89,6 @@ inline Mutex::~Mutex()
 	if (m_isInit) {
 		// TODO: Error checking.
 		DeleteCriticalSection(&m_criticalSection);
-		m_isInit = false;
 	}
 }
 

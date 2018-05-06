@@ -88,7 +88,6 @@ inline Mutex::~Mutex()
 	if (m_isInit) {
 		// TODO: Error checking.
 		pthread_mutex_destroy(&m_mutex);
-		m_isInit = false;
 	}
 }
 
