@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include "Semaphore.hpp"
+
+#include <mach/mach.h>
 #include <mach/mach_traps.h>
 #include <mach/semaphore.h>
 
