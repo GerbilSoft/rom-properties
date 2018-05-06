@@ -440,10 +440,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	pExtURLs->clear();
 
 	RP_D(const WiiU);
-	if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
+	if (!d->isValid) {
 		// Disc image isn't valid.
 		return -EIO;
 	}
@@ -457,7 +454,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Select the best size.
-	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	const ImageSizeDef *const sizeDef = d->selectBestSize(sizeDefs, size);
 	if (!sizeDef) {
 		// No size available...
 		return -ENOENT;
@@ -544,7 +541,8 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Add the URLs.
-	pExtURLs->reserve(4*szdef_count);
+	pExtURLs->resize(szdef_count * tdb_regions.size());
+	auto extURL_iter = pExtURLs->begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -552,16 +550,14 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
-		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-			int idx = (int)pExtURLs->size();
-			pExtURLs->resize(idx+1);
-			auto &extURL = pExtURLs->at(idx);
-
-			extURL.url = d->getURL_GameTDB("wiiu", imageTypeName, *iter, id6, ext);
-			extURL.cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, *iter, id6, ext);
-			extURL.width = szdefs_dl[i]->width;
-			extURL.height = szdefs_dl[i]->height;
-			extURL.high_res = (szdefs_dl[i]->index > 0);
+		for (auto tdb_iter = tdb_regions.cbegin();
+		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		{
+			extURL_iter->url = d->getURL_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, *tdb_iter, id6, ext);
+			extURL_iter->width = szdefs_dl[i]->width;
+			extURL_iter->height = szdefs_dl[i]->height;
+			extURL_iter->high_res = (szdefs_dl[i]->index > 0);
 		}
 	}
 

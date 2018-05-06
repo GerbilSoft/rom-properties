@@ -2540,7 +2540,10 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	pExtURLs->clear();
 
 	RP_D(const Nintendo3DS);
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+	if (!d->isValid || d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
@@ -2619,7 +2622,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 
 	// Make sure the ID4 has only printable characters.
 	// NOTE: We're checking for NULL termination above.
-	const char *id4 = &ncch_header->product_code[6];
+	const char *const id4 = &ncch_header->product_code[6];
 	for (int i = 3; i >= 0; i--) {
 		if (!ISPRINT(id4[i])) {
 			// Non-printable character found.
@@ -2636,14 +2639,6 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 		return -ENOENT;
 	}
 
-	if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
-		// ROM image isn't valid.
-		return -EIO;
-	}
-
 	// Get the image sizes and sort them based on the
 	// requested image size.
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
@@ -2653,7 +2648,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Select the best size.
-	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	const ImageSizeDef *const sizeDef = d->selectBestSize(sizeDefs, size);
 	if (!sizeDef) {
 		// No size available...
 		return -ENOENT;
@@ -2711,7 +2706,8 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Add the URLs.
-	pExtURLs->reserve(4*szdef_count);
+	pExtURLs->resize(szdef_count * tdb_regions.size());
+	auto extURL_iter = pExtURLs->begin();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -2719,16 +2715,14 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
-		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-			int idx = (int)pExtURLs->size();
-			pExtURLs->resize(idx+1);
-			auto &extURL = pExtURLs->at(idx);
-
-			extURL.url = d->getURL_GameTDB("3ds", imageTypeName, *iter, id4, ext);
-			extURL.cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName, *iter, id4, ext);
-			extURL.width = szdefs_dl[i]->width;
-			extURL.height = szdefs_dl[i]->height;
-			extURL.high_res = (szdefs_dl[i]->index >= 2);
+		for (auto tdb_iter = tdb_regions.cbegin();
+		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		{
+			extURL_iter->url = d->getURL_GameTDB("3ds", imageTypeName, *tdb_iter, id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName, *tdb_iter, id4, ext);
+			extURL_iter->width = szdefs_dl[i]->width;
+			extURL_iter->height = szdefs_dl[i]->height;
+			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);
 		}
 	}
 

@@ -2000,7 +2000,10 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	pExtURLs->clear();
 
 	RP_D(const GameCube);
-	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
+	if (d->discType < 0) {
+		// Unknown disc type.
+		return -EIO;
+	} else if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
 		// TGC game IDs aren't unique, so we can't get
 		// an image URL that makes any sense.
 		return -ENOENT;
@@ -2013,14 +2016,6 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		return -ENOENT;
 	}
 
-	if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (d->discType < 0) {
-		// Unknown disc type.
-		return -EIO;
-	}
-
 	// Get the image sizes and sort them based on the
 	// requested image size.
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
@@ -2030,7 +2025,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	}
 
 	// Select the best size.
-	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	const ImageSizeDef *const sizeDef = d->selectBestSize(sizeDefs, size);
 	if (!sizeDef) {
 		// No size available...
 		return -ENOENT;
@@ -2084,7 +2079,10 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	// TODO: If multiple image sizes are added, add the
 	// "default" size to the end of ExtURLs in case the
 	// user has high-resolution downloads disabled.
-	pExtURLs->reserve(4);
+	// See Nintendo3DS for an example.
+	// (NOTE: For GameTDB, currently only applies to coverfullHQ on GCN/Wii.)
+	pExtURLs->resize(tdb_regions.size());
+	auto extURL_iter = pExtURLs->begin();
 
 	// Disc scan: Is this not the first disc?
 	if (imageType == IMG_EXT_MEDIA &&
@@ -2096,29 +2094,26 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		snprintf(discName, sizeof(discName), "%s%u",
 			 imageTypeName, d->discHeader.disc_number+1);
 
-		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-			int idx = (int)pExtURLs->size();
-			pExtURLs->resize(idx+1);
-			auto &extURL = pExtURLs->at(idx);
-
-			extURL.url = d->getURL_GameTDB("wii", discName, *iter, id6, ".png");
-			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName, *iter, id6, ".png");
-			extURL.width = sizeDef->width;
-			extURL.height = sizeDef->height;
+		pExtURLs->resize(pExtURLs->size() * 2);
+		for (auto tdb_iter = tdb_regions.cbegin();
+		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		{
+			extURL_iter->url = d->getURL_GameTDB("wii", discName, *tdb_iter, id6, ".png");
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", discName, *tdb_iter, id6, ".png");
+			extURL_iter->width = sizeDef->width;
+			extURL_iter->height = sizeDef->height;
 		}
 	}
 
 	// First disc, or not a disc scan.
-	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-		int idx = (int)pExtURLs->size();
-		pExtURLs->resize(idx+1);
-		auto &extURL = pExtURLs->at(idx);
-
-		extURL.url = d->getURL_GameTDB("wii", imageTypeName, *iter, id6, ".png");
-		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *iter, id6, ".png");
-		extURL.width = sizeDef->width;
-		extURL.height = sizeDef->height;
-		extURL.high_res = false;	// Only one size is available.
+	for (auto tdb_iter = tdb_regions.cbegin();
+	     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+	{
+		extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName, *tdb_iter, id6, ".png");
+		extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *tdb_iter, id6, ".png");
+		extURL_iter->width = sizeDef->width;
+		extURL_iter->height = sizeDef->height;
+		extURL_iter->high_res = false;	// Only one size is available.
 	}
 
 	// All URLs added.

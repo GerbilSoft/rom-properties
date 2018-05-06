@@ -514,10 +514,7 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	RP_UNUSED(size);
 
 	RP_D(Amiibo);
-	if (!d->file || !d->file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
+	if (!d->isValid) {
 		// Invalid file.
 		return -EIO;
 	}
@@ -535,7 +532,8 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	auto &extURL = pExtURLs->at(0);
 
 	// Amiibo ID.
-	const string amiibo_id = rp_sprintf("%08X-%08X",
+	char amiibo_id[20];
+	snprintf(amiibo_id, sizeof(amiibo_id), "%08X-%08X",
 		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id));
 
 	// Cache key. (amiibo ID)
