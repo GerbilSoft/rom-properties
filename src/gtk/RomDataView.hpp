@@ -57,7 +57,7 @@ GType rp_desc_format_type_get_type(void) G_GNUC_CONST;
 GType		rom_data_view_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 void		rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-GtkWidget	*rom_data_view_new		(void) G_GNUC_CONST G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*rom_data_view_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 const gchar	*rom_data_view_get_filename	(RomDataView	*page) G_GNUC_INTERNAL;
 void		rom_data_view_set_filename	(RomDataView	*page,
