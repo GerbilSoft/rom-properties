@@ -28,9 +28,11 @@
 
 // Each .cpp file defines the Mutex class itself, with required fields.
 
-#ifdef _WIN32
+#if defined(_WIN32)
 # include "SemaphoreWin32.cpp"
-#else /* !_WIN32 */
+#elif defined(__APPLE__)
+# include "SemaphoreMac.cpp"
+#else
 # include "SemaphorePosix.cpp"
 #endif
 
