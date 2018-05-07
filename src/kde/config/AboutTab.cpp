@@ -417,6 +417,12 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += png_copyright.toUtf8().constData();
 	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>";
 	sLibraries += br;
+	if (APNG_is_supported) {
+		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
+		sLibraries += ' ';
+		sLibraries += "<a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>";
+		sLibraries += br;
+	}
 	sLibraries += rp_sprintf(sLicense, "libpng license");
 #endif /* HAVE_PNG */
 

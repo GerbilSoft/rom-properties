@@ -645,6 +645,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	/** libpng **/
 	// FIXME: Use png_get_copyright().
+	// FIXME: Check for APNG.
 #ifdef HAVE_PNG
 	sLibraries += RTF_BR RTF_BR
 		"Compiled with libpng " PNG_LIBPNG_VER_STRING "." RTF_BR
