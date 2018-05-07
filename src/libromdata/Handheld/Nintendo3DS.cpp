@@ -2154,10 +2154,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Issuer.
 		// NOTE: We're using the Ticket Issuer in the TMD tab.
-		// Retail Ticket will always have a Retail TMD,
-		// but the issuer is technically different.
-		// We're only printing "Ticket Issuer" if we can't
-		// identify the issuer at all.
+		// TODO: Verify that Ticket and TMD issuers match?
 		const char *issuer;
 		if (!strncmp(d->mxh.ticket.issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(d->mxh.ticket.issuer))) {
 			// Retail issuer..
@@ -2171,10 +2168,11 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		if (issuer) {
+			// tr: Ticket issuer. (retail or debug)
 			d->fields->addField_string(C_("Nintendo3DS", "Issuer"), issuer);
 		} else {
-			// Print the ticket issuer as-is.
-			d->fields->addField_string(C_("Nintendo3DS", "Ticket Issuer"),
+			// Unknown issuer. Print it as-is.
+			d->fields->addField_string(C_("Nintendo3DS", "Issuer"),
 				latin1_to_utf8(d->mxh.ticket.issuer, sizeof(d->mxh.ticket.issuer)));
 		}
 
