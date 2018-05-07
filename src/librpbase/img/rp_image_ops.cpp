@@ -259,9 +259,11 @@ rp_image *rp_image::squared(void) const
 
 		// NOTE: Using uint8_t* because stride is measured in bytes.
 		uint8_t *dest = static_cast<uint8_t*>(sq_img->bits());
-		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+
 		// "Blanking" area is right border, potential unused space from stride, then left border.
-		const int dest_blanking = sq_img->stride() - sq_img->row_bytes();
+		const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+		const int src_row_bytes = this->row_bytes();	// Source row bytes.
+		const int dest_blanking = sq_img->stride() - src_row_bytes;
 		const int dest_stride = sq_img->stride();
 		const int src_stride = d->backend->stride;
 
@@ -270,19 +272,18 @@ rp_image *rp_image::squared(void) const
 		dest += (addToLeft * sizeof(uint32_t));
 
 		// Copy and clear all but the last line.
-		const int row_bytes = sq_img->row_bytes();
-		for (unsigned int y = (height-1); y > 0; y--) {
-			memcpy(dest, src, row_bytes);
-			memset(&dest[row_bytes], 0, dest_blanking);
+		for (int y = (height-2); y >= 0; y--) {
+			memcpy(dest, src, src_row_bytes);
+			memset(&dest[src_row_bytes], 0, dest_blanking);
 			dest += dest_stride;
 			src += src_stride;
 		}
 
 		// Copy the last line.
 		// NOTE: Last row may not be the full stride.
-		memcpy(dest, src, row_bytes);
+		memcpy(dest, src, src_row_bytes);
 		// Clear the end of the line.
-		memset(&dest[row_bytes], 0, addToRight * sizeof(uint32_t));
+		memset(&dest[src_row_bytes], 0, addToRight * sizeof(uint32_t));
 	}
 
 	// Copy sBIT if it's set.
