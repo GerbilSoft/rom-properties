@@ -106,7 +106,7 @@ const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_tit
 	{{0x00008702, 0x00009302, 0x00009C02, 0x0000A502, 0x0000AD02, 0x0000B502}, NOP_C_("Nintendo3DSSysTitles", "Game Notes")},
 	{{0x00008802, 0x00009402, 0x00009D02, 0x0000A602, 0x0000AE02, 0x0000B602}, NOP_C_("Nintendo3DSSysTitles", "Internet Browser")},
 	{{0x00008D02, 0x00009602, 0x00009F02, 0x0000A702, 0x0000AF02, 0x0000B702}, NOP_C_("Nintendo3DSSysTitles", "Friend List")},
-	{{0x00008E02, 0x00009702, 0x0000A002, 0x0000A802, 0x0000B002, 0x0000B802}, NOP_C_("Nintendo3DSSysTitles", "Notificaitons")},
+	{{0x00008E02, 0x00009702, 0x0000A002, 0x0000A802, 0x0000B002, 0x0000B802}, NOP_C_("Nintendo3DSSysTitles", "Notifications")},
 	{{0x0000C002, 0x0000C802, 0x0000D002, 0x0000D802, 0x0000DE02, 0x0000E402}, NOP_C_("Nintendo3DSSysTitles", "Software Keyboard")},
 	{{0x0000C003, 0x0000C803, 0x0000D003, 0x0000D803, 0x0000DE03, 0x0000E403}, NOP_C_("Nintendo3DSSysTitles", "Software Keyboard (SAFE_MODE)")},
 	{{0x0000C102, 0x0000C902, 0x0000D102, 0x0000D902, 0x0000DF02, 0x0000E502}, NOP_C_("Nintendo3DSSysTitles", "Mii picker")},
