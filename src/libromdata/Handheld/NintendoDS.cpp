@@ -1126,22 +1126,24 @@ int NintendoDS::loadFieldData(void)
 		const char *filetype = nullptr;
 		switch (romHeader->dsi.filetype) {
 			case DSi_FTYPE_CARTRIDGE:
-				filetype = C_("NintendoDS", "Cartridge");
+				// tr: DSi-enhanced or DSi-exclusive cartridge.
+				filetype = C_("NintendoDS|DSiFileType", "Cartridge");
 				break;
 			case DSi_FTYPE_DSiWARE:
-				filetype = C_("NintendoDS", "DSiWare");
+				filetype = C_("NintendoDS|DSiFileType", "DSiWare");
 				break;
 			case DSi_FTYPE_SYSTEM_FUN_TOOL:
-				filetype = C_("NintendoDS", "System Fun Tool");
+				filetype = C_("NintendoDS|DSiFileType", "System Fun Tool");
 				break;
 			case DSi_FTYPE_NONEXEC_DATA:
-				filetype = C_("NintendoDS", "Non-Executable Data File");
+				// tr: Data file, e.g. DS cartridge whitelist.
+				filetype = C_("NintendoDS|DSiFileType", "Non-Executable Data File");
 				break;
 			case DSi_FTYPE_SYSTEM_BASE_TOOL:
-				filetype = C_("NintendoDS", "System Base Tool");
+				filetype = C_("NintendoDS|DSiFileType", "System Base Tool");
 				break;
 			case DSi_FTYPE_SYSTEM_MENU:
-				filetype = C_("NintendoDS", "System Menu");
+				filetype = C_("NintendoDS|DSiFileType", "System Menu");
 				break;
 			default:
 				break;
@@ -1231,9 +1233,13 @@ int NintendoDS::loadFieldData(void)
 
 		// Flags.
 		static const char *const dsi_flags_bitfield_names[] = {
+			// tr: Uses the DSi-specific touchscreen protocol.
 			NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
+			// tr: Game requires agreeing to the Nintendo online services agreement.
 			NOP_C_("NintendoDS|DSi_Flags", "Require EULA"),
+			// tr: Custom icon is used from the save file.
 			NOP_C_("NintendoDS|DSi_Flags", "Custom Icon"),
+			// tr: Game supports Nintendo Wi-Fi Connection.
 			NOP_C_("NintendoDS|DSi_Flags", "Nintendo WFC"),
 			NOP_C_("NintendoDS|DSi_Flags", "DS Wireless"),
 			NOP_C_("NintendoDS|DSi_Flags", "NDS Icon SHA-1"),

@@ -322,6 +322,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 	static const char *const io_bitfield_names[] = {
 		NOP_C_("MegaDrive|I/O", "Joypad"),
 		NOP_C_("MegaDrive|I/O", "6-button"),
+		// tr: Use a locale-specific abbreviation for Sega Master System, e.g. MK3 or similar.
 		NOP_C_("MegaDrive|I/O", "SMS Joypad"),
 		NOP_C_("MegaDrive|I/O", "Team Player"),
 		NOP_C_("MegaDrive|I/O", "Keyboard"),
@@ -332,6 +333,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		NOP_C_("MegaDrive|I/O", "Paddle"),
 		NOP_C_("MegaDrive|I/O", "Floppy Drive"),
 		NOP_C_("MegaDrive|I/O", "CD-ROM"),
+		// tr: Brand name; only translate if the name was changed in your region.
 		NOP_C_("MegaDrive|I/O", "Activator"),
 		NOP_C_("MegaDrive|I/O", "Mega Mouse"),
 	};

@@ -318,23 +318,26 @@ int Sega8Bit::loadFieldData(void)
 	switch ((tmr->region_and_size >> 4) & 0xF) {
 		case Sega8_SMS_Japan:
 			sysID = C_("Sega8Bit|SysID", "Sega Master System");
-			region = C_("Sega8Bit|SysID", "Japan");
+			region = C_("Region", "Japan");
 			break;
 		case Sega8_SMS_Export:
 			sysID = C_("Sega8Bit|SysID", "Sega Master System");
-			region = C_("Sega8Bit|SysID", "Export");
+			// tr: Any region that isn't Japan. (used for Sega 8-bit)
+			region = C_("Region", "Export");
 			break;
 		case Sega8_GG_Japan:
 			sysID = C_("Sega8Bit|SysID", "Game Gear");
-			region = C_("Sega8Bit|SysID", "Japan");
+			region = C_("Region", "Japan");
 			break;
 		case Sega8_GG_Export:
 			sysID = C_("Sega8Bit|SysID", "Game Gear");
-			region = C_("Sega8Bit|SysID", "Export");
+			// tr: Any region that isn't Japan. (used for Sega 8-bit)
+			region = C_("Region", "Export");
 			break;
 		case Sega8_GG_International:
 			sysID = C_("Sega8Bit|SysID", "Game Gear");
-			region = C_("Sega8Bit|SysID", "International");
+			// tr: Effectively region-free.
+			region = C_("Region", "Worldwide");
 			break;
 		default:
 			sysID = nullptr;

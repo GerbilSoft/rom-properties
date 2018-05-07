@@ -822,6 +822,7 @@ int NES::loadFieldData(void)
 			d->formatBankSizeKB(chr_ram_size));
 	}
 	if (chr_ram_battery_size > 0) {
+		// tr: CHR RAM with a battery backup.
 		d->fields->addField_string(C_("NES", "CHR RAM (backed up)"),
 			d->formatBankSizeKB(chr_ram_battery_size));
 	}
@@ -830,6 +831,7 @@ int NES::loadFieldData(void)
 			d->formatBankSizeKB(prg_ram_size));
 	}
 	if (prg_ram_battery_size > 0) {
+		// tr: Save RAM with a battery backup.
 		d->fields->addField_string(C_("NES", "Save RAM (backed up)"),
 			d->formatBankSizeKB(prg_ram_battery_size));
 	}
