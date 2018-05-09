@@ -136,6 +136,9 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	string msg;
 	msg.reserve(1024);
 
+	// TODO: Localize POSIX error messages?
+	// TODO: Thread-safe strerror()?
+
 	switch (iret.status) {
 		case KeyStoreQt::Import_InvalidParams:
 		default:
@@ -147,21 +150,36 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			break;
 
 		case KeyStoreQt::Import_OpenError:
-			// TODO: Show the actual error.
-			msg = rp_sprintf(C_("KeyManagerTab",
-				// tr: %s == filename
-				"An error occurred while opening '%s'."),
-				QFileInfo(filename).fileName().toUtf8().constData());
+			if (iret.error_code != 0) {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while opening '%1$s': %2$s"),
+					QFileInfo(filename).fileName().toUtf8().constData(),
+					strerror(iret.error_code));
+			} else {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while opening '%s'."),
+					QFileInfo(filename).fileName().toUtf8().constData());
+			}
 			type = KMessageWidget::Error;
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
 		case KeyStoreQt::Import_ReadError:
-			// TODO: Show the actual error.
-			msg = rp_sprintf(C_("KeyManagerTab",
-				// tr: %s == filename
-				"An error occurred while reading '%s'."),
-				QFileInfo(filename).fileName().toUtf8().constData());
+			// TODO: Error code for short reads.
+			if (iret.error_code != 0) {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while reading '%1$s': %2$s"),
+					QFileInfo(filename).fileName().toUtf8().constData(),
+					strerror(iret.error_code));
+			} else {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while reading '%s'."),
+					QFileInfo(filename).fileName().toUtf8().constData());
+			}
 			type = KMessageWidget::Error;
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
@@ -177,6 +195,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			break;
 
 		case KeyStoreQt::Import_NoKeysImported:
+			// TODO: If keys were imported, use ':' instead of '.'.
 			msg = rp_sprintf(C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
@@ -190,6 +209,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			// NOTE: Formatting numbers using ostringstream() because
 			// MSVC's printf() doesn't support thousands separators.
 			// TODO: CMake checks?
+			// TODO: If keys were imported, use ':' instead of '.'.
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			ostringstream s_keyCount;
 			s_keyCount << keyCount;

@@ -218,6 +218,7 @@ class KeyStoreUI
 		 */
 		struct ImportReturn {
 			uint8_t status;			/* ImportStatus */
+			uint8_t error_code;		// POSIX error code. (0 for success or unknown)
 			uint8_t keysExist;		// Keys not imported because they're already in the file.
 			uint8_t keysInvalid;		// Keys not imported because they didn't verify.
 			uint8_t keysNotUsed;		// Keys not imported because they aren't used by rom-properties.
