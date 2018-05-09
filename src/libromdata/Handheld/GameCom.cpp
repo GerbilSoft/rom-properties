@@ -243,11 +243,16 @@ const rp_image *GameComPrivate::loadIcon(void)
 		pSrc = &tmpbuf[GCOM_ICON_W * iconYalign];
 		pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
 		dest_stride = icon->stride();
-		// TODO: Skip the loop if the strides match?
-		for (int y = GCOM_ICON_H; y > 0; y--) {
-			memcpy(pDestBase, pSrc, GCOM_ICON_W);
-			pSrc += GCOM_ICON_W;
-			pDestBase += dest_stride;
+		if (dest_stride == GCOM_ICON_W) {
+			// Stride matches. Copy everything all at once.
+			memcpy(pDestBase, pSrc, GCOM_ICON_W*GCOM_ICON_H);
+		} else {
+			// Stride doesn't match. Copy line-by-line.
+			for (int y = GCOM_ICON_H; y > 0; y--) {
+				memcpy(pDestBase, pSrc, GCOM_ICON_W);
+				pSrc += GCOM_ICON_W;
+				pDestBase += dest_stride;
+			}
 		}
 	}
 
