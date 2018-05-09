@@ -1081,7 +1081,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file) {
+	if (!file->isOpen()) {
+		// TODO: file->lastError()?
 		iret.status = Import_OpenError;
 		return iret;
 	}
@@ -1139,7 +1140,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file) {
+	if (!file->isOpen()) {
+		// TODO: file->lastError()?
 		iret.status = Import_OpenError;
 		return iret;
 	}
@@ -1208,7 +1210,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file) {
+	if (!file->isOpen()) {
+		// TODO: file->lastError()?
 		iret.status = Import_OpenError;
 		return iret;
 	}
@@ -1229,6 +1232,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 		int ret = file->seek(32768);
 		if (ret != 0) {
 			// Seek error.
+			// TODO: file->lastError()?
 			iret.status = Import_ReadError;
 			return iret;
 		}
@@ -1236,6 +1240,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	size_t size = file->read(buf.get(), 32768);
 	if (size != 32768) {
 		// Read error.
+		// TODO: file->lastError()?
 		iret.status = Import_ReadError;
 		return iret;
 	}
@@ -1277,7 +1282,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file) {
+	if (!file->isOpen()) {
 		iret.status = Import_OpenError;
 		return iret;
 	}
