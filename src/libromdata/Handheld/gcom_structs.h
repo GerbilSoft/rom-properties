@@ -61,6 +61,15 @@ typedef struct PACKED _Gcom_RomHeader {
 	char sys_id[9];			// [0x005] System identifier.
 
 	struct {
+		/**
+		 * game.com ROM images are divided into 16 KB banks,
+		 * each of which makes up a 2bpp 256x256 bitmap.
+		 * The game's icon is specified by selecting a bank
+		 * number and the icon's (x,y) coordinates.
+		 *
+		 * NOTE: Bitmaps are rotated 270 degrees and vertically flipped.
+		 */
+
 		uint8_t bank;	// [0x00E] Bank number. (16 KB; 256x256)
 		uint8_t x;	// [0x00F] X coordinate within the bank.
 		uint8_t y;	// [0x010] Y coordinate within the bank.
