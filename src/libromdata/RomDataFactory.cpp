@@ -188,14 +188,14 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(PlayStationSave, true),
 
 	// NOTE: game.com may be at either 0 or 0x40000.
-	// 0x40000 address is checked below.
-	GetRomDataFns(GameCom, false),
+	// The 0x40000 address is checked below.
+	GetRomDataFns(GameCom, true),
 
 	// Headers with non-zero addresses.
 	GetRomDataFns_addr(Sega8Bit, false, 0x7FE0, 0x20),
 	// NOTE: game.com may be at either 0 or 0x40000.
-	// 0 address is checked above.
-	GetRomDataFns_addr(GameCom, false, 0x40000, 0x20),
+	// The 0 address is checked above.
+	GetRomDataFns_addr(GameCom, true, 0x40000, 0x20),
 
 	{nullptr, nullptr, nullptr, false, 0, 0}
 };
