@@ -114,10 +114,21 @@ const rp_image *GameComPrivate::loadIcon(void)
 		return nullptr;
 	}
 
-	// If the bank number is past the end of the ROM, it may be underdumped.
 	const int64_t fileSize = this->file->size();
 	uint8_t bank_number = romHeader.icon.bank;
 	unsigned int bank_offset = bank_number * GCOM_ICON_BANK_SIZE;
+	unsigned int bank_adj = 0;
+	if (bank_offset > 256*1024) {
+		// Check if the ROM is 0.8 MB or 1.8 MB.
+		// These ROMs are incorrectly dumped, but we can usually
+		// get the icon by subtracting 256 KB.
+		if (fileSize == 768*1024 || fileSize == 1792*1024) {
+			bank_adj = 256*1024;
+			bank_offset -= bank_adj;
+		}
+	}
+
+	// If the bank number is past the end of the ROM, it may be underdumped.
 	if (bank_offset > fileSize) {
 		// If the bank number is more than 2x the filesize,
 		// and it's over the 1 MB mark, forget it.
@@ -128,21 +139,13 @@ const rp_image *GameComPrivate::loadIcon(void)
 		// Get the lowest power of two size and mask the bank number.
 		unsigned int lz = (1 << uilog2((unsigned int)fileSize));
 		bank_number &= ((lz / GCOM_ICON_BANK_SIZE) - 1);
-		bank_offset = bank_number * GCOM_ICON_BANK_SIZE;
+		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE) - bank_adj;
 	}
 
 	// Make sure the icon address is valid.
 	// NOTE: Last line doesn't have to be the full width.
 	static const uint32_t icon_data_len = ((GCOM_ICON_BANK_W * (GCOM_ICON_H - 1)) + GCOM_ICON_W) / 4;
 	unsigned int icon_file_offset = bank_offset;
-	if (icon_file_offset > 256*1024) {
-		// Check if the ROM is 0.8 MB or 1.8 MB.
-		// These ROMs are incorrectly dumped, but we can usually
-		// get the icon by subtracting 256 KB.
-		if (fileSize == 768*1024 || fileSize == 1792*1024) {
-			icon_file_offset -= 256*1024;
-		}
-	}
 	icon_file_offset += (romHeader.icon.y / 4);
 	icon_file_offset += ((romHeader.icon.x * GCOM_ICON_BANK_W) / 4);
 	if (icon_file_offset + icon_data_len > fileSize) {
