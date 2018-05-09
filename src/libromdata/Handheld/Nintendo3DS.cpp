@@ -876,15 +876,15 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	if (romType == Nintendo3DSPrivate::ROM_TYPE_CCI &&
 	    headers_loaded & Nintendo3DSPrivate::HEADER_NCSD)
 	{
-		tid_desc = "Media ID";
+		tid_desc = C_("Nintendo3DS", "Media ID");
 		tid_lo = le32_to_cpu(mxh.ncsd_header.media_id.lo);
 		tid_hi = le32_to_cpu(mxh.ncsd_header.media_id.hi);
 	} else if ((headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || loadTicketAndTMD() == 0) {
-		tid_desc = "Title ID";
+		tid_desc = C_("Nintendo3DS", "Title ID");
 		tid_hi = be32_to_cpu(mxh.tmd_header.title_id.hi);
 		tid_lo = be32_to_cpu(mxh.tmd_header.title_id.lo);
 	} else if (ncch_header) {
-		tid_desc = "Title ID";
+		tid_desc = C_("Nintendo3DS", "Title ID");
 		tid_lo = le32_to_cpu(ncch_header->program_id.lo);
 		tid_hi = le32_to_cpu(ncch_header->program_id.hi);
 	}
