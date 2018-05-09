@@ -144,7 +144,12 @@ const rp_image *GameComPrivate::loadIcon(void)
 
 	// Make sure the icon address is valid.
 	// NOTE: Last line doesn't have to be the full width.
-	static const uint32_t icon_data_len = ((GCOM_ICON_BANK_W * (GCOM_ICON_H - 1)) + GCOM_ICON_W) / 4;
+	// NOTE: If (y % 4 != 0), we'll have to read at least one extra byte.
+	unsigned int icon_data_len = ((GCOM_ICON_BANK_W * (GCOM_ICON_H - 1)) + GCOM_ICON_W) / 4;
+	const unsigned int iconYalign = (romHeader.icon.y % 4);
+	if (iconYalign != 0) {
+		icon_data_len++;
+	}
 	unsigned int icon_file_offset = bank_offset;
 	icon_file_offset += (romHeader.icon.y / 4);
 	icon_file_offset += ((romHeader.icon.x * GCOM_ICON_BANK_W) / 4);
@@ -191,13 +196,32 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// Because of this, we can't use scanline pointer adjustment for
 	// the destination image. Each pixel address will be calculated
 	// manually.
+	uint8_t *pDestBase;
+	int dest_stride;
+
+	// NOTE 2: Icons might not be aligned on a byte boundary. Because of
+	// this, we'll need to convert the icon using a temporary buffer,
+	// then memcpy() it to the rp_image.
+	unique_ptr<uint8_t[]> tmpbuf;
+	if (iconYalign != 0) {
+		// Y is not a multiple of 4.
+		// Blit to the temporary buffer first.
+		tmpbuf.reset(new uint8_t[GCOM_ICON_W * (GCOM_ICON_H + 4)]);
+		pDestBase = tmpbuf.get();
+		dest_stride = GCOM_ICON_W;
+	} else {
+		// Y is a multiple of 4.
+		// Blit directly to rp_image.
+		pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
+		dest_stride = icon->stride();
+	}
+
 	const uint8_t *pSrc = icon_data.get();
-	uint8_t *const pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
-	const int dest_stride = icon->stride();
-	for (unsigned int y = 0; y < GCOM_ICON_H; y++) {
-		for (unsigned int x = 0; x < GCOM_ICON_W; x += 4, pSrc++) {
+	const unsigned int Ytotal = GCOM_ICON_H + iconYalign;
+	for (unsigned int x = 0; x < GCOM_ICON_W; x++) {
+		uint8_t *pDest = pDestBase + x;
+		for (unsigned int y = 0; y < Ytotal; y += 4, pSrc++) {
 			uint8_t px2bpp = *pSrc;
-			uint8_t *const pDest = pDestBase + (dest_stride * x) + y;
 			pDest[dest_stride*3] = px2bpp & 0x03;
 			px2bpp >>= 2;
 			pDest[dest_stride*2] = px2bpp & 0x03;
@@ -205,10 +229,26 @@ const rp_image *GameComPrivate::loadIcon(void)
 			pDest[dest_stride*1] = px2bpp & 0x03;
 			px2bpp >>= 2;
 			pDest[0] = px2bpp;
+
+			// Next group of pixels.
+			pDest += (dest_stride*4);
 		}
 
 		// Next line.
-		pSrc += ((GCOM_ICON_BANK_W - GCOM_ICON_W) / 4);
+		pSrc += ((GCOM_ICON_BANK_H - Ytotal) / 4);
+	}
+
+	// Copy the temporary buffer into the icon if necessary.
+	if (iconYalign != 0) {
+		pSrc = &tmpbuf[GCOM_ICON_W * iconYalign];
+		pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
+		dest_stride = icon->stride();
+		// TODO: Skip the loop if the strides match?
+		for (int y = GCOM_ICON_H; y > 0; y--) {
+			memcpy(pDestBase, pSrc, GCOM_ICON_W);
+			pSrc += GCOM_ICON_W;
+			pDestBase += dest_stride;
+		}
 	}
 
 	// Save and return the icon.
