@@ -200,6 +200,16 @@ class KeyManagerTabPrivate
 	public:
 		/** "Import" menu actions. **/
 
+		// Starting directory for importing keys.
+		// TODO: Save this in the configuration file?
+		wstring wsKeyFileDir;
+
+		/**
+		 * Save the key file directory.
+		 * @param filename Key filename.
+		 */
+		void saveKeyFileDir(const wchar_t *filename);
+
 		/**
 		 * Convert pipes (L'|') to NULLs (L'\0').
 		 *
@@ -1432,6 +1442,26 @@ void KeyManagerTabPrivate::loadImages(void)
 /** "Import" menu actions. **/
 
 /**
+ * Save the key file directory.
+ * @param filename Key filename.
+ */
+void KeyManagerTabPrivate::saveKeyFileDir(const wchar_t *filename)
+{
+	// Save the filename, then remove everything after the first backslash.
+	// NOTE: If this is the root directory, the backslash is left intact.
+	// Otherwise, the backslash is removed.
+	wsKeyFileDir = filename;
+	size_t bspos = wsKeyFileDir.rfind(L'\\');
+	if (bspos != wstring::npos) {
+		if (bspos > 2) {
+			wsKeyFileDir.resize(bspos);
+		} else if (bspos == 2) {
+			wsKeyFileDir.resize(3);
+		}
+	}
+}
+
+/**
  * Import keys from Wii keys.bin. (BootMii format)
  */
 void KeyManagerTabPrivate::importWiiKeysBin(void)
@@ -1458,12 +1488,16 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
 	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
+
+	// Save the key file directory.
+	saveKeyFileDir(filename):
 
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
@@ -1497,12 +1531,16 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
 	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
+
+	// Save the key file directory.
+	saveKeyFileDir(filename):
 
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
@@ -1536,12 +1574,16 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
 	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
+
+	// Save the key file directory.
+	saveKeyFileDir(filename):
 
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
@@ -1575,12 +1617,16 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	ofn.lpstrCustomFilter = nullptr;
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
 	ofn.lpstrTitle = wsDlgTitle.c_str();
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
 	BOOL bRet = GetOpenFileName(&ofn);
 	if (!bRet || filename[0] == 0)
 		return;
+
+	// Save the key file directory.
+	saveKeyFileDir(filename):
 
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.

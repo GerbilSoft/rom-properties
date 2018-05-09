@@ -214,7 +214,7 @@ static INLINE int secoptions_init(void)
 	// Remove the current directory from the DLL search path.
 	pfnSetDllDirectoryW = (PFNSETDLLDIRECTORYW)GetProcAddress(hKernel32, "SetDllDirectoryW");
 	if (pfnSetDllDirectoryW) {
-		pfnSetDllDirectoryW(L"");
+		//pfnSetDllDirectoryW(L"");
 	}
 
 	// Only search the system directory for DLLs.
@@ -223,7 +223,7 @@ static INLINE int secoptions_init(void)
 	// delay-loaded, it may be loaded from the application directory...
 	pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)GetProcAddress(hKernel32, "SetDefaultDllDirectories");
 	if (pfnSetDefaultDllDirectories) {
-		pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
+		//pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
 	}
 
 	// Terminate the process if heap corruption is detected.
