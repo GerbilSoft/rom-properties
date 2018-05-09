@@ -186,14 +186,14 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	}
 
 	// Check the value length.
-	int value_len = (int)strlen(value);
-	if ((value_len % 2) != 0) {
-		// Value is an odd length, which is invalid.
-		// This means we have an extra nybble.
-		mapInvalidKeyNames.insert(std::make_pair(string(name), KeyManager::VERIFY_KEY_INVALID));
+	const int value_len = (int)strlen(value);
+	if (value_len > 255) {
+		// Key is long.
 		return 1;
 	}
-	const uint8_t len = (uint8_t)(value_len / 2);
+
+	const bool is_odd_len = ((value_len % 2) != 0);
+	uint8_t len = (uint8_t)(value_len / 2);
 
 	// Parse the value.
 	unsigned int vKeys_start_pos = (unsigned int)vKeys.size();
@@ -206,6 +206,22 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 		// Invalid character(s) encountered.
 		vKeys.resize(vKeys_start_pos);
 		return 1;
+	}
+	if (is_odd_len) {
+		// Odd length. Parse the last nybble and append a 0.
+		// This is better than simply discarding it entirely.
+		char buf[2];
+		buf[0] = value[value_len-1];
+		buf[1] = '0';
+		vKeys.resize(vKeys.size() + 2);
+		ret = KeyManager::hexStringToBytes(buf, &vKeys[vKeys_pos+len], 1);
+		if (ret != 0) {
+			// Invalid character(s) encountered.
+			vKeys.resize(vKeys_start_pos);
+			return 1;
+		}
+		// Add the extra byte.
+		len++;
 	}
 
 	// Value parsed successfully.
