@@ -102,6 +102,7 @@ button.
 | Nintendo Game Boy Advance     |       Yes      |       N/A       |       No       |
 | Nintendo DS(i)                |       Yes      |       Icon      |  Covers, Box   |
 | Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
+| Tiger game.com                |       Yes      |       Icon      |       No       |
 
 ### Texture Formats
 
