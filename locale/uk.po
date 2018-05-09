@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-05-06 21:44-0400\n"
+"POT-Creation-Date: 2018-05-09 01:48-0400\n"
 "PO-Revision-Date: 2018-03-18 16:17-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -92,28 +92,28 @@ msgid ""
 "a>, the Unofficial amiibo Database."
 msgstr ""
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:93
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:87
 msgctxt "KeyManagerTab"
 msgid "Wii keys.bin"
 msgstr ""
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:94
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:88
 msgctxt "KeyManagerTab"
 msgid "Wii U otp.bin"
 msgstr ""
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:95
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:89
 msgctxt "KeyManagerTab"
 msgid "3DS boot9.bin"
 msgstr ""
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:96
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:90
 msgctxt "KeyManagerTab"
 msgid "3DS aeskeydb.bin"
 msgstr ""
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:97
-#: ../src/kde/config/KeyManagerTab.cpp:291
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:91
+#: ../src/kde/config/KeyManagerTab.cpp:337
 msgctxt "KeyManagerTab"
 msgid "I&mport"
 msgstr ""
@@ -315,43 +315,57 @@ msgctxt "ImageTypesTab|Values"
 msgid "9"
 msgstr ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:134
+#: ../src/kde/config/KeyManagerTab.cpp:146
 msgctxt "KeyManagerTab"
 msgid ""
 "An invalid parameter was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
 msgstr ""
 
+#. tr: %1$s == filename, %2$s == error message
+#: ../src/kde/config/KeyManagerTab.cpp:156
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "An error occurred while opening '%1$s': %2$s"
+msgstr ""
+
 #. tr: %s == filename
-#: ../src/kde/config/KeyManagerTab.cpp:143
+#: ../src/kde/config/KeyManagerTab.cpp:162
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '%s'."
 msgstr ""
 
+#. tr: %1$s == filename, %2$s == error message
+#: ../src/kde/config/KeyManagerTab.cpp:174
+#, c-format
+msgctxt "KeyManagerTab"
+msgid "An error occurred while reading '%1$s': %2$s"
+msgstr ""
+
 #. tr: %s == filename
-#: ../src/kde/config/KeyManagerTab.cpp:152
+#: ../src/kde/config/KeyManagerTab.cpp:180
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '%s'."
 msgstr ""
 
 #. tr: %1$s == filename, %2$s == type of file
-#: ../src/kde/config/KeyManagerTab.cpp:160
+#: ../src/kde/config/KeyManagerTab.cpp:190
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "The file '%1$s' is not a valid %2$s file."
 msgstr ""
 
 #. tr: %s == filename
-#: ../src/kde/config/KeyManagerTab.cpp:169
+#: ../src/kde/config/KeyManagerTab.cpp:201
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '%s'."
 msgstr ""
 
 #. tr: %1$s == number of keys (formatted), %2$u == filename
-#: ../src/kde/config/KeyManagerTab.cpp:184
+#: ../src/kde/config/KeyManagerTab.cpp:218
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%1$s key was imported from '%2$s'."
@@ -361,7 +375,7 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:208
+#: ../src/kde/config/KeyManagerTab.cpp:243
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
@@ -371,7 +385,7 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:218
+#: ../src/kde/config/KeyManagerTab.cpp:253
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it is incorrect."
@@ -381,7 +395,7 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:228
+#: ../src/kde/config/KeyManagerTab.cpp:263
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it isn't used by rom-properties."
@@ -392,7 +406,7 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:238
+#: ../src/kde/config/KeyManagerTab.cpp:273
 #, c-format
 msgctxt "KeyManagerTab"
 msgid ""
@@ -406,7 +420,7 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:248
+#: ../src/kde/config/KeyManagerTab.cpp:283
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported and verified as correct."
@@ -415,7 +429,7 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: ../src/kde/config/KeyManagerTab.cpp:257
+#: ../src/kde/config/KeyManagerTab.cpp:292
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported without verification."
@@ -425,81 +439,81 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. tr: Wii keys.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:388
-#: ../src/win32/config/KeyManagerTab.cpp:1448
+#: ../src/kde/config/KeyManagerTab.cpp:435
+#: ../src/win32/config/KeyManagerTab.cpp:1478
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
 msgstr ""
 
 #. tr: Wii keys.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:391
+#: ../src/kde/config/KeyManagerTab.cpp:438
 msgctxt "KeyManagerTab"
 msgid "keys.bin (keys.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: Wii U otp.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:407
-#: ../src/win32/config/KeyManagerTab.cpp:1487
+#: ../src/kde/config/KeyManagerTab.cpp:455
+#: ../src/win32/config/KeyManagerTab.cpp:1521
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
 msgstr ""
 
 #. tr: Wii U otp.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:410
+#: ../src/kde/config/KeyManagerTab.cpp:458
 msgctxt "KeyManagerTab"
 msgid "otp.bin (otp.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: 3DS boot9.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:426
-#: ../src/win32/config/KeyManagerTab.cpp:1526
+#: ../src/kde/config/KeyManagerTab.cpp:475
+#: ../src/win32/config/KeyManagerTab.cpp:1564
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
 msgstr ""
 
 #. tr: 3DS boot9.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:429
+#: ../src/kde/config/KeyManagerTab.cpp:478
 msgctxt "KeyManagerTab"
 msgid "boot9.bin (boot9.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: 3DS aeskeydb.bin dialog title.
 #. tr: aeskeydb.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:445
-#: ../src/win32/config/KeyManagerTab.cpp:1565
+#: ../src/kde/config/KeyManagerTab.cpp:495
+#: ../src/win32/config/KeyManagerTab.cpp:1607
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
 msgstr ""
 
 #. tr: 3DS aeskeydb.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:448
+#: ../src/kde/config/KeyManagerTab.cpp:498
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: Column 0: Key Name.
 #: ../src/kde/config/KeyStoreModel.cpp:426
-#: ../src/win32/config/KeyManagerTab.cpp:388
+#: ../src/win32/config/KeyManagerTab.cpp:398
 msgctxt "KeyManagerTab"
 msgid "Key Name"
 msgstr ""
 
 #. tr: Column 1: Value.
 #: ../src/kde/config/KeyStoreModel.cpp:429
-#: ../src/win32/config/KeyManagerTab.cpp:397
+#: ../src/win32/config/KeyManagerTab.cpp:407
 msgctxt "KeyManagerTab"
 msgid "Value"
 msgstr ""
 
 #. tr: Column 2: Verification status.
 #: ../src/kde/config/KeyStoreModel.cpp:432
-#: ../src/win32/config/KeyManagerTab.cpp:402
+#: ../src/win32/config/KeyManagerTab.cpp:412
 msgctxt "KeyManagerTab"
 msgid "Valid?"
 msgstr ""
 
 #. tr: IMG_INT_ICON
-#: ../src/libromdata/config/TImageTypesConfig.cpp:379
+#: ../src/libromdata/config/TImageTypesConfig.cpp:377
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -507,7 +521,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_INT_BANNER
-#: ../src/libromdata/config/TImageTypesConfig.cpp:381
+#: ../src/libromdata/config/TImageTypesConfig.cpp:379
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -515,7 +529,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_INT_MEDIA
-#: ../src/libromdata/config/TImageTypesConfig.cpp:383
+#: ../src/libromdata/config/TImageTypesConfig.cpp:381
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -523,7 +537,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_INT_IMAGE
-#: ../src/libromdata/config/TImageTypesConfig.cpp:385
+#: ../src/libromdata/config/TImageTypesConfig.cpp:383
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -531,7 +545,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_EXT_MEDIA
-#: ../src/libromdata/config/TImageTypesConfig.cpp:390
+#: ../src/libromdata/config/TImageTypesConfig.cpp:388
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -539,7 +553,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_EXT_COVER
-#: ../src/libromdata/config/TImageTypesConfig.cpp:392
+#: ../src/libromdata/config/TImageTypesConfig.cpp:390
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -547,7 +561,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_EXT_COVER_3D
-#: ../src/libromdata/config/TImageTypesConfig.cpp:394
+#: ../src/libromdata/config/TImageTypesConfig.cpp:392
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -555,7 +569,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_EXT_COVER_FULL
-#: ../src/libromdata/config/TImageTypesConfig.cpp:396
+#: ../src/libromdata/config/TImageTypesConfig.cpp:394
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -563,7 +577,7 @@ msgid ""
 msgstr ""
 
 #. tr: IMG_EXT_BOX
-#: ../src/libromdata/config/TImageTypesConfig.cpp:398
+#: ../src/libromdata/config/TImageTypesConfig.cpp:396
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -571,61 +585,55 @@ msgid ""
 msgstr ""
 
 #. tr: amiibo
-#: ../src/libromdata/config/TImageTypesConfig.cpp:417
+#: ../src/libromdata/config/TImageTypesConfig.cpp:415
 msgctxt "TImageTypesConfig|SysName"
 msgid "amiibo"
 msgstr ""
 
 #. tr: NintendoBadge
-#: ../src/libromdata/config/TImageTypesConfig.cpp:419
+#: ../src/libromdata/config/TImageTypesConfig.cpp:417
 msgctxt "TImageTypesConfig|SysName"
 msgid "Badge Arcade"
 msgstr ""
 
-#. tr: Dreamcast
-#: ../src/libromdata/config/TImageTypesConfig.cpp:421
-msgctxt "TImageTypesConfig|SysName"
-msgid "Dreamcast"
-msgstr ""
-
 #. tr: DreamcastSave
-#: ../src/libromdata/config/TImageTypesConfig.cpp:423
+#: ../src/libromdata/config/TImageTypesConfig.cpp:419
 msgctxt "TImageTypesConfig|SysName"
 msgid "Dreamcast Saves"
 msgstr ""
 
 #. tr: GameCube
-#: ../src/libromdata/config/TImageTypesConfig.cpp:425
+#: ../src/libromdata/config/TImageTypesConfig.cpp:421
 msgctxt "TImageTypesConfig|SysName"
 msgid "GameCube / Wii"
 msgstr ""
 
 #. tr: GameCubeSave
-#: ../src/libromdata/config/TImageTypesConfig.cpp:427
+#: ../src/libromdata/config/TImageTypesConfig.cpp:423
 msgctxt "TImageTypesConfig|SysName"
 msgid "GameCube Saves"
 msgstr ""
 
 #. tr: NintendoDS
-#: ../src/libromdata/config/TImageTypesConfig.cpp:429
+#: ../src/libromdata/config/TImageTypesConfig.cpp:425
 msgctxt "TImageTypesConfig|SysName"
 msgid "Nintendo DS(i)"
 msgstr ""
 
 #. tr: Nintendo3DS
-#: ../src/libromdata/config/TImageTypesConfig.cpp:431
+#: ../src/libromdata/config/TImageTypesConfig.cpp:427
 msgctxt "TImageTypesConfig|SysName"
 msgid "Nintendo 3DS"
 msgstr ""
 
 #. tr: PlayStationSave
-#: ../src/libromdata/config/TImageTypesConfig.cpp:433
+#: ../src/libromdata/config/TImageTypesConfig.cpp:429
 msgctxt "TImageTypesConfig|SysName"
 msgid "PlayStation Saves"
 msgstr ""
 
 #. tr: WiiU
-#: ../src/libromdata/config/TImageTypesConfig.cpp:435
+#: ../src/libromdata/config/TImageTypesConfig.cpp:431
 msgctxt "TImageTypesConfig|SysName"
 msgid "Wii U"
 msgstr ""
@@ -2583,6 +2591,21 @@ msgctxt "GameBoyAdvance"
 msgid "Unknown"
 msgstr ""
 
+#: ../src/libromdata/Handheld/GameCom.cpp:494
+msgctxt "GameCom"
+msgid "Title"
+msgstr ""
+
+#: ../src/libromdata/Handheld/GameCom.cpp:498
+msgctxt "GameCom"
+msgid "Game ID"
+msgstr ""
+
+#: ../src/libromdata/Handheld/GameCom.cpp:502
+msgctxt "GameCom"
+msgid "Entry Point"
+msgstr ""
+
 #: ../src/libromdata/Handheld/Lynx.cpp:235
 msgctxt "Lynx"
 msgid "Title"
@@ -2626,6 +2649,17 @@ msgstr ""
 #: ../src/libromdata/Handheld/Lynx.cpp:254
 msgctxt "Lynx"
 msgid "Bank 1 Size"
+msgstr ""
+
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:879
+msgctxt "Nintendo3DS"
+msgid "Media ID"
+msgstr ""
+
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:883
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:887
+msgctxt "Nintendo3DS"
+msgid "Title ID"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:899
@@ -4938,61 +4972,61 @@ msgid "# of Resources"
 msgstr ""
 
 #. tr: VERIFY_OK
-#: ../src/librpbase/crypto/KeyManager.cpp:237
+#: ../src/librpbase/crypto/KeyManager.cpp:253
 msgctxt "KeyManager|VerifyResult"
 msgid "Something happened."
 msgstr ""
 
 #. tr: VERIFY_INVALID_PARAMS
-#: ../src/librpbase/crypto/KeyManager.cpp:239
+#: ../src/librpbase/crypto/KeyManager.cpp:255
 msgctxt "KeyManager|VerifyResult"
 msgid "Invalid parameters. (THIS IS A BUG!)"
 msgstr ""
 
 #. tr: VERIFY_NO_SUPPORT
-#: ../src/librpbase/crypto/KeyManager.cpp:241
+#: ../src/librpbase/crypto/KeyManager.cpp:257
 msgctxt "KeyManager|VerifyResult"
 msgid "Decryption is not supported in this build."
 msgstr ""
 
 #. tr: VERIFY_KEY_DB_NOT_LOADED
-#: ../src/librpbase/crypto/KeyManager.cpp:243
+#: ../src/librpbase/crypto/KeyManager.cpp:259
 msgctxt "KeyManager|VerifyResult"
 msgid "keys.conf was not found."
 msgstr ""
 
 #. tr: VERIFY_KEY_DB_ERROR
-#: ../src/librpbase/crypto/KeyManager.cpp:245
+#: ../src/librpbase/crypto/KeyManager.cpp:261
 msgctxt "KeyManager|VerifyResult"
 msgid "keys.conf has an error and could not be loaded."
 msgstr ""
 
 #. tr: VERIFY_KEY_NOT_FOUND
-#: ../src/librpbase/crypto/KeyManager.cpp:247
+#: ../src/librpbase/crypto/KeyManager.cpp:263
 msgctxt "KeyManager|VerifyResult"
 msgid "Required key was not found in keys.conf."
 msgstr ""
 
 #. tr: VERIFY_KEY_INVALID
-#: ../src/librpbase/crypto/KeyManager.cpp:249
+#: ../src/librpbase/crypto/KeyManager.cpp:265
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is not a valid key."
 msgstr ""
 
 #. tr: VERFIY_IAESCIPHER_INIT_ERR
-#: ../src/librpbase/crypto/KeyManager.cpp:251
+#: ../src/librpbase/crypto/KeyManager.cpp:267
 msgctxt "KeyManager|VerifyResult"
 msgid "AES decryption could not be initialized."
 msgstr ""
 
 #. tr: VERIFY_IAESCIPHER_DECRYPT_ERR
-#: ../src/librpbase/crypto/KeyManager.cpp:253
+#: ../src/librpbase/crypto/KeyManager.cpp:269
 msgctxt "KeyManager|VerifyResult"
 msgid "AES decryption failed."
 msgstr ""
 
 #. tr: VERIFY_WRONG_KEY
-#: ../src/librpbase/crypto/KeyManager.cpp:255
+#: ../src/librpbase/crypto/KeyManager.cpp:271
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is incorrect."
 msgstr ""
@@ -5667,38 +5701,38 @@ msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr ""
 
-#: ../src/win32/config/KeyManagerTab.cpp:365
+#: ../src/win32/config/KeyManagerTab.cpp:375
 msgctxt "KeyManagerTab"
 msgid "Import..."
 msgstr ""
 
 #. tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1450
+#: ../src/win32/config/KeyManagerTab.cpp:1480
 msgctxt "KeyManagerTab"
 msgid "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1489
+#: ../src/win32/config/KeyManagerTab.cpp:1523
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1528
+#: ../src/win32/config/KeyManagerTab.cpp:1566
 msgctxt "KeyManagerTab"
 msgid "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1567
+#: ../src/win32/config/KeyManagerTab.cpp:1609
 msgctxt "KeyManagerTab"
 msgid ""
 "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1619
+#: ../src/win32/config/KeyManagerTab.cpp:1665
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr ""
