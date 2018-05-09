@@ -1497,7 +1497,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 		return;
 
 	// Save the key file directory.
-	saveKeyFileDir(filename):
+	saveKeyFileDir(filename);
 
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
@@ -1540,7 +1540,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 		return;
 
 	// Save the key file directory.
-	saveKeyFileDir(filename):
+	saveKeyFileDir(filename);
 
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
@@ -1583,7 +1583,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 		return;
 
 	// Save the key file directory.
-	saveKeyFileDir(filename):
+	saveKeyFileDir(filename);
 
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
@@ -1626,7 +1626,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 		return;
 
 	// Save the key file directory.
-	saveKeyFileDir(filename):
+	saveKeyFileDir(filename);
 
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2U8(filename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
