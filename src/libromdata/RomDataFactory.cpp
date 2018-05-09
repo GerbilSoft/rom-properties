@@ -59,6 +59,7 @@ using std::vector;
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"
 #include "Handheld/GameBoyAdvance.hpp"
+#include "Handheld/GameCom.hpp"
 #include "Handheld/Lynx.hpp"
 #include "Handheld/Nintendo3DS.hpp"
 #include "Handheld/Nintendo3DSFirm.hpp"
@@ -186,8 +187,15 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(EXE, false),	// TODO: Thumbnailing on non-Windows platforms.
 	GetRomDataFns(PlayStationSave, true),
 
+	// NOTE: game.com may be at either 0 or 0x40000.
+	// 0x40000 address is checked below.
+	GetRomDataFns(GameCom, false),
+
 	// Headers with non-zero addresses.
 	GetRomDataFns_addr(Sega8Bit, false, 0x7FE0, 0x20),
+	// NOTE: game.com may be at either 0 or 0x40000.
+	// 0 address is checked above.
+	GetRomDataFns_addr(GameCom, false, 0x40000, 0x20),
 
 	{nullptr, nullptr, nullptr, false, 0, 0}
 };
@@ -348,10 +356,12 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 			if (info.ext == nullptr) {
 				// No file extension...
 				break;
-			} else if (strcasecmp(info.ext, ".sms") != 0 &&
-				   strcasecmp(info.ext, ".gg") != 0)
+			} else if (strcasecmp(info.ext, ".bin") != 0 &&	/* generic .bin */
+				   strcasecmp(info.ext, ".sms") != 0 &&	/* Sega Master System */
+				   strcasecmp(info.ext, ".gg") != 0 &&	/* Game Gear */
+				   strcasecmp(info.ext, ".tgc") != 0)	/* game.com */
 			{
-				// Not SMS or Game Gear.
+				// Not SMS, Game Gear, or game.com.
 				break;
 			}
 

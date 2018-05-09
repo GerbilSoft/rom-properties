@@ -41,6 +41,7 @@ SET(libromdata_SRCS
 	Handheld/DMG.cpp
 	Handheld/Lynx.cpp
 	Handheld/GameBoyAdvance.cpp
+	Handheld/GameCom.cpp
 	Handheld/Nintendo3DS.cpp
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/NintendoDS.cpp
@@ -122,6 +123,7 @@ SET(libromdata_H
 	Handheld/DMG.hpp
 	Handheld/Lynx.hpp
 	Handheld/GameBoyAdvance.hpp
+	Handheld/GameCom.hpp
 	Handheld/Nintendo3DS.hpp
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/NintendoDS.hpp
@@ -129,6 +131,7 @@ SET(libromdata_H
 
 	Handheld/dmg_structs.h
 	Handheld/gba_structs.h
+	Handheld/gcom_structs.h
 	Handheld/n3ds_structs.h
 	Handheld/nds_structs.h
 	Handheld/lnx_structs.h
