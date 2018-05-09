@@ -38,7 +38,6 @@ using namespace LibRpBase;
 // Does not include texture files, since those are always
 // thumbnailed using IMG_INT_IMAGE.
 #include "Other/Amiibo.hpp"
-#include "Console/Dreamcast.hpp"
 #include "Console/DreamcastSave.hpp"
 #include "Console/GameCube.hpp"
 #include "Console/GameCubeSave.hpp"
@@ -55,7 +54,6 @@ template<typename ComboBox>
 const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
 	SysDataEntry(Amiibo),
 	SysDataEntry(NintendoBadge),
-	SysDataEntry(Dreamcast),
 	SysDataEntry(DreamcastSave),
 	SysDataEntry(GameCube),
 	SysDataEntry(GameCubeSave),
@@ -417,8 +415,6 @@ const char *TImageTypesConfig<ComboBox>::sysName(unsigned int sys)
 		NOP_C_("TImageTypesConfig|SysName", "amiibo"),
 		// tr: NintendoBadge
 		NOP_C_("TImageTypesConfig|SysName", "Badge Arcade"),
-		// tr: Dreamcast
-		NOP_C_("TImageTypesConfig|SysName", "Dreamcast"),
 		// tr: DreamcastSave
 		NOP_C_("TImageTypesConfig|SysName", "Dreamcast Saves"),
 		// tr: GameCube
