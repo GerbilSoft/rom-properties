@@ -7,8 +7,9 @@ IF(QT4_FOUND)
 	# Make sure KDE4's CMake files don't create an uninstall rule.
 	SET(_kde4_uninstall_rule_created TRUE)
 
-	# Find KDE4. (TODO: Version?)
-	FIND_PACKAGE(KDE4 ${REQUIRE_KDE4})
+	# Find KDE4.
+	# - 4.7.0: KMessageWidget
+	FIND_PACKAGE(KDE4 4.7.0 ${REQUIRE_KDE4})
 	IF(NOT KDE4_FOUND)
 		# KDE4 not found.
 		SET(BUILD_KDE4 OFF CACHE "" INTERNAL FORCE)

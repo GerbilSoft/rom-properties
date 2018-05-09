@@ -17,8 +17,6 @@ SET(rom-properties-kde_SRCS
 	config/DownloadsTab.cpp
 	config/AboutTab.cpp
 	config/QTreeViewOpt.cpp
-	config/MessageWidget.cpp
-	config/MessageWidgetStack.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
@@ -34,8 +32,6 @@ SET(rom-properties-kde_H
 	config/DownloadsTab.hpp
 	config/AboutTab.hpp
 	config/QTreeViewOpt.hpp
-	config/MessageWidget.hpp
-	config/MessageWidgetStack.hpp
 	)
 SET(rom-properties-kde_UIS
 	RomDataView.ui

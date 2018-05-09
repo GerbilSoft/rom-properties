@@ -10,10 +10,7 @@
     <height>300</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="vboxMain">
-   <item>
-    <widget class="MessageWidgetStack" name="msgWidget" native="true"/>
-   </item>
+  <layout class="QVBoxLayout" name="vboxMain" stretch="1,0">
    <item>
     <widget class="QTreeViewOpt" name="treeKeyStore">
      <property name="alternatingRowColors">
@@ -84,12 +81,6 @@
    <class>QTreeViewOpt</class>
    <extends>QTreeView</extends>
    <header>config/QTreeViewOpt.hpp</header>
-  </customwidget>
-  <customwidget>
-   <class>MessageWidgetStack</class>
-   <extends>QWidget</extends>
-   <header>config/MessageWidgetStack.hpp</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

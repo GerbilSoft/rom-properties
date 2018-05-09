@@ -19,6 +19,7 @@ Build-Depends:
  qtbase5-dev,
  qttools5-dev-tools,
  kio-dev,
+ libkf5widgetsaddons-dev,
  libglib2.0-dev,
  libgtk2.0-dev,
  libthunarx-2-dev,

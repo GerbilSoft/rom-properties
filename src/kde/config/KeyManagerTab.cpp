@@ -46,6 +46,9 @@ using std::string;
 #include <QFileDialog>
 #include <QMenu>
 
+// KDE includes.
+#include <kmessagewidget.h>
+
 #include "ui_KeyManagerTab.h"
 class KeyManagerTabPrivate
 {
@@ -123,17 +126,20 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	const QString &keyType,
 	const KeyStoreQt::ImportReturn &iret)
 {
+	KMessageWidget::MessageType type = KMessageWidget::Information;
+	QStyle::StandardPixmap icon = QStyle::SP_MessageBoxInformation;
+	bool showKeyStats = false;
 	string msg;
 	msg.reserve(1024);
-	MessageWidget::MsgIcon icon;
-	bool showKeyStats = false;
+
 	switch (iret.status) {
 		case KeyStoreQt::Import_InvalidParams:
 		default:
 			msg = C_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
 				"THIS IS A BUG; please report this to the developers!");
-			icon = MessageWidget::ICON_CRITICAL;
+			type = KMessageWidget::Error;
+			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
 		case KeyStoreQt::Import_OpenError:
@@ -142,7 +148,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				// tr: %s == filename
 				"An error occurred while opening '%s'."),
 				QFileInfo(filename).fileName().toUtf8().constData());
-			icon = MessageWidget::ICON_CRITICAL;
+			type = KMessageWidget::Error;
+			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
 		case KeyStoreQt::Import_ReadError:
@@ -151,7 +158,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				// tr: %s == filename
 				"An error occurred while reading '%s'."),
 				QFileInfo(filename).fileName().toUtf8().constData());
-			icon = MessageWidget::ICON_CRITICAL;
+			type = KMessageWidget::Error;
+			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
 		case KeyStoreQt::Import_InvalidFile:
@@ -160,7 +168,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"The file '%1$s' is not a valid %2$s file."),
 				QFileInfo(filename).fileName().toUtf8().constData(),
 				keyType.toUtf8().constData());
-			icon = MessageWidget::ICON_WARNING;
+			type = KMessageWidget::Warning;
+			icon = QStyle::SP_MessageBoxWarning;
 			break;
 
 		case KeyStoreQt::Import_NoKeysImported:
@@ -168,7 +177,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
 				QFileInfo(filename).fileName().toUtf8().constData());
-			icon = MessageWidget::ICON_WARNING;
+			type = KMessageWidget::Information;
+			icon = QStyle::SP_MessageBoxInformation;
 			showKeyStats = true;
 			break;
 
@@ -185,7 +195,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%1$s keys were imported from '%2$s'.",
 				keyCount), s_keyCount.str().c_str(),
 				QFileInfo(filename).fileName().toUtf8().constData());
-			icon = MessageWidget::ICON_INFORMATION;
+			type = KMessageWidget::Positive;
+			icon = QStyle::SP_DialogOkButton;
 			showKeyStats = true;
 			break;
 		}
@@ -260,7 +271,18 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 	}
 
-	ui.msgWidget->showMessage(U82Q(msg), icon);
+	Q_Q(KeyManagerTab);
+	KMessageWidget *widget = new KMessageWidget(q);
+	widget->setCloseButtonVisible(true);
+	widget->setWordWrap(true);
+	widget->setMessageType(type);
+	widget->setIcon(qApp->style()->standardIcon(icon, nullptr, widget));
+	widget->setText(U82Q(msg));
+	QObject::connect(widget, SIGNAL(hideAnimationFinished()),
+			 widget, SLOT(deleteLater()));
+
+	ui.vboxMain->insertWidget(0, widget);
+	widget->animatedShow();
 }
 
 /** KeyManagerTab **/
