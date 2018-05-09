@@ -25,6 +25,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/bitstuff.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 
@@ -120,13 +121,37 @@ const rp_image *GameComPrivate::loadIcon(void)
 		return nullptr;
 	}
 
+	// If the bank number is past the end of the ROM, it may be underdumped.
+	// NOTE: Adding addr_adj may cause problems in this case, so what we should
+	// do first is round the ROM size up to the next power of two, divide by two,
+	// then mask the bank number with the new ROM size.
+	const int64_t fileSize = this->file->size();
+	uint8_t bank_number = romHeader.icon.bank;
+	unsigned int bank_offset = bank_number * GCOM_ICON_BANK_SIZE;
+	if (bank_offset > fileSize) {
+		// If the bank number is more than 2x the filesize,
+		// and it's over the 1 MB mark, forget it.
+		if (bank_offset > (fileSize * 2) && bank_offset > 1048576) {
+			// Completely out of range.
+			return nullptr;
+		}
+		// Get the lowest power of two size and mask the bank number.
+		unsigned int lz = (1 << uilog2((unsigned int)fileSize));
+		bank_number &= ((lz / GCOM_ICON_BANK_SIZE) - 1);
+		bank_offset = bank_number * GCOM_ICON_BANK_SIZE;
+	}
+
 	// Make sure the icon address is valid.
 	// NOTE: Last line doesn't have to be the full width.
 	static const uint32_t icon_data_len = ((GCOM_ICON_BANK_W * (GCOM_ICON_H - 1)) + GCOM_ICON_W) / 4;
-	uint32_t icon_file_offset = addr_adj + romHeader.icon.bank * GCOM_ICON_BANK_SIZE;
+	int icon_file_offset = addr_adj + bank_offset;
+	if (icon_file_offset < 0) {
+		// Try without the address adjustment.
+		icon_file_offset = bank_offset;
+	}
 	icon_file_offset += (romHeader.icon.y / 4);
 	icon_file_offset += ((romHeader.icon.x * GCOM_ICON_BANK_W) / 4);
-	if (icon_file_offset + icon_data_len > this->file->size()) {
+	if (icon_file_offset + icon_data_len > fileSize) {
 		// Out of range.
 		return nullptr;
 	}
