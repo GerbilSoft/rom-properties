@@ -61,14 +61,9 @@ typedef struct PACKED _Gcom_RomHeader {
 	char sys_id[9];			// [0x005] System identifier.
 
 	struct {
-		uint8_t bank;		// [0x00E] Bank number. (16 KB; 256x256)
-		union {
-			struct {
-				uint8_t x;	// [0x00F] X coordinate within the bank.
-				uint8_t y;	// [0x010] Y coordinate within the bank.
-			};
-			uint16_t addr;		// [0x00F] Starting address within the bank.
-		};
+		uint8_t bank;	// [0x00E] Bank number. (16 KB; 256x256)
+		uint8_t x;	// [0x00F] X coordinate within the bank.
+		uint8_t y;	// [0x010] Y coordinate within the bank.
 	} icon;
 
 	char title[9];			// [0x011] Game title.

@@ -124,7 +124,8 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// NOTE: Last line doesn't have to be the full width.
 	static const uint32_t icon_data_len = (GCOM_ICON_BANK_W * (GCOM_ICON_H - 1)) + GCOM_ICON_W;
 	uint32_t icon_file_offset = addr_adj + romHeader.icon.bank * GCOM_ICON_BANK_SIZE;
-	icon_file_offset += le16_to_cpu(romHeader.icon.addr);
+	icon_file_offset += (romHeader.icon.y / 4);
+	icon_file_offset += ((romHeader.icon.x * GCOM_ICON_BANK_W) / 4);
 	if (icon_file_offset + icon_data_len > this->file->size()) {
 		// Out of range.
 		return nullptr;
