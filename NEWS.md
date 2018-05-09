@@ -22,6 +22,7 @@
   * ELF: Executable and Linkable Format. Used by Linux, most Unix systems,
     and many other platforms, including GameCube and Wii. A modified version,
     RPX/RPL, is used on Wii U and is also supported.
+  * game.com: Tiger game.com ROM images. Supports properties and icons.
 
 * New system features:
   * Super NES: Satellaview BS-X ROM headers are now decoded properly.
