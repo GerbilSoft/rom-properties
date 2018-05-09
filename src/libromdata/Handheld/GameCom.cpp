@@ -66,12 +66,6 @@ class GameComPrivate : public RomDataPrivate
 		// ROM header.
 		Gcom_RomHeader romHeader;
 
-		// Address adjustment.
-		// If the header starts at 0, this should be -0x40000,
-		// since the icon bank is relative to the physical
-		// address, not the logical address.
-		int addr_adj;
-
 		// Icon.
 		rp_image *icon;
 
@@ -86,7 +80,6 @@ class GameComPrivate : public RomDataPrivate
 
 GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
 	: super(q, file)
-	, addr_adj(0)
 	, icon(nullptr)
 {
 	// Clear the ROM header struct.
@@ -122,9 +115,6 @@ const rp_image *GameComPrivate::loadIcon(void)
 	}
 
 	// If the bank number is past the end of the ROM, it may be underdumped.
-	// NOTE: Adding addr_adj may cause problems in this case, so what we should
-	// do first is round the ROM size up to the next power of two, divide by two,
-	// then mask the bank number with the new ROM size.
 	const int64_t fileSize = this->file->size();
 	uint8_t bank_number = romHeader.icon.bank;
 	unsigned int bank_offset = bank_number * GCOM_ICON_BANK_SIZE;
@@ -144,10 +134,14 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// Make sure the icon address is valid.
 	// NOTE: Last line doesn't have to be the full width.
 	static const uint32_t icon_data_len = ((GCOM_ICON_BANK_W * (GCOM_ICON_H - 1)) + GCOM_ICON_W) / 4;
-	int icon_file_offset = addr_adj + bank_offset;
-	if (icon_file_offset < 0) {
-		// Try without the address adjustment.
-		icon_file_offset = bank_offset;
+	unsigned int icon_file_offset = bank_offset;
+	if (icon_file_offset > 256*1024) {
+		// Check if the ROM is 0.8 MB or 1.8 MB.
+		// These ROMs are incorrectly dumped, but we can usually
+		// get the icon by subtracting 256 KB.
+		if (fileSize == 768*1024 || fileSize == 1792*1024) {
+			icon_file_offset -= 256*1024;
+		}
 	}
 	icon_file_offset += (romHeader.icon.y / 4);
 	icon_file_offset += ((romHeader.icon.x * GCOM_ICON_BANK_W) / 4);
@@ -258,10 +252,7 @@ GameCom::GameCom(IRpFile *file)
 		d->isValid = (isRomSupported_static(&info) >= 0);
 	}
 
-	if (d->isValid) {
-		// Header is valid at the standard address.
-		d->addr_adj = 0;
-	} else {
+	if (!d->isValid) {
 		// Try again at the alternate address.
 		size_t size = d->file->seekAndRead(GCOM_HEADER_ADDRESS_ALT, &d->romHeader, sizeof(d->romHeader));
 		if (size == sizeof(d->romHeader)) {
@@ -273,11 +264,6 @@ GameCom::GameCom(IRpFile *file)
 			info.ext = nullptr;	// Not needed for Gcom.
 			info.szFile = 0;	// Not needed for Gcom.
 			d->isValid = (isRomSupported_static(&info) >= 0);
-		}
-		if (d->isValid) {
-			// Header is valid at the alternate address.
-			// Set the address adjustment.
-			d->addr_adj = GCOM_HEADER_ADDRESS_ALT - GCOM_HEADER_ADDRESS;
 		}
 	}
 }
