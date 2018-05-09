@@ -1004,7 +1004,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	}
 
 	// Get the requested minimum number of rows.
-	// Recalculate the row heights for this GtkTreeView.
+	// Recalculate the row heights for this QTreeWidget.
 	const int rows_visible = treeWidget->property("RFT_LISTDATA_rows_visible").toInt();
 	if (rows_visible <= 0) {
 		// This QTreeWidget doesn't have a fixed number of rows.
