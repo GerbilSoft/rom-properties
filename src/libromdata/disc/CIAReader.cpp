@@ -366,7 +366,7 @@ size_t CIAReader::read(void *ptr, size_t size)
 		m_lastError = EIO;
 		return 0;
 	}
-	unsigned int sz_dec = d->cipher->decrypt(static_cast<uint8_t*>(ptr), size);
+	size_t sz_dec = d->cipher->decrypt(static_cast<uint8_t*>(ptr), size);
 	if (sz_dec != size) {
 		// decrypt() failed.
 		m_lastError = EIO;
