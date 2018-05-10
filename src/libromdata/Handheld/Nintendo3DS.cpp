@@ -1701,8 +1701,9 @@ int Nintendo3DS::loadFieldData(void)
 	// Tested with several CCI, CIA, and NCCH files.
 	d->fields->reserve(20);
 
-	// Reserve at least 2 tabs.
-	d->fields->reserveTabs(2);
+	// Reserve at least 4 tabs:
+	// SMDH, NCSD/CIA, ExHeader, Permissions
+	d->fields->reserveTabs(4);
 
 	// Have we shown a warning yet?
 	bool shownWarning = false;
