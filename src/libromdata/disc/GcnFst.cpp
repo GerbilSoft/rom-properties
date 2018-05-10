@@ -65,7 +65,7 @@ class GcnFstPrivate
 		// String table, converted to Unicode.
 		// - Key: String offset in the FST string table.
 		// - Value: string.
-		unordered_map<uint32_t, string> u8_string_table;
+		mutable unordered_map<uint32_t, string> u8_string_table;
 
 		// Offset shift.
 		uint8_t offsetShift;
@@ -208,7 +208,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
 	const char *str = &string_table_ptr[offset];
 	int len = (int)strlen(str);	// TODO: Bounds checking.
 	string u8str = cp1252_sjis_to_utf8(str, len);
-	iter = const_cast<GcnFstPrivate*>(this)->u8_string_table.insert(std::make_pair(offset, u8str)).first;
+	iter = u8_string_table.insert(std::make_pair(offset, u8str)).first;
 	return iter->second.c_str();
 }
 

@@ -473,7 +473,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return const_cast<rp_image*>(iconAnimData->frames[0]);
+		return iconAnimData->frames[0];
 	} else if (!this->file || !this->isValid) {
 		// Can't load the icon.
 		return nullptr;
