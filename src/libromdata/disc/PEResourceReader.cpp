@@ -611,7 +611,7 @@ PEResourceReader::~PEResourceReader()
  */
 bool PEResourceReader::isOpen(void) const
 {
-	RP_D(PEResourceReader);
+	RP_D(const PEResourceReader);
 	return (d->file && d->file->isOpen());
 }
 
@@ -694,7 +694,7 @@ void PEResourceReader::rewind(void)
  */
 int64_t PEResourceReader::tell(void)
 {
-	RP_D(PEResourceReader);
+	RP_D(const PEResourceReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
 	if (!d->file || !d->file->isOpen()) {
@@ -714,7 +714,7 @@ int64_t PEResourceReader::tell(void)
 int64_t PEResourceReader::size(void)
 {
 	// TODO: Errors?
-	RP_D(PEResourceReader);
+	RP_D(const PEResourceReader);
 	return (int64_t)d->rsrc_size;
 }
 

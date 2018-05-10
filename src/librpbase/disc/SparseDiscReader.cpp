@@ -229,7 +229,7 @@ void SparseDiscReader::rewind(void)
  */
 int64_t SparseDiscReader::tell(void)
 {
-	RP_D(SparseDiscReader);
+	RP_D(const SparseDiscReader);
 	assert(d->file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);
@@ -249,7 +249,7 @@ int64_t SparseDiscReader::tell(void)
  */
 int64_t SparseDiscReader::size(void)
 {
-	RP_D(SparseDiscReader);
+	RP_D(const SparseDiscReader);
 	assert(d->file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);

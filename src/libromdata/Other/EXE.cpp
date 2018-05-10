@@ -120,7 +120,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileFlags", "Info Inferred"),
 		NOP_C_("EXE|FileFlags", "Special Build"),
 	};
-	vector<string> *v_FileFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_FileFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|FileFlags", FileFlags_names, ARRAY_SIZE(FileFlags_names));
 	fields->addField_bitfield(C_("EXE", "File Flags"),
 		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
@@ -327,7 +327,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	static const char *const field_names[] = {
 		"Key", "Value"
 	};
-	vector<string> *v_field_names = RomFields::strArrayToVector(
+	vector<string> *const v_field_names = RomFields::strArrayToVector(
 		field_names, ARRAY_SIZE(field_names));
 
 	// Add the StringFileInfo.
@@ -491,7 +491,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ProgFlags", "80386 insns"),
 		NOP_C_("EXE|ProgFlags", "FPU insns"),
 	};
-	vector<string> *v_ProgFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|ProgFlags", ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
 	fields->addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
@@ -530,7 +530,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ApplFlags", "Non-Conforming"),
 		NOP_C_("EXE|ApplFlags", "DLL"),
 	};
-	vector<string> *v_ApplFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|ApplFlags", ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
 	fields->addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
@@ -547,7 +547,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|OtherFlags", "Proportional Fonts"),
 		NOP_C_("EXE|OtherFlags", "Gangload Area"),
 	};
-	vector<string> *v_OtherFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
 	fields->addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
@@ -874,7 +874,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|PEFlags", "DLL"),
 		nullptr, nullptr,
 	};
-	vector<string> *v_pe_flags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
 		"EXE|PEFlags", pe_flags_names, ARRAY_SIZE(pe_flags_names));
 	fields->addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
@@ -894,7 +894,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|DLLFlags", "Control Flow Guard"),
 		NOP_C_("EXE|DLLFlags", "TS Aware"),
 	};
-	vector<string> *v_dll_flags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
 		"EXE|DLLFlags", dll_flags_names, ARRAY_SIZE(dll_flags_names));
 	fields->addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);

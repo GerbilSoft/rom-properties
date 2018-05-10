@@ -729,7 +729,7 @@ vector<RomData::ImageSizeDef> KhronosKTX::supportedImageSizes(ImageType imageTyp
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(KhronosKTX);
+	RP_D(const KhronosKTX);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
@@ -758,7 +758,7 @@ uint32_t KhronosKTX::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(KhronosKTX);
+	RP_D(const KhronosKTX);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by DDS.
 		return 0;
@@ -895,8 +895,8 @@ int KhronosKTX::loadFieldData(void)
 		};
 
 		// NOTE: Making a copy.
-		vector<vector<string> > *p_kv_data = new vector<vector<string> >(d->kv_data);
-		vector<string> *v_kv_field_names = RomFields::strArrayToVector_i18n(
+		vector<vector<string> > *const p_kv_data = new vector<vector<string> >(d->kv_data);
+		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
 			"KhronosKTX|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
 		d->fields->addField_listData("Key/Value Data", v_kv_field_names, p_kv_data);
 	}

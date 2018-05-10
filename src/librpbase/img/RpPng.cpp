@@ -204,7 +204,7 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep d
 void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 {
 	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
+	IRpFile *const file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
 	if (!file)
 		return;
 

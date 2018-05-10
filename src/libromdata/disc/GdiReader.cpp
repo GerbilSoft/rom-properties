@@ -572,7 +572,7 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
  */
 int GdiReader::trackCount(void) const
 {
-	RP_D(GdiReader);
+	RP_D(const GdiReader);
 	return (int)d->trackMappings.size();
 }
 

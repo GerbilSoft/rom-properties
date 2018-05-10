@@ -513,7 +513,7 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	// Only one size is available.
 	RP_UNUSED(size);
 
-	RP_D(Amiibo);
+	RP_D(const Amiibo);
 	if (!d->isValid) {
 		// Invalid file.
 		return -EIO;

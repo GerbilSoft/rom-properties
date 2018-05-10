@@ -353,7 +353,7 @@ bool RomData::isValid(void) const
  */
 bool RomData::isOpen(void) const
 {
-	RP_D(RomData);
+	RP_D(const RomData);
 	return (d->file != nullptr);
 }
 

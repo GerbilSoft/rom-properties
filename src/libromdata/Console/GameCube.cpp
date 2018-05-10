@@ -1883,7 +1883,7 @@ int GameCube::loadFieldData(void)
 			// tr: Total size of the partition.
 			NOP_C_("GameCube|Partition", "Total Size"),
 		};
-		vector<string> *v_partitions_names = RomFields::strArrayToVector_i18n(
+		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
 			"GameCube|Partition", partitions_names, ARRAY_SIZE(partitions_names));
 		d->fields->addField_listData("Partitions", v_partitions_names, partitions);
 	} else {

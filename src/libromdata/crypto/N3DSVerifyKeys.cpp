@@ -220,7 +220,7 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 	}
 
 	// Initialize the Key Manager.
-	KeyManager *keyManager = KeyManager::instance();
+	KeyManager *const keyManager = KeyManager::instance();
 
 	// Determine the keyset to use.
 	// TODO: If issuer is unknown, try Debug, then Retail.

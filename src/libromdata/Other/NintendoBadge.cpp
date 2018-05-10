@@ -473,7 +473,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(NintendoBadge);
+	RP_D(const NintendoBadge);
 	if (!d->isValid || (imageType != IMG_INT_ICON && imageType != IMG_INT_IMAGE)) {
 		return vector<ImageSizeDef>();
 	}

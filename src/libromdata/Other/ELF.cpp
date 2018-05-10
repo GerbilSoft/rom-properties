@@ -1005,7 +1005,7 @@ int ELF::loadFieldData(void)
 				// tr: Little-Endian Data
 				NOP_C_("ELF|SPARCFlags", "LE Data")
 			};
-			vector<string> *v_sparc_flags_names = RomFields::strArrayToVector_i18n(
+			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_sparc_flags_names, 4, flags);
@@ -1051,7 +1051,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|MIPSFlags", "FP64"),
 				NOP_C_("ELF|MIPSFlags", "NaN 2008"),
 			};
-			vector<string> *v_mips_flags_names = RomFields::strArrayToVector_i18n(
+			vector<string> *const v_mips_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_mips_flags_names, 4, (flags & ~0xF0000000));

@@ -361,7 +361,7 @@ vector<RomData::ImageSizeDef> ValveVTF3::supportedImageSizes(ImageType imageType
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(ValveVTF3);
+	RP_D(const ValveVTF3);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
@@ -390,7 +390,7 @@ uint32_t ValveVTF3::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(ValveVTF3);
+	RP_D(const ValveVTF3);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by DDS.
 		return 0;

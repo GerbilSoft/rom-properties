@@ -78,7 +78,7 @@ struct ExtractParam {
 * @param romData RomData containing the images
 * @param extract Vector of image extraction parameters
 */
-static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) {
+static void ExtractImages(const RomData *romData, std::vector<ExtractParam>& extract) {
 	int supported = romData->supportedImageTypes();
 	for (auto it = extract.begin(); it != extract.end(); ++it) {
 		if (!it->filename) continue;

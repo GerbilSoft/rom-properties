@@ -227,7 +227,7 @@ IsoPartition::~IsoPartition()
  */
 bool IsoPartition::isOpen(void) const
 {
-	RP_D(IsoPartition);
+	RP_D(const IsoPartition);
 	return (d->discReader && d->discReader->isOpen());
 }
 
@@ -312,7 +312,7 @@ int64_t IsoPartition::tell(void)
 int64_t IsoPartition::size(void)
 {
 	// TODO: Restrict partition size?
-	RP_D(IsoPartition);
+	RP_D(const IsoPartition);
 	if (!d->discReader)
 		return -1;
 	return d->partition_size;

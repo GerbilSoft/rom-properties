@@ -826,7 +826,7 @@ vector<RomData::ImageSizeDef> SegaPVR::supportedImageSizes(ImageType imageType) 
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(SegaPVR);
+	RP_D(const SegaPVR);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
@@ -853,7 +853,7 @@ uint32_t SegaPVR::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(SegaPVR);
+	RP_D(const SegaPVR);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by PVR.
 		return 0;

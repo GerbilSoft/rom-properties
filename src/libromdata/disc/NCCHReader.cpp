@@ -519,7 +519,7 @@ NCCHReader::~NCCHReader()
  */
 bool NCCHReader::isOpen(void) const
 {
-	RP_D(NCCHReader);
+	RP_D(const NCCHReader);
 	if (d->useDiscReader) {
 		return (d->discReader && d->discReader->isOpen());
 	} else {
@@ -681,7 +681,7 @@ void NCCHReader::rewind(void)
  */
 int64_t NCCHReader::tell(void)
 {
-	RP_D(NCCHReader);
+	RP_D(const NCCHReader);
 	assert(isOpen());
 	if (!isOpen()) {
 		m_lastError = EBADF;
@@ -914,7 +914,7 @@ const char *NCCHReader::contentType(void) const
 	if (!ncch_header) {
 		// NCCH header is not loaded.
 		// Check if this is another content type.
-		RP_D(NCCHReader);
+		RP_D(const NCCHReader);
 		switch (d->nonNcchContentType) {
 			case NCCHReaderPrivate::NONCCH_NDHT:
 				// NDHT (DS Whitelist)
@@ -968,7 +968,7 @@ const char *NCCHReader::contentType(void) const
  */
 IRpFile *NCCHReader::open(int section, const char *filename)
 {
-	RP_D(NCCHReader);
+	RP_D(const NCCHReader);
 	assert(isOpen());
 	assert(section == N3DS_NCCH_SECTION_EXEFS);
 	assert(filename != nullptr);
@@ -1039,7 +1039,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
  */
 LibRpBase::IRpFile *NCCHReader::openLogo(void)
 {
-	RP_D(NCCHReader);
+	RP_D(const NCCHReader);
 	assert(isOpen());
 	if (!isOpen()) {
 		m_lastError = EBADF;

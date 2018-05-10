@@ -458,7 +458,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
  */
 const char *NES::systemName(unsigned int type) const
 {
-	RP_D(NES);
+	RP_D(const NES);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 

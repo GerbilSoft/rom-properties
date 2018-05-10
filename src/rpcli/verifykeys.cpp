@@ -83,7 +83,7 @@ int VerifyKeys(void)
 {
 	// Initialize the key manager.
 	// Get the Key Manager instance.
-	KeyManager *keyManager = KeyManager::instance();
+	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
 	if (!keyManager) {
 		cerr << "*** " << C_("rpcli", "ERROR initializing KeyManager. Cannot verify keys.") << endl;

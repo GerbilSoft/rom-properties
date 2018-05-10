@@ -300,7 +300,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// Otherwise, we can only get the partition size information.
 
 	// Get the Key Manager instance.
-	KeyManager *keyManager = KeyManager::instance();
+	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
 
 	// Determine the required encryption key.
@@ -722,7 +722,7 @@ int WiiPartition::seek(int64_t pos)
  */
 int64_t WiiPartition::tell(void)
 {
-	RP_D(WiiPartition);
+	RP_D(const WiiPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader ||  !d->discReader->isOpen()) {

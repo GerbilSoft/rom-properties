@@ -81,7 +81,7 @@ GcnPartition::GcnPartition(GcnPartitionPrivate *d)
  */
 bool GcnPartition::isOpen(void) const
 {
-	RP_D(GcnPartition);
+	RP_D(const GcnPartition);
 	return (d->discReader && d->discReader->isOpen());
 }
 
@@ -168,7 +168,7 @@ int64_t GcnPartition::tell(void)
 int64_t GcnPartition::size(void)
 {
 	// TODO: Errors?
-	RP_D(GcnPartition);
+	RP_D(const GcnPartition);
 	return d->data_size;
 }
 

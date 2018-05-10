@@ -529,7 +529,7 @@ NEResourceReader::~NEResourceReader()
  */
 bool NEResourceReader::isOpen(void) const
 {
-	RP_D(NEResourceReader);
+	RP_D(const NEResourceReader);
 	return (d->file && d->file->isOpen());
 }
 

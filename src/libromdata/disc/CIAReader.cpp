@@ -243,7 +243,7 @@ CIAReader::~CIAReader()
  */
 bool CIAReader::isOpen(void) const
 {
-	RP_D(CIAReader);
+	RP_D(const CIAReader);
 	return (d->file && d->file->isOpen());
 }
 
@@ -421,7 +421,7 @@ void CIAReader::rewind(void)
  */
 int64_t CIAReader::tell(void)
 {
-	RP_D(CIAReader);
+	RP_D(const CIAReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
 	if (!d->file ||  !d->file->isOpen()) {
