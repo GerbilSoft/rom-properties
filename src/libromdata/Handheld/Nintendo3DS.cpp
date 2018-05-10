@@ -369,7 +369,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 						toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
 						toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
 						toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
-						toNext64(le32_to_cpu((uint32_t)mxh.cia_header.content_size)) +
+						toNext64((uint32_t)(le64_to_cpu(mxh.cia_header.content_size))) +
 						(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
 				size_t size = file->seekAndRead(addr, &smdh, sizeof(smdh));
 				if (size == sizeof(smdh)) {
