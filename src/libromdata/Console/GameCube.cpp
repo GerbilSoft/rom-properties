@@ -1639,14 +1639,14 @@ int GameCube::loadFieldData(void)
 					default:
 						// USA/PAL uses cp1252.
 						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_to_utf8(comment_data.data(), static_cast<int>(comment_data.size())));
+							cp1252_to_utf8(comment_data));
 						break;
 
 					case GCN_REGION_JPN:
 					case GCN_REGION_KOR:
 						// Japan uses Shift-JIS.
 						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_sjis_to_utf8(comment_data.data(), static_cast<int>(comment_data.size())));
+							cp1252_sjis_to_utf8(comment_data));
 						break;
 				}
 			}
