@@ -212,7 +212,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 	} else {
 		// Y is a multiple of 4.
 		// Blit directly to rp_image.
-		pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
+		pDestBase = static_cast<uint8_t*>(icon->bits());
 		dest_stride = icon->stride();
 	}
 
@@ -241,7 +241,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// Copy the temporary buffer into the icon if necessary.
 	if (iconYalign != 0) {
 		pSrc = &tmpbuf[GCOM_ICON_W * iconYalign];
-		pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
+		pDestBase = static_cast<uint8_t*>(icon->bits());
 		dest_stride = icon->stride();
 		if (dest_stride == GCOM_ICON_W) {
 			// Stride matches. Copy everything all at once.

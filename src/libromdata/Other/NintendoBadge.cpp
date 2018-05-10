@@ -291,10 +291,11 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 					&badgeData[badge_rgb_sz], badge_a4_sz);
 
 				// Copy the image into place.
+				// TODO: Pointer arithmetic instead of rp_image::scanLine().
 				const unsigned int mx = x*badge_dims;
 				for (int py = badge_dims-1; py >= 0; py--) {
-					const uint32_t *src = reinterpret_cast<const uint32_t*>(mb_img->scanLine(py));
-					uint32_t *dest = reinterpret_cast<uint32_t*>(img[idx]->scanLine(py+my)) + mx;
+					const uint32_t *src = static_cast<const uint32_t*>(mb_img->scanLine(py));
+					uint32_t *dest = static_cast<uint32_t*>(img[idx]->scanLine(py+my)) + mx;
 					memcpy(dest, src, mb_row_bytes);
 				}
 

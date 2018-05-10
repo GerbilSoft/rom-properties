@@ -1074,7 +1074,7 @@ int ImageDecoder::fromRed8ToL8(rp_image *img)
 	// TODO: Optimize with SSE2/SSSE3?
 	const unsigned int width = (unsigned int)img->width();
 	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
-	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
+	argb32_t *line = static_cast<argb32_t*>(img->bits());
 	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
 		unsigned int x = width;
 		for (; x > 1; x -= 2, line += 2) {
@@ -1113,7 +1113,7 @@ int ImageDecoder::fromRG8ToLA8(rp_image *img)
 	// TODO: Optimize with SSE2/SSSE3?
 	const unsigned int width = (unsigned int)img->width();
 	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
-	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
+	argb32_t *line = static_cast<argb32_t*>(img->bits());
 	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
 		unsigned int x = width;
 		for (; x > 1; x -= 2, line += 2) {

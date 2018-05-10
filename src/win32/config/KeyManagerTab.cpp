@@ -1184,7 +1184,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 				return TRUE;
 			}
 
-			const wchar_t *const pchData = reinterpret_cast<const wchar_t*>(GlobalLock(hClipboardData));
+			const wchar_t *const pchData = static_cast<const wchar_t*>(GlobalLock(hClipboardData));
 			if (!pchData) {
 				// No data.
 				CloseClipboard();

@@ -60,7 +60,7 @@ int rp_image::apply_chroma_key_sse2(uint32_t key)
 	}
 
 	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
-	uint32_t *img_buf = reinterpret_cast<uint32_t*>(backend->data());
+	uint32_t *img_buf = static_cast<uint32_t*>(backend->data());
 
 	// SSE2 constants.
 	const __m128i xmm_key = _mm_setr_epi32(key, key, key, key);

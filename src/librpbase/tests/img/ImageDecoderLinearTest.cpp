@@ -375,7 +375,7 @@ void ImageDecoderLinearTest::Validate_RpImage(
 	const int width = pImg->height();
 	const int height = pImg->height();
 	for (int y = 0; y < height; y++) {
-		const uint32_t *px = reinterpret_cast<const uint32_t*>(pImg->scanLine(y));
+		const uint32_t *px = static_cast<const uint32_t*>(pImg->scanLine(y));
 		for (int x = 0; x < width; x++, px++) {
 			ASSERT_EQ(dest_pixel, *px);
 		}

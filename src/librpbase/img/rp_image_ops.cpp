@@ -401,7 +401,7 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 	}
 
 	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
-	uint32_t *img_buf = reinterpret_cast<uint32_t*>(backend->data());
+	uint32_t *img_buf = static_cast<uint32_t*>(backend->data());
 
 	for (unsigned int y = (unsigned int)backend->height; y > 0; y--) {
 		unsigned int x = (unsigned int)backend->width;
