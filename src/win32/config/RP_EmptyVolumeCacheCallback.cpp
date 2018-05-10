@@ -55,7 +55,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::PurgeProgress(DWORDLONG dwlSpaceFree
 		return S_OK;
 	}
 	// TODO: Better way to calculate a percentage?
-	float fPct = (float)dwlSpaceFreed / (float)dwlSpaceToFree;
-	SendMessage(m_hProgressBar, PBM_SETSTATE, m_baseProgress + (unsigned int)(fPct * 100.0f), 0);
+	float fPct = static_cast<float>(dwlSpaceFreed) / static_cast<float>(dwlSpaceToFree);
+	SendMessage(m_hProgressBar, PBM_SETSTATE, m_baseProgress + static_cast<unsigned int>(fPct * 100.0f), 0);
 	return S_OK;
 }

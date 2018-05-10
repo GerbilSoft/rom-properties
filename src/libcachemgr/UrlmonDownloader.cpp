@@ -111,8 +111,8 @@ int UrlmonDownloader::download(void)
 	// Read the file into the data buffer.
 	// TODO: malloc()'d buffer to prevent initialization?
 	const int64_t fileSize = file->size();
-	m_data.resize((size_t)fileSize);
-	size_t ret = file->read(m_data.data(), (size_t)fileSize);
+	m_data.resize(static_cast<size_t>(fileSize));
+	size_t ret = file->read(m_data.data(), static_cast<size_t>(fileSize));
 	if (ret != fileSize) {
 		// Error reading the file.
 		m_data.clear();

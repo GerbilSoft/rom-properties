@@ -620,8 +620,8 @@ const char *NintendoPublishers::lookup(const char *code)
 {
 	if (!code[0] || !code[1])
 		return nullptr;
-	uint16_t code16 = ((uint8_t)(code[0]) << 8) |
-			   (uint8_t)(code[1]);
+	const uint16_t code16 = (static_cast<uint8_t>(code[0]) << 8) |
+				 static_cast<uint8_t>(code[1]);
 	return lookup(code16);
 }
 

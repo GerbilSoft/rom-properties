@@ -220,7 +220,7 @@ int RpGdiplusBackend::palette_len(void) const
 {
 	if (!m_pGdipPalette)
 		return 0;
-	return (int)m_pGdipPalette->Count;
+	return static_cast<int>(m_pGdipPalette->Count);
 }
 
 /**
@@ -707,7 +707,7 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = pBmpData->Width;
-	bmiHeader->biHeight = -(int)pBmpData->Height;	// Top-down
+	bmiHeader->biHeight = -static_cast<int>(pBmpData->Height);	// Top-down
 	bmiHeader->biPlanes = 1;
 	bmiHeader->biBitCount = 32;
 	bmiHeader->biCompression = BI_RGB;	// TODO: BI_BITFIELDS?
@@ -758,7 +758,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 {
 	// BITMAPINFO with 256-color palette.
 	const size_t szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
-	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
+	BITMAPINFO *bmi = static_cast<BITMAPINFO*>(malloc(szBmi));
 	if (!bmi) {
 		// ENOMEM
 		return nullptr;
@@ -769,7 +769,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = pBmpData->Width;
-	bmiHeader->biHeight = -(int)pBmpData->Height;	// Top-down
+	bmiHeader->biHeight = -static_cast<int>(pBmpData->Height);	// Top-down
 	bmiHeader->biPlanes = 1;
 	bmiHeader->biBitCount = 8;
 	bmiHeader->biCompression = BI_RGB;

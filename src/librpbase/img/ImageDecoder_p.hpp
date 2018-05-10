@@ -678,7 +678,7 @@ inline uint32_t ImageDecoderPrivate::RG88_to_ARGB32(uint16_t px16)
 {
 	// RG88:     RRRRRRRR GGGGGGGG
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	return 0xFF000000 | ((uint32_t)px16 << 8);
+	return 0xFF000000 | (static_cast<uint32_t>(px16) << 8);
 }
 
 /**
@@ -690,7 +690,7 @@ inline uint32_t ImageDecoderPrivate::GR88_to_ARGB32(uint16_t px16)
 {
 	// GR88:     GGGGGGGG RRRRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	return 0xFF000000 | ((uint32_t)__swab16(px16) << 8);
+	return 0xFF000000 | (static_cast<uint32_t>(__swab16(px16)) << 8);
 }
 
 // GameCube-specific 16-bit RGB

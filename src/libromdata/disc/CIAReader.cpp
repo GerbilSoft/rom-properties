@@ -276,8 +276,8 @@ size_t CIAReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->content_length.
 	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= d->content_length) {
-		size = (size_t)(d->content_length - d->pos);
+	if (d->pos + static_cast<int64_t>(size) >= d->content_length) {
+		size = static_cast<size_t>(d->content_length - d->pos);
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -403,7 +403,7 @@ int CIAReader::seek(int64_t pos)
 	else if (pos >= d->content_length)
 		d->pos = d->content_length;
 	else
-		d->pos = (uint32_t)pos;
+		d->pos = static_cast<uint32_t>(pos);
 	return 0;
 }
 

@@ -105,11 +105,11 @@ IFACEMETHODIMP IStreamWrapper::Read(void *pv, ULONG cb, ULONG *pcbRead)
 
 	size_t size = m_file->read(pv, cb);
 	if (pcbRead) {
-		*pcbRead = (ULONG)size;
+		*pcbRead = static_cast<ULONG>(size);
 	}
 
 	// FIXME: Return an error only if size == 0?
-	return (size == (size_t)cb ? S_OK : S_FALSE);
+	return (size == static_cast<size_t>(cb) ? S_OK : S_FALSE);
 }
 
 IFACEMETHODIMP IStreamWrapper::Write(const void *pv, ULONG cb, ULONG *pcbWritten)
@@ -120,11 +120,11 @@ IFACEMETHODIMP IStreamWrapper::Write(const void *pv, ULONG cb, ULONG *pcbWritten
 
 	size_t size = m_file->write(pv, cb);
 	if (pcbWritten) {
-		*pcbWritten = (ULONG)size;
+		*pcbWritten = static_cast<ULONG>(size);
 	}
 
 	// FIXME: Return an error only if size == 0?
-	return (size == (size_t)cb ? S_OK : S_FALSE);
+	return (size == static_cast<size_t>(cb) ? S_OK : S_FALSE);
 }
 
 /** IStream **/
@@ -168,7 +168,7 @@ IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize)
 		return E_HANDLE;
 	}
 
-	int64_t size = (int64_t)libNewSize.QuadPart;
+	int64_t size = static_cast<int64_t>(libNewSize.QuadPart);
 	if (size < 0) {
 		// Out of bounds.
 		return STG_E_INVALIDFUNCTION;
@@ -222,7 +222,9 @@ IFACEMETHODIMP IStreamWrapper::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
 
 	HRESULT hr = S_OK;
 	while (cb.QuadPart > 0) {
-		ULONG toRead = (cb.QuadPart > (ULONG)sizeof(buf) ? (ULONG)sizeof(buf) : (ULONG)cb.QuadPart);
+		ULONG toRead = (cb.QuadPart > static_cast<ULONG>(sizeof(buf))
+			? static_cast<ULONG>(sizeof(buf))
+			: static_cast<ULONG>(cb.QuadPart));
 		size_t szRead = m_file->read(buf, toRead);
 		if (szRead == 0) {
 			// Read error.
@@ -233,14 +235,16 @@ IFACEMETHODIMP IStreamWrapper::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
 
 		// Write the data to the destination stream.
 		ULONG ulWritten;
-		hr = pstm->Write(buf, (ULONG)szRead, &ulWritten);
+		hr = pstm->Write(buf, static_cast<ULONG>(szRead), &ulWritten);
 		if (FAILED(hr)) {
 			// Write failed.
 			break;
 		}
 		totalWritten.QuadPart += ulWritten;
 
-		if ((ULONG)szRead != toRead || ulWritten != (ULONG)szRead) {
+		if (static_cast<ULONG>(szRead) != toRead ||
+			ulWritten != static_cast<ULONG>(szRead))
+		{
 			// EOF or out of space.
 			break;
 		}

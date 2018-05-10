@@ -215,7 +215,7 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 
 	// Set ComboBoxes that don't have a priority to "No".
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
-		unsigned int cbid = sysAndImageTypeToCbid((unsigned int)sys, IMG_TYPE_COUNT-1);
+		unsigned int cbid = sysAndImageTypeToCbid(static_cast<unsigned int>(sys), IMG_TYPE_COUNT-1);
 		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--, cbid--) {
 			if (cbo_needsReset[sys][imageType] && cboImageType[sys][imageType]) {
 				if (imageTypes[sys][imageType] != 0xFF) {
@@ -459,9 +459,9 @@ bool TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 	if (prio >= 0 && prio != 0xFF) {
 		// Check for any image types that have the new priority.
 		for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
-			if ((unsigned int)i == imageType)
+			if (static_cast<unsigned int>(i) == imageType)
 				continue;
-			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == (uint8_t)prio) {
+			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == static_cast<uint8_t>(prio)) {
 				// Found a match! Swap the priority.
 				imageTypes[sys][i] = prev_prio;
 				cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, i), prev_prio);

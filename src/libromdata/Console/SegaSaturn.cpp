@@ -452,7 +452,8 @@ int SegaSaturn::loadFieldData(void)
 	} else if (!memcmp(discHeader->maker_id, "SEGA TP T-", 10)) {
 		// This may be a third-party T-code.
 		char *endptr;
-		unsigned int t_code = (unsigned int)strtoul(&discHeader->maker_id[10], &endptr, 10);
+		const unsigned int t_code = static_cast<unsigned int>(
+			strtoul(&discHeader->maker_id[10], &endptr, 10));
 		if (t_code != 0 &&
 		    endptr > &discHeader->maker_id[10] &&
 		    endptr <= &discHeader->maker_id[15])
@@ -560,7 +561,7 @@ int SegaSaturn::loadFieldData(void)
 		v_peripherals_bitfield_names, 3, peripherals);
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

@@ -248,7 +248,7 @@ std::u16string utf8_to_utf16(const char *str, int len);
  */
 static inline std::u16string utf8_to_utf16(const std::string &str)
 {
-	return utf8_to_utf16(str.data(), (int)str.size());
+	return utf8_to_utf16(str.data(), static_cast<int>(str.size()));
 }
 
 /**
@@ -304,9 +304,9 @@ static inline std::u16string utf16le_to_utf16(const char16_t *wcs, int len)
 {
 	// Check for a NULL terminator.
 	if (len < 0) {
-		len = (int)u16_strlen(wcs);
+		len = static_cast<int>(u16_strlen(wcs));
 	} else {
-		len = (int)u16_strnlen(wcs, len);
+		len = static_cast<int>(u16_strnlen(wcs, len));
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -326,9 +326,9 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 {
 	// Check for a NULL terminator.
 	if (len < 0) {
-		len = (int)u16_strlen(wcs);
+		len = static_cast<int>(u16_strlen(wcs));
 	} else {
-		len = (int)u16_strnlen(wcs, len);
+		len = static_cast<int>(u16_strnlen(wcs, len));
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN

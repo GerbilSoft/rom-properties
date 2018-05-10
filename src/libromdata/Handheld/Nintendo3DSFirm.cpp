@@ -225,7 +225,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 	unsigned int szFile = 0;
 	if (d->file->size() <= 4*1024*1024) {
 		// Firmware binary is 4 MB or less.
-		szFile = (unsigned int)d->file->size();
+		szFile = static_cast<unsigned int>(d->file->size());
 		firmBuf.reset(new uint8_t[szFile]);
 		d->file->rewind();
 		size_t size = d->file->read(firmBuf.get(), szFile);
@@ -246,7 +246,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
 		// Calculate the CRC32 and look it up.
 		if (firmBuf) {
-			const uint32_t crc = crc32(0, firmBuf.get(), (unsigned int)szFile);
+			const uint32_t crc = crc32(0, firmBuf.get(), static_cast<unsigned int>(szFile));
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
 				// Official firmware binary.
@@ -314,8 +314,8 @@ int Nintendo3DSFirm::loadFieldData(void)
 		};
 
 		for (unsigned int i = 0; i < ARRAY_SIZE(arm9VerStr); i++) {
-			const char *verstr = (const char*)memmem(firmBuf.get(), szFile,
-				arm9VerStr[i].searchstr, arm9VerStr[i].searchlen);
+			const char *verstr = static_cast<const char*>(memmem(
+				firmBuf.get(), szFile, arm9VerStr[i].searchstr, arm9VerStr[i].searchlen));
 			if (!verstr)
 				continue;
 

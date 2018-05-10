@@ -138,7 +138,7 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	}
 
 	// Read the GDI and parse the track information.
-	unsigned int gdisize = (unsigned int)fileSize;
+	const unsigned int gdisize = static_cast<unsigned int>(fileSize);
 	unique_ptr<char[]> gdibuf(new char[gdisize+1]);
 	file->rewind();
 	size_t size = file->read(gdibuf.get(), gdisize);
@@ -175,10 +175,10 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 
 	// Find the last data track.
 	int lastDataTrack = 0;	// 1-based; 0 is invalid.
-	for (int i = (int)trackMappings.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(trackMappings.size())-1; i >= 0; i--) {
 		const BlockRange *blockRange = trackMappings[i];
 		if (blockRange) {
-			if ((int)blockRange->trackNumber > lastDataTrack) {
+			if (static_cast<int>(blockRange->trackNumber) > lastDataTrack) {
 				lastDataTrack = blockRange->trackNumber;
 			}
 		}
@@ -262,8 +262,8 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		return -EIO;
 	}
 
-	blockRanges.reserve((size_t)trackCount);
-	trackMappings.resize((size_t)trackCount);
+	blockRanges.reserve(static_cast<size_t>(trackCount));
+	trackMappings.resize(static_cast<size_t>(trackCount));
 
 	// Remainder of file is the track list.
 	// Format: Track# LBA Type SectorSize Filename ???
@@ -323,13 +323,13 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		}
 
 		// Save the track information.
-		int idx = (int)blockRanges.size();
+		int idx = static_cast<int>(blockRanges.size());
 		blockRanges.resize(idx+1);
 		BlockRange &blockRange = blockRanges[idx];
-		blockRange.blockStart = (unsigned int)blockStart;
+		blockRange.blockStart = static_cast<unsigned int>(blockStart);
 		blockRange.blockEnd = 0;	// will be filled in when loaded
-		blockRange.sectorSize = (uint16_t)sectorSize;
-		blockRange.trackNumber = (uint8_t)trackNumber;
+		blockRange.sectorSize = static_cast<uint16_t>(sectorSize);
+		blockRange.trackNumber = static_cast<uint8_t>(trackNumber);
 		blockRange.reserved = 0;
 		// FIXME: UTF-8 or Latin-1?
 		filename[sizeof(filename)-1] = 0;
@@ -360,7 +360,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 
 	// Check if this track exists.
 	// NOTE: trackNumber starts at 1, not 0.
-	if (trackNumber > (int)trackMappings.size()) {
+	if (trackNumber > static_cast<int>(trackMappings.size())) {
 		// Track number is out of range.
 		return -ENOENT;
 	}
@@ -413,7 +413,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// File opened.
-	blockRange->blockEnd = blockRange->blockStart + (unsigned int)(fileSize / blockRange->sectorSize) - 1;
+	blockRange->blockEnd = blockRange->blockStart + static_cast<unsigned int>(fileSize / blockRange->sectorSize) - 1;
 	blockRange->file = file;
 	return 0;
 }
@@ -500,8 +500,9 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	assert(blockIdx < d->blockCount);
 	// TODO: Make sure overflow doesn't occur.
 	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
-	if (pos < 0 || pos >= (int)d->block_size || size > d->block_size ||
-	    (int64_t)(pos + size) > (int64_t)d->block_size ||
+	if (pos < 0 || pos >= static_cast<int>(d->block_size) ||
+		size > d->block_size ||
+		static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size) ||
 	    blockIdx >= d->blockCount)
 	{
 		// pos+size is out of range.
@@ -557,7 +558,7 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	// Go to the block.
 	// FIXME: Read the whole block so we can determine if this is Mode1 or Mode2.
 	// Mode1 data starts at byte 16; Mode2 data starts at byte 24.
-	const int64_t phys_pos = ((int64_t)(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + 16 + pos;
+	const int64_t phys_pos = (static_cast<int64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + 16 + pos;
 	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = blockRange->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);
@@ -573,7 +574,7 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 int GdiReader::trackCount(void) const
 {
 	RP_D(const GdiReader);
-	return (int)d->trackMappings.size();
+	return static_cast<int>(d->trackMappings.size());
 }
 
 /**
@@ -587,14 +588,14 @@ int GdiReader::startingLBA(int trackNumber) const
 	assert(trackNumber <= 99);
 
 	RP_D(GdiReader);
-	if (trackNumber <= 0 || trackNumber > (int)d->trackMappings.size())
+	if (trackNumber <= 0 || trackNumber > static_cast<int>(d->trackMappings.size()))
 		return -1;
 
 	const GdiReaderPrivate::BlockRange *blockRange = d->trackMappings[trackNumber-1];
 	if (!blockRange)
 		return -1;
 
-	return (int)blockRange->blockStart;
+	return static_cast<int>(blockRange->blockStart);
 }
 
 /**

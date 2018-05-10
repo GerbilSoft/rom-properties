@@ -86,10 +86,10 @@ int measureTextSize(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSize)
 		int len;
 		if (p_nl) {
 			// Found a newline.
-			len = (int)(p_nl - wstr);
+			len = static_cast<int>(p_nl - wstr);
 		} else {
 			// No newline. Process the rest of the string.
-			len = (int)wcslen(wstr);
+			len = static_cast<int>(wcslen(wstr));
 		}
 		assert(len >= 0);
 		if (len < 0) {
@@ -344,7 +344,7 @@ LRESULT CALLBACK MultiLineEditProc(
 			// References:
 			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
 			// - https://stackoverflow.com/a/20884852
-			DWORD code = (DWORD)DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			const DWORD code = static_cast<DWORD>(DefSubclassProc(hWnd, uMsg, wParam, lParam));
 			return (code & ~DLGC_HASSETSEL);
 		}
 
@@ -384,7 +384,7 @@ LRESULT CALLBACK SingleLineEditProc(
 			// References:
 			// - https://stackoverflow.com/questions/20876045/cricheditctrl-selects-all-text-when-it-gets-focus
 			// - https://stackoverflow.com/a/20884852
-			DWORD code = (DWORD)DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			const DWORD code = static_cast<DWORD>(DefSubclassProc(hWnd, uMsg, wParam, lParam));
 			return (code & ~DLGC_HASSETSEL);
 		}
 

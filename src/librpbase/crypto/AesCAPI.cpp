@@ -225,7 +225,7 @@ int AesCAPI::setKey(const uint8_t *RESTRICT pKey, size_t size)
 
 	// Calculate the blob size based on the
 	// specified key size.
-	const DWORD blobSize = (DWORD)(sizeof(blob.hdr) + sizeof(blob.keySize) + size);
+	const DWORD blobSize = static_cast<DWORD>(sizeof(blob.hdr) + sizeof(blob.keySize) + size);
 
 	// Load the key.
 	HCRYPTKEY hNewKey;
@@ -395,7 +395,7 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 		}
 	} else {
 		// EBC and/or CBC.
-		dwLen = (DWORD)size;
+		dwLen = static_cast<DWORD>(size);
 		bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, pData, &dwLen);
 		CryptDestroyKey(hMyKey);
 	}

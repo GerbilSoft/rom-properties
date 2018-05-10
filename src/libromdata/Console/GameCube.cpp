@@ -334,7 +334,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		}
 
 		// Read the partition table entries.
-		int64_t pt_addr = (int64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
+		int64_t pt_addr = static_cast<int64_t>(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
 		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
 		size = discReader->seekAndRead(pt_addr, pt, ptSize);
 		if (size != ptSize) {
@@ -348,9 +348,9 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		for (unsigned int j = 0; j < count; j++, idx++) {
 			WiiPartEntry &entry = wiiPtbl.at(idx);
 
-			entry.vg = (uint8_t)i;
-			entry.pt = (uint8_t)j;
-			entry.start = (int64_t)(be32_to_cpu(pt[j].addr)) << 2;
+			entry.vg = static_cast<uint8_t>(i);
+			entry.pt = static_cast<uint8_t>(j);
+			entry.start = static_cast<int64_t>(be32_to_cpu(pt[j].addr)) << 2;
 			entry.type = be32_to_cpu(pt[j].type);
 		}
 	}
@@ -1514,8 +1514,8 @@ int GameCube::loadFieldData(void)
 				discHeader->company);
 		} else {
 			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
-				(uint8_t)discHeader->company[0],
-				(uint8_t)discHeader->company[1]);
+				static_cast<uint8_t>(discHeader->company[0]),
+				static_cast<uint8_t>(discHeader->company[1]));
 		}
 	}
 	d->fields->addField_string(C_("GameCube", "Publisher"), s_publisher);
@@ -1595,22 +1595,22 @@ int GameCube::loadFieldData(void)
 
 			// Game name.
 			if (comment->gamename_full[0] != 0) {
-				field_len = (int)strnlen(comment->gamename_full, sizeof(comment->gamename_full));
+				field_len = static_cast<int>(strnlen(comment->gamename_full, sizeof(comment->gamename_full)));
 				comment_data.append(comment->gamename_full, field_len);
 				comment_data += '\n';
 			} else if (comment->gamename[0] != 0) {
-				field_len = (int)strnlen(comment->gamename, sizeof(comment->gamename));
+				field_len = static_cast<int>(strnlen(comment->gamename, sizeof(comment->gamename)));
 				comment_data.append(comment->gamename, field_len);
 				comment_data += '\n';
 			}
 
 			// Company.
 			if (comment->company_full[0] != 0) {
-				field_len = (int)strnlen(comment->company_full, sizeof(comment->company_full));
+				field_len = static_cast<int>(strnlen(comment->company_full, sizeof(comment->company_full)));
 				comment_data.append(comment->company_full, field_len);
 				comment_data += '\n';
 			} else if (comment->company[0] != 0) {
-				field_len = (int)strnlen(comment->company, sizeof(comment->company));
+				field_len = static_cast<int>(strnlen(comment->company, sizeof(comment->company)));
 				comment_data.append(comment->company, field_len);
 				comment_data += '\n';
 			}
@@ -1622,7 +1622,7 @@ int GameCube::loadFieldData(void)
 					comment_data += '\n';
 				}
 
-				field_len = (int)strnlen(comment->gamedesc, sizeof(comment->gamedesc));
+				field_len = static_cast<int>(strnlen(comment->gamedesc, sizeof(comment->gamedesc)));
 				comment_data.append(comment->gamedesc, field_len);
 			}
 
@@ -1639,14 +1639,14 @@ int GameCube::loadFieldData(void)
 					default:
 						// USA/PAL uses cp1252.
 						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_to_utf8(comment_data.data(), (int)comment_data.size()));
+							cp1252_to_utf8(comment_data.data(), static_cast<int>(comment_data.size())));
 						break;
 
 					case GCN_REGION_JPN:
 					case GCN_REGION_KOR:
 						// Japan uses Shift-JIS.
 						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_sjis_to_utf8(comment_data.data(), (int)comment_data.size()));
+							cp1252_sjis_to_utf8(comment_data.data(), static_cast<int>(comment_data.size())));
 						break;
 				}
 			}
@@ -1670,7 +1670,7 @@ int GameCube::loadFieldData(void)
 	// Valid ratings: 0-1, 3-9
 	static const uint16_t valid_ratings = 0x3FB;
 
-	for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 		if (!(valid_ratings & (1 << i))) {
 			// Rating is not applicable for GameCube.
 			age_ratings[i] = 0;

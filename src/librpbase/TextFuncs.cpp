@@ -66,7 +66,7 @@ u16string utf16_bswap(const char16_t *str, int len)
 		return u16string();
 	} else if (len < 0) {
 		// NULL-terminated string.
-		len = (int)u16_strlen(str);
+		len = static_cast<int>(u16_strlen(str));
 		if (len <= 0) {
 			return u16string();
 		}
@@ -263,8 +263,8 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
 
 static inline int calc_frac_part(int64_t size, int64_t mask)
 {
-	float f = (float)(size & (mask - 1)) / (float)mask;
-	int frac_part = (int)(f * 1000.0f);
+	float f = static_cast<float>(size & (mask - 1)) / static_cast<float>(mask);
+	int frac_part = static_cast<int>(f * 1000.0f);
 
 	// MSVC added round() and roundf() in MSVC 2013.
 	// Use our own rounding code instead.
@@ -291,42 +291,42 @@ string formatFileSize(int64_t size)
 	if (size < 0) {
 		// Invalid size. Print the value as-is.
 		suffix = nullptr;
-		whole_part = (int)size;
+		whole_part = static_cast<int>(size);
 		frac_part = 0;
 	} else if (size < (2LL << 10)) {
 		// tr: Bytes (< 1,024)
 		suffix = NC_("TextFuncs|FileSize", "byte", "bytes", (int)size);
-		whole_part = (int)size;
+		whole_part = static_cast<int>(size);
 		frac_part = 0;
 	} else if (size < (2LL << 20)) {
 		// tr: Kilobytes
 		suffix = C_("TextFuncs|FileSize", "KiB");
-		whole_part = (int)(size >> 10);
+		whole_part = static_cast<int>(size >> 10);
 		frac_part = calc_frac_part(size, (1LL << 10));
 	} else if (size < (2LL << 30)) {
 		// tr: Megabytes
 		suffix = C_("TextFuncs|FileSize", "MiB");
-		whole_part = (int)(size >> 20);
+		whole_part = static_cast<int>(size >> 20);
 		frac_part = calc_frac_part(size, (1LL << 20));
 	} else if (size < (2LL << 40)) {
 		// tr: Gigabytes
 		suffix = C_("TextFuncs|FileSize", "GiB");
-		whole_part = (int)(size >> 30);
+		whole_part = static_cast<int>(size >> 30);
 		frac_part = calc_frac_part(size, (1LL << 30));
 	} else if (size < (2LL << 50)) {
 		// tr: Terabytes
 		suffix = C_("TextFuncs|FileSize", "TiB");
-		whole_part = (int)(size >> 40);
+		whole_part = static_cast<int>(size >> 40);
 		frac_part = calc_frac_part(size, (1LL << 40));
 	} else if (size < (2LL << 60)) {
 		// tr: Petabytes
 		suffix = C_("TextFuncs|FileSize", "PiB");
-		whole_part = (int)(size >> 50);
+		whole_part = static_cast<int>(size >> 50);
 		frac_part = calc_frac_part(size, (1LL << 50));
 	} else /*if (size < (2ULL << 70))*/ {
 		// tr: Exabytes
 		suffix = C_("TextFuncs|FileSize", "EiB");
-		whole_part = (int)(size >> 60);
+		whole_part = static_cast<int>(size >> 60);
 		frac_part = calc_frac_part(size, (1LL << 60));
 	}
 

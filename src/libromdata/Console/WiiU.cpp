@@ -382,8 +382,10 @@ int WiiU::loadFieldData(void)
 			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%.4s)"), publisher_code);
 		} else {
 			s_publisher = rp_sprintf(C_("WiiU", "Unknown (%02X %02X %02X %02X)"),
-				(uint8_t)publisher_code[0], (uint8_t)publisher_code[1],
-				(uint8_t)publisher_code[2], (uint8_t)publisher_code[3]);
+				static_cast<uint8_t>(publisher_code[0]),
+				static_cast<uint8_t>(publisher_code[1]),
+				static_cast<uint8_t>(publisher_code[2]),
+				static_cast<uint8_t>(publisher_code[3]));
 		}
 	}
 	d->fields->addField_string(C_("WiiU", "Publisher"), s_publisher);

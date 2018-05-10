@@ -285,8 +285,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// File timestamp. (FILETIME format)
 	// NOTE: This seems to be 0 in most EXEs and DLLs I've tested.
-	uint64_t fileTime = ((uint64_t)pVsFfi->dwFileDateMS) << 32 |
-			     (uint64_t)pVsFfi->dwFileDateLS;
+	uint64_t fileTime = (static_cast<uint64_t>(pVsFfi->dwFileDateMS)) << 32 |
+			     static_cast<uint64_t>(pVsFfi->dwFileDateLS);
 	if (fileTime != 0) {
 		// Convert to UNIX time.
 #ifndef FILETIME_1970
@@ -295,7 +295,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 #ifndef HECTONANOSEC_PER_SEC
 		#define HECTONANOSEC_PER_SEC 10000000LL
 #endif
-		time_t fileTimeUnix = (time_t)((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
+		time_t fileTimeUnix = static_cast<time_t>((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
 		fields->addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
@@ -315,7 +315,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	const auto &st = pVsSfi->begin()->second;
 	auto data = new vector<vector<string> >();
 	data->resize(st.size());
-	for (unsigned int i = 0; i < (unsigned int)st.size(); i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(st.size()); i++) {
 		const auto &st_row = st.at(i);
 		auto &data_row = data->at(i);
 		data_row.reserve(2);
@@ -422,7 +422,7 @@ int EXEPrivate::loadNEResourceTable(void)
 	if (resTableSize == 0) {
 		// Not known. Go with the file size.
 		// NOTE: Limited to 32-bit file sizes.
-		resTableSize = (uint32_t)file->size() - ResTableOffset;
+		resTableSize = static_cast<uint32_t>(file->size()) - ResTableOffset;
 	}
 
 	// Load the resources using NEResourceReader.
@@ -672,9 +672,9 @@ int EXEPrivate::loadPESectionTable(void)
 		return -ENOMEM;
 	}
 	pe_sections.resize(section_count);
-	uint32_t szToRead = (uint32_t)(section_count * sizeof(IMAGE_SECTION_HEADER));
+	uint32_t szToRead = static_cast<uint32_t>(section_count * sizeof(IMAGE_SECTION_HEADER));
 	size_t size = file->seekAndRead(section_table_start, pe_sections.data(), szToRead);
-	if (size != (size_t)szToRead) {
+	if (size != static_cast<size_t>(szToRead)) {
 		// Seek and/or read error.
 		pe_sections.clear();
 		return -EIO;
@@ -683,7 +683,7 @@ int EXEPrivate::loadPESectionTable(void)
 	// Not all sections may be in use.
 	// Find the first section header with an empty name.
 	int ret = 0;
-	for (unsigned int i = 0; i < (unsigned int)pe_sections.size(); i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(pe_sections.size()); i++) {
 		if (pe_sections[i].Name[0] == 0) {
 			// Found the first empty section.
 			pe_sections.resize(i);
@@ -731,7 +731,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// .rsrc is usually closer to the end of the section list,
 	// so search back to front.
 	const IMAGE_SECTION_HEADER *rsrc = nullptr;
-	for (int i = (int)pe_sections.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(pe_sections.size())-1; i >= 0; i--) {
 		const IMAGE_SECTION_HEADER *section = &pe_sections[i];
 		if (!strcmp(section->Name, ".rsrc")) {
 			// Found the .rsrc section.
@@ -906,7 +906,7 @@ void EXEPrivate::addFields_PE(void)
 	uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
 	if (timestamp != 0) {
 		fields->addField_dateTime(C_("EXE", "Timestamp"),
-			(time_t)timestamp,
+			static_cast<time_t>(timestamp),
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
@@ -1401,7 +1401,7 @@ int EXE::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

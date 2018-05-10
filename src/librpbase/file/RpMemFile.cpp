@@ -44,7 +44,7 @@ namespace LibRpBase {
 RpMemFile::RpMemFile(const void *buf, size_t size)
 	: super()
 	, m_buf(buf)
-	, m_size((int64_t)size)
+	, m_size(static_cast<int64_t>(size))
 	, m_pos(0)
 {
 	if (!buf) {
@@ -134,7 +134,7 @@ size_t RpMemFile::read(void *ptr, size_t size)
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.
-	if ((int64_t)m_pos > ((int64_t)m_size - (int64_t)size)) {
+	if (static_cast<int64_t>(m_pos) > (static_cast<int64_t>(m_size) - static_cast<int64_t>(size))) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
 		size = m_size - m_pos;
@@ -181,10 +181,10 @@ int RpMemFile::seek(int64_t pos)
 	// a position within a memory buffer.
 	if (pos <= 0) {
 		m_pos = 0;
-	} else if ((size_t)pos >= m_size) {
+	} else if (static_cast<size_t>(pos) >= m_size) {
 		m_pos = m_size;
 	} else {
-		m_pos = (size_t)pos;
+		m_pos = static_cast<size_t>(pos);
 	}
 
 	return 0;

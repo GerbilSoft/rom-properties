@@ -112,8 +112,8 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	const int dest_stride_adj = (img->stride() / sizeof(uint32_t)) - img->width();
 	switch (px_format) {
 		case PXF_ARGB1555: {
-			for (unsigned int y = 0; y < (unsigned int)height; y++) {
-				for (unsigned int x = 0; x < (unsigned int)width; x++) {
+			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
+				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
 					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
@@ -127,8 +127,8 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		}
 
 		case PXF_RGB565: {
-			for (unsigned int y = 0; y < (unsigned int)height; y++) {
-				for (unsigned int x = 0; x < (unsigned int)width; x++) {
+			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
+				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
 					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
@@ -142,8 +142,8 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		}
 
 		case PXF_ARGB4444: {
-			for (unsigned int y = 0; y < (unsigned int)height; y++) {
-				for (unsigned int x = 0; x < (unsigned int)width; x++) {
+			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
+				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
 					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
@@ -227,7 +227,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
 		case PXF_ARGB1555: {
-			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i += 2) {
+			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+1]);
 			}
@@ -238,7 +238,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 		}
 
 		case PXF_RGB565: {
-			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i += 2) {
+			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+1]);
 			}
@@ -249,7 +249,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 		}
 
 		case PXF_ARGB4444: {
-			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i += 2) {
+			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
 				palette[i+0] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+1]);
 			}
@@ -270,11 +270,11 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 	const int dest_stride = (img->stride() / sizeof(uint32_t));
 	const int dest_stride_adj = dest_stride + dest_stride - img->width();
-	for (unsigned int y = 0; y < (unsigned int)height; y += 2, px_dest += dest_stride_adj) {
-	for (unsigned int x = 0; x < (unsigned int)width; x += 2, px_dest += 2) {
+	for (unsigned int y = 0; y < static_cast<unsigned int>(height); y += 2, px_dest += dest_stride_adj) {
+	for (unsigned int x = 0; x < static_cast<unsigned int>(width); x += 2, px_dest += 2) {
 		const unsigned int srcIdx = ((dc_tmap[x >> 1] << 1) | dc_tmap[y >> 1]);
 		assert(srcIdx < (unsigned int)img_siz);
-		if (srcIdx >= (unsigned int)img_siz) {
+		if (srcIdx >= static_cast<unsigned int>(img_siz)) {
 			// Out of bounds.
 			delete img;
 			return nullptr;
@@ -286,8 +286,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 		// multiplied by 4.
 		const unsigned int palIdx = img_buf[srcIdx] * 4;
 		if (smallVQ) {
-			assert(palIdx < (unsigned int)pal_entry_count);
-			if (palIdx >= (unsigned int)pal_entry_count) {
+			assert(palIdx < static_cast<unsigned int>(pal_entry_count));
+			if (palIdx >= static_cast<unsigned int>(pal_entry_count)) {
 				// Palette index is out of bounds.
 				// NOTE: This can only happen with SmallVQ,
 				// since VQ always has 1024 palette entries.

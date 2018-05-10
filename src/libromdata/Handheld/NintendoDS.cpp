@@ -324,14 +324,14 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 			uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
 			bmp_used[bmp_pal_idx] = true;
 			iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
-			iconAnimData->delays[seq_idx].numer = (uint16_t)delay;
+			iconAnimData->delays[seq_idx].numer = static_cast<uint16_t>(delay);
 			iconAnimData->delays[seq_idx].denom = 60;
 			iconAnimData->delays[seq_idx].ms = delay * 1000 / 60;
 		}
 		iconAnimData->seq_count = seq_idx;
 
 		// Convert the required bitmaps.
-		for (int i = 0; i < (int)bmp_used.size(); i++) {
+		for (int i = 0; i < static_cast<int>(bmp_used.size()); i++) {
 			if (bmp_used[i]) {
 				iconAnimData->count = i + 1;
 
@@ -1203,7 +1203,7 @@ int NintendoDS::loadFieldData(void)
 		// TODO: Not sure if Finland is valid for DSi.
 		static const uint16_t valid_ratings = 0x3FB;
 
-		for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
+		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 			if (!(valid_ratings & (1 << i))) {
 				// Rating is not applicable for NintendoDS.
 				age_ratings[i] = 0;
@@ -1253,7 +1253,7 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

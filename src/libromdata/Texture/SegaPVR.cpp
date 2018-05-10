@@ -182,11 +182,11 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		return nullptr;
 	}
 
-	if (this->file->size() > 128*1024*1024) {
+	if (file->size() > 128*1024*1024) {
 		// Sanity check: PVR files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)this->file->size();
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	// TODO: Support YUV422, 4-bit, 8-bit, and BUMP formats.
 	// Currently assuming all formats use 16bpp.
@@ -467,11 +467,11 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 		return nullptr;
 	}
 
-	if (this->file->size() > 128*1024*1024) {
+	if (file->size() > 128*1024*1024) {
 		// Sanity check: GVR files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)this->file->size();
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
 	uint32_t expected_size = 0;
@@ -603,7 +603,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	// Check if this PVR image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = (uint32_t)sz_header;
+	info.header.size = static_cast<uint32_t>(sz_header);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for PVR.
 	info.szFile = file->size();
@@ -1012,7 +1012,7 @@ int SegaPVR::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

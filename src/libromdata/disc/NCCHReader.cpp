@@ -316,7 +316,7 @@ NCCHReaderPrivate::~NCCHReaderPrivate()
  */
 int NCCHReaderPrivate::findEncSection(uint32_t address) const
 {
-	for (int i = 0; i < (int)encSections.size(); i++) {
+	for (int i = 0; i < static_cast<int>(encSections.size()); i++) {
 		const auto &section = encSections.at(i);
 		if (address >= section.address &&
 		    address < section.address + section.length)
@@ -555,8 +555,8 @@ size_t NCCHReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->ncch_length.
 	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= d->ncch_length) {
-		size = (size_t)(d->ncch_length - d->pos);
+	if (d->pos + static_cast<int64_t>(size) >= d->ncch_length) {
+		size = static_cast<size_t>(d->ncch_length - d->pos);
 	}
 
 	if (d->ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
@@ -591,7 +591,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 			return sz_total_read;
 		} else {
 			// We're in an encrypted section.
-			uint32_t section_offset = (uint32_t)(d->pos - section->address);
+			uint32_t section_offset = static_cast<uint32_t>(d->pos - section->address);
 			if (section_offset + size <= section->length) {
 				// Remainder of reading is in this section.
 				sz_to_read = size;
@@ -618,10 +618,10 @@ size_t NCCHReader::read(void *ptr, size_t size)
 
 			// Decrypt the data.
 			// FIXME: Round up to 16 if a short read occurred?
-			ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), (unsigned int)ret_sz);
+			ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), static_cast<unsigned int>(ret_sz));
 		}
 
-		d->pos += (uint32_t)ret_sz;
+		d->pos += static_cast<uint32_t>(ret_sz);
 		ptr8 += ret_sz;
 		sz_total_read += ret_sz;
 		size -= ret_sz;
@@ -663,7 +663,7 @@ int NCCHReader::seek(int64_t pos)
 	else if (pos >= d->ncch_length)
 		d->pos = d->ncch_length;
 	else
-		d->pos = (uint32_t)pos;
+		d->pos = static_cast<uint32_t>(pos);
 	return 0;
 }
 
@@ -1012,7 +1012,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 		le32_to_cpu(file_header->offset);
 	const uint32_t size = le32_to_cpu(file_header->size);
 	if (offset >= d->ncch_length ||
-	    ((int64_t)offset + size) > d->ncch_length)
+	    (static_cast<int64_t>(offset) + size) > d->ncch_length)
 	{
 		// File offset/size is out of bounds.
 		m_lastError = EIO;	// TODO: Better error code?

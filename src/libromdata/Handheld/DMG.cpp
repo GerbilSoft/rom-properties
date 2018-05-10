@@ -566,7 +566,7 @@ int DMG::loadFieldData(void)
 	} else if (romHeader->entry[0] == 0x18) {
 		// JR nnnn
 		// Found in many homebrew ROMs.
-		const int8_t disp = (int8_t)romHeader->entry[1];
+		const int8_t disp = static_cast<int8_t>(romHeader->entry[1]);
 		// Current PC: 0x100
 		// Add displacement, plus 2.
 		const uint16_t entry_address = 0x100 + disp + 2;
@@ -592,8 +592,8 @@ int DMG::loadFieldData(void)
 					romHeader->new_publisher_code);
 			} else {
 				s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X %02X)"),
-					(uint8_t)romHeader->new_publisher_code[0],
-					(uint8_t)romHeader->new_publisher_code[1]);
+					static_cast<uint8_t>(romHeader->new_publisher_code[0]),
+					static_cast<uint8_t>(romHeader->new_publisher_code[1]));
 			}
 		}
 	} else {
@@ -632,10 +632,11 @@ int DMG::loadFieldData(void)
 			const int banks = rom_size / 16;
 			d->fields->addField_string(C_("DMG", "ROM Size"),
 				rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
-					(unsigned int)rom_size, (unsigned int)banks));
+					static_cast<unsigned int>(rom_size),
+					static_cast<unsigned int>(banks)));
 		} else {
 			d->fields->addField_string(C_("DMG", "ROM Size"),
-				rp_sprintf(C_("DMG", "%u KiB"), (unsigned int)rom_size));
+				rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(rom_size)));
 		}
 	}
 
@@ -657,10 +658,11 @@ int DMG::loadFieldData(void)
 				const int banks = ram_size / 16;
 				d->fields->addField_string(C_("DMG", "RAM Size"),
 					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
-						(unsigned int)ram_size, (unsigned int)banks));
+						static_cast<unsigned int>(ram_size),
+						static_cast<unsigned int>(banks)));
 			} else {
 				d->fields->addField_string(C_("DMG", "RAM Size"),
-					rp_sprintf(C_("DMG", "%u KiB"), ram_size));
+					rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(ram_size)));
 			}
 		}
 	}

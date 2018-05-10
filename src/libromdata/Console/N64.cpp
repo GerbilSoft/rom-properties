@@ -329,7 +329,7 @@ int N64::loadFieldData(void)
 		buf, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

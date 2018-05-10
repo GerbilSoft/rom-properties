@@ -165,7 +165,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	const unsigned int header_addr = (unsigned int)(filesize - 0x220);
+	const unsigned int header_addr = static_cast<unsigned int>(filesize - 0x220);
 	d->file->seek(header_addr);
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader))
@@ -214,7 +214,7 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	// 0x220 before the end of the file.
 	if (info->szFile < 0x220)
 		return -1;
-	const uint32_t header_addr_expected = (uint32_t)(info->szFile - 0x220);
+	const uint32_t header_addr_expected = static_cast<uint32_t>(info->szFile - 0x220);
 	if (info->header.addr > header_addr_expected)
 		return -1;
 	else if (info->header.addr + info->header.size < header_addr_expected + 0x20)
@@ -348,7 +348,7 @@ int VirtualBoy::loadFieldData(void)
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
 	id6.append(romHeader->publisher, sizeof(romHeader->publisher));
 	d->fields->addField_string(C_("VirtualBoy", "Game ID"),
-		latin1_to_utf8(id6.data(), (int)id6.size()));
+		latin1_to_utf8(id6.data(), static_cast<int>(id6.size())));
 
 	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(romHeader->publisher);
@@ -363,8 +363,8 @@ int VirtualBoy::loadFieldData(void)
 				romHeader->publisher);
 		} else {
 			s_publisher = rp_sprintf(C_("VirtualBoy", "Unknown (%02X %02X)"),
-				(uint8_t)romHeader->publisher[0],
-				(uint8_t)romHeader->publisher[1]);
+				static_cast<uint8_t>(romHeader->publisher[0]),
+				static_cast<uint8_t>(romHeader->publisher[1]));
 		}
 	}
 	d->fields->addField_string(C_("VirtualBoy", "Publisher"), s_publisher);

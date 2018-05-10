@@ -186,17 +186,18 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	}
 
 	// Check the value length.
-	const int value_len = (int)strlen(value);
+	// TODO: Check for <= 0?
+	const int value_len = static_cast<int>(strlen(value));
 	if (value_len > 255) {
 		// Key is long.
 		return 1;
 	}
 
 	const bool is_odd_len = ((value_len % 2) != 0);
-	uint8_t len = (uint8_t)(value_len / 2);
+	uint8_t len = static_cast<uint8_t>(value_len / 2);
 
 	// Parse the value.
-	unsigned int vKeys_start_pos = (unsigned int)vKeys.size();
+	const unsigned int vKeys_start_pos = static_cast<unsigned int>(vKeys.size());
 	unsigned int vKeys_pos = vKeys_start_pos;
 	// Reserve space for half of the key string.
 	// Key string is ASCII hex, so two characters make up one byte.
@@ -464,13 +465,15 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 	for (; len > 0; len--, str += 2, buf++) {
 		// Process two characters at a time.
 		// Two hexadecimal digits == one byte.
-		if ((unsigned int)str[0] > 0x80 || (unsigned int)str[1] > 0x80) {
+		if (static_cast<unsigned int>(str[0]) > 0x80 ||
+			static_cast<unsigned int>(str[1]) > 0x80)
+		{
 			// Invalid character.
 			return -EINVAL;
 		}
 
-		uint8_t chr0 = ascii_to_hex[(uint8_t)str[0]];
-		uint8_t chr1 = ascii_to_hex[(uint8_t)str[1]];
+		uint8_t chr0 = ascii_to_hex[static_cast<uint8_t>(str[0])];
+		uint8_t chr1 = ascii_to_hex[static_cast<uint8_t>(str[1])];
 		if (chr0 > 0x0F || chr1 > 0x0F) {
 			// Invalid character.
 			return -EINVAL;

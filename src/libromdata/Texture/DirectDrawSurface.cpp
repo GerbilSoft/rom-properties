@@ -555,7 +555,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		// Sanity check: DDS files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)file->size();
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	// Seek to the start of the texture data.
 	int ret = file->seek(texDataStartAddr);
@@ -833,7 +833,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	// Check if this DDS texture is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = (uint32_t)size;
+	info.header.size = static_cast<uint32_t>(size);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DDS.
 	info.szFile = file->size();
@@ -850,10 +850,10 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 			unsigned int headerSize;
 			if (!isXbox) {
 				// DX10 texture.
-				headerSize = (unsigned int)(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
+				headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
 			} else {
 				// Xbox One texture.
-				headerSize = (unsigned int)(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
+				headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
 			}
 			if (size < headerSize) {
 				// Extra headers weren't read.
@@ -1353,7 +1353,7 @@ int DirectDrawSurface::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

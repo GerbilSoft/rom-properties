@@ -726,7 +726,7 @@ int NES::loadFieldData(void)
 	// Display the fields.
 	if (!romOK) {
 		// Invalid mapper.
-		return (int)d->fields->count();
+		return static_cast<int>(d->fields->count());
 	}
 
 	if (mapper >= 0) {
@@ -737,10 +737,11 @@ int NES::loadFieldData(void)
 		if (mapper_name) {
 			// tr: Print the mapper ID followed by the mapper name.
 			s_mapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
-				(unsigned int)mapper, mapper_name);
+				static_cast<unsigned int>(mapper), mapper_name);
 		} else {
 			// tr: Print only the mapper ID.
-			s_mapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)mapper);
+			s_mapper = rp_sprintf(C_("NES|Mapper", "%u"),
+				static_cast<unsigned int>(mapper));
 		}
 		d->fields->addField_string(C_("NES", "Mapper"), s_mapper);
 	} else {
@@ -765,10 +766,11 @@ int NES::loadFieldData(void)
 		if (submapper_name) {
 			// tr: Print the submapper ID followed by the submapper name.
 			s_submapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
-				(unsigned int)submapper, submapper_name);
+				static_cast<unsigned int>(submapper), submapper_name);
 		} else {
 			// tr: Print only the submapper ID.
-			s_submapper = rp_sprintf(C_("NES|Mapper", "%u"), (unsigned int)submapper);
+			s_submapper = rp_sprintf(C_("NES|Mapper", "%u"),
+				static_cast<unsigned int>(submapper));
 		}
 		d->fields->addField_string(C_("NES", "Submapper"), s_submapper);
 	}
@@ -945,7 +947,7 @@ int NES::loadFieldData(void)
 	}
 
 	// TODO: More fields.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

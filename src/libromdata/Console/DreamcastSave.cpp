@@ -498,13 +498,13 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
 	// Make sure the file is big enough.
 	uint32_t sz_reserved = vms_header_offset +
-		(uint32_t)sizeof(vms_header) +
+		static_cast<uint32_t>(sizeof(vms_header)) +
 		DC_VMS_ICON_PALETTE_SIZE +
 		(icon_count * DC_VMS_ICON_DATA_SIZE);
 	if (vms_header.eyecatch_type <= 3) {
 		sz_reserved += eyecatch_sizes[vms_header.eyecatch_type];
 	}
-	if ((int64_t)sz_reserved > this->file->size()) {
+	if (static_cast<int64_t>(sz_reserved) > this->file->size()) {
 		// File is NOT big enough.
 		return nullptr;
 	}
@@ -513,7 +513,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 	VmsIcon_buf_t buf;
 
 	// Load the palette.
-	size_t size = file->seekAndRead(vms_header_offset + (uint32_t)sizeof(vms_header),
+	size_t size = file->seekAndRead(vms_header_offset + static_cast<uint32_t>(sizeof(vms_header)),
 					buf.palette.u16, sizeof(buf.palette.u16));
 	if (size != sizeof(buf.palette.u16)) {
 		// Seek and/or read error.
@@ -730,10 +730,10 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 	// Skip over the icons.
 	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
 	// Make sure the file is big enough.
-	const uint32_t sz_icons = (uint32_t)sizeof(vms_header) +
+	const uint32_t sz_icons = static_cast<uint32_t>(sizeof(vms_header)) +
 		DC_VMS_ICON_PALETTE_SIZE +
 		(vms_header.icon_count * DC_VMS_ICON_DATA_SIZE);
-	if ((int64_t)sz_icons + eyecatch_size > file->size()) {
+	if (static_cast<int64_t>(sz_icons) + eyecatch_size > file->size()) {
 		// File is NOT big enough.
 		return nullptr;
 	}
@@ -1439,7 +1439,7 @@ int DreamcastSave::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

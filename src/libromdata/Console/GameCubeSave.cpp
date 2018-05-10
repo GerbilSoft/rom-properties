@@ -405,7 +405,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 		// Icon delay.
 		// Using 125ms for the fastest speed.
 		// TODO: Verify this?
-		iconAnimData->delays[i].numer = (uint16_t)delay;
+		iconAnimData->delays[i].numer = static_cast<uint16_t>(delay);
 		iconAnimData->delays[i].denom = 8;
 		iconAnimData->delays[i].ms = delay * 125;
 
@@ -607,7 +607,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 
 	// Save the directory entry for later.
 	memcpy(&d->direntry, &header[gciOffset], sizeof(d->direntry));
-	d->byteswap_direntry(&d->direntry, (GameCubeSavePrivate::SaveType)d->saveType);
+	d->byteswap_direntry(&d->direntry, static_cast<GameCubeSavePrivate::SaveType>(d->saveType));
 	// Data area offset.
 	d->dataOffset = gciOffset + 0x40;
 }
@@ -648,7 +648,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		// - 272 bytes: GCS-specific header.
 		// - 64 bytes: CARD directory entry.
 		// TODO: GCS has a user-specified description field and other stuff.
-		const uint32_t data_size = (uint32_t)(info->szFile - 336);
+		const uint32_t data_size = static_cast<uint32_t>(info->szFile - 336);
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
@@ -668,7 +668,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		// - 128 bytes: SAV-specific header.
 		// - 64 bytes: CARD directory entry.
 		// TODO: SAV has a copy of the description, plus other fields?
-		const uint32_t data_size = (uint32_t)(info->szFile - 192);
+		const uint32_t data_size = static_cast<uint32_t>(info->szFile - 192);
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
@@ -683,7 +683,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	// Check for GCI.
 	// GCI files are a multiple of 8 KB, plus 64 bytes:
 	// - 64 bytes: CARD directory entry.
-	const uint32_t data_size = (uint32_t)(info->szFile - 64);
+	const uint32_t data_size = static_cast<uint32_t>(info->szFile - 64);
 	if (data_size % 8192 == 0) {
 		// Check the CARD directory entry.
 		if (GameCubeSavePrivate::isCardDirEntry(
@@ -880,7 +880,7 @@ int GameCubeSave::loadFieldData(void)
 		const char *null_pos = static_cast<const char*>(memchr(desc_buf, 0, 32));
 		if (null_pos) {
 			// Found a NULL byte.
-			desc_len = (int)(null_pos - desc_buf);
+			desc_len = static_cast<int>(null_pos - desc_buf);
 		}
 		string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
 		desc += '\n';
@@ -889,7 +889,7 @@ int GameCubeSave::loadFieldData(void)
 		null_pos = static_cast<const char*>(memchr(&desc_buf[32], 0, 32));
 		if (null_pos) {
 			// Found a NULL byte.
-			desc_len = (int)(null_pos - desc_buf - 32);
+			desc_len = static_cast<int>(null_pos - desc_buf - 32);
 		}
 		desc += cp1252_sjis_to_utf8(&desc_buf[32], desc_len);
 
@@ -898,7 +898,7 @@ int GameCubeSave::loadFieldData(void)
 
 	// Last Modified timestamp.
 	d->fields->addField_dateTime(C_("GameCubeSave", "Last Modified"),
-		(time_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF,
+		static_cast<time_t>(d->direntry.lastmodified) + GC_UNIX_TIME_DIFF,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME |
 		RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.
@@ -919,7 +919,7 @@ int GameCubeSave::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("GameCubeSave", "Blocks"), d->direntry.length);
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

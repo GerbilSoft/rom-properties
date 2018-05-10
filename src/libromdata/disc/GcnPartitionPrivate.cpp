@@ -166,7 +166,7 @@ int GcnPartitionPrivate::loadFst(void)
 	}
 
 	// Seek to the beginning of the FST.
-	ret = q->seek((int64_t)bootBlock.fst_offset << offsetShift);
+	ret = q->seek(static_cast<int64_t>(bootBlock.fst_offset) << offsetShift);
 	if (ret != 0) {
 		// Seek failed.
 		return -q->m_lastError;

@@ -98,11 +98,11 @@ static char *rp_iconv(const char *src, int len,
 	size_t src_bytes_len = (size_t)len;
 	const size_t out_bytes_len = (src_bytes_len * 4) + 4;
 	size_t out_bytes_remaining = out_bytes_len;
-	char *outbuf = (char*)malloc(out_bytes_len);
+	char *outbuf = static_cast<char*>(malloc(out_bytes_len));
 
 	// Input and output pointers.
-	char *inptr = (char*)(src);	// Input pointer.
-	char *outptr = &outbuf[0];	// Output pointer.
+	char *inptr = const_cast<char*>(src);	// Input pointer.
+	char *outptr = &outbuf[0];		// Output pointer.
 
 	bool success = true;
 	while (src_bytes_len > 0) {
@@ -150,18 +150,18 @@ static char *rp_iconv(const char *src, int len,
 static FORCEINLINE int check_NULL_terminator(const char *str, int len)
 {
 	if (len < 0) {
-		return (int)strlen(str);
+		return static_cast<int>(strlen(str));
 	} else {
-		return (int)strnlen(str, len);
+		return static_cast<int>(strnlen(str, len));
 	}
 }
 
 static FORCEINLINE int check_NULL_terminator(const char16_t *wcs, int len)
 {
 	if (len < 0) {
-		return (int)u16_strlen(wcs);
+		return static_cast<int>(u16_strlen(wcs));
 	} else {
-		return (int)u16_strnlen(wcs, len);
+		return static_cast<int>(u16_strnlen(wcs, len));
 	}
 }
 

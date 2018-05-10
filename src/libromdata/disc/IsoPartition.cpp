@@ -173,7 +173,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 			q->m_lastError = EIO;
 			return -q->m_lastError;
 		}
-		iso_start_offset = (int)(rootdir->block.he - 20);
+		iso_start_offset = static_cast<int>(rootdir->block.he - 20);
 	}
 
 	// Load the root directory.
@@ -181,7 +181,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 	// the entire root directory all at once.
 	rootDir_data.resize(rootdir->size.he);
 	const int64_t rootDir_addr = partition_offset +
-		(int64_t)(rootdir->block.he - iso_start_offset) * block_size;
+		static_cast<int64_t>(rootdir->block.he - iso_start_offset) * block_size;
 	size_t size = discReader->seekAndRead(rootDir_addr, rootDir_data.data(), rootDir_data.size());
 	if (size != rootDir_data.size()) {
 		// Seek and/or read error.
@@ -452,7 +452,7 @@ IRpFile *IsoPartition::open(const char *filename)
 	// Find the file in the root directory.
 	// NOTE: Filenames are case-insensitive.
 	// NOTE: File might have a ";1" suffix.
-	const unsigned int filename_len = (unsigned int)s_filename.size();
+	const unsigned int filename_len = static_cast<unsigned int>(s_filename.size());
 	const ISO_DirEntry *dirEntry_found = nullptr;
 	const uint8_t *p = d->rootDir_data.data();
 	const uint8_t *const p_end = p + d->rootDir_data.size();
@@ -516,7 +516,7 @@ IRpFile *IsoPartition::open(const char *filename)
 	const unsigned int block_size = d->pvd.pri.logical_block_size.he;
 
 	// Make sure the file is in bounds.
-	const int64_t file_addr = ((int64_t)dirEntry_found->block.he - d->iso_start_offset) * block_size;
+	const int64_t file_addr = (static_cast<int64_t>(dirEntry_found->block.he) - d->iso_start_offset) * block_size;
 	if (file_addr >= d->partition_size + d->partition_offset ||
 	    file_addr > d->partition_size + d->partition_offset - dirEntry_found->size.he)
 	{

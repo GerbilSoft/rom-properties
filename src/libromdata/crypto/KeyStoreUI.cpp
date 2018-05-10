@@ -410,8 +410,8 @@ void KeyStoreUIPrivate::reset(void)
 inline int KeyStoreUIPrivate::sectKeyToIdx(int sectIdx, int keyIdx) const
 {
 	assert(sectIdx >= 0);
-	assert(sectIdx < (int)sections.size());
-	if (sectIdx < 0 || sectIdx >= (int)sections.size())
+	assert(sectIdx < static_cast<int>(sections.size()));
+	if (sectIdx < 0 || sectIdx >= static_cast<int>(sections.size()))
 		return -1;
 
 	assert(keyIdx >= 0);
@@ -437,12 +437,12 @@ inline int KeyStoreUIPrivate::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx)
 		return -EINVAL;
 
 	assert(idx >= 0);
-	assert(idx < (int)keys.size());
-	if (idx < 0 || idx >= (int)keys.size())
+	assert(idx < static_cast<int>(keys.size()));
+	if (idx < 0 || idx >= static_cast<int>(keys.size()))
 		return -ERANGE;
 
 	// Figure out what section this key is in.
-	for (int i = 0; i < (int)sections.size(); i++) {
+	for (int i = 0; i < static_cast<int>(sections.size()); i++) {
 		const KeyStoreUIPrivate::Section &section = sections[i];
 		if (idx < (section.keyIdxStart + section.keyCount)) {
 			// Found the section.
@@ -471,11 +471,11 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 	KeyStoreUI::ImportReturn iret = {0, 0, 0, 0, 0, 0, 0, 0};
 
 	assert(sectIdx >= 0);
-	assert(sectIdx < (int)sections.size());
+	assert(sectIdx < static_cast<int>(sections.size()));
 	assert(kba != nullptr);
 	assert(buf != nullptr);
 	assert(len != 0);
-	if (sectIdx < 0 || sectIdx >= (int)sections.size() ||
+	if (sectIdx < 0 || sectIdx >= static_cast<int>(sections.size()) ||
 	    !kba || !buf || len == 0)
 	{
 		iret.status = KeyStoreUI::Import_InvalidParams;
@@ -613,7 +613,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 	for (const char *p = str.c_str(); *p != 0; p++) {
 		// The following check works for both UTF-8 and UTF-16.
 		// If the character value is >= 128, it's non-ASCII.
-		if (((unsigned int)*p) >= 128) {
+		if (static_cast<unsigned int>(*p) >= 128) {
 			// Found a non-ASCII character.
 			hasNonAscii = true;
 			break;
@@ -629,8 +629,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 	// but we'll take any length.
 
 	// Convert to UTF-16 first.
-	// FIXME: std::string overload for utf8_to_utf16().
-	const std::u16string u16str = utf8_to_utf16(str.data(), (int)str.size());
+	const std::u16string u16str = utf8_to_utf16(str);
 
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
@@ -639,10 +638,10 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 	hexstr += "FFFE";
 	for (const char16_t *p = u16str.c_str(); *p != 0; p++) {
 		const char16_t u16 = *p;
-		hexstr += (char16_t)hex_lookup[(u16 >>  4) & 0x0F];
-		hexstr += (char16_t)hex_lookup[(u16 >>  0) & 0x0F];
-		hexstr += (char16_t)hex_lookup[(u16 >> 12) & 0x0F];
-		hexstr += (char16_t)hex_lookup[(u16 >>  8) & 0x0F];
+		hexstr += hex_lookup[(u16 >>  4) & 0x0F];
+		hexstr += hex_lookup[(u16 >>  0) & 0x0F];
+		hexstr += hex_lookup[(u16 >> 12) & 0x0F];
+		hexstr += hex_lookup[(u16 >>  8) & 0x0F];
 	}
 
 	return hexstr;
@@ -822,7 +821,7 @@ int KeyStoreUI::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const
 int KeyStoreUI::sectCount(void) const
 {
 	RP_D(const KeyStoreUI);
-	return (int)d->sections.size();
+	return static_cast<int>(d->sections.size());
 }
 
 /**
@@ -836,8 +835,11 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 	assert(sectIdx >= 0);
 	assert(sectIdx < (int)d->sections.size());
 	assert(sectIdx < ARRAY_SIZE(d->encKeyFns));
-	if (sectIdx < 0 || sectIdx >= (int)d->sections.size() || sectIdx >= ARRAY_SIZE(d->encKeyFns))
+	if (sectIdx < 0 || sectIdx >= static_cast<int>(d->sections.size()) ||
+		sectIdx >= ARRAY_SIZE(d->encKeyFns))
+	{
 		return nullptr;
+	}
 
 	static const char *const sectNames[] = {
 		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
@@ -860,7 +862,7 @@ int KeyStoreUI::keyCount(int sectIdx) const
 	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
 	assert(sectIdx < (int)d->sections.size());
-	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
+	if (sectIdx < 0 || sectIdx >= static_cast<int>(d->sections.size()))
 		return -1;
 	return d->sections[sectIdx].keyCount;
 }
@@ -873,7 +875,7 @@ int KeyStoreUI::totalKeyCount(void) const
 {
 	RP_D(const KeyStoreUI);
 	int ret = 0;
-	for (int i = (int)d->sections.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(d->sections.size())-1; i >= 0; i--) {
 		ret += d->sections[i].keyCount;
 	}
 	return ret;
@@ -915,8 +917,8 @@ const KeyStoreUI::Key *KeyStoreUI::getKey(int idx) const
 {
 	RP_D(const KeyStoreUI);
 	assert(idx >= 0);
-	assert(idx < (int)d->keys.size());
-	if (idx < 0 || idx >= (int)d->keys.size())
+	assert(idx < static_cast<int>(d->keys.size()));
+	if (idx < 0 || idx >= static_cast<int>(d->keys.size()))
 		return nullptr;
 	return &d->keys[idx];
 }
@@ -994,8 +996,8 @@ int KeyStoreUI::setKey(int idx, const string &value)
 {
 	RP_D(KeyStoreUI);
 	assert(idx >= 0);
-	assert(idx < (int)d->keys.size());
-	if (idx < 0 || idx >= (int)d->keys.size())
+	assert(idx < static_cast<int>(d->keys.size()));
+	if (idx < 0 || idx >= static_cast<int>(d->keys.size()))
 		return -ERANGE;
 
 	Key &key = d->keys[idx];
@@ -1084,7 +1086,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 	if (!file->isOpen()) {
 		// TODO: file->lastError()?
 		iret.status = Import_OpenError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 
@@ -1101,7 +1103,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 		// Read error.
 		// TODO: file->lastError()?
 		iret.status = Import_ReadError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 	file->close();
@@ -1144,7 +1146,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		iret.status = Import_OpenError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 
@@ -1160,7 +1162,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiUOtpBin(const char *filename)
 	if (size != 1024) {
 		// Read error.
 		iret.status = Import_ReadError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 	file->close();
@@ -1214,7 +1216,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		iret.status = Import_OpenError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 
@@ -1235,7 +1237,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 		if (ret != 0) {
 			// Seek error.
 			iret.status = Import_ReadError;
-			iret.error_code = (uint8_t)file->lastError();
+			iret.error_code = static_cast<uint8_t>(file->lastError());
 			return iret;
 		}
 	}
@@ -1243,7 +1245,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const char *filename)
 	if (size != 32768) {
 		// Read error.
 		iret.status = Import_ReadError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 	file->close();
@@ -1286,7 +1288,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file->isOpen()) {
 		iret.status = Import_OpenError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 
@@ -1298,12 +1300,12 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 	}
 
 	// Read the entire file into memory.
-	unique_ptr<uint8_t[]> buf(new uint8_t[(size_t)fileSize]);
-	size_t size = file->read(buf.get(), (size_t)fileSize);
-	if (size != (unsigned int)fileSize) {
+	unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<size_t>(fileSize)]);
+	size_t size = file->read(buf.get(), static_cast<size_t>(fileSize));
+	if (size != static_cast<size_t>(fileSize)) {
 		// Read error.
 		iret.status = Import_ReadError;
-		iret.error_code = (uint8_t)file->lastError();
+		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
 	file->close();

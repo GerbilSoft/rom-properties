@@ -177,12 +177,12 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 
 	// Validate the starting address and size.
 	const int64_t fileSize = file->size();
-	if ((int64_t)rsrc_addr >= fileSize) {
+	if (static_cast<int64_t>(rsrc_addr) >= fileSize) {
 		// Starting address is past the end of the file.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
 		return;
-	} else if (((int64_t)rsrc_addr + (int64_t)rsrc_size) > fileSize) {
+	} else if ((static_cast<int64_t>(rsrc_addr) + static_cast<int64_t>(rsrc_size)) > fileSize) {
 		// Resource ends past the end of the file.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
@@ -226,7 +226,7 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 		// Sanity check; constrain to 64 entries.
 		entryCount = 64;
 	}
-	uint32_t szToRead = (uint32_t)(entryCount * sizeof(IMAGE_RESOURCE_DIRECTORY_ENTRY));
+	uint32_t szToRead = static_cast<uint32_t>(entryCount * sizeof(IMAGE_RESOURCE_DIRECTORY_ENTRY));
 	unique_ptr<IMAGE_RESOURCE_DIRECTORY_ENTRY[]> irdEntries(new IMAGE_RESOURCE_DIRECTORY_ENTRY[entryCount]);
 	size = file->read(irdEntries.get(), szToRead);
 	if (size != szToRead) {
@@ -249,7 +249,7 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 
 		// Entry data.
 		auto &entry = dir[entriesRead];
-		entry.id = (uint16_t)id;
+		entry.id = static_cast<uint16_t>(id);
 		// addr points to IMAGE_RESOURCE_DIRECTORY
 		// or IMAGE_RESOURCE_DATA_ENTRY.
 		entry.addr = le32_to_cpu(irdEntry->OffsetToData);
@@ -317,7 +317,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(u
 const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir(uint16_t type, uint16_t id)
 {
 	// Check if the type and ID is already cached.
-	uint32_t type_and_id = (type | ((uint32_t)id << 16));
+	uint32_t type_and_id = (type | (static_cast<uint32_t>(id) << 16));
 	auto iter_td = type_and_id_dirs.find(type_and_id);
 	if (iter_td != type_and_id_dirs.end()) {
 		// Type and ID is already cached.
@@ -392,7 +392,7 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	}
 
 	// Check the key name.
-	unsigned int key_len = (unsigned int)u16_strlen(key);
+	unsigned int key_len = static_cast<unsigned int>(u16_strlen(key));
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
 	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
 	keyData_len = ALIGN(4, keyData_len + sizeof(fields)) - sizeof(fields);
@@ -484,7 +484,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	string str_langID = utf16le_to_utf8(s_langID, 8);
 	// Parse using strtoul().
 	char *endptr;
-	*langID = (unsigned int)strtoul(str_langID.c_str(), &endptr, 16);
+	*langID = static_cast<unsigned int>(strtoul(str_langID.c_str(), &endptr, 16));
 	if (*langID == 0 || endptr != (str_langID.c_str() + 8)) {
 		// Not valid.
 		// TODO: Better error code?
@@ -496,7 +496,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
 	const int64_t pos_strings = file->tell();
-	int strTblData_len = (int)fields[0] - (int)(pos_strings - pos_start);
+	int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
 		return -EIO;
@@ -505,7 +505,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// Read the string table.
 	unique_ptr<uint8_t[]> strTblData(new uint8_t[strTblData_len]);
 	size = file->read(strTblData.get(), strTblData_len);
-	if (size != (size_t)strTblData_len) {
+	if (size != static_cast<size_t>(strTblData_len)) {
 		// Read error.
 		return -EIO;
 	}
@@ -632,19 +632,19 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 	}
 
 	// Are we already at the end of the .rsrc section?
-	if (d->pos >= (int64_t)d->rsrc_size) {
+	if (d->pos >= static_cast<int64_t>(d->rsrc_size)) {
 		// End of the .rsrc section.
 		return 0;
 	}
 
 	// Make sure d->pos + size <= d->rsrc_size.
 	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= (int64_t)d->rsrc_size) {
-		size = (size_t)((int64_t)d->rsrc_size - d->pos);
+	if (d->pos + static_cast<int64_t>(size) >= static_cast<int64_t>(d->rsrc_size)) {
+		size = static_cast<size_t>(static_cast<int64_t>(d->rsrc_size) - d->pos);
 	}
 
 	// Read the data.
-	size_t read = d->file->seekAndRead((int64_t)d->rsrc_addr + (int64_t)d->pos, ptr, size);
+	size_t read = d->file->seekAndRead(static_cast<int64_t>(d->rsrc_addr) + static_cast<int64_t>(d->pos), ptr, size);
 	if (read != size) {
 		// Seek and/or read error.
 		m_lastError = d->file->lastError();
@@ -672,8 +672,8 @@ int PEResourceReader::seek(int64_t pos)
 	// TODO: How does POSIX behave?
 	if (pos < 0) {
 		d->pos = 0;
-	} else if (pos >= (int64_t)d->rsrc_size) {
-		d->pos = (int64_t)d->rsrc_size;
+	} else if (pos >= static_cast<int64_t>(d->rsrc_size)) {
+		d->pos = static_cast<int64_t>(d->rsrc_size);
 	} else {
 		d->pos = pos;
 	}
@@ -715,7 +715,7 @@ int64_t PEResourceReader::size(void)
 {
 	// TODO: Errors?
 	RP_D(const PEResourceReader);
-	return (int64_t)d->rsrc_size;
+	return static_cast<int64_t>(d->rsrc_size);
 }
 
 /** IPartition **/
@@ -729,7 +729,7 @@ int64_t PEResourceReader::partition_size(void) const
 {
 	// TODO: Errors?
 	RP_D(const PEResourceReader);
-	return (int64_t)d->rsrc_size;
+	return static_cast<int64_t>(d->rsrc_size);
 }
 
 /**
@@ -741,7 +741,7 @@ int64_t PEResourceReader::partition_size(void) const
 int64_t PEResourceReader::partition_size_used(void) const
 {
 	RP_D(const PEResourceReader);
-	return (int64_t)d->rsrc_size;
+	return static_cast<int64_t>(d->rsrc_size);
 }
 
 /** Resource access functions. **/
@@ -767,7 +767,8 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 	}
 
 	// Get the directory for the type and ID.
-	const PEResourceReaderPrivate::rsrc_dir_t *type_id_dir = d->getTypeIdDir(type, (uint16_t)id);
+	const PEResourceReaderPrivate::rsrc_dir_t *type_id_dir =
+		d->getTypeIdDir(type, static_cast<uint16_t>(id));
 	if (!type_id_dir || type_id_dir->empty())
 		return nullptr;
 
@@ -780,7 +781,7 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 		for (auto iter = type_id_dir->cbegin();
 		     iter != type_id_dir->cend(); ++iter)
 		{
-			if (iter->id == (uint16_t)lang) {
+			if (iter->id == static_cast<uint16_t>(lang)) {
 				// Found the language ID.
 				dirEntry = &(*iter);
 				break;

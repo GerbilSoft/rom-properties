@@ -70,7 +70,7 @@ rp_image *rp_image::dup(void) const
 		memcpy(dest, src, len);
 	} else {
 		// Copy one line at a time.
-		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			memcpy(dest, src, row_bytes);
 			dest += dest_stride;
 			src += src_stride;
@@ -135,10 +135,10 @@ rp_image *rp_image::dup_ARGB32(void) const
 	const int dest_adj = (img->stride() / 4) - width;
 	const int src_adj = d->backend->stride - width;
 
-	for (unsigned int y = (unsigned int)height; y > 0; y--) {
+	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 		// Convert up to 4 pixels per loop iteration.
 		unsigned int x;
-		for (x = (unsigned int)width; x > 3; x -= 4) {
+		for (x = static_cast<unsigned int>(width); x > 3; x -= 4) {
 			dest[0] = pal[src[0]];
 			dest[1] = pal[src[1]];
 			dest[2] = pal[src[2]];
@@ -403,8 +403,8 @@ int rp_image::apply_chroma_key_cpp(uint32_t key)
 	const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
 	uint32_t *img_buf = static_cast<uint32_t*>(backend->data());
 
-	for (unsigned int y = (unsigned int)backend->height; y > 0; y--) {
-		unsigned int x = (unsigned int)backend->width;
+	for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
+		unsigned int x = static_cast<unsigned int>(backend->width);
 		for (; x > 1; x -= 2, img_buf += 2) {
 			// Check for chroma key pixels.
 			if (img_buf[0] == key) {

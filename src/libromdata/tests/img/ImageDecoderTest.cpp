@@ -286,7 +286,7 @@ void ImageDecoderTest::SetUp(void)
 	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
 
 	// Read the PNG image into memory.
-	const size_t pngSize = (size_t)file->size();
+	const size_t pngSize = static_cast<size_t>(file->size());
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
@@ -378,7 +378,7 @@ void ImageDecoderTest::Compare_RpImage(
 	const int row_bytes = pImgExpected->row_bytes();
 	const int stride_expected = pImgExpected->stride();
 	const int stride_actual   = pImgActual->stride();
-	for (unsigned int y = (unsigned int)pImgExpected->height(); y > 0; y--) {
+	for (unsigned int y = static_cast<unsigned int>(pImgExpected->height()); y > 0; y--) {
 		ASSERT_EQ(0, memcmp(pBitsExpected, pBitsActual, row_bytes)) <<
 			"Decoded image does not match the expected PNG image.";
 		pBitsExpected += stride_expected;
@@ -447,7 +447,7 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (int i = (int)suffix.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(suffix.size())-1; i >= 0; i--) {
 		char chr = suffix[i];
 		if (!ISALNUM(chr) && chr != '_') {
 			suffix[i] = '_';

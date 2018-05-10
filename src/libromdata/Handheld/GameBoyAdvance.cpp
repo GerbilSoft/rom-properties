@@ -292,8 +292,8 @@ int GameBoyAdvance::loadFieldData(void)
 				romHeader->company);
 		} else {
 			s_publisher = rp_sprintf(C_("GameBoyAdvance", "Unknown (%02X %02X)"),
-				(uint8_t)romHeader->company[0],
-				(uint8_t)romHeader->company[1]);
+				static_cast<uint8_t>(romHeader->company[0]),
+				static_cast<uint8_t>(romHeader->company[1]));
 		}
 	}
 	d->fields->addField_string(C_("GameBoyAdvance", "Publisher"), s_publisher);

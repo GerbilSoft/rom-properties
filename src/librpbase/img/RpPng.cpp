@@ -440,7 +440,8 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	}
 
 	// Allocate the row pointers.
-	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
+	row_pointers = static_cast<const png_byte**>(
+		png_malloc(png_ptr, sizeof(const png_byte*) * height));
 	if (!row_pointers) {
 		delete img;
 		return nullptr;

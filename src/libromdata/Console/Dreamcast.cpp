@@ -270,7 +270,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	// Check if this disc image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = (unsigned int)size;
+	info.header.size = static_cast<unsigned int>(size);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&sector);
 	const string filename = file->filename();
 	info.ext = FileSystem::file_ext(filename);
@@ -294,7 +294,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			// FIXME: Assuming Mode 1.
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
 			d->discReader = new Cdrom2352Reader(d->file);
-			d->iso_start_offset = (int)cdrom_msf_to_lba(&sector.msf);
+			d->iso_start_offset = static_cast<int>(cdrom_msf_to_lba(&sector.msf));
 			break;
 
 		case DreamcastPrivate::DISC_GDI: {
@@ -511,7 +511,8 @@ int Dreamcast::loadFieldData(void)
 	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
 		// This may be a third-party T-code.
 		char *endptr;
-		unsigned int t_code = (unsigned int)strtoul(&discHeader->publisher[10], &endptr, 10);
+		const unsigned int t_code = static_cast<unsigned int>(
+			strtoul(&discHeader->publisher[10], &endptr, 10));
 		if (endptr > &discHeader->publisher[10] &&
 		    endptr <= &discHeader->publisher[15] &&
 		    *endptr == ' ')
@@ -645,7 +646,8 @@ int Dreamcast::loadFieldData(void)
 
 	// Peripherals are stored as an ASCII hex bitfield.
 	char *endptr;
-	unsigned int peripherals = (unsigned int)strtoul(discHeader->peripherals, &endptr, 16);
+	const unsigned int peripherals = static_cast<unsigned int>(strtoul(
+		discHeader->peripherals, &endptr, 16));
 	if (endptr > discHeader->peripherals &&
 	    endptr <= &discHeader->peripherals[7])
 	{
@@ -709,7 +711,7 @@ int Dreamcast::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

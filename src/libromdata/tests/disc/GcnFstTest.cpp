@@ -180,7 +180,7 @@ void GcnFstTest::SetUp(void)
 	ASSERT_GT(getFileFromZip(zip_filename, mode.fst_filename.c_str(), m_fst_buf, MAX_GCN_FST_BIN_FILESIZE), 0);
 
 	// Create the GcnFst object.
-	m_fst = new GcnFst(m_fst_buf.data(), (uint32_t)m_fst_buf.size(), mode.offsetShift);
+	m_fst = new GcnFst(m_fst_buf.data(), static_cast<uint32_t>(m_fst_buf.size()), mode.offsetShift);
 	ASSERT_TRUE(m_fst->isOpen());
 }
 
@@ -263,7 +263,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	}
 	EXPECT_LE(file_info.uncompressed_size, (uLong)max_filesize) <<
 		"Compressed file '" << int_filename << "' is too big.";
-	if (file_info.uncompressed_size > (uLong)max_filesize) {
+	if (file_info.uncompressed_size > static_cast<uLong>(max_filesize)) {
 		unzClose(unz);
 		return -4;
 	}
@@ -280,11 +280,11 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 	// NOTE: zlib and minizip are only guaranteed to be able to
 	// read UINT16_MAX (64 KB) at a time, and the updated MiniZip
 	// from https://github.com/nmoinvaz/minizip enforces this.
-	buf.resize((size_t)file_info.uncompressed_size);
+	buf.resize(static_cast<size_t>(file_info.uncompressed_size));
 	uint8_t *p = buf.data();
 	size_t size = buf.size();
 	while (size > 0) {
-		int to_read = (int)(size > UINT16_MAX ? UINT16_MAX : size);
+		int to_read = static_cast<int>(size > UINT16_MAX ? UINT16_MAX : size);
 		ret = unzReadCurrentFile(unz, p, to_read);
 		EXPECT_EQ(to_read, ret);
 		if (ret != to_read) {
@@ -318,7 +318,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 
 	// Close the Zip file.
 	unzClose(unz);
-	return (int)file_info.uncompressed_size;
+	return static_cast<int>(file_info.uncompressed_size);
 }
 
 /**
@@ -528,7 +528,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
 
 		if (file_info.size_filename > 0 &&
-		    file_info.uncompressed_size <= (uLong)MAX_GCN_FST_BIN_FILESIZE)
+		    file_info.uncompressed_size <= static_cast<uLong>(MAX_GCN_FST_BIN_FILESIZE))
 		{
 			// Add this filename to the list.
 			// NOTE: Filename might not be NULL-terminated,
@@ -562,7 +562,7 @@ string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<Gcn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (int i = (int)suffix.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(suffix.size())-1; i >= 0; i--) {
 		char chr = suffix[i];
 		if (!ISALNUM(chr) && chr != '_') {
 			suffix[i] = '_';

@@ -146,7 +146,7 @@ Amiibo::Amiibo(IRpFile *file)
 			// fall-through
 		case NFP_FILE_EXTENDED:	// Extended dump.
 			// Size is valid.
-			d->nfpSize = (int)size;
+			d->nfpSize = static_cast<int>(size);
 			break;
 
 		default:
@@ -478,7 +478,7 @@ int Amiibo::loadFieldData(void)
 	d->fields->addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

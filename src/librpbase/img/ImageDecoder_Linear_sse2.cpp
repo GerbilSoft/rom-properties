@@ -420,9 +420,9 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
 			__m128i reg_zero = _mm_setzero_si128();
-			for (unsigned int y = (unsigned int)height; y > 0; y--) {
-				/* Process 8 pixels per iteration using SSE2. */
-				unsigned int x = (unsigned int)width;
+			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = static_cast<unsigned int>(width);
 				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
 					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
@@ -444,19 +444,19 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 					_mm_store_si128(xmm_dest+1, px1);
 				}
 
-				/* Remaining pixels. */
+				// Remaining pixels.
 				for (; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::RG88_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
 
-				/* Next line. */
+				// Next line.
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
 
-			/* Set the sBIT metadata. */
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
 			img->set_sBIT(&sBIT_RG88);
 			break;
@@ -466,9 +466,9 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		case PXF_GR88: {
 			// Components are already 8-bit, so we need to
 			// expand them to DWORD and add the alpha channel.
-			for (unsigned int y = (unsigned int)height; y > 0; y--) {
-				/* Process 8 pixels per iteration using SSE2. */
-				unsigned int x = (unsigned int)width;
+			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
+				// Process 8 pixels per iteration using SSE2.
+				unsigned int x = static_cast<unsigned int>(width);
 				for (; x > 7; x -= 8, px_dest += 8, img_buf += 8) {
 					const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 					__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
@@ -491,19 +491,19 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 					_mm_store_si128(xmm_dest+1, px1);
 				}
 
-				/* Remaining pixels. */
+				// Remaining pixels.
 				for (; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::RG88_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
 
-				/* Next line. */
+				// Next line.
 				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
 
-			/* Set the sBIT metadata. */
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT_RG88 = {8,8,1,0,0};
 			img->set_sBIT(&sBIT_RG88);
 			break;

@@ -233,14 +233,18 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
 	// In the original QSize::scale():
 	// - rs_*: this
 	// - tgt_*: passed-in QSize
-	int64_t rw = (((int64_t)tgt_size.height * (int64_t)rs_size.width) / (int64_t)rs_size.height);
+	int64_t rw = ((static_cast<int64_t>(tgt_size.height) *
+		       static_cast<int64_t>(rs_size.width)) /
+		      static_cast<int64_t>(rs_size.height));
 	bool useHeight = (rw <= tgt_size.width);
 
 	if (useHeight) {
-		rs_size.width = (int)rw;
+		rs_size.width = static_cast<int>(rw);
 		rs_size.height = tgt_size.height;
 	} else {
-		rs_size.height = (int)(((int64_t)tgt_size.width * (int64_t)rs_size.height) / (int64_t)rs_size.width);
+		rs_size.height = static_cast<int>((static_cast<int64_t>(tgt_size.width) *
+						   static_cast<int64_t>(rs_size.height)) /
+						  static_cast<int64_t>(rs_size.width));
 		rs_size.width = tgt_size.width;
 	}
 }

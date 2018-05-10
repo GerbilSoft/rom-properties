@@ -110,7 +110,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		// Manifest is too big.
 		return -ENOMEM;
 	}
-	unsigned int xml_size = (unsigned int)f_manifest->size();
+	unsigned int xml_size = static_cast<unsigned int>(f_manifest->size());
 	unique_ptr<char[]> xml(new char[xml_size+1]);
 	size_t size = f_manifest->read(xml.get(), xml_size);
 	if (size != xml_size) {
