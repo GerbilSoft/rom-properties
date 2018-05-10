@@ -598,7 +598,7 @@ void RpPngFormatTest::Compare_Palettes(
 	int bmpColorTableSize,
 	int biClrUsed)
 {
-	const uint32_t *pSrcPalette = static_cast<const uint32_t*>(img->palette());
+	const uint32_t *pSrcPalette = img->palette();
 	if (biClrUsed < 0) {
 		biClrUsed = img->palette_len();
 	}

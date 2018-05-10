@@ -104,8 +104,8 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 
 	// Create the bitmap.
 	uint8_t *pvBits;
-	HBITMAP hBitmap = CreateDIBSection(nullptr, static_cast<BITMAPINFO*>(&bmi),
-		DIB_RGB_COLORS, reinterpret_cast<void**>(&pvBits), nullptr, 0);
+	HBITMAP hBitmap = CreateDIBSection(nullptr, &bmi, DIB_RGB_COLORS,
+		reinterpret_cast<void**>(&pvBits), nullptr, 0);
 	if (!hBitmap)
 		return nullptr;
 
