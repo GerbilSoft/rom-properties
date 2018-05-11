@@ -2069,7 +2069,7 @@ int Nintendo3DS::loadFieldData(void)
 				if (part_ncch_header) {
 					// Encryption.
 					NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
-					int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
+					ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
 					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
 						if (cryptoType.name) {
@@ -2150,8 +2150,8 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Required system version?
 
 		// Version.
-		const uint16_t version = be16_to_cpu(tmd_header->title_version);
-		d->fields->addField_string(C_("Nintendo3DS", "Version"), d->n3dsVersionToString(version));
+		d->fields->addField_string(C_("Nintendo3DS", "Version"),
+			d->n3dsVersionToString(be16_to_cpu(tmd_header->title_version)));
 
 		// Issuer.
 		// NOTE: We're using the Ticket Issuer in the TMD tab.
@@ -2297,8 +2297,8 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Version. [FIXME: Might not be right...]
-			const uint16_t version = le16_to_cpu(content_ncch_header->version);
-			data_row.push_back(d->n3dsVersionToString(version));
+			data_row.push_back(d->n3dsVersionToString(
+				le16_to_cpu(content_ncch_header->version)));
 
 			// Content size.
 			data_row.push_back(LibRpBase::formatFileSize(pNcch->partition_size()));

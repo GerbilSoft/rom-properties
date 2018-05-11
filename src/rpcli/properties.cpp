@@ -607,8 +607,8 @@ public:
 
 				os << '[';
 				bool printedOne = false;
-				for (int i = 0; i < (int)age_ratings->size(); i++) {
-					const uint16_t rating = age_ratings->at(i);
+				for (int j = 0; j < static_cast<int>(age_ratings->size()); j++) {
+					const uint16_t rating = age_ratings->at(j);
 					if (!(rating & RomFields::AGEBF_ACTIVE))
 						continue;
 
@@ -619,16 +619,16 @@ public:
 					printedOne = true;
 
 					os << "{\"name\":";
-					const char *abbrev = RomFields::ageRatingAbbrev(i);
+					const char *const abbrev = RomFields::ageRatingAbbrev(j);
 					if (abbrev) {
 						os << '"' << abbrev << '"';
 					} else {
 						// Invalid age rating.
 						// Use the numeric index.
-						os << i;
+						os << j;
 					}
 					os << ",\"rating\":\""
-					   << RomFields::ageRatingDecode(i, rating)
+					   << RomFields::ageRatingDecode(j, rating)
 					   << "\"}";
 				}
 				os << "]}";
@@ -753,14 +753,14 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 				if (animdata) {
 					os << ",\"frames\":" << animdata->count;
 					os << ",\"sequence\":[";
-					for (int i = 0; i < animdata->seq_count; i++) {
-						if (i) os << ',';
-						os << (unsigned)animdata->seq_index[i];
+					for (int j = 0; j < animdata->seq_count; j++) {
+						if (j) os << ',';
+						os << (unsigned)animdata->seq_index[j];
 					}
 					os << "],\"delay\":[";
-					for (int i = 0; i < animdata->seq_count; i++) {
-						if (i) os << ',';
-						os << animdata->delays[i].ms;
+					for (int j = 0; i < animdata->seq_count; j++) {
+						if (j) os << ',';
+						os << animdata->delays[j].ms;
 					}
 					os << ']';
 				}

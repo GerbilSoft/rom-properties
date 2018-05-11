@@ -539,7 +539,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 	// Load the icons. (32x32, 4bpp)
 	// Icons are stored contiguously immediately after the palette.
 	for (int i = 0; i < icon_count; i++) {
-		size_t size = file->read(buf.icon_color.u8, sizeof(buf.icon_color.u8));
+		size = file->read(buf.icon_color.u8, sizeof(buf.icon_color.u8));
 		if (size != sizeof(buf.icon_color)) {
 			// Read error.
 			break;

@@ -238,7 +238,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 
 		// Re-read the WBFS header.
 		file->rewind();
-		size_t size = file->read(head, hd_sec_sz);
+		size = file->read(head, hd_sec_sz);
 		if (size != hd_sec_sz) {
 			// Read error.
 			// TODO: Return errno?

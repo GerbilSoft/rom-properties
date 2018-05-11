@@ -321,10 +321,10 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	auto iter = d->mapKeyNames.find(keyName);
 	if (iter == d->mapKeyNames.end()) {
 		// Key was not parsed. Figure out why.
-		auto iter = d->mapInvalidKeyNames.find(keyName);
-		if (iter != d->mapInvalidKeyNames.end()) {
+		auto iter2 = d->mapInvalidKeyNames.find(keyName);
+		if (iter2 != d->mapInvalidKeyNames.end()) {
 			// An error occurred when parsing the key.
-			return (VerifyResult)iter->second;
+			return (VerifyResult)iter2->second;
 		}
 
 		// Key was not found.

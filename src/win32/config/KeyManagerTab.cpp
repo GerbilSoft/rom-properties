@@ -495,7 +495,7 @@ void KeyManagerTabPrivate::initUI(void)
 		column_width[0] = std::max(column_width[0], tmp_width[0]);
 		//column_width[1] = std::max(column_width[1], tmp_width[1]);
 
-		int ret = LibWin32Common::measureTextSize(hListView, hFontMono, U82W_s(key->value), &szValue);
+		ret = LibWin32Common::measureTextSize(hListView, hFontMono, U82W_s(key->value), &szValue);
 		assert(ret == 0);
 		if (ret == 0) {
 			column_width[1] = std::max(column_width[1], (int)szValue.cx + column_padding[1]);

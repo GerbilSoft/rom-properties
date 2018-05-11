@@ -302,7 +302,7 @@ GameCom::GameCom(IRpFile *file)
 
 	if (!d->isValid) {
 		// Try again at the alternate address.
-		size_t size = d->file->seekAndRead(GCOM_HEADER_ADDRESS_ALT, &d->romHeader, sizeof(d->romHeader));
+		size = d->file->seekAndRead(GCOM_HEADER_ADDRESS_ALT, &d->romHeader, sizeof(d->romHeader));
 		if (size == sizeof(d->romHeader)) {
 			// Check if this ROM image is supported.
 			DetectInfo info;

@@ -412,7 +412,7 @@ void RpFile::init(void)
 			d->sector_size = dwBytesPerSector;
 		} else {
 			// GetDiskFreeSpace() failed.
-			DWORD w32err = GetLastError();
+			w32err = GetLastError();
 			if (w32err == ERROR_INVALID_PARAMETER) {
 				// The disk may use some file system that
 				// Windows doesn't recognize.
