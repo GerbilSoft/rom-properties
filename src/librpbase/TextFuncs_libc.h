@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_LIBC_H__
 
 #include "config.librpbase.h"
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {

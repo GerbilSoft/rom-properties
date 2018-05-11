@@ -23,6 +23,9 @@
 #include "common.h"
 #include "TextFuncs.hpp"
 
+// C includes. (C++ namespace)
+#include <cstdio>
+
 #if defined(_WIN32)
 #error TextFuncs_iconv.cpp is not supported on Windows.
 #elif !defined(HAVE_ICONV)
