@@ -2362,41 +2362,52 @@ int Nintendo3DS::loadFieldData(void)
 
 		// TODO: Figure out what "Core Version" is.
 
-		// System Mode.
-		// TODO: Localize this? ("MB" -> "Mo" in French.)
-		static const char *const old3ds_sys_mode_tbl[6] = {
-			"Prod (64 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod
-			nullptr,
-			"Dev1 (96 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1
-			"Dev2 (80 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2
-			"Dev3 (72 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3
-			"Dev4 (32 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4
+		// System Mode struct.
+		typedef struct _ModeTbl_t {
+			char name[7];	// Mode name.
+			uint8_t mb;		// RAM allocation, in megabytes.
+		} ModeTbl_t;
+		ASSERT_STRUCT(ModeTbl_t, 8);
+
+		// Old3DS System Mode.
+		// NOTE: Mode names are NOT translatable!
+		static const ModeTbl_t old3ds_sys_mode_tbl[6] = {
+			{"Prod", 64},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod
+			{"", 0},
+			{"Dev1", 96},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1
+			{"Dev2", 80},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2
+			{"Dev3", 72},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3
+			{"Dev4", 32},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4
 		};
 		const uint8_t old3ds_sys_mode = (ncch_exheader->aci.arm11_local.flags[2] &
 			N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
 		if (old3ds_sys_mode < ARRAY_SIZE(old3ds_sys_mode_tbl) &&
-		    old3ds_sys_mode_tbl[old3ds_sys_mode] != nullptr)
+		    old3ds_sys_mode_tbl[old3ds_sys_mode].name[0] != '\0')
 		{
+			const auto &ptbl = &old3ds_sys_mode_tbl[old3ds_sys_mode];
 			d->fields->addField_string(C_("Nintendo3DS", "Old3DS Sys Mode"),
-				old3ds_sys_mode_tbl[old3ds_sys_mode]);
+				// tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
+				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
 		} else {
 			d->fields->addField_string(C_("Nintendo3DS", "Old3DS Sys Mode"),
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), old3ds_sys_mode));
 		}
 
 		// New3DS System Mode.
-		// TODO: Localize this? ("MB" -> "Mo" in French.)
-		static const char *const new3ds_sys_mode_tbl[4] = {
-			"Legacy (64 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy
-			"Prod (124 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
-			"Dev1 (178 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
-			"Dev2 (124 MB)",	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2
+		// NOTE: Mode names are NOT translatable!
+		static const ModeTbl_t new3ds_sys_mode_tbl[4] = {
+			{"Legacy", 64},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy
+			{"Prod", 124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
+			{"Dev1", 178},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
+			{"Dev2", 124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2
 		};
 		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] &
 			N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
 		if (new3ds_sys_mode < ARRAY_SIZE(new3ds_sys_mode_tbl)) {
+			const auto &ptbl = &new3ds_sys_mode_tbl[new3ds_sys_mode];
 			d->fields->addField_string(C_("Nintendo3DS", "New3DS Sys Mode"),
-				new3ds_sys_mode_tbl[new3ds_sys_mode]);
+				// tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
+				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
 		} else {
 			d->fields->addField_string(C_("Nintendo3DS", "New3DS Sys Mode"),
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), new3ds_sys_mode));
