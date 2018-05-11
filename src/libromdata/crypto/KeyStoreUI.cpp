@@ -1345,15 +1345,19 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 		// Check if this is a supported keyslot.
 		// Key indexes: 0 == retail, 1 == debug
 		// except for Slot0x3DKeyY, which has 6 of each
-		// TODO: Use static const arrays and assign an array pointer?
-		int8_t keyIdx[12] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ,-1};
+		unsigned int keyCount = 0;
+		const uint8_t *pKeyIdx = nullptr;
 		switch (aesKey->slot) {
 			case 0x18:
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x18KeyX;
-					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x18KeyX;
+					static const uint8_t keys_Slot0x18KeyX[] = {
+						N3DSVerifyKeys::Key_Retail_Slot0x18KeyX,
+						N3DSVerifyKeys::Key_Debug_Slot0x18KeyX,
+					};
+					keyCount = ARRAY_SIZE(keys_Slot0x18KeyX);
+					pKeyIdx = keys_Slot0x18KeyX;
 				}
 				break;
 
@@ -1361,8 +1365,12 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x1BKeyX;
-					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x1BKeyX;
+					static const uint8_t keys_Slot0x1BKeyX[] = {
+						N3DSVerifyKeys::Key_Retail_Slot0x1BKeyX,
+						N3DSVerifyKeys::Key_Debug_Slot0x1BKeyX,
+					};
+					keyCount = ARRAY_SIZE(keys_Slot0x1BKeyX);
+					pKeyIdx = keys_Slot0x1BKeyX;
 				}
 				break;
 
@@ -1370,8 +1378,12 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x25KeyX;
-					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x25KeyX;
+					static const uint8_t keys_Slot0x25KeyX[] = {
+						N3DSVerifyKeys::Key_Retail_Slot0x25KeyX,
+						N3DSVerifyKeys::Key_Debug_Slot0x25KeyX,
+					};
+					keyCount = ARRAY_SIZE(keys_Slot0x25KeyX);
+					pKeyIdx = keys_Slot0x25KeyX;
 				}
 				break;
 
@@ -1379,8 +1391,12 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 				// Only KeyX is available for this key.
 				// KeyY is taken from the title's RSA signature.
 				if (aesKey->type == 'X') {
-					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX;
-					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX;
+					static const uint8_t keys_Slot0x2CKeyX[] = {
+						N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX,
+						N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX,
+					};
+					keyCount = ARRAY_SIZE(keys_Slot0x2CKeyX);
+					pKeyIdx = keys_Slot0x2CKeyX;
 				}
 				break;
 
@@ -1388,38 +1404,53 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 				// KeyX, KeyY, and KeyNormal are available.
 				// TODO: Optimize Y/N cases by setting an array pointer?
 				switch (aesKey->type) {
-					case 'X':
-						keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX;
-						keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX;
+					case 'X': {
+						static const uint8_t keys_Slot0x3DKeyX[] = {
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX,
+						};
+						keyCount = ARRAY_SIZE(keys_Slot0x3DKeyX);
+						pKeyIdx = keys_Slot0x3DKeyX;
 						break;
-					case 'Y':
-						keyIdx[0]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0;
-						keyIdx[1]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_1;
-						keyIdx[2]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_2;
-						keyIdx[3]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_3;
-						keyIdx[4]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_4;
-						keyIdx[5]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_5;
-						keyIdx[6]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_0;
-						keyIdx[7]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_1;
-						keyIdx[8]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_2;
-						keyIdx[9]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_3;
-						keyIdx[10] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_4;
-						keyIdx[11] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_5;
+					}
+					case 'Y': {
+						static const uint8_t keys_Slot0x3DKeyY[] = {
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_1,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_2,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_3,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_4,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_5,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_0,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_1,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_2,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_3,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_4,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_5,
+						};
+						keyCount = ARRAY_SIZE(keys_Slot0x3DKeyY);
+						pKeyIdx = keys_Slot0x3DKeyY;
 						break;
-					case 'N':
-						keyIdx[0]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0;
-						keyIdx[1]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_1;
-						keyIdx[2]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_2;
-						keyIdx[3]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_3;
-						keyIdx[4]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_4;
-						keyIdx[5]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_5;
-						keyIdx[6]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_0;
-						keyIdx[7]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_1;
-						keyIdx[8]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_2;
-						keyIdx[9]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_3;
-						keyIdx[10] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_4;
-						keyIdx[11] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_5;
+					}
+					case 'N': {
+						static const uint8_t keys_Slot0x3DKeyNormal[] = {
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_1,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_2,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_3,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_4,
+							N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_5,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_0,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_1,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_2,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_3,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_4,
+							N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_5,
+						};
+						keyCount = ARRAY_SIZE(keys_Slot0x3DKeyNormal);
+						pKeyIdx = keys_Slot0x3DKeyNormal;
 						break;
+					}
 					default:
 						break;
 				}
@@ -1430,7 +1461,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 				break;
 		}
 
-		if (keyIdx[0] < 0) {
+		if (!pKeyIdx) {
 			// Key is not supported.
 			iret.keysNotUsed++;
 			continue;
@@ -1458,11 +1489,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 
 		// Check if the key is OK.
 		bool keyChecked = false;
-		for (int i = 0; i < ARRAY_SIZE(keyIdx); i++) {
-			if (keyIdx[i] < 0)
-				break;
-
-			Key *const pKey = &d->keys[keyIdxStart + keyIdx[i]];
+		for (int i = keyCount; i > 0; i--, pKeyIdx++) {
+			Key *const pKey = &d->keys[keyIdxStart + *pKeyIdx];
 			if (pKey->status == Key::Status_OK) {
 				// Key is already OK. Don't bother with it.
 				iret.keysExist++;
@@ -1471,7 +1499,7 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 			}
 
 			// Check if this key matches.
-			const uint8_t *const verifyData = N3DSVerifyKeys::encryptionVerifyData_static(keyIdx[i]);
+			const uint8_t *const verifyData = N3DSVerifyKeys::encryptionVerifyData_static(*pKeyIdx);
 			if (verifyData) {
 				// Verify the key.
 				int ret = d->verifyKeyData(aesKey->key, verifyData, 16);
@@ -1484,8 +1512,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 						pKey->modified = true;
 						iret.keysImportedVerify++;
 						wereKeysImported = true;
-						emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, keyIdx[i]);
-						emit keyChanged_int(keyIdxStart + keyIdx[i]);
+						emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, *pKeyIdx);
+						emit keyChanged_int(keyIdxStart + *pKeyIdx);
 					} else {
 						// No change.
 						iret.keysExist++;
@@ -1505,8 +1533,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 					pKey->modified = true;
 					iret.keysImportedNoVerify++;
 					wereKeysImported = true;
-					emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, keyIdx[i]);
-					emit keyChanged_int(keyIdxStart + keyIdx[i]);
+					emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, *pKeyIdx);
+					emit keyChanged_int(keyIdxStart + *pKeyIdx);
 				} else {
 					// No change.
 					iret.keysExist++;
