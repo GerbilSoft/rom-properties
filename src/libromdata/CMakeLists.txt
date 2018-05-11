@@ -56,6 +56,8 @@ SET(libromdata_SRCS
 	Other/Amiibo.cpp
 	Other/ELF.cpp
 	Other/EXE.cpp
+	Other/EXE_NE.cpp
+	Other/EXE_PE.cpp
 	Other/NintendoBadge.cpp
 
 	data/SegaPublishers.cpp
