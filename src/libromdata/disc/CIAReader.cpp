@@ -146,9 +146,9 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 	char keyY_name[40];
 	char keyNormal_name[40];
 	snprintf(keyX_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyX", keyPrefix);
-	snprintf(keyY_name, sizeof(keyY_name), "%s-Slot0x3DKeyY-%d",
+	snprintf(keyY_name, sizeof(keyY_name), "%s-Slot0x3DKeyY-%u",
 		keyPrefix, ticket->keyY_index);
-	snprintf(keyNormal_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyNormal-%d",
+	snprintf(keyNormal_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyNormal-%u",
 		keyPrefix, ticket->keyY_index);
 
 	// Get the KeyNormal. If that fails, get KeyX and KeyY,
