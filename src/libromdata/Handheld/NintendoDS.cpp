@@ -324,14 +324,14 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 			uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
 			bmp_used[bmp_pal_idx] = true;
 			iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
-			iconAnimData->delays[seq_idx].numer = (uint16_t)delay;
+			iconAnimData->delays[seq_idx].numer = static_cast<uint16_t>(delay);
 			iconAnimData->delays[seq_idx].denom = 60;
 			iconAnimData->delays[seq_idx].ms = delay * 1000 / 60;
 		}
 		iconAnimData->seq_count = seq_idx;
 
 		// Convert the required bitmaps.
-		for (int i = 0; i < (int)bmp_used.size(); i++) {
+		for (int i = 0; i < static_cast<int>(bmp_used.size()); i++) {
 			if (bmp_used[i]) {
 				iconAnimData->count = i + 1;
 
@@ -1079,7 +1079,7 @@ int NintendoDS::loadFieldData(void)
 		static const char *const hw_bitfield_names[] = {
 			"Nintendo DS", "Nintendo DSi"
 		};
-		vector<string> *v_hw_bitfield_names = RomFields::strArrayToVector(
+		vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
 			hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
 		d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
 			v_hw_bitfield_names, 0, hw_type);
@@ -1105,7 +1105,7 @@ int NintendoDS::loadFieldData(void)
 			NOP_C_("Region", "South Korea"),
 			NOP_C_("Region", "China"),
 		};
-		vector<string> *v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 			"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
 		d->fields->addField_bitfield("DS Region",
 			v_nds_region_bitfield_names, 0, nds_region);
@@ -1189,7 +1189,7 @@ int NintendoDS::loadFieldData(void)
 			NOP_C_("Region", "China"),
 			NOP_C_("Region", "South Korea"),
 		};
-		vector<string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
 			"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
 		d->fields->addField_bitfield(region_code_name,
 			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
@@ -1203,7 +1203,7 @@ int NintendoDS::loadFieldData(void)
 		// TODO: Not sure if Finland is valid for DSi.
 		static const uint16_t valid_ratings = 0x3FB;
 
-		for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
+		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 			if (!(valid_ratings & (1 << i))) {
 				// Rating is not applicable for NintendoDS.
 				age_ratings[i] = 0;
@@ -1246,14 +1246,14 @@ int NintendoDS::loadFieldData(void)
 			NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
 			NOP_C_("NintendoDS|DSi_Flags", "Developer"),
 		};
-		vector<string> *v_dsi_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<string> *const v_dsi_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 			"NintendoDS|DSi_Flags", dsi_flags_bitfield_names, ARRAY_SIZE(dsi_flags_bitfield_names));
 		d->fields->addField_bitfield("DSi Flags",
 			v_dsi_flags_bitfield_names, 3, le32_to_cpu(romHeader->dsi.flags));
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

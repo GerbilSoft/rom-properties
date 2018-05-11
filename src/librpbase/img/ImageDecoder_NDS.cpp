@@ -86,8 +86,8 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	// so we don't need to clear the remaining colors.
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 8);
-	const unsigned int tilesY = (unsigned int)(height / 8);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {

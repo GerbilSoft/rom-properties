@@ -166,7 +166,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		// Sanity check: KTX files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)file->size();
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	// Seek to the start of the texture data.
 	int ret = file->seek(texDataStartAddr);
@@ -190,19 +190,19 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		case GL_RGB:
 			// 24-bit RGB.
 			stride = ALIGN(4, ktxHeader.pixelWidth * 3);
-			expected_size = (unsigned int)stride * height;
+			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_RGBA:
 			// 32-bit RGBA.
 			stride = ktxHeader.pixelWidth * 4;
-			expected_size = (unsigned int)stride * height;
+			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_LUMINANCE:
 			// 8-bit luminance.
 			stride = ALIGN(4, ktxHeader.pixelWidth);
-			expected_size = (unsigned int)stride * height;
+			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case 0:
@@ -588,7 +588,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	// Check if this KTX texture is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = (uint32_t)size;
+	info.header.size = static_cast<uint32_t>(size);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->ktxHeader);
 	info.ext = nullptr;	// Not needed for KTX.
 	info.szFile = file->size();
@@ -729,15 +729,15 @@ vector<RomData::ImageSizeDef> KhronosKTX::supportedImageSizes(ImageType imageTyp
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(KhronosKTX);
+	RP_D(const KhronosKTX);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
 
 	// Return the image's size.
 	const ImageSizeDef imgsz[] = {{nullptr,
-		(uint16_t)d->ktxHeader.pixelWidth,
-		(uint16_t)d->ktxHeader.pixelHeight, 0}};
+		static_cast<uint16_t>(d->ktxHeader.pixelWidth),
+		static_cast<uint16_t>(d->ktxHeader.pixelHeight), 0}};
 	return vector<ImageSizeDef>(imgsz, imgsz + 1);
 }
 
@@ -758,7 +758,7 @@ uint32_t KhronosKTX::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(KhronosKTX);
+	RP_D(const KhronosKTX);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by DDS.
 		return 0;
@@ -895,14 +895,14 @@ int KhronosKTX::loadFieldData(void)
 		};
 
 		// NOTE: Making a copy.
-		vector<vector<string> > *p_kv_data = new vector<vector<string> >(d->kv_data);
-		vector<string> *v_kv_field_names = RomFields::strArrayToVector_i18n(
+		vector<vector<string> > *const p_kv_data = new vector<vector<string> >(d->kv_data);
+		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
 			"KhronosKTX|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
 		d->fields->addField_listData("Key/Value Data", v_kv_field_names, p_kv_data);
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

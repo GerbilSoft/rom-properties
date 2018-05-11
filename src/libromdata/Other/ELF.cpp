@@ -203,11 +203,11 @@ int ELFPrivate::checkProgramHeaders(void)
 	uint8_t phbuf[sizeof(Elf64_Phdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_phoff = (int64_t)Elf_Header.elf64.e_phoff;
+		e_phoff = static_cast<int64_t>(Elf_Header.elf64.e_phoff);
 		e_phnum = Elf_Header.elf64.e_phnum;
 		phsize = sizeof(Elf64_Phdr);
 	} else {
-		e_phoff = (int64_t)Elf_Header.elf32.e_phoff;
+		e_phoff = static_cast<int64_t>(Elf_Header.elf32.e_phoff);
 		e_phnum = Elf_Header.elf32.e_phnum;
 		phsize = sizeof(Elf32_Phdr);
 	}
@@ -331,11 +331,11 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint8_t shbuf[sizeof(Elf64_Shdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_shoff = (int64_t)Elf_Header.elf64.e_shoff;
+		e_shoff = static_cast<int64_t>(Elf_Header.elf64.e_shoff);
 		e_shnum = Elf_Header.elf64.e_shnum;
 		shsize = sizeof(Elf64_Shdr);
 	} else {
-		e_shoff = (int64_t)Elf_Header.elf32.e_shoff;
+		e_shoff = static_cast<int64_t>(Elf_Header.elf32.e_shoff);
 		e_shnum = Elf_Header.elf32.e_shnum;
 		shsize = sizeof(Elf32_Shdr);
 	}
@@ -1005,7 +1005,7 @@ int ELF::loadFieldData(void)
 				// tr: Little-Endian Data
 				NOP_C_("ELF|SPARCFlags", "LE Data")
 			};
-			vector<string> *v_sparc_flags_names = RomFields::strArrayToVector_i18n(
+			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_sparc_flags_names, 4, flags);
@@ -1051,7 +1051,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|MIPSFlags", "FP64"),
 				NOP_C_("ELF|MIPSFlags", "NaN 2008"),
 			};
-			vector<string> *v_mips_flags_names = RomFields::strArrayToVector_i18n(
+			vector<string> *const v_mips_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_mips_flags_names, 4, (flags & ~0xF0000000));
@@ -1191,7 +1191,7 @@ int ELF::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

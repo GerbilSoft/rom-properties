@@ -115,9 +115,9 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 			return nullptr;
 	}
 
-	for (unsigned int y = (unsigned int)height; y > 0; y--) {
+	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 		// Process 16 pixels per iteration using SSSE3.
-		unsigned int x = (unsigned int)width;
+		unsigned int x = static_cast<unsigned int>(width);
 		for (; x > 15; x -= 16, px_dest += 16, img_buf += 16*3) {
 			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 			__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
@@ -263,8 +263,8 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			// Stride is not identical. Copy each scanline.
 			const int dest_stride = img->stride() / sizeof(uint32_t);
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-			const unsigned int copy_len = (unsigned int)width * bytespp;
-			for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			const unsigned int copy_len = static_cast<unsigned int>(width * bytespp);
+			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				memcpy(px_dest, img_buf, copy_len);
 				img_buf += (stride / bytespp);
 				px_dest += dest_stride;
@@ -333,9 +333,9 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 
 	if (has_alpha) {
 		// Image has a valid alpha channel.
-		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			// Process 16 pixels per iteration using SSSE3.
-			unsigned int x = (unsigned int)width;
+			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 				const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 				__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
@@ -410,9 +410,9 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		// Image does not have an alpha channel.
 		__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
 
-		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 			// Process 16 pixels per iteration using SSSE3.
-			unsigned int x = (unsigned int)width;
+			unsigned int x = static_cast<unsigned int>(width);
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 				const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 				__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);

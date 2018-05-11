@@ -51,13 +51,13 @@ class Mutex
 		 * the previous locker unlocks it.
 		 * @return 0 on success; non-zero on error.
 		 */
-		inline int lock(void);
+		_Acquires_lock_(this->m_criticalSection) inline int lock(void);
 
 		/**
 		 * Unlock the mutex.
 		 * @return 0 on success; non-zero on error.
 		 */
-		inline int unlock(void);
+		_Releases_lock_(this->m_criticalSection) inline int unlock(void);
 
 	private:
 		// NOTE: Windows implementation uses critical sections,
@@ -98,7 +98,7 @@ inline Mutex::~Mutex()
  * the previous locker unlocks it.
  * @return 0 on success; non-zero on error.
  */
-inline int Mutex::lock(void)
+_Acquires_lock_(this->m_criticalSection) inline int Mutex::lock(void)
 {
 	if (!m_isInit)
 		return -EBADF;
@@ -112,7 +112,7 @@ inline int Mutex::lock(void)
  * Unlock the mutex.
  * @return 0 on success; non-zero on error.
  */
-inline int Mutex::unlock(void)
+_Releases_lock_(this->m_criticalSection) inline int Mutex::unlock(void)
 {
 	if (!m_isInit)
 		return -EBADF;

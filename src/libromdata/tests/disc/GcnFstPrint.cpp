@@ -80,7 +80,7 @@ int RP_C_API main(int argc, char *argv[])
 			puts(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
 			return EXIT_FAILURE;
 		}
-		offsetShift = (uint8_t)ltmp;
+		offsetShift = static_cast<uint8_t>(ltmp);
 	}
 
 	// Open and read the FST file.
@@ -105,14 +105,14 @@ int RP_C_API main(int argc, char *argv[])
 	// Read the FST into memory.
 	uint8_t *fstData = static_cast<uint8_t*>(malloc(filesize));
 	if (!fstData) {
-		printf(C_("GcnFstPrint", "ERROR: malloc(%u) failed."), (unsigned int)filesize);
+		printf(C_("GcnFstPrint", "ERROR: malloc(%u) failed."), static_cast<unsigned int>(filesize));
 		putchar('\n');
 		fclose(f);
 		return EXIT_FAILURE;
 	}
 	size_t rd_size = fread(fstData, 1, filesize, f);
 	fclose(f);
-	if (rd_size != (size_t)filesize) {
+	if (rd_size != static_cast<size_t>(filesize)) {
 		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
 		printf_p(C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
 			(unsigned int)rd_size, (unsigned int)filesize);
@@ -124,7 +124,7 @@ int RP_C_API main(int argc, char *argv[])
 	// Parse the FST.
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
-	GcnFst *fst = new GcnFst(fstData, (uint32_t)filesize, offsetShift);
+	GcnFst *fst = new GcnFst(fstData, static_cast<uint32_t>(filesize), offsetShift);
 	if (!fst->isOpen()) {
 		puts(C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));
 		free(fstData);

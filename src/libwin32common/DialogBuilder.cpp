@@ -138,11 +138,11 @@ inline void DialogBuilder::write_wstr(LPCWSTR wstr)
 inline void DialogBuilder::write_wstr_ord(LPCWSTR wstr)
 {
 	// FIXME: Prevent buffer overflows.
-	if (((ULONG_PTR)wstr) <= 0xFFFF) {
+	if ((reinterpret_cast<ULONG_PTR>(wstr)) <= 0xFFFF) {
 		// String is an atom.
 		ASSERT_BUFFER(sizeof(WORD)*2);
 		write_word(0xFFFF);
-		write_word(((ULONG_PTR)wstr) & 0xFFFF);
+		write_word(reinterpret_cast<ULONG_PTR>(wstr) & 0xFFFF);
 	} else {
 		// Not an atom. Write a normal string.
 		write_wstr(wstr);
@@ -153,7 +153,7 @@ inline void DialogBuilder::align_dword(void)
 {
 	ULONG_PTR ul = (ULONG_PTR)m_pDlgBuf;
 	ul = (ul + 3) & ~3;
-	m_pDlgBuf = (uint8_t*)ul;
+	m_pDlgBuf = reinterpret_cast<uint8_t*>(ul);
 }
 
 /**
@@ -238,7 +238,7 @@ void DialogBuilder::add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindo
 	lpdit->y = lpItemTemplate->y;
 	lpdit->cx = lpItemTemplate->cx;
 	lpdit->cy = lpItemTemplate->cy;
-	lpdit->id = (DWORD)lpItemTemplate->id;
+	lpdit->id = static_cast<DWORD>(lpItemTemplate->id);
 
 	// Window class and text.
 	write_wstr_ord(lpszWindowClass);

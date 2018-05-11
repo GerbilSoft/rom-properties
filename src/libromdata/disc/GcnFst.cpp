@@ -65,7 +65,7 @@ class GcnFstPrivate
 		// String table, converted to Unicode.
 		// - Key: String offset in the FST string table.
 		// - Value: string.
-		unordered_map<uint32_t, string> u8_string_table;
+		mutable unordered_map<uint32_t, string> u8_string_table;
 
 		// Offset shift.
 		uint8_t offsetShift;
@@ -206,9 +206,9 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
 	// Name has not been converted.
 	// Do the conversion now.
 	const char *str = &string_table_ptr[offset];
-	int len = (int)strlen(str);	// TODO: Bounds checking.
+	int len = static_cast<int>(strlen(str));	// TODO: Bounds checking.
 	string u8str = cp1252_sjis_to_utf8(str, len);
-	iter = const_cast<GcnFstPrivate*>(this)->u8_string_table.insert(std::make_pair(offset, u8str)).first;
+	iter = u8_string_table.insert(std::make_pair(offset, u8str)).first;
 	return iter->second.c_str();
 }
 
@@ -230,7 +230,7 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
 	}
 
 	// NOTE: For the root directory, next_offset is the number of entries.
-	if ((uint32_t)idx >= be32_to_cpu(fstData[0].root_dir.file_count)) {
+	if (static_cast<uint32_t>(idx) >= be32_to_cpu(fstData[0].root_dir.file_count)) {
 		// Index is out of range.
 		return nullptr;
 	}
@@ -306,13 +306,13 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 			path_component = s_path.substr(slash_pos + 1);
 		} else {
 			// Found another slash.
-			int sz = (int)(next_slash_pos - slash_pos - 1);
+			int sz = static_cast<int>(next_slash_pos - slash_pos - 1);
 			if (sz <= 0) {
 				// Empty path component.
 				slash_pos = next_slash_pos;
 				continue;
 			}
-			path_component = s_path.substr(slash_pos + 1, (size_t)sz);
+			path_component = s_path.substr(slash_pos + 1, static_cast<size_t>(sz));
 		}
 
 		if (path_component.empty()) {
@@ -441,7 +441,7 @@ IFst::Dir *GcnFst::opendir(const char *path)
 	d->fstDirCount++;
 	dirp->parent = this;
 	// TODO: Better way to get dir_idx?
-	dirp->dir_idx = (int)(fst_entry - d->fstData);
+	dirp->dir_idx = static_cast<int>(fst_entry - d->fstData);
 
 	// Initialize the entry to the root directory.
 	// readdir() will automatically seek to the next entry.
@@ -503,7 +503,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 
 	// NOTE: next_offset is the entry index *after* the last entry,
 	// so this works for both the root directory and subdirectories.
-	if (idx >= (int)be32_to_cpu(dir_fst_entry->dir.next_offset)) {
+	if (idx >= static_cast<int>(be32_to_cpu(dir_fst_entry->dir.next_offset))) {
 		// Last entry in the directory.
 		return nullptr;
 	}
@@ -535,7 +535,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 		dirp->entry.size = 0;
 	} else {
 		// Save the offset and size.
-		dirp->entry.offset = ((int64_t)be32_to_cpu(fst_entry->file.offset) << d->offsetShift);
+		dirp->entry.offset = static_cast<int64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
 		dirp->entry.size = be32_to_cpu(fst_entry->file.size);
 	}
 
@@ -596,7 +596,7 @@ int GcnFst::find_file(const char *filename, DirEnt *dirent)
 		dirent->size = 0;
 	} else {
 		// Save the offset and size.
-		dirent->offset = ((int64_t)be32_to_cpu(fst_entry->file.offset) << d->offsetShift);
+		dirent->offset = static_cast<int64_t>(be32_to_cpu(fst_entry->file.offset)) << d->offsetShift;
 		dirent->size = be32_to_cpu(fst_entry->file.size);
 	}
 
@@ -628,7 +628,7 @@ int64_t GcnFst::totalUsedSize(void) const
 	for (; file_count > 1; file_count--, entry++) {
 		if (d->is_dir(entry))
 			continue;
-		total_size += (int64_t)be32_to_cpu(entry->file.size);
+		total_size += static_cast<int64_t>(be32_to_cpu(entry->file.size));
 	}
 	return total_size;
 }

@@ -223,7 +223,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		}
 
 		// Parse the comma-separated values.
-		const unsigned int vStartPos = (unsigned int)vImgTypePrio.size();
+		// TODO: Use size_t?
+		const unsigned int vStartPos = static_cast<unsigned int>(vImgTypePrio.size());
 		unsigned int count = 0;	// Number of image types.
 		uint32_t imgbf = 0;	// Image type bitfield to prevent duplicates.
 		while (*pos) {
@@ -295,13 +296,13 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			};
 			static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
 
-			RomData::ImageType imgType = (RomData::ImageType)-1;
+			RomData::ImageType imgType = static_cast<RomData::ImageType>(-1);
 			for (int i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
-				if ((unsigned int)imageTypeNames[i][0] == len &&
+				if (static_cast<unsigned int>(imageTypeNames[i][0]) == len &&
 				    !strncasecmp(pos, &imageTypeNames[i][1], len))
 				{
 					// Found a match!
-					imgType = (RomData::ImageType)i;
+					imgType = static_cast<RomData::ImageType>(i);
 					break;
 				}
 			}
@@ -424,7 +425,7 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	}
 
 	// Is the first entry RomData::IMG_DISABLED?
-	if (d->vImgTypePrio[idx] == (uint8_t)RomData::IMG_DISABLED) {
+	if (d->vImgTypePrio[idx] == static_cast<uint8_t>(RomData::IMG_DISABLED)) {
 		// Thumbnails are disabled for this class.
 		return IMGTR_DISABLED;
 	}

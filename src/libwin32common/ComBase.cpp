@@ -44,7 +44,7 @@ void incRpGlobalRefCount(void)
 	hShlwapi = LoadLibrary(L"shlwapi.dll");
 	assert(hShlwapi != nullptr);
 	if (hShlwapi) {
-		pQISearch = (PFNQISEARCH)GetProcAddress(hShlwapi, MAKEINTRESOURCEA(219));
+		pQISearch = reinterpret_cast<PFNQISEARCH>(GetProcAddress(hShlwapi, MAKEINTRESOURCEA(219)));
 		assert(pQISearch != nullptr);
 		if (!pQISearch) {
 			FreeLibrary(hShlwapi);

@@ -174,7 +174,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		template<typename T>
 		static inline T toNext64(T val)
 		{
-			return (val + (T)63) & ~((T)63);
+			return (val + static_cast<T>(63)) & ~(static_cast<T>(63));
 		}
 
 		/**
@@ -369,7 +369,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 						toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
 						toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
 						toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
-						toNext64(le32_to_cpu((uint32_t)mxh.cia_header.content_size)) +
+						toNext64(static_cast<uint32_t>(le64_to_cpu(mxh.cia_header.content_size))) +
 						(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
 				size_t size = file->seekAndRead(addr, &smdh, sizeof(smdh));
 				if (size == sizeof(smdh)) {
@@ -453,7 +453,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			}
 
 			// Check if the content index is valid.
-			if ((unsigned int)idx >= content_count) {
+			if (static_cast<unsigned int>(idx) >= content_count) {
 				// Content index is out of range.
 				return -ENOENT;
 			}
@@ -463,7 +463,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			for (unsigned int i = 0; i < content_count; i++) {
 				if (be16_to_cpu(content_chunks[i].index) == idx) {
 					// Found the content chunk.
-					length = (uint32_t)(be64_to_cpu(content_chunks[i].size));
+					length = static_cast<uint32_t>(be64_to_cpu(content_chunks[i].size));
 					break;
 				}
 				// Next chunk.
@@ -494,7 +494,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			}
 
 			// Get the partition offset and length.
-			offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
+			offset = static_cast<int64_t>(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
 			length = le32_to_cpu(mxh.ncsd_header.partitions[idx].length) << media_unit_shift;
 			// TODO: Validate length.
 			// Make sure the partition starts after the card info header.
@@ -512,7 +512,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 				return -ENOENT;
 			}
 			offset = 0;
-			length = (uint32_t)file->size();
+			length = static_cast<uint32_t>(file->size());
 			break;
 		}
 
@@ -743,7 +743,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	// DSiWare titles that I've seen do.
 	if (content_count <= 2 && !this->srlData) {
 		const int64_t offset = mxh.content_start_addr;
-		const uint32_t length = (uint32_t)be64_to_cpu(content_chunks[0].size);
+		const uint32_t length = static_cast<uint32_t>(be64_to_cpu(content_chunks[0].size));
 		if (length >= 0x8000) {
 			// Attempt to open the SRL as if it's a new file.
 			// TODO: IRpFile implementation with offset/length, so we don't
@@ -917,10 +917,10 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		const int64_t szFile = (f_logo ? f_logo->size() : 0);
 		if (szFile == 8192) {
 			// Calculate the CRC32.
-			unique_ptr<uint8_t[]> buf(new uint8_t[(unsigned int)szFile]);
-			size_t size = f_logo->read(buf.get(), (unsigned int)szFile);
-			if (size == (unsigned int)szFile) {
-				crc = crc32(0, buf.get(), (unsigned int)szFile);
+			unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
+			size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
+			if (size == static_cast<unsigned int>(szFile)) {
+				crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
 			}
 		} else if (szFile > 0) {
 			// Some other custom logo.
@@ -1189,7 +1189,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 
 	fields->addField_listData(C_("Nintendo3DS", "FS Access"), nullptr, vv_fs,
 		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-		(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access));
+		static_cast<uint32_t>(le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access)));
 
 	// ARM9 access.
 	static const char *const perm_arm9_access[] = {
@@ -1222,7 +1222,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 
 		fields->addField_listData(C_("Nintendo3DS", "ARM9 Access"), nullptr, vv_arm9,
 			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-			(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm9.descriptors));
+			static_cast<uint32_t>(le64_to_cpu(pNcchExHeader->aci.arm9.descriptors)));
 	}
 
 	// Services. Each service is a maximum of 8 characters.
@@ -1304,7 +1304,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	switch (d->romType) {
 		case Nintendo3DSPrivate::ROM_TYPE_SMDH:
 			// SMDH header.
-			if (info.szFile < (int64_t)(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t))) {
+			if (info.szFile < static_cast<int64_t>(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t))) {
 				// File is too small.
 				return;
 			}
@@ -1431,7 +1431,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 
 	// Check for SMDH.
 	if (!memcmp(info->header.pData, N3DS_SMDH_HEADER_MAGIC, 4) &&
-	    info->szFile >= (int64_t)(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t)))
+	    info->szFile >= static_cast<int64_t>(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t)))
 	{
 		// We have an SMDH file.
 		return Nintendo3DSPrivate::ROM_TYPE_SMDH;
@@ -1813,7 +1813,7 @@ int Nintendo3DS::loadFieldData(void)
 		// Valid ratings: 0-1, 3-4, 6-10
 		static const uint16_t valid_ratings = 0x7DB;
 
-		for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
+		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
 			if (!(valid_ratings & (1 << i))) {
 				// Rating is not applicable for NintendoDS.
 				age_ratings[i] = 0;
@@ -2051,7 +2051,7 @@ int Nintendo3DS::loadFieldData(void)
 			if (ret == -ENOENT)
 				continue;
 
-			const int vidx = (int)partitions->size();
+			const int vidx = static_cast<int>(partitions->size());
 			partitions->resize(vidx+1);
 			auto &data_row = partitions->at(vidx);
 
@@ -2069,7 +2069,7 @@ int Nintendo3DS::loadFieldData(void)
 				if (part_ncch_header) {
 					// Encryption.
 					NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
-					int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
+					ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
 					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
 						if (cryptoType.name) {
@@ -2120,7 +2120,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Partition size.
-			const int64_t length_bytes = (int64_t)length << d->media_unit_shift;
+			const int64_t length_bytes = static_cast<int64_t>(length) << d->media_unit_shift;
 			data_row.push_back(LibRpBase::formatFileSize(length_bytes));
 
 			delete pNcch;
@@ -2150,8 +2150,8 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Required system version?
 
 		// Version.
-		const uint16_t version = be16_to_cpu(tmd_header->title_version);
-		d->fields->addField_string(C_("Nintendo3DS", "Version"), d->n3dsVersionToString(version));
+		d->fields->addField_string(C_("Nintendo3DS", "Version"),
+			d->n3dsVersionToString(be16_to_cpu(tmd_header->title_version)));
 
 		// Issuer.
 		// NOTE: We're using the Ticket Issuer in the TMD tab.
@@ -2199,7 +2199,7 @@ int Nintendo3DS::loadFieldData(void)
 			if (ret == -ENOENT)
 				continue;
 
-			const int vidx = (int)contents->size();
+			const int vidx = static_cast<int>(contents->size());
 			contents->resize(vidx+1);
 			auto &data_row = contents->at(vidx);
 
@@ -2297,8 +2297,8 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Version. [FIXME: Might not be right...]
-			const uint16_t version = le16_to_cpu(content_ncch_header->version);
-			data_row.push_back(d->n3dsVersionToString(version));
+			data_row.push_back(d->n3dsVersionToString(
+				le16_to_cpu(content_ncch_header->version)));
 
 			// Content size.
 			data_row.push_back(LibRpBase::formatFileSize(pNcch->partition_size()));
@@ -2424,7 +2424,7 @@ int Nintendo3DS::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

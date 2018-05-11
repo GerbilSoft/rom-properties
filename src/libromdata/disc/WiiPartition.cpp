@@ -230,8 +230,8 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	}
 
 	// Save important data.
-	data_offset     = (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
-	data_size       = (int64_t)be32_to_cpu(partitionHeader.data_size) << 2;
+	data_offset     = static_cast<int64_t>(be32_to_cpu(partitionHeader.data_offset)) << 2;
+	data_size       = static_cast<int64_t>(be32_to_cpu(partitionHeader.data_size)) << 2;
 	if (data_size == 0) {
 		// NoCrypto RVT-H images sometimes have this set to 0.
 		// Use the calculated partition size.
@@ -277,7 +277,7 @@ WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
 		// Assuming Retail issuer.
 		if (keyIdx <= 1) {
 			// keyIdx maps to encKey directly for retail.
-			m_encKey = (WiiPartition::EncKey)keyIdx;
+			m_encKey = static_cast<WiiPartition::EncKey>(keyIdx);
 		}
 	}
 
@@ -300,7 +300,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// Otherwise, we can only get the partition size information.
 
 	// Get the Key Manager instance.
-	KeyManager *keyManager = KeyManager::instance();
+	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
 
 	// Determine the required encryption key.
@@ -454,7 +454,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	// since it's called by initDecryption() before
 	// verifyResult is set.
 	int64_t sector_addr = partition_offset + data_offset;
-	sector_addr += ((int64_t)sector_num * SECTOR_SIZE_ENCRYPTED);
+	sector_addr += (static_cast<int64_t>(sector_num) * SECTOR_SIZE_ENCRYPTED);
 
 	int ret = discReader->seek(sector_addr);
 	if (ret != 0) {
@@ -538,8 +538,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 	// Make sure d->pos_7C00 + size <= d->data_size.
 	// If it isn't, we'll do a short read.
-	if (d->pos_7C00 + (int64_t)size >= d->data_size) {
-		size = (size_t)(d->data_size - d->pos_7C00);
+	if (d->pos_7C00 + static_cast<int64_t>(size) >= d->data_size) {
+		size = static_cast<size_t>(d->data_size - d->pos_7C00);
 	}
 
 	if (d->noCrypto) {
@@ -551,12 +551,12 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			// Not a block boundary.
 			// Read the end of the block.
 			uint32_t read_sz = SECTOR_SIZE_ENCRYPTED - blockStartOffset;
-			if (size < (size_t)read_sz) {
-				read_sz = (uint32_t)size;
+			if (size < static_cast<size_t>(read_sz)) {
+				read_sz = static_cast<uint32_t>(size);
 			}
 
 			// Read and decrypt the sector.
-			uint32_t blockStart = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
@@ -577,7 +577,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			assert(d->pos_7C00 % SECTOR_SIZE_ENCRYPTED == 0);
 
 			// Read the sector.
-			uint32_t blockStart = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
 			d->readSector(blockStart);
 
 			// Copy data from the sector.
@@ -590,7 +590,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 			// Read the sector.
 			assert(d->pos_7C00 % SECTOR_SIZE_ENCRYPTED == 0);
-			uint32_t blockEnd = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
+			const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_ENCRYPTED);
 			d->readSector(blockEnd);
 
 			// Copy data from the sector.
@@ -630,12 +630,12 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		// Not a block boundary.
 		// Read the end of the block.
 		uint32_t read_sz = SECTOR_SIZE_DECRYPTED - blockStartOffset;
-		if (size < (size_t)read_sz) {
-			read_sz = (uint32_t)size;
+		if (size < static_cast<size_t>(read_sz)) {
+			read_sz = static_cast<uint32_t>(size);
 		}
 
 		// Read and decrypt the sector.
-		uint32_t blockStart = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
 		d->readSector(blockStart);
 
 		// Copy data from the sector.
@@ -656,7 +656,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
 
 		// Read and decrypt the sector.
-		uint32_t blockStart = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
 		d->readSector(blockStart);
 
 		// Copy data from the sector.
@@ -669,7 +669,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 		// Read and decrypt the sector.
 		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
-		uint32_t blockEnd = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
 		d->readSector(blockEnd);
 
 		// Copy data from the sector.
@@ -722,7 +722,7 @@ int WiiPartition::seek(int64_t pos)
  */
 int64_t WiiPartition::tell(void)
 {
-	RP_D(WiiPartition);
+	RP_D(const WiiPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader ||  !d->discReader->isOpen()) {

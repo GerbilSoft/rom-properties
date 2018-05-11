@@ -337,7 +337,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		NOP_C_("MegaDrive|I/O", "Activator"),
 		NOP_C_("MegaDrive|I/O", "Mega Mouse"),
 	};
-	vector<string> *v_io_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_io_bitfield_names = RomFields::strArrayToVector_i18n(
 		"MegaDrive|I/O", io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
 	// Parse I/O support.
 	uint32_t io_support = parseIOSupport(pRomHeader->io_support, sizeof(pRomHeader->io_support));
@@ -416,7 +416,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 	};
-	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	fields->addField_bitfield(C_("MegaDrive", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region);
@@ -502,7 +502,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		NOP_C_("MegaDrive|VectorTable", "Vector"),
 		NOP_C_("MegaDrive|VectorTable", "Address"),
 	};
-	vector<string> *v_vectors_headers = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
 		"MegaDrive|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
 	fields->addField_listData(C_("MegaDrive", "Vector Table"),
 		v_vectors_headers, vectors_info,
@@ -966,7 +966,7 @@ int MegaDrive::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

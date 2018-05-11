@@ -159,7 +159,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			// - Attrs should start at column 40.
 			// TODO: Handle full-width and non-BMP Unicode characters correctly.
 			const int tree_name_length = ((level+1)*4) + 1 +
-					(int)utf8_to_utf16(name).size();
+					static_cast<int>(utf8_to_utf16(name).size());
 			int attr_spaces;
 			if (tree_name_length < 40) {
 				// Pad it to 40 columns.

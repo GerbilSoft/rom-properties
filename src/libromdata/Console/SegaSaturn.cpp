@@ -452,7 +452,8 @@ int SegaSaturn::loadFieldData(void)
 	} else if (!memcmp(discHeader->maker_id, "SEGA TP T-", 10)) {
 		// This may be a third-party T-code.
 		char *endptr;
-		unsigned int t_code = (unsigned int)strtoul(&discHeader->maker_id[10], &endptr, 10);
+		const unsigned int t_code = static_cast<unsigned int>(
+			strtoul(&discHeader->maker_id[10], &endptr, 10));
 		if (t_code != 0 &&
 		    endptr > &discHeader->maker_id[10] &&
 		    endptr <= &discHeader->maker_id[15])
@@ -503,7 +504,7 @@ int SegaSaturn::loadFieldData(void)
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 	};
-	vector<string> *v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(C_("SegaSaturn", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
@@ -552,7 +553,7 @@ int SegaSaturn::loadFieldData(void)
 		NOP_C_("SegaSaturn|Peripherals", "ROM Cartridge"),
 		NOP_C_("SegaSaturn|Peripherals", "MPEG Card"),
 	};
-	vector<string> *v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
 		"SegaSaturn|Peripherals", peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
 	// Parse peripherals.
 	uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
@@ -560,7 +561,7 @@ int SegaSaturn::loadFieldData(void)
 		v_peripherals_bitfield_names, 3, peripherals);
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

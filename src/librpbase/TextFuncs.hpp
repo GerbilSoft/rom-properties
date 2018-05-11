@@ -143,6 +143,17 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 std::string cp1252_to_utf8(const char *str, int len);
 
 /**
+ * Convert cp1252 text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str cp1252 string.
+ * @return UTF-8 string.
+ */
+static inline std::string cp1252_to_utf8(const std::string &str)
+{
+	return cp1252_to_utf8(str.data(), static_cast<int>(str.size()));
+}
+
+/**
  * Convert cp1252 text to UTF-16.
  * Trailing NULL bytes will be removed.
  * @param str cp1252 text.
@@ -183,6 +194,17 @@ std::string utf16_to_cp1252(const char16_t *wcs, int len);
 std::string cp1252_sjis_to_utf8(const char *str, int len);
 
 /**
+ * Convert cp1252 or Shift-JIS text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str cp1252 or Shift-JIS string.
+ * @return UTF-8 string.
+ */
+static inline std::string cp1252_sjis_to_utf8(const std::string &str)
+{
+	return cp1252_sjis_to_utf8(str.data(), static_cast<int>(str.size()));
+}
+
+/**
  * Convert cp1252 or Shift-JIS text to UTF-16.
  * Trailing NULL bytes will be removed.
  * @param str cp1252 or Shift-JIS text.
@@ -201,6 +223,17 @@ std::u16string cp1252_sjis_to_utf16(const char *str, int len);
  * @return UTF-8 string.
  */
 std::string latin1_to_utf8(const char *str, int len);
+
+/**
+ * Convert Latin-1 (ISO-8859-1) text to UTF-8
+ * Trailing NULL bytes will be removed.
+ * @param str Latin-1 string.
+ * @return UTF-8 string.
+ */
+static inline std::string latin1_to_utf8(const std::string &str)
+{
+	return latin1_to_utf8(str.data(), static_cast<int>(str.size()));
+}
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
@@ -248,7 +281,7 @@ std::u16string utf8_to_utf16(const char *str, int len);
  */
 static inline std::u16string utf8_to_utf16(const std::string &str)
 {
-	return utf8_to_utf16(str.data(), (int)str.size());
+	return utf8_to_utf16(str.data(), static_cast<int>(str.size()));
 }
 
 /**
@@ -304,9 +337,9 @@ static inline std::u16string utf16le_to_utf16(const char16_t *wcs, int len)
 {
 	// Check for a NULL terminator.
 	if (len < 0) {
-		len = (int)u16_strlen(wcs);
+		len = static_cast<int>(u16_strlen(wcs));
 	} else {
-		len = (int)u16_strnlen(wcs, len);
+		len = static_cast<int>(u16_strnlen(wcs, len));
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -326,9 +359,9 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 {
 	// Check for a NULL terminator.
 	if (len < 0) {
-		len = (int)u16_strlen(wcs);
+		len = static_cast<int>(u16_strlen(wcs));
 	} else {
-		len = (int)u16_strnlen(wcs, len);
+		len = static_cast<int>(u16_strnlen(wcs, len));
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN

@@ -81,7 +81,7 @@ GcnPartition::GcnPartition(GcnPartitionPrivate *d)
  */
 bool GcnPartition::isOpen(void) const
 {
-	RP_D(GcnPartition);
+	RP_D(const GcnPartition);
 	return (d->discReader && d->discReader->isOpen());
 }
 
@@ -168,7 +168,7 @@ int64_t GcnPartition::tell(void)
 int64_t GcnPartition::size(void)
 {
 	// TODO: Errors?
-	RP_D(GcnPartition);
+	RP_D(const GcnPartition);
 	return d->data_size;
 }
 
@@ -210,7 +210,8 @@ int64_t GcnPartition::partition_size_used(void) const
 	}
 
 	// FST offset and size.
-	int64_t size = (int64_t)(d->bootBlock.fst_offset + d->bootBlock.fst_size) << d->offsetShift;
+	// TODO: Convert both fst_offset and fst_size to int64_t before adding/shifting?
+	int64_t size = static_cast<int64_t>(d->bootBlock.fst_offset + d->bootBlock.fst_size) << d->offsetShift;
 	
 	// Get the FST used size.
 	size += d->fst->totalUsedSize();

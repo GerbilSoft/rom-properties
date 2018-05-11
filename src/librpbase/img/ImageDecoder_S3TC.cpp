@@ -207,7 +207,7 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RES
 	}
 
 	// Prevent overflow.
-	return (uint8_t)(a_ret > 255 ? 255 : a_ret);
+	return static_cast<uint8_t>(a_ret > 255 ? 255 : a_ret);
 }
 #endif /* ENABLE_S3TC */
 
@@ -273,7 +273,7 @@ static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t *RES
 	}
 
 	// No overflow is possible in S2TC mode.
-	return (uint8_t)a_ret;
+	return static_cast<uint8_t>(a_ret);
 }
 
 /**
@@ -329,8 +329,8 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary 4-tile buffer.
 	uint32_t tileBuf[4][4*4];
@@ -391,7 +391,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 					unsigned int sel = indexes & 3;
 					if (sel == 2) {
 						// Select c0 or c1, depending on pixel number.
-						sel = S2TC_select_c0c1((unsigned int)i);
+						sel = S2TC_select_c0c1(static_cast<unsigned int>(i));
 					}
 					tileBuf[tile][i] = pal[sel].u32;
 				}
@@ -454,8 +454,8 @@ static rp_image *T_fromDXT1(int width, int height,
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -618,8 +618,8 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 	const dxt3_block *dxt3_src = reinterpret_cast<const dxt3_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -764,8 +764,8 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 	const dxt5_block *dxt5_src = reinterpret_cast<const dxt5_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -879,8 +879,8 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 	const bc4_block *bc4_src = reinterpret_cast<const bc4_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -990,8 +990,8 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 	const bc5_block *bc5_src = reinterpret_cast<const bc5_block*>(img_buf);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -1072,10 +1072,10 @@ int ImageDecoder::fromRed8ToL8(rp_image *img)
 		return -EINVAL;
 
 	// TODO: Optimize with SSE2/SSSE3?
-	const unsigned int width = (unsigned int)img->width();
+	const unsigned int width = static_cast<unsigned int>(img->width());
 	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
-	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
-	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
+	argb32_t *line = static_cast<argb32_t*>(img->bits());
+	for (unsigned int y = static_cast<unsigned int>(img->height()); y > 0; y--, line += diff) {
 		unsigned int x = width;
 		for (; x > 1; x -= 2, line += 2) {
 			line[0].a = 0xFF;
@@ -1111,10 +1111,10 @@ int ImageDecoder::fromRG8ToLA8(rp_image *img)
 		return -EINVAL;
 
 	// TODO: Optimize with SSE2/SSSE3?
-	const unsigned int width = (unsigned int)img->width();
+	const unsigned int width = static_cast<unsigned int>(img->width());
 	const unsigned int diff = (img->stride() - img->row_bytes()) / sizeof(argb32_t);
-	argb32_t *line = reinterpret_cast<argb32_t*>(img->bits());
-	for (unsigned int y = (unsigned int)img->height(); y > 0; y--, line += diff) {
+	argb32_t *line = static_cast<argb32_t*>(img->bits());
+	for (unsigned int y = static_cast<unsigned int>(img->height()); y > 0; y--, line += diff) {
 		unsigned int x = width;
 		for (; x > 1; x -= 2, line += 2) {
 			line[0].a = line[0].g;

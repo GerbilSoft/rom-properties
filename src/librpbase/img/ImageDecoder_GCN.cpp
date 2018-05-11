@@ -63,8 +63,8 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 	}
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 4);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 4);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
@@ -202,19 +202,19 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 		palette[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
 		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 			// Found the transparent color.
-			tr_idx = (int)i;
+			tr_idx = static_cast<int>(i);
 		}
 		palette[i+1] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i+1]));
 		if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 			// Found the transparent color.
-			tr_idx = (int)i+1;
+			tr_idx = static_cast<int>(i+1);
 		}
 	}
 	img->set_tr_idx(tr_idx);
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 8);
-	const unsigned int tilesY = (unsigned int)(height / 4);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 4);
 
 	// Tile pointer.
 	const uint8_t *tileBuf = img_buf;

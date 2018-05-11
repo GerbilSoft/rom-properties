@@ -141,7 +141,7 @@ const rp_image *ValveVTF3Private::loadImage(void)
 		// Sanity check: VTF files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)file->size();
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	// Handle a 1D texture as a "width x 1" 2D texture.
 	// NOTE: Handling a 3D texture as a single 2D texture.
@@ -248,7 +248,7 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	// Check if this VTF3 texture is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = (uint32_t)size;
+	info.header.size = static_cast<uint32_t>(size);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->vtf3Header);
 	info.ext = nullptr;	// Not needed for VTF3.
 	info.szFile = file->size();
@@ -361,7 +361,7 @@ vector<RomData::ImageSizeDef> ValveVTF3::supportedImageSizes(ImageType imageType
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(ValveVTF3);
+	RP_D(const ValveVTF3);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
@@ -390,7 +390,7 @@ uint32_t ValveVTF3::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(ValveVTF3);
+	RP_D(const ValveVTF3);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by DDS.
 		return 0;
@@ -449,7 +449,7 @@ int ValveVTF3::loadFieldData(void)
 	// TODO: Flags.
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

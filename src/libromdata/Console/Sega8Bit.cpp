@@ -357,8 +357,8 @@ int Sega8Bit::loadFieldData(void)
 
 	// Check for other headers.
 	// TODO: SDSC header.
-	if (0x10000 - (uint32_t)le16_to_cpu(d->romHeader.codemasters.checksum) ==
-	    (uint32_t)le16_to_cpu(d->romHeader.codemasters.checksum_compl))
+	if (0x10000 - static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum)) ==
+		static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
 	{
 		// Codemasters checksums match.
 		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
@@ -478,7 +478,7 @@ int Sega8Bit::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

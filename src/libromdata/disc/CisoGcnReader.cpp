@@ -136,7 +136,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 
 	// Parse the CISO block map.
 	uint16_t physBlockIdx = 0;
-	for (int i = 0; i < (int)blockMap.size(); i++) {
+	for (int i = 0; i < static_cast<int>(blockMap.size()); i++) {
 		switch (cisoHeader.map[i]) {
 			case 0:
 				// Empty block.
@@ -157,7 +157,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	}
 
 	// Calculate the disc size based on the highest logical block index.
-	disc_size = (int64_t)(maxLogicalBlockUsed+1) * (int64_t)block_size;
+	disc_size = static_cast<int64_t>(maxLogicalBlockUsed+1) * static_cast<int64_t>(block_size);
 
 	// Reset the disc position.
 	pos = 0;
@@ -247,8 +247,9 @@ int CisoGcnReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	assert(size <= d->block_size);
 	// TODO: Make sure overflow doesn't occur.
 	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
-	if (pos < 0 || pos >= (int)d->block_size || size > d->block_size ||
-	    (int64_t)(pos + size) > (int64_t)d->block_size)
+	if (pos < 0 || pos >= static_cast<int>(d->block_size) ||
+		size > d->block_size ||
+		static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size))
 	{
 		// pos+size is out of range.
 		return -1;
@@ -272,11 +273,11 @@ int CisoGcnReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	if (physBlockIdx >= 0xFFFF) {
 		// Empty block.
 		memset(ptr, 0, size);
-		return (int)size;
+		return static_cast<int>(size);
 	}
 
 	// Go to the block.
-	const int64_t phys_pos = sizeof(d->cisoHeader) + ((int64_t)physBlockIdx * d->block_size) + pos;
+	const int64_t phys_pos = sizeof(d->cisoHeader) + (static_cast<int64_t>(physBlockIdx) * d->block_size) + pos;
 	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = d->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);

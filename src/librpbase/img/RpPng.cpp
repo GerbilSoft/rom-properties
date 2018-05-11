@@ -204,7 +204,7 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep d
 void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 {
 	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
+	IRpFile *const file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
 	if (!file)
 		return;
 
@@ -440,7 +440,8 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	}
 
 	// Allocate the row pointers.
-	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
+	row_pointers = static_cast<const png_byte**>(
+		png_malloc(png_ptr, sizeof(const png_byte*) * height));
 	if (!row_pointers) {
 		delete img;
 		return nullptr;

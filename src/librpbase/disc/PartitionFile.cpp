@@ -144,10 +144,10 @@ size_t PartitionFile::read(void *ptr, size_t size)
 	}
 
 	// Check if size is in bounds.
-	if (m_pos > (int64_t)(m_size - size)) {
+	if (m_pos > m_size - static_cast<int64_t>(size)) {
 		// Not enough data.
 		// Copy whatever's left in the file.
-		size = (size_t)(m_size - m_pos);
+		size = static_cast<size_t>(m_size - m_pos);
 	}
 
 	size_t ret = 0;

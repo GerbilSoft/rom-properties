@@ -612,7 +612,7 @@ const char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
 	}
 
 	// Do a binary search in submappers[].
-	const NESMappersPrivate::SubmapperEntry key = {(uint16_t)mapper, 0, nullptr};
+	const NESMappersPrivate::SubmapperEntry key = { static_cast<uint8_t>(mapper), 0, nullptr };
 	const NESMappersPrivate::SubmapperEntry *res =
 		static_cast<const NESMappersPrivate::SubmapperEntry*>(bsearch(&key,
 			NESMappersPrivate::submappers,
@@ -622,8 +622,8 @@ const char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
 	if (!res || !res->info || res->info_size == 0)
 		return nullptr;
 
-	// Do a minary search in res->info.
-	const NESMappersPrivate::SubmapperInfo key2 = {(uint8_t)submapper, false, nullptr};
+	// Do a binary search in res->info.
+	const NESMappersPrivate::SubmapperInfo key2 = { static_cast<uint8_t>(submapper), false, nullptr };
 	const NESMappersPrivate::SubmapperInfo *res2 =
 		static_cast<const NESMappersPrivate::SubmapperInfo*>(bsearch(&key2,
 			res->info, res->info_size,

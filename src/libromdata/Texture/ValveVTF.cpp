@@ -318,14 +318,15 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 		// Sanity check: VTF files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)file->size();
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	// Handle a 1D texture as a "width x 1" 2D texture.
 	// NOTE: Handling a 3D texture as a single 2D texture.
 	const int height = (vtfHeader.height > 0 ? vtfHeader.height : 1);
 
 	// Calculate the expected size.
-	unsigned int expected_size = calcImageSize((VTF_IMAGE_FORMAT)vtfHeader.highResImageFormat,
+	unsigned int expected_size = calcImageSize(
+		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat),
 		vtfHeader.width, height);
 	if (expected_size == 0) {
 		// Invalid image size.
@@ -338,7 +339,8 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	// NOTE: Dimensions must be powers of two.
 	unsigned int texDataStartAddr_adj = texDataStartAddr;
 	unsigned int mipmap_size = expected_size;
-	const unsigned int minBlockSize = getMinBlockSize((VTF_IMAGE_FORMAT)vtfHeader.highResImageFormat);
+	const unsigned int minBlockSize = getMinBlockSize(
+		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat));
 	for (unsigned int mipmapLevel = vtfHeader.mipmapCount; mipmapLevel > 1; mipmapLevel--) {
 		mipmap_size /= 4;
 		if (mipmap_size >= minBlockSize) {
@@ -352,7 +354,7 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 
 	// Low-resolution image size.
 	texDataStartAddr_adj += calcImageSize(
-		(VTF_IMAGE_FORMAT)vtfHeader.lowResImageFormat,
+		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.lowResImageFormat),
 		vtfHeader.lowResImageWidth,
 		(vtfHeader.lowResImageHeight > 0 ? vtfHeader.lowResImageHeight : 1));
 
@@ -581,7 +583,7 @@ ValveVTF::ValveVTF(IRpFile *file)
 	// Check if this VTF texture is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = (uint32_t)size;
+	info.header.size = static_cast<uint32_t>(size);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->vtfHeader);
 	info.ext = nullptr;	// Not needed for VTF.
 	info.szFile = file->size();
@@ -715,7 +717,7 @@ vector<RomData::ImageSizeDef> ValveVTF::supportedImageSizes(ImageType imageType)
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(ValveVTF);
+	RP_D(const ValveVTF);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
@@ -744,7 +746,7 @@ uint32_t ValveVTF::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(ValveVTF);
+	RP_D(const ValveVTF);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by DDS.
 		return 0;
@@ -921,7 +923,7 @@ int ValveVTF::loadFieldData(void)
 	const char *img_format = nullptr;
 	if (vtfHeader->highResImageFormat < ARRAY_SIZE(img_format_tbl)) {
 		img_format = img_format_tbl[vtfHeader->highResImageFormat];
-	} else if (vtfHeader->highResImageFormat == (unsigned int)-1) {
+	} else if (vtfHeader->highResImageFormat == static_cast<unsigned int>(-1)) {
 		img_format = NOP_C_("ValveVTF|ImageFormat", "None");
 	}
 
@@ -940,7 +942,7 @@ int ValveVTF::loadFieldData(void)
 	img_format = nullptr;
 	if (vtfHeader->lowResImageFormat < ARRAY_SIZE(img_format_tbl)) {
 		img_format = img_format_tbl[vtfHeader->lowResImageFormat];
-	} else if (vtfHeader->lowResImageFormat == (unsigned int)-1) {
+	} else if (vtfHeader->lowResImageFormat == static_cast<unsigned int>(-1)) {
 		img_format = NOP_C_("ValveVTF|ImageFormat", "None");
 	}
 
@@ -972,7 +974,7 @@ int ValveVTF::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

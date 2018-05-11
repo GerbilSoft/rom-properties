@@ -326,7 +326,7 @@ void RpPngFormatTest::SetUp(void)
 	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
 
 	// Read the PNG image into memory.
-	const size_t pngSize = (size_t)file->size();
+	const size_t pngSize = static_cast<size_t>(file->size());
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
@@ -400,7 +400,7 @@ void RpPngFormatTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src
 
 	// Calculate the CRC32.
 	// This includes the chunk name and data section.
-	const uint32_t chunk_crc = (uint32_t)(
+	const uint32_t chunk_crc = static_cast<uint32_t>(
 		crc32(0, reinterpret_cast<const Bytef*>(&ihdr_full.chunk_name),
 		      sizeof(ihdr_full.chunk_name) + sizeof(ihdr_full.data)));
 
@@ -598,7 +598,7 @@ void RpPngFormatTest::Compare_Palettes(
 	int bmpColorTableSize,
 	int biClrUsed)
 {
-	const uint32_t *pSrcPalette = static_cast<const uint32_t*>(img->palette());
+	const uint32_t *pSrcPalette = img->palette();
 	if (biClrUsed < 0) {
 		biClrUsed = img->palette_len();
 	}
@@ -999,7 +999,7 @@ string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInf
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (int i = (int)suffix.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(suffix.size())-1; i >= 0; i--) {
 		char chr = suffix[i];
 		if (!ISALNUM(chr) && chr != '_') {
 			suffix[i] = '_';

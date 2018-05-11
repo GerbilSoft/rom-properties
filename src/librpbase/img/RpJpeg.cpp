@@ -151,8 +151,8 @@ boolean JPEGCALL RpJpegPrivate::fill_input_buffer(j_decompress_ptr cinfo)
 		}
 		WARNMS(cinfo, JWRN_JPEG_EOF);
 		/* Insert a fake EOI marker */
-		src->buffer[0] = (JOCTET)0xFF;
-		src->buffer[1] = (JOCTET)JPEG_EOI;
+		src->buffer[0] = static_cast<JOCTET>(0xFF);
+		src->buffer[1] = static_cast<JOCTET>(JPEG_EOI);
 		nbytes = 2;
 	}
 
@@ -177,15 +177,15 @@ void JPEGCALL RpJpegPrivate::skip_input_data(j_decompress_ptr cinfo, long num_by
 	 * any trouble anyway --- large skips are infrequent.
 	 */
 	if (num_bytes > 0) {
-		while (num_bytes > (long) src->bytes_in_buffer) {
-			num_bytes -= (long) src->bytes_in_buffer;
+		while (num_bytes > static_cast<long>(src->bytes_in_buffer)) {
+			num_bytes -= static_cast<long>(src->bytes_in_buffer);
 			(void) (*src->fill_input_buffer) (cinfo);
 			/* note we assume that fill_input_buffer will never return FALSE,
 			 * so suspension need not be handled.
 			 */
 		}
-		src->next_input_byte += (size_t) num_bytes;
-		src->bytes_in_buffer -= (size_t) num_bytes;
+		src->next_input_byte += static_cast<size_t>(num_bytes);
+		src->bytes_in_buffer -= static_cast<size_t>(num_bytes);
 	}
 }
 
@@ -343,7 +343,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 		case JCS_RGB:
 			// libjpeg-turbo supports RGB->BGRA conversion.
 			if (try_ext_bgra) {
-				cinfo.out_color_space = (J_COLOR_SPACE)MY_JCS_EXT_BGRA;
+				cinfo.out_color_space = static_cast<J_COLOR_SPACE>(MY_JCS_EXT_BGRA);
 				cinfo.output_components = 4;
 				direct_copy = true;
 				tried_ext_bgra = true;
@@ -353,7 +353,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			// libjpeg (standard) supports YCbCr->RGB conversion.
 			// libjpeg-turbo supports YCbCr->BGRA conversion.
 			if (try_ext_bgra) {
-				cinfo.out_color_space = (J_COLOR_SPACE)MY_JCS_EXT_BGRA;
+				cinfo.out_color_space = static_cast<J_COLOR_SPACE>(MY_JCS_EXT_BGRA);
 				cinfo.output_components = 4;
 				direct_copy = true;
 				tried_ext_bgra = true;
@@ -407,7 +407,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			for (int i = 0; i < std::min(256, img->palette_len());
 				i++, img_palette++)
 			{
-				uint8_t gray = (uint8_t)i;
+				uint8_t gray = static_cast<uint8_t>(i);
 				*img_palette = (gray | gray << 8 | gray << 16);
 				*img_palette |= 0xFF000000;
 			}

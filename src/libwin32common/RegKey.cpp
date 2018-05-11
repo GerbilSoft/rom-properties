@@ -337,7 +337,7 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value, DWORD dwType)
 	} else {
 		// Get the string length, add 1 for NULL,
 		// and multiply by sizeof(wchar_t).
-		cbData = (DWORD)((wcslen(value) + 1) * sizeof(wchar_t));
+		cbData = static_cast<DWORD>((wcslen(value) + 1) * sizeof(wchar_t));
 	}
 
 	return RegSetValueEx(m_hKey,
@@ -369,7 +369,7 @@ LONG RegKey::write(LPCWSTR lpValueName, const wstring& value, DWORD dwType)
 
 	// Get the string length, add 1 for NULL,
 	// and multiply by sizeof(wchar_t).
-	DWORD cbData = (DWORD)((value.size() + 1) * sizeof(wchar_t));
+	DWORD cbData = static_cast<DWORD>((value.size() + 1) * sizeof(wchar_t));
 
 	return RegSetValueEx(m_hKey,
 		lpValueName,			// lpValueName
@@ -392,7 +392,7 @@ LONG RegKey::write_dword(LPCWSTR lpValueName, DWORD value)
 		return ERROR_INVALID_HANDLE;
 	}
 
-	DWORD cbData = (DWORD)sizeof(value);
+	DWORD cbData = static_cast<DWORD>(sizeof(value));
 	return RegSetValueEx(m_hKey,
 		lpValueName,		// lpValueName
 		0,			// Reserved
@@ -552,7 +552,7 @@ LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 	// Initialize the vector.
 	lstSubKeys.clear();
 
-	for (int i = 0; i < (int)cSubKeys; i++) {
+	for (int i = 0; i < static_cast<int>(cSubKeys); i++) {
 		DWORD cchName = cMaxSubKeyLen;
 		lResult = RegEnumKeyEx(m_hKey, i,
 			szName.get(),	// lpName

@@ -120,7 +120,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileFlags", "Info Inferred"),
 		NOP_C_("EXE|FileFlags", "Special Build"),
 	};
-	vector<string> *v_FileFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_FileFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|FileFlags", FileFlags_names, ARRAY_SIZE(FileFlags_names));
 	fields->addField_bitfield(C_("EXE", "File Flags"),
 		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
@@ -285,8 +285,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// File timestamp. (FILETIME format)
 	// NOTE: This seems to be 0 in most EXEs and DLLs I've tested.
-	uint64_t fileTime = ((uint64_t)pVsFfi->dwFileDateMS) << 32 |
-			     (uint64_t)pVsFfi->dwFileDateLS;
+	uint64_t fileTime = (static_cast<uint64_t>(pVsFfi->dwFileDateMS)) << 32 |
+			     static_cast<uint64_t>(pVsFfi->dwFileDateLS);
 	if (fileTime != 0) {
 		// Convert to UNIX time.
 #ifndef FILETIME_1970
@@ -295,7 +295,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 #ifndef HECTONANOSEC_PER_SEC
 		#define HECTONANOSEC_PER_SEC 10000000LL
 #endif
-		time_t fileTimeUnix = (time_t)((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
+		time_t fileTimeUnix = static_cast<time_t>((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
 		fields->addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
@@ -315,7 +315,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	const auto &st = pVsSfi->begin()->second;
 	auto data = new vector<vector<string> >();
 	data->resize(st.size());
-	for (unsigned int i = 0; i < (unsigned int)st.size(); i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(st.size()); i++) {
 		const auto &st_row = st.at(i);
 		auto &data_row = data->at(i);
 		data_row.reserve(2);
@@ -327,7 +327,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	static const char *const field_names[] = {
 		"Key", "Value"
 	};
-	vector<string> *v_field_names = RomFields::strArrayToVector(
+	vector<string> *const v_field_names = RomFields::strArrayToVector(
 		field_names, ARRAY_SIZE(field_names));
 
 	// Add the StringFileInfo.
@@ -422,7 +422,7 @@ int EXEPrivate::loadNEResourceTable(void)
 	if (resTableSize == 0) {
 		// Not known. Go with the file size.
 		// NOTE: Limited to 32-bit file sizes.
-		resTableSize = (uint32_t)file->size() - ResTableOffset;
+		resTableSize = static_cast<uint32_t>(file->size()) - ResTableOffset;
 	}
 
 	// Load the resources using NEResourceReader.
@@ -491,7 +491,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ProgFlags", "80386 insns"),
 		NOP_C_("EXE|ProgFlags", "FPU insns"),
 	};
-	vector<string> *v_ProgFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|ProgFlags", ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
 	fields->addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
@@ -530,7 +530,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ApplFlags", "Non-Conforming"),
 		NOP_C_("EXE|ApplFlags", "DLL"),
 	};
-	vector<string> *v_ApplFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|ApplFlags", ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
 	fields->addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
@@ -547,7 +547,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|OtherFlags", "Proportional Fonts"),
 		NOP_C_("EXE|OtherFlags", "Gangload Area"),
 	};
-	vector<string> *v_OtherFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
 	fields->addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
@@ -672,9 +672,9 @@ int EXEPrivate::loadPESectionTable(void)
 		return -ENOMEM;
 	}
 	pe_sections.resize(section_count);
-	uint32_t szToRead = (uint32_t)(section_count * sizeof(IMAGE_SECTION_HEADER));
+	uint32_t szToRead = static_cast<uint32_t>(section_count * sizeof(IMAGE_SECTION_HEADER));
 	size_t size = file->seekAndRead(section_table_start, pe_sections.data(), szToRead);
-	if (size != (size_t)szToRead) {
+	if (size != static_cast<size_t>(szToRead)) {
 		// Seek and/or read error.
 		pe_sections.clear();
 		return -EIO;
@@ -683,7 +683,7 @@ int EXEPrivate::loadPESectionTable(void)
 	// Not all sections may be in use.
 	// Find the first section header with an empty name.
 	int ret = 0;
-	for (unsigned int i = 0; i < (unsigned int)pe_sections.size(); i++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(pe_sections.size()); i++) {
 		if (pe_sections[i].Name[0] == 0) {
 			// Found the first empty section.
 			pe_sections.resize(i);
@@ -731,7 +731,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// .rsrc is usually closer to the end of the section list,
 	// so search back to front.
 	const IMAGE_SECTION_HEADER *rsrc = nullptr;
-	for (int i = (int)pe_sections.size()-1; i >= 0; i--) {
+	for (int i = static_cast<int>(pe_sections.size())-1; i >= 0; i--) {
 		const IMAGE_SECTION_HEADER *section = &pe_sections[i];
 		if (!strcmp(section->Name, ".rsrc")) {
 			// Found the .rsrc section.
@@ -874,7 +874,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|PEFlags", "DLL"),
 		nullptr, nullptr,
 	};
-	vector<string> *v_pe_flags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
 		"EXE|PEFlags", pe_flags_names, ARRAY_SIZE(pe_flags_names));
 	fields->addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
@@ -894,7 +894,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|DLLFlags", "Control Flow Guard"),
 		NOP_C_("EXE|DLLFlags", "TS Aware"),
 	};
-	vector<string> *v_dll_flags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
 		"EXE|DLLFlags", dll_flags_names, ARRAY_SIZE(dll_flags_names));
 	fields->addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
@@ -906,7 +906,7 @@ void EXEPrivate::addFields_PE(void)
 	uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
 	if (timestamp != 0) {
 		fields->addField_dateTime(C_("EXE", "Timestamp"),
-			(time_t)timestamp,
+			static_cast<time_t>(timestamp),
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
@@ -1401,7 +1401,7 @@ int EXE::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

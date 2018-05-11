@@ -83,7 +83,8 @@ static inline std::string W2U8(const wchar_t *wcs, int len = -1)
 static inline std::string W2U8(const std::wstring &wcs)
 {
 	return LibRpBase::utf16_to_utf8(
-		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size());
+		reinterpret_cast<const char16_t*>(
+			wcs.data()), static_cast<int>(wcs.size()));
 }
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__ */

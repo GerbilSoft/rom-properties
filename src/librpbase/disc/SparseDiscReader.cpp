@@ -109,8 +109,8 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->disc_size.
 	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= d->disc_size) {
-		size = (size_t)(d->disc_size - d->pos);
+	if (d->pos + static_cast<int64_t>(size) >= d->disc_size) {
+		size = static_cast<size_t>(d->disc_size - d->pos);
 	}
 
 	// Check if we're not starting on a block boundary.
@@ -120,13 +120,13 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 		// Not a block boundary.
 		// Read the end of the block.
 		uint32_t read_sz = block_size - blockStartOffset;
-		if (size < (size_t)read_sz) {
-			read_sz = (uint32_t)size;
+		if (size < static_cast<size_t>(read_sz)) {
+			read_sz = static_cast<uint32_t>(size);
 		}
 
-		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
+		const unsigned int blockIdx = static_cast<unsigned int>(d->pos / block_size);
 		int rd = this->readBlock(blockIdx, ptr8, blockStartOffset, read_sz);
-		if (rd < 0 || rd != (int)read_sz) {
+		if (rd < 0 || rd != static_cast<int>(read_sz)) {
 			// Error reading the data.
 			return (rd > 0 ? rd : 0);
 		}
@@ -144,9 +144,9 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 	    ret += block_size, d->pos += block_size)
 	{
 		assert(d->pos % block_size == 0);
-		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
+		const unsigned int blockIdx = static_cast<unsigned int>(d->pos / block_size);
 		int rd = this->readBlock(blockIdx, ptr8, 0, block_size);
-		if (rd < 0 || rd != (int)block_size) {
+		if (rd < 0 || rd != static_cast<int>(block_size)) {
 			// Error reading the data.
 			return ret + (rd > 0 ? rd : 0);
 		}
@@ -158,9 +158,9 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 		assert(d->pos % block_size == 0);
 
 		// Read the start of the block.
-		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
+		const unsigned int blockIdx = static_cast<unsigned int>(d->pos / block_size);
 		int rd = this->readBlock(blockIdx, ptr8, 0, size);
-		if (rd < 0 || rd != (int)size) {
+		if (rd < 0 || rd != static_cast<int>(size)) {
 			// Error reading the data.
 			return ret + (rd > 0 ? rd : 0);
 		}
@@ -229,7 +229,7 @@ void SparseDiscReader::rewind(void)
  */
 int64_t SparseDiscReader::tell(void)
 {
-	RP_D(SparseDiscReader);
+	RP_D(const SparseDiscReader);
 	assert(d->file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);
@@ -249,7 +249,7 @@ int64_t SparseDiscReader::tell(void)
  */
 int64_t SparseDiscReader::size(void)
 {
-	RP_D(SparseDiscReader);
+	RP_D(const SparseDiscReader);
 	assert(d->file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);

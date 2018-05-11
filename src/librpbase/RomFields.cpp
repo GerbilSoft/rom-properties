@@ -145,7 +145,7 @@ inline bool RomFieldsPrivate::isShared(void) const
 void RomFieldsPrivate::delete_data(void)
 {
 	// Delete all of the allocated strings in this->fields.
-	for (int i = (int)(fields.size() - 1); i >= 0; i--) {
+	for (int i = static_cast<int>(fields.size() - 1); i >= 0; i--) {
 		RomFields::Field &field = this->fields.at(i);
 		if (!field.isValid) {
 			// No data here.
@@ -255,7 +255,7 @@ void RomFields::detach(void)
 	RomFieldsPrivate *const d_new = new RomFieldsPrivate();
 	RomFieldsPrivate *const d_old = d_ptr;
 	d_new->fields.resize(d_old->fields.size());
-	for (int i = (int)(d_old->fields.size() - 1); i >= 0; i--) {
+	for (int i = static_cast<int>(d_old->fields.size() - 1); i >= 0; i--) {
 		const Field &field_old = d_old->fields.at(i);
 		Field &field_new = d_new->fields.at(i);
 		field_new.name = field_old.name;
@@ -509,7 +509,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	string str;
 	str.reserve(64);
 	unsigned int ratings_count = 0;
-	for (int i = 0; i < (int)age_ratings->size(); i++) {
+	for (int i = 0; i < static_cast<int>(age_ratings->size()); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
@@ -554,7 +554,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 int RomFields::count(void) const
 {
 	RP_D(const RomFields);
-	return (int)d->fields.size();
+	return static_cast<int>(d->fields.size());
 }
 
 /**
@@ -565,7 +565,7 @@ int RomFields::count(void) const
 const RomFields::Field *RomFields::field(int idx) const
 {
 	RP_D(const RomFields);
-	if (idx < 0 || idx >= (int)d->fields.size())
+	if (idx < 0 || idx >= static_cast<int>(d->fields.size()))
 		return nullptr;
 	return &d->fields[idx];
 }
@@ -606,7 +606,7 @@ void RomFields::setTabIndex(int tabIdx)
 {
 	RP_D(RomFields);
 	d->tabIdx = tabIdx;
-	if ((int)d->tabNames.size() < tabIdx+1) {
+	if (static_cast<int>(d->tabNames.size()) < tabIdx+1) {
 		// Need to resize tabNames.
 		d->tabNames.resize(tabIdx+1);
 	}
@@ -625,7 +625,7 @@ void RomFields::setTabName(int tabIdx, const char *name)
 		return;
 
 	RP_D(RomFields);
-	if ((int)d->tabNames.size() < tabIdx+1) {
+	if (static_cast<int>(d->tabNames.size()) < tabIdx+1) {
 		// Need to resize tabNames.
 		d->tabNames.resize(tabIdx+1);
 	}
@@ -641,7 +641,7 @@ int RomFields::addTab(const char *name)
 {
 	RP_D(RomFields);
 	d->tabNames.push_back(name);
-	d->tabIdx = (int)d->tabNames.size() - 1;
+	d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
 	return d->tabIdx;
 }
 
@@ -655,7 +655,7 @@ int RomFields::tabCount(void) const
 	// only a single tab is in use and no
 	// tab name has been set.
 	RP_D(const RomFields);
-	int ret = (int)d->tabNames.size();
+	int ret = static_cast<int>(d->tabNames.size());
 	return (ret > 0 ? ret : 1);
 }
 
@@ -671,7 +671,7 @@ const char *RomFields::tabName(int tabIdx) const
 		return nullptr;
 
 	RP_D(const RomFields);
-	if (tabIdx >= (int)d->tabNames.size()) {
+	if (tabIdx >= static_cast<int>(d->tabNames.size())) {
 		// No tab name.
 		return nullptr;
 	}
@@ -784,7 +784,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		if (!src)
 			continue;
 
-		int idx = (int)d->fields.size();
+		int idx = static_cast<int>(d->fields.size());
 		d->fields.resize(idx+1);
 		Field &field = d->fields.at(idx);
 		field.name = src->name;
@@ -839,7 +839,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	}
 
 	// Fields added.
-	return (int)d->fields.size()-1;
+	return static_cast<int>(d->fields.size() - 1);
 }
 
 /**
@@ -857,7 +857,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 	// RFT_STRING
 	RP_D(RomFields);
-	int idx = (int)d->fields.size();
+	int idx = static_cast<int>(d->fields.size());
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -891,7 +891,7 @@ int RomFields::addField_string(const char *name, const string &str, unsigned int
 
 	// RFT_STRING
 	RP_D(RomFields);
-	int idx = (int)d->fields.size();
+	int idx = static_cast<int>(d->fields.size());
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1058,13 +1058,13 @@ int RomFields::addField_bitfield(const char *name,
 
 	// RFT_BITFIELD
 	RP_D(RomFields);
-	int idx = (int)d->fields.size();
+	int idx = static_cast<int>(d->fields.size());
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
 	field.name = name;
 	field.type = RFT_BITFIELD;
-	field.desc.bitfield.elements = (int)bit_names->size();	// TODO: Remove this.
+	field.desc.bitfield.elements = static_cast<int>(bit_names->size());	// TODO: Remove this.
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.desc.bitfield.names = bit_names;
 	field.data.bitfield = bitfield;
@@ -1096,7 +1096,7 @@ int RomFields::addField_listData(const char *name,
 
 	// RFT_LISTDATA
 	RP_D(RomFields);
-	int idx = (int)d->fields.size();
+	int idx = static_cast<int>(d->fields.size());
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1127,7 +1127,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 
 	// RFT_DATETIME
 	RP_D(RomFields);
-	int idx = (int)d->fields.size();
+	int idx = static_cast<int>(d->fields.size());
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1155,7 +1155,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 
 	// RFT_AGE_RATINGS
 	RP_D(RomFields);
-	int idx = (int)d->fields.size();
+	int idx = static_cast<int>(d->fields.size());
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 

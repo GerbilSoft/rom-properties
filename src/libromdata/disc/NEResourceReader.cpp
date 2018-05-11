@@ -149,12 +149,12 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 
 	// Validate the starting address and size.
 	const int64_t fileSize = file->size();
-	if ((int64_t)rsrc_tbl_addr >= fileSize) {
+	if (static_cast<int64_t>(rsrc_tbl_addr) >= fileSize) {
 		// Starting address is past the end of the file.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
 		return;
-	} else if (((int64_t)rsrc_tbl_addr + (int64_t)rsrc_tbl_size) > fileSize) {
+	} else if ((static_cast<int64_t>(rsrc_tbl_addr) +static_cast<int64_t>(rsrc_tbl_size)) > fileSize) {
 		// Resource ends past the end of the file.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
@@ -322,7 +322,7 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 
 	// Check the key name.
 	// NOTE: NE uses SBCS/MBCS/DBCS, so the length is in bytes.
-	const unsigned int key_len = (unsigned int)strlen(key);
+	const unsigned int key_len = static_cast<unsigned int>(strlen(key));
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
 	// NOTE: sizeof(fields) == 4, so it's already WORD-aligned.
 	unsigned int keyData_len = key_len + 1;
@@ -409,7 +409,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Parse using strtoul().
 	char *endptr;
-	*langID = (unsigned int)strtoul(s_langID, &endptr, 16);
+	*langID = static_cast<unsigned int>(strtoul(s_langID, &endptr, 16));
 	if (*langID == 0 || endptr != &s_langID[8]) {
 		// Not valid.
 		// TODO: Better error code?
@@ -421,7 +421,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
 	const int64_t pos_strings = file->tell();
-	int strTblData_len = (int)fields[0] - (int)(pos_strings - pos_start);
+	int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
 		return -EIO;
@@ -430,7 +430,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// Read the string table.
 	unique_ptr<uint8_t[]> strTblData(new uint8_t[strTblData_len]);
 	size = file->read(strTblData.get(), strTblData_len);
-	if (size != (size_t)strTblData_len) {
+	if (size != static_cast<size_t>(strTblData_len)) {
 		// Read error.
 		return -EIO;
 	}
@@ -529,7 +529,7 @@ NEResourceReader::~NEResourceReader()
  */
 bool NEResourceReader::isOpen(void) const
 {
-	RP_D(NEResourceReader);
+	RP_D(const NEResourceReader);
 	return (d->file && d->file->isOpen());
 }
 
@@ -624,7 +624,7 @@ int64_t NEResourceReader::size(void)
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return (int64_t)d->file->size();
+	return static_cast<int64_t>(d->file->size());
 }
 
 /** IPartition **/
@@ -642,7 +642,7 @@ int64_t NEResourceReader::partition_size(void) const
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return (int64_t)d->file->size();
+	return static_cast<int64_t>(d->file->size());
 }
 
 /**
@@ -659,7 +659,7 @@ int64_t NEResourceReader::partition_size_used(void) const
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return (int64_t)d->file->size();
+	return static_cast<int64_t>(d->file->size());
 }
 
 /** Resource access functions. **/
@@ -698,8 +698,8 @@ IRpFile *NEResourceReader::open(uint16_t type, int id, int lang)
 	} else {
 		// Search for the ID.
 		// TODO: unordered_map?
-		for (unsigned int i = 0; i < (unsigned int)dir.size(); i++) {
-			if (dir[i].id == (uint16_t)id) {
+		for (unsigned int i = 0; i < static_cast<unsigned int>(dir.size()); i++) {
+			if (dir[i].id == static_cast<uint16_t>(id)) {
 				// Found the ID.
 				entry = &dir[i];
 				break;

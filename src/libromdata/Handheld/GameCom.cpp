@@ -137,7 +137,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 			return nullptr;
 		}
 		// Get the lowest power of two size and mask the bank number.
-		unsigned int lz = (1 << uilog2((unsigned int)fileSize));
+		unsigned int lz = (1 << uilog2(static_cast<unsigned int>(fileSize)));
 		bank_number &= ((lz / GCOM_ICON_BANK_SIZE) - 1);
 		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE) - bank_adj;
 	}
@@ -212,7 +212,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 	} else {
 		// Y is a multiple of 4.
 		// Blit directly to rp_image.
-		pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
+		pDestBase = static_cast<uint8_t*>(icon->bits());
 		dest_stride = icon->stride();
 	}
 
@@ -241,7 +241,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// Copy the temporary buffer into the icon if necessary.
 	if (iconYalign != 0) {
 		pSrc = &tmpbuf[GCOM_ICON_W * iconYalign];
-		pDestBase = reinterpret_cast<uint8_t*>(icon->bits());
+		pDestBase = static_cast<uint8_t*>(icon->bits());
 		dest_stride = icon->stride();
 		if (dest_stride == GCOM_ICON_W) {
 			// Stride matches. Copy everything all at once.
@@ -302,7 +302,7 @@ GameCom::GameCom(IRpFile *file)
 
 	if (!d->isValid) {
 		// Try again at the alternate address.
-		size_t size = d->file->seekAndRead(GCOM_HEADER_ADDRESS_ALT, &d->romHeader, sizeof(d->romHeader));
+		size = d->file->seekAndRead(GCOM_HEADER_ADDRESS_ALT, &d->romHeader, sizeof(d->romHeader));
 		if (size == sizeof(d->romHeader)) {
 			// Check if this ROM image is supported.
 			DetectInfo info;
@@ -505,7 +505,7 @@ int GameCom::loadFieldData(void)
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

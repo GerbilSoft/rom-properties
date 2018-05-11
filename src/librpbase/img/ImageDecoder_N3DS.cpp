@@ -72,8 +72,8 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 	}
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 8);
-	const unsigned int tilesY = (unsigned int)(height / 8);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[8*8];
@@ -135,8 +135,8 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565_A4(int width, int height,
 		return nullptr;
 
 	// Calculate the total number of tiles.
-	const unsigned int tilesX = (unsigned int)(width / 8);
-	const unsigned int tilesY = (unsigned int)(height / 8);
+	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
+	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);

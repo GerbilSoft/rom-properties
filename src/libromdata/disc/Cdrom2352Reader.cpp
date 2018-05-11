@@ -91,7 +91,7 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file
 
 	// Disc parameters.
 	// TODO: 64-bit block count?
-	blockCount = (unsigned int)(fileSize / 2352);
+	blockCount = static_cast<unsigned int>(fileSize / 2352);
 	block_size = 2048;
 	disc_size = fileSize / 2352 * 2048;
 
@@ -166,8 +166,9 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 	assert(blockIdx < d->blockCount);
 	// TODO: Make sure overflow doesn't occur.
 	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
-	if (pos < 0 || pos >= (int)d->block_size || size > d->block_size ||
-	    (int64_t)(pos + size) > (int64_t)d->block_size ||
+	if (pos < 0 || pos >= static_cast<int>(d->block_size) ||
+		size > d->block_size ||
+		static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size) ||
 	    blockIdx >= d->blockCount)
 	{
 		// pos+size is out of range.
@@ -182,7 +183,7 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 	// Go to the block.
 	// FIXME: Read the whole block so we can determine if this is Mode1 or Mode2.
 	// Mode1 data starts at byte 16; Mode2 data starts at byte 24.
-	const int64_t phys_pos = ((int64_t)blockIdx * d->physBlockSize) + 16 + pos;
+	const int64_t phys_pos = (static_cast<int64_t>(blockIdx) * d->physBlockSize) + 16 + pos;
 	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = d->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);

@@ -555,7 +555,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		// Sanity check: DDS files shouldn't be more than 128 MB.
 		return nullptr;
 	}
-	const uint32_t file_sz = (uint32_t)file->size();
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	// Seek to the start of the texture data.
 	int ret = file->seek(texDataStartAddr);
@@ -833,7 +833,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	// Check if this DDS texture is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = (uint32_t)size;
+	info.header.size = static_cast<uint32_t>(size);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DDS.
 	info.szFile = file->size();
@@ -850,10 +850,10 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 			unsigned int headerSize;
 			if (!isXbox) {
 				// DX10 texture.
-				headerSize = (unsigned int)(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
+				headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
 			} else {
 				// Xbox One texture.
-				headerSize = (unsigned int)(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
+				headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
 			}
 			if (size < headerSize) {
 				// Extra headers weren't read.
@@ -1025,7 +1025,7 @@ vector<RomData::ImageSizeDef> DirectDrawSurface::supportedImageSizes(ImageType i
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(DirectDrawSurface);
+	RP_D(const DirectDrawSurface);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
@@ -1052,7 +1052,7 @@ uint32_t DirectDrawSurface::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(DirectDrawSurface);
+	RP_D(const DirectDrawSurface);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by DDS.
 		return 0;
@@ -1284,7 +1284,7 @@ int DirectDrawSurface::loadFieldData(void)
 		nullptr, nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwFlags", "Depth"),
 	};
-	vector<string> *v_dwFlags_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n(
 		"DirectDrawSurface|dwFlags", dwFlags_names, ARRAY_SIZE(dwFlags_names));
 	d->fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
@@ -1307,7 +1307,7 @@ int DirectDrawSurface::loadFieldData(void)
 		nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
 	};
-	vector<string> *v_dwCaps_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n(
 		"DirectDrawSurface|dwFlags", dwCaps_names, ARRAY_SIZE(dwCaps_names));
 	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
@@ -1334,7 +1334,7 @@ int DirectDrawSurface::loadFieldData(void)
 		nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps2", "Volume"),
 	};
-	vector<string> *v_dwCaps2_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n(
 		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
 	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, ddsHeader->dwCaps2);
@@ -1353,7 +1353,7 @@ int DirectDrawSurface::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

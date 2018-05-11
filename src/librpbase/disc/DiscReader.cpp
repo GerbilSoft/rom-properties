@@ -145,8 +145,8 @@ size_t DiscReader::read(void *ptr, size_t size)
 
 	// Constrain size based on offset and length.
 	int64_t pos = m_file->tell();
-	if ((int64_t)(pos + size) > m_offset + m_length) {
-		size = (size_t)(m_offset + m_length - pos);
+	if (pos + static_cast<int64_t>(size) > m_offset + m_length) {
+		size = static_cast<size_t>(m_offset + m_length - pos);
 	}
 
 	size_t ret = m_file->read(ptr, size);

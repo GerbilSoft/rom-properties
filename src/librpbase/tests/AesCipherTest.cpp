@@ -110,15 +110,15 @@ class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 		 * Compare two byte arrays.
 		 * The byte arrays are converted to hexdumps and then
 		 * compared using EXPECT_EQ().
-		 * @param expected Expected data.
-		 * @param actual Actual data.
-		 * @param size Size of both arrays.
-		 * @param data_type Data type.
+		 * @param expected	[in] Expected data.
+		 * @param actual	[in] Actual data.
+		 * @param size		[in] Size of both arrays.
+		 * @param data_type	[in] Data type.
 		 */
 		void CompareByteArrays(
 			const uint8_t *expected,
 			const uint8_t *actual,
-			unsigned int size,
+			size_t size,
 			const char *data_type);
 
 	public:
@@ -156,20 +156,20 @@ const char AesCipherTest::test_string[64] =
  * Compare two byte arrays.
  * The byte arrays are converted to hexdumps and then
  * compared using EXPECT_EQ().
- * @param expected Expected data.
- * @param actual Actual data.
- * @param size Size of both arrays.
- * @param data_type Data type.
+ * @param expected	[in] Expected data.
+ * @param actual	[in] Actual data.
+ * @param size		[in] Size of both arrays.
+ * @param data_type	[in] Data type.
  */
 void AesCipherTest::CompareByteArrays(
 	const uint8_t *expected,
 	const uint8_t *actual,
-	unsigned int size,
+	size_t size,
 	const char *data_type)
 {
 	// Output format: (assume ~64 bytes per line)
 	// 0000: 01 23 45 67 89 AB CD EF  01 23 45 67 89 AB CD EF
-	const unsigned int bufSize = ((size / 16) + !!(size % 16)) * 64;
+	const size_t bufSize = ((size / 16) + !!(size % 16)) * 64;
 	char printf_buf[16];
 	string s_expected, s_actual;
 	s_expected.reserve(bufSize);
@@ -177,7 +177,7 @@ void AesCipherTest::CompareByteArrays(
 
 	// TODO: Use stringstream instead?
 	const uint8_t *pE = expected, *pA = actual;
-	for (unsigned int i = 0; i < size; i++, pE++, pA++) {
+	for (size_t i = 0; i < size; i++, pE++, pA++) {
 		if (i % 16 == 0) {
 			// New line.
 			if (i > 0) {
@@ -186,7 +186,8 @@ void AesCipherTest::CompareByteArrays(
 				s_actual += '\n';
 			}
 
-			snprintf(printf_buf, sizeof(printf_buf), "%04X: ", i);
+			// TODO: Print a 64-bit value.
+			snprintf(printf_buf, sizeof(printf_buf), "%04X: ", static_cast<unsigned int>(i));
 			s_expected += printf_buf;
 			s_actual += printf_buf;
 		}
@@ -280,7 +281,7 @@ TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
-		buf.data(), (unsigned int)buf.size(), "plaintext data");
+		buf.data(), buf.size(), "plaintext data");
 }
 
 /**
@@ -320,7 +321,7 @@ TEST_P(AesCipherTest, decryptTest_chainingThenKey)
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
-		buf.data(), (unsigned int)buf.size(), "plaintext data");
+		buf.data(), buf.size(), "plaintext data");
 }
 
 /** Decryption tests. **/

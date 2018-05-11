@@ -149,11 +149,11 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 		&hAesAlg, BCRYPT_AES_ALGORITHM, nullptr, 0);
 	if (NT_SUCCESS(status)) {
 		// Default to ECB chaining.
-		NTSTATUS status = pBCryptSetProperty(
-					hAesAlg, 
-					BCRYPT_CHAINING_MODE, 
-					(PBYTE)BCRYPT_CHAIN_MODE_ECB,
-					sizeof(BCRYPT_CHAIN_MODE_ECB), 0);
+		status = pBCryptSetProperty(
+				hAesAlg, 
+				BCRYPT_CHAINING_MODE, 
+				(PBYTE)BCRYPT_CHAIN_MODE_ECB,
+				sizeof(BCRYPT_CHAIN_MODE_ECB), 0);
 		if (NT_SUCCESS(status)) {
 			// Save the algorithm.
 			this->hAesAlg = hAesAlg;

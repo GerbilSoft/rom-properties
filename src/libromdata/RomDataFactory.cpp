@@ -301,7 +301,7 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 	file->rewind();
 	info.header.addr = 0;
 	info.header.pData = header;
-	info.header.size = (uint32_t)file->read(header, sizeof(header));
+	info.header.size = static_cast<uint32_t>(file->read(header, sizeof(header)));
 	if (info.header.size == 0) {
 		// Read error.
 		return nullptr;
@@ -377,7 +377,7 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 
 			// Make sure the file is big enough to
 			// have this header.
-			if (((int64_t)fns->address + fns->size) > info.szFile)
+			if ((static_cast<int64_t>(fns->address) + fns->size) > info.szFile)
 				continue;
 
 			// Read the header data.
@@ -385,7 +385,7 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 			int ret = file->seek(info.header.addr);
 			if (ret != 0)
 				continue;
-			info.header.size = (uint32_t)file->read(header, fns->size);
+			info.header.size = static_cast<uint32_t>(file->read(header, fns->size));
 			if (info.header.size != fns->size)
 				continue;
 		}
@@ -430,8 +430,8 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 		if (!readFooter) {
 			static const int footer_size = 1024;
 			if (info.szFile > footer_size) {
-				info.header.addr = (uint32_t)(info.szFile - footer_size);
-				info.header.size = (uint32_t)file->seekAndRead(info.header.addr, header, footer_size);
+				info.header.addr = static_cast<uint32_t>(info.szFile - footer_size);
+				info.header.size = static_cast<uint32_t>(file->seekAndRead(info.header.addr, header, footer_size));
 				if (info.header.size == 0) {
 					// Seek and/or read error.
 					return nullptr;

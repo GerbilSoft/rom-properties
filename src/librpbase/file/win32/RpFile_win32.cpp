@@ -189,13 +189,13 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->device_size.
 	// If it isn't, we'll do a short read.
-	if (pos + (int64_t)size >= device_size) {
-		size = (size_t)(device_size - pos);
+	if (pos + static_cast<int64_t>(size) >= device_size) {
+		size = static_cast<size_t>(device_size - pos);
 	}
 
 	// Seek to the beginning of the first block.
 	// TODO: Make sure sector_size is a power of 2.
-	int seek_ret = q->seek(pos & ~((int64_t)sector_size - 1));
+	int seek_ret = q->seek(pos & ~(static_cast<int64_t>(sector_size) - 1));
 	if (seek_ret != 0) {
 		// Seek error.
 		return 0;
@@ -224,8 +224,8 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 
 		// Copy the data from the sector buffer.
 		uint32_t read_sz = sector_size - blockStartOffset;
-		if (size < (size_t)read_sz) {
-			read_sz = (uint32_t)size;
+		if (size < static_cast<size_t>(read_sz)) {
+			read_sz = static_cast<uint32_t>(size);
 		}
 		memcpy(ptr8, &sector_buffer[blockStartOffset], read_sz);
 
@@ -407,12 +407,12 @@ void RpFile::init(void)
 			// Save the device size and sector size.
 			// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
 			// but it doesn't provide dwBytesPerSector.
-			d->device_size = (dwBytesPerSector * dwSectorsPerCluster) *
-					 (int64_t)dwTotalNumberOfClusters;
+			d->device_size = static_cast<int64_t>(dwBytesPerSector * dwSectorsPerCluster) *
+					 static_cast<int64_t>(dwTotalNumberOfClusters);
 			d->sector_size = dwBytesPerSector;
 		} else {
 			// GetDiskFreeSpace() failed.
-			DWORD w32err = GetLastError();
+			w32err = GetLastError();
 			if (w32err == ERROR_INVALID_PARAMETER) {
 				// The disk may use some file system that
 				// Windows doesn't recognize.
@@ -543,7 +543,7 @@ size_t RpFile::read(void *ptr, size_t size)
 	}
 
 	DWORD bytesRead;
-	BOOL bRet = ReadFile(d->file.get(), ptr, (DWORD)size, &bytesRead, nullptr);
+	BOOL bRet = ReadFile(d->file.get(), ptr, static_cast<DWORD>(size), &bytesRead, nullptr);
 	if (!bRet) {
 		// An error occurred.
 		m_lastError = w32err_to_posix(GetLastError());
@@ -576,7 +576,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 	}
 
 	DWORD bytesWritten;
-	BOOL bRet = WriteFile(d->file.get(), ptr, (DWORD)size, &bytesWritten, nullptr);
+	BOOL bRet = WriteFile(d->file.get(), ptr, static_cast<DWORD>(size), &bytesWritten, nullptr);
 	if (!bRet) {
 		// An error occurred.
 		m_lastError = w32err_to_posix(GetLastError());

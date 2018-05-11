@@ -177,7 +177,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 {
 	// Assume 512-byte sectors initially.
 	unsigned int hd_sec_sz = 512;
-	wbfs_head_t *head = (wbfs_head_t*)malloc(hd_sec_sz);
+	wbfs_head_t *head = static_cast<wbfs_head_t*>(malloc(hd_sec_sz));
 	if (!head) {
 		// ENOMEM
 		return nullptr;
@@ -204,7 +204,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	// Based on libwbfs.c's wbfs_open_partition().
 
 	// wbfs_t struct.
-	wbfs_t *p = (wbfs_t*)malloc(sizeof(wbfs_t));
+	wbfs_t *p = static_cast<wbfs_t*>(malloc(sizeof(wbfs_t)));
 	if (!p) {
 		// ENOMEM
 		free(head);
@@ -229,7 +229,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	if (p->hd_sec_sz != hd_sec_sz) {
 		hd_sec_sz = p->hd_sec_sz;
 		free(head);
-		head = (wbfs_head_t*)malloc(hd_sec_sz);
+		head = static_cast<wbfs_head_t*>(malloc(hd_sec_sz));
 		if (!head) {
 			// ENOMEM
 			free(p);
@@ -238,7 +238,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 
 		// Re-read the WBFS header.
 		file->rewind();
-		size_t size = file->read(head, hd_sec_sz);
+		size = file->read(head, hd_sec_sz);
 		if (size != hd_sec_sz) {
 			// Read error.
 			// TODO: Return errno?
@@ -264,14 +264,14 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	// Disc size.
 	p->n_wbfs_sec = p->n_wii_sec >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
 	p->n_wbfs_sec_per_disc = p->n_wii_sec_per_disc >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
-	p->disc_info_sz = (uint16_t)ALIGN_LBA(sizeof(wbfs_disc_info_t) + p->n_wbfs_sec_per_disc*2);
+	p->disc_info_sz = static_cast<uint16_t>(ALIGN_LBA(sizeof(wbfs_disc_info_t) + p->n_wbfs_sec_per_disc*2));
 
 	// Free blocks table.
 	p->freeblks_lba = (p->wbfs_sec_sz - p->n_wbfs_sec/8) >> p->hd_sec_sz_s;
 	p->freeblks = nullptr;
 	p->max_disc = (p->freeblks_lba-1) / (p->disc_info_sz >> p->hd_sec_sz_s);
 	if (p->max_disc > (p->hd_sec_sz - sizeof(wbfs_head_t)))
-		p->max_disc = (uint16_t)(p->hd_sec_sz - sizeof(wbfs_head_t));
+		p->max_disc = static_cast<uint16_t>(p->hd_sec_sz - sizeof(wbfs_head_t));
 
 	p->n_disc_open = 0;
 	return p;
@@ -310,7 +310,7 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 		if (head->disc_table[i]) {
 			if (count++ == index) {
 				// Found the disc table index.
-				wbfs_disc_t *disc = (wbfs_disc_t*)malloc(sizeof(wbfs_disc_t));
+				wbfs_disc_t *disc = static_cast<wbfs_disc_t*>(malloc(sizeof(wbfs_disc_t)));
 				if (!disc) {
 					// ENOMEM
 					return nullptr;
@@ -319,7 +319,7 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				disc->i = i;
 
 				// Read the disc header.
-				disc->header = (wbfs_disc_info_t*)malloc(p->disc_info_sz);
+				disc->header = static_cast<wbfs_disc_info_t*>(malloc(p->disc_info_sz));
 				if (!disc->header) {
 					// ENOMEM
 					free(disc);
@@ -387,7 +387,7 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 	}
 
 	// lastBlock+1 * WBFS block size == filesize.
-	return (int64_t)(lastBlock + 1) * (int64_t)(p->wbfs_sec_sz);
+	return static_cast<int64_t>(lastBlock + 1) * static_cast<int64_t>(p->wbfs_sec_sz);
 }
 
 /** WbfsReader **/
@@ -459,8 +459,8 @@ int WbfsReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	assert(pos >= 0 && pos < (int)d->block_size);
 	assert(size <= d->block_size);
 	// TODO: Make sure overflow doesn't occur.
-	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
-	if (pos < 0 || (int64_t)(pos + size) > (int64_t)d->block_size) {
+	assert(static_cast<int64_t>(pos + size) <= static_cast<int64_t>(d->block_size));
+	if (pos < 0 || static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size)) {
 		// pos+size is out of range.
 		return -1;
 	}
@@ -482,11 +482,11 @@ int WbfsReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	if (physBlockIdx == 0) {
 		// Empty block.
 		memset(ptr, 0, size);
-		return (int)size;
+		return static_cast<int>(size);
 	}
 
 	// Go to the block.
-	const int64_t phys_pos = ((int64_t)physBlockIdx * d->block_size) + pos;
+	const int64_t phys_pos = (static_cast<int64_t>(physBlockIdx) * d->block_size) + pos;
 	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = d->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);

@@ -224,7 +224,7 @@ static void init_printbuf_state (printbuf_state *prbuf);
 static void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent);
 static void report_printbuf (printbuf_state *prbuf, const char *fname, const char *chunkid);
 #endif /* rom-properties */
-static int  keywordlen (uch *buffer, int maxsize);
+static int  keywordlen (const uch *buffer, int maxsize);
 #ifdef RP_PRINTF_ENABLED
 static const char *getmonth (int m);
 static int  ratio (ulg uc, ulg c);
@@ -238,12 +238,12 @@ int  pngcheck (IRpFile *fp);
 #if 0 /* rom-properties */
 static int  pnginfile (FILE *fp, const char *fname, int ipng, int extracting);
 static void pngsearch (FILE *fp, const char *fname, int extracting);
-static int  check_magic (uch *magic, const char *fname, int which);
+static int  check_magic (const uch *magic, const char *fname, int which);
 static int  check_chunk_name (const char *chunk_name, const char *fname);
-static int  check_keyword (uch *buffer, int maxsize, int *pKeylen,
+static int  check_keyword (const uch *buffer, int maxsize, int *pKeylen,
                     const char *keyword_name, const char *chunkid, const char *fname);
-static int  check_text (uch *buffer, int maxsize, const char *chunkid, const char *fname);
-static int  check_ascii_float (uch *buffer, int len, const char *chunkid, const char *fname);
+static int  check_text (const uch *buffer, int maxsize, const char *chunkid, const char *fname);
+static int  check_ascii_float (const uch *buffer, int len, const char *chunkid, const char *fname);
 #endif
 
 #define BS 32000 /* size of read block for CRC calculation (and zlib) */
@@ -347,12 +347,12 @@ static inline void report_printbuf (printbuf_state *prbuf, const char *chunkid) 
 }
 #endif /* RP_PRINTF_ENABLED */
 
-int check_magic (uch *magic, int which);
+int check_magic (const uch *magic, int which);
 int check_chunk_name (const char *chunk_name);
-int check_keyword (uch *buffer, int maxsize, int *pKeylen,
+int check_keyword (const uch *buffer, int maxsize, int *pKeylen,
                    const char *keyword_name, const char *chunkid);
-int check_text (uch *buffer, int maxsize, const char *chunkid);
-int check_ascii_float (uch *buffer, int len, const char *chunkid);
+int check_text (const uch *buffer, int maxsize, const char *chunkid);
+int check_ascii_float (const uch *buffer, int len, const char *chunkid);
 
 public:
 	explicit CPngCheck(IRpFile *fp)
@@ -1084,7 +1084,7 @@ void CPngCheck::report_printbuf(printbuf_state *prbuf, const char *chunkid)
 
 
 
-static int keywordlen(uch *buf, int maxsize)
+static int keywordlen(const uch *buf, int maxsize)
 {
   int j = 0;
 
@@ -3695,8 +3695,8 @@ FIXME: add support for decompressing/printing zTXt
           png? 'P':'J');
         set_err(kMinorError);
       } else if (sz > 0 && verbose) {
-        uch *p = buffer;
-        uch *lastbreak = buffer;
+        const uch *p = buffer;
+        const uch *const lastbreak = buffer;
 
         if (sz < 32)
           printf(":  ");
@@ -5010,7 +5010,7 @@ static void pngsearch(FILE *fp, const char *fname, int extracting)
  * without any restrictions.
  *
  */
-int CPngCheck::check_magic(uch *magic, int which)
+int CPngCheck::check_magic(const uch *magic, int which)
 {
   int i;
   const uch *good_magic = (which == 0)? good_PNG_magic :
@@ -5091,7 +5091,7 @@ int CPngCheck::check_chunk_name(const char *chunk_name)
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
 /* keyword_name is "keyword" for most chunks, but it can instead be "name" or
  * "identifier" or whatever makes sense for the chunk in question */
-int CPngCheck::check_keyword(uch *buffer, int maxsize, int *pKeylen,
+int CPngCheck::check_keyword(const uch *buffer, int maxsize, int *pKeylen,
                   const char *keyword_name, const char *chunkid)
 {
   int j, prev_space = 0;
@@ -5152,7 +5152,7 @@ int CPngCheck::check_keyword(uch *buffer, int maxsize, int *pKeylen,
 
 /* GRR 20070707 */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-int CPngCheck::check_text(uch *buffer, int maxsize, const char *chunkid)
+int CPngCheck::check_text(const uch *buffer, int maxsize, const char *chunkid)
 {
   int j, ctrlwarn = verbose? 1 : 0;  /* print message once, only if verbose */
 
@@ -5175,9 +5175,9 @@ int CPngCheck::check_text(uch *buffer, int maxsize, const char *chunkid)
 
 /* GRR 20061203 (used only for sCAL) */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-int CPngCheck::check_ascii_float(uch *buffer, int len, const char *chunkid)
+int CPngCheck::check_ascii_float(const uch *buffer, int len, const char *chunkid)
 {
-  uch *qq = buffer, *bufEnd = buffer + len;
+  const uch *qq = buffer; const uch *const bufEnd = buffer + len;
   int have_sign = 0, have_integer = 0, have_dot = 0, have_fraction = 0;
   int have_E = 0, have_Esign = 0, have_exponent = 0, in_digits = 0;
   int have_nonzero = 0;

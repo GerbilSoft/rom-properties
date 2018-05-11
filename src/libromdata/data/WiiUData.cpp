@@ -358,9 +358,9 @@ uint32_t WiiUData::lookup_disc_publisher(const char *id4)
 {
 	// Check the region-independent list first.
 	WiiUDataPrivate::WiiUDiscPublisher key;
-	key.id4 = ((uint8_t)id4[0] << 24) |
-		  ((uint8_t)id4[1] << 16) |
-		  ((uint8_t)id4[2] << 8) | 'x';
+	key.id4 = (static_cast<uint8_t>(id4[0]) << 24) |
+		  (static_cast<uint8_t>(id4[1]) << 16) |
+		  (static_cast<uint8_t>(id4[2]) << 8) | 'x';
 	key.publisher = 0;
 
 	// Do a binary search.
@@ -377,7 +377,7 @@ uint32_t WiiUData::lookup_disc_publisher(const char *id4)
 
 	// Check the region-specific list.
 	key.id4 &= ~0xFF;
-	key.id4 |= (uint8_t)id4[3];
+	key.id4 |= static_cast<uint8_t>(id4[3]);
 
 	// Do a binary search.
 	res = static_cast<const WiiUDataPrivate::WiiUDiscPublisher*>(bsearch(&key,

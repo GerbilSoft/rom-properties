@@ -637,7 +637,7 @@ void PNGCAPI RpPngWriterPrivate::png_io_IRpFile_write(png_structp png_ptr, png_b
 void PNGCAPI RpPngWriterPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 {
 	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
+	IRpFile *const file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
 	if (!file)
 		return;
 
@@ -855,7 +855,8 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	png_set_bgr(png_ptr);
 
 	// Allocate the row pointers.
-	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * cache.height);
+	row_pointers = static_cast<const png_byte**>(
+		png_malloc(png_ptr, sizeof(const png_byte*) * cache.height));
 	if (!row_pointers) {
 		lastError = ENOMEM;
 		return -lastError;
@@ -1377,7 +1378,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
-	png_set_text(d->png_ptr, d->info_ptr, text, (int)kv.size());
+	png_set_text(d->png_ptr, d->info_ptr, text, static_cast<int>(kv.size()));
 	delete[] text;
 	for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
 		free(*iter);

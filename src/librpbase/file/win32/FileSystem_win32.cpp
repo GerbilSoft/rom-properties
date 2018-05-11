@@ -159,7 +159,7 @@ int rmkdir(const string &path)
 	// Find all backslashes and ensure the directory component exists.
 	// (Skip the drive letter and root backslash.)
 	size_t slash_pos = 4;
-	while ((slash_pos = path16.find((char16_t)DIR_SEP_CHR, slash_pos)) != string::npos) {
+	while ((slash_pos = path16.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != string::npos) {
 		// Temporarily NULL out this slash.
 		path16[slash_pos] = 0;
 
@@ -436,8 +436,8 @@ static void LookupGetFinalPathnameByHandleW(void)
 {
 	HMODULE hKernel32 = GetModuleHandle(L"kernel32");
 	if (hKernel32) {
-		pfnGetFinalPathnameByHandleW = (PFNGETFINALPATHNAMEBYHANDLEW)
-			GetProcAddress(hKernel32, "GetFinalPathNameByHandleW");
+		pfnGetFinalPathnameByHandleW = reinterpret_cast<PFNGETFINALPATHNAMEBYHANDLEW>(
+			GetProcAddress(hKernel32, "GetFinalPathNameByHandleW"));
 	}
 }
 

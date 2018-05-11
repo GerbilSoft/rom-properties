@@ -146,9 +146,9 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 	char keyY_name[40];
 	char keyNormal_name[40];
 	snprintf(keyX_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyX", keyPrefix);
-	snprintf(keyY_name, sizeof(keyY_name), "%s-Slot0x3DKeyY-%d",
+	snprintf(keyY_name, sizeof(keyY_name), "%s-Slot0x3DKeyY-%u",
 		keyPrefix, ticket->keyY_index);
-	snprintf(keyNormal_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyNormal-%d",
+	snprintf(keyNormal_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyNormal-%u",
 		keyPrefix, ticket->keyY_index);
 
 	// Get the KeyNormal. If that fails, get KeyX and KeyY,
@@ -243,7 +243,7 @@ CIAReader::~CIAReader()
  */
 bool CIAReader::isOpen(void) const
 {
-	RP_D(CIAReader);
+	RP_D(const CIAReader);
 	return (d->file && d->file->isOpen());
 }
 
@@ -276,8 +276,8 @@ size_t CIAReader::read(void *ptr, size_t size)
 
 	// Make sure d->pos + size <= d->content_length.
 	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= d->content_length) {
-		size = (size_t)(d->content_length - d->pos);
+	if (d->pos + static_cast<int64_t>(size) >= d->content_length) {
+		size = static_cast<size_t>(d->content_length - d->pos);
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -366,7 +366,7 @@ size_t CIAReader::read(void *ptr, size_t size)
 		m_lastError = EIO;
 		return 0;
 	}
-	unsigned int sz_dec = d->cipher->decrypt(static_cast<uint8_t*>(ptr), size);
+	size_t sz_dec = d->cipher->decrypt(static_cast<uint8_t*>(ptr), size);
 	if (sz_dec != size) {
 		// decrypt() failed.
 		m_lastError = EIO;
@@ -403,7 +403,7 @@ int CIAReader::seek(int64_t pos)
 	else if (pos >= d->content_length)
 		d->pos = d->content_length;
 	else
-		d->pos = (uint32_t)pos;
+		d->pos = static_cast<uint32_t>(pos);
 	return 0;
 }
 
@@ -421,7 +421,7 @@ void CIAReader::rewind(void)
  */
 int64_t CIAReader::tell(void)
 {
-	RP_D(CIAReader);
+	RP_D(const CIAReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
 	if (!d->file ||  !d->file->isOpen()) {
