@@ -231,6 +231,9 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	mapKeyNames.insert(std::make_pair(string(name), keyIdx));
 	return 1;
 #else /* !ENABLE_DECRYPTION */
+	RP_UNUSED(section);
+	RP_UNUSED(name);
+	RP_UNUSED(value);
 	assert(!"Should not be called in no-decryption builds.");
 	return 0;
 #endif /* ENABLE_DECRYPTION */
