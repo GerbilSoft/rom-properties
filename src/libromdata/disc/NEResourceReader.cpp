@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.cpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "NEResourceReader.hpp"
@@ -97,13 +96,6 @@ class NEResourceReaderPrivate
 		 * @return 0 if the header matches; non-zero on error.
 		 */
 		static int load_VS_VERSION_INFO_header(IRpFile *file, const char *key, uint16_t *pLen, uint16_t *pValueLen);
-
-		/**
-		 * DWORD alignment function.
-		 * @param file	[in] File to DWORD align.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static inline int alignFileDWORD(IRpFile *file);
 
 		/**
 		 * Load a string table.
@@ -351,22 +343,6 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 }
 
 /**
- * DWORD alignment function.
- * @param file	[in] File to DWORD align.
- * @return 0 on success; non-zero on error.
- */
-inline int NEResourceReaderPrivate::alignFileDWORD(IRpFile *file)
-{
-	int ret = 0;
-	int64_t pos = file->tell();
-	if (pos % 4 != 0) {
-		pos = ALIGN(4, pos);
-		ret = file->seek(pos);
-	}
-	return ret;
-}
-
-/**
  * Load a string table.
  * @param file		[in] PE version resource.
  * @param st		[out] String Table.
@@ -417,7 +393,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	}
 
 	// DWORD alignment.
-	alignFileDWORD(file);
+	IResourceReader::alignFileDWORD(file);
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
 	const int64_t pos_strings = file->tell();
@@ -794,7 +770,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// DWORD alignment, if necessary.
-	NEResourceReaderPrivate::alignFileDWORD(f_ver.get());
+	alignFileDWORD(f_ver.get());
 
 	// Read the StringFileInfo section header.
 	static const char vssfi[] = "StringFileInfo";

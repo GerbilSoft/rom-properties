@@ -79,6 +79,7 @@ SET(libromdata_SRCS
 	disc/GcnPartitionPrivate.cpp
 	disc/WiiPartition.cpp
 	disc/GcnFst.cpp
+	disc/IResourceReader.cpp
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
