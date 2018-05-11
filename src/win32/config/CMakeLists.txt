@@ -9,6 +9,9 @@ SET_TARGET_PROPERTIES(rp-config PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rp-config)
 SET_WINDOWS_SUBSYSTEM(rp-config WIN32)
 SET_WINDOWS_NO_MANIFEST(rp-config)
+# NOTE: rp_show_config_dialog() uses a WinMain-style entry point,
+# so use WinMain for rp-config.exe.
+SET_WINDOWS_ENTRYPOINT(rp-config WinMain OFF)
 
 TARGET_LINK_LIBRARIES(rp-config win32common)
 TARGET_INCLUDE_DIRECTORIES(rp-config

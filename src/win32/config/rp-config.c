@@ -103,7 +103,7 @@ static const wchar_t CLSIDs[4][40] = {
 	} \
 } while (0)
 
-int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
 	// Filename and path buffers.
 	wchar_t *exe_path = NULL;	// MAX_PATH
