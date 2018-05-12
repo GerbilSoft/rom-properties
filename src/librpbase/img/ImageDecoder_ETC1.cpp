@@ -34,7 +34,7 @@ namespace LibRpBase {
 
 // ETC1 block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
-union etc1_block {
+union PACKED etc1_block {
 	struct {
 		// Base colors
 		// Byte layout:
