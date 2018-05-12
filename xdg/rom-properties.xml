@@ -35,4 +35,24 @@
       <match value="WII\001DISC" type="string" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-wii-u-rom">
+    <comment>Wii U disc image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <alias type="application/x-wii-u-iso-image"/>
+    <glob pattern="*.iso"/>
+    <glob pattern="*.wud"/>
+    <magic priority="50">
+      <match value="WUP-" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-game-com-rom">
+    <comment>game.com ROM image</comment>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.bin"/>
+    <glob pattern="*.tgc"/>
+    <magic priority="50">
+      <match value="TigerDMGC" type="string" offset="5"/>
+    </magic>
+  </mime-type>
 </mime-info>
