@@ -30,6 +30,8 @@
 
 namespace LibRpBase {
 
+#pragma pack(1)
+
 // ETC1 block format.
 // NOTE: Layout maps to on-disk format, which is big-endian.
 union etc1_block {
@@ -110,6 +112,8 @@ struct etc2_rgba_block {
 	etc1_block etc1;
 };
 ASSERT_STRUCT(etc2_rgba_block, 16);
+
+#pragma pack()
 
 /**
  * Extract the 48-bit code value from etc2_alpha.
