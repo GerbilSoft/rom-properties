@@ -11,7 +11,9 @@ ENDIF()
 # Increase some warnings to errors:
 # - C4013: function undefined; this is allowed in C, but will
 #   probably cause a linker error.
-SET(RP_C_FLAGS_COMMON "/nologo /wd4355 /wd4482 /we4013 -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE")
+# - C4024: 'function': different types for formal and actual parameter n
+# - C4047: 'function': 'parameter' differs in levels of indirection from 'argument'
+SET(RP_C_FLAGS_COMMON "/nologo /wd4355 /wd4482 /we4013 /we4024 /we4047 -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE")
 SET(RP_CXX_FLAGS_COMMON "${RP_C_FLAGS_COMMON} -D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING")
 # NOTE: /TSAWARE is automatically set for Windows 2000 and later. (as of at least Visual Studio .NET 2003)
 # NOTE 2: /TSAWARE is not applicable for DLLs.
