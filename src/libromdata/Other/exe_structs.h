@@ -81,7 +81,6 @@ typedef enum {
 } PE_Characteristics;
 
 typedef enum {
-	// TODO: Update from `file`.
 	IMAGE_FILE_MACHINE_UNKNOWN	= 0x0000,
 	IMAGE_FILE_MACHINE_I386		= 0x014C, /* Intel 386 or later processors 
 						     and compatible processors */
@@ -104,7 +103,9 @@ typedef enum {
 	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01F1, /* Power PC with floating point support */
 	IMAGE_FILE_MACHINE_IA64		= 0x0200, /* Intel Itanium processor family */
 	IMAGE_FILE_MACHINE_MIPS16	= 0x0266, /* MIPS16 */
+	IMAGE_FILE_MACHINE_M68K		= 0x0268, /* Motorola 68000 */
 	IMAGE_FILE_MACHINE_ALPHA64	= 0x0284, /* Alpha AXP (64-bit) */
+	IMAGE_FILE_MACHINE_PA_RISC	= 0x0290, /* PA-RISC */
 	IMAGE_FILE_MACHINE_MIPSFPU	= 0x0366, /* MIPS with FPU */
 	IMAGE_FILE_MACHINE_MIPSFPU16	= 0x0466, /* MIPS16 with FPU */
 	IMAGE_FILE_MACHINE_AXP64	= IMAGE_FILE_MACHINE_ALPHA64, /* Alpha AXP (64-bit) */
