@@ -35,6 +35,7 @@
 	((int)(((sizeof(x) / sizeof(x[0]))) / \
 		(size_t)(!(sizeof(x) % sizeof(x[0])))))
 
+#ifdef _WIN32
 // Architecture name.
 #if defined(_M_X64) || defined(__amd64__)
 # define ARCH_NAME L"amd64"
@@ -44,7 +45,6 @@
 # error Unsupported CPU architecture.
 #endif
 
-#ifdef _WIN32
 /**
  * Initialize the internationalization subsystem.
  * (Windows version)
