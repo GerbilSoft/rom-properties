@@ -26,6 +26,7 @@
     <glob pattern="*.gcm"/>
     <glob pattern="*.ciso"/>
     <glob pattern="*.rvm"/>
+    <glob pattern="*.wia"/>
     <magic priority="50">
       <match value="0x5d1c9ea3" type="big32" offset="24"/>
       <match value="CISO" type="string" offset="4">
