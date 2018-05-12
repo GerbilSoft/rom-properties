@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-gamecube-rom">
+    <comment>GameCube disc image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <alias type="application/x-gamecube-iso-image"/>
+    <glob pattern="*.iso"/>
+    <glob pattern="*.gcm"/>
+    <glob pattern="*.ciso"/>
+    <magic priority="50">
+      <match value="0xc2339f3d" type="big32" offset="28"/>
+      <match value="CISO" type="string" offset="4">
+        <match value="0xc2339f3d" type="big32" offset="32796"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-wii-rom">
+    <comment>Wii disc image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <alias type="application/x-wii-iso-image"/>
+    <alias type="application/x-wbfs"/>
+    <alias type="application/x-wia"/>
+    <glob pattern="*.iso"/>
+    <glob pattern="*.gcm"/>
+    <glob pattern="*.ciso"/>
+    <glob pattern="*.rvm"/>
+    <glob pattern="*.wia"/>
+    <magic priority="50">
+      <match value="0x5d1c9ea3" type="big32" offset="24"/>
+      <match value="CISO" type="string" offset="4">
+        <match value="0x5d1c9ea3" type="big32" offset="32792"/>
+      </match>
+      <match value="WBFS" type="string" offset="0"/>
+      <match value="WII\001DISC" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-wii-u-rom">
+    <comment>Wii U disc image</comment>
+    <sub-class-of type="application/x-raw-disk-image"/>
+    <generic-icon name="application-x-cd-image"/>
+    <alias type="application/x-wii-u-iso-image"/>
+    <glob pattern="*.iso"/>
+    <glob pattern="*.wud"/>
+    <magic priority="50">
+      <match value="WUP-" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-game-com-rom">
+    <comment>game.com ROM image</comment>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.bin"/>
+    <glob pattern="*.tgc"/>
+    <magic priority="50">
+      <match value="TigerDMGC" type="string" offset="5"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-ps1-save">
+    <comment>PlayStation save file</comment>
+    <glob pattern="*.psv"/>
+    <magic priority="50">
+      <match value="\0VSP\0\0\0\0" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-vtf">
+    <comment>Valve texture file</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.vtf"/>
+    <magic priority="50">
+      <match value="VTF\0" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-vtf3">
+    <comment>Valve texture file (PS3)</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.vtf"/>
+    <magic priority="50">
+      <match value="VTF3" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-sega-pvr">
+    <comment>Sega PVR texture file</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.pvr"/>
+    <magic priority="50">
+      <match value="PVRT" type="string" offset="0"/>
+      <match value="PVRT" type="string" offset="12"/>
+      <match value="PVRT" type="string" offset="16"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-sega-gvr">
+    <comment>Sega GVR texture file</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.gvr"/>
+    <magic priority="50">
+      <match value="GVRT" type="string" offset="0"/>
+      <match value="GVRT" type="string" offset="12"/>
+      <match value="GVRT" type="string" offset="16"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-sega-pvrx">
+    <comment>Sega PVRX texture file</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.pvr"/>
+    <magic priority="50">
+      <match value="PVRX" type="string" offset="0"/>
+      <match value="PVRX" type="string" offset="12"/>
+      <match value="PVRX" type="string" offset="16"/>
+    </magic>
+  </mime-type>
+</mime-info>
