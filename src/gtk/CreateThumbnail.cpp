@@ -375,8 +375,13 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// URI.
-	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
-	// GTK+ desktops do urlencode spaces and non-ASCII characters.
+	// NOTE: The Thumbnail Management Standard specification says spaces
+	// must be urlencoded: ' ' -> "%20"
+	// KDE4 and KF5 prior to 5.46 did not do this correctly.
+	// KF5 5.46 does encode the URI correctly.
+	// References:
+	// - https://bugs.kde.org/show_bug.cgi?id=393015
+	// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
 	if (g_path_is_absolute(source_file)) {
 		// We have an absolute path.
 		uri = g_filename_to_uri(source_file, nullptr, nullptr);
