@@ -56,4 +56,11 @@
       <match value="TigerDMGC" type="string" offset="5"/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-ps1-save">
+    <comment>PlayStation save file</comment>
+    <glob pattern="*.psv"/>
+    <magic priority="50">
+      <match value="\0VSP\0\0\0\0" type="string" offset="0"/>
+    </magic>
+  </mime-type>
 </mime-info>
