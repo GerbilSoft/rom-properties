@@ -175,7 +175,6 @@ void AesCipherTest::CompareByteArrays(
 	s_expected.reserve(bufSize);
 	s_actual.reserve(bufSize);
 
-	// TODO: Use stringstream instead?
 	const uint8_t *pE = expected, *pA = actual;
 	for (size_t i = 0; i < size; i++, pE++, pA++) {
 		if (i % 16 == 0) {

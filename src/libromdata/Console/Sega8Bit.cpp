@@ -189,7 +189,6 @@ int Sega8Bit::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const Sega8_RomHeader*>(&info->header.pData[offset]);
 
 	// Check "TMR SEGA".
-	// TODO: Codemasters and SDSC checks.
 	if (!memcmp(romHeader->magic, SEGA8_MAGIC, sizeof(romHeader->magic))) {
 		// This is a Sega 8-bit ROM image.
 		return 0;
@@ -356,7 +355,6 @@ int Sega8Bit::loadFieldData(void)
 	// TODO: ROM size?
 
 	// Check for other headers.
-	// TODO: SDSC header.
 	if (0x10000 - static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum)) ==
 		static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
 	{

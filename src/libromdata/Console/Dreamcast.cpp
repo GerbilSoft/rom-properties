@@ -183,7 +183,6 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	}
 
 	// Create the ISO-9660 file system reader if it isn't already opened.
-	// TODO: Support multi-track images.
 	if (!isoPartition) {
 		if (discType == DISC_GDI) {
 			// Open track 3 as ISO-9660.
