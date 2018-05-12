@@ -54,6 +54,7 @@ using namespace LibRomData;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 
 // C++ includes.
 #include <fstream>
