@@ -256,6 +256,11 @@ const rp_image *GameComPrivate::loadIcon(void)
 		}
 	}
 
+	// Set the sBIT metadata.
+	// TODO: Use grayscale instead of RGB.
+	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
+	icon->set_sBIT(&sBIT);
+
 	// Save and return the icon.
 	this->icon = icon;
 	return icon;
