@@ -66,8 +66,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
 	}
 
 	// Load the file.
-	// TODO: Proper string conversion.
-	hr = pPersistFile->Load((LPCOLESTR)this->filename.c_str(), STGM_READ);
+	hr = pPersistFile->Load(U82W_s(this->filename), STGM_READ);
 	if (FAILED(hr)) {
 		// Failed to load the file.
 		return ERROR_FILE_NOT_FOUND;
