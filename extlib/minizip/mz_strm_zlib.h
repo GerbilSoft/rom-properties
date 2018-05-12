@@ -1,5 +1,5 @@
 /* mz_strm_zlib.h -- Stream for zlib inflate/deflate
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,8 +9,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#ifndef _MZ_STREAM_ZLIB_H
-#define _MZ_STREAM_ZLIB_H
+#ifndef MZ_STREAM_ZLIB_H
+#define MZ_STREAM_ZLIB_H
 
 #include <stdint.h>
 

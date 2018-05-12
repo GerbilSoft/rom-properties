@@ -1,5 +1,5 @@
 /* mz_strm_split.c -- Stream for split files
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -255,7 +255,7 @@ int32_t mz_stream_split_write(void *stream, const void *buf, int32_t size)
     int32_t bytes_avail = 0;
     int32_t number_disk = -1;
     int32_t err = MZ_OK;
-    uint8_t *buf_ptr = (uint8_t *)buf;
+    const uint8_t *buf_ptr = (const uint8_t *)buf;
 
     while (bytes_left > 0)
     {

@@ -1,5 +1,5 @@
 /* mz_os_posix.h -- System functions for posix
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,8 +9,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#ifndef _MZ_OS_POSIX_H
-#define _MZ_OS_POSIX_H
+#ifndef MZ_OS_POSIX_H
+#define MZ_OS_POSIX_H
 
 #include <stdint.h>
 #include <time.h>
@@ -35,8 +35,8 @@ int32_t mz_posix_file_exists(const char *path);
 int64_t mz_posix_get_file_size(const char *path);
 int32_t mz_posix_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date);
 int32_t mz_posix_set_file_date(const char *path, time_t modified_date, time_t accessed_date, time_t creation_date);
-int32_t mz_posix_get_file_attribs(const char *path, int32_t *attributes);
-int32_t mz_posix_set_file_attribs(const char *path, int32_t attributes);
+int32_t mz_posix_get_file_attribs(const char *path, uint32_t *attributes);
+int32_t mz_posix_set_file_attribs(const char *path, uint32_t attributes);
 int32_t mz_posix_make_dir(const char *path);
 DIR*    mz_posix_open_dir(const char *path);
 struct

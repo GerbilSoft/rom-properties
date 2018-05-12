@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -14,8 +14,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#ifndef _MZ_ZIP_H
-#define _MZ_ZIP_H
+#ifndef MZ_ZIP_H
+#define MZ_ZIP_H
 
 #include <stdint.h>
 #include <time.h>
@@ -49,9 +49,9 @@ typedef struct mz_zip_file_s
     uint32_t external_fa;               // external file attributes
     uint16_t zip64;                     // zip64 extension mode
 
-    char     *filename;                 // filename string
-    uint8_t  *extrafield;               // extrafield data
-    char     *comment;                  // comment string
+    const char     *filename;           // filename string
+    const uint8_t  *extrafield;         // extrafield data
+    const char     *comment;            // comment string
 
 #ifdef HAVE_AES
     uint16_t aes_version;               // winzip aes extension if not 0

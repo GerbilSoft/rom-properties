@@ -1,5 +1,5 @@
 /* mz_strm_zlib.c -- Stream for zlib inflate/deflate
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -139,7 +139,7 @@ int32_t mz_stream_zlib_read(void *stream, void *buf, int32_t size)
             bytes_to_read = sizeof(zlib->buffer);
             if (zlib->max_total_in > 0)
             {
-                if ((zlib->max_total_in - zlib->total_in) < sizeof(zlib->buffer))
+                if ((zlib->max_total_in - zlib->total_in) < (int64_t)sizeof(zlib->buffer))
                     bytes_to_read = (int32_t)(zlib->max_total_in - zlib->total_in);
             }
 
@@ -256,7 +256,7 @@ int32_t mz_stream_zlib_write(void *stream, const void *buf, int32_t size)
     mz_stream_zlib *zlib = (mz_stream_zlib *)stream;
 
 
-    zlib->zstream.next_in = (Bytef*)buf;
+    zlib->zstream.next_in = (Bytef*)(intptr_t)buf;
     zlib->zstream.avail_in = (uInt)size;
 
     mz_stream_zlib_deflate(stream, Z_NO_FLUSH);

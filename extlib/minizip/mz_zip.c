@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -54,7 +54,6 @@
 
 #define MZ_ZIP_SIZE_CD_ITEM             (0x2e)
 #define MZ_ZIP_SIZE_CD_LOCATOR64        (0x14)
-#define MZ_ZIP_SIZE_LOCALHEADER         (0x1e)
 
 #define MZ_ZIP_EXTENSION_ZIP64          (0x0001)
 #define MZ_ZIP_EXTENSION_NTFS           (0x000a)
@@ -695,7 +694,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
 
     if ((err == MZ_OK) && (file_info->filename_size > 0))
     {
-        mz_stream_mem_get_buffer(file_info_stream, (void **)&file_info->filename);
+        mz_stream_mem_get_buffer(file_info_stream, (const void **)&file_info->filename);
 
         err = mz_stream_copy(file_info_stream, stream, file_info->filename_size);
         if (err == MZ_OK)
@@ -706,7 +705,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
 
     if ((err == MZ_OK) && (file_info->extrafield_size > 0))
     {
-        mz_stream_mem_get_buffer_at(file_info_stream, seek, (void **)&file_info->extrafield);
+        mz_stream_mem_get_buffer_at(file_info_stream, seek, (const void **)&file_info->extrafield);
 
         err = mz_stream_copy(file_info_stream, stream, file_info->extrafield_size);
         if (err == MZ_OK)
@@ -740,7 +739,8 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
             // NTFS extra field
             else if (extra_header_id == MZ_ZIP_EXTENSION_NTFS)
             {
-                err = mz_stream_read_uint32(file_info_stream, &reserved);
+                if (err == MZ_OK)
+                    err = mz_stream_read_uint32(file_info_stream, &reserved);
                 extra_data_size_read = 4;
 
                 while ((err == MZ_OK) && (extra_data_size_read < extra_data_size))
@@ -749,7 +749,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
                     if (err == MZ_OK)
                         err = mz_stream_read_uint16(file_info_stream, &ntfs_attrib_size);
 
-                    if ((ntfs_attrib_id == 0x01) && (ntfs_attrib_size == 24))
+                    if ((err == MZ_OK) && (ntfs_attrib_id == 0x01) && (ntfs_attrib_size == 24))
                     {
                         err = mz_stream_read_uint64(file_info_stream, &ntfs_time);
                         mz_zip_ntfs_to_unix_time(ntfs_time, &file_info->modified_date);
@@ -767,7 +767,8 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
                     }
                     else
                     {
-                        err = mz_stream_seek(file_info_stream, ntfs_attrib_size, MZ_SEEK_CUR);
+                        if (err == MZ_OK)
+                            err = mz_stream_seek(file_info_stream, ntfs_attrib_size, MZ_SEEK_CUR);
                     }
 
                     extra_data_size_read += ntfs_attrib_size + 4;
@@ -812,7 +813,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
 
     if ((err == MZ_OK) && (file_info->comment_size > 0))
     {
-        mz_stream_mem_get_buffer_at(file_info_stream, seek, (void **)&file_info->comment);
+        mz_stream_mem_get_buffer_at(file_info_stream, seek, (const void **)&file_info->comment);
 
         err = mz_stream_copy(file_info_stream, stream, file_info->comment_size);
         if (err == MZ_OK)

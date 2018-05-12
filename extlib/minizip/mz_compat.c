@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -55,7 +55,6 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
 {
     mz_compat *compat = NULL;
     int32_t mode = MZ_OPEN_MODE_READWRITE;
-    int32_t open_existing = 0;
     void *handle = NULL;
     void *stream = NULL;
 
@@ -79,7 +78,6 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
         mode |= MZ_OPEN_MODE_CREATE | MZ_OPEN_MODE_APPEND;
         break;
     case APPEND_STATUS_ADDINZIP:
-        open_existing = 1;
         break;
     }
 
@@ -108,14 +106,22 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
 }
 
 extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_fileinfo *zipfi,
-    ZIP_UNUSED const void *extrafield_local, ZIP_UNUSED uint16_t size_extrafield_local, const void *extrafield_global,
+    const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
-    int raw, ZIP_UNUSED int windowBits, ZIP_UNUSED int memLevel, ZIP_UNUSED int strategy, const char *password,
-    ZIP_UNUSED uint32_t crc_for_crypting,  uint16_t version_madeby, uint16_t flag_base, int zip64)
+    int raw, int windowBits, int memLevel, int strategy, const char *password,
+    uint32_t crc_for_crypting,  uint16_t version_madeby, uint16_t flag_base, int zip64)
 {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file file_info;
     uint64_t dos_date = 0;
+
+
+    MZ_UNUSED(strategy);
+    MZ_UNUSED(memLevel);
+    MZ_UNUSED(windowBits);
+    MZ_UNUSED(size_extrafield_local);
+    MZ_UNUSED(extrafield_local);
+    MZ_UNUSED(crc_for_crypting);
 
     if (compat == NULL)
         return ZIP_PARAMERROR;
@@ -138,13 +144,13 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
         filename = "-";
 
     file_info.compression_method = compression_method;
-    file_info.filename = (char *)filename;
+    file_info.filename = filename;
     //file_info.extrafield_local = extrafield_local;
     //file_info.extrafield_local_size = size_extrafield_local;
-    file_info.extrafield = (uint8_t *)extrafield_global;
+    file_info.extrafield = extrafield_global;
     file_info.extrafield_size = size_extrafield_global;
     file_info.version_madeby = version_madeby;
-    file_info.comment = (char *)comment;
+    file_info.comment = comment;
     file_info.flag = flag_base;
     if (zip64)
         file_info.zip64 = MZ_ZIP64_FORCE;
@@ -208,9 +214,11 @@ extern int ZEXPORT zipOpenNewFileInZip3_64(zipFile file, const char *filename, c
 extern int ZEXPORT zipWriteInFileInZip(zipFile file, const void *buf, uint32_t len)
 {
     mz_compat *compat = (mz_compat *)file;
+    int32_t written = 0;
     if (compat == NULL)
         return ZIP_PARAMERROR;
-    if (mz_zip_entry_write(compat->handle, buf, len) != len)
+    written = mz_zip_entry_write(compat->handle, buf, len);
+    if ((written < 0) || ((uint32_t)written != len))
         return ZIP_ERRNO;
     return ZIP_OK;
 }

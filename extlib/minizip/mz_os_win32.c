@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -213,7 +213,7 @@ int32_t mz_win32_set_file_date(const char *path, time_t modified_date, time_t ac
     return err;
 }
 
-int32_t mz_win32_get_file_attribs(const char *path, int32_t *attributes)
+int32_t mz_win32_get_file_attribs(const char *path, uint32_t *attributes)
 {
     wchar_t *path_wide = NULL;
     int32_t err = MZ_OK;
@@ -228,7 +228,7 @@ int32_t mz_win32_get_file_attribs(const char *path, int32_t *attributes)
     return err;
 }
 
-int32_t mz_win32_set_file_attribs(const char *path, int32_t attributes)
+int32_t mz_win32_set_file_attribs(const char *path, uint32_t attributes)
 {
     wchar_t *path_wide = NULL;
     int32_t err = MZ_OK;
@@ -328,7 +328,7 @@ int32_t mz_win32_close_dir(DIR *dir)
 int32_t mz_win32_is_dir(const char *path)
 {
     wchar_t *path_wide = NULL;
-    int32_t attribs = 0;
+    uint32_t attribs = 0;
 
     path_wide = mz_win32_unicode_path_create(path);
     attribs = GetFileAttributesW(path_wide);

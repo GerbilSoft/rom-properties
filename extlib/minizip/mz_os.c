@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -95,6 +95,28 @@ int32_t mz_path_combine(char *path, const char *join, int32_t max_path)
         strncat(path, join, max_path - path_len);
     }
 
+    return MZ_OK;
+}
+
+int32_t mz_path_remove_filename(char *path)
+{
+    char *path_ptr = NULL;
+
+    if (path == NULL)
+        return MZ_PARAM_ERROR;
+
+    path_ptr = path + strlen(path) - 1;
+
+    while (path_ptr > path)
+    {
+        if ((*path_ptr == '/') || (*path_ptr == '\\'))
+        {
+            *path_ptr = 0;
+            break;
+        }
+
+        path_ptr -= 1;
+    }
     return MZ_OK;
 }
 

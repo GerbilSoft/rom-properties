@@ -1,5 +1,5 @@
 /* mz_compat.h -- Backwards compatible interface for older versions
-   Version 2.3.0, May 3rd, 2018
+   Version 2.3.1, May 9th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,8 +11,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#ifndef _MZ_COMPAT_H
-#define _MZ_COMPAT_H
+#ifndef MZ_COMPAT_H
+#define MZ_COMPAT_H
 
 #include <stdint.h>
 
@@ -23,12 +23,6 @@ extern "C" {
 #include "zlib.h"
 
 /***************************************************************************/
-
-#ifdef __GNUC__
-#  define ZIP_UNUSED __attribute__((__unused__))
-#else
-#  define ZIP_UNUSED
-#endif
 
 #ifndef DEF_MEM_LEVEL
 #  if MAX_MEM_LEVEL >= 8
@@ -122,27 +116,27 @@ extern int ZEXPORT zipOpenNewFileInZip3(zipFile file, const char *filename, cons
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    ZIP_UNUSED uint32_t crc_for_crypting);
+    uint32_t crc_for_crypting);
 extern int ZEXPORT zipOpenNewFileInZip3_64(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    ZIP_UNUSED uint32_t crc_for_crypting, int zip64);
+    uint32_t crc_for_crypting, int zip64);
 extern int ZEXPORT zipOpenNewFileInZip4(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    ZIP_UNUSED uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base);
+    uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base);
 extern int ZEXPORT zipOpenNewFileInZip4_64(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    ZIP_UNUSED uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base, int zip64);
+    uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base, int zip64);
 extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
     uint16_t size_extrafield_global, const char *comment, uint16_t compression_method, int level,
     int raw, int windowBits, int memLevel, int strategy, const char *password,
-    ZIP_UNUSED uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base, int zip64);
+    uint32_t crc_for_crypting, uint16_t version_madeby, uint16_t flag_base, int zip64);
 
 extern int ZEXPORT zipWriteInFileInZip(zipFile file, const void *buf, uint32_t len);
 
