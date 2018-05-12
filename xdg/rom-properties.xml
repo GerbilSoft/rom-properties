@@ -63,4 +63,20 @@
       <match value="\0VSP\0\0\0\0" type="string" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="image/x-vtf">
+    <comment>Valve texture file</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.vtf"/>
+    <magic priority="50">
+      <match value="VTF\0" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-vtf3">
+    <comment>Valve texture file (PS3)</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.vtf"/>
+    <magic priority="50">
+      <match value="VTF3" type="string" offset="0"/>
+    </magic>
+  </mime-type>
 </mime-info>
