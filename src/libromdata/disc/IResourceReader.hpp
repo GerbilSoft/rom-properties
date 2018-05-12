@@ -48,7 +48,7 @@ class IResourceReader : public LibRpBase::IPartition
 	private:
 		RP_DISABLE_COPY(IResourceReader)
 
-	protected:
+	public:
 		/**
 		 * DWORD alignment function.
 		 * @param file	[in] File to DWORD align.
