@@ -50,7 +50,7 @@ class Nintendo3DSSysTitlesPrivate
 		}; */
 
 		// Regions.
-		static const char *const regions[6];
+		static const char regions[6][4];
 
 		static const SysTitle sys_title_00040010[];	// System applications.
 		static const SysTitle sys_title_00040030[];	// System applets.
@@ -61,8 +61,7 @@ class Nintendo3DSSysTitlesPrivate
 /** Nintendo3DSSysTitlesPrivate **/
 
 // Regions.
-// TODO: char array instead of pointers.
-const char *const Nintendo3DSSysTitlesPrivate::regions[6] = {
+const char Nintendo3DSSysTitlesPrivate::regions[6][4] = {
 	"JPN", "USA", "EUR",
 	"CHN", "KOR", "TWN",
 };
