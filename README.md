@@ -210,6 +210,14 @@ https://github.com/GerbilSoft/rom-properties/issues
 * @DankRank: Contributor, bug tester.
 * @CheatFreak: Bug tester, amiibo support.
 
+### Translators
+* @DankRank: Russian, Ukrainian
+* @NullMagic2: Brazilian Portuguese
+
+### Other Contributions
+
+[This list is incomplete; if you think you should be listed here, file an issue.]
+
 ### Websites
 
 * [GBATEK](http://problemkaputt.de/gbatek.htm): Game Boy Advance, Nintendo DS,
