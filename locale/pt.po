@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-05-06 21:44-0400\n"
+"POT-Creation-Date: 2018-05-13 13:23-0400\n"
 "PO-Revision-Date: 2018-05-08 14:00-0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -104,28 +104,28 @@ msgstr ""
 "As imagens amiibo são fornecidas pelo<a href=\"http://amiibo.life/\">amiibo."
 "life</a> banco de dados não oficial Amiibo."
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:93
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:87
 msgctxt "KeyManagerTab"
 msgid "Wii keys.bin"
 msgstr "Wii keys.bin"
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:94
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:88
 msgctxt "KeyManagerTab"
 msgid "Wii U otp.bin"
 msgstr "Wii U otp.bin"
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:95
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:89
 msgctxt "KeyManagerTab"
 msgid "3DS boot9.bin"
 msgstr "3DS boot9.bin"
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:96
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:90
 msgctxt "KeyManagerTab"
 msgid "3DS aeskeydb.bin"
 msgstr "3DS aeskeydb.bin"
 
-#: ../build/src/kde/kde5/ui_KeyManagerTab.h:97
-#: ../src/kde/config/KeyManagerTab.cpp:291
+#: ../build/src/kde/kde5/ui_KeyManagerTab.h:91
+#: ../src/kde/config/KeyManagerTab.cpp:337
 msgctxt "KeyManagerTab"
 msgid "I&mport"
 msgstr "I&mportar"
@@ -331,7 +331,7 @@ msgctxt "ImageTypesTab|Values"
 msgid "9"
 msgstr "9"
 
-#: ../src/kde/config/KeyManagerTab.cpp:134
+#: ../src/kde/config/KeyManagerTab.cpp:146
 msgctxt "KeyManagerTab"
 msgid ""
 "An invalid parameter was passed to the key importer.\n"
@@ -340,36 +340,50 @@ msgstr ""
 "O gestor de chaves recebeu um parâmetro inválido.\n"
 "ESTE É UM BUG. Entre em contato com os desenvolvedores!"
 
+#. tr: %1$s == filename, %2$s == error message
+#: ../src/kde/config/KeyManagerTab.cpp:156
+#, fuzzy, c-format
+msgctxt "KeyManagerTab"
+msgid "An error occurred while opening '%1$s': %2$s"
+msgstr "Ocorreu um erro ao abrir '%1$s': %2$s"
+
 #. tr: %s == filename
-#: ../src/kde/config/KeyManagerTab.cpp:143
+#: ../src/kde/config/KeyManagerTab.cpp:162
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '%s'."
 msgstr "Ocorreu um erro ao abrir '%s'."
 
+#. tr: %1$s == filename, %2$s == error message
+#: ../src/kde/config/KeyManagerTab.cpp:174
+#, fuzzy, c-format
+msgctxt "KeyManagerTab"
+msgid "An error occurred while reading '%1$s': %2$s"
+msgstr "Ocorreu um erro ao abrir '%1$s': %2$s"
+
 #. tr: %s == filename
-#: ../src/kde/config/KeyManagerTab.cpp:152
+#: ../src/kde/config/KeyManagerTab.cpp:180
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '%s'."
 msgstr "Ocorreu um erro ao abrir '%s'."
 
 #. tr: %1$s == filename, %2$s == type of file
-#: ../src/kde/config/KeyManagerTab.cpp:160
+#: ../src/kde/config/KeyManagerTab.cpp:190
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "The file '%1$s' is not a valid %2$s file."
 msgstr "O arquivo '%1$s' não é um %2$s válido."
 
 #. tr: %s == filename
-#: ../src/kde/config/KeyManagerTab.cpp:169
+#: ../src/kde/config/KeyManagerTab.cpp:201
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "No keys were imported from '%s'."
 msgstr "Nenhuma chave foi importada de '%s'."
 
 #. tr: %1$s == number of keys (formatted), %2$u == filename
-#: ../src/kde/config/KeyManagerTab.cpp:184
+#: ../src/kde/config/KeyManagerTab.cpp:218
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%1$s key was imported from '%2$s'."
@@ -378,7 +392,7 @@ msgstr[0] "A chave %1$s  foi importada de '%2$s'."
 msgstr[1] "As chaves %1$s  foram importadas de '%2$s'."
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:208
+#: ../src/kde/config/KeyManagerTab.cpp:243
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
@@ -387,7 +401,7 @@ msgstr[0] "A chave %s   já existe no Gestor de Chaves."
 msgstr[1] "As chaves %s   já existem no Gestor de Chaves."
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:218
+#: ../src/kde/config/KeyManagerTab.cpp:253
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it is incorrect."
@@ -396,7 +410,7 @@ msgstr[0] "Chave %s não importada porque está incorreta."
 msgstr[1] "Chaves %s não importadas porque estão incorretas."
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:228
+#: ../src/kde/config/KeyManagerTab.cpp:263
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it isn't used by rom-properties."
@@ -407,7 +421,7 @@ msgstr[1] ""
 "Chaves %s não importadas porque não são utilizadas por rom-properties."
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:238
+#: ../src/kde/config/KeyManagerTab.cpp:273
 #, c-format
 msgctxt "KeyManagerTab"
 msgid ""
@@ -424,7 +438,7 @@ msgstr[1] ""
 "disponíveis."
 
 #. tr: %s == number of keys (formatted)
-#: ../src/kde/config/KeyManagerTab.cpp:248
+#: ../src/kde/config/KeyManagerTab.cpp:283
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported and verified as correct."
@@ -432,7 +446,7 @@ msgid_plural "%s keys have been imported and verified as correct."
 msgstr[0] "Chave %s importada e validada."
 msgstr[1] "Chaves %s importadas e validadas."
 
-#: ../src/kde/config/KeyManagerTab.cpp:257
+#: ../src/kde/config/KeyManagerTab.cpp:292
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported without verification."
@@ -441,41 +455,41 @@ msgstr[0] "Chave %s foi importada sem validação."
 msgstr[1] "Chaves %s foram importadas sem validação."
 
 #. tr: Wii keys.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:388
-#: ../src/win32/config/KeyManagerTab.cpp:1448
+#: ../src/kde/config/KeyManagerTab.cpp:435
+#: ../src/win32/config/KeyManagerTab.cpp:1478
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
 msgstr "Selecione o arquivo keys.bin, do Wii"
 
 #. tr: Wii keys.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:391
+#: ../src/kde/config/KeyManagerTab.cpp:438
 msgctxt "KeyManagerTab"
 msgid "keys.bin (keys.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 "keys.bin (keys.bin);;Arquivos binários (*.bin);;Todos os arquivos (*.*)"
 
 #. tr: Wii U otp.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:407
-#: ../src/win32/config/KeyManagerTab.cpp:1487
+#: ../src/kde/config/KeyManagerTab.cpp:455
+#: ../src/win32/config/KeyManagerTab.cpp:1521
 msgctxt "KeyManagerTab"
 msgid "Select Wii U otp.bin File"
 msgstr "Selecione arquivo otp.bin, do WiiU"
 
 #. tr: Wii U otp.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:410
+#: ../src/kde/config/KeyManagerTab.cpp:458
 msgctxt "KeyManagerTab"
 msgid "otp.bin (otp.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr "otp.bin (otp.bin);;Arquivos binários (*.bin);;Todos os arquivos(*.*)"
 
 #. tr: 3DS boot9.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:426
-#: ../src/win32/config/KeyManagerTab.cpp:1526
+#: ../src/kde/config/KeyManagerTab.cpp:475
+#: ../src/win32/config/KeyManagerTab.cpp:1564
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
 msgstr "Selecione arquivo boot9.bin, do 3DS"
 
 #. tr: 3DS boot9.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:429
+#: ../src/kde/config/KeyManagerTab.cpp:478
 msgctxt "KeyManagerTab"
 msgid "boot9.bin (boot9.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
@@ -483,14 +497,14 @@ msgstr ""
 
 #. tr: 3DS aeskeydb.bin dialog title.
 #. tr: aeskeydb.bin dialog title.
-#: ../src/kde/config/KeyManagerTab.cpp:445
-#: ../src/win32/config/KeyManagerTab.cpp:1565
+#: ../src/kde/config/KeyManagerTab.cpp:495
+#: ../src/win32/config/KeyManagerTab.cpp:1607
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
 msgstr "Selecione arquivo aeskeydb.bin, do 3DS"
 
 #. tr: 3DS aeskeydb.bin file filter. (Qt)
-#: ../src/kde/config/KeyManagerTab.cpp:448
+#: ../src/kde/config/KeyManagerTab.cpp:498
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
@@ -499,27 +513,27 @@ msgstr ""
 
 #. tr: Column 0: Key Name.
 #: ../src/kde/config/KeyStoreModel.cpp:426
-#: ../src/win32/config/KeyManagerTab.cpp:388
+#: ../src/win32/config/KeyManagerTab.cpp:398
 msgctxt "KeyManagerTab"
 msgid "Key Name"
 msgstr "Nome da chave"
 
 #. tr: Column 1: Value.
 #: ../src/kde/config/KeyStoreModel.cpp:429
-#: ../src/win32/config/KeyManagerTab.cpp:397
+#: ../src/win32/config/KeyManagerTab.cpp:407
 msgctxt "KeyManagerTab"
 msgid "Value"
 msgstr "Valor"
 
 #. tr: Column 2: Verification status.
 #: ../src/kde/config/KeyStoreModel.cpp:432
-#: ../src/win32/config/KeyManagerTab.cpp:402
+#: ../src/win32/config/KeyManagerTab.cpp:412
 msgctxt "KeyManagerTab"
 msgid "Valid?"
 msgstr "Válido?"
 
 #. tr: IMG_INT_ICON
-#: ../src/libromdata/config/TImageTypesConfig.cpp:379
+#: ../src/libromdata/config/TImageTypesConfig.cpp:377
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -529,7 +543,7 @@ msgstr ""
 "interno"
 
 #. tr: IMG_INT_BANNER
-#: ../src/libromdata/config/TImageTypesConfig.cpp:381
+#: ../src/libromdata/config/TImageTypesConfig.cpp:379
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -539,7 +553,7 @@ msgstr ""
 "interno"
 
 #. tr: IMG_INT_MEDIA
-#: ../src/libromdata/config/TImageTypesConfig.cpp:383
+#: ../src/libromdata/config/TImageTypesConfig.cpp:381
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -549,7 +563,7 @@ msgstr ""
 "interna"
 
 #. tr: IMG_INT_IMAGE
-#: ../src/libromdata/config/TImageTypesConfig.cpp:385
+#: ../src/libromdata/config/TImageTypesConfig.cpp:383
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
@@ -559,7 +573,7 @@ msgstr ""
 "interna"
 
 #. tr: IMG_EXT_MEDIA
-#: ../src/libromdata/config/TImageTypesConfig.cpp:390
+#: ../src/libromdata/config/TImageTypesConfig.cpp:388
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -569,7 +583,7 @@ msgstr ""
 "externa"
 
 #. tr: IMG_EXT_COVER
-#: ../src/libromdata/config/TImageTypesConfig.cpp:392
+#: ../src/libromdata/config/TImageTypesConfig.cpp:390
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -579,7 +593,7 @@ msgstr ""
 "externa"
 
 #. tr: IMG_EXT_COVER_3D
-#: ../src/libromdata/config/TImageTypesConfig.cpp:394
+#: ../src/libromdata/config/TImageTypesConfig.cpp:392
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -589,7 +603,7 @@ msgstr ""
 "externa"
 
 #. tr: IMG_EXT_COVER_FULL
-#: ../src/libromdata/config/TImageTypesConfig.cpp:396
+#: ../src/libromdata/config/TImageTypesConfig.cpp:394
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -599,7 +613,7 @@ msgstr ""
 "externa completa"
 
 #. tr: IMG_EXT_BOX
-#: ../src/libromdata/config/TImageTypesConfig.cpp:398
+#: ../src/libromdata/config/TImageTypesConfig.cpp:396
 msgctxt "TImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
@@ -609,66 +623,60 @@ msgstr ""
 "externa"
 
 #. tr: amiibo
-#: ../src/libromdata/config/TImageTypesConfig.cpp:417
+#: ../src/libromdata/config/TImageTypesConfig.cpp:415
 msgctxt "TImageTypesConfig|SysName"
 msgid "amiibo"
 msgstr "amiibo"
 
 #. tr: NintendoBadge
-#: ../src/libromdata/config/TImageTypesConfig.cpp:419
+#: ../src/libromdata/config/TImageTypesConfig.cpp:417
 msgctxt "TImageTypesConfig|SysName"
 msgid "Badge Arcade"
 msgstr "Insígnia de Arcade"
 
-#. tr: Dreamcast
-#: ../src/libromdata/config/TImageTypesConfig.cpp:421
-msgctxt "TImageTypesConfig|SysName"
-msgid "Dreamcast"
-msgstr "Dreamcast"
-
 #. tr: DreamcastSave
-#: ../src/libromdata/config/TImageTypesConfig.cpp:423
+#: ../src/libromdata/config/TImageTypesConfig.cpp:419
 msgctxt "TImageTypesConfig|SysName"
 msgid "Dreamcast Saves"
 msgstr "Jogos gravados de Dreamcast"
 
 #. tr: GameCube
-#: ../src/libromdata/config/TImageTypesConfig.cpp:425
+#: ../src/libromdata/config/TImageTypesConfig.cpp:421
 msgctxt "TImageTypesConfig|SysName"
 msgid "GameCube / Wii"
 msgstr "GameCube / Wii"
 
 #. tr: GameCubeSave
-#: ../src/libromdata/config/TImageTypesConfig.cpp:427
+#: ../src/libromdata/config/TImageTypesConfig.cpp:423
 msgctxt "TImageTypesConfig|SysName"
 msgid "GameCube Saves"
 msgstr "Jogos gravados de Gamecube"
 
 #. tr: NintendoDS
-#: ../src/libromdata/config/TImageTypesConfig.cpp:429
+#: ../src/libromdata/config/TImageTypesConfig.cpp:425
 msgctxt "TImageTypesConfig|SysName"
 msgid "Nintendo DS(i)"
 msgstr "Nintendo DS(i)"
 
 #. tr: Nintendo3DS
-#: ../src/libromdata/config/TImageTypesConfig.cpp:431
+#: ../src/libromdata/config/TImageTypesConfig.cpp:427
 msgctxt "TImageTypesConfig|SysName"
 msgid "Nintendo 3DS"
 msgstr "Nintendo 3DS"
 
 #. tr: PlayStationSave
-#: ../src/libromdata/config/TImageTypesConfig.cpp:433
+#: ../src/libromdata/config/TImageTypesConfig.cpp:429
 msgctxt "TImageTypesConfig|SysName"
 msgid "PlayStation Saves"
 msgstr "Jogos gravados de Playstation"
 
 #. tr: WiiU
-#: ../src/libromdata/config/TImageTypesConfig.cpp:435
+#: ../src/libromdata/config/TImageTypesConfig.cpp:431
 msgctxt "TImageTypesConfig|SysName"
 msgid "Wii U"
 msgstr "Wii U"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:502
+#: ../src/libromdata/Console/Dreamcast.cpp:501
 msgctxt "Dreamcast"
 msgid "Title"
 msgstr "Nome"
@@ -715,13 +723,13 @@ msgstr "Desconhecido(a)"
 #: ../src/libromdata/Console/Dreamcast.cpp:589
 #: ../src/libromdata/Console/GameCube.cpp:430
 #: ../src/libromdata/Console/MegaDrive.cpp:414
-#: ../src/libromdata/Console/Sega8Bit.cpp:321
-#: ../src/libromdata/Console/Sega8Bit.cpp:330
-#: ../src/libromdata/Console/SegaSaturn.cpp:501
+#: ../src/libromdata/Console/Sega8Bit.cpp:320
+#: ../src/libromdata/Console/Sega8Bit.cpp:329
+#: ../src/libromdata/Console/SegaSaturn.cpp:502
 #: ../src/libromdata/Console/SNES.cpp:829
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1794
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1795
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1185
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:380
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:379
 msgctxt "Region"
 msgid "Japan"
 msgstr "Japão"
@@ -729,19 +737,19 @@ msgstr "Japão"
 #: ../src/libromdata/Console/Dreamcast.cpp:590
 #: ../src/libromdata/Console/GameCube.cpp:477
 #: ../src/libromdata/Console/MegaDrive.cpp:416
-#: ../src/libromdata/Console/SegaSaturn.cpp:503
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1795
+#: ../src/libromdata/Console/SegaSaturn.cpp:504
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1796
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1186
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:383
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:382
 msgctxt "Region"
 msgid "USA"
 msgstr "EUA"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:591
 #: ../src/libromdata/Console/MegaDrive.cpp:417
-#: ../src/libromdata/Console/SegaSaturn.cpp:504
+#: ../src/libromdata/Console/SegaSaturn.cpp:505
 #: ../src/libromdata/Console/SNES.cpp:831
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1796
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1797
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1187
 msgctxt "Region"
 msgid "Europe"
@@ -782,134 +790,134 @@ msgctxt "Dreamcast"
 msgid "0x%1$04X (HEADER is INVALID: %2$.4s)"
 msgstr "0x%1$04X (CABEÇALHO INVÁLIDO: %2$.4s)"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:655
+#: ../src/libromdata/Console/Dreamcast.cpp:656
 msgctxt "Dreamcast|OSSupport"
 msgid "Windows CE"
 msgstr "Windows CE"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:657
+#: ../src/libromdata/Console/Dreamcast.cpp:658
 msgctxt "Dreamcast|OSSupport"
 msgid "VGA Box"
 msgstr "Adaptador VGA"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:661
+#: ../src/libromdata/Console/Dreamcast.cpp:662
 msgctxt "Dreamcast"
 msgid "OS Support"
 msgstr "Apoio com SO"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:666
+#: ../src/libromdata/Console/Dreamcast.cpp:667
 msgctxt "Dreamcast|Expansion"
 msgid "Other"
 msgstr "Outros"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:667
+#: ../src/libromdata/Console/Dreamcast.cpp:668
 msgctxt "Dreamcast|Expansion"
 msgid "Jump Pack"
 msgstr "Dispositivo de vibração"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:668
+#: ../src/libromdata/Console/Dreamcast.cpp:669
 msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
 msgstr "Microfone"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:669
+#: ../src/libromdata/Console/Dreamcast.cpp:670
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
 msgstr "VMU"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:673
+#: ../src/libromdata/Console/Dreamcast.cpp:674
 msgctxt "Dreamcast"
 msgid "Expansion Units"
 msgstr "Unidades de expansão"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:678
+#: ../src/libromdata/Console/Dreamcast.cpp:679
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Start, A, B, D-Pad"
 msgstr "Início, A, B, Direcional"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:679
+#: ../src/libromdata/Console/Dreamcast.cpp:680
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
 msgstr "Botão C"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:680
+#: ../src/libromdata/Console/Dreamcast.cpp:681
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
 msgstr "Botão D"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:681
+#: ../src/libromdata/Console/Dreamcast.cpp:682
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
 msgstr "Botão X"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:682
+#: ../src/libromdata/Console/Dreamcast.cpp:683
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
 msgstr "Botão Y"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:683
+#: ../src/libromdata/Console/Dreamcast.cpp:684
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
 msgstr "Botão Z"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:684
+#: ../src/libromdata/Console/Dreamcast.cpp:685
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Second D-Pad"
 msgstr "Direcional secundário"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:685
+#: ../src/libromdata/Console/Dreamcast.cpp:686
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
 msgstr "Botão analógico L"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:686
+#: ../src/libromdata/Console/Dreamcast.cpp:687
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
 msgstr "Botão analógico R"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:687
+#: ../src/libromdata/Console/Dreamcast.cpp:688
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H1"
 msgstr "H1 analógico"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:688
+#: ../src/libromdata/Console/Dreamcast.cpp:689
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V1"
 msgstr "V1 analógico"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:689
+#: ../src/libromdata/Console/Dreamcast.cpp:690
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H2"
 msgstr "H2 analógico"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:690
+#: ../src/libromdata/Console/Dreamcast.cpp:691
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V2"
 msgstr "V2 analógico"
 
 #. tr: Required controller features.
-#: ../src/libromdata/Console/Dreamcast.cpp:695
+#: ../src/libromdata/Console/Dreamcast.cpp:696
 msgctxt "Dreamcast"
 msgid "Req. Controller"
 msgstr "Botões necessários"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:700
+#: ../src/libromdata/Console/Dreamcast.cpp:701
 msgctxt "Dreamcast|OptCtrl"
 msgid "Light Gun"
 msgstr "Pistola"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:701
+#: ../src/libromdata/Console/Dreamcast.cpp:702
 msgctxt "Dreamcast|OptCtrl"
 msgid "Keyboard"
 msgstr "Teclado"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:702
+#: ../src/libromdata/Console/Dreamcast.cpp:703
 msgctxt "Dreamcast|OptCtrl"
 msgid "Mouse"
 msgstr "Mouse"
 
 #. tr: Optional controller features.
-#: ../src/libromdata/Console/Dreamcast.cpp:707
+#: ../src/libromdata/Console/Dreamcast.cpp:708
 msgctxt "Dreamcast"
 msgid "Opt. Controller"
 msgstr "Controle opcional"
@@ -1031,8 +1039,8 @@ msgid "Game Title"
 msgstr "Nome de jogo"
 
 #: ../src/libromdata/Console/GameCube.cpp:433
-#: ../src/libromdata/Console/SegaSaturn.cpp:502
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
+#: ../src/libromdata/Console/SegaSaturn.cpp:503
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1801
 msgctxt "Region"
 msgid "Taiwan"
 msgstr "Taiwan"
@@ -1040,7 +1048,7 @@ msgstr "Taiwan"
 #: ../src/libromdata/Console/GameCube.cpp:438
 #: ../src/libromdata/Console/GameCube.cpp:484
 #: ../src/libromdata/Console/SNES.cpp:841
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1799
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1105
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1190
 msgctxt "Region"
@@ -1049,7 +1057,7 @@ msgstr "Coreia do Sul"
 
 #: ../src/libromdata/Console/GameCube.cpp:440
 #: ../src/libromdata/Console/SNES.cpp:839
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1798
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1799
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1106
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1189
 msgctxt "Region"
@@ -1098,7 +1106,7 @@ msgstr "Espanha"
 
 #: ../src/libromdata/Console/GameCube.cpp:466
 #: ../src/libromdata/Console/SNES.cpp:845
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1797
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1798
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1188
 msgctxt "Region"
 msgid "Australia"
@@ -1551,32 +1559,32 @@ msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr "Cabeçalho da ROM combinada"
 
-#: ../src/libromdata/Console/N64.cpp:286
+#: ../src/libromdata/Console/N64.cpp:287
 msgctxt "N64"
 msgid "Title"
 msgstr "Nome"
 
-#: ../src/libromdata/Console/N64.cpp:298
+#: ../src/libromdata/Console/N64.cpp:299
 msgctxt "N64"
 msgid "Game ID"
 msgstr "Código de jogo"
 
-#: ../src/libromdata/Console/N64.cpp:302
+#: ../src/libromdata/Console/N64.cpp:303
 msgctxt "N64"
 msgid "Revision"
 msgstr "Revisão"
 
-#: ../src/libromdata/Console/N64.cpp:306
+#: ../src/libromdata/Console/N64.cpp:307
 msgctxt "N64"
 msgid "Entry Point"
 msgstr "Ponto de entrada"
 
-#: ../src/libromdata/Console/N64.cpp:317 ../src/libromdata/Console/N64.cpp:320
+#: ../src/libromdata/Console/N64.cpp:318 ../src/libromdata/Console/N64.cpp:321
 msgctxt "N64"
 msgid "Release"
 msgstr "Versão"
 
-#: ../src/libromdata/Console/N64.cpp:328
+#: ../src/libromdata/Console/N64.cpp:329
 msgctxt "N64"
 msgid "CRCs"
 msgstr "CRCs"
@@ -1616,7 +1624,7 @@ msgctxt "NES|Format"
 msgid "TDS (Nintendo 3DS Virtual Console)"
 msgstr "TDS (Console virtual Nintendo 3DS)"
 
-#: ../src/libromdata/Console/NES.cpp:703 ../src/libromdata/Console/NES.cpp:930
+#: ../src/libromdata/Console/NES.cpp:703 ../src/libromdata/Console/NES.cpp:932
 msgctxt "NES"
 msgid "Unknown"
 msgstr "Desconhecido(a)"
@@ -1636,7 +1644,7 @@ msgstr "%s (Console virtual Wii U)"
 
 #. tr: Print the mapper ID followed by the mapper name.
 #. tr: Print the submapper ID followed by the submapper name.
-#: ../src/libromdata/Console/NES.cpp:739 ../src/libromdata/Console/NES.cpp:767
+#: ../src/libromdata/Console/NES.cpp:739 ../src/libromdata/Console/NES.cpp:768
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%1$u - %2$s"
@@ -1644,161 +1652,161 @@ msgstr "%1$u - %2$s"
 
 #. tr: Print only the mapper ID.
 #. tr: Print only the submapper ID.
-#: ../src/libromdata/Console/NES.cpp:743 ../src/libromdata/Console/NES.cpp:771
+#: ../src/libromdata/Console/NES.cpp:743 ../src/libromdata/Console/NES.cpp:772
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%u"
 msgstr "%u"
 
-#: ../src/libromdata/Console/NES.cpp:745 ../src/libromdata/Console/NES.cpp:752
+#: ../src/libromdata/Console/NES.cpp:746 ../src/libromdata/Console/NES.cpp:753
 msgctxt "NES"
 msgid "Mapper"
 msgstr "Mapeador"
 
-#: ../src/libromdata/Console/NES.cpp:753
+#: ../src/libromdata/Console/NES.cpp:754
 msgctxt "NES"
 msgid "[Missing TNES mapping!]"
 msgstr "[Mapeamento TNES faltando!]"
 
-#: ../src/libromdata/Console/NES.cpp:773
+#: ../src/libromdata/Console/NES.cpp:775
 msgctxt "NES"
 msgid "Submapper"
 msgstr "Submapeamento"
 
-#: ../src/libromdata/Console/NES.cpp:779
+#: ../src/libromdata/Console/NES.cpp:781
 msgctxt "NES"
 msgid "TNES Mapper"
 msgstr "Mapeamento TNES"
 
-#: ../src/libromdata/Console/NES.cpp:786
+#: ../src/libromdata/Console/NES.cpp:788
 msgctxt "NES|TVMode"
 msgid "NTSC"
 msgstr "NTSC"
 
-#: ../src/libromdata/Console/NES.cpp:787
+#: ../src/libromdata/Console/NES.cpp:789
 msgctxt "NES|TVMode"
 msgid "PAL"
 msgstr "Pal"
 
-#: ../src/libromdata/Console/NES.cpp:788 ../src/libromdata/Console/NES.cpp:789
+#: ../src/libromdata/Console/NES.cpp:790 ../src/libromdata/Console/NES.cpp:791
 msgctxt "NES|TVMode"
 msgid "Dual (NTSC/PAL)"
 msgstr "Duplo (NTSC/PAL)"
 
-#: ../src/libromdata/Console/NES.cpp:792
+#: ../src/libromdata/Console/NES.cpp:794
 msgctxt "NES"
 msgid "TV Mode"
 msgstr "Modo TV"
 
-#: ../src/libromdata/Console/NES.cpp:799
+#: ../src/libromdata/Console/NES.cpp:801
 msgctxt "NES|Features"
 msgid "Save RAM, Trainer"
 msgstr "Gravar RAM, Treinador"
 
-#: ../src/libromdata/Console/NES.cpp:801
+#: ../src/libromdata/Console/NES.cpp:803
 msgctxt "NES|Features"
 msgid "Save RAM"
 msgstr "Gravar RAM"
 
-#: ../src/libromdata/Console/NES.cpp:803
+#: ../src/libromdata/Console/NES.cpp:805
 msgctxt "NES|Features"
 msgid "Trainer"
 msgstr "Treinador"
 
-#: ../src/libromdata/Console/NES.cpp:806
+#: ../src/libromdata/Console/NES.cpp:808
 msgctxt "NES"
 msgid "Features"
 msgstr "Recursos"
 
-#: ../src/libromdata/Console/NES.cpp:811
+#: ../src/libromdata/Console/NES.cpp:813
 msgctxt "NES"
 msgid "PRG ROM"
 msgstr "ROM do"
 
-#: ../src/libromdata/Console/NES.cpp:815
+#: ../src/libromdata/Console/NES.cpp:817
 msgctxt "NES"
 msgid "CHR ROM"
 msgstr "CHR da ROM"
 
-#: ../src/libromdata/Console/NES.cpp:821
+#: ../src/libromdata/Console/NES.cpp:823
 msgctxt "NES"
 msgid "CHR RAM"
 msgstr "CHR da RAM"
 
 #. tr: CHR RAM with a battery backup.
-#: ../src/libromdata/Console/NES.cpp:826
+#: ../src/libromdata/Console/NES.cpp:828
 msgctxt "NES"
 msgid "CHR RAM (backed up)"
 msgstr "CHR RAM (bateria)"
 
-#: ../src/libromdata/Console/NES.cpp:830
+#: ../src/libromdata/Console/NES.cpp:832
 msgctxt "NES"
 msgid "PRG RAM"
 msgstr "PRG da RAM"
 
 #. tr: Save RAM with a battery backup.
-#: ../src/libromdata/Console/NES.cpp:835
+#: ../src/libromdata/Console/NES.cpp:837
 msgctxt "NES"
 msgid "Save RAM (backed up)"
 msgstr "RAM de grav. de jogo (bateria)"
 
-#: ../src/libromdata/Console/NES.cpp:843
+#: ../src/libromdata/Console/NES.cpp:845
 msgctxt "NES"
 msgid "Game ID"
 msgstr "Código de jogo"
 
-#: ../src/libromdata/Console/NES.cpp:851
+#: ../src/libromdata/Console/NES.cpp:853
 msgctxt "NES"
 msgid "Publisher"
 msgstr "Distribuidor(a)"
 
-#: ../src/libromdata/Console/NES.cpp:853
+#: ../src/libromdata/Console/NES.cpp:855
 #, c-format
 msgctxt "NES"
 msgid "Unknown (0x%02X)"
 msgstr "Desconhecido 0x%02X)"
 
-#: ../src/libromdata/Console/NES.cpp:856
+#: ../src/libromdata/Console/NES.cpp:858
 msgctxt "NES"
 msgid "Revision"
 msgstr "Revisão"
 
-#: ../src/libromdata/Console/NES.cpp:861
+#: ../src/libromdata/Console/NES.cpp:863
 msgctxt "NES"
 msgid "Manufacturing Date"
 msgstr "Data de fabricação"
 
-#: ../src/libromdata/Console/NES.cpp:880
+#: ../src/libromdata/Console/NES.cpp:882
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
 msgstr "Quatro telas"
 
-#: ../src/libromdata/Console/NES.cpp:884 ../src/libromdata/Console/NES.cpp:927
+#: ../src/libromdata/Console/NES.cpp:886 ../src/libromdata/Console/NES.cpp:929
 msgctxt "NES|Mirroring"
 msgid "Vertical"
 msgstr "Vertical"
 
-#: ../src/libromdata/Console/NES.cpp:886 ../src/libromdata/Console/NES.cpp:924
+#: ../src/libromdata/Console/NES.cpp:888 ../src/libromdata/Console/NES.cpp:926
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
 msgstr "Horizontal"
 
-#: ../src/libromdata/Console/NES.cpp:918
+#: ../src/libromdata/Console/NES.cpp:920
 msgctxt "NES|Mirroring"
 msgid "One Screen"
 msgstr "Uma tela"
 
-#: ../src/libromdata/Console/NES.cpp:920
+#: ../src/libromdata/Console/NES.cpp:922
 msgctxt "NES|Mirroring"
 msgid "Programmable"
 msgstr "Programável"
 
-#: ../src/libromdata/Console/NES.cpp:940
+#: ../src/libromdata/Console/NES.cpp:942
 msgctxt "NES"
 msgid "Mirroring"
 msgstr "Espelhamento"
 
-#: ../src/libromdata/Console/NES.cpp:943
+#: ../src/libromdata/Console/NES.cpp:945
 msgctxt "NES"
 msgid "VS. PPU"
 msgstr "Nº da PPU VS"
@@ -1813,119 +1821,117 @@ msgctxt "PlayStationSave"
 msgid "Description"
 msgstr "Descrição"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:301
+#: ../src/libromdata/Console/Sega8Bit.cpp:300
 msgctxt "Sega8Bit"
 msgid "Product Code"
 msgstr "Código do produto"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:313
+#: ../src/libromdata/Console/Sega8Bit.cpp:312
 msgctxt "Sega8Bit"
 msgid "Version"
 msgstr "Versão"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:320
-#: ../src/libromdata/Console/Sega8Bit.cpp:324
+#: ../src/libromdata/Console/Sega8Bit.cpp:319
+#: ../src/libromdata/Console/Sega8Bit.cpp:323
 msgctxt "Sega8Bit|SysID"
 msgid "Sega Master System"
 msgstr "Sega Master System"
 
 #. tr: Any region that isn't Japan. (used for Sega 8-bit)
-#: ../src/libromdata/Console/Sega8Bit.cpp:326
-#: ../src/libromdata/Console/Sega8Bit.cpp:335
+#: ../src/libromdata/Console/Sega8Bit.cpp:325
+#: ../src/libromdata/Console/Sega8Bit.cpp:334
 #, fuzzy
-#| msgctxt "Sega8Bit|SysID"
-#| msgid "Export"
 msgctxt "Region"
 msgid "Export"
 msgstr "Nome de exportação"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:329
-#: ../src/libromdata/Console/Sega8Bit.cpp:333
-#: ../src/libromdata/Console/Sega8Bit.cpp:338
+#: ../src/libromdata/Console/Sega8Bit.cpp:328
+#: ../src/libromdata/Console/Sega8Bit.cpp:332
+#: ../src/libromdata/Console/Sega8Bit.cpp:337
 msgctxt "Sega8Bit|SysID"
 msgid "Game Gear"
 msgstr "Game Gear"
 
 #. tr: Effectively region-free.
-#: ../src/libromdata/Console/Sega8Bit.cpp:340
+#: ../src/libromdata/Console/Sega8Bit.cpp:339
 msgctxt "Region"
 msgid "Worldwide"
 msgstr "Mundial"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:346
+#: ../src/libromdata/Console/Sega8Bit.cpp:345
 msgctxt "Sega8Bit"
 msgid "System"
 msgstr "Sistema"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:347
-#: ../src/libromdata/Console/Sega8Bit.cpp:349
+#: ../src/libromdata/Console/Sega8Bit.cpp:346
+#: ../src/libromdata/Console/Sega8Bit.cpp:348
 msgctxt "Sega8Bit"
 msgid "Unknown"
 msgstr "Desconhecido(a)"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:348
+#: ../src/libromdata/Console/Sega8Bit.cpp:347
 msgctxt "Sega8Bit"
 msgid "Region Code"
 msgstr "Código de região"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:352
+#: ../src/libromdata/Console/Sega8Bit.cpp:351
 msgctxt "Sega8Bit"
 msgid "Checksum"
 msgstr "Soma de controle"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:365
-#: ../src/libromdata/Console/Sega8Bit.cpp:417
-#: ../src/libromdata/Console/Sega8Bit.cpp:476
+#: ../src/libromdata/Console/Sega8Bit.cpp:363
+#: ../src/libromdata/Console/Sega8Bit.cpp:415
+#: ../src/libromdata/Console/Sega8Bit.cpp:474
 msgctxt "Sega8Bit"
 msgid "Extra Header"
 msgstr "Cabeçalho extra"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:399
+#: ../src/libromdata/Console/Sega8Bit.cpp:397
 msgctxt "Sega8Bit"
 msgid "Build Time"
 msgstr "Tempo de compilação"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:406
+#: ../src/libromdata/Console/Sega8Bit.cpp:404
 msgctxt "Sega8Bit"
 msgid "CM Checksum Banks"
 msgstr "Bancos de soma CM"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:408
+#: ../src/libromdata/Console/Sega8Bit.cpp:406
 msgctxt "Sega8Bit"
 msgid "CM Checksum 1"
 msgstr "Soma de verificação 1 (CM)"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:411
+#: ../src/libromdata/Console/Sega8Bit.cpp:409
 msgctxt "Sega8Bit"
 msgid "CM Checksum 2"
 msgstr "Soma de verificação 2 (CM)"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:430
+#: ../src/libromdata/Console/Sega8Bit.cpp:428
 msgctxt "Sega8Bit"
 msgid "SDSC Version"
 msgstr "Versão de especificações 8 bits"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:462
+#: ../src/libromdata/Console/Sega8Bit.cpp:460
 msgctxt "Sega8Bit"
 msgid "Build Date"
 msgstr "Data de compilação"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:468
+#: ../src/libromdata/Console/Sega8Bit.cpp:466
 msgctxt "Sega8Bit"
 msgid "Author"
 msgstr "Autor"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:469
+#: ../src/libromdata/Console/Sega8Bit.cpp:467
 msgctxt "Sega8Bit"
 msgid "Name"
 msgstr "Nome"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:470
+#: ../src/libromdata/Console/Sega8Bit.cpp:468
 msgctxt "Sega8Bit"
 msgid "Description"
 msgstr "Descrição"
 
-#: ../src/libromdata/Console/Sega8Bit.cpp:477
+#: ../src/libromdata/Console/Sega8Bit.cpp:475
 msgctxt "Sega8Bit"
 msgid "M404 Copyright Header"
 msgstr "Cabeçalho de direitos autorais M404"
@@ -1935,126 +1941,126 @@ msgctxt "SegaSaturn"
 msgid "Title"
 msgstr "Nome"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:466
-#: ../src/libromdata/Console/SegaSaturn.cpp:470
+#: ../src/libromdata/Console/SegaSaturn.cpp:467
+#: ../src/libromdata/Console/SegaSaturn.cpp:471
 msgctxt "SegaSaturn"
 msgid "Publisher"
 msgstr "Distribuidor(a)"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:478
+#: ../src/libromdata/Console/SegaSaturn.cpp:479
 msgctxt "SegaSaturn"
 msgid "Product #"
 msgstr "Nº de produto"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:483
+#: ../src/libromdata/Console/SegaSaturn.cpp:484
 msgctxt "SegaSaturn"
 msgid "Version"
 msgstr "Versão"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:489
+#: ../src/libromdata/Console/SegaSaturn.cpp:490
 msgctxt "SegaSaturn"
 msgid "Release Date"
 msgstr "Data de lançamento"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:508
+#: ../src/libromdata/Console/SegaSaturn.cpp:509
 msgctxt "SegaSaturn"
 msgid "Region Code"
 msgstr "Código de região"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:528
-#: ../src/libromdata/Console/SegaSaturn.cpp:533
+#: ../src/libromdata/Console/SegaSaturn.cpp:529
+#: ../src/libromdata/Console/SegaSaturn.cpp:534
 msgctxt "SegaSaturn"
 msgid "Disc #"
 msgstr "Nº de disco"
 
 #. tr: Disc X of Y (for multi-disc games)
-#: ../src/libromdata/Console/SegaSaturn.cpp:530
+#: ../src/libromdata/Console/SegaSaturn.cpp:531
 #, c-format
 msgctxt "SegaSaturn|Disc"
 msgid "%1$u of %2$u"
 msgstr "%1$u de %2$u"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:534
+#: ../src/libromdata/Console/SegaSaturn.cpp:535
 msgctxt "SegaSaturn"
 msgid "Unknown"
 msgstr "Desconhecido(a)"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:539
+#: ../src/libromdata/Console/SegaSaturn.cpp:540
 msgctxt "SegaSaturn|Peripherals"
 msgid "Control Pad"
 msgstr "Controle"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:540
+#: ../src/libromdata/Console/SegaSaturn.cpp:541
 msgctxt "SegaSaturn|Peripherals"
 msgid "Analog Controller"
 msgstr "Controle analógico"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:541
+#: ../src/libromdata/Console/SegaSaturn.cpp:542
 msgctxt "SegaSaturn|Peripherals"
 msgid "Mouse"
 msgstr "Mouse"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:542
+#: ../src/libromdata/Console/SegaSaturn.cpp:543
 msgctxt "SegaSaturn|Peripherals"
 msgid "Keyboard"
 msgstr "Teclado"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:543
+#: ../src/libromdata/Console/SegaSaturn.cpp:544
 msgctxt "SegaSaturn|Peripherals"
 msgid "Steering Controller"
 msgstr "Volante"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:544
+#: ../src/libromdata/Console/SegaSaturn.cpp:545
 msgctxt "SegaSaturn|Peripherals"
 msgid "Multi-Tap"
 msgstr "Multitap"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:545
+#: ../src/libromdata/Console/SegaSaturn.cpp:546
 msgctxt "SegaSaturn|Peripherals"
 msgid "Light Gun"
 msgstr "Pistola"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:546
+#: ../src/libromdata/Console/SegaSaturn.cpp:547
 msgctxt "SegaSaturn|Peripherals"
 msgid "RAM Cartridge"
 msgstr "Cartucho"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:547
+#: ../src/libromdata/Console/SegaSaturn.cpp:548
 msgctxt "SegaSaturn|Peripherals"
 msgid "3D Controller"
 msgstr "Controle 3D"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:548
+#: ../src/libromdata/Console/SegaSaturn.cpp:549
 msgctxt "SegaSaturn|Peripherals"
 msgid "Link Cable"
 msgstr "Cabo de ligação"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:549
+#: ../src/libromdata/Console/SegaSaturn.cpp:550
 msgctxt "SegaSaturn|Peripherals"
 msgid "NetLink"
 msgstr "NetLink"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:550
+#: ../src/libromdata/Console/SegaSaturn.cpp:551
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
 msgstr "Pachinko"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:551
+#: ../src/libromdata/Console/SegaSaturn.cpp:552
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
 msgstr "Controlador de disquete"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:552
+#: ../src/libromdata/Console/SegaSaturn.cpp:553
 msgctxt "SegaSaturn|Peripherals"
 msgid "ROM Cartridge"
 msgstr "Cartucho"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:553
+#: ../src/libromdata/Console/SegaSaturn.cpp:554
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
 msgstr "Placa MPEG"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:559
+#: ../src/libromdata/Console/SegaSaturn.cpp:560
 msgctxt "SegaSaturn"
 msgid "Peripherals"
 msgstr "Periféricos"
@@ -2197,209 +2203,207 @@ msgctxt "WiiU"
 msgid "Unknown (%02X %02X %02X %02X)"
 msgstr "Desconhecido(a) (%02X %02X %02X %02X)"
 
-#: ../src/libromdata/Console/WiiU.cpp:389
+#: ../src/libromdata/Console/WiiU.cpp:391
 msgctxt "WiiU"
 msgid "Publisher"
 msgstr "Distribuidor(a)"
 
-#: ../src/libromdata/Console/WiiU.cpp:393
+#: ../src/libromdata/Console/WiiU.cpp:395
 msgctxt "WiiU"
 msgid "Version"
 msgstr "Versão"
 
-#: ../src/libromdata/Console/WiiU.cpp:398
+#: ../src/libromdata/Console/WiiU.cpp:400
 msgctxt "WiiU"
 msgid "OS Version"
 msgstr "Versão do SO"
 
-#: ../src/libromdata/Console/WiiU.cpp:406
+#: ../src/libromdata/Console/WiiU.cpp:408
 msgctxt "WiiU"
 msgid "Region"
 msgstr "Região"
 
-#: ../src/libromdata/crypto/KeyStoreUI.cpp:843
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:845
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo Wii AES Keys"
 msgstr "Chaves "
 
-#: ../src/libromdata/crypto/KeyStoreUI.cpp:844
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:846
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS Key Scrambler Constants"
 msgstr "Constantes de codificação de chave do Nintendo 3DS"
 
-#: ../src/libromdata/crypto/KeyStoreUI.cpp:845
+#: ../src/libromdata/crypto/KeyStoreUI.cpp:847
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
 msgstr "Chaves AES do Nintendo 3DS"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:75
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:74
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Settings"
 msgstr "Configurações de sistema"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:76
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:75
 msgctxt "Nintendo3DSSysTitles"
 msgid "Download Play"
 msgstr "Receber jogo"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:77
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:76
 msgctxt "Nintendo3DSSysTitles"
 msgid "Activity Log"
 msgstr "Registro de atividades"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:78
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:93
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:77
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:92
 msgctxt "Nintendo3DSSysTitles"
 msgid "Health and Safety Information"
 msgstr "Informações de saúde e segurança"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:79
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:78
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo 3DS Camera"
 msgstr "Câmera do Nintendo 3DS"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:80
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:79
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo 3DS Sound"
 msgstr "Som do Nintendo 3DS"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:81
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:80
 msgctxt "Nintendo3DSSysTitles"
 msgid "Mii Maker"
 msgstr "Mii Maker"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:82
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:81
 msgctxt "Nintendo3DSSysTitles"
 msgid "StreetPass Mii Plaza"
 msgstr "StreetPass Mii Plaza"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:83
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:82
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop"
 msgstr "eShop"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:84
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:83
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Transfer"
 msgstr "Transferência para sistema"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:85
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:84
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo Zone"
 msgstr "Nintendo Zone"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:86
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:94
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:85
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:93
 msgctxt "Nintendo3DSSysTitles"
 msgid "Face Raiders"
 msgstr "Face Raiders"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:87
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:86
 msgctxt "Nintendo3DSSysTitles"
 msgid "AR Games"
 msgstr "Realidade aumentada"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:88
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:87
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Updater (SAFE_MODE)"
 msgstr "Atualizador de sistema (SAFE_MODE)"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:89
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:88
 msgctxt "Nintendo3DSSysTitles"
 msgid "Promotional Video (v1.1.0)"
 msgstr "Vídeo promocional (v. 1.1.0)"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:90
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:89
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo Network ID Settings"
 msgstr "Configurações de ID de Rede Nintendo"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:95
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:94
 msgctxt "Nintendo3DSSysTitles"
 msgid "microSD Management"
 msgstr "Gestão de microSD"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:103
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:102
 msgctxt "Nintendo3DSSysTitles"
 msgid "HOME Menu"
 msgstr "Menu Inicial"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:104
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:103
 msgctxt "Nintendo3DSSysTitles"
 msgid "Camera"
 msgstr "Câmera"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:105
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:104
 msgctxt "Nintendo3DSSysTitles"
 msgid "Instruction Manual"
 msgstr "Manual de instruções"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:106
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:105
 msgctxt "Nintendo3DSSysTitles"
 msgid "Game Notes"
 msgstr "Comentários de jogo"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:107
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:121
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:106
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:120
 msgctxt "Nintendo3DSSysTitles"
 msgid "Internet Browser"
 msgstr "Navegador de Internet"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:108
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:107
 msgctxt "Nintendo3DSSysTitles"
 msgid "Friend List"
 msgstr "Lista de amigos"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:109
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:108
 #, fuzzy
-#| msgctxt "Nintendo3DSSysTitles"
-#| msgid "Notificaitons"
 msgctxt "Nintendo3DSSysTitles"
 msgid "Notifications"
 msgstr "Notificações"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:110
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:109
 msgctxt "Nintendo3DSSysTitles"
 msgid "Software Keyboard"
 msgstr "Teclado de software"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:111
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:122
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:110
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:121
 msgctxt "Nintendo3DSSysTitles"
 msgid "Software Keyboard (SAFE_MODE)"
 msgstr "Teclado de software (SAFE_MODE)"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:112
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:111
 msgctxt "Nintendo3DSSysTitles"
 msgid "Mii picker"
 msgstr "Seletor de Miis"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:113
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:112
 msgctxt "Nintendo3DSSysTitles"
 msgid "Picture picker"
 msgstr "Seletor de imagens"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:114
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:113
 msgctxt "Nintendo3DSSysTitles"
 msgid "Voice memo picker"
 msgstr "Seletor de memorandos de áudio"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:115
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:114
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop applet"
 msgstr "Applet eShop"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:116
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:115
 msgctxt "Nintendo3DSSysTitles"
 msgid "Miiverse"
 msgstr "Miiverso"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:117
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:116
 msgctxt "Nintendo3DSSysTitles"
 msgid "Miiverse posting applet"
 msgstr "Aplicativo de comentários Miiverso"
 
-#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:118
+#: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:117
 msgctxt "Nintendo3DSSysTitles"
 msgid "amiibo Settings"
 msgstr "Configurações de amiibo"
@@ -2421,7 +2425,7 @@ msgstr "Código de jogo"
 #: ../src/libromdata/Handheld/DMG.cpp:469
 #: ../src/libromdata/Handheld/DMG.cpp:517
 #: ../src/libromdata/Handheld/DMG.cpp:629
-#: ../src/libromdata/Handheld/DMG.cpp:644
+#: ../src/libromdata/Handheld/DMG.cpp:645
 msgctxt "DMG"
 msgid "Unknown"
 msgstr "Desconhecido(a)"
@@ -2494,13 +2498,13 @@ msgstr "Recursos"
 
 #: ../src/libromdata/Handheld/DMG.cpp:629
 #: ../src/libromdata/Handheld/DMG.cpp:633
-#: ../src/libromdata/Handheld/DMG.cpp:637
+#: ../src/libromdata/Handheld/DMG.cpp:638
 msgctxt "DMG"
 msgid "ROM Size"
 msgstr "Tamanho da ROM"
 
 #: ../src/libromdata/Handheld/DMG.cpp:634
-#: ../src/libromdata/Handheld/DMG.cpp:659
+#: ../src/libromdata/Handheld/DMG.cpp:660
 #, c-format
 msgctxt "DMG"
 msgid "%1$u KiB (%2$u bank)"
@@ -2508,74 +2512,74 @@ msgid_plural "%1$u KiB (%2$u banks)"
 msgstr[0] "%1$u KiB (banco %2$u)"
 msgstr[1] "%1$u KiB (%2$u banks)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:638
-#: ../src/libromdata/Handheld/DMG.cpp:663
+#: ../src/libromdata/Handheld/DMG.cpp:639
+#: ../src/libromdata/Handheld/DMG.cpp:665
 #, c-format
 msgctxt "DMG"
 msgid "%u KiB"
 msgstr "%u KiB"
 
-#: ../src/libromdata/Handheld/DMG.cpp:644
-#: ../src/libromdata/Handheld/DMG.cpp:650
-#: ../src/libromdata/Handheld/DMG.cpp:654
-#: ../src/libromdata/Handheld/DMG.cpp:658
-#: ../src/libromdata/Handheld/DMG.cpp:662
+#: ../src/libromdata/Handheld/DMG.cpp:645
+#: ../src/libromdata/Handheld/DMG.cpp:651
+#: ../src/libromdata/Handheld/DMG.cpp:655
+#: ../src/libromdata/Handheld/DMG.cpp:659
+#: ../src/libromdata/Handheld/DMG.cpp:664
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr "Tamanho da RAM"
 
 #. tr: MBC2 internal memory - Not really RAM, but whatever.
-#: ../src/libromdata/Handheld/DMG.cpp:652
+#: ../src/libromdata/Handheld/DMG.cpp:653
 msgctxt "DMG"
 msgid "512 x 4 bits"
 msgstr "512 x 4 bits"
 
-#: ../src/libromdata/Handheld/DMG.cpp:654
+#: ../src/libromdata/Handheld/DMG.cpp:655
 msgctxt "DMG"
 msgid "No RAM"
 msgstr "Sem RAM"
 
-#: ../src/libromdata/Handheld/DMG.cpp:671
-#: ../src/libromdata/Handheld/DMG.cpp:674
-#: ../src/libromdata/Handheld/DMG.cpp:678
+#: ../src/libromdata/Handheld/DMG.cpp:673
+#: ../src/libromdata/Handheld/DMG.cpp:676
+#: ../src/libromdata/Handheld/DMG.cpp:680
 msgctxt "DMG"
 msgid "Region"
 msgstr "Região"
 
-#: ../src/libromdata/Handheld/DMG.cpp:671
+#: ../src/libromdata/Handheld/DMG.cpp:673
 msgctxt "Region|DMG"
 msgid "Japanese"
 msgstr "Japão"
 
-#: ../src/libromdata/Handheld/DMG.cpp:674
+#: ../src/libromdata/Handheld/DMG.cpp:676
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
 msgstr "Fora do Japão"
 
-#: ../src/libromdata/Handheld/DMG.cpp:679
+#: ../src/libromdata/Handheld/DMG.cpp:681
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (INVALID)"
 msgstr "0x%02X (INVÁLIDO)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:684
+#: ../src/libromdata/Handheld/DMG.cpp:686
 msgctxt "DMG"
 msgid "Revision"
 msgstr "Revisão"
 
-#: ../src/libromdata/Handheld/DMG.cpp:698
-#: ../src/libromdata/Handheld/DMG.cpp:702
+#: ../src/libromdata/Handheld/DMG.cpp:700
+#: ../src/libromdata/Handheld/DMG.cpp:704
 msgctxt "DMG"
 msgid "Checksum"
 msgstr "Soma de controle"
 
-#: ../src/libromdata/Handheld/DMG.cpp:699
+#: ../src/libromdata/Handheld/DMG.cpp:701
 #, c-format
 msgctxt "DMG"
 msgid "0x%1$02X (INVALID; should be 0x%2$02X)"
 msgstr "0x%1$02X (INVÁLIDO; deveria ser 0x%2$02X)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:703
+#: ../src/libromdata/Handheld/DMG.cpp:705
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (valid)"
@@ -2631,6 +2635,24 @@ msgctxt "GameBoyAdvance"
 msgid "Unknown"
 msgstr "Desconhecido(a)"
 
+#: ../src/libromdata/Handheld/GameCom.cpp:499
+#, fuzzy
+msgctxt "GameCom"
+msgid "Title"
+msgstr "Nome"
+
+#: ../src/libromdata/Handheld/GameCom.cpp:503
+#, fuzzy
+msgctxt "GameCom"
+msgid "Game ID"
+msgstr "Código de jogo"
+
+#: ../src/libromdata/Handheld/GameCom.cpp:508
+#, fuzzy
+msgctxt "GameCom"
+msgid "Entry Point"
+msgstr "Ponto de entrada"
+
 #: ../src/libromdata/Handheld/Lynx.cpp:235
 msgctxt "Lynx"
 msgid "Title"
@@ -2676,6 +2698,19 @@ msgctxt "Lynx"
 msgid "Bank 1 Size"
 msgstr "Tamanho de Banco 1"
 
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:879
+#, fuzzy
+msgctxt "Nintendo3DS"
+msgid "Media ID"
+msgstr "Código de mídia"
+
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:883
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:887
+#, fuzzy
+msgctxt "Nintendo3DS"
+msgid "Title ID"
+msgstr "Código de nome"
+
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:899
 msgctxt "Nintendo3DS"
 msgid "Product Code"
@@ -2717,144 +2752,144 @@ msgctxt "Nintendo3DS"
 msgid "Services"
 msgstr "Serviços"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1737
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1891
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1738
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1892
 msgctxt "Nintendo3DS"
 msgid "Unknown error. (THIS IS A BUG!)"
 msgstr "Erro desconhecido (ISSO É UM BUG)!"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1739
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1893
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1740
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1894
 msgctxt "Nintendo3DS"
 msgid "Warning"
 msgstr "Aviso"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1783
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1784
 msgctxt "Nintendo3DS"
 msgid "Title"
 msgstr "Nome"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1785
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1786
 msgctxt "Nintendo3DS"
 msgid "Full Title"
 msgstr "Nome completo"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1787
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1788
 msgctxt "Nintendo3DS"
 msgid "Publisher"
 msgstr "Distribuidor(a)"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1804
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1805
 msgctxt "Nintendo3DS"
 msgid "Region Code"
 msgstr "Código de região"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1842
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1843
 msgctxt "Nintendo3DS"
 msgid "Age Rating"
 msgstr "Classificação indicativa"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1847
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1848
 msgctxt "Nintendo3DS"
 msgid "DSiWare"
 msgstr "DSiWare"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1938
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1939
 msgctxt "Nintendo3DS|CCI"
 msgid "#"
 msgstr "Nº"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1939
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1940
 msgctxt "Nintendo3DS|CCI"
 msgid "Type"
 msgstr "Tipo"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1940
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1941
 msgctxt "Nintendo3DS|CCI"
 msgid "Encryption"
 msgstr "Criptografia"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1941
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1942
 msgctxt "Nintendo3DS|CCI"
 msgid "Version"
 msgstr "Versão"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1942
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1943
 msgctxt "Nintendo3DS|CCI"
 msgid "Size"
 msgstr "Tamanho"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1950
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1963
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1951
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1964
 msgctxt "Nintendo3DS|eMMC"
 msgid "Type"
 msgstr "Tipo"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1962
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1963
 msgctxt "Nintendo3DS|eMMC"
 msgid "#"
 msgstr "Nº"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1964
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1965
 msgctxt "Nintendo3DS|eMMC"
 msgid "Keyslot"
 msgstr "Registro de chave"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1965
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1966
 msgctxt "Nintendo3DS|eMMC"
 msgid "Size"
 msgstr "Tamanho"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1986
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1989
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1987
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1990
 msgctxt "Nintendo3DS"
 msgid "Media Type"
 msgstr "Tipo de mídia"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1990
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1991
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "Unknown (0x%02X)"
 msgstr "Desconhecido (0x%02X)"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1995
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1996
 msgctxt "Nintendo3DS"
 msgid "Card2 RW Address"
 msgstr "Endereço "
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2014
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2015
 msgctxt "Nintendo3DS|CDev"
 msgid "NOR Flash"
 msgstr "Flash NOR"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2015
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2016
 msgctxt "Nintendo3DS|CDev"
 msgid "None"
 msgstr "Nenhum(a)"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2016
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2017
 msgctxt "Nintendo3DS|CDev"
 msgid "Bluetooth"
 msgstr "Bluetooth"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2019
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2022
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2020
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2023
 msgctxt "Nintendo3DS"
 msgid "Card Device"
 msgstr "Dispositivo de cartão"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2023
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2024
 #, c-format
 msgctxt "Nintendo3DS|CDev"
 msgid "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"
 msgstr "Desconhecido(a) (SDK2=0x%1$02X, SDK3=0x%2$02X)"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2029
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2030
 msgctxt "Nintendo3DS"
 msgid "Card Revision"
 msgstr "Revisão de cartão"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2129
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2130
 msgctxt "Nintendo3DS"
 msgid "Partitions"
 msgstr "Partições"
@@ -2864,124 +2899,133 @@ msgctxt "Nintendo3DS"
 msgid "Version"
 msgstr "Versão"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2161
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2162
 msgctxt "Nintendo3DS"
 msgid "Retail"
 msgstr "Aluguel"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2164
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2165
 msgctxt "Nintendo3DS"
 msgid "Debug"
 msgstr "Depuração"
 
 #. tr: Ticket issuer. (retail or debug)
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2172
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2175
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2173
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2176
 msgctxt "Nintendo3DS"
 msgid "Issuer"
 msgstr "Emissor"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2182
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2183
 msgctxt "Nintendo3DS"
 msgid "Demo Use Limit"
 msgstr "Limite de demonstrações"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2310
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2311
 msgctxt "Nintendo3DS|CtNames"
 msgid "#"
 msgstr "Nº"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2311
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2312
 msgctxt "Nintendo3DS|CtNames"
 msgid "Type"
 msgstr "Tipo"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2312
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2313
 msgctxt "Nintendo3DS|CtNames"
 msgid "Encryption"
 msgstr "Criptografia"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2313
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
 msgctxt "Nintendo3DS|CtNames"
 msgid "Version"
 msgstr "Versão"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2314
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2315
 msgctxt "Nintendo3DS|CtNames"
 msgid "Size"
 msgstr "Tamanho"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2318
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2319
 msgctxt "Nintendo3DS"
 msgid "Contents"
 msgstr "Conteúdo"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2330
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2331
 msgctxt "Nintendo3DS"
 msgid "Process Name"
 msgstr "Nome do processo"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2336
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2337
 msgctxt "Nintendo3DS|ApplType"
 msgid "Application"
 msgstr "Aplicativo"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2338
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2339
 msgctxt "Nintendo3DS|ApplType"
 msgid "System Applet"
 msgstr "Applet de sistema"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2340
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2341
 msgctxt "Nintendo3DS|ApplType"
 msgid "Library Applet"
 msgstr "Applet de biblioteca"
 
 #. tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2342
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2343
 msgctxt "Nintendo3DS|ApplType"
 msgid "SysModule"
 msgstr "Módulo de sistema"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2346
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2349
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2347
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2350
 msgctxt "Nintendo3DS"
 msgid "Type"
 msgstr "Tipo"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2350
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2383
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2401
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2351
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2393
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2413
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "Invalid (0x%02X)"
 msgstr "Inválido(a) (0x%02X)"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2379
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2382
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2388
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2392
 msgctxt "Nintendo3DS"
 msgid "Old3DS Sys Mode"
 msgstr "Modo de sist. do antigo 3DS"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2397
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2400
+#. tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
+#. tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2390
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2410
+#, fuzzy, c-format
+msgctxt "Nintendo3DS"
+msgid "%1$s (%2$u MiB)"
+msgstr "%1$s (%2$u MiB)"
+
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2408
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2412
 msgctxt "Nintendo3DS"
 msgid "New3DS Sys Mode"
 msgstr "Modo de sist. do novo 3DS"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2406
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2418
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "L2 Cache"
 msgstr "Cachê L2"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2407
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2419
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "804 MHz"
 msgstr "804 MHz"
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2421
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2433
 msgctxt "Nintendo3DS"
 msgid "Permissions"
 msgstr "Permissões"
@@ -3116,54 +3160,36 @@ msgstr "Todas as regiões"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1120
 msgctxt "NintendoDS"
 msgid "Title ID"
-msgstr "Nome de jogo"
+msgstr "Código de nome"
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1130
-#, fuzzy
-#| msgctxt "NintendoDS"
-#| msgid "Cartridge"
 msgctxt "NintendoDS|DSiFileType"
 msgid "Cartridge"
 msgstr "Cartucho"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1133
-#, fuzzy
-#| msgctxt "Nintendo3DS"
-#| msgid "DSiWare"
 msgctxt "NintendoDS|DSiFileType"
 msgid "DSiWare"
 msgstr "DSiWare"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1136
-#, fuzzy
-#| msgctxt "NintendoDS"
-#| msgid "System Fun Tool"
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Fun Tool"
 msgstr "Ferramentas de sistema"
 
 #. tr: Data file, e.g. DS cartridge whitelist.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1140
-#, fuzzy
-#| msgctxt "NintendoDS"
-#| msgid "Non-Executable Data File"
 msgctxt "NintendoDS|DSiFileType"
 msgid "Non-Executable Data File"
 msgstr "Arquivo de dados não executáveis"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1143
-#, fuzzy
-#| msgctxt "NintendoDS"
-#| msgid "System Base Tool"
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Base Tool"
 msgstr "Base do sistema"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1146
-#, fuzzy
-#| msgctxt "NintendoDS"
-#| msgid "System Menu"
 msgctxt "NintendoDS|DSiFileType"
 msgid "System Menu"
 msgstr "Menu de sistema"
@@ -3254,34 +3280,34 @@ msgctxt "VirtualBoy"
 msgid "Game ID"
 msgstr "Código de jogo"
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:362
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:361
 #, c-format
 msgctxt "VirtualBoy"
 msgid "Unknown (%.2s)"
 msgstr "Desconhecido (%.2s)"
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:365
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:364
 #, c-format
 msgctxt "VirtualBoy"
 msgid "Unknown (%02X %02X)"
 msgstr "Desconhecido (%02X %02X)"
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:370
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:369
 msgctxt "VirtualBoy"
 msgid "Publisher"
 msgstr "Distribuidor(a)"
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:373
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:372
 msgctxt "VirtualBoy"
 msgid "Revision"
 msgstr "Revisão"
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:386
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:385
 msgctxt "VirtualBoy"
 msgid "Unknown"
 msgstr "ERRO"
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:389
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:388
 msgctxt "VirtualBoy"
 msgid "Region"
 msgstr "Região"
@@ -3777,8 +3803,8 @@ msgctxt "EXE"
 msgid "File Subtype"
 msgstr "Subtipo de arquivo"
 
-#: ../src/libromdata/Other/EXE.cpp:282 ../src/libromdata/Other/EXE.cpp:471
-#: ../src/libromdata/Other/EXE.cpp:624
+#: ../src/libromdata/Other/EXE.cpp:282 ../src/libromdata/Other/EXE.cpp:399
+#: ../src/libromdata/Other/EXE_NE.cpp:153
 #, c-format
 msgctxt "EXE"
 msgid "Unknown (0x%02X)"
@@ -3814,377 +3840,41 @@ msgctxt "EXE"
 msgid "Initial SS:SP"
 msgstr "SS:SP Inicial"
 
-#: ../src/libromdata/Other/EXE.cpp:451
-msgctxt "EXE"
-msgid "NE Header"
-msgstr "Cabeçalho NE"
-
-#: ../src/libromdata/Other/EXE.cpp:468 ../src/libromdata/Other/EXE.cpp:470
-#: ../src/libromdata/Other/EXE.cpp:621 ../src/libromdata/Other/EXE.cpp:623
-msgctxt "EXE"
-msgid "Target OS"
-msgstr "SO de destino"
-
-#: ../src/libromdata/Other/EXE.cpp:476
-msgctxt "EXE|DGroupType"
-msgid "None"
-msgstr "Nenhum"
-
-#: ../src/libromdata/Other/EXE.cpp:477
-msgctxt "EXE|DGroupType"
-msgid "Single Shared"
-msgstr "Compartilhamento único"
-
-#: ../src/libromdata/Other/EXE.cpp:478
-msgctxt "EXE|DGroupType"
-msgid "Multiple"
-msgstr "Múltiplos"
-
-#: ../src/libromdata/Other/EXE.cpp:479
-msgctxt "EXE|DGroupType"
-msgid "(null)"
-msgstr "(nulo)"
-
-#: ../src/libromdata/Other/EXE.cpp:481
-msgctxt "EXE"
-msgid "DGroup Type"
-msgstr "Tipo DGroup"
-
-#: ../src/libromdata/Other/EXE.cpp:487
-msgctxt "EXE|ProgFlags"
-msgid "Global Init"
-msgstr "Início global"
-
-#: ../src/libromdata/Other/EXE.cpp:488
-msgctxt "EXE|ProgFlags"
-msgid "Protected Mode Only"
-msgstr "Somente modo protegido"
-
-#: ../src/libromdata/Other/EXE.cpp:489
-msgctxt "EXE|ProgFlags"
-msgid "8086 insns"
-msgstr "insns 8086"
-
-#: ../src/libromdata/Other/EXE.cpp:490
-msgctxt "EXE|ProgFlags"
-msgid "80286 insns"
-msgstr "insns 80286"
-
-#: ../src/libromdata/Other/EXE.cpp:491
-msgctxt "EXE|ProgFlags"
-msgid "80386 insns"
-msgstr "insns 80386"
-
-#: ../src/libromdata/Other/EXE.cpp:492
-msgctxt "EXE|ProgFlags"
-msgid "FPU insns"
-msgstr "insns FPU"
-
-#: ../src/libromdata/Other/EXE.cpp:504 ../src/libromdata/Other/EXE.cpp:513
-msgctxt "EXE|ApplType"
-msgid "None"
-msgstr "Nenhum"
-
-#: ../src/libromdata/Other/EXE.cpp:505
-msgctxt "EXE|ApplType"
-msgid "Full Screen (not aware of Presentation Manager)"
-msgstr "Tela cheia (não ciente do Gestor de Apresentação)"
-
-#: ../src/libromdata/Other/EXE.cpp:506
-msgctxt "EXE|ApplType"
-msgid "Presentation Manager compatible"
-msgstr "Compatível com Gestor de Apresentação"
-
-#: ../src/libromdata/Other/EXE.cpp:507
-msgctxt "EXE|ApplType"
-msgid "Presentation Manager application"
-msgstr "Aplicativo do Gestor de Apresentação"
-
-#: ../src/libromdata/Other/EXE.cpp:514
-msgctxt "EXE|ApplType"
-msgid "Full Screen (not aware of Windows)"
-msgstr "Tela Cheia (Não ciente do Windows)"
-
-#: ../src/libromdata/Other/EXE.cpp:515
-msgctxt "EXE|ApplType"
-msgid "Windows compatible"
-msgstr "Compatível com o Windows"
-
-#: ../src/libromdata/Other/EXE.cpp:516
-msgctxt "EXE|ApplType"
-msgid "Windows application"
-msgstr "Aplicativo do Windows"
-
-#: ../src/libromdata/Other/EXE.cpp:520
-msgctxt "EXE"
-msgid "Application Type"
-msgstr "Tipo de aplicativo"
-
-#: ../src/libromdata/Other/EXE.cpp:527
-msgctxt "EXE|ApplFlags"
-msgid "OS/2 Application"
-msgstr "Aplicativo OS/2"
-
-#: ../src/libromdata/Other/EXE.cpp:529
-msgctxt "EXE|ApplFlags"
-msgid "Image Error"
-msgstr "Erro de imagem"
-
-#: ../src/libromdata/Other/EXE.cpp:530
-msgctxt "EXE|ApplFlags"
-msgid "Non-Conforming"
-msgstr "Fora de conformidade"
-
-#: ../src/libromdata/Other/EXE.cpp:531
-msgctxt "EXE|ApplFlags"
-msgid "DLL"
-msgstr "DLL"
-
-#: ../src/libromdata/Other/EXE.cpp:535
-msgctxt "EXE"
-msgid "Application Flags"
-msgstr "Parâmetros de aplicativo"
-
-#: ../src/libromdata/Other/EXE.cpp:545
-msgctxt "EXE|OtherFlags"
-msgid "Long File Names"
-msgstr "Nomes de arquivo longos"
-
-#: ../src/libromdata/Other/EXE.cpp:546
-msgctxt "EXE|OtherFlags"
-msgid "Protected Mode"
-msgstr "Modo protegido"
-
-#: ../src/libromdata/Other/EXE.cpp:547
-msgctxt "EXE|OtherFlags"
-msgid "Proportional Fonts"
-msgstr "Fotnes proporcionais"
-
-#: ../src/libromdata/Other/EXE.cpp:548
-msgctxt "EXE|OtherFlags"
-msgid "Gangload Area"
-msgstr "Área de gangload"
-
-#: ../src/libromdata/Other/EXE.cpp:552
-msgctxt "EXE"
-msgid "Other Flags"
-msgstr "Outros parâmetros"
-
-#: ../src/libromdata/Other/EXE.cpp:558
-msgctxt "EXE"
-msgid "Windows Version"
-msgstr "Versão do Windows"
-
-#: ../src/libromdata/Other/EXE.cpp:582 ../src/libromdata/Other/EXE.cpp:936
-msgctxt "EXE"
-msgid "Version"
-msgstr "Versão"
-
-#: ../src/libromdata/Other/EXE.cpp:601
+#: ../src/libromdata/Other/EXE.cpp:376
 msgctxt "EXE"
 msgid "LE Header"
 msgstr "Cabeçalho LE"
 
-#: ../src/libromdata/Other/EXE.cpp:608 ../src/libromdata/Other/EXE.cpp:610
-#: ../src/libromdata/Other/EXE.cpp:818
+#: ../src/libromdata/Other/EXE.cpp:383 ../src/libromdata/Other/EXE.cpp:385
+#: ../src/libromdata/Other/EXE_PE.cpp:238
 msgctxt "EXE"
 msgid "CPU"
 msgstr "CPU"
 
-#: ../src/libromdata/Other/EXE.cpp:611 ../src/libromdata/Other/EXE.cpp:812
+#: ../src/libromdata/Other/EXE.cpp:386 ../src/libromdata/Other/EXE_PE.cpp:232
 #, c-format
 msgctxt "EXE"
 msgid "Unknown (0x%04X)"
 msgstr "Desconhecido(a) (0x%04X)"
 
-#: ../src/libromdata/Other/EXE.cpp:775
+#: ../src/libromdata/Other/EXE.cpp:396 ../src/libromdata/Other/EXE.cpp:398
+#: ../src/libromdata/Other/EXE_NE.cpp:150
+#: ../src/libromdata/Other/EXE_NE.cpp:152
 msgctxt "EXE"
-msgid "PE Header"
-msgstr "Cabeçalho PE"
+msgid "Target OS"
+msgstr "SO de destino"
 
-#: ../src/libromdata/Other/EXE.cpp:821
-msgctxt "EXE"
-msgid "OS Version"
-msgstr "Versão do SO"
-
-#. tr: IMAGE_SUBSYSTEM_NATIVE
-#: ../src/libromdata/Other/EXE.cpp:829
-msgctxt "EXE|Subsystem"
-msgid "Native"
-msgstr "Nativo"
-
-#. tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
-#: ../src/libromdata/Other/EXE.cpp:831
-msgctxt "EXE|Subsystem"
-msgid "Windows"
-msgstr "Windows"
-
-#. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
-#: ../src/libromdata/Other/EXE.cpp:833
-msgctxt "EXE|Subsystem"
-msgid "Console"
-msgstr "Console"
-
-#. tr: IMAGE_SUBSYSTEM_OS2_CUI
-#: ../src/libromdata/Other/EXE.cpp:836
-msgctxt "EXE|Subsystem"
-msgid "OS/2 Console"
-msgstr "Console OS/2"
-
-#. tr: IMAGE_SUBSYSTEM_POSIX_CUI
-#: ../src/libromdata/Other/EXE.cpp:839
-msgctxt "EXE|Subsystem"
-msgid "POSIX Console"
-msgstr "Console POSIX"
-
-#. tr: IMAGE_SUBSYSTEM_NATIVE_WINDOWS
-#: ../src/libromdata/Other/EXE.cpp:841
-msgctxt "EXE|Subsystem"
-msgid "Win9x Native Driver"
-msgstr "Controlador nativo do Windows"
-
-#. tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
-#: ../src/libromdata/Other/EXE.cpp:843
-msgctxt "EXE|Subsystem"
-msgid "Windows CE"
-msgstr "Windows CE"
-
-#. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
-#: ../src/libromdata/Other/EXE.cpp:845
-msgctxt "EXE|Subsystem"
-msgid "EFI Application"
-msgstr "Aplicativo EFI"
-
-#. tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
-#: ../src/libromdata/Other/EXE.cpp:847
-msgctxt "EXE|Subsystem"
-msgid "EFI Boot Service Driver"
-msgstr "Controlador de serviço de Boot EFI"
-
-#. tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
-#: ../src/libromdata/Other/EXE.cpp:849
-msgctxt "EXE|Subsystem"
-msgid "EFI Runtime Driver"
-msgstr "Controlador de execução EFI"
-
-#. tr: IMAGE_SUBSYSTEM_EFI_ROM
-#: ../src/libromdata/Other/EXE.cpp:851
-msgctxt "EXE|Subsystem"
-msgid "EFI ROM Image"
-msgstr "Imagem de ROM EFI"
-
-#. tr: IMAGE_SUBSYSTEM_XBOX
-#: ../src/libromdata/Other/EXE.cpp:853
-msgctxt "EXE|Subsystem"
-msgid "Xbox"
-msgstr "Xbox"
-
-#: ../src/libromdata/Other/EXE.cpp:857
-msgctxt "EXE"
-msgid "Subsystem"
-msgstr "Subsistema"
-
-#: ../src/libromdata/Other/EXE.cpp:861 ../src/libromdata/Other/EXE.cpp:1370
-msgctxt "EXE"
-msgid "Unknown"
-msgstr "ERRO"
-
-#: ../src/libromdata/Other/EXE.cpp:868
-msgctxt "EXE|PEFlags"
-msgid "Executable"
-msgstr "Executável"
-
-#: ../src/libromdata/Other/EXE.cpp:870
-msgctxt "EXE|PEFlags"
-msgid ">2GB addressing"
-msgstr "+ de 2GB de endereçamento"
-
-#: ../src/libromdata/Other/EXE.cpp:874
-msgctxt "EXE|PEFlags"
-msgid "DLL"
-msgstr "DLL"
-
-#: ../src/libromdata/Other/EXE.cpp:879
-msgctxt "EXE"
-msgid "PE Flags"
-msgstr "Parâmetros PE"
-
-#: ../src/libromdata/Other/EXE.cpp:885
-msgctxt "EXE|DLLFlags"
-msgid "High Entropy VA"
-msgstr "Valor de alta entropia"
-
-#: ../src/libromdata/Other/EXE.cpp:886
-msgctxt "EXE|DLLFlags"
-msgid "Dynamic Base"
-msgstr "Base dinâmica"
-
-#: ../src/libromdata/Other/EXE.cpp:887
-msgctxt "EXE|DLLFlags"
-msgid "Force Integrity"
-msgstr "Forçar verificação"
-
-#: ../src/libromdata/Other/EXE.cpp:888
-msgctxt "EXE|DLLFlags"
-msgid "NX Compatible"
-msgstr "Compatível com NX"
-
-#: ../src/libromdata/Other/EXE.cpp:889
-msgctxt "EXE|DLLFlags"
-msgid "No Isolation"
-msgstr "Sem isolamento"
-
-#: ../src/libromdata/Other/EXE.cpp:890
-msgctxt "EXE|DLLFlags"
-msgid "No SEH"
-msgstr "Sem SEH"
-
-#: ../src/libromdata/Other/EXE.cpp:891
-msgctxt "EXE|DLLFlags"
-msgid "No Bind"
-msgstr "Não vincular"
-
-#: ../src/libromdata/Other/EXE.cpp:892
-msgctxt "EXE|DLLFlags"
-msgid "AppContainer"
-msgstr "AppContainer"
-
-#: ../src/libromdata/Other/EXE.cpp:893
-msgctxt "EXE|DLLFlags"
-msgid "WDM Driver"
-msgstr "Controlador WDM"
-
-#: ../src/libromdata/Other/EXE.cpp:894
-msgctxt "EXE|DLLFlags"
-msgid "Control Flow Guard"
-msgstr "Proteção de controle de Fluxo"
-
-#: ../src/libromdata/Other/EXE.cpp:895
-msgctxt "EXE|DLLFlags"
-msgid "TS Aware"
-msgstr "Ciente de TS"
-
-#: ../src/libromdata/Other/EXE.cpp:899
-msgctxt "EXE"
-msgid "DLL Flags"
-msgstr "Parâmetros de DLL"
-
-#: ../src/libromdata/Other/EXE.cpp:908 ../src/libromdata/Other/EXE.cpp:913
-msgctxt "EXE"
-msgid "Timestamp"
-msgstr "Carimbo de data/hora"
-
-#: ../src/libromdata/Other/EXE.cpp:913
-msgctxt "EXE"
-msgid "Not set"
-msgstr "Não definido(a)"
-
-#: ../src/libromdata/Other/EXE.cpp:1368 ../src/libromdata/Other/EXE.cpp:1370
+#: ../src/libromdata/Other/EXE.cpp:824 ../src/libromdata/Other/EXE.cpp:826
 msgctxt "EXE"
 msgid "Type"
 msgstr "Tipo"
 
-#: ../src/libromdata/Other/EXE.cpp:1399
+#: ../src/libromdata/Other/EXE.cpp:826 ../src/libromdata/Other/EXE_PE.cpp:281
+msgctxt "EXE"
+msgid "Unknown"
+msgstr "ERRO"
+
+#: ../src/libromdata/Other/EXE.cpp:855
 msgctxt "EXE"
 msgid "MZ Header"
 msgstr "Cabeçalho MZ"
@@ -4304,98 +3994,438 @@ msgctxt "EXE|Manifest"
 msgid "Compatibility"
 msgstr "Compatibilidade"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:590
-#: ../src/libromdata/Other/NintendoBadge.cpp:685
-#: ../src/libromdata/Other/NintendoBadge.cpp:727
+#: ../src/libromdata/Other/EXE_NE.cpp:133
+msgctxt "EXE"
+msgid "NE Header"
+msgstr "Cabeçalho NE"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:158
+msgctxt "EXE|DGroupType"
+msgid "None"
+msgstr "Nenhum"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:159
+msgctxt "EXE|DGroupType"
+msgid "Single Shared"
+msgstr "Compartilhamento único"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:160
+msgctxt "EXE|DGroupType"
+msgid "Multiple"
+msgstr "Múltiplos"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:161
+msgctxt "EXE|DGroupType"
+msgid "(null)"
+msgstr "(nulo)"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:163
+msgctxt "EXE"
+msgid "DGroup Type"
+msgstr "Tipo DGroup"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:169
+msgctxt "EXE|ProgFlags"
+msgid "Global Init"
+msgstr "Início global"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:170
+msgctxt "EXE|ProgFlags"
+msgid "Protected Mode Only"
+msgstr "Somente modo protegido"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:171
+msgctxt "EXE|ProgFlags"
+msgid "8086 insns"
+msgstr "insns 8086"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:172
+msgctxt "EXE|ProgFlags"
+msgid "80286 insns"
+msgstr "insns 80286"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:173
+msgctxt "EXE|ProgFlags"
+msgid "80386 insns"
+msgstr "insns 80386"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:174
+msgctxt "EXE|ProgFlags"
+msgid "FPU insns"
+msgstr "insns FPU"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:186
+#: ../src/libromdata/Other/EXE_NE.cpp:195
+msgctxt "EXE|ApplType"
+msgid "None"
+msgstr "Nenhum"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:187
+msgctxt "EXE|ApplType"
+msgid "Full Screen (not aware of Presentation Manager)"
+msgstr "Tela cheia (não ciente do Gestor de Apresentação)"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:188
+msgctxt "EXE|ApplType"
+msgid "Presentation Manager compatible"
+msgstr "Compatível com Gestor de Apresentação"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:189
+msgctxt "EXE|ApplType"
+msgid "Presentation Manager application"
+msgstr "Aplicativo do Gestor de Apresentação"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:196
+msgctxt "EXE|ApplType"
+msgid "Full Screen (not aware of Windows)"
+msgstr "Tela Cheia (Não ciente do Windows)"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:197
+msgctxt "EXE|ApplType"
+msgid "Windows compatible"
+msgstr "Compatível com o Windows"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:198
+msgctxt "EXE|ApplType"
+msgid "Windows application"
+msgstr "Aplicativo do Windows"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:202
+msgctxt "EXE"
+msgid "Application Type"
+msgstr "Tipo de aplicativo"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:209
+msgctxt "EXE|ApplFlags"
+msgid "OS/2 Application"
+msgstr "Aplicativo OS/2"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:211
+msgctxt "EXE|ApplFlags"
+msgid "Image Error"
+msgstr "Erro de imagem"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:212
+msgctxt "EXE|ApplFlags"
+msgid "Non-Conforming"
+msgstr "Fora de conformidade"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:213
+msgctxt "EXE|ApplFlags"
+msgid "DLL"
+msgstr "DLL"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:217
+msgctxt "EXE"
+msgid "Application Flags"
+msgstr "Parâmetros de aplicativo"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:227
+msgctxt "EXE|OtherFlags"
+msgid "Long File Names"
+msgstr "Nomes de arquivo longos"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:228
+msgctxt "EXE|OtherFlags"
+msgid "Protected Mode"
+msgstr "Modo protegido"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:229
+msgctxt "EXE|OtherFlags"
+msgid "Proportional Fonts"
+msgstr "Fotnes proporcionais"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:230
+msgctxt "EXE|OtherFlags"
+msgid "Gangload Area"
+msgstr "Área de gangload"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:234
+msgctxt "EXE"
+msgid "Other Flags"
+msgstr "Outros parâmetros"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:240
+msgctxt "EXE"
+msgid "Windows Version"
+msgstr "Versão do Windows"
+
+#: ../src/libromdata/Other/EXE_NE.cpp:264
+#: ../src/libromdata/Other/EXE_PE.cpp:356
+msgctxt "EXE"
+msgid "Version"
+msgstr "Versão"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:195
+msgctxt "EXE"
+msgid "PE Header"
+msgstr "Cabeçalho PE"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:241
+msgctxt "EXE"
+msgid "OS Version"
+msgstr "Versão do SO"
+
+#. tr: IMAGE_SUBSYSTEM_NATIVE
+#: ../src/libromdata/Other/EXE_PE.cpp:249
+msgctxt "EXE|Subsystem"
+msgid "Native"
+msgstr "Nativo"
+
+#. tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
+#: ../src/libromdata/Other/EXE_PE.cpp:251
+msgctxt "EXE|Subsystem"
+msgid "Windows"
+msgstr "Windows"
+
+#. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
+#: ../src/libromdata/Other/EXE_PE.cpp:253
+msgctxt "EXE|Subsystem"
+msgid "Console"
+msgstr "Console"
+
+#. tr: IMAGE_SUBSYSTEM_OS2_CUI
+#: ../src/libromdata/Other/EXE_PE.cpp:256
+msgctxt "EXE|Subsystem"
+msgid "OS/2 Console"
+msgstr "Console OS/2"
+
+#. tr: IMAGE_SUBSYSTEM_POSIX_CUI
+#: ../src/libromdata/Other/EXE_PE.cpp:259
+msgctxt "EXE|Subsystem"
+msgid "POSIX Console"
+msgstr "Console POSIX"
+
+#. tr: IMAGE_SUBSYSTEM_NATIVE_WINDOWS
+#: ../src/libromdata/Other/EXE_PE.cpp:261
+msgctxt "EXE|Subsystem"
+msgid "Win9x Native Driver"
+msgstr "Controlador nativo do Windows"
+
+#. tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
+#: ../src/libromdata/Other/EXE_PE.cpp:263
+msgctxt "EXE|Subsystem"
+msgid "Windows CE"
+msgstr "Windows CE"
+
+#. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
+#: ../src/libromdata/Other/EXE_PE.cpp:265
+msgctxt "EXE|Subsystem"
+msgid "EFI Application"
+msgstr "Aplicativo EFI"
+
+#. tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
+#: ../src/libromdata/Other/EXE_PE.cpp:267
+msgctxt "EXE|Subsystem"
+msgid "EFI Boot Service Driver"
+msgstr "Controlador de serviço de Boot EFI"
+
+#. tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
+#: ../src/libromdata/Other/EXE_PE.cpp:269
+msgctxt "EXE|Subsystem"
+msgid "EFI Runtime Driver"
+msgstr "Controlador de execução EFI"
+
+#. tr: IMAGE_SUBSYSTEM_EFI_ROM
+#: ../src/libromdata/Other/EXE_PE.cpp:271
+msgctxt "EXE|Subsystem"
+msgid "EFI ROM Image"
+msgstr "Imagem de ROM EFI"
+
+#. tr: IMAGE_SUBSYSTEM_XBOX
+#: ../src/libromdata/Other/EXE_PE.cpp:273
+msgctxt "EXE|Subsystem"
+msgid "Xbox"
+msgstr "Xbox"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:277
+msgctxt "EXE"
+msgid "Subsystem"
+msgstr "Subsistema"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:288
+msgctxt "EXE|PEFlags"
+msgid "Executable"
+msgstr "Executável"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:290
+msgctxt "EXE|PEFlags"
+msgid ">2GB addressing"
+msgstr "+ de 2GB de endereçamento"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:294
+msgctxt "EXE|PEFlags"
+msgid "DLL"
+msgstr "DLL"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:299
+msgctxt "EXE"
+msgid "PE Flags"
+msgstr "Parâmetros PE"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:305
+msgctxt "EXE|DLLFlags"
+msgid "High Entropy VA"
+msgstr "Valor de alta entropia"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:306
+msgctxt "EXE|DLLFlags"
+msgid "Dynamic Base"
+msgstr "Base dinâmica"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:307
+msgctxt "EXE|DLLFlags"
+msgid "Force Integrity"
+msgstr "Forçar verificação"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:308
+msgctxt "EXE|DLLFlags"
+msgid "NX Compatible"
+msgstr "Compatível com NX"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:309
+msgctxt "EXE|DLLFlags"
+msgid "No Isolation"
+msgstr "Sem isolamento"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:310
+msgctxt "EXE|DLLFlags"
+msgid "No SEH"
+msgstr "Sem SEH"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:311
+msgctxt "EXE|DLLFlags"
+msgid "No Bind"
+msgstr "Não vincular"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:312
+msgctxt "EXE|DLLFlags"
+msgid "AppContainer"
+msgstr "AppContainer"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:313
+msgctxt "EXE|DLLFlags"
+msgid "WDM Driver"
+msgstr "Controlador WDM"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:314
+msgctxt "EXE|DLLFlags"
+msgid "Control Flow Guard"
+msgstr "Proteção de controle de Fluxo"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:315
+msgctxt "EXE|DLLFlags"
+msgid "TS Aware"
+msgstr "Ciente de TS"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:319
+msgctxt "EXE"
+msgid "DLL Flags"
+msgstr "Parâmetros de DLL"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:328
+#: ../src/libromdata/Other/EXE_PE.cpp:333
+msgctxt "EXE"
+msgid "Timestamp"
+msgstr "Carimbo de data/hora"
+
+#: ../src/libromdata/Other/EXE_PE.cpp:333
+msgctxt "EXE"
+msgid "Not set"
+msgstr "Não definido(a)"
+
+#: ../src/libromdata/Other/NintendoBadge.cpp:591
+#: ../src/libromdata/Other/NintendoBadge.cpp:686
+#: ../src/libromdata/Other/NintendoBadge.cpp:728
 msgctxt "NintendoBadge"
 msgid "Type"
 msgstr "Tipo"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:591
+#: ../src/libromdata/Other/NintendoBadge.cpp:592
 msgctxt "NintendoBadge|Type"
 msgid "Mega Badge"
 msgstr "Megainsígnia"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:592
+#: ../src/libromdata/Other/NintendoBadge.cpp:593
 msgctxt "NintendoBadge|Type"
 msgid "Individual Badge"
 msgstr "Insígnia individual"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:618
-#: ../src/libromdata/Other/NintendoBadge.cpp:711
+#: ../src/libromdata/Other/NintendoBadge.cpp:619
+#: ../src/libromdata/Other/NintendoBadge.cpp:712
 msgctxt "NintendoBadge"
 msgid "Name"
 msgstr "Nome"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:623
+#: ../src/libromdata/Other/NintendoBadge.cpp:624
 msgctxt "NintendoBadge"
 msgid "Badge ID"
 msgstr "Código de insígnia"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:627
+#: ../src/libromdata/Other/NintendoBadge.cpp:628
 msgctxt "NintendoBadge"
 msgid "Filename"
 msgstr "Nome de arquivo"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:631
-#: ../src/libromdata/Other/NintendoBadge.cpp:719
+#: ../src/libromdata/Other/NintendoBadge.cpp:632
+#: ../src/libromdata/Other/NintendoBadge.cpp:720
 msgctxt "NintendoBadge"
 msgid "Set Name"
 msgstr "Nome de conjunto"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:636
+#: ../src/libromdata/Other/NintendoBadge.cpp:637
 msgctxt "NintendoBadge"
 msgid "Mega Badge Size"
 msgstr "Tamanho de megainsígnia"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:643
-#: ../src/libromdata/Other/NintendoBadge.cpp:647
+#: ../src/libromdata/Other/NintendoBadge.cpp:644
+#: ../src/libromdata/Other/NintendoBadge.cpp:648
 msgctxt "NintendoBadge"
 msgid "Launch Title ID"
 msgstr "Código de nome de lançamento"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:644
+#: ../src/libromdata/Other/NintendoBadge.cpp:645
 msgctxt "NintendoBadge"
 msgid "None"
 msgstr "Nenhum"
 
 #. tr: %1$s == Title name, %2$s == Region
-#: ../src/libromdata/Other/NintendoBadge.cpp:665
+#: ../src/libromdata/Other/NintendoBadge.cpp:666
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (New3DS) (%2$s)"
 msgstr "%1$s (Novo 3DS) (%2$s)"
 
 #. tr: Title name
-#: ../src/libromdata/Other/NintendoBadge.cpp:668
+#: ../src/libromdata/Other/NintendoBadge.cpp:669
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%s (New3DS)"
 msgstr "%s (Novo 3DS)"
 
 #. tr: %1$s == Title name, %2$s == Region
-#: ../src/libromdata/Other/NintendoBadge.cpp:673
+#: ../src/libromdata/Other/NintendoBadge.cpp:674
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (%2$s)"
 msgstr "%1$s (%2$s)"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:678
+#: ../src/libromdata/Other/NintendoBadge.cpp:679
 msgctxt "NintendoBadge"
 msgid "Launch Title Name"
 msgstr "Código de nome de lançamento"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:685
+#: ../src/libromdata/Other/NintendoBadge.cpp:686
 msgctxt "NintendoBadge"
 msgid "Badge Set"
 msgstr "Conjunto de insígnias"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:716
+#: ../src/libromdata/Other/NintendoBadge.cpp:717
 msgctxt "NintendoBadge"
 msgid "Set ID"
 msgstr "Código de conjunto"
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:727
+#: ../src/libromdata/Other/NintendoBadge.cpp:728
 msgctxt "NintendoBadge"
 msgid "Unknown"
 msgstr "ERRO"
@@ -4769,295 +4799,295 @@ msgctxt "ValveVTF3"
 msgid "Image Format"
 msgstr "Formato de imagem"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:796
+#: ../src/libromdata/Texture/ValveVTF.cpp:798
 msgctxt "ValveVTF"
 msgid "VTF Version"
 msgstr "Versão VTF"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:804
-#: ../src/libromdata/Texture/ValveVTF.cpp:810
-#: ../src/libromdata/Texture/ValveVTF.cpp:814
+#: ../src/libromdata/Texture/ValveVTF.cpp:806
+#: ../src/libromdata/Texture/ValveVTF.cpp:812
+#: ../src/libromdata/Texture/ValveVTF.cpp:816
 msgctxt "ValveVTF"
 msgid "Texture Size"
 msgstr "Tamanho de textura"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:821
+#: ../src/libromdata/Texture/ValveVTF.cpp:823
 msgctxt "ValveVTF|Flags"
 msgid "Point Sampling"
 msgstr "Ponto de amostragem"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:822
+#: ../src/libromdata/Texture/ValveVTF.cpp:824
 msgctxt "ValveVTF|Flags"
 msgid "Trilinear Sampling"
 msgstr "Amostragem trilinear"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:823
+#: ../src/libromdata/Texture/ValveVTF.cpp:825
 msgctxt "ValveVTF|Flags"
 msgid "Clamp S"
 msgstr "Aproximação S"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:824
+#: ../src/libromdata/Texture/ValveVTF.cpp:826
 msgctxt "ValveVTF|Flags"
 msgid "Clamp T"
 msgstr "Aproximação T"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:826
+#: ../src/libromdata/Texture/ValveVTF.cpp:828
 msgctxt "ValveVTF|Flags"
 msgid "Anisotropic Sampling"
 msgstr "Amostragem anisotrópica"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:827
+#: ../src/libromdata/Texture/ValveVTF.cpp:829
 msgctxt "ValveVTF|Flags"
 msgid "Hint DXT5"
 msgstr "Dica DXT5"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:828
+#: ../src/libromdata/Texture/ValveVTF.cpp:830
 msgctxt "ValveVTF|Flags"
 msgid "PWL Corrected"
 msgstr "Correção de PWL"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:829
+#: ../src/libromdata/Texture/ValveVTF.cpp:831
 msgctxt "ValveVTF|Flags"
 msgid "Normal Map"
 msgstr "Mapa normal"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:831
+#: ../src/libromdata/Texture/ValveVTF.cpp:833
 msgctxt "ValveVTF|Flags"
 msgid "No Mipmaps"
 msgstr "Sem mipmaps"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:832
+#: ../src/libromdata/Texture/ValveVTF.cpp:834
 msgctxt "ValveVTF|Flags"
 msgid "No Level of Detail"
 msgstr "Sem detalhes"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:833
+#: ../src/libromdata/Texture/ValveVTF.cpp:835
 msgctxt "ValveVTF|Flags"
 msgid "No Minimum Mipmap"
 msgstr "Sem mipmap mínimo"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:834
+#: ../src/libromdata/Texture/ValveVTF.cpp:836
 msgctxt "ValveVTF|Flags"
 msgid "Procedural"
 msgstr "Procedural"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:836
+#: ../src/libromdata/Texture/ValveVTF.cpp:838
 msgctxt "ValveVTF|Flags"
 msgid "1-bit Alpha"
 msgstr "Alfa de 1 bit"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:837
+#: ../src/libromdata/Texture/ValveVTF.cpp:839
 msgctxt "ValveVTF|Flags"
 msgid "8-bit Alpha"
 msgstr "Alfa de 8 bits"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:838
+#: ../src/libromdata/Texture/ValveVTF.cpp:840
 msgctxt "ValveVTF|Flags"
 msgid "Environment Map"
 msgstr "Mapa de ambiente"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:839
+#: ../src/libromdata/Texture/ValveVTF.cpp:841
 msgctxt "ValveVTF|Flags"
 msgid "Render Target"
 msgstr "Destino de renderização"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:841
+#: ../src/libromdata/Texture/ValveVTF.cpp:843
 msgctxt "ValveVTF|Flags"
 msgid "Depth Render Target"
 msgstr "Profundidade de destino de renderização"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:842
+#: ../src/libromdata/Texture/ValveVTF.cpp:844
 msgctxt "ValveVTF|Flags"
 msgid "No Debug Override"
 msgstr "Não sobrescrever depuração"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:843
+#: ../src/libromdata/Texture/ValveVTF.cpp:845
 msgctxt "ValveVTF|Flags"
 msgid "Single Copy"
 msgstr "Cópia única"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:844
+#: ../src/libromdata/Texture/ValveVTF.cpp:846
 msgctxt "ValveVTF|Flags"
 msgid "Pre SRGB"
 msgstr "Pré-SRGB"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:846
+#: ../src/libromdata/Texture/ValveVTF.cpp:848
 msgctxt "ValveVTF|Flags"
 msgid "Premult Color by 1/mipmap"
 msgstr "Cor pré-multiplicada por 1/mipmap"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:847
+#: ../src/libromdata/Texture/ValveVTF.cpp:849
 msgctxt "ValveVTF|Flags"
 msgid "Normal to DuDv"
 msgstr "Normal para DuDv"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:848
+#: ../src/libromdata/Texture/ValveVTF.cpp:850
 msgctxt "ValveVTF|Flags"
 msgid "Alpha Test Mipmap Gen"
 msgstr "Teste alfa, geração de mipmaps"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:849
+#: ../src/libromdata/Texture/ValveVTF.cpp:851
 msgctxt "ValveVTF|Flags"
 msgid "No depth Buffer"
 msgstr "Sem buffer de profundidade"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:851
+#: ../src/libromdata/Texture/ValveVTF.cpp:853
 msgctxt "ValveVTF|Flags"
 msgid "Nice Filtered"
 msgstr "Filtro NICE"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:852
+#: ../src/libromdata/Texture/ValveVTF.cpp:854
 msgctxt "ValveVTF|Flags"
 msgid "Clamp U"
 msgstr "Clamp U"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:853
+#: ../src/libromdata/Texture/ValveVTF.cpp:855
 msgctxt "ValveVTF|Flags"
 msgid "Vertex Texture"
 msgstr "Textura de vértice"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:854
+#: ../src/libromdata/Texture/ValveVTF.cpp:856
 msgctxt "ValveVTF|Flags"
 msgid "SSBump"
 msgstr "SSBump"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:857
+#: ../src/libromdata/Texture/ValveVTF.cpp:859
 msgctxt "ValveVTF|Flags"
 msgid "Border"
 msgstr "Borda"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:870
+#: ../src/libromdata/Texture/ValveVTF.cpp:872
 msgctxt "ValveVTF"
 msgid "Flags"
 msgstr "Atributos"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:874
+#: ../src/libromdata/Texture/ValveVTF.cpp:876
 msgctxt "ValveVTF"
 msgid "# of Frames"
 msgstr "Nº de quadros"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:876
+#: ../src/libromdata/Texture/ValveVTF.cpp:878
 msgctxt "ValveVTF"
 msgid "First Frame"
 msgstr "Primeiro quatro"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:880
+#: ../src/libromdata/Texture/ValveVTF.cpp:882
 msgctxt "ValveVTF"
 msgid "Reflectivity Vector"
 msgstr "Vetor de refletividade"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:887
+#: ../src/libromdata/Texture/ValveVTF.cpp:889
 msgctxt "ValveVTF"
 msgid "Bumpmap Scale"
 msgstr "Escala de bumpmap"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:901
+#: ../src/libromdata/Texture/ValveVTF.cpp:903
 msgctxt "ValveVTF|ImageFormat"
 msgid "RGB888 (Bluescreen)"
 msgstr "RGB888 (tela azul)"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:902
+#: ../src/libromdata/Texture/ValveVTF.cpp:904
 msgctxt "ValveVTF|ImageFormat"
 msgid "BGR888 (Bluescreen)"
 msgstr "BGR888 (tela azul)"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:925
-#: ../src/libromdata/Texture/ValveVTF.cpp:944
+#: ../src/libromdata/Texture/ValveVTF.cpp:927
+#: ../src/libromdata/Texture/ValveVTF.cpp:946
 msgctxt "ValveVTF|ImageFormat"
 msgid "None"
 msgstr "Nenhum"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:929
-#: ../src/libromdata/Texture/ValveVTF.cpp:932
+#: ../src/libromdata/Texture/ValveVTF.cpp:931
+#: ../src/libromdata/Texture/ValveVTF.cpp:934
 msgctxt "ValveVTF"
 msgid "High-Res Image Format"
 msgstr "Formato de imagem em alta resolução"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:933
-#: ../src/libromdata/Texture/ValveVTF.cpp:962
+#: ../src/libromdata/Texture/ValveVTF.cpp:935
+#: ../src/libromdata/Texture/ValveVTF.cpp:964
 #, c-format
 msgctxt "ValveVTF"
 msgid "Unknown (%d)"
 msgstr "Desconhecido(a) (%d)"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:937
+#: ../src/libromdata/Texture/ValveVTF.cpp:939
 msgctxt "ValveVTF"
 msgid "Mipmap Count"
 msgstr "Contagem de mipmaps"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:948
-#: ../src/libromdata/Texture/ValveVTF.cpp:961
+#: ../src/libromdata/Texture/ValveVTF.cpp:950
+#: ../src/libromdata/Texture/ValveVTF.cpp:963
 msgctxt "ValveVTF"
 msgid "Low-Res Image Format"
 msgstr "Formato de imagem em baixa resolução"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:953
-#: ../src/libromdata/Texture/ValveVTF.cpp:957
+#: ../src/libromdata/Texture/ValveVTF.cpp:955
+#: ../src/libromdata/Texture/ValveVTF.cpp:959
 msgctxt "ValveVTF"
 msgid "Low-Res Size"
 msgstr "Tamanho de baixa resolução"
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:970
+#: ../src/libromdata/Texture/ValveVTF.cpp:972
 msgctxt "ValveVTF"
 msgid "# of Resources"
 msgstr "Nº de recursos"
 
 #. tr: VERIFY_OK
-#: ../src/librpbase/crypto/KeyManager.cpp:237
+#: ../src/librpbase/crypto/KeyManager.cpp:257
 msgctxt "KeyManager|VerifyResult"
 msgid "Something happened."
 msgstr "Alguma coisa aconteceu."
 
 #. tr: VERIFY_INVALID_PARAMS
-#: ../src/librpbase/crypto/KeyManager.cpp:239
+#: ../src/librpbase/crypto/KeyManager.cpp:259
 msgctxt "KeyManager|VerifyResult"
 msgid "Invalid parameters. (THIS IS A BUG!)"
 msgstr "Parâmetros inválidos. (ISTO É UM BUG!)"
 
 #. tr: VERIFY_NO_SUPPORT
-#: ../src/librpbase/crypto/KeyManager.cpp:241
+#: ../src/librpbase/crypto/KeyManager.cpp:261
 msgctxt "KeyManager|VerifyResult"
 msgid "Decryption is not supported in this build."
 msgstr "Esta compilação não possui descodificação."
 
 #. tr: VERIFY_KEY_DB_NOT_LOADED
-#: ../src/librpbase/crypto/KeyManager.cpp:243
+#: ../src/librpbase/crypto/KeyManager.cpp:263
 msgctxt "KeyManager|VerifyResult"
 msgid "keys.conf was not found."
 msgstr "keys.conf não encontrado."
 
 #. tr: VERIFY_KEY_DB_ERROR
-#: ../src/librpbase/crypto/KeyManager.cpp:245
+#: ../src/librpbase/crypto/KeyManager.cpp:265
 msgctxt "KeyManager|VerifyResult"
 msgid "keys.conf has an error and could not be loaded."
 msgstr "keys.conf possui um erro e não pôde ser carregado."
 
 #. tr: VERIFY_KEY_NOT_FOUND
-#: ../src/librpbase/crypto/KeyManager.cpp:247
+#: ../src/librpbase/crypto/KeyManager.cpp:267
 msgctxt "KeyManager|VerifyResult"
 msgid "Required key was not found in keys.conf."
 msgstr "Chave necessária não encontrada em keys.conf."
 
 #. tr: VERIFY_KEY_INVALID
-#: ../src/librpbase/crypto/KeyManager.cpp:249
+#: ../src/librpbase/crypto/KeyManager.cpp:269
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is not a valid key."
 msgstr "Chave em keys.conf não é válida."
 
 #. tr: VERFIY_IAESCIPHER_INIT_ERR
-#: ../src/librpbase/crypto/KeyManager.cpp:251
+#: ../src/librpbase/crypto/KeyManager.cpp:271
 msgctxt "KeyManager|VerifyResult"
 msgid "AES decryption could not be initialized."
 msgstr "Descodificação AES não pode ser inciada."
 
 #. tr: VERIFY_IAESCIPHER_DECRYPT_ERR
-#: ../src/librpbase/crypto/KeyManager.cpp:253
+#: ../src/librpbase/crypto/KeyManager.cpp:273
 msgctxt "KeyManager|VerifyResult"
 msgid "AES decryption failed."
 msgstr "Falha na descodificação AES."
 
 #. tr: VERIFY_WRONG_KEY
-#: ../src/librpbase/crypto/KeyManager.cpp:255
+#: ../src/librpbase/crypto/KeyManager.cpp:275
 msgctxt "KeyManager|VerifyResult"
 msgid "The key in keys.conf is incorrect."
 msgstr "Chave em keys.conf incorreta."
@@ -5144,7 +5174,7 @@ msgstr "Arquivo de ícone"
 #: ../src/librpbase/RomData.cpp:431
 msgctxt "RomData|FileType"
 msgid "Banner File"
-msgstr "Arquivo de banner"
+msgstr ""
 
 #. tr: FTYPE_HOMEBREW
 #: ../src/librpbase/RomData.cpp:433
@@ -5161,8 +5191,6 @@ msgstr "Despejo eMMC"
 #. tr: FTYPE_CONTAINER_FILE
 #: ../src/librpbase/RomData.cpp:437
 #, fuzzy
-#| msgctxt "RomData|FileType"
-#| msgid "Banner File"
 msgctxt "RomData|FileType"
 msgid "Container File"
 msgstr "Arquivo de banner"
@@ -5321,144 +5349,144 @@ msgid "%1$s %2$s"
 msgstr "%1$s %2$s"
 
 #. tr: %1$s == image type name, %2$s == output filename
-#: ../src/rpcli/rpcli.cpp:94
+#: ../src/rpcli/rpcli.cpp:95
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting %1$s into '%2$s'"
 msgstr "Extração de %1$s em '%2$s'"
 
 #. tr: %1$s == filename, %2%s == error message
-#: ../src/rpcli/rpcli.cpp:100 ../src/rpcli/rpcli.cpp:122
+#: ../src/rpcli/rpcli.cpp:101 ../src/rpcli/rpcli.cpp:123
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't create file '%1$s': %2$s"
 msgstr "Não foi possível criar arquivo '%1$s': %2$s"
 
-#: ../src/rpcli/rpcli.cpp:103 ../src/rpcli/rpcli.cpp:125
+#: ../src/rpcli/rpcli.cpp:104 ../src/rpcli/rpcli.cpp:126
 msgctxt "rpcli"
 msgid "Done"
 msgstr "Concluído"
 
-#: ../src/rpcli/rpcli.cpp:113
+#: ../src/rpcli/rpcli.cpp:114
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting animated icon into '%s'"
 msgstr "Extração de ícone animado em '%s'"
 
-#: ../src/rpcli/rpcli.cpp:116
+#: ../src/rpcli/rpcli.cpp:117
 msgctxt "rpcli"
 msgid "APNG not supported, extracting only the first frame"
 msgstr "Incompatível com APNG. Somente primeiro quadro extraído."
 
-#: ../src/rpcli/rpcli.cpp:131
+#: ../src/rpcli/rpcli.cpp:132
 msgctxt "rpcli"
 msgid "Animated icon not found"
 msgstr "Ícone animado"
 
-#: ../src/rpcli/rpcli.cpp:134
+#: ../src/rpcli/rpcli.cpp:135
 #, c-format
 msgctxt "rpcli"
 msgid "Image '%s' not found"
 msgstr "Imagem '%s' não encontrada"
 
-#: ../src/rpcli/rpcli.cpp:148
+#: ../src/rpcli/rpcli.cpp:149
 #, c-format
 msgctxt "rpcli"
 msgid "Reading file '%s'..."
 msgstr "Lendo arquivo '%s'..."
 
-#: ../src/rpcli/rpcli.cpp:154
+#: ../src/rpcli/rpcli.cpp:155
 msgctxt "rpcli"
 msgid "Outputting JSON data"
 msgstr "Leitura de arquivo JSON"
 
-#: ../src/rpcli/rpcli.cpp:162
+#: ../src/rpcli/rpcli.cpp:163
 msgctxt "rpcli"
 msgid "ROM is not supported"
 msgstr "ROM não compatível"
 
-#: ../src/rpcli/rpcli.cpp:170
+#: ../src/rpcli/rpcli.cpp:171
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't open file: %s"
 msgstr "Não foi possível abrir arquivo %s"
 
-#: ../src/rpcli/rpcli.cpp:192
+#: ../src/rpcli/rpcli.cpp:193
 #, c-format
 msgctxt "rpcli"
 msgid "System language code: %s"
 msgstr "Código de idioma do sistema: %s"
 
-#: ../src/rpcli/rpcli.cpp:193 ../src/rpcli/rpcli.cpp:206
+#: ../src/rpcli/rpcli.cpp:194 ../src/rpcli/rpcli.cpp:207
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
 msgstr "0 (isto é um bug!)"
 
-#: ../src/rpcli/rpcli.cpp:205
+#: ../src/rpcli/rpcli.cpp:206
 #, c-format
 msgctxt "rpcli"
 msgid "System country code: %s"
 msgstr "Código regional de sistema: %s"
 
-#: ../src/rpcli/rpcli.cpp:228
+#: ../src/rpcli/rpcli.cpp:229
 msgctxt "rpcli"
 msgid "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 "Utilização: [-k] [-c] [-j] [[-x[b]N arquivo de saída]... nome de arquivo]..."
 
-#: ../src/rpcli/rpcli.cpp:229
+#: ../src/rpcli/rpcli.cpp:230
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
 msgstr "Verificar chaves de criptografia em  keys.conf."
 
-#: ../src/rpcli/rpcli.cpp:231
+#: ../src/rpcli/rpcli.cpp:232
 msgctxt "rpcli"
 msgid "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 "Utilização: rpcli  [-j] [[-x[b]N arquivo de saída]... nome do arquivo]..."
 
-#: ../src/rpcli/rpcli.cpp:233
+#: ../src/rpcli/rpcli.cpp:234
 msgctxt "rpcli"
 msgid "Print system region information."
 msgstr "Mostrar informações regionais de sistema."
 
-#: ../src/rpcli/rpcli.cpp:234
+#: ../src/rpcli/rpcli.cpp:235
 msgctxt "rpcli"
 msgid "Use JSON output format."
 msgstr "Usar formato de saída JSON."
 
-#: ../src/rpcli/rpcli.cpp:235
+#: ../src/rpcli/rpcli.cpp:236
 msgctxt "rpcli"
 msgid "Extract image N to outfile in PNG format."
 msgstr "Extrair imagem N para arquivo de saída em formato PNG."
 
-#: ../src/rpcli/rpcli.cpp:236
+#: ../src/rpcli/rpcli.cpp:237
 msgctxt "rpcli"
 msgid "Extract the animated icon to outfile in APNG format."
 msgstr "Extrai ícone animado para arquivo de saída em formato APNG."
 
-#: ../src/rpcli/rpcli.cpp:238
+#: ../src/rpcli/rpcli.cpp:239
 msgctxt "rpcli"
 msgid "Examples:"
 msgstr "Exemplos:"
 
-#: ../src/rpcli/rpcli.cpp:240
+#: ../src/rpcli/rpcli.cpp:241
 msgctxt "rpcli"
 msgid "displays info about s3.gen"
 msgstr "mostra informações sobre s3.gen"
 
-#: ../src/rpcli/rpcli.cpp:242
+#: ../src/rpcli/rpcli.cpp:243
 msgctxt "rpcli"
 msgid "extracts icon from pokeb2.nds"
 msgstr "extrai ícone de pokeb2.nds"
 
-#: ../src/rpcli/rpcli.cpp:281
+#: ../src/rpcli/rpcli.cpp:282
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type %ld"
 msgstr "Aviso: pulando imagem desconhecida de tipo %ld"
 
-#: ../src/rpcli/rpcli.cpp:299
+#: ../src/rpcli/rpcli.cpp:300
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '%c'"
@@ -5755,13 +5783,13 @@ msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr "Tipos de imagens"
 
-#: ../src/win32/config/KeyManagerTab.cpp:365
+#: ../src/win32/config/KeyManagerTab.cpp:375
 msgctxt "KeyManagerTab"
 msgid "Import..."
 msgstr "Importar..."
 
 #. tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1450
+#: ../src/win32/config/KeyManagerTab.cpp:1480
 msgctxt "KeyManagerTab"
 msgid "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
@@ -5769,14 +5797,14 @@ msgstr ""
 "*||"
 
 #. tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1489
+#: ../src/win32/config/KeyManagerTab.cpp:1523
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 "otp.bin|otp.bin|Arquivos binários (*.bin)|*.bin|Todos os arquivos (*.*)|*.*||"
 
 #. tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1528
+#: ../src/win32/config/KeyManagerTab.cpp:1566
 msgctxt "KeyManagerTab"
 msgid "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
@@ -5784,7 +5812,7 @@ msgstr ""
 "*.*||"
 
 #. tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1567
+#: ../src/win32/config/KeyManagerTab.cpp:1609
 msgctxt "KeyManagerTab"
 msgid ""
 "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
@@ -5793,35 +5821,7 @@ msgstr ""
 "(*.*)|*.*||"
 
 #. tr: Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1619
+#: ../src/win32/config/KeyManagerTab.cpp:1665
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr "&Gestor de chaves"
-
-#~ msgctxt "Sega8Bit|SysID"
-#~ msgid "Japan"
-#~ msgstr "Japão"
-
-#~ msgctxt "Sega8Bit|SysID"
-#~ msgid "International"
-#~ msgstr "Internacional"
-
-#~ msgctxt "Nintendo3DS"
-#~ msgid "Ticket Issuer"
-#~ msgstr "Emissor"
-
-#~ msgctxt "NintendoDS"
-#~ msgid "DSiWare"
-#~ msgstr "DSiWare"
-
-#~ msgctxt "RomData|FileType"
-#~ msgid "Title Contents"
-#~ msgstr "Arquivo de contêiner"
-
-#~ msgctxt "rpcli"
-#~ msgid "Couldn't create file '%s'"
-#~ msgstr "Não foi possível criar arquivo '%s'"
-
-#~ msgctxt "rpcli"
-#~ msgid "Extract image N to outfile in BMP format."
-#~ msgstr "Extrair imagem N para arquivo de saída em formato BMP."
