@@ -72,7 +72,7 @@ msgid ""
 "This may increase bandwidth usage."
 msgstr ""
 "Recber arte de alta qualidade com miniaturas grandes.\n"
-"\vIsto pode aumentar a utilização de largura de banda."
+"Isto pode aumentar a utilização de largura de banda."
 
 #: ../build/src/kde/kde5/ui_ImageTypesTab.h:84
 msgctxt "ImageTypesTab"
@@ -338,7 +338,7 @@ msgid ""
 "THIS IS A BUG; please report this to the developers!"
 msgstr ""
 "O gestor de chaves recebeu um parâmetro inválido.\n"
-"\vESTE É UM BUG. Entre em contato com os desenvolvedores!"
+"ESTE É UM BUG. Entre em contato com os desenvolvedores!"
 
 #. tr: %s == filename
 #: ../src/kde/config/KeyManagerTab.cpp:143
