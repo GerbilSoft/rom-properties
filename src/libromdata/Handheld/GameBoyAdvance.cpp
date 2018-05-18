@@ -261,7 +261,7 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// GBA ROM header.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	// Game title.
 	d->fields->addField_string(C_("GameBoyAdvance", "Title"),
@@ -337,6 +337,18 @@ int GameBoyAdvance::loadFieldData(void)
 			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
 				C_("GameBoyAdvance", "Unknown"));
 			break;
+	}
+
+	// Debugging enabled?
+	// Reference: https://problemkaputt.de/gbatek.htm#gbacartridgeheader
+	if (d->romType == GameBoyAdvancePrivate::ROM_GBA) {
+		const uint8_t debug_enable = romHeader->nintendo_logo[0x9C-4];
+		d->fields->addField_string(C_("GameBoyAdvance", "Enable Debug"),
+			(debug_enable & 0xA5) == 0xA5
+				// tr: Debugging is enabled.
+				? C_("GameBoyAdvance", "Yes")
+				// tr: Debugging is disabled.
+				: C_("GameBoyAdvance", "No"));
 	}
 
 	// Finished reading the field data.
