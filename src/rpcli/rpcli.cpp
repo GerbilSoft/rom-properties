@@ -69,6 +69,15 @@ using std::locale;
 using std::ofstream;
 using std::string;
 
+#include "libi18n/config.libi18n.h"
+#if defined(_MSC_VER) && defined(ENABLE_NLS)
+// MSVC: Exception handling for /DELAYLOAD.
+#include "libwin32common/DelayLoadHelper.h"
+// DelayLoad test implementation.
+#include "libi18n/i18n.h"
+DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
+#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
+
 struct ExtractParam {
 	int image_type; // Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
 	const char* filename; // Target filename. Can be null due to argv[argc]
@@ -220,6 +229,23 @@ int RP_C_API main(int argc, char *argv[])
 
 	// Set the C and C++ locales.
 	locale::global(locale(""));
+
+#if defined(_MSC_VER) && defined(ENABLE_NLS)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_textdomain() != 0) {
+		// Delay load failed.
+		// TODO: Use a CMake macro for the soversion?
+		#define LIBGNUINTL_DLL "libgnuintl-8.dll"
+		fputs("*** ERROR: " LIBGNUINTL_DLL " could not be loaded.\n\n"
+			"This build of rom-properties has localization enabled,\n"
+			"which requires the use of GNU gettext.\n\n"
+			"Please redownload rom-properties and copy the\n"
+			LIBGNUINTL_DLL " file to the installation directory.\n",
+			stderr);
+		return EXIT_FAILURE;
+	}
+#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 	// Initialize i18n.
 	rp_i18n_init();

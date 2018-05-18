@@ -76,7 +76,31 @@ static int DelayLoad_test_##fn(void) { \
  * DELAYLOAD_TEST_FUNCTION_IMPL2(): Implementation of the DelayLoad test function.
  * Creates a test function named DelayLoad_test_##fn, which should
  * be called prior to using the DLL.
+ * @param fn Function name. Must take 1 argument.
+ * @param arg0
+ */
+#define DELAYLOAD_TEST_FUNCTION_IMPL1(fn, arg0) \
+DELAYLOAD_FILTER_FUNCTION_IMPL(fn) \
+static int DelayLoad_test_##fn(void) { \
+	static int success = 0; \
+	if (!success) { \
+		__try { \
+			(void)fn(arg0); \
+		} __except (DelayLoad_filter_##fn(GetExceptionCode())) { \
+			return -ENOTSUP; \
+		} \
+		success = 1; \
+	} \
+	return 0; \
+}
+
+/**
+ * DELAYLOAD_TEST_FUNCTION_IMPL2(): Implementation of the DelayLoad test function.
+ * Creates a test function named DelayLoad_test_##fn, which should
+ * be called prior to using the DLL.
  * @param fn Function name. Must take 2 arguments.
+ * @param arg0
+ * @param arg1
  */
 #define DELAYLOAD_TEST_FUNCTION_IMPL2(fn, arg0, arg1) \
 DELAYLOAD_FILTER_FUNCTION_IMPL(fn) \

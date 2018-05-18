@@ -103,23 +103,29 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 
 // UUID attribute.
 #ifdef _MSC_VER
-#define UUID_ATTR(str) __declspec(uuid(str))
+# define UUID_ATTR(str) __declspec(uuid(str))
 #else /* !_MSC_VER */
 // UUID attribute is not supported by gcc-5.2.0.
-#define UUID_ATTR(str)
+# define UUID_ATTR(str)
 #endif /* _MSC_VER */
 
 // SAL 1.0 annotations not supported by MinGW-w64 5.0.1.
 #ifndef __out_opt
-#define __out_opt
+# define __out_opt
 #endif
 
 // SAL 2.0 annotations not supported by MSVC 2010.
 #ifndef _COM_Outptr_
-#define _COM_Outptr_
+# define _COM_Outptr_
 #endif
 #ifndef _Outptr_
-#define _Outptr_
+# define _Outptr_
+#endif
+#ifndef _Acquires_lock_
+# define _Acquires_lock_(var)
+#endif
+#ifndef _Releases_lock_
+# define _Releases_lock_(var)
 #endif
 
 // Current image instance.

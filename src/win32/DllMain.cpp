@@ -74,6 +74,15 @@ wchar_t dll_filename[MAX_PATH];
 extern const wchar_t RP_ProgID[];
 const wchar_t RP_ProgID[] = L"rom-properties";
 
+#include "libi18n/config.libi18n.h"
+#if defined(_MSC_VER) && defined(ENABLE_NLS)
+// MSVC: Exception handling for /DELAYLOAD.
+#include "libwin32common/DelayLoadHelper.h"
+// DelayLoad test implementation.
+#include "libi18n/i18n.h"
+DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
+#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
+
 /**
  * DLL entry point.
  * @param hInstance
@@ -148,6 +157,15 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 
 	// Clear the interface pointer initially.
 	*ppv = nullptr;
+
+#if defined(_MSC_VER) && defined(ENABLE_NLS)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_textdomain() != 0) {
+		// Delay load failed.
+		return E_UNEXPECTED;
+	}
+#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 	// Check for supported classes.
 	HRESULT hr = E_FAIL;

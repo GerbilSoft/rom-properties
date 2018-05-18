@@ -22,11 +22,10 @@ IF(MSVC)
 		SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:${_dll}.dll")
 	ENDFOREACH()
 
-	# libgnuintl-8.dll is precompiled. (Release only)
+	# libgnuintl-8.dll is precompiled. (Release build only)
 	IF(ENABLE_NLS)
-		# TODO: Enable once checks are added to prevent crashing.
-		#SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:libgnuintl-8.dll")
-		#SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:libgnuintl-8.dll")
+		SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:libgnuintl-8.dll")
+		SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:libgnuintl-8.dll")
 	ENDIF(ENABLE_NLS)
 
 	SET(CMAKE_EXE_LINKER_FLAGS_DEBUG    "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${DL_DEBUG_FLAGS}")

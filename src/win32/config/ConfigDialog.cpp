@@ -45,12 +45,21 @@ using LibRpBase::Config;
 #include <string>
 using std::wstring;
 
+#include "libi18n/config.libi18n.h"
+#if defined(_MSC_VER) && defined(ENABLE_NLS)
+// MSVC: Exception handling for /DELAYLOAD.
+#include "libwin32common/DelayLoadHelper.h"
+// DelayLoad test implementation.
+#include "libi18n/i18n.h"
+DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
+#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
+
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
 #include "DownloadsTab.hpp"
 #include "CacheTab.hpp"
 #ifdef ENABLE_DECRYPTION
-#include "KeyManagerTab.hpp"
+# include "KeyManagerTab.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "AboutTab.hpp"
 
@@ -413,6 +422,25 @@ int CALLBACK rp_show_config_dialog(
 	HWND hWnd, HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 {
 	// TODO: nCmdShow.
+
+#if defined(_MSC_VER) && defined(ENABLE_NLS)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_textdomain() != 0) {
+		// Delay load failed.
+		// TODO: Use a CMake macro for the soversion?
+		#define LIBGNUINTL_DLL L"libgnuintl-8.dll"
+		MessageBox(hWnd,
+			LIBGNUINTL_DLL L" could not be loaded.\n\n"
+			L"This build of rom-properties has localization enabled,\n"
+			L"which requires the use of GNU texttext.\n\n"
+			L"Please redownload rom-properties and copy the\n"
+			LIBGNUINTL_DLL L" file to the installation directory.",
+			LIBGNUINTL_DLL L" not found",
+			MB_ICONSTOP);
+		return EXIT_FAILURE;
+	}
+#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
 
 	// Make sure COM is initialized.
 	// NOTE: Using apartment threading for OLE compatibility.
