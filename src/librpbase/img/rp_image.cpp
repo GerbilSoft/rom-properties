@@ -455,6 +455,7 @@ int rp_image::palette_len(void) const
 int rp_image::tr_idx(void) const
 {
 	RP_D(const rp_image);
+	assert(d->backend->format == FORMAT_CI8);
 	if (d->backend->format != FORMAT_CI8)
 		return -1;
 
