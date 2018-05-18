@@ -346,7 +346,8 @@ inline void ImageDecoderPrivate::BlitTile(
 
 	// Go to the first pixel for this tile.
 	const int stride_px = img->stride() / sizeof(pixel);
-	pixel *imgBuf = static_cast<pixel*>(img->scanLine((int)(tileY * tileH)));
+	pixel *imgBuf = static_cast<pixel*>(img->bits());
+	imgBuf += (tileY * tileH) * stride_px;
 	imgBuf += (tileX * tileW);
 
 	for (unsigned int y = tileH; y > 0; y--) {
@@ -372,15 +373,17 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(
 	rp_image *RESTRICT img, const uint8_t *RESTRICT tileBuf,
 	unsigned int tileX, unsigned int tileY)
 {
+	static_assert(tileW % 2 == 0, "Tile width must be a multiple of 2.");
 	assert(img->format() == rp_image::FORMAT_CI8);
 	assert(img->width() % 2 == 0);
-	assert(tileW % 2 == 0);
 
 	// Go to the first pixel for this tile.
-	uint8_t *imgBuf = static_cast<uint8_t*>(img->scanLine(tileY * tileH));
+	const int stride_px = img->stride();
+	uint8_t *imgBuf = static_cast<uint8_t*>(img->bits());
+	imgBuf += (tileY * tileH) * stride_px;
 	imgBuf += (tileX * tileW);
 
-	const int stride_px_adj = img->stride() - tileW;
+	const int stride_px_adj = stride_px - tileW;
 	for (unsigned int y = tileH; y > 0; y--) {
 		// Expand CI4 pixels to CI8 before writing.
 		for (unsigned int x = tileW; x > 0; x -= 2) {
