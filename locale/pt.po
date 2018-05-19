@@ -1,15 +1,15 @@
 # Brazilian Portuguese translations for rom-properties package.
 # Copyright (C) 2018 Null Magic
 # This file is distributed under the same license as the rom-properties package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Null Magic, 2018
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2018-05-19 12:24-0400\n"
-"PO-Revision-Date: 2018-05-08 14:00-0300\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2018-05-19 13:54-0300\n"
+"Last-Translator: Null Magic\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -195,8 +195,7 @@ msgstr "GNU GPL versão 2"
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the %s or later."
-msgstr ""
-"Este programa foi licenciado de acordo com a %s ou posterior."
+msgstr "Este programa foi licenciado de acordo com a %s ou posterior."
 
 #: ../src/kde/config/AboutTab.cpp:201 ../src/win32/config/AboutTab.cpp:653
 msgctxt "AboutTab|Credits"
@@ -2642,13 +2641,13 @@ msgstr "Desconhecido(a)"
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:346
 msgctxt "GameBoyAdvance"
 msgid "Enable Debug"
-msgstr ""
+msgstr "Habilitar depuração"
 
 #. tr: Debugging is enabled.
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:349
 msgctxt "GameBoyAdvance"
 msgid "Yes"
-msgstr ""
+msgstr "Sim"
 
 #. tr: Debugging is disabled.
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:351
@@ -5196,7 +5195,7 @@ msgstr "Arquivo de ícone"
 #: ../src/librpbase/RomData.cpp:431
 msgctxt "RomData|FileType"
 msgid "Banner File"
-msgstr ""
+msgstr "Arquivo de banner"
 
 #. tr: FTYPE_HOMEBREW
 #: ../src/librpbase/RomData.cpp:433
