@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-05-13 13:23-0400\n"
+"POT-Creation-Date: 2018-05-19 12:24-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,7 @@ msgstr ""
 
 #. tr: Dialog title.
 #: ../build/src/kde/kde5/ui_ConfigDialog.h:78
-#: ../src/win32/config/ConfigDialog.cpp:227
+#: ../src/win32/config/ConfigDialog.cpp:232
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page Configuration"
 msgstr ""
@@ -165,87 +165,92 @@ msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:155 ../src/win32/config/AboutTab.cpp:481
+#: ../src/kde/config/AboutTab.cpp:155 ../src/win32/config/AboutTab.cpp:548
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:180
-msgctxt "AboutTab|Credits"
-msgid ""
-"This program is licensed under the <a href='https://www.gnu.org/licenses/old-"
-"licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later."
+#: ../src/kde/config/AboutTab.cpp:176 ../src/win32/config/AboutTab.cpp:634
+msgctxt "AboutTabl|Credits"
+msgid "GNU GPL v2"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:196 ../src/win32/config/AboutTab.cpp:579
+#. tr: %s is the name of the license.
+#: ../src/kde/config/AboutTab.cpp:185 ../src/win32/config/AboutTab.cpp:631
+#, c-format
+msgctxt "AboutTab|Credits"
+msgid "This program is licensed under the %s or later."
+msgstr ""
+
+#: ../src/kde/config/AboutTab.cpp:201 ../src/win32/config/AboutTab.cpp:653
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:199 ../src/win32/config/AboutTab.cpp:582
+#: ../src/kde/config/AboutTab.cpp:204 ../src/win32/config/AboutTab.cpp:656
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:202 ../src/win32/config/AboutTab.cpp:585
+#: ../src/kde/config/AboutTab.cpp:207 ../src/win32/config/AboutTab.cpp:659
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr ""
 
 #. tr: Sub-credit.
-#: ../src/kde/config/AboutTab.cpp:234 ../src/win32/config/AboutTab.cpp:609
+#: ../src/kde/config/AboutTab.cpp:239 ../src/win32/config/AboutTab.cpp:683
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
 msgstr ""
 
 #. tr: Using an internal copy of a library.
-#: ../src/kde/config/AboutTab.cpp:255
+#: ../src/kde/config/AboutTab.cpp:260
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of %s."
 msgstr ""
 
 #. tr: Compiled with a specific version of an external library.
-#: ../src/kde/config/AboutTab.cpp:257
+#: ../src/kde/config/AboutTab.cpp:262
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with %s."
 msgstr ""
 
 #. tr: Using an external library, e.g. libpcre.so
-#: ../src/kde/config/AboutTab.cpp:259
+#: ../src/kde/config/AboutTab.cpp:264
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Using %s."
 msgstr ""
 
 #. tr: License: (libraries with only a single license)
-#: ../src/kde/config/AboutTab.cpp:261
+#: ../src/kde/config/AboutTab.cpp:266
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "License: %s"
 msgstr ""
 
 #. tr: Licenses: (libraries with multiple licenses)
-#: ../src/kde/config/AboutTab.cpp:263
+#: ../src/kde/config/AboutTab.cpp:268
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:421
+#: ../src/kde/config/AboutTab.cpp:426
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:506 ../src/win32/config/AboutTab.cpp:700
+#: ../src/kde/config/AboutTab.cpp:511 ../src/win32/config/AboutTab.cpp:774
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr ""
 
-#: ../src/kde/config/AboutTab.cpp:526 ../src/win32/config/AboutTab.cpp:717
+#: ../src/kde/config/AboutTab.cpp:531 ../src/win32/config/AboutTab.cpp:791
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
@@ -2581,6 +2586,23 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:338
 msgctxt "GameBoyAdvance"
 msgid "Unknown"
+msgstr ""
+
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:346
+msgctxt "GameBoyAdvance"
+msgid "Enable Debug"
+msgstr ""
+
+#. tr: Debugging is enabled.
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:349
+msgctxt "GameBoyAdvance"
+msgid "Yes"
+msgstr ""
+
+#. tr: Debugging is disabled.
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:351
+msgctxt "GameBoyAdvance"
+msgid "No"
 msgstr ""
 
 #: ../src/libromdata/Handheld/GameCom.cpp:499
@@ -5290,142 +5312,142 @@ msgid "%1$s %2$s"
 msgstr ""
 
 #. tr: %1$s == image type name, %2$s == output filename
-#: ../src/rpcli/rpcli.cpp:95
+#: ../src/rpcli/rpcli.cpp:104
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting %1$s into '%2$s'"
 msgstr ""
 
 #. tr: %1$s == filename, %2%s == error message
-#: ../src/rpcli/rpcli.cpp:101 ../src/rpcli/rpcli.cpp:123
+#: ../src/rpcli/rpcli.cpp:110 ../src/rpcli/rpcli.cpp:132
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't create file '%1$s': %2$s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:104 ../src/rpcli/rpcli.cpp:126
+#: ../src/rpcli/rpcli.cpp:113 ../src/rpcli/rpcli.cpp:135
 msgctxt "rpcli"
 msgid "Done"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:114
+#: ../src/rpcli/rpcli.cpp:123
 #, c-format
 msgctxt "rpcli"
 msgid "Extracting animated icon into '%s'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:117
+#: ../src/rpcli/rpcli.cpp:126
 msgctxt "rpcli"
 msgid "APNG not supported, extracting only the first frame"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:132
+#: ../src/rpcli/rpcli.cpp:141
 msgctxt "rpcli"
 msgid "Animated icon not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:135
+#: ../src/rpcli/rpcli.cpp:144
 #, c-format
 msgctxt "rpcli"
 msgid "Image '%s' not found"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:149
+#: ../src/rpcli/rpcli.cpp:158
 #, c-format
 msgctxt "rpcli"
 msgid "Reading file '%s'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:155
+#: ../src/rpcli/rpcli.cpp:164
 msgctxt "rpcli"
 msgid "Outputting JSON data"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:163
+#: ../src/rpcli/rpcli.cpp:172
 msgctxt "rpcli"
 msgid "ROM is not supported"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:171
+#: ../src/rpcli/rpcli.cpp:180
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't open file: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:193
+#: ../src/rpcli/rpcli.cpp:202
 #, c-format
 msgctxt "rpcli"
 msgid "System language code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:194 ../src/rpcli/rpcli.cpp:207
+#: ../src/rpcli/rpcli.cpp:203 ../src/rpcli/rpcli.cpp:216
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:206
+#: ../src/rpcli/rpcli.cpp:215
 #, c-format
 msgctxt "rpcli"
 msgid "System country code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:229
+#: ../src/rpcli/rpcli.cpp:255
 msgctxt "rpcli"
 msgid "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:230
+#: ../src/rpcli/rpcli.cpp:256
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:232
+#: ../src/rpcli/rpcli.cpp:258
 msgctxt "rpcli"
 msgid "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:234
+#: ../src/rpcli/rpcli.cpp:260
 msgctxt "rpcli"
 msgid "Print system region information."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:235
+#: ../src/rpcli/rpcli.cpp:261
 msgctxt "rpcli"
 msgid "Use JSON output format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:236
+#: ../src/rpcli/rpcli.cpp:262
 msgctxt "rpcli"
 msgid "Extract image N to outfile in PNG format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:237
+#: ../src/rpcli/rpcli.cpp:263
 msgctxt "rpcli"
 msgid "Extract the animated icon to outfile in APNG format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:239
+#: ../src/rpcli/rpcli.cpp:265
 msgctxt "rpcli"
 msgid "Examples:"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:241
+#: ../src/rpcli/rpcli.cpp:267
 msgctxt "rpcli"
 msgid "displays info about s3.gen"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:243
+#: ../src/rpcli/rpcli.cpp:269
 msgctxt "rpcli"
 msgid "extracts icon from pokeb2.nds"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:282
+#: ../src/rpcli/rpcli.cpp:308
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type %ld"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:300
+#: ../src/rpcli/rpcli.cpp:326
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '%c'"
@@ -5591,33 +5613,23 @@ msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:562
-msgctxt "AboutTab|Credits"
-msgid "This program is licensed under the GNU GPL v2 or later."
-msgstr ""
-
-#: ../src/win32/config/AboutTab.cpp:564
-msgctxt "AboutTab|Credits"
-msgid "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"
-msgstr ""
-
-#: ../src/win32/config/AboutTab.cpp:617
+#: ../src/win32/config/AboutTab.cpp:691
 msgctxt "AboutTab"
 msgid "Credits"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:681
+#: ../src/win32/config/AboutTab.cpp:755
 msgctxt "AboutTab"
 msgid "Libraries"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:722
+#: ../src/win32/config/AboutTab.cpp:797
 msgctxt "AboutTab"
 msgid "Support"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/AboutTab.cpp:864
+#: ../src/win32/config/AboutTab.cpp:976
 msgctxt "AboutTab"
 msgid "About"
 msgstr ""
@@ -5680,13 +5692,13 @@ msgid "Thumbnail Cache"
 msgstr ""
 
 #. tr: "Reset" button.
-#: ../src/win32/config/ConfigDialog.cpp:269
+#: ../src/win32/config/ConfigDialog.cpp:274
 msgctxt "ConfigDialog"
 msgid "Reset"
 msgstr ""
 
 #. tr: "Defaults" button.
-#: ../src/win32/config/ConfigDialog.cpp:287
+#: ../src/win32/config/ConfigDialog.cpp:292
 msgctxt "ConfigDialog"
 msgid "Defaults"
 msgstr ""
