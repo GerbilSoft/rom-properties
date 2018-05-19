@@ -171,14 +171,20 @@ void AboutTabPrivate::initProgramTitleText(void)
  */
 void AboutTabPrivate::initCreditsTab(void)
 {
+	// License name, with HTML formatting.
+	const string sPrgLicense = rp_sprintf("<a href='%s'>%s</a>",
+		C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"),
+		C_("AboutTabl|Credits", "GNU GPL v2"));
+
 	// lblCredits is RichText.
 	string sCredits;
 	sCredits.reserve(4096);
 	// NOTE: Copyright is NOT localized.
 	sCredits += "Copyright (c) 2016-2018 by David Korth.<br/>";
-	sCredits += C_("AboutTab|Credits",
-		"This program is licensed under the "
-		"<a href='https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later.");
+	sCredits += rp_sprintf(
+		// tr: %s is the name of the license.
+		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
+			sPrgLicense.c_str());
 
 	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
@@ -528,8 +534,9 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport += sIndent;
 	sSupport += chrBullet;
 	sSupport += ' ';
-	sSupport += "<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
-		"David Korth &lt;gerbilsoft@gerbilsoft.com&gt;</a>";
+	sSupport += "David Korth "
+		"&lt;<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
+		"gerbilsoft@gerbilsoft.com</a>&gt;";
 
 	// We're done building the string.
 	ui.lblSupport->setText(U82Q(sSupport));

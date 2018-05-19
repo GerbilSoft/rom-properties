@@ -119,10 +119,6 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
-	// Load RICHED20.DLL for RICHEDIT_CLASS.
-	// TODO: What if this fails?
-	LoadLibrary(L"RICHED20.DLL");
-
 	// Initialize the property sheet tabs.
 
 	// Image type priority.

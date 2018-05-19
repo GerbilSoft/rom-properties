@@ -125,6 +125,11 @@ class AboutTabPrivate
 		 */
 		void initBoldFont(HFONT hFont);
 
+		// RichEdit DLLs.
+		HMODULE hRichEd20_dll;
+		HMODULE hMsftEdit_dll;
+		bool bUseFriendlyLinks;
+
 	protected:
 		// Current RichText streaming context.
 		struct RTF_CTX {
@@ -150,6 +155,15 @@ class AboutTabPrivate
 		 * @return RTF-escaped text.
 		 */
 		static string rtfEscape(const char *str);
+
+		/**
+		 * Create an RTF "friendly link" if supported.
+		 * If not supported, returns the escaped link title.
+		 * @param link	[in] Link address.
+		 * @param title	[in] Link title.
+		 * @return RTF "friendly link", or title only.
+		 */
+		string rtfFriendlyLink(const char *link, const char *title);
 
 	protected:
 		// Tab text. (RichText format)
@@ -196,15 +210,27 @@ class AboutTabPrivate
 AboutTabPrivate::AboutTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
+	, bUseFriendlyLinks(false)
 	, hFontBold(nullptr)
 {
 	memset(&rtfCtx, 0, sizeof(rtfCtx));
+
+	// Load the RichEdit DLLs.
+	// TODO: What if this fails?
+	hRichEd20_dll = LoadLibrary(L"RICHED20.DLL");
+	hMsftEdit_dll = LoadLibrary(L"MSFTEDIT.DLL");
 }
 
 AboutTabPrivate::~AboutTabPrivate()
 {
 	if (hFontBold) {
 		DeleteFont(hFontBold);
+	}
+	if (hMsftEdit_dll) {
+		FreeLibrary(hMsftEdit_dll);
+	}
+	if (hRichEd20_dll) {
+		FreeLibrary(hRichEd20_dll);
 	}
 }
 
@@ -449,6 +475,29 @@ string AboutTabPrivate::rtfEscape(const char *str)
 }
 
 /**
+ * Create an RTF "friendly link" if supported.
+ * If not supported, returns the escaped link title.
+ * @param link	[in] Link address.
+ * @param title	[in] Link title.
+ * @return RTF "friendly link", or title only.
+ */
+string AboutTabPrivate::rtfFriendlyLink(const char *link, const char *title)
+{
+	assert(link != nullptr);
+	assert(title != nullptr);
+
+	if (bUseFriendlyLinks) {
+		// Friendly links are available.
+		// Reference: https://blogs.msdn.microsoft.com/murrays/2009/09/24/richedit-friendly-name-hyperlinks/
+		return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{%s}}}",
+			rtfEscape(link).c_str(), rtfEscape(title).c_str());
+	} else {
+		// No friendly links.
+		return rtfEscape(title);
+	}
+}
+
+/**
  * Initialize the program title text.
  */
 void AboutTabPrivate::initProgramTitleText(void)
@@ -559,9 +608,18 @@ void AboutTabPrivate::initCreditsTab(void)
 	// NOTE: Copyright is NOT localized.
 	sCredits += "Copyright (c) 2016-2018 by David Korth." RTF_BR;
 	sCredits += RTF_BR;
-	sCredits += C_("AboutTab|Credits", "This program is licensed under the GNU GPL v2 or later.");
-	sCredits += RTF_BR;
-	sCredits += C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html");
+	sCredits += rp_sprintf(
+		// tr: %s is the name of the license.
+		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
+			rtfFriendlyLink(
+				// tr: GNU GPL v2 license URL, language-specific.
+				C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"),
+				C_("AboutTabl|Credits", "GNU GPL v2")).c_str());
+	if (!bUseFriendlyLinks) {
+		sCredits += RTF_BR;
+		// tr: GNU GPL v2 license URL, language-specific.
+		sCredits += C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html");
+	}
 
 	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
 	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
@@ -601,7 +659,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		if (creditsData->url) {
 			// FIXME: Figure out how to get hyperlinks working.
 			sCredits += " <";
-			sCredits += rtfEscape(creditsData->linkText);
+			sCredits += rtfFriendlyLink(creditsData->url, creditsData->linkText);
 			sCredits += '>';
 		}
 		if (creditsData->sub) {
@@ -715,8 +773,9 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport += RTF_BR;
 	sSupport += C_("AboutTab|Support",
 		"You can also email the developer directly:");
-	sSupport += RTF_BR RTF_TAB RTF_BULLET " David Korth <gerbilsoft@gerbilsoft.com>";
-	sSupport += '}';
+	sSupport += RTF_BR RTF_TAB RTF_BULLET " David Korth <";
+	sSupport += rtfFriendlyLink("mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com");
+	sSupport += ">}";
 
 	// Add the "Support" tab.
 	const wstring wsTabTitle = U82W_c(C_("AboutTab", "Support"));
