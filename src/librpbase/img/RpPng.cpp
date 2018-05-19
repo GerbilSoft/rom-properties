@@ -263,7 +263,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 				color.b = png_palette->blue;
 				if (trans && num_trans > 0) {
 					// Copy the transparency information.
-					color.a = *trans;
+					color.a = *trans++;
 					num_trans--;
 				} else {
 					// No transparency information.
