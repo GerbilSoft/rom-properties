@@ -49,6 +49,10 @@ using std::string;
 using std::wstring;
 using std::u16string;
 
+// Maximum number of tabs.
+// NOTE: Must be adjusted if more tabs are added!
+#define MAX_TABS 3
+
 // Windows: RichEdit control.
 #include <richedit.h>
 // NOTE: AURL_ENABLEURL is only defined if _RICHEDIT_VER >= 0x0800
@@ -60,6 +64,10 @@ using std::u16string;
 #ifndef AURL_ENABLEEMAILADDR
 # define AURL_ENABLEEMAILADDR 2
 #endif
+// Uncomment to enable use of RichEdit 4.1 if available.
+// FIXME: Friendly links aren't underlined or blue on WinXP or Win7...
+// Reference: https://blogs.msdn.microsoft.com/murrays/2015/03/27/richedit-colors/
+//#define MSFTEDIT_USE_41 1
 
 // Other libraries.
 #ifdef HAVE_ZLIB
@@ -127,7 +135,9 @@ class AboutTabPrivate
 
 		// RichEdit DLLs.
 		HMODULE hRichEd20_dll;
+#ifdef MSFTEDIT_USE_41
 		HMODULE hMsftEdit_dll;
+#endif /* MSFTEDIT_USE_41 */
 		bool bUseFriendlyLinks;
 
 	protected:
@@ -171,6 +181,9 @@ class AboutTabPrivate
 		string sLibraries;
 		string sSupport;
 
+		// RichEdit control.
+		HWND hRichEdit;
+
 		/**
 		 * Initialize the program title text.
 		 */
@@ -212,13 +225,16 @@ AboutTabPrivate::AboutTabPrivate()
 	, hWndPropSheet(nullptr)
 	, bUseFriendlyLinks(false)
 	, hFontBold(nullptr)
+	, hRichEdit(nullptr)
 {
 	memset(&rtfCtx, 0, sizeof(rtfCtx));
 
 	// Load the RichEdit DLLs.
 	// TODO: What if this fails?
 	hRichEd20_dll = LoadLibrary(L"RICHED20.DLL");
+#ifdef MSFTEDIT_USE_41
 	hMsftEdit_dll = LoadLibrary(L"MSFTEDIT.DLL");
+#endif /* MSFTEDIT_USE_41 */
 }
 
 AboutTabPrivate::~AboutTabPrivate()
@@ -226,9 +242,11 @@ AboutTabPrivate::~AboutTabPrivate()
 	if (hFontBold) {
 		DeleteFont(hFontBold);
 	}
+#ifdef MSFTEDIT_USE_41
 	if (hMsftEdit_dll) {
 		FreeLibrary(hMsftEdit_dll);
 	}
+#endif /* MSFTEDIT_USE_41 */
 	if (hRichEd20_dll) {
 		FreeLibrary(hRichEd20_dll);
 	}
@@ -792,11 +810,10 @@ void AboutTabPrivate::initSupportTab(void)
 void AboutTabPrivate::setTabContents(int index)
 {
 	assert(index >= 0);
-	assert(index <= 2);
-	if (unlikely(index < 0 || index > 2))
+	assert(index < MAX_TABS);
+	if (unlikely(index < 0 || index >= MAX_TABS))
 		return;
 
-	HWND hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
 	assert(hRichEdit != nullptr);
 	if (unlikely(!hRichEdit)) {
 		// Something went wrong...
@@ -834,10 +851,20 @@ void AboutTabPrivate::setTabContents(int index)
  */
 void AboutTabPrivate::init(void)
 {
+	// Initialize the program title text.
 	initProgramTitleText();
-	initCreditsTab();
-	initLibrariesTab();
-	initSupportTab();
+
+	// Insert a dummy tab for proper sizing for now.
+	HWND hTabControl = GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL);
+	assert(hTabControl != nullptr);
+	if (unlikely(!hTabControl)) {
+		// Something went wrong...
+		return;
+	}
+	TCITEM tcItem;
+	tcItem.mask = TCIF_TEXT;
+	tcItem.pszText = L"DUMMY";
+	TabCtrl_InsertItem(hTabControl, MAX_TABS, &tcItem);
 
 	// Adjust the RichEdit position.
 	assert(hWndPropSheet != nullptr);
@@ -846,11 +873,11 @@ void AboutTabPrivate::init(void)
 		return;
 	}
 
-	HWND hTabControl = GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL);
-	HWND hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
-	assert(hTabControl != nullptr);
+	// NOTE: We can't seem to set the dialog ID correctly
+	// when using CreateWindowEx(), so we'll save hRichEdit here.
+	hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
 	assert(hRichEdit != nullptr);
-	if (unlikely(!hTabControl || !hRichEdit)) {
+	if (unlikely(!hRichEdit)) {
 		// Something went wrong...
 		return;
 	}
@@ -864,6 +891,26 @@ void AboutTabPrivate::init(void)
 	// Dialog margins.
 	RECT dlgMargin = {7, 7, 8, 8};
 	MapDialogRect(hWndPropSheet, &dlgMargin);
+
+	// Attempt to switch to RichEdit 4.1 if it's available.
+#ifdef MSFTEDIT_USE_41
+	if (hMsftEdit_dll) {
+		HWND hRichEdit41 = CreateWindowEx(
+			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_LEFT | WS_EX_CLIENTEDGE,
+			MSFTEDIT_CLASS, L"",
+			WS_TABSTOP | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL | WS_VISIBLE | WS_CHILD,
+			0, 0, 0, 0,
+			hWndPropSheet, nullptr, nullptr, nullptr);
+		if (hRichEdit41) {
+			DestroyWindow(hRichEdit);
+			SetWindowFont(hRichEdit41, GetWindowFont(hWndPropSheet), FALSE);
+			hRichEdit = hRichEdit41;
+			// FIXME: Not working...
+			SetWindowLong(hRichEdit, GWL_ID, IDC_ABOUT_RICHEDIT);
+			bUseFriendlyLinks = true;
+		}
+	}
+#endif /* MSFTEDIT_USE_41 */
 
 	// Set the RichEdit's position.
 	SetWindowPos(hRichEdit, 0,
@@ -880,6 +927,11 @@ void AboutTabPrivate::init(void)
 	// NOTE: Might only work on Win8+.
 	SendMessage(hRichEdit, EM_AUTOURLDETECT, AURL_ENABLEEMAILADDR, 0);
 
+	// Initialize the tab text.
+	initCreditsTab();
+	initLibrariesTab();
+	initSupportTab();
+
 	// Subclass the control.
 	// TODO: Error handling?
 	SetWindowSubclass(hRichEdit,
@@ -887,6 +939,9 @@ void AboutTabPrivate::init(void)
 		IDC_ABOUT_RICHEDIT,
 		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
 
+	// Remove the dummy tab.
+	TabCtrl_DeleteItem(hTabControl, MAX_TABS);
+	TabCtrl_SetCurSel(hTabControl, 0);
 	// Set tab contents to Credits.
 	setTabContents(0);
 }
