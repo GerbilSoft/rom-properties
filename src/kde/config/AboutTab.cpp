@@ -172,8 +172,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 void AboutTabPrivate::initCreditsTab(void)
 {
 	// License name, with HTML formatting.
-	const string sPrgLicense = rp_sprintf("<a href='%s'>%s</a>",
-		C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"),
+	const string sPrgLicense = rp_sprintf("<a href='https://www.gnu.org/licenses/gpl-2.0.html'>%s</a>",
 		C_("AboutTabl|Credits", "GNU GPL v2"));
 
 	// lblCredits is RichText.
@@ -354,7 +353,6 @@ void AboutTabPrivate::initLibrariesTab(void)
 		APNG_unref();
 	}
 
-	sLibraries += brbr;
 	const uint32_t png_version_number = png_access_version_number();
 	char pngVersion[32];
 	snprintf(pngVersion, sizeof(pngVersion), "libpng %u.%u.%u",
@@ -371,6 +369,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		fullPngVersion = rp_sprintf("%s (No APNG support)", pngVersion);
 	}
 
+	sLibraries += brbr;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
 	sLibraries += rp_sprintf(sIntCopyOf, fullPngVersion.c_str());
 #else

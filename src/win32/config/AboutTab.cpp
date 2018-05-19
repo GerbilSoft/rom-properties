@@ -630,13 +630,11 @@ void AboutTabPrivate::initCreditsTab(void)
 		// tr: %s is the name of the license.
 		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
 			rtfFriendlyLink(
-				// tr: GNU GPL v2 license URL, language-specific.
-				C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"),
+				"https://www.gnu.org/licenses/gpl-2.0.html",
 				C_("AboutTabl|Credits", "GNU GPL v2")).c_str());
 	if (!bUseFriendlyLinks) {
 		sCredits += RTF_BR;
-		// tr: GNU GPL v2 license URL, language-specific.
-		sCredits += C_("AboutTab|Credits", "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html");
+		sCredits += "https://www.gnu.org/licenses/gpl-2.0.html";
 	}
 
 	AboutTabText::CreditType_t lastCreditType = AboutTabText::CT_CONTINUE;
