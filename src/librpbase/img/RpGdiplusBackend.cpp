@@ -141,7 +141,9 @@ RpGdiplusBackend::~RpGdiplusBackend()
 	}
 
 	aligned_free(m_pImgBuf);
-	GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
+	if (m_gdipToken != 0) {
+		GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
+	}
 }
 
 /**
