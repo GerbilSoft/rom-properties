@@ -60,6 +60,7 @@ using namespace LibRpBase;
 #include "Texture/SegaPVR.hpp"
 #include "Texture/KhronosKTX.hpp"
 #include "Texture/ValveVTF.hpp"
+#include "Texture/ValveVTF3.hpp"
 
 // DirectDraw Surface structs.
 #include "Texture/dds_structs.h"
@@ -408,19 +409,22 @@ TEST_P(ImageDecoderTest, decodeTest)
 	// Determine the image type by checking the last 7 characters of the filename.
 	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
 	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz")) {
-		// DDS image.
+		// DDS image
 		m_romData = new DirectDrawSurface(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
-		// PVR/GVR image.
+		// PVR/GVR image
 		m_romData = new SegaPVR(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
-		// Khronos KTX image.
+		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// Needs GzFile, a gzip-decompressing IRpFile subclass.
 		m_romData = new KhronosKTX(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
+		// Valve Texture File (PS3)
+		m_romData = new ValveVTF3(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
-		// Valve Texture File.
+		// Valve Texture File
 		m_romData = new ValveVTF(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
@@ -875,6 +879,30 @@ INSTANTIATE_TEST_CASE_P(VTF_S2TC, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"VTF/DXT5.vtf.gz",
 			"VTF/DXT5.s2tc.png", false))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+#ifdef ENABLE_S3TC
+// Valve VTF3 tests. (S3TC)
+INSTANTIATE_TEST_CASE_P(VTF3_S3TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"VTF3/elevator_screen_broken_normal.ps3.vtf.gz",
+			"VTF3/elevator_screen_broken_normal.ps3.s3tc.png"),
+		ImageDecoderTest_mode(
+			"VTF3/elevator_screen_colour.ps3.vtf.gz",
+			"VTF3/elevator_screen_colour.ps3.s3tc.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_S3TC */
+
+// Valve VTF3 tests. (S2TC)
+INSTANTIATE_TEST_CASE_P(VTF3_S2TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"VTF3/elevator_screen_broken_normal.ps3.vtf.gz",
+			"VTF3/elevator_screen_broken_normal.ps3.s2tc.png", false),
+		ImageDecoderTest_mode(
+			"VTF3/elevator_screen_colour.ps3.vtf.gz",
+			"VTF3/elevator_screen_colour.ps3.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Test images from texture-compressor.
