@@ -778,7 +778,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case IDC_KEYMANAGER_IMPORT: {
 					// Show the "Import" popup menu.
 					if (!d->hMenuImport) {
-						d->hMenuImport = LoadMenu(HINST_THISCOMPONENT, MAKEINTRESOURCE(IDR_KEYMANAGER_IMPORT));
+						d->hMenuImport = ITab::LoadMenu_i18n(IDR_KEYMANAGER_IMPORT);
 					}
 
 					if (!d->hMenuImport) {

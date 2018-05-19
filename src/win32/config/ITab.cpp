@@ -25,11 +25,12 @@
 using LibRpBase::SystemRegion;
 
 /**
- * Load a dialog resource using the current i18n settings.
- * @param dwResId Dialog resource ID.
- * @return Pointer to dialog resource, or nullptr if not found.
+ * Load a resource using the current i18n settings.
+ * @param lpType Resource type.
+ * @param dwResId Resource ID.
+ * @return Pointer to resource, or nullptr if not found.
  */
-LPCDLGTEMPLATE ITab::LoadDialog_i18n(DWORD dwResId)
+LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 {
 	// NOTE: This function should be updated whenever
 	// a new translation is added.
@@ -62,12 +63,12 @@ LPCDLGTEMPLATE ITab::LoadDialog_i18n(DWORD dwResId)
 
 	// Search for the requested language.
 	if (wLanguage != 0) {
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
+		hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
 				MAKEINTRESOURCE(dwResId),
 				wLanguage);
 		if (!hRsrc && wLanguageFallback != 0) {
 			// Try the fallback language.
-			hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
+			hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
 					MAKEINTRESOURCE(dwResId),
 					wLanguageFallback);
 		}
@@ -75,14 +76,14 @@ LPCDLGTEMPLATE ITab::LoadDialog_i18n(DWORD dwResId)
 
 	if (!hRsrc) {
 		// Try en_US.
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
+		hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
 				MAKEINTRESOURCE(dwResId),
 				MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 	}
 
 	if (!hRsrc) {
 		// Try without specifying a language ID.
-		hRsrc = FindResourceEx(HINST_THISCOMPONENT, RT_DIALOG,
+		hRsrc = FindResourceEx(HINST_THISCOMPONENT, lpType,
 				MAKEINTRESOURCE(dwResId),
 				MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 	}
@@ -102,5 +103,5 @@ LPCDLGTEMPLATE ITab::LoadDialog_i18n(DWORD dwResId)
 		return nullptr;
 	}
 
-	return static_cast<LPCDLGTEMPLATE>(LockResource(hGlobal));
+	return LockResource(hGlobal);
 }
