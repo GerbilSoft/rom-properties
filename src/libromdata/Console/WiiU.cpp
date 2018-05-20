@@ -37,6 +37,11 @@
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
+// DiscReader
+#include "librpbase/disc/DiscReader.hpp"
+#include "disc/WuxReader.hpp"
+#include "disc/wux_structs.h"
+
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
 #include <cassert>
@@ -61,12 +66,24 @@ class WiiUPrivate : public RomDataPrivate
 {
 	public:
 		WiiUPrivate(WiiU *q, IRpFile *file);
+		virtual ~WiiUPrivate();
 
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WiiUPrivate)
 
 	public:
+		enum DiscType {
+			DISC_UNKNOWN = -1,	// Unknown disc type
+
+			DISC_FORMAT_WUD = 0,	// Wii U disc image (uncompressed)
+			DISC_FORMAT_WUX = 1,	// WUX (compressed)
+		};
+
+		// Disc type and reader.
+		int discType;
+		IDiscReader *discReader;
+
 		// Disc header.
 		WiiU_DiscHeader discHeader;
 };
@@ -75,9 +92,16 @@ class WiiUPrivate : public RomDataPrivate
 
 WiiUPrivate::WiiUPrivate(WiiU *q, IRpFile *file)
 	: super(q, file)
+	, discType(DISC_UNKNOWN)
+	, discReader(nullptr)
 {
 	// Clear the discHeader struct.
 	memset(&discHeader, 0, sizeof(discHeader));
+}
+
+WiiUPrivate::~WiiUPrivate()
+{
+	delete discReader;
 }
 
 /** WiiU **/
@@ -126,16 +150,52 @@ WiiU::WiiU(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for Wii U.
 	info.szFile = d->file->size();
-	if (isRomSupported_static(&info) < 0) {
+	d->discType = isRomSupported_static(&info);
+	if (d->discType < 0) {
 		// Disc image is invalid.
 		return;
 	}
 
+	// Create an IDiscReader.
+	switch (d->discType) {
+		case WiiUPrivate::DISC_FORMAT_WUD:
+			d->discReader = new DiscReader(d->file);
+			break;
+		case WiiUPrivate::DISC_FORMAT_WUX:
+			d->discReader = new WuxReader(d->file);
+			break;
+		case WiiUPrivate::DISC_UNKNOWN:
+		default:
+			d->fileType = FTYPE_UNKNOWN;
+			d->discType = WiiUPrivate::DISC_UNKNOWN;
+			break;
+	}
+
+	if (d->discType < 0) {
+		// Nothing else to do here.
+		return;
+	}
+
+	// Re-read the disc header for WUX.
+	if (d->discType > WiiUPrivate::DISC_FORMAT_WUD) {
+		size = d->discReader->seekAndRead(0, header, sizeof(header));
+		if (size != sizeof(header)) {
+			// Seek and/or read error.
+			d->discType = WiiUPrivate::DISC_UNKNOWN;
+			delete d->discReader;
+			d->discReader = nullptr;
+			return;
+		}
+	}
+
 	// Verify the secondary magic number at 0x10000.
 	uint32_t disc_magic;
-	size = d->file->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
+	size = d->discReader->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
+		d->discType = WiiUPrivate::DISC_UNKNOWN;
+		delete d->discReader;
+		d->discReader = nullptr;
 		return;
 	}
 
@@ -172,10 +232,21 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
+	// Check for WUX magic numbers.
+	const wuxHeader_t *const wuxHeader = reinterpret_cast<const wuxHeader_t*>(info->header.pData);
+	if (wuxHeader->magic[0] == cpu_to_le32(WUX_MAGIC_0) &&
+	    wuxHeader->magic[1] == cpu_to_le32(WUX_MAGIC_1))
+	{
+		// WUX header detected.
+		// TODO: Also check for other Wii U magic numbers if WUX is found.
+		// TODO: Verify block size?
+		return WiiUPrivate::DISC_FORMAT_WUX;
+	}
+
 	// Game ID must start with "WUP-".
 	// NOTE: There's also a secondary magic number at 0x10000,
 	// but we can't check it here.
-	const WiiU_DiscHeader *wiiu_header = reinterpret_cast<const WiiU_DiscHeader*>(info->header.pData);
+	const WiiU_DiscHeader *const wiiu_header = reinterpret_cast<const WiiU_DiscHeader*>(info->header.pData);
 	if (memcmp(wiiu_header->id, "WUP-", 4) != 0) {
 		// Not Wii U.
 		return -1;
@@ -204,7 +275,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Disc header is valid.
-	return 0;
+	return WiiUPrivate::DISC_FORMAT_WUD;
 }
 
 /**

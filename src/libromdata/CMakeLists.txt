@@ -72,7 +72,7 @@ SET(libromdata_SRCS
 	data/NintendoLanguage.cpp
 	data/GLenumStrings.cpp
 	data/ELFData.cpp
-	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
+
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
 	disc/GcnPartition.cpp
@@ -87,7 +87,10 @@ SET(libromdata_SRCS
 	disc/Cdrom2352Reader.cpp
 	disc/IsoPartition.cpp
 	disc/GdiReader.cpp
+	disc/WuxReader.cpp
+
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
+	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	utils/SuperMagicDrive.cpp
 	)
 # Headers.
@@ -175,7 +178,7 @@ SET(libromdata_H
 	data/NintendoLanguage.hpp
 	data/GLenumStrings.hpp
 	data/ELFData.hpp
-	img/TCreateThumbnail.hpp
+
 	disc/WbfsReader.hpp
 	disc/libwbfs.h
 	disc/CisoGcnReader.hpp
@@ -193,7 +196,11 @@ SET(libromdata_H
 	disc/Cdrom2352Reader.hpp
 	disc/IsoPartition.hpp
 	disc/GdiReader.hpp
+	disc/WuxReader.cpp
+	disc/wux_structs.h
+
 	config/TImageTypesConfig.hpp
+	img/TCreateThumbnail.hpp
 	utils/SuperMagicDrive.hpp
 	)
 

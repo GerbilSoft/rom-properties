@@ -29,7 +29,7 @@
   * Wii: Added support for unencrypted images from debug systems and GCM
     images with SDK headers.
   * NES: Improved publisher lookup for FDS titles.
-  * Wii U: Display game publishers.
+  * Wii U: Display game publishers; added support for .wux disc images.
   * DMG: Added more entry point formats.
   * DirectDrawSurface: Untested support for Xbox One textures.
   * NintendoDS: Improved DSi flag decoding; added key index decoding.
