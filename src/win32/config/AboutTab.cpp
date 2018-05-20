@@ -628,7 +628,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += RTF_BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
-		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
+		rtfEscape(C_("AboutTab|Credits", "This program is licensed under the %s or later.")).c_str(),
 			rtfFriendlyLink(
 				"https://www.gnu.org/licenses/gpl-2.0.html",
 				C_("AboutTabl|Credits", "GNU GPL v2")).c_str());
@@ -650,13 +650,13 @@ void AboutTabPrivate::initCreditsTab(void)
 
 			switch (creditsData->type) {
 				case AboutTabText::CT_DEVELOPER:
-					sCredits += C_("AboutTab|Credits", "Developers:");
+					sCredits += rtfEscape(C_("AboutTab|Credits", "Developers:"));
 					break;
 				case AboutTabText::CT_CONTRIBUTOR:
-					sCredits += C_("AboutTab|Credits", "Contributors:");
+					sCredits += rtfEscape(C_("AboutTab|Credits", "Contributors:"));
 					break;
 				case AboutTabText::CT_TRANSLATOR:
-					sCredits += C_("AboutTab|Credits", "Translators:");
+					sCredits += rtfEscape(C_("AboutTab|Credits", "Translators:"));
 					break;
 
 				case AboutTabText::CT_CONTINUE:
@@ -680,7 +680,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 		if (creditsData->sub) {
 			// Sub-credit.
-			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
+			sCredits += rp_sprintf(rtfEscape(C_("AboutTab|Credits", " (%s)")).c_str(),
 				rtfEscape(creditsData->sub));
 		}
 	}
@@ -770,8 +770,8 @@ void AboutTabPrivate::initSupportTab(void)
 	// RTF starting sequence.
 	sSupport = RTF_START;
 
-	sSupport += C_("AboutTab|Support",
-		"For technical support, you can visit the following websites:");
+	sSupport += rtfEscape(C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:"));
 	sSupport += RTF_BR;
 
 	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
@@ -787,8 +787,8 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// Email the author.
 	sSupport += RTF_BR;
-	sSupport += C_("AboutTab|Support",
-		"You can also email the developer directly:");
+	sSupport += rtfEscape(C_("AboutTab|Support",
+		"You can also email the developer directly:"));
 	sSupport += RTF_BR RTF_TAB RTF_BULLET " David Korth <";
 	sSupport += rtfFriendlyLink("mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com");
 	sSupport += ">}";
