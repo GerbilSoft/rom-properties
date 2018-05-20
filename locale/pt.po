@@ -613,7 +613,8 @@ msgid ""
 "Full Cover"
 msgstr ""
 "Capa\n"
-"externa completa"
+"externa\n"
+"completa"
 
 #. tr: IMG_EXT_BOX
 #: ../src/libromdata/config/TImageTypesConfig.cpp:396

@@ -231,10 +231,14 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	MapWindowPoints(HWND_DESKTOP, GetParent(lblDesc2), (LPPOINT)&rect_lblDesc2, 2);
 
 	// Determine the size of the largest image type label.
+	// NOTE: Keeping heights of each label in order to
+	// vertically-align labels on the bottom.
+	int h_lbl[IMG_TYPE_COUNT];
 	SIZE sz_lblImageType = {0, 0};
 	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		SIZE szCur;
 		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82W_c(imageTypeName(i)), &szCur);
+		h_lbl[i] = szCur.cy;
 		if (szCur.cx > sz_lblImageType.cx) {
 			sz_lblImageType.cx = szCur.cx;
 		}
@@ -277,10 +281,11 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + (dlgMargin.right/2),
 		rect_lblDesc2.bottom + dlgMargin.bottom};
 	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
+		const int y_lbl = curPt.y + (sz_lblImageType.cy - h_lbl[i]);
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, U82W_c(imageTypeName(i)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
-			curPt.x, curPt.y, sz_lblImageType.cx, sz_lblImageType.cy,
+			curPt.x, y_lbl, sz_lblImageType.cx, h_lbl[i],
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblImageType, hFontDlg, FALSE);
 		curPt.x += sz_lblImageType.cx;
