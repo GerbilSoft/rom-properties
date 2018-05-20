@@ -1,8 +1,9 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * resource.rc: Win32 resource script. (rp_RU)                             *
+ * resource.rc: Win32 resource script. (en_US)                             *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2018 by Null Magic.                                       *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -31,68 +32,68 @@
 /**
  * Configuration: Image type priorities.
  */
-LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_IMAGETYPES DIALOGEX 0, 0, 365, 225
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0
 BEGIN
-    LTEXT           "53l3c7 7h3 1m463 7yp35 y0u w0uld l1k3 70 u53 f0r 34ch 5y573m 45 175 7humbn41l 1m463.\n1n73rn4l 1m4635 4r3 c0n741n3d w17h1n 7h3 r0m f1l3.\n3x73rn4l 1m4635 4r3 d0wnl04d3d fr0m 4n 3x73rn4l 1m463 d474b453.", IDC_IMAGETYPES_DESC1, 7, 7, 349, 30, SS_LEFT, WS_EX_LEFT
-    LTEXT           "1 = h16h357 pr10r17y; 2 = 53c0nd h16h357 pr10r17y; n0 = 16n0r3", IDC_IMAGETYPES_DESC2, 7, 37, 349, 8, SS_LEFT, WS_EX_LEFT
-    CONTROL         "64m3cub3, w11, w11 u, n1n73nd0 d5, 4nd n1n73nd0 3d5 3x73rn4l 1m4635\n4r3 pr0v1d3d by <a href=""http://www.gametdb.com/"">GameTDB</a>.\n4m11b0 1m4635 4r3 pr0v1d3d by <a href=""http://amiibo.life/"">amiibo.life</a>, 7h3 un0ff1c14l 4m11b0 d474b453.", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 194, 349, 24, 0x00000000
+    LTEXT           "Selecione os tipos de imagem que você deseja utilizar em cada sistema como miniatura.\nAs imagens internas ficam contidas dentro de uma ROM.\nImagens externas são recebidas de um banco de dados externo de imagens.", IDC_IMAGETYPES_DESC1, 7, 7, 349, 30, SS_LEFT, WS_EX_LEFT
+    LTEXT           "1 = prioridade mais alta; 2 = prioridade alta; Não = ignorar", IDC_IMAGETYPES_DESC2, 7, 37, 349, 8, SS_LEFT, WS_EX_LEFT 
+    CONTROL         "As imagens de GameCube, Wii, Wii U, Nintendo DS, e Nintendo 3DS\nsão fornecidas por <a href=""http://www.gametdb.com/"">GameTDB</a>.\nAs imagens amiibo são fornecidas pelo <a href=""http://amiibo.life/"">amiibo.life</a>, banco de dados não oficial Amiibo.", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 194, 349, 24, 0x00000000
 END
 
 /**
  * Configuration: Download settings.
  */
-LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_DOWNLOADS DIALOGEX 0, 0, 365, 225
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    AUTOCHECKBOX    "3n4bl3 3x73rn4l 1m463 d0wnl04d5.", IDC_EXTIMGDL, 7, 7, 349, 8, 0, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "4lw4y5 u53 7h3 1n73rn4l 1c0n (1f pr353n7) f0r 5m4ll 51z35.", IDC_INTICONSMALL, 7, 21, 349, 8, 0, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "d0wnl04d h16h-r350lu710n 5c4n5 1f v13w1n6 l4r63 7humbn41l5.\n7h15 m4y 1ncr3453 b4ndw1d7h u5463.", IDC_HIGHRESDL, 7, 35, 349, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Habilitar recebimentos de imagem externa.", IDC_EXTIMGDL, 7, 7, 349, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Sempre utilizar o ícone interno (se presente) para tamanhos pequenos.", IDC_INTICONSMALL, 7, 21, 349, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Recber arte de alta qualidade com miniaturas grandes.\nIsto pode aumentar a utilização de largura de banda.", IDC_HIGHRESDL, 7, 35, 349, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
  * Configuration: Thumbnail cache. (Windows Vista and later)
  */
-LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_CACHE DIALOGEX 0, 0, 365, 225
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "1f 4ny 1m463 7yp3 53771n65 w3r3 ch4n63d, y0u w1ll n33d 70 cl34r 7h3 5y573m 7humbn41l c4ch3.", IDC_STATIC, 7, 7, 349, 8, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "cl34r 7h3 5y573m 7humbn41l c4ch3", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 349, 28, 0, WS_EX_LEFT
-    LTEXT           "r0m pr0p3r7135 p463 m41n741n5 175 0wn d0wnl04d c4ch3 f0r 3x73rn4l 1m4635. cl34r1n6 7h15 c4ch3 w1ll f0rc3 3x73rn4l 1m4635 70 b3 r3d0wnl04d3d.", IDC_STATIC, 7, 55, 349, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "cl34r 7h3 r0m pr0p3r7135 p463 d0wnl04d c4ch3", IDC_CACHE_CLEAR_RP_DL, 7, 75, 349, 28, 0, WS_EX_LEFT
-    LTEXT           "cl34r1n6 7h3 c4ch3...", IDC_CACHE_STATUS, 7, 176, 349, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    LTEXT           "If any image type settings were changed, you will need to clear the system thumbnail cache.", IDC_STATIC, 7, 7, 349, 8, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 349, 28, 0, WS_EX_LEFT
+    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 349, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 349, 28, 0, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 176, 349, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 187, 349, 16, WS_EX_LEFT
 END
 
 /**
  * Configuration: Thumbnail cache. (Windows XP and earlier)
  */
-LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 365, 225
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "1f 4ny 1m463 7yp3 53771n65 w3r3 ch4n63d, y0u w1ll n33d 70 cl34r 7h3 7humbn41l c4ch3 f1l35.\n7h15 v3r510n 0f w1nd0w5 d035 n07 h4v3 4 c3n7r4l1z3d 7humbn41l d474b453, 50 17 m4y 74k3 4 wh1l3 f0r 4ll 7humb5.db f1l35 70 b3 l0c473d 4nd d3l373d.", IDC_STATIC, 7, 7, 349, 25, SS_LEFT, WS_EX_TRANSPARENT
-    AUTORADIOBUTTON "f1nd 4ll 7humb5.db f1l35 0n 7h3 5p3c1f13d dr1v3(5):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
-    AUTORADIOBUTTON "5p3c1fy 4 p47h", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
+    LTEXT           "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.", IDC_STATIC, 7, 7, 349, 25, SS_LEFT, WS_EX_TRANSPARENT
+    AUTORADIOBUTTON "Find all Thumbs.db files on the specified drive(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
+    AUTORADIOBUTTON "Specify a path", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 349, 40, WS_EX_LEFT | WS_EX_CLIENTEDGE
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 295, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
-    PUSHBUTTON      "br0w53...", IDC_CACHE_XP_BROWSE, 307, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
-    PUSHBUTTON      "f1nd 4nd r3m0v3 7humb5.db f1l35", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 90, 350, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "r0m pr0p3r7135 p463 m41n741n5 175 0wn d0wnl04d c4ch3 f0r 3x73rn4l 1m4635. cl34r1n6 7h15 c4ch3 w1ll f0rc3 3x73rn4l 1m4635 70 b3 r3d0wnl04d3d.", IDC_STATIC, 7, 125, 265, 20, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "cl34r", IDC_CACHE_CLEAR_RP_DL, 275, 127, 82, 15, 0, WS_EX_LEFT
-    LTEXT           "cl34r1n6 7h3 c4ch3...", IDC_CACHE_STATUS, 7, 176, 349, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 307, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
+    PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 90, 350, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
+    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 265, 20, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 275, 127, 82, 15, 0, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 176, 349, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 187, 349, 16, WS_EX_LEFT
 END
 
@@ -100,7 +101,7 @@ END
 /**
  * Configuration: Key Manager.
  */
-LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_KEYMANAGER DIALOGEX 0, 0, 365, 225
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
@@ -109,21 +110,21 @@ BEGIN
     CONTROL         "", IDC_KEYMANAGER_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL, 7, 7, 349, 193, WS_EX_LEFT | WS_EX_CLIENTEDGE
     // EDIT control is created as a child control of the ListView.
     //EDITTEXT        IDC_KEYMANAGER_EDIT, 0, 0, 0, 0, NOT WS_VISIBLE | ES_AUTOHSCROLL | ES_WANTRETURN, WS_EX_LEFT
-    PUSHBUTTON      "1&mp0r7", IDC_KEYMANAGER_IMPORT, 7, 204, 50, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "I&mportar", IDC_KEYMANAGER_IMPORT, 7, 204, 50, 14, 0, WS_EX_LEFT
 END
 
 /**
  * Configuration: Key Manager. ("Import" popup menu.)
  */
-LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDR_KEYMANAGER_IMPORT MENU
 BEGIN
-    POPUP "1mp0r7"
+    POPUP "Importar"
     BEGIN
-        MENUITEM "w11 k3y5.b1n", IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN
-        MENUITEM "w11 u 07p.b1n", IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN
-        MENUITEM "3d5 b0079.b1n", IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
-        MENUITEM "3d5 435k3ydb.b1n", IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB
+        MENUITEM "Wii keys.bin", IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN
+        MENUITEM "Wii U otp.bin", IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN
+        MENUITEM "3DS boot9.bin", IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
+        MENUITEM "3DS aeskeydb.bin", IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB
     END
 END
 #endif /* ENABLE_DECRYPTION */
@@ -131,15 +132,15 @@ END
 /**
  * Configuration: About.
  */
-LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN
 IDD_CONFIG_ABOUT DIALOGEX 0, 0, 365, 225
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, NOT WS_VISIBLE | WS_EX_LEFT
-    CTEXT           "r0m pr0p3r7135 p463", IDC_ABOUT_LINE1, 7, 7, 350, 9, SS_CENTER, WS_EX_LEFT
-    CTEXT           "5h3ll 3x73n510n", IDC_ABOUT_LINE2, 7, 16, 350, 9, SS_CENTER, WS_EX_LEFT
+    CTEXT           "Página de propriedades da ROM", IDC_ABOUT_LINE1, 7, 7, 350, 9, SS_CENTER, WS_EX_LEFT
+    CTEXT           "Extensão Shell", IDC_ABOUT_LINE2, 7, 16, 350, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "", IDC_ABOUT_VERSION, 7, 28, 350, 32, SS_CENTER, WS_EX_LEFT
     CONTROL         "", IDC_ABOUT_TABCONTROL, WC_TABCONTROL, 0, 7, 63, 350, 168, WS_EX_LEFT
     CONTROL         "", IDC_ABOUT_RICHEDIT, RICHEDIT_CLASS, WS_TABSTOP | WS_BORDER | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL, 14, 84, 336, 140, WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT

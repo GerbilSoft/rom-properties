@@ -372,7 +372,7 @@ void KeyManagerTabPrivate::initUI(void)
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
-		SetWindowText(hBtnImport, U82W_c(C_("KeyManagerTab", "Import...")));
+		SetWindowText(hBtnImport, U82W_c(C_("KeyManagerTab", "I&mport...")));
 	}
 
 	// Initialize the ListView.

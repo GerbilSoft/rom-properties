@@ -474,10 +474,10 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("Cache Tab", "Thumbnail Cache"));
+	const wstring wsTabTitle = U82W_c(C_("CacheTab", "Thumbnail Cache"));
 
 	PROPSHEETPAGE psp;
-	psp.dwSize = sizeof(psp);	
+	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszIcon = nullptr;

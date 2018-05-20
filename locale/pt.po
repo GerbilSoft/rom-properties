@@ -101,8 +101,8 @@ msgid ""
 msgstr ""
 "As imagens de GameCube, Wii, Wii U, Nintendo DS, e Nintendo 3DS <br/>são "
 "fornecidas por <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
-"As imagens amiibo são fornecidas pelo<a href=\"http://amiibo.life/\">amiibo."
-"life</a> banco de dados não oficial Amiibo."
+"As imagens amiibo são fornecidas pelo <a href=\"http://amiibo.life/\">amiibo."
+"life</a>, banco de dados não oficial Amiibo."
 
 #: ../build/src/kde/kde5/ui_KeyManagerTab.h:87
 msgctxt "KeyManagerTab"
@@ -5765,7 +5765,7 @@ msgstr "Cachê de miniaturas de sistema já está limpo. Nada a fazer aqui."
 
 #. tr: Tab title.
 #: ../src/win32/config/CacheTab.cpp:477
-msgctxt "Cache Tab"
+msgctxt "CacheTab"
 msgid "Thumbnail Cache"
 msgstr "Cachê de miniaturas"
 
@@ -5795,8 +5795,8 @@ msgstr "Tipos de imagens"
 
 #: ../src/win32/config/KeyManagerTab.cpp:375
 msgctxt "KeyManagerTab"
-msgid "Import..."
-msgstr "Importar..."
+msgid "I&mport..."
+msgstr "I&mportar..."
 
 #. tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
 #: ../src/win32/config/KeyManagerTab.cpp:1480

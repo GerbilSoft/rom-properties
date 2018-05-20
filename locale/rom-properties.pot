@@ -5687,7 +5687,7 @@ msgstr ""
 
 #. tr: Tab title.
 #: ../src/win32/config/CacheTab.cpp:477
-msgctxt "Cache Tab"
+msgctxt "CacheTab"
 msgid "Thumbnail Cache"
 msgstr ""
 
@@ -5717,7 +5717,7 @@ msgstr ""
 
 #: ../src/win32/config/KeyManagerTab.cpp:375
 msgctxt "KeyManagerTab"
-msgid "Import..."
+msgid "I&mport..."
 msgstr ""
 
 #. tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]

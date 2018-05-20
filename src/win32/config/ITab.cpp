@@ -44,6 +44,11 @@ LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 	WORD wLanguageFallback = 0;	// Fallback language.
 
 	switch (lc) {
+		case 'pt':
+			// Default is pt_BR.
+			wLanguage = MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN);
+			break;
+
 		case 'ru':
 			// Default is ru_RU.
 			wLanguage = MAKELANGID(LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA);

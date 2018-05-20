@@ -447,6 +447,9 @@ int CALLBACK rp_show_config_dialog(
 		return EXIT_FAILURE;
 	}
 
+	// Initialize i18n.
+	rp_i18n_init();
+
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
 	delete cfg;

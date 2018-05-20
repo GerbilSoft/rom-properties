@@ -54,6 +54,7 @@ SET(rom-properties-win32_H
 SET(rom-properties-win32_RC
 	res/resource.rc
 	res/rp-en_US.rc
+	res/rp-pt_BR.rc
 	res/rp-ru_RU.rc
 	)
 
