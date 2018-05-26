@@ -190,17 +190,27 @@ void CacheTabPrivate::initControlsXP(void)
 	// FIXME: If a drive's label is short, but later changes to long,
 	// the column doesn't automatically expand.
 	HWND hListView = GetDlgItem(hWndPropSheet, IDC_CACHE_XP_DRIVES);
-	assert(hListView != nullptr);
-	if (hListView) {
-		// Initialize the ListView image list.
-		// NOTE: SHGetImageList() internally calls HIMAGELIST_QueryInterface(),
-		// so we need to Release() it when we're done using it.
-		HRESULT hr = SHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
-		if (SUCCEEDED(hr)) {
-			ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
-		}
+	if (!hListView)
+		return;
+
+	// Initialize the ListView image list.
+	// NOTE: HIMAGELIST and IImageList are compatible.
+	// Since this is a system image list, we should *not*
+	// release/destroy it when we're done using it.
+	HRESULT hr = SHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
+	if (SUCCEEDED(hr)) {
+		ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
 	}
 
+	// Enable double-buffering if not using RDP.
+	if (!GetSystemMetrics(SM_REMOTESESSION)) {
+		ListView_SetExtendedListViewStyle(hListView, LVS_EX_DOUBLEBUFFER);
+	}
+
+	// Register for WTS session notifications. (Remote Desktop)
+	WTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+
+	// Enumerate the drives.
 	enumDrivesXP();
 }
 
@@ -833,6 +843,37 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			std::swap(unitmask, d->dwUnitmaskXP);
 			d->updateDrivesXP(unitmask);
 			return TRUE;
+		}
+
+		case WM_WTSSESSION_CHANGE: {
+			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d || d->isVista) {
+				// No CacheTabPrivate, or using Vista+.
+				// Nothing to do here.
+				return FALSE;
+			}
+			HWND hListView = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_LIST);
+			assert(hListView != nullptr);
+			if (!hListView)
+				break;
+			DWORD dwExStyle = ListView_GetExtendedListViewStyle(hListView);
+
+			// If RDP was connected, disable ListView double-buffering.
+			// If console (or RemoteFX) was connected, enable ListView double-buffering.
+			switch (wParam) {
+				case WTS_CONSOLE_CONNECT:
+					dwExStyle |= LVS_EX_DOUBLEBUFFER;
+					ListView_SetExtendedListViewStyle(hListView, dwExStyle);
+					break;
+				case WTS_REMOTE_CONNECT:
+					dwExStyle &= ~LVS_EX_DOUBLEBUFFER;
+					ListView_SetExtendedListViewStyle(hListView, dwExStyle);
+					break;
+				default:
+					break;
+			}
+			break;
 		}
 
 		default:
