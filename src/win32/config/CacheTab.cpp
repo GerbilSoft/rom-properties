@@ -489,13 +489,15 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		hr = pCleaner->Purge(-1LL, pCallback);
 		if (FAILED(hr)) {
 			// Cleanup failed. (TODO: Figure out why!)
-			// TODO: Indicate the drive letter and error code.
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"),
 				(char)szDrivePath[0], hr);
 			SetWindowText(hStatusLabel, U82W_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
+			EnableWindow(hClearSysThumbs, TRUE);
+			EnableWindow(hClearRpDl, TRUE);
+			return 8;
 		}
 
 		// Next drive.
