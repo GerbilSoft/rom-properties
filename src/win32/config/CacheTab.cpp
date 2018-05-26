@@ -22,16 +22,16 @@
 #include "CacheTab.hpp"
 #include "res/resource.h"
 
-// libwin32common
-#include "libwin32common/RegKey.hpp"
-using LibWin32Common::RegKey;
-
 // librpbase
 #include "librpbase/TextFuncs_wchar.hpp"
 
 // libi18n
 #include "libi18n/i18n.h"
 
+// libwin32common
+#include "libwin32common/RegKey.hpp"
+#include "libwin32common/sdk/commctrl_ts.h"
+using LibWin32Common::RegKey;
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
 
@@ -63,6 +63,11 @@ class CacheTabPrivate
 		 * Initialize controls on the XP version.
 		 */
 		void initControlsXP(void);
+
+		/**
+		 * Enumerate all drives. (XP version)
+		 */
+		void enumDrivesXP(void);
 
 		/**
 		 * Clear the Thumbnail Cache. (Windows Vista and later.)
@@ -127,6 +132,52 @@ void CacheTabPrivate::initControlsXP(void)
 	Button_SetCheck(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_FIND_DRIVES), BST_CHECKED);
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
+	enumDrivesXP();
+}
+
+/**
+ * Enumerate all drives. (XP version)
+ */
+void CacheTabPrivate::enumDrivesXP(void)
+{
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_CACHE_XP_DRIVES);
+	assert(hListView != nullptr);
+	if (!hListView) {
+		// Should not be called on Vista+...
+		return;
+	}
+
+	// Clear the ListView.
+	ListView_DeleteAllItems(hListView);
+
+	// Get available drives.
+	DWORD dwDrives = GetLogicalDrives();
+
+	// Check each drive.
+	wchar_t path[] = L"X:\\";
+	SHFILEINFO sfi;
+	LVITEM lvi;
+	memset(&lvi, 0, sizeof(lvi));
+	lvi.mask = /*LVIF_IMAGE |*/ LVIF_PARAM | LVIF_TEXT;
+	for (unsigned int i = 0; i < 26 && dwDrives != 0; i++, dwDrives >>= 1) {
+		// Ignore missing drives and network drives.
+		if (!(dwDrives & 1))
+			continue;
+		path[0] = L'A' + i;
+		UINT uiDriveType = GetDriveType(path);
+		if (uiDriveType <= DRIVE_NO_ROOT_DIR || uiDriveType == DRIVE_REMOTE)
+			continue;
+
+		DWORD_PTR ret = SHGetFileInfo(path, 0, &sfi, sizeof(sfi),
+			SHGFI_DISPLAYNAME | SHGFI_SYSICONINDEX);
+		if (ret == 0)
+			continue;
+
+		lvi.iItem = i;
+		lvi.lParam = i;
+		lvi.pszText = sfi.szDisplayName;
+		ListView_InsertItem(hListView, &lvi);
+	}
 }
 
 /**
