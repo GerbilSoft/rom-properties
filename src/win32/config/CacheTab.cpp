@@ -49,6 +49,7 @@ class CacheTabPrivate
 {
 	public:
 		CacheTabPrivate();
+		~CacheTabPrivate();
 
 	private:
 		RP_DISABLE_COPY(CacheTabPrivate)
@@ -98,6 +99,9 @@ class CacheTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
+		// Image list for the XP drive list.
+		IImageList *pImageList;
+
 		// Is this Windows Vista or later?
 		bool isVista;
 };
@@ -107,6 +111,7 @@ class CacheTabPrivate
 CacheTabPrivate::CacheTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
+	, pImageList(nullptr)
 	, isVista(false)
 {
 	// Determine which dialog we should use.
@@ -117,6 +122,13 @@ CacheTabPrivate::CacheTabPrivate()
 	} else {
 		// Not available. Use manual cache cleaning.
 		isVista = false;
+	}
+}
+
+CacheTabPrivate::~CacheTabPrivate()
+{
+	if (pImageList) {
+		pImageList->Release();
 	}
 }
 
@@ -132,6 +144,19 @@ void CacheTabPrivate::initControlsXP(void)
 	Button_SetCheck(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_FIND_DRIVES), BST_CHECKED);
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
+
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_CACHE_XP_DRIVES);
+	assert(hListView != nullptr);
+	if (hListView) {
+		// Initialize the ListView image list.
+		// NOTE: SHGetImageList() internally calls HIMAGELIST_QueryInterface(),
+		// so we need to Release() it when we're done using it.
+		HRESULT hr = SHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
+		if (SUCCEEDED(hr)) {
+			ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
+		}
+	}
+
 	enumDrivesXP();
 }
 
@@ -158,7 +183,7 @@ void CacheTabPrivate::enumDrivesXP(void)
 	SHFILEINFO sfi;
 	LVITEM lvi;
 	memset(&lvi, 0, sizeof(lvi));
-	lvi.mask = /*LVIF_IMAGE |*/ LVIF_PARAM | LVIF_TEXT;
+	lvi.mask = LVIF_IMAGE | LVIF_PARAM | LVIF_TEXT;
 	for (unsigned int i = 0; i < 26 && dwDrives != 0; i++, dwDrives >>= 1) {
 		// Ignore missing drives and network drives.
 		if (!(dwDrives & 1))
@@ -175,6 +200,7 @@ void CacheTabPrivate::enumDrivesXP(void)
 
 		lvi.iItem = i;
 		lvi.lParam = i;
+		lvi.iImage = sfi.iIcon;
 		lvi.pszText = sfi.szDisplayName;
 		ListView_InsertItem(hListView, &lvi);
 	}
