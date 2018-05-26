@@ -360,6 +360,17 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			break;
 		}
 
+		case WM_DEVICECHANGE: {
+			// Forward WM_DEVICECHANGE to CacheTab.
+			// NOTE: PropSheet_IndexToHwnd() may return nullptr if
+			// CacheTab hasn't been initialized yet.
+			HWND hwndCacheTab = PropSheet_IndexToHwnd(hWnd, 2);
+			if (hwndCacheTab) {
+				SendMessage(hwndCacheTab, uMsg, wParam, lParam);
+			}
+			break;
+		}
+
 		case PSM_CHANGED:
 			// A property sheet is telling us that something has changed.
 			// Enable the "Reset" button.

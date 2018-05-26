@@ -34,6 +34,9 @@
 using LibWin32Common::RegKey;
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
+// Windows: WM_DEVICECHANGE structs.
+#include <dbt.h>
+#include <devguid.h>
 
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
@@ -44,6 +47,9 @@ _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 // C++ includes.
 #include <string>
 using std::wstring;
+
+// Timer ID for the XP drive update procedure.
+#define TMRID_XP_DRIVE_UPDATE 0xD103
 
 class CacheTabPrivate
 {
@@ -69,6 +75,12 @@ class CacheTabPrivate
 		 * Enumerate all drives. (XP version)
 		 */
 		void enumDrivesXP(void);
+
+		/**
+		 * Update drives in the drive list.
+		 * @param unitmask Drive mask. (may have multiple bits set)
+		 */
+		void updateDrivesXP(DWORD unitmask);
 
 		/**
 		 * Clear the Thumbnail Cache. (Windows Vista and later.)
@@ -102,6 +114,9 @@ class CacheTabPrivate
 		// Image list for the XP drive list.
 		IImageList *pImageList;
 
+		// XP drive update mask.
+		DWORD dwUnitmaskXP;
+
 		// Is this Windows Vista or later?
 		bool isVista;
 };
@@ -112,6 +127,7 @@ CacheTabPrivate::CacheTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, pImageList(nullptr)
+	, dwUnitmaskXP(0)
 	, isVista(false)
 {
 	// Determine which dialog we should use.
@@ -122,6 +138,12 @@ CacheTabPrivate::CacheTabPrivate()
 	} else {
 		// Not available. Use manual cache cleaning.
 		isVista = false;
+
+		// Handle "critical" errors ourselves.
+		// This fixes an issue where Windows shows a
+		// "There is no disk in the drive." message when
+		// a CD-ROM is removed and we call SHGetFileInfo().
+		SetErrorMode(SEM_FAILCRITICALERRORS);
 	}
 }
 
@@ -203,6 +225,82 @@ void CacheTabPrivate::enumDrivesXP(void)
 		lvi.iImage = sfi.iIcon;
 		lvi.pszText = sfi.szDisplayName;
 		ListView_InsertItem(hListView, &lvi);
+	}
+}
+
+/**
+ * Update drives in the drive list.
+ * @param unitmask Drive mask. (may have multiple bits set)
+ */
+void CacheTabPrivate::updateDrivesXP(DWORD unitmask)
+{
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_CACHE_XP_DRIVES);
+	assert(hListView != nullptr);
+	if (!hListView) {
+		// Should not be called on Vista+...
+		return;
+	}
+
+	wchar_t path[] = L"X:\\";
+	SHFILEINFO sfi;
+	LVITEM lviNew, lviCur;
+	memset(&lviNew, 0, sizeof(lviNew));
+	memset(&lviCur, 0, sizeof(lviCur));
+	lviNew.mask = LVIF_IMAGE | LVIF_PARAM | LVIF_TEXT;
+	lviCur.mask = LVIF_PARAM;
+
+	// TODO: Optimize by storing a map of drive letters
+	// to ListView indexes somewhere.
+	unsigned int mask = 1;
+	for (unsigned int i = 0; i < 26; i++, mask <<= 1) {
+		// Check if this drive is specified.
+		if (!(unitmask & mask))
+			continue;
+
+		bool toDelete = true;
+		bool isPresent = false;
+
+		// Check the drive status.
+		path[0] = L'A' + i;
+		UINT uiDriveType = GetDriveType(path);
+		if (uiDriveType > DRIVE_NO_ROOT_DIR && uiDriveType != DRIVE_REMOTE) {
+			// Get drive information.
+			DWORD_PTR ret = SHGetFileInfo(path, 0, &sfi, sizeof(sfi),
+				SHGFI_DISPLAYNAME | SHGFI_SYSICONINDEX);
+			if (ret != 0) {
+				lviNew.lParam = i;
+				lviNew.iImage = sfi.iIcon;
+				lviNew.pszText = sfi.szDisplayName;
+				toDelete = false;
+			}
+		}
+
+		// Check if this drive is already in the ListView.
+		const int lvItemCount = ListView_GetItemCount(hListView);
+		for (int j = 0; j < lvItemCount; j++) {
+			lviCur.iItem = j;
+			ListView_GetItem(hListView, &lviCur);
+			if (lviCur.lParam == i) {
+				// Found a match!
+				isPresent = true;
+				if (toDelete) {
+					// Delete the item.
+					ListView_DeleteItem(hListView, j);
+				} else {
+					// Update the item.
+					lviNew.iItem = j;
+					ListView_SetItem(hListView, &lviNew);
+				}
+				break;
+			}
+		}
+
+		if (!toDelete && !isPresent) {
+			// Item not found. Add it to the end of the list.
+			// TODO: Add in drive letter order?
+			lviNew.iItem = lvItemCount;
+			ListView_InsertItem(hListView, &lviNew);
+		}
 	}
 }
 
@@ -476,16 +574,60 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_DRIVES), SW_SHOW);
 					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
 					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
-					break;
+					return TRUE;
 				case IDC_CACHE_XP_FIND_PATH:
 					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_DRIVES), SW_HIDE);
 					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_PATH), SW_SHOW);
 					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_SHOW);
-					break;
+					return TRUE;
 				default:
 					break;
 			}
 			break;
+		}
+
+		case WM_DEVICECHANGE: {
+			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d || d->isVista) {
+				// No CacheTabPrivate, or using Vista+.
+				// Nothing to do here.
+				break;
+			}
+
+			if (wParam != DBT_DEVICEARRIVAL && wParam != DBT_DEVICEREMOVECOMPLETE)
+				break;
+
+			// Device is being added or removed.
+			// Update the device in the drive list.
+			const PDEV_BROADCAST_HDR lpdb = reinterpret_cast<PDEV_BROADCAST_HDR>(lParam);
+			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME) {
+				const PDEV_BROADCAST_VOLUME lpdbv = reinterpret_cast<PDEV_BROADCAST_VOLUME>(lParam);
+				// Schedule an update after a second to allow the drive to stabilize.
+				// TODO: Instead of waiting 1 second, just keep retrying
+				// SHGetFileInfo() until it succeeds? (media change only)
+				d->dwUnitmaskXP |= lpdbv->dbcv_unitmask;
+				SetTimer(hDlg, TMRID_XP_DRIVE_UPDATE, 1000, NULL);
+			}
+			return TRUE;
+		}
+
+		case WM_TIMER: {
+			if (wParam != TMRID_XP_DRIVE_UPDATE)
+				break;
+			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d || d->isVista) {
+				// No CacheTabPrivate, or using Vista+.
+				// Nothing to do here.
+				return FALSE;
+			}
+
+			// Update the drives.
+			DWORD unitmask = 0;
+			std::swap(unitmask, d->dwUnitmaskXP);
+			d->updateDrivesXP(unitmask);
+			return TRUE;
 		}
 
 		default:
