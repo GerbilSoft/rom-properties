@@ -167,6 +167,8 @@ void CacheTabPrivate::initControlsXP(void)
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
 
+	// FIXME: If a drive's label is short, but later changes to long,
+	// the column doesn't automatically expand.
 	HWND hListView = GetDlgItem(hWndPropSheet, IDC_CACHE_XP_DRIVES);
 	assert(hListView != nullptr);
 	if (hListView) {
