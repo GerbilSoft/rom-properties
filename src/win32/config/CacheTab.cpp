@@ -407,7 +407,12 @@ int CacheTabPrivate::clearCacheVista(void)
 		return 6;
 	}
 
-	// TODO: Disable user input until we're done?
+	// Disable the buttons until we're done.
+	// TODO: Disable the main tab control too?
+	HWND hClearSysThumbs = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
+	HWND hClearRpDl = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
+	EnableWindow(hClearSysThumbs, FALSE);
+	EnableWindow(hClearRpDl, FALSE);
 
 	// Initialize the progress bar.
 	SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, driveCount * 100));
@@ -454,6 +459,8 @@ int CacheTabPrivate::clearCacheVista(void)
 			SetWindowText(hStatusLabel, U82W_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
+			EnableWindow(hClearSysThumbs, TRUE);
+			EnableWindow(hClearRpDl, TRUE);
 			return 7;
 		}
 
@@ -485,6 +492,8 @@ int CacheTabPrivate::clearCacheVista(void)
 	}
 	SetWindowText(hStatusLabel, U82W_c(success_message));
 	pCallback->Release();
+	EnableWindow(hClearSysThumbs, TRUE);
+	EnableWindow(hClearRpDl, TRUE);
 	return 0;
 }
 
