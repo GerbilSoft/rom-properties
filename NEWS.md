@@ -63,6 +63,8 @@
     partition.
   * GTK+: Fixed a potential crash if running on a system that doesn't support
     SSSE3 instructions.
+  * Win32: rp-config's option to clear the rom-properties cache didn't do
+    anything. It now clears the rom-properties cache directory.
 
 * Other changes:
   * libromdata/ has been reorganized to use subdirectories for type of system.

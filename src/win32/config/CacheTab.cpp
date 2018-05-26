@@ -24,6 +24,8 @@
 
 // librpbase
 #include "librpbase/TextFuncs_wchar.hpp"
+#include "librpbase/file/FileSystem.hpp"
+using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -46,6 +48,10 @@ _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
 // C++ includes.
 #include <string>
+#include <utility>
+#include <vector>
+using std::pair;
+using std::vector;
 using std::wstring;
 
 // Timer ID for the XP drive update procedure.
@@ -86,7 +92,21 @@ class CacheTabPrivate
 		 * Clear the Thumbnail Cache. (Windows Vista and later.)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int clearCacheVista(void);
+		int clearThumbnailCacheVista(void);
+
+		/**
+		 * Recursively scan a directory for files.
+		 * @param path	[in] Path to scan.
+		 * @param rvec	[in/out] Return vector for filenames and attributes.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int recursiveScan(const wchar_t *path, vector<pair<wstring, DWORD> > &rvec);
+
+		/**
+		 * Clear the rom-properties cache.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int clearRomPropertiesCache(void);
 
 	public:
 		/**
@@ -310,7 +330,7 @@ void CacheTabPrivate::updateDrivesXP(DWORD unitmask)
  * Clear the Thumbnail Cache. (Windows Vista and later.)
  * @return 0 on success; non-zero on error.
  */
-int CacheTabPrivate::clearCacheVista(void)
+int CacheTabPrivate::clearThumbnailCacheVista(void)
 {
 	HWND hStatusLabel = GetDlgItem(hWndPropSheet, IDC_CACHE_STATUS);
 	HWND hProgressBar = GetDlgItem(hWndPropSheet, IDC_CACHE_PROGRESS);
@@ -415,6 +435,7 @@ int CacheTabPrivate::clearCacheVista(void)
 	EnableWindow(hClearRpDl, FALSE);
 
 	// Initialize the progress bar.
+	SendMessage(hProgressBar, PBM_SETSTATE, PBST_NORMAL, 0);
 	SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, driveCount * 100));
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
@@ -498,6 +519,160 @@ int CacheTabPrivate::clearCacheVista(void)
 }
 
 /**
+ * Recursively scan a directory for files.
+ * @param path	[in] Path to scan.
+ * @param rvec	[in/out] Return vector for filenames and attributes.
+ * @return 0 on success; non-zero on error.
+ */
+int CacheTabPrivate::recursiveScan(const wchar_t *path, vector<pair<wstring, DWORD> > &rvec)
+{
+	wstring findFilter(path);
+	findFilter += L"\\*";
+
+	WIN32_FIND_DATA findFileData;
+	HANDLE hFindFile = FindFirstFile(findFilter.c_str(), &findFileData);
+	if (!hFindFile || hFindFile == INVALID_HANDLE_VALUE) {
+		// Error finding files.
+		return -1;
+	}
+
+	do {
+		// Skip "." and "..".
+		if (findFileData.cFileName[0] == L'.' &&
+			(findFileData.cFileName[1] == L'\0' ||
+			 (findFileData.cFileName[1] == '.' && findFileData.cFileName[2] == '\0')))
+		{
+			continue;
+		}
+
+		wstring fullFileName(path);
+		fullFileName += L'\\';
+		fullFileName += findFileData.cFileName;
+
+		// If this is a directory, recursively scan it, then add it.
+		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			// Recursively scan it.
+			recursiveScan(fullFileName.c_str(), rvec);
+		}
+
+		// Add the filename and attributes.
+		// FIXME: Test emplace_back on MSVC 2010.
+		rvec.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
+	} while (FindNextFile(hFindFile, &findFileData));
+	FindClose(hFindFile);
+
+	return 0;
+}
+
+/**
+* Clear the rom-properties cache.
+* @return 0 on success; non-zero on error.
+*/
+int CacheTabPrivate::clearRomPropertiesCache(void)
+{
+	// TODO: Use a separate thread with callbacks?
+	HWND hStatusLabel = GetDlgItem(hWndPropSheet, IDC_CACHE_STATUS);
+	HWND hProgressBar = GetDlgItem(hWndPropSheet, IDC_CACHE_PROGRESS);
+	ShowWindow(hStatusLabel, SW_SHOW);
+	ShowWindow(hProgressBar, SW_SHOW);
+
+	// Reset the progress bar.
+	SendMessage(hProgressBar, PBM_SETSTATE, PBST_NORMAL, 0);
+	SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 100));
+	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
+
+	// Disable the buttons until we're done.
+	// TODO: Disable the main tab control too?
+	HWND hClearSysThumbs = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
+	HWND hClearRpDl = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
+	EnableWindow(hClearSysThumbs, FALSE);
+	EnableWindow(hClearRpDl, FALSE);
+
+	SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "Clearing the rom-properties cache...")));
+
+	// Initialize the progress bar.
+	// TODO: Before or after scanning?
+	SendMessage(hProgressBar, PBM_SETSTATE, PBST_NORMAL, 0);
+	SendMessage(hProgressBar, PBM_SETRANGE, 0, 1);
+	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
+
+	// Cache directory.
+	// NOTE: FileSystem::getCacheDirectory() doesn't have "\\\\?\\"
+	// prepended, since we don't want to display this to the user.
+	// RpFile_Win32 normally prepends it automatically, but we're not
+	// using that here.
+	wstring cacheDir = L"\\\\?\\";
+	cacheDir += U82W_s(FileSystem::getCacheDirectory());
+
+	// Recursively scan the cache directory.
+	// TODO: Do we really want to store everything in a vector? (Wastes memory.)
+	// Maybe do a simple counting scan first, then delete.
+	vector<pair<wstring, DWORD> > rvec;
+	recursiveScan(cacheDir.c_str(), rvec);
+	if (rvec.empty()) {
+		// Nothing to do!
+		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
+		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
+		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
+		EnableWindow(hClearSysThumbs, TRUE);
+		EnableWindow(hClearRpDl, TRUE);
+		return 0;
+	}
+
+	// Delete all of the files and subdirectories.
+	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rvec.size());
+	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
+	unsigned int count = 0;
+	unsigned int dirErrs = 0, fileErrs = 0;
+	for (auto iter = rvec.cbegin(); iter != rvec.cend(); ++iter) {
+		if (iter->second & FILE_ATTRIBUTE_DIRECTORY) {
+			// Remove the directory.
+			BOOL bRet = RemoveDirectory(iter->first.c_str());
+			if (!bRet) {
+				dirErrs++;
+				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+			}
+		} else {
+			// Delete the file.
+			BOOL bRet = TRUE;
+			if (iter->second & FILE_ATTRIBUTE_READONLY) {
+				// Need to remove the read-only attribute.
+				bRet = SetFileAttributes(iter->first.c_str(), (iter->second & ~FILE_ATTRIBUTE_READONLY));
+			}
+			if (!bRet) {
+				// Error removing the read-only attribute.
+				fileErrs++;
+				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+			} else {
+				bRet = DeleteFile(iter->first.c_str());
+				if (!bRet) {
+					// Error deleting the file.
+					fileErrs++;
+					SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+				}
+			}
+		}
+
+		// TODO: Restrict update frequency to X number of files/directories?
+		count++;
+		SendMessage(hProgressBar, PBM_SETPOS, count, 0);
+	}
+
+	if (dirErrs > 0 || fileErrs > 0) {
+		// TODO: Localize this string.
+		SetWindowText(hStatusLabel, U82W_s(
+			rp_sprintf("Error: Unable to delete %u file(s) and/or %u dir(s).",
+				fileErrs, dirErrs)));
+	} else {
+		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "rom-properties cache cleared successfully.")));
+	}
+
+	EnableWindow(hClearSysThumbs, TRUE);
+	EnableWindow(hClearRpDl, TRUE);
+	return 0;
+}
+
+/**
  * Dialog procedure.
  * @param hDlg
  * @param uMsg
@@ -575,7 +750,11 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			switch (LOWORD(wParam)) {
 				case IDC_CACHE_CLEAR_SYS_THUMBS:
 					// Clear the system thumbnail cache. (Vista+)
-					d->clearCacheVista();
+					d->clearThumbnailCacheVista();
+					return TRUE;
+				case IDC_CACHE_CLEAR_RP_DL:
+					// Clear the rom-properties cache.
+					d->clearRomPropertiesCache();
 					return TRUE;
 				case IDC_CACHE_XP_CLEAR_SYS_THUMBS:
 					// Clear the system thumbnail cache. (XP)
