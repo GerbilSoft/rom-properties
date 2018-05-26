@@ -154,7 +154,7 @@ CacheTabPrivate::CacheTabPrivate()
 	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
 	if (hKey.isOpen()) {
 		// Windows Vista Thumbnail Cache cleaner is available.
-		isVista = true;
+		//isVista = true;
 	} else {
 		// Not available. Use manual cache cleaning.
 		isVista = false;
@@ -433,6 +433,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	HWND hClearRpDl = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
 	EnableWindow(hClearSysThumbs, FALSE);
 	EnableWindow(hClearRpDl, FALSE);
+	SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 	// Initialize the progress bar.
 	SendMessage(hProgressBar, PBM_SETSTATE, PBST_NORMAL, 0);
@@ -482,6 +483,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			pCallback->Release();
 			EnableWindow(hClearSysThumbs, TRUE);
 			EnableWindow(hClearRpDl, TRUE);
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			MessageBeep(MB_ICONERROR);
 			return 7;
 		}
 
@@ -497,6 +500,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			pCallback->Release();
 			EnableWindow(hClearSysThumbs, TRUE);
 			EnableWindow(hClearRpDl, TRUE);
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			MessageBeep(MB_ICONERROR);
 			return 8;
 		}
 
@@ -517,6 +522,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	pCallback->Release();
 	EnableWindow(hClearSysThumbs, TRUE);
 	EnableWindow(hClearRpDl, TRUE);
+	SetCursor(LoadCursor(NULL, IDC_ARROW));
+	MessageBeep(MB_ICONINFORMATION);
 	return 0;
 }
 
@@ -589,6 +596,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	HWND hClearRpDl = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
 	EnableWindow(hClearSysThumbs, FALSE);
 	EnableWindow(hClearRpDl, FALSE);
+	SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 	SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "Clearing the rom-properties cache...")));
 
@@ -618,6 +626,8 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
 		EnableWindow(hClearRpDl, TRUE);
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		MessageBeep(MB_ICONINFORMATION);
 		return 0;
 	}
 
@@ -665,12 +675,15 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		SetWindowText(hStatusLabel, U82W_s(
 			rp_sprintf("Error: Unable to delete %u file(s) and/or %u dir(s).",
 				fileErrs, dirErrs)));
+		MessageBeep(MB_ICONWARNING);
 	} else {
 		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "rom-properties cache cleared successfully.")));
+		MessageBeep(MB_ICONINFORMATION);
 	}
 
 	EnableWindow(hClearSysThumbs, TRUE);
 	EnableWindow(hClearRpDl, TRUE);
+	SetCursor(LoadCursor(NULL, IDC_ARROW));
 	return 0;
 }
 
