@@ -29,6 +29,11 @@
        <string>&amp;Downloads</string>
       </attribute>
      </widget>
+     <widget class="CacheTab" name="tabCache">
+      <attribute name="title">
+       <string>Thumbnail &amp;Cache</string>
+      </attribute>
+     </widget>
      <widget class="AboutTab" name="tabAbout">
       <attribute name="title">
        <string>&amp;About</string>
@@ -72,6 +77,12 @@
     <slot>loadDefaults()</slot>
     <slot>save()</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>CacheTab</class>
+   <extends>QWidget</extends>
+   <header>config/CacheTab.hpp</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>AboutTab</class>

@@ -15,6 +15,7 @@ SET(rom-properties-kde_SRCS
 	config/ITab.cpp
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
+	config/CacheTab.cpp
 	config/AboutTab.cpp
 	config/QTreeViewOpt.cpp
 	)
@@ -30,6 +31,7 @@ SET(rom-properties-kde_H
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
+	config/CacheTab.hpp
 	config/AboutTab.hpp
 	config/QTreeViewOpt.hpp
 	)
@@ -38,6 +40,7 @@ SET(rom-properties-kde_UIS
 	config/ConfigDialog.ui
 	config/ImageTypesTab.ui
 	config/DownloadsTab.ui
+	config/CacheTab.ui
 	config/AboutTab.ui
 	)
 

@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * ITab.hpp: Configuration tab interface.                                  *
+ * Cache.hpp: Cache tab for rp-config.                                     *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,31 +14,29 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_ITAB_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_ITAB_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_CACHETAB_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_CACHETAB_HPP__
 
-// Qt includes.
-#include <QSettings>
-#include <QWidget>
+#include "ITab.hpp"
 
-class ITab : public QWidget
+class CacheTabPrivate;
+class CacheTab : public ITab
 {
 	Q_OBJECT
-	Q_PROPERTY(bool defaults READ hasDefaults)
 
-	protected:
-		explicit ITab(QWidget *parent = nullptr);
 	public:
-		virtual ~ITab();
+		explicit CacheTab(QWidget *parent = nullptr);
+		virtual ~CacheTab();
 
 	private:
-		typedef QWidget super;
-		Q_DISABLE_COPY(ITab)
+		typedef ITab super;
+		CacheTabPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(CacheTab);
+		Q_DISABLE_COPY(CacheTab)
 
 	public:
 		/**
@@ -50,32 +48,41 @@ class ITab : public QWidget
 		 *
 		 * @return True to enable; false to disable.
 		 */
-		virtual bool hasDefaults(void) const { return true; }
+		bool hasDefaults(void) const final { return false; }
+
+	protected:
+		// State change event. (Used for switching the UI language at runtime.)
+		void changeEvent(QEvent *event) final;
 
 	public slots:
 		/**
 		 * Reset the configuration.
 		 */
-		virtual void reset(void) = 0;
+		void reset(void) final;
 
 		/**
 		 * Load the default configuration.
 		 * This does NOT save, and will only emit modified()
 		 * if it's different from the current configuration.
 		 */
-		virtual void loadDefaults(void) = 0;
+		void loadDefaults(void) final;
 
 		/**
 		 * Save the configuration.
 		 * @param pSettings QSettings object.
 		 */
-		virtual void save(QSettings *pSettings) = 0;
+		void save(QSettings *pSettings) final;
 
-	signals:
+	protected slots:
 		/**
-		 * Configuration has been modified.
+		 * "Clear System Thumbnail Cache" was clicked.
 		 */
-		void modified(void);
+		void on_btnClearSysThumbnailCache_clicked(void);
+
+		/**
+		 * "Clear ROM Properties Cache" was clicked.
+		 */
+		void on_btnClearRomPropertiesCache_clicked(void);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_ITAB_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_CACHETAB_HPP__ */

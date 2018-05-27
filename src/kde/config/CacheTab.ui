@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CacheTab</class>
+ <widget class="QWidget" name="CacheTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>416</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="vboxMain">
+   <item>
+    <widget class="QLabel" name="lblClearSysThumbnailCache">
+     <property name="text">
+      <string>If any image type settings were changed, you will need to clear the system thumbnail cache.</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnClearSysThumbnailCache">
+     <property name="text">
+      <string>Clear the System Thumbnail Cache</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="lblClearRomPropertiesCache">
+     <property name="text">
+      <string>ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnClearRomPropertiesCache">
+     <property name="text">
+      <string>Clear the ROM Properties Page Download Cache</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="vspcDownloads">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>197</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="lblStatus">
+     <property name="text">
+      <string>Clearing the cache...</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="pbStatus"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+ <slots>
+  <signal>modified()</signal>
+  <slot>reset()</slot>
+  <slot>loadDefaults()</slot>
+  <slot>save()</slot>
+  <slot>checkBox_clicked()</slot>
+ </slots>
+</ui>
