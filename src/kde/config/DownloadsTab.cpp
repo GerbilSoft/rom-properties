@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * DownloadsTab.cpp: Downloads tab for rp-config.                          *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "DownloadsTab.hpp"
@@ -32,11 +31,9 @@ using LibRpBase::Config;
 class DownloadsTabPrivate
 {
 	public:
-		explicit DownloadsTabPrivate(DownloadsTab *q);
+		explicit DownloadsTabPrivate();
 
 	private:
-		DownloadsTab *const q_ptr;
-		Q_DECLARE_PUBLIC(DownloadsTab)
 		Q_DISABLE_COPY(DownloadsTabPrivate)
 
 	public:
@@ -49,16 +46,15 @@ class DownloadsTabPrivate
 
 /** DownloadsTabPrivate **/
 
-DownloadsTabPrivate::DownloadsTabPrivate(DownloadsTab* q)
-	: q_ptr(q)
-	, changed(false)
+DownloadsTabPrivate::DownloadsTabPrivate()
+	: changed(false)
 { }
 
 /** DownloadsTab **/
 
 DownloadsTab::DownloadsTab(QWidget *parent)
 	: super(parent)
-	, d_ptr(new DownloadsTabPrivate(this))
+	, d_ptr(new DownloadsTabPrivate())
 {
 	Q_D(DownloadsTab);
 	d->ui.setupUi(this);
