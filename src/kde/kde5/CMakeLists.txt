@@ -116,7 +116,7 @@ IF(BUILD_KDE5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr romdata rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr romdata rpbase unixcommon)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-kde5 i18n)
 	ENDIF(ENABLE_NLS)

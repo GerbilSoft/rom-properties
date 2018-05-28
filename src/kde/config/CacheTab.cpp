@@ -20,8 +20,20 @@
 
 #include "CacheTab.hpp"
 
+// NOTE: librpbase doesn't cache the main cache directory;
+// it only caches the rom-properties cache directory.
+// We'll get the main cache directory from libunixcommon.
+#include "librpbase/file/FileSystem.hpp"
+#include "libunixcommon/userdirs.hpp"
+
+#include "RpQt.hpp"
+
 // C includes. (C++ namespace)
 #include <cassert>
+
+// C++ includes.
+#include <string>
+using std::string;
 
 #include "ui_CacheTab.h"
 class CacheTabPrivate
@@ -34,7 +46,27 @@ class CacheTabPrivate
 
 	public:
 		Ui::CacheTab ui;
+
+		/**
+		 * Clear a directory using a worker thread.
+		 * @param dir Directory to clear.
+		 * TODO: Directory title?
+		 */
+		void clearDirectory(const QString &dir);
 };
+
+/** CacheTabPrivate **/
+
+/**
+ * Clear a directory using a worker thread.
+ * @param dir Directory to clear.
+ * TODO: Directory title?
+ */
+void CacheTabPrivate::clearDirectory(const QString &dir)
+{
+	// TODO: Implement this and add Q pointer!
+	Q_UNUSED(dir);
+}
 
 /** CacheTab **/
 
@@ -104,8 +136,14 @@ void CacheTab::save(QSettings *pSettings)
  */
 void CacheTab::on_btnClearSysThumbnailCache_clicked(void)
 {
-	// TODO: Start cache clearing worker thread using
-	// ~/.cache/thumbnails/ as the base directory.
+	Q_D(CacheTab);
+	const string cacheDir = LibUnixCommon::getCacheDirectory();
+	if (cacheDir.empty()) {
+		// TODO: Error!
+		return;
+	}
+	QString qCacheDir = U82Q(cacheDir) + QLatin1String("/thumbnails");
+	d->clearDirectory(qCacheDir);
 }
 
 /**
@@ -113,6 +151,6 @@ void CacheTab::on_btnClearSysThumbnailCache_clicked(void)
  */
 void CacheTab::on_btnClearRomPropertiesCache_clicked(void)
 {
-	// TODO: Start cache clearing worker thread using
-	// ~/.cache/rom-properties/ as the base directory.
+	Q_D(CacheTab);
+	d->clearDirectory(U82Q(LibRpBase::FileSystem::getCacheDirectory()));
 }
