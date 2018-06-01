@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,15 +14,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
-
-#include "config.librpbase.h"
 
 /** Icons. **/
 #define IDI_KEY_VALID           201
@@ -119,7 +116,8 @@
 #define IDC_CACHE_XP_BROWSE                     40209
 #define IDC_CACHE_XP_CLEAR_SYS_THUMBS           40210
 
-#ifdef ENABLE_DECRYPTION
+// FIXME: Only if ENABLE_DECRYPTION, but we can't include config.librpbase.h.
+#if 1
 // Key Manager
 #define IDC_KEYMANAGER_LIST                     40301
 #define IDC_KEYMANAGER_EDIT                     40302
@@ -131,7 +129,7 @@
 #define IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN      30303
 #define IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN     30304
 #define IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB      30305
-#endif /* ENABLE_DECRYPTION */
+#endif
 
 // About
 #define IDC_ABOUT_ICON                          40401

@@ -24,8 +24,10 @@
 #include "resource.common.inc.h"
 #include "resource.h"
 
+#define APSTUDIO_HIDDEN_SYMBOLS
 #include <wingdi.h>
 #include <prsht.h>
+#undef APSTUDIO_HIDDEN_SYMBOLS
 
 /** Manifest. **/
 ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"res\\rom-properties.dll.manifest"

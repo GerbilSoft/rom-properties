@@ -69,6 +69,7 @@ IF(ENABLE_DECRYPTION)
 		config/KeyStoreWin32.hpp
 		config/KeyStore_OwnerDataCallback.hpp
 		)
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} /dENABLE_DECRYPTION")
 ENDIF(ENABLE_DECRYPTION)
 
 IF(MSVC)

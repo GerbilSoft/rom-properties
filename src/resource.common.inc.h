@@ -27,7 +27,9 @@
 #endif
 
 // Windows SDK.
+#define APSTUDIO_HIDDEN_SYMBOLS
 #include <windows.h>
+#undef APSTUDIO_HIDDEN_SYMBOLS
 
 /* program version */
 #include "config.version.h"
