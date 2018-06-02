@@ -51,6 +51,10 @@ const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 	{CT_DEVELOPER,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
 	{CT_CONTINUE,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
 
+	// Translators
+	{CT_TRANSLATOR,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", "ru, uk"},
+	{CT_CONTINUE,		"Null Magic", nullptr, nullptr, "pt_BR"},
+
 	// Contributors
 	{CT_CONTRIBUTOR,	"CheatFreak47", nullptr, nullptr, nullptr},
 

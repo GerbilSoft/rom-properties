@@ -675,7 +675,11 @@ void AboutTabPrivate::initCreditsTab(void)
 		if (creditsData->url) {
 			// FIXME: Figure out how to get hyperlinks working.
 			sCredits += " <";
-			sCredits += rtfFriendlyLink(creditsData->url, creditsData->linkText);
+			if (creditsData->linkText) {
+				sCredits += rtfFriendlyLink(creditsData->url, creditsData->linkText);
+			} else {
+				sCredits += rtfFriendlyLink(creditsData->url, creditsData->url);
+			}
 			sCredits += '>';
 		}
 		if (creditsData->sub) {
