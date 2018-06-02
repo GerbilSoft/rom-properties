@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-05-19 12:24-0400\n"
+"POT-Creation-Date: 2018-06-02 11:38-0400\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -303,61 +303,61 @@ msgid "&Key Manager"
 msgstr "&Менеджер ключів"
 
 #: ../src/kde/config/ImageTypesTab.cpp:234
-#: ../src/win32/config/ImageTypesTab.cpp:384
+#: ../src/win32/config/ImageTypesTab.cpp:389
 msgctxt "ImageTypesTab|Values"
 msgid "No"
 msgstr "Вимк."
 
 #: ../src/kde/config/ImageTypesTab.cpp:235
-#: ../src/win32/config/ImageTypesTab.cpp:385
+#: ../src/win32/config/ImageTypesTab.cpp:390
 msgctxt "ImageTypesTab|Values"
 msgid "1"
 msgstr "1"
 
 #: ../src/kde/config/ImageTypesTab.cpp:236
-#: ../src/win32/config/ImageTypesTab.cpp:386
+#: ../src/win32/config/ImageTypesTab.cpp:391
 msgctxt "ImageTypesTab|Values"
 msgid "2"
 msgstr "2"
 
 #: ../src/kde/config/ImageTypesTab.cpp:237
-#: ../src/win32/config/ImageTypesTab.cpp:387
+#: ../src/win32/config/ImageTypesTab.cpp:392
 msgctxt "ImageTypesTab|Values"
 msgid "3"
 msgstr "3"
 
 #: ../src/kde/config/ImageTypesTab.cpp:238
-#: ../src/win32/config/ImageTypesTab.cpp:388
+#: ../src/win32/config/ImageTypesTab.cpp:393
 msgctxt "ImageTypesTab|Values"
 msgid "4"
 msgstr "4"
 
 #: ../src/kde/config/ImageTypesTab.cpp:239
-#: ../src/win32/config/ImageTypesTab.cpp:389
+#: ../src/win32/config/ImageTypesTab.cpp:394
 msgctxt "ImageTypesTab|Values"
 msgid "5"
 msgstr "5"
 
 #: ../src/kde/config/ImageTypesTab.cpp:240
-#: ../src/win32/config/ImageTypesTab.cpp:390
+#: ../src/win32/config/ImageTypesTab.cpp:395
 msgctxt "ImageTypesTab|Values"
 msgid "6"
 msgstr "6"
 
 #: ../src/kde/config/ImageTypesTab.cpp:241
-#: ../src/win32/config/ImageTypesTab.cpp:391
+#: ../src/win32/config/ImageTypesTab.cpp:396
 msgctxt "ImageTypesTab|Values"
 msgid "7"
 msgstr "7"
 
 #: ../src/kde/config/ImageTypesTab.cpp:242
-#: ../src/win32/config/ImageTypesTab.cpp:392
+#: ../src/win32/config/ImageTypesTab.cpp:397
 msgctxt "ImageTypesTab|Values"
 msgid "8"
 msgstr "8"
 
 #: ../src/kde/config/ImageTypesTab.cpp:243
-#: ../src/win32/config/ImageTypesTab.cpp:393
+#: ../src/win32/config/ImageTypesTab.cpp:398
 msgctxt "ImageTypesTab|Values"
 msgid "9"
 msgstr "9"
@@ -2191,39 +2191,39 @@ msgctxt "SNES"
 msgid "Unlimited"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiU.cpp:357
+#: ../src/libromdata/Console/WiiU.cpp:428
 msgctxt "WiiU"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiU.cpp:382
+#: ../src/libromdata/Console/WiiU.cpp:453
 #, c-format
 msgctxt "WiiU"
 msgid "Unknown (%.4s)"
 msgstr "Невідомо (%.4s)"
 
-#: ../src/libromdata/Console/WiiU.cpp:384
+#: ../src/libromdata/Console/WiiU.cpp:455
 #, c-format
 msgctxt "WiiU"
 msgid "Unknown (%02X %02X %02X %02X)"
 msgstr "Невідомо (%02X %02X %02X %02X)"
 
-#: ../src/libromdata/Console/WiiU.cpp:391
+#: ../src/libromdata/Console/WiiU.cpp:462
 msgctxt "WiiU"
 msgid "Publisher"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiU.cpp:395
+#: ../src/libromdata/Console/WiiU.cpp:466
 msgctxt "WiiU"
 msgid "Version"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiU.cpp:400
+#: ../src/libromdata/Console/WiiU.cpp:471
 msgctxt "WiiU"
 msgid "OS Version"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiU.cpp:408
+#: ../src/libromdata/Console/WiiU.cpp:479
 msgctxt "WiiU"
 msgid "Region"
 msgstr ""
@@ -4779,31 +4779,31 @@ msgctxt "KhronosKTX|KeyValue"
 msgid "Value"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:896
+#: ../src/libromdata/Texture/SegaPVR.cpp:903
 msgctxt "SegaPVR"
 msgid "Texture Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:994
-#: ../src/libromdata/Texture/SegaPVR.cpp:996
+#: ../src/libromdata/Texture/SegaPVR.cpp:1001
+#: ../src/libromdata/Texture/SegaPVR.cpp:1003
 msgctxt "SegaPVR"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:997
-#: ../src/libromdata/Texture/SegaPVR.cpp:1005
+#: ../src/libromdata/Texture/SegaPVR.cpp:1004
+#: ../src/libromdata/Texture/SegaPVR.cpp:1012
 #, c-format
 msgctxt "SegaPVR"
 msgid "Unknown (0x%02X)"
 msgstr "Невідомо (0x%02X)"
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:1002
-#: ../src/libromdata/Texture/SegaPVR.cpp:1004
+#: ../src/libromdata/Texture/SegaPVR.cpp:1009
+#: ../src/libromdata/Texture/SegaPVR.cpp:1011
 msgctxt "SegaPVR"
 msgid "Image Data Type"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:1010
+#: ../src/libromdata/Texture/SegaPVR.cpp:1017
 msgctxt "SegaPVR"
 msgid "Global Index"
 msgstr ""
@@ -5691,59 +5691,84 @@ msgctxt "AboutTab"
 msgid "About"
 msgstr "Про програму"
 
-#: ../src/win32/config/CacheTab.cpp:158
+#: ../src/win32/config/CacheTab.cpp:366
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:182
+#: ../src/win32/config/CacheTab.cpp:390
 msgctxt "CacheTab|Win32"
 msgid "ERROR: No fixed HDDs or SSDs detected."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:192
+#: ../src/win32/config/CacheTab.cpp:400
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner not found. (res == %ld)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:204 ../src/win32/config/CacheTab.cpp:213
+#: ../src/win32/config/CacheTab.cpp:412 ../src/win32/config/CacheTab.cpp:421
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner CLSID is invalid."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:227
+#: ../src/win32/config/CacheTab.cpp:435
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: CoCreateInstance() failed. (hr == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:275
+#: ../src/win32/config/CacheTab.cpp:490
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid ""
 "ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:289
+#: ../src/win32/config/CacheTab.cpp:507
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:305
+#: ../src/win32/config/CacheTab.cpp:528
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:307
+#: ../src/win32/config/CacheTab.cpp:530
 msgctxt "CacheTab"
 msgid "System thumbnail cache is already empty. Nothing to do here."
 msgstr ""
 
+#: ../src/win32/config/CacheTab.cpp:642
+msgctxt "CacheTab"
+msgid "ERROR: Unable to get the cache directory path."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:666
+msgctxt "CacheTab"
+msgid "Clearing the rom-properties cache..."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:681
+msgctxt "CacheTab"
+msgid "ERROR: rom-properties cache has unexpected files. Not clearing it."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:693
+msgctxt "CacheTab"
+msgid "rom-properties cache is empty. Nothing to do."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:749
+msgctxt "CacheTab"
+msgid "rom-properties cache cleared successfully."
+msgstr ""
+
 #. tr: Tab title.
-#: ../src/win32/config/CacheTab.cpp:477
+#: ../src/win32/config/CacheTab.cpp:1001
 msgctxt "CacheTab"
 msgid "Thumbnail Cache"
 msgstr ""
@@ -5767,7 +5792,7 @@ msgid "Downloads"
 msgstr "Завантаження"
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:717
+#: ../src/win32/config/ImageTypesTab.cpp:722
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr "Типи зображень"
