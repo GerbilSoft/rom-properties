@@ -376,6 +376,18 @@ class ImageDecoder
 			const uint8_t *RESTRICT img_buf, int img_siz,
 			const uint16_t *RESTRICT pal_buf, int pal_siz);
 
+		/**
+		 * Convert a GameCube I8 image to rp_image.
+		 * NOTE: Uses a grayscale palette.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf I8 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromGcnI8(int width, int height,
+			const uint8_t *img_buf, int img_siz);
+
 		/** Nintendo DS **/
 
 		/**

@@ -238,4 +238,79 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	return img;
 }
 
+/**
+ * Convert a GameCube I8 image to rp_image.
+ * NOTE: Uses a grayscale palette.
+ * FIXME: Needs verification.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf I8 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromGcnI8(int width, int height,
+	const uint8_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (width * height));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (width * height))
+	{
+		return nullptr;
+	}
+
+	// GameCube I8 uses 8x4 tiles.
+	// FIXME: Verify!
+	assert(width % 8 == 0);
+	assert(height % 4 == 0);
+	if (width % 8 != 0 || height % 4 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 8);
+	const unsigned int tilesY = (unsigned int)(height / 4);
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Initialize a grayscale palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 256);
+	if (img->palette_len() < 256) {
+		// Not enough colors...
+		delete img;
+		return nullptr;
+	}
+
+	uint32_t gray = 0;
+	for (unsigned int i = 0; i < 256; i++, gray += 0xFF010101) {
+		palette[i] = gray;
+	}
+	// No transparency here.
+	img->set_tr_idx(-1);
+
+	// Tile pointer.
+	const uint8_t *tileBuf = img_buf;
+
+	for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++) {
+			// Decode the current tile.
+			ImageDecoderPrivate::BlitTile<uint8_t, 8, 4>(img, tileBuf, x, y);
+			tileBuf += (8 * 4);
+		}
+	}
+
+	// Set the sBIT metadata.
+	// TODO: Use grayscale instead of RGB.
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
 }
