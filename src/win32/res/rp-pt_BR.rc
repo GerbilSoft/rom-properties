@@ -69,11 +69,11 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "If any image type settings were changed, you will need to clear the system thumbnail cache.", IDC_STATIC, 7, 7, 359, 8, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 360, 28, 0, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 359, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 360, 28, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 196, 359, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    LTEXT           "Se qualquer configuração de tipo de imagem for alterada, será necessário apagar o cachê de miniaturas de sistema.", IDC_STATIC, 7, 7, 359, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Apagar Cachê de Miniaturas de Sistema", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 27, 360, 28, 0, WS_EX_LEFT
+    LTEXT           "A página de rom-properties mantém seu próprio cachê de recebimentos para imagens externas. Apagá-lo forçará imagens externas a serem recebidas novamente.", IDC_STATIC, 7, 62, 359, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Apagar a página de recebimento de cacê de rom-properties", IDC_CACHE_CLEAR_RP_DL, 7, 82, 360, 28, 0, WS_EX_LEFT
+    LTEXT           "Apagando cachê...", IDC_CACHE_STATUS, 7, 196, 359, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 207, 359, 16, WS_EX_LEFT
 END
 
@@ -86,16 +86,16 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.", IDC_STATIC, 7, 7, 359, 25, SS_LEFT, WS_EX_TRANSPARENT
-    AUTORADIOBUTTON "Find all Thumbs.db files on the specified drive(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
-    AUTORADIOBUTTON "Specify a path", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
+    LTEXT           "Se qualquer configuração de tipo de imagem for alterada, será necessário apagar os arquivos de cachê de miniaturas.\nEsta versão do Windows não possui uma base centralizada de miniaturas, então pode demorar um pouco para que todos os arquivos Thumbs.db sejam localizados e apagados.", IDC_STATIC, 7, 7, 359, 25, SS_LEFT, WS_EX_TRANSPARENT
+    AUTORADIOBUTTON "Encontrar todos os arquivos Thumbs.db nos drives especificados:", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
+    AUTORADIOBUTTON "Especificar caminho", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 359, 45, WS_EX_LEFT | WS_EX_CLIENTEDGE
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 305, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
-    PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 317, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
-    PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 360, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 275, 20, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 285, 127, 82, 15, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 196, 359, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    PUSHBUTTON      "Procurar...", IDC_CACHE_XP_BROWSE, 317, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
+    PUSHBUTTON      "Localizar e remover arquivos Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 360, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
+    LTEXT           "A página do rom-properties mantém seu próprio cachê de recebimentos de imagens externas. Limpar o cachê forçará as imagens externas a serem recebidas novamente", IDC_STATIC, 7, 125, 275, 20, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Apagar", IDC_CACHE_CLEAR_RP_DL, 285, 127, 82, 15, 0, WS_EX_LEFT
+    LTEXT           "Apagando o cachê...", IDC_CACHE_STATUS, 7, 196, 359, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 207, 359, 16, WS_EX_LEFT
 END
 

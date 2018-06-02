@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2018-06-02 11:38-0400\n"
-"PO-Revision-Date: 2018-05-19 13:54-0300\n"
+"PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -345,7 +345,7 @@ msgstr ""
 
 #. tr: %1$s == filename, %2$s == error message
 #: ../src/kde/config/KeyManagerTab.cpp:156
-#, fuzzy, c-format
+#, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while opening '%1$s': %2$s"
 msgstr "Ocorreu um erro ao abrir '%1$s': %2$s"
@@ -359,10 +359,10 @@ msgstr "Ocorreu um erro ao abrir '%s'."
 
 #. tr: %1$s == filename, %2$s == error message
 #: ../src/kde/config/KeyManagerTab.cpp:174
-#, fuzzy, c-format
+#, c-format
 msgctxt "KeyManagerTab"
 msgid "An error occurred while reading '%1$s': %2$s"
-msgstr "Ocorreu um erro ao abrir '%1$s': %2$s"
+msgstr "Ocorreu um erro ao ler '%1$s': %2$s"
 
 #. tr: %s == filename
 #: ../src/kde/config/KeyManagerTab.cpp:180
@@ -1206,12 +1206,9 @@ msgid "ERROR: %s"
 msgstr "ERRO: %s"
 
 #: ../src/libromdata/Console/GameCube.cpp:1718
-#, fuzzy
-#| msgctxt "RomDataView"
-#| msgid "Unknown"
 msgctxt "GameCube"
 msgid "Unknown"
-msgstr "ERRO"
+msgstr "Desconhecido"
 
 #: ../src/libromdata/Console/GameCube.cpp:1764
 #: ../src/libromdata/Console/GameCube.cpp:1775
@@ -1844,10 +1841,9 @@ msgstr "Sega Master System"
 #. tr: Any region that isn't Japan. (used for Sega 8-bit)
 #: ../src/libromdata/Console/Sega8Bit.cpp:325
 #: ../src/libromdata/Console/Sega8Bit.cpp:334
-#, fuzzy
 msgctxt "Region"
 msgid "Export"
-msgstr "Nome de exportação"
+msgstr "Exportar"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:328
 #: ../src/libromdata/Console/Sega8Bit.cpp:332
@@ -3026,7 +3022,7 @@ msgstr "Modo de sist. do antigo 3DS"
 #. tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2390
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2410
-#, fuzzy, c-format
+#, c-format
 msgctxt "Nintendo3DS"
 msgid "%1$s (%2$u MiB)"
 msgstr "%1$s (%2$u MiB)"
@@ -5212,10 +5208,9 @@ msgstr "Despejo eMMC"
 
 #. tr: FTYPE_CONTAINER_FILE
 #: ../src/librpbase/RomData.cpp:437
-#, fuzzy
 msgctxt "RomData|FileType"
 msgid "Container File"
-msgstr "Arquivo de banner"
+msgstr "Arquivo contêiner"
 
 #. tr: FTYPE_FIRMWARE_BINARY
 #: ../src/librpbase/RomData.cpp:439
@@ -5767,27 +5762,29 @@ msgstr "Cachê de miniaturas de sistema já está limpo. Nada a fazer aqui."
 #: ../src/win32/config/CacheTab.cpp:642
 msgctxt "CacheTab"
 msgid "ERROR: Unable to get the cache directory path."
-msgstr ""
+msgstr "Erro: não é possível obter o caminho do diretório de cachê."
 
 #: ../src/win32/config/CacheTab.cpp:666
 msgctxt "CacheTab"
 msgid "Clearing the rom-properties cache..."
-msgstr ""
+msgstr "Limpando o cachê de rom-properties..."
 
 #: ../src/win32/config/CacheTab.cpp:681
 msgctxt "CacheTab"
 msgid "ERROR: rom-properties cache has unexpected files. Not clearing it."
 msgstr ""
+"ERRO: cachê do rom-properties possui arquivos estranhos. Cachê não será "
+"apagado."
 
 #: ../src/win32/config/CacheTab.cpp:693
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
-msgstr ""
+msgstr "O cachê de rom-properties está vazio. Nada a fazer."
 
 #: ../src/win32/config/CacheTab.cpp:749
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
-msgstr ""
+msgstr "Cachê de rom-properties apagado com sucesso."
 
 #. tr: Tab title.
 #: ../src/win32/config/CacheTab.cpp:1001
