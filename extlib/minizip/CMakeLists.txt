@@ -99,7 +99,9 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
 endif()
 
 if(UNIX)
-    add_compile_options(-O3)
+    # rom-properties: Use -O3 only in release builds.
+    #add_compile_options(-O3)
+    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
 
     list(APPEND MINIZIP_SRC "mz_os_posix.c")
     list(APPEND MINIZIP_PUBLIC_HEADERS "mz_os_posix.h")
