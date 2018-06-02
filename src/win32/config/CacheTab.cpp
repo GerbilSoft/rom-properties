@@ -633,7 +633,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Cache directory.
 	// Sanity check: Must be at least 8 characters.
 	const string cacheDir = FileSystem::getCacheDirectory();
-	int bscount = 0;
+	size_t bscount = 0;
 	for (auto iter = cacheDir.cbegin(); iter != cacheDir.cend(); ++iter) {
 		if (*iter == L'\\')
 			bscount++;
