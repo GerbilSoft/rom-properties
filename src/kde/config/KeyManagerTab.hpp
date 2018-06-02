@@ -27,7 +27,6 @@ class KeyManagerTabPrivate;
 class KeyManagerTab : public ITab
 {
 	Q_OBJECT
-	Q_PROPERTY(bool defaults READ hasDefaults)
 
 	public:
 		explicit KeyManagerTab(QWidget *parent = nullptr);

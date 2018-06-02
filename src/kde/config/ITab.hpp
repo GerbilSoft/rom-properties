@@ -29,6 +29,7 @@
 class ITab : public QWidget
 {
 	Q_OBJECT
+	Q_PROPERTY(bool defaults READ hasDefaults)
 
 	protected:
 		explicit ITab(QWidget *parent = nullptr);
