@@ -1,6 +1,6 @@
 # Changes
 
-## v1.3 - The Internationalization Release (released 201?/??/??)
+## v1.3 - The Internationalization Release (released 2018/06/02)
 
 * New features:
   * Most strings are now localizable. The gettext utilities and libintl

@@ -185,11 +185,11 @@ CMD /C "EXIT /B 0"
 :: Clear the packaging prefix.
 ECHO Clearing the pkg_windows directory...
 RMDIR /S /Q pkg_windows
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+::@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 MKDIR pkg_windows
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+::@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 CHDIR pkg_windows
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+::@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :: Compile the 32-bit version.
 ECHO.
