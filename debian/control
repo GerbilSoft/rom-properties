@@ -35,7 +35,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: rom-properties-kde4, rom-properties-kde5, rom-properties-xfce, rom-properties-gnome, rom-properties-cli, rom-properties-stub, ${misc:Depends}
+Depends: rom-properties-kde4, rom-properties-kde5, rom-properties-xfce, rom-properties-gnome, rom-properties-cli, rom-properties-stub, rom-properties-lang, ${misc:Depends}
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -46,6 +46,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-kde4
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -56,6 +57,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-kde5
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -66,6 +68,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-xfce
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -76,6 +79,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-gnome
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-stub
+Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -87,6 +91,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-cli
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -97,6 +102,7 @@ Description: ROM Properties Page shell extension
 Package: rom-properties-stub
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -104,3 +110,13 @@ Description: ROM Properties Page shell extension
  .
  This package contains the stub executable, which is used for the
  configuration UI and GNOME thumbnailer.
+
+Package: rom-properties-lang
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the language files for localization.
