@@ -7,7 +7,6 @@ TMP := $(CURDIR)/debian/tmp
 %:
 	dh $@ --parallel -Bbuild
 
-export QT_SELECT=qt4
 CMAKE_OPTIONS := \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DENABLE_JPEG=ON \

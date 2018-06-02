@@ -21,7 +21,6 @@ case "$OSTYPE" in
 		# Linux. Enable everything.
 		# NOTE: KF5 is not available on Ubuntu 14.04,
 		# so we can't build the KDE5 plugin.
-		export QT_SELECT=qt4
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DENABLE_LTO=OFF \

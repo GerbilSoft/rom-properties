@@ -1,4 +1,5 @@
 PROJECT(rom-properties-kde5)
+SET(ENV{QT_SELECT} qt5)
 
 # Reference: http://www.proli.net/2014/06/21/porting-your-project-to-qt5kf5/
 # Find KDE5 Extra CMake Modules.
@@ -53,7 +54,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 
 		# Get the plugin directory and Qt prefix.
 		# Prefix will be removed from the plugin directory if necessary.
-		EXEC_PROGRAM(qtpaths ARGS --plugin-dir OUTPUT_VARIABLE PLUGIN_INSTALL_DIR)
+		EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE PLUGIN_INSTALL_DIR)
 		IF(NOT PLUGIN_INSTALL_DIR)
 			MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
 		ENDIF(NOT PLUGIN_INSTALL_DIR)

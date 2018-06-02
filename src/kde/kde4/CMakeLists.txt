@@ -1,4 +1,5 @@
 PROJECT(rom-properties-kde4)
+SET(ENV{QT_SELECT} qt4)
 
 # Find Qt4.
 SET(QT4_NO_LINK_QTMAIN 1)

@@ -11,6 +11,8 @@ IF(NOT APPLE)
 	# FIXME: Remove prefix from KDE4's path.
 	# NOTE: Need to skip the uninstall rule due to conflicts
 	# with the actual KDE4 frontend.
+	SET(QT_SELECT_OLD $ENV{QT_SELECT})
+	SET(ENV{QT_SELECT} qt4)
 	SET(_kde4_uninstall_rule_created TRUE)
 	FIND_PACKAGE(KDE4)
 	SET(KDE4_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
@@ -20,6 +22,7 @@ IF(NOT APPLE)
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 	# Find the qtpaths executable.
+	SET(ENV{QT_SELECT} qt5)
 	FIND_PROGRAM(QTPATHS qtpaths)
 	IF(NOT QTPATHS)
 		MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
@@ -29,13 +32,15 @@ IF(NOT APPLE)
 
 	# Get the plugin directory and Qt prefix.
 	# Prefix will be removed from the plugin directory if necessary.
-	EXEC_PROGRAM(qtpaths ARGS --plugin-dir OUTPUT_VARIABLE KDE5_PLUGIN_INSTALL_DIR)
+	EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE KDE5_PLUGIN_INSTALL_DIR)
 	IF(NOT KDE5_PLUGIN_INSTALL_DIR)
 		MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
 	ENDIF(NOT KDE5_PLUGIN_INSTALL_DIR)
-	EXEC_PROGRAM(qtpaths ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
+	EXEC_PROGRAM(${QTPATHS} ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
 	INCLUDE(ReplaceHardcodedPrefix)
 	REPLACE_HARDCODED_PREFIX(KDE5_PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")
+	SET(ENV{QT_SELECT} ${QT_SELECT_OLD})
+	UNSET(QT_SELECT_OLD)
 
 	# XFCE and GNOME.
 	FIND_PACKAGE(ThunarX2)
