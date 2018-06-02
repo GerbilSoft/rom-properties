@@ -131,6 +131,19 @@ IF(BUILD_KDE5)
 	IF(HAVE_PNG)
 		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde5 PRIVATE ${PNG_INCLUDE_DIRS})
 	ENDIF(HAVE_PNG)
+
+	# FIXME: Workaround for gcc-5.4.0 LTO bug.
+	# Disabling LTO for the KDE5 build if using gcc-5.4.0 or earlier,
+	# and decryption is enabled. (It crashes when compiling the moc
+	# file for KeyManagerTab.cpp.)
+	# NOTE: We can't add it to the automoc.cpp file because then automoc
+	# will try including itself, resulting in a failure.
+	IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+	   CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0 AND
+	   ENABLE_DECRYPTION)
+		SET(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fno-lto")
+		SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fno-lto")
+	ENDIF()
 ENDIF(BUILD_KDE5)
 
 # Define -DQT_NO_DEBUG in release builds.
