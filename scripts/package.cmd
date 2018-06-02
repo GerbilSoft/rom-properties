@@ -202,7 +202,7 @@ cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAK
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cpack -C Release
+cpack -G ZIP -C Release
 POPD
 
 :: Compile the 64-bit version.
@@ -216,7 +216,7 @@ cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR% Win64" -DCMAKE_GENERATOR_TOOLSET
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cpack -C Release
+cpack -G ZIP -C Release
 POPD
 
 :: Merge the ZIP files.
