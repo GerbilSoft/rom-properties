@@ -236,13 +236,13 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	} WindowsSettings_t;
 
 	static const char *const WindowsSettings_names[] = {
-		C_("EXE|Manifest|WinSettings", "Auto Elevate"),
-		C_("EXE|Manifest|WinSettings", "Disable Theming"),
-		C_("EXE|Manifest|WinSettings", "Disable Window Filter"),
-		C_("EXE|Manifest|WinSettings", "High-Res Scroll"),
-		C_("EXE|Manifest|WinSettings", "Magic Future Setting"),
-		C_("EXE|Manifest|WinSettings", "Printer Driver Isolation"),
-		C_("EXE|Manifest|WinSettings", "Ultra High-Res Scroll"),
+		NOP_C_("EXE|Manifest|WinSettings", "Auto Elevate"),
+		NOP_C_("EXE|Manifest|WinSettings", "Disable Theming"),
+		NOP_C_("EXE|Manifest|WinSettings", "Disable Window Filter"),
+		NOP_C_("EXE|Manifest|WinSettings", "High-Res Scroll"),
+		NOP_C_("EXE|Manifest|WinSettings", "Magic Future Setting"),
+		NOP_C_("EXE|Manifest|WinSettings", "Printer Driver Isolation"),
+		NOP_C_("EXE|Manifest|WinSettings", "Ultra High-Res Scroll"),
 	};
 
 	// Windows settings.
