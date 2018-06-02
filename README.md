@@ -14,6 +14,10 @@ This release adds support for internationalization. Now you can have the ROM Pro
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
+New systems supported include the Tiger Electronics game.com:
+
+![game.com active](doc/img/v1.3/rp.win7.GameCom.png)
+
 This release also adds support for several new texture file formats, including Khornos KTX and Valve VTF. It also adds support for ETCn-compressed textures.
 
 See [`CHANGES.md`](CHANGES.md) for a full list of changes in v1.3.
