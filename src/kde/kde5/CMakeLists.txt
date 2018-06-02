@@ -138,12 +138,10 @@ IF(BUILD_KDE5)
 	# file for KeyManagerTab.cpp.)
 	# NOTE: We can't add it to the automoc.cpp file because then automoc
 	# will try including itself, resulting in a failure.
-	IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
-	   CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0 AND
-	   ENABLE_DECRYPTION)
+	IF(GCC_5xx_LTO_ISSUES AND ENABLE_DECRYPTION)
 		SET(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fno-lto")
 		SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fno-lto")
-	ENDIF()
+	ENDIF(GCC_5xx_LTO_ISSUES AND ENABLE_DECRYPTION)
 ENDIF(BUILD_KDE5)
 
 # Define -DQT_NO_DEBUG in release builds.

@@ -10,6 +10,12 @@ ELSEIF(CMAKE_COMPILER_IS_GNUCXX)
 	ENDIF()
 ENDIF()
 
+# gcc-5.4 and earlier have issues with LTO.
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+   CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+	SET(GCC_5xx_LTO_ISSUES ON)
+ENDIF()
+
 # Compiler flag modules.
 INCLUDE(CheckCCompilerFlag)
 INCLUDE(CheckCXXCompilerFlag)

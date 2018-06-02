@@ -305,6 +305,13 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 			byteswap_ifunc.c
 			img/ImageDecoder_ifunc.cpp
 			)
+		# Disable LTO on the IFUNC files if LTO is known to be broken.
+		IF(GCC_5xx_LTO_ISSUES)
+			FOREACH(ifunc_file ${librpbase_IFUNC_SRCS})
+				SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
+					APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
+			ENDFOREACH()
+		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
 
 	IF(MSVC AND NOT CMAKE_CL_64)

@@ -234,6 +234,13 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
 		SET(libromdata_IFUNC_SRCS utils/SuperMagicDrive_ifunc.cpp)
+		# Disable LTO on the IFUNC files if LTO is known to be broken.
+		IF(GCC_5xx_LTO_ISSUES)
+			FOREACH(ifunc_file ${libromdata_IFUNC_SRCS})
+				SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
+					APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
+			ENDFOREACH()
+		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
 
 	# MSVC does not support MMX intrinsics in 64-bit builds.
