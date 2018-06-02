@@ -34,20 +34,20 @@ extern "C" {
  * IFUNC resolver function for decodeBlock().
  * @return Function pointer.
  */
-static RP_IFUNC_ptr_t decodeBlock_resolve(void)
+static __typeof__(&SuperMagicDrive::decodeBlock_cpp) decodeBlock_resolve(void)
 {
 #ifdef SMD_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
-		return (RP_IFUNC_ptr_t)&SuperMagicDrive::decodeBlock_sse2;
+		return &SuperMagicDrive::decodeBlock_sse2;
 	} else
 #endif /* SMD_HAS_SSE2 */
 #ifdef SMD_HAS_MMX
 	if (RP_CPU_HasMMX()) {
-		return (RP_IFUNC_ptr_t)&SuperMagicDrive::decodeBlock_mmx;
+		return &SuperMagicDrive::decodeBlock_mmx;
 	} else
 #endif /* SMD_HAS_MMX */
 	{
-		return (RP_IFUNC_ptr_t)&SuperMagicDrive::decodeBlock_cpp;
+		return &SuperMagicDrive::decodeBlock_cpp;
 	}
 }
 #endif /* SMD_ALWAYS_HAS_SSE2 */

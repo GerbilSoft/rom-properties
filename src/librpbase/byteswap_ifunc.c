@@ -47,11 +47,11 @@ static __typeof__(&__byte_swap_16_array_c) __byte_swap_16_array_resolve(void)
 # endif /* BYTESWAP_HAS_SSE2 */
 # ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
-		return (RP_IFUNC_ptr_t)&__byte_swap_16_array_mmx;
+		return &__byte_swap_16_array_mmx;
 	} else
 # endif /* BYTESWAP_HAS_MMX */
 	{
-		return (RP_IFUNC_ptr_t)&__byte_swap_16_array_c;
+		return &__byte_swap_16_array_c;
 	}
 #endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
 }
@@ -85,7 +85,7 @@ static __typeof__(&__byte_swap_32_array_c) __byte_swap_32_array_resolve(void)
 # endif /* BYTESWAP_HAS_MMX */
 # endif /* 0 */
 	{
-		return (RP_IFUNC_ptr_t)&__byte_swap_32_array_c;
+		return &__byte_swap_32_array_c;
 	}
 #endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
