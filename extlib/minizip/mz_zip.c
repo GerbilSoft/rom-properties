@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.3.1, May 9th, 2018
+   Version 2.3.2, May 29, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -30,11 +30,11 @@
 #ifdef HAVE_BZIP2
 #  include "mz_strm_bzip.h"
 #endif
-#ifdef HAVE_CRYPT
-#  include "mz_strm_crypt.h"
-#endif
 #ifdef HAVE_LZMA
 #  include "mz_strm_lzma.h"
+#endif
+#ifdef HAVE_PKCRYPT
+#  include "mz_strm_pkcrypt.h"
 #endif
 #ifdef HAVE_ZLIB
 #  include "mz_strm_zlib.h"
@@ -1115,7 +1115,7 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
         else
 #endif
         {
-#ifdef HAVE_CRYPT
+#ifdef HAVE_PKCRYPT
             uint8_t verify1 = 0;
             uint8_t verify2 = 0;
 
@@ -1137,9 +1137,9 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
                 verify2 = (uint8_t)((zip->file_info.crc >> 24) & 0xff);
             }
 
-            mz_stream_crypt_create(&zip->crypt_stream);
-            mz_stream_crypt_set_password(zip->crypt_stream, password);
-            mz_stream_crypt_set_verify(zip->crypt_stream, verify1, verify2);
+            mz_stream_pkcrypt_create(&zip->crypt_stream);
+            mz_stream_pkcrypt_set_password(zip->crypt_stream, password);
+            mz_stream_pkcrypt_set_verify(zip->crypt_stream, verify1, verify2);
 #endif
         }
     }
@@ -1158,8 +1158,10 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
     {
         if (zip->compression_method == MZ_COMPRESS_METHOD_RAW)
             mz_stream_raw_create(&zip->compress_stream);
+#ifdef HAVE_ZLIB
         else if (zip->compression_method == MZ_COMPRESS_METHOD_DEFLATE)
             mz_stream_zlib_create(&zip->compress_stream);
+#endif
 #ifdef HAVE_BZIP2
         else if (zip->compression_method == MZ_COMPRESS_METHOD_BZIP2)
             mz_stream_bzip_create(&zip->compress_stream);
@@ -1232,7 +1234,7 @@ extern int32_t mz_zip_entry_read_open(void *handle, int16_t raw, const char *pas
     int16_t compression_method = 0;
     int32_t err = MZ_OK;
 
-#if !defined(HAVE_CRYPT) && !defined(HAVE_AES)
+#if !defined(HAVE_PKCRYPT) && !defined(HAVE_AES)
     if (password != NULL)
         return MZ_PARAM_ERROR;
 #endif
@@ -1272,7 +1274,7 @@ extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_inf
     int16_t compression_method = 0;
 
 
-#if !defined(HAVE_CRYPT) && !defined(HAVE_AES)
+#if !defined(HAVE_PKCRYPT) && !defined(HAVE_AES)
     if (password != NULL)
         return MZ_PARAM_ERROR;
 #endif

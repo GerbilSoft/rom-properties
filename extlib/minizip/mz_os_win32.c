@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.3.1, May 9th, 2018
+   Version 2.3.2, May 29, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -43,6 +43,7 @@ typedef struct DIR_int_s {
 
 /***************************************************************************/
 
+#if defined(HAVE_PKCRYPT) || defined(HAVE_AES)
 int32_t mz_win32_rand(uint8_t *buf, int32_t size)
 {
     HCRYPTPROV provider;
@@ -68,6 +69,7 @@ int32_t mz_win32_rand(uint8_t *buf, int32_t size)
 
     return len;
 }
+#endif
 
 wchar_t *mz_win32_unicode_path_create(const char *path)
 {

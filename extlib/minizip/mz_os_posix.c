@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.3.1, May 9th, 2018
+   Version 2.3.2, May 29, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -34,11 +34,13 @@
 
 /***************************************************************************/
 
+#if defined(HAVE_PKCRYPT) || defined(HAVE_AES)
 int32_t mz_posix_rand(uint8_t *buf, int32_t size)
 {
     arc4random_buf(buf, size);
     return size;
 }
+#endif
 
 int32_t mz_posix_file_exists(const char *path)
 {

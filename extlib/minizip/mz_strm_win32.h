@@ -1,5 +1,5 @@
 /* mz_sstrm_win32.h -- Stream for filesystem access for windows
-   Version 2.3.1, May 9th, 2018
+   Version 2.3.2, May 29, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -14,8 +14,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#ifndef _MZ_STREAM_WIN32_H
-#define _MZ_STREAM_WIN32_H
+#ifndef MZ_STREAM_WIN32_H
+#define MZ_STREAM_WIN32_H
 
 #include <stdint.h>
 

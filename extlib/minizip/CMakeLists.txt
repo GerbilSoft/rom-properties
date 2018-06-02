@@ -7,12 +7,12 @@
 
 # rom-properties: Disabled these options.
 IF(0)
-option(USE_ZLIB "Enables building with ZLIB library" ON)
-option(USE_BZIP2 "Enables building with BZIP2 library" ON)
-option(USE_LZMA "Enables building with LZMA library" ON)
-option(USE_CRYPT "Enables building with PKWARE traditional encryption" ON)
-option(USE_AES "Enables building with AES library" ON)
-option(BUILD_TEST "Enables building of minizip executable." OFF)
+option(USE_ZLIB "Enables ZLIB compression" ON)
+option(USE_BZIP2 "Enables BZIP2 compression" ON)
+option(USE_LZMA "Enables LZMA compression" ON)
+option(USE_PKCRYPT "Enables PKWARE traditional encryption" ON)
+option(USE_AES "Enables AES encryption" ON)
+option(BUILD_TEST "Builds minizip test executable" OFF)
 ENDIF(0)
 
 # rom-properties: Using ZLIB.
@@ -40,7 +40,7 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 ENDIF(0)
 
-set(VERSION "2.3.1")
+set(VERSION "2.3.2")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -74,7 +74,6 @@ set(MINIZIP_SRC
     mz_strm_mem.c
     mz_strm_posix.c
     mz_strm_split.c
-    mz_strm_zlib.c
     mz_zip.c)
 
 set(MINIZIP_PUBLIC_HEADERS
@@ -86,7 +85,6 @@ set(MINIZIP_PUBLIC_HEADERS
     mz_strm_mem.h
     mz_strm_posix.h
     mz_strm_split.h
-    mz_strm_zlib.h
     mz_zip.h)
 
 if(WIN32)
@@ -134,11 +132,11 @@ if(UNIX)
     endif()
 endif()
 
-if(USE_CRYPT)
-    add_definitions(-DHAVE_CRYPT)
+if(USE_PKCRYPT)
+    add_definitions(-DHAVE_PKCRYPT)
 
-    list(APPEND MINIZIP_SRC "mz_strm_crypt.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_crypt.h")
+    list(APPEND MINIZIP_SRC "mz_strm_pkcrypt.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_pkcrypt.h")
 endif()
 
 if(USE_AES)
@@ -151,14 +149,12 @@ if(USE_AES)
         lib/aes/aescrypt.c
         lib/aes/aeskey.c
         lib/aes/aestab.c
-        lib/aes/aes_ni.c
         lib/aes/hmac.c
         lib/aes/pwd2key.c
         lib/aes/sha1.c)
 
     set(AES_PUBLIC_HEADERS
         lib/aes/aes.h
-        lib/aes/aes_ni.h
         lib/aes/aesopt.h
         lib/aes/aestab.h
         lib/aes/brg_endian.h
@@ -174,6 +170,9 @@ endif()
 
 if(USE_ZLIB)
     add_definitions(-DHAVE_ZLIB)
+
+    list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
 
     # rom-properties: Disabled for now.
     IF(0)
