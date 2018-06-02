@@ -100,42 +100,6 @@ RegKey::~RegKey()
 }
 
 /**
- * Get the handle to the opened registry key.
- * @return Handle to the opened registry key, or INVALID_HANDLE_VALUE if not open.
- */
-HKEY RegKey::handle(void) const
-{
-	return m_hKey;
-}
-
-/**
- * Was the key opened successfully?
- * @return True if the key was opened successfully; false if not.
- */
-bool RegKey::isOpen(void) const
-{
-	return (m_hKey != nullptr);
-}
-
-/**
- * Get the return value of RegCreateKeyEx() or RegOpenKeyEx().
- * @return Return value.
- */
-LONG RegKey::lOpenRes(void) const
-{
-	return m_lOpenRes;
-}
-
-/**
- * Get the key's desired access rights.
- * @return Desired access rights.
- */
-REGSAM RegKey::samDesired(void) const
-{
-	return m_samDesired;
-}
-
-/**
  * Close the key.
  */
 void RegKey::close(void)
@@ -498,21 +462,6 @@ LONG RegKey::deleteSubKey(HKEY hKeyRoot, LPCWSTR lpSubKey)
 	// Try to delete the key again.
 	szName.reset();
 	return RegDeleteKey(hKeyRoot, lpSubKey);
-}
-
-/**
- * Recursively delete a subkey.
- * @param lpSubKey Subkey name.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RegKey::deleteSubKey(LPCWSTR lpSubKey)
-{
-	if (!m_hKey) {
-		// Handle is invalid.
-		return ERROR_INVALID_HANDLE;
-	}
-
-	return deleteSubKey(m_hKey, lpSubKey);
 }
 
 /**

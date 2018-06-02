@@ -64,25 +64,37 @@ class RegKey
 		 * Get the handle to the opened registry key.
 		 * @return Handle to the opened registry key, or INVALID_HANDLE_VALUE if not open.
 		 */
-		HKEY handle(void) const;
+		inline HKEY handle(void) const
+		{
+			return m_hKey;
+		}
 
 		/**
 		* Was the key opened successfully?
 		* @return True if the key was opened successfully; false if not.
 		*/
-		bool isOpen(void) const;
+		inline bool isOpen(void) const
+		{
+			return (m_hKey != nullptr);
+		}
 
 		/**
 		* Get the return value of RegCreateKeyEx() or RegOpenKeyEx().
 		* @return Return value.
 		*/
-		LONG lOpenRes(void) const;
+		inline LONG lOpenRes(void) const
+		{
+			return m_lOpenRes;
+		}
 
 		/**
 		 * Get the key's desired access rights.
 		 * @return Desired access rights.
 		 */
-		REGSAM samDesired(void) const;
+		inline REGSAM samDesired(void) const
+		{
+			return m_samDesired;
+		}
 
 		/**
 		 * Close the key.
@@ -157,14 +169,17 @@ class RegKey
 		 * @param lpSubKey Subkey name.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG deleteSubKey(HKEY hKeyRoot, LPCWSTR subKey);
+		static LONG deleteSubKey(HKEY hKeyRoot, LPCWSTR lpSubKey);
 
 		/**
 		 * Recursively delete a subkey.
 		 * @param lpSubKey Subkey name.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		LONG deleteSubKey(LPCWSTR subKey);
+		inline LONG deleteSubKey(LPCWSTR lpSubKey)
+		{
+			return deleteSubKey(m_hKey, lpSubKey);
+		}
 
 		/**
 		 * Enumerate subkeys.
