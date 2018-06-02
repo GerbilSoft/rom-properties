@@ -51,6 +51,7 @@ _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 #include <utility>
 #include <vector>
 using std::pair;
+using std::string;
 using std::vector;
 using std::wstring;
 
@@ -538,7 +539,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 }
 
 /**
- * Recursively scan a directory for files.
+ * Recursively scan a directory for image files.
  * @param path	[in] Path to scan.
  * @param rvec	[in/out] Return vector for filenames and attributes.
  * @return 0 on success; non-zero on error.
@@ -563,6 +564,35 @@ int CacheTabPrivate::recursiveScan(const wchar_t *path, vector<pair<wstring, DWO
 		{
 			continue;
 		}
+
+		// Make sure we should delete this file.
+		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+			size_t len;
+			wchar_t *pExt;
+
+			// Thumbs.db files can be deleted.
+			if (!wcscasecmp(findFileData.cFileName, L"Thumbs.db"))
+				goto isok;
+
+			// Check the extension.
+			len = wcslen(findFileData.cFileName);
+			if (len <= 4) {
+				// Filename is too short. This is bad.
+				return -EIO;
+			}
+
+			pExt = &findFileData.cFileName[len-4];
+			if (!wcscasecmp(pExt, L".png") ||
+			    !wcscasecmp(pExt, L".jpg"))
+			{
+				// Valid extension.
+				goto isok;
+			}
+
+			// Extension is not valid.
+			return -EIO;
+		}
+	isok:
 
 		wstring fullFileName(path);
 		fullFileName += L'\\';
@@ -600,6 +630,31 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 100));
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
+	// Cache directory.
+	// Sanity check: Must be at least 8 characters.
+	const string cacheDir = FileSystem::getCacheDirectory();
+	int bscount = 0;
+	for (auto iter = cacheDir.cbegin(); iter != cacheDir.cend(); ++iter) {
+		if (*iter == L'\\')
+			bscount++;
+	}
+	if (cacheDir.size() < 8 || bscount < 6) {
+		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "ERROR: Unable to get the cache directory path.")));
+		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
+		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
+		// FIXME: Not working...
+		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+		MessageBeep(MB_ICONERROR);
+		return 0;
+	}
+
+	// NOTE: FileSystem::getCacheDirectory() doesn't have "\\\\?\\"
+	// prepended, since we don't want to display this to the user.
+	// RpFile_Win32 normally prepends it automatically, but we're not
+	// using that here.
+	wstring cacheDirW = L"\\\\?\\";
+	cacheDirW += U82W_s(cacheDir);
+
 	// Disable the buttons until we're done.
 	// TODO: Disable the main tab control too?
 	HWND hClearSysThumbs = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_SYS_THUMBS);
@@ -616,20 +671,24 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETRANGE, 0, 1);
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
-	// Cache directory.
-	// NOTE: FileSystem::getCacheDirectory() doesn't have "\\\\?\\"
-	// prepended, since we don't want to display this to the user.
-	// RpFile_Win32 normally prepends it automatically, but we're not
-	// using that here.
-	wstring cacheDir = L"\\\\?\\";
-	cacheDir += U82W_s(FileSystem::getCacheDirectory());
-
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a vector? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
 	vector<pair<wstring, DWORD> > rvec;
-	recursiveScan(cacheDir.c_str(), rvec);
-	if (rvec.empty()) {
+	int ret = recursiveScan(cacheDirW.c_str(), rvec);
+	if (ret != 0) {
+		// Non-image file found.
+		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "ERROR: rom-properties cache has unexpected files. Not clearing it.")));
+		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
+		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
+		EnableWindow(hClearSysThumbs, TRUE);
+		EnableWindow(hClearRpDl, TRUE);
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		// FIXME: Not working...
+		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+		MessageBeep(MB_ICONERROR);
+		return 0;
+	} else if (rvec.empty()) {
 		// Nothing to do!
 		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
