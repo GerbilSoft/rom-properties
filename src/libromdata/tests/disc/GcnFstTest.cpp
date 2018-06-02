@@ -18,6 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
+// for HAVE_ZLIB for mz_compat.h
+#include "config.librpbase.h"
+
 // Google Test
 #include "gtest/gtest.h"
 
@@ -89,8 +92,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const GcnFstTest_mode& mod
 };
 
 // Maximum file size for FST files.
-static const int MAX_GCN_FST_BIN_FILESIZE = 1024*1024;	// 1.0 MB
-static const int MAX_GCN_FST_TXT_FILESIZE = 1536*1024;	// 1.5 MB
+static const uint64_t MAX_GCN_FST_BIN_FILESIZE = 1024*1024;	// 1.0 MB
+static const uint64_t MAX_GCN_FST_TXT_FILESIZE = 1536*1024;	// 1.5 MB
 
 class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 {
@@ -121,7 +124,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		static int getFileFromZip(const char *zip_filename,
 			const char *int_filename,
 			ao::uvector<uint8_t>& buf,
-			int max_filesize = MAX_GCN_FST_BIN_FILESIZE);
+			uint64_t max_filesize = MAX_GCN_FST_BIN_FILESIZE);
 
 	public:
 		// FST data.
@@ -228,7 +231,7 @@ unzFile GcnFstTest::openZip(const char *filename)
 int GcnFstTest::getFileFromZip(const char *zip_filename,
 	const char *int_filename,
 	ao::uvector<uint8_t>& buf,
-	int max_filesize)
+	uint64_t max_filesize)
 {
 	// Open the Zip file.
 	// NOTE: MiniZip 2.2.3's compatibility functions
@@ -261,9 +264,9 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 		unzClose(unz);
 		return -3;
 	}
-	EXPECT_LE(file_info.uncompressed_size, (uLong)max_filesize) <<
+	EXPECT_LE(file_info.uncompressed_size, max_filesize) <<
 		"Compressed file '" << int_filename << "' is too big.";
-	if (file_info.uncompressed_size > static_cast<uLong>(max_filesize)) {
+	if (file_info.uncompressed_size > max_filesize) {
 		unzClose(unz);
 		return -4;
 	}
@@ -524,11 +527,11 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 		EXPECT_GT(file_info.size_filename, 0) << "A filename in the ZIP file has no name. Skipping...";
 
 		// Make sure the file isn't too big.
-		EXPECT_LE(file_info.uncompressed_size, (uLong)MAX_GCN_FST_BIN_FILESIZE) <<
+		EXPECT_LE(file_info.uncompressed_size, MAX_GCN_FST_BIN_FILESIZE) <<
 			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
 
 		if (file_info.size_filename > 0 &&
-		    file_info.uncompressed_size <= static_cast<uLong>(MAX_GCN_FST_BIN_FILESIZE))
+		    file_info.uncompressed_size <= MAX_GCN_FST_BIN_FILESIZE)
 		{
 			// Add this filename to the list.
 			// NOTE: Filename might not be NULL-terminated,

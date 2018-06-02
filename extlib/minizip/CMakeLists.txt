@@ -45,18 +45,18 @@ set(VERSION "2.3.2")
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
 
-# rom-properties: We're using CheckZLIB later.
-IF(0)
 # Ensure correct version of zlib is referenced
 if(USE_ZLIB)
+    # rom-properties: We're using CheckZLIB later.
+    IF(0)
     set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
     find_package(ZLIB REQUIRED)
     if(ZLIB_FOUND)
         include_directories(${ZLIB_INCLUDE_DIRS})
     endif()
+    ENDIF(0)
     add_definitions(-DHAVE_ZLIB)
 endif()
-ENDIF(0)
 
 # rom-properties: Not using pkgconfig.
 IF(0)
