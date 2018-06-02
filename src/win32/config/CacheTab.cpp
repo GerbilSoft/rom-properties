@@ -74,9 +74,9 @@ class CacheTabPrivate
 
 	public:
 		/**
-		 * Initialize controls on the XP version.
+		 * Initialize the dialog.
 		 */
-		void initControlsXP(void);
+		void initDialog(void);
 
 		/**
 		 * Enumerate all drives. (XP version)
@@ -180,10 +180,24 @@ CacheTabPrivate::~CacheTabPrivate()
 const wchar_t CacheTabPrivate::D_PTR_PROP[] = L"CacheTabPrivate";
 
 /**
- * Initialize controls on the XP version.
+ * Initialize the dialog.
  */
-void CacheTabPrivate::initControlsXP(void)
+void CacheTabPrivate::initDialog(void)
 {
+	// Initialize strings.
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESCRIPTION), U82W_c(isVista
+		// tr: Windows Vista and later. Has a centralized thumbnails cache.
+		? C_("CacheTab", "If any image type settings were changed, you will need to clear the system thumbnail cache.")
+		// tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
+		: C_("CacheTab", "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.")));
+
+	if (isVista) {
+		// System is Vista or later.
+		// XP initialization is not needed.
+		return;
+	}
+
+	// The XP version requires some control initialization.
 	Button_SetCheck(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_FIND_DRIVES), BST_CHECKED);
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
 	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
@@ -784,10 +798,8 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			// Store the D object pointer with this particular page dialog.
 			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
-			// The XP version requires some control initialization.
-			if (!d->isVista) {
-				d->initControlsXP();
-			}
+			// Initialize the dialog..
+			d->initDialog();
 			return TRUE;
 		}
 

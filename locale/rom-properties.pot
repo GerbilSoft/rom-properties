@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2018-06-02 11:38-0400\n"
+"POT-Creation-Date: 2018-06-02 16:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5634,84 +5634,102 @@ msgctxt "AboutTab"
 msgid "About"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:366
+#. tr: Windows Vista and later. Has a centralized thumbnails cache.
+#: ../src/win32/config/CacheTab.cpp:190
+msgctxt "CacheTab"
+msgid ""
+"If any image type settings were changed, you will need to clear the system "
+"thumbnail cache."
+msgstr ""
+
+#. tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
+#: ../src/win32/config/CacheTab.cpp:192
+msgctxt "CacheTab"
+msgid ""
+"If any image type settings were changed, you will need to clear the "
+"thumbnail cache files.\n"
+"This version of Windows does not have a centralized thumbnail database, so "
+"it may take a while for all Thumbs.db files to be located and deleted."
+msgstr ""
+
+#: ../src/win32/config/CacheTab.cpp:380
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:390
+#: ../src/win32/config/CacheTab.cpp:404
 msgctxt "CacheTab|Win32"
 msgid "ERROR: No fixed HDDs or SSDs detected."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:400
+#: ../src/win32/config/CacheTab.cpp:414
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner not found. (res == %ld)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:412 ../src/win32/config/CacheTab.cpp:421
+#: ../src/win32/config/CacheTab.cpp:426 ../src/win32/config/CacheTab.cpp:435
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner CLSID is invalid."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:435
+#: ../src/win32/config/CacheTab.cpp:449
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: CoCreateInstance() failed. (hr == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:490
+#: ../src/win32/config/CacheTab.cpp:504
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid ""
 "ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:507
+#: ../src/win32/config/CacheTab.cpp:521
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:528
+#: ../src/win32/config/CacheTab.cpp:542
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:530
+#: ../src/win32/config/CacheTab.cpp:544
 msgctxt "CacheTab"
 msgid "System thumbnail cache is already empty. Nothing to do here."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:642
+#: ../src/win32/config/CacheTab.cpp:656
 msgctxt "CacheTab"
 msgid "ERROR: Unable to get the cache directory path."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:666
+#: ../src/win32/config/CacheTab.cpp:680
 msgctxt "CacheTab"
 msgid "Clearing the rom-properties cache..."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:681
+#: ../src/win32/config/CacheTab.cpp:695
 msgctxt "CacheTab"
 msgid "ERROR: rom-properties cache has unexpected files. Not clearing it."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:693
+#: ../src/win32/config/CacheTab.cpp:707
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:749
+#: ../src/win32/config/CacheTab.cpp:763
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/CacheTab.cpp:1001
+#: ../src/win32/config/CacheTab.cpp:1013
 msgctxt "CacheTab"
 msgid "Thumbnail Cache"
 msgstr ""

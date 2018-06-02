@@ -105,16 +105,17 @@
 #define IDC_HIGHRESDL                           40103
 
 // Thumbnail cache
-#define IDC_CACHE_CLEAR_SYS_THUMBS              40201
-#define IDC_CACHE_CLEAR_RP_DL                   40202
-#define IDC_CACHE_STATUS                        40203
-#define IDC_CACHE_PROGRESS                      40204
-#define IDC_CACHE_XP_FIND_DRIVES                40205
-#define IDC_CACHE_XP_FIND_PATH                  40206
-#define IDC_CACHE_XP_DRIVES                     40207
-#define IDC_CACHE_XP_PATH                       40208
-#define IDC_CACHE_XP_BROWSE                     40209
-#define IDC_CACHE_XP_CLEAR_SYS_THUMBS           40210
+#define IDC_CACHE_DESCRIPTION                   40201
+#define IDC_CACHE_CLEAR_SYS_THUMBS              40202
+#define IDC_CACHE_CLEAR_RP_DL                   40203
+#define IDC_CACHE_STATUS                        40204
+#define IDC_CACHE_PROGRESS                      40205
+#define IDC_CACHE_XP_FIND_DRIVES                40206
+#define IDC_CACHE_XP_FIND_PATH                  40207
+#define IDC_CACHE_XP_DRIVES                     40208
+#define IDC_CACHE_XP_PATH                       40209
+#define IDC_CACHE_XP_BROWSE                     40210
+#define IDC_CACHE_XP_CLEAR_SYS_THUMBS           40211
 
 // FIXME: Only if ENABLE_DECRYPTION, but we can't include config.librpbase.h.
 #if 1
