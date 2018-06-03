@@ -74,7 +74,7 @@ const unsigned int rp_image::qt_inv_premul_factor[256] = {
 };
 
 /**
- * Un-premultiply an argb32_t pixel. (SSE4.1 version)
+ * Un-premultiply an argb32_t pixel. (Standard version)
  * From qt-5.11.0's qrgb.h.
  * qUnpremultiply()
  *
@@ -137,7 +137,7 @@ int rp_image::un_premultiply_cpp(void)
 }
 
 /**
- * Premultiply an argb32_t pixel. (SSE4.1 version)
+ * Premultiply an argb32_t pixel. (Standard version)
  * From qt-5.11.0's qrgb.h.
  * qPremultiply()
  *
