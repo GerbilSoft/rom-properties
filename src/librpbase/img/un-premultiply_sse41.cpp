@@ -48,7 +48,7 @@ namespace LibRpBase {
  */
 static FORCEINLINE void un_premultiply_pixel_sse41(argb32_t &px)
 {
-	const uint alpha = px.a;
+	const unsigned int alpha = px.a;
 	if (alpha == 255 || alpha == 0)
 		return;
 
