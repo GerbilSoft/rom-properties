@@ -263,3 +263,5 @@ https://github.com/GerbilSoft/rom-properties/issues
   Information on the Valve VTF texture file format.
 * [nocash SNES hardware specifications](http://problemkaputt.de/fullsnes.htm):
   Super NES and Satellaview BS-X technical information.
+* [Homebrew Development Kit for the Tiger game.com](https://github.com/Tpot-SSL/GameComHDK)
+  by @Tpot-SSL: game.com technical information.
