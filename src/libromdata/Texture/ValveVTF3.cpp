@@ -426,14 +426,8 @@ int ValveVTF3::loadFieldData(void)
 
 	// Texture size.
 	// TODO: 3D textures?
-	if (vtf3Header->height > 0) {
-		// TODO: >0 or >1?
-		d->fields->addField_string(C_("ValveVTF3", "Texture Size"),
-			rp_sprintf("%ux%u", vtf3Header->width,
-				vtf3Header->height));
-	} else {
-		d->fields->addField_string_numeric(C_("ValveVTF3", "Texture Size"), vtf3Header->width);
-	}
+	d->fields->addField_dimensions(C_("ValveVTF3", "Texture Size"),
+		vtf3Header->width, vtf3Header->height);
 
 	// Image format.
 	d->fields->addField_string(C_("ValveVTF3", "Image Format"),

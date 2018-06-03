@@ -1076,13 +1076,9 @@ int DirectDrawSurface::loadFieldData(void)
 	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	// Texture size.
-	if (ddsHeader->dwFlags & DDSD_DEPTH) {
-		d->fields->addField_string(C_("DirectDrawSurface", "Texture Size"),
-			rp_sprintf("%ux%ux%u", ddsHeader->dwWidth, ddsHeader->dwHeight, ddsHeader->dwDepth));
-	} else {
-		d->fields->addField_string(C_("DirectDrawSurface", "Texture Size"),
-			rp_sprintf("%ux%u", ddsHeader->dwWidth, ddsHeader->dwHeight));
-	}
+	d->fields->addField_dimensions(C_("DirectDrawSurface", "Texture Size"),
+		ddsHeader->dwWidth, ddsHeader->dwHeight,
+		(ddsHeader->dwFlags & DDSD_DEPTH) ? ddsHeader->dwDepth : 0);
 
 	// Pitch (uncompressed)
 	// Linear size (compressed)

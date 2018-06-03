@@ -1147,6 +1147,38 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
 	return widget;
 }
 
+/**
+ * Initialize a Dimensions field.
+ * @param page RomDataView object.
+ * @param field RomFields::Field
+ * @return Display widget, or nullptr on error.
+ */
+static GtkWidget*
+rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
+{
+	// Dimensions.
+	GtkWidget *widget = gtk_label_new(nullptr);
+	gtk_label_set_use_underline(GTK_LABEL(widget), false);
+	gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
+	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
+	gtk_widget_show(widget);
+	GTK_WIDGET_HALIGN_LEFT(widget);
+
+	// TODO: 'x' or '×'? Using 'x' for now.
+	const int *const dimensions = field->data.dimensions;
+	ostringstream oss;
+	oss << dimensions[0];
+	if (dimensions[1] > 0) {
+		oss << 'x' << dimensions[1];
+		if (dimensions[2] > 0) {
+			oss << 'x' << dimensions[2];
+		}
+	}
+
+	gtk_label_set_text(GTK_LABEL(widget), oss.str().c_str());
+	return widget;
+}
+
 static void
 rom_data_view_update_display(RomDataView *page)
 {
@@ -1292,31 +1324,29 @@ rom_data_view_update_display(RomDataView *page)
 			case RomFields::RFT_INVALID:
 				// No data here.
 				break;
+			default:
+				// Unsupported right now.
+				assert(!"Unsupported RomFields::RomFieldsType.");
+				break;
 
 			case RomFields::RFT_STRING:
 				widget = rom_data_view_init_string(page, field);
 				break;
-
 			case RomFields::RFT_BITFIELD:
 				widget = rom_data_view_init_bitfield(page, field);
 				break;
-
 			case RomFields::RFT_LISTDATA:
 				separate_rows = !!(field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
 				widget = rom_data_view_init_listdata(page, field);
 				break;
-
 			case RomFields::RFT_DATETIME:
 				widget = rom_data_view_init_datetime(page, field);
 				break;
-
 			case RomFields::RFT_AGE_RATINGS:
 				widget = rom_data_view_init_age_ratings(page, field);
 				break;
-
-			default:
-				// Unsupported right now.
-				assert(!"Unsupported RomFields::RomFieldsType.");
+			case RomFields::RFT_DIMENSIONS:
+				widget = rom_data_view_init_dimensions(page, field);
 				break;
 		}
 

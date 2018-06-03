@@ -371,6 +371,30 @@ public:
 	}
 };
 
+class DimensionsField {
+	size_t width;
+	const RomFields::Field *romField;
+public:
+	DimensionsField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
+	friend ostream& operator<<(ostream& os, const DimensionsField& field) {
+		auto romField = field.romField;
+
+		os << ColonPad(field.width, romField->name.c_str());
+		StreamStateSaver state(os);
+
+		// Convert the dimensions field to a string.
+		const int *const dimensions = romField->data.dimensions;
+		os << dimensions[0];
+		if (dimensions[1] > 0) {
+			os << 'x' << dimensions[1];
+			if (dimensions[2] > 0) {
+				os << 'x' << dimensions[2];
+			}
+		}
+		return os;
+	}
+};
+
 class FieldsOutput {
 	const RomFields& fields;
 public:
@@ -417,6 +441,10 @@ public:
 			}
 			case RomFields::RFT_AGE_RATINGS: {
 				os << AgeRatingsField(maxWidth, romField);
+				break;
+			}
+			case RomFields::RFT_DIMENSIONS: {
+				os << DimensionsField(maxWidth, romField);
 				break;
 			}
 			default: {
@@ -630,6 +658,22 @@ public:
 					os << ",\"rating\":\""
 					   << RomFields::ageRatingDecode(j, rating)
 					   << "\"}";
+				}
+				os << "]}";
+				break;
+			}
+
+			case RomFields::RFT_DIMENSIONS: {
+				os << "{\"type\":\"DIMENSIONS\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
+				   << "},\"data\":";
+
+				const int *const dimensions = romField->data.dimensions;
+				os << "[\"w\":" << dimensions[0];
+				if (dimensions[1] > 0) {
+					os << ",\"h\":" << dimensions[1];
+					if (dimensions[2] > 0) {
+						os << ",\"d\":" << dimensions[2];
+					}
 				}
 				os << "]}";
 				break;

@@ -44,6 +44,7 @@ class RomFields
 			RFT_LISTDATA,		// ListData.
 			RFT_DATETIME,		// Date/Time.
 			RFT_AGE_RATINGS,	// Age ratings.
+			RFT_DIMENSIONS,		// Image dimensions.
 		};
 
 		// String format flags. (RFT_STRING)
@@ -195,6 +196,11 @@ class RomFields
 				// RFT_AGE_RATINGS
 				// See AgeRatingsCountry for field indexes.
 				const age_ratings_t *age_ratings;
+
+				// RFT_DIMENSIONS
+				// Up to three image dimensions.
+				// If a dimension is not present, set to 0.
+				int dimensions[3];
 			} data;
 		};
 
@@ -478,6 +484,16 @@ class RomFields
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_ageRatings(const char *name, const age_ratings_t &age_ratings);
+
+		/**
+		 * Add image dimensions.
+		 * @param name Field name.
+		 * @param dimX X dimension.
+		 * @param dimY Y dimension.
+		 * @param dimZ Z dimension.
+		 * @return Field index, or -1 on error.
+		 */
+		int addField_dimensions(const char *name, int dimX, int dimY = 0, int dimZ = 0);
 };
 
 }

@@ -142,6 +142,13 @@ class RomDataViewPrivate
 		void initAgeRatings(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
+		 * Initialize a Dimensions field.
+		 * @param lblDesc Description label.
+		 * @param field RomFields::Field
+		 */
+		void initDimensions(QLabel *lblDesc, const RomFields::Field *field);
+
+		/**
 		 * Initialize the display widgets.
 		 * If the widgets already exist, they will
 		 * be deleted and recreated.
@@ -723,6 +730,39 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 }
 
 /**
+ * Initialize a Dimensions field.
+ * @param lblDesc Description label.
+ * @param field RomFields::Field
+ */
+void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field *field)
+{
+	// Dimensions.
+	Q_Q(RomDataView);
+	QLabel *lblDimensions = new QLabel(q);
+	lblDimensions->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+	lblDimensions->setTextFormat(Qt::PlainText);
+	lblDimensions->setTextInteractionFlags(
+		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+	lblDimensions->setFocusPolicy(Qt::StrongFocus);
+
+	// TODO: 'x' or '×'? Using 'x' for now.
+	const int *const dimensions = field->data.dimensions;
+	QString str = QString::number(dimensions[0]);
+	if (dimensions[1] > 0) {
+		str.reserve(str.size() * 3);
+		str += QChar(L'x');
+		str += QString::number(dimensions[1]);
+		if (dimensions[2] > 0) {
+			str += QChar(L'x');
+			str += QString::number(dimensions[2]);
+		}
+	}
+
+	lblDimensions->setText(str);
+	tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDimensions);
+}
+
+/**
  * Initialize the display widgets.
  * If the widgets already exist, they will
  * be deleted and recreated.
@@ -840,31 +880,29 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				// No data here.
 				delete lblDesc;
 				break;
-
-			case RomFields::RFT_STRING:
-				initString(lblDesc, field);
-				break;
-
-			case RomFields::RFT_BITFIELD:
-				initBitfield(lblDesc, field);
-				break;
-
-			case RomFields::RFT_LISTDATA:
-				initListData(lblDesc, field);
-				break;
-
-			case RomFields::RFT_DATETIME:
-				initDateTime(lblDesc, field);
-				break;
-
-			case RomFields::RFT_AGE_RATINGS:
-				initAgeRatings(lblDesc, field);
-				break;
-
 			default:
 				// Unsupported right now.
 				assert(!"Unsupported RomFields::RomFieldsType.");
 				delete lblDesc;
+				break;
+
+			case RomFields::RFT_STRING:
+				initString(lblDesc, field);
+				break;
+			case RomFields::RFT_BITFIELD:
+				initBitfield(lblDesc, field);
+				break;
+			case RomFields::RFT_LISTDATA:
+				initListData(lblDesc, field);
+				break;
+			case RomFields::RFT_DATETIME:
+				initDateTime(lblDesc, field);
+				break;
+			case RomFields::RFT_AGE_RATINGS:
+				initAgeRatings(lblDesc, field);
+				break;
+			case RomFields::RFT_DIMENSIONS:
+				initDimensions(lblDesc, field);
 				break;
 		}
 	}

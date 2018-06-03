@@ -793,21 +793,14 @@ int ValveVTF::loadFieldData(void)
 
 	// Texture size.
 	// 7.2+ supports 3D textures.
+	int depth = 0;
 	if ((vtfHeader->version[0] > 7 || (vtfHeader->version[0] == 7 && vtfHeader->version[1] >= 2)) &&
 	     vtfHeader->depth > 1)
 	{
-		d->fields->addField_string(C_("ValveVTF", "Texture Size"),
-			rp_sprintf("%ux%ux%u", vtfHeader->width,
-				vtfHeader->height,
-				vtfHeader->depth));
-	} else if (vtfHeader->height > 0) {
-		// TODO: >0 or >1?
-		d->fields->addField_string(C_("ValveVTF", "Texture Size"),
-			rp_sprintf("%ux%u", vtfHeader->width,
-				vtfHeader->height));
-	} else {
-		d->fields->addField_string_numeric(C_("ValveVTF", "Texture Size"), vtfHeader->width);
+		depth = vtfHeader->depth;
 	}
+	d->fields->addField_dimensions(C_("ValveVTF", "Texture Size"),
+		vtfHeader->width, vtfHeader->height, depth);
 
 	// Flags.
 	// TODO: Show "deprecated" flags for older versions.
@@ -943,15 +936,9 @@ int ValveVTF::loadFieldData(void)
 		d->fields->addField_string(C_("ValveVTF", "Low-Res Image Format"),
 			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
 		// Low-res image size.
-		if (vtfHeader->lowResImageHeight > 0) {
-			// TODO: >0 or >1?
-			d->fields->addField_string(C_("ValveVTF", "Low-Res Size"),
-				rp_sprintf("%ux%u", vtfHeader->lowResImageWidth,
-					vtfHeader->lowResImageHeight));
-		} else {
-			d->fields->addField_string_numeric(C_("ValveVTF", "Low-Res Size"),
-				vtfHeader->lowResImageWidth);
-		}		
+		d->fields->addField_dimensions(C_("ValveVTF", "Low-Res Size"),
+			vtfHeader->lowResImageWidth,
+			vtfHeader->lowResImageHeight);
 	} else {
 		d->fields->addField_string(C_("ValveVTF", "Low-Res Image Format"),
 			rp_sprintf(C_("ValveVTF", "Unknown (%d)"), vtfHeader->highResImageFormat));

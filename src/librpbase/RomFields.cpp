@@ -155,6 +155,7 @@ void RomFieldsPrivate::delete_data(void)
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
 			case RomFields::RFT_DATETIME:
+			case RomFields::RFT_DIMENSIONS:
 				// No data here.
 				break;
 
@@ -275,6 +276,7 @@ void RomFields::detach(void)
 				field_new.desc.flags = 0;
 				field_new.data.generic = 0;
 				break;
+
 			case RFT_STRING:
 				field_new.desc.flags = field_old.desc.flags;
 				if (field_old.data.str) {
@@ -319,6 +321,10 @@ void RomFields::detach(void)
 			case RFT_AGE_RATINGS:
 				field_new.data.age_ratings = field_old.data.age_ratings;
 				break;
+			case RFT_DIMENSIONS:
+				memcpy(field_new.data.dimensions, field_old.data.dimensions, sizeof(field_old.data.dimensions));
+				break;
+
 			default:
 				// ERROR!
 				assert(!"Unsupported RomFields::RomFieldsType.");
@@ -831,6 +837,9 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 						? new age_ratings_t(*src->data.age_ratings)
 						: nullptr);
 				break;
+			case RFT_DIMENSIONS:
+				memcpy(field.data.dimensions, src->data.dimensions, sizeof(src->data.dimensions));
+				break;
 
 			default:
 				assert(!"Unsupported RomFields::RomFieldsType.");
@@ -1162,6 +1171,36 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 	field.name = name;
 	field.type = RFT_AGE_RATINGS;
 	field.data.age_ratings = new age_ratings_t(age_ratings);
+	field.tabIdx = d->tabIdx;
+	field.isValid = true;
+	return idx;
+}
+
+/**
+ * Add image dimensions.
+ * @param name Field name.
+ * @param dimX X dimension.
+ * @param dimY Y dimension.
+ * @param dimZ Z dimension.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dimZ)
+{
+	assert(name != nullptr);
+	if (!name)
+		return -1;
+
+	// RFT_DIMENSIONS
+	RP_D(RomFields);
+	int idx = static_cast<int>(d->fields.size());
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	field.name = name;
+	field.type = RFT_DIMENSIONS;
+	field.data.dimensions[0] = dimX;
+	field.data.dimensions[1] = dimY;
+	field.data.dimensions[2] = dimZ;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return idx;

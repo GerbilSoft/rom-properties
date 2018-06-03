@@ -892,8 +892,8 @@ int SegaPVR::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Texture size.
-	d->fields->addField_string(C_("SegaPVR", "Texture Size"),
-		rp_sprintf("%ux%u", pvrHeader->width, pvrHeader->height));
+	d->fields->addField_dimensions(C_("SegaPVR", "Texture Size"),
+		pvrHeader->width, pvrHeader->height);
 
 	// Pixel format.
 	static const char *const pxfmt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][8] = {

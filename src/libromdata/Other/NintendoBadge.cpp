@@ -630,8 +630,8 @@ int NintendoBadge::loadFieldData(void)
 
 			// Mega badge size.
 			if (d->megaBadge) {
-				d->fields->addField_string(C_("NintendoBadge", "Mega Badge Size"),
-					rp_sprintf("%ux%u", prbs->mb_width, prbs->mb_height));
+				d->fields->addField_dimensions(C_("NintendoBadge", "Mega Badge Size"),
+					prbs->mb_width, prbs->mb_height);
 			}
 
 			// Title ID.

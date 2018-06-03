@@ -300,6 +300,21 @@ class RP_ShellPropSheetExt_Private
 			const RomFields::Field *field);
 
 		/**
+		 * Initialize a Dimensions field.
+		 * This function internally calls initString().
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @param field		[in] RomFields::Field
+		 * @return Field height, in pixels.
+		 */
+		int initDimensions(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
+			const RomFields::Field *field);
+
+		/**
 		 * Initialize the bold font.
 		 * @param hFont Base font.
 		 */
@@ -1437,6 +1452,45 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 }
 
 /**
+ * Initialize a Dimensions field.
+ * This function internally calls initString().
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @param field		[in] RomFields::Field
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
+	const POINT &pt_start, int idx, const SIZE &size,
+	const RomFields::Field *field)
+{
+	assert(hDlg != nullptr);
+	assert(hWndTab != nullptr);
+	assert(field != nullptr);
+	assert(field->type == RomFields::RFT_DIMENSIONS);
+	if (!hDlg || !hWndTab || !field)
+		return 0;
+	if (field->type != RomFields::RFT_DIMENSIONS)
+		return 0;
+
+	// TODO: 'x' or '×'? Using 'x' for now.
+	const int *const dimensions = field->data.dimensions;
+	wostringstream woss;
+	woss << dimensions[0];
+	if (dimensions[1] > 0) {
+		woss << L'x' << dimensions[1];
+		if (dimensions[2] > 0) {
+			woss << L'x' << dimensions[2];
+		}
+	}
+
+	// Initialize the string field.
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, woss.str().c_str());
+}
+
+/**
  * Initialize the bold font.
  * @param hFont Base font.
  */
@@ -1843,6 +1897,18 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
 				if (field_cy == 0) {
 					// initAgeRatings() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
+				}
+				break;
+			}
+
+			case RomFields::RFT_DIMENSIONS: {
+				// Dimensions field.
+				SIZE size = {dlg_value_width, field_cy};
+				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, field);
+				if (field_cy == 0) {
+					// initDimensions() failed.
 					// Remove the description label.
 					DestroyWindow(hStatic);
 				}

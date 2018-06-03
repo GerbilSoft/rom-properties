@@ -791,18 +791,9 @@ int KhronosKTX::loadFieldData(void)
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// Texture size.
-	if (ktxHeader->pixelDepth > 0) {
-		d->fields->addField_string(C_("KhronosKTX", "Texture Size"),
-			rp_sprintf("%ux%ux%u", ktxHeader->pixelWidth,
-				ktxHeader->pixelHeight,
-				ktxHeader->pixelDepth));
-	} else if (ktxHeader->pixelHeight > 0) {
-		d->fields->addField_string(C_("KhronosKTX", "Texture Size"),
-			rp_sprintf("%ux%u", ktxHeader->pixelWidth,
-				ktxHeader->pixelHeight));
-	} else {
-		d->fields->addField_string_numeric(C_("KhronosKTX", "Texture Size"), ktxHeader->pixelWidth);
-	}
+	d->fields->addField_dimensions(C_("KhronosKTX", "Texture Size"),
+		ktxHeader->pixelWidth, ktxHeader->pixelHeight,
+		ktxHeader->pixelDepth);
 
 	// Endianness.
 	// TODO: Save big vs. little in the constructor instead of just "needs byteswapping"?
