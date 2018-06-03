@@ -276,16 +276,10 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	}
 
 	// Read the texture data.
-	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
-	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
-	if (!buf) {
-		// Memory allocation failure.
-		return nullptr;
-	}
-	size = file->read(buf, expected_size);
+	auto buf = aligned_uptr<uint8_t>(16, expected_size);
+	size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		aligned_free(buf);
 		return nullptr;
 	}
 
@@ -296,21 +290,21 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// 24-bit RGB.
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
 				ktxHeader.pixelWidth, height,
-				buf, expected_size, stride);
+				buf.get(), expected_size, stride);
 			break;
 
 		case GL_RGBA:
 			// 32-bit RGBA.
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
 				ktxHeader.pixelWidth, height,
-				reinterpret_cast<const uint32_t*>(buf), expected_size, stride);
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
 		case GL_LUMINANCE:
 			// 8-bit Luminance.
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
 				ktxHeader.pixelWidth, height,
-				buf, expected_size, stride);
+				buf.get(), expected_size, stride);
 			break;
 
 		case 0:
@@ -324,21 +318,21 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// DXT1-compressed texture.
 					img = ImageDecoder::fromDXT1(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 					// DXT1-compressed texture with 1-bit alpha.
 					img = ImageDecoder::fromDXT1_A1(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
 					// DXT3-compressed texture.
 					img = ImageDecoder::fromDXT3(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_RGBA_DXT5_S3TC:
@@ -347,21 +341,21 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// DXT5-compressed texture.
 					img = ImageDecoder::fromDXT5(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_ETC1_RGB8_OES:
 					// ETC1-compressed texture.
 					img = ImageDecoder::fromETC1(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RGB8_ETC2:
 					// ETC2-compressed RGB texture.
 					img = ImageDecoder::fromETC2_RGB(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
@@ -369,7 +363,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// with punchthrough alpha.
 					img = ImageDecoder::fromETC2_RGB_A1(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RGBA8_ETC2_EAC:
@@ -377,7 +371,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// with EAC-compressed alpha channel.
 					img = ImageDecoder::fromETC2_RGBA(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RED_RGTC1:
@@ -386,7 +380,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC4(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_RG_RGTC2:
@@ -395,7 +389,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC5(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					break;
 
 				case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
@@ -404,7 +398,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC4(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					// TODO: If this fails, return it anyway or return nullptr?
 					ImageDecoder::fromRed8ToL8(img);
 					break;
@@ -415,7 +409,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// TODO: Handle signed properly.
 					img = ImageDecoder::fromBC5(
 						ktxHeader.pixelWidth, height,
-						buf, expected_size);
+						buf.get(), expected_size);
 					// TODO: If this fails, return it anyway or return nullptr?
 					ImageDecoder::fromRG8ToLA8(img);
 					break;
@@ -440,7 +434,6 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 		}
 	}
 
-	aligned_free(buf);
 	return img;
 }
 

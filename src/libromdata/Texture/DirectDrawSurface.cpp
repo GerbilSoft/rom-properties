@@ -564,10 +564,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		return nullptr;
 	}
 
-	// Aligned memory buffer.
-	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
-	uint8_t *buf = nullptr;
-
 	// TODO: Handle DX10 alpha processing.
 	// Currently, we're assuming straight alpha for formats
 	// that have an alpha channel, except for DXT2 and DXT4,
@@ -617,15 +613,10 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Read the texture data.
-		buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
-		if (!buf) {
-			// Memory allocation failure.
-			return nullptr;
-		}
-		size_t size = file->read(buf, expected_size);
+		auto buf = aligned_uptr<uint8_t>(16, expected_size);
+		size_t size = file->read(buf.get(), expected_size);
 		if (size != expected_size) {
 			// Read error.
-			aligned_free(buf);
 			return nullptr;
 		}
 
@@ -638,12 +629,12 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					// 1-bit alpha.
 					img = ImageDecoder::fromDXT1_A1(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
-						buf, expected_size);
+						buf.get(), expected_size);
 				} else {
 					// No alpha channel.
 					img = ImageDecoder::fromDXT1(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
-						buf, expected_size);
+						buf.get(), expected_size);
 				}
 				break;
 
@@ -654,12 +645,12 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					// Standard alpha: DXT3
 					img = ImageDecoder::fromDXT3(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
-						buf, expected_size);
+						buf.get(), expected_size);
 				} else {
 					// Premultiplied alpha: DXT2
 					img = ImageDecoder::fromDXT2(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
-						buf, expected_size);
+						buf.get(), expected_size);
 				}
 				break;
 
@@ -670,12 +661,12 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					// Standard alpha: DXT5
 					img = ImageDecoder::fromDXT5(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
-						buf, expected_size);
+						buf.get(), expected_size);
 				} else {
 					// Premultiplied alpha: DXT4
 					img = ImageDecoder::fromDXT4(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
-						buf, expected_size);
+						buf.get(), expected_size);
 				}
 				break;
 
@@ -684,7 +675,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC4_SNORM:
 				img = ImageDecoder::fromBC4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size);
+					buf.get(), expected_size);
 				break;
 
 			case DXGI_FORMAT_BC5_TYPELESS:
@@ -692,7 +683,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC5_SNORM:
 				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size);
+					buf.get(), expected_size);
 				break;
 
 			default:
@@ -735,15 +726,10 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Read the texture data.
-		buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
-		if (!buf) {
-			// Memory allocation failure.
-			return nullptr;
-		}
-		size_t size = file->read(buf, expected_size);
+		auto buf = aligned_uptr<uint8_t>(16, expected_size);
+		size_t size = file->read(buf.get(), expected_size);
 		if (size != expected_size) {
 			// Read error.
-			aligned_free(buf);
 			return nullptr;
 		}
 
@@ -753,7 +739,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				img = ImageDecoder::fromLinear8(
 					(ImageDecoder::PixelFormat)pxf_uncomp,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size, stride);
+					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint16_t):
@@ -761,7 +747,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				img = ImageDecoder::fromLinear16(
 					(ImageDecoder::PixelFormat)pxf_uncomp,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					reinterpret_cast<const uint16_t*>(buf),
+					reinterpret_cast<const uint16_t*>(buf.get()),
 					expected_size, stride);
 				break;
 
@@ -770,7 +756,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				img = ImageDecoder::fromLinear24(
 					(ImageDecoder::PixelFormat)pxf_uncomp,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf, expected_size, stride);
+					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint32_t):
@@ -778,7 +764,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				img = ImageDecoder::fromLinear32(
 					(ImageDecoder::PixelFormat)pxf_uncomp,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					reinterpret_cast<const uint32_t*>(buf),
+					reinterpret_cast<const uint32_t*>(buf.get()),
 					expected_size, stride);
 				break;
 
@@ -790,8 +776,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	}
 
 	// TODO: Untile textures for XBOX format.
-
-	aligned_free(buf);
 	return img;
 }
 

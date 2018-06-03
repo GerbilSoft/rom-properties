@@ -231,15 +231,11 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 	// TODO: Multiple internal image sizes.
 	// For now, 64x64 only.
 	const unsigned int badge_sz = badge_rgb_sz + badge_a4_sz;
-	uint8_t *const badgeData = static_cast<uint8_t*>(aligned_malloc(16, badge_sz));
-	if (!badgeData) {
-		// Memory allocation failure.
-		return nullptr;
-	}
+	auto badgeData = aligned_uptr<uint8_t>(16, badge_sz);
 
 	if (!doMegaBadge) {
 		// Single badge.
-		size_t size = file->seekAndRead(start_addr, badgeData, badge_sz);
+		size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 		if (size != badge_sz) {
 			// Seek and/or read error.
 			return nullptr;
@@ -249,12 +245,12 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		if (badge_a4_sz > 0) {
 			img[idx] = ImageDecoder::fromN3DSTiledRGB565_A4(
 				badge_dims, badge_dims,
-				reinterpret_cast<const uint16_t*>(badgeData), badge_rgb_sz,
-				&badgeData[badge_rgb_sz], badge_a4_sz);
+				reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
+				badgeData.get() + badge_rgb_sz, badge_a4_sz);
 		} else {
 			img[idx] = ImageDecoder::fromN3DSTiledRGB565(
 				badge_dims, badge_dims,
-				reinterpret_cast<const uint16_t*>(badgeData), badge_rgb_sz);
+				reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz);
 		}
 
 		if (badgeType == BADGE_TYPE_CABS) {
@@ -277,7 +273,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		for (unsigned int y = 0; y < mb_height; y++) {
 			const unsigned int my = y*badge_dims;
 			for (unsigned int x = 0; x < mb_width; x++, start_addr += (0x2800+0xA00)) {
-				size_t size = file->seekAndRead(start_addr, badgeData, badge_sz);
+				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 				if (size != badge_sz) {
 					// Seek and/or read error.
 					delete img[idx];
@@ -287,8 +283,8 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 				rp_image *mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
 					badge_dims, badge_dims,
-					reinterpret_cast<const uint16_t*>(badgeData), badge_rgb_sz,
-					&badgeData[badge_rgb_sz], badge_a4_sz);
+					reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
+					badgeData.get() + badge_rgb_sz, badge_a4_sz);
 
 				// Copy the image into place.
 				// TODO: Pointer arithmetic instead of rp_image::scanLine().

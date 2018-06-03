@@ -313,16 +313,10 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	}
 
 	// Read the texture data.
-	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
-	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
-	if (!buf) {
-		// Memory allocation failure.
-		return nullptr;
-	}
-	size_t size = file->read(buf, expected_size);
+	auto buf = aligned_uptr<uint8_t>(16, expected_size);
+	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		aligned_free(buf);
 		return nullptr;
 	}
 
@@ -341,7 +335,6 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		default:
 			// Unsupported pixel format.
-			aligned_free(buf);
 			return nullptr;
 	}
 
@@ -351,20 +344,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 			img = ImageDecoder::fromDreamcastSquareTwiddled16(px_format,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf), expected_size);
+				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
 			break;
 
 		case PVR_IMG_RECTANGLE:
 			img = ImageDecoder::fromLinear16(px_format,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf), expected_size);
+				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
 			break;
 
 		case PVR_IMG_VQ: {
 			// VQ images have a 1024-entry palette.
 			static const unsigned int pal_siz = 1024*2;
-			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf);
-			const uint8_t *const img_buf = buf + pal_siz;
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
+			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expected_size - pal_siz;
 
 			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
@@ -391,7 +384,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
 				pvrHeader.width, pvrHeader.height,
-				buf, expected_size, pal_buf.get(), pal_siz);
+				buf.get(), expected_size, pal_buf.get(), pal_siz);
 			break;
 		}
 
@@ -399,8 +392,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// Small VQ images have up to 1024 palette entries based on width.
 			const unsigned int pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
-			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf);
-			const uint8_t *const img_buf = buf + pal_siz;
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
+			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expected_size - pal_siz;
 
 			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
@@ -428,7 +421,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
-				buf, expected_size, pal_buf.get(), pal_siz);
+				buf.get(), expected_size, pal_buf.get(), pal_siz);
 			break;
 		}
 
@@ -437,7 +430,6 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 	}
 
-	aligned_free(buf);
 	return img;
 }
 

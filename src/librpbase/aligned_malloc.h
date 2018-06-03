@@ -133,4 +133,22 @@ static FORCEINLINE void aligned_free(void *memptr)
 # error Missing aligned malloc() function for this system.
 #endif
 
+#ifdef __cplusplus
+
+// std::unique_ptr<> wrapper for aligned_malloc().
+// Reference: https://embeddedartistry.com/blog/2017/2/23/c-smart-pointers-with-aligned-mallocfree
+#include <memory>
+
+template<class T> using unique_ptr_aligned = std::unique_ptr<T, decltype(&aligned_free)>;
+
+template<class T>
+static inline unique_ptr_aligned<T> aligned_uptr(size_t align, size_t size)
+{
+	return unique_ptr_aligned<T>(
+		static_cast<T*>(aligned_malloc(align, size)), 
+		&aligned_free);
+}
+
+#endif /* __cplusplus */
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_ALIGNED_MALLOC_H__ */

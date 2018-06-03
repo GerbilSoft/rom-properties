@@ -739,16 +739,11 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 	}
 
 	// Load the eyecatch data.
-	uint8_t *const data = static_cast<uint8_t*>(aligned_malloc(16, eyecatch_size));
-	if (!data) {
-		// Memory allocation failure.
-		return nullptr;
-	}
+	auto data = aligned_uptr<uint8_t>(16, eyecatch_size);
 	file->seek(vms_header_offset + sz_icons);
-	size_t size = file->read(data, eyecatch_size);
+	size_t size = file->read(data.get(), eyecatch_size);
 	if (size != eyecatch_size) {
 		// Error loading the eyecatch data.
-		aligned_free(data);
 		return nullptr;
 	}
 
@@ -756,7 +751,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 		// Apply 32-bit byteswapping to the eyecatch data.
 		// TODO: Use an IRpFile subclass that automatically byteswaps
 		// instead of doing manual byteswapping here?
-		__byte_swap_32_array(reinterpret_cast<uint32_t*>(data), eyecatch_size);
+		__byte_swap_32_array(reinterpret_cast<uint32_t*>(data.get()), eyecatch_size);
 	}
 
 	// Convert the eycatch to rp_image.
@@ -771,33 +766,32 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 			// FIXME: Completely untested.
 			img_banner = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
-				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
+				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
 			break;
 		}
 
 		case DC_VMS_EYECATCH_CI8: {
 			// CI8 eyecatch.
 			// TODO: Needs more testing.
-			const uint8_t *image_buf = data + DC_VMS_EYECATCH_CI8_PALETTE_SIZE;
+			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI8_PALETTE_SIZE;
 			img_banner = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_ARGB4444,
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI8_DATA_SIZE,
-				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_CI8_PALETTE_SIZE);
+				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_CI8_PALETTE_SIZE);
 			break;
 		}
 
 		case DC_VMS_EYECATCH_CI4: {
 			// CI4 eyecatch.
-			const uint8_t *image_buf = data + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;
+			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;
 			img_banner = ImageDecoder::fromLinearCI4<true>(ImageDecoder::PXF_ARGB4444,
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI4_DATA_SIZE,
-				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_CI4_PALETTE_SIZE);
+				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_CI4_PALETTE_SIZE);
 			break;
 		}
 	}
 
-	aligned_free(data);
 	return img_banner;
 }
 

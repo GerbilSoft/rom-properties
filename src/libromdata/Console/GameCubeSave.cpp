@@ -370,15 +370,10 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
-	uint8_t *const icondata = static_cast<uint8_t*>(aligned_malloc(16, iconsizetotal));
-	if (!icondata) {
-		// Memory allocation failure.
-		return nullptr;
-	}
-	size_t size = file->seekAndRead(dataOffset + iconaddr, icondata, iconsizetotal);
+	auto icondata = aligned_uptr<uint8_t>(16, iconsizetotal);
+	size_t size = file->seekAndRead(dataOffset + iconaddr, icondata.get(), iconsizetotal);
 	if (size != iconsizetotal) {
 		// Seek and/or read error.
-		aligned_free(icondata);
 		return nullptr;
 	}
 
@@ -386,7 +381,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 	if (is_CI8_shared) {
 		// Shared CI8 palette is at the end of the data.
 		pal_CI8_shared = reinterpret_cast<const uint16_t*>(
-			&icondata[iconsizetotal - (256*2)]);
+			icondata.get() + (iconsizetotal - (256*2)));
 	}
 
 	this->iconAnimData = new IconAnimData();
@@ -415,7 +410,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 				const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 2;
 				iconAnimData->frames[i] = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
 					CARD_ICON_W, CARD_ICON_H,
-					reinterpret_cast<const uint16_t*>(&icondata[iconaddr_cur]),
+					reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur),
 					iconsize);
 				iconaddr_cur += iconsize;
 				break;
@@ -427,8 +422,8 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 				const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
-					&icondata[iconaddr_cur], iconsize,
-					reinterpret_cast<const uint16_t*>(&icondata[iconaddr_cur+iconsize]), 256*2);
+					icondata.get() + iconaddr_cur, iconsize,
+					reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur + iconsize), 256*2);
 				iconaddr_cur += iconsize + (256*2);
 				break;
 			}
@@ -437,7 +432,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 				const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
-					&icondata[iconaddr_cur], iconsize,
+					icondata.get() + iconaddr_cur, iconsize,
 					pal_CI8_shared, 256*2);
 				iconaddr_cur += iconsize;
 				break;
@@ -452,9 +447,6 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 
 		iconAnimData->count++;
 	}
-
-	// Free the icon data.
-	aligned_free(icondata);
 
 	// NOTE: We're not deleting iconAnimData even if we only have
 	// a single icon because iconAnimData() will call loadIcon()

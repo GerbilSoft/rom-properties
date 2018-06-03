@@ -379,16 +379,10 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	}
 
 	// Read the texture data.
-	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
-	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
-	if (!buf) {
-		// Memory allocation failure.
-		return nullptr;
-	}
-	size_t size = file->read(buf, expected_size);
+	auto buf = aligned_uptr<uint8_t>(16, expected_size);
+	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		aligned_free(buf);
 		return nullptr;
 	}
 
@@ -404,52 +398,52 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 		case VTF_IMAGE_FORMAT_UVLX8888:	// handling as RGBA8888
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf), expected_size);
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_ABGR8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGBA8888,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf), expected_size);
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_ARGB8888:
 			// This is stored as RAGB for some reason...
 			// FIXME: May be a bug in VTFEdit. (Tested versions: 1.2.5, 1.3.3)
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RABG8888,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf), expected_size);
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_BGRA8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf), expected_size);
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_BGRx8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_xRGB8888,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf), expected_size);
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 			break;
 
 		/* 24-bit */
 		case VTF_IMAGE_FORMAT_RGB888:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_BGR888:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_RGB888,
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_RGB888_BLUESCREEN:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			img->apply_chroma_key(0xFF0000FF);
 			break;
 		case VTF_IMAGE_FORMAT_BGR888_BLUESCREEN:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_RGB888,
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			img->apply_chroma_key(0xFF0000FF);
 			break;
 
@@ -457,27 +451,27 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 		case VTF_IMAGE_FORMAT_RGB565:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_BGR565,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_BGR565:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_BGRx5551:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB555,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_BGRA4444:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_BGRA5551:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB1555,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_IA88:
 			// FIXME: I8 might have the alpha channel set to the I channel,
@@ -488,13 +482,13 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 			// TODO: Add ImageDecoder::fromLinear16() support for IA8 later.
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_A8L8,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_UV88:
 			// We're handling this as a GR88 texture.
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_GR88,
 				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 
 		/* 8-bit */
@@ -504,34 +498,34 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 			// https://www.opengl.org/discussion_boards/showthread.php/151701-GL_LUMINANCE-vs-GL_INTENSITY
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_A8:
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_A8,
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 
 		/* Compressed */
 		case VTF_IMAGE_FORMAT_DXT1:
 			img = ImageDecoder::fromDXT1(
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA:
 			img = ImageDecoder::fromDXT1_A1(
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_DXT3:
 			img = ImageDecoder::fromDXT3(
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 		case VTF_IMAGE_FORMAT_DXT5:
 			img = ImageDecoder::fromDXT5(
 				vtfHeader.width, height,
-				buf, expected_size);
+				buf.get(), expected_size);
 			break;
 
 		case VTF_IMAGE_FORMAT_P8:
@@ -542,7 +536,6 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 			break;
 	}
 
-	aligned_free(buf);
 	return img;
 }
 

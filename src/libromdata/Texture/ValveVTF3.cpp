@@ -179,16 +179,10 @@ const rp_image *ValveVTF3Private::loadImage(void)
 	}
 
 	// Read the texture data.
-	// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
-	uint8_t *const buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
-	if (!buf) {
-		// Memory allocation failure.
-		return nullptr;
-	}
-	size_t size = file->read(buf, expected_size);
+	auto buf = aligned_uptr<uint8_t>(16, expected_size);
+	size_t size = file->read(buf.get(), expected_size);
 	if (size != expected_size) {
 		// Read error.
-		aligned_free(buf);
 		return nullptr;
 	}
 
@@ -198,16 +192,15 @@ const rp_image *ValveVTF3Private::loadImage(void)
 		// Encoded using DXT5.
 		img = ImageDecoder::fromDXT5(
 			vtf3Header.width, height,
-			buf, expected_size);
+			buf.get(), expected_size);
 	} else {
 		// Image does not have an alpha channel.
 		// Encoded using DXT1.
 		img = ImageDecoder::fromDXT1(
 			vtf3Header.width, height,
-			buf, expected_size);
+			buf.get(), expected_size);
 	}
 
-	aligned_free(buf);
 	return img;
 }
 
