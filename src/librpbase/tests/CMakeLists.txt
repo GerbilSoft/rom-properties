@@ -128,3 +128,17 @@ TARGET_LINK_LIBRARIES(ByteswapTest gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
 ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest)
+
+# UnPremultiplyTest.
+ADD_EXECUTABLE(UnPremultiplyTest
+	gtest_init.cpp
+	img/UnPremultiplyTest.cpp
+	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(UnPremultiplyTest win32common)
+ENDIF(WIN32)
+TARGET_LINK_LIBRARIES(UnPremultiplyTest rpbase)
+TARGET_LINK_LIBRARIES(UnPremultiplyTest gtest)
+DO_SPLIT_DEBUG(UnPremultiplyTest)
+SET_WINDOWS_SUBSYSTEM(UnPremultiplyTest CONSOLE)
+ADD_TEST(NAME UnPremultiplyTest COMMAND UnPremultiplyTest)
