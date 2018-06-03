@@ -20,7 +20,7 @@ New systems supported include the Tiger Electronics game.com:
 
 This release also adds support for several new texture file formats, including Khornos KTX and Valve VTF. It also adds support for ETCn-compressed textures.
 
-See [`CHANGES.md`](CHANGES.md) for a full list of changes in v1.3.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.3.
 
 ## Feedback
 
