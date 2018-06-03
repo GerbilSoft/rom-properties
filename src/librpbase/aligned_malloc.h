@@ -138,12 +138,19 @@ static FORCEINLINE void aligned_free(void *memptr)
 // Reference: https://embeddedartistry.com/blog/2017/2/23/c-smart-pointers-with-aligned-mallocfree
 #include <memory>
 
+// NOTE: MSVC 2010 doesn't support "template using".
+// TODO: Check 2012; assuming 2013+ for now.
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
 template<class T> using unique_ptr_aligned = std::unique_ptr<T, decltype(&aligned_free)>;
+# define UNIQUE_PTR_ALIGNED_T unique_ptr_aligned<T>
+#else /* _MSC_VER < 1900 */
+# define UNIQUE_PTR_ALIGNED_T std::unique_ptr<T, decltype(&aligned_free)>
+#endif
 
 template<class T>
-static inline unique_ptr_aligned<T> aligned_uptr(size_t align, size_t size)
+static inline UNIQUE_PTR_ALIGNED_T aligned_uptr(size_t align, size_t size)
 {
-	return unique_ptr_aligned<T>(
+	return UNIQUE_PTR_ALIGNED_T(
 		static_cast<T*>(aligned_malloc(align, size)), 
 		&aligned_free);
 }
