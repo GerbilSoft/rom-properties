@@ -74,26 +74,31 @@ const unsigned int rp_image::qt_inv_premul_factor[256] = {
 };
 
 /**
- * Un-premultiply an argb32_t pixel.
+ * Un-premultiply an argb32_t pixel. (SSE4.1 version)
+ * From qt-5.11.0's qrgb.h.
+ * qUnpremultiply()
+ *
  * This is needed in order to convert DXT2/3 to DXT4/5.
- * @param px	[in/out] argb32_t pixel to un-premultiply, in place.
+ *
+ * @param px	[in] ARGB32 pixel to un-premultiply.
+ * @return Un-premultiplied pixel.
  */
-static FORCEINLINE void un_premultiply_pixel(argb32_t &px)
+static FORCEINLINE uint32_t un_premultiply_pixel(uint32_t px)
 {
-	if (likely(px.a == 255)) {
-		// Do nothing.
-	} else if (px.a == 0) {
-		px.u32 = 0;
-	} else {
-		// Based on Qt 5.9.1's qUnpremultiply().
-		// (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
-		const unsigned int invAlpha = rp_image::qt_inv_premul_factor[px.a];
-		// We add 0x8000 to get even rounding.
-		// The rounding also ensures that qPremultiply(qUnpremultiply(p)) == p for all p.
-		px.r = (px.r * invAlpha + 0x8000) >> 16;
-		px.g = (px.g * invAlpha + 0x8000) >> 16;
-		px.b = (px.b * invAlpha + 0x8000) >> 16;
-	}
+	argb32_t rpx;
+	rpx.u32 = px;
+	if (likely(rpx.a == 255 || rpx.a == 0))
+		return px;
+
+	// Based on Qt 5.9.1's qUnpremultiply().
+	// (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
+	const unsigned int invAlpha = rp_image::qt_inv_premul_factor[rpx.a];
+	// We add 0x8000 to get even rounding.
+	// The rounding also ensures that qPremultiply(qUnpremultiply(p)) == p for all p.
+	rpx.r = (rpx.r * invAlpha + 0x8000) >> 16;
+	rpx.g = (rpx.g * invAlpha + 0x8000) >> 16;
+	rpx.b = (rpx.b * invAlpha + 0x8000) >> 16;
+	return rpx.u32;
 }
 
 /**
@@ -120,11 +125,11 @@ int rp_image::un_premultiply_cpp(void)
 	for (int y = backend->height; y > 0; y--, px_dest += dest_stride_adj) {
 		int x = width;
 		for (; x > 1; x -= 2, px_dest += 2) {
-			un_premultiply_pixel(px_dest[0]);
-			un_premultiply_pixel(px_dest[1]);
+			px_dest[0].u32 = un_premultiply_pixel(px_dest[0].u32);
+			px_dest[1].u32 = un_premultiply_pixel(px_dest[1].u32);
 		}
 		if (x == 1) {
-			un_premultiply_pixel(*px_dest);
+			px_dest->u32 = un_premultiply_pixel(px_dest->u32);
 			px_dest++;
 		}
 	}
