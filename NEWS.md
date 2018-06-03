@@ -1,5 +1,7 @@
 # Changes
 
+## v1.4 (released 2018/??/??)
+
 ## v1.3 - The Internationalization Release (released 2018/06/02)
 
 * New features:
