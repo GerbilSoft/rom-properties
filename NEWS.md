@@ -2,6 +2,9 @@
 
 ## v1.4 (released 2018/??/??)
 
+* New features:
+  * The Cairo graphics library is now used for GTK+ 3.x builds.
+
 ## v1.3 - The Internationalization Release (released 2018/06/02)
 
 * New features:
