@@ -146,7 +146,7 @@ int rp_image::un_premultiply_cpp(void)
  * @param px	[in] ARGB32 pixel to premultiply.
  * @return Premultiplied pixel.
  */
-static FORCEINLINE uint32_t premultiply_pixel(uint32_t px)
+static FORCEINLINE uint32_t premultiply_pixel_inl(uint32_t px)
 {
 	const unsigned int a = (px >> 24);
 	if (likely(a == 255 || a == 0))
@@ -161,6 +161,16 @@ static FORCEINLINE uint32_t premultiply_pixel(uint32_t px)
 	px = (px + ((px >> 8) & 0xff) + 0x80);
 	px &= 0xff00;
 	return (px | t | (a << 24));
+}
+
+/**
+ * rp_image wrapper function for premultiply_pixel().
+ * @param px	[in] ARGB32 pixel to premultiply.
+ * @return Premultiplied pixel.
+ */
+uint32_t rp_image::premultiply_pixel(uint32_t px)
+{
+	return premultiply_pixel_inl(px);
 }
 
 /**
@@ -188,11 +198,11 @@ int rp_image::premultiply(void)
 	for (int y = backend->height; y > 0; y--, px_dest += dest_stride_adj) {
 		int x = width;
 		for (; x > 1; x -= 2, px_dest += 2) {
-			px_dest[0].u32 = premultiply_pixel(px_dest[0].u32);
-			px_dest[1].u32 = premultiply_pixel(px_dest[1].u32);
+			px_dest[0].u32 = premultiply_pixel_inl(px_dest[0].u32);
+			px_dest[1].u32 = premultiply_pixel_inl(px_dest[1].u32);
 		}
 		if (x == 1) {
-			px_dest->u32 = premultiply_pixel(px_dest->u32);
+			px_dest->u32 = premultiply_pixel_inl(px_dest->u32);
 			px_dest++;
 		}
 	}

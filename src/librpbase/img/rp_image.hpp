@@ -367,6 +367,13 @@ class rp_image
 		inline int un_premultiply(void);
 
 		/**
+		 * rp_image wrapper function for premultiply_pixel().
+		 * @param px	[in] ARGB32 pixel to premultiply.
+		 * @return Premultiplied pixel.
+		 */
+		static uint32_t premultiply_pixel(uint32_t px);
+
+		/**
 		 * Premultiply this image.
 		 *
 		 * Image must be ARGB32.
