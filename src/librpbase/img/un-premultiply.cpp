@@ -1,6 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
  * un-premultiply.cpp: Un-premultiply function.                            *
+ * Standard version. (C++ code only)                                       *
  *                                                                         *
  * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
@@ -32,10 +33,12 @@
 
 namespace LibRpBase {
 
-// Inverted pre-multiplication factors.
-// From Qt 5.9.1's qcolor.cpp.
-// These values are: 0x00FF00FF / alpha
-static const unsigned int qt_inv_premul_factor[256] = {
+/**
+ * Inverted pre-multiplication factors.
+ * From Qt 5.9.1's qcolor.cpp.
+ * These values are: 0x00FF00FF / alpha
+ */
+const unsigned int rp_image::qt_inv_premul_factor[256] = {
 	0, 16711935, 8355967, 5570645, 4177983, 3342387, 2785322, 2387419,
 	2088991, 1856881, 1671193, 1519266, 1392661, 1285533, 1193709, 1114129,
 	1044495, 983055, 928440, 879575, 835596, 795806, 759633, 726605,
@@ -84,7 +87,7 @@ static FORCEINLINE void un_premultiply_pixel(argb32_t &px)
 	} else {
 		// Based on Qt 5.9.1's qUnpremultiply().
 		// (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
-		const unsigned int invAlpha = qt_inv_premul_factor[px.a];
+		const unsigned int invAlpha = rp_image::qt_inv_premul_factor[px.a];
 		// We add 0x8000 to get even rounding.
 		// The rounding also ensures that qPremultiply(qUnpremultiply(p)) == p for all p.
 		px.r = (px.r * invAlpha + 0x8000) >> 16;
@@ -95,10 +98,13 @@ static FORCEINLINE void un_premultiply_pixel(argb32_t &px)
 
 /**
  * Un-premultiply an ARGB32 rp_image.
+ * Standard version using regular C++ code.
+ *
  * Image must be ARGB32.
+ *
  * @return 0 on success; non-zero on error.
  */
-int rp_image::un_premultiply(void)
+int rp_image::un_premultiply_cpp(void)
 {
 	RP_D(const rp_image);
 	rp_image_backend *const backend = d->backend;
@@ -108,7 +114,6 @@ int rp_image::un_premultiply(void)
 		return -1;
 	}
 
-	// NOTE: SSE2 can't be used for un-premultiply due to lack of division instructions.
 	const int width = backend->width;
 	argb32_t *px_dest = static_cast<argb32_t*>(backend->data());
 	int dest_stride_adj = (backend->stride / sizeof(*px_dest)) - width;

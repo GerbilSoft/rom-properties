@@ -294,6 +294,10 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 			img/RpJpeg_ssse3.cpp
 			)
 	ENDIF(JPEG_FOUND)
+	# TODO: Disable SSE 4.1 if not supported by the compiler?
+	SET(librpbase_SSE41_SRCS
+		img/un-premultiply_sse41.cpp
+		)
 
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
@@ -317,11 +321,13 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSE2_FLAG "/arch:SSE2")
 		SET(SSSE3_FLAG "/arch:SSE2")
+		SET(SSE41_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
 		# TODO: Other compilers?
 		SET(MMX_FLAG "-mmmx")
 		SET(SSE2_FLAG "-msse2")
 		SET(SSSE3_FLAG "-mssse3")
+		SET(SSE41_FLAG "-msse4.1")
 	ENDIF()
 
 	IF(MMX_FLAG)
@@ -344,6 +350,13 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 		ENDFOREACH()
 	ENDIF(SSSE3_FLAG)
+
+	IF(SSE41_FLAG)
+		FOREACH(sse41_file ${librpbase_SSE41_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${sse41_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE41_FLAG} ")
+		ENDFOREACH()
+	ENDIF(SSE41_FLAG)
 ENDIF()
 UNSET(arch)
 
@@ -377,6 +390,7 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_MMX_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
+	${librpbase_SSE41_SRCS}
 	)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rpbase)
