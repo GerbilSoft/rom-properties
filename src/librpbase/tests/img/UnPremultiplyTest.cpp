@@ -50,7 +50,12 @@ class UnPremultiplyTest : public ::testing::Test
 	protected:
 		UnPremultiplyTest()
 			: m_img(new rp_image(512, 512, rp_image::FORMAT_ARGB32))
-		{ }
+		{
+			// Initialize the image with non-zero data.
+			size_t sz = m_img->row_bytes() * (m_img->height() - 1);
+			sz += (m_img->width() * sizeof(uint32_t));
+			memset(m_img->bits(), 0x55, sz);
+		}
 
 		~UnPremultiplyTest()
 		{
