@@ -100,6 +100,18 @@ static FORCEINLINE int RP_CPU_HasSSSE3(void)
 	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSSE3);
 }
 
+/**
+ * Check if the CPU supports SSE4.1.
+ * @return Non-zero if SSE4.1 is supported; 0 if not.
+ */
+static FORCEINLINE int RP_CPU_HasSSE41(void)
+{
+	if (unlikely(!RP_CPU_Flags_Init)) {
+		RP_CPU_InitCPUFlags();
+	}
+	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSE41);
+}
+
 #ifdef __cplusplus
 }
 #endif

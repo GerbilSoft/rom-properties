@@ -2,6 +2,12 @@
 
 ## v1.4 (released 2018/??/??)
 
+* New features:
+  * The Cairo graphics library is now used for GTK+ 3.x builds.
+  * The un-premultiply function, used for DXT2 and DXT4 images, now has
+    an SSE4.1-optimized implementation. The standard implementation has
+    also been optimized to be somewhat faster.
+
 ## v1.3 - The Internationalization Release (released 2018/06/02)
 
 * New features:

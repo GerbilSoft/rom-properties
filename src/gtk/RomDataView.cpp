@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "RomDataView.hpp"
-#include "GdkImageConv.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -50,6 +49,9 @@ using LibRomData::RomDataFactory;
 using std::ostringstream;
 using std::string;
 using std::vector;
+
+// PIMGTYPE
+#include "PIMGTYPE.hpp"
 
 // GTK+ 2.x compatibility macros.
 // Reference: https://github.com/kynesim/wireshark/blob/master/ui/gtk/old-gtk-compat.h
@@ -153,9 +155,8 @@ struct _RomDataView {
 	RomData		*romData;
 
 	// Animated icon data.
-	// TODO: GdkPixmap or cairo_surface_t?
 	// TODO: Use std::array<>?
-	GdkPixbuf	*iconFrames[IconAnimData::MAX_FRAMES];
+	PIMGTYPE	iconFrames[IconAnimData::MAX_FRAMES];
 	IconAnimHelper	*iconAnimHelper;
 	int		last_frame_number;	// Last frame number.
 
@@ -398,7 +399,7 @@ rom_data_view_dispose(GObject *object)
 	// Delete the icon frames.
 	for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
 		if (page->iconFrames[i]) {
-			g_object_unref(page->iconFrames[i]);
+			PIMGTYPE_destroy(page->iconFrames[i]);
 			page->iconFrames[i] = nullptr;
 		}
 	}
@@ -533,7 +534,7 @@ rom_data_view_set_filename(RomDataView	*page,
 		// Delete the icon frames.
 		for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
 			if (page->iconFrames[i]) {
-				g_object_unref(page->iconFrames[i]);
+				PIMGTYPE_destroy(page->iconFrames[i]);
 				page->iconFrames[i] = nullptr;
 			}
 		}
@@ -668,10 +669,10 @@ rom_data_view_init_header_row(RomDataView *page)
 		// Get the banner.
 		const rp_image *banner = page->romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
-			GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(banner);
-			if (pixbuf) {
-				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgBanner), pixbuf);
-				g_object_unref(pixbuf);
+			PIMGTYPE pImgType = rp_image_to_PIMGTYPE(banner);
+			if (pImgType) {
+				gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgBanner), pImgType);
+				PIMGTYPE_destroy(pImgType);
 				gtk_widget_show(page->imgBanner);
 			}
 		}
@@ -686,13 +687,13 @@ rom_data_view_init_header_row(RomDataView *page)
 			// Is this an animated icon?
 			const IconAnimData *const iconAnimData = page->romData->iconAnimData();
 			if (iconAnimData) {
-				// Convert the icons to GdkPixbuf.
+				// Convert the icons to PIMGTYPE.
 				for (int i = iconAnimData->count-1; i >= 0; i--) {
 					const rp_image *const frame = iconAnimData->frames[i];
 					if (frame && frame->isValid()) {
-						GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(frame);
-						if (pixbuf) {
-							page->iconFrames[i] = pixbuf;
+						PIMGTYPE pImgType = rp_image_to_PIMGTYPE(frame);
+						if (pImgType) {
+							page->iconFrames[i] = pImgType;
 						}
 					}
 				}
@@ -703,7 +704,7 @@ rom_data_view_init_header_row(RomDataView *page)
 				page->last_frame_number = page->iconAnimHelper->frameNumber();
 
 				// Show the first frame.
-				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon),
+				gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgIcon),
 					page->iconFrames[page->last_frame_number]);
 				gtk_widget_show(page->imgIcon);
 
@@ -711,10 +712,10 @@ rom_data_view_init_header_row(RomDataView *page)
 			} else {
 				// Not an animated icon.
 				page->last_frame_number = 0;
-				GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(icon);
-				if (pixbuf) {
-					gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon), pixbuf);
-					page->iconFrames[0] = pixbuf;
+				PIMGTYPE pImgType = rp_image_to_PIMGTYPE(icon);
+				if (pImgType) {
+					gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgIcon), pImgType);
+					page->iconFrames[0] = pImgType;
 					gtk_widget_show(page->imgIcon);
 				}
 			}
@@ -1621,7 +1622,7 @@ static gboolean anim_timer_func(RomDataView *page)
 	if (frame != page->last_frame_number) {
 		// New frame number.
 		// Update the icon.
-		gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon), page->iconFrames[frame]);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(page->imgIcon), page->iconFrames[frame]);
 		page->last_frame_number = frame;
 	}
 

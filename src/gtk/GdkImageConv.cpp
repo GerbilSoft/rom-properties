@@ -53,7 +53,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 		return nullptr;
 
 	uint32_t *px_dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
-	const int dest_stride_adj = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*px_dest)) - img->width();
+	const int dest_stride_adj = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*px_dest)) - width;
 
 	switch (img->format()) {
 		case rp_image::FORMAT_ARGB32: {

@@ -27,18 +27,17 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# it won't do anything.
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
-		SET(rom-properties-gtk_IFUNC_SRCS GdkImageConv_ifunc.cpp)
+		SET(rom-properties-gtk2_IFUNC_SRCS GdkImageConv_ifunc.cpp)
 	ENDIF(UNIX AND NOT APPLE)
 
 	# NOTE: SSSE3 flags are set in subprojects, not here.
-	SET(rom-properties-gtk_SSSE3_SRCS GdkImageConv_ssse3.cpp)
+	SET(rom-properties-gtk2_SSSE3_SRCS GdkImageConv_ssse3.cpp)
 ENDIF()
 UNSET(arch)
 
 # Sources and headers.
 SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
-	GdkImageConv.cpp
 	CreateThumbnail.cpp
 	)
 SET(rom-properties-gtk_H
@@ -46,17 +45,38 @@ SET(rom-properties-gtk_H
 	GdkImageConv.hpp
 	)
 
+# GTK2 sources and headers.
+SET(rom-properties-gtk2_SRCS GdkImageConv.cpp)
+SET(rom-properties-gtk2_H GdkImageConv.hpp)
+
+# GTK3 sources and headers.
+SET(rom-properties-gtk3_SRCS CairoImageConv.cpp)
+SET(rom-properties-gtk3_H CairoImageConv.hpp)
+
 # Common libraries required for both GTK+ 2.x and 3.x.
 FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GObject2 2.26.0)
-FIND_PACKAGE(GdkPixbuf2)
-IF(NOT GLib2_FOUND OR NOT GObject2_FOUND OR NOT GdkPixbuf2_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND)
+	# Check for version-specific image libraries.
+	FIND_PACKAGE(GdkPixbuf2)
+	IF(NOT GdkPixbuf2_FOUND)
+		# Cannot build GTK2 frontends.
+		SET(BUILD_GTK2 OFF CACHE "" INTERNAL FORCE)
+		SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
+	ENDIF(NOT GdkPixbuf2_FOUND)
+	FIND_PACKAGE(Cairo)
+	IF(NOT Cairo_FOUND)
+		# Cannot build GTK3 frontends.
+		SET(BUILD_GTK3 OFF CACHE "" INTERNAL FORCE)
+		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
+	ENDIF(NOT Cairo_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND)
 	# Cannot build any GTK+ frontends.
 	SET(BUILD_GTK2 OFF CACHE "" INTERNAL FORCE)
 	SET(BUILD_GTK3 OFF CACHE "" INTERNAL FORCE)
 	SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
 	SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
-ENDIF(NOT GLib2_FOUND OR NOT GObject2_FOUND OR NOT GdkPixbuf2_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND)
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)
@@ -75,8 +95,8 @@ ENDIF(BUILD_GTK2)
 
 # Build GTK+ 3.x frontends.
 IF(BUILD_GTK3)
-	# GTK3 minimum is 3.0.0, so no version check is needed.
-	FIND_PACKAGE(GTK3 ${REQUIRE_GTK3})
+	# GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
+	FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gnome)
 	ELSE(GTK3_FOUND)

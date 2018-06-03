@@ -712,8 +712,8 @@ inline rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 
 #if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
 
-// System does not support IFUNC, or we don't have optimizations for these CPUs.
-// Use standard inline dispatch.
+// System does not support IFUNC, or we aren't guaranteed to have
+// optimizations for these CPUs. Use standard inline dispatch.
 
 /**
  * Convert a linear 16-bit RGB image to rp_image.

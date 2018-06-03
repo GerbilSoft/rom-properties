@@ -33,6 +33,7 @@
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 # include "librpbase/cpuflags_x86.h"
 # define RP_IMAGE_HAS_SSE2 1
+# define RP_IMAGE_HAS_SSE41 1
 #endif
 #ifdef RP_CPU_AMD64
 # define RP_IMAGE_ALWAYS_HAS_SSE2 1
@@ -103,6 +104,14 @@ class rp_image
 	private:
 		friend class rp_image_private;
 		rp_image_private *const d_ptr;
+
+	public:
+		/**
+		* Inverted pre-multiplication factors.
+		* From Qt 5.9.1's qcolor.cpp.
+		* These values are: 0x00FF00FF / alpha
+		*/
+		static const unsigned int qt_inv_premul_factor[256];
 
 	public:
 		/**
@@ -328,10 +337,50 @@ class rp_image
 
 		/**
 		 * Un-premultiply this image.
+		 * Standard version using regular C++ code.
+		 *
 		 * Image must be ARGB32.
+		 *
 		 * @return 0 on success; non-zero on error.
 		 */
-		int un_premultiply(void);
+		int un_premultiply_cpp(void);
+
+#ifdef RP_IMAGE_HAS_SSE41
+		/**
+		 * Un-premultiply this image.
+		 * SSE4.1-optimized version.
+		 *
+		 * Image must be ARGB32.
+		 *
+		 * @return 0 on success; non-zero on error.
+		 */
+		int un_premultiply_sse41(void);
+#endif /* RP_IMAGE_HAS_SSE41 */
+
+		/**
+		 * Un-premultiply this image.
+		 *
+		 * Image must be ARGB32.
+		 *
+		 * @return 0 on success; non-zero on error.
+		 */
+		inline int un_premultiply(void);
+
+		/**
+		 * rp_image wrapper function for premultiply_pixel().
+		 * @param px	[in] ARGB32 pixel to premultiply.
+		 * @return Premultiplied pixel.
+		 */
+		static uint32_t premultiply_pixel(uint32_t px);
+
+		/**
+		 * Premultiply this image.
+		 *
+		 * Image must be ARGB32.
+		 *
+		 * @return 0 on success; non-zero on error.
+		 */
+		int premultiply(void);
 
 		/**
 		 * Convert a chroma-keyed image to standard ARGB32.
@@ -374,7 +423,7 @@ class rp_image
 		 * @param key Chroma key color.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int apply_chroma_key(uint32_t key);
+		int IFUNC_INLINE apply_chroma_key(uint32_t key);
 
 		/**
 		 * Vertically flip the image.
@@ -386,6 +435,31 @@ class rp_image
 		 */
 		rp_image *vflip(void) const;
 };
+
+/**
+ * Un-premultiply this image.
+ *
+ * Image must be ARGB32.
+ *
+ * @return 0 on success; non-zero on error.
+ */
+inline int rp_image::un_premultiply(void)
+{
+	// FIXME: Figure out how to get IFUNC working with  C++ member functions.
+#ifdef RP_IMAGE_HAS_SSE41
+	if (RP_CPU_HasSSE41()) {
+		return un_premultiply_sse41();
+	} else
+#endif /* RP_IMAGE_HAS_SSE2 */
+	{
+		return un_premultiply_cpp();
+	}
+}
+
+#if defined(RP_HAS_IFUNC) && defined(RP_IMAGE_ALWAYS_HAS_SSE2)
+
+// System does support IFUNC, but it's always guaranteed to have SSE2.
+// Eliminate the IFUNC dispatch on this system.
 
 /**
  * Convert a chroma-keyed image to standard ARGB32.
@@ -400,20 +474,41 @@ class rp_image
  */
 inline int rp_image::apply_chroma_key(uint32_t key)
 {
-#ifdef RP_IMAGE_ALWAYS_HAS_SSE2
 	// amd64 always has SSE2.
 	return apply_chroma_key_sse2(key);
-#else /* !RP_IMAGE_ALWAYS_HAS_SSE2 */
-# ifdef RP_IMAGE_HAS_SSE2
+}
+
+#endif /* defined(RP_HAS_IFUNC) && defined(RP_IMAGE_ALWAYS_HAS_SSE2) */
+
+#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
+
+// System does not support IFUNC, or we aren't guaranteed to have
+// optimizations for these CPUs. Use standard inline dispatch.
+
+/**
+ * Convert a chroma-keyed image to standard ARGB32.
+ *
+ * This operates on the image itself, and does not return
+ * a duplicated image with the adjusted image.
+ *
+ * NOTE: The image *must* be ARGB32.
+ *
+ * @param key Chroma key color.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+inline int rp_image::apply_chroma_key(uint32_t key)
+{
+#ifdef RP_IMAGE_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		return apply_chroma_key_sse2(key);
 	} else
-# endif /* RP_IMAGE_HAS_SSE2 */
+#endif /* RP_IMAGE_HAS_SSE2 */
 	{
 		return apply_chroma_key_cpp(key);
 	}
-#endif /* RP_IMAGE_ALWAYS_HAS_SSE2 */
 }
+
+#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
 
 }
 
