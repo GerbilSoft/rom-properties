@@ -685,7 +685,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		if (creditsData->sub) {
 			// Sub-credit.
 			sCredits += rp_sprintf(rtfEscape(C_("AboutTab|Credits", " (%s)")).c_str(),
-				rtfEscape(creditsData->sub));
+				rtfEscape(creditsData->sub).c_str());
 		}
 	}
 
