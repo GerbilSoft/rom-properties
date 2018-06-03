@@ -44,26 +44,25 @@ namespace LibRpBase {
  *
  * This is needed in order to convert DXT2/3 to DXT4/5.
  *
- * @param px	[in] ARGB32 pixel to un-premultiply.
- * @return Un-premultiplied pixel.
+ * @param px	[in/out] argb32_t pixel to un-premultiply, in place.
  */
-static FORCEINLINE uint32_t un_premultiply_pixel_sse41(uint32_t px)
+static FORCEINLINE void un_premultiply_pixel_sse41(argb32_t &px)
 {
-	const unsigned int alpha = (px >> 24);
+	const uint alpha = px.a;
 	if (alpha == 255 || alpha == 0)
-		return px;
+		return;
 
 	const unsigned int invAlpha = rp_image::qt_inv_premul_factor[alpha];
 	const __m128i via = _mm_set1_epi32(invAlpha);
 	const __m128i vr = _mm_set1_epi32(0x8000);
-	__m128i vl = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(px));
+	__m128i vl = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(px.u32));
 	vl = _mm_mullo_epi32(vl, via);
 	vl = _mm_add_epi32(vl, vr);
 	vl = _mm_srai_epi32(vl, 16);
 	vl = _mm_insert_epi32(vl, alpha, 3);
 	vl = _mm_packus_epi32(vl, vl);
 	vl = _mm_packus_epi16(vl, vl);
-	return _mm_cvtsi128_si32(vl);
+	px.u32 = _mm_cvtsi128_si32(vl);
 }
 
 /**
@@ -87,11 +86,11 @@ int rp_image::un_premultiply_sse41(void)
 	for (int y = backend->height; y > 0; y--, px_dest += dest_stride_adj) {
 		int x = width;
 		for (; x > 1; x -= 2, px_dest += 2) {
-			px_dest[0].u32 = un_premultiply_pixel_sse41(px_dest[0].u32);
-			px_dest[1].u32 = un_premultiply_pixel_sse41(px_dest[1].u32);
+			un_premultiply_pixel_sse41(px_dest[0]);
+			un_premultiply_pixel_sse41(px_dest[1]);
 		}
 		if (x == 1) {
-			px_dest->u32 = un_premultiply_pixel_sse41(px_dest->u32);
+			un_premultiply_pixel_sse41(*px_dest);
 			px_dest++;
 		}
 	}
