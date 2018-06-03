@@ -113,6 +113,16 @@ TEST_F(UnPremultiplyTest, un_premultiply_dispatch_benchmark)
 }
 #endif /* RP_IMAGE_HAS_SSE41 */
 
+/**
+ * Benchmark the ImageDecoder::premultiply() function. (Standard version)
+ */
+TEST_F(UnPremultiplyTest, premultiply_cpp)
+{
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		m_img->premultiply();
+	}
+}
+
 } }
 
 /**

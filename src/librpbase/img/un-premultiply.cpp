@@ -136,4 +136,67 @@ int rp_image::un_premultiply_cpp(void)
 	return 0;
 }
 
+/**
+ * Premultiply an argb32_t pixel. (SSE4.1 version)
+ * From qt-5.11.0's qrgb.h.
+ * qPremultiply()
+ *
+ * This is needed in order to use the Cairo graphics library.
+ *
+ * @param px	[in] ARGB32 pixel to premultiply.
+ * @return Premultiplied pixel.
+ */
+static FORCEINLINE uint32_t premultiply_pixel(uint32_t px)
+{
+	const unsigned int a = (px >> 24);
+	if (likely(a == 255 || a == 0))
+		return px;
+
+	// Based on Qt 5.9.1's qPremultiply().
+	unsigned int t = (px & 0xff00ff) * a;
+	t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
+	t &= 0xff00ff;
+
+	px = ((px >> 8) & 0xff) * a;
+	px = (px + ((px >> 8) & 0xff) + 0x80);
+	px &= 0xff00;
+	return (px | t | (a << 24));
+}
+
+/**
+ * Premultiply an ARGB32 rp_image.
+ *
+ * Image must be ARGB32.
+ *
+ * @return 0 on success; non-zero on error.
+ */
+int rp_image::premultiply(void)
+{
+	// TODO: Qt doesn't have SSE-optimized builds.
+
+	RP_D(const rp_image);
+	rp_image_backend *const backend = d->backend;
+	assert(backend->format == rp_image::FORMAT_ARGB32);
+	if (backend->format != rp_image::FORMAT_ARGB32) {
+		// Incorrect format...
+		return -1;
+	}
+
+	const int width = backend->width;
+	argb32_t *px_dest = static_cast<argb32_t*>(backend->data());
+	int dest_stride_adj = (backend->stride / sizeof(*px_dest)) - width;
+	for (int y = backend->height; y > 0; y--, px_dest += dest_stride_adj) {
+		int x = width;
+		for (; x > 1; x -= 2, px_dest += 2) {
+			px_dest[0].u32 = premultiply_pixel(px_dest[0].u32);
+			px_dest[1].u32 = premultiply_pixel(px_dest[1].u32);
+		}
+		if (x == 1) {
+			px_dest->u32 = premultiply_pixel(px_dest->u32);
+			px_dest++;
+		}
+	}
+	return 0;
+}
+
 }

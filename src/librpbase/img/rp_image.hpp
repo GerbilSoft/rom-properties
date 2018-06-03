@@ -367,6 +367,15 @@ class rp_image
 		inline int un_premultiply(void);
 
 		/**
+		 * Premultiply this image.
+		 *
+		 * Image must be ARGB32.
+		 *
+		 * @return 0 on success; non-zero on error.
+		 */
+		int premultiply(void);
+
+		/**
 		 * Convert a chroma-keyed image to standard ARGB32.
 		 * Standard version using regular C++ code.
 		 *
