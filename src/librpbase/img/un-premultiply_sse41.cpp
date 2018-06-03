@@ -52,7 +52,7 @@ static FORCEINLINE void un_premultiply_pixel_sse41(argb32_t &px)
 	if (alpha == 255 || alpha == 0)
 		return;
 
-	const uint invAlpha = rp_image::qt_inv_premul_factor[alpha];
+	const unsigned int invAlpha = rp_image::qt_inv_premul_factor[alpha];
 	const __m128i via = _mm_set1_epi32(invAlpha);
 	const __m128i vr = _mm_set1_epi32(0x8000);
 	__m128i vl = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(px.u32));
