@@ -23,9 +23,14 @@
 
 #include <glib.h>
 
+// NOTE: thunarx.h doesn't have extern "C" set up properly everywhere.
 G_BEGIN_DECLS;
 
-// NOTE: thunarx.h doesn't have extern "C" set up properly everywhere.
+// NOTE: Thunar-1.8.0's thunarx-renamer.h depends on GtkVBox,
+// which is deprecated in GTK+ 3.x.
+#ifdef GTK_DISABLE_DEPRECATED
+# undef GTK_DISABLE_DEPRECATED
+#endif
 #include <thunarx/thunarx.h>
 
 typedef struct _RomPropertiesPageClass	RomPropertiesPageClass;

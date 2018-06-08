@@ -253,7 +253,8 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	switch (desc_format_type) {
 		case RP_DFT_XFCE:
 		default:
-			// TODO: Changes for XFCE/GTK3.
+			// XFCE style.
+			// NOTE: No changes between GTK+ 2.x and 3.x.
 
 			// Text alignment: Right
 			gtk_label_set_justify(label, GTK_JUSTIFY_RIGHT);

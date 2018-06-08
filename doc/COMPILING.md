@@ -7,7 +7,8 @@ packages:
 * All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev mesa-common-dev gettext
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules kio-dev libkf5widgetsaddons-dev
-* XFCE: libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev
+* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev
+* XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev
 * GNOME: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev
 
 On Red Hat/Fedora, you will need to install "C Development Tools and Libraries"
@@ -15,13 +16,20 @@ and the following development packages:
 * All: cmake libcurl-devel zlib-devel libpng-devel libjpeg-turbo-devel nettle-devel tinyxml2-devel libbsd-devel mesa-libGL-devel gettext
 * KDE 4.x: qt-devel kdelibs-devel
 * KDE 5.x: qt5-qtbase-devel qt5-qttools extra-cmake-modules kf5-kio-devel kf5-kwidgetsaddons-devel
-* XFCE: glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel
+* XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel
+* XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel
 * GNOME: glib2-devel gtk3-devel cairo-devel nautilus-devel
 
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.
 * Debian/Ubuntu: tumbler
 * Red Hat/Fedora: tumbler
+
+NOTE 2: Thunar 1.8.0 switched to GTK+ 3.x. This version is not currently
+available in most distribution repositories. The Fedora RPM listed above
+may change by the time it hits the repositories, or it may stay the same
+if they decide not to allow both ThunarX2 and ThunarX3 to be installed
+side-by-side.
 
 Clone the repository, then:
 * cd rom-properties
