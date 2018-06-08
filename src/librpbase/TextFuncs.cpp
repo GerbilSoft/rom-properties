@@ -287,7 +287,6 @@ string formatFileSize(int64_t size)
 	int whole_part, frac_part;
 
 	// TODO: Optimize this?
-	// TODO: Localize this?
 	if (size < 0) {
 		// Invalid size. Print the value as-is.
 		suffix = nullptr;
@@ -323,7 +322,7 @@ string formatFileSize(int64_t size)
 		suffix = C_("TextFuncs|FileSize", "PiB");
 		whole_part = static_cast<int>(size >> 50);
 		frac_part = calc_frac_part(size, (1LL << 50));
-	} else /*if (size < (2ULL << 70))*/ {
+	} else /*if (size < (2LL << 70))*/ {
 		// tr: Exabytes
 		suffix = C_("TextFuncs|FileSize", "EiB");
 		whole_part = static_cast<int>(size >> 60);
