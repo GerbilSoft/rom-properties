@@ -37,7 +37,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: rom-properties-kde4, rom-properties-kde5, rom-properties-xfce, rom-properties-gnome, rom-properties-cli, rom-properties-stub, rom-properties-lang, ${misc:Depends}
+Depends: rom-properties-kde4, rom-properties-kde5, rom-properties-xfce, rom-properties-gnome, rom-properties-cli, rom-properties-stub, rom-properties-lang, rom-properties-thumbnail-dbus, ${misc:Depends}
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -69,14 +69,14 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-xfce
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: rom-properties-thumbnailer-dbus, ${shlibs:Depends}, ${misc:Depends}
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
  .
- This package contains the XFCE version.
+ This package contains the XFCE (GTK+ 2.x) version.
 
 Package: rom-properties-gnome
 Architecture: any
@@ -122,3 +122,16 @@ Description: ROM Properties Page shell extension
  including Nintendo GameCube and Wii.
  .
  This package contains the language files for localization.
+
+Package: rom-properties-thumbnailer-dbus
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: rom-properties-lang
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the D-Bus Thumbnailer service, used by XFCE's
+ tumblerd thumbnailing subsystem.
+
