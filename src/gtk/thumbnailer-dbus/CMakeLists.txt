@@ -25,6 +25,14 @@ ADD_CUSTOM_COMMAND(
 	VERBATIM
 	)
 
+# Disable unused parameter warnings in generated D-Bus sources.
+INCLUDE(CheckCCompilerFlag)
+CHECK_C_COMPILER_FLAG("-Wno-unused-parameter" CFLAG_Wno_unused_parameter)
+IF(CFLAG_Wno_unused_parameter)
+	SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
+		APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
+ENDIF(CFLAG_Wno_unused_parameter)
+
 SET(rp-thumbnailer-dbus_SRCS
 	rp-thumbnailer-dbus.cpp
 	rp-thumbnailer-main.cpp

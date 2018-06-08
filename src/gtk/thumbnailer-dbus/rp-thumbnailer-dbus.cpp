@@ -428,6 +428,7 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	const char *flavor, bool urgent,
 	RpThumbnailer *thumbnailer)
 {
+	RP_UNUSED(mime_type);
 	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), invocation, false);
 	g_dbus_async_return_val_if_fail(uri != nullptr, invocation, false);
 

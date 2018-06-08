@@ -116,6 +116,8 @@ shutdown_rp_thumbnailer_dbus(RpThumbnailer *thumbnailer, GMainLoop *main_loop)
 static void
 on_dbus_name_lost(GDBusConnection *connection, const gchar *name, gpointer user_data)
 {
+	RP_UNUSED(connection);
+	RP_UNUSED(name);
 	GMainLoop *const main_loop = (GMainLoop*)user_data;
 	g_return_if_fail(main_loop != nullptr);
 
