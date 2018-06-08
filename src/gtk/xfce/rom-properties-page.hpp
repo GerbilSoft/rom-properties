@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (XFCE)                             *
  * rom-properties-page.hpp: ThunarX Properties Page.                       *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_XFCE_ROM_PROPERTIES_PAGE_HPP__
@@ -43,7 +42,7 @@ typedef struct _RomPropertiesPage	RomPropertiesPage;
 GType			rom_properties_page_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 void			rom_properties_page_register_type	(ThunarxProviderPlugin *plugin) G_GNUC_INTERNAL;
 
-RomPropertiesPage	*rom_properties_page_new		(void) G_GNUC_CONST G_GNUC_INTERNAL G_GNUC_MALLOC;
+RomPropertiesPage	*rom_properties_page_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 ThunarxFileInfo		*rom_properties_page_get_file		(RomPropertiesPage	*page) G_GNUC_INTERNAL;
 void			rom_properties_page_set_file		(RomPropertiesPage	*page,
