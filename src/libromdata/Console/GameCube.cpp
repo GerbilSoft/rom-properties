@@ -1218,12 +1218,16 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		// Disc image is stored in "HDD" sector 1.
 		unsigned int hdd_sector_size = (1 << info->header.pData[8]);
 		if (info->header.size >= hdd_sector_size + 0x200) {
-			// Check for Wii magic.
-			// FIXME: GCN magic too?
+			// Check for magic numbers.
 			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
 			if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 				// Wii disc image. (WBFS format)
 				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
+			} else if (gcn_header->magic_gcn == cpu_to_be32(GCN_MAGIC)) {
+				// GameCube disc image. (WBFS format)
+				// NOTE: Not really useful, but `wit` supports
+				// converting GameCube disc images to WBFS format.
+				return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WBFS);
 			}
 		}
 	}
