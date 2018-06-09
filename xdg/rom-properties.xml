@@ -114,4 +114,9 @@
       <match value="PVRX" type="string" offset="16"/>
     </magic>
   </mime-type>
+  <mime-type type="audio/x-adx">
+    <comment>CRI ADX audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.adx"/>
+  </mime-type>
 </mime-info>
