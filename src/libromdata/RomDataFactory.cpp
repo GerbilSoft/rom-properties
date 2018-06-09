@@ -73,6 +73,9 @@ using std::vector;
 #include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
 
+// RomData subclasses: Audio
+#include "Audio/ADX.hpp"
+
 // RomData subclasses: Other
 #include "Other/Amiibo.hpp"
 #include "Other/ELF.hpp"
@@ -176,6 +179,9 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SegaPVR, true),
 	GetRomDataFns(ValveVTF, true),
 	GetRomDataFns(ValveVTF3, true),
+
+	// Audio
+	GetRomDataFns(ADX, false),
 
 	// Other
 	GetRomDataFns(Amiibo, true),

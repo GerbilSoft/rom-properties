@@ -445,6 +445,8 @@ const char *RomData::fileType_string(void) const
 		NOP_C_("RomData|FileType", "Shared Library"),
 		// tr: FTYPE_CORE_DUMP
 		NOP_C_("RomData|FileType", "Core Dump"),
+		// tr: FTYPE_AUDIO_FILE
+		NOP_C_("RomData|FileType", "Audio File"),
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");

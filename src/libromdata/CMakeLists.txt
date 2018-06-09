@@ -53,6 +53,8 @@ SET(libromdata_SRCS
 	Texture/ValveVTF.cpp
 	Texture/ValveVTF3.cpp
 
+	Audio/ADX.cpp
+
 	Other/Amiibo.cpp
 	Other/ELF.cpp
 	Other/EXE.cpp
@@ -154,6 +156,10 @@ SET(libromdata_H
 	Texture/pvr_structs.h
 	Texture/vtf_structs.h
 	Texture/vtf3_structs.h
+
+	Audio/ADX.hpp
+
+	Audio/adx_structs.h
 
 	Other/Amiibo.hpp
 	Other/ELF.hpp

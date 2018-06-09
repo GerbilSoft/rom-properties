@@ -229,6 +229,7 @@ class RomData
 			FTYPE_RELOCATABLE_OBJECT,	// Relocatable Object File (*.o)
 			FTYPE_SHARED_LIBRARY,		// Shared Library (similar to DLLs)
 			FTYPE_CORE_DUMP,		// Core Dump
+			FTYPE_AUDIO_FILE,		// Audio file
 
 			FTYPE_LAST			// End of FileType.
 		};
