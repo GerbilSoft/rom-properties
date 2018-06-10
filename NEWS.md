@@ -8,6 +8,9 @@
     an SSE4.1-optimized implementation. The standard implementation has
     also been optimized to be somewhat faster.
 
+* New parsers:
+  * ADX: CRI ADX audio format. Used by many Sega games.
+
 ## v1.3 - The Internationalization Release (released 2018/06/02)
 
 * New features:
