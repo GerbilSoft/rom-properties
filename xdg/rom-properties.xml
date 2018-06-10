@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <!-- *** Audio *** -->
+
+  <!-- ADX -->
+  <mime-type type="audio/x-adx">
+    <comment>CRI ADX audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.adx"/>
+  </mime-type>
+
+  <!-- *** Console *** -->
+
+  <!-- GameCube -->
   <mime-type type="application/x-gamecube-rom">
     <comment>GameCube disc image</comment>
     <sub-class-of type="application/x-raw-disk-image"/>
@@ -52,6 +64,20 @@
       <match value="WUP-" type="string" offset="0"/>
     </magic>
   </mime-type>
+
+  <!-- PlayStationSave -->
+  <mime-type type="application/x-ps1-save">
+    <comment>PlayStation save file</comment>
+    <glob pattern="*.psv"/>
+    <magic priority="50">
+      <match value="\0VSP\0\0\0\0" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+
+  <!-- *** Handheld *** -->
+
+  <!-- GameCom -->
   <mime-type type="application/x-game-com-rom">
     <comment>game.com ROM image</comment>
     <generic-icon name="application-x-executable"/>
@@ -61,29 +87,10 @@
       <match value="TigerDMGC" type="string" offset="5"/>
     </magic>
   </mime-type>
-  <mime-type type="application/x-ps1-save">
-    <comment>PlayStation save file</comment>
-    <glob pattern="*.psv"/>
-    <magic priority="50">
-      <match value="\0VSP\0\0\0\0" type="string" offset="0"/>
-    </magic>
-  </mime-type>
-  <mime-type type="image/x-vtf">
-    <comment>Valve texture file</comment>
-    <generic-icon name="image-x-generic"/>
-    <glob pattern="*.vtf"/>
-    <magic priority="50">
-      <match value="VTF\0" type="string" offset="0"/>
-    </magic>
-  </mime-type>
-  <mime-type type="image/x-vtf3">
-    <comment>Valve texture file (PS3)</comment>
-    <generic-icon name="image-x-generic"/>
-    <glob pattern="*.vtf"/>
-    <magic priority="50">
-      <match value="VTF3" type="string" offset="0"/>
-    </magic>
-  </mime-type>
+
+  <!-- Texture -->
+
+  <!-- SegaPVR -->
   <mime-type type="image/x-sega-pvr">
     <comment>Sega PVR texture file</comment>
     <generic-icon name="image-x-generic"/>
@@ -114,9 +121,24 @@
       <match value="PVRX" type="string" offset="16"/>
     </magic>
   </mime-type>
-  <mime-type type="audio/x-adx">
-    <comment>CRI ADX audio</comment>
-    <generic-icon name="audio-x-generic"/>
-    <glob pattern="*.adx"/>
+
+  <!-- ValveVTF -->
+  <mime-type type="image/x-vtf">
+    <comment>Valve texture file</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.vtf"/>
+    <magic priority="50">
+      <match value="VTF\0" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- ValveVTF3 -->
+  <mime-type type="image/x-vtf3">
+    <comment>Valve texture file (PS3)</comment>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.vtf"/>
+    <magic priority="50">
+      <match value="VTF3" type="string" offset="0"/>
+    </magic>
   </mime-type>
 </mime-info>
