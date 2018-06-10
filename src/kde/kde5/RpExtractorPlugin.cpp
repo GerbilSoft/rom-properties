@@ -24,6 +24,23 @@
 
 #include "RpExtractorPlugin.hpp"
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomMetaData.hpp"
+#include "librpbase/file/RpFile.hpp"
+using LibRpBase::RomData;
+using LibRpBase::RomMetaData;
+using LibRpBase::IRpFile;
+using LibRpBase::RpFile;
+
+// libromdata
+#include "libromdata/RomDataFactory.hpp"
+using LibRomData::RomDataFactory;
+
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
+
 // KDE includes.
 #include <kfilemetadata/extractorplugin.h>
 #include <kfilemetadata/properties.h>
@@ -67,17 +84,70 @@ QStringList RpExtractorPlugin::mimetypes(void) const
 
 void RpExtractorPlugin::extract(ExtractionResult *result)
 {
-	result->add(Property::Duration, 1234);
-	return;
-
-	// TODO: Use KIO to support network URLs.
-	// For now, require a local path.
-	KFileItem item(QUrl(result->inputUrl()));
-	QString filename = item.localPath();
+	// TODO: Check if the input URL has a scheme.
+	// In testing, it seems to only be local paths.
+	QString filename = result->inputUrl();
 	if (filename.isEmpty())
 		return;
 
-	return;
+	// Attempt to open the ROM file.
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	unique_ptr<IRpFile> file(new RpFile(filename.toUtf8().constData(), RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen()) {
+		// Could not open the file.
+		return;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	RomData *const romData = RomDataFactory::create(file.get(), false);
+	file.reset(nullptr);	// file is dup()'d by RomData.
+	if (!romData) {
+		// ROM is not supported.
+		return;
+	}
+
+	// Get the metadata properties.
+	const RomMetaData *metaData = romData->metaData();
+	if (!metaData || metaData->empty()) {
+		// No metadata properties.
+		romData->unref();
+		return;
+	}
+
+	// Process the metadata.
+	const int count = metaData->count();
+	for (int i = 0; i < count; i++) {
+		const RomMetaData::MetaData *prop = metaData->prop(i);
+		assert(prop != nullptr);
+		if (!prop)
+			continue;
+
+		// RomMetaData's property indexes match KFileMetaData.
+		// No conversion is necessary.
+		switch (prop->type) {
+			case LibRpBase::PropertyType::Integer:
+				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+					prop->data.value);
+				break;
+
+			case LibRpBase::PropertyType::String: {
+				const std::string *str = prop->data.str;
+				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+					QString::fromUtf8(str->data(), static_cast<int>(str->size())));
+				break;
+			}
+
+			default:
+				// ERROR!
+				assert(!"Unsupported RomMetaData PropertyType.");
+				break;
+		}
+	}
+
+	// Finished extracting metadata.
+	romData->unref();
 }
 
 }

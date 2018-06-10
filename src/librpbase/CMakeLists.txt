@@ -99,6 +99,7 @@ SET(librpbase_SRCS
 	TextFuncs_libc.c
 	RomData.cpp
 	RomFields.cpp
+	RomMetaData.cpp
 	SystemRegion.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
@@ -144,6 +145,7 @@ SET(librpbase_H
 	RomData_decl.hpp
 	RomData_p.hpp
 	RomFields.hpp
+	RomMetaData.hpp
 	SystemRegion.hpp
 	bitstuff.h
 	file/IRpFile.hpp

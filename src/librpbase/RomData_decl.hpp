@@ -105,6 +105,18 @@ class klass : public LibRpBase::RomData { \
 		int loadFieldData(void) final;
 
 /**
+ * RomData subclass function declaration for loading metadata properties.
+ */
+#define ROMDATA_DECL_METADATA() \
+	protected: \
+		/** \
+		 * Load metadata properties. \
+		 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
+		 * @return Number of metadata properties read on success; negative POSIX error code on error. \
+		 */ \
+		int loadMetaData(void) final;
+
+/**
  * RomData subclass function declarations for image handling.
  */
 #define ROMDATA_DECL_IMGSUPPORT() \

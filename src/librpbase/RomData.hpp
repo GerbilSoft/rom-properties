@@ -37,6 +37,7 @@ namespace LibRpBase {
 
 class IRpFile;
 class RomFields;
+class RomMetaData;
 class rp_image;
 struct IconAnimData;
 
@@ -383,6 +384,13 @@ class RomData
 		virtual int loadFieldData(void) = 0;
 
 		/**
+		 * Load metadata properties.
+		 * Called by RomData::metaData() if the field data hasn't been loaded yet.
+		 * @return Number of metadata properties read on success; negative POSIX error code on error.
+		 */
+		virtual int loadMetaData(void);
+
+		/**
 		 * Load an internal image.
 		 * Called by RomData::image().
 		 * @param imageType	[in] Image type to load.
@@ -397,6 +405,12 @@ class RomData
 		 * @return ROM Fields object.
 		 */
 		const RomFields *fields(void) const;
+
+		/**
+		 * Get the ROM Metadata object.
+		 * @return ROM Metadata object.
+		 */
+		const RomMetaData *metaData(void) const;
 
 	private:
 		/**
