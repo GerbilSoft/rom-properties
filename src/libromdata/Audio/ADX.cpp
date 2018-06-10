@@ -313,7 +313,7 @@ int ADX::loadFieldData(void)
 
 	// ADX header.
 	const ADX_Header *const adxHeader = &d->adxHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Format.
 	const char *format;
@@ -338,6 +338,9 @@ int ADX::loadFieldData(void)
 			break;
 	}
 	d->fields->addField_string(C_("ADX", "Format"), format);
+
+	// Number of channels.
+	d->fields->addField_string_numeric(C_("ADX", "Channels"), adxHeader->channel_count);
 
 	// Sample rate and sample count.
 	const uint32_t sample_rate = be32_to_cpu(adxHeader->sample_rate);
@@ -410,7 +413,10 @@ int ADX::loadMetaData(void)
 
 	// ADX header.
 	const ADX_Header *const adxHeader = &d->adxHeader;
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// Number of channels.
+	d->metaData->addMetaData_integer(Property::Channels, adxHeader->channel_count);
 
 	// Sample rate.
 	d->metaData->addMetaData_integer(Property::SampleRate,
