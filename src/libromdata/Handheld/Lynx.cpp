@@ -217,7 +217,7 @@ const char *const *Lynx::supportedFileExtensions_static(void)
 int Lynx::loadFieldData(void)
 {
 	RP_D(Lynx);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

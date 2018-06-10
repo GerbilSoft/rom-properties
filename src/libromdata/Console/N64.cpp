@@ -263,7 +263,7 @@ const char *const *N64::supportedFileExtensions_static(void)
 int N64::loadFieldData(void)
 {
 	RP_D(N64);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

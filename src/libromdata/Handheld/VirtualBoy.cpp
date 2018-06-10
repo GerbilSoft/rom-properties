@@ -325,7 +325,7 @@ const char *const *VirtualBoy::supportedFileExtensions_static(void)
 int VirtualBoy::loadFieldData(void)
 {
 	RP_D(VirtualBoy);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

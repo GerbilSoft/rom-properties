@@ -1060,7 +1060,7 @@ uint32_t DirectDrawSurface::imgpf(ImageType imageType) const
 int DirectDrawSurface::loadFieldData(void)
 {
 	RP_D(DirectDrawSurface);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

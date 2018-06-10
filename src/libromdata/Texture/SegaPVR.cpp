@@ -876,7 +876,7 @@ uint32_t SegaPVR::imgpf(ImageType imageType) const
 int SegaPVR::loadFieldData(void)
 {
 	RP_D(SegaPVR);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

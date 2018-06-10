@@ -410,7 +410,7 @@ std::vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType im
 int WiiU::loadFieldData(void)
 {
 	RP_D(WiiU);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

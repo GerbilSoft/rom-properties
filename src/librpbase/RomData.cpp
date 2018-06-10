@@ -541,7 +541,7 @@ int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
 const RomFields *RomData::fields(void) const
 {
 	RP_D(const RomData);
-	if (!d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadFieldData();

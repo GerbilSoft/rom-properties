@@ -248,7 +248,7 @@ const char *const *GameBoyAdvance::supportedFileExtensions_static(void)
 int GameBoyAdvance::loadFieldData(void)
 {
 	RP_D(GameBoyAdvance);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

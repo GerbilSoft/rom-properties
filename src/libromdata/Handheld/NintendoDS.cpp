@@ -979,7 +979,7 @@ uint32_t NintendoDS::imgpf(ImageType imageType) const
 int NintendoDS::loadFieldData(void)
 {
 	RP_D(NintendoDS);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

@@ -577,11 +577,10 @@ const RomFields::Field *RomFields::field(int idx) const
 }
 
 /**
- * Is data loaded?
- * TODO: Rename to empty() after porting to the new addField() functions.
- * @return True if m_data has at least one row; false if m_data is nullptr or empty.
+ * Is this RomFields empty?
+ * @return True if empty; false if not.
  */
-bool RomFields::isDataLoaded(void) const
+bool RomFields::empty(void) const
 {
 	RP_D(const RomFields);
 	return !d->fields.empty();

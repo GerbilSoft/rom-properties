@@ -482,7 +482,7 @@ vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes(ImageType imageType
 int Dreamcast::loadFieldData(void)
 {
 	RP_D(Dreamcast);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

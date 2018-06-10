@@ -638,7 +638,7 @@ const char *const *SNES::supportedFileExtensions_static(void)
 int SNES::loadFieldData(void)
 {
 	RP_D(SNES);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

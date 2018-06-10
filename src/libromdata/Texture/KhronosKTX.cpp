@@ -775,7 +775,7 @@ uint32_t KhronosKTX::imgpf(ImageType imageType) const
 int KhronosKTX::loadFieldData(void)
 {
 	RP_D(KhronosKTX);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

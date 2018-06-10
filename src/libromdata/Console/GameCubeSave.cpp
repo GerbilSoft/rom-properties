@@ -820,7 +820,7 @@ uint32_t GameCubeSave::imgpf(ImageType imageType) const
 int GameCubeSave::loadFieldData(void)
 {
 	RP_D(GameCubeSave);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

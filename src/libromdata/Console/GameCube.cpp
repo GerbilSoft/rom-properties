@@ -1452,7 +1452,7 @@ std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageTyp
 int GameCube::loadFieldData(void)
 {
 	RP_D(GameCube);
-	if (d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
