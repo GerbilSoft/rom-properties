@@ -65,11 +65,14 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(QT_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
 
 		# Find KDE5. (TODO: Version?)
-		FIND_PACKAGE(KF5 ${REQUIRE_KDE5} COMPONENTS KIO WidgetsAddons)
-		IF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND)
+		FIND_PACKAGE(KF5 ${REQUIRE_KDE5} COMPONENTS KIO WidgetsAddons FileMetaData)
+		IF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND OR NOT KF5FileMetaData_FOUND)
 			# KDE5 not found.
 			SET(BUILD_KDE5 OFF CACHE "" INTERNAL FORCE)
-		ENDIF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND)
+		ENDIF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND OR NOT KF5FileMetaData_FOUND)
+
+		# TODO: Can we get the subdirectory from KFileMetaData?
+		SET(KFMD_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
 	ELSE()
 		# Qt5 not found.
 		SET(BUILD_KDE5 OFF CACHE "" INTERNAL FORCE)
@@ -81,13 +84,18 @@ ENDIF()
 
 # Sources and headers. (common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_SRCS "${rom-properties-kde_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_H "${rom-properties-kde_H}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_UIS "${rom-properties-kde_UIS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_H    "${rom-properties-kde_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_UIS  "${rom-properties-kde_UIS}")
 
 # Sources and headers. (KDE5-specific)
 SET(rom-properties-kde5_SRCS
 	${rom-properties-kde5_SRCS}
+	RpExtractorPlugin.cpp
 	RomPropertiesDialogPluginFactoryKDE5.cpp
+	)
+SET(rom-properties-kde5_H
+	${rom-properties-kde5_H}
+	RpExtractorPlugin.hpp
 	)
 
 IF(COMMAND QT5_WRAP_UI)
@@ -122,7 +130,7 @@ IF(BUILD_KDE5)
 		TARGET_LINK_LIBRARIES(rom-properties-kde5 i18n)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 ${ZLIB_LIBRARY})
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 KF5::KIOWidgets KF5::WidgetsAddons)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 Qt5::Widgets Qt5::Gui Qt5::Core)
 
 	# Add zlib and png directories for the About tab.
@@ -132,6 +140,23 @@ IF(BUILD_KDE5)
 	IF(HAVE_PNG)
 		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde5 PRIVATE ${PNG_INCLUDE_DIRS})
 	ENDIF(HAVE_PNG)
+
+	# RpExtractorPluginForwarder
+	ADD_LIBRARY(kfilemetadata_rom-properties-kde5 MODULE
+		RpExtractorPluginForwarder.cpp
+		RpExtractorPluginForwarder.hpp
+		)
+	SET_TARGET_PROPERTIES(kfilemetadata_rom-properties-kde5 PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(kfilemetadata_rom-properties-kde5)
+	TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kde5 KF5::KIOCore KF5::FileMetaData)
+	TARGET_COMPILE_DEFINITIONS(kfilemetadata_rom-properties-kde5
+		PRIVATE PLUGIN_INSTALL_DIR=\"${PLUGIN_INSTALL_DIR}\"
+		)
+
+	# Link in libdl if it's required for dlopen().
+	IF(CMAKE_DL_LIBS)
+		TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kde5 ${CMAKE_DL_LIBS})
+	ENDIF(CMAKE_DL_LIBS)
 
 	# FIXME: Workaround for gcc-5.4.0 LTO bug.
 	# Disabling LTO for the KDE5 build if using gcc-5.4.0 or earlier,
@@ -158,6 +183,10 @@ IF(BUILD_KDE5)
 		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
+	INSTALL(TARGETS kfilemetadata_rom-properties-kde5
+		LIBRARY DESTINATION "${KFMD_PLUGIN_INSTALL_DIR}"
+		COMPONENT "plugin"
+		)
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde5.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
@@ -171,6 +200,14 @@ IF(BUILD_KDE5)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}"
+				COMPONENT "debug"
+				)
+		ENDIF(DEBUG_FILENAME)
+
+		GET_TARGET_PROPERTY(DEBUG_FILENAME kfilemetadata_rom-properties-kde5 PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KFMD_PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

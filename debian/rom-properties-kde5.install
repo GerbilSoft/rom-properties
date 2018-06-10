@@ -1,2 +1,3 @@
 usr/lib/*/qt5/plugins/rom-properties-kde5.so
+usr/lib/*/qt5/plugins/kf5/kfilemetadata/kfilemetadata_rom-properties-kde5.so
 usr/share/kservices5/rom-properties-kde5.desktop
