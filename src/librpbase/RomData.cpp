@@ -545,7 +545,7 @@ int RomData::loadMetaData(void)
 const RomFields *RomData::fields(void) const
 {
 	RP_D(const RomData);
-	if (!d->fields->empty()) {
+	if (d->fields->empty()) {
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadFieldData();
