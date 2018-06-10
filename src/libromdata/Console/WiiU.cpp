@@ -313,7 +313,7 @@ const char *WiiU::systemName(unsigned int type) const
 const char *const *WiiU::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".wud",
+		".wud", ".wux",
 
 		// NOTE: May cause conflicts on Windows
 		// if fallback handling isn't working.

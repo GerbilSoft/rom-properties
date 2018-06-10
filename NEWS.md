@@ -11,6 +11,10 @@
 * New parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
 
+* Bug fixes:
+  * Wii U: The .wux file extension wasn't registered on Windows, so it wasn't
+    properly detected.
+
 ## v1.3 - The Internationalization Release (released 2018/06/02)
 
 * New features:
