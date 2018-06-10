@@ -205,7 +205,7 @@ const char *const *Nintendo3DSFirm::supportedFileExtensions_static(void)
 int Nintendo3DSFirm::loadFieldData(void)
 {
 	RP_D(Nintendo3DSFirm);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

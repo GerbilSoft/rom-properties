@@ -877,7 +877,7 @@ const char *const *MegaDrive::supportedFileExtensions_static(void)
 int MegaDrive::loadFieldData(void)
 {
 	RP_D(MegaDrive);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

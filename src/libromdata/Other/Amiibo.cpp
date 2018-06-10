@@ -379,7 +379,7 @@ uint32_t Amiibo::imgpf(ImageType imageType) const
 int Amiibo::loadFieldData(void)
 {
 	RP_D(Amiibo);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

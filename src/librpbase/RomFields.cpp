@@ -583,7 +583,7 @@ const RomFields::Field *RomFields::field(int idx) const
 bool RomFields::empty(void) const
 {
 	RP_D(const RomFields);
-	return !d->fields.empty();
+	return d->fields.empty();
 }
 
 /** Convenience functions for RomData subclasses. **/

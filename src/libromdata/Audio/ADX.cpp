@@ -300,7 +300,7 @@ const char *const *ADX::supportedFileExtensions_static(void)
 int ADX::loadFieldData(void)
 {
 	RP_D(ADX);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

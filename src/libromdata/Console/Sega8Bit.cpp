@@ -257,7 +257,7 @@ const char *const *Sega8Bit::supportedFileExtensions_static(void)
 int Sega8Bit::loadFieldData(void)
 {
 	RP_D(Sega8Bit);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

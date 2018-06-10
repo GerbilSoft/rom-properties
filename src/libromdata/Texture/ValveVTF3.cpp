@@ -407,7 +407,7 @@ uint32_t ValveVTF3::imgpf(ImageType imageType) const
 int ValveVTF3::loadFieldData(void)
 {
 	RP_D(ValveVTF3);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

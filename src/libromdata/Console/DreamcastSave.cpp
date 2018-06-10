@@ -1227,7 +1227,7 @@ uint32_t DreamcastSave::imgpf(ImageType imageType) const
 int DreamcastSave::loadFieldData(void)
 {
 	RP_D(DreamcastSave);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

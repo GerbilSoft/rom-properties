@@ -479,7 +479,7 @@ uint32_t PlayStationSave::imgpf(ImageType imageType) const
 int PlayStationSave::loadFieldData(void)
 {
 	RP_D(PlayStationSave);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {

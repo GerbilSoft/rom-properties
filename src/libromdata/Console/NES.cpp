@@ -577,7 +577,7 @@ const char *const *NES::supportedFileExtensions_static(void)
 int NES::loadFieldData(void)
 {
 	RP_D(NES);
-	if (d->fields->empty()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
