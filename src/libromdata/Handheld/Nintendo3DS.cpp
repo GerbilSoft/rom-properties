@@ -1540,6 +1540,33 @@ const char *const *Nintendo3DS::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *Nintendo3DS::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-nintendo-3ds-smdh",
+		"application/x-nintendo-3ds-3dsx",
+		"application/x-nintendo-3ds-rom",
+		"application/x-nintendo-3ds-emmc",
+		"application/x-nintendo-3ds-cia",
+		"application/x-nintendo-3ds-ncch",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */

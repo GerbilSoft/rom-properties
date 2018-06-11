@@ -415,6 +415,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for FDS.
+	// TODO: Check that the block code is 0x01?
 	static const uint8_t fwNES_magic[] = "FDS\x1A";
 	static const uint8_t fds_magic[] = "*NINTENDO-HVC*";
 
@@ -567,6 +568,28 @@ const char *const *NES::supportedFileExtensions_static(void)
 		nullptr
 	};
 	return exts;
+}
+
+/**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *NES::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types from FreeDesktop.org.
+		"application/x-nes-rom",
+		"application/x-fds-disk",
+
+		nullptr
+	};
+	return mimeTypes;
 }
 
 /**

@@ -270,6 +270,18 @@ class RomData
 		virtual const char *const *supportedFileExtensions(void) const = 0;
 
 		/**
+		 * Get a list of all supported MIME types.
+		 * This is to be used for metadata extractors that
+		 * must indicate which MIME types they support.
+		 *
+		 * NOTE: The array and the strings in the array should
+		 * *not* be freed by the caller.
+		 *
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+		 */
+		virtual const char *const *supportedMimeTypes(void) const = 0;
+
+		/**
 		 * Image types supported by a RomData subclass.
 		 */
 		enum ImageType {

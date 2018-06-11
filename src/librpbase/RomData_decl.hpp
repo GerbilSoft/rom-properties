@@ -95,6 +95,30 @@ class klass : public LibRpBase::RomData { \
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
 		 */ \
 		const char *const *supportedFileExtensions(void) const final; \
+		\
+		/** \
+		 * Get a list of all supported MIME types. \
+		 * This is to be used for metadata extractors that \
+		 * must indicate which MIME types they support. \
+		 * \
+		 * NOTE: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		static const char *const *supportedMimeTypes_static(void); \
+		\
+		/** \
+		 * Get a list of all supported MIME types. \
+		 * This is to be used for metadata extractors that \
+		 * must indicate which MIME types they support. \
+		 * \
+		 * NOTE: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		const char *const *supportedMimeTypes(void) const final; \
 	\
 	protected: \
 		/** \
@@ -270,6 +294,21 @@ int klass::isRomSupported(const DetectInfo *info) const \
 const char *const *klass::supportedFileExtensions(void) const \
 { \
 	return klass::supportedFileExtensions_static(); \
+} \
+\
+/** \
+ * Get a list of all supported MIME types. \
+ * This is to be used for metadata extractors that \
+ * must indicate which MIME types they support. \
+ * \
+ * NOTE: The array and the strings in the array should \
+ * *not* be freed by the caller. \
+ * \
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+ */ \
+const char *const *klass::supportedMimeTypes(void) const \
+{ \
+	return klass::supportedMimeTypes_static(); \
 }
 
 /**
