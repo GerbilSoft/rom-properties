@@ -39,7 +39,9 @@ using LibRomData::RomDataFactory;
 
 // C++ includes.
 #include <memory>
+#include <vector>
 using std::unique_ptr;
+using std::vector;
 
 // KDE includes.
 #include <kfilemetadata/extractorplugin.h>
@@ -68,19 +70,20 @@ extern "C" {
 
 RpExtractorPlugin::RpExtractorPlugin(QObject *parent)
 	: super(parent)
-{
-	// TODO: Create an RpExtractorPlugin class and retrieve
-	// it from the rom-properties-kde5.so library.
-}
+{ }
 
 QStringList RpExtractorPlugin::mimetypes(void) const
 {
-	// TODO: Get a list of MIME types from RomDataFactory.
-	// Hard-coding ADX and DDS for now.
-	QStringList mimeList;
-	mimeList += QLatin1String("audio/x-adx");
-	mimeList += QLatin1String("image/x-dds");
-	return mimeList;
+	// Get the MIME types from RomDataFactory.
+	vector<const char*> vec_mimeTypes = RomDataFactory::supportedMimeTypes();
+
+	// Convert to QStringList.
+	QStringList mimeTypes;
+	mimeTypes.reserve(static_cast<int>(vec_mimeTypes.size()));
+	for (auto iter = vec_mimeTypes.cbegin(); iter != vec_mimeTypes.cend(); ++iter) {
+		mimeTypes += QString::fromUtf8(*iter);
+	}
+	return mimeTypes;
 }
 
 void RpExtractorPlugin::extract(ExtractionResult *result)

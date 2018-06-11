@@ -74,6 +74,14 @@ class RomDataFactory
 		 * @return All supported file extensions, including the leading dot.
 		 */
 		static std::vector<ExtInfo> supportedFileExtensions(void);
+
+		/**
+		 * Get all supported MIME types.
+		 * Used for KFileMetaData.
+		 *
+		 * @return All supported MIME types.
+		 */
+		static std::vector<const char*> supportedMimeTypes(void);
 };
 
 }

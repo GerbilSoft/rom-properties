@@ -37,9 +37,11 @@ using namespace LibRpBase;
 // C++ includes.
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 using std::string;
 using std::unordered_map;
+using std::unordered_set;
 using std::vector;
 
 // RomData subclasses: Consoles
@@ -97,14 +99,16 @@ class RomDataFactoryPrivate
 		RP_DISABLE_COPY(RomDataFactoryPrivate)
 
 	public:
-		typedef int (*pFnIsRomSupported)(const RomData::DetectInfo *info);
-		typedef const char *const * (*pFnSupportedFileExtensions)(void);
-		typedef RomData* (*pFnNewRomData)(IRpFile *file);
+		typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
+		typedef const char *const * (*pfnSupportedFileExtensions_t)(void);
+		typedef const char *const * (*pfnSupportedMimeTypes_t)(void);
+		typedef RomData* (*pfnNewRomData_t)(IRpFile *file);
 
 		struct RomDataFns {
-			pFnIsRomSupported isRomSupported;
-			pFnNewRomData newRomData;
-			pFnSupportedFileExtensions supportedFileExtensions;
+			pfnIsRomSupported_t isRomSupported;
+			pfnNewRomData_t newRomData;
+			pfnSupportedFileExtensions_t supportedFileExtensions;
+			pfnSupportedMimeTypes_t supportedMimeTypes;
 			bool hasThumbnail;
 
 			// Extra fields for files whose headers
@@ -127,11 +131,13 @@ class RomDataFactoryPrivate
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::supportedFileExtensions_static, \
+	 sys::supportedMimeTypes_static, \
 	 hasThumbnail, 0, 0}
 #define GetRomDataFns_addr(sys, hasThumbnail, address, size) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::supportedFileExtensions_static, \
+	 sys::supportedMimeTypes_static, \
 	 hasThumbnail, address, size}
 
 		// RomData subclasses that use a header.
@@ -203,12 +209,12 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// The 0 address is checked above.
 	GetRomDataFns_addr(GameCom, true, 0x40000, 0x20),
 
-	{nullptr, nullptr, nullptr, false, 0, 0}
+	{nullptr, nullptr, nullptr, nullptr, false, 0, 0}
 };
 
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, false),
-	{nullptr, nullptr, nullptr, false, 0, 0}
+	{nullptr, nullptr, nullptr, nullptr, false, 0, 0}
 };
 
 /**
@@ -519,6 +525,65 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	}
 
 	return vec;
+}
+
+/**
+ * Get all supported MIME types.
+ * Used for KFileMetaData.
+ *
+ * @return All supported MIME types.
+ */
+vector<const char*> RomDataFactory::supportedMimeTypes(void)
+{
+	// TODO: Add generic types, e.g. application/octet-stream?
+
+	// In order to handle multiple RomData subclasses
+	// that support the same MIME types, we're using
+	// an unordered_set<string>. The actual data
+	// is stored in the vector<const char*>.
+	unordered_set<string> map_mimeTypes;
+	vector<const char*> vec_mimeTypes;
+
+	static const size_t reserve_size =
+		(ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_header) +
+		 ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_footer)) * 2;
+	vec_mimeTypes.reserve(reserve_size);
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+	map_mimeTypes.reserve(reserve_size);
+#endif
+
+	const RomDataFactoryPrivate::RomDataFns *fns =
+		&RomDataFactoryPrivate::romDataFns_header[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+		if (!sys_mimeTypes)
+			continue;
+
+		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
+			auto iter = map_mimeTypes.find(*sys_mimeTypes);
+			if (iter == map_mimeTypes.end()) {
+				map_mimeTypes.insert(*sys_mimeTypes);
+				vec_mimeTypes.push_back(*sys_mimeTypes);
+			}
+		}
+	}
+
+	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+		if (!sys_mimeTypes)
+			continue;
+
+		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
+			auto iter = map_mimeTypes.find(*sys_mimeTypes);
+			if (iter == map_mimeTypes.end()) {
+				map_mimeTypes.insert(*sys_mimeTypes);
+				vec_mimeTypes.push_back(*sys_mimeTypes);
+			}
+		}
+	}
+
+	return vec_mimeTypes;
 }
 
 }
