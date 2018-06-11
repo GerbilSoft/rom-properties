@@ -422,6 +422,40 @@ uint32_t ValveVTF3::imgpf(ImageType imageType) const
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ValveVTF3::loadMetaData(void)
+{
+	RP_D(ValveVTF3);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// VTF3 header.
+	const VTF3HEADER *const vtf3Header = &d->vtf3Header;
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// Dimensions.
+	d->metaData->addMetaData_integer(Property::Width, vtf3Header->width);
+	d->metaData->addMetaData_integer(Property::Height, vtf3Header->height);
+
+	// Finished reading the metadata.
+	return (int)d->fields->count();
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
