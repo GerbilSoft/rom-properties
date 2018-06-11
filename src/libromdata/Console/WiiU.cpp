@@ -171,6 +171,15 @@ WiiU::WiiU(IRpFile *file)
 			break;
 	}
 
+	if (!d->discReader->isOpen()) {
+		// Error opening the DiscReader.
+		delete d->discReader;
+		d->discReader = nullptr;
+		d->fileType = FTYPE_UNKNOWN;
+		d->discType = WiiUPrivate::DISC_UNKNOWN;
+		return;
+	}
+
 	if (d->discType < 0) {
 		// Nothing else to do here.
 		return;

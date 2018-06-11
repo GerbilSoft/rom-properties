@@ -388,7 +388,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// Open "exefs:/icon".
 			NCCHReader *const ncch_reader = loadNCCH();
 			if (!ncch_reader || !ncch_reader->isOpen()) {
-				// Unable to open the primary NCCH.
+				// Unable to open the primary NCCH section.
 				return -6;
 			}
 
@@ -1754,19 +1754,27 @@ int Nintendo3DS::loadFieldData(void)
 	    d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA ||
 	    d->romType == Nintendo3DSPrivate::ROM_TYPE_NCCH)
 	{
-		KeyManager::VerifyResult res = (ncch
-			? ncch->verifyResult()
-			: KeyManager::VERIFY_UNKNOWN);
-		if (!d->srlData && res != KeyManager::VERIFY_OK) {
-			// Missing encryption keys.
+		if (!ncch) {
+			// Unable to open the primary NCCH section.
 			if (!shownWarning) {
-				const char *err = KeyManager::verifyResultToString(res);
-				if (!err) {
-					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
-				}
 				d->fields->addField_string(C_("Nintendo3DS", "Warning"),
-					err, RomFields::STRF_WARNING);
+					C_("Nintendo3DS", "Unable to open the primary NCCH section."),
+					RomFields::STRF_WARNING);
 				shownWarning = true;
+			}
+		} else {
+			KeyManager::VerifyResult res = ncch->verifyResult();
+			if (!d->srlData && res != KeyManager::VERIFY_OK) {
+				// Missing encryption keys.
+				if (!shownWarning) {
+					const char *err = KeyManager::verifyResultToString(res);
+					if (!err) {
+						err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
+					}
+					d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+						err, RomFields::STRF_WARNING);
+					shownWarning = true;
+				}
 			}
 		}
 	}
@@ -1906,7 +1914,15 @@ int Nintendo3DS::loadFieldData(void)
 			d->fields->setTabName(0, "NCSD");
 		}
 
-		if (!ncch || ncch->verifyResult() != KeyManager::VERIFY_OK) {
+		if (!ncch) {
+			// Unable to open the primary NCCH section.
+			if (!shownWarning) {
+				d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+					C_("Nintendo3DS", "Unable to open the primary NCCH section."),
+					RomFields::STRF_WARNING);
+				shownWarning = true;
+			}
+		} else if (ncch->verifyResult() != KeyManager::VERIFY_OK) {
 			// Missing encryption keys.
 			// TODO: This warning probably isn't needed,
 			// since it's handled above...
