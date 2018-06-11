@@ -62,6 +62,11 @@ class RomDataFactory
 		struct ExtInfo {
 			const char *ext;
 			bool hasThumbnail;
+
+			ExtInfo(const char *ext, bool hasThumbnail)
+				: ext(ext)
+				, hasThumbnail(hasThumbnail)
+				{ }
 		};
 
 		/**

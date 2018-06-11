@@ -411,10 +411,10 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 
 	// Use an ExtInfo with the progID instead of the extension.
 	string progID_u8 = W2U8(progID);
-	const RomDataFactory::ExtInfo progID_info = {
+	const RomDataFactory::ExtInfo progID_info(
 		progID_u8.c_str(),
 		ext_info.hasThumbnail
-	};
+	);
 
 	// Does HKCR\\progID exist?
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
@@ -490,10 +490,10 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 
 	// Use an ExtInfo with the progID instead of the extension.
 	string progID_u8 = W2U8(progID);
-	const RomDataFactory::ExtInfo progID_info = {
+	const RomDataFactory::ExtInfo progID_info(
 		progID_u8.c_str(),
 		ext_info.hasThumbnail
-	};
+	);
 
 	// Does HKCR\\progID exist?
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);

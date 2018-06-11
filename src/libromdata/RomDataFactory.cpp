@@ -477,12 +477,21 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 {
 	// In order to handle multiple RomData subclasses
 	// that support the same extensions, we're using
-	// an unordered_map. If any of the handlers for a
-	// given extension support thumbnails, then the
-	// thumbnail handlers will be registered.
-	// FIXME: May need to use string instead of char*
-	// for proper hashing.
-	unordered_map<const char*, bool> exts;
+	// an unordered_map<string, bool>. If any of the
+	// handlers for a given extension support thumbnails,
+	// then the thumbnail handlers will be registered.
+	//
+	// The actual data is stored in the vector<ExtInfo>.
+	unordered_map<string, bool> map_exts;
+	vector<ExtInfo> vec_exts;
+
+	static const size_t reserve_size =
+		(ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_header) +
+		 ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_footer)) * 2;
+	vec_exts.reserve(reserve_size);
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+	map_exts.reserve(reserve_size);
+#endif
 
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_header[0];
@@ -491,11 +500,17 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 		if (!sys_exts)
 			continue;
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-		exts.reserve(exts.size() + 4);
-#endif
 		for (; *sys_exts != nullptr; sys_exts++) {
-			exts[*sys_exts] |= fns->hasThumbnail;
+			auto iter = map_exts.find(*sys_exts);
+			if (iter != map_exts.end()) {
+				// We already had this extension.
+				// Update its thumbnail status.
+				iter->second = fns->hasThumbnail;
+			} else {
+				// First time encountering this extension.
+				map_exts[*sys_exts] = fns->hasThumbnail;
+				vec_exts.push_back(ExtInfo(*sys_exts, fns->hasThumbnail));
+			}
 		}
 	}
 
@@ -505,26 +520,26 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 		if (!sys_exts)
 			continue;
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-		exts.reserve(exts.size() + 4);
-#endif
 		for (; *sys_exts != nullptr; sys_exts++) {
-			exts[*sys_exts] |= fns->hasThumbnail;
+			auto iter = map_exts.find(*sys_exts);
+			if (iter != map_exts.end()) {
+				// We already had this extension.
+				// Update its thumbnail status.
+				iter->second = fns->hasThumbnail;
+			} else {
+				// First time encountering this extension.
+				map_exts[*sys_exts] = fns->hasThumbnail;
+				vec_exts.push_back(ExtInfo(*sys_exts, fns->hasThumbnail));
+			}
 		}
 	}
 
-	// Convert to vector<ExtInfo>.
-	vector<ExtInfo> vec;
-	vec.reserve(exts.size());
-	
-	ExtInfo extInfo;
-	for (auto iter = exts.cbegin(); iter != exts.cend(); ++iter) {
-		extInfo.ext = iter->first;
-		extInfo.hasThumbnail = iter->second;
-		vec.push_back(extInfo);
+	// Make sure the vector's thumbnail status is up to date.
+	for (auto iter = vec_exts.begin(); iter != vec_exts.end(); ++iter) {
+		iter->hasThumbnail = map_exts[iter->ext];
 	}
 
-	return vec;
+	return vec_exts;
 }
 
 /**
