@@ -541,7 +541,7 @@ vector<const char*> RomDataFactory::supportedMimeTypes(void)
 	// that support the same MIME types, we're using
 	// an unordered_set<string>. The actual data
 	// is stored in the vector<const char*>.
-	unordered_set<string> map_mimeTypes;
+	unordered_set<string> set_mimeTypes;
 	vector<const char*> vec_mimeTypes;
 
 	static const size_t reserve_size =
@@ -549,7 +549,7 @@ vector<const char*> RomDataFactory::supportedMimeTypes(void)
 		 ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_footer)) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
-	map_mimeTypes.reserve(reserve_size);
+	set_mimeTypes.reserve(reserve_size);
 #endif
 
 	const RomDataFactoryPrivate::RomDataFns *fns =
@@ -560,9 +560,9 @@ vector<const char*> RomDataFactory::supportedMimeTypes(void)
 			continue;
 
 		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
-			auto iter = map_mimeTypes.find(*sys_mimeTypes);
-			if (iter == map_mimeTypes.end()) {
-				map_mimeTypes.insert(*sys_mimeTypes);
+			auto iter = set_mimeTypes.find(*sys_mimeTypes);
+			if (iter == set_mimeTypes.end()) {
+				set_mimeTypes.insert(*sys_mimeTypes);
 				vec_mimeTypes.push_back(*sys_mimeTypes);
 			}
 		}
@@ -575,9 +575,9 @@ vector<const char*> RomDataFactory::supportedMimeTypes(void)
 			continue;
 
 		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
-			auto iter = map_mimeTypes.find(*sys_mimeTypes);
-			if (iter == map_mimeTypes.end()) {
-				map_mimeTypes.insert(*sys_mimeTypes);
+			auto iter = set_mimeTypes.find(*sys_mimeTypes);
+			if (iter == set_mimeTypes.end()) {
+				set_mimeTypes.insert(*sys_mimeTypes);
 				vec_mimeTypes.push_back(*sys_mimeTypes);
 			}
 		}
