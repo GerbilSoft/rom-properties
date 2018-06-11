@@ -53,6 +53,78 @@ namespace Property {
 		Composer,	// string: composer
 		Lyricist,	// string: lyricist
 
+		// Document
+		Author,		// string: author
+		Title,		// string: title
+		Subject,	// string: subject
+		Generator,	// string: application used to create this file
+		PageCount,	// integer: page count
+		WordCount,	// integer: word count
+		LineCount,	// integer: line count
+		Language,	// string: language
+		Copyright,	// string: copyright
+		Publisher,	// string: publisher
+		CreationDate,	// FIXME: What's the type?
+		Keywords,	// FIXME: What's the type?
+
+		// Media
+		Width,		// integer: width, in pixels
+		Height,		// integer: height, in pixels
+		AspectRatio,	// FIXME: Float?
+		FrameRate,	// integer: number of frames per second
+
+		// Images
+		ImageMake,			// string
+		ImageModel,			// string
+		ImageDateTime,			// FIXME
+		ImageOrientation,		// FIXME
+		PhotoFlash,			// FIXME
+		PhotoPixelXDimension,		// FIXME
+		PhotoPixelYDimension,		// FIXME
+		PhotoDateTimeOriginal,		// FIXME
+		PhotoFocalLength,		// FIXME
+		PhotoFocalLengthIn35mmFilm,	// FIXME
+		PhotoExposureTime,		// FIXME
+		PhotoFNumber,			// FIXME
+		PhotoApertureValue,		// FIXME
+		PhotoExposureBiasValue,		// FIXME
+		PhotoWhiteBalance,		// FIXME
+		PhotoMeteringMode,		// FIXME
+		PhotoISOSpeedRatings,		// FIXME
+		PhotoSaturation,		// FIXME
+		PhotoSharpness,			// FIXME
+		PhotoGpsLatitude,		// FIXME
+		PhotoGpsLongitude,		// FIXME
+		PhotoGpsAltitude,		// FIXME
+
+		// Translations
+		TranslationUnitsTotal,			// FIXME
+		TranslationUnitsWithTranslation,	// FIXME
+		TranslationUnitsWithDraftTranslation,	// FIXME
+		TranslationLastAuthor,			// FIXME
+		TranslationLastUpDate,			// FIXME
+		TranslationTemplateDate,		// FIXME
+
+		// Origin
+		OriginUrl,		// string: origin URL
+		OriginEmailSubject,	// string: subject of origin email
+		OriginEmailSender,	// string: sender of origin email
+		OriginEmailMessageId,	// string: message ID of origin email
+
+		// Audio
+		DiscNumber,		// integer: disc number of multi-disc set
+		Location,		// string: location where audio was recorded
+		Performer,		// string: (lead) performer
+		Ensemble,		// string: ensemble
+		Arranger,		// string: arranger
+		Conductor,		// string: conductor
+		Opus,			// string: opus
+
+		// Other
+		Label,			// string: label
+		Compilation,		// string: compilation
+		License,		// string: license information
+
 		// TODO: More fields.
 		PropertyCount,
 		LastProperty = PropertyCount-1,

@@ -76,9 +76,10 @@ RpExtractorPlugin::RpExtractorPlugin(QObject *parent)
 QStringList RpExtractorPlugin::mimetypes(void) const
 {
 	// TODO: Get a list of MIME types from RomDataFactory.
-	// Hard-coding ADX for now.
+	// Hard-coding ADX and DDS for now.
 	QStringList mimeList;
 	mimeList += QLatin1String("audio/x-adx");
+	mimeList += QLatin1String("image/x-dds");
 	return mimeList;
 }
 

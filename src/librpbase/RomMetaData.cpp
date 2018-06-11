@@ -96,6 +96,7 @@ class RomMetaDataPrivate
 const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
+	// Audio
 	PropertyType::Integer,	// BitRate
 	PropertyType::Integer,	// Channels
 	PropertyType::Integer,	// Duration
@@ -109,6 +110,78 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::String,	// AlbumArtist
 	PropertyType::String,	// Composer
 	PropertyType::String,	// Lyricist
+
+	// Document
+	PropertyType::String,	// Author
+	PropertyType::String,	// Title
+	PropertyType::String,	// Subject
+	PropertyType::String,	// Generator
+	PropertyType::Integer,	// PageCount
+	PropertyType::Integer,	// WordCount
+	PropertyType::Integer,	// LineCount
+	PropertyType::String,	// Language
+	PropertyType::String,	// Copyright
+	PropertyType::String,	// Publisher
+	PropertyType::Invalid,	// CreationDate (FIXME)
+	PropertyType::Invalid,	// Keywords (FIXME)
+
+	// Media
+	PropertyType::Integer,	// Width
+	PropertyType::Integer,	// Height
+	PropertyType::Invalid,	// AspectRatio (FIXME: Float?)
+	PropertyType::Integer,	// FrameRate
+
+	// Images
+	PropertyType::String,	// ImageMake
+	PropertyType::String,	// ImageModel
+	PropertyType::Invalid,	// ImageDateTime (FIXME)
+	PropertyType::Invalid,	// ImageOrientation (FIXME)
+	PropertyType::Invalid,	// PhotoFlash (FIXME)
+	PropertyType::Invalid,	// PhotoPixelXDimension (FIXME)
+	PropertyType::Invalid,	// PhotoPixelYDimension (FIXME)
+	PropertyType::Invalid,	// PhotoDateTimeOriginal (FIXME)
+	PropertyType::Invalid,	// PhotoFocalLength (FIXME)
+	PropertyType::Invalid,	// PhotoFocalLengthIn35mmFilm (FIXME)
+	PropertyType::Invalid,	// PhotoExposureTime (FIXME)
+	PropertyType::Invalid,	// PhotoFNumber (FIXME)
+	PropertyType::Invalid,	// PhotoApertureValue (FIXME)
+	PropertyType::Invalid,	// PhotoExposureBiasValue (FIXME)
+	PropertyType::Invalid,	// PhotoWhiteBalance (FIXME)
+	PropertyType::Invalid,	// PhotoMeteringMode (FIXME)
+	PropertyType::Invalid,	// PhotoISOSpeedRatings (FIXME)
+	PropertyType::Invalid,	// PhotoSaturation (FIXME)
+	PropertyType::Invalid,	// PhotoSharpness (FIXME)
+	PropertyType::Invalid,	// PhotoGpsLatitude (FIXME)
+	PropertyType::Invalid,	// PhotoGpsLongitude (FIXME)
+	PropertyType::Invalid,	// PhotoGpsAltitude (FIXME)
+
+	// Translations
+	PropertyType::Invalid,	// TranslationUnitsTotal (FIXME)
+	PropertyType::Invalid,	// TranslationUnitsWithTranslation (FIXME)
+	PropertyType::Invalid,	// TranslationUnitsWithDraftTranslation (FIXME)
+	PropertyType::Invalid,	// TranslationLastAuthor (FIXME)
+	PropertyType::Invalid,	// TranslationLastUpDate (FIXME)
+	PropertyType::Invalid,	// TranslationTemplateDate (FIXME)
+
+	// Origin
+	PropertyType::String,	// OriginUrl
+	PropertyType::String,	// OriginEmailSubject
+	PropertyType::String,	// OriginEmailSender
+	PropertyType::String,	// OriginEmailMessageId
+
+	// Audio
+	PropertyType::Integer,	// DiscNumber
+	PropertyType::String,	// Location
+	PropertyType::String,	// Performer
+	PropertyType::String,	// Ensemble
+	PropertyType::String,	// Arranger
+	PropertyType::String,	// Conductor
+	PropertyType::String,	// Opus
+
+	// Other
+	PropertyType::String,	// Label
+	PropertyType::String,	// Compilation
+	PropertyType::String,	// License
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()

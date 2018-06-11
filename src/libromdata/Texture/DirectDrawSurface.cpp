@@ -1358,6 +1358,40 @@ int DirectDrawSurface::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int DirectDrawSurface::loadMetaData(void)
+{
+	RP_D(DirectDrawSurface);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// DDS header.
+	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
+	d->metaData->reserve(12);	// Maximum of 2 metadata properties.
+
+	// Dimensions.
+	d->metaData->addMetaData_integer(Property::Width, ddsHeader->dwWidth);
+	d->metaData->addMetaData_integer(Property::Height, ddsHeader->dwHeight);
+
+	// Finished reading the metadata.
+	return (int)d->fields->count();
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
