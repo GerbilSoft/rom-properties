@@ -778,40 +778,6 @@ uint32_t ValveVTF::imgpf(ImageType imageType) const
 }
 
 /**
- * Load metadata properties.
- * Called by RomData::metaData() if the field data hasn't been loaded yet.
- * @return Number of metadata properties read on success; negative POSIX error code on error.
- */
-int ValveVTF::loadMetaData(void)
-{
-	RP_D(ValveVTF);
-	if (d->metaData != nullptr) {
-		// Metadata *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
-		// Unknown file type.
-		return -EIO;
-	}
-
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-
-	// VTF header.
-	const VTFHEADER *const vtfHeader = &d->vtfHeader;
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
-	// Dimensions.
-	d->metaData->addMetaData_integer(Property::Width, vtfHeader->width);
-	d->metaData->addMetaData_integer(Property::Height, vtfHeader->height);
-
-	// Finished reading the metadata.
-	return (int)d->fields->count();
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -1011,6 +977,40 @@ int ValveVTF::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ValveVTF::loadMetaData(void)
+{
+	RP_D(ValveVTF);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// VTF header.
+	const VTFHEADER *const vtfHeader = &d->vtfHeader;
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// Dimensions.
+	d->metaData->addMetaData_integer(Property::Width, vtfHeader->width);
+	d->metaData->addMetaData_integer(Property::Height, vtfHeader->height);
+
+	// Finished reading the metadata.
+	return (int)d->fields->count();
 }
 
 /**
