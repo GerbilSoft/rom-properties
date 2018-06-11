@@ -1926,6 +1926,79 @@ int GameCube::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int GameCube::loadMetaData(void)
+{
+	RP_D(GameCube);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->discType < 0) {
+		// Unknown disc type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// Disc header is read in the constructor.
+	const GCN_DiscHeader *const discHeader = &d->discHeader;
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// Title.
+	// TODO: Use opening.bnr title for GameCube instead?
+	// TODO: Is Shift-JIS actually permissible here?
+	switch (d->gcnRegion) {
+		case GCN_REGION_USA:
+		case GCN_REGION_EUR:
+		default:
+			// USA/PAL uses cp1252.
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_to_utf8(
+					discHeader->game_title, sizeof(discHeader->game_title)));
+			break;
+
+		case GCN_REGION_JPN:
+		case GCN_REGION_KOR:
+			// Japan uses Shift-JIS.
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_sjis_to_utf8(
+					discHeader->game_title, sizeof(discHeader->game_title)));
+			break;
+	}
+
+	// Look up the publisher.
+	const char *const publisher = NintendoPublishers::lookup(discHeader->company);
+	string s_publisher;
+	if (publisher) {
+		s_publisher = publisher;
+	} else {
+		if (ISALNUM(discHeader->company[0]) &&
+		    ISALNUM(discHeader->company[1]))
+		{
+			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
+				discHeader->company);
+		} else {
+			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
+				static_cast<uint8_t>(discHeader->company[0]),
+				static_cast<uint8_t>(discHeader->company[1]));
+		}
+	}
+	d->metaData->addMetaData_string(Property::Publisher, s_publisher);
+
+	// TODO: Disc number?
+
+	// Finished reading the metadata.
+	return (int)d->fields->count();
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
