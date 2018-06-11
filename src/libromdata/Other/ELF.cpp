@@ -877,7 +877,7 @@ const char *ELF::systemName(unsigned int type) const
 const char *const *ELF::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".",		// FIXME: Does this work for files with no extension?
+		//".",		// FIXME: Does this work for files with no extension?
 		".elf",		// Common for Wii homebrew.
 		".so",		// Shared libraries. (TODO: Versioned .so files.)
 		".o",		// Relocatable object files.
