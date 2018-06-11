@@ -344,34 +344,53 @@
   <!-- *** Texture *** -->
 
   <!-- SegaPVR -->
+  <!-- FIXME: libmirage-gbi.xml is overriding this. -->
   <mime-type type="image/x-sega-pvr">
     <comment>Sega PVR texture file</comment>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.pvr"/>
-    <magic priority="50">
+    <magic priority="75">
       <match value="PVRT" type="string" offset="0"/>
-      <match value="PVRT" type="string" offset="12"/>
-      <match value="PVRT" type="string" offset="16"/>
+      <match value="GBIX" type="string" offset="0">
+        <match value="PVRT" type="string" offset="12"/>
+        <match value="PVRT" type="string" offset="16"/>
+      </match>
+      <match value="GCIX" type="string" offset="0">
+        <match value="PVRT" type="string" offset="12"/>
+        <match value="PVRT" type="string" offset="16"/>
+      </match>
     </magic>
   </mime-type>
   <mime-type type="image/x-sega-gvr">
     <comment>Sega GVR texture file</comment>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.gvr"/>
-    <magic priority="50">
+    <magic priority="75">
       <match value="GVRT" type="string" offset="0"/>
-      <match value="GVRT" type="string" offset="12"/>
-      <match value="GVRT" type="string" offset="16"/>
+      <match value="GBIX" type="string" offset="0">
+        <match value="GVRT" type="string" offset="12"/>
+        <match value="GVRT" type="string" offset="16"/>
+      </match>
+      <match value="GCIX" type="string" offset="0">
+        <match value="GVRT" type="string" offset="12"/>
+        <match value="GVRT" type="string" offset="16"/>
+      </match>
     </magic>
   </mime-type>
   <mime-type type="image/x-sega-pvrx">
     <comment>Sega PVRX texture file</comment>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.pvr"/>
-    <magic priority="50">
+    <magic priority="75">
       <match value="PVRX" type="string" offset="0"/>
-      <match value="PVRX" type="string" offset="12"/>
-      <match value="PVRX" type="string" offset="16"/>
+      <match value="GBIX" type="string" offset="0">
+        <match value="PVRX" type="string" offset="12"/>
+        <match value="PVRX" type="string" offset="16"/>
+      </match>
+      <match value="GCIX" type="string" offset="0">
+        <match value="PVRX" type="string" offset="12"/>
+        <match value="PVRX" type="string" offset="16"/>
+      </match>
     </magic>
   </mime-type>
 
