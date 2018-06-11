@@ -1381,7 +1381,7 @@ int DirectDrawSurface::loadMetaData(void)
 
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->metaData->reserve(12);	// Maximum of 2 metadata properties.
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
 	d->metaData->addMetaData_integer(Property::Width, ddsHeader->dwWidth);
