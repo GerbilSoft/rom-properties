@@ -75,7 +75,7 @@ class DreamcastPrivate : public RomDataPrivate
 
 	public:
 		enum DiscType {
-			DISC_UNKNOWN		= -1,	// Unknown ROM type.
+			DISC_UNKNOWN		= -1,	// Unknown disc image type.
 			DISC_ISO_2048		= 0,	// ISO-9660, 2048-byte sectors.
 			DISC_ISO_2352		= 1,	// ISO-9660, 2352-byte sectors.
 			DISC_GDI		= 2,	// GD-ROM cuesheet
@@ -114,6 +114,15 @@ class DreamcastPrivate : public RomDataPrivate
 		 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
 		 */
 		const rp_image *load0GDTEX(void);
+
+		/**
+		 * Parse the disc number portion of the device information field.
+		 * @param ip0000_bin	[in] IP0000.bin struct.
+		 * @param disc_num	[out] Disc number.
+		 * @param disc_total	[out] Total number of discs.
+		 */
+		static void parseDiscNumber(const DC_IP0000_BIN_t *ip0000_bin,
+			uint8_t &disc_num, uint8_t &disc_total);
 };
 
 /** DreamcastPrivate **/
@@ -227,6 +236,33 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	pvrData_tmp->unref();
 	delete pvrFile_tmp;
 	return nullptr;
+}
+
+/**
+ * Parse the disc number portion of the device information field.
+ * @param ip0000_bin	[in] IP0000.bin struct.
+ * @param disc_num	[out] Disc number.
+ * @param disc_total	[out] Total number of discs.
+ */
+void DreamcastPrivate::parseDiscNumber(
+	const DC_IP0000_BIN_t *ip0000_bin,
+	uint8_t &disc_num, uint8_t &disc_total)
+{
+	disc_num = 0;
+	disc_total = 0;
+
+	if (!memcmp(&ip0000_bin->device_info[4], " GD-ROM", 7) &&
+	    ip0000_bin->device_info[12] == '/')
+	{
+		// "GD-ROM" is present.
+		if (ISDIGIT(ip0000_bin->device_info[11]) &&
+		    ISDIGIT(ip0000_bin->device_info[13]))
+		{
+			// Disc digits are present.
+			disc_num = ip0000_bin->device_info[11] & 0x0F;
+			disc_total = ip0000_bin->device_info[13] & 0x0F;
+		}
+	}
 }
 
 /** Dreamcast **/
@@ -516,7 +552,7 @@ int Dreamcast::loadFieldData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid || d->discType < 0) {
-		// Unknown ROM image type.
+		// Unknown disc image type.
 		return -EIO;
 	}
 
@@ -578,21 +614,8 @@ int Dreamcast::loadFieldData(void)
 	);
 
 	// Disc number.
-	uint8_t disc_num = 0;
-	uint8_t disc_total = 0;
-	if (!memcmp(&discHeader->device_info[4], " GD-ROM", 7) &&
-	    discHeader->device_info[12] == '/')
-	{
-		// "GD-ROM" is present.
-		if (ISDIGIT(discHeader->device_info[11]) &&
-		    ISDIGIT(discHeader->device_info[13]))
-		{
-			// Disc digits are present.
-			disc_num = discHeader->device_info[11] & 0x0F;
-			disc_total = discHeader->device_info[13] & 0x0F;
-		}
-	}
-
+	uint8_t disc_num, disc_total;
+	d->parseDiscNumber(discHeader, disc_num, disc_total);
 	if (disc_num != 0) {
 		d->fields->addField_string(C_("Dreamcast", "Disc #"),
 			// tr: Disc X of Y (for multi-disc games)
@@ -738,6 +761,75 @@ int Dreamcast::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Dreamcast::loadMetaData(void)
+{
+	RP_D(Dreamcast);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->discType < 0) {
+		// Unknown disc image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// Dreamcast disc header.
+	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// Title. (TODO: Encoding?)
+	d->metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)));
+
+	// Publisher.
+	const char *publisher = nullptr;
+	if (!memcmp(discHeader->publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader->publisher))) {
+		// First-party Sega title.
+		publisher = "Sega";
+	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
+		// This may be a third-party T-code.
+		char *endptr;
+		const unsigned int t_code = static_cast<unsigned int>(
+			strtoul(&discHeader->publisher[10], &endptr, 10));
+		if (endptr > &discHeader->publisher[10] &&
+		    endptr <= &discHeader->publisher[15] &&
+		    *endptr == ' ')
+		{
+			// Valid T-code. Look up the publisher.
+			publisher = SegaPublishers::lookup(t_code);
+		}
+	}
+
+	if (publisher) {
+		d->metaData->addMetaData_string(Property::Publisher, publisher);
+	} else {
+		// Unknown publisher.
+		// List the field as-is.
+		d->metaData->addMetaData_string(Property::Publisher,
+			latin1_to_utf8(discHeader->publisher, sizeof(discHeader->publisher)));
+	}
+
+	// Disc number. (multiple disc sets only)
+	uint8_t disc_num, disc_total;
+	d->parseDiscNumber(discHeader, disc_num, disc_total);
+	if (disc_num != 0 && disc_total > 1) {
+		d->metaData->addMetaData_integer(Property::DiscNumber, disc_num);
+	}
+
+	// Finished reading the metadata.
+	return (int)d->fields->count();
 }
 
 /**
