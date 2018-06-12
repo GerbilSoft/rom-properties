@@ -28,6 +28,7 @@
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RelatedFile.hpp"
+#include "librpbase/threads/pthread_once.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -154,9 +155,43 @@ class RomDataFactoryPrivate
 		 * @return DreamcastSave if valid; nullptr if not.
 		 */
 		static RomData *openDreamcastVMSandVMI(IRpFile *file);
+
+		// Vectors for file extensions and MIME types.
+		// We want to collect them once per session instead of
+		// repeatedly collecting them, since the caller might
+		// not cache them.
+		// pthread_once() control variable.
+		static vector<RomDataFactory::ExtInfo> vec_exts;
+		static vector<const char*> vec_mimeTypes;
+		static pthread_once_t once_exts;
+		static pthread_once_t once_mimeTypes;
+
+		/**
+		 * Initialize the vector of supported file extensions.
+		 * Used for Win32 COM registration.
+		 *
+		 * Internal function; must be called using pthread_once().
+		 *
+		 * NOTE: The return value is a struct that includes a flag
+		 * indicating if the file type handler supports thumbnails.
+		 */
+		static void init_supportedFileExtensions(void);
+
+		/**
+		 * Initialize the vector of supported MIME types.
+		 * Used for KFileMetaData.
+		 *
+		 * Internal function; must be called using pthread_once().
+		 */
+		static void init_supportedMimeTypes(void);
 };
 
 /** RomDataFactoryPrivate **/
+
+vector<RomDataFactory::ExtInfo> RomDataFactoryPrivate::vec_exts;
+vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
+pthread_once_t RomDataFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
+pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	// Consoles
@@ -469,11 +504,15 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 }
 
 /**
- * Get all supported file extensions.
+ * Initialize the vector of supported file extensions.
  * Used for Win32 COM registration.
- * @return All supported file extensions, including the leading dot.
+ *
+ * Internal function; must be called using pthread_once().
+ *
+ * NOTE: The return value is a struct that includes a flag
+ * indicating if the file type handler supports thumbnails.
  */
-vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
+void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 {
 	// In order to handle multiple RomData subclasses
 	// that support the same extensions, we're using
@@ -483,18 +522,16 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	//
 	// The actual data is stored in the vector<ExtInfo>.
 	unordered_map<string, bool> map_exts;
-	vector<ExtInfo> vec_exts;
 
 	static const size_t reserve_size =
-		(ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_header) +
-		 ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_footer)) * 2;
+		(ARRAY_SIZE(romDataFns_header) +
+		 ARRAY_SIZE(romDataFns_footer)) * 2;
 	vec_exts.reserve(reserve_size);
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 	map_exts.reserve(reserve_size);
 #endif
 
-	const RomDataFactoryPrivate::RomDataFns *fns =
-		&RomDataFactoryPrivate::romDataFns_header[0];
+	const RomDataFns *fns = &romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		const char *const *sys_exts = fns->supportedFileExtensions();
 		if (!sys_exts)
@@ -509,12 +546,13 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 			} else {
 				// First time encountering this extension.
 				map_exts[*sys_exts] = fns->hasThumbnail;
-				vec_exts.push_back(ExtInfo(*sys_exts, fns->hasThumbnail));
+				vec_exts.push_back(RomDataFactory::ExtInfo(
+					*sys_exts, fns->hasThumbnail));
 			}
 		}
 	}
 
-	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
+	fns = &romDataFns_footer[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		const char *const *sys_exts = fns->supportedFileExtensions();
 		if (!sys_exts)
@@ -529,7 +567,8 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 			} else {
 				// First time encountering this extension.
 				map_exts[*sys_exts] = fns->hasThumbnail;
-				vec_exts.push_back(ExtInfo(*sys_exts, fns->hasThumbnail));
+				vec_exts.push_back(RomDataFactory::ExtInfo(
+					*sys_exts, fns->hasThumbnail));
 			}
 		}
 	}
@@ -538,17 +577,30 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	for (auto iter = vec_exts.begin(); iter != vec_exts.end(); ++iter) {
 		iter->hasThumbnail = map_exts[iter->ext];
 	}
-
-	return vec_exts;
 }
 
 /**
- * Get all supported MIME types.
+ * Get all supported file extensions.
+ * Used for Win32 COM registration.
+ *
+ * NOTE: The return value is a struct that includes a flag
+ * indicating if the file type handler supports thumbnails.
+ *
+ * @return All supported file extensions, including the leading dot.
+ */
+const vector<RomDataFactory::ExtInfo> &RomDataFactory::supportedFileExtensions(void)
+{
+	pthread_once(&RomDataFactoryPrivate::once_exts, RomDataFactoryPrivate::init_supportedFileExtensions);
+	return RomDataFactoryPrivate::vec_exts;
+}
+
+/**
+ * Initialize the vector of supported MIME types.
  * Used for KFileMetaData.
  *
- * @return All supported MIME types.
+ * Internal function; must be called using pthread_once().
  */
-vector<const char*> RomDataFactory::supportedMimeTypes(void)
+void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 {
 	// TODO: Add generic types, e.g. application/octet-stream?
 
@@ -557,7 +609,6 @@ vector<const char*> RomDataFactory::supportedMimeTypes(void)
 	// an unordered_set<string>. The actual data
 	// is stored in the vector<const char*>.
 	unordered_set<string> set_mimeTypes;
-	vector<const char*> vec_mimeTypes;
 
 	static const size_t reserve_size =
 		(ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_header) +
@@ -597,8 +648,18 @@ vector<const char*> RomDataFactory::supportedMimeTypes(void)
 			}
 		}
 	}
+}
 
-	return vec_mimeTypes;
+/**
+ * Get all supported MIME types.
+ * Used for KFileMetaData.
+ *
+ * @return All supported MIME types.
+ */
+const vector<const char*> &RomDataFactory::supportedMimeTypes(void)
+{
+	pthread_once(&RomDataFactoryPrivate::once_mimeTypes, RomDataFactoryPrivate::init_supportedMimeTypes);
+	return RomDataFactoryPrivate::vec_mimeTypes;
 }
 
 }

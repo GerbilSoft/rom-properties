@@ -78,7 +78,7 @@ class RomDataFactory
 		 *
 		 * @return All supported file extensions, including the leading dot.
 		 */
-		static std::vector<ExtInfo> supportedFileExtensions(void);
+		static const std::vector<ExtInfo> &supportedFileExtensions(void);
 
 		/**
 		 * Get all supported MIME types.
@@ -86,7 +86,7 @@ class RomDataFactory
 		 *
 		 * @return All supported MIME types.
 		 */
-		static std::vector<const char*> supportedMimeTypes(void);
+		static const std::vector<const char*> &supportedMimeTypes(void);
 };
 
 }

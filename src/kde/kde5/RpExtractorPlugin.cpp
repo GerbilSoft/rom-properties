@@ -75,7 +75,7 @@ RpExtractorPlugin::RpExtractorPlugin(QObject *parent)
 QStringList RpExtractorPlugin::mimetypes(void) const
 {
 	// Get the MIME types from RomDataFactory.
-	vector<const char*> vec_mimeTypes = RomDataFactory::supportedMimeTypes();
+	const vector<const char*> &vec_mimeTypes = RomDataFactory::supportedMimeTypes();
 
 	// Convert to QStringList.
 	QStringList mimeTypes;
