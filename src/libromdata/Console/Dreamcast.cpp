@@ -116,6 +116,12 @@ class DreamcastPrivate : public RomDataPrivate
 		const rp_image *load0GDTEX(void);
 
 		/**
+		 * Get the disc publisher.
+		 * @return Disc publisher.
+		 */
+		string getPublisher(void) const;
+
+		/**
 		 * Parse the disc number portion of the device information field.
 		 * @param disc_num	[out] Disc number.
 		 * @param disc_total	[out] Total number of discs.
@@ -234,6 +240,42 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	pvrData_tmp->unref();
 	delete pvrFile_tmp;
 	return nullptr;
+}
+
+/**
+ * Get the disc publisher.
+ * @return Disc publisher.
+ */
+string DreamcastPrivate::getPublisher(void) const
+{
+	const char *publisher = nullptr;
+	if (!memcmp(discHeader.publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader.publisher))) {
+		// First-party Sega title.
+		publisher = "Sega";
+	} else if (!memcmp(discHeader.publisher, "SEGA LC-T-", 10)) {
+		// This may be a third-party T-code.
+		char *endptr;
+		const unsigned int t_code = static_cast<unsigned int>(
+			strtoul(&discHeader.publisher[10], &endptr, 10));
+		if (endptr > &discHeader.publisher[10] &&
+		    endptr <= &discHeader.publisher[15] &&
+		    *endptr == ' ')
+		{
+			// Valid T-code. Look up the publisher.
+			publisher = SegaPublishers::lookup(t_code);
+		}
+	}
+
+	if (publisher) {
+		// Found the publisher.
+		return publisher;
+	}
+
+	// Unknown publisher.
+	// List the field as-is.
+	string s_ret = latin1_to_utf8(discHeader.publisher, sizeof(discHeader.publisher));
+	trimEnd(s_ret);
+	return s_ret;
 }
 
 /**
@@ -566,33 +608,7 @@ int Dreamcast::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Publisher.
-	const char *publisher = nullptr;
-	if (!memcmp(discHeader->publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader->publisher))) {
-		// First-party Sega title.
-		publisher = "Sega";
-	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
-		// This may be a third-party T-code.
-		char *endptr;
-		const unsigned int t_code = static_cast<unsigned int>(
-			strtoul(&discHeader->publisher[10], &endptr, 10));
-		if (endptr > &discHeader->publisher[10] &&
-		    endptr <= &discHeader->publisher[15] &&
-		    *endptr == ' ')
-		{
-			// Valid T-code. Look up the publisher.
-			publisher = SegaPublishers::lookup(t_code);
-		}
-	}
-
-	if (publisher) {
-		d->fields->addField_string(C_("Dreamcast", "Publisher"), publisher);
-	} else {
-		// Unknown publisher.
-		// List the field as-is.
-		d->fields->addField_string(C_("Dreamcast", "Publisher"),
-			latin1_to_utf8(discHeader->publisher, sizeof(discHeader->publisher)),
-			RomFields::STRF_TRIM_END);
-	}
+	d->fields->addField_string(C_("Dreamcast", "Publisher"), d->getPublisher());
 
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
@@ -795,32 +811,7 @@ int Dreamcast::loadMetaData(void)
 		RomMetaData::STRF_TRIM_END);
 
 	// Publisher.
-	const char *publisher = nullptr;
-	if (!memcmp(discHeader->publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader->publisher))) {
-		// First-party Sega title.
-		publisher = "Sega";
-	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
-		// This may be a third-party T-code.
-		char *endptr;
-		const unsigned int t_code = static_cast<unsigned int>(
-			strtoul(&discHeader->publisher[10], &endptr, 10));
-		if (endptr > &discHeader->publisher[10] &&
-		    endptr <= &discHeader->publisher[15] &&
-		    *endptr == ' ')
-		{
-			// Valid T-code. Look up the publisher.
-			publisher = SegaPublishers::lookup(t_code);
-		}
-	}
-
-	if (publisher) {
-		d->metaData->addMetaData_string(Property::Publisher, publisher);
-	} else {
-		// Unknown publisher.
-		// List the field as-is.
-		d->metaData->addMetaData_string(Property::Publisher,
-			latin1_to_utf8(discHeader->publisher, sizeof(discHeader->publisher)));
-	}
+	d->fields->addField_string(C_("Dreamcast", "Publisher"), d->getPublisher());
 
 	// Disc number. (multiple disc sets only)
 	uint8_t disc_num, disc_total;
