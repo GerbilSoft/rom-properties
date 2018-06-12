@@ -791,7 +791,8 @@ int Dreamcast::loadMetaData(void)
 
 	// Title. (TODO: Encoding?)
 	d->metaData->addMetaData_string(Property::Title,
-		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)));
+		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
+		RomMetaData::STRF_TRIM_END);
 
 	// Publisher.
 	const char *publisher = nullptr;
