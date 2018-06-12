@@ -149,6 +149,13 @@ class RomMetaDataPrivate;
 class RomMetaData
 {
 	public:
+		// String format flags. (Property::String)
+		// NOTE: These have the same values as RomFields::StringFormat.
+		enum StringFormat {
+			// Trim spaces from the end of strings.
+			STRF_TRIM_END	= (1 << 3),
+		};
+
 		// ROM metadata struct.
 		// Dynamically allocated.
 		struct MetaData {
@@ -234,17 +241,19 @@ class RomMetaData
 		 * Add a string metadata property.
 		 * @param name Metadata name.
 		 * @param str String value.
+		 * @param flags Formatting flags.
 		 * @return Metadata index.
 		 */
-		int addMetaData_string(Property::Property name, const char *str);
+		int addMetaData_string(Property::Property name, const char *str, unsigned int flags = 0);
 
 		/**
 		 * Add a string metadata property.
 		 * @param name Metadata name.
 		 * @param str String value.
+		 * @param flags Formatting flags.
 		 * @return Metadata index.
 		 */
-		int addMetaData_string(Property::Property name, const std::string &str);
+		int addMetaData_string(Property::Property name, const std::string &str, unsigned int flags = 0);
 };
 
 }

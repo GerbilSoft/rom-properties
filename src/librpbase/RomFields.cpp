@@ -86,13 +86,6 @@ class RomFieldsPrivate
 		 * Deletes allocated strings in this->data.
 		 */
 		void delete_data(void);
-
-		/**
-		 * Remove trailing spaces from a string.
-		 * Used for STRF_TRIM_END.
-		 * @param str String.
-		 */
-		void trimEnd(string &str);
 };
 
 /** RomFieldsPrivate **/
@@ -181,26 +174,6 @@ void RomFieldsPrivate::delete_data(void)
 
 	// Clear the fields vector.
 	this->fields.clear();
-}
-
-/**
- * Remove trailing spaces from a string.
- * Used for STRF_TRIM_END.
- * @param str String.
- */
-void RomFieldsPrivate::trimEnd(string &str)
-{
-	// NOTE: No str.empty() check because that's usually never the case here.
-	// TODO: Check for U+3000? (UTF-8: "\xE3\x80\x80")
-	// TODO: Move to TextFuncs and add unit tests?
-	size_t sz = str.size();
-	const char *p_start = str.c_str();
-	for (const char *p = p_start + sz - 1; p >= p_start; p--) {
-		if (*p != ' ')
-			break;
-		sz--;
-	}
-	str.resize(sz);
 }
 
 /** RomFields **/
@@ -879,7 +852,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 	// Handle string trimming flags.
 	if (field.data.str && (flags & STRF_TRIM_END)) {
-		d->trimEnd(*nstr);
+		trimEnd(*nstr);
 	}
 	return idx;
 }
@@ -913,7 +886,7 @@ int RomFields::addField_string(const char *name, const string &str, unsigned int
 
 	// Handle string trimming flags.
 	if (nstr && (flags & STRF_TRIM_END)) {
-		d->trimEnd(*nstr);
+		trimEnd(*nstr);
 	}
 	return idx;
 }

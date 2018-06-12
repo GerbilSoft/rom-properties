@@ -497,9 +497,10 @@ int RomMetaData::addMetaData_integer(Property::Property name, int value)
  * Add a string metadata property.
  * @param name Metadata name.
  * @param str String value.
+ * @param flags Formatting flags.
  * @return Metadata index.
  */
-int RomMetaData::addMetaData_string(Property::Property name, const char *str)
+int RomMetaData::addMetaData_string(Property::Property name, const char *str, unsigned int flags)
 {
 	assert(name > Property::FirstProperty);
 	assert(name < Property::PropertyCount);
@@ -520,6 +521,11 @@ int RomMetaData::addMetaData_string(Property::Property name, const char *str)
 	metaData.name = name;
 	metaData.type = PropertyType::String;
 	metaData.data.str = nstr;
+
+	// Trim the string if requested.
+	if (nstr && (flags & STRF_TRIM_END)) {
+		trimEnd(*nstr);
+	}
 	return idx;
 }
 
@@ -527,9 +533,10 @@ int RomMetaData::addMetaData_string(Property::Property name, const char *str)
  * Add a string metadata property.
  * @param name Metadata name.
  * @param str String value.
+ * @param flags Formatting flags.
  * @return Metadata index.
  */
-int RomMetaData::addMetaData_string(Property::Property name, const std::string &str)
+int RomMetaData::addMetaData_string(Property::Property name, const std::string &str, unsigned int flags)
 {
 	assert(name > Property::FirstProperty);
 	assert(name < Property::PropertyCount);
@@ -550,6 +557,11 @@ int RomMetaData::addMetaData_string(Property::Property name, const std::string &
 	metaData.name = name;
 	metaData.type = PropertyType::String;
 	metaData.data.str = nstr;
+
+	// Trim the string if requested.
+	if (nstr && (flags & STRF_TRIM_END)) {
+		trimEnd(*nstr);
+	}
 	return idx;
 }
 
