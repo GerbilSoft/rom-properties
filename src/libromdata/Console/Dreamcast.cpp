@@ -322,6 +322,11 @@ Dreamcast::Dreamcast(IRpFile *file)
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
 			d->iso_start_offset = -1;
 			d->discReader = new DiscReader(d->file);
+			if (d->file->size() <= 64*1024) {
+				// 64 KB is way too small for a Dreamcast disc image.
+				// We'll assume this is IP.bin.
+				d->fileType = FTYPE_BOOT_SECTOR;
+			}
 			break;
 
 		case DreamcastPrivate::DISC_ISO_2352:

@@ -440,6 +440,8 @@ const char *RomData::fileType_string(void) const
 		NOP_C_("RomData|FileType", "Core Dump"),
 		// tr: FTYPE_AUDIO_FILE
 		NOP_C_("RomData|FileType", "Audio File"),
+		// tr: FTYPE_BOOT_SECTOR
+		NOP_C_("RomData|FileType", "Boot Sector"),
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");

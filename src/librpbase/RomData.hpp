@@ -231,6 +231,7 @@ class RomData
 			FTYPE_SHARED_LIBRARY,		// Shared Library (similar to DLLs)
 			FTYPE_CORE_DUMP,		// Core Dump
 			FTYPE_AUDIO_FILE,		// Audio file
+			FTYPE_BOOT_SECTOR,		// Boot sector
 
 			FTYPE_LAST			// End of FileType.
 		};

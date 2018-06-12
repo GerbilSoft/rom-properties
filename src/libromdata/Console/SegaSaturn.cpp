@@ -301,6 +301,11 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
+			if (d->file->size() <= 64*1024) {
+				// 64 KB is way too small for a Dreamcast disc image.
+				// We'll assume this is IP.bin.
+				d->fileType = FTYPE_BOOT_SECTOR;
+			}
 			break;
 		case SegaSaturnPrivate::DISC_ISO_2352:
 			// 2352-byte sectors.
