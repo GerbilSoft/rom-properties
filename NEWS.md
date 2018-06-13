@@ -1,5 +1,10 @@
 # Changes
 
+## v1.3.1 (released 2018/06/12)
+
+* Windows: Fixed a bug that caused Explorer to crash if a supported file had
+  an internal image whose width was not a multiple of 8.
+
 ## v1.3 - The Internationalization Release (released 2018/06/02)
 
 * New features:
