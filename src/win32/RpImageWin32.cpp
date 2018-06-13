@@ -121,18 +121,36 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 				// Find all pixels matching tr_idx.
 				uint8_t *dest = pvBits;
 				for (int y = image->height()-1; y >= 0; y--) {
+					// TODO: Use stride arithmetic instead of image->scanLine().
 					const uint8_t *src = static_cast<const uint8_t*>(image->scanLine(y));
-					for (unsigned int x = (unsigned int)width; x > 0; x -= 8) {
+					unsigned int x = (unsigned int)width;
+					for (unsigned int x = (unsigned int)width; x > 7; x -= 8) {
 						uint8_t pxMono = 0;
-						for (unsigned int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
+						for (unsigned int bit = 8; bit > 0; bit--, src++) {
 							// MSB == left-most pixel.
 							pxMono <<= 1;
 							pxMono |= (*src != tr_idx);
 						}
 						*dest++ = pxMono;
 					}
-					// Next line.
-					dest += stride_adj;
+
+					// Handle unaligned bits.
+					if (x > 0) {
+						uint8_t pxMono = 0;
+						for (unsigned int bit = x; bit > 0; bit--, src++) {
+							// MSB == left-most pixel.
+							pxMono <<= 1;
+							pxMono |= (*src != tr_idx);
+						}
+						// Not 8px aligned; shift the bits over.
+						pxMono <<= (8 - x);
+						*dest++ = pxMono;
+					}
+
+					// Clear out unused bytes and go to the next line.
+					for (unsigned int x = (unsigned int)stride_adj; x > 0; x--) {
+						*dest++ = 0;
+					}
 				}
 			} else {
 				// tr_idx isn't set. This means the image is either
@@ -145,22 +163,39 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 
 		case rp_image::FORMAT_ARGB32: {
 			// Find all pixels with a 0 alpha channel.
-			// FIXME: Needs testing.
 			memset(pvBits, 0xFF, icon_sz);
 			uint8_t *dest = pvBits;
 			for (int y = image->height()-1; y >= 0; y--) {
+				// TODO: Use stride arithmetic instead of image->scanLine().
 				const uint32_t *src = static_cast<const uint32_t*>(image->scanLine(y));
-				for (unsigned int x = (unsigned int)image->width(); x > 0; x -= 8) {
+				unsigned int x = (unsigned int)width;
+				for (; x > 7; x -= 8) {
 					uint8_t pxMono = 0;
-					for (unsigned int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
+					for (unsigned int bit = 8; bit > 0; bit--, src++) {
 						// MSB == left-most pixel.
 						pxMono <<= 1;
 						pxMono |= ((*src & 0xFF000000) != 0);
 					}
 					*dest++ = pxMono;
 				}
-				// Next line.
-				dest += stride_adj;
+
+				// Handle unaligned bits.
+				if (x > 0) {
+					uint8_t pxMono = 0;
+					for (unsigned int bit = x; bit > 0; bit--, src++) {
+						// MSB == left-most pixel.
+						pxMono <<= 1;
+						pxMono |= ((*src & 0xFF000000) != 0);
+					}
+					// Not 8px aligned; shift the bits over.
+					pxMono <<= (8 - x);
+					*dest++ = pxMono;
+				}
+
+				// Clear out unused bytes and go to the next line.
+				for (unsigned int x = (unsigned int)stride_adj; x > 0; x--) {
+					*dest++ = 0;
+				}
 			}
 			break;
 		}
