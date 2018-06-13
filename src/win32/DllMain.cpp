@@ -226,6 +226,26 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
+	// Register as "OpenWithProgids/rom-properties".
+	// This is needed for RP_PropertyStore.
+	RegKey hkey_ext(hkcr, ext.c_str(), KEY_READ|KEY_WRITE, true);
+	if (hkey_ext.lOpenRes() != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	RegKey hkey_OpenWithProgids(hkey_ext, L"OpenWithProgids", KEY_READ|KEY_WRITE, true);
+	if (hkey_ext.lOpenRes() != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	hkey_OpenWithProgids.write(RP_ProgID, nullptr);
+	hkey_OpenWithProgids.close();
+	hkey_ext.close();
+
+	// Register the classes with the ProgID.
+	lResult = RP_ExtractIcon::RegisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::RegisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
 	if (extInfo.hasThumbnail) {
 		// Register the thumbnail handlers.
 		lResult = RP_ExtractIcon::RegisterFileType(hkcr, ext.c_str());
@@ -311,6 +331,29 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 			hkey_fileType.deleteSubKey(keysToDel[i]);
 		}
 	}
+
+	// Unregister the classes from the ProgID.
+	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::UnregisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Remove "OpenWithProgids/rom-properties" if it's present.
+	RegKey hkey_ext(hkcr, ext.c_str(), KEY_READ|KEY_WRITE, false);
+	if (hkey_ext.lOpenRes() == ERROR_SUCCESS) {
+		RegKey hkey_OpenWithProgids(hkey_ext, L"OpenWithProgids", KEY_READ|KEY_WRITE, false);
+		if (hkey_ext.lOpenRes() == ERROR_SUCCESS) {
+			hkey_OpenWithProgids.deleteValue(RP_ProgID);
+			if (hkey_OpenWithProgids.isKeyEmpty()) {
+				// OpenWithProgids is empty. Delete it.
+				hkey_OpenWithProgids.close();
+				hkey_ext.deleteSubKey(L"OpenWithProgids");
+			}
+		}
+	}
+	hkey_ext.close();
 
 	// Is a custom ProgID registered?
 	// If so, we should check for empty keys there, too.
@@ -594,6 +637,11 @@ STDAPI DllRegisterServer(void)
 	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
 	if (!hkcr.isOpen()) return SELFREG_E_CLASS;
 
+	// Create a ProgID.
+	RegKey hkey_progID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);
+	if (!hkey_progID.isOpen()) return SELFREG_E_CLASS;
+	hkey_progID.write(nullptr, L"ROM Properties Page Shell Extension");
+
 	// Register all supported file types and associate them
 	// with our ProgID.
 	const vector<RomDataFactory::ExtInfo> &vec_exts = RomDataFactory::supportedFileExtensions();
@@ -720,6 +768,14 @@ STDAPI DllUnregisterServer(void)
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, L"Drive");
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Remove the ProgID if it's empty.
+	RegKey hkey_progID(hkcr, RP_ProgID, KEY_READ|KEY_WRITE, false);
+	if (hkey_progID.isOpen() && hkey_progID.isKeyEmpty()) {
+		// No subkeys. Delete this key.
+		hkey_progID.close();
+		hkcr.deleteSubKey(RP_ProgID);
+	}
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
