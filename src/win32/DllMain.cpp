@@ -229,22 +229,14 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 	// Register as "OpenWithProgids/rom-properties".
 	// This is needed for RP_PropertyStore.
 	RegKey hkey_ext(hkcr, ext.c_str(), KEY_READ|KEY_WRITE, true);
-	if (hkey_ext.lOpenRes() != ERROR_SUCCESS)
+	if (!hkey_ext.isOpen())
 		return SELFREG_E_CLASS;
 	RegKey hkey_OpenWithProgids(hkey_ext, L"OpenWithProgids", KEY_READ|KEY_WRITE, true);
-	if (hkey_ext.lOpenRes() != ERROR_SUCCESS)
+	if (!hkey_ext.isOpen())
 		return SELFREG_E_CLASS;
 	hkey_OpenWithProgids.write(RP_ProgID, nullptr);
 	hkey_OpenWithProgids.close();
 	hkey_ext.close();
-
-	// Register the classes with the ProgID.
-	lResult = RP_ExtractIcon::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	if (extInfo.hasThumbnail) {
 		// Register the thumbnail handlers.
@@ -332,19 +324,11 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 		}
 	}
 
-	// Unregister the classes from the ProgID.
-	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, RP_ProgID);
-	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
 	// Remove "OpenWithProgids/rom-properties" if it's present.
 	RegKey hkey_ext(hkcr, ext.c_str(), KEY_READ|KEY_WRITE, false);
-	if (hkey_ext.lOpenRes() == ERROR_SUCCESS) {
+	if (hkey_ext.isOpen()) {
 		RegKey hkey_OpenWithProgids(hkey_ext, L"OpenWithProgids", KEY_READ|KEY_WRITE, false);
-		if (hkey_ext.lOpenRes() == ERROR_SUCCESS) {
+		if (hkey_ext.isOpen()) {
 			hkey_OpenWithProgids.deleteValue(RP_ProgID);
 			if (hkey_OpenWithProgids.isKeyEmpty()) {
 				// OpenWithProgids is empty. Delete it.
@@ -642,8 +626,15 @@ STDAPI DllRegisterServer(void)
 	if (!hkey_progID.isOpen()) return SELFREG_E_CLASS;
 	hkey_progID.write(nullptr, L"ROM Properties Page Shell Extension");
 
-	// Register all supported file types and associate them
-	// with our ProgID.
+	// Register the classes with the ProgID.
+	lResult = RP_ExtractIcon::RegisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::RegisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Register all supported file types and associate them with our ProgID.
 	const vector<RomDataFactory::ExtInfo> &vec_exts = RomDataFactory::supportedFileExtensions();
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register the file type handlers for this file extension globally.
@@ -725,6 +716,14 @@ STDAPI DllUnregisterServer(void)
 	// Open HKEY_CLASSES_ROOT.
 	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
 	if (!hkcr.isOpen()) return SELFREG_E_CLASS;
+
+	// Unregister the classes from the ProgID.
+	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::UnregisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, RP_ProgID);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Unegister all supported file types.
 	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
