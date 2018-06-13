@@ -147,8 +147,10 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 						*dest++ = pxMono;
 					}
 
-					// Next line.
-					dest += stride_adj;
+					// Clear out unused bytes and go to the next line.
+					for (unsigned int x = (unsigned int)stride_adj; x > 0; x--) {
+						*dest++ = 0;
+					}
 				}
 			} else {
 				// tr_idx isn't set. This means the image is either
@@ -190,8 +192,10 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 					*dest++ = pxMono;
 				}
 
-				// Next line.
-				dest += stride_adj;
+				// Clear out unused bytes and go to the next line.
+				for (unsigned int x = (unsigned int)stride_adj; x > 0; x--) {
+					*dest++ = 0;
+				}
 			}
 			break;
 		}
