@@ -183,6 +183,12 @@ class GameCubePrivate : public RomDataPrivate
 
 	public:
 		/**
+		 * Get the disc publisher.
+		 * @return Disc publisher.
+		 */
+		string getPublisher(void) const;
+
+		/**
 		 * Load opening.bnr. (GameCube only)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
@@ -694,6 +700,32 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 	}
 
 	return ret;
+}
+
+/**
+ * Get the disc publisher.
+ * @return Disc publisher.
+ */
+string GameCubePrivate::getPublisher(void) const
+{
+	const char *const publisher = NintendoPublishers::lookup(discHeader.company);
+	if (publisher) {
+		return publisher;
+	}
+
+	// Unknown publisher.
+	if (ISALNUM(discHeader.company[0]) &&
+	    ISALNUM(discHeader.company[1]))
+	{
+		// Disc ID is alphanumeric.
+		return rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
+			discHeader.company);
+	}
+
+	// Disc ID is not alphanumeric.
+	return rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
+		static_cast<uint8_t>(discHeader.company[0]),
+		static_cast<uint8_t>(discHeader.company[1]));
 }
 
 /**
@@ -1531,24 +1563,8 @@ int GameCube::loadFieldData(void)
 	d->fields->addField_string(C_("GameCube", "Game ID"),
 		latin1_to_utf8(discHeader->id6, ARRAY_SIZE(discHeader->id6)));
 
-	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(discHeader->company);
-	string s_publisher;
-	if (publisher) {
-		s_publisher = publisher;
-	} else {
-		if (ISALNUM(discHeader->company[0]) &&
-		    ISALNUM(discHeader->company[1]))
-		{
-			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
-				discHeader->company);
-		} else {
-			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(discHeader->company[0]),
-				static_cast<uint8_t>(discHeader->company[1]));
-		}
-	}
-	d->fields->addField_string(C_("GameCube", "Publisher"), s_publisher);
+	// Publisher.
+	d->fields->addField_string(C_("GameCube", "Publisher"), d->getPublisher());
 
 	// Other fields.
 	d->fields->addField_string_numeric(C_("GameCube", "Disc #"),
@@ -1973,24 +1989,8 @@ int GameCube::loadMetaData(void)
 			break;
 	}
 
-	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(discHeader->company);
-	string s_publisher;
-	if (publisher) {
-		s_publisher = publisher;
-	} else {
-		if (ISALNUM(discHeader->company[0]) &&
-		    ISALNUM(discHeader->company[1]))
-		{
-			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
-				discHeader->company);
-		} else {
-			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(discHeader->company[0]),
-				static_cast<uint8_t>(discHeader->company[1]));
-		}
-	}
-	d->metaData->addMetaData_string(Property::Publisher, s_publisher);
+	// Publisher.
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// TODO: Disc number?
 
