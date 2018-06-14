@@ -37,6 +37,7 @@
 #include "RP_ExtractImage.hpp"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
+#include "RP_PropertyStore.hpp"
 
 // libwin32common
 #include "libwin32common/ComBase.hpp"
@@ -180,6 +181,7 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	else CHECK_INTERFACE(RP_ExtractImage)
 	else CHECK_INTERFACE(RP_ShellPropSheetExt)
 	else CHECK_INTERFACE(RP_ThumbnailProvider)
+	else CHECK_INTERFACE(RP_PropertyStore)
 	else {
 		// Class not available.
 		hr = CLASS_E_CLASSNOTAVAILABLE;
@@ -195,10 +197,11 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 /**
  * Register file type handlers.
  * @param hkcr HKEY_CLASSES_ROOT, or user-specific Classes key.
+ * @param pHklm HKEY_LOCAL_MACHINE, or user-specific root. (If nullptr, skip RP_PropertyStore.)
  * @param extInfo RomDataFactory::ExtInfo
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInfo)
+static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::ExtInfo &extInfo)
 {
 	LONG lResult;
 
@@ -238,6 +241,12 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 	hkey_OpenWithProgids.close();
 	hkey_ext.close();
 
+	// Register the property store handler.
+	if (pHklm) {
+		lResult = RP_PropertyStore::RegisterFileType(*pHklm, ext.c_str());
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	}
+
 	if (extInfo.hasThumbnail) {
 		// Register the thumbnail handlers.
 		lResult = RP_ExtractIcon::RegisterFileType(hkcr, ext.c_str());
@@ -264,10 +273,11 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 /**
  * Unregister file type handlers.
  * @param hkcr HKEY_CLASSES_ROOT, or user-specific Classes key.
+ * @param pHklm HKEY_LOCAL_MACHINE, or user-specific root. (If nullptr, skip RP_PropertyStore.)
  * @param extInfo RomDataFactory::ExtInfo
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInfo)
+static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::ExtInfo &extInfo)
 {
 	LONG lResult;
 
@@ -306,6 +316,10 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	if (pHklm) {
+		lResult = RP_PropertyStore::UnregisterFileType(*pHklm, ext.c_str());
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	}
 
 	// Delete keys if they're empty.
 	static const wchar_t *const keysToDel[] = {L"ShellEx", L"RP_Fallback"};
@@ -419,6 +433,9 @@ static wstring GetUserFileAssoc(const wstring &sid, const char *ext)
  */
 static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtInfo &ext_info)
 {
+	// NOTE: We might end up registering RP_PropertyStore
+	// multiple times due to HKCR vs. HKLM differences.
+
 	// Get the ProgID.
 	wstring progID = GetUserFileAssoc(sid, ext_info.ext);
 	if (progID.empty()) {
@@ -446,7 +463,7 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	// Does HKCR\\progID exist?
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
 	if (hkcr_ProgID.isOpen()) {
-		LONG lResult = RegisterFileType(hkcr, progID_info);
+		LONG lResult = RegisterFileType(hkcr, nullptr, progID_info);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
@@ -459,30 +476,19 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	}
 
 	// Next, check "HKU\\[sid]".
-
-	// 208-character buffer:
-	// - SID length: 184 characters
-	//   - Reference: http://stackoverflow.com/questions/1140528/what-is-the-maximum-length-of-a-sid-in-sddl-format
-	// - Software\\Classes: 16 characters
-	// - Extra: 8 characters
-	wchar_t regPath[208];
-	int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
-		L"%s\\Software\\Classes", sid.c_str());
-	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
-		// Buffer isn't large enough...
-		return ERROR_BUFFER_OVERFLOW;
-	}
-
-	RegKey hku_cr(HKEY_USERS, regPath, KEY_WRITE, false);
-	if (hku_cr.isOpen()) {
-		LONG lResult = RegisterFileType(hku_cr, progID_info);
+	RegKey hku(HKEY_USERS, sid.c_str(), KEY_READ, false);
+	RegKey hku_cr(hku, L"Software\\Classes", KEY_WRITE, false);
+	if (hku.isOpen() && hku_cr.isOpen()) {
+		LONG lResult = RegisterFileType(hku_cr, nullptr, progID_info);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
 	} else {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
-		if (hku_cr.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+		if (hku.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hku.lOpenRes();
+		} else if (hku_cr.lOpenRes() != ERROR_FILE_NOT_FOUND) {
 			return hku_cr.lOpenRes();
 		}
 	}
@@ -498,6 +504,9 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
  */
 static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::ExtInfo &ext_info)
 {
+	// NOTE: We might end up registering RP_PropertyStore
+	// multiple times due to HKCR vs. HKLM differences.
+
 	// Get the ProgID.
 	wstring progID = GetUserFileAssoc(sid, ext_info.ext);
 	if (progID.empty()) {
@@ -525,7 +534,7 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 	// Does HKCR\\progID exist?
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
 	if (hkcr_ProgID.isOpen()) {
-		LONG lResult = UnregisterFileType(hkcr, progID_info);
+		LONG lResult = UnregisterFileType(hkcr, nullptr, progID_info);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
@@ -538,30 +547,19 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 	}
 
 	// Next, check "HKU\\[sid]".
-
-	// 208-character buffer:
-	// - SID length: 184 characters
-	//   - Reference: http://stackoverflow.com/questions/1140528/what-is-the-maximum-length-of-a-sid-in-sddl-format
-	// - Software\\Classes: 16 characters
-	// - Extra: 8 characters
-	wchar_t regPath[208];
-	int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
-		L"%s\\Software\\Classes", sid.c_str());
-	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
-		// Buffer isn't large enough...
-		return ERROR_BUFFER_OVERFLOW;
-	}
-
-	RegKey hku_cr(HKEY_USERS, regPath, KEY_WRITE, false);
-	if (hku_cr.isOpen()) {
-		LONG lResult = UnregisterFileType(hku_cr, progID_info);
+	RegKey hku(HKEY_USERS, sid.c_str(), KEY_READ, false);
+	RegKey hku_cr(HKEY_USERS, L"Software\\Classes", KEY_WRITE, false);
+	if (hku.isOpen() && hku_cr.isOpen()) {
+		LONG lResult = UnregisterFileType(hku_cr, nullptr, progID_info);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
 	} else {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
-		if (hku_cr.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+		if (hku.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hku.lOpenRes();
+		} else if (hku_cr.lOpenRes() != ERROR_FILE_NOT_FOUND) {
 			return hku_cr.lOpenRes();
 		}
 	}
@@ -604,6 +602,8 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_PropertyStore::RegisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -617,9 +617,11 @@ STDAPI DllRegisterServer(void)
 	// These are usually ".DEFAULT" or "well-known" SIDs.
 	user_SIDs.remove_if(process_HKU_subkey);
 
-	// Open HKEY_CLASSES_ROOT.
+	// Open HKEY_CLASSES_ROOT and HKEY_LOCAL_MACHINE.
 	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
 	if (!hkcr.isOpen()) return SELFREG_E_CLASS;
+	RegKey hklm(HKEY_LOCAL_MACHINE, nullptr, KEY_READ, false);
+	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
 	// Create a ProgID.
 	RegKey hkey_progID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);
@@ -627,6 +629,7 @@ STDAPI DllRegisterServer(void)
 	hkey_progID.write(nullptr, L"ROM Properties Page Shell Extension");
 
 	// Register the classes with the ProgID.
+	// NOTE: Skipping RP_PropertyStore.
 	lResult = RP_ExtractIcon::RegisterFileType(hkcr, RP_ProgID);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ExtractImage::RegisterFileType(hkcr, RP_ProgID);
@@ -638,7 +641,7 @@ STDAPI DllRegisterServer(void)
 	const vector<RomDataFactory::ExtInfo> &vec_exts = RomDataFactory::supportedFileExtensions();
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register the file type handlers for this file extension globally.
-		lResult = RegisterFileType(hkcr, *ext_iter);
+		lResult = RegisterFileType(hkcr, &hklm, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Register user file types if necessary.
@@ -700,6 +703,8 @@ STDAPI DllUnregisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_PropertyStore::UnregisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -713,11 +718,14 @@ STDAPI DllUnregisterServer(void)
 	// These are usually ".DEFAULT" or "well-known" SIDs.
 	user_SIDs.remove_if(process_HKU_subkey);
 
-	// Open HKEY_CLASSES_ROOT.
+	// Open HKEY_CLASSES_ROOT and HKEY_LOCAL_MACHINE.
 	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
 	if (!hkcr.isOpen()) return SELFREG_E_CLASS;
+	RegKey hklm(HKEY_LOCAL_MACHINE, nullptr, KEY_READ, false);
+	if (!hklm.isOpen()) return SELFREG_E_CLASS;
 
 	// Unregister the classes from the ProgID.
+	// NOTE: Skipping RP_PropertyStore.
 	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, RP_ProgID);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ExtractImage::UnregisterFileType(hkcr, RP_ProgID);
@@ -729,7 +737,7 @@ STDAPI DllUnregisterServer(void)
 	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Unregister the file type handlers for this file extension globally.
-		lResult = UnregisterFileType(hkcr, *ext_iter);
+		lResult = UnregisterFileType(hkcr, &hklm, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 		// Unregister user file types if necessary.
