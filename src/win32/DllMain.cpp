@@ -626,7 +626,9 @@ STDAPI DllRegisterServer(void)
 	// Create a ProgID.
 	RegKey hkey_progID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);
 	if (!hkey_progID.isOpen()) return SELFREG_E_CLASS;
-	hkey_progID.write(nullptr, L"ROM Properties Page Shell Extension");
+	// Delete the default value, since we don't want to override
+	// the default file type description.
+	hkey_progID.deleteValue(nullptr);
 
 	// Register the classes with the ProgID.
 	// NOTE: Skipping RP_PropertyStore.
