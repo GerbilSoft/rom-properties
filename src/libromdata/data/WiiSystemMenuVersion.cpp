@@ -21,6 +21,7 @@
 #include "WiiSystemMenuVersion.hpp"
 
 // C includes.
+#include <stdint.h>
 #include <stdlib.h>
 
 namespace LibRomData {
@@ -41,8 +42,8 @@ class WiiSystemMenuVersionPrivate {
 		 * - https://yls8.mtheall.com/ninupdates/reports.php
 		 */
 		struct SysVersionEntry_t {
-			unsigned int version;
-			const char *str;
+			uint16_t version;
+			char str[6];
 		};
 		static const SysVersionEntry_t sysVersionList[];
 
@@ -93,7 +94,7 @@ const WiiSystemMenuVersionPrivate::SysVersionEntry_t WiiSystemMenuVersionPrivate
 	{608, "4.3J"}, {609, "4.3U"}, {610, "4.3E"},
 
 	// End of list.
-	{0, nullptr}
+	{0, ""}
 };
 
 /**
@@ -121,7 +122,7 @@ int RP_C_API WiiSystemMenuVersionPrivate::compar(const void *a, const void *b)
 const char *WiiSystemMenuVersion::lookup(unsigned int version)
 {
 	// Do a binary search.
-	const WiiSystemMenuVersionPrivate::SysVersionEntry_t key = {version, nullptr};
+	const WiiSystemMenuVersionPrivate::SysVersionEntry_t key = {static_cast<uint16_t>(version), ""};
 	const WiiSystemMenuVersionPrivate::SysVersionEntry_t *res =
 		static_cast<const WiiSystemMenuVersionPrivate::SysVersionEntry_t*>(bsearch(&key,
 			WiiSystemMenuVersionPrivate::sysVersionList,
