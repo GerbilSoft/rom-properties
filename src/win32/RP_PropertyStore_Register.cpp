@@ -56,38 +56,94 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 	// Set the properties to display in the various fields.
 	// TODO: Get properties from RomDataFactory, or just use
 	// all of them regardless?
-	// TODO: InfoTip and PreviewTitle?
+	// TODO: PreviewTitle.
+
+	// PreviewDetails.
+	// NOTE: Default properties should go *after* these.
 	static const wchar_t PreviewDetails[] = L"prop:"
-		// Default properties. (Win7)
-		// TODO: Reorder these. (Check .wav, .png, etc.)
-		L"System.DateModified;"
-		L"System.Size;"
-		L"System.DateCreated;"
+		// Custom properties.
+		L"System.Title;"
+		L"System.Company;"
+		L"System.Image.Dimensions;"
+		L"System.Media.Duration;"
+		L"System.Media.SampleRate;";
+
+	// InfoTip.
+	// NOTE: Default properties should go *before* these.
+	static const wchar_t InfoTip[] =
 		// Custom properties.
 		L"System.Title;"
 		L"System.Company;"
 		L"System.Image.Dimensions;"
 		L"System.Media.Duration;"
 		L"System.Media.SampleRate";
-	// FIXME: Add standard system properties.
+
+#if 0
+	// FIXME: FullDetails will show empty properties if
+	// they're listed here but aren't set by RP_PropertyStore.
+	// We'll need to register multiple ProgIDs for different
+	// classes of files, but maybe later...
 	static const wchar_t FullDetails[] = L"prop:"
+		L"System.PropGroup.General;"
 		L"System.Title;"
 		L"System.Company;"
+		L"System.PropGroup.Image;"
 		L"System.Image.Dimensions;"
 		L"System.Image.Width;"
 		L"System.Image.Height;"
+		L"System.PropGroup.Audio;"
 		L"System.Media.Duration;"
-		L"System.Media.SampleRate;";
-		L"System.Media.SampleSize";
+		L"System.Audio.SampleRate;"
+		L"System.Audio.SampleSize";
+#endif
 
+	RegKey hkcr_All(HKEY_CLASSES_ROOT, L"*", KEY_READ, false);
+	if (!hkcr_All.isOpen())
+		return hkcr_All.lOpenRes();
+	wstring s_reg;
+
+	// Get the default "PreviewDetails" and append them
+	// to the custom "FullDetails".
+	wstring s_previewDetails(PreviewDetails, ARRAY_SIZE(PreviewDetails)-1);
+	s_reg = hkcr_All.read(L"PreviewDetails");
+	if (s_reg.size() > 5) {
+		// First 5 characters should be "prop:".
+		if (!wcsncasecmp(s_reg.c_str(), L"prop:", 5)) {
+			// Append the properties.
+			s_previewDetails += L';';
+			s_previewDetails.append(s_reg.c_str()+5, s_reg.size()-5);
+		}
+	}
+
+	// Get the default "InfoTip" and prepend them
+	// to the custom "InfoTip".
+	wstring s_infoTip;
+	s_reg = hkcr_All.read(L"PreviewDetails");
+	if (s_reg.size() > 5) {
+		// First 5 characters should be "prop:".
+		if (!wcsncasecmp(s_reg.c_str(), L"prop:", 5)) {
+			// Prepend the properties.
+			s_infoTip = s_reg;
+		}
+	}
+	if (s_infoTip.empty()) {
+		// Prepend with "prop:".
+		s_infoTip = L"prop:";
+	}
+	s_infoTip.append(InfoTip, ARRAY_SIZE(InfoTip)-1);
+
+	// Write the registry keys.
 	RegKey hkey_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);
 	if (!hkey_ProgID.isOpen())
 		return hkey_ProgID.lOpenRes();
-	lResult = hkey_ProgID.write(L"PreviewDetails", PreviewDetails);
+	lResult = hkey_ProgID.write(L"PreviewDetails", s_previewDetails);
 	if (lResult != ERROR_SUCCESS) return lResult;
-	// FIXME: Need standard properties here.
-	//lResult = hkey_ProgID.write(L"FullDetails", FullDetails);
-	//if (lResult != ERROR_SUCCESS) return lResult;
+	lResult = hkey_ProgID.write(L"InfoTip", s_infoTip);
+	if (lResult != ERROR_SUCCESS) return lResult;
+#if 0
+	lResult = hkey_ProgID.write(L"FullDetails", s_fullDetails);
+	if (lResult != ERROR_SUCCESS) return lResult;
+#endif
 
 	// COM object registered.
 	return ERROR_SUCCESS;

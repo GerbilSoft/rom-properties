@@ -196,6 +196,9 @@ IFACEMETHODIMP RP_PropertyStore::GetCount(_Out_ DWORD *cProps)
 IFACEMETHODIMP RP_PropertyStore::GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv)
 {
 	RP_D(const RP_PropertyStore);
+	if (!pv) {
+		return E_POINTER;
+	}
 
 	// Linear search for the property.
 	// TODO: Optimize this?
