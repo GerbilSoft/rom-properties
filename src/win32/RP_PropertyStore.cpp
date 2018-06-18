@@ -304,10 +304,9 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == LibRpBase::PropertyType::Integer);
 				if (prop->type != LibRpBase::PropertyType::Integer)
 					continue;
-				// NOTE: Converting duration from seconds to 100ns.
-				// TODO: Store duration in ms or 100ns units?
+				// NOTE: Converting duration from ms to 100ns.
 				if (prop->name == LibRpBase::Property::Duration) {
-					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.value) * 10000000ULL;
+					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.value) * 10000ULL;
 					InitPropVariantFromUInt64(duration_100ns, &prop_var);
 				} else {
 					// Use the value as-is.

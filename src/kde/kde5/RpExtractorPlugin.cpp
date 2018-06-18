@@ -131,10 +131,15 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 		// RomMetaData's property indexes match KFileMetaData.
 		// No conversion is necessary.
 		switch (prop->type) {
-			case LibRpBase::PropertyType::Integer:
-				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
-					prop->data.value);
+			case LibRpBase::PropertyType::Integer: {
+				int value = prop->data.value;
+				if (prop->name == Property::Duration) {
+					// Duration needs to be converted from ms to seconds.
+					value /= 1000;
+				}
+				result->add(static_cast<KFileMetaData::Property::Property>(prop->name), value);
 				break;
+			}
 
 			case LibRpBase::PropertyType::String: {
 				const std::string *str = prop->data.str;

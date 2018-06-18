@@ -41,7 +41,7 @@ namespace Property {
 		// Audio
 		BitRate,	// integer: kbit/sec
 		Channels,	// integer: channels
-		Duration,	// integer: seconds
+		Duration,	// integer: duration, in milliseconds
 		Genre,		// string
 		SampleRate,	// integer: Hz
 		TrackNumber,	// integer: track number

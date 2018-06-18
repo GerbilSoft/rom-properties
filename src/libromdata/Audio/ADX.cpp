@@ -67,6 +67,14 @@ class ADXPrivate : public RomDataPrivate
 		 * @return m:ss.cs
 		 */
 		static string formatSampleAsTime(unsigned int sample, unsigned int rate);
+
+		/**
+		 * Convert a sample value to milliseconds.
+		 * @param sample Sample value.
+		 * @param rate Sample rate.
+		 * @return Milliseconds.
+		 */
+		static unsigned int convSampleToMs(unsigned int sample, unsigned int rate);
 };
 
 /** ADXPrivate **/
@@ -87,7 +95,7 @@ ADXPrivate::ADXPrivate(ADX *q, IRpFile *file)
  */
 string ADXPrivate::formatSampleAsTime(unsigned int sample, unsigned int rate)
 {
-	// TODO: Move to TextFuncs or similar if this will be
+	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
 	// used by multiple parsers.
 	char buf[32];
 	unsigned int min, sec, cs;
@@ -109,6 +117,33 @@ string ADXPrivate::formatSampleAsTime(unsigned int sample, unsigned int rate)
 	if (len >= (int)sizeof(buf))
 		len = (int)sizeof(buf)-1;
 	return string(buf, len);
+}
+
+/**
+ * Convert a sample value to milliseconds.
+ * @param sample Sample value.
+ * @param rate Sample rate.
+ * @return Milliseconds.
+ */
+unsigned int ADXPrivate::convSampleToMs(unsigned int sample, unsigned int rate)
+{
+	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
+	// used by multiple parsers.
+	const unsigned int ms_frames = (sample % rate);
+	unsigned int sec, ms;
+	if (ms_frames != 0) {
+		// Calculate milliseconds.
+		ms = static_cast<unsigned int>(((float)ms_frames / (float)rate) * 1000);
+	} else {
+		// No milliseconds.
+		ms = 0;
+	}
+
+	// Calculate seconds.
+	sec = sample / rate;
+
+	// Convert to milliseconds and add the milliseconds value.
+	return (sec * 1000) + ms;
 }
 
 /** ADX **/
@@ -442,9 +477,10 @@ int ADX::loadMetaData(void)
 	d->metaData->addMetaData_integer(Property::SampleRate,
 		be32_to_cpu(adxHeader->sample_rate));
 
-	// Length, in seconds. (non-looping)
+	// Length, in milliseconds. (non-looping)
 	d->metaData->addMetaData_integer(Property::Duration,
-		be32_to_cpu(adxHeader->sample_count) / be32_to_cpu(adxHeader->sample_rate));
+		d->convSampleToMs(be32_to_cpu(adxHeader->sample_count),
+			be32_to_cpu(adxHeader->sample_rate)));
 
 	// Finished reading the metadata.
 	return (int)d->fields->count();
