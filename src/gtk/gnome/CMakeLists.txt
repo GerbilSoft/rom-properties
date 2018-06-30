@@ -32,6 +32,14 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_IFUNC_SRCS "${rom-properties-gtk3_IFUNC_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SSSE3_SRCS "${rom-properties-gtk3_SSSE3_SRCS}")
 
+	# Disable LTO on the IFUNC files if LTO is known to be broken.
+	IF(GCC_5xx_LTO_ISSUES)
+		FOREACH(ifunc_file ${rom-properties-gnome_IFUNC_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
+		ENDFOREACH()
+	ENDIF(GCC_5xx_LTO_ISSUES)
+
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)

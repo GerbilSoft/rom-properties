@@ -1,3 +1,10 @@
+rom-properties (1.3.2-1ppa1~xenial1) xenial; urgency=medium
+
+  * Fix a crash issue on GNOME and XFCE.
+  * Fix the MimeTypes key in the XFCE Specialized Thumbnailer file.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 30 Jun 2018 13:56:08 -0400
+
 rom-properties (1.3-1ppa2~xenial1) xenial; urgency=medium
 
   * Fix the 32-bit build.
