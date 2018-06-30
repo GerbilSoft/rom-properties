@@ -1,5 +1,12 @@
 # Changes
 
+## v1.3.2 (released 2018/06/30)
+
+* Linux: Fixed a crash on GNOME and XFCE when using Ubuntu 16.04.
+  IFUNC was not being disabled on gcc5 in the GTK+ directory.
+
+* XFCE: The Specialized Thumbnailer file has a MimeTypes key, not MimeType.
+
 ## v1.3.1 (released 2018/06/12)
 
 * Windows: Fixed a bug that caused Explorer to crash if a supported file had
