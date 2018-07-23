@@ -1,6 +1,6 @@
 # CMakeLists.txt
 
-# Copyright (C) 2007,2009-2017 Glenn Randers-Pehrson
+# Copyright (C) 2007,2009-2018 Glenn Randers-Pehrson
 # Written by Christian Ehrlicher, 2007
 # Revised by Roger Lowman, 2009-2010
 # Revised by Clifford Yapp, 2011-2012
@@ -39,7 +39,7 @@ IF(UNIX AND NOT APPLE)
 	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
 ENDIF(UNIX AND NOT APPLE)
 
-project(libpng ASM C)
+project(libpng C ASM)
 # rom-properties: Disable libpng testing.
 IF(0)
 enable_testing()
@@ -47,7 +47,7 @@ ENDIF(0)
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_RELEASE 34)
+set(PNGLIB_RELEASE 35)
 set(PNGLIB_NAME libpng${PNGLIB_MAJOR}${PNGLIB_MINOR})
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_RELEASE})
 
@@ -444,7 +444,7 @@ else()
                     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
   # A single target handles generation of all generated files.  If
-  # they are dependend upon separately by multiple targets, this
+  # they are depended upon separately by multiple targets, this
   # confuses parallel make (it would require a separate top-level
   # target for each file to track the dependencies properly).
   add_custom_target(genfiles DEPENDS
@@ -914,7 +914,7 @@ endif(NOT WIN32 OR CYGWIN OR MINGW)
 # SET UP LINKS
 if(PNG_SHARED)
   set_target_properties(png PROPERTIES
-#   VERSION 16.${PNGLIB_RELEASE}.1.6.34
+#   VERSION 16.${PNGLIB_RELEASE}.1.6.35
     VERSION 16.${PNGLIB_RELEASE}.0
     SOVERSION 16
     CLEAN_DIRECT_OUTPUT 1)
