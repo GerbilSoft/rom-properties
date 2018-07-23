@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -18,12 +18,7 @@
 #include "mz.h"
 #include "mz_os.h"
 #include "mz_strm.h"
-#ifdef HAVE_LZMA
-#  include "mz_strm_lzma.h"
-#endif
-#ifdef HAVE_ZLIB
-#  include "mz_strm_zlib.h"
-#endif
+#include "mz_strm_crc32.h"
 
 /***************************************************************************/
 
@@ -98,6 +93,105 @@ int32_t mz_path_combine(char *path, const char *join, int32_t max_path)
     return MZ_OK;
 }
 
+int32_t mz_path_resolve(const char *path, char *output, int32_t max_output)
+{
+    const char *source = path;
+    const char *check = output;
+    char *target = output;
+
+    if (max_output <= 0)
+        return MZ_PARAM_ERROR;
+
+    while (*source != 0 && max_output > 1)
+    {
+        check = source;
+        if ((*check == '\\') || (*check == '/'))
+            check += 1;
+
+        if ((source == path) || (check != source) || (*target == 0))
+        {
+            // Skip double paths
+            if ((*check == '\\') || (*check == '/'))
+            {
+                source += 1;
+                continue;
+            }
+            if ((*check != 0) && (*check == '.'))
+            {
+                check += 1;
+
+                // Remove current directory . if at end of stirng
+                if ((*check == 0) && (source != path))
+                {
+                    // Copy last slash
+                    *target = *source;
+                    target += 1;
+                    max_output -= 1;
+                    source += (check - source);
+                    continue;
+                }
+
+                // Remove current directory . if not at end of stirng
+                if ((*check == 0) || (*check == '\\' || *check == '/'))
+                {                   
+                    // Only proceed if .\ is not entire string
+                    if (check[1] != 0 || (path != source))
+                    {
+                        source += (check - source);
+                        continue;
+                    }
+                }
+
+                // Go to parent directory ..
+                if ((*check != 0) || (*check == '.'))
+                {
+                    check += 1;
+                    if ((*check == 0) || (*check == '\\' || *check == '/'))
+                    {
+                        source += (check - source);
+
+                        // Search backwards for previous slash
+                        if (target != output)
+                        {
+                            target -= 1;
+                            do
+                            {
+                                if ((*target == '\\') || (*target == '/'))
+                                    break;
+
+                                target -= 1;
+                                max_output += 1;
+                            }
+                            while (target > output);
+                        }
+                        
+                        if ((target == output) && (*source != 0))
+                            source += 1;
+                        if ((*target == '\\' || *target == '/') && (*source == 0))
+                            target += 1;
+
+                        *target = 0;
+                        continue;
+                    }
+                }
+            }
+        }
+
+        *target = *source;
+
+        source += 1;
+        target += 1;
+        max_output -= 1;
+    }
+
+    *target = 0;
+
+    if (*path == 0)
+        return MZ_INTERNAL_ERROR;
+
+    return MZ_OK;
+}
+
 int32_t mz_path_remove_filename(const char *path)
 {
     char *path_ptr = NULL;
@@ -154,16 +248,6 @@ int32_t mz_get_file_crc(const char *path, uint32_t *result_crc)
     err = mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ);
 
     mz_stream_crc32_create(&crc32_stream);
-#ifdef HAVE_ZLIB
-    mz_stream_crc32_set_update_func(crc32_stream,
-        (mz_stream_crc32_update)mz_stream_zlib_get_crc32_update());
-#elif defined(HAVE_LZMA)
-    mz_stream_crc32_set_update_func(crc32_stream,
-        (mz_stream_crc32_update)mz_stream_lzma_get_crc32_update());
-#else
-    #error ZLIB or LZMA required for CRC32
-#endif
-
     mz_stream_crc32_open(crc32_stream, NULL, MZ_OPEN_MODE_READ);
 
     mz_stream_set_base(crc32_stream, stream);

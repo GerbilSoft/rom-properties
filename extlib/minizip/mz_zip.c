@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -30,16 +30,17 @@
 #ifdef HAVE_BZIP2
 #  include "mz_strm_bzip.h"
 #endif
+#include "mz_strm_crc32.h"
 #ifdef HAVE_LZMA
 #  include "mz_strm_lzma.h"
 #endif
+#include "mz_strm_mem.h"
 #ifdef HAVE_PKCRYPT
 #  include "mz_strm_pkcrypt.h"
 #endif
 #ifdef HAVE_ZLIB
 #  include "mz_strm_zlib.h"
 #endif
-#include "mz_strm_mem.h"
 
 #include "mz_zip.h"
 
@@ -78,6 +79,7 @@ typedef struct mz_zip_s
     int32_t  open_mode;
 
     uint32_t disk_number_with_cd;   // number of the disk with the central dir
+    uint64_t disk_offset_shift;     // correction for zips that have wrong offset start of cd
 
     uint64_t cd_start_pos;          // pos of the first file in the central dir stream
     uint64_t cd_current_pos;        // pos of the current file in the central dir
@@ -86,7 +88,6 @@ typedef struct mz_zip_s
 
     uint16_t entry_scanned;
     uint16_t entry_opened;          // 1 if a file in the zip is currently writ.
-    uint64_t entry_read;
 
     int64_t  number_entry;
 
@@ -249,7 +250,8 @@ static int32_t mz_zip_read_cd(void *handle)
         // Offset of start of central directory with respect to the starting disk number
         if (err == MZ_OK)
             err = mz_stream_read_uint32(zip->stream, &value32);
-        zip->cd_offset = value32;
+        if (err == MZ_OK)
+            zip->cd_offset = value32;
         // Zip file global comment length
         if (err == MZ_OK)
             err = mz_stream_read_uint16(zip->stream, &comment_size);
@@ -307,6 +309,28 @@ static int32_t mz_zip_read_cd(void *handle)
     {
         if (eocd_pos < zip->cd_offset + zip->cd_size)
             err = MZ_FORMAT_ERROR;
+    }
+
+    if (err == MZ_OK)
+    {
+        // Verify central directory signature exists at offset
+        err = mz_stream_seek(zip->stream, zip->cd_offset, MZ_SEEK_SET);
+        if (err == MZ_OK)
+            err = mz_stream_read_uint32(zip->stream, &value32);
+        if (value32 != MZ_ZIP_MAGIC_CENTRALHEADER)
+        {
+            // If not found attempt to seek backward to find it
+            err = mz_stream_seek(zip->stream, eocd_pos - zip->cd_size, MZ_SEEK_SET);
+            if (err == MZ_OK)
+                err = mz_stream_read_uint32(zip->stream, &value32);
+            if (value32 == MZ_ZIP_MAGIC_CENTRALHEADER)
+            {
+                // If found compensate for incorrect locations
+                value64 = zip->cd_offset;
+                zip->cd_offset = eocd_pos - zip->cd_size;
+                zip->disk_offset_shift = zip->cd_offset - value64;
+            }
+        }
     }
 
     if ((err == MZ_OK) && (comment_size > 0))
@@ -477,7 +501,8 @@ extern void* mz_zip_open(void *stream, int32_t mode)
 
     if ((mode & MZ_OPEN_MODE_READ) || (mode & MZ_OPEN_MODE_APPEND))
     {
-        err = mz_zip_read_cd(zip);
+        if ((mode & MZ_OPEN_MODE_CREATE) == 0)
+            err = mz_zip_read_cd(zip);
 
         if ((err == MZ_OK) && (mode & MZ_OPEN_MODE_APPEND))
         {
@@ -660,11 +685,15 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
         if (err == MZ_OK)
             err = mz_stream_read_uint32(stream, &file_info->crc);
         if (err == MZ_OK)
+        {
             err = mz_stream_read_uint32(stream, &value32);
-        file_info->compressed_size = value32;
+            file_info->compressed_size = value32;
+        }
         if (err == MZ_OK)
+        {
             err = mz_stream_read_uint32(stream, &value32);
-        file_info->uncompressed_size = value32;
+            file_info->uncompressed_size = value32;
+        }
         if (err == MZ_OK)
             err = mz_stream_read_uint16(stream, &file_info->filename_size);
         if (err == MZ_OK)
@@ -674,15 +703,19 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
             if (err == MZ_OK)
                 err = mz_stream_read_uint16(stream, &file_info->comment_size);
             if (err == MZ_OK)
+            {
                 err = mz_stream_read_uint16(stream, &value16);
-            file_info->disk_number = value16;
+                file_info->disk_number = value16;
+            }
             if (err == MZ_OK)
                 err = mz_stream_read_uint16(stream, &file_info->internal_fa);
             if (err == MZ_OK)
                 err = mz_stream_read_uint32(stream, &file_info->external_fa);
             if (err == MZ_OK)
+            {
                 err = mz_stream_read_uint32(stream, &value32);
-            file_info->disk_offset = value32;
+                file_info->disk_offset = value32;
+            }
         }
     }
 
@@ -731,8 +764,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
                 if ((err == MZ_OK) && (file_info->compressed_size == UINT32_MAX))
                     err = mz_stream_read_uint64(file_info_stream, &file_info->compressed_size);
                 if ((err == MZ_OK) && (file_info->disk_offset == UINT32_MAX))
-                    err = mz_stream_read_uint64(file_info_stream, &value64);
-                file_info->disk_offset = value64;
+                    err = mz_stream_read_uint64(file_info_stream, &file_info->disk_offset);
                 if ((err == MZ_OK) && (file_info->disk_number == UINT16_MAX))
                     err = mz_stream_read_uint32(file_info_stream, &file_info->disk_number);
             }
@@ -795,11 +827,15 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
                     err = MZ_FORMAT_ERROR;
                 // Get AES encryption strength and actual compression method
                 if (err == MZ_OK)
+                {
                     err = mz_stream_read_uint8(file_info_stream, &value8);
-                file_info->aes_encryption_mode = value8;
+                    file_info->aes_encryption_mode = value8;
+                }
                 if (err == MZ_OK)
+                {
                     err = mz_stream_read_uint16(file_info_stream, &value16);
-                file_info->compression_method = value16;
+                    file_info->compression_method = value16;
+                }
             }
 #endif
             else
@@ -1075,7 +1111,7 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
 {
     mz_zip *zip = (mz_zip *)handle;
     int64_t max_total_in = 0;
-    int64_t total_in = 0;
+    int64_t header_size = 0;
     int64_t footer_size = 0;
     int32_t err = MZ_OK;
 
@@ -1100,10 +1136,8 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
         return MZ_PARAM_ERROR;
     }
 
-    if ((zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && (password == NULL) && (zip->compression_method != MZ_COMPRESS_METHOD_RAW))
-        return MZ_PARAM_ERROR;
-
-    if ((err == MZ_OK) && (zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && (zip->compression_method != MZ_COMPRESS_METHOD_RAW))
+    if ((err == MZ_OK) && (zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED) && 
+        (zip->compression_method != MZ_COMPRESS_METHOD_RAW || password != NULL))
     {
 #ifdef HAVE_AES
         if (zip->file_info.aes_version)
@@ -1185,10 +1219,13 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
             if (zip->compression_method == MZ_COMPRESS_METHOD_RAW || zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)
             {
                 max_total_in = zip->file_info.compressed_size;
+                mz_stream_set_prop_int64(zip->crypt_stream, MZ_STREAM_PROP_TOTAL_IN_MAX, max_total_in);
+
+                if (mz_stream_get_prop_int64(zip->crypt_stream, MZ_STREAM_PROP_HEADER_SIZE, &header_size) == MZ_OK)
+                    max_total_in -= header_size;
                 if (mz_stream_get_prop_int64(zip->crypt_stream, MZ_STREAM_PROP_FOOTER_SIZE, &footer_size) == MZ_OK)
                     max_total_in -= footer_size;
-                if (mz_stream_get_prop_int64(zip->crypt_stream, MZ_STREAM_PROP_TOTAL_IN, &total_in) == MZ_OK)
-                    max_total_in -= total_in;
+
                 mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_TOTAL_IN_MAX, max_total_in);
             }
             if (zip->compression_method == MZ_COMPRESS_METHOD_LZMA && (zip->file_info.flag & MZ_ZIP_FLAG_LZMA_EOS_MARKER) == 0)
@@ -1205,16 +1242,6 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
     if (err == MZ_OK)
     {
         mz_stream_crc32_create(&zip->crc32_stream);
-#ifdef HAVE_ZLIB
-        mz_stream_crc32_set_update_func(zip->crc32_stream,
-            (mz_stream_crc32_update)mz_stream_zlib_get_crc32_update());
-#elif defined(HAVE_LZMA)
-        mz_stream_crc32_set_update_func(zip->crc32_stream,
-            (mz_stream_crc32_update)mz_stream_lzma_get_crc32_update());
-#else
-        #error ZLIB or LZMA required for CRC32
-#endif
-
         mz_stream_set_base(zip->crc32_stream, zip->compress_stream);
 
         err = mz_stream_open(zip->crc32_stream, NULL, zip->open_mode);
@@ -1252,7 +1279,7 @@ extern int32_t mz_zip_entry_read_open(void *handle, int16_t raw, const char *pas
     else
         mz_stream_set_prop_int64(zip->stream, MZ_STREAM_PROP_DISK_NUMBER, zip->file_info.disk_number);
 
-    err = mz_stream_seek(zip->stream, zip->file_info.disk_offset, MZ_SEEK_SET);
+    err = mz_stream_seek(zip->stream, zip->file_info.disk_offset + zip->disk_offset_shift, MZ_SEEK_SET);
     if (err == MZ_OK)
         err = mz_zip_entry_read_header(zip->stream, 1, &zip->local_file_info, zip->local_file_info_stream);
 
@@ -1260,6 +1287,10 @@ extern int32_t mz_zip_entry_read_open(void *handle, int16_t raw, const char *pas
     if (raw)
         compression_method = MZ_COMPRESS_METHOD_RAW;
 
+#ifdef MZ_ZIP_COMPRESS_ONLY
+    if (compression_method != MZ_COMPRESS_METHOD_RAW)
+        err = MZ_SUPPORT_ERROR;
+#endif 
     if (err == MZ_OK)
         err = mz_zip_entry_open_int(handle, compression_method, 0, password);
 
@@ -1328,6 +1359,10 @@ extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_inf
     if ((compress_level == 0) || (mz_zip_attrib_is_dir(zip->file_info.external_fa, zip->file_info.version_madeby) == MZ_OK))
         compression_method = MZ_COMPRESS_METHOD_RAW;
 
+#ifdef MZ_ZIP_DECOMPRESS_ONLY
+    if (compression_method != MZ_COMPRESS_METHOD_RAW)
+        err = MZ_SUPPORT_ERROR;
+#endif
     if (err == MZ_OK)
         err = mz_zip_entry_write_header(zip->stream, 1, &zip->file_info);
     if (err == MZ_OK)
@@ -1345,20 +1380,27 @@ extern int32_t mz_zip_entry_read(void *handle, void *buf, uint32_t len)
         return MZ_PARAM_ERROR;
     if (UINT_MAX == UINT16_MAX && len > UINT16_MAX) // Zlib limitation
         return MZ_PARAM_ERROR;
-    if (len == 0 || zip->file_info.uncompressed_size == 0)
+    if (len == 0)
+        return MZ_PARAM_ERROR;
+
+    if (zip->file_info.compressed_size == 0)
         return 0;
+
+    // Read entire entry even if uncompressed_size = 0, otherwise
+    // aes encryption validation will fail if compressed_size > 0
     read = mz_stream_read(zip->crc32_stream, buf, len);
-    if (read > 0)
-        zip->entry_read += read;
     return read;
 }
 
 extern int32_t mz_zip_entry_write(void *handle, const void *buf, uint32_t len)
 {
     mz_zip *zip = (mz_zip *)handle;
+    int32_t written = 0;
+
     if (zip == NULL || zip->entry_opened == 0)
         return MZ_PARAM_ERROR;
-    return mz_stream_write(zip->crc32_stream, buf, len);
+    written = mz_stream_write(zip->crc32_stream, buf, len);
+    return written;
 }
 
 extern int32_t mz_zip_entry_get_info(void *handle, mz_zip_file **file_info)
@@ -1383,6 +1425,7 @@ extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, 
 {
     mz_zip *zip = (mz_zip *)handle;
     uint64_t compressed_size = 0;
+    int64_t total_in = 0;
     int32_t err = MZ_OK;
 
     if (zip == NULL || zip->entry_opened == 0)
@@ -1399,7 +1442,9 @@ extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, 
         if (zip->file_info.aes_version <= 0x0001)
 #endif
         {
-            if ((zip->entry_read > 0) && (zip->compression_method != MZ_COMPRESS_METHOD_RAW))
+            mz_stream_crc32_get_prop_int64(zip->crc32_stream, MZ_STREAM_PROP_TOTAL_IN, &total_in);
+            // If entire entry was not read this will fail
+            if ((total_in > 0) && (zip->compression_method != MZ_COMPRESS_METHOD_RAW))
             {
                 if (crc32 != zip->file_info.crc)
                     err = MZ_CRC_ERROR;

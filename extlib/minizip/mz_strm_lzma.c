@@ -1,5 +1,5 @@
 /* mz_strm_lzma.c -- Stream for lzma inflate/deflate
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -83,6 +83,10 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
 
     if (mode & MZ_OPEN_MODE_WRITE)
     {
+#ifdef MZ_ZIP_DECOMPRESS_ONLY
+        MZ_UNUSED(filters);
+        return MZ_SUPPORT_ERROR;
+#else
         lzma->lstream.next_out = lzma->buffer;
         lzma->lstream.avail_out = sizeof(lzma->buffer);
 
@@ -104,9 +108,13 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
         lzma->total_out += MZ_LZMA_HEADER_SIZE;
 
         lzma->error = lzma_alone_encoder(&lzma->lstream, &opt_lzma);
+#endif
     }
     else if (mode & MZ_OPEN_MODE_READ)
     {
+#ifdef MZ_ZIP_COMPRESS_ONLY
+        return MZ_SUPPORT_ERROR;
+#else
         lzma->lstream.next_in = lzma->buffer;
         lzma->lstream.avail_in = 0;
 
@@ -117,6 +125,7 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
         lzma->total_in += MZ_LZMA_HEADER_SIZE;
 
         lzma->error = lzma_alone_decoder(&lzma->lstream, UINT64_MAX);
+#endif
     }
 
     if (lzma->error != LZMA_OK)
@@ -137,6 +146,9 @@ int32_t mz_stream_lzma_is_open(void *stream)
 
 int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
 {
+#ifdef MZ_ZIP_COMPRESS_ONLY
+    return MZ_SUPPORT_ERROR;
+#else
     mz_stream_lzma *lzma = (mz_stream_lzma *)stream;
     uint64_t total_in_before = 0;
     uint64_t total_out_before = 0;
@@ -212,6 +224,7 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
         return lzma->error;
 
     return total_out;
+#endif
 }
 
 static int32_t mz_stream_lzma_flush(void *stream)
@@ -262,7 +275,7 @@ static int32_t mz_stream_lzma_code(void *stream, int32_t flush)
         lzma->buffer_len += out_bytes;
         lzma->total_out += out_bytes;
     }
-    while (lzma->lstream.avail_in > 0);
+    while ((lzma->lstream.avail_in > 0) || (flush == LZMA_FINISH && err == LZMA_OK));
 
     return MZ_OK;
 }
@@ -270,16 +283,20 @@ static int32_t mz_stream_lzma_code(void *stream, int32_t flush)
 int32_t mz_stream_lzma_write(void *stream, const void *buf, int32_t size)
 {
     mz_stream_lzma *lzma = (mz_stream_lzma *)stream;
+    int32_t err = size;
 
-
+#ifdef MZ_ZIP_DECOMPRESS_ONLY
+    MZ_UNUSED(lzma);
+    err = MZ_SUPPORT_ERROR;
+#else
     lzma->lstream.next_in = (uint8_t*)(intptr_t)buf;
     lzma->lstream.avail_in = (size_t)size;
 
     mz_stream_lzma_code(stream, LZMA_RUN);
 
     lzma->total_in += size;
-
-    return size;
+#endif
+    return err;
 }
 
 int64_t mz_stream_lzma_tell(void *stream)
@@ -304,14 +321,22 @@ int32_t mz_stream_lzma_close(void *stream)
 
     if (lzma->mode & MZ_OPEN_MODE_WRITE)
     {
+#ifdef MZ_ZIP_DECOMPRESS_ONLY
+        return MZ_SUPPORT_ERROR;
+#else
         mz_stream_lzma_code(stream, LZMA_FINISH);
         mz_stream_lzma_flush(stream);
 
         lzma_end(&lzma->lstream);
+#endif
     }
     else if (lzma->mode & MZ_OPEN_MODE_READ)
     {
+#ifdef MZ_ZIP_COMPRESS_ONLY
+        return MZ_SUPPORT_ERROR;
+#else
         lzma_end(&lzma->lstream);
+#endif
     }
 
     lzma->initialized = 0;
@@ -334,15 +359,23 @@ int32_t mz_stream_lzma_get_prop_int64(void *stream, int32_t prop, int64_t *value
     {
     case MZ_STREAM_PROP_TOTAL_IN:
         *value = lzma->total_in;
-        return MZ_OK;
+        break;
+    case MZ_STREAM_PROP_TOTAL_IN_MAX:
+        *value = lzma->max_total_in;
+        break;
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = lzma->total_out;
-        return MZ_OK;
+        break;
+    case MZ_STREAM_PROP_TOTAL_OUT_MAX:
+        *value = lzma->max_total_out;
+        break;
     case MZ_STREAM_PROP_HEADER_SIZE:
         *value = MZ_LZMA_HEADER_SIZE;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 int32_t mz_stream_lzma_set_prop_int64(void *stream, int32_t prop, int64_t value)
@@ -355,17 +388,19 @@ int32_t mz_stream_lzma_set_prop_int64(void *stream, int32_t prop, int64_t value)
             lzma->preset = LZMA_PRESET_EXTREME;
         else
             lzma->preset = LZMA_PRESET_DEFAULT;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_TOTAL_IN_MAX:
         lzma->max_total_in = value;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_TOTAL_OUT_MAX:
         if (value < -1)
             return MZ_PARAM_ERROR;
         lzma->max_total_out = value;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 void *mz_stream_lzma_create(void **stream)
@@ -402,15 +437,9 @@ void *mz_stream_lzma_get_interface(void)
     return (void *)&mz_stream_lzma_vtbl;
 }
 
-static int32_t mz_stream_lzma_crc32(int32_t value, const void *buf, int32_t size)
+static int64_t mz_stream_lzma_crc32(int64_t value, const void *buf, int32_t size)
 {
-    return lzma_crc32(buf, size, value);
-}
-
-void *mz_stream_lzma_get_crc32_table(void)
-{
-    extern const uint32_t lzma_crc32_table;
-    return (void *)lzma_crc32_table;
+    return (int32_t)lzma_crc32(buf, size, (int32_t)value);
 }
 
 void *mz_stream_lzma_get_crc32_update(void)

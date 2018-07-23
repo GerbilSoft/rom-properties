@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -54,7 +54,7 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
     zlib_filefunc64_def *pzlib_filefunc_def)
 {
     mz_compat *compat = NULL;
-    int32_t mode = MZ_OPEN_MODE_READWRITE;
+    int32_t mode = MZ_OPEN_MODE_WRITE;
     void *handle = NULL;
     void *stream = NULL;
 
@@ -78,6 +78,7 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
         mode |= MZ_OPEN_MODE_CREATE | MZ_OPEN_MODE_APPEND;
         break;
     case APPEND_STATUS_ADDINZIP:
+        mode |= MZ_OPEN_MODE_READ;
         break;
     }
 

@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -96,29 +96,6 @@ int32_t mz_stream_set_prop_int64(void *stream, int32_t prop, int64_t value);
 
 void*   mz_stream_create(void **stream, mz_stream_vtbl *vtbl);
 void    mz_stream_delete(void **stream);
-
-/***************************************************************************/
-
-typedef int32_t (*mz_stream_crc32_update)(int32_t value, const void *buf, int32_t size);
-
-int32_t mz_stream_crc32_open(void *stream, const char *filename, int32_t mode);
-int32_t mz_stream_crc32_is_open(void *stream);
-int32_t mz_stream_crc32_read(void *stream, void *buf, int32_t size);
-int32_t mz_stream_crc32_write(void *stream, const void *buf, int32_t size);
-int64_t mz_stream_crc32_tell(void *stream);
-int32_t mz_stream_crc32_seek(void *stream, int64_t offset, int32_t origin);
-int32_t mz_stream_crc32_close(void *stream);
-int32_t mz_stream_crc32_error(void *stream);
-
-int32_t mz_stream_crc32_get_value(void *stream);
-
-int32_t mz_stream_crc32_get_prop_int64(void *stream, int32_t prop, int64_t *value);
-int32_t mz_stream_crc32_set_update_func(void *stream, mz_stream_crc32_update update);
-
-void*   mz_stream_crc32_create(void **stream);
-void    mz_stream_crc32_delete(void **stream);
-
-void*   mz_stream_crc32_get_interface(void);
 
 /***************************************************************************/
 

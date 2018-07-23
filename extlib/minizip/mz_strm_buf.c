@@ -1,5 +1,5 @@
 /* mz_strm_buf.c -- Stream for buffering reads/writes
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    This version of ioapi is designed to buffer IO.
@@ -349,6 +349,11 @@ int32_t mz_stream_buffered_close(void *stream)
     if (buffered->writebuf_hits + buffered->writebuf_misses > 0)
         mz_stream_buffered_print(stream, "write efficency %.02f%%\n",
             (buffered->writebuf_hits / ((float)buffered->writebuf_hits + buffered->writebuf_misses)) * 100);
+
+    buffered->readbuf_len = 0;
+    buffered->readbuf_pos = 0;
+    buffered->writebuf_len = 0;
+    buffered->writebuf_pos = 0;
 
     return mz_stream_close(buffered->stream.base);
 }

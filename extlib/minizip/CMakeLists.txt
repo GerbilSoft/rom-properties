@@ -12,6 +12,8 @@ option(USE_BZIP2 "Enables BZIP2 compression" ON)
 option(USE_LZMA "Enables LZMA compression" ON)
 option(USE_PKCRYPT "Enables PKWARE traditional encryption" ON)
 option(USE_AES "Enables AES encryption" ON)
+option(COMPRESS_ONLY "Only support compression" OFF)
+option(DECOMPRESS_ONLY "Only support decompression" OFF)
 option(BUILD_TEST "Builds minizip test executable" OFF)
 ENDIF(0)
 
@@ -40,7 +42,7 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 ENDIF(0)
 
-set(VERSION "2.3.2")
+set(VERSION "2.3.8")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -71,6 +73,7 @@ set(MINIZIP_SRC
     mz_compat.c
     mz_strm.c
     mz_strm_buf.c
+    mz_strm_crc32.c
     mz_strm_mem.c
     mz_strm_posix.c
     mz_strm_split.c
@@ -82,10 +85,20 @@ set(MINIZIP_PUBLIC_HEADERS
     mz_compat.h
     mz_strm.h
     mz_strm_buf.h
+    mz_strm_crc32.h
     mz_strm_mem.h
     mz_strm_posix.h
     mz_strm_split.h
     mz_zip.h)
+
+if(COMPRESS_ONLY)
+    add_definitions(-DMZ_ZIP_COMPRESS_ONLY)
+endif()
+if(DECOMPRESS_ONLY)
+    add_definitions(-DMZ_ZIP_DECOMPRESS_ONLY)
+endif()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(WIN32)
     list(APPEND MINIZIP_SRC "mz_os_win32.c" "mz_strm_win32.c")
@@ -95,7 +108,7 @@ if(WIN32)
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
-    add_definitions(-DMZ_USE_WINRT_API)
+    add_definitions(-DMZ_WINRT_API)
 endif()
 
 if(UNIX)

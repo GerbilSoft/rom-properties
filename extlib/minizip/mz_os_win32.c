@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -26,9 +26,9 @@
 
 /***************************************************************************/
 
-#if defined(WINAPI_FAMILY_PARTITION) && (!(defined(MZ_USE_WINRT_API)))
+#if defined(WINAPI_FAMILY_PARTITION) && (!(defined(MZ_WINRT_API)))
 #  if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#    define MZ_USE_WINRT_API 1
+#    define MZ_WINRT_API 1
 #  endif
 #endif
 
@@ -118,7 +118,7 @@ int64_t mz_win32_get_file_size(const char *path)
 
 
     path_wide = mz_win32_unicode_path_create(path);
-#ifdef MZ_USE_WINRT_API
+#ifdef MZ_WINRT_API
     handle = CreateFile2W(path_wide, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
     handle = CreateFileW(path_wide, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -188,7 +188,7 @@ int32_t mz_win32_set_file_date(const char *path, time_t modified_date, time_t ac
 
 
     path_wide = mz_win32_unicode_path_create(path);
-#ifdef MZ_USE_WINRT_API
+#ifdef MZ_WINRT_API
     handle = CreateFile2W(path_wide, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 #else
     handle = CreateFileW(path_wide, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);

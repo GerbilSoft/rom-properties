@@ -1,5 +1,5 @@
 /* mz_strm_split.c -- Stream for split files
-   Version 2.3.2, May 29, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -87,7 +87,7 @@ static int32_t mz_stream_split_open_disk(void *stream, int32_t number_disk)
     // Construct disk path
     if (disk_part > 0)
     {
-        for (i = strlen(split->path_disk) - 1; i >= 0; i -= 1)
+        for (i = (int32_t)strlen(split->path_disk) - 1; i >= 0; i -= 1)
         {
             if (split->path_disk[i] != '.')
                 continue;
@@ -180,11 +180,11 @@ int32_t mz_stream_split_open(void *stream, const char *path, int32_t mode)
 
     split->mode = mode;
 
-    split->path_cd_size = strlen(path) + 1;
+    split->path_cd_size = (int32_t)strlen(path) + 1;
     split->path_cd = (char *)MZ_ALLOC(split->path_cd_size);
     strncpy(split->path_cd, path, split->path_cd_size);
 
-    split->path_disk_size = strlen(path) + 10;
+    split->path_disk_size = (int32_t)strlen(path) + 10;
     split->path_disk = (char *)MZ_ALLOC(split->path_disk_size);
     strncpy(split->path_disk, path, split->path_disk_size);
 
@@ -338,15 +338,17 @@ int32_t mz_stream_split_get_prop_int64(void *stream, int32_t prop, int64_t *valu
     {
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = split->total_out;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_DISK_NUMBER:
         *value = split->number_disk;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_DISK_SIZE:
         *value = split->disk_size;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 int32_t mz_stream_split_set_prop_int64(void *stream, int32_t prop, int64_t value)
@@ -356,12 +358,14 @@ int32_t mz_stream_split_set_prop_int64(void *stream, int32_t prop, int64_t value
     {
     case MZ_STREAM_PROP_DISK_NUMBER:
         split->number_disk = (int32_t)value;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_DISK_SIZE:
         split->disk_size = value;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 void *mz_stream_split_create(void **stream)
