@@ -107,7 +107,6 @@ IF(USE_INTERNAL_JPEG)
 	# Use the internal copy of libjpeg-turbo.
 	# On Windows and Mac OS X, this will build DLLs.
 	# On other systems, this will be statically-linked.
-	# FIXME: libjpeg-turbo's CMakeLists.txt only officially supports Windows.
 	IF(WIN32 OR APPLE)
 		SET(ENABLE_SHARED ON)
 		SET(ENABLE_STATIC OFF)
