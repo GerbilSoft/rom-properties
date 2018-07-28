@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.3.8, July 14, 2018
+   Version 2.3.9, July 26, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -18,6 +18,7 @@
 #include "mz.h"
 #include "mz_os.h"
 #include "mz_strm.h"
+#include "mz_strm_mem.h"
 #include "mz_strm_zlib.h"
 #include "mz_zip.h"
 
@@ -26,11 +27,30 @@
 /***************************************************************************/
 
 typedef struct mz_compat_s {
-    void *stream;
-    void *handle;
+    void    *stream;
+    void    *handle;
+    int     raw;
 } mz_compat;
 
 /***************************************************************************/
+
+static int32_t zipConvertAppendToStreamMode(int append)
+{
+    int32_t mode = MZ_OPEN_MODE_WRITE;
+    switch (append)
+    {
+    case APPEND_STATUS_CREATE:
+        mode |= MZ_OPEN_MODE_CREATE;
+        break;
+    case APPEND_STATUS_CREATEAFTER:
+        mode |= MZ_OPEN_MODE_CREATE | MZ_OPEN_MODE_APPEND;
+        break;
+    case APPEND_STATUS_ADDINZIP:
+        mode |= MZ_OPEN_MODE_READ;
+        break;
+    }
+    return mode;
+}
 
 extern zipFile ZEXPORT zipOpen(const char *path, int append)
 {
@@ -53,9 +73,8 @@ extern zipFile ZEXPORT zipOpen2(const char *path, int append, const char **globa
 extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **globalcomment,
     zlib_filefunc64_def *pzlib_filefunc_def)
 {
-    mz_compat *compat = NULL;
-    int32_t mode = MZ_OPEN_MODE_WRITE;
-    void *handle = NULL;
+    zipFile zip = NULL;
+    int32_t mode = zipConvertAppendToStreamMode(append);
     void *stream = NULL;
 
     if (pzlib_filefunc_def)
@@ -69,18 +88,6 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
             return NULL;
     }
 
-    switch (append)
-    {
-    case APPEND_STATUS_CREATE:
-        mode |= MZ_OPEN_MODE_CREATE;
-        break;
-    case APPEND_STATUS_CREATEAFTER:
-        mode |= MZ_OPEN_MODE_CREATE | MZ_OPEN_MODE_APPEND;
-        break;
-    case APPEND_STATUS_ADDINZIP:
-        mode |= MZ_OPEN_MODE_READ;
-        break;
-    }
 
     if (mz_stream_open(stream, path, mode) != MZ_OK)
     {
@@ -88,13 +95,27 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
         return NULL;
     }
 
-    handle = mz_zip_open(stream, mode);
+    zip = zipOpen_MZ(stream, append, globalcomment);
 
-    if (handle == NULL)
+    if (zip == NULL)
     {
         mz_stream_delete(&stream);
         return NULL;
     }
+
+    return zip;
+}
+
+extern zipFile ZEXPORT zipOpen_MZ(void *stream, int append, const char **globalcomment)
+{
+    mz_compat *compat = NULL;
+    int32_t mode = zipConvertAppendToStreamMode(append);
+    void *handle = NULL;
+
+    handle = mz_zip_open(stream, mode);
+
+    if (handle == NULL)
+        return NULL;
 
     if (globalcomment != NULL)
         mz_zip_get_comment(handle, globalcomment);
@@ -127,6 +148,8 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
     if (compat == NULL)
         return ZIP_PARAMERROR;
 
+    compat->raw = raw;
+
     memset(&file_info, 0, sizeof(file_info));
 
     if (zipfi != NULL)
@@ -158,7 +181,7 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
     else
         file_info.zip64 = MZ_ZIP64_DISABLE;
 #ifdef HAVE_AES
-    if (password)
+    if ((password != NULL) || (raw && (file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)))
         file_info.aes_version = MZ_AES_VERSION;
 #endif
 
@@ -234,17 +257,22 @@ extern int ZEXPORT zipCloseFileInZipRaw64(zipFile file, uint64_t uncompressed_si
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return ZIP_PARAMERROR;
+    if (compat->raw == 0)
+        return mz_zip_entry_close(compat->handle);
     return mz_zip_entry_close_raw(compat->handle, uncompressed_size, crc32);
 }
 
 extern int ZEXPORT zipCloseFileInZip(zipFile file)
 {
-    return zipCloseFileInZipRaw(file, 0, 0);
+    return zipCloseFileInZip64(file);
 }
 
 extern int ZEXPORT zipCloseFileInZip64(zipFile file)
 {
-    return zipCloseFileInZipRaw(file, 0, 0);
+    mz_compat *compat = (mz_compat *)file;
+    if (compat == NULL)
+        return ZIP_PARAMERROR;
+    return mz_zip_entry_close(compat->handle);
 }
 
 extern int ZEXPORT zipClose(zipFile file, const char *global_comment)
@@ -262,14 +290,8 @@ extern int ZEXPORT zipClose2_64(zipFile file, const char *global_comment, uint16
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
 
-    if (compat == NULL)
-        return ZIP_PARAMERROR;
-
-    if (global_comment != NULL)
-        mz_zip_set_comment(compat->handle, global_comment);
-
-    mz_zip_set_version_madeby(compat->handle, version_madeby);
-    err = mz_zip_close(compat->handle);
+    if (compat->handle != NULL)
+        err = zipClose2_MZ(file, global_comment, version_madeby);
 
     if (compat->stream != NULL)
     {
@@ -280,6 +302,42 @@ extern int ZEXPORT zipClose2_64(zipFile file, const char *global_comment, uint16
     MZ_FREE(compat);
 
     return err;
+}
+
+// Only closes the zip handle, does not close the stream
+extern int ZEXPORT zipClose_MZ(zipFile file, const char *global_comment)
+{
+    return zipClose2_MZ(file, global_comment, MZ_VERSION_MADEBY);
+}
+
+// Only closes the zip handle, does not close the stream
+extern int ZEXPORT zipClose2_MZ(zipFile file, const char *global_comment, uint16_t version_madeby)
+{
+    mz_compat *compat = (mz_compat *)file;
+    int32_t err = MZ_OK;
+
+    if (compat == NULL)
+        return ZIP_PARAMERROR;
+    if (compat->handle == NULL)
+        return err;
+
+    if (global_comment != NULL)
+        mz_zip_set_comment(compat->handle, global_comment);
+
+    mz_zip_set_version_madeby(compat->handle, version_madeby);
+    err = mz_zip_close(compat->handle);
+
+    compat->handle = NULL;
+
+    return err;
+}
+
+extern void* ZEXPORT zipGetStream(zipFile file)
+{
+    mz_compat *compat = (mz_compat *)file;
+    if (compat == NULL)
+        return NULL;
+    return (void *)compat->stream;
 }
 
 /***************************************************************************/
@@ -302,9 +360,7 @@ extern unzFile ZEXPORT unzOpen2(const char *path, zlib_filefunc_def *pzlib_filef
 
 extern unzFile ZEXPORT unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_filefunc_def)
 {
-    mz_compat *compat = NULL;
-    int32_t mode = MZ_OPEN_MODE_READ;
-    void *handle = NULL;
+    unzFile unz = NULL;
     void *stream = NULL;
 
     if (pzlib_filefunc_def)
@@ -317,20 +373,31 @@ extern unzFile ZEXPORT unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_
         if (mz_stream_os_create(&stream) == NULL)
             return NULL;
     }
-
-    if (mz_stream_open(stream, path, mode) != MZ_OK)
+    
+    if (mz_stream_open(stream, path, MZ_OPEN_MODE_READ) != MZ_OK)
     {
         mz_stream_delete(&stream);
         return NULL;
     }
 
-    handle = mz_zip_open(stream, mode);
+    unz = unzOpen_MZ(stream);
+    if (unz == NULL)
+    {
+        mz_stream_delete(&stream);
+        return NULL;
+    }
+    return unz;
+}
+
+extern unzFile ZEXPORT unzOpen_MZ(void *stream)
+{
+    mz_compat *compat = NULL;
+    void *handle = NULL;
+
+    handle = mz_zip_open(stream, MZ_OPEN_MODE_READ);
 
     if (handle == NULL)
-    {
-        mz_stream_delete(&stream);
         return NULL;
-    }
 
     compat = (mz_compat *)MZ_ALLOC(sizeof(mz_compat));
     compat->handle = handle;
@@ -348,7 +415,8 @@ extern int ZEXPORT unzClose(unzFile file)
     if (compat == NULL)
         return UNZ_PARAMERROR;
 
-    err = mz_zip_close(compat->handle);
+    if (compat->handle != NULL)
+        err = unzClose_MZ(file);
 
     if (compat->stream != NULL)
     {
@@ -357,6 +425,21 @@ extern int ZEXPORT unzClose(unzFile file)
     }
 
     MZ_FREE(compat);
+
+    return err;
+}
+
+// Only closes the zip handle, does not close the stream
+extern int ZEXPORT unzClose_MZ(unzFile file)
+{
+    mz_compat *compat = (mz_compat *)file;
+    int32_t err = MZ_OK;
+
+    if (compat == NULL)
+        return UNZ_PARAMERROR;
+
+    err = mz_zip_close(compat->handle);
+    compat->handle = NULL;
 
     return err;
 }
@@ -417,13 +500,45 @@ extern int ZEXPORT unzGetGlobalComment(unzFile file, char *comment, uint16_t com
 extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, const char *password)
 {
     mz_compat *compat = (mz_compat *)file;
+    mz_zip_file *file_info = NULL;
+    int err = MZ_OK;
+
     if (compat == NULL)
         return UNZ_PARAMERROR;
     if (method != NULL)
         *method = 0;
     if (level != NULL)
         *level = 0;
-    return mz_zip_entry_read_open(compat->handle, (int16_t)raw, password);
+
+    err = mz_zip_entry_read_open(compat->handle, (int16_t)raw, password);
+    if (err == MZ_OK)
+        err = mz_zip_entry_get_info(compat->handle, &file_info);
+    if (err == MZ_OK)
+    {
+        if (method != NULL)
+        {
+            *method = file_info->compression_method;
+        }
+
+        if (level != NULL)
+        {
+            *level = 6;
+            switch (file_info->flag & 0x06)
+            {
+            case MZ_ZIP_FLAG_DEFLATE_SUPER_FAST: 
+                *level = 1;
+                break;
+            case MZ_ZIP_FLAG_DEFLATE_FAST:
+                *level = 2;
+                break;
+            case MZ_ZIP_FLAG_DEFLATE_MAX:
+                *level = 9;
+                break;
+            }
+        }
+    }
+
+    return err;
 }
 
 extern int ZEXPORT unzOpenCurrentFile(unzFile file)
@@ -642,6 +757,14 @@ extern int ZEXPORT unzGetLocalExtrafield(unzFile file, void *buf, unsigned len) 
     return 0;
 }
 
+extern void* ZEXPORT unzGetStream(unzFile file)
+{
+    mz_compat *compat = (mz_compat *)file;
+    if (compat == NULL)
+        return NULL;
+    return (void *)compat->stream;
+}
+
 /***************************************************************************/
 
 void fill_fopen_filefunc(zlib_filefunc_def *pzlib_filefunc_def)
@@ -679,4 +802,10 @@ void fill_win32_filefunc64W(zlib_filefunc64_def *pzlib_filefunc_def)
     // NOTE: You should no longer pass in widechar string to open function
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
+}
+
+void fill_memory_filefunc(zlib_filefunc_def *pzlib_filefunc_def)
+{
+    if (pzlib_filefunc_def != NULL)
+        *pzlib_filefunc_def = mz_stream_mem_get_interface();
 }

@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.3.8, July 14, 2018
+   Version 2.3.9, July 26, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -91,6 +91,7 @@ int32_t mz_stream_close(void *stream);
 int32_t mz_stream_error(void *stream);
 
 int32_t mz_stream_set_base(void *stream, void *base);
+void*   mz_stream_get_interface(void *stream);
 int32_t mz_stream_get_prop_int64(void *stream, int32_t prop, int64_t *value);
 int32_t mz_stream_set_prop_int64(void *stream, int32_t prop, int64_t value);
 

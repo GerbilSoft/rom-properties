@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.3.8, July 14, 2018
+   Version 2.3.9, July 26, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -16,13 +16,20 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#ifdef HAVE_GETRANDOM
+#  include <sys/random.h>
+#endif
 #if defined unix || defined __APPLE__
 #  include <unistd.h>
 #  include <utime.h>
+#  define HAVE_ARC4RANDOM_BUF
 #endif
 #if defined __linux__
-#  include <bsd/stdlib.h>
+#  if !defined(MZ_ZIP_NO_COMPRESSION) && \
+      !defined(MZ_ZIP_NO_ENCRYPTION) && \
+       defined(HAVE_LIBBSD)
+#    include <bsd/stdlib.h> // arc4random_buf
+#  endif
 #else
 #  include <stdlib.h>
 #endif
@@ -34,12 +41,70 @@
 
 /***************************************************************************/
 
-#if defined(HAVE_PKCRYPT) || defined(HAVE_AES)
+#if !defined(MZ_ZIP_NO_COMPRESSION) && !defined(MZ_ZIP_NO_ENCRYPTION)
+#if defined(HAVE_LIBBSD) || defined(HAVE_ARC4RANDOM_BUF)
 int32_t mz_posix_rand(uint8_t *buf, int32_t size)
 {
     arc4random_buf(buf, size);
     return size;
 }
+#elif defined(HAVE_ARC4RANDOM)
+int32_t mz_posix_rand(uint8_t *buf, int32_t size)
+{
+    int32_t left = size;
+    for (; left > 2; left -= 3, buf += 3)
+    {
+        uint32_t val = arc4random();
+
+        buf[0] = (val) & 0xFF;
+        buf[1] = (val >> 8) & 0xFF;
+        buf[2] = (val >> 16) & 0xFF;
+    }
+    for (; left > 0; left--, buf++)
+    {
+        *buf = arc4random() & 0xFF;
+    }
+    return size - left;
+}
+#elif defined(HAVE_GETRANDOM)
+int32_t mz_posix_rand(uint8_t *buf, int32_t size)
+{
+    int32_t left = size;
+    int32_t written = 0;
+
+    while (left > 0)
+    {
+        written = getrandom(buf, left, 0);
+        if (written < 0)
+            return MZ_INTERNAL_ERROR;
+
+        buf += written;
+        left -= written;
+    }
+    return size - left;
+}
+#else
+#if !defined(FORCE_LOWQUALITY_ENTROPY)
+#  error "Low quality entropy function used for encryption"
+#endif
+int32_t mz_posix_rand(uint8_t *buf, int32_t size)
+{
+    static unsigned calls = 0;
+    int32_t i = 0;
+
+    // Ensure different random header each time
+    if (++calls == 1)
+    {
+        #define PI_SEED 3141592654UL
+        srand((unsigned)(time(NULL) ^ PI_SEED));
+    }
+
+    while (i < size)
+        buf[i++] = (rand() >> 7) & 0xff;
+
+    return size;
+}
+#endif
 #endif
 
 int32_t mz_posix_file_exists(const char *path)

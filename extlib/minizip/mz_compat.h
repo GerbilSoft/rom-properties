@@ -1,5 +1,5 @@
 /* mz_compat.h -- Backwards compatible interface for older versions
-   Version 2.3.8, July 14, 2018
+   Version 2.3.9, July 26, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -116,6 +116,7 @@ extern zipFile ZEXPORT zipOpen2(const char *path, int append, const char **globa
     zlib_filefunc_def *pzlib_filefunc_def);
 extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **globalcomment,
     zlib_filefunc64_def *pzlib_filefunc_def);
+extern zipFile ZEXPORT zipOpen_MZ(void *stream, int append, const char **globalcomment);
 
 extern int ZEXPORT zipOpenNewFileInZip3(zipFile file, const char *filename, const zip_fileinfo *zipfi,
     const void *extrafield_local, uint16_t size_extrafield_local, const void *extrafield_global,
@@ -153,6 +154,9 @@ extern int ZEXPORT zipCloseFileInZip64(zipFile file);
 extern int ZEXPORT zipClose(zipFile file, const char *global_comment);
 extern int ZEXPORT zipClose_64(zipFile file, const char *global_comment);
 extern int ZEXPORT zipClose2_64(zipFile file, const char *global_comment, uint16_t version_madeby);
+extern int ZEXPORT zipClose_MZ(zipFile file, const char *global_comment);
+extern int ZEXPORT zipClose2_MZ(zipFile file, const char *global_comment, uint16_t version_madeby);
+extern void* ZEXPORT zipGetStream(zipFile file);
 
 /***************************************************************************/
 
@@ -252,8 +256,10 @@ extern unzFile ZEXPORT unzOpen(const char *path);
 extern unzFile ZEXPORT unzOpen64(const void *path);
 extern unzFile ZEXPORT unzOpen2(const char *path, zlib_filefunc_def *pzlib_filefunc_def);
 extern unzFile ZEXPORT unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_filefunc_def);
+extern unzFile ZEXPORT unzOpen_MZ(void *stream);
 
 extern int ZEXPORT unzClose(unzFile file);
+extern int ZEXPORT unzClose_MZ(unzFile file);
 extern int ZEXPORT unzGetGlobalInfo(unzFile file, unz_global_info* pglobal_info32);
 extern int ZEXPORT unzGetGlobalInfo64(unzFile file, unz_global_info64 *pglobal_info);
 extern int ZEXPORT unzGetGlobalComment(unzFile file, char *comment, uint16_t comment_size);
@@ -277,6 +283,7 @@ extern int32_t ZEXPORT unzGetOffset(unzFile file);
 extern int ZEXPORT unzSetOffset64(unzFile file, uint64_t pos);
 extern int ZEXPORT unzSetOffset(unzFile file, uint32_t pos);
 extern int ZEXPORT unzGetLocalExtrafield(unzFile file, void *buf, unsigned len);
+extern void* ZEXPORT unzGetStream(unzFile file);
 
 /***************************************************************************/
 
@@ -286,6 +293,7 @@ void fill_win32_filefunc(zlib_filefunc_def *pzlib_filefunc_def);
 void fill_win32_filefunc64(zlib_filefunc64_def *pzlib_filefunc_def);
 void fill_win32_filefunc64A(zlib_filefunc64_def *pzlib_filefunc_def);
 void fill_win32_filefunc64W(zlib_filefunc64_def *pzlib_filefunc_def);
+void fill_memory_filefunc(zlib_filefunc_def *pzlib_filefunc_def);
 
 /***************************************************************************/
 

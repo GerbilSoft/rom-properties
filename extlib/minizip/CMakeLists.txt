@@ -3,7 +3,7 @@
 # E-Mail:     schmieder.matthias@gmail.com
 # Year:       2016
 #***************************************************************************
-#cmake_minimum_required(VERSION 2.8)
+#cmake_minimum_required(VERSION 3.0.2)
 
 # rom-properties: Disabled these options.
 IF(0)
@@ -21,14 +21,9 @@ ENDIF(0)
 SET(USE_ZLIB ON)
 include_directories(${ZLIB_INCLUDE_DIRS})
 
-# Set a consistent MACOSX_RPATH default across all CMake versions.
-# When CMake 2.8.12 is required, change this default to 1.
-# When CMake 3.0.0 is required, remove this block (see CMP0042).
-if(NOT DEFINED CMAKE_MACOSX_RPATH)
-    set(CMAKE_MACOSX_RPATH 0)
-endif()
-
 project("minizip")
+
+include(CheckSymbolExists)
 
 # rom-properties: Disabled installation.
 IF(0)
@@ -42,7 +37,8 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 ENDIF(0)
 
-set(VERSION "2.3.8")
+# Minizip library version
+set(VERSION "2.3.9")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -92,10 +88,13 @@ set(MINIZIP_PUBLIC_HEADERS
     mz_zip.h)
 
 if(COMPRESS_ONLY)
-    add_definitions(-DMZ_ZIP_COMPRESS_ONLY)
+    add_definitions(-DMZ_ZIP_NO_DECOMPRESSION)
 endif()
 if(DECOMPRESS_ONLY)
-    add_definitions(-DMZ_ZIP_DECOMPRESS_ONLY)
+    add_definitions(-DMZ_ZIP_NO_COMPRESSION)
+endif()
+if(NOT USE_PKCRYPT AND NOT USE_AES)
+    add_definitions(-DMZ_ZIP_NO_ENCRYPTION)
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -137,14 +136,33 @@ if(UNIX)
         add_definitions(-D_FILE_OFFSET_BITS=64)
     endif()
 
+    set(_bsd "")
     if(CMAKE_SYSTEM_NAME MATCHES "Linux")
         find_package(PkgConfig REQUIRED)
 
-        pkg_check_modules(LIBBSD libbsd REQUIRED)
-
-        include_directories(${LIBBSD_INCLUDE_DIRS})
-        link_directories(${LIBBSD_LIBRARY_DIRS})
+        pkg_check_modules(LIBBSD libbsd)
+        if (LIBBSD_FOUND)
+            add_definitions(-DHAVE_LIBBSD)
+            include_directories(${LIBBSD_INCLUDE_DIRS})
+            link_directories(${LIBBSD_LIBRARY_DIRS})
+            set(_bsd "bsd/")
+        endif()
     endif()
+
+    check_symbol_exists("getrandom" "sys/random.h" HAVE_GETRANDOM)
+    if (HAVE_GETRANDOM)
+        add_definitions(-DHAVE_GETRANDOM)
+    endif()
+    check_symbol_exists("arc4random_buf" "${_bsd}stdlib.h" HAVE_ARC4RANDOM_BUF)
+    if (HAVE_ARC4RANDOM_BUF)
+        add_definitions(-DHAVE_ARC4RANDOM_BUF)
+    else()
+        check_symbol_exists("arc4random" "${_bsd}stdlib.h" HAVE_ARC4RANDOM)
+        if (HAVE_ARC4RANDOM)
+            add_definitions(-DHAVE_ARC4RANDOM)
+        endif()
+    endif()
+
 endif()
 
 if(USE_PKCRYPT)
@@ -201,6 +219,7 @@ if(USE_ZLIB)
     endif()
     ENDIF(0)
 endif()
+
 if(USE_BZIP2)
     add_definitions(-DHAVE_BZIP2)
     add_definitions(-DBZ_NO_STDIO)

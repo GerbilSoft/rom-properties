@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.3.8, July 14, 2018
+   Version 2.3.9, July 26, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -17,7 +17,9 @@
 #include <errno.h>
 
 #include <windows.h>
-#include <wincrypt.h>
+#if !defined(MZ_ZIP_NO_COMPRESSION) && !defined(MZ_ZIP_NO_ENCRYPTION)
+#  include <wincrypt.h>
+#endif
 
 #include "mz.h"
 
@@ -43,7 +45,7 @@ typedef struct DIR_int_s {
 
 /***************************************************************************/
 
-#if defined(HAVE_PKCRYPT) || defined(HAVE_AES)
+#if !defined(MZ_ZIP_NO_COMPRESSION) && !defined(MZ_ZIP_NO_ENCRYPTION)
 int32_t mz_win32_rand(uint8_t *buf, int32_t size)
 {
     HCRYPTPROV provider;

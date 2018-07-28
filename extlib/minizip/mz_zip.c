@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.3.8, July 14, 2018
+   Version 2.3.9, July 26, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -99,7 +99,7 @@ typedef struct mz_zip_s
 
 /***************************************************************************/
 
-// Locate the central directory of a zip file (at the end, just before the global comment)
+// Locate the end of central directory of a zip file (at the end, just before the global comment)
 static int32_t mz_zip_search_eocd(void *stream, uint64_t *central_pos)
 {
     uint8_t buf[1024 + 4];
@@ -154,7 +154,7 @@ static int32_t mz_zip_search_eocd(void *stream, uint64_t *central_pos)
     return MZ_EXIST_ERROR;
 }
 
-// Locate the central directory 64 of a zip file (at the end, just before the global comment)
+// Locate the end of central directory 64 of a zip file
 static int32_t mz_zip_search_zip64_eocd(void *stream, const uint64_t end_central_offset, uint64_t *central_pos)
 {
     uint64_t offset = 0;
@@ -255,6 +255,16 @@ static int32_t mz_zip_read_cd(void *handle)
         // Zip file global comment length
         if (err == MZ_OK)
             err = mz_stream_read_uint16(zip->stream, &comment_size);
+        if ((err == MZ_OK) && (comment_size > 0))
+        {
+            zip->comment = (char *)MZ_ALLOC(comment_size + 1);
+            if (zip->comment)
+            {
+                if (mz_stream_read(zip->stream, zip->comment, comment_size) != comment_size)
+                    err = MZ_STREAM_ERROR;
+                zip->comment[comment_size] = 0;
+            }
+        }
 
         if ((err == MZ_OK) && ((number_entry_cd == UINT16_MAX) || (zip->cd_offset == UINT32_MAX)))
         {
@@ -330,17 +340,6 @@ static int32_t mz_zip_read_cd(void *handle)
                 zip->cd_offset = eocd_pos - zip->cd_size;
                 zip->disk_offset_shift = zip->cd_offset - value64;
             }
-        }
-    }
-
-    if ((err == MZ_OK) && (comment_size > 0))
-    {
-        zip->comment = (char *)MZ_ALLOC(comment_size + 1);
-        if (zip->comment)
-        {
-            if (mz_stream_read(zip->stream, zip->comment, comment_size) != comment_size)
-                err = MZ_STREAM_ERROR;
-            zip->comment[comment_size] = 0;
         }
     }
 
@@ -1261,7 +1260,7 @@ extern int32_t mz_zip_entry_read_open(void *handle, int16_t raw, const char *pas
     int16_t compression_method = 0;
     int32_t err = MZ_OK;
 
-#if !defined(HAVE_PKCRYPT) && !defined(HAVE_AES)
+#if defined(MZ_ZIP_NO_ENCRYPTION)
     if (password != NULL)
         return MZ_PARAM_ERROR;
 #endif
@@ -1287,7 +1286,7 @@ extern int32_t mz_zip_entry_read_open(void *handle, int16_t raw, const char *pas
     if (raw)
         compression_method = MZ_COMPRESS_METHOD_RAW;
 
-#ifdef MZ_ZIP_COMPRESS_ONLY
+#ifdef MZ_ZIP_NO_DECOMPRESSION
     if (compression_method != MZ_COMPRESS_METHOD_RAW)
         err = MZ_SUPPORT_ERROR;
 #endif 
@@ -1305,7 +1304,7 @@ extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_inf
     int16_t compression_method = 0;
 
 
-#if !defined(HAVE_PKCRYPT) && !defined(HAVE_AES)
+#if defined(MZ_ZIP_NO_ENCRYPTION)
     if (password != NULL)
         return MZ_PARAM_ERROR;
 #endif
@@ -1341,8 +1340,6 @@ extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_inf
 
     if (password != NULL)
         zip->file_info.flag |= MZ_ZIP_FLAG_ENCRYPTED;
-    else
-        zip->file_info.flag &= ~MZ_ZIP_FLAG_ENCRYPTED;
 
     mz_stream_get_prop_int64(zip->stream, MZ_STREAM_PROP_DISK_NUMBER, &disk_number);
     zip->file_info.disk_number = (uint32_t)disk_number;
@@ -1359,7 +1356,7 @@ extern int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_inf
     if ((compress_level == 0) || (mz_zip_attrib_is_dir(zip->file_info.external_fa, zip->file_info.version_madeby) == MZ_OK))
         compression_method = MZ_COMPRESS_METHOD_RAW;
 
-#ifdef MZ_ZIP_DECOMPRESS_ONLY
+#ifdef MZ_ZIP_NO_COMPRESSION
     if (compression_method != MZ_COMPRESS_METHOD_RAW)
         err = MZ_SUPPORT_ERROR;
 #endif
@@ -1421,7 +1418,7 @@ extern int32_t mz_zip_entry_get_local_info(void *handle, mz_zip_file **local_fil
     return MZ_OK;
 }
 
-extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, uint32_t crc32)
+static int32_t mz_zip_entry_close_int(void *handle, int16_t raw, uint64_t uncompressed_size, uint32_t crc32)
 {
     mz_zip *zip = (mz_zip *)handle;
     uint64_t compressed_size = 0;
@@ -1432,7 +1429,8 @@ extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, 
         return MZ_PARAM_ERROR;
 
     mz_stream_close(zip->compress_stream);
-    if (crc32 == 0)
+
+    if (raw == 0)
         crc32 = mz_stream_crc32_get_value(zip->crc32_stream);
 
     if ((zip->open_mode & MZ_OPEN_MODE_WRITE) == 0)
@@ -1442,7 +1440,7 @@ extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, 
         if (zip->file_info.aes_version <= 0x0001)
 #endif
         {
-            mz_stream_crc32_get_prop_int64(zip->crc32_stream, MZ_STREAM_PROP_TOTAL_IN, &total_in);
+            mz_stream_get_prop_int64(zip->crc32_stream, MZ_STREAM_PROP_TOTAL_IN, &total_in);
             // If entire entry was not read this will fail
             if ((total_in > 0) && (zip->compression_method != MZ_COMPRESS_METHOD_RAW))
             {
@@ -1453,7 +1451,7 @@ extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, 
     }
 
     mz_stream_get_prop_int64(zip->compress_stream, MZ_STREAM_PROP_TOTAL_OUT, (int64_t *)&compressed_size);
-    if ((zip->compression_method != MZ_COMPRESS_METHOD_RAW) || (uncompressed_size == 0))
+    if (raw == 0)
         mz_stream_get_prop_int64(zip->crc32_stream, MZ_STREAM_PROP_TOTAL_OUT, (int64_t *)&uncompressed_size);
 
     if (zip->file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)
@@ -1509,7 +1507,12 @@ extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, 
 
 extern int32_t mz_zip_entry_close(void *handle)
 {
-    return mz_zip_entry_close_raw(handle, 0, 0);
+    return mz_zip_entry_close_int(handle, 0, 0, 0);
+}
+
+extern int32_t mz_zip_entry_close_raw(void *handle, uint64_t uncompressed_size, uint32_t crc32)
+{
+    return mz_zip_entry_close_int(handle, 1, uncompressed_size, crc32);
 }
 
 static int32_t mz_zip_goto_next_entry_int(void *handle)
