@@ -71,7 +71,7 @@ static const char *turbojpeg_message_table[] = {
   NULL
 };
 
-static void my_error_exit(j_common_ptr cinfo)
+static void JPEGCALL my_error_exit(j_common_ptr cinfo)
 {
   my_error_ptr myerr = (my_error_ptr)cinfo->err;
 
@@ -81,12 +81,12 @@ static void my_error_exit(j_common_ptr cinfo)
 
 /* Based on output_message() in jerror.c */
 
-static void my_output_message(j_common_ptr cinfo)
+static void JPEGCALL my_output_message(j_common_ptr cinfo)
 {
   (*cinfo->err->format_message) (cinfo, errStr);
 }
 
-static void my_emit_message(j_common_ptr cinfo, int msg_level)
+static void JPEGCALL my_emit_message(j_common_ptr cinfo, int msg_level)
 {
   my_error_ptr myerr = (my_error_ptr)cinfo->err;
 
@@ -1345,12 +1345,12 @@ static int setDecodeDefaults(struct jpeg_decompress_struct *dinfo,
 }
 
 
-int my_read_markers(j_decompress_ptr dinfo)
+int JPEGCALL my_read_markers(j_decompress_ptr dinfo)
 {
   return JPEG_REACHED_SOS;
 }
 
-void my_reset_marker_reader(j_decompress_ptr dinfo)
+void JPEGCALL my_reset_marker_reader(j_decompress_ptr dinfo)
 {
 }
 

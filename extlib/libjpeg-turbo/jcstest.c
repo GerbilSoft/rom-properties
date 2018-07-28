@@ -48,19 +48,19 @@ typedef struct _error_mgr {
   jmp_buf jb;
 } error_mgr;
 
-static void my_error_exit(j_common_ptr cinfo)
+static void JPEGCALL my_error_exit(j_common_ptr cinfo)
 {
   error_mgr *myerr = (error_mgr *)cinfo->err;
   (*cinfo->err->output_message) (cinfo);
   longjmp(myerr->jb, 1);
 }
 
-static void my_output_message(j_common_ptr cinfo)
+static void JPEGCALL my_output_message(j_common_ptr cinfo)
 {
   (*cinfo->err->format_message) (cinfo, lasterror);
 }
 
-int main(void)
+int JPEGCALL main(void)
 {
   int jcs_valid = -1, jcs_alpha_valid = -1;
   struct jpeg_compress_struct cinfo;

@@ -72,7 +72,7 @@ typedef struct _tga_source_struct {
   int dup_pixel_count;          /* # of times to duplicate previous pixel */
 
   /* This saves the correct pixel-row-expansion method for preload_image */
-  JDIMENSION (*get_pixel_rows) (j_compress_ptr cinfo, cjpeg_source_ptr sinfo);
+  JDIMENSION (JPEGCALL *get_pixel_rows) (j_compress_ptr cinfo, cjpeg_source_ptr sinfo);
 } tga_source_struct;
 
 

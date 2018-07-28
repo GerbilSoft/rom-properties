@@ -122,7 +122,7 @@ char *sigfig(double val, int figs, char *buf, int len)
 
 
 /* Custom DCT filter which produces a negative of the image */
-int dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
+int JPEGCALL dummyDCTFilter(short *coeffs, tjregion arrayRegion, tjregion planeRegion,
                    int componentIndex, int transformIndex,
                    tjtransform *transform)
 {
@@ -793,7 +793,7 @@ void usage(char *progName)
 }
 
 
-int main(int argc, char *argv[])
+int JPEGCALL main(int argc, char *argv[])
 {
   unsigned char *srcBuf = NULL;
   int w = 0, h = 0, i, j, minQual = -1, maxQual = -1;

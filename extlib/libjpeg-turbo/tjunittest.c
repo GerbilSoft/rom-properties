@@ -845,7 +845,7 @@ int bmpTest(void)
 }
 
 
-int main(int argc, char *argv[])
+int JPEGCALL main(int argc, char *argv[])
 {
   int i, num4bf = 5;
 
