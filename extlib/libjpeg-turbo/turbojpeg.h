@@ -36,6 +36,15 @@
 #endif
 #define DLLCALL
 
+/* rom-properties: using stdcall for internal functions */
+#ifndef JPEGCALL
+# ifdef _MSC_VER
+#  define JPEGCALL __cdecl
+# else
+#  define JPEGCALL
+# endif
+#endif
+
 
 /**
  * @addtogroup TurboJPEG

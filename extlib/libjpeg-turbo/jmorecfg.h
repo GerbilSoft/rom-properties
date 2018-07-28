@@ -204,10 +204,12 @@ typedef unsigned int JDIMENSION;
  */
 
 /* rom-properties: using stdcall for internal functions */
-#ifdef _MSC_VER
-# define JPEGCALL __cdecl
-#else
-# define JPEGCALL
+#ifndef JPEGCALL
+# ifdef _MSC_VER
+#  define JPEGCALL __cdecl
+# else
+#  define JPEGCALL
+# endif
 #endif
 
 /* a function called through method pointers: */
