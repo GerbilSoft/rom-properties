@@ -164,6 +164,12 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const QString cssImageType = QLatin1String(
 		"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
 	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
+		// TODO: Decrement the column number for >IMG_INT_MEDIA?
+		if (i == RomData::IMG_INT_MEDIA) {
+			// No INT MEDIA boxes, so eliminate the column.
+			continue;
+		}
+
 		QLabel *const lblImageType = new QLabel(U82Q(imageTypeName(i)), q);
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
@@ -191,6 +197,12 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	const unsigned int imageType = imageTypeFromCbid(cbid);
 	if (!validateSysImageType(sys, imageType))
 		return;
+
+	// TODO: Decrement the column number for >IMG_INT_MEDIA?
+	if (imageType == RomData::IMG_INT_MEDIA) {
+		// No INT MEDIA boxes, so eliminate the column.
+		return;
+	}
 
 	// Create the ComboBox.
 	Q_Q(ImageTypesTab);
