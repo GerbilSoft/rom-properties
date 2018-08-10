@@ -118,6 +118,7 @@ SET(libromdata_H
 
 	Console/dc_structs.h
 	Console/gcn_structs.h
+	Console/gcn_banner.h
 	Console/gcn_card.h
 	Console/md_structs.h
 	Console/n64_structs.h
@@ -126,6 +127,8 @@ SET(libromdata_H
 	Console/saturn_structs.h
 	Console/sega8_structs.h
 	Console/snes_structs.h
+	Console/wii_structs.h
+	Console/wii_banner.h
 	Console/wiiu_structs.h
 
 	Handheld/DMG.hpp

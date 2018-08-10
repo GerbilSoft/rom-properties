@@ -22,6 +22,7 @@
 #include "WiiPartition.hpp"
 
 #include "Console/gcn_structs.h"
+#include "Console/wii_structs.h"
 #include "GcnFst.hpp"
 
 // librpbase

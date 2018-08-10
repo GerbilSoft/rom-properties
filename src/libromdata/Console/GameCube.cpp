@@ -23,6 +23,8 @@
 
 #include "gcn_structs.h"
 #include "gcn_banner.h"
+#include "wii_structs.h"
+#include "wii_banner.h"
 #include "data/NintendoPublishers.hpp"
 #include "data/WiiSystemMenuVersion.hpp"
 #include "data/NintendoLanguage.hpp"
