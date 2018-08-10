@@ -249,6 +249,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 		uint8_t title_key[16];
 		memcpy(title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
 		cipher->decrypt(title_key, sizeof(title_key));
+		delete cipher;
 
 		// Data area IV:
 		// - First two bytes are the big-endian content index.
