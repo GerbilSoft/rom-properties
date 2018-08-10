@@ -69,6 +69,9 @@ class AesNettlePrivate
 
 		IAesCipher::ChainingMode chainingMode;
 
+		// Has the key been changed since the last operation?
+		bool key_changed;
+
 #ifdef HAVE_NETTLE_3
 		// Cipher functions.
 		nettle_cipher_func *decrypt_fn;
@@ -83,6 +86,7 @@ class AesNettlePrivate
 
 AesNettlePrivate::AesNettlePrivate()
 	: chainingMode(IAesCipher::CM_ECB)
+	, key_changed(true)
 #ifdef HAVE_NETTLE_3
 	, decrypt_fn(nullptr)
 	, encrypt_fn(nullptr)
@@ -177,6 +181,7 @@ int AesNettle::setKey(const uint8_t *RESTRICT pKey, size_t size)
 	// Save the key data.
 	memcpy(d->key, pKey, size);
 	d->key_len = size;
+	d->key_changed = true;
 	return 0;
 }
 
@@ -196,7 +201,10 @@ int AesNettle::setChainingMode(ChainingMode mode)
 	}
 
 	RP_D(AesNettle);
-	d->chainingMode = mode;
+	if (d->chainingMode != mode) {
+		d->chainingMode = mode;
+		d->key_changed = true;
+	}
 	return 0;
 }
 
@@ -217,6 +225,7 @@ int AesNettle::setIV(const uint8_t *RESTRICT pIV, size_t size)
 	}
 
 	// Set the IV/counter.
+	// NOTE: This does NOT require a key update.
 	memcpy(d->iv, pIV, AES_BLOCK_SIZE);
 	return 0;
 }
@@ -243,17 +252,21 @@ size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
 		return 0;
 	}
 
-	// TODO: Optimize key setting so it isn't
-	// done unless it's needed.
 	switch (d->chainingMode) {
 		case CM_ECB:
-			d->setkey_dec_fn(&d->ctx, d->key);
+			if (d->key_changed) {
+				d->setkey_dec_fn(&d->ctx, d->key);
+				d->key_changed = false;
+			}
 			d->decrypt_fn(&d->ctx, size, pData, pData);
 			break;
 
 		case CM_CBC:
 			// IV is automatically updated for the next block.
-			d->setkey_dec_fn(&d->ctx, d->key);
+			if (d->key_changed) {
+				d->setkey_dec_fn(&d->ctx, d->key);
+				d->key_changed = false;
+			}
 			cbc_decrypt(&d->ctx, d->decrypt_fn, AES_BLOCK_SIZE,
 				    d->iv, size, pData, pData);
 			break;
@@ -261,7 +274,10 @@ size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
 		case CM_CTR:
 			// ctr is automatically updated for the next block.
 			// NOTE: ctr uses the *encrypt* function, even for decryption.
-			d->setkey_enc_fn(&d->ctx, d->key);
+			if (d->key_changed) {
+				d->setkey_enc_fn(&d->ctx, d->key);
+				d->key_changed = false;
+			}
 			ctr_crypt(&d->ctx, d->encrypt_fn, AES_BLOCK_SIZE,
 				  d->iv, size, pData, pData);
 			break;
@@ -271,13 +287,19 @@ size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
 #else /* !HAVE_NETTLE_3 */
 	switch (d->chainingMode) {
 		case CM_ECB:
-			aes_set_decrypt_key(&d->ctx, d->key_len, d->key);
+			if (d->key_changed) {
+				aes_set_decrypt_key(&d->ctx, d->key_len, d->key);
+				d->key_changed = false;
+			}
 			aes_decrypt(&d->ctx, size, pData, pData);
 			break;
 
 		case CM_CBC:
 			// IV is automatically updated for the next block.
-			aes_set_decrypt_key(&d->ctx, d->key_len, d->key);
+			if (d->key_changed) {
+				aes_set_decrypt_key(&d->ctx, d->key_len, d->key);
+				d->key_changed = false;
+			}
 			cbc_decrypt(&d->ctx, (nettle_crypt_func*)aes_decrypt, AES_BLOCK_SIZE,
 				    d->iv, size, pData, pData);
 			break;
@@ -285,7 +307,10 @@ size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
 		case CM_CTR:
 			// ctr is automatically updated for the next block.
 			// NOTE: ctr uses the *encrypt* function, even for decryption.
-			aes_set_encrypt_key(&d->ctx, d->key_len, d->key);
+			if (d->key_changed) {
+				aes_set_encrypt_key(&d->ctx, d->key_len, d->key);
+				d->key_changed = false;
+			}
 			ctr_crypt(&d->ctx, (nettle_crypt_func*)aes_encrypt, AES_BLOCK_SIZE,
 				  d->iv, size, pData, pData);
 			break;
