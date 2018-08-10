@@ -207,7 +207,7 @@ SET(libromdata_H
 	disc/Cdrom2352Reader.hpp
 	disc/IsoPartition.hpp
 	disc/GdiReader.hpp
-	disc/WuxReader.cpp
+	disc/WuxReader.hpp
 	disc/wux_structs.h
 
 	config/TImageTypesConfig.hpp

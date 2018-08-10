@@ -23,11 +23,12 @@
 
 // librpbase
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/disc/CBCReader.hpp"
 #ifdef ENABLE_DECRYPTION
-#include "librpbase/crypto/AesCipherFactory.hpp"
-#include "librpbase/crypto/IAesCipher.hpp"
-#include "librpbase/crypto/KeyManager.hpp"
-#include "../crypto/N3DSVerifyKeys.hpp"
+# include "librpbase/crypto/AesCipherFactory.hpp"
+# include "librpbase/crypto/IAesCipher.hpp"
+# include "librpbase/crypto/KeyManager.hpp"
+# include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
 
@@ -55,26 +56,13 @@ class CIAReaderPrivate
 
 	public:
 		LibRpBase::IRpFile *file;	// 3DS CIA file.
-
-		// Content offsets.
-		const int64_t content_offset;	// Content start offset, in bytes.
-		const uint32_t content_length;	// Content length, in bytes.
-
-		// Current read position within the CIA content.
-		// pos = 0 indicates the beginning of the content.
-		// NOTE: This cannot be more than 4 GB,
-		// so we're using uint32_t.
-		uint32_t pos;
+		CBCReader *cbcReader;		// CBC reader.
 
 #ifdef ENABLE_DECRYPTION
 		// KeyY index for title key encryption.
 		uint8_t titleKeyEncIdx;
 		// TMD content index.
 		uint16_t tmd_content_index;
-
-		// CIA cipher.
-		uint8_t title_key[16];		// Decrypted title key.
-		LibRpBase::IAesCipher *cipher;	// Cipher.
 #endif /* ENABLE_DECRYPTION */
 };
 
@@ -82,17 +70,13 @@ class CIAReaderPrivate
 
 CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 	int64_t content_offset, uint32_t content_length,
-	const N3DS_Ticket_t *ticket,
-	uint16_t tmd_content_index)
+	const N3DS_Ticket_t *ticket, uint16_t tmd_content_index)
 	: q_ptr(q)
 	, file(file)
-	, content_offset(content_offset)
-	, content_length(content_length)
-	, pos(0)
+	, cbcReader(nullptr)
 #ifdef ENABLE_DECRYPTION
 	, titleKeyEncIdx(0)
 	, tmd_content_index(tmd_content_index)
-	, cipher(nullptr)
 #endif /* ENABLE_DECRYPTION */
 {
 #ifndef ENABLE_DECRYPTION
@@ -102,6 +86,8 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 	assert(ticket != nullptr);
 	if (!ticket) {
 		// No ticket. Assuming no encryption.
+		// Create a passthru CBCReader anyway.
+		cbcReader = new CBCReader(file, content_offset, content_length, nullptr, nullptr);
 		return;
 	}
 
@@ -158,8 +144,8 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 		keyNormal_name, keyX_name, keyY_name,
 		keyNormal_verify, keyX_verify, keyY_verify);
 	if (res == KeyManager::VERIFY_OK) {
-		// Create the cipher.
-		cipher = AesCipherFactory::create();
+		// Create a cipher to decrypt the title key.
+		IAesCipher *cipher = AesCipherFactory::create();
 
 		// Initialize parameters for title key decryption.
 		// TODO: Error checking.
@@ -178,19 +164,20 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 		cipher->setIV(cia_iv.u8, sizeof(cia_iv.u8));
 
 		// Decrypt the title key.
+		uint8_t title_key[16];
 		memcpy(title_key, ticket->title_key, sizeof(title_key));
 		cipher->decrypt(title_key, sizeof(title_key));
 
-		// Initialize parameters for CIA decryption.
-		// Parameters:
-		// - Key: Decrypted title key.
-		// - Chaining mode: CBC
-		// - IV: Content index from the TMD.
-		cipher->setKey(title_key, sizeof(title_key));
+		// Data area: IV is the TMD content index.
+		cia_iv.u8[0] = tmd_content_index >> 8;
+		cia_iv.u8[1] = tmd_content_index & 0xFF;
+		memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
+
+		// Create a CBC reader to decrypt the CIA.
+		cbcReader = new CBCReader(file, content_offset, content_length, title_key, cia_iv.u8);
 	} else {
 		// Unable to get the CIA encryption keys.
 		// TODO: Set an error.
-		memset(title_key, 0, sizeof(title_key));
 		//verifyResult = res;
 		this->file = nullptr;
 	}
@@ -203,9 +190,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 
 CIAReaderPrivate::~CIAReaderPrivate()
 {
-#ifdef ENABLE_DECRYPTION
-	delete cipher;
-#endif /* ENABLE_DECRYPTION */
+	delete cbcReader;
 }
 
 /** CIAReader **/
@@ -259,10 +244,11 @@ size_t CIAReader::read(void *ptr, size_t size)
 	assert(ptr != nullptr);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
+	assert(d->cbcReader != nullptr);
 	if (!ptr) {
 		m_lastError = EINVAL;
 		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
+	} else if (!d->file || !d->file->isOpen() || !d->cbcReader) {
 		m_lastError = EBADF;
 		return 0;
 	} else if (size == 0) {
@@ -270,115 +256,9 @@ size_t CIAReader::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	// Are we already at the end of the file?
-	if (d->pos >= d->content_length)
-		return 0;
-
-	// Make sure d->pos + size <= d->content_length.
-	// If it isn't, we'll do a short read.
-	if (d->pos + static_cast<int64_t>(size) >= d->content_length) {
-		size = static_cast<size_t>(d->content_length - d->pos);
-	}
-
-#ifdef ENABLE_DECRYPTION
-	// If decryption isn't available, CIAReader would have
-	// NULLed out this->file if the CIA was encrypted.
-	if (!d->cipher)
-#endif /* ENABLE_DECRYPTION */
-	{
-		// No CIA encryption. Read directly from the file.
-		size_t sz_read = d->file->seekAndRead(d->content_offset + d->pos, ptr, size);
-		if (sz_read != size) {
-			// Seek and/or read error.
-			m_lastError = d->file->lastError();
-			if (m_lastError == 0) {
-				m_lastError = EIO;
-			}
-			return 0;
-		}
-		return sz_read;
-	}
-
-#ifdef ENABLE_DECRYPTION
-	// TODO: Handle reads that aren't a multiple of 16 bytes.
-	assert(d->pos % 16 == 0);
-	assert(size % 16 == 0);
-	if (d->pos % 16 != 0 || size % 16 != 0) {
-		// Cannot read now.
-		return 0;
-	}
-
-	// Physical address.
-	int64_t phys_addr = d->content_offset + d->pos;
-
-	// Determine the CIA IV.
-	u128_t cia_iv;
-	if (d->pos >= 16) {
-		// Subtract 16 in order to read the IV.
-		phys_addr -= 16;
-	}
-	int ret = d->file->seek(phys_addr);
-	if (ret != 0) {
-		// Seek error.
-		m_lastError = d->file->lastError();
-		if (m_lastError == 0) {
-			m_lastError = EIO;
-		}
-		return 0;
-	}
-
-	if (d->pos < 16) {
-		// Start of CIA content.
-		// IV is the TMD content index.
-		cia_iv.u8[0] = d->tmd_content_index >> 8;
-		cia_iv.u8[1] = d->tmd_content_index & 0xFF;
-		memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
-	} else {
-		// IV is the previous 16 bytes.
-		// TODO: Cache this?
-		size_t sz_read = d->file->read(&cia_iv.u8, sizeof(cia_iv.u8));
-		if (sz_read != sizeof(cia_iv.u8)) {
-			// Read error.
-			m_lastError = d->file->lastError();
-			if (m_lastError == 0) {
-				m_lastError = EIO;
-			}
-			return 0;
-		}
-	}
-
-	// Read the data.
-	size_t sz_read = d->file->read(ptr, size);
-	if (sz_read != size) {
-		// Short read.
-		// Cannot decrypt with a short read.
-		m_lastError = d->file->lastError();
-		if (m_lastError == 0) {
-			m_lastError = EIO;
-		}
-		return 0;
-	}
-
-	// Decrypt the data.
-	ret = d->cipher->setIV(cia_iv.u8, sizeof(cia_iv.u8));
-	if (ret != 0) {
-		// setIV() failed.
-		m_lastError = EIO;
-		return 0;
-	}
-	size_t sz_dec = d->cipher->decrypt(static_cast<uint8_t*>(ptr), size);
-	if (sz_dec != size) {
-		// decrypt() failed.
-		m_lastError = EIO;
-		return 0;
-	}
-
-	// Data read and decrypted successfully.
-	return sz_read;
-#else
-	// Cannot decrypt data if decryption is disabled.
-	return 0;
-#endif /* ENABLE_DECRYPTION */
+	size_t ret = d->cbcReader->read(ptr, size);
+	m_lastError = d->cbcReader->lastError();
+	return ret;
 }
 
 /**
@@ -391,20 +271,17 @@ int CIAReader::seek(int64_t pos)
 	RP_D(CIAReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
-	if (!d->file ||  !d->file->isOpen()) {
+	assert(d->cbcReader != nullptr);
+	if (!d->file ||  !d->file->isOpen() || !d->cbcReader) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	// Handle out-of-range cases.
-	// TODO: How does POSIX behave?
-	if (pos < 0)
-		d->pos = 0;
-	else if (pos >= d->content_length)
-		d->pos = d->content_length;
-	else
-		d->pos = static_cast<uint32_t>(pos);
-	return 0;
+	int ret = d->cbcReader->seek(pos);
+	if (ret != 0) {
+		m_lastError = d->cbcReader->lastError();
+	}
+	return ret;
 }
 
 /**
@@ -423,13 +300,15 @@ int64_t CIAReader::tell(void)
 {
 	RP_D(const CIAReader);
 	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file ||  !d->file->isOpen()) {
+	assert(d->cbcReader != nullptr);
+	if (!d->file ||  !d->file->isOpen() || !d->cbcReader) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	return d->pos;
+	int64_t ret = d->cbcReader->tell();
+	m_lastError = d->cbcReader->lastError();
+	return ret;
 }
 
 /**
@@ -441,7 +320,17 @@ int64_t CIAReader::tell(void)
 int64_t CIAReader::size(void)
 {
 	RP_D(const CIAReader);
-	return d->content_length;
+	assert(d->file != nullptr);
+	assert(d->file->isOpen());
+	assert(d->cbcReader != nullptr);
+	if (!d->file ||  !d->file->isOpen() || !d->cbcReader) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	int64_t ret = d->cbcReader->size();
+	m_lastError = d->cbcReader->lastError();
+	return ret;
 }
 
 /** IPartition **/
@@ -453,9 +342,9 @@ int64_t CIAReader::size(void)
  */
 int64_t CIAReader::partition_size(void) const
 {
-	// TODO: Errors?
+	// TODO: Handle errors.
 	RP_D(const CIAReader);
-	return d->content_length;
+	return (d->cbcReader ? d->cbcReader->partition_size() : -1);
 }
 
 /**
@@ -466,10 +355,10 @@ int64_t CIAReader::partition_size(void) const
  */
 int64_t CIAReader::partition_size_used(void) const
 {
-	// TODO: Errors?
 	// NOTE: For CIAReader, this is the same as partition_size().
+	// TODO: Handle errors.
 	RP_D(const CIAReader);
-	return d->content_length;
+	return (d->cbcReader ? d->cbcReader->partition_size_used() : -1);
 }
 
 }
