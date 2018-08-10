@@ -48,9 +48,9 @@ using namespace LibRpBase;
 #endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
-#include <cctype>
 #include <cstdio>
 #include <cstring>
 
@@ -66,6 +66,7 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(WiiWAD)
+ROMDATA_IMPL_IMG(WiiWAD)
 
 class WiiWADPrivate : public RomDataPrivate
 {
@@ -101,6 +102,20 @@ class WiiWADPrivate : public RomDataPrivate
 #endif /* ENABLE_DECRYPTION */
 		// Key status.
 		KeyManager::VerifyResult key_status;
+
+		/**
+		 * Convert a Wii WAD region value to a GameTDB region code.
+		 * @param idRegion Game ID region.
+		 *
+		 * NOTE: Mulitple GameTDB region codes may be returned, including:
+		 * - User-specified fallback region. [TODO]
+		 * - General fallback region.
+		 *
+		 * TODO: Get the actual Wii region value from the WAD file.
+		 *
+		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
+		 */
+		static vector<const char*> wadRegionToGameTDB(char idRegion);
 };
 
 /** WiiWADPrivate **/
@@ -122,6 +137,98 @@ WiiWADPrivate::~WiiWADPrivate()
 #ifdef ENABLE_DECRYPTION
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
+}
+
+/**
+ * Convert a Wii WAD region value to a GameTDB region code.
+ * @param idRegion Game ID region.
+ *
+ * NOTE: Mulitple GameTDB region codes may be returned, including:
+ * - User-specified fallback region. [TODO]
+ * - General fallback region.
+ *
+ * TODO: Get the actual Wii region value from the WAD file.
+ *
+ * @return GameTDB region code(s), or empty vector if the region value is invalid.
+ */
+vector<const char*> WiiWADPrivate::wadRegionToGameTDB(char idRegion)
+{
+	// TODO: Get the actual Wii region value from the WAD file.
+	// Using the Game ID region only for now.
+	vector<const char*> ret;
+	int fallback_region = 0;
+
+	// Check for region-specific game IDs.
+	switch (idRegion) {
+		case 'E':	// USA
+			ret.push_back("US");
+			break;
+		case 'J':	// Japan
+			ret.push_back("JA");
+			break;
+		case 'O':
+			// TODO: US/EU.
+			// Compare to host system region.
+			// For now, assuming US.
+			ret.push_back("US");
+			break;
+		case 'P':	// PAL
+		case 'X':	// Multi-language release
+		case 'Y':	// Multi-language release
+		case 'L':	// Japanese import to PAL regions
+		case 'M':	// Japanese import to PAL regions
+		default:
+			if (fallback_region == 0) {
+				// Use the fallback region.
+				fallback_region = 1;
+			}
+			break;
+
+		// European regions.
+		case 'D':	// Germany
+			ret.push_back("DE");
+			break;
+		case 'F':	// France
+			ret.push_back("FR");
+			break;
+		case 'H':	// Netherlands
+			ret.push_back("NL");
+			break;
+		case 'I':	// Italy
+			ret.push_back("NL");
+			break;
+		case 'R':	// Russia
+			ret.push_back("RU");
+			break;
+		case 'S':	// Spain
+			ret.push_back("ES");
+			break;
+		case 'U':	// Australia
+			if (fallback_region == 0) {
+				// Use the fallback region.
+				fallback_region = 2;
+			}
+			break;
+	}
+
+	// Check for fallbacks.
+	switch (fallback_region) {
+		case 1:
+			// Europe
+			ret.push_back("EN");
+			break;
+		case 2:
+			// Australia
+			ret.push_back("AU");
+			ret.push_back("EN");
+			break;
+
+		case 0:	// None
+		default:
+			break;
+	}
+
+	return ret;
 }
 
 /** WiiWAD **/
@@ -386,6 +493,76 @@ const char *const *WiiWAD::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t WiiWAD::supportedImageTypes_static(void)
+{
+	return IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	       IMGBF_EXT_COVER_FULL;
+	// TODO: wwtitle (title screen)
+	//       IMGBF_EXT_TITLE_SCREEN;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	switch (imageType) {
+		case IMG_EXT_COVER: {
+			static const ImageSizeDef sz_EXT_COVER[] = {
+				{nullptr, 160, 224, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+		case IMG_EXT_COVER_3D: {
+			static const ImageSizeDef sz_EXT_COVER_3D[] = {
+				{nullptr, 176, 248, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
+				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+		}
+		case IMG_EXT_COVER_FULL: {
+			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+				{nullptr, 512, 340, 0},
+				{"HQ", 1024, 680, 1},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+		}
+		// TODO: wwtitle (title screen)
+#if 0
+		case IMG_EXT_TITLE_SCREEN: {
+			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
+				{nullptr, 192, 112, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
+				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
+		}
+#endif
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return std::vector<ImageSizeDef>();
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -490,6 +667,158 @@ int WiiWAD::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
+	}
+	pExtURLs->clear();
+
+	// Check for a valid TID hi.
+	RP_D(const WiiWAD);
+	switch (be32_to_cpu(d->tmdHeader.title_id.hi)) {
+		case 0x00010000:
+		case 0x00010001:
+		case 0x00010002:
+		case 0x00010004:
+		case 0x00010005:
+		case 0x00010008:
+			// TID hi is valid.
+			break;
+
+		default:
+			// No GameTDB artwork is available.
+			return -ENOENT;
+	}
+
+	// Get the image sizes and sort them based on the
+	// requested image size.
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// Select the best size.
+	const ImageSizeDef *const sizeDef = d->selectBestSize(sizeDefs, size);
+	if (!sizeDef) {
+		// No size available...
+		return -ENOENT;
+	}
+
+	// NOTE: Only downloading the first size as per the
+	// sort order, since GameTDB basically guarantees that
+	// all supported sizes for an image type are available.
+	// TODO: Add cache keys for other sizes in case they're
+	// downloaded and none of these are available?
+
+	// Determine the image type name.
+	const char *imageTypeName_base;
+	const char *ext;
+	switch (imageType) {
+		case IMG_EXT_COVER:
+			imageTypeName_base = "cover";
+			ext = ".png";
+			break;
+		case IMG_EXT_COVER_3D:
+			imageTypeName_base = "cover3D";
+			ext = ".png";
+			break;
+		case IMG_EXT_COVER_FULL:
+			imageTypeName_base = "coverfull";
+			ext = ".png";
+			break;
+#if 0
+		// TODO: wwtitle (title screen)
+		case IMG_EXT_TITLE_SCREEN:
+			imageTypeName_base = "wwtitle";
+			ext = ".png";
+			break;
+#endif
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Game ID. (GameTDB uses ID4 for WiiWare.)
+	// The ID4 cannot have non-printable characters.
+	// NOTE: Must be NULL-terminated.
+	char id4[5];
+	memcpy(id4, &d->tmdHeader.title_id.u8[4], 4);
+	id4[4] = 0;
+	for (int i = 4-1; i >= 0; i--) {
+		if (!ISPRINT(id4[i])) {
+			// Non-printable character found.
+			return -ENOENT;
+		}
+	}
+
+	// Determine the GameTDB region code(s).
+	// TODO: Get the actual Wii region from the WAD file.
+	vector<const char*> tdb_regions = d->wadRegionToGameTDB(id4[3]);
+
+	// If we're downloading a "high-resolution" image (M or higher),
+	// also add the default image to ExtURLs in case the user has
+	// high-resolution image downloads disabled.
+	const ImageSizeDef *szdefs_dl[2];
+	szdefs_dl[0] = sizeDef;
+	unsigned int szdef_count;
+	if (sizeDef->index >= 2) {
+		// M or higher.
+		szdefs_dl[1] = &sizeDefs[0];
+		szdef_count = 2;
+	} else {
+		// Default or S.
+		szdef_count = 1;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(szdef_count * tdb_regions.size());
+	auto extURL_iter = pExtURLs->begin();
+	for (unsigned int i = 0; i < szdef_count; i++) {
+		// Current image type.
+		char imageTypeName[16];
+		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+
+		// Add the images.
+		for (auto tdb_iter = tdb_regions.cbegin();
+		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
+		{
+			extURL_iter->url = d->getURL_GameTDB("wii", imageTypeName, *tdb_iter, id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *tdb_iter, id4, ext);
+			extURL_iter->width = szdefs_dl[i]->width;
+			extURL_iter->height = szdefs_dl[i]->height;
+			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);
+		}
+	}
+
+	// All URLs added.
+	return 0;
 }
 
 }

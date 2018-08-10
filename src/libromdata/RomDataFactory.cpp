@@ -164,7 +164,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SNES, false),
 	GetRomDataFns(SegaSaturn, false),
 	GetRomDataFns(WiiU, true),
-	GetRomDataFns(WiiWAD, false),
+	GetRomDataFns(WiiWAD, true),
 
 	// Handhelds
 	GetRomDataFns(DMG, false),
