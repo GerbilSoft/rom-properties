@@ -195,6 +195,23 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 #ifdef ENABLE_DECRYPTION
 	// Initialize the CBC reader for the main data area.
+
+	// Determine the key index and debug vs. retail.
+	WiiPartition::EncryptionKeys keyIdx;
+	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
+	if (!memcmp(d->ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
+		// Debug encryption.
+		keyIdx = WiiPartition::Key_Rvt_Debug;
+	} else {
+		// Retail encryption.
+		uint8_t idx = d->ticket.common_key_index;
+		if (idx > 2) {
+			// Out of range. Assume Wii common key.
+			idx = 0;
+		}
+		keyIdx = (WiiPartition::EncryptionKeys)idx;
+	}
+
 	// TODO: Determine key index and debug vs. retail by reading the TMD.
 	// TODO: WiiVerifyKeys class.
 	KeyManager *const keyManager = KeyManager::instance();
@@ -202,12 +219,15 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 	// Key verification data.
 	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
-	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(WiiPartition::Key_Rvl_Common);
+	const char *const keyName = WiiPartition::encryptionKeyName_static(keyIdx);
+	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(keyIdx);
+	assert(keyName != nullptr);
+	assert(keyName[0] != '\0');
 	assert(verifyData != nullptr);
 
 	// Get and verify the key.
 	KeyManager::KeyData_t keyData;
-	d->key_status = keyManager->getAndVerify("rvl-common", &keyData, verifyData, 16);
+	d->key_status = keyManager->getAndVerify(keyName, &keyData, verifyData, 16);
 	if (d->key_status == KeyManager::VERIFY_OK) {
 		// Create a cipher to decrypt the title key.
 		IAesCipher *cipher = AesCipherFactory::create();
