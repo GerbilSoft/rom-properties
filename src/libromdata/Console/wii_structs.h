@@ -82,6 +82,20 @@ typedef struct PACKED _RVL_TimeLimit {
 ASSERT_STRUCT(RVL_TimeLimit, 8);
 
 /**
+ * Title ID struct/union.
+ * TODO: Verify operation on big-endian systems.
+ */
+typedef union PACKED _RVL_TitleID_t {
+	uint64_t id;
+	struct {
+		uint32_t hi;
+		uint32_t lo;
+	};
+	uint8_t u8[8];
+} RVL_TitleID_t;
+ASSERT_STRUCT(RVL_TitleID_t, 8);
+
+/**
  * Wii ticket.
  * Reference: http://wiibrew.org/wiki/Ticket
  */
@@ -98,7 +112,7 @@ typedef struct PACKED _RVL_Ticket {
 	uint8_t unknown1;		// [0x1CF] Unknown.
 	uint8_t ticket_id[0x08];	// [0x1D0] Ticket ID. (IV for title key decryption for console-specific titles.)
 	uint8_t console_id[4];		// [0x1D8] Console ID.
-	uint8_t title_id[8];		// [0x1DC] Title ID. (IV used for AES-CBC encryption.)
+	RVL_TitleID_t title_id;		// [0x1DC] Title ID. (IV used for AES-CBC encryption.)
 	uint8_t unknown2[2];		// [0x1E4] Unknown, mostly 0xFFFF.
 	uint8_t ticket_version[2];	// [0x1E6] Ticket version.
 	uint32_t permitted_titles_mask;	// [0x1E8] Permitted titles mask.
@@ -111,6 +125,36 @@ typedef struct PACKED _RVL_Ticket {
 	RVL_TimeLimit time_limits[8];	// [0x264] Time limits.
 } RVL_Ticket;
 ASSERT_STRUCT(RVL_Ticket, 0x2A4);
+
+/**
+ * Wii TMD header.
+ * Reference: http://wiibrew.org/wiki/Tmd_file_structure
+ */
+typedef struct PACKED _RVL_TMD_Header {
+	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
+	uint8_t signature[0x100];	// [0x004] Signature.
+
+	// The following fields are all covered by the above signature.
+	uint8_t padding1[0x3C];		// [0x104]
+	char signature_issuer[0x40];	// [0x140] Signature issuer.
+	uint8_t version;		// [0x180] Version.
+	uint8_t ca_crl_version;		// [0x181] CA CRL version.
+	uint8_t signer_crl_version;	// [0x182] Signer CRL version.
+	uint8_t padding2;		// [0x183]
+	RVL_TitleID_t sys_version;	// [0x184] System version. (IOS title ID)
+	RVL_TitleID_t title_id;		// [0x18C] Title ID.
+	uint32_t title_type;		// [0x194] Title type.
+	uint16_t group_id;		// [0x198] Group ID.
+	uint8_t reserved[62];		// [0x19A]
+	uint32_t access_rights;		// [0x1D8] Access rights for e.g. DVD Video and AHBPROT.
+	uint16_t title_version;		// [0x1DC] Title version.
+	uint16_t nbr_cont;		// [0x1DE] Number of contents.
+	uint16_t boot_index;		// [0x1E0] Boot index.
+	uint8_t padding3[2];		// [0x1E2]
+
+	// Following this header is a variable-length content table.
+} RVL_TMD_Header;
+ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
 
 /**
  * Wii partition header.

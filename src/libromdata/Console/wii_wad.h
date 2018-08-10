@@ -28,7 +28,8 @@
 #include "librpbase/common.h"
 #include <stdint.h>
 
-// Content.bin files contain an IMET section.
+// Wii data structures.
+#include "wii_structs.h"
 #include "wii_banner.h"
 
 #ifdef __cplusplus
@@ -59,19 +60,6 @@ typedef struct PACKED _Wii_WAD_Header {
 ASSERT_STRUCT(Wii_WAD_Header, 32);
 
 /**
- * Title ID struct/union.
- * TODO: Verify operation on big-endian systems.
- */
-typedef union PACKED _Wii_TitleID_t {
-	uint64_t id;
-	struct {
-		uint32_t hi;
-		uint32_t lo;
-	};
-} Wii_TitleID_t;
-ASSERT_STRUCT(Wii_TitleID_t, 8);
-
-/**
  * content.bin header.
  *
  * This is the encrypted program data in a WAD file and/or
@@ -82,12 +70,12 @@ ASSERT_STRUCT(Wii_TitleID_t, 8);
  * All fields are big-endian.
  */
 typedef struct PACKED _Wii_Content_Bin_Header {
-	Wii_TitleID_t title_id;		// [0x000] Title ID. (tid-hi is usually 0x00010001)
+	RVL_TitleID_t title_id;		// [0x000] Title ID. (tid-hi is usually 0x00010001)
 	uint32_t partB_size;		// [0x008] Size of part B.
 	uint8_t md5_header[16];		// [0x00C] MD5 hash of the header.
 	uint8_t md5_icon[16];		// [0x01C] MD5 hash of the DECRYPTED icon.
 	uint8_t unknown_2[4];		// [0x02C]
-	Wii_TitleID_t tid_ref[2];	// [0x030] Title dependencies?
+	RVL_TitleID_t tid_ref[2];	// [0x030] Title dependencies?
 	Wii_IMET_t imet;		// [0x040] IMET header
 } Wii_Content_Bin_Header;
 ASSERT_STRUCT(Wii_Content_Bin_Header, 0x640);

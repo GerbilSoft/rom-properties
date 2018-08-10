@@ -35,6 +35,14 @@
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
+// Decryption.
+#include "librpbase/crypto/KeyManager.hpp"
+#ifdef ENABLE_DECRYPTION
+# include "librpbase/crypto/AesCipherFactory.hpp"
+# include "librpbase/crypto/IAesCipher.hpp"
+# include "librpbase/disc/CBCReader.hpp"
+#endif /* ENABLE_DECRYPTION */
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
@@ -57,14 +65,17 @@ class WiiWADPrivate : public RomDataPrivate
 {
 	public:
 		WiiWADPrivate(WiiWAD *q, IRpFile *file);
+		~WiiWADPrivate();
 
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WiiWADPrivate)
 
 	public:
-		// WAD header.
+		// WAD structs.
 		Wii_WAD_Header wadHeader;
+		RVL_Ticket ticket;
+		RVL_TMD_Header tmdHeader;
 		Wii_Content_Bin_Header contentHeader;
 
 		/**
@@ -77,16 +88,34 @@ class WiiWADPrivate : public RomDataPrivate
 		{
 			return (val + (T)63) & ~((T)63);
 		}
+
+#ifdef ENABLE_DECRYPTION
+		// CBC reader for the main data area.
+		CBCReader *cbcReader;
+#endif /* ENABLE_DECRYPTION */
+		// Key status.
+		KeyManager::VerifyResult key_status;
 };
 
 /** WiiWADPrivate **/
 
 WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	: super(q, file)
+#ifdef ENABLE_DECRYPTION
+	, cbcReader(nullptr)
+#endif /* ENABLE_DECRYPTION */
+	, key_status(KeyManager::VERIFY_UNKNOWN)
 {
 	// Clear the various structs.
 	memset(&wadHeader, 0, sizeof(wadHeader));
 	memset(&contentHeader, 0, sizeof(contentHeader));
+}
+
+WiiWADPrivate::~WiiWADPrivate()
+{
+#ifdef ENABLE_DECRYPTION
+	delete cbcReader;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /** WiiWAD **/
@@ -120,8 +149,11 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Read the WAD header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->wadHeader, sizeof(d->wadHeader));
-	if (size != sizeof(d->wadHeader))
+	if (size != sizeof(d->wadHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this WAD file is supported.
 	DetectInfo info;
@@ -129,10 +161,83 @@ WiiWAD::WiiWAD(IRpFile *file)
 	info.header.size = sizeof(d->wadHeader);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->wadHeader);
 	info.ext = nullptr;	// Not needed for WiiWAD.
-	info.szFile = file->size();
+	info.szFile = d->file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+		return;
+	}
 
-	// TODO: Decryption.
+	// Read the ticket and TMD.
+	// TODO: Verify ticket/TMD sizes.
+	unsigned int addr = WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.header_size)) +
+			    WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.cert_chain_size));
+	size = d->file->seekAndRead(addr, &d->ticket, sizeof(d->ticket));
+	if (size != sizeof(d->ticket)) {
+		// Seek and/or read error.
+		d->isValid = false;
+		delete d->file;
+		d->file = nullptr;
+		return;
+	}
+	addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.ticket_size));
+	size = d->file->seekAndRead(addr, &d->tmdHeader, sizeof(d->tmdHeader));
+	if (size != sizeof(d->tmdHeader)) {
+		// Seek and/or read error.
+		d->isValid = false;
+		delete d->file;
+		d->file = nullptr;
+		return;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	// Initialize the CBC reader for the main data area.
+	// TODO: Determine key index and debug vs. retail by reading the TMD.
+	// TODO: WiiVerifyKeys class.
+	KeyManager *const keyManager = KeyManager::instance();
+	assert(keyManager != nullptr);
+
+	KeyManager::KeyData_t keyData;
+	d->key_status = keyManager->get("rvl-common", &keyData);
+	if (d->key_status == KeyManager::VERIFY_OK) {
+		// Create a cipher to decrypt the title key.
+		IAesCipher *cipher = AesCipherFactory::create();
+
+		// Initialize parameters for title key decryption.
+		// TODO: Error checking.
+		// Parameters:
+		// - Chaining mode: CBC
+		// - IV: Title ID (little-endian)
+		cipher->setChainingMode(IAesCipher::CM_CBC);
+		cipher->setKey(keyData.key, keyData.length);
+		// Title key IV: High 8 bytes are the title ID (in big-endian), low 8 bytes are 0.
+		uint8_t iv[16];
+		memcpy(iv, &d->ticket.title_id.id, sizeof(d->ticket.title_id.id));
+		memset(&iv[8], 0, 8);
+		cipher->setIV(iv, sizeof(iv));
+		
+		// Decrypt the title key.
+		uint8_t title_key[16];
+		memcpy(title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
+		cipher->decrypt(title_key, sizeof(title_key));
+
+		// Data area IV:
+		// - First two bytes are the big-endian content index.
+		// - Remaining bytes are zero.
+		// - TODO: Read the TMD content table. For now, assuming index 0.
+		memset(iv, 0, sizeof(iv));
+
+		// Create a CBC reader to decrypt the data section.
+		addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.tmd_size));
+		d->cbcReader = new CBCReader(d->file, addr, be32_to_cpu(d->wadHeader.data_size), title_key, iv);
+
+		// TODO: Verify some known data?
+	}
+#else /* !ENABLE_DECRYPTION */
+	// Cannot decrypt anything...
+	d->key_status = KeyManager::VERIFY_NO_SUPPORT;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /** ROM detection functions. **/
@@ -181,10 +286,10 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 	
 	// Check the file size to ensure we have at least the IMET section.
 	unsigned int expected_size = WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->header_size)) +
-				WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->cert_chain_size)) +
-				WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->ticket_size)) +
-				WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->tmd_size)) +
-				sizeof(Wii_Content_Bin_Header);
+				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->cert_chain_size)) +
+				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->ticket_size)) +
+				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->tmd_size)) +
+				     sizeof(Wii_Content_Bin_Header);
 	if (expected_size > info->szFile) {
 		// File is too small.
 		return -1;
@@ -283,10 +388,55 @@ int WiiWAD::loadFieldData(void)
 		return -EIO;
 	}
 
-	// WAD header is read in the constructor.
-	const Wii_WAD_Header *const wadHeader = &d->wadHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	// WAD headers are read in the constructor.
+	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
+	d->fields->reserve(3);	// Maximum of 3 fields.
 
+	if (d->key_status != KeyManager::VERIFY_OK) {
+		// Unable to get the decryption key.
+		const char *err = KeyManager::verifyResultToString(d->key_status);
+		if (!err) {
+			err = C_("WiiWAD", "Unknown error. (THIS IS A BUG!)");
+		}
+		d->fields->addField_string(C_("WiiWAD", "Warning"),
+			err, RomFields::STRF_WARNING);
+		return (int)d->fields->count();
+	}
+
+	// Title ID.
+	// TODO: Make sure the ticket title ID matches the TMD title ID.
+	d->fields->addField_string(C_("WiiWAD", "Title ID"),
+		rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->title_id.hi), be32_to_cpu(tmdHeader->title_id.lo)));
+
+	// Game ID.
+	// NOTE: Only displayed if TID lo is all alphanumeric characters.
+	// TODO: Only for certain TID hi?
+	if (isalnum(tmdHeader->title_id.u8[4]) &&
+	    isalnum(tmdHeader->title_id.u8[5]) &&
+	    isalnum(tmdHeader->title_id.u8[6]) &&
+	    isalnum(tmdHeader->title_id.u8[7]))
+	{
+		// Print the game ID.
+		// TODO: Is the publisher code available anywhere?
+		d->fields->addField_string(C_("WiiWAD", "Game ID"),
+			rp_sprintf("%.4s", reinterpret_cast<const char*>(&tmdHeader->title_id.u8[4])));
+	}
+
+	// Required IOS version.
+	const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
+	if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
+	    ios_lo > 2 && ios_lo < 0x300)
+	{
+		// Standard IOS slot.
+		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
+			rp_sprintf("IOS%u", ios_lo));
+	} else {
+		// Non-standard IOS slot.
+		// Print the full title ID.
+		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
+			rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->sys_version.hi), be32_to_cpu(tmdHeader->sys_version.lo)));
+	}
+	
 	// TODO: Decrypt content.bin to get the actual data.
 
 	// Finished reading the field data.

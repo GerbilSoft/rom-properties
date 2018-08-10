@@ -371,7 +371,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// First 8 bytes are the title ID.
 	// Second 8 bytes are all 0.
 	uint8_t iv[16];
-	memcpy(iv, partitionHeader.ticket.title_id, 8);
+	memcpy(iv, partitionHeader.ticket.title_id.u8, 8);
 	memset(&iv[8], 0, 8);
 
 	// Decrypt the title key.
