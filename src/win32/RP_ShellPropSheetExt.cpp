@@ -1647,11 +1647,18 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			C_("RomDataView", "%s:"), field->name.c_str())));
 		const wstring& desc_text = w_desc_text.at(i);
 
-		// TODO: Handle STRF_WARNING?
-
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
-		GetTextExtentPoint32(hDC, desc_text.data(), (int)desc_text.size(), &textSize);
+		if (field->desc.flags & RomFields::STRF_WARNING) {
+			// Label is bold. Use hFontBold.
+			HFONT hFontOrig = SelectFont(hDC, hFontBold);
+			GetTextExtentPoint32(hDC, desc_text.data(), (int)desc_text.size(), &textSize);
+			SelectFont(hDC, hFontOrig);
+		} else {
+			// Regular font.
+			GetTextExtentPoint32(hDC, desc_text.data(), (int)desc_text.size(), &textSize);
+		}
+
 		if (textSize.cx > max_text_width) {
 			max_text_width = textSize.cx;
 		}
