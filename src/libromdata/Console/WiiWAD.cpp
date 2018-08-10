@@ -41,6 +41,8 @@ using namespace LibRpBase;
 # include "librpbase/crypto/AesCipherFactory.hpp"
 # include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/disc/CBCReader.hpp"
+// Key verification.
+# include "disc/WiiPartition.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
@@ -198,8 +200,14 @@ WiiWAD::WiiWAD(IRpFile *file)
 	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
 
+	// Key verification data.
+	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
+	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(WiiPartition::Key_Rvl_Common);
+	assert(verifyData != nullptr);
+
+	// Get and verify the key.
 	KeyManager::KeyData_t keyData;
-	d->key_status = keyManager->get("rvl-common", &keyData);
+	d->key_status = keyManager->getAndVerify("rvl-common", &keyData, verifyData, 16);
 	if (d->key_status == KeyManager::VERIFY_OK) {
 		// Create a cipher to decrypt the title key.
 		IAesCipher *cipher = AesCipherFactory::create();
