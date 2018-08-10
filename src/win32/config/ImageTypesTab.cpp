@@ -396,6 +396,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		NOP_C_("ImageTypesTab|Values", "7"),
 		NOP_C_("ImageTypesTab|Values", "8"),
 		NOP_C_("ImageTypesTab|Values", "9"),
+		NOP_C_("ImageTypesTab|Values", "10"),
 	};
 	static_assert(ARRAY_SIZE(s_values) == IMG_TYPE_COUNT+1, "s_values[] is the wrong size.");
 

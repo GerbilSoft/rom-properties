@@ -46,6 +46,7 @@ using namespace LibRpBase;
 #include "Handheld/Nintendo3DS.hpp"
 #include "Console/PlayStationSave.hpp"
 #include "Console/WiiU.hpp"
+#include "Console/WiiWAD.hpp"
 
 namespace LibRomData {
 
@@ -61,6 +62,7 @@ const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
 	SysDataEntry(Nintendo3DS),
 	SysDataEntry(PlayStationSave),
 	SysDataEntry(WiiU),
+	SysDataEntry(WiiWAD),
 };
 
 template<typename ComboBox>
@@ -325,6 +327,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 			"ExtCover3D",
 			"ExtCoverFull",
 			"ExtBox",
+			"ExtTitleScreen",
 		};
 		static_assert(ARRAY_SIZE(conf_imageTypeNames) == IMG_TYPE_COUNT, "conf_imageTypeNames[] is the wrong size.");
 
@@ -394,6 +397,8 @@ const char *TImageTypesConfig<ComboBox>::imageTypeName(unsigned int imageType)
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nFull Cover"),
 		// tr: IMG_EXT_BOX
 		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nBox"),
+		// tr: IMG_EXT_TITLE_SCREEN
+		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nTitle Screen"),
 	};
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
 		"imageType_names[] needs to be updated.");
@@ -429,6 +434,8 @@ const char *TImageTypesConfig<ComboBox>::sysName(unsigned int sys)
 		NOP_C_("TImageTypesConfig|SysName", "PlayStation Saves"),
 		// tr: WiiU
 		NOP_C_("TImageTypesConfig|SysName", "Wii U"),
+		// tr: WiiWAD
+		NOP_C_("TImageTypesConfig|SysName", "Wii WAD Files"),
 	};
 	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
 		"sysNames[] needs to be updated.");

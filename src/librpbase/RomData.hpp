@@ -285,12 +285,13 @@ class RomData
 			IMG_EXT_COVER_3D,	// External cover scan (3D version)
 			IMG_EXT_COVER_FULL,	// External cover scan (front and back)
 			IMG_EXT_BOX,		// External box scan (cover + outer box)
+			IMG_EXT_TITLE_SCREEN,	// External title screen
 
 			// Ranges.
 			IMG_INT_MIN = IMG_INT_ICON,
 			IMG_INT_MAX = IMG_INT_IMAGE,
 			IMG_EXT_MIN = IMG_EXT_MEDIA,
-			IMG_EXT_MAX = IMG_EXT_BOX,
+			IMG_EXT_MAX = IMG_EXT_TITLE_SCREEN,
 
 			// Special value for the user configuration.
 			// If specified, all thumbnails will be disabled.
@@ -316,6 +317,7 @@ class RomData
 			IMGBF_EXT_COVER_3D   = (1 << IMG_EXT_COVER_3D),   // External cover scan (3D version)
 			IMGBF_EXT_COVER_FULL = (1 << IMG_EXT_COVER_FULL), // External cover scan (front and back)
 			IMGBF_EXT_BOX	     = (1 << IMG_EXT_BOX),        // External box scan (cover + outer box)
+			IMGBF_EXT_TITLE_SCREEN = (1 << IMG_EXT_TITLE_SCREEN), // External title screen
 		};
 
 		/**

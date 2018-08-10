@@ -499,9 +499,8 @@ const char *const *WiiWAD::supportedFileExtensions_static(void)
 uint32_t WiiWAD::supportedImageTypes_static(void)
 {
 	return IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
-	       IMGBF_EXT_COVER_FULL;
-	// TODO: wwtitle (title screen)
-	//       IMGBF_EXT_TITLE_SCREEN;
+	       IMGBF_EXT_COVER_FULL |
+	       IMGBF_EXT_TITLE_SCREEN;
 }
 
 /**
@@ -544,8 +543,6 @@ std::vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType 
 			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
 				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
 		}
-		// TODO: wwtitle (title screen)
-#if 0
 		case IMG_EXT_TITLE_SCREEN: {
 			static const ImageSizeDef sz_EXT_TITLE_SCREEN[] = {
 				{nullptr, 192, 112, 0},
@@ -553,7 +550,6 @@ std::vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType 
 			return vector<ImageSizeDef>(sz_EXT_TITLE_SCREEN,
 				sz_EXT_TITLE_SCREEN + ARRAY_SIZE(sz_EXT_TITLE_SCREEN));
 		}
-#endif
 		default:
 			break;
 	}
@@ -752,13 +748,10 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 			imageTypeName_base = "coverfull";
 			ext = ".png";
 			break;
-#if 0
-		// TODO: wwtitle (title screen)
 		case IMG_EXT_TITLE_SCREEN:
 			imageTypeName_base = "wwtitle";
 			ext = ".png";
 			break;
-#endif
 		default:
 			// Unsupported image type.
 			return -ENOENT;
