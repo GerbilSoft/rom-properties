@@ -1411,6 +1411,8 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		{
 			// Validate the various sizes.
 			// TODO: Add some fuzz to some of these?
+			// NOTE: 3dbrew lists up to 64 contents; some DLC packages
+			// have significantly more, so we'll allow pu to 256.
 			if (cia_header->cert_chain_size == cpu_to_le32(N3DS_CERT_CHAIN_SIZE) &&
 			    le32_to_cpu(cia_header->ticket_size) % 4 == 0 &&
 			    (cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 + 0x200 + 0x3C) ||
@@ -1418,7 +1420,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 			     cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 +  0x3C + 0x40)) &&
 			    le32_to_cpu(cia_header->tmd_size) % 4 == 0 &&
 			    (le32_to_cpu(cia_header->tmd_size) >= cpu_to_le32(sizeof(N3DS_TMD_Header_t) + 0x4 + 0x3C + 0x40 + sizeof(N3DS_Content_Info_Record_t)*64 + sizeof(N3DS_Content_Chunk_Record_t)) &&
-			     le32_to_cpu(cia_header->tmd_size) <= cpu_to_le32(sizeof(N3DS_TMD_Header_t) + 0x4 + 0x200 + 0x3C + sizeof(N3DS_Content_Info_Record_t)*64 + sizeof(N3DS_Content_Chunk_Record_t)*64)) &&
+			     le32_to_cpu(cia_header->tmd_size) <= cpu_to_le32(sizeof(N3DS_TMD_Header_t) + 0x4 + 0x200 + 0x3C + sizeof(N3DS_Content_Info_Record_t)*256 + sizeof(N3DS_Content_Chunk_Record_t)*256)) &&
 			    (cia_header->meta_size == cpu_to_le32(0) ||
 			     (le32_to_cpu(cia_header->meta_size) % 4 == 0 &&
 			      le32_to_cpu(cia_header->meta_size) >= (sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t)))))
