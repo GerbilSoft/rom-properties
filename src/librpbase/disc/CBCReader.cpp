@@ -122,7 +122,9 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, IRpFile *file,
 
 CBCReaderPrivate::~CBCReaderPrivate()
 {
+#ifdef ENABLE_DECRYPTION
 	delete cipher;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /** CBCReader **/
