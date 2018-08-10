@@ -315,8 +315,11 @@ DMG::DMG(IRpFile *file)
 	// Read the ROM header. [0x150 bytes]
 	uint8_t header[0x150];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM is supported.
 	DetectInfo info;
@@ -332,6 +335,9 @@ DMG::DMG(IRpFile *file)
 		// Save the header for later.
 		// TODO: Save the RST table?
 		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+	} else {
+		delete d->file;
+		d->file = nullptr;
 	}
 }
 

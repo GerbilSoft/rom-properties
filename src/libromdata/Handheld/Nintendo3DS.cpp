@@ -1286,8 +1286,11 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	uint8_t header[0x2020];	// large enough for CIA headers
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
@@ -1306,6 +1309,8 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			// SMDH header.
 			if (info.szFile < static_cast<int64_t>(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t))) {
 				// File is too small.
+				delete d->file;
+				d->file = nullptr;
 				return;
 			}
 			d->fileType = FTYPE_ICON_FILE;
@@ -1355,6 +1360,8 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 		default:
 			// Unknown ROM format.
 			d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
+			delete d->file;
+			d->file = nullptr;
 			return;
 	}
 

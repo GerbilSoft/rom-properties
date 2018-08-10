@@ -140,8 +140,11 @@ WiiU::WiiU(IRpFile *file)
 	uint8_t header[sizeof(GCN_DiscHeader)];
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this disc image is supported.
 	DetectInfo info;
@@ -153,6 +156,8 @@ WiiU::WiiU(IRpFile *file)
 	d->discType = isRomSupported_static(&info);
 	if (d->discType < 0) {
 		// Disc image is invalid.
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -173,6 +178,8 @@ WiiU::WiiU(IRpFile *file)
 
 	if (d->discType < 0) {
 		// Nothing else to do here.
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -181,9 +188,11 @@ WiiU::WiiU(IRpFile *file)
 		size = d->discReader->seekAndRead(0, header, sizeof(header));
 		if (size != sizeof(header)) {
 			// Seek and/or read error.
-			d->discType = WiiUPrivate::DISC_UNKNOWN;
 			delete d->discReader;
+			delete d->file;
 			d->discReader = nullptr;
+			d->file = nullptr;
+			d->discType = WiiUPrivate::DISC_UNKNOWN;
 			return;
 		}
 	}
@@ -193,9 +202,11 @@ WiiU::WiiU(IRpFile *file)
 	size = d->discReader->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
-		d->discType = WiiUPrivate::DISC_UNKNOWN;
 		delete d->discReader;
+		delete d->file;
 		d->discReader = nullptr;
+		d->file = nullptr;
+		d->discType = WiiUPrivate::DISC_UNKNOWN;
 		return;
 	}
 
@@ -205,6 +216,14 @@ WiiU::WiiU(IRpFile *file)
 
 		// Save the disc header.
 		memcpy(&d->discHeader, header, sizeof(d->discHeader));
+	} else {
+		// No match.
+		delete d->discReader;
+		delete d->file;
+		d->discReader = nullptr;
+		d->file = nullptr;
+		d->discType = WiiUPrivate::DISC_UNKNOWN;
+		return;
 	}
 }
 

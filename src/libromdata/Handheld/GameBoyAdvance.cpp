@@ -111,8 +111,11 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	// Read the ROM header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
-	if (size != sizeof(d->romHeader))
+	if (size != sizeof(d->romHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
@@ -124,6 +127,10 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	d->romType = isRomSupported_static(&info);
 
 	d->isValid = (d->romType >= 0);
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+	}
 }
 
 /**

@@ -232,8 +232,11 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	uint8_t header[1024];
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
@@ -263,6 +266,8 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			break;
 		default:
 			// Unknown save type.
+			delete d->file;
+			d->file = nullptr;
 			d->saveType = PlayStationSavePrivate::SAVE_TYPE_UNKNOWN;
 			return;
 	}

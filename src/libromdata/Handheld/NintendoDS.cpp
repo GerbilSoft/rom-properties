@@ -711,8 +711,11 @@ void NintendoDS::init(void)
 	// Read the ROM header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
-	if (size != sizeof(d->romHeader))
+	if (size != sizeof(d->romHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
@@ -723,6 +726,11 @@ void NintendoDS::init(void)
 	info.szFile = 0;	// Not needed for NDS.
 	d->romType = isRomSupported_static(&info);
 	d->isValid = (d->romType >= 0);
+
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+	}
 }
 
 /**

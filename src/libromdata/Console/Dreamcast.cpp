@@ -263,8 +263,11 @@ Dreamcast::Dreamcast(IRpFile *file)
 	CDROM_2352_Sector_t sector;
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
-	if (size == 0 || size > sizeof(sector))
+	if (size == 0 || size > sizeof(sector)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this disc image is supported.
 	DetectInfo info;
@@ -276,8 +279,11 @@ Dreamcast::Dreamcast(IRpFile *file)
 	info.szFile = 0;	// Not needed for Dreamcast.
 	d->discType = isRomSupported_static(&info);
 
-	if (d->discType < 0)
+	if (d->discType < 0) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	switch (d->discType) {
 		case DreamcastPrivate::DISC_ISO_2048:
@@ -304,6 +310,10 @@ Dreamcast::Dreamcast(IRpFile *file)
 			const int lba_track03 = d->gdiReader->startingLBA(3);
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
+				delete d->gdiReader;
+				delete d->file;
+				d->gdiReader = nullptr;
+				d->file = nullptr;
 				return;
 			}
 			// TODO: Don't hard-code 2048?

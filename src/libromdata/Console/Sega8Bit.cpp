@@ -146,6 +146,8 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	size_t size = d->file->seekAndRead(0x7FE0, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
 		// Seek and/or read error.
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -157,6 +159,11 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	info.ext = nullptr;	// Not needed for Sega 8-bit.
 	info.szFile = d->file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
+
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+	}
 }
 
 /**

@@ -108,8 +108,11 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	// Read the firmware header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->firmHeader, sizeof(d->firmHeader));
-	if (size != sizeof(d->firmHeader))
+	if (size != sizeof(d->firmHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this firmware binary is supported.
 	DetectInfo info;
@@ -119,6 +122,11 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	info.ext = nullptr;	// Not needed for N3DS FIRM.
 	info.szFile = 0;	// Not needed for N3DS FIRM.
 	d->isValid = (isRomSupported_static(&info) >= 0);
+
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+	}
 }
 
 /**

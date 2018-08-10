@@ -987,8 +987,11 @@ GameCube::GameCube(IRpFile *file)
 	uint8_t header[4096+256];
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this disc image is supported.
 	DetectInfo info;
@@ -1040,6 +1043,8 @@ GameCube::GameCube(IRpFile *file)
 	d->isValid = (d->discType >= 0);
 	if (!d->isValid) {
 		// Nothing else to do here.
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -1049,14 +1054,15 @@ GameCube::GameCube(IRpFile *file)
 		if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WIA) {
 			// GCN/Wii header starts at 0x58.
 			memcpy(&d->discHeader, &header[0x58], sizeof(d->discHeader));
-			return;
 		} else {
 			// Non-WIA formats must have a valid DiscReader.
 			d->discType = GameCubePrivate::DISC_UNKNOWN;
 			d->isValid = false;
-			return;
+			delete d->file;
+			d->file = nullptr;
 		}
-	}
+		return;
+ 	}
 
 	// Save the disc header for later.
 	d->discReader->rewind();
@@ -1064,7 +1070,9 @@ GameCube::GameCube(IRpFile *file)
 	if (size != sizeof(d->discHeader)) {
 		// Error reading the disc header.
 		delete d->discReader;
+		delete d->file;
 		d->discReader = nullptr;
+		d->file = nullptr;
 		d->discType = GameCubePrivate::DISC_UNKNOWN;
 		d->isValid = false;
 		return;
@@ -1098,7 +1106,9 @@ GameCube::GameCube(IRpFile *file)
 		} else {
 			// Unknown system type.
 			delete d->discReader;
+			delete d->file;
 			d->discReader = nullptr;
+			d->file = nullptr;
 			d->discType = GameCubePrivate::DISC_UNKNOWN;
 			d->isValid = false;
 			return;
@@ -1114,7 +1124,9 @@ GameCube::GameCube(IRpFile *file)
 			if (size != sizeof(bootInfo)) {
 				// Cannot read bi2.bin.
 				delete d->discReader;
+				delete d->file;
 				d->discReader = nullptr;
+				d->file = nullptr;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
 				d->isValid = false;
 				return;
@@ -1129,7 +1141,9 @@ GameCube::GameCube(IRpFile *file)
 			if (size != sizeof(d->regionSetting)) {
 				// Cannot read RVL_RegionSetting.
 				delete d->discReader;
+				delete d->file;
 				d->discReader = nullptr;
+				d->file = nullptr;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
 				d->isValid = false;
 				return;
@@ -1141,7 +1155,9 @@ GameCube::GameCube(IRpFile *file)
 		default:
 			// Unknown system.
 			delete d->discReader;
+			delete d->file;
 			d->discReader = nullptr;
+			d->file = nullptr;
 			d->discType = GameCubePrivate::DISC_UNKNOWN;
 			d->isValid = false;
 			return;

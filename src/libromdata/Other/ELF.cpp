@@ -627,8 +627,11 @@ ELF::ELF(IRpFile *file)
 	// more data than just the header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->Elf_Header, sizeof(d->Elf_Header));
-	if (size != sizeof(d->Elf_Header))
+	if (size != sizeof(d->Elf_Header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this executable is supported.
 	DetectInfo info;
@@ -642,6 +645,8 @@ ELF::ELF(IRpFile *file)
 	d->isValid = (d->elfFormat >= 0);
 	if (!d->isValid) {
 		// Not an ELF executable.
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -651,6 +656,8 @@ ELF::ELF(IRpFile *file)
 			// Unsupported...
 			d->isValid = false;
 			d->elfFormat = ELFPrivate::ELF_FORMAT_UNKNOWN;
+			delete d->file;
+			d->file = nullptr;
 			return;
 
 		case ELFPrivate::ELF_FORMAT_32HOST:
@@ -714,11 +721,13 @@ ELF::ELF(IRpFile *file)
 
 		// TODO: Determine different RPX/RPL file types.
 		switch (primary->e_type) {
+			default:
+				// Should not happen...
+				d->fileType = FTYPE_UNKNOWN;
+				break;
 			case 0xFE01:
 				// This matches some homebrew software.
 				d->fileType = RomData::FTYPE_EXECUTABLE;
-				break;
-			default:
 				break;
 		}
 	} else {
@@ -731,6 +740,7 @@ ELF::ELF(IRpFile *file)
 		switch (d->Elf_Header.primary.e_type) {
 			default:
 				// Should not happen...
+				d->fileType = FTYPE_UNKNOWN;
 				break;
 			case ET_REL:
 				d->fileType = FTYPE_RELOCATABLE_OBJECT;

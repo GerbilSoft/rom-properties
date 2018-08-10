@@ -319,6 +319,8 @@ SNES::SNES(IRpFile *file)
 			size_t size = d->file->seekAndRead(bsx_addrs[i], buf, sizeof(buf));
 			if (size != sizeof(buf)) {
 				// Read error.
+				delete d->file;
+				d->file = nullptr;
 				return;
 			}
 
@@ -345,8 +347,11 @@ SNES::SNES(IRpFile *file)
 		SMD_Header smdHeader;
 		d->file->rewind();
 		size_t size = d->file->read(&smdHeader, sizeof(smdHeader));
-		if (size != sizeof(smdHeader))
+		if (size != sizeof(smdHeader)) {
+			delete d->file;
+			d->file = nullptr;
 			return;
+		}
 
 		if (smdHeader.id[0] == 0xAA && smdHeader.id[1] == 0xBB) {
 			// TODO: Check page count?
@@ -443,6 +448,8 @@ SNES::SNES(IRpFile *file)
 
 	if (d->header_address == 0) {
 		// No ROM header.
+		delete d->file;
+		d->file = nullptr;
 		d->romType = SNESPrivate::ROM_UNKNOWN;
 		d->isValid = false;
 		return;

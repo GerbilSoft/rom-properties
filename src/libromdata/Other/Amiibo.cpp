@@ -151,6 +151,8 @@ Amiibo::Amiibo(IRpFile *file)
 
 		default:
 			// Unsupported file size.
+			delete d->file;
+			d->file = nullptr;
 			return;
 	}
 
@@ -162,6 +164,11 @@ Amiibo::Amiibo(IRpFile *file)
 	info.ext = nullptr;	// Not needed for NFP.
 	info.szFile = d->file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
+
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+	}
 }
 
 /**

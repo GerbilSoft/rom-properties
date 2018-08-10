@@ -541,8 +541,11 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Read the ROM header. [0x400 bytes]
 	uint8_t header[0x400];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM is supported.
 	DetectInfo info;
@@ -624,6 +627,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 		// Parse the MD region code.
 		d->md_region = MegaDriveRegions::parseRegionCodes(
 			d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
+	} else {
+		// Not valid. Close the file.
+		delete d->file;
+		d->file = nullptr;
 	}
 }
 
