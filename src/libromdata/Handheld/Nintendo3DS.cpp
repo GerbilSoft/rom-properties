@@ -1413,6 +1413,8 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 			// TODO: Add some fuzz to some of these?
 			// NOTE: 3dbrew lists up to 64 contents; some DLC packages
 			// have significantly more, so we'll allow pu to 256.
+			// TODO: Read the TMD content count value and calculate the expected
+			// TMD size based on that.
 			if (cia_header->cert_chain_size == cpu_to_le32(N3DS_CERT_CHAIN_SIZE) &&
 			    le32_to_cpu(cia_header->ticket_size) % 4 == 0 &&
 			    (cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 + 0x200 + 0x3C) ||
