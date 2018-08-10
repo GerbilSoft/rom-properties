@@ -26,6 +26,7 @@
 #include "wii_wad.h"
 #include "wii_banner.h"
 #include "data/NintendoLanguage.hpp"
+#include "data/WiiSystemMenuVersion.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -582,7 +583,7 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields->reserve(7);	// Maximum of 7 fields.
 
 	if (d->key_status != KeyManager::VERIFY_OK) {
 		// Unable to get the decryption key.
@@ -611,6 +612,69 @@ int WiiWAD::loadFieldData(void)
 		// TODO: Is the publisher code available anywhere?
 		d->fields->addField_string(C_("WiiWAD", "Game ID"),
 			rp_sprintf("%.4s", reinterpret_cast<const char*>(&tmdHeader->title_id.u8[4])));
+	}
+
+	// Title version.
+	const uint16_t title_version = be16_to_cpu(tmdHeader->title_version);
+	d->fields->addField_string(C_("WiiWAD", "Title Version"),
+		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
+
+	// Region code.
+	// TODO: Is there a real way to get this from the WAD contents?
+	char region_char;
+	if (tmdHeader->title_id.hi == cpu_to_be32(0x00000001)) {
+		// IOS and/or System Menu.
+		if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
+			// System Menu.
+			const char *ver = WiiSystemMenuVersion::lookup(title_version);
+			region_char = (ver ? ver[3] : '\0');
+		} else {
+			// IOS, BC, or MIOS. No region.
+			region_char = '\0';
+		}
+	} else {
+		// Assume the 4th character of the ID4 is the region code.
+		region_char = (char)tmdHeader->title_id.u8[7];
+	}
+
+	// TODO: Combine with GameCube, and/or make a generic Nintendo region code class?
+	// TODO: Specific European countries?
+	const char *s_region;
+	switch (region_char) {
+		case '\0':
+		case 'A':
+			s_region = C_("WiiWAD|Region", "Region-Free");
+			break;
+		case 'E':
+			s_region = C_("WiiWAD|Region", "USA");
+			break;
+		case 'J':
+			s_region = C_("WiiWAD|Region", "Japan");
+			break;
+		case 'W':
+			s_region = C_("WiiWAD|Region", "Taiwan");
+			break;
+		case 'K':
+		case 'T':
+		case 'Q':
+			s_region = C_("WiiWAD|Region", "South Korea");
+			break;
+		case 'C':
+			s_region = C_("WiiWAD|Region", "China");
+			break;
+		default:
+			if (isupper(region_char)) {
+				s_region = C_("WiiWAD|Region", "Europe");
+			} else {
+				s_region = nullptr;
+			}
+			break;
+	}
+	if (s_region) {
+		d->fields->addField_string(C_("WiiWAD", "Region"), s_region);
+	} else {
+		d->fields->addField_string(C_("WiiWAD", "Region"),
+			rp_sprintf(C_("WiiWAD", "Unknown (0x%02X)"), (uint8_t)region_char));
 	}
 
 	// Required IOS version.
