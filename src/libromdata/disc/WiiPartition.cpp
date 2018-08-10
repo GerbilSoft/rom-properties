@@ -276,6 +276,7 @@ WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
 		}
 	} else {
 		// Assuming Retail issuer.
+		// NOTE: vWii common key cannot be used for discs.
 		if (keyIdx <= 1) {
 			// keyIdx maps to encKey directly for retail.
 			m_encKey = static_cast<WiiPartition::EncKey>(keyIdx);
