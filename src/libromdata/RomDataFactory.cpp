@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RomDataFactory.hpp: RomData factory class.                              *
+ * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "RomDataFactory.hpp"
@@ -55,6 +54,7 @@ using std::vector;
 #include "Console/SegaSaturn.hpp"
 #include "Console/SNES.hpp"
 #include "Console/WiiU.hpp"
+#include "Console/WiiWAD.hpp"
 
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"
@@ -164,6 +164,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(SNES, false),
 	GetRomDataFns(SegaSaturn, false),
 	GetRomDataFns(WiiU, true),
+	GetRomDataFns(WiiWAD, false),
 
 	// Handhelds
 	GetRomDataFns(DMG, false),

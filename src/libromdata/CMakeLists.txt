@@ -37,6 +37,7 @@ SET(libromdata_SRCS
 	Console/SNES.cpp
 	Console/PlayStationSave.cpp
 	Console/WiiU.cpp
+	Console/WiiWAD.cpp
 
 	Handheld/DMG.cpp
 	Handheld/Lynx.cpp
@@ -129,6 +130,7 @@ SET(libromdata_H
 	Console/snes_structs.h
 	Console/wii_structs.h
 	Console/wii_banner.h
+	Console/wii_wad.h
 	Console/wiiu_structs.h
 
 	Handheld/DMG.hpp

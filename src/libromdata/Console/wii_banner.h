@@ -93,7 +93,7 @@ ASSERT_STRUCT(_wii_savegame_icon_t, BANNER_WIBN_ICON_SIZE);
  *
  * All fields are big-endian.
  */
-typedef struct _wii_imet_t {
+typedef struct _Wii_IMET_t{
 	uint8_t zeroes1[64];
 	uint32_t magic;		// "IMET"
 	uint32_t hashsize;	// Hash length
@@ -110,8 +110,8 @@ typedef struct _wii_imet_t {
 	uint8_t zeroes2[588];
 	uint8_t md5[16];	// MD5 of 0 to 'hashsize' in the header.
 				// This field is all 0 when calculating.
-} wii_imet_t;
-ASSERT_STRUCT(wii_imet_t, 1536);
+} Wii_IMET_t;
+ASSERT_STRUCT(Wii_IMET_t, 1536);
 
 // Wii languages. (Maps to IMET indexes.)
 typedef enum {

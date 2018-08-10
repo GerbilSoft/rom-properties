@@ -122,7 +122,7 @@ class GameCubePrivate : public RomDataPrivate
 		banner_bnr2_t *gcn_opening_bnr;
 
 		// Wii opening.bnr. (IMET section)
-		wii_imet_t *wii_opening_bnr;
+		Wii_IMET_t *wii_opening_bnr;
 
 		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
 		uint32_t gcnRegion;
@@ -812,7 +812,7 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 	}
 
 	// Read the IMET struct.
-	unique_ptr<wii_imet_t> pBanner(new wii_imet_t);
+	unique_ptr<Wii_IMET_t> pBanner(new Wii_IMET_t);
 	if (!pBanner) {
 		return -ENOMEM;
 	}
