@@ -129,6 +129,8 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 {
 	// Clear the various structs.
 	memset(&wadHeader, 0, sizeof(wadHeader));
+	memset(&ticket, 0, sizeof(ticket));
+	memset(&tmdHeader, 0, sizeof(tmdHeader));
 	memset(&contentHeader, 0, sizeof(contentHeader));
 }
 
@@ -589,7 +591,6 @@ int WiiWAD::loadFieldData(void)
 		}
 		d->fields->addField_string(C_("WiiWAD", "Warning"),
 			err, RomFields::STRF_WARNING);
-		return (int)d->fields->count();
 	}
 
 	// Title ID.
@@ -625,7 +626,7 @@ int WiiWAD::loadFieldData(void)
 		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
 			rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->sys_version.hi), be32_to_cpu(tmdHeader->sys_version.lo)));
 	}
-	
+
 	// IMET header.
 	// TODO: Read on demand instead of always reading in the constructor.
 	if (d->contentHeader.imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
