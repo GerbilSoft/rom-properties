@@ -100,6 +100,8 @@ class WiiWADPrivate : public RomDataPrivate
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
 #endif /* ENABLE_DECRYPTION */
+		// Key index.
+		WiiPartition::EncryptionKeys key_idx;
 		// Key status.
 		KeyManager::VerifyResult key_status;
 
@@ -125,6 +127,7 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
 #endif /* ENABLE_DECRYPTION */
+	, key_idx(WiiPartition::Key_Max)
 	, key_status(KeyManager::VERIFY_UNKNOWN)
 {
 	// Clear the various structs.
@@ -306,15 +309,11 @@ WiiWAD::WiiWAD(IRpFile *file)
 		return;
 	}
 
-#ifdef ENABLE_DECRYPTION
-	// Initialize the CBC reader for the main data area.
-
 	// Determine the key index and debug vs. retail.
-	WiiPartition::EncryptionKeys keyIdx;
 	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
 	if (!memcmp(d->ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug encryption.
-		keyIdx = WiiPartition::Key_Rvt_Debug;
+		d->key_idx = WiiPartition::Key_Rvt_Debug;
 	} else {
 		// Retail encryption.
 		uint8_t idx = d->ticket.common_key_index;
@@ -322,18 +321,20 @@ WiiWAD::WiiWAD(IRpFile *file)
 			// Out of range. Assume Wii common key.
 			idx = 0;
 		}
-		keyIdx = (WiiPartition::EncryptionKeys)idx;
+		d->key_idx = (WiiPartition::EncryptionKeys)idx;
 	}
 
-	// TODO: Determine key index and debug vs. retail by reading the TMD.
+#ifdef ENABLE_DECRYPTION
+	// Initialize the CBC reader for the main data area.
+
 	// TODO: WiiVerifyKeys class.
 	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
 
 	// Key verification data.
 	// TODO: Move out of WiiPartition and into WiiVerifyKeys?
-	const char *const keyName = WiiPartition::encryptionKeyName_static(keyIdx);
-	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(keyIdx);
+	const char *const keyName = WiiPartition::encryptionKeyName_static(d->key_idx);
+	const uint8_t *const verifyData = WiiPartition::encryptionVerifyData_static(d->key_idx);
 	assert(keyName != nullptr);
 	assert(keyName[0] != '\0');
 	assert(verifyData != nullptr);
@@ -581,7 +582,7 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	if (d->key_status != KeyManager::VERIFY_OK) {
 		// Unable to get the decryption key.
@@ -620,12 +621,31 @@ int WiiWAD::loadFieldData(void)
 		// Standard IOS slot.
 		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
 			rp_sprintf("IOS%u", ios_lo));
-	} else {
+	} else if (tmdHeader->sys_version.id != 0) {
 		// Non-standard IOS slot.
 		// Print the full title ID.
 		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
 			rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->sys_version.hi), be32_to_cpu(tmdHeader->sys_version.lo)));
 	}
+
+	// Encryption key.
+	// TODO: WiiPartition function to get a key's "display name"?
+	static const char *const encKeyNames[] = {
+		NOP_C_("WiiWAD|EncKey", "Retail"),
+		NOP_C_("WiiWAD|EncKey", "Korean"),
+		NOP_C_("WiiWAD|EncKey", "vWii"),
+		NOP_C_("WiiWAD|EncKey", "SD AES"),
+		NOP_C_("WiiWAD|EncKey", "SD IV"),
+		NOP_C_("WiiWAD|EncKey", "SD MD5"),
+		NOP_C_("WiiWAD|EncKey", "Debug"),
+	};
+	const char *keyName;
+	if (d->key_idx >= 0 && d->key_idx < WiiPartition::Key_Max) {
+		keyName = dpgettext_expr(RP_I18N_DOMAIN, "WiiWAD|EncKey", encKeyNames[d->key_idx]);
+	} else {
+		keyName = C_("WiiWAD", "Unknown");
+	}
+	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
 	// IMET header.
 	// TODO: Read on demand instead of always reading in the constructor.
