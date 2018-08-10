@@ -1,10 +1,8 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit c9addbe56dd823b7904d5c9efa1b9f1407c8ecec
-Fixed returning compression method. #289
-
-NOTE: This is v2.3.9 with some additional patches.
+commit 0f8d91101b56a1aa5c50b542ac99d77a7eece0e0
+Version 2.4.0.
 
 The following changes have been made to the original:
 

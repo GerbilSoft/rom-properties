@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.3.9, July 26, 2018
+   Version 2.4.0, August 5, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -94,6 +94,41 @@ void mz_win32_unicode_path_delete(wchar_t **path)
         MZ_FREE(*path);
         *path = NULL;
     }
+}
+
+int32_t mz_win32_rename(const char *source_path, const char *target_path)
+{
+    wchar_t *source_path_wide = NULL;
+    wchar_t *target_path_wide = NULL;
+    int32_t result = 0;
+
+
+    source_path_wide = mz_win32_unicode_path_create(source_path);
+    target_path_wide = mz_win32_unicode_path_create(target_path);
+    result = MoveFileW(source_path_wide, target_path_wide);
+    mz_win32_unicode_path_delete(&source_path_wide);
+    mz_win32_unicode_path_delete(&target_path_wide);
+
+    if (result == 0)
+        return MZ_EXIST_ERROR;
+
+    return MZ_OK;
+}
+
+int32_t mz_win32_delete(const char *path)
+{
+    wchar_t *path_wide = NULL;
+    int32_t result = 0;
+
+
+    path_wide = mz_win32_unicode_path_create(path);
+    result = DeleteFileW(path_wide);
+    mz_win32_unicode_path_delete(&path_wide);
+
+    if (result == 0)
+        return MZ_EXIST_ERROR;
+
+    return MZ_OK;
 }
 
 int32_t mz_win32_file_exists(const char *path)

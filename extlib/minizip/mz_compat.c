@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.3.9, July 26, 2018
+   Version 2.4.0, August 5, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -184,9 +184,6 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
     if ((password != NULL) || (raw && (file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)))
         file_info.aes_version = MZ_AES_VERSION;
 #endif
-
-    if (raw)
-        level = 0;
 
     return mz_zip_entry_write_open(compat->handle, &file_info, (int16_t)level, password);
 }
