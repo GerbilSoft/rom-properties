@@ -24,6 +24,8 @@
 #include "gcn_structs.h"
 #include "wii_structs.h"
 #include "wii_wad.h"
+#include "wii_banner.h"
+#include "data/NintendoLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -258,10 +260,21 @@ WiiWAD::WiiWAD(IRpFile *file)
 		memset(iv, 0, sizeof(iv));
 
 		// Create a CBC reader to decrypt the data section.
+		// TODO: Verify some known data?
 		addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.tmd_size));
 		d->cbcReader = new CBCReader(d->file, addr, be32_to_cpu(d->wadHeader.data_size), title_key, iv);
 
-		// TODO: Verify some known data?
+		// Read the content header.
+		// NOTE: Continuing even if this fails, since we can show
+		// other infomration from the ticket and TMD.
+		size = d->cbcReader->read(&d->contentHeader, sizeof(d->contentHeader));
+		if (size == sizeof(d->contentHeader)) {
+			// Make sure this is an IMET header.
+			if (d->contentHeader.imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
+				// This is an IMET header.
+				// TODO: Do something here?
+			}
+		}
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt anything...
@@ -419,7 +432,7 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	if (d->key_status != KeyManager::VERIFY_OK) {
 		// Unable to get the decryption key.
@@ -466,6 +479,39 @@ int WiiWAD::loadFieldData(void)
 			rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->sys_version.hi), be32_to_cpu(tmdHeader->sys_version.lo)));
 	}
 	
+	// IMET header.
+	// TODO: Read on demand instead of always reading in the constructor.
+	if (d->contentHeader.imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
+		const Wii_IMET_t *const imet = &d->contentHeader.imet;
+
+		/* Game info. */
+		// TODO: Combine with GameCubePrivate::wii_getBannerName()?
+		
+		// Get the system language.
+		// TODO: Verify against the region code somehow?
+		int lang = NintendoLanguage::getWiiLanguage();
+
+		// If the language-specific name is empty,
+		// revert to English.
+		if (imet->names[lang][0][0] == 0) {
+			// Revert to English.
+			lang = WII_LANG_ENGLISH;
+		}
+
+		// NOTE: The banner may have two lines.
+		// Each line is a maximum of 21 characters.
+		// Convert from UTF-16 BE and split into two lines at the same time.
+		string info = utf16be_to_utf8(imet->names[lang][0], 21);
+		if (imet->names[lang][1][0] != 0) {
+			info += '\n';
+			info += utf16be_to_utf8(imet->names[lang][1], 21);
+		}
+
+		if (!info.empty()) {
+			d->fields->addField_string(C_("WiiWAD", "Game Info"), info);
+		}
+	}
+
 	// TODO: Decrypt content.bin to get the actual data.
 
 	// Finished reading the field data.
