@@ -167,6 +167,7 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 		uint8_t title_key[16];
 		memcpy(title_key, ticket->title_key, sizeof(title_key));
 		cipher->decrypt(title_key, sizeof(title_key));
+		delete cipher;
 
 		// Data area: IV is the TMD content index.
 		cia_iv.u8[0] = tmd_content_index >> 8;
