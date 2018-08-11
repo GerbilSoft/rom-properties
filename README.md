@@ -121,10 +121,11 @@ button.
 
 ### Audio Formats
 
-|             System            | Properties Tab | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:---------------:|:--------------:|
-| CRI ADX ADPCM                 |       Yes      |       N/A       |       N/A      |
-| Nintendo Sound Format         |       Yes      |       N/A       |       N/A      |
+|             System            | Properties Tab | Internal Images | External Scans | Metadata |
+|:-----------------------------:|:--------------:|:---------------:|:--------------:|:--------:|
+| CRI ADX ADPCM                 |       Yes      |       N/A       |       N/A      |    Yes   |
+| Game Boy Sound System         |       Yes      |       N/A       |       N/A      |    Yes   |
+| Nintendo Sound Format         |       Yes      |       N/A       |       N/A      |    Yes   |
 
 ### Other
 

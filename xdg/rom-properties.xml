@@ -9,6 +9,16 @@
     <glob pattern="*.adx"/>
   </mime-type>
 
+  <!-- GBS -->
+  <mime-type type="audio/x-gbs">
+    <comment>Game Boy Sound System audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.gbs"/>
+    <magic priority="50">
+      <match value="GBS\x01" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- NSF -->
   <mime-type type="audio/x-nsf">
     <comment>Nintendo Sound Format audio</comment>
