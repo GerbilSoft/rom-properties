@@ -107,6 +107,12 @@ class WiiWADPrivate : public RomDataPrivate
 		KeyManager::VerifyResult key_status;
 
 		/**
+		 * Get the game information string from the banner.
+		 * @return Game information string, or empty string on error.
+		 */
+		string getGameInfo(void);
+
+		/**
 		 * Convert a Wii WAD region value to a GameTDB region code.
 		 * @param idRegion Game ID region.
 		 *
@@ -143,6 +149,46 @@ WiiWADPrivate::~WiiWADPrivate()
 #ifdef ENABLE_DECRYPTION
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
+}
+
+/**
+ * Get the game information string from the banner.
+ * @return Game information string, or empty string on error.
+ */
+string WiiWADPrivate::getGameInfo(void)
+{
+	// IMET header.
+	// TODO: Read on demand instead of always reading in the constructor.
+	if (contentHeader.imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
+		// Not valid.
+		return string();
+	}
+
+	const Wii_IMET_t *const imet = &contentHeader.imet;
+
+	// TODO: Combine with GameCubePrivate::wii_getBannerName()?
+
+	// Get the system language.
+	// TODO: Verify against the region code somehow?
+	int lang = NintendoLanguage::getWiiLanguage();
+
+	// If the language-specific name is empty,
+	// revert to English.
+	if (imet->names[lang][0][0] == 0) {
+		// Revert to English.
+		lang = WII_LANG_ENGLISH;
+	}
+
+	// NOTE: The banner may have two lines.
+	// Each line is a maximum of 21 characters.
+	// Convert from UTF-16 BE and split into two lines at the same time.
+	string info = utf16be_to_utf8(imet->names[lang][0], 21);
+	if (imet->names[lang][1][0] != 0) {
+		info += '\n';
+		info += utf16be_to_utf8(imet->names[lang][1], 21);
+	}
+
+	return info;
 }
 
 /**
@@ -736,43 +782,60 @@ int WiiWAD::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
-	// IMET header.
-	// TODO: Read on demand instead of always reading in the constructor.
-	if (d->contentHeader.imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
-		const Wii_IMET_t *const imet = &d->contentHeader.imet;
-
-		/* Game info. */
-		// TODO: Combine with GameCubePrivate::wii_getBannerName()?
-		
-		// Get the system language.
-		// TODO: Verify against the region code somehow?
-		int lang = NintendoLanguage::getWiiLanguage();
-
-		// If the language-specific name is empty,
-		// revert to English.
-		if (imet->names[lang][0][0] == 0) {
-			// Revert to English.
-			lang = WII_LANG_ENGLISH;
-		}
-
-		// NOTE: The banner may have two lines.
-		// Each line is a maximum of 21 characters.
-		// Convert from UTF-16 BE and split into two lines at the same time.
-		string info = utf16be_to_utf8(imet->names[lang][0], 21);
-		if (imet->names[lang][1][0] != 0) {
-			info += '\n';
-			info += utf16be_to_utf8(imet->names[lang][1], 21);
-		}
-
-		if (!info.empty()) {
-			d->fields->addField_string(C_("WiiWAD", "Game Info"), info);
-		}
+	// Game info.
+	string gameInfo = d->getGameInfo();
+	if (!gameInfo.empty()) {
+		d->fields->addField_string(C_("WiiWAD", "Game Info"), gameInfo);
 	}
 
 	// TODO: Decrypt content.bin to get the actual data.
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int WiiWAD::loadMetaData(void)
+{
+	RP_D(WiiWAD);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// NOTE: We can only get the title if the encryption key is valid.
+	// If we can't get the title, don't bother creating RomMetaData.
+	string gameInfo = d->getGameInfo();
+	if (gameInfo.empty()) {
+		return -EIO;
+	}
+	const size_t nl_pos = gameInfo.find('\n');
+	if (nl_pos != string::npos) {
+		gameInfo.resize(nl_pos);
+	}
+	if (gameInfo.empty()) {
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Title. (first line of game info)
+	d->metaData->addMetaData_string(Property::Title, gameInfo);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
