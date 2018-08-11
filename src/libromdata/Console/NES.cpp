@@ -106,7 +106,7 @@ class NESPrivate : public RomDataPrivate
 		} header;
 
 		/**
-		 * Format PRG/CHR ROM bank sizes, in KB.
+		 * Format PRG/CHR ROM bank sizes, in KiB.
 		 *
 		 * This function expects the size to be a multiple of 1024,
 		 * so it doesn't do any fractional rounding or printing.
@@ -114,7 +114,7 @@ class NESPrivate : public RomDataPrivate
 		 * @param size File size.
 		 * @return Formatted file size.
 		 */
-		static inline string formatBankSizeKB(unsigned int size);
+		static inline string formatBankSizeKiB(unsigned int size);
 
 		/**
 		 * Convert an FDS BCD datestamp to Unix time.
@@ -139,7 +139,7 @@ NESPrivate::NESPrivate(NES *q, IRpFile *file)
 }
 
 /**
- * Format PRG/CHR ROM bank sizes, in KB.
+ * Format PRG/CHR ROM bank sizes, in KiB.
  *
  * This function expects the size to be a multiple of 1024,
  * so it doesn't do any fractional rounding or printing.
@@ -147,9 +147,9 @@ NESPrivate::NESPrivate(NES *q, IRpFile *file)
  * @param size File size.
  * @return Formatted file size.
  */
-inline string NESPrivate::formatBankSizeKB(unsigned int size)
+inline string NESPrivate::formatBankSizeKiB(unsigned int size)
 {
-	return rp_sprintf("%u KB", (size / 1024));
+	return rp_sprintf("%u KiB", (size / 1024));
 }
 
 /**
@@ -618,8 +618,10 @@ int NES::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NES ROM header.
-	d->fields->reserve(15);	// Maximum of 15 fields.
+	// NES ROM header:
+	// - 15 regular fields. (iNES, NES 2.0, FDS)
+	// - 8 fields for the internal NES header.
+	d->fields->reserve(15+8);
 
 	// Determine stuff based on the ROM format.
 	const char *rom_format;
@@ -637,6 +639,7 @@ int NES::loadFieldData(void)
 	unsigned int prg_ram_battery_size = 0;	// PRG RAM with battery (save RAM)
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 		case NESPrivate::ROM_FORMAT_OLD_INES:
+			d->fields->setTabName(0, "iNES");
 			rom_format = C_("NES|Format", "Archaic iNES");
 			mapper = (d->header.ines.mapper_lo >> 4);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
@@ -651,6 +654,7 @@ int NES::loadFieldData(void)
 			break;
 
 		case NESPrivate::ROM_FORMAT_INES:
+			d->fields->setTabName(0, "iNES");
 			rom_format = C_("NES|Format", "iNES");
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0);
@@ -678,6 +682,7 @@ int NES::loadFieldData(void)
 			break;
 
 		case NESPrivate::ROM_FORMAT_NES2:
+			d->fields->setTabName(0, "NES 2.0");
 			rom_format = C_("NES|Format", "NES 2.0");
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0) |
@@ -709,6 +714,7 @@ int NES::loadFieldData(void)
 			break;
 
 		case NESPrivate::ROM_FORMAT_TNES:
+			d->fields->setTabName(0, "TNES");
 			rom_format = C_("NES|Format", "TNES (Nintendo 3DS Virtual Console)");
 			tnes_mapper = d->header.tnes.mapper;
 			mapper = NESMappers::tnesMapperToInesMapper(tnes_mapper);
@@ -720,16 +726,20 @@ int NES::loadFieldData(void)
 		// NOTE: FDS fields are handled later.
 		// We're just obtaining the ROM format name here.
 		case NESPrivate::ROM_FORMAT_FDS:
+			d->fields->setTabName(0, "FDS");
 			rom_format = C_("NES|Format", "FDS disk image");
 			break;
 		case NESPrivate::ROM_FORMAT_FDS_FWNES:
+			d->fields->setTabName(0, "FDS");
 			rom_format = C_("NES|Format", "FDS disk image (with fwNES header)");
 			break;
 		case NESPrivate::ROM_FORMAT_FDS_TNES:
+			d->fields->setTabName(0, "FDS");
 			rom_format = C_("NES|Format", "TDS (Nintendo 3DS Virtual Console)");
 			break;
 
 		default:
+			d->fields->setTabName(0, "NES");
 			rom_format = C_("NES", "Unknown");
 			romOK = false;
 			break;
@@ -840,32 +850,32 @@ int NES::loadFieldData(void)
 
 	// ROM sizes.
 	if (prg_rom_size > 0) {
-		d->fields->addField_string(C_("NES", "PRG ROM"),
-			d->formatBankSizeKB(prg_rom_size));
+		d->fields->addField_string(C_("NES", "PRG ROM Size"),
+			d->formatBankSizeKiB(prg_rom_size));
 	}
 	if (chr_rom_size > 0) {
-		d->fields->addField_string(C_("NES", "CHR ROM"),
-			d->formatBankSizeKB(chr_rom_size));
+		d->fields->addField_string(C_("NES", "CHR ROM Size"),
+			d->formatBankSizeKiB(chr_rom_size));
 	}
 
 	// RAM sizes.
 	if (chr_ram_size > 0) {
-		d->fields->addField_string(C_("NES", "CHR RAM"),
-			d->formatBankSizeKB(chr_ram_size));
+		d->fields->addField_string(C_("NES", "CHR RAM Size"),
+			d->formatBankSizeKiB(chr_ram_size));
 	}
 	if (chr_ram_battery_size > 0) {
 		// tr: CHR RAM with a battery backup.
 		d->fields->addField_string(C_("NES", "CHR RAM (backed up)"),
-			d->formatBankSizeKB(chr_ram_battery_size));
+			d->formatBankSizeKiB(chr_ram_battery_size));
 	}
 	if (prg_ram_size > 0) {
-		d->fields->addField_string(C_("NES", "PRG RAM"),
-			d->formatBankSizeKB(prg_ram_size));
+		d->fields->addField_string(C_("NES", "PRG RAM Size"),
+			d->formatBankSizeKiB(prg_ram_size));
 	}
 	if (prg_ram_battery_size > 0) {
 		// tr: Save RAM with a battery backup.
 		d->fields->addField_string(C_("NES", "Save RAM (backed up)"),
-			d->formatBankSizeKB(prg_ram_battery_size));
+			d->formatBankSizeKiB(prg_ram_battery_size));
 	}
 
 	// Check for FDS fields.
@@ -880,9 +890,12 @@ int NES::loadFieldData(void)
 		// Publisher.
 		const char *const publisher =
 			NintendoPublishers::lookup_fds(d->header.fds.publisher_code);
-		d->fields->addField_string(C_("NES", "Publisher"),
-			publisher ? publisher :
+		if (publisher) {
+			d->fields->addField_string(C_("NES", "Publisher"), publisher);
+		} else {
+			d->fields->addField_string(C_("NES", "Publisher"),
 				rp_sprintf(C_("NES", "Unknown (0x%02X)"), d->header.fds.publisher_code));
+		}
 
 		// Revision.
 		d->fields->addField_string_numeric(C_("NES", "Revision"),
@@ -973,6 +986,179 @@ int NES::loadFieldData(void)
 		}
 		if (vs_ppu) {
 			d->fields->addField_string(C_("NES", "VS. PPU"), vs_ppu);
+		}
+
+		// Check for the internal NES footer.
+		// This is located at 0xFFE0 in one of the PRG banks.
+		// We'll verify that it's valid by looking for an
+		// all-ASCII title, possibly right-aligned with
+		// 0xFF filler bytes.
+		// NOTE: +16 to skip the iNES header.
+		NES_IntFooter intFooter;
+		bool isFound = false;
+		unsigned int firstNonFF = (unsigned int)sizeof(intFooter.name);
+
+		// Starting address depends on PRG ROM size.
+		unsigned int start_addr;
+		switch (prg_rom_size) {
+			case 16*1024:
+				// One PRG bank.
+				start_addr = 0x3FE0+16;
+				break;
+			case 32*1024:
+				// Two PRG banks.
+				start_addr = 0x7FE0+16;
+				break;
+			case 64*1024:
+			default:
+				// Four or more PRG banks.
+				start_addr = 0xFFE0+16;
+				break;
+		}
+
+		// TODO: Only check on 64 KB boundaries instead of checking each PRG bank?
+		for (unsigned int addr = start_addr; addr < prg_rom_size; addr += 16*1024) {
+			size_t size = d->file->seekAndRead(addr, &intFooter, sizeof(intFooter));
+			if (size != sizeof(intFooter)) {
+				// Seek and/or read error.
+				// Assume we don't have an internal footer.
+				break;
+			}
+
+			// Check the mirroring value.
+			if ((intFooter.board_info >> 4) > 1) {
+				// Incorrect mirroring value.
+				continue;
+			}
+
+			// Check if the name looks right.
+			firstNonFF = (unsigned int)sizeof(intFooter.name);
+			bool foundNonFF = false;
+			bool foundInvalid = false;
+			for (unsigned int i = 0; i < (unsigned int)sizeof(intFooter.name); i++) {
+				char chr = intFooter.name[i];
+				if (chr == (char)0xFF) {
+					if (foundNonFF) {
+						// Cannot have 0xFF here.
+						foundInvalid = true;
+						break;
+					}
+					continue;
+				}
+
+				if (!foundNonFF) {
+					foundNonFF = true;
+					firstNonFF = i;
+				}
+				if (chr < 32 || chr >= 127) {
+					// Invalid character.
+					foundInvalid = true;
+					break;
+				}
+			}
+
+			if (!foundInvalid && firstNonFF < (unsigned int)sizeof(intFooter.name)) {
+				// Name looks valid.
+				isFound = true;
+				break;
+			}
+		}
+
+		if (isFound) {
+			// Found the internal footer.
+			d->fields->addTab("Internal Footer");
+
+			// Internal name. (Assuming ASCII.)
+			if (firstNonFF < (unsigned int)sizeof(intFooter.name)) {
+				d->fields->addField_string(C_("NES", "Internal Name"),
+					latin1_to_utf8(&intFooter.name[firstNonFF], sizeof(intFooter.name)-firstNonFF));
+			}
+
+			// PRG checksum.
+			d->fields->addField_string_numeric(C_("NES", "PRG Checksum"),
+				le16_to_cpu(intFooter.prg_checksum),
+				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+
+			// CHR checksum.
+			d->fields->addField_string_numeric(C_("NES", "CHR Checksum"),
+				le16_to_cpu(intFooter.chr_checksum),
+				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+
+			// ROM sizes.
+			static const uint32_t sz_lookup[] = {
+				0,		// 0
+				0,		// 1
+				32*1024,	// 2
+				128*1024,	// 3
+				256*1024,	// 4
+				512*1024,	// 5
+			};
+
+			const uint8_t prg_sz_idx = intFooter.rom_size >> 4;
+			const uint8_t chr_sz_idx = intFooter.rom_size & 0x0F;
+			unsigned int prg_size = 0, chr_size = 0;
+			if (prg_sz_idx < ARRAY_SIZE(sz_lookup)) {
+				prg_size = sz_lookup[prg_sz_idx];
+			}
+			if (chr_sz_idx < ARRAY_SIZE(sz_lookup)) {
+				chr_size = sz_lookup[chr_sz_idx];
+			}
+
+			// PRG ROM size.
+			string s_prg_size;
+			if (prg_sz_idx == 0) {
+				s_prg_size = C_("NES", "Not Set");
+			} else if (prg_size != 0) {
+				s_prg_size = d->formatBankSizeKiB(prg_size);
+			} else {
+				s_prg_size = rp_sprintf(C_("NES", "Unknown (0x%02X)"), prg_sz_idx);
+			}
+			d->fields->addField_string(C_("NES", "PRG ROM Size"), s_prg_size);
+
+			// CHR ROM size.
+			string s_chr_size;
+			if (chr_sz_idx == 0) {
+				s_chr_size = C_("NES", "Not Set");
+			} else if (chr_size != 0) {
+				s_chr_size = d->formatBankSizeKiB(chr_size);
+			} else {
+				s_chr_size = rp_sprintf(C_("NES", "Unknown (0x%02X)"), chr_sz_idx);
+			}
+			d->fields->addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
+
+			// Mirroring.
+			switch (intFooter.board_info >> 4) {
+				case 0:
+					mirroring = C_("NES|Mirroring", "Horizontal");
+					break;
+				case 1:
+					mirroring = C_("NES|Mirroring", "Vertical");
+					break;
+				default:
+					mirroring = nullptr;
+					break;
+			}
+			if (mirroring) {
+				d->fields->addField_string(C_("NES", "Mirroring"), mirroring);
+			} else {
+				d->fields->addField_string(C_("NES", "Mirroring"),
+					rp_sprintf(C_("NES", "Unknown (0x%02X)"), intFooter.board_info >> 4));
+			}
+
+			// Board type.
+			// TODO: Lookup table.
+			d->fields->addField_string_numeric(C_("NES", "Board Type"),
+				intFooter.board_info & 0x0F);
+
+			// Publisher.
+			const char *const publisher =
+				NintendoPublishers::lookup_old(intFooter.publisher_code);
+			if (publisher) {
+				d->fields->addField_string(C_("NES", "Publisher"), publisher);
+			} else {
+				d->fields->addField_string(C_("NES", "Publisher"),
+					rp_sprintf(C_("NES", "Unknown (0x%02X)"), intFooter.publisher_code));
+			}
 		}
 	}
 

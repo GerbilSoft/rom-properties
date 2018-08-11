@@ -131,6 +131,34 @@ typedef enum {
 } NES2_TV_Mode;
 
 /**
+ * Internal NES footer.
+ * Located at 0xFFE0 in a PRG bank in some ROMs.
+ *
+ * References:
+ * - http://forums.no-intro.org/viewtopic.php?f=2&t=445
+ * - https://github.com/GerbilSoft/rom-properties/issues/116
+ *
+ * TODO: Add enums?
+ */
+typedef struct PACKED _NES_IntFooter {
+	char name[16];		// [0x000] Name. (May be right-aligned with 0xFF filler bytes.)
+	uint16_t prg_checksum;	// [0x010] PRG checksum.
+	uint16_t chr_checksum;	// [0x012] CHR checksum.
+	uint8_t rom_size;	// [0x014] ROM sizes. Upper nybble == PRG, lower nybble == CHR
+				//         2=32KB; 3=128KB; 4=256KB; 5=512KB
+	uint8_t board_info;	// [0x015] Board information.
+				//         Upper nybble: Mirroring (1=vertical, 0=horizontal)
+				//         Lower nybble: Mapper (4=MMCx)
+	uint8_t unknown1[2];	// [0x016]
+	uint8_t publisher_code;	// [0x018] Old publisher code.
+	uint8_t unknown2;	// [0x019]
+	uint16_t nmi_vector;	// [0x01A] NMI vector.
+	uint16_t reset_vector;	// [0x01C] Reset vector.
+	uint16_t irq_vector;	// [0x01E] IRQ vector.
+} NES_IntFooter;
+ASSERT_STRUCT(NES_IntFooter, 32);
+
+/**
  * TNES ROM header.
  * Used with Nintendo 3DS Virtual Console games.
  */
