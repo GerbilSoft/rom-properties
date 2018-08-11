@@ -39,8 +39,10 @@ using namespace LibRpBase;
 // C++ includes.
 #include <string>
 #include <sstream>
+#include <vector>
 using std::ostringstream;
 using std::string;
+using std::vector;
 
 namespace LibRomData {
 
@@ -243,27 +245,27 @@ int NSF::loadFieldData(void)
 
 	// NSF header.
 	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// NOTE: The NSF specification says ASCII, but I'm assuming
 	// the text is cp1252 and/or Shift-JIS.
 
 	// Title.
-	if (d->nsfHeader.title[0] != 0) {
+	if (nsfHeader->title[0] != 0) {
 		d->fields->addField_string(C_("NSF", "Title"),
-			cp1252_sjis_to_utf8(d->nsfHeader.title, sizeof(d->nsfHeader.title)));
+			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 	}
 
 	// Composer.
-	if (d->nsfHeader.composer[0] != 0) {
+	if (nsfHeader->composer[0] != 0) {
 		d->fields->addField_string(C_("NSF", "Composer"),
-			cp1252_sjis_to_utf8(d->nsfHeader.composer, sizeof(d->nsfHeader.composer)));
+			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 	}
 
 	// Copyright.
-	if (d->nsfHeader.copyright[0] != 0) {
+	if (nsfHeader->copyright[0] != 0) {
 		d->fields->addField_string(C_("NSF", "Copyright"),
-			cp1252_sjis_to_utf8(d->nsfHeader.copyright, sizeof(d->nsfHeader.copyright)));
+			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
 
 	// Number of tracks.
@@ -288,6 +290,38 @@ int NSF::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("NSF", "Play Address"),
 		le16_to_cpu(nsfHeader->init_address),
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+
+	// TV System.
+	// TODO: NTSC/PAL framerates?
+	// NOTE: NSF uses an enum, not a bitfield.
+	static const char *const tv_system_bitfield_names[] = {
+		NOP_C_("NSF|TVSystem", "NTSC"),
+		NOP_C_("NSF|TVSystem", "PAL"),
+	};
+	uint32_t bfval = nsfHeader->tv_system;
+	if (bfval < NSF_TV_MAX) {
+		bfval++;
+	} else {
+		bfval = 0;
+	}
+	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector_i18n(
+		"NSF|TVSystem", tv_system_bitfield_names, ARRAY_SIZE(tv_system_bitfield_names));
+	d->fields->addField_bitfield(C_("NSF", "TV System"),
+		v_tv_system_bitfield_names, 0, bfval);
+
+	// Expansion audio.
+	static const char *const expansion_bitfield_names[] = {
+		NOP_C_("NSF|Expansion", "Konami VRC6"),
+		NOP_C_("NSF|Expansion", "Konami VRC7"),
+		NOP_C_("NSF|Expansion", "2C33 (FDS)"),
+		NOP_C_("NSF|Expansion", "MMC5"),
+		NOP_C_("NSF|Expansion", "Namco N163"),
+		NOP_C_("NSF|Expansion", "Sunsoft 5B"),
+	};
+	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector_i18n(
+		"NSF|Expansion", expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
+	d->fields->addField_bitfield(C_("NSF", "Expansion"),
+		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
@@ -320,21 +354,21 @@ int NSF::loadMetaData(void)
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title.
-	if (d->nsfHeader.title[0] != 0) {
+	if (nsfHeader->title[0] != 0) {
 		d->metaData->addMetaData_string(Property::Title,
-			cp1252_sjis_to_utf8(d->nsfHeader.title, sizeof(d->nsfHeader.title)));
+			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 	}
 
 	// Composer.
-	if (d->nsfHeader.composer[0] != 0) {
+	if (nsfHeader->composer[0] != 0) {
 		d->metaData->addMetaData_string(Property::Composer,
-			cp1252_sjis_to_utf8(d->nsfHeader.composer, sizeof(d->nsfHeader.composer)));
+			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 	}
 
 	// Copyright.
-	if (d->nsfHeader.copyright[0] != 0) {
+	if (nsfHeader->copyright[0] != 0) {
 		d->metaData->addMetaData_string(Property::Copyright,
-			cp1252_sjis_to_utf8(d->nsfHeader.copyright, sizeof(d->nsfHeader.copyright)));
+			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
 
 	// Finished reading the metadata.
