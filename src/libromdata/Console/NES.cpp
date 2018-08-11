@@ -1020,12 +1020,18 @@ int NES::loadFieldData(void)
 			bool foundInvalid = false;
 			for (unsigned int i = 0; i < (unsigned int)sizeof(intFooter.name); i++) {
 				char chr = intFooter.name[i];
+
+				// Skip leading 0xFF.
 				if (chr == (char)0xFF) {
 					if (foundNonFF) {
 						// Cannot have 0xFF here.
 						foundInvalid = true;
 						break;
 					}
+					continue;
+				}
+				// Also skip leading spaces.
+				if (!foundNonFF && chr == ' ') {
 					continue;
 				}
 
