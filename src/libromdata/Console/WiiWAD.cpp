@@ -492,7 +492,11 @@ const char *WiiWAD::systemName(unsigned int type) const
  */
 const char *const *WiiWAD::supportedFileExtensions_static(void)
 {
-	static const char *const exts[] = { ".wad" };
+	static const char *const exts[] = {
+		".wad",
+
+		nullptr
+	};
 	return exts;
 }
 
