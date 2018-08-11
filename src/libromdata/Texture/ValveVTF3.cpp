@@ -235,8 +235,11 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	// Read the VTF3 header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtf3Header, sizeof(d->vtf3Header));
-	if (size != sizeof(d->vtf3Header))
+	if (size != sizeof(d->vtf3Header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this VTF3 texture is supported.
 	DetectInfo info;
@@ -247,16 +250,20 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	info.szFile = file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
-	if (d->isValid) {
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		// Header is stored in big-endian, so it always
-		// needs to be byteswapped on little-endian.
-		d->vtf3Header.signature		= be32_to_cpu(d->vtf3Header.signature);
-		d->vtf3Header.flags		= be32_to_cpu(d->vtf3Header.flags);
-		d->vtf3Header.width		= be16_to_cpu(d->vtf3Header.width);
-		d->vtf3Header.height		= be16_to_cpu(d->vtf3Header.height);
-#endif
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+		return;
 	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Header is stored in big-endian, so it always
+	// needs to be byteswapped on little-endian.
+	d->vtf3Header.signature		= be32_to_cpu(d->vtf3Header.signature);
+	d->vtf3Header.flags		= be32_to_cpu(d->vtf3Header.flags);
+	d->vtf3Header.width		= be16_to_cpu(d->vtf3Header.width);
+	d->vtf3Header.height		= be16_to_cpu(d->vtf3Header.height);
+#endif
 }
 
 /**

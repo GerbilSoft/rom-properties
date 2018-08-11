@@ -87,7 +87,8 @@ button.
 | Nintendo 64             |       Yes      |       N/A       |       No       |
 | Nintendo GameCube       |       Yes      |      Banner     |      Disc      |
 | Nintendo GameCube Saves |       Yes      |       Icon      |       N/A      |
-| Nintendo Wii            |       Yes      |        No       |  Disc, Covers  |
+| Nintendo Wii (Discs)    |       Yes      |        No       |  Disc, Covers  |
+| Nintendo Wii (WADs)     |       Yes      |        No       |  Title, Covers |
 | Nintendo Wii U          |       Yes      |        No       |  Disc, Covers  |
 | Sega 8-bit (SMS, GG)    |       Yes      |       N/A       |       No       |
 | Sega Mega Drive         |       Yes      |       N/A       |       No       |

@@ -22,6 +22,7 @@
 #include "WiiPartition.hpp"
 
 #include "Console/gcn_structs.h"
+#include "Console/wii_structs.h"
 #include "GcnFst.hpp"
 
 // librpbase
@@ -275,6 +276,7 @@ WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
 		}
 	} else {
 		// Assuming Retail issuer.
+		// NOTE: vWii common key cannot be used for discs.
 		if (keyIdx <= 1) {
 			// keyIdx maps to encKey directly for retail.
 			m_encKey = static_cast<WiiPartition::EncKey>(keyIdx);
@@ -370,7 +372,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// First 8 bytes are the title ID.
 	// Second 8 bytes are all 0.
 	uint8_t iv[16];
-	memcpy(iv, partitionHeader.ticket.title_id, 8);
+	memcpy(iv, partitionHeader.ticket.title_id.u8, 8);
 	memset(&iv[8], 0, 8);
 
 	// Decrypt the title key.

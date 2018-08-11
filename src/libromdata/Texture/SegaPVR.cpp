@@ -596,8 +596,11 @@ SegaPVR::SegaPVR(IRpFile *file)
 	uint8_t header[32+128];
 	d->file->rewind();
 	size_t sz_header = d->file->read(header, sizeof(header));
-	if (sz_header < 32)
+	if (sz_header < 32) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this PVR image is supported.
 	DetectInfo info;
@@ -609,8 +612,11 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->pvrType = isRomSupported_static(&info);
 	d->isValid = (d->pvrType >= 0);
 
-	if (!d->isValid)
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if we have a GBIX header.
 	// (or GCIX for some Wii titles)
@@ -639,6 +645,8 @@ SegaPVR::SegaPVR(IRpFile *file)
 		assert(d->gbix_len <= 128);
 		if (d->gbix_len < 4 || d->gbix_len > 128 || (d->gbix_len > (sz_header-8))) {
 			// Invalid GBIX header.
+			delete d->file;
+			d->file = nullptr;
 			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
 			d->isValid = false;
 			return;
@@ -669,6 +677,8 @@ SegaPVR::SegaPVR(IRpFile *file)
 		default:
 			// Should not get here...
 			assert(!"Invalid PVR type.");
+			delete d->file;
+			d->file = nullptr;
 			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
 			d->isValid = false;
 			break;

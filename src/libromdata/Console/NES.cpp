@@ -234,8 +234,11 @@ NES::NES(IRpFile *file)
 	// Read the ROM header. [128 bytes]
 	uint8_t header[128];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
@@ -279,6 +282,8 @@ NES::NES(IRpFile *file)
 			size_t szret = d->file->seekAndRead(0x2010, &d->header.fds, sizeof(d->header.fds));
 			if (szret != sizeof(d->header.fds)) {
 				// Seek and/or read error.
+				delete d->file;
+				d->file = nullptr;
 				d->fileType = FTYPE_UNKNOWN;
 				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;
@@ -290,6 +295,8 @@ NES::NES(IRpFile *file)
 
 		default:
 			// Unknown ROM type.
+			delete d->file;
+			d->file = nullptr;
 			d->fileType = FTYPE_UNKNOWN;
 			d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 			return;

@@ -811,8 +811,11 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	uint8_t header[4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX)];
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
-	if (size < 4+sizeof(DDS_HEADER))
+	if (size < 4+sizeof(DDS_HEADER)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this DDS texture is supported.
 	DetectInfo info;
@@ -823,90 +826,96 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	info.szFile = file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
-	if (d->isValid) {
-		// Is this a DXT10 texture?
-		const DDS_HEADER *const pSrcHeader = reinterpret_cast<const DDS_HEADER*>(&header[4]);
-		if (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_DX10) ||
-		    pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX))
-		{
-			const bool isXbox = (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX));
-			// Verify the size.
-			unsigned int headerSize;
-			if (!isXbox) {
-				// DX10 texture.
-				headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
-			} else {
-				// Xbox One texture.
-				headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
-			}
-			if (size < headerSize) {
-				// Extra headers weren't read.
-				d->isValid = false;
-				return;
-			}
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+		return;
+	}
 
-			// Save the DXT10 header.
-			memcpy(&d->dxt10Header, &header[4+sizeof(DDS_HEADER)], sizeof(d->dxt10Header));
-			if (isXbox) {
-				// Save the Xbox One header.
-				memcpy(&d->xb1Header, &header[4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)], sizeof(d->xb1Header));
-			}
-
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-			// Byteswap the DXT10 header.
-			d->dxt10Header.dxgiFormat = (DXGI_FORMAT)le32_to_cpu((uint32_t)d->dxt10Header.dxgiFormat);
-			d->dxt10Header.resourceDimension = (D3D10_RESOURCE_DIMENSION)le32_to_cpu((uint32_t)d->dxt10Header.resourceDimension);
-			d->dxt10Header.miscFlag   = le32_to_cpu(d->dxt10Header.miscFlag);
-			d->dxt10Header.arraySize  = le32_to_cpu(d->dxt10Header.arraySize);
-			d->dxt10Header.miscFlags2 = le32_to_cpu(d->dxt10Header.miscFlags2);
-			if (isXbox) {
-				// Byteswap the Xbox One header.
-				d->xb1Header.tileMode		= le32_to_cpu(d->xb1Header.tileMode);
-				d->xb1Header.baseAlignment	= le32_to_cpu(d->xb1Header.baseAlignment);
-				d->xb1Header.dataSize		= le32_to_cpu(d->xb1Header.dataSize);
-				d->xb1Header.xdkVer		= le32_to_cpu(d->xb1Header.xdkVer);
-			}
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-
-			// Texture data start address.
-			d->texDataStartAddr = headerSize;
+	// Is this a DXT10 texture?
+	const DDS_HEADER *const pSrcHeader = reinterpret_cast<const DDS_HEADER*>(&header[4]);
+	if (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_DX10) ||
+	    pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX))
+	{
+		const bool isXbox = (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX));
+		// Verify the size.
+		unsigned int headerSize;
+		if (!isXbox) {
+			// DX10 texture.
+			headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10));
 		} else {
-			// No DXT10 header.
-			d->texDataStartAddr = 4+sizeof(DDS_HEADER);
+			// Xbox One texture.
+			headerSize = static_cast<unsigned int>(4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)+sizeof(DDS_HEADER_XBOX));
+		}
+		if (size < headerSize) {
+			// Extra headers weren't read.
+			delete d->file;
+			d->file = nullptr;
+			d->isValid = false;
+			return;
 		}
 
-		// Save the DDS header.
-		memcpy(&d->ddsHeader, pSrcHeader, sizeof(d->ddsHeader));
+		// Save the DXT10 header.
+		memcpy(&d->dxt10Header, &header[4+sizeof(DDS_HEADER)], sizeof(d->dxt10Header));
+		if (isXbox) {
+			// Save the Xbox One header.
+			memcpy(&d->xb1Header, &header[4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)], sizeof(d->xb1Header));
+		}
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-		// Byteswap the DDS header.
-		d->ddsHeader.dwSize		= le32_to_cpu(d->ddsHeader.dwSize);
-		d->ddsHeader.dwFlags		= le32_to_cpu(d->ddsHeader.dwFlags);
-		d->ddsHeader.dwHeight		= le32_to_cpu(d->ddsHeader.dwHeight);
-		d->ddsHeader.dwWidth		= le32_to_cpu(d->ddsHeader.dwWidth);
-		d->ddsHeader.dwPitchOrLinearSize	= le32_to_cpu(d->ddsHeader.dwPitchOrLinearSize);
-		d->ddsHeader.dwDepth		= le32_to_cpu(d->ddsHeader.dwDepth);
-		d->ddsHeader.dwMipMapCount	= le32_to_cpu(d->ddsHeader.dwMipMapCount);
-		d->ddsHeader.dwCaps	= le32_to_cpu(d->ddsHeader.dwCaps);
-		d->ddsHeader.dwCaps2	= le32_to_cpu(d->ddsHeader.dwCaps2);
-		d->ddsHeader.dwCaps3	= le32_to_cpu(d->ddsHeader.dwCaps3);
-		d->ddsHeader.dwCaps4	= le32_to_cpu(d->ddsHeader.dwCaps4);
-
-		// Byteswap the DDS pixel format.
-		DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
-		ddspf.dwSize		= le32_to_cpu(ddspf.dwSize);
-		ddspf.dwFlags		= le32_to_cpu(ddspf.dwFlags);
-		ddspf.dwFourCC		= le32_to_cpu(ddspf.dwFourCC);
-		ddspf.dwRGBBitCount	= le32_to_cpu(ddspf.dwRGBBitCount);
-		ddspf.dwRBitMask	= le32_to_cpu(ddspf.dwRBitMask);
-		ddspf.dwGBitMask	= le32_to_cpu(ddspf.dwGBitMask);
-		ddspf.dwBBitMask	= le32_to_cpu(ddspf.dwBBitMask);
-		ddspf.dwABitMask	= le32_to_cpu(ddspf.dwABitMask);
+		// Byteswap the DXT10 header.
+		d->dxt10Header.dxgiFormat = (DXGI_FORMAT)le32_to_cpu((uint32_t)d->dxt10Header.dxgiFormat);
+		d->dxt10Header.resourceDimension = (D3D10_RESOURCE_DIMENSION)le32_to_cpu((uint32_t)d->dxt10Header.resourceDimension);
+		d->dxt10Header.miscFlag   = le32_to_cpu(d->dxt10Header.miscFlag);
+		d->dxt10Header.arraySize  = le32_to_cpu(d->dxt10Header.arraySize);
+		d->dxt10Header.miscFlags2 = le32_to_cpu(d->dxt10Header.miscFlags2);
+		if (isXbox) {
+			// Byteswap the Xbox One header.
+			d->xb1Header.tileMode		= le32_to_cpu(d->xb1Header.tileMode);
+			d->xb1Header.baseAlignment	= le32_to_cpu(d->xb1Header.baseAlignment);
+			d->xb1Header.dataSize		= le32_to_cpu(d->xb1Header.dataSize);
+			d->xb1Header.xdkVer		= le32_to_cpu(d->xb1Header.xdkVer);
+		}
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
-		// Update the pixel format.
-		d->updatePixelFormat();
+		// Texture data start address.
+		d->texDataStartAddr = headerSize;
+	} else {
+		// No DXT10 header.
+		d->texDataStartAddr = 4+sizeof(DDS_HEADER);
 	}
+
+	// Save the DDS header.
+	memcpy(&d->ddsHeader, pSrcHeader, sizeof(d->ddsHeader));
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	// Byteswap the DDS header.
+	d->ddsHeader.dwSize		= le32_to_cpu(d->ddsHeader.dwSize);
+	d->ddsHeader.dwFlags		= le32_to_cpu(d->ddsHeader.dwFlags);
+	d->ddsHeader.dwHeight		= le32_to_cpu(d->ddsHeader.dwHeight);
+	d->ddsHeader.dwWidth		= le32_to_cpu(d->ddsHeader.dwWidth);
+	d->ddsHeader.dwPitchOrLinearSize	= le32_to_cpu(d->ddsHeader.dwPitchOrLinearSize);
+	d->ddsHeader.dwDepth		= le32_to_cpu(d->ddsHeader.dwDepth);
+	d->ddsHeader.dwMipMapCount	= le32_to_cpu(d->ddsHeader.dwMipMapCount);
+	d->ddsHeader.dwCaps	= le32_to_cpu(d->ddsHeader.dwCaps);
+	d->ddsHeader.dwCaps2	= le32_to_cpu(d->ddsHeader.dwCaps2);
+	d->ddsHeader.dwCaps3	= le32_to_cpu(d->ddsHeader.dwCaps3);
+	d->ddsHeader.dwCaps4	= le32_to_cpu(d->ddsHeader.dwCaps4);
+
+	// Byteswap the DDS pixel format.
+	DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
+	ddspf.dwSize		= le32_to_cpu(ddspf.dwSize);
+	ddspf.dwFlags		= le32_to_cpu(ddspf.dwFlags);
+	ddspf.dwFourCC		= le32_to_cpu(ddspf.dwFourCC);
+	ddspf.dwRGBBitCount	= le32_to_cpu(ddspf.dwRGBBitCount);
+	ddspf.dwRBitMask	= le32_to_cpu(ddspf.dwRBitMask);
+	ddspf.dwGBitMask	= le32_to_cpu(ddspf.dwGBitMask);
+	ddspf.dwBBitMask	= le32_to_cpu(ddspf.dwBBitMask);
+	ddspf.dwABitMask	= le32_to_cpu(ddspf.dwABitMask);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+	// Update the pixel format.
+	d->updatePixelFormat();
 }
 
 /**

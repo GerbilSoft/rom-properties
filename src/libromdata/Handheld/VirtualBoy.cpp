@@ -161,6 +161,8 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	// and cannot be larger than 16 MB.
 	if (filesize < 0x220 || filesize > (16*1024*1024)) {
 		// File size is out of range.
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -168,8 +170,11 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	const unsigned int header_addr = static_cast<unsigned int>(filesize - 0x220);
 	d->file->seek(header_addr);
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
-	if (size != sizeof(d->romHeader))
+	if (size != sizeof(d->romHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Make sure this is actually a Virtual Boy ROM.
 	DetectInfo info;
@@ -179,6 +184,11 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	info.ext = nullptr;	// Not needed for Virtual Boy.
 	info.szFile = filesize;
 	d->isValid = (isRomSupported(&info) >= 0);
+
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+	}
 }
 
 /** ROM detection functions. **/

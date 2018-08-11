@@ -37,6 +37,7 @@ SET(libromdata_SRCS
 	Console/SNES.cpp
 	Console/PlayStationSave.cpp
 	Console/WiiU.cpp
+	Console/WiiWAD.cpp
 
 	Handheld/DMG.cpp
 	Handheld/Lynx.cpp
@@ -118,6 +119,7 @@ SET(libromdata_H
 
 	Console/dc_structs.h
 	Console/gcn_structs.h
+	Console/gcn_banner.h
 	Console/gcn_card.h
 	Console/md_structs.h
 	Console/n64_structs.h
@@ -126,6 +128,9 @@ SET(libromdata_H
 	Console/saturn_structs.h
 	Console/sega8_structs.h
 	Console/snes_structs.h
+	Console/wii_structs.h
+	Console/wii_banner.h
+	Console/wii_wad.h
 	Console/wiiu_structs.h
 
 	Handheld/DMG.hpp
@@ -202,7 +207,7 @@ SET(libromdata_H
 	disc/Cdrom2352Reader.hpp
 	disc/IsoPartition.hpp
 	disc/GdiReader.hpp
-	disc/WuxReader.cpp
+	disc/WuxReader.hpp
 	disc/wux_structs.h
 
 	config/TImageTypesConfig.hpp

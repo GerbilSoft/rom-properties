@@ -105,8 +105,11 @@ Lynx::Lynx(IRpFile *file)
 	// Read the ROM header. [0x40 bytes]
 	uint8_t header[0x40];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM is supported.
 	DetectInfo info;
@@ -121,6 +124,9 @@ Lynx::Lynx(IRpFile *file)
 	if (d->isValid) {
 		// Save the header for later.
 		memcpy(&d->romHeader, header, sizeof(d->romHeader));
+	} else {
+		delete d->file;
+		d->file = nullptr;
 	}
 }
 

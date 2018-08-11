@@ -98,6 +98,8 @@
 #define IDC_IMAGETYPES_DESC1                    40001
 #define IDC_IMAGETYPES_DESC2                    40002
 #define IDC_IMAGETYPES_CREDITS                  40003
+#define IDC_IMAGETYPES_VIEWPORT_OUTER		40010
+#define IDC_IMAGETYPES_VIEWPORT_INNER		40011
 
 // Downloads
 #define IDC_EXTIMGDL                            40101

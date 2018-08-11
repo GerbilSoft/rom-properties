@@ -117,8 +117,11 @@ Config ConfigPrivate::instance;
  * Default image type priority.
  * Used if a custom configuration is not defined
  * for a given system.
+ *
+ * TODO: Per-system defaults?
  */
 const uint8_t ConfigPrivate::defImgTypePrio[] = {
+	RomData::IMG_EXT_TITLE_SCREEN,	// WiiWare only
 	RomData::IMG_EXT_MEDIA,
 	RomData::IMG_EXT_COVER,
 	RomData::IMG_EXT_BOX,
@@ -293,6 +296,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 				"\x0A" "ExtCover3D",
 				"\x0C" "ExtCoverFull",
 				"\x06" "ExtBox",
+				"\x0E" "ExtTitleScreen",
 			};
 			static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
 

@@ -340,8 +340,11 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	// for both PRBS and CABS.
 	d->file->rewind();
 	size_t size = d->file->read(&d->badgeHeader, sizeof(d->badgeHeader));
-	if (size != sizeof(d->badgeHeader))
+	if (size != sizeof(d->badgeHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this badge is supported.
 	DetectInfo info;
@@ -354,8 +357,11 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	d->isValid = (d->badgeType >= 0);
 	d->megaBadge = false;	// check later
 
-	if (!d->isValid)
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check for mega badge.
 	if (d->badgeType == NintendoBadgePrivate::BADGE_TYPE_PRBS) {

@@ -281,8 +281,11 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	CDROM_2352_Sector_t sector;
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
-	if (size != sizeof(sector))
+	if (size != sizeof(sector)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
@@ -293,8 +296,11 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	info.szFile = 0;	// Not needed for SegaSaturn.
 	d->discType = isRomSupported_static(&info);
 
-	if (d->discType < 0)
+	if (d->discType < 0) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	switch (d->discType) {
 		case SegaSaturnPrivate::DISC_ISO_2048:
@@ -309,6 +315,8 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			break;
 		default:
 			// Unsupported.
+			delete d->file;
+			d->file = nullptr;
 			return;
 	}
 	d->isValid = true;

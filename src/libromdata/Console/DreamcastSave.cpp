@@ -884,7 +884,8 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		int ret = d->readVmiHeader(d->file);
 		if (ret != 0) {
 			// Read error.
-			d->file->close();
+			delete d->file;
+			d->file = nullptr;
 			return;
 		}
 
@@ -894,7 +895,8 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	} else {
 		// Not valid.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
-		d->file->close();
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -913,7 +915,8 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			d->file->close();
+			delete d->file;
+			d->file = nullptr;
 			return;
 		}
 
@@ -936,7 +939,8 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 				d->loaded_headers |= headerLoaded;
 			} else {
 				// Not valid.
-				d->file->close();
+				delete d->file;
+				d->file = nullptr;
 				return;
 			}
 		}
@@ -979,7 +983,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	d->vmi_file = vmi_file->dup();
 	if (!d->vmi_file) {
 		// Could not dup() the VMI file.
-		d->file->close();
+		delete d->file;
+		d->file = nullptr;
 		return;
 	}
 
@@ -993,9 +998,10 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	      vmi_fileSize != DC_VMI_Header_SIZE)
 	{
 		// Invalid file(s).
-		d->file->close();
 		delete d->vmi_file;
+		delete d->file;
 		d->vmi_file = nullptr;
+		d->file = nullptr;
 		return;
 	}
 
@@ -1009,9 +1015,10 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	int ret = d->readVmiHeader(d->vmi_file);
 	if (ret != 0) {
 		// Error reading the VMI header.
-		d->file->close();
 		delete d->vmi_file;
+		delete d->file;
 		d->vmi_file = nullptr;
+		d->file = nullptr;
 		return;
 	}
 
@@ -1029,9 +1036,10 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			d->file->close();
 			delete d->vmi_file;
+			delete d->file;
 			d->vmi_file = nullptr;
+			d->file = nullptr;
 			return;
 		}
 	}

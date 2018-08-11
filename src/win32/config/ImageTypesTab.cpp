@@ -236,6 +236,11 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	int h_lbl[IMG_TYPE_COUNT];
 	SIZE sz_lblImageType = {0, 0};
 	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
+		if (i == RomData::IMG_INT_MEDIA) {
+			// No INT MEDIA boxes, so eliminate the column.
+			continue;
+		}
+
 		SIZE szCur;
 		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82W_c(imageTypeName(i)), &szCur);
 		h_lbl[i] = szCur.cy;
@@ -281,6 +286,11 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + (dlgMargin.right/2),
 		rect_lblDesc2.bottom + dlgMargin.bottom};
 	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
+		if (i == RomData::IMG_INT_MEDIA) {
+			// No INT MEDIA boxes, so eliminate the column.
+			continue;
+		}
+
 		const int y_lbl = curPt.y + (sz_lblImageType.cy - h_lbl[i]);
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, U82W_c(imageTypeName(i)),
@@ -346,10 +356,14 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	}
 
 	// Create the ComboBox.
-	const POINT ptComboBox = {
+	POINT ptComboBox = {
 		pt_cboImageType.x + (sz_cboImageType.cx * (LONG)imageType),
 		pt_cboImageType.y + (sz_cboImageType.cy * (LONG)sys)
 	};
+	if (imageType >= RomData::IMG_INT_MEDIA) {
+		// No INT MEDIA boxes, so eliminate the column.
+		ptComboBox.x -= sz_cboImageType.cx;
+	}
 
 	HWND hComboBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
 		WC_COMBOBOX, nullptr,
@@ -396,6 +410,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		NOP_C_("ImageTypesTab|Values", "7"),
 		NOP_C_("ImageTypesTab|Values", "8"),
 		NOP_C_("ImageTypesTab|Values", "9"),
+		NOP_C_("ImageTypesTab|Values", "10"),
 	};
 	static_assert(ARRAY_SIZE(s_values) == IMG_TYPE_COUNT+1, "s_values[] is the wrong size.");
 

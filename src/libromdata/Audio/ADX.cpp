@@ -143,8 +143,11 @@ ADX::ADX(IRpFile *file)
 	uint8_t header[4096];
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this file is supported.
 	DetectInfo info;
@@ -155,8 +158,11 @@ ADX::ADX(IRpFile *file)
 	info.szFile = 0;	// Not needed for ADX.
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
-	if (!d->isValid)
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Save the ROM header.
 	memcpy(&d->adxHeader, header, sizeof(d->adxHeader));

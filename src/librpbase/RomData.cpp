@@ -660,6 +660,8 @@ const char *RomData::getImageTypeName(ImageType imageType) {
 		NOP_C_("RomData|ImageType", "External cover scan (front and back)"),
 		// tr: IMG_EXT_BOX
 		NOP_C_("RomData|ImageType", "External box scan"),
+		// tr: IMG_EXT_TITLE_SCREEN
+		NOP_C_("RomData|ImageType", "External title screen"),
 	};
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_EXT_MAX + 1,
 		"imageType_names[] needs to be updated.");

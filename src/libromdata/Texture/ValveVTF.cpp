@@ -570,8 +570,11 @@ ValveVTF::ValveVTF(IRpFile *file)
 	// Read the VTF header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->vtfHeader, sizeof(d->vtfHeader));
-	if (size != sizeof(d->vtfHeader))
+	if (size != sizeof(d->vtfHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this VTF texture is supported.
 	DetectInfo info;
@@ -582,37 +585,41 @@ ValveVTF::ValveVTF(IRpFile *file)
 	info.szFile = file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
-	if (d->isValid) {
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+		return;
+	}
+
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-		// Header is stored in little-endian, so it always
-		// needs to be byteswapped on big-endian.
-		d->vtfHeader.signature		= le32_to_cpu(d->vtfHeader.signature);
-		d->vtfHeader.version[0]		= le32_to_cpu(d->vtfHeader.version[0]);
-		d->vtfHeader.version[1]		= le32_to_cpu(d->vtfHeader.version[1]);
-		d->vtfHeader.headerSize		= le32_to_cpu(d->vtfHeader.headerSize);
-		d->vtfHeader.width		= le16_to_cpu(d->vtfHeader.width);
-		d->vtfHeader.height		= le16_to_cpu(d->vtfHeader.height);
-		d->vtfHeader.flags		= le32_to_cpu(d->vtfHeader.flags);
-		d->vtfHeader.frames		= le16_to_cpu(d->vtfHeader.frames);
-		d->vtfHeader.firstFrame		= le16_to_cpu(d->vtfHeader.firstFrame);
-		d->vtfHeader.reflectivity[0]	= d->__swabf(d->vtfHeader.reflectivity[0]);
-		d->vtfHeader.reflectivity[1]	= d->__swabf(d->vtfHeader.reflectivity[1]);
-		d->vtfHeader.reflectivity[2]	= d->__swabf(d->vtfHeader.reflectivity[2]);
-		d->vtfHeader.bumpmapScale	= d->__swabf(d->vtfHeader.bumpmapScale);
-		d->vtfHeader.highResImageFormat	= le32_to_cpu(d->vtfHeader.highResImageFormat);
-		d->vtfHeader.lowResImageFormat	= le32_to_cpu(d->vtfHeader.lowResImageFormat);
-		d->vtfHeader.depth		= le16_to_cpu(d->vtfHeader.depth);
-		d->vtfHeader.numResources	= le32_to_cpu(d->vtfHeader.numResources);
+	// Header is stored in little-endian, so it always
+	// needs to be byteswapped on big-endian.
+	d->vtfHeader.signature		= le32_to_cpu(d->vtfHeader.signature);
+	d->vtfHeader.version[0]		= le32_to_cpu(d->vtfHeader.version[0]);
+	d->vtfHeader.version[1]		= le32_to_cpu(d->vtfHeader.version[1]);
+	d->vtfHeader.headerSize		= le32_to_cpu(d->vtfHeader.headerSize);
+	d->vtfHeader.width		= le16_to_cpu(d->vtfHeader.width);
+	d->vtfHeader.height		= le16_to_cpu(d->vtfHeader.height);
+	d->vtfHeader.flags		= le32_to_cpu(d->vtfHeader.flags);
+	d->vtfHeader.frames		= le16_to_cpu(d->vtfHeader.frames);
+	d->vtfHeader.firstFrame		= le16_to_cpu(d->vtfHeader.firstFrame);
+	d->vtfHeader.reflectivity[0]	= d->__swabf(d->vtfHeader.reflectivity[0]);
+	d->vtfHeader.reflectivity[1]	= d->__swabf(d->vtfHeader.reflectivity[1]);
+	d->vtfHeader.reflectivity[2]	= d->__swabf(d->vtfHeader.reflectivity[2]);
+	d->vtfHeader.bumpmapScale	= d->__swabf(d->vtfHeader.bumpmapScale);
+	d->vtfHeader.highResImageFormat	= le32_to_cpu(d->vtfHeader.highResImageFormat);
+	d->vtfHeader.lowResImageFormat	= le32_to_cpu(d->vtfHeader.lowResImageFormat);
+	d->vtfHeader.depth		= le16_to_cpu(d->vtfHeader.depth);
+	d->vtfHeader.numResources	= le32_to_cpu(d->vtfHeader.numResources);
 #endif
 
-		// Texture data start address.
-		// Note that this is the start of *all* texture data,
-		// including the low-res texture and mipmaps.
-		// TODO: Should always be 16-byte aligned?
-		// TODO: Verify header size against sizeof(VTFHEADER).
-		// Test VTFs are 7.2 with 80-byte headers; sizeof(VTFHEADER) is 72...
-		d->texDataStartAddr = d->vtfHeader.headerSize;
-	}
+	// Texture data start address.
+	// Note that this is the start of *all* texture data,
+	// including the low-res texture and mipmaps.
+	// TODO: Should always be 16-byte aligned?
+	// TODO: Verify header size against sizeof(VTFHEADER).
+	// Test VTFs are 7.2 with 80-byte headers; sizeof(VTFHEADER) is 72...
+	d->texDataStartAddr = d->vtfHeader.headerSize;
 }
 
 /**

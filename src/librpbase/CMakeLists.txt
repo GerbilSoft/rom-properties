@@ -124,6 +124,7 @@ SET(librpbase_SRCS
 	disc/DiscReader.cpp
 	disc/PartitionFile.cpp
 	disc/SparseDiscReader.cpp
+	disc/CBCReader.cpp
 	crypto/KeyManager.cpp
 	config/ConfReader.cpp
 	config/Config.cpp
@@ -169,6 +170,7 @@ SET(librpbase_H
 	disc/PartitionFile.hpp
 	disc/SparseDiscReader.hpp
 	disc/SparseDiscReader_p.hpp
+	disc/CBCReader.hpp
 	crypto/KeyManager.hpp
 	config/ConfReader.hpp
 	config/Config.hpp

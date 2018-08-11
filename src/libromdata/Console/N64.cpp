@@ -111,8 +111,11 @@ N64::N64(IRpFile *file)
 	// Read the ROM image header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
-	if (size != sizeof(d->romHeader))
+	if (size != sizeof(d->romHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
@@ -155,6 +158,8 @@ N64::N64(IRpFile *file)
 		default:
 			// Unknown ROM type.
 			d->romType = N64Private::ROM_TYPE_UNKNOWN;
+			delete d->file;
+			d->file = nullptr;
 			return;
 	}
 

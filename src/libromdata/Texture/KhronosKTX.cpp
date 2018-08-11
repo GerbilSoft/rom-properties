@@ -575,8 +575,11 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	// Read the KTX header.
 	d->file->rewind();
 	size_t size = d->file->read(&d->ktxHeader, sizeof(d->ktxHeader));
-	if (size != sizeof(d->ktxHeader))
+	if (size != sizeof(d->ktxHeader)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this KTX texture is supported.
 	DetectInfo info;
@@ -587,38 +590,42 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	info.szFile = file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
-	if (d->isValid) {
-		// Check if the header needs to be byteswapped.
-		if (d->ktxHeader.endianness != KTX_ENDIAN_MAGIC) {
-			// Byteswapping is required.
-			// NOTE: Keeping `endianness` unswapped in case
-			// the actual image data needs to be byteswapped.
-			d->ktxHeader.glType			= __swab32(d->ktxHeader.glType);
-			d->ktxHeader.glTypeSize			= __swab32(d->ktxHeader.glTypeSize);
-			d->ktxHeader.glFormat			= __swab32(d->ktxHeader.glFormat);
-			d->ktxHeader.glInternalFormat		= __swab32(d->ktxHeader.glInternalFormat);
-			d->ktxHeader.glBaseInternalFormat	= __swab32(d->ktxHeader.glBaseInternalFormat);
-			d->ktxHeader.pixelWidth			= __swab32(d->ktxHeader.pixelWidth);
-			d->ktxHeader.pixelHeight		= __swab32(d->ktxHeader.pixelHeight);
-			d->ktxHeader.pixelDepth			= __swab32(d->ktxHeader.pixelDepth);
-			d->ktxHeader.numberOfArrayElements	= __swab32(d->ktxHeader.numberOfArrayElements);
-			d->ktxHeader.numberOfFaces		= __swab32(d->ktxHeader.numberOfFaces);
-			d->ktxHeader.numberOfMipmapLevels	= __swab32(d->ktxHeader.numberOfMipmapLevels);
-			d->ktxHeader.bytesOfKeyValueData	= __swab32(d->ktxHeader.bytesOfKeyValueData);
-
-			// Convenience flag.
-			d->isByteswapNeeded = true;
-		}
-
-		// Texture data start address.
-		// NOTE: Always 4-byte aligned.
-		d->texDataStartAddr = ALIGN(4, sizeof(d->ktxHeader) + d->ktxHeader.bytesOfKeyValueData);
-
-		// Load key/value data.
-		// This function also checks for KTXorientation
-		// and sets the HFlip/VFlip values as necessary.
-		d->loadKeyValueData();
+	if (!d->isValid) {
+		delete d->file;
+		d->file = nullptr;
+		return;
 	}
+
+	// Check if the header needs to be byteswapped.
+	if (d->ktxHeader.endianness != KTX_ENDIAN_MAGIC) {
+		// Byteswapping is required.
+		// NOTE: Keeping `endianness` unswapped in case
+		// the actual image data needs to be byteswapped.
+		d->ktxHeader.glType			= __swab32(d->ktxHeader.glType);
+		d->ktxHeader.glTypeSize			= __swab32(d->ktxHeader.glTypeSize);
+		d->ktxHeader.glFormat			= __swab32(d->ktxHeader.glFormat);
+		d->ktxHeader.glInternalFormat		= __swab32(d->ktxHeader.glInternalFormat);
+		d->ktxHeader.glBaseInternalFormat	= __swab32(d->ktxHeader.glBaseInternalFormat);
+		d->ktxHeader.pixelWidth			= __swab32(d->ktxHeader.pixelWidth);
+		d->ktxHeader.pixelHeight		= __swab32(d->ktxHeader.pixelHeight);
+		d->ktxHeader.pixelDepth			= __swab32(d->ktxHeader.pixelDepth);
+		d->ktxHeader.numberOfArrayElements	= __swab32(d->ktxHeader.numberOfArrayElements);
+		d->ktxHeader.numberOfFaces		= __swab32(d->ktxHeader.numberOfFaces);
+		d->ktxHeader.numberOfMipmapLevels	= __swab32(d->ktxHeader.numberOfMipmapLevels);
+		d->ktxHeader.bytesOfKeyValueData	= __swab32(d->ktxHeader.bytesOfKeyValueData);
+
+		// Convenience flag.
+		d->isByteswapNeeded = true;
+	}
+
+	// Texture data start address.
+	// NOTE: Always 4-byte aligned.
+	d->texDataStartAddr = ALIGN(4, sizeof(d->ktxHeader) + d->ktxHeader.bytesOfKeyValueData);
+
+	// Load key/value data.
+	// This function also checks for KTXorientation
+	// and sets the HFlip/VFlip values as necessary.
+	d->loadKeyValueData();
 }
 
 /**

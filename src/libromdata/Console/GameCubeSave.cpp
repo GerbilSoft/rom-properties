@@ -565,8 +565,11 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	uint8_t header[1024];
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
-	if (size != sizeof(header))
+	if (size != sizeof(header)) {
+		delete d->file;
+		d->file = nullptr;
 		return;
+	}
 
 	// Check if this disc image is supported.
 	DetectInfo info;
@@ -592,6 +595,8 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 		default:
 			// Unknown save type.
 			d->saveType = GameCubeSavePrivate::SAVE_TYPE_UNKNOWN;
+			delete d->file;
+			d->file = nullptr;
 			return;
 	}
 

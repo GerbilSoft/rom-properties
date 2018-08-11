@@ -27,6 +27,7 @@ using LibRpBase::SystemRegion;
 
 // Nintendo system structs.
 #include "Console/gcn_banner.h"
+#include "Console/wii_banner.h"
 #include "Handheld/nds_structs.h"
 #include "Handheld/n3ds_structs.h"
 
