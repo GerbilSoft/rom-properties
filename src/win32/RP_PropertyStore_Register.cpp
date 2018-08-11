@@ -64,6 +64,8 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 		// Custom properties.
 		L"System.Title;"
 		L"System.Company;"
+		L"System.Music.Composer;"
+		L"System.Media.Copyright;"
 		L"System.Image.Dimensions;"
 		L"System.Media.Duration;"
 		L"System.Media.SampleRate;";
@@ -74,6 +76,8 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 		// Custom properties.
 		L"System.Title;"
 		L"System.Company;"
+		L"System.Music.Composer;"
+		L"System.Media.Copyright;"
 		L"System.Image.Dimensions;"
 		L"System.Media.Duration;"
 		L"System.Media.SampleRate";

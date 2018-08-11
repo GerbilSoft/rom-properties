@@ -176,19 +176,19 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		{&PKEY_Audio_EncodingBitrate, VT_UI4},	// BitRate (FIXME: Windows uses bit/sec; KDE uses kbit/sec)
 		{&PKEY_Audio_ChannelCount, VT_UI4},	// Channels
 		{&PKEY_Media_Duration, VT_UI8},		// Duration (100ns units)
-		{&PKEY_Music_Genre, VT_ARRAY|VT_BSTR},	// Genre
+		{&PKEY_Music_Genre, VT_VECTOR|VT_BSTR},	// Genre
 		{&PKEY_Audio_SampleRate, VT_UI4},	// Sample rate (Hz)
 		{&PKEY_Music_TrackNumber, VT_UI4},	// Track number
 		{&PKEY_Media_Year, VT_UI4},		// Release year
 		{&PKEY_Comment, VT_BSTR},		// Comment
-		{&PKEY_Music_Artist, VT_ARRAY|VT_BSTR},	// Artist
+		{&PKEY_Music_Artist, VT_VECTOR|VT_BSTR},// Artist
 		{&PKEY_Music_AlbumTitle, VT_BSTR},	// Album
 		{&PKEY_Music_AlbumArtist, VT_BSTR},	// Album artist
-		{&PKEY_Music_Composer, VT_ARRAY|VT_BSTR},// Composer
+		{&PKEY_Music_Composer, VT_VECTOR|VT_BSTR},// Composer
 		{nullptr, VT_EMPTY},			// Lyricist
 
 		// Document
-		{&PKEY_Author, VT_ARRAY|VT_BSTR},	// Author
+		{&PKEY_Author, VT_VECTOR|VT_BSTR},	// Author
 		{&PKEY_Title, VT_BSTR},			// Title
 		{&PKEY_Subject, VT_BSTR},		// Subject
 		{&PKEY_SoftwareUsed, VT_BSTR},		// Generator
@@ -199,7 +199,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		{&PKEY_Copyright, VT_BSTR},		// Copyright
 		{&PKEY_Company, VT_BSTR},		// Publisher (TODO: PKEY_Media_Publisher?)
 		{&PKEY_DateCreated, VT_DATE},		// Creation date
-		{&PKEY_Keywords, VT_ARRAY|VT_BSTR},	// Keywords
+		{&PKEY_Keywords, VT_VECTOR|VT_BSTR},	// Keywords
 
 		// Media
 		{&PKEY_Image_HorizontalSize, VT_UI4},	// Width
@@ -251,7 +251,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		{nullptr, VT_EMPTY},			// Performer
 		{nullptr, VT_EMPTY},			// Ensemble
 		{nullptr, VT_EMPTY},			// Arranger
-		{&PKEY_Music_Conductor, VT_ARRAY|VT_BSTR},// Conductor
+		{&PKEY_Music_Conductor, VT_VECTOR|VT_BSTR},// Conductor
 		{nullptr, VT_EMPTY},			// Opus
 
 		// Other
@@ -407,8 +407,22 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				d->prop_val.push_back(prop_var);
 				break;
 
-			case VT_ARRAY|VT_BSTR:
+			case VT_VECTOR|VT_BSTR: {
+				// For now, assuming an array with a single string.
+				assert(prop->type == LibRpBase::PropertyType::String);
+				if (prop->type != LibRpBase::PropertyType::String)
+					continue;
+
+				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
+				const wchar_t *vstr[] = {wstr.c_str()};
+				InitPropVariantFromStringVector(vstr, 1, &prop_var);
+				d->prop_key.push_back(conv.pkey);
+				d->prop_val.push_back(prop_var);
+				break;
+			}
+
 			default:
+				// TODO: Add support for multiple strings.
 				// FIXME: Not supported.
 				assert(!"Unsupported PROPVARIANT type.");
 				break;
