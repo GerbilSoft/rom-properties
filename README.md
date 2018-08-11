@@ -119,6 +119,13 @@ button.
 | Valve VTF Textures            |       Yes      |      Image      |       N/A      |
 | Valve VTF3 (PS3) Textures     |       Yes      |      Image      |       N/A      |
 
+### Audio Formats
+
+|             System            | Properties Tab | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:---------------:|:--------------:|
+| CRI ADX ADPCM                 |       Yes      |       N/A       |       N/A      |
+| Nintendo Sound Format         |       Yes      |       N/A       |       N/A      |
+
 ### Other
 
 |             System             | Properties Tab | Internal Images | External Scans |

@@ -12,9 +12,12 @@
     on KDE and Windows.
 
 * New parsers:
-  * ADX: CRI ADX audio format. Used by many Sega games.
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
     installable titles. Supports GameTDB image downloads.
+
+* New audio parsers:
+  * ADX: CRI ADX audio format. Used by many Sega games.
+  * NSF: Nintendo Sound Format. Used for NES audio rips.
 
 * Bug fixes:
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.

@@ -9,6 +9,16 @@
     <glob pattern="*.adx"/>
   </mime-type>
 
+  <!-- NSF -->
+  <mime-type type="audio/x-nsf">
+    <comment>Nintendo Sound Format audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.nsf"/>
+    <magic priority="50">
+      <match value="NESM\x1A\x01" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- *** Console *** -->
 
   <!-- Dreamcast -->

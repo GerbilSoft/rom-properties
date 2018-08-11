@@ -78,6 +78,7 @@ using std::vector;
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
+#include "Audio/NSF.hpp"
 
 // RomData subclasses: Other
 #include "Other/Amiibo.hpp"
@@ -224,6 +225,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Audio
 	GetRomDataFns(ADX, false),
+	GetRomDataFns(NSF, false),
 
 	// Other
 	GetRomDataFns(Amiibo, true),
