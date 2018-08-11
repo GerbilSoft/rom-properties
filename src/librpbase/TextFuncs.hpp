@@ -432,6 +432,13 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
  */
 std::string formatFileSize(int64_t fileSize);
 
+/**
+ * Remove trailing spaces from a string.
+ * NOTE: This modifies the string *in place*.
+ * @param str String.
+ */
+void trimEnd(std::string &str);
+
 }
 #endif /* __cplusplus */
 

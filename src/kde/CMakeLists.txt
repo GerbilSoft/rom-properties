@@ -67,6 +67,9 @@ IF(ENABLE_NLS)
 	SET(rom-properties-kde_H    ${rom-properties-kde_H}    GettextTranslator.hpp)
 ENDIF(ENABLE_NLS)
 
+# NOTE: RpExtractorPlugin cannot use common source because
+# Qt's moc doesn't support preprocessor directores like #ifdef.
+
 # Qt options:
 # - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)
 # - Disable implicit QString ASCII casts.

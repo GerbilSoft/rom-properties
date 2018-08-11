@@ -176,6 +176,15 @@ WiiU::WiiU(IRpFile *file)
 			break;
 	}
 
+	if (!d->discReader->isOpen()) {
+		// Error opening the DiscReader.
+		delete d->discReader;
+		d->discReader = nullptr;
+		d->fileType = FTYPE_UNKNOWN;
+		d->discType = WiiUPrivate::DISC_UNKNOWN;
+		return;
+	}
+
 	if (d->discType < 0) {
 		// Nothing else to do here.
 		delete d->file;
@@ -332,7 +341,7 @@ const char *WiiU::systemName(unsigned int type) const
 const char *const *WiiU::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".wud",
+		".wud", ".wux",
 
 		// NOTE: May cause conflicts on Windows
 		// if fallback handling isn't working.
@@ -341,6 +350,28 @@ const char *const *WiiU::supportedFileExtensions_static(void)
 		nullptr
 	};
 	return exts;
+}
+
+/**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *WiiU::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-wii-u-rom",
+
+		nullptr
+	};
+	return mimeTypes;
 }
 
 /**
@@ -429,7 +460,7 @@ std::vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType im
 int WiiU::loadFieldData(void)
 {
 	RP_D(WiiU);
-	if (d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

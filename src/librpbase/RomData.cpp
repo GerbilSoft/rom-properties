@@ -48,8 +48,6 @@ namespace LibRpBase {
  *
  * @param q RomData class.
  * @param file ROM file.
- * @param fields Array of ROM Field descriptions.
- * @param count Number of ROM Field descriptions.
  */
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	: q_ptr(q)
@@ -57,6 +55,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields())
+	, metaData(nullptr)
 	, className(nullptr)
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
@@ -73,6 +72,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 RomDataPrivate::~RomDataPrivate()
 {
 	delete fields;
+	delete metaData;
 
 	// Close the file if it's still open.
 	delete this->file;
@@ -277,11 +277,7 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
  *
  * To close the file, either delete this object or call close().
  *
- * In addition, subclasses must pass an array of RomFieldDesc structs.
- *
  * @param file ROM file.
- * @param fields Array of ROM Field descriptions.
- * @param count Number of ROM Field descriptions.
  */
 RomData::RomData(IRpFile *file)
 	: d_ptr(new RomDataPrivate(this, file))
@@ -297,9 +293,6 @@ RomData::RomData(IRpFile *file)
  * To close the file, either delete this object or call close().
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
- *
- * In addition, subclasses must pass an array of RomFieldDesc structs
- * using an allocated RomDataPrivate subclass.
  *
  * @param d RomDataPrivate subclass.
  */
@@ -447,6 +440,8 @@ const char *RomData::fileType_string(void) const
 		NOP_C_("RomData|FileType", "Core Dump"),
 		// tr: FTYPE_AUDIO_FILE
 		NOP_C_("RomData|FileType", "Audio File"),
+		// tr: FTYPE_BOOT_SECTOR
+		NOP_C_("RomData|FileType", "Boot Sector"),
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");
@@ -535,13 +530,24 @@ int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int RomData::loadMetaData(void)
+{
+	// Not implemented for the base class.
+	return -ENOSYS;
+}
+
+/**
  * Get the ROM Fields object.
  * @return ROM Fields object.
  */
 const RomFields *RomData::fields(void) const
 {
 	RP_D(const RomData);
-	if (!d->fields->isDataLoaded()) {
+	if (d->fields->empty()) {
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadFieldData();
@@ -549,6 +555,23 @@ const RomFields *RomData::fields(void) const
 			return nullptr;
 	}
 	return d->fields;
+}
+
+/**
+ * Get the ROM Metadata object.
+ * @return ROM Metadata object.
+ */
+const RomMetaData *RomData::metaData(void) const
+{
+	RP_D(const RomData);
+	if (!d->metaData || d->metaData->empty()) {
+		// Data has not been loaded.
+		// Load it now.
+		int ret = const_cast<RomData*>(this)->loadMetaData();
+		if (ret < 0)
+			return nullptr;
+	}
+	return d->metaData;
 }
 
 /**

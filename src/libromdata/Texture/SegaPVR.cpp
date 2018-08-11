@@ -814,6 +814,30 @@ const char *const *SegaPVR::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *SegaPVR::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/x-sega-pvr",
+		"image/x-sega-gvr",
+		"image/x-sega-pvrx",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -886,7 +910,7 @@ uint32_t SegaPVR::imgpf(ImageType imageType) const
 int SegaPVR::loadFieldData(void)
 {
 	RP_D(SegaPVR);
-	if (d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -1022,6 +1046,40 @@ int SegaPVR::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SegaPVR::loadMetaData(void)
+{
+	RP_D(SegaPVR);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->pvrType < 0) {
+		// Unknown PVR image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// PVR header.
+	const PVR_Header *const pvrHeader = &d->pvrHeader;
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// Dimensions.
+	d->metaData->addMetaData_integer(Property::Width, pvrHeader->width);
+	d->metaData->addMetaData_integer(Property::Height, pvrHeader->height);
+
+	// Finished reading the metadata.
+	return (int)d->fields->count();
 }
 
 /**

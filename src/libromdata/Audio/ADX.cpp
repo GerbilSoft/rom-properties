@@ -67,6 +67,14 @@ class ADXPrivate : public RomDataPrivate
 		 * @return m:ss.cs
 		 */
 		static string formatSampleAsTime(unsigned int sample, unsigned int rate);
+
+		/**
+		 * Convert a sample value to milliseconds.
+		 * @param sample Sample value.
+		 * @param rate Sample rate.
+		 * @return Milliseconds.
+		 */
+		static unsigned int convSampleToMs(unsigned int sample, unsigned int rate);
 };
 
 /** ADXPrivate **/
@@ -87,7 +95,7 @@ ADXPrivate::ADXPrivate(ADX *q, IRpFile *file)
  */
 string ADXPrivate::formatSampleAsTime(unsigned int sample, unsigned int rate)
 {
-	// TODO: Move to TextFuncs or similar if this will be
+	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
 	// used by multiple parsers.
 	char buf[32];
 	unsigned int min, sec, cs;
@@ -109,6 +117,33 @@ string ADXPrivate::formatSampleAsTime(unsigned int sample, unsigned int rate)
 	if (len >= (int)sizeof(buf))
 		len = (int)sizeof(buf)-1;
 	return string(buf, len);
+}
+
+/**
+ * Convert a sample value to milliseconds.
+ * @param sample Sample value.
+ * @param rate Sample rate.
+ * @return Milliseconds.
+ */
+unsigned int ADXPrivate::convSampleToMs(unsigned int sample, unsigned int rate)
+{
+	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
+	// used by multiple parsers.
+	const unsigned int ms_frames = (sample % rate);
+	unsigned int sec, ms;
+	if (ms_frames != 0) {
+		// Calculate milliseconds.
+		ms = static_cast<unsigned int>(((float)ms_frames / (float)rate) * 1000);
+	} else {
+		// No milliseconds.
+		ms = 0;
+	}
+
+	// Calculate seconds.
+	sec = sample / rate;
+
+	// Convert to milliseconds and add the milliseconds value.
+	return (sec * 1000) + ms;
 }
 
 /** ADX **/
@@ -299,6 +334,26 @@ const char *const *ADX::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *ADX::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		"audio/x-adx",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -306,7 +361,7 @@ const char *const *ADX::supportedFileExtensions_static(void)
 int ADX::loadFieldData(void)
 {
 	RP_D(ADX);
-	if (d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -319,7 +374,7 @@ int ADX::loadFieldData(void)
 
 	// ADX header.
 	const ADX_Header *const adxHeader = &d->adxHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Format.
 	const char *format;
@@ -344,6 +399,9 @@ int ADX::loadFieldData(void)
 			break;
 	}
 	d->fields->addField_string(C_("ADX", "Format"), format);
+
+	// Number of channels.
+	d->fields->addField_string_numeric(C_("ADX", "Channels"), adxHeader->channel_count);
 
 	// Sample rate and sample count.
 	const uint32_t sample_rate = be32_to_cpu(adxHeader->sample_rate);
@@ -389,6 +447,48 @@ int ADX::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
+	return (int)d->fields->count();
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int ADX::loadMetaData(void)
+{
+	RP_D(ADX);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// ADX header.
+	const ADX_Header *const adxHeader = &d->adxHeader;
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// Number of channels.
+	d->metaData->addMetaData_integer(Property::Channels, adxHeader->channel_count);
+
+	// Sample rate.
+	d->metaData->addMetaData_integer(Property::SampleRate,
+		be32_to_cpu(adxHeader->sample_rate));
+
+	// Length, in milliseconds. (non-looping)
+	d->metaData->addMetaData_integer(Property::Duration,
+		d->convSampleToMs(be32_to_cpu(adxHeader->sample_count),
+			be32_to_cpu(adxHeader->sample_rate)));
+
+	// Finished reading the metadata.
 	return (int)d->fields->count();
 }
 

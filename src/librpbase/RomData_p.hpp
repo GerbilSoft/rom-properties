@@ -31,6 +31,7 @@
 
 // TODO: Remove from here and add to each RomData subclass?
 #include "RomFields.hpp"
+#include "RomMetaData.hpp"
 
 namespace LibRpBase {
 
@@ -63,7 +64,8 @@ class RomDataPrivate
 		volatile int ref_cnt;		// Reference count.
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
 		IRpFile *file;			// Open file.
-		RomFields *const fields;	// ROM fields.
+		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)
+		RomMetaData *metaData;		// ROM metadata. (NOTE: nullptr initially.)
 
 		// Class name for user configuration. (ASCII) (default is nullptr)
 		const char *className;

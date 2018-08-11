@@ -741,6 +741,30 @@ const char *const *GameCubeSave::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *GameCubeSave::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-gamecube-gci",	// .gci
+		"application/x-gamecube-gcs",	// .gcs
+		"application/x-gamecube-sav",	// .sav
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -825,7 +849,7 @@ uint32_t GameCubeSave::imgpf(ImageType imageType) const
 int GameCubeSave::loadFieldData(void)
 {
 	RP_D(GameCubeSave);
-	if (d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

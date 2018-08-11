@@ -887,7 +887,7 @@ const char *ELF::systemName(unsigned int type) const
 const char *const *ELF::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".",		// FIXME: Does this work for files with no extension?
+		//".",		// FIXME: Does this work for files with no extension?
 		".elf",		// Common for Wii homebrew.
 		".so",		// Shared libraries. (TODO: Versioned .so files.)
 		".o",		// Relocatable object files.
@@ -904,6 +904,29 @@ const char *const *ELF::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *ELF::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types from FreeDesktop.org.
+		"application/x-executable",
+		"application/x-sharedlib",
+		"application/x-core",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -911,7 +934,7 @@ const char *const *ELF::supportedFileExtensions_static(void)
 int ELF::loadFieldData(void)
 {
 	RP_D(ELF);
-	if (d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

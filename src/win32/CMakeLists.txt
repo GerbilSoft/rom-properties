@@ -19,6 +19,8 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
+	RP_PropertyStore.cpp
+	RP_PropertyStore_Register.cpp
 	CreateThumbnail.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
@@ -40,6 +42,8 @@ SET(rom-properties-win32_H
 	RpFile_IStream.hpp
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp
+	RP_PropertyStore.hpp
+	RP_PropertyStore_p.hpp
 	CreateThumbnail.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
@@ -137,6 +141,9 @@ IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties i18n)
 ENDIF(ENABLE_NLS)
 TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32 wtsapi32)
+# Required by InitPropVariantFromString().
+# TODO: Write our own version that doesn't use SHStrDupW()?
+TARGET_LINK_LIBRARIES(rom-properties shlwapi)
 
 # Add zlib and png directories for the About tab.
 IF(HAVE_ZLIB)

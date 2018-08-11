@@ -95,6 +95,30 @@ class klass : public LibRpBase::RomData { \
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
 		 */ \
 		const char *const *supportedFileExtensions(void) const final; \
+		\
+		/** \
+		 * Get a list of all supported MIME types. \
+		 * This is to be used for metadata extractors that \
+		 * must indicate which MIME types they support. \
+		 * \
+		 * NOTE: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		static const char *const *supportedMimeTypes_static(void); \
+		\
+		/** \
+		 * Get a list of all supported MIME types. \
+		 * This is to be used for metadata extractors that \
+		 * must indicate which MIME types they support. \
+		 * \
+		 * NOTE: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		const char *const *supportedMimeTypes(void) const final; \
 	\
 	protected: \
 		/** \
@@ -103,6 +127,18 @@ class klass : public LibRpBase::RomData { \
 		 * @return 0 on success; negative POSIX error code on error. \
 		 */ \
 		int loadFieldData(void) final;
+
+/**
+ * RomData subclass function declaration for loading metadata properties.
+ */
+#define ROMDATA_DECL_METADATA() \
+	protected: \
+		/** \
+		 * Load metadata properties. \
+		 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
+		 * @return Number of metadata properties read on success; negative POSIX error code on error. \
+		 */ \
+		int loadMetaData(void) final;
 
 /**
  * RomData subclass function declarations for image handling.
@@ -258,6 +294,21 @@ int klass::isRomSupported(const DetectInfo *info) const \
 const char *const *klass::supportedFileExtensions(void) const \
 { \
 	return klass::supportedFileExtensions_static(); \
+} \
+\
+/** \
+ * Get a list of all supported MIME types. \
+ * This is to be used for metadata extractors that \
+ * must indicate which MIME types they support. \
+ * \
+ * NOTE: The array and the strings in the array should \
+ * *not* be freed by the caller. \
+ * \
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+ */ \
+const char *const *klass::supportedMimeTypes(void) const \
+{ \
+	return klass::supportedMimeTypes_static(); \
 }
 
 /**

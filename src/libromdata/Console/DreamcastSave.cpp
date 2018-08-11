@@ -1151,6 +1151,31 @@ const char *const *DreamcastSave::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *DreamcastSave::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types used by Sega.
+		"application/x-dreamcast-vms",		// .vms
+		"application/x-dreamcast-vms-info",	// .vmi
+
+		// Unofficial MIME types.
+		"application/x-dreamcast-dci",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -1235,7 +1260,7 @@ uint32_t DreamcastSave::imgpf(ImageType imageType) const
 int DreamcastSave::loadFieldData(void)
 {
 	RP_D(DreamcastSave);
-	if (d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {

@@ -185,6 +185,12 @@ class GameCubePrivate : public RomDataPrivate
 
 	public:
 		/**
+		 * Get the disc publisher.
+		 * @return Disc publisher.
+		 */
+		string getPublisher(void) const;
+
+		/**
 		 * Load opening.bnr. (GameCube only)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
@@ -696,6 +702,32 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 	}
 
 	return ret;
+}
+
+/**
+ * Get the disc publisher.
+ * @return Disc publisher.
+ */
+string GameCubePrivate::getPublisher(void) const
+{
+	const char *const publisher = NintendoPublishers::lookup(discHeader.company);
+	if (publisher) {
+		return publisher;
+	}
+
+	// Unknown publisher.
+	if (ISALNUM(discHeader.company[0]) &&
+	    ISALNUM(discHeader.company[1]))
+	{
+		// Disc ID is alphanumeric.
+		return rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
+			discHeader.company);
+	}
+
+	// Disc ID is not alphanumeric.
+	return rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
+		static_cast<uint8_t>(discHeader.company[0]),
+		static_cast<uint8_t>(discHeader.company[1]));
 }
 
 /**
@@ -1360,6 +1392,32 @@ const char *const *GameCube::supportedFileExtensions_static(void)
 }
 
 /**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *GameCube::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types from FreeDesktop.org.
+		"application/x-gamecube-rom",
+		"application/x-gamecube-iso-image",
+		"application/x-wii-rom",
+		"application/x-wii-iso-image",
+		"application/x-wbfs",
+		"application/x-wia",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -1470,7 +1528,7 @@ std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageTyp
 int GameCube::loadFieldData(void)
 {
 	RP_D(GameCube);
-	if (d->fields->isDataLoaded()) {
+	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1523,24 +1581,8 @@ int GameCube::loadFieldData(void)
 	d->fields->addField_string(C_("GameCube", "Game ID"),
 		latin1_to_utf8(discHeader->id6, ARRAY_SIZE(discHeader->id6)));
 
-	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(discHeader->company);
-	string s_publisher;
-	if (publisher) {
-		s_publisher = publisher;
-	} else {
-		if (ISALNUM(discHeader->company[0]) &&
-		    ISALNUM(discHeader->company[1]))
-		{
-			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
-				discHeader->company);
-		} else {
-			s_publisher = rp_sprintf(C_("GameCube", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(discHeader->company[0]),
-				static_cast<uint8_t>(discHeader->company[1]));
-		}
-	}
-	d->fields->addField_string(C_("GameCube", "Publisher"), s_publisher);
+	// Publisher.
+	d->fields->addField_string(C_("GameCube", "Publisher"), d->getPublisher());
 
 	// Other fields.
 	d->fields->addField_string_numeric(C_("GameCube", "Disc #"),
@@ -1914,6 +1956,63 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
+	return (int)d->fields->count();
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int GameCube::loadMetaData(void)
+{
+	RP_D(GameCube);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->discType < 0) {
+		// Unknown disc type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// Disc header is read in the constructor.
+	const GCN_DiscHeader *const discHeader = &d->discHeader;
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// Title.
+	// TODO: Use opening.bnr title for GameCube instead?
+	// TODO: Is Shift-JIS actually permissible here?
+	switch (d->gcnRegion) {
+		case GCN_REGION_USA:
+		case GCN_REGION_EUR:
+		default:
+			// USA/PAL uses cp1252.
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_to_utf8(
+					discHeader->game_title, sizeof(discHeader->game_title)));
+			break;
+
+		case GCN_REGION_JPN:
+		case GCN_REGION_KOR:
+			// Japan uses Shift-JIS.
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_sjis_to_utf8(
+					discHeader->game_title, sizeof(discHeader->game_title)));
+			break;
+	}
+
+	// Publisher.
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+
+	// TODO: Disc number?
+
+	// Finished reading the metadata.
 	return (int)d->fields->count();
 }
 
