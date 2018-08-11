@@ -831,7 +831,7 @@ int Dreamcast::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return (int)d->fields->count();
+	return static_cast<int>(d->metaData->count());
 }
 
 /**

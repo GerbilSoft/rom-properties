@@ -489,7 +489,7 @@ int ADX::loadMetaData(void)
 			be32_to_cpu(adxHeader->sample_rate)));
 
 	// Finished reading the metadata.
-	return (int)d->fields->count();
+	return static_cast<int>(d->metaData->count());
 }
 
 }

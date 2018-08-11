@@ -2013,7 +2013,7 @@ int GameCube::loadMetaData(void)
 	// TODO: Disc number?
 
 	// Finished reading the metadata.
-	return (int)d->fields->count();
+	return static_cast<int>(d->metaData->count());
 }
 
 /**

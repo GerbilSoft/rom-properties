@@ -499,7 +499,7 @@ int ValveVTF3::loadMetaData(void)
 	d->metaData->addMetaData_integer(Property::Height, vtf3Header->height);
 
 	// Finished reading the metadata.
-	return (int)d->fields->count();
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
