@@ -20,6 +20,10 @@
   * GBS: Game Boy Sound System. Used for Game Boy audio rips.
   * NSF: Nintendo Sound Format. Used for NES audio rips.
 
+* New parser features:
+  * NES: Added support for the internal footer present in some ROMs. This
+    footer is used for, among other things, FamicomBox.
+
 * Bug fixes:
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.
 
