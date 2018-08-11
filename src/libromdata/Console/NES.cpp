@@ -1060,7 +1060,8 @@ int NES::loadFieldData(void)
 			// Internal name. (Assuming ASCII.)
 			if (firstNonFF < (unsigned int)sizeof(intFooter.name)) {
 				d->fields->addField_string(C_("NES", "Internal Name"),
-					latin1_to_utf8(&intFooter.name[firstNonFF], sizeof(intFooter.name)-firstNonFF));
+					latin1_to_utf8(&intFooter.name[firstNonFF], sizeof(intFooter.name)-firstNonFF),
+					RomFields::STRF_TRIM_END);
 			}
 
 			// PRG checksum.
