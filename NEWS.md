@@ -7,6 +7,9 @@
   * The un-premultiply function, used for DXT2 and DXT4 images, now has
     an SSE4.1-optimized implementation. The standard implementation has
     also been optimized to be somewhat faster.
+  * File meta data is now exported to the desktop environment. This includes
+    e.g. dimensions for textures and duration for audio. Currently supported
+    on KDE and Windows.
 
 * New parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
