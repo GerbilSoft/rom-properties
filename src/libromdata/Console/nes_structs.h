@@ -132,7 +132,7 @@ typedef enum {
 
 /**
  * Internal NES footer.
- * Located at 0xFFE0 in a PRG bank in some ROMs.
+ * Located at the last 32 bytes of the last PRG bank in some ROMs.
  *
  * References:
  * - http://forums.no-intro.org/viewtopic.php?f=2&t=445

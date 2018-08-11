@@ -989,35 +989,18 @@ int NES::loadFieldData(void)
 		}
 
 		// Check for the internal NES footer.
-		// This is located at 0xFFE0 in one of the PRG banks.
+		// This is located at the last 32 bytes of the last PRG bank in some ROMs.
 		// We'll verify that it's valid by looking for an
 		// all-ASCII title, possibly right-aligned with
 		// 0xFF filler bytes.
 		// NOTE: +16 to skip the iNES header.
 		NES_IntFooter intFooter;
-		bool isFound = false;
+		bool hasFooter = false;
 		unsigned int firstNonFF = (unsigned int)sizeof(intFooter.name);
+		unsigned int addr = prg_rom_size - sizeof(intFooter) + 16;
+		printf("READ: %08X\n", addr);
 
-		// Starting address depends on PRG ROM size.
-		unsigned int start_addr;
-		switch (prg_rom_size) {
-			case 16*1024:
-				// One PRG bank.
-				start_addr = 0x3FE0+16;
-				break;
-			case 32*1024:
-				// Two PRG banks.
-				start_addr = 0x7FE0+16;
-				break;
-			case 64*1024:
-			default:
-				// Four or more PRG banks.
-				start_addr = 0xFFE0+16;
-				break;
-		}
-
-		// TODO: Only check on 64 KB boundaries instead of checking each PRG bank?
-		for (unsigned int addr = start_addr; addr < prg_rom_size; addr += 16*1024) {
+		do {	// to break out early
 			size_t size = d->file->seekAndRead(addr, &intFooter, sizeof(intFooter));
 			if (size != sizeof(intFooter)) {
 				// Seek and/or read error.
@@ -1028,7 +1011,7 @@ int NES::loadFieldData(void)
 			// Check the mirroring value.
 			if ((intFooter.board_info >> 4) > 1) {
 				// Incorrect mirroring value.
-				continue;
+				break;
 			}
 
 			// Check if the name looks right.
@@ -1059,12 +1042,12 @@ int NES::loadFieldData(void)
 
 			if (!foundInvalid && firstNonFF < (unsigned int)sizeof(intFooter.name)) {
 				// Name looks valid.
-				isFound = true;
+				hasFooter = true;
 				break;
 			}
-		}
+		} while (0);
 
-		if (isFound) {
+		if (hasFooter) {
 			// Found the internal footer.
 			d->fields->addTab("Internal Footer");
 
