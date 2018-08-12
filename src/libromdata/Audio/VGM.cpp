@@ -369,7 +369,11 @@ int VGM::loadFieldData(void)
 
 	// VGM header.
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
-	d->fields->reserve(23);	// Maximum of 23 fields.
+	// NOTE: It's very unlikely that a single VGM will have
+	// all supported sound chips, so we'll reserve enough
+	// fields for the base data and up to 8 sound chips,
+	// assuming 2 fields per chip.
+	d->fields->reserve(11+(8*2));
 
 	// Version number. (BCD)
 	unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
@@ -441,6 +445,10 @@ int VGM::loadFieldData(void)
 				le32_to_cpu(vgmHeader->frame_rate));
 		}
 	}
+
+	// TODO:
+	// - VGM 1.51: Loop modifier
+	// - VGM 1.60: Volume modifier, loop base
 
 	// SN76489 [1.00]
 	const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
@@ -655,6 +663,67 @@ int VGM::loadFieldData(void)
 			d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), chip_name).c_str(),
 				v_ay8910_flags_bitfield_names, 2, vgmHeader->ay8910_flags);
 		}
+	}
+
+	if (vgm_version >= 0x0161) {
+		// Game Boy (LR35902) [1.61]
+		SOUND_CHIP(dmg, "DMG");
+
+		// NES APU (2A03) [1.61]
+		if (offsetof(VGM_Header, nes_apu_clk) < data_offset) {
+			const uint32_t nes_apu_clk = le32_to_cpu(vgmHeader->nes_apu_clk);
+			if ((nes_apu_clk & ~(1 << 31)) != 0) {
+				d->fields->addField_string(
+					rp_sprintf(C_("VGM", "%s Clock Rate"), "NES APU").c_str(),
+						d->formatClockRate(nes_apu_clk & ~(1 << 31)));
+
+				// Bit 31 indicates presence of FDS audio hardware.
+				const char *const nes_exp = (nes_apu_clk & (1 << 31))
+					? C_("VGM|NESExpansion", "Famicom Disk System")
+					: C_("VGM|NESExpansion", "(none)");
+				d->fields->addField_string(
+					rp_sprintf(C_("VGM", "%s Expansions"), "NES APU").c_str(), nes_exp);
+			}
+		}
+
+		// MultiPCM [1.61]
+		SOUND_CHIP(multipcm, "MultiPCM");
+
+		// uPD7759 [1.61]
+		SOUND_CHIP(upd7759, "uPD7759");
+
+		// NOTE: Ordering is done by the clock rate field,
+		// not the flags field.
+
+		// OKIM6258 [1.61]
+		// TODO: Flags
+		SOUND_CHIP(okim6258, "OKIM6258");
+
+		// OKIM6295 [1.61]
+		SOUND_CHIP(okim6295, "OKIM6295");
+
+		// K051649 [1.61]
+		SOUND_CHIP(k051649, "K051649");
+
+		// K054539 [1.61]
+		// TODO: Flags
+		SOUND_CHIP(k054539, "K054539");
+
+		// HuC6280 [1.61]
+		SOUND_CHIP(huc6280, "HuC6280");
+
+		// C140 [1.61]
+		// TODO: Flags
+		SOUND_CHIP(c140, "C140");
+
+		// K053260 [1.61]
+		SOUND_CHIP(k053260, "K053260");
+
+		// Pokey [1.61]
+		SOUND_CHIP(pokey, "Pokey");
+
+		// QSound
+		SOUND_CHIP(qsound, "QSound");
 	}
 
 	// Finished reading the field data.
