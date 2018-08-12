@@ -296,21 +296,19 @@ int VGM::loadFieldData(void)
 	// NOTE: Not byteswapping when checking for 0 because
 	// 0 in big-endian is the same as 0 in little-endian.
 
-	/** VGM 1.00 **/
-
 	// TODO: GD3 tags.
 
-	// Duration
+	// Duration [1.00]
 	d->fields->addField_string(C_("VGM", "Duration"),
 		formatSampleAsTime(le32_to_cpu(vgmHeader->sample_count), VGM_SAMPLE_RATE));
 
-	// Loop point
+	// Loop point [1.00]
 	if (vgmHeader->loop_offset != 0) {
 		d->fields->addField_string(C_("VGM", "Loop Offset"),
 			formatSampleAsTime(le32_to_cpu(vgmHeader->loop_offset), VGM_SAMPLE_RATE));
 	}
 
-	// Framerate. (VGM 1.01)
+	// Framerate. [1.01]
 	if (version >= 0x0101) {
 		if (vgmHeader->frame_rate != 0) {
 			d->fields->addField_string_numeric(C_("VGM", "Frame Rate"),
@@ -318,7 +316,7 @@ int VGM::loadFieldData(void)
 		}
 	}
 
-	// SN76489
+	// SN76489 [1.00]
 	if (vgmHeader->sn76489_clk != 0) {
 		const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
 		// TODO: Dual-chip bit.
@@ -335,7 +333,7 @@ int VGM::loadFieldData(void)
 			rp_sprintf(C_("VGM", "%s clock rate"), chip_name).c_str(),
 			d->formatClockRate(sn76489_clk & ~0xC0000000));
 
-		// LFSR data. (VGM 1.10)
+		// LFSR data. [1.10; defaults used for older versions]
 		uint16_t lfsr_feedback = 0x0009;
 		uint8_t lfsr_width = 16;
 		if (vgmHeader->version >= 0x0110) {
@@ -355,11 +353,27 @@ int VGM::loadFieldData(void)
 			lfsr_width);
 	}
 
-	// YM2413
+	// YM2413 [1.00]
 	if (vgmHeader->ym2413_clk != 0) {
 		d->fields->addField_string(
 			rp_sprintf(C_("VGM", "%s clock rate"), "YM2413").c_str(),
 			d->formatClockRate(le32_to_cpu(vgmHeader->ym2413_clk)));
+	}
+
+	if (version >= 0x0110) {
+		// YM2612 [1.10]
+		if (vgmHeader->ym2612_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s clock rate"), "YM2612").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->ym2612_clk)));
+		}
+
+		// YM2151 [1.10]
+		if (vgmHeader->ym2151_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s clock rate"), "YM2151").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->ym2151_clk)));
+		}
 	}
 
 	// Finished reading the field data.
