@@ -41,7 +41,7 @@ extern "C" {
  */
 #define VGM_MAGIC 0x206D6756	/* "Vgm " (little-endian) */
 #define VGM_SAMPLE_RATE 44100	// All VGM sample values use this rate.
-typedef struct _VGM_Header {
+typedef struct PACKED _VGM_Header {
 	uint32_t magic;		// [0x000] "Vgm "
 	uint32_t eof_offset;	// [0x004] Offset: End of file.
 	uint32_t version;	// [0x008] Version number, in BCD.
@@ -165,6 +165,17 @@ typedef struct _VGM_Header {
 	uint8_t reserved_171_b[4];	// [0x0E4]
 } VGM_Header;
 ASSERT_STRUCT(VGM_Header, 232);
+
+/**
+ * GD3 header.
+ */
+#define GD3_MAGIC 0x20336447	/* "Gd3 " (little-endian) */
+typedef struct PACKED _GD3_Header {
+	uint32_t magic;		// [0x000] "Gd3 "
+	uint32_t version;	// [0x004] Version number, in BCD. (v1.00)
+	uint32_t length;	// [0x008] Length of the GD3 data.
+} GD3_Header;
+ASSERT_STRUCT(GD3_Header, 12);
 
 /**
  * VGM 1.10: SN76489 LFSR patterns.

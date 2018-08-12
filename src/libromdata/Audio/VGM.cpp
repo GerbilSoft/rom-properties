@@ -37,11 +37,13 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <sstream>
 #include <vector>
 using std::ostringstream;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -68,6 +70,13 @@ class VGMPrivate : public RomDataPrivate
 		 * @return IC clock rate, in Hz, kHz, MHz, or GHz. (Three decimal places.)
 		 */
 		string formatClockRate(unsigned int clock_rate);
+
+		/**
+		 * Load GD3 tags.
+		 * @param addr Starting address of the GD3 tag block.
+		 * @return Vector of tags, or empty vector on error.
+		 */
+		vector<string> loadGD3(unsigned int addr);
 };
 
 /** VGMPrivate **/
@@ -107,6 +116,79 @@ string VGMPrivate::formatClockRate(unsigned int clock_rate)
 		const unsigned int frac = (clock_rate / 1000000) % 1000;
 		return rp_sprintf_p(C_("VGM", "%1$u.%2$03u GHz"), whole, frac);
 	}
+}
+
+/**
+ * Load GD3 tags.
+ * @param addr Starting address of the GD3 tag block.
+ * @return Vector of tags, or empty vector on error.
+ */
+vector<string> VGMPrivate::loadGD3(unsigned int addr)
+{
+	vector<string> v_gd3;
+
+	assert(file != nullptr);
+	assert(file->isOpen());
+	if (!file || !file->isOpen()) {
+		return v_gd3;
+	}
+
+	GD3_Header gd3Header;
+	size_t size = file->seekAndRead(addr, &gd3Header, sizeof(gd3Header));
+	if (size != sizeof(gd3Header)) {
+		// Seek and/or read error.
+		return v_gd3;
+	}
+
+	// Validate the header.
+	if (gd3Header.magic != cpu_to_le32(GD3_MAGIC) ||
+	    le32_to_cpu(gd3Header.version) < 0x0100)
+	{
+		// Incorrect header.
+		// TODO: Require exactly v1.00?
+		return v_gd3;
+	}
+
+	// Length limitations:
+	// - Must be an even number. (UTF-16)
+	// - Minimum of 11*2 bytes; Maximum of 16 KB.
+	const unsigned int length = le32_to_cpu(gd3Header.length);
+	if (length % 2 != 0 || length < 11*2 || length > 16*1024) {
+		// Incorrect length value.
+		return v_gd3;
+	}
+
+	// Read the GD3 data.
+	const unsigned int length16 = length / 2;
+	unique_ptr<char16_t[]> gd3(new char16_t[length16]);
+	size = file->read(gd3.get(), length);
+	if (size != length) {
+		// Read error.
+		return v_gd3;
+	}
+
+	// Make sure the end of the GD3 data is NULL-terminated.
+	if (gd3[length16-1] != 0) {
+		// Not NULL-terminated.
+		return v_gd3;
+	}
+
+	// Convert from NULL-terminated strings to a vector.
+	// TODO: Optimize on systems where wchar_t functions are 16-bit?
+	const char16_t *start = gd3.get();
+	const char16_t *const endptr = start + length16;
+	for (const char16_t *p = start; p < endptr; p++) {
+		// Check for a NULL.
+		if (*p == 0) {
+			// Found a NULL!
+			v_gd3.push_back(utf16le_to_utf8(start, (int)(p-start)));
+			// Next string.
+			start = p + 1;
+		}
+	}
+
+	// TODO: Verify that it's 11 strings?
+	return v_gd3;
 }
 
 /** VGM **/
@@ -290,13 +372,46 @@ int VGM::loadFieldData(void)
 
 	// Version number. (BCD)
 	unsigned int version = le32_to_cpu(vgmHeader->version);
-	d->fields->addField_string(C_("VGM", "Version"),
+	d->fields->addField_string(C_("VGM", "VGM Version"),
 		rp_sprintf_p(C_("VGM", "%1$x.%2$02x"), version >> 8, version & 0xFF));
 
 	// NOTE: Not byteswapping when checking for 0 because
 	// 0 in big-endian is the same as 0 in little-endian.
 
-	// TODO: GD3 tags.
+	// GD3 tags.
+	if (d->vgmHeader.gd3_offset != 0) {
+		// TODO: Make sure the GD3 offset is stored after the header.
+		const unsigned int addr = le32_to_cpu(d->vgmHeader.gd3_offset) + offsetof(VGM_Header, gd3_offset);
+		vector<string> v_gd3 = d->loadGD3(addr);
+
+		// TODO: Option to show Japanese instead of English.
+		if (!v_gd3.empty()) {
+			// TODO: Optimize line count checking?
+			const size_t line_count = v_gd3.size();
+			if (line_count >= 1 && !v_gd3[0].empty()) {
+				d->fields->addField_string(C_("VGM", "Track Name"), v_gd3[0]);
+			}
+			if (line_count >= 3 && !v_gd3[2].empty()) {
+				d->fields->addField_string(C_("VGM", "Game Name"), v_gd3[2]);
+			}
+			if (line_count >= 5 && !v_gd3[4].empty()) {
+				d->fields->addField_string(C_("VGM", "System Name"), v_gd3[4]);
+			}
+			if (line_count >= 7 && !v_gd3[6].empty()) {
+				// TODO: Multiple composer handling.
+				d->fields->addField_string(C_("VGM", "Composer"), v_gd3[6]);
+			}
+			if (line_count >= 9 && !v_gd3[8].empty()) {
+				d->fields->addField_string(C_("VGM", "Release Date"), v_gd3[8]);
+			}
+			if (line_count >= 10 && !v_gd3[9].empty()) {
+				d->fields->addField_string(C_("VGM", "VGM Ripper"), v_gd3[9]);
+			}
+			if (line_count >= 11 && !v_gd3[10].empty()) {
+				d->fields->addField_string(C_("VGM", "Notes"), v_gd3[10]);
+			}
+		}
+	}
 
 	// Duration [1.00]
 	d->fields->addField_string(C_("VGM", "Duration"),
