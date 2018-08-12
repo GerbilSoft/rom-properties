@@ -286,7 +286,7 @@ int VGM::loadFieldData(void)
 
 	// VGM header.
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(7);	// Maximum of 7 fields.
 
 	// Version number. (BCD)
 	unsigned int version = le32_to_cpu(vgmHeader->version);
@@ -334,6 +334,25 @@ int VGM::loadFieldData(void)
 		d->fields->addField_string(
 			rp_sprintf(C_("VGM", "%s clock rate"), chip_name).c_str(),
 			d->formatClockRate(sn76489_clk & ~0xC0000000));
+
+		// LFSR data. (VGM 1.10)
+		uint16_t lfsr_feedback = 0x0009;
+		uint8_t lfsr_width = 16;
+		if (vgmHeader->version >= 0x0110) {
+			if (vgmHeader->sn76489_lfsr != 0) {
+				lfsr_feedback = le16_to_cpu(vgmHeader->sn76489_lfsr);
+			}
+			if (vgmHeader->sn76489_width != 0) {
+				lfsr_width = vgmHeader->sn76489_width;
+			}
+		}
+
+		d->fields->addField_string_numeric(
+			rp_sprintf(C_("VGM", "%s LFSR pattern"), chip_name).c_str(),
+			lfsr_feedback, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		d->fields->addField_string_numeric(
+			rp_sprintf(C_("VGM", "%s LFSR width"), chip_name).c_str(),
+			lfsr_width);
 	}
 
 	// YM2413
