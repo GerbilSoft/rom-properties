@@ -488,27 +488,25 @@ int VGM::loadFieldData(void)
 			v_psg_flags_bitfield_names, 2, psg_flags);
 	}
 
+	// Macro for sound chips that don't have any special bitflags or parameters.
+#define SOUND_CHIP(field, display) \
+	do { \
+		if (vgmHeader->field##_clk != 0) { \
+			d->fields->addField_string( \
+				rp_sprintf(C_("VGM", "%s clock rate"), display).c_str(), \
+				d->formatClockRate(le32_to_cpu(vgmHeader->field##_clk))); \
+		} \
+	} while (0)
+
 	// YM2413 [1.00]
-	if (vgmHeader->ym2413_clk != 0) {
-		d->fields->addField_string(
-			rp_sprintf(C_("VGM", "%s clock rate"), "YM2413").c_str(),
-			d->formatClockRate(le32_to_cpu(vgmHeader->ym2413_clk)));
-	}
+	SOUND_CHIP(ym2413, "YM2413");
 
 	if (vgm_version >= 0x0110) {
 		// YM2612 [1.10]
-		if (vgmHeader->ym2612_clk != 0) {
-			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s clock rate"), "YM2612").c_str(),
-				d->formatClockRate(le32_to_cpu(vgmHeader->ym2612_clk)));
-		}
+		SOUND_CHIP(ym2612, "YM2612");
 
 		// YM2151 [1.10]
-		if (vgmHeader->ym2151_clk != 0) {
-			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s clock rate"), "YM2151").c_str(),
-				d->formatClockRate(le32_to_cpu(vgmHeader->ym2151_clk)));
-		}
+		SOUND_CHIP(ym2151, "YM2151");
 	}
 
 	if (vgm_version >= 0x0151) {
@@ -524,25 +522,13 @@ int VGM::loadFieldData(void)
 		}
 
 		// RF5C68 [1.51]
-		if (vgmHeader->rf5c68_clk != 0) {
-			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s clock rate"), "RF5C68").c_str(),
-				d->formatClockRate(le32_to_cpu(vgmHeader->rf5c68_clk)));
-		}
+		SOUND_CHIP(rf5c68, "RF5C68");
 
 		// YM2203 [1.51]
-		if (vgmHeader->ym2203_clk != 0) {
-			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s clock rate"), "YM2203").c_str(),
-				d->formatClockRate(le32_to_cpu(vgmHeader->ym2203_clk)));
-		}
+		SOUND_CHIP(ym2203, "YM2203");
 
 		// YM2608 [1.51]
-		if (vgmHeader->ym2608_clk != 0) {
-			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s clock rate"), "YM2608").c_str(),
-				d->formatClockRate(le32_to_cpu(vgmHeader->ym2608_clk)));
-		}
+		SOUND_CHIP(ym2608, "YM2608");
 
 		// YM2610/YM2610B [1.51]
 		const uint32_t ym2610_clk = le32_to_cpu(vgmHeader->ym2610_clk);
