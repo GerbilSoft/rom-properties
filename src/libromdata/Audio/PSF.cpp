@@ -37,11 +37,16 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
+#include <memory>
 #include <string>
 #include <sstream>
+#include <unordered_map>
 #include <vector>
 using std::ostringstream;
 using std::string;
+using std::unique_ptr;
+using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
@@ -61,6 +66,20 @@ class PSFPrivate : public RomDataPrivate
 		// PSF header.
 		// NOTE: **NOT** byteswapped in memory.
 		PSF_Header psfHeader;
+
+		/**
+		 * Parse the tag section.
+		 * @param tag_addr Tag section starting address.
+		 * @return Map containing key/value entries.
+		 */
+		unordered_map<string, string> parseTags(int64_t tag_addr);
+
+		/**
+		 * Get the "ripped by" tag name for the specified PSF version.
+		 * @param version PSF version.
+		 * @return "Ripped by" tag name.
+		 */
+		const char *getRippedByTagName(uint8_t version);
 };
 
 /** PSFPrivate **/
@@ -70,6 +89,125 @@ PSFPrivate::PSFPrivate(PSF *q, IRpFile *file)
 {
 	// Clear the PSF header struct.
 	memset(&psfHeader, 0, sizeof(psfHeader));
+}
+
+/**
+ * Parse the tag section.
+ * @param tag_addr Tag section starting address.
+ * @return Map containing key/value entries.
+ */
+unordered_map<string, string> PSFPrivate::parseTags(int64_t tag_addr)
+{
+	unordered_map<string, string> kv;
+
+	// Read the tag magic first.
+	char tag_magic[sizeof(PSF_TAG_MAGIC)-1];
+	size_t size = file->seekAndRead(tag_addr, tag_magic, sizeof(tag_magic));
+	if (size != sizeof(tag_magic)) {
+		// Seek and/or read error.
+		return kv;
+	}
+
+	// Read the rest of the file.
+	// NOTE: Maximum of 16 KB.
+	int64_t data_len = file->size() - tag_addr - sizeof(tag_magic);
+	if (data_len <= 0) {
+		// Not enough data...
+		return kv;
+	}
+
+	// NOTE: Values may be encoded as either cp1252/sjis or UTF-8.
+	// Since we won't be able to determine this until we're finished
+	// decoding variables, we'll have to do character conversion
+	// *after* kv is populated.
+	unique_ptr<char> tag_data(new char[data_len]);
+	size = file->read(tag_data.get(), data_len);
+	if (size != (size_t)data_len) {
+		// Read error.
+		return kv;
+	}
+
+	bool isUtf8 = false;
+	const char *start = tag_data.get();
+	const char *const endptr = start + data_len;
+	for (const char *p = start; p < endptr; p++) {
+		// Find the next newline.
+		const char *nl = static_cast<const char*>(memchr(p, '\n', endptr-p));
+		if (!nl) {
+			// No newline. Assume this is the end of the tag section,
+			// and read up to the end.
+			nl = endptr;
+		}
+		if (p == nl) {
+			// Empty line.
+			continue;
+		}
+
+		// Find the equals sign.
+		const char *eq = static_cast<const char*>(memchr(p, '=', nl-p));
+		if (eq) {
+			// Found the equals sign.
+			int k_len = (int)(eq - p);
+			int v_len = (int)(nl - eq - 1);
+			if (k_len > 0 && v_len > 0) {
+				// Key and value are valid.
+				// NOTE: Key is case-insensitive, so convert to lowercase.
+				// NOTE: Key *must* be ASCII.
+				string key(p, k_len);
+				std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+				kv.insert(std::make_pair(key, string(eq+1, v_len)));
+
+				// Check for UTF-8.
+				// NOTE: v_len check is redundant...
+				if (key == "utf8" && v_len > 0) {
+					// "utf8" key with non-empty value.
+					// This is UTF-8.
+					isUtf8 = true;
+				}
+			}
+		}
+
+		// Next line.
+		p = nl;
+	}
+
+	// If we're not using UTF-8, convert the values.
+	if (!isUtf8) {
+		for (auto iter = kv.begin(); iter != kv.end(); ++iter) {
+			iter->second = cp1252_sjis_to_utf8(iter->second);
+		}
+	}
+
+	return kv;
+}
+
+/**
+ * Get the "ripped by" tag name for the specified PSF version.
+ * @param version PSF version.
+ * @return "Ripped by" tag name.
+ */
+const char *PSFPrivate::getRippedByTagName(uint8_t version)
+{
+	switch (version) {
+		default:
+		case PSF_VERSION_PLAYSTATION:
+		case PSF_VERSION_PLAYSTATION_2:
+			return "psfby";
+		case PSF_VERSION_SATURN:
+			return "ssfby";
+		case PSF_VERSION_DREAMCAST:
+			return "dsfby";
+		case PSF_VERSION_MEGA_DRIVE:
+			return "msfby";	// FIXME: May be incorrect.
+		case PSF_VERSION_N64:
+			return "usfby";
+		case PSF_VERSION_GBA:
+			return "gsfby";
+		case PSF_VERSION_SNES:
+			return "snsfby";
+		case PSF_VERSION_QSOUND:
+			return "qsfby";
+	}
 }
 
 /** PSF **/
@@ -260,7 +398,11 @@ int PSF::loadFieldData(void)
 
 	// PSF header.
 	const PSF_Header *const psfHeader = &d->psfHeader;
-	d->fields->reserve(1);	// Maximum of 1 field.
+
+	// PSF fields:
+	// - 1 regular field.
+	// - 11 fields in the "[TAG]" section.
+	d->fields->reserve(1+11);
 
 	// System.
 	const char *sysname;
@@ -302,6 +444,98 @@ int PSF::loadFieldData(void)
 	} else {
 		d->fields->addField_string(C_("PSF", "System"),
 			rp_sprintf(C_("PSF", "Unknown (0x%02X)"), psfHeader->version));
+	}
+
+	// Parse the tags.
+	const int64_t tag_addr = (int64_t)sizeof(*psfHeader) +
+		le32_to_cpu(psfHeader->reserved_size) +
+		le32_to_cpu(psfHeader->compressed_prg_length);
+	unordered_map<string, string> tags = d->parseTags(tag_addr);
+
+	if (!tags.empty()) {
+		// Title
+		auto iter = tags.find("title");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Title"), iter->second);
+		}
+
+		// Artist
+		iter = tags.find("artist");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Artist"), iter->second);
+		}
+
+		// Game
+		iter = tags.find("game");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Game"), iter->second);
+		}
+
+		// Release Date
+		// NOTE: The tag is "year", but it may be YYYY-MM-DD.
+		iter = tags.find("year");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Release Date"), iter->second);
+		}
+
+		// Genre
+		iter = tags.find("genre");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Genre"), iter->second);
+		}
+
+		// Copyright
+		iter = tags.find("copyright");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Copyright"), iter->second);
+		}
+
+		// Ripped By
+		// NOTE: The tag varies based on PSF version.
+		const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
+		iter = tags.find(ripped_by_tag);
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Ripped By"), iter->second);
+		} else {
+			// Try "psfby" if the system-specific one isn't there.
+			iter = tags.find("psfby");
+			if (iter != tags.end()) {
+				d->fields->addField_string(C_("PSF", "Ripped By"), iter->second);
+			}
+		}
+
+		// Volume (floating-point number)
+		iter = tags.find("volume");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Volume"), iter->second);
+		}
+
+		// Duration
+		//
+		// Possible formats:
+		// - seconds.decimal
+		// - minutes:seconds.decimal
+		// - hours:minutes:seconds.decimal
+		//
+		// Decimal may be omitted.
+		// Commas are also accepted.
+		iter = tags.find("length");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Duration"), iter->second);
+		}
+
+		// Fadeout duration
+		// Same format as duration.
+		iter = tags.find("fade");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Fadeout Duration"), iter->second);
+		}
+
+		// Comment
+		iter = tags.find("comment");
+		if (iter != tags.end()) {
+			d->fields->addField_string(C_("PSF", "Comment"), iter->second);
+		}
 	}
 
 	// Finished reading the field data.
