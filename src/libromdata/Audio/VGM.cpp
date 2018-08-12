@@ -384,8 +384,8 @@ int VGM::loadFieldData(void)
 		const unsigned int addr = le32_to_cpu(d->vgmHeader.gd3_offset) + offsetof(VGM_Header, gd3_offset);
 		vector<string> v_gd3 = d->loadGD3(addr);
 
-		// TODO: Option to show Japanese instead of English.
 		if (!v_gd3.empty()) {
+			// TODO: Option to show Japanese instead of English.
 			// TODO: Optimize line count checking?
 			const size_t line_count = v_gd3.size();
 			if (line_count >= 1 && !v_gd3[0].empty()) {
@@ -493,6 +493,90 @@ int VGM::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int VGM::loadMetaData(void)
+{
+	RP_D(VGM);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// VGM header.
+	const VGM_Header *const vgmHeader = &d->vgmHeader;
+	d->metaData->reserve(6);	// Maximum of 6 metadata properties.
+
+	// Length, in milliseconds. (non-looping)
+	d->metaData->addMetaData_integer(Property::Duration,
+		convSampleToMs(le32_to_cpu(vgmHeader->sample_count), VGM_SAMPLE_RATE));
+
+	// Attempt to load the GD3 tags.
+	if (d->vgmHeader.gd3_offset != 0) {
+		// TODO: Make sure the GD3 offset is stored after the header.
+		const unsigned int addr = le32_to_cpu(d->vgmHeader.gd3_offset) + offsetof(VGM_Header, gd3_offset);
+		vector<string> v_gd3 = d->loadGD3(addr);
+		if (!v_gd3.empty()) {
+			// TODO: Option to show Japanese instead of English.
+			// TODO: Optimize line count checking?
+			const size_t line_count = v_gd3.size();
+			if (line_count >= 1 && !v_gd3[0].empty()) {
+				d->metaData->addMetaData_string(Property::Title, v_gd3[0]);
+			}
+			if (line_count >= 3 && !v_gd3[2].empty()) {
+				// NOTE: Not exactly "album"...
+				d->metaData->addMetaData_string(Property::Album, v_gd3[2]);
+			}
+			/*if (line_count >= 5 && !v_gd3[4].empty()) {
+				// FIXME: No property for this...
+				d->metaData->addMetaData_string(Property::SystemName, v_gd3[4]);
+			}*/
+			if (line_count >= 7 && !v_gd3[6].empty()) {
+				// TODO: Multiple composer handling.
+				d->metaData->addMetaData_string(Property::Composer, v_gd3[6]);
+			}
+			if (line_count >= 9 && !v_gd3[8].empty()) {
+				// Parse the release date.
+				// NOTE: Only year is supported.
+				int year;
+				char chr;
+				int s = sscanf(v_gd3[8].c_str(), "%04d%c", &year, &chr);
+				if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
+					// Year seems to be valid.
+					// Make sure the number is acceptable:
+					// - No negatives.
+					// - Four-digit only. (lol Y10K)
+					if (year >= 0 && year < 10000) {
+						d->metaData->addMetaData_integer(Property::ReleaseYear, year);
+					}
+				}
+			}
+			/*if (line_count >= 10 && !v_gd3[9].empty()) {
+				// FIXME: No property for this...
+				d->metaData->addMetaData_string(Property::VGMRipper, v_gd3[9]);
+			}*/
+			if (line_count >= 11 && !v_gd3[10].empty()) {
+				d->metaData->addMetaData_string(Property::Comment, v_gd3[10]);
+			}
+		}
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
