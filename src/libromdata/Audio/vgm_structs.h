@@ -41,6 +41,8 @@ extern "C" {
  */
 #define VGM_MAGIC 0x206D6756	/* "Vgm " (little-endian) */
 #define VGM_SAMPLE_RATE 44100	// All VGM sample values use this rate.
+#define VGM_CLK_FLAG_ALTMODE	(1 << 31)	/* alternate mode for some sound chips */
+#define VGM_CLK_FLAG_DUALCHIP	(1 << 30)	/* dual-chip mode for some sound chips */
 typedef struct PACKED _VGM_Header {
 	uint32_t magic;		// [0x000] "Vgm "
 	uint32_t eof_offset;	// [0x004] Offset: End of file.
