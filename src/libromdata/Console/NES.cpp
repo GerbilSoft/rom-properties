@@ -623,6 +623,10 @@ int NES::loadFieldData(void)
 	// - 8 fields for the internal NES header.
 	d->fields->reserve(15+8);
 
+	// Reserve at least 2 tabs:
+	// iNES, Internal Footer
+	d->fields->reserveTabs(2);
+
 	// Determine stuff based on the ROM format.
 	const char *rom_format;
 	bool romOK = true;
