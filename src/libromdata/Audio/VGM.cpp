@@ -726,6 +726,65 @@ int VGM::loadFieldData(void)
 		SOUND_CHIP(qsound, "QSound");
 	}
 
+	if (vgm_version >= 0x0171) {
+		// SCSP [1.71]
+		SOUND_CHIP(scsp, "SCSP");
+
+		// WonderSwan [1.71]
+		SOUND_CHIP(ws, "WonderSwam");
+
+		// VSU [1.71]
+		SOUND_CHIP(vsu, "VSU");
+
+		// SAA1099 [1.71]
+		SOUND_CHIP(saa1099, "SAA1099");
+
+		// ES5503 [1.71]
+		if (offsetof(VGM_Header, es5503_num_ch) < data_offset && vgmHeader->es5503_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s Clock Rate"), "ES5503").c_str(),
+					d->formatClockRate(le32_to_cpu(vgmHeader->es5503_clk)));
+			d->fields->addField_string_numeric(
+				rp_sprintf(C_("VGM", "%s # of Channels"), "ES5503").c_str(),
+					vgmHeader->es5503_num_ch);
+		}
+
+		// ES5505/ES5506 [1.71]
+		if (offsetof(VGM_Header, es5505_num_ch) < data_offset) {
+			const uint32_t es5505_clk = le32_to_cpu(vgmHeader->es5505_clk);
+			if ((es5505_clk & ~(1 << 31)) != 0) {
+				const char *const chip_name = (es5505_clk & (1 << 31))
+					? "ES5506"
+					: "ES5505";
+
+				d->fields->addField_string(
+					rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
+						d->formatClockRate(es5505_clk & ~(1 << 31)));
+
+				d->fields->addField_string_numeric(
+					rp_sprintf(C_("VGM", "%s # of Channels"), chip_name).c_str(),
+						vgmHeader->es5505_num_ch);
+			}
+		}
+
+		// X1-010 [1.71]
+		SOUND_CHIP(x1_010, "X1-010");
+
+		// C352 [1.71]
+		if (offsetof(VGM_Header, es5505_num_ch) < data_offset && vgmHeader->c352_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s Clock Rate"), "C352").c_str(),
+					d->formatClockRate(le32_to_cpu(vgmHeader->c352_clk)));
+
+			d->fields->addField_string_numeric(
+				rp_sprintf(C_("VGM", "%s Clock Divider"), "C352").c_str(),
+					vgmHeader->c352_clk_div * 4);
+		}
+
+		// GA20 [1.71]
+		SOUND_CHIP(ga20, "GA20");
+	}
+
 	// Finished reading the field data.
 	return (int)d->fields->count();
 }
