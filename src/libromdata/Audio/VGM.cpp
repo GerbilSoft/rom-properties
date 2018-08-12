@@ -34,6 +34,7 @@ using namespace LibRpBase;
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <cstddef>
 #include <cstring>
 
 // C++ includes.
@@ -375,6 +376,16 @@ int VGM::loadFieldData(void)
 	d->fields->addField_string(C_("VGM", "VGM Version"),
 		rp_sprintf_p(C_("VGM", "%1$x.%2$02x"), vgm_version >> 8, vgm_version & 0xFF));
 
+	// VGM data offset.
+	// Header fields must end before this offset.
+	unsigned int data_offset;
+	if (vgm_version < 0x0150) {
+		// VGM older than v1.50: Fixed start offset of 0x40.
+		data_offset = 0x40;
+	} else {
+		data_offset = le32_to_cpu(d->vgmHeader.data_offset) + offsetof(VGM_Header, data_offset);
+	}
+
 	// NOTE: Not byteswapping when checking for 0 because
 	// 0 in big-endian is the same as 0 in little-endian.
 
@@ -491,7 +502,7 @@ int VGM::loadFieldData(void)
 	// Macro for sound chips that don't have any special bitflags or parameters.
 #define SOUND_CHIP(field, display) \
 	do { \
-		if (vgmHeader->field##_clk != 0) { \
+		if (offsetof(VGM_Header, field##_clk) < data_offset && vgmHeader->field##_clk != 0) { \
 			d->fields->addField_string( \
 				rp_sprintf(C_("VGM", "%s Clock Rate"), display).c_str(), \
 				d->formatClockRate(le32_to_cpu(vgmHeader->field##_clk))); \
@@ -509,9 +520,12 @@ int VGM::loadFieldData(void)
 		SOUND_CHIP(ym2151, "YM2151");
 	}
 
+	// TODO: Optimize data offset checks.
+	// If e.g. Sega PCM is out of range, the rest of the chips will also
+	// be out of range, so we should skip them.
 	if (vgm_version >= 0x0151) {
 		// Sega PCM [1.51]
-		if (vgmHeader->sega_pcm_clk != 0) {
+		if (offsetof(VGM_Header, sega_pcm_if_reg) < data_offset && vgmHeader->sega_pcm_clk != 0) {
 			d->fields->addField_string(
 				rp_sprintf(C_("VGM", "%s Clock Rate"), "Sega PCM").c_str(),
 				d->formatClockRate(le32_to_cpu(vgmHeader->sega_pcm_clk)));
@@ -534,7 +548,7 @@ int VGM::loadFieldData(void)
 		};
 
 		// YM2203 [1.51]
-		if (vgmHeader->ym2203_clk != 0) {
+		if (offsetof(VGM_Header, ym2203_ay8910_flags) < data_offset && vgmHeader->ym2203_clk != 0) {
 			d->fields->addField_string(
 				rp_sprintf(C_("VGM", "%s Clock Rate"), "YM2203").c_str(),
 				d->formatClockRate(le32_to_cpu(vgmHeader->ym2203_clk)));
@@ -547,7 +561,7 @@ int VGM::loadFieldData(void)
 		}
 
 		// YM2608 [1.51]
-		if (vgmHeader->ym2608_clk != 0) {
+		if (offsetof(VGM_Header, ym2608_ay8910_flags) < data_offset && vgmHeader->ym2608_clk != 0) {
 			d->fields->addField_string(
 				rp_sprintf(C_("VGM", "%s Clock Rate"), "YM2608").c_str(),
 				d->formatClockRate(le32_to_cpu(vgmHeader->ym2608_clk)));
@@ -560,13 +574,15 @@ int VGM::loadFieldData(void)
 		}
 
 		// YM2610/YM2610B [1.51]
-		const uint32_t ym2610_clk = le32_to_cpu(vgmHeader->ym2610_clk);
-		if ((ym2610_clk & ~(1 << 31)) != 0) {
-			const char *const chip_name = (ym2610_clk & (1 << 31)) ? "YM2610B" : "YM2610";
+		if (offsetof(VGM_Header, ym2610_clk) < data_offset) {
+			const uint32_t ym2610_clk = le32_to_cpu(vgmHeader->ym2610_clk);
+			if ((ym2610_clk & ~(1 << 31)) != 0) {
+				const char *const chip_name = (ym2610_clk & (1 << 31)) ? "YM2610B" : "YM2610";
 
-			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
-				d->formatClockRate(ym2610_clk & ~(1 << 31)));
+				d->fields->addField_string(
+					rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
+					d->formatClockRate(ym2610_clk & ~(1 << 31)));
+			}
 		}
 
 		// YM2813 [1.51]
@@ -597,7 +613,7 @@ int VGM::loadFieldData(void)
 		SOUND_CHIP(pwm, "PWM");
 
 		// AY8910 [1.51]
-		if (vgmHeader->ay8910_clk != 0) {
+		if (offsetof(VGM_Header, ay8910_flags) < data_offset && vgmHeader->ay8910_clk != 0) {
 			const char *chip_name;
 			switch (vgmHeader->ay8910_type) {
 				default:
