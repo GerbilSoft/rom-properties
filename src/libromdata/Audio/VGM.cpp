@@ -432,9 +432,9 @@ int VGM::loadFieldData(void)
 	}
 
 	// SN76489 [1.00]
-	if (vgmHeader->sn76489_clk != 0) {
-		const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
-		// TODO: Dual-chip bit.
+	const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
+	if ((sn76489_clk & ~0xC0000000) != 0) {
+		// TODO: Handle the dual-chip bit.
 
 		// Check for T6W28.
 		const char *chip_name;
@@ -521,6 +521,38 @@ int VGM::loadFieldData(void)
 				rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
 				le32_to_cpu(vgmHeader->sega_pcm_if_reg),
 				RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+		}
+
+		// RF5C68 [1.51]
+		if (vgmHeader->rf5c68_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s clock rate"), "RF5C68").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->rf5c68_clk)));
+		}
+
+		// YM2203 [1.51]
+		if (vgmHeader->ym2203_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s clock rate"), "YM2203").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->ym2203_clk)));
+		}
+
+		// YM2608 [1.51]
+		if (vgmHeader->ym2608_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s clock rate"), "YM2608").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->ym2608_clk)));
+		}
+
+		// YM2610/YM2610B [1.51]
+		const uint32_t ym2610_clk = le32_to_cpu(vgmHeader->ym2610_clk);
+		printf("clk: %08X\n", ym2610_clk);
+		if ((ym2610_clk & ~(1 << 31)) != 0) {
+			const char *const chip_name = (ym2610_clk & (1 << 31)) ? "YM2610B" : "YM2610";
+
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s clock rate"), chip_name).c_str(),
+				d->formatClockRate(ym2610_clk & ~(1 << 31)));
 		}
 	}
 
