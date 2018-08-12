@@ -439,6 +439,24 @@ std::string formatFileSize(int64_t fileSize);
  */
 void trimEnd(std::string &str);
 
+/** Audio functions. **/
+
+/**
+ * Format a sample value as m:ss.cs.
+ * @param sample Sample value.
+ * @param rate Sample rate.
+ * @return m:ss.cs
+ */
+std::string formatSampleAsTime(unsigned int sample, unsigned int rate);
+
+/**
+ * Convert a sample value to milliseconds.
+ * @param sample Sample value.
+ * @param rate Sample rate.
+ * @return Milliseconds.
+ */
+unsigned int convSampleToMs(unsigned int sample, unsigned int rate);
+
 }
 #endif /* __cplusplus */
 

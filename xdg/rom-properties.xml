@@ -29,6 +29,18 @@
     </magic>
   </mime-type>
 
+  <!-- VGM -->
+  <mime-type type="audio/x-nsf">
+    <comment>Video Game Music audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.vgm"/>
+    <glob pattern="*.vgz"/>
+    <!--<glob pattern="*.vgm.gz"/>-->
+    <magic priority="50">
+      <match value="Vgm " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- *** Console *** -->
 
   <!-- Dreamcast -->

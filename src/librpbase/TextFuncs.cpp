@@ -401,4 +401,65 @@ void trimEnd(string &str)
 	str.resize(sz);
 }
 
+/** Audio functions. **/
+
+/**
+ * Format a sample value as m:ss.cs.
+ * @param sample Sample value.
+ * @param rate Sample rate.
+ * @return m:ss.cs
+ */
+string formatSampleAsTime(unsigned int sample, unsigned int rate)
+{
+	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
+	// used by multiple parsers.
+	char buf[32];
+	unsigned int min, sec, cs;
+
+	const unsigned int cs_frames = (sample % rate);
+	if (cs_frames != 0) {
+		// Calculate centiseconds.
+		cs = static_cast<unsigned int>(((float)cs_frames / (float)rate) * 100);
+	} else {
+		// No centiseconds.
+		cs = 0;
+	}
+
+	sec = sample / rate;
+	min = sec / 60;
+	sec %= 60;
+
+	int len = snprintf(buf, sizeof(buf), "%u:%02u.%02u", min, sec, cs);
+	if (len >= (int)sizeof(buf))
+		len = (int)sizeof(buf)-1;
+	return string(buf, len);
+}
+
+/**
+ * Convert a sample value to milliseconds.
+ * @param sample Sample value.
+ * @param rate Sample rate.
+ * @return Milliseconds.
+ */
+unsigned int convSampleToMs(unsigned int sample, unsigned int rate)
+{
+	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
+	// used by multiple parsers.
+	const unsigned int ms_frames = (sample % rate);
+	unsigned int sec, ms;
+	if (ms_frames != 0) {
+		// Calculate milliseconds.
+		ms = static_cast<unsigned int>(((float)ms_frames / (float)rate) * 1000);
+	} else {
+		// No milliseconds.
+		ms = 0;
+	}
+
+	// Calculate seconds.
+	sec = sample / rate;
+
+	// Convert to milliseconds and add the milliseconds value.
+	return (sec * 1000) + ms;
+}
+
 }

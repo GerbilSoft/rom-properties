@@ -19,6 +19,8 @@
   * ADX: CRI ADX audio format. Used by many Sega games.
   * GBS: Game Boy Sound System. Used for Game Boy audio rips.
   * NSF: Nintendo Sound Format. Used for NES audio rips.
+  * VGM: Video Gmae Music format. Used for all sorts of video game
+    audio rips, including Sega Mega Drive and Neo Geo Pocket
 
 * New parser features:
   * NES: Added support for the internal footer present in some ROMs. This

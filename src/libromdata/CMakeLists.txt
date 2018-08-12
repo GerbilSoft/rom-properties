@@ -57,6 +57,7 @@ SET(libromdata_SRCS
 	Audio/ADX.cpp
 	Audio/GBS.cpp
 	Audio/NSF.cpp
+	Audio/VGM.cpp
 
 	Other/Amiibo.cpp
 	Other/ELF.cpp
@@ -167,10 +168,12 @@ SET(libromdata_H
 	Audio/ADX.hpp
 	Audio/GBS.hpp
 	Audio/NSF.hpp
+	Audio/VGM.cpp
 
 	Audio/adx_structs.h
 	Audio/gbs_structs.h
 	Audio/nsf_structs.h
+	Audio/vgm_structs.h
 
 	Other/Amiibo.hpp
 	Other/ELF.hpp
