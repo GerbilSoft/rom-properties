@@ -32,6 +32,7 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -80,6 +81,13 @@ class PSFPrivate : public RomDataPrivate
 		 * @return "Ripped by" tag name.
 		 */
 		const char *getRippedByTagName(uint8_t version);
+
+		/**
+		 * Convert a PSF length string to milliseconds.
+		 * @param str PSF length string.
+		 * @return Milliseconds.
+		 */
+		static unsigned int lengthToMs(const char *str);
 };
 
 /** PSFPrivate **/
@@ -208,6 +216,137 @@ const char *PSFPrivate::getRippedByTagName(uint8_t version)
 		case PSF_VERSION_QSOUND:
 			return "qsfby";
 	}
+}
+
+/**
+ * Convert a PSF length string to milliseconds.
+ * @param str PSF length string.
+ * @return Milliseconds.
+ */
+unsigned int PSFPrivate::lengthToMs(const char *str)
+{
+	/**
+	 * Possible formats:
+	 * - seconds.decimal
+	 * - minutes:seconds.decimal
+	 * - hours:minutes:seconds.decimal
+	 *
+	 * Decimal may be omitted.
+	 * Commas are also accepted.
+	 */
+
+	// TODO: Verify 'frac' length.
+	// All fractional portions observed thus far are
+	// three digits (milliseconds).
+	unsigned int hour, min, sec, frac;
+
+	// Check the 'frac' length.
+	unsigned int frac_adj = 0;
+	const char *dp = strchr(str, '.');
+	if (!dp) {
+		dp = strchr(str, ',');
+	}
+	if (dp) {
+		// Found the decimal point.
+		// Count how many digits are after it.
+		unsigned int digit_count = 0;
+		dp++;
+		for (; *dp != '\0'; dp++) {
+			if (ISDIGIT(*dp)) {
+				// Found a digit.
+				digit_count++;
+			} else {
+				// Not a digit.
+				break;
+			}
+		}
+		switch (digit_count) {
+			case 0:
+				// No digits.
+				frac_adj = 0;
+				break;
+			case 1:
+				// One digit. (tenths)
+				frac_adj = 100;
+				break;
+			case 2:
+				// Two digits. (hundredths)
+				frac_adj = 10;
+				break;
+			case 3:
+				// Three digits. (thousandths)
+				frac_adj = 1;
+				break;
+			default:
+				// Too many digits...
+				// TODO: Mask these digits somehow.
+				frac_adj = 1;
+		}
+	}
+
+	// hours:minutes:seconds.decimal
+	int s = sscanf(str, "%u:%u:%u.%u", &hour, &min, &sec, &frac);
+	if (s != 4) {
+		s = sscanf(str, "%u:%u:%u,%u", &hour, &min, &sec, &frac);
+	}
+	if (s == 4) {
+		// Format matched.
+		return (hour * 60 * 60 * 1000) +
+		       (min * 60 * 1000) +
+		       (sec * 1000) +
+		       (frac * frac_adj);
+	}
+
+	// hours:minutes:seconds
+	s = sscanf(str, "%u:%u:%u", &hour, &min, &sec);
+	if (s == 3) {
+		// Format matched.
+		return (hour * 60 * 60 * 1000) +
+		       (min * 60 * 1000) +
+		       (sec * 1000);
+	}
+
+	// minutes:seconds.decimal
+	s = sscanf(str, "%u:%u.%u", &min, &sec, &frac);
+	if (s != 3) {
+		s = sscanf(str, "%u:%u,%u", &min, &sec, &frac);
+	}
+	if (s == 3) {
+		// Format matched.
+		return (min * 60 * 1000) +
+		       (sec * 1000) +
+		       (frac * frac_adj);
+	}
+
+	// minutes:seconds
+	s = sscanf(str, "%u:%u", &min, &sec);
+	if (s == 2) {
+		// Format matched.
+		return (min * 60 * 1000) +
+		       (sec * 1000);
+	}
+
+	// seconds.decimal
+	s = sscanf(str, "%u.%u", &sec, &frac);
+	if (s != 2) {
+		s = sscanf(str, "%u,%u", &sec, &frac);
+	}
+	if (s == 2) {
+		// Format matched.
+		return (min * 60 * 1000) +
+		       (sec * 1000) +
+		       (frac * frac_adj);
+	}
+
+	// seconds
+	s = sscanf(str, "%u", &sec);
+	if (s == 1) {
+		// Format matched.
+		return sec;
+	}
+
+	// No matches.
+	return 0;
 }
 
 /** PSF **/
@@ -539,7 +678,143 @@ int PSF::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int PSF::loadMetaData(void)
+{
+	RP_D(PSF);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// PSF header.
+	const PSF_Header *const psfHeader = &d->psfHeader;
+
+	// Attempt to parse the tags before doing anything else.
+	const int64_t tag_addr = (int64_t)sizeof(*psfHeader) +
+		le32_to_cpu(psfHeader->reserved_size) +
+		le32_to_cpu(psfHeader->compressed_prg_length);
+	unordered_map<string, string> tags = d->parseTags(tag_addr);
+
+	if (tags.empty()) {
+		// No tags.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// PSF metadata:
+	// - 8 properties in the "[TAG]" section.
+	d->metaData->reserve(8);
+
+	// Title
+	auto iter = tags.find("title");
+	if (iter != tags.end()) {
+		d->metaData->addMetaData_string(Property::Title, iter->second);
+	}
+
+	// Artist
+	iter = tags.find("artist");
+	if (iter != tags.end()) {
+		d->metaData->addMetaData_string(Property::Artist, iter->second);
+	}
+
+	// Game
+	iter = tags.find("game");
+	if (iter != tags.end()) {
+		// NOTE: Not exactly "album"...
+		d->metaData->addMetaData_string(Property::Album, iter->second);
+	}
+
+	// Release Date
+	// NOTE: The tag is "year", but it may be YYYY-MM-DD.
+	iter = tags.find("year");
+	if (iter != tags.end()) {
+		// Parse the release date.
+		// NOTE: Only year is supported.
+		int year;
+		char chr;
+		int s = sscanf(iter->second.c_str(), "%04d%c", &year, &chr);
+		if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
+			// Year seems to be valid.
+			// Make sure the number is acceptable:
+			// - No negatives.
+			// - Four-digit only. (lol Y10K)
+			if (year >= 0 && year < 10000) {
+				d->metaData->addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
+			}
+		}
+	}
+
+	// Genre
+	iter = tags.find("genre");
+	if (iter != tags.end()) {
+		d->metaData->addMetaData_string(Property::Genre, iter->second);
+	}
+
+	// Copyright
+	iter = tags.find("copyright");
+	if (iter != tags.end()) {
+		d->metaData->addMetaData_string(Property::Copyright, iter->second);
+	}
+
+#if 0
+	// FIXME: No property for this...
+	// Ripped By
+	// NOTE: The tag varies based on PSF version.
+	const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
+	iter = tags.find(ripped_by_tag);
+	if (iter != tags.end()) {
+		// FIXME: No property for this...
+		d->metaData->addMetaData_string(Property::RippedBy, iter->second);
+	} else {
+		// Try "psfby" if the system-specific one isn't there.
+		iter = tags.find("psfby");
+		if (iter != tags.end()) {
+			// FIXME: No property for this...
+			d->metaData->addMetaData_string(Property::RippedBy, iter->second);
+		}
+	}
+#endif
+
+	// Duration
+	//
+	// Possible formats:
+	// - seconds.decimal
+	// - minutes:seconds.decimal
+	// - hours:minutes:seconds.decimal
+	//
+	// Decimal may be omitted.
+	// Commas are also accepted.
+	iter = tags.find("length");
+	if (iter != tags.end()) {
+		// Convert the length string to milliseconds.
+		const unsigned int ms = d->lengthToMs(iter->second.c_str());
+		d->metaData->addMetaData_integer(Property::Duration, ms);
+	}
+
+	// Comment
+	iter = tags.find("comment");
+	if (iter != tags.end()) {
+		d->metaData->addMetaData_string(Property::Comment, iter->second);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
