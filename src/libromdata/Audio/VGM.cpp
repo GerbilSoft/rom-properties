@@ -445,7 +445,7 @@ int VGM::loadFieldData(void)
 		}
 
 		d->fields->addField_string(
-			rp_sprintf(C_("VGM", "%s clock rate"), chip_name).c_str(),
+			rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
 			d->formatClockRate(sn76489_clk & ~0xC0000000));
 
 		// LFSR data. [1.10; defaults used for older versions]
@@ -493,7 +493,7 @@ int VGM::loadFieldData(void)
 	do { \
 		if (vgmHeader->field##_clk != 0) { \
 			d->fields->addField_string( \
-				rp_sprintf(C_("VGM", "%s clock rate"), display).c_str(), \
+				rp_sprintf(C_("VGM", "%s Clock Rate"), display).c_str(), \
 				d->formatClockRate(le32_to_cpu(vgmHeader->field##_clk))); \
 		} \
 	} while (0)
@@ -513,7 +513,7 @@ int VGM::loadFieldData(void)
 		// Sega PCM [1.51]
 		if (vgmHeader->sega_pcm_clk != 0) {
 			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s clock rate"), "Sega PCM").c_str(),
+				rp_sprintf(C_("VGM", "%s Clock Rate"), "Sega PCM").c_str(),
 				d->formatClockRate(le32_to_cpu(vgmHeader->sega_pcm_clk)));
 			d->fields->addField_string_numeric(
 				rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
@@ -524,11 +524,40 @@ int VGM::loadFieldData(void)
 		// RF5C68 [1.51]
 		SOUND_CHIP(rf5c68, "RF5C68");
 
+		// AY8910 flags.
+		// Used for YM2203, YM2608, and AY8910.
+		static const char *const ay8910_flags_bitfield_names[] = {
+			NOP_C_("VGM|AY8910Flags", "Legacy Output"),
+			NOP_C_("VGM|AY8910Flags", "Single Output"),
+			NOP_C_("VGM|AY8910Flags", "Discrete Output"),
+			NOP_C_("VGM|AY8910Flags", "Raw Output"),
+		};
+
 		// YM2203 [1.51]
-		SOUND_CHIP(ym2203, "YM2203");
+		if (vgmHeader->ym2203_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s Clock Rate"), "YM2203").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->ym2203_clk)));
+
+			// TODO: Is AY8910 type needed?
+			vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
+			d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), "YM2203 (AY8910)").c_str(),
+				v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2203_ay8910_flags);
+		}
 
 		// YM2608 [1.51]
-		SOUND_CHIP(ym2608, "YM2608");
+		if (vgmHeader->ym2608_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s Clock Rate"), "YM2608").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->ym2608_clk)));
+
+			// TODO: Is AY8910 type needed?
+			vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
+			d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), "YM2608 (AY8910)").c_str(),
+				v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2608_ay8910_flags);
+		}
 
 		// YM2610/YM2610B [1.51]
 		const uint32_t ym2610_clk = le32_to_cpu(vgmHeader->ym2610_clk);
@@ -536,8 +565,79 @@ int VGM::loadFieldData(void)
 			const char *const chip_name = (ym2610_clk & (1 << 31)) ? "YM2610B" : "YM2610";
 
 			d->fields->addField_string(
-				rp_sprintf(C_("VGM", "%s clock rate"), chip_name).c_str(),
+				rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
 				d->formatClockRate(ym2610_clk & ~(1 << 31)));
+		}
+
+		// YM2813 [1.51]
+		SOUND_CHIP(ym3812, "YM3812");
+
+		// YM3526 [1.51]
+		SOUND_CHIP(ym3526, "YM3526");
+
+		// Y8950 [1.51]
+		SOUND_CHIP(y8950, "Y8950");
+
+		// YMF262 [1.51]
+		SOUND_CHIP(ymf262, "YMF262");
+
+		// YMF278B [1.51]
+		SOUND_CHIP(ymf278b, "YMF278B");
+
+		// YMF271 [1.51]
+		SOUND_CHIP(ymf271, "YMF271");
+
+		// YMZ280B [1.51]
+		SOUND_CHIP(ymz280b, "YMZ280B");
+
+		// RF5C164 [1.51]
+		SOUND_CHIP(rf5c164, "RF5C164");
+
+		// PWM [1.51]
+		SOUND_CHIP(pwm, "PWM");
+
+		// AY8910 [1.51]
+		if (vgmHeader->ay8910_clk != 0) {
+			const char *chip_name;
+			switch (vgmHeader->ay8910_type) {
+				default:
+					// TODO: Print the type ID?
+					chip_name = "AYxxxx";
+					break;
+				case 0x00:
+					chip_name = "AY8910";
+					break;
+				case 0x01:
+					chip_name = "AY8912";
+					break;
+				case 0x02:
+					chip_name = "AY8913";
+					break;
+				case 0x03:
+					chip_name = "AY8930";
+					break;
+				case 0x10:
+					chip_name = "YM2149";
+					break;
+				case 0x11:
+					chip_name = "YM3439";
+					break;
+				case 0x12:
+					chip_name = "YMZ284";
+					break;
+				case 0x13:
+					chip_name = "YMZ294";
+					break;
+			}
+
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->ay8910_clk)));
+
+			vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
+			d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), chip_name).c_str(),
+				v_ay8910_flags_bitfield_names, 2, vgmHeader->ay8910_flags);
 		}
 	}
 
