@@ -95,17 +95,17 @@ string VGMPrivate::formatClockRate(unsigned int clock_rate)
 		// kHz
 		const unsigned int whole = clock_rate / 1000;
 		const unsigned int frac = clock_rate % 1000;
-		return rp_sprintf_p(C_("VGM", "%1$u.%2$u kHz"), whole, frac);
+		return rp_sprintf_p(C_("VGM", "%1$u.%2$03u kHz"), whole, frac);
 	} else if (clock_rate < 1000000000) {
 		// MHz
 		const unsigned int whole = clock_rate / 1000000;
 		const unsigned int frac = (clock_rate / 1000) % 1000;
-		return rp_sprintf_p(C_("VGM", "%1$u.%2$u MHz"), whole, frac);
+		return rp_sprintf_p(C_("VGM", "%1$u.%2$03u MHz"), whole, frac);
 	} else {
 		// GHz
 		const unsigned int whole = clock_rate / 1000000000;
 		const unsigned int frac = (clock_rate / 1000000) % 1000;
-		return rp_sprintf_p(C_("VGM", "%1$u.%2$u GHz"), whole, frac);
+		return rp_sprintf_p(C_("VGM", "%1$u.%2$03u GHz"), whole, frac);
 	}
 }
 
