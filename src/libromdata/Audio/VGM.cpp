@@ -286,7 +286,7 @@ int VGM::loadFieldData(void)
 
 	// VGM header.
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
-	d->fields->reserve(1);	// Maximum of 1 fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	// Version number. (BCD)
 	unsigned int version = le32_to_cpu(vgmHeader->version);
@@ -308,6 +308,14 @@ int VGM::loadFieldData(void)
 	if (vgmHeader->loop_offset != 0) {
 		d->fields->addField_string(C_("VGM", "Loop Offset"),
 			formatSampleAsTime(le32_to_cpu(vgmHeader->loop_offset), VGM_SAMPLE_RATE));
+	}
+
+	// Framerate. (VGM 1.01)
+	if (version >= 0x0101) {
+		if (vgmHeader->frame_rate != 0) {
+			d->fields->addField_string_numeric(C_("VGM", "Frame Rate"),
+				le32_to_cpu(vgmHeader->frame_rate));
+		}
 	}
 
 	// SN76489
