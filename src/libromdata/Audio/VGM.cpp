@@ -368,12 +368,12 @@ int VGM::loadFieldData(void)
 
 	// VGM header.
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields->reserve(19);	// Maximum of 19 fields.
 
 	// Version number. (BCD)
-	unsigned int version = le32_to_cpu(vgmHeader->version);
+	unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
 	d->fields->addField_string(C_("VGM", "VGM Version"),
-		rp_sprintf_p(C_("VGM", "%1$x.%2$02x"), version >> 8, version & 0xFF));
+		rp_sprintf_p(C_("VGM", "%1$x.%2$02x"), vgm_version >> 8, vgm_version & 0xFF));
 
 	// NOTE: Not byteswapping when checking for 0 because
 	// 0 in big-endian is the same as 0 in little-endian.
@@ -424,7 +424,7 @@ int VGM::loadFieldData(void)
 	}
 
 	// Framerate. [1.01]
-	if (version >= 0x0101) {
+	if (vgm_version >= 0x0101) {
 		if (vgmHeader->frame_rate != 0) {
 			d->fields->addField_string_numeric(C_("VGM", "Frame Rate"),
 				le32_to_cpu(vgmHeader->frame_rate));
@@ -451,7 +451,7 @@ int VGM::loadFieldData(void)
 		// LFSR data. [1.10; defaults used for older versions]
 		uint16_t lfsr_feedback = 0x0009;
 		uint8_t lfsr_width = 16;
-		if (vgmHeader->version >= 0x0110) {
+		if (vgm_version >= 0x0110) {
 			if (vgmHeader->sn76489_lfsr != 0) {
 				lfsr_feedback = le16_to_cpu(vgmHeader->sn76489_lfsr);
 			}
@@ -466,6 +466,26 @@ int VGM::loadFieldData(void)
 		d->fields->addField_string_numeric(
 			rp_sprintf(C_("VGM", "%s LFSR width"), chip_name).c_str(),
 			lfsr_width);
+
+		// Flags. [1.51]
+		uint32_t psg_flags;
+		if (vgm_version >= 0x0151) {
+			// NOTE: Bits 2 and 3 are active low, so invert them here.
+			psg_flags = vgmHeader->sn76489_flags ^ 0x0C;
+		} else {
+			// No PSG flags.
+			psg_flags = 0;
+		}
+		static const char *const psg_flags_bitfield_names[] = {
+			NOP_C_("VGM|PSGFlags", "Freq 0 is 0x400"),
+			NOP_C_("VGM|PSGFlags", "Output Negate"),
+			NOP_C_("VGM|PSGFlags", "Stereo"),
+			NOP_C_("VGM|PSGFlags", "/8 Clock Divider"),
+		};
+		vector<string> *const v_psg_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+			"VGM|PSGFlags", psg_flags_bitfield_names, ARRAY_SIZE(psg_flags_bitfield_names));
+		d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), chip_name).c_str(),
+			v_psg_flags_bitfield_names, 2, psg_flags);
 	}
 
 	// YM2413 [1.00]
@@ -475,7 +495,7 @@ int VGM::loadFieldData(void)
 			d->formatClockRate(le32_to_cpu(vgmHeader->ym2413_clk)));
 	}
 
-	if (version >= 0x0110) {
+	if (vgm_version >= 0x0110) {
 		// YM2612 [1.10]
 		if (vgmHeader->ym2612_clk != 0) {
 			d->fields->addField_string(
@@ -488,6 +508,19 @@ int VGM::loadFieldData(void)
 			d->fields->addField_string(
 				rp_sprintf(C_("VGM", "%s clock rate"), "YM2151").c_str(),
 				d->formatClockRate(le32_to_cpu(vgmHeader->ym2151_clk)));
+		}
+	}
+
+	if (vgm_version >= 0x0151) {
+		// Sega PCM [1.51]
+		if (vgmHeader->sega_pcm_clk != 0) {
+			d->fields->addField_string(
+				rp_sprintf(C_("VGM", "%s clock rate"), "Sega PCM").c_str(),
+				d->formatClockRate(le32_to_cpu(vgmHeader->sega_pcm_clk)));
+			d->fields->addField_string_numeric(
+				rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
+				le32_to_cpu(vgmHeader->sega_pcm_if_reg),
+				RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 		}
 	}
 
