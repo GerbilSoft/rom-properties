@@ -80,6 +80,7 @@ using std::vector;
 #include "Audio/ADX.hpp"
 #include "Audio/GBS.hpp"
 #include "Audio/NSF.hpp"
+#include "Audio/PSF.hpp"
 #include "Audio/VGM.hpp"
 
 // RomData subclasses: Other
@@ -229,6 +230,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(ADX, false),
 	GetRomDataFns(GBS, false),
 	GetRomDataFns(NSF, false),
+	GetRomDataFns(PSF, false),
 	GetRomDataFns(VGM, false),
 
 	// Other
