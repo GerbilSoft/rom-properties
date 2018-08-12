@@ -126,6 +126,7 @@ button.
 | CRI ADX ADPCM                 |       Yes      |       N/A       |       N/A      |    Yes   |
 | Game Boy Sound System         |       Yes      |       N/A       |       N/A      |    Yes   |
 | Nintendo Sound Format         |       Yes      |       N/A       |       N/A      |    Yes   |
+| Portable Sound Format         |       Yes      |       N/A       |       N/A      |    Yes   |
 | Video Game Music              |       Yes      |       N/A       |       N/A      |    Yes   |
 
 ### Other
