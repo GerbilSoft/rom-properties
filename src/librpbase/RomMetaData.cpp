@@ -102,8 +102,8 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::Integer,	// Duration
 	PropertyType::String,	// Genre
 	PropertyType::Integer,	// Sample Rate
-	PropertyType::Integer,	// Track number
-	PropertyType::Integer,	// Release Year
+	PropertyType::UnsignedInteger,	// Track number
+	PropertyType::UnsignedInteger,	// Release Year
 	PropertyType::String,	// Comment
 	PropertyType::String,	// Artist
 	PropertyType::String,	// Album
@@ -247,13 +247,12 @@ void RomMetaDataPrivate::delete_data(void)
 
 		switch (PropertyTypeMap[metaData.name]) {
 			case PropertyType::Integer:
+			case PropertyType::UnsignedInteger:
 				// No data here.
 				break;
-
 			case PropertyType::String:
 				delete const_cast<string*>(metaData.data.str);
 				break;
-
 			default:
 				// ERROR!
 				assert(!"Unsupported RomMetaData PropertyType.");
@@ -334,13 +333,14 @@ void RomMetaData::detach(void)
 		metaData_new.type = metaData_old.type;
 		switch (metaData_old.type) {
 			case PropertyType::Integer:
-				metaData_new.data.value = metaData_old.data.value;
+				metaData_new.data.ivalue = metaData_old.data.ivalue;
 				break;
-
+			case PropertyType::UnsignedInteger:
+				metaData_new.data.uvalue = metaData_old.data.uvalue;
+				break;
 			case PropertyType::String:
 				metaData_new.data.str = new string(*metaData_old.data.str);
 				break;
-
 			default:
 				// ERROR!
 				assert(!"Unsupported RomMetaData PropertyType.");
@@ -443,13 +443,14 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 		metaData.type = src->type;
 		switch (metaData.type) {
 			case PropertyType::Integer:
-				metaData.data.value = src->data.value;
+				metaData.data.ivalue = src->data.ivalue;
 				break;
-
+			case PropertyType::UnsignedInteger:
+				metaData.data.uvalue = src->data.uvalue;
+				break;
 			case PropertyType::String:
 				metaData.data.str = new string(*src->data.str);
 				break;
-
 			default:
 				// ERROR!
 				assert(!"Unsupported RomMetaData PropertyType.");
@@ -489,7 +490,39 @@ int RomMetaData::addMetaData_integer(Property::Property name, int value)
 
 	metaData.name = name;
 	metaData.type = PropertyType::Integer;
-	metaData.data.value = value;
+	metaData.data.ivalue = value;
+	return idx;
+}
+
+/**
+ * Add an unsigned integer metadata property.
+ * @param name Metadata name.
+ * @param val Unsigned integer value.
+ * @return Metadata index.
+ */
+int RomMetaData::addMetaData_uint(Property::Property name, unsigned int value)
+{
+	assert(name > Property::FirstProperty);
+	assert(name < Property::PropertyCount);
+	if (name <= Property::FirstProperty ||
+	    name >= Property::PropertyCount)
+	{
+		return -1;
+	}
+
+	// Make sure this is an integer property.
+	assert(RomMetaDataPrivate::PropertyTypeMap[name] == PropertyType::UnsignedInteger);
+	if (RomMetaDataPrivate::PropertyTypeMap[name] != PropertyType::UnsignedInteger)
+		return -1;
+
+	RP_D(RomMetaData);
+	int idx = static_cast<int>(d->metaData.size());
+	d->metaData.resize(idx+1);
+	MetaData &metaData = d->metaData.at(idx);
+
+	metaData.name = name;
+	metaData.type = PropertyType::UnsignedInteger;
+	metaData.data.uvalue = value;
 	return idx;
 }
 

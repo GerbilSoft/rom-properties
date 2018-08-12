@@ -561,7 +561,7 @@ int VGM::loadMetaData(void)
 					// - No negatives.
 					// - Four-digit only. (lol Y10K)
 					if (year >= 0 && year < 10000) {
-						d->metaData->addMetaData_integer(Property::ReleaseYear, year);
+						d->metaData->addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
 					}
 				}
 			}

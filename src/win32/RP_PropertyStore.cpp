@@ -297,31 +297,34 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 			continue;
 		}
 
+		// FIXME: UIx should only accept PropertyType::UnsignedInteger,
+		// and Ix should only accept PropertyType::Integer.
 		PROPVARIANT prop_var;
 		switch (conv.vtype) {
 			case VT_UI8: {
-				// FIXME: Signed vs. unsigned?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				// FIXME: 64-bit values?
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
+
 				// NOTE: Converting duration from ms to 100ns.
 				if (prop->name == LibRpBase::Property::Duration) {
-					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.value) * 10000ULL;
+					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.uvalue) * 10000ULL;
 					InitPropVariantFromUInt64(duration_100ns, &prop_var);
 				} else {
 					// Use the value as-is.
-					InitPropVariantFromUInt64(static_cast<uint64_t>(prop->data.value), &prop_var);
+					InitPropVariantFromUInt64(static_cast<uint64_t>(prop->data.uvalue), &prop_var);
 				}
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;
 			}
 			case VT_UI4:
-				// FIXME: Signed vs. unsigned?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				InitPropVariantFromUInt32(static_cast<uint32_t>(prop->data.value), &prop_var);
+
+				InitPropVariantFromUInt32(static_cast<uint32_t>(prop->data.uvalue), &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 
@@ -329,76 +332,77 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				switch (prop->name) {
 					case LibRpBase::Property::Width:
 						assert(dimensions.cx == 0);
-						dimensions.cx = static_cast<uint32_t>(prop->data.value);
+						dimensions.cx = static_cast<uint32_t>(prop->data.uvalue);
 						break;
 					case LibRpBase::Property::Height:
 						assert(dimensions.cy == 0);
-						dimensions.cy = static_cast<uint32_t>(prop->data.value);
+						dimensions.cy = static_cast<uint32_t>(prop->data.uvalue);
 						break;
 					default:
 						break;
 				}
 				break;
 			case VT_UI2:
-				// FIXME: Signed vs. unsigned?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				InitPropVariantFromUInt16(static_cast<uint16_t>(prop->data.value), &prop_var);
+
+				InitPropVariantFromUInt16(static_cast<uint16_t>(prop->data.uvalue), &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;
 			case VT_UI1:
-				// FIXME: Signed vs. unsigned?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				InitPropVariantFromUInt8(static_cast<uint8_t>(prop->data.value), &prop_var);
+
+				InitPropVariantFromUInt8(static_cast<uint8_t>(prop->data.uvalue), &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;
 
 			case VT_I8: {
 				// FIXME: 64-bit values?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				InitPropVariantFromInt64(static_cast<int64_t>(prop->data.value), &prop_var);
+
+				InitPropVariantFromInt64(static_cast<int64_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;
 			}
 			case VT_I4:
-				// FIXME: Signed vs. unsigned?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				InitPropVariantFromInt32(static_cast<int32_t>(prop->data.value), &prop_var);
+
+				InitPropVariantFromInt32(static_cast<int32_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;
 			case VT_I2:
-				// FIXME: Signed vs. unsigned?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				InitPropVariantFromInt16(static_cast<int16_t>(prop->data.value), &prop_var);
+
+				InitPropVariantFromInt16(static_cast<int16_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;
 			case VT_I1:
-				// FIXME: Signed vs. unsigned?
-				assert(prop->type == LibRpBase::PropertyType::Integer);
-				if (prop->type != LibRpBase::PropertyType::Integer)
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				InitPropVariantFromInt8(static_cast<int8_t>(prop->data.value), &prop_var);
+
+				InitPropVariantFromInt8(static_cast<int8_t>(prop->data.ivalue), &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;
 
 			case VT_BSTR:
-				assert(prop->type == LibRpBase::PropertyType::String);
-				if (prop->type != LibRpBase::PropertyType::String)
+				assert(prop->type == PropertyType::String);
+				if (prop->type != PropertyType::String)
 					continue;
 				InitPropVariantFromString(
 					prop->data.str ? U82W_s(*prop->data.str) : L"",
@@ -409,8 +413,8 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 
 			case VT_VECTOR|VT_BSTR: {
 				// For now, assuming an array with a single string.
-				assert(prop->type == LibRpBase::PropertyType::String);
-				if (prop->type != LibRpBase::PropertyType::String)
+				assert(prop->type == PropertyType::String);
+				if (prop->type != PropertyType::String)
 					continue;
 
 				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
