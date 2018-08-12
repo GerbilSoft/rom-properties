@@ -368,7 +368,7 @@ int VGM::loadFieldData(void)
 
 	// VGM header.
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
-	d->fields->reserve(19);	// Maximum of 19 fields.
+	d->fields->reserve(23);	// Maximum of 23 fields.
 
 	// Version number. (BCD)
 	unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
@@ -546,7 +546,6 @@ int VGM::loadFieldData(void)
 
 		// YM2610/YM2610B [1.51]
 		const uint32_t ym2610_clk = le32_to_cpu(vgmHeader->ym2610_clk);
-		printf("clk: %08X\n", ym2610_clk);
 		if ((ym2610_clk & ~(1 << 31)) != 0) {
 			const char *const chip_name = (ym2610_clk & (1 << 31)) ? "YM2610B" : "YM2610";
 
