@@ -72,6 +72,8 @@ GBSPrivate::GBSPrivate(GBS *q, IRpFile *file)
 	memset(&gbsHeader, 0, sizeof(gbsHeader));
 }
 
+/** GBS **/
+
 /**
  * Read a GBS audio file.
  *

@@ -72,6 +72,8 @@ NSFPrivate::NSFPrivate(NSF *q, IRpFile *file)
 	memset(&nsfHeader, 0, sizeof(nsfHeader));
 }
 
+/** NSF **/
+
 /**
  * Read an NSF audio file.
  *
