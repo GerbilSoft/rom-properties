@@ -123,6 +123,17 @@ class DMGPrivate : public RomDataPrivate
 		 */
 		static inline int RomSize(uint8_t type);
 
+		/**
+		 * Format ROM/RAM sizes, in KiB.
+		 *
+		 * This function expects the size to be a multiple of 1024,
+		 * so it doesn't do any fractional rounding or printing.
+		 *
+		 * @param size File size.
+		 * @return Formatted file size.
+		 */
+		inline string formatROMSizeKiB(unsigned int size);
+
 	public:
 		/**
 		 * DMG RAM size array.
@@ -151,6 +162,9 @@ class DMGPrivate : public RomDataPrivate
 	public:
 		// ROM header.
 		DMG_RomHeader romHeader;
+
+		// GBX footer.
+		GBX_Footer gbxFooter;
 };
 
 /** DMGPrivate **/
@@ -226,6 +240,7 @@ DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+	memset(&gbxFooter, 0, sizeof(gbxFooter));
 }
 
 /**
@@ -261,6 +276,20 @@ inline int DMGPrivate::RomSize(uint8_t type)
 		return rom_size_52[type-0x52];
 	}
 	return -1;
+}
+
+/**
+ * Format ROM/RAM sizes, in KiB.
+ *
+ * This function expects the size to be a multiple of 1024,
+ * so it doesn't do any fractional rounding or printing.
+ *
+ * @param size File size.
+ * @return Formatted file size.
+ */
+inline string DMGPrivate::formatROMSizeKiB(unsigned int size)
+{
+	return rp_sprintf("%u KiB", (size / 1024));
 }
 
 /**
@@ -338,6 +367,18 @@ DMG::DMG(IRpFile *file)
 	} else {
 		delete d->file;
 		d->file = nullptr;
+		return;
+	}
+
+	// Attempt to read the GBX footer.
+	int64_t addr = file->size() - sizeof(GBX_Footer);
+	if (addr >= (int64_t)sizeof(GBX_Footer)) {
+		size = file->seekAndRead(addr, &d->gbxFooter, sizeof(d->gbxFooter));
+		if (size != sizeof(d->gbxFooter)) {
+			// Unable to read the footer.
+			// Zero out the magic number just in case.
+			d->gbxFooter.magic = 0;
+		}
 	}
 }
 
@@ -429,6 +470,9 @@ const char *const *DMG::supportedFileExtensions_static(void)
 		".gb",  ".sgb", ".sgb2",
 		".gbc", ".cgb",
 
+		// ROMs with GBX footer.
+		".gbx",
+
 		nullptr
 	};
 	return exts;
@@ -477,7 +521,15 @@ int DMG::loadFieldData(void)
 
 	// DMG ROM header, excluding the RST table.
 	const DMG_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(12);	// Maximum of 12 fields.
+
+	// NES ROM header:
+	// - 12 regular fields.
+	// - 5 fields for the GBX footer.
+	d->fields->reserve(12+5);
+
+	// Reserve at least 2 tabs:
+	// DMG, GBX
+	d->fields->reserveTabs(2);
 
 	// Game title & Game ID
 	/* NOTE: there are two approaches for doing this, when the 15 bytes are all used
@@ -572,6 +624,15 @@ int DMG::loadFieldData(void)
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
 	d->fields->addField_bitfield(C_("DMG", "System"),
 		v_system_bitfield_names, 0, dmg_system);
+
+	// Set the tab name based on the system.
+	if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
+		d->fields->setTabName(0, "CGB");
+	} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
+		d->fields->setTabName(0, "SGB");
+	} else {
+		d->fields->setTabName(0, "DMG");
+	}
 
 	// Entry Point
 	if ((romHeader->entry[0] == 0x00 ||	// NOP
@@ -731,6 +792,156 @@ int DMG::loadFieldData(void)
 	} else {
 		d->fields->addField_string(C_("DMG", "Checksum"),
 			rp_sprintf(C_("DMG", "0x%02X (valid)"), checksum));
+	}
+
+	/** GBX footer. **/
+	const GBX_Footer *const gbxFooter = &d->gbxFooter;
+	if (gbxFooter->magic == cpu_to_be32(GBX_MAGIC)) {
+		// GBX footer is present.
+		d->fields->addTab("GBX");
+
+		// GBX version.
+		// TODO: Do things based on the version number?
+		d->fields->addField_string(C_("DMG", "GBX Version"),
+			rp_sprintf_p(C_("DMG", "%1$u.%2$u"),
+				be32_to_cpu(gbxFooter->version.major),
+				be32_to_cpu(gbxFooter->version.minor)));
+
+		// Mapper.
+		const char *mapper;
+		switch (be32_to_cpu(gbxFooter->mapper_id)) {
+			default:
+				mapper = nullptr;
+				break;
+
+			// Nintendo
+			case GBX_MAPPER_ROM_ONLY:
+				mapper = "ROM only";
+				break;
+			case GBX_MAPPER_MBC1:
+				mapper = "Nintendo MBC1";
+				break;
+			case GBX_MAPPER_MBC2:
+				mapper = "Nintendo MBC2";
+				break;
+			case GBX_MAPPER_MBC3:
+				mapper = "Nintendo MBC3";
+				break;
+			case GBX_MAPPER_MBC5:
+				mapper = "Nintendo MBC5";
+				break;
+			case GBX_MAPPER_MBC7:
+				mapper = "Nintendo MBC7 (tilt sensor)";
+				break;
+			case GBX_MAPPER_MBC1_MULTICART:
+				mapper = "Nintendo MBC1 multicart";
+				break;
+			case GBX_MAPPER_MMM01:
+				mapper = "Nintendo/Mani MMM01";
+				break;
+			case GBX_MAPPER_POCKET_CAMERA:
+				mapper = "Nintendo Game Boy Camera";
+				break;
+
+			// Licensed third-party
+			case GBX_MAPPER_HuC1:
+				mapper = "Hudson HuC1";
+				break;
+			case GBX_MAPPER_HuC3:
+				mapper = "Hudson HuC3";
+				break;
+			case GBX_MAPPER_TAMA5:
+				mapper = "Bandai TAMA5";
+				break;
+
+			// Unlicensed
+			case GBX_MAPPER_BBD:
+				mapper = "BBD";
+				break;
+			case GBX_MAPPER_HITEK:
+				mapper = "Hitek";
+				break;
+			case GBX_MAPPER_SINTAX:
+				mapper = "Sintax";
+				break;
+			case GBX_MAPPER_NT_OLDER_TYPE_1:
+				mapper = "NT older type 1";
+				break;
+			case GBX_MAPPER_NT_OLDER_TYPE_2:
+				mapper = "NT older type 2";
+				break;
+			case GBX_MAPPER_NT_NEWER:
+				mapper = "NT newer";
+				break;
+			case GBX_MAPPER_LI_CHENG:
+				mapper = "Li Cheng";
+				break;
+			case GBX_MAPPER_LAST_BIBLE:
+				mapper = "\"Last Bible\" multicart";
+				break;
+			case GBX_MAPPER_LIEBAO:
+				mapper = "Liebao Technology";
+				break;
+		}
+
+		if (mapper) {
+			d->fields->addField_string(C_("DMG", "Mapper"), mapper);
+		} else {
+			// If the mapper ID is all printable characters, print the mapper as text.
+			// Otherwise, print a hexdump.
+			if (ISPRINT(gbxFooter->mapper[0]) &&
+			    ISPRINT(gbxFooter->mapper[1]) &&
+			    ISPRINT(gbxFooter->mapper[2]) &&
+			    ISPRINT(gbxFooter->mapper[3]))
+			{
+				// All printable.
+				d->fields->addField_string(C_("DMG", "Mapper"),
+					latin1_to_utf8(gbxFooter->mapper, sizeof(gbxFooter->mapper)),
+					RomFields::STRF_MONOSPACE);
+			} else {
+				// Not printable. Print a hexdump.
+				d->fields->addField_string_hexdump(C_("DMG", "Mapper"),
+					reinterpret_cast<const uint8_t*>(&gbxFooter->mapper[0]),
+					sizeof(gbxFooter->mapper),
+					RomFields::STRF_MONOSPACE);
+			}
+		}
+
+		// Features.
+		// NOTE: Same strings as the regular DMG header,
+		// but the bitfield ordering is different.
+		// NOTE: GBX spec says 00 = not present, 01 = present.
+		// Assuming any non-zero value is present.
+		uint32_t gbx_features = 0;
+		if (gbxFooter->battery_flag) {
+			gbx_features |= (1 << 0);
+		}
+		if (gbxFooter->rumble_flag) {
+			gbx_features |= (1 << 1);
+		}
+		if (gbxFooter->timer_flag) {
+			gbx_features |= (1 << 2);
+		}
+
+		static const char *const gbx_feature_bitfield_names[] = {
+			NOP_C_("DMG|Features", "Battery"),
+			NOP_C_("DMG|Features", "Rumble"),
+			NOP_C_("DMG|Features", "Timer"),
+		};
+		vector<string> *const v_gbx_feature_bitfield_names = RomFields::strArrayToVector_i18n(
+			"DMG|Features", gbx_feature_bitfield_names, ARRAY_SIZE(gbx_feature_bitfield_names));
+		d->fields->addField_bitfield(C_("DMG", "Features"),
+			v_gbx_feature_bitfield_names, 0, gbx_features);
+
+		// ROM size, in bytes.
+		// TODO: Use formatFileSize() instead?
+		d->fields->addField_string(C_("DMG", "ROM Size"),
+			d->formatROMSizeKiB(be32_to_cpu(gbxFooter->rom_size)));
+
+		// RAM size, in bytes.
+		// TODO: Use formatFileSize() instead?
+		d->fields->addField_string(C_("DMG", "RAM Size"),
+			d->formatROMSizeKiB(be32_to_cpu(gbxFooter->ram_size)));
 	}
 
 	return (int)d->fields->count();

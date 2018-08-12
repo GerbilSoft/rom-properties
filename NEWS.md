@@ -21,6 +21,9 @@
   * NSF: Nintendo Sound Format. Used for NES audio rips.
 
 * New parser features:
+  * DMG: Added support for GBX footer. This is used to indicate certain
+    cartridge features that either can't be represented in the DMG header
+    or aren't properly represented in e.g. unlicensed games.
   * NES: Added support for the internal footer present in some ROMs. This
     footer is used for, among other things, FamicomBox.
 

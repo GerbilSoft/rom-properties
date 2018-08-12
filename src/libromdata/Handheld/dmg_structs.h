@@ -81,6 +81,71 @@ typedef struct PACKED _DMG_RomHeader {
 } DMG_RomHeader;
 ASSERT_STRUCT(DMG_RomHeader, 80);
 
+/**
+ * GBX footer.
+ * All fields are in big-endian.
+ *
+ * References:
+ * - http://hhug.me/gbx/1.0
+ * - https://github.com/GerbilSoft/rom-properties/issues/125
+ */
+#define GBX_MAGIC 0x47425821	// "GBX!" (big-endian)
+typedef struct _GBX_Footer {
+	/** Cartridge information. **/
+	union {
+		char mapper[4];		// [0x000] Mapper identifier. (ASCII; NULL-padded)
+		uint32_t mapper_id;	// [0x000] Mapper identifier. (See GBX_Mapper_e.)
+	};
+	uint8_t battery_flag;		// [0x004] 1 if battery is present; 0 if not.
+	uint8_t rumble_flag;		// [0x005] 1 if rumble is present; 0 if not.
+	uint8_t timer_flag;		// [0x006] 1 if timer is present; 0 if not.
+	uint8_t reserved1;		// [0x007]
+	uint32_t rom_size;		// [0x008] ROM size, in bytes.
+	uint32_t ram_size;		// [0x00C] RAM size, in bytes.
+	uint32_t mapper_vars[8];	// [0x010] Mapper-specific variables.
+
+	/** GBX metadata. **/
+	uint32_t footer_size;		// [0x030] Footer size, in bytes. (Should be 64.)
+	struct {
+		uint32_t major;		// [0x034] Major version number.
+		uint32_t minor;		// [0x038] Minor version number.
+	} version;
+	uint32_t magic;			// [0x03C] "GBX!"
+} GBX_Footer;
+ASSERT_STRUCT(GBX_Footer, 64);
+
+/**
+ * GBX: Mapper FourCCs.
+ */
+typedef enum {
+	// Nintendo
+	GBX_MAPPER_ROM_ONLY		= 'ROM\0',
+	GBX_MAPPER_MBC1			= 'MBC1',
+	GBX_MAPPER_MBC2			= 'MBC2',
+	GBX_MAPPER_MBC3			= 'MBC3',
+	GBX_MAPPER_MBC5			= 'MBC5',
+	GBX_MAPPER_MBC7			= 'MBC7',
+	GBX_MAPPER_MBC1_MULTICART	= 'MB1M',
+	GBX_MAPPER_MMM01		= 'MMM1',
+	GBX_MAPPER_POCKET_CAMERA	= 'CAMR',
+
+	// Licensed third-party
+	GBX_MAPPER_HuC1			= 'HUC1',
+	GBX_MAPPER_HuC3			= 'HUC3',
+	GBX_MAPPER_TAMA5		= 'TAM5',
+
+	// Unlicensed
+	GBX_MAPPER_BBD			= 'BBD\0',
+	GBX_MAPPER_HITEK		= 'HITK',
+	GBX_MAPPER_SINTAX		= 'SNTX',
+	GBX_MAPPER_NT_OLDER_TYPE_1	= 'NTO1',
+	GBX_MAPPER_NT_OLDER_TYPE_2	= 'NTO2',
+	GBX_MAPPER_NT_NEWER		= 'NTN\0',
+	GBX_MAPPER_LI_CHENG		= 'LICH',
+	GBX_MAPPER_LAST_BIBLE		= 'LBMC',
+	GBX_MAPPER_LIEBAO		= 'LIBA',
+} GBX_Mapper_e;
+
 #pragma pack()
 
 #ifdef __cplusplus
