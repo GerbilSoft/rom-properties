@@ -288,7 +288,7 @@ int NSF::loadFieldData(void)
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("NSF", "Play Address"),
-		le16_to_cpu(nsfHeader->init_address),
+		le16_to_cpu(nsfHeader->play_address),
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
 	// TV System.

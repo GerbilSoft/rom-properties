@@ -288,7 +288,7 @@ int GBS::loadFieldData(void)
 
 	// Play address.
 	d->fields->addField_string_numeric(C_("GBS", "Play Address"),
-		le16_to_cpu(gbsHeader->init_address),
+		le16_to_cpu(gbsHeader->play_address),
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
