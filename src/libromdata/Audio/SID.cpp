@@ -174,7 +174,7 @@ const char *SID::systemName(unsigned int type) const
 		"SID::systemName() array index optimization needs to be updated.");
 
 	static const char *const sysNames[4] = {
-		"Commodore 64 PlaySID Music File",
+		"Commodore 64 SID Music",
 		"SID",
 		"SID",
 		nullptr
@@ -318,6 +318,55 @@ int SID::loadFieldData(void)
 	// TODO: v2+ fields.
 
 	// Finished reading the field data.
+	return (int)d->fields->count();
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SID::loadMetaData(void)
+{
+	RP_D(SID);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// SID header.
+	const SID_Header *const sidHeader = &d->sidHeader;
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// Title. (Name)
+	if (sidHeader->name[0] != 0) {
+		d->metaData->addMetaData_string(Property::Title,
+			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
+	}
+
+	// Author.
+	if (sidHeader->author[0] != 0) {
+		// TODO: Composer instead of Author?
+		d->metaData->addMetaData_string(Property::Author,
+			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
+	}
+
+	// Copyright.
+	if (sidHeader->copyright[0] != 0) {
+		d->metaData->addMetaData_string(Property::Copyright,
+			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
+	}
+
+	// Finished reading the metadata.
 	return (int)d->fields->count();
 }
 
