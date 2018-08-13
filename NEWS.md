@@ -21,6 +21,7 @@
   * NSF: Nintendo Sound Format. Used for NES audio rips.
   * PSF: Portable Sound Format. Used for PlayStation audio rips.
     Subformats are used for several other platforms.
+  * SID: Commodore 64 SID Music format.
   * VGM: Video Gmae Music format. Used for all sorts of video game
     audio rips, including Sega Mega Drive and Neo Geo Pocket
 

@@ -124,6 +124,7 @@ button.
 |             System            | Properties Tab | Internal Images | External Scans | Metadata |
 |:-----------------------------:|:--------------:|:---------------:|:--------------:|:--------:|
 | CRI ADX ADPCM                 |       Yes      |       N/A       |       N/A      |    Yes   |
+| Commodore 64 SID Music        |       Yes      |       N/A       |       N/A      |    Yes   |
 | Game Boy Sound System         |       Yes      |       N/A       |       N/A      |    Yes   |
 | Nintendo Sound Format         |       Yes      |       N/A       |       N/A      |    Yes   |
 | Portable Sound Format         |       Yes      |       N/A       |       N/A      |    Yes   |
