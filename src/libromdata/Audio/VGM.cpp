@@ -40,9 +40,7 @@ using namespace LibRpBase;
 // C++ includes.
 #include <memory>
 #include <string>
-#include <sstream>
 #include <vector>
-using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::vector;

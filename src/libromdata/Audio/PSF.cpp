@@ -41,10 +41,8 @@ using namespace LibRpBase;
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <sstream>
 #include <unordered_map>
 #include <vector>
-using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;

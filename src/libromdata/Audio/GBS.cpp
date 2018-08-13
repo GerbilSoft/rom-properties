@@ -38,9 +38,7 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <string>
-#include <sstream>
 #include <vector>
-using std::ostringstream;
 using std::string;
 using std::vector;
 
