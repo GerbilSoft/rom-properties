@@ -272,6 +272,24 @@ int SID::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("SID", "Version"),
 		be16_to_cpu(sidHeader->version));
 
+	// Name.
+	if (sidHeader->name[0] != 0) {
+		d->fields->addField_string(C_("SID", "Name"),
+			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
+	}
+
+	// Author.
+	if (sidHeader->author[0] != 0) {
+		d->fields->addField_string(C_("SID", "Author"),
+			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
+	}
+
+	// Copyright.
+	if (sidHeader->copyright[0] != 0) {
+		d->fields->addField_string(C_("SID", "Copyright"),
+			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
+	}
+
 	// Load address.
 	d->fields->addField_string_numeric(C_("SID", "Load Address"),
 		be16_to_cpu(sidHeader->loadAddress),
@@ -296,25 +314,6 @@ int SID::loadFieldData(void)
 		be16_to_cpu(sidHeader->startSong));
 
 	// TODO: Speed?
-
-	// Name.
-	if (sidHeader->name[0] != 0) {
-		d->fields->addField_string(C_("SID", "Name"),
-			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
-	}
-
-	// Author.
-	if (sidHeader->author[0] != 0) {
-		d->fields->addField_string(C_("SID", "Author"),
-			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
-	}
-
-	// Copyright.
-	if (sidHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("SID", "Copyright"),
-			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
-	}
-
 	// TODO: v2+ fields.
 
 	// Finished reading the field data.
