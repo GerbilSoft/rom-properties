@@ -145,13 +145,13 @@ int GBS::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const GBS_Header*>(info->header.pData);
 
 	// Check the GBS magic number.
-	if (memcmp(gbsHeader->magic, GBS_MAGIC, sizeof(gbsHeader->magic)) != 0) {
-		// Not the GBS magic number.
-		return -1;
+	if (!memcmp(gbsHeader->magic, GBS_MAGIC, sizeof(gbsHeader->magic))) {
+		// Found the GBS magic number.
+		return 0;
 	}
 
-	// This is an GBS file.
-	return 0;
+	// Not suported.
+	return -1;
 }
 
 /**

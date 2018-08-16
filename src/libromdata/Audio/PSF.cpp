@@ -422,13 +422,13 @@ int PSF::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const PSF_Header*>(info->header.pData);
 
 	// Check the PSF magic number.
-	if (memcmp(psfHeader->magic, PSF_MAGIC, sizeof(psfHeader->magic)) != 0) {
-		// Not the PSF magic number.
-		return -1;
+	if (!memcmp(psfHeader->magic, PSF_MAGIC, sizeof(psfHeader->magic))) {
+		// Found the PSF magic number.
+		return 0;
 	}
 
-	// This is an PSF file.
-	return 0;
+	// Not supported.
+	return -1;
 }
 
 /**

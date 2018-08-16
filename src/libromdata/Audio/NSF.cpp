@@ -145,13 +145,13 @@ int NSF::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const NSF_Header*>(info->header.pData);
 
 	// Check the NSF magic number.
-	if (memcmp(nsfHeader->magic, NSF_MAGIC, sizeof(nsfHeader->magic)) != 0) {
-		// Not the NSF magic number.
-		return -1;
+	if (!memcmp(nsfHeader->magic, NSF_MAGIC, sizeof(nsfHeader->magic))) {
+		// Found the NSF magic number.
+		return 0;
 	}
 
-	// This is an NSF file.
-	return 0;
+	// Not supported.
+	return -1;
 }
 
 /**
