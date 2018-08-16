@@ -37,6 +37,9 @@ using LibRpBase::RpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // C++ includes.
 #include <memory>
 #include <vector>
