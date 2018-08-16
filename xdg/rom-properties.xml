@@ -30,7 +30,7 @@
   </mime-type>
 
   <!-- VGM -->
-  <mime-type type="audio/x-nsf">
+  <mime-type type="audio/x-vgm">
     <comment>Video Game Music audio</comment>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.vgm"/>
