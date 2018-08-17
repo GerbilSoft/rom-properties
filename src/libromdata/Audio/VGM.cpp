@@ -449,7 +449,6 @@ int VGM::loadFieldData(void)
 	// - VGM 1.60: Volume modifier, loop base
 
 	// SN76489 [1.00]
-	#define PSG_T6W28 (VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP)
 	const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
 	if ((sn76489_clk & ~PSG_T6W28) != 0) {
 		// TODO: Handle the dual-chip bit.
