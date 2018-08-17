@@ -110,6 +110,7 @@ class RpFilePrivate
 		 * (Re-)Open the main file.
 		 *
 		 * INTERNAL FUNCTION. This does NOT affect gzfd.
+		 * NOTE: This function sets q->m_lastError.
 		 *
 		 * Uses parameters stored in this->filename and this->mode.
 		 * @return 0 on success; non-zero on error.
@@ -149,6 +150,7 @@ inline const mode_str_t *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
  * (Re-)Open the main file.
  *
  * INTERNAL FUNCTION. This does NOT affect gzfd.
+ * NOTE: This function sets q->m_lastError.
  *
  * Uses parameters stored in this->filename and this->mode.
  * @return 0 on success; non-zero on error.
@@ -183,7 +185,15 @@ int RpFilePrivate::reOpenFile(void)
 #endif /* _WIN32 */
 
 	// Return 0 if it's *not* nullptr.
-	return (file.get() == nullptr);
+	if (!file) {
+		RP_Q(RpFile);
+		q->m_lastError = errno;
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		return q->m_lastError;
+	}
+	return 0;
 }
 
 /** RpFile **/
@@ -229,7 +239,6 @@ void RpFile::init(void)
 	// Open the file.
 	if (d->reOpenFile() != 0) {
 		// An error occurred while opening the file.
-		m_lastError = errno;
 		return;
 	}
 
