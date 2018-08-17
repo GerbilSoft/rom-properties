@@ -97,7 +97,7 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(filename.toUtf8().constData(), RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(filename.toUtf8().constData(), RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
 		return;

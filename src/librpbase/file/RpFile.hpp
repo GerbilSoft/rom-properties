@@ -46,6 +46,13 @@ class RpFile : public IRpFile
 			FM_OPEN_WRITE = 1,	// Open for reading/writing. (Must exist!)
 			//FM_CREATE_READ = 2,	// Not valid; handled as FM_CREATE_WRITE.
 			FM_CREATE_WRITE = 3,	// Create for reading/writing. (Will overwrite!)
+
+			// Mask.
+			FM_MODE_MASK = 3,	// Mode mask.
+
+			// Extras.
+			FM_GZIP_DECOMPRESS = 4,	// Transparent gzip decompression. (read-only!)
+			FM_OPEN_READ_GZ = FM_READ | FM_GZIP_DECOMPRESS,
 		};
 
 		/**

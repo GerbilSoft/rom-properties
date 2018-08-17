@@ -2060,7 +2060,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file.reset(new RpFile(W2U8(filename, cchFilename), RpFile::FM_OPEN_READ));
+	file.reset(new RpFile(W2U8(filename, cchFilename), RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -2363,7 +2363,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Open the RomData object.
-			unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
+			unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ));
 			if (!file || !file->isOpen()) {
 				// Unable to open the file.
 				break;

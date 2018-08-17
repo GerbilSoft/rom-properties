@@ -1433,7 +1433,7 @@ rom_data_view_load_rom_data(gpointer data)
 	// TODO: gvfs support.
 	if (G_LIKELY(page->filename != nullptr)) {
 		// Open the ROM file.
-		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ);
+		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			// Create the RomData object.
 			page->romData = RomDataFactory::create(file, false);

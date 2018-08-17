@@ -156,7 +156,7 @@ static void ExtractImages(const RomData *romData, std::vector<ExtractParam>& ext
 */
 static void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract){
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
-	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);
+	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
 		RomData *romData = RomDataFactory::create(file);
 		if (romData && romData->isValid()) {

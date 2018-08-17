@@ -283,7 +283,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// Attempt to open the ROM file.
 	// TODO: RpGVfsFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(source_file, RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(source_file, RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
 		return RPCT_SOURCE_FILE_ERROR;

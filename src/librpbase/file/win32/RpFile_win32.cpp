@@ -123,7 +123,7 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 	DWORD *pdwShareMode,
 	DWORD *pdwCreationDisposition)
 {
-	switch (mode) {
+	switch (mode & RpFile::FM_MODE_MASK) {
 		case RpFile::FM_OPEN_READ:
 			*pdwDesiredAccess = GENERIC_READ;
 			*pdwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
