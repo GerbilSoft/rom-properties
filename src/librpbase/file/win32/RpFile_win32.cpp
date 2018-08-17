@@ -59,8 +59,12 @@ struct myFile_deleter {
 class RpFilePrivate
 {
 	public:
-		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode);
-		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode);
+		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
+			: q_ptr(q), filename(filename), mode(mode)
+			, device_size(0), sector_size(0) { }
+		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
+			: q_ptr(q), filename(filename), mode(mode)
+			, device_size(0), sector_size(0) { }
 
 	private:
 		RP_DISABLE_COPY(RpFilePrivate)
@@ -87,6 +91,7 @@ class RpFilePrivate
 		 * @param pdwDesiredAccess		[out] dwDesiredAccess
 		 * @param pdwShareMode			[out] dwShareMode
 		 * @param pdwCreationDisposition	[out] dwCreationDisposition
+		 * @return 0 on success; non-zero on error.
 		 */
 		static inline int mode_to_win32(RpFile::FileMode mode,
 			DWORD *pdwDesiredAccess,
@@ -105,28 +110,13 @@ class RpFilePrivate
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-	: q_ptr(q)
-	, filename(filename)
-	, mode(mode)
-	, device_size(0)
-	, sector_size(0)
-{ }
-
-RpFilePrivate::RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-	: q_ptr(q)
-	, filename(filename)
-	, mode(mode)
-	, device_size(0)
-	, sector_size(0)
-{ }
-
 /**
  * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
  * @param mode				[in] FileMode
  * @param pdwDesiredAccess		[out] dwDesiredAccess
  * @param pdwShareMode			[out] dwShareMode
  * @param pdwCreationDisposition	[out] dwCreationDisposition
+ * @return 0 on success; non-zero on error.
  */
 inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 	DWORD *pdwDesiredAccess,
@@ -492,7 +482,7 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	RP_D(const RpFile);
-	return (d->file && d->file.get() != INVALID_HANDLE_VALUE);
+	return (d->file.get() != nullptr && d->file.get() != INVALID_HANDLE_VALUE);
 }
 
 /**

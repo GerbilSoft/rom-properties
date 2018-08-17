@@ -51,7 +51,7 @@ typedef char mode_str_t;
 
 namespace LibRpBase {
 
-// Deleter for std::unique_ptr<FILE> m_file.
+// Deleter for std::unique_ptr<FILE> d->file.
 struct myFile_deleter {
 	void operator()(FILE *p) const {
 		if (p != nullptr) {
@@ -60,7 +60,40 @@ struct myFile_deleter {
 	}
 };
 
-static inline const mode_str_t *mode_to_str(RpFile::FileMode mode)
+/** RpFilePrivate **/
+
+class RpFilePrivate
+{
+	public:
+		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
+			: q_ptr(q), filename(filename), mode(mode) { }
+		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
+			: q_ptr(q), filename(filename), mode(mode) { }
+
+	private:
+		RP_DISABLE_COPY(RpFilePrivate)
+		RpFile *const q_ptr;
+
+	public:
+		std::shared_ptr<FILE> file;
+		string filename;
+		RpFile::FileMode mode;
+
+	public:
+		/**
+		 * Convert an RpFile::FileMode to an fopen() mode string.
+		 * @param mode	[in] FileMode
+		 * @return fopen() mode string.
+		 */
+		static inline const mode_str_t *mode_to_str(RpFile::FileMode mode);
+};
+
+/**
+ * Convert an RpFile::FileMode to an fopen() mode string.
+ * @param mode	[in] FileMode
+ * @return fopen() mode string.
+ */
+inline const mode_str_t *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
 {
 	switch (mode) {
 		case RpFile::FM_OPEN_READ:
@@ -76,6 +109,8 @@ static inline const mode_str_t *mode_to_str(RpFile::FileMode mode)
 	}
 }
 
+/** RpFile **/
+
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
@@ -84,9 +119,7 @@ static inline const mode_str_t *mode_to_str(RpFile::FileMode mode)
  */
 RpFile::RpFile(const char *filename, FileMode mode)
 	: super()
-	, m_file(nullptr)
-	, m_filename(filename)
-	, m_mode(mode)
+	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
 	init();
 }
@@ -99,20 +132,19 @@ RpFile::RpFile(const char *filename, FileMode mode)
  */
 RpFile::RpFile(const string &filename, FileMode mode)
 	: super()
-	, m_file(nullptr)
-	, m_filename(filename)
-	, m_mode(mode)
+	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
 	init();
 }
 
 /**
  * Common initialization function for RpFile's constructors.
- * Filename must be set in m_filename.
+ * Filename must be set in d->filename.
  */
 void RpFile::init(void)
 {
-	const mode_str_t *mode_str = mode_to_str(m_mode);
+	RP_D(RpFile);
+	const mode_str_t *mode_str = d->mode_to_str(d->mode);
 	if (!mode_str) {
 		m_lastError = EINVAL;
 		return;
@@ -121,40 +153,39 @@ void RpFile::init(void)
 	// TODO: On Windows, prepend "\\\\?\\" for super-long filenames?
 
 #if defined(_WIN32)
-	// Windows: Use RP2W_s() to convert the filename to wchar_t.
+	// Windows: Use U82W_s() to convert the filename to wchar_t.
+	// TODO: Block device support?
 
 	// If this is an absolute path, make sure it starts with
 	// "\\?\" in order to support filenames longer than MAX_PATH.
 	wstring filenameW;
-	if (m_filename.size() > 3 &&
-	    ISASCII(m_filename[0]) && ISALPHA(m_filename[0]) &&
-	    m_filename[1] == ':' && m_filename[2] == '\\')
+	if (d->filename.size() > 3 &&
+	    ISASCII(d->filename[0]) && ISALPHA(d->filename[0]) &&
+	    d->filename[1] == ':' && d->filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += RP2W_s(m_filename);
+		filenameW += U82W_s(d->filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = RP2W_s(m_filename);
+		filenameW = U82W_s(d->filename);
 	}
 
-	m_file.reset(_wfopen(filenameW.c_str(), mode_str), myFile_deleter());
+	d->file.reset(_wfopen(filenameW.c_str(), mode_str), myFile_deleter());
 #else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames directly.
-	m_file.reset(fopen(m_filename.c_str(), mode_str), myFile_deleter());
+	d->file.reset(fopen(d->filename.c_str(), mode_str), myFile_deleter());
 #endif /* _WIN32 */
 
-	if (!m_file) {
+	if (!d->file) {
 		// An error occurred while opening the file.
 		m_lastError = errno;
 	}
 }
 
 RpFile::~RpFile()
-{
-	m_file.reset();
-}
+{ }
 
 /**
  * Copy constructor.
@@ -162,10 +193,10 @@ RpFile::~RpFile()
  */
 RpFile::RpFile(const RpFile &other)
 	: super()
-	, m_file(other.m_file)
-	, m_filename(other.m_filename)
-	, m_mode(other.m_mode)
+	, d_ptr(new RpFilePrivate(this, other.d_ptr->filename, other.d_ptr->mode))
 {
+	RP_D(RpFile);
+	d->file = other.d_ptr->file;
 	m_lastError = other.m_lastError;
 }
 
@@ -176,9 +207,10 @@ RpFile::RpFile(const RpFile &other)
  */
 RpFile &RpFile::operator=(const RpFile &other)
 {
-	m_file = other.m_file;
-	m_filename = other.m_filename;
-	m_mode = other.m_mode;
+	RP_D(RpFile);
+	d->file = other.d_ptr->file;
+	d->filename = other.d_ptr->filename;
+	d->mode = other.d_ptr->mode;
 	m_lastError = other.m_lastError;
 	return *this;
 }
@@ -190,7 +222,8 @@ RpFile &RpFile::operator=(const RpFile &other)
  */
 bool RpFile::isOpen(void) const
 {
-	return (m_file.get() != nullptr);
+	RP_D(const RpFile);
+	return (d->file.get() != nullptr);
 }
 
 /**
@@ -214,7 +247,8 @@ IRpFile *RpFile::dup(void)
  */
 void RpFile::close(void)
 {
-	m_file.reset();
+	RP_D(RpFile);
+	d->file.reset();
 }
 
 /**
@@ -225,13 +259,14 @@ void RpFile::close(void)
  */
 size_t RpFile::read(void *ptr, size_t size)
 {
-	if (!m_file) {
+	RP_D(RpFile);
+	if (!d->file) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
-	size_t ret = fread(ptr, 1, size, m_file.get());
-	if (ferror(m_file.get())) {
+	size_t ret = fread(ptr, 1, size, d->file.get());
+	if (ferror(d->file.get())) {
 		// An error occurred.
 		m_lastError = errno;
 	}
@@ -246,15 +281,16 @@ size_t RpFile::read(void *ptr, size_t size)
  */
 size_t RpFile::write(const void *ptr, size_t size)
 {
-	if (!m_file || !(m_mode & FM_WRITE)) {
+	RP_D(RpFile);
+	if (!d->file || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
 		return 0;
 	}
 
-	size_t ret = fwrite(ptr, 1, size, m_file.get());
-	if (ferror(m_file.get())) {
+	size_t ret = fwrite(ptr, 1, size, d->file.get());
+	if (ferror(d->file.get())) {
 		// An error occurred.
 		m_lastError = errno;
 	}
@@ -268,16 +304,17 @@ size_t RpFile::write(const void *ptr, size_t size)
  */
 int RpFile::seek(int64_t pos)
 {
-	if (!m_file) {
+	RP_D(RpFile);
+	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	int ret = fseeko(m_file.get(), pos, SEEK_SET);
+	int ret = fseeko(d->file.get(), pos, SEEK_SET);
 	if (ret != 0) {
 		m_lastError = errno;
 	}
-	::fflush(m_file.get());	// needed for some things like gzip
+	::fflush(d->file.get());	// needed for some things like gzip
 	return ret;
 }
 
@@ -287,12 +324,13 @@ int RpFile::seek(int64_t pos)
  */
 int64_t RpFile::tell(void)
 {
-	if (!m_file) {
+	RP_D(RpFile);
+	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	return ftello(m_file.get());
+	return ftello(d->file.get());
 }
 
 /**
@@ -302,7 +340,8 @@ int64_t RpFile::tell(void)
  */
 int RpFile::truncate(int64_t size)
 {
-	if (!m_file || !(m_mode & FM_WRITE)) {
+	RP_D(RpFile);
+	if (!d->file || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -313,18 +352,18 @@ int RpFile::truncate(int64_t size)
 	}
 
 	// Get the current position.
-	int64_t pos = ftello(m_file.get());
+	int64_t pos = ftello(d->file.get());
 	if (pos < 0) {
 		m_lastError = errno;
 		return -1;
 	}
 
 	// Truncate the file.
-	fflush(m_file.get());
+	fflush(d->file.get());
 #ifdef _WIN32
-	int ret = _chsize_s(fileno(m_file.get()), size);
+	int ret = _chsize_s(fileno(d->file.get()), size);
 #else
-	int ret = ftruncate(fileno(m_file.get()), size);
+	int ret = ftruncate(fileno(d->file.get()), size);
 #endif
 	if (ret != 0) {
 		m_lastError = errno;
@@ -334,7 +373,7 @@ int RpFile::truncate(int64_t size)
 	// If the previous position was past the new
 	// file size, reset the pointer.
 	if (pos > size) {
-		ret = fseeko(m_file.get(), size, SEEK_SET);
+		ret = fseeko(d->file.get(), size, SEEK_SET);
 		if (ret != 0) {
 			m_lastError = errno;
 			return -1;
@@ -353,7 +392,8 @@ int RpFile::truncate(int64_t size)
  */
 int64_t RpFile::size(void)
 {
-	if (!m_file) {
+	RP_D(RpFile);
+	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -361,14 +401,14 @@ int64_t RpFile::size(void)
 	// TODO: Error checking?
 
 	// Save the current position.
-	int64_t cur_pos = ftello(m_file.get());
+	int64_t cur_pos = ftello(d->file.get());
 
 	// Seek to the end of the file and record its position.
-	fseeko(m_file.get(), 0, SEEK_END);
-	int64_t end_pos = ftello(m_file.get());
+	fseeko(d->file.get(), 0, SEEK_END);
+	int64_t end_pos = ftello(d->file.get());
 
 	// Go back to the previous position.
-	fseeko(m_file.get(), cur_pos, SEEK_SET);
+	fseeko(d->file.get(), cur_pos, SEEK_SET);
 
 	// Return the file size.
 	return end_pos;
@@ -380,7 +420,8 @@ int64_t RpFile::size(void)
  */
 string RpFile::filename(void) const
 {
-	return m_filename;
+	RP_D(const RpFile);
+	return d->filename;
 }
 
 }
