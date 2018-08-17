@@ -266,7 +266,15 @@ void RpFile::init(void)
 						// Open the file with gzdopen().
 						::rewind(d->file.get());
 						::fflush(d->file.get());
-						d->gzfd = gzdopen(fileno(d->file.get()), "r");
+						int gzfd_dup = ::dup(fileno(d->file.get()));
+						if (gzfd_dup >= 0) {
+							d->gzfd = gzdopen(gzfd_dup, "r");
+							if (!d->gzfd) {
+								// gzdopen() failed.
+								// Close the dup()'d handle to prevent a leak.
+								::close(gzfd_dup);
+							}
+						}
 					}
 				}
 			}
@@ -305,7 +313,19 @@ RpFile::RpFile(const RpFile &other)
 			// since we know it was already gzipped.
 			::rewind(d->file.get());
 			::fflush(d->file.get());
-			d->gzfd = gzdopen(fileno(d->file.get()), "r");
+			int gzfd_dup = ::dup(fileno(d->file.get()));
+			if (gzfd_dup >= 0) {
+				d->gzfd = gzdopen(gzfd_dup, "r");
+				if (d->gzfd) {
+					// Copy the uncompressed size and seek position.
+					d->gzsz = other.d_ptr->gzsz;
+					gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
+				} else {
+					// gzdopen() failed.
+					// Close the dup()'d handle to prevent a leak.
+					::close(gzfd_dup);
+				}
+			}
 		}
 	} else {
 		// Not gzipped.
@@ -344,7 +364,19 @@ RpFile &RpFile::operator=(const RpFile &other)
 			// since we know it was already gzipped.
 			::rewind(d->file.get());
 			::fflush(d->file.get());
-			d->gzfd = gzdopen(fileno(d->file.get()), "r");
+			int gzfd_dup = ::dup(fileno(d->file.get()));
+			if (gzfd_dup >= 0) {
+				d->gzfd = gzdopen(gzfd_dup, "r");
+				if (d->gzfd) {
+					// Copy the uncompressed size and seek position.
+					d->gzsz = other.d_ptr->gzsz;
+					gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
+				} else {
+					// gzdopen() failed.
+					// Close the dup()'d handle to prevent a leak.
+					::close(gzfd_dup);
+				}
+			}
 		}
 	} else {
 		// Not gzipped.
