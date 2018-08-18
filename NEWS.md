@@ -10,6 +10,12 @@
   * File meta data is now exported to the desktop environment. This includes
     e.g. dimensions for textures and duration for audio. Currently supported
     on KDE and Windows.
+  * Support for gzipped files. This is important for VGMs, which are commonly
+    distributed in gzipped format (.vgz).
+    * NOTE: Currently only partially supported on Windows. In particular,
+      the IThumbnailProvider and IPropertyStore implementations use IStream,
+      and we don't have transparent decompression for IStream yet. This will
+      be fixed before the release of v1.4.
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
