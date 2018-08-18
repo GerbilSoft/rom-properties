@@ -19,11 +19,17 @@
  ***************************************************************************/
 
 #include "../RpFile.hpp"
+
+// librpbase
+#include "byteswap.h"
 #include "TextFuncs.hpp"
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.h"
+
+// C includes.
+#include <fcntl.h>
 
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
@@ -36,9 +42,23 @@ using std::string;
 using std::unique_ptr;
 using std::wstring;
 
+// zlib for transparent gzip decompression.
+// FIXME: add delayload
+#include <zlib.h>
+// gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
+#if (ZLIB_VER_MAJOR > 1) || \
+    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR > 2) || \
+    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
+// zlib-1.2.4 or later
+#else
+# define gzclose_r(file) gzclose(file)
+# define gzclose_w(file) gzclose(file)
+#endif
+
 // Windows SDK
 #include <windows.h>
 #include <winioctl.h>
+#include <io.h>
 
 namespace LibRpBase {
 
@@ -59,8 +79,13 @@ struct myFile_deleter {
 class RpFilePrivate
 {
 	public:
-		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode);
-		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode);
+		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
+			: q_ptr(q), filename(filename), mode(mode)
+			, gzfd(nullptr), gzsz(0), sector_size(0) { }
+		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
+			: q_ptr(q), filename(filename), mode(mode)
+			, gzfd(nullptr), gzsz(0), sector_size(0) { }
+		~RpFilePrivate();
 
 	private:
 		RP_DISABLE_COPY(RpFilePrivate)
@@ -70,14 +95,20 @@ class RpFilePrivate
 		// NOTE: file is a HANDLE, but shared_ptr doesn't
 		// work correctly with pointer types as the
 		// template parameter.
-		std::shared_ptr<void> file;
-		string filename;
-		RpFile::FileMode mode;
+
+		std::shared_ptr<void> file;	// File handle.
+		string filename;		// Filename.
+		RpFile::FileMode mode;		// File mode.
+
+		// gzip parameters.
+		gzFile gzfd;			// Used for transparent gzip decompression.
+		union {
+			int64_t gzsz;			// Uncompressed file size.
+			int64_t device_size;		// Device size. (for block devices)
+		};
 
 		// Block device parameters.
-		// NOTE: These fields are all 0 if the
-		// file is a regular file.
-		int64_t device_size;		// Device size.
+		// Set to 0 if this is a regular file.
 		unsigned int sector_size;	// Sector size. (bytes per sector)
 
 	public:
@@ -87,11 +118,23 @@ class RpFilePrivate
 		 * @param pdwDesiredAccess		[out] dwDesiredAccess
 		 * @param pdwShareMode			[out] dwShareMode
 		 * @param pdwCreationDisposition	[out] dwCreationDisposition
+		 * @return 0 on success; non-zero on error.
 		 */
 		static inline int mode_to_win32(RpFile::FileMode mode,
 			DWORD *pdwDesiredAccess,
 			DWORD *pdwShareMode,
 			DWORD *pdwCreationDisposition);
+
+		/**
+		 * (Re-)Open the main file.
+		 *
+		 * INTERNAL FUNCTION. This does NOT affect gzfd.
+		 * NOTE: This function sets q->m_lastError.
+		 *
+		 * Uses parameters stored in this->filename and this->mode.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int reOpenFile(void);
 
 		/**
 		 * Read using block reads.
@@ -105,21 +148,12 @@ class RpFilePrivate
 
 /** RpFilePrivate **/
 
-RpFilePrivate::RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-	: q_ptr(q)
-	, filename(filename)
-	, mode(mode)
-	, device_size(0)
-	, sector_size(0)
-{ }
-
-RpFilePrivate::RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-	: q_ptr(q)
-	, filename(filename)
-	, mode(mode)
-	, device_size(0)
-	, sector_size(0)
-{ }
+RpFilePrivate::~RpFilePrivate()
+{
+	if (gzfd) {
+		gzclose_r(gzfd);
+	}
+}
 
 /**
  * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
@@ -127,13 +161,14 @@ RpFilePrivate::RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode
  * @param pdwDesiredAccess		[out] dwDesiredAccess
  * @param pdwShareMode			[out] dwShareMode
  * @param pdwCreationDisposition	[out] dwCreationDisposition
+ * @return 0 on success; non-zero on error.
  */
 inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 	DWORD *pdwDesiredAccess,
 	DWORD *pdwShareMode,
 	DWORD *pdwCreationDisposition)
 {
-	switch (mode) {
+	switch (mode & RpFile::FM_MODE_MASK) {
 		case RpFile::FM_OPEN_READ:
 			*pdwDesiredAccess = GENERIC_READ;
 			*pdwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
@@ -157,6 +192,147 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 
 	// Mode converted successfully.
 	return 0;
+}
+
+/**
+ * (Re-)Open the main file.
+ *
+ * INTERNAL FUNCTION. This does NOT affect gzfd.
+ * NOTE: This function sets q->m_lastError.
+ *
+ * Uses parameters stored in this->filename and this->mode.
+ * @return 0 on success; non-zero on error.
+ */
+int RpFilePrivate::reOpenFile(void)
+{
+	RP_Q(RpFile);
+
+	// Determine the file mode.
+	DWORD dwDesiredAccess, dwShareMode, dwCreationDisposition;
+	if (mode_to_win32(mode, &dwDesiredAccess, &dwShareMode, &dwCreationDisposition) != 0) {
+		// Invalid mode.
+		q->m_lastError = EINVAL;
+		return -1;
+	}
+
+	// Unicode filename.
+	wstring filenameW;
+
+	// Check if the path starts with a drive letter.
+	bool isBlockDevice = false;
+	if (filename.size() >= 3 &&
+	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\\')
+	{
+		// Is it only a drive letter?
+		if (filename.size() == 3) {
+			// This is a drive letter.
+			// Only CD-ROM (and similar) drives are supported.
+			// TODO: Verify if opening by drive letter works,
+			// or if we have to resolve the physical device name.
+			if (GetDriveType(U82W_s(filename)) != DRIVE_CDROM) {
+				// Not a CD-ROM drive.
+				q->m_lastError = ENOTSUP;
+				return -2;
+			}
+
+			// Create a raw device filename.
+			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
+			filenameW = L"\\\\.\\X:";
+			filenameW[4] = filename[0];
+			isBlockDevice = true;
+		} else {
+			// Absolute path.
+			// Prepend "\\?\" in order to support filenames longer than MAX_PATH.
+			filenameW = L"\\\\?\\";
+			filenameW += U82W_s(filename);
+		}
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = U82W_s(filename);
+	}
+
+	if (isBlockDevice && (mode & RpFile::FM_WRITE)) {
+		// Writing to block devices is not allowed.
+		q->m_lastError = EINVAL;
+		return -3;
+	}
+
+	// Open the file.
+	file.reset(CreateFile(filenameW.c_str(),
+			dwDesiredAccess,
+			dwShareMode,
+			nullptr,
+			dwCreationDisposition,
+			FILE_ATTRIBUTE_NORMAL,
+			nullptr), myFile_deleter());
+	if (!file || file.get() == INVALID_HANDLE_VALUE) {
+		// Error opening the file.
+		q->m_lastError = w32err_to_posix(GetLastError());
+		return -4;
+	}
+
+	if (isBlockDevice) {
+		// Get the disk space.
+		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX seems to report 512-byte sectors
+		// for certain emulated CD-ROM device, e.g. the Verizon LG G2.
+		// GetDiskFreeSpace() reports the correct value (2048).
+		DWORD dwSectorsPerCluster, dwBytesPerSector;
+		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
+		DWORD w32err = 0;
+		BOOL bRet = GetDiskFreeSpace(U82W_s(filename),
+			&dwSectorsPerCluster, &dwBytesPerSector,
+			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
+		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {
+			// TODO: Make sure the sector size is a power of 2
+			// and isn't a ridiculous value.
+
+			// Save the device size and sector size.
+			// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
+			// but it doesn't provide dwBytesPerSector.
+			device_size = static_cast<int64_t>(dwBytesPerSector * dwSectorsPerCluster) *
+				      static_cast<int64_t>(dwTotalNumberOfClusters);
+			sector_size = dwBytesPerSector;
+		} else {
+			// GetDiskFreeSpace() failed.
+			w32err = GetLastError();
+			if (w32err == ERROR_INVALID_PARAMETER) {
+				// The disk may use some file system that
+				// Windows doesn't recognize.
+				// Try IOCTL_DISK_GET_DRIVE_GEOMETRY_EX instead.
+				DISK_GEOMETRY_EX dg;
+				DWORD dwBytesReturned;  // TODO: Check this?
+				if (DeviceIoControl(file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+				    NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL) != 0)
+				{
+					// Device geometry retrieved.
+					w32err = 0;
+					device_size = dg.DiskSize.QuadPart;
+					sector_size = dg.Geometry.BytesPerSector;
+				} else {
+					// IOCTL failed.
+					w32err = GetLastError();
+					if (w32err == 0) {
+						w32err = ERROR_INVALID_PARAMETER;
+					}
+				}
+			}
+		}
+
+		if (w32err != 0) {
+			// An error occurred...
+			q->m_lastError = w32err_to_posix(GetLastError());
+			if (q->m_lastError == 0) {
+				q->m_lastError = EIO;
+			}
+			file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
+			return -5;
+		}
+	}
+
+	// Return 0 if it's *not* nullptr or INVALID_HANDLE_VALUE.
+	return (!file || file.get() == INVALID_HANDLE_VALUE);
 }
 
 /**
@@ -322,127 +498,88 @@ RpFile::RpFile(const string &filename, FileMode mode)
  */
 void RpFile::init(void)
 {
-	// Determine the file mode.
 	RP_D(RpFile);
-	DWORD dwDesiredAccess, dwShareMode, dwCreationDisposition;
-	if (d->mode_to_win32(d->mode, &dwDesiredAccess, &dwShareMode, &dwCreationDisposition) != 0) {
-		// Invalid mode.
-		m_lastError = EINVAL;
-		return;
-	}
 
-	// Unicode filename.
-	wstring filenameW;
-
-	// Check if the path starts with a drive letter.
-	bool isBlockDevice = false;
-	if (d->filename.size() >= 3 &&
-	    ISASCII(d->filename[0]) && ISALPHA(d->filename[0]) &&
-	    d->filename[1] == ':' && d->filename[2] == '\\')
-	{
-		// Is it only a drive letter?
-		if (d->filename.size() == 3) {
-			// This is a drive letter.
-			// Only CD-ROM (and similar) drives are supported.
-			// TODO: Verify if opening by drive letter works,
-			// or if we have to resolve the physical device name.
-			if (GetDriveType(U82W_s(d->filename)) != DRIVE_CDROM) {
-				// Not a CD-ROM drive.
-				m_lastError = ENOTSUP;
-				return;
-			}
-
-			// Create a raw device filename.
-			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
-			filenameW = L"\\\\.\\X:";
-			filenameW[4] = d->filename[0];
-			isBlockDevice = true;
-		} else {
-			// Absolute path.
-			// Prepend "\\?\" in order to support filenames longer than MAX_PATH.
-			filenameW = L"\\\\?\\";
-			filenameW += U82W_s(d->filename);
-		}
-	} else {
-		// Not an absolute path, or "\\?\" is already
-		// prepended. Use it as-is.
-		filenameW = U82W_s(d->filename);
-	}
-
-	if (isBlockDevice && (d->mode & FM_WRITE)) {
-		// Writing to block devices is not allowed.
-		m_lastError = EINVAL;
-		return;
-	}
+	// Cannot use decompression with writing, or when reading block devices.
+	// FIXME: Proper assert statement...
+	//assert((d->mode & FM_MODE_MASK != RpFile::FM_READ) || (d->mode & RpFile::FM_GZIP_DECOMPRESS));
 
 	// Open the file.
-	d->file.reset(CreateFile(filenameW.c_str(),
-			dwDesiredAccess,
-			dwShareMode,
-			nullptr,
-			dwCreationDisposition,
-			FILE_ATTRIBUTE_NORMAL,
-			nullptr), myFile_deleter());
-	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
-		// Error opening the file.
-		m_lastError = w32err_to_posix(GetLastError());
+	if (d->reOpenFile() != 0) {
+		// An error occurred while opening the file.
 		return;
 	}
 
-	if (isBlockDevice) {
-		// Get the disk space.
-		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX seems to report 512-byte sectors
-		// for certain emulated CD-ROM device, e.g. the Verizon LG G2.
-		// GetDiskFreeSpace() reports the correct value (2048).
-		DWORD dwSectorsPerCluster, dwBytesPerSector;
-		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
-		DWORD w32err = 0;
-		BOOL bRet = GetDiskFreeSpace(U82W_s(d->filename),
-			&dwSectorsPerCluster, &dwBytesPerSector,
-			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
-		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {
-			// TODO: Make sure the sector size is a power of 2
-			// and isn't a ridiculous value.
+	// Check if this is a gzipped file.
+	// If it is, use transparent decompression.
+	// Reference: https://www.forensicswiki.org/wiki/Gzip
+	if (d->sector_size == 0 && d->mode == FM_OPEN_READ_GZ) {
+		DWORD bytesRead;
+		BOOL bRet;
 
-			// Save the device size and sector size.
-			// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
-			// but it doesn't provide dwBytesPerSector.
-			d->device_size = static_cast<int64_t>(dwBytesPerSector * dwSectorsPerCluster) *
-					 static_cast<int64_t>(dwTotalNumberOfClusters);
-			d->sector_size = dwBytesPerSector;
-		} else {
-			// GetDiskFreeSpace() failed.
-			w32err = GetLastError();
-			if (w32err == ERROR_INVALID_PARAMETER) {
-				// The disk may use some file system that
-				// Windows doesn't recognize.
-				// Try IOCTL_DISK_GET_DRIVE_GEOMETRY_EX instead.
-				DISK_GEOMETRY_EX dg;
-				DWORD dwBytesReturned;  // TODO: Check this?
-				if (DeviceIoControl(d->file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
-				    NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL) != 0)
-				{
-					// Device geometry retrieved.
-					w32err = 0;
-					d->device_size = dg.DiskSize.QuadPart;
-					d->sector_size = dg.Geometry.BytesPerSector;
-				} else {
-					// IOCTL failed.
-					w32err = GetLastError();
-					if (w32err == 0) {
-						w32err = ERROR_INVALID_PARAMETER;
+		uint16_t gzmagic;
+		bRet = ReadFile(d->file.get(), &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
+		if (bRet && bytesRead == sizeof(gzmagic) && gzmagic == be16_to_cpu(0x1F8B)) {
+			// This is a gzipped file.
+			// Get the uncompressed size at the end of the file.
+			LARGE_INTEGER liFileSize;
+			bRet = GetFileSizeEx(d->file.get(), &liFileSize);
+			if (bRet && liFileSize.QuadPart > 10+8) {
+				LARGE_INTEGER liSeekPos;
+				liSeekPos.QuadPart = liFileSize.QuadPart - 4;
+				bRet = SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+				if (bRet) {
+					uint32_t uncomp_sz;
+					bRet = ReadFile(d->file.get(), &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
+					uncomp_sz = le32_to_cpu(uncomp_sz);
+					if (bRet && bytesRead == sizeof(uncomp_sz) && uncomp_sz >= liFileSize.QuadPart-(10+8)) {
+						// Uncompressed size looks valid.
+						d->gzsz = (int64_t)uncomp_sz;
+
+						liSeekPos.QuadPart = 0;
+						SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+						// NOTE: Not sure if this is needed on Windows.
+						FlushFileBuffers(d->file.get());
+
+						// Open the file with gzdopen().
+						HANDLE hGzDup;
+						BOOL bRet = DuplicateHandle(
+							GetCurrentProcess(),	// hSourceProcessHandle
+							d->file.get(),		// hSourceHandle
+							GetCurrentProcess(),	// hTargetProcessHandle
+							&hGzDup,		// lpTargetHandle
+							0,			// dwDesiredAccess
+							FALSE,			// bInheritHandle
+							DUPLICATE_SAME_ACCESS);	// dwOptions
+						if (bRet) {
+							// NOTE: close() on gzfd_dup() will close the
+							// underlying Windows handle.
+							int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
+							if (gzfd_dup >= 0) {
+								d->gzfd = gzdopen(gzfd_dup, "r");
+								if (!d->gzfd) {
+									// gzdopen() failed.
+									// Close the dup()'d handle to prevent a leak.
+									_close(gzfd_dup);
+								}
+							} else {
+								// Unable to open an fd.
+								CloseHandle(hGzDup);
+							}
+						}
 					}
 				}
 			}
 		}
 
-		if (w32err != 0) {
-			// An error occurred...
-			m_lastError = w32err_to_posix(GetLastError());
-			if (m_lastError == 0) {
-				m_lastError = EIO;
-			}
-			d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
+		if (!d->gzfd) {
+			// Not a gzipped file.
+			// Rewind and flush the file.
+			LARGE_INTEGER liSeekPos;
+			liSeekPos.QuadPart = 0;
+			SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+			// NOTE: Not sure if this is needed on Windows.
+			FlushFileBuffers(d->file.get());
 		}
 	}
 }
@@ -461,10 +598,51 @@ RpFile::RpFile(const RpFile &other)
 	, d_ptr(new RpFilePrivate(this, other.d_ptr->filename, other.d_ptr->mode))
 {
 	RP_D(RpFile);
-	d->file = other.d_ptr->file;
 	d->device_size = other.d_ptr->device_size;
 	d->sector_size = other.d_ptr->sector_size;
 	m_lastError = other.m_lastError;
+
+	// NOTE: If the file is gzipped, we can't simply dup()
+	// the file handle because gzdopen() won't work correctly.
+	// TODO: Consolidate with init() and others.
+	if (other.d_ptr->gzfd) {
+		// Re-open the file.
+		if (!d->reOpenFile()) {
+			// Open as gzip without checking modes,
+			// since we know it was already gzipped.
+			HANDLE hGzDup;
+			BOOL bRet = DuplicateHandle(
+				GetCurrentProcess(),	// hSourceProcessHandle
+				d->file.get(),		// hSourceHandle
+				GetCurrentProcess(),	// hTargetProcessHandle
+				&hGzDup,		// lpTargetHandle
+				0,			// dwDesiredAccess
+				FALSE,			// bInheritHandle
+				DUPLICATE_SAME_ACCESS);	// dwOptions
+			if (bRet) {
+				// NOTE: close() on gzfd_dup() will close the
+				// underlying Windows handle.
+				int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
+				if (gzfd_dup >= 0) {
+					d->gzfd = gzdopen(gzfd_dup, "r");
+					if (d->gzfd) {
+						// Copy the seek position.
+						gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
+					} else {
+						// gzdopen() failed.
+						// Close the dup()'d handle to prevent a leak.
+						_close(gzfd_dup);
+					}
+				} else {
+					// Unable to open an fd.
+					CloseHandle(hGzDup);
+				}
+			}
+		}
+	} else {
+		// Not gzipped.
+		d->file = other.d_ptr->file;
+	}
 }
 
 /**
@@ -475,12 +653,54 @@ RpFile::RpFile(const RpFile &other)
 RpFile &RpFile::operator=(const RpFile &other)
 {
 	RP_D(RpFile);
-	d->file = other.d_ptr->file;
 	d->filename = other.d_ptr->filename;
 	d->mode = other.d_ptr->mode;
 	d->device_size = other.d_ptr->device_size;
 	d->sector_size = other.d_ptr->sector_size;
 	m_lastError = other.m_lastError;
+
+	// NOTE: If the file is gzipped, we can't simply dup()
+	// the file handle because gzdopen() won't work correctly.
+	// TODO: Consolidate with init() and others.
+	if (other.d_ptr->gzfd) {
+		// Re-open the file.
+		if (!d->reOpenFile()) {
+			// Open as gzip without checking modes,
+			// since we know it was already gzipped.
+			HANDLE hGzDup;
+			BOOL bRet = DuplicateHandle(
+				GetCurrentProcess(),	// hSourceProcessHandle
+				d->file.get(),		// hSourceHandle
+				GetCurrentProcess(),	// hTargetProcessHandle
+				&hGzDup,		// lpTargetHandle
+				0,			// dwDesiredAccess
+				FALSE,			// bInheritHandle
+				DUPLICATE_SAME_ACCESS);	// dwOptions
+			if (bRet) {
+				// NOTE: close() on gzfd_dup() will close the
+				// underlying Windows handle.
+				int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
+				if (gzfd_dup >= 0) {
+					d->gzfd = gzdopen(gzfd_dup, "r");
+					if (d->gzfd) {
+						// Copy the seek position.
+						gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
+					} else {
+						// gzdopen() failed.
+						// Close the dup()'d handle to prevent a leak.
+						_close(gzfd_dup);
+					}
+				} else {
+					// Unable to open an fd.
+					CloseHandle(hGzDup);
+				}
+			}
+		}
+	} else {
+		// Not gzipped.
+		d->file = other.d_ptr->file;
+	}
+
 	return *this;
 }
 
@@ -492,7 +712,7 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	RP_D(const RpFile);
-	return (d->file && d->file.get() != INVALID_HANDLE_VALUE);
+	return (d->file.get() != nullptr && d->file.get() != INVALID_HANDLE_VALUE);
 }
 
 /**
@@ -517,6 +737,10 @@ IRpFile *RpFile::dup(void)
 void RpFile::close(void)
 {
 	RP_D(RpFile);
+	if (d->gzfd) {
+		gzclose_r(d->gzfd);
+		d->gzfd = nullptr;
+	}
 	d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
 }
 
@@ -543,11 +767,22 @@ size_t RpFile::read(void *ptr, size_t size)
 	}
 
 	DWORD bytesRead;
-	BOOL bRet = ReadFile(d->file.get(), ptr, static_cast<DWORD>(size), &bytesRead, nullptr);
-	if (!bRet) {
-		// An error occurred.
-		m_lastError = w32err_to_posix(GetLastError());
-		return 0;
+	if (d->gzfd) {
+		int iret = gzread(d->gzfd, ptr, (unsigned int)size);
+		if (iret >= 0) {
+			bytesRead = (DWORD)iret;
+		} else {
+			// An error occurred.
+			bytesRead = 0;
+			m_lastError = errno;
+		}
+	} else {
+		BOOL bRet = ReadFile(d->file.get(), ptr, static_cast<DWORD>(size), &bytesRead, nullptr);
+		if (!bRet) {
+			// An error occurred.
+			m_lastError = w32err_to_posix(GetLastError());
+			bytesRead = 0;
+		}
 	}
 
 	return bytesRead;
@@ -599,15 +834,30 @@ int RpFile::seek(int64_t pos)
 		return -1;
 	}
 
-	LARGE_INTEGER liSeekPos;
-	liSeekPos.QuadPart = pos;
-	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
-	if (!bRet) {
-		m_lastError = w32err_to_posix(GetLastError());
-		return -1;
+	int ret;
+	if (d->gzfd) {
+		// FIXME: Might not work with >2GB files...
+		z_off_t zret = gzseek(d->gzfd, (long)pos, SEEK_SET);
+		if (zret >= 0) {
+			ret = 0;
+		} else {
+			// TODO: Does gzseek() set errno?
+			ret = -1;
+			m_lastError = -EIO;
+		}
+	} else {
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = pos;
+		BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+		if (bRet) {
+			ret = 0;
+		} else {
+			ret = -1;
+			m_lastError = w32err_to_posix(GetLastError());
+		}
 	}
 
-	return 0;
+	return ret;
 }
 
 /**
@@ -620,6 +870,10 @@ int64_t RpFile::tell(void)
 	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
+	}
+
+	if (d->gzfd) {
+		return (int64_t)gztell(d->gzfd);
 	}
 
 	LARGE_INTEGER liSeekPos, liSeekRet;
@@ -696,9 +950,15 @@ int64_t RpFile::size(void)
 		return -1;
 	}
 
-	if (d->device_size != 0) {
+	// TODO: Error checking?
+
+	if (d->sector_size != 0) {
 		// Block device. Use the cached device size.
 		return d->device_size;
+	} else if (d->gzfd) {
+		// gzipped files have the uncompressed size stored
+		// at the end of the stream.
+		return d->gzsz;
 	}
 
 	// Regular file.

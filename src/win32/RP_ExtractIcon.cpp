@@ -148,7 +148,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	}
 
 	// Attempt to open the ROM file.
-	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
 		return E_FAIL;
 	}

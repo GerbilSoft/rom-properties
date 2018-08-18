@@ -100,7 +100,7 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(filename.toUtf8().constData(), RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(filename.toUtf8().constData(), RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
 		return;
@@ -135,12 +135,18 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 		// No conversion is necessary.
 		switch (prop->type) {
 			case LibRpBase::PropertyType::Integer: {
-				int value = prop->data.value;
-				if (prop->name == Property::Duration) {
+				int ivalue = prop->data.ivalue;
+				if (prop->name == LibRpBase::Property::Duration) {
 					// Duration needs to be converted from ms to seconds.
-					value /= 1000;
+					ivalue /= 1000;
 				}
-				result->add(static_cast<KFileMetaData::Property::Property>(prop->name), value);
+				result->add(static_cast<KFileMetaData::Property::Property>(prop->name), ivalue);
+				break;
+			}
+
+			case LibRpBase::PropertyType::UnsignedInteger: {
+				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+					    prop->data.uvalue);
 				break;
 			}
 

@@ -44,8 +44,8 @@ namespace Property {
 		Duration,	// integer: duration, in milliseconds
 		Genre,		// string
 		SampleRate,	// integer: Hz
-		TrackNumber,	// integer: track number
-		ReleaseYear,	// integer: year
+		TrackNumber,	// unsigned integer: track number
+		ReleaseYear,	// unsigned integer: year
 		Comment,	// string: comment
 		Artist,		// string: artist
 		Album,		// string: album
@@ -137,8 +137,9 @@ namespace PropertyType {
 		FirstPropertyType = 0,
 		Invalid = 0,
 
-		Integer,	// Integer type
-		String,		// String type (UTF-8)
+		Integer,		// Integer type
+		UnsignedInteger,	// Unsigned integer type
+		String,			// String type (UTF-8)
 
 		PropertyTypeCount,
 		LastPropertyType = PropertyTypeCount-1,
@@ -163,7 +164,10 @@ class RomMetaData
 			PropertyType::PropertyType type;	// Property type.
 			union _data {
 				// Integer property
-				int value;
+				int ivalue;
+
+				// Unsigned integer property
+				unsigned int uvalue;
 
 				// String property
 				const std::string *str;
@@ -236,6 +240,14 @@ class RomMetaData
 		 * @return Metadata index.
 		 */
 		int addMetaData_integer(Property::Property name, int value);
+
+		/**
+		 * Add an unsigned integer metadata property.
+		 * @param name Metadata name.
+		 * @param val Unsigned integer value.
+		 * @return Metadata index.
+		 */
+		int addMetaData_uint(Property::Property name, unsigned int value);
 
 		/**
 		 * Add a string metadata property.

@@ -31,10 +31,7 @@
 
 namespace LibRpBase {
 
-#ifdef _WIN32
 class RpFilePrivate;
-#endif /* _WIN32 */
-
 class RpFile : public IRpFile
 {
 	public:
@@ -49,6 +46,13 @@ class RpFile : public IRpFile
 			FM_OPEN_WRITE = 1,	// Open for reading/writing. (Must exist!)
 			//FM_CREATE_READ = 2,	// Not valid; handled as FM_CREATE_WRITE.
 			FM_CREATE_WRITE = 3,	// Create for reading/writing. (Will overwrite!)
+
+			// Mask.
+			FM_MODE_MASK = 3,	// Mode mask.
+
+			// Extras.
+			FM_GZIP_DECOMPRESS = 4,	// Transparent gzip decompression. (read-only!)
+			FM_OPEN_READ_GZ = FM_READ | FM_GZIP_DECOMPRESS,
 		};
 
 		/**
@@ -69,11 +73,9 @@ class RpFile : public IRpFile
 	public:
 		RpFile(const RpFile &other);
 		RpFile &operator=(const RpFile &other);
-#ifdef _WIN32
 	protected:
 		friend class RpFilePrivate;
 		RpFilePrivate *const d_ptr;
-#endif /* _WIN32 */
 
 	public:
 		/**
@@ -151,16 +153,6 @@ class RpFile : public IRpFile
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		std::string filename(void) const final;
-
-#ifndef _WIN32
-	protected:
-		// On non-Windows platforms, m_file is an stdio FILE.
-		// TODO: Move to a private class?
-		std::shared_ptr<FILE> m_file;
-
-		std::string m_filename;
-		FileMode m_mode;
-#endif /* !_WIN32 */
 };
 
 }

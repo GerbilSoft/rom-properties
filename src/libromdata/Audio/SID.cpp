@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GBS.hpp: GBS audio reader.                                              *
+ * SID.hpp: SID audio reader.                                              *
  *                                                                         *
  * Copyright (c) 2018 by David Korth.                                      *
  *                                                                         *
@@ -18,10 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "GBS.hpp"
+#include "SID.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "gbs_structs.h"
+#include "sid_structs.h"
 
 // librpbase
 #include "librpbase/common.h"
@@ -44,36 +44,36 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(GBS)
+ROMDATA_IMPL(SID)
 
-class GBSPrivate : public RomDataPrivate
+class SIDPrivate : public RomDataPrivate
 {
 	public:
-		GBSPrivate(GBS *q, IRpFile *file);
+		SIDPrivate(SID *q, IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(GBSPrivate)
+		RP_DISABLE_COPY(SIDPrivate)
 
 	public:
-		// GBS header.
+		// SID header.
 		// NOTE: **NOT** byteswapped in memory.
-		GBS_Header gbsHeader;
+		SID_Header sidHeader;
 };
 
-/** GBSPrivate **/
+/** SIDPrivate **/
 
-GBSPrivate::GBSPrivate(GBS *q, IRpFile *file)
+SIDPrivate::SIDPrivate(SID *q, IRpFile *file)
 	: super(q, file)
 {
-	// Clear the GBS header struct.
-	memset(&gbsHeader, 0, sizeof(gbsHeader));
+	// Clear the SID header struct.
+	memset(&sidHeader, 0, sizeof(sidHeader));
 }
 
-/** GBS **/
+/** SID **/
 
 /**
- * Read a GBS audio file.
+ * Read an SID audio file.
  *
  * A ROM image must be opened by the caller. The file handle
  * will be dup()'d and must be kept open in order to load
@@ -85,11 +85,11 @@ GBSPrivate::GBSPrivate(GBS *q, IRpFile *file)
  *
  * @param file Open ROM image.
  */
-GBS::GBS(IRpFile *file)
-	: super(new GBSPrivate(this, file))
+SID::SID(IRpFile *file)
+	: super(new SIDPrivate(this, file))
 {
-	RP_D(GBS);
-	d->className = "GBS";
+	RP_D(SID);
+	d->className = "SID";
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {
@@ -97,10 +97,10 @@ GBS::GBS(IRpFile *file)
 		return;
 	}
 
-	// Read the GBS header.
+	// Read the SID header.
 	d->file->rewind();
-	size_t size = d->file->read(&d->gbsHeader, sizeof(d->gbsHeader));
-	if (size != sizeof(d->gbsHeader)) {
+	size_t size = d->file->read(&d->sidHeader, sizeof(d->sidHeader));
+	if (size != sizeof(d->sidHeader)) {
 		delete d->file;
 		d->file = nullptr;
 		return;
@@ -109,10 +109,10 @@ GBS::GBS(IRpFile *file)
 	// Check if this file is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(d->gbsHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->gbsHeader);
-	info.ext = nullptr;	// Not needed for GBS.
-	info.szFile = 0;	// Not needed for GBS.
+	info.header.size = sizeof(d->sidHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->sidHeader);
+	info.ext = nullptr;	// Not needed for SID.
+	info.szFile = 0;	// Not needed for SID.
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -127,30 +127,33 @@ GBS::GBS(IRpFile *file)
  * @param info DetectInfo containing ROM detection information.
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int GBS::isRomSupported_static(const DetectInfo *info)
+int SID::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(GBS_Header))
+	    info->header.size < sizeof(SID_Header))
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
 	}
 
-	const GBS_Header *const gbsHeader =
-		reinterpret_cast<const GBS_Header*>(info->header.pData);
+	const SID_Header *const sidHeader =
+		reinterpret_cast<const SID_Header*>(info->header.pData);
 
-	// Check the GBS magic number.
-	if (!memcmp(gbsHeader->magic, GBS_MAGIC, sizeof(gbsHeader->magic))) {
-		// Found the GBS magic number.
+	// Check the SID magic number.
+	if (sidHeader->magic == cpu_to_be32(PSID_MAGIC) ||
+	    sidHeader->magic == cpu_to_be32(RSID_MAGIC))
+	{
+		// Found the SID magic number.
+		// TODO: Differentiate between PSID and RSID here?
 		return 0;
 	}
 
-	// Not suported.
+	// Not supported.
 	return -1;
 }
 
@@ -159,21 +162,21 @@ int GBS::isRomSupported_static(const DetectInfo *info)
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const char *GBS::systemName(unsigned int type) const
+const char *SID::systemName(unsigned int type) const
 {
-	RP_D(const GBS);
+	RP_D(const SID);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// GBS has the same name worldwide, so we can
+	// SID has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"GBS::systemName() array index optimization needs to be updated.");
+		"SID::systemName() array index optimization needs to be updated.");
 
 	static const char *const sysNames[4] = {
-		"Nintendo Sound Format",
-		"GBS",
-		"GBS",
+		"Commodore 64 SID Music",
+		"SID",
+		"SID",
 		nullptr
 	};
 
@@ -193,10 +196,10 @@ const char *GBS::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const char *const *GBS::supportedFileExtensions_static(void)
+const char *const *SID::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".gbs",
+		".sid", ".psid",
 
 		nullptr
 	};
@@ -213,11 +216,11 @@ const char *const *GBS::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const char *const *GBS::supportedMimeTypes_static(void)
+const char *const *SID::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-gbs",
+		// Official MIME types.
+		"audio/prs.sid",
 
 		nullptr
 	};
@@ -229,9 +232,9 @@ const char *const *GBS::supportedMimeTypes_static(void)
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
  */
-int GBS::loadFieldData(void)
+int SID::loadFieldData(void)
 {
-	RP_D(GBS);
+	RP_D(SID);
 	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -243,60 +246,75 @@ int GBS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// GBS header.
-	const GBS_Header *const gbsHeader = &d->gbsHeader;
-	d->fields->reserve(9);	// Maximum of 9 fields.
+	// SID header.
+	const SID_Header *const sidHeader = &d->sidHeader;
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
-	// NOTE: The GBS specification says ASCII, but I'm assuming
-	// the text is cp1252 and/or Shift-JIS.
+	// Type.
+	const char *type;
+	switch (be32_to_cpu(sidHeader->magic)) {
+		case PSID_MAGIC:
+			type = "PlaySID";
+			break;
+		case RSID_MAGIC:
+			type = "RealSID";
+			break;
+		default:
+			// Should not happen...
+			assert(!"Invalid SID type.");
+			type = "Unknown";
+			break;
+	}
+	d->fields->addField_string(C_("SID", "Type"), type);
 
-	// Title.
-	if (gbsHeader->title[0] != 0) {
-		d->fields->addField_string(C_("GBS", "Title"),
-			cp1252_sjis_to_utf8(gbsHeader->title, sizeof(gbsHeader->title)));
+	// Version.
+	// TODO: Check for PSIDv2NG?
+	d->fields->addField_string_numeric(C_("SID", "Version"),
+		be16_to_cpu(sidHeader->version));
+
+	// Name.
+	if (sidHeader->name[0] != 0) {
+		d->fields->addField_string(C_("SID", "Name"),
+			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
 	}
 
-	// Composer.
-	if (gbsHeader->composer[0] != 0) {
-		d->fields->addField_string(C_("GBS", "Composer"),
-			cp1252_sjis_to_utf8(gbsHeader->composer, sizeof(gbsHeader->composer)));
+	// Author.
+	if (sidHeader->author[0] != 0) {
+		d->fields->addField_string(C_("SID", "Author"),
+			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
 	}
 
 	// Copyright.
-	if (gbsHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("GBS", "Copyright"),
-			cp1252_sjis_to_utf8(gbsHeader->copyright, sizeof(gbsHeader->copyright)));
+	if (sidHeader->copyright[0] != 0) {
+		d->fields->addField_string(C_("SID", "Copyright"),
+			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
 	}
 
-	// Number of tracks.
-	d->fields->addField_string_numeric(C_("GBS", "Track Count"),
-		gbsHeader->track_count);
-
-	// Default track number.
-	d->fields->addField_string_numeric(C_("GBS", "Default Track #"),
-		gbsHeader->default_track);
-
 	// Load address.
-	d->fields->addField_string_numeric(C_("GBS", "Load Address"),
-		le16_to_cpu(gbsHeader->load_address),
+	d->fields->addField_string_numeric(C_("SID", "Load Address"),
+		be16_to_cpu(sidHeader->loadAddress),
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
-	d->fields->addField_string_numeric(C_("GBS", "Init Address"),
-		le16_to_cpu(gbsHeader->init_address),
+	d->fields->addField_string_numeric(C_("SID", "Init Address"),
+		be16_to_cpu(sidHeader->initAddress),
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
-	d->fields->addField_string_numeric(C_("GBS", "Play Address"),
-		le16_to_cpu(gbsHeader->play_address),
+	d->fields->addField_string_numeric(C_("SID", "Play Address"),
+		be16_to_cpu(sidHeader->playAddress),
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
-	// Play address.
-	d->fields->addField_string_numeric(C_("GBS", "Stack Pointer"),
-		le16_to_cpu(gbsHeader->stack_pointer),
-		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+	// Number of songs.
+	d->fields->addField_string_numeric(C_("SID", "# of Songs"),
+		be16_to_cpu(sidHeader->songs));
 
-	// TODO: Timer modulo and control?
+	// Starting song number.
+	d->fields->addField_string_numeric(C_("SID", "Starting Song #"),
+		be16_to_cpu(sidHeader->startSong));
+
+	// TODO: Speed?
+	// TODO: v2+ fields.
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
@@ -307,9 +325,9 @@ int GBS::loadFieldData(void)
  * Called by RomData::metaData() if the field data hasn't been loaded yet.
  * @return Number of metadata properties read on success; negative POSIX error code on error.
  */
-int GBS::loadMetaData(void)
+int SID::loadMetaData(void)
 {
-	RP_D(GBS);
+	RP_D(SID);
 	if (d->metaData != nullptr) {
 		// Metadata *has* been loaded...
 		return 0;
@@ -324,26 +342,27 @@ int GBS::loadMetaData(void)
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
 
-	// GBS header.
-	const GBS_Header *const gbsHeader = &d->gbsHeader;
+	// SID header.
+	const SID_Header *const sidHeader = &d->sidHeader;
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
-	// Title.
-	if (gbsHeader->title[0] != 0) {
+	// Title. (Name)
+	if (sidHeader->name[0] != 0) {
 		d->metaData->addMetaData_string(Property::Title,
-			cp1252_sjis_to_utf8(gbsHeader->title, sizeof(gbsHeader->title)));
+			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
 	}
 
-	// Composer.
-	if (gbsHeader->composer[0] != 0) {
-		d->metaData->addMetaData_string(Property::Composer,
-			cp1252_sjis_to_utf8(gbsHeader->composer, sizeof(gbsHeader->composer)));
+	// Author.
+	if (sidHeader->author[0] != 0) {
+		// TODO: Composer instead of Author?
+		d->metaData->addMetaData_string(Property::Author,
+			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
 	}
 
 	// Copyright.
-	if (gbsHeader->copyright[0] != 0) {
+	if (sidHeader->copyright[0] != 0) {
 		d->metaData->addMetaData_string(Property::Copyright,
-			cp1252_sjis_to_utf8(gbsHeader->copyright, sizeof(gbsHeader->copyright)));
+			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
 	}
 
 	// Finished reading the metadata.
