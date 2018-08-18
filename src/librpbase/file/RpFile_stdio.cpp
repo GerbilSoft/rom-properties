@@ -305,7 +305,7 @@ RpFile::RpFile(const RpFile &other)
 
 	// NOTE: If the file is gzipped, we can't simply dup()
 	// the file handle because gzdopen() won't work correctly.
-	// TODO: BEFORE COMMIT, consolidate with init() and others.
+	// TODO: Consolidate with init() and others.
 	if (other.d_ptr->gzfd) {
 		// Re-open the file.
 		if (!d->reOpenFile()) {
@@ -347,7 +347,7 @@ RpFile &RpFile::operator=(const RpFile &other)
 
 	// NOTE: If the file is gzipped, we can't simply dup()
 	// the file handle because gzdopen() won't work correctly.
-	// TODO: BEFORE COMMIT, consolidate with init() and others.
+	// TODO: Consolidate with init() and others.
 	if (other.d_ptr->gzfd) {
 		// Re-open the file.
 		const mode_str_t *mode_str = d->mode_to_str(d->mode);
