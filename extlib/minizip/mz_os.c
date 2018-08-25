@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.4.0, August 5, 2018
+   Version 2.5.1, August 18, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -159,7 +159,7 @@ int32_t mz_path_resolve(const char *path, char *output, int32_t max_output)
         if ((*check == '\\') || (*check == '/'))
             check += 1;
 
-        if ((source == path) || (check != source) || (*target == 0))
+        if ((source == path) || (check != source))
         {
             // Skip double paths
             if ((*check == '\\') || (*check == '/'))

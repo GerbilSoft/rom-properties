@@ -1,5 +1,5 @@
 /* mz_strm_mem.c -- Stream for memory access
-   Version 2.4.0, August 5, 2018
+   Version 2.5.1, August 18, 2018
    part of the MiniZip project
 
    This interface is designed to access memory rather than files.
@@ -48,7 +48,7 @@ static mz_stream_vtbl mz_stream_mem_vtbl = {
 typedef struct mz_stream_mem_s {
     mz_stream   stream;
     int32_t     mode;
-    char        *buffer;    // Memory buffer pointer
+    uint8_t     *buffer;    // Memory buffer pointer
     int32_t     size;       // Size of the memory buffer
     int32_t     limit;      // Furthest we've written
     int32_t     position;   // Current position in the memory
@@ -61,10 +61,10 @@ static void mz_stream_mem_set_size(void *stream, int32_t size)
 {
     mz_stream_mem *mem = (mz_stream_mem *)stream;
     int32_t new_size = size;
-    char *new_buf = NULL;
+    uint8_t *new_buf = NULL;
 
 
-    new_buf = (char *)MZ_ALLOC(new_size);
+    new_buf = (uint8_t *)MZ_ALLOC(new_size);
     if (mem->buffer)
     {
         memcpy(new_buf, mem->buffer, mem->size);
@@ -209,7 +209,7 @@ int32_t mz_stream_mem_error(void *stream)
 void mz_stream_mem_set_buffer(void *stream, void *buf, int32_t size)
 {
     mz_stream_mem *mem = (mz_stream_mem *)stream;
-    mem->buffer = buf;
+    mem->buffer = (uint8_t *)buf;
     mem->size = size;
     mem->limit = size;
 }
@@ -226,6 +226,12 @@ int32_t mz_stream_mem_get_buffer_at(void *stream, int64_t position, const void *
         return MZ_STREAM_ERROR;
     *buf = mem->buffer + position;
     return MZ_OK;
+}
+
+int32_t mz_stream_mem_get_buffer_at_current(void *stream, const void **buf)
+{
+    mz_stream_mem *mem = (mz_stream_mem *)stream;
+    return mz_stream_mem_get_buffer_at(stream, mem->position, buf);
 }
 
 void mz_stream_mem_get_buffer_length(void *stream, int32_t *length)
@@ -255,8 +261,7 @@ void *mz_stream_mem_create(void **stream)
     {
         memset(mem, 0, sizeof(mz_stream_mem));
         mem->stream.vtbl = &mz_stream_mem_vtbl;
-        // Large grow size to prevent fragmentation
-        mem->grow_size = 128 * 1024;
+        mem->grow_size = 4096;
     }
     if (stream != NULL)
         *stream = mem;

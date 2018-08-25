@@ -1,7 +1,8 @@
 #***************************************************************************
-# Copyright:  Matthias Schmieder,
-# E-Mail:     schmieder.matthias@gmail.com
-# Year:       2016
+# Copyright (C) 2017-2018 Nathan Moinvaziri
+#                         https://github.com/nmoinvaz/minizip
+# Copyright (C)      2016 Matthias Schmieder
+#                         schmieder.matthias@gmail.com
 #***************************************************************************
 #cmake_minimum_required(VERSION 3.0.2)
 
@@ -38,10 +39,10 @@ set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installa
 ENDIF(0)
 
 # Minizip library version
-set(VERSION "2.4.0")
+set(VERSION "2.5.1")
 
 # Minizip api version
-set(SOVERSION "2")
+set(SOVERSION "2.5")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -57,6 +58,16 @@ if(USE_ZLIB)
     endif()
     ENDIF(0)
     add_definitions(-DHAVE_ZLIB)
+endif()
+
+# Check if bzip2 installation is present
+if(USE_BZIP2)
+    set(BZIP2_ROOT ${DEF_BZIP2_ROOT} CACHE PATH "Parent directory of bzip2 installation")
+    find_package(BZip2)
+    if(BZIP2_FOUND)
+        include_directories(${BZIP2_INCLUDE_DIRS})
+    endif()
+    add_definitions(-DHAVE_BZIP2)
 endif()
 
 # rom-properties: Not using pkgconfig.
@@ -76,7 +87,8 @@ set(MINIZIP_SRC
     mz_strm_mem.c
     mz_strm_posix.c
     mz_strm_split.c
-    mz_zip.c)
+    mz_zip.c
+    mz_zip_rw.c)
 
 set(MINIZIP_PUBLIC_HEADERS
     mz.h
@@ -88,7 +100,8 @@ set(MINIZIP_PUBLIC_HEADERS
     mz_strm_mem.h
     mz_strm_posix.h
     mz_strm_split.h
-    mz_zip.h)
+    mz_zip.h
+    mz_zip_rw.h)
 
 if(COMPRESS_ONLY)
     add_definitions(-DMZ_ZIP_NO_DECOMPRESSION)
@@ -223,7 +236,14 @@ if(USE_ZLIB)
     ENDIF(0)
 endif()
 
-if(USE_BZIP2)
+if(USE_BZIP2 AND BZIP2_FOUND)
+    add_definitions(-DHAVE_BZIP2)
+
+    list(APPEND MINIZIP_SRC "mz_strm_bzip.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_bzip.h")
+
+    set(CMAKE_REQUIRED_LIBRARIES BZip2::BZip2)
+elseif(USE_BZIP2)
     add_definitions(-DHAVE_BZIP2)
     add_definitions(-DBZ_NO_STDIO)
 
@@ -401,6 +421,9 @@ IF(NOT ZLIB_LIBRARY)
     MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
 ENDIF(NOT ZLIB_LIBRARY)
 target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARY})
+if(USE_BZIP2 AND BZIP2_FOUND)
+    target_link_libraries(${PROJECT_NAME} BZip2::BZip2)
+endif()
 if(USE_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 endif()
@@ -415,24 +438,32 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC ZLIB_CONST)
 
 # rom-properties: Disable installation and tests.
 IF(0)
-install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
-        INCLUDES DESTINATION "${INSTALL_INC_DIR}"
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
+target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
 
-install(EXPORT ${PROJECT_NAME}
-        DESTINATION "${INSTALL_CMAKE_DIR}"
-        NAMESPACE "MINIZIP::")
-
-install(FILES ${MINIZIP_PUBLIC_HEADERS} DESTINATION "${INSTALL_INC_DIR}")
-install(FILES ${MINIZIP_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
+if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
+    install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+            INCLUDES DESTINATION "${INSTALL_INC_DIR}"
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
+            LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
+    install(EXPORT ${PROJECT_NAME}
+            DESTINATION "${INSTALL_CMAKE_DIR}"
+            NAMESPACE "MINIZIP::")
+endif()
+if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
+    install(FILES ${MINIZIP_PUBLIC_HEADERS} DESTINATION "${INSTALL_INC_DIR}")
+endif()
+if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
+    install(FILES ${MINIZIP_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
+endif()
 
 if(BUILD_TEST)
     add_executable(minizip "minizip.c")
     target_link_libraries(minizip ${PROJECT_NAME})
 
-    install(TARGETS minizip
+    if(NOT SKIP_INSTALL_BINARIES AND NOT SKIP_INSTALL_ALL)
+        install(TARGETS minizip
             RUNTIME DESTINATION "bin")
+    endif()
 endif()
 ENDIF(0)

@@ -1,4 +1,4 @@
-# Minizip 2.4.0
+# Minizip 2.5.1
 
 This library is a refactoring of the minizip contribution found in the zlib distribution and is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -75,7 +75,8 @@ cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zl
 | mz_strm_posix.\* | File stream using Posix functions | Non-windows systems |
 | mz_strm_win32.\* | File stream using Win32 API functions | Windows systems |
 | mz_strm_zlib.\* | Deflate stream using zlib | zlib or liblzma |
-| mz_zip.\* | Zip functionality | Yes |
+| mz_zip.\* | Zip format | Yes |
+| mz_zip_rw.\* | Zip reader/writer | No |
 
 ## Features
 
@@ -89,7 +90,7 @@ cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zl
 #### LZMA
 
 + Requires ``cmake . -DUSE_LZMA=ON`` or ``#define HAVE_LZMA``
-+ Requires [liblzma](https://tukaani.org/xz/) library
++ Requires [liblzma](https://tukaani.org/xz/) library with modifications
 
 ### Encryption
 

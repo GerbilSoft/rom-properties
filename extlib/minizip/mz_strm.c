@@ -1,5 +1,5 @@
 /* mz_strm.c -- Stream interface
-   Version 2.4.0, August 5, 2018
+   Version 2.5.1, August 18, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -159,6 +159,14 @@ int32_t mz_stream_write_uint32(void *stream, uint32_t value)
 int32_t mz_stream_write_uint64(void *stream, uint64_t value)
 {
     return mz_stream_write_value(stream, value, sizeof(uint64_t));
+}
+
+int32_t mz_stream_write_chars(void *stream, const char *value, uint8_t null_terminate)
+{
+    int32_t len = (int32_t)strlen(value);
+    if (null_terminate)
+        len += 1;
+    return mz_stream_write(stream, value, len);
 }
 
 int32_t mz_stream_copy(void *target, void *source, int32_t len)

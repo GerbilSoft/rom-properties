@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.4.0, August 5, 2018
+   Version 2.5.1, August 18, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -29,7 +29,6 @@
 typedef struct mz_compat_s {
     void    *stream;
     void    *handle;
-    int     raw;
 } mz_compat;
 
 /***************************************************************************/
@@ -109,13 +108,18 @@ extern zipFile ZEXPORT zipOpen2_64(const void *path, int append, const char **gl
 extern zipFile ZEXPORT zipOpen_MZ(void *stream, int append, const char **globalcomment)
 {
     mz_compat *compat = NULL;
+    int32_t err = MZ_OK;
     int32_t mode = zipConvertAppendToStreamMode(append);
     void *handle = NULL;
 
-    handle = mz_zip_open(stream, mode);
+    mz_zip_create(&handle);
+    err = mz_zip_open(handle, stream, mode);
 
-    if (handle == NULL)
+    if (err != MZ_OK)
+    {
+        mz_zip_delete(&handle);
         return NULL;
+    }
 
     if (globalcomment != NULL)
         mz_zip_get_comment(handle, globalcomment);
@@ -147,8 +151,6 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
 
     if (compat == NULL)
         return ZIP_PARAMERROR;
-
-    compat->raw = raw;
 
     memset(&file_info, 0, sizeof(file_info));
 
@@ -185,7 +187,7 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
         file_info.aes_version = MZ_AES_VERSION;
 #endif
 
-    return mz_zip_entry_write_open(compat->handle, &file_info, (int16_t)level, password);
+    return mz_zip_entry_write_open(compat->handle, &file_info, (int16_t)level, (uint8_t)raw, password);
 }
 
 extern int ZEXPORT zipOpenNewFileInZip4_64(zipFile file, const char *filename, const zip_fileinfo *zipfi,
@@ -254,8 +256,6 @@ extern int ZEXPORT zipCloseFileInZipRaw64(zipFile file, uint64_t uncompressed_si
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return ZIP_PARAMERROR;
-    if (compat->raw == 0)
-        return mz_zip_entry_close(compat->handle);
     return mz_zip_entry_close_raw(compat->handle, uncompressed_size, crc32);
 }
 
@@ -323,8 +323,7 @@ extern int ZEXPORT zipClose2_MZ(zipFile file, const char *global_comment, uint16
 
     mz_zip_set_version_madeby(compat->handle, version_madeby);
     err = mz_zip_close(compat->handle);
-
-    compat->handle = NULL;
+    mz_zip_delete(&compat->handle);
 
     return err;
 }
@@ -389,12 +388,17 @@ extern unzFile ZEXPORT unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_
 extern unzFile ZEXPORT unzOpen_MZ(void *stream)
 {
     mz_compat *compat = NULL;
+    int32_t err = MZ_OK;
     void *handle = NULL;
 
-    handle = mz_zip_open(stream, MZ_OPEN_MODE_READ);
+    mz_zip_create(&handle);
+    err = mz_zip_open(handle, stream, MZ_OPEN_MODE_READ);
 
-    if (handle == NULL)
+    if (err != MZ_OK)
+    {
+        mz_zip_delete(&handle);
         return NULL;
+    }
 
     compat = (mz_compat *)MZ_ALLOC(sizeof(mz_compat));
     compat->handle = handle;
@@ -436,7 +440,7 @@ extern int ZEXPORT unzClose_MZ(unzFile file)
         return UNZ_PARAMERROR;
 
     err = mz_zip_close(compat->handle);
-    compat->handle = NULL;
+    mz_zip_delete(&compat->handle);
 
     return err;
 }
@@ -507,7 +511,7 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int *method, int *level, in
     if (level != NULL)
         *level = 0;
 
-    err = mz_zip_entry_read_open(compat->handle, (int16_t)raw, password);
+    err = mz_zip_entry_read_open(compat->handle, (uint8_t)raw, password);
     if (err == MZ_OK)
         err = mz_zip_entry_get_info(compat->handle, &file_info);
     if (err == MZ_OK)
@@ -714,9 +718,32 @@ extern int ZEXPORT unzGoToNextFile(unzFile file)
 extern int ZEXPORT unzLocateFile(unzFile file, const char *filename, unzFileNameComparer filename_compare_func)
 {
     mz_compat *compat = (mz_compat *)file;
+    mz_zip_file *file_info = NULL;
+    int32_t err = MZ_OK;
+    int32_t result = 0;
+
     if (compat == NULL)
         return UNZ_PARAMERROR;
-    return mz_zip_locate_entry(compat->handle, filename, filename_compare_func);
+
+    err = mz_zip_goto_first_entry(compat->handle);
+    while (err == MZ_OK)
+    {
+        err = mz_zip_entry_get_info(compat->handle, &file_info);
+        if (err != MZ_OK)
+            break;
+
+        if (filename_compare_func != NULL)
+            result = filename_compare_func(file, filename, file_info->filename);
+        else
+            result = strcmp(filename, file_info->filename);
+
+        if (result == 0)
+            return MZ_OK;
+
+        err = mz_zip_goto_next_entry(compat->handle);
+    }
+
+    return err;
 }
 
 extern int32_t ZEXPORT unzGetOffset(unzFile file)
