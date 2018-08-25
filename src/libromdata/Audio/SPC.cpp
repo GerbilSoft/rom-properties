@@ -681,153 +681,156 @@ int SPC::loadFieldData(void)
 		return -EIO;
 	}
 
-	// SPC header.
-	const SPC_Header *const spcHeader = &d->spcHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
-
 	// Get the ID666 tags.
 	auto kv = d->parseTags();
-	if (!kv.empty()) {
-		// TODO: Add more tags.
+	if (kv.empty()) {
+		// No tags.
+		return 0;
+	}
 
-		// Song name.
-		auto iter = kv.find(SPC_xID6_ITEM_SONG_NAME);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(data.isStrIdx);
-			if (data.isStrIdx) {
-				d->fields->addField_string(C_("SPC", "Song Name"), kv.getStr(data));
+	// SPC header.
+	d->fields->reserve(10);	// Maximum of 10 fields.
+
+	// TODO: Add more tags.
+	// TODO: Duration.
+
+	// Song name.
+	auto iter = kv.find(SPC_xID6_ITEM_SONG_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->fields->addField_string(C_("SPC", "Song Name"), kv.getStr(data));
+		}
+	}
+
+	// Game name.
+	iter = kv.find(SPC_xID6_ITEM_GAME_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->fields->addField_string(C_("SPC", "Game Name"), kv.getStr(data));
+		}
+	}
+
+	// Artist.
+	iter = kv.find(SPC_xID6_ITEM_ARTIST_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->fields->addField_string(C_("SPC", "Artist"), kv.getStr(data));
+		}
+	}
+
+	// Dumper.
+	iter = kv.find(SPC_xID6_ITEM_DUMPER_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->fields->addField_string(C_("SPC", "Dumper"), kv.getStr(data));
+		}
+	}
+
+	// Dump date.
+	iter = kv.find(SPC_xID6_ITEM_DUMP_DATE);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			d->fields->addField_dateTime(C_("SPC", "Dump Date"),
+				data.timestamp,
+				RomFields::RFT_DATETIME_HAS_DATE |
+				RomFields::RFT_DATETIME_IS_UTC  // Date only.
+			);
+		}
+	}
+
+	// Comments.
+	iter = kv.find(SPC_xID6_ITEM_COMMENTS);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->fields->addField_string(C_("SPC", "Comments"), kv.getStr(data));
+		}
+	}
+
+	// Emulator used.
+	iter = kv.find(SPC_xID6_ITEM_EMULATOR_USED);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			const char *emu;
+			switch (data.uvalue) {
+				case SPC_EMULATOR_UNKNOWN:
+					emu = C_("SPC|Emulator", "Unknown");
+					break;
+				case SPC_EMULATOR_ZSNES:
+					emu = "ZSNES";
+					break;
+				case SPC_EMULATOR_SNES9X:
+					emu = "Snes9x";
+					break;
+				default:
+					emu = nullptr;
+					break;
+			}
+
+			if (emu) {
+				d->fields->addField_string(C_("SPC", "Emulator Used"), emu);
+			} else {
+				d->fields->addField_string(C_("SPC", "Emulator Used"),
+					rp_sprintf(C_("SPC", "Unknown (0x%02X)"), data.uvalue));
 			}
 		}
+	}
 
-		// Game name.
-		iter = kv.find(SPC_xID6_ITEM_GAME_NAME);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(data.isStrIdx);
-			if (data.isStrIdx) {
-				d->fields->addField_string(C_("SPC", "Game Name"), kv.getStr(data));
-			}
+	// OST title.
+	iter = kv.find(SPC_xID6_ITEM_OST_TITLE);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->fields->addField_string(C_("SPC", "OST Title"), kv.getStr(data));
 		}
+	}
 
-		// Artist.
-		iter = kv.find(SPC_xID6_ITEM_ARTIST_NAME);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(data.isStrIdx);
-			if (data.isStrIdx) {
-				d->fields->addField_string(C_("SPC", "Artist"), kv.getStr(data));
-			}
+	// OST disc number.
+	iter = kv.find(SPC_xID6_ITEM_OST_DISC);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			// Disc number.
+			d->fields->addField_string_numeric(C_("SPC", "OST Disc #"), data.uvalue);
 		}
+	}
 
-		// Dumper.
-		iter = kv.find(SPC_xID6_ITEM_DUMPER_NAME);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(data.isStrIdx);
-			if (data.isStrIdx) {
-				d->fields->addField_string(C_("SPC", "Dumper"), kv.getStr(data));
+	// OST track number.
+	iter = kv.find(SPC_xID6_ITEM_OST_TRACK);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			// High byte: Track number. (0-99)
+			// Low byte: Optional letter.
+			// TODO: Restrict track number?
+			char buf[32];
+			uint8_t track_num = data.uvalue >> 8;
+			char track_letter = data.uvalue & 0xFF;
+			if (ISALNUM(track_letter)) {
+				// Valid track letter.
+				snprintf(buf, sizeof(buf), "%u%c", track_num, track_letter);
+			} else {
+				// Not a valid track letter.
+				snprintf(buf, sizeof(buf), "%u", track_num);
 			}
-		}
 
-		// Dump date.
-		iter = kv.find(SPC_xID6_ITEM_DUMP_DATE);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(!data.isStrIdx);
-			if (!data.isStrIdx) {
-				d->fields->addField_dateTime(C_("SPC", "Dump Date"),
-					data.timestamp,
-					RomFields::RFT_DATETIME_HAS_DATE |
-					RomFields::RFT_DATETIME_IS_UTC  // Date only.
-				);
-			}
-		}
-
-		// Comments.
-		iter = kv.find(SPC_xID6_ITEM_COMMENTS);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(data.isStrIdx);
-			if (data.isStrIdx) {
-				d->fields->addField_string(C_("SPC", "Comments"), kv.getStr(data));
-			}
-		}
-
-		// Emulator used.
-		iter = kv.find(SPC_xID6_ITEM_EMULATOR_USED);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(!data.isStrIdx);
-			if (!data.isStrIdx) {
-				const char *emu;
-				switch (data.uvalue) {
-					case SPC_EMULATOR_UNKNOWN:
-						emu = C_("SPC|Emulator", "Unknown");
-						break;
-					case SPC_EMULATOR_ZSNES:
-						emu = "ZSNES";
-						break;
-					case SPC_EMULATOR_SNES9X:
-						emu = "Snes9x";
-						break;
-					default:
-						emu = nullptr;
-						break;
-				}
-
-				if (emu) {
-					d->fields->addField_string(C_("SPC", "Emulator Used"), emu);
-				} else {
-					d->fields->addField_string(C_("SPC", "Emulator Used"),
-						rp_sprintf(C_("SPC", "Unknown (0x%02X)"), data.uvalue));
-				}
-			}
-		}
-
-		// OST title.
-		iter = kv.find(SPC_xID6_ITEM_OST_TITLE);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(data.isStrIdx);
-			if (data.isStrIdx) {
-				d->fields->addField_string(C_("SPC", "OST Title"), kv.getStr(data));
-			}
-		}
-
-		// OST disc number.
-		iter = kv.find(SPC_xID6_ITEM_OST_DISC);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(!data.isStrIdx);
-			if (!data.isStrIdx) {
-				// Disc number.
-				d->fields->addField_string_numeric(C_("SPC", "OST Disc #"), data.uvalue);
-			}
-		}
-
-		// OST track number.
-		iter = kv.find(SPC_xID6_ITEM_OST_TRACK);
-		if (iter != kv.end()) {
-			const auto &data = iter->second;
-			assert(!data.isStrIdx);
-			if (!data.isStrIdx) {
-				// High byte: Track number. (0-99)
-				// Low byte: Optional letter.
-				// TODO: Restrict track number?
-				char buf[32];
-				uint8_t track_num = data.uvalue >> 8;
-				char track_letter = data.uvalue & 0xFF;
-				if (ISALNUM(track_letter)) {
-					// Valid track letter.
-					snprintf(buf, sizeof(buf), "%u%c", track_num, track_letter);
-				} else {
-					// Not a valid track letter.
-					snprintf(buf, sizeof(buf), "%u", track_num);
-				}
-
-				d->fields->addField_string(C_("SPC", "OST Track #"), buf);
-			}
+			d->fields->addField_string(C_("SPC", "OST Track #"), buf);
 		}
 	}
 
