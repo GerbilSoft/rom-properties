@@ -1,5 +1,10 @@
 # Changes
 
+## v1.3.3 (released 2018/08/25)
+
+* GameCube: Fixed a crash when downloading external images for Disc 2
+  from multi-disc games. Thanks to @Nomelas for reporting this bug.
+
 ## v1.3.2 (released 2018/06/30)
 
 * Linux: Fixed a crash on GNOME and XFCE when using Ubuntu 16.04.
