@@ -1,10 +1,16 @@
+rom-properties (1.3.3-1ppa1~xenial2) xenial; urgency=medium
+
+  * Update the changelog timestamps correctly.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 25 Aug 2018 10:35:23 -0400
+
 rom-properties (1.3.3-1ppa1~xenial1) xenial; urgency=medium
 
   * GameCube: Fixed a crash when downloading external images for Disc 2
     from multi-disc games.
   * Thanks to @Nomelas for reporting this bug.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 30 Jun 2018 13:56:08 -0400
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 25 Aug 2018 10:35:00 -0400
 
 rom-properties (1.3.2-1ppa1~xenial1) xenial; urgency=medium
 
