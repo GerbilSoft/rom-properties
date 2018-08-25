@@ -689,7 +689,7 @@ int SPC::loadFieldData(void)
 	}
 
 	// SPC header.
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields->reserve(11);	// Maximum of 11 fields.
 
 	// TODO: Add more tags.
 	// TODO: Duration.
@@ -721,6 +721,16 @@ int SPC::loadFieldData(void)
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
 			d->fields->addField_string(C_("SPC", "Artist"), kv.getStr(data));
+		}
+	}
+
+	// Copyright year.
+	iter = kv.find(SPC_xID6_ITEM_COPYRIGHT_YEAR);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			d->fields->addField_string_numeric(C_("SPC", "Copyright Year"), data.uvalue);
 		}
 	}
 
@@ -868,7 +878,7 @@ int SPC::loadMetaData(void)
 	d->metaData = new RomMetaData();
 
 	// SPC header.
-	d->metaData->reserve(9);	// Maximum of 9 metadata properties.
+	d->metaData->reserve(10);	// Maximum of 10 metadata properties.
 
 	// TODO: Add more tags.
 	// TODO: Duration.
@@ -900,6 +910,16 @@ int SPC::loadMetaData(void)
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
 			d->metaData->addMetaData_string(Property::Artist, kv.getStr(data));
+		}
+	}
+
+	// Copyright year. (Release year.)
+	iter = kv.find(SPC_xID6_ITEM_COPYRIGHT_YEAR);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			d->metaData->addMetaData_uint(Property::ReleaseYear, data.uvalue);
 		}
 	}
 
