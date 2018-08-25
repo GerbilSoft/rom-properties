@@ -29,6 +29,15 @@
     </magic>
   </mime-type>
 
+  <mime-type type="audio/x-spc">
+    <_comment>Super NES audio</_comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.spc"/>
+    <magic priority="50">
+      <match value="SNES-SPC700 Sound File Data v0.30" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- VGM -->
   <mime-type type="audio/x-vgm">
     <comment>Video Game Music audio</comment>
