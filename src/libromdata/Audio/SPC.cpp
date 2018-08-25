@@ -32,16 +32,19 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstring>
 #include <ctime>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
 
@@ -338,7 +341,170 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 		kv.insertUInt(SPC_xID6_ITEM_EMULATOR_USED, id666->text.emulator_used);
 	}
 
-	// TODO: Find Extended ID666 tags and parse them?
+	// Check for Extended ID666 tags.
+	SPC_xID6_Header xID6;
+	size_t size = file->seekAndRead(SPC_xID6_ADDRESS, &xID6, sizeof(xID6));
+	if (size != sizeof(xID6) || xID6.magic != cpu_to_be32(SPC_xID6_MAGIC)) {
+		// Seek and/or read error, or incorrect magic.
+		return kv;
+	}
+
+	// NOTE: Maximum of 16 KB.
+	unsigned int len = le32_to_cpu(xID6.size);
+	if (len < 4 || len > 16384) {
+		// Invalid length.
+		return kv;
+	}
+
+	// NOTE: Using indexes instead of pointer arithmetic
+	// due to DWORD alignment requirements.
+	unique_ptr<uint8_t[]> data(new uint8_t[len]);
+	size = file->read(data.get(), len);
+	if (size != (size_t)len) {
+		// Read error.
+		return kv;
+	}
+
+	for (unsigned int i = 0; i < len-3; i++) {
+		switch (data[i]) {
+			default:
+				// Unsupported tag key.
+				// Check the length and skip it.
+				if (data[i+1] == 0) {
+					// No extra data.
+					i += 4-1;
+				} else {
+					// Extra data. Add the length.
+					// NOTE: Must be DWORD-aligned.
+					const unsigned int slen = data[i+2] | (data[i+3] << 8);
+					i += 4 + slen;
+					i = ALIGN(4, i);
+					i--;
+				}
+				break;
+
+			// Strings.
+			case SPC_xID6_ITEM_SONG_NAME:
+			case SPC_xID6_ITEM_GAME_NAME:
+			case SPC_xID6_ITEM_ARTIST_NAME:
+			case SPC_xID6_ITEM_DUMPER_NAME:
+			case SPC_xID6_ITEM_OST_TITLE:
+			case SPC_xID6_ITEM_PUBLISHER: {
+				// Must be stored after the header.
+				assert(data[i+1] != 0);
+				if (data[i+1] == 0) {
+					i = len;
+					break;
+				}
+
+				// Next two bytes: String length.
+				// Should be 4-256, but we'll accept anything
+				// as long as it doesn't go out of bounds.
+				const unsigned int slen = data[i+2] | (data[i+3] << 8);
+				assert(slen > 0);
+				if (i + 4 + slen > len) {
+					// Out of bounds.
+					i = len;
+					break;
+				}
+
+				// NOTE: Strings are encoded using cp1252.
+				kv.insertStr(static_cast<SPC_xID6_Item_e>(data[i]),
+					cp1252_to_utf8(reinterpret_cast<const char*>(&data[i+4]), (size_t)slen));
+
+				// DWORD alignment.
+				i += 4 + slen;
+				i = ALIGN(4, i);
+				i--; // for loop iterator
+				break;
+			}
+
+			// 16-bit lengths. (integer values stored within the header)
+			case SPC_xID6_ITEM_OST_TRACK:
+			case SPC_xID6_ITEM_COPYRIGHT_YEAR: {
+				// Must be stored within the header.
+				assert(data[i+1] == 0);
+				if (data[i+1] != 0) {
+					i = len;
+					break;
+				}
+
+				// Next two bytes: 16-bit value.
+				const unsigned int u16val = data[i+2] | (data[i+3] << 8);
+				kv.insertUInt(static_cast<SPC_xID6_Item_e>(data[i]), u16val);
+
+				// Next tag.
+				i += 4-1;
+				break;
+			}
+
+			// 8-bit lengths. (integer values stored within the header)
+			case SPC_xID6_ITEM_EMULATOR_USED:
+			case SPC_xID6_ITEM_OST_DISC:
+			case SPC_xID6_ITEM_MUTED_CHANNELS:
+			case SPC_xID6_ITEM_LOOP_COUNT: {
+				// Must be stored within the header.
+				assert(data[i+1] == 0);
+				if (data[i+1] != 0) {
+					i = len;
+					break;
+				}
+
+				// Next byte: 8-bit value.
+				const unsigned int u8val = data[i+2];
+				kv.insertUInt(static_cast<SPC_xID6_Item_e>(data[i]), u8val);
+
+				// Next tag.
+				i += 4-1;
+				break;
+			}
+
+			// Integers. (32-bit; stored after the header)
+			case SPC_xID6_ITEM_DUMP_DATE:
+			case SPC_xID6_ITEM_INTRO_LENGTH:
+			case SPC_xID6_ITEM_LOOP_LENGTH:
+			case SPC_xID6_ITEM_END_LENGTH:
+			case SPC_xID6_ITEM_FADE_LENGTH:
+			case SPC_xID6_ITEM_AMP_VALUE:
+				// Must be stored after the header.
+				assert(data[i+1] != 0);
+				if (data[i+1] == 0) {
+					i = len;
+					break;
+				}
+
+				// Next two bytes: Size.
+				// Should be 4 for uint32_t.
+				const unsigned int slen = data[i+2] | (data[i+3] << 8);
+				assert(slen == 4);
+				if (slen != 4 || i + 4 + 4 > len) {
+					// Incorrect length, or out of bounds.
+					i = len;
+					break;
+				}
+
+				// Get the integer value.
+				// TODO: Use le32_to_cpu()?
+				if (data[i] == SPC_xID6_ITEM_DUMP_DATE) {
+					// Convert from BCD to Unix time.
+					kv.insertTimestamp(static_cast<SPC_xID6_Item_e>(data[i]),
+						bcd_to_unix_time(&data[i+4], 4));
+				} else {
+					// Regular integer.
+					const unsigned int uival =  data[i+4] |
+								   (data[i+5] <<  8) |
+								   (data[i+6] << 16) |
+								   (data[i+7] << 24);
+					kv.insertUInt(static_cast<SPC_xID6_Item_e>(data[i]), uival);
+				}
+
+				// Next tag.
+				i += 8-1;
+				break;
+		}
+	}
+
+	// Tags parsed.
 	return kv;
 }
 
@@ -517,7 +683,7 @@ int SPC::loadFieldData(void)
 
 	// SPC header.
 	const SPC_Header *const spcHeader = &d->spcHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// Get the ID666 tags.
 	auto kv = d->parseTags();
@@ -564,7 +730,7 @@ int SPC::loadFieldData(void)
 			}
 		}
 
-		// Dump date. (TODO)
+		// Dump date.
 		iter = kv.find(SPC_xID6_ITEM_DUMP_DATE);
 		if (iter != kv.end()) {
 			const auto &data = iter->second;
@@ -616,6 +782,51 @@ int SPC::loadFieldData(void)
 					d->fields->addField_string(C_("SPC", "Emulator Used"),
 						rp_sprintf(C_("SPC", "Unknown (0x%02X)"), data.uvalue));
 				}
+			}
+		}
+
+		// OST title.
+		iter = kv.find(SPC_xID6_ITEM_OST_TITLE);
+		if (iter != kv.end()) {
+			const auto &data = iter->second;
+			assert(data.isStrIdx);
+			if (data.isStrIdx) {
+				d->fields->addField_string(C_("SPC", "OST Title"), kv.getStr(data));
+			}
+		}
+
+		// OST disc number.
+		iter = kv.find(SPC_xID6_ITEM_OST_DISC);
+		if (iter != kv.end()) {
+			const auto &data = iter->second;
+			assert(!data.isStrIdx);
+			if (!data.isStrIdx) {
+				// Disc number.
+				d->fields->addField_string_numeric(C_("SPC", "OST Disc #"), data.uvalue);
+			}
+		}
+
+		// OST track number.
+		iter = kv.find(SPC_xID6_ITEM_OST_TRACK);
+		if (iter != kv.end()) {
+			const auto &data = iter->second;
+			assert(!data.isStrIdx);
+			if (!data.isStrIdx) {
+				// High byte: Track number. (0-99)
+				// Low byte: Optional letter.
+				// TODO: Restrict track number?
+				char buf[32];
+				uint8_t track_num = data.uvalue >> 8;
+				char track_letter = data.uvalue & 0xFF;
+				if (ISALNUM(track_letter)) {
+					// Valid track letter.
+					snprintf(buf, sizeof(buf), "%u%c", track_num, track_letter);
+				} else {
+					// Not a valid track letter.
+					snprintf(buf, sizeof(buf), "%u", track_num);
+				}
+
+				d->fields->addField_string(C_("SPC", "OST Track #"), buf);
 			}
 		}
 	}

@@ -123,34 +123,48 @@ typedef enum {
 	// NOTE: These are only present in Extended ID666
 	// if the full value couldn't be represented properly
 	// in regular ID666.
-	SPC_xID6_ITEM_SONG_NAME		= 0x01,	// string, 4-256
-	SPC_xID6_ITEM_GAME_NAME		= 0x02,	// string, 4-256
-	SPC_xID6_ITEM_ARTIST_NAME	= 0x03,	// string, 4-256
-	SPC_xID6_ITEM_DUMPER_NAME	= 0x04,	// string, 4-256
-	SPC_xID6_ITEM_DUMP_DATE		= 0x05,	// uint32_t, BCD: YY YY MM DD
-	SPC_xID6_ITEM_EMULATOR_USED	= 0x06,	// uint8_t
-	SPC_xID6_ITEM_COMMENTS		= 0x07,
+	SPC_xID6_ITEM_SONG_NAME		= 0x01,	// string: 4-256 chars
+	SPC_xID6_ITEM_GAME_NAME		= 0x02,	// string: 4-256 chars
+	SPC_xID6_ITEM_ARTIST_NAME	= 0x03,	// string: 4-256 chars
+	SPC_xID6_ITEM_DUMPER_NAME	= 0x04,	// string: 4-256 chars
+	SPC_xID6_ITEM_DUMP_DATE		= 0x05,	// integer: uint32_t, BCD: YY YY MM DD
+	SPC_xID6_ITEM_EMULATOR_USED	= 0x06,	// length: uint8_t
+	SPC_xID6_ITEM_COMMENTS		= 0x07,	// string: 4-256 chars
 
 	// New fields.
-	SPC_xID6_ITEM_OST_TITLE		= 0x10,	// string, 4-256
-	SPC_xID6_ITEM_OST_DISC		= 0x11,	// uint8_t
-	SPC_xID6_ITEM_OST_TRACK		= 0x12,	// uint16_t: hi=0-99, lo=optional ascii char
-	SPC_xID6_ITEM_PUBLISHER		= 0x13,	// string, 4-256
-	SPC_xID6_ITEM_COPYRIGHT_YEAR	= 0x14,	// uint16_t
+	SPC_xID6_ITEM_OST_TITLE		= 0x10,	// string: 4-256 chars
+	SPC_xID6_ITEM_OST_DISC		= 0x11,	// length: uint8_t
+	SPC_xID6_ITEM_OST_TRACK		= 0x12,	// length: uint16_t: hi=0-99, lo=optional ascii char
+	SPC_xID6_ITEM_PUBLISHER		= 0x13,	// string: 4-256 chars
+	SPC_xID6_ITEM_COPYRIGHT_YEAR	= 0x14,	// length: uint16_t
 
-	// Length values are stored in ticks. (uint32_t)
+	// Song length values are stored in ticks. (uint32_t)
 	// One tick = 1/64000 of a second.
 	// Maximum length is 383,999,999 ticks.
 	// The "End" length can contain a negative value.
-	SPC_xID6_ITEM_INTRO_LENGTH	= 0x30,	// ticks
-	SPC_xID6_ITEM_LOOP_LENGTH	= 0x31,	// ticks
-	SPC_xID6_ITEM_END_LENGTH	= 0x32,	// ticks
-	SPC_xID6_ITEM_FADE_LENGTH	= 0x33,	// ticks
+	SPC_xID6_ITEM_INTRO_LENGTH	= 0x30,	// integer: ticks
+	SPC_xID6_ITEM_LOOP_LENGTH	= 0x31,	// integer: ticks
+	SPC_xID6_ITEM_END_LENGTH	= 0x32,	// integer: ticks
+	SPC_xID6_ITEM_FADE_LENGTH	= 0x33,	// integer: ticks
 
-	SPC_xID6_ITEM_MUTED_CHANNELS	= 0x34,	// uint8_t: one bit is set for each channel that's muted
-	SPC_xID6_ITEM_LOOP_COUNT	= 0x35,	// uint8_t: number of times to loop the looped section
-	SPC_xID6_ITEM_AMP_VALUE		= 0x36,	// uint32_t: Amplification value (Normal SNES == 65536)
+	SPC_xID6_ITEM_MUTED_CHANNELS	= 0x34,	// length: uint8_t: one bit is set for each channel that's muted
+	SPC_xID6_ITEM_LOOP_COUNT	= 0x35,	// length: uint8_t: number of times to loop the looped section
+	SPC_xID6_ITEM_AMP_VALUE		= 0x36,	// integer: uint32_t: Amplification value (Normal SNES == 65536)
 } SPC_xID6_Item_e;
+
+/**
+ * Extended ID666: Header.
+ * Located at 0x10200.
+ *
+ * All fields are in little-endian.
+ */
+#define SPC_xID6_MAGIC 'xid6'
+#define SPC_xID6_ADDRESS 0x10200
+typedef struct PACKED _SPC_xID6_Header {
+	uint32_t magic;		// [0x000] 'xid6'
+	uint32_t size;		// [0x004] Size, not including the header.
+} SPC_xID6_Header;
+ASSERT_STRUCT(SPC_xID6_Header, 8);
 
 #pragma pack()
 
