@@ -1,3 +1,9 @@
+rom-properties (1.3.3-1ppa2~bionic1) bionic; urgency=medium
+
+  * Build for Ubuntu 18.04 "Bionic" Beaver.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 25 Aug 2018 10:59:19 -0400
+
 rom-properties (1.3.3-1ppa1~xenial2) xenial; urgency=medium
 
   * Update the changelog timestamps correctly.
