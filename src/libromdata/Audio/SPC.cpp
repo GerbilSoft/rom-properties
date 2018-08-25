@@ -35,6 +35,7 @@ using namespace LibRpBase;
 #include <cassert>
 #include <cerrno>
 #include <cstring>
+#include <ctime>
 
 // C++ includes.
 #include <string>
@@ -76,9 +77,11 @@ class SPCPrivate : public RomDataPrivate
 				union {
 					int ivalue;
 					unsigned int uvalue;
+					time_t timestamp;
 				}; 
 				bool isStrIdx;
 
+				val_t() : timestamp(0), isStrIdx(false) { }
 				val_t(int ivalue) : ivalue(ivalue), isStrIdx(false) { }
 				val_t(unsigned int uvalue) : uvalue(uvalue), isStrIdx(false) { }
 			};
@@ -138,6 +141,18 @@ class SPCPrivate : public RomDataPrivate
 			inline void insertUInt(SPC_xID6_Item_e key, unsigned int uvalue)
 			{
 				map.insert(std::make_pair(key, val_t(uvalue)));
+			}
+
+			/**
+			 * Insert a timestamp value.
+			 * @param key Extended ID666 tag index.
+			 * @param timestamp Timestamp value.
+			 */
+			inline void insertTimestamp(SPC_xID6_Item_e key, time_t timestamp)
+			{
+				val_t val;
+				val.timestamp = timestamp;
+				map.insert(std::make_pair(key, val));
 			}
 
 			/**
@@ -251,8 +266,9 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 		// Binary version.
 
 		// Dump date. (YYYYMMDD)
-		// TODO: Convert to Unix time. (UTC)
-		//kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, dump_date);
+		// TODO: Untested.
+		kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE,
+			bcd_to_unix_time(id666->bin.dump_date, sizeof(id666->bin.dump_date)));
 
 		// Artist.
 		if (id666->bin.artist[0] != '\0') {
@@ -272,6 +288,7 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 
 		// Dump date. (MM/DD/YYYY; also allowing MM-DD-YYYY)
 		// NOTE: Might not be NULL-terminated...
+		// TODO: Untested.
 		char dump_date[11];
 		memcpy(dump_date, id666->text.dump_date, sizeof(dump_date));
 		dump_date[sizeof(dump_date)-1] = '\0';
@@ -282,8 +299,28 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 			s = sscanf("%02u-%02u-%04u", dump_date, &month, &day, &year);
 		}
 		if (s == 3) {
-			// TODO: Convert to Unix time. (UTC)
-			//kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, dump_date);
+			// Convert to Unix time.
+			// NOTE: struct tm has some oddities:
+			// - tm_year: year - 1900
+			// - tm_mon: 0 == January
+			struct tm ymdtime;
+
+			ymdtime.tm_year = year - 1900;
+			ymdtime.tm_mon  = month - 1;
+			ymdtime.tm_mday = day;
+
+			// Time portion is empty.
+			ymdtime.tm_hour = 0;
+			ymdtime.tm_min = 0;
+			ymdtime.tm_sec = 0;
+
+			// tm_wday and tm_yday are output variables.
+			ymdtime.tm_wday = 0;
+			ymdtime.tm_yday = 0;
+			ymdtime.tm_isdst = 0;
+
+			// If conversion fails, this will return -1.
+			kv.insertTimestamp(SPC_xID6_ITEM_DUMP_DATE, timegm(&ymdtime));
 		}
 
 		// Artist.
@@ -480,7 +517,7 @@ int SPC::loadFieldData(void)
 
 	// SPC header.
 	const SPC_Header *const spcHeader = &d->spcHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(7);	// Maximum of 7 fields.
 
 	// Get the ID666 tags.
 	auto kv = d->parseTags();
@@ -524,6 +561,20 @@ int SPC::loadFieldData(void)
 			assert(data.isStrIdx);
 			if (data.isStrIdx) {
 				d->fields->addField_string(C_("SPC", "Dumper"), kv.getStr(data));
+			}
+		}
+
+		// Dump date. (TODO)
+		iter = kv.find(SPC_xID6_ITEM_DUMP_DATE);
+		if (iter != kv.end()) {
+			const auto &data = iter->second;
+			assert(!data.isStrIdx);
+			if (!data.isStrIdx) {
+				d->fields->addField_dateTime(C_("SPC", "Dump Date"),
+					data.timestamp,
+					RomFields::RFT_DATETIME_HAS_DATE |
+					RomFields::RFT_DATETIME_IS_UTC  // Date only.
+				);
 			}
 		}
 

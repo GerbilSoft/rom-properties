@@ -266,6 +266,61 @@ time_t RomDataPrivate::ascii_yyyymmdd_to_unix_time(const char *ascii_date)
 	return timegm(&ymdtime);
 }
 
+/**
+ * Convert a BCD timestamp to Unix time.
+ * @param bcd_tm BCD timestamp. (YY YY MM DD HH mm ss)
+ * @param size Size of BCD timestamp. (4 or 7)
+ * @return Unix time, or -1 if an error occurred.
+ *
+ * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
+ * not likely to be valid, since the first programmable
+ * video game consoles were released in the late 1970s.
+ */
+time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
+{
+	// Convert BCD time to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm bcdtime;
+
+	// TODO: Check for invalid BCD values.
+	if (size >= 4) {
+		bcdtime.tm_year = ((bcd_tm[0] >> 4) * 1000) +
+				  ((bcd_tm[0] & 0x0F) * 100) +
+				  ((bcd_tm[1] >> 4) * 10) +
+				   (bcd_tm[1] & 0x0F) - 1900;
+		bcdtime.tm_mon  = ((bcd_tm[2] >> 4) * 10) +
+				   (bcd_tm[2] & 0x0F) - 1;
+		bcdtime.tm_mday = ((bcd_tm[3] >> 4) * 10) +
+				   (bcd_tm[3] & 0x0F);
+		if (size >= 7) {
+			bcdtime.tm_hour = ((bcd_tm[4] >> 4) * 10) +
+					   (bcd_tm[4] & 0x0F);
+			bcdtime.tm_min  = ((bcd_tm[5] >> 4) * 10) +
+					   (bcd_tm[5] & 0x0F);
+			bcdtime.tm_sec  = ((bcd_tm[6] >> 4) * 10) +
+					   (bcd_tm[6] & 0x0F);
+		} else {
+			// No HH/mm/ss portion.
+			bcdtime.tm_hour = 0;
+			bcdtime.tm_min  = 0;
+			bcdtime.tm_sec  = 0;
+		}
+	} else {
+		// Invalid BCD time.
+		return -1;
+	}
+
+	// tm_wday and tm_yday are output variables.
+	bcdtime.tm_wday = 0;
+	bcdtime.tm_yday = 0;
+	bcdtime.tm_isdst = 0;
+
+	// If conversion fails, this will return -1.
+	return timegm(&bcdtime);
+}
+
 /** RomData **/
 
 /**
