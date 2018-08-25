@@ -805,7 +805,6 @@ int SPC::loadFieldData(void)
 		const auto &data = iter->second;
 		assert(!data.isStrIdx);
 		if (!data.isStrIdx) {
-			// Disc number.
 			d->fields->addField_string_numeric(C_("SPC", "OST Disc #"), data.uvalue);
 		}
 	}
@@ -836,6 +835,152 @@ int SPC::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SPC::loadMetaData(void)
+{
+	RP_D(SPC);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Get the ID666 tags.
+	auto kv = d->parseTags();
+	if (kv.empty()) {
+		// No tags.
+		// TODO: Return 0 instead of -EIO?
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// SPC header.
+	d->metaData->reserve(9);	// Maximum of 9 metadata properties.
+
+	// TODO: Add more tags.
+	// TODO: Duration.
+
+	// Song name.
+	auto iter = kv.find(SPC_xID6_ITEM_SONG_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->metaData->addMetaData_string(Property::Title, kv.getStr(data));
+		}
+	}
+
+	// Game name.
+	iter = kv.find(SPC_xID6_ITEM_GAME_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->metaData->addMetaData_string(Property::Title, kv.getStr(data));
+		}
+	}
+
+	// Artist.
+	iter = kv.find(SPC_xID6_ITEM_ARTIST_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->metaData->addMetaData_string(Property::Artist, kv.getStr(data));
+		}
+	}
+
+#if 0
+	// Dumper.
+	// TODO: No "Dumper" property...
+	iter = kv.find(SPC_xID6_ITEM_DUMPER_NAME);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->metaData->addMetaData_string(Property::Dumper, kv.getStr(data));
+		}
+	}
+#endif
+
+	// Dump date.
+	iter = kv.find(SPC_xID6_ITEM_DUMP_DATE);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			d->metaData->addMetaData_timestamp(Property::CreationDate, data.timestamp);
+		}
+	}
+
+	// Comments.
+	iter = kv.find(SPC_xID6_ITEM_COMMENTS);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->metaData->addMetaData_string(Property::Comment, kv.getStr(data));
+		}
+	}
+
+#if 0
+	// Emulator used.
+	// TODO: No property...
+#endif
+
+	// OST title.
+	// NOTE: Using "Compilation" as the property.
+	iter = kv.find(SPC_xID6_ITEM_OST_TITLE);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(data.isStrIdx);
+		if (data.isStrIdx) {
+			d->metaData->addMetaData_string(Property::Compilation, kv.getStr(data));
+		}
+	}
+
+	// OST disc number.
+	iter = kv.find(SPC_xID6_ITEM_OST_DISC);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			// TODO: Int or UInt on KDE?
+			d->metaData->addMetaData_uint(Property::DiscNumber, data.uvalue);
+		}
+	}
+
+	// OST track number.
+	iter = kv.find(SPC_xID6_ITEM_OST_TRACK);
+	if (iter != kv.end()) {
+		const auto &data = iter->second;
+		assert(!data.isStrIdx);
+		if (!data.isStrIdx) {
+			// High byte: Track number. (0-99)
+			// Low byte: Optional letter.
+			// TODO: Restrict track number?
+			// TODO: How to represent the letter here?
+			// TODO: Int or UInt on KDE?
+			const uint8_t track_num = data.uvalue >> 8;
+			d->metaData->addMetaData_uint(Property::TrackNumber, track_num);
+		}
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }

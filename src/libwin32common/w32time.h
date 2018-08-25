@@ -35,19 +35,29 @@
 #endif
 
 /**
+ * Convert from Unix time to Win32 FILETIME.
+ * @param unix_time Unix time.
+ * @param pFileTime FILETIME.
+ */
+static TIME_INLINE void UnixTimeToFileTime(_In_ time_t unix_time, _Out_ FILETIME *pFileTime)
+{
+	// Reference: https://support.microsoft.com/en-us/kb/167296
+	LARGE_INTEGER li;
+	li.QuadPart = ((int64_t)unix_time * HECTONANOSEC_PER_SEC) + FILETIME_1970;
+	pFileTime->dwLowDateTime = li.LowPart;
+	pFileTime->dwHighDateTime = (DWORD)li.HighPart;
+}
+
+/**
  * Convert from Unix time to Win32 SYSTEMTIME.
  * @param unix_time Unix time.
  * @param pSystemTime Win32 SYSTEMTIME.
  */
-static TIME_INLINE void UnixTimeToSystemTime(time_t unix_time, SYSTEMTIME *pSystemTime)
+static TIME_INLINE void UnixTimeToSystemTime(_In_ time_t unix_time, _Out_ SYSTEMTIME *pSystemTime)
 {
-	LARGE_INTEGER li;
-	FILETIME ft;
-
 	// Reference: https://support.microsoft.com/en-us/kb/167296
-	li.QuadPart = (unix_time * HECTONANOSEC_PER_SEC) + FILETIME_1970;
-	ft.dwLowDateTime = li.LowPart;
-	ft.dwHighDateTime = (DWORD)li.HighPart;
+	FILETIME ft;
+	UnixTimeToFileTime(unix_time, &ft);
 	FileTimeToSystemTime(&ft, pSystemTime);
 }
 
@@ -56,7 +66,7 @@ static TIME_INLINE void UnixTimeToSystemTime(time_t unix_time, SYSTEMTIME *pSyst
  * @param pFileTime Win32 FILETIME.
  * @return Unix time.
  */
-static TIME_INLINE int64_t FileTimeToUnixTime(const FILETIME *pFileTime)
+static TIME_INLINE int64_t FileTimeToUnixTime(_In_ const FILETIME *pFileTime)
 {
 	// Reference: https://support.microsoft.com/en-us/kb/167296
 	LARGE_INTEGER li;
@@ -70,7 +80,7 @@ static TIME_INLINE int64_t FileTimeToUnixTime(const FILETIME *pFileTime)
  * @param pFileTime Win32 SYSTEMTIME.
  * @return Unix time.
  */
-static TIME_INLINE int64_t SystemTimeToUnixTime(const SYSTEMTIME *pSystemTime)
+static TIME_INLINE int64_t SystemTimeToUnixTime(_In_ const SYSTEMTIME *pSystemTime)
 {
 	FILETIME fileTime;
 	SystemTimeToFileTime(pSystemTime, &fileTime);

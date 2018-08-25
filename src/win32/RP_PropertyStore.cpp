@@ -38,6 +38,9 @@ using namespace LibRpBase;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
+// libwin32common
+#include "libwin32common/w32time.h"
+
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
 
@@ -420,6 +423,22 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
 				const wchar_t *vstr[] = {wstr.c_str()};
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
+				d->prop_key.push_back(conv.pkey);
+				d->prop_val.push_back(prop_var);
+				break;
+			}
+
+			case VT_DATE: {
+				assert(prop->type == PropertyType::Timestamp);
+				if (prop->type != PropertyType::Timestamp)
+					continue;
+
+				// Date is stored as Unix time.
+				// Convert to FILETIME, then to VT_DATE.
+				// TODO: Verify timezone handling.
+				FILETIME ft;
+				UnixTimeToFileTime(prop->data.timestamp, &ft);
+				InitPropVariantFromFileTime(&ft, &prop_var);
 				d->prop_key.push_back(conv.pkey);
 				d->prop_val.push_back(prop_var);
 				break;

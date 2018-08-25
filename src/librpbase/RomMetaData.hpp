@@ -140,6 +140,7 @@ namespace PropertyType {
 		Integer,		// Integer type
 		UnsignedInteger,	// Unsigned integer type
 		String,			// String type (UTF-8)
+		Timestamp,		// UNIX timestamp
 
 		PropertyTypeCount,
 		LastPropertyType = PropertyTypeCount-1,
@@ -171,6 +172,9 @@ class RomMetaData
 
 				// String property
 				const std::string *str;
+
+				// UNIX timestamp
+				time_t timestamp;
 			} data;
 		};
 
@@ -266,6 +270,14 @@ class RomMetaData
 		 * @return Metadata index.
 		 */
 		int addMetaData_string(Property::Property name, const std::string &str, unsigned int flags = 0);
+
+		/**
+		 * Add a timestamp metadata property.
+		 * @param name Metadata name.
+		 * @param timestamp UNIX timestamp.
+		 * @return Metadata index.
+		 */
+		int addMetaData_timestamp(Property::Property name, time_t timestamp);
 };
 
 }

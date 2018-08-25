@@ -46,6 +46,9 @@ using LibRomData::RomDataFactory;
 using std::unique_ptr;
 using std::vector;
 
+// Qt includes.
+#include <QtCore/QDateTime>
+
 // KDE includes.
 #include <kfilemetadata/extractorplugin.h>
 #include <kfilemetadata/properties.h>
@@ -154,6 +157,20 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 				const std::string *str = prop->data.str;
 				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
 					QString::fromUtf8(str->data(), static_cast<int>(str->size())));
+				break;
+			}
+
+			case LibRpBase::PropertyType::Timestamp: {
+				// TODO: Verify timezone handling.
+				// NOTE: fromMSecsSinceEpoch() with TZ spec was added in Qt 5.2.
+				// Maybe write a wrapper function? (RomDataView uses this, too.)
+				// NOTE: Some properties might need the full QDateTime.
+				// CreationDate seems to work fine with just QDate.
+				QDateTime dateTime;
+				dateTime.setTimeSpec(Qt::UTC);
+				dateTime.setMSecsSinceEpoch((qint64)prop->data.timestamp * 1000);
+				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+					dateTime.date());
 				break;
 			}
 
