@@ -2196,26 +2196,35 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	}
 	id6[6] = 0;
 
+	// External images with multiple discs must be handled differently.
+	const bool isDisc2 =
+		(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX) &&
+		 d->discHeader.disc_number > 0;
+
 	// ExtURLs.
 	// TODO: If multiple image sizes are added, add the
 	// "default" size to the end of ExtURLs in case the
 	// user has high-resolution downloads disabled.
 	// See Nintendo3DS for an example.
 	// (NOTE: For GameTDB, currently only applies to coverfullHQ on GCN/Wii.)
-	pExtURLs->resize(tdb_regions.size());
+	size_t vsz = tdb_regions.size();
+	if (isDisc2) {
+		// Need to increase the initial size.
+		// Increasing the size later invalidates the iterator.
+		vsz *= 2;
+	}
+
+	pExtURLs->resize(vsz);
 	auto extURL_iter = pExtURLs->begin();
 
-	// Disc scan: Is this not the first disc?
-	if (imageType == IMG_EXT_MEDIA &&
-	    d->discHeader.disc_number > 0)
-	{
+	// Is this not the first disc?
+	if (isDisc2) {
 		// Disc 2 (or 3, or 4...)
 		// Request the disc 2 image first.
 		char discName[16];
 		snprintf(discName, sizeof(discName), "%s%u",
 			 imageTypeName, d->discHeader.disc_number+1);
 
-		pExtURLs->resize(pExtURLs->size() * 2);
 		for (auto tdb_iter = tdb_regions.cbegin();
 		     tdb_iter != tdb_regions.cend(); ++tdb_iter, ++extURL_iter)
 		{
