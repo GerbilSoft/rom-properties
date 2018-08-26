@@ -73,7 +73,7 @@ void *memmem(const void *haystack, size_t haystacklen,
 		return (void*)memchr(haystack, (int)*cs, needlelen);
 
 	/* the last position where its possible to find "s" in "l" */
-	last = (char *)cl + haystacklen - needlelen;
+	last = (const char *)cl + haystacklen - needlelen;
 
 	for (cur = (const char *)cl; cur <= last; cur++) {
 		if (cur[0] == cs[0] && memcmp(cur, cs, needlelen) == 0)
