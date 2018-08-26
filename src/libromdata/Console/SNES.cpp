@@ -627,7 +627,7 @@ const char *const *SNES::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".smc", ".swc", ".sfc",
-		".fig", ".ufo",
+		".fig", ".ufo", ".mgd",
 
 		// BS-X
 		".bs", ".bsx",
