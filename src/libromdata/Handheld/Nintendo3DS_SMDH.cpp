@@ -32,7 +32,6 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/ImageDecoder.hpp"
@@ -51,9 +50,6 @@ using namespace LibRpBase;
 #include <vector>
 using std::string;
 using std::vector;
-
-// zlib for crc32()
-#include <zlib.h>
 
 namespace LibRomData {
 

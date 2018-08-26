@@ -35,7 +35,6 @@
 #include "librpbase/file/FileSystem.hpp"
 
 #include "librpbase/img/rp_image.hpp"
-#include "librpbase/img/ImageDecoder.hpp"
 
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
