@@ -1324,10 +1324,30 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 void Nintendo3DS::close(void)
 {
 	RP_D(Nintendo3DS);
-	if (d->sbptr.srl.data) {
-		// Close the SRL.
-		d->sbptr.srl.data->close();
+
+	// Close any child RomData subclasses.
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
+		if (d->sbptr.srl.data) {
+			// Close the SRL.
+			d->sbptr.srl.data->close();
+		}
+	} else {
+		if (d->sbptr.smdh.data) {
+			// Close the SMDH.
+			d->sbptr.smdh.data->close();
+		}
 	}
+
+	// Close associated files used with child RomData subclasses.
+	if (d->sbptr.file) {
+		delete d->sbptr.file;
+		d->sbptr.file = nullptr;
+	}
+	if (d->sbptr.reader) {
+		delete d->sbptr.reader;
+		d->sbptr.reader = nullptr;
+	}
+
 	super::close();
 }
 
