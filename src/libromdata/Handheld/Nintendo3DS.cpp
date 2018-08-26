@@ -92,7 +92,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		enum RomType {
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
 
-			ROM_TYPE_SMDH	= 0,	// SMDH (no longer supported; see Nintendo3DS_SMDH)
+			//ROM_TYPE_SMDH	= 0,	// SMDH (no longer supported; see Nintendo3DS_SMDH)
 			ROM_TYPE_3DSX	= 1,	// 3DSX (homebrew)
 			ROM_TYPE_CCI	= 2,	// CCI/3DS (cartridge dump)
 			ROM_TYPE_eMMC	= 3,	// eMMC dump
@@ -1262,18 +1262,6 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	// Determine what kind of file this is.
 	// NOTE: SMDH header and icon will be loaded on demand.
 	switch (d->romType) {
-		case Nintendo3DSPrivate::ROM_TYPE_SMDH:
-			// SMDH header.
-			if (info.szFile < static_cast<int64_t>(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t))) {
-				// File is too small.
-				delete d->file;
-				d->file = nullptr;
-				return;
-			}
-			d->fileType = FTYPE_ICON_FILE;
-			// SMDH header is loaded by loadSMDH().
-			break;
-
 		case Nintendo3DSPrivate::ROM_TYPE_3DSX:
 			// Save the 3DSX header for later.
 			memcpy(&d->mxh.hb3dsx_header, header, sizeof(d->mxh.hb3dsx_header));
