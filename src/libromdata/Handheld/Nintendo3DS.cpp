@@ -92,7 +92,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		enum RomType {
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
 
-			ROM_TYPE_SMDH	= 0,	// SMDH
+			ROM_TYPE_SMDH	= 0,	// SMDH (no longer supported; see Nintendo3DS_SMDH)
 			ROM_TYPE_3DSX	= 1,	// 3DSX (homebrew)
 			ROM_TYPE_CCI	= 2,	// CCI/3DS (cartridge dump)
 			ROM_TYPE_eMMC	= 3,	// eMMC dump
@@ -416,7 +416,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 	}
 
 	// Verify the SMDH magic number.
-	if (memcmp(smdh.header.magic, N3DS_SMDH_HEADER_MAGIC, sizeof(smdh.header.magic)) != 0) {
+	if (smdh.header.magic != cpu_to_be32(N3DS_SMDH_HEADER_MAGIC)) {
 		// SMDH magic number is incorrect.
 		return -99;
 	}
@@ -1440,14 +1440,6 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
-	// Check for SMDH.
-	if (!memcmp(info->header.pData, N3DS_SMDH_HEADER_MAGIC, 4) &&
-	    info->szFile >= static_cast<int64_t>(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t)))
-	{
-		// We have an SMDH file.
-		return Nintendo3DSPrivate::ROM_TYPE_SMDH;
-	}
-
 	// Check for 3DSX.
 	if (!memcmp(info->header.pData, N3DS_3DSX_HEADER_MAGIC, 4) &&
 	    info->szFile >= (int64_t)sizeof(N3DS_3DSX_Header_t))
@@ -1533,7 +1525,6 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 const char *const *Nintendo3DS::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".smdh",	// SMDH (icon) file.
 		".3dsx",	// Homebrew application.
 		".3ds",		// ROM image. (NOTE: Conflicts with 3DS Max.)
 		".3dz",		// ROM image. (with private header for Gateway 3DS)
@@ -1565,7 +1556,6 @@ const char *const *Nintendo3DS::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-3ds-smdh",
 		"application/x-nintendo-3ds-3dsx",
 		"application/x-nintendo-3ds-rom",
 		"application/x-nintendo-3ds-emmc",
@@ -1628,6 +1618,8 @@ std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(Image
 
 	switch (imageType) {
 		case IMG_INT_ICON: {
+			// Technically handled by Nintendo3DS_SMDH,
+			// but we'll return it here anyway.
 			static const ImageSizeDef sz_INT_ICON[] = {
 				{nullptr, 24, 24, 0},
 				{nullptr, 48, 48, 1},
@@ -1702,14 +1694,16 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 		}
 	}
 
+	uint32_t ret = 0;
 	switch (imageType) {
 		case IMG_INT_ICON:
 			// Use nearest-neighbor scaling.
-			return IMGPF_RESCALE_NEAREST;
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
 		default:
 			break;
 	}
-	return 0;
+	return ret;
 }
 
 /**

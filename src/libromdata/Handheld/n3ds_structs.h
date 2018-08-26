@@ -125,14 +125,15 @@ typedef enum {
  * All fields are little-endian.
  * NOTE: Strings may not be NULL-terminated!
  */
-#define N3DS_SMDH_HEADER_MAGIC "SMDH"
+#define N3DS_SMDH_HEADER_MAGIC 'SMDH'
 typedef struct PACKED _N3DS_SMDH_Header_t {
-	char magic[4];		// "SMDH"
-	uint16_t version;
-	uint8_t reserved1[2];
-	N3DS_SMDH_Title_t titles[16];
-	N3DS_SMDH_Settings_t settings;
-	uint8_t reserved2[8];
+	uint32_t magic;			// [0x0000] 'SMDH' (0x48444D53)
+	uint16_t version;		// [0x0004] SMDH version.
+	uint8_t reserved1[2];		// [0x0006]
+	N3DS_SMDH_Title_t titles[16];	// [0x0008] Application titles.
+	N3DS_SMDH_Settings_t settings;	// [0x2008] Application settings.
+	uint8_t reserved2[8];		// [0x2038]
+					// [0x2040] Icons.
 } N3DS_SMDH_Header_t;
 ASSERT_STRUCT(N3DS_SMDH_Header_t, 8256);
 

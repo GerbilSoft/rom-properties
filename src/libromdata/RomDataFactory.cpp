@@ -67,6 +67,7 @@ using std::vector;
 #include "Handheld/Lynx.hpp"
 #include "Handheld/Nintendo3DS.hpp"
 #include "Handheld/Nintendo3DSFirm.hpp"
+#include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
@@ -215,6 +216,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(GameBoyAdvance, false, 0x04, 0x24FFAE51),
 	GetRomDataFns_addr(Lynx, false, 0, 'LYNX'),
 	GetRomDataFns_addr(Nintendo3DSFirm, false, 0, 'FIRM'),
+	GetRomDataFns_addr(Nintendo3DS_SMDH, true, 0, 'SMDH'),
 
 	// Textures
 	GetRomDataFns_addr(DirectDrawSurface, true, 0, 'DDS '),
