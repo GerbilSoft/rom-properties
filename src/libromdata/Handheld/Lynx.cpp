@@ -50,15 +50,6 @@ class LynxPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(LynxPrivate)
 
 	public:
-		enum Lynx_RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_LYNX = 0,	// Atari Lynx
-		};
-
-		// ROM type.
-		int romType;
-
-	public:
 		// ROM header.
 		Lynx_RomHeader romHeader;
 };
@@ -67,7 +58,6 @@ class LynxPrivate : public RomDataPrivate
 
 LynxPrivate::LynxPrivate(Lynx *q, IRpFile *file)
 	: super(q, file)
-	, romType(ROM_UNKNOWN)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -118,9 +108,8 @@ Lynx::Lynx(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for Lynx.
 	info.szFile = 0;	// Not needed for Lynx.
-	d->romType = isRomSupported_static(&info);
+	d->isValid = (isRomSupported_static(&info) >= 0);
 
-	d->isValid = (d->romType >= 0);
 	if (d->isValid) {
 		// Save the header for later.
 		memcpy(&d->romHeader, header, sizeof(d->romHeader));
@@ -158,7 +147,7 @@ int Lynx::isRomSupported_static(const DetectInfo *info)
 	static const char lynxMagic[4] = {'L','Y','N','X'};
 	if (!memcmp(romHeader->magic, lynxMagic, sizeof(lynxMagic))) {
 		// Found a Lynx ROM.
-		return LynxPrivate::ROM_LYNX;
+		return 0;
 	}
 
 	// Not supported.
@@ -250,7 +239,7 @@ int Lynx::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid || d->romType < 0) {
+	} else if (!d->isValid) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
