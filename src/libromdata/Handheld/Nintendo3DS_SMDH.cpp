@@ -554,4 +554,20 @@ int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, const rp_image **pI
 	return (*pImage != nullptr ? 0 : -EIO);
 }
 
+/** Special SMDH accessor functions. **/
+
+/**
+ * Get the SMDH region code.
+ * @return SMDH region code, or 0 on error.
+ */
+uint32_t Nintendo3DS_SMDH::getRegionCode(void) const
+{
+	RP_D(const Nintendo3DS_SMDH);
+	if (d->smdh.header.magic != cpu_to_be32(N3DS_SMDH_HEADER_MAGIC)) {
+		// Invalid magic number.
+		return 0;
+	}
+	return d->smdh.header.settings.region_code;
+}
+
 }
