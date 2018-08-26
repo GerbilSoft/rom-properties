@@ -423,14 +423,14 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	int lang = NintendoLanguage::getN3DSLanguage();
 
 	// Check that the field is valid.
-	if (d->smdh.header.titles[lang].desc_short[0] == cpu_to_le16(0)) {
+	if (smdhHeader->titles[lang].desc_short[0] == cpu_to_le16(0)) {
 		// Not valid. Check English.
-		if (d->smdh.header.titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0)) {
+		if (smdhHeader->titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0)) {
 			// English is valid.
 			lang = N3DS_LANG_ENGLISH;
 		} else {
 			// Not valid. Check Japanese.
-			if (d->smdh.header.titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16(0)) {
+			if (smdhHeader->titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16(0)) {
 				// Japanese is valid.
 				lang = N3DS_LANG_JAPANESE;
 			} else {
@@ -441,13 +441,13 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		}
 	}
 
-	if (lang >= 0 && lang < ARRAY_SIZE(d->smdh.header.titles)) {
+	if (lang >= 0 && lang < ARRAY_SIZE(smdhHeader->titles)) {
 		d->fields->addField_string(C_("Nintendo3DS", "Title"), utf16le_to_utf8(
-			d->smdh.header.titles[1].desc_short, ARRAY_SIZE(d->smdh.header.titles[lang].desc_short)));
+			smdhHeader->titles[1].desc_short, ARRAY_SIZE(smdhHeader->titles[lang].desc_short)));
 		d->fields->addField_string(C_("Nintendo3DS", "Full Title"), utf16le_to_utf8(
-			d->smdh.header.titles[1].desc_long, ARRAY_SIZE(d->smdh.header.titles[lang].desc_long)));
+			smdhHeader->titles[1].desc_long, ARRAY_SIZE(smdhHeader->titles[lang].desc_long)));
 		d->fields->addField_string(C_("Nintendo3DS", "Publisher"), utf16le_to_utf8(
-			d->smdh.header.titles[1].publisher, ARRAY_SIZE(d->smdh.header.titles[lang].publisher)));
+			smdhHeader->titles[1].publisher, ARRAY_SIZE(smdhHeader->titles[lang].publisher)));
 	}
 
 	// Region code.
@@ -464,7 +464,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
 	d->fields->addField_bitfield(C_("Nintendo3DS", "Region Code"),
-		v_n3ds_region_bitfield_names, 3, le32_to_cpu(d->smdh.header.settings.region_code));
+		v_n3ds_region_bitfield_names, 3, le32_to_cpu(smdhHeader->settings.region_code));
 
 	// Age rating(s).
 	// Note that not all 16 fields are present on 3DS,
@@ -486,7 +486,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		// - 0x20: No age restriction.
 		// - 0x40: Rating pending.
 		// - 0x80: Rating is valid if set.
-		const uint8_t n3ds_rating = d->smdh.header.settings.ratings[i];
+		const uint8_t n3ds_rating = smdhHeader->settings.ratings[i];
 		if (!(n3ds_rating & 0x80)) {
 			// Rating is unused.
 			age_ratings[i] = 0;
