@@ -122,7 +122,7 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::String,	// Language
 	PropertyType::String,	// Copyright
 	PropertyType::String,	// Publisher
-	PropertyType::Invalid,	// CreationDate (FIXME)
+	PropertyType::Timestamp, // CreationDate
 	PropertyType::Invalid,	// Keywords (FIXME)
 
 	// Media
@@ -134,12 +134,12 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 	// Images
 	PropertyType::String,	// ImageMake
 	PropertyType::String,	// ImageModel
-	PropertyType::Invalid,	// ImageDateTime (FIXME)
+	PropertyType::Timestamp, // ImageDateTime
 	PropertyType::Invalid,	// ImageOrientation (FIXME)
 	PropertyType::Invalid,	// PhotoFlash (FIXME)
 	PropertyType::Invalid,	// PhotoPixelXDimension (FIXME)
 	PropertyType::Invalid,	// PhotoPixelYDimension (FIXME)
-	PropertyType::Invalid,	// PhotoDateTimeOriginal (FIXME)
+	PropertyType::Timestamp, // PhotoDateTimeOriginal
 	PropertyType::Invalid,	// PhotoFocalLength (FIXME)
 	PropertyType::Invalid,	// PhotoFocalLengthIn35mmFilm (FIXME)
 	PropertyType::Invalid,	// PhotoExposureTime (FIXME)
@@ -170,7 +170,7 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::String,	// OriginEmailMessageId
 
 	// Audio
-	PropertyType::Integer,	// DiscNumber
+	PropertyType::UnsignedInteger,	// DiscNumber [TODO verify unsigned]
 	PropertyType::String,	// Location
 	PropertyType::String,	// Performer
 	PropertyType::String,	// Ensemble
@@ -248,6 +248,7 @@ void RomMetaDataPrivate::delete_data(void)
 		switch (PropertyTypeMap[metaData.name]) {
 			case PropertyType::Integer:
 			case PropertyType::UnsignedInteger:
+			case PropertyType::Timestamp:
 				// No data here.
 				break;
 			case PropertyType::String:
@@ -340,6 +341,9 @@ void RomMetaData::detach(void)
 				break;
 			case PropertyType::String:
 				metaData_new.data.str = new string(*metaData_old.data.str);
+				break;
+			case PropertyType::Timestamp:
+				metaData_new.data.timestamp = metaData_old.data.timestamp;
 				break;
 			default:
 				// ERROR!
@@ -450,6 +454,9 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 				break;
 			case PropertyType::String:
 				metaData.data.str = new string(*src->data.str);
+				break;
+			case PropertyType::Timestamp:
+				metaData.data.timestamp = src->data.timestamp;
 				break;
 			default:
 				// ERROR!
@@ -595,6 +602,35 @@ int RomMetaData::addMetaData_string(Property::Property name, const std::string &
 	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
+	return idx;
+}
+
+/**
+ * Add a timestamp metadata property.
+ * @param name Metadata name.
+ * @param timestamp UNIX timestamp.
+ * @return Metadata index.
+ */
+int RomMetaData::addMetaData_timestamp(Property::Property name, time_t timestamp)
+{
+	assert(name > Property::FirstProperty);
+	assert(name < Property::PropertyCount);
+	if (name <= Property::FirstProperty || name >= Property::PropertyCount)
+		return -1;
+
+	// Make sure this is a timestamp property.
+	assert(RomMetaDataPrivate::PropertyTypeMap[name] == PropertyType::Timestamp);
+	if (RomMetaDataPrivate::PropertyTypeMap[name] != PropertyType::Timestamp)
+		return -1;
+
+	RP_D(RomMetaData);
+	int idx = static_cast<int>(d->metaData.size());
+	d->metaData.resize(idx+1);
+	MetaData &metaData = d->metaData.at(idx);
+
+	metaData.name = name;
+	metaData.type = PropertyType::String;
+	metaData.data.timestamp = timestamp;
 	return idx;
 }
 

@@ -120,6 +120,18 @@ class RomDataPrivate
 		 * @return Unix time_t, or -1 on error.
 		 */
 		static time_t ascii_yyyymmdd_to_unix_time(const char *ascii_date);
+
+		/**
+		 * Convert a BCD timestamp to Unix time.
+		 * @param bcd_tm BCD timestamp. (YY YY MM DD HH mm ss)
+		 * @param size Size of BCD timestamp. (4 or 7)
+		 * @return Unix time, or -1 if an error occurred.
+		 *
+		 * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
+		 * not likely to be valid, since the first programmable
+		 * video game consoles were released in the late 1970s.
+		 */
+		static time_t bcd_to_unix_time(const uint8_t *bcd_tm, size_t size);
 };
 
 }

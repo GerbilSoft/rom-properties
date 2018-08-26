@@ -22,6 +22,7 @@
 
 // librpbase
 #include "librpbase/common.h"
+#include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
@@ -82,6 +83,7 @@ using std::vector;
 #include "Audio/NSF.hpp"
 #include "Audio/PSF.hpp"
 #include "Audio/SID.hpp"
+#include "Audio/SPC.hpp"
 #include "Audio/VGM.hpp"
 
 // RomData subclasses: Other
@@ -120,7 +122,7 @@ class RomDataFactoryPrivate
 			// Extra fields for files whose headers
 			// appear at specific addresses.
 			uint32_t address;
-			uint32_t size;
+			uint32_t size;	// Contains magic number for fast 32-bit magic checking.
 		};
 
 		/**
@@ -139,12 +141,19 @@ class RomDataFactoryPrivate
 	 sys::supportedFileExtensions_static, \
 	 sys::supportedMimeTypes_static, \
 	 hasThumbnail, 0, 0}
+
 #define GetRomDataFns_addr(sys, hasThumbnail, address, size) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::supportedFileExtensions_static, \
 	 sys::supportedMimeTypes_static, \
 	 hasThumbnail, address, size}
+
+		// RomData subclasses that use a header at 0 and
+		// definitely have a 32-bit magic number in the header.
+		// - address: Address of magic number within the header.
+		// - size: 32-bit magic number.
+		static const RomDataFns romDataFns_magic[];
 
 		// RomData subclasses that use a header.
 		// Headers with addresses other than 0 should be
@@ -198,6 +207,33 @@ vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
 pthread_once_t RomDataFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
 pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 
+// TODO: Check all original classes and make sure
+// they do 32-bit checks instead of memcmp().
+const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
+	// Handhelds
+	GetRomDataFns_addr(DMG, false, 0x104, 0xCEED6666),
+	GetRomDataFns_addr(GameBoyAdvance, false, 0x04, 0x24FFAE51),
+	GetRomDataFns_addr(Lynx, false, 0, 'LYNX'),
+	GetRomDataFns_addr(Nintendo3DSFirm, false, 0, 'FIRM'),
+
+	// Textures
+	GetRomDataFns_addr(DirectDrawSurface, true, 0, 'DDS '),
+	GetRomDataFns_addr(KhronosKTX, true, 0, (uint32_t)'\xABKTX'),
+	GetRomDataFns_addr(ValveVTF, true, 0, 'VTF\0'),
+	GetRomDataFns_addr(ValveVTF3, true, 0, 'VTF3'),
+
+	// Audio
+	GetRomDataFns_addr(GBS, false, 0, 'GBS\x01'),
+	GetRomDataFns_addr(NSF, false, 0, 'NESM'),
+	GetRomDataFns_addr(SPC, false, 0, 'SNES'),
+	GetRomDataFns_addr(VGM, false, 0, 'Vgm '),
+
+	// Other
+	GetRomDataFns_addr(ELF, false, 0, '\177ELF'),
+
+	{nullptr, nullptr, nullptr, nullptr, false, 0, 0}
+};
+
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	// Consoles
 	GetRomDataFns(Dreamcast, true),
@@ -213,31 +249,19 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(WiiWAD, true),
 
 	// Handhelds
-	GetRomDataFns(DMG, false),
-	GetRomDataFns(GameBoyAdvance, false),
-	GetRomDataFns(Lynx, false),
 	GetRomDataFns(Nintendo3DS, true),
-	GetRomDataFns(Nintendo3DSFirm, false),
 	GetRomDataFns(NintendoDS, true),
 
 	// Textures
-	GetRomDataFns(DirectDrawSurface, true),
-	GetRomDataFns(KhronosKTX, true),
 	GetRomDataFns(SegaPVR, true),
-	GetRomDataFns(ValveVTF, true),
-	GetRomDataFns(ValveVTF3, true),
 
 	// Audio
 	GetRomDataFns(ADX, false),
-	GetRomDataFns(GBS, false),
-	GetRomDataFns(NSF, false),
 	GetRomDataFns(PSF, false),
-	GetRomDataFns(SID, false),
-	GetRomDataFns(VGM, false),
+	GetRomDataFns(SID, false),	// PSID/RSID; maybe move to _magic[]?
 
 	// Other
 	GetRomDataFns(Amiibo, true),
-	GetRomDataFns(ELF, false),
 	GetRomDataFns(NintendoBadge, true),
 
 	// The following formats have 16-bit magic numbers,
@@ -392,9 +416,40 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 		// Not a .VMI+.VMS pair.
 	}
 
-	// Check RomData subclasses that take a header.
+	// Check RomData subclasses that take a header at 0x0000
+	// and definitely have a 32-bit magic number in the header.
 	const RomDataFactoryPrivate::RomDataFns *fns =
-		&RomDataFactoryPrivate::romDataFns_header[0];
+		&RomDataFactoryPrivate::romDataFns_magic[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		if (thumbnail && !fns->hasThumbnail) {
+			// Thumbnail is requested, but this RomData class
+			// doesn't support any images.
+			continue;
+		}
+
+		// Check the magic number.
+		// TODO: Verify alignment restrictions.
+		assert(fns->address % 4 == 0);
+		assert(fns->address + sizeof(uint32_t) <= sizeof(header));
+		uint32_t magic = *(uint32_t*)(&header[fns->address]);
+		if (be32_to_cpu(magic) == fns->size) {
+			// Found a matching magic number.
+			if (fns->isRomSupported(&info) >= 0) {
+				RomData *const romData = fns->newRomData(file);
+				if (romData->isValid()) {
+					// RomData subclass obtained.
+					return romData;
+				}
+
+				// Not actually supported.
+				romData->unref();
+			}
+		}
+	}
+
+	// Check other RomData subclasses that take a header,
+	// but don't have a simple 32-bit magic number check.
+	fns = &RomDataFactoryPrivate::romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		if (thumbnail && !fns->hasThumbnail) {
 			// Thumbnail is requested, but this RomData class
@@ -542,7 +597,28 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	map_exts.reserve(reserve_size);
 #endif
 
-	const RomDataFns *fns = &romDataFns_header[0];
+	const RomDataFns *fns = &romDataFns_magic[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		const char *const *sys_exts = fns->supportedFileExtensions();
+		if (!sys_exts)
+			continue;
+
+		for (; *sys_exts != nullptr; sys_exts++) {
+			auto iter = map_exts.find(*sys_exts);
+			if (iter != map_exts.end()) {
+				// We already had this extension.
+				// Update its thumbnail status.
+				iter->second = fns->hasThumbnail;
+			} else {
+				// First time encountering this extension.
+				map_exts[*sys_exts] = fns->hasThumbnail;
+				vec_exts.push_back(RomDataFactory::ExtInfo(
+					*sys_exts, fns->hasThumbnail));
+			}
+		}
+	}
+
+	fns = &romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		const char *const *sys_exts = fns->supportedFileExtensions();
 		if (!sys_exts)
@@ -630,7 +706,22 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 #endif
 
 	const RomDataFactoryPrivate::RomDataFns *fns =
-		&RomDataFactoryPrivate::romDataFns_header[0];
+		&RomDataFactoryPrivate::romDataFns_magic[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+		if (!sys_mimeTypes)
+			continue;
+
+		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
+			auto iter = set_mimeTypes.find(*sys_mimeTypes);
+			if (iter == set_mimeTypes.end()) {
+				set_mimeTypes.insert(*sys_mimeTypes);
+				vec_mimeTypes.push_back(*sys_mimeTypes);
+			}
+		}
+	}
+
+	fns = &RomDataFactoryPrivate::romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
 		if (!sys_mimeTypes)

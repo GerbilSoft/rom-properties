@@ -126,7 +126,7 @@ unordered_map<string, string> PSFPrivate::parseTags(int64_t tag_addr)
 	// Since we won't be able to determine this until we're finished
 	// decoding variables, we'll have to do character conversion
 	// *after* kv is populated.
-	unique_ptr<char> tag_data(new char[data_len]);
+	unique_ptr<char[]> tag_data(new char[data_len]);
 	size = file->read(tag_data.get(), data_len);
 	if (size != (size_t)data_len) {
 		// Read error.

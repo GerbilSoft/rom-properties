@@ -130,7 +130,6 @@ class DreamcastSavePrivate : public RomDataPrivate
 
 		// Time conversion functions.
 		static time_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
-		static time_t vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm);
 
 		// Is this a VMS game file?
 		bool isGameFile;
@@ -268,48 +267,6 @@ time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 	dctime.tm_hour = vmi_tm->hour;
 	dctime.tm_min  = vmi_tm->min;
 	dctime.tm_sec  = vmi_tm->sec;
-
-	// tm_wday and tm_yday are output variables.
-	dctime.tm_wday = 0;
-	dctime.tm_yday = 0;
-	dctime.tm_isdst = 0;
-
-	// If conversion fails, d->ctime will be set to -1.
-	return timegm(&dctime);
-}
-
-/**
- * Convert a VMS BCD timestamp to Unix time.
- * @param vms_bcd_tm VMS BCD timestamp.
- * @return Unix time, or -1 if an error occurred.
- *
- * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
- * not likely to be valid for Dreamcast, since Dreamcast
- * was released in 1998.
- */
-time_t DreamcastSavePrivate::vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm)
-{
-	// Convert the VMS BCD time to Unix time.
-	// NOTE: struct tm has some oddities:
-	// - tm_year: year - 1900
-	// - tm_mon: 0 == January
-	struct tm dctime;
-
-	// TODO: Check for invalid BCD values.
-	dctime.tm_year = ((vms_bcd_tm->century >> 4) * 1000) +
-			 ((vms_bcd_tm->century & 0x0F) * 100) +
-			 ((vms_bcd_tm->year >> 4) * 10) +
-			  (vms_bcd_tm->year & 0x0F) - 1900;
-	dctime.tm_mon  = ((vms_bcd_tm->mon >> 4) * 10) +
-			  (vms_bcd_tm->mon & 0x0F) - 1;
-	dctime.tm_mday = ((vms_bcd_tm->mday >> 4) * 10) +
-			  (vms_bcd_tm->mday & 0x0F);
-	dctime.tm_hour = ((vms_bcd_tm->hour >> 4) * 10) +
-			  (vms_bcd_tm->hour & 0x0F);
-	dctime.tm_min  = ((vms_bcd_tm->min >> 4) * 10) +
-			  (vms_bcd_tm->min & 0x0F);
-	dctime.tm_sec  = ((vms_bcd_tm->sec >> 4) * 10) +
-			  (vms_bcd_tm->sec & 0x0F);
 
 	// tm_wday and tm_yday are output variables.
 	dctime.tm_wday = 0;
@@ -921,7 +878,9 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		}
 
 		// Convert the VMS BCD time to Unix time.
-		d->ctime = d->vms_bcd_to_unix_time(&d->vms_dirent.ctime);
+		d->ctime = d->bcd_to_unix_time(
+			reinterpret_cast<const uint8_t*>(&d->vms_dirent.ctime),
+			sizeof(d->vms_dirent.ctime));
 	} else {
 		// If the VMI file is not available, we'll use a heuristic:
 		// The description fields cannot contain any control
