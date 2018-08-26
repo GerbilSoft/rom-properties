@@ -92,7 +92,9 @@ class SPCPrivate : public RomDataPrivate
 			// Map of ID666 tags.
 			// - Key: Extended ID666 tag index.
 			// - Value: struct val_t.
-			typedef unordered_map<SPC_xID6_Item_e, val_t> map_t;
+			// NOTE: gcc-6.1 added support for using enums as keys for unordered_map.
+			// Older gcc requires uint8_t instead.
+			typedef unordered_map<uint8_t, val_t> map_t;
 			map_t map;
 
 			/**
