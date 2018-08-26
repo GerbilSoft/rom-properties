@@ -154,19 +154,23 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		NCCHReader *ncch_reader;
 
 	public:
-		// TODO: Combine the SMDH and SRL readers into a union,
-		// since they're mutually exclusive.
+		struct {
+			// for subclasses:
+			// - SMDH: reader uses ncch_f_icon
+			// - SRL: reader uses this->file
+			IDiscReader *reader;	// uses ncch_f_icon
+			PartitionFile *file;	// uses reader
 
-		// File readers for SMDH sections.
-		IRpFile *ncch_f_icon;		// opened from the NCCHReader
-		IDiscReader *smdhReader;	// uses ncch_f_icon
-		PartitionFile *smdhFile;	// uses smdhReader
-		Nintendo3DS_SMDH *smdhData;	// Nintendo3DS_SMDH object
-
-		// File readers for DSiWare CIAs.
-		IDiscReader *srlReader;		// uses this->file
-		PartitionFile *srlFile;		// uses srlReader
-		NintendoDS *srlData;		// NintendoDS object
+			// If HEADER_SMDH is present, the SMDH struct is valid.
+			// Otherwise, the SRL struct is valid.
+			struct {
+				Nintendo3DS_SMDH *data;	// Nintendo3DS_SMDH object
+				IRpFile *ncch_f_icon;	// opened from the NCCHReader
+			} smdh;
+			struct {
+				NintendoDS *data;	// NintendoDS object
+			} srl;
+		} sbptr;
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -262,13 +266,6 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
 	, content_count(0)
 	, ncch_reader(nullptr)
-	, ncch_f_icon(nullptr)
-	, smdhReader(nullptr)
-	, smdhFile(nullptr)
-	, smdhData(nullptr)
-	, srlReader(nullptr)
-	, srlFile(nullptr)
-	, srlData(nullptr)
 {
 	// Clear img_icon.
 	img_icon[0] = nullptr;
@@ -276,6 +273,7 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 
 	// Clear the various headers.
 	memset(&mxh, 0, sizeof(mxh));
+	memset(&sbptr, 0, sizeof(sbptr));
 }
 
 Nintendo3DSPrivate::~Nintendo3DSPrivate()
@@ -283,23 +281,25 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 	delete img_icon[0];
 	delete img_icon[1];
 
-	// If an SMDH section is present, these will be open.
-	if (smdhData) {
-		smdhData->unref();
+	if (headers_loaded & HEADER_SMDH) {
+		// SMDH header is loaded.
+		if (sbptr.smdh.data) {
+			sbptr.smdh.data->unref();
+		}
+		delete sbptr.file;
+		delete sbptr.reader;
+		delete sbptr.smdh.ncch_f_icon;
+	} else {
+		// No SMDH header. May have DSiWare.
+		if (sbptr.srl.data) {
+			sbptr.srl.data->unref();
+		}
+		delete sbptr.file;
+		delete sbptr.reader;
 	}
-	delete smdhFile;
-	delete smdhReader;
-	delete ncch_f_icon;
 
 	// NCCH reader.
 	delete ncch_reader;
-
-	// If this is a DSiWare SRL, these will be open.
-	if (srlData) {
-		srlData->unref();
-	}
-	delete srlFile;
-	delete srlReader;
 }
 
 /**
@@ -337,7 +337,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Open the SMDH section.
-			smdhReader = new DiscReader(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
+			sbptr.reader = new DiscReader(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
 			break;
 		}
 
@@ -370,7 +370,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
-				smdhReader = new DiscReader(this->file, addr, N3DS_SMDH_Section_Size);
+				sbptr.reader = new DiscReader(this->file, addr, N3DS_SMDH_Section_Size);
 				break;
 			}
 
@@ -388,36 +388,36 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -6;
 			}
 
-			ncch_f_icon = ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon");
-			if (!ncch_f_icon) {
+			sbptr.smdh.ncch_f_icon = ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon");
+			if (!sbptr.smdh.ncch_f_icon) {
 				// Failed to open "icon".
 				return -7;
-			} else if (ncch_f_icon->size() < (int64_t)N3DS_SMDH_Section_Size) {
+			} else if (sbptr.smdh.ncch_f_icon->size() < (int64_t)N3DS_SMDH_Section_Size) {
 				// Icon is too small.
 				return -8;
 			}
 
 			// Create the SMDH reader.
-			smdhReader = new DiscReader(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
+			sbptr.reader = new DiscReader(sbptr.smdh.ncch_f_icon, 0, N3DS_SMDH_Section_Size);
 			break;
 		}
 	}
 
-	if (!smdhReader || !smdhReader->isOpen()) {
+	if (!sbptr.reader || !sbptr.reader->isOpen()) {
 		// Unable to open the SMDH reader.
 		goto err;
 	}
 
 	// Open the SMDH file.
-	smdhFile = new PartitionFile(smdhReader, 0, N3DS_SMDH_Section_Size);
-	if (!smdhFile->isOpen()) {
+	sbptr.file = new PartitionFile(sbptr.reader, 0, N3DS_SMDH_Section_Size);
+	if (!sbptr.file->isOpen()) {
 		// Unable to open the SMDH file.
 		goto err;
 	}
 
 	// Open the SMDH RomData subclass.
-	smdhData = new Nintendo3DS_SMDH(smdhFile);
-	if (!smdhData->isOpen()) {
+	sbptr.smdh.data = new Nintendo3DS_SMDH(sbptr.file);
+	if (!sbptr.smdh.data->isOpen()) {
 		// Unable to open the SMDH file.
 		goto err;
 	}
@@ -428,17 +428,17 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 err:
 	// Unable to open the SMDH section.
-	if (smdhData) {
-		smdhData->unref();
+	if (sbptr.smdh.data) {
+		sbptr.smdh.data->unref();
 	}
-	delete smdhFile;
-	delete smdhReader;
-	delete ncch_f_icon;
-	smdhData = nullptr;
-	smdhFile = nullptr;
-	smdhReader = nullptr;
-	ncch_f_icon = nullptr;
-	return -98;
+	delete sbptr.file;
+	delete sbptr.reader;
+	delete sbptr.smdh.ncch_f_icon;
+	sbptr.smdh.data = nullptr;
+	sbptr.file = nullptr;
+	sbptr.reader = nullptr;
+	sbptr.smdh.ncch_f_icon = nullptr;
+	return -99;
 }
 
 /**
@@ -757,7 +757,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	// Check if the CIA is DSiWare.
 	// NOTE: "WarioWare Touched!" has a manual, but no other
 	// DSiWare titles that I've seen do.
-	if (content_count <= 2 && !this->srlData) {
+	if (content_count <= 2 && !(headers_loaded & HEADER_SMDH) && !this->sbptr.srl.data) {
 		const int64_t offset = mxh.content_start_addr;
 		const uint32_t length = static_cast<uint32_t>(be64_to_cpu(content_chunks[0].size));
 		if (length >= 0x8000) {
@@ -792,9 +792,9 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 
 			if (srlData && srlData->isOpen() && srlData->isValid()) {
 				// SRL opened successfully.
-				this->srlReader = srlReader;
-				this->srlFile = srlFile;
-				this->srlData = srlData;
+				this->sbptr.reader = srlReader;
+				this->sbptr.file = srlFile;
+				this->sbptr.srl.data = srlData;
 			} else {
 				// Failed to open the SRL.
 				if (srlData) {
@@ -1319,9 +1319,9 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 void Nintendo3DS::close(void)
 {
 	RP_D(Nintendo3DS);
-	if (d->srlData) {
+	if (d->sbptr.srl.data) {
 		// Close the SRL.
-		d->srlData->close();
+		d->sbptr.srl.data->close();
 	}
 	super::close();
 }
@@ -1538,10 +1538,10 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
-		if (d->srlData) {
+		if (d->sbptr.srl.data) {
 			// This is a DSiWare SRL.
 			// Get the image information from the underlying SRL.
-			return d->srlData->supportedImageTypes();
+			return d->sbptr.srl.data->supportedImageTypes();
 		}
 	}
 
@@ -1632,10 +1632,10 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
-		if (d->srlData) {
+		if (d->sbptr.srl.data) {
 			// This is a DSiWare SRL.
 			// Get the image information from the underlying SRL.
-			return d->srlData->imgpf(imageType);
+			return d->sbptr.srl.data->imgpf(imageType);
 		}
 	}
 
@@ -1714,7 +1714,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 		} else {
 			KeyManager::VerifyResult res = ncch->verifyResult();
-			if (!d->srlData && res != KeyManager::VERIFY_OK) {
+			if (!d->sbptr.srl.data && res != KeyManager::VERIFY_OK) {
 				// Missing encryption keys.
 				if (!shownWarning) {
 					const char *err = KeyManager::verifyResultToString(res);
@@ -1743,14 +1743,14 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Add the SMDH fields from the Nintendo3DS_SMDH object.
-		const RomFields *smdh_fields = d->smdhData->fields();
+		const RomFields *smdh_fields = d->sbptr.smdh.data->fields();
 		if (smdh_fields) {
 			// Add the SMDH fields.
 			d->fields->addFields_romFields(smdh_fields, 0);
 		}
-	} else if (d->srlData) {
+	} else if (d->sbptr.srl.data) {
 		// DSiWare SRL.
-		const RomFields *srl_fields = d->srlData->fields();
+		const RomFields *srl_fields = d->sbptr.srl.data->fields();
 		if (srl_fields) {
 			d->fields->setTabName(0, C_("Nintendo3DS", "DSiWare"));
 
@@ -2143,7 +2143,7 @@ int Nintendo3DS::loadFieldData(void)
 					crypto = "CIA";
 				}
 
-				if (i == 0 && d->srlData) {
+				if (i == 0 && d->sbptr.srl.data) {
 					// This is an SRL.
 					if (!noncch_cnt_type) {
 						noncch_cnt_type = "SRL";
@@ -2379,10 +2379,10 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 			d->loadTicketAndTMD();
 		}
-		if (d->srlData) {
+		if (d->sbptr.srl.data) {
 			// This is a DSiWare SRL.
 			// Get the image from the underlying SRL.
-			const rp_image *image = d->srlData->image(imageType);
+			const rp_image *image = d->sbptr.srl.data->image(imageType);
 			*pImage = image;
 			return (image ? 0 : -EIO);
 		}
@@ -2400,7 +2400,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	// Get the icon from the SMDH section.
-	const rp_image *image = d->smdhData->image(imageType);
+	const rp_image *image = d->sbptr.smdh.data->image(imageType);
 	*pImage = image;
 	return (image ? 0 : -EIO);
 }
@@ -2420,8 +2420,8 @@ const IconAnimData *Nintendo3DS::iconAnimData(void) const
 	// only used if we're looking at a DSiWare SRL
 	// packaged as a CIA.
 	RP_D(const Nintendo3DS);
-	if (d->srlData) {
-		return d->srlData->iconAnimData();
+	if (d->sbptr.srl.data) {
+		return d->sbptr.srl.data->iconAnimData();
 	}
 	return nullptr;
 }
@@ -2464,10 +2464,10 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
 			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
-		if (d->srlData) {
+		if (d->sbptr.srl.data) {
 			// This is a DSiWare SRL.
 			// Get the image URLs from the underlying SRL.
-			return d->srlData->extURLs(imageType, pExtURLs, size);
+			return d->sbptr.srl.data->extURLs(imageType, pExtURLs, size);
 		}
 	}
 
@@ -2603,12 +2603,12 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	uint32_t smdhRegion = 0;
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
 		// SMDH section loaded.
-		smdhRegion = d->smdhData->getRegionCode();
+		smdhRegion = d->sbptr.smdh.data->getRegionCode();
 	} else {
 		// Load the SMDH section.
 		if (const_cast<Nintendo3DSPrivate*>(d)->loadSMDH() == 0) {
 			// SMDH section loaded.
-			smdhRegion = d->smdhData->getRegionCode();
+			smdhRegion = d->sbptr.smdh.data->getRegionCode();
 		}
 	}
 
