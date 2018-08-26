@@ -101,30 +101,36 @@ public:
 	}
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
 		if (!cp.str) {
-			//assert(0); // RomData should never return a null string // disregard that
+			//assert(!"RomData should never return a null string"); // disregard that
 			return os << "(null)";
 		}
-		
-		string escaped;
-		escaped.reserve(strlen(cp.str));
+
+		// Field padding buffer.
+		const size_t padbuf_len = cp.width + (cp.quotes ? 1 : 0);
+		unique_ptr<char[]> padbuf(new char[padbuf_len + 2]);
+		padbuf[0] = '\n';
+		memset(padbuf.get() + 1, ' ', padbuf_len);
+		padbuf[padbuf_len] = '\0';
+
+		if (cp.quotes) {
+			os << '\'';
+		}
 		for (const char* str = cp.str; *str != 0; str++) {
 			if (cp.width && *str == '\n') {
-				escaped += '\n';
-				escaped.append(cp.width + (cp.quotes?1:0), ' ');
+				os << padbuf.get();
 			} else if ((unsigned char)*str < 0x20) {
 				// Encode control characters using U+2400 through U+241F.
-				escaped += "\xE2\x90";
-				escaped += (char)(0x80 + (unsigned char)*str);
+				os << "\xE2\x90";
+				os << (char)(0x80 + (unsigned char)*str);
 			} else {
-				escaped += *str;
+				os << *str;
 			}
 		}
 		if (cp.quotes) {
-			return os << '\'' << escaped << '\'';
+			os << '\'';
 		}
-		else {
-			return os << escaped;
-		}
+
+		return os;
 	}
 };
 class StringField {
@@ -474,38 +480,37 @@ public:
 
 		// Certain characters need to be escaped.
 		const char *str = js.str;
-		string escaped;
-		escaped.reserve(strlen(str));
+		os << '"';
 		for (; *str != 0; str++) {
 			switch (*str) {
 				case '\\':
-					escaped += "\\\\";
+					os << "\\\\";
 					break;
 				case '"':
-					escaped += "\\";
+					os << "\\";
 					break;
 				case '\b':
-					escaped += "\\b";
+					os << "\\b";
 					break;
 				case '\f':
-					escaped += "\\f";
+					os << "\\f";
 					break;
 				case '\t':
-					escaped += "\\t";
+					os << "\\t";
 					break;
 				case '\n':
-					escaped += "\\n";
+					os << "\\n";
 					break;
 				case '\r':
-					escaped += "\\r";
+					os << "\\r";
 					break;
 				default:
-					escaped += *str;
+					os << *str;
 					break;
 			}
 		}
 
-		return os << '"' << escaped << '"';
+		return os << '"';
 	}
 };
 
@@ -527,7 +532,7 @@ public:
 
 			switch (romField->type) {
 			case RomFields::RFT_INVALID: {
-				assert(0); // INVALID field type
+				assert(!"INVALID field type");
 				os << "{\"type\":\"INVALID\"}";
 				break;
 			}
