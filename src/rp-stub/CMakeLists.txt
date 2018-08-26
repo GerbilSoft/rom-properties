@@ -11,6 +11,11 @@ TARGET_INCLUDE_DIRECTORIES(rp-stub
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
 
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(rpbase git_version)
+ENDIF(TARGET git_version)
+
 # dll-search.c is in libunixcommon.
 TARGET_LINK_LIBRARIES(rp-stub unixcommon)
 
