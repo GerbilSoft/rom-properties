@@ -10,10 +10,10 @@ ADD_EXECUTABLE(FilterCacheKeyTest
 	FilterCacheKeyTest.cpp
 	)
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(FilterCacheKeyTest win32common)
+	TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(FilterCacheKeyTest rpbase cachemgr)
-TARGET_LINK_LIBRARIES(FilterCacheKeyTest gtest)
+TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE rpbase cachemgr)
+TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(FilterCacheKeyTest)
 SET_WINDOWS_SUBSYSTEM(FilterCacheKeyTest CONSOLE)
 ADD_TEST(NAME FilterCacheKeyTest COMMAND FilterCacheKeyTest)

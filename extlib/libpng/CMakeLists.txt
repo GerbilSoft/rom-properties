@@ -585,7 +585,7 @@ if(PNG_SHARED)
     set_target_properties(png PROPERTIES PREFIX "lib")
     set_target_properties(png PROPERTIES IMPORT_PREFIX "lib")
   endif()
-  target_link_libraries(png ${ZLIB_LIBRARY} ${M_LIBRARY})
+  target_link_libraries(png PRIVATE ${ZLIB_LIBRARY} ${M_LIBRARY})
   # rom-properties: Split debug functionality; Windows subsystem.
   DO_SPLIT_DEBUG(png)
   SET_WINDOWS_SUBSYSTEM(png WIN32)
@@ -623,7 +623,7 @@ if(PNG_STATIC)
     # msvc does not append 'lib' - do it here to have consistent name
     set_target_properties(png_static PROPERTIES PREFIX "lib")
   endif()
-  target_link_libraries(png_static ${ZLIB_LIBRARY} ${M_LIBRARY})
+  target_link_libraries(png_static PRIVATE ${ZLIB_LIBRARY} ${M_LIBRARY})
   # rom-properties: Set the MSVC debug path.
   SET_MSVC_DEBUG_PATH(png_static)
 endif()
@@ -642,7 +642,7 @@ if(PNG_FRAMEWORK)
     XCODE_ATTRIBUTE_INSTALL_PATH "@rpath"
     PUBLIC_HEADER "${libpng_public_hdrs}"
     OUTPUT_NAME png)
-  target_link_libraries(png_framework ${ZLIB_LIBRARY} ${M_LIBRARY})
+  target_link_libraries(png_framework PRIVATE ${ZLIB_LIBRARY} ${M_LIBRARY})
 endif()
 
 if(NOT PNG_LIB_TARGETS)
@@ -702,12 +702,12 @@ if(PNG_TESTS AND PNG_SHARED)
   set(PNGTEST_PNG "${CMAKE_CURRENT_SOURCE_DIR}/pngtest.png")
 
   add_executable(pngtest ${pngtest_sources})
-  target_link_libraries(pngtest png)
+  target_link_libraries(pngtest PRIVATE png)
 
   png_add_test(NAME pngtest COMMAND pngtest FILES "${PNGTEST_PNG}")
 
   add_executable(pngvalid ${pngvalid_sources})
-  target_link_libraries(pngvalid png)
+  target_link_libraries(pngvalid PRIVATE png)
 
   png_add_test(NAME pngvalid-gamma-16-to-8
                COMMAND pngvalid OPTIONS --gamma-16-to-8)
@@ -739,7 +739,7 @@ if(PNG_TESTS AND PNG_SHARED)
                COMMAND pngvalid OPTIONS --transform)
 
   add_executable(pngstest ${pngstest_sources})
-  target_link_libraries(pngstest png)
+  target_link_libraries(pngstest PRIVATE png)
 
   foreach(gamma_type 1.8 linear none sRGB)
     foreach(alpha_type none alpha)
@@ -794,7 +794,7 @@ if(PNG_TESTS AND PNG_SHARED)
   endforeach()
 
   add_executable(pngunknown ${pngunknown_sources})
-  target_link_libraries(pngunknown png)
+  target_link_libraries(pngunknown PRIVATE png)
 
   png_add_test(NAME pngunknown-discard COMMAND pngunknown OPTIONS --strict default=discard FILES "${PNGTEST_PNG}")
   png_add_test(NAME pngunknown-IDAT COMMAND pngunknown OPTIONS --strict default=discard IDAT=save FILES "${PNGTEST_PNG}")
@@ -805,7 +805,7 @@ if(PNG_TESTS AND PNG_SHARED)
   png_add_test(NAME pngunknown-vpAg COMMAND pngunknown OPTIONS --strict vpAg=if-safe FILES "${PNGTEST_PNG}")
 
   add_executable(pngimage ${pngimage_sources})
-  target_link_libraries(pngimage png)
+  target_link_libraries(pngimage PRIVATE png)
 
   png_add_test(NAME pngimage-quick COMMAND pngimage OPTIONS --list-combos --log FILES ${PNGSUITE_PNGS})
   png_add_test(NAME pngimage-full COMMAND pngimage OPTIONS --exhaustive --list-combos --log FILES ${PNGSUITE_PNGS})
@@ -816,11 +816,11 @@ ENDIF(0) # rom-properties
 IF(0)
 if(PNG_SHARED)
   add_executable(pngfix ${pngfix_sources})
-  target_link_libraries(pngfix png)
+  target_link_libraries(pngfix PRIVATE png)
   set(PNG_BIN_TARGETS pngfix)
 
   add_executable(png-fix-itxt ${png_fix_itxt_sources})
-  target_link_libraries(png-fix-itxt ${ZLIB_LIBRARY} ${M_LIBRARY})
+  target_link_libraries(png-fix-itxt PRIVATE ${ZLIB_LIBRARY} ${M_LIBRARY})
   list(APPEND PNG_BIN_TARGETS png-fix-itxt)
 endif()
 ENDIF(0)

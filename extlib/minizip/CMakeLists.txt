@@ -414,21 +414,21 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C PREFIX ""
 # rom-properties: Link to ${ZLIB_LIBRARY}.
 IF(0)
 if(USE_ZLIB)
-    target_link_libraries(${PROJECT_NAME} ZLIB::ZLIB)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB)
 endif()
 ENDIF(0)
 IF(NOT ZLIB_LIBRARY)
     MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
 ENDIF(NOT ZLIB_LIBRARY)
-target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARY})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
 if(USE_BZIP2 AND BZIP2_FOUND)
-    target_link_libraries(${PROJECT_NAME} BZip2::BZip2)
+    target_link_libraries(${PROJECT_NAME} PRIVATE BZip2::BZip2)
 endif()
 if(USE_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 endif()
 if(UNIX)
-    target_link_libraries(${PROJECT_NAME} ${LIBBSD_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBBSD_LIBRARIES})
 endif()
 
 # rom-properties: Set include directory to the source path; enable ZLIB_CONST.
@@ -459,7 +459,7 @@ endif()
 
 if(BUILD_TEST)
     add_executable(minizip "minizip.c")
-    target_link_libraries(minizip ${PROJECT_NAME})
+    target_link_libraries(minizip PRIVATE ${PROJECT_NAME})
 
     if(NOT SKIP_INSTALL_BINARIES AND NOT SKIP_INSTALL_ALL)
         install(TARGETS minizip
