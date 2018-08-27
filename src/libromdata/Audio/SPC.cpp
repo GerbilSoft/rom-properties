@@ -94,6 +94,10 @@ class SPCPrivate : public RomDataPrivate
 			// - Value: struct val_t.
 			// NOTE: gcc-6.1 added support for using enums as keys for unordered_map.
 			// Older gcc requires uint8_t instead.
+			// References:
+			// - https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
+			// - https://github.com/dropbox/djinni/issues/213
+			// - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970
 			typedef unordered_map<uint8_t, val_t> map_t;
 			map_t map;
 

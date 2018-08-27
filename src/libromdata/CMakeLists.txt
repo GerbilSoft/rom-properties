@@ -45,6 +45,7 @@ SET(libromdata_SRCS
 	Handheld/GameCom.cpp
 	Handheld/Nintendo3DS.cpp
 	Handheld/Nintendo3DSFirm.cpp
+	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
 	Handheld/VirtualBoy.cpp
 
@@ -145,6 +146,7 @@ SET(libromdata_H
 	Handheld/GameCom.hpp
 	Handheld/Nintendo3DS.hpp
 	Handheld/Nintendo3DSFirm.hpp
+	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
 	Handheld/VirtualBoy.hpp
 
