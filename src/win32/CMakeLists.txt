@@ -145,13 +145,16 @@ TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 propsys)
 # TODO: Write our own version that doesn't use SHStrDupW()?
 TARGET_LINK_LIBRARIES(rom-properties PRIVATE shlwapi)
 
-# Add zlib and png directories for the About tab.
+# Add zlib, png, and tinyxml2 directories for the About tab.
 IF(HAVE_ZLIB)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties PRIVATE ${ZLIB_INCLUDE_DIRS})
 ENDIF(HAVE_ZLIB)
 IF(HAVE_PNG)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties PRIVATE ${PNG_INCLUDE_DIRS})
 ENDIF(HAVE_PNG)
+IF(HAVE_XML)
+	TARGET_INCLUDE_DIRECTORIES(rom-properties PRIVATE ${TinyXML2_INCLUDE_DIR})
+ENDIF(HAVE_XML)
 
 # Delay-load some Windows system libraries.
 # TODO: MinGW delay-load?
