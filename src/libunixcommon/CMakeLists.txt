@@ -82,7 +82,7 @@ SET_MSVC_DEBUG_PATH(unixcommon)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(unixcommon PROPERTIES EXCLUDE_FROM_ALL TRUE)
 IF(APPLE)
-	TARGET_LINK_LIBRARIES(unixcommon "-framework Foundation")
+	TARGET_LINK_LIBRARIES(unixcommon PUBLIC "-framework Foundation")
 ENDIF(APPLE)
 
 TARGET_INCLUDE_DIRECTORIES(unixcommon

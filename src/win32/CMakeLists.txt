@@ -136,14 +136,14 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rom-properties cachemgr romdata rpbase win32common)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE cachemgr romdata rpbase win32common)
 IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties i18n)
+	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
-TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32 wtsapi32 propsys)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 propsys)
 # Required by InitPropVariantFromString().
 # TODO: Write our own version that doesn't use SHStrDupW()?
-TARGET_LINK_LIBRARIES(rom-properties shlwapi)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE shlwapi)
 
 # Add zlib and png directories for the About tab.
 IF(HAVE_ZLIB)
@@ -157,7 +157,7 @@ ENDIF(HAVE_PNG)
 # TODO: MinGW delay-load?
 IF(MSVC)
 	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
-	TARGET_LINK_LIBRARIES(rom-properties delayimp)
+	TARGET_LINK_LIBRARIES(rom-properties PRIVATE delayimp)
 ENDIF(MSVC)
 
 # CMake-3.7.2 doesn't add include paths to windres.

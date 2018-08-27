@@ -125,13 +125,13 @@ IF(BUILD_KDE5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr romdata rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 PRIVATE cachemgr romdata rpbase)
 	IF(ENABLE_NLS)
-		TARGET_LINK_LIBRARIES(rom-properties-kde5 i18n)
+		TARGET_LINK_LIBRARIES(rom-properties-kde5 PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 ${ZLIB_LIBRARY})
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 Qt5::Widgets Qt5::Gui Qt5::Core)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 PRIVATE ${ZLIB_LIBRARY})
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 
 	# Add zlib and png directories for the About tab.
 	IF(HAVE_ZLIB)

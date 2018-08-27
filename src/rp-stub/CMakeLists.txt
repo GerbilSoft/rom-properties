@@ -17,15 +17,15 @@ IF(TARGET git_version)
 ENDIF(TARGET git_version)
 
 # dll-search.c is in libunixcommon.
-TARGET_LINK_LIBRARIES(rp-stub unixcommon)
+TARGET_LINK_LIBRARIES(rp-stub PRIVATE unixcommon)
 
 IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rp-stub i18n)
+	TARGET_LINK_LIBRARIES(rp-stub PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 
 # Link in libdl if it's required for dlopen().
 IF(CMAKE_DL_LIBS)
-	TARGET_LINK_LIBRARIES(rp-stub ${CMAKE_DL_LIBS})
+	TARGET_LINK_LIBRARIES(rp-stub PRIVATE ${CMAKE_DL_LIBS})
 ENDIF(CMAKE_DL_LIBS)
 
 ###########################

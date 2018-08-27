@@ -97,9 +97,9 @@ TARGET_INCLUDE_DIRECTORIES(rpcli
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rpcli romdata rpbase)
+TARGET_LINK_LIBRARIES(rpcli PRIVATE romdata rpbase)
 IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rpcli i18n)
+	TARGET_LINK_LIBRARIES(rpcli PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 
 # CMake-3.7.2 doesn't add include paths to windres.
@@ -113,7 +113,7 @@ ENDIF(MINGW)
 # TODO: MinGW delay-load?
 IF(MSVC)
 	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
-	TARGET_LINK_LIBRARIES(rpcli delayimp)
+	TARGET_LINK_LIBRARIES(rpcli PRIVATE delayimp)
 ENDIF(MSVC)
 
 #################

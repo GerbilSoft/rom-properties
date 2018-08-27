@@ -89,12 +89,13 @@ IF(BUILD_GNOME)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome cachemgr romdata rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE cachemgr romdata rpbase)
 	IF(ENABLE_NLS)
-		TARGET_LINK_LIBRARIES(rom-properties-gnome i18n)
+		TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome Gnome::libnautilus-extension)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 Cairo::cairo GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gnome::libnautilus-extension)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE Cairo::cairo)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome PUBLIC Gtk3::gtk3 GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-gnome\")
 ENDIF(BUILD_GNOME)
 
