@@ -388,7 +388,7 @@ SNES::SNES(IRpFile *file)
 				// Check for "SUPERUFO".
 				static const char superufo[] = "SUPERUFO";
 				const uint8_t *u8ptr = reinterpret_cast<const uint8_t*>(&smdHeader);
-				if (!memcmp(&u8ptr[8], superufo, sizeof(superufo)-8)) {
+				if (!memcmp(&u8ptr[8], superufo, sizeof(superufo)-1)) {
 					// Super UFO ROM header.
 					isCopierHeader = true;
 				}
