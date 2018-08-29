@@ -2044,6 +2044,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		// or if we have to resolve the physical device name.
 		if (GetDriveType(filename) != DRIVE_CDROM) {
 			// Not a CD-ROM drive.
+			hr = E_UNEXPECTED;	// same as icon/image
 			goto cleanup;
 		}
 	} else {
@@ -2055,6 +2056,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			// File cannot be opened or is a directory.
+			hr = E_UNEXPECTED;	// same as icon/image
 			goto cleanup;
 		}
 	}
