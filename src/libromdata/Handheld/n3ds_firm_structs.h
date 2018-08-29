@@ -49,11 +49,13 @@ ASSERT_STRUCT(_N3DS_FIRM_Section_Header_t, 48);
 
 /**
  * Nintendo 3DS firmware binary header struct.
- * All fields are little-endian.
+ *
+ * All fields are little-endian,
+ * except for the magic number.
  */
-#define N3DS_FIRM_MAGIC "FIRM"
+#define N3DS_FIRM_MAGIC 'FIRM'
 typedef struct PACKED _N3DS_FIRM_Header_t {
-	uint8_t magic[4];			// [0x000] "FIRM"
+	uint32_t magic;				// [0x000] 'FIRM' (big-endian)
 	uint32_t boot_priority;			// [0x004] Normally 0. (highest value = max prio)
 	uint32_t arm11_entrypoint;		// [0x008] Non-zero for FIRM; zero for Boot9Strap payloads.
 	uint32_t arm9_entrypoint;		// [0x00C]

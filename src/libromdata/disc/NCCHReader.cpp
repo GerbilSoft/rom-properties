@@ -121,18 +121,20 @@ void NCCHReaderPrivate::init(void)
 
 	// Verify the NCCH magic number.
 	RP_Q(NCCHReader);
-	if (memcmp(ncch_header.hdr.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header.hdr.magic)) != 0) {
+	if (ncch_header.hdr.magic != cpu_to_be32(N3DS_NCCH_HEADER_MAGIC)) {
 		// NCCH magic number is incorrect.
 		// Check for non-NCCH types.
-		const uint8_t *u8hdr = reinterpret_cast<const uint8_t*>(&ncch_header);
-		if (!memcmp(u8hdr, "NDHT", 4)) {
+		if (ncch_header.hdr.magic != cpu_to_be32('NDHT')) {
 			// NDHT. (DS Whitelist)
 			// 0004800F-484E4841
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NDHT;
 			this->file = nullptr;
 			return;
-		} else if (!memcmp(&u8hdr[0x80], "NARC", 4)) {
+		}
+
+		const uint32_t magic_narc = ((const uint32_t*)&ncch_header)[0x80/4];
+		if (magic_narc == cpu_to_be32('NARC')) {
 			// NARC. (TWL Version Data)
 			// 0004800F-484E4C41
 			verifyResult = KeyManager::VERIFY_OK;

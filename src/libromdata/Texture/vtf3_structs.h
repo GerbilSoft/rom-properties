@@ -37,7 +37,7 @@ extern "C" {
  *
  * All fields are in big-endian.
  */
-#define VTF3_SIGNATURE 0x56544633	// "VTF3"
+#define VTF3_SIGNATURE 'VTF3'
 #define VTF_VERSION_MAJOR 7
 #define VTF_VERSION_MINOR 2
 typedef struct PACKED _VTF3HEADER {
@@ -45,7 +45,7 @@ typedef struct PACKED _VTF3HEADER {
 	// - Image format.
 	// - Number of mipmaps.
 
-	uint32_t signature;		// [0x000] VTF3_SIGNATURE
+	uint32_t signature;		// [0x000] 'VTF3'
 	uint8_t unknown1[12];		// [0x004]
 
 	uint32_t flags;			// [0x010] See VTF3_FLAGS.

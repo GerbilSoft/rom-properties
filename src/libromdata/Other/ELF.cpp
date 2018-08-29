@@ -788,43 +788,46 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const Elf_PrimaryEhdr*>(info->header.pData);
 
 	// Check the magic number.
-	if (!memcmp(pHdr->e_magic, ELF_MAGIC, sizeof(pHdr->e_magic))) {
-		// Verify the bitness and endianness fields.
-		switch (pHdr->e_data) {
-			case ELFDATA2LSB:
-				// Little-endian.
-				switch (pHdr->e_class) {
-					case ELFCLASS32:
-						// 32-bit LSB.
-						return ELFPrivate::ELF_FORMAT_32LSB;
-					case ELFCLASS64:
-						// 64-bit LSB.
-						return ELFPrivate::ELF_FORMAT_64LSB;
-					default:
-						// Unknown bitness.
-						break;
-				}
-				break;
+	if (pHdr->e_magic != cpu_to_be32(ELF_MAGIC)) {
+		// Invalid magic.
+		return -1;
+	}
 
-			case ELFDATA2MSB:
-				// Big-endian.
-				switch (pHdr->e_class) {
-					case ELFCLASS32:
-						// 32-bit MSB.
-						return ELFPrivate::ELF_FORMAT_32MSB;
-					case ELFCLASS64:
-						// 64-bit MSB.
-						return ELFPrivate::ELF_FORMAT_64MSB;
-					default:
-						// Unknown bitness.
-						break;
-				}
-				break;
+	// Verify the bitness and endianness fields.
+	switch (pHdr->e_data) {
+		case ELFDATA2LSB:
+			// Little-endian.
+			switch (pHdr->e_class) {
+				case ELFCLASS32:
+					// 32-bit LSB.
+					return ELFPrivate::ELF_FORMAT_32LSB;
+				case ELFCLASS64:
+					// 64-bit LSB.
+					return ELFPrivate::ELF_FORMAT_64LSB;
+				default:
+					// Unknown bitness.
+					break;
+			}
+			break;
 
-			default:
-				// Unknown endianness.
-				break;
-		}
+		case ELFDATA2MSB:
+			// Big-endian.
+			switch (pHdr->e_class) {
+				case ELFCLASS32:
+					// 32-bit MSB.
+					return ELFPrivate::ELF_FORMAT_32MSB;
+				case ELFCLASS64:
+					// 64-bit MSB.
+					return ELFPrivate::ELF_FORMAT_64MSB;
+				default:
+					// Unknown bitness.
+					break;
+			}
+			break;
+
+		default:
+			// Unknown endianness.
+			break;
 	}
 
 	// Not supported.

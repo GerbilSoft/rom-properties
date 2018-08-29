@@ -140,12 +140,10 @@ int Lynx::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// Check the system name.
+	// Check the magic number.
 	const Lynx_RomHeader *const romHeader =
 		reinterpret_cast<const Lynx_RomHeader*>(info->header.pData);
-
-	static const char lynxMagic[4] = {'L','Y','N','X'};
-	if (!memcmp(romHeader->magic, lynxMagic, sizeof(lynxMagic))) {
+	if (romHeader->magic == cpu_to_be32(LYNX_MAGIC)) {
 		// Found a Lynx ROM.
 		return 0;
 	}

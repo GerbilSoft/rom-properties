@@ -35,13 +35,14 @@ extern "C" {
  * Valve VTF: File header.
  * Reference: https://developer.valvesoftware.com/wiki/Valve_Texture_Format
  *
- * All fields are in little-endian.
+ * All fields are little-endian,
+ * except for the magic number.
  */
-#define VTF_SIGNATURE 0x00465456	// "VTF\0"
+#define VTF_SIGNATURE 'VTF\0'
 #define VTF_VERSION_MAJOR 7
 #define VTF_VERSION_MINOR 2
 typedef struct PACKED _VTFHEADER {
-	uint32_t signature;		// VTF_SIGNATURE
+	uint32_t signature;		// 'VTF\0' (big-endian)
 	uint32_t version[2];		// Version number. (current version is 7.2)
 	uint32_t headerSize;		// Header size (16-byte aligned)
 					// For 7.3, includes size of resources dictionary.

@@ -73,9 +73,9 @@ typedef uint64_t Elf64_Symndx;
  * ELF primary header.
  * These fields are identical for both 32-bit and 64-bit.
  */
-#define ELF_MAGIC "\177ELF"
+#define ELF_MAGIC '\177ELF'
 typedef struct PACKED _Elf_PrimaryEhdr {
-	char e_magic[4];	// [0x000] "\x7FELF"
+	uint32_t e_magic;	// [0x000] '\x177ELF' (big-endian)
 	uint8_t e_class;	// [0x004] Bitness (see Elf_Bitness)
 	uint8_t e_data;		// [0x005] Endianness (see Elf_Endianness)
 	uint8_t e_elfversion;	// [0x006] ELF version

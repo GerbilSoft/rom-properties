@@ -38,18 +38,21 @@ extern "C" {
  * Reference:
  * - http://handy.cvs.sourceforge.net/viewvc/handy/win32src/public/handybug/dvreadme.txt
  *
- * All fields are little-endian.
+ * All fields are little-endian,
+ * except for the magic number.
+ *
  * NOTE: Strings are NOT null-terminated!
  */
+#define LYNX_MAGIC 'LYNX'
 typedef struct PACKED _Lynx_RomHeader {
-	char magic[4]; // "LYNX"
-	uint16_t page_size_bank0;
-	uint16_t page_size_bank1;
-	uint16_t version;
-	char cartname[32];
-	char manufname[16];
-	uint8_t rotation; // 0 - none, 1 - left, 2 - right
-	uint8_t spare[5]; // padding
+	uint32_t magic;			// [0x000] 'LYNX' (big-endian)
+	uint16_t page_size_bank0;	// [0x004]
+	uint16_t page_size_bank1;	// [0x006]
+	uint16_t version;		// [0x008]
+	char cartname[32];		// [0x00A]
+	char manufname[16];		// [0x02A]
+	uint8_t rotation;		// [0x03A] // 0 - none, 1 - left, 2 - right
+	uint8_t spare[5];		// [0x03B] // padding
 } Lynx_RomHeader;
 ASSERT_STRUCT(Lynx_RomHeader, 64);
 

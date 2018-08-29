@@ -182,27 +182,28 @@ ASSERT_STRUCT(N3DS_SMDH_Icon_t, 0x1680);
  * Nintendo 3DS Homebrew Application header. (.3dsx)
  * Reference: https://3dbrew.org/wiki/3DSX_Format
  *
- * All fields are little-endian.
+ * All fields are little-endian,
+ * except for the magic number.
  */
-#define N3DS_3DSX_HEADER_MAGIC "3DSX"
+#define N3DS_3DSX_HEADER_MAGIC '3DSX'
 #define N3DS_3DSX_STANDARD_HEADER_SIZE 32
 #define N3DS_3DSX_EXTENDED_HEADER_SIZE 44
 typedef struct PACKED _N3DS_3DSX_Header_t {
 	// Standard header.
-	char magic[4];			// "3DSX"
-	uint16_t header_size;		// Header size.
-	uint16_t reloc_header_size;	// Relocation header size.
-	uint32_t format_version;
-	uint32_t flags;
-	uint32_t code_segment_size;
-	uint32_t rodata_segment_size;
-	uint32_t data_segment_size;	// Includes BSS.
-	uint32_t bss_segment_size;
+	uint32_t magic; 		// [0x000] '3DSX' (big-endian)
+	uint16_t header_size;		// [0x004] Header size.
+	uint16_t reloc_header_size;	// [0x006] Relocation header size.
+	uint32_t format_version;	// [0x008]
+	uint32_t flags;			// [0x00C]
+	uint32_t code_segment_size;	// [0x010]
+	uint32_t rodata_segment_size;	// [0x014]
+	uint32_t data_segment_size;	// [0x018] Includes BSS.
+	uint32_t bss_segment_size;	// [0x01C]
 
 	// Extended header. (only valid if header_size > 32)
-	uint32_t smdh_offset;
-	uint32_t smdh_size;
-	uint32_t romfs_offset;
+	uint32_t smdh_offset;		// [0x020]
+	uint32_t smdh_size;		// [0x024]
+	uint32_t romfs_offset;		// [0x028]
 } N3DS_3DSX_Header_t;
 ASSERT_STRUCT(N3DS_3DSX_Header_t, 44);
 
@@ -281,13 +282,14 @@ ASSERT_STRUCT(N3DS_TitleID_BE_t, 8);
  * This version does not have the 256-byte RSA-2048 signature.
  * Reference: https://3dbrew.org/wiki/NCSD
  *
- * All fields are little-endian.
+ * All fields are little-endian,
+ * except for the magic number.
  */
-#define N3DS_NCSD_HEADER_MAGIC "NCSD"
+#define N3DS_NCSD_HEADER_MAGIC 'NCSD'
 #define N3DS_NCSD_NOSIG_HEADER_ADDRESS 0x100
 typedef struct PACKED _N3DS_NCSD_Header_NoSig_t {
 	// [0x100]
-	char magic[4];			// [0x100] "NCSD"
+	uint32_t magic;			// [0x100] 'NCSD' (big-endian)
 	uint32_t image_size;		// [0x104] Image size, in media units. (1 media unit = 512 bytes)
 	N3DS_TitleID_LE_t media_id;	// [0x108] Media ID.
 
@@ -410,12 +412,13 @@ ASSERT_STRUCT(N3DS_NCSD_Card_Info_Header_t, 0xF00);
  * This version does not have the 256-byte RSA-2048 signature.
  * Reference: https://3dbrew.org/wiki/NCSD
  *
- * All fields are little-endian.
+ * All fields are little-endian,
+ * except for the magic number.
  */
-#define N3DS_NCCH_HEADER_MAGIC "NCCH"
+#define N3DS_NCCH_HEADER_MAGIC 'NCCH'
 typedef struct PACKED _N3DS_NCCH_Header_NoSig_t {
 	// NOTE: Addresses are relative to the version *with* a signature.
-	char magic[4];				// [0x100] "NCCH"
+	uint32_t magic;				// [0x100] 'NCCH' (big-endian)
 	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
 	union {
 		uint64_t partition_id;		// [0x108] Partition ID.

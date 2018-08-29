@@ -48,15 +48,29 @@ extern "C" {
 #define TNES_PRG_BANK_SIZE 8192
 #define TNES_CHR_BANK_SIZE 8192
 
+/**
+ * iNES ROM header.
+ * This matches the ROM header format exactly.
+ * References:
+ * - https://wiki.nesdev.com/w/index.php/INES
+ * - https://wiki.nesdev.com/w/index.php/NES_2.0
+ *
+ * All fields are in little-endian,
+ * except for the magic number.
+ *
+ * NOTE: Strings are NOT null-terminated!
+ */
+#define INES_MAGIC		'NES\x1A'
+#define INES_MAGIC_WIIU_VC	'NES\x00'
 typedef struct PACKED _INES_RomHeader {
-	uint8_t magic[4];	// "NES\x1A"
-	uint8_t prg_banks;	// # of 16 KB PRG ROM banks.
-	uint8_t chr_banks;	// # of 8 KB CHR ROM banks.
+	uint32_t magic;		// [0x000] 'NES\x1A' (big-endian)
+	uint8_t prg_banks;	// [0x004] # of 16 KB PRG ROM banks.
+	uint8_t chr_banks;	// [0x005]# of 8 KB CHR ROM banks.
 
 	// Mapper values. Each byte has one
 	// nybble, plus HW information.
-	uint8_t mapper_lo;	// byte 6
-	uint8_t mapper_hi;	// byte 7
+	uint8_t mapper_lo;	// [0x006]
+	uint8_t mapper_hi;	// [0x007]
 
 	union {
 		struct {
@@ -161,16 +175,20 @@ ASSERT_STRUCT(NES_IntFooter, 32);
 /**
  * TNES ROM header.
  * Used with Nintendo 3DS Virtual Console games.
+ *
+ * All fields are in little-endian,
+ * except for the magic number.
  */
+#define TNES_MAGIC 'TNES'
 typedef struct PACKED _TNES_RomHeader {
-	uint8_t magic[4];	// "TNES"
-	uint8_t mapper;
-	uint8_t prg_banks;	// # of 8 KB PRG ROM banks.
-	uint8_t chr_banks;	// # of 8 KB CHR ROM banks.
-	uint8_t wram;		// 00 == no; 01 == yes
-	uint8_t mirroring;	// 00 == none; 01 == horizontal; 02 == vertical
-	uint8_t vram;		// 00 == no; 01 == yes
-	uint8_t reserved[6];
+	uint32_t magic;		// [0x000] 'TNES' (big-endian)
+	uint8_t mapper;		// [0x004]
+	uint8_t prg_banks;	// [0x005] # of 8 KB PRG ROM banks.
+	uint8_t chr_banks;	// [0x006] # of 8 KB CHR ROM banks.
+	uint8_t wram;		// [0x007] 00 == no; 01 == yes
+	uint8_t mirroring;	// [0x008] 00 == none; 01 == horizontal; 02 == vertical
+	uint8_t vram;		// [0x009] 00 == no; 01 == yes
+	uint8_t reserved[6];	// [0x00A]
 } TNES_RomHeader;
 ASSERT_STRUCT(TNES_RomHeader, 16);
 
@@ -255,11 +273,15 @@ typedef enum {
 /**
  * fwNES FDS header.
  * If present, it's placed before the regular FDS header.
+ *
+ * All fields are in little-endian,
+ * except for the magic number.
  */
+#define fwNES_MAGIC 'FDS\x1A'
 typedef struct PACKED _FDS_DiskHeader_fwNES {
-	uint8_t magic[4];	// "FDS\x1A"
-	uint8_t disk_sides;	// Number of disk sides.
-	uint8_t reserved[11];	// Zero filled.
+	uint32_t magic;		// [0x000] 'FDS\x1A' (big-endian)
+	uint8_t disk_sides;	// [0x004] Number of disk sides.
+	uint8_t reserved[11];	// [0x005] Zero filled.
 } FDS_DiskHeader_fwNES;
 ASSERT_STRUCT(FDS_DiskHeader_fwNES, 16);
 

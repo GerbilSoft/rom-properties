@@ -64,6 +64,8 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	// References:
 	// - https://bugs.kde.org/show_bug.cgi?id=392100
 	// - https://cgit.kde.org/kio.git/commit/?id=7d6e4965dfcd7fc12e8cba7b1506dde22de5d2dd
+	// TODO: https://cgit.kde.org/kdenetwork-filesharing.git/commit/?id=abf945afd4f08d80cdc53c650d80d300f245a73d
+	// (and other uses) [use mostLocalPath()]
 	const KFileItem &item = items.at(0);
 	QString filename = item.localPath();
 	if (filename.isEmpty())

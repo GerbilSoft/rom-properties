@@ -53,11 +53,12 @@ extern "C" {
  * If width * height == 1: Image data starts at 0x1100.
  * Otherwise, image data starts at 0x4300.
  *
- * All fields are in little-endian.
+ * All fields are in little-endian,
+ * except for the magic number.
  */
-#define BADGE_PRBS_MAGIC "PRBS"
+#define BADGE_PRBS_MAGIC 'PRBS'
 typedef struct PACKED _Badge_PRBS_Header {
-	char magic[4];		// [0x000] "PRBS"
+	uint32_t magic;		// [0x000] 'PRBS' (big-endian)
 	uint8_t reserved1[56];	// [0x004] Unknown
 	uint32_t badge_id;	// [0x03C] Badge ID
 	uint8_t reserved2[4];	// [0x040] Unknown
@@ -87,11 +88,12 @@ ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
  *
  * Image data starts at 0x2080;
  *
- * All fields are in little-endian.
+ * All fields are in little-endian,
+ * except for the magic number.
  */
-#define BADGE_CABS_MAGIC "CABS"
+#define BADGE_CABS_MAGIC 'CABS'
 typedef struct PACKED _Badge_CABS_Header {
-	char magic[4];		// [0x000] "CABS"
+	uint32_t magic;		// [0x000] 'CABS'
 	uint8_t reserved1[32];	// [0x004] Unknown
 	uint32_t set_id;	// [0x024] Set ID.
 	uint8_t reserved2[4];	// [0x028] Unknown

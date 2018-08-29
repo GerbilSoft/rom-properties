@@ -393,11 +393,12 @@ int NintendoBadge::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for PRBS.
-	if (!memcmp(info->header.pData, BADGE_PRBS_MAGIC, 4)) {
+	uint32_t magic = *((const uint32_t*)info->header.pData);
+	if (magic == cpu_to_be32(BADGE_PRBS_MAGIC)) {
 		// PRBS header is present.
 		// TODO: Other checks?
 		return NintendoBadgePrivate::BADGE_TYPE_PRBS;
-	} else if (!memcmp(info->header.pData, BADGE_CABS_MAGIC, 4)) {
+	} else if (magic == cpu_to_be32(BADGE_CABS_MAGIC)) {
 		// CABS header is present.
 		// TODO: Other checks?
 		return NintendoBadgePrivate::BADGE_TYPE_CABS;

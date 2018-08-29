@@ -265,7 +265,7 @@ int VGM::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const VGM_Header*>(info->header.pData);
 
 	// Check the VGM magic number.
-	if (vgmHeader->magic == cpu_to_le32(VGM_MAGIC)) {
+	if (vgmHeader->magic == cpu_to_be32(VGM_MAGIC)) {
 		// Found the VGM magic number.
 		return 0;
 	}

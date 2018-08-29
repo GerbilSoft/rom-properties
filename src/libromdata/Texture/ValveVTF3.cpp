@@ -288,7 +288,7 @@ int ValveVTF3::isRomSupported_static(const DetectInfo *info)
 	// Verify the VTF3 signature.
 	const VTF3HEADER *const vtf3Header =
 		reinterpret_cast<const VTF3HEADER*>(info->header.pData);
-	if (vtf3Header->signature == be32_to_cpu(VTF3_SIGNATURE)) {
+	if (vtf3Header->signature == cpu_to_be32(VTF3_SIGNATURE)) {
 		// VTF3 signature is correct.
 		return 0;
 	}

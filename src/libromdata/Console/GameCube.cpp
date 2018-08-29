@@ -1218,7 +1218,8 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for the magic numbers.
-	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
+	const GCN_DiscHeader *gcn_header =
+		reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
 	if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 		// Wii disc image.
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
@@ -1237,22 +1238,25 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// Check for SDK headers.
 	// TODO: More comprehensive?
 	// TODO: Checksum at 0x0830. (For GCN, makeGCM always puts 0xAB0B here...)
-	static const uint8_t sdk_0x0000[4] = {0xFF,0xFF,0x00,0x00};
-	static const uint8_t sdk_0x082C[4] = {0x00,0x00,0xE0,0x06};
-	if (!memcmp(&info->header.pData[0x0000], sdk_0x0000, sizeof(sdk_0x0000))) {
+	static const uint32_t sdk_0x0000 = 0xFFFF0000;	// BE32
+	static const uint32_t sdk_0x082C = 0x0000E006;	// BE32
+	const uint32_t *const pData32 =
+		reinterpret_cast<const uint32_t*>(info->header.pData);
+	if (pData32[0] == cpu_to_be32(sdk_0x0000)) {
 		if (info->header.size < 0x0830) {
 			// Can't check 0x082C, so assume it has the SDK headers.
 			return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_SDK);
 		}
 
-		if (!memcmp(&info->header.pData[0x082C], sdk_0x082C, sizeof(sdk_0x082C))) {
+		if (pData32[0x082C/4] == cpu_to_be32(sdk_0x082C)) {
 			// This is a valid GCN/Wii SDK disc image header.
 			return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_SDK);
 		}
 	}
 
 	// Check for TGC.
-	const GCN_TGC_Header *const tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
+	const GCN_TGC_Header *const tgcHeader =
+		reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
 	if (tgcHeader->tgc_magic == cpu_to_be32(TGC_MAGIC)) {
 		// TGC images have their own 32 KB header, so we can't
 		// check the actual GCN/Wii header here.
@@ -1291,8 +1295,8 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for WIA.
-	static const uint8_t wia_magic[4] = {'W','I','A',1};
-	if (!memcmp(info->header.pData, wia_magic, sizeof(wia_magic))) {
+	static const uint32_t wia_magic = 'WIA\x01';
+	if (pData32[0] == cpu_to_be32(wia_magic)) {
 		// This is a WIA image.
 		// NOTE: We're using the WIA system ID if it's valid.
 		// Otherwise, fall back to GCN/Wii magic.
@@ -1309,14 +1313,12 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 		// Check the GameCube/Wii magic.
 		// TODO: WIA struct when full WIA support is added.
-		uint32_t magic_tmp;
-		memcpy(&magic_tmp, &info->header.pData[0x70], sizeof(magic_tmp));
-		if (magic_tmp == cpu_to_be32(WII_MAGIC)) {
+		// FIXME BEFORE COMMIT: TEST THIS
+		gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[0x58]);
+		if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image. (WIA format)
 			return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WIA);
-		}
-		memcpy(&magic_tmp, &info->header.pData[0x74], sizeof(magic_tmp));
-		if (magic_tmp == cpu_to_be32(GCN_MAGIC)) {
+		} else if (gcn_header->magic_gcn == cpu_to_be32(GCN_MAGIC)) {
 			// GameCube disc image. (WIA format)
 			return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WIA);
 		}

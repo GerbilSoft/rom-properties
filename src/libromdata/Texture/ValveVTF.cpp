@@ -644,7 +644,7 @@ int ValveVTF::isRomSupported_static(const DetectInfo *info)
 	// Verify the VTF signature.
 	const VTFHEADER *const vtfHeader =
 		reinterpret_cast<const VTFHEADER*>(info->header.pData);
-	if (vtfHeader->signature == le32_to_cpu(VTF_SIGNATURE)) {
+	if (vtfHeader->signature == cpu_to_be32(VTF_SIGNATURE)) {
 		// VTF signature is correct.
 		return 0;
 	}

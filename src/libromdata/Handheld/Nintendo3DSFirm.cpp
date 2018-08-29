@@ -152,7 +152,7 @@ int Nintendo3DSFirm::isRomSupported_static(const DetectInfo *info)
 	// TODO: Other checks?
 	const N3DS_FIRM_Header_t *const firmHeader =
 		reinterpret_cast<const N3DS_FIRM_Header_t*>(info->header.pData);
-	if (!memcmp(firmHeader->magic, N3DS_FIRM_MAGIC, sizeof(firmHeader->magic))) {
+	if (firmHeader->magic == cpu_to_be32(N3DS_FIRM_MAGIC)) {
 		// This is a FIRM binary.
 		return 0;
 	}

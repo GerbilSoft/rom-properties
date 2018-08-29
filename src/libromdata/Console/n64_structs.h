@@ -36,9 +36,13 @@ extern "C" {
  * This matches the ROM header format exactly.
  * Reference: http://www.romhacking.net/forum/index.php/topic,20415.msg286889.html?PHPSESSID=8bc8li2rrckkt4arqv7kdmufu1#msg286889
  * 
- * All fields are big-endian.
+ * All fields are in big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
+#define N64_Z64_MAGIC   0x803712400000000FULL
+#define N64_V64_MAGIC   0x3780401200000F00ULL
+#define N64_SWAP2_MAGIC 0x12408037000F0000ULL
+#define N64_LE32_MAGIC  0x401237800F000000ULL
 typedef union PACKED _N64_RomHeader {
 	struct {
 		union {
@@ -51,6 +55,7 @@ typedef union PACKED _N64_RomHeader {
 				uint32_t init_pi;
 				uint32_t clockrate;
 			};
+			uint64_t magic64;
 		};
 
 		uint32_t entrypoint;	// [0x008]

@@ -35,11 +35,13 @@ extern "C" {
 
 /**
  * Game Boy Sound System.
- * All fields are little-endian.
+ *
+ * All fields are little-endian,
+ * except for the magic number.
  */
-#define GBS_MAGIC "GBS\x01"
+#define GBS_MAGIC 'GBS\x01'
 typedef struct PACKED _GBS_Header {
-	char magic[4];			// [0x000] "GBS\x01"
+	uint32_t magic;			// [0x000] 'GBS\x01' (big-endian)
 					//         NOTE: \x01 is technically a version number.
 	uint8_t track_count;		// [0x004] Number of tracks
 	uint8_t default_track;		// [0x005] Default track number, plus one. (usually 1)

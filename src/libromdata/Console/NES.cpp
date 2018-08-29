@@ -329,13 +329,12 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	// Check for iNES.
 	const INES_RomHeader *inesHeader =
 		reinterpret_cast<const INES_RomHeader*>(info->header.pData);
-	static const uint8_t ines_magic[4] = {'N','E','S',0x1A};
-	if (!memcmp(inesHeader->magic, ines_magic, 3) &&
-	    (inesHeader->magic[3] == 0x1A || inesHeader->magic[3] == 0x00))
+	if (inesHeader->magic == cpu_to_be32(INES_MAGIC) ||
+	    inesHeader->magic == cpu_to_be32(INES_MAGIC_WIIU_VC))
 	{
 		// Found an iNES ROM header.
 		// If the fourth byte is 0x00, it's Wii U VC.
-		int romType = (inesHeader->magic[3] == 0x00)
+		int romType = (inesHeader->magic == cpu_to_be32(INES_MAGIC_WIIU_VC))
 				? NESPrivate::ROM_SPECIAL_WIIU_VC
 				: 0;
 
@@ -406,8 +405,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	// Check for TNES.
 	const TNES_RomHeader *tnesHeader =
 		reinterpret_cast<const TNES_RomHeader*>(info->header.pData);
-	static const uint8_t tnes_magic[4] = {'T','N','E','S'};
-	if (!memcmp(tnesHeader->magic, tnes_magic, sizeof(tnesHeader->magic))) {
+	if (tnesHeader->magic == cpu_to_be32(TNES_MAGIC)) {
 		// Found a TNES ROM header.
 		if (tnesHeader->mapper == TNES_MAPPER_FDS) {
 			// This is an FDS game.
@@ -423,13 +421,12 @@ int NES::isRomSupported_static(const DetectInfo *info)
 
 	// Check for FDS.
 	// TODO: Check that the block code is 0x01?
-	static const uint8_t fwNES_magic[] = "FDS\x1A";
 	static const uint8_t fds_magic[] = "*NINTENDO-HVC*";
 
 	// Check for headered FDS.
 	const FDS_DiskHeader_fwNES *fwNESHeader =
 		reinterpret_cast<const FDS_DiskHeader_fwNES*>(info->header.pData);
-	if (!memcmp(fwNESHeader->magic, fwNES_magic, sizeof(fwNESHeader->magic)-1)) {
+	if (fwNESHeader->magic == cpu_to_be32(fwNES_MAGIC)) {
 		// fwNES header is present.
 		// TODO: Check required NULL bytes.
 		// For now, assume this is correct.

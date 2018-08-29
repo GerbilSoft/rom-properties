@@ -1411,9 +1411,9 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for 3DSX.
-	if (!memcmp(info->header.pData, N3DS_3DSX_HEADER_MAGIC, 4) &&
-	    info->szFile >= (int64_t)sizeof(N3DS_3DSX_Header_t))
-	{
+	const N3DS_3DSX_Header_t *const _3dsx_header =
+		reinterpret_cast<const N3DS_3DSX_Header_t*>(info->header.pData);
+	if (_3dsx_header->magic == cpu_to_be32(N3DS_3DSX_HEADER_MAGIC)) {
 		// We have a 3DSX file.
 		// NOTE: sizeof(N3DS_3DSX_Header_t) includes the
 		// extended header, but that's fine, since a .3DSX
@@ -1426,7 +1426,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	const N3DS_NCSD_Header_NoSig_t *const ncsd_header =
 		reinterpret_cast<const N3DS_NCSD_Header_NoSig_t*>(
 			&info->header.pData[N3DS_NCSD_NOSIG_HEADER_ADDRESS]);
-	if (!memcmp(ncsd_header->magic, N3DS_NCSD_HEADER_MAGIC, sizeof(ncsd_header->magic))) {
+	if (ncsd_header->magic == cpu_to_be32(N3DS_NCSD_HEADER_MAGIC)) {
 		// TODO: Validate the NCSD image size field?
 
 		// Check if this is an eMMC dump or a CCI image.
@@ -1449,7 +1449,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	// Check for NCCH.
 	const N3DS_NCCH_Header_t *const ncch_header =
 		reinterpret_cast<const N3DS_NCCH_Header_t*>(info->header.pData);
-	if (!memcmp(ncch_header->hdr.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header->hdr.magic))) {
+	if (ncch_header->hdr.magic == cpu_to_be32(N3DS_NCCH_HEADER_MAGIC)) {
 		// Found the NCCH magic.
 		// TODO: Other checks?
 		return Nintendo3DSPrivate::ROM_TYPE_NCCH;

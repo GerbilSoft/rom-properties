@@ -145,7 +145,7 @@ int GBS::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const GBS_Header*>(info->header.pData);
 
 	// Check the GBS magic number.
-	if (!memcmp(gbsHeader->magic, GBS_MAGIC, sizeof(gbsHeader->magic))) {
+	if (gbsHeader->magic == cpu_to_be32(GBS_MAGIC)) {
 		// Found the GBS magic number.
 		return 0;
 	}

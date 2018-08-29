@@ -200,23 +200,19 @@ int N64::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all N64 ROMs.
-	static const uint8_t magic[4][8] = {
-		{0x80,0x37,0x12,0x40,0x00,0x00,0x00,0x0F},	// Z64
-		{0x37,0x80,0x40,0x12,0x00,0x00,0x0F,0x00},	// V64
-		{0x12,0x40,0x80,0x37,0x00,0x0F,0x00,0x00},	// swap2
-		{0x40,0x12,0x37,0x80,0x0F,0x00,0x00,0x00},	// le32
-	};
-
-	for (int i = 0; i < 4; i++) {
-		if (!memcmp(romHeader->magic, magic[i], sizeof(magic[i]))) {
-			// Found a matching magic number.
-			// This corresponds to N64Private::RomType.
-			return i;
-		}
+	// TODO: Check 32-bit code generation.
+	int romType = N64Private::ROM_TYPE_UNKNOWN;
+	if (romHeader->magic64 == cpu_to_be64(N64_Z64_MAGIC)) {
+		romType = N64Private::ROM_TYPE_Z64;
+	} else if (romHeader->magic64 == cpu_to_be64(N64_V64_MAGIC)) {
+		romType = N64Private::ROM_TYPE_V64;
+	} else if (romHeader->magic64 == cpu_to_be64(N64_SWAP2_MAGIC)) {
+		romType = N64Private::ROM_TYPE_SWAP2;
+	} else if (romHeader->magic64 == cpu_to_be64(N64_LE32_MAGIC)) {
+		romType = N64Private::ROM_TYPE_LE32;
 	}
 
-	// Not supported.
-	return -1;
+	return romType;
 }
 
 /**
