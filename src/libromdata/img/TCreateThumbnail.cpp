@@ -262,7 +262,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 {
 	uint32_t imgbf = romData->supportedImageTypes();
 	uint32_t imgpf = 0;
-	ImgSize img_sz;
+	ImgSize img_sz = {0, 0};
 
 	// Get the image priority.
 	const Config *const config = Config::instance();
@@ -346,6 +346,12 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 	}
 
 skip_image_check:
+	if (img_sz.width <= 0 || img_sz.height <= 0) {
+		// Image size is invalid.
+		freeImgClass(ret_img);
+		return RPCT_SOURCE_FILE_ERROR;
+	}
+
 	// TODO: If image is larger than req_size, resize down.
 	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
 		// TODO: User configuration.

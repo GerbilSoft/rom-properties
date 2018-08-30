@@ -381,7 +381,7 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 	}
 
 	// Temporary KeyData_t in case pKeyData is nullptr.
-	KeyData_t tmp_key_data;
+	KeyData_t tmp_key_data = {nullptr, 0};
 	if (!pKeyData) {
 		pKeyData = &tmp_key_data;
 	}
