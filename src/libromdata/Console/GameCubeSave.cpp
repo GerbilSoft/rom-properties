@@ -331,7 +331,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 	bool is_CI8_shared = false;
 	uint16_t iconfmt = direntry.iconfmt;
 	uint16_t iconspeed = direntry.iconspeed;
-	for (int i = 0; i < CARD_MAXICONS; i++, iconfmt >>= 2, iconspeed >>= 2) {
+	for (unsigned int i = 0; i < CARD_MAXICONS; i++, iconfmt >>= 2, iconspeed >>= 2) {
 		if ((iconspeed & CARD_SPEED_MASK) == CARD_SPEED_END) {
 			// End of the icons.
 			break;
@@ -391,7 +391,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 	iconfmt = direntry.iconfmt;
 	iconspeed = direntry.iconspeed;
 	for (int i = 0; i < CARD_MAXICONS; i++, iconfmt >>= 2, iconspeed >>= 2) {
-		const int delay = (iconspeed & CARD_SPEED_MASK);
+		const unsigned int delay = (iconspeed & CARD_SPEED_MASK);
 		if (delay == CARD_SPEED_END) {
 			// End of the icons.
 			break;
@@ -407,7 +407,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 		switch (iconfmt & CARD_ICON_MASK) {
 			case CARD_ICON_RGB: {
 				// RGB5A3
-				const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 2;
+				static const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 2;
 				iconAnimData->frames[i] = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
 					CARD_ICON_W, CARD_ICON_H,
 					reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur),
@@ -419,7 +419,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 			case CARD_ICON_CI_UNIQUE: {
 				// CI8 with a unique palette.
 				// Palette is located immediately after the icon.
-				const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+				static const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
 					icondata.get() + iconaddr_cur, iconsize,
@@ -429,7 +429,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 			}
 
 			case CARD_ICON_CI_SHARED: {
-				const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+				static const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
 					icondata.get() + iconaddr_cur, iconsize,
@@ -830,11 +830,27 @@ uint32_t GameCubeSave::imgpf(ImageType imageType) const
 		return 0;
 	}
 
+	uint32_t ret = 0;
 	switch (imageType) {
-		case IMG_INT_ICON:
+		case IMG_INT_ICON: {
+			RP_D(const GameCubeSave);
+			// Use nearest-neighbor scaling when resizing.
+			// Also, need to check if this is an animated icon.
+			const_cast<GameCubeSavePrivate*>(d)->loadIcon();
+			if (d->iconAnimData && d->iconAnimData->count > 1) {
+				// Animated icon.
+				ret = IMGPF_RESCALE_NEAREST | IMGPF_ICON_ANIMATED;
+			} else {
+				// Not animated.
+				ret = IMGPF_RESCALE_NEAREST;
+			}
+			break;
+		}
+
 		case IMG_INT_BANNER:
 			// Use nearest-neighbor scaling.
 			return IMGPF_RESCALE_NEAREST;
+
 		default:
 			break;
 	}
@@ -861,6 +877,7 @@ int GameCubeSave::loadFieldData(void)
 	}
 
 	// Save file header is read and byteswapped in the constructor.
+	const card_direntry *const direntry = &d->direntry;
 	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Game ID.
@@ -868,15 +885,15 @@ int GameCubeSave::loadFieldData(void)
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(d->direntry.id6[i])
-			? d->direntry.id6[i]
+		id6[i] = (ISPRINT(direntry->id6[i])
+			? direntry->id6[i]
 			: '_');
 	}
 	id6[6] = 0;
 	d->fields->addField_string(C_("GameCubeSave", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Look up the publisher.
-	const char *publisher = NintendoPublishers::lookup(d->direntry.company);
+	const char *publisher = NintendoPublishers::lookup(direntry->company);
 	d->fields->addField_string(C_("GameCubeSave", "Publisher"),
 		publisher ? publisher : C_("GameCubeSave", "Unknown"));
 
@@ -884,11 +901,11 @@ int GameCubeSave::loadFieldData(void)
 	// TODO: Remove trailing spaces.
 	d->fields->addField_string(C_("GameCubeSave", "Filename"),
 		cp1252_sjis_to_utf8(
-			d->direntry.filename, sizeof(d->direntry.filename)));
+			direntry->filename, sizeof(direntry->filename)));
 
 	// Description.
 	char desc_buf[64];
-	size_t size = d->file->seekAndRead(d->dataOffset + d->direntry.commentaddr,
+	size_t size = d->file->seekAndRead(d->dataOffset + direntry->commentaddr,
 					   desc_buf, sizeof(desc_buf));
 	if (size == sizeof(desc_buf)) {
 		// Add the description.
@@ -919,7 +936,7 @@ int GameCubeSave::loadFieldData(void)
 
 	// Last Modified timestamp.
 	d->fields->addField_dateTime(C_("GameCubeSave", "Last Modified"),
-		static_cast<time_t>(d->direntry.lastmodified) + GC_UNIX_TIME_DIFF,
+		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME |
 		RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.
@@ -927,17 +944,17 @@ int GameCubeSave::loadFieldData(void)
 
 	// File mode.
 	char file_mode[5];
-	file_mode[0] = ((d->direntry.permission & CARD_ATTRIB_GLOBAL) ? 'G' : '-');
-	file_mode[1] = ((d->direntry.permission & CARD_ATTRIB_NOMOVE) ? 'M' : '-');
-	file_mode[2] = ((d->direntry.permission & CARD_ATTRIB_NOCOPY) ? 'C' : '-');
-	file_mode[3] = ((d->direntry.permission & CARD_ATTRIB_PUBLIC) ? 'P' : '-');
+	file_mode[0] = ((direntry->permission & CARD_ATTRIB_GLOBAL) ? 'G' : '-');
+	file_mode[1] = ((direntry->permission & CARD_ATTRIB_NOMOVE) ? 'M' : '-');
+	file_mode[2] = ((direntry->permission & CARD_ATTRIB_NOCOPY) ? 'C' : '-');
+	file_mode[3] = ((direntry->permission & CARD_ATTRIB_PUBLIC) ? 'P' : '-');
 	file_mode[4] = 0;
 	d->fields->addField_string(C_("GameCubeSave", "Mode"), file_mode, RomFields::STRF_MONOSPACE);
 
 	// Copy count.
-	d->fields->addField_string_numeric(C_("GameCubeSave", "Copy Count"), d->direntry.copytimes);
+	d->fields->addField_string_numeric(C_("GameCubeSave", "Copy Count"), direntry->copytimes);
 	// Blocks.
-	d->fields->addField_string_numeric(C_("GameCubeSave", "Blocks"), d->direntry.length);
+	d->fields->addField_string_numeric(C_("GameCubeSave", "Blocks"), direntry->length);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
