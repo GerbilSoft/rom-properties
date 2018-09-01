@@ -305,8 +305,7 @@ void WiiSave::close(void)
 
 	// Close any child RomData subclasses.
 	if (d->wibnData) {
-		d->wibnData->unref();
-		d->wibnData = nullptr;
+		d->wibnData->close();
 	}
 
 	// Close associated files used with child RomData subclasses.
