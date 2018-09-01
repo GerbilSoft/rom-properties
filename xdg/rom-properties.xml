@@ -347,6 +347,18 @@
     </magic>
   </mime-type>
 
+  <!-- WiiWIBN -->
+  <mime-type type="application/x-wii-wibn">
+    <comment>Wii save game banner file</comment>
+    <!-- FIXME: Better icon. -->
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <glob pattern="*.bin"/>
+    <magic priority="50">
+      <match value="WIBN" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- *** Other *** -->
 
   <!-- Amiibo -->
