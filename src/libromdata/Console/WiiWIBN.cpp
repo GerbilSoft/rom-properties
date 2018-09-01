@@ -519,12 +519,12 @@ int WiiWIBN::loadFieldData(void)
 
 	// Title.
 	d->fields->addField_string(C_("WiiWIBN", "Title"),
-		utf16be_to_utf8(wibnHeader->gameTitle, sizeof(wibnHeader->gameTitle)));
+		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE(wibnHeader->gameTitle)));
 
 	// Subtitle.
 	if (wibnHeader->gameSubTitle[0] != 0) {
 		d->fields->addField_string(C_("WiiWIBN", "Subtitle"),
-			utf16be_to_utf8(wibnHeader->gameSubTitle, sizeof(wibnHeader->gameSubTitle)));
+			utf16be_to_utf8(wibnHeader->gameSubTitle, ARRAY_SIZE(wibnHeader->gameSubTitle)));
 	}
 
 	// Flags.
