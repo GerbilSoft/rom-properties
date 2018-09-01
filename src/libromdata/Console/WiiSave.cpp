@@ -272,12 +272,14 @@ WiiSave::WiiSave(IRpFile *file)
 			    d->svHeader.unknown2[0] == 0 &&
 			    d->svHeader.unknown2[1] == 0)
 			{
-				// Savegame header is valid.
+				// Save game header is valid.
 				d->svLoaded = true;
 			}
 		}
 
 		// Create the PartitionFile.
+		// TODO: Only if the save game header is valid?
+		// TODO: Get the size from the save game header?
 		PartitionFile *ptFile = new PartitionFile(d->cbcReader,
 			sizeof(Wii_SaveGame_Header_t),
 			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t));
