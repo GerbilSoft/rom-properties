@@ -1339,15 +1339,12 @@ void Nintendo3DS::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	if (d->sbptr.file) {
-		delete d->sbptr.file;
-		d->sbptr.file = nullptr;
-	}
-	if (d->sbptr.reader) {
-		delete d->sbptr.reader;
-		d->sbptr.reader = nullptr;
-	}
+	delete d->sbptr.file;
+	delete d->sbptr.reader;
+	d->sbptr.file = nullptr;
+	d->sbptr.reader = nullptr;
 
+	// Call the superclass function.
 	super::close();
 }
 

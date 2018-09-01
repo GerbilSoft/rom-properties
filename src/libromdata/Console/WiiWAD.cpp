@@ -56,12 +56,10 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -425,10 +423,14 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 		// Read the content header.
 		// NOTE: Continuing even if this fails, since we can show
-		// other infomration from the ticket and TMD.
+		// other information from the ticket and TMD.
 		size = d->cbcReader->read(&d->contentHeader, sizeof(d->contentHeader));
 		if (size == sizeof(d->contentHeader)) {
-			// Make sure this is an IMET header.
+			// Contents may be one of the following:
+			// - IMET header: Most common.
+			// - WIBN header: DLC titles.
+			// TODO: Use the WiiWIBN subclass.
+			// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
 			if (d->contentHeader.imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
 				// This is an IMET header.
 				// TODO: Do something here?
@@ -439,6 +441,22 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Cannot decrypt anything...
 	d->key_status = KeyManager::VERIFY_NO_SUPPORT;
 #endif /* ENABLE_DECRYPTION */
+}
+
+/**
+ * Close the opened file.
+ */
+void WiiWAD::close(void)
+{
+#ifdef ENABLE_DECRYPTION
+	// Close the CBCReader.
+	RP_D(WiiWAD);
+	delete d->cbcReader;
+	d->cbcReader = nullptr;
+#endif /* ENABLE_DECRYPTION */
+
+	// Call the superclass function.
+	super::close();
 }
 
 /** ROM detection functions. **/

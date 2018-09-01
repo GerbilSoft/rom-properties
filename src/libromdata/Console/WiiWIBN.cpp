@@ -46,9 +46,11 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
