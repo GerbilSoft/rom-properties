@@ -38,6 +38,7 @@ SET(libromdata_SRCS
 	Console/PlayStationSave.cpp
 	Console/WiiU.cpp
 	Console/WiiWAD.cpp
+	Console/WiiWIBN.cpp
 
 	Handheld/DMG.cpp
 	Handheld/Lynx.cpp

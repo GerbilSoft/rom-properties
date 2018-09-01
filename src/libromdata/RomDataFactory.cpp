@@ -59,6 +59,7 @@ using std::vector;
 #include "Console/SNES.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
+#include "Console/WiiWIBN.hpp"
 
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"
@@ -211,6 +212,9 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 // TODO: Check all original classes and make sure
 // they do 32-bit checks instead of memcmp().
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
+	// Consoles
+	GetRomDataFns_addr(WiiWIBN, true, 0, 'WIBN'),
+
 	// Handhelds
 	GetRomDataFns_addr(DMG, false, 0x104, 0xCEED6666),
 	GetRomDataFns_addr(GameBoyAdvance, false, 0x04, 0x24FFAE51),
