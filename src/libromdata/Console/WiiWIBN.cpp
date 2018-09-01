@@ -513,7 +513,7 @@ int WiiWIBN::loadFieldData(void)
 
 	// Wii WIBN header.
 	const Wii_WIBN_Header_t *const wibnHeader = &d->wibnHeader;
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields->reserve(3);	// Maximum of 3 fields.
 
 	// TODO: Combine title and subtitle into one field?
 
@@ -526,6 +526,15 @@ int WiiWIBN::loadFieldData(void)
 		d->fields->addField_string(C_("WiiWIBN", "Subtitle"),
 			utf16be_to_utf8(wibnHeader->gameSubTitle, sizeof(wibnHeader->gameSubTitle)));
 	}
+
+	// Flags.
+	static const char *const flags_names[] = {
+		NOP_C_("WiiWIBN|Flags", "No Copy"),
+	};
+	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+		"WiiWIBN|Flags", flags_names, ARRAY_SIZE(flags_names));
+	d->fields->addField_bitfield(C_("WiiWIBN", "Flags"),
+		v_flags_names, 0, be32_to_cpu(wibnHeader->flags));
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
