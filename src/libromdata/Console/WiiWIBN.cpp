@@ -172,11 +172,12 @@ const rp_image *WiiWIBNPrivate::loadIcon(void)
 		}
 
 		// Icon delay.
-		// Using 125ms for the fastest speed.
+		// Using 62ms for the fastest speed.
 		// TODO: Verify this?
+		static const uint16_t ms_tbl[4] = {0, 62/*.5*/, 125, 250};
 		iconAnimData->delays[i].numer = static_cast<uint16_t>(delay);
 		iconAnimData->delays[i].denom = 8;
-		iconAnimData->delays[i].ms = delay * 125;
+		iconAnimData->delays[i].ms = ms_tbl[delay];
 
 		// Wii save icons are always RGB5A3.
 		iconAnimData->frames[i] = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
