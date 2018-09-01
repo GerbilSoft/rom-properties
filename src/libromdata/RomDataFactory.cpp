@@ -57,6 +57,7 @@ using std::vector;
 #include "Console/Sega8Bit.hpp"
 #include "Console/SegaSaturn.hpp"
 #include "Console/SNES.hpp"
+#include "Console/WiiSave.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
@@ -251,6 +252,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(NES, false),
 	GetRomDataFns(SNES, false),
 	GetRomDataFns(SegaSaturn, false),
+	GetRomDataFns(WiiSave, true),
 	GetRomDataFns(WiiU, true),
 	GetRomDataFns(WiiWAD, true),
 
