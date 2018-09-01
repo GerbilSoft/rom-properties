@@ -1200,15 +1200,31 @@ uint32_t DreamcastSave::imgpf(ImageType imageType) const
 		return 0;
 	}
 
+	uint32_t ret = 0;
 	switch (imageType) {
-		case IMG_INT_ICON:
+		case IMG_INT_ICON: {
+			RP_D(const DreamcastSave);
+			// Use nearest-neighbor scaling when resizing.
+			// Also, need to check if this is an animated icon.
+			const_cast<DreamcastSavePrivate*>(d)->loadIcon();
+			if (d->iconAnimData && d->iconAnimData->count > 1) {
+				// Animated icon.
+				ret = IMGPF_RESCALE_NEAREST | IMGPF_ICON_ANIMATED;
+			} else {
+				// Not animated.
+				ret = IMGPF_RESCALE_NEAREST;
+			}
+			break;
+		}
+
 		case IMG_INT_BANNER:
 			// Use nearest-neighbor scaling.
 			return IMGPF_RESCALE_NEAREST;
+
 		default:
 			break;
 	}
-	return 0;
+	return ret;
 }
 
 /**

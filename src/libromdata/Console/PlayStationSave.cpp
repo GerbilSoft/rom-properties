@@ -476,12 +476,12 @@ uint32_t PlayStationSave::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	RP_D(const PlayStationSave);
 	uint32_t ret = 0;
 	switch (imageType) {
-		case IMG_INT_ICON:
+		case IMG_INT_ICON: {
 			// Use nearest-neighbor scaling when resizing.
 			// Also, need to check if this is an animated icon.
+			RP_D(const PlayStationSave);
 			const_cast<PlayStationSavePrivate*>(d)->loadIcon();
 			if (d->iconAnimData && d->iconAnimData->count > 1) {
 				// Animated icon.
@@ -491,6 +491,7 @@ uint32_t PlayStationSave::imgpf(ImageType imageType) const
 				ret = IMGPF_RESCALE_NEAREST;
 			}
 			break;
+		}
 
 		default:
 			break;
