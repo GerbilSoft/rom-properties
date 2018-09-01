@@ -263,8 +263,18 @@ WiiSave::WiiSave(IRpFile *file)
 		// other information from the ticket and TMD.
 		size = d->cbcReader->read(&d->svHeader, sizeof(d->svHeader));
 		if (size == sizeof(d->svHeader)) {
-			// TODO: Do something here?
-			d->svLoaded = true;
+			// Verify parts of the header.
+			// - Title ID: must start with 0001xxxx
+			// - Padding: must be 00 00
+			// - TODO: MD5?
+			if ((be32_to_cpu(d->svHeader.savegame_id.hi) >> 16) == 0x0001 &&
+			    d->svHeader.unknown1 == 0 &&
+			    d->svHeader.unknown2[0] == 0 &&
+			    d->svHeader.unknown2[1] == 0)
+			{
+				// Savegame header is valid.
+				d->svLoaded = true;
+			}
 		}
 
 		// Create the PartitionFile.
