@@ -397,56 +397,59 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Get and verify the key.
 	KeyManager::KeyData_t keyData;
 	d->key_status = keyManager->getAndVerify(keyName, &keyData, verifyData, 16);
-	if (d->key_status == KeyManager::VERIFY_OK) {
-		// Create a cipher to decrypt the title key.
-		IAesCipher *cipher = AesCipherFactory::create();
+	if (d->key_status != KeyManager::VERIFY_OK) {
+		// Unable to get and verify the key.
+		return;
+	}
 
-		// Initialize parameters for title key decryption.
-		// TODO: Error checking.
-		// Parameters:
-		// - Chaining mode: CBC
-		// - IV: Title ID (little-endian)
-		cipher->setChainingMode(IAesCipher::CM_CBC);
-		cipher->setKey(keyData.key, keyData.length);
-		// Title key IV: High 8 bytes are the title ID (in big-endian), low 8 bytes are 0.
-		uint8_t iv[16];
-		memcpy(iv, &d->ticket.title_id.id, sizeof(d->ticket.title_id.id));
-		memset(&iv[8], 0, 8);
-		cipher->setIV(iv, sizeof(iv));
-		
-		// Decrypt the title key.
-		uint8_t title_key[16];
-		memcpy(title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
-		cipher->decrypt(title_key, sizeof(title_key));
-		delete cipher;
+	// Create a cipher to decrypt the title key.
+	IAesCipher *cipher = AesCipherFactory::create();
 
-		// Data area IV:
-		// - First two bytes are the big-endian content index.
-		// - Remaining bytes are zero.
-		// - TODO: Read the TMD content table. For now, assuming index 0.
-		memset(iv, 0, sizeof(iv));
+	// Initialize parameters for title key decryption.
+	// TODO: Error checking.
+	// Parameters:
+	// - Chaining mode: CBC
+	// - IV: Title ID (little-endian)
+	cipher->setChainingMode(IAesCipher::CM_CBC);
+	cipher->setKey(keyData.key, keyData.length);
+	// Title key IV: High 8 bytes are the title ID (in big-endian), low 8 bytes are 0.
+	uint8_t iv[16];
+	memcpy(iv, &d->ticket.title_id.id, sizeof(d->ticket.title_id.id));
+	memset(&iv[8], 0, 8);
+	cipher->setIV(iv, sizeof(iv));
+	
+	// Decrypt the title key.
+	uint8_t title_key[16];
+	memcpy(title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
+	cipher->decrypt(title_key, sizeof(title_key));
+	delete cipher;
 
-		// Create a CBC reader to decrypt the data section.
-		// TODO: Verify some known data?
-		addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.tmd_size));
-		d->cbcReader = new CBCReader(d->file, addr, be32_to_cpu(d->wadHeader.data_size), title_key, iv);
+	// Data area IV:
+	// - First two bytes are the big-endian content index.
+	// - Remaining bytes are zero.
+	// - TODO: Read the TMD content table. For now, assuming index 0.
+	memset(iv, 0, sizeof(iv));
 
-		// Read the content header.
-		// NOTE: Continuing even if this fails, since we can show
-		// other information from the ticket and TMD.
-		size = d->cbcReader->read(&d->contentHeader, sizeof(d->contentHeader));
-		if (size == sizeof(d->contentHeader)) {
-			// Contents may be one of the following:
-			// - IMET header: Most common.
-			// - WIBN header: DLC titles.
-			size = d->cbcReader->read(&d->imet, sizeof(d->imet));
-			if (size == sizeof(d->imet)) {
-				// TODO: Use the WiiWIBN subclass.
-				// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
-				if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
-					// This is an IMET header.
-					// TODO: Do something here?
-				}
+	// Create a CBC reader to decrypt the data section.
+	// TODO: Verify some known data?
+	addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.tmd_size));
+	d->cbcReader = new CBCReader(d->file, addr, be32_to_cpu(d->wadHeader.data_size), title_key, iv);
+
+	// Read the content header.
+	// NOTE: Continuing even if this fails, since we can show
+	// other information from the ticket and TMD.
+	size = d->cbcReader->read(&d->contentHeader, sizeof(d->contentHeader));
+	if (size == sizeof(d->contentHeader)) {
+		// Contents may be one of the following:
+		// - IMET header: Most common.
+		// - WIBN header: DLC titles.
+		size = d->cbcReader->read(&d->imet, sizeof(d->imet));
+		if (size == sizeof(d->imet)) {
+			// TODO: Use the WiiWIBN subclass.
+			// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
+			if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
+				// This is an IMET header.
+				// TODO: Do something here?
 			}
 		}
 	}
