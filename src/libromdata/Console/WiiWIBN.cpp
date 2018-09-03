@@ -524,7 +524,10 @@ int WiiWIBN::loadFieldData(void)
 		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE(wibnHeader->gameTitle)));
 
 	// Subtitle.
-	if (wibnHeader->gameSubTitle[0] != 0) {
+	// NOTE: Skipping empty subtitles.
+	const char16_t chr1 = wibnHeader->gameSubTitle[0];
+	const char16_t chr2 = wibnHeader->gameSubTitle[1];
+	if (chr1 != 0 && (chr1 != ' ' && chr2 != 0)) {
 		d->fields->addField_string(C_("WiiWIBN", "Subtitle"),
 			utf16be_to_utf8(wibnHeader->gameSubTitle, ARRAY_SIZE(wibnHeader->gameSubTitle)));
 	}
