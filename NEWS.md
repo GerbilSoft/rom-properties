@@ -44,6 +44,8 @@
     or aren't properly represented in e.g. unlicensed games.
   * NES: Added support for the internal footer present in some ROMs. This
     footer is used for, among other things, FamicomBox.
+  * Nintendo3DS: Split the SMDH code into a separate parser. This should
+    make maintenance easier.
 
 * Bug fixes:
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.
