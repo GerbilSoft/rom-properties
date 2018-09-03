@@ -650,7 +650,9 @@ const char *const *WiiWAD::supportedMimeTypes_static(void)
  */
 uint32_t WiiWAD::supportedImageTypes_static(void)
 {
-	return IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	// TODO: Only return IMG_INT_* if a WiiWIBN is available.
+	return IMGBF_INT_ICON | IMGBF_INT_BANNER |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 	       IMGBF_EXT_COVER_FULL |
 	       IMGBF_EXT_TITLE_SCREEN;
 }
@@ -673,6 +675,22 @@ std::vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType 
 	}
 
 	switch (imageType) {
+		// TODO: Only return IMG_INT_* if a WiiWIBN is available.
+		case IMG_INT_ICON: {
+			static const ImageSizeDef sz_INT_ICON[] = {
+				{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+		}
+		case IMG_INT_BANNER: {
+			static const ImageSizeDef sz_INT_BANNER[] = {
+				{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
 				{nullptr, 160, 224, 0},
@@ -926,6 +944,57 @@ int WiiWAD::loadMetaData(void)
 }
 
 /**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		*pImage = nullptr;
+		return -ERANGE;
+	}
+
+	// Forward this call to the WiiWIBN object.
+	RP_D(WiiWAD);
+	if (d->wibnData) {
+		return d->wibnData->loadInternalImage(imageType, pImage);
+	}
+
+	// No WiiWIBN object.
+	*pImage = nullptr;
+	return 0;
+}
+
+/**
+ * Get the animated icon data.
+ *
+ * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+ * object has an animated icon.
+ *
+ * @return Animated icon data, or nullptr if no animated icon is present.
+ */
+const IconAnimData *WiiWAD::iconAnimData(void) const
+{
+	// Forward this call to the WiiWIBN object.
+	RP_D(const WiiWAD);
+	if (d->wibnData) {
+		return d->wibnData->iconAnimData();
+	}
+
+	// No WiiWIBN object.
+	return nullptr;
+}
+
+/**
  * Get a list of URLs for an external image type.
  *
  * A thumbnail size may be requested from the shell.
@@ -954,8 +1023,16 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	}
 	pExtURLs->clear();
 
-	// Check for a valid TID hi.
+	// Check if a WiiWIBN is present.
+	// If it is, this is a DLC WAD, so the title ID
+	// won't match anything on GameTDB.
 	RP_D(const WiiWAD);
+	if (d->wibnData) {
+		// WiiWIBN is present.
+		return -ENOENT;
+	}
+
+	// Check for a valid TID hi.
 	switch (be32_to_cpu(d->tmdHeader.title_id.hi)) {
 		case 0x00010000:
 		case 0x00010001:
