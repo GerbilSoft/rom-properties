@@ -46,6 +46,9 @@ using namespace LibRpBase;
 # include "librpbase/disc/CBCReader.hpp"
 // Key verification.
 # include "disc/WiiPartition.hpp"
+// For sections delegated to other RomData subclasses.
+# include "librpbase/disc/PartitionFile.hpp"
+# include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
@@ -97,6 +100,8 @@ class WiiWADPrivate : public RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
+		PartitionFile *wibnFile;	// uses CBCReader
+		WiiWIBN *wibnData;		// uses wibnFile
 
 		// Main data headers.
 		Wii_Content_Bin_Header contentHeader;
@@ -134,6 +139,8 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	: super(q, file)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
+	, wibnFile(nullptr)
+	, wibnData(nullptr)
 #endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
 	, key_status(KeyManager::VERIFY_UNKNOWN)
@@ -152,6 +159,10 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 WiiWADPrivate::~WiiWADPrivate()
 {
 #ifdef ENABLE_DECRYPTION
+	if (wibnData) {
+		wibnData->unref();
+	}
+	delete wibnFile;
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
 }
@@ -450,6 +461,30 @@ WiiWAD::WiiWAD(IRpFile *file)
 			if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
 				// This is an IMET header.
 				// TODO: Do something here?
+			} else if (d->imet.magic == cpu_to_be32(WII_WIBN_MAGIC)) {
+				// This is a WIBN header.
+				// Create the PartitionFile and WiiWIBN subclass.
+				// NOTE: Not sure how big the WIBN data is, so we'll
+				// allow it to read the rest of the file.
+				PartitionFile *ptFile = new PartitionFile(d->cbcReader,
+					sizeof(d->contentHeader),
+					be32_to_cpu(d->wadHeader.data_size) - sizeof(d->contentHeader));
+				if (ptFile->isOpen()) {
+					// Open the WiiWIBN.
+					WiiWIBN *wibn = new WiiWIBN(ptFile);
+					if (wibn->isOpen()) {
+						// Opened successfully.
+						d->wibnFile = ptFile;
+						d->wibnData = wibn;
+					} else {
+						// Unable to open the WiiWIBN.
+						wibn->unref();
+						delete ptFile;
+					}
+				} else {
+					// Unable to open the PartitionFile.
+					delete ptFile;
+				}
 			}
 		}
 	}
@@ -465,9 +500,17 @@ WiiWAD::WiiWAD(IRpFile *file)
 void WiiWAD::close(void)
 {
 #ifdef ENABLE_DECRYPTION
-	// Close the CBCReader.
 	RP_D(WiiWAD);
+
+	// Close any child RomData subclasses.
+	if (d->wibnData) {
+		d->wibnData->close();
+	}
+
+	// Close associated files used with child RomData subclasses.
+	delete d->wibnFile;
 	delete d->cbcReader;
+	d->wibnFile = nullptr;
 	d->cbcReader = nullptr;
 #endif /* ENABLE_DECRYPTION */
 
@@ -816,10 +859,18 @@ int WiiWAD::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
-	// Game info.
-	string gameInfo = d->getGameInfo();
-	if (!gameInfo.empty()) {
-		d->fields->addField_string(C_("WiiWAD", "Game Info"), gameInfo);
+	// Do we have a WIBN header?
+	// If so, we don't have IMET data.
+	if (d->wibnData) {
+		// Add the WIBN data.
+		d->fields->addFields_romFields(d->wibnData->fields(), 0);
+	} else {
+		// No WIBN data.
+		// Get the IMET data if it's available.
+		string gameInfo = d->getGameInfo();
+		if (!gameInfo.empty()) {
+			d->fields->addField_string(C_("WiiWAD", "Game Info"), gameInfo);
+		}
 	}
 
 	// TODO: Decrypt content.bin to get the actual data.
@@ -846,6 +897,8 @@ int WiiWAD::loadMetaData(void)
 		// Unknown file type.
 		return -EIO;
 	}
+
+	// TODO: Game title from WIBN if it's available.
 
 	// NOTE: We can only get the title if the encryption key is valid.
 	// If we can't get the title, don't bother creating RomMetaData.
