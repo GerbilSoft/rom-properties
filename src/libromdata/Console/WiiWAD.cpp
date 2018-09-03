@@ -82,7 +82,6 @@ class WiiWADPrivate : public RomDataPrivate
 		Wii_WAD_Header wadHeader;
 		RVL_Ticket ticket;
 		RVL_TMD_Header tmdHeader;
-		Wii_Content_Bin_Header contentHeader;
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -98,6 +97,10 @@ class WiiWADPrivate : public RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
+
+		// Main data headers.
+		Wii_Content_Bin_Header contentHeader;
+		Wii_IMET_t imet;	// NOTE: May be WIBN.
 #endif /* ENABLE_DECRYPTION */
 		// Key index.
 		WiiPartition::EncryptionKeys key_idx;
@@ -139,7 +142,11 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	memset(&wadHeader, 0, sizeof(wadHeader));
 	memset(&ticket, 0, sizeof(ticket));
 	memset(&tmdHeader, 0, sizeof(tmdHeader));
+
+#ifdef ENABLE_DECRYPTION
 	memset(&contentHeader, 0, sizeof(contentHeader));
+	memset(&imet, 0, sizeof(imet));
+#endif /* ENABLE_DECRYPTION */
 }
 
 WiiWADPrivate::~WiiWADPrivate()
@@ -155,14 +162,13 @@ WiiWADPrivate::~WiiWADPrivate()
  */
 string WiiWADPrivate::getGameInfo(void)
 {
+#ifdef ENABLE_DECRYPTION
 	// IMET header.
 	// TODO: Read on demand instead of always reading in the constructor.
-	if (contentHeader.imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
+	if (imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Not valid.
 		return string();
 	}
-
-	const Wii_IMET_t *const imet = &contentHeader.imet;
 
 	// TODO: Combine with GameCubePrivate::wii_getBannerName()?
 
@@ -172,7 +178,7 @@ string WiiWADPrivate::getGameInfo(void)
 
 	// If the language-specific name is empty,
 	// revert to English.
-	if (imet->names[lang][0][0] == 0) {
+	if (imet.names[lang][0][0] == 0) {
 		// Revert to English.
 		lang = WII_LANG_ENGLISH;
 	}
@@ -180,13 +186,17 @@ string WiiWADPrivate::getGameInfo(void)
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	string info = utf16be_to_utf8(imet->names[lang][0], 21);
-	if (imet->names[lang][1][0] != 0) {
+	string info = utf16be_to_utf8(imet.names[lang][0], 21);
+	if (imet.names[lang][1][0] != 0) {
 		info += '\n';
-		info += utf16be_to_utf8(imet->names[lang][1], 21);
+		info += utf16be_to_utf8(imet.names[lang][1], 21);
 	}
 
 	return info;
+#else /* !ENABLE_DECRYPTION */
+	// Unable to decrypt the IMET header.
+	return string();
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -429,11 +439,14 @@ WiiWAD::WiiWAD(IRpFile *file)
 			// Contents may be one of the following:
 			// - IMET header: Most common.
 			// - WIBN header: DLC titles.
-			// TODO: Use the WiiWIBN subclass.
-			// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
-			if (d->contentHeader.imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
-				// This is an IMET header.
-				// TODO: Do something here?
+			size = d->cbcReader->read(&d->imet, sizeof(d->imet));
+			if (size == sizeof(d->imet)) {
+				// TODO: Use the WiiWIBN subclass.
+				// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
+				if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
+					// This is an IMET header.
+					// TODO: Do something here?
+				}
 			}
 		}
 	}

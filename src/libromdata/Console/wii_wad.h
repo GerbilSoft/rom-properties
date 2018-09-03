@@ -65,6 +65,10 @@ ASSERT_STRUCT(Wii_WAD_Header, 32);
  * This is the encrypted program data in a WAD file and/or
  * copied to an SD card.
  *
+ * This is followed by one of the following:
+ * - Wii_IMET_t: IMET header. (most WADs)
+ * - Wii_WIBN_Header_t: WIBN header. (DLC WADs)
+ *
  * Reference: http://wiibrew.org/wiki/Content.bin
  *
  * All fields are big-endian.
@@ -76,9 +80,8 @@ typedef struct PACKED _Wii_Content_Bin_Header {
 	uint8_t md5_icon[16];		// [0x01C] MD5 hash of the DECRYPTED icon.
 	uint8_t unknown_2[4];		// [0x02C]
 	RVL_TitleID_t tid_ref[2];	// [0x030] Title dependencies?
-	Wii_IMET_t imet;		// [0x040] IMET header
 } Wii_Content_Bin_Header;
-ASSERT_STRUCT(Wii_Content_Bin_Header, 0x640);
+ASSERT_STRUCT(Wii_Content_Bin_Header, 64);
 
 #pragma pack()
 
