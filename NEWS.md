@@ -19,7 +19,13 @@
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
-    installable titles. Supports GameTDB image downloads.
+    installable titles. Supports GameTDB image downloads for most WADs,
+    and extracts the internal icon and banner for DLC WADs.
+  * WiiSave: Encrypted Wii save files. These are the data.bin files present
+    on the SD card when copying a save file from the Wii Menu.
+  * WiiWIBN: Wii banner files. These are contained in encrypted Wii save
+    files and Wii DLC WADs, and are present as standalone files in unencrypted
+    Wii save directories as `banner.bin`.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
