@@ -868,7 +868,7 @@ const gcn_banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
 		return nullptr;
 	}
 
-	if (!opening_bnr.gcn.file) {
+	if (!opening_bnr.gcn.data) {
 		// Attempt to load opening.bnr.
 		if (const_cast<GameCubePrivate*>(this)->gcn_loadOpeningBnr() != 0) {
 			// Error loading opening.bnr.
@@ -876,7 +876,7 @@ const gcn_banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
 		}
 
 		// Make sure it was actually loaded.
-		if (!opening_bnr.gcn.file) {
+		if (!opening_bnr.gcn.data) {
 			// opening.bnr was not loaded.
 			return nullptr;
 		}
