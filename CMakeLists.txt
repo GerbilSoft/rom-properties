@@ -163,6 +163,12 @@ ELSE(ENABLE_DECRYPTION)
 	SET(ENABLE_DECRYPTION_MSG "Disabled")
 ENDIF(ENABLE_DECRYPTION)
 
+IF(ENABLE_XML)
+	SET(ENABLE_XML_MSG "Enabled")
+ELSE(ENABLE_XML)
+	SET(ENABLE_XML_MSG "Disabled")
+ENDIF(ENABLE_XML)
+
 IF(ENABLE_S3TC)
 	SET(DXTn_ALG_MSG "S3TC")
 ELSE(ENABLE_S3TC)
@@ -194,6 +200,7 @@ MESSAGE("
 - Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
 - Decryption functionality: ${ENABLE_DECRYPTION_MSG}
+- XML parsing: ${ENABLE_XML_MSG}
 - DXTn algorithm: ${DXTn_ALG_MSG}
 
 - Building these third-party libraries from extlib:
