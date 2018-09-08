@@ -769,10 +769,10 @@ int WiiWAD::loadFieldData(void)
 	// Game ID.
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
-	if (isalnum(tmdHeader->title_id.u8[4]) &&
-	    isalnum(tmdHeader->title_id.u8[5]) &&
-	    isalnum(tmdHeader->title_id.u8[6]) &&
-	    isalnum(tmdHeader->title_id.u8[7]))
+	if (ISALNUM(tmdHeader->title_id.u8[4]) &&
+	    ISALNUM(tmdHeader->title_id.u8[5]) &&
+	    ISALNUM(tmdHeader->title_id.u8[6]) &&
+	    ISALNUM(tmdHeader->title_id.u8[7]))
 	{
 		// Print the game ID.
 		// TODO: Is the publisher code available anywhere?
