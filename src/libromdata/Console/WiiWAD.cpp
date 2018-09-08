@@ -764,7 +764,9 @@ int WiiWAD::loadFieldData(void)
 	// Title ID.
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
 	d->fields->addField_string(C_("WiiWAD", "Title ID"),
-		rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->title_id.hi), be32_to_cpu(tmdHeader->title_id.lo)));
+		rp_sprintf("%08X-%08X",
+			be32_to_cpu(tmdHeader->title_id.hi),
+			be32_to_cpu(tmdHeader->title_id.lo)));
 
 	// Game ID.
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.

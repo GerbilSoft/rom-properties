@@ -48,6 +48,7 @@ using namespace LibRpBase;
 #endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstdio>
@@ -84,6 +85,9 @@ class WiiSavePrivate : public RomDataPrivate
 
 		bool svLoaded;	// True if svHeader was read.
 
+		// Wii_Bk_Header_t magic.
+		static const uint8_t bk_header_magic[8];
+
 		/**
 		 * Round a value to the next highest multiple of 64.
 		 * @param value Value.
@@ -108,6 +112,11 @@ class WiiSavePrivate : public RomDataPrivate
 };
 
 /** WiiSavePrivate **/
+
+// Wii_Bk_Header_t magic.
+const uint8_t WiiSavePrivate::bk_header_magic[8] = {
+	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
+};
 
 WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	: super(q, file)
@@ -195,15 +204,12 @@ WiiSave::WiiSave(IRpFile *file)
 	}
 
 	// Check for the Bk header at the designated locations.
-	static const uint8_t bk_header_magic[8] = {
-		0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
-	};
 	unsigned int bkHeaderAddr = (unsigned int)(
 		svSizeMin - sizeof(Wii_Bk_Header_t));
 	for (; bkHeaderAddr < size; bkHeaderAddr += BANNER_WIBN_ICON_SIZE) {
 		const Wii_Bk_Header_t *bkHeader =
 			reinterpret_cast<const Wii_Bk_Header_t*>(svData.get() + bkHeaderAddr);
-		if (!memcmp(bkHeader->full_magic, bk_header_magic, sizeof(bk_header_magic))) {
+		if (!memcmp(bkHeader->full_magic, d->bk_header_magic, sizeof(d->bk_header_magic))) {
 			// Found the full magic.
 			memcpy(&d->bkHeader, bkHeader, sizeof(d->bkHeader));
 			break;
@@ -508,7 +514,60 @@ int WiiSave::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO
+	// Wii save and backup headers.
+	const Wii_SaveGame_Header_t *const svHeader = &d->svHeader;
+	const Wii_Bk_Header_t *const bkHeader = &d->bkHeader;
+	d->fields->reserve(4);	// Maximum of 4 fields.
+
+	// Check if the headers are valid.
+	// TODO: Do this in the constructor instead?
+	const bool isSvValid = (svHeader->savegame_id.id != 0);
+	const bool isBkValid = (!memcmp(bkHeader->full_magic, d->bk_header_magic, sizeof(d->bk_header_magic)));
+
+	// Savegame header.
+	if (isSvValid) {
+		// Savegame ID. (title ID)
+		d->fields->addField_string(C_("WiiSave", "Savegame ID"),
+			rp_sprintf("%08X-%08X",
+				be32_to_cpu(svHeader->savegame_id.hi),
+				be32_to_cpu(svHeader->savegame_id.lo)));
+
+	}
+
+	// Game ID.
+	// NOTE: Uses the ID from the Bk header.
+	// TODO: Check if it matches the savegame header?
+	if (isBkValid) {
+		if (ISALNUM(bkHeader->id4[0]) &&
+		    ISALNUM(bkHeader->id4[1]) &&
+		    ISALNUM(bkHeader->id4[2]) &&
+		    ISALNUM(bkHeader->id4[3]))
+		{
+			// Print the game ID.
+			// TODO: Is the publisher code available anywhere?
+			d->fields->addField_string(C_("WiiSave", "Game ID"),
+				latin1_to_utf8(bkHeader->id4, sizeof(bkHeader->id4)));
+		}
+	}
+
+	// Permissions. (TODO)
+	if (isSvValid) {
+		d->fields->addField_string_numeric(C_("WiiSave", "Permissions"),
+			svHeader->permissions,
+			RomFields::FB_HEX, 2, RomFields::STRF_MONOSPACE);
+	}
+
+	// MAC address.
+	if (isBkValid) {
+		d->fields->addField_string(C_("WiiSave", "MAC Address"),
+			rp_sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
+				bkHeader->wii_mac[0], bkHeader->wii_mac[1],
+				bkHeader->wii_mac[2], bkHeader->wii_mac[3],
+				bkHeader->wii_mac[4], bkHeader->wii_mac[5]));
+	}
+
+	// TODO: Get title information from the encrypted data.
+	// (Is there an IMET header?)
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
