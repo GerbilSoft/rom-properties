@@ -418,11 +418,46 @@ int GameCubeBNR::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: Read fields.
-	// TODO: Function to access game info for use by GameCube.
-	// For now, just being used for banner extraction.
+	// Get the comment.
+	const gcn_banner_comment_t *comment = getComment();
+	if (!comment) {
+		// No comment...
+		return static_cast<int>(d->fields->count());
+	}
+	d->fields->reserve(3);	// Maximum of 3 fields.
 
-	return 0;
+	// TODO: If BNR1, check for Shift-JIS characters.
+	// Assuming cp1252 for now.
+
+	// TODO: Show both full and normal?
+	// Currently showing full if it's there; otherwise, normal.
+
+	// Game name.
+	if (comment->gamename_full[0] != '\0') {
+		d->fields->addField_string(C_("GameCubeBNR", "Game Name"),
+			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+	} else if (comment->gamename[0] != '\0') {
+		d->fields->addField_string(C_("GameCubeBNR", "Game Name"),
+			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+	}
+
+	// Company.
+	if (comment->company_full[0] != '\0') {
+		d->fields->addField_string(C_("GameCubeBNR", "Company"),
+			cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
+	} else if (comment->company[0] != '\0') {
+		d->fields->addField_string(C_("GameCubeBNR", "Company"),
+			cp1252_to_utf8(comment->company, sizeof(comment->company)));
+	}
+
+	// Game description.
+	if (comment->gamedesc[0] != '\0') {
+		d->fields->addField_string(C_("GameCubeBNR", "Description"),
+			cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+	}
+
+	// Finished reading the field data.
+	return static_cast<int>(d->fields->count());
 }
 
 /**

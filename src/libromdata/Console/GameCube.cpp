@@ -899,29 +899,29 @@ string GameCubePrivate::gcn_getGameInfo(void) const
 	int field_len;
 
 	// Game name.
-	if (comment->gamename_full[0] != 0) {
+	if (comment->gamename_full[0] != '\0') {
 		field_len = static_cast<int>(strnlen(comment->gamename_full, sizeof(comment->gamename_full)));
 		gameInfo.append(comment->gamename_full, field_len);
 		gameInfo += '\n';
-	} else if (comment->gamename[0] != 0) {
+	} else if (comment->gamename[0] != '\0') {
 		field_len = static_cast<int>(strnlen(comment->gamename, sizeof(comment->gamename)));
 		gameInfo.append(comment->gamename, field_len);
 		gameInfo += '\n';
 	}
 
 	// Company.
-	if (comment->company_full[0] != 0) {
+	if (comment->company_full[0] != '\0') {
 		field_len = static_cast<int>(strnlen(comment->company_full, sizeof(comment->company_full)));
 		gameInfo.append(comment->company_full, field_len);
 		gameInfo += '\n';
-	} else if (comment->company[0] != 0) {
+	} else if (comment->company[0] != '\0') {
 		field_len = static_cast<int>(strnlen(comment->company, sizeof(comment->company)));
 		gameInfo.append(comment->company, field_len);
 		gameInfo += '\n';
 	}
 
 	// Game description.
-	if (comment->gamedesc[0] != 0) {
+	if (comment->gamedesc[0] != '\0') {
 		// Add a second newline if necessary.
 		if (!gameInfo.empty()) {
 			gameInfo += '\n';
