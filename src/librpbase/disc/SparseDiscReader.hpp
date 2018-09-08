@@ -67,11 +67,6 @@ class SparseDiscReader : public IDiscReader
 		int seek(int64_t pos) final;
 
 		/**
-		 * Seek to the beginning of the disc image.
-		 */
-		void rewind(void) final;
-
-		/**
 		 * Get the disc image position.
 		 * @return Disc image position on success; -1 on error.
 		 */

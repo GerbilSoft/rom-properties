@@ -82,11 +82,6 @@ class CBCReader : public LibRpBase::IPartition
 		int seek(int64_t pos) final;
 
 		/**
-		 * Seek to the beginning of the partition.
-		 */
-		void rewind(void) final;
-
-		/**
 		 * Get the partition position.
 		 * @return Partition position on success; -1 on error.
 		 */
