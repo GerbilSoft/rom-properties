@@ -849,12 +849,13 @@ uint32_t GameCubeSave::imgpf(ImageType imageType) const
 
 		case IMG_INT_BANNER:
 			// Use nearest-neighbor scaling.
-			return IMGPF_RESCALE_NEAREST;
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
 
 		default:
 			break;
 	}
-	return 0;
+	return ret;
 }
 
 /**
