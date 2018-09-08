@@ -80,22 +80,26 @@ button.
 
 ### Game Consoles
 
-|          System         | Properties Tab | Internal Images | External Scans |
-|:-----------------------:|:--------------:|:---------------:|:--------------:|
-| NES                     |       Yes      |       N/A       |       No       |
-| Super NES               |       Yes      |       N/A       |       No       |
-| Nintendo 64             |       Yes      |       N/A       |       No       |
-| Nintendo GameCube       |       Yes      |      Banner     |      Disc      |
-| Nintendo GameCube Saves |       Yes      |       Icon      |       N/A      |
-| Nintendo Wii (Discs)    |       Yes      |        No       |  Disc, Covers  |
-| Nintendo Wii (WADs)     |       Yes      |        No       |  Title, Covers |
-| Nintendo Wii U          |       Yes      |        No       |  Disc, Covers  |
-| Sega 8-bit (SMS, GG)    |       Yes      |       N/A       |       No       |
-| Sega Mega Drive         |       Yes      |       N/A       |       No       |
-| Sega Dreamcast          |       Yes      |      Media      |       No       |
-| Sega Dreamcast Saves    |       Yes      |   Icon, Banner  |       No       |
-| Sega Saturn             |       Yes      |       N/A       |       No       |
-| Sony PlayStation Saves  |       Yes      |       Icon      |       N/A      |
+|           System          | Properties Tab | Internal Images | External Scans |
+|:-------------------------:|:--------------:|:---------------:|:--------------:|
+| NES                       |       Yes      |       N/A       |       No       |
+| Super NES                 |       Yes      |       N/A       |       No       |
+| Nintendo 64               |       Yes      |       N/A       |       No       |
+| Nintendo GameCube         |       Yes      |      Banner     |      Disc      |
+| Nintendo GameCube Banners |       Yes      |      Banner     |      Disc      |
+| Nintendo GameCube Saves   |       Yes      |       Icon      |       N/A      |
+| Nintendo Wii (Discs)      |       Yes      |        No       |  Disc, Covers  |
+| Nintendo Wii (WADs)       |       Yes      |       Yes*      |  Title, Covers |
+| Nintendo Wii Saves        |       Yes      |       Yes       |       N/A      |
+| Nintendo Wii U            |       Yes      |        No       |  Disc, Covers  |
+| Sega 8-bit (SMS, GG)      |       Yes      |       N/A       |       No       |
+| Sega Mega Drive           |       Yes      |       N/A       |       No       |
+| Sega Dreamcast            |       Yes      |      Media      |       No       |
+| Sega Dreamcast Saves      |       Yes      |   Icon, Banner  |       No       |
+| Sega Saturn               |       Yes      |       N/A       |       No       |
+| Sony PlayStation Saves    |       Yes      |       Icon      |       N/A      |
+
+\* Internal images are only present in Wii DLC WADs.
 
 ### Handhelds
 

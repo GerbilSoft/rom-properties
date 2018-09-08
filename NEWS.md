@@ -42,6 +42,8 @@
   * DMG: Added support for GBX footer. This is used to indicate certain
     cartridge features that either can't be represented in the DMG header
     or aren't properly represented in e.g. unlicensed games.
+  * GameCube: Split the GameCube opening.bnr code into a separate parser.
+    This allows standalone GameCube opening.bnr files to be handled.
   * NES: Added support for the internal footer present in some ROMs. This
     footer is used for, among other things, FamicomBox.
   * Nintendo3DS: Split the SMDH code into a separate parser. This should
