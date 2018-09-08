@@ -965,15 +965,21 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -ERANGE;
 	}
 
-	// Forward this call to the WiiWIBN object.
 	RP_D(WiiWAD);
+	if (!d->isValid) {
+		// Banner file isn't valid.
+		*pImage = nullptr;
+		return -EIO;
+	}
+
+	// Forward this call to the WiiWIBN object.
 	if (d->wibnData) {
 		return d->wibnData->loadInternalImage(imageType, pImage);
 	}
 
 	// No WiiWIBN object.
 	*pImage = nullptr;
-	return 0;
+	return -ENOENT;
 }
 
 /**

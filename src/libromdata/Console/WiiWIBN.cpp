@@ -46,11 +46,9 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -232,9 +230,9 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
 
 	// Banner is located after the WIBN header,
 	// and is always RGB5A3 format.
-	uint8_t bannerbuf[BANNER_WIBN_IMAGE_SIZE];
-	size_t size = file->seekAndRead(sizeof(wibnHeader), bannerbuf, sizeof(bannerbuf));
-	if (size != sizeof(bannerbuf)) {
+	auto bannerbuf = aligned_uptr<uint16_t>(16, BANNER_WIBN_IMAGE_SIZE/2);
+	size_t size = file->seekAndRead(sizeof(wibnHeader), bannerbuf.get(), BANNER_WIBN_IMAGE_SIZE);
+	if (size != BANNER_WIBN_IMAGE_SIZE) {
 		// Seek and/or read error.
 		return nullptr;
 	}
@@ -242,7 +240,7 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
 	// Convert the banner from GCN RGB5A3 format to ARGB32.
 	img_banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
 		BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H,
-		reinterpret_cast<const uint16_t*>(bannerbuf), sizeof(bannerbuf));
+		bannerbuf.get(), BANNER_WIBN_IMAGE_SIZE);
 	return img_banner;
 }
 
@@ -486,7 +484,8 @@ uint32_t WiiWIBN::imgpf(ImageType imageType) const
 
 		case IMG_INT_BANNER:
 			// Use nearest-neighbor scaling.
-			return IMGPF_RESCALE_NEAREST;
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
 
 		default:
 			break;
@@ -586,7 +585,7 @@ int WiiWIBN::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		default:
 			// Unsupported image type.
 			*pImage = nullptr;
-			return 0;
+			return -ENOENT;
 	}
 
 	if (!d->file) {
