@@ -49,6 +49,7 @@ using std::vector;
 #include "Console/Dreamcast.hpp"
 #include "Console/DreamcastSave.hpp"
 #include "Console/GameCube.hpp"
+#include "Console/GameCubeBNR.hpp"
 #include "Console/GameCubeSave.hpp"
 #include "Console/MegaDrive.hpp"
 #include "Console/N64.hpp"
@@ -210,8 +211,7 @@ vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
 pthread_once_t RomDataFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
 pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 
-// TODO: Check all original classes and make sure
-// they do 32-bit checks instead of memcmp().
+// TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
 	GetRomDataFns_addr(WiiWIBN, true, 0, 'WIBN'),
@@ -246,6 +246,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(Dreamcast, true),
 	GetRomDataFns(DreamcastSave, true),
 	GetRomDataFns(GameCube, true),
+	GetRomDataFns(GameCubeBNR, true),
 	GetRomDataFns(GameCubeSave, true),
 	GetRomDataFns(MegaDrive, false),
 	GetRomDataFns(N64, false),

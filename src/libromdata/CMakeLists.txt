@@ -29,6 +29,7 @@ SET(libromdata_SRCS
 	Console/Dreamcast.cpp
 	Console/DreamcastSave.cpp
 	Console/GameCube.cpp
+	Console/GameCubeBNR.cpp
 	Console/GameCubeSave.cpp
 	Console/N64.cpp
 	Console/NES.cpp
@@ -115,6 +116,7 @@ SET(libromdata_H
 	Console/Dreamcast.hpp
 	Console/DreamcastSave.hpp
 	Console/GameCube.hpp
+	Console/GameCubeBNR.hpp
 	Console/GameCubeSave.hpp
 	Console/MegaDrive.hpp
 	Console/MegaDriveRegions.hpp

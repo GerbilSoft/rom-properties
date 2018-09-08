@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GameCube.hpp: Nintendo GameCube and Wii disc image reader.              *
+ * GameCubeBNR.hpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -18,22 +18,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_GAMECUBE_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_GAMECUBE_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_GAMECUBEBNR_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_GAMECUBEBNR_HPP__
 
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN(GameCube)
-ROMDATA_DECL_CLOSE()
-ROMDATA_DECL_METADATA()
+ROMDATA_DECL_BEGIN(GameCubeBNR)
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
-ROMDATA_DECL_IMGEXT()
 ROMDATA_DECL_END()
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_GAMECUBE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_GAMECUBEBNR_HPP__ */

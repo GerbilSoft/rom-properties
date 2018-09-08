@@ -36,49 +36,47 @@ extern "C" {
 #pragma pack(1)
 
 // Magic numbers.
-#define BANNER_MAGIC_BNR1 0x424E5231	/* 'BNR1' */
-#define BANNER_MAGIC_BNR2 0x424E5232	/* 'BNR2' */
+#define GCN_BANNER_MAGIC_BNR1 'BNR1'
+#define GCN_BANNER_MAGIC_BNR2 'BNR2'
 
 // Banner size.
-#define BANNER_IMAGE_W 96
-#define BANNER_IMAGE_H 32
+#define GCN_BANNER_IMAGE_W 96
+#define GCN_BANNER_IMAGE_H 32
+#define GCN_BANNER_IMAGE_SIZE ((GCN_BANNER_IMAGE_W * GCN_BANNER_IMAGE_H) * 2)
 
 // NOTE: Strings are encoded in either cp1252 or Shift-JIS,
 // depending on the game region.
 
 // Banner comment.
-#define GCN_BANNER_COMMENT_SIZE 0x140
-typedef struct PACKED _banner_comment_t
+typedef struct PACKED _gcn_banner_comment_t
 {
 	char gamename[0x20];
 	char company[0x20];
 	char gamename_full[0x40];
 	char company_full[0x40];
 	char gamedesc[0x80];
-} banner_comment_t;
-ASSERT_STRUCT(banner_comment_t, GCN_BANNER_COMMENT_SIZE);
+} gcn_banner_comment_t;
+ASSERT_STRUCT(gcn_banner_comment_t, 0x140);
 
 // BNR1
-#define GCN_BANNER_BNR1_SIZE (0x1820 + GCN_BANNER_COMMENT_SIZE)
-typedef struct PACKED _banner_bnr1_t
+typedef struct PACKED _gcn_banner_bnr1_t
 {
-	uint32_t magic;			// BANNER_MAGIC_BNR1
+	uint32_t magic;					// BANNER_MAGIC_BNR1
 	uint8_t reserved[0x1C];
-	uint16_t banner[0x1800>>1];	// Banner image. (96x32, RGB5A3)
-	banner_comment_t comment;
-} banner_bnr1_t;
-ASSERT_STRUCT(banner_bnr1_t, GCN_BANNER_BNR1_SIZE);
+	uint16_t banner[GCN_BANNER_IMAGE_SIZE/2];	// Banner image. (96x32, RGB5A3)
+	gcn_banner_comment_t comment;
+} gcn_banner_bnr1_t;
+ASSERT_STRUCT(gcn_banner_bnr1_t, 0x1820 + 0x140);
 
 // BNR2
-#define GCN_BANNER_BNR2_SIZE (0x1820 + (GCN_BANNER_COMMENT_SIZE * 6))
-typedef struct PACKED _banner_bnr2_t
+typedef struct PACKED _gcn_banner_bnr2_t
 {
-	uint32_t magic;			// BANNER_MAGIC_BNR2
+	uint32_t magic;					// BANNER_MAGIC_BNR2
 	uint8_t reserved[0x1C];
-	uint16_t banner[0x1800>>1];	// Banner image. (96x32, RGB5A3)
-	banner_comment_t comments[6];
-} banner_bnr2_t;
-ASSERT_STRUCT(banner_bnr2_t, GCN_BANNER_BNR2_SIZE);
+	uint16_t banner[GCN_BANNER_IMAGE_SIZE/2];	// Banner image. (96x32, RGB5A3)
+	gcn_banner_comment_t comments[6];
+} gcn_banner_bnr2_t;
+ASSERT_STRUCT(gcn_banner_bnr2_t, 0x1820 + (0x140 * 6));
 
 // BNR2 languages. (Maps to GameCube language setting.)
 typedef enum {
