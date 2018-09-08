@@ -208,12 +208,12 @@ class GameCubePrivate : public RomDataPrivate
 		int wii_loadOpeningBnr(void);
 
 		/**
-		 * Get the gcn_banner_comment_t from opening.bnr. (GameCube version)
+		 * [GameCube] Get the game information from opening.bnr.
 		 * For BNR2, this uses the comment that most
 		 * closely matches the host system language.
-		 * @return gcn_banner_comment_t, or nullptr if opening.bnr was not loaded.
+		 * @return Game information, or nullptr if opening.bnr was not loaded.
 		 */
-		const gcn_banner_comment_t *gcn_getBannerComment(void) const;
+		string gcn_getGameInfo(void) const;
 
 		/**
 		 * Get the game name from opening.bnr. (Wii version)
@@ -854,63 +854,109 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 }
 
 /**
- * Get the gcn_banner_comment_t from opening.bnr.
+ * [GameCube] Get the game information from opening.bnr.
  * For BNR2, this uses the comment that most
  * closely matches the host system language.
- * @return gcn_banner_comment_t, or nullptr if opening.bnr was not loaded.
+ * @return Game information, or nullptr if opening.bnr was not loaded.
  */
-const gcn_banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
+string GameCubePrivate::gcn_getGameInfo(void) const
 {
 	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN);
 	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN) {
 		// Not supported.
 		// TODO: Do Triforce games have opening.bnr?
-		return nullptr;
+		return string();
 	}
 
 	if (!opening_bnr.gcn.data) {
 		// Attempt to load opening.bnr.
 		if (const_cast<GameCubePrivate*>(this)->gcn_loadOpeningBnr() != 0) {
 			// Error loading opening.bnr.
-			return nullptr;
+			return string();
 		}
 
 		// Make sure it was actually loaded.
 		if (!opening_bnr.gcn.data) {
 			// opening.bnr was not loaded.
-			return nullptr;
+			return string();
 		}
 	}
 
-	// TODO: Add comment accessors to GameCubeBNR.
-	return nullptr;
-#if 0
-	// Check if this is BNR1 or BNR2.
-	// BNR2 has language-specific fields.
-	const gcn_banner_comment_t *comment = nullptr;
-	if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR2) {
-		// Get the system language.
-		const int lang = NintendoLanguage::getGcnPalLanguage();
-		comment = &gcn_opening_bnr->comments[lang];
-
-		// If all of the language-specific fields are empty,
-		// revert to English.
-		if (comment->gamename[0] == 0 &&
-		    comment->company[0] == 0 &&
-		    comment->gamename_full[0] == 0 &&
-		    comment->company_full[0] == 0 &&
-		    comment->gamedesc[0] == 0)
-		{
-			// Revert to English.
-			comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ENGLISH];
-		}
-	} else /*if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR1)*/ {
-		// BNR1 only has one banner comment.
-		comment = &gcn_opening_bnr->comments[0];
+	// Get the comment from the GameCubeBNR.
+	const gcn_banner_comment_t *comment = opening_bnr.gcn.data->getComment();
+	if (!comment) {
+		// Unable to get the comment...
+		return string();
 	}
 
-	return comment;
-#endif
+	string gameInfo;
+	gameInfo.reserve(sizeof(*comment));
+
+	// Fields are not necessarily null-terminated.
+	// NOTE: We're converting from cp1252 or Shift-JIS
+	// *after* concatenating all the strings, which is
+	// why we're using strnlen() here.
+	int field_len;
+
+	// Game name.
+	if (comment->gamename_full[0] != 0) {
+		field_len = static_cast<int>(strnlen(comment->gamename_full, sizeof(comment->gamename_full)));
+		gameInfo.append(comment->gamename_full, field_len);
+		gameInfo += '\n';
+	} else if (comment->gamename[0] != 0) {
+		field_len = static_cast<int>(strnlen(comment->gamename, sizeof(comment->gamename)));
+		gameInfo.append(comment->gamename, field_len);
+		gameInfo += '\n';
+	}
+
+	// Company.
+	if (comment->company_full[0] != 0) {
+		field_len = static_cast<int>(strnlen(comment->company_full, sizeof(comment->company_full)));
+		gameInfo.append(comment->company_full, field_len);
+		gameInfo += '\n';
+	} else if (comment->company[0] != 0) {
+		field_len = static_cast<int>(strnlen(comment->company, sizeof(comment->company)));
+		gameInfo.append(comment->company, field_len);
+		gameInfo += '\n';
+	}
+
+	// Game description.
+	if (comment->gamedesc[0] != 0) {
+		// Add a second newline if necessary.
+		if (!gameInfo.empty()) {
+			gameInfo += '\n';
+		}
+
+		field_len = static_cast<int>(strnlen(comment->gamedesc, sizeof(comment->gamedesc)));
+		gameInfo.append(comment->gamedesc, field_len);
+	}
+
+	// Remove trailing newlines.
+	// TODO: Optimize this by using a `for` loop and counter. (maybe ptr)
+	while (!gameInfo.empty() && gameInfo[gameInfo.size()-1] == '\n') {
+		gameInfo.resize(gameInfo.size()-1);
+	}
+
+	if (!gameInfo.empty()) {
+		// Convert from cp1252 or Shift-JIS.
+		switch (gcnRegion) {
+			case GCN_REGION_USA:
+			case GCN_REGION_EUR:
+			default:
+				// USA/PAL uses cp1252.
+				gameInfo = cp1252_to_utf8(gameInfo);
+				break;
+
+			case GCN_REGION_JPN:
+			case GCN_REGION_KOR:
+				// Japan uses Shift-JIS.
+				gameInfo = cp1252_sjis_to_utf8(gameInfo);
+				break;
+		}
+	}
+
+	// We're done here.
+	return gameInfo;
 }
 
 /**
@@ -1682,76 +1728,10 @@ int GameCube::loadFieldData(void)
 		// GameCube-specific fields.
 
 		// Game information from opening.bnr.
-		const gcn_banner_comment_t *comment = d->gcn_getBannerComment();
-		if (comment) {
-			// cp1252/sjis comment data.
-			// TODO: BNR2 is only cp1252.
-			string comment_data;
-			comment_data.reserve(sizeof(*comment));
-
-			// Fields are not necessarily null-terminated.
-			// NOTE: We're converting from cp1252 or Shift-JIS
-			// *after* concatenating all the strings, which is
-			// why we're using strnlen() here.
-			int field_len;
-
-			// Game name.
-			if (comment->gamename_full[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->gamename_full, sizeof(comment->gamename_full)));
-				comment_data.append(comment->gamename_full, field_len);
-				comment_data += '\n';
-			} else if (comment->gamename[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->gamename, sizeof(comment->gamename)));
-				comment_data.append(comment->gamename, field_len);
-				comment_data += '\n';
-			}
-
-			// Company.
-			if (comment->company_full[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->company_full, sizeof(comment->company_full)));
-				comment_data.append(comment->company_full, field_len);
-				comment_data += '\n';
-			} else if (comment->company[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->company, sizeof(comment->company)));
-				comment_data.append(comment->company, field_len);
-				comment_data += '\n';
-			}
-
-			// Game description.
-			if (comment->gamedesc[0] != 0) {
-				// Add a second newline if necessary.
-				if (!comment_data.empty()) {
-					comment_data += '\n';
-				}
-
-				field_len = static_cast<int>(strnlen(comment->gamedesc, sizeof(comment->gamedesc)));
-				comment_data.append(comment->gamedesc, field_len);
-			}
-
-			// Remove trailing newlines.
-			while (!comment_data.empty() && comment_data[comment_data.size()-1] == '\n') {
-				comment_data.resize(comment_data.size()-1);
-			}
-
-			if (!comment_data.empty()) {
-				// Show the comment data.
-				switch (d->gcnRegion) {
-					case GCN_REGION_USA:
-					case GCN_REGION_EUR:
-					default:
-						// USA/PAL uses cp1252.
-						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_to_utf8(comment_data));
-						break;
-
-					case GCN_REGION_JPN:
-					case GCN_REGION_KOR:
-						// Japan uses Shift-JIS.
-						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_sjis_to_utf8(comment_data));
-						break;
-				}
-			}
+		string comment = d->gcn_getGameInfo();
+		if (!comment.empty()) {
+			// Show the comment.
+			d->fields->addField_string(C_("GameCube", "Game Info"), comment);
 		}
 
 		// Finished reading the field data.

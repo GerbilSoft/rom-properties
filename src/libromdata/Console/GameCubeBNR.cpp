@@ -22,6 +22,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "gcn_banner.h"
+#include "data/NintendoLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -76,6 +77,11 @@ class GameCubeBNRPrivate : public RomDataPrivate
 		// Internal images.
 		rp_image *img_banner;
 
+		// Banner comments.
+		// - If BNR1: 1 item.
+		// - If BNR2: 6 items.
+		gcn_banner_comment_t *comments;
+
 	public:
 		/**
 		 * Load the banner.
@@ -89,11 +95,13 @@ class GameCubeBNRPrivate : public RomDataPrivate
 GameCubeBNRPrivate::GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file)
 	: super(q, file)
 	, img_banner(nullptr)
+	, comments(nullptr)
 { }
 
 GameCubeBNRPrivate::~GameCubeBNRPrivate()
 {
 	delete img_banner;
+	delete[] comments;
 }
 
 /**
@@ -172,12 +180,42 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&bnr_magic);
 	info.ext = nullptr;	// Not needed for GameCube banner files.
 	info.szFile = d->file->size();
-	d->bannerType = (isRomSupported_static(&info) >= 0);
+	d->bannerType = isRomSupported_static(&info);
 	d->isValid = (d->bannerType >= 0);
 
 	if (!d->isValid) {
 		delete d->file;
 		d->file = nullptr;
+		return;
+	}
+
+	// Read the banner comments.
+	unsigned int num;
+	switch (d->bannerType) {
+		default:
+			// Unknown banner type.
+			num = 0;
+			break;
+		case GameCubeBNRPrivate::BANNER_BNR1:
+			// US/JP: One comment.
+			num = 1;
+			break;
+		case GameCubeBNRPrivate::BANNER_BNR2:
+			// PAL: Six comments.
+			num = 6;
+			break;
+	}
+
+	if (num > 0) {
+		// Read the comments.
+		d->comments = new gcn_banner_comment_t[num];
+		const size_t expSize = sizeof(gcn_banner_comment_t) * num;
+		size = file->seekAndRead(offsetof(gcn_banner_bnr1_t, comment), d->comments, expSize);
+		if (size != expSize) {
+			// Seek and/or read error.
+			delete[] d->comments;
+			d->comments = nullptr;
+		}
 	}
 }
 
@@ -207,13 +245,13 @@ int GameCubeBNR::isRomSupported_static(const DetectInfo *info)
 
 	switch (bnr_magic) {
 		case GCN_BANNER_MAGIC_BNR1:
-			if (info->szFile >= sizeof(gcn_banner_bnr1_t)) {
+			if (info->szFile >= (int64_t)sizeof(gcn_banner_bnr1_t)) {
 				// This is BNR1.
 				return GameCubeBNRPrivate::BANNER_BNR1;
 			}
 			break;
 		case GCN_BANNER_MAGIC_BNR2:
-			if (info->szFile >= sizeof(gcn_banner_bnr2_t)) {
+			if (info->szFile >= (int64_t)sizeof(gcn_banner_bnr2_t)) {
 				// This is BNR2.
 				return GameCubeBNRPrivate::BANNER_BNR2;
 			}
@@ -432,6 +470,61 @@ int GameCubeBNR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
 	*pImage = d->loadBanner();
 	return (*pImage != nullptr ? 0 : -EIO);
+}
+
+/** GameCubeBNR accessors. **/
+
+/**
+ * Get the gcn_banner_comment_t.
+ *
+ * For BNR2, this returns the comment that most closely
+ * matches the system language.
+ *
+ * return gcn_banner_comment_t, or nullptr on error.
+ */
+const gcn_banner_comment_t *GameCubeBNR::getComment(void) const
+{
+	RP_D(const GameCubeBNR);
+	assert(d->comments != nullptr);
+	if (!d->comments) {
+		// No comments available...
+		return nullptr;
+	}
+
+	const gcn_banner_comment_t *comment;
+	switch (d->bannerType) {
+		default:
+			// Unknown banner type.
+			comment = nullptr;
+			break;
+
+		case GameCubeBNRPrivate::BANNER_BNR1:
+			// US/JP: One comment.
+			comment = d->comments;
+			break;
+
+		case GameCubeBNRPrivate::BANNER_BNR2: {
+			// PAL: Six comments.
+			// Get the system language.
+			const int lang = NintendoLanguage::getGcnPalLanguage();
+			comment = &d->comments[lang];
+
+			// If all of the language-specific fields are empty,
+			// revert to English.
+			if (comment->gamename[0] == 0 &&
+			    comment->company[0] == 0 &&
+			    comment->gamename_full[0] == 0 &&
+			    comment->company_full[0] == 0 &&
+			    comment->gamedesc[0] == 0)
+			{
+				// Revert to English.
+				comment = &d->comments[GCN_PAL_LANG_ENGLISH];
+			}
+			break;
+		}
+	}
+
+	return comment;
 }
 
 }
