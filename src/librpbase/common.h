@@ -22,6 +22,12 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_COMMON_H__
 #define __ROMPROPERTIES_LIBRPBASE_COMMON_H__
 
+#ifdef __cplusplus
+# include <cstddef>
+#else
+# include <stddef.h>
+#endif
+
 /**
  * Number of elements in an array.
  *
@@ -36,9 +42,9 @@
 // PACKED struct attribute.
 // Use in conjunction with #pragma pack(1).
 #ifdef __GNUC__
-#define PACKED __attribute__((packed))
+# define PACKED __attribute__((packed))
 #else
-#define PACKED
+# define PACKED
 #endif
 
 /**
