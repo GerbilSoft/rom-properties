@@ -2,9 +2,9 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomMetaData.hpp: ROM metadata class.                                    *
  *                                                                         *
- * Unlike RomMetaData, which shows all of the information of a ROM image   *
- * in a generic list, RomMetaData stores specific properties that can be   *
- * used by the desktop environment's indexer.                              *
+ * Unlike RomFields, which shows all of the information of a ROM image in  *
+ * a generic list, RomMetaData stores specific properties that can be used *
+ * by the desktop environment's indexer.                                   *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
