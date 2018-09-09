@@ -352,6 +352,8 @@ int WiiSave::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
+	// TODO: Add support for encrypted channel backups?
+
 	// Wii save files are encrypted. An unencrypted 'Bk' header
 	// exists after the banner, but it might be past the data
 	// read by RomDataFactory, so we ca'nt rely on it.
