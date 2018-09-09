@@ -377,11 +377,7 @@ uint32_t ValveVTF3::supportedImageTypes_static(void)
  */
 vector<RomData::ImageSizeDef> ValveVTF3::supportedImageSizes(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const ValveVTF3);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
@@ -406,11 +402,7 @@ vector<RomData::ImageSizeDef> ValveVTF3::supportedImageSizes(ImageType imageType
  */
 uint32_t ValveVTF3::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	RP_D(const ValveVTF3);
 	if (imageType != IMG_INT_IMAGE) {
@@ -511,16 +503,7 @@ int ValveVTF3::loadMetaData(void)
  */
 int ValveVTF3::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(ValveVTF3);
 	if (imageType != IMG_INT_IMAGE) {

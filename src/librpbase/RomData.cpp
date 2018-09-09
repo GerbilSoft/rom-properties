@@ -649,8 +649,23 @@ const rp_image *RomData::image(ImageType imageType) const
 
 	// Load the internal image.
 	// The subclass maintains ownership of the image.
+#ifdef _DEBUG
+	// TODO: Verify casting on 32-bit.
+	#define INVALID_IMG_PTR ((const rp_image*)((intptr_t)-1LL))
+	const rp_image *img = INVALID_IMG_PTR;
+#else /* !_DEBUG */
 	const rp_image *img;
+#endif
 	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, &img);
+
+	// SANITY CHECK: If loadInternalImage() returns 0,
+	// img *must* be valid. Otherwise, it must be nullptr.
+	assert((ret == 0 && img != nullptr) ||
+	       (ret != 0 && img == nullptr));
+
+	// SANITY CHECK: `img` must not be -1LL.
+	assert(img != INVALID_IMG_PTR);
+
 	return (ret == 0 ? img : nullptr);
 }
 

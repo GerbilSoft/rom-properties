@@ -440,11 +440,7 @@ uint32_t PlayStationSave::supportedImageTypes_static(void)
  */
 std::vector<RomData::ImageSizeDef> PlayStationSave::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return std::vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_INT_ICON) {
 		// Only icons are supported.
@@ -470,18 +466,14 @@ std::vector<RomData::ImageSizeDef> PlayStationSave::supportedImageSizes_static(I
  */
 uint32_t PlayStationSave::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
-	RP_D(const PlayStationSave);
 	uint32_t ret = 0;
 	switch (imageType) {
-		case IMG_INT_ICON:
+		case IMG_INT_ICON: {
 			// Use nearest-neighbor scaling when resizing.
 			// Also, need to check if this is an animated icon.
+			RP_D(const PlayStationSave);
 			const_cast<PlayStationSavePrivate*>(d)->loadIcon();
 			if (d->iconAnimData && d->iconAnimData->count > 1) {
 				// Animated icon.
@@ -491,6 +483,7 @@ uint32_t PlayStationSave::imgpf(ImageType imageType) const
 				ret = IMGPF_RESCALE_NEAREST;
 			}
 			break;
+		}
 
 		default:
 			break;
@@ -559,16 +552,7 @@ int PlayStationSave::loadFieldData(void)
  */
 int PlayStationSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(PlayStationSave);
 	if (imageType != IMG_INT_ICON) {

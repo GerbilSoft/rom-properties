@@ -175,23 +175,6 @@ int DiscReader::seek(int64_t pos)
 }
 
 /**
- * Seek to the beginning of the disc image.
- */
-void DiscReader::rewind(void)
-{
-	assert(m_file != nullptr);
-	if (!m_file) {
-		m_lastError = EBADF;
-		return;
-	}
-
-	int ret = m_file->seek(m_offset);
-	if (ret != 0) {
-		m_lastError = m_file->lastError();
-	}
-}
-
-/**
  * Get the disc image position.
  * @return Partition position on success; -1 on error.
  */

@@ -40,12 +40,14 @@ using namespace LibRpBase;
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
+#include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/AesCipherFactory.hpp"
 # include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/disc/CBCReader.hpp"
-// Key verification.
-# include "disc/WiiPartition.hpp"
+// For sections delegated to other RomData subclasses.
+# include "librpbase/disc/PartitionFile.hpp"
+# include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
@@ -56,12 +58,10 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -84,7 +84,6 @@ class WiiWADPrivate : public RomDataPrivate
 		Wii_WAD_Header wadHeader;
 		RVL_Ticket ticket;
 		RVL_TMD_Header tmdHeader;
-		Wii_Content_Bin_Header contentHeader;
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -100,6 +99,12 @@ class WiiWADPrivate : public RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
+		PartitionFile *wibnFile;	// uses CBCReader
+		WiiWIBN *wibnData;		// uses wibnFile
+
+		// Main data headers.
+		Wii_Content_Bin_Header contentHeader;
+		Wii_IMET_t imet;	// NOTE: May be WIBN.
 #endif /* ENABLE_DECRYPTION */
 		// Key index.
 		WiiPartition::EncryptionKeys key_idx;
@@ -133,6 +138,8 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	: super(q, file)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
+	, wibnFile(nullptr)
+	, wibnData(nullptr)
 #endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
 	, key_status(KeyManager::VERIFY_UNKNOWN)
@@ -141,12 +148,20 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	memset(&wadHeader, 0, sizeof(wadHeader));
 	memset(&ticket, 0, sizeof(ticket));
 	memset(&tmdHeader, 0, sizeof(tmdHeader));
+
+#ifdef ENABLE_DECRYPTION
 	memset(&contentHeader, 0, sizeof(contentHeader));
+	memset(&imet, 0, sizeof(imet));
+#endif /* ENABLE_DECRYPTION */
 }
 
 WiiWADPrivate::~WiiWADPrivate()
 {
 #ifdef ENABLE_DECRYPTION
+	if (wibnData) {
+		wibnData->unref();
+	}
+	delete wibnFile;
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
 }
@@ -157,14 +172,13 @@ WiiWADPrivate::~WiiWADPrivate()
  */
 string WiiWADPrivate::getGameInfo(void)
 {
+#ifdef ENABLE_DECRYPTION
 	// IMET header.
 	// TODO: Read on demand instead of always reading in the constructor.
-	if (contentHeader.imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
+	if (imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Not valid.
 		return string();
 	}
-
-	const Wii_IMET_t *const imet = &contentHeader.imet;
 
 	// TODO: Combine with GameCubePrivate::wii_getBannerName()?
 
@@ -174,7 +188,7 @@ string WiiWADPrivate::getGameInfo(void)
 
 	// If the language-specific name is empty,
 	// revert to English.
-	if (imet->names[lang][0][0] == 0) {
+	if (imet.names[lang][0][0] == 0) {
 		// Revert to English.
 		lang = WII_LANG_ENGLISH;
 	}
@@ -182,13 +196,17 @@ string WiiWADPrivate::getGameInfo(void)
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	string info = utf16be_to_utf8(imet->names[lang][0], 21);
-	if (imet->names[lang][1][0] != 0) {
+	string info = utf16be_to_utf8(imet.names[lang][0], 21);
+	if (imet.names[lang][1][0] != 0) {
 		info += '\n';
-		info += utf16be_to_utf8(imet->names[lang][1], 21);
+		info += utf16be_to_utf8(imet.names[lang][1], 21);
 	}
 
 	return info;
+#else /* !ENABLE_DECRYPTION */
+	// Unable to decrypt the IMET header.
+	return string();
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -389,49 +407,83 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Get and verify the key.
 	KeyManager::KeyData_t keyData;
 	d->key_status = keyManager->getAndVerify(keyName, &keyData, verifyData, 16);
-	if (d->key_status == KeyManager::VERIFY_OK) {
-		// Create a cipher to decrypt the title key.
-		IAesCipher *cipher = AesCipherFactory::create();
+	if (d->key_status != KeyManager::VERIFY_OK) {
+		// Unable to get and verify the key.
+		return;
+	}
 
-		// Initialize parameters for title key decryption.
-		// TODO: Error checking.
-		// Parameters:
-		// - Chaining mode: CBC
-		// - IV: Title ID (little-endian)
-		cipher->setChainingMode(IAesCipher::CM_CBC);
-		cipher->setKey(keyData.key, keyData.length);
-		// Title key IV: High 8 bytes are the title ID (in big-endian), low 8 bytes are 0.
-		uint8_t iv[16];
-		memcpy(iv, &d->ticket.title_id.id, sizeof(d->ticket.title_id.id));
-		memset(&iv[8], 0, 8);
-		cipher->setIV(iv, sizeof(iv));
-		
-		// Decrypt the title key.
-		uint8_t title_key[16];
-		memcpy(title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
-		cipher->decrypt(title_key, sizeof(title_key));
-		delete cipher;
+	// Create a cipher to decrypt the title key.
+	IAesCipher *cipher = AesCipherFactory::create();
 
-		// Data area IV:
-		// - First two bytes are the big-endian content index.
-		// - Remaining bytes are zero.
-		// - TODO: Read the TMD content table. For now, assuming index 0.
-		memset(iv, 0, sizeof(iv));
+	// Initialize parameters for title key decryption.
+	// TODO: Error checking.
+	// Parameters:
+	// - Chaining mode: CBC
+	// - IV: Title ID (little-endian)
+	cipher->setChainingMode(IAesCipher::CM_CBC);
+	cipher->setKey(keyData.key, keyData.length);
+	// Title key IV: High 8 bytes are the title ID (in big-endian), low 8 bytes are 0.
+	uint8_t iv[16];
+	memcpy(iv, &d->ticket.title_id.id, sizeof(d->ticket.title_id.id));
+	memset(&iv[8], 0, 8);
+	cipher->setIV(iv, sizeof(iv));
+	
+	// Decrypt the title key.
+	uint8_t title_key[16];
+	memcpy(title_key, d->ticket.enc_title_key, sizeof(d->ticket.enc_title_key));
+	cipher->decrypt(title_key, sizeof(title_key));
+	delete cipher;
 
-		// Create a CBC reader to decrypt the data section.
-		// TODO: Verify some known data?
-		addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.tmd_size));
-		d->cbcReader = new CBCReader(d->file, addr, be32_to_cpu(d->wadHeader.data_size), title_key, iv);
+	// Data area IV:
+	// - First two bytes are the big-endian content index.
+	// - Remaining bytes are zero.
+	// - TODO: Read the TMD content table. For now, assuming index 0.
+	memset(iv, 0, sizeof(iv));
 
-		// Read the content header.
-		// NOTE: Continuing even if this fails, since we can show
-		// other infomration from the ticket and TMD.
-		size = d->cbcReader->read(&d->contentHeader, sizeof(d->contentHeader));
-		if (size == sizeof(d->contentHeader)) {
-			// Make sure this is an IMET header.
-			if (d->contentHeader.imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
+	// Create a CBC reader to decrypt the data section.
+	// TODO: Verify some known data?
+	addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.tmd_size));
+	d->cbcReader = new CBCReader(d->file, addr, be32_to_cpu(d->wadHeader.data_size), title_key, iv);
+
+	// Read the content header.
+	// NOTE: Continuing even if this fails, since we can show
+	// other information from the ticket and TMD.
+	size = d->cbcReader->read(&d->contentHeader, sizeof(d->contentHeader));
+	if (size == sizeof(d->contentHeader)) {
+		// Contents may be one of the following:
+		// - IMET header: Most common.
+		// - WIBN header: DLC titles.
+		size = d->cbcReader->read(&d->imet, sizeof(d->imet));
+		if (size == sizeof(d->imet)) {
+			// TODO: Use the WiiWIBN subclass.
+			// TODO: Create a WiiIMET subclass? (and also use it in GameCube)
+			if (d->imet.magic == cpu_to_be32(WII_IMET_MAGIC)) {
 				// This is an IMET header.
 				// TODO: Do something here?
+			} else if (d->imet.magic == cpu_to_be32(WII_WIBN_MAGIC)) {
+				// This is a WIBN header.
+				// Create the PartitionFile and WiiWIBN subclass.
+				// NOTE: Not sure how big the WIBN data is, so we'll
+				// allow it to read the rest of the file.
+				PartitionFile *ptFile = new PartitionFile(d->cbcReader,
+					sizeof(d->contentHeader),
+					be32_to_cpu(d->wadHeader.data_size) - sizeof(d->contentHeader));
+				if (ptFile->isOpen()) {
+					// Open the WiiWIBN.
+					WiiWIBN *wibn = new WiiWIBN(ptFile);
+					if (wibn->isOpen()) {
+						// Opened successfully.
+						d->wibnFile = ptFile;
+						d->wibnData = wibn;
+					} else {
+						// Unable to open the WiiWIBN.
+						wibn->unref();
+						delete ptFile;
+					}
+				} else {
+					// Unable to open the PartitionFile.
+					delete ptFile;
+				}
 			}
 		}
 	}
@@ -439,6 +491,30 @@ WiiWAD::WiiWAD(IRpFile *file)
 	// Cannot decrypt anything...
 	d->key_status = KeyManager::VERIFY_NO_SUPPORT;
 #endif /* ENABLE_DECRYPTION */
+}
+
+/**
+ * Close the opened file.
+ */
+void WiiWAD::close(void)
+{
+#ifdef ENABLE_DECRYPTION
+	RP_D(WiiWAD);
+
+	// Close any child RomData subclasses.
+	if (d->wibnData) {
+		d->wibnData->close();
+	}
+
+	// Close associated files used with child RomData subclasses.
+	delete d->wibnFile;
+	delete d->cbcReader;
+	d->wibnFile = nullptr;
+	d->cbcReader = nullptr;
+#endif /* ENABLE_DECRYPTION */
+
+	// Call the superclass function.
+	super::close();
 }
 
 /** ROM detection functions. **/
@@ -573,7 +649,9 @@ const char *const *WiiWAD::supportedMimeTypes_static(void)
  */
 uint32_t WiiWAD::supportedImageTypes_static(void)
 {
-	return IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	// TODO: Only return IMG_INT_* if a WiiWIBN is available.
+	return IMGBF_INT_ICON | IMGBF_INT_BANNER |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
 	       IMGBF_EXT_COVER_FULL |
 	       IMGBF_EXT_TITLE_SCREEN;
 }
@@ -589,13 +667,25 @@ uint32_t WiiWAD::supportedImageTypes_static(void)
  */
 std::vector<RomData::ImageSizeDef> WiiWAD::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return std::vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
+		// TODO: Only return IMG_INT_* if a WiiWIBN is available.
+		case IMG_INT_ICON: {
+			static const ImageSizeDef sz_INT_ICON[] = {
+				{nullptr, BANNER_WIBN_ICON_W, BANNER_WIBN_ICON_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+		}
+		case IMG_INT_BANNER: {
+			static const ImageSizeDef sz_INT_BANNER[] = {
+				{nullptr, BANNER_WIBN_IMAGE_W, BANNER_WIBN_IMAGE_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
 				{nullptr, 160, 224, 0},
@@ -669,15 +759,17 @@ int WiiWAD::loadFieldData(void)
 	// Title ID.
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
 	d->fields->addField_string(C_("WiiWAD", "Title ID"),
-		rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->title_id.hi), be32_to_cpu(tmdHeader->title_id.lo)));
+		rp_sprintf("%08X-%08X",
+			be32_to_cpu(tmdHeader->title_id.hi),
+			be32_to_cpu(tmdHeader->title_id.lo)));
 
 	// Game ID.
 	// NOTE: Only displayed if TID lo is all alphanumeric characters.
 	// TODO: Only for certain TID hi?
-	if (isalnum(tmdHeader->title_id.u8[4]) &&
-	    isalnum(tmdHeader->title_id.u8[5]) &&
-	    isalnum(tmdHeader->title_id.u8[6]) &&
-	    isalnum(tmdHeader->title_id.u8[7]))
+	if (ISALNUM(tmdHeader->title_id.u8[4]) &&
+	    ISALNUM(tmdHeader->title_id.u8[5]) &&
+	    ISALNUM(tmdHeader->title_id.u8[6]) &&
+	    ISALNUM(tmdHeader->title_id.u8[7]))
 	{
 		// Print the game ID.
 		// TODO: Is the publisher code available anywhere?
@@ -782,10 +874,21 @@ int WiiWAD::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
-	// Game info.
-	string gameInfo = d->getGameInfo();
-	if (!gameInfo.empty()) {
-		d->fields->addField_string(C_("WiiWAD", "Game Info"), gameInfo);
+#ifdef ENABLE_DECRYPTION
+	// Do we have a WIBN header?
+	// If so, we don't have IMET data.
+	if (d->wibnData) {
+		// Add the WIBN data.
+		d->fields->addFields_romFields(d->wibnData->fields(), 0);
+	} else
+#endif /* ENABLE_DECRYPTION */
+	{
+		// No WIBN data.
+		// Get the IMET data if it's available.
+		string gameInfo = d->getGameInfo();
+		if (!gameInfo.empty()) {
+			d->fields->addField_string(C_("WiiWAD", "Game Info"), gameInfo);
+		}
 	}
 
 	// TODO: Decrypt content.bin to get the actual data.
@@ -813,6 +916,8 @@ int WiiWAD::loadMetaData(void)
 		return -EIO;
 	}
 
+	// TODO: Game title from WIBN if it's available.
+
 	// NOTE: We can only get the title if the encryption key is valid.
 	// If we can't get the title, don't bother creating RomMetaData.
 	string gameInfo = d->getGameInfo();
@@ -839,6 +944,58 @@ int WiiWAD::loadMetaData(void)
 }
 
 /**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+
+	RP_D(WiiWAD);
+	if (!d->isValid) {
+		// Banner file isn't valid.
+		*pImage = nullptr;
+		return -EIO;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	// Forward this call to the WiiWIBN object.
+	if (d->wibnData) {
+		return d->wibnData->loadInternalImage(imageType, pImage);
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// No WiiWIBN object.
+	*pImage = nullptr;
+	return -ENOENT;
+}
+
+/**
+ * Get the animated icon data.
+ *
+ * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+ * object has an animated icon.
+ *
+ * @return Animated icon data, or nullptr if no animated icon is present.
+ */
+const IconAnimData *WiiWAD::iconAnimData(void) const
+{
+#ifdef ENABLE_DECRYPTION
+	// Forward this call to the WiiWIBN object.
+	RP_D(const WiiWAD);
+	if (d->wibnData) {
+		return d->wibnData->iconAnimData();
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// No WiiWIBN object.
+	return nullptr;
+}
+
+/**
  * Get a list of URLs for an external image type.
  *
  * A thumbnail size may be requested from the shell.
@@ -855,20 +1012,34 @@ int WiiWAD::loadMetaData(void)
  */
 int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
-	assert(pExtURLs != nullptr);
-	if (!pExtURLs) {
-		// No vector.
-		return -EINVAL;
-	}
+	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();
 
-	// Check for a valid TID hi.
+	// Check if a WiiWIBN is present.
+	// If it is, this is a DLC WAD, so the title ID
+	// won't match anything on GameTDB.
 	RP_D(const WiiWAD);
+#ifdef ENABLE_DECRYPTION
+	if (d->wibnData) {
+		// WiiWIBN is present.
+		// This means the boxart is not available on GameTDB,
+		// since it's a DLC WAD.
+		return -ENOENT;
+	} else
+#endif /* ENABLE_DECRYPTION */
+	{
+		// If the first letter of the ID4 is lowercase,
+		// that means it's a DLC title. GameTDB doesn't
+		// have artwork for DLC titles.
+		// FIXME: NEEDS TESTING BEFORE COMMIT
+		char sysID = be32_to_cpu(d->tmdHeader.title_id.lo) >> 24;
+		if (ISLOWER(sysID)) {
+			// It's lowercase.
+			return -ENOENT;
+		}
+	}
+
+	// Check for a valid TID hi.
 	switch (be32_to_cpu(d->tmdHeader.title_id.hi)) {
 		case 0x00010000:
 		case 0x00010001:

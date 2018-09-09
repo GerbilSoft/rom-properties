@@ -90,9 +90,12 @@ class IDiscReader
 		virtual int seek(int64_t pos) = 0;
 
 		/**
-		 * Seek to the beginning of the disc image.
+		 * Seek to the beginning of the file.
 		 */
-		virtual void rewind(void) = 0;
+		inline void rewind(void)
+		{
+			this->seek(0);
+		}
 
 		/**
 		 * Get the disc image position.

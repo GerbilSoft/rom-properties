@@ -147,11 +147,16 @@ template<class T> using unique_ptr_aligned = std::unique_ptr<T, decltype(&aligne
 # define UNIQUE_PTR_ALIGNED_T std::unique_ptr<T, decltype(&aligned_free)>
 #endif
 
+/**
+ * Aligned unique_ptr() helper.
+ * @param align Alignment, in bytes.
+ * @param size Size, in sizeof(T) units.
+ */
 template<class T>
 static inline UNIQUE_PTR_ALIGNED_T aligned_uptr(size_t align, size_t size)
 {
 	return UNIQUE_PTR_ALIGNED_T(
-		static_cast<T*>(aligned_malloc(align, size)), 
+		static_cast<T*>(aligned_malloc(align, size * sizeof(T))),
 		&aligned_free);
 }
 

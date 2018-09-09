@@ -359,11 +359,7 @@ uint32_t Amiibo::supportedImageTypes_static(void)
  */
 std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return std::vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_EXT_MEDIA) {
 		// Only media scans are supported.
@@ -389,11 +385,7 @@ std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes_static(ImageType 
  */
 uint32_t Amiibo::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	// NOTE: amiibo.life's amiibo images have alpha transparency.
 	// Hence, no image processing is required.
@@ -527,16 +519,7 @@ int Amiibo::loadFieldData(void)
  */
 int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size) const
 {
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
-	assert(pExtURLs != nullptr);
-	if (!pExtURLs) {
-		// No vector.
-		return -EINVAL;
-	}
+	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();
 
 	// Only one size is available.

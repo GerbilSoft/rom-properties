@@ -48,6 +48,9 @@ using namespace LibRpBase;
 #include "disc/CisoGcnReader.hpp"
 #include "disc/WiiPartition.hpp"
 
+// For sections delegated to other RomData subclasses.
+#include "GameCubeBNR.hpp"
+
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
 #include <cassert>
@@ -78,10 +81,6 @@ class GameCubePrivate : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(GameCubePrivate)
-
-	public:
-		// Internal images.
-		rp_image *img_banner;
 
 	public:
 		// NDDEMO header.
@@ -116,13 +115,19 @@ class GameCubePrivate : public RomDataPrivate
 		GCN_DiscHeader discHeader;
 		RVL_RegionSetting regionSetting;
 
-		// GameCube opening.bnr.
-		// NOTE: Check gcn_opening_bnr->magic to determine
-		// how many comment fields are present.
-		banner_bnr2_t *gcn_opening_bnr;
-
-		// Wii opening.bnr. (IMET section)
-		Wii_IMET_t *wii_opening_bnr;
+		// opening.bnr
+		union {
+			struct {
+				// opening.bnr file and object.
+				GcnPartition *partition;
+				IRpFile *file;
+				GameCubeBNR *data;
+			} gcn;
+			struct {
+				// Wii opening.bnr. (IMET section)
+				Wii_IMET_t *imet;
+			} wii;
+		} opening_bnr;
 
 		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
 		uint32_t gcnRegion;
@@ -203,12 +208,12 @@ class GameCubePrivate : public RomDataPrivate
 		int wii_loadOpeningBnr(void);
 
 		/**
-		 * Get the banner_comment_t from opening.bnr. (GameCube version)
+		 * [GameCube] Get the game information from opening.bnr.
 		 * For BNR2, this uses the comment that most
 		 * closely matches the host system language.
-		 * @return banner_comment_t, or nullptr if opening.bnr was not loaded.
+		 * @return Game information, or nullptr if opening.bnr was not loaded.
 		 */
-		const banner_comment_t *gcn_getBannerComment(void) const;
+		string gcn_getGameInfo(void) const;
 
 		/**
 		 * Get the game name from opening.bnr. (Wii version)
@@ -246,11 +251,8 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 
 GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	: super(q, file)
-	, img_banner(nullptr)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
-	, gcn_opening_bnr(nullptr)
-	, wii_opening_bnr(nullptr)
 	, gcnRegion(~0)
 	, wiiPtblLoaded(false)
 	, updatePartition(nullptr)
@@ -259,13 +261,12 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	// Clear the various structs.
 	memset(&discHeader, 0, sizeof(discHeader));
 	memset(&regionSetting, 0, sizeof(regionSetting));
+	memset(&opening_bnr, 0, sizeof(opening_bnr));
 }
 
 GameCubePrivate::~GameCubePrivate()
 {
-	// Internal images.
-	delete img_banner;
-
+	// Wii partition pointers.
 	updatePartition = nullptr;
 	gamePartition = nullptr;
 
@@ -275,8 +276,24 @@ GameCubePrivate::~GameCubePrivate()
 	}
 	wiiPtbl.clear();
 
-	delete gcn_opening_bnr;
-	delete wii_opening_bnr;
+	if (discType > DISC_UNKNOWN) {
+		// Delete opening.bnr data.
+		switch (discType & DISC_SYSTEM_MASK) {
+			case DISC_SYSTEM_GCN:
+				if (opening_bnr.gcn.data) {
+					opening_bnr.gcn.data->unref();
+				}
+				delete opening_bnr.gcn.file;
+				delete opening_bnr.gcn.partition;
+				break;
+			case DISC_SYSTEM_WII:
+				delete opening_bnr.wii.imet;
+				break;
+			default:
+				break;
+		}
+	}
+
 	delete discReader;
 }
 
@@ -737,22 +754,22 @@ string GameCubePrivate::getPublisher(void) const
 int GameCubePrivate::gcn_loadOpeningBnr(void)
 {
 	assert(discReader != nullptr);
+	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN);
 	if (!discReader) {
 		return -EIO;
-	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN &&
-		   (discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE)
-	{
+	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN) {
 		// Not supported.
 		// TODO: Do Triforce games have opening.bnr?
 		return -ENOTSUP;
 	}
 
-	if (gcn_opening_bnr) {
+	if (opening_bnr.gcn.data) {
 		// Banner is already loaded.
 		return 0;
 	}
 
-	// NOTE: We usually don't keep a GcnPartition open,
+	// NOTE: The GCN partition needs to stay open,
+	// since we have a subclass for reading the object.
 	// since we don't need to access more than one file.
 	unique_ptr<GcnPartition> gcnPartition(new GcnPartition(discReader, 0));
 	if (!gcnPartition || !gcnPartition->isOpen()) {
@@ -766,49 +783,18 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 		return -gcnPartition->lastError();
 	}
 
-	// Determine the banner size.
-	unsigned int banner_size = 0;
-
-	// Read the magic number to determine what type of
-	// opening.bnr file this is.
-	uint32_t bnr_magic;
-	size_t size = f_opening_bnr->read(&bnr_magic, sizeof(bnr_magic));
-	if (size != sizeof(bnr_magic)) {
-		// Read error.
-		int err = f_opening_bnr->lastError();
-		return (err != 0 ? -err : -EIO);
+	// Attempt to open a GameCubeBNR subclass.
+	GameCubeBNR *bnr = new GameCubeBNR(f_opening_bnr.get());
+	if (!bnr->isOpen()) {
+		// Unable to open the subcalss.
+		bnr->unref();
+		return -EIO;
 	}
 
-	bnr_magic = be32_to_cpu(bnr_magic);
-	switch (bnr_magic) {
-		case BANNER_MAGIC_BNR1:
-			banner_size = GCN_BANNER_BNR1_SIZE;
-			break;
-		case BANNER_MAGIC_BNR2:
-			banner_size = GCN_BANNER_BNR2_SIZE;
-			break;
-		default:
-			// Unknown magic.
-			// TODO: Better error code?
-			return -EIO;
-	}
-
-	// Load the full banner.
-	// NOTE: Always use a BNR2 pointer.
-	//       BNR1 and BNR2 have identical layouts, except
-	//       BNR2 has more comment fields.
-	// NOTE 2: Magic number is loaded as host-endian.
-	unique_ptr<banner_bnr2_t> pBanner(new banner_bnr2_t);
-	pBanner->magic = bnr_magic;
-	size = f_opening_bnr->read(&pBanner->reserved, banner_size-4);
-	if (size != banner_size-4) {
-		// Read error.
-		int err = f_opening_bnr->lastError();
-		return (err != 0 ? -err : -EIO);
-	}
-
-	// Banner is loaded.
-	gcn_opening_bnr = pBanner.release();
+	// GameCubeBNR subclass is open.
+	opening_bnr.gcn.partition = gcnPartition.release();
+	opening_bnr.gcn.file = f_opening_bnr.release();
+	opening_bnr.gcn.data = bnr;
 	return 0;
 }
 
@@ -827,7 +813,7 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 		return -ENOTSUP;
 	}
 
-	if (wii_opening_bnr) {
+	if (opening_bnr.wii.imet) {
 		// Banner is already loaded.
 		return 0;
 	}
@@ -863,57 +849,114 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 	}
 
 	// Banner is loaded.
-	wii_opening_bnr = pBanner.release();
+	opening_bnr.wii.imet = pBanner.release();
 	return 0;
 }
 
 /**
- * Get the banner_comment_t from opening.bnr.
+ * [GameCube] Get the game information from opening.bnr.
  * For BNR2, this uses the comment that most
  * closely matches the host system language.
- * @return banner_comment_t, or nullptr if opening.bnr was not loaded.
+ * @return Game information, or nullptr if opening.bnr was not loaded.
  */
-const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
+string GameCubePrivate::gcn_getGameInfo(void) const
 {
-	if (!gcn_opening_bnr) {
+	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN);
+	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN) {
+		// Not supported.
+		// TODO: Do Triforce games have opening.bnr?
+		return string();
+	}
+
+	if (!opening_bnr.gcn.data) {
 		// Attempt to load opening.bnr.
 		if (const_cast<GameCubePrivate*>(this)->gcn_loadOpeningBnr() != 0) {
 			// Error loading opening.bnr.
-			return nullptr;
+			return string();
 		}
 
 		// Make sure it was actually loaded.
-		if (!gcn_opening_bnr) {
+		if (!opening_bnr.gcn.data) {
 			// opening.bnr was not loaded.
-			return nullptr;
+			return string();
 		}
 	}
 
-	// Check if this is BNR1 or BNR2.
-	// BNR2 has language-specific fields.
-	const banner_comment_t *comment = nullptr;
-	if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR2) {
-		// Get the system language.
-		const int lang = NintendoLanguage::getGcnPalLanguage();
-		comment = &gcn_opening_bnr->comments[lang];
-
-		// If all of the language-specific fields are empty,
-		// revert to English.
-		if (comment->gamename[0] == 0 &&
-		    comment->company[0] == 0 &&
-		    comment->gamename_full[0] == 0 &&
-		    comment->company_full[0] == 0 &&
-		    comment->gamedesc[0] == 0)
-		{
-			// Revert to English.
-			comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ENGLISH];
-		}
-	} else /*if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR1)*/ {
-		// BNR1 only has one banner comment.
-		comment = &gcn_opening_bnr->comments[0];
+	// Get the comment from the GameCubeBNR.
+	const gcn_banner_comment_t *comment = opening_bnr.gcn.data->getComment();
+	if (!comment) {
+		// Unable to get the comment...
+		return string();
 	}
 
-	return comment;
+	string gameInfo;
+	gameInfo.reserve(sizeof(*comment));
+
+	// Fields are not necessarily null-terminated.
+	// NOTE: We're converting from cp1252 or Shift-JIS
+	// *after* concatenating all the strings, which is
+	// why we're using strnlen() here.
+	int field_len;
+
+	// Game name.
+	if (comment->gamename_full[0] != '\0') {
+		field_len = static_cast<int>(strnlen(comment->gamename_full, sizeof(comment->gamename_full)));
+		gameInfo.append(comment->gamename_full, field_len);
+		gameInfo += '\n';
+	} else if (comment->gamename[0] != '\0') {
+		field_len = static_cast<int>(strnlen(comment->gamename, sizeof(comment->gamename)));
+		gameInfo.append(comment->gamename, field_len);
+		gameInfo += '\n';
+	}
+
+	// Company.
+	if (comment->company_full[0] != '\0') {
+		field_len = static_cast<int>(strnlen(comment->company_full, sizeof(comment->company_full)));
+		gameInfo.append(comment->company_full, field_len);
+		gameInfo += '\n';
+	} else if (comment->company[0] != '\0') {
+		field_len = static_cast<int>(strnlen(comment->company, sizeof(comment->company)));
+		gameInfo.append(comment->company, field_len);
+		gameInfo += '\n';
+	}
+
+	// Game description.
+	if (comment->gamedesc[0] != '\0') {
+		// Add a second newline if necessary.
+		if (!gameInfo.empty()) {
+			gameInfo += '\n';
+		}
+
+		field_len = static_cast<int>(strnlen(comment->gamedesc, sizeof(comment->gamedesc)));
+		gameInfo.append(comment->gamedesc, field_len);
+	}
+
+	// Remove trailing newlines.
+	// TODO: Optimize this by using a `for` loop and counter. (maybe ptr)
+	while (!gameInfo.empty() && gameInfo[gameInfo.size()-1] == '\n') {
+		gameInfo.resize(gameInfo.size()-1);
+	}
+
+	if (!gameInfo.empty()) {
+		// Convert from cp1252 or Shift-JIS.
+		switch (gcnRegion) {
+			case GCN_REGION_USA:
+			case GCN_REGION_EUR:
+			default:
+				// USA/PAL uses cp1252.
+				gameInfo = cp1252_to_utf8(gameInfo);
+				break;
+
+			case GCN_REGION_JPN:
+			case GCN_REGION_KOR:
+				// Japan uses Shift-JIS.
+				gameInfo = cp1252_sjis_to_utf8(gameInfo);
+				break;
+		}
+	}
+
+	// We're done here.
+	return gameInfo;
 }
 
 /**
@@ -924,7 +967,13 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
  */
 string GameCubePrivate::wii_getBannerName(void) const
 {
-	if (!wii_opening_bnr) {
+	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
+	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
+		// Not supported.
+		return string();
+	}
+
+	if (!opening_bnr.wii.imet) {
 		// Attempt to load opening.bnr.
 		if (const_cast<GameCubePrivate*>(this)->wii_loadOpeningBnr() != 0) {
 			// Error loading opening.bnr.
@@ -932,7 +981,7 @@ string GameCubePrivate::wii_getBannerName(void) const
 		}
 
 		// Make sure it was actually loaded.
-		if (!wii_opening_bnr) {
+		if (!opening_bnr.wii.imet) {
 			// opening.bnr was not loaded.
 			return string();
 		}
@@ -944,7 +993,7 @@ string GameCubePrivate::wii_getBannerName(void) const
 
 	// If the language-specific name is empty,
 	// revert to English.
-	if (wii_opening_bnr->names[lang][0][0] == 0) {
+	if (opening_bnr.wii.imet->names[lang][0][0] == 0) {
 		// Revert to English.
 		lang = WII_LANG_ENGLISH;
 	}
@@ -952,10 +1001,10 @@ string GameCubePrivate::wii_getBannerName(void) const
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	string info = utf16be_to_utf8(wii_opening_bnr->names[lang][0], 21);
-	if (wii_opening_bnr->names[lang][1][0] != 0) {
+	string info = utf16be_to_utf8(opening_bnr.wii.imet->names[lang][0], 21);
+	if (opening_bnr.wii.imet->names[lang][1][0] != 0) {
 		info += '\n';
-		info += utf16be_to_utf8(wii_opening_bnr->names[lang][1], 21);
+		info += utf16be_to_utf8(opening_bnr.wii.imet->names[lang][1], 21);
 	}
 	return info;
 }
@@ -1194,6 +1243,39 @@ GameCube::GameCube(IRpFile *file)
 			d->isValid = false;
 			return;
 	}
+}
+
+/**
+ * Close the opened file.
+ */
+void GameCube::close(void)
+{
+	RP_D(GameCube);
+	if (d->discType > GameCubePrivate::DISC_UNKNOWN) {
+		// Close opening.bnr subclasses.
+		// NOTE: Don't delete them, since they
+		// may be needed for images and fields.
+		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+			case GameCubePrivate::DISC_SYSTEM_GCN:
+				if (d->opening_bnr.gcn.data) {
+					d->opening_bnr.gcn.data->close();
+				}
+
+				delete d->opening_bnr.gcn.file;
+				delete d->opening_bnr.gcn.partition;
+				d->opening_bnr.gcn.file = nullptr;
+				d->opening_bnr.gcn.partition = nullptr;
+				break;
+			case GameCubePrivate::DISC_SYSTEM_WII:
+				// No subclass for Wii yet.
+				break;
+			default:
+				break;
+		}
+	}
+
+	// Call the superclass function.
+	super::close();
 }
 
 /** ROM detection functions. **/
@@ -1441,11 +1523,7 @@ uint32_t GameCube::supportedImageTypes_static(void)
  */
 uint32_t GameCube::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	switch (imageType) {
 		case IMG_INT_BANNER:
@@ -1471,11 +1549,7 @@ uint32_t GameCube::imgpf(ImageType imageType) const
  */
 std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return std::vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
 		case IMG_INT_BANNER: {
@@ -1646,76 +1720,10 @@ int GameCube::loadFieldData(void)
 		// GameCube-specific fields.
 
 		// Game information from opening.bnr.
-		const banner_comment_t *comment = d->gcn_getBannerComment();
-		if (comment) {
-			// cp1252/sjis comment data.
-			// TODO: BNR2 is only cp1252.
-			string comment_data;
-			comment_data.reserve(sizeof(*comment));
-
-			// Fields are not necessarily null-terminated.
-			// NOTE: We're converting from cp1252 or Shift-JIS
-			// *after* concatenating all the strings, which is
-			// why we're using strnlen() here.
-			int field_len;
-
-			// Game name.
-			if (comment->gamename_full[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->gamename_full, sizeof(comment->gamename_full)));
-				comment_data.append(comment->gamename_full, field_len);
-				comment_data += '\n';
-			} else if (comment->gamename[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->gamename, sizeof(comment->gamename)));
-				comment_data.append(comment->gamename, field_len);
-				comment_data += '\n';
-			}
-
-			// Company.
-			if (comment->company_full[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->company_full, sizeof(comment->company_full)));
-				comment_data.append(comment->company_full, field_len);
-				comment_data += '\n';
-			} else if (comment->company[0] != 0) {
-				field_len = static_cast<int>(strnlen(comment->company, sizeof(comment->company)));
-				comment_data.append(comment->company, field_len);
-				comment_data += '\n';
-			}
-
-			// Game description.
-			if (comment->gamedesc[0] != 0) {
-				// Add a second newline if necessary.
-				if (!comment_data.empty()) {
-					comment_data += '\n';
-				}
-
-				field_len = static_cast<int>(strnlen(comment->gamedesc, sizeof(comment->gamedesc)));
-				comment_data.append(comment->gamedesc, field_len);
-			}
-
-			// Remove trailing newlines.
-			while (!comment_data.empty() && comment_data[comment_data.size()-1] == '\n') {
-				comment_data.resize(comment_data.size()-1);
-			}
-
-			if (!comment_data.empty()) {
-				// Show the comment data.
-				switch (d->gcnRegion) {
-					case GCN_REGION_USA:
-					case GCN_REGION_EUR:
-					default:
-						// USA/PAL uses cp1252.
-						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_to_utf8(comment_data));
-						break;
-
-					case GCN_REGION_JPN:
-					case GCN_REGION_KOR:
-						// Japan uses Shift-JIS.
-						d->fields->addField_string(C_("GameCube", "Game Info"),
-							cp1252_sjis_to_utf8(comment_data));
-						break;
-				}
-			}
+		string comment = d->gcn_getGameInfo();
+		if (!comment.empty()) {
+			// Show the comment.
+			d->fields->addField_string(C_("GameCube", "Game Info"), comment);
 		}
 
 		// Finished reading the field data.
@@ -2027,43 +2035,21 @@ int GameCube::loadMetaData(void)
  */
 int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(GameCube);
 	if (imageType != IMG_INT_BANNER) {
 		// Only IMG_INT_BANNER is supported by GameCube.
 		*pImage = nullptr;
 		return -ENOENT;
-	} else if (d->img_banner) {
-		// Image has already been loaded.
-		*pImage = d->img_banner;
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
 	} else if (!d->isValid) {
-		// Save file isn't valid.
+		// Disc image isn't valid.
 		*pImage = nullptr;
 		return -EIO;
-	} else if (!d->discReader) {
-		// Cannot read the disc contents.
-		*pImage = nullptr;
-		return -ENOENT;
 	}
 
-	// Internal images are currently only supported for GCN,
-	// and possibly Triforce.
-	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) >= GameCubePrivate::DISC_SYSTEM_WII) {
+	// Internal images are currently only supported for GCN.
+	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_GCN) {
 		// opening.bnr doesn't have an image.
 		*pImage = nullptr;
 		return -ENOENT;
@@ -2077,20 +2063,14 @@ int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -ENOENT;
 	}
 
-	// Convert the banner from GameCube RGB5A3 to ARGB32.
-	rp_image *banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
-		BANNER_IMAGE_W, BANNER_IMAGE_H,
-		d->gcn_opening_bnr->banner, sizeof(d->gcn_opening_bnr->banner));
-	if (!banner) {
-		// Error converting the banner.
-		*pImage = nullptr;
-		return -EIO;
+	// Forward this call to the GameCubeBNR object.
+	if (d->opening_bnr.gcn.data) {
+		return d->opening_bnr.gcn.data->loadInternalImage(imageType, pImage);
 	}
 
-	// Finished decoding the banner.
-	d->img_banner = banner;
-	*pImage = banner;
-	return 0;
+	// No GameCubeBNR object.
+	*pImage = nullptr;
+	return -ENOENT;
 }
 
 /**
@@ -2110,16 +2090,7 @@ int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
  */
 int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
-	assert(pExtURLs != nullptr);
-	if (!pExtURLs) {
-		// No vector.
-		return -EINVAL;
-	}
+	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();
 
 	RP_D(const GameCube);

@@ -24,6 +24,9 @@
 #include <stdint.h>
 #include "librpbase/common.h"
 
+// for Title ID
+#include "wii_structs.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,7 +35,7 @@ extern "C" {
 
 /**
  * WIBN (Wii Banner)
- * Reference: http://wiibrew.org/wiki/Savegame_Files
+ * Reference: https://wiibrew.org/wiki/Savegame_Files
  * NOTE: This may be located at one of two places:
  * - 0x0000: banner.bin extracted via SaveGame Manager GX
  * - 0x0020: Savegame extracted via Wii System Menu
@@ -56,32 +59,36 @@ extern "C" {
 #define BANNER_WIBN_ICON_H 48
 
 // Struct size.
-#define BANNER_WIBN_IMAGE_SIZE 24576
-#define BANNER_WIBN_ICON_SIZE 0x1200
-#define BANNER_WIBN_STRUCT_SIZE 24736
+#define BANNER_WIBN_IMAGE_SIZE (BANNER_WIBN_IMAGE_W * BANNER_WIBN_IMAGE_H * 2)
+#define BANNER_WIBN_ICON_SIZE (BANNER_WIBN_ICON_W * BANNER_WIBN_ICON_H * 2)
+#define BANNER_WIBN_STRUCT_SIZE (sizeof(Wii_WIBN_Header_t) + BANNER_WIBN_IMAGE_SIZE)
 #define BANNER_WIBN_STRUCT_SIZE_ICONS(icons) \
 	(BANNER_WIBN_STRUCT_SIZE + ((icons)*BANNER_WIBN_ICON_SIZE))
 
-typedef struct PACKED _wii_savegame_header_t {
-	uint32_t magic;			// BANNER_MAGIC_WIBN
-	uint32_t flags;
-	uint16_t iconDelay;		// Similar to GCN.
-	uint8_t reserved[22];
-	uint16_t gameTitle[32];		// Game title. (UTF-16 BE)
-	uint16_t gameSubTitle[32];	// Game subtitle. (UTF-16 BE)
-} wii_savegame_header_t;
-ASSERT_STRUCT(wii_savegame_header_t, 160);
+/**
+ * Wii save game banner header.
+ * Reference: https://wiibrew.org/wiki/Savegame_Files#Banner
+ *
+ * All fields are in big-endian.
+ */
+#define WII_WIBN_MAGIC 'WIBN'
+typedef struct PACKED _Wii_WIBN_Header_t {
+	uint32_t magic;			// [0x000] 'WIBN'
+	uint32_t flags;			// [0x004] Flags. (See Wii_WIBN_Flags_e.)
+	uint16_t iconspeed;		// [0x008] Similar to GCN.
+	uint8_t reserved[22];		// [0x00A]
+	char16_t gameTitle[32];		// [0x020] Game title. (UTF-16 BE)
+	char16_t gameSubTitle[32];	// [0x060] Game subtitle. (UTF-16 BE)
+} Wii_WIBN_Header_t;
+ASSERT_STRUCT(Wii_WIBN_Header_t, 160);
 
-typedef struct PACKED _wii_savegame_banner_t {
-	uint16_t banner[BANNER_WIBN_IMAGE_W*BANNER_WIBN_IMAGE_H];	// Banner image. (192x64, RGB5A3)
-	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];		// Main icon. (48x48, RGB5A3)
-} wii_savegame_banner_t;
-ASSERT_STRUCT(wii_savegame_banner_t, BANNER_WIBN_IMAGE_SIZE+BANNER_WIBN_ICON_SIZE);
-
-typedef struct PACKED _wii_savegame_icon_t {
-	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];	// Additional icon. (48x48, RGB5A3) [optional]
-} wii_savegame_icon_t;
-ASSERT_STRUCT(_wii_savegame_icon_t, BANNER_WIBN_ICON_SIZE);
+/**
+ * Wii save game flags.
+ */
+typedef enum {
+	WII_WIBN_FLAG_NO_COPY		= (1 << 0),	// Cannot copy from NAND normally.
+	WII_WIBN_FLAG_ICON_BOUNCE	= (1 << 4),	// Icon animation "bounces" instead of looping.
+} Wii_WIBN_Flags_e;
 
 // IMET magic number.
 #define WII_IMET_MAGIC 0x494D4554	/* 'IMET' */
@@ -89,11 +96,11 @@ ASSERT_STRUCT(_wii_savegame_icon_t, BANNER_WIBN_ICON_SIZE);
 /**
  * IMET (Wii opening.bnr header)
  * This contains the game title.
- * Reference: http://wiibrew.org/wiki/Opening.bnr#banner.bin_and_icon.bin
+ * Reference: https://wiibrew.org/wiki/Opening.bnr#banner.bin_and_icon.bin
  *
- * All fields are big-endian.
+ * All fields are in big-endian.
  */
-typedef struct _Wii_IMET_t{
+typedef struct _Wii_IMET_t {
 	uint8_t zeroes1[64];
 	uint32_t magic;		// "IMET"
 	uint32_t hashsize;	// Hash length
@@ -125,6 +132,75 @@ typedef enum {
 	// 7 and 8 are unknown. (Chinese?)
 	WII_LANG_KOREAN		= 9,
 } Wii_Language_ID;
+
+/**
+ * Wii save game main header.
+ * This header is always encrypted.
+ * Reference: https://wiibrew.org/wiki/Savegame_Files#Main_header
+ *
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _Wii_SaveGame_Header_t {
+	RVL_TitleID_t savegame_id;	// [0x000] Savegame ID (title ID)
+	uint32_t banner_size;		// [0x008] Size of banner+icons, with header. (max 0xF0A0)
+	uint8_t permissions;		// [0x00C] Permissions (???)
+	uint8_t unknown1;		// [0x00D]
+	uint8_t md5_header[16];		// [0x00E] MD5 of plaintext header, with md5 blanker applied
+	uint8_t unknown2[2];		// [0x01E]
+} Wii_SaveGame_Header_t;
+ASSERT_STRUCT(Wii_SaveGame_Header_t, 32);
+
+/**
+ * Wii save game Bk (backup) header.
+ * This header is always unencrypted.
+ * Reference: https://wiibrew.org/wiki/Savegame_Files#Bk_.28.22BacKup.22.29_Header
+ *
+ * All fields are in big-endian.
+ */
+#define WII_BK_SIZE 0x70
+#define WII_BK_MAGIC 'Bk'
+#define WII_BK_VERSION 0x0001
+typedef struct PACKED _Wii_Bk_Header_t {
+	union {
+		struct {
+			uint32_t size;		// [0x000] Size of the header. (0x070)
+			uint16_t magic;		// [0x004] Magic. ('Bk')
+			uint16_t version;	// [0x006] Version. (0x0001)
+		};
+		uint8_t full_magic[0x008];	// [0x000] 8-byte magic.
+	};
+	uint32_t ng_id;		// [0x008] NG id
+	uint32_t num_files;	// [0x00C] Number of files.
+	uint32_t size_files;	// [0x010] Size of files.
+	uint32_t unknown1[2];	// [0x014]
+	uint32_t total_size;	// [0x01C] Total size.
+	uint8_t unknown2[64];	// [0x020]
+	uint32_t unknown3;	// [0x060]
+	char id4[4];		// [0x064] Game ID.
+	uint8_t wii_mac[6];	// [0x068] MAC address of the originating Wii.
+	uint8_t unknown4[2];	// [0x06E]
+	uint8_t padding[16];	// [0x070] 64-byte alignment.
+} Wii_Bk_Header_t;
+ASSERT_STRUCT(Wii_Bk_Header_t, 0x70+0x10);
+
+/**
+ * Wii save game file header.
+ * Reference: https://wiibrew.org/wiki/Savegame_Files#File_Header
+ *
+ * All fields are in big-endian.
+ */
+#define WII_SAVEGAME_FILEHEADER_MAGIC 0x03ADF17E
+typedef struct PACKED _Wii_SaveGame_FileHeader_t {
+	uint32_t magic;		// [0x000] Magic. (0x03ADF17E)
+	uint32_t size;		// [0x004] Size of file.
+	uint8_t permissions;	// [0x008] Permissions. (???)
+	uint8_t attributes;	// [0x009] Attributes. (???)
+	uint8_t type;		// [0x00A] Type. (1 == file, 2 == directory)
+	char filename[0x45];	// [0x00B] Filename. (NULL-terminated)
+	uint8_t iv[16];		// [0x050] IV for file decryption.
+	uint8_t unknown[0x20];	// [0x060]
+} Wii_SaveGame_FileHeader_t;
+ASSERT_STRUCT(Wii_SaveGame_FileHeader_t, 0x80);
 
 #pragma pack()
 

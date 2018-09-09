@@ -275,14 +275,6 @@ int IsoPartition::seek(int64_t pos)
 }
 
 /**
- * Seek to the beginning of the partition.
- */
-void IsoPartition::rewind(void)
-{
-	seek(0);
-}
-
-/**
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */

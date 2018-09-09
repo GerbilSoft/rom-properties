@@ -19,7 +19,13 @@
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
-    installable titles. Supports GameTDB image downloads.
+    installable titles. Supports GameTDB image downloads for most WADs,
+    and extracts the internal icon and banner for DLC WADs.
+  * WiiSave: Encrypted Wii save files. These are the data.bin files present
+    on the SD card when copying a save file from the Wii Menu.
+  * WiiWIBN: Wii banner files. These are contained in encrypted Wii save
+    files and Wii DLC WADs, and are present as standalone files in unencrypted
+    Wii save directories as `banner.bin`.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
@@ -36,8 +42,12 @@
   * DMG: Added support for GBX footer. This is used to indicate certain
     cartridge features that either can't be represented in the DMG header
     or aren't properly represented in e.g. unlicensed games.
+  * GameCube: Split the GameCube opening.bnr code into a separate parser.
+    This allows standalone GameCube opening.bnr files to be handled.
   * NES: Added support for the internal footer present in some ROMs. This
     footer is used for, among other things, FamicomBox.
+  * Nintendo3DS: Split the SMDH code into a separate parser. This should
+    make maintenance easier.
 
 * Bug fixes:
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.

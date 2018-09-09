@@ -49,6 +49,7 @@ using std::vector;
 #include "Console/Dreamcast.hpp"
 #include "Console/DreamcastSave.hpp"
 #include "Console/GameCube.hpp"
+#include "Console/GameCubeBNR.hpp"
 #include "Console/GameCubeSave.hpp"
 #include "Console/MegaDrive.hpp"
 #include "Console/N64.hpp"
@@ -57,8 +58,10 @@ using std::vector;
 #include "Console/Sega8Bit.hpp"
 #include "Console/SegaSaturn.hpp"
 #include "Console/SNES.hpp"
+#include "Console/WiiSave.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
+#include "Console/WiiWIBN.hpp"
 
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"
@@ -208,9 +211,11 @@ vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
 pthread_once_t RomDataFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
 pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 
-// TODO: Check all original classes and make sure
-// they do 32-bit checks instead of memcmp().
+// TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
+	// Consoles
+	GetRomDataFns_addr(WiiWIBN, true, 0, 'WIBN'),
+
 	// Handhelds
 	GetRomDataFns_addr(DMG, false, 0x104, 0xCEED6666),
 	GetRomDataFns_addr(GameBoyAdvance, false, 0x04, 0x24FFAE51),
@@ -241,12 +246,14 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(Dreamcast, true),
 	GetRomDataFns(DreamcastSave, true),
 	GetRomDataFns(GameCube, true),
+	GetRomDataFns(GameCubeBNR, true),
 	GetRomDataFns(GameCubeSave, true),
 	GetRomDataFns(MegaDrive, false),
 	GetRomDataFns(N64, false),
 	GetRomDataFns(NES, false),
 	GetRomDataFns(SNES, false),
 	GetRomDataFns(SegaSaturn, false),
+	GetRomDataFns(WiiSave, true),
 	GetRomDataFns(WiiU, true),
 	GetRomDataFns(WiiWAD, true),
 

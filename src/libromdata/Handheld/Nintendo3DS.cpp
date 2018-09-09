@@ -1339,15 +1339,12 @@ void Nintendo3DS::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	if (d->sbptr.file) {
-		delete d->sbptr.file;
-		d->sbptr.file = nullptr;
-	}
-	if (d->sbptr.reader) {
-		delete d->sbptr.reader;
-		d->sbptr.reader = nullptr;
-	}
+	delete d->sbptr.file;
+	delete d->sbptr.reader;
+	d->sbptr.file = nullptr;
+	d->sbptr.reader = nullptr;
 
+	// Call the superclass function.
 	super::close();
 }
 
@@ -1580,11 +1577,7 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
  */
 std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return std::vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
 		case IMG_INT_ICON: {
@@ -1645,11 +1638,7 @@ std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(Image
  */
 uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	RP_D(const Nintendo3DS);
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
@@ -2387,16 +2376,7 @@ int Nintendo3DS::loadFieldData(void)
  */
 int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Nintendo3DS);
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
@@ -2468,16 +2448,7 @@ const IconAnimData *Nintendo3DS::iconAnimData(void) const
  */
 int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
-	assert(pExtURLs != nullptr);
-	if (!pExtURLs) {
-		// No vector.
-		return -EINVAL;
-	}
+	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();
 
 	RP_D(const Nintendo3DS);
