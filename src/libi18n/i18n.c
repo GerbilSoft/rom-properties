@@ -18,6 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
+// NOTE: We need to have at least one file compiled in order to
+// build a static library. Otherwise, CMake will complain.
+
+// Since we don't want any code actually compiled here if NLS is disabled,
+// wrap the whole thing in #ifdef ENABLE_NLS.
+
+#include "libi18n/config.libi18n.h"
+#ifdef ENABLE_NLS
+
 #include "i18n.h"
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
@@ -147,3 +156,5 @@ int rp_i18n_init(void)
 	return 0;
 }
 #endif /* _WIN32 */
+
+#endif /* ENABLE_NLS */
