@@ -105,29 +105,29 @@ public:
 			return os << "(null)";
 		}
 
-		// Field padding buffer.
-		const size_t padbuf_len = cp.width + (cp.quotes ? 1 : 0);
-		unique_ptr<char[]> padbuf(new char[padbuf_len + 2]);
-		padbuf[0] = '\n';
-		memset(padbuf.get() + 1, ' ', padbuf_len);
-		padbuf[padbuf_len] = '\0';
+		// NOTE: We have to use a temporary string here because
+		// the caller might be using setw() for field padding.
+		// TODO: Try optimizing it out while preserving setw().
+		string escaped;
+		escaped.reserve(strlen(cp.str));
 
-		if (cp.quotes) {
-			os << '\'';
-		}
 		for (const char* str = cp.str; *str != 0; str++) {
 			if (cp.width && *str == '\n') {
-				os << padbuf.get();
+				escaped += '\n';
+				escaped.append(cp.width + (cp.quotes?1:0), ' ');
 			} else if ((unsigned char)*str < 0x20) {
 				// Encode control characters using U+2400 through U+241F.
-				os << "\xE2\x90";
-				os << (char)(0x80 + (unsigned char)*str);
+				escaped += "\xE2\x90";
+				escaped += (char)(0x80 + (unsigned char)*str);
 			} else {
-				os << *str;
+				escaped += *str;
 			}
 		}
+
 		if (cp.quotes) {
-			os << '\'';
+			os << '\'' << escaped << '\'';
+		} else {
+			os << escaped;
 		}
 
 		return os;
