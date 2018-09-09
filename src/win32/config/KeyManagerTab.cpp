@@ -1451,6 +1451,12 @@ string KeyManagerTabPrivate::getOpenFileName(const wchar_t *dlgTitle, const wcha
 	if (0) {
 		// TODO: Implement IOpenFileDialog.
 		// This should support >MAX_PATH on Windows 10 v1607 and later.
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb776913%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+		// Requires the following:
+		// - -DWINVER=0x0600
+		// - IFileDialogEvents object
+
+		// TODO: Move to libwin32common and implement everything there.
 	} else {
 		// GetOpenFileName()
 
