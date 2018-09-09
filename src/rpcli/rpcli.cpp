@@ -252,10 +252,10 @@ int RP_C_API main(int argc, char *argv[])
 
 	if(argc < 2){
 #ifdef ENABLE_DECRYPTION
-		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 		cerr << "  -k:   " << C_("rpcli", "Verify encryption keys in keys.conf.") << endl;
 #else /* !ENABLE_DECRYPTION */
-		cerr << C_("rpcli", "Usage: rpcli [-j] [[-x[b]N outfile]... filename]...") << endl;
+		cerr << C_("rpcli", "Usage: rpcli [-j] [[-x[b]N outfile]... [-a apngoutfile] filename]...") << endl;
 #endif /* ENABLE_DECRYPTION */
 		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << endl;
 		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << endl;
