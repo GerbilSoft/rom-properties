@@ -23,9 +23,6 @@
 
 #include "librpbase/common.h"
 
-// C includes.
-#include <stdint.h>
-
 namespace LibRomData {
 
 class GLenumStrings

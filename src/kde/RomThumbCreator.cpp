@@ -22,13 +22,8 @@
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
-// libcachemgr
-#include "libcachemgr/CacheManager.hpp"
-using LibCacheMgr::CacheManager;
-
 // librpbase
 #include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;

@@ -21,7 +21,6 @@
 #include "WiiWIBN.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "data/NintendoPublishers.hpp"
 #include "gcn_card.h"
 #include "wii_banner.h"
 
@@ -40,7 +39,6 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstring>

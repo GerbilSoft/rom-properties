@@ -27,7 +27,6 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 
 #include "librpbase/img/rp_image.hpp"

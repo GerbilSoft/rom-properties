@@ -21,7 +21,6 @@
 #include "WiiWAD.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "gcn_structs.h"
 #include "wii_structs.h"
 #include "wii_wad.h"
 #include "wii_banner.h"
@@ -32,7 +31,6 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
 
 #include "libi18n/i18n.h"
@@ -58,7 +56,6 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-#include <sstream>
 #include <string>
 #include <vector>
 using std::string;

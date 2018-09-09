@@ -21,9 +21,6 @@
 #include "Nintendo3DSSysTitles.hpp"
 #include "libi18n/i18n.h"
 
-// C includes.
-#include <stdlib.h>
-
 namespace LibRomData {
 
 class Nintendo3DSSysTitlesPrivate

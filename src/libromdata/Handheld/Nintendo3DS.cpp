@@ -25,7 +25,6 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "n3ds_structs.h"
-#include "data/NintendoLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"

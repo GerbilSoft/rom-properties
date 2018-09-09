@@ -42,10 +42,6 @@
 
 // librpbase
 #include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/uvector.h"
-#include "librpbase/TextFuncs.hpp"
-
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/RpMemFile.hpp"
 #include "librpbase/file/FileSystem.hpp"

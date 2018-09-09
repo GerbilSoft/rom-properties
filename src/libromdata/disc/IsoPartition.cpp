@@ -23,7 +23,6 @@
 #include "iso_structs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;

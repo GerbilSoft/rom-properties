@@ -33,7 +33,6 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 

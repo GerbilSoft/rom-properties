@@ -42,7 +42,6 @@ using namespace LibRpBase;
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
-#include <cstdio>
 #include <cstring>
 
 // C++ includes.

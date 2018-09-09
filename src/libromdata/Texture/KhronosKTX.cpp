@@ -51,6 +51,7 @@ using namespace LibRpBase;
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 using std::string;
 using std::unique_ptr;

@@ -33,11 +33,7 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
-
-#include "librpbase/img/rp_image.hpp"
-#include "librpbase/img/ImageDecoder.hpp"
 
 #include "libi18n/i18n.h"
 using namespace LibRpBase;

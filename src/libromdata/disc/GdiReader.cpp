@@ -25,7 +25,6 @@
 #include "IsoPartition.hpp"
 
 // librpbase
-#include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/RelatedFile.hpp"

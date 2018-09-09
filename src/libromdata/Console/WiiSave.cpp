@@ -38,8 +38,6 @@ using namespace LibRpBase;
 #include "librpbase/crypto/KeyManager.hpp"
 #include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/crypto/AesCipherFactory.hpp"
-# include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
 # include "librpbase/disc/PartitionFile.hpp"
@@ -50,12 +48,10 @@ using namespace LibRpBase;
 #include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
-#include <cstdio>
 #include <cstring>
 
 // C++ includes.
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 using std::string;

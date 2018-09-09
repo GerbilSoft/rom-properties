@@ -21,7 +21,6 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
