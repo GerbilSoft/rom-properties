@@ -494,11 +494,7 @@ uint32_t NintendoBadge::supportedImageTypes_static(void)
  */
 vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const NintendoBadge);
 	if (!d->isValid || (imageType != IMG_INT_ICON && imageType != IMG_INT_IMAGE)) {
@@ -564,11 +560,7 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
  */
 uint32_t NintendoBadge::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	switch (imageType) {
 		case IMG_INT_ICON:
@@ -768,16 +760,7 @@ int NintendoBadge::loadFieldData(void)
  */
 int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(NintendoBadge);
 	if (!d->file) {

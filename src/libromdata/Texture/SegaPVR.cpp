@@ -853,11 +853,7 @@ uint32_t SegaPVR::supportedImageTypes_static(void)
  */
 vector<RomData::ImageSizeDef> SegaPVR::supportedImageSizes(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const SegaPVR);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
@@ -880,11 +876,7 @@ vector<RomData::ImageSizeDef> SegaPVR::supportedImageSizes(ImageType imageType) 
  */
 uint32_t SegaPVR::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	RP_D(const SegaPVR);
 	if (imageType != IMG_INT_IMAGE) {
@@ -1091,16 +1083,7 @@ int SegaPVR::loadMetaData(void)
  */
 int SegaPVR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(SegaPVR);
 	if (imageType != IMG_INT_IMAGE) {

@@ -571,11 +571,7 @@ uint32_t Dreamcast::supportedImageTypes_static(void)
  */
 vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const Dreamcast);
 	if (!d->isValid || imageType != IMG_INT_MEDIA) {
@@ -596,11 +592,7 @@ vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes(ImageType imageType
  */
 vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_INT_MEDIA) {
 		// Only IMG_INT_MEDIA is supported.
@@ -866,16 +858,7 @@ int Dreamcast::loadMetaData(void)
  */
 int Dreamcast::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Dreamcast);
 	if (imageType != IMG_INT_MEDIA) {

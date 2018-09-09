@@ -744,11 +744,7 @@ uint32_t KhronosKTX::supportedImageTypes_static(void)
  */
 vector<RomData::ImageSizeDef> KhronosKTX::supportedImageSizes(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const KhronosKTX);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
@@ -773,11 +769,7 @@ vector<RomData::ImageSizeDef> KhronosKTX::supportedImageSizes(ImageType imageTyp
  */
 uint32_t KhronosKTX::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	RP_D(const KhronosKTX);
 	if (imageType != IMG_INT_IMAGE) {
@@ -926,16 +918,7 @@ int KhronosKTX::loadFieldData(void)
  */
 int KhronosKTX::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(KhronosKTX);
 	if (imageType != IMG_INT_IMAGE) {

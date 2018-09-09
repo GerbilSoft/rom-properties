@@ -1033,11 +1033,7 @@ uint32_t DirectDrawSurface::supportedImageTypes_static(void)
  */
 vector<RomData::ImageSizeDef> DirectDrawSurface::supportedImageSizes(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
@@ -1060,11 +1056,7 @@ vector<RomData::ImageSizeDef> DirectDrawSurface::supportedImageSizes(ImageType i
  */
 uint32_t DirectDrawSurface::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	RP_D(const DirectDrawSurface);
 	if (imageType != IMG_INT_IMAGE) {
@@ -1409,16 +1401,7 @@ int DirectDrawSurface::loadMetaData(void)
  */
 int DirectDrawSurface::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(DirectDrawSurface);
 	if (imageType != IMG_INT_IMAGE) {

@@ -351,11 +351,7 @@ uint32_t GameCubeBNR::supportedImageTypes_static(void)
  */
 std::vector<RomData::ImageSizeDef> GameCubeBNR::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return std::vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_INT_BANNER) {
 		// Only banners are supported.
@@ -380,11 +376,7 @@ std::vector<RomData::ImageSizeDef> GameCubeBNR::supportedImageSizes_static(Image
  */
 uint32_t GameCubeBNR::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	if (imageType == IMG_INT_BANNER) {
 		// Use nearest-neighbor scaling.
@@ -465,16 +457,7 @@ int GameCubeBNR::loadFieldData(void)
  */
 int GameCubeBNR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	assert(pImage != nullptr);
-	if (!pImage) {
-		// Invalid parameters.
-		return -EINVAL;
-	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		*pImage = nullptr;
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	if (imageType != IMG_INT_BANNER) {
 		// Only IMG_INT_BANNER is supported by GameCubeBNR.

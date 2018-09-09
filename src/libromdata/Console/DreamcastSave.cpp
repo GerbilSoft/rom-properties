@@ -1154,11 +1154,7 @@ uint32_t DreamcastSave::supportedImageTypes_static(void)
  */
 std::vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return std::vector<ImageSizeDef>();
-	}
+	ASSERT_supportedImageSizes(imageType);
 
 	switch (imageType) {
 		case IMG_INT_ICON: {
@@ -1194,11 +1190,7 @@ std::vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes_static(Ima
  */
 uint32_t DreamcastSave::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
+	ASSERT_imgpf(imageType);
 
 	uint32_t ret = 0;
 	switch (imageType) {
@@ -1453,11 +1445,7 @@ int DreamcastSave::loadFieldData(void)
  */
 int DreamcastSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
+	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(DreamcastSave);
 	switch (imageType) {
