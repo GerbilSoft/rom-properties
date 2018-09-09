@@ -1331,8 +1331,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 				break;
 			case 1: {
 				// Latin-1. Convert it.
-				// TODO: utf8_to_latin1() wrapper that takes std::string?
-				char *const latin1_str = strdup(utf8_to_latin1(value.c_str(), (int)value.size()).c_str());
+				char *const latin1_str = strdup(utf8_to_latin1(value).c_str());
 				vU8toL1.push_back(latin1_str);
 				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
 				pTxt->key = (png_charp)kv[i].first;

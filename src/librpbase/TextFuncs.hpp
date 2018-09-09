@@ -254,6 +254,17 @@ std::u16string latin1_to_utf16(const char *str, int len);
 std::string utf8_to_latin1(const char *str, int len);
 
 /**
+ * Convert UTF-8 text to Latin-1 (ISO-8859-1).
+ * Trailing NULL bytes will be removed.
+ * @param str UTF-8 text.
+ * @return Latin-1 string.
+ */
+static inline std::string utf8_to_latin1(const std::string &str)
+{
+	return utf8_to_latin1(str.data(), static_cast<int>(str.size()));
+}
+
+/**
  * Convert UTF-16 Latin-1 (ISO-8859-1).
  * Trailing NULL bytes will be removed.
  * @param wcs UTF-16 text.
