@@ -66,8 +66,7 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	}
 
 	// Convert the palette.
-	// TODO: Optimize using pointers instead of indexes?
-	uint32_t *palette = img->palette();
+	uint32_t *const palette = img->palette();
 	assert(img->palette_len() >= 16);
 	if (img->palette_len() < 16) {
 		// Not enough colors...
@@ -75,15 +74,17 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 		return nullptr;
 	}
 
-	palette[0] = 0; // Color 0 is always transparent.
-	img->set_tr_idx(0);
-	for (unsigned int i = 1; i < 16; i += 2) {
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+	for (unsigned int i = 0; i < 16; i += 2) {
 		// NDS color format is BGR555.
 		palette[i+0] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
 		palette[i+1] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 	}
-	// NOTE: rp_image initializes the palette to 0,
-	// so we don't need to clear the remaining colors.
+	// Color 0 is always transparent.
+	// NOTE: Not special-casing color 0 in order to prevent an off-by-one.
+	palette[0] = 0;
+	img->set_tr_idx(0);
 
 	// Calculate the total number of tiles.
 	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
