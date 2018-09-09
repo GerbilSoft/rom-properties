@@ -41,9 +41,8 @@ IF(MSVC)
 	# Precompiled headers.
 	# NOTE: Only enabling PCH for MSVC builds.
 	INCLUDE(PrecompiledHeader)
-	SET(rom-properties-rpcli_PCH_C stdafx.c)
 	SET(rom-properties-rpcli_PCH_CXX stdafx.cpp)
-	SET(rom-properties-rpcli_PCH_SRC ${rom-properties-rpcli_PCH_C} ${rom-properties-rpcli_PCH_CXX})
+	SET(rom-properties-rpcli_PCH_SRC ${rom-properties-rpcli_PCH_CXX})
 	SET(rom-properties-rpcli_PCH_H stdafx.h)
 
 	# Delay-load sources.
