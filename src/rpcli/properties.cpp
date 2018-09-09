@@ -716,7 +716,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	      " detected" << endl;
 	os << FieldsOutput(*(romdata->fields())) << endl;
 
-	int supported = romdata->supportedImageTypes();
+	const int supported = romdata->supportedImageTypes();
 
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
 		if (!(supported & (1 << i)))
@@ -779,7 +779,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	}
 	os << ",\"fields\":" << JSONFieldsOutput(*(romdata->fields()));
 
-	int supported = romdata->supportedImageTypes();
+	const int supported = romdata->supportedImageTypes();
 
 	bool first = true;
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
