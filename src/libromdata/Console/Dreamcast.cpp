@@ -571,21 +571,44 @@ uint32_t Dreamcast::supportedImageTypes_static(void)
  */
 vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes(ImageType imageType) const
 {
-	// TODO: Forward to pvrData.
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return vector<ImageSizeDef>();
 	}
 
-	RP_D(Dreamcast);
+	RP_D(const Dreamcast);
 	if (!d->isValid || imageType != IMG_INT_MEDIA) {
+		// Only IMG_INT_MEDIA is supported.
 		return vector<ImageSizeDef>();
 	}
 
-	// TODO: Return the image's size.
-	// For now, just return a generic image.
-	const ImageSizeDef imgsz[] = {{nullptr, 0, 0, 0}};
+	// TODO: Actually check the PVR.
+	// Assuming 256x256 for now.
+	static const ImageSizeDef imgsz[] = {{nullptr, 256, 256, 0}};
+	return vector<ImageSizeDef>(imgsz, imgsz + 1);
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return vector<ImageSizeDef>();
+	}
+
+	if (imageType != IMG_INT_MEDIA) {
+		// Only IMG_INT_MEDIA is supported.
+		return vector<ImageSizeDef>();
+	}
+
+	// NOTE: Assuming the PVR is 256x256.
+	static const ImageSizeDef imgsz[] = {{nullptr, 256, 256, 0}};
 	return vector<ImageSizeDef>(imgsz, imgsz + 1);
 }
 
