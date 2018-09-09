@@ -39,7 +39,7 @@
     audio rips, including Sega Mega Drive and Neo Geo Pocket
 
 * New parser features:
-  * DMG: Added support for GBX footer. This is used to indicate certain
+  * DMG: Added support for the GBX footer. This is used to indicate certain
     cartridge features that either can't be represented in the DMG header
     or aren't properly represented in e.g. unlicensed games.
   * GameCube: Split the GameCube opening.bnr code into a separate parser.
