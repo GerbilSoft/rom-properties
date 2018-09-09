@@ -782,7 +782,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	if (ret == 0) {
 		// String table read successfully.
 		// TODO: Reduce copying?
-		pVsSfi->insert(std::make_pair(langID, st));
+		pVsSfi->insert(std::make_pair(langID, std::move(st)));
 	}
 
 	// Version information read successfully.
