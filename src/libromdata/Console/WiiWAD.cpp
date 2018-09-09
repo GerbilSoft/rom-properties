@@ -40,12 +40,11 @@ using namespace LibRpBase;
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
+#include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/AesCipherFactory.hpp"
 # include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/disc/CBCReader.hpp"
-// Key verification.
-# include "disc/WiiPartition.hpp"
 // For sections delegated to other RomData subclasses.
 # include "librpbase/disc/PartitionFile.hpp"
 # include "WiiWIBN.hpp"
@@ -879,12 +878,15 @@ int WiiWAD::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
+#ifdef ENABLE_DECRYPTION
 	// Do we have a WIBN header?
 	// If so, we don't have IMET data.
 	if (d->wibnData) {
 		// Add the WIBN data.
 		d->fields->addFields_romFields(d->wibnData->fields(), 0);
-	} else {
+	} else
+#endif /* ENABLE_DECRYPTION */
+	{
 		// No WIBN data.
 		// Get the IMET data if it's available.
 		string gameInfo = d->getGameInfo();
@@ -972,10 +974,12 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -EIO;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	// Forward this call to the WiiWIBN object.
 	if (d->wibnData) {
 		return d->wibnData->loadInternalImage(imageType, pImage);
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// No WiiWIBN object.
 	*pImage = nullptr;
@@ -992,11 +996,13 @@ int WiiWAD::loadInternalImage(ImageType imageType, const rp_image **pImage)
  */
 const IconAnimData *WiiWAD::iconAnimData(void) const
 {
+#ifdef ENABLE_DECRYPTION
 	// Forward this call to the WiiWIBN object.
 	RP_D(const WiiWAD);
 	if (d->wibnData) {
 		return d->wibnData->iconAnimData();
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// No WiiWIBN object.
 	return nullptr;
@@ -1035,9 +1041,24 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// If it is, this is a DLC WAD, so the title ID
 	// won't match anything on GameTDB.
 	RP_D(const WiiWAD);
+#ifdef ENABLE_DECRYPTION
 	if (d->wibnData) {
 		// WiiWIBN is present.
+		// This means the boxart is not available on GameTDB,
+		// since it's a DLC WAD.
 		return -ENOENT;
+	} else
+#endif /* ENABLE_DECRYPTION */
+	{
+		// If the first letter of the ID4 is lowercase,
+		// that means it's a DLC title. GameTDB doesn't
+		// have artwork for DLC titles.
+		// FIXME: NEEDS TESTING BEFORE COMMIT
+		char sysID = be32_to_cpu(d->tmdHeader.title_id.lo) >> 24;
+		if (ISLOWER(sysID)) {
+			// It's lowercase.
+			return -ENOENT;
+		}
 	}
 
 	// Check for a valid TID hi.

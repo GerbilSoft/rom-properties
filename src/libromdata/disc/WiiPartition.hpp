@@ -106,7 +106,6 @@ class WiiPartition : public GcnPartition
 		 */
 		EncKey encKey(void) const;
 
-#ifdef ENABLE_DECRYPTION
 	public:
 		// Encryption key indexes.
 		enum EncryptionKeys {
@@ -124,6 +123,8 @@ class WiiPartition : public GcnPartition
 			Key_Max
 		};
 
+#ifdef ENABLE_DECRYPTION
+	public:
 		/**
 		 * Get the total number of encryption key names.
 		 * @return Number of encryption key names.

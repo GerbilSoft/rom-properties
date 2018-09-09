@@ -36,12 +36,11 @@ using namespace LibRpBase;
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
+#include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/AesCipherFactory.hpp"
 # include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/disc/CBCReader.hpp"
-// Key verification.
-# include "disc/WiiPartition.hpp"
 // For sections delegated to other RomData subclasses.
 # include "librpbase/disc/PartitionFile.hpp"
 # include "WiiWIBN.hpp"
@@ -464,8 +463,13 @@ uint32_t WiiSave::supportedImageTypes_static(void)
  */
 std::vector<RomData::ImageSizeDef> WiiSave::supportedImageSizes_static(ImageType imageType)
 {
+#ifdef ENABLE_DECRYPTION
 	// TODO: Check the actual WiiWIBN object?
 	return WiiWIBN::supportedImageSizes_static(imageType);
+#else /* !ENABLE_DECRYPTION */
+	// TODO: Return the correct size information anyway?
+	return std::vector<RomData::ImageSizeDef>();
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -485,11 +489,13 @@ uint32_t WiiSave::imgpf(ImageType imageType) const
 		return 0;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	RP_D(const WiiSave);
 	if (d->wibnData) {
 		// Return imgpf from the WiiWIBN object.
 		return d->wibnData->imgpf(imageType);
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// No image processing flags by default.
 	return 0;
@@ -593,11 +599,13 @@ int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -ERANGE;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	// Forward this call to the WiiWIBN object.
 	RP_D(WiiSave);
 	if (d->wibnData) {
 		return d->wibnData->loadInternalImage(imageType, pImage);
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// No WiiWIBN object.
 	*pImage = nullptr;
@@ -614,11 +622,13 @@ int WiiSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
  */
 const IconAnimData *WiiSave::iconAnimData(void) const
 {
+#ifdef ENABLE_DECRYPTION
 	// Forward this call to the WiiWIBN object.
 	RP_D(const WiiSave);
 	if (d->wibnData) {
 		return d->wibnData->iconAnimData();
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	// No WiiWIBN object.
 	return nullptr;
