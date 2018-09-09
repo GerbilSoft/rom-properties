@@ -299,7 +299,7 @@ int GBS::loadFieldData(void)
 	// TODO: Timer modulo and control?
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**
@@ -347,7 +347,7 @@ int GBS::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

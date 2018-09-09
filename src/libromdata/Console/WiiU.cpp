@@ -525,7 +525,7 @@ int WiiU::loadFieldData(void)
 		latin1_to_utf8(d->discHeader.region, sizeof(d->discHeader.region)));
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

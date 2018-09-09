@@ -317,7 +317,7 @@ int SID::loadFieldData(void)
 	// TODO: v2+ fields.
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**
@@ -366,7 +366,7 @@ int SID::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

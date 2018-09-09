@@ -944,7 +944,7 @@ int DMG::loadFieldData(void)
 			d->formatROMSizeKiB(be32_to_cpu(gbxFooter->ram_size)));
 	}
 
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

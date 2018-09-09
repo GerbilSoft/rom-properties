@@ -324,7 +324,7 @@ int NSF::loadFieldData(void)
 		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**
@@ -372,7 +372,7 @@ int NSF::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }

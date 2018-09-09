@@ -1668,7 +1668,7 @@ int GameCube::loadFieldData(void)
 	if (!d->discReader) {
 		// Cannot read the disc contents.
 		// We're done for now.
-		return (int)d->fields->count();
+		return static_cast<int>(d->fields->count());
 	}
 
 	// Region code.
@@ -1723,7 +1723,7 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Finished reading the field data.
-		return (int)d->fields->count();
+		return static_cast<int>(d->fields->count());
 	}
 	
 	/** Wii-specific fields. **/
@@ -1962,7 +1962,7 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 /**

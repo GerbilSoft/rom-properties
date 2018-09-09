@@ -417,7 +417,7 @@ int VirtualBoy::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("VirtualBoy", "Region"), region);
 
-	return (int)d->fields->count();
+	return static_cast<int>(d->fields->count());
 }
 
 }
