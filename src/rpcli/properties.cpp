@@ -244,8 +244,9 @@ public:
 		unique_ptr<size_t[]> colSize(new size_t[col_count]());
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
-			for (int i = (int)listDataDesc.names->size()-1; i >= 0; i--) {
-				colSize[i] = listDataDesc.names->at(i).size();
+			int i = 0;
+			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
+				colSize[i] = it->size();
 			}
 		}
 
@@ -268,9 +269,10 @@ public:
 		bool skipFirstNL = true;
 		if (listDataDesc.names) {
 			// Print the column names.
-			for (int i = 0; i < (int)listDataDesc.names->size(); i++) {
+			size_t i = 0;
+			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
 				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
-				os << '|' << setw(colSize[i]) << listDataDesc.names->at(i);
+				os << '|' << setw(colSize[i]) << *it;
 			}
 			os << '|' << endl << Pad(field.width) << string(totalWidth, '-');
 			// Don't skip the first newline, since we're
@@ -285,7 +287,6 @@ public:
 			colSize[0] -= 4;
 		}
 		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-			int i = 0;
 			if (!skipFirstNL) {
 				os << endl << Pad(field.width);
 			} else {
@@ -296,8 +297,9 @@ public:
 				os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
 				checkboxes >>= 1;
 			}
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-				os << setw(colSize[i++]) << SafeString(jt->c_str(), false) << '|';
+			size_t i = 0;
+			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++i) {
+				os << setw(colSize[i]) << SafeString(jt->c_str(), false) << '|';
 			}
 		}
 		return os;
@@ -608,9 +610,12 @@ public:
 							os << ((checkboxes & 1) ? "true" : "false") << ',';
 							checkboxes >>= 1;
 						}
+
+						bool did_one = false;
 						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-							if (jt != it->cbegin()) os << ',';
+							if (!did_one) os << ',';
 							os << JSONString(jt->c_str());
+							did_one = true;
 						}
 						os << ']';
 					}
@@ -743,7 +748,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		if (ret != 0 || extURLs.empty())
 			continue;
 
-		for (auto iter = extURLs.cbegin(); iter != extURLs.end(); ++iter) {
+		for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 			os << "-- " <<
 				RomData::getImageTypeName((RomData::ImageType)i) << ": " << iter->url <<
 				" (cache_key: " << iter->cache_key << ')' << endl;
@@ -853,7 +858,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		os << ",\"exturls\":[";
 		bool firsturl = true;
 
-		for (auto iter = extURLs.cbegin(); iter != extURLs.end(); ++iter) {
+		for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 			if (firsturl) firsturl = false;
 			else os << ',';
 
