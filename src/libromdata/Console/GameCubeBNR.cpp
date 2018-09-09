@@ -357,20 +357,16 @@ std::vector<RomData::ImageSizeDef> GameCubeBNR::supportedImageSizes_static(Image
 		return std::vector<ImageSizeDef>();
 	}
 
-	switch (imageType) {
-		case IMG_INT_BANNER: {
-			static const ImageSizeDef sz_INT_BANNER[] = {
-				{nullptr, GCN_BANNER_IMAGE_W, GCN_BANNER_IMAGE_H, 0},
-			};
-			return vector<ImageSizeDef>(sz_INT_BANNER,
-				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
-		}
-		default:
-			break;
+	if (imageType != IMG_INT_BANNER) {
+		// Only banners are supported.
+		return std::vector<ImageSizeDef>();
 	}
 
-	// Unsupported image type.
-	return std::vector<ImageSizeDef>();
+	static const ImageSizeDef sz_INT_BANNER[] = {
+		{nullptr, GCN_BANNER_IMAGE_W, GCN_BANNER_IMAGE_H, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_BANNER,
+		sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
 }
 
 /**
