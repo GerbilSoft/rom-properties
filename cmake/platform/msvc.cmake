@@ -75,12 +75,9 @@ IF(NOT CMAKE_SIZEOF_VOID_P)
 	# Set it based on CMAKE_SYSTEM_PROCESSOR.
 	# FIXME: This won't work if we're cross-compiling, e.g. using
 	# the x86_amd64 or amd64_x86 toolchains.
-	IF(CPU_amd64 OR CPU_ia64)
+	IF(CMAKE_CL_64)
 		SET(CMAKE_SIZEOF_VOID_P 8)
-	ELSEIF(CPU_i386)
-		SET(CMAKE_SIZEOF_VOID_P 4)
 	ELSE()
-		# Assume other CPUs are 32-bit.
 		SET(CMAKE_SIZEOF_VOID_P 4)
 	ENDIF()
 ENDIF(NOT CMAKE_SIZEOF_VOID_P)
