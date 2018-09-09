@@ -1058,6 +1058,8 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_VAR(0x0800, "Inkling", splatoon_inkling_variants),
 	AMIIBO_CHAR_ID_ONE(0x0801, "Callie"),
 	AMIIBO_CHAR_ID_ONE(0x0802, "Marie"),
+	AMIIBO_CHAR_ID_ONE(0x0803, "Pearl"),
+	AMIIBO_CHAR_ID_ONE(0x0804, "Marina"),
 
 	// Mario Sports Superstars (character series = 0x09C)
 	AMIIBO_CHAR_ID_VAR(0x09C0, "Mario", mss_mario_variants),
@@ -2142,6 +2144,10 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 
 	// Special Pokémon [0x0375]
 	{  0, 0, "Detective Pikachu"},		// 0x0375
+
+	// Splatoon: Wave 4 [0x0376-0x377]
+	{  0, 4, "Pearl"},			// 0x0376
+	{  0, 4, "Marina"},			// 0x0377
 };
 
 /** AmiiboData **/
@@ -2223,7 +2229,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0375)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0377)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
