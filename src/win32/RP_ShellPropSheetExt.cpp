@@ -2052,7 +2052,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	} else {
 		// Make sure this isn't a directory.
 		// TODO: Other checks?
-		// TODO BEFORE COMMIT: check if it's actually called for dirs
+		// TODO: Check if it's actually called for directories.
 		DWORD dwAttr = GetFileAttributes(filename);
 		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
 		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))

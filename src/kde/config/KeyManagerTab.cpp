@@ -195,7 +195,6 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			break;
 
 		case KeyStoreQt::Import_NoKeysImported:
-			// TODO: If keys were imported, use ':' instead of '.'.
 			msg = rp_sprintf(C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
@@ -209,7 +208,6 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			// NOTE: Formatting numbers using ostringstream() because
 			// MSVC's printf() doesn't support thousands separators.
 			// TODO: CMake checks?
-			// TODO: If keys were imported, use ':' instead of '.'.
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			ostringstream s_keyCount;
 			s_keyCount << keyCount;

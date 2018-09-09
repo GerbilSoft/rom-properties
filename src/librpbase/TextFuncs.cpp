@@ -390,7 +390,6 @@ void trimEnd(string &str)
 {
 	// NOTE: No str.empty() check because that's usually never the case here.
 	// TODO: Check for U+3000? (UTF-8: "\xE3\x80\x80")
-	// TODO: Move to TextFuncs and add unit tests?
 	size_t sz = str.size();
 	const char *p_start = str.c_str();
 	for (const char *p = p_start + sz - 1; p >= p_start; p--) {
@@ -411,8 +410,6 @@ void trimEnd(string &str)
  */
 string formatSampleAsTime(unsigned int sample, unsigned int rate)
 {
-	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
-	// used by multiple parsers.
 	char buf[32];
 	unsigned int min, sec, cs;
 
@@ -443,8 +440,6 @@ string formatSampleAsTime(unsigned int sample, unsigned int rate)
  */
 unsigned int convSampleToMs(unsigned int sample, unsigned int rate)
 {
-	// TODO: Move to TextFuncs (TimeFuncs?) if this will be
-	// used by multiple parsers.
 	const unsigned int ms_frames = (sample % rate);
 	unsigned int sec, ms;
 	if (ms_frames != 0) {

@@ -73,15 +73,10 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	// buffer when rp_image is deleted. Note that this may crash
 	// if QImages aren't detached before the rp_image is deleted.
 
-	// FIXME: Need to test with Qt4 to make sure this doesn't break!
-	// TODO: Manually hack into QImageData and set own_data?
-	// This will call free(), which is usually fine on POSIX systems
-	// when using POSIX aligned memory allocation functions.
-
 	// Create the QImage using the allocated memory buffer.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	m_qImage = QImage(data, width, height, this->stride, qfmt, aligned_free, data);
-#else
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	m_qImage = QImage(data, width, height, this->stride, qfmt);
 #endif
 	if (m_qImage.isNull()) {
@@ -97,7 +92,7 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	QImage::DataPtr d = m_qImage.data_ptr();
 	d->own_data = true;
 	d->ro_data = false;
-#endif
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 
 	// We're using the full stride for the last row
 	// to make it easier to manage. (Qt does this as well.)

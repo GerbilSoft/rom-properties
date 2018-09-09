@@ -268,7 +268,6 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 	if (!key)
 		return QVariant();
 
-	// TODO: Make KeyStoreUI templated so we can use QString directly?
 	switch (role) {
 		case Qt::DisplayRole:
 			switch (index.column()) {
