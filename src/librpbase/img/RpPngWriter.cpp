@@ -85,9 +85,11 @@
 #include <csetjmp>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
@@ -1313,9 +1315,8 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	// Allocate string pointer arrays for kv_vector.
 	// Since kv_vector is Latin-1, we don't have to
 	// strdup() the strings.
-	// TODO: unique_ptr<>?
-	png_text *text = new png_text[kv.size()];
-	png_text *pTxt = text;
+	unique_ptr<png_text> text(new png_text[kv.size()]);
+	png_text *pTxt = text.get();
 	for (unsigned int i = 0; i < kv.size(); i++, pTxt++) {
 		// Check if the string is ASCII, Latin-1, or other.
 		const string &value = kv[i].second;
@@ -1369,7 +1370,6 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	// WARNING: Do NOT initialize any C++ objects past this point!
 	if (setjmp(png_jmpbuf(d->png_ptr))) {
 		// PNG write failed.
-		delete[] text;
 		for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
 			free(*iter);
 		}
@@ -1378,8 +1378,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
-	png_set_text(d->png_ptr, d->info_ptr, text, static_cast<int>(kv.size()));
-	delete[] text;
+	png_set_text(d->png_ptr, d->info_ptr, text.get(), static_cast<int>(kv.size()));
 	for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
 		free(*iter);
 	}
