@@ -25,6 +25,7 @@
 #include "gtest/gtest.h"
 
 // MiniZip
+#include <zlib.h>
 #include "mz_zip.h"
 #include "mz_compat.h"
 
