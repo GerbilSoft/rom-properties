@@ -1,5 +1,5 @@
 /* mz_zip_rw.c -- Zip reader/writer
-   Version 2.5.1, August 18, 2018
+   Version 2.5.2, August 27, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -51,6 +51,7 @@ typedef struct mz_zip_reader_s {
                 entry_cb;
     uint8_t     raw;
     uint8_t     buffer[UINT16_MAX];
+    uint8_t     legacy_encoding;
 } mz_zip_reader;
 
 /***************************************************************************/
@@ -351,6 +352,14 @@ int32_t mz_zip_reader_entry_get_info(void *handle, mz_zip_file **file_info)
     return err;
 }
 
+int32_t mz_zip_reader_entry_is_dir(void *handle)
+{
+    mz_zip_reader *reader = (mz_zip_reader *)handle;
+    if (mz_zip_reader_is_open(handle) != MZ_OK)
+        return MZ_PARAM_ERROR;
+    return mz_zip_entry_is_dir(reader->zip_handle);
+}
+
 int32_t mz_zip_reader_entry_save_process(void *handle, void *stream, mz_stream_write_cb write_cb)
 {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
@@ -452,6 +461,8 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
     void *file_stream = NULL;
     int32_t err = MZ_OK;
     int32_t err_cb = MZ_OK;
+    int32_t err_attrib = 0;
+    int32_t target_attrib = 0;
     char directory[512];
 
     if (mz_zip_reader_is_open(reader) != MZ_OK)
@@ -468,7 +479,7 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
     // If it is a directory entry then create a directory instead of writing file
     if (mz_zip_entry_is_dir(reader->zip_handle) == MZ_OK)
     {
-        err = mz_make_dir(directory);
+        err = mz_dir_make(directory);
         return err;
     }
 
@@ -483,7 +494,7 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
     // Create the output directory if it doesn't already exist
     if (mz_os_is_dir(directory) != MZ_OK)
     {
-        err = mz_make_dir(directory);
+        err = mz_dir_make(directory);
         if (err != MZ_OK)
             return err;
     }
@@ -504,6 +515,15 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
         // Set the time of the file that has been created
         mz_os_set_file_date(path, reader->file_info->modified_date, 
             reader->file_info->accessed_date, reader->file_info->creation_date);
+    }
+
+    if (err == MZ_OK)
+    {
+        // Set file attributes for the correct system
+        err_attrib = mz_zip_attrib_convert(MZ_HOST_SYSTEM(reader->file_info->version_madeby), reader->file_info->external_fa,
+            MZ_VERSION_MADEBY_HOST_SYSTEM, &target_attrib);
+        if (err_attrib == MZ_OK)
+            err_attrib = mz_os_set_file_attribs(path, target_attrib);
     }
 
     return err;
@@ -558,6 +578,7 @@ int32_t mz_zip_reader_save_all(void *handle, const char *destination_dir)
     mz_zip_reader *reader = (mz_zip_reader *)handle;
     int32_t err = MZ_OK;
     char path[512];
+    char utf8_name[256];
     char resolved_name[256];
 
     err = mz_zip_reader_goto_first_entry(handle);
@@ -567,7 +588,12 @@ int32_t mz_zip_reader_save_all(void *handle, const char *destination_dir)
         // Construct output path
         path[0] = 0;
 
-        err = mz_path_resolve(reader->file_info->filename, resolved_name, sizeof(resolved_name));
+        if ((reader->legacy_encoding) && (reader->file_info->flag & MZ_ZIP_FLAG_UTF8) == 0)
+            mz_encoding_cp437_to_utf8(reader->file_info->filename, utf8_name, sizeof(utf8_name));
+        else
+            strncpy(utf8_name, reader->file_info->filename, sizeof(utf8_name));
+
+        err = mz_path_resolve(utf8_name, resolved_name, sizeof(resolved_name));
         if (err != MZ_OK)
             break;
 
@@ -617,6 +643,12 @@ int32_t mz_zip_reader_get_raw(void *handle, uint8_t *raw)
         return MZ_PARAM_ERROR;
     *raw = reader->raw;
     return MZ_OK;
+}
+
+void mz_zip_reader_set_legacy_encoding(void *handle, uint8_t legacy_encoding)
+{
+    mz_zip_reader *reader = (mz_zip_reader *)handle;
+    reader->legacy_encoding = legacy_encoding;
 }
 
 void mz_zip_reader_set_overwrite_cb(void *handle, void *userdata, mz_zip_reader_overwrite_cb cb)
@@ -879,8 +911,8 @@ int32_t mz_zip_writer_close(void *handle)
 
     if (writer->mem_stream != NULL)
     {
-        mz_stream_mem_close(writer->file_stream);
-        mz_stream_mem_delete(&writer->file_stream);
+        mz_stream_mem_close(writer->mem_stream);
+        mz_stream_mem_delete(&writer->mem_stream);
     }
 
     return err;
@@ -1096,8 +1128,8 @@ int32_t mz_zip_writer_add_file(void *handle, const char *path, const char *filen
     file_info.version_madeby = MZ_VERSION_MADEBY;
     file_info.compression_method = writer->compress_method;
     file_info.filename = filename;
-    file_info.filename_size = (uint16_t)strlen(filename);
     file_info.uncompressed_size = mz_os_get_file_size(path);
+    file_info.flag = MZ_ZIP_FLAG_UTF8;
 
 #ifdef HAVE_AES
     if (writer->aes)

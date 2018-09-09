@@ -1,5 +1,5 @@
 /* mz_strm.c -- Stream interface
-   Version 2.5.1, August 18, 2018
+   Version 2.5.2, August 27, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -182,7 +182,7 @@ int32_t mz_stream_copy(void *target, void *source, int32_t len)
         if (bytes_to_copy > (int32_t)sizeof(buf))
             bytes_to_copy = sizeof(buf);
         read = mz_stream_read(source, buf, bytes_to_copy);
-        if (read < 0)
+        if (read <= 0)
             return MZ_STREAM_ERROR;
         written = mz_stream_write(target, buf, read);
         if (written != read)

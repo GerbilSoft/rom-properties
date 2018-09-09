@@ -1,5 +1,5 @@
 /* mz.h -- Errors codes, zip flags and magic
-   Version 2.5.1, August 18, 2018
+   Version 2.5.2, August 27, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -19,7 +19,7 @@ extern "C" {
 /***************************************************************************/
 
 // MZ_VERSION
-#define MZ_VERSION                      ("2.5.1")
+#define MZ_VERSION                      ("2.5.2")
 
 // MZ_ERROR
 #define MZ_OK                           (0)  // zlib
@@ -73,6 +73,7 @@ extern "C" {
 #define MZ_ZIP_FLAG_DEFLATE_SUPER_FAST  (MZ_ZIP_FLAG_DEFLATE_FAST | \
                                          MZ_ZIP_FLAG_DEFLATE_MAX)
 #define MZ_ZIP_FLAG_DATA_DESCRIPTOR     (1 << 3)
+#define MZ_ZIP_FLAG_UTF8                (1 << 11)
 
 // MZ_ZIP64
 #define MZ_ZIP64_AUTO                   (0)
@@ -80,6 +81,7 @@ extern "C" {
 #define MZ_ZIP64_DISABLE                (2)
 
 // MZ_HOST_SYSTEM
+#define MZ_HOST_SYSTEM(VERSION_MADEBY)  ((uint8_t)(VERSION_MADEBY >> 8))
 #define MZ_HOST_SYSTEM_MSDOS            (0)
 #define MZ_HOST_SYSTEM_UNIX             (3)
 #define MZ_HOST_SYSTEM_WINDOWS_NTFS     (10)

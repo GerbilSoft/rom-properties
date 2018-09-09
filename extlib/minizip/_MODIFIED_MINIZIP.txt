@@ -1,8 +1,10 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit 2b3cd16b6fcb1cccf752ec51523cabc02243d60c
-Version 2.5.1.
+commit 67d17c0442f3c8b80ff3ccf006e7d38fd9f90c48
+Merge pull request #307 from driquet/fix-infinite-loop
+
+NOTE: This is v2.5.2 plus some extra patches.
 
 The following changes have been made to the original:
 

@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.5.1, August 18, 2018
+   Version 2.5.2, August 27, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -25,12 +25,10 @@
 #  include <utime.h>
 #  define HAVE_ARC4RANDOM_BUF
 #endif
-#if defined __linux__
-#  if !defined(MZ_ZIP_NO_COMPRESSION) && \
-      !defined(MZ_ZIP_NO_ENCRYPTION) && \
-       defined(HAVE_LIBBSD)
-#    include <bsd/stdlib.h> // arc4random_buf
-#  endif
+#if  defined(HAVE_LIBBSD) && \
+    !defined(MZ_ZIP_NO_COMPRESSION) && \
+    !defined(MZ_ZIP_NO_ENCRYPTION)
+#  include <bsd/stdlib.h> // arc4random_buf
 #else
 #  include <stdlib.h>
 #endif
@@ -43,7 +41,7 @@
 /***************************************************************************/
 
 #if !defined(MZ_ZIP_NO_COMPRESSION) && !defined(MZ_ZIP_NO_ENCRYPTION)
-#if defined(HAVE_LIBBSD) || defined(HAVE_ARC4RANDOM_BUF)
+#if defined(HAVE_ARC4RANDOM_BUF)
 int32_t mz_posix_rand(uint8_t *buf, int32_t size)
 {
     arc4random_buf(buf, size);

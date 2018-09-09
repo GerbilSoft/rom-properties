@@ -1,5 +1,5 @@
 /* mz_strm_posix.c -- Stream for filesystem access for posix/linux
-   Version 2.5.1, August 18, 2018
+   Version 2.5.2, August 27, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -25,7 +25,7 @@
 
 /***************************************************************************/
 
-#if defined(MZ_USE_FILE32API)
+#if defined(MZ_FILE32_API)
 #  define fopen64 fopen
 #  define ftello64 ftell
 #  define fseeko64 fseek

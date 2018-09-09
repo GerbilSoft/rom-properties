@@ -1,5 +1,5 @@
 /* mz_zip_rw.h -- Zip reader/writer
-   Version 2.5.1, August 18, 2018
+   Version 2.5.2, August 27, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -70,6 +70,9 @@ int32_t mz_zip_reader_entry_read(void *handle, const void *buf, int32_t len);
 int32_t mz_zip_reader_entry_get_info(void *handle, mz_zip_file **file_info);
 // Gets the current entry file info
 
+int32_t mz_zip_reader_entry_is_dir(void *handle);
+// Gets the current entry is a directory
+
 int32_t mz_zip_reader_entry_save(void *handle, void *stream, mz_stream_write_cb write_cb);
 // Save the current entry to a steam
 
@@ -99,10 +102,13 @@ void    mz_zip_reader_set_password(void *handle, const char *password);
 // Sets the password required for extraction
 
 void    mz_zip_reader_set_raw(void *handle, uint8_t raw);
-// Sets whether or not we should save the entry raw
+// Sets whether or not it should save the entry raw
 
 int32_t mz_zip_reader_get_raw(void *handle, uint8_t *raw);
-// Gets whether or not we should save the entry raw
+// Gets whether or not it should save the entry raw
+
+void    mz_zip_reader_set_legacy_encoding(void *handle, uint8_t legacy_encoding);
+// Sets whether or not it should support cp437 in zip file names
 
 void    mz_zip_reader_set_overwrite_cb(void *handle, void *userdata, mz_zip_reader_overwrite_cb cb);
 // Callback for what to do when a file is being overwritten

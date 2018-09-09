@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.5.1, August 18, 2018
+   Version 2.5.2, August 27, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -49,9 +49,9 @@ typedef struct mz_zip_file_s
     uint32_t external_fa;               // external file attributes
     uint16_t zip64;                     // zip64 extension mode
 
-    const char     *filename;           // filename string
+    const char     *filename;           // filename utf8 null-terminated string
     const uint8_t  *extrafield;         // extrafield data
-    const char     *comment;            // comment string
+    const char     *comment;            // comment utf8 null-terminated string
 
 #ifdef HAVE_AES
     uint16_t aes_version;               // winzip aes extension if not 0
@@ -88,6 +88,9 @@ int32_t mz_zip_get_version_madeby(void *handle, uint16_t *version_madeby);
 
 int32_t mz_zip_set_version_madeby(void *handle, uint16_t version_madeby);
 // Set the version made by used for writing zip file
+
+int32_t mz_zip_get_stream(void *handle, void **stream);
+// Get a pointer to the stream used to open
 
 /***************************************************************************/
 
@@ -153,8 +156,19 @@ int32_t mz_zip_locate_next_entry(void *handle, void *userdata, mz_zip_locate_ent
 
 /***************************************************************************/
 
-int32_t  mz_zip_attrib_is_dir(int32_t attributes, int32_t version_madeby);
+int32_t mz_zip_attrib_is_dir(int32_t attrib, int32_t version_madeby);
 // Checks to see if the attribute is a directory based on platform
+
+int32_t mz_zip_attrib_convert(uint8_t src_sys, int32_t src_attrib, uint8_t target_sys, int32_t *target_attrib);
+// Converts file attributes from one host system to another
+
+int32_t mz_zip_attrib_posix_to_win32(int32_t posix_attrib, int32_t *win32_attrib);
+// Converts posix file attributes to win32 file attributes
+
+int32_t mz_zip_attrib_win32_to_posix(int32_t win32_attrib, int32_t *posix_attrib);
+// Converts win32 file attributes to posix file attributes
+
+/***************************************************************************/
 
 int32_t  mz_zip_dosdate_to_tm(uint64_t dos_date, struct tm *ptm);
 // Convert dos date/time format to struct tm
@@ -176,6 +190,8 @@ int32_t  mz_zip_ntfs_to_unix_time(uint64_t ntfs_time, time_t *unix_time);
 
 int32_t  mz_zip_unix_to_ntfs_time(time_t unix_time, uint64_t *ntfs_time);
 // Convert unix time to ntfs time
+
+/***************************************************************************/
 
 int32_t  mz_zip_path_compare(const char *path1, const char *path2, uint8_t ignore_case);
 // Compare two paths without regard to slashes
