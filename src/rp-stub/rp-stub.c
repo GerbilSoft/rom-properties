@@ -81,10 +81,9 @@ static void show_version(void)
 # endif /* RP_GIT_DESCRIBE */
 #endif /* RP_GIT_VERSION */
 	putchar('\n');
-	printf("%s", C_("rp-stub",
+	puts(C_("rp-stub",
 		"This program is licensed under the GNU GPL v2.\n"
 		"See http://www.gnu.org/licenses/gpl-2.0.html for more information."));
-	putchar('\n');
 }
 
 static void show_help(const char *argv0)
@@ -170,11 +169,11 @@ int main(int argc, char *argv[])
 	}
 
 	static const struct option long_options[] = {
-		{"size",	required_argument,	nullptr, 's'},
-		{"config",	no_argument,		nullptr, 'c'},
-		{"debug",	no_argument,		nullptr, 'd'},
-		{"help",	no_argument,		nullptr, 'h'},
-		{"version",	no_argument,		nullptr, 'V'},
+		{"size",	required_argument,	NULL, 's'},
+		{"config",	no_argument,		NULL, 'c'},
+		{"debug",	no_argument,		NULL, 'd'},
+		{"help",	no_argument,		NULL, 'h'},
+		{"version",	no_argument,		NULL, 'V'},
 		// TODO: Option to scan for installed plugins.
 
 		{NULL, 0, NULL, 0}

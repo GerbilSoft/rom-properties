@@ -1212,6 +1212,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		int row_num = 0;
 		for (int i = 0; i < row_count; i++) {
 			const vector<string> &data_row = list_data->at(i);
+			// FIXME: Skip even if we don't have checkboxes?
+			// (also check other UI frontends)
 			if (hasCheckboxes && data_row.empty()) {
 				// Skip this row.
 				checkboxes >>= 1;

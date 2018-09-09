@@ -181,7 +181,7 @@ static int CALLBACK MonospacedFontEnumProc(
 	const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
 	DWORD FontType, LPARAM lParam)
 {
-	unordered_set<wstring> *pFonts = reinterpret_cast<unordered_set<wstring>*>(lParam);
+	unordered_set<wstring> *const pFonts = reinterpret_cast<unordered_set<wstring>*>(lParam);
 
 	// Check the font attributes:
 	// - Must be monospaced.
