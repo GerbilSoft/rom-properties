@@ -17,7 +17,7 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-"C" {
+extern "C" {
 #endif
 
 #ifdef HAVE_ZLIB
