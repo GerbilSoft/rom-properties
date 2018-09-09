@@ -270,18 +270,18 @@ ELSE()
 ENDIF()
 
 # CPU-specific and optimized sources.
-# TODO: Move arch detection to platform.cmake.
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+IF(CPU_i386 OR CPU_amd64)
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
 	SET(librpbase_CPU_H cpuflags_x86.h)
 
 	# MSVC does not support MMX intrinsics in 64-bit builds.
 	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
-	# TODO: Disable MMX on all 64-bit builds?
-	IF(NOT MSVC OR NOT CMAKE_CL_64)
+	#
+	# amd64 CPUs support SSE2 as a minimum anyway, so there's
+	# no point in building MMX code for 64-bit.
+	IF(CPU_i386)
 		SET(librpbase_MMX_SRCS byteswap_mmx.c)
-	ENDIF(NOT MSVC OR NOT CMAKE_CL_64)
+	ENDIF(CPU_i386)
 
 	SET(librpbase_SSE2_SRCS
 		byteswap_sse2.c

@@ -263,8 +263,7 @@ IF(ENABLE_DECRYPTION)
 ENDIF(ENABLE_DECRYPTION)
 
 # Optimized sources.
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+IF(CPU_i386 OR CPU_amd64)
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
 	# checks, so even if this does get compiled on a non-glibc system,
@@ -283,10 +282,12 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
 	# MSVC does not support MMX intrinsics in 64-bit builds.
 	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
-	# TODO: Disable MMX on all 64-bit builds?
-	IF(NOT MSVC OR NOT CMAKE_CL_64)
-		SET(libromdata_SSE2_SRCS utils/SuperMagicDrive_mmx.cpp)
-	ENDIF(NOT MSVC OR NOT CMAKE_CL_64)
+	#
+	# amd64 CPUs support SSE2 as a minimum anyway, so there's
+	# no point in building MMX code for 64-bit.
+	IF(CPU_i386)
+		SET(libromdata_MMX_SRCS utils/SuperMagicDrive_mmx.cpp)
+	ENDIF(CPU_i386)
 	SET(libromdata_SSE2_SRCS
 		${libromdata_SSE2_SRCS}
 		utils/SuperMagicDrive_sse2.cpp
@@ -310,7 +311,6 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
 	ENDIF(SSE2_FLAG)
 ENDIF()
-UNSET(arch)
 
 ######################
 # Build the library. #
@@ -321,6 +321,7 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
 	${libromdata_IFUNC_SRCS}
+	${libromdata_MMX_SRCS}
 	${libromdata_SSE2_SRCS}
 	)
 INCLUDE(SetMSVCDebugPath)

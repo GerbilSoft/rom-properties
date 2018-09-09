@@ -33,8 +33,9 @@
 # include "librpbase/cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
 /* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
-/* TODO: Disable MMX on all 64-bit builds? */
-# if !defined(_MSC_VER) || (defined(_M_IX86) && !defined(_M_X64))
+/* In addition, amd64 CPUs all support SSE2 as a minimum, */
+/* so there's no point in building MMX code for 64-bit. */
+# if (defined(_M_IX86) || defined(__i386__)) && !defined(_M_X64) && !defined(__amd64__)
 #  define BYTESWAP_HAS_MMX 1
 # endif
 # define BYTESWAP_HAS_SSE2 1
