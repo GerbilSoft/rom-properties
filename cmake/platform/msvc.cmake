@@ -69,18 +69,15 @@ ENDIF()
 SET(CMAKE_ASM_MASM_FLAGS "/W0 /safeseh" CACHE STRING
      "Flags used by the assembler during all build types.")
 
-# CPU architecture.
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-
 # Check if CMAKE_SIZEOF_VOID_P is set correctly.
 IF(NOT CMAKE_SIZEOF_VOID_P)
 	# CMAKE_SIZEOF_VOID_P isn't set.
 	# Set it based on CMAKE_SYSTEM_PROCESSOR.
 	# FIXME: This won't work if we're cross-compiling, e.g. using
 	# the x86_amd64 or amd64_x86 toolchains.
-	IF(arch MATCHES "^x86_64$|^amd64$|^ia64$")
+	IF(CPU_amd64 OR CPU_ia64)
 		SET(CMAKE_SIZEOF_VOID_P 8)
-	ELSEIF(arch MATCHES "^(i.|x)86$")
+	ELSEIF(CPU_i386)
 		SET(CMAKE_SIZEOF_VOID_P 4)
 	ELSE()
 		# Assume other CPUs are 32-bit.
@@ -91,11 +88,12 @@ ENDIF(NOT CMAKE_SIZEOF_VOID_P)
 # Use stdcall on i386.
 # Applies to unexported functions only.
 # Exported functions must have explicit calling conventions.
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$|^ia64$" AND NOT CMAKE_CL_64)
-	SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Gz")
-	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Gz")
-ENDIF()
-UNSET(arch)
+IF(CPU_i386 OR CPU_amd64)
+	IF(NOT CMAKE_CL_64)
+		SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Gz")
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Gz")
+	ENDIF(NOT CMAKE_CL_64)
+ENDIF(CPU_i386 OR CPU_amd64)
 
 # TODO: Code coverage checking for MSVC?
 IF(ENABLE_COVERAGE)
