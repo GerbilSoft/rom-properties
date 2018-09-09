@@ -53,6 +53,7 @@ using namespace LibRomData;
 // C++ includes.
 #include <algorithm>
 #include <string>
+using std::string;
 using std::wstring;
 
 class KeyManagerTabPrivate
@@ -205,28 +206,17 @@ class KeyManagerTabPrivate
 		wstring wsKeyFileDir;
 
 		/**
-		 * Save the key file directory.
-		 * @param filename Key filename.
-		 */
-		void saveKeyFileDir(const wchar_t *filename);
-
-		/**
-		 * Convert pipes (L'|') to NULLs (L'\0').
+		 * Get a filename using the Open File Name dialog.
 		 *
-		 * This is needed because Win32 file filters use embedded
-		 * NULL characters, but gettext doesn't support that because
-		 * it uses C strings.
+		 * Depending on OS, this may use:
+		 * - Vista+: IOpenFileDialog
+		 * - XP: GetOpenFileName()
 		 *
-		 * @param wstr std::wstring to modify.
+		 * @param dlgTitle Dialog title.
+		 * @param filterSpec Filter specification. (pipe-delimited)
+		 * @return Filename (in UTF-8), or empty string on error.
 		 */
-		static inline void convertPipesToNulls(wstring &wstr)
-		{
-			for (auto iter = wstr.begin(); iter != wstr.end(); ++iter) {
-				if (*iter == L'|') {
-					*iter = L'\0';
-				}
-			}
-		}
+		string getOpenFileName(const wchar_t *dlgTitle, const wchar_t *filterSpec);
 
 		/**
 		 * Import keys from Wii keys.bin. (BootMii format)
@@ -1442,15 +1432,68 @@ void KeyManagerTabPrivate::loadImages(void)
 /** "Import" menu actions. **/
 
 /**
- * Save the key file directory.
- * @param filename Key filename.
+ * Get a filename using the Open File Name dialog.
+ *
+ * Depending on OS, this may use:
+ * - Vista+: IOpenFileDialog
+ * - XP: GetOpenFileName()
+ *
+ * @param dlgTitle Dialog title.
+ * @param filterSpec Filter specification. (pipe-delimited)
+ * @return Filename (in UTF-8), or empty string on error.
  */
-void KeyManagerTabPrivate::saveKeyFileDir(const wchar_t *filename)
+string KeyManagerTabPrivate::getOpenFileName(const wchar_t *dlgTitle, const wchar_t *filterSpec)
 {
-	// Save the filename, then remove everything after the first backslash.
+	assert(dlgTitle != nullptr);
+	assert(filterSpec != nullptr);
+	string s_ret;
+
+	if (0) {
+		// TODO: Implement IOpenFileDialog.
+		// This should support >MAX_PATH on Windows 10 v1607 and later.
+	} else {
+		// GetOpenFileName()
+
+		// Convert filterSpec from pipe-delimited to NULL-deliminted.
+		// This is needed because Win32 file filters use embedded
+		// NULL characters, but gettext doesn't support that because
+		// it uses C strings.
+		wstring ws_filterSpec(filterSpec);
+		for (auto iter = ws_filterSpec.begin(); iter != ws_filterSpec.end(); ++iter) {
+			if (*iter == L'|') {
+				*iter = L'\0';
+			}
+		}
+
+		wchar_t filename[MAX_PATH];
+		filename[0] = 0;
+
+		OPENFILENAME ofn;
+		memset(&ofn, 0, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = hWndPropSheet;
+		ofn.lpstrFilter = ws_filterSpec.c_str();
+		ofn.lpstrCustomFilter = nullptr;
+		ofn.lpstrFile = filename;
+		ofn.nMaxFile = ARRAY_SIZE(filename);
+		ofn.lpstrInitialDir = wsKeyFileDir.c_str();
+		ofn.lpstrTitle = dlgTitle;
+		ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+		BOOL bRet = GetOpenFileName(&ofn);
+		if (!bRet || filename[0] == 0)
+			return s_ret;
+
+		// Save the UTF-16 filename for wsKeyFileDir.
+		wsKeyFileDir = filename;
+		// Convert to UTF-8 for the return value.
+		s_ret = W2U8(wsKeyFileDir);
+	}
+
+	// Assuming the filename has been saved in wsKeyFileDir.
+	// Remove everything after the first backslash.
 	// NOTE: If this is the root directory, the backslash is left intact.
 	// Otherwise, the backslash is removed.
-	wsKeyFileDir = filename;
 	size_t bspos = wsKeyFileDir.rfind(L'\\');
 	if (bspos != wstring::npos) {
 		if (bspos > 2) {
@@ -1459,6 +1502,9 @@ void KeyManagerTabPrivate::saveKeyFileDir(const wchar_t *filename)
 			wsKeyFileDir.resize(3);
 		}
 	}
+
+	// Return the filename.
+	return s_ret;
 }
 
 /**
@@ -1470,36 +1516,16 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
-	wchar_t filename[MAX_PATH];
-	filename[0] = 0;
-
 	// tr: Wii keys.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
 	// tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
 	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-	convertPipesToNulls(wsFileFilter);
 
-	OPENFILENAME ofn;
-	memset(&ofn, 0, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = wsFileFilter.c_str();
-	ofn.lpstrCustomFilter = nullptr;
-	ofn.lpstrFile = filename;
-	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
-	ofn.lpstrTitle = wsDlgTitle.c_str();
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-	BOOL bRet = GetOpenFileName(&ofn);
-	if (!bRet || filename[0] == 0)
+	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	if (filename.empty())
 		return;
 
-	// Save the key file directory.
-	saveKeyFileDir(filename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2U8(filename).c_str());
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii keys.bin", iret);
 }
@@ -1513,36 +1539,16 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
-	wchar_t filename[MAX_PATH];
-	filename[0] = 0;
-
 	// tr: Wii U otp.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
 	// tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
 	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-	convertPipesToNulls(wsFileFilter);
 
-	OPENFILENAME ofn;
-	memset(&ofn, 0, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = wsFileFilter.c_str();
-	ofn.lpstrCustomFilter = nullptr;
-	ofn.lpstrFile = filename;
-	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
-	ofn.lpstrTitle = wsDlgTitle.c_str();
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-	BOOL bRet = GetOpenFileName(&ofn);
-	if (!bRet || filename[0] == 0)
+	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	if (filename.empty())
 		return;
 
-	// Save the key file directory.
-	saveKeyFileDir(filename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(W2U8(filename).c_str());
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii U otp.bin", iret);
 }
@@ -1556,36 +1562,16 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	if (!hWndPropSheet)
 		return;
 
-	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
-	wchar_t filename[MAX_PATH];
-	filename[0] = 0;
-
 	// tr: 3DS boot9.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
 	// tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
 	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-	convertPipesToNulls(wsFileFilter);
 
-	OPENFILENAME ofn;
-	memset(&ofn, 0, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = wsFileFilter.c_str();
-	ofn.lpstrCustomFilter = nullptr;
-	ofn.lpstrFile = filename;
-	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
-	ofn.lpstrTitle = wsDlgTitle.c_str();
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-	BOOL bRet = GetOpenFileName(&ofn);
-	if (!bRet || filename[0] == 0)
+	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	if (filename.empty())
 		return;
 
-	// Save the key file directory.
-	saveKeyFileDir(filename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2U8(filename).c_str());
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS boot9.bin", iret);
 }
@@ -1599,36 +1585,16 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	if (!hWndPropSheet)
 		return;
 
-	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
-	wchar_t filename[MAX_PATH];
-	filename[0] = 0;
-
 	// tr: aeskeydb.bin dialog title.
 	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
 	// tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
 	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-	convertPipesToNulls(wsFileFilter);
 
-	OPENFILENAME ofn;
-	memset(&ofn, 0, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hWndPropSheet;
-	ofn.lpstrFilter = wsFileFilter.c_str();
-	ofn.lpstrCustomFilter = nullptr;
-	ofn.lpstrFile = filename;
-	ofn.nMaxFile = ARRAY_SIZE(filename);
-	ofn.lpstrInitialDir = wsKeyFileDir.c_str();
-	ofn.lpstrTitle = wsDlgTitle.c_str();
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
-
-	BOOL bRet = GetOpenFileName(&ofn);
-	if (!bRet || filename[0] == 0)
+	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	if (filename.empty())
 		return;
 
-	// Save the key file directory.
-	saveKeyFileDir(filename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2U8(filename).c_str());
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS aeskeydb.bin", iret);
 }
