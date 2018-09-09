@@ -834,8 +834,8 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 
 	// Is this a DXT10 texture?
 	const DDS_HEADER *const pSrcHeader = reinterpret_cast<const DDS_HEADER*>(&header[4]);
-	if (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_DX10) ||
-	    pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX))
+	if (pSrcHeader->ddspf.dwFourCC == cpu_to_be32(DDPF_FOURCC_DX10) ||
+	    pSrcHeader->ddspf.dwFourCC == cpu_to_be32(DDPF_FOURCC_XBOX))
 	{
 		const bool isXbox = (pSrcHeader->ddspf.dwFourCC == le32_to_cpu(DDPF_FOURCC_XBOX));
 		// Verify the size.
@@ -903,16 +903,19 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->ddsHeader.dwCaps4	= le32_to_cpu(d->ddsHeader.dwCaps4);
 
 	// Byteswap the DDS pixel format.
+	// NOTE: FourCC is handled separately.
 	DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
 	ddspf.dwSize		= le32_to_cpu(ddspf.dwSize);
 	ddspf.dwFlags		= le32_to_cpu(ddspf.dwFlags);
-	ddspf.dwFourCC		= le32_to_cpu(ddspf.dwFourCC);
 	ddspf.dwRGBBitCount	= le32_to_cpu(ddspf.dwRGBBitCount);
 	ddspf.dwRBitMask	= le32_to_cpu(ddspf.dwRBitMask);
 	ddspf.dwGBitMask	= le32_to_cpu(ddspf.dwGBitMask);
 	ddspf.dwBBitMask	= le32_to_cpu(ddspf.dwBBitMask);
 	ddspf.dwABitMask	= le32_to_cpu(ddspf.dwABitMask);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+	// FourCC is considered to be big-endian.
+	d->ddsHeader.ddspf.dwFourCC = be32_to_cpu(d->ddsHeader.ddspf.dwFourCC);
 
 	// Update the pixel format.
 	d->updatePixelFormat();
