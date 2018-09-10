@@ -27,6 +27,7 @@
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(DMG)
+ROMDATA_DECL_CLOSE()
 ROMDATA_DECL_END()
 
 }

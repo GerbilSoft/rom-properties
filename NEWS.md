@@ -30,6 +30,7 @@
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
   * GBS: Game Boy Sound System. Used for Game Boy audio rips.
+    * Supports GBS files embedded in GBS Player ROM images.
   * NSF: Nintendo Sound Format. Used for NES audio rips.
   * PSF: Portable Sound Format. Used for PlayStation audio rips.
     Subformats are used for several other platforms.

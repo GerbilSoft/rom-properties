@@ -32,6 +32,12 @@
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
+// For sections delegated to other RomData subclasses.
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
+#include "Audio/GBS.hpp"
+#include "Audio/gbs_structs.h"
+
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
 #include <cassert>
@@ -52,6 +58,7 @@ class DMGPrivate : public RomDataPrivate
 {
 	public:
 		DMGPrivate(DMG *q, IRpFile *file);
+		virtual ~DMGPrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -165,6 +172,13 @@ class DMGPrivate : public RomDataPrivate
 
 		// GBX footer.
 		GBX_Footer gbxFooter;
+
+		// GBS subclass.
+		struct {
+			IDiscReader *reader;	// uses ncch_f_icon
+			PartitionFile *file;	// uses reader
+			GBS *data;
+		} gbs;
 };
 
 /** DMGPrivate **/
@@ -238,9 +252,19 @@ DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_UNKNOWN)
 {
-	// Clear the ROM header struct.
+	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
 	memset(&gbxFooter, 0, sizeof(gbxFooter));
+	memset(&gbs, 0, sizeof(gbs));
+}
+
+DMGPrivate::~DMGPrivate()
+{
+	if (gbs.data) {
+		gbs.data->unref();
+	}
+	delete gbs.file;
+	delete gbs.reader;
 }
 
 /**
@@ -380,6 +404,71 @@ DMG::DMG(IRpFile *file)
 			d->gbxFooter.magic = 0;
 		}
 	}
+
+	// Check for GBS.
+	uint8_t gbs_jmp[3];
+	size = file->seekAndRead(0, gbs_jmp, sizeof(gbs_jmp));
+	if (size == sizeof(gbs_jmp) && gbs_jmp[0] == 0xC3) {
+		// Read the jump address.
+		// GBS header is at the jump address minus sizeof(GBS_Header).
+		uint16_t jp_addr = (gbs_jmp[2] << 8) | gbs_jmp[1];
+		if (jp_addr >= sizeof(GBS_Header)) {
+			jp_addr -= sizeof(GBS_Header);
+			// Read the GBS magic number.
+			uint32_t gbs_magic;
+			size = file->seekAndRead(jp_addr, &gbs_magic, sizeof(gbs_magic));
+			if (size == sizeof(gbs_magic) && gbs_magic == cpu_to_be32(GBS_MAGIC)) {
+				// Found the GBS magic number.
+				// Open the GBS.
+				// TODO: Separate function and use more nested `if` statements
+				// to eliminate NULL checks? (same with Nintendo3DS's SRL stuff)
+				PartitionFile *ptFile = nullptr;
+				GBS *gbs = nullptr;
+
+				const int64_t length = file->size() - jp_addr;
+				DiscReader *const reader = new DiscReader(file, jp_addr, length);
+				if (reader->isOpen()) {
+					// Create a PartitionFile.
+					ptFile = new PartitionFile(reader, 0, length);
+				}
+
+				if (ptFile && ptFile->isOpen()) {
+					// Open the GBS.
+					gbs = new GBS(ptFile);
+				}
+
+				if (gbs && gbs->isOpen()) {
+					// GBS opened.
+					d->gbs.reader = reader;
+					d->gbs.file = ptFile;
+					d->gbs.data = gbs;
+				} else {
+					// Unable to open the GBS.
+					if (gbs) {
+						gbs->unref();
+					}
+					delete ptFile;
+					delete reader;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Close the opened file.
+ */
+void DMG::close(void)
+{
+	RP_D(DMG);
+	if (d->gbs.data) {
+		d->gbs.data->unref();
+		d->gbs.data = nullptr;
+	}
+	delete d->gbs.file;
+	delete d->gbs.reader;
+	d->gbs.file = nullptr;
+	d->gbs.reader = nullptr;
 }
 
 /** ROM detection functions. **/
@@ -528,8 +617,8 @@ int DMG::loadFieldData(void)
 	d->fields->reserve(12+5);
 
 	// Reserve at least 2 tabs:
-	// DMG, GBX
-	d->fields->reserveTabs(2);
+	// DMG, GBX, GBS
+	d->fields->reserveTabs(3);
 
 	// Game title & Game ID
 	/* NOTE: there are two approaches for doing this, when the 15 bytes are all used
@@ -796,7 +885,8 @@ int DMG::loadFieldData(void)
 
 	/** GBX footer. **/
 	const GBX_Footer *const gbxFooter = &d->gbxFooter;
-	if (gbxFooter->magic == cpu_to_be32(GBX_MAGIC)) {
+	const bool hasGBX = (gbxFooter->magic == cpu_to_be32(GBX_MAGIC));
+	if (hasGBX) {
 		// GBX footer is present.
 		d->fields->addTab("GBX");
 
@@ -942,6 +1032,15 @@ int DMG::loadFieldData(void)
 		// TODO: Use formatFileSize() instead?
 		d->fields->addField_string(C_("DMG", "RAM Size"),
 			d->formatROMSizeKiB(be32_to_cpu(gbxFooter->ram_size)));
+	}
+
+	/** GBS **/
+	if (d->gbs.data) {
+		// This is a GBS Player ROM.
+		// TODO: GBS metadata.
+		d->fields->addTab("GBS");
+		const int tabOffset = (hasGBX ? 2 : 1);
+		d->fields->addFields_romFields(d->gbs.data->fields(), tabOffset);
 	}
 
 	return static_cast<int>(d->fields->count());
