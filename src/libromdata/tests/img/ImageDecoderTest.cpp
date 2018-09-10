@@ -198,9 +198,9 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderTest_mod
 inline void ImageDecoderTest::replace_slashes(std::string &path)
 {
 #ifdef _WIN32
-	for (size_t n = 0; n < path.size(); n++) {
-		if (path[n] == '/') {
-			path[n] = '\\';
+	for (auto iter = path.begin(); iter != path.end(); ++iter) {
+		if (*iter == '/') {
+			*iter = '\\';
 		}
 	}
 #else
@@ -447,10 +447,11 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (int i = static_cast<int>(suffix.size())-1; i >= 0; i--) {
-		char chr = suffix[i];
-		if (!ISALNUM(chr) && chr != '_') {
-			suffix[i] = '_';
+	for (auto iter = suffix.begin(); iter != suffix.end(); ++iter) {
+		// NOTE: Not checking for '_' because that
+		// wastes a branch.
+		if (!ISALNUM(*iter)) {
+			*iter = '_';
 		}
 	}
 

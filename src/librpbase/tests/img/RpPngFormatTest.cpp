@@ -999,14 +999,14 @@ string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInf
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	for (int i = static_cast<int>(suffix.size())-1; i >= 0; i--) {
-		char chr = suffix[i];
-		if (!ISALNUM(chr) && chr != '_') {
-			suffix[i] = '_';
+	for (auto iter = suffix.begin(); iter != suffix.end(); ++iter) {
+		// NOTE: Not checking for '_' because that
+		// wastes a branch.
+		if (!ISALNUM(*iter)) {
+			*iter = '_';
 		}
 	}
 
-	// TODO: Convert to ASCII?
 	return suffix;
 }
 
