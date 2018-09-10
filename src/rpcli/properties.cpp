@@ -416,6 +416,10 @@ public:
 			}
 		}
 		maxWidth += 2;
+
+		const int tabCount = fo.fields.tabCount();
+		int tabIdx = -1;
+
 		bool printed_first = false;
 		for (int i = 0; i < fo.fields.count(); i++) {
 			auto romField = fo.fields.field(i);
@@ -425,6 +429,25 @@ public:
 
 			if (printed_first)
 				os << endl;
+
+			// New tab?
+			if (tabCount > 1 && tabIdx != romField->tabIdx) {
+				// Tab indexes must be consecutive.
+				assert(tabIdx + 1 == romField->tabIdx);
+				tabIdx = romField->tabIdx;
+
+				// TODO: Better formatting?
+				const char *name = fo.fields.tabName(tabIdx);
+				assert(name != nullptr);
+				os << "----- ";
+				if (name) {
+					os << name;
+				} else {
+					os << "(tab " << tabIdx << ')';
+				}
+				os << " -----" << endl;
+			}
+
 			switch (romField->type) {
 			case RomFields::RFT_INVALID: {
 				assert(!"INVALID field type");
@@ -781,6 +804,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 
 	const int supported = romdata->supportedImageTypes();
 
+	// TODO: Tabs.
 	bool first = true;
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
 		if (!(supported & (1 << i)))
