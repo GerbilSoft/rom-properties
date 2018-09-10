@@ -885,8 +885,7 @@ int DMG::loadFieldData(void)
 
 	/** GBX footer. **/
 	const GBX_Footer *const gbxFooter = &d->gbxFooter;
-	const bool hasGBX = (gbxFooter->magic == cpu_to_be32(GBX_MAGIC));
-	if (hasGBX) {
+	if (gbxFooter->magic == cpu_to_be32(GBX_MAGIC)) {
 		// GBX footer is present.
 		d->fields->addTab("GBX");
 
@@ -1042,8 +1041,8 @@ int DMG::loadFieldData(void)
 		assert(gbsFields != nullptr);
 		assert(!gbsFields->empty());
 		if (gbsFields && !gbsFields->empty()) {
+			const int tabOffset = d->fields->tabCount();
 			d->fields->addTab("GBS");
-			const int tabOffset = (hasGBX ? 2 : 1);
 			d->fields->addFields_romFields(gbsFields, tabOffset);
 		}
 	}
