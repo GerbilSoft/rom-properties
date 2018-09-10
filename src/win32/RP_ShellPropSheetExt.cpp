@@ -1205,13 +1205,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Add the row data.
 	if (list_data) {
-		const int row_count = (int)list_data->size();
 		uint32_t checkboxes = field->data.list_checkboxes;
 		LVITEM lvItem;
 		lvItem.mask = LVIF_TEXT;
 		int row_num = 0;
-		for (int i = 0; i < row_count; i++) {
-			const vector<string> &data_row = list_data->at(i);
+		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
+			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?
 			// (also check other UI frontends)
 			if (hasCheckboxes && data_row.empty()) {
