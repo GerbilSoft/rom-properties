@@ -485,7 +485,7 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < 0x150)
+	    info->header.size < (0x100 + sizeof(DMG_RomHeader)))
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
