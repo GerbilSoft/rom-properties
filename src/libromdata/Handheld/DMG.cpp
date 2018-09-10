@@ -1039,7 +1039,9 @@ int DMG::loadFieldData(void)
 		// This is a GBS Player ROM.
 		// TODO: GBS metadata.
 		const RomFields *gbsFields = d->gbs.data->fields();
-		if (!gbsFields->empty()) {
+		assert(gbsFields != nullptr);
+		assert(!gbsFields->empty());
+		if (gbsFields && !gbsFields->empty()) {
 			d->fields->addTab("GBS");
 			const int tabOffset = (hasGBX ? 2 : 1);
 			d->fields->addFields_romFields(gbsFields, tabOffset);
