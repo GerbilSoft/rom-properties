@@ -106,6 +106,7 @@ static void	rom_data_view_desc_format_type_changed(RpDescFormatType desc_format_
 static void	rom_data_view_init_header_row	(RomDataView	*page);
 static void	rom_data_view_update_display	(RomDataView	*page);
 static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
+static void	rom_data_view_delete_tabs	(RomDataView	*page);
 
 /** Signal handlers. **/
 static void	checkbox_no_toggle_signal_handler   (GtkToggleButton	*togglebutton,
@@ -243,10 +244,10 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(label), "RFT_STRING_warning"));
 	if (is_warning) {
 		// Use the "Warning" format.
-		PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
-		pango_attr_list_insert(attr_lst, attr);
-		attr = pango_attr_foreground_new(65535, 0, 0);
-		pango_attr_list_insert(attr_lst, attr);
+		pango_attr_list_insert(attr_lst,
+			pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
+		pango_attr_list_insert(attr_lst,
+			pango_attr_foreground_new(65535, 0, 0));
 	}
 
 	// Check for DE-specific formatting.
@@ -273,8 +274,8 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 
 			if (!is_warning) {
 				// Text style: Bold
-				PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
-				pango_attr_list_insert(attr_lst, attr);
+				pango_attr_list_insert(attr_lst,
+					pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
 			}
 			break;
 
@@ -365,8 +366,8 @@ rom_data_view_init(RomDataView *page)
 
 	// Make lblSysInfo bold.
 	PangoAttrList *attr_lst = pango_attr_list_new();
-	PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
-	pango_attr_list_insert(attr_lst, attr);
+	pango_attr_list_insert(attr_lst,
+		pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
 	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
 	pango_attr_list_unref(attr_lst);
 
@@ -554,28 +555,7 @@ rom_data_view_set_filename(RomDataView	*page,
 		}
 
 		// Delete the tabs.
-		for (int i = (int)page->tabs->size()-1; i >= 0; i--) {
-			auto &tab = page->tabs->at(i);
-			if (tab.lblCredits) {
-				gtk_widget_destroy(tab.lblCredits);
-			}
-			if (tab.table) {
-				gtk_widget_destroy(tab.table);
-			}
-			if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
-				gtk_widget_destroy(tab.vbox);
-			}
-		}
-		page->tabs->clear();
-
-		if (page->tabWidget) {
-			// Delete the tab widget.
-			gtk_widget_destroy(page->tabWidget);
-			page->tabWidget = nullptr;
-		}
-
-		// Clear the various widget references.
-		page->vecDescLabels->clear();
+		rom_data_view_delete_tabs(page);
 	}
 
 	// Filename has been changed.
@@ -776,16 +756,16 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 
 		// Monospace font?
 		if (field->desc.flags & RomFields::STRF_MONOSPACE) {
-			PangoAttribute *attr = pango_attr_family_new("monospace");
-			pango_attr_list_insert(attr_lst, attr);
+			pango_attr_list_insert(attr_lst,
+				pango_attr_family_new("monospace"));
 		}
 
 		// "Warning" font?
 		if (field->desc.flags & RomFields::STRF_WARNING) {
-			PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
-			pango_attr_list_insert(attr_lst, attr);
-			attr = pango_attr_foreground_new(65535, 0, 0);
-			pango_attr_list_insert(attr_lst, attr);
+			pango_attr_list_insert(attr_lst,
+				pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
+			pango_attr_list_insert(attr_lst,
+				pango_attr_foreground_new(65535, 0, 0));
 		}
 
 		gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
@@ -1191,28 +1171,7 @@ rom_data_view_update_display(RomDataView *page)
 	rom_data_view_init_header_row(page);
 
 	// Delete the tabs.
-	for (int i = (int)page->tabs->size()-1; i >= 0; i--) {
-		auto &tab = page->tabs->at(i);
-		if (tab.lblCredits) {
-			gtk_widget_destroy(tab.lblCredits);
-		}
-		if (tab.table) {
-			gtk_widget_destroy(tab.table);
-		}
-		if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
-			gtk_widget_destroy(tab.vbox);
-		}
-	}
-	page->tabs->clear();
-
-	if (page->tabWidget) {
-		// Delete the tab widget.
-		gtk_widget_destroy(page->tabWidget);
-		page->tabWidget = nullptr;
-	}
-
-	// Clear the various widget references.
-	page->vecDescLabels->clear();
+	rom_data_view_delete_tabs(page);
 
 	if (!page->romData) {
 		// No ROM data...
@@ -1459,6 +1418,41 @@ rom_data_view_load_rom_data(gpointer data)
 	// Clear the timeout.
 	page->changed_idle = 0;
 	return FALSE;
+}
+
+/**
+ * Delete tabs and related widgets.
+ * @param page RomDataView.
+ */
+static void
+rom_data_view_delete_tabs(RomDataView *page)
+{
+	assert(page != nullptr);
+	assert(page->tabs != nullptr);
+	assert(page->vecDescLabels != nullptr);
+
+	// Delete the tab contents.
+	for (auto tab = page->tabs->begin(); tab != page->tabs->end(); ++tab) {
+		if (tab->lblCredits) {
+			gtk_widget_destroy(tab->lblCredits);
+		}
+		if (tab->table) {
+			gtk_widget_destroy(tab->table);
+		}
+		if (tab->vbox && tab->vbox != GTK_WIDGET(page)) {
+			gtk_widget_destroy(tab->vbox);
+		}
+	}
+	page->tabs->clear();
+
+	if (page->tabWidget) {
+		// Delete the tab widget.
+		gtk_widget_destroy(page->tabWidget);
+		page->tabWidget = nullptr;
+	}
+
+	// Clear the various widget references.
+	page->vecDescLabels->clear();
 }
 
 /** Signal handlers. **/
