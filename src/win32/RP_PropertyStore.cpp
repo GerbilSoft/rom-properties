@@ -508,21 +508,17 @@ IFACEMETHODIMP RP_PropertyStore::GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVAR
 
 	// Linear search for the property.
 	// TODO: Optimize this?
-	size_t n;
-	for (n = 0; n < d->prop_key.size(); n++) {
+	for (size_t n = 0; n < d->prop_key.size(); n++) {
 		if (*d->prop_key[n] == key) {
 			// Found the property.
-			break;
+			// Return the property value.
+			return PropVariantCopy(pv, &d->prop_val[n]);
 		}
 	}
-	if (n >= d->prop_key.size()) {
-		// Property not found.
-		PropVariantClear(pv);
-		return S_OK;
-	}
 
-	// Return the property value.
-	return PropVariantCopy(pv, &d->prop_val[n]);
+	// Property not found.
+	PropVariantClear(pv);
+	return S_OK;
 }
 
 IFACEMETHODIMP RP_PropertyStore::SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar)
