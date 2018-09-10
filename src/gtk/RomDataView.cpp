@@ -1432,15 +1432,16 @@ rom_data_view_delete_tabs(RomDataView *page)
 	assert(page->vecDescLabels != nullptr);
 
 	// Delete the tab contents.
-	for (auto tab = page->tabs->begin(); tab != page->tabs->end(); ++tab) {
-		if (tab->lblCredits) {
-			gtk_widget_destroy(tab->lblCredits);
+	for (auto iter = page->tabs->begin(); iter != page->tabs->end(); ++iter) {
+		auto &tab = *iter;
+		if (tab.lblCredits) {
+			gtk_widget_destroy(tab.lblCredits);
 		}
-		if (tab->table) {
-			gtk_widget_destroy(tab->table);
+		if (tab.table) {
+			gtk_widget_destroy(tab.table);
 		}
-		if (tab->vbox && tab->vbox != GTK_WIDGET(page)) {
-			gtk_widget_destroy(tab->vbox);
+		if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
+			gtk_widget_destroy(tab.vbox);
 		}
 	}
 	page->tabs->clear();
