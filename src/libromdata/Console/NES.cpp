@@ -999,7 +999,6 @@ int NES::loadFieldData(void)
 		bool hasFooter = false;
 		unsigned int firstNonFF = (unsigned int)sizeof(intFooter.name);
 		unsigned int addr = prg_rom_size - sizeof(intFooter) + 16;
-		printf("READ: %08X\n", addr);
 
 		do {	// to break out early
 			size_t size = d->file->seekAndRead(addr, &intFooter, sizeof(intFooter));
