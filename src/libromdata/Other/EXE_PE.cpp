@@ -151,8 +151,8 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// .rsrc is usually closer to the end of the section list,
 	// so search back to front.
 	const IMAGE_SECTION_HEADER *rsrc = nullptr;
-	for (int i = static_cast<int>(pe_sections.size())-1; i >= 0; i--) {
-		const IMAGE_SECTION_HEADER *section = &pe_sections[i];
+	for (auto iter = pe_sections.crbegin(); iter != pe_sections.crend(); ++iter) {
+		const IMAGE_SECTION_HEADER *section = &(*iter);
 		if (!strcmp(section->Name, ".rsrc")) {
 			// Found the .rsrc section.
 			rsrc = section;

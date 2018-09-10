@@ -871,8 +871,8 @@ int KeyStoreUI::totalKeyCount(void) const
 {
 	RP_D(const KeyStoreUI);
 	int ret = 0;
-	for (int i = static_cast<int>(d->sections.size())-1; i >= 0; i--) {
-		ret += d->sections[i].keyCount;
+	for (auto iter = d->sections.cbegin(); iter != d->sections.cend(); ++iter) {
+		ret += iter->keyCount;
 	}
 	return ret;
 }

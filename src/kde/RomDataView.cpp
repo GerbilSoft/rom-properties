@@ -771,8 +771,8 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field 
 void RomDataViewPrivate::initDisplayWidgets(void)
 {
 	// Clear the tabs.
-	for (int i = tabs.size()-1; i >= 0; i--) {
-		auto &tab = tabs[i];
+	for (auto iter = tabs.begin(); iter != tabs.end(); ++iter) {
+		auto &tab = *iter;
 		// Delete the credits label if it's present.
 		delete tab.lblCredits;
 		// Delete the QFormLayout if it's present.

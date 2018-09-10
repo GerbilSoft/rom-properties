@@ -422,9 +422,9 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (hbmpBanner) {
 		DeleteObject(hbmpBanner);
 	}
-	for (int i = (int)(hbmpIconFrames.size())-1; i >= 0; i--) {
-		if (hbmpIconFrames[i]) {
-			DeleteObject(hbmpIconFrames[i]);
+	for (auto iter = hbmpIconFrames.begin(); iter != hbmpIconFrames.end(); ++iter) {
+		if (*iter) {
+			DeleteObject(*iter);
 		}
 	}
 
@@ -546,10 +546,10 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Delete the old icons.
-		for (int i = (int)(hbmpIconFrames.size())-1; i >= 0; i--) {
-			if (hbmpIconFrames[i]) {
-				DeleteObject(hbmpIconFrames[i]);
-				hbmpIconFrames[i] = nullptr;
+		for (auto iter = hbmpIconFrames.begin(); iter != hbmpIconFrames.end(); ++iter) {
+			if (*iter) {
+				DeleteObject(*iter);
+				*iter = nullptr;
 			}
 		}
 

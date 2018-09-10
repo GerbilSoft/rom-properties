@@ -1317,9 +1317,9 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	// strdup() the strings.
 	unique_ptr<png_text> text(new png_text[kv.size()]);
 	png_text *pTxt = text.get();
-	for (unsigned int i = 0; i < kv.size(); i++, pTxt++) {
+	for (auto iter = kv.cbegin(); iter != kv.cend(); ++iter, ++pTxt) {
 		// Check if the string is ASCII, Latin-1, or other.
-		const string &value = kv[i].second;
+		const string &value = iter->second;
 		const bool compress = (value.size() >= 40);	// same as Qt
 
 		const int status = u8strIsPngLatin1(value.c_str());
@@ -1327,7 +1327,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 			case 0:
 				// ASCII. Use it as-is.
 				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
-				pTxt->key = (png_charp)kv[i].first;
+				pTxt->key = (png_charp)iter->first;
 				pTxt->text = (png_charp)value.c_str();
 				break;
 			case 1: {
@@ -1335,13 +1335,13 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 				char *const latin1_str = strdup(utf8_to_latin1(value).c_str());
 				vU8toL1.push_back(latin1_str);
 				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
-				pTxt->key = (png_charp)kv[i].first;
+				pTxt->key = (png_charp)iter->first;
 				pTxt->text = (png_charp)latin1_str;
 				break;
 			}
 			case 2:
 				// UTF-8. Use iTXt.
-				pTxt->key = (png_charp)kv[i].first;
+				pTxt->key = (png_charp)iter->first;
 				pTxt->text = (png_charp)value.c_str();
 #ifdef PNG_iTXt_SUPPORTED
 				// iTXt is supported at compile time.
