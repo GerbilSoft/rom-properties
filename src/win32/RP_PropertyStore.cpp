@@ -291,7 +291,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 
 		// Convert from the RomMetaData property indexes to
 		// Windows property keys.
-		const MetaDataConv &conv = d->metaDataConv[prop->name];
+		const RP_PropertyStore_Private::MetaDataConv &conv = d->metaDataConv[prop->name];
 		if (!conv.pkey || conv.vtype == VT_EMPTY) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
