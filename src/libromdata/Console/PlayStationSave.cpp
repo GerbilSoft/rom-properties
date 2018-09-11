@@ -543,6 +543,40 @@ int PlayStationSave::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int PlayStationSave::loadMetaData(void)
+{
+	RP_D(PlayStationSave);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// PSV (PS1 on PS3) save file header.
+	const PS1_SC_Struct *const scHeader = &d->scHeader;
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Title. (Description)
+	d->metaData->addMetaData_string(Property::Title,
+		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->fields->count());
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.

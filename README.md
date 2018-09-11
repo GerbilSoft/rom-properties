@@ -97,7 +97,7 @@ button.
 | Sega Dreamcast            |       Yes      |    Yes   |      Media      |       No       |
 | Sega Dreamcast Saves      |       Yes      |    No    |   Icon, Banner  |       No       |
 | Sega Saturn               |       Yes      |    Yes   |       N/A       |       No       |
-| Sony PlayStation Saves    |       Yes      |    No    |       Icon      |       N/A      |
+| Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A      |
 
 \* Internal images are only present in Wii DLC WADs.
 
