@@ -306,7 +306,8 @@ int N64::loadFieldData(void)
 	// Title.
 	// TODO: Space elimination.
 	d->fields->addField_string(C_("N64", "Title"),
-		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)));
+		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
+		RomFields::STRF_TRIM_END);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -352,6 +353,43 @@ int N64::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int N64::loadMetaData(void)
+{
+	RP_D(N64);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// ROM file header is read and byteswapped in the constructor.
+	// TODO: Indicate the byteswapping format?
+	const N64_RomHeader *const romHeader = &d->romHeader;
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Title.
+	// TODO: Space elimination.
+	d->metaData->addMetaData_string(Property::Title,
+		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
+		RomMetaData::STRF_TRIM_END);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
