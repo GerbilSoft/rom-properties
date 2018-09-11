@@ -426,7 +426,7 @@ int GameCubeBNR::loadFieldData(void)
 			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
 	} else if (comment->gamename[0] != '\0') {
 		d->fields->addField_string(C_("GameCubeBNR", "Game Name"),
-			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+			cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
 	}
 
 	// Company.
