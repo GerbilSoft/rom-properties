@@ -449,6 +449,70 @@ int GameCubeBNR::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int GameCubeBNR::loadMetaData(void)
+{
+	RP_D(GameCubeBNR);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->bannerType < 0) {
+		// Unknown banner file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// Get the comment.
+	const gcn_banner_comment_t *comment = getComment();
+	if (!comment) {
+		// No comment...
+		return static_cast<int>(d->metaData->count());
+	}
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+
+	// TODO: If BNR1, check for Shift-JIS characters.
+	// Assuming cp1252 for now.
+
+	// TODO: Show both full and normal?
+	// Currently showing full if it's there; otherwise, normal.
+
+	// Game name.
+	if (comment->gamename_full[0] != '\0') {
+		d->metaData->addMetaData_string(Property::Title,
+			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+	} else if (comment->gamename[0] != '\0') {
+		d->metaData->addMetaData_string(Property::Title,
+			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+	}
+
+	// Company.
+	if (comment->company_full[0] != '\0') {
+		d->metaData->addMetaData_string(Property::Publisher,
+			cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
+	} else if (comment->company[0] != '\0') {
+		d->metaData->addMetaData_string(Property::Publisher,
+			cp1252_to_utf8(comment->company, sizeof(comment->company)));
+	}
+
+	// Game description.
+	if (comment->gamedesc[0] != '\0') {
+		d->metaData->addMetaData_string(Property::Comment,
+			cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
