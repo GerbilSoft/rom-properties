@@ -65,6 +65,19 @@ class RP_PropertyStore_Private
 		// Property values.
 		std::vector<PROPVARIANT> prop_val;
 
+		/**
+		 * Metadata conversion table.
+		 * - Index: LibRpBase::Property
+		 * - Value:
+		 *   - pkey: PROPERTYKEY (if nullptr, not implemented)
+		 *   - vtype: Expected variant type.
+		 */
+		struct MetaDataConv {
+			const PROPERTYKEY *pkey;
+			LONG vtype;
+		};
+		static const MetaDataConv metaDataConv[];
+
 	public:
 		/**
 		 * Register the file type handler.

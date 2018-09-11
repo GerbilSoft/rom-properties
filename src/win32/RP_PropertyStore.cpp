@@ -62,6 +62,104 @@ const CLSID CLSID_RP_PropertyStore =
 /** RP_PropertyStore_Private **/
 #include "RP_PropertyStore_p.hpp"
 
+/**
+ * Metadata conversion table.
+ * - Index: LibRpBase::Property
+ * - Value:
+ *   - pkey: PROPERTYKEY (if nullptr, not implemented)
+ *   - vtype: Expected variant type.
+ */
+const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataConv[] = {
+	{nullptr, VT_EMPTY},			// Empty
+
+	// Audio
+	{&PKEY_Audio_EncodingBitrate, VT_UI4},	// BitRate (FIXME: Windows uses bit/sec; KDE uses kbit/sec)
+	{&PKEY_Audio_ChannelCount, VT_UI4},	// Channels
+	{&PKEY_Media_Duration, VT_UI8},		// Duration (100ns units)
+	{&PKEY_Music_Genre, VT_VECTOR|VT_BSTR},	// Genre
+	{&PKEY_Audio_SampleRate, VT_UI4},	// Sample rate (Hz)
+	{&PKEY_Music_TrackNumber, VT_UI4},	// Track number
+	{&PKEY_Media_Year, VT_UI4},		// Release year
+	{&PKEY_Comment, VT_BSTR},		// Comment
+	{&PKEY_Music_Artist, VT_VECTOR|VT_BSTR},// Artist
+	{&PKEY_Music_AlbumTitle, VT_BSTR},	// Album
+	{&PKEY_Music_AlbumArtist, VT_BSTR},	// Album artist
+	{&PKEY_Music_Composer, VT_VECTOR|VT_BSTR},// Composer
+	{nullptr, VT_EMPTY},			// Lyricist
+
+	// Document
+	{&PKEY_Author, VT_VECTOR|VT_BSTR},	// Author
+	{&PKEY_Title, VT_BSTR},			// Title
+	{&PKEY_Subject, VT_BSTR},		// Subject
+	{&PKEY_SoftwareUsed, VT_BSTR},		// Generator
+	{&PKEY_Document_PageCount, VT_I4},	// Page count
+	{&PKEY_Document_WordCount, VT_I4},	// Word count
+	{&PKEY_Document_LineCount, VT_I4},	// Line count
+	{&PKEY_Language, VT_BSTR},		// Language
+	{&PKEY_Copyright, VT_BSTR},		// Copyright
+	{&PKEY_Company, VT_BSTR},		// Publisher (TODO: PKEY_Media_Publisher?)
+	{&PKEY_DateCreated, VT_DATE},		// Creation date
+	{&PKEY_Keywords, VT_VECTOR|VT_BSTR},	// Keywords
+
+	// Media
+	{&PKEY_Image_HorizontalSize, VT_UI4},	// Width
+	{&PKEY_Image_VerticalSize, VT_UI4},	// Height
+	{nullptr, VT_EMPTY},			// Aspect ratio (TODO)
+	{&PKEY_Video_FrameRate, VT_UI4},	// Framerate (NOTE: Frames per 1000 seconds)
+
+	// Images
+	{&PKEY_Devices_Manufacturer, VT_BSTR},	// ImageMake
+	{&PKEY_Devices_ModelName, VT_BSTR},	// ImageModel
+	{&PKEY_Photo_DateTaken, VT_DATE},	// ImageDateTime
+	{&PKEY_Photo_Orientation, VT_UI2},	// ImageOrientation
+	{&PKEY_Photo_Flash, VT_UI1},		// PhotoFlash
+	{nullptr, VT_EMPTY},			// PhotoPixelXDimension
+	{nullptr, VT_EMPTY},			// PhotoPixelYDimension
+	{nullptr, VT_EMPTY},			// PhotoDateTimeOriginal
+	{nullptr, VT_EMPTY},			// PhotoFocalLength
+	{nullptr, VT_EMPTY},			// PhotoFocalLengthIn35mmFilm
+	{nullptr, VT_EMPTY},			// PhotoExposureTime
+	{nullptr, VT_EMPTY},			// PhotoFNumber
+	{nullptr, VT_EMPTY},			// PhotoApertureValue
+	{nullptr, VT_EMPTY},			// PhotoExposureBiasValue
+	{nullptr, VT_EMPTY},			// PhotoWhiteBalance
+	{nullptr, VT_EMPTY},			// PhotoMeteringMode
+	{nullptr, VT_EMPTY},			// PhotoISOSpeedRatings
+	{nullptr, VT_EMPTY},			// PhotoSaturation
+	{nullptr, VT_EMPTY},			// PhotoSharpness
+	{nullptr, VT_EMPTY},			// PhotoGpsLatitude
+	{nullptr, VT_EMPTY},			// PhotoGpsLongitude
+	{nullptr, VT_EMPTY},			// PhotoGpsAltitude
+
+	// Translations
+	{nullptr, VT_EMPTY},			// TranslationUnitsTotal
+	{nullptr, VT_EMPTY},			// TranslationUnitsWithTranslation
+	{nullptr, VT_EMPTY},			// TranslationUnitsWithDraftTranslation
+	{nullptr, VT_EMPTY},			// TranslationLastAuthor
+	{nullptr, VT_EMPTY},			// TranslationLastUpDate
+	{nullptr, VT_EMPTY},			// TranslationTemplateDate
+
+	// Origin
+	{nullptr, VT_EMPTY},			// OriginUrl
+	{nullptr, VT_EMPTY},			// OriginEmailSubject
+	{nullptr, VT_EMPTY},			// OriginEmailSender
+	{nullptr, VT_EMPTY},			// OriginEmailMessageId
+
+	// Audio
+	{nullptr, VT_EMPTY},			// Disc number (FIXME: Not supported on Windows)
+	{nullptr, VT_EMPTY},			// Location
+	{nullptr, VT_EMPTY},			// Performer
+	{nullptr, VT_EMPTY},			// Ensemble
+	{nullptr, VT_EMPTY},			// Arranger
+	{&PKEY_Music_Conductor, VT_VECTOR|VT_BSTR},// Conductor
+	{nullptr, VT_EMPTY},			// Opus
+
+	// Other
+	{nullptr, VT_EMPTY},			// Label
+	{nullptr, VT_EMPTY},			// Compilation
+	{nullptr, VT_EMPTY},			// License
+};
+
 // Win32 SDK doesn't have this.
 // TODO: Move to libwin32common.
 // Reference: https://github.com/peirick/FlifWICCodec/blob/e42164e90ec300ae7396b6f06365ae0d7dcb651b/FlifWICCodec/decode_frame.cpp#L262
@@ -163,106 +261,6 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		return E_FAIL;
 	}
 
-	// Metadata conversion table.
-	// - Index: LibRpBase::Property
-	// - Value:
-	//   - pkey: PROPERTYKEY (if nullptr, not implemented)
-	//   - vtype: Expected variant type.
-	struct MetaDataConv {
-		const PROPERTYKEY *pkey;
-		LONG vtype;
-	};
-	static const MetaDataConv metaDataConv[] = {
-		{nullptr, VT_EMPTY},			// Empty
-
-		// Audio
-		{&PKEY_Audio_EncodingBitrate, VT_UI4},	// BitRate (FIXME: Windows uses bit/sec; KDE uses kbit/sec)
-		{&PKEY_Audio_ChannelCount, VT_UI4},	// Channels
-		{&PKEY_Media_Duration, VT_UI8},		// Duration (100ns units)
-		{&PKEY_Music_Genre, VT_VECTOR|VT_BSTR},	// Genre
-		{&PKEY_Audio_SampleRate, VT_UI4},	// Sample rate (Hz)
-		{&PKEY_Music_TrackNumber, VT_UI4},	// Track number
-		{&PKEY_Media_Year, VT_UI4},		// Release year
-		{&PKEY_Comment, VT_BSTR},		// Comment
-		{&PKEY_Music_Artist, VT_VECTOR|VT_BSTR},// Artist
-		{&PKEY_Music_AlbumTitle, VT_BSTR},	// Album
-		{&PKEY_Music_AlbumArtist, VT_BSTR},	// Album artist
-		{&PKEY_Music_Composer, VT_VECTOR|VT_BSTR},// Composer
-		{nullptr, VT_EMPTY},			// Lyricist
-
-		// Document
-		{&PKEY_Author, VT_VECTOR|VT_BSTR},	// Author
-		{&PKEY_Title, VT_BSTR},			// Title
-		{&PKEY_Subject, VT_BSTR},		// Subject
-		{&PKEY_SoftwareUsed, VT_BSTR},		// Generator
-		{&PKEY_Document_PageCount, VT_I4},	// Page count
-		{&PKEY_Document_WordCount, VT_I4},	// Word count
-		{&PKEY_Document_LineCount, VT_I4},	// Line count
-		{&PKEY_Language, VT_BSTR},		// Language
-		{&PKEY_Copyright, VT_BSTR},		// Copyright
-		{&PKEY_Company, VT_BSTR},		// Publisher (TODO: PKEY_Media_Publisher?)
-		{&PKEY_DateCreated, VT_DATE},		// Creation date
-		{&PKEY_Keywords, VT_VECTOR|VT_BSTR},	// Keywords
-
-		// Media
-		{&PKEY_Image_HorizontalSize, VT_UI4},	// Width
-		{&PKEY_Image_VerticalSize, VT_UI4},	// Height
-		{nullptr, VT_EMPTY},			// Aspect ratio (TODO)
-		{&PKEY_Video_FrameRate, VT_UI4},	// Framerate (NOTE: Frames per 1000 seconds)
-
-		// Images
-		{&PKEY_Devices_Manufacturer, VT_BSTR},	// ImageMake
-		{&PKEY_Devices_ModelName, VT_BSTR},	// ImageModel
-		{&PKEY_Photo_DateTaken, VT_DATE},	// ImageDateTime
-		{&PKEY_Photo_Orientation, VT_UI2},	// ImageOrientation
-		{&PKEY_Photo_Flash, VT_UI1},		// PhotoFlash
-		{nullptr, VT_EMPTY},			// PhotoPixelXDimension
-		{nullptr, VT_EMPTY},			// PhotoPixelYDimension
-		{nullptr, VT_EMPTY},			// PhotoDateTimeOriginal
-		{nullptr, VT_EMPTY},			// PhotoFocalLength
-		{nullptr, VT_EMPTY},			// PhotoFocalLengthIn35mmFilm
-		{nullptr, VT_EMPTY},			// PhotoExposureTime
-		{nullptr, VT_EMPTY},			// PhotoFNumber
-		{nullptr, VT_EMPTY},			// PhotoApertureValue
-		{nullptr, VT_EMPTY},			// PhotoExposureBiasValue
-		{nullptr, VT_EMPTY},			// PhotoWhiteBalance
-		{nullptr, VT_EMPTY},			// PhotoMeteringMode
-		{nullptr, VT_EMPTY},			// PhotoISOSpeedRatings
-		{nullptr, VT_EMPTY},			// PhotoSaturation
-		{nullptr, VT_EMPTY},			// PhotoSharpness
-		{nullptr, VT_EMPTY},			// PhotoGpsLatitude
-		{nullptr, VT_EMPTY},			// PhotoGpsLongitude
-		{nullptr, VT_EMPTY},			// PhotoGpsAltitude
-
-		// Translations
-		{nullptr, VT_EMPTY},			// TranslationUnitsTotal
-		{nullptr, VT_EMPTY},			// TranslationUnitsWithTranslation
-		{nullptr, VT_EMPTY},			// TranslationUnitsWithDraftTranslation
-		{nullptr, VT_EMPTY},			// TranslationLastAuthor
-		{nullptr, VT_EMPTY},			// TranslationLastUpDate
-		{nullptr, VT_EMPTY},			// TranslationTemplateDate
-
-		// Origin
-		{nullptr, VT_EMPTY},			// OriginUrl
-		{nullptr, VT_EMPTY},			// OriginEmailSubject
-		{nullptr, VT_EMPTY},			// OriginEmailSender
-		{nullptr, VT_EMPTY},			// OriginEmailMessageId
-
-		// Audio
-		{nullptr, VT_EMPTY},			// Disc number (FIXME: Not supported on Windows)
-		{nullptr, VT_EMPTY},			// Location
-		{nullptr, VT_EMPTY},			// Performer
-		{nullptr, VT_EMPTY},			// Ensemble
-		{nullptr, VT_EMPTY},			// Arranger
-		{&PKEY_Music_Conductor, VT_VECTOR|VT_BSTR},// Conductor
-		{nullptr, VT_EMPTY},			// Opus
-
-		// Other
-		{nullptr, VT_EMPTY},			// Label
-		{nullptr, VT_EMPTY},			// Compilation
-		{nullptr, VT_EMPTY},			// License
-	};
-
 	// Get the metadata properties.
 	const RomMetaData *metaData = d->romData->metaData();
 	if (!metaData || metaData->empty()) {
@@ -285,7 +283,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		if (!prop)
 			continue;
 
-		if (prop->name <= 0 || prop->name >= ARRAY_SIZE(metaDataConv)) {
+		if (prop->name <= 0 || prop->name >= ARRAY_SIZE(d->metaDataConv)) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
 			continue;
@@ -293,7 +291,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 
 		// Convert from the RomMetaData property indexes to
 		// Windows property keys.
-		const MetaDataConv &conv = metaDataConv[prop->name];
+		const MetaDataConv &conv = d->metaDataConv[prop->name];
 		if (!conv.pkey || conv.vtype == VT_EMPTY) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
