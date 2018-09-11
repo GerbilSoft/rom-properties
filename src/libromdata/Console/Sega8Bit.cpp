@@ -38,7 +38,9 @@ using namespace LibRpBase;
 #include <ctime>
 
 // C++ includes.
+#include <string>
 #include <vector>
+using std::string;
 using std::vector;
 
 namespace LibRomData {
@@ -66,12 +68,25 @@ class Sega8BitPrivate : public RomDataPrivate
 		} romHeader;
 
 		/**
-		 * Add an SDSC string field.
-		 * @param name Field name.
+		 * Get an SDSC string field.
 		 * @param ptr SDSC string pointer.
-		 * @return 0 on success; negative POSIX error code on error.
+		 * @return SDSC string on success; empty string on error.
 		 */
-		int addField_string_sdsc(const char *name, uint16_t ptr);
+		string getSdscString(uint16_t ptr);
+
+		/**
+		 * Convert a Codemasters timestamp to a Unix timestamp.
+		 * @param timestamp Codemasters timestamp.
+		 * @return Unix timestamp, or -1 on error.
+		 */
+		static time_t codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp);
+
+		/**
+		 * Convert an SDSC build date to a Unix timestamp.
+		 * @param date SDSC build date.
+		 * @return Unix timestamp, or -1 on error.
+		 */
+		static time_t sdsc_date_to_unix_time(const Sega8_SDSC_Date *date);
 };
 
 /** Sega8BitPrivate **/
@@ -84,24 +99,23 @@ Sega8BitPrivate::Sega8BitPrivate(Sega8Bit *q, IRpFile *file)
 }
 
 /**
- * Add an SDSC string field.
- * @param name Field name.
+ * Get an SDSC string field.
  * @param ptr SDSC string pointer.
- * @return 0 on success; negative POSIX error code on error.
+ * @return SDSC string on success; empty string on error.
  */
-int Sega8BitPrivate::addField_string_sdsc(const char *name, uint16_t ptr)
+string Sega8BitPrivate::getSdscString(uint16_t ptr)
 {
 	assert(file != nullptr);
 	assert(file->isOpen());
 	assert(isValid);
 	if (!file || !file->isOpen() || !isValid) {
 		// Can't add anything...
-		return -EBADF;
+		return string();
 	}
 
 	if (ptr == 0x0000 || ptr == 0xFFFF) {
 		// No string here...
-		return 0;
+		return string();
 	}
 
 	char strbuf[256];
@@ -110,10 +124,85 @@ int Sega8BitPrivate::addField_string_sdsc(const char *name, uint16_t ptr)
 		// NOTE: SDSC documentation says these strings should be ASCII.
 		// Since SDSC was introduced in 2001, I'll interpret them as cp1252.
 		// Reference: http://www.smspower.org/Development/SDSCHeader#SDSC7fe04BytesASCII
-		fields->addField_string(name,
-			cp1252_to_utf8(strbuf, sizeof(strbuf)));
+		return cp1252_to_utf8(strbuf, sizeof(strbuf));
 	}
-	return 0;
+
+	// Unable to read the string...
+	return string();
+}
+
+/**
+ * Convert a Codemasters timestamp to a Unix timestamp.
+ * @param timestamp Codemasters timestamp.
+ * @return Unix timestamp, or -1 on error.
+ */
+time_t Sega8BitPrivate::codemasters_timestamp_to_unix_time(const Sega8_Codemasters_Timestamp *timestamp)
+{
+	// Convert date/time from BCD.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+
+	// TODO: Check for invalid BCD values.
+	struct tm cmtime;
+	cmtime.tm_year = ((timestamp->year >> 4) * 10) +
+			  (timestamp->year & 0x0F);
+	if (cmtime.tm_year < 80) {
+		// Assume date values lower than 80 are 2000+.
+		cmtime.tm_year += 100;
+	}
+	cmtime.tm_mon  = ((timestamp->month >> 4) * 10) +
+			  (timestamp->month & 0x0F) - 1;
+	cmtime.tm_mday = ((timestamp->day >> 4) * 10) +
+			  (timestamp->day & 0x0F);
+	cmtime.tm_hour = ((timestamp->hour >> 4) * 10) +
+			  (timestamp->hour & 0x0F);
+	cmtime.tm_min  = ((timestamp->minute >> 4) * 10) +
+			  (timestamp->minute & 0x0F);
+	cmtime.tm_sec = 0;
+
+	// tm_wday and tm_yday are output variables.
+	cmtime.tm_wday = 0;
+	cmtime.tm_yday = 0;
+	cmtime.tm_isdst = 0;
+
+	// If conversion fails, d->ctime will be set to -1.
+	return timegm(&cmtime);
+}
+
+/**
+ * Convert an SDSC build date to a Unix timestamp.
+ * @param date SDSC build date.
+ * @return Unix timestamp, or -1 on error.
+ */
+time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
+{
+	// Convert date/time from BCD.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+
+	// TODO: Check for invalid BCD values.
+	struct tm cmtime;
+	cmtime.tm_year = ((date->century >> 4) * 1000) +
+			 ((date->century & 0x0F) * 100) +
+			 ((date->year >> 4) * 10) +
+			  (date->year & 0x0F) - 1900;
+	cmtime.tm_mon  = ((date->month >> 4) * 10) +
+			  (date->month & 0x0F) - 1;
+	cmtime.tm_mday = ((date->day >> 4) * 10) +
+			  (date->day & 0x0F);
+	cmtime.tm_hour = 0;
+	cmtime.tm_min  = 0;
+	cmtime.tm_sec = 0;
+
+	// tm_wday and tm_yday are output variables.
+	cmtime.tm_wday = 0;
+	cmtime.tm_yday = 0;
+	cmtime.tm_isdst = 0;
+
+	// If conversion fails, d->ctime will be set to -1.
+	return timegm(&cmtime);
 }
 
 /** Sega8Bit **/
@@ -385,42 +474,15 @@ int Sega8Bit::loadFieldData(void)
 
 	// Check for other headers.
 	if (0x10000 - static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum)) ==
-		static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
+	    static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
 	{
 		// Codemasters checksums match.
 		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
 		d->fields->addField_string(C_("Sega8Bit", "Extra Header"), "Codemasters");
 
-		// Convert date/time from BCD.
-		// NOTE: struct tm has some oddities:
-		// - tm_year: year - 1900
-		// - tm_mon: 0 == January
-
-		// TODO: Check for invalid BCD values.
-		struct tm cmtime;
-		cmtime.tm_year = ((codemasters->timestamp.year >> 4) * 10) +
-				  (codemasters->timestamp.year & 0x0F);
-		if (cmtime.tm_year < 80) {
-			// Assume date values lower than 80 are 2000+.
-			cmtime.tm_year += 100;
-		}
-		cmtime.tm_mon  = ((codemasters->timestamp.month >> 4) * 10) +
-				  (codemasters->timestamp.month & 0x0F) - 1;
-		cmtime.tm_mday = ((codemasters->timestamp.day >> 4) * 10) +
-				  (codemasters->timestamp.day & 0x0F);
-		cmtime.tm_hour = ((codemasters->timestamp.hour >> 4) * 10) +
-				  (codemasters->timestamp.hour & 0x0F);
-		cmtime.tm_min  = ((codemasters->timestamp.minute >> 4) * 10) +
-				  (codemasters->timestamp.minute & 0x0F);
-		cmtime.tm_sec = 0;
-
-		// tm_wday and tm_yday are output variables.
-		cmtime.tm_wday = 0;
-		cmtime.tm_yday = 0;
-		cmtime.tm_isdst = 0;
-
-		// If conversion fails, d->ctime will be set to -1.
-		time_t ctime = timegm(&cmtime);
+		// Build time.
+		// NOTE: CreationDate is currently handled as QDate on KDE.
+		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
 
 		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(C_("Sega8Bit", "Build Time"), ctime,
@@ -438,7 +500,7 @@ int Sega8Bit::loadFieldData(void)
 		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum 2"),
 			le16_to_cpu(codemasters->checksum_compl),
 			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
-	} else if (!memcmp(d->romHeader.sdsc.magic, SDSC_MAGIC, 4)) {
+	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
 		// SDSC header magic.
 		const Sega8_SDSC_RomHeader *sdsc = &d->romHeader.sdsc;
 		d->fields->addField_string(C_("Sega8Bit", "Extra Header"), "SDSC");
@@ -457,33 +519,7 @@ int Sega8Bit::loadFieldData(void)
 		d->fields->addField_string(C_("Sega8Bit", "SDSC Version"), bcdbuf);
 
 		// Build date.
-
-		// Convert date/time from BCD.
-		// NOTE: struct tm has some oddities:
-		// - tm_year: year - 1900
-		// - tm_mon: 0 == January
-
-		// TODO: Check for invalid BCD values.
-		struct tm cmtime;
-		cmtime.tm_year = ((sdsc->date.century >> 4) * 1000) +
-				 ((sdsc->date.century & 0x0F) * 100) +
-				 ((sdsc->date.year >> 4) * 10) +
-				  (sdsc->date.year & 0x0F) - 1900;
-		cmtime.tm_mon  = ((sdsc->date.month >> 4) * 10) +
-				  (sdsc->date.month & 0x0F) - 1;
-		cmtime.tm_mday = ((sdsc->date.day >> 4) * 10) +
-				  (sdsc->date.day & 0x0F);
-		cmtime.tm_hour = 0;
-		cmtime.tm_min  = 0;
-		cmtime.tm_sec = 0;
-
-		// tm_wday and tm_yday are output variables.
-		cmtime.tm_wday = 0;
-		cmtime.tm_yday = 0;
-		cmtime.tm_isdst = 0;
-
-		// If conversion fails, d->ctime will be set to -1.
-		time_t ctime = timegm(&cmtime);
+		time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
 
 		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(C_("Sega8Bit", "Build Date"), ctime,
@@ -492,10 +528,12 @@ int Sega8Bit::loadFieldData(void)
 		);
 
 		// SDSC string fields.
-		d->addField_string_sdsc(C_("Sega8Bit", "Author"), le16_to_cpu(sdsc->author_ptr));
-		d->addField_string_sdsc(C_("Sega8Bit", "Name"), le16_to_cpu(sdsc->name_ptr));
-		d->addField_string_sdsc(C_("Sega8Bit", "Description"), le16_to_cpu(sdsc->desc_ptr));
-
+		d->fields->addField_string(C_("Sega8Bit", "Author"),
+			d->getSdscString(le16_to_cpu(sdsc->author_ptr)));
+		d->fields->addField_string(C_("Sega8Bit", "Name"),
+			d->getSdscString(le16_to_cpu(sdsc->name_ptr)));
+		d->fields->addField_string(C_("Sega8Bit", "Description"),
+			d->getSdscString(le16_to_cpu(sdsc->desc_ptr)));
 	} else if (!memcmp(d->romHeader.m404_copyright, "COPYRIGHT SEGA", 14) ||
 		   !memcmp(d->romHeader.m404_copyright, "COPYRIGHTSEGA", 13))
 	{
@@ -506,6 +544,73 @@ int Sega8Bit::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Sega8Bit::loadMetaData(void)
+{
+	RP_D(Sega8Bit);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	if (0x10000 - static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum)) ==
+	    static_cast<uint32_t>(le16_to_cpu(d->romHeader.codemasters.checksum_compl)))
+	{
+		// Codemasters checksums match.
+		d->metaData = new RomMetaData();
+		d->metaData->reserve(1);	// Maximum of 1 metadata property.
+		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
+
+		// Build time.
+		// NOTE: CreationDate is currently handled as QDate on KDE.
+		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
+		d->metaData->addMetaData_timestamp(Property::CreationDate, ctime);
+	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
+		// SDSC header is present.
+		d->metaData = new RomMetaData();
+		d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+		const Sega8_SDSC_RomHeader *const sdsc = &d->romHeader.sdsc;
+
+		// Build date.
+		time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
+		d->metaData->addMetaData_timestamp(Property::CreationDate, ctime);
+
+		// Author.
+		string str = d->getSdscString(le16_to_cpu(sdsc->author_ptr));
+		if (!str.empty()) {
+			d->metaData->addMetaData_string(Property::Author, str);
+		}
+
+		// Name. (Title)
+		str = d->getSdscString(le16_to_cpu(sdsc->name_ptr));
+		if (!str.empty()) {
+			d->metaData->addMetaData_string(Property::Title, str);
+		}
+
+		// Description. (Comment)
+                // TODO: Property::Comment is assumed to be user-added
+                // on KDE Dolphin 18.08.1. Needs a description property.
+                // Also needs verification on Windows.
+                str = d->getSdscString(le16_to_cpu(sdsc->desc_ptr));
+		if (!str.empty()) {
+			d->metaData->addMetaData_string(Property::Subject, str);
+		}
+	}
+
+	// Finished reading the metadata.
+	return (d->metaData ? static_cast<int>(d->metaData->count()) : -ENOENT);
 }
 
 }

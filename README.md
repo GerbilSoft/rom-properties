@@ -92,7 +92,7 @@ button.
 | Nintendo Wii (WADs)       |       Yes      |    Yes   |       Yes*      |  Title, Covers |
 | Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A      |
 | Nintendo Wii U            |       Yes      |    No    |        No       |  Disc, Covers  |
-| Sega 8-bit (SMS, GG)      |       Yes      |    No    |       N/A       |       No       |
+| Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |       No       |
 | Sega Mega Drive           |       Yes      |    No    |       N/A       |       No       |
 | Sega Dreamcast            |       Yes      |    Yes   |      Media      |       No       |
 | Sega Dreamcast Saves      |       Yes      |    No    |   Icon, Banner  |       No       |
