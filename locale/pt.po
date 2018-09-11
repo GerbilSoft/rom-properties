@@ -1687,7 +1687,7 @@ msgstr "NTSC"
 #: ../src/libromdata/Console/NES.cpp:789
 msgctxt "NES|TVMode"
 msgid "PAL"
-msgstr "Pal"
+msgstr "PAL"
 
 #: ../src/libromdata/Console/NES.cpp:790 ../src/libromdata/Console/NES.cpp:791
 msgctxt "NES|TVMode"
