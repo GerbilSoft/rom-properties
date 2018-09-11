@@ -183,26 +183,26 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
 	// - tm_mon: 0 == January
 
 	// TODO: Check for invalid BCD values.
-	struct tm cmtime;
-	cmtime.tm_year = ((date->century >> 4) * 1000) +
-			 ((date->century & 0x0F) * 100) +
-			 ((date->year >> 4) * 10) +
-			  (date->year & 0x0F) - 1900;
-	cmtime.tm_mon  = ((date->month >> 4) * 10) +
-			  (date->month & 0x0F) - 1;
-	cmtime.tm_mday = ((date->day >> 4) * 10) +
-			  (date->day & 0x0F);
-	cmtime.tm_hour = 0;
-	cmtime.tm_min  = 0;
-	cmtime.tm_sec = 0;
+	struct tm sdsctime;
+	sdsctime.tm_year = ((date->century >> 4) * 1000) +
+			   ((date->century & 0x0F) * 100) +
+			   ((date->year >> 4) * 10) +
+			    (date->year & 0x0F) - 1900;
+	sdsctime.tm_mon  = ((date->month >> 4) * 10) +
+			    (date->month & 0x0F) - 1;
+	sdsctime.tm_mday = ((date->day >> 4) * 10) +
+			    (date->day & 0x0F);
+	sdsctime.tm_hour = 0;
+	sdsctime.tm_min  = 0;
+	sdsctime.tm_sec = 0;
 
 	// tm_wday and tm_yday are output variables.
-	cmtime.tm_wday = 0;
-	cmtime.tm_yday = 0;
-	cmtime.tm_isdst = 0;
+	sdsctime.tm_wday = 0;
+	sdsctime.tm_yday = 0;
+	sdsctime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
-	return timegm(&cmtime);
+	return timegm(&sdsctime);
 }
 
 /** Sega8Bit **/
