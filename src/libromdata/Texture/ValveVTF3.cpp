@@ -486,6 +486,7 @@ int ValveVTF3::loadMetaData(void)
 	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
+	// TODO: Don't add height for 1D textures?
 	d->metaData->addMetaData_integer(Property::Width, vtf3Header->width);
 	d->metaData->addMetaData_integer(Property::Height, vtf3Header->height);
 

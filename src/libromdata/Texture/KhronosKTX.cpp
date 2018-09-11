@@ -911,6 +911,41 @@ int KhronosKTX::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int KhronosKTX::loadMetaData(void)
+{
+	RP_D(KhronosKTX);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// KTX header.
+	const KTX_Header *const ktxHeader = &d->ktxHeader;
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// Dimensions.
+	// TODO: Don't add pixelHeight for 1D textures?
+	d->metaData->addMetaData_integer(Property::Width, ktxHeader->pixelWidth);
+	d->metaData->addMetaData_integer(Property::Height, ktxHeader->pixelHeight);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.

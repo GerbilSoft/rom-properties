@@ -1388,6 +1388,7 @@ int DirectDrawSurface::loadMetaData(void)
 	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
+	// TODO: Don't add dwHeight for 1D textures?
 	d->metaData->addMetaData_integer(Property::Width, ddsHeader->dwWidth);
 	d->metaData->addMetaData_integer(Property::Height, ddsHeader->dwHeight);
 

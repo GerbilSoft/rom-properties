@@ -119,7 +119,7 @@ button.
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Sega PVR Textures             |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
-| Khronos KTX Textures          |       Yes      |    No    |      Image      |       N/A      |
+| Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 
