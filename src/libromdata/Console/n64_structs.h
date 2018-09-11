@@ -59,15 +59,16 @@ typedef union PACKED _N64_RomHeader {
 		};
 
 		uint32_t entrypoint;	// [0x008]
-		uint8_t release[4];	// [0x00C] OS version. Format: 00 00 AA BB
+		uint8_t os_version[4];	// [0x00C] OS version. (Previously called "release")
+					//         Format: 00 00 AA BB
 					//         AA is decimal; BB is ASCII.
 					//         OoT is 00 00 14 49 == OS 20I
 		uint32_t crc[2];	// [0x010] Two CRCs.
 		uint8_t reserved1[8];	// [0x018]
 		char title[0x14];	// [0x020] Title. (cp932)
 		uint8_t reserved[7];	// [0x034]
-		char id4[4];		// Game ID.
-		uint8_t revision;	// Revision.
+		char id4[4];		// [0x03B] Game ID.
+		uint8_t revision;	// [0x03F] Revision.
 	};
 
 	// Direct access for byteswapping.
