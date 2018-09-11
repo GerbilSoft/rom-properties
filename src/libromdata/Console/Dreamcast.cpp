@@ -835,7 +835,7 @@ int Dreamcast::loadMetaData(void)
 		RomMetaData::STRF_TRIM_END);
 
 	// Publisher.
-	d->fields->addField_string(C_("Dreamcast", "Publisher"), d->getPublisher());
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
 
 	// Disc number. (multiple disc sets only)
 	uint8_t disc_num, disc_total;
