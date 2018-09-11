@@ -958,7 +958,10 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->metaData->addMetaData_string(Property::Comment, kv.getStr(data));
+			// TODO: Property::Comment is assumed to be user-added
+			// on KDE Dolphin 18.08.1. Needs a description property.
+			// Also needs verification on Windows.
+			d->metaData->addMetaData_string(Property::Subject, kv.getStr(data));
 		}
 	}
 

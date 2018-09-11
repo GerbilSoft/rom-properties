@@ -504,7 +504,10 @@ int GameCubeBNR::loadMetaData(void)
 
 	// Game description.
 	if (comment->gamedesc[0] != '\0') {
-		d->metaData->addMetaData_string(Property::Comment,
+		// TODO: Property::Comment is assumed to be user-added
+		// on KDE Dolphin 18.08.1. Needs a description property.
+		// Also needs verification on Windows.
+		d->metaData->addMetaData_string(Property::Subject,
 			cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
 	}
 

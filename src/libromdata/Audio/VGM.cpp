@@ -894,7 +894,10 @@ int VGM::loadMetaData(void)
 				d->metaData->addMetaData_string(Property::VGMRipper, v_gd3[9]);
 			}*/
 			if (line_count >= 11 && !v_gd3[10].empty()) {
-				d->metaData->addMetaData_string(Property::Comment, v_gd3[10]);
+				// TODO: Property::Comment is assumed to be user-added
+				// on KDE Dolphin 18.08.1. Needs a description property.
+				// Also needs verification on Windows.
+				d->metaData->addMetaData_string(Property::Subject, v_gd3[10]);
 			}
 		}
 	}
