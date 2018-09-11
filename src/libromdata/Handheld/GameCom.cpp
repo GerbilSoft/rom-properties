@@ -294,7 +294,7 @@ GameCom::GameCom(IRpFile *file)
 
 	// Read the ROM header at the standard address.
 	size_t size = d->file->seekAndRead(GCOM_HEADER_ADDRESS, &d->romHeader, sizeof(d->romHeader));
-	if (size != sizeof(d->romHeader)) {
+	if (size == sizeof(d->romHeader)) {
 		// Check if this ROM image is supported.
 		DetectInfo info;
 		info.header.addr = GCOM_HEADER_ADDRESS;
