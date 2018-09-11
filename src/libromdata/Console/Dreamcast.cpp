@@ -256,7 +256,8 @@ string DreamcastPrivate::getPublisher(void) const
 		char *endptr;
 		const unsigned int t_code = static_cast<unsigned int>(
 			strtoul(&discHeader.publisher[10], &endptr, 10));
-		if (endptr > &discHeader.publisher[10] &&
+		if (t_code != 0 &&
+		    endptr > &discHeader.publisher[10] &&
 		    endptr <= &discHeader.publisher[15] &&
 		    *endptr == ' ')
 		{

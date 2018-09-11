@@ -125,6 +125,19 @@ class SegaSaturnPrivate : public RomDataPrivate
 
 		// Region code. (Saturn_Region)
 		unsigned int saturn_region;
+
+		/**
+		 * Get the disc publisher.
+		 * @return Disc publisher.
+		 */
+		string getPublisher(void) const;
+
+		/**
+		 * Parse the disc number portion of the device information field.
+		 * @param disc_num	[out] Disc number.
+		 * @param disc_total	[out] Total number of discs.
+		 */
+		void parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const;
 };
 
 /** SegaSaturnPrivate **/
@@ -245,6 +258,67 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
 	}
 
 	return ret;
+}
+
+/**
+ * Get the disc publisher.
+ * @return Disc publisher.
+ */
+string SegaSaturnPrivate::getPublisher(void) const
+{
+	const char *publisher = nullptr;
+	if (!memcmp(discHeader.maker_id, SATURN_IP0000_BIN_MAKER_ID, sizeof(discHeader.maker_id))) {
+		// First-party Sega title.
+		publisher = "Sega";
+	} else if (!memcmp(discHeader.maker_id, "SEGA TP T-", 10)) {
+		// This may be a third-party T-code.
+		char *endptr;
+		const unsigned int t_code = static_cast<unsigned int>(
+			strtoul(&discHeader.maker_id[10], &endptr, 10));
+		if (t_code != 0 &&
+		    endptr > &discHeader.maker_id[10] &&
+		    endptr <= &discHeader.maker_id[15] &&
+		    *endptr == ' ')
+		{
+			// Valid T-code. Look up the publisher.
+			publisher = SegaPublishers::lookup(t_code);
+		}
+	}
+
+	if (publisher) {
+		// Found the publisher.
+		return publisher;
+	}
+
+	// Unknown publisher.
+	// List the field as-is.
+	string s_ret = latin1_to_utf8(discHeader.maker_id, sizeof(discHeader.maker_id));
+	trimEnd(s_ret);
+	return s_ret;
+}
+
+/**
+ * Parse the disc number portion of the device information field.
+ * @param disc_num	[out] Disc number.
+ * @param disc_total	[out] Total number of discs.
+ */
+void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) const
+{
+	disc_num = 0;
+	disc_total = 0;
+
+	if (!memcmp(&discHeader.device_info[0], "CD-", 3) &&
+	             discHeader.device_info[4] == '/')
+	{
+		// "CD-ROM" is present.
+		if (ISDIGIT(discHeader.device_info[3]) &&
+		    ISDIGIT(discHeader.device_info[5]))
+		{
+			// Disc digits are present.
+			disc_num = discHeader.device_info[3] & 0x0F;
+			disc_total = discHeader.device_info[5] & 0x0F;
+		}
+	}
 }
 
 /** SegaSaturn **/
@@ -478,33 +552,7 @@ int SegaSaturn::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Publisher.
-	const char *publisher = nullptr;
-	if (!memcmp(discHeader->maker_id, SATURN_IP0000_BIN_MAKER_ID, sizeof(discHeader->maker_id))) {
-		// First-party Sega title.
-		publisher = "Sega";
-	} else if (!memcmp(discHeader->maker_id, "SEGA TP T-", 10)) {
-		// This may be a third-party T-code.
-		char *endptr;
-		const unsigned int t_code = static_cast<unsigned int>(
-			strtoul(&discHeader->maker_id[10], &endptr, 10));
-		if (t_code != 0 &&
-		    endptr > &discHeader->maker_id[10] &&
-		    endptr <= &discHeader->maker_id[15])
-		{
-			// Valid T-code. Look up the publisher.
-			publisher = SegaPublishers::lookup(t_code);
-		}
-	}
-
-	if (publisher) {
-		d->fields->addField_string(C_("SegaSaturn", "Publisher"), publisher);
-	} else {
-		// Unknown publisher.
-		// List the field as-is.
-		d->fields->addField_string(C_("SegaSaturn", "Publisher"),
-			latin1_to_utf8(discHeader->maker_id, sizeof(discHeader->maker_id)),
-			RomFields::STRF_TRIM_END);
-	}
+	d->fields->addField_string(C_("SegaSaturn", "Publisher"), d->getPublisher());
 
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
@@ -543,21 +591,8 @@ int SegaSaturn::loadFieldData(void)
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
 	// Disc number.
-	uint8_t disc_num = 0;
-	uint8_t disc_total = 0;
-	if (!memcmp(discHeader->device_info, "CD-", 3) &&
-	    discHeader->device_info[4] == '/')
-	{
-		// "GD-ROM" is present.
-		if (ISDIGIT(discHeader->device_info[3]) &&
-		    ISDIGIT(discHeader->device_info[5]))
-		{
-			// Disc digits are present.
-			disc_num = discHeader->device_info[3] & 0x0F;
-			disc_total = discHeader->device_info[5] & 0x0F;
-		}
-	}
-
+	uint8_t disc_num, disc_total;
+	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0) {
 		d->fields->addField_string(C_("SegaSaturn", "Disc #"),
 			// tr: Disc X of Y (for multi-disc games)
@@ -595,6 +630,55 @@ int SegaSaturn::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SegaSaturn::loadMetaData(void)
+{
+	RP_D(SegaSaturn);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->discType < 0) {
+		// Unknown disc image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// Sega Saturn disc header.
+	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
+	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+
+	// Title. (TODO: Encoding?)
+	d->metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
+		RomMetaData::STRF_TRIM_END);
+
+	// Publisher.
+	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+
+	// Release date.
+	d->metaData->addMetaData_timestamp(Property::CreationDate,
+		d->ascii_yyyymmdd_to_unix_time(discHeader->release_date));
+
+	// Disc number. (multiple disc sets only)
+	uint8_t disc_num, disc_total;
+	d->parseDiscNumber(disc_num, disc_total);
+	if (disc_num != 0 && disc_total > 1) {
+		d->metaData->addMetaData_integer(Property::DiscNumber, disc_num);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }

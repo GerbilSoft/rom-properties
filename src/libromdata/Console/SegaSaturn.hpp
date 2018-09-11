@@ -26,6 +26,7 @@
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(SegaSaturn)
+ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
 }
