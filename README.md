@@ -80,69 +80,69 @@ button.
 
 ### Game Consoles
 
-|           System          | Properties Tab | Internal Images | External Scans |
-|:-------------------------:|:--------------:|:---------------:|:--------------:|
-| NES                       |       Yes      |       N/A       |       No       |
-| Super NES                 |       Yes      |       N/A       |       No       |
-| Nintendo 64               |       Yes      |       N/A       |       No       |
-| Nintendo GameCube         |       Yes      |      Banner     |      Disc      |
-| Nintendo GameCube Banners |       Yes      |      Banner     |      Disc      |
-| Nintendo GameCube Saves   |       Yes      |       Icon      |       N/A      |
-| Nintendo Wii (Discs)      |       Yes      |        No       |  Disc, Covers  |
-| Nintendo Wii (WADs)       |       Yes      |       Yes*      |  Title, Covers |
-| Nintendo Wii Saves        |       Yes      |       Yes       |       N/A      |
-| Nintendo Wii U            |       Yes      |        No       |  Disc, Covers  |
-| Sega 8-bit (SMS, GG)      |       Yes      |       N/A       |       No       |
-| Sega Mega Drive           |       Yes      |       N/A       |       No       |
-| Sega Dreamcast            |       Yes      |      Media      |       No       |
-| Sega Dreamcast Saves      |       Yes      |   Icon, Banner  |       No       |
-| Sega Saturn               |       Yes      |       N/A       |       No       |
-| Sony PlayStation Saves    |       Yes      |       Icon      |       N/A      |
+|           System          | Properties Tab | Metadata | Internal Images | External Scans |
+|:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| NES                       |       Yes      |    No    |       N/A       |       No       |
+| Super NES                 |       Yes      |    No    |       N/A       |       No       |
+| Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
+| Nintendo GameCube         |       Yes      |    Yes   |      Banner     |      Disc      |
+| Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |      Disc      |
+| Nintendo GameCube Saves   |       Yes      |    No    |       Icon      |       N/A      |
+| Nintendo Wii (Discs)      |       Yes      |    Yes   |        No       |  Disc, Covers  |
+| Nintendo Wii (WADs)       |       Yes      |    Yes   |       Yes*      |  Title, Covers |
+| Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A      |
+| Nintendo Wii U            |       Yes      |    No    |        No       |  Disc, Covers  |
+| Sega 8-bit (SMS, GG)      |       Yes      |    No    |       N/A       |       No       |
+| Sega Mega Drive           |       Yes      |    No    |       N/A       |       No       |
+| Sega Dreamcast            |       Yes      |    Yes   |      Media      |       No       |
+| Sega Dreamcast Saves      |       Yes      |    No    |   Icon, Banner  |       No       |
+| Sega Saturn               |       Yes      |    Yes   |       N/A       |       No       |
+| Sony PlayStation Saves    |       Yes      |    No    |       Icon      |       N/A      |
 
 \* Internal images are only present in Wii DLC WADs.
 
 ### Handhelds
 
-|             System            | Properties Tab | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:---------------:|:--------------:|
-| Atari Lynx                    |       Yes      |       N/A       |       No       |
-| Nintendo Game Boy (Color)     |       Yes      |       N/A       |       No       |
-| Nintendo Virtual Boy          |       Yes      |       N/A       |       No       |
-| Nintendo Game Boy Advance     |       Yes      |       N/A       |       No       |
-| Nintendo DS(i)                |       Yes      |       Icon      |  Covers, Box   |
-| Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
-| Tiger game.com                |       Yes      |       Icon      |       No       |
+|             System            | Properties Tab | Metadata | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| Atari Lynx                    |       Yes      |    No    |       N/A       |       No       |
+| Nintendo Game Boy (Color)     |       Yes      |    No    |       N/A       |       No       |
+| Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
+| Nintendo Game Boy Advance     |       Yes      |    No    |       N/A       |       No       |
+| Nintendo DS(i)                |       Yes      |    No    |       Icon      |  Covers, Box   |
+| Nintendo 3DS                  |       Yes      |    No    |       Icon      |  Covers, Box   |
+| Tiger game.com                |       Yes      |    No    |       Icon      |       No       |
 
 ### Texture Formats
 
-|             System            | Properties Tab | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:---------------:|:--------------:|
-| Sega PVR Textures             |       Yes      |      Image      |       N/A      |
-| Microsoft DirectDraw Surface  |       Yes      |      Image      |       N/A      |
-| Khronos KTX Textures          |       Yes      |      Image      |       N/A      |
-| Valve VTF Textures            |       Yes      |      Image      |       N/A      |
-| Valve VTF3 (PS3) Textures     |       Yes      |      Image      |       N/A      |
+|             System            | Properties Tab | Metadata | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| Sega PVR Textures             |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
+| Khronos KTX Textures          |       Yes      |    No    |      Image      |       N/A      |
+| Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
+| Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 
 ### Audio Formats
 
-|             System            | Properties Tab | Internal Images | External Scans | Metadata |
-|:-----------------------------:|:--------------:|:---------------:|:--------------:|:--------:|
-| CRI ADX ADPCM                 |       Yes      |       N/A       |       N/A      |    Yes   |
-| Commodore 64 SID Music        |       Yes      |       N/A       |       N/A      |    Yes   |
-| Game Boy Sound System         |       Yes      |       N/A       |       N/A      |    Yes   |
-| Nintendo Sound Format         |       Yes      |       N/A       |       N/A      |    Yes   |
-| Portable Sound Format         |       Yes      |       N/A       |       N/A      |    Yes   |
-| Super NES SPC Format          |       Yes      |       N/A       |       N/A      |    Yes   |
-| Video Game Music              |       Yes      |       N/A       |       N/A      |    Yes   |
+|             System            | Properties Tab | Metadata | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| CRI ADX ADPCM                 |       Yes      |    Yes   |       N/A       |       N/A      |
+| Commodore 64 SID Music        |       Yes      |    Yes   |       N/A       |       N/A      |
+| Game Boy Sound System         |       Yes      |    Yes   |       N/A       |       N/A      |
+| Nintendo Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
+| Portable Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
+| Super NES SPC Format          |       Yes      |    Yes   |       N/A       |       N/A      |
+| Video Game Music              |       Yes      |    Yes   |       N/A       |       N/A      |
 
 ### Other
 
-|             System             | Properties Tab | Internal Images | External Scans |
-|:------------------------------:|:--------------:|:---------------:|:--------------:|
-| Executable and Linkable Format |       Yes      |       N/A       |       N/A      |
-| Nintendo amiibo                |       Yes      |       N/A       |      Media     |
-| Nintendo Badge Arcade          |       Yes      |      Image      |       N/A      |
-| Windows/DOS Executables        |       Yes      |        No       |       N/A      |
+|             System             | Properties Tab | Metadata | Internal Images | External Scans |
+|:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
+| Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
+| Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |
+| Windows/DOS Executables        |       Yes      |    No    |        No       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
