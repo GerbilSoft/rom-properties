@@ -827,7 +827,7 @@ int Dreamcast::loadMetaData(void)
 
 	// Dreamcast disc header.
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
+	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title. (TODO: Encoding?)
 	d->metaData->addMetaData_string(Property::Title,
@@ -836,6 +836,10 @@ int Dreamcast::loadMetaData(void)
 
 	// Publisher.
 	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+
+	// Release date.
+	d->metaData->addMetaData_timestamp(Property::CreationDate,
+		d->ascii_yyyymmdd_to_unix_time(discHeader->release_date));
 
 	// Disc number. (multiple disc sets only)
 	uint8_t disc_num, disc_total;

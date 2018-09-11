@@ -64,7 +64,7 @@ namespace Property {
 		Language,	// string: language
 		Copyright,	// string: copyright
 		Publisher,	// string: publisher
-		CreationDate,	// FIXME: What's the type?
+		CreationDate,	// timestamp: creation date
 		Keywords,	// FIXME: What's the type?
 
 		// Media

@@ -629,7 +629,7 @@ int RomMetaData::addMetaData_timestamp(Property::Property name, time_t timestamp
 	MetaData &metaData = d->metaData.at(idx);
 
 	metaData.name = name;
-	metaData.type = PropertyType::String;
+	metaData.type = PropertyType::Timestamp;
 	metaData.data.timestamp = timestamp;
 	return idx;
 }
