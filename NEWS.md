@@ -52,6 +52,8 @@
 
 * Bug fixes:
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.
+  * Linux: Fixed a file handle leak that was only noticeable when handling
+    more than 1,023 files in one invocation of the `rpcli` program.
 
 ## v1.3.3 (released 2018/08/25)
 
