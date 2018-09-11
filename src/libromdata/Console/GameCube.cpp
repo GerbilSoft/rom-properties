@@ -1991,30 +1991,64 @@ int GameCube::loadMetaData(void)
 	const GCN_DiscHeader *const discHeader = &d->discHeader;
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
-	// Title.
-	// TODO: Use opening.bnr title for GameCube instead?
-	// TODO: Is Shift-JIS actually permissible here?
-	switch (d->gcnRegion) {
-		case GCN_REGION_USA:
-		case GCN_REGION_EUR:
+	// If this is GameCube, use opening.bnr if available.
+	// TODO: Wii IMET?
+	bool addedBnrMetaData = false;
+	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
 		default:
-			// USA/PAL uses cp1252.
-			d->metaData->addMetaData_string(Property::Title,
-				cp1252_to_utf8(
-					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
 
-		case GCN_REGION_JPN:
-		case GCN_REGION_KOR:
-			// Japan uses Shift-JIS.
-			d->metaData->addMetaData_string(Property::Title,
-				cp1252_sjis_to_utf8(
-					discHeader->game_title, sizeof(discHeader->game_title)));
+		case GameCubePrivate::DISC_SYSTEM_GCN: {
+			if (!d->opening_bnr.gcn.data) {
+				d->gcn_loadOpeningBnr();
+				if (!d->opening_bnr.gcn.data) {
+					// Still unable to load the metadata.
+					break;
+				}
+			}
+
+			// Get the metadata from opening.bnr.
+			const RomMetaData *const bnrMetaData = d->opening_bnr.gcn.data->metaData();
+			if (bnrMetaData && !bnrMetaData->empty()) {
+				int ret = d->metaData->addMetaData_metaData(bnrMetaData);
+				if (ret >= 0) {
+					// Metadata added successfully.
+					addedBnrMetaData = true;
+				}
+			}
 			break;
+		}
 	}
 
-	// Publisher.
-	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+	if (!addedBnrMetaData) {
+		// Unable to load opening.bnr.
+		// Use the disc header.
+
+		// Title.
+		// TODO: Use opening.bnr title for GameCube instead?
+		// TODO: Is Shift-JIS actually permissible here?
+		switch (d->gcnRegion) {
+			case GCN_REGION_USA:
+			case GCN_REGION_EUR:
+			default:
+				// USA/PAL uses cp1252.
+				d->metaData->addMetaData_string(Property::Title,
+					cp1252_to_utf8(
+						discHeader->game_title, sizeof(discHeader->game_title)));
+				break;
+
+			case GCN_REGION_JPN:
+			case GCN_REGION_KOR:
+				// Japan uses Shift-JIS.
+				d->metaData->addMetaData_string(Property::Title,
+					cp1252_sjis_to_utf8(
+						discHeader->game_title, sizeof(discHeader->game_title)));
+				break;
+		}
+
+		// Publisher.
+		d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());
+	}
 
 	// TODO: Disc number?
 
