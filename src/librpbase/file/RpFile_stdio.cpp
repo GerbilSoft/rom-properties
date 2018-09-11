@@ -290,7 +290,9 @@ void RpFile::init(void)
 }
 
 RpFile::~RpFile()
-{ }
+{
+	delete d_ptr;
+}
 
 /**
  * Copy constructor.
