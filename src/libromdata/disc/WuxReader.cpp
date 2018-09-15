@@ -64,9 +64,6 @@ class WuxReaderPrivate : public SparseDiscReaderPrivate {
 		// Data start position.
 		// Starts immediately after the index table.
 		int64_t dataOffset;
-
-		// Index of the last used block.
-		int maxLogicalBlockUsed;
 };
 
 /** WuxReaderPrivate **/
@@ -255,7 +252,6 @@ int WuxReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	}
 
 	// Get the physical block number first.
-	// TODO: Check against maxLogicalBlockUsed?
 	assert(blockIdx < d->idxTbl.size());
 	if (blockIdx >= d->idxTbl.size()) {
 		// Out of range.

@@ -79,7 +79,10 @@ class N64Private : public RomDataPrivate
 N64Private::N64Private(N64 *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_TYPE_UNKNOWN)
-{ }
+{
+	// Clear the ROM header struct.
+	memset(&romHeader, 0, sizeof(romHeader));
+}
 
 /** N64 **/
 

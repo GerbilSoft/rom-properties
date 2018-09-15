@@ -126,13 +126,11 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	memset(&svHeader, 0, sizeof(svHeader));
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
-#ifdef ENABLE_DECRYPTION
 	key_idx[0] = WiiPartition::Key_Max;	// SD AES key
 	key_status[0] = KeyManager::VERIFY_UNKNOWN;
 
 	key_idx[1] = WiiPartition::Key_Max;	// SD IV
 	key_status[1] = KeyManager::VERIFY_UNKNOWN;
-#endif /* ENABLE_DECRYPTION */
 }
 
 WiiSavePrivate::~WiiSavePrivate()

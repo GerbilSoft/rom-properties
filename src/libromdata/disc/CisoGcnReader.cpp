@@ -77,6 +77,8 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 {
 	// Clear the CISO header struct.
 	memset(&cisoHeader, 0, sizeof(cisoHeader));
+	// Clear the CISO block map initially.
+	blockMap.fill(0xFFFF);
 
 	if (!this->file) {
 		// File could not be dup()'d.
@@ -126,9 +128,6 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 		q->m_lastError = EIO;
 		return;
 	}
-
-	// Clear the CISO block map initially.
-	blockMap.fill(0xFFFF);
 
 	// Parse the CISO block map.
 	uint16_t physBlockIdx = 0;

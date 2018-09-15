@@ -94,6 +94,7 @@ class GameCubeBNRPrivate : public RomDataPrivate
 
 GameCubeBNRPrivate::GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file)
 	: super(q, file)
+	, bannerType(BANNER_UNKNOWN)
 	, img_banner(nullptr)
 	, comments(nullptr)
 { }

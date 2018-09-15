@@ -180,6 +180,7 @@ RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
 	, pstream(nullptr)
 	, grfMode(0)
+	, romData(nullptr)
 { }
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
