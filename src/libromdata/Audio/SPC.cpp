@@ -905,7 +905,7 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->metaData->addMetaData_string(Property::Title, kv.getStr(data));
+			d->metaData->addMetaData_string(Property::Album, kv.getStr(data));
 		}
 	}
 
