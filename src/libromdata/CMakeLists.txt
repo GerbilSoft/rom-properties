@@ -62,6 +62,7 @@ SET(libromdata_SRCS
 	Audio/GBS.cpp
 	Audio/NSF.cpp
 	Audio/PSF.cpp
+	Audio/SAP.cpp
 	Audio/SID.cpp
 	Audio/SPC.cpp
 	Audio/VGM.cpp
@@ -181,6 +182,7 @@ SET(libromdata_H
 	Audio/GBS.hpp
 	Audio/NSF.hpp
 	Audio/PSF.hpp
+	Audio/SAP.hpp
 	Audio/SID.hpp
 	Audio/SPC.hpp
 	Audio/VGM.hpp

@@ -34,6 +34,7 @@
   * NSF: Nintendo Sound Format. Used for NES audio rips.
   * PSF: Portable Sound Format. Used for PlayStation audio rips.
     Subformats are used for several other platforms.
+  * SAP: Atari 8-bit audio format.
   * SPC: Super NES SPC-700 audio format.
   * SID: Commodore 64 SID Music format.
   * VGM: Video Gmae Music format. Used for all sorts of video game

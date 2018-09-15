@@ -131,4 +131,11 @@
 # define timegm(tm)	_mkgmtime(tm)
 #endif
 
+/** strtok_r() **/
+
+// MSVC has strtok_s(), which is basically the same as strtok_r().
+#ifdef _MSC_VER
+# define strtok_r(str, delim, saveptr) strtok_s(str, delim, saveptr)
+#endif
+
 #endif /* __C99_COMPAT_MSVCRT_H__ */

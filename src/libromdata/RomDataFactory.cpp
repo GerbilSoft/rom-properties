@@ -85,6 +85,7 @@ using std::vector;
 #include "Audio/GBS.hpp"
 #include "Audio/NSF.hpp"
 #include "Audio/PSF.hpp"
+#include "Audio/SAP.hpp"
 #include "Audio/SID.hpp"
 #include "Audio/SPC.hpp"
 #include "Audio/VGM.hpp"
@@ -266,6 +267,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// Audio
 	GetRomDataFns(ADX, false),
 	GetRomDataFns(PSF, false),
+	GetRomDataFns(SAP, false),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
 	GetRomDataFns(SID, false),	// PSID/RSID; maybe move to _magic[]?
 
 	// Other

@@ -115,6 +115,10 @@ SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
 bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM)
 {
 	// Game title: Should be ASCII.
+	// TODO: Should not contain control characters. (0x01-0x1F)
+	// Check: Final Fantasy V - Expert v0.947 by JCE3000GT (Hack) [a1].smc
+	// - Zero out the low 0x7F00 bytes.
+	// - ROM is incorrectly detected as LoROM.
 	for (int i = 0; i < ARRAY_SIZE(romHeader->snes.title); i++) {
 		if (romHeader->snes.title[i] & 0x80) {
 			// Invalid character.

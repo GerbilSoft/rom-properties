@@ -40,11 +40,6 @@ using namespace LibRpBase;
 #include <cstdio>
 #include <cstring>
 
-// FIXME: Put this in a compatibility header.
-#ifdef _MSC_VER
-# define strtok_r(str, delim, saveptr) strtok_s(str, delim, saveptr)
-#endif
-
 // C++ includes.
 #include <memory>
 #include <string>

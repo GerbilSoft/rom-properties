@@ -29,6 +29,18 @@
     </magic>
   </mime-type>
 
+  <!-- SAP -->
+  <mime-type type="audio/x-sap">
+    <_comment>Atari 8-bit audio</_comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.sap"/>
+    <magic priority="50">
+      <match value="SAP\r\n" type="string" offset="0"/>
+      <match value="SAP\n" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- SPC -->
   <mime-type type="audio/x-spc">
     <_comment>Super NES audio</_comment>
     <generic-icon name="audio-x-generic"/>
