@@ -31,7 +31,7 @@
 
   <!-- SAP -->
   <mime-type type="audio/x-sap">
-    <_comment>Atari 8-bit audio</_comment>
+    <comment>Atari 8-bit audio</comment>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.sap"/>
     <magic priority="50">
@@ -42,7 +42,7 @@
 
   <!-- SPC -->
   <mime-type type="audio/x-spc">
-    <_comment>Super NES audio</_comment>
+    <comment>Super NES audio</comment>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.spc"/>
     <magic priority="50">
