@@ -582,4 +582,55 @@ int SAP::loadFieldData(void)
 	return static_cast<int>(d->fields->count());
 }
 
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SAP::loadMetaData(void)
+{
+	RP_D(SAP);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Get the tags.
+	SAPPrivate::TagData tags = d->parseTags();
+	if (!tags.tags_read) {
+		// No tags.
+		return 0;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
+
+	// Composer.
+	if (!tags.author.empty()) {
+		d->metaData->addMetaData_string(Property::Composer, tags.author);
+	}
+
+	// Song title.
+	if (!tags.name.empty()) {
+		d->metaData->addMetaData_string(Property::Title, tags.name);
+	}
+
+	// TODO: Date.
+
+	// Number of channels.
+	d->metaData->addMetaData_integer(Property::Channels, (tags.stereo ? 2 : 1));
+
+	// TODO: Duration.
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
 }

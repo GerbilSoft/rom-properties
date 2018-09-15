@@ -127,7 +127,7 @@ button.
 
 |             System            | Properties Tab | Metadata | Internal Images | External Scans |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Atari 8-bit SAP audio         |       Yes      |    No    |       N/A       |       N/A      |
+| Atari 8-bit SAP audio         |       Yes      |    Yes   |       N/A       |       N/A      |
 | CRI ADX ADPCM                 |       Yes      |    Yes   |       N/A       |       N/A      |
 | Commodore 64 SID Music        |       Yes      |    Yes   |       N/A       |       N/A      |
 | Game Boy Sound System         |       Yes      |    Yes   |       N/A       |       N/A      |
