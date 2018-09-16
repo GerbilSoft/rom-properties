@@ -279,6 +279,7 @@ unsigned int PSFPrivate::lengthToMs(const char *str)
 				// Too many digits...
 				// TODO: Mask these digits somehow.
 				frac_adj = 1;
+				break;
 		}
 	}
 
