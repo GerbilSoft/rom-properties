@@ -43,7 +43,9 @@ using namespace LibRpBase;
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
+using std::pair;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
@@ -85,12 +87,24 @@ class SAPPrivate : public RomDataPrivate
 			uint16_t player_addr;	// Player address.
 			uint16_t covox_addr;	// COVOX hardware address. (If not specified, set to 0.)
 
-			// TODO: "TIME" tags for each song.
+			// TIME tags.
+			// - first: Duration, in milliseconds.
+			// - second: Loop flag.
+			vector<pair<uint32_t, bool> > durations;
 
 			TagData() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
 				  , type('\0'), fastplay(0), init_addr(0), music_addr(0), player_addr(0)
 				  , covox_addr(0) { }
 		};
+
+		/**
+		 * Convert a duration to milliseconds + loop flag.
+		 * @param str	[in] Duration string.
+		 * @param pMs	[out] Milliseconds.
+		 * @param pLoop	[out] Loop flag.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop);
 
 		/**
 		 * Parse the tags from the open SAP file.
@@ -104,6 +118,112 @@ class SAPPrivate : public RomDataPrivate
 SAPPrivate::SAPPrivate(SAP *q, IRpFile *file)
 	: super(q, file)
 { }
+
+/**
+ * Convert a duration to milliseconds + loop flag.
+ * @param str	[in] Duration string.
+ * @param pMs	[out] Milliseconds.
+ * @param pLoop	[out] Loop flag.
+ * @return 0 on success; non-zero on error.
+ */
+int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
+{
+	// Time format:
+	// - One or two digits specifying minutes
+	// - Colon
+	// - Two digits specifying seconds
+	// - Optional: Decimal point followed by one to three digits
+	// - Optional: One space followed by four uppercase letters "LOOP"
+
+	// Examples:
+	// - 0:12
+	// - 01:23.4
+	// - 12:34.56
+	// - 12:34.567
+
+	// TODO: Consolidate code with PSF?
+	// NOTE: PSF allows ',' for decimal; SAP doesn't.
+	unsigned int min, sec, frac;
+
+	// Check the 'frac' length.
+	unsigned int frac_adj = 0;
+	const char *dp = strchr(str, '.');
+	if (!dp) {
+		dp = strchr(str, ',');
+	}
+	if (dp) {
+		// Found the decimal point.
+		// Count how many digits are after it.
+		unsigned int digit_count = 0;
+		dp++;
+		for (; *dp != '\0'; dp++) {
+			if (ISDIGIT(*dp)) {
+				// Found a digit.
+				digit_count++;
+			} else {
+				// Not a digit.
+				break;
+			}
+		}
+		switch (digit_count) {
+			case 0:
+				// No digits.
+				frac_adj = 0;
+				break;
+			case 1:
+				// One digit. (tenths)
+				frac_adj = 100;
+				break;
+			case 2:
+				// Two digits. (hundredths)
+				frac_adj = 10;
+				break;
+			case 3:
+				// Three digits. (thousandths)
+				frac_adj = 1;
+				break;
+			default:
+				// Too many digits...
+				// TODO: Mask these digits somehow.
+				frac_adj = 1;
+				break;
+		}
+	}
+
+	// minutes:seconds.decimal
+	int s = sscanf(str, "%u:%u.%u", &min, &sec, &frac);
+	if (s == 3) {
+		// Format matched.
+		*pMs = (min * 60 * 1000) +
+		       (sec * 1000) +
+		       (frac * frac_adj);
+	} else {
+		// minutes:seconds
+		int s = sscanf(str, "%u:%u", &min, &sec);
+		if (s == 3) {
+			// Format matched.
+			*pMs = (min * 60 * 1000) +
+			       (sec * 1000);
+		} else {
+			// No match.
+			return -EINVAL;
+		}
+	}
+
+	// Check for "LOOP".
+	*pLoop = false;
+	const char *space = strchr(str, ' ');
+	if (space) {
+		space++;
+		if (!strncasecmp(space, "LOOP", 4) && (space[4] == '\0' || ISSPACE(space[4]))) {
+			// Found "LOOP".
+			*pLoop = true;
+		}
+	}
+
+	// Done.
+	return 0;
+}
 
 /**
  * Parse the tags from the open SAP file.
@@ -210,8 +330,8 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 			{"MUSIC",	KT_UINT16_HEX,	&tags.music_addr},
 			{"PLAYER",	KT_UINT16_HEX,	&tags.player_addr},
 			{"COVOX",	KT_UINT16_HEX,	&tags.covox_addr},
-			// TODO
-			//{"TIME",	KT_TIME_LOOP,	&tags.???},
+			// TIME is handled separately.
+			{"TIME",	KT_TIME_LOOP,	nullptr},
 
 			{nullptr, KT_UNKNOWN, nullptr}
 		};
@@ -292,6 +412,23 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					// Zero it out and take the string.
 					*dblq = '\0';
 					*(static_cast<string*>(kwd->ptr)) = latin1_to_utf8(params+1, -1);
+					break;
+				}
+
+				case KT_TIME_LOOP: {
+					// Duration, plus optional "LOOP" keyword.
+					// TODO: Verify that we don't go over the song count?
+					if (tags.durations.empty()) {
+						// Reserve space.
+						tags.durations.reserve(tags.songs);
+					}
+
+					uint32_t duration;
+					bool loop_flag;
+					if (!durationToMsLoop(params, &duration, &loop_flag)) {
+						// Parsed successfully.
+						tags.durations.push_back(std::make_pair(duration, loop_flag));
+					}
 					break;
 				}
 			}
@@ -578,6 +715,38 @@ int SAP::loadFieldData(void)
 			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	}
 
+	// Song list.
+	if (!tags.durations.empty()) {
+		auto song_list = new vector<vector<string> >();
+		song_list->resize(tags.durations.size());
+
+		auto src_iter = tags.durations.cbegin();
+		auto dest_iter = song_list->begin();
+		for ( ; dest_iter != song_list->end(); ++src_iter, ++dest_iter) {
+			vector<string> &data_row = *dest_iter;
+			data_row.reserve(2);	// 2 fields per row.
+
+			// Format as m:ss.ddd.
+			// TODO: Separate function?
+			const uint32_t duration = src_iter->first;
+			const uint32_t min = (duration / 1000) / 60;
+			const uint32_t sec = (duration / 1000) % 60;
+			const uint32_t ms =  (duration % 1000);
+			data_row.push_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
+			data_row.push_back(src_iter->second
+				? C_("SAP|SongList|Looping", "Yes")
+				: C_("SAP|SongList|Looping", "No"));
+		}
+
+		static const char *const song_list_hdr[2] = {
+			NOP_C_("SAP|SongList", "Duration"),
+			NOP_C_("SAP|SongList", "Looping"),
+		};
+		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n(
+			"SAP|SongList", song_list_hdr, ARRAY_SIZE(song_list_hdr));
+		d->fields->addField_listData("Song List", v_song_list_hdr, song_list);
+	}
+
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
 }
@@ -627,7 +796,14 @@ int SAP::loadMetaData(void)
 	// Number of channels.
 	d->metaData->addMetaData_integer(Property::Channels, (tags.stereo ? 2 : 1));
 
-	// TODO: Duration.
+	// NOTE: Including all songs in the duration.
+	uint32_t duration = 0;
+	for (auto iter = tags.durations.cbegin(); iter != tags.durations.cend(); ++iter) {
+		duration += iter->first;
+	}
+	if (duration > 0) {
+		d->metaData->addMetaData_integer(Property::Duration, (int)duration);
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
