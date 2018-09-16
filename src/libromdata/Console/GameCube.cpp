@@ -1891,7 +1891,6 @@ int GameCube::loadFieldData(void)
 					// Non-ASCII data. Print the hex values instead.
 					str = rp_sprintf("%08X", entry.type);
 				}
-				break;
 			}
 			data_row.push_back(str);
 
