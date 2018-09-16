@@ -149,7 +149,7 @@ class GameCubePrivate : public RomDataPrivate
 			WiiPartition *partition;	// Partition object.
 		};
 
-		std::vector<WiiPartEntry> wiiPtbl;
+		vector<WiiPartEntry> wiiPtbl;
 		bool wiiPtblLoaded;
 
 		// Pointers to specific partitions within wiiPtbl.
@@ -1543,7 +1543,7 @@ uint32_t GameCube::imgpf(ImageType imageType) const
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
@@ -1589,7 +1589,7 @@ std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageTyp
 	}
 
 	// Unsupported image type.
-	return std::vector<ImageSizeDef>();
+	return vector<ImageSizeDef>();
 }
 
 /**
@@ -1846,16 +1846,17 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Partition table.
-		auto partitions = new std::vector<std::vector<string> >();
+		auto partitions = new vector<vector<string> >();
 		partitions->resize(d->wiiPtbl.size());
 
-		unsigned int ptidx = 0;
-		for (auto iter = partitions->begin(); iter != partitions->end(); ++iter, ptidx++) {
-			vector<string> &data_row = *iter;
+		auto src_iter = d->wiiPtbl.cbegin();
+		auto dest_iter = partitions->begin();
+		for ( ; dest_iter != partitions->end(); ++src_iter, ++dest_iter) {
+			vector<string> &data_row = *dest_iter;
 			data_row.reserve(5);	// 5 fields per row.
 
 			// Partition entry.
-			const GameCubePrivate::WiiPartEntry &entry = d->wiiPtbl[ptidx];
+			const GameCubePrivate::WiiPartEntry &entry = *src_iter;
 
 			// Partition number.
 			data_row.push_back(rp_sprintf("%dp%d", entry.vg, entry.pt));
