@@ -722,9 +722,10 @@ int SAP::loadFieldData(void)
 
 		auto src_iter = tags.durations.cbegin();
 		auto dest_iter = song_list->begin();
-		for ( ; dest_iter != song_list->end(); ++src_iter, ++dest_iter) {
+		unsigned int song_num = 0;
+		for ( ; dest_iter != song_list->end(); ++src_iter, ++dest_iter, song_num++) {
 			vector<string> &data_row = *dest_iter;
-			data_row.reserve(2);	// 2 fields per row.
+			data_row.reserve(3);	// 3 fields per row.
 
 			// Format as m:ss.ddd.
 			// TODO: Separate function?
@@ -732,13 +733,15 @@ int SAP::loadFieldData(void)
 			const uint32_t min = (duration / 1000) / 60;
 			const uint32_t sec = (duration / 1000) % 60;
 			const uint32_t ms =  (duration % 1000);
+			data_row.push_back(rp_sprintf("%u", song_num));
 			data_row.push_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
 			data_row.push_back(src_iter->second
 				? C_("SAP|SongList|Looping", "Yes")
 				: C_("SAP|SongList|Looping", "No"));
 		}
 
-		static const char *const song_list_hdr[2] = {
+		static const char *const song_list_hdr[3] = {
+			NOP_C_("SAP|SongList", "#"),
 			NOP_C_("SAP|SongList", "Duration"),
 			NOP_C_("SAP|SongList", "Looping"),
 		};
