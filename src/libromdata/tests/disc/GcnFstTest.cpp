@@ -53,11 +53,13 @@ using LibRomData::GcnFst;
 #include <sstream>
 #include <string>
 #include <unordered_set>
+#include <vector>
 using std::istringstream;
 using std::ostream;
 using std::string;
 using std::stringstream;
 using std::unordered_set;
+using std::vector;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
@@ -147,7 +149,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 * @param offsetShift File offset shift. (0 == GCN, 2 == Wii)
 		 * @return FST files.
 		 */
-		static std::vector<GcnFstTest_mode> ReadTestCasesFromDisk(uint8_t offsetShift);
+		static vector<GcnFstTest_mode> ReadTestCasesFromDisk(uint8_t offsetShift);
 
 		/**
 		 * Test case suffix generator.

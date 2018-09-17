@@ -1141,7 +1141,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_fs = new std::vector<std::vector<string> >();
+	auto vv_fs = new vector<vector<string> >();
 	vv_fs->resize(ARRAY_SIZE(perm_fs_access));
 	for (int i = ARRAY_SIZE(perm_fs_access)-1; i >= 0; i--) {
 		auto &data_row = vv_fs->at(i);
@@ -1174,7 +1174,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	    pNcchExHeader->aci.arm9.descriptor_version == 3)
 	{
 		// Convert to vector<vector<string> > for RFT_LISTDATA.
-		auto vv_arm9 = new std::vector<std::vector<string> >();
+		auto vv_arm9 = new vector<vector<string> >();
 		vv_arm9->resize(ARRAY_SIZE(perm_arm9_access));
 		for (int i = ARRAY_SIZE(perm_arm9_access)-1; i >= 0; i--) {
 			auto &data_row = vv_arm9->at(i);
@@ -1190,7 +1190,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	// The field is NULL-padded, though if the service name
 	// is 8 characters long, there won't be any NULLs.
 	// TODO: How to determine 32 or 34? (descriptor version?)
-	auto vv_svc = new std::vector<std::vector<string> >();
+	auto vv_svc = new vector<vector<string> >();
 	vv_svc->reserve(ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services));
 	const char *svc = &pNcchExHeader->aci.arm11_local.services[0][0];
 	for (int i = 0; i < ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services); i++, svc += 8) {
@@ -1574,7 +1574,7 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
@@ -1623,7 +1623,7 @@ std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(Image
 	}
 
 	// Unsupported image type.
-	return std::vector<ImageSizeDef>();
+	return vector<ImageSizeDef>();
 }
 
 /**
@@ -1964,7 +1964,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Partition table.
 		// TODO: Show the ListView on a separate row?
-		auto partitions = new std::vector<std::vector<string> >();
+		auto partitions = new vector<vector<string> >();
 		partitions->reserve(8);
 
 		// Process the partition table.
@@ -2114,7 +2114,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Contents table.
 		// TODO: Show the ListView on a separate row?
-		auto contents = new std::vector<std::vector<string> >();
+		auto contents = new vector<vector<string> >();
 		contents->reserve(d->content_count);
 
 		// Process the contents.

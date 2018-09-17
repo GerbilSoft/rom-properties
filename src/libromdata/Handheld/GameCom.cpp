@@ -448,13 +448,13 @@ uint32_t GameCom::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> GameCom::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> GameCom::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_INT_ICON) {
 		// Only icons are supported.
-		return std::vector<ImageSizeDef>();
+		return vector<ImageSizeDef>();
 	}
 
 	// game.com ROM images have 64x64 icons.

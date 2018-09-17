@@ -457,14 +457,14 @@ uint32_t WiiSave::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> WiiSave::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> WiiSave::supportedImageSizes_static(ImageType imageType)
 {
 #ifdef ENABLE_DECRYPTION
 	// TODO: Check the actual WiiWIBN object?
 	return WiiWIBN::supportedImageSizes_static(imageType);
 #else /* !ENABLE_DECRYPTION */
 	// TODO: Return the correct size information anyway?
-	return std::vector<RomData::ImageSizeDef>();
+	return vector<RomData::ImageSizeDef>();
 #endif /* ENABLE_DECRYPTION */
 }
 

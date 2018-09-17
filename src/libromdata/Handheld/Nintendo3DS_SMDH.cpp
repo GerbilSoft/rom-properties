@@ -331,13 +331,13 @@ uint32_t Nintendo3DS_SMDH::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> Nintendo3DS_SMDH::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> Nintendo3DS_SMDH::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_INT_ICON) {
 		// Only icons are supported.
-		return std::vector<ImageSizeDef>();
+		return vector<ImageSizeDef>();
 	}
 
 	static const ImageSizeDef sz_INT_ICON[] = {

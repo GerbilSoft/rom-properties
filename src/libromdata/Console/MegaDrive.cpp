@@ -475,7 +475,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
 	};
 
-	auto vectors_info = new std::vector<std::vector<string> >();
+	auto vectors_info = new vector<vector<string> >();
 	vectors_info->resize(ARRAY_SIZE(vectors_names));
 
 	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++) {

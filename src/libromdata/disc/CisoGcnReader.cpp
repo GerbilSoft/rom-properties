@@ -60,7 +60,7 @@ class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
 		// Block map.
 		// 0x0000 == first block after CISO header.
 		// 0xFFFF == empty block.
-		std::array<uint16_t, CISO_MAP_SIZE> blockMap;
+		array<uint16_t, CISO_MAP_SIZE> blockMap;
 
 		// Index of the last used block.
 		int maxLogicalBlockUsed;

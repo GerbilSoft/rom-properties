@@ -45,6 +45,7 @@ using namespace LibRomData;
 #include <string>
 #include <vector>
 using std::string;
+using std::u16string;
 using std::unique_ptr;
 using std::vector;
 
@@ -625,7 +626,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 	// but we'll take any length.
 
 	// Convert to UTF-16 first.
-	const std::u16string u16str = utf8_to_utf16(str);
+	const u16string u16str = utf8_to_utf16(str);
 
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?

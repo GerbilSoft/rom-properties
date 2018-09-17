@@ -46,8 +46,10 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <array>
 #include <string>
 #include <vector>
+using std::array;
 using std::string;
 using std::vector;
 
@@ -297,7 +299,7 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 		// Animated icon is present.
 
 		// Which bitmaps are used?
-		std::array<bool, IconAnimData::MAX_FRAMES> bmp_used;
+		array<bool, IconAnimData::MAX_FRAMES> bmp_used;
 		bmp_used.fill(false);
 
 		// Parse the icon sequence.
@@ -906,7 +908,7 @@ uint32_t NintendoDS::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
@@ -952,7 +954,7 @@ std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageT
 	}
 
 	// Unsupported image type.
-	return std::vector<ImageSizeDef>();
+	return vector<ImageSizeDef>();
 }
 
 /**

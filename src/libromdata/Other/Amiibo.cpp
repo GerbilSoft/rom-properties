@@ -357,13 +357,13 @@ uint32_t Amiibo::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
 	if (imageType != IMG_EXT_MEDIA) {
 		// Only media scans are supported.
-		return std::vector<ImageSizeDef>();
+		return vector<ImageSizeDef>();
 	}
 
 	// Amiibo scan sizes may vary, but there's always one.
@@ -517,7 +517,7 @@ int Amiibo::loadFieldData(void)
  *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size) const
+int Amiibo::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
 	ASSERT_extURLs(imageType, pExtURLs);
 	pExtURLs->clear();

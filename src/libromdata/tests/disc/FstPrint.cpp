@@ -209,7 +209,7 @@ int fstPrint(IFst *fst, ostream &os)
 		return -EINVAL;
 	}
 
-	std::vector<uint8_t> tree_lines;
+	vector<uint8_t> tree_lines;
 	tree_lines.reserve(16);
 
 	FstFileCount fc = {0, 0};

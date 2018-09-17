@@ -180,7 +180,7 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		 * Replace slashes with backslashes on Windows.
 		 * @param path Pathname.
 		 */
-		static inline void replace_slashes(std::string &path);
+		static inline void replace_slashes(string &path);
 };
 
 /**
@@ -195,7 +195,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderTest_mod
  * Replace slashes with backslashes on Windows.
  * @param path Pathname.
  */
-inline void ImageDecoderTest::replace_slashes(std::string &path)
+inline void ImageDecoderTest::replace_slashes(string &path)
 {
 #ifdef _WIN32
 	for (auto iter = path.begin(); iter != path.end(); ++iter) {

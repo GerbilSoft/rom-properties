@@ -397,7 +397,7 @@ uint32_t WiiU::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-std::vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
@@ -444,7 +444,7 @@ std::vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType im
 	}
 
 	// Unsupported image type.
-	return std::vector<ImageSizeDef>();
+	return vector<ImageSizeDef>();
 }
 
 /**
