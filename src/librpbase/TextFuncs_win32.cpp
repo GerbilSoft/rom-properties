@@ -408,7 +408,7 @@ W32U_8TO8_1(ansi, CP_ACP, utf8, CP_UTF8)
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string cpN_to_utf8(unsigned int cp, const char *str, int len)
+string cpN_to_utf8(unsigned int cp, const char *str, int len)
 {
 	len = check_NULL_terminator(str, len);
 

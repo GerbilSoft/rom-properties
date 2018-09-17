@@ -576,7 +576,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const char *str, un
  * @param flags Formatting flags.
  * @return Metadata index.
  */
-int RomMetaData::addMetaData_string(Property::Property name, const std::string &str, unsigned int flags)
+int RomMetaData::addMetaData_string(Property::Property name, const string &str, unsigned int flags)
 {
 	assert(name > Property::FirstProperty);
 	assert(name < Property::PropertyCount);

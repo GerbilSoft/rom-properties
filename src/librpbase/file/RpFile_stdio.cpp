@@ -29,6 +29,8 @@
 
 // C++ includes.
 #include <string>
+#include <memory>
+using std::shared_ptr;
 using std::string;
 using std::u16string;
 
@@ -91,9 +93,9 @@ class RpFilePrivate
 		RpFile *const q_ptr;
 
 	public:
-		std::shared_ptr<FILE> file;	// File pointer.
-		string filename;		// Filename.
-		RpFile::FileMode mode;		// File mode.
+		shared_ptr<FILE> file;	// File pointer.
+		string filename;	// Filename.
+		RpFile::FileMode mode;	// File mode.
 
 		gzFile gzfd;			// Used for transparent gzip decompression.
 		int64_t gzsz;			// Uncompressed file size.

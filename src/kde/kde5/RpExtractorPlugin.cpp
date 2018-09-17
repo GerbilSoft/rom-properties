@@ -42,7 +42,9 @@ using LibRomData::RomDataFactory;
 
 // C++ includes.
 #include <memory>
+#include <string>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -154,7 +156,7 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 			}
 
 			case LibRpBase::PropertyType::String: {
-				const std::string *str = prop->data.str;
+				const string *str = prop->data.str;
 				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
 					QString::fromUtf8(str->data(), static_cast<int>(str->size())));
 				break;

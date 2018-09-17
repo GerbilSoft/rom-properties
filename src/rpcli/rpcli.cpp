@@ -68,6 +68,7 @@ using std::endl;
 using std::locale;
 using std::ofstream;
 using std::string;
+using std::vector;
 
 #include "libi18n/config.libi18n.h"
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
@@ -88,7 +89,7 @@ struct ExtractParam {
 * @param romData RomData containing the images
 * @param extract Vector of image extraction parameters
 */
-static void ExtractImages(const RomData *romData, std::vector<ExtractParam>& extract) {
+static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract) {
 	int supported = romData->supportedImageTypes();
 	for (auto it = extract.begin(); it != extract.end(); ++it) {
 		if (!it->filename) continue;
@@ -154,7 +155,7 @@ static void ExtractImages(const RomData *romData, std::vector<ExtractParam>& ext
 * @param json Is program running in json mode?
 * @param extract Vector of image extraction parameters
 */
-static void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract){
+static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract){
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
@@ -272,7 +273,7 @@ int RP_C_API main(int argc, char *argv[])
 	assert(RomData::IMG_INT_MIN == 0);
 	// DoFile parameters
 	bool json = false;
-	std::vector<ExtractParam> extract;
+	vector<ExtractParam> extract;
 
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
 		if (argv[i][0] == '-' && argv[i][1] == 'j') {

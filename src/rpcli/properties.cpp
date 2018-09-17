@@ -33,6 +33,7 @@
 #include <iomanip>
 #include <memory>
 #include <string>
+#include <vector>
 using std::endl;
 using std::left;
 using std::max;
@@ -40,6 +41,7 @@ using std::ostream;
 using std::setw;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 // librpbase
 #include "librpbase/RomData.hpp"
@@ -851,7 +853,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	}
 
 	first = true;
-	std::vector<RomData::ExtURL> extURLs;
+	vector<RomData::ExtURL> extURLs;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
 		if (!(supported & (1 << i)))
 			continue;

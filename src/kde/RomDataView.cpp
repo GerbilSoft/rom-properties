@@ -41,6 +41,7 @@ using namespace LibRpBase;
 #include <array>
 #include <string>
 #include <vector>
+using std::array;
 using std::string;
 using std::vector;
 
@@ -89,7 +90,7 @@ class RomDataViewPrivate
 
 		// Animated icon data.
 		QTimer *tmrIconAnim;
-		std::array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
+		array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		bool anim_running;		// Animation is running.
 		int last_frame_number;		// Last frame number.

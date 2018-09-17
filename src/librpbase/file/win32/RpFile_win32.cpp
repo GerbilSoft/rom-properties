@@ -38,6 +38,7 @@
 // C++ includes.
 #include <memory>
 #include <string>
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::wstring;
@@ -96,9 +97,9 @@ class RpFilePrivate
 		// work correctly with pointer types as the
 		// template parameter.
 
-		std::shared_ptr<void> file;	// File handle.
-		string filename;		// Filename.
-		RpFile::FileMode mode;		// File mode.
+		shared_ptr<void> file;	// File handle.
+		string filename;	// Filename.
+		RpFile::FileMode mode;	// File mode.
 
 		// gzip parameters.
 		gzFile gzfd;			// Used for transparent gzip decompression.

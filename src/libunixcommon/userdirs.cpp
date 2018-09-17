@@ -76,7 +76,7 @@ static inline void removeTrailingSlashes(string &path)
  *
  * @return User's home directory (without trailing slash), or empty string on error.
  */
-std::string getHomeDirectory(void)
+string getHomeDirectory(void)
 {
 	string home_dir;
 

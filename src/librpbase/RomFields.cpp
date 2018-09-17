@@ -1029,7 +1029,7 @@ int RomFields::addField_string_address_range(const char *name,
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_bitfield(const char *name,
-	const std::vector<string> *bit_names,
+	const vector<string> *bit_names,
 	int elemsPerRow, uint32_t bitfield)
 {
 	assert(name != nullptr);
@@ -1066,8 +1066,8 @@ int RomFields::addField_bitfield(const char *name,
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_listData(const char *name,
-	const std::vector<string> *headers,
-	const std::vector<std::vector<string> > *list_data,
+	const vector<string> *headers,
+	const vector<vector<string> > *list_data,
 	int rows_visible, unsigned int flags, uint32_t checkboxes)
 {
 	assert(name != nullptr);

@@ -62,6 +62,7 @@ using LibRomData::RomDataFactory;
 #include <string>
 #include <unordered_set>
 #include <vector>
+using std::array;
 using std::unique_ptr;
 using std::unordered_set;
 using std::wostringstream;
@@ -179,7 +180,7 @@ class RP_ShellPropSheetExt_Private
 		int curTabIndex;
 
 		// Animated icon data.
-		std::array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
+		array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
 		RECT rectIcon;
 		SIZE szIcon;
 		bool nearest_icon;

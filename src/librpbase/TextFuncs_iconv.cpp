@@ -52,6 +52,7 @@
 
 // C++ includes.
 #include <string>
+using std::basic_string;
 using std::string;
 using std::u16string;
 
@@ -180,11 +181,11 @@ static FORCEINLINE int check_NULL_terminator(const char16_t *wcs, int len)
  * @param iconv_dest	Destination encoding.
  */
 #define ICONV_FUNCTION_1(src_prefix, src_type, iconv_src0, dest_suffix, dest_type, iconv_dest) \
-std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
+basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
 { \
 	len = check_NULL_terminator(str, len); \
 	\
-	std::basic_string<dest_type> ret; \
+	basic_string<dest_type> ret; \
 	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
 	if (mbs) { \
 		ret = mbs; \
@@ -207,12 +208,12 @@ std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, 
  * @param iconv_dest	Destination encoding.
  */
 #define ICONV_FUNCTION_2(src_prefix, src_type, iconv_src0, iconv_src1, dest_suffix, dest_type, iconv_dest) \
-std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
+basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
 { \
 	len = check_NULL_terminator(str, len); \
 	\
 	/* First encoding. */ \
-	std::basic_string<dest_type> ret; \
+	basic_string<dest_type> ret; \
 	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
 	if (mbs) { \
 		ret = mbs; \
@@ -284,12 +285,12 @@ std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, 
  * @param iconv_dest	Destination encoding.
  */
 #define ICONV_FUNCTION_3(src_prefix, src_type, iconv_src0, iconv_src1, iconv_src2, dest_suffix, dest_type, iconv_dest) \
-std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
+basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
 { \
 	len = check_NULL_terminator(str, len); \
 	\
 	/* First encoding. */ \
-	std::basic_string<dest_type> ret; \
+	basic_string<dest_type> ret; \
 	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
 	if (mbs) { \
 		ret = mbs; \
@@ -345,7 +346,7 @@ ICONV_FUNCTION_1(utf16be, char16_t, "UTF-16BE", utf8, char, "UTF-8")
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string ansi_to_utf8(const char *str, int len)
+string ansi_to_utf8(const char *str, int len)
 {
 	// FIXME: Determine the correct 8-bit encoding on non-Windows systems.
 	// Assuming Latin-1. (ISO-8859-1)
@@ -364,7 +365,7 @@ std::string ansi_to_utf8(const char *str, int len)
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string cpN_to_utf8(unsigned int cp, const char *str, int len)
+string cpN_to_utf8(unsigned int cp, const char *str, int len)
 {
 	len = check_NULL_terminator(str, len);
 
@@ -372,7 +373,7 @@ std::string cpN_to_utf8(unsigned int cp, const char *str, int len)
 	char cp_name[32];
 	snprintf(cp_name, sizeof(cp_name), "CP%u//IGNORE", cp);
 
-	std::string ret;
+	string ret;
 	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len, cp_name, "UTF-8"));
 	if (mbs) {
 		ret = mbs;
