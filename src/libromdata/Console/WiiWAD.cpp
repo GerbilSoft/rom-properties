@@ -56,9 +56,11 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -77,10 +79,30 @@ class WiiWADPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(WiiWADPrivate)
 
 	public:
+		// WAD type.
+		enum WadType {
+			WAD_UNKNOWN	= -1,	// Unknown WAD type.
+			WAD_STANDARD	= 0,	// Standard WAD.
+			WAD_EARLY	= 1,	// Early WAD. (early devkits only)
+		};
+
+		// WAD type.
+		int wadType;
+
 		// WAD structs.
-		Wii_WAD_Header wadHeader;
+		union {
+			Wii_WAD_Header wad;
+			Wii_WAD_Header_EARLY wadE;
+		} wadHeader;
 		RVL_Ticket ticket;
 		RVL_TMD_Header tmdHeader;
+
+		// Data offset and size.
+		uint32_t data_offset;
+		uint32_t data_size;
+
+		// Name. (Early WADs only)
+		string wadName;
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -133,6 +155,9 @@ class WiiWADPrivate : public RomDataPrivate
 
 WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	: super(q, file)
+	, wadType(WAD_UNKNOWN)
+	, data_offset(0)
+	, data_size(0)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
 	, wibnFile(nullptr)
@@ -342,18 +367,69 @@ WiiWAD::WiiWAD(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->wadHeader);
 	info.ext = nullptr;	// Not needed for WiiWAD.
 	info.szFile = d->file->size();
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->wadType = isRomSupported_static(&info);
+	d->isValid = (d->wadType >= 0);
 	if (!d->isValid) {
 		delete d->file;
 		d->file = nullptr;
 		return;
 	}
 
+	// Determine the addresses.
+	uint32_t ticket_addr, tmd_addr;
+	switch (d->wadType) {
+		case WiiWADPrivate::WAD_STANDARD:
+			// Standard WAD.
+			// Sections are 64-byte aligned.
+			ticket_addr = WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.wad.header_size)) +
+				      WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.wad.cert_chain_size));
+			tmd_addr = ticket_addr +
+				      WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.wad.ticket_size));
+
+			// Data offset is after the TMD.
+			// Data size is taken from the header.
+			d->data_size = be32_to_cpu(d->wadHeader.wad.data_size);
+			d->data_offset = tmd_addr +
+				      WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.wad.tmd_size));
+			break;
+
+		case WiiWADPrivate::WAD_EARLY: {
+			// Early devkit WADs.
+			// Sections are NOT 64-byte aligned,
+			// and there's an extra "name" section after the TMD.
+			ticket_addr = be32_to_cpu(d->wadHeader.wadE.header_size) +
+				      be32_to_cpu(d->wadHeader.wadE.cert_chain_size);
+			tmd_addr = ticket_addr + be32_to_cpu(d->wadHeader.wadE.ticket_size);
+
+			// Data offset is explicitly specified.
+			// Data size is assumed to be the rest of the file.
+			d->data_offset = be32_to_cpu(d->wadHeader.wadE.data_offset);
+			d->data_size = (uint32_t)d->file->size() - d->data_offset;
+
+			// Read the name here, since it's only present in early WADs.
+			const uint32_t name_size = be32_to_cpu(d->wadHeader.wadE.name_size);
+			if (name_size > 0 && name_size <= 1024) {
+				const uint32_t name_addr = tmd_addr + be32_to_cpu(d->wadHeader.wadE.tmd_size);
+				unique_ptr<char[]> namebuf(new char[name_size]);
+				size = d->file->seekAndRead(name_addr, namebuf.get(), name_size);
+				if (size == name_size) {
+					// TODO: Trim NULLs?
+					d->wadName = string(namebuf.get(), name_size);
+				}
+			}
+			break;
+		}
+
+		default:
+			assert(!"Should not get here...");
+			delete d->file;
+			d->file = nullptr;
+			return;
+	}
+
 	// Read the ticket and TMD.
 	// TODO: Verify ticket/TMD sizes.
-	unsigned int addr = WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.header_size)) +
-			    WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.cert_chain_size));
-	size = d->file->seekAndRead(addr, &d->ticket, sizeof(d->ticket));
+	size = d->file->seekAndRead(ticket_addr, &d->ticket, sizeof(d->ticket));
 	if (size != sizeof(d->ticket)) {
 		// Seek and/or read error.
 		d->isValid = false;
@@ -361,8 +437,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 		d->file = nullptr;
 		return;
 	}
-	addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.ticket_size));
-	size = d->file->seekAndRead(addr, &d->tmdHeader, sizeof(d->tmdHeader));
+	size = d->file->seekAndRead(tmd_addr, &d->tmdHeader, sizeof(d->tmdHeader));
 	if (size != sizeof(d->tmdHeader)) {
 		// Seek and/or read error.
 		d->isValid = false;
@@ -439,8 +514,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 	// Create a CBC reader to decrypt the data section.
 	// TODO: Verify some known data?
-	addr += WiiWADPrivate::toNext64(be32_to_cpu(d->wadHeader.tmd_size));
-	d->cbcReader = new CBCReader(d->file, addr, be32_to_cpu(d->wadHeader.data_size), title_key, iv);
+	d->cbcReader = new CBCReader(d->file, d->data_offset, d->data_size, title_key, iv);
 
 	// Read the content header.
 	// NOTE: Continuing even if this fails, since we can show
@@ -464,7 +538,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 				// allow it to read the rest of the file.
 				PartitionFile *ptFile = new PartitionFile(d->cbcReader,
 					sizeof(d->contentHeader),
-					be32_to_cpu(d->wadHeader.data_size) - sizeof(d->contentHeader));
+					d->data_size - sizeof(d->contentHeader));
 				if (ptFile->isOpen()) {
 					// Open the WiiWIBN.
 					WiiWIBN *wibn = new WiiWIBN(ptFile);
@@ -548,6 +622,15 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 	    wadHeader->type != cpu_to_be32(WII_WAD_TYPE_Bk))
 	{
 		// WAD type is incorrect.
+		// NOTE: This may be an early WAD.
+		const Wii_WAD_Header_EARLY *wadE = reinterpret_cast<const Wii_WAD_Header_EARLY*>(wadHeader);
+		if (wadE->ticket_size == cpu_to_be32(sizeof(RVL_Ticket))) {
+			// Ticket size is correct.
+			// This is probably an early WAD.
+			return WiiWADPrivate::WAD_EARLY;
+		}
+
+		// Not supported.
 		return -1;
 	}
 
@@ -570,7 +653,7 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// This appears to be a Wii WAD file.
-	return 0;
+	return WiiWADPrivate::WAD_STANDARD;
 }
 
 /**
@@ -734,14 +817,14 @@ int WiiWAD::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->wadType < 0) {
 		// Unknown file type.
 		return -EIO;
 	}
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	if (d->key_status != KeyManager::VERIFY_OK) {
 		// Unable to get the decryption key.
@@ -751,6 +834,33 @@ int WiiWAD::loadFieldData(void)
 		}
 		d->fields->addField_string(C_("WiiWAD", "Warning"),
 			err, RomFields::STRF_WARNING);
+	}
+
+	// Type.
+	string s_wadType;
+	switch (d->wadType) {
+		case WiiWADPrivate::WAD_STANDARD: {
+			char buf[4];
+			memcpy(buf, &d->wadHeader.wad.type, sizeof(buf));
+			buf[2] = '\0';
+			buf[3] = '\0';
+			s_wadType = string(buf, 2);
+			break;
+		};
+
+		case WiiWADPrivate::WAD_EARLY:
+			s_wadType = C_("WiiWAD", "Early Devkit");
+			break;
+
+		default:
+			s_wadType = C_("WiiWAD", "Unknown");
+			break;
+	}
+	d->fields->addField_string(C_("WiiWAD", "Type"), s_wadType);
+
+	// Internal name. (Early WADs only)
+	if (!d->wadName.empty()) {
+		d->fields->addField_string(C_("WiiWAD", "Name"), d->wadName);
 	}
 
 	// Title ID.
@@ -918,7 +1028,7 @@ int WiiWAD::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->wadType < 0) {
 		// Unknown file type.
 		return -EIO;
 	}
@@ -1026,6 +1136,10 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// If it is, this is a DLC WAD, so the title ID
 	// won't match anything on GameTDB.
 	RP_D(const WiiWAD);
+	if (!d->isValid || d->wadType < 0) {
+		// WAD isn't valid.
+		return -EIO;
+	} else
 #ifdef ENABLE_DECRYPTION
 	if (d->wibnData) {
 		// WiiWIBN is present.
