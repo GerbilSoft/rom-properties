@@ -741,7 +741,7 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	if (d->key_status != KeyManager::VERIFY_OK) {
 		// Unable to get the decryption key.
@@ -851,6 +851,16 @@ int WiiWAD::loadFieldData(void)
 		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
 			rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->sys_version.hi), be32_to_cpu(tmdHeader->sys_version.lo)));
 	}
+
+	// Access rights.
+	vector<string> *const v_access_rights_hdr = new vector<string>();
+	v_access_rights_hdr->reserve(2);
+	v_access_rights_hdr->push_back("AHBPROT");
+	v_access_rights_hdr->push_back(C_("WiiWAD", "DVD Video"));
+	d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
+		v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
+
+	// TODO: Age ratings?
 
 	// Encryption key.
 	// TODO: WiiPartition function to get a key's "display name"?
