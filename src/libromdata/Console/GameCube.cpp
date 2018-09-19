@@ -1612,9 +1612,13 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Disc header is read in the constructor.
-	// TODO: Reserve fewer fields for GCN?
 	const GCN_DiscHeader *const discHeader = &d->discHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
+
+	// TODO: Reserve fewer fields for GCN?
+	// Maximum number of fields:
+	// - GameCube and Wii: 7 (includes Game Info)
+	// - Wii only: 5
+	d->fields->reserve(12);
 
 	// TODO: Trim the titles. (nulls, spaces)
 	// NOTE: The titles are dup()'d as C strings, so maybe not nulls.
@@ -1730,6 +1734,28 @@ int GameCube::loadFieldData(void)
 
 	// Load the Wii partition tables.
 	int wiiPtLoaded = d->loadWiiPartitionTables();
+
+	// TMD fields.
+	if (d->gamePartition) {
+		const RVL_TMD_Header *const tmdHeader = d->gamePartition->tmdHeader();
+		if (tmdHeader) {
+			// Title ID.
+			// TID Lo is usually the same as the game ID,
+			// except for some diagnostics discs.
+			d->fields->addField_string(C_("GameCube", "Title ID"),
+				rp_sprintf("%08X-%08X",
+					be32_to_cpu(tmdHeader->title_id.hi),
+					be32_to_cpu(tmdHeader->title_id.lo)));
+
+			// Access rights.
+			vector<string> *const v_access_rights_hdr = new vector<string>();
+			v_access_rights_hdr->reserve(2);
+			v_access_rights_hdr->push_back("AHBPROT");
+			v_access_rights_hdr->push_back(C_("GameCube", "DVD Video"));
+			d->fields->addField_bitfield(C_("GameCube", "Access Rights"),
+				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
+		}
+	}
 
 	// Get age rating(s).
 	// RVL_RegionSetting is loaded in the constructor.

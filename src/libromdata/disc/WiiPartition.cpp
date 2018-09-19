@@ -757,6 +757,32 @@ WiiPartition::EncKey WiiPartition::encKey(void) const
 	return d->getEncKey();
 }
 
+/**
+ * Get the ticket.
+ * @return Ticket, or nullptr if unavailable.
+ */
+const RVL_Ticket *WiiPartition::ticket(void) const
+{
+	RP_D(const WiiPartition);
+	return (d->partitionHeader.ticket.signature_type != 0
+		? &d->partitionHeader.ticket
+		: nullptr);
+}
+
+/**
+ * Get the TMD header.
+ * @return TMD header, or nullptr if unavailable.
+ */
+const RVL_TMD_Header *WiiPartition::tmdHeader(void) const
+{
+	RP_D(const WiiPartition);
+	const RVL_TMD_Header *const tmdHeader =
+		reinterpret_cast<const RVL_TMD_Header*>(d->partitionHeader.tmd);
+	return (tmdHeader->signature_type != 0
+		? tmdHeader
+		: nullptr);
+}
+
 #ifdef ENABLE_DECRYPTION
 /** Encryption keys. **/
 

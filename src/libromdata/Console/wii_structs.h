@@ -146,7 +146,7 @@ typedef struct PACKED _RVL_TMD_Header {
 	uint32_t title_type;		// [0x194] Title type.
 	uint16_t group_id;		// [0x198] Group ID.
 	uint8_t reserved[62];		// [0x19A]
-	uint32_t access_rights;		// [0x1D8] Access rights for e.g. DVD Video and AHBPROT.
+	uint32_t access_rights;		// [0x1D8] Access rights. (See RVL_Access_Rights_e.)
 	uint16_t title_version;		// [0x1DC] Title version.
 	uint16_t nbr_cont;		// [0x1DE] Number of contents.
 	uint16_t boot_index;		// [0x1E0] Boot index.
@@ -155,6 +155,14 @@ typedef struct PACKED _RVL_TMD_Header {
 	// Following this header is a variable-length content table.
 } RVL_TMD_Header;
 ASSERT_STRUCT(RVL_TMD_Header, 0x1E4);
+
+/**
+ * Access rights.
+ */
+typedef enum {
+	RVL_ACCESS_RIGHTS_AHBPROT	= (1 << 0),
+	RVL_ACCESS_RIGHTS_DVD_VIDEO	= (1 << 1),
+} RVL_Access_Rights_e;
 
 /**
  * Wii partition header.

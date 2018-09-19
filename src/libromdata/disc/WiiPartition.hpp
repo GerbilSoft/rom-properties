@@ -23,6 +23,7 @@
 
 #include "librpbase/config.librpbase.h"
 #include "GcnPartition.hpp"
+#include "../Console/wii_structs.h"
 
 // librpbase
 #include "librpbase/crypto/KeyManager.hpp"
@@ -105,6 +106,18 @@ class WiiPartition : public GcnPartition
 		 * @return Encryption key in use.
 		 */
 		EncKey encKey(void) const;
+
+		/**
+		 * Get the ticket.
+		 * @return Ticket, or nullptr if unavailable.
+		 */
+		const RVL_Ticket *ticket(void) const;
+
+		/**
+		 * Get the TMD header.
+		 * @return TMD header, or nullptr if unavailable.
+		 */
+		const RVL_TMD_Header *tmdHeader(void) const;
 
 	public:
 		// Encryption key indexes.
