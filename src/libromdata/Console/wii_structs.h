@@ -102,12 +102,12 @@ ASSERT_STRUCT(RVL_TitleID_t, 8);
 typedef struct PACKED _RVL_Ticket {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
 	uint8_t signature[0x100];	// [0x004] Signature.
+	uint8_t padding_sig[0x3C];	// [0x104] Padding. (always 0)
 
 	// The following fields are all covered by the above signature.
-	uint8_t padding1[0x3C];		// [0x104] Padding. (always 0)
 	char signature_issuer[0x40];	// [0x140] Signature issuer.
 	uint8_t ecdh_data[0x3C];	// [0x180] ECDH data.
-	uint8_t padding2[0x03];		// [0x1BC] Padding.
+	uint8_t padding1[0x03];		// [0x1BC] Padding.
 	uint8_t enc_title_key[0x10];	// [0x1BF] Encrypted title key.
 	uint8_t unknown1;		// [0x1CF] Unknown.
 	uint8_t ticket_id[0x08];	// [0x1D0] Ticket ID. (IV for title key decryption for console-specific titles.)
@@ -121,7 +121,7 @@ typedef struct PACKED _RVL_Ticket {
 	uint8_t common_key_index;	// [0x1F1] Common Key index. (0 == default, 1 == Korean)
 	uint8_t unknown3[0x30];		// [0x1F2] Unknown. (VC related?)
 	uint8_t content_access_perm[0x40];	// [0x222] Content access permissions. (1 bit per content)
-	uint8_t padding3[2];		// [0x262] Padding. (always 0)
+	uint8_t padding2[2];		// [0x262] Padding. (always 0)
 	RVL_TimeLimit time_limits[8];	// [0x264] Time limits.
 } RVL_Ticket;
 ASSERT_STRUCT(RVL_Ticket, 0x2A4);
@@ -133,14 +133,14 @@ ASSERT_STRUCT(RVL_Ticket, 0x2A4);
 typedef struct PACKED _RVL_TMD_Header {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
 	uint8_t signature[0x100];	// [0x004] Signature.
+	uint8_t padding_sig[0x3C];	// [0x104] Padding. (always 0)
 
 	// The following fields are all covered by the above signature.
-	uint8_t padding1[0x3C];		// [0x104]
 	char signature_issuer[0x40];	// [0x140] Signature issuer.
 	uint8_t version;		// [0x180] Version.
 	uint8_t ca_crl_version;		// [0x181] CA CRL version.
 	uint8_t signer_crl_version;	// [0x182] Signer CRL version.
-	uint8_t padding2;		// [0x183]
+	uint8_t padding1;		// [0x183]
 	RVL_TitleID_t sys_version;	// [0x184] System version. (IOS title ID)
 	RVL_TitleID_t title_id;		// [0x18C] Title ID.
 	uint32_t title_type;		// [0x194] Title type.
@@ -150,7 +150,7 @@ typedef struct PACKED _RVL_TMD_Header {
 	uint16_t title_version;		// [0x1DC] Title version.
 	uint16_t nbr_cont;		// [0x1DE] Number of contents.
 	uint16_t boot_index;		// [0x1E0] Boot index.
-	uint8_t padding3[2];		// [0x1E2]
+	uint8_t padding2[2];		// [0x1E2]
 
 	// Following this header is a variable-length content table.
 } RVL_TMD_Header;
