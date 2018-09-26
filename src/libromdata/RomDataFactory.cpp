@@ -86,6 +86,7 @@ using std::vector;
 #include "Audio/NSF.hpp"
 #include "Audio/PSF.hpp"
 #include "Audio/SAP.hpp"
+#include "Audio/SNDH.hpp"
 #include "Audio/SID.hpp"
 #include "Audio/SPC.hpp"
 #include "Audio/VGM.hpp"
@@ -232,6 +233,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	// Audio
 	GetRomDataFns_addr(GBS, false, 0, 'GBS\x01'),
 	GetRomDataFns_addr(NSF, false, 0, 'NESM'),
+	GetRomDataFns_addr(SNDH, false, 12, 'SNDH'),
 	GetRomDataFns_addr(SPC, false, 0, 'SNES'),
 	GetRomDataFns_addr(VGM, false, 0, 'Vgm '),
 
