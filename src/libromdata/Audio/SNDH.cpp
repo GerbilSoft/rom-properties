@@ -85,6 +85,7 @@ class SNDHPrivate : public RomDataPrivate
 				unsigned int D;
 			} timer;
 			unsigned int vblank;		// VBlank frequency. (50/60)
+			unsigned int year;		// Year of release.
 			unsigned int def_subtune;	// Default subtune.
 
 			// TODO: Use std::pair<>?
@@ -92,7 +93,7 @@ class SNDHPrivate : public RomDataPrivate
 			vector<string> subtune_names;		// Subtune names.
 			vector<unsigned int> subtune_lengths;	// Subtune lengths, in seconds.
 
-			TagData() : tags_read(false), subtunes(0), vblank(0), def_subtune(0)
+			TagData() : tags_read(false), subtunes(0), vblank(0), year(0), def_subtune(0)
 			{
 				// Clear the timer values.
 				memset(&timer, 0, sizeof(timer));
@@ -166,12 +167,13 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 	// Read up to 4 KB from the beginning of the file.
 	// TODO: Support larger headers?
 	static const size_t HEADER_SIZE = 4096;
-	unique_ptr<uint8_t[]> header(new uint8_t[HEADER_SIZE]);
+	unique_ptr<uint8_t[]> header(new uint8_t[HEADER_SIZE+1]);
 	size_t sz = file->seekAndRead(0, header.get(), HEADER_SIZE);
 	if (sz < 16) {
 		// Not enough data for "SNDH" and "HDNS".
 		return tags;
 	}
+	header[HEADER_SIZE] = 0;	// ensure NULL-termination
 
 	// Verify the header.
 	// NOTE: SNDH is defined as using CRLF line endings,
@@ -236,6 +238,26 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				}
 				p += tags.converter.size() + 1;
 				break;
+
+			case 'YEAR': {
+				// Year of release.
+				// String uses ASCII digits, so use strtoul().
+				p += 4;
+				if (p >= p_end) {
+					// Out of bounds.
+					break;
+				}
+				char *endptr;
+				tags.year = (unsigned int)strtoul(reinterpret_cast<const char*>(p), &endptr, 10);
+				if (endptr >= reinterpret_cast<const char*>(p_end) || *endptr != '\0') {
+					// Invalid value.
+					tags.year = 0;
+					p = p_end;
+					break;
+				}
+				p = reinterpret_cast<const uint8_t*>(endptr) + 1;
+				break;
+			}
 
 			case 'HDNS':
 				// End of SNDH header.
@@ -461,6 +483,11 @@ int SNDH::loadFieldData(void)
 	if (!tags.converter.empty()) {
 		d->fields->addField_string(C_("SNDH", "Converter"),
 			tags.converter, RomFields::STRF_TRIM_END);
+	}
+
+	// Year of release.
+	if (tags.year != 0) {
+		d->fields->addField_string_numeric(C_("SNDH", "Year of Release"), tags.year);
 	}
 
 	// Finished reading the field data.
