@@ -272,6 +272,8 @@ const char *const *ADX::supportedFileExtensions_static(void)
 const char *const *ADX::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
 		"audio/x-adx",
 
 		nullptr
