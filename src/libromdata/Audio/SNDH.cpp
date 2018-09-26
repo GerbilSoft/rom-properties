@@ -696,6 +696,12 @@ int SNDH::loadFieldData(void)
 		bool has_TIME = !tags.subtune_lengths.empty();
 		unsigned int col_count = 2 + (has_SN && has_TIME);
 
+		// Some SNDH files have all zeroes for duration.
+		// Example: Taylor_Nathan/180.sndh
+		// If this is the case, and there are no names, don't bother showing the list.
+		// TODO: Hide the third column if there are names but all zero durations?
+		uint64_t duration_total = 0;
+
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
 		auto subtune_list = new vector<vector<string> >();
 		subtune_list->resize(count);
@@ -720,6 +726,7 @@ int SNDH::loadFieldData(void)
 					// Format as m:ss.
 					// TODO: Separate function?
 					const uint32_t duration = tags.subtune_lengths.at(idx);
+					duration_total += duration;
 					const uint32_t min = duration / 60;
 					const uint32_t sec = duration % 60;
 					data_row.push_back(rp_sprintf("%u:%02u", min, sec));
@@ -729,25 +736,30 @@ int SNDH::loadFieldData(void)
 			}
 		}
 
-		static const char *subtune_list_hdr[3] = {
-			NOP_C_("SNDH|SubtuneList", "#"),
-			nullptr, nullptr
-		};
-		if (has_SN && has_TIME) {
-			subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
-			subtune_list_hdr[2] = NOP_C_("SNDH|SubtuneList", "Duration");
-		} else if (has_SN) {
-			subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
-		} else if (has_TIME) {
-			subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Duration");
+		if (!has_SN && has_TIME && duration_total == 0) {
+			// No durations. Don't bother showing the list.
+			delete subtune_list;
 		} else {
-			assert(!"Invalid combination of has_SN and has_TIME.");
-			col_count = 1;
-		}
+			static const char *subtune_list_hdr[3] = {
+				NOP_C_("SNDH|SubtuneList", "#"),
+				nullptr, nullptr
+			};
+			if (has_SN && has_TIME) {
+				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
+				subtune_list_hdr[2] = NOP_C_("SNDH|SubtuneList", "Duration");
+			} else if (has_SN) {
+				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Name");
+			} else if (has_TIME) {
+				subtune_list_hdr[1] = NOP_C_("SNDH|SubtuneList", "Duration");
+			} else {
+				assert(!"Invalid combination of has_SN and has_TIME.");
+				col_count = 1;
+			}
 
-		vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
-			"SNDH|SubtuneList", subtune_list_hdr, col_count);
-		d->fields->addField_listData("Subtune List", v_subtune_list_hdr, subtune_list);
+			vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
+				"SNDH|SubtuneList", subtune_list_hdr, col_count);
+			d->fields->addField_listData("Subtune List", v_subtune_list_hdr, subtune_list);
+		}
 	} else if (tags.subtune_names.empty() && tags.subtune_lengths.size() == 1) {
 		// No subtune names, but we have one subtune length.
 		// This means it's the length of the entire song.
