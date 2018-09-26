@@ -201,6 +201,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					// An error occurred.
 					p = p_end;
 				}
+				p += tags.title.size() + 1;
 				break;
 
 			case 'COMM':
@@ -211,6 +212,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					// An error occurred.
 					p = p_end;
 				}
+				p += tags.composer.size() + 1;
 				break;
 
 			case 'RIPP':
@@ -221,6 +223,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					// An error occurred.
 					p = p_end;
 				}
+				p += tags.ripper.size() + 1;
 				break;
 
 			case 'CONV':
@@ -231,6 +234,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					// An error occurred.
 					p = p_end;
 				}
+				p += tags.converter.size() + 1;
 				break;
 
 			case 'HDNS':
