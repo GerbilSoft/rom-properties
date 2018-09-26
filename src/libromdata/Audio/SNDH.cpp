@@ -235,6 +235,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// Song title.
 				p += 4;
 				tags.title = readStrFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -245,6 +246,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// Composer.
 				p += 4;
 				tags.composer = readStrFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -255,6 +257,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// Ripper.
 				p += 4;
 				tags.ripper = readStrFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -265,6 +268,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// Converter.
 				p += 4;
 				tags.converter = readStrFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -306,6 +310,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				for (unsigned int i = 0; i < subtunes; i++, p_tbl++) {
 					const uint8_t *p_str = p + be16_to_cpu(*p_tbl);
 					string str = readStrFromBuffer(&p_str, p_end, &err);
+					assert(!err);
 					if (err) {
 						// An error occured.
 						break;
@@ -318,6 +323,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					}
 				}
 
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -342,6 +348,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// Immediately following the tag is a table of WORDs,
 				// with one element per subtune.
 				const uint8_t *const p_next = p + 4 + (subtunes * 2);
+				assert(p_next <= p_end);
 				if (p_next > p_end) {
 					// Out of bounds.
 					p = p_end;
@@ -383,6 +390,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// String uses ASCII digits, so use strtoul().
 				p += 2;
 				tags.subtunes = readAsciiNumberFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -393,6 +401,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// VBlank frequency.
 				p += 2;
 				tags.vblank_freq = readAsciiNumberFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -407,6 +416,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				const uint8_t idx = p[1] - 'A';
 				p += 2;
 				tags.timer_freq[idx] = readAsciiNumberFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -420,6 +430,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// TODO: Check that it doesn't exceed the subtune count?
 				p += 2;
 				tags.def_subtune = readAsciiNumberFromBuffer(&p, p_end, &err);
+				assert(!err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
