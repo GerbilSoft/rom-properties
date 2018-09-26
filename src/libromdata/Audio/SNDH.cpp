@@ -155,9 +155,10 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 
 	*p_err = false;
 	if (s_end > *p) {
+		// TODO: Convert from ATASCII, not Latin-1.
 		string ret = latin1_to_utf8(reinterpret_cast<const char*>(*p), (int)(s_end-*p));
 		// Skip the string, then add one for the NULL terminator.
-		*p += ret.size() + 1;
+		*p = s_end + 1;
 		return ret;
 	}
 
