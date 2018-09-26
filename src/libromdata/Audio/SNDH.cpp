@@ -102,12 +102,21 @@ class SNDHPrivate : public RomDataPrivate
 
 		/**
 		 * Read a NULL-terminated ASCII string from an arbitrary binary buffer.
-		 * @param p	[in] String pointer.
+		 * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
 		 * @param p_end	[in] End of buffer pointer.
 		 * @param p_err	[out] Set to true if the string is out of bounds.
 		 * @return ASCII string.
 		 */
-		static string readStrFromBuffer(const uint8_t *p, const uint8_t *p_end, bool *p_err);
+		static string readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
+
+		/**
+		 * Read a NULL-terminated unsigned ASCII number from an arbitrary binary buffer.
+		 * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
+		 * @param p_end	[in] End of buffer pointer.
+		 * @param p_err	[out] Set to true if the string is out of bounds.
+		 * @return Unsigned ASCII number.
+		 */
+		static unsigned int readAsciiNumberFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
 
 		/**
 		 * Parse the tags from the open SNDH file.
@@ -124,20 +133,20 @@ SNDHPrivate::SNDHPrivate(SNDH *q, IRpFile *file)
 
 /**
  * Read a NULL-terminated ASCII string from an arbitrary binary buffer.
- * @param p	[in] String pointer.
+ * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
  * @param p_end	[in] End of buffer pointer.
  * @param p_err	[out] Set to true if the string is out of bounds.
  * @return ASCII string.
  */
-string SNDHPrivate::readStrFromBuffer(const uint8_t *p, const uint8_t *p_end, bool *p_err)
+string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err)
 {
-	if (p >= p_end) {
+	if (*p >= p_end) {
 		// Out of bounds.
 		*p_err = true;
 		return string();
 	}
 
-	const uint8_t *const s_end = reinterpret_cast<const uint8_t*>(memchr(p, 0, p_end - p));
+	const uint8_t *const s_end = reinterpret_cast<const uint8_t*>(memchr(*p, 0, p_end-*p));
 	if (!s_end) {
 		// Out of bounds.
 		*p_err = true;
@@ -145,12 +154,42 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t *p, const uint8_t *p_end, bo
 	}
 
 	*p_err = false;
-	if (s_end > p) {
-		return latin1_to_utf8(reinterpret_cast<const char*>(p), (int)(s_end-p));
+	if (s_end > *p) {
+		string ret = latin1_to_utf8(reinterpret_cast<const char*>(*p), (int)(s_end-*p));
+		// Skip the string, then add one for the NULL terminator.
+		*p += ret.size() + 1;
+		return ret;
 	}
 
 	// Empty string.
 	return string();
+}
+
+/**
+ * Read a NULL-terminated unsigned ASCII number from an arbitrary binary buffer.
+ * @param p	[in/out] String pointer. (will be adjusted to point after the NULL terminator)
+ * @param p_end	[in] End of buffer pointer.
+ * @param p_err	[out] Set to true if the string is out of bounds.
+ * @return Unsigned ASCII number.
+ */
+unsigned int SNDHPrivate::readAsciiNumberFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err)
+{
+	if (*p >= p_end) {
+		// Out of bounds.
+		*p_err = true;
+		return 0;
+	}
+
+	char *endptr;
+	unsigned int ret = (unsigned int)strtoul(reinterpret_cast<const char*>(*p), &endptr, 10);
+	if (endptr >= reinterpret_cast<const char*>(p_end) || *endptr != '\0') {
+		// Invalid value.
+		*p_err = true;
+		return 0;
+	}
+	// endptr is the NULL terminator, so go one past that.
+	*p = reinterpret_cast<const uint8_t*>(endptr) + 1;
+	return ret;
 }
 
 /**
@@ -194,70 +233,59 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 		// NOTE: This might not be aligned, so we'll need to handle
 		// alignment properly later.
 		uint32_t tag = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(p)));
+		bool is32 = true;
 		switch (tag) {
 			case 'TITL':
 				// Song title.
 				p += 4;
-				tags.title = readStrFromBuffer(p, p_end, &err);
+				tags.title = readStrFromBuffer(&p, p_end, &err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
 				}
-				p += tags.title.size() + 1;
 				break;
 
 			case 'COMM':
 				// Composer.
 				p += 4;
-				tags.composer = readStrFromBuffer(p, p_end, &err);
+				tags.composer = readStrFromBuffer(&p, p_end, &err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
 				}
-				p += tags.composer.size() + 1;
 				break;
 
 			case 'RIPP':
 				// Ripper.
 				p += 4;
-				tags.ripper = readStrFromBuffer(p, p_end, &err);
+				tags.ripper = readStrFromBuffer(&p, p_end, &err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
 				}
-				p += tags.ripper.size() + 1;
 				break;
 
 			case 'CONV':
 				// Converter.
 				p += 4;
-				tags.converter = readStrFromBuffer(p, p_end, &err);
+				tags.converter = readStrFromBuffer(&p, p_end, &err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
 				}
-				p += tags.converter.size() + 1;
 				break;
 
 			case 'YEAR': {
 				// Year of release.
 				// String uses ASCII digits, so use strtoul().
 				p += 4;
-				if (p >= p_end) {
-					// Out of bounds.
-					break;
-				}
-				char *endptr;
-				tags.year = (unsigned int)strtoul(reinterpret_cast<const char*>(p), &endptr, 10);
-				if (endptr >= reinterpret_cast<const char*>(p_end) || *endptr != '\0') {
-					// Invalid value.
-					tags.year = 0;
-					p = p_end;
-					break;
-				}
-				p = reinterpret_cast<const uint8_t*>(endptr) + 1;
-				break;
-			}
+				tags.year = readAsciiNumberFromBuffer(&p, p_end, &err);
+				if (err) {
+					// An error occurred.
+ 					p = p_end;
+ 				}
+ 				break;
+ 			}
 
 			case 'HDNS':
 				// End of SNDH header.
@@ -265,7 +293,33 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				break;
 
 			default:
-				// TODO
+				// Need to check for 16-bit tags next.
+				is32 = false;
+				break;
+		}
+
+		if (is32) {
+			// A 32-bit tag was parsed.
+			// Check the next tag.
+			continue;
+		}
+
+		// Check for 16-bit tags.
+		tag = be16_to_cpu(*(reinterpret_cast<const uint16_t*>(p)));
+		switch (tag) {
+			case '##':
+				// # of subtunes.
+				// String uses ASCII digits, so use strtoul().
+				p += 2;
+				tags.subtunes = readAsciiNumberFromBuffer(&p, p_end, &err);
+				if (err) {
+					// An error occurred.
+					p = p_end;
+				}
+				break;
+
+			default:
+				// Unsupported tag...
 				p++;
 				break;
 		}
@@ -488,6 +542,11 @@ int SNDH::loadFieldData(void)
 	// Year of release.
 	if (tags.year != 0) {
 		d->fields->addField_string_numeric(C_("SNDH", "Year of Release"), tags.year);
+	}
+
+	// Number of subtunes.
+	if (tags.subtunes != 0) {
+		d->fields->addField_string_numeric(C_("SNDH", "# of Subtunes"), tags.subtunes);
 	}
 
 	// Finished reading the field data.
