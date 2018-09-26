@@ -76,15 +76,8 @@ class SNDHPrivate : public RomDataPrivate
 			string converter;	// Converter name.
 
 			unsigned int subtunes;	// Subtune count.
-			struct {
-				// Timer frequencies.
-				// 0 if not specified.
-				unsigned int A;
-				unsigned int B;
-				unsigned int C;
-				unsigned int D;
-			} timer;
-			unsigned int vblank;		// VBlank frequency. (50/60)
+			unsigned int vblank_freq;	// VBlank frequency. (50/60)
+			unsigned int timer_freq[4];	// Timer frequencies. (A, B, C, D) [0 if not specified]
 			unsigned int year;		// Year of release.
 			unsigned int def_subtune;	// Default subtune.
 
@@ -93,10 +86,10 @@ class SNDHPrivate : public RomDataPrivate
 			vector<string> subtune_names;		// Subtune names.
 			vector<unsigned int> subtune_lengths;	// Subtune lengths, in seconds.
 
-			TagData() : tags_read(false), subtunes(0), vblank(0), year(0), def_subtune(0)
+			TagData() : tags_read(false), subtunes(0), vblank_freq(0), year(0), def_subtune(0)
 			{
-				// Clear the timer values.
-				memset(&timer, 0, sizeof(timer));
+				// Clear the timer frequencies.
+				memset(&timer_freq, 0, sizeof(timer_freq));
 			}
 		};
 
@@ -288,6 +281,53 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
  				break;
  			}
 
+			case '!#SN': {
+				// Subtune names.
+
+				// NOTE: If subtune count is 0 (no '##' tag), this is SNDHv1,
+				// which doesn't support subtunes. Handle it as a single subtune.
+				const unsigned int subtunes = (tags.subtunes > 0 ? tags.subtunes : 1);
+
+				// The following WORDs are offsets from the tag,
+				// and they point to NULL-terminated strings.
+				// The next tag is immediately after the last string.
+				assert(tags.subtune_names.empty());
+				if (!tags.subtune_names.empty()) {
+					// We already have subtune names.
+					// This means there's a duplicate '!#SN' tag.
+					p = p_end;
+					break;
+				}
+
+				const uint16_t *p_tbl = reinterpret_cast<const uint16_t*>(p + 4);
+				const uint8_t *p_next = nullptr;
+				for (unsigned int i = 0; i < subtunes; i++, p_tbl++) {
+					const uint8_t *p_str = p + be16_to_cpu(*p_tbl);
+					string str = readStrFromBuffer(&p_str, p_end, &err);
+					if (err) {
+						// An error occured.
+						break;
+					}
+					tags.subtune_names.push_back(std::move(str));
+
+					if (p_str > p_next) {
+						// This string is the farthest ahead so far.
+						p_next = p_str;
+					}
+				}
+
+				if (err) {
+					// An error occurred.
+					p = p_end;
+					tags.subtune_names.clear();
+				} else {
+					// p_next is the next byte to read.
+					// NOTE: http://sndh.atari.org/fileformat.php says it should be 16-bit aligned.
+					p = p_next;
+				}
+				break;
+			}
+
 			case 'HDNS':
 				// End of SNDH header.
 				p = p_end;
@@ -313,6 +353,43 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// String uses ASCII digits, so use strtoul().
 				p += 2;
 				tags.subtunes = readAsciiNumberFromBuffer(&p, p_end, &err);
+				if (err) {
+					// An error occurred.
+					p = p_end;
+				}
+				break;
+
+			case '!V':
+				// VBlank frequency.
+				p += 2;
+				tags.vblank_freq = readAsciiNumberFromBuffer(&p, p_end, &err);
+				if (err) {
+					// An error occurred.
+					p = p_end;
+				}
+				break;
+
+			case 'TA':
+			case 'TB':
+			case 'TC':
+			case 'TD': {
+				// Timer frequency.
+				const uint8_t idx = p[1] - 'A';
+				p += 2;
+				tags.timer_freq[idx] = readAsciiNumberFromBuffer(&p, p_end, &err);
+				if (err) {
+					// An error occurred.
+					p = p_end;
+				}
+				break;
+			}
+
+			case '!#':
+				// Default subtune.
+				// NOTE: First subtune is 1, not 0.
+				// TODO: Check that it doesn't exceed the subtune count?
+				p += 2;
+				tags.def_subtune = readAsciiNumberFromBuffer(&p, p_end, &err);
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -548,6 +625,59 @@ int SNDH::loadFieldData(void)
 	// Number of subtunes.
 	if (tags.subtunes != 0) {
 		d->fields->addField_string_numeric(C_("SNDH", "# of Subtunes"), tags.subtunes);
+	}
+
+	// NOTE: Tag listing on http://sndh.atari.org/fileformat.php lists
+	// VBL *after* timers, but "Calling method and speed" lists
+	// VBL *before* timers. We'll list it before timers.
+
+	// VBlank frequency.
+	if (tags.vblank_freq != 0) {
+		d->fields->addField_string(C_("SNDH", "VBlank Freq"),
+			rp_sprintf(C_("SNDH", "%u Hz"), tags.vblank_freq));
+	}
+
+	// Timer frequencies.
+	// TODO: Use RFT_LISTDATA?
+	for (unsigned int i = 0; i < (unsigned int)ARRAY_SIZE(tags.timer_freq); i++) {
+		if (tags.timer_freq[i] == 0)
+			continue;
+
+		d->fields->addField_string(
+			rp_sprintf(C_("SNDH", "Timer %c Freq"), 'A'+i).c_str(),
+			rp_sprintf(C_("SNDH", "%u Hz"), tags.timer_freq[i]));
+	}
+
+	// Default subtune.
+	// NOTE: First subtune is 1, not 0.
+	if (tags.subtunes > 1 && tags.def_subtune > 0) {
+		d->fields->addField_string_numeric(C_("SMDH", "Default Subtune"), tags.def_subtune);
+	}
+
+	// Subtune list.
+	if (!tags.subtune_names.empty()) {
+		auto subtune_list = new vector<vector<string> >();
+		subtune_list->resize(tags.subtune_names.size());
+
+		auto names_iter = tags.subtune_names.cbegin();
+		auto dest_iter = subtune_list->begin();
+		unsigned int subtune_num = 1;	// NOTE: First subtune is 1, not 0.
+		for ( ; dest_iter != subtune_list->end(); ++names_iter, ++dest_iter, subtune_num++) {
+			vector<string> &data_row = *dest_iter;
+			data_row.reserve(2);	// 2 fields per row.
+
+			// TODO: Duration?
+			data_row.push_back(rp_sprintf("%u", subtune_num));
+			data_row.push_back(*names_iter);
+		}
+
+		static const char *const subtune_list_hdr[2] = {
+			NOP_C_("SNDH|SubtuneList", "#"),
+			NOP_C_("SNDH|SubtuneList", "Name"),
+		};
+		vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
+			"SNDH|SubtuneList", subtune_list_hdr, ARRAY_SIZE(subtune_list_hdr));
+		d->fields->addField_listData("Subtune List", v_subtune_list_hdr, subtune_list);
 	}
 
 	// Finished reading the field data.
