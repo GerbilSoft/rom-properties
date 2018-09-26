@@ -75,7 +75,8 @@ class SNDHPrivate : public RomDataPrivate
 			string ripper;		// Ripper name.
 			string converter;	// Converter name.
 
-			unsigned int subtunes;	// Subtune count.
+			unsigned int subtunes;		// Subtune count. (If 0 or 1, entire file is one song.)
+							// NOTE: 0 (or missing) means SNDHv1; 1 means SNDHv2.
 			unsigned int vblank_freq;	// VBlank frequency. (50/60)
 			unsigned int timer_freq[4];	// Timer frequencies. (A, B, C, D) [0 if not specified]
 			unsigned int year;		// Year of release.
@@ -325,6 +326,34 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					// NOTE: http://sndh.atari.org/fileformat.php says it should be 16-bit aligned.
 					p = p_next;
 				}
+				break;
+			}
+
+			case 'TIME': {
+				// Subtune lengths, in seconds.
+				// NOTE: This field is OPTIONAL.
+				// Count_Zero/Decade_Demo_Quartet.sndh has '!#SN', but not 'TIME'.
+
+				// NOTE: If subtune count is 0, this is SNDHv1,
+				// which only supports one subtune.
+				const unsigned int subtunes = (tags.subtunes > 0 ? tags.subtunes : 1);
+
+				// Immediately following the tag is a table of WORDs,
+				// with one element per subtune.
+				const uint8_t *const p_next = p + 4 + (subtunes * 2);
+				if (p_next > p_end) {
+					// Out of bounds.
+					p = p_end;
+					break;
+				}
+
+				const uint16_t *p_tbl = reinterpret_cast<const uint16_t*>(p + 4);
+				tags.subtune_lengths.resize(subtunes);
+				for (auto iter = tags.subtune_lengths.begin(); iter != tags.subtune_lengths.end(); ++iter, p_tbl++) {
+					*iter = be16_to_cpu(*p_tbl);
+				}
+
+				p = p_next;
 				break;
 			}
 
@@ -623,9 +652,9 @@ int SNDH::loadFieldData(void)
 	}
 
 	// Number of subtunes.
-	if (tags.subtunes != 0) {
-		d->fields->addField_string_numeric(C_("SNDH", "# of Subtunes"), tags.subtunes);
-	}
+	// TODO: Omit this if it's 0 or 1?
+	d->fields->addField_string_numeric(C_("SNDH", "# of Subtunes"),
+		(tags.subtunes > 0) ? tags.subtunes : 1);
 
 	// NOTE: Tag listing on http://sndh.atari.org/fileformat.php lists
 	// VBL *after* timers, but "Calling method and speed" lists
@@ -659,25 +688,77 @@ int SNDH::loadFieldData(void)
 		auto subtune_list = new vector<vector<string> >();
 		subtune_list->resize(tags.subtune_names.size());
 
-		auto names_iter = tags.subtune_names.cbegin();
-		auto dest_iter = subtune_list->begin();
-		unsigned int subtune_num = 1;	// NOTE: First subtune is 1, not 0.
-		for ( ; dest_iter != subtune_list->end(); ++names_iter, ++dest_iter, subtune_num++) {
-			vector<string> &data_row = *dest_iter;
-			data_row.reserve(2);	// 2 fields per row.
-
-			// TODO: Duration?
-			data_row.push_back(rp_sprintf("%u", subtune_num));
-			data_row.push_back(*names_iter);
+		// NOTE: Some SNDH files have '!#SN' but not 'TIME'.
+		// Example: Count_Zero/Decade_Demo_Quartet.sndh
+		bool has_TIME = !tags.subtune_lengths.empty();
+		if (has_TIME && tags.subtune_lengths.size() < tags.subtune_names.size()) {
+			// Not enough subtune lengths. Add more so we can
+			// at least show something instead of crashing.
+			tags.subtune_lengths.resize(tags.subtune_names.size());
 		}
 
-		static const char *const subtune_list_hdr[2] = {
-			NOP_C_("SNDH|SubtuneList", "#"),
-			NOP_C_("SNDH|SubtuneList", "Name"),
-		};
-		vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
-			"SNDH|SubtuneList", subtune_list_hdr, ARRAY_SIZE(subtune_list_hdr));
-		d->fields->addField_listData("Subtune List", v_subtune_list_hdr, subtune_list);
+		if (has_TIME) {
+			// TIME field is present. Include it in the list.
+			auto names_iter = tags.subtune_names.cbegin();
+			auto lengths_iter = tags.subtune_lengths.cbegin();
+			auto dest_iter = subtune_list->begin();
+			unsigned int subtune_num = 1;	// NOTE: First subtune is 1, not 0.
+			for (; dest_iter != subtune_list->end(); ++names_iter, ++lengths_iter, ++dest_iter, subtune_num++) {
+				vector<string> &data_row = *dest_iter;
+				data_row.reserve(3);	// 3 fields per row.
+
+				// Format as m:ss.
+				// TODO: Separate function?
+				const uint32_t duration = *lengths_iter;
+				const uint32_t min = duration / 60;
+				const uint32_t sec = duration % 60;
+
+				data_row.push_back(rp_sprintf("%u", subtune_num));
+				data_row.push_back(*names_iter);
+				data_row.push_back(rp_sprintf("%u:%02u", min, sec));
+			}
+
+			static const char *const subtune_list_hdr[3] = {
+				NOP_C_("SNDH|SubtuneList", "#"),
+				NOP_C_("SNDH|SubtuneList", "Name"),
+				NOP_C_("SNDH|SubtuneList", "Duration"),
+			};
+			vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
+				"SNDH|SubtuneList", subtune_list_hdr, ARRAY_SIZE(subtune_list_hdr));
+			d->fields->addField_listData("Subtune List", v_subtune_list_hdr, subtune_list);
+		} else {
+			// No 'TIME' field.
+			auto names_iter = tags.subtune_names.cbegin();
+			auto dest_iter = subtune_list->begin();
+			unsigned int subtune_num = 1;	// NOTE: First subtune is 1, not 0.
+			for (; dest_iter != subtune_list->end(); ++names_iter, ++dest_iter, subtune_num++) {
+				vector<string> &data_row = *dest_iter;
+				data_row.reserve(2);	// 2 fields per row.
+
+				data_row.push_back(rp_sprintf("%u", subtune_num));
+				data_row.push_back(*names_iter);
+			}
+
+			static const char *const subtune_list_hdr[2] = {
+				NOP_C_("SNDH|SubtuneList", "#"),
+				NOP_C_("SNDH|SubtuneList", "Name"),
+			};
+			vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
+				"SNDH|SubtuneList", subtune_list_hdr, ARRAY_SIZE(subtune_list_hdr));
+			d->fields->addField_listData("Subtune List", v_subtune_list_hdr, subtune_list);
+		}
+	} else if (tags.subtune_lengths.size() == 1) {
+		// No subtune names, but we have one subtune length.
+		// This means it's the length of the entire song.
+
+		// Format as m:ss.
+		// TODO: Separate function?
+		const uint32_t duration = tags.subtune_lengths.at(0);
+		const uint32_t min = duration / 60;
+		const uint32_t sec = duration % 60;
+
+		d->fields->addField_string("Duration",
+			rp_sprintf("%u:%02u", min, sec));
 	}
 
 	// Finished reading the field data.
