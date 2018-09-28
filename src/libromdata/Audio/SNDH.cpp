@@ -386,6 +386,38 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				break;
 			}
 
+			case 'FLAG': {
+				// TODO: This is non-standard.
+				// Observed variants: (after the tag)
+				// - Two bytes, and a NULL terminator.
+				// - Three bytes, and a NULL terminator.
+				// - Five bytes, and no NULL terminator.
+				bool handled = false;
+				if (p + 6 < p_end) {
+					if (p[6] == 0) {
+						p += 7;
+						handled = true;
+					}
+				}
+				if (!handled && p + 7 < p_end) {
+					if (p[7] == 0) {
+						p += 8;
+						handled = true;
+					}
+				}
+				if (!handled && (p + 9 < p_end)) {
+					p += 9;
+					handled = true;
+				}
+
+				assert(handled);
+				if (!handled) {
+					p = p_end;
+					break;
+				}
+				break;
+			}
+
 			case 'HDNS':
 				// End of SNDH header.
 				p = p_end;
