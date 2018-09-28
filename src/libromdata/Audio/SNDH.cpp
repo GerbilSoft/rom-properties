@@ -326,10 +326,20 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					break;
 				}
 
+				// NOTE: Some SNDH files are incorrect and assume offset 0
+				// is the start of the text area.
+				// - MotionRide/K0mar.sndh [NOTE: Seems to be working now...]
+				// - Mr_Saigon/MSI_Sound_Demo.sndh
+				// - The_Archmage/MSI_Sound_Demo.sndh (WHICH ONE?)
+				// - Edd_the_Duck/Sonixx.sndh
+				// - Roggie/Sonixx.sndh (WHICH ONE?)
+				// - Povey_Rob/Quartet_1_0.sndh
 				const uint16_t *p_tbl = reinterpret_cast<const uint16_t*>(p + 4);
+				const unsigned int offset = (be16_to_cpu(*p_tbl) == 0 ? (4 + (subtunes * 2)) : 0);
+
 				const uint8_t *p_next = nullptr;
 				for (unsigned int i = 0; i < subtunes; i++, p_tbl++) {
-					const uint8_t *p_str = p + be16_to_cpu(*p_tbl);
+					const uint8_t *p_str = p + be16_to_cpu(*p_tbl) + offset;
 					string str = readStrFromBuffer(&p_str, p_end, &err);
 					//assert(!err);	// FIXME: Breaks Johansen_Benny/Yahtzee.sndh.
 					if (err) {
