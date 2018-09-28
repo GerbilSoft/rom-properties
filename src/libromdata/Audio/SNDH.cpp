@@ -257,6 +257,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				break;
 
 			case 'RIPP':
+			case 'ripp':	// header corruption in: Marcer/Bellanotte_Chip.sndh
 				// Ripper.
 				p += 4;
 				tags.ripper = readStrFromBuffer(&p, p_end, &err);
