@@ -180,8 +180,11 @@ unsigned int SNDHPrivate::readAsciiNumberFromBuffer(const uint8_t **p, const uin
 	unsigned int ret = (unsigned int)strtoul(reinterpret_cast<const char*>(*p), &endptr, 10);
 	if (endptr >= reinterpret_cast<const char*>(p_end) || *endptr != '\0') {
 		// Invalid value.
+		// NOTE: Return the parsed number anyway, in case it's still useful.
+		// For exmaple, 'YEAR' tags might have "1995/2013".
+		// See: Modmate/almoST_real_(ENtRACte).sndh
 		*p_err = true;
-		return 0;
+		return ret;
 	}
 	// endptr is the NULL terminator, so go one past that.
 	*p = reinterpret_cast<const uint8_t*>(endptr) + 1;
@@ -278,11 +281,27 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 			case 'YEAR': {
 				// Year of release.
 				// String uses ASCII digits, so use strtoul().
+				// FIXME: Modmate/almoST_real_(ENtRACte).sndh has "1995/2013".
+				// Ignoring errors for now.
 				p += 4;
 				tags.year = readAsciiNumberFromBuffer(&p, p_end, &err);
 				if (err) {
 					// An error occurred.
- 					p = p_end;
+					if (tags.year != 0) {
+						// FIXME: Might be two years, e.g. "1995/2013".
+						// This might also be "198x".
+						// Ignore the non-numeric portion for now.
+						const uint8_t *const p_nul = reinterpret_cast<const uint8_t*>(memchr(p, 0, p_end - p));
+						if (p_nul) {
+							err = false;	// Ignore this error for now.
+							p = p_nul + 1;
+						} else {
+							p = p_end;
+						}
+					} else {
+						// Invalid year, probably.
+						p = p_end;
+					}
  				}
  				break;
  			}
