@@ -219,7 +219,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 		// Not SNDH.
 		return tags;
 	}
-	p += 4;
+	p += 16;
 
 	// NOTE: Strings are in ASCII.
 	// TODO: Add ascii_to_utf8(). For now, using latin1_to_utf8().
@@ -287,7 +287,8 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
  				break;
  			}
 
-			case '!#SN': {
+			case '!#SN':
+			case '!#ST': {
 				// Subtune names.
 
 				// NOTE: If subtune count is 0 (no '##' tag), this is SNDHv1,
@@ -310,7 +311,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				for (unsigned int i = 0; i < subtunes; i++, p_tbl++) {
 					const uint8_t *p_str = p + be16_to_cpu(*p_tbl);
 					string str = readStrFromBuffer(&p_str, p_end, &err);
-					assert(!err);
+					//assert(!err);	// FIXME: Breaks Johansen_Benny/Yahtzee.sndh.
 					if (err) {
 						// An error occured.
 						break;
@@ -323,7 +324,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 					}
 				}
 
-				assert(!err);
+				//assert(!err);	// FIXME: Breaks Johansen_Benny/Yahtzee.sndh.
 				if (err) {
 					// An error occurred.
 					p = p_end;
@@ -388,13 +389,26 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 			case '##':
 				// # of subtunes.
 				// String uses ASCII digits, so use strtoul().
-				p += 2;
-				tags.subtunes = readAsciiNumberFromBuffer(&p, p_end, &err);
-				assert(!err);
-				if (err) {
-					// An error occurred.
+				// NOTE: Digits might not be NULL-terminated,
+				// so instead of using readAsciiNumberFromBuffer(),
+				// parse the two digits manually.
+				assert(p + 4 <= p_end);
+				if (p + 4 > p_end) {
+					// Out of bounds.
 					p = p_end;
+					break;
 				}
+
+				assert(ISDIGIT(p[2]));
+				assert(ISDIGIT(p[3]));
+				if (!ISDIGIT(p[2]) || !ISDIGIT(p[3])) {
+					// Not digits.
+					p = p_end;
+					break;
+				}
+
+				tags.subtunes = ((p[2] - '0') * 10) + (p[3] - '0');
+				p += 4;
 				break;
 
 			case '!V':
@@ -413,6 +427,17 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 			case 'TC':
 			case 'TD': {
 				// Timer frequency.
+
+				// Check for invalid digits after 'Tx'.
+				// If present, this is probably the end of the header,
+				// and the file is missing an HDNS tag.
+				// See: Beast/Boring.sndh
+				if (!ISDIGIT(p[2])) {
+					// End of header.
+					p = p_end;
+					break;
+				}
+
 				const uint8_t idx = p[1] - 'A';
 				p += 2;
 				tags.timer_freq[idx] = readAsciiNumberFromBuffer(&p, p_end, &err);
@@ -439,7 +464,17 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 			default:
 				// Unsupported tag...
-				p++;
+				// If this is a NULL byte or a space, find the next
+				// non-NULL/non-space byte and continue.
+				// Otherwise, it's an invalid tag, so stop processing.
+				if (*p == 0 || *p == ' ') {
+					while (p < p_end && (*p == 0 || *p == ' ')) {
+						p++;
+					}
+				} else {
+					// Invalid tag.
+					p = p_end;
+				}
 				break;
 		}
 	}
