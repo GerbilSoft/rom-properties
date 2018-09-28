@@ -387,27 +387,55 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 			}
 
 			case 'FLAG': {
+				// TODO: Optimize this!
 				// TODO: This is non-standard.
 				// Observed variants: (after the tag)
 				// - Two bytes, and a NULL terminator.
 				// - Three bytes, and a NULL terminator.
-				// - Five bytes, and no NULL terminator.
+				// - Five bytes, and maybe a NULL terminator.
+				// NOTE: The data format for some of these seems to be
+				// two bytes per subtune, two more bytes, then two NULL bytes.
 				bool handled = false;
-				if (p + 6 < p_end) {
-					if (p[6] == 0) {
-						p += 7;
+				if (p + 4+2 < p_end) {
+					if (p[4+2] == 0 && ISUPPER(p[4+2+1])) {
+						p += 4+2+1;
 						handled = true;
 					}
 				}
-				if (!handled && p + 7 < p_end) {
-					if (p[7] == 0) {
-						p += 8;
+
+				if (!handled && p + 4+3 < p_end) {
+					if (p[4+3] == 0 && ISUPPER(p[4+3+1])) {
+						p += 4+3+1;
 						handled = true;
 					}
 				}
-				if (!handled && (p + 9 < p_end)) {
-					p += 9;
-					handled = true;
+
+				// Check for the 5-byte version.
+				if (!handled && (p + 4+5+1 < p_end)) {
+					// Might not have a NULL terminator.
+					if (p[4+5] != 0 && ISUPPER(p[4+5+1])) {
+						// No NULL terminator.
+						p += 4+5;
+						handled = true;
+					} else {
+						// NULL terminator.
+						if (p[4] == '~' && p + 4+6+2 < p_end && ISUPPER(p[4+5+2])) {
+							p += 4+5+1;
+							handled = true;
+						}
+					}
+				}
+
+				// Search for `00 00`.
+				if (!handled) {
+					for (p += 4; p+1 < p_end; p += 2) {
+						if (p[0] == 0 && p[1] == 0) {
+							// Found it!
+							p += 2;
+							handled = true;
+							break;
+						}
+					}
 				}
 
 				assert(handled);
