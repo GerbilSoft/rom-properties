@@ -86,6 +86,7 @@ SET(libromdata_SRCS
 	data/NintendoLanguage.cpp
 	data/GLenumStrings.cpp
 	data/ELFData.cpp
+	data/DX10Formats.cpp
 
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -218,6 +219,7 @@ SET(libromdata_H
 	data/NintendoLanguage.hpp
 	data/GLenumStrings.hpp
 	data/ELFData.hpp
+	data/DX10Formats.hpp
 
 	disc/WbfsReader.hpp
 	disc/libwbfs.h
