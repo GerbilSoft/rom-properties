@@ -138,8 +138,8 @@ inline bool RomFieldsPrivate::isShared(void) const
 void RomFieldsPrivate::delete_data(void)
 {
 	// Delete all of the allocated strings in this->fields.
-	for (int i = static_cast<int>(fields.size() - 1); i >= 0; i--) {
-		RomFields::Field &field = this->fields.at(i);
+	for (auto iter = fields.begin(); iter != fields.end(); ++iter) {
+		RomFields::Field &field = *iter;
 		if (!field.isValid) {
 			// No data here.
 			continue;
@@ -229,9 +229,12 @@ void RomFields::detach(void)
 	RomFieldsPrivate *const d_new = new RomFieldsPrivate();
 	RomFieldsPrivate *const d_old = d_ptr;
 	d_new->fields.resize(d_old->fields.size());
-	for (int i = static_cast<int>(d_old->fields.size() - 1); i >= 0; i--) {
-		const Field &field_old = d_old->fields.at(i);
-		Field &field_new = d_new->fields.at(i);
+	auto old_iter = d_old->fields.cbegin();
+	auto new_iter = d_new->fields.begin();
+	for (; old_iter != d_old->fields.cend(); ++old_iter, ++new_iter) {
+		const Field &field_old = *old_iter;
+		Field &field_new = *new_iter;
+
 		field_new.name = field_old.name;
 		field_new.type = field_old.type;
 		field_new.isValid = field_old.isValid;
