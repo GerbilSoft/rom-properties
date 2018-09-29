@@ -1808,7 +1808,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	}
 
 	for (int idx = 0; idx < count; idx++) {
-		const RomFields::Field *field = fields->field(idx);
+		const RomFields::Field *const field = fields->field(idx);
 		assert(field != nullptr);
 		if (!field || !field->isValid)
 			continue;
@@ -1842,7 +1842,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		switch (field->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
-				DestroyWindow(hStatic);
 				field_cy = 0;
 				break;
 
@@ -1850,22 +1849,12 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// String data.
 				SIZE size = {dlg_value_width, field_cy};
 				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
-				if (field_cy == 0) {
-					// initString() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
 				break;
 			}
 
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
 				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
-				if (field_cy == 0) {
-					// initBitfield() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
 				break;
 
 			case RomFields::RFT_LISTDATA: {
@@ -1880,11 +1869,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				}
 
 				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, field);
-				if (field_cy == 0) {
-					// initListData() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				} else {
+				if (field_cy > 0) {
 					// Add the extra row if necessary.
 					if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 						const int szAdj = descSize.cy - (dlgMargin.top/3);
@@ -1899,50 +1884,40 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_DATETIME: {
 				// Date/Time in Unix format.
-				SIZE size = {dlg_value_width, field_cy};
+				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
-				if (field_cy == 0) {
-					// initDateTime() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
 				break;
 			}
 
 			case RomFields::RFT_AGE_RATINGS: {
 				// Age Ratings field.
-				SIZE size = {dlg_value_width, field_cy};
+				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
-				if (field_cy == 0) {
-					// initAgeRatings() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
 				break;
 			}
 
 			case RomFields::RFT_DIMENSIONS: {
 				// Dimensions field.
-				SIZE size = {dlg_value_width, field_cy};
+				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initDimensions(hDlg, tab.hDlg, pt_start, idx, size, field);
-				if (field_cy == 0) {
-					// initDimensions() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
 				break;
 			}
 
 			default:
 				// Unsupported data type.
 				assert(!"Unsupported RomFields::RomFieldsType.");
-				DestroyWindow(hStatic);
 				field_cy = 0;
 				break;
 		}
 
-		// Next row.
-		tab.curPt.y += field_cy;
+		if (field_cy > 0) {
+			// Next row.
+			tab.curPt.y += field_cy;
+		} else /* if (field_cy == 0) */ {
+			// Failed to initialize the widget.
+			// Remove the description label.
+			DestroyWindow(hStatic);
+		}
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
