@@ -316,6 +316,9 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF(SSE2_FLAG)
 ENDIF()
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
+
 ######################
 # Build the library. #
 ######################

@@ -1,0 +1,54 @@
+/* cm_config.h.in -- unice68 template for cmake config.h */
+
+/* ----------------------------------------------------------------------
+ *  Package info
+ */
+
+/* Name of package */
+#define PACKAGE "@PACKAGE@"
+
+/* Version number of package */
+#define VERSION "@VERSION@"
+
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"
+
+/* Package short description */
+#define PACKAGE_DESC
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME PACKAGE
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "@PACKAGE@ @VERSION@"
+
+/* Define to the home page for this package. */
+#define PACKAGE_URL "@PACKAGE_URL@"
+
+/* Version number */
+#define PACKAGE_VERNUM @PACKAGE_VERNUM@
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION VERSION
+
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME PACKAGE
+
+/* ----------------------------------------------------------------------
+ *  Configured headers
+ */
+
+#cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_ASSERT_H
+#cmakedefine HAVE_LIBGEN_H
+#cmakedefine HAVE_UNISTD_H
+#cmakedefine HAVE_FCNTL_H
+#cmakedefine HAVE_IO_H
+
+/* ----------------------------------------------------------------------
+ *  Configured functions
+ */
+
+#cmakedefine HAVE_BASENAME
+#cmakedefine HAVE_SETMODE
+#cmakedefine HAVE__SETMODE
