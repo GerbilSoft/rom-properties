@@ -23,7 +23,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+# include "config.unice68.h"
 #endif
 #ifndef PACKAGE_NAME
 # define PACKAGE_NAME "unice68"

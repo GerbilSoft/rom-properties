@@ -87,7 +87,7 @@ set(libdir "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/cm_config.h.in"
-  "${PROJECT_BINARY_DIR}/config.h"
+  "${PROJECT_BINARY_DIR}/config.unice68.h"
   @ONLY)
 
 configure_file (
@@ -166,12 +166,15 @@ if (BUILD_UNICE68_CLI)
     unice68_exe PROPERTIES
     OUTPUT_NAME unice68
     C_STANDARD 99
-    COMPILE_DEFINITIONS "")
+    COMPILE_DEFINITIONS "HAVE_CONFIG_H")
+  # rom-properties: Disable installation.
+  IF(0)
   install(
     TARGETS unice68_exe
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     )
+  ENDIF(0) # rom-properties
   
 endif (BUILD_UNICE68_CLI)

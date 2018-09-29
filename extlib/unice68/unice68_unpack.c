@@ -23,7 +23,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+# include "config.unice68.h"
 #endif
 
 #include "unice68_private.h"
