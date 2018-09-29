@@ -97,6 +97,7 @@ SET(librpbase_SRCS
 	byteswap.c
 	TextFuncs.cpp
 	TextFuncs_libc.c
+	TextFuncs_conv.cpp
 	RomData.cpp
 	RomFields.cpp
 	RomMetaData.cpp
