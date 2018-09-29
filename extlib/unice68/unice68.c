@@ -288,7 +288,7 @@ static void * myalloc(void * buf, int len, char * name)
   const unsigned int al = (1<<10) - 1;
 
   message(D, "Allocating %d bytes for the %s buffer\n", len, name);
-  if (memmax && len >= memmax) {
+  if (memmax && (unsigned int)len >= memmax) {
     error("cowardly refuse to allocate %u KiB of memory (try `-n')\n",
           (len+al) >> 10);
     free(buf);
@@ -419,8 +419,10 @@ int main(int argc, char *argv[])
       case 'd': case 't': case 'T':
         /* case 'c': */
         sens = 'd';
+        /* fall-through */
       case 'P':
         oldid = 1;
+	/* fall-through */
       case 'p': case 's':
         if (!sens) sens = 'p';
         if (mode != 0) {
@@ -497,7 +499,7 @@ int main(int argc, char *argv[])
   }
   hread = err;
 
-  if (hread < sizeof(header)) {
+  if (hread < (int)sizeof(header)) {
     if (sens == 'd') {
       err = ERR_UNPACK_TOO_SMALL;
       error("input is too small, not ice packed.\n");
@@ -629,6 +631,7 @@ int main(int argc, char *argv[])
       ibuffer = obuffer; ilen = olen;
       obuffer = tbuffer; olen = tlen;
     }
+    /* fall-through */
   case 'd':
     message(V, "ice depacking \"%s\" (%d bytes) ...\n", finp, ilen);
     err = unice68_depacker(obuffer, ibuffer);
