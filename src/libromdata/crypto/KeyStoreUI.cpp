@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * KeyStoreUI.cpp: Key store object for Qt.                                *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
  * Copyright (c) 2012-2018 by David Korth.                                 *
  *                                                                         *
@@ -239,11 +239,12 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	// Load the key names from the various classes.
 	// Values will be loaded later.
 	sections.clear();
-	sections.reserve(ARRAY_SIZE(encKeyFns));
+	sections.resize(ARRAY_SIZE(encKeyFns));
 	keys.clear();
 
 	int keyIdxStart = 0;
-	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
+	auto sectIter = sections.begin();
+	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++, ++sectIter) {
 		const EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
 		const int keyCount = encSys->pfnKeyCount();
 		assert(keyCount > 0);
@@ -251,8 +252,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 			continue;
 
 		// Set up the section.
-		sections.resize(sections.size()+1);
-		auto &section = sections[sections.size()-1];
+		auto &section = *sectIter;
 		section.keyIdxStart = keyIdxStart;
 		section.keyCount = keyCount;
 
@@ -260,18 +260,21 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 		keyIdxStart += keyCount;
 
 		// Get the keys.
-		keys.reserve(keys.size() + keyCount);
-		for (int i = 0; i < keyCount; i++) {
+		const size_t prevKeyCount = keys.size();
+		size_t totalKeyCount = prevKeyCount + keyCount;
+		keys.resize(totalKeyCount);
+		auto keyIter = keys.begin() + prevKeyCount;
+		for (int i = 0; i < keyCount; i++, ++keyIter) {
 			// Key name.
 			const char *const keyName = encSys->pfnKeyName(i);
 			assert(keyName != nullptr);
 			if (!keyName) {
 				// Skip NULL key names. (This shouldn't happen...)
+				totalKeyCount--;
 				continue;
 			}
 
-			keys.resize(keys.size()+1);
-			auto &key = keys[keys.size()-1];
+			auto &key = *keyIter;
 			key.name = latin1_to_utf8(keyName, -1);
 
 			// Key is empty initially.
@@ -280,6 +283,12 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 
 			// Allow kanji for twl-scrambler.
 			key.allowKanji = (key.name == "twl-scrambler");
+		}
+
+		// If any keys were skipped, shrink the key vector.
+		// NOTE: This shouldn't happen...
+		if (keys.size() != totalKeyCount) {
+			keys.resize(totalKeyCount);
 		}
 	}
 
@@ -630,18 +639,20 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
-	string hexstr;
-	hexstr.reserve(4+(u16str.size()*4));
-	hexstr += "FFFE";
-	for (const char16_t *p = u16str.c_str(); *p != 0; p++) {
-		const char16_t u16 = *p;
-		hexstr += hex_lookup[(u16 >>  4) & 0x0F];
-		hexstr += hex_lookup[(u16 >>  0) & 0x0F];
-		hexstr += hex_lookup[(u16 >> 12) & 0x0F];
-		hexstr += hex_lookup[(u16 >>  8) & 0x0F];
+	const unsigned int hexlen = 4+(u16str.size()*4);
+	unique_ptr<char[]> hexstr(new char[hexlen]);
+	char *pHex = hexstr.get();
+	memcpy(pHex, "FFFE", 4);
+	pHex += 4;
+	for (const char16_t *pu16 = u16str.c_str(); *pu16 != '\0'; pu16++, pHex += 4) {
+		const char16_t u16 = *pu16;
+		pHex[0] = hex_lookup[(u16 >>  4) & 0x0F];
+		pHex[1] = hex_lookup[(u16 >>  0) & 0x0F];
+		pHex[2] = hex_lookup[(u16 >> 12) & 0x0F];
+		pHex[3] = hex_lookup[(u16 >>  8) & 0x0F];
 	}
 
-	return hexstr;
+	return string(hexstr.get(), hexlen);
 }
 
 /**
@@ -751,14 +762,15 @@ string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
 	if (!data || len == 0 || len > 64)
 		return string();
 
-	string hexstr;
-	hexstr.reserve(len*2);
-	for (; len > 0; len--, data++) {
-		hexstr += hex_lookup[*data >> 4];
-		hexstr += hex_lookup[*data & 0x0F];
+	const unsigned int hexlen = len*2;
+	unique_ptr<char[]> hexstr(new char[hexlen]);
+	char *pHex = hexstr.get();
+	for (; len > 0; len--, data++, pHex += 2) {
+		pHex[0] = hex_lookup[*data >> 4];
+		pHex[1] = hex_lookup[*data & 0x0F];
 	}
 
-	return hexstr;
+	return string(hexstr.get(), hexlen);
 }
 
 /** KeyStore **/
