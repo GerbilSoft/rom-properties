@@ -389,11 +389,14 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 
 	// Read 4,096+256 bytes from the ROM header.
 	// This should be enough to detect most systems.
-	uint8_t header[4096+256];
+	union {
+		uint8_t u8[4096+256];
+		uint32_t u32[(4096+256)/4];
+	} header;
 	file->rewind();
 	info.header.addr = 0;
-	info.header.pData = header;
-	info.header.size = static_cast<uint32_t>(file->read(header, sizeof(header)));
+	info.header.pData = header.u8;
+	info.header.size = static_cast<uint32_t>(file->read(header.u8, sizeof(header.u8)));
 	if (info.header.size == 0) {
 		// Read error.
 		return nullptr;
@@ -440,8 +443,9 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 		// Check the magic number.
 		// TODO: Verify alignment restrictions.
 		assert(fns->address % 4 == 0);
-		assert(fns->address + sizeof(uint32_t) <= sizeof(header));
-		uint32_t magic = *(uint32_t*)(&header[fns->address]);
+		assert(fns->address + sizeof(uint32_t) <= sizeof(header.u32));
+		// FIXME: Fix strict aliasing warnings on Ubuntu 14.04.
+		uint32_t magic = header.u32[fns->address/4];
 		if (be32_to_cpu(magic) == fns->size) {
 			// Found a matching magic number.
 			if (fns->isRomSupported(&info) >= 0) {
@@ -508,7 +512,7 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 			int ret = file->seek(info.header.addr);
 			if (ret != 0)
 				continue;
-			info.header.size = static_cast<uint32_t>(file->read(header, fns->size));
+			info.header.size = static_cast<uint32_t>(file->read(header.u8, fns->size));
 			if (info.header.size != fns->size)
 				continue;
 		}
@@ -554,7 +558,7 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 			static const int footer_size = 1024;
 			if (info.szFile > footer_size) {
 				info.header.addr = static_cast<uint32_t>(info.szFile - footer_size);
-				info.header.size = static_cast<uint32_t>(file->seekAndRead(info.header.addr, header, footer_size));
+				info.header.size = static_cast<uint32_t>(file->seekAndRead(info.header.addr, header.u8, footer_size));
 				if (info.header.size == 0) {
 					// Seek and/or read error.
 					return nullptr;
