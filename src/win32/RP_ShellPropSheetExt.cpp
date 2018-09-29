@@ -969,8 +969,10 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	// Convert the bitfield description names to UTF-16 once.
 	vector<wstring> wnames;
 	wnames.reserve(count);
-	for (int j = 0; j < count; j++) {
-		const string &name = bitfieldDesc.names->at(j);
+	for (auto iter = bitfieldDesc.names->cbegin();
+	     iter != bitfieldDesc.names->cend(); ++iter)
+	{
+		const string &name = *iter;
 		if (name.empty()) {
 			// Skip U82W_s() for empty strings.
 			wnames.push_back(wstring());
@@ -995,8 +997,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		for (; elemsPerRow > 1; elemsPerRow--) {
 			col_widths.resize(elemsPerRow);
 			row = 0; col = 0;
-			for (int j = 0; j < count; j++) {
-				const wstring &wname = wnames.at(j);
+			auto iter = wnames.cbegin();
+			for (int j = 0; j < count; ++iter, j++) {
+				const wstring &wname = *iter;
 				if (wname.empty())
 					continue;
 
@@ -1020,7 +1023,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 			// Add up the widths.
 			int total_width = 0;
-			for (auto iter = col_widths.begin(); iter != col_widths.end(); ++iter) {
+			for (auto iter = col_widths.cbegin(); iter != col_widths.cend(); ++iter) {
 				total_width += *iter;
 			}
 			// TODO: "DLL" on Windows executables is forced to the next line.
@@ -1055,8 +1058,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	pt.y -= rect_subtract.bottom;
 
 	row = 0; col = 0;
-	for (int j = 0; j < count; j++) {
-		const wstring &wname = wnames.at(j);
+	auto iter = wnames.cbegin();
+	for (int j = 0; j < count; ++iter, j++) {
+		const wstring &wname = *iter;
 		if (wname.empty())
 			continue;
 
@@ -1180,8 +1184,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (listDataDesc.names) {
 		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
 		lvColumn.fmt = LVCFMT_LEFT;
-		for (int i = 0; i < col_count; i++) {
-			const string &str = listDataDesc.names->at(i);
+		auto iter = listDataDesc.names->cbegin();
+		for (int i = 0; i < col_count; ++iter, i++) {
+			const string &str = *iter;
 			if (!str.empty()) {
 				// NOTE: pszText is LPWSTR, not LPCWSTR...
 				const wstring wstr = U82W_s(str);
