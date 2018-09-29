@@ -58,14 +58,12 @@ using LibRomData::RomDataFactory;
 // C++ includes.
 #include <array>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
 using std::array;
 using std::unique_ptr;
 using std::unordered_set;
-using std::wostringstream;
 using std::string;
 using std::wstring;
 using std::vector;
@@ -1484,17 +1482,21 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
 
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field->data.dimensions;
-	wostringstream woss;
-	woss << dimensions[0];
+	wchar_t wbuf[64];
 	if (dimensions[1] > 0) {
-		woss << L'x' << dimensions[1];
 		if (dimensions[2] > 0) {
-			woss << L'x' << dimensions[2];
+			swprintf(wbuf, ARRAY_SIZE(wbuf), L"%dx%dx%d",
+				dimensions[0], dimensions[1], dimensions[2]);
+		} else {
+			swprintf(wbuf, ARRAY_SIZE(wbuf), L"%dx%d",
+				dimensions[0], dimensions[1]);
 		}
+	} else {
+		swprintf(wbuf, ARRAY_SIZE(wbuf), L"%d", dimensions[0]);
 	}
 
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, woss.str().c_str());
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, wbuf);
 }
 
 /**
