@@ -600,72 +600,44 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	unordered_map<string, bool> map_exts;
 
 	static const size_t reserve_size =
-		(ARRAY_SIZE(romDataFns_header) +
+		(ARRAY_SIZE(romDataFns_magic) +
+		 ARRAY_SIZE(romDataFns_header) +
 		 ARRAY_SIZE(romDataFns_footer)) * 2;
 	vec_exts.reserve(reserve_size);
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 	map_exts.reserve(reserve_size);
 #endif
 
-	const RomDataFns *fns = &romDataFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_exts = fns->supportedFileExtensions();
-		if (!sys_exts)
-			continue;
+	// Table of pointers to tables.
+	// This reduces duplication by only requiring a single loop.
+	static const RomDataFns *const romDataFns_tbl[] = {
+		romDataFns_magic,
+		romDataFns_header,
+		romDataFns_footer,
+		nullptr
+	};
 
-		for (; *sys_exts != nullptr; sys_exts++) {
-			auto iter = map_exts.find(*sys_exts);
-			if (iter != map_exts.end()) {
-				// We already had this extension.
-				// Update its thumbnail status.
-				iter->second = fns->hasThumbnail;
-			} else {
-				// First time encountering this extension.
-				map_exts[*sys_exts] = fns->hasThumbnail;
-				vec_exts.push_back(RomDataFactory::ExtInfo(
-					*sys_exts, fns->hasThumbnail));
-			}
-		}
-	}
+	for (const RomDataFns *const *tblptr = &romDataFns_tbl[0];
+	     tblptr != nullptr; tblptr++)
+	{
+		const RomDataFns *fns = *tblptr;
+		for (; fns->supportedFileExtensions != nullptr; fns++) {
+			const char *const *sys_exts = fns->supportedFileExtensions();
+			if (!sys_exts)
+				continue;
 
-	fns = &romDataFns_header[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_exts = fns->supportedFileExtensions();
-		if (!sys_exts)
-			continue;
-
-		for (; *sys_exts != nullptr; sys_exts++) {
-			auto iter = map_exts.find(*sys_exts);
-			if (iter != map_exts.end()) {
-				// We already had this extension.
-				// Update its thumbnail status.
-				iter->second = fns->hasThumbnail;
-			} else {
-				// First time encountering this extension.
-				map_exts[*sys_exts] = fns->hasThumbnail;
-				vec_exts.push_back(RomDataFactory::ExtInfo(
-					*sys_exts, fns->hasThumbnail));
-			}
-		}
-	}
-
-	fns = &romDataFns_footer[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_exts = fns->supportedFileExtensions();
-		if (!sys_exts)
-			continue;
-
-		for (; *sys_exts != nullptr; sys_exts++) {
-			auto iter = map_exts.find(*sys_exts);
-			if (iter != map_exts.end()) {
-				// We already had this extension.
-				// Update its thumbnail status.
-				iter->second = fns->hasThumbnail;
-			} else {
-				// First time encountering this extension.
-				map_exts[*sys_exts] = fns->hasThumbnail;
-				vec_exts.push_back(RomDataFactory::ExtInfo(
-					*sys_exts, fns->hasThumbnail));
+			for (; *sys_exts != nullptr; sys_exts++) {
+				auto iter = map_exts.find(*sys_exts);
+				if (iter != map_exts.end()) {
+					// We already had this extension.
+					// Update its thumbnail status.
+					iter->second = fns->hasThumbnail;
+				} else {
+					// First time encountering this extension.
+					map_exts[*sys_exts] = fns->hasThumbnail;
+					vec_exts.push_back(RomDataFactory::ExtInfo(
+						*sys_exts, fns->hasThumbnail));
+				}
 			}
 		}
 	}
