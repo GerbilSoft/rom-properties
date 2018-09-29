@@ -412,11 +412,30 @@ std::string cpN_to_utf8(unsigned int cp, const char *str, int len);
 /**
  * Convert Atari ST text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param str	[in] ANSI text.
+ * @param str	[in] Atari ST text.
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
 std::string atariST_to_utf8(const char *str, int len);
+
+/**
+ * Convert Atari ATASCII text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] Atari ATASCII text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string atascii_to_utf8(const char *str, int len);
+
+/**
+ * Convert Commodore PETSCII text (C64 variant) to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] Commodore PETSCII text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @param shifted [in] False for unshifted (uppercase+graphics); true for shifted (lowercase+uppercase).
+ * @return UTF-8 string.
+ */
+std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
 
 /** sprintf() **/
 
