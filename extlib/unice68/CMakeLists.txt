@@ -97,6 +97,17 @@ configure_file (
 
 add_definitions(-DHAVE_CONFIG_H)
 
+# Disable certain warning flags.
+IF(NOT MSVC)
+	FOREACH(FLAG_TEST "-Wno-empty-body -Wno-shift-negative-value")
+		CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST})
+		IF(CFLAG_${FLAG_TEST})
+			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG_TEST}")
+		ENDIF(CFLAG_${FLAG_TEST})
+		UNSET(CFLAG_${FLAG_TEST})
+	ENDFOREACH()
+ENDIF(NOT MSVC)
+
 # ======================================================================
 # Target library: unice68
 
