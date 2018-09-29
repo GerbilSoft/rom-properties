@@ -1652,9 +1652,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// tr: Field description label.
-		w_desc_text.push_back(U82W_s(rp_sprintf(
-			C_("RomDataView", "%s:"), field->name.c_str())));
-		const wstring& desc_text = w_desc_text.at(i);
+		wstring desc_text = U82W_s(rp_sprintf(
+			C_("RomDataView", "%s:"), field->name.c_str()));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
@@ -1671,6 +1670,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		if (textSize.cx > max_text_width) {
 			max_text_width = textSize.cx;
 		}
+
+		// Save for later.
+		w_desc_text.push_back(std::move(desc_text));
 	}
 
 	// Add additional spacing between the ':' and the field.
