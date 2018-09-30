@@ -1,5 +1,5 @@
 /* mz_strm_buf.c -- Stream for buffering reads/writes
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    This version of ioapi is designed to buffer IO.
@@ -11,11 +11,11 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
 
 #include "mz.h"
 #include "mz_strm.h"
@@ -140,8 +140,10 @@ int32_t mz_stream_buffered_read(void *stream, void *buf, int32_t size)
     mz_stream_buffered_print(stream, "read [size %ld pos %lld]\n", size, buffered->position);
 
     if (buffered->writebuf_len > 0)
+    {
         mz_stream_buffered_print(stream, "switch from write to read, not yet supported [%lld]\n",
             buffered->position);
+    }
 
     while (bytes_left_to_read > 0)
     {
@@ -264,7 +266,7 @@ int64_t mz_stream_buffered_tell(void *stream)
         buffered->position, buffered->readbuf_pos, buffered->writebuf_pos, errno);
 
     if (buffered->readbuf_len > 0)
-        position -= (buffered->readbuf_len - buffered->readbuf_pos);
+        position -= ((int64_t)buffered->readbuf_len - buffered->readbuf_pos);
     if (buffered->writebuf_len > 0)
         position += buffered->writebuf_pos;
     return position;
@@ -307,17 +309,17 @@ int32_t mz_stream_buffered_seek(void *stream, int64_t offset, int32_t origin)
 
             if (buffered->readbuf_len > 0)
             {
-                if (offset <= (buffered->readbuf_len - buffered->readbuf_pos))
+                if (offset <= ((int64_t)buffered->readbuf_len - buffered->readbuf_pos))
                 {
                     buffered->readbuf_pos += (uint32_t)offset;
                     return MZ_OK;
                 }
-                offset -= (buffered->readbuf_len - buffered->readbuf_pos);
+                offset -= ((int64_t)buffered->readbuf_len - buffered->readbuf_pos);
                 buffered->position += offset;
             }
             if (buffered->writebuf_len > 0)
             {
-                if (offset <= (buffered->writebuf_len - buffered->writebuf_pos))
+                if (offset <= ((int64_t)buffered->writebuf_len - buffered->writebuf_pos))
                 {
                     buffered->writebuf_pos += (uint32_t)offset;
                     return MZ_OK;
@@ -357,12 +359,16 @@ int32_t mz_stream_buffered_close(void *stream)
     mz_stream_buffered_print(stream, "close [flushed %d]\n", bytes_flushed);
 
     if (buffered->readbuf_hits + buffered->readbuf_misses > 0)
-        mz_stream_buffered_print(stream, "read efficency %.02f%%\n",
+    {
+        mz_stream_buffered_print(stream, "read efficiency %.02f%%\n",
             (buffered->readbuf_hits / ((float)buffered->readbuf_hits + buffered->readbuf_misses)) * 100);
+    }
 
     if (buffered->writebuf_hits + buffered->writebuf_misses > 0)
-        mz_stream_buffered_print(stream, "write efficency %.02f%%\n",
+    {
+        mz_stream_buffered_print(stream, "write efficiency %.02f%%\n",
             (buffered->writebuf_hits / ((float)buffered->writebuf_hits + buffered->writebuf_misses)) * 100);
+    }
 
     mz_stream_buffered_reset(buffered);
 

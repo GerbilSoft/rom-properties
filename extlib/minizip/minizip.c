@@ -1,5 +1,5 @@
 /* minizip.c
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,12 +11,11 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
 #include <time.h>
-#include <errno.h>
 
 #include "mz.h"
 #include "mz_os.h"
@@ -102,7 +101,7 @@ int32_t minizip_list(const char *path)
     }
 
     err = mz_zip_reader_goto_first_entry(reader);
-        
+
     if (err != MZ_OK && err != MZ_END_OF_LIST)
     {
         printf("Error %d going to first entry in zip file\n", err);
@@ -154,7 +153,7 @@ int32_t minizip_list(const char *path)
             string_method = "LZMA";
             break;
         default:
-            string_method = "Unknwn";
+            string_method = "?";
         }
 
         mz_zip_time_t_to_tm(file_info->modified_date, &tmu_date);
@@ -206,7 +205,7 @@ int32_t minizip_add_progress_cb(void *handle, void *userdata, mz_zip_file *file_
     else if (!raw && file_info->uncompressed_size > 0)
         progress = ((double)position / file_info->uncompressed_size) * 100;
 
-    printf("%s - %lld / %lld (%.02f%%)\n", file_info->filename, position, file_info->uncompressed_size, progress);
+    printf("%s - %"PRIu64" / %"PRIu64" (%.02f%%)\n", file_info->filename, position, file_info->uncompressed_size, progress);
     return MZ_OK;
 
 }
@@ -279,7 +278,7 @@ int32_t minizip_add(const char *path, const char *password, minizip_opt *options
     {
         printf("Error %d opening zip for writing\n", err);
     }
-    
+
     err_close = mz_zip_writer_close(writer);
     if (err_close != MZ_OK)
     {
@@ -303,7 +302,7 @@ int32_t minizip_extract_progress_cb(void *handle, void *userdata, mz_zip_file *f
 {
     double progress = 0;
     uint8_t raw = 0;
-    
+
     mz_zip_reader_get_raw(handle, &raw);
 
     if (raw && file_info->compressed_size > 0)
@@ -311,7 +310,7 @@ int32_t minizip_extract_progress_cb(void *handle, void *userdata, mz_zip_file *f
     else if (!raw && file_info->uncompressed_size > 0)
         progress = ((double)position / file_info->uncompressed_size) * 100;
 
-    printf("%s - %lld / %lld (%.02f%%)\n", file_info->filename, position, file_info->uncompressed_size, progress);
+    printf("%s - %"PRIu64" / %"PRIu64" (%.02f%%)\n", file_info->filename, position, file_info->uncompressed_size, progress);
     return MZ_OK;
 
 }
@@ -552,7 +551,7 @@ int main(int argc, const char *argv[])
                 options.legacy_encoding = 1;
             else if (((c == 'k') || (c == 'K')) && (i + 1 < argc))
             {
-                options.disk_size = atoi(argv[i + 1]) * 1024;
+                options.disk_size = (int64_t)atoi(argv[i + 1]) * 1024;
                 i += 1;
             }
             else if (((c == 'd') || (c == 'D')) && (i + 1 < argc))
@@ -591,7 +590,8 @@ int main(int argc, const char *argv[])
     }
     else if (do_erase)
     {
-        strncpy(tmp_path, path, sizeof(tmp_path));
+        strncpy(tmp_path, path, sizeof(tmp_path) - 1);
+        tmp_path[sizeof(tmp_path) - 1] = 0;
         strncat(tmp_path, ".tmp", sizeof(tmp_path) - strlen(tmp_path) - 1);
 
         err = minizip_erase(path, tmp_path, argc - (path_arg + 1), &argv[path_arg + 1]);
@@ -604,7 +604,8 @@ int main(int argc, const char *argv[])
     if (err == MZ_OK && do_erase)
     {
         // Swap zip with temporary zip, backup old zip if possible
-        strncpy(bak_path, path, sizeof(bak_path));
+        strncpy(bak_path, path, sizeof(bak_path) - 1);
+        bak_path[sizeof(bak_path) - 1] = 0;
         strncat(bak_path, ".bak", sizeof(bak_path) - strlen(bak_path) - 1);
 
         if (mz_os_file_exists(bak_path) == MZ_OK)

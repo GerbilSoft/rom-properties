@@ -1,4 +1,4 @@
-# minizip 2.5.2
+# minizip 2.5.4
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux. 
 
@@ -17,9 +17,10 @@ had been contributed to by many people. As part of the zlib distribution, Mark A
 original [minizip](https://github.com/madler/zlib/tree/master/contrib/minizip) project.
 
 In 2006, I began working with the minizip project and started submitting bugs I found in the library to 
-Gilles Vollant via e-mail. In 2010, I implemented some additional features like disk splitting and I/O buffering.
-My continued work on the project necessitated setting up a public repository so I could share my improvements
-with the rest of the world. I have been maintaining this fork of the project ever since. In 2017, I began the 
+Gilles Vollant via e-mail. In 2010, I implemented some additional features like disk splitting, 
+I/O buffering, and AES encryption.
+My continued work on the project necessitated setting up a public repository so I could share these and other improvements
+with the rest of the world. I have been maintaining and actively developing this fork of the project ever since. In 2017, I began the 
 task of refactoring and rewriting most of library as it had become difficult to maintain and code readability 
 had suffered over the years.
 
@@ -37,6 +38,7 @@ Master: [![Master Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?
 + Buffered streaming for improved I/O performance.
 + NTFS timestamp support for UTC last modified, last accessed, and creation dates.
 + Disk split support for splitting zip archives into multiple files.
++ Preservation of file attributes across file systems.
 + Unicode filename support through UTF-8 encoding.
 + IBM Codepage 437 legacy character encoding support.
 + Turn off compilation of compression, decompression, or encryption.

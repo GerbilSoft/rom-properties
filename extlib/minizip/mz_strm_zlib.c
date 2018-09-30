@@ -1,5 +1,5 @@
 /* mz_strm_zlib.c -- Stream for zlib inflate/deflate
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -10,7 +10,6 @@
 */
 
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -26,7 +25,7 @@
 // Define z_crc_t in zlib 1.2.5 and less or if using zlib-ng
 #if defined(ZLIBNG_VERNUM)
 typedef uint32_t z_crc_t;
-#elif (ZLIB_VERNUM < 0x1270) 
+#elif (ZLIB_VERNUM < 0x1270)
 typedef unsigned long z_crc_t;
 #endif
 

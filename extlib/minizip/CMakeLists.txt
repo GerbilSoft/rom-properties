@@ -40,7 +40,7 @@ set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installa
 ENDIF(0)
 
 # Minizip library version
-set(VERSION "2.5.2")
+set(VERSION "2.5.4")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -125,6 +125,10 @@ endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
     add_definitions(-DMZ_WINRT_API)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
+    add_compile_options(-W -Wall)
 endif()
 
 if(UNIX)
@@ -405,7 +409,7 @@ add_library(${PROJECT_NAME}
                 ${BZIP2_SRC} ${BZIP2_PUBLIC_HEADERS}
                 ${LZMA_SRC} ${LZMA_PUBLIC_HEADERS})
 
-if (MINGW AND BUILD_SHARED_LIBS)
+if (MSVC AND BUILD_SHARED_LIBS)
   set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_NAME "minizip")
 endif ()
 

@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -16,13 +16,12 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include <errno.h>
 #include <limits.h>
 
 #include "mz.h"
@@ -263,7 +262,7 @@ static int32_t mz_zip_read_cd(void *handle)
         if ((err == MZ_OK) && (comment_size > 0))
         {
             zip->comment = (char *)MZ_ALLOC(comment_size + 1);
-            if (zip->comment)
+            if (zip->comment != NULL)
             {
                 if (mz_stream_read(zip->stream, zip->comment, comment_size) != comment_size)
                     err = MZ_STREAM_ERROR;
@@ -561,7 +560,7 @@ int32_t mz_zip_open(void *handle, void *stream, int32_t mode)
         // Memory streams used to store variable length file info data
         mz_stream_mem_create(&zip->file_info_stream);
         mz_stream_mem_open(zip->file_info_stream, NULL, MZ_OPEN_MODE_CREATE);
-        
+
         mz_stream_mem_create(&zip->local_file_info_stream);
         mz_stream_mem_open(zip->local_file_info_stream, NULL, MZ_OPEN_MODE_CREATE);
     }
@@ -642,7 +641,10 @@ int32_t mz_zip_set_comment(void *handle, const char *comment)
         MZ_FREE(zip->comment);
     comment_size = (uint16_t)(strlen(comment) + 1);
     zip->comment = (char *)MZ_ALLOC(comment_size);
-    strncpy(zip->comment, comment, comment_size);
+    if (zip->comment == NULL)
+        return MZ_MEM_ERROR;
+    strncpy(zip->comment, comment, comment_size - 1);
+    zip->comment[comment_size - 1] = 0;
     return MZ_OK;
 }
 
@@ -761,7 +763,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
         }
     }
 
-    max_seek = file_info->filename_size + file_info->extrafield_size + file_info->comment_size + 3;
+    max_seek = (int64_t)file_info->filename_size + file_info->extrafield_size + file_info->comment_size + 3;
     if (err == MZ_OK)
         err = mz_stream_seek(file_info_stream, max_seek, MZ_SEEK_SET);
     if (err == MZ_OK)
@@ -775,7 +777,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
         if (err == MZ_OK)
             err = mz_stream_write_uint8(file_info_stream, 0);
 
-        seek += file_info->filename_size + 1;
+        seek += (int64_t)file_info->filename_size + 1;
     }
 
     if ((err == MZ_OK) && (file_info->extrafield_size > 0))
@@ -790,7 +792,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
         if (err == MZ_OK)
             err = mz_stream_seek(file_info_stream, seek, MZ_SEEK_SET);
 
-        seek += file_info->extrafield_size + 1;
+        seek += (int64_t)file_info->extrafield_size + 1;
 
         while ((err == MZ_OK) && (extra_pos < file_info->extrafield_size))
         {
@@ -1460,7 +1462,7 @@ int32_t mz_zip_entry_read_open(void *handle, uint8_t raw, const char *password)
 #ifdef MZ_ZIP_NO_DECOMPRESSION
     if (zip->file_info.compression_method != MZ_COMPRESS_METHOD_STORE)
         err = MZ_SUPPORT_ERROR;
-#endif 
+#endif
     if (err == MZ_OK)
         err = mz_zip_entry_open_int(handle, raw, 0, password);
 
@@ -1472,7 +1474,6 @@ int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info, int1
     mz_zip *zip = (mz_zip *)handle;
     int64_t disk_number = 0;
     int32_t err = MZ_OK;
-    int32_t len = 0;
 
 #if defined(MZ_ZIP_NO_ENCRYPTION)
     if (password != NULL)
@@ -1782,7 +1783,7 @@ int32_t mz_zip_goto_next_entry(void *handle)
     if (zip == NULL)
         return MZ_PARAM_ERROR;
 
-    zip->cd_current_pos += MZ_ZIP_SIZE_CD_ITEM + zip->file_info.filename_size +
+    zip->cd_current_pos += (uint64_t)MZ_ZIP_SIZE_CD_ITEM + zip->file_info.filename_size +
         zip->file_info.extrafield_size + zip->file_info.comment_size;
 
     return mz_zip_goto_next_entry_int(handle);

@@ -1,5 +1,5 @@
 /* mz_strm_split.c -- Stream for split files
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,9 +9,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "mz.h"
@@ -97,7 +96,8 @@ static int32_t mz_stream_split_open_disk(void *stream, int32_t number_disk)
     }
     else
     {
-        strncpy(split->path_disk, split->path_cd, split->path_disk_size);
+        strncpy(split->path_disk, split->path_cd, split->path_disk_size - 1);
+        split->path_disk[split->path_disk_size - 1] = 0;
     }
 
     // If disk part doesn't exist during reading then return MZ_EXIST_ERROR
@@ -182,11 +182,24 @@ int32_t mz_stream_split_open(void *stream, const char *path, int32_t mode)
 
     split->path_cd_size = (int32_t)strlen(path) + 1;
     split->path_cd = (char *)MZ_ALLOC(split->path_cd_size);
-    strncpy(split->path_cd, path, split->path_cd_size);
+
+    if (split->path_cd == NULL)
+        return MZ_MEM_ERROR;
+
+    strncpy(split->path_cd, path, split->path_cd_size - 1);
+    split->path_cd[split->path_cd_size - 1] = 0;
 
     split->path_disk_size = (int32_t)strlen(path) + 10;
     split->path_disk = (char *)MZ_ALLOC(split->path_disk_size);
-    strncpy(split->path_disk, path, split->path_disk_size);
+
+    if (split->path_disk == NULL)
+    {
+        MZ_FREE(split->path_cd);
+        return MZ_MEM_ERROR;
+    }
+
+    strncpy(split->path_disk, path, split->path_disk_size - 1);
+    split->path_disk[split->path_disk_size - 1] = 0;
 
     if (mode & MZ_OPEN_MODE_WRITE)
     {

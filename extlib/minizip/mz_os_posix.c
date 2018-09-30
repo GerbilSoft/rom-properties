@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -20,17 +20,22 @@
 #ifdef HAVE_GETRANDOM
 #  include <sys/random.h>
 #endif
-#if defined unix || defined __APPLE__
+#if defined(unix) || defined(__APPLE__)
 #  include <unistd.h>
 #  include <utime.h>
-#  define HAVE_ARC4RANDOM_BUF
+#  ifndef HAVE_ARC4RANDOM_BUF
+#    define HAVE_ARC4RANDOM_BUF
+#  endif
 #endif
-#if  defined(HAVE_LIBBSD) && \
-    !defined(MZ_ZIP_NO_COMPRESSION) && \
-    !defined(MZ_ZIP_NO_ENCRYPTION)
+#if defined(HAVE_LIBBSD) && \
+   !defined(MZ_ZIP_NO_COMPRESSION) && \
+   !defined(MZ_ZIP_NO_ENCRYPTION)
 #  include <bsd/stdlib.h> // arc4random_buf
-#else
-#  include <stdlib.h>
+#endif
+
+#ifdef __APPLE__
+#include <mach/clock.h>
+#include <mach/mach.h>
 #endif
 
 #include "mz.h"
@@ -158,7 +163,7 @@ int32_t mz_posix_get_file_date(const char *path, time_t *modified_date, time_t *
         // Not all systems allow stat'ing a file with / appended
         len = strlen(path);
         name = (char *)malloc(len + 1);
-        strncpy(name, path, len + 1);
+        strncpy(name, path, len);
         name[len] = 0;
         if (name[len - 1] == '/')
             name[len - 1] = 0;
@@ -259,4 +264,25 @@ int32_t mz_posix_is_dir(const char *path)
     if (S_ISDIR(path_stat.st_mode))
         return MZ_OK;
     return MZ_EXIST_ERROR;
+}
+
+uint64_t mz_posix_ms_time(void)
+{
+    struct timespec ts;
+
+#ifdef __APPLE__
+    clock_serv_t cclock;
+    mach_timespec_t mts;
+
+    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+    clock_get_time(cclock, &mts);
+    mach_port_deallocate(mach_task_self(), cclock);
+
+    ts.tv_sec = mts.tv_sec;
+    ts.tv_nsec = mts.tv_nsec;
+#else
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+#endif
+
+    return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }

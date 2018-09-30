@@ -1,5 +1,5 @@
 /* mz_os.h -- System functions
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -54,7 +54,7 @@ int32_t mz_path_compare_wc(const char *path, const char *wildcard, uint8_t ignor
 int32_t mz_path_resolve(const char *path, char *target, int32_t max_target);
 // Resolves path
 
-int32_t mz_path_remove_filename(const char *path);
+int32_t mz_path_remove_filename(char *path);
 // Remove the filename from a path
 
 int32_t mz_path_get_filename(const char *path, const char **filename);

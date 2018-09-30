@@ -1,5 +1,5 @@
 /* mz_zip_rw.c -- Zip reader/writer
-   Version 2.5.2, August 27, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -27,6 +27,10 @@
 
 /***************************************************************************/
 
+#define MZ_DEFAULT_PROGRESS_INTERVAL (1000u)
+
+/***************************************************************************/
+
 typedef struct mz_zip_reader_s {
     void        *zip_handle;
     void        *file_stream;
@@ -46,6 +50,7 @@ typedef struct mz_zip_reader_s {
     void        *progress_userdata;
     mz_zip_reader_progress_cb
                 progress_cb;
+    uint32_t    progress_cb_interval_ms;
     void        *entry_userdata;
     mz_zip_reader_entry_cb
                 entry_cb;
@@ -223,6 +228,7 @@ static int32_t mz_zip_reader_locate_entry_cb(void *handle, void *userdata, mz_zi
 {
     mz_zip_reader *reader = (mz_zip_reader *)userdata;
     int32_t result = 0;
+    MZ_UNUSED(handle);
     result = mz_path_compare_wc(file_info->filename, reader->pattern, reader->pattern_ignore_case);
     return result;
 }
@@ -332,11 +338,11 @@ int32_t mz_zip_reader_entry_close(void *handle)
     return err;
 }
 
-int32_t mz_zip_reader_entry_read(void *handle, const void *buf, int32_t len)
+int32_t mz_zip_reader_entry_read(void *handle, void *buf, int32_t len)
 {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
     int32_t read = 0;
-    read = mz_zip_entry_read(reader->zip_handle, (void *)buf, len);
+    read = mz_zip_entry_read(reader->zip_handle, buf, len);
     return read;
 }
 
@@ -409,12 +415,12 @@ int32_t mz_zip_reader_entry_save_process(void *handle, void *stream, mz_stream_w
 int32_t mz_zip_reader_entry_save(void *handle, void *stream, mz_stream_write_cb write_cb)
 {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
+    uint64_t current_time = 0;
+    uint64_t update_time = 0;
     int64_t current_pos = 0;
     int64_t update_pos = 0;
     int32_t err = MZ_OK;
     int32_t written = 0;
-    time_t current_time = time(NULL);
-    time_t update_time = 0;
 
     if (mz_zip_reader_is_open(reader) != MZ_OK)
         return MZ_PARAM_ERROR;
@@ -436,9 +442,9 @@ int32_t mz_zip_reader_entry_save(void *handle, void *stream, mz_stream_write_cb 
         if (written < 0)
             err = written;
 
-        // Every 1 second lets update the progress 
-        current_time = time(NULL);
-        if ((current_time - update_time) > 1)
+        // Update progress if enough time have passed
+        current_time = mz_os_ms_time();
+        if ((current_time - update_time) > reader->progress_cb_interval_ms)
         {
             if (reader->progress_cb != NULL)
                 reader->progress_cb(handle, reader->progress_userdata, reader->file_info, current_pos);
@@ -473,7 +479,8 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
     if (reader->entry_cb != NULL)
         reader->entry_cb(handle, reader->entry_userdata, reader->file_info, path);
 
-    strncpy(directory, path, sizeof(directory));
+    strncpy(directory, path, sizeof(directory) - 1);
+    directory[sizeof(directory) - 1] = 0;
     mz_path_remove_filename(directory);
 
     // If it is a directory entry then create a directory instead of writing file
@@ -513,7 +520,7 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
     if (err == MZ_OK)
     {
         // Set the time of the file that has been created
-        mz_os_set_file_date(path, reader->file_info->modified_date, 
+        mz_os_set_file_date(path, reader->file_info->modified_date,
             reader->file_info->accessed_date, reader->file_info->creation_date);
     }
 
@@ -544,7 +551,7 @@ int32_t mz_zip_reader_entry_save_buffer(void *handle, void *buf, int32_t len)
     if (len != (int32_t)reader->file_info->uncompressed_size)
         return MZ_PARAM_ERROR;
 
-    // Create a memory stream backed by our buffer and save to it 
+    // Create a memory stream backed by our buffer and save to it
     mz_stream_mem_create(&mem_stream);
     mz_stream_mem_set_buffer(mem_stream, buf, len);
 
@@ -589,9 +596,14 @@ int32_t mz_zip_reader_save_all(void *handle, const char *destination_dir)
         path[0] = 0;
 
         if ((reader->legacy_encoding) && (reader->file_info->flag & MZ_ZIP_FLAG_UTF8) == 0)
+        {
             mz_encoding_cp437_to_utf8(reader->file_info->filename, utf8_name, sizeof(utf8_name));
+        }
         else
-            strncpy(utf8_name, reader->file_info->filename, sizeof(utf8_name));
+        {
+            strncpy(utf8_name, reader->file_info->filename, sizeof(utf8_name) - 1);
+            utf8_name[sizeof(utf8_name) - 1] = 0;
+        }
 
         err = mz_path_resolve(utf8_name, resolved_name, sizeof(resolved_name));
         if (err != MZ_OK)
@@ -672,6 +684,12 @@ void mz_zip_reader_set_progress_cb(void *handle, void *userdata, mz_zip_reader_p
     reader->progress_userdata = userdata;
 }
 
+void mz_zip_reader_set_progress_interval(void *handle, uint32_t milliseconds)
+{
+    mz_zip_reader *reader = (mz_zip_reader *)handle;
+    reader->progress_cb_interval_ms = milliseconds;
+}
+
 void mz_zip_reader_set_entry_cb(void *handle, void *userdata, mz_zip_reader_entry_cb cb)
 {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
@@ -700,9 +718,9 @@ void *mz_zip_reader_create(void **handle)
     if (reader != NULL)
     {
         memset(reader, 0, sizeof(mz_zip_reader));
-    }
-    if (reader != NULL)
+        reader->progress_cb_interval_ms = MZ_DEFAULT_PROGRESS_INTERVAL;
         *handle = reader;
+    }
 
     return reader;
 }
@@ -739,6 +757,7 @@ typedef struct mz_zip_writer_s {
     void        *progress_userdata;
     mz_zip_writer_progress_cb
                 progress_cb;
+    uint32_t    progress_cb_interval_ms;
     void        *entry_userdata;
     mz_zip_writer_entry_cb
                 entry_cb;
@@ -806,7 +825,7 @@ int32_t mz_zip_writer_open_file(void *handle, const char *path, int64_t disk_siz
     else
     {
         if (writer->overwrite_cb != NULL)
-            err_cb = writer->overwrite_cb(handle, writer->overwrite_cb, path);
+            err_cb = writer->overwrite_cb(handle, writer->overwrite_userdata, path);
 
         if (err_cb == MZ_INTERNAL_ERROR)
             return err;
@@ -1003,13 +1022,12 @@ int32_t mz_zip_writer_add_process(void *handle, void *stream, mz_stream_read_cb 
 int32_t mz_zip_writer_add(void *handle, void *stream, mz_stream_read_cb read_cb)
 {
     mz_zip_writer *writer = (mz_zip_writer *)handle;
+    uint64_t current_time = 0;
+    uint64_t update_time = 0;
     int64_t current_pos = 0;
     int64_t update_pos = 0;
     int32_t err = MZ_OK;
     int32_t written = 0;
-    time_t current_time = time(NULL);
-    time_t update_time = 0;
-
 
     // Update the progress at the beginning
     if (writer->progress_cb != NULL)
@@ -1026,9 +1044,9 @@ int32_t mz_zip_writer_add(void *handle, void *stream, mz_stream_read_cb read_cb)
         if (written < 0)
             err = written;
 
-        // Every 1 second lets update the progress 
-        current_time = time(NULL);
-        if ((current_time - update_time) > 1)
+        // Update progress if enough time have passed
+        current_time = mz_os_ms_time();
+        if ((current_time - update_time) > writer->progress_cb_interval_ms)
         {
             if (writer->progress_cb != NULL)
                 writer->progress_cb(handle, writer->progress_userdata, &writer->file_info, current_pos);
@@ -1124,7 +1142,7 @@ int32_t mz_zip_writer_add_file(void *handle, const char *path, const char *filen
         filename += 1;
 
     // Get information about the file on disk so we can store it in zip
-    
+
     file_info.version_madeby = MZ_VERSION_MADEBY;
     file_info.compression_method = writer->compress_method;
     file_info.filename = filename;
@@ -1176,7 +1194,8 @@ int32_t mz_zip_writer_add_path(void *handle, const char *path, const char *root_
 
     if (strrchr(path, '*') != NULL)
     {
-        strncpy(path_dir, path, sizeof(path_dir));
+        strncpy(path_dir, path, sizeof(path_dir) - 1);
+        path_dir[sizeof(path_dir) - 1] = 0;
         mz_path_remove_filename(path_dir);
         wildcard_ptr = path_dir + strlen(path_dir) + 1;
         root_path = path = path_dir;
@@ -1336,6 +1355,12 @@ void mz_zip_writer_set_progress_cb(void *handle, void *userdata, mz_zip_writer_p
     writer->progress_userdata = userdata;
 }
 
+void mz_zip_writer_set_progress_interval(void *handle, uint32_t milliseconds)
+{
+    mz_zip_writer *writer = (mz_zip_writer *)handle;
+    writer->progress_cb_interval_ms = milliseconds;
+}
+
 void mz_zip_writer_set_entry_cb(void *handle, void *userdata, mz_zip_writer_entry_cb cb)
 {
     mz_zip_writer *writer = (mz_zip_writer *)handle;
@@ -1367,9 +1392,10 @@ void *mz_zip_writer_create(void **handle)
 
         writer->compress_method = MZ_COMPRESS_METHOD_DEFLATE;
         writer->compress_level = MZ_COMPRESS_LEVEL_BEST;
-    }
-    if (writer != NULL)
+        writer->progress_cb_interval_ms = MZ_DEFAULT_PROGRESS_INTERVAL;
+
         *handle = writer;
+    }
 
     return writer;
 }
