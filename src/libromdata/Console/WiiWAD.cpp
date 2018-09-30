@@ -125,6 +125,7 @@ class WiiWADPrivate : public RomDataPrivate
 		Wii_Content_Bin_Header contentHeader;
 		Wii_IMET_t imet;	// NOTE: May be WIBN.
 #endif /* ENABLE_DECRYPTION */
+
 		// Key index.
 		WiiPartition::EncryptionKeys key_idx;
 		// Key status.
@@ -959,7 +960,9 @@ int WiiWAD::loadFieldData(void)
 		// Non-standard IOS slot.
 		// Print the full title ID.
 		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
-			rp_sprintf("%08X-%08X", be32_to_cpu(tmdHeader->sys_version.hi), be32_to_cpu(tmdHeader->sys_version.lo)));
+			rp_sprintf("%08X-%08X",
+				be32_to_cpu(tmdHeader->sys_version.hi),
+				be32_to_cpu(tmdHeader->sys_version.lo)));
 	}
 
 	// Access rights.
