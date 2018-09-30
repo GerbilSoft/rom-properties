@@ -280,10 +280,8 @@ int TImageTypesConfig<ComboBox>::save(void)
 	// Image types are stored in the imageTypes[] array.
 	const uint8_t *pImageTypes = imageTypes[0];
 
-	// TODO: Switch back to std::ostringstream since everything's
-	// using UTF-8 now? (u16string ostringstream didn't work.)
 	std::string imageTypeList;
-	imageTypeList.reserve(128);
+	imageTypeList.reserve(128);	// TODO: Optimal reservation?
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// Is this system using the default configuration?
 		if (sysIsDefault[sys]) {
