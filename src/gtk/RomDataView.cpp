@@ -43,10 +43,8 @@ using LibRomData::RomDataFactory;
 #include <cassert>
 
 // C++ includes.
-#include <sstream>
 #include <string>
 #include <vector>
-using std::ostringstream;
 using std::string;
 using std::vector;
 
@@ -1148,16 +1146,20 @@ rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::
 
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field->data.dimensions;
-	ostringstream oss;
-	oss << dimensions[0];
+	char buf[64];
 	if (dimensions[1] > 0) {
-		oss << 'x' << dimensions[1];
 		if (dimensions[2] > 0) {
-			oss << 'x' << dimensions[2];
+			snprintf(buf, sizeof(buf), "%dx%dx%d",
+				dimensions[0], dimensions[1], dimensions[2]);
+		} else {
+			snprintf(buf, sizeof(buf), "%dx%d",
+				dimensions[0], dimensions[1]);
 		}
+	} else {
+		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
 	}
 
-	gtk_label_set_text(GTK_LABEL(widget), oss.str().c_str());
+	gtk_label_set_text(GTK_LABEL(widget), buf);
 	return widget;
 }
 
