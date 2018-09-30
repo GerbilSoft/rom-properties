@@ -202,8 +202,17 @@ IF(BUILD_TESTING)
 	SET(gtest_force_shared_crt ON CACHE BOOL "Always use msvcrt.dll")
 	SET(SKIP_INSTALL_LIBRARIES ON)
 	SET(SKIP_INSTALL_ALL ON)
-	ADD_SUBDIRECTORY(googletest)
 
+	# Use shared libraries on Windows.
+	IF(WIN32)
+		SET(BUILD_STATIC_LIBS OFF)
+		SET(BUILD_SHARED_LIBS ON)
+	ELSE(WIN32)
+		SET(BUILD_STATIC_LIBS ON)
+		SET(BUILD_SHARED_LIBS OFF)
+	ENDIF(WIN32)
+
+	ADD_SUBDIRECTORY(googletest)
 	INCLUDE(SetMSVCDebugPath)
 	SET_EXTLIB_PROPERTIES(
 		gtest gtest_main gtest_no_exception gtest_main_no_exception
@@ -211,4 +220,9 @@ IF(BUILD_TESTING)
 		gmock gmock_main gmock_main_no_exception
 		gmock_main_no_rtti gmock_main_use_own_tuple
 		)
+	IF(WIN32)
+		# GTest is a DLL, so we need to set this.
+		TARGET_COMPILE_DEFINITIONS(gtest INTERFACE GTEST_LINKED_AS_SHARED_LIBRARY=1)
+		TARGET_COMPILE_DEFINITIONS(gtest_main INTERFACE GTEST_LINKED_AS_SHARED_LIBRARY=1)
+	ENDIF(WIN32)
 ENDIF(BUILD_TESTING)
