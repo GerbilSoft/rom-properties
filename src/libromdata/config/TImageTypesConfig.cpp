@@ -48,6 +48,9 @@ using namespace LibRpBase;
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
 
+// C++ includes.
+#include <string>
+
 namespace LibRomData {
 
 // System data.
