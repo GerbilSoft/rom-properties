@@ -154,7 +154,7 @@ Files:
  extlib/inih/*.h
  extlib/inih/LICENSE.txt
  extlib/inih/README.md
-Copyright: (c) 2009, Ben Hoyt
+Copyright: (c) 2009-2018, Ben Hoyt
 License: BSD-3-clause
 
 Files:
@@ -168,8 +168,13 @@ Files:
  extlib/tinyxml2/CMakeLists.txt
  extlib/tinyxml2/Makefile
  extlib/tinyxml2/dox
-Copyright: 2011-2016 Lee Thomason (www.grinninglizard.com)
+Copyright: 2011-2018 Lee Thomason (www.grinninglizard.com)
 License: Zlib
+
+Files:
+ extlib/unice68/*
+Copyright: (c) 1998-2016 Benjamin Gerard
+License: GPL-3+
 
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
