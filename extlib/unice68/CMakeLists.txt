@@ -85,16 +85,6 @@ set(datadir "\${datarootdir}")
 set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
 set(libdir "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
 
-configure_file (
-  "${PROJECT_SOURCE_DIR}/cm_config.h.in"
-  "${PROJECT_BINARY_DIR}/config.unice68.h"
-  @ONLY)
-
-configure_file (
-  "${PROJECT_SOURCE_DIR}/unice68.pc.in"
-  "${PROJECT_BINARY_DIR}/unice68.pc"
-  @ONLY)
-
 add_definitions(-DHAVE_CONFIG_H)
 
 # Disable certain warning flags.
@@ -178,3 +168,16 @@ if (BUILD_UNICE68_CLI)
   ENDIF(0) # rom-properties
   
 endif (BUILD_UNICE68_CLI)
+
+# ======================================================================
+# rom-properties: Write config files *after* checking includes and functions.
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/cm_config.h.in"
+  "${PROJECT_BINARY_DIR}/config.unice68.h"
+  @ONLY)
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/unice68.pc.in"
+  "${PROJECT_BINARY_DIR}/unice68.pc"
+  @ONLY)
