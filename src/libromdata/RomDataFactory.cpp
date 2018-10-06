@@ -233,7 +233,6 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	// Audio
 	GetRomDataFns_addr(GBS, false, 0, 'GBS\x01'),
 	GetRomDataFns_addr(NSF, false, 0, 'NESM'),
-	GetRomDataFns_addr(SNDH, false, 12, 'SNDH'),
 	GetRomDataFns_addr(SPC, false, 0, 'SNES'),
 	GetRomDataFns_addr(VGM, false, 0, 'Vgm '),
 
@@ -270,6 +269,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(ADX, false),
 	GetRomDataFns(PSF, false),
 	GetRomDataFns(SAP, false),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
+	GetRomDataFns(SNDH, false),	// "SNDH", or "ICE!" or "Ice!" if packed.
 	GetRomDataFns(SID, false),	// PSID/RSID; maybe move to _magic[]?
 
 	// Other

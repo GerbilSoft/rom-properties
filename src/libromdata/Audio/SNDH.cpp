@@ -21,6 +21,7 @@
 // Reference: http://sndh.atari.org/fileformat.php
 // NOTE: The header format consists of tags that may be in any order,
 // so we don't have a structs file.
+#include "libromdata/config.libromdata.h"
 
 #include "SNDH.hpp"
 #include "librpbase/RomData_p.hpp"
@@ -29,9 +30,15 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_libc.h"
 #include "librpbase/file/IRpFile.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// unice68
+#ifdef ENABLE_UNICE68
+# include "unice68.h"
+#endif
 
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
@@ -207,20 +214,57 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 	// Read up to 4 KB from the beginning of the file.
 	// TODO: Support larger headers?
-	static const size_t HEADER_SIZE = 4096;
-	unique_ptr<uint8_t[]> header(new uint8_t[HEADER_SIZE+1]);
-	size_t sz = file->seekAndRead(0, header.get(), HEADER_SIZE);
+	size_t headerSize = 4096;
+	unique_ptr<uint8_t[]> header(new uint8_t[headerSize+1]);
+	size_t sz = file->seekAndRead(0, header.get(), headerSize);
 	if (sz < 16) {
 		// Not enough data for "SNDH" and "HDNS".
 		return tags;
+	} else if (sz < headerSize) {
+		headerSize = sz;
 	}
-	header[HEADER_SIZE] = 0;	// ensure NULL-termination
+	header[headerSize] = 0;	// ensure NULL-termination
+
+	// Check if this is packed with ICE.
+	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(header.get());
+	if (pData32[0] == cpu_to_be32('ICE!') || pData32[0] == cpu_to_be32('Ice!')) {
+		// Packed with ICE.
+#ifdef ENABLE_UNICE68
+		printf("is ice\n");
+		// Decompress the data.
+		// FIXME: unice68_depacker() only supports decompressing the entire file.
+		// Add a variant that supports buffer sizes.
+		const int64_t fileSize = file->size();
+		if (fileSize <= 0) {
+			return tags;
+		}
+		unique_ptr<uint8_t[]> inbuf(new uint8_t[fileSize]);
+		sz = file->seekAndRead(0, inbuf.get(), fileSize);
+		if (sz != (size_t)fileSize) {
+			return tags;
+		}
+		int reqSize = unice68_depacked_size(inbuf.get(), nullptr);
+		if (reqSize <= 0) {
+			return tags;
+		}
+		header.reset(new uint8_t[reqSize+1]);
+		int ret = unice68_depacker(header.get(), inbuf.get());
+		if (ret != 0) {
+			return tags;
+		}
+		headerSize = std::min(4096, reqSize);
+		header[headerSize] = 0;	// ensure NULL-termination
+#else /* !ENABLE_UNICE68 */
+		// unice68 is disabled.
+		return tags;
+#endif /* ENABLE_UNICE68 */
+	}
 
 	// Verify the header.
 	// NOTE: SNDH is defined as using CRLF line endings,
 	// but we'll allow LF line endings too.
 	const uint8_t *p = header.get();
-	const uint8_t *const p_end = header.get() + HEADER_SIZE;
+	const uint8_t *const p_end = header.get() + headerSize;
 	if (memcmp(&header[12], "SNDH", 4) != 0) {
 		// Not SNDH.
 		return tags;
@@ -603,10 +647,16 @@ SNDH::SNDH(IRpFile *file)
 	}
 
 	// Read the SNDH header.
-	uint8_t buf[16];
+	// NOTE: Reading up to 512 bytes to detect certain
+	// ICE-packed files:
+	// - Connolly_Sean/Viking_Child.sndh: Has 'HDNS' at 0x1F4.
+	uint8_t buf[512];
 	d->file->rewind();
 	size_t size = d->file->read(buf, sizeof(buf));
-	if (size != sizeof(buf)) {
+	// NOTE: Allowing less than 512 bytes, since some
+	// ICE-compressed SNDH files are really small.
+	// - Lowe_Al/Kings_Quest_II.sndh: 453 bytes.
+	if (size < 12) {
 		delete d->file;
 		d->file = nullptr;
 		return;
@@ -615,7 +665,7 @@ SNDH::SNDH(IRpFile *file)
 	// Check if this file is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(buf);
+	info.header.size = size;
 	info.header.pData = buf;
 	info.ext = nullptr;	// Not needed for SNDH.
 	info.szFile = 0;	// Not needed for SNDH.
@@ -653,6 +703,44 @@ int SNDH::isRomSupported_static(const DetectInfo *info)
 		// Found the SNDH magic number.
 		return 0;
 	}
+
+#ifdef ENABLE_UNICE68
+	// Is it packed with ICE?
+	if (pData32[0] == cpu_to_be32('ICE!') || pData32[0] == cpu_to_be32('Ice!')) {
+		// Packed. Check for other SNDH data.
+		// TODO: Test on test suite.
+		// Reference: https://bugs.launchpad.net/ubuntu/+source/file/+bug/946696
+		size_t sz = std::min<size_t>(512, info->header.size);
+		if (sz > 12) {
+			sz -= 12;
+			// Check for fragments of known SNDH tags.
+			// FIXME: The following ICE-compressed files are not being detected:
+			// - Kauling_Andy/Infinity_One.sndh
+			static const struct _sndh_fragment_t {
+				uint8_t len;
+				uint8_t data[4];
+			} fragments[] = {
+				{3, {'N','D','H',0}},
+				{4, {'T','I','T','L'}},
+				{4, {'C','O','N','V'}},
+				{4, {'R','I','P','P'}},
+				{4, {'H','D','N','S'}},
+				{0, {0,0,0,0}}
+			};
+
+			for (const struct _sndh_fragment_t *fragment = fragments;
+			     fragment->len != 0; fragment++)
+			{
+				void *p = memmem(&info->header.pData[12], sz, fragment->data, fragment->len);
+				if (p) {
+					// Found a matching fragment.
+					// TODO: Use a constant to indicate ICE-compressed?
+					return 1;
+				}
+			}
+		}
+	}
+#endif /* ENABLE_UNICE68 */
 
 	// Not supported.
 	return -1;
