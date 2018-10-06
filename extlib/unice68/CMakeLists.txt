@@ -156,6 +156,8 @@ if (BUILD_UNICE68_CLI)
   check_function_exists (basename HAVE_BASENAME)
   check_function_exists (setmode HAVE_SETMODE)
   check_function_exists (_setmode HAVE__SETMODE)
+  check_function_exists (fileno HAVE_FILENO)
+  check_function_exists (_fileno HAVE__FILENO)
 
   add_executable(unice68_exe unice68.c)
   target_link_libraries(unice68_exe unice68_lib)

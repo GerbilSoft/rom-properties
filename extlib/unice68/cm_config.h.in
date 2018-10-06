@@ -52,3 +52,5 @@
 #cmakedefine HAVE_BASENAME
 #cmakedefine HAVE_SETMODE
 #cmakedefine HAVE__SETMODE
+#cmakedefine HAVE_FILENO
+#cmakedefine HAVE__FILENO
