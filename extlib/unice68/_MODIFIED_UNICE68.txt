@@ -1,0 +1,11 @@
+This copy of unice68-2.0.0.690 is a modified version of the original.
+
+The following changes have been made to the original:
+
+- autoconf build system has been removed.
+
+- CMakeLists.txt has been modified to disable installation.
+
+To obtain the original unice68-2.0.0.690, visit:
+- https://sourceforge.net/projects/sc68/
+- https://sourceforge.net/projects/sc68/files/unice68/

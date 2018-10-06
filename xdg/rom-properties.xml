@@ -40,6 +40,19 @@
     </magic>
   </mime-type>
 
+  <!-- SAP -->
+  <mime-type type="audio/x-sndh">
+    <comment>Atari ST audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.sndh"/>
+    <magic priority="50">
+      <match value="SNDH" type="string" offset="12"/>
+      <!-- NOTE: This technically matches any Pack-ICE compressed file. -->
+      <match value="ICE!" type="string" offset="0"/>
+      <match value="Ice!" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- SPC -->
   <mime-type type="audio/x-spc">
     <comment>Super NES audio</comment>

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_win32.cpp: Text encoding functions. (Win32 version)           *
  *                                                                         *
- * Copyright (c) 2009-2016 by David Korth.                                 *
+ * Copyright (c) 2009-2018 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,13 +14,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "config.librpbase.h"
 #include "TextFuncs.hpp"
+#include "TextFuncs_NULL.hpp"
 
 #ifndef _WIN32
 #error TextFuncs_win32.cpp is for Windows only.
@@ -137,25 +137,6 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
 }
 
 /** Public text conversion functions. **/
-
-// Overloaded NULL terminator checks for ICONV_FUNCTION_*.
-static FORCEINLINE int check_NULL_terminator(const char *str, int len)
-{
-	if (len < 0) {
-		return static_cast<int>(strlen(str));
-	} else {
-		return static_cast<int>(strnlen(str, len));
-	}
-}
-
-static FORCEINLINE int check_NULL_terminator(const char16_t *wcs, int len)
-{
-	if (len < 0) {
-		return static_cast<int>(u16_strlen(wcs));
-	} else {
-		return static_cast<int>(u16_strnlen(wcs, len));
-	}
-}
 
 /**
  * Convert from an 8-bit encoding to another 8-bit encoding.

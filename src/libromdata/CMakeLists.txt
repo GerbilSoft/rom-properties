@@ -63,6 +63,7 @@ SET(libromdata_SRCS
 	Audio/NSF.cpp
 	Audio/PSF.cpp
 	Audio/SAP.cpp
+	Audio/SNDH.cpp
 	Audio/SID.cpp
 	Audio/SPC.cpp
 	Audio/VGM.cpp
@@ -184,6 +185,7 @@ SET(libromdata_H
 	Audio/NSF.hpp
 	Audio/PSF.hpp
 	Audio/SAP.hpp
+	Audio/SNDH.hpp
 	Audio/SID.hpp
 	Audio/SPC.hpp
 	Audio/VGM.hpp
@@ -316,6 +318,9 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF(SSE2_FLAG)
 ENDIF()
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
+
 ######################
 # Build the library. #
 ######################
@@ -360,6 +365,10 @@ IF(ENABLE_XML AND TinyXML2_FOUND)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE ${TinyXML2_LIBRARY})
 	TARGET_INCLUDE_DIRECTORIES(romdata PRIVATE ${TinyXML2_INCLUDE_DIR})
 ENDIF(ENABLE_XML AND TinyXML2_FOUND)
+
+IF(ENABLE_UNICE68)
+	TARGET_LINK_LIBRARIES(romdata PRIVATE unice68_lib)
+ENDIF(ENABLE_UNICE68)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

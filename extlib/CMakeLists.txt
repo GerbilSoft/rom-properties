@@ -196,6 +196,16 @@ IF(USE_INTERNAL_XML)
 	# TODO: Set TinyXML2::tinyxml2 and use it in libromdata?
 ENDIF(USE_INTERNAL_XML)
 
+# UnICE68 for Atari ST SNDH files.
+IF(ENABLE_UNICE68)
+	SET(BUILD_UNICE68_CLI ON) # only builds if unice68_exe is explicitly built
+	SET(BUILD_STATIC_LIBS ON)
+	SET(BUILD_SHARED_LIBS OFF)
+	ADD_SUBDIRECTORY(unice68)
+	SET_EXTLIB_PROPERTIES(unice68_lib)
+	SET_EXTLIB_PROPERTIES(unice68_exe)
+ENDIF(ENABLE_UNICE68)
+
 # Google Test
 IF(BUILD_TESTING)
 	# Reference: http://stackoverflow.com/questions/12540970/how-to-make-gtest-build-mdd-instead-of-mtd-by-default-using-cmake

@@ -36,8 +36,10 @@
   * PSF: Portable Sound Format. Used for PlayStation audio rips.
     Subformats are used for several other platforms.
   * SAP: Atari 8-bit audio format.
-  * SPC: Super NES SPC-700 audio format.
   * SID: Commodore 64 SID Music format.
+  * SNDH: Atari ST audio format. Supports uncompressed files and files
+    compressed using the ICE! algorithm.
+  * SPC: Super NES SPC-700 audio format.
   * VGM: Video Gmae Music format. Used for all sorts of video game
     audio rips, including Sega Mega Drive and Neo Geo Pocket
 
