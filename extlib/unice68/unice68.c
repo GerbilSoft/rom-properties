@@ -64,6 +64,15 @@
 # endif
 #endif
 
+#ifdef _MSC_VER
+# ifndef __cplusplus
+#  define inline __inline
+# endif
+# define UNICE68_CDECL __cdecl
+#else
+# define UNICE68_CDECL
+#endif
+
 static char     * prg;
 static int        verbose;
 static FILE     * msgout;
@@ -245,7 +254,7 @@ static int myfileno(FILE * file)
   return _fileno(file);
 #else
   if (file == stdin)
-    return STDIN_FILENO
+    return STDIN_FILENO;
   else if (file == stdout)
     return STDOUT_FILENO;
   else if (file == stderr)
@@ -341,7 +350,7 @@ enum {
   ERR_PACKER_STRESS,
 };
 
-int main(int argc, char *argv[])
+int UNICE68_CDECL main(int argc, char *argv[])
 {
   int err = ERR_UNDEFINED;
   int mode = 0, oneop = 0, sens = 0, oldid = 0;

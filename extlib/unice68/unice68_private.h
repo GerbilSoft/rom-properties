@@ -46,3 +46,9 @@
 #  define UNICE68_API __declspec(dllexport)
 # endif
 #endif
+
+#ifdef _MSC_VER
+# ifndef __cplusplus
+#  define inline __inline
+# endif
+#endif
