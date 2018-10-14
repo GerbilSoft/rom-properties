@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.5.4, September 30, 2018
+   Version 2.6.0, October 8, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -29,6 +29,7 @@ extern "C" {
 #define MZ_STREAM_PROP_DISK_SIZE            (7)
 #define MZ_STREAM_PROP_DISK_NUMBER          (8)
 #define MZ_STREAM_PROP_COMPRESS_LEVEL       (9)
+#define MZ_STREAM_PROP_COMPRESS_ALGORITHM   (10)
 
 /***************************************************************************/
 
@@ -78,11 +79,13 @@ int32_t mz_stream_read(void *stream, void *buf, int32_t size);
 int32_t mz_stream_read_uint8(void *stream, uint8_t *value);
 int32_t mz_stream_read_uint16(void *stream, uint16_t *value);
 int32_t mz_stream_read_uint32(void *stream, uint32_t *value);
+int32_t mz_stream_read_int64(void *stream, int64_t *value);
 int32_t mz_stream_read_uint64(void *stream, uint64_t *value);
 int32_t mz_stream_write(void *stream, const void *buf, int32_t size);
 int32_t mz_stream_write_uint8(void *stream, uint8_t value);
 int32_t mz_stream_write_uint16(void *stream, uint16_t value);
 int32_t mz_stream_write_uint32(void *stream, uint32_t value);
+int32_t mz_stream_write_int64(void *stream, int64_t value);
 int32_t mz_stream_write_uint64(void *stream, uint64_t value);
 int32_t mz_stream_write_chars(void *stream, const char *value, uint8_t null_terminate);
 int32_t mz_stream_copy(void *target, void *source, int32_t len);

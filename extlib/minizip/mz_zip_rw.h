@@ -1,5 +1,5 @@
 /* mz_zip_rw.h -- Zip reader/writer
-   Version 2.5.4, September 30, 2018
+   Version 2.6.0, October 8, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -24,7 +24,7 @@ extern "C" {
 
 typedef int32_t (*mz_zip_reader_overwrite_cb)(void *handle, void *userdata, mz_zip_file *file_info, const char *path);
 typedef int32_t (*mz_zip_reader_password_cb)(void *handle, void *userdata, mz_zip_file *file_info, char *password, int32_t max_password);
-typedef int32_t (*mz_zip_reader_progress_cb)(void *handle, void *userdata, mz_zip_file *file_info, uint64_t position);
+typedef int32_t (*mz_zip_reader_progress_cb)(void *handle, void *userdata, mz_zip_file *file_info, int64_t position);
 typedef int32_t (*mz_zip_reader_entry_cb)(void *handle, void *userdata, mz_zip_file *file_info, const char *path);
 
 /***************************************************************************/
@@ -138,7 +138,7 @@ void    mz_zip_reader_delete(void **handle);
 
 typedef int32_t (*mz_zip_writer_overwrite_cb)(void *handle, void *userdata, const char *path);
 typedef int32_t (*mz_zip_writer_password_cb)(void *handle, void *userdata, mz_zip_file *file_info, char *password, int32_t max_password);
-typedef int32_t (*mz_zip_writer_progress_cb)(void *handle, void *userdata, mz_zip_file *file_info, uint64_t position);
+typedef int32_t (*mz_zip_writer_progress_cb)(void *handle, void *userdata, mz_zip_file *file_info, int64_t position);
 typedef int32_t (*mz_zip_writer_entry_cb)(void *handle, void *userdata, mz_zip_file *file_info);
 
 /***************************************************************************/
@@ -206,7 +206,7 @@ int32_t mz_zip_writer_get_raw(void *handle, uint8_t *raw);
 void    mz_zip_writer_set_aes(void *handle, uint8_t aes);
 // Use aes encryption when adding files in zip
 
-void    mz_zip_writer_set_compress_method(void *handle, int16_t compress_method);
+void    mz_zip_writer_set_compress_method(void *handle, uint16_t compress_method);
 // Sets the compression method when adding files in zip
 
 void    mz_zip_writer_set_compress_level(void *handle, int16_t compress_level);

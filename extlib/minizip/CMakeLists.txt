@@ -13,6 +13,7 @@ option(USE_BZIP2 "Enables BZIP2 compression" ON)
 option(USE_LZMA "Enables LZMA compression" ON)
 option(USE_PKCRYPT "Enables PKWARE traditional encryption" ON)
 option(USE_AES "Enables AES encryption" ON)
+option(USE_LIBCOMP "Enables Apple compression" OFF)
 option(COMPRESS_ONLY "Only support compression" OFF)
 option(DECOMPRESS_ONLY "Only support decompression" OFF)
 option(BUILD_TEST "Builds minizip test executable" OFF)
@@ -40,7 +41,7 @@ set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installa
 ENDIF(0)
 
 # Minizip library version
-set(VERSION "2.5.4")
+set(VERSION "2.6.0")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -226,8 +227,13 @@ endif()
 if(USE_ZLIB)
     add_definitions(-DHAVE_ZLIB)
 
-    list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
+    if(USE_LIBCOMP)
+        list(APPEND MINIZIP_SRC "mz_strm_libcomp.c")
+        list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_libcomp.h")
+    else() 
+        list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
+        list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
+    endif()
 
     # rom-properties: Disabled for now.
     IF(0)
@@ -429,6 +435,9 @@ ENDIF(NOT ZLIB_LIBRARY)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
 if(USE_BZIP2 AND BZIP2_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${BZIP2_LIBRARIES})
+endif()
+if(USE_LIBCOMP)
+    target_link_libraries(${PROJECT_NAME} PRIVATE compression)
 endif()
 if(USE_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)

@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.5.4, September 30, 2018
+   Version 2.6.0, October 8, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -67,7 +67,7 @@ int32_t mz_path_combine(char *path, const char *join, int32_t max_path)
     if (path == NULL || join == NULL || max_path == 0)
         return MZ_PARAM_ERROR;
 
-    path_len = strlen(path);
+    path_len = (int32_t)strlen(path);
 
     if (path_len == 0)
     {
@@ -289,7 +289,7 @@ int32_t mz_dir_make(const char *path)
     if (len <= 0)
         return 0;
 
-    current_dir = (char *)MZ_ALLOC(len + 1);
+    current_dir = (char *)MZ_ALLOC((uint16_t)len + 1);
     if (current_dir == NULL)
         return MZ_MEM_ERROR;
 
@@ -378,7 +378,7 @@ int32_t mz_encoding_cp437_to_utf8(const char *source, char *target, int32_t max_
     // Convert ibm codepage 437 encoding to utf-8
     while (*source != 0)
     {
-        cp437_char = *source;
+        cp437_char = (uint8_t)*source;
         source += 1;
         utf8_char = mz_encoding_codepage437_to_utf8[cp437_char];
         for (x = 0; x < 32; x += 8)
@@ -388,7 +388,7 @@ int32_t mz_encoding_cp437_to_utf8(const char *source, char *target, int32_t max_
                 continue;
             if (max_target <= 1)
                 break;
-            target[written] = utf8_byte;
+            target[written] = (char)utf8_byte;
             written += 1;
             max_target -= 1;
         }

@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.5.4, September 30, 2018
+   Version 2.6.0, October 8, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -30,7 +30,7 @@
 typedef struct mz_compat_s {
     void     *stream;
     void     *handle;
-    int64_t  entry_index;
+    uint64_t entry_index;
     int64_t  entry_pos;
     int64_t  total_out;
 } mz_compat;
@@ -248,9 +248,9 @@ int ZEXPORT zipWriteInFileInZip(zipFile file, const void *buf, uint32_t len)
 {
     mz_compat *compat = (mz_compat *)file;
     int32_t written = 0;
-    if (compat == NULL)
+    if (compat == NULL || len >= INT32_MAX)
         return ZIP_PARAMERROR;
-    written = mz_zip_entry_write(compat->handle, buf, len);
+    written = mz_zip_entry_write(compat->handle, buf, (int32_t)len);
     if ((written < 0) || ((uint32_t)written != len))
         return ZIP_ERRNO;
     return ZIP_OK;
@@ -261,7 +261,7 @@ int ZEXPORT zipCloseFileInZipRaw(zipFile file, uint32_t uncompressed_size, uint3
     return zipCloseFileInZipRaw64(file, uncompressed_size, crc32);
 }
 
-int ZEXPORT zipCloseFileInZipRaw64(zipFile file, uint64_t uncompressed_size, uint32_t crc32)
+int ZEXPORT zipCloseFileInZipRaw64(zipFile file, int64_t uncompressed_size, uint32_t crc32)
 {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
@@ -496,7 +496,7 @@ int ZEXPORT unzGetGlobalInfo64(unzFile file, unz_global_info64 *pglobal_info)
     if (err == MZ_OK)
         pglobal_info->size_comment = (uint16_t)strlen(comment_ptr);
     if ((err == MZ_OK) || (err == MZ_EXIST_ERROR))
-        err = mz_zip_get_number_entry(compat->handle, (int64_t *)&pglobal_info->number_entry);
+        err = mz_zip_get_number_entry(compat->handle, &pglobal_info->number_entry);
     if (err == MZ_OK)
         err = mz_zip_get_disk_number_with_cd(compat->handle, &pglobal_info->number_disk_with_CD);
     return err;
@@ -587,11 +587,11 @@ int ZEXPORT unzReadCurrentFile(unzFile file, void *buf, uint32_t len)
 {
     mz_compat *compat = (mz_compat *)file;
     int32_t err = MZ_OK;
-    if (compat == NULL)
+    if (compat == NULL || len >= INT32_MAX)
         return UNZ_PARAMERROR;
-    err = mz_zip_entry_read(compat->handle, buf, len);
+    err = mz_zip_entry_read(compat->handle, buf, (int32_t)len);
     if (err > 0)
-        compat->total_out += err;
+        compat->total_out += (uint32_t)err;
     return err;
 }
 
@@ -610,7 +610,7 @@ int ZEXPORT unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char 
 {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
-    int16_t bytes_to_copy = 0;
+    uint16_t bytes_to_copy = 0;
     int32_t err = MZ_OK;
 
     if (compat == NULL)
@@ -674,7 +674,7 @@ int ZEXPORT unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile_info, 
 {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
-    int16_t bytes_to_copy = 0;
+    uint16_t bytes_to_copy = 0;
     int32_t err = MZ_OK;
 
     if (compat == NULL)
@@ -701,8 +701,8 @@ int ZEXPORT unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile_info, 
         pfile_info->internal_fa = file_info->internal_fa;
         pfile_info->external_fa = file_info->external_fa;
 
-        pfile_info->compressed_size = file_info->compressed_size;
-        pfile_info->uncompressed_size = file_info->uncompressed_size;
+        pfile_info->compressed_size = (uint64_t)file_info->compressed_size;
+        pfile_info->uncompressed_size = (uint64_t)file_info->uncompressed_size;
 
         if (filename_size > 0 && filename != NULL && file_info->filename != NULL)
         {
@@ -760,7 +760,7 @@ int ZEXPORT unzLocateFile(unzFile file, const char *filename, unzFileNameCompare
 {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
-    int64_t preserve_index = 0;
+    uint64_t preserve_index = 0;
     int32_t err = MZ_OK;
     int32_t result = 0;
 
@@ -796,12 +796,17 @@ int ZEXPORT unzLocateFile(unzFile file, const char *filename, unzFileNameCompare
 int ZEXPORT unzGetFilePos(unzFile file, unz_file_pos *file_pos)
 {
     mz_compat *compat = (mz_compat *)file;
-
+    int32_t offset = 0;
+    
     if (compat == NULL || file_pos == NULL)
         return UNZ_PARAMERROR;
-
-    file_pos->pos_in_zip_directory = unzGetOffset(file);
-    file_pos->num_of_file = (int32_t)compat->entry_index;
+    
+    offset = unzGetOffset(file);
+    if (offset < 0)
+        return offset;
+    
+    file_pos->pos_in_zip_directory = (uint32_t)offset;
+    file_pos->num_of_file = (uint32_t)compat->entry_index;
     return MZ_OK;
 }
 
@@ -822,11 +827,16 @@ int ZEXPORT unzGoToFilePos(unzFile file, unz_file_pos *file_pos)
 int ZEXPORT unzGetFilePos64(unzFile file, unz64_file_pos *file_pos)
 {
     mz_compat *compat = (mz_compat *)file;
-
+    int64_t offset = 0;
+    
     if (compat == NULL || file_pos == NULL)
         return UNZ_PARAMERROR;
-
-    file_pos->pos_in_zip_directory = unzGetOffset64(file);
+    
+    offset = unzGetOffset64(file);
+    if (offset < 0)
+        return (int)offset;
+    
+    file_pos->pos_in_zip_directory = offset;
     file_pos->num_of_file = compat->entry_index;
     return UNZ_OK;
 }
@@ -863,7 +873,7 @@ int ZEXPORT unzSetOffset(unzFile file, uint32_t pos)
     return unzSetOffset64(file, pos);
 }
 
-int ZEXPORT unzSetOffset64(unzFile file, uint64_t pos)
+int ZEXPORT unzSetOffset64(unzFile file, int64_t pos)
 {
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
@@ -871,18 +881,21 @@ int ZEXPORT unzSetOffset64(unzFile file, uint64_t pos)
     return (int)mz_zip_goto_entry(compat->handle, pos);
 }
 
-int ZEXPORT unzGetLocalExtrafield(unzFile file, void *buf, unsigned len)
+int ZEXPORT unzGetLocalExtrafield(unzFile file, void *buf, unsigned int len)
 {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
     int32_t err = MZ_OK;
-    int32_t bytes_to_copy = len;
+    int32_t bytes_to_copy = 0;
 
-    if (compat == NULL || buf == NULL)
+    if (compat == NULL || buf == NULL || len >= INT32_MAX)
         return UNZ_PARAMERROR;
-
+    
     err = mz_zip_entry_get_local_info(compat->handle, &file_info);
-
+    if (err != MZ_OK)
+        return err;
+    
+    bytes_to_copy = (int32_t)len;
     if (bytes_to_copy > file_info->extrafield_size)
         bytes_to_copy = file_info->extrafield_size;
 
@@ -903,21 +916,19 @@ int64_t ZEXPORT unzTell64(unzFile file)
     mz_compat *compat = (mz_compat *)file;
     if (compat == NULL)
         return UNZ_PARAMERROR;
-    return compat->total_out;
+    return (int64_t)compat->total_out;
 }
 
-int ZEXPORT unzSeek(unzFile file, uint32_t offset, int origin)
+int ZEXPORT unzSeek(unzFile file, int32_t offset, int origin)
 {
     return unzSeek64(file, offset, origin);
 }
 
-int ZEXPORT unzSeek64(unzFile file, uint64_t offset, int origin)
+int ZEXPORT unzSeek64(unzFile file, int64_t offset, int origin)
 {
     mz_compat *compat = (mz_compat *)file;
     mz_zip_file *file_info = NULL;
-    uint64_t stream_pos_begin = 0;
-    uint64_t stream_pos_end = 0;
-    uint64_t position = 0;
+    int64_t position = 0;
     int32_t err = MZ_OK;
     void *stream = NULL;
 
@@ -934,11 +945,11 @@ int ZEXPORT unzSeek64(unzFile file, uint64_t offset, int origin)
     else if (origin == SEEK_CUR)
         position = compat->total_out + offset;
     else if (origin == SEEK_END)
-        position = file_info->compressed_size + offset;
+        position = (int64_t)file_info->compressed_size + offset;
     else
         return UNZ_PARAMERROR;
 
-    if (position > file_info->compressed_size)
+    if (position > (int64_t)file_info->compressed_size)
         return UNZ_PARAMERROR;
 
     err = mz_zip_get_stream(compat->handle, &stream);
@@ -960,7 +971,7 @@ int ZEXPORT unzEndOfFile(unzFile file)
     err = mz_zip_entry_get_info(compat->handle, &file_info);
     if (err != MZ_OK)
         return err;
-    if (compat->total_out == file_info->uncompressed_size)
+    if (compat->total_out == (int64_t)file_info->uncompressed_size)
         return 1;
     return 0;
 }

@@ -1,4 +1,4 @@
-# minizip 2.5.4
+# minizip 2.6.0
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux. 
 
@@ -18,11 +18,10 @@ original [minizip](https://github.com/madler/zlib/tree/master/contrib/minizip) p
 
 In 2006, I began working with the minizip project and started submitting bugs I found in the library to 
 Gilles Vollant via e-mail. In 2010, I implemented some additional features like disk splitting, 
-I/O buffering, and AES encryption.
-My continued work on the project necessitated setting up a public repository so I could share these and other improvements
-with the rest of the world. I have been maintaining and actively developing this fork of the project ever since. In 2017, I began the 
-task of refactoring and rewriting most of library as it had become difficult to maintain and code readability 
-had suffered over the years.
+I/O buffering, and AES encryption. My continued work on the project necessitated setting up a public 
+repository so I could share these and other improvements with the rest of the world. I have been maintaining 
+and actively developing this fork of the project ever since. In 2017, I refactored and rewrote most of 
+library as it had become difficult to maintain and code readability had suffered over the years.
 
 Dev: [![Dev Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=dev)](https://travis-ci.org/nmoinvaz/minizip/branches)
 Master: [![Master Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=master)](https://travis-ci.org/nmoinvaz/minizip/branches)
@@ -44,6 +43,7 @@ Master: [![Master Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?
 + Turn off compilation of compression, decompression, or encryption.
 + Windows (Win32 & WinRT), macOS and Linux platform support.
 + Streaming interface for easy implementation of additional platforms.
++ Support for Apple's compression library ZLIB implementation.
 + Compatibility interface for older versions of minizip.
 + Example minizip command line tool.
 
@@ -69,6 +69,7 @@ cmake --build .
 | USE_LZMA | Enables LZMA compression | ON |
 | USE_PKCRYPT | Enables PKWARE traditional encryption | ON |
 | USE_AES | Enables WinZIP AES encryption | ON |
+| USE_LIBCOMP | Enables Apple compression | OFF |
 | COMPRESS_ONLY | Only support compression | OFF |
 | DECOMPRESS_ONLY | Only support decompression | OFF |
 | BUILD_TEST | Builds minizip test executable | OFF |
@@ -108,6 +109,7 @@ cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zl
 | mz_strm_buf.\* | Buffered stream | No |
 | mz_strm_bzip.\* | BZIP2 stream using libbzip2 | No |
 | mz_strm_crc32.\* | CRC32 stream | Yes |
+| mz_strm_libcomp.\* | Apple compression stream | No |
 | mz_strm_lzma.\* | LZMA stream using liblzma | zlib or liblzma |
 | mz_strm_mem.\* | Memory stream | Yes |
 | mz_strm_split.\* | Disk splitting stream | No |

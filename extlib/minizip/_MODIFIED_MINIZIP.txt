@@ -1,10 +1,10 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit fe7983319a031b9368663741c3fa1da37cf9a243
-Merge branch 'master' into dev
+commit ff6f2a1db68148978105ad23bfec53ccf7ed402e
+Version 2.6.0.
 
-Tag: 2.5.4
+Tag: 2.6.0
 
 The following changes have been made to the original:
 

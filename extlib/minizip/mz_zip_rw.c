@@ -1,5 +1,5 @@
 /* mz_zip_rw.c -- Zip reader/writer
-   Version 2.5.4, September 30, 2018
+   Version 2.6.0, October 8, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -465,10 +465,10 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
 {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
     void *file_stream = NULL;
+    uint32_t target_attrib = 0;
+    int32_t err_attrib = 0;
     int32_t err = MZ_OK;
     int32_t err_cb = MZ_OK;
-    int32_t err_attrib = 0;
-    int32_t target_attrib = 0;
     char directory[512];
 
     if (mz_zip_reader_is_open(reader) != MZ_OK)
@@ -530,7 +530,7 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
         err_attrib = mz_zip_attrib_convert(MZ_HOST_SYSTEM(reader->file_info->version_madeby), reader->file_info->external_fa,
             MZ_VERSION_MADEBY_HOST_SYSTEM, &target_attrib);
         if (err_attrib == MZ_OK)
-            err_attrib = mz_os_set_file_attribs(path, target_attrib);
+            mz_os_set_file_attribs(path, target_attrib);
     }
 
     return err;
@@ -762,7 +762,7 @@ typedef struct mz_zip_writer_s {
     mz_zip_writer_entry_cb
                 entry_cb;
     const char  *password;
-    int16_t     compress_method;
+    uint16_t    compress_method;
     int16_t     compress_level;
     uint8_t     aes;
     uint8_t     raw;
@@ -1082,7 +1082,11 @@ int32_t mz_zip_writer_add_info(void *handle, void *stream, mz_stream_read_cb rea
     if (stream != NULL)
     {
         if (mz_zip_attrib_is_dir(writer->file_info.external_fa, writer->file_info.version_madeby) != MZ_OK)
+        {
             err = mz_zip_writer_add(handle, stream, read_cb);
+            if (err != MZ_OK)
+                return err;
+        }
     }
 
     err = mz_zip_writer_entry_close(handle);
@@ -1116,7 +1120,10 @@ int32_t mz_zip_writer_add_file(void *handle, const char *path, const char *filen
 {
     mz_zip_writer *writer = (mz_zip_writer *)handle;
     mz_zip_file file_info;
+    uint32_t target_attrib = 0;
+    uint32_t src_attrib = 0;
     int32_t err = MZ_OK;
+    uint8_t src_sys = 0;
     void *stream = NULL;
     const char *filename = filename_in_zip;
 
@@ -1156,8 +1163,22 @@ int32_t mz_zip_writer_add_file(void *handle, const char *path, const char *filen
 
     mz_os_get_file_date(path, &file_info.modified_date, &file_info.accessed_date,
         &file_info.creation_date);
-    mz_os_get_file_attribs(path, &file_info.external_fa);
-
+    mz_os_get_file_attribs(path, &src_attrib);
+    
+    src_sys = MZ_HOST_SYSTEM(file_info.version_madeby);
+    
+    if ((src_sys != MZ_HOST_SYSTEM_MSDOS) && (src_sys != MZ_HOST_SYSTEM_WINDOWS_NTFS))
+    {
+        // High bytes are OS specific attributes, low byte is always DOS attributes
+        if (mz_zip_attrib_convert(src_sys, src_attrib, MZ_HOST_SYSTEM_MSDOS, &target_attrib) == MZ_OK)
+            file_info.external_fa = target_attrib;
+        file_info.external_fa |= (src_attrib << 16);
+    }
+    else
+    {
+        file_info.external_fa = src_attrib;
+    }
+   
     if (mz_os_is_dir(path) != MZ_OK)
     {
         mz_stream_os_create(&stream);
@@ -1322,7 +1343,7 @@ void mz_zip_writer_set_aes(void *handle, uint8_t aes)
     writer->aes = aes;
 }
 
-void mz_zip_writer_set_compress_method(void *handle, int16_t compress_method)
+void mz_zip_writer_set_compress_method(void *handle, uint16_t compress_method)
 {
     mz_zip_writer *writer = (mz_zip_writer *)handle;
     writer->compress_method = compress_method;
