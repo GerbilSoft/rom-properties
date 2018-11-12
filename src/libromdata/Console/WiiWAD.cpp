@@ -978,27 +978,6 @@ int WiiWAD::loadFieldData(void)
 	d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
 		v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
-	// TODO: Age ratings?
-
-	// Encryption key.
-	// TODO: WiiPartition function to get a key's "display name"?
-	static const char *const encKeyNames[] = {
-		NOP_C_("WiiWAD|EncKey", "Retail"),
-		NOP_C_("WiiWAD|EncKey", "Korean"),
-		NOP_C_("WiiWAD|EncKey", "vWii"),
-		NOP_C_("WiiWAD|EncKey", "SD AES"),
-		NOP_C_("WiiWAD|EncKey", "SD IV"),
-		NOP_C_("WiiWAD|EncKey", "SD MD5"),
-		NOP_C_("WiiWAD|EncKey", "Debug"),
-	};
-	const char *keyName;
-	if (d->key_idx >= 0 && d->key_idx < WiiPartition::Key_Max) {
-		keyName = dpgettext_expr(RP_I18N_DOMAIN, "WiiWAD|EncKey", encKeyNames[d->key_idx]);
-	} else {
-		keyName = C_("WiiWAD", "Unknown");
-	}
-	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
-
 	// Get age rating(s).
 	// TODO: Combine with GameCube::addFieldData()'s code.
 	// Note that not all 16 fields are present on GCN,
@@ -1034,6 +1013,25 @@ int WiiWAD::loadFieldData(void)
 		}
 	}
 	d->fields->addField_ageRatings("Age Rating", age_ratings);
+
+	// Encryption key.
+	// TODO: WiiPartition function to get a key's "display name"?
+	static const char *const encKeyNames[] = {
+		NOP_C_("WiiWAD|EncKey", "Retail"),
+		NOP_C_("WiiWAD|EncKey", "Korean"),
+		NOP_C_("WiiWAD|EncKey", "vWii"),
+		NOP_C_("WiiWAD|EncKey", "SD AES"),
+		NOP_C_("WiiWAD|EncKey", "SD IV"),
+		NOP_C_("WiiWAD|EncKey", "SD MD5"),
+		NOP_C_("WiiWAD|EncKey", "Debug"),
+	};
+	const char *keyName;
+	if (d->key_idx >= 0 && d->key_idx < WiiPartition::Key_Max) {
+		keyName = dpgettext_expr(RP_I18N_DOMAIN, "WiiWAD|EncKey", encKeyNames[d->key_idx]);
+	} else {
+		keyName = C_("WiiWAD", "Unknown");
+	}
+	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
 #ifdef ENABLE_DECRYPTION
 	// Do we have a WIBN header?
