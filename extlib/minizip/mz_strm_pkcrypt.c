@@ -1,12 +1,12 @@
 /* mz_strm_pkcrypt.c -- Code for traditional PKWARE encryption
-   Version 2.6.0, October 8, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
       https://github.com/nmoinvaz/minizip
    Copyright (C) 1998-2005 Gilles Vollant
       Modifications for Info-ZIP crypting
-      http://www.winimage.com/zLibDll/minizip.html
+      https://www.winimage.com/zLibDll/minizip.html
    Copyright (C) 2003 Terry Thorsen
 
    This code is a modified version of crypting code in Info-ZIP distribution
@@ -27,9 +27,8 @@
 #include <string.h>
 
 #include "mz.h"
-#include "mz_os.h"
+#include "mz_crypt.h"
 #include "mz_strm.h"
-#include "mz_strm_crc32.h"
 #include "mz_strm_pkcrypt.h"
 
 /***************************************************************************/
@@ -66,8 +65,6 @@ typedef struct mz_stream_pkcrypt_s {
     uint8_t         verify1;
     uint8_t         verify2;
     const char      *password;
-    mz_stream_crc32_update
-                    crc32_update;
 } mz_stream_pkcrypt;
 
 /***************************************************************************/
@@ -99,14 +96,14 @@ static uint8_t mz_stream_pkcrypt_update_keys(void *stream, uint8_t c)
     mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
     uint8_t buf = c;
 
-    pkcrypt->keys[0] = (uint32_t)~pkcrypt->crc32_update(~pkcrypt->keys[0], &buf, 1);
+    pkcrypt->keys[0] = (uint32_t)~mz_crypt_crc32_update(~pkcrypt->keys[0], &buf, 1);
 
     pkcrypt->keys[1] += pkcrypt->keys[0] & 0xff;
     pkcrypt->keys[1] *= 134775813L;
     pkcrypt->keys[1] += 1;
 
     buf = (uint8_t)(pkcrypt->keys[1] >> 24);
-    pkcrypt->keys[2] = (uint32_t)~pkcrypt->crc32_update(~pkcrypt->keys[2], &buf, 1);
+    pkcrypt->keys[2] = (uint32_t)~mz_crypt_crc32_update(~pkcrypt->keys[2], &buf, 1);
 
     return (uint8_t)c;
 }
@@ -143,14 +140,11 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode)
     pkcrypt->initialized = 0;
 
     if (mz_stream_is_open(pkcrypt->stream.base) != MZ_OK)
-        return MZ_STREAM_ERROR;
+        return MZ_OPEN_ERROR;
 
     if (password == NULL)
         password = pkcrypt->password;
     if (password == NULL)
-        return MZ_STREAM_ERROR;
-
-    if (mz_stream_crc32_get_update_func(&pkcrypt->crc32_update) != MZ_OK)
         return MZ_PARAM_ERROR;
 
     mz_stream_pkcrypt_init_keys(stream, password);
@@ -164,7 +158,7 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode)
         return MZ_SUPPORT_ERROR;
 #else
         // First generate RAND_HEAD_LEN - 2 random bytes.
-        mz_os_rand(header, RAND_HEAD_LEN - 2);
+        mz_crypt_rand(header, RAND_HEAD_LEN - 2);
 
         // Encrypt random header (last two bytes is high word of crc)
         for (i = 0; i < RAND_HEAD_LEN - 2; i++)
@@ -174,7 +168,7 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode)
         header[i++] = mz_stream_pkcrypt_encode(stream, pkcrypt->verify2, t);
 
         if (mz_stream_write(pkcrypt->stream.base, header, RAND_HEAD_LEN) != RAND_HEAD_LEN)
-            return MZ_STREAM_ERROR;
+            return MZ_WRITE_ERROR;
 
         pkcrypt->total_out += RAND_HEAD_LEN;
 #endif
@@ -190,7 +184,7 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode)
         return MZ_SUPPORT_ERROR;
 #else
         if (mz_stream_read(pkcrypt->stream.base, header, RAND_HEAD_LEN) != RAND_HEAD_LEN)
-            return MZ_STREAM_ERROR;
+            return MZ_READ_ERROR;
 
         for (i = 0; i < RAND_HEAD_LEN - 2; i++)
             header[i] = mz_stream_pkcrypt_decode(stream, header[i]);
@@ -215,7 +209,7 @@ int32_t mz_stream_pkcrypt_is_open(void *stream)
 {
     mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
     if (pkcrypt->initialized == 0)
-        return MZ_STREAM_ERROR;
+        return MZ_OPEN_ERROR;
     return MZ_OK;
 }
 
@@ -244,7 +238,7 @@ int32_t mz_stream_pkcrypt_write(void *stream, const void *buf, int32_t size)
     uint16_t t = 0;
 
     if (size > (int32_t)sizeof(pkcrypt->buffer))
-        return MZ_STREAM_ERROR;
+        return MZ_BUF_ERROR;
 
     for (i = 0; i < size; i++)
         pkcrypt->buffer[i] = mz_stream_pkcrypt_encode(stream, buf_ptr[i], t);

@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.6.0, October 8, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -8,7 +8,7 @@
      Modifications for Zip64 support
      http://result42.com
    Copyright (C) 1998-2010 Gilles Vollant
-     http://www.winimage.com/zLibDll/minizip.html
+     https://www.winimage.com/zLibDll/minizip.html
 
    This program is distributed under the terms of the same license as zlib.
    See the accompanying LICENSE file for the full text of the license.
@@ -48,15 +48,15 @@ typedef struct mz_zip_file_s
     uint16_t internal_fa;               // internal file attributes
     uint32_t external_fa;               // external file attributes
     uint16_t zip64;                     // zip64 extension mode
+#ifdef HAVE_AES
+    uint16_t aes_version;               // winzip aes extension if not 0
+    uint8_t  aes_encryption_mode;       // winzip aes encryption mode
+#endif
 
     const char     *filename;           // filename utf8 null-terminated string
     const uint8_t  *extrafield;         // extrafield data
     const char     *comment;            // comment utf8 null-terminated string
 
-#ifdef HAVE_AES
-    uint16_t aes_version;               // winzip aes extension if not 0
-    uint8_t  aes_encryption_mode;       // winzip aes encryption mode
-#endif
 } mz_zip_file, mz_zip_entry;
 
 /***************************************************************************/
@@ -92,6 +92,12 @@ int32_t mz_zip_set_version_madeby(void *handle, uint16_t version_madeby);
 int32_t mz_zip_get_stream(void *handle, void **stream);
 // Get a pointer to the stream used to open
 
+int32_t mz_zip_set_cd_stream(void *handle, int64_t cd_start_pos, void *cd_stream);
+// Sets the stream to use for reading the central dir
+
+int32_t mz_zip_get_cd_mem_stream(void *handle, void **cd_mem_stream);
+// Get a pointer to the stream used to store the central dir in memory
+
 /***************************************************************************/
 
 int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info,
@@ -119,6 +125,9 @@ int32_t mz_zip_entry_get_info(void *handle, mz_zip_file **file_info);
 int32_t mz_zip_entry_get_local_info(void *handle, mz_zip_file **local_file_info);
 // Get local info about the current file, only valid while current entry is being read
 
+int32_t mz_zip_entry_set_extrafield(void *handle, const uint8_t *extrafield, uint16_t extrafield_size);
+// Sets or updates the extra field for the entry to be used before writing cd
+
 int32_t mz_zip_entry_close_raw(void *handle, int64_t uncompressed_size, uint32_t crc32);
 // Close the current file in the zip file where raw is compressed data
 
@@ -126,6 +135,9 @@ int32_t mz_zip_entry_close(void *handle);
 // Close the current file in the zip file
 
 /***************************************************************************/
+
+int32_t mz_zip_set_number_entry(void *handle, uint64_t number_entry);
+// Sets the total number of entries
 
 int32_t mz_zip_get_number_entry(void *handle, uint64_t *number_entry);
 // Get the total number of entries
@@ -167,6 +179,17 @@ int32_t mz_zip_attrib_posix_to_win32(uint32_t posix_attrib, uint32_t *win32_attr
 
 int32_t mz_zip_attrib_win32_to_posix(uint32_t win32_attrib, uint32_t *posix_attrib);
 // Converts win32 file attributes to posix file attributes
+
+/***************************************************************************/
+
+int32_t mz_zip_extrafield_find(void *stream, uint16_t type, uint16_t *length);
+// Seeks to extra field by its type and returns its length
+
+int32_t mz_zip_extrafield_read(void *stream, uint16_t *type, uint16_t *length);
+// Reads an extrafield header from a stream
+
+int32_t mz_zip_extrafield_write(void *stream, uint32_t type, uint16_t length);
+// Writes an extrafield header to a stream
 
 /***************************************************************************/
 

@@ -4,16 +4,24 @@
 # Copyright (C)      2016 Matthias Schmieder
 #                         schmieder.matthias@gmail.com
 #***************************************************************************
-#cmake_minimum_required(VERSION 3.0.2)
+
+# rom-properties: Not needed.
+IF(0)
+cmake_minimum_required(VERSION 3.0.2)
+message(STATUS "Using CMake version ${CMAKE_VERSION}")
+ENDIF(0) # rom-properties
 
 # rom-properties: Disabled these options.
 IF(0)
+option(USE_COMPAT "Enables compatibility layer" ON)
 option(USE_ZLIB "Enables ZLIB compression" ON)
 option(USE_BZIP2 "Enables BZIP2 compression" ON)
 option(USE_LZMA "Enables LZMA compression" ON)
 option(USE_PKCRYPT "Enables PKWARE traditional encryption" ON)
 option(USE_AES "Enables AES encryption" ON)
 option(USE_LIBCOMP "Enables Apple compression" OFF)
+option(USE_OPENSSL "Enables OpenSSL for encryption" OFF)
+option(USE_BRG "Enables Brian Gladman's encryption library" OFF)
 option(COMPRESS_ONLY "Only support compression" OFF)
 option(DECOMPRESS_ONLY "Only support decompression" OFF)
 option(BUILD_TEST "Builds minizip test executable" OFF)
@@ -31,6 +39,7 @@ include(CheckSymbolExists)
 # rom-properties: Disabled installation.
 IF(0)
 include(GNUInstallDirs)
+include(ExternalProject)
 
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
@@ -41,7 +50,7 @@ set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installa
 ENDIF(0)
 
 # Minizip library version
-set(VERSION "2.6.0")
+set(VERSION "2.7.4")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -49,14 +58,73 @@ set(SOVERSION "2.5")
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
 
+# rom-properties: Not using pkgconfig.
+IF(0)
+set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/minizip.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/minizip.pc.cmakein ${MINIZIP_PC} @ONLY)
+ENDIF(0) # rom-properties
+
+set(PROJECT_NAME libminizip)
+
 # Ensure correct version of zlib is referenced
 if(USE_ZLIB)
     # rom-properties: We're using CheckZLIB later.
     IF(0)
     set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
-    find_package(ZLIB REQUIRED)
+    find_package(ZLIB)
     if(ZLIB_FOUND)
+        message(STATUS "Using ZLIB ${ZLIB_VERSION_STRING}")
         include_directories(${ZLIB_INCLUDE_DIRS})
+        add_definitions(-DHAVE_ZLIB)
+    else()
+        if (NOT ZLIB_TAG)
+            set(ZLIB_TAG master)
+        endif()
+        if (NOT ZLIB_REPOSITORY)
+            set(ZLIB_REPOSITORY https://github.com/madler/zlib)
+        endif()
+
+        message(STATUS "Using ZLIB ${ZLIB_REPOSITORY} ${ZLIB_TAG}")
+
+        set(ZLIB_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib/zlib)
+        set(ZLIB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install/zlib)
+        set(ZLIB_INCLUDE_DIRS ${ZLIB_INSTALL_DIR}/include)
+
+        if(WIN32)
+            if(${CMAKE_GENERATOR} MATCHES "Visual Studio.*")
+                set(ZLIB_LIBRARIES
+                    debug ${ZLIB_INSTALL_DIR}/lib/zlibstaticd.lib
+                    optimized ${ZLIB_INSTALL_DIR}/lib/zlibstatic.lib)
+            else()
+                if(CMAKE_BUILD_TYPE EQUAL Debug)
+                    set(ZLIB_LIBRARIES
+                        ${ZLIB_INSTALL_DIR}/lib/zlibstaticd.lib)
+                else()
+                    set(ZLIB_LIBRARIES
+                        ${ZLIB_INSTALL_DIR}/lib/zlibstatic.lib)
+                endif()
+            endif()
+        else()
+            set(ZLIB_LIBRARIES
+                ${ZLIB_INSTALL_DIR}/lib/libz.a)
+        endif()
+        
+        ExternalProject_Add(zlib
+            PREFIX zlib
+            GIT_REPOSITORY ${ZLIB_REPOSITORY}
+            GIT_TAG ${ZLIB_TAG}
+            SOURCE_DIR ${ZLIB_SOURCE_DIR}
+            BUILD_IN_SOURCE 1
+            INSTALL_DIR ${ZLIB_INSTALL_DIR}
+            BUILD_BYPRODUCTS ${ZLIB_STATIC_LIBRARIES}
+            CMAKE_CACHE_ARGS
+                -DCMAKE_INSTALL_PREFIX:STRING=${ZLIB_INSTALL_DIR}
+                -DZLIB_COMPAT:STRING=ON
+        )
+
+        include_directories(${ZLIB_INCLUDE_DIRS})
+        add_definitions(-DHAVE_ZLIB)
+        
     endif()
     ENDIF(0)
     add_definitions(-DHAVE_ZLIB)
@@ -67,44 +135,50 @@ if(USE_BZIP2)
     set(BZIP2_ROOT ${DEF_BZIP2_ROOT} CACHE PATH "Parent directory of bzip2 installation")
     find_package(BZip2)
     if(BZIP2_FOUND)
+        message(STATUS "Using BZIP2 ${BZIP2_VERSION_STRING}")
         include_directories(${BZIP2_INCLUDE_DIRS})
+        add_definitions(-DHAVE_BZIP2)
     endif()
-    add_definitions(-DHAVE_BZIP2)
 endif()
 
-# rom-properties: Not using pkgconfig.
-IF(0)
-set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/minizip.pc)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/minizip.pc.cmakein ${MINIZIP_PC} @ONLY)
-ENDIF(0)
+# Check to see if openssl installation is present
+if (USE_OPENSSL)
+    set(OPENSSL_ROOT ${DEF_OPENSSL_ROOT} CACHE PATH "Parent directory of openssl installation")
+    find_package(OpenSSL)
+    if (OPENSSL_FOUND)
+        message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+        include_directories(${OPENSSL_INCLUDE_DIRS})
+        link_directories(${OPENSSL_LIBRARIES})
+    endif()
+endif()
 
-set(PROJECT_NAME libminizip)
-
+# Initial source files
 set(MINIZIP_SRC
+    mz_crypt.c
     mz_os.c
-    mz_compat.c
     mz_strm.c
     mz_strm_buf.c
-    mz_strm_crc32.c
     mz_strm_mem.c
-    mz_strm_posix.c
     mz_strm_split.c
     mz_zip.c
     mz_zip_rw.c)
 
+# Initial header files
 set(MINIZIP_PUBLIC_HEADERS
     mz.h
     mz_os.h
-    mz_compat.h
+    mz_crypt.h
     mz_strm.h
     mz_strm_buf.h
-    mz_strm_crc32.h
     mz_strm_mem.h
-    mz_strm_posix.h
     mz_strm_split.h
+    mz_strm_os.h
     mz_zip.h
     mz_zip_rw.h)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# Setup predefined macros
 if(COMPRESS_ONLY)
     add_definitions(-DMZ_ZIP_NO_DECOMPRESSION)
 endif()
@@ -115,30 +189,65 @@ if(NOT USE_PKCRYPT AND NOT USE_AES)
     add_definitions(-DMZ_ZIP_NO_ENCRYPTION)
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
+# Windows specific
 if(WIN32)
-    list(APPEND MINIZIP_SRC "mz_os_win32.c" "mz_strm_win32.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_os_win32.h" "mz_strm_win32.h")
+    list(APPEND MINIZIP_SRC "mz_os_win32.c" "mz_strm_os_win32.c")
+    if (USE_PKCRYPT OR USE_AES)
+        if (NOT USE_OPENSSL AND NOT OPENSSL_FOUND AND NOT USE_BRG)
+            list(APPEND MINIZIP_SRC "mz_crypt_win32.c")
+        endif()
+    endif()
 
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
 
+# Windows store specific
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
     add_definitions(-DMZ_WINRT_API)
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
-    add_compile_options(-W -Wall)
-endif()
-
+# Unix specific
 if(UNIX)
-    # rom-properties: Use -O3 only in release builds.
-    #add_compile_options(-O3)
-    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
+    list(APPEND MINIZIP_SRC "mz_os_posix.c" "mz_strm_os_posix.c")
+    
+    if ((USE_PKCRYPT OR USE_AES) AND (NOT USE_OPENSSL AND NOT OPENSSL_FOUND))
+        
+        if (APPLE AND NOT USE_BRG)
+            list(APPEND MINIZIP_SRC "mz_crypt_apple.c")
+        else()
+            set(USE_BRG TRUE)
+        endif()
+        
+        # Check to see which random generation functions we have 
+        check_symbol_exists("getrandom" "sys/random.h" HAVE_GETRANDOM)
+        if (HAVE_GETRANDOM)
+            add_definitions(-DHAVE_GETRANDOM)
+        endif()
+        check_symbol_exists("arc4random_buf" "stdlib.h" HAVE_ARC4RANDOM_BUF)
+        if (HAVE_ARC4RANDOM_BUF)
+            add_definitions(-DHAVE_ARC4RANDOM_BUF)
+        else()
+            check_symbol_exists("arc4random" "stdlib.h" HAVE_ARC4RANDOM)
+            if (HAVE_ARC4RANDOM)
+                add_definitions(-DHAVE_ARC4RANDOM)
+            endif()
+        endif()
 
-    list(APPEND MINIZIP_SRC "mz_os_posix.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_os_posix.h")
+        if(NOT HAVE_ARC4RANDOM_BUF)
+            find_package(PkgConfig REQUIRED)
+
+            pkg_check_modules(LIBBSD libbsd)
+            if (LIBBSD_FOUND)
+                check_library_exists("${LIBBSD_LIBRARIES}" "arc4random_buf" "${LIBBSD_LIBRARY_DIRS}" HAVE_LIBBSD_ARC4RANDOM_BUF)
+                if (HAVE_LIBBSD_ARC4RANDOM_BUF)
+                    add_definitions(-DHAVE_LIBBSD)
+                    add_definitions(-DHAVE_ARC4RANDOM_BUF)
+                    include_directories(${LIBBSD_INCLUDE_DIRS})
+                    link_directories(${LIBBSD_LIBRARY_DIRS})
+                endif()
+            endif()
+        endif()
+    endif()
 
     # rom-properties: LFS is already set by CheckLargeFileSupport.cmake.
     #set(define_lfs_macros TRUE)
@@ -158,36 +267,46 @@ if(UNIX)
         add_definitions(-D_FILE_OFFSET_BITS=64)
     endif()
 
-    check_symbol_exists("getrandom" "sys/random.h" HAVE_GETRANDOM)
-    if (HAVE_GETRANDOM)
-        add_definitions(-DHAVE_GETRANDOM)
+    # rom-properties: Disable this for now.
+    # (No IconvConfig.cmake in cmake-3.9.6.)
+    IF(0)
+    find_package(Iconv)
+    if (Iconv_FOUND)
+        message(STATUS "Using Iconv")
+        include_directories(${Iconv_INCLUDE_DIRS})
     endif()
-    check_symbol_exists("arc4random_buf" "stdlib.h" HAVE_ARC4RANDOM_BUF)
-    if (HAVE_ARC4RANDOM_BUF)
-        add_definitions(-DHAVE_ARC4RANDOM_BUF)
-    else()
-        check_symbol_exists("arc4random" "stdlib.h" HAVE_ARC4RANDOM)
-        if (HAVE_ARC4RANDOM)
-            add_definitions(-DHAVE_ARC4RANDOM)
-        endif()
-    endif()
+    ENDIF(0) # rom-properties
 
-    if(NOT HAVE_ARC4RANDOM_BUF)
-        find_package(PkgConfig REQUIRED)
-
-        pkg_check_modules(LIBBSD libbsd)
-        if (LIBBSD_FOUND)
-            check_library_exists("${LIBBSD_LIBRARIES}" "arc4random_buf" "${LIBBSD_LIBRARY_DIRS}" HAVE_LIBBSD_ARC4RANDOM_BUF)
-            if (HAVE_LIBBSD_ARC4RANDOM_BUF)
-                add_definitions(-DHAVE_LIBBSD)
-                add_definitions(-DHAVE_ARC4RANDOM_BUF)
-                include_directories(${LIBBSD_INCLUDE_DIRS})
-                link_directories(${LIBBSD_LIBRARY_DIRS})
-            endif()
-        endif()
-    endif()
 endif()
 
+# Include compatibility layer
+if(USE_COMPAT)
+    list(APPEND MINIZIP_SRC "mz_compat.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_compat.h")
+
+    set(COMPAT_HEADER "\
+/* file.h -- Compatibility layer shim\n\
+   part of the MiniZip project\n\n\
+   This program is distributed under the terms of the same license as zlib.\n\
+   See the accompanying LICENSE file for the full text of the license.\n\
+*/\n\n\
+#ifndef MZ_COMPAT_FILE\n\
+#define MZ_COMPAT_FILE\n\
+#include \"mz_compat.h\"\n\
+#endif\n")
+
+    string(REPLACE "file.h" "zip.h" ZIP_COMPAT_HEADER ${COMPAT_HEADER})
+    string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_ZIP" ZIP_COMPAT_HEADER ${ZIP_COMPAT_HEADER})
+    file(WRITE "zip.h" ${ZIP_COMPAT_HEADER})
+    list(APPEND MINIZIP_PUBLIC_HEADERS "zip.h") 
+
+    string(REPLACE "file.h" "unzip.h" UNZIP_COMPAT_HEADER ${COMPAT_HEADER})
+    string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_UNZIP" UNZIP_COMPAT_HEADER ${UNZIP_COMPAT_HEADER})
+    file(WRITE "unzip.h" ${UNZIP_COMPAT_HEADER})
+    list(APPEND MINIZIP_PUBLIC_HEADERS "unzip.h")
+endif()
+
+# Include PKCRYPT
 if(USE_PKCRYPT)
     add_definitions(-DHAVE_PKCRYPT)
 
@@ -195,35 +314,49 @@ if(USE_PKCRYPT)
     list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_pkcrypt.h")
 endif()
 
+# Include AES
 if(USE_AES)
     add_definitions(-DHAVE_AES)
 
-    list(APPEND MINIZIP_SRC "mz_strm_aes.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_aes.h")
-
-    set(AES_SRC
-        lib/aes/aescrypt.c
-        lib/aes/aeskey.c
-        lib/aes/aestab.c
-        lib/aes/hmac.c
-        lib/aes/pwd2key.c
-        lib/aes/sha1.c)
-
-    set(AES_PUBLIC_HEADERS
-        lib/aes/aes.h
-        lib/aes/aesopt.h
-        lib/aes/aestab.h
-        lib/aes/brg_endian.h
-        lib/aes/brg_types.h
-        lib/aes/hmac.h
-        lib/aes/pwd2key.h
-        lib/aes/sha1.h)
-
-    include_directories(lib/aes)
-
-    source_group("AES" FILES ${AES_SRC} ${AES_PUBLIC_HEADERS})
+    list(APPEND MINIZIP_SRC "mz_strm_wzaes.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_wzaes.h")
 endif()
 
+# Include BRG
+if(USE_BRG)
+    list(APPEND MINIZIP_SRC "mz_crypt_brg.c")
+
+    add_definitions(-DMZ_ZIP_NO_SIGNING)
+
+    set(BRG_SRC
+        lib/brg/aescrypt.c
+        lib/brg/aeskey.c
+        lib/brg/aestab.c
+        lib/brg/hmac.c
+        lib/brg/sha1.c
+        lib/brg/sha2.c)
+
+    set(BRG_PUBLIC_HEADERS
+        lib/brg/aes.h
+        lib/brg/aesopt.h
+        lib/brg/aestab.h
+        lib/brg/brg_endian.h
+        lib/brg/brg_types.h
+        lib/brg/hmac.h
+        lib/brg/sha1.h
+        lib/brg/sha2.h)
+
+    include_directories(lib/brg)
+
+    source_group("BRG" FILES ${BRG_SRC} ${BRG_PUBLIC_HEADERS})
+endif()
+
+# Include OpenSSL
+if(USE_OPENSSL AND OPENSSL_FOUND)
+    list(APPEND MINIZIP_SRC "mz_crypt_openssl.c")
+endif()
+
+# Include ZLIB
 if(USE_ZLIB)
     add_definitions(-DHAVE_ZLIB)
 
@@ -233,53 +366,55 @@ if(USE_ZLIB)
     else() 
         list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
         list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
+        
+        # rom-properties: Disabled for now.
+        IF(0)
+        if (ZLIB_FOUND)
+            include(CheckFunctionExists)
+            set(CMAKE_REQUIRED_LIBRARIES ZLIB)
+            CHECK_FUNCTION_EXISTS(z_get_crc_table
+                NEEDS_Z_PREFIX)
+    
+            if(NEEDS_Z_PREFIX)
+                add_definitions(-DZ_PREFIX)
+            endif()
+        endif()
+        ENDIF(0) # rom-properties
     endif()
-
-    # rom-properties: Disabled for now.
-    IF(0)
-    include(CheckFunctionExists)
-    set(CMAKE_REQUIRED_LIBRARIES ZLIB::ZLIB)
-    CHECK_FUNCTION_EXISTS(z_get_crc_table
-        NEEDS_Z_PREFIX)
-
-    if(NEEDS_Z_PREFIX)
-        add_definitions(-DZ_PREFIX)
-    endif()
-    ENDIF(0)
 endif()
 
-if(USE_BZIP2 AND BZIP2_FOUND)
+# Include BZIP2 
+if(USE_BZIP2)
     add_definitions(-DHAVE_BZIP2)
 
     list(APPEND MINIZIP_SRC "mz_strm_bzip.c")
     list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_bzip.h")
 
-    set(CMAKE_REQUIRED_LIBRARIES BZip2::BZip2)
-elseif(USE_BZIP2)
-    add_definitions(-DHAVE_BZIP2)
-    add_definitions(-DBZ_NO_STDIO)
+    if(BZIP2_FOUND)
+        set(CMAKE_REQUIRED_LIBRARIES BZip2::BZip2)
+    else()
+        add_definitions(-DBZ_NO_STDIO)
 
-    list(APPEND MINIZIP_SRC "mz_strm_bzip.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_bzip.h")
+        set(BZIP2_SRC
+            lib/bzip2/blocksort.c
+            lib/bzip2/bzlib.c
+            lib/bzip2/compress.c
+            lib/bzip2/crctable.c
+            lib/bzip2/decompress.c
+            lib/bzip2/huffman.c
+            lib/bzip2/randtable.c)
 
-    set(BZIP2_SRC
-        lib/bzip2/blocksort.c
-        lib/bzip2/bzlib.c
-        lib/bzip2/compress.c
-        lib/bzip2/crctable.c
-        lib/bzip2/decompress.c
-        lib/bzip2/huffman.c
-        lib/bzip2/randtable.c)
+        set(BZIP2_PUBLIC_HEADERS
+            lib/bzip2/bzlib.h
+            lib/bzip2/bzlib_private.h)
 
-    set(BZIP2_PUBLIC_HEADERS
-        lib/bzip2/bzlib.h
-        lib/bzip2/bzlib_private.h)
+        include_directories(lib/bzip2)
 
-    include_directories(lib/bzip2)
-
-    source_group("BZip2" FILES ${BZIP2_SRC} ${BZIP2_PUBLIC_HEADERS})
+        source_group("BZip2" FILES ${BZIP2_SRC} ${BZIP2_PUBLIC_HEADERS})
+    endif()
 endif()
 
+# Include LZMA 
 if(USE_LZMA)
     add_definitions(-DHAVE_LZMA)
     add_definitions(-DHAVE_CONFIG_H)
@@ -405,24 +540,32 @@ if(CMAKE_C_COMPILER MATCHES ".*clang")
     enable_option_if_supported(-maes check_opt_aes)
 endif()
 ENDIF(0)
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
+    add_compile_options(-W -Wall)
+    # rom-properties: Use -O3 only in release builds.
+    #add_compile_options(-O3)
+    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
+endif()
 
 # Create minizip library
 source_group("Minizip" FILES ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS})
 
 add_library(${PROJECT_NAME}
                 ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS}
-                ${AES_SRC} ${AES_PUBLIC_HEADERS}
+                ${BRG_SRC} ${BRG_PUBLIC_HEADERS}
                 ${BZIP2_SRC} ${BZIP2_PUBLIC_HEADERS}
                 ${LZMA_SRC} ${LZMA_PUBLIC_HEADERS})
 
 if (MSVC AND BUILD_SHARED_LIBS)
-  set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_NAME "minizip")
+    set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_NAME "minizip")
 endif ()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${VERSION} SOVERSION ${SOVERSION})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C PREFIX ""
                       POSITION_INDEPENDENT_CODE 1)
+
+# Link with external libraries
 # rom-properties: Link to ${ZLIB_LIBRARY}.
 IF(0)
 if(USE_ZLIB)
@@ -436,14 +579,26 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
 if(USE_BZIP2 AND BZIP2_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${BZIP2_LIBRARIES})
 endif()
-if(USE_LIBCOMP)
-    target_link_libraries(${PROJECT_NAME} PRIVATE compression)
-endif()
 if(USE_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 endif()
-if(UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBBSD_LIBRARIES})
+if(USE_LIBCOMP)
+    target_link_libraries(${PROJECT_NAME} PRIVATE compression)
+endif()
+if(Iconv_FOUND AND NOT Iconv_IS_BUILT_IN)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${Iconv_LIBRARIES})
+endif()
+if(USE_OPENSSL AND OPENSSL_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENSSL_LIBRARIES})
+elseif(UNIX)
+    if(APPLE AND NOT USE_BRG)
+        message(STATUS "Using Security Framework")
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreFoundation")
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Security")
+        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-F/Library/Frameworks")
+    else()
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBBSD_LIBRARIES})
+    endif()
 endif()
 
 # rom-properties: Set include directory to the source path; enable ZLIB_CONST.
@@ -455,6 +610,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC ZLIB_CONST)
 IF(0)
 target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
 
+# Install files
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
             INCLUDES DESTINATION "${INSTALL_INC_DIR}"
@@ -472,8 +628,9 @@ if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${MINIZIP_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
 endif()
 
+# Build test executable
 if(BUILD_TEST)
-    add_executable(minizip "minizip.c")
+    add_executable(minizip "minizip.c" "test/test.c" "test/test.h")
     target_link_libraries(minizip PRIVATE ${PROJECT_NAME})
 
     if(NOT SKIP_INSTALL_BINARIES AND NOT SKIP_INSTALL_ALL)

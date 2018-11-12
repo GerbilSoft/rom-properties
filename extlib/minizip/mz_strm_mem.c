@@ -1,5 +1,5 @@
 /* mz_strm_mem.c -- Stream for memory access
-   Version 2.6.0, October 8, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    This interface is designed to access memory rather than files.
@@ -11,7 +11,7 @@
      https://github.com/nmoinvaz/minizip
    Copyright (C) 2003 Justin Fletcher
    Copyright (C) 1998-2003 Gilles Vollant
-     http://www.winimage.com/zLibDll/minizip.html
+     https://www.winimage.com/zLibDll/minizip.html
 
    This program is distributed under the terms of the same license as zlib.
    See the accompanying LICENSE file for the full text of the license.
@@ -96,7 +96,7 @@ int32_t mz_stream_mem_is_open(void *stream)
 {
     mz_stream_mem *mem = (mz_stream_mem *)stream;
     if (mem->buffer == NULL)
-        return MZ_STREAM_ERROR;
+        return MZ_OPEN_ERROR;
     return MZ_OK;
 }
 
@@ -174,15 +174,19 @@ int32_t mz_stream_mem_seek(void *stream, int64_t offset, int32_t origin)
             new_pos = offset;
             break;
         default:
-            return MZ_STREAM_ERROR;
+            return MZ_SEEK_ERROR;
     }
 
     if (new_pos > mem->size)
     {
         if ((mem->mode & MZ_OPEN_MODE_CREATE) == 0)
-            return MZ_STREAM_ERROR;
+            return MZ_SEEK_ERROR;
 
         mz_stream_mem_set_size(stream, (int32_t)new_pos);
+    }
+    else if (new_pos < 0)
+    {
+        return MZ_SEEK_ERROR;
     }
 
     mem->position = (int32_t)new_pos;
@@ -222,7 +226,7 @@ int32_t mz_stream_mem_get_buffer_at(void *stream, int64_t position, const void *
 {
     mz_stream_mem *mem = (mz_stream_mem *)stream;
     if (buf == NULL || position < 0 || mem->size < position || mem->buffer == NULL)
-        return MZ_STREAM_ERROR;
+        return MZ_SEEK_ERROR;
     *buf = mem->buffer + position;
     return MZ_OK;
 }

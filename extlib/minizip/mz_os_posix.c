@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.6.0, October 8, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -13,87 +13,92 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
+#include <iconv.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef HAVE_GETRANDOM
-#  include <sys/random.h>
-#endif
-#if defined(unix) || defined(__APPLE__)
-#  include <unistd.h>
-#  include <utime.h>
-#  ifndef HAVE_ARC4RANDOM_BUF
-#    define HAVE_ARC4RANDOM_BUF
-#  endif
-#endif
-#if defined(HAVE_LIBBSD) && \
-   !defined(MZ_ZIP_NO_COMPRESSION) && \
-   !defined(MZ_ZIP_NO_ENCRYPTION)
-#  include <bsd/stdlib.h> // arc4random_buf
-#endif
 
-#ifdef __APPLE__
-#include <mach/clock.h>
-#include <mach/mach.h>
+#if defined(__APPLE__) || defined(unix)
+#  include <utime.h>
+#  include <unistd.h>
+#endif
+#if defined(__APPLE__)
+#  include <mach/clock.h>
+#  include <mach/mach.h>
 #endif
 
 #include "mz.h"
 #include "mz_strm.h"
 #include "mz_os.h"
-#include "mz_os_posix.h"
 
 /***************************************************************************/
 
-#if !defined(MZ_ZIP_NO_COMPRESSION) && !defined(MZ_ZIP_NO_ENCRYPTION)
-#if defined(HAVE_ARC4RANDOM_BUF)
-int32_t mz_posix_rand(uint8_t *buf, int32_t size)
+uint8_t *mz_os_utf8_string_create(const char *string, int32_t encoding)
 {
-    if (size < 0)
-        return 0;
-    arc4random_buf(buf, (uint32_t)size);
-    return size;
+    iconv_t cd;
+    const char *from_encoding = NULL;
+    int32_t result = 0;
+    size_t string_length = 0;
+    size_t string_utf8_size = 0;
+    uint8_t *string_utf8 = NULL;
+    uint8_t *string_utf8_ptr = NULL;
+
+    if (string == NULL)
+        return NULL;
+
+    if (encoding == MZ_ENCODING_CODEPAGE_437)
+        from_encoding = "CP437";
+    else if (encoding == MZ_ENCODING_CODEPAGE_932)
+        from_encoding = "CP932";
+    else if (encoding == MZ_ENCODING_CODEPAGE_936)
+        from_encoding = "CP936";
+    else if (encoding == MZ_ENCODING_CODEPAGE_950)
+        from_encoding = "CP950";
+    else if (encoding == MZ_ENCODING_UTF8)
+        from_encoding = "UTF-8";
+    else
+        return NULL;
+
+    cd = iconv_open("UTF-8", from_encoding);
+    if (cd == (iconv_t)-1)
+        return NULL;
+
+    string_length = strlen(string);
+    string_utf8_size = string_length * 2;
+    string_utf8 = (uint8_t *)MZ_ALLOC((int32_t)(string_utf8_size + 1));
+    string_utf8_ptr = string_utf8;
+
+    if (string_utf8)
+    {
+        memset(string_utf8, 0, string_utf8_size + 1);
+
+        result = iconv(cd, (char **)&string, &string_length,
+                (char **)&string_utf8_ptr, &string_utf8_size);
+
+        iconv_close(cd);
+    }
+
+    if (result == -1)
+    {
+        MZ_FREE(string_utf8);
+        string_utf8 = NULL;
+    }
+
+    return string_utf8;
 }
-#elif defined(HAVE_ARC4RANDOM)
-int32_t mz_posix_rand(uint8_t *buf, int32_t size)
+
+void mz_os_utf8_string_delete(uint8_t **string)
 {
-    int32_t left = size;
-    for (; left > 2; left -= 3, buf += 3)
+    if (string != NULL)
     {
-        uint32_t val = arc4random();
-
-        buf[0] = (val) & 0xFF;
-        buf[1] = (val >> 8) & 0xFF;
-        buf[2] = (val >> 16) & 0xFF;
+        MZ_FREE(*string);
+        *string = NULL;
     }
-    for (; left > 0; left--, buf++)
-    {
-        *buf = arc4random() & 0xFF;
-    }
-    return size - left;
 }
-#elif defined(HAVE_GETRANDOM)
-int32_t mz_posix_rand(uint8_t *buf, int32_t size)
-{
-    int32_t left = size;
-    int32_t written = 0;
 
-    while (left > 0)
-    {
-        written = getrandom(buf, left, 0);
-        if (written < 0)
-            return MZ_INTERNAL_ERROR;
+/***************************************************************************/
 
-        buf += written;
-        left -= written;
-    }
-    return size - left;
-}
-#else
-#if !defined(FORCE_LOWQUALITY_ENTROPY)
-#  error "Low quality entropy function used for encryption"
-#endif
-int32_t mz_posix_rand(uint8_t *buf, int32_t size)
+int32_t mz_os_rand(uint8_t *buf, int32_t size)
 {
     static unsigned calls = 0;
     int32_t i = 0;
@@ -110,10 +115,8 @@ int32_t mz_posix_rand(uint8_t *buf, int32_t size)
 
     return size;
 }
-#endif
-#endif
 
-int32_t mz_posix_rename(const char *source_path, const char *target_path)
+int32_t mz_os_rename(const char *source_path, const char *target_path)
 {
     if (rename(source_path, target_path) == -1)
         return MZ_EXIST_ERROR;
@@ -121,7 +124,7 @@ int32_t mz_posix_rename(const char *source_path, const char *target_path)
     return MZ_OK;
 }
 
-int32_t mz_posix_delete(const char *path)
+int32_t mz_os_delete(const char *path)
 {
     if (unlink(path) == -1)
         return MZ_EXIST_ERROR;
@@ -129,7 +132,7 @@ int32_t mz_posix_delete(const char *path)
     return MZ_OK;
 }
 
-int32_t mz_posix_file_exists(const char *path)
+int32_t mz_os_file_exists(const char *path)
 {
     struct stat stat_info;
 
@@ -140,7 +143,7 @@ int32_t mz_posix_file_exists(const char *path)
     return MZ_EXIST_ERROR;
 }
 
-int64_t mz_posix_get_file_size(const char *path)
+int64_t mz_os_get_file_size(const char *path)
 {
     struct stat stat_info;
 
@@ -151,7 +154,7 @@ int64_t mz_posix_get_file_size(const char *path)
     return 0;
 }
 
-int32_t mz_posix_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date)
+int32_t mz_os_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date)
 {
     struct stat stat_info;
     char *name = NULL;
@@ -189,7 +192,7 @@ int32_t mz_posix_get_file_date(const char *path, time_t *modified_date, time_t *
     return err;
 }
 
-int32_t mz_posix_set_file_date(const char *path, time_t modified_date, time_t accessed_date, time_t creation_date)
+int32_t mz_os_set_file_date(const char *path, time_t modified_date, time_t accessed_date, time_t creation_date)
 {
     struct utimbuf ut;
 
@@ -204,7 +207,7 @@ int32_t mz_posix_set_file_date(const char *path, time_t modified_date, time_t ac
     return MZ_OK;
 }
 
-int32_t mz_posix_get_file_attribs(const char *path, uint32_t *attributes)
+int32_t mz_os_get_file_attribs(const char *path, uint32_t *attributes)
 {
     struct stat stat_info;
     int32_t err = MZ_OK;
@@ -216,7 +219,7 @@ int32_t mz_posix_get_file_attribs(const char *path, uint32_t *attributes)
     return err;
 }
 
-int32_t mz_posix_set_file_attribs(const char *path, uint32_t attributes)
+int32_t mz_os_set_file_attribs(const char *path, uint32_t attributes)
 {
     int32_t err = MZ_OK;
 
@@ -226,7 +229,7 @@ int32_t mz_posix_set_file_attribs(const char *path, uint32_t attributes)
     return err;
 }
 
-int32_t mz_posix_make_dir(const char *path)
+int32_t mz_os_make_dir(const char *path)
 {
     int32_t err = 0;
 
@@ -238,19 +241,19 @@ int32_t mz_posix_make_dir(const char *path)
     return MZ_OK;
 }
 
-DIR* mz_posix_open_dir(const char *path)
+DIR* mz_os_open_dir(const char *path)
 {
     return opendir(path);
 }
 
-struct dirent* mz_posix_read_dir(DIR *dir)
+struct dirent* mz_os_read_dir(DIR *dir)
 {
     if (dir == NULL)
         return NULL;
     return readdir(dir);
 }
 
-int32_t mz_posix_close_dir(DIR *dir)
+int32_t mz_os_close_dir(DIR *dir)
 {
     if (dir == NULL)
         return MZ_PARAM_ERROR;
@@ -259,7 +262,7 @@ int32_t mz_posix_close_dir(DIR *dir)
     return MZ_OK;
 }
 
-int32_t mz_posix_is_dir(const char *path)
+int32_t mz_os_is_dir(const char *path)
 {
     struct stat path_stat;
     stat(path, &path_stat);
@@ -268,11 +271,11 @@ int32_t mz_posix_is_dir(const char *path)
     return MZ_EXIST_ERROR;
 }
 
-uint64_t mz_posix_ms_time(void)
+uint64_t mz_os_ms_time(void)
 {
     struct timespec ts;
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
     clock_serv_t cclock;
     mach_timespec_t mts;
 
