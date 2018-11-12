@@ -504,6 +504,11 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			// - T: South Korea with English language
 			return C_("Region", "South Korea");
 
+		// Other.
+		case GCN_REGION_ALL:
+			// Region-Free.
+			return C_("Region", "Region-Free");
+
 		default:
 			break;
 	}
@@ -651,6 +656,7 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 			ret.push_back("KO");
 			break;
 
+		case GCN_REGION_ALL:
 		default:
 			// Invalid gcnRegion. Use the game ID by itself.
 			// (Usually happens if we can't read BI2.bin,
@@ -938,6 +944,7 @@ string GameCubePrivate::gcn_getGameInfo(void) const
 		switch (gcnRegion) {
 			case GCN_REGION_USA:
 			case GCN_REGION_EUR:
+			case GCN_REGION_ALL:	// TODO: Assume JP?
 			default:
 				// USA/PAL uses cp1252.
 				gameInfo = cp1252_to_utf8(gameInfo);
@@ -1629,6 +1636,7 @@ int GameCube::loadFieldData(void)
 	switch (d->gcnRegion) {
 		case GCN_REGION_USA:
 		case GCN_REGION_EUR:
+		case GCN_REGION_ALL:	// TODO: Assume JP?
 		default:
 			// USA/PAL uses cp1252.
 			d->fields->addField_string(C_("GameCube", "Title"),
@@ -2056,6 +2064,7 @@ int GameCube::loadMetaData(void)
 		switch (d->gcnRegion) {
 			case GCN_REGION_USA:
 			case GCN_REGION_EUR:
+			case GCN_REGION_ALL:	// TODO: Assume JP?
 			default:
 				// USA/PAL uses cp1252.
 				d->metaData->addMetaData_string(Property::Title,
