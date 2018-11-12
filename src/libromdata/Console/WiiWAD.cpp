@@ -891,10 +891,13 @@ int WiiWAD::loadFieldData(void)
 	d->fields->addField_string(C_("WiiWAD", "Title Version"),
 		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
 
+	// Title ID constants.
+	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
+
 	// Region code.
 	// TODO: Combine with GameCubePrivate::gcnRegionToString().
 	unsigned int region_code;
-	if (tmdHeader->title_id.hi == cpu_to_be32(0x00000001)) {
+	if (tid_hi == 0x00000001) {
 		// IOS and/or System Menu.
 		if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
 			// System Menu.
@@ -978,41 +981,43 @@ int WiiWAD::loadFieldData(void)
 	d->fields->addField_bitfield(C_("WiiWAD", "Access Rights"),
 		v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
-	// Get age rating(s).
-	// TODO: Combine with GameCube::addFieldData()'s code.
-	// Note that not all 16 fields are present on GCN,
-	// though the fields do match exactly, so no
-	// mapping is necessary.
-	RomFields::age_ratings_t age_ratings;
-	// Valid ratings: 0-1, 3-9
-	static const uint16_t valid_ratings = 0x3FB;
+	if (tid_hi >= 0x00010000) {
+		// Get age rating(s).
+		// TODO: Combine with GameCube::addFieldData()'s code.
+		// Note that not all 16 fields are present on GCN,
+		// though the fields do match exactly, so no
+		// mapping is necessary.
+		RomFields::age_ratings_t age_ratings;
+		// Valid ratings: 0-1, 3-9
+		static const uint16_t valid_ratings = 0x3FB;
 
-	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-		if (!(valid_ratings & (1 << i))) {
-			// Rating is not applicable for GCN.
-			age_ratings[i] = 0;
-			continue;
-		}
+		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
+			if (!(valid_ratings & (1 << i))) {
+				// Rating is not applicable for GCN.
+				age_ratings[i] = 0;
+				continue;
+			}
 
-		// GCN ratings field:
-		// - 0x1F: Age rating.
-		// - 0x20: Has online play if set.
-		// - 0x80: Unused if set.
-		const uint8_t rvl_rating = tmdHeader->ratings[i];
-		if (rvl_rating & 0x80) {
-			// Rating is unused.
-			age_ratings[i] = 0;
-			continue;
-		}
-		// Set active | age value.
-		age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
+			// GCN ratings field:
+			// - 0x1F: Age rating.
+			// - 0x20: Has online play if set.
+			// - 0x80: Unused if set.
+			const uint8_t rvl_rating = tmdHeader->ratings[i];
+			if (rvl_rating & 0x80) {
+				// Rating is unused.
+				age_ratings[i] = 0;
+				continue;
+			}
+			// Set active | age value.
+			age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
 
-		// Is "rating may change during online play" set?
-		if (rvl_rating & 0x20) {
-			age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+			// Is "rating may change during online play" set?
+			if (rvl_rating & 0x20) {
+				age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+			}
 		}
+		d->fields->addField_ageRatings("Age Rating", age_ratings);
 	}
-	d->fields->addField_ageRatings("Age Rating", age_ratings);
 
 	// Encryption key.
 	// TODO: WiiPartition function to get a key's "display name"?
