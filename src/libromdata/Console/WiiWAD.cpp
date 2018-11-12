@@ -21,6 +21,7 @@
 #include "WiiWAD.hpp"
 #include "librpbase/RomData_p.hpp"
 
+#include "gcn_structs.h"
 #include "wii_structs.h"
 #include "wii_wad.h"
 #include "wii_banner.h"
@@ -825,7 +826,7 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields->reserve(11);	// Maximum of 11 fields.
 
 	if (d->key_status != KeyManager::VERIFY_OK) {
 		// Unable to get the decryption key.
@@ -891,61 +892,65 @@ int WiiWAD::loadFieldData(void)
 		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
 
 	// Region code.
-	// TODO: Is there a real way to get this from the WAD contents?
-	char region_char;
+	// TODO: Combine with GameCubePrivate::gcnRegionToString().
+	unsigned int region_code;
 	if (tmdHeader->title_id.hi == cpu_to_be32(0x00000001)) {
 		// IOS and/or System Menu.
 		if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
 			// System Menu.
 			const char *ver = WiiSystemMenuVersion::lookup(title_version);
-			region_char = (ver ? ver[3] : '\0');
+			switch (ver[3]) {
+				case 'J':
+					region_code = GCN_REGION_JPN;
+					break;
+				case 'U':
+					region_code = GCN_REGION_USA;
+					break;
+				case 'E':
+					region_code = GCN_REGION_EUR;
+					break;
+				case 'K':
+					region_code = GCN_REGION_KOR;
+					break;
+				default:
+					region_code = 255;
+					break;
+			}
 		} else {
 			// IOS, BC, or MIOS. No region.
-			region_char = '\0';
+			region_code = GCN_REGION_ALL;
 		}
 	} else {
-		// Assume the 4th character of the ID4 is the region code.
-		region_char = (char)tmdHeader->title_id.u8[7];
+		region_code = be16_to_cpu(tmdHeader->region_code);
 	}
 
-	// TODO: Combine with GameCube, and/or make a generic Nintendo region code class?
-	// TODO: Specific European countries?
 	const char *s_region;
-	switch (region_char) {
-		case '\0':
-		case 'A':
-			s_region = C_("WiiWAD|Region", "Region-Free");
-			break;
-		case 'E':
-			s_region = C_("WiiWAD|Region", "USA");
-			break;
-		case 'J':
+	switch (region_code) {
+		case GCN_REGION_JPN:
 			s_region = C_("WiiWAD|Region", "Japan");
 			break;
-		case 'W':
-			s_region = C_("WiiWAD|Region", "Taiwan");
+		case GCN_REGION_USA:
+			s_region = C_("WiiWAD|Region", "USA");
 			break;
-		case 'K':
-		case 'T':
-		case 'Q':
+		case GCN_REGION_EUR:
+			s_region = C_("WiiWAD|Region", "Europe");
+			break;
+		case GCN_REGION_ALL:
+			s_region = C_("WiiWAD|Region", "Region-Free");
+			break;
+		case GCN_REGION_KOR:
 			s_region = C_("WiiWAD|Region", "South Korea");
 			break;
-		case 'C':
-			s_region = C_("WiiWAD|Region", "China");
-			break;
 		default:
-			if (isupper(region_char)) {
-				s_region = C_("WiiWAD|Region", "Europe");
-			} else {
-				s_region = nullptr;
-			}
+			s_region = nullptr;
 			break;
 	}
+
 	if (s_region) {
 		d->fields->addField_string(C_("WiiWAD", "Region"), s_region);
 	} else {
 		d->fields->addField_string(C_("WiiWAD", "Region"),
-			rp_sprintf(C_("WiiWAD", "Unknown (0x%02X)"), (uint8_t)region_char));
+			rp_sprintf(C_("WiiWAD", "Unknown (0x%02X)"), region_code));
 	}
 
 	// Required IOS version.
@@ -993,6 +998,42 @@ int WiiWAD::loadFieldData(void)
 		keyName = C_("WiiWAD", "Unknown");
 	}
 	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
+
+	// Get age rating(s).
+	// TODO: Combine with GameCube::addFieldData()'s code.
+	// Note that not all 16 fields are present on GCN,
+	// though the fields do match exactly, so no
+	// mapping is necessary.
+	RomFields::age_ratings_t age_ratings;
+	// Valid ratings: 0-1, 3-9
+	static const uint16_t valid_ratings = 0x3FB;
+
+	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
+		if (!(valid_ratings & (1 << i))) {
+			// Rating is not applicable for GCN.
+			age_ratings[i] = 0;
+			continue;
+		}
+
+		// GCN ratings field:
+		// - 0x1F: Age rating.
+		// - 0x20: Has online play if set.
+		// - 0x80: Unused if set.
+		const uint8_t rvl_rating = tmdHeader->ratings[i];
+		if (rvl_rating & 0x80) {
+			// Rating is unused.
+			age_ratings[i] = 0;
+			continue;
+		}
+		// Set active | age value.
+		age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
+
+		// Is "rating may change during online play" set?
+		if (rvl_rating & 0x20) {
+			age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+		}
+	}
+	d->fields->addField_ageRatings("Age Rating", age_ratings);
 
 #ifdef ENABLE_DECRYPTION
 	// Do we have a WIBN header?

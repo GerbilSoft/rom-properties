@@ -74,6 +74,7 @@ typedef enum {
 	GCN_REGION_JPN = 0,	// Japan / Taiwan
 	GCN_REGION_USA = 1,	// USA
 	GCN_REGION_EUR = 2,	// Europe / Australia
+	GCN_REGION_ALL = 3,	// Region-Free
 	GCN_REGION_KOR = 4,	// South Korea
 } GCN_Region_Code;
 

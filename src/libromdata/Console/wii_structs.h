@@ -145,7 +145,16 @@ typedef struct PACKED _RVL_TMD_Header {
 	RVL_TitleID_t title_id;		// [0x18C] Title ID.
 	uint32_t title_type;		// [0x194] Title type.
 	uint16_t group_id;		// [0x198] Group ID.
-	uint8_t reserved[62];		// [0x19A]
+	uint16_t reserved1;		// [0x19A]
+
+	// region_code and ratings are NOT valid for discs.
+	// They're only valid for WiiWare.
+	uint16_t region_code;		// [0x19C] Region code. (See GCN_Region_Code.)
+	uint8_t ratings[0x10];		// [0x19E] Country-specific age ratings.
+	uint8_t reserved3[12];		// [0x1AE]
+
+	uint8_t ipc_mask[12];		// [0x1BA] IPC mask.
+	uint8_t reserved4[18];		// [0x1C6]
 	uint32_t access_rights;		// [0x1D8] Access rights. (See RVL_Access_Rights_e.)
 	uint16_t title_version;		// [0x1DC] Title version.
 	uint16_t nbr_cont;		// [0x1DE] Number of contents.
