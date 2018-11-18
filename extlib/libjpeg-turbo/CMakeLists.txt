@@ -6,7 +6,7 @@ if(CMAKE_EXECUTABLE_SUFFIX)
 endif()
 
 project(libjpeg-turbo C)
-set(VERSION 2.0.0)
+set(VERSION 2.0.1)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -115,7 +115,9 @@ endif()
 
 include(cmakescripts/GNUInstallDirs.cmake)
 
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+if(ENABLE_SHARED)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+endif()
 
 macro(report_directory var)
   if(CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_FULL_${var})
@@ -149,29 +151,45 @@ macro(boolean_number var)
 endmacro()
 
 # rom-properties: Don't use option() here; it's set by extlib.
-#option(ENABLE_SHARED "Build shared libraries" TRUE)
+IF(0)
+option(ENABLE_SHARED "Build shared libraries" TRUE)
 boolean_number(ENABLE_SHARED)
-#option(ENABLE_STATIC "Build static libraries" TRUE)
+option(ENABLE_STATIC "Build static libraries" TRUE)
 boolean_number(ENABLE_STATIC)
-#option(REQUIRE_SIMD "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)" FALSE)
+option(REQUIRE_SIMD "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)" FALSE)
 boolean_number(REQUIRE_SIMD)
-#option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_ARITH_DEC=0 WITH_ARITH_ENC=0 WITH_JAVA=0 WITH_SIMD=0 WITH_TURBOJPEG=0 )" FALSE)
+option(WITH_12BIT "Encode/decode JPEG images with 12-bit samples (implies WITH_ARITH_DEC=0 WITH_ARITH_ENC=0 WITH_JAVA=0 WITH_SIMD=0 WITH_TURBOJPEG=0 )" FALSE)
 boolean_number(WITH_12BIT)
-#option(WITH_ARITH_DEC "Include arithmetic decoding support when emulating the libjpeg v6b API/ABI" TRUE)
+option(WITH_ARITH_DEC "Include arithmetic decoding support when emulating the libjpeg v6b API/ABI" TRUE)
 boolean_number(WITH_ARITH_DEC)
-#option(WITH_ARITH_ENC "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI" TRUE)
+option(WITH_ARITH_ENC "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI" TRUE)
 boolean_number(WITH_ARITH_ENC)
-#option(WITH_JAVA "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)" FALSE)
+option(WITH_JAVA "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)" FALSE)
 boolean_number(WITH_JAVA)
-#option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG7 "Emulate libjpeg v7 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
 boolean_number(WITH_JPEG7)
-#option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
+option(WITH_JPEG8 "Emulate libjpeg v8 API/ABI (this makes ${CMAKE_PROJECT_NAME} backward-incompatible with libjpeg v6b)" FALSE)
 boolean_number(WITH_JPEG8)
-#option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" TRUE)
+option(WITH_MEM_SRCDST "Include in-memory source/destination manager functions when emulating the libjpeg v6b or v7 API/ABI" TRUE)
 boolean_number(WITH_MEM_SRCDST)
-#option(WITH_SIMD "Include SIMD extensions, if available for this platform" TRUE)
+option(WITH_SIMD "Include SIMD extensions, if available for this platform" TRUE)
 boolean_number(WITH_SIMD)
-#option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" TRUE)
+option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" TRUE)
+boolean_number(WITH_TURBOJPEG)
+ENDIF(0) # rom-properties
+
+# rom-properties: boolean_number() from above.
+boolean_number(ENABLE_SHARED)
+boolean_number(ENABLE_STATIC)
+boolean_number(REQUIRE_SIMD)
+boolean_number(WITH_12BIT)
+boolean_number(WITH_ARITH_DEC)
+boolean_number(WITH_ARITH_ENC)
+boolean_number(WITH_JAVA)
+boolean_number(WITH_JPEG7)
+boolean_number(WITH_JPEG8)
+boolean_number(WITH_MEM_SRCDST)
+boolean_number(WITH_SIMD)
 boolean_number(WITH_TURBOJPEG)
 
 macro(report_option var desc)
@@ -1417,10 +1435,10 @@ if(UNIX OR MINGW)
     ${CMAKE_CURRENT_SOURCE_DIR}/rdjpgcom.1
     ${CMAKE_CURRENT_SOURCE_DIR}/wrjpgcom.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
-    ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 endif()
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libjpeg.pc
+  ${CMAKE_CURRENT_BINARY_DIR}/pkgscripts/libturbojpeg.pc
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jconfig.h
   ${CMAKE_CURRENT_SOURCE_DIR}/jerror.h ${CMAKE_CURRENT_SOURCE_DIR}/jmorecfg.h
