@@ -902,22 +902,26 @@ int WiiWAD::loadFieldData(void)
 		if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
 			// System Menu.
 			const char *ver = WiiSystemMenuVersion::lookup(title_version);
-			switch (ver[3]) {
-				case 'J':
-					region_code = GCN_REGION_JPN;
-					break;
-				case 'U':
-					region_code = GCN_REGION_USA;
-					break;
-				case 'E':
-					region_code = GCN_REGION_EUR;
-					break;
-				case 'K':
-					region_code = GCN_REGION_KOR;
-					break;
-				default:
-					region_code = 255;
-					break;
+			if (ver) {
+				switch (ver[3]) {
+					case 'J':
+						region_code = GCN_REGION_JPN;
+						break;
+					case 'U':
+						region_code = GCN_REGION_USA;
+						break;
+					case 'E':
+						region_code = GCN_REGION_EUR;
+						break;
+					case 'K':
+						region_code = GCN_REGION_KOR;
+						break;
+					default:
+						region_code = 255;
+						break;
+				}
+			} else {
+				region_code = 255;
 			}
 		} else {
 			// IOS, BC, or MIOS. No region.
