@@ -290,6 +290,8 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 // Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
 const ELFDataPrivate::MachineType ELFDataPrivate::machineTypes_other[] = {
 	{243,		"UCB RISC-V"},
+	{247,		"eBPF"},
+	{251,		"NEC VE"},
 
 	// The following are unofficial and/or obsolete types.
 	// TODO: Indicate unofficial/obsolete using a separate flag?
