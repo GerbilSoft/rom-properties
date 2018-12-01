@@ -15,8 +15,7 @@ ENDFUNCTION(SET_EXTLIB_PROPERTIES)
 # TODO: Test on all archs and fix Z_PREFIX issues.
 # TODO: Add more assembly files from contrib/ besides the
 # default ones that were listed in zlib's CMakeLists.txt.
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+IF(CPU_i386 OR CPU_amd64)
 	# i386/amd64. Check sizeof(void*) for the actual architecture,
 	# since building 32-bit on 64-bit isn't considered "cross-compiling",
 	# so CMAKE_SYSTEM_PROCESSOR might not be accurate.
@@ -28,8 +27,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	ELSE()
 		SET(ASM686 "ON")
 	ENDIF()
-ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
-UNSET(arch)
+ENDIF(CPU_i386 OR CPU_amd64)
 
 # FIXME: zlib-1.2.9's asm optimizations break on 32-bit Windows...
 # Reference:  https://github.com/madler/zlib/issues/41

@@ -18,9 +18,7 @@ SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 
 # CPU-specific and optimized sources.
-# TODO: Move arch detection to platform.cmake.
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+IF(CPU_i386 OR CPU_amd64)
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
 	# checks, so even if this does get compiled on a non-glibc system,
@@ -32,8 +30,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
 	# NOTE: SSSE3 flags are set in subprojects, not here.
 	SET(rom-properties-gtk2_SSSE3_SRCS GdkImageConv_ssse3.cpp)
-ENDIF()
-UNSET(arch)
+ENDIF(CPU_i386 OR CPU_amd64)
 
 # Sources and headers.
 SET(rom-properties-gtk_SRCS
