@@ -1826,10 +1826,26 @@ int GameCube::loadFieldData(void)
 		// Update version.
 		const char *sysMenu = nullptr;
 		unsigned int ios_slot = 0, ios_major = 0, ios_minor = 0;
+		unsigned int ios_retail_count = 0;
 		bool isDebugIOS = false;
 		if (d->updatePartition) {
-			// Find the System Menu version.
-			// - Retail: RVL-WiiSystemmenu-v*.wad file.
+			// Get the update version.
+			//
+			// On retail discs, the update partition usually contains
+			// a System Menu, but some (RHMP99, Harvest Moon PAL) only
+			// contain Boot2 and IOS.
+			//
+			// Debug discs generally only have two copies of IOS.
+			// Both copies are the same version, with one compiled for
+			// 64M systems and one for 128M systems.
+			//
+			// Filename patterns:
+			// - Retail:
+			//   - System menu: RVL-WiiSystemmenu-v*.wad file.
+			//   - IOS: IOS21-64-v514.wad
+			//     - 21: IOS slot
+			//     - 64: Memory configuration (64 only)
+			//     - 514: IOS version. (v514 == 2.2)
 			// - Debug: firmware.64.56.21.29.wad
 			//   - 64: Memory configuration (64 or 128)
 			//   - 56: IOS slot
@@ -1859,12 +1875,24 @@ int GameCube::loadFieldData(void)
 						isDebugIOS = true;
 						break;
 					}
+
+					// Check for a retail IOS.
+					ret = sscanf(dirent->name, "IOS%u-%u-v%u.wad",
+						&ios_slot, &ios_mem, &ios_major);
+					if (ret == 3 && ios_mem == 64) {
+						// Found a retail IOS.
+						// NOTE: ios_major has a combined version number,
+						// so it needs to be split into major/minor.
+						ios_minor = ios_major & 0xFF;
+						ios_major >>= 8;
+						ios_retail_count++;
+					}
 				}
 				d->updatePartition->closedir(dirp);
 			}
 		}
 
-		if (isDebugIOS) {
+		if (isDebugIOS || ios_retail_count == 1) {
 			d->fields->addField_string(C_("GameCube", "Update"),
 				rp_sprintf("IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
 					(ios_major << 8) | ios_minor));
