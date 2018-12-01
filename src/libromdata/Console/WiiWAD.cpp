@@ -1203,7 +1203,6 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		// If the first letter of the ID4 is lowercase,
 		// that means it's a DLC title. GameTDB doesn't
 		// have artwork for DLC titles.
-		// FIXME: NEEDS TESTING BEFORE COMMIT
 		char sysID = be32_to_cpu(d->tmdHeader.title_id.lo) >> 24;
 		if (ISLOWER(sysID)) {
 			// It's lowercase.
