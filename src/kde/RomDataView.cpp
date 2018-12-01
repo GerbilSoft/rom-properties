@@ -471,12 +471,10 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field *f
 	// Bitfield type. Create a grid of checkboxes.
 	Q_Q(RomDataView);
 	const auto &bitfieldDesc = field->desc.bitfield;
-
-	int count = bitfieldDesc.elements;
-	assert(count <= (int)bitfieldDesc.names->size());
-	if (count > (int)bitfieldDesc.names->size()) {
-		count = (int)bitfieldDesc.names->size();
-	}
+	int count = (int)bitfieldDesc.names->size();
+	assert(count <= 32);
+	if (count > 32)
+		count = 32;
 
 	QGridLayout *gridLayout = new QGridLayout();
 	int row = 0, col = 0;
