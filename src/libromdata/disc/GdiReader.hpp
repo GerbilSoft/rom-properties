@@ -72,6 +72,16 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		/** SparseDiscReader functions. **/
 
 		/**
+		 * Get the physical address of the specified logical block index.
+		 *
+		 * NOTE: Not implemented in this subclass.
+		 *
+		 * @param blockIdx	[in] Block index.
+		 * @return Physical block address. (-1 due to not being implemented)
+		 */
+		int64_t getPhysBlockAddr(uint32_t blockIdx) const final;
+
+		/**
 		 * Read the specified block.
 		 *
 		 * This can read either a full block or a partial block.
