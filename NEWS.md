@@ -53,6 +53,8 @@
     * Display the title ID for Wii games, since it might be different than
       the game ID.
     * Show access rights, i.e. AHBPROT and DVD Video.
+    * Detect Wii update partitions that have Boot2 and a single IOS, but
+      not a System Menu.
   * NES: Added support for the internal footer present in some ROMs. This
     footer is used for, among other things, FamicomBox.
   * Nintendo3DS: Split the SMDH code into a separate parser. This should
