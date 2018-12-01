@@ -92,6 +92,7 @@ class AmiiboDataPrivate {
 		static const char_variant_t pikmin_olimar_variants[];
 		static const char_variant_t mii_variants[];
 		static const char_variant_t splatoon_inkling_variants[];
+		static const char_variant_t splatoon_octoling_variants[];
 		static const char_variant_t fe_corrin_variants[];
 
 		static const char_variant_t mss_mario_variants[];
@@ -280,7 +281,7 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x32C
 	nullptr,				// 0x330
 	"Pac-Man",				// 0x334
-	nullptr,				// 0x338
+	"Dark Souls",				// 0x338
 	nullptr,				// 0x33C
 	nullptr,				// 0x340
 	nullptr,				// 0x344
@@ -376,6 +377,13 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_inkling_vari
 	{0x01, "Inkling Girl"},
 	{0x02, "Inkling Boy"},
 	{0x03, "Inkling Squid"},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_octoling_variants[] = {
+	{0x00, "Octoling"},	// NOTE: Not actually assigned.
+	{0x01, "Octoling Girl"},
+	{0x02, "Octoling Boy"},
+	{0x03, "Octoling Octopus"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::fe_corrin_variants[] = {
@@ -1060,6 +1068,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x0802, "Marie"),
 	AMIIBO_CHAR_ID_ONE(0x0803, "Pearl"),
 	AMIIBO_CHAR_ID_ONE(0x0804, "Marina"),
+	AMIIBO_CHAR_ID_VAR(0x0805, "Octoling", splatoon_octoling_variants),
 
 	// Mario Sports Superstars (character series = 0x09C)
 	AMIIBO_CHAR_ID_VAR(0x09C0, "Mario", mss_mario_variants),
@@ -1133,6 +1142,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Pac-Man (character series = 0x334)
 	AMIIBO_CHAR_ID_ONE(0x3340, "Pac-Man"),
 
+	// Dark Souls (character series = 0x338)
+	AMIIBO_CHAR_ID_ONE(0x3380, "Solaire of Astora"),
+
 	// Mega Man (character series = 0x348)
 	AMIIBO_CHAR_ID_ONE(0x3480, "Mega Man"),
 
@@ -1190,13 +1202,14 @@ const char *const AmiiboDataPrivate::amiibo_series_names[] = {
 	nullptr,				// 0x0B
 	"Kirby",				// 0x0C
 	"Special Pok\xC3\xA9mon",		// 0x0D
-	nullptr,				// 0x0E
+	"Mario Sports Superstars",		// 0x0E
 	"Monster Hunter",			// 0x0F
 	"BoxBoy!",				// 0x10
 	"Pikmin",				// 0x11
 	"Fire Emblem",				// 0x12
 	"Metroid",				// 0x13
-	"Cereal",				// 0x14
+	"Other",				// 0x14
+	"Mega Man",				// 0x15
 };
 
 // amiibo IDs.
@@ -2145,9 +2158,32 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Special Pokémon [0x0375]
 	{  0, 0, "Detective Pikachu"},		// 0x0375
 
-	// Splatoon: Wave 4 [0x0376-0x377]
+	// Splatoon: Wave 4 [0x0376-0x0377]
 	{  0, 4, "Pearl"},			// 0x0376
 	{  0, 4, "Marina"},			// 0x0377
+
+	// Dark Souls [0x0378]
+	{  0, 0, "Solaire of Astora"},		// 0x0378
+
+	// Mega Man [0x0379]
+	{  0, 0, "Mega Man"},			// 0x0379
+
+	// Unused [0x037A-0x38D]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037A,0x037B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037C,0x037D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037E,0x037F
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0380,0x0381
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0382,0x0383
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0384,0x0385
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0386,0x0387
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0388,0x0389
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x038A,0x038B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x038C,0x038D
+
+	// Splatoon: Wave 5 [0x038E-0x0390]
+	{  0, 5, "Octoling Girl"},		// 0x038E
+	{  0, 5, "Octoling Boy"},		// 0x038F
+	{  0, 5, "Octoling Octopus"},		// 0x0390
 };
 
 /** AmiiboData **/
@@ -2229,7 +2265,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0377)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0390)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
