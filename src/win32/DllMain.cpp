@@ -814,7 +814,7 @@ STDAPI DllGetVersion(_Out_ DLLVERSIONINFO2 *pdvi)
 	pdvi->info1.dwMajorVersion = RP_VERSION_MAJOR;
 	pdvi->info1.dwMinorVersion = RP_VERSION_MINOR;
 	pdvi->info1.dwBuildNumber = RP_VERSION_PATCH;	// Not technically a build number...
-	pdvi->info1.dwPlatformID = DLLVER_PLATFORM_NT;	// TODO: 9x?
+	pdvi->info1.dwPlatformID = DLLVER_PLATFORM_NT;
 
 	if (pdvi->info1.cbSize >= sizeof(DLLVERSIONINFO2)) {
 		// DLLVERSIONINFO2
