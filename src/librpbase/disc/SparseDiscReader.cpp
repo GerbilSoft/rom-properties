@@ -272,8 +272,7 @@ int SparseDiscReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t si
 		return -1;
 	}
 
-	// TODO: "unlikely" hint.
-	if (size == 0) {
+	if (unlikely(size == 0)) {
 		// Nothing to read.
 		return 0;
 	}
