@@ -155,19 +155,17 @@ public:
 	friend ostream& operator<<(ostream& os, const BitfieldField& field) {
 		auto romField = field.romField;
 		const auto &bitfieldDesc = romField->desc.bitfield;
-		assert(romField->desc.bitfield.names != nullptr);
-		if (!romField->desc.bitfield.names) {
+		assert(bitfieldDesc.names != nullptr);
+		if (!bitfieldDesc.names) {
 			return os << "[ERROR: No bitfield names.]";
 		}
 		const int perRow = (bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4);
 
-		// TODO: Remove bitfieldDesc.elements?
 		unique_ptr<size_t[]> colSize(new size_t[perRow]());
-		int count = bitfieldDesc.elements;
-		assert(count <= (int)bitfieldDesc.names->size());
-		if (count > (int)bitfieldDesc.names->size()) {
-			count = (int)bitfieldDesc.names->size();
-		}
+		int count = (int)bitfieldDesc.names->size();
+		assert(count <= 32);
+		if (count > 32)
+			count = 32;
 
 		// Determine the column widths.
 		int col = 0;
@@ -574,18 +572,15 @@ public:
 			case RomFields::RFT_BITFIELD: {
 				const auto &bitfieldDesc = romField->desc.bitfield;
 				os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
-				   << ",\"elements\":" << bitfieldDesc.elements
 				   << ",\"elementsPerRow\":" << bitfieldDesc.elemsPerRow
 				   << ",\"names\":";
 				assert(bitfieldDesc.names != nullptr);
 				if (bitfieldDesc.names) {
 					os << '[';
-					// TODO: Remove bitfieldDesc.elements?
-					int count = bitfieldDesc.elements;
-					assert(count <= (int)bitfieldDesc.names->size());
-					if (count > (int)bitfieldDesc.names->size()) {
-						count = (int)bitfieldDesc.names->size();
-					}
+					int count = (int)bitfieldDesc.names->size();
+					assert(count <= 32);
+					if (count > 32)
+						count = 32;
 					bool printedOne = false;
 					for (int bit = 0; bit < count; bit++) {
 						const string &name = bitfieldDesc.names->at(bit);

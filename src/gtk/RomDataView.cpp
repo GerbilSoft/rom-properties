@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "RomDataView.hpp"
+#include "rp-gtk-enums.h"
 
 // librpbase
 #include "librpbase/common.h"
@@ -218,7 +219,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	properties[PROP_DESC_FORMAT_TYPE] = g_param_spec_enum(
 		"desc-format-type", "desc-format-type",
 		"Description format type.",
-		TYPE_RP_DESC_FORMAT_TYPE,
+		RP_TYPE_DESC_FORMAT_TYPE,
 		RP_DFT_XFCE,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
@@ -801,6 +802,11 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	// TODO: Description label needs some padding on the top...
 	const auto &bitfieldDesc = field->desc.bitfield;
 
+	int count = (int)bitfieldDesc.names->size();
+	assert(count <= 32);
+	if (count > 32)
+		count = 32;
+
 #if GTK_CHECK_VERSION(3,0,0)
 	GtkWidget *widget = gtk_grid_new();
 	//gtk_grid_set_row_spacings(GTK_TABLE(widget), 2);
@@ -810,13 +816,13 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	int totalRows, totalCols;
 	if (bitfieldDesc.elemsPerRow == 0) {
 		// All elements are in one row.
-		totalCols = bitfieldDesc.elements;
+		totalCols = count;
 		totalRows = 1;
 	} else {
 		// Multiple rows.
 		totalCols = bitfieldDesc.elemsPerRow;
-		totalRows = bitfieldDesc.elements / bitfieldDesc.elemsPerRow;
-		if ((bitfieldDesc.elements % bitfieldDesc.elemsPerRow) > 0) {
+		totalRows = count / bitfieldDesc.elemsPerRow;
+		if ((count % bitfieldDesc.elemsPerRow) > 0) {
 			totalRows++;
 		}
 	}
@@ -826,12 +832,6 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
 #endif
 	gtk_widget_show(widget);
-
-	int count = bitfieldDesc.elements;
-	assert(count <= (int)bitfieldDesc.names->size());
-	if (count > (int)bitfieldDesc.names->size()) {
-		count = (int)bitfieldDesc.names->size();
-	}
 
 	int row = 0, col = 0;
 	for (int bit = 0; bit < count; bit++) {
@@ -1663,32 +1663,4 @@ static gboolean anim_timer_func(RomDataView *page)
 		return FALSE;
 	}
 	return TRUE;
-}
-
-/** RpDescFormatType **/
-
-// TODO: Use glib-mkenums to generate the enum type functions.
-// References:
-// - https://arosenfeld.wordpress.com/2010/08/11/glib-mkenums/
-// - https://github.com/Kurento/kms-cmake-utils/blob/master/CMake/FindGLIB-MKENUMS.cmake
-// - https://github.com/Kurento/kms-cmake-utils/blob/master/CMake/GLibHelpers.cmake
-// - https://developer.gnome.org/gobject/stable/glib-mkenums.html
-GType rp_desc_format_type_get_type(void)
-{
-	static volatile gsize g_enum_type_id__volatile = 0;
-
-	if (g_once_init_enter(&g_enum_type_id__volatile)) {
-		static const GEnumValue values[] = {
-			{ RP_DFT_XFCE, "RP_DFT_XFCE", "XFCE style (default)" },
-			{ RP_DFT_GNOME, "RP_DFT_GNOME", "GNOME style" },
-			{ RP_DFT_LAST, "RP_DFT_LAST", "last" },
-			{ 0, NULL, NULL }
-		};
-		GType g_enum_type_id =
-			g_enum_register_static("RpDescFormatType", values);
-
-		g_once_init_leave(&g_enum_type_id__volatile, g_enum_type_id);
-	}
-
-	return g_enum_type_id__volatile;
 }

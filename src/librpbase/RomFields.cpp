@@ -262,7 +262,6 @@ void RomFields::detach(void)
 				}
 				break;
 			case RFT_BITFIELD:
-				field_new.desc.bitfield.elements = field_old.desc.bitfield.elements;
 				field_new.desc.bitfield.elemsPerRow = field_old.desc.bitfield.elemsPerRow;
 				if (field_old.desc.bitfield.names) {
 					field_new.desc.bitfield.names = new vector<string>(*field_old.desc.bitfield.names);
@@ -783,7 +782,6 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field.data.str = (src->data.str ? new string(*src->data.str) : nullptr);
 				break;
 			case RFT_BITFIELD:
-				field.desc.bitfield.elements = src->desc.bitfield.elements;
 				field.desc.bitfield.elemsPerRow = src->desc.bitfield.elemsPerRow;
 				field.desc.bitfield.names = (src->desc.bitfield.names
 						? new vector<string>(*(src->desc.bitfield.names))
@@ -1048,7 +1046,6 @@ int RomFields::addField_bitfield(const char *name,
 
 	field.name = name;
 	field.type = RFT_BITFIELD;
-	field.desc.bitfield.elements = static_cast<int>(bit_names->size());	// TODO: Remove this.
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.desc.bitfield.names = bit_names;
 	field.data.bitfield = bitfield;

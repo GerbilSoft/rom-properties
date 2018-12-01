@@ -82,10 +82,27 @@ class SparseDiscReader : public IDiscReader
 		/** Virtual functions for SparseDiscReader subclasses. **/
 
 		/**
+		 * Get the physical address of the specified logical block index.
+		 *
+		 * Special return values:
+		 * -  0: Empty block. (Sparse files are unlikely to have blocks that
+		 *                     start at address 0.)
+		 * - -1: Invalid block index.
+		 *
+		 * @param blockIdx	[in] Block index.
+		 * @return Physical block address.
+		 */
+		virtual int64_t getPhysBlockAddr(uint32_t blockIdx) const = 0;
+
+		/**
 		 * Read the specified block.
 		 *
 		 * This can read either a full block or a partial block.
 		 * For a full block, set pos = 0 and size = block_size.
+		 *
+		 * This function can be overridden by subclasses if necessary,
+		 * though usually it isn't needed. Override getPhysBlockAddr()
+		 * instead.
 		 *
 		 * @param blockIdx	[in] Block index.
 		 * @param ptr		[out] Output data buffer.
@@ -93,7 +110,7 @@ class SparseDiscReader : public IDiscReader
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) = 0;
+		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size);
 };
 
 }

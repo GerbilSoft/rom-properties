@@ -148,10 +148,8 @@ class RomFields
 			union _desc {
 				unsigned int flags;	// Generic flags. (string, date)
 
+				// TODO: Reorder to reduce wasted space on 64-bit?
 				struct _bitfield {
-					// Number of bits to check. (must be 1-32)
-					// TODO: Remove this field.
-					int elements;
 					// Bit flags per row. (3 or 4 is usually good)
 					int elemsPerRow;
 					// Bit flag names.

@@ -28,6 +28,7 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <cstring>
 
 namespace LibRpBase {
 
@@ -242,6 +243,58 @@ int64_t SparseDiscReader::size(void)
 	}
 
 	return d->disc_size;
+}
+
+/**
+ * Read the specified block.
+ *
+ * This can read either a full block or a partial block.
+ * For a full block, set pos = 0 and size = block_size.
+ *
+ * @param blockIdx	[in] Block index.
+ * @param ptr		[out] Output data buffer.
+ * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+ * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
+ * @return Number of bytes read, or -1 if the block index is invalid.
+ */
+int SparseDiscReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
+{
+	// Read 'size' bytes of block 'blockIdx', starting at 'pos'.
+	// NOTE: This can only be called by SparseDiscReader,
+	// so the main assertions are already checked there.
+	RP_D(SparseDiscReader);
+	assert(pos >= 0 && pos < (int)d->block_size);
+	assert(size <= d->block_size);
+	// TODO: Make sure overflow doesn't occur.
+	assert(static_cast<int64_t>(pos + size) <= static_cast<int64_t>(d->block_size));
+	if (pos < 0 || static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size)) {
+		// pos+size is out of range.
+		return -1;
+	}
+
+	if (unlikely(size == 0)) {
+		// Nothing to read.
+		return 0;
+	}
+
+	// Get the physical address first.
+	const int64_t physBlockAddr = getPhysBlockAddr(blockIdx);
+	assert(physBlockAddr >= 0);
+	if (physBlockAddr < 0) {
+		// Out of range.
+		return -1;
+	}
+
+	if (physBlockAddr == 0) {
+		// Empty block.
+		memset(ptr, 0, size);
+		return static_cast<int>(size);
+	}
+
+	// Read from the block.
+	size_t sz_read = d->file->seekAndRead(physBlockAddr + pos, ptr, size);
+	m_lastError = d->file->lastError();
+	return (sz_read > 0 ? (int)sz_read : -1);
 }
 
 }

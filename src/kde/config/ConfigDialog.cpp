@@ -165,9 +165,11 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	d->btnReset = d->ui.buttonBox->button(QDialogButtonBox::Reset);
 	d->btnDefaults = d->ui.buttonBox->button(QDialogButtonBox::RestoreDefaults);
 
-	// FIXME: Set the "Reset" button's icon to "edit-undo". (Also something for Defaults.)
-	// Attmepting to do this using d->btnApply->setIcon() doesn't seem to work...
-	// See KDE5's System Settings for the correct icons.
+	// Fix button icons. (Matches KDE)
+	// Qt uses "document-revert" for "Reset" and nothing for "Defaults".
+	// KDE uses "edit-undo" for "Reset" and "document-revert" for "Defaults".
+	d->btnReset->setIcon(QIcon::fromTheme(QLatin1String("edit-undo")));
+	d->btnDefaults->setIcon(QIcon::fromTheme(QLatin1String("document-revert")));
 
 	// Connect slots for "Apply" and "Reset".
 	connect(d->btnApply, SIGNAL(clicked()), this, SLOT(apply()));

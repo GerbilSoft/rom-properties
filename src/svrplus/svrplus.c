@@ -498,7 +498,6 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 				: L"An error occurred while registering the DLL:");
 		}
 
-		// TODO: Optimize by not using wcscat_s()?
 		if (res32 != ISR_OK) {
 			if (g_is64bit) {
 				wcscpy_s(msg2, ARRAY_SIZE(msg2), L"\x2022 32-bit: ");

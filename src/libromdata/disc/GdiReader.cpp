@@ -474,6 +474,21 @@ int GdiReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 /** SparseDiscReader functions. **/
 
 /**
+ * Get the physical address of the specified logical block index.
+ *
+ * NOTE: Not implemented in this subclass.
+ *
+ * @param blockIdx	[in] Block index.
+ * @return Physical block address. (-1 due to not being implemented)
+ */
+int64_t GdiReader::getPhysBlockAddr(uint32_t blockIdx) const
+{
+	RP_UNUSED(blockIdx);
+	assert(!"GdiReader::getPhysBlockAddr() is not implemented.");
+	return -1;
+}
+
+/**
  * Read the specified block.
  *
  * This can read either a full block or a partial block.

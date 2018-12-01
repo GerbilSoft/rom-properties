@@ -209,9 +209,6 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 {
 	TagData tags;
 
-	// FIXME: May be compressed with "Pack-Ice".
-	// https://sourceforge.net/projects/sc68/files/unice68/
-
 	// Read up to 4 KB from the beginning of the file.
 	// TODO: Support larger headers?
 	size_t headerSize = 4096;
@@ -226,6 +223,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 	header[headerSize] = 0;	// ensure NULL-termination
 
 	// Check if this is packed with ICE.
+	// https://sourceforge.net/projects/sc68/files/unice68/
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(header.get());
 	if (pData32[0] == cpu_to_be32('ICE!') || pData32[0] == cpu_to_be32('Ice!')) {
 		// Packed with ICE.

@@ -217,58 +217,28 @@ int WuxReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 /** SparseDiscReader functions. **/
 
 /**
- * Read the specified block.
- *
- * This can read either a full block or a partial block.
- * For a full block, set pos = 0 and size = block_size.
+ * Get the physical address of the specified logical block index.
  *
  * @param blockIdx	[in] Block index.
- * @param ptr		[out] Output data buffer.
- * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
- * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
- * @return Number of bytes read, or -1 if the block index is invalid.
+ * @return Physical address. (0 == empty block; -1 == invalid block index)
  */
-int WuxReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
+int64_t WuxReader::getPhysBlockAddr(uint32_t blockIdx) const
 {
-	// Read 'size' bytes of block 'blockIdx', starting at 'pos'.
-	// NOTE: This can only be called by SparseDiscReader,
-	// so the main assertions are already checked there.
+	// Make sure the block index is in range.
 	RP_D(WuxReader);
-	assert(pos >= 0 && pos < (int)d->block_size);
-	assert(size <= d->block_size);
-	// TODO: Make sure overflow doesn't occur.
-	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
-	if (pos < 0 || pos >= static_cast<int>(d->block_size) ||
-		size > d->block_size ||
-		static_cast<int64_t>(pos + size) > static_cast<int64_t>(d->block_size))
-	{
-		// pos+size is out of range.
-		return -1;
-	}
-
-	if (unlikely(size == 0)) {
-		// Nothing to read.
-		return 0;
-	}
-
-	// Get the physical block number first.
 	assert(blockIdx < d->idxTbl.size());
 	if (blockIdx >= d->idxTbl.size()) {
 		// Out of range.
 		return -1;
 	}
 
+	// Get the physical block index.
 	// NOTE: .wux only supports deduplication.
 	// There's no special indicator for a "zero" block.
 	const uint32_t physBlockIdx = le32_to_cpu(d->idxTbl[blockIdx]);
 
-	// Go to the block.
-	// TODO: Make sure it isn't out of range?
-	const int64_t phys_pos = d->dataOffset +
-		(static_cast<int64_t>(physBlockIdx) * d->block_size) + pos;
-	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
-	m_lastError = d->file->lastError();
-	return (sz_read > 0 ? (int)sz_read : -1);
+	// Convert to a physical block address and return.
+	return d->dataOffset + (static_cast<int64_t>(physBlockIdx) * d->block_size);
 }
 
 }
