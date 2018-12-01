@@ -1,5 +1,5 @@
 /* mz_strm_posix.c -- Stream for filesystem access for posix/linux
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -14,38 +14,31 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
 
 #include "mz.h"
 #include "mz_strm.h"
 #include "mz_strm_os.h"
 
+#include <stdio.h> /* fopen, fread.. */
+#include <errno.h>
+
 /***************************************************************************/
 
-#if defined(MZ_FILE32_API)
-#  define fopen64 fopen
-#  define ftello64 ftell
-#  define fseeko64 fseek
-#else
-#  if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || \
-      defined(__OpenBSD__) || defined(__APPLE__) || defined(__ANDROID__)
-#    define fopen64 fopen
+#define fopen64 fopen
+#ifndef MZ_FILE32_API
+#  ifndef NO_FSEEKO
 #    define ftello64 ftello
 #    define fseeko64 fseeko
+#  elif defined(_MSC_VER) && (_MSC_VER >= 1400)
+#    define ftello64 _ftelli64
+#    define fseeko64 _fseeki64
 #  endif
-#  ifdef _MSC_VER
-#    define fopen64 fopen
-#    if (_MSC_VER >= 1400) && (!(defined(NO_MSCVER_FILE64_FUNC)))
-#      define ftello64 _ftelli64
-#      define fseeko64 _fseeki64
-#    else /* old MSC */
-#      define ftello64 ftell
-#      define fseeko64 fseek
-#    endif
-#  endif
+#endif
+#ifndef ftello64
+#  define ftello64 ftell
+#endif
+#ifndef fseeko64
+#  define fseeko64 fseek
 #endif
 
 /***************************************************************************/
@@ -99,6 +92,9 @@ int32_t mz_stream_os_open(void *stream, const char *path, int32_t mode)
         posix->error = errno;
         return MZ_OPEN_ERROR;
     }
+
+    if (mode & MZ_OPEN_MODE_APPEND)
+        return mz_stream_os_seek(stream, 0, MZ_SEEK_END);
 
     return MZ_OK;
 }

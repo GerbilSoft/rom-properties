@@ -1,5 +1,5 @@
 /* mz_crypt_brg.c -- Crypto/hash functions using Brian Gladman's library
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,27 +9,25 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
 
-#include <sys/types.h>
+#include "mz.h"
+#include "mz_os.h"
+
 #if defined(HAVE_GETRANDOM)
 #  include <sys/random.h>
 #endif
 #if defined(HAVE_LIBBSD)
-#  include <bsd/stdlib.h> // arc4random_buf
+#  include <sys/types.h>
+#  ifndef __u_char_defined
+     typedef unsigned char  u_char;
+#  endif 
+#  include <bsd/stdlib.h> /* arc4random_buf */
 #endif
 
 #include "aes.h"
 #include "sha1.h"
 #include "sha2.h"
 #include "hmac.h"
-
-#include "mz.h"
-
-#include "mz_os.h"
 
 /***************************************************************************/
 

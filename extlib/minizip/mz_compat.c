@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,10 +11,6 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
 
 #include "mz.h"
 #include "mz_os.h"
@@ -23,6 +19,8 @@
 #include "mz_strm_os.h"
 #include "mz_strm_zlib.h"
 #include "mz_zip.h"
+
+#include <stdio.h> /* SEEK */
 
 #include "mz_compat.h"
 
@@ -182,8 +180,8 @@ int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_f
 
     file_info.compression_method = compression_method;
     file_info.filename = filename;
-    //file_info.extrafield_local = extrafield_local;
-    //file_info.extrafield_local_size = size_extrafield_local;
+    /* file_info.extrafield_local = extrafield_local; */
+    /* file_info.extrafield_local_size = size_extrafield_local; */
     file_info.extrafield = extrafield_global;
     file_info.extrafield_size = size_extrafield_global;
     file_info.version_madeby = version_madeby;
@@ -193,7 +191,7 @@ int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, const zip_f
         file_info.zip64 = MZ_ZIP64_FORCE;
     else
         file_info.zip64 = MZ_ZIP64_DISABLE;
-#ifdef HAVE_AES
+#ifdef HAVE_WZAES
     if ((password != NULL) || (raw && (file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)))
         file_info.aes_version = MZ_AES_VERSION;
 #endif
@@ -312,13 +310,13 @@ int ZEXPORT zipClose2_64(zipFile file, const char *global_comment, uint16_t vers
     return err;
 }
 
-// Only closes the zip handle, does not close the stream
+/* Only closes the zip handle, does not close the stream */
 int ZEXPORT zipClose_MZ(zipFile file, const char *global_comment)
 {
     return zipClose2_MZ(file, global_comment, MZ_VERSION_MADEBY);
 }
 
-// Only closes the zip handle, does not close the stream
+/* Only closes the zip handle, does not close the stream */
 int ZEXPORT zipClose2_MZ(zipFile file, const char *global_comment, uint16_t version_madeby)
 {
     mz_compat *compat = (mz_compat *)file;
@@ -449,7 +447,7 @@ int ZEXPORT unzClose(unzFile file)
     return err;
 }
 
-// Only closes the zip handle, does not close the stream
+/* Only closes the zip handle, does not close the stream */
 int ZEXPORT unzClose_MZ(unzFile file)
 {
     mz_compat *compat = (mz_compat *)file;
@@ -955,7 +953,7 @@ int ZEXPORT unzSeek64(unzFile file, int64_t offset, int origin)
 
     err = mz_zip_get_stream(compat->handle, &stream);
     if (err == MZ_OK)
-        err = mz_stream_seek(stream, compat->entry_pos + position, SEEK_SET);
+        err = mz_stream_seek(stream, compat->entry_pos + position, MZ_SEEK_SET);
     if (err == MZ_OK)
         compat->total_out = position;
     return err;
@@ -1019,7 +1017,7 @@ void fill_win32_filefunc64A(zlib_filefunc64_def *pzlib_filefunc_def)
 
 void fill_win32_filefunc64W(zlib_filefunc64_def *pzlib_filefunc_def)
 {
-    // NOTE: You should no longer pass in widechar string to open function
+    /* NOTE: You should no longer pass in widechar string to open function */
     if (pzlib_filefunc_def != NULL)
         *pzlib_filefunc_def = mz_stream_os_get_interface();
 }

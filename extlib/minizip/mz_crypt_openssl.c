@@ -1,5 +1,5 @@
 /* mz_crypt_openssl.c -- Crypto/hash functions for OpenSSL
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,9 +9,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+
+#include "mz.h"
 
 #include <openssl/err.h>
 #include <openssl/rand.h>
@@ -21,8 +20,6 @@
 #include <openssl/pkcs12.h>
 #include <openssl/cms.h>
 #include <openssl/x509.h>
-
-#include "mz.h"
 
 /***************************************************************************/
 
@@ -441,6 +438,9 @@ int32_t mz_crypt_hmac_copy(void *src_handle, void *target_handle)
 
     if (source == NULL || target == NULL)
         return MZ_PARAM_ERROR;
+    
+    if (target->ctx == NULL)
+        target->ctx = HMAC_CTX_new();
 
     result = HMAC_CTX_copy(target->ctx, source->ctx);
     if (!result)
@@ -629,11 +629,12 @@ int32_t mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *si
             intercerts = CMS_get1_certs(cms);
         if (intercerts)
         {
-            // Verify signer certificates
+            /* Verify signer certificates */
+            signer_count = sk_X509_num(signers);
             if (signer_count > 0)
                 err = MZ_OK;
 
-            for (i = 0; i < sk_X509_num(signers); i++)
+            for (i = 0; i < signer_count; i++)
             {
                 store_ctx = X509_STORE_CTX_new();
                 X509_STORE_CTX_init(store_ctx, cert_store, sk_X509_value(signers, i), intercerts);
@@ -653,7 +654,7 @@ int32_t mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *si
 
         if (err == MZ_OK)
         {
-            // Verify the message
+            /* Verify the message */
             if (((int32_t)buf_mem->length != message_size) || 
                 (memcmp(buf_mem->data, message, message_size) != 0))
                 err = MZ_SIGN_ERROR;

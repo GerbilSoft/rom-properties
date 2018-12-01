@@ -1,5 +1,5 @@
 /* mz_strm_bzip.c -- Stream for bzip inflate/deflate
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -10,15 +10,11 @@
 */
 
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-
-#include "bzlib.h"
-
 #include "mz.h"
 #include "mz_strm.h"
 #include "mz_strm_bzip.h"
+
+#include "bzlib.h"
 
 /***************************************************************************/
 
@@ -116,6 +112,9 @@ int32_t mz_stream_bzip_is_open(void *stream)
 int32_t mz_stream_bzip_read(void *stream, void *buf, int32_t size)
 {
 #ifdef MZ_ZIP_NO_DECOMPRESSION
+    MZ_UNUSED(stream);
+    MZ_UNUSED(buf);
+    MZ_UNUSED(size);
     return MZ_SUPPORT_ERROR;
 #else
     mz_stream_bzip *bzip = (mz_stream_bzip *)stream;
@@ -127,7 +126,7 @@ int32_t mz_stream_bzip_read(void *stream, void *buf, int32_t size)
     int32_t total_out = 0;
     int32_t in_bytes = 0;
     int32_t out_bytes = 0;
-    int32_t bytes_to_read = 0;
+    int32_t bytes_to_read = sizeof(bzip->buffer);
     int32_t read = 0;
     int32_t err = BZ_OK;
 
@@ -142,10 +141,9 @@ int32_t mz_stream_bzip_read(void *stream, void *buf, int32_t size)
     {
         if (bzip->bzstream.avail_in == 0)
         {
-            bytes_to_read = sizeof(bzip->buffer);
             if (bzip->max_total_in > 0)
             {
-                if ((bzip->max_total_in - bzip->total_in) < (int64_t)sizeof(bzip->buffer))
+                if ((int64_t)bytes_to_read > (bzip->max_total_in - bzip->total_in))
                     bytes_to_read = (int32_t)(bzip->max_total_in - bzip->total_in);
             }
 
@@ -199,6 +197,7 @@ int32_t mz_stream_bzip_read(void *stream, void *buf, int32_t size)
 #endif
 }
 
+#ifndef MZ_ZIP_NO_COMPRESSION
 static int32_t mz_stream_bzip_flush(void *stream)
 {
     mz_stream_bzip *bzip = (mz_stream_bzip *)stream;
@@ -254,6 +253,7 @@ static int32_t mz_stream_bzip_compress(void *stream, int flush)
 
     return MZ_OK;
 }
+#endif
 
 int32_t mz_stream_bzip_write(void *stream, const void *buf, int32_t size)
 {
@@ -262,6 +262,7 @@ int32_t mz_stream_bzip_write(void *stream, const void *buf, int32_t size)
 
 #ifdef MZ_ZIP_NO_COMPRESSION
     MZ_UNUSED(bzip);
+    MZ_UNUSED(buf);
     err = MZ_SUPPORT_ERROR;
 #else
     bzip->bzstream.next_in = (char *)(intptr_t)buf;

@@ -1,5 +1,5 @@
 /* mz_strm_libcomp.c -- Stream for apple compression
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -10,17 +10,11 @@
 */
 
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-
-#include <compression.h>
-
-#include "zlib.h"
-
 #include "mz.h"
 #include "mz_strm.h"
 #include "mz_strm_libcomp.h"
+
+#include <compression.h>
 
 /***************************************************************************/
 
@@ -114,6 +108,9 @@ int32_t mz_stream_libcomp_is_open(void *stream)
 int32_t mz_stream_libcomp_read(void *stream, void *buf, int32_t size)
 {
 #ifdef MZ_ZIP_NO_DECOMPRESSION
+    MZ_UNUSED(stream);
+    MZ_UNUSED(buf);
+    MZ_UNUSED(size);
     return MZ_SUPPORT_ERROR;
 #else
     mz_stream_libcomp *libcomp = (mz_stream_libcomp *)stream;
@@ -125,10 +122,10 @@ int32_t mz_stream_libcomp_read(void *stream, void *buf, int32_t size)
     int32_t total_out = 0;
     int32_t in_bytes = 0;
     int32_t out_bytes = 0;
-    int32_t bytes_to_read = 0;
+    int32_t bytes_to_read = sizeof(libcomp->buffer);
     int32_t read = 0;
-    int32_t err = Z_OK;
-
+    int32_t err = MZ_OK;
+    int16_t flags = 0;
 
     libcomp->cstream.dst_ptr = buf;
     libcomp->cstream.dst_size = (size_t)size;
@@ -137,10 +134,9 @@ int32_t mz_stream_libcomp_read(void *stream, void *buf, int32_t size)
     {
         if (libcomp->cstream.src_size == 0)
         {
-            bytes_to_read = sizeof(libcomp->buffer);
             if (libcomp->max_total_in > 0)
             {
-                if ((libcomp->max_total_in - libcomp->total_in) < (int64_t)sizeof(libcomp->buffer))
+                if ((int64_t)bytes_to_read > (libcomp->max_total_in - libcomp->total_in))
                     bytes_to_read = (int32_t)(libcomp->max_total_in - libcomp->total_in);
             }
 
@@ -149,8 +145,8 @@ int32_t mz_stream_libcomp_read(void *stream, void *buf, int32_t size)
             if (read < 0)
                 return read;
             if (read == 0)
-                break;
-
+                flags = COMPRESSION_STREAM_FINALIZE;
+            
             libcomp->cstream.src_ptr = libcomp->buffer;
             libcomp->cstream.src_size = (size_t)read;
         }
@@ -158,7 +154,7 @@ int32_t mz_stream_libcomp_read(void *stream, void *buf, int32_t size)
         total_in_before = libcomp->cstream.src_size;
         total_out_before = libcomp->cstream.dst_size;
 
-        err = compression_stream_process(&libcomp->cstream, 0);
+        err = compression_stream_process(&libcomp->cstream, flags);
         if (err == COMPRESSION_STATUS_ERROR)
         {
             libcomp->error = err;
@@ -208,7 +204,7 @@ static int32_t mz_stream_libcomp_deflate(void *stream, int flush)
     uint64_t total_out_before = 0;
     uint64_t total_out_after = 0;
     uint32_t out_bytes = 0;
-    int32_t err = Z_OK;
+    int32_t err = MZ_OK;
 
 
     do
@@ -310,7 +306,7 @@ int32_t mz_stream_libcomp_close(void *stream)
     
     libcomp->initialized = 0;
 
-    if (libcomp->error != Z_OK)
+    if (libcomp->error != MZ_OK)
         return MZ_CLOSE_ERROR;
     return MZ_OK;
 }
@@ -390,13 +386,6 @@ void mz_stream_libcomp_delete(void **stream)
 
 /***************************************************************************/
 
-// Define z_crc_t in zlib 1.2.5 and less
-#if (ZLIB_VERNUM < 0x1270)
-typedef unsigned long z_crc_t;
-#endif
-
-/***************************************************************************/
-
 static mz_stream_vtbl mz_stream_zlib_vtbl = {
     mz_stream_libcomp_open,
     mz_stream_libcomp_is_open,
@@ -431,14 +420,4 @@ void *mz_stream_zlib_create(void **stream)
 void *mz_stream_zlib_get_interface(void)
 {
     return (void *)&mz_stream_zlib_vtbl;
-}
-
-static int64_t mz_stream_zlib_crc32(int64_t value, const void *buf, int32_t size)
-{
-    return (int64_t)crc32((z_crc_t)value, buf, (uint32_t)size);
-}
-
-void *mz_stream_zlib_get_crc32_update(void)
-{
-    return (void *)mz_stream_zlib_crc32;
 }

@@ -1,5 +1,5 @@
 /* mz_strm_wzaes.c -- Stream for WinZip AES encryption
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -10,9 +10,6 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-
-#include <stdlib.h>
-#include <string.h>
 
 #include "mz.h"
 #include "mz_crypt.h"
@@ -121,20 +118,20 @@ int32_t mz_stream_wzaes_open(void *stream, const char *path, int32_t mode)
 
     key_length = MZ_AES_KEY_LENGTH(wzaes->encryption_mode);
 
-    // Derive the encryption and authentication keys and the password verifier
+    /* Derive the encryption and authentication keys and the password verifier */
     mz_crypt_pbkdf2((uint8_t *)password, password_length, salt_value, salt_length,
         MZ_AES_KEYING_ITERATIONS, kbuf, 2 * key_length + MZ_AES_PW_VERIFY_SIZE);
 
-    // Initialize the encryption nonce and buffer pos
+    /* Initialize the encryption nonce and buffer pos */
     wzaes->crypt_pos = MZ_AES_BLOCK_SIZE;
     memset(wzaes->nonce, 0, sizeof(wzaes->nonce));
 
-    // Initialize for encryption using key 1
+    /* Initialize for encryption using key 1 */
     mz_crypt_aes_reset(wzaes->aes);
     mz_crypt_aes_set_mode(wzaes->aes, wzaes->encryption_mode);
     mz_crypt_aes_set_encrypt_key(wzaes->aes, kbuf, key_length);
 
-    // Initialize for authentication using key 2
+    /* Initialize for authentication using key 2 */
     mz_crypt_hmac_reset(wzaes->hmac);
     mz_crypt_hmac_set_algorithm(wzaes->hmac, MZ_HASH_SHA1);
     mz_crypt_hmac_init(wzaes->hmac, kbuf + key_length, key_length);
@@ -193,11 +190,11 @@ static int32_t mz_stream_wzaes_encrypt_data(void *stream, uint8_t *buf, int32_t 
         {
             uint32_t j = 0;
 
-            // Increment encryption nonce
+            /* Increment encryption nonce */
             while (j < 8 && !++wzaes->nonce[j])
                 j += 1;
 
-            // Encrypt the nonce to form next xor buffer
+            /* Encrypt the nonce to form next xor buffer */
             memcpy(wzaes->crypt_block, wzaes->nonce, MZ_AES_BLOCK_SIZE);
             mz_crypt_aes_encrypt(wzaes->aes, wzaes->crypt_block, sizeof(wzaes->crypt_block));
             pos = 0;
@@ -218,7 +215,7 @@ int32_t mz_stream_wzaes_read(void *stream, void *buf, int32_t size)
     int32_t read = 0;
 
     max_total_in = wzaes->max_total_in - MZ_AES_FOOTER_SIZE;
-    if (bytes_to_read + wzaes->total_in > max_total_in)
+    if ((int64_t)bytes_to_read > (max_total_in - wzaes->total_in))
         bytes_to_read = (int32_t)(max_total_in - wzaes->total_in);
 
     read = mz_stream_read(wzaes->stream.base, buf, bytes_to_read);
@@ -227,30 +224,45 @@ int32_t mz_stream_wzaes_read(void *stream, void *buf, int32_t size)
     {
         mz_crypt_hmac_update(wzaes->hmac, (uint8_t *)buf, read);
         mz_stream_wzaes_encrypt_data(stream, (uint8_t *)buf, read);
+
+        wzaes->total_in += read;
     }
 
-    wzaes->total_in += read;
     return read;
 }
 
 int32_t mz_stream_wzaes_write(void *stream, const void *buf, int32_t size)
 {
     mz_stream_wzaes *wzaes = (mz_stream_wzaes *)stream;
+    const uint8_t *buf_ptr = (const uint8_t *)buf;
+    int32_t bytes_to_write = sizeof(wzaes->buffer);
+    int32_t total_written = 0;
     int32_t written = 0;
 
     if (size < 0)
         return MZ_PARAM_ERROR;
-    if (size > (int32_t)sizeof(wzaes->buffer))
-        return MZ_BUF_ERROR;
 
-    memcpy(wzaes->buffer, buf, size);
-    mz_stream_wzaes_encrypt_data(stream, (uint8_t *)wzaes->buffer, size);
-    mz_crypt_hmac_update(wzaes->hmac, wzaes->buffer, size);
+    do
+    {
+        if (bytes_to_write > (size - total_written))
+            bytes_to_write = (size - total_written);
 
-    written = mz_stream_write(wzaes->stream.base, wzaes->buffer, size);
-    if (written > 0)
-        wzaes->total_out += written;
-    return written;
+        memcpy(wzaes->buffer, buf_ptr, bytes_to_write);
+        buf_ptr += bytes_to_write;
+
+        mz_stream_wzaes_encrypt_data(stream, (uint8_t *)wzaes->buffer, bytes_to_write);
+        mz_crypt_hmac_update(wzaes->hmac, wzaes->buffer, bytes_to_write);
+
+        written = mz_stream_write(wzaes->stream.base, wzaes->buffer, bytes_to_write);
+        if (written < 0)
+            return written;
+
+        total_written += written;
+    }
+    while (total_written < size && written > 0);
+
+    wzaes->total_out += total_written;
+    return total_written;
 }
 
 int64_t mz_stream_wzaes_tell(void *stream)
@@ -287,7 +299,7 @@ int32_t mz_stream_wzaes_close(void *stream)
 
         wzaes->total_in += MZ_AES_AUTHCODE_SIZE;
 
-        // If entire entry was not read this will fail
+        /* If entire entry was not read this will fail */
         if (memcmp(computed_hash, expected_hash, MZ_AES_AUTHCODE_SIZE) != 0)
             return MZ_CRC_ERROR;
     }

@@ -1,5 +1,5 @@
 /* mz_strm_pkcrypt.c -- Code for traditional PKWARE encryption
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -23,17 +23,10 @@
 */
 
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "mz.h"
 #include "mz_crypt.h"
 #include "mz_strm.h"
 #include "mz_strm_pkcrypt.h"
-
-/***************************************************************************/
-
-#define RAND_HEAD_LEN  (12)
 
 /***************************************************************************/
 
@@ -49,7 +42,7 @@ static mz_stream_vtbl mz_stream_pkcrypt_vtbl = {
     mz_stream_pkcrypt_create,
     mz_stream_pkcrypt_delete,
     mz_stream_pkcrypt_get_prop_int64,
-    NULL
+    mz_stream_pkcrypt_set_prop_int64
 };
 
 /***************************************************************************/
@@ -58,10 +51,11 @@ typedef struct mz_stream_pkcrypt_s {
     mz_stream       stream;
     int32_t         error;
     int16_t         initialized;
-    uint8_t         buffer[INT16_MAX];
+    uint8_t         buffer[UINT16_MAX];
     int64_t         total_in;
+    int64_t         max_total_in;
     int64_t         total_out;
-    uint32_t        keys[3];          // keys defining the pseudo-random sequence
+    uint32_t        keys[3];          /* keys defining the pseudo-random sequence */
     uint8_t         verify1;
     uint8_t         verify2;
     const char      *password;
@@ -83,9 +77,9 @@ static uint8_t mz_stream_pkcrypt_decrypt_byte(void *stream)
 {
     mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
 
-    unsigned temp; // POTENTIAL BUG:  temp*(temp^1) may overflow in an
-                   // unpredictable manner on 16-bit systems; not a problem
-                   // with any known compiler so far, though.
+    unsigned temp; /* POTENTIAL BUG:  temp*(temp^1) may overflow in an */
+                   /* unpredictable manner on 16-bit systems; not a problem */
+                   /* with any known compiler so far, though. */
 
     temp = pkcrypt->keys[2] | 2;
     return (uint8_t)(((temp * (temp ^ 1)) >> 8) & 0xff);
@@ -132,7 +126,7 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode)
     int16_t i = 0;
     uint8_t verify1 = 0;
     uint8_t verify2 = 0;
-    uint8_t header[RAND_HEAD_LEN];
+    uint8_t header[MZ_PKCRYPT_HEADER_SIZE];
     const char *password = path;
 
     pkcrypt->total_in = 0;
@@ -157,20 +151,20 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode)
 
         return MZ_SUPPORT_ERROR;
 #else
-        // First generate RAND_HEAD_LEN - 2 random bytes.
-        mz_crypt_rand(header, RAND_HEAD_LEN - 2);
+        /* First generate RAND_HEAD_LEN - 2 random bytes. */
+        mz_crypt_rand(header, MZ_PKCRYPT_HEADER_SIZE - 2);
 
-        // Encrypt random header (last two bytes is high word of crc)
-        for (i = 0; i < RAND_HEAD_LEN - 2; i++)
+        /* Encrypt random header (last two bytes is high word of crc) */
+        for (i = 0; i < MZ_PKCRYPT_HEADER_SIZE - 2; i++)
             header[i] = mz_stream_pkcrypt_encode(stream, header[i], t);
 
         header[i++] = mz_stream_pkcrypt_encode(stream, pkcrypt->verify1, t);
         header[i++] = mz_stream_pkcrypt_encode(stream, pkcrypt->verify2, t);
 
-        if (mz_stream_write(pkcrypt->stream.base, header, RAND_HEAD_LEN) != RAND_HEAD_LEN)
+        if (mz_stream_write(pkcrypt->stream.base, header, sizeof(header)) != sizeof(header))
             return MZ_WRITE_ERROR;
 
-        pkcrypt->total_out += RAND_HEAD_LEN;
+        pkcrypt->total_out += MZ_PKCRYPT_HEADER_SIZE;
 #endif
     }
     else if (mode & MZ_OPEN_MODE_READ)
@@ -183,21 +177,21 @@ int32_t mz_stream_pkcrypt_open(void *stream, const char *path, int32_t mode)
 
         return MZ_SUPPORT_ERROR;
 #else
-        if (mz_stream_read(pkcrypt->stream.base, header, RAND_HEAD_LEN) != RAND_HEAD_LEN)
+        if (mz_stream_read(pkcrypt->stream.base, header, sizeof(header)) != sizeof(header))
             return MZ_READ_ERROR;
 
-        for (i = 0; i < RAND_HEAD_LEN - 2; i++)
+        for (i = 0; i < MZ_PKCRYPT_HEADER_SIZE - 2; i++)
             header[i] = mz_stream_pkcrypt_decode(stream, header[i]);
 
         verify1 = mz_stream_pkcrypt_decode(stream, header[i++]);
         verify2 = mz_stream_pkcrypt_decode(stream, header[i++]);
 
-        // Older versions used 2 byte check, newer versions use 1 byte check.
+        /* Older versions used 2 byte check, newer versions use 1 byte check. */
         MZ_UNUSED(verify1);
         if ((verify2 != 0) && (verify2 != pkcrypt->verify2))
             return MZ_PASSWORD_ERROR;
 
-        pkcrypt->total_in += RAND_HEAD_LEN;
+        pkcrypt->total_in += MZ_PKCRYPT_HEADER_SIZE;
 #endif
     }
 
@@ -217,15 +211,22 @@ int32_t mz_stream_pkcrypt_read(void *stream, void *buf, int32_t size)
 {
     mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
     uint8_t *buf_ptr = (uint8_t *)buf;
+    int32_t bytes_to_read = size;
     int32_t read = 0;
     int32_t i = 0;
 
-    read = mz_stream_read(pkcrypt->stream.base, buf, size);
+
+    if ((int64_t)bytes_to_read > (pkcrypt->max_total_in - pkcrypt->total_in))
+        bytes_to_read = (int32_t)(pkcrypt->max_total_in - pkcrypt->total_in);
+
+    read = mz_stream_read(pkcrypt->stream.base, buf, bytes_to_read);
 
     for (i = 0; i < read; i++)
         buf_ptr[i] = mz_stream_pkcrypt_decode(stream, buf_ptr[i]);
 
-    pkcrypt->total_in += read;
+    if (read > 0)
+        pkcrypt->total_in += read;
+
     return read;
 }
 
@@ -233,22 +234,36 @@ int32_t mz_stream_pkcrypt_write(void *stream, const void *buf, int32_t size)
 {
     mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
     const uint8_t *buf_ptr = (const uint8_t *)buf;
+    int32_t bytes_to_write = sizeof(pkcrypt->buffer);
+    int32_t total_written = 0;
     int32_t written = 0;
     int32_t i = 0;
     uint16_t t = 0;
 
-    if (size > (int32_t)sizeof(pkcrypt->buffer))
-        return MZ_BUF_ERROR;
+    if (size < 0)
+        return MZ_PARAM_ERROR;
 
-    for (i = 0; i < size; i++)
-        pkcrypt->buffer[i] = mz_stream_pkcrypt_encode(stream, buf_ptr[i], t);
+    do
+    {
+        if (bytes_to_write > (size - total_written))
+            bytes_to_write = (size - total_written);
 
-    written = mz_stream_write(pkcrypt->stream.base, pkcrypt->buffer, size);
+        for (i = 0; i < bytes_to_write; i += 1)
+        {
+            pkcrypt->buffer[i] = mz_stream_pkcrypt_encode(stream, *buf_ptr, t);
+            buf_ptr += 1;
+        }
 
-    if (written > 0)
-        pkcrypt->total_out += written;
+        written = mz_stream_write(pkcrypt->stream.base, pkcrypt->buffer, bytes_to_write);
+        if (written < 0)
+            return written;
 
-    return written;
+        total_written += written;
+    }
+    while (total_written < size && written > 0);
+
+    pkcrypt->total_out += total_written;
+    return total_written;
 }
 
 int64_t mz_stream_pkcrypt_tell(void *stream)
@@ -307,11 +322,28 @@ int32_t mz_stream_pkcrypt_get_prop_int64(void *stream, int32_t prop, int64_t *va
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = pkcrypt->total_out;
         break;
+    case MZ_STREAM_PROP_TOTAL_IN_MAX:
+        *value = pkcrypt->max_total_in;
+        break;
     case MZ_STREAM_PROP_HEADER_SIZE:
-        *value = RAND_HEAD_LEN;
+        *value = MZ_PKCRYPT_HEADER_SIZE;
         break;
     case MZ_STREAM_PROP_FOOTER_SIZE:
         *value = 0;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
+    }
+    return MZ_OK;
+}
+
+int32_t mz_stream_pkcrypt_set_prop_int64(void *stream, int32_t prop, int64_t value)
+{
+    mz_stream_pkcrypt *pkcrypt = (mz_stream_pkcrypt *)stream;
+    switch (prop)
+    {
+    case MZ_STREAM_PROP_TOTAL_IN_MAX:
+        pkcrypt->max_total_in = value;
         break;
     default:
         return MZ_EXIST_ERROR;

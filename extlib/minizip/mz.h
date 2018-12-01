@@ -1,5 +1,5 @@
 /* mz.h -- Errors codes, zip flags and magic
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -12,22 +12,18 @@
 #ifndef MZ_H
 #define MZ_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /***************************************************************************/
 
-// MZ_VERSION
-#define MZ_VERSION                      ("2.7.4")
+/* MZ_VERSION */
+#define MZ_VERSION                      ("2.8.0")
 
-// MZ_ERROR
-#define MZ_OK                           (0)  // zlib
-#define MZ_STREAM_ERROR                 (-1) // zlib
-#define MZ_DATA_ERROR                   (-3) // zlib
-#define MZ_MEM_ERROR                    (-4) // zlib
-#define MZ_BUF_ERROR                    (-5) // zlib
-#define MZ_VERSION_ERROR                (-6) // zlib
+/* MZ_ERROR */
+#define MZ_OK                           (0)  /* zlib */
+#define MZ_STREAM_ERROR                 (-1) /* zlib */
+#define MZ_DATA_ERROR                   (-3) /* zlib */
+#define MZ_MEM_ERROR                    (-4) /* zlib */
+#define MZ_BUF_ERROR                    (-5) /* zlib */
+#define MZ_VERSION_ERROR                (-6) /* zlib */
 
 #define MZ_END_OF_LIST                  (-100)
 #define MZ_END_OF_STREAM                (-101)
@@ -49,7 +45,7 @@ extern "C" {
 #define MZ_WRITE_ERROR                  (-116)
 #define MZ_SIGN_ERROR                   (-117)
 
-// MZ_OPEN
+/* MZ_OPEN */
 #define MZ_OPEN_MODE_READ               (0x01)
 #define MZ_OPEN_MODE_WRITE              (0x02)
 #define MZ_OPEN_MODE_READWRITE          (MZ_OPEN_MODE_READ | MZ_OPEN_MODE_WRITE)
@@ -57,12 +53,12 @@ extern "C" {
 #define MZ_OPEN_MODE_CREATE             (0x08)
 #define MZ_OPEN_MODE_EXISTING           (0x10)
 
-// MZ_SEEK
+/* MZ_SEEK */
 #define MZ_SEEK_SET                     (0)
 #define MZ_SEEK_CUR                     (1)
 #define MZ_SEEK_END                     (2)
 
-// MZ_COMPRESS
+/* MZ_COMPRESS */
 #define MZ_COMPRESS_METHOD_STORE        (0)
 #define MZ_COMPRESS_METHOD_DEFLATE      (8)
 #define MZ_COMPRESS_METHOD_BZIP2        (12)
@@ -74,7 +70,7 @@ extern "C" {
 #define MZ_COMPRESS_LEVEL_NORMAL        (6)
 #define MZ_COMPRESS_LEVEL_BEST          (9)
 
-// MZ_ZIP_FLAG
+/* MZ_ZIP_FLAG */
 #define MZ_ZIP_FLAG_ENCRYPTED           (1 << 0)
 #define MZ_ZIP_FLAG_LZMA_EOS_MARKER     (1 << 1)
 #define MZ_ZIP_FLAG_DEFLATE_MAX         (1 << 1)
@@ -86,7 +82,7 @@ extern "C" {
 #define MZ_ZIP_FLAG_UTF8                (1 << 11)
 #define MZ_ZIP_FLAG_MASK_LOCAL_INFO     (1 << 13)
 
-// MZ_ZIP_EXTENSION
+/* MZ_ZIP_EXTENSION */
 #define MZ_ZIP_EXTENSION_ZIP64          (0x0001)
 #define MZ_ZIP_EXTENSION_NTFS           (0x000a)
 #define MZ_ZIP_EXTENSION_AES            (0x9901)
@@ -95,22 +91,22 @@ extern "C" {
 #define MZ_ZIP_EXTENSION_HASH           (0x1a51)
 #define MZ_ZIP_EXTENSION_CDCD           (0xcdcd)
 
-// MZ_ZIP64
+/* MZ_ZIP64 */
 #define MZ_ZIP64_AUTO                   (0)
 #define MZ_ZIP64_FORCE                  (1)
 #define MZ_ZIP64_DISABLE                (2)
 
-// MZ_HOST_SYSTEM
+/* MZ_HOST_SYSTEM */
 #define MZ_HOST_SYSTEM(VERSION_MADEBY)  ((uint8_t)(VERSION_MADEBY >> 8))
 #define MZ_HOST_SYSTEM_MSDOS            (0)
 #define MZ_HOST_SYSTEM_UNIX             (3)
 #define MZ_HOST_SYSTEM_WINDOWS_NTFS     (10)
 #define MZ_HOST_SYSTEM_OSX_DARWIN       (19)
 
-// MZ_PKCRYPT
+/* MZ_PKCRYPT */
 #define MZ_PKCRYPT_HEADER_SIZE          (12)
 
-// MZ_AES
+/* MZ_AES */
 #define MZ_AES_VERSION                  (1)
 #define MZ_AES_ENCRYPTION_MODE_128      (0x01)
 #define MZ_AES_ENCRYPTION_MODE_192      (0x02)
@@ -121,7 +117,7 @@ extern "C" {
 #define MZ_AES_HEADER_SIZE(MODE)        ((4 * (MODE & 3) + 4) + 2)
 #define MZ_AES_FOOTER_SIZE              (10)
 
-// MZ_HASH
+/* MZ_HASH */
 #define MZ_HASH_MD5                     (10)
 #define MZ_HASH_MD5_SIZE                (16)
 #define MZ_HASH_SHA1                    (20)
@@ -130,14 +126,14 @@ extern "C" {
 #define MZ_HASH_SHA256_SIZE             (32)
 #define MZ_HASH_MAX_SIZE                (256)
 
-// MZ_ENCODING
+/* MZ_ENCODING */
 #define MZ_ENCODING_CODEPAGE_437        (437)
 #define MZ_ENCODING_CODEPAGE_932        (932)
 #define MZ_ENCODING_CODEPAGE_936        (936)
 #define MZ_ENCODING_CODEPAGE_950        (950)
 #define MZ_ENCODING_UTF8                (65001)
 
-// MZ_UTILITY
+/* MZ_UTILITY */
 #define MZ_UNUSED(SYMBOL)               ((void)SYMBOL)
 
 #ifndef MZ_CUSTOM_ALLOC
@@ -149,8 +145,62 @@ extern "C" {
 
 /***************************************************************************/
 
-#ifdef __cplusplus
-}
+#include <stdlib.h> /* size_t, NULL, malloc */
+#include <time.h>   /* time_t, time() */
+#include <string.h> /* memset, strncpy, strlen */
+#include <limits.h>
+
+#ifdef HAVE_STDINT_H
+#  include <stdint.h>
+#else
+typedef signed char        int8_t;
+typedef short              int16_t;
+typedef int                int32_t;
+typedef long long          int64_t;
+typedef unsigned char      uint8_t;
+typedef unsigned short     uint16_t;
+typedef unsigned int       uint32_t;
+typedef unsigned long long uint64_t;
 #endif
+
+#ifdef HAVE_INTTYPES_H
+#  include <inttypes.h>
+#else
+#  define PRId8  "hhd"
+#  define PRId16 "hd"
+#  define PRId32 "d"
+#  define PRIu32 "u"
+#  define PRIx32 "x"
+#  if ULONG_MAX == 4294967295UL
+#    define PRId64 "lld"
+#    define PRIu64 "llu"
+#    define PRIx64 "llx"
+#  else
+#    define PRId64 "ld"
+#    define PRIu64 "lu"
+#    define PRIx64 "lx"
+#  endif
+#endif
+
+#ifndef INT16_MAX
+#  define INT16_MAX   32767
+#endif
+#ifndef INT32_MAX 
+#  define INT32_MAX   2147483647L
+#endif
+#ifndef INT64_MAX
+#  define INT64_MAX   9223372036854775807LL
+#endif
+#ifndef UINT16_MAX
+#  define UINT16_MAX  65535U
+#endif
+#ifndef UINT32_MAX 
+#  define UINT32_MAX  4294967295UL 
+#endif
+#ifndef UINT64_MAX
+#  define UINT64_MAX  18446744073709551615ULL
+#endif
+
+/***************************************************************************/
 
 #endif

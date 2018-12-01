@@ -1,5 +1,5 @@
 /* mz_strm_split.h -- Stream for split files
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,8 +11,6 @@
 
 #ifndef MZ_STREAM_SPLIT_H
 #define MZ_STREAM_SPLIT_H
-
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

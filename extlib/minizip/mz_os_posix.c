@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,16 +9,18 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "mz.h"
+#include "mz_strm.h"
+#include "mz_os.h"
+
+#include <stdio.h> /* rename */
 #include <errno.h>
 #include <iconv.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(__APPLE__) || defined(unix)
+#if defined(__APPLE__) || defined(__unix__)
 #  include <utime.h>
 #  include <unistd.h>
 #endif
@@ -26,10 +28,6 @@
 #  include <mach/clock.h>
 #  include <mach/mach.h>
 #endif
-
-#include "mz.h"
-#include "mz_strm.h"
-#include "mz_os.h"
 
 /***************************************************************************/
 
@@ -103,7 +101,7 @@ int32_t mz_os_rand(uint8_t *buf, int32_t size)
     static unsigned calls = 0;
     int32_t i = 0;
 
-    // Ensure different random header each time
+    /* Ensure different random header each time */
     if (++calls == 1)
     {
         #define PI_SEED 3141592654UL
@@ -134,52 +132,58 @@ int32_t mz_os_delete(const char *path)
 
 int32_t mz_os_file_exists(const char *path)
 {
-    struct stat stat_info;
+    struct stat path_stat;
 
-    memset(&stat_info, 0, sizeof(stat_info));
-    if (stat(path, &stat_info) == 0)
+    memset(&path_stat, 0, sizeof(path_stat));
+    if (stat(path, &path_stat) == 0)
         return MZ_OK;
-
     return MZ_EXIST_ERROR;
 }
 
 int64_t mz_os_get_file_size(const char *path)
 {
-    struct stat stat_info;
+    struct stat path_stat;
 
-    memset(&stat_info, 0, sizeof(stat_info));
-    if (stat(path, &stat_info) == 0)
-        return stat_info.st_size;
+    memset(&path_stat, 0, sizeof(path_stat));
+    if (stat(path, &path_stat) == 0)
+    {
+        /* Stat returns size taken up by directory entry, so return 0 */
+        if (S_ISDIR(path_stat.st_mode))
+            return 0;
+
+        return path_stat.st_size;
+    }
 
     return 0;
 }
 
 int32_t mz_os_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date)
 {
-    struct stat stat_info;
+    struct stat path_stat;
     char *name = NULL;
     size_t len = 0;
     int32_t err = MZ_INTERNAL_ERROR;
 
-    memset(&stat_info, 0, sizeof(stat_info));
+    memset(&path_stat, 0, sizeof(path_stat));
 
     if (strcmp(path, "-") != 0)
     {
-        // Not all systems allow stat'ing a file with / appended
+        /* Not all systems allow stat'ing a file with / appended */
         len = strlen(path);
         name = (char *)malloc(len + 1);
         strncpy(name, path, len);
         name[len] = 0;
-        if (name[len - 1] == '/')
+
+        if (name[len - 1] == '/' || name[len - 1] == '\\')
             name[len - 1] = 0;
 
-        if (stat(name, &stat_info) == 0)
+        if (stat(name, &path_stat) == 0)
         {
             if (modified_date != NULL)
-                *modified_date = stat_info.st_mtime;
+                *modified_date = path_stat.st_mtime;
             if (accessed_date != NULL)
-                *accessed_date = stat_info.st_atime;
-            // Creation date not supported
+                *accessed_date = path_stat.st_atime;
+            /* Creation date not supported */
             if (creation_date != NULL)
                 *creation_date = 0;
 
@@ -198,8 +202,9 @@ int32_t mz_os_set_file_date(const char *path, time_t modified_date, time_t acces
 
     ut.actime = accessed_date;
     ut.modtime = modified_date;
-    // Creation date not supported
-    (void)creation_date;
+
+    /* Creation date not supported */
+    MZ_UNUSED(creation_date);
 
     if (utime(path, &ut) != 0)
         return MZ_INTERNAL_ERROR;
@@ -209,13 +214,13 @@ int32_t mz_os_set_file_date(const char *path, time_t modified_date, time_t acces
 
 int32_t mz_os_get_file_attribs(const char *path, uint32_t *attributes)
 {
-    struct stat stat_info;
+    struct stat path_stat;
     int32_t err = MZ_OK;
 
-    memset(&stat_info, 0, sizeof(stat_info));
-    if (stat(path, &stat_info) == -1)
+    memset(&path_stat, 0, sizeof(path_stat));
+    if (stat(path, &path_stat) == -1)
         err = MZ_INTERNAL_ERROR;
-    *attributes = stat_info.st_mode;
+    *attributes = path_stat.st_mode;
     return err;
 }
 
@@ -265,9 +270,12 @@ int32_t mz_os_close_dir(DIR *dir)
 int32_t mz_os_is_dir(const char *path)
 {
     struct stat path_stat;
+
+    memset(&path_stat, 0, sizeof(path_stat));
     stat(path, &path_stat);
     if (S_ISDIR(path_stat.st_mode))
         return MZ_OK;
+
     return MZ_EXIST_ERROR;
 }
 

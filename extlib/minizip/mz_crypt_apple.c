@@ -1,5 +1,5 @@
 /* mz_crypt_apple.c -- Crypto/hash functions for Apple
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,9 +9,8 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+
+#include "mz.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CommonCrypto/CommonCryptor.h>
@@ -20,8 +19,6 @@
 #include <CommonCrypto/CommonRandom.h>
 #include <Security/Security.h>
 #include <Security/SecPolicy.h>
-
-#include "mz.h"
 
 /***************************************************************************/
 
@@ -479,12 +476,11 @@ int32_t mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *si
     CMSDecoderRef decoder = NULL;
     CMSSignerStatus signer_status = 0;
     CFDataRef message_out = NULL;
-    SecTrustRef trust = NULL;
     SecPolicyRef trust_policy = NULL;
     OSStatus status = noErr;
     OSStatus verify_status = noErr;
     size_t signer_count = 0;
-    int32_t i = 0;
+    size_t i = 0;
     int32_t err = MZ_SIGN_ERROR;
 
     if (message == NULL || signature == NULL)

@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,19 +9,12 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <time.h>
-#include <direct.h>
-#include <errno.h>
-
-#include <windows.h>
 
 #include "mz.h"
-
 #include "mz_os.h"
 #include "mz_strm_os.h"
+
+#include <windows.h>
 
 /***************************************************************************/
 
@@ -82,7 +75,7 @@ uint8_t *mz_os_utf8_string_create(const char *string, int32_t encoding)
         if (string_utf8)
         {
             memset(string_utf8, 0, string_utf8_size + 1);
-            WideCharToMultiByte(CP_UTF8, 0, string_wide, -1, string_utf8, string_utf8_size, NULL, NULL);
+            WideCharToMultiByte(CP_UTF8, 0, string_wide, -1, (char *)string_utf8, string_utf8_size, NULL, NULL);
         }
 
         mz_os_unicode_string_delete(&string_wide);
@@ -352,7 +345,7 @@ int32_t mz_os_set_file_attribs(const char *path, uint32_t attributes)
 int32_t mz_os_make_dir(const char *path)
 {
     wchar_t *path_wide = NULL;
-    int32_t err = 0;
+    int32_t err = MZ_OK;
 
     if (path == NULL)
         return MZ_PARAM_ERROR;
@@ -360,13 +353,15 @@ int32_t mz_os_make_dir(const char *path)
     if (path_wide == NULL)
         return MZ_PARAM_ERROR;
 
-    err = _wmkdir(path_wide);
+    if (CreateDirectoryW(path_wide, NULL) == 0)
+    {
+        if (GetLastError() != ERROR_ALREADY_EXISTS)
+            err = MZ_INTERNAL_ERROR;
+    }
+
     mz_os_unicode_string_delete(&path_wide);
 
-    if (err != 0 && errno != EEXIST)
-        return MZ_INTERNAL_ERROR;
-
-    return MZ_OK;
+    return err;
 }
 
 DIR *mz_os_open_dir(const char *path)

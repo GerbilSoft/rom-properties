@@ -1,5 +1,5 @@
 /* mz_strm_buf.h -- Stream for buffering reads/writes
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    This version of ioapi is designed to buffer IO.
@@ -13,8 +13,6 @@
 
 #ifndef MZ_STREAM_BUFFERED_H
 #define MZ_STREAM_BUFFERED_H
-
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,15 +1,19 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit https://arstechnica.com/tech-policy/2018/11/amazon-must-give-up-echo-recordings-in-double-murder-case-judge-rules/
-Merge branch 'dev' of https://github.com/nmoinvaz/minizip into dev
+commit 5cb88b8f096199124bd8a5862008b66e884af10d
+Version 2.8.0.
 
-Tag: 2.7.4
+Tag: 2.8.0
 
 The following changes have been made to the original:
 
 - cmake_minimum_required() has been disabled. The project-wide values
   will be used instead.
+
+- Certain compile definitions are exported as part of the libminizip
+  target, since they're needed in order to prevent build errors in
+  other projects.
 
 - Some other functionality not needed by rom-properties has been disabled.
 

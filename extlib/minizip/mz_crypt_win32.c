@@ -1,5 +1,5 @@
 /* mz_crypt_win32.c -- Crypto/hash functions for Windows
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,16 +11,12 @@
 
 #pragma comment(lib, "crypt32.lib")
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+#include "mz.h"
+#include "mz_os.h"
+#include "mz_crypt.h"
 
 #include <windows.h>
 #include <wincrypt.h>
-
-#include "mz.h"
-
-#include "mz_os.h"
 
 /***************************************************************************/
 
@@ -199,7 +195,6 @@ static void mz_crypt_aes_free(void *handle)
 
 void mz_crypt_aes_reset(void *handle)
 {
-    mz_crypt_aes *aes = (mz_crypt_aes *)handle;
     mz_crypt_aes_free(handle);
 }
 
@@ -243,12 +238,12 @@ static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_l
     mz_crypt_aes *aes = (mz_crypt_aes *)handle;
     HCRYPTHASH hash = 0;
     ALG_ID alg_id = 0;
-    ALG_ID hash_alg_id = 0;
     typedef struct key_blob_header_s {
         BLOBHEADER hdr;
         uint32_t   key_length;
     } key_blob_header_s;
     key_blob_header_s *key_blob_s = NULL;
+    uint32_t mode = CRYPT_MODE_ECB;
     uint8_t *key_blob = NULL;
     int32_t key_blob_size = 0;
     int32_t result = 0;
@@ -284,8 +279,12 @@ static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_l
 
         memcpy(key_blob + sizeof(key_blob_header_s), key, key_length);
 
-        result = CryptImportKey(aes->provider, key_blob, key_blob_size, 0, CRYPT_IPSEC_HMAC_KEY, &aes->key);
+        result = CryptImportKey(aes->provider, key_blob, key_blob_size, 0, 0, &aes->key);
     }
+
+    if (result)
+        result = CryptSetKeyParam(aes->key, KP_MODE, (const uint8_t *)&mode, 0);
+
     if (!result)
     {
         aes->error = GetLastError();
@@ -373,14 +372,12 @@ static void mz_crypt_hmac_free(void *handle)
 
 void mz_crypt_hmac_reset(void *handle)
 {
-    mz_crypt_hmac *hmac = (mz_crypt_hmac *)handle;
     mz_crypt_hmac_free(handle);
 }
 
 int32_t mz_crypt_hmac_init(void *handle, const void *key, int32_t key_length)
 {
     mz_crypt_hmac *hmac = (mz_crypt_hmac *)handle;
-    HCRYPTHASH hash = 0;
     ALG_ID alg_id = 0;
     typedef struct key_blob_header_s {
         BLOBHEADER hdr;
@@ -467,7 +464,6 @@ int32_t mz_crypt_hmac_end(void *handle, uint8_t *digest, int32_t digest_size)
     mz_crypt_hmac *hmac = (mz_crypt_hmac *)handle;
     int32_t result = 0;
     int32_t expected_size = 0;
-    int32_t err = MZ_OK;
 
     if (hmac == NULL || digest == NULL || hmac->hash == 0)
         return MZ_PARAM_ERROR;
@@ -550,7 +546,6 @@ int32_t mz_crypt_sign(uint8_t *message, int32_t message_size, uint8_t *cert_data
     wchar_t *password_wide = NULL;
     int32_t result = 0;
     int32_t err = MZ_OK;
-    uint32_t key_spec = 0;
     uint32_t messages_sizes[1];
     uint8_t *messages[1];
 
@@ -599,7 +594,7 @@ int32_t mz_crypt_sign(uint8_t *message, int32_t message_size, uint8_t *cert_data
         messages[0] = message;
         messages_sizes[0] = message_size;
 
-#if 0 // Timestamp support
+#if 0 /* Timestamp support */
         CRYPT_ATTR_BLOB crypt_blob;
         CRYPT_TIMESTAMP_CONTEXT *ts_context = NULL;
         CRYPT_ATTRIBUTE unauth_attribs[1];
@@ -690,7 +685,7 @@ int32_t mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *si
     crypt_msg = CryptMsgOpenToDecode(PKCS_7_ASN_ENCODING | X509_ASN_ENCODING, 0, 0, 0, NULL, NULL);
     if (crypt_msg != NULL)
     {
-#if 0 // Timestamp support
+#if 0 /* Timestamp support */
         PCRYPT_ATTRIBUTES unauth_attribs = NULL;
         HCRYPTMSG ts_msg = 0;
         uint8_t *ts_content = NULL;
@@ -739,7 +734,7 @@ int32_t mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *si
 
     if ((crypt_msg != NULL) && (result) && (decoded_size == message_size))
     {
-        // Verify cms message with our stored message
+        /* Verify cms message with our stored message */
         if (memcmp(decoded, message, message_size) == 0)
             err = MZ_OK;
     }

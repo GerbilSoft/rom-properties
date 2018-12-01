@@ -1,4 +1,4 @@
-# minizip 2.7.4
+# minizip 2.8.0
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux. 
 
@@ -8,12 +8,12 @@ Maintained by Nathan Moinvaziri.
 
 ## Branches
 
-| Name | State | Version | Description | Travis CI |
-|:- |:-:|:-:|:-|:-:|
-|[master](https://github.com/nmoinvaz/minizip/tree/master)|Active|2.x|Modern rewrite of 1.2 branch that includes more advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. Compatibility layer provided for older versions.|[![Master Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=master)](https://travis-ci.org/nmoinvaz/minizip/branches)|
-|[dev](https://github.com/nmoinvaz/minizip/tree/dev)|Active|2.x|Latest development code|[![Dev Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=dev)](https://travis-ci.org/nmoinvaz/minizip/branches)|
-|[1.2](https://github.com/nmoinvaz/minizip/tree/1.2)|Stale| 1.x|Drop-in replacement for zlib's minizip that includes WinZip AES encryption, disk splitting, I/O buffering and some additional fixes.||
-|[1.1](https://github.com/nmoinvaz/minizip/tree/1.1)|Stale| 1.x|Original minizip as of zlib 1.2.11.||
+| Name | State | Version | Description |
+|:- |:-:|:-:|:-|
+|[master](https://github.com/nmoinvaz/minizip/tree/master)|Active [![Master Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=master)](https://travis-ci.org/nmoinvaz/minizip/branches)|2.x|Modern rewrite of 1.2 branch that includes more advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. Compatibility layer provided for older versions.|
+|[dev](https://github.com/nmoinvaz/minizip/tree/dev)|Active [![Dev Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=dev)](https://travis-ci.org/nmoinvaz/minizip/branches)|2.x|Latest development code|
+|[1.2](https://github.com/nmoinvaz/minizip/tree/1.2)|Stale| 1.x|Drop-in replacement for zlib's minizip that includes WinZip AES encryption, disk splitting, I/O buffering and some additional fixes.|
+|[1.1](https://github.com/nmoinvaz/minizip/tree/1.1)|Stale| 1.x|Original minizip as of zlib 1.2.11.|
 
 ## History
 
@@ -49,6 +49,7 @@ the library as version 2 because it had become difficult to maintain and code re
 + Zero out local file header information.
 + Zip/unzip of central directory to reduce size.
 + Ability to generate and verify CMS signature for each entry.
++ Recover the central directory if it is corrupt or missing.
 + Example minizip command line tool.
 
 ## Build
@@ -72,13 +73,15 @@ cmake --build .
 | USE_BZIP2 | Enables BZIP2 compression | ON |
 | USE_LZMA | Enables LZMA compression | ON |
 | USE_PKCRYPT | Enables PKWARE traditional encryption | ON |
-| USE_AES | Enables WinZIP AES encryption | ON |
+| USE_WZAES | Enables WinZIP AES encryption | ON |
 | USE_LIBCOMP | Enables Apple compression | OFF |
 | USE_OPENSSL | Enables OpenSSL encryption | OFF |
 | USE_BRG | Enables Brian Gladman's library | OFF |
 | COMPRESS_ONLY | Only support compression | OFF |
 | DECOMPRESS_ONLY | Only support decompression | OFF |
 | BUILD_TEST | Builds minizip test executable | OFF |
+| BUILD_UNIT_TEST | Builds minizip unit test project | OFF |
+| BUILD_FUZZ_TEST | Builds minizip fuzz executables | OFF |
 
 ## Contents
 

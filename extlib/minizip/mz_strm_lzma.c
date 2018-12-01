@@ -1,5 +1,5 @@
 /* mz_strm_lzma.c -- Stream for lzma inflate/deflate
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -10,16 +10,11 @@
 */
 
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-
-#include "lzma.h"
-
 #include "mz.h"
 #include "mz_strm.h"
 #include "mz_strm_lzma.h"
+
+#include "lzma.h"
 
 /***************************************************************************/
 
@@ -84,6 +79,8 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
     {
 #ifdef MZ_ZIP_NO_COMPRESSION
         MZ_UNUSED(filters);
+        MZ_UNUSED(major);
+        MZ_UNUSED(minor);
         return MZ_SUPPORT_ERROR;
 #else
         lzma->lstream.next_out = lzma->buffer;
@@ -112,6 +109,9 @@ int32_t mz_stream_lzma_open(void *stream, const char *path, int32_t mode)
     else if (mode & MZ_OPEN_MODE_READ)
     {
 #ifdef MZ_ZIP_NO_DECOMPRESSION
+        MZ_UNUSED(filters);
+        MZ_UNUSED(major);
+        MZ_UNUSED(minor);
         return MZ_SUPPORT_ERROR;
 #else
         lzma->lstream.next_in = lzma->buffer;
@@ -146,6 +146,9 @@ int32_t mz_stream_lzma_is_open(void *stream)
 int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
 {
 #ifdef MZ_ZIP_NO_DECOMPRESSION
+    MZ_UNUSED(stream);
+    MZ_UNUSED(buf);
+    MZ_UNUSED(size);
     return MZ_SUPPORT_ERROR;
 #else
     mz_stream_lzma *lzma = (mz_stream_lzma *)stream;
@@ -172,7 +175,7 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
             bytes_to_read = sizeof(lzma->buffer);
             if (lzma->max_total_in > 0)
             {
-                if ((lzma->max_total_in - lzma->total_in) < (int64_t)sizeof(lzma->buffer))
+                if ((int64_t)bytes_to_read > (lzma->max_total_in - lzma->total_in))
                     bytes_to_read = (int32_t)(lzma->max_total_in - lzma->total_in);
             }
 
@@ -223,6 +226,7 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size)
 #endif
 }
 
+#ifndef MZ_ZIP_NO_COMPRESSION
 static int32_t mz_stream_lzma_flush(void *stream)
 {
     mz_stream_lzma *lzma = (mz_stream_lzma *)stream;
@@ -273,6 +277,7 @@ static int32_t mz_stream_lzma_code(void *stream, int32_t flush)
 
     return MZ_OK;
 }
+#endif
 
 int32_t mz_stream_lzma_write(void *stream, const void *buf, int32_t size)
 {
@@ -281,6 +286,7 @@ int32_t mz_stream_lzma_write(void *stream, const void *buf, int32_t size)
 
 #ifdef MZ_ZIP_NO_COMPRESSION
     MZ_UNUSED(lzma);
+    MZ_UNUSED(buf);
     err = MZ_SUPPORT_ERROR;
 #else
     lzma->lstream.next_in = (uint8_t*)(intptr_t)buf;

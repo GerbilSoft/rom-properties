@@ -1,5 +1,5 @@
 /* mz_sstrm_os.h -- Stream for filesystem access
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,8 +11,6 @@
 
 #ifndef MZ_STREAM_OS_H
 #define MZ_STREAM_OS_H
-
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

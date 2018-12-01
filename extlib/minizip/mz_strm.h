@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.7.4, November 6, 2018
+   Version 2.8.0, November 24, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,8 +11,6 @@
 
 #ifndef MZ_STREAM_H
 #define MZ_STREAM_H
-
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +44,9 @@ typedef void    (*mz_stream_destroy_cb)        (void **stream);
 
 typedef int32_t (*mz_stream_get_prop_int64_cb) (void *stream, int32_t prop, int64_t *value);
 typedef int32_t (*mz_stream_set_prop_int64_cb) (void *stream, int32_t prop, int64_t value);
+
+typedef int32_t (*mz_stream_find_cb)           (void *stream, const void *find, int32_t find_size, 
+                                                int64_t max_seek, int64_t *position);
 
 /***************************************************************************/
 
@@ -87,11 +88,12 @@ int32_t mz_stream_write_uint16(void *stream, uint16_t value);
 int32_t mz_stream_write_uint32(void *stream, uint32_t value);
 int32_t mz_stream_write_int64(void *stream, int64_t value);
 int32_t mz_stream_write_uint64(void *stream, uint64_t value);
-int32_t mz_stream_write_chars(void *stream, const char *value, uint8_t null_terminate);
 int32_t mz_stream_copy(void *target, void *source, int32_t len);
 int32_t mz_stream_copy_stream(void *target, mz_stream_write_cb write_cb, void *source, mz_stream_read_cb read_cb, int32_t len);
 int64_t mz_stream_tell(void *stream);
 int32_t mz_stream_seek(void *stream, int64_t offset, int32_t origin);
+int32_t mz_stream_find(void *stream, const void *find, int32_t find_size, int64_t max_seek, int64_t *position);
+int32_t mz_stream_find_reverse(void *stream, const void *find, int32_t find_size, int64_t max_seek, int64_t *position);
 int32_t mz_stream_close(void *stream);
 int32_t mz_stream_error(void *stream);
 
