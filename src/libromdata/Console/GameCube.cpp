@@ -1858,34 +1858,41 @@ int GameCube::loadFieldData(void)
 						continue;
 
 					// Check for a retail System Menu.
-					unsigned int version;
-					int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
-					if (ret == 1) {
-						// Found a retail System Menu.
-						sysMenu = WiiSystemMenuVersion::lookup(version);
-						break;
+					if (dirent->name[0] == 'R') {
+						unsigned int version;
+						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
+						if (ret == 1) {
+							// Found a retail System Menu.
+							sysMenu = WiiSystemMenuVersion::lookup(version);
+							break;
+						}
 					}
 
 					// Check for a debug IOS.
-					unsigned int ios_mem;
-					ret = sscanf(dirent->name, "firmware.%u.%u.%u.%u.wad",
-						&ios_mem, &ios_slot, &ios_major, &ios_minor);
-					if (ret == 4 && (ios_mem == 64 || ios_mem == 128)) {
-						// Found a debug IOS.
-						isDebugIOS = true;
-						break;
+					if (dirent->name[0] == 'f') {
+						unsigned int ios_mem;
+						int ret = sscanf(dirent->name, "firmware.%u.%u.%u.%u.wad",
+							&ios_mem, &ios_slot, &ios_major, &ios_minor);
+						if (ret == 4 && (ios_mem == 64 || ios_mem == 128)) {
+							// Found a debug IOS.
+							isDebugIOS = true;
+							break;
+						}
 					}
 
 					// Check for a retail IOS.
-					ret = sscanf(dirent->name, "IOS%u-%u-v%u.wad",
-						&ios_slot, &ios_mem, &ios_major);
-					if (ret == 3 && ios_mem == 64) {
-						// Found a retail IOS.
-						// NOTE: ios_major has a combined version number,
-						// so it needs to be split into major/minor.
-						ios_minor = ios_major & 0xFF;
-						ios_major >>= 8;
-						ios_retail_count++;
+					if (dirent->name[0] == 'I') {
+						unsigned int ios_mem;
+						int ret = sscanf(dirent->name, "IOS%u-%u-v%u.wad",
+							&ios_slot, &ios_mem, &ios_major);
+						if (ret == 3 && ios_mem == 64) {
+							// Found a retail IOS.
+							// NOTE: ios_major has a combined version number,
+							// so it needs to be split into major/minor.
+							ios_minor = ios_major & 0xFF;
+							ios_major >>= 8;
+							ios_retail_count++;
+						}
 					}
 				}
 				d->updatePartition->closedir(dirp);
