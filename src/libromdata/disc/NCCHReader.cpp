@@ -659,13 +659,15 @@ int NCCHReader::seek(int64_t pos)
 	}
 
 	// Handle out-of-range cases.
-	// TODO: How does POSIX behave?
-	if (pos < 0)
-		d->pos = 0;
-	else if (pos >= d->ncch_length)
+	if (pos < 0) {
+		// Negative is invalid.
+		m_lastError = EINVAL;
+		return -1;
+	} else if (pos >= d->ncch_length) {
 		d->pos = d->ncch_length;
-	else
+	} else {
 		d->pos = static_cast<uint32_t>(pos);
+	}
 	return 0;
 }
 

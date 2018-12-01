@@ -706,13 +706,15 @@ int WiiPartition::seek(int64_t pos)
 	}
 
 	// Handle out-of-range cases.
-	// TODO: How does POSIX behave?
-	if (pos < 0)
-		d->pos_7C00 = 0;
-	else if (pos >= d->data_size)
+	if (pos < 0) {
+		// Negative is invalid.
+		m_lastError = EINVAL;
+		return -1;
+	} else if (pos >= d->data_size) {
 		d->pos_7C00 = d->data_size;
-	else
+	} else {
 		d->pos_7C00 = pos;
+	}
 	return 0;
 }
 

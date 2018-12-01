@@ -645,9 +645,10 @@ int PEResourceReader::seek(int64_t pos)
 	}
 
 	// Handle out-of-range cases.
-	// TODO: How does POSIX behave?
 	if (pos < 0) {
-		d->pos = 0;
+		// Negative is invalid.
+		m_lastError = EINVAL;
+		return -1;
 	} else if (pos >= static_cast<int64_t>(d->rsrc_size)) {
 		d->pos = static_cast<int64_t>(d->rsrc_size);
 	} else {
