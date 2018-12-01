@@ -44,15 +44,6 @@ typedef enum {
 	RP_DFT_LAST
 } RpDescFormatType;
 
-// TODO: Use glib-mkenums to generate the enum type functions.
-// References:
-// - https://arosenfeld.wordpress.com/2010/08/11/glib-mkenums/
-// - https://github.com/Kurento/kms-cmake-utils/blob/master/CMake/FindGLIB-MKENUMS.cmake
-// - https://github.com/Kurento/kms-cmake-utils/blob/master/CMake/GLibHelpers.cmake
-// - https://developer.gnome.org/gobject/stable/glib-mkenums.html
-GType rp_desc_format_type_get_type(void) G_GNUC_CONST;
-#define TYPE_RP_DESC_FORMAT_TYPE (rp_desc_format_type_get_type())
-
 /* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
 GType		rom_data_view_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 void		rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;

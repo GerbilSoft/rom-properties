@@ -39,10 +39,12 @@ UNSET(arch)
 SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
 	CreateThumbnail.cpp
+	rp-gtk-enums.c
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
 	GdkImageConv.hpp
+	rp-gtk-enums.h
 	)
 
 # GTK2 sources and headers.
