@@ -42,6 +42,7 @@ using namespace LibRpBase;
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/WbfsReader.hpp"
 #include "disc/CisoGcnReader.hpp"
+#include "disc/NASOSReader.hpp"
 #include "disc/WiiPartition.hpp"
 
 // For sections delegated to other RomData subclasses.
@@ -93,12 +94,13 @@ class GameCubePrivate : public RomDataPrivate
 			DISC_SYSTEM_MASK = 0xFF,
 
 			// High byte: Image format.
-			DISC_FORMAT_RAW  = (0 << 8),	// Raw image. (ISO, GCM)
-			DISC_FORMAT_SDK  = (1 << 8),	// Raw image with SDK header.
-			DISC_FORMAT_TGC  = (2 << 8),	// TGC (embedded disc image) (GCN only?)
-			DISC_FORMAT_WBFS = (3 << 8),	// WBFS image. (Wii only)
-			DISC_FORMAT_CISO = (4 << 8),	// CISO image.
-			DISC_FORMAT_WIA  = (5 << 8),	// WIA image. (Header only!)
+			DISC_FORMAT_RAW   = (0 << 8),	// Raw image. (ISO, GCM)
+			DISC_FORMAT_SDK   = (1 << 8),	// Raw image with SDK header.
+			DISC_FORMAT_TGC   = (2 << 8),	// TGC (embedded disc image) (GCN only?)
+			DISC_FORMAT_WBFS  = (3 << 8),	// WBFS image. (Wii only)
+			DISC_FORMAT_CISO  = (4 << 8),	// CISO image.
+			DISC_FORMAT_WIA   = (5 << 8),	// WIA image. (Header only!)
+			DISC_FORMAT_NASOS = (6 << 8),	// NASOS image.
 			DISC_FORMAT_UNKNOWN = (0xFF << 8),
 			DISC_FORMAT_MASK = (0xFF << 8),
 		};
@@ -403,6 +405,8 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Create the WiiPartition objects.
 	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl.end(); ++iter) {
+		// TODO: NASOS images are decrypted, but we should
+		// still show how they'd be encrypted.
 		iter->partition = new WiiPartition(discReader, iter->start, iter->size, noCrypto);
 
 		if (iter->type == PARTITION_UPDATE && !updatePartition) {
@@ -1111,6 +1115,9 @@ GameCube::GameCube(IRpFile *file)
 			case GameCubePrivate::DISC_FORMAT_CISO:
 				d->discReader = new CisoGcnReader(d->file);
 				break;
+			case GameCubePrivate::DISC_FORMAT_NASOS:
+				d->discReader = new NASOSReader(d->file);
+				break;
 			case GameCubePrivate::DISC_FORMAT_WIA:
 				// TODO: Implement WiaReader.
 				// For now, only the header will be readable.
@@ -1412,6 +1419,15 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_WIA);
 	}
 
+	// Check for NASOS.
+	// TODO: WII9?
+	static const uint32_t nasos_wii5_magic = 'WII5';
+	if (pData32[0] == cpu_to_be32(nasos_wii5_magic)) {
+		// This is a NASOS image.
+		// TODO: Other checks.
+		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_NASOS);
+	}
+
 	// Not supported.
 	return GameCubePrivate::DISC_UNKNOWN;
 }
@@ -1465,6 +1481,7 @@ const char *const *GameCube::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".gcm", ".rvm", ".wbfs",
 		".ciso", ".cso", ".tgc",
+		".dec",	// .iso.dec
 
 		// Partially supported. (Header only!)
 		".wia",
@@ -1498,6 +1515,10 @@ const char *const *GameCube::supportedMimeTypes_static(void)
 		"application/x-wii-iso-image",
 		"application/x-wbfs",
 		"application/x-wia",
+
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-nasos-image",
 
 		nullptr
 	};
