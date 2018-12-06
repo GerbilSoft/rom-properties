@@ -342,10 +342,17 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		return -errno;
 	}
 
-	// Check for NoCrypto.
-	// TODO: Check both hash_verify and disc_noCrypto.
-	// Dolphin only checks hash_verify.
-	const bool noCrypto = (discHeader.hash_verify != 0);
+	// Check the crypto and hash method.
+	// TODO: Lookup table instead of branches?
+	unsigned int cryptoMethod = 0;
+	if (discHeader.disc_noCrypto != 0 || (discType & DISC_FORMAT_MASK) == DISC_FORMAT_NASOS) {
+		// No encryption.
+		cryptoMethod |= WiiPartition::CM_UNENCRYPTED;
+	}
+	if (discHeader.hash_verify != 0) {
+		// No hashes.
+		cryptoMethod |= WiiPartition::CM_32K;
+	}
 
 	// Process each volume group.
 	for (unsigned int i = 0; i < 4; i++) {
@@ -407,7 +414,8 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl.end(); ++iter) {
 		// TODO: NASOS images are decrypted, but we should
 		// still show how they'd be encrypted.
-		iter->partition = new WiiPartition(discReader, iter->start, iter->size, noCrypto);
+		iter->partition = new WiiPartition(discReader, iter->start, iter->size,
+			(WiiPartition::CryptoMethod)cryptoMethod);
 
 		if (iter->type == PARTITION_UPDATE && !updatePartition) {
 			// System Update partition.

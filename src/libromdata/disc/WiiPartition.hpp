@@ -34,6 +34,21 @@ class WiiPartitionPrivate;
 class WiiPartition : public GcnPartition
 {
 	public:
+		// Bitfield enum indicating the encryption type.
+		enum CryptoMethod {
+			CM_ENCRYPTED = 0,	// Data is encrypted.
+			CM_UNENCRYPTED = 1,	// Data is not encrypted.
+			CM_MASK_ENCRYPTED = 1,
+
+			CM_1K_31K = 0,		// 1k hashes, 31k data
+			CM_32K = 2,		// 32k data
+			CM_MASK_SECTOR = 2,
+
+			CM_STANDARD = (CM_ENCRYPTED | CM_1K_31K),	// Standard encrypted Wii disc
+			CM_RVTH = (CM_UNENCRYPTED | CM_32K),		// Unencrypted RVT-H disc image
+			CM_NASOS = (CM_UNENCRYPTED | CM_1K_31K),	// NASOS compressed retail disc image
+		};
+
 		/**
 		 * Construct a WiiPartition with the specified IDiscReader.
 		 *
@@ -43,10 +58,10 @@ class WiiPartition : public GcnPartition
 		 * @param discReader		[in] IDiscReader.
 		 * @param partition_offset	[in] Partition start offset.
 		 * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
-		 * @param noCrypto		[in] If true, disc image is not encrypted. (RVT-H)
+		 * @param cryptoMethod		[in] Crypto method.
 		 */
 		WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-			int64_t partition_size, bool noCrypto = false);
+			int64_t partition_size, CryptoMethod crypto = CM_STANDARD);
 		~WiiPartition();
 
 	private:
