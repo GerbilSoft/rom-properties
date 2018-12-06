@@ -22,8 +22,8 @@
 // - http://vgmrips.net/wiki/VGM_Specification
 // - http://vgmrips.net/wiki/GD3_Specification
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_NSF_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_AUDIO_NSF_STRUCTS_H__
+#ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__
+#define __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__
 
 #include "librpbase/common.h"
 #include <stdint.h>
@@ -312,4 +312,4 @@ ASSERT_STRUCT(VGM_170_ChipVolume, 4);
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_AUDIO_NSF_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__ */
