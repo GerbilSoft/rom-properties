@@ -123,6 +123,13 @@ class WiiPartition : public GcnPartition
 		EncKey encKey(void) const;
 
 		/**
+		 * Get the encryption key that would be in use if the partition was encrypted.
+		 * This is only needed for NASOS images.
+		 * @return "Real" encryption key in use.
+		 */
+		EncKey encKeyReal(void) const;
+
+		/**
 		 * Get the ticket.
 		 * @return Ticket, or nullptr if unavailable.
 		 */

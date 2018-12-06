@@ -70,18 +70,19 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 	public:
 		/**
 		 * Determine the encryption key used by this partition.
-		 * @return encKey.
+		 * This initializes encKey and encKeyReal.
 		 */
-		WiiPartition::EncKey getEncKey(void);
+		void getEncKey(void);
 
-	private:
 		// Encryption key in use.
-		WiiPartition::EncKey m_encKey;
+		WiiPartition::EncKey encKey;
+		// Encryption key that would be used if the partition was encrypted.
+		WiiPartition::EncKey encKeyReal;
 
-	public:
 		// Crypto method.
 		WiiPartition::CryptoMethod cryptoMethod;
 
+	public:
 		// Decrypted read position. (0x7C00 bytes out of 0x8000)
 		// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
 		int64_t pos_7C00;
@@ -177,14 +178,16 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	: super(q, discReader, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
-	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
+	, encKey(WiiPartition::ENCKEY_UNKNOWN)
+	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
 	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, verifyResult(KeyManager::VERIFY_NO_SUPPORT)
-	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
+	, encKey(WiiPartition::ENCKEY_UNKNOWN)
+	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
 	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
@@ -192,9 +195,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 {
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// No encryption. (RVT-H)
-		// TODO: Determine what the key would be anyway? (for NASOS)
 		verifyResult = KeyManager::VERIFY_OK;
-		m_encKey = WiiPartition::ENCKEY_NONE;
 	}
 
 	// Clear data set by GcnPartition in case the
@@ -249,19 +250,20 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 
 /**
  * Determine the encryption key used by this partition.
- * @return encKey.
+ * This initializes encKey and encKeyReal.
  */
-WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
+void WiiPartitionPrivate::getEncKey(void)
 {
-	if (m_encKey > WiiPartition::ENCKEY_UNKNOWN) {
+	if (encKey > WiiPartition::ENCKEY_UNKNOWN) {
 		// Encryption key has already been determined.
-		return m_encKey;
+		return;
 	}
 
-	m_encKey = WiiPartition::ENCKEY_UNKNOWN;
+	encKey = WiiPartition::ENCKEY_UNKNOWN;
+	encKeyReal = WiiPartition::ENCKEY_UNKNOWN;
 	if (partition_size < 0) {
 		// Error loading the partition header.
-		return m_encKey;
+		return;
 	}
 
 	assert(partitionHeader.ticket.common_key_index <= 1);
@@ -272,18 +274,24 @@ WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
 	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug issuer. Use the debug key for keyIdx == 0.
 		if (keyIdx == 0) {
-			m_encKey = WiiPartition::ENCKEY_DEBUG;
+			encKeyReal = WiiPartition::ENCKEY_DEBUG;
 		}
 	} else {
 		// Assuming Retail issuer.
 		// NOTE: vWii common key cannot be used for discs.
 		if (keyIdx <= 1) {
 			// keyIdx maps to encKey directly for retail.
-			m_encKey = static_cast<WiiPartition::EncKey>(keyIdx);
+			encKeyReal = static_cast<WiiPartition::EncKey>(keyIdx);
 		}
 	}
 
-	return m_encKey;
+	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
+		// Not encrypted.
+		encKey = WiiPartition::ENCKEY_NONE;
+	} else {
+		// Encrypted.
+		encKey = encKeyReal;
+	}
 }
 
 #ifdef ENABLE_DECRYPTION
@@ -306,7 +314,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	assert(keyManager != nullptr);
 
 	// Determine the required encryption key.
-	const WiiPartition::EncKey encKey = getEncKey();
+	getEncKey();
 	if (encKey <= WiiPartition::ENCKEY_UNKNOWN) {
 		// Invalid encryption key index.
 		// Use VERIFY_KEY_NOT_FOUND here.
@@ -760,7 +768,21 @@ WiiPartition::EncKey WiiPartition::encKey(void) const
 {
 	// TODO: Errors?
 	RP_D(WiiPartition);
-	return d->getEncKey();
+	d->getEncKey();
+	return d->encKey;
+}
+
+/**
+ * Get the encryption key that would be in use if the partition was encrypted.
+ * This is only needed for NASOS images.
+ * @return "Real" encryption key in use.
+ */
+WiiPartition::EncKey WiiPartition::encKeyReal(void) const
+{
+	// TODO: Errors?
+	RP_D(WiiPartition);
+	d->getEncKey();
+	return d->encKeyReal;
 }
 
 /**

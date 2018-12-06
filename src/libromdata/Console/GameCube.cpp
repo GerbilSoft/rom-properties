@@ -1995,10 +1995,22 @@ int GameCube::loadFieldData(void)
 
 			// Encryption key.
 			// TODO: Use a string table?
+			WiiPartition::EncKey encKey;
+			if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
+				// NASOS disc image.
+				// If this would normally be an encrypted image, use encKeyReal().
+				encKey = (d->discHeader.disc_noCrypto == 0
+					? entry.partition->encKeyReal()
+					: entry.partition->encKey());
+			} else {
+				// Other disc image. Use encKey().
+				encKey = entry.partition->encKey();
+			}
+
 			const char *key_name;
-			switch (entry.partition->encKey()) {
-				case WiiPartition::ENCKEY_UNKNOWN:
+			switch (encKey) {
 				default:
+				case WiiPartition::ENCKEY_UNKNOWN:
 					// tr: Unknown encryption key.
 					key_name = C_("GameCube|KeyIdx", "Unknown");
 					break;
