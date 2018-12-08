@@ -43,6 +43,7 @@ using namespace LibRpBase;
 #include "disc/WbfsReader.hpp"
 #include "disc/CisoGcnReader.hpp"
 #include "disc/NASOSReader.hpp"
+#include "disc/nasos_gcn.h"	// for magic numbers
 #include "disc/WiiPartition.hpp"
 
 // For sections delegated to other RomData subclasses.
@@ -1177,6 +1178,54 @@ GameCube::GameCube(IRpFile *file)
 		return;
 	}
 
+	if (((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) &&
+	    ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_UNKNOWN))
+	{
+		// Verify that the NASOS header matches the disc format.
+		bool isOK = true;
+		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+			case GameCubePrivate::DISC_SYSTEM_GCN:
+				// Must have GCN magic number or nddemo header.
+				if (d->discHeader.magic_gcn == cpu_to_be32(GCN_MAGIC)) {
+					// GCN magic number is present.
+					break;
+				} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header,
+				           sizeof(GameCubePrivate::nddemo_header)))
+				{
+					// nddemo header is present.
+					break;
+				}
+
+				// Not a GCN image.
+				isOK = false;
+				break;
+
+			case GameCubePrivate::DISC_SYSTEM_WII:
+				// Must have Wii magic number.
+				if (d->discHeader.magic_wii != cpu_to_be32(WII_MAGIC)) {
+					// Wii magic number is NOT present.
+					isOK = false;
+				}
+				break;
+
+			default:
+				// Unsupported...
+				isOK = false;
+				break;
+		}
+
+		if (!isOK) {
+			// Incorrect image format.
+			delete d->discReader;
+			delete d->file;
+			d->discReader = nullptr;
+			d->file = nullptr;
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			d->isValid = false;
+			return;
+		}
+	}
+
 	if (d->discType != GameCubePrivate::DISC_UNKNOWN &&
 	    ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_UNKNOWN))
 	{
@@ -1429,11 +1478,12 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 	// Check for NASOS.
 	// TODO: WII9?
-	static const uint32_t nasos_wii5_magic = 'WII5';
-	if (pData32[0] == cpu_to_be32(nasos_wii5_magic)) {
-		// This is a NASOS image.
-		// TODO: Other checks.
-		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_NASOS);
+	if (pData32[0] == cpu_to_be32(NASOS_MAGIC_GCML)) {
+		// GameCube NASOS image.
+		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_NASOS);
+	} else if (pData32[0] == cpu_to_be32(NASOS_MAGIC_WII5)) {
+		// Wii NASOS image. (single-layer)
+		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_NASOS);
 	}
 
 	// Not supported.

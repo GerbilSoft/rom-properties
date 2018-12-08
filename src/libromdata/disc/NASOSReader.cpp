@@ -52,21 +52,39 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 
 	public:
 		// NASOS header.
-		NASOSHeader nasosHeader;
+		union {
+			NASOSHeader nasos;
+			NASOSHeader_GCML gcml;
+			NASOSHeader_WII5 wii5;
+		} header;
+
+		enum DiscType {
+			DT_UNKNOWN = 0,
+			DT_GCML = 1,
+			DT_WII5 = 2,
+		};
+		DiscType discType;
 
 		// Block map.
-		// Values are absolute block addresses, divided by 256.
+		// Values are absolute block addresses, possibly with a shift amount.
 		// Special value: 0xFFFFFFFF == empty block
 		ao::uvector<uint32_t> blockMap;
+
+		// Block address shift.
+		// - GCML: 0
+		// - WII5: 8
+		uint8_t blockMapShift;
 };
 
 /** NASOSReaderPrivate **/
 
 NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 	: super(q, file)
+	, discType(DT_UNKNOWN)
+	, blockMapShift(0)
 {
-	// Clear the NASOSheader struct.
-	memset(&nasosHeader, 0, sizeof(nasosHeader));
+	// Clear the NASOSHeader structs.
+	memset(&header, 0, sizeof(header));
 
 	if (!this->file) {
 		// File could not be dup()'d.
@@ -75,8 +93,8 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 
 	// Read the NASOS header.
 	this->file->rewind();
-	size_t sz = this->file->read(&nasosHeader, sizeof(nasosHeader));
-	if (sz != sizeof(nasosHeader)) {
+	size_t sz = this->file->read(&header, sizeof(header));
+	if (sz != sizeof(header)) {
 		// Error reading the NASOS header.
 		delete this->file;
 		this->file = nullptr;
@@ -86,7 +104,21 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 
 	// Verify the NASOS header.
 	// TODO: WII9 magic?
-	if (nasosHeader.magic != cpu_to_be32(NASOS_MAGIC_WII5)) {
+	// TODO: Check the actual disc header magic?
+	unsigned int blockMapStart, blockCount;
+	if (header.nasos.magic == cpu_to_be32(NASOS_MAGIC_GCML)) {
+		discType = DT_GCML;
+		block_size = 2048;			// NOTE: Not stored in the header.
+		blockMapStart = sizeof(header.gcml);
+		blockCount = NASOS_GCML_BlockCount;	// NOTE: Not stored in the header.
+		blockMapShift = 0;
+	} else if (header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII5)) {
+		discType = DT_WII5;
+		block_size = 1024;	// TODO: Is this stored in the header?
+		blockMapStart = sizeof(header.wii5);
+		blockCount = le32_to_cpu(header.wii5.block_count) >> 8;
+		blockMapShift = 8;
+	} else {
 		// Invalid magic.
 		delete this->file;
 		this->file = nullptr;
@@ -96,14 +128,11 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 
 	// TODO: Other checks.
 
-	// Assuming 1024-byte block size.
-	block_size = 1024;
-
 	// Read the block map.
 	// TODO: Restrict the maximum block count?
-	blockMap.resize(le32_to_cpu(nasosHeader.block_count) >> 8);
+	blockMap.resize(blockCount);
 	const size_t sz_blockMap = blockMap.size() * sizeof(uint32_t);
-	sz = this->file->read(blockMap.data(), sz_blockMap);
+	sz = this->file->seekAndRead(blockMapStart, blockMap.data(), sz_blockMap);
 	if (sz != sz_blockMap) {
 		// Error reading the block map.
 		blockMap.clear();
@@ -114,7 +143,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 	}
 
 	// Disc size is based on the block map size.
-	disc_size = static_cast<int64_t>(blockMap.size()) * 1024;
+	disc_size = static_cast<int64_t>(blockMap.size()) * block_size;
 
 	// Reset the disc position.
 	pos = 0;
@@ -143,7 +172,9 @@ int NASOSReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 	// TODO: WII9 magic?
 	const NASOSHeader *const nasosHeader =
 		reinterpret_cast<const NASOSHeader*>(pHeader);
-	if (nasosHeader->magic != cpu_to_be32(NASOS_MAGIC_WII5)) {
+	if (nasosHeader->magic != cpu_to_be32(NASOS_MAGIC_GCML) &&
+	    nasosHeader->magic != cpu_to_be32(NASOS_MAGIC_WII5))
+	{
 		// Invalid magic.
 		return -1;
 	}
@@ -191,7 +222,7 @@ int64_t NASOSReader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Adjust to bytes and return.
-	return static_cast<int64_t>(physBlockAddr) << 8;
+	return static_cast<int64_t>(physBlockAddr) << d->blockMapShift;
 }
 
 }
