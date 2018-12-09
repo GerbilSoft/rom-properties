@@ -59,7 +59,7 @@ ASSERT_STRUCT(NASOSHeader, 8);
 #define NASOS_GCML_BlockCount 712880
 typedef struct _NASOSHeader_GCML {
 	NASOSHeader header;	// [0x000] Main NASOS header.
-	uint8_t unknown1[16];	// [0x008]
+	uint8_t md5_orig[16];	// [0x008] MD5 of the original disc image.
 } NASOSHeader_GCML;
 ASSERT_STRUCT(NASOSHeader_GCML, 24);
 
@@ -74,7 +74,8 @@ ASSERT_STRUCT(NASOSHeader_GCML, 24);
 
 typedef struct _NASOSHeader_WII5 {
 	NASOSHeader header;	// [0x000] Main NASOS header.
-	uint8_t unknown1[64];	// [0x008]
+	uint8_t md5_orig[16];	// [0x008] MD5 of the original disc image.
+	uint8_t unknown1[48];	// [0x018]
 	uint32_t block_count;	// [0x048] Block count. (divide by 256)
 	uint8_t unknown2[16];	// [0x04C]
 } NASOSHeader_WII5;
