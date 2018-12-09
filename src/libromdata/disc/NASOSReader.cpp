@@ -55,13 +55,13 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 		union {
 			NASOSHeader nasos;
 			NASOSHeader_GCML gcml;
-			NASOSHeader_WII5 wii5;
+			NASOSHeader_WIIx wiix;
 		} header;
 
 		enum DiscType {
 			DT_UNKNOWN = 0,
 			DT_GCML = 1,
-			DT_WII5 = 2,
+			DT_WIIx = 2,
 		};
 		DiscType discType;
 
@@ -72,7 +72,7 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 
 		// Block address shift.
 		// - GCML: 0
-		// - WII5: 8
+		// - WIIx: 8
 		uint8_t blockMapShift;
 };
 
@@ -112,11 +112,14 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 		blockMapStart = sizeof(header.gcml);
 		blockCount = NASOS_GCML_BlockCount;	// NOTE: Not stored in the header.
 		blockMapShift = 0;
-	} else if (header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII5)) {
-		discType = DT_WII5;
+	} else if ((header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII5)) ||
+		   (header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII9)))
+	{
+		discType = DT_WIIx;
 		block_size = 1024;	// TODO: Is this stored in the header?
-		blockMapStart = sizeof(header.wii5);
-		blockCount = le32_to_cpu(header.wii5.block_count) >> 8;
+		blockMapStart = sizeof(header.wiix);
+		// TODO: Verify against WII5 (0x460900) and WII9 (0x7ED380).
+		blockCount = le32_to_cpu(header.wiix.block_count) >> 8;
 		blockMapShift = 8;
 	} else {
 		// Invalid magic.
