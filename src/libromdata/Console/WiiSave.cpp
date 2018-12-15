@@ -464,6 +464,7 @@ vector<RomData::ImageSizeDef> WiiSave::supportedImageSizes_static(ImageType imag
 	return WiiWIBN::supportedImageSizes_static(imageType);
 #else /* !ENABLE_DECRYPTION */
 	// TODO: Return the correct size information anyway?
+	RP_UNUSED(imageType);
 	return vector<RomData::ImageSizeDef>();
 #endif /* ENABLE_DECRYPTION */
 }
