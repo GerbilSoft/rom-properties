@@ -168,11 +168,12 @@ class GameCubePrivate : public RomDataPrivate
 
 		/**
 		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
-		 * @param gcnRegion GCN region value.
-		 * @param idRegion Game ID region.
+		 * @param gcnRegion	[in] GCN region value.
+		 * @param idRegion	[in] Game ID region.
+		 * @param pIsDefault	[out,opt] Set to True if the region string represents the default region for the ID4.
 		 * @return String, or nullptr if the region value is invalid.
 		 */
-		static const char *gcnRegionToString(unsigned int gcnRegion, char idRegion);
+		static const char *gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault = nullptr);
 
 		/**
 		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a GameTDB region code.
@@ -433,11 +434,12 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 /**
  * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
- * @param gcnRegion GCN region value.
- * @param idRegion Game ID region.
+ * @param gcnRegion	[in] GCN region value.
+ * @param idRegion	[in] Game ID region.
+ * @param pIsDefault	[out,opt] Set to True if the region string represents the default region for the ID4.
  * @return String, or nullptr if the region value is invalid.
  */
-const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRegion)
+const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault)
 {
 	/**
 	 * There are two region codes for GCN/Wii games:
@@ -456,11 +458,18 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 	 * Game ID reference:
 	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
 	 */
+
 	switch (gcnRegion) {
 		case GCN_REGION_JPN:
+			if (pIsDefault) {
+				*pIsDefault = false;
+			}
 			switch (idRegion) {
 				case 'J':	// Japan
 				default:
+					if (pIsDefault) {
+						*pIsDefault = true;
+					}
 					return C_("Region", "Japan");
 
 				case 'W':	// Taiwan
@@ -475,6 +484,9 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			}
 
 		case GCN_REGION_EUR:
+			if (pIsDefault) {
+				*pIsDefault = false;
+			}
 			switch (idRegion) {
 				case 'P':	// PAL
 				case 'X':	// Multi-language release
@@ -482,6 +494,9 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 				case 'L':	// Japanese import to PAL regions
 				case 'M':	// Japanese import to PAL regions
 				default:
+					if (pIsDefault) {
+						*pIsDefault = true;
+					}
 					return C_("Region", "Europe / Australia");
 
 				case 'D':	// Germany
@@ -508,6 +523,9 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			// - N: Japanese import to USA and other NTSC regions.
 			// - Z: Prince of Persia - The Forgotten Sands (Wii)
 			// - B: Ufouria: The Saga (Virtual Console)
+			if (pIsDefault) {
+				*pIsDefault = true;
+			}
 			return C_("Region", "USA");
 
 		case GCN_REGION_KOR:
@@ -515,17 +533,26 @@ const char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRe
 			// - K: South Korea
 			// - Q: South Korea with Japanese language
 			// - T: South Korea with English language
+			if (pIsDefault) {
+				*pIsDefault = true;
+			}
 			return C_("Region", "South Korea");
 
 		// Other.
 		case GCN_REGION_ALL:
 			// Region-Free.
+			if (pIsDefault) {
+				*pIsDefault = true;
+			}
 			return C_("Region", "Region-Free");
 
 		default:
 			break;
 	}
 
+	if (pIsDefault) {
+		*pIsDefault = true;
+	}
 	return nullptr;
 }
 
@@ -1765,25 +1792,29 @@ int GameCube::loadFieldData(void)
 	// Region code.
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
-	const char *region = d->gcnRegionToString(d->gcnRegion, discHeader->id4[3]);
+	bool isDefault;
+	const char *region = d->gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
 	if (region) {
 		// Append the GCN region name (USA/JPN/EUR/KOR) if
 		// the ID6 value differs.
 		const char *suffix = nullptr;
-		switch (d->gcnRegion) {
-			case GCN_REGION_JPN:
-				if (discHeader->id4[3] != 'J') {
+		if (!isDefault) {
+			switch (d->gcnRegion) {
+				case GCN_REGION_JPN:
 					suffix = "JPN";
-				}
-				break;
-			case GCN_REGION_EUR:
-				if (discHeader->id4[3] != 'P') {
+					break;
+				case GCN_REGION_USA:
+					suffix = "USA";
+					break;
+				case GCN_REGION_EUR:
 					suffix = "EUR";
-				}
-				break;
-			default:
-				// No suffix for USA or South Korea.
-				break;
+					break;
+				case GCN_REGION_KOR:
+					suffix = "KOR";
+					break;
+				default:
+					break;
+			}
 		}
 
 		string s_region;
