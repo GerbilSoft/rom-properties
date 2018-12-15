@@ -31,6 +31,7 @@ SET(libromdata_SRCS
 	Console/GameCube.cpp
 	Console/GameCubeBNR.cpp
 	Console/GameCubeSave.cpp
+	Console/GameCubeRegions.cpp
 	Console/N64.cpp
 	Console/NES.cpp
 	Console/Sega8Bit.cpp
@@ -122,6 +123,7 @@ SET(libromdata_H
 	Console/GameCube.hpp
 	Console/GameCubeBNR.hpp
 	Console/GameCubeSave.hpp
+	Console/GameCubeRegions.hpp
 	Console/MegaDrive.hpp
 	Console/MegaDriveRegions.hpp
 	Console/N64.hpp

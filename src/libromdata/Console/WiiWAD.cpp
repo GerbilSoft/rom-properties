@@ -27,15 +27,16 @@
 #include "wii_banner.h"
 #include "data/NintendoLanguage.hpp"
 #include "data/WiiSystemMenuVersion.hpp"
+#include "GameCubeRegions.hpp"
 
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
 
 #include "libi18n/i18n.h"
-using namespace LibRpBase;
 
 // Decryption.
 #include "librpbase/crypto/KeyManager.hpp"
@@ -137,20 +138,6 @@ class WiiWADPrivate : public RomDataPrivate
 		 * @return Game information string, or empty string on error.
 		 */
 		string getGameInfo(void);
-
-		/**
-		 * Convert a Wii WAD region value to a GameTDB region code.
-		 * @param idRegion Game ID region.
-		 *
-		 * NOTE: Mulitple GameTDB region codes may be returned, including:
-		 * - User-specified fallback region. [TODO]
-		 * - General fallback region.
-		 *
-		 * TODO: Get the actual Wii region value from the WAD file.
-		 *
-		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
-		 */
-		static vector<const char*> wadRegionToGameTDB(char idRegion);
 };
 
 /** WiiWADPrivate **/
@@ -231,98 +218,6 @@ string WiiWADPrivate::getGameInfo(void)
 	// Unable to decrypt the IMET header.
 	return string();
 #endif /* ENABLE_DECRYPTION */
-}
-
-/**
- * Convert a Wii WAD region value to a GameTDB region code.
- * @param idRegion Game ID region.
- *
- * NOTE: Mulitple GameTDB region codes may be returned, including:
- * - User-specified fallback region. [TODO]
- * - General fallback region.
- *
- * TODO: Get the actual Wii region value from the WAD file.
- *
- * @return GameTDB region code(s), or empty vector if the region value is invalid.
- */
-vector<const char*> WiiWADPrivate::wadRegionToGameTDB(char idRegion)
-{
-	// TODO: Get the actual Wii region value from the WAD file.
-	// Using the Game ID region only for now.
-	vector<const char*> ret;
-	int fallback_region = 0;
-
-	// Check for region-specific game IDs.
-	switch (idRegion) {
-		case 'E':	// USA
-			ret.push_back("US");
-			break;
-		case 'J':	// Japan
-			ret.push_back("JA");
-			break;
-		case 'O':
-			// TODO: US/EU.
-			// Compare to host system region.
-			// For now, assuming US.
-			ret.push_back("US");
-			break;
-		case 'P':	// PAL
-		case 'X':	// Multi-language release
-		case 'Y':	// Multi-language release
-		case 'L':	// Japanese import to PAL regions
-		case 'M':	// Japanese import to PAL regions
-		default:
-			if (fallback_region == 0) {
-				// Use the fallback region.
-				fallback_region = 1;
-			}
-			break;
-
-		// European regions.
-		case 'D':	// Germany
-			ret.push_back("DE");
-			break;
-		case 'F':	// France
-			ret.push_back("FR");
-			break;
-		case 'H':	// Netherlands
-			ret.push_back("NL");
-			break;
-		case 'I':	// Italy
-			ret.push_back("NL");
-			break;
-		case 'R':	// Russia
-			ret.push_back("RU");
-			break;
-		case 'S':	// Spain
-			ret.push_back("ES");
-			break;
-		case 'U':	// Australia
-			if (fallback_region == 0) {
-				// Use the fallback region.
-				fallback_region = 2;
-			}
-			break;
-	}
-
-	// Check for fallbacks.
-	switch (fallback_region) {
-		case 1:
-			// Europe
-			ret.push_back("EN");
-			break;
-		case 2:
-			// Australia
-			ret.push_back("AU");
-			ret.push_back("EN");
-			break;
-
-		case 0:	// None
-		default:
-			break;
-	}
-
-	return ret;
 }
 
 /** WiiWAD **/
@@ -895,8 +790,7 @@ int WiiWAD::loadFieldData(void)
 	const uint32_t tid_hi = be32_to_cpu(tmdHeader->title_id.hi);
 
 	// Region code.
-	// TODO: Combine with GameCubePrivate::gcnRegionToString().
-	unsigned int region_code;
+	unsigned int gcnRegion;
 	if (tid_hi == 0x00000001) {
 		// IOS and/or System Menu.
 		if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
@@ -905,59 +799,71 @@ int WiiWAD::loadFieldData(void)
 			if (ver) {
 				switch (ver[3]) {
 					case 'J':
-						region_code = GCN_REGION_JPN;
+						gcnRegion = GCN_REGION_JPN;
 						break;
 					case 'U':
-						region_code = GCN_REGION_USA;
+						gcnRegion = GCN_REGION_USA;
 						break;
 					case 'E':
-						region_code = GCN_REGION_EUR;
+						gcnRegion = GCN_REGION_EUR;
 						break;
 					case 'K':
-						region_code = GCN_REGION_KOR;
+						gcnRegion = GCN_REGION_KOR;
 						break;
 					default:
-						region_code = 255;
+						gcnRegion = 255;
 						break;
 				}
 			} else {
-				region_code = 255;
+				gcnRegion = 255;
 			}
 		} else {
 			// IOS, BC, or MIOS. No region.
-			region_code = GCN_REGION_ALL;
+			gcnRegion = GCN_REGION_ALL;
 		}
 	} else {
-		region_code = be16_to_cpu(tmdHeader->region_code);
+		gcnRegion = be16_to_cpu(tmdHeader->region_code);
 	}
 
-	const char *s_region;
-	switch (region_code) {
-		case GCN_REGION_JPN:
-			s_region = C_("WiiWAD|Region", "Japan");
-			break;
-		case GCN_REGION_USA:
-			s_region = C_("WiiWAD|Region", "USA");
-			break;
-		case GCN_REGION_EUR:
-			s_region = C_("WiiWAD|Region", "Europe");
-			break;
-		case GCN_REGION_ALL:
-			s_region = C_("WiiWAD|Region", "Region-Free");
-			break;
-		case GCN_REGION_KOR:
-			s_region = C_("WiiWAD|Region", "South Korea");
-			break;
-		default:
-			s_region = nullptr;
-			break;
-	}
+	bool isDefault;
+	const char id4_region = (char)tmdHeader->title_id.u8[7];
+	const char *const region =
+		GameCubeRegions::gcnRegionToString(gcnRegion, id4_region, &isDefault);
+	if (region) {
+		// Append the GCN region name (USA/JPN/EUR/KOR) if
+		// the ID4 value differs.
+		const char *suffix = nullptr;
+		if (!isDefault) {
+			switch (gcnRegion) {
+				case GCN_REGION_JPN:
+					suffix = "JPN";
+					break;
+				case GCN_REGION_USA:
+					suffix = "USA";
+					break;
+				case GCN_REGION_EUR:
+					suffix = "EUR";
+					break;
+				case GCN_REGION_KOR:
+					suffix = "KOR";
+					break;
+				default:
+					break;
+			}
+		}
 
-	if (s_region) {
+		string s_region;
+		if (suffix) {
+			// tr: %1%s == full region name, %2$s == abbreviation
+			s_region = rp_sprintf_p(C_("WiiWAD", "%1$s (%2$s)"), region, suffix);
+		} else {
+			s_region = region;
+		}
+
 		d->fields->addField_string(C_("WiiWAD", "Region"), s_region);
 	} else {
 		d->fields->addField_string(C_("WiiWAD", "Region"),
-			rp_sprintf(C_("WiiWAD", "Unknown (0x%02X)"), region_code));
+			rp_sprintf(C_("WiiWAD", "Unknown (0x%02X)"), gcnRegion));
 	}
 
 	// Required IOS version.
@@ -1210,8 +1116,11 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		}
 	}
 
+	// TMD Header.
+	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
+
 	// Check for a valid TID hi.
-	switch (be32_to_cpu(d->tmdHeader.title_id.hi)) {
+	switch (be32_to_cpu(tmdHeader->title_id.hi)) {
 		case 0x00010000:
 		case 0x00010001:
 		case 0x00010002:
@@ -1276,7 +1185,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// The ID4 cannot have non-printable characters.
 	// NOTE: Must be NULL-terminated.
 	char id4[5];
-	memcpy(id4, &d->tmdHeader.title_id.u8[4], 4);
+	memcpy(id4, &tmdHeader->title_id.u8[4], 4);
 	id4[4] = 0;
 	for (int i = 4-1; i >= 0; i--) {
 		if (!ISPRINT(id4[i])) {
@@ -1286,8 +1195,10 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	}
 
 	// Determine the GameTDB region code(s).
-	// TODO: Get the actual Wii region from the WAD file.
-	vector<const char*> tdb_regions = d->wadRegionToGameTDB(id4[3]);
+	const unsigned int gcnRegion = be16_to_cpu(tmdHeader->region_code);
+	const char id4_region = (char)tmdHeader->title_id.u8[7];
+	vector<const char*> tdb_regions =
+		GameCubeRegions::gcnRegionToGameTDB(gcnRegion, id4_region);
 
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has
