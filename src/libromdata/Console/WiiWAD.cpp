@@ -834,22 +834,7 @@ int WiiWAD::loadFieldData(void)
 		// the ID4 value differs.
 		const char *suffix = nullptr;
 		if (!isDefault) {
-			switch (gcnRegion) {
-				case GCN_REGION_JPN:
-					suffix = "JPN";
-					break;
-				case GCN_REGION_USA:
-					suffix = "USA";
-					break;
-				case GCN_REGION_EUR:
-					suffix = "EUR";
-					break;
-				case GCN_REGION_KOR:
-					suffix = "KOR";
-					break;
-				default:
-					break;
-			}
+			suffix = GameCubeRegions::gcnRegionToAbbrevString(gcnRegion);
 		}
 
 		string s_region;

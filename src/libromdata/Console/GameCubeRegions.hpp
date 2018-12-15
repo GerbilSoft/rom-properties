@@ -47,6 +47,14 @@ class GameCubeRegions
 		static const char *gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault = nullptr);
 
 		/**
+		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to an abbreviation string.
+		 * Abbreviation string is e.g. "JPN" or "USA".
+		 * @param gcnRegion	[in] GCN region value.
+		 * @return Abbreviation string, or nullptr if the region value is invalid.
+		 */
+		static const char *gcnRegionToAbbrevString(unsigned int gcnRegion);
+
+		/**
 		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a GameTDB region code.
 		 * @param gcnRegion GCN region value.
 		 * @param idRegion Game ID region.

@@ -154,6 +154,35 @@ const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRe
 }
 
 /**
+ * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to an abbreviation string.
+ * Abbreviation string is e.g. "JPN" or "USA".
+ * @param gcnRegion	[in] GCN region value.
+ * @return Abbreviation string, or nullptr if the region value is invalid.
+ */
+const char *GameCubeRegions::gcnRegionToAbbrevString(unsigned int gcnRegion)
+{
+	const char *suffix;
+	switch (gcnRegion) {
+		case GCN_REGION_JPN:
+			suffix = "JPN";
+			break;
+		case GCN_REGION_USA:
+			suffix = "USA";
+			break;
+		case GCN_REGION_EUR:
+			suffix = "EUR";
+			break;
+		case GCN_REGION_KOR:
+			suffix = "KOR";
+			break;
+		default:
+			suffix = nullptr;
+			break;
+	}
+	return suffix;
+}
+
+/**
  * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a GameTDB region code.
  * @param gcnRegion GCN region value.
  * @param idRegion Game ID region.
