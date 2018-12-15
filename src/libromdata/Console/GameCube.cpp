@@ -1794,7 +1794,7 @@ int GameCube::loadFieldData(void)
 			s_region = region;
 		}
 
-		d->fields->addField_string(C_("GameCube", "Region"), region);
+		d->fields->addField_string(C_("GameCube", "Region"), s_region);
 	} else {
 		// Invalid region code.
 		d->fields->addField_string(C_("GameCube", "Region"),

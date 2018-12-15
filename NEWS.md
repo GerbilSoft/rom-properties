@@ -67,6 +67,9 @@
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.
   * Linux: Fixed a file handle leak that was only noticeable when handling
     more than 1,023 files in one invocation of the `rpcli` program.
+  * GameCube: Fix bug that prevented "EUR" and "JPN" from being appended
+    to region code descriptions if the game's BI2 region doesn't match
+    the ID4 region.
 
 ## v1.3.3 (released 2018/08/25)
 
