@@ -1,5 +1,5 @@
 /* mz_zip_rw.c -- Zip reader/writer
-   Version 2.8.0, November 24, 2018
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -750,7 +750,8 @@ int32_t mz_zip_reader_entry_save_file(void *handle, const char *path)
         return MZ_PARAM_ERROR;
 
     /* Convert to forward slashes for unix which doesn't like backslashes */
-    strncpy(pathwfs, path, sizeof(pathwfs));
+    strncpy(pathwfs, path, sizeof(pathwfs) - 1);
+    pathwfs[sizeof(pathwfs) - 1] = 0;
     for (i = 0; i < (int32_t)strlen(pathwfs); i += 1)
     {
         if (pathwfs[i] == '\\')
@@ -887,7 +888,8 @@ int32_t mz_zip_reader_save_all(void *handle, const char *destination_dir)
             utf8_string = mz_os_utf8_string_create(reader->file_info->filename, reader->encoding);
             if (utf8_string)
             {
-                strncpy(utf8_name, (char *)utf8_string, sizeof(utf8_name));
+                strncpy(utf8_name, (char *)utf8_string, sizeof(utf8_name) - 1);
+                utf8_name[sizeof(utf8_name) - 1] = 0;
                 mz_os_utf8_string_delete(&utf8_string);
             }
         }
@@ -1665,11 +1667,8 @@ int32_t mz_zip_writer_add_file(void *handle, const char *path, const char *filen
 
     if (writer->zip_cd)
         file_info.flag |= MZ_ZIP_FLAG_MASK_LOCAL_INFO;
-
-#ifdef HAVE_WZAES
     if (writer->aes)
         file_info.aes_version = MZ_AES_VERSION;
-#endif
 
     mz_os_get_file_date(path, &file_info.modified_date, &file_info.accessed_date,
         &file_info.creation_date);
@@ -2006,8 +2005,9 @@ void *mz_zip_writer_create(void **handle)
     if (writer != NULL)
     {
         memset(writer, 0, sizeof(mz_zip_writer));
-
+#if defined(HAVE_WZAES)
         writer->aes = 1;
+#endif
 #if defined(HAVE_ZLIB) || defined(HAVE_LIBCOMP)
         writer->compress_method = MZ_COMPRESS_METHOD_DEFLATE;
 #elif defined(HAVE_BZIP2)
