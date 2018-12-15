@@ -104,6 +104,7 @@ SET(libromdata_SRCS
 	disc/IsoPartition.cpp
 	disc/GdiReader.cpp
 	disc/WuxReader.cpp
+	disc/NASOSReader.cpp
 
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
@@ -242,6 +243,8 @@ SET(libromdata_H
 	disc/GdiReader.hpp
 	disc/WuxReader.hpp
 	disc/wux_structs.h
+	disc/NASOSReader.hpp
+	disc/nasos_gcn.h
 
 	config/TImageTypesConfig.hpp
 	img/TCreateThumbnail.hpp

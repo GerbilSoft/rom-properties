@@ -53,7 +53,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 {
 	public:
 		WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader,
-			int64_t partition_offset, int64_t partition_size, bool noCrypto);
+			int64_t partition_offset, int64_t partition_size, WiiPartition::CryptoMethod cryptoMethod);
 		virtual ~WiiPartitionPrivate();
 
 	private:
@@ -70,20 +70,21 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 	public:
 		/**
 		 * Determine the encryption key used by this partition.
-		 * @return encKey.
+		 * This initializes encKey and encKeyReal.
 		 */
-		WiiPartition::EncKey getEncKey(void);
+		void getEncKey(void);
 
-	private:
 		// Encryption key in use.
-		WiiPartition::EncKey m_encKey;
+		WiiPartition::EncKey encKey;
+		// Encryption key that would be used if the partition was encrypted.
+		WiiPartition::EncKey encKeyReal;
+
+		// Crypto method.
+		WiiPartition::CryptoMethod cryptoMethod;
 
 	public:
-		// If true, the disc image is not encrypted. (RVT-H)
-		bool noCrypto;
-
 		// Decrypted read position. (0x7C00 bytes out of 0x8000)
-		// NOTE: Actual read position if noCrypto is true.
+		// NOTE: Actual read position if ((cryptoMethod & CM_MASK_SECTOR) == CM_32K).
 		int64_t pos_7C00;
 
 		// Decrypted sector cache.
@@ -173,27 +174,28 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		IDiscReader *discReader, int64_t partition_offset,
-		int64_t partition_size, bool noCrypto)
+		int64_t partition_size, WiiPartition::CryptoMethod cryptoMethod)
 	: super(q, discReader, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
-	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, noCrypto(noCrypto)
+	, encKey(WiiPartition::ENCKEY_UNKNOWN)
+	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
+	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
 	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, verifyResult(KeyManager::VERIFY_NO_SUPPORT)
-	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
-	, noCrypto(noCrypto)
+	, encKey(WiiPartition::ENCKEY_UNKNOWN)
+	, encKeyReal(WiiPartition::ENCKEY_UNKNOWN)
+	, cryptoMethod(cryptoMethod)
 	, pos_7C00(-1)
 	, sector_num(~0)
 #endif /* ENABLE_DECRYPTION */
 {
-	if (noCrypto) {
+	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// No encryption. (RVT-H)
 		verifyResult = KeyManager::VERIFY_OK;
-		m_encKey = WiiPartition::ENCKEY_NONE;
 	}
 
 	// Clear data set by GcnPartition in case the
@@ -236,6 +238,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 		// Use the calculated partition size.
 		data_size = partition_size - data_offset;
 	}
+
 	this->partition_size  = data_size + data_offset;
 #ifdef ENABLE_DECRYPTION
 	pos_7C00	= 0;
@@ -247,19 +250,20 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 
 /**
  * Determine the encryption key used by this partition.
- * @return encKey.
+ * This initializes encKey and encKeyReal.
  */
-WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
+void WiiPartitionPrivate::getEncKey(void)
 {
-	if (m_encKey > WiiPartition::ENCKEY_UNKNOWN) {
+	if (encKey > WiiPartition::ENCKEY_UNKNOWN) {
 		// Encryption key has already been determined.
-		return m_encKey;
+		return;
 	}
 
-	m_encKey = WiiPartition::ENCKEY_UNKNOWN;
+	encKey = WiiPartition::ENCKEY_UNKNOWN;
+	encKeyReal = WiiPartition::ENCKEY_UNKNOWN;
 	if (partition_size < 0) {
 		// Error loading the partition header.
-		return m_encKey;
+		return;
 	}
 
 	assert(partitionHeader.ticket.common_key_index <= 1);
@@ -270,18 +274,24 @@ WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
 	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug issuer. Use the debug key for keyIdx == 0.
 		if (keyIdx == 0) {
-			m_encKey = WiiPartition::ENCKEY_DEBUG;
+			encKeyReal = WiiPartition::ENCKEY_DEBUG;
 		}
 	} else {
 		// Assuming Retail issuer.
 		// NOTE: vWii common key cannot be used for discs.
 		if (keyIdx <= 1) {
 			// keyIdx maps to encKey directly for retail.
-			m_encKey = static_cast<WiiPartition::EncKey>(keyIdx);
+			encKeyReal = static_cast<WiiPartition::EncKey>(keyIdx);
 		}
 	}
 
-	return m_encKey;
+	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
+		// Not encrypted.
+		encKey = WiiPartition::ENCKEY_NONE;
+	} else {
+		// Encrypted.
+		encKey = encKeyReal;
+	}
 }
 
 #ifdef ENABLE_DECRYPTION
@@ -304,7 +314,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	assert(keyManager != nullptr);
 
 	// Determine the required encryption key.
-	const WiiPartition::EncKey encKey = getEncKey();
+	getEncKey();
 	if (encKey <= WiiPartition::ENCKEY_UNKNOWN) {
 		// Invalid encryption key index.
 		// Use VERIFY_KEY_NOT_FOUND here.
@@ -442,8 +452,9 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	}
 
 	RP_Q(WiiPartition);
+	const bool isCrypted = ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_ENCRYPTED);
 #ifndef ENABLE_DECRYPTION
-	if (!noCrypto) {
+	if (isCrypted) {
 		// Decryption is disabled.
 		q->m_lastError = EIO;
 		return -1;
@@ -471,7 +482,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	}
 
 #ifdef ENABLE_DECRYPTION
-	if (!noCrypto) {
+	if (isCrypted) {
 		// Decrypt the sector.
 		if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
 		    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
@@ -500,11 +511,11 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * @param discReader		[in] IDiscReader.
  * @param partition_offset	[in] Partition start offset.
  * @param partition_size	[in] Calculated partition size. Used if the size in the header is 0.
- * @param noCrypto		[in] If true, disc image is not encrypted. (RVT-H)
+ * @param cryptoMethod		[in] Crypto method.
  */
 WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
-		int64_t partition_size, bool noCrypto)
-	: super(new WiiPartitionPrivate(this, discReader, partition_offset, partition_size, noCrypto))
+		int64_t partition_size, CryptoMethod cryptoMethod)
+	: super(new WiiPartitionPrivate(this, discReader, partition_offset, partition_size, cryptoMethod))
 { }
 
 WiiPartition::~WiiPartition()
@@ -542,8 +553,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		size = static_cast<size_t>(d->data_size - d->pos_7C00);
 	}
 
-	if (d->noCrypto) {
-		// No encryption.
+	if ((d->cryptoMethod & CM_MASK_SECTOR) == CM_32K) {
+		// Full 32K sectors. (implies no encryption)
 
 		// Check if we're not starting on a block boundary.
 		const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_ENCRYPTED;
@@ -600,93 +611,94 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			d->pos_7C00 += size;
 		}
 	} else {
+		if ((d->cryptoMethod & CM_MASK_ENCRYPTED) == CM_ENCRYPTED) {
 #ifdef ENABLE_DECRYPTION
-	// Make sure decryption is initialized.
-	switch (d->verifyResult) {
-		case KeyManager::VERIFY_UNKNOWN:
-			// Attempt to initialize decryption.
-			if (d->initDecryption() != KeyManager::VERIFY_OK) {
-				// Decryption could not be initialized.
-				// TODO: Better error?
-				m_lastError = EIO;
-				return -m_lastError;
+			// Make sure decryption is initialized.
+			switch (d->verifyResult) {
+				case KeyManager::VERIFY_UNKNOWN:
+					// Attempt to initialize decryption.
+					if (d->initDecryption() != KeyManager::VERIFY_OK) {
+						// Decryption could not be initialized.
+						// TODO: Better error?
+						m_lastError = EIO;
+						return -m_lastError;
+					}
+					break;
+
+				case KeyManager::VERIFY_OK:
+					// Decryption is initialized.
+					break;
+
+				default:
+					// Decryption failed to initialize.
+					// TODO: Better error?
+					m_lastError = EIO;
+					return -m_lastError;
 			}
-			break;
-
-		case KeyManager::VERIFY_OK:
-			// Decryption is initialized.
-			break;
-
-		default:
-			// Decryption failed to initialize.
-			// TODO: Better error?
+#else /* !ENABLE_DECRYPTION */
+			// Decryption is not enabled.
 			m_lastError = EIO;
-			return -m_lastError;
-	}
-
-	// Check if we're not starting on a block boundary.
-	const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_DECRYPTED;
-	if (blockStartOffset != 0) {
-		// Not a block boundary.
-		// Read the end of the block.
-		uint32_t read_sz = SECTOR_SIZE_DECRYPTED - blockStartOffset;
-		if (size < static_cast<size_t>(read_sz)) {
-			read_sz = static_cast<uint32_t>(size);
+			ret = 0;
+#endif /* ENABLE_DECRYPTION */
 		}
 
-		// Read and decrypt the sector.
-		const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
-		d->readSector(blockStart);
+		// Check if we're not starting on a block boundary.
+		const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_DECRYPTED;
+		if (blockStartOffset != 0) {
+			// Not a block boundary.
+			// Read the end of the block.
+			uint32_t read_sz = SECTOR_SIZE_DECRYPTED - blockStartOffset;
+			if (size < static_cast<size_t>(read_sz)) {
+				read_sz = static_cast<uint32_t>(size);
+			}
 
-		// Copy data from the sector.
-		memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET + blockStartOffset], read_sz);
+			// Read and decrypt the sector.
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+			d->readSector(blockStart);
 
-		// Starting block read.
-		size -= read_sz;
-		ptr8 += read_sz;
-		ret += read_sz;
-		d->pos_7C00 += read_sz;
-	}
+			// Copy data from the sector.
+			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET + blockStartOffset], read_sz);
 
-	// Read entire blocks.
-	for (; size >= SECTOR_SIZE_DECRYPTED;
-	    size -= SECTOR_SIZE_DECRYPTED, ptr8 += SECTOR_SIZE_DECRYPTED,
-	    ret += SECTOR_SIZE_DECRYPTED, d->pos_7C00 += SECTOR_SIZE_DECRYPTED)
-	{
-		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
+			// Starting block read.
+			size -= read_sz;
+			ptr8 += read_sz;
+			ret += read_sz;
+			d->pos_7C00 += read_sz;
+		}
 
-		// Read and decrypt the sector.
-		const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
-		d->readSector(blockStart);
+		// Read entire blocks.
+		for (; size >= SECTOR_SIZE_DECRYPTED;
+		size -= SECTOR_SIZE_DECRYPTED, ptr8 += SECTOR_SIZE_DECRYPTED,
+		ret += SECTOR_SIZE_DECRYPTED, d->pos_7C00 += SECTOR_SIZE_DECRYPTED)
+		{
+			assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
 
-		// Copy data from the sector.
-		memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED);
-	}
+			// Read and decrypt the sector.
+			const uint32_t blockStart = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+			d->readSector(blockStart);
 
-	// Check if we still have data left. (not a full block)
-	if (size > 0) {
-		// Not a full block.
+			// Copy data from the sector.
+			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED);
+		}
 
-		// Read and decrypt the sector.
-		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
-		const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
-		d->readSector(blockEnd);
+		// Check if we still have data left. (not a full block)
+		if (size > 0) {
+			// Not a full block.
 
-		// Copy data from the sector.
-		memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], size);
+			// Read and decrypt the sector.
+			assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
+			const uint32_t blockEnd = static_cast<uint32_t>(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+			d->readSector(blockEnd);
 
-		ret += size;
-		d->pos_7C00 += size;
+			// Copy data from the sector.
+			memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], size);
+
+			ret += size;
+			d->pos_7C00 += size;
+		}
 	}
 
 	// Finished reading the data.
-#else /* !ENABLE_DECRYPTION */
-	// Decryption is not enabled.
-	m_lastError = EIO;
-	ret = 0;
-#endif /* ENABLE_DECRYPTION */
-	}
-
 	return ret;
 }
 
@@ -756,7 +768,21 @@ WiiPartition::EncKey WiiPartition::encKey(void) const
 {
 	// TODO: Errors?
 	RP_D(WiiPartition);
-	return d->getEncKey();
+	d->getEncKey();
+	return d->encKey;
+}
+
+/**
+ * Get the encryption key that would be in use if the partition was encrypted.
+ * This is only needed for NASOS images.
+ * @return "Real" encryption key in use.
+ */
+WiiPartition::EncKey WiiPartition::encKeyReal(void) const
+{
+	// TODO: Errors?
+	RP_D(WiiPartition);
+	d->getEncKey();
+	return d->encKeyReal;
 }
 
 /**

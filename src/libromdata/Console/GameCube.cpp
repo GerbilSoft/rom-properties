@@ -42,6 +42,8 @@ using namespace LibRpBase;
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/WbfsReader.hpp"
 #include "disc/CisoGcnReader.hpp"
+#include "disc/NASOSReader.hpp"
+#include "disc/nasos_gcn.h"	// for magic numbers
 #include "disc/WiiPartition.hpp"
 
 // For sections delegated to other RomData subclasses.
@@ -93,12 +95,13 @@ class GameCubePrivate : public RomDataPrivate
 			DISC_SYSTEM_MASK = 0xFF,
 
 			// High byte: Image format.
-			DISC_FORMAT_RAW  = (0 << 8),	// Raw image. (ISO, GCM)
-			DISC_FORMAT_SDK  = (1 << 8),	// Raw image with SDK header.
-			DISC_FORMAT_TGC  = (2 << 8),	// TGC (embedded disc image) (GCN only?)
-			DISC_FORMAT_WBFS = (3 << 8),	// WBFS image. (Wii only)
-			DISC_FORMAT_CISO = (4 << 8),	// CISO image.
-			DISC_FORMAT_WIA  = (5 << 8),	// WIA image. (Header only!)
+			DISC_FORMAT_RAW   = (0 << 8),	// Raw image. (ISO, GCM)
+			DISC_FORMAT_SDK   = (1 << 8),	// Raw image with SDK header.
+			DISC_FORMAT_TGC   = (2 << 8),	// TGC (embedded disc image) (GCN only?)
+			DISC_FORMAT_WBFS  = (3 << 8),	// WBFS image. (Wii only)
+			DISC_FORMAT_CISO  = (4 << 8),	// CISO image.
+			DISC_FORMAT_WIA   = (5 << 8),	// WIA image. (Header only!)
+			DISC_FORMAT_NASOS = (6 << 8),	// NASOS image.
 			DISC_FORMAT_UNKNOWN = (0xFF << 8),
 			DISC_FORMAT_MASK = (0xFF << 8),
 		};
@@ -340,10 +343,17 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		return -errno;
 	}
 
-	// Check for NoCrypto.
-	// TODO: Check both hash_verify and disc_noCrypto.
-	// Dolphin only checks hash_verify.
-	const bool noCrypto = (discHeader.hash_verify != 0);
+	// Check the crypto and hash method.
+	// TODO: Lookup table instead of branches?
+	unsigned int cryptoMethod = 0;
+	if (discHeader.disc_noCrypto != 0 || (discType & DISC_FORMAT_MASK) == DISC_FORMAT_NASOS) {
+		// No encryption.
+		cryptoMethod |= WiiPartition::CM_UNENCRYPTED;
+	}
+	if (discHeader.hash_verify != 0) {
+		// No hashes.
+		cryptoMethod |= WiiPartition::CM_32K;
+	}
 
 	// Process each volume group.
 	for (unsigned int i = 0; i < 4; i++) {
@@ -403,7 +413,10 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Create the WiiPartition objects.
 	for (auto iter = wiiPtbl.begin(); iter != wiiPtbl.end(); ++iter) {
-		iter->partition = new WiiPartition(discReader, iter->start, iter->size, noCrypto);
+		// TODO: NASOS images are decrypted, but we should
+		// still show how they'd be encrypted.
+		iter->partition = new WiiPartition(discReader, iter->start, iter->size,
+			(WiiPartition::CryptoMethod)cryptoMethod);
 
 		if (iter->type == PARTITION_UPDATE && !updatePartition) {
 			// System Update partition.
@@ -1111,6 +1124,9 @@ GameCube::GameCube(IRpFile *file)
 			case GameCubePrivate::DISC_FORMAT_CISO:
 				d->discReader = new CisoGcnReader(d->file);
 				break;
+			case GameCubePrivate::DISC_FORMAT_NASOS:
+				d->discReader = new NASOSReader(d->file);
+				break;
 			case GameCubePrivate::DISC_FORMAT_WIA:
 				// TODO: Implement WiaReader.
 				// For now, only the header will be readable.
@@ -1160,6 +1176,54 @@ GameCube::GameCube(IRpFile *file)
 		d->discType = GameCubePrivate::DISC_UNKNOWN;
 		d->isValid = false;
 		return;
+	}
+
+	if (((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) &&
+	    ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_UNKNOWN))
+	{
+		// Verify that the NASOS header matches the disc format.
+		bool isOK = true;
+		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+			case GameCubePrivate::DISC_SYSTEM_GCN:
+				// Must have GCN magic number or nddemo header.
+				if (d->discHeader.magic_gcn == cpu_to_be32(GCN_MAGIC)) {
+					// GCN magic number is present.
+					break;
+				} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header,
+				           sizeof(GameCubePrivate::nddemo_header)))
+				{
+					// nddemo header is present.
+					break;
+				}
+
+				// Not a GCN image.
+				isOK = false;
+				break;
+
+			case GameCubePrivate::DISC_SYSTEM_WII:
+				// Must have Wii magic number.
+				if (d->discHeader.magic_wii != cpu_to_be32(WII_MAGIC)) {
+					// Wii magic number is NOT present.
+					isOK = false;
+				}
+				break;
+
+			default:
+				// Unsupported...
+				isOK = false;
+				break;
+		}
+
+		if (!isOK) {
+			// Incorrect image format.
+			delete d->discReader;
+			delete d->file;
+			d->discReader = nullptr;
+			d->file = nullptr;
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			d->isValid = false;
+			return;
+		}
 	}
 
 	if (d->discType != GameCubePrivate::DISC_UNKNOWN &&
@@ -1412,6 +1476,16 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_WIA);
 	}
 
+	// Check for NASOS.
+	// TODO: WII9?
+	if (pData32[0] == cpu_to_be32(NASOS_MAGIC_GCML)) {
+		// GameCube NASOS image.
+		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_NASOS);
+	} else if (pData32[0] == cpu_to_be32(NASOS_MAGIC_WII5)) {
+		// Wii NASOS image. (single-layer)
+		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_NASOS);
+	}
+
 	// Not supported.
 	return GameCubePrivate::DISC_UNKNOWN;
 }
@@ -1465,6 +1539,7 @@ const char *const *GameCube::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".gcm", ".rvm", ".wbfs",
 		".ciso", ".cso", ".tgc",
+		".dec",	// .iso.dec
 
 		// Partially supported. (Header only!)
 		".wia",
@@ -1498,6 +1573,10 @@ const char *const *GameCube::supportedMimeTypes_static(void)
 		"application/x-wii-iso-image",
 		"application/x-wbfs",
 		"application/x-wia",
+
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-nasos-image",
 
 		nullptr
 	};
@@ -1966,10 +2045,22 @@ int GameCube::loadFieldData(void)
 
 			// Encryption key.
 			// TODO: Use a string table?
+			WiiPartition::EncKey encKey;
+			if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
+				// NASOS disc image.
+				// If this would normally be an encrypted image, use encKeyReal().
+				encKey = (d->discHeader.disc_noCrypto == 0
+					? entry.partition->encKeyReal()
+					: entry.partition->encKey());
+			} else {
+				// Other disc image. Use encKey().
+				encKey = entry.partition->encKey();
+			}
+
 			const char *key_name;
-			switch (entry.partition->encKey()) {
-				case WiiPartition::ENCKEY_UNKNOWN:
+			switch (encKey) {
 				default:
+				case WiiPartition::ENCKEY_UNKNOWN:
 					// tr: Unknown encryption key.
 					key_name = C_("GameCube|KeyIdx", "Unknown");
 					break;
