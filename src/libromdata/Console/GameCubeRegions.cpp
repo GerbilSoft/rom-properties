@@ -161,25 +161,13 @@ const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRe
  */
 const char *GameCubeRegions::gcnRegionToAbbrevString(unsigned int gcnRegion)
 {
-	const char *suffix;
-	switch (gcnRegion) {
-		case GCN_REGION_JPN:
-			suffix = "JPN";
-			break;
-		case GCN_REGION_USA:
-			suffix = "USA";
-			break;
-		case GCN_REGION_EUR:
-			suffix = "EUR";
-			break;
-		case GCN_REGION_KOR:
-			suffix = "KOR";
-			break;
-		default:
-			suffix = nullptr;
-			break;
+	static const char region_tbl[5][4] = {
+		"JPN", "USA", "EUR", "ALL", "KOR"
+	};
+	if (gcnRegion >= ARRAY_SIZE(region_tbl)) {
+		return nullptr;
 	}
-	return suffix;
+	return region_tbl[gcnRegion];
 }
 
 /**
