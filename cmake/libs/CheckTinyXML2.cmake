@@ -35,12 +35,13 @@ IF(USE_INTERNAL_XML)
 		# Using DLLs on Windows.
 		# TODO: Build a dylib for Mac OS X.
 		SET(USE_INTERNAL_XML_DLL ON)
-		SET(TinyXML2_LIBRARY tinyxml2 CACHE "TinyXML2 library." INTERNAL FORCE)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_XML_DLL OFF)
-		SET(TinyXML2_LIBRARY tinyxml2_static CACHE "TinyXML2 library." INTERNAL FORCE)
 	ENDIF()
+	# TinyXML2 v7.0.0's CMakeLists.txt uses the same target for
+	# both DLL and static library builds.
+	SET(TinyXML2_LIBRARY tinyxml2 CACHE "TinyXML2 library." INTERNAL FORCE)
 	SET(TinyXML2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/extlib/tinyxml2")
 ELSE(USE_INTERNAL_XML)
 	SET(USE_INTERNAL_XML_DLL OFF)
