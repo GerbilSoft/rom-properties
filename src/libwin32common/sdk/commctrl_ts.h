@@ -119,11 +119,11 @@ static FORCEINLINE int Header_ClearAllFilters(_In_ HWND hwndHD)
 
 #if (_WIN32_WINNT >= 0x600)
 #undef Header_GetItemDropDownRect
-static FORCEINLINE BOOL Header_GetItemDropDownRect(_In_ HWND hwndHD, _In_ int iItem, _Inout_ LPERCT lpItemRect)
+static FORCEINLINE BOOL Header_GetItemDropDownRect(_In_ HWND hwndHD, _In_ int iItem, _Inout_ LPRECT lpItemRect)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETITEMDROPDOWNRECT, STATIC_CAST(WPARAM)(iItem), REINTERPRET_CAST(LPARAM)(lpItemRect)))); }
 
 #undef Header_GetOverflowRect
-static FORCEINLINE BOOL Header_GetOverflowRect(_In_ HWND hwndHD, _Inout_ LPERCT lpItemRect)
+static FORCEINLINE BOOL Header_GetOverflowRect(_In_ HWND hwndHD, _Inout_ LPRECT lpItemRect)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETOVERFLOWRECT, 0, REINTERPRET_CAST(LPARAM)(lpItemRect)))); }
 
 #undef Header_GetFocusedItem
