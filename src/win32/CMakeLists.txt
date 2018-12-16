@@ -21,6 +21,8 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider_Fallback.cpp
 	RP_PropertyStore.cpp
 	RP_PropertyStore_Register.cpp
+	RP_ShellIconOverlayIdentifier.cpp
+	RP_ShellIconOverlayIdentifier_Register.cpp
 	CreateThumbnail.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
@@ -44,6 +46,8 @@ SET(rom-properties-win32_H
 	RP_ThumbnailProvider_p.hpp
 	RP_PropertyStore.hpp
 	RP_PropertyStore_p.hpp
+	RP_ShellIconOverlayIdentifier.hpp
+	RP_ShellIconOverlayIdentifier_p.hpp
 	CreateThumbnail.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp

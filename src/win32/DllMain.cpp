@@ -38,6 +38,7 @@
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_PropertyStore.hpp"
+#include "RP_ShellIconOverlayIdentifier.hpp"
 
 // libwin32common
 #include "libwin32common/ComBase.hpp"
@@ -182,6 +183,7 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	else CHECK_INTERFACE(RP_ShellPropSheetExt)
 	else CHECK_INTERFACE(RP_ThumbnailProvider)
 	else CHECK_INTERFACE(RP_PropertyStore)
+	else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
 	else {
 		// Class not available.
 		hr = CLASS_E_CLASSNOTAVAILABLE;
@@ -604,6 +606,8 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_PropertyStore::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ShellIconOverlayIdentifier::RegisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -706,6 +710,8 @@ STDAPI DllUnregisterServer(void)
 	lResult = RP_ThumbnailProvider::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_PropertyStore::UnregisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ShellIconOverlayIdentifier::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.

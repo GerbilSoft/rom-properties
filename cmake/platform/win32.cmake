@@ -10,8 +10,8 @@ SET(RP_C_FLAGS_WIN32 "-DSTRICT -DWIN32_LEAN_AND_MEAN -DNOMINMAX")
 # No support for ANSI Windows, i.e. Win9x.
 SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DUNICODE -D_UNICODE")
 
-# Minimum Windows version for the SDK is Windows XP.
-SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_IE=0x0600")
+# Minimum Windows version for the SDK is Windows Vista.
+SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DWINVER=0x0600 -D_WIN32_WINNT=0x0600 -D_WIN32_IE=0x0600")
 
 # Enable secure template overloads for C++.
 # References:
