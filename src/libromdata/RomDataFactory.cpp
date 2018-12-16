@@ -624,7 +624,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	};
 
 	for (const RomDataFns *const *tblptr = &romDataFns_tbl[0];
-	     tblptr != nullptr; tblptr++)
+	     *tblptr != nullptr; tblptr++)
 	{
 		const RomDataFns *fns = *tblptr;
 		for (; fns->supportedFileExtensions != nullptr; fns++) {
