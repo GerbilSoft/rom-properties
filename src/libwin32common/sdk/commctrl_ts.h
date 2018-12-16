@@ -127,10 +127,10 @@ static FORCEINLINE BOOL Header_GetOverflowRect(_In_ HWND hwndHD, _Inout_ LPRECT 
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETOVERFLOWRECT, 0, REINTERPRET_CAST(LPARAM)(lpItemRect)))); }
 
 #undef Header_GetFocusedItem
-static FORCEINLINE int Header_GetOverflowRect(_In_ HWND hwndHD)
+static FORCEINLINE int Header_GetFocusedItem(_In_ HWND hwndHD)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_GETFOCUSEDITEM, 0, 0))); }
 
-#undef Header_GetFocusedItem
+#undef Header_SetFocusedItem
 static FORCEINLINE BOOL Header_SetFocusedItem(_In_ HWND hwndHD, _In_ int iItem)
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwndHD, HDM_SETFOCUSEDITEM, 0, STATIC_CAST(LPARAM)(iItem)))); }
 #endif // _WIN32_WINNT >= 0x600
