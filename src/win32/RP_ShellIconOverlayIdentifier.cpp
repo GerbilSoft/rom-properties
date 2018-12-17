@@ -49,9 +49,10 @@ const CLSID CLSID_RP_ShellIconOverlayIdentifier =
 #include "RP_ShellIconOverlayIdentifier_p.hpp"
 
 RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
-	: file(nullptr)
-	, romData(nullptr)
-	, hShell32_dll(nullptr)
+#if 0
+	: romData(nullptr)
+#endif
+	: hShell32_dll(nullptr)
 	, pfnSHGetStockIconInfo(nullptr)
 {
 	// Get SHGetStockIconInfo().
@@ -67,11 +68,13 @@ RP_ShellIconOverlayIdentifier_Private::~RP_ShellIconOverlayIdentifier_Private()
 		FreeLibrary(hShell32_dll);
 	}
 
+	// FIXME: OwnCloud's shell extension checks the file in GetOverlayInfo, but
+	// Windows 7 only calls GetOverlayInfo once per session...
+#if 0
 	if (romData) {
 		romData->unref();
 	}
-
-	delete file;
+#endif
 }
 
 /** RP_PropertyStore **/
