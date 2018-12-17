@@ -2658,9 +2658,6 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
  */
 bool Nintendo3DS::hasDangerousPermissions(void) const
 {
-	// TODO
-	return true;
-
 	// Get the primary NCCH.
 	// If this fails, and the file type is NCSD or CIA,
 	// it usually means there's a missing key.
@@ -2673,16 +2670,35 @@ bool Nintendo3DS::hasDangerousPermissions(void) const
 	}
 
 	// Get the NCCH Extended Header.
-	const N3DS_NCCH_ExHeader_t *const ncch_exheader = ncch->ncchExHeader();
-	if (!ncch_exheader) {
+	const N3DS_NCCH_ExHeader_t *const pNcchExHeader = ncch->ncchExHeader();
+	if (!pNcchExHeader) {
 		// Can't get the ExHeader.
 		return false;
 	}
 
 	// TODO: Ignore permissions on system titles.
 	// TODO: Check for a non-zero signature?
+	// TODO: Check permissions on retail games and compare to this list.
+	static const uint32_t fsAccess_dangerous =
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo |
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw |
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite;
+	static const uint32_t ioAccess_dangerous =
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3;
 
-	// No dangerous permissions by default.
+	if ((pNcchExHeader->aci.arm11_local.storage.fs_access & fsAccess_dangerous) ||
+	    (pNcchExHeader->aci.arm9.descriptors & ioAccess_dangerous))
+	{
+		// One or more "dangerous" permissions are set.
+		// TODO: Also highlight "dangerous" permissions in the ROM Properties tab.
+		return true;
+	}
+
+	// No "dangerous" permissions are set.
 	return false;
 }
 
