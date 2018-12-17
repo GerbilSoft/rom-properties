@@ -39,6 +39,7 @@ using namespace LibRpBase;
 using LibRomData::RomDataFactory;
 
 // libwin32common
+#include "libwin32common/propsys_xp.h"
 #include "libwin32common/w32time.h"
 
 // RpFile_IStream
