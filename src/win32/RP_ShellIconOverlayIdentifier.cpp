@@ -50,10 +50,22 @@ const CLSID CLSID_RP_ShellIconOverlayIdentifier =
 RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 	: file(nullptr)
 	, romData(nullptr)
-{ }
+	, hShell32_dll(nullptr)
+	, pfnSHGetStockIconInfo(nullptr)
+{
+	// Get SHGetStockIconInfo().
+	hShell32_dll = LoadLibrary(L"shell32.dll");
+	if (hShell32_dll) {
+		pfnSHGetStockIconInfo = (PFNSHGETSTOCKICONINFO)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
+	}
+}
 
 RP_ShellIconOverlayIdentifier_Private::~RP_ShellIconOverlayIdentifier_Private()
 {
+	if (hShell32_dll) {
+		FreeLibrary(hShell32_dll);
+	}
+
 	if (romData) {
 		romData->unref();
 	}
@@ -109,21 +121,26 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 
 	// TODO: Actually check the file.
 	// For now, assuming it needs the UAC shield.
+	HRESULT hr = E_FAIL;
 
-	// NOTE: SHGetStockIconInfo() is Vista+ only.
-	// TODO: Dynamically load the function pointer.
-	SHSTOCKICONINFO sii;
-	sii.cbSize = sizeof(sii);
-	HRESULT hr = SHGetStockIconInfo(SIID_SHIELD, SHGSI_ICONLOCATION, &sii);
-	if (SUCCEEDED(hr)) {
-		// Copy the returned filename and index.
-		wcscpy_s(pwszIconFile, cchMax, sii.szPath);
-		*pIndex = sii.iIcon;
-		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
+	RP_D(const RP_ShellIconOverlayIdentifier);
+	if (d->pfnSHGetStockIconInfo) {
+		// SHGetStockIconInfo() is available.
+		SHSTOCKICONINFO sii;
+		sii.cbSize = sizeof(sii);
+		hr = d->pfnSHGetStockIconInfo(SIID_SHIELD, SHGSI_ICONLOCATION, &sii);
+		if (SUCCEEDED(hr)) {
+			// Copy the returned filename and index.
+			wcscpy_s(pwszIconFile, cchMax, sii.szPath);
+			*pIndex = sii.iIcon;
+			*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
+		} else {
+			// Unable to get the filename.
+			*pIndex = 0;
+			*pdwFlags = 0;
+		}
 	} else {
-		// Unable to get the filename.
-		*pIndex = 0;
-		*pdwFlags = 0;
+		// TODO: Include a shield icon for XP and earlier.
 	}
 
 	return hr;

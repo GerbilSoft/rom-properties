@@ -144,7 +144,7 @@ TARGET_LINK_LIBRARIES(rom-properties PRIVATE cachemgr romdata rpbase win32common
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 propsys)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 propsys shell32)
 # Required by InitPropVariantFromString().
 # TODO: Write our own version that doesn't use SHStrDupW()?
 TARGET_LINK_LIBRARIES(rom-properties PRIVATE shlwapi)

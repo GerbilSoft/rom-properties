@@ -52,6 +52,12 @@ class RP_ShellIconOverlayIdentifier_Private
 
 		// RomData object.
 		LibRpBase::RomData *romData;
+
+	public:
+		// SHGetStockIconInfo() for the UAC shield icon.
+		typedef HRESULT (STDAPICALLTYPE *PFNSHGETSTOCKICONINFO)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
+		HMODULE hShell32_dll;
+		PFNSHGETSTOCKICONINFO pfnSHGetStockIconInfo;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_P_HPP__ */
