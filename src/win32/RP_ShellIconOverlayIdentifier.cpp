@@ -181,11 +181,15 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 			*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
 		} else {
 			// Unable to get the filename.
+			pwszIconFile[0] = '\0';
 			*pIndex = 0;
 			*pdwFlags = 0;
 		}
 	} else {
 		// TODO: Include a shield icon for XP and earlier.
+		pwszIconFile[0] = '\0';
+		*pIndex = 0;
+		*pdwFlags = 0;
 	}
 
 	return hr;
