@@ -35,7 +35,7 @@ HRESULT InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PRO
 	if (cElems == 0) {
 		// No elements.
 		pPropVar->cabstr.cElems = cElems;
-		pPropVar->cabstr.pElems = nullptr;
+		pPropVar->cabstr.pElems = NULL;
 		return S_OK;
 	}
 
@@ -49,9 +49,21 @@ HRESULT InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PRO
 
 	// Copy the strings.
 	for (i = 0; i < cElems; i++) {
-		pPropVar->cabstr.pElems[i] = SysAllocString(prgsz[i]);
-		// TODO: Check if an error occurred. (source != NULL, dest == NULL)
-		// If an error occurred, free strings and return E_OUTOFMEMORY.
+		BSTR bstr = SysAllocString(prgsz[i]);
+		if (!bstr && prgsz[i]) {
+			// Error copying the string.
+			// Free all the other strings and cancel.
+			ULONG j;
+			for (j = 0; j < i; j++) {
+				SysFreeString(pPropVar->cabstr.pElems[j]);
+			}
+			CoTaskMemFree(pPropVar->cabstr.pElems);
+			pPropVar->cabstr.pElems = NULL;
+			pPropVar->cabstr.cElems = 0;
+			return E_OUTOFMEMORY;
+		}
+
+		pPropVar->cabstr.pElems[i] = bstr;
 	}
 
 	// Strings copied.
