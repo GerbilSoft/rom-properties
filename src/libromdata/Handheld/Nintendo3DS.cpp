@@ -1712,6 +1712,7 @@ int Nintendo3DS::loadFieldData(void)
 	// If this fails, and the file type is NCSD or CIA,
 	// it usually means there's a missing key.
 	const NCCHReader *const ncch = d->loadNCCH();
+
 	// Check for potential encryption key errors.
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI ||
 	    d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA ||
@@ -2648,6 +2649,41 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool Nintendo3DS::hasDangerousPermissions(void) const
+{
+	// TODO
+	return true;
+
+	// Get the primary NCCH.
+	// If this fails, and the file type is NCSD or CIA,
+	// it usually means there's a missing key.
+	RP_D(const Nintendo3DS);
+	const NCCHReader *const ncch =
+		const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
+	if (!ncch || !ncch->isOpen()) {
+		// Can't open the primary NCCH.
+		return false;
+	}
+
+	// Get the NCCH Extended Header.
+	const N3DS_NCCH_ExHeader_t *const ncch_exheader = ncch->ncchExHeader();
+	if (!ncch_exheader) {
+		// Can't get the ExHeader.
+		return false;
+	}
+
+	// TODO: Ignore permissions on system titles.
+	// TODO: Check for a non-zero signature?
+
+	// No dangerous permissions by default.
+	return false;
 }
 
 }

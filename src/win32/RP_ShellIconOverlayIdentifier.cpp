@@ -24,6 +24,7 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 using namespace LibRpBase;
 
@@ -105,12 +106,40 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 		return E_POINTER;
 	}
 
-	// Allow all files that aren't "slow" or unavailable.
-	// TODO: Other attributes?
-	//return (dwAttrib & (SFGAO_ISSLOW | SFGAO_GHOSTED))
-		//? S_FALSE	/* File is too slow. Don't check it. */
-		//: S_OK;		/* Check the file. */
-	return S_OK;
+	// FIXME: OwnCloud's shell extension checks the file in GetOverlayInfo, but
+	// Windows 7 only calls GetOverlayInfo once per session...
+#if 0
+	// Close the existing RomData object.
+	RP_D(RP_ShellIconOverlayIdentifier);
+	if (d->romData) {
+		d->romData->unref();
+		d->romData = nullptr;
+	}
+#endif
+
+	// Don't check the file if it's "slow", unavailable, or a directory.
+	if (dwAttrib & (SFGAO_ISSLOW | SFGAO_GHOSTED | SFGAO_FOLDER)) {
+		// Don't bother checking this file.
+		return S_FALSE;
+	}
+
+	// Open the ROM file.
+	unique_ptr<RpFile> file(new RpFile(W2U8(pwszPath), RpFile::FM_OPEN_READ_GZ));
+	if (!file || file->lastError() != 0) {
+		// Error opening the ROM file.
+		return E_FAIL;
+	}
+
+	// Attempt to create a RomData object.
+	RomData *const romData = RomDataFactory::create(file.get());
+	if (!romData) {
+		// No RomData.
+		return S_FALSE;
+	}
+
+	HRESULT hr = (romData->hasDangerousPermissions() ? S_OK : S_FALSE);
+	romData->unref();
+	return hr;
 }
 
 IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags)
@@ -119,8 +148,21 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		return E_POINTER;
 	}
 
-	// TODO: Actually check the file.
-	// For now, assuming it needs the UAC shield.
+	// FIXME: OwnCloud's shell extension checks the file here, but
+	// Windows 7 only calls GetOverlayInfo once per session...
+#if 0
+	// Check the RomData object.
+	RP_D(const RP_ShellIconOverlayIdentifier);
+	if (!d->romData) {
+		// Not loaded...
+		return E_FAIL;
+	} else if (!d->romData->hasDangerousPermissions()) {
+		// No dangerous permissions.
+		return S_FALSE;
+	}
+#endif
+
+	// Get the "dangerous" permissions overlay.
 	HRESULT hr = E_FAIL;
 
 	RP_D(const RP_ShellIconOverlayIdentifier);
@@ -152,8 +194,8 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetPriority(_Out_ int *pPriority)
 		return E_POINTER;
 	}
 
-	// Use a higher priority for the UAC icon.
-	*pPriority = 90;
+	// Use the higest priority for the UAC icon.
+	*pPriority = 0;
 	return S_OK;
 }
 

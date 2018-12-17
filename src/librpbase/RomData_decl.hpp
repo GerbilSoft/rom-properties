@@ -247,6 +247,18 @@ class klass : public LibRpBase::RomData { \
 		const LibRpBase::IconAnimData *iconAnimData(void) const final;
 
 /**
+ * RomData subclass function declaration for indicating "dangerous" permissions.
+ */
+#define ROMDATA_DECL_DANGEROUS() \
+	public: \
+		/** \
+		 * Does this ROM image have "dangerous" permissions? \
+		 * \
+		 * @return True if the ROM image has "dangerous" permissions; false if not. \
+		 */ \
+		bool hasDangerousPermissions(void) const final;
+
+/**
  * RomData subclass function declaration for closing the internal file handle.
  * Only needed if extra handling is needed, e.g. if multiple files are opened.
  */
