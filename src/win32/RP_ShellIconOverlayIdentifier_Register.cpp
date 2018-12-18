@@ -33,6 +33,9 @@ using std::wstring;
 #define CLSID_RP_ShellIconOverlayIdentifier_String	TEXT("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
 extern const wchar_t RP_ProgID[];
 
+// Overlay handler name.
+static const wchar_t RP_OverlayHandler[] = L"RpDangerousPermissionsOverlay";
+
 /**
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
@@ -58,8 +61,11 @@ LONG RP_ShellIconOverlayIdentifier::RegisterCLSID(void)
 	if (!hklm_SIOI.isOpen())
 		return hklm_SIOI.lOpenRes();
 
+	// Delete the old handler in case it's present.
+	hklm_SIOI.deleteSubKey(RP_ProgID);
+
 	// Create the handler for rom-properties.
-	RegKey hklm_rpi(hklm_SIOI, RP_ProgID, KEY_READ|KEY_WRITE, true);
+	RegKey hklm_rpi(hklm_SIOI, RP_OverlayHandler, KEY_READ|KEY_WRITE, true);
 	if (!hklm_rpi.isOpen())
 		return hklm_rpi.lOpenRes();
 
@@ -82,6 +88,9 @@ LONG RP_ShellIconOverlayIdentifier::UnregisterCLSID(void)
 	// Remove the shell icon overlay handler.
 	RegKey hklm_SIOI(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers", KEY_READ, false);
 	if (hklm_SIOI.isOpen()) {
+		hklm_SIOI.deleteSubKey(RP_OverlayHandler);
+
+		// Delete the old one in case it's present.
 		hklm_SIOI.deleteSubKey(RP_ProgID);
 	}
 
