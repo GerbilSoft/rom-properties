@@ -59,7 +59,7 @@
 #include <wtsapi32.h>
 
 // Common Controls COM declarations.
-#include <CommonControls.h>
+#include <commoncontrols.h>
 
 /** Windows Vista functionality. **/
 // These aren't available in the Windows headers unless

@@ -89,7 +89,7 @@ ENABLE_LANGUAGE(RC)
 # Force windres to output COFF, even though it'll use the .res extension.
 SET(CMAKE_RC_OUTPUT_EXTENSION .obj)
 SET(CMAKE_RC_COMPILE_OBJECT
-	"<CMAKE_RC_COMPILER> --output-format=coff <FLAGS> <DEFINES> -o <OBJECT> <SOURCE>")
+	"<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> <INCLUDES> -o <OBJECT> <SOURCE>")
 
 # Append the CFLAGS and LDFLAGS.
 SET(RP_C_FLAGS_COMMON			"${RP_C_FLAGS_COMMON} ${RP_C_FLAGS_WIN32}")

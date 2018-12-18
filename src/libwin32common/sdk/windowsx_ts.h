@@ -354,7 +354,7 @@ static FORCEINLINE int ListBox_GetItemRect(_In_ HWND hwndCtl, _In_ int index, _O
 static FORCEINLINE int ListBox_SetCaretIndex(_In_ HWND hwndCtl, _In_ int index)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndCtl, LB_SETCARETINDEX, STATIC_CAST(WPARAM)(index), 0L))); }
 #undef ListBox_GetCaretIndex
-static FORCEINLINE int ListBox_GetCaretIndex(_In_ HWND hwndCtl, _In_ int index)
+static FORCEINLINE int ListBox_GetCaretIndex(_In_ HWND hwndCtl)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndCtl, LB_GETCARETINDEX, 0L, 0L))); }
 
 #undef ListBox_FindStringExact
@@ -369,7 +369,9 @@ static FORCEINLINE int ListBox_GetItemHeight(_In_ HWND hwndCtl, _In_ int index)
 	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndCtl, LB_GETITEMHEIGHT, STATIC_CAST(WPARAM)(index), 0L))); }
 #endif  /* WINVER >= 0x030a */
 
-#define ListBox_Dir(hwndCtl, attrs, lpszFileSpec)   ((int)(DWORD)SNDMSG((hwndCtl), LB_DIR, (WPARAM)(UINT)(attrs), (LPARAM)(LPCTSTR)(lpszFileSpec)))
+#undef ListBox_Dir
+static FORCEINLINE int ListBox_Dir(_In_ HWND hwndCtl, _In_ UINT attrs, _In_ LPCTSTR lpszFileSpec)
+	{ return STATIC_CAST(int)(STATIC_CAST(DWORD)(SNDMSG(hwndCtl, LB_DIR, STATIC_CAST(WPARAM)(attrs), REINTERPRET_CAST(LPARAM)(lpszFileSpec)))); }
 
 /****** ComboBox control message APIs ****************************************/
 

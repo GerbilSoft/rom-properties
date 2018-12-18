@@ -846,9 +846,12 @@ static FORCEINLINE UINT TreeView_SetItemState(_In_ HWND hwndTV, _In_ HTREEITEM h
 
 #define TreeView_GetLineColor(hwnd) \
     (COLORREF)SNDMSG((hwnd), TVM_GETLINECOLOR, 0, 0)
+#endif /* TODO */
+
 #endif /* _WIN32_IE >= 0x0500 */
 
 #if (_WIN32_WINNT >= 0x0501)
+#if 0 /* TODO */
 #define TreeView_MapAccIDToHTREEITEM(hwnd, id) \
     (HTREEITEM)SNDMSG((hwnd), TVM_MAPACCIDTOHTREEITEM, id, 0)
 
@@ -863,8 +866,8 @@ static FORCEINLINE UINT TreeView_SetItemState(_In_ HWND hwndTV, _In_ HTREEITEM h
 
 #define TreeView_SetAutoScrollInfo(hwnd, uPixPerSec, uUpdateTime) \
     SNDMSG((hwnd), TVM_SETAUTOSCROLLINFO, (WPARAM)(uPixPerSec), (LPARAM)(uUpdateTime))
-#endif /* _WIN32_WINNT >= 0x0501 */
 #endif /* TODO */
+#endif /* _WIN32_WINNT >= 0x0501 */
 
 #if (_WIN32_WINNT >= 0x0600)
 #if 0 /* TODO */
