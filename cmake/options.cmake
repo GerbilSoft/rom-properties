@@ -74,6 +74,9 @@ ENDIF()
 # TODO: Tri-state like UI frontends.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
+# Enable OpenGL for Khronos KTX support.
+OPTION(ENABLE_GL "Enable OpenGL for Khronos KTX support." ON)
+
 # Enable S3TC decompression. If disabled, uses S2TC.
 OPTION(ENABLE_S3TC "Enable S3TC decompression. If disabled, uses S2TC." ON)
 
