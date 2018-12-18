@@ -113,7 +113,7 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file.get(), false);
+	RomData *const romData = RomDataFactory::create(file.get());
 	file.reset(nullptr);	// file is dup()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.

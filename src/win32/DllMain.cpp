@@ -249,7 +249,7 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
-	if (extInfo.hasThumbnail) {
+	if (extInfo.attrs & RomDataFactory::RDA_HAS_THUMBNAIL) {
 		// Register the thumbnail handlers.
 		lResult = RP_ExtractIcon::RegisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
@@ -459,7 +459,7 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
 		progID_u8.c_str(),
-		ext_info.hasThumbnail
+		ext_info.attrs
 	);
 
 	// Does HKCR\\progID exist?
@@ -530,7 +530,7 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
 		progID_u8.c_str(),
-		ext_info.hasThumbnail
+		ext_info.attrs
 	);
 
 	// Does HKCR\\progID exist?
