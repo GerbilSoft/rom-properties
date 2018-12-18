@@ -138,6 +138,21 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			};
 		} mxh;
 
+		// Permissions. (cached from headers)
+		struct {
+			bool isLoaded;		// True if perm is initialized.
+			bool isSysTitle;	// True if this is a system title.
+			bool isSigZero;		// True if signature is zero
+
+			// True if "dangerous" permissions are set.
+			// Note that this might not be set if it's a known
+			// system title with a non-zero signature.
+			bool isDangerous;
+
+			uint32_t fsAccess;	// ARM11 FS access
+			uint32_t ioAccess;	// ARM9 descriptors
+		} perm;
+
 		// Content chunk records. (CIA only)
 		// Loaded by loadTicketAndTMD().
 		unsigned int content_count;
@@ -154,7 +169,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 	public:
 		struct {
-			// for subclasses:
+			// For subclasses:
 			// - SMDH: reader uses ncch_f_icon
 			// - SRL: reader uses this->file
 			IDiscReader *reader;	// uses ncch_f_icon
@@ -249,6 +264,12 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		static inline string n3dsVersionToString(uint16_t version);
 
 		/**
+		 * Load the permissions values. (from ExHeader)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadPermissions(void);
+
+		/**
 		 * Add the Permissions fields. (part of ExHeader)
 		 * A separate tab should be created by the caller first.
 		 * @param pNcchExHeader NCCH ExHeader.
@@ -270,8 +291,9 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	img_icon[0] = nullptr;
 	img_icon[1] = nullptr;
 
-	// Clear the various headers.
+	// Clear the various structs.
 	memset(&mxh, 0, sizeof(mxh));
+	memset(&perm, 0, sizeof(perm));
 	memset(&sbptr, 0, sizeof(sbptr));
 }
 
@@ -1100,12 +1122,119 @@ inline string Nintendo3DSPrivate::n3dsVersionToString(uint16_t version)
 }
 
 /**
+ * Load the permissions values. (from ExHeader)
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::loadPermissions(void)
+{
+	if (perm.isLoaded) {
+		// Permissions have already been loaded.
+		return 0;
+	}
+
+	const NCCHReader *const ncch = loadNCCH();
+	if (!ncch || !ncch->isOpen()) {
+		// Can't open the primary NCCH.
+		return false;
+	}
+
+	// Get the NCCH Header.
+	// TODO: With signature?
+	const N3DS_NCCH_Header_NoSig_t *const ncch_header = ncch->ncchHeader();
+	if (!ncch_header) {
+		// Can't get the header.
+		return false;
+	}
+
+	// Get the NCCH Extended Header.
+	const N3DS_NCCH_ExHeader_t *const ncch_exheader = ncch->ncchExHeader();
+	if (!ncch_exheader) {
+		// Can't get the ExHeader.
+		return false;
+	}
+
+	// Is this a system title?
+	// NOTE: Only checking TID HI right now.
+	// NOTE: Not checking NCSD media ID.
+	// Reference: https://3dbrew.org/wiki/Title_list
+	const uint32_t tid_hi = le32_to_cpu(ncch_header->program_id.hi);
+	switch (tid_hi) {
+		case 0x00040010:	// System Applications
+		case 0x0004001B:	// System Data Archives
+		case 0x00040030:	// System Applets
+		case 0x0004009B:	// Shared Data Archives
+		case 0x000400DB:	// System Data Archives
+		case 0x00040130:	// System Modules
+		case 0x00040138:	// System Firmware
+			// System title.
+			perm.isSysTitle = true;
+			break;
+
+		default:
+			break;
+	}
+
+	// Check for a zero signature.
+	// TODO: Check NCCH signature also.
+	// Currently only checking NCCH ExHeader signature.
+	// TODO: Check if homebrew actually has zero signatures.
+	perm.isSigZero = true;
+	const uintptr_t *pSig32 =
+		reinterpret_cast<const uintptr_t*>(ncch_exheader->signature_accessdesc);
+	for (unsigned int i = 0x100/sizeof(uintptr_t); i > 0; i--, pSig32++) {
+		if (*pSig32 != 0) {
+			// Non-zero signature.
+			perm.isSigZero = false;
+			break;
+		}
+	}
+
+	// Save the permissions.
+	perm.fsAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm11_local.storage.fs_access));
+	perm.ioAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm9.descriptors));
+
+	// TODO: Ignore permissions on system titles.
+	// TODO: Check for a non-zero signature?
+	// TODO: Check permissions on retail games and compare to this list.
+	static const uint32_t fsAccess_dangerous =
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo |
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw |
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite;
+	static const uint32_t ioAccess_dangerous =
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3;
+
+	// If this is a system title with a non-zero signature,
+	// don't indicate "dangerous" permissions, since those
+	// are expected.
+	if (!perm.isSysTitle || perm.isSigZero) {
+		// Not a system title, or has a zero signature.
+		// Check for "dangerous" permissions.
+		if ((perm.fsAccess & fsAccess_dangerous) ||
+		    (perm.ioAccess & ioAccess_dangerous))
+		{
+			// One or more "dangerous" permissions are set.
+			// TODO: Also highlight "dangerous" permissions in the ROM Properties tab.
+			perm.isDangerous = true;
+		}
+	}
+
+	// We're done here.
+	return 0;
+}
+
+/**
  * Add the Permissions fields. (part of ExHeader)
  * A separate tab should be created by the caller first.
  * @param pNcchExHeader NCCH ExHeader.
  */
 void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader)
 {
+	// TODO: Use loadPermissions() and remove the pNcchExHeader parameter.
+
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
 	static const int rows_visible = 6;
@@ -2658,48 +2787,16 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
  */
 bool Nintendo3DS::hasDangerousPermissions(void) const
 {
-	// Get the primary NCCH.
-	// If this fails, and the file type is NCSD or CIA,
-	// it usually means there's a missing key.
+	// Load permissions.
+	// TODO: If this is DSiWare, check DSiWare permissions?
 	RP_D(const Nintendo3DS);
-	const NCCHReader *const ncch =
-		const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
-	if (!ncch || !ncch->isOpen()) {
-		// Can't open the primary NCCH.
+	int ret = const_cast<Nintendo3DSPrivate*>(d)->loadPermissions();
+	if (ret != 0) {
+		// Can't load permissions.
 		return false;
 	}
 
-	// Get the NCCH Extended Header.
-	const N3DS_NCCH_ExHeader_t *const pNcchExHeader = ncch->ncchExHeader();
-	if (!pNcchExHeader) {
-		// Can't get the ExHeader.
-		return false;
-	}
-
-	// TODO: Ignore permissions on system titles.
-	// TODO: Check for a non-zero signature?
-	// TODO: Check permissions on retail games and compare to this list.
-	static const uint32_t fsAccess_dangerous =
-		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo |
-		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw |
-		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite;
-	static const uint32_t ioAccess_dangerous =
-		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand |
-		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite |
-		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln |
-		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand |
-		N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3;
-
-	if ((pNcchExHeader->aci.arm11_local.storage.fs_access & fsAccess_dangerous) ||
-	    (pNcchExHeader->aci.arm9.descriptors & ioAccess_dangerous))
-	{
-		// One or more "dangerous" permissions are set.
-		// TODO: Also highlight "dangerous" permissions in the ROM Properties tab.
-		return true;
-	}
-
-	// No "dangerous" permissions are set.
-	return false;
+	return d->perm.isDangerous;
 }
 
 }
