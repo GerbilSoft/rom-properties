@@ -67,14 +67,6 @@ RP_ShellIconOverlayIdentifier_Private::~RP_ShellIconOverlayIdentifier_Private()
 	if (hShell32_dll) {
 		FreeLibrary(hShell32_dll);
 	}
-
-	// FIXME: OwnCloud's shell extension checks the file in GetOverlayInfo, but
-	// Windows 7 only calls GetOverlayInfo once per session...
-#if 0
-	if (romData) {
-		romData->unref();
-	}
-#endif
 }
 
 /** RP_PropertyStore **/
@@ -109,17 +101,6 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 		return E_POINTER;
 	}
 
-	// FIXME: OwnCloud's shell extension checks the file in GetOverlayInfo, but
-	// Windows 7 only calls GetOverlayInfo once per session...
-#if 0
-	// Close the existing RomData object.
-	RP_D(RP_ShellIconOverlayIdentifier);
-	if (d->romData) {
-		d->romData->unref();
-		d->romData = nullptr;
-	}
-#endif
-
 	// Don't check the file if it's "slow", unavailable, or a directory.
 	if (dwAttrib & (SFGAO_ISSLOW | SFGAO_GHOSTED | SFGAO_FOLDER)) {
 		// Don't bother checking this file.
@@ -150,20 +131,6 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 	if (!pwszIconFile || !pIndex || !pdwFlags) {
 		return E_POINTER;
 	}
-
-	// FIXME: OwnCloud's shell extension checks the file here, but
-	// Windows 7 only calls GetOverlayInfo once per session...
-#if 0
-	// Check the RomData object.
-	RP_D(const RP_ShellIconOverlayIdentifier);
-	if (!d->romData) {
-		// Not loaded...
-		return E_FAIL;
-	} else if (!d->romData->hasDangerousPermissions()) {
-		// No dangerous permissions.
-		return S_FALSE;
-	}
-#endif
 
 	// Get the "dangerous" permissions overlay.
 	HRESULT hr = E_FAIL;

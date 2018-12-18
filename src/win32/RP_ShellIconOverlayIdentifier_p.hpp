@@ -47,14 +47,6 @@ class RP_ShellIconOverlayIdentifier_Private
 		RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier_Private)
 
 	public:
-		// FIXME: OwnCloud's shell extension checks the file in GetOverlayInfo, but
-		// Windows 7 only calls GetOverlayInfo once per session...
-#if 0
-		// RomData object.
-		LibRpBase::RomData *romData;
-#endif
-
-	public:
 		// SHGetStockIconInfo() for the UAC shield icon.
 		typedef HRESULT (STDAPICALLTYPE *PFNSHGETSTOCKICONINFO)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
 		HMODULE hShell32_dll;
