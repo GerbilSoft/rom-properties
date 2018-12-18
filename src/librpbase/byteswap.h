@@ -58,25 +58,34 @@
 # define inline __inline
 #endif
 
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))
 
 /* Use the gcc byteswap intrinsics. */
-#define __swab16(x) __builtin_bswap16(x)
-#define __swab32(x) __builtin_bswap32(x)
-#define __swab64(x) __builtin_bswap64(x)
+#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8))
+#define __swab16(x) (uint16_t)__builtin_bswap16(x)
+#endif
+#define __swab32(x) (uint32_t)__builtin_bswap32(x)
+#define __swab64(x) (uint64_t)__builtin_bswap64(x)
 
 #else
 
 /* Use the macros. */
 #warning No intrinsics defined for this compiler. Byteswapping may be slow.
 
-#define __swab16(x) ((uint16_t)(((x) << 8) | ((x) >> 8)))
+#endif
 
+#ifndef __swab16
+#define __swab16(x) ((uint16_t)(((x) << 8) | ((x) >> 8)))
+#endif
+
+#ifndef __swab32
 #define __swab32(x) \
 	((uint32_t)(((x) << 24) | ((x) >> 24) | \
 		(((x) & 0x0000FF00UL) << 8) | \
 		(((x) & 0x00FF0000UL) >> 8)))
+#endif
 
+#ifndef __swab64
 #define __swab64(x) \
 	((uint64_t)(((x) << 56) | ((x) >> 56) | \
 		(((x) & 0x000000000000FF00ULL) << 40) | \
