@@ -18,7 +18,7 @@ Build-Depends:
  kdelibs5-dev,
  qtbase5-dev,
  qttools5-dev-tools,
- kio-dev,
+ libkf5kio-dev | kio-dev,
  libkf5widgetsaddons-dev,
  libkf5filemetadata-dev,
  libglib2.0-dev,
