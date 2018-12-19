@@ -77,7 +77,7 @@ using std::vector;
 #include "Texture/DirectDrawSurface.hpp"
 #ifdef ENABLE_GL
 #include "Texture/KhronosKTX.hpp"
-#endif
+#endif /* ENABLE_GL */
 #include "Texture/SegaPVR.hpp"
 #include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
@@ -230,7 +230,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(DirectDrawSurface, true, 0, 'DDS '),
 #ifdef ENABLE_GL
 	GetRomDataFns_addr(KhronosKTX, true, 0, (uint32_t)'\xABKTX'),
-#endif
+#endif /* ENABLE_GL */
 	GetRomDataFns_addr(ValveVTF, true, 0, 'VTF\0'),
 	GetRomDataFns_addr(ValveVTF3, true, 0, 'VTF3'),
 

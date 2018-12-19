@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "config.librpbase.h"
+#include "config.libromdata.h"
 
 // Google Test
 #include "gtest/gtest.h"
@@ -54,7 +55,9 @@ using namespace LibRpBase;
 // from the RomData subclass?
 #include "Texture/DirectDrawSurface.hpp"
 #include "Texture/SegaPVR.hpp"
+#ifdef ENABLE_GL
 #include "Texture/KhronosKTX.hpp"
+#endif /* ENABLE_GL */
 #include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
 
@@ -411,11 +414,13 @@ TEST_P(ImageDecoderTest, decodeTest)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
 		// PVR/GVR image
 		m_romData = new SegaPVR(m_f_dds);
+#ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// Needs GzFile, a gzip-decompressing IRpFile subclass.
 		m_romData = new KhronosKTX(m_f_dds);
+#endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
 		m_romData = new ValveVTF3(m_f_dds);
@@ -704,6 +709,7 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1_S2TC, ImageDecoderTest,
 			"GVR/weeklytitle.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+#ifdef ENABLE_GL
 // KTX tests.
 INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 	::testing::Values(
@@ -763,6 +769,7 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 			"KTX/rgba.png"))
 
 	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_GL */
 
 // Valve VTF tests. (all formats)
 INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
@@ -902,6 +909,7 @@ INSTANTIATE_TEST_CASE_P(VTF3_S2TC, ImageDecoderTest,
 			"VTF3/elevator_screen_colour.ps3.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+#ifdef ENABLE_GL
 // Test images from texture-compressor.
 // Reference: https://github.com/TimvanScherpenzeel/texture-compressor
 INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
@@ -913,6 +921,7 @@ INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
 			"tctest/example-etc2.ktx.gz",
 			"tctest/example-etc2.ktx.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_GL */
 
 #ifdef ENABLE_S3TC
 // texture-compressor tests. (S3TC)
