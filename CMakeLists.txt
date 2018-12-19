@@ -107,6 +107,7 @@ INCLUDE(CheckZLIB)
 INCLUDE(CheckPNG)
 INCLUDE(CheckJPEG)
 INCLUDE(CheckTinyXML2)
+INCLUDE(CheckOpenGL)
 
 # Reference: https://cmake.org/Wiki/RecipeAddUninstallTarget
 ########### Add uninstall target ###############

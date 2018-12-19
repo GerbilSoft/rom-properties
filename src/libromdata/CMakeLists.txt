@@ -1,25 +1,5 @@
 PROJECT(libromdata)
 
-# Check for gl.h.
-# FIXME: This check is failing with MSVC...
-IF(NOT MSVC)
-	IF(APPLE)
-		SET(GL_H_FILENAME "OpenGL/gl.h")
-	ELSE(APPLE)
-		SET(GL_H_FILENAME "GL/gl.h")
-	ENDIF(APPLE)
-	CHECK_INCLUDE_FILES(${GL_H_FILENAME} HAVE_GL_H)
-	IF(NOT HAVE_GL_H)
-		SET(ERR_MSG "gl.h not found. (Required for Khronos KTX.)")
-		IF(UNIX AND NOT APPLE)
-			SET(ERR_MSG "${ERR_MSG} Install one of these packages:
-  - Debian/Ubuntu: mesa-common-dev
-  - Red Hat/Fedora: mesa-libGL-devel")
-		ENDIF(UNIX AND NOT APPLE)
-		MESSAGE(FATAL_ERROR "${ERR_MSG}")
-	ENDIF(NOT HAVE_GL_H)
-ENDIF(NOT MSVC)
-
 # Sources.
 SET(libromdata_SRCS
 	RomDataFactory.cpp
@@ -54,7 +34,6 @@ SET(libromdata_SRCS
 	Handheld/VirtualBoy.cpp
 
 	Texture/DirectDrawSurface.cpp
-	Texture/KhronosKTX.cpp
 	Texture/SegaPVR.cpp
 	Texture/ValveVTF.cpp
 	Texture/ValveVTF3.cpp
@@ -86,7 +65,6 @@ SET(libromdata_SRCS
 	data/Nintendo3DSFirmData.cpp
 	data/Nintendo3DSSysTitles.cpp
 	data/NintendoLanguage.cpp
-	data/GLenumStrings.cpp
 	data/ELFData.cpp
 	data/DX10Formats.cpp
 
@@ -172,13 +150,11 @@ SET(libromdata_H
 	Handheld/vb_structs.h
 
 	Texture/DirectDrawSurface.hpp
-	Texture/KhronosKTX.hpp
 	Texture/SegaPVR.hpp
 	Texture/ValveVTF.hpp
 	Texture/ValveVTF3.hpp
 
 	Texture/dds_structs.h
-	Texture/ktx_structs.h
 	Texture/pvr_structs.h
 	Texture/vtf_structs.h
 	Texture/vtf3_structs.h
@@ -222,7 +198,6 @@ SET(libromdata_H
 	data/Nintendo3DSFirmData.hpp
 	data/Nintendo3DSSysTitles.hpp
 	data/NintendoLanguage.hpp
-	data/GLenumStrings.hpp
 	data/ELFData.hpp
 	data/DX10Formats.hpp
 
@@ -252,6 +227,18 @@ SET(libromdata_H
 	img/TCreateThumbnail.hpp
 	utils/SuperMagicDrive.hpp
 	)
+
+IF(ENABLE_GL)
+	SET(libromdata_GL_SRCS
+		Texture/KhronosKTX.cpp
+		data/GLenumStrings.cpp
+		)
+	SET(libromdata_GL_H
+		Texture/KhronosKTX.hpp
+		Texture/ktx_structs.h
+		data/GLenumStrings.hpp
+		)
+ENDIF(ENABLE_GL)
 
 IF(ENABLE_XML)
 	SET(libromdata_SRCS ${libromdata_SRCS} Other/EXE_manifest.cpp)
@@ -334,6 +321,7 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_GL_SRCS} ${libromdata_GL_H}
 	${libromdata_IFUNC_SRCS}
 	${libromdata_MMX_SRCS}
 	${libromdata_SSE2_SRCS}
@@ -370,6 +358,9 @@ IF(ENABLE_XML AND TinyXML2_FOUND)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE ${TinyXML2_LIBRARY})
 	TARGET_INCLUDE_DIRECTORIES(romdata PRIVATE ${TinyXML2_INCLUDE_DIR})
 ENDIF(ENABLE_XML AND TinyXML2_FOUND)
+IF(ENABLE_GL AND OPENGL_FOUND)
+	TARGET_INCLUDE_DIRECTORIES(romdata PRIVATE ${OPENGL_INCLUDE_DIR})
+ENDIF(ENABLE_GL AND OPENGL_FOUND)
 
 IF(ENABLE_UNICE68)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE unice68_lib)
