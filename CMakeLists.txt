@@ -176,6 +176,12 @@ ELSE(ENABLE_S3TC)
 	SET(DXTn_ALG_MSG "S2TC")
 ENDIF(ENABLE_S3TC)
 
+IF(ENABLE_GL)
+	SET(ENABLE_KTX_MSG "Enabled")
+ELSE(ENABLE_GL)
+	SET(ENABLE_KTX_MSG "Disabled")
+ENDIF(ENABLE_GL)
+
 UNSET(EXTLIB_BUILD)
 IF(USE_INTERNAL_ZLIB)
 	SET(EXTLIB_BUILD "${EXTLIB_BUILD}  - zlib\n")
@@ -203,6 +209,7 @@ MESSAGE("
 - Decryption functionality: ${ENABLE_DECRYPTION_MSG}
 - XML parsing: ${ENABLE_XML_MSG}
 - DXTn algorithm: ${DXTn_ALG_MSG}
+- KTX textures: ${ENABLE_KTX_MSG}
 
 - Building these third-party libraries from extlib:
 ${EXTLIB_BUILD}")
