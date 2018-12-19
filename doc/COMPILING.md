@@ -6,9 +6,11 @@ On Debian/Ubuntu, you will need build-essential and the following development
 packages:
 * All: cmake libcurl-dev zlib1g-dev libpng-dev libjpeg-dev nettle-dev pkg-config libtinyxml2-dev libbsd-dev mesa-common-dev gettext
 * KDE 4.x: libqt4-dev kdelibs5-dev
-* KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules kio-dev libkf5widgetsaddons-dev
-* XFCE: libglib2.0-dev libgtk2.0-dev libthunarx-2-dev
-* GNOME: libglib2.0-dev libgtk-3-dev libnautilus-extension-dev
+* KDE 5.x: qtbase5-dev qttools5-dev-tools extra-cmake-modules libkf5kio-dev libkf5widgetsaddons-dev
+* XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev
+* GNOME: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev
+
+NOTE: libkf5kio-dev was called kio-dev prior to Ubuntu 18.04.
 
 On Red Hat/Fedora, you will need to install "C Development Tools and Libraries"
 and the following development packages:
