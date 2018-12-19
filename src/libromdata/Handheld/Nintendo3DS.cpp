@@ -149,8 +149,16 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// system title with a non-zero signature.
 			bool isDangerous;
 
-			uint32_t fsAccess;	// ARM11 FS access
-			uint32_t ioAccess;	// ARM9 descriptors
+			uint32_t fsAccess;		// ARM11 FS access
+			uint32_t ioAccess;		// ARM9 descriptors
+			uint8_t ioAccessVersion;	// ARM9 descriptor version.
+
+			// Services.
+			// Pointer to character array [34][8].
+			// NOTE: This is stored within the ExHeader struct.
+			// N3DS_SERVICE_MAX: 34 (number of services)
+			// N3DS_SERVICE_LEN: 8 (length of service name)
+			const char (*services)[N3DS_SERVICE_LEN];
 		} perm;
 
 		// Content chunk records. (CIA only)
@@ -272,9 +280,9 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		/**
 		 * Add the Permissions fields. (part of ExHeader)
 		 * A separate tab should be created by the caller first.
-		 * @param pNcchExHeader NCCH ExHeader.
+		 * @return 0 on success; non-zero on error.
 		 */
-		void addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader);
+		int addFields_permissions(void);
 };
 
 /** Nintendo3DSPrivate **/
@@ -1191,7 +1199,16 @@ int Nintendo3DSPrivate::loadPermissions(void)
 
 	// Save the permissions.
 	perm.fsAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm11_local.storage.fs_access));
+
+	// TODO: Other descriptor versions?
+	// v2 is standard; may be v3 on 9.3.0-X.
+	assert(ncch_exheader->aci.arm9.descriptor_version == 2 ||
+	       ncch_exheader->aci.arm9.descriptor_version == 3);
 	perm.ioAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm9.descriptors));
+	perm.ioAccessVersion = ncch_exheader->aci.arm9.descriptor_version;
+
+	// Save a pointer to the services array.
+	perm.services = ncch_exheader->aci.arm11_local.services;
 
 	// TODO: Ignore permissions on system titles.
 	// TODO: Check for a non-zero signature?
@@ -1230,10 +1247,15 @@ int Nintendo3DSPrivate::loadPermissions(void)
  * Add the Permissions fields. (part of ExHeader)
  * A separate tab should be created by the caller first.
  * @param pNcchExHeader NCCH ExHeader.
+ * @return 0 on success; non-zero on error.
  */
-void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader)
+int Nintendo3DSPrivate::addFields_permissions(void)
 {
-	// TODO: Use loadPermissions() and remove the pNcchExHeader parameter.
+	int ret = loadPermissions();
+	if (ret != 0) {
+		// Unable to load permissions.
+		return ret;
+	}
 
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
@@ -1278,8 +1300,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	}
 
 	fields->addField_listData(C_("Nintendo3DS", "FS Access"), nullptr, vv_fs,
-		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-		static_cast<uint32_t>(le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access)));
+		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES, perm.fsAccess);
 
 	// ARM9 access.
 	static const char *const perm_arm9_access[] = {
@@ -1297,10 +1318,10 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 
 	// TODO: Other descriptor versions?
 	// v2 is standard; may be v3 on 9.3.0-X.
-	assert(pNcchExHeader->aci.arm9.descriptor_version == 2 ||
-	       pNcchExHeader->aci.arm9.descriptor_version == 3);
-	if (pNcchExHeader->aci.arm9.descriptor_version == 2 ||
-	    pNcchExHeader->aci.arm9.descriptor_version == 3)
+	assert(perm.ioAccessVersion == 2 ||
+	       perm.ioAccessVersion == 3);
+	if (perm.ioAccessVersion == 2 ||
+	    perm.ioAccessVersion == 3)
 	{
 		// Convert to vector<vector<string> > for RFT_LISTDATA.
 		auto vv_arm9 = new vector<vector<string> >();
@@ -1311,8 +1332,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		}
 
 		fields->addField_listData(C_("Nintendo3DS", "ARM9 Access"), nullptr, vv_arm9,
-			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-			static_cast<uint32_t>(le64_to_cpu(pNcchExHeader->aci.arm9.descriptors)));
+			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES, perm.ioAccess);
 	}
 
 	// Services. Each service is a maximum of 8 characters.
@@ -1320,9 +1340,9 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	// is 8 characters long, there won't be any NULLs.
 	// TODO: How to determine 32 or 34? (descriptor version?)
 	auto vv_svc = new vector<vector<string> >();
-	vv_svc->reserve(ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services));
-	const char *svc = &pNcchExHeader->aci.arm11_local.services[0][0];
-	for (int i = 0; i < ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services); i++, svc += 8) {
+	vv_svc->reserve(N3DS_SERVICE_MAX);
+	const char *svc = perm.services[0];
+	for (int i = 0; i < N3DS_SERVICE_MAX; i++, svc += N3DS_SERVICE_LEN) {
 		if (svc[0] == 0) {
 			// End of service list.
 			break;
@@ -1332,7 +1352,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		// TODO: Service descriptions?
 		vv_svc->resize(vv_svc->size()+1);
 		auto &data_row = vv_svc->at(vv_svc->size()-1);
-		data_row.push_back(latin1_to_utf8(svc, 8));
+		data_row.push_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
 	}
 
 	if (likely(!vv_svc->empty())) {
@@ -1341,6 +1361,8 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		// No services.
 		delete vv_svc;
 	}
+
+	return 0;
 }
 
 /** Nintendo3DS **/
@@ -2489,7 +2511,7 @@ int Nintendo3DS::loadFieldData(void)
 		// ExHeader, but we're using a separate tab because
 		// there's a lot of them.
 		d->fields->addTab(C_("Nintendo3DS", "Permissions"));
-		d->addFields_permissions(ncch_exheader);
+		d->addFields_permissions();
 	}
 
 	// Finished reading the field data.
