@@ -62,6 +62,10 @@
     footer is used for, among other things, FamicomBox.
   * Nintendo3DS: Split the SMDH code into a separate parser. This should
     make maintenance easier.
+  * NintendoDS: The "Access Control" field (labeled "Permissions") is now
+    shown for ROMs with DSi functionality. Both permissions and flags are
+    now shown on a new tab, and they both use a listbox instead of a grid
+    of checkboxes.
 
 * Bug fixes:
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.
