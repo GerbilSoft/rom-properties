@@ -109,13 +109,6 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 		return sl;
 	}
 
-	// Make sure it's a file and not a directory.
-	QFileInfo fileInfo(filename);
-	if (fileInfo.isDir()) {
-		// It's a directory.
-		return sl;
-	}
-
 	// Single file, and it's local.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
