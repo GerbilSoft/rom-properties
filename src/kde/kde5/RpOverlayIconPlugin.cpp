@@ -23,6 +23,7 @@
  ***************************************************************************/
 
 #include "RpOverlayIconPlugin.hpp"
+#include "RpQt.hpp"
 
 // librpbase
 #include "librpbase/RomData.hpp"
@@ -48,6 +49,9 @@ using std::vector;
 
 // Qt includes.
 #include <QtCore/QDateTime>
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
+#include <QtCore/QStandardPaths>
 
 // KDE includes.
 #include <kfilemetadata/extractorplugin.h>
@@ -80,9 +84,61 @@ RpOverlayIconPlugin::RpOverlayIconPlugin(QObject *parent)
 
 QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 {
-	// TODO: Check the RomData object.
+	// TODO: Check for slow devices and/or cache this?
 	QStringList sl;
-	sl += QLatin1String("security-medium");
+
+	// FIXME: KFileItem's localPath() isn't working here for some reason.
+	// We'll handle desktop:/ manually.
+	QString filename = item.toLocalFile();
+	if (filename.isEmpty()) {
+		// Unable to convert it directly.
+		// Check for "desktop:/".
+		const QString scheme = item.scheme();
+		if (scheme == QLatin1String("desktop")) {
+			// Desktop folder.
+			// TODO: Remove leading '/' from item.path()?
+			filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, item.path());
+		} else {
+			// Unsupported scheme.
+			return sl;
+		}
+	}
+
+	if (filename.isEmpty()) {
+		// No filename.
+		return sl;
+	}
+
+	// Make sure it's a file and not a directory.
+	QFileInfo fileInfo(filename);
+	if (fileInfo.isDir()) {
+		// It's a directory.
+		return sl;
+	}
+
+	// Single file, and it's local.
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ));
+	if (!file || !file->isOpen()) {
+		// Unable to open the file.
+		return sl;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// file is dup()'d by RomData.
+	RomData *const romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_DPOVERLAY);
+	if (!romData) {
+		// No RomData.
+		return sl;
+	}
+
+	// If the ROM image has "dangerous" permissions,
+	// return the "security-medium" overlay icon.
+	if (romData->hasDangerousPermissions()) {
+		sl += QLatin1String("security-medium");
+	}
+
 	return sl;
 }
 
