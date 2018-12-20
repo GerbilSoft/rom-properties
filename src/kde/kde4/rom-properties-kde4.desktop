@@ -7,6 +7,8 @@ ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
 # KDE service settings.
 X-KDE-Library=rom-properties-kde4
 X-KDE-ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
+X-KDE-Protocol=file
+X-KDE-Protocols=file,desktop
 
 # NOTE: all/all doesn't work; use application/octet-stream.
 # TODO: Remove application/octet-stream and only use more-specific types?
