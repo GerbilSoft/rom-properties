@@ -114,7 +114,7 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 	// For now, using RpFile, which is an stdio wrapper.
 	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
-		// Unable to open the file.
+		// Could not open the file.
 		return sl;
 	}
 

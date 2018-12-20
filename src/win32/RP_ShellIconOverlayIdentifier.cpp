@@ -117,7 +117,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	// Attempt to create a RomData object.
 	RomData *const romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_DPOVERLAY);
 	if (!romData) {
-		// No RomData.
+		// ROM is not supported.
 		return S_FALSE;
 	}
 

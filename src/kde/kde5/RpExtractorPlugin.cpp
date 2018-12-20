@@ -23,6 +23,7 @@
  ***************************************************************************/
 
 #include "RpExtractorPlugin.hpp"
+#include "RpQt.hpp"
 
 // librpbase
 #include "librpbase/RomData.hpp"
@@ -102,10 +103,10 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 	if (filename.isEmpty())
 		return;
 
-	// Attempt to open the ROM file.
+	// Single file, and it's local.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(filename.toUtf8().constData(), RpFile::FM_OPEN_READ_GZ));
+	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
 		return;
