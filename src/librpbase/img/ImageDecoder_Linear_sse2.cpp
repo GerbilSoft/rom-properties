@@ -282,6 +282,13 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		src_stride_adj = (stride / bytespp) - width;
 	}
 
+	// If width + src_stride_adj is not a multiple of 8 pixels,
+	// fall back to the C++ version.
+	if ((width + src_stride_adj) % 8 != 0) {
+		// Fall back to the C++ version.
+		return fromLinear16_cpp(px_format, width, height, img_buf, img_siz, stride);
+	}
+
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
