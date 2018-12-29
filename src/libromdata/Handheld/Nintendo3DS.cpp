@@ -1928,6 +1928,15 @@ int Nintendo3DS::loadFieldData(void)
 				d->addTitleIdAndProductCodeFields(true);
 			}
 
+			// Do we have additional tabs?
+			// TODO: Combine "DSiWare" (tab 0) and "DSi" (tab 1)?
+			const int subtab_count = srl_fields->tabCount();
+			if (subtab_count > 1) {
+				for (int subtab = 1; subtab < subtab_count; subtab++) {
+					d->fields->setTabName(subtab, srl_fields->tabName(subtab));
+				}
+			}
+
 			// Add the DSiWare fields.
 			d->fields->addFields_romFields(srl_fields, 0);
 		}
