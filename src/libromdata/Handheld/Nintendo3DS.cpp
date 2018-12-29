@@ -2560,6 +2560,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		// Load the SMDH section.
 		if (d->loadSMDH() != 0) {
 			// Error loading the SMDH section.
+			*pImage = nullptr;
 			return -EIO;
 		}
 	}
