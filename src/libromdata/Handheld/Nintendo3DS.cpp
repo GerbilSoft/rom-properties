@@ -1211,9 +1211,10 @@ int Nintendo3DSPrivate::loadPermissions(void)
 	perm.services = ncch_exheader->aci.arm11_local.services;
 
 	// TODO: Ignore permissions on system titles.
-	// TODO: Check for a non-zero signature?
 	// TODO: Check permissions on retail games and compare to this list.
 	static const uint32_t fsAccess_dangerous =
+		// TinyFormat has CategoryFilesystemTool set.
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool |
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo |
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw |
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite;
