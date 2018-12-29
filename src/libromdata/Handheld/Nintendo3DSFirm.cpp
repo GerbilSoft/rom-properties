@@ -346,7 +346,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			{"Hourglass9", "Hourglass9 v", 12},
 		};
 
-		const char *arm9VerStr_title;
+		const char *arm9VerStr_title = nullptr;
 		string s_verstr;
 		for (unsigned int i = 0; i < ARRAY_SIZE(arm9VerStr); i++) {
 			const char *verstr = static_cast<const char*>(memmem(
