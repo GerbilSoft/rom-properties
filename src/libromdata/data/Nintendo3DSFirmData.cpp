@@ -65,6 +65,7 @@ const Nintendo3DSFirmData::FirmBin_t Nintendo3DSFirmDataPrivate::firmBins[] = {
 	{0x41C8A171, {2,52, 0}, {11,2}, false},
 	{0x4380DB8D, {2,46, 0}, { 9,0}, false},
 	{0x4A07016A, {2,54, 0}, {11,4}, true},
+	{0x4EE22A07, {2,55, 0}, {11,8}, false},
 	{0x528E293F, {2,37, 0}, { 6,0}, false},
 	{0x584C9AF5, {2,48, 3}, { 9,3}, false},
 	{0x6488499E, {2,33, 4}, { 4,0}, false},
@@ -93,6 +94,7 @@ const Nintendo3DSFirmData::FirmBin_t Nintendo3DSFirmDataPrivate::firmBins[] = {
 	{0xE0D74F64, {2,32,15}, { 3,0}, false},
 	{0xE25F25F5, {2,31,40}, { 2,2}, false},
 	{0xEA07F21E, {2,40, 0}, { 7,2}, false},
+	{0xEE23547A, {2,55, 0}, {11,8}, true},
 	{0xF5D833A2, {2,51, 2}, {11,1}, true},
 	{0xFFA6777A, {2,48, 3}, { 9,3}, true},
 
