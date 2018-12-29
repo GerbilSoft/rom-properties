@@ -264,7 +264,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Handhelds
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
-	GetRomDataFns(NintendoDS, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
 
 	// Textures
 	GetRomDataFns(SegaPVR, ATTR_HAS_THUMBNAIL),

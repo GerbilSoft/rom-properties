@@ -1556,4 +1556,34 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	return 0;
 }
 
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool NintendoDS::hasDangerousPermissions(void) const
+{
+	// Load permissions.
+	// TODO: If this is DSiWare, check DSiWare permissions?
+	RP_D(const NintendoDS);
+
+	// If Game Card Power On is set, eMMC Access and SD Card must be off.
+	// This combination is normally not found in licensed games,
+	// and is only found in the system menu. Some homebrew titles
+	// might have this set, though.
+	const uint32_t dsi_access_control = le32_to_cpu(d->romHeader.dsi.access_control);
+	if (dsi_access_control & DSi_ACCESS_GAME_CARD_POWER_ON) {
+		// Game Card Power On is set.
+		if (dsi_access_control & (DSi_ACCESS_SD_CARD | DSi_ACCESS_eMMC_ACCESS)) {
+			// SD and/or eMMC is set.
+			// This combination is not allowed by Nintendo, and
+			// usually indicates some sort of homebrew.
+			return true;
+		}
+	}
+
+	// Not dangerous.
+	return false;
+}
+
 }

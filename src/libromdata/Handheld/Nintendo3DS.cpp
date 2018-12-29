@@ -2820,10 +2820,18 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
  */
 bool Nintendo3DS::hasDangerousPermissions(void) const
 {
-	// Load permissions.
-	// TODO: If this is DSiWare, check DSiWare permissions?
 	RP_D(const Nintendo3DS);
-	int ret = const_cast<Nintendo3DSPrivate*>(d)->loadPermissions();
+
+	// Check for DSiWare.
+	// TODO: Check d->sbptr.srl.data first?
+	int ret = const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
+	if (ret == 0 && d->sbptr.srl.data) {
+		// DSiWare: Check DSi permissions.
+		return d->sbptr.srl.data->hasDangerousPermissions();
+	}
+
+	// Load permissions.
+	ret = const_cast<Nintendo3DSPrivate*>(d)->loadPermissions();
 	if (ret != 0) {
 		// Can't load permissions.
 		return false;
