@@ -284,6 +284,10 @@ int Nintendo3DSFirm::loadFieldData(void)
 			} else {
 				// Check for a custom FIRM.
 				checkCustomFIRM = true;
+
+				// NOTE: Luma3DS v9.1 has an ARM11 entry point set,
+				// so we should check for ARM9 homebrew as well.
+				checkARM9 = true;
 			}
 		}
 	} else if (arm11_entrypoint == 0 && arm9_entrypoint != 0) {
@@ -313,11 +317,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 		}
 	}
 
-	d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
-		(firmBinDesc ? firmBinDesc : C_("Nintendo3DSFirm", "Unknown")));
-
-	// Official firmware binary fields.
 	if (firmBin) {
+		// Official firmware binary fields.
+		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
+			(firmBinDesc ? firmBinDesc : C_("Nintendo3DSFirm", "Unknown")));
+
 		// FIRM version.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "FIRM Version"),
 			rp_sprintf("%u.%u.%u", firmBin->kernel.major,
@@ -326,10 +330,9 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// System version.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "System Version"),
 			rp_sprintf("%u.%u", firmBin->sys.major, firmBin->sys.minor));
-	}
+	} else if (checkARM9) {
+		// Check for ARM9 homebrew.
 
-	// Check for ARM9 homebrew.
-	if (checkARM9) {
 		// Version strings.
 		struct Arm9VerStr_t {
 			const char *title;	// Application title.
@@ -343,13 +346,15 @@ int Nintendo3DSFirm::loadFieldData(void)
 			{"Hourglass9", "Hourglass9 v", 12},
 		};
 
+		const char *arm9VerStr_title;
+		string s_verstr;
 		for (unsigned int i = 0; i < ARRAY_SIZE(arm9VerStr); i++) {
 			const char *verstr = static_cast<const char*>(memmem(
 				firmBuf.get(), szFile, arm9VerStr[i].searchstr, arm9VerStr[i].searchlen));
 			if (!verstr)
 				continue;
 
-			d->fields->addField_string(C_("Nintendo3DSFirm", "Title"), arm9VerStr[i].title);
+			arm9VerStr_title = arm9VerStr[i].title;
 
 			// Version does NOT include the 'v' character.
 			verstr += arm9VerStr[i].searchlen;
@@ -362,14 +367,33 @@ int Nintendo3DSFirm::loadFieldData(void)
 				count++;
 			}
 			if (count > 0) {
+				// Make sure this is labeled as ARM9 homebrew.
+				firmBinDesc = C_("Nintendo3DSFirm", "ARM9 Homebrew");
+
 				// NOTE: Most ARM9 homebrew uses UTF-8 strings.
-				d->fields->addField_string(C_("Nintendo3DSFirm", "Version"),
-					string(verstr, count));
+				s_verstr.assign(verstr, count);
 			}
 
 			// We're done here.
 			break;
 		}
+
+		// Add the firmware type field.
+		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
+			(firmBinDesc ? firmBinDesc : C_("Nintendo3DSFirm", "Unknown")));
+
+		if (arm9VerStr_title) {
+			d->fields->addField_string(C_("Nintendo3DSFirm", "Title"), arm9VerStr_title);
+		}
+
+		// If the version was found, add it.
+		if (!s_verstr.empty()) {
+			d->fields->addField_string(C_("Nintendo3DSFirm", "Version"), s_verstr);
+		}
+	} else {
+		// Add the firmware type field.
+		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
+			(firmBinDesc ? firmBinDesc : C_("Nintendo3DSFirm", "Unknown")));
 	}
 
 	// Entry Points
