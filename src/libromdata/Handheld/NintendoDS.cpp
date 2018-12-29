@@ -1105,42 +1105,39 @@ int NintendoDS::loadFieldData(void)
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
 
-	// TODO: Also hide this for DSiWare SRLs?
-	if (!d->cia) {
-		static const char *const hw_bitfield_names[] = {
-			"Nintendo DS", "Nintendo DSi"
-		};
-		vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
-			hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
-		d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
-			v_hw_bitfield_names, 0, hw_type);
+	static const char *const hw_bitfield_names[] = {
+		"Nintendo DS", "Nintendo DSi"
+	};
+	vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
+		hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
+	d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
+		v_hw_bitfield_names, 0, hw_type);
 
-		// NDS Region.
-		// Only used for region locking on Chinese iQue DS consoles.
-		// Not displayed for DSiWare wrapped in 3DS CIA packages.
-		uint32_t nds_region = 0;
-		if (romHeader->nds_region & 0x80) {
-			nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
-		}
-		if (romHeader->nds_region & 0x40) {
-			nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
-		}
-		if (nds_region == 0) {
-			// No known region flags.
-			// Note that the Sonic Colors demo has 0x02 here.
-			nds_region = NintendoDSPrivate::NDS_REGION_FREE;
-		}
-
-		static const char *const nds_region_bitfield_names[] = {
-			NOP_C_("Region", "Region-Free"),
-			NOP_C_("Region", "South Korea"),
-			NOP_C_("Region", "China"),
-		};
-		vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
-		d->fields->addField_bitfield("DS Region",
-			v_nds_region_bitfield_names, 0, nds_region);
+	// NDS Region.
+	// Only used for region locking on Chinese iQue DS consoles.
+	// Not displayed for DSiWare wrapped in 3DS CIA packages.
+	uint32_t nds_region = 0;
+	if (romHeader->nds_region & 0x80) {
+		nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
 	}
+	if (romHeader->nds_region & 0x40) {
+		nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
+	}
+	if (nds_region == 0) {
+		// No known region flags.
+		// Note that the Sonic Colors demo has 0x02 here.
+		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
+	}
+
+	static const char *const nds_region_bitfield_names[] = {
+		NOP_C_("Region", "Region-Free"),
+		NOP_C_("Region", "South Korea"),
+		NOP_C_("Region", "China"),
+	};
+	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
+		"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+	d->fields->addField_bitfield("DS Region",
+		v_nds_region_bitfield_names, 0, nds_region);
 
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
