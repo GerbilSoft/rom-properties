@@ -319,7 +319,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		}
 
 		// Save the track information.
-		int idx = static_cast<int>(blockRanges.size());
+		size_t idx = blockRanges.size();
 		blockRanges.resize(idx+1);
 		BlockRange &blockRange = blockRanges[idx];
 		blockRange.blockStart = static_cast<unsigned int>(blockStart);

@@ -665,7 +665,8 @@ public:
 
 				os << '[';
 				bool printedOne = false;
-				for (int j = 0; j < static_cast<int>(age_ratings->size()); j++) {
+				const size_t age_ratings_max = age_ratings->size();
+				for (size_t j = 0; j < age_ratings_max; j++) {
 					const uint16_t rating = age_ratings->at(j);
 					if (!(rating & RomFields::AGEBF_ACTIVE))
 						continue;

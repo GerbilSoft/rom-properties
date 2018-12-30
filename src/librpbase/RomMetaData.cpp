@@ -431,7 +431,7 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 		if (!src)
 			continue;
 
-		int idx = static_cast<int>(d->metaData.size());
+		size_t idx = d->metaData.size();
 		d->metaData.resize(idx+1);
 		MetaData &metaData = d->metaData.at(idx);
 		metaData.name = src->name;
@@ -491,14 +491,14 @@ int RomMetaData::addMetaData_integer(Property::Property name, int value)
 		return -1;
 
 	RP_D(RomMetaData);
-	int idx = static_cast<int>(d->metaData.size());
+	size_t idx = d->metaData.size();
 	d->metaData.resize(idx+1);
 	MetaData &metaData = d->metaData.at(idx);
 
 	metaData.name = name;
 	metaData.type = PropertyType::Integer;
 	metaData.data.ivalue = value;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -523,14 +523,14 @@ int RomMetaData::addMetaData_uint(Property::Property name, unsigned int value)
 		return -1;
 
 	RP_D(RomMetaData);
-	int idx = static_cast<int>(d->metaData.size());
+	size_t idx = d->metaData.size();
 	d->metaData.resize(idx+1);
 	MetaData &metaData = d->metaData.at(idx);
 
 	metaData.name = name;
 	metaData.type = PropertyType::UnsignedInteger;
 	metaData.data.uvalue = value;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -553,7 +553,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const char *str, un
 		return -1;
 
 	RP_D(RomMetaData);
-	int idx = static_cast<int>(d->metaData.size());
+	size_t idx = d->metaData.size();
 	d->metaData.resize(idx+1);
 	MetaData &metaData = d->metaData.at(idx);
 
@@ -566,7 +566,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const char *str, un
 	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -589,7 +589,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const string &str, 
 		return -1;
 
 	RP_D(RomMetaData);
-	int idx = static_cast<int>(d->metaData.size());
+	size_t idx = d->metaData.size();
 	d->metaData.resize(idx+1);
 	MetaData &metaData = d->metaData.at(idx);
 
@@ -602,7 +602,7 @@ int RomMetaData::addMetaData_string(Property::Property name, const string &str, 
 	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -624,14 +624,14 @@ int RomMetaData::addMetaData_timestamp(Property::Property name, time_t timestamp
 		return -1;
 
 	RP_D(RomMetaData);
-	int idx = static_cast<int>(d->metaData.size());
+	size_t idx = d->metaData.size();
 	d->metaData.resize(idx+1);
 	MetaData &metaData = d->metaData.at(idx);
 
 	metaData.name = name;
 	metaData.type = PropertyType::Timestamp;
 	metaData.data.timestamp = timestamp;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 }

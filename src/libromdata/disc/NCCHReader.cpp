@@ -318,7 +318,7 @@ NCCHReaderPrivate::~NCCHReaderPrivate()
  */
 int NCCHReaderPrivate::findEncSection(uint32_t address) const
 {
-	for (int i = 0; i < static_cast<int>(encSections.size()); i++) {
+	for (int i = static_cast<int>(encSections.size())-1; i >= 0; i--) {
 		const auto &section = encSections.at(i);
 		if (address >= section.address &&
 		    address < section.address + section.length)

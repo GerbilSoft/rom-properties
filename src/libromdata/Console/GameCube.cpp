@@ -586,26 +586,26 @@ string GameCubePrivate::gcn_getGameInfo(void) const
 	// NOTE: We're converting from cp1252 or Shift-JIS
 	// *after* concatenating all the strings, which is
 	// why we're using strnlen() here.
-	int field_len;
+	size_t field_len;
 
 	// Game name.
 	if (comment->gamename_full[0] != '\0') {
-		field_len = static_cast<int>(strnlen(comment->gamename_full, sizeof(comment->gamename_full)));
+		field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
 		gameInfo.append(comment->gamename_full, field_len);
 		gameInfo += '\n';
 	} else if (comment->gamename[0] != '\0') {
-		field_len = static_cast<int>(strnlen(comment->gamename, sizeof(comment->gamename)));
+		field_len = strnlen(comment->gamename, sizeof(comment->gamename));
 		gameInfo.append(comment->gamename, field_len);
 		gameInfo += '\n';
 	}
 
 	// Company.
 	if (comment->company_full[0] != '\0') {
-		field_len = static_cast<int>(strnlen(comment->company_full, sizeof(comment->company_full)));
+		field_len = strnlen(comment->company_full, sizeof(comment->company_full));
 		gameInfo.append(comment->company_full, field_len);
 		gameInfo += '\n';
 	} else if (comment->company[0] != '\0') {
-		field_len = static_cast<int>(strnlen(comment->company, sizeof(comment->company)));
+		field_len = strnlen(comment->company, sizeof(comment->company));
 		gameInfo.append(comment->company, field_len);
 		gameInfo += '\n';
 	}
@@ -617,7 +617,7 @@ string GameCubePrivate::gcn_getGameInfo(void) const
 			gameInfo += '\n';
 		}
 
-		field_len = static_cast<int>(strnlen(comment->gamedesc, sizeof(comment->gamedesc)));
+		field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
 		gameInfo.append(comment->gamedesc, field_len);
 	}
 

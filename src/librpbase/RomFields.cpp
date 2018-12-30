@@ -764,7 +764,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		if (!src)
 			continue;
 
-		int idx = static_cast<int>(d->fields.size());
+		size_t idx = d->fields.size();
 		d->fields.resize(idx+1);
 		Field &field = d->fields.at(idx);
 		field.name = src->name;
@@ -839,7 +839,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 	// RFT_STRING
 	RP_D(RomFields);
-	int idx = static_cast<int>(d->fields.size());
+	size_t idx = d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -855,7 +855,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	if (field.data.str && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -873,7 +873,7 @@ int RomFields::addField_string(const char *name, const string &str, unsigned int
 
 	// RFT_STRING
 	RP_D(RomFields);
-	int idx = static_cast<int>(d->fields.size());
+	size_t idx = d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -889,7 +889,7 @@ int RomFields::addField_string(const char *name, const string &str, unsigned int
 	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -1040,7 +1040,7 @@ int RomFields::addField_bitfield(const char *name,
 
 	// RFT_BITFIELD
 	RP_D(RomFields);
-	int idx = static_cast<int>(d->fields.size());
+	size_t idx = d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1051,7 +1051,7 @@ int RomFields::addField_bitfield(const char *name,
 	field.data.bitfield = bitfield;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -1077,7 +1077,7 @@ int RomFields::addField_listData(const char *name,
 
 	// RFT_LISTDATA
 	RP_D(RomFields);
-	int idx = static_cast<int>(d->fields.size());
+	size_t idx = d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1090,7 +1090,7 @@ int RomFields::addField_listData(const char *name,
 	field.data.list_checkboxes = checkboxes;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -1108,7 +1108,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 
 	// RFT_DATETIME
 	RP_D(RomFields);
-	int idx = static_cast<int>(d->fields.size());
+	size_t idx = d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1118,7 +1118,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 	field.data.date_time = date_time;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -1136,7 +1136,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 
 	// RFT_AGE_RATINGS
 	RP_D(RomFields);
-	int idx = static_cast<int>(d->fields.size());
+	size_t idx = d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1145,7 +1145,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 	field.data.age_ratings = new age_ratings_t(age_ratings);
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 /**
@@ -1164,7 +1164,7 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 
 	// RFT_DIMENSIONS
 	RP_D(RomFields);
-	int idx = static_cast<int>(d->fields.size());
+	size_t idx = d->fields.size();
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
@@ -1175,7 +1175,7 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 	field.data.dimensions[2] = dimZ;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
-	return idx;
+	return static_cast<int>(idx);
 }
 
 }
