@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * DownloadsTab.hpp: Downloads tab for rp-config.                          *
+ * OptionsTab.hpp: Options tab for rp-config.                              *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -18,24 +18,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_DOWNLOADSTAB_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_DOWNLOADSTAB_HPP__
+#ifndef __ROMPROPERTIES_WIN32_CONFIG_OPTIONSTAB_HPP__
+#define __ROMPROPERTIES_WIN32_CONFIG_OPTIONSTAB_HPP__
 
 #include "ITab.hpp"
 
-class DownloadsTabPrivate;
-class DownloadsTab : public ITab
+class OptionsTabPrivate;
+class OptionsTab : public ITab
 {
 	public:
-		DownloadsTab();
-		virtual ~DownloadsTab();
+		OptionsTab();
+		virtual ~OptionsTab();
 
 	private:
 		typedef ITab super;
-		RP_DISABLE_COPY(DownloadsTab)
+		RP_DISABLE_COPY(OptionsTab)
 	private:
-		friend class DownloadsTabPrivate;
-		DownloadsTabPrivate *const d_ptr;
+		friend class OptionsTabPrivate;
+		OptionsTabPrivate *const d_ptr;
 
 	public:
 		/**
@@ -66,4 +66,4 @@ class DownloadsTab : public ITab
 		void save(void) final;
 };
 
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_DOWNLOADSTAB_HPP__ */
+#endif /* __ROMPROPERTIES_WIN32_CONFIG_OPTIONSTAB_HPP__ */
