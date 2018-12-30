@@ -1,7 +1,7 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
- * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
- * Handles CCI/3DS, CIA, and SMDH files.                                   *
+ * ROM Properties Page shell extension. (Win32)                            *
+ * RP_ShellIconOverlayIdentifier_p.hpp: IShellIconOverlayIdentifier        *
+ * (PRIVATE CLASS)                                                         *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -19,23 +19,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_NINTENDO3DS_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_NINTENDO3DS_HPP__
+#ifndef __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_P_HPP__
+#define __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_P_HPP__
 
+#include "RP_ShellIconOverlayIdentifier.hpp"
+
+// librpbase
+#include "librpbase/file/IRpFile.hpp"
 #include "librpbase/RomData.hpp"
 
-namespace LibRomData {
+// Workaround for RP_D() expecting the no-underscore naming convention.
+#define RP_ShellIconOverlayIdentifierPrivate RP_ShellIconOverlayIdentifier_Private
 
-ROMDATA_DECL_BEGIN(Nintendo3DS)
-ROMDATA_DECL_CLOSE()
-ROMDATA_DECL_DANGEROUS()
-ROMDATA_DECL_IMGSUPPORT()
-ROMDATA_DECL_IMGPF()
-ROMDATA_DECL_IMGINT()
-ROMDATA_DECL_ICONANIM()
-ROMDATA_DECL_IMGEXT()
-ROMDATA_DECL_END()
+// CLSID
+extern const CLSID CLSID_RP_ShellIconOverlayIdentifier;
 
-}
+// C++ includes.
+#include <vector>
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_NINTENDO3DS_HPP__ */
+class RP_ShellIconOverlayIdentifier_Private
+{
+	public:
+		RP_ShellIconOverlayIdentifier_Private();
+		~RP_ShellIconOverlayIdentifier_Private();
+
+	private:
+		RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier_Private)
+
+	public:
+		// SHGetStockIconInfo() for the UAC shield icon.
+		typedef HRESULT (STDAPICALLTYPE *PFNSHGETSTOCKICONINFO)(_In_ SHSTOCKICONID siid, _In_ UINT uFlags, _Out_ SHSTOCKICONINFO *psii);
+		HMODULE hShell32_dll;
+		PFNSHGETSTOCKICONINFO pfnSHGetStockIconInfo;
+};
+
+#endif /* __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_P_HPP__ */

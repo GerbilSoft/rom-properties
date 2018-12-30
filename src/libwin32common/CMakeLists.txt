@@ -14,6 +14,7 @@ SET(libwin32common_SRCS
 	WinUI.cpp
 	w32err.c
 	ComBase.cpp
+	propsys_xp.c
 	sdk/win_iid.c
 	)
 SET(libwin32common_H
@@ -27,6 +28,7 @@ SET(libwin32common_H
 	msvc_common.h
 	w32time.h
 	ComBase.hpp
+	propsys_xp.h
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

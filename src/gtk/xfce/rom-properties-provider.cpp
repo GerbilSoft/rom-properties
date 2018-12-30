@@ -125,7 +125,7 @@ rom_properties_get_file_supported(ThunarxFileInfo *info)
 		// NOTE: We have to create an instance here in order to
 		// prevent false positives caused by isRomSupported()
 		// saying "yes" while new RomData() says "no".
-		RomData *romData = RomDataFactory::create(file, false);
+		RomData *romData = RomDataFactory::create(file);
 		if (romData != nullptr) {
 			supported = TRUE;
 			romData->unref();

@@ -35,6 +35,10 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include <windows.h>
 
+#if _WIN32_WINNT < 0x0600
+# error Windows Vista SDK or later is required.
+#endif
+
 // Typesafe inline function wrappers for some Windows headers.
 #include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32common/sdk/commctrl_ts.h"
@@ -60,72 +64,5 @@
 
 // Common Controls COM declarations.
 #include <commoncontrols.h>
-
-/** Windows Vista functionality. **/
-// These aren't available in the Windows headers unless
-// _WIN32_WINNT >= 0x0600.
-#if _WIN32_WINNT < 0x0600
-
-#ifndef PBM_SETSTATE
-#define PBM_SETSTATE            (WM_USER+16) // wParam = PBST_[State] (NORMAL, ERROR, PAUSED)
-#endif
-#ifndef PBM_GETSTATE
-#define PBM_GETSTATE            (WM_USER+17)
-#endif
-
-#ifndef PBST_NORMAL
-#define PBST_NORMAL             0x0001
-#endif
-#ifndef PBST_ERROR
-#define PBST_ERROR              0x0002
-#endif
-#ifndef PBST_PAUSED
-#define PBST_PAUSED             0x0003
-#endif
-
-// Split buttons. (for buttons with dropdown menus)
-#ifndef BS_SPLITBUTTON
-#define BS_SPLITBUTTON	0x0000000CL
-#endif
-#ifndef BCSIF_GLYPH
-#define BCSIF_GLYPH	0x0001
-#endif
-#ifndef BCSIF_IMAGE
-#define BCSIF_IMAGE	0x0002
-#endif
-#ifndef BCSIF_STYLE
-#define BCSIF_STYLE	0x0004
-#endif
-#ifndef BCSIF_SIZE
-#define BCSIF_SIZE	0x0008
-#endif
-#ifndef BCSS_NOSPLIT
-#define BCSS_NOSPLIT	0x0001
-#endif
-#ifndef BCSS_STRETCH
-#define BCSS_STRETCH	0x0002
-#endif
-#ifndef BCSS_ALIGNLEFT
-#define BCSS_ALIGNLEFT	0x0004
-#endif
-#ifndef BCSS_IMAGE
-#define BCSS_IMAGE	0x0008
-#endif
-#ifndef BCM_SETSPLITINFO
-#define BCM_SETSPLITINFO         (BCM_FIRST + 0x0007)
-#define Button_SetSplitInfo(hwnd, pInfo) \
-    (BOOL)SNDMSG((hwnd), BCM_SETSPLITINFO, 0, (LPARAM)(pInfo))
-#define BCM_GETSPLITINFO         (BCM_FIRST + 0x0008)
-#define Button_GetSplitInfo(hwnd, pInfo) \
-    (BOOL)SNDMSG((hwnd), BCM_GETSPLITINFO, 0, (LPARAM)(pInfo))
-typedef struct tagBUTTON_SPLITINFO {
-	UINT        mask;
-	HIMAGELIST  himlGlyph;
-	UINT        uSplitStyle;
-	SIZE        size;
-} BUTTON_SPLITINFO, *PBUTTON_SPLITINFO;
-#endif
-
-#endif /* _WIN32_WINNT < 0x0600 */
 
 #endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */

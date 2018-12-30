@@ -231,6 +231,31 @@ typedef enum {
 } DSi_Region;
 
 /**
+ * Nintendo DSi access control. (0x1B4)
+ */
+typedef enum {
+	DSi_ACCESS_COMMON_KEY			= (1 <<  0),
+	DSi_ACCESS_AES_SLOT_B			= (1 <<  1),
+	DSi_ACCESS_AES_SLOT_C			= (1 <<  2),
+	DSi_ACCESS_SD_CARD			= (1 <<  3),
+	DSi_ACCESS_eMMC_ACCESS			= (1 <<  4),
+	DSi_ACCESS_GAME_CARD_POWER_ON		= (1 <<  5),
+	DSi_ACCESS_SHARED2_FILE			= (1 <<  6),
+	DSi_ACCESS_SIGN_JPEG_FOR_LAUNCHER	= (1 <<  7),
+	DSi_ACCESS_GAME_CARD_NTR_MODE		= (1 <<  8),
+	DSi_ACCESS_SSL_CLIENT_CERT		= (1 <<  9),
+	DSi_ACCESS_SIGN_JPEG_FOR_USER		= (1 << 10),
+	DSi_ACCESS_PHOTO_READ_ACCESS		= (1 << 11),
+	DSi_ACCESS_PHOTO_WRITE_ACCESS		= (1 << 12),
+	DSi_ACCESS_SD_CARD_READ_ACCESS		= (1 << 13),
+	DSi_ACCESS_SD_CARD_WRITE_ACCESS		= (1 << 14),
+	DSi_ACCESS_GAME_CARD_SAVE_READ_ACCESS	= (1 << 15),
+	DSi_ACCESS_GAME_CARD_SAVE_WRITE_ACCESS	= (1 << 16),
+
+	DSi_ACCESS_DEBUG_KEY			= (1 << 31),
+} DSi_Access;
+
+/**
  * Nintendo DSi Flags. (0x1BF)
  */
 typedef enum {

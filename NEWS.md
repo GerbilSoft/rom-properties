@@ -16,6 +16,11 @@
       the IThumbnailProvider and IPropertyStore implementations use IStream,
       and we don't have transparent decompression for IStream yet. This will
       be fixed before the release of v1.4.
+  * ROM images for Nintendo DS and 3DS with "dangerous" permissions now have
+    an overlay icon on Windows and KDE. This normally happens with certain
+    homebrew that requires full system access (or system titles), but it's
+    also possible that someone could create a malicious homebrew title
+    disguised as a retail game.
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
@@ -62,6 +67,10 @@
     footer is used for, among other things, FamicomBox.
   * Nintendo3DS: Split the SMDH code into a separate parser. This should
     make maintenance easier.
+  * NintendoDS: The "Access Control" field (labeled "Permissions") is now
+    shown for ROMs with DSi functionality. Both permissions and flags are
+    now shown on a new tab, and they both use a listbox instead of a grid
+    of checkboxes.
 
 * Bug fixes:
   * Nintendo 3DS: Handle DLC packages with more than 64 contents.

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * DownloadsTab.cpp: Downloads tab for rp-config.                          *
+ * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "DownloadsTab.hpp"
+#include "OptionsTab.hpp"
 #include "res/resource.h"
 
 // librpbase
@@ -37,17 +37,17 @@ using LibRpBase::Config;
 #include <string>
 using std::wstring;
 
-class DownloadsTabPrivate
+class OptionsTabPrivate
 {
 	public:
-		DownloadsTabPrivate();
+		OptionsTabPrivate();
 
 	private:
-		RP_DISABLE_COPY(DownloadsTabPrivate)
+		RP_DISABLE_COPY(OptionsTabPrivate)
 
 	public:
 		// Property for "D pointer".
-		// This points to the DownloadsTabPrivate object.
+		// This points to the OptionsTabPrivate object.
 		static const wchar_t D_PTR_PROP[];
 
 	protected:
@@ -123,22 +123,22 @@ class DownloadsTabPrivate
 		bool changed;
 };
 
-/** DownloadsTabPrivate **/
+/** OptionsTabPrivate **/
 
-DownloadsTabPrivate::DownloadsTabPrivate()
+OptionsTabPrivate::OptionsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, changed(false)
 { }
 
 // Property for "D pointer".
-// This points to the DownloadsTabPrivate object.
-const wchar_t DownloadsTabPrivate::D_PTR_PROP[] = L"DownloadsTabPrivate";
+// This points to the OptionsTabPrivate object.
+const wchar_t OptionsTabPrivate::D_PTR_PROP[] = L"OptionsTabPrivate";
 
 /**
  * Reset the configuration.
  */
-void DownloadsTabPrivate::reset(void)
+void OptionsTabPrivate::reset(void)
 {
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
@@ -150,12 +150,14 @@ void DownloadsTabPrivate::reset(void)
 	CheckDlgButton(hWndPropSheet, IDC_EXTIMGDL, boolToBstChecked(config->extImgDownloadEnabled()));
 	CheckDlgButton(hWndPropSheet, IDC_INTICONSMALL, boolToBstChecked(config->useIntIconForSmallSizes()));
 	CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(config->downloadHighResScans()));
+	CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
+		boolToBstChecked(config->showDangerousPermissionsOverlayIcon()));
 
 	// No longer changed.
 	changed = false;
 }
 
-void DownloadsTabPrivate::loadDefaults(void)
+void OptionsTabPrivate::loadDefaults(void)
 {
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
@@ -166,6 +168,7 @@ void DownloadsTabPrivate::loadDefaults(void)
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
+	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	bool isDefChanged = false;
 
 	bool cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
@@ -183,6 +186,12 @@ void DownloadsTabPrivate::loadDefaults(void)
 		CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(downloadHighResScans_default));
 		isDefChanged = true;
 	}
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
+	if (cur != downloadHighResScans_default) {
+		CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
+			boolToBstChecked(showDangerousPermissionsOverlayIcon_default));
+		isDefChanged = true;
+	}
 
 	if (isDefChanged) {
 		this->changed = true;
@@ -193,7 +202,7 @@ void DownloadsTabPrivate::loadDefaults(void)
 /**
  * Save the configuration.
  */
-void DownloadsTabPrivate::save(void)
+void OptionsTabPrivate::save(void)
 {
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
@@ -216,6 +225,9 @@ void DownloadsTabPrivate::save(void)
 	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
 	WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, U82W_c(filename));
 
+	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
+	WritePrivateProfileString(L"Options", L"ShowDangerousPermissionsOverlayIcon", bstr, U82W_c(filename));
+
 	// No longer changed.
 	changed = false;
 }
@@ -227,7 +239,7 @@ void DownloadsTabPrivate::save(void)
  * @param wParam
  * @param lParam
  */
-INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 		case WM_INITDIALOG: {
@@ -237,8 +249,8 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 			if (!pPage)
 				return TRUE;
 
-			// Get the pointer to the DownloadsTabPrivate object.
-			DownloadsTabPrivate *const d = reinterpret_cast<DownloadsTabPrivate*>(pPage->lParam);
+			// Get the pointer to the OptionsTabPrivate object.
+			OptionsTabPrivate *const d = reinterpret_cast<OptionsTabPrivate*>(pPage->lParam);
 			if (!d)
 				return TRUE;
 
@@ -256,16 +268,16 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 		case WM_DESTROY: {
 			// Remove the D_PTR_PROP property from the page. 
 			// The D_PTR_PROP property stored the pointer to the 
-			// DownloadsTabPrivate object.
+			// OptionsTabPrivate object.
 			RemoveProp(hDlg, D_PTR_PROP);
 			return TRUE;
 		}
 
 		case WM_NOTIFY: {
-			DownloadsTabPrivate *const d = static_cast<DownloadsTabPrivate*>(
+			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
-				// No DownloadsTabPrivate. Can't do anything...
+				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;
 			}
 
@@ -290,10 +302,10 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 		}
 
 		case WM_COMMAND: {
-			DownloadsTabPrivate *const d = static_cast<DownloadsTabPrivate*>(
+			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
-				// No DownloadsTabPrivate. Can't do anything...
+				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;
 			}
 
@@ -308,10 +320,10 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 		}
 
 		case WM_RP_PROP_SHEET_RESET: {
-			DownloadsTabPrivate *const d = static_cast<DownloadsTabPrivate*>(
+			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
-				// No DownloadsTabPrivate. Can't do anything...
+				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;
 			}
 
@@ -321,10 +333,10 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 		}
 
 		case WM_RP_PROP_SHEET_DEFAULTS: {
-			DownloadsTabPrivate *const d = static_cast<DownloadsTabPrivate*>(
+			OptionsTabPrivate *const d = static_cast<OptionsTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
-				// No DownloadsTabPrivate. Can't do anything...
+				// No OptionsTabPrivate. Can't do anything...
 				return FALSE;
 			}
 
@@ -347,7 +359,7 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
  * @param wParam
  * @param lParam
  */
-UINT CALLBACK DownloadsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
+UINT CALLBACK OptionsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
@@ -367,13 +379,13 @@ UINT CALLBACK DownloadsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEE
 	return FALSE;
 }
 
-/** DownloadsTab **/
+/** OptionsTab **/
 
-DownloadsTab::DownloadsTab(void)
-	: d_ptr(new DownloadsTabPrivate())
+OptionsTab::OptionsTab(void)
+	: d_ptr(new OptionsTabPrivate())
 { }
 
-DownloadsTab::~DownloadsTab()
+OptionsTab::~OptionsTab()
 {
 	delete d_ptr;
 }
@@ -386,9 +398,9 @@ DownloadsTab::~DownloadsTab()
  *
  * @return HPROPSHEETPAGE.
  */
-HPROPSHEETPAGE DownloadsTab::getHPropSheetPage(void)
+HPROPSHEETPAGE OptionsTab::getHPropSheetPage(void)
 {
-	RP_D(DownloadsTab);
+	RP_D(OptionsTab);
 	assert(d->hPropSheetPage == nullptr);
 	if (d->hPropSheetPage) {
 		// Property sheet has already been created.
@@ -396,19 +408,19 @@ HPROPSHEETPAGE DownloadsTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("DownloadsTab", "Downloads"));
+	const wstring wsTabTitle = U82W_c(C_("OptionsTab", "Options"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
-	psp.pResource = LoadDialog_i18n(IDD_CONFIG_DOWNLOADS);
+	psp.pResource = LoadDialog_i18n(IDD_CONFIG_OPTIONS);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = wsTabTitle.c_str();
-	psp.pfnDlgProc = DownloadsTabPrivate::dlgProc;
+	psp.pfnDlgProc = OptionsTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;
-	psp.pfnCallback = DownloadsTabPrivate::callbackProc;
+	psp.pfnCallback = OptionsTabPrivate::callbackProc;
 
 	d->hPropSheetPage = CreatePropertySheetPage(&psp);
 	return d->hPropSheetPage;
@@ -417,9 +429,9 @@ HPROPSHEETPAGE DownloadsTab::getHPropSheetPage(void)
 /**
  * Reset the contents of this tab.
  */
-void DownloadsTab::reset(void)
+void OptionsTab::reset(void)
 {
-	RP_D(DownloadsTab);
+	RP_D(OptionsTab);
 	d->reset();
 }
 
@@ -428,18 +440,18 @@ void DownloadsTab::reset(void)
  * This does NOT save, and will only emit modified()
  * if it's different from the current configuration.
  */
-void DownloadsTab::loadDefaults(void)
+void OptionsTab::loadDefaults(void)
 {
-	RP_D(DownloadsTab);
+	RP_D(OptionsTab);
 	d->loadDefaults();
 }
 
 /**
  * Save the contents of this tab.
  */
-void DownloadsTab::save(void)
+void OptionsTab::save(void)
 {
-	RP_D(DownloadsTab);
+	RP_D(OptionsTab);
 	if (d->changed) {
 		d->save();
 	}

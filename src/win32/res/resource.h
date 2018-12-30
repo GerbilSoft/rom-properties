@@ -88,7 +88,7 @@
 
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES                   110
-#define IDD_CONFIG_DOWNLOADS                    111
+#define IDD_CONFIG_OPTIONS                      111
 #define IDD_CONFIG_CACHE                        112
 #define IDD_CONFIG_CACHE_XP                     113
 #define IDD_CONFIG_KEYMANAGER                   114
@@ -101,10 +101,11 @@
 #define IDC_IMAGETYPES_VIEWPORT_OUTER		40010
 #define IDC_IMAGETYPES_VIEWPORT_INNER		40011
 
-// Downloads
+// Options
 #define IDC_EXTIMGDL                            40101
 #define IDC_INTICONSMALL                        40102
 #define IDC_HIGHRESDL                           40103
+#define IDC_DANGEROUSPERMISSIONS                40104
 
 // Thumbnail cache
 #define IDC_CACHE_DESCRIPTION                   40201

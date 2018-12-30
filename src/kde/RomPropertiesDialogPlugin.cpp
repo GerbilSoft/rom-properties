@@ -48,6 +48,9 @@ using LibRomData::RomDataFactory;
 #include <memory>
 using std::unique_ptr;
 
+// Qt includes.
+#include <QtCore/QFileInfo>
+
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: super(props)
 {
@@ -66,10 +69,12 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	// - https://cgit.kde.org/kio.git/commit/?id=7d6e4965dfcd7fc12e8cba7b1506dde22de5d2dd
 	// TODO: https://cgit.kde.org/kdenetwork-filesharing.git/commit/?id=abf945afd4f08d80cdc53c650d80d300f245a73d
 	// (and other uses) [use mostLocalPath()]
-	const KFileItem &item = items.at(0);
-	QString filename = item.localPath();
-	if (filename.isEmpty())
+	const KFileItem &fileItem = items.at(0);
+	const QString filename = fileItem.localPath();
+	if (filename.isEmpty()) {
+		// Unable to get a local path.
 		return;
+	}
 
 	// Single file, and it's local.
 	// TODO: Use KIO and transparent decompression?
@@ -81,12 +86,14 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	RomData *romData = RomDataFactory::create(file.get());
-	if (!romData)
+	RomData *const romData = RomDataFactory::create(file.get());
+	if (!romData) {
+		// ROM is not supported.
 		return;
+	}
 
 	// ROM is supported. Show the properties.
-	RomDataView *romDataView = new RomDataView(romData, props);
+	RomDataView *const romDataView = new RomDataView(romData, props);
 	// tr: Tab title.
 	props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
 

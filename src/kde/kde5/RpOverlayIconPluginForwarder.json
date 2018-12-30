@@ -1,0 +1,8 @@
+{
+    "KPlugin": {
+        "Description": "Overlay icon for rom-properties",
+        "ServiceTypes": [
+            "KOverlayIconPlugin"
+        ]
+    }
+}

@@ -436,7 +436,10 @@ void KeyManagerTabPrivate::initUI(void)
 		if (hasIListView) {
 			// Create groups for each section.
 			// NOTE: We have to use the Vista+ LVGROUP definition.
-			LVGROUP_Vista lvGroup;
+#if _WIN32_WINNT < 0x0600
+# error Windows Vista SDK or later is required.
+#endif
+			LVGROUP lvGroup;
 			lvGroup.cbSize = sizeof(lvGroup);
 			lvGroup.mask = LVGF_ALIGN | LVGF_GROUPID | LVGF_HEADER | LVGF_ITEMS;
 			lvGroup.uAlign = LVGA_HEADER_LEFT;

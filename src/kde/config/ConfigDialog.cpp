@@ -183,7 +183,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// Connect the modification signals.
 	// FIXME: Should be doable in Qt Designer...
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
-	connect(d->ui.tabDownloads, SIGNAL(modified()), this, SLOT(tabModified()));
+	connect(d->ui.tabOptions, SIGNAL(modified()), this, SLOT(tabModified()));
 #ifdef ENABLE_DECRYPTION
 	connect(d->tabKeyManager, SIGNAL(modified()), this, SLOT(tabModified()));
 #endif /* ENABLE_DECRYPTION */
@@ -303,7 +303,7 @@ void ConfigDialog::apply(void)
 	// Save all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
-	d->ui.tabDownloads->save(&settings);
+	d->ui.tabOptions->save(&settings);
 
 #ifdef ENABLE_DECRYPTION
 	// KeyManager needs to save to keys.conf.
@@ -337,7 +337,7 @@ void ConfigDialog::reset(void)
 	// Reset all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->reset();
-	d->ui.tabDownloads->reset();
+	d->ui.tabOptions->reset();
 #ifdef ENABLE_DECRYPTION
 	d->tabKeyManager->reset();
 #endif /* ENABLE_DECRYPTION */
@@ -364,7 +364,7 @@ void ConfigDialog::loadDefaults(void)
 			d->ui.tabImageTypes->loadDefaults();
 			break;
 		case 1:
-			d->ui.tabDownloads->loadDefaults();
+			d->ui.tabOptions->loadDefaults();
 			break;
 		default:
 			assert(!"Unrecognized tab index.");

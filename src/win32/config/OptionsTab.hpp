@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * DownloadsTab.hpp: Downloads tab for rp-config.                          *
+ * ROM Properties Page shell extension. (Win32)                            *
+ * OptionsTab.hpp: Options tab for rp-config.                              *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -18,33 +18,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_DOWNLOADSTAB_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_DOWNLOADSTAB_HPP__
+#ifndef __ROMPROPERTIES_WIN32_CONFIG_OPTIONSTAB_HPP__
+#define __ROMPROPERTIES_WIN32_CONFIG_OPTIONSTAB_HPP__
 
 #include "ITab.hpp"
 
-class DownloadsTabPrivate;
-class DownloadsTab : public ITab
+class OptionsTabPrivate;
+class OptionsTab : public ITab
 {
-	Q_OBJECT
-
 	public:
-		explicit DownloadsTab(QWidget *parent = nullptr);
-		virtual ~DownloadsTab();
+		OptionsTab();
+		virtual ~OptionsTab();
 
 	private:
 		typedef ITab super;
-		DownloadsTabPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(DownloadsTab);
-		Q_DISABLE_COPY(DownloadsTab)
+		RP_DISABLE_COPY(OptionsTab)
+	private:
+		friend class OptionsTabPrivate;
+		OptionsTabPrivate *const d_ptr;
 
-	protected:
-		// State change event. (Used for switching the UI language at runtime.)
-		void changeEvent(QEvent *event) final;
-
-	public slots:
+	public:
 		/**
-		 * Reset the configuration.
+		 * Create the HPROPSHEETPAGE for this tab.
+		 *
+		 * NOTE: This function can only be called once.
+		 * Subsequent invocations will return nullptr.
+		 *
+		 * @return HPROPSHEETPAGE.
+		 */
+		HPROPSHEETPAGE getHPropSheetPage(void) final;
+
+		/**
+		 * Reset the contents of this tab.
 		 */
 		void reset(void) final;
 
@@ -56,16 +61,9 @@ class DownloadsTab : public ITab
 		void loadDefaults(void) final;
 
 		/**
-		 * Save the configuration.
-		 * @param pSettings QSettings object.
+		 * Save the contents of this tab.
 		 */
-		void save(QSettings *pSettings) final;
-
-	protected slots:
-		/**
-		 * A checkbox was clicked.
-		 */
-		void checkBox_clicked(void);
+		void save(void) final;
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_DOWNLOADSTAB_HPP__ */
+#endif /* __ROMPROPERTIES_WIN32_CONFIG_OPTIONSTAB_HPP__ */

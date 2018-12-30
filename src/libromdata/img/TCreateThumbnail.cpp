@@ -421,7 +421,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgCla
 {
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file, true);
+	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		if (sBIT) {
@@ -461,7 +461,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int req_size,
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file.get(), true);
+	RomData *romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_THUMBNAIL);
 	file.reset(nullptr);	// file is dup()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.

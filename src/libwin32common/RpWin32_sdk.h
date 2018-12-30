@@ -127,6 +127,9 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 #ifndef _Releases_lock_
 # define _Releases_lock_(var)
 #endif
+#ifndef _Out_writes_
+# define _Out_writes_(var)
+#endif
 
 // Current image instance.
 // This is filled in by the linker.

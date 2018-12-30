@@ -77,29 +77,6 @@ class RP_PropertyStore_Private
 			LONG vtype;
 		};
 		static const MetaDataConv metaDataConv[];
-
-	public:
-		/**
-		 * Register the file type handler.
-		 *
-		 * Internal version; this only registers for a single Classes key.
-		 * Called by the public version multiple times if a ProgID is registered.
-		 *
-		 * @param hkey_Assoc File association key to register under.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkey_Assoc);
-
-		/**
-		 * Unregister the file type handler.
-		 *
-		 * Internal version; this only unregisters for a single Classes key.
-		 * Called by the public version multiple times if a ProgID is registered.
-		 *
-		 * @param hkey_Assoc File association key to unregister under.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkey_Assoc);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_P_HPP__ */

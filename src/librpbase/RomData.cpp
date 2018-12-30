@@ -776,4 +776,15 @@ const IconAnimData *RomData::iconAnimData(void) const
 	return nullptr;
 }
 
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool RomData::hasDangerousPermissions(void) const
+{
+	// No dangerous permissions by default.
+	return false;
+}
+
 }

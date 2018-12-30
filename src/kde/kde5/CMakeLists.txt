@@ -73,6 +73,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 
 		# TODO: Can we get the subdirectory from KFileMetaData?
 		SET(KFMD_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
+		SET(KFOV_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}/kf5/overlayicon")
 	ELSE()
 		# Qt5 not found.
 		SET(BUILD_KDE5 OFF CACHE "" INTERNAL FORCE)
@@ -91,11 +92,13 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_UIS  "${rom-properti
 SET(rom-properties-kde5_SRCS
 	${rom-properties-kde5_SRCS}
 	RpExtractorPlugin.cpp
+	RpOverlayIconPlugin.cpp
 	RomPropertiesDialogPluginFactoryKDE5.cpp
 	)
 SET(rom-properties-kde5_H
 	${rom-properties-kde5_H}
 	RpExtractorPlugin.hpp
+	RpOverlayIconPlugin.hpp
 	)
 
 IF(COMMAND QT5_WRAP_UI)
@@ -152,10 +155,28 @@ IF(BUILD_KDE5)
 	TARGET_COMPILE_DEFINITIONS(kfilemetadata_rom-properties-kde5
 		PRIVATE PLUGIN_INSTALL_DIR=\"${PLUGIN_INSTALL_DIR}\"
 		)
-
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kde5 ${CMAKE_DL_LIBS})
+	ENDIF(CMAKE_DL_LIBS)
+
+	# RpOverlayIconPluginForwarder
+	# TODO: Use kcoreaddons_add_plugin() for the JSON?
+	# https://github.com/owncloud/client/blob/master/shell_integration/dolphin/CMakeLists.txt
+	# TODO: Better name.
+	ADD_LIBRARY(overlayiconplugin_rom-properties-kde5 MODULE
+		RpOverlayIconPluginForwarder.cpp
+		RpOverlayIconPluginForwarder.hpp
+		)
+	SET_TARGET_PROPERTIES(overlayiconplugin_rom-properties-kde5 PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(overlayiconplugin_rom-properties-kde5)
+	TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kde5 KF5::KIOCore KF5::KIOWidgets)
+	TARGET_COMPILE_DEFINITIONS(overlayiconplugin_rom-properties-kde5
+		PRIVATE PLUGIN_INSTALL_DIR=\"${PLUGIN_INSTALL_DIR}\"
+		)
+	# Link in libdl if it's required for dlopen().
+	IF(CMAKE_DL_LIBS)
+		TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kde5 ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
 	# FIXME: Workaround for gcc-5.4.0 LTO bug.
@@ -187,6 +208,10 @@ IF(BUILD_KDE5)
 		LIBRARY DESTINATION "${KFMD_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
+	INSTALL(TARGETS overlayiconplugin_rom-properties-kde5
+		LIBRARY DESTINATION "${KFOV_PLUGIN_INSTALL_DIR}"
+		COMPONENT "plugin"
+		)
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde5.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
@@ -208,6 +233,14 @@ IF(BUILD_KDE5)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KFMD_PLUGIN_INSTALL_DIR}"
+				COMPONENT "debug"
+				)
+		ENDIF(DEBUG_FILENAME)
+
+		GET_TARGET_PROPERTY(DEBUG_FILENAME overlayiconplugin_rom-properties-kde5 PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KFOV_PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

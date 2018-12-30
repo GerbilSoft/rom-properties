@@ -1013,6 +1013,14 @@ int NintendoDS::loadFieldData(void)
 		return -EIO;
 	}
 
+#ifdef _WIN32
+	// Windows: 6 visible rows per RFT_LISTDATA.
+	static const int rows_visible = 6;
+#else
+	// Linux: 4 visible rows per RFT_LISTDATA.
+	static const int rows_visible = 4;
+#endif
+
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(13);	// Maximum of 13 fields.
@@ -1097,42 +1105,39 @@ int NintendoDS::loadFieldData(void)
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
 
-	// TODO: Also hide this for DSiWare SRLs?
-	if (!d->cia) {
-		static const char *const hw_bitfield_names[] = {
-			"Nintendo DS", "Nintendo DSi"
-		};
-		vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
-			hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
-		d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
-			v_hw_bitfield_names, 0, hw_type);
+	static const char *const hw_bitfield_names[] = {
+		"Nintendo DS", "Nintendo DSi"
+	};
+	vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
+		hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
+	d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
+		v_hw_bitfield_names, 0, hw_type);
 
-		// NDS Region.
-		// Only used for region locking on Chinese iQue DS consoles.
-		// Not displayed for DSiWare wrapped in 3DS CIA packages.
-		uint32_t nds_region = 0;
-		if (romHeader->nds_region & 0x80) {
-			nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
-		}
-		if (romHeader->nds_region & 0x40) {
-			nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
-		}
-		if (nds_region == 0) {
-			// No known region flags.
-			// Note that the Sonic Colors demo has 0x02 here.
-			nds_region = NintendoDSPrivate::NDS_REGION_FREE;
-		}
-
-		static const char *const nds_region_bitfield_names[] = {
-			NOP_C_("Region", "Region-Free"),
-			NOP_C_("Region", "South Korea"),
-			NOP_C_("Region", "China"),
-		};
-		vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
-		d->fields->addField_bitfield("DS Region",
-			v_nds_region_bitfield_names, 0, nds_region);
+	// NDS Region.
+	// Only used for region locking on Chinese iQue DS consoles.
+	// Not displayed for DSiWare wrapped in 3DS CIA packages.
+	uint32_t nds_region = 0;
+	if (romHeader->nds_region & 0x80) {
+		nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
 	}
+	if (romHeader->nds_region & 0x40) {
+		nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
+	}
+	if (nds_region == 0) {
+		// No known region flags.
+		// Note that the Sonic Colors demo has 0x02 here.
+		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
+	}
+
+	static const char *const nds_region_bitfield_names[] = {
+		NOP_C_("Region", "Region-Free"),
+		NOP_C_("Region", "South Korea"),
+		NOP_C_("Region", "China"),
+	};
+	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
+		"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+	d->fields->addField_bitfield("DS Region",
+		v_nds_region_bitfield_names, 0, nds_region);
 
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
@@ -1254,6 +1259,55 @@ int NintendoDS::loadFieldData(void)
 		}
 		d->fields->addField_ageRatings(C_("NintendoDS", "Age Rating"), age_ratings);
 
+		// Permissions and flags.
+		d->fields->addTab("Permissions");
+
+		// Permissions.
+		static const char *const dsi_permissions_bitfield_names[] = {
+			NOP_C_("NintendoDS|DSi_Permissions", "Common Key"),
+			NOP_C_("NintendoDS|DSi_Permissions", "AES Slot B"),
+			NOP_C_("NintendoDS|DSi_Permissions", "AES Slot C"),
+			NOP_C_("NintendoDS|DSi_Permissions", "SD Card"),
+			NOP_C_("NintendoDS|DSi_Permissions", "eMMC Access"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Game Card Power On"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Shared2 File"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Sign JPEG for Launcher"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Game Card NTR Mode"),
+			NOP_C_("NintendoDS|DSi_Permissions", "SSL Client Cert"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Sign JPEG for User"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Photo Read Access"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Photo Write Access"),
+			NOP_C_("NintendoDS|DSi_Permissions", "SD Card Read Access"),
+			NOP_C_("NintendoDS|DSi_Permissions", "SD Card Write Access"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Game Card Save Read Access"),
+			NOP_C_("NintendoDS|DSi_Permissions", "Game Card Save Write Access"),
+
+			// FIXME: How to handle unused entries for RFT_LISTDATA?
+			/*
+			// Bits 17-30 are not used.
+			nullptr, nullptr, nullptr,
+			nullptr, nullptr, nullptr, nullptr,
+			nullptr, nullptr, nullptr, nullptr,
+			nullptr, nullptr, nullptr,
+
+			NOP_C_("NintendoDS|DSi_Permissions", "Debug Key"),
+			*/
+		};
+
+		// Convert to vector<vector<string> > for RFT_LISTDATA.
+		auto vv_dsi_perm = new vector<vector<string> >();
+		vv_dsi_perm->resize(ARRAY_SIZE(dsi_permissions_bitfield_names));
+		for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
+			auto &data_row = vv_dsi_perm->at(i);
+			data_row.push_back(
+				dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
+					dsi_permissions_bitfield_names[i]));
+		}
+
+		d->fields->addField_listData(C_("NintendoDS", "Permissions"), nullptr, vv_dsi_perm,
+			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
+			le32_to_cpu(romHeader->dsi.access_control));
+
 		// Flags.
 		static const char *const dsi_flags_bitfield_names[] = {
 			// tr: Uses the DSi-specific touchscreen protocol.
@@ -1269,10 +1323,20 @@ int NintendoDS::loadFieldData(void)
 			NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
 			NOP_C_("NintendoDS|DSi_Flags", "Developer"),
 		};
-		vector<string> *const v_dsi_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-			"NintendoDS|DSi_Flags", dsi_flags_bitfield_names, ARRAY_SIZE(dsi_flags_bitfield_names));
-		d->fields->addField_bitfield("DSi Flags",
-			v_dsi_flags_bitfield_names, 3, le32_to_cpu(romHeader->dsi.flags));
+
+		// Convert to vector<vector<string> > for RFT_LISTDATA.
+		auto vv_dsi_flags = new vector<vector<string> >();
+		vv_dsi_flags->resize(ARRAY_SIZE(dsi_flags_bitfield_names));
+		for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
+			auto &data_row = vv_dsi_flags->at(i);
+			data_row.push_back(
+				dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
+					dsi_flags_bitfield_names[i]));
+		}
+
+		d->fields->addField_listData(C_("NintendoDS", "Flags"), nullptr, vv_dsi_flags,
+			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
+			romHeader->dsi.flags);
 	}
 
 	// Finished reading the field data.
@@ -1490,6 +1554,36 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool NintendoDS::hasDangerousPermissions(void) const
+{
+	// Load permissions.
+	// TODO: If this is DSiWare, check DSiWare permissions?
+	RP_D(const NintendoDS);
+
+	// If Game Card Power On is set, eMMC Access and SD Card must be off.
+	// This combination is normally not found in licensed games,
+	// and is only found in the system menu. Some homebrew titles
+	// might have this set, though.
+	const uint32_t dsi_access_control = le32_to_cpu(d->romHeader.dsi.access_control);
+	if (dsi_access_control & DSi_ACCESS_GAME_CARD_POWER_ON) {
+		// Game Card Power On is set.
+		if (dsi_access_control & (DSi_ACCESS_SD_CARD | DSi_ACCESS_eMMC_ACCESS)) {
+			// SD and/or eMMC is set.
+			// This combination is not allowed by Nintendo, and
+			// usually indicates some sort of homebrew.
+			return true;
+		}
+	}
+
+	// Not dangerous.
+	return false;
 }
 
 }

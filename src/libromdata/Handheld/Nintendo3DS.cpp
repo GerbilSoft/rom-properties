@@ -138,6 +138,29 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			};
 		} mxh;
 
+		// Permissions. (cached from headers)
+		struct {
+			bool isLoaded;		// True if perm is initialized.
+
+			// True if "dangerous" permissions are set.
+			// Note that this might not be set if it's a known
+			// system title with a non-zero signature.
+			bool isDangerous;
+
+			// ARM9 descriptor version.
+			uint8_t ioAccessVersion;
+
+			uint32_t fsAccess;		// ARM11 FS access
+			uint32_t ioAccess;		// ARM9 descriptors
+
+			// Services.
+			// Pointer to character array [34][8].
+			// NOTE: This is stored within the ExHeader struct.
+			// N3DS_SERVICE_MAX: 34 (number of services)
+			// N3DS_SERVICE_LEN: 8 (length of service name)
+			const char (*services)[N3DS_SERVICE_LEN];
+		} perm;
+
 		// Content chunk records. (CIA only)
 		// Loaded by loadTicketAndTMD().
 		unsigned int content_count;
@@ -154,7 +177,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 	public:
 		struct {
-			// for subclasses:
+			// For subclasses:
 			// - SMDH: reader uses ncch_f_icon
 			// - SRL: reader uses this->file
 			IDiscReader *reader;	// uses ncch_f_icon
@@ -249,11 +272,17 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		static inline string n3dsVersionToString(uint16_t version);
 
 		/**
+		 * Load the permissions values. (from ExHeader)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadPermissions(void);
+
+		/**
 		 * Add the Permissions fields. (part of ExHeader)
 		 * A separate tab should be created by the caller first.
-		 * @param pNcchExHeader NCCH ExHeader.
+		 * @return 0 on success; non-zero on error.
 		 */
-		void addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader);
+		int addFields_permissions(void);
 };
 
 /** Nintendo3DSPrivate **/
@@ -270,8 +299,9 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	img_icon[0] = nullptr;
 	img_icon[1] = nullptr;
 
-	// Clear the various headers.
+	// Clear the various structs.
 	memset(&mxh, 0, sizeof(mxh));
+	memset(&perm, 0, sizeof(perm));
 	memset(&sbptr, 0, sizeof(sbptr));
 }
 
@@ -1093,19 +1123,104 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 inline string Nintendo3DSPrivate::n3dsVersionToString(uint16_t version)
 {
 	// Reference: https://3dbrew.org/wiki/Titles
-	return rp_sprintf("%u.%u.%u",
+	return rp_sprintf("%u.%u.%u (v%u)",
 		(version >> 10),
 		(version >>  4) & 0x1F,
-		(version & 0x0F));
+		(version & 0x0F),
+		version);
+}
+
+/**
+ * Load the permissions values. (from ExHeader)
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::loadPermissions(void)
+{
+	if (perm.isLoaded) {
+		// Permissions have already been loaded.
+		return 0;
+	}
+
+	const NCCHReader *const ncch = loadNCCH();
+	if (!ncch || !ncch->isOpen()) {
+		// Can't open the primary NCCH.
+		return false;
+	}
+
+	// Get the NCCH Header.
+	// TODO: With signature?
+	const N3DS_NCCH_Header_NoSig_t *const ncch_header = ncch->ncchHeader();
+	if (!ncch_header) {
+		// Can't get the header.
+		return false;
+	}
+
+	// Get the NCCH Extended Header.
+	const N3DS_NCCH_ExHeader_t *const ncch_exheader = ncch->ncchExHeader();
+	if (!ncch_exheader) {
+		// Can't get the ExHeader.
+		return false;
+	}
+
+	// Save the permissions.
+	perm.fsAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm11_local.storage.fs_access));
+
+	// TODO: Other descriptor versions?
+	// v2 is standard; may be v3 on 9.3.0-X.
+	assert(ncch_exheader->aci.arm9.descriptor_version == 2 ||
+	       ncch_exheader->aci.arm9.descriptor_version == 3);
+	perm.ioAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm9.descriptors));
+	perm.ioAccessVersion = ncch_exheader->aci.arm9.descriptor_version;
+
+	// Save a pointer to the services array.
+	perm.services = ncch_exheader->aci.arm11_local.services;
+
+	// TODO: Ignore permissions on system titles.
+	// TODO: Check permissions on retail games and compare to this list.
+	static const uint32_t fsAccess_dangerous =
+		// mset has CategorySystemApplication set.
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication |
+		// TinyFormat has CategoryFilesystemTool set.
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool |
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo |
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw |
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite |
+		// mset has CategorySystemSettings set.
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings;
+	static const uint32_t ioAccess_dangerous =
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand |
+		N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3;
+
+	// Check for "dangerous" permissions.
+	if ((perm.fsAccess & fsAccess_dangerous) ||
+	    (perm.ioAccess & ioAccess_dangerous))
+	{
+		// One or more "dangerous" permissions are set.
+		// TODO: Also highlight "dangerous" permissions in the ROM Properties tab.
+		perm.isDangerous = true;
+	}
+
+	// We're done here.
+	return 0;
 }
 
 /**
  * Add the Permissions fields. (part of ExHeader)
  * A separate tab should be created by the caller first.
  * @param pNcchExHeader NCCH ExHeader.
+ * @return 0 on success; non-zero on error.
  */
-void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader)
+int Nintendo3DSPrivate::addFields_permissions(void)
 {
+	int ret = loadPermissions();
+	if (ret != 0) {
+		// Unable to load permissions.
+		return ret;
+	}
+
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
 	static const int rows_visible = 6;
@@ -1149,8 +1264,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	}
 
 	fields->addField_listData(C_("Nintendo3DS", "FS Access"), nullptr, vv_fs,
-		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-		static_cast<uint32_t>(le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access)));
+		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES, perm.fsAccess);
 
 	// ARM9 access.
 	static const char *const perm_arm9_access[] = {
@@ -1168,10 +1282,10 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 
 	// TODO: Other descriptor versions?
 	// v2 is standard; may be v3 on 9.3.0-X.
-	assert(pNcchExHeader->aci.arm9.descriptor_version == 2 ||
-	       pNcchExHeader->aci.arm9.descriptor_version == 3);
-	if (pNcchExHeader->aci.arm9.descriptor_version == 2 ||
-	    pNcchExHeader->aci.arm9.descriptor_version == 3)
+	assert(perm.ioAccessVersion == 2 ||
+	       perm.ioAccessVersion == 3);
+	if (perm.ioAccessVersion == 2 ||
+	    perm.ioAccessVersion == 3)
 	{
 		// Convert to vector<vector<string> > for RFT_LISTDATA.
 		auto vv_arm9 = new vector<vector<string> >();
@@ -1182,8 +1296,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		}
 
 		fields->addField_listData(C_("Nintendo3DS", "ARM9 Access"), nullptr, vv_arm9,
-			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-			static_cast<uint32_t>(le64_to_cpu(pNcchExHeader->aci.arm9.descriptors)));
+			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES, perm.ioAccess);
 	}
 
 	// Services. Each service is a maximum of 8 characters.
@@ -1191,9 +1304,9 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	// is 8 characters long, there won't be any NULLs.
 	// TODO: How to determine 32 or 34? (descriptor version?)
 	auto vv_svc = new vector<vector<string> >();
-	vv_svc->reserve(ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services));
-	const char *svc = &pNcchExHeader->aci.arm11_local.services[0][0];
-	for (int i = 0; i < ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services); i++, svc += 8) {
+	vv_svc->reserve(N3DS_SERVICE_MAX);
+	const char *svc = perm.services[0];
+	for (int i = 0; i < N3DS_SERVICE_MAX; i++, svc += N3DS_SERVICE_LEN) {
 		if (svc[0] == 0) {
 			// End of service list.
 			break;
@@ -1203,7 +1316,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		// TODO: Service descriptions?
 		vv_svc->resize(vv_svc->size()+1);
 		auto &data_row = vv_svc->at(vv_svc->size()-1);
-		data_row.push_back(latin1_to_utf8(svc, 8));
+		data_row.push_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
 	}
 
 	if (likely(!vv_svc->empty())) {
@@ -1212,6 +1325,8 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		// No services.
 		delete vv_svc;
 	}
+
+	return 0;
 }
 
 /** Nintendo3DS **/
@@ -1712,6 +1827,7 @@ int Nintendo3DS::loadFieldData(void)
 	// If this fails, and the file type is NCSD or CIA,
 	// it usually means there's a missing key.
 	const NCCHReader *const ncch = d->loadNCCH();
+
 	// Check for potential encryption key errors.
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI ||
 	    d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA ||
@@ -1774,6 +1890,15 @@ int Nintendo3DS::loadFieldData(void)
 				// (Include the content type, if available.)
 				haveSeparateSMDHTab = false;
 				d->addTitleIdAndProductCodeFields(true);
+			}
+
+			// Do we have additional tabs?
+			// TODO: Combine "DSiWare" (tab 0) and "DSi" (tab 1)?
+			const int subtab_count = srl_fields->tabCount();
+			if (subtab_count > 1) {
+				for (int subtab = 1; subtab < subtab_count; subtab++) {
+					d->fields->setTabName(subtab, srl_fields->tabName(subtab));
+				}
 			}
 
 			// Add the DSiWare fields.
@@ -2359,7 +2484,7 @@ int Nintendo3DS::loadFieldData(void)
 		// ExHeader, but we're using a separate tab because
 		// there's a lot of them.
 		d->fields->addTab(C_("Nintendo3DS", "Permissions"));
-		d->addFields_permissions(ncch_exheader);
+		d->addFields_permissions();
 	}
 
 	// Finished reading the field data.
@@ -2399,6 +2524,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		// Load the SMDH section.
 		if (d->loadSMDH() != 0) {
 			// Error loading the SMDH section.
+			*pImage = nullptr;
 			return -EIO;
 		}
 	}
@@ -2648,6 +2774,33 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 
 	// All URLs added.
 	return 0;
+}
+
+/**
+ * Does this ROM image have "dangerous" permissions?
+ *
+ * @return True if the ROM image has "dangerous" permissions; false if not.
+ */
+bool Nintendo3DS::hasDangerousPermissions(void) const
+{
+	RP_D(const Nintendo3DS);
+
+	// Check for DSiWare.
+	// TODO: Check d->sbptr.srl.data first?
+	int ret = const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
+	if (ret == 0 && d->sbptr.srl.data) {
+		// DSiWare: Check DSi permissions.
+		return d->sbptr.srl.data->hasDangerousPermissions();
+	}
+
+	// Load permissions.
+	ret = const_cast<Nintendo3DSPrivate*>(d)->loadPermissions();
+	if (ret != 0) {
+		// Can't load permissions.
+		return false;
+	}
+
+	return d->perm.isDangerous;
 }
 
 }

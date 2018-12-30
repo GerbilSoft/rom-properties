@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * RP_PropertyStore.hpp: IPropertyStore implementation.                    *
+ * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -18,8 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_HPP__
-#define __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_HPP__
+#ifndef __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_HPP__
+#define __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_HPP__
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -30,28 +30,28 @@
 
 // CLSID
 extern "C" {
-	extern const CLSID CLSID_RP_PropertyStore;
+	extern const CLSID CLSID_RP_ShellIconOverlayIdentifier;
 }
 
 namespace LibWin32Common {
 	class RegKey;
 }
 
-class RP_PropertyStore_Private;
+class RP_ShellIconOverlayIdentifier_Private;
 
-class UUID_ATTR("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
-RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities>
+class UUID_ATTR("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
+RP_ShellIconOverlayIdentifier : public LibWin32Common::ComBase<IShellIconOverlayIdentifier>
 {
 	public:
-		RP_PropertyStore();
-		virtual ~RP_PropertyStore();
+		RP_ShellIconOverlayIdentifier();
+		virtual ~RP_ShellIconOverlayIdentifier();
 
 	private:
-		typedef LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities> super;
-		RP_DISABLE_COPY(RP_PropertyStore)
+		typedef LibWin32Common::ComBase<IShellIconOverlayIdentifier> super;
+		RP_DISABLE_COPY(RP_ShellIconOverlayIdentifier)
 	private:
-		friend class RP_PropertyStore_Private;
-		RP_PropertyStore_Private *const d_ptr;
+		friend class RP_ShellIconOverlayIdentifier_Private;
+		RP_ShellIconOverlayIdentifier_Private *const d_ptr;
 
 	public:
 		// IUnknown
@@ -65,45 +65,21 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 		static LONG RegisterCLSID(void);
 
 		/**
-		 * Register the file type handler.
-		 * @param hklm HKEY_LOCAL_MACHINE or user-specific root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hklm, LPCWSTR ext);
-
-		/**
 		 * Unregister the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterCLSID(void);
 
-		/**
-		 * Unregister the file type handler.
-		 * @param hklm HKEY_LOCAL_MACHINE or user-specific root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hklm, LPCWSTR ext);
-
 	public:
-		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;
-
-		// IPropertyStore
-		IFACEMETHODIMP Commit(void) final;
-		IFACEMETHODIMP GetAt(_In_ DWORD iProp, _Out_ PROPERTYKEY *pkey) final;
-		IFACEMETHODIMP GetCount(_Out_ DWORD *cProps) final;
-		IFACEMETHODIMP GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVARIANT *pv) final;
-		IFACEMETHODIMP SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPVARIANT propvar) final;
-
-		// IPropertyStoreCapabilities
-		IFACEMETHODIMP IsPropertyWritable(REFPROPERTYKEY key) final;
+		// IShellIconOverlayIdentifier
+		IFACEMETHODIMP IsMemberOf(_In_ PCWSTR pwszPath, DWORD dwAttrib) final;
+		IFACEMETHODIMP GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags);
+		IFACEMETHODIMP GetPriority(_Out_ int *pPriority);
 };
 
 #ifdef __CRT_UUID_DECL
 // Required for MinGw-w64 __uuidof() emulation.
-__CRT_UUID_DECL(RP_PropertyStore, 0x4a1e3510, 0x50bd, 0x4b03, 0xa8, 0x01, 0xe4, 0xc9, 0x54, 0xf4, 0x3b, 0x96)
+__CRT_UUID_DECL(RP_ShellIconOverlayIdentifier, 0x02c6Af01, 0x3c99, 0x497d, 0xb3, 0xfc, 0xe3, 0x8c, 0xe5, 0x26, 0x78, 0x6b);
 #endif
 
-#endif /* __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_HPP__ */
+#endif /* __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_HPP__ */

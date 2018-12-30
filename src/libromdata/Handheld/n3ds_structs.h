@@ -721,6 +721,8 @@ typedef enum {
  *
  * All fields are little-endian.
  */
+#define N3DS_SERVICE_MAX 34
+#define N3DS_SERVICE_LEN 8
 typedef struct PACKED _N3DS_NCCH_ExHeader_ACI_t {
 	// [0x000]
 	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM11_Local_System_Capabilities
@@ -756,7 +758,7 @@ typedef struct PACKED _N3DS_NCCH_ExHeader_ACI_t {
 		// Prior to 9.3.0-X, only 32 services were allowed.
 		// 9.3.0-X adds an extra 2 service slots.
 		// Reference: https://3dbrew.org/wiki/9.3.0-21#NATIVE_FIRM
-		char services[34][8];		// [0x050] Services.
+		char services[N3DS_SERVICE_MAX][N3DS_SERVICE_LEN]; // [0x050] Services.
 
 		uint8_t reserved[15];		// [0x160]
 		uint8_t res_limit_category;	// [0x16F] See N3DS_NCCH_ExHeader_ACI_ResLimit_Category.

@@ -290,7 +290,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file.get(), true);
+	RomData *romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_THUMBNAIL);
 	file.reset(nullptr);	// file is dup()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.

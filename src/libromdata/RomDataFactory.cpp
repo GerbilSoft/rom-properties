@@ -124,7 +124,7 @@ class RomDataFactoryPrivate
 			pfnNewRomData_t newRomData;
 			pfnSupportedFileExtensions_t supportedFileExtensions;
 			pfnSupportedMimeTypes_t supportedMimeTypes;
-			bool hasThumbnail;
+			unsigned int attrs;
 
 			// Extra fields for files whose headers
 			// appear at specific addresses.
@@ -142,19 +142,19 @@ class RomDataFactoryPrivate
 			return new klass(file);
 		}
 
-#define GetRomDataFns(sys, hasThumbnail) \
+#define GetRomDataFns(sys, attrs) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::supportedFileExtensions_static, \
 	 sys::supportedMimeTypes_static, \
-	 hasThumbnail, 0, 0}
+	 attrs, 0, 0}
 
-#define GetRomDataFns_addr(sys, hasThumbnail, address, size) \
+#define GetRomDataFns_addr(sys, attrs, address, size) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
 	 sys::supportedFileExtensions_static, \
 	 sys::supportedMimeTypes_static, \
-	 hasThumbnail, address, size}
+	 attrs, address, size}
 
 		// RomData subclasses that use a header at 0 and
 		// definitely have a 32-bit magic number in the header.
@@ -214,93 +214,97 @@ vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
 pthread_once_t RomDataFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
 pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 
+#define ATTR_NONE RomDataFactory::RDA_NONE
+#define ATTR_HAS_THUMBNAIL RomDataFactory::RDA_HAS_THUMBNAIL
+#define ATTR_HAS_DPOVERLAY RomDataFactory::RDA_HAS_DPOVERLAY
+
 // TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
-	GetRomDataFns_addr(WiiWIBN, true, 0, 'WIBN'),
+	GetRomDataFns_addr(WiiWIBN, RomDataFactory::RDA_HAS_THUMBNAIL, 0, 'WIBN'),
 
 	// Handhelds
-	GetRomDataFns_addr(DMG, false, 0x104, 0xCEED6666),
-	GetRomDataFns_addr(GameBoyAdvance, false, 0x04, 0x24FFAE51),
-	GetRomDataFns_addr(Lynx, false, 0, 'LYNX'),
-	GetRomDataFns_addr(Nintendo3DSFirm, false, 0, 'FIRM'),
-	GetRomDataFns_addr(Nintendo3DS_SMDH, true, 0, 'SMDH'),
+	GetRomDataFns_addr(DMG, ATTR_NONE, 0x104, 0xCEED6666),
+	GetRomDataFns_addr(GameBoyAdvance, ATTR_NONE, 0x04, 0x24FFAE51),
+	GetRomDataFns_addr(Lynx, ATTR_NONE, 0, 'LYNX'),
+	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
+	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL, 0, 'SMDH'),
 
 	// Textures
-	GetRomDataFns_addr(DirectDrawSurface, true, 0, 'DDS '),
+	GetRomDataFns_addr(DirectDrawSurface, ATTR_HAS_THUMBNAIL, 0, 'DDS '),
 #ifdef ENABLE_GL
-	GetRomDataFns_addr(KhronosKTX, true, 0, (uint32_t)'\xABKTX'),
+	GetRomDataFns_addr(KhronosKTX, ATTR_HAS_THUMBNAIL, 0, (uint32_t)'\xABKTX'),
 #endif /* ENABLE_GL */
-	GetRomDataFns_addr(ValveVTF, true, 0, 'VTF\0'),
-	GetRomDataFns_addr(ValveVTF3, true, 0, 'VTF3'),
+	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL, 0, 'VTF\0'),
+	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL, 0, 'VTF3'),
 
 	// Audio
-	GetRomDataFns_addr(GBS, false, 0, 'GBS\x01'),
-	GetRomDataFns_addr(NSF, false, 0, 'NESM'),
-	GetRomDataFns_addr(SPC, false, 0, 'SNES'),
-	GetRomDataFns_addr(VGM, false, 0, 'Vgm '),
+	GetRomDataFns_addr(GBS, ATTR_NONE, 0, 'GBS\x01'),
+	GetRomDataFns_addr(NSF, ATTR_NONE, 0, 'NESM'),
+	GetRomDataFns_addr(SPC, ATTR_NONE, 0, 'SNES'),
+	GetRomDataFns_addr(VGM, ATTR_NONE, 0, 'Vgm '),
 
 	// Other
-	GetRomDataFns_addr(ELF, false, 0, '\177ELF'),
+	GetRomDataFns_addr(ELF, ATTR_NONE, 0, '\177ELF'),
 
-	{nullptr, nullptr, nullptr, nullptr, false, 0, 0}
+	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	// Consoles
-	GetRomDataFns(Dreamcast, true),
-	GetRomDataFns(DreamcastSave, true),
-	GetRomDataFns(GameCube, true),
-	GetRomDataFns(GameCubeBNR, true),
-	GetRomDataFns(GameCubeSave, true),
-	GetRomDataFns(MegaDrive, false),
-	GetRomDataFns(N64, false),
-	GetRomDataFns(NES, false),
-	GetRomDataFns(SNES, false),
-	GetRomDataFns(SegaSaturn, false),
-	GetRomDataFns(WiiSave, true),
-	GetRomDataFns(WiiU, true),
-	GetRomDataFns(WiiWAD, true),
+	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(MegaDrive, ATTR_NONE),
+	GetRomDataFns(N64, ATTR_NONE),
+	GetRomDataFns(NES, ATTR_NONE),
+	GetRomDataFns(SNES, ATTR_NONE),
+	GetRomDataFns(SegaSaturn, ATTR_NONE),
+	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(WiiU, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL),
 
 	// Handhelds
-	GetRomDataFns(Nintendo3DS, true),
-	GetRomDataFns(NintendoDS, true),
+	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
+	GetRomDataFns(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
 
 	// Textures
-	GetRomDataFns(SegaPVR, true),
+	GetRomDataFns(SegaPVR, ATTR_HAS_THUMBNAIL),
 
 	// Audio
-	GetRomDataFns(ADX, false),
-	GetRomDataFns(PSF, false),
-	GetRomDataFns(SAP, false),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
-	GetRomDataFns(SNDH, false),	// "SNDH", or "ICE!" or "Ice!" if packed.
-	GetRomDataFns(SID, false),	// PSID/RSID; maybe move to _magic[]?
+	GetRomDataFns(ADX, ATTR_NONE),
+	GetRomDataFns(PSF, ATTR_NONE),
+	GetRomDataFns(SAP, ATTR_NONE),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
+	GetRomDataFns(SNDH, ATTR_NONE),	// "SNDH", or "ICE!" or "Ice!" if packed.
+	GetRomDataFns(SID, ATTR_NONE),	// PSID/RSID; maybe move to _magic[]?
 
 	// Other
-	GetRomDataFns(Amiibo, true),
-	GetRomDataFns(NintendoBadge, true),
+	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL),
 
 	// The following formats have 16-bit magic numbers,
 	// so they should go at the end of the address=0 section.
-	GetRomDataFns(EXE, false),	// TODO: Thumbnailing on non-Windows platforms.
-	GetRomDataFns(PlayStationSave, true),
+	GetRomDataFns(EXE, ATTR_NONE),	// TODO: Thumbnailing on non-Windows platforms.
+	GetRomDataFns(PlayStationSave, ATTR_HAS_THUMBNAIL),
 
 	// NOTE: game.com may be at either 0 or 0x40000.
 	// The 0x40000 address is checked below.
-	GetRomDataFns(GameCom, true),
+	GetRomDataFns(GameCom, ATTR_HAS_THUMBNAIL),
 
 	// Headers with non-zero addresses.
-	GetRomDataFns_addr(Sega8Bit, false, 0x7FE0, 0x20),
+	GetRomDataFns_addr(Sega8Bit, ATTR_NONE, 0x7FE0, 0x20),
 	// NOTE: game.com may be at either 0 or 0x40000.
 	// The 0 address is checked above.
-	GetRomDataFns_addr(GameCom, true, 0x40000, 0x20),
+	GetRomDataFns_addr(GameCom, ATTR_HAS_THUMBNAIL, 0x40000, 0x20),
 
-	{nullptr, nullptr, nullptr, nullptr, false, 0, 0}
+	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
-	GetRomDataFns(VirtualBoy, false),
-	{nullptr, nullptr, nullptr, nullptr, false, 0, 0}
+	GetRomDataFns(VirtualBoy, ATTR_NONE),
+	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 /**
@@ -372,21 +376,21 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 /** RomDataFactory **/
 
 /**
- * Create a RomData class for the specified ROM file.
+ * Create a RomData subclass for the specified ROM file.
  *
  * NOTE: RomData::isValid() is checked before returning a
  * created RomData instance, so returned objects can be
  * assumed to be valid as long as they aren't nullptr.
  *
  * If imgbf is non-zero, at least one of the specified image
- * types must be supported by the RomData class in order to
+ * types must be supported by the RomData subclass in order to
  * be returned.
  *
  * @param file ROM file.
- * @param thumbnail If true, RomData class must support at least one image type.
- * @return RomData class, or nullptr if the ROM isn't supported.
+ * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+ * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
+RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 {
 	RomData::DetectInfo info;
 
@@ -440,9 +444,9 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_magic[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		if (thumbnail && !fns->hasThumbnail) {
-			// Thumbnail is requested, but this RomData class
-			// doesn't support any images.
+		if ((fns->attrs & attrs) != attrs) {
+			// This RomData subclass doesn't have the
+			// required attributes.
 			continue;
 		}
 
@@ -471,9 +475,9 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 	// but don't have a simple 32-bit magic number check.
 	fns = &RomDataFactoryPrivate::romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		if (thumbnail && !fns->hasThumbnail) {
-			// Thumbnail is requested, but this RomData class
-			// doesn't support any images.
+		if ((fns->attrs & attrs) != attrs) {
+			// This RomData subclass doesn't have the
+			// required attributes.
 			continue;
 		}
 
@@ -545,9 +549,9 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 	bool readFooter = false;
 	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		if (thumbnail && !fns->hasThumbnail) {
-			// Thumbnail is requested, but this RomData class
-			// doesn't support any images.
+		if ((fns->attrs & attrs) != attrs) {
+			// This RomData subclass doesn't have the
+			// required attributes.
 			continue;
 		}
 
@@ -607,7 +611,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	// then the thumbnail handlers will be registered.
 	//
 	// The actual data is stored in the vector<ExtInfo>.
-	unordered_map<string, bool> map_exts;
+	unordered_map<string, unsigned int> map_exts;
 
 	static const size_t reserve_size =
 		(ARRAY_SIZE(romDataFns_magic) +
@@ -640,21 +644,21 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 				auto iter = map_exts.find(*sys_exts);
 				if (iter != map_exts.end()) {
 					// We already had this extension.
-					// Update its thumbnail status.
-					iter->second = fns->hasThumbnail;
+					// Update its attributes.
+					iter->second |= fns->attrs;
 				} else {
 					// First time encountering this extension.
-					map_exts[*sys_exts] = fns->hasThumbnail;
+					map_exts[*sys_exts] = fns->attrs;
 					vec_exts.push_back(RomDataFactory::ExtInfo(
-						*sys_exts, fns->hasThumbnail));
+						*sys_exts, fns->attrs));
 				}
 			}
 		}
 	}
 
-	// Make sure the vector's thumbnail status is up to date.
+	// Make sure the vector's attributes fields are up to date.
 	for (auto iter = vec_exts.begin(); iter != vec_exts.end(); ++iter) {
-		iter->hasThumbnail = map_exts[iter->ext];
+		iter->attrs = map_exts[iter->ext];
 	}
 }
 
@@ -663,7 +667,8 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
  * Used for Win32 COM registration.
  *
  * NOTE: The return value is a struct that includes a flag
- * indicating if the file type handler supports thumbnails.
+ * indicating if the file type handler supports thumbnails
+ * and/or may have "dangerous" permissions.
  *
  * @return All supported file extensions, including the leading dot.
  */

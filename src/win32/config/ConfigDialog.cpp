@@ -56,7 +56,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
-#include "DownloadsTab.hpp"
+#include "OptionsTab.hpp"
 #include "CacheTab.hpp"
 #ifdef ENABLE_DECRYPTION
 # include "KeyManagerTab.hpp"
@@ -125,7 +125,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	tabs[0] = new ImageTypesTab();
 	hpsp[0] = tabs[0]->getHPropSheetPage();
 	// Download configuration.
-	tabs[1] = new DownloadsTab();
+	tabs[1] = new OptionsTab();
 	hpsp[1] = tabs[1]->getHPropSheetPage();
 	// Thumbnail cache.
 	// References:

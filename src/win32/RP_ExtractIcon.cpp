@@ -155,7 +155,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	d->romData = RomDataFactory::create(file.get(), true);
+	d->romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_THUMBNAIL);
 
 	// NOTE: Since this is the registered icon handler
 	// for the file type, we have to implement our own

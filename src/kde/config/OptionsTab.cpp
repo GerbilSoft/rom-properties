@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * DownloadsTab.cpp: Downloads tab for rp-config.                          *
+ * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "DownloadsTab.hpp"
+#include "OptionsTab.hpp"
 
 // librpbase
 #include "librpbase/config/Config.hpp"
@@ -27,43 +27,43 @@ using LibRpBase::Config;
 // C includes. (C++ namespace)
 #include <cassert>
 
-#include "ui_DownloadsTab.h"
-class DownloadsTabPrivate
+#include "ui_OptionsTab.h"
+class OptionsTabPrivate
 {
 	public:
-		explicit DownloadsTabPrivate();
+		explicit OptionsTabPrivate();
 
 	private:
-		Q_DISABLE_COPY(DownloadsTabPrivate)
+		Q_DISABLE_COPY(OptionsTabPrivate)
 
 	public:
-		Ui::DownloadsTab ui;
+		Ui::OptionsTab ui;
 
 	public:
 		// Has the user changed anything?
 		bool changed;
 };
 
-/** DownloadsTabPrivate **/
+/** OptionsTabPrivate **/
 
-DownloadsTabPrivate::DownloadsTabPrivate()
+OptionsTabPrivate::OptionsTabPrivate()
 	: changed(false)
 { }
 
-/** DownloadsTab **/
+/** OptionsTab **/
 
-DownloadsTab::DownloadsTab(QWidget *parent)
+OptionsTab::OptionsTab(QWidget *parent)
 	: super(parent)
-	, d_ptr(new DownloadsTabPrivate())
+	, d_ptr(new OptionsTabPrivate())
 {
-	Q_D(DownloadsTab);
+	Q_D(OptionsTab);
 	d->ui.setupUi(this);
 
 	// Load the current configuration.
 	reset();
 }
 
-DownloadsTab::~DownloadsTab()
+OptionsTab::~OptionsTab()
 {
 	delete d_ptr;
 }
@@ -72,11 +72,11 @@ DownloadsTab::~DownloadsTab()
  * Widget state has changed.
  * @param event State change event.
  */
-void DownloadsTab::changeEvent(QEvent *event)
+void OptionsTab::changeEvent(QEvent *event)
 {
 	if (event->type() == QEvent::LanguageChange) {
 		// Retranslate the UI.
-		Q_D(DownloadsTab);
+		Q_D(OptionsTab);
 		d->ui.retranslateUi(this);
 	}
 
@@ -87,15 +87,16 @@ void DownloadsTab::changeEvent(QEvent *event)
 /**
  * Reset the configuration.
  */
-void DownloadsTab::reset(void)
+void OptionsTab::reset(void)
 {
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
 
-	Q_D(DownloadsTab);
+	Q_D(OptionsTab);
 	d->ui.chkExtImgDownloadEnabled->setChecked(config->extImgDownloadEnabled());
 	d->ui.chkUseIntIconForSmallSizes->setChecked(config->useIntIconForSmallSizes());
 	d->ui.chkDownloadHighResScans->setChecked(config->downloadHighResScans());
+	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
 }
 
 /**
@@ -103,16 +104,17 @@ void DownloadsTab::reset(void)
  * This does NOT save, and will only emit modified()
  * if it's different from the current configuration.
  */
-void DownloadsTab::loadDefaults(void)
+void OptionsTab::loadDefaults(void)
 {
 	// TODO: Get the defaults from Config.
 	// For now, hard-coding everything here.
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
+	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	bool isDefChanged = false;
 
-	Q_D(DownloadsTab);
+	Q_D(OptionsTab);
 	if (d->ui.chkExtImgDownloadEnabled->isChecked() != extImgDownloadEnabled_default) {
 		d->ui.chkExtImgDownloadEnabled->setChecked(extImgDownloadEnabled_default);
 		isDefChanged = true;
@@ -123,6 +125,13 @@ void DownloadsTab::loadDefaults(void)
 	}
 	if (d->ui.chkDownloadHighResScans->isChecked() != downloadHighResScans_default) {
 		d->ui.chkDownloadHighResScans->setChecked(downloadHighResScans_default);
+		isDefChanged = true;
+	}
+	if (d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked() !=
+		showDangerousPermissionsOverlayIcon_default)
+	{
+		d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(
+			showDangerousPermissionsOverlayIcon_default);
 		isDefChanged = true;
 	}
 
@@ -136,14 +145,14 @@ void DownloadsTab::loadDefaults(void)
  * Save the configuration.
  * @param pSettings QSettings object.
  */
-void DownloadsTab::save(QSettings *pSettings)
+void OptionsTab::save(QSettings *pSettings)
 {
 	assert(pSettings != nullptr);
 	if (!pSettings)
 		return;
 
 	// Save the configuration.
-	Q_D(const DownloadsTab);
+	Q_D(const OptionsTab);
 	pSettings->beginGroup(QLatin1String("Downloads"));
 	pSettings->setValue(QLatin1String("ExtImageDownload"),
 		d->ui.chkExtImgDownloadEnabled->isChecked());
@@ -152,15 +161,21 @@ void DownloadsTab::save(QSettings *pSettings)
 	pSettings->setValue(QLatin1String("DownloadHighResScans"),
 		d->ui.chkDownloadHighResScans->isChecked());
 	pSettings->endGroup();
+
+	pSettings->beginGroup(QLatin1String("Options"));
+	pSettings->setValue(QLatin1String("ShowDangerousPermissionsOverlayIcon"),
+		d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked());
+	pSettings->endGroup();
 }
 
 /**
  * A checkbox was clicked.
  */
-void DownloadsTab::checkBox_clicked(void)
+void OptionsTab::checkBox_clicked(void)
 {
 	// Configuration has been changed.
-	Q_D(DownloadsTab);
+	Q_D(OptionsTab);
 	d->changed = true;
+	printf("MOO\n");
 	emit modified();
 }

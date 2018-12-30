@@ -525,6 +525,14 @@ class RomData
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
 		virtual const IconAnimData *iconAnimData(void) const;
+
+	public:
+		/**
+		 * Does this ROM image have "dangerous" permissions?
+		 *
+		 * @return True if the ROM image has "dangerous" permissions; false if not.
+		 */
+		virtual bool hasDangerousPermissions(void) const;
 };
 
 }

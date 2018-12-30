@@ -43,29 +43,43 @@ class RomDataFactory
 
 	public:
 		/**
-		 * Create a RomData class for the specified ROM file.
+		 * Bitfield of RomData subclass attributes.
+		 */
+		enum RomDataAttr {
+			// RomData subclass has no attributes.
+			RDA_NONE		= 0,
+
+			// RomData subclass has thumbnails.
+			RDA_HAS_THUMBNAIL	= (1 << 0),
+
+			// RomData subclass may have "dangerous" permissions.
+			RDA_HAS_DPOVERLAY	= (1 << 1),
+		};
+
+		/**
+		 * Create a RomData subclass for the specified ROM file.
 		 *
 		 * NOTE: RomData::isValid() is checked before returning a
 		 * created RomData instance, so returned objects can be
 		 * assumed to be valid as long as they aren't nullptr.
 		 *
 		 * If imgbf is non-zero, at least one of the specified image
-		 * types must be supported by the RomData class in order to
+		 * types must be supported by the RomData subclass in order to
 		 * be returned.
 		 *
 		 * @param file ROM file.
-		 * @param thumbnail If true, RomData class must support at least one image type.
-		 * @return RomData class, or nullptr if the ROM isn't supported.
+		 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+		 * @return RomData subclass, or nullptr if the ROM isn't supported.
 		 */
-		static LibRpBase::RomData *create(LibRpBase::IRpFile *file, bool thumbnail = false);
+		static LibRpBase::RomData *create(LibRpBase::IRpFile *file, unsigned int attrs = 0);
 
 		struct ExtInfo {
 			const char *ext;
-			bool hasThumbnail;
+			unsigned int attrs;
 
-			ExtInfo(const char *ext, bool hasThumbnail)
+			ExtInfo(const char *ext, unsigned int attrs)
 				: ext(ext)
-				, hasThumbnail(hasThumbnail)
+				, attrs(attrs)
 				{ }
 		};
 
@@ -74,7 +88,8 @@ class RomDataFactory
 		 * Used for Win32 COM registration.
 		 *
 		 * NOTE: The return value is a struct that includes a flag
-		 * indicating if the file type handler supports thumbnails.
+		 * indicating if the file type handler supports thumbnails
+		 * and/or may have "dangerous" permissions.
 		 *
 		 * @return All supported file extensions, including the leading dot.
 		 */

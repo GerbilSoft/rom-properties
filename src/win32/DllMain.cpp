@@ -38,6 +38,7 @@
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_PropertyStore.hpp"
+#include "RP_ShellIconOverlayIdentifier.hpp"
 
 // libwin32common
 #include "libwin32common/ComBase.hpp"
@@ -182,6 +183,7 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	else CHECK_INTERFACE(RP_ShellPropSheetExt)
 	else CHECK_INTERFACE(RP_ThumbnailProvider)
 	else CHECK_INTERFACE(RP_PropertyStore)
+	else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
 	else {
 		// Class not available.
 		hr = CLASS_E_CLASSNOTAVAILABLE;
@@ -247,7 +249,7 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
-	if (extInfo.hasThumbnail) {
+	if (extInfo.attrs & RomDataFactory::RDA_HAS_THUMBNAIL) {
 		// Register the thumbnail handlers.
 		lResult = RP_ExtractIcon::RegisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
@@ -457,7 +459,7 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
 		progID_u8.c_str(),
-		ext_info.hasThumbnail
+		ext_info.attrs
 	);
 
 	// Does HKCR\\progID exist?
@@ -528,7 +530,7 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 	string progID_u8 = W2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
 		progID_u8.c_str(),
-		ext_info.hasThumbnail
+		ext_info.attrs
 	);
 
 	// Does HKCR\\progID exist?
@@ -603,6 +605,8 @@ STDAPI DllRegisterServer(void)
 	lResult = RP_ThumbnailProvider::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_PropertyStore::RegisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ShellIconOverlayIdentifier::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
@@ -706,6 +710,8 @@ STDAPI DllUnregisterServer(void)
 	lResult = RP_ThumbnailProvider::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_PropertyStore::UnregisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ShellIconOverlayIdentifier::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.

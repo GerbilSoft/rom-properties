@@ -21,13 +21,15 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider_Fallback.cpp
 	RP_PropertyStore.cpp
 	RP_PropertyStore_Register.cpp
+	RP_ShellIconOverlayIdentifier.cpp
+	RP_ShellIconOverlayIdentifier_Register.cpp
 	CreateThumbnail.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
 	config/ITab.cpp
 	config/ImageTypesTab.cpp
-	config/DownloadsTab.cpp
+	config/OptionsTab.cpp
 	config/CacheTab.cpp
 	config/AboutTab.cpp
 	)
@@ -44,13 +46,15 @@ SET(rom-properties-win32_H
 	RP_ThumbnailProvider_p.hpp
 	RP_PropertyStore.hpp
 	RP_PropertyStore_p.hpp
+	RP_ShellIconOverlayIdentifier.hpp
+	RP_ShellIconOverlayIdentifier_p.hpp
 	CreateThumbnail.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
-	config/DownloadsTab.hpp
+	config/OptionsTab.hpp
 	config/CacheTab.hpp
 	config/AboutTab.hpp
 	res/resource.h
@@ -144,7 +148,7 @@ TARGET_LINK_LIBRARIES(rom-properties PRIVATE cachemgr romdata rpbase win32common
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 propsys)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 propsys shell32)
 # Required by InitPropVariantFromString().
 # TODO: Write our own version that doesn't use SHStrDupW()?
 TARGET_LINK_LIBRARIES(rom-properties PRIVATE shlwapi)
