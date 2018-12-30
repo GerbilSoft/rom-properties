@@ -120,6 +120,13 @@ class Config : public ConfReader
 		 * @return True if we should download high-resolution scans; false if not.
 		 */
 		bool downloadHighResScans(void) const;
+
+		/**
+		 * Show an overlay icon for "dangerous" permissions?
+		 * NOTE: Call load() before using this function.
+		 * @return True if we should show the overlay icon; false if not.
+		 */
+		bool showDangerousPermissionsOverlayIcon(void) const;
 };
 
 }

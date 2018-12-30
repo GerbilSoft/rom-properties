@@ -26,6 +26,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
+#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -101,6 +102,12 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 		return E_POINTER;
 	}
 
+	const Config *const config = Config::instance();
+	if (!config->showDangerousPermissionsOverlayIcon()) {
+		// Overlay icon is disabled.
+		return S_FALSE;
+	}
+
 	// Don't check the file if it's "slow", unavailable, or a directory.
 	if (dwAttrib & (SFGAO_ISSLOW | SFGAO_GHOSTED | SFGAO_FOLDER)) {
 		// Don't bother checking this file.
@@ -166,6 +173,12 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetPriority(_Out_ int *pPriority)
 {
 	if (!pPriority) {
 		return E_POINTER;
+	}
+
+	const Config *const config = Config::instance();
+	if (!config->showDangerousPermissionsOverlayIcon()) {
+		// Overlay icon is disabled.
+		return S_FALSE;
 	}
 
 	// Use the higest priority for the UAC icon.

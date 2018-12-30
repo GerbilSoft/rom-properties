@@ -28,9 +28,11 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/file/RpFile.hpp"
+#include "librpbase/config/Config.hpp"
 using LibRpBase::RomData;
 using LibRpBase::IRpFile;
 using LibRpBase::RpFile;
+using LibRpBase::Config;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -86,6 +88,12 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 {
 	// TODO: Check for slow devices and/or cache this?
 	QStringList sl;
+
+	const Config *const config = Config::instance();
+	if (!config->showDangerousPermissionsOverlayIcon()) {
+		// Overlay icon is disabled.
+		return sl;
+	}
 
 	// FIXME: KFileItem's localPath() isn't working here for some reason.
 	// We'll handle desktop:/ manually.

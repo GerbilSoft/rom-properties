@@ -104,6 +104,7 @@ class ConfigPrivate : public ConfReaderPrivate
 		bool extImgDownloadEnabled;
 		bool useIntIconForSmallSizes;
 		bool downloadHighResScans;
+		bool showDangerousPermissionsOverlayIcon;
 };
 
 /** ConfigPrivate **/
@@ -137,6 +138,8 @@ ConfigPrivate::ConfigPrivate()
 	, extImgDownloadEnabled(true)
 	, useIntIconForSmallSizes(true)
 	, downloadHighResScans(true)
+	/* Overlay icon */
+	, showDangerousPermissionsOverlayIcon(true)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
 }
@@ -161,6 +164,8 @@ void ConfigPrivate::reset(void)
 	extImgDownloadEnabled = true;
 	useIntIconForSmallSizes = true;
 	downloadHighResScans = true;
+	// Overlay icon.
+	showDangerousPermissionsOverlayIcon = true;
 }
 
 /**
@@ -195,6 +200,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			param = &useIntIconForSmallSizes;
 		} else if (!strcasecmp(name, "DownloadHighResScans")) {
 			param = &downloadHighResScans;
+		} else if (!strcasecmp(name, "ShowDangerousPermissionsOverlayIcon")) {
+			param = &showDangerousPermissionsOverlayIcon;
 		} else {
 			// Invalid option.
 			return 1;
@@ -202,9 +209,9 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 		// Parse the value.
 		// Acceptable values are "true", "false", "1", and "0".
-		if (!strcasecmp(value, "true") || !strcasecmp(value, "1")) {
+		if (!strcasecmp(value, "true") || !strcmp(value, "1")) {
 			*param = true;
-		} else if (!strcasecmp(value, "false") || !strcasecmp(value, "0")) {
+		} else if (!strcasecmp(value, "false") || !strcmp(value, "0")) {
 			*param = false;
 		} else {
 			// TODO: Show a warning or something?
@@ -490,6 +497,17 @@ bool Config::downloadHighResScans(void) const
 {
 	RP_D(const Config);
 	return d->downloadHighResScans;
+}
+
+/**
+ * Show an overlay icon for "dangerous" permissions?
+ * NOTE: Call load() before using this function.
+ * @return True if we should show the overlay icon; false if not.
+ */
+bool Config::showDangerousPermissionsOverlayIcon(void) const
+{
+	RP_D(const Config);
+	return d->showDangerousPermissionsOverlayIcon;
 }
 
 }
