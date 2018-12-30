@@ -45,7 +45,7 @@
   * SNDH: Atari ST audio format. Supports uncompressed files and files
     compressed using the ICE! algorithm.
   * SPC: Super NES SPC-700 audio format.
-  * VGM: Video Gmae Music format. Used for all sorts of video game
+  * VGM: Video Game Music format. Used for all sorts of video game
     audio rips, including Sega Mega Drive and Neo Geo Pocket
 
 * New parser features:
