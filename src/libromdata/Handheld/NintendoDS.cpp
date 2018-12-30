@@ -1023,7 +1023,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	const bool hasDSi = (romHeader->unitcode & 1);
+	const bool hasDSi = !!(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi);
 	if (hasDSi) {
 		// DSi-enhanced or DSi-exclusive.
 		d->fields->reserve(10+7);
