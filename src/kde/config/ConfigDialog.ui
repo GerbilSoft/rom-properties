@@ -24,9 +24,9 @@
        <string>&amp;Image Types</string>
       </attribute>
      </widget>
-     <widget class="DownloadsTab" name="tabDownloads">
+     <widget class="OptionsTab" name="tabOptions">
       <attribute name="title">
-       <string>&amp;Downloads</string>
+       <string>&amp;Options</string>
       </attribute>
      </widget>
      <widget class="AboutTab" name="tabAbout">
@@ -62,9 +62,9 @@
    </slots>
   </customwidget>
   <customwidget>
-   <class>DownloadsTab</class>
+   <class>OptionsTab</class>
    <extends>QWidget</extends>
-   <header>config/DownloadsTab.hpp</header>
+   <header>config/OptionsTab.hpp</header>
    <container>1</container>
    <slots>
     <signal>modified()</signal>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>OptionsTab</class>
+ <widget class="QWidget" name="OptionsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>466</width>
+    <height>258</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="vboxMain">
+   <item>
+    <widget class="QGroupBox" name="grpDownloads">
+     <property name="title">
+      <string>&amp;Downloads</string>
+     </property>
+     <layout class="QVBoxLayout" name="vboxDownloads">
+      <item>
+       <widget class="QCheckBox" name="chkExtImgDownloadEnabled">
+        <property name="text">
+         <string>Enable external image downloads.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkUseIntIconForSmallSizes">
+        <property name="text">
+         <string>Always use the internal icon (if present) for small sizes.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkDownloadHighResScans">
+        <property name="text">
+         <string>Download high-resolution scans if viewing large thumbnails.
+This may increase bandwidth usage.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="grpOptions">
+     <property name="title">
+      <string>&amp;Options</string>
+     </property>
+     <layout class="QVBoxLayout" name="vboxOptions">
+      <item>
+       <widget class="QCheckBox" name="chkShowDangerousPermissionsOverlayIcon">
+        <property name="text">
+         <string>Show a security overlay icon for ROM images with
+&quot;dangerous&quot; permissions.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="vspcDownloads">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>197</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>chkExtImgDownloadEnabled</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>28</x>
+     <y>60</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>5</x>
+     <y>18</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkUseIntIconForSmallSizes</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>26</x>
+     <y>95</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>4</x>
+     <y>43</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkDownloadHighResScans</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>26</x>
+     <y>144</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>3</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkShowDangerousPermissionsOverlayIcon</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>51</x>
+     <y>212</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>219</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>modified()</signal>
+  <slot>reset()</slot>
+  <slot>loadDefaults()</slot>
+  <slot>save()</slot>
+  <slot>checkBox_clicked()</slot>
+ </slots>
+</ui>

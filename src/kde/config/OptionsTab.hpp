@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * DownloadsTab.hpp: Downloads tab for rp-config.                          *
+ * OptionsTab.hpp: Options tab for rp-config.                              *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  *                                                                         *
@@ -18,25 +18,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_DOWNLOADSTAB_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_DOWNLOADSTAB_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_OPTIONSTAB_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_OPTIONSTAB_HPP__
 
 #include "ITab.hpp"
 
-class DownloadsTabPrivate;
-class DownloadsTab : public ITab
+class OptionsTabPrivate;
+class OptionsTab : public ITab
 {
 	Q_OBJECT
 
 	public:
-		explicit DownloadsTab(QWidget *parent = nullptr);
-		virtual ~DownloadsTab();
+		explicit OptionsTab(QWidget *parent = nullptr);
+		virtual ~OptionsTab();
 
 	private:
 		typedef ITab super;
-		DownloadsTabPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(DownloadsTab);
-		Q_DISABLE_COPY(DownloadsTab)
+		OptionsTabPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(OptionsTab);
+		Q_DISABLE_COPY(OptionsTab)
 
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
@@ -68,4 +68,4 @@ class DownloadsTab : public ITab
 		void checkBox_clicked(void);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_DOWNLOADSTAB_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_OPTIONSTAB_HPP__ */
