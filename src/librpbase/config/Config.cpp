@@ -200,7 +200,24 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			param = &useIntIconForSmallSizes;
 		} else if (!strcasecmp(name, "DownloadHighResScans")) {
 			param = &downloadHighResScans;
-		} else if (!strcasecmp(name, "ShowDangerousPermissionsOverlayIcon")) {
+		} else {
+			// Invalid option.
+			return 1;
+		}
+
+		// Parse the value.
+		// Acceptable values are "true", "false", "1", and "0".
+		if (!strcasecmp(value, "true") || !strcmp(value, "1")) {
+			*param = true;
+		} else if (!strcasecmp(value, "false") || !strcmp(value, "0")) {
+			*param = false;
+		} else {
+			// TODO: Show a warning or something?
+		}
+	} else if (!strcasecmp(section, "Options")) {
+		// Options.
+		bool *param;
+		if (!strcasecmp(name, "ShowDangerousPermissionsOverlayIcon")) {
 			param = &showDangerousPermissionsOverlayIcon;
 		} else {
 			// Invalid option.
