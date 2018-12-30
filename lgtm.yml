@@ -1,0 +1,8 @@
+path_classifiers:
+  test:
+    - "src/*/tests/**"
+  docs:
+    - "doc/**"
+
+queries:
+  - exclude: "extlib/**"
