@@ -7,7 +7,7 @@
   * The un-premultiply function, used for DXT2 and DXT4 images, now has
     an SSE4.1-optimized implementation. The standard implementation has
     also been optimized to be somewhat faster.
-  * File meta data is now exported to the desktop environment. This includes
+  * File metadata is now exported to the desktop environment. This includes
     e.g. dimensions for textures and duration for audio. Currently supported
     on KDE and Windows.
   * Support for gzipped files. This is important for VGMs, which are commonly
