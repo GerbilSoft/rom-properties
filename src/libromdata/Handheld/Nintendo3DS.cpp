@@ -141,17 +141,17 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		// Permissions. (cached from headers)
 		struct {
 			bool isLoaded;		// True if perm is initialized.
-			bool isSysTitle;	// True if this is a system title.
-			bool isSigZero;		// True if signature is zero
 
 			// True if "dangerous" permissions are set.
 			// Note that this might not be set if it's a known
 			// system title with a non-zero signature.
 			bool isDangerous;
 
+			// ARM9 descriptor version.
+			uint8_t ioAccessVersion;
+
 			uint32_t fsAccess;		// ARM11 FS access
 			uint32_t ioAccess;		// ARM9 descriptors
-			uint8_t ioAccessVersion;	// ARM9 descriptor version.
 
 			// Services.
 			// Pointer to character array [34][8].
@@ -1162,42 +1162,6 @@ int Nintendo3DSPrivate::loadPermissions(void)
 		return false;
 	}
 
-	// Is this a system title?
-	// NOTE: Only checking TID HI right now.
-	// NOTE: Not checking NCSD media ID.
-	// Reference: https://3dbrew.org/wiki/Title_list
-	const uint32_t tid_hi = le32_to_cpu(ncch_header->program_id.hi);
-	switch (tid_hi) {
-		case 0x00040010:	// System Applications
-		case 0x0004001B:	// System Data Archives
-		case 0x00040030:	// System Applets
-		case 0x0004009B:	// Shared Data Archives
-		case 0x000400DB:	// System Data Archives
-		case 0x00040130:	// System Modules
-		case 0x00040138:	// System Firmware
-			// System title.
-			perm.isSysTitle = true;
-			break;
-
-		default:
-			break;
-	}
-
-	// Check for a zero signature.
-	// TODO: Check NCCH signature also.
-	// Currently only checking NCCH ExHeader signature.
-	// TODO: Check if homebrew actually has zero signatures.
-	perm.isSigZero = true;
-	const uintptr_t *pSig32 =
-		reinterpret_cast<const uintptr_t*>(ncch_exheader->signature_accessdesc);
-	for (unsigned int i = 0x100/sizeof(uintptr_t); i > 0; i--, pSig32++) {
-		if (*pSig32 != 0) {
-			// Non-zero signature.
-			perm.isSigZero = false;
-			break;
-		}
-	}
-
 	// Save the permissions.
 	perm.fsAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm11_local.storage.fs_access));
 
@@ -1230,19 +1194,13 @@ int Nintendo3DSPrivate::loadPermissions(void)
 		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand |
 		N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3;
 
-	// If this is a system title with a non-zero signature,
-	// don't indicate "dangerous" permissions, since those
-	// are expected.
-	if (!perm.isSysTitle || perm.isSigZero) {
-		// Not a system title, or has a zero signature.
-		// Check for "dangerous" permissions.
-		if ((perm.fsAccess & fsAccess_dangerous) ||
-		    (perm.ioAccess & ioAccess_dangerous))
-		{
-			// One or more "dangerous" permissions are set.
-			// TODO: Also highlight "dangerous" permissions in the ROM Properties tab.
-			perm.isDangerous = true;
-		}
+	// Check for "dangerous" permissions.
+	if ((perm.fsAccess & fsAccess_dangerous) ||
+	    (perm.ioAccess & ioAccess_dangerous))
+	{
+		// One or more "dangerous" permissions are set.
+		// TODO: Also highlight "dangerous" permissions in the ROM Properties tab.
+		perm.isDangerous = true;
 	}
 
 	// We're done here.
