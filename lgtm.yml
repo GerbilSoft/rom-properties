@@ -5,4 +5,4 @@ path_classifiers:
     - "doc/**"
 
 queries:
-  - exclude: "extlib/**"
+  - exclude: cpp/fixme-comment
