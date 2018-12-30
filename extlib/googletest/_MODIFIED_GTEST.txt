@@ -1,4 +1,4 @@
-This copy of googletest-1.8.0 is a modified version of the original.
+This copy of googletest-1.8.1 is a modified version of the original.
 
 The following changes have been made to the original:
 
@@ -12,4 +12,7 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
-To obtain the original googletest-1.8.0, visit https://github.com/google/googletest .
+- Removed test suites, scripts, and Xcode projects in order to reduce
+  warnings on LGTM.
+
+To obtain the original googletest-1.8.1, visit https://github.com/google/googletest .
