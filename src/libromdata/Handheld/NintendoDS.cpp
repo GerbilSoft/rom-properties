@@ -1023,7 +1023,14 @@ int NintendoDS::loadFieldData(void)
 
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(13);	// Maximum of 13 fields.
+	const bool hasDSi = (romHeader->unitcode & 1);
+	if (hasDSi) {
+		// DSi-enhanced or DSi-exclusive.
+		d->fields->reserve(10+7);
+	} else {
+		// NDS only.
+		d->fields->reserve(10);
+	}
 
 	// NDS common fields.
 	d->fields->setTabName(0, "NDS");
@@ -1139,205 +1146,209 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_bitfield("DS Region",
 		v_nds_region_bitfield_names, 0, nds_region);
 
-	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
-		// DSi-specific fields.
-		d->fields->addTab("DSi");
-
-		// Title ID.
-		const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
-		d->fields->addField_string(C_("NintendoDS", "Title ID"),
-			rp_sprintf("%08X-%08X",
-				tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
-
-		// DSi filetype.
-		// TODO: String table?
-		const char *filetype = nullptr;
-		switch (romHeader->dsi.filetype) {
-			case DSi_FTYPE_CARTRIDGE:
-				// tr: DSi-enhanced or DSi-exclusive cartridge.
-				filetype = C_("NintendoDS|DSiFileType", "Cartridge");
-				break;
-			case DSi_FTYPE_DSiWARE:
-				filetype = C_("NintendoDS|DSiFileType", "DSiWare");
-				break;
-			case DSi_FTYPE_SYSTEM_FUN_TOOL:
-				filetype = C_("NintendoDS|DSiFileType", "System Fun Tool");
-				break;
-			case DSi_FTYPE_NONEXEC_DATA:
-				// tr: Data file, e.g. DS cartridge whitelist.
-				filetype = C_("NintendoDS|DSiFileType", "Non-Executable Data File");
-				break;
-			case DSi_FTYPE_SYSTEM_BASE_TOOL:
-				filetype = C_("NintendoDS|DSiFileType", "System Base Tool");
-				break;
-			case DSi_FTYPE_SYSTEM_MENU:
-				filetype = C_("NintendoDS|DSiFileType", "System Menu");
-				break;
-			default:
-				break;
-		}
-
-		// TODO: Is the field name too long?
-		if (filetype) {
-			d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"), filetype);
-		} else {
-			// Invalid file type.
-			d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"),
-				rp_sprintf(C_("NintendoDS", "Unknown (0x%02X)"), romHeader->dsi.filetype));
-		}
-
-		// Key index. Determined by title ID.
-		int key_idx;
-		if (tid_hi & 0x00000010) {
-			// System application.
-			key_idx = 2;
-		} else if (tid_hi & 0x00000001) {
-			// Applet.
-			key_idx = 1;
-		} else {
-			// Cartridge and/or DSiWare.
-			key_idx = 3;
-		}
-
-		// TODO: Keyset is determined by the system.
-		// There might be some indicator in the cartridge header...
-		d->fields->addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
-
-		const char *const region_code_name = (d->cia
-				? C_("NintendoDS", "Region Code")
-				: C_("NintendoDS", "DSi Region"));
-
-		// DSi Region.
-		// Maps directly to the header field.
-		static const char *const dsi_region_bitfield_names[] = {
-			NOP_C_("Region", "Japan"),
-			NOP_C_("Region", "USA"),
-			NOP_C_("Region", "Europe"),
-			NOP_C_("Region", "Australia"),
-			NOP_C_("Region", "China"),
-			NOP_C_("Region", "South Korea"),
-		};
-		vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
-			"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
-		d->fields->addField_bitfield(region_code_name,
-			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
-
-		// Age rating(s).
-		// Note that not all 16 fields are present on DSi,
-		// though the fields do match exactly, so no
-		// mapping is necessary.
-		RomFields::age_ratings_t age_ratings;
-		// Valid ratings: 0-1, 3-9
-		// TODO: Not sure if Finland is valid for DSi.
-		static const uint16_t valid_ratings = 0x3FB;
-
-		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-			if (!(valid_ratings & (1 << i))) {
-				// Rating is not applicable for NintendoDS.
-				age_ratings[i] = 0;
-				continue;
-			}
-
-			// DSi ratings field:
-			// - 0x1F: Age rating.
-			// - 0x40: Prohibited in area. (TODO: Verify)
-			// - 0x80: Rating is valid if set.
-			const uint8_t dsi_rating = romHeader->dsi.age_ratings[i];
-			if (!(dsi_rating & 0x80)) {
-				// Rating is unused.
-				age_ratings[i] = 0;
-				continue;
-			}
-
-			// Set active | age value.
-			age_ratings[i] = RomFields::AGEBF_ACTIVE | (dsi_rating & 0x1F);
-
-			// Is the game prohibited?
-			if (dsi_rating & 0x40) {
-				age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
-			}
-		}
-		d->fields->addField_ageRatings(C_("NintendoDS", "Age Rating"), age_ratings);
-
-		// Permissions and flags.
-		d->fields->addTab("Permissions");
-
-		// Permissions.
-		static const char *const dsi_permissions_bitfield_names[] = {
-			NOP_C_("NintendoDS|DSi_Permissions", "Common Key"),
-			NOP_C_("NintendoDS|DSi_Permissions", "AES Slot B"),
-			NOP_C_("NintendoDS|DSi_Permissions", "AES Slot C"),
-			NOP_C_("NintendoDS|DSi_Permissions", "SD Card"),
-			NOP_C_("NintendoDS|DSi_Permissions", "eMMC Access"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Game Card Power On"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Shared2 File"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Sign JPEG for Launcher"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Game Card NTR Mode"),
-			NOP_C_("NintendoDS|DSi_Permissions", "SSL Client Cert"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Sign JPEG for User"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Photo Read Access"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Photo Write Access"),
-			NOP_C_("NintendoDS|DSi_Permissions", "SD Card Read Access"),
-			NOP_C_("NintendoDS|DSi_Permissions", "SD Card Write Access"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Game Card Save Read Access"),
-			NOP_C_("NintendoDS|DSi_Permissions", "Game Card Save Write Access"),
-
-			// FIXME: How to handle unused entries for RFT_LISTDATA?
-			/*
-			// Bits 17-30 are not used.
-			nullptr, nullptr, nullptr,
-			nullptr, nullptr, nullptr, nullptr,
-			nullptr, nullptr, nullptr, nullptr,
-			nullptr, nullptr, nullptr,
-
-			NOP_C_("NintendoDS|DSi_Permissions", "Debug Key"),
-			*/
-		};
-
-		// Convert to vector<vector<string> > for RFT_LISTDATA.
-		auto vv_dsi_perm = new vector<vector<string> >();
-		vv_dsi_perm->resize(ARRAY_SIZE(dsi_permissions_bitfield_names));
-		for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
-			auto &data_row = vv_dsi_perm->at(i);
-			data_row.push_back(
-				dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
-					dsi_permissions_bitfield_names[i]));
-		}
-
-		d->fields->addField_listData(C_("NintendoDS", "Permissions"), nullptr, vv_dsi_perm,
-			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-			le32_to_cpu(romHeader->dsi.access_control));
-
-		// Flags.
-		static const char *const dsi_flags_bitfield_names[] = {
-			// tr: Uses the DSi-specific touchscreen protocol.
-			NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
-			// tr: Game requires agreeing to the Nintendo online services agreement.
-			NOP_C_("NintendoDS|DSi_Flags", "Require EULA"),
-			// tr: Custom icon is used from the save file.
-			NOP_C_("NintendoDS|DSi_Flags", "Custom Icon"),
-			// tr: Game supports Nintendo Wi-Fi Connection.
-			NOP_C_("NintendoDS|DSi_Flags", "Nintendo WFC"),
-			NOP_C_("NintendoDS|DSi_Flags", "DS Wireless"),
-			NOP_C_("NintendoDS|DSi_Flags", "NDS Icon SHA-1"),
-			NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
-			NOP_C_("NintendoDS|DSi_Flags", "Developer"),
-		};
-
-		// Convert to vector<vector<string> > for RFT_LISTDATA.
-		auto vv_dsi_flags = new vector<vector<string> >();
-		vv_dsi_flags->resize(ARRAY_SIZE(dsi_flags_bitfield_names));
-		for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
-			auto &data_row = vv_dsi_flags->at(i);
-			data_row.push_back(
-				dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
-					dsi_flags_bitfield_names[i]));
-		}
-
-		d->fields->addField_listData(C_("NintendoDS", "Flags"), nullptr, vv_dsi_flags,
-			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-			romHeader->dsi.flags);
+	
+	if (!(hw_type & NintendoDSPrivate::DS_HW_DSi)) {
+		// Not a DSi-enhanced or DSi-exclusive ROM image.
+		return static_cast<int>(d->fields->count());
 	}
+
+	/** DSi-specific fields. **/
+	d->fields->addTab("DSi");
+
+	// Title ID.
+	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
+	d->fields->addField_string(C_("NintendoDS", "Title ID"),
+		rp_sprintf("%08X-%08X",
+			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
+
+	// DSi filetype.
+	// TODO: String table?
+	const char *filetype = nullptr;
+	switch (romHeader->dsi.filetype) {
+		case DSi_FTYPE_CARTRIDGE:
+			// tr: DSi-enhanced or DSi-exclusive cartridge.
+			filetype = C_("NintendoDS|DSiFileType", "Cartridge");
+			break;
+		case DSi_FTYPE_DSiWARE:
+			filetype = C_("NintendoDS|DSiFileType", "DSiWare");
+			break;
+		case DSi_FTYPE_SYSTEM_FUN_TOOL:
+			filetype = C_("NintendoDS|DSiFileType", "System Fun Tool");
+			break;
+		case DSi_FTYPE_NONEXEC_DATA:
+			// tr: Data file, e.g. DS cartridge whitelist.
+			filetype = C_("NintendoDS|DSiFileType", "Non-Executable Data File");
+			break;
+		case DSi_FTYPE_SYSTEM_BASE_TOOL:
+			filetype = C_("NintendoDS|DSiFileType", "System Base Tool");
+			break;
+		case DSi_FTYPE_SYSTEM_MENU:
+			filetype = C_("NintendoDS|DSiFileType", "System Menu");
+			break;
+		default:
+			break;
+	}
+
+	// TODO: Is the field name too long?
+	if (filetype) {
+		d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"), filetype);
+	} else {
+		// Invalid file type.
+		d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"),
+			rp_sprintf(C_("NintendoDS", "Unknown (0x%02X)"), romHeader->dsi.filetype));
+	}
+
+	// Key index. Determined by title ID.
+	int key_idx;
+	if (tid_hi & 0x00000010) {
+		// System application.
+		key_idx = 2;
+	} else if (tid_hi & 0x00000001) {
+		// Applet.
+		key_idx = 1;
+	} else {
+		// Cartridge and/or DSiWare.
+		key_idx = 3;
+	}
+
+	// TODO: Keyset is determined by the system.
+	// There might be some indicator in the cartridge header...
+	d->fields->addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
+
+	const char *const region_code_name = (d->cia
+			? C_("NintendoDS", "Region Code")
+			: C_("NintendoDS", "DSi Region"));
+
+	// DSi Region.
+	// Maps directly to the header field.
+	static const char *const dsi_region_bitfield_names[] = {
+		NOP_C_("Region", "Japan"),
+		NOP_C_("Region", "USA"),
+		NOP_C_("Region", "Europe"),
+		NOP_C_("Region", "Australia"),
+		NOP_C_("Region", "China"),
+		NOP_C_("Region", "South Korea"),
+	};
+	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
+		"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
+	d->fields->addField_bitfield(region_code_name,
+		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
+
+	// Age rating(s).
+	// Note that not all 16 fields are present on DSi,
+	// though the fields do match exactly, so no
+	// mapping is necessary.
+	RomFields::age_ratings_t age_ratings;
+	// Valid ratings: 0-1, 3-9
+	// TODO: Not sure if Finland is valid for DSi.
+	static const uint16_t valid_ratings = 0x3FB;
+
+	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
+		if (!(valid_ratings & (1 << i))) {
+			// Rating is not applicable for NintendoDS.
+			age_ratings[i] = 0;
+			continue;
+		}
+
+		// DSi ratings field:
+		// - 0x1F: Age rating.
+		// - 0x40: Prohibited in area. (TODO: Verify)
+		// - 0x80: Rating is valid if set.
+		const uint8_t dsi_rating = romHeader->dsi.age_ratings[i];
+		if (!(dsi_rating & 0x80)) {
+			// Rating is unused.
+			age_ratings[i] = 0;
+			continue;
+		}
+
+		// Set active | age value.
+		age_ratings[i] = RomFields::AGEBF_ACTIVE | (dsi_rating & 0x1F);
+
+		// Is the game prohibited?
+		if (dsi_rating & 0x40) {
+			age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
+		}
+	}
+	d->fields->addField_ageRatings(C_("NintendoDS", "Age Rating"), age_ratings);
+
+	// Permissions and flags.
+	d->fields->addTab("Permissions");
+
+	// Permissions.
+	static const char *const dsi_permissions_bitfield_names[] = {
+		NOP_C_("NintendoDS|DSi_Permissions", "Common Key"),
+		NOP_C_("NintendoDS|DSi_Permissions", "AES Slot B"),
+		NOP_C_("NintendoDS|DSi_Permissions", "AES Slot C"),
+		NOP_C_("NintendoDS|DSi_Permissions", "SD Card"),
+		NOP_C_("NintendoDS|DSi_Permissions", "eMMC Access"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Game Card Power On"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Shared2 File"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Sign JPEG for Launcher"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Game Card NTR Mode"),
+		NOP_C_("NintendoDS|DSi_Permissions", "SSL Client Cert"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Sign JPEG for User"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Photo Read Access"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Photo Write Access"),
+		NOP_C_("NintendoDS|DSi_Permissions", "SD Card Read Access"),
+		NOP_C_("NintendoDS|DSi_Permissions", "SD Card Write Access"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Game Card Save Read Access"),
+		NOP_C_("NintendoDS|DSi_Permissions", "Game Card Save Write Access"),
+
+		// FIXME: How to handle unused entries for RFT_LISTDATA?
+		/*
+		// Bits 17-30 are not used.
+		nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr,
+
+		NOP_C_("NintendoDS|DSi_Permissions", "Debug Key"),
+		*/
+	};
+
+	// Convert to vector<vector<string> > for RFT_LISTDATA.
+	auto vv_dsi_perm = new vector<vector<string> >();
+	vv_dsi_perm->resize(ARRAY_SIZE(dsi_permissions_bitfield_names));
+	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
+		auto &data_row = vv_dsi_perm->at(i);
+		data_row.push_back(
+			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
+				dsi_permissions_bitfield_names[i]));
+	}
+
+	d->fields->addField_listData(C_("NintendoDS", "Permissions"), nullptr, vv_dsi_perm,
+		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
+		le32_to_cpu(romHeader->dsi.access_control));
+
+	// Flags.
+	static const char *const dsi_flags_bitfield_names[] = {
+		// tr: Uses the DSi-specific touchscreen protocol.
+		NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
+		// tr: Game requires agreeing to the Nintendo online services agreement.
+		NOP_C_("NintendoDS|DSi_Flags", "Require EULA"),
+		// tr: Custom icon is used from the save file.
+		NOP_C_("NintendoDS|DSi_Flags", "Custom Icon"),
+		// tr: Game supports Nintendo Wi-Fi Connection.
+		NOP_C_("NintendoDS|DSi_Flags", "Nintendo WFC"),
+		NOP_C_("NintendoDS|DSi_Flags", "DS Wireless"),
+		NOP_C_("NintendoDS|DSi_Flags", "NDS Icon SHA-1"),
+		NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
+		NOP_C_("NintendoDS|DSi_Flags", "Developer"),
+	};
+
+	// Convert to vector<vector<string> > for RFT_LISTDATA.
+	auto vv_dsi_flags = new vector<vector<string> >();
+	vv_dsi_flags->resize(ARRAY_SIZE(dsi_flags_bitfield_names));
+	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
+		auto &data_row = vv_dsi_flags->at(i);
+		data_row.push_back(
+			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
+				dsi_flags_bitfield_names[i]));
+	}
+
+	d->fields->addField_listData(C_("NintendoDS", "Flags"), nullptr, vv_dsi_flags,
+		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
+		romHeader->dsi.flags);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
