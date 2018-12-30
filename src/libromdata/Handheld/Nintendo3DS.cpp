@@ -1123,10 +1123,11 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 inline string Nintendo3DSPrivate::n3dsVersionToString(uint16_t version)
 {
 	// Reference: https://3dbrew.org/wiki/Titles
-	return rp_sprintf("%u.%u.%u",
+	return rp_sprintf("%u.%u.%u (v%u)",
 		(version >> 10),
 		(version >>  4) & 0x1F,
-		(version & 0x0F));
+		(version & 0x0F),
+		version);
 }
 
 /**
