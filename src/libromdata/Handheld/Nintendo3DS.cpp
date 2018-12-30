@@ -2104,9 +2104,10 @@ int Nintendo3DS::loadFieldData(void)
 			if (ret == -ENOENT)
 				continue;
 
-			const int vidx = static_cast<int>(partitions->size());
+			const size_t vidx = partitions->size();
 			partitions->resize(vidx+1);
 			auto &data_row = partitions->at(vidx);
+			data_row.reserve(5);
 
 			// Partition number.
 			data_row.push_back(rp_sprintf("%u", i));
@@ -2252,9 +2253,10 @@ int Nintendo3DS::loadFieldData(void)
 			if (ret == -ENOENT)
 				continue;
 
-			const int vidx = static_cast<int>(contents->size());
+			const size_t vidx = contents->size();
 			contents->resize(vidx+1);
 			auto &data_row = contents->at(vidx);
+			data_row.reserve(5);
 
 			// Content index.
 			data_row.push_back(rp_sprintf("%u", i));
@@ -2301,13 +2303,13 @@ int Nintendo3DS::loadFieldData(void)
 				// Encryption.
 				data_row.push_back(crypto ? crypto : s_unknown);
 				// Version.
-				data_row.push_back("");
+				data_row.push_back(string());
 
 				// Content size.
 				if (i < d->content_count) {
 					data_row.push_back(LibRpBase::formatFileSize(be64_to_cpu(content_chunk->size)));
 				} else {
-					data_row.push_back("");
+					data_row.push_back(string());
 				}
 				delete pNcch;
 				continue;
