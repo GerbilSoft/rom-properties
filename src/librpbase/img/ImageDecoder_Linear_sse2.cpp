@@ -101,8 +101,8 @@ static inline void T_RGB16_sse2(
 	__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A);
 	__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A);
 
-	_mm_store_si128(xmm_dest, px0);
-	_mm_store_si128(xmm_dest+1, px1);
+	_mm_store_si128(&xmm_dest[0], px0);
+	_mm_store_si128(&xmm_dest[1], px1);
 }
 
 /**
@@ -219,8 +219,8 @@ static inline void T_ARGB16_sse2(
 	__m128i px0 = _mm_unpacklo_epi16(sB, sR);
 	__m128i px1 = _mm_unpackhi_epi16(sB, sR);
 
-	_mm_store_si128(xmm_dest, px0);
-	_mm_store_si128(xmm_dest+1, px1);
+	_mm_store_si128(&xmm_dest[0], px0);
+	_mm_store_si128(&xmm_dest[1], px1);
 }
 
 /**
@@ -447,8 +447,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 					px1 = _mm_or_si128(px1, Mask32_A);
 
 					// Write the pixels to the destination image buffer.
-					_mm_store_si128(xmm_dest, px0);
-					_mm_store_si128(xmm_dest+1, px1);
+					_mm_store_si128(&xmm_dest[0], px0);
+					_mm_store_si128(&xmm_dest[1], px1);
 				}
 
 				// Remaining pixels.
@@ -494,8 +494,8 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 					px1 = _mm_or_si128(px1, Mask32_A);
 
 					// Write the pixels to the destination image buffer.
-					_mm_store_si128(xmm_dest, px0);
-					_mm_store_si128(xmm_dest+1, px1);
+					_mm_store_si128(&xmm_dest[0], px0);
+					_mm_store_si128(&xmm_dest[1], px1);
 				}
 
 				// Remaining pixels.

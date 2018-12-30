@@ -63,22 +63,22 @@ void RpJpegPrivate::decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_stru
 			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src);
 			__m128i *xmm_dest = reinterpret_cast<__m128i*>(dest);
 
-			__m128i sa = _mm_load_si128(xmm_src);
-			__m128i sb = _mm_load_si128(xmm_src+1);
-			__m128i sc = _mm_load_si128(xmm_src+2);
+			__m128i sa = _mm_load_si128(&xmm_src[0]);
+			__m128i sb = _mm_load_si128(&xmm_src[1]);
+			__m128i sc = _mm_load_si128(&xmm_src[2]);
 
 			__m128i val = _mm_shuffle_epi8(sa, shuf_mask);
 			val = _mm_or_si128(val, alpha_mask);
-			_mm_store_si128(xmm_dest, val);
+			_mm_store_si128(&xmm_dest[0], val);
 			val = _mm_shuffle_epi8(_mm_alignr_epi8(sb, sa, 12), shuf_mask);
 			val = _mm_or_si128(val, alpha_mask);
-			_mm_store_si128(xmm_dest+1, val);
+			_mm_store_si128(&xmm_dest[1], val);
 			val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sb, 8), shuf_mask);
 			val = _mm_or_si128(val, alpha_mask);
-			_mm_store_si128(xmm_dest+2, val);
+			_mm_store_si128(&xmm_dest[2], val);
 			val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sc, 4), shuf_mask);
 			val = _mm_or_si128(val, alpha_mask);
-			_mm_store_si128(xmm_dest+3, val);
+			_mm_store_si128(&xmm_dest[3], val);
 		}
 
 		// Remaining pixels.

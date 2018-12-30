@@ -63,10 +63,10 @@ void __byte_swap_16_array_c(uint16_t *ptr, unsigned int n)
 	// using 32-bit accesses.
 	dwptr = (uint32_t*)ptr;
 	for (; n >= 16; n -= 16, dwptr += 4) {
-		*(dwptr+0) = swap_two_16_in_32(*(dwptr+0));
-		*(dwptr+1) = swap_two_16_in_32(*(dwptr+1));
-		*(dwptr+2) = swap_two_16_in_32(*(dwptr+2));
-		*(dwptr+3) = swap_two_16_in_32(*(dwptr+3));
+		dwptr[0] = swap_two_16_in_32(dwptr[0]);
+		dwptr[1] = swap_two_16_in_32(dwptr[1]);
+		dwptr[2] = swap_two_16_in_32(dwptr[2]);
+		dwptr[3] = swap_two_16_in_32(dwptr[3]);
 	}
 	ptr = (uint16_t*)dwptr;
 
