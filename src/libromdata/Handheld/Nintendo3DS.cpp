@@ -1214,11 +1214,15 @@ int Nintendo3DSPrivate::loadPermissions(void)
 	// TODO: Ignore permissions on system titles.
 	// TODO: Check permissions on retail games and compare to this list.
 	static const uint32_t fsAccess_dangerous =
+		// mset has CategorySystemApplication set.
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication |
 		// TinyFormat has CategoryFilesystemTool set.
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool |
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo |
 		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw |
-		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite;
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite |
+		// mset has CategorySystemSettings set.
+		N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings;
 	static const uint32_t ioAccess_dangerous =
 		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand |
 		N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite |
