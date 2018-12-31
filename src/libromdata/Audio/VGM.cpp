@@ -599,7 +599,7 @@ int VGM::loadFieldData(void)
 
 		// YM2610/YM2610B [1.51]
 		if (offsetof(VGM_Header, ym2610_clk) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->ym2608_clk);
+			unsigned int clk = le32_to_cpu(vgmHeader->ym2610_clk);
 			clk &= ~VGM_CLK_FLAG_DUALCHIP;
 			if ((clk & ~VGM_CLK_FLAG_ALTMODE) != 0) {
 				const char *const chip_name = (clk & VGM_CLK_FLAG_ALTMODE) ? "YM2610B" : "YM2610";
