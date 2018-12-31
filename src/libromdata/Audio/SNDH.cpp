@@ -842,7 +842,7 @@ int SNDH::loadFieldData(void)
 	}
 
 	// SNDH header.
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields->reserve(13);	// Maximum of 4 fields.
 
 	// NOTE: Some strings have trailing spaces.
 
@@ -948,10 +948,10 @@ int SNDH::loadFieldData(void)
 				if (idx < tags.subtune_lengths.size()) {
 					// Format as m:ss.
 					// TODO: Separate function?
-					const uint32_t duration = tags.subtune_lengths.at(idx);
+					const unsigned int duration = tags.subtune_lengths.at(idx);
 					duration_total += duration;
-					const uint32_t min = duration / 60;
-					const uint32_t sec = duration % 60;
+					const unsigned int min = duration / 60;
+					const unsigned int sec = duration % 60;
 					data_row.push_back(rp_sprintf("%u:%02u", min, sec));
 				} else {
 					data_row.push_back(string());
@@ -998,6 +998,71 @@ int SNDH::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
+	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int SNDH::loadMetaData(void)
+{
+	RP_D(SNDH);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
+	// Get the tags.
+	SNDHPrivate::TagData tags = d->parseTags();
+	if (!tags.tags_read) {
+		// No tags.
+		return 0;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(4);	// Maximum of 3 metadata properties.
+
+	// Song title.
+	if (!tags.title.empty()) {
+		d->metaData->addMetaData_string(Property::Title,
+			tags.title, RomFields::STRF_TRIM_END);
+	}
+
+	// Composer.
+	if (!tags.composer.empty()) {
+		d->metaData->addMetaData_string(Property::Composer,
+			tags.composer, RomFields::STRF_TRIM_END);
+	}
+
+	// Year of release.
+	if (tags.year != 0) {
+		d->metaData->addMetaData_uint(Property::ReleaseYear, tags.year);
+	}
+
+	// Duration.
+	// This is the total duration of *all* subtunes.
+	unsigned int duration = 0;
+	for (auto iter = tags.subtune_lengths.cbegin();
+	     iter != tags.subtune_lengths.cend(); ++iter)
+	{
+		duration += *iter;
+	}
+	if (duration != 0) {
+		// NOTE: Length is in milliseconds, so we need to
+		// multiply duration by 1000.
+		d->metaData->addMetaData_integer(Property::Duration, duration * 1000);
+	}
+
+	// Finished reading the metadata.
 	return static_cast<int>(d->fields->count());
 }
 

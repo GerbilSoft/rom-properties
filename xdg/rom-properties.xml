@@ -40,7 +40,7 @@
     </magic>
   </mime-type>
 
-  <!-- SAP -->
+  <!-- SNDH -->
   <mime-type type="audio/x-sndh">
     <comment>Atari ST audio</comment>
     <generic-icon name="audio-x-generic"/>
