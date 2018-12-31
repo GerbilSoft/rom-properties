@@ -1029,10 +1029,10 @@ int ValveVTF::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// VTF header.
 	const VTFHEADER *const vtfHeader = &d->vtfHeader;
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
 	// TODO: Don't add height for 1D textures?

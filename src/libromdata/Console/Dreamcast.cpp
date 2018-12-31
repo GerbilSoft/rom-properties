@@ -825,10 +825,10 @@ int Dreamcast::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
 
 	// Dreamcast disc header.
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
 
 	// Title. (TODO: Encoding?)
 	d->metaData->addMetaData_string(Property::Title,

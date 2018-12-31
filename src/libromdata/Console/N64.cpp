@@ -380,11 +380,11 @@ int N64::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// Title.
 	// TODO: Space elimination.

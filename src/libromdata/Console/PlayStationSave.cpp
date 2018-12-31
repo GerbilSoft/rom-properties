@@ -563,10 +563,10 @@ int PlayStationSave::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// PSV (PS1 on PS3) save file header.
 	const PS1_SC_Struct *const scHeader = &d->scHeader;
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// Title. (Description)
 	d->metaData->addMetaData_string(Property::Title,

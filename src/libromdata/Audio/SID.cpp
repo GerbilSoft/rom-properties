@@ -341,10 +341,10 @@ int SID::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// SID header.
 	const SID_Header *const sidHeader = &d->sidHeader;
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title. (Name)
 	if (sidHeader->name[0] != 0) {

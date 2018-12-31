@@ -1301,10 +1301,10 @@ int DirectDrawSurface::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
 	// TODO: Don't add dwHeight for 1D textures?

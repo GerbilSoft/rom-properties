@@ -468,15 +468,15 @@ int GameCubeBNR::loadMetaData(void)
 		return -EIO;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-
 	// Get the comment.
-	const gcn_banner_comment_t *comment = getComment();
+	const gcn_banner_comment_t *const comment = getComment();
 	if (!comment) {
 		// No comment...
-		return static_cast<int>(d->metaData->count());
+		return 0;
 	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// TODO: If BNR1, check for Shift-JIS characters.

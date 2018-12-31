@@ -400,10 +400,10 @@ int ADX::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// ADX header.
 	const ADX_Header *const adxHeader = &d->adxHeader;
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// Number of channels.
 	d->metaData->addMetaData_integer(Property::Channels, adxHeader->channel_count);

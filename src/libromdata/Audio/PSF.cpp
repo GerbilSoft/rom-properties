@@ -715,10 +715,7 @@ int PSF::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-
-	// PSF metadata:
-	// - 8 properties in the "[TAG]" section.
-	d->metaData->reserve(8);
+	d->metaData->reserve(8);	// Maximum of 8 metadata properties.
 
 	// Title
 	auto iter = tags.find("title");

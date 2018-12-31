@@ -883,8 +883,6 @@ int SPC::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
-
-	// SPC header.
 	d->metaData->reserve(10);	// Maximum of 10 metadata properties.
 
 	// TODO: Add more tags.

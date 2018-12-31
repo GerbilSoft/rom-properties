@@ -554,10 +554,10 @@ int GameCom::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// game.com ROM header.
 	const Gcom_RomHeader *const romHeader = &d->romHeader;
-	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// Game title.
 	d->metaData->addMetaData_string(Property::Title,

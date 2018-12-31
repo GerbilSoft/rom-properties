@@ -323,10 +323,10 @@ int GBS::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// GBS header.
 	const GBS_Header *const gbsHeader = &d->gbsHeader;
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title.
 	if (gbsHeader->title[0] != 0) {

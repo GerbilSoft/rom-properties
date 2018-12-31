@@ -480,10 +480,10 @@ int ValveVTF3::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// VTF3 header.
 	const VTF3HEADER *const vtf3Header = &d->vtf3Header;
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
 	// TODO: Don't add height for 1D textures?

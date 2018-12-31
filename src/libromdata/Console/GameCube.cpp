@@ -1811,10 +1811,10 @@ int GameCube::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// Disc header is read in the constructor.
 	const GCN_DiscHeader *const discHeader = &d->discHeader;
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// If this is GameCube, use opening.bnr if available.
 	// TODO: Wii IMET?

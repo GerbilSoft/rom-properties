@@ -881,10 +881,10 @@ int VGM::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(6);	// Maximum of 6 metadata properties.
 
 	// VGM header.
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
-	d->metaData->reserve(6);	// Maximum of 6 metadata properties.
 
 	// Length, in milliseconds. (non-looping)
 	d->metaData->addMetaData_integer(Property::Duration,

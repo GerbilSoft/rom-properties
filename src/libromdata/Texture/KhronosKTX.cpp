@@ -931,10 +931,10 @@ int KhronosKTX::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// KTX header.
 	const KTX_Header *const ktxHeader = &d->ktxHeader;
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
 	// TODO: Don't add pixelHeight for 1D textures?

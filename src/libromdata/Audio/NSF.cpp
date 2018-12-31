@@ -348,10 +348,10 @@ int NSF::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// NSF header.
 	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// Title.
 	if (nsfHeader->title[0] != 0) {

@@ -1061,10 +1061,10 @@ int SegaPVR::loadMetaData(void)
 
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// PVR header.
 	const PVR_Header *const pvrHeader = &d->pvrHeader;
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
 	// Dimensions.
 	// TODO: Don't add height for 1D textures?
