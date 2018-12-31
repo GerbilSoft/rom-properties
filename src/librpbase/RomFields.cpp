@@ -759,59 +759,59 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	// - Use absolute or relative tab offset.
 	d->fields.reserve(d->fields.size() + other->count());
 
-	for (int i = 0; i < other->count(); i++) {
-		const Field *src = other->field(i);
-		if (!src)
-			continue;
-
+	for (auto old_iter = other->d_ptr->fields.cbegin();
+	     old_iter != other->d_ptr->fields.cend(); ++old_iter)
+	{
 		size_t idx = d->fields.size();
 		d->fields.resize(idx+1);
-		Field &field = d->fields.at(idx);
-		field.name = src->name;
-		field.type = src->type;
-		field.tabIdx = (tabOffset != -1 ? (src->tabIdx + tabOffset) : d->tabIdx);
-		field.isValid = src->isValid;
-		field.desc.flags = src->desc.flags;
+		const Field &field_src = *old_iter;
+		Field &field_dest = d->fields.at(idx);
 
-		switch (src->type) {
+		field_dest.name = field_src.name;
+		field_dest.type = field_src.type;
+		field_dest.tabIdx = (tabOffset != -1 ? (field_src.tabIdx + tabOffset) : d->tabIdx);
+		field_dest.isValid = field_src.isValid;
+		field_dest.desc.flags = field_src.desc.flags;
+
+		switch (field_src.type) {
 			case RFT_INVALID:
 				// No data here...
 				break;
 
 			case RFT_STRING:
-				field.data.str = (src->data.str ? new string(*src->data.str) : nullptr);
+				field_dest.data.str = (field_src.data.str ? new string(*field_src.data.str) : nullptr);
 				break;
 			case RFT_BITFIELD:
-				field.desc.bitfield.elemsPerRow = src->desc.bitfield.elemsPerRow;
-				field.desc.bitfield.names = (src->desc.bitfield.names
-						? new vector<string>(*(src->desc.bitfield.names))
+				field_dest.desc.bitfield.elemsPerRow = field_src.desc.bitfield.elemsPerRow;
+				field_dest.desc.bitfield.names = (field_src.desc.bitfield.names
+						? new vector<string>(*(field_src.desc.bitfield.names))
 						: nullptr);
-				field.data.bitfield = src->data.bitfield;
+				field_dest.data.bitfield = field_src.data.bitfield;
 				break;
 			case RFT_LISTDATA:
-				field.desc.list_data.flags =
-					src->desc.list_data.flags;
-				field.desc.list_data.rows_visible =
-					src->desc.list_data.rows_visible;
-				field.desc.list_data.names = (src->desc.list_data.names
-						? new vector<string>(*(src->desc.list_data.names))
+				field_dest.desc.list_data.flags =
+					field_src.desc.list_data.flags;
+				field_dest.desc.list_data.rows_visible =
+					field_src.desc.list_data.rows_visible;
+				field_dest.desc.list_data.names = (field_src.desc.list_data.names
+						? new vector<string>(*(field_src.desc.list_data.names))
 						: nullptr);
-				field.data.list_data = (src->data.list_data
-						? new vector<vector<string> >(*(src->data.list_data))
+				field_dest.data.list_data = (field_src.data.list_data
+						? new vector<vector<string> >(*(field_src.data.list_data))
 						: nullptr);
-				field.data.list_checkboxes =
-					src->data.list_checkboxes;
+				field_dest.data.list_checkboxes =
+					field_src.data.list_checkboxes;
 				break;
 			case RFT_DATETIME:
-				field.data.date_time = src->data.date_time;
+				field_dest.data.date_time = field_src.data.date_time;
 				break;
 			case RFT_AGE_RATINGS:
-				field.data.age_ratings = (src->data.age_ratings
-						? new age_ratings_t(*src->data.age_ratings)
+				field_dest.data.age_ratings = (field_src.data.age_ratings
+						? new age_ratings_t(*field_src.data.age_ratings)
 						: nullptr);
 				break;
 			case RFT_DIMENSIONS:
-				memcpy(field.data.dimensions, src->data.dimensions, sizeof(src->data.dimensions));
+				memcpy(field_dest.data.dimensions, field_src.data.dimensions, sizeof(field_src.data.dimensions));
 				break;
 
 			default:
