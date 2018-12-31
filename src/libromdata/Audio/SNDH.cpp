@@ -228,7 +228,6 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 	if (pData32[0] == cpu_to_be32('ICE!') || pData32[0] == cpu_to_be32('Ice!')) {
 		// Packed with ICE.
 #ifdef ENABLE_UNICE68
-		printf("is ice\n");
 		// Decompress the data.
 		// FIXME: unice68_depacker() only supports decompressing the entire file.
 		// Add a variant that supports buffer sizes.
