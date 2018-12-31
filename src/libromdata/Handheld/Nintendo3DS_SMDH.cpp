@@ -87,6 +87,12 @@ class Nintendo3DS_SMDH_Private : public RomDataPrivate
 		 * @return Icon, or nullptr on error.
 		 */
 		const rp_image *loadIcon(int idx = 1);
+
+		/**
+		 * Get the language ID to use for the title fields.
+		 * @return N3DS language ID.
+		 */
+		N3DS_Language_ID getLangID(void) const;
 };
 
 /** Nintendo3DS_SMDH_Private **/
@@ -162,6 +168,38 @@ const rp_image *Nintendo3DS_SMDH_Private::loadIcon(int idx)
 	}
 
 	return img_icon[idx];
+}
+
+/**
+ * Get the language ID to use for the title fields.
+ * @return N3DS language ID.
+ */
+N3DS_Language_ID Nintendo3DS_SMDH_Private::getLangID(void) const
+{
+	// Get the system language.
+	// TODO: Verify against the game's region code?
+	N3DS_Language_ID lang = static_cast<N3DS_Language_ID>(NintendoLanguage::getN3DSLanguage());
+
+	// Check that the field is valid.
+	if (smdh.header.titles[lang].desc_short[0] == cpu_to_le16(0)) {
+		// Not valid. Check English.
+		if (smdh.header.titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0)) {
+			// English is valid.
+			lang = N3DS_LANG_ENGLISH;
+		} else {
+			// Not valid. Check Japanese.
+			if (smdh.header.titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16(0)) {
+				// Japanese is valid.
+				lang = N3DS_LANG_JAPANESE;
+			} else {
+				// Not valid...
+				// Default to English anyway.
+				lang = N3DS_LANG_ENGLISH;
+			}
+		}
+	}
+
+	return lang;
 }
 
 /** Nintendo3DS_SMDH **/
@@ -388,7 +426,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid) {
-		// Unknown file type.
+		// SMDH file isn't valid.
 		return -EIO;
 	}
 
@@ -405,34 +443,17 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	d->fields->reserve(5);
 	d->fields->setTabName(0, "SMDH");
 
-	// Get the system language.
-	// TODO: Verify against the game's region code?
-	int lang = NintendoLanguage::getN3DSLanguage();
-
-	// Check that the field is valid.
-	if (smdhHeader->titles[lang].desc_short[0] == cpu_to_le16(0)) {
-		// Not valid. Check English.
-		if (smdhHeader->titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0)) {
-			// English is valid.
-			lang = N3DS_LANG_ENGLISH;
-		} else {
-			// Not valid. Check Japanese.
-			if (smdhHeader->titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16(0)) {
-				// Japanese is valid.
-				lang = N3DS_LANG_JAPANESE;
-			} else {
-				// Not valid...
-				// TODO: Check other languages?
-				lang = -1;
-			}
-		}
-	}
-
-	if (lang >= 0 && lang < ARRAY_SIZE(smdhHeader->titles)) {
+	// Title fields.
+	N3DS_Language_ID lang = d->getLangID();
+	if (smdhHeader->titles[lang].desc_short[0] != '\0') {
 		d->fields->addField_string(C_("Nintendo3DS", "Title"), utf16le_to_utf8(
 			smdhHeader->titles[lang].desc_short, ARRAY_SIZE(smdhHeader->titles[lang].desc_short)));
+	}
+	if (smdhHeader->titles[lang].desc_long[0] != '\0') {
 		d->fields->addField_string(C_("Nintendo3DS", "Full Title"), utf16le_to_utf8(
 			smdhHeader->titles[lang].desc_long, ARRAY_SIZE(smdhHeader->titles[lang].desc_long)));
+	}
+	if (smdhHeader->titles[lang].publisher[0] != '\0') {
 		d->fields->addField_string(C_("Nintendo3DS", "Publisher"), utf16le_to_utf8(
 			smdhHeader->titles[lang].publisher, ARRAY_SIZE(smdhHeader->titles[lang].publisher)));
 	}
@@ -495,6 +516,62 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Nintendo3DS_SMDH::loadMetaData(void)
+{
+	RP_D(Nintendo3DS_SMDH);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// SMDH file isn't valid.
+		return -EIO;
+	}
+
+	// Parse the SMDH header.
+	const N3DS_SMDH_Header_t *const smdhHeader = &d->smdh.header;
+	if (smdhHeader->magic != cpu_to_be32(N3DS_SMDH_HEADER_MAGIC)) {
+		// Invalid magic number.
+		return 0;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// Title.
+	// NOTE: Preferring Full Title. If not found, using Title.
+	N3DS_Language_ID lang = d->getLangID();
+	if (smdhHeader->titles[lang].desc_long[0] != '\0') {
+		// Using the Full Title.
+		d->metaData->addMetaData_string(Property::Title,
+			utf16le_to_utf8(
+				smdhHeader->titles[lang].desc_long, ARRAY_SIZE(smdhHeader->titles[lang].desc_long)));
+	} else if (smdhHeader->titles[lang].desc_short[0] != '\0') {
+		// Using the regular Title.
+		d->metaData->addMetaData_string(Property::Title,
+			utf16le_to_utf8(
+				smdhHeader->titles[lang].desc_short, ARRAY_SIZE(smdhHeader->titles[lang].desc_short)));
+	}
+
+	// Publisher.
+	if (smdhHeader->titles[lang].publisher[0] != '\0') {
+		d->metaData->addMetaData_string(Property::Publisher,
+			utf16le_to_utf8(
+				smdhHeader->titles[lang].publisher, ARRAY_SIZE(smdhHeader->titles[lang].publisher)));
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.
@@ -522,7 +599,7 @@ int Nintendo3DS_SMDH::loadInternalImage(ImageType imageType, const rp_image **pI
 		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
-		// Save file isn't valid.
+		// SMDH file isn't valid.
 		*pImage = nullptr;
 		return -EIO;
 	}

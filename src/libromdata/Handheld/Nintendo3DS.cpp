@@ -2494,6 +2494,47 @@ int Nintendo3DS::loadFieldData(void)
 }
 
 /**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Nintendo3DS::loadMetaData(void)
+{
+	RP_D(Nintendo3DS);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Check for DSiWare.
+	// TODO: Check d->sbptr.srl.data first?
+	int ret = const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
+	if (ret == 0 && d->sbptr.srl.data) {
+		// Add the NDS metadata.
+		d->metaData = new RomMetaData();
+		d->metaData->addMetaData_metaData(d->sbptr.srl.data->metaData());
+	} else {
+		// Not DSiWare. Check for SMDH.
+		// TODO: Check d->sbptr.smdh.data first?
+		ret = const_cast<Nintendo3DSPrivate*>(d)->loadSMDH();
+		if (ret == 0) {
+			// Add the SMDH metadata.
+			d->metaData = new RomMetaData();
+			d->metaData->addMetaData_metaData(d->sbptr.smdh.data->metaData());
+		}
+	}
+
+	// Finished reading the metadata.
+	return (d->metaData ? static_cast<int>(d->metaData->count()) : 0);
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image().
  * @param imageType	[in] Image type to load.

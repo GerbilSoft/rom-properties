@@ -109,8 +109,8 @@ button.
 | Nintendo Game Boy (Color)     |       Yes      |    No    |       N/A       |       No       |
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
 | Nintendo Game Boy Advance     |       Yes      |    No    |       N/A       |       No       |
-| Nintendo DS(i)                |       Yes      |    No    |       Icon      |  Covers, Box   |
-| Nintendo 3DS                  |       Yes      |    No    |       Icon      |  Covers, Box   |
+| Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
+| Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
 
 ### Texture Formats

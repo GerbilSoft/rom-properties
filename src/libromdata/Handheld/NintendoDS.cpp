@@ -1065,11 +1065,11 @@ int NintendoDS::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("NintendoDS", "Type"), nds_romType);
 
-	// Game title.
+	// Title.
 	d->fields->addField_string(C_("NintendoDS", "Title"),
 		latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title)));
 
-	// Full game title.
+	// Full title.
 	// TODO: Where should this go?
 	int lang = d->getTitleIndex();
 	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
@@ -1078,14 +1078,15 @@ int NintendoDS::loadFieldData(void)
 				ARRAY_SIZE(d->nds_icon_title.title[lang])));
 	}
 
-	// Game ID and publisher.
+	// Game ID.
 	d->fields->addField_string(C_("NintendoDS", "Game ID"),
 		latin1_to_utf8(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
 
-	// Look up the publisher.
-	const char *publisher = NintendoPublishers::lookup(romHeader->company);
+	// Publisher.
+	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
 	d->fields->addField_string(C_("NintendoDS", "Publisher"),
-		publisher ? publisher : C_("NintendoDS", "Unknown"));
+		publisher ? publisher :
+			rp_sprintf(C_("NintendoDS", "Unknown (%.2s)"), romHeader->company));
 
 	// ROM version.
 	d->fields->addField_string_numeric(C_("NintendoDS", "Revision"),
@@ -1352,6 +1353,50 @@ int NintendoDS::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int NintendoDS::loadMetaData(void)
+{
+	RP_D(NintendoDS);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	// ROM header is read in the constructor.
+	const NDS_RomHeader *const romHeader = &d->romHeader;
+
+	// Title.
+	// TODO: Show the full title if it's present:
+	// - Three lines: Concatenate the first two lines
+	// - Two lines: Show the first line only.
+	// - One line: Show that line.
+	d->metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title)));
+
+	// Publisher.
+	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
+	d->metaData->addMetaData_string(Property::Publisher,
+		publisher ? publisher :
+			rp_sprintf(C_("NintendoDS", "Unknown (%.2s)"), romHeader->company));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
