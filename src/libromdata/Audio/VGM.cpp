@@ -516,7 +516,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) { \
 				d->fields->addField_string( \
 					rp_sprintf(C_("VGM", "%s Clock Rate"), display).c_str(), \
-					d->formatClockRate(le32_to_cpu(vgmHeader->field##_clk))); \
+					d->formatClockRate(clk)); \
 			} \
 		} \
 	} while (0)
