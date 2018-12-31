@@ -449,6 +449,13 @@ int VGM::loadFieldData(void)
 	// - VGM 1.51: Loop modifier
 	// - VGM 1.60: Volume modifier, loop base
 
+	// Yes/No for dual-chip.
+	const char *const s_clockrate = C_("VGM", "%s Clock Rate");
+	const char *const s_dualchip = C_("VGM", "%s Dual-Chip");
+	const char *const s_flags = C_("VGM", "%s Flags");
+	const char *const s_yes = C_("VGM", "Yes");
+	const char *const s_no = C_("VGM", "No");
+
 	// SN76489 [1.00]
 	const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
 	if ((sn76489_clk & ~PSG_T6W28) != 0) {
@@ -463,8 +470,11 @@ int VGM::loadFieldData(void)
 		}
 
 		d->fields->addField_string(
-			rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
+			rp_sprintf(s_clockrate, chip_name).c_str(),
 			d->formatClockRate(sn76489_clk & ~PSG_T6W28));
+		d->fields->addField_string(
+			rp_sprintf(s_dualchip, chip_name).c_str(),
+				(sn76489_clk & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 		// LFSR data. [1.10; defaults used for older versions]
 		uint16_t lfsr_feedback = 0x0009;
@@ -502,34 +512,39 @@ int VGM::loadFieldData(void)
 		};
 		vector<string> *const v_psg_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 			"VGM|PSGFlags", psg_flags_bitfield_names, ARRAY_SIZE(psg_flags_bitfield_names));
-		d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), chip_name).c_str(),
+		d->fields->addField_bitfield(rp_sprintf(s_flags, chip_name).c_str(),
 			v_psg_flags_bitfield_names, 2, psg_flags);
 	}
 
 	// Macro for sound chips that don't have any special bitflags or parameters.
-	// TODO: Dual-chip support. (Ignored for now.)
-#define SOUND_CHIP(field, display) \
+	// Set dual to true if the sound chip supports dual-chip mode.
+#define SOUND_CHIP(field, display, dual) \
 	do { \
 		if (offsetof(VGM_Header, field##_clk) < data_offset) { \
-			unsigned int clk = le32_to_cpu(vgmHeader->field##_clk); \
-			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP); \
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->field##_clk); \
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP); \
 			if (clk != 0) { \
 				d->fields->addField_string( \
-					rp_sprintf(C_("VGM", "%s Clock Rate"), display).c_str(), \
+					rp_sprintf(s_clockrate, display).c_str(), \
 					d->formatClockRate(clk)); \
+				if (dual) { \
+					d->fields->addField_string( \
+						rp_sprintf(s_dualchip, display).c_str(), \
+							(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no); \
+				} \
 			} \
 		} \
 	} while (0)
 
 	// YM2413 [1.00]
-	SOUND_CHIP(ym2413, "YM2413");
+	SOUND_CHIP(ym2413, "YM2413", true);
 
 	if (vgm_version >= 0x0110) {
 		// YM2612 [1.10]
-		SOUND_CHIP(ym2612, "YM2612");
+		SOUND_CHIP(ym2612, "YM2612", true);
 
 		// YM2151 [1.10]
-		SOUND_CHIP(ym2151, "YM2151");
+		SOUND_CHIP(ym2151, "YM2151", true);
 	}
 
 	// TODO: Optimize data offset checks.
@@ -542,7 +557,7 @@ int VGM::loadFieldData(void)
 			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), "Sega PCM").c_str(),
+					rp_sprintf(s_clockrate, "Sega PCM").c_str(),
 					d->formatClockRate(clk));
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
@@ -552,7 +567,7 @@ int VGM::loadFieldData(void)
 		}
 
 		// RF5C68 [1.51]
-		SOUND_CHIP(rf5c68, "RF5C68");
+		SOUND_CHIP(rf5c68, "RF5C68", false);
 
 		// AY8910 flags.
 		// Used for YM2203, YM2608, and AY8910.
@@ -565,82 +580,91 @@ int VGM::loadFieldData(void)
 
 		// YM2203 [1.51]
 		if (offsetof(VGM_Header, ym2203_ay8910_flags) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->ym2203_clk);
-			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->ym2203_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), "YM2203").c_str(),
+					rp_sprintf(s_clockrate, "YM2203").c_str(),
 					d->formatClockRate(clk));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, "YM2203").c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 				// TODO: Is AY8910 type needed?
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 					"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
-				d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), "YM2203 (AY8910)").c_str(),
+				d->fields->addField_bitfield(rp_sprintf(s_flags, "YM2203 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2203_ay8910_flags);
 			}
 		}
 
 		// YM2608 [1.51]
 		if (offsetof(VGM_Header, ym2608_ay8910_flags) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->ym2608_clk);
-			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->ym2608_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), "YM2608").c_str(),
+					rp_sprintf(s_clockrate, "YM2608").c_str(),
 					d->formatClockRate(clk));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, "YM2608").c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 				// TODO: Is AY8910 type needed?
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 					"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
-				d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), "YM2608 (AY8910)").c_str(),
+				d->fields->addField_bitfield(rp_sprintf(s_flags, "YM2608 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2608_ay8910_flags);
 			}
 		}
 
 		// YM2610/YM2610B [1.51]
 		if (offsetof(VGM_Header, ym2610_clk) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->ym2610_clk);
-			clk &= ~VGM_CLK_FLAG_DUALCHIP;
-			if ((clk & ~VGM_CLK_FLAG_ALTMODE) != 0) {
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->ym2610_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			if (clk != 0) {
 				const char *const chip_name = (clk & VGM_CLK_FLAG_ALTMODE) ? "YM2610B" : "YM2610";
 
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
+					rp_sprintf(s_clockrate, chip_name).c_str(),
 					d->formatClockRate(clk & ~VGM_CLK_FLAG_ALTMODE));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, chip_name).c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 			}
 		}
 
 		// YM2813 [1.51]
-		SOUND_CHIP(ym3812, "YM3812");
+		SOUND_CHIP(ym3812, "YM3812", true);
 
 		// YM3526 [1.51]
-		SOUND_CHIP(ym3526, "YM3526");
+		SOUND_CHIP(ym3526, "YM3526", true);
 
 		// Y8950 [1.51]
-		SOUND_CHIP(y8950, "Y8950");
+		SOUND_CHIP(y8950, "Y8950", true);
 
 		// YMF262 [1.51]
-		SOUND_CHIP(ymf262, "YMF262");
+		SOUND_CHIP(ymf262, "YMF262", true);
 
 		// YMF278B [1.51]
-		SOUND_CHIP(ymf278b, "YMF278B");
+		SOUND_CHIP(ymf278b, "YMF278B", true);
 
 		// YMF271 [1.51]
-		SOUND_CHIP(ymf271, "YMF271");
+		SOUND_CHIP(ymf271, "YMF271", true);
 
 		// YMZ280B [1.51]
-		SOUND_CHIP(ymz280b, "YMZ280B");
+		SOUND_CHIP(ymz280b, "YMZ280B", true);
 
 		// RF5C164 [1.51]
-		SOUND_CHIP(rf5c164, "RF5C164");
+		SOUND_CHIP(rf5c164, "RF5C164", false);
 
 		// PWM [1.51]
-		SOUND_CHIP(pwm, "PWM");
+		SOUND_CHIP(pwm, "PWM", false);
 
 		// AY8910 [1.51]
 		if (offsetof(VGM_Header, ay8910_flags) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->ay8910_clk);
-			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->ay8910_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				const char *chip_name;
 				switch (vgmHeader->ay8910_type) {
@@ -675,12 +699,15 @@ int VGM::loadFieldData(void)
 				}
 
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
+					rp_sprintf(s_clockrate, chip_name).c_str(),
 					d->formatClockRate(clk));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, chip_name).c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 					"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
-				d->fields->addField_bitfield(rp_sprintf(C_("VGM", "%s Flags"), chip_name).c_str(),
+				d->fields->addField_bitfield(rp_sprintf(s_flags, chip_name).c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ay8910_flags);
 			}
 		}
@@ -688,16 +715,19 @@ int VGM::loadFieldData(void)
 
 	if (vgm_version >= 0x0161) {
 		// Game Boy (LR35902) [1.61]
-		SOUND_CHIP(dmg, "DMG");
+		SOUND_CHIP(dmg, "DMG", true);
 
 		// NES APU (2A03) [1.61]
 		if (offsetof(VGM_Header, nes_apu_clk) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->nes_apu_clk);
-			clk &= ~VGM_CLK_FLAG_DUALCHIP;
-			if ((clk & ~VGM_CLK_FLAG_ALTMODE) != 0) {
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->nes_apu_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), "NES APU").c_str(),
-						d->formatClockRate(clk & ~VGM_CLK_FLAG_ALTMODE));
+					rp_sprintf(s_clockrate, "NES APU").c_str(),
+						d->formatClockRate(clk));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, "NES APU").c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 				// Bit 31 indicates presence of FDS audio hardware.
 				const char *const nes_exp = (clk & VGM_CLK_FLAG_ALTMODE)
@@ -709,66 +739,70 @@ int VGM::loadFieldData(void)
 		}
 
 		// MultiPCM [1.61]
-		SOUND_CHIP(multipcm, "MultiPCM");
+		SOUND_CHIP(multipcm, "MultiPCM", true);
 
 		// uPD7759 [1.61]
-		SOUND_CHIP(upd7759, "uPD7759");
+		SOUND_CHIP(upd7759, "uPD7759", true);
 
 		// NOTE: Ordering is done by the clock rate field,
 		// not the flags field.
 
 		// OKIM6258 [1.61]
 		// TODO: Flags
-		SOUND_CHIP(okim6258, "OKIM6258");
+		SOUND_CHIP(okim6258, "OKIM6258", true);
 
 		// OKIM6295 [1.61]
-		SOUND_CHIP(okim6295, "OKIM6295");
+		SOUND_CHIP(okim6295, "OKIM6295", true);
 
 		// K051649 [1.61]
-		SOUND_CHIP(k051649, "K051649");
+		SOUND_CHIP(k051649, "K051649", true);
 
 		// K054539 [1.61]
 		// TODO: Flags
-		SOUND_CHIP(k054539, "K054539");
+		SOUND_CHIP(k054539, "K054539", true);
 
 		// HuC6280 [1.61]
-		SOUND_CHIP(huc6280, "HuC6280");
+		SOUND_CHIP(huc6280, "HuC6280", true);
 
 		// C140 [1.61]
 		// TODO: Flags
-		SOUND_CHIP(c140, "C140");
+		SOUND_CHIP(c140, "C140", true);
 
 		// K053260 [1.61]
-		SOUND_CHIP(k053260, "K053260");
+		SOUND_CHIP(k053260, "K053260", true);
 
 		// Pokey [1.61]
-		SOUND_CHIP(pokey, "Pokey");
+		SOUND_CHIP(pokey, "Pokey", true);
 
 		// QSound
-		SOUND_CHIP(qsound, "QSound");
+		SOUND_CHIP(qsound, "QSound", false);
 	}
 
 	if (vgm_version >= 0x0171) {
 		// SCSP [1.71]
-		SOUND_CHIP(scsp, "SCSP");
+		SOUND_CHIP(scsp, "SCSP", true);
 
 		// WonderSwan [1.71]
-		SOUND_CHIP(ws, "WonderSwan");
+		SOUND_CHIP(ws, "WonderSwan", true);
 
 		// VSU [1.71]
-		SOUND_CHIP(vsu, "VSU");
+		SOUND_CHIP(vsu, "VSU", true);
 
 		// SAA1099 [1.71]
-		SOUND_CHIP(saa1099, "SAA1099");
+		SOUND_CHIP(saa1099, "SAA1099", true);
 
 		// ES5503 [1.71]
 		if (offsetof(VGM_Header, es5503_num_ch) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->es5503_clk);
-			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->es5503_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), "ES5503").c_str(),
+					rp_sprintf(s_clockrate, "ES5503").c_str(),
 						d->formatClockRate(clk));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, "ES5503").c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
+
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s # of Channels"), "ES5503").c_str(),
 						vgmHeader->es5503_num_ch);
@@ -777,16 +811,19 @@ int VGM::loadFieldData(void)
 
 		// ES5505/ES5506 [1.71]
 		if (offsetof(VGM_Header, es5505_num_ch) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->es5505_clk);
-			clk &= ~VGM_CLK_FLAG_DUALCHIP;
-			if ((clk & ~VGM_CLK_FLAG_ALTMODE) != 0) {
-				const char *const chip_name = (clk & VGM_CLK_FLAG_ALTMODE)
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->es5505_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			if (clk != 0) {
+				const char *const chip_name = (clk_full & VGM_CLK_FLAG_ALTMODE)
 					? "ES5506"
 					: "ES5505";
 
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), chip_name).c_str(),
-						d->formatClockRate(clk & ~VGM_CLK_FLAG_ALTMODE));
+					rp_sprintf(s_clockrate, chip_name).c_str(),
+						d->formatClockRate(clk));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, chip_name).c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s # of Channels"), chip_name).c_str(),
@@ -795,16 +832,19 @@ int VGM::loadFieldData(void)
 		}
 
 		// X1-010 [1.71]
-		SOUND_CHIP(x1_010, "X1-010");
+		SOUND_CHIP(x1_010, "X1-010", true);
 
 		// C352 [1.71]
 		if (offsetof(VGM_Header, es5505_num_ch) < data_offset) {
-			unsigned int clk = le32_to_cpu(vgmHeader->c352_clk);
-			clk &= ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
+			const unsigned int clk_full = le32_to_cpu(vgmHeader->c352_clk);
+			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Clock Rate"), "C352").c_str(),
+					rp_sprintf(s_clockrate, "C352").c_str(),
 						d->formatClockRate(clk));
+				d->fields->addField_string(
+					rp_sprintf(s_dualchip, "C352").c_str(),
+						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s Clock Divider"), "C352").c_str(),
@@ -813,7 +853,7 @@ int VGM::loadFieldData(void)
 		}
 
 		// GA20 [1.71]
-		SOUND_CHIP(ga20, "GA20");
+		SOUND_CHIP(ga20, "GA20", true);
 	}
 
 	// Finished reading the field data.
