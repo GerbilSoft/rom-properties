@@ -160,6 +160,8 @@ int64_t Cdrom2352Reader::getPhysBlockAddr(uint32_t blockIdx) const
 	}
 
 	// Convert to a physical block address and return.
+	// FIXME: Currently only supports Mode 1.
+	// Check for Mode 2 and handle it correctly.
 	return (static_cast<int64_t>(blockIdx) * d->physBlockSize) + 16;
 }
 
