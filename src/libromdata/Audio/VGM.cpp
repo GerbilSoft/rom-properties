@@ -753,7 +753,7 @@ int VGM::loadFieldData(void)
 		SOUND_CHIP(scsp, "SCSP");
 
 		// WonderSwan [1.71]
-		SOUND_CHIP(ws, "WonderSwam");
+		SOUND_CHIP(ws, "WonderSwan");
 
 		// VSU [1.71]
 		SOUND_CHIP(vsu, "VSU");
