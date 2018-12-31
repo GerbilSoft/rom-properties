@@ -159,22 +159,23 @@ public:
 		if (!bitfieldDesc.names) {
 			return os << "[ERROR: No bitfield names.]";
 		}
-		const int perRow = (bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4);
+		const unsigned int perRow = static_cast<unsigned int>(
+			(bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4));
 
-		unique_ptr<size_t[]> colSize(new size_t[perRow]());
-		int count = (int)bitfieldDesc.names->size();
+		unique_ptr<unsigned int[]> colSize(new unsigned int[perRow]());
+		unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
 		assert(count <= 32);
 		if (count > 32)
 			count = 32;
 
 		// Determine the column widths.
-		int col = 0;
-		for (int bit = 0; bit < count; bit++) {
+		unsigned int col = 0;
+		for (unsigned int bit = 0; bit < count; bit++) {
 			const string &name = bitfieldDesc.names->at(bit);
 			if (name.empty())
 				continue;
 
-			colSize[col] = max(name.size(), colSize[col]);
+			colSize[col] = max(static_cast<unsigned int>(name.size()), colSize[col]);
 			col++;
 			if (col == perRow) {
 				col = 0;
@@ -186,7 +187,7 @@ public:
 		StreamStateSaver state(os);
 		os << left;
 		col = 0;
-		for (int bit = 0; bit < count; bit++) {
+		for (unsigned int bit = 0; bit < count; bit++) {
 			const string &name = bitfieldDesc.names->at(bit);
 			if (name.empty())
 				continue;
@@ -226,14 +227,14 @@ public:
 			return os << "[ERROR: No list data.]";
 		}
 
-		int col_count = 1;
+		unsigned int col_count = 1;
 		if (listDataDesc.names) {
-			col_count = (int)listDataDesc.names->size();
+			col_count = static_cast<unsigned int>(listDataDesc.names->size());
 		} else {
 			// No column headers.
 			// Use the first row.
 			if (list_data && !list_data->empty()) {
-				col_count = (int)list_data->at(0).size();
+				col_count = static_cast<unsigned int>(list_data->at(0).size());
 			}
 		}
 		assert(col_count > 0);
@@ -241,19 +242,19 @@ public:
 			return os << "[ERROR: No list data.]";
 		}
 
-		unique_ptr<size_t[]> colSize(new size_t[col_count]());
-		size_t totalWidth = col_count + 1;
+		unique_ptr<unsigned int[]> colSize(new unsigned int[col_count]());
+		unsigned int totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
 			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
-				colSize[i] = it->size();
+				colSize[i] = static_cast<unsigned int>(it->size());
 			}
 		}
 
 		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-			int i = 0;
+			unsigned int i = 0;
 			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-				colSize[i] = max(jt->length(), colSize[i]);
+				colSize[i] = max(static_cast<unsigned int>(jt->length()), colSize[i]);
 				i++;
 			}
 		}
@@ -269,7 +270,7 @@ public:
 		bool skipFirstNL = true;
 		if (listDataDesc.names) {
 			// Print the column names.
-			size_t i = 0;
+			unsigned int i = 0;
 			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
 				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
 				os << '|' << setw(colSize[i]) << *it;
@@ -297,7 +298,7 @@ public:
 				os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
 				checkboxes >>= 1;
 			}
-			size_t i = 0;
+			unsigned int i = 0;
 			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++i) {
 				os << setw(colSize[i]) << SafeString(jt->c_str(), false) << '|';
 			}
@@ -577,12 +578,12 @@ public:
 				assert(bitfieldDesc.names != nullptr);
 				if (bitfieldDesc.names) {
 					os << '[';
-					int count = (int)bitfieldDesc.names->size();
+					unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
 					assert(count <= 32);
 					if (count > 32)
 						count = 32;
 					bool printedOne = false;
-					for (int bit = 0; bit < count; bit++) {
+					for (unsigned int bit = 0; bit < count; bit++) {
 						const string &name = bitfieldDesc.names->at(bit);
 						if (name.empty())
 							continue;
@@ -604,12 +605,12 @@ public:
 				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField->name.c_str());
 				if (listDataDesc.names) {
 					os << ",\"names\":[";
-					const int col_count = (int)listDataDesc.names->size();
+					const unsigned int col_count = static_cast<unsigned int>(listDataDesc.names->size());
 					if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 						// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
 						os << "checked,";
 					}
-					for (int j = 0; j < col_count; j++) {
+					for (unsigned int j = 0; j < col_count; j++) {
 						if (j) os << ',';
 						os << JSONString(listDataDesc.names->at(j).c_str());
 					}
@@ -665,8 +666,8 @@ public:
 
 				os << '[';
 				bool printedOne = false;
-				const size_t age_ratings_max = age_ratings->size();
-				for (size_t j = 0; j < age_ratings_max; j++) {
+				const unsigned int age_ratings_max = static_cast<unsigned int>(age_ratings->size());
+				for (unsigned int j = 0; j < age_ratings_max; j++) {
 					const uint16_t rating = age_ratings->at(j);
 					if (!(rating & RomFields::AGEBF_ACTIVE))
 						continue;
