@@ -1,8 +1,8 @@
 path_classifiers:
   test:
-    - "src/*/tests/**"
+    - "/src/*/tests/"
   docs:
-    - "doc/**"
+    - /doc/
 
 queries:
   - exclude: cpp/fixme-comment
