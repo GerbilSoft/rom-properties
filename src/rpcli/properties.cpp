@@ -237,7 +237,7 @@ public:
 			}
 		}
 		assert(col_count > 0);
-		if (col_count < 0) {
+		if (col_count <= 0) {
 			return os << "[ERROR: No list data.]";
 		}
 
