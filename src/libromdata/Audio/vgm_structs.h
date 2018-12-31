@@ -36,10 +36,13 @@ extern "C" {
 
 /**
  * Video Game Music Format.
- * All fields are little-endian.
+ *
+ * All fields are in little-endian, except for the
+ * magic number, which is considered "big-endian".
+ *
  * All pointer offsets are relative to that field's address.
  */
-#define VGM_MAGIC 0x206D6756U	/* "Vgm " (little-endian) */
+#define VGM_MAGIC 'Vgm '	// Magic number
 #define VGM_SAMPLE_RATE 44100U	// All VGM sample values use this rate.
 #define VGM_CLK_FLAG_ALTMODE	(1U << 31)	/* alternate mode for some sound chips */
 #define VGM_CLK_FLAG_DUALCHIP	(1U << 30)	/* dual-chip mode for some sound chips */
