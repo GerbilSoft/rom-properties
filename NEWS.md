@@ -73,7 +73,10 @@
     of checkboxes.
 
 * Bug fixes:
-  * Nintendo 3DS: Handle DLC packages with more than 64 contents.
+  * Nintendo 3DS:
+    * Handle DLC packages with more than 64 contents.
+    * Correctly handle localized titles. Previously, English titles were
+      used regardless of the system region.
   * Linux: Fixed a file handle leak that was only noticeable when handling
     more than 1,023 files in one invocation of the `rpcli` program.
   * GameCube: Fix bug that prevented "EUR" and "JPN" from being appended

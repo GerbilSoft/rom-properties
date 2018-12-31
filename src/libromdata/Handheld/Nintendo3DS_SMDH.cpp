@@ -430,11 +430,11 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 
 	if (lang >= 0 && lang < ARRAY_SIZE(smdhHeader->titles)) {
 		d->fields->addField_string(C_("Nintendo3DS", "Title"), utf16le_to_utf8(
-			smdhHeader->titles[1].desc_short, ARRAY_SIZE(smdhHeader->titles[lang].desc_short)));
+			smdhHeader->titles[lang].desc_short, ARRAY_SIZE(smdhHeader->titles[lang].desc_short)));
 		d->fields->addField_string(C_("Nintendo3DS", "Full Title"), utf16le_to_utf8(
-			smdhHeader->titles[1].desc_long, ARRAY_SIZE(smdhHeader->titles[lang].desc_long)));
+			smdhHeader->titles[lang].desc_long, ARRAY_SIZE(smdhHeader->titles[lang].desc_long)));
 		d->fields->addField_string(C_("Nintendo3DS", "Publisher"), utf16le_to_utf8(
-			smdhHeader->titles[1].publisher, ARRAY_SIZE(smdhHeader->titles[lang].publisher)));
+			smdhHeader->titles[lang].publisher, ARRAY_SIZE(smdhHeader->titles[lang].publisher)));
 	}
 
 	// Region code.
