@@ -702,48 +702,30 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	set_mimeTypes.reserve(reserve_size);
 #endif
 
-	const RomDataFactoryPrivate::RomDataFns *fns =
-		&RomDataFactoryPrivate::romDataFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
-		if (!sys_mimeTypes)
-			continue;
+	// Table of pointers to tables.
+	// This reduces duplication by only requiring a single loop.
+	static const RomDataFns *const romDataFns_tbl[] = {
+		romDataFns_magic,
+		romDataFns_header,
+		romDataFns_footer,
+		nullptr
+	};
 
-		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
-			auto iter = set_mimeTypes.find(*sys_mimeTypes);
-			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(*sys_mimeTypes);
-				vec_mimeTypes.push_back(*sys_mimeTypes);
-			}
-		}
-	}
+	for (const RomDataFns *const *tblptr = &romDataFns_tbl[0];
+	     *tblptr != nullptr; tblptr++)
+	{
+		const RomDataFns *fns = *tblptr;
+		for (; fns->supportedFileExtensions != nullptr; fns++) {
+			const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+			if (!sys_mimeTypes)
+				continue;
 
-	fns = &RomDataFactoryPrivate::romDataFns_header[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
-		if (!sys_mimeTypes)
-			continue;
-
-		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
-			auto iter = set_mimeTypes.find(*sys_mimeTypes);
-			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(*sys_mimeTypes);
-				vec_mimeTypes.push_back(*sys_mimeTypes);
-			}
-		}
-	}
-
-	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
-		if (!sys_mimeTypes)
-			continue;
-
-		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
-			auto iter = set_mimeTypes.find(*sys_mimeTypes);
-			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(*sys_mimeTypes);
-				vec_mimeTypes.push_back(*sys_mimeTypes);
+			for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
+				auto iter = set_mimeTypes.find(*sys_mimeTypes);
+				if (iter == set_mimeTypes.end()) {
+					set_mimeTypes.insert(*sys_mimeTypes);
+					vec_mimeTypes.push_back(*sys_mimeTypes);
+				}
 			}
 		}
 	}
