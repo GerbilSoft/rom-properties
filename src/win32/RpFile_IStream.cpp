@@ -49,6 +49,7 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	, m_pStream(pStream)
 	, m_z_uncomp_sz(0)
 	, m_z_filepos(0)
+	, m_z_realpos(0)
 	, m_pZstm(nullptr)
 	// zlib buffer
 	, m_pZbuf(nullptr)
@@ -183,6 +184,7 @@ int RpFile_IStream::copyZlibStream(const RpFile_IStream &other)
 	// Copy the other values.
 	m_z_uncomp_sz = other.m_z_uncomp_sz;
 	m_z_filepos = other.m_z_filepos;
+	m_z_realpos = other.m_z_realpos;
 	m_zbufLen = other.m_zbufLen;
 	m_zcurPos = other.m_zcurPos;
 
@@ -196,6 +198,7 @@ zero_all_values:
 
 	m_z_uncomp_sz = 0;
 	m_z_filepos = 0;
+	m_z_realpos = 0;
 	m_zbufLen = 0;
 	m_zcurPos = 0;
 
@@ -211,6 +214,7 @@ RpFile_IStream::RpFile_IStream(const RpFile_IStream &other)
 	, m_pStream(other.m_pStream)
 	, m_z_uncomp_sz(0)
 	, m_z_filepos(0)
+	, m_z_realpos(0)
 	, m_pZstm(nullptr)
 	// zlib buffer
 	, m_pZbuf(nullptr)
@@ -319,13 +323,23 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 	if (m_pZstm) {
 		// Read and decompress.
 		// Reference: https://www.codeproject.com/Articles/3602/Zlib-compression-decompression-wrapper-as-ISequent
-		HRESULT hr = S_OK;
 		m_pZstm->next_out = static_cast<Bytef*>(ptr);
 		m_pZstm->avail_out = static_cast<uInt>(size);
+
+		// Seek to the last real position.
+		LARGE_INTEGER dlibMove;
+		dlibMove.QuadPart = m_z_realpos;
+		HRESULT hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, nullptr);
+		if (FAILED(hr)) {
+			// Unable to seek.
+			m_lastError = EIO;
+			return 0;
+		}
 
 		if (m_zcurPos == m_zbufLen) {
 			// Need to read more data from the gzipped file.
 			m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			m_z_realpos += m_zbufLen;
 			m_zcurPos = 0;
 		}
 
@@ -353,6 +367,7 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 
 			// Read more data from the gzipped file.
 			m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			m_z_realpos += m_zbufLen;
 			m_zcurPos = 0;
 		} while (m_pZstm->avail_out > 0);
 
@@ -440,6 +455,7 @@ int RpFile_IStream::seek(int64_t pos)
 	if (m_pZstm) {
 		// Reset the zlib stream.
 		m_z_filepos = 0;
+		m_z_realpos = 0;
 		m_zbufLen = 0;
 		m_zcurPos = 0;
 		inflateEnd(m_pZstm);

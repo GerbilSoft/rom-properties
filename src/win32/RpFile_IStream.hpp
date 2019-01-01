@@ -127,6 +127,7 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		// zlib
 		unsigned int m_z_uncomp_sz;
 		unsigned int m_z_filepos;	// position in compressed file
+		int64_t m_z_realpos;		// position in real file
 		struct z_stream_s *m_pZstm;
 		// zlib buffer
 		uint8_t *m_pZbuf;
