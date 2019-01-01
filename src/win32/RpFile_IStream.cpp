@@ -347,9 +347,13 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 				}
 				didSeek = true;
 			}
+			// S_FALSE: End of file. Continue processing with
+			//          whatever's left.
+			// E_PENDING: TODO
+			// Other: Error.
 			hr = m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
-			if (FAILED(hr)) {
-				// Unable to read.
+			if (FAILED(hr) && hr != S_FALSE) {
+				// Read error.
 				m_lastError = EIO;
 				return 0;
 			}
@@ -402,12 +406,11 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 
 			m_zcurPos = 0;
 			hr = m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
-			if (hr == S_FALSE) {
-				// End of file.
-				// TODO: E_PENDING?
-				m_zbufLen = 0;
-				break;
-			} else if (FAILED(hr)) {
+			// S_FALSE: End of file. Continue processing with
+			//          whatever's left.
+			// E_PENDING: TODO
+			// Other: Error.
+			if (FAILED(hr) && hr != S_FALSE) {
 				// Read error.
 				m_lastError = EIO;
 				m_zbufLen = 0;
