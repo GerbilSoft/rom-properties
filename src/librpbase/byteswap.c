@@ -92,10 +92,10 @@ void __byte_swap_32_array_c(uint32_t *ptr, unsigned int n)
 
 	// Process 4 DWORDs per iteration.
 	for (; n >= 16; n -= 16, ptr += 4) {
-		*(ptr+0) = __swab32(*(ptr+0));
-		*(ptr+1) = __swab32(*(ptr+1));
-		*(ptr+2) = __swab32(*(ptr+2));
-		*(ptr+3) = __swab32(*(ptr+3));
+		ptr[0] = __swab32(ptr[0]);
+		ptr[1] = __swab32(ptr[1]);
+		ptr[2] = __swab32(ptr[2]);
+		ptr[3] = __swab32(ptr[3]);
 	}
 
 	// Process remaining DWORDs.
