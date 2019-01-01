@@ -387,6 +387,11 @@ int VGM::loadFieldData(void)
 		data_offset = 0x40;
 	} else {
 		data_offset = le32_to_cpu(d->vgmHeader.data_offset) + offsetof(VGM_Header, data_offset);
+		// Sanity check: Must be less than 4k.
+		assert(data_offset <= 4096);
+		if (data_offset > 4096) {
+			data_offset = 4096;
+		}
 	}
 
 	// NOTE: Not byteswapping when checking for 0 because
