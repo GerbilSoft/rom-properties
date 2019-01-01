@@ -326,13 +326,20 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 	}
 	img->set_tr_idx(tr_idx);
 
-	// Copy one line at a time. (CI8 -> CI8)
 	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
 	const int stride = img->stride();
-	for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
-		memcpy(px_dest, img_buf, width);
-		px_dest += stride;
-		img_buf += width;
+	if (stride == width) {
+		// Image stride matches the source width.
+		// Copy the entire image all at once.
+		// TODO: Needs testing.
+		memcpy(px_dest, img_buf, width * height);
+	} else {
+		// Copy one line at a time. (CI8 -> CI8)
+		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
+			memcpy(px_dest, img_buf, width);
+			px_dest += stride;
+			img_buf += width;
+		}
 	}
 
 	// Image has been converted.
