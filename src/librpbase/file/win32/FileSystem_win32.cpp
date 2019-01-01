@@ -49,16 +49,6 @@ using std::wstring;
 #include <shlobj.h>
 #include <direct.h>
 
-// FIXME: This is Vista only.
-// On XP, symlink resolution should be disabled.
-extern "C"
-DWORD WINAPI GetFinalPathNameByHandleW(
-  _In_  HANDLE hFile,
-  _Out_ LPWSTR lpszFilePath,
-  _In_  DWORD  cchFilePath,
-  _In_  DWORD  dwFlags
-);
-
 namespace LibRpBase { namespace FileSystem {
 
 // pthread_once() control variable.
