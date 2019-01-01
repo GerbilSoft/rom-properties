@@ -315,6 +315,8 @@ void RpFile_IStream::close(void)
  */
 size_t RpFile_IStream::read(void *ptr, size_t size)
 {
+	HRESULT hr;
+
 	if (!m_pStream) {
 		m_lastError = EBADF;
 		return 0;
@@ -326,19 +328,29 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 		m_pZstm->next_out = static_cast<Bytef*>(ptr);
 		m_pZstm->avail_out = static_cast<uInt>(size);
 
-		// Seek to the last real position.
-		LARGE_INTEGER dlibMove;
-		dlibMove.QuadPart = m_z_realpos;
-		HRESULT hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, nullptr);
-		if (FAILED(hr)) {
-			// Unable to seek.
-			m_lastError = EIO;
-			return 0;
-		}
+		// Only seek if we need to read data.
+		bool didSeek = false;
 
 		if (m_zcurPos == m_zbufLen) {
 			// Need to read more data from the gzipped file.
-			m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			if (!didSeek) {
+				// Seek to the last real position.
+				LARGE_INTEGER dlibMove;
+				dlibMove.QuadPart = m_z_realpos;
+				hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, nullptr);
+				if (FAILED(hr)) {
+					// Unable to seek.
+					m_lastError = EIO;
+					return 0;
+				}
+				didSeek = true;
+			}
+			hr = m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			if (FAILED(hr)) {
+				// Unable to read.
+				m_lastError = EIO;
+				return 0;
+			}
 			m_z_realpos += m_zbufLen;
 			m_zcurPos = 0;
 		}
@@ -354,10 +366,17 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 			}
 
 			err = inflate(m_pZstm, Z_SYNC_FLUSH);
-			if (err != Z_OK) {
-				// Error decompressing data.
-				m_lastError = EIO;
-				return 0;
+			switch (err) {
+				case Z_OK:
+				case Z_STREAM_END:
+					// Data decompressed successfully.
+					// NOTE: Z_STREAM_END occurs if we reached
+					// the end of the stream in this read.
+					break;
+				default:
+					// Error decompressing data.
+					m_lastError = EIO;
+					return 0;
 			}
 
 			if (m_pZstm->avail_out == 0) {
@@ -366,7 +385,24 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 			}
 
 			// Read more data from the gzipped file.
-			m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			if (!didSeek) {
+				// Seek to the last real position.
+				LARGE_INTEGER dlibMove;
+				dlibMove.QuadPart = m_z_realpos;
+				hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, nullptr);
+				if (FAILED(hr)) {
+					// Unable to seek.
+					m_lastError = EIO;
+					return 0;
+				}
+				didSeek = true;
+			}
+			hr = m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			if (FAILED(hr)) {
+				// Unable to read.
+				m_lastError = EIO;
+				return 0;
+			}
 			m_z_realpos += m_zbufLen;
 			m_zcurPos = 0;
 		} while (m_pZstm->avail_out > 0);
@@ -380,7 +416,7 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 	}
 
 	ULONG cbRead;
-	HRESULT hr = m_pStream->Read(ptr, (ULONG)size, &cbRead);
+	hr = m_pStream->Read(ptr, (ULONG)size, &cbRead);
 	if (FAILED(hr)) {
 		// An error occurred.
 		// TODO: Convert hr to POSIX?
