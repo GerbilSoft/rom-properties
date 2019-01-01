@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_NULL.hpp: Text encoding functions. (NULL terminator checks)   *
  *                                                                         *
- * Copyright (c) 2009-2018 by David Korth.                                 *
+ * Copyright (c) 2009-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -17,6 +17,9 @@
  * You should have received a copy of the GNU General Public License       *
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_NULL_HPP__
+#define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_NULL_HPP__
 
 #include "config.librpbase.h"
 #include "common.h"
@@ -49,3 +52,5 @@ static FORCEINLINE int check_NULL_terminator(const char16_t *wcs, int len)
 }
 
 }
+
+#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_NULL_HPP__ */

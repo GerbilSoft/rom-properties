@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ImageDecoder_p.hpp: Image decoding functions. (PRIVATE CLASS)           *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,10 +14,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_LIBRPBASE_IMG_IMAGEDECODER_P_HPP__
+#define __ROMPROPERTIES_LIBRPBASE_IMG_IMAGEDECODER_P_HPP__
 
 #include "common.h"
 #include "img/rp_image.hpp"
@@ -943,3 +945,5 @@ inline uint32_t ImageDecoderPrivate::A8_to_ARGB32(uint8_t px8)
 }
 
 }
+
+#endif /* __ROMPROPERTIES_LIBRPBASE_IMG_IMAGEDECODER_P_HPP__ */
