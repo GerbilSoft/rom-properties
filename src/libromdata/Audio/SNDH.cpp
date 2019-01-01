@@ -50,6 +50,7 @@ using namespace LibRpBase;
 // C++ includes.
 #include <algorithm>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -715,7 +716,7 @@ int SNDH::isRomSupported_static(const DetectInfo *info)
 			// - Kauling_Andy/Infinity_One.sndh
 			static const struct _sndh_fragment_t {
 				uint8_t len;
-				uint8_t data[4];
+				char data[4];
 			} fragments[] = {
 				{3, {'N','D','H',0}},
 				{4, {'T','I','T','L'}},
@@ -884,20 +885,22 @@ int SNDH::loadFieldData(void)
 	// VBL *before* timers. We'll list it before timers.
 
 	// VBlank frequency.
+	const char *const s_hz = C_("SNDH", "%u Hz");
 	if (tags.vblank_freq != 0) {
 		d->fields->addField_string(C_("SNDH", "VBlank Freq"),
-			rp_sprintf(C_("SNDH", "%u Hz"), tags.vblank_freq));
+			rp_sprintf(s_hz, tags.vblank_freq));
 	}
 
 	// Timer frequencies.
 	// TODO: Use RFT_LISTDATA?
+	const char *const s_timer_freq = C_("SNDH", "Timer %c Freq");
 	for (unsigned int i = 0; i < (unsigned int)ARRAY_SIZE(tags.timer_freq); i++) {
 		if (tags.timer_freq[i] == 0)
 			continue;
 
 		d->fields->addField_string(
-			rp_sprintf(C_("SNDH", "Timer %c Freq"), 'A'+i).c_str(),
-			rp_sprintf(C_("SNDH", "%u Hz"), tags.timer_freq[i]));
+			rp_sprintf(s_timer_freq, 'A'+i).c_str(),
+			rp_sprintf(s_hz, tags.timer_freq[i]));
 	}
 
 	// Default subtune.
@@ -1049,12 +1052,9 @@ int SNDH::loadMetaData(void)
 
 	// Duration.
 	// This is the total duration of *all* subtunes.
-	unsigned int duration = 0;
-	for (auto iter = tags.subtune_lengths.cbegin();
-	     iter != tags.subtune_lengths.cend(); ++iter)
-	{
-		duration += *iter;
-	}
+	const unsigned int duration = std::accumulate(
+		tags.subtune_lengths.cbegin(),
+		tags.subtune_lengths.cend(), 0U);
 	if (duration != 0) {
 		// NOTE: Length is in milliseconds, so we need to
 		// multiply duration by 1000.
