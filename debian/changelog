@@ -1,5 +1,12 @@
 rom-properties (1.3.3-1ppa2~cosmic1) cosmic; urgency=medium
 
+  * Disable XFCE for now, since Ubuntu 18.10 switched from the GTK+ 2.x
+    version to GTK+ 3.x.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 01 Jan 2019 17:36:24 -0500
+
+rom-properties (1.3.3-1ppa2~cosmic1) cosmic; urgency=medium
+
   * Build for Ubuntu 18.10 "Cosmic" Cuttlefish.
 
  -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 01 Jan 2019 17:20:50 -0500

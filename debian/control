@@ -22,7 +22,6 @@ Build-Depends:
  libkf5widgetsaddons-dev,
  libglib2.0-dev,
  libgtk2.0-dev,
- libthunarx-2-dev,
  libgtk-3-dev,
  libnautilus-extension-dev,
  libbsd-dev,
@@ -35,7 +34,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: rom-properties-kde4, rom-properties-kde5, rom-properties-xfce, rom-properties-gnome, rom-properties-cli, rom-properties-stub, rom-properties-lang, ${misc:Depends}
+Depends: rom-properties-kde4, rom-properties-kde5, rom-properties-gnome, rom-properties-cli, rom-properties-stub, rom-properties-lang, ${misc:Depends}
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -64,17 +63,6 @@ Description: ROM Properties Page shell extension
  including Nintendo GameCube and Wii.
  .
  This package contains the KDE 5 version.
-
-Package: rom-properties-xfce
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: rom-properties-lang
-Description: ROM Properties Page shell extension
- This shell extension provides thumbnailing and property page functionality
- for ROM images, disc images, and save files for various game consoles,
- including Nintendo GameCube and Wii.
- .
- This package contains the XFCE version.
 
 Package: rom-properties-gnome
 Architecture: any
