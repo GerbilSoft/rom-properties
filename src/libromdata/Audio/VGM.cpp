@@ -373,6 +373,10 @@ int VGM::loadFieldData(void)
 	// fields for the base data and up to 8 sound chips,
 	// assuming 2 fields per chip.
 	d->fields->reserve(11+(8*2));
+	d->fields->reserveTabs(2);
+
+	// Main tab.
+	d->fields->setTabName(0, "VGM");
 
 	// Version number. (BCD)
 	unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
@@ -449,6 +453,9 @@ int VGM::loadFieldData(void)
 				le32_to_cpu(vgmHeader->frame_rate));
 		}
 	}
+
+	// Sound chips.
+	d->fields->addTab(C_("VGM", "Sound Chips"));
 
 	// TODO:
 	// - VGM 1.51: Loop modifier
