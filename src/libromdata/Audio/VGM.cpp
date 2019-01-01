@@ -467,8 +467,9 @@ int VGM::loadFieldData(void)
 		// TODO: Handle the dual-chip bit.
 
 		// Check for T6W28.
+		const bool isT6W28 = ((sn76489_clk & PSG_T6W28) == PSG_T6W28);
 		const char *chip_name;
-		if ((sn76489_clk & PSG_T6W28) == PSG_T6W28) {
+		if (isT6W28) {
 			chip_name = "T6W28";
 		} else {
 			chip_name = "SN76489";
@@ -477,9 +478,11 @@ int VGM::loadFieldData(void)
 		d->fields->addField_string(
 			rp_sprintf(s_clockrate, chip_name).c_str(),
 			d->formatClockRate(sn76489_clk & ~PSG_T6W28));
-		d->fields->addField_string(
-			rp_sprintf(s_dualchip, chip_name).c_str(),
-				(sn76489_clk & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
+		if (!isT6W28) {
+			d->fields->addField_string(
+				rp_sprintf(s_dualchip, chip_name).c_str(),
+					(sn76489_clk & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
+		}
 
 		// LFSR data. [1.10; defaults used for older versions]
 		uint16_t lfsr_feedback = 0x0009;
