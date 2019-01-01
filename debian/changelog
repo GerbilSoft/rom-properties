@@ -1,4 +1,4 @@
-rom-properties (1.3.3-1ppa2~cosmic1) cosmic; urgency=medium
+rom-properties (1.3.3-1ppa2~cosmic2) cosmic; urgency=medium
 
   * Disable XFCE for now, since Ubuntu 18.10 switched from the GTK+ 2.x
     version to GTK+ 3.x.
