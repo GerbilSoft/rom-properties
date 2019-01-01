@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -35,11 +35,20 @@ using std::string;
 using std::unique_ptr;
 
 // zlib for transparent gzip decompression.
-// FIXME: add delayload
 #include <zlib.h>
 
 // zlib buffer size.
 #define ZLIB_BUFFER_SIZE 16384
+
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+#endif /* _MSC_VER */
 
 /**
  * Create an IRpFile using IStream* as the underlying storage mechanism.
@@ -61,6 +70,17 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	pStream->AddRef();
 
 	if (gzip) {
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+		// Delay load verification.
+		// TODO: Only if linked with /DELAYLOAD?
+		if (DelayLoad_test_zlibVersion() != 0) {
+			// Delay load failed.
+			// Don't do any gzip checking.
+			return;
+		}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+		// for IStream::Seek()
 		LARGE_INTEGER li;
 
 		// Check for a gzipped file.
