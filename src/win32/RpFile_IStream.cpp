@@ -399,14 +399,21 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 				}
 				didSeek = true;
 			}
+
+			m_zcurPos = 0;
 			hr = m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
-			if (FAILED(hr)) {
-				// Unable to read.
+			if (hr == S_FALSE) {
+				// End of file.
+				// TODO: E_PENDING?
+				m_zbufLen = 0;
+				break;
+			} else if (FAILED(hr)) {
+				// Read error.
 				m_lastError = EIO;
+				m_zbufLen = 0;
 				return 0;
 			}
 			m_z_realpos += m_zbufLen;
-			m_zcurPos = 0;
 		} while (m_pZstm->avail_out > 0);
 
 		// Adjust the current seek pointer based on how much data was read.
