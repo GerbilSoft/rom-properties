@@ -29,8 +29,10 @@
 using namespace LibRpBase;
 
 // C++ includes.
+#include <memory>
 #include <string>
 using std::string;
+using std::unique_ptr;
 
 // zlib for transparent gzip decompression.
 // FIXME: add delayload
@@ -466,22 +468,83 @@ size_t RpFile_IStream::write(const void *ptr, size_t size)
  */
 int RpFile_IStream::seek(int64_t pos)
 {
+	LARGE_INTEGER dlibMove;
+	HRESULT hr;
+
 	if (!m_pStream) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	if (m_pZstm && pos != 0) {
-		// zlib stream: Cannot seek anywhere except 0.
-		// TODO: Make it possible?
-		m_lastError = EIO;
-		return -1;
+	if (m_pZstm) {
+		// zlib stream: Special seek handling.
+		if (pos == m_z_filepos) {
+			// No seek necessary.
+			return 0;
+		}
+
+		size_t skip_bytes;
+		if (pos < m_z_filepos) {
+			// Reset the stream first.
+			inflateEnd(m_pZstm);
+
+			m_z_filepos = 0;
+			m_zbufLen = 0;
+			m_zcurPos = 0;
+			memset(m_pZstm, 0, sizeof(*m_pZstm));
+			int err = inflateInit2(m_pZstm, 16+MAX_WBITS);
+
+			// Seek to the beginning of the real file.
+			m_z_realpos = 0;
+			dlibMove.QuadPart = 0;
+			hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
+
+			if (err != Z_OK || FAILED(hr)) {
+				// Error initializing the zlib stream
+				// and/or rewinding the base stream.
+				// Cannot continue with this stream.
+				free(m_pZstm);
+				free(m_pZbuf);
+				m_pZstm = nullptr;
+				m_pZbuf = nullptr;
+				m_z_uncomp_sz = 0;
+
+				m_pStream->Release();
+				m_pStream = nullptr;
+				return -1;
+			}
+
+			skip_bytes = static_cast<size_t>(pos);
+		} else if (pos > m_z_filepos) {
+			// Skip over the bytes.
+			skip_bytes = static_cast<size_t>(pos - m_z_filepos);
+		} else {
+			// Should not happen...
+			assert(!"Something happened...");
+			return -1;
+		}
+
+		// Skip over the required number of bytes.
+		unique_ptr<uint8_t[]> skip_buf(new uint8_t[ZLIB_BUFFER_SIZE]);
+		while (skip_bytes > 0) {
+			size_t sz_to_read = (skip_bytes > ZLIB_BUFFER_SIZE ? ZLIB_BUFFER_SIZE : skip_bytes);
+			size_t sz_read = this->read(skip_buf.get(), sz_to_read);
+			if (sz_read != sz_to_read) {
+				// Error...
+				m_lastError = -EIO;
+				return -1;
+			}
+
+			skip_bytes -= sz_to_read;
+		}
+
+		// Seek was successful.
+		return 0;
 	}
 
-	// Rewind the base stream.
-	LARGE_INTEGER dlibMove;
+	// Seek in the base stream.
 	dlibMove.QuadPart = pos;
-	HRESULT hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
+	hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
 	if (FAILED(hr)) {
 		// TODO: Convert hr to POSIX?
 		m_lastError = EIO;
