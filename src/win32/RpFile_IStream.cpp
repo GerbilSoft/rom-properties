@@ -331,7 +331,7 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 		m_pZstm->avail_out = static_cast<uInt>(size);
 
 		// Only seek if we need to read data.
-		bool didSeek = false;
+		bool didSeek = true;
 
 		if (m_zcurPos == m_zbufLen) {
 			// Need to read more data from the gzipped file.
@@ -339,7 +339,7 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 				// Seek to the last real position.
 				LARGE_INTEGER dlibMove;
 				dlibMove.QuadPart = m_z_realpos;
-				hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, nullptr);
+				hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
 				if (FAILED(hr)) {
 					// Unable to seek.
 					m_lastError = EIO;
@@ -391,7 +391,7 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 				// Seek to the last real position.
 				LARGE_INTEGER dlibMove;
 				dlibMove.QuadPart = m_z_realpos;
-				hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, nullptr);
+				hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
 				if (FAILED(hr)) {
 					// Unable to seek.
 					m_lastError = EIO;
