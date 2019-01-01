@@ -138,16 +138,24 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	// NOTE: Win16 executables don't have a separate
 	// .rsrc section, so we have to use the entire
 	// size of the file as the resource size.
+	static const uint32_t fileSize_MAX = 16U*1024*1024;
 
 	// Validate the starting address and size.
-	const int64_t fileSize = file->size();
-	if (static_cast<int64_t>(rsrc_tbl_addr) >= fileSize) {
-		// Starting address is past the end of the file.
+	const int64_t fileSize_i64 = file->size();
+	if (fileSize_i64 > fileSize_MAX) {
+		// A Win16 executable larger than 16 MB doesn't make any sense.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
 		return;
-	} else if ((static_cast<int64_t>(rsrc_tbl_addr) +static_cast<int64_t>(rsrc_tbl_size)) > fileSize) {
-		// Resource ends past the end of the file.
+	}
+
+	const uint32_t fileSize = static_cast<uint32_t>(fileSize_i64);
+	if (rsrc_tbl_addr >= fileSize ||
+	    rsrc_tbl_size >= fileSize_MAX ||
+	    ((rsrc_tbl_addr + rsrc_tbl_size) > fileSize))
+	{
+		// Starting address is past the end of the file,
+		// or resource ends past the end of the file.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
 		return;

@@ -168,14 +168,22 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	}
 
 	// Validate the starting address and size.
-	const int64_t fileSize = file->size();
-	if (static_cast<int64_t>(rsrc_addr) >= fileSize) {
-		// Starting address is past the end of the file.
+	static const uint32_t fileSize_MAX = 2U*1024*1024*1024;
+	const int64_t fileSize_i64 = file->size();
+	if (fileSize_i64 > fileSize_MAX) {
+		// A Win32/Win64 executable larger than 2 GB doesn't make any sense.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
 		return;
-	} else if ((static_cast<int64_t>(rsrc_addr) + static_cast<int64_t>(rsrc_size)) > fileSize) {
-		// Resource ends past the end of the file.
+	}
+
+	const uint32_t fileSize = static_cast<uint32_t>(fileSize_i64);
+	if (rsrc_addr >= fileSize ||
+	    rsrc_size >= fileSize_MAX ||
+	    ((rsrc_addr + rsrc_size) > fileSize))
+	{
+		// Starting address is past the end of the file,
+		// or resource ends past the end of the file.
 		this->file = nullptr;
 		q->m_lastError = -EIO;
 		return;
