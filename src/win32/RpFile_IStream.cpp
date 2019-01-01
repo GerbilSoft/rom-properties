@@ -23,6 +23,7 @@
 #include "RpFile_IStream.hpp"
 
 // librpbase
+#include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
@@ -31,22 +32,174 @@ using namespace LibRpBase;
 #include <string>
 using std::string;
 
+// zlib for transparent gzip decompression.
+// FIXME: add delayload
+#include <zlib.h>
+
+// zlib buffer size.
+#define ZLIB_BUFFER_SIZE 16384
+
 /**
  * Create an IRpFile using IStream* as the underlying storage mechanism.
- * @param pStream IStream*.
+ * @param pStream	[in] IStream*.
+ * @param gzip		[in] If true, handle gzipped files automatically.
  */
-RpFile_IStream::RpFile_IStream(IStream *pStream)
+RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	: super()
 	, m_pStream(pStream)
+	, m_z_uncomp_sz(0)
+	, m_z_filepos(0)
+	, m_pZstm(nullptr)
+	// zlib buffer
+	, m_pZbuf(nullptr)
+	, m_zbufLen(0)
+	, m_zcurPos(0)
 {
 	pStream->AddRef();
+
+	if (gzip) {
+		LARGE_INTEGER li;
+
+		// Check for a gzipped file.
+		uint16_t gzmagic;
+		ULONG cbRead;
+		HRESULT hr = m_pStream->Read(&gzmagic, (ULONG)sizeof(gzmagic), &cbRead);
+		if (SUCCEEDED(hr) && cbRead == (ULONG)sizeof(gzmagic) &&
+		    gzmagic == be16_to_cpu(0x1F8B))
+		{
+			// gzip magic found!
+			// Get the uncompressed size at the end of the file.
+			ULARGE_INTEGER uliFileSize;
+			li.QuadPart = -4;
+			hr = m_pStream->Seek(li, STREAM_SEEK_END, &uliFileSize);
+			if (SUCCEEDED(hr)) {
+				uliFileSize.QuadPart += 4;
+				hr = m_pStream->Read(&m_z_uncomp_sz, (ULONG)sizeof(m_z_uncomp_sz), &cbRead);
+				if (SUCCEEDED(hr) && cbRead == (ULONG)sizeof(m_z_uncomp_sz)) {
+					m_z_uncomp_sz = le32_to_cpu(m_z_uncomp_sz);
+					if (m_z_uncomp_sz >= uliFileSize.QuadPart-(10+8)) {
+						// Valid filesize.
+						// Initialize zlib.
+						// NOTE: m_pZstm *must* be zero-initialized.
+						// Otherwise, inflateInit() will crash.
+						m_pZstm = static_cast<z_stream*>(calloc(1, sizeof(z_stream)));
+						if (m_pZstm) {
+							int err = inflateInit2(m_pZstm, 16+MAX_WBITS);
+							if (err != Z_OK) {
+								// Error initializing zlib.
+								free(m_pZstm);
+								m_pZstm = nullptr;
+								m_z_uncomp_sz = 0;
+							}
+
+							// Allocate the zlib buffer.
+							m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
+							if (!m_pZbuf) {
+								// malloc() failed.
+								inflateEnd(m_pZstm);
+								free(m_pZstm);
+								m_pZstm = nullptr;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (!m_pZstm) {
+			// Error initializing zlib.
+			m_z_uncomp_sz = 0;
+		}
+
+		// Rewind back to the beginning of the stream.
+		li.QuadPart = 0;
+		m_pStream->Seek(li, STREAM_SEEK_SET, nullptr);
+	}
 }
 
 RpFile_IStream::~RpFile_IStream()
 {
+	free(m_pZbuf);
+
+	if (m_pZstm) {
+		// Close zlib.
+		inflateEnd(m_pZstm);
+		free(m_pZstm);
+	}
+
 	if (m_pStream) {
 		m_pStream->Release();
 	}
+}
+
+/**
+ * Copy the zlib stream from another RpFile_IStream.
+ * @param other
+ * @return 0 on success; non-zero on error.
+ */
+int RpFile_IStream::copyZlibStream(const RpFile_IStream &other)
+{
+	int ret = 0;
+
+	// Delete the current stream.
+	if (m_pZstm) {
+		inflateEnd(m_pZstm);
+		free(m_pZstm);
+	}
+	free(m_pZbuf);
+
+	if (!other.m_pZstm) {
+		// No stream to copy.
+		// Zero everything out.
+		goto zero_all_values;
+	}
+
+	// Copy the stream.
+	m_pZstm = static_cast<z_stream*>(malloc(sizeof(z_stream)));
+	if (!m_pZstm) {
+		// Error allocating the z_stream.
+		m_lastError = ENOMEM;
+		ret = -1;
+		goto zero_all_values;
+	}
+	m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
+	if (!m_pZbuf) {
+		// Error allocating the zlib buffer.
+		free(m_pZstm);
+		m_lastError = ENOMEM;
+		ret = -1;
+		goto zero_all_values;
+	}		
+
+	// Copy the zlib stream.
+	// NOTE: inflateCopy() handles the internal_state struct.
+	inflateCopy(m_pZstm, other.m_pZstm);
+	m_pZstm->next_in = nullptr;
+	m_pZstm->next_out = nullptr;
+
+	// Copy the zlib buffer.
+	memcpy(m_pZbuf, other.m_pZbuf, other.m_zbufLen);
+
+	// Copy the other values.
+	m_z_uncomp_sz = other.m_z_uncomp_sz;
+	m_z_filepos = other.m_z_filepos;
+	m_zbufLen = other.m_zbufLen;
+	m_zcurPos = other.m_zcurPos;
+
+	// We're done here.
+	return 0;
+
+zero_all_values:
+	// Zero everything.
+	m_pZstm = nullptr;
+	m_pZbuf = nullptr;
+
+	m_z_uncomp_sz = 0;
+	m_z_filepos = 0;
+	m_zbufLen = 0;
+	m_zcurPos = 0;
+
+	return ret;
 }
 
 /**
@@ -56,8 +209,24 @@ RpFile_IStream::~RpFile_IStream()
 RpFile_IStream::RpFile_IStream(const RpFile_IStream &other)
 	: super()
 	, m_pStream(other.m_pStream)
+	, m_z_uncomp_sz(0)
+	, m_z_filepos(0)
+	, m_pZstm(nullptr)
+	// zlib buffer
+	, m_pZbuf(nullptr)
+	, m_zbufLen(0)
+	, m_zcurPos(0)
 {
-	// TODO: Combine with assignment constructor?
+	// TODO: Combine with the assignment constructor?
+
+	int ret = copyZlibStream(other);
+	if (ret != 0) {
+		// Error copying the zlib stream.
+		m_pStream = nullptr;
+		return;
+	}
+
+	// Take a reference to the other IStream.
 	m_pStream->AddRef();
 	m_lastError = other.m_lastError;
 
@@ -80,9 +249,19 @@ RpFile_IStream &RpFile_IStream::operator=(const RpFile_IStream &other)
 		m_pStream = nullptr;
 	}
 
+	// Copy the zlib stream.
+	int ret = copyZlibStream(other);
+	if (ret != 0) {
+		// Error copying the zlib stream.
+		return *this;
+	}
+
+	// Take a reference to the other IStream.
 	m_pStream = other.m_pStream;
 	m_pStream->AddRef();
 
+	// Nothing else to do, since we can't actually
+	// clone the stream.
 	m_lastError = other.m_lastError;
 	return *this;
 }
@@ -137,6 +316,54 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 		return 0;
 	}
 
+	if (m_pZstm) {
+		// Read and decompress.
+		// Reference: https://www.codeproject.com/Articles/3602/Zlib-compression-decompression-wrapper-as-ISequent
+		HRESULT hr = S_OK;
+		m_pZstm->next_out = static_cast<Bytef*>(ptr);
+		m_pZstm->avail_out = static_cast<uInt>(size);
+
+		if (m_zcurPos == m_zbufLen) {
+			// Need to read more data from the gzipped file.
+			m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			m_zcurPos = 0;
+		}
+
+		int err = Z_OK;
+		do {
+			m_pZstm->next_in = &m_pZbuf[m_zcurPos];
+			m_pZstm->avail_in = m_zbufLen - m_zcurPos;
+
+			if (m_pZstm->avail_in == 0) {
+				// Out of data.
+				return 0;
+			}
+
+			err = inflate(m_pZstm, Z_SYNC_FLUSH);
+			if (err != Z_OK) {
+				// Error decompressing data.
+				m_lastError = EIO;
+				return 0;
+			}
+
+			if (m_pZstm->avail_out == 0) {
+				m_zcurPos = static_cast<unsigned int>(m_pZstm->next_in - m_pZbuf);
+				break;
+			}
+
+			// Read more data from the gzipped file.
+			m_pStream->Read(m_pZbuf, ZLIB_BUFFER_SIZE, &m_zbufLen);
+			m_zcurPos = 0;
+		} while (m_pZstm->avail_out > 0);
+
+		// Adjust the current seek pointer based on how much data was read.
+		const unsigned int sz_read = static_cast<unsigned int>(size - m_pZstm->avail_out);
+		m_z_filepos += sz_read;
+
+		// We're done here.
+		return sz_read;
+	}
+
 	ULONG cbRead;
 	HRESULT hr = m_pStream->Read(ptr, (ULONG)size, &cbRead);
 	if (FAILED(hr)) {
@@ -160,6 +387,12 @@ size_t RpFile_IStream::write(const void *ptr, size_t size)
 	if (!m_pStream) {
 		// TODO: Read-only check?
 		m_lastError = EBADF;
+		return 0;
+	}
+
+	// Cannot write to zlib streams.
+	if (m_pZstm) {
+		m_lastError = EROFS;
 		return 0;
 	}
 
@@ -187,6 +420,14 @@ int RpFile_IStream::seek(int64_t pos)
 		return -1;
 	}
 
+	if (m_pZstm && pos != 0) {
+		// zlib stream: Cannot seek anywhere except 0.
+		// TODO: Make it possible?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// Rewind the base stream.
 	LARGE_INTEGER dlibMove;
 	dlibMove.QuadPart = pos;
 	HRESULT hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
@@ -194,6 +435,29 @@ int RpFile_IStream::seek(int64_t pos)
 		// TODO: Convert hr to POSIX?
 		m_lastError = EIO;
 		return -1;
+	}
+
+	if (m_pZstm) {
+		// Reset the zlib stream.
+		m_z_filepos = 0;
+		m_zbufLen = 0;
+		m_zcurPos = 0;
+		inflateEnd(m_pZstm);
+		memset(m_pZstm, 0, sizeof(*m_pZstm));
+		int err = inflateInit2(m_pZstm, 16+MAX_WBITS);
+		if (err != Z_OK) {
+			// Error initializing the zlib stream...
+			// Cannot continue with this stream.
+			free(m_pZstm);
+			free(m_pZbuf);
+			m_pZstm = nullptr;
+			m_pZbuf = nullptr;
+			m_z_uncomp_sz = 0;
+
+			m_pStream->Release();
+			m_pStream = nullptr;
+			return -1;
+		}
 	}
 
 	return 0;
@@ -208,6 +472,11 @@ int64_t RpFile_IStream::tell(void)
 	if (!m_pStream) {
 		m_lastError = EBADF;
 		return -1;
+	}
+
+	if (m_pZstm) {
+		// zlib-compressed file.
+		return static_cast<int64_t>(m_z_filepos);
 	}
 
 	LARGE_INTEGER dlibMove;
@@ -236,6 +505,10 @@ int RpFile_IStream::truncate(int64_t size)
 		return -1;
 	} else if (size < 0) {
 		m_lastError = EINVAL;
+		return -1;
+	} else if (m_pZstm) {
+		// zlib is read-only.
+		m_lastError = EROFS;
 		return -1;
 	}
 
@@ -287,6 +560,11 @@ int64_t RpFile_IStream::size(void)
 	if (!m_pStream) {
 		m_lastError = EBADF;
 		return -1;
+	}
+
+	if (m_pZstm) {
+		// zlib-compressed file.
+		return static_cast<int64_t>(m_z_uncomp_sz);
 	}
 
 	// Use Stat() instead of Seek().
