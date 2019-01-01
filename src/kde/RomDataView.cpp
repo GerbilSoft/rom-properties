@@ -478,8 +478,9 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field *f
 
 	QGridLayout *gridLayout = new QGridLayout();
 	int row = 0, col = 0;
-	for (int bit = 0; bit < count; bit++) {
-		const string &name = bitfieldDesc.names->at(bit);
+	auto iter = bitfieldDesc.names->cbegin();
+	for (int bit = 0; bit < count; bit++, ++iter) {
+		const string &name = *iter;
 		if (name.empty())
 			continue;
 
@@ -523,14 +524,14 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	const auto list_data = field->data.list_data;
 	assert(list_data != nullptr);
 
-	int col_count = 1;
+	unsigned int col_count = 1;
 	if (listDataDesc.names) {
-		col_count = (int)listDataDesc.names->size();
+		col_count = static_cast<unsigned int>(listDataDesc.names->size());
 	} else {
 		// No column headers.
 		// Use the first row.
 		if (list_data && !list_data->empty()) {
-			col_count = (int)list_data->at(0).size();
+			col_count = static_cast<unsigned int>(list_data->at(0).size());
 		}
 	}
 
@@ -545,14 +546,15 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	if (listDataDesc.names) {
 		QStringList columnNames;
 		columnNames.reserve(col_count);
-		for (int i = 0; i < col_count; i++) {
-			const string &name = listDataDesc.names->at(i);
+		auto iter = listDataDesc.names->cbegin();
+		for (unsigned int i = 0; i < col_count; i++, ++iter) {
+			const string &name = *iter;
 			if (!name.empty()) {
 				columnNames.append(U82Q(name));
 			} else {
 				// Don't show this column.
 				columnNames.append(QString());
-				treeWidget->setColumnHidden(i, true);
+				treeWidget->setColumnHidden(static_cast<int>(i), true);
 			}
 		}
 		treeWidget->setHeaderLabels(columnNames);
@@ -593,8 +595,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	// Resize the columns to fit the contents.
-	for (int i = 0; i < col_count; i++) {
-		treeWidget->resizeColumnToContents(i);
+	for (unsigned int i = 0; i < col_count; i++) {
+		treeWidget->resizeColumnToContents(static_cast<int>(i));
 	}
 	treeWidget->resizeColumnToContents(col_count);
 

@@ -834,8 +834,9 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 	gtk_widget_show(widget);
 
 	int row = 0, col = 0;
-	for (int bit = 0; bit < count; bit++) {
-		const string &name = bitfieldDesc.names->at(bit);
+	auto iter = bitfieldDesc.names->cbegin();
+	for (int bit = 0; bit < count; bit++, ++iter) {
+		const string &name = *iter;
 		if (name.empty())
 			continue;
 
@@ -988,8 +989,9 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	// Set up the column names.
 	if (listDataDesc.names) {
-		for (int i = 0; i < col_count; i++) {
-			const string &name = listDataDesc.names->at(i);
+		auto iter = listDataDesc.names->cbegin();
+		for (int i = 0; i < col_count; i++, ++iter) {
+			const string &name = *iter;
 			if (name.empty())
 				break;
 
@@ -1195,7 +1197,8 @@ rom_data_view_update_display(RomDataView *page)
 	if (fields->tabCount() > 1) {
 		page->tabs->resize(fields->tabCount());
 		page->tabWidget = gtk_notebook_new();
-		for (int i = 0; i < fields->tabCount(); i++) {
+		auto tabIter = page->tabs->begin();
+		for (int i = 0; i < fields->tabCount(); i++, ++tabIter) {
 			// Create a tab.
 			const char *name = fields->tabName(i);
 			if (!name) {
@@ -1203,7 +1206,7 @@ rom_data_view_update_display(RomDataView *page)
 				continue;
 			}
 
-			auto &tab = page->tabs->at(i);
+			auto &tab = *tabIter;
 #if GTK_CHECK_VERSION(3,0,0)
 			tab.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 			tab.table = gtk_grid_new();
