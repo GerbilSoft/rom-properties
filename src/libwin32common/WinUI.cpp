@@ -206,6 +206,7 @@ int findMonospacedFont(LOGFONT *plfFontMono)
 	// Enumerate all monospaced fonts.
 	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
 	unordered_set<wstring> enum_fonts;
+	// FIXME: Use a CMake check like in librpbase.
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 	enum_fonts.reserve(64);
 #endif

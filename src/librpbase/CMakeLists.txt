@@ -92,6 +92,23 @@ CHECK_SYMBOL_EXISTS_OR_INLINE(_wputenv_s "stdlib.h" "_wputenv_s(L\"abc123\", \"d
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
 
+# Check for unordered_map::reserve and unordered_set::reserve.
+SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
+CHECK_CXX_SOURCE_COMPILES("#include <unordered_map>
+int main(void) {
+	std::unordered_map<int, int> testMap;
+	testMap.reserve(4);
+	return 0;
+}" HAVE_UNORDERED_MAP_RESERVE)
+CHECK_CXX_SOURCE_COMPILES("#include <unordered_set>
+int main(void) {
+	std::unordered_set<int> testSet;
+	testSet.reserve(4);
+	return 0;
+}" HAVE_UNORDERED_SET_RESERVE)
+SET(CMAKE_REQUIRED_INCLUDES ${OLD_CMAKE_REQUIRED_INCLUDES})
+UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
+
 # Sources.
 SET(librpbase_SRCS
 	byteswap.c

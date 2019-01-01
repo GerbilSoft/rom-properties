@@ -18,6 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
+
 #include "RomDataFactory.hpp"
 
 // librpbase
@@ -641,7 +643,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 		 ARRAY_SIZE(romDataFns_header) +
 		 ARRAY_SIZE(romDataFns_footer)) * 2;
 	vec_exts.reserve(reserve_size);
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#ifdef HAVE_UNORDERED_MAP_RESERVE
 	map_exts.reserve(reserve_size);
 #endif
 
@@ -712,7 +714,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 		(ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_header) +
 		 ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_footer)) * 2;
 	vec_mimeTypes.reserve(reserve_size);
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
 #endif
 

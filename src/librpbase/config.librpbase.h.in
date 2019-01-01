@@ -166,4 +166,12 @@
 /* Define to 1 if you have the `_wputenv_s` function. */
 #cmakedefine HAVE__WPUTENV_S 1
 
+/** C++ standard library **/
+
+/** Define to 1 if you have the `unordered_map::reserve` function. */
+#cmakedefine HAVE_UNORDERED_MAP_RESERVE 1
+
+/** Define to 1 if you have the `unordered_set::reserve` function. */
+#cmakedefine HAVE_UNORDERED_SET_RESERVE 1
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_CONFIG_H__ */

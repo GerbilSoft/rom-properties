@@ -142,7 +142,7 @@ void KeyManagerPrivate::reset(void)
 
 	// Reserve 1 KB for the key store.
 	vKeys.reserve(1024);
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#ifdef HAVE_UNORDERED_MAP_RESERVE
 	// Reserve entries for the key names map.
 	// NOTE: Not reserving entries for invalid key names.
 	mapKeyNames.reserve(64);

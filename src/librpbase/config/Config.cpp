@@ -18,6 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
+
 #include "Config.hpp"
 #include "ConfReader_p.hpp"
 
@@ -155,7 +157,7 @@ void ConfigPrivate::reset(void)
 
 	// Reserve 1 KB for the image type priorities store.
 	vImgTypePrio.reserve(1024);
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#ifdef HAVE_UNORDERED_MAP_RESERVE
 	// Reserve 16 entries for the map.
 	mapImgTypePrio.reserve(16);
 #endif

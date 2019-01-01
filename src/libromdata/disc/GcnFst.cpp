@@ -18,6 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
+
 #include "GcnFst.hpp"
 #include "../Console/gcn_structs.h"
 
@@ -158,7 +160,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	string_table_ptr = reinterpret_cast<char*>(&fst8[string_table_offset]);
 	string_table_sz = fstData_sz - string_table_offset;
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#ifdef HAVE_UNORDERED_MAP_RESERVE
 	// Reserve space in the string table.
 	// NOTE: file_count includes the root directory entry.
 	u8_string_table.reserve(file_count - 1);
