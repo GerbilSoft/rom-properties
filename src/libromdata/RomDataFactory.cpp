@@ -170,6 +170,11 @@ class RomDataFactoryPrivate
 		// RomData subclasses that use a footer.
 		static const RomDataFns romDataFns_footer[];
 
+		// Table of pointers to tables.
+		// This reduces duplication by only requiring a single loop
+		// in each function.
+		static const RomDataFns *const romDataFns_tbl[];
+
 		/**
 		 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
 		 * @param file One opened file in the .VMI+.VMS pair.
@@ -218,6 +223,10 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 #define ATTR_HAS_THUMBNAIL RomDataFactory::RDA_HAS_THUMBNAIL
 #define ATTR_HAS_DPOVERLAY RomDataFactory::RDA_HAS_DPOVERLAY
 
+// RomData subclasses that use a header at 0 and
+// definitely have a 32-bit magic number in the header.
+// - address: Address of magic number within the header.
+// - size: 32-bit magic number.
 // TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
@@ -250,6 +259,9 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
+// RomData subclasses that use a header.
+// Headers with addresses other than 0 should be
+// placed at the end of this array.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	// Consoles
 	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL),
@@ -302,9 +314,20 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
+// RomData subclasses that use a footer.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+};
+
+// Table of pointers to tables.
+// This reduces duplication by only requiring a single loop
+// in each function.
+const RomDataFactoryPrivate::RomDataFns *const RomDataFactoryPrivate::romDataFns_tbl[] = {
+	romDataFns_magic,
+	romDataFns_header,
+	romDataFns_footer,
+	nullptr
 };
 
 /**
@@ -622,15 +645,6 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	map_exts.reserve(reserve_size);
 #endif
 
-	// Table of pointers to tables.
-	// This reduces duplication by only requiring a single loop.
-	static const RomDataFns *const romDataFns_tbl[] = {
-		romDataFns_magic,
-		romDataFns_header,
-		romDataFns_footer,
-		nullptr
-	};
-
 	for (const RomDataFns *const *tblptr = &romDataFns_tbl[0];
 	     *tblptr != nullptr; tblptr++)
 	{
@@ -701,15 +715,6 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 	set_mimeTypes.reserve(reserve_size);
 #endif
-
-	// Table of pointers to tables.
-	// This reduces duplication by only requiring a single loop.
-	static const RomDataFns *const romDataFns_tbl[] = {
-		romDataFns_magic,
-		romDataFns_header,
-		romDataFns_footer,
-		nullptr
-	};
 
 	for (const RomDataFns *const *tblptr = &romDataFns_tbl[0];
 	     *tblptr != nullptr; tblptr++)
