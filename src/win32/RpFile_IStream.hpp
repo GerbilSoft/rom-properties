@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -24,14 +24,18 @@
 #include "librpbase/file/IRpFile.hpp"
 #include <objidl.h>
 
+// zlib
+struct z_stream_s;
+
 class RpFile_IStream : public LibRpBase::IRpFile
 {
 	public:
 		/**
 		 * Create an IRpFile using IStream* as the underlying storage mechanism.
-		 * @param pStream IStream*.
+		 * @param pStream	[in] IStream*.
+		 * @param gzip		[in] If true, handle gzipped files automatically.
 		 */
-		explicit RpFile_IStream(IStream *pStream);
+		explicit RpFile_IStream(IStream *pStream, bool gzip = false);
 		virtual ~RpFile_IStream();
 
 	private:
@@ -119,6 +123,23 @@ class RpFile_IStream : public LibRpBase::IRpFile
 	protected:
 		IStream *m_pStream;
 		std::string m_filename;
+
+		// zlib
+		unsigned int m_z_uncomp_sz;
+		unsigned int m_z_filepos;	// position in compressed file
+		int64_t m_z_realpos;		// position in real file
+		struct z_stream_s *m_pZstm;
+		// zlib buffer
+		uint8_t *m_pZbuf;
+		ULONG m_zbufLen;
+		ULONG m_zcurPos;
+
+		/**
+		 * Copy the zlib stream from another RpFile_IStream.
+		 * @param other
+		 * @return 0 on success; non-zero on error.
+		 */
+		int copyZlibStream(const RpFile_IStream &other);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__ */

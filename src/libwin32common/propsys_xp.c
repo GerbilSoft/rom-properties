@@ -40,7 +40,7 @@ HRESULT InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PRO
 	}
 
 	// Allocate memory for the vector.
-	pPropVar->cabstr.pElems = CoTaskMemAlloc(cElems * sizeof(prgsz));
+	pPropVar->cabstr.pElems = CoTaskMemAlloc(cElems * sizeof(PWCHAR));
 	if (!pPropVar->cabstr.pElems) {
 		// Unable to allocate memory.
 		pPropVar->cabstr.cElems = 0;

@@ -234,7 +234,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
-	IRpFile *file = new RpFile_IStream(pstream);
+	IRpFile *file = new RpFile_IStream(pstream, true);
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.
 		delete file;

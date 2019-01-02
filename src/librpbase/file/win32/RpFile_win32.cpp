@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_Win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -44,7 +44,6 @@ using std::unique_ptr;
 using std::wstring;
 
 // zlib for transparent gzip decompression.
-// FIXME: add delayload
 #include <zlib.h>
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
 #if (ZLIB_VER_MAJOR > 1) || \
@@ -61,7 +60,17 @@ using std::wstring;
 #include <winioctl.h>
 #include <io.h>
 
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
 namespace LibRpBase {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+#endif /* _MSC_VER */
 
 /**
  * Deleter for std::unique_ptr<void> d->file,
@@ -515,6 +524,16 @@ void RpFile::init(void)
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
 	if (d->sector_size == 0 && d->mode == FM_OPEN_READ_GZ) {
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+		// Delay load verification.
+		// TODO: Only if linked with /DELAYLOAD?
+		if (DelayLoad_test_zlibVersion() != 0) {
+			// Delay load failed.
+			// Don't do any gzip checking.
+			return;
+		}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
 		DWORD bytesRead;
 		BOOL bRet;
 

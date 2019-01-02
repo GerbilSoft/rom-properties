@@ -592,19 +592,20 @@ int CacheTabPrivate::recursiveScan(const wchar_t *path, vector<pair<wstring, DWO
 			len = wcslen(findFileData.cFileName);
 			if (len <= 4) {
 				// Filename is too short. This is bad.
+				FindClose(hFindFile);
 				return -EIO;
 			}
 
 			pExt = &findFileData.cFileName[len-4];
-			if (!wcscasecmp(pExt, L".png") ||
-			    !wcscasecmp(pExt, L".jpg"))
+			if (wcscasecmp(pExt, L".png") != 0 &&
+			    wcscasecmp(pExt, L".jpg") != 0)
 			{
-				// Valid extension.
-				goto isok;
+				// Extension is not valid.
+				FindClose(hFindFile);
+				return -EIO;
 			}
 
-			// Extension is not valid.
-			return -EIO;
+			// All checks pass.
 		}
 	isok:
 
