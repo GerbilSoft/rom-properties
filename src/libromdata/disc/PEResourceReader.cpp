@@ -801,6 +801,7 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 
 /**
  * Load a VS_VERSION_INFO resource.
+ * Data will be byteswapped to host-endian if necessary.
  * @param id		[in] Resource ID. (-1 for "first entry")
  * @param lang		[in] Language ID. (-1 for "first entry")
  * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
