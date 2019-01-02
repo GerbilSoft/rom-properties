@@ -54,9 +54,11 @@ using namespace LibRpBase;
 #endif
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 // Uninitialized vector class.
@@ -112,13 +114,28 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 			Elf64_Ehdr elf64;
 		} Elf_Header;
 
+		// Header location and size.
+		struct hdr_info_t {
+			int64_t addr;
+			uint64_t size;
+		};
+
+		/**
+		 * Read an ELF program header.
+		 * @param phbuf	[in] Pointer to program header.
+		 * @return Header information.
+		 */
+		hdr_info_t readProgramHeader(const uint8_t *phbuf);
+
 		// Program Header information.
 		bool hasCheckedPH;	// Have we checked program headers yet?
 		bool isPie;		// Is this a position-independent executable?
-		bool isDynamic;		// Is this program dynamically linked?
 		bool isWiiU;		// Is this a Wii U executable?
 
 		string interpreter;	// PT_INTERP value
+
+		// PT_DYNAMIC
+		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
 
 		// Section Header information.
 		bool hasCheckedSH;	// Have we checked section headers yet?
@@ -135,6 +152,13 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 		inline uint32_t elf32_to_cpu(uint32_t x);
 
 		/**
+		 * Byteswap a uint64_t value from ELF to CPU.
+		 * @param x Value to swap.
+		 * @return Swapped value.
+		 */
+		inline uint64_t elf64_to_cpu(uint64_t x);
+
+		/**
 		 * Check program headers.
 		 * @return 0 on success; non-zero on error.
 		 */
@@ -145,6 +169,12 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int checkSectionHeaders(void);
+
+		/**
+		 * Add PT_DYNAMIC fields.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addPtDynamicFields(void);
 };
 
 /** ELFPrivate **/
@@ -154,13 +184,45 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	, elfFormat(ELF_FORMAT_UNKNOWN)
 	, hasCheckedPH(false)
 	, isPie(false)
-	, isDynamic(false)
 	, isWiiU(false)
 	, hasCheckedSH(false)
 	, build_id_type(nullptr)
 {
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
+	memset(&pt_dynamic, 0, sizeof(pt_dynamic));
+}
+
+/**
+ * Read an ELF program header.
+ * @param phbuf	[in] Pointer to program header.
+ * @return Header information.
+ */
+ELFPrivate::hdr_info_t ELFPrivate::readProgramHeader(const uint8_t *phbuf)
+{
+	hdr_info_t info;
+
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			info.addr = phdr->p_offset;
+			info.size = phdr->p_filesz;
+		} else {
+			info.addr = __swab64(phdr->p_offset);
+			info.size = __swab64(phdr->p_filesz);
+		}
+	} else {
+		const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			info.addr = phdr->p_offset;
+			info.size = phdr->p_filesz;
+		} else {
+			info.addr = __swab32(phdr->p_offset);
+			info.size = __swab32(phdr->p_filesz);
+		}
+	}
+
+	return info;
 }
 
 /**
@@ -174,6 +236,24 @@ inline uint32_t ELFPrivate::elf32_to_cpu(uint32_t x)
 		return x;
 	} else {
 		return __swab32(x);
+	}
+
+	// Should not get here...
+	assert(!"Should not get here...");
+	return ~0;
+}
+
+/**
+ * Byteswap a uint64_t value from ELF to CPU.
+ * @param x Value to swap.
+ * @return Swapped value.
+ */
+inline uint64_t ELFPrivate::elf64_to_cpu(uint64_t x)
+{
+	if (Elf_Header.primary.e_data == ELFDATAHOST) {
+		return x;
+	} else {
+		return __swab64(x);
 	}
 
 	// Should not get here...
@@ -247,35 +327,15 @@ int ELFPrivate::checkProgramHeaders(void)
 				isPie = (Elf_Header.primary.e_type == ET_DYN);
 
 				// Get the interpreter name.
-				int64_t int_addr;
-				uint64_t int_size;
-				if (Elf_Header.primary.e_class == ELFCLASS64) {
-					const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
-					if (Elf_Header.primary.e_data == ELFDATAHOST) {
-						int_addr = phdr->p_offset;
-						int_size = phdr->p_filesz;
-					} else {
-						int_addr = __swab64(phdr->p_offset);
-						int_size = __swab64(phdr->p_filesz);
-					}
-				} else {
-					const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
-					if (Elf_Header.primary.e_data == ELFDATAHOST) {
-						int_addr = phdr->p_offset;
-						int_size = phdr->p_filesz;
-					} else {
-						int_addr = __swab32(phdr->p_offset);
-						int_size = __swab32(phdr->p_filesz);
-					}
-				}
+				hdr_info_t info = readProgramHeader(phbuf);
 
 				// Sanity check: Interpreter must be 256 characters or less.
 				// NOTE: Interpreter should be NULL-terminated.
-				if (int_size <= 256) {
+				if (info.size <= 256) {
 					char buf[256];
 					const int64_t prevoff = file->tell();
-					size = file->seekAndRead(int_addr, buf, int_size);
-					if (size != int_size) {
+					size = file->seekAndRead(info.addr, buf, info.size);
+					if (size != info.size) {
 						// Seek and/or read error.
 						return -EIO;
 					}
@@ -286,12 +346,12 @@ int ELFPrivate::checkProgramHeaders(void)
 					}
 
 					// Remove trailing NULLs.
-					while (int_size > 0 && buf[int_size-1] == 0) {
-						int_size--;
+					while (info.size > 0 && buf[info.size-1] == 0) {
+						info.size--;
 					}
 
-					if (int_size > 0) {
-						interpreter.assign(buf, int_size);
+					if (info.size > 0) {
+						interpreter.assign(buf, info.size);
 					}
 				}
 
@@ -300,7 +360,8 @@ int ELFPrivate::checkProgramHeaders(void)
 
 			case PT_DYNAMIC:
 				// Executable is dynamically linked.
-				isDynamic = true;
+				// Save the header information for later.
+				pt_dynamic = readProgramHeader(phbuf);
 				break;
 
 			default:
@@ -595,6 +656,130 @@ int ELFPrivate::checkSectionHeaders(void)
 	return 0;
 }
 
+/**
+ * Add PT_DYNAMIC fields.
+ * @return 0 on success; non-zero on error.
+ */
+int ELFPrivate::addPtDynamicFields(void)
+{
+	if (isWiiU || pt_dynamic.addr == 0) {
+		// Not a dynamic object.
+		// (Wii U dynamic objects don't work the same way as
+		// standard POSIX dynamic objects.)
+		return -1;
+	}
+
+	if (pt_dynamic.size > 1U*1024*1024) {
+		// PT_DYNAMIC is larger than 1 MB.
+		// That's no good.
+		return -2;
+	}
+
+	// Read the header.
+	const unsigned int sz_to_read = static_cast<unsigned int>(pt_dynamic.size);
+	unique_ptr<uint8_t[]> pt_dyn_buf(new uint8_t[sz_to_read]);
+	size_t size = file->seekAndRead(pt_dynamic.addr, pt_dyn_buf.get(), sz_to_read);
+	if (size != sz_to_read) {
+		// Read error.
+		return -3;
+	}
+
+	// Process headers.
+	// NOTE: Separate loops for 32-bit vs. 64-bit.
+	bool has_DT_FLAGS = false, has_DT_FLAGS_1 = false;
+	uint32_t val_DT_FLAGS = 0, val_DT_FLAGS_1 = 0;
+
+	// TODO: DT_RPATH
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		const Elf64_Dyn *phdr = reinterpret_cast<const Elf64_Dyn*>(pt_dyn_buf.get());
+		const Elf64_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
+		// TODO: Don't allow duplicates?
+		for (; phdr < phdr_end; phdr++) {
+			Elf64_Sxword d_tag = elf64_to_cpu(phdr->d_tag);
+			switch (d_tag) {
+				case DT_FLAGS:
+					has_DT_FLAGS = true;
+					val_DT_FLAGS = static_cast<uint32_t>(elf64_to_cpu(phdr->d_un.d_val));
+					break;
+				case DT_FLAGS_1:
+					has_DT_FLAGS_1 = true;
+					val_DT_FLAGS_1 = static_cast<uint32_t>(elf64_to_cpu(phdr->d_un.d_val));
+					break;
+				default:
+					break;
+			}
+		}
+	} else {
+		const Elf32_Dyn *phdr = reinterpret_cast<const Elf32_Dyn*>(pt_dyn_buf.get());
+		const Elf32_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
+		for (; phdr < phdr_end; phdr++) {
+			Elf32_Sword d_tag = elf32_to_cpu(phdr->d_tag);
+			switch (d_tag) {
+				case DT_FLAGS:
+					has_DT_FLAGS = true;
+					val_DT_FLAGS = elf32_to_cpu(phdr->d_un.d_val);
+					break;
+				case DT_FLAGS_1:
+					has_DT_FLAGS_1 = true;
+					val_DT_FLAGS_1 = elf32_to_cpu(phdr->d_un.d_val);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	if (!has_DT_FLAGS && !has_DT_FLAGS_1) {
+		// No relevant PT_DYNAMIC entries.
+		return 0;
+	}
+
+	// Add the PT_DYNAMIC tab.
+	fields->addTab("PT_DYNAMIC");
+
+	if (has_DT_FLAGS) {
+		// DT_FLAGS
+		static const char *const dt_flags_names[] = {
+			// 0x00000000
+			"ORIGIN", "SYMBOLIC", "TEXTREL", "BIND_NOW",
+			// 0x00000010
+			"STATIC_TLS",
+		};
+		vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
+			dt_flags_names, ARRAY_SIZE(dt_flags_names));
+		fields->addField_bitfield("DT_FLAGS",
+			v_dt_flags_names, 3, val_DT_FLAGS);
+	}
+
+	if (has_DT_FLAGS_1) {
+		// DT_FLAGS_1
+		// NOTE: Internal-use symbols are left as nullptr.
+		static const char *const dt_flags_1_names[] = {
+			// 0x00000000
+			"Now", "Global", "Group", "NoDelete",
+			// 0x00000010
+			"LoadFltr", "InitFirst", "NoOpen", "Origin",
+			// 0x00000100
+			"Direct", nullptr /*"Trans"*/, "Interpose", "NoDefLib",
+			// 0x00001000
+			"NoDump", "ConfAlt", "EndFiltee", "DispRelDNE",
+			// 0x00010000
+			"DispRelPND", "NoDirect", nullptr /*"IgnMulDef"*/, nullptr /*"NokSyms"*/,
+			// 0x00100000
+			nullptr /*"NoHdr"*/, "Edited", nullptr /*"NoReloc"*/, "SymIntpose",
+			// 0x01000000
+			"GlobAudit", "Singleton", "Stub", "PIE"
+		};
+		vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
+			dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
+		fields->addField_bitfield("DT_FLAGS_1",
+			v_dt_flags_1_names, 3, val_DT_FLAGS_1);
+	}
+
+	// We're done here.
+	return 0;
+}
+
 /** ELF **/
 
 /**
@@ -719,7 +904,7 @@ ELF::ELF(IRpFile *file)
 		// Assuming this is a Wii U executable.
 		// TODO: Also verify that there's no program headers?
 		d->isWiiU = true;
-		d->isDynamic = true;	// TODO: Properly check this.
+		d->pt_dynamic.addr = 1;	// TODO: Properly check this.
 
 		// TODO: Determine different RPX/RPL file types.
 		switch (primary->e_type) {
@@ -954,6 +1139,9 @@ int ELF::loadFieldData(void)
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
+	d->fields->reserveTabs(2);
+	d->fields->setTabName(0, "ELF");
+
 	// NOTE: Executable type is used as File Type.
 
 	// CPU.
@@ -1185,7 +1373,7 @@ int ELF::loadFieldData(void)
 
 	// Linkage.
 	d->fields->addField_string(C_("ELF", "Linkage"),
-		d->isDynamic
+		d->pt_dynamic.addr != 0
 			? C_("ELF|Linkage", "Dynamic")
 			: C_("ELF|Linkage", "Static"));
 
@@ -1226,6 +1414,14 @@ int ELF::loadFieldData(void)
 		d->fields->addField_string_hexdump(fieldName.c_str(),
 			d->build_id.data(), d->build_id.size(),
 			RomFields::STRF_HEX_LOWER | RomFields::STRF_HEXDUMP_NO_SPACES);
+	}
+
+	// If this is a dynamically-linked executable,
+	// print DT_FLAGS and DT_FLAGS_1.
+	// TODO: Print required libraries?
+	// Sanity check: Maximum of 1 MB.
+	if (!d->isWiiU && d->pt_dynamic.addr != 0) {
+		d->addPtDynamicFields();
 	}
 
 	// Finished reading the field data.
