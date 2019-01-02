@@ -689,7 +689,8 @@ int ELFPrivate::addPtDynamicFields(void)
 	bool has_DT_FLAGS = false, has_DT_FLAGS_1 = false;
 	uint32_t val_DT_FLAGS = 0, val_DT_FLAGS_1 = 0;
 
-	// TODO: DT_RPATH
+	// TODO: DT_RPATH/DT_RUNPATH
+	// Requires string table parsing too?
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Dyn *phdr = reinterpret_cast<const Elf64_Dyn*>(pt_dyn_buf.get());
 		const Elf64_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
