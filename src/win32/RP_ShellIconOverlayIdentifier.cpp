@@ -166,6 +166,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		// Based on Windows 7's shield icon from imageres.dll.
 		// FIXME: Windows XP requires the overlay icon to be the
 		// same size as the regular icon, but with transparency.
+		hr = E_FAIL;
 #if 0
 		extern wchar_t dll_filename[];
 		wcscpy_s(pwszIconFile, cchMax, dll_filename);
