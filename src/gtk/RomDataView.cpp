@@ -397,18 +397,8 @@ rom_data_view_dispose(GObject *object)
 		page->tmrIconAnim = 0;
 	}
 
-	// Delete the icon frames.
-	for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
-		if (page->iconFrames[i]) {
-			PIMGTYPE_destroy(page->iconFrames[i]);
-			page->iconFrames[i] = nullptr;
-		}
-	}
-
-	// Clear the widget reference containers.
-	page->tabs->clear();
-	page->tabWidget = nullptr;
-	page->vecDescLabels->clear();
+	// Delete the icon frames and tabs.
+	rom_data_view_delete_tabs(page);
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rom_data_view_parent_class)->dispose(object);
@@ -532,13 +522,8 @@ rom_data_view_set_filename(RomDataView	*page,
 			page->romData = nullptr;
 		}
 
-		// Delete the icon frames.
-		for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
-			if (page->iconFrames[i]) {
-				PIMGTYPE_destroy(page->iconFrames[i]);
-				page->iconFrames[i] = nullptr;
-			}
-		}
+		// Delete the icon frames and tabs.
+		rom_data_view_delete_tabs(page);
 	}
 
 	/* Assign the value */
@@ -552,9 +537,6 @@ rom_data_view_set_filename(RomDataView	*page,
 		if (page->hboxHeaderRow) {
 			gtk_widget_hide(page->hboxHeaderRow);
 		}
-
-		// Delete the tabs.
-		rom_data_view_delete_tabs(page);
 	}
 
 	// Filename has been changed.
@@ -751,7 +733,7 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 
 	// Check for any formatting options.
 	if (field->desc.flags != 0) {
-		PangoAttrList *attr_lst = pango_attr_list_new();
+		PangoAttrList *const attr_lst = pango_attr_list_new();
 
 		// Monospace font?
 		if (field->desc.flags & RomFields::STRF_MONOSPACE) {
@@ -1170,11 +1152,11 @@ rom_data_view_update_display(RomDataView *page)
 {
 	assert(page != nullptr);
 
+	// Delete the icon frames and tabs.
+	rom_data_view_delete_tabs(page);
+
 	// Initialize the header row.
 	rom_data_view_init_header_row(page);
-
-	// Delete the tabs.
-	rom_data_view_delete_tabs(page);
 
 	if (!page->romData) {
 		// No ROM data...
@@ -1264,7 +1246,7 @@ rom_data_view_update_display(RomDataView *page)
 	// NOTE: GtkSizeGroup automatically unreferences itself
 	// once all referenced widgets are deleted, so we don't
 	// need to manage it ourselves.
-	GtkSizeGroup *size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	GtkSizeGroup *const size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 
 	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
@@ -1458,6 +1440,14 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
+
+	// Delete the icon frames.
+	for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
+		if (page->iconFrames[i]) {
+			PIMGTYPE_destroy(page->iconFrames[i]);
+			page->iconFrames[i] = nullptr;
+		}
+	}
 }
 
 /** Signal handlers. **/
