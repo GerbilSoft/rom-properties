@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-config.c: Configuration stub.                                        *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -67,11 +67,12 @@ static const wchar_t rp_subdir[] = L"amd64\\";
 // looking up CLSIDs in the registry, so we might as well have the
 // string format here instead of converting at runtime
 // CLSID paths.
-static const wchar_t CLSIDs[4][40] = {
+static const wchar_t CLSIDs[5][40] = {
 	L"{E51BC107-E491-4B29-A6A3-2A4309259802}",	// RP_ExtractIcon
 	L"{84573BC0-9502-42F8-8066-CC527D0779E5}",	// RP_ExtractImage
 	L"{2443C158-DF7C-4352-B435-BC9F885FFD52}",	// RP_ShellPropSheetExt
 	L"{4723DF58-463E-4590-8F4A-8D9DD4F4355A}",	// RP_ThumbnailProvider
+	L"{02C6AF01-3C99-497D-B3FC-E38CE526786B}",	// RP_ShellIconOverlayIdentifier
 };
 
 /**
@@ -105,6 +106,8 @@ static const wchar_t CLSIDs[4][40] = {
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
+	HANDLE hSingleInstanceMutex;
+
 	// Filename and path buffers.
 	wchar_t *exe_path = NULL;	// MAX_PATH
 	#define EXE_PATH_LEN (MAX_PATH)
@@ -117,17 +120,36 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	LONG lResult;
 	unsigned int i;
 
+	static const wchar_t prg_title[] = L"ROM Properties Page Configuration";
+
 	RP_UNUSED(hPrevInstance);
 
 	// Set Win32 security options.
 	secoptions_init();
+
+	// Check if another instance of rp-config is already running.
+	// References:
+	// - https://stackoverflow.com/questions/4191465/how-to-run-only-one-instance-of-application
+	// - https://stackoverflow.com/a/33531179
+	// TODO: Localized window title?
+	hSingleInstanceMutex = CreateMutex(nullptr, TRUE, L"Local\\com.gerbilsoft.rom-properties.rp-config");
+	if (!hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
+		// Mutex already exists.
+		// Set focus to the existing instance.
+		// TODO: Localized window titles?
+		HWND hWnd = FindWindow(L"#32770", prg_title);
+		if (hWnd) {
+			SetForegroundWindow(hWnd);
+		}
+		return EXIT_SUCCESS;
+	}
 
 	// Set the C locale.
 	// TODO: C++ locale?
 	setlocale(LC_ALL, "");
 
 #define FAIL_MESSAGE(msg) do { \
-		MessageBox(NULL, (msg), L"ROM Properties Page Configuration", MB_ICONSTOP); \
+		MessageBox(NULL, (msg), prg_title, MB_ICONSTOP); \
 		goto fail; \
 	} while (0)
 
@@ -238,7 +260,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// All options have failed...
 	MessageBox(NULL, L"Could not find rom-properties.dll.\n\n"
 		L"Please ensure the DLL is present in the same\ndirectory as rp-config.exe.",
-		L"ROM Properties Page Configuration", MB_ICONWARNING);
+		prg_title, MB_ICONWARNING);
 
 fail:
 	free(exe_path);
