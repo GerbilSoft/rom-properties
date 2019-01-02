@@ -805,6 +805,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
  */
 int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+	HANDLE hSingleInstanceMutex;
 #ifndef _WIN64
 	HMODULE hKernel32;
 	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
@@ -815,13 +816,30 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// Set Win32 security options.
 	secoptions_init();
 
+	// Check if another instance of svrplus is already running.
+	// References:
+	// - https://stackoverflow.com/questions/4191465/how-to-run-only-one-instance-of-application
+	// - https://stackoverflow.com/a/33531179
+	hSingleInstanceMutex = CreateMutex(nullptr, true, L"Local\\com.gerbilsoft.rom-properties.svrplus");
+	if (!hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
+		// Mutex already exists.
+		// Set focus to the existing instance.
+		HWND hWnd = FindWindow(L"#32770", L"ROM Properties Page Installer");
+		if (hWnd) {
+			SetForegroundWindow(hWnd);
+		}
+		return EXIT_SUCCESS;
+	}
+
 	// Set the C locale.
 	setlocale(LC_ALL, "");
 
 #ifndef _WIN64
 	// Check if this is a 64-bit system. (Wow64)
 	hKernel32 = GetModuleHandle(L"kernel32");
+	assert(hKernel32 != nullptr);
 	if (!hKernel32) {
+		CloseHandle(hSingleInstanceMutex);
 		DebugBreak();
 		return EXIT_FAILURE;
 	}
@@ -862,5 +880,6 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		DestroyIcon(hIconDialogSmall);
 	}
 
+	CloseHandle(hSingleInstanceMutex);
 	return EXIT_SUCCESS;
 }
