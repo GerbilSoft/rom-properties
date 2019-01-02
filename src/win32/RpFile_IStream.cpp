@@ -351,7 +351,7 @@ size_t RpFile_IStream::read(void *ptr, size_t size)
 		m_pZstm->avail_out = static_cast<uInt>(size);
 
 		// Only seek if we need to read data.
-		bool didSeek = true;
+		bool didSeek = false;
 
 		if (m_zcurPos == m_zbufLen) {
 			// Need to read more data from the gzipped file.
