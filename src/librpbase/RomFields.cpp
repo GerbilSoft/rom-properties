@@ -490,8 +490,9 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 	string str;
 	str.reserve(64);
 	unsigned int ratings_count = 0;
+	auto iter = age_ratings->cbegin();
 	for (int i = 0; i < static_cast<int>(age_ratings->size()); i++) {
-		const uint16_t rating = age_ratings->at(i);
+		const uint16_t rating = *iter;
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
 
