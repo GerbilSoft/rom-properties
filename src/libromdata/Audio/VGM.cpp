@@ -475,12 +475,7 @@ int VGM::loadFieldData(void)
 
 		// Check for T6W28.
 		const bool isT6W28 = ((sn76489_clk & PSG_T6W28) == PSG_T6W28);
-		const char *chip_name;
-		if (isT6W28) {
-			chip_name = "T6W28";
-		} else {
-			chip_name = "SN76489";
-		}
+		const char *const chip_name = (isT6W28 ? "T6W28" : "SN76489");
 
 		d->fields->addField_string(
 			rp_sprintf(s_clockrate, chip_name).c_str(),
@@ -638,7 +633,8 @@ int VGM::loadFieldData(void)
 			const unsigned int clk_full = le32_to_cpu(vgmHeader->ym2610_clk);
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
-				const char *const chip_name = (clk & VGM_CLK_FLAG_ALTMODE) ? "YM2610B" : "YM2610";
+				const char *const chip_name =
+					(clk_full & VGM_CLK_FLAG_ALTMODE) ? "YM2610B" : "YM2610";
 
 				d->fields->addField_string(
 					rp_sprintf(s_clockrate, chip_name).c_str(),
