@@ -796,8 +796,8 @@ int VGM::loadFieldData(void)
 		// WonderSwan [1.71]
 		SOUND_CHIP(ws, "WonderSwan", true);
 
-		// VSU [1.71]
-		SOUND_CHIP(vsu, "VSU", true);
+		// VSU-VUE [1.71]
+		SOUND_CHIP(vsu, "VSU-VUE", true);
 
 		// SAA1099 [1.71]
 		SOUND_CHIP(saa1099, "SAA1099", true);
