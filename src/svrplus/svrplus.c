@@ -820,7 +820,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// References:
 	// - https://stackoverflow.com/questions/4191465/how-to-run-only-one-instance-of-application
 	// - https://stackoverflow.com/a/33531179
-	hSingleInstanceMutex = CreateMutex(nullptr, true, L"Local\\com.gerbilsoft.rom-properties.svrplus");
+	hSingleInstanceMutex = CreateMutex(NULL, TRUE, L"Local\\com.gerbilsoft.rom-properties.svrplus");
 	if (!hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
 		// Mutex already exists.
 		// Set focus to the existing instance.
@@ -837,7 +837,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #ifndef _WIN64
 	// Check if this is a 64-bit system. (Wow64)
 	hKernel32 = GetModuleHandle(L"kernel32");
-	assert(hKernel32 != nullptr);
+	assert(hKernel32 != NULL);
 	if (!hKernel32) {
 		CloseHandle(hSingleInstanceMutex);
 		DebugBreak();
