@@ -21,6 +21,7 @@
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "stdafx.h"
 #include "RP_ShellIconOverlayIdentifier.hpp"
+#include "res/resource.h"
 
 // librpbase
 #include "librpbase/RomData.hpp"
@@ -140,11 +141,12 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 	}
 
 	// Get the "dangerous" permissions overlay.
-	HRESULT hr = E_FAIL;
+	HRESULT hr;
 
 	RP_D(const RP_ShellIconOverlayIdentifier);
 	if (d->pfnSHGetStockIconInfo) {
 		// SHGetStockIconInfo() is available.
+		// FIXME: Icon size is a bit too large in some cases.
 		SHSTOCKICONINFO sii;
 		sii.cbSize = sizeof(sii);
 		hr = d->pfnSHGetStockIconInfo(SIID_SHIELD, SHGSI_ICONLOCATION, &sii);
@@ -160,10 +162,19 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 			*pdwFlags = 0;
 		}
 	} else {
-		// TODO: Include a shield icon for XP and earlier.
-		pwszIconFile[0] = '\0';
-		*pIndex = 0;
-		*pdwFlags = 0;
+		// Use our own shield icon.
+		// Based on Windows 7's shield icon from imageres.dll.
+		// FIXME: Windows XP requires the overlay icon to be the
+		// same size as the regular icon, but with transparency.
+#if 0
+		extern wchar_t dll_filename[];
+		wcscpy_s(pwszIconFile, cchMax, dll_filename);
+		*pIndex = -IDI_SHIELD;
+		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
+
+		// Assume we're successful.
+		hr = S_OK;
+#endif
 	}
 
 	return hr;
