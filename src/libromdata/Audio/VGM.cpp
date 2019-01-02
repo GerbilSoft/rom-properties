@@ -741,7 +741,7 @@ int VGM::loadFieldData(void)
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 
 				// Bit 31 indicates presence of FDS audio hardware.
-				const char *const nes_exp = (clk & VGM_CLK_FLAG_ALTMODE)
+				const char *const nes_exp = (clk_full & VGM_CLK_FLAG_ALTMODE)
 					? C_("VGM|NESExpansion", "Famicom Disk System")
 					: C_("VGM|NESExpansion", "(none)");
 				d->fields->addField_string(
