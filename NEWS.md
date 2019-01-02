@@ -12,10 +12,6 @@
     on KDE and Windows.
   * Support for gzipped files. This is important for VGMs, which are commonly
     distributed in gzipped format (.vgz).
-    * NOTE: Currently only partially supported on Windows. In particular,
-      the IThumbnailProvider and IPropertyStore implementations use IStream,
-      and we don't have transparent decompression for IStream yet. This will
-      be fixed before the release of v1.4.
   * ROM images for Nintendo DS and 3DS with "dangerous" permissions now have
     an overlay icon on Windows and KDE. This normally happens with certain
     homebrew that requires full system access (or system titles), but it's
