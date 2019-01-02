@@ -644,19 +644,6 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// Total widget width.
 	int total_widget_width = 0;
 
-	// System name and file type.
-	// TODO: System logo and/or game title?
-	const char *const systemName = romData->systemName(
-		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *const fileType = romData->fileType_string();
-	assert(systemName != nullptr);
-	assert(fileType != nullptr);
-
-	const string sysInfo = rp_sprintf_p(
-		// tr: %1$s == system name, %2$s == file type
-		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType);
-	const wstring wSysInfo = LibWin32Common::unix2dos(U82W_s(sysInfo));
-
 	// Label size.
 	SIZE sz_lblSysInfo = {0, 0};
 
@@ -666,7 +653,20 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	assert(hFontDlg != nullptr);
 	const HFONT hFont = (hFontBold ? hFontBold : hFontDlg);
 
-	if (!sysInfo.empty()) {
+	// System name and file type.
+	// TODO: System logo and/or game title?
+	const char *const systemName = romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	const char *const fileType = romData->fileType_string();
+	assert(systemName != nullptr);
+	assert(fileType != nullptr);
+
+	const wstring wSysInfo =
+		LibWin32Common::unix2dos(U82W_s(rp_sprintf_p(
+			// tr: %1$s == system name, %2$s == file type
+			C_("RomDataView", "%1$s\n%2$s"), systemName, fileType)));
+
+	if (!wSysInfo.empty()) {
 		// Determine the appropriate label size.
 		int ret = LibWin32Common::measureTextSize(hDlg, hFont, wSysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
@@ -1651,7 +1651,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// tr: Field description label.
-		wstring desc_text = U82W_s(rp_sprintf(
+		const wstring desc_text = U82W_s(rp_sprintf(
 			C_("RomDataView", "%s:"), field->name.c_str()));
 
 		// Get the width of this specific entry.
@@ -1659,11 +1659,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		if (field->desc.flags & RomFields::STRF_WARNING) {
 			// Label is bold. Use hFontBold.
 			HFONT hFontOrig = SelectFont(hDC, hFontBold);
-			GetTextExtentPoint32(hDC, desc_text.data(), (int)desc_text.size(), &textSize);
+			GetTextExtentPoint32(hDC, desc_text.data(),
+				static_cast<int>(desc_text.size()), &textSize);
 			SelectFont(hDC, hFontOrig);
 		} else {
 			// Regular font.
-			GetTextExtentPoint32(hDC, desc_text.data(), (int)desc_text.size(), &textSize);
+			GetTextExtentPoint32(hDC, desc_text.data(),
+				static_cast<int>(desc_text.size()), &textSize);
 		}
 
 		if (textSize.cx > max_text_width) {
@@ -1846,7 +1848,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_STRING: {
 				// String data.
-				SIZE size = {dlg_value_width, field_cy};
+				const SIZE size = {dlg_value_width, field_cy};
 				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
 				break;
 			}
