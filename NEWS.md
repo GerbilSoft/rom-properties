@@ -17,6 +17,8 @@
     homebrew that requires full system access (or system titles), but it's
     also possible that someone could create a malicious homebrew title
     disguised as a retail game.
+    * NOTE: The Windows implementation currently requires Windows Vista
+      or later.
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
