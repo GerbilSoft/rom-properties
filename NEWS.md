@@ -7,6 +7,7 @@
   * The un-premultiply function, used for DXT2 and DXT4 images, now has
     an SSE4.1-optimized implementation. The standard implementation has
     also been optimized to be somewhat faster.
+  * The XFCE frontend can now be built for both GTK+ 2.x and 3.x.
   * File metadata is now exported to the desktop environment. This includes
     e.g. dimensions for textures and duration for audio. Currently supported
     on KDE and Windows.
