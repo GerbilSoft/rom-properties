@@ -373,9 +373,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// this will be set to {255, 255}.
 		uint8_t alpha[2];
 
-		// P-bits.
-		uint8_t p_bits[6];
-
 		/** END: Temporary values. **/
 
 		// TODO: Make sure this is correct on big-endian.
@@ -495,11 +492,43 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			// Optimization to avoid having to shift the
 			// whole 64-bit and/or 128-bit value multiple times.
 			unsigned int lsb8 = (lsb & 0xFF);
-			for (unsigned int i = 0; i < EndpointCount[mode]; i++) {
-				p_bits[i] = lsb8 & 1;
-				lsb >>= 1;
+			if (mode == 1) {
+				// Mode 1: Two P-bits for four subsets.
+				const uint8_t p_bit0 = (lsb8 & 1) << 1;
+				const uint8_t p_bit1 = (lsb8 & 2);
+
+				// Subset 0
+				endpoints[0][0] |= p_bit0;
+				endpoints[0][1] |= p_bit0;
+				endpoints[0][2] |= p_bit0;
+				endpoints[1][0] |= p_bit0;
+				endpoints[1][1] |= p_bit0;
+				endpoints[1][2] |= p_bit0;
+
+				// Subset 1
+				endpoints[2][0] |= p_bit1;
+				endpoints[2][1] |= p_bit1;
+				endpoints[2][2] |= p_bit1;
+				endpoints[3][0] |= p_bit1;
+				endpoints[3][1] |= p_bit1;
+				endpoints[3][2] |= p_bit1;
+
+				rshift128(msb, lsb, 2);
+			} else {
+				// Other modes: Unique P-bit for each subset.
+				const uint8_t p_shamt = 7 - endpoint_bits;
+				for (unsigned int i = 0; i < endpoint_count; i++, lsb8 >>= 1) {
+					const uint8_t p_bit = (lsb8 & 1) << p_shamt;
+					endpoints[i][0] |= p_bit;
+					endpoints[i][1] |= p_bit;
+					endpoints[i][2] |= p_bit;
+				}
+				rshift128(msb, lsb, EndpointCount[mode]);
 			}
-			rshift128(msb, lsb, EndpointCount[mode]);
+
+			// Increase the endpoint bits to indicate how many bits
+			// need to be copied when expanding the color value.
+			endpoint_bits++;
 		}
 
 		// At this point, the only remaining data is indexes,
@@ -508,11 +537,11 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 
 		// Process the index data.
 		// (Mode 5: Color index data.)
-		// TODO: Add P-bits.
 		const unsigned int index_mask = (1U << index_bits) - 1;
 		for (unsigned int i = 0; i < 16; i++, lsb >>= index_bits) {
 			const unsigned int data_idx = lsb & index_mask;
 			const unsigned int ep_idx = (subset ? subset[i] * 2 : 0);
+
 			tileBuf[i].r = interpolate_component(index_bits, data_idx, endpoints[ep_idx][0], endpoints[ep_idx+1][0]);
 			tileBuf[i].g = interpolate_component(index_bits, data_idx, endpoints[ep_idx][1], endpoints[ep_idx+1][1]);
 			tileBuf[i].b = interpolate_component(index_bits, data_idx, endpoints[ep_idx][2], endpoints[ep_idx+1][2]);
