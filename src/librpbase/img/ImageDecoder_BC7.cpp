@@ -457,7 +457,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		uint8_t endpoint_bits = EndpointBits[mode];
 		uint8_t endpoint_count = EndpointCount[mode];
 		const uint8_t endpoint_mask = (1U << endpoint_bits) - 1;
-		const uint8_t endpoint_shamt = (8 - endpoint_bits) + PBitCount[mode];
+		const uint8_t endpoint_shamt = (8 - endpoint_bits);
 		const unsigned int component_count = endpoint_count * 3;
 		uint8_t ep_idx = 0, comp_idx = 0;
 		for (unsigned int i = 0; i < component_count; i++) {
@@ -478,10 +478,11 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		uint8_t alpha_bits = AlphaBits[mode];
 		if (alpha_bits != 0) {
 			// We have alpha components.
-			// TODO: Optimize P-bit shifting?
+			// TODO: Optimize shifting?
 			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
-			alpha[0] = (lsb & alpha_mask) << PBitCount[mode];
-			alpha[1] = ((lsb >> alpha_bits) & alpha_mask) << PBitCount[mode];
+			const uint8_t alpha_shamt = (8 - alpha_bits);
+			alpha[0] = (lsb & alpha_mask) << alpha_shamt;
+			alpha[1] = ((lsb >> alpha_bits) & alpha_mask) << alpha_shamt;
 			rshift128(msb, lsb, alpha_bits * 2);
 		} else {
 			// No alpha. Use 255.
