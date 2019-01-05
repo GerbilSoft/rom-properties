@@ -39,7 +39,9 @@ static const uint8_t aWeight3[] = {0, 9, 18, 27, 37, 46, 55, 64};
 static const uint8_t aWeight4[] = {0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64};
 
 // Partition definitions for modes with 2 subsets.
-// Reference: https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
+// References:
+// - https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
+// - https://github.com/hglm/detex/blob/master/bptc-tables.c
 // TODO: Optimize into bitfields.
 static uint8_t bc7_2sub[64][16] = {
 	// 0
@@ -123,6 +125,93 @@ static uint8_t bc7_2sub[64][16] = {
 	{0,1,0,0,0,1,0,0,0,1,1,1,0,1,1,1},
 };
 
+// Partition definitions for modes with 2 subsets.
+// References:
+// - https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
+// - https://github.com/hglm/detex/blob/master/bptc-tables.c
+// TODO: Optimize into bitfields.
+static uint8_t bc7_3sub[64][16] = {
+	// 0
+	{0,0,1,1,0,0,1,1,0,2,2,1,2,2,2,2},
+	{0,0,0,1,0,0,1,1,2,2,1,1,2,2,2,1},
+	{0,0,0,0,2,0,0,1,2,2,1,1,2,2,1,1},
+	{0,2,2,2,0,0,2,2,0,0,1,1,0,1,1,1},
+	{0,0,0,0,0,0,0,0,1,1,2,2,1,1,2,2},
+	{0,0,1,1,0,0,1,1,0,0,2,2,0,0,2,2},
+	{0,0,2,2,0,0,2,2,1,1,1,1,1,1,1,1},
+	{0,0,1,1,0,0,1,1,2,2,1,1,2,2,1,1},
+
+	// 8
+	{0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2},
+	{0,0,0,0,1,1,1,1,1,1,1,1,2,2,2,2},
+	{0,0,0,0,1,1,1,1,2,2,2,2,2,2,2,2},
+	{0,0,1,2,0,0,1,2,0,0,1,2,0,0,1,2},
+	{0,1,1,2,0,1,1,2,0,1,1,2,0,1,1,2},
+	{0,1,2,2,0,1,2,2,0,1,2,2,0,1,2,2},
+	{0,0,1,1,0,1,1,2,1,1,2,2,1,2,2,2},
+	{0,0,1,1,2,0,0,1,2,2,0,0,2,2,2,0},
+
+	// 16
+	{0,0,0,1,0,0,1,1,0,1,1,2,1,1,2,2},
+	{0,1,1,1,0,0,1,1,2,0,0,1,2,2,0,0},
+	{0,0,0,0,1,1,2,2,1,1,2,2,1,1,2,2},
+	{0,0,2,2,0,0,2,2,0,0,2,2,1,1,1,1},
+	{0,1,1,1,0,1,1,1,0,2,2,2,0,2,2,2},
+	{0,0,0,1,0,0,0,1,2,2,2,1,2,2,2,1},
+	{0,0,0,0,0,0,1,1,0,1,2,2,0,1,2,2},
+	{0,0,0,0,1,1,0,0,2,2,1,0,2,2,1,0},
+
+	// 24
+	{0,1,2,2,0,1,2,2,0,0,1,1,0,0,0,0},
+	{0,0,1,2,0,0,1,2,1,1,2,2,2,2,2,2},
+	{0,1,1,0,1,2,2,1,1,2,2,1,0,1,1,0},
+	{0,0,0,0,0,1,1,0,1,2,2,1,1,2,2,1},
+	{0,0,2,2,1,1,0,2,1,1,0,2,0,0,2,2},
+	{0,1,1,0,0,1,1,0,2,0,0,2,2,2,2,2},
+	{0,0,1,1,0,1,2,2,0,1,2,2,0,0,1,1},
+	{0,0,0,0,2,0,0,0,2,2,1,1,2,2,2,1},
+
+	// 32
+	{0,0,0,0,0,0,0,2,1,1,2,2,1,2,2,2},
+	{0,2,2,2,0,0,2,2,0,0,1,2,0,0,1,1},
+	{0,0,1,1,0,0,1,2,0,0,2,2,0,2,2,2},
+	{0,1,2,0,0,1,2,0,0,1,2,0,0,1,2,0},
+	{0,0,0,0,1,1,1,1,2,2,2,2,0,0,0,0},
+	{0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0},
+	{0,1,2,0,2,0,1,2,1,2,0,1,0,1,2,0},
+	{0,0,1,1,2,2,0,0,1,1,2,2,0,0,1,1},
+
+	// 40
+	{0,0,1,1,1,1,2,2,2,2,0,0,0,0,1,1},
+	{0,1,0,1,0,1,0,1,2,2,2,2,2,2,2,2},
+	{0,0,0,0,0,0,0,0,2,1,2,1,2,1,2,1},
+	{0,0,2,2,1,1,2,2,0,0,2,2,1,1,2,2},
+	{0,0,2,2,0,0,1,1,0,0,2,2,0,0,1,1},
+	{0,2,2,0,1,2,2,1,0,2,2,0,1,2,2,1},
+	{0,1,0,1,2,2,2,2,2,2,2,2,0,1,0,1},
+	{0,0,0,0,2,1,2,1,2,1,2,1,2,1,2,1},
+
+	// 48
+	{0,1,0,1,0,1,0,1,0,1,0,1,2,2,2,2},
+	{0,2,2,2,0,1,1,1,0,2,2,2,0,1,1,1},
+	{0,0,0,2,1,1,1,2,0,0,0,2,1,1,1,2},
+	{0,0,0,0,2,1,1,2,2,1,1,2,2,1,1,2},
+	{0,2,2,2,0,1,1,1,0,1,1,1,0,2,2,2},
+	{0,0,0,2,1,1,1,2,1,1,1,2,0,0,0,2},
+	{0,1,1,0,0,1,1,0,0,1,1,0,2,2,2,2},
+	{0,0,0,0,0,0,0,0,2,1,1,2,2,1,1,2},
+
+	// 56
+	{0,1,1,0,0,1,1,0,2,2,2,2,2,2,2,2},
+	{0,0,2,2,0,0,1,1,0,0,1,1,0,0,2,2},
+	{0,0,2,2,1,1,2,2,1,1,2,2,0,0,2,2},
+	{0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,2},
+	{0,0,0,2,0,0,0,1,0,0,0,2,0,0,0,1},
+	{0,2,2,2,1,2,2,2,0,2,2,2,1,2,2,2},
+	{0,1,0,1,2,2,2,2,2,2,2,2,2,2,2,2},
+	{0,1,1,1,2,0,1,1,2,2,0,1,2,2,2,0},
+};
+
 /**
  * Interpolate a color component.
  * @tparam bits Index precision, in number of bits.
@@ -131,16 +220,16 @@ static uint8_t bc7_2sub[64][16] = {
  * @param e1 Endpoint 1 component.
  * @return Interpolated color component.
  */
-template<int bits>
-static FORCEINLINE uint8_t interpolate_component(unsigned int index, uint8_t e0, uint8_t e1)
+static uint8_t interpolate_component(unsigned int bits, unsigned int index, uint8_t e0, uint8_t e1)
 {
-	static_assert(bits == 2 || bits == 3 || bits == 4, "Unsupported `bits` value.");
+	assert(bits >= 2 && bits <= 4);
+	assert(index < (1U << bits));
 
 	// Shortcut for no-interpolation cases.
 	// TODO: Does this actually improve performance?
 	if (index == 0) {
 		return e0;
-	} else if (index == (1<<bits)-1) {
+	} else if (index == (1U<<bits)-1) {
 		return e1;
 	}
 
@@ -165,26 +254,49 @@ static FORCEINLINE uint8_t interpolate_component(unsigned int index, uint8_t e0,
 }
 
 /**
- * Interpolate color values.
- * @tparam bits Index precision, in number of bits.
- * @tparam alpha If true, interpolate the alpha channel.
- * @param index Color/alpha index.
- * @param colors Color endpoints. (2-element array)
- * @return Interpolated ARGB32 color.
+ * Get the mode number.
+ * @param dword0 LSB DWORD.
+ * @return Mode number.
  */
-template<int bits, bool alpha>
-static inline uint32_t interpolate_color(unsigned int index, const argb32_t colors[2])
+static inline int get_mode(uint32_t dword0)
 {
-	argb32_t argb;
-	argb.r = interpolate_component<bits>(index, colors[0].r, colors[1].r);
-	argb.g = interpolate_component<bits>(index, colors[0].g, colors[1].g);
-	argb.b = interpolate_component<bits>(index, colors[0].b, colors[1].b);
-	if (alpha) {
-		argb.a = interpolate_component<bits>(index, colors[0].a, colors[1].a);
-	} else {
-		argb.a = 255;
+	// TODO: ctz/_BitScanForward?
+	for (int i = 0; i < 8; i++, dword0 >>= 1) {
+		if (dword0 & 1) {
+			// Found the mode number.
+			return i;
+		}
 	}
-	return argb.u32;
+
+	// Invalid mode.
+	assert(!"BC7 block has an invalid mode.");
+	return -1;
+}
+
+/**
+ * Right-shift two 64-bit values as if it's a single 128-bit value.
+ * @param msb	[in/out] MSB QWORD
+ * @param lsb	[in/out] LSB QWORD
+ * @param shamt [in] Shift amount
+ */
+static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
+{
+	if (shamt > 128) {
+		// Shifting more than 128 bits.
+		lsb = 0;
+		msb = 0;
+	} else if (shamt > 64) {
+		// Shifting more than 64 bits.
+		lsb = msb >> (shamt - 64);
+		msb = 0;
+	} else {
+		// Shift LSB first.
+		lsb >>= (shamt - 64);
+		// Copy from MSB to LSB.
+		lsb |= (msb << (64 - shamt));
+		// Shift MSB next.
+		msb >>= shamt;
+	}
 }
 
 /**
@@ -230,299 +342,190 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	// BC7 has eight block modes with varying properties, including
 	// bitfields of different lengths. As such, the only guaranteed
 	// block format we have is 128-bit little-endian, which will be
-	// represented as four uint32_t values.
-	const uint32_t *bc7_src = reinterpret_cast<const uint32_t*>(img_buf);
+	// represented as two uint64_t values, which will be shifted
+	// as each component is processed.
+	// TODO: Optimize by using fewer shifts?
+	const uint64_t *bc7_src = reinterpret_cast<const uint64_t*>(img_buf);
 
 	// Temporary tile buffer.
 	argb32_t tileBuf[4*4];
 
-	// Temporary ARGB and alpha values.
-	argb32_t colors[6];
-	memset(&colors, 0, sizeof(colors));
-	uint8_t alpha[2] = {0, 0};
-	uint8_t p_bits[6] = {0, 0, 0, 0, 0, 0};
-	unsigned int partition = 0;
-	const uint8_t *subset = nullptr;
-
 	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, bc7_src += 4) {
-		// FIXME: Proper support on big-endian.
-		// Not doing byteswapping right now...
+	for (unsigned int x = 0; x < tilesX; x++, bc7_src += 2) {
+		/** BEGIN: Temporary values. **/
 
-		bool done = true;
-		uint32_t cx;	// Temporary color value.
+		// Partition number.
+		unsigned int partition;
 
-		// P-bits represent the LSB of the various color components.
-
-		// Rotation bits:
+		// Rotation mode.
+		// Only present in modes 4 and 5.
+		// For all other modes, this is assumed to be 00.
 		// - 00: ARGB - no swapping
 		// - 01: RAGB - swap A and R
 		// - 10: GRAB - swap A and G
 		// - 11: BRGA - swap A and B
+		uint8_t rotation_mode;
+		
+		// Endpoints.
+		// - [6]: Individual endpoints.
+		// - [3]: RGB components.
+		uint8_t endpoints[6][3];
+
+		// Alpha components.
+		// If the selected mode doesn't have alpha,
+		// this will be set to {255, 255}.
+		uint8_t alpha[2];
+
+		// P-bits.
+		uint8_t p_bits[6];
+
+		// Selected subset.
+		const uint8_t *subset;
+
+		/** END: Temporary values. **/
+
+		// TODO: Make sure this is correct on big-endian.
+		uint64_t lsb = le64_to_cpu(bc7_src[0]);
+		uint64_t msb = le64_to_cpu(bc7_src[1]);
 
 		// Check the block mode.
-		const uint8_t mode = le32_to_cpu(bc7_src[0]) & 0xFF;
-		if (mode & 0x01) {
-			/**
-			 * Mode 0:
-			 * - Color components only (no alpha)
-			 * - 3 subsets per block
-			 * - RGBP 4.4.4.1 endpoints with a unique P-bit per endpoint
-			 * - 3-bit indexes
-			 * - 16 partitions
-			 *
-			 * LSB: [1]
-			 *      [4-bit partition]
-			 *      [4-bit R0][4-bit R1][4-bit R2][4-bit R3][4-bit R4][4-bit R5]
-			 *      [4-bit G0][4-bit G1][4-bit G2][4-bit G3][4-bit G4][4-bit G5]
-			 *      [4-bit B0][4-bit B1][4-bit B2][4-bit B3][4-bit B4][4-bit B5]
-			 *      [1-bit P0][1-bit P1][1-bit P2][1-bit P3][1-bit P4][1-bit P5]
-			 *      [45-bit index] MSB
-			 */
-			done = false;
-			cx = 0xFF000000;
-		} else if ((mode & 0x03) == 0x02) {
-			/**
-			 * Mode 1:
-			 * - Color components only (no alpha)
-			 * - 2 subsets per block
-			 * - RGBP 6.6.6.1 endpoints with a shared P-bit per subset
-			 * - 3-bit indexes
-			 * - 64 partitions
-			 *
-			 * LSB: [01]
-			 *      [6-bit partition]
-			 *      [6-bit R0][6-bit R1][6-bit R2][6-bit R3]
-			 *      [6-bit G0][6-bit G1][6-bit G2][6-bit G3]
-			 *      [6-bit B0][6-bit B1][6-bit B2][6-bit B3]
-			 *      [1-bit P0][1-bit P1]
-			 *      [46-bit index] MSB
-			 */
-			done = false;
-			cx = 0xFF0000FF;
-		} else if ((mode & 0x07) == 0x04) {
-			/**
-			 * Mode 2:
-			 * - Color components only (no alpha)
-			 * - 3 subsets per block
-			 * - RGB 5.5.5 endpoints
-			 * - 2-bit indexes
-			 * - 64 partitions
-			 *
-			 * LSB: [001]
-			 *      [6-bit partition]
-			 *      [5-bit R0][5-bit R1][5-bit R2][5-bit R3][5-bit R4][5-bit R5]
-			 *      [5-bit G0][5-bit G1][5-bit G2][5-bit G3][5-bit G4][5-bit G5]
-			 *      [5-bit B0][5-bit B1][5-bit B2][5-bit B3][5-bit B4][5-bit B5]
-			 *      [29-bit index] MSB
-			 */
-			done = false;
-			cx = 0xFF00FF00;
-		} else if ((mode & 0x0F) == 0x08) {
-			/**
-			 * Mode 3:
-			 * - Color components only (no alpha)
-			 * - 2 subsets per block
-			 * - RGBP 7.7.7.1 endpoints with a unqiue P-bit per subset
-			 * - 2-bit indexes
-			 * - 64 partitions
-			 *
-			 * LSB: [0001]
-			 *      [6-bit partition]
-			 *      [7-bit R0][7-bit R1][7-bit R2][7-bit R3]
-			 *      [7-bit G0][7-bit G1][7-bit G2][7-bit G3]
-			 *      [7-bit B0][7-bit B1][7-bit B2][7-bit B3]
-			 *      [1-bit P0][1-bit P1][1-bit P2][1-bit P3]
-			 *      [30-bit index] MSB
-			 */
-
-			// Partition index.
-			partition = (bc7_src[0] >> 4) & 0x3F;
-			subset = &bc7_2sub[partition][0];
-
-			// Extract the P bits.
-			p_bits[0] = !!(bc7_src[2] & (1 << 30));
-			p_bits[1] =    bc7_src[2] >> 31;
-			p_bits[2] =    bc7_src[3] & 1;
-			p_bits[3] = !!(bc7_src[3] & 2);
-
-			// Extract the RGB and alpha values.
-			// 7-bit RGB; P bits will be applied later.
-			colors[0].r =  (bc7_src[0] >>  9) & 0xFE;
-			colors[1].r =  (bc7_src[0] >> 16) & 0xFE;
-			colors[2].r =  (bc7_src[0] >> 23) & 0xFE;
-			colors[3].r = ((bc7_src[0] >> 30) | (bc7_src[1] << 2)) & 0xFE;
-
-			colors[0].g =  (bc7_src[1] >>  5) & 0xFE;
-			colors[1].g =  (bc7_src[1] >> 12) & 0xFE;
-			colors[2].g =  (bc7_src[1] >> 19) & 0xFE;
-			colors[3].g = ((bc7_src[1] >> 26) | (bc7_src[2] << 6)) & 0xFE;
-
-			colors[0].b =  (bc7_src[2] >>  1) & 0xFE;
-			colors[1].b =  (bc7_src[2] >>  8) & 0xFE;
-			colors[2].b =  (bc7_src[2] >> 15) & 0xFE;
-			colors[3].b =  (bc7_src[2] >> 22) & 0xFE;
-
-			// Apply the P bits.
-			// FIXME: Is this correct?
-			for (unsigned int i = 0; i < 4; i++) {
-				colors[i].r |= p_bits[i];
-				colors[i].g |= p_bits[i];
-				colors[i].b |= p_bits[i];
-			}
-
-			// Get the indexes.
-			// NOTE: Unspecified index bits are fixed at 0.
-			uint32_t index_color = bc7_src[3] >> 2;
-
-			// Each index is two bits, which represents one of the two endpoints in the current subset.
-			for (unsigned int i = 0; i < 16; i++, index_color >>= 2) {
-				tileBuf[i].u32 = interpolate_color<2,false>(index_color & 3, &colors[subset[i]*2]);
-			}
-		} else if ((mode & 0x1F) == 0x10) {
-			/**
-			 * Mode 4:
-			 * - Color components with separate alpha component
-			 * - 1 subset per block
-			 * - RGB 5.5.5 color endpoints
-			 * - 6-bit alpha endpoints
-			 * - 16 x 2-bit indexes
-			 * - 16 x 3-bit indexes
-			 * - 2-bit component rotation
-			 * - 1-bit index selector (whether the 2- or 3-bit indexes are used)
-			 *
-			 * LSB: [00001]
-			 *      [2-bit rotation]
-			 *      [1-bit idxMode]
-			 *      [5-bit R0][5-bit R1]
-			 *      [5-bit G0][5-bit G1]
-			 *      [5-bit B0][5-bit B1]
-			 *      [6-bit A0][6-bit A1]
-			 *      [31-bit index] MSB
-			 *      [47-bit index] MSB
-			 */
-			done = false;
-			cx = 0xFFFF0000;
-		} else if ((mode & 0x3F) == 0x20) {
-			/**
-			 * Mode 5:
-			 * - Color components with separate alpha component
-			 * - 1 subset per block
-			 * - RGB 7.7.7 color endpoints
-			 * - 6-bit alpha endpoints
-			 * - 16 x 2-bit color indexes
-			 * - 16 x 2-bit alpha indexes
-			 * - 2-bit component rotation
-			 *
-			 * LSB: [000001]
-			 *      [2-bit rotation]
-			 *      [7-bit R0][7-bit R1]
-			 *      [7-bit G0][7-bit G1]
-			 *      [7-bit B0][7-bit B1]
-			 *      [8-bit A0][8-bit A1]
-			 *      [31-bit color index data] MSB
-			 *      [31-bit alpha index data] MSB
-			 */
-
-			// Extract the RGB and alpha values.
-			// 7-bit RGB; duplicate the MSB in the LSB.
-			colors[0].r = (bc7_src[0] >>  7) & 0xFE; colors[0].r |= (colors[0].r >> 7);
-			colors[1].r = (bc7_src[0] >> 14) & 0xFE; colors[1].r |= (colors[1].r >> 7);
-
-			colors[0].g = (bc7_src[0] >> 21) & 0xFE; colors[0].g |= (colors[0].g >> 7);
-			colors[1].g = ((bc7_src[0] >> 28) & 0x0E) | ((bc7_src[1] << 4) & 0xF0);
-				colors[1].g |= (colors[1].g >> 7);
-
-			colors[0].b = (bc7_src[1] >>  3) & 0xFE; colors[0].b |= (colors[0].b >> 7);
-			colors[1].b = (bc7_src[1] >> 10) & 0xFE; colors[0].b |= (colors[1].b >> 7);
-
-			alpha[0] = (bc7_src[1] >> 18);
-			alpha[1] = ((bc7_src[1] >> 26) & 0x3F) | ((bc7_src[2] << 6) & 0xC0);
-
-			// Rotation bits.
-			const uint8_t rot_bits = (bc7_src[1] >> 6) & 3;
-
-			// Get the indexes.
-			// NOTE: Unspecified index bits are fixed at 0.
-			uint32_t index_color = (bc7_src[2] >> 2) | ((bc7_src[3] & 1) << 31);
-			uint32_t index_alpha = bc7_src[3] >> 1;
-
-			// Each index is two bits, which represents one of the two endpoints.
-			for (unsigned int i = 0; i < 16; i++, index_color >>= 2, index_alpha >>= 2) {
-				tileBuf[i].u32 = interpolate_color<2,false>(index_color & 3, colors);
-				tileBuf[i].a = interpolate_component<2>(index_alpha & 3, alpha[0], alpha[1]);
-
-				// Check for rotation bits.
-				// TODO: Optimize using u8 indexing?
-				switch (rot_bits & 3) {
-					case 0:
-						// Nothing to do here.
-						break;
-					case 1:
-						// Swap A and R.
-						std::swap(tileBuf[i].a, tileBuf[i].r);
-						break;
-					case 2:
-						// Swap A and G.
-						std::swap(tileBuf[i].a, tileBuf[i].g);
-						break;
-					case 3:
-						// Swap A and B.
-						std::swap(tileBuf[i].a, tileBuf[i].b);
-						break;
-					default:
-						break;
-				}
-			}
-		} else if ((mode & 0x7F) == 0x40) {
-			/**
-			 * Mode 6:
-			 * - Combined color and alpha components
-			 * - 1 subset per block
-			 * - RGBAP 7.7.7.7.1 color (and alpha) endpoints (unqiue P-bit per endpoint)
-			 * - 16 x 4-bit indexes
-			 *
-			 * LSB: [0000001]
-			 *      [7-bit R0][7-bit R1]
-			 *      [7-bit G0][7-bit G1]
-			 *      [7-bit B0][7-bit B1]
-			 *      [7-bit A0][7-bit A1]
-			 *      [1-bit P0][1-bit P1]
-			 *      [63-bit index data] MSB
-			 */
-			done = false;
-			cx = 0xFFFFFF00;
-		} else if ((mode & 0xFF) == 0x80) {
-			/**
-			 * Mode 7:
-			 * - Combined color and alpha components
-			 * - 2 subsets per block
-			 * - RGBAP 5.5.5.5.1 color (and alpha) endpoints (unqiue P-bit per endpoint)
-			 * - 2-bit indexes
-			 * - 64-bit partitions
-			 *
-			 * LSB: [00000001]
-			 *      [5-bit R0][5-bit R1][5-bit R2][5-bit R3]
-			 *      [5-bit G0][5-bit G1][5-bit G2][5-bit G3]
-			 *      [5-bit B0][5-bit B1][5-bit B2][5-bit B3]
-			 *      [5-bit A0][5-bit A1][5-bit A2][5-bit A3]
-			 *      [1-bit P0][1-bit P1][1-bit P2][1-bit P3]
-			 *      [30-bit index data] MSB
-			 */
-			done = false;
-			cx = 0xFFFFFFFF;
-		} else {
+		const int mode = get_mode(static_cast<uint32_t>(lsb));
+		if (mode < 0) {
 			// Invalid mode.
-			done = false;
-			cx = 0xFFFFFFFF;
+			delete img;
+			return nullptr;
+		}
+		rshift128(msb, lsb, mode+1);
+
+		// Rotation mode.
+		if (mode == 4 || mode == 5) {
+			rotation_mode = lsb & 3;
+			rshift128(msb, lsb, 2);
+		} else {
+			// No rotation.
+			rotation_mode = 0;
 		}
 
-		if (!done) {
-			// Not implemented yet. Use the fake color.
-			for (unsigned int i = 0; i < 16; i++) {
-				// TODO: decode
-				tileBuf[i].u32 = cx;
+		// Bits per index. (either 2 or 3)
+		// NOTE: Most modes don't have the full 32-bit or 48-bit
+		// index table. Missing bits are assumed to be 0.
+		static const uint8_t IndexBits[8] = {3, 3, 2, 2, 0, 2, 4, 2};
+		unsigned int index_bits = IndexBits[mode];
+		if (index_bits == 0) {
+			// Mode 4: Selectable between 2 and 3.
+			index_bits = (lsb & 1 ? 3 : 2);
+			rshift128(msb, lsb, 1);
+		}
+
+		// Partition count.
+		static const uint8_t PartitionBits[8] = {4, 6, 6, 6, 0, 0, 0, 6};
+		if (PartitionBits[mode] != 0) {
+			partition = lsb & ((1U << PartitionBits[mode]) - 1);
+			rshift128(msb, lsb, PartitionBits[mode]);
+		} else {
+			// No partitions.
+			partition = 0;
+		}
+
+		// P-bits.
+		// NOTE: These are applied per subset.
+		// The P-bit count is needed here in order to determine the
+		// shift amount for the endpoints and alpha values.
+		static const uint8_t PBitCount[8] = {1, 1, 0, 1, 0, 0, 1, 1};
+
+		// Number of endpoints.
+		static const uint8_t EndpointCount[8] = {6, 4, 6, 4, 2, 2, 2, 4};
+		// Bits per endpoint component.
+		static const uint8_t EndpointBits[8] = {4, 6, 5, 7, 5, 7, 7, 5};
+
+		// Extract and extend the components.
+		// NOTE: Components are stored in RRRR/GGGG/BBBB/AAAA order.
+		// Needs to be shuffled for RGBA.
+		uint8_t endpoint_bits = EndpointBits[mode];
+		uint8_t endpoint_count = EndpointCount[mode];
+		const uint8_t endpoint_mask = (1U << endpoint_bits) - 1;
+		const uint8_t endpoint_shamt = (8 - endpoint_bits) + PBitCount[mode];
+		const unsigned int component_count = endpoint_count * 3;
+		uint8_t ep_idx = 0, comp_idx = 0;
+		for (unsigned int i = 0; i < component_count; i++) {
+			endpoints[ep_idx][comp_idx] = (lsb & endpoint_mask) << endpoint_shamt;
+			ep_idx++;
+			if (ep_idx == endpoint_count) {
+				// Next component.
+				comp_idx++;
+				ep_idx = 0;
 			}
+
+			// Shift the data over.
+			rshift128(msb, lsb, endpoint_bits);
+		}
+
+		// Do we have alpha components?
+		static const uint8_t AlphaBits[8] = {0, 0, 0, 0, 6, 8, 7, 5};
+		uint8_t alpha_bits = AlphaBits[mode];
+		if (alpha_bits != 0) {
+			// We have alpha components.
+			// TODO: Optimize P-bit shifting?
+			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
+			alpha[0] = (lsb & alpha_mask) << PBitCount[mode];
+			alpha[1] = ((lsb >> alpha_bits) & alpha_mask) << PBitCount[mode];
+			rshift128(msb, lsb, alpha_bits * 2);
+		} else {
+			// No alpha. Use 255.
+			alpha[0] = 255;
+			alpha[1] = 255;
+		}
+
+		// P-bits.
+		if (PBitCount[mode] != 0) {
+			// Optimization to avoid having to shift the
+			// whole 64-bit and/or 128-bit value multiple times.
+			unsigned int lsb8 = (lsb & 0xFF);
+			for (unsigned int i = 0; i < EndpointCount[mode]; i++) {
+				p_bits[i] = lsb8 & 1;
+				lsb >>= 1;
+			}
+			rshift128(msb, lsb, EndpointCount[mode]);
+		}
+
+		// At this point, the only remaining data is indexes,
+		// which fits entirely into LSB. Hence, we can stop
+		// using rshift128().
+
+		// Determine the subset to use.
+		static const uint8_t SubsetCount[8] = {3, 2, 3, 2, 1, 1, 1, 2};
+		switch (SubsetCount[mode]) {
+			default:
+			case 1:
+				// One subset.
+				subset = nullptr;
+				break;
+			case 2:
+				// Two subsets.
+				subset = &bc7_2sub[partition][0];
+				break;
+			case 3:
+				// Three subsets.
+				subset = &bc7_3sub[partition][0];
+				break;
+		}
+
+		// Process the index data.
+		// (Mode 5: Color index data.)
+		// TODO: Add P-bits.
+		const unsigned int index_mask = (1U << index_bits) - 1;
+		for (unsigned int i = 0; i < 16; i++, lsb >>= index_bits) {
+			const unsigned int data_idx = lsb & index_mask;
+			const unsigned int ep_idx = (subset ? subset[i] * 2 : 0);
+			tileBuf[i].r = interpolate_component(index_bits, data_idx, endpoints[ep_idx][0], endpoints[ep_idx+1][0]);
+			tileBuf[i].g = interpolate_component(index_bits, data_idx, endpoints[ep_idx][1], endpoints[ep_idx+1][1]);
+			tileBuf[i].b = interpolate_component(index_bits, data_idx, endpoints[ep_idx][2], endpoints[ep_idx+1][2]);
+		}
+
+		// TODO: Alpha handling.
+		// For now, set it to 255.
+		for (unsigned int i = 0; i < 16; i++) {
+			tileBuf[i].a = 255;
 		}
 
 		// Blit the tile to the main image buffer.
