@@ -396,14 +396,15 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			rotation_mode = 0;
 		}
 
-		// Bits per index. (either 2 or 3)
-		// NOTE: Most modes don't have the full 32-bit or 48-bit
-		// index table. Missing bits are assumed to be 0.
-		static const uint8_t IndexBits[8] = {3, 3, 2, 2, 0, 2, 4, 2};
-		unsigned int index_bits = IndexBits[mode];
-		if (index_bits == 0) {
-			// Mode 4: Selectable between 2 and 3.
-			index_bits = (lsb & 1 ? 3 : 2);
+		// Index mode selector. (Mode 4 only)
+		uint8_t idxMode_m4 = 0;
+		if (mode == 4) {
+			// Mode 4 has both 2-bit and 3-bit selectors.
+			// The index selection bit determines which is used for
+			// color data and which is used for alpha data:
+			// - idxMode_m4 == 0: Color == 2-bit, Alpha == 3-bit
+			// - idxMode_m4 == 1: Color == 3-bit, Alpha == 2-bit
+			idxMode_m4 = lsb & 1;
 			rshift128(msb, lsb, 1);
 		}
 
@@ -548,33 +549,42 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			endpoint_bits++;
 		}
 
+		// Bits per index. (either 2 or 3)
+		// NOTE: Most modes don't have the full 32-bit or 48-bit
+		// index table. Missing bits are assumed to be 0.
+		static const uint8_t IndexBits[8] = { 3, 3, 2, 2, 0, 2, 4, 2 };
+		unsigned int index_bits = IndexBits[mode];
+
 		// At this point, the only remaining data is indexes,
 		// which fits entirely into LSB. Hence, we can stop
 		// using rshift128().
 
 		// EXCEPTION: Mode 4 has both 2-bit *and* 3-bit indexes.
-		// If 2-bit indexes are in use, we have to mask off the 3-bit indexes.
-		// If 3-bit indexes are in use, we have to shift them in.
+		// Depending on idxMode_m4, we have to use one or the other.
+		uint64_t idxData;
+		uint8_t index_mask;
 		if (mode == 4) {
-			switch (index_bits) {
-				default:
-					assert(!"Invalid index_bits for mode 4.");
-					delete img;
-					return nullptr;
-				case 2:
-					lsb &= (1U << 31) - 1;
-					break;
-				case 3:
-					rshift128(msb, lsb, 31);
-					break;
+			// Load the color indexes.
+			if (idxMode_m4) {
+				// idxMode is set: Color data uses the 3-bit indexes.
+				idxData = (msb >> 14) | (lsb >> 31);
+				index_bits = 3;
+				index_mask = (1U << 3) - 1;
+			} else {
+				// idxMode is not set: Color data uses the 2-bit indexes.
+				idxData = lsb & ((1U << 31) - 1);
+				index_bits = 2;
+				index_mask = (1U << 2) - 1;
 			}
+		} else {
+			// Use the LSB indexes as-is.
+			idxData = lsb;
+			index_mask = (1U << index_bits) - 1;
 		}
 
 		// Process the index data for the color components.
-		const uint64_t lsb_orig = lsb;
-		const unsigned int index_mask = (1U << index_bits) - 1;
-		for (unsigned int i = 0; i < 16; i++, lsb >>= index_bits) {
-			const unsigned int data_idx = lsb & index_mask;
+		for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits) {
+			const unsigned int data_idx = idxData & index_mask;
 			const unsigned int ep_idx = (subset ? subset[i] * 2 : 0);
 
 			tileBuf[i].r = interpolate_component(index_bits, data_idx, endpoints[ep_idx][0], endpoints[ep_idx+1][0]);
@@ -585,9 +595,21 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// Alpha handling.
 		if (mode == 4) {
 			// Mode 4: Alpha indexes are present.
-			// 2-bit indexes, 1 subset.
-			for (unsigned int i = 0; i < 16; i++, lsb >>= 2) {
-				tileBuf[i].a = interpolate_component(2, lsb & 1, alpha[0], alpha[1]);
+			// Load the appropriate indexes based on idxMode.
+			uint8_t index_bits, index_mask;
+			if (idxMode_m4) {
+				// idxMode is set: Alpha data uses the 2-bit indexes.
+				idxData = lsb & ((1U << 31) - 1);
+				index_bits = 3;
+				index_mask = (1U << 3) - 1;
+			} else {
+				// idxMode is not set: Alpha data uses the 3-bit indexes.
+				idxData = (msb >> 14) | (lsb >> 31);
+				index_bits = 2;
+				index_mask = (1U << 2) - 1;
+			}
+			for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits) {
+				tileBuf[i].a = interpolate_component(index_bits, idxData & index_mask, alpha[0], alpha[1]);
 			}
 		} else if (alpha_bits == 0) {
 			// No alpha. Assume 255.
@@ -596,9 +618,9 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			}
 		} else {
 			// Process alpha using the index data.
-			lsb = lsb_orig;
-			for (unsigned int i = 0; i < 16; i++, lsb >>= index_bits) {
-				const unsigned int data_idx = lsb & index_mask;
+			idxData = lsb;
+			for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits) {
+				const unsigned int data_idx = idxData & index_mask;
 				const unsigned int ep_idx = (subset ? subset[i] * 2 : 0);
 				tileBuf[i].a = interpolate_component(index_bits, data_idx, alpha[ep_idx], alpha[ep_idx+1]);
 			}
