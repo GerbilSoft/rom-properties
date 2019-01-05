@@ -348,8 +348,9 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				// Check the DX10 format.
 				// TODO: Handle typeless, signed, sRGB, float.
 				// TODO: Make this a lookup table with three fields?
+				dxgi_format = dxt10Header.dxgiFormat;
 				dxgi_alpha = dxt10Header.miscFlags2;
-				switch (dxt10Header.dxgiFormat) {
+				switch (dxgi_format) {
 					case DXGI_FORMAT_R10G10B10A2_TYPELESS:
 					case DXGI_FORMAT_R10G10B10A2_UNORM:
 					case DXGI_FORMAT_R10G10B10A2_UINT:
@@ -422,7 +423,6 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 
 					default:
 						// Use the DX10 format as-is. (Assume it's compressed.)
-						dxgi_format = dxt10Header.dxgiFormat;
 						break;
 				}
 				break;
@@ -1174,17 +1174,12 @@ int DirectDrawSurface::loadFieldData(void)
 		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), C_("DirectDrawSurface", "Unknown"));
 	}
 
-	if (ddspf.dwFourCC == DDPF_FOURCC_DX10 ||
-	    ddspf.dwFourCC == DDPF_FOURCC_XBOX)
-	{
-		// DX10 texture.
-		const DDS_HEADER_DXT10 *const dxt10Header = &d->dxt10Header;
-
-		// Texture format.
-		const char *texFormat = DX10Formats::lookup_dxgiFormat(dxt10Header->dxgiFormat);
+	if (d->dxgi_format != 0) {
+		// DX10 texture format.
+		const char *texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
 		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
-				rp_sprintf(C_("DirectDrawSurface", "Unknown (0x%08X)"), dxt10Header->dxgiFormat)));
+				rp_sprintf(C_("DirectDrawSurface", "Unknown (0x%08X)"), d->dxgi_format)));
 	}
 
 	// dwFlags

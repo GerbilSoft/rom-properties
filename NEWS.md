@@ -51,6 +51,8 @@
   * DMG: Added support for the GBX footer. This is used to indicate certain
     cartridge features that either can't be represented in the DMG header
     or aren't properly represented in e.g. unlicensed games.
+  * DirectDrawSurface: For non-DX10 textures, the equivalent DX10 format is
+    now shown if it can be determined.
   * ELF: Two PT_DYNAMIC headers are now displayed if present:
     * DT_FLAGS
     * DT_FLAGS_1
