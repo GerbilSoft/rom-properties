@@ -360,9 +360,10 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		uint8_t endpoints[6][3];
 
 		// Alpha components.
-		// If the selected mode doesn't have alpha,
-		// this will be set to {255, 255}.
-		uint8_t alpha[2];
+		// If no alpha is present, this will be 255.
+		// For modes with alpha components, there is always
+		// one alpha channel per endpoint.
+		uint8_t alpha[4];
 
 		/** END: Temporary values. **/
 
@@ -450,7 +451,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// NOTE: Components are stored in RRRR/GGGG/BBBB/AAAA order.
 		// Needs to be shuffled for RGBA.
 		uint8_t endpoint_bits = EndpointBits[mode];
-		uint8_t endpoint_count = EndpointCount[mode];
+		const uint8_t endpoint_count = EndpointCount[mode];
 		const uint8_t endpoint_mask = (1U << endpoint_bits) - 1;
 		const uint8_t endpoint_shamt = (8 - endpoint_bits);
 		const unsigned int component_count = endpoint_count * 3;
@@ -473,16 +474,18 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		uint8_t alpha_bits = AlphaBits[mode];
 		if (alpha_bits != 0) {
 			// We have alpha components.
-			// TODO: Optimize shifting?
 			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
 			const uint8_t alpha_shamt = (8 - alpha_bits);
-			alpha[0] = (lsb & alpha_mask) << alpha_shamt;
-			alpha[1] = ((lsb >> alpha_bits) & alpha_mask) << alpha_shamt;
-			rshift128(msb, lsb, alpha_bits * 2);
+			for (unsigned int i = 0; i < endpoint_count; i++) {
+				alpha[i] = (lsb & alpha_mask) << endpoint_shamt;
+				rshift128(msb, lsb, alpha_bits);
+			}
 		} else {
 			// No alpha. Use 255.
 			alpha[0] = 255;
 			alpha[1] = 255;
+			alpha[2] = 255;
+			alpha[3] = 255;
 		}
 
 		// P-bits.
@@ -569,7 +572,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			tileBuf[i].a = 255;
 		}
 
-		// Component rotation?
+		// Component rotation.
 		// TODO: Optimize with SSSE3.
 		switch (rotation_mode) {
 			case 0:
