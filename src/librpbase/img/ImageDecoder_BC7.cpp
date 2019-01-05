@@ -354,15 +354,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	for (unsigned int x = 0; x < tilesX; x++, bc7_src += 2) {
 		/** BEGIN: Temporary values. **/
 
-		// Rotation mode.
-		// Only present in modes 4 and 5.
-		// For all other modes, this is assumed to be 00.
-		// - 00: ARGB - no swapping
-		// - 01: RAGB - swap A and R
-		// - 10: GRAB - swap A and G
-		// - 11: BRGA - swap A and B
-		uint8_t rotation_mode;
-		
 		// Endpoints.
 		// - [6]: Individual endpoints.
 		// - [3]: RGB components.
@@ -389,6 +380,13 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		rshift128(msb, lsb, mode+1);
 
 		// Rotation mode.
+		// Only present in modes 4 and 5.
+		// For all other modes, this is assumed to be 00.
+		// - 00: ARGB - no swapping
+		// - 01: RAGB - swap A and R
+		// - 10: GRAB - swap A and G
+		// - 11: BRGA - swap A and B
+		uint8_t rotation_mode;
 		if (mode == 4 || mode == 5) {
 			rotation_mode = lsb & 3;
 			rshift128(msb, lsb, 2);
@@ -551,6 +549,32 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// For now, set it to 255.
 		for (unsigned int i = 0; i < 16; i++) {
 			tileBuf[i].a = 255;
+		}
+
+		// Component rotation?
+		// TODO: Optimize with SSSE3.
+		switch (rotation_mode) {
+			case 0:
+				// ARGB: No rotation.
+				break;
+			case 1:
+				// RAGB: Swap A and R.
+				for (unsigned int i = 0; i < 16; i++) {
+					std::swap(tileBuf[i].a, tileBuf[i].r);
+				}
+				break;
+			case 2:
+				// GRAB: Swap A and G.
+				for (unsigned int i = 0; i < 16; i++) {
+					std::swap(tileBuf[i].a, tileBuf[i].g);
+				}
+				break;
+			case 3:
+				// BRGA: Swap A and B.
+				for (unsigned int i = 0; i < 16; i++) {
+					std::swap(tileBuf[i].a, tileBuf[i].b);
+				}
+				break;
 		}
 
 		// Blit the tile to the main image buffer.
