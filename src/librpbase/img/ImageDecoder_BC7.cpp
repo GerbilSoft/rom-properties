@@ -554,8 +554,8 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			}
 		}
 
-		// Process the index data.
-		// (Mode 5: Color index data.)
+		// Process the index data for the color components.
+		const uint64_t lsb_orig = lsb;
 		const unsigned int index_mask = (1U << index_bits) - 1;
 		for (unsigned int i = 0; i < 16; i++, lsb >>= index_bits) {
 			const unsigned int data_idx = lsb & index_mask;
@@ -566,10 +566,26 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			tileBuf[i].b = interpolate_component(index_bits, data_idx, endpoints[ep_idx][2], endpoints[ep_idx+1][2]);
 		}
 
-		// TODO: Alpha handling.
-		// For now, set it to 255.
-		for (unsigned int i = 0; i < 16; i++) {
-			tileBuf[i].a = 255;
+		// Alpha handling.
+		if (mode == 4) {
+			// Mode 4: Alpha indexes are present.
+			// 2-bit indexes, 1 subset.
+			for (unsigned int i = 0; i < 16; i++, lsb >>= 2) {
+				tileBuf[i].a = interpolate_component(2, lsb & 1, alpha[0], alpha[1]);
+			}
+		} else if (alpha_bits == 0) {
+			// No alpha. Assume 255.
+			for (unsigned int i = 0; i < 16; i++) {
+				tileBuf[i].a = 255;
+			}
+		} else {
+			// Process alpha using the index data.
+			lsb = lsb_orig;
+			for (unsigned int i = 0; i < 16; i++, lsb >>= index_bits) {
+				const unsigned int data_idx = lsb & index_mask;
+				const unsigned int ep_idx = (subset ? subset[i] * 2 : 0);
+				tileBuf[i].a = interpolate_component(index_bits, data_idx, alpha[ep_idx], alpha[ep_idx+1]);
+			}
 		}
 
 		// Component rotation.
