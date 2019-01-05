@@ -354,9 +354,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	for (unsigned int x = 0; x < tilesX; x++, bc7_src += 2) {
 		/** BEGIN: Temporary values. **/
 
-		// Partition number.
-		unsigned int partition;
-
 		// Rotation mode.
 		// Only present in modes 4 and 5.
 		// For all other modes, this is assumed to be 00.
@@ -378,9 +375,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 
 		// P-bits.
 		uint8_t p_bits[6];
-
-		// Selected subset.
-		const uint8_t *subset;
 
 		/** END: Temporary values. **/
 
@@ -417,14 +411,33 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			rshift128(msb, lsb, 1);
 		}
 
-		// Partition count.
+		// Subset/partition.
+		static const uint8_t SubsetCount[8] = {3, 2, 3, 2, 1, 1, 1, 2};
 		static const uint8_t PartitionBits[8] = {4, 6, 6, 6, 0, 0, 0, 6};
+		const uint8_t *subset;
 		if (PartitionBits[mode] != 0) {
-			partition = lsb & ((1U << PartitionBits[mode]) - 1);
+			unsigned int partition = lsb & ((1U << PartitionBits[mode]) - 1);
 			rshift128(msb, lsb, PartitionBits[mode]);
+
+			// Determine the subset to use.
+			switch (SubsetCount[mode]) {
+				default:
+				case 1:
+					// One subset.
+					subset = nullptr;
+					break;
+				case 2:
+					// Two subsets.
+					subset = &bc7_2sub[partition][0];
+					break;
+				case 3:
+					// Three subsets.
+					subset = &bc7_3sub[partition][0];
+					break;
+			}
 		} else {
-			// No partitions.
-			partition = 0;
+			// No subsets/partitions.
+			subset = nullptr;
 		}
 
 		// P-bits.
@@ -491,24 +504,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// At this point, the only remaining data is indexes,
 		// which fits entirely into LSB. Hence, we can stop
 		// using rshift128().
-
-		// Determine the subset to use.
-		static const uint8_t SubsetCount[8] = {3, 2, 3, 2, 1, 1, 1, 2};
-		switch (SubsetCount[mode]) {
-			default:
-			case 1:
-				// One subset.
-				subset = nullptr;
-				break;
-			case 2:
-				// Two subsets.
-				subset = &bc7_2sub[partition][0];
-				break;
-			case 3:
-				// Three subsets.
-				subset = &bc7_3sub[partition][0];
-				break;
-		}
 
 		// Process the index data.
 		// (Mode 5: Color index data.)
