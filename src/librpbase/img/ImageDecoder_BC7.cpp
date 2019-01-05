@@ -23,11 +23,84 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+// C++ includes.
+#include <algorithm>	// std::swap() until C++11
+#include <utility>	// std::swap() since C++11
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
 
 namespace LibRpBase {
+
+// Interpolation values.
+static const uint8_t aWeight2[] = {0, 21, 43, 64};
+static const uint8_t aWeight3[] = {0, 9, 18, 27, 37, 46, 55, 64};
+static const uint8_t aWeight4[] = {0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64};
+
+/**
+ * Interpolate a color component.
+ * @tparam bits Index precision, in number of bits.
+ * @param index Color/alpha index.
+ * @param e0 Endpoint 0 component.
+ * @param e1 Endpoint 1 component.
+ * @return Interpolated color component.
+ */
+template<int bits>
+static FORCEINLINE uint8_t interpolate_component(unsigned int index, uint8_t e0, uint8_t e1)
+{
+	static_assert(bits == 2 || bits == 3 || bits == 4, "Unsupported `bits` value.");
+
+	// Shortcut for no-interpolation cases.
+	// TODO: Does this actually improve performance?
+	if (index == 0) {
+		return e0;
+	} else if (index == (1<<bits)-1) {
+		return e1;
+	}
+
+	uint8_t weight;
+	switch (bits) {
+		case 2:
+			weight = aWeight2[index];
+			break;
+		case 3:
+			weight = aWeight3[index];
+			break;
+		case 4:
+			weight = aWeight4[index];
+			break;
+		default:
+			// Should not happen...
+			return 0;
+	}
+
+	return (uint8_t)((((64 - weight) * (unsigned int)e0) +
+			       ((weight  * (unsigned int)e1) + 32)) >> 6);
+}
+
+/**
+ * Interpolate color values.
+ * @tparam bits Index precision, in number of bits.
+ * @tparam alpha If true, interpolate the alpha channel.
+ * @param index Color/alpha index.
+ * @param colors Color endpoints. (2-element array)
+ * @return Interpolated ARGB32 color.
+ */
+template<int bits, bool alpha>
+static inline uint32_t interpolate_color(unsigned int index, const argb32_t colors[2])
+{
+	argb32_t argb;
+	argb.r = interpolate_component<bits>(index, colors[0].r, colors[1].r);
+	argb.g = interpolate_component<bits>(index, colors[0].g, colors[1].g);
+	argb.b = interpolate_component<bits>(index, colors[0].b, colors[1].b);
+	if (alpha) {
+		argb.a = interpolate_component<bits>(index, colors[0].a, colors[1].a);
+	} else {
+		argb.a = 0;
+	}
+	return argb.u32;
+}
 
 /**
  * Convert a BC7 image to rp_image.
@@ -76,14 +149,28 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	const uint32_t *bc7_src = reinterpret_cast<const uint32_t*>(img_buf);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	argb32_t tileBuf[4*4];
+
+	// Temporary ARGB and alpha values.
+	argb32_t colors[6];
+	memset(&colors, 0, sizeof(colors));
+	uint8_t alpha[2] = {0, 0};
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, bc7_src += 4) {
 		// FIXME: Proper support on big-endian.
 		// Not doing byteswapping right now...
 
+		bool done = true;
 		uint32_t cx;	// Temporary color value.
+
+		// P-bits represent the LSB of the various color components.
+
+		// Rotation bits:
+		// - 00: ARGB - no swapping
+		// - 01: RAGB - swap A and R
+		// - 10: GRAB - swap A and G
+		// - 11: BRGA - swap A and B
 
 		// Check the block mode.
 		const uint8_t mode = le32_to_cpu(bc7_src[0]) & 0xFF;
@@ -104,6 +191,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [1-bit P0][1-bit P1][1-bit P2][1-bit P3][1-bit P4][1-bit P5]
 			 *      [45-bit index] MSB
 			 */
+			done = false;
 			cx = 0xFF000000;
 		} else if ((mode & 0x03) == 0x02) {
 			/**
@@ -122,6 +210,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [1-bit P0][1-bit P1]
 			 *      [46-bit index] MSB
 			 */
+			done = false;
 			cx = 0xFF0000FF;
 		} else if ((mode & 0x07) == 0x04) {
 			/**
@@ -139,6 +228,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [5-bit B0][5-bit B1][5-bit B2][5-bit B3][5-bit B4][5-bit B5]
 			 *      [29-bit index] MSB
 			 */
+			done = false;
 			cx = 0xFF00FF00;
 		} else if ((mode & 0x0F) == 0x08) {
 			/**
@@ -157,6 +247,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [1-bit P0][1-bit P1][1-bit P2][1-bit P3]
 			 *      [30-bit index] MSB
 			 */
+			done = false;
 			cx = 0xFF00FFFF;
 		} else if ((mode & 0x1F) == 0x10) {
 			/**
@@ -180,6 +271,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [31-bit index] MSB
 			 *      [47-bit index] MSB
 			 */
+			done = false;
 			cx = 0xFFFF0000;
 		} else if ((mode & 0x3F) == 0x20) {
 			/**
@@ -201,7 +293,57 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [31-bit color index data] MSB
 			 *      [31-bit alpha index data] MSB
 			 */
-			cx = 0xFFFF00FF;
+
+			// Extract the RGB and alpha values.
+			// 7-bit RGB; duplicate the MSB in the LSB.
+			colors[0].r = (bc7_src[0] >>  7) & 0xFE; colors[0].r |= (colors[0].r >> 7);
+			colors[1].r = (bc7_src[0] >> 14) & 0xFE; colors[1].r |= (colors[1].r >> 7);
+
+			colors[0].g = (bc7_src[0] >> 21) & 0xFE; colors[0].g |= (colors[0].g >> 7);
+			colors[1].g = ((bc7_src[0] >> 28) & 0x0E) | ((bc7_src[1] << 4) & 0xF0);
+				colors[1].g |= (colors[1].g >> 7);
+
+			colors[0].b = (bc7_src[1] >>  3) & 0xFE; colors[0].b |= (colors[0].b >> 7);
+			colors[1].b = (bc7_src[1] >> 10) & 0xFE; colors[0].b |= (colors[1].b >> 7);
+
+			alpha[0] = (bc7_src[1] >> 18);
+			alpha[1] = ((bc7_src[1] >> 26) & 0x3F) | ((bc7_src[2] << 6) & 0xC0);
+
+			// Rotation bits.
+			const uint8_t rot_bits = (bc7_src[1] >> 6) & 3;
+
+			// Get the indexes.
+			// NOTE: Unspecified index bits are fixed at 0.
+			uint32_t index_color = (bc7_src[2] >> 2) | ((bc7_src[3] & 1) << 31);
+			uint32_t index_alpha = bc7_src[3] >> 1;
+
+			// Each index is two bits, which represents one of the two endpoints.
+			for (unsigned int i = 0; i < 16; i++, index_color >>= 2, index_alpha >>= 2) {
+				tileBuf[i].u32 = interpolate_color<2,false>(index_color & 3, colors);
+				tileBuf[i].a = interpolate_component<2>(index_alpha & 3, alpha[0], alpha[1]);
+
+				// Check for rotation bits.
+				// TODO: Optimize using u8 indexing?
+				switch (rot_bits & 3) {
+					case 0:
+						// Nothing to do here.
+						break;
+					case 1:
+						// Swap A and R.
+						std::swap(tileBuf[i].a, tileBuf[i].r);
+						break;
+					case 2:
+						// Swap A and G.
+						std::swap(tileBuf[i].a, tileBuf[i].g);
+						break;
+					case 3:
+						// Swap A and B.
+						std::swap(tileBuf[i].a, tileBuf[i].b);
+						break;
+					default:
+						break;
+				}
+			}
 		} else if ((mode & 0x7F) == 0x40) {
 			/**
 			 * Mode 6:
@@ -218,6 +360,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [1-bit P0][1-bit P1]
 			 *      [63-bit index data] MSB
 			 */
+			done = false;
 			cx = 0xFFFFFF00;
 		} else if ((mode & 0xFF) == 0x80) {
 			/**
@@ -236,20 +379,25 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			 *      [1-bit P0][1-bit P1][1-bit P2][1-bit P3]
 			 *      [30-bit index data] MSB
 			 */
+			done = false;
 			cx = 0xFFFFFFFF;
 		} else {
 			// Invalid mode.
+			done = false;
 			cx = 0xFFFFFFFF;
 		}
 
-		// Process the 16 pixels.
-		for (unsigned int i = 0; i < 16; i++) {
-			// TODO: decode
-			tileBuf[i] = cx;
+		if (!done) {
+			// Not implemented yet. Use the fake color.
+			for (unsigned int i = 0; i < 16; i++) {
+				// TODO: decode
+				tileBuf[i].u32 = cx;
+			}
 		}
 
 		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img,
+			reinterpret_cast<const uint32_t*>(&tileBuf[0]), x, y);
 	} }
 
 	// Image has been converted.
