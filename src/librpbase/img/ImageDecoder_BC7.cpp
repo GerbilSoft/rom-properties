@@ -97,7 +97,7 @@ static inline uint32_t interpolate_color(unsigned int index, const argb32_t colo
 	if (alpha) {
 		argb.a = interpolate_component<bits>(index, colors[0].a, colors[1].a);
 	} else {
-		argb.a = 0;
+		argb.a = 255;
 	}
 	return argb.u32;
 }
