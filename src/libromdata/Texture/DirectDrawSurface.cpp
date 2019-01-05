@@ -913,10 +913,10 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	ddspf.dwGBitMask	= le32_to_cpu(ddspf.dwGBitMask);
 	ddspf.dwBBitMask	= le32_to_cpu(ddspf.dwBBitMask);
 	ddspf.dwABitMask	= le32_to_cpu(ddspf.dwABitMask);
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-
+#else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 	// FourCC is considered to be big-endian.
 	d->ddsHeader.ddspf.dwFourCC = be32_to_cpu(d->ddsHeader.ddspf.dwFourCC);
+#endif
 
 	// Update the pixel format.
 	d->updatePixelFormat();
@@ -1125,12 +1125,14 @@ int DirectDrawSurface::loadFieldData(void)
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
 		// TODO: Union of uint32_t and char?
+		// NOTE: dwFourCC is byteswapped from 'big-endian'
+		// to host-endian, so it needs to be reversed here.
 		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
 			rp_sprintf("%c%c%c%c",
-				 ddspf.dwFourCC        & 0xFF,
-				(ddspf.dwFourCC >>  8) & 0xFF,
+				(ddspf.dwFourCC >> 24) & 0xFF,
 				(ddspf.dwFourCC >> 16) & 0xFF,
-				(ddspf.dwFourCC >> 24) & 0xFF));
+				(ddspf.dwFourCC >>  8) & 0xFF,
+				 ddspf.dwFourCC        & 0xFF));
 	} else if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
