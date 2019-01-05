@@ -477,7 +477,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
 			const uint8_t alpha_shamt = (8 - alpha_bits);
 			for (unsigned int i = 0; i < endpoint_count; i++) {
-				alpha[i] = (lsb & alpha_mask) << endpoint_shamt;
+				alpha[i] = (lsb & alpha_mask) << alpha_shamt;
 				rshift128(msb, lsb, alpha_bits);
 			}
 		} else {
