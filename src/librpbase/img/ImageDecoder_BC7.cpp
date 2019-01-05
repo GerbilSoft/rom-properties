@@ -533,6 +533,24 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// which fits entirely into LSB. Hence, we can stop
 		// using rshift128().
 
+		// EXCEPTION: Mode 4 has both 2-bit *and* 3-bit indexes.
+		// If 2-bit indexes are in use, we have to mask off the 3-bit indexes.
+		// If 3-bit indexes are in use, we have to shift them in.
+		if (mode == 4) {
+			switch (index_bits) {
+				default:
+					assert(!"Invalid index_bits for mode 4.");
+					delete img;
+					return nullptr;
+				case 2:
+					lsb &= (1U << 31) - 1;
+					break;
+				case 3:
+					rshift128(msb, lsb, 31);
+					break;
+			}
+		}
+
 		// Process the index data.
 		// (Mode 5: Color index data.)
 		const unsigned int index_mask = (1U << index_bits) - 1;
