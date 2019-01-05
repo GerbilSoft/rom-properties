@@ -517,17 +517,33 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 				rshift128(msb, lsb, 2);
 			} else {
 				// Other modes: Unique P-bit for each subset.
-				const uint8_t p_shamt = 7 - endpoint_bits;
+				// TODO: Skip alpha if alpha_bits == 0?
+				const uint8_t p_ep_shamt = 7 - endpoint_bits;
 				for (unsigned int i = 0; i < endpoint_count; i++, lsb8 >>= 1) {
-					const uint8_t p_bit = (lsb8 & 1) << p_shamt;
+					const uint8_t p_bit = (lsb8 & 1) << p_ep_shamt;
 					endpoints[i][0] |= p_bit;
 					endpoints[i][1] |= p_bit;
 					endpoints[i][2] |= p_bit;
 				}
+
+				if (alpha_bits > 0) {
+					// Apply P-bits to the alpha components.
+					assert(endpoint_count <= ARRAY_SIZE(alpha));
+					const uint8_t p_a_shamt = 7 - alpha_bits;
+					lsb8 = (lsb & 0xFF);
+					for (unsigned int i = 0; i < endpoint_count; i++, lsb8 >>= 1) {
+						alpha[i] |= (lsb8 & 1) << p_a_shamt;
+					}
+
+					// Increment the alpha bits to indicate how many bits
+					// need to be copied when expanding the color value.
+					alpha_bits++;
+				}
+
 				rshift128(msb, lsb, EndpointCount[mode]);
 			}
 
-			// Increase the endpoint bits to indicate how many bits
+			// Increment the endpoint bits to indicate how many bits
 			// need to be copied when expanding the color value.
 			endpoint_bits++;
 		}
