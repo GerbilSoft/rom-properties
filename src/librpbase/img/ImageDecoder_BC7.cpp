@@ -721,19 +721,19 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			if (idxMode_m4) {
 				// idxMode is set: Alpha data uses the 2-bit indexes.
 				idxData = lsb & ((1U << 31) - 1);
-				index_bits = 3;
-				index_mask = (1U << 3) - 1;
+				index_bits = 2;
+				index_mask = (1U << 2) - 1;
 			} else {
-				// idxMode is set: Color data uses the 3-bit indexes.
+				// idxMode is not set: Alpha data uses the 3-bit indexes.
 				// NOTE: We've already shifted by 50 bits by now, so the
 				// MSB contains the high 14 bits of the index data, and
 				// the LSB contains the low 33 bits of the index data.
 				idxData = (msb << 33) | (lsb >> 31);
-				index_bits = 2;
-				index_mask = (1U << 2) - 1;
+				index_bits = 3;
+				index_mask = (1U << 3) - 1;
 			}
 
-			for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits) {
+			for (unsigned int i = 0; i < 16; i++) {
 				const uint8_t subset_idx = (subset ? subset[i] : 0);
 				uint8_t data_idx;
 				if (i == anchor_index[subset_idx]) {
