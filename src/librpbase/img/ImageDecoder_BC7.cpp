@@ -43,7 +43,7 @@ static const uint8_t aWeight4[] = {0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 
 // - https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
 // - https://github.com/hglm/detex/blob/master/bptc-tables.c
 // TODO: Optimize into bitfields.
-static uint8_t bc7_2sub[64][16] = {
+static const uint8_t bc7_2sub[64][16] = {
 	// 0
 	{0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1},
 	{0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1},
@@ -130,7 +130,7 @@ static uint8_t bc7_2sub[64][16] = {
 // - https://rockets2000.wordpress.com/2015/05/19/bc7-partitions-subsets/
 // - https://github.com/hglm/detex/blob/master/bptc-tables.c
 // TODO: Optimize into bitfields.
-static uint8_t bc7_3sub[64][16] = {
+static const uint8_t bc7_3sub[64][16] = {
 	// 0
 	{0,0,1,1,0,0,1,1,0,2,2,1,2,2,2,2},
 	{0,0,0,1,0,0,1,1,2,2,1,1,2,2,2,1},
