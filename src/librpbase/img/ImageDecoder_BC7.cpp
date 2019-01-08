@@ -285,7 +285,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -503,7 +503,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 					alpha_bits++;
 				}
 
-				rshift128(msb, lsb, EndpointCount[mode]);
+				rshift128(msb, lsb, endpoint_count);
 			}
 
 			// Increment the endpoint bits to indicate how many bits
