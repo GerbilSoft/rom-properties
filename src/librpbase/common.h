@@ -145,7 +145,7 @@
 /**
  * Alignment assertion macro.
  */
-#define ASSERT_ALIGNMENT(a, ptr)	assert(reinterpret_cast<uintptr_t>(ptr) % 16 == 0);
+#define ASSERT_ALIGNMENT(a, ptr)	assert(reinterpret_cast<uintptr_t>(ptr) % (a) == 0);
 
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
