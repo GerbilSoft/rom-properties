@@ -669,7 +669,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			case 1:
 				// RAGB: Swap A and R.
 				for (unsigned int i = 0; i < 16; i++) {
-					uint8_t a = tileBuf[i].a;
+					const uint8_t a = tileBuf[i].a;
 					tileBuf[i].a = tileBuf[i].r;
 					tileBuf[i].r = a;
 				}
@@ -677,7 +677,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			case 2:
 				// GRAB: Swap A and G.
 				for (unsigned int i = 0; i < 16; i++) {
-					uint8_t a = tileBuf[i].a;
+					const uint8_t a = tileBuf[i].a;
 					tileBuf[i].a = tileBuf[i].g;
 					tileBuf[i].g = a;
 				}
@@ -685,7 +685,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			case 3:
 				// BRGA: Swap A and B.
 				for (unsigned int i = 0; i < 16; i++) {
-					uint8_t a = tileBuf[i].a;
+					const uint8_t a = tileBuf[i].a;
 					tileBuf[i].a = tileBuf[i].b;
 					tileBuf[i].b = a;
 				}
