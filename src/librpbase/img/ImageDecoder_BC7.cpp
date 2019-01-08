@@ -273,6 +273,84 @@ static inline int get_mode(uint32_t dword0)
 	return -1;
 }
 
+// Anchor indexes for the second subset (idx == 1) in 2-subset modes.
+static const uint8_t anchorIndexes_subset2of2[64] = {
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15,  2,  8,  2,  2,  8,  8, 15,
+	 2,  8,  2,  2,  8,  8,  2,  2,
+	15, 15,  6,  8,  2,  8, 15, 15,
+	 2,  8,  2,  2,  2, 15, 15,  6,
+	 6,  2,  6,  8, 15, 15,  2,  2,
+	15, 15, 15, 15, 15,  2,  2, 15,
+};
+
+// Anchor indexes for the second subset (idx == 1) in 3-subset modes.
+static const uint8_t anchorIndexes_subset2of3[64] = {
+	 3,  3, 15, 15,  8,  3, 15, 15,
+	 8,  8,  6,  6,  6,  5,  3,  3,
+	 3,  3,  8, 15,  3,  3,  6, 10,
+	 5,  8,  8,  6,  8,  5, 15, 15,
+	 8, 15,  3,  5,  6, 10,  8, 15,
+	15,  3, 15,  5, 15, 15, 15, 15,
+	 3, 15,  5,  5,  5,  8,  5, 10,
+	 5, 10,  8, 13, 15, 12,  3,  3,
+};
+
+// Anchor indexes for the third subset (idx == 2) in 3-subset modes.
+static uint8_t anchorIndexes_subset3of3[64] = {
+	15,  8,  8,  3, 15, 15,  3,  8,
+	15, 15, 15, 15, 15, 15, 15,  8,
+	15,  8, 15,  3, 15,  8, 15,  8,
+	 3, 15,  6, 10, 15, 15, 10,  8,
+	15,  3, 15, 10, 10,  8,  9, 10,
+	 6, 15,  8, 15,  3,  6,  6,  8,
+	15,  3, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15,  3, 15, 15,  8,
+};
+
+/**
+ * Get the index of the "anchor" bits for implied index bits.
+ * @param partition Partition number.
+ * @param subset Subset number.
+ * @param subsetCount Total number of subsets. (1, 2, 3)
+ */
+static uint8_t getAnchorIndex(uint8_t partition, uint8_t subset, uint8_t subsetCount)
+{
+	if (subset == 0) {
+		// Subset 0 always has an anchor index of 0.
+		return 0;
+	}
+
+	uint8_t idx;
+	switch (subsetCount) {
+		default:
+			assert(!"Invalid subset count.");
+			idx = 0;
+			break;
+		case 1:
+			// Should've been handled above but okay.
+			idx = 0;
+			break;
+		case 2:
+			// Two subsets.
+			// Assume this is the second subset.
+			idx = anchorIndexes_subset2of2[partition];
+			break;
+		case 3:
+			// Three subsets.
+			// Subset is either 1 or 2, since subset can't be 0.
+			assert(subset != 0);
+			idx = (subset == 1
+				? anchorIndexes_subset2of3[partition]
+				: anchorIndexes_subset3of3[partition]
+				);
+			break;
+	}
+
+	return idx;
+}
+
 /**
  * Right-shift two 64-bit values as if it's a single 128-bit value.
  * @param msb	[in/out] MSB QWORD
@@ -412,8 +490,9 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		static const uint8_t SubsetCount[8] = {3, 2, 3, 2, 1, 1, 1, 2};
 		static const uint8_t PartitionBits[8] = {4, 6, 6, 6, 0, 0, 0, 6};
 		const uint8_t *subset;
+		uint8_t partition = 0;
 		if (PartitionBits[mode] != 0) {
-			unsigned int partition = lsb & ((1U << PartitionBits[mode]) - 1);
+			partition = lsb & ((1U << PartitionBits[mode]) - 1);
 			rshift128(msb, lsb, PartitionBits[mode]);
 
 			// Determine the subset to use.
@@ -518,7 +597,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 				rshift128(msb, lsb, 2);
 			} else {
 				// Other modes: Unique P-bit for each subset.
-				// TODO: Skip alpha if alpha_bits == 0?
 				const uint8_t p_ep_shamt = 7 - endpoint_bits;
 				for (unsigned int i = 0; i < endpoint_count; i++, lsb8 >>= 1) {
 					const uint8_t p_bit = (lsb8 & 1) << p_ep_shamt;
@@ -599,11 +677,37 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			index_mask = (1U << index_bits) - 1;
 		}
 
-		// Process the index data for the color components.
-		for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits) {
-			const unsigned int data_idx = idxData & index_mask;
-			const unsigned int ep_idx = (subset ? subset[i] * 2 : 0);
+		// Check for anchor bits.
+		uint8_t anchor_index[3];
+		if (mode == 1) {
+			// Mode 1: anchor_index[0] is always 0.
+			// TODO: Verify this?
+			anchor_index[0] = 0;
+			anchor_index[1] = anchorIndexes_subset2of2[partition];
+		} else {
+			// Other modes.
+			const uint8_t subset_count = SubsetCount[mode];
+			for (unsigned int i = 0; i < subset_count; i++) {
+				anchor_index[i] = getAnchorIndex(partition, i, subset_count);
+			}
+		}
 
+		// Process the index data for the color components.
+		for (unsigned int i = 0; i < 16; i++) {
+			const uint8_t subset_idx = (subset ? subset[i] : 0);
+			uint8_t data_idx;
+			if (i == anchor_index[subset_idx]) {
+				// This is an anchor index.
+				// Highest bit is 0.
+				data_idx = idxData & (index_mask >> 1);
+				idxData >>= (index_bits - 1);
+			} else {
+				// Regular index.
+				data_idx = idxData & index_mask;
+				idxData >>= index_bits;
+			}
+
+			const uint8_t ep_idx = subset_idx * 2;
 			tileBuf[i].r = interpolate_component(index_bits, data_idx, endpoints[ep_idx][0], endpoints[ep_idx+1][0]);
 			tileBuf[i].g = interpolate_component(index_bits, data_idx, endpoints[ep_idx][1], endpoints[ep_idx+1][1]);
 			tileBuf[i].b = interpolate_component(index_bits, data_idx, endpoints[ep_idx][2], endpoints[ep_idx+1][2]);
@@ -628,8 +732,23 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 				index_bits = 2;
 				index_mask = (1U << 2) - 1;
 			}
+
 			for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits) {
-				tileBuf[i].a = interpolate_component(index_bits, idxData & index_mask, alpha[0], alpha[1]);
+				const uint8_t subset_idx = (subset ? subset[i] : 0);
+				uint8_t data_idx;
+				if (i == anchor_index[subset_idx]) {
+					// This is an anchor index.
+					// Highest bit is 0.
+					data_idx = idxData & (index_mask >> 1);
+					idxData >>= (index_bits - 1);
+				}
+				else {
+					// Regular index.
+					data_idx = idxData & index_mask;
+					idxData >>= index_bits;
+				}
+
+				tileBuf[i].a = interpolate_component(index_bits, data_idx, alpha[0], alpha[1]);
 			}
 		} else if (alpha_bits == 0) {
 			// No alpha. Assume 255.
@@ -640,8 +759,21 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			// Process alpha using the index data.
 			idxData = lsb;
 			for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits) {
-				const unsigned int data_idx = idxData & index_mask;
-				const unsigned int ep_idx = (subset ? subset[i] * 2 : 0);
+				const uint8_t subset_idx = (subset ? subset[i] : 0);
+				uint8_t data_idx;
+				if (i == anchor_index[subset_idx]) {
+					// This is an anchor index.
+					// Highest bit is 0.
+					data_idx = idxData & (index_mask >> 1);
+					idxData >>= (index_bits - 1);
+				}
+				else {
+					// Regular index.
+					data_idx = idxData & index_mask;
+					idxData >>= index_bits;
+				}
+
+				const uint8_t ep_idx = subset_idx * 2;
 				tileBuf[i].a = interpolate_component(index_bits, data_idx, alpha[ep_idx], alpha[ep_idx+1]);
 			}
 		}
