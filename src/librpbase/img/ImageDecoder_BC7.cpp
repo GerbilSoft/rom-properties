@@ -403,12 +403,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			subset = 0;
 		}
 
-		// P-bits.
-		// NOTE: These are applied per subset.
-		// The P-bit count is needed here in order to determine the
-		// shift amount for the endpoints and alpha values.
-		static const uint8_t PBitCount[8] = {1, 1, 0, 1, 0, 0, 1, 1};
-
 		// Number of endpoints.
 		static const uint8_t EndpointCount[8] = {6, 4, 6, 4, 2, 2, 2, 4};
 		// Bits per endpoint component.
@@ -420,7 +414,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		uint8_t endpoint_bits = EndpointBits[mode];
 		const uint8_t endpoint_count = EndpointCount[mode];
 		const uint8_t endpoint_mask = (1U << endpoint_bits) - 1;
-		const uint8_t endpoint_shamt = (8 - endpoint_bits);
+		const uint8_t endpoint_shamt = 8U - endpoint_bits;
 		const unsigned int component_count = endpoint_count * 3;
 		uint8_t ep_idx = 0, comp_idx = 0;
 		for (unsigned int i = 0; i < component_count; i++) {
@@ -445,7 +439,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			// TODO: Or, rotation might enable alpha...
 			sBIT.alpha = 8;
 			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
-			const uint8_t alpha_shamt = (8 - alpha_bits);
+			const uint8_t alpha_shamt = 8U - alpha_bits;
 			for (unsigned int i = 0; i < endpoint_count; i++) {
 				alpha[i] = (lsb & alpha_mask) << alpha_shamt;
 				rshift128(msb, lsb, alpha_bits);
@@ -459,6 +453,10 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		}
 
 		// P-bits.
+		// NOTE: These are applied per subset.
+		// The P-bit count is needed here in order to determine the
+		// shift amount for the endpoints and alpha values.
+		static const uint8_t PBitCount[8] = {1, 1, 0, 1, 0, 0, 1, 1};
 		if (PBitCount[mode] != 0) {
 			// Optimization to avoid having to shift the
 			// whole 64-bit and/or 128-bit value multiple times.
@@ -534,7 +532,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// Bits per index. (either 2 or 3)
 		// NOTE: Most modes don't have the full 32-bit or 48-bit
 		// index table. Missing bits are assumed to be 0.
-		static const uint8_t IndexBits[8] = { 3, 3, 2, 2, 0, 2, 4, 2 };
+		static const uint8_t IndexBits[8] = {3, 3, 2, 2, 0, 2, 4, 2};
 		unsigned int index_bits = IndexBits[mode];
 
 		// At this point, the only remaining data is indexes,
