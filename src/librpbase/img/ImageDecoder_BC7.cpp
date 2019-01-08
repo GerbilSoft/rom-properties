@@ -23,10 +23,6 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
-// C++ includes.
-#include <algorithm>	// std::swap() until C++11
-#include <utility>	// std::swap() since C++11
-
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
@@ -796,19 +792,25 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			case 1:
 				// RAGB: Swap A and R.
 				for (unsigned int i = 0; i < 16; i++) {
-					std::swap(tileBuf[i].a, tileBuf[i].r);
+					uint8_t a = tileBuf[i].a;
+					tileBuf[i].a = tileBuf[i].r;
+					tileBuf[i].r = a;
 				}
 				break;
 			case 2:
 				// GRAB: Swap A and G.
 				for (unsigned int i = 0; i < 16; i++) {
-					std::swap(tileBuf[i].a, tileBuf[i].g);
+					uint8_t a = tileBuf[i].a;
+					tileBuf[i].a = tileBuf[i].g;
+					tileBuf[i].r = a;
 				}
 				break;
 			case 3:
 				// BRGA: Swap A and B.
 				for (unsigned int i = 0; i < 16; i++) {
-					std::swap(tileBuf[i].a, tileBuf[i].b);
+					uint8_t a = tileBuf[i].a;
+					tileBuf[i].a = tileBuf[i].b;
+					tileBuf[i].r = a;
 				}
 				break;
 		}
