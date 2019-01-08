@@ -417,6 +417,12 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		return nullptr;
 	}
 
+	// sBIT metadata.
+	// The alpha value is set depending on whether or not
+	// a block with alpha bits set is encountered.
+	// TODO: Check rotation?
+	rp_image::sBIT_t sBIT = {8,8,8,0,0};
+
 	// BC7 has eight block modes with varying properties, including
 	// bitfields of different lengths. As such, the only guaranteed
 	// block format we have is 128-bit little-endian, which will be
@@ -554,6 +560,9 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		uint8_t alpha_bits = AlphaBits[mode];
 		if (alpha_bits != 0) {
 			// We have alpha components.
+			// TODO: Might not actually be alpha if rotation is enabled...
+			// TODO: Or, rotation might enable alpha...
+			sBIT.alpha = 8;
 			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
 			const uint8_t alpha_shamt = (8 - alpha_bits);
 			for (unsigned int i = 0; i < endpoint_count; i++) {
@@ -808,6 +817,9 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img,
 			reinterpret_cast<const uint32_t*>(&tileBuf[0]), x, y);
 	} }
+
+	// Set the sBIT metadata.
+	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
 	return img;
