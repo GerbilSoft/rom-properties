@@ -684,7 +684,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 				for (unsigned int i = 0; i < 16; i++) {
 					uint8_t a = tileBuf[i].a;
 					tileBuf[i].a = tileBuf[i].g;
-					tileBuf[i].r = a;
+					tileBuf[i].g = a;
 				}
 				break;
 			case 3:
@@ -692,7 +692,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 				for (unsigned int i = 0; i < 16; i++) {
 					uint8_t a = tileBuf[i].a;
 					tileBuf[i].a = tileBuf[i].b;
-					tileBuf[i].r = a;
+					tileBuf[i].b = a;
 				}
 				break;
 		}
