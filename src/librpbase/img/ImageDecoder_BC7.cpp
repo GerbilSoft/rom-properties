@@ -549,6 +549,20 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			endpoint_bits++;
 		}
 
+		// Expand the endpoints and alpha components.
+		if (endpoint_bits < 8) {
+			for (unsigned int i = 0; i < endpoint_count; i++) {
+				endpoints[i][0] = endpoints[i][0] | (endpoints[i][0] >> endpoint_bits);
+				endpoints[i][1] = endpoints[i][1] | (endpoints[i][1] >> endpoint_bits);
+				endpoints[i][2] = endpoints[i][2] | (endpoints[i][2] >> endpoint_bits);
+			}
+		}
+		if (alpha_bits != 0 && alpha_bits < 8) {
+			for (unsigned int i = 0; i < endpoint_count; i++) {
+				alpha[i] = alpha[i] | (alpha[i] >> alpha_bits);
+			}
+		}
+
 		// Bits per index. (either 2 or 3)
 		// NOTE: Most modes don't have the full 32-bit or 48-bit
 		// index table. Missing bits are assumed to be 0.
