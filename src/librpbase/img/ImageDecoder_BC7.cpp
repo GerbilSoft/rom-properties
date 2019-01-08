@@ -309,6 +309,12 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	// Temporary tile buffer.
 	argb32_t tileBuf[4*4];
 
+	// Anchor indexes.
+	// Subset 0 is always anchored at 0.
+	// Other subsets depend on subset count and partition number.
+	uint8_t anchor_index[3];
+	anchor_index[0] = 0;
+
 	for (unsigned int y = 0; y < tilesY; y++) {
 	for (unsigned int x = 0; x < tilesX; x++, bc7_src += 2) {
 		/** BEGIN: Temporary values. **/
@@ -561,19 +567,10 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			index_mask = (1U << index_bits) - 1;
 		}
 
-		// Check for anchor bits.
-		uint8_t anchor_index[3];
-		if (mode == 1) {
-			// Mode 1: anchor_index[0] is always 0.
-			// TODO: Verify this?
-			anchor_index[0] = 0;
-			anchor_index[1] = anchorIndexes_subset2of2[partition];
-		} else {
-			// Other modes.
-			const uint8_t subset_count = SubsetCount[mode];
-			for (unsigned int i = 0; i < subset_count; i++) {
-				anchor_index[i] = getAnchorIndex(partition, i, subset_count);
-			}
+		// Get the anchor indexes.
+		const uint8_t subset_count = SubsetCount[mode];
+		for (unsigned int i = 1; i < subset_count; i++) {
+			anchor_index[i] = getAnchorIndex(partition, i, subset_count);
 		}
 
 		// Process the index data for the color components.
