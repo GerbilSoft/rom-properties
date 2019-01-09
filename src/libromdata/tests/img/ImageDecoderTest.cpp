@@ -25,7 +25,6 @@
 #include "gtest/gtest.h"
 
 // zlib and libpng
-#include <zlib.h>
 #ifdef HAVE_PNG
 # include <png.h>
 #endif /* HAVE_PNG */
@@ -926,9 +925,6 @@ extern "C" int gtest_main(int argc, char *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: ImageDecoder tests.\n\n");
 	fflush(nullptr);
-
-	// Make sure the CRC32 table is initialized.
-	get_crc_table();
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
