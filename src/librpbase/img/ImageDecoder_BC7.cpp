@@ -631,9 +631,15 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			}
 		} else {
 			// Process alpha using the index data.
-			idxData = lsb;
+			if (mode == 5) {
+				// Mode 5: Separate alpha indexes, stored after the color indexes.
+				idxData = lsb >> 31;
+			} else {
+				// Other modes: Same indexes as color data.
+				idxData = lsb;
+			}
 			subsetData = subset;
-			for (unsigned int i = 0; i < 16; i++, idxData >>= index_bits, subsetData >>= 2) {
+			for (unsigned int i = 0; i < 16; i++, subsetData >>= 2) {
 				const uint8_t subset_idx = subsetData & 3;
 				uint8_t data_idx;
 				if (i == anchor_index[subset_idx]) {
@@ -641,8 +647,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 					// Highest bit is 0.
 					data_idx = idxData & (index_mask >> 1);
 					idxData >>= (index_bits - 1);
-				}
-				else {
+				} else {
 					// Regular index.
 					data_idx = idxData & index_mask;
 					idxData >>= index_bits;
