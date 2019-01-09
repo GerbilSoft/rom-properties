@@ -110,8 +110,8 @@ struct ImageDecoderTest_mode
 };
 
 // Maximum file size for images.
-static const size_t MAX_DDS_IMAGE_FILESIZE = 2*1024*1024;
-static const size_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
+static const size_t MAX_DDS_IMAGE_FILESIZE = 3*1024*1024;
+static const size_t MAX_PNG_IMAGE_FILESIZE = 3*1024*1024;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 {
@@ -335,16 +335,23 @@ void ImageDecoderTest::Compare_RpImage(
 
 	// Compare the two images.
 	// TODO: rp_image::operator==()?
-	const uint8_t *pBitsExpected = static_cast<const uint8_t*>(pImgExpected->bits());
-	const uint8_t *pBitsActual   = static_cast<const uint8_t*>(pImgActual->bits());
-	const int row_bytes = pImgExpected->row_bytes();
-	const int stride_expected = pImgExpected->stride();
-	const int stride_actual   = pImgActual->stride();
-	for (unsigned int y = static_cast<unsigned int>(pImgExpected->height()); y > 0; y--) {
-		ASSERT_EQ(0, memcmp(pBitsExpected, pBitsActual, row_bytes)) <<
-			"Decoded image does not match the expected PNG image.";
-		pBitsExpected += stride_expected;
-		pBitsActual   += stride_actual;
+	const uint32_t *pBitsExpected = static_cast<const uint32_t*>(pImgExpected->bits());
+	const uint32_t *pBitsActual   = static_cast<const uint32_t*>(pImgActual->bits());
+	const int stride_diff_exp = (pImgExpected->stride() - pImgExpected->row_bytes()) / sizeof(uint32_t);
+	const int stride_diff_act = (pImgActual->stride() - pImgActual->row_bytes()) / sizeof(uint32_t);
+	const unsigned int width  = static_cast<unsigned int>(pImgExpected->width());
+	const unsigned int height = static_cast<unsigned int>(pImgExpected->height());
+	for (unsigned int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < width; x++, pBitsExpected++, pBitsActual++) {
+			if (*pBitsExpected != *pBitsActual) {
+				printf("ERR: (%u,%u): expected %08X, got %08X\n",
+					x, y, *pBitsExpected, *pBitsActual);
+			}
+			ASSERT_EQ(*pBitsExpected, *pBitsActual) <<
+				"Decoded image does not match the expected PNG image.";
+		}
+		pBitsExpected += stride_diff_exp;
+		pBitsActual   += stride_diff_act;
 	}
 }
 
@@ -913,6 +920,36 @@ INSTANTIATE_TEST_CASE_P(TCtest_S2TC, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"tctest/example-dxt5.dds.gz",
 			"tctest/example-dxt5.s2tc.dds.png", false))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+
+// BC7 tests.
+INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"BC7/w5_grass200_abd_a.dds.gz",
+			"BC7/w5_grass200_abd_a.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_grass201_abd.dds.gz",
+			"BC7/w5_grass201_abd.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_grass206_abd.dds.gz",
+			"BC7/w5_grass206_abd.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_rock805_abd.dds.gz",
+			"BC7/w5_rock805_abd.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_rock805_nrm.dds.gz",
+			"BC7/w5_rock805_nrm.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_rope801_prm.dds.gz",
+			"BC7/w5_rope801_prm.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_sand504_abd_a.dds.gz",
+			"BC7/w5_sand504_abd_a.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_wood503_prm.dds.gz",
+			"BC7/w5_wood503_prm.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
