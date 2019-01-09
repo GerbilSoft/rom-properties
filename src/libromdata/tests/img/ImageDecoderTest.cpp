@@ -942,7 +942,7 @@ INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
 			"BC7/w5_rock805_nrm.dds.gz",
 			"BC7/w5_rock805_nrm.png"),
 		ImageDecoderTest_mode(
-			"BC7/w5_rope801_prm.dds.gz",
+			"BC7/w5_rope801_prm.dds",
 			"BC7/w5_rope801_prm.png"),
 		ImageDecoderTest_mode(
 			"BC7/w5_sand504_abd_a.dds.gz",
