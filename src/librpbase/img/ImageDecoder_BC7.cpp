@@ -234,22 +234,17 @@ static uint8_t getAnchorIndex(uint8_t partition, uint8_t subset, uint8_t subsetC
  */
 static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
 {
-	if (shamt > 128) {
-		// Shifting more than 128 bits.
-		lsb = 0;
-		msb = 0;
-	} else if (shamt > 64) {
-		// Shifting more than 64 bits.
-		lsb = msb >> (shamt - 64);
-		msb = 0;
-	} else {
-		// Shift LSB first.
-		lsb >>= (shamt - 64);
-		// Copy from MSB to LSB.
-		lsb |= (msb << (64 - shamt));
-		// Shift MSB next.
-		msb >>= shamt;
+	if (shamt == 0) {
+		// Nothing to do here...
+		return;
 	}
+
+	// Shift LSB first.
+	lsb >>= (shamt - 64);
+	// Copy from MSB to LSB.
+	lsb |= (msb << (64 - shamt));
+	// Shift MSB next.
+	msb >>= shamt;
 }
 
 /**
