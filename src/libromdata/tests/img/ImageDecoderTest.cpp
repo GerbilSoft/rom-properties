@@ -111,7 +111,7 @@ struct ImageDecoderTest_mode
 
 // Maximum file size for images.
 static const size_t MAX_DDS_IMAGE_FILESIZE = 3*1024*1024;
-static const size_t MAX_PNG_IMAGE_FILESIZE = 3*1024*1024;
+static const size_t MAX_PNG_IMAGE_FILESIZE = 2*1024*1024;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 {
