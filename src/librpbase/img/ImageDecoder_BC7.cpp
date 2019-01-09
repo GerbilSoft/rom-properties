@@ -227,19 +227,21 @@ static uint8_t getAnchorIndex(uint8_t partition, uint8_t subset, uint8_t subsetC
 
 /**
  * Right-shift two 64-bit values as if it's a single 128-bit value.
+ * NOTE: Assuming `shamt` is always less than 64.
  * @param msb	[in/out] MSB QWORD
  * @param lsb	[in/out] LSB QWORD
  * @param shamt [in] Shift amount
  */
 static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
 {
+	assert(shamt < 64);
 	if (shamt == 0) {
 		// Nothing to do here...
 		return;
 	}
 
 	// Shift LSB first.
-	lsb >>= (shamt - 64);
+	lsb >>= shamt;
 	// Copy from MSB to LSB.
 	lsb |= (msb << (64 - shamt));
 	// Shift MSB next.
