@@ -423,7 +423,7 @@ class rp_image
 		 * @param key Chroma key color.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int IFUNC_INLINE apply_chroma_key(uint32_t key);
+		inline int apply_chroma_key(uint32_t key);
 
 		/**
 		 * Vertically flip the image.
@@ -456,11 +456,6 @@ inline int rp_image::un_premultiply(void)
 	}
 }
 
-#if defined(RP_HAS_IFUNC) && defined(RP_IMAGE_ALWAYS_HAS_SSE2)
-
-// System does support IFUNC, but it's always guaranteed to have SSE2.
-// Eliminate the IFUNC dispatch on this system.
-
 /**
  * Convert a chroma-keyed image to standard ARGB32.
  *
@@ -474,41 +469,21 @@ inline int rp_image::un_premultiply(void)
  */
 inline int rp_image::apply_chroma_key(uint32_t key)
 {
+	// FIXME: Figure out how to get IFUNC working with  C++ member functions.
+#if defined(RP_IMAGE_ALWAYS_HAS_SSE2)
 	// amd64 always has SSE2.
 	return apply_chroma_key_sse2(key);
-}
-
-#endif /* defined(RP_HAS_IFUNC) && defined(RP_IMAGE_ALWAYS_HAS_SSE2) */
-
-#if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
-
-// System does not support IFUNC, or we aren't guaranteed to have
-// optimizations for these CPUs. Use standard inline dispatch.
-
-/**
- * Convert a chroma-keyed image to standard ARGB32.
- *
- * This operates on the image itself, and does not return
- * a duplicated image with the adjusted image.
- *
- * NOTE: The image *must* be ARGB32.
- *
- * @param key Chroma key color.
- * @return 0 on success; negative POSIX error code on error.
- */
-inline int rp_image::apply_chroma_key(uint32_t key)
-{
-#ifdef RP_IMAGE_HAS_SSE2
+#else
+# if defined(RP_IMAGE_HAS_SSE2)
 	if (RP_CPU_HasSSE2()) {
 		return apply_chroma_key_sse2(key);
 	} else
-#endif /* RP_IMAGE_HAS_SSE2 */
+# endif /* RP_IMAGE_HAS_SSE2 */
 	{
 		return apply_chroma_key_cpp(key);
 	}
+#endif /* RP_IMAGE_ALWAYS_HAS_SSE2 */
 }
-
-#endif /* !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
 
 }
 
