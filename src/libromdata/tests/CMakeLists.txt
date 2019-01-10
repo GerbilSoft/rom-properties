@@ -114,6 +114,7 @@ ENDFOREACH(test_dir ${ImageDecoderTest_dirs})
 FILE(GLOB_RECURSE ImageDecoderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data"
 	img/ImageDecoder_data/*.png
 	img/ImageDecoder_data/*.gz
+	img/ImageDecoder_data/*.dds
 	)
 FOREACH(test_image ${ImageDecoderTest_images})
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
