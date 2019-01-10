@@ -25,9 +25,20 @@
 #include "gtest/gtest.h"
 
 // zlib and libpng
+#include <zlib.h>
 #ifdef HAVE_PNG
 # include <png.h>
 #endif /* HAVE_PNG */
+
+// gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
+#if (ZLIB_VER_MAJOR > 1) || \
+    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR > 2) || \
+    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
+// zlib-1.2.4 or later
+#else
+#define gzclose_r(file) gzclose(file)
+#define gzclose_w(file) gzclose(file)
+#endif
 
 // librpbase
 #include "librpbase/common.h"
@@ -44,7 +55,7 @@ using namespace LibRpBase;
 #include "Texture/DirectDrawSurface.hpp"
 #include "Texture/SegaPVR.hpp"
 #ifdef ENABLE_GL
-# include "Texture/KhronosKTX.hpp"
+#include "Texture/KhronosKTX.hpp"
 #endif /* ENABLE_GL */
 #include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
@@ -118,6 +129,7 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 	protected:
 		ImageDecoderTest()
 			: ::testing::TestWithParam<ImageDecoderTest_mode>()
+			, m_gzDds(nullptr)
 			, m_f_dds(nullptr)
 			, m_romData(nullptr)
 		{ }
@@ -144,6 +156,10 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		// Image buffers.
 		ao::uvector<uint8_t> m_dds_buf;
 		ao::uvector<uint8_t> m_png_buf;
+
+		// gzip file handle for .dds.gz.
+		// Placed here so it can be freed by TearDown() if necessary.
+		gzFile m_gzDds;
 
 		// RomData class pointer for .dds.gz.
 		// Placed here so it can be freed by TearDown() if necessary.
@@ -222,43 +238,59 @@ void ImageDecoderTest::SetUp(void)
 	path += DIR_SEP_CHR;
 	path += mode.dds_gz_filename;
 	replace_slashes(path);
-	unique_ptr<IRpFile> dds_gz_file(new RpFile(path, RpFile::FM_OPEN_READ_GZ));
-	ASSERT_TRUE(dds_gz_file.get() != nullptr);
-	ASSERT_TRUE(dds_gz_file->isOpen()) << "Error loading gzipped DDS image file: " <<
-		mode.dds_gz_filename << " - " << strerror(dds_gz_file->lastError());
+	m_gzDds = gzopen(path.c_str(), "rb");
+	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the DDS file: "
+		<< mode.dds_gz_filename;
 
-	// Maximum compressed file size.
-	const size_t ddsSize = static_cast<size_t>(dds_gz_file->size());
-	ASSERT_LE(ddsSize, MAX_DDS_IMAGE_FILESIZE) << "DDS test image is too big.";
+	// Get the decompressed file size.
+	// gzseek() does not support SEEK_END.
+	// Read through the file until we hit an EOF.
+	// NOTE: We could optimize this by reading the uncompressed
+	// file size if gzdirect() == 1, but this is a test case,
+	// so it doesn't really matter.
+	uint8_t buf[4096];
+	uint32_t ddsSize = 0;
+	while (!gzeof(m_gzDds)) {
+		int sz_read = gzread(m_gzDds, buf, sizeof(buf));
+		ASSERT_NE(sz_read, -1) << "gzread() failed.";
+		ddsSize += sz_read;
+	}
+	gzrewind(m_gzDds);
+
+	ASSERT_GT(ddsSize, 4+sizeof(DDS_HEADER))
+		<< "DDS test image is too small.";
+	ASSERT_LE(ddsSize, MAX_DDS_IMAGE_FILESIZE)
+		<< "DDS test image is too big.";
 
 	// Read the DDS image into memory.
 	m_dds_buf.resize(ddsSize);
-	ASSERT_EQ(ddsSize, m_dds_buf.size());
-	size_t sz_read = dds_gz_file->read(m_dds_buf.data(), ddsSize);
-	ASSERT_EQ(ddsSize, sz_read) << "Error loading DDS image file: " <<
+	ASSERT_EQ((size_t)ddsSize, m_dds_buf.size());
+	int sz = gzread(m_gzDds, m_dds_buf.data(), ddsSize);
+	gzclose_r(m_gzDds);
+	m_gzDds = nullptr;
+
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: " <<
 		mode.dds_gz_filename << " - short read";
-	dds_gz_file.reset();
 
 	// Open the PNG image file being tested.
 	path.resize(18);	// Back to "ImageDecoder_data/".
 	path += mode.png_filename;
 	replace_slashes(path);
-	unique_ptr<IRpFile> png_file(new RpFile(path, RpFile::FM_OPEN_READ));
-	ASSERT_TRUE(png_file.get() != nullptr);
-	ASSERT_TRUE(png_file->isOpen()) << "Error loading PNG image file: " <<
-		mode.png_filename << " - " << strerror(png_file->lastError());
+	unique_ptr<IRpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
+	ASSERT_TRUE(file.get() != nullptr);
+	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " <<
+		mode.png_filename << " - " << strerror(file->lastError());
 
 	// Maximum image size.
-	const size_t pngSize = static_cast<size_t>(png_file->size());
-	ASSERT_LE(pngSize, MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
+	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
 
 	// Read the PNG image into memory.
+	const size_t pngSize = static_cast<size_t>(file->size());
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
-	size_t readSize = png_file->read(m_png_buf.data(), pngSize);
+	size_t readSize = file->read(m_png_buf.data(), pngSize);
 	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: " <<
 		mode.png_filename << " - short read";
-	png_file.reset();
 }
 
 /**
@@ -274,6 +306,11 @@ void ImageDecoderTest::TearDown(void)
 
 	delete m_f_dds;
 	m_f_dds = nullptr;
+
+	if (m_gzDds) {
+		gzclose_r(m_gzDds);
+		m_gzDds = nullptr;
+	}
 }
 
 /**
