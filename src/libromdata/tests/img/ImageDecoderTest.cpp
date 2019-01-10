@@ -376,7 +376,8 @@ TEST_P(ImageDecoderTest, decodeTest)
 
 	// Determine the image type by checking the last 7 characters of the filename.
 	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
-	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz")) {
+	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
+	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds") {
 		// DDS image
 		m_romData = new DirectDrawSurface(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
