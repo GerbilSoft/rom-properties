@@ -34,6 +34,7 @@ using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cstring>
 
 // C++ includes.
 #include <string>
@@ -55,6 +56,14 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(MachOPrivate)
 
 	public:
+		// Executable format.
+		enum Exec_Format {
+			EXEC_FORMAT_UNKNOWN	= -1,
+			EXEC_FORMAT_MACH	= 0,
+			EXEC_FORMAT_FAT		= 1,
+		};
+		int execFormat;
+
 		// Mach-O format.
 		enum Mach_Format {
 			MACH_FORMAT_UNKNOWN	= -1,
@@ -83,16 +92,49 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 
 		// Mach-O header.
 		mach_header machHeader;
+
+		/**
+		 * Check the Mach-O magic number.
+		 * @param magic Magic number as read directly from disk.
+		 * @return Mach_Format value.
+		 */
+		static int checkMachMagicNumber(uint32_t magic);
 };
 
 /** MachOPrivate **/
 
 MachOPrivate::MachOPrivate(MachO *q, IRpFile *file)
 	: super(q, file)
+	, execFormat(EXEC_FORMAT_UNKNOWN)
 	, machFormat(MACH_FORMAT_UNKNOWN)
 {
 	// Clear the structs.
 	memset(&machHeader, 0, sizeof(machHeader));
+}
+
+/**
+ * Check the Mach-O magic number.
+ * @param magic Magic number as read directly from disk.
+ * @return Mach_Format value.
+ */
+int MachOPrivate::checkMachMagicNumber(uint32_t magic)
+{
+	// NOTE: Checking in order of Mac OS X usage as of 2019.
+	int ret = MACH_FORMAT_UNKNOWN;
+	if (magic == cpu_to_le32(MH_MAGIC_64)) {
+		// LE64 magic number.
+		ret = MACH_FORMAT_64LSB;
+	} else if (magic == cpu_to_le32(MH_MAGIC)) {
+		// LE32 magic number.
+		ret = MACH_FORMAT_32LSB;
+	} else if (magic == cpu_to_be32(MH_MAGIC)) {
+		// BE32 magic number.
+		ret = MACH_FORMAT_32MSB;
+	} else if (magic == cpu_to_be32(MH_MAGIC_64)) {
+		// BE64 magic number.
+		ret = MACH_FORMAT_64MSB;
+	}
+	return ret;
 }
 
 /** MachO **/
@@ -124,10 +166,14 @@ MachO::MachO(IRpFile *file)
 		return;
 	}
 
-	// Read the Mach-O header.
+	// Read the file header.
+	// - Mach-O header: 7 DWORDs
+	// - Universal header: 2 DWORDs, plus 5 DWORDs per architecture.
+	// Assuming up to 16 architectures, read 2+(5*16) = 82 DWORDs, or 328 bytes.
+	uint8_t header[328];
 	d->file->rewind();
-	size_t size = d->file->read(&d->machHeader, sizeof(d->machHeader));
-	if (size != sizeof(d->machHeader)) {
+	size_t size = d->file->read(header, sizeof(header));
+	if (size != sizeof(header)) {
 		delete d->file;
 		d->file = nullptr;
 		return;
@@ -136,25 +182,36 @@ MachO::MachO(IRpFile *file)
 	// Check if this executable is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(d->machHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->machHeader);
+	info.header.size = sizeof(header);
+	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for ELF.
 	info.szFile = 0;	// Not needed for ELF.
-	d->machFormat = isRomSupported_static(&info);
+	d->execFormat = isRomSupported_static(&info);
 
-	d->isValid = (d->machFormat >= 0);
-	if (!d->isValid) {
-		// Not a Mach-O executable.
-		delete d->file;
-		d->file = nullptr;
-		return;
+	// Load the Mach header.
+	switch (d->execFormat) {
+		case MachOPrivate::EXEC_FORMAT_MACH:
+			// Standar Mach executable.
+			memcpy(&d->machHeader, header, sizeof(d->machHeader));
+			d->machFormat = d->checkMachMagicNumber(d->machHeader.magic);
+			break;
+
+		case MachOPrivate::EXEC_FORMAT_FAT:
+			// TODO: Read the first architecture.
+			// TODO: Read all architectures?
+			break;
+
+		default:
+			// Not supported.
+			break;
 	}
 
 	// Swap endianness if needed.
+	d->isValid = (d->machFormat >= 0);
 	switch (d->machFormat) {
 		default:
-			// Should not get here...
 			d->isValid = false;
+			d->execFormat = MachOPrivate::EXEC_FORMAT_UNKNOWN;
 			d->machFormat = MachOPrivate::MACH_FORMAT_UNKNOWN;
 			delete d->file;
 			d->file = nullptr;
@@ -224,39 +281,46 @@ MachO::MachO(IRpFile *file)
  */
 int MachO::isRomSupported_static(const DetectInfo *info)
 {
+	// Read the file header.
+	// - Mach-O header: 7 DWORDs
+	// - Universal header: 2 DWORDs, plus 5 DWORDs per architecture.
+	// Only the first two DWORDs are needed for identification.
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(mach_header))
+	    info->header.size < 8)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
 	}
 
-	const mach_header *const machHeader =
-		reinterpret_cast<const mach_header*>(info->header.pData);
+	const uint32_t *const pu32 =
+		reinterpret_cast<const uint32_t*>(info->header.pData);
 
 	// Check the magic number.
 	// NOTE: Checking in order of Mac OS X usage as of 2019.
-	if (machHeader->magic == cpu_to_le32(MH_MAGIC_64)) {
-		// LE64 magic number.
-		return MachOPrivate::MACH_FORMAT_64LSB;
-	} else if (machHeader->magic == cpu_to_le32(MH_MAGIC)) {
-		// LE32 magic number.
-		return MachOPrivate::MACH_FORMAT_32LSB;
-	} else if (machHeader->magic == cpu_to_be32(MH_MAGIC)) {
-		// BE32 magic number.
-		return MachOPrivate::MACH_FORMAT_32MSB;
-	} else if (machHeader->magic == cpu_to_be32(MH_MAGIC_64)) {
-		// BE64 magic number.
-		return MachOPrivate::MACH_FORMAT_64MSB;
+	if (pu32[0] == cpu_to_be32(FAT_MAGIC)) {
+		// Universal binary.
+		// Note that this is the same magic number as Java classes,
+		// so check the second value (number of architectures)
+		// to verify. We're assuming a maximum of 16 architectures
+		// per executbale.
+		if (be32_to_cpu(pu32[1]) <= 16) {
+			// Mach-O universal binary.
+			return MachOPrivate::EXEC_FORMAT_FAT;
+		}
+	} else if (MachOPrivate::checkMachMagicNumber(pu32[0]) !=
+		   MachOPrivate::MACH_FORMAT_UNKNOWN)
+	{
+		// Mach-O executable.
+		return MachOPrivate::EXEC_FORMAT_MACH;
 	}
 
 	// Not supported.
-	return MachOPrivate::MACH_FORMAT_UNKNOWN;
+	return MachOPrivate::EXEC_FORMAT_UNKNOWN;
 }
 
 /**

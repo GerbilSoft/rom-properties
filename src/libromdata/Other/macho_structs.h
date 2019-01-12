@@ -25,6 +25,8 @@
 // - https://opensource.apple.com/source/xnu/xnu-792/EXTERNAL_HEADERS/mach-o/loader.h.auto.html
 // - https://opensource.apple.com/source/xnu/xnu-792/osfmk/mach/machine.h.auto.html
 // - https://github.com/file/file/blob/master/magic/Magdir/mach
+// - https://github.com/aidansteele/osx-abi-macho-file-format-reference
+// - https://opensource.apple.com/source/xnu/xnu-344/EXTERNAL_HEADERS/mach-o/fat.h.auto.html
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
@@ -306,6 +308,25 @@ typedef enum {
 	MH_NO_HEAP_EXECUTION		= 0x1000000,
 	MH_APP_EXTENSION_SAFE		= 0x2000000,
 } mh_flags_t;
+
+/**
+ * Fat header for Universal Binaries.
+ * NOTE: Universal Binary header is *always* in big-endian.
+ */
+#define FAT_MAGIC	0xCAFEBABE
+
+typedef struct PACKED _fat_header {
+	uint32_t magic;		/* FAT_MAGIC */
+	uint32_t nfat_arch;	/* number of structs that follow */
+} fat_header;
+
+typedef struct PACKED _fat_arch {
+	uint32_t cputype;	/* cpu specifier (int) */
+	uint32_t cpusubtype;	/* machine specifier (int) */
+	uint32_t offset;	/* file offset to this object file */
+	uint32_t size;		/* size of this object file */
+	uint32_t align;		/* alignment as a power of 2 */
+} fat_arch;
 
 #pragma pack()
 
