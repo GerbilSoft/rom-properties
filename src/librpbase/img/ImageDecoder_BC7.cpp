@@ -25,6 +25,21 @@
 
 #include "common.h"
 
+#include "cpu_dispatch.h"
+#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
+// MSVC always provides the intrinsics.
+// For GCC, since we're using inlines, we have to have
+// gcc-4.4 to enable per-function optimization.
+# if defined(_MSC_VER) || \
+     (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)))
+#  define BC7_HAS_SSSE3 1
+#  include "cpuflags_x86.h"
+// SSSE3 headers.
+#  include <emmintrin.h>
+#  include <tmmintrin.h>
+# endif /* _MSC_VER || __GNUC__ */
+#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
@@ -251,6 +266,96 @@ static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
 	msb >>= shamt;
 }
 
+#ifdef BC7_HAS_SSSE3
+# pragma GCC push_options
+# pragma GCC target("ssse3")
+/**
+ * Rotate components.
+ * SSSE3-optimized version.
+ * @param rotation_mode Rotation mode.
+ * @param tileBuf Tile buffer.
+ */
+static inline void rotate_components_SSSE3(uint8_t rotation_mode, argb32_t tileBuf[16])
+{
+	// FIXME: Verify the masks.
+	assert(rotation_mode <= 3);
+	ASSERT_ALIGNMENT(16, tileBuf);
+
+	__m128i shuf_mask;
+	switch (rotation_mode & 3) {
+		case 0:
+			// ARGB: No rotation.
+			return;
+		case 1:
+			// RAGB: Swap A and R.
+			shuf_mask = _mm_setr_epi8(0,1,3,2, 4,5,7,6, 8,9,11,10, 12,13,15,14);
+			break;
+		case 2:
+			// GRAB: Swap A and G.
+			shuf_mask = _mm_setr_epi8(0,3,2,1, 4,7,6,5, 8,11,10,9, 12,15,14,13);
+			break;
+		case 3:
+			// BRGA: Swap A and B.
+			shuf_mask = _mm_setr_epi8(3,1,2,0, 7,5,6,4, 11,9,10,8, 15,13,14,12);
+			break;
+	}
+
+	// Process four pixels per XMM register.
+	__m128i *const xmm_tileBuf = reinterpret_cast<__m128i*>(tileBuf);
+
+	__m128i reg0 = _mm_load_si128(&xmm_tileBuf[0]);
+	__m128i reg1 = _mm_load_si128(&xmm_tileBuf[1]);
+	__m128i reg2 = _mm_load_si128(&xmm_tileBuf[2]);
+	__m128i reg3 = _mm_load_si128(&xmm_tileBuf[3]);
+
+	_mm_store_si128(&xmm_tileBuf[0], _mm_shuffle_epi8(reg0, shuf_mask));
+	_mm_store_si128(&xmm_tileBuf[1], _mm_shuffle_epi8(reg1, shuf_mask));
+	_mm_store_si128(&xmm_tileBuf[2], _mm_shuffle_epi8(reg2, shuf_mask));
+	_mm_store_si128(&xmm_tileBuf[3], _mm_shuffle_epi8(reg3, shuf_mask));
+}
+# pragma GCC pop_options
+#endif /* BC7_HAS_SSSE3 */
+
+/**
+ * Rotate components.
+ * Standard version using regular C++ code.
+ * @param rotation_mode Rotation mode.
+ * @param tileBuf Tile buffer.
+ */
+static inline void rotate_components_cpp(uint8_t rotation_mode, argb32_t tileBuf[16])
+{
+	assert(rotation_mode <= 3);
+	switch (rotation_mode & 3) {
+		case 0:
+			// ARGB: No rotation.
+			break;
+		case 1:
+			// RAGB: Swap A and R.
+			for (unsigned int i = 0; i < 16; i++) {
+				const uint8_t a = tileBuf[i].a;
+				tileBuf[i].a = tileBuf[i].r;
+				tileBuf[i].r = a;
+			}
+			break;
+		case 2:
+			// GRAB: Swap A and G.
+			for (unsigned int i = 0; i < 16; i++) {
+				const uint8_t a = tileBuf[i].a;
+				tileBuf[i].a = tileBuf[i].g;
+				tileBuf[i].g = a;
+			}
+			break;
+		case 3:
+			// BRGA: Swap A and B.
+			for (unsigned int i = 0; i < 16; i++) {
+				const uint8_t a = tileBuf[i].a;
+				tileBuf[i].a = tileBuf[i].b;
+				tileBuf[i].b = a;
+			}
+			break;
+	}
+}
+
 /**
  * Convert a BC7 image to rp_image.
  * @param width Image width.
@@ -290,6 +395,11 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		delete img;
 		return nullptr;
 	}
+
+	// Use SSSE3 optimization for rotation?
+#ifdef BC7_HAS_SSSE3
+	const bool useSSSE3 = !!(RP_CPU_HasSSSE3());
+#endif
 
 	// sBIT metadata.
 	// The alpha value is set depending on whether or not
@@ -662,35 +772,18 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		}
 
 		// Component rotation.
-		// TODO: Optimize with SSSE3.
-		switch (rotation_mode) {
-			case 0:
-				// ARGB: No rotation.
-				break;
-			case 1:
-				// RAGB: Swap A and R.
-				for (unsigned int i = 0; i < 16; i++) {
-					const uint8_t a = tileBuf[i].a;
-					tileBuf[i].a = tileBuf[i].r;
-					tileBuf[i].r = a;
-				}
-				break;
-			case 2:
-				// GRAB: Swap A and G.
-				for (unsigned int i = 0; i < 16; i++) {
-					const uint8_t a = tileBuf[i].a;
-					tileBuf[i].a = tileBuf[i].g;
-					tileBuf[i].g = a;
-				}
-				break;
-			case 3:
-				// BRGA: Swap A and B.
-				for (unsigned int i = 0; i < 16; i++) {
-					const uint8_t a = tileBuf[i].a;
-					tileBuf[i].a = tileBuf[i].b;
-					tileBuf[i].b = a;
-				}
-				break;
+		if (rotation_mode != 0) {
+			// NOTE: Not using a separate dispatch function
+			// in order to reduce RP_CPU_HasSSSE3() calls
+			// and static initialization.
+#ifdef BC7_HAS_SSSE3
+			if (useSSSE3) {
+				rotate_components_SSSE3(rotation_mode, tileBuf);
+			} else
+#endif /* defined(RP_CPU_I386) || defined(RP_CPU_AMD64) */
+			{
+				rotate_components_cpp(rotation_mode, tileBuf);
+			}
 		}
 
 		// Blit the tile to the main image buffer.
