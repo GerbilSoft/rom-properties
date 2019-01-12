@@ -488,9 +488,29 @@ int MachO::loadFieldData(void)
 	}
 
 	const mach_header *const machHeader = &d->machHeaders[0];
+	int machFormat = d->machFormats[0];
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Executable format.
+	static const char *const exec_type_tbl[] = {
+		NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
+		NOP_C_("RomData|ExecType", "64-bit Little Endian"),
+		NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
+		NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
+	};
+	if (machFormat > MachOPrivate::MACH_FORMAT_UNKNOWN &&
+	    machFormat < ARRAY_SIZE(exec_type_tbl))
+	{
+		d->fields->addField_string(C_("MachO", "Format"),
+			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[machFormat]));
+	} else {
+		// TODO: Show individual values.
+		// NOTE: This shouldn't happen...
+		d->fields->addField_string(C_("MachO", "Format"),
+			C_("RomData", "Unknown"));
+	}
+
+	// CPU type.
 	const char *const s_cpu = MachOData::lookup_cpu_type(machHeader->cputype);
 	if (s_cpu) {
 		d->fields->addField_string(C_("Mach-O", "CPU"), s_cpu);
