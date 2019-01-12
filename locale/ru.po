@@ -37,7 +37,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-01-02 15:13-0500\n"
+"POT-Creation-Date: 2019-01-11 23:28-0500\n"
 "PO-Revision-Date: 2018-04-13 04:50+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -580,21 +580,21 @@ msgid "aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)"
 msgstr ""
 
 #. tr: Column 0: Key Name.
-#: ../src/kde/config/KeyStoreModel.cpp:425
+#: ../src/kde/config/KeyStoreModel.cpp:111
 #: ../src/win32/config/KeyManagerTab.cpp:388
 msgctxt "KeyManagerTab"
 msgid "Key Name"
 msgstr "Название ключа"
 
 #. tr: Column 1: Value.
-#: ../src/kde/config/KeyStoreModel.cpp:428
+#: ../src/kde/config/KeyStoreModel.cpp:113
 #: ../src/win32/config/KeyManagerTab.cpp:397
 msgctxt "KeyManagerTab"
 msgid "Value"
 msgstr "Значение"
 
 #. tr: Column 2: Verification status.
-#: ../src/kde/config/KeyStoreModel.cpp:431
+#: ../src/kde/config/KeyStoreModel.cpp:115
 #: ../src/win32/config/KeyManagerTab.cpp:402
 msgctxt "KeyManagerTab"
 msgid "Valid?"
@@ -611,27 +611,54 @@ msgid "ADX with Exponential Scale"
 msgstr ""
 
 #: ../src/libromdata/Audio/ADX.cpp:327
-msgctxt "ADX|Format"
+#: ../src/libromdata/Console/Dreamcast.cpp:667
+#: ../src/libromdata/Console/GameCubeSave.cpp:891
+#: ../src/libromdata/Console/MegaDrive.cpp:301
+#: ../src/libromdata/Console/NES.cpp:745
+#: ../src/libromdata/Console/Sega8Bit.cpp:464
+#: ../src/libromdata/Console/Sega8Bit.cpp:466
+#: ../src/libromdata/Console/SegaSaturn.cpp:603
+#: ../src/libromdata/Console/SNES.cpp:760
+#: ../src/libromdata/Console/SNES.cpp:803
+#: ../src/libromdata/Console/SNES.cpp:809
+#: ../src/libromdata/Console/WiiWAD.cpp:753
+#: ../src/libromdata/Handheld/DMG.cpp:638
+#: ../src/libromdata/Handheld/DMG.cpp:686
+#: ../src/libromdata/Handheld/DMG.cpp:823
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:366
+#: ../src/libromdata/Handheld/Lynx.cpp:263
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:900
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1803
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:323
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:383
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:396
+#: ../src/libromdata/Other/Amiibo.cpp:470
+#: ../src/libromdata/Other/Amiibo.cpp:475
+#: ../src/libromdata/Other/Amiibo.cpp:480 ../src/libromdata/Other/ELF.cpp:1374
+#: ../src/libromdata/Other/EXE_PE.cpp:281
+#: ../src/libromdata/Other/NintendoBadge.cpp:747
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1186
+msgctxt "RomData"
 msgid "Unknown"
 msgstr "Неизвестно"
 
 #: ../src/libromdata/Audio/ADX.cpp:330
-msgctxt "ADX"
+msgctxt "RomData|Audio"
 msgid "Format"
 msgstr "Формат"
 
 #: ../src/libromdata/Audio/ADX.cpp:333
-msgctxt "ADX"
+msgctxt "RomData|Audio"
 msgid "Channels"
 msgstr ""
 
 #: ../src/libromdata/Audio/ADX.cpp:343
-msgctxt "ADX"
+msgctxt "RomData|Audio"
 msgid "Sample Rate"
 msgstr ""
 
 #: ../src/libromdata/Audio/ADX.cpp:346
-msgctxt "ADX"
+msgctxt "RomData|Audio"
 msgid "Length"
 msgstr ""
 
@@ -671,28 +698,31 @@ msgctxt "ADX"
 msgid "Loop End"
 msgstr ""
 
-#: ../src/libromdata/Audio/GBS.cpp:255
-msgctxt "GBS"
+#: ../src/libromdata/Audio/GBS.cpp:255 ../src/libromdata/Audio/NSF.cpp:255
+#: ../src/libromdata/Audio/PSF.cpp:597
+msgctxt "RomData|Audio"
 msgid "Title"
 msgstr "Название"
 
-#: ../src/libromdata/Audio/GBS.cpp:261
-msgctxt "GBS"
+#: ../src/libromdata/Audio/GBS.cpp:261 ../src/libromdata/Audio/NSF.cpp:261
+#: ../src/libromdata/Audio/SNDH.cpp:857 ../src/libromdata/Audio/VGM.cpp:425
+msgctxt "RomData|Audio"
 msgid "Composer"
 msgstr ""
 
-#: ../src/libromdata/Audio/GBS.cpp:267
-msgctxt "GBS"
+#: ../src/libromdata/Audio/GBS.cpp:267 ../src/libromdata/Audio/NSF.cpp:267
+#: ../src/libromdata/Audio/PSF.cpp:628 ../src/libromdata/Audio/SID.cpp:289
+msgctxt "RomData|Audio"
 msgid "Copyright"
 msgstr ""
 
-#: ../src/libromdata/Audio/GBS.cpp:272
-msgctxt "GBS"
+#: ../src/libromdata/Audio/GBS.cpp:272 ../src/libromdata/Audio/NSF.cpp:272
+msgctxt "RomData|Audio"
 msgid "Track Count"
 msgstr ""
 
-#: ../src/libromdata/Audio/GBS.cpp:276
-msgctxt "GBS"
+#: ../src/libromdata/Audio/GBS.cpp:276 ../src/libromdata/Audio/NSF.cpp:276
+msgctxt "RomData|Audio"
 msgid "Default Track #"
 msgstr ""
 
@@ -714,31 +744,6 @@ msgstr ""
 #: ../src/libromdata/Audio/GBS.cpp:295
 msgctxt "GBS"
 msgid "Stack Pointer"
-msgstr ""
-
-#: ../src/libromdata/Audio/NSF.cpp:255
-msgctxt "NSF"
-msgid "Title"
-msgstr "Название"
-
-#: ../src/libromdata/Audio/NSF.cpp:261
-msgctxt "NSF"
-msgid "Composer"
-msgstr ""
-
-#: ../src/libromdata/Audio/NSF.cpp:267
-msgctxt "NSF"
-msgid "Copyright"
-msgstr ""
-
-#: ../src/libromdata/Audio/NSF.cpp:272
-msgctxt "NSF"
-msgid "Track Count"
-msgstr ""
-
-#: ../src/libromdata/Audio/NSF.cpp:276
-msgctxt "NSF"
-msgid "Default Track #"
 msgstr ""
 
 #: ../src/libromdata/Audio/NSF.cpp:280
@@ -856,19 +861,29 @@ msgctxt "PSF"
 msgid "System"
 msgstr "Система"
 
-#: ../src/libromdata/Audio/PSF.cpp:584
+#: ../src/libromdata/Audio/PSF.cpp:584 ../src/libromdata/Audio/SPC.cpp:804
+#: ../src/libromdata/Console/DreamcastSave.cpp:1350
+#: ../src/libromdata/Console/DreamcastSave.cpp:1374
+#: ../src/libromdata/Console/NES.cpp:899 ../src/libromdata/Console/NES.cpp:1105
+#: ../src/libromdata/Console/NES.cpp:1116
+#: ../src/libromdata/Console/NES.cpp:1136
+#: ../src/libromdata/Console/SNES.cpp:851
+#: ../src/libromdata/Console/SNES.cpp:894
+#: ../src/libromdata/Console/WiiWAD.cpp:851
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2044
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1199
+#: ../src/libromdata/Other/Amiibo.cpp:464 ../src/libromdata/Other/ELF.cpp:1261
+#: ../src/libromdata/Other/EXE.cpp:282 ../src/libromdata/Other/EXE.cpp:399
+#: ../src/libromdata/Other/EXE_NE.cpp:153
+#: ../src/libromdata/Texture/SegaPVR.cpp:1022
+#: ../src/libromdata/Texture/SegaPVR.cpp:1030
 #, c-format
-msgctxt "PSF"
+msgctxt "RomData"
 msgid "Unknown (0x%02X)"
 msgstr "Неизвестно (0x%02X)"
 
-#: ../src/libromdata/Audio/PSF.cpp:597
-msgctxt "PSF"
-msgid "Title"
-msgstr "Название"
-
-#: ../src/libromdata/Audio/PSF.cpp:603
-msgctxt "PSF"
+#: ../src/libromdata/Audio/PSF.cpp:603 ../src/libromdata/Audio/SPC.cpp:730
+msgctxt "RomData|Audio"
 msgid "Artist"
 msgstr ""
 
@@ -877,19 +892,16 @@ msgctxt "PSF"
 msgid "Game"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:616
-msgctxt "PSF"
+#: ../src/libromdata/Audio/PSF.cpp:616 ../src/libromdata/Audio/VGM.cpp:428
+#: ../src/libromdata/Console/Dreamcast.cpp:652
+#: ../src/libromdata/Console/SegaSaturn.cpp:571
+msgctxt "RomData"
 msgid "Release Date"
 msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:622
-msgctxt "PSF"
+msgctxt "RomData|Audio"
 msgid "Genre"
-msgstr ""
-
-#: ../src/libromdata/Audio/PSF.cpp:628
-msgctxt "PSF"
-msgid "Copyright"
 msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:636 ../src/libromdata/Audio/PSF.cpp:641
@@ -902,8 +914,8 @@ msgctxt "PSF"
 msgid "Volume"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:662
-msgctxt "PSF"
+#: ../src/libromdata/Audio/PSF.cpp:662 ../src/libromdata/Audio/SNDH.cpp:998
+msgctxt "RomData|Audio"
 msgid "Duration"
 msgstr ""
 
@@ -913,18 +925,18 @@ msgid "Fadeout Duration"
 msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:675
-msgctxt "PSF"
+msgctxt "RomData|Audio"
 msgid "Comment"
 msgstr ""
 
-#: ../src/libromdata/Audio/SAP.cpp:633
-msgctxt "SAP"
+#: ../src/libromdata/Audio/SAP.cpp:633 ../src/libromdata/Audio/SID.cpp:283
+msgctxt "RomData|Audio"
 msgid "Author"
 msgstr ""
 
-#: ../src/libromdata/Audio/SAP.cpp:638
+#: ../src/libromdata/Audio/SAP.cpp:638 ../src/libromdata/Audio/SNDH.cpp:851
 #, fuzzy
-msgctxt "SAP"
+msgctxt "RomData|Audio"
 msgid "Song Title"
 msgstr "Название"
 
@@ -933,13 +945,13 @@ msgctxt "SAP"
 msgid "Date"
 msgstr ""
 
-#: ../src/libromdata/Audio/SAP.cpp:647
-msgctxt "SAP"
+#: ../src/libromdata/Audio/SAP.cpp:647 ../src/libromdata/Audio/SID.cpp:309
+msgctxt "RomData|Audio"
 msgid "# of Songs"
 msgstr ""
 
 #: ../src/libromdata/Audio/SAP.cpp:651
-msgctxt "SAP"
+msgctxt "RomData|Audio"
 msgid "Default Song #"
 msgstr ""
 
@@ -1000,7 +1012,6 @@ msgid "No"
 msgstr "Выкл"
 
 #: ../src/libromdata/Audio/SAP.cpp:745
-#, fuzzy
 msgctxt "SAP|SongList"
 msgid "#"
 msgstr "№"
@@ -1021,25 +1032,19 @@ msgid "Type"
 msgstr "Тип"
 
 #: ../src/libromdata/Audio/SID.cpp:272
-msgctxt "SID"
+#: ../src/libromdata/Console/Dreamcast.cpp:646
+#: ../src/libromdata/Console/Sega8Bit.cpp:430
+#: ../src/libromdata/Console/SegaSaturn.cpp:565
+#: ../src/libromdata/Console/WiiU.cpp:511
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:391
+msgctxt "RomData"
 msgid "Version"
 msgstr "Версия"
 
 #: ../src/libromdata/Audio/SID.cpp:277
-#, fuzzy
-msgctxt "SID"
+msgctxt "RomData|Audio"
 msgid "Name"
 msgstr "Назавние"
-
-#: ../src/libromdata/Audio/SID.cpp:283
-msgctxt "SID"
-msgid "Author"
-msgstr ""
-
-#: ../src/libromdata/Audio/SID.cpp:289
-msgctxt "SID"
-msgid "Copyright"
-msgstr ""
 
 #: ../src/libromdata/Audio/SID.cpp:294
 msgctxt "SID"
@@ -1056,25 +1061,9 @@ msgctxt "SID"
 msgid "Play Address"
 msgstr ""
 
-#: ../src/libromdata/Audio/SID.cpp:309
-msgctxt "SID"
-msgid "# of Songs"
-msgstr ""
-
 #: ../src/libromdata/Audio/SID.cpp:313
-msgctxt "SID"
+msgctxt "RomData|Audio"
 msgid "Starting Song #"
-msgstr ""
-
-#: ../src/libromdata/Audio/SNDH.cpp:851
-#, fuzzy
-msgctxt "SNDH"
-msgid "Song Title"
-msgstr "Название"
-
-#: ../src/libromdata/Audio/SNDH.cpp:857
-msgctxt "SNDH"
-msgid "Composer"
 msgstr ""
 
 #: ../src/libromdata/Audio/SNDH.cpp:863
@@ -1120,13 +1109,11 @@ msgid "Default Subtune"
 msgstr ""
 
 #: ../src/libromdata/Audio/SNDH.cpp:969
-#, fuzzy
 msgctxt "SNDH|SubtuneList"
 msgid "#"
 msgstr "№"
 
 #: ../src/libromdata/Audio/SNDH.cpp:973 ../src/libromdata/Audio/SNDH.cpp:976
-#, fuzzy
 msgctxt "SNDH|SubtuneList"
 msgid "Name"
 msgstr "Назавние"
@@ -1136,26 +1123,15 @@ msgctxt "SNDH|SubtuneList"
 msgid "Duration"
 msgstr ""
 
-#: ../src/libromdata/Audio/SNDH.cpp:998
-msgctxt "SNDH"
-msgid "Duration"
-msgstr ""
-
 #: ../src/libromdata/Audio/SPC.cpp:710
 #, fuzzy
-msgctxt "SPC"
+msgctxt "RomData|Audio"
 msgid "Song Name"
 msgstr "Назавние"
 
 #: ../src/libromdata/Audio/SPC.cpp:720
-#, fuzzy
 msgctxt "SPC"
 msgid "Game Name"
-msgstr "Название ключа"
-
-#: ../src/libromdata/Audio/SPC.cpp:730
-msgctxt "SPC"
-msgid "Artist"
 msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:740
@@ -1174,7 +1150,7 @@ msgid "Dump Date"
 msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:774
-msgctxt "SPC"
+msgctxt "RomData|Audio"
 msgid "Comments"
 msgstr ""
 
@@ -1188,17 +1164,10 @@ msgctxt "SPC"
 msgid "Emulator Used"
 msgstr ""
 
-#: ../src/libromdata/Audio/SPC.cpp:804
-#, c-format
-msgctxt "SPC"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
-
 #: ../src/libromdata/Audio/SPC.cpp:815
-#, fuzzy
 msgctxt "SPC"
 msgid "OST Title"
-msgstr "Название"
+msgstr ""
 
 # There's two ways "Disc #: %d" can be parsed.
 # (1) "number of the disс is %d" (NP is N)
@@ -1206,10 +1175,9 @@ msgstr "Название"
 # The meaning is the same in this context, but I decided to go with (2), because it sounds more concise.
 # (1) can be translated as "Номер диска" or "№ диска".
 #: ../src/libromdata/Audio/SPC.cpp:825
-#, fuzzy
 msgctxt "SPC"
 msgid "OST Disc #"
-msgstr "Диск №"
+msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:849
 msgctxt "SPC"
@@ -1241,7 +1209,6 @@ msgid "%1$u.%2$03u GHz"
 msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:383
-#, fuzzy
 msgctxt "VGM"
 msgid "VGM Version"
 msgstr "VGM Версия"
@@ -1253,30 +1220,18 @@ msgid "%1$x.%2$02x"
 msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:415
-msgctxt "VGM"
+msgctxt "RomData|Audio"
 msgid "Track Name"
 msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:418
-#, fuzzy
 msgctxt "VGM"
 msgid "Game Name"
-msgstr "Название ключа"
-
-#: ../src/libromdata/Audio/VGM.cpp:421
-#, fuzzy
-msgctxt "VGM"
-msgid "System Name"
-msgstr "Система"
-
-#: ../src/libromdata/Audio/VGM.cpp:425
-msgctxt "VGM"
-msgid "Composer"
 msgstr ""
 
-#: ../src/libromdata/Audio/VGM.cpp:428
+#: ../src/libromdata/Audio/VGM.cpp:421
 msgctxt "VGM"
-msgid "Release Date"
+msgid "System Name"
 msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:431
@@ -1285,7 +1240,7 @@ msgid "VGM Ripper"
 msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:434
-msgctxt "VGM"
+msgctxt "RomData|Audio"
 msgid "Notes"
 msgstr ""
 
@@ -1584,28 +1539,45 @@ msgid "Wii WAD Files"
 msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:631
-msgctxt "Dreamcast"
+#: ../src/libromdata/Console/GameCube.cpp:1396
+#: ../src/libromdata/Console/GameCube.cpp:1404
+#: ../src/libromdata/Console/N64.cpp:312
+#: ../src/libromdata/Console/SegaSaturn.cpp:550
+#: ../src/libromdata/Handheld/DMG.cpp:635
+#: ../src/libromdata/Handheld/DMG.cpp:659
+#: ../src/libromdata/Handheld/DMG.cpp:684
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:295
+#: ../src/libromdata/Handheld/GameCom.cpp:518
+#: ../src/libromdata/Handheld/Lynx.cpp:249
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:386
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1069
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:374
+msgctxt "RomData"
 msgid "Title"
 msgstr "Название"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:636
-msgctxt "Dreamcast"
+#: ../src/libromdata/Console/GameCube.cpp:1423
+#: ../src/libromdata/Console/GameCubeSave.cpp:890
+#: ../src/libromdata/Console/MegaDrive.cpp:294
+#: ../src/libromdata/Console/MegaDrive.cpp:297
+#: ../src/libromdata/Console/MegaDrive.cpp:300
+#: ../src/libromdata/Console/NES.cpp:896 ../src/libromdata/Console/NES.cpp:898
+#: ../src/libromdata/Console/SegaSaturn.cpp:555
+#: ../src/libromdata/Console/SNES.cpp:808
+#: ../src/libromdata/Console/WiiU.cpp:507
+#: ../src/libromdata/Handheld/DMG.cpp:786
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:327
+#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:457
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1087
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:399
+msgctxt "RomData"
 msgid "Publisher"
 msgstr "Издатель"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:641
 msgctxt "Dreamcast"
 msgid "Product #"
-msgstr ""
-
-#: ../src/libromdata/Console/Dreamcast.cpp:646
-msgctxt "Dreamcast"
-msgid "Version"
-msgstr ""
-
-#: ../src/libromdata/Console/Dreamcast.cpp:652
-msgctxt "Dreamcast"
-msgid "Release Date"
 msgstr ""
 
 # There's two ways "Disc #: %d" can be parsed.
@@ -1615,7 +1587,10 @@ msgstr ""
 # (1) can be translated as "Номер диска" or "№ диска".
 #: ../src/libromdata/Console/Dreamcast.cpp:661
 #: ../src/libromdata/Console/Dreamcast.cpp:666
-msgctxt "Dreamcast"
+#: ../src/libromdata/Console/GameCube.cpp:1426
+#: ../src/libromdata/Console/SegaSaturn.cpp:597
+#: ../src/libromdata/Console/SegaSaturn.cpp:602
+msgctxt "RomData"
 msgid "Disc #"
 msgstr "Диск №"
 
@@ -1625,11 +1600,6 @@ msgstr "Диск №"
 msgctxt "Dreamcast|Disc"
 msgid "%1$u of %2$u"
 msgstr "%1$u из %2$u"
-
-#: ../src/libromdata/Console/Dreamcast.cpp:667
-msgctxt "Dreamcast"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:680
 #: ../src/libromdata/Console/GameCubeRegions.cpp:70
@@ -1667,9 +1637,25 @@ msgid "Europe"
 msgstr "Европа"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:686
-msgctxt "Dreamcast"
+#: ../src/libromdata/Console/GameCube.cpp:1462
+#: ../src/libromdata/Console/GameCube.cpp:1465
+#: ../src/libromdata/Console/MegaDrive.cpp:421
+#: ../src/libromdata/Console/Sega8Bit.cpp:465
+#: ../src/libromdata/Console/SegaSaturn.cpp:590
+#: ../src/libromdata/Console/SNES.cpp:893
+#: ../src/libromdata/Console/WiiU.cpp:524
+#: ../src/libromdata/Console/WiiWAD.cpp:848
+#: ../src/libromdata/Console/WiiWAD.cpp:850
+#: ../src/libromdata/Handheld/DMG.cpp:851
+#: ../src/libromdata/Handheld/DMG.cpp:855
+#: ../src/libromdata/Handheld/DMG.cpp:860
+#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:474
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1220
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:418
+#, fuzzy
+msgctxt "RomData"
 msgid "Region Code"
-msgstr ""
+msgstr "Регион"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:690
 msgctxt "Dreamcast"
@@ -1679,7 +1665,11 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:719
 #: ../src/libromdata/Console/Dreamcast.cpp:723
 #: ../src/libromdata/Console/Dreamcast.cpp:729
-msgctxt "Dreamcast"
+#: ../src/libromdata/Console/MegaDrive.cpp:316
+#: ../src/libromdata/Console/Sega8Bit.cpp:469
+#: ../src/libromdata/Handheld/DMG.cpp:880
+#: ../src/libromdata/Handheld/DMG.cpp:884
+msgctxt "RomData"
 msgid "Checksum"
 msgstr "Контрольная сумма"
 
@@ -1836,7 +1826,11 @@ msgstr ""
 #: ../src/libromdata/Console/DreamcastSave.cpp:1269
 #: ../src/libromdata/Console/DreamcastSave.cpp:1277
 #: ../src/libromdata/Console/DreamcastSave.cpp:1285
-msgctxt "DreamcastSave"
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1839
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1853
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1930
+#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1947
+msgctxt "RomData"
 msgid "Warning"
 msgstr ""
 
@@ -1900,13 +1894,6 @@ msgctxt "DreamcastSave"
 msgid "File Type"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1350
-#: ../src/libromdata/Console/DreamcastSave.cpp:1374
-#, c-format
-msgctxt "DreamcastSave"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
-
 #: ../src/libromdata/Console/DreamcastSave.cpp:1362
 msgctxt "DreamcastSave"
 msgid "Copy OK"
@@ -1951,10 +1938,9 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:426
 #: ../src/libromdata/Console/GameCubeBNR.cpp:429
-#, fuzzy
 msgctxt "GameCubeBNR"
 msgid "Game Name"
-msgstr "Название ключа"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCubeBNR.cpp:435
 #: ../src/libromdata/Console/GameCubeBNR.cpp:438
@@ -1969,7 +1955,7 @@ msgstr "Описание"
 
 #: ../src/libromdata/Console/GameCube.cpp:430
 #, c-format
-msgctxt "GameCube"
+msgctxt "RomData"
 msgid "Unknown (%.2s)"
 msgstr "Неизвестно (%.2s)"
 
@@ -1989,30 +1975,19 @@ msgctxt "GameCube"
 msgid "ERROR: Unknown error. (THIS IS A BUG!)"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1396
-#: ../src/libromdata/Console/GameCube.cpp:1404
-msgctxt "GameCube"
-msgid "Title"
-msgstr "Название"
-
 #: ../src/libromdata/Console/GameCube.cpp:1419
 msgctxt "GameCube"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCube.cpp:1423
-msgctxt "GameCube"
-msgid "Publisher"
-msgstr "Издатель"
-
-# See [Dreamcast] Disc #
-#: ../src/libromdata/Console/GameCube.cpp:1426
-msgctxt "GameCube"
-msgid "Disc #"
-msgstr "Диск №"
-
 #: ../src/libromdata/Console/GameCube.cpp:1428
-msgctxt "GameCube"
+#: ../src/libromdata/Console/N64.cpp:329 ../src/libromdata/Console/NES.cpp:903
+#: ../src/libromdata/Handheld/DMG.cpp:866
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:330
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1092
+#: ../src/libromdata/Handheld/VirtualBoy.cpp:402
+#, fuzzy
+msgctxt "RomData"
 msgid "Revision"
 msgstr "Ревизия"
 
@@ -2023,15 +1998,12 @@ msgctxt "GameCube"
 msgid "%1$s (%2$s)"
 msgstr "%1$s (%2$s)"
 
-#: ../src/libromdata/Console/GameCube.cpp:1462
-#: ../src/libromdata/Console/GameCube.cpp:1465
-msgctxt "GameCube"
-msgid "Region"
-msgstr "Регион"
-
 #: ../src/libromdata/Console/GameCube.cpp:1466
+#: ../src/libromdata/Console/SNES.cpp:962 ../src/libromdata/Other/EXE.cpp:182
+#: ../src/libromdata/Other/EXE.cpp:211
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1194
 #, c-format
-msgctxt "GameCube"
+msgctxt "RomData"
 msgid "Unknown (0x%08X)"
 msgstr "Неизвестно (0x%08X)"
 
@@ -2044,10 +2016,9 @@ msgid "Game Info"
 msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1497
-#, fuzzy
 msgctxt "GameCube"
 msgid "Title ID"
-msgstr "Название"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1506
 msgctxt "GameCube"
@@ -2261,16 +2232,6 @@ msgctxt "GameCubeSave"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/GameCubeSave.cpp:890
-msgctxt "GameCubeSave"
-msgid "Publisher"
-msgstr "Издатель"
-
-#: ../src/libromdata/Console/GameCubeSave.cpp:891
-msgctxt "GameCubeSave"
-msgid "Unknown"
-msgstr "Неизвестно"
-
 #: ../src/libromdata/Console/GameCubeSave.cpp:895
 msgctxt "GameCubeSave"
 msgid "Filename"
@@ -2307,21 +2268,9 @@ msgid "System"
 msgstr ""
 
 #: ../src/libromdata/Console/MegaDrive.cpp:261
-msgctxt "MegaDrive"
+msgctxt "RomData"
 msgid "Copyright"
 msgstr ""
-
-#: ../src/libromdata/Console/MegaDrive.cpp:294
-#: ../src/libromdata/Console/MegaDrive.cpp:297
-#: ../src/libromdata/Console/MegaDrive.cpp:300
-msgctxt "MegaDrive"
-msgid "Publisher"
-msgstr "Издатель"
-
-#: ../src/libromdata/Console/MegaDrive.cpp:301
-msgctxt "MegaDrive"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:305
 msgctxt "MegaDrive"
@@ -2337,11 +2286,6 @@ msgstr ""
 msgctxt "MegaDrive"
 msgid "Serial Number"
 msgstr ""
-
-#: ../src/libromdata/Console/MegaDrive.cpp:316
-msgctxt "MegaDrive"
-msgid "Checksum"
-msgstr "Контрольная сумма"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:323
 msgctxt "MegaDrive|I/O"
@@ -2469,11 +2413,6 @@ msgctxt "Region"
 msgid "Asia"
 msgstr "Азия"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:421
-msgctxt "MegaDrive"
-msgid "Region Code"
-msgstr ""
-
 #: ../src/libromdata/Console/MegaDrive.cpp:501
 msgctxt "MegaDrive|VectorTable"
 msgid "#"
@@ -2505,20 +2444,10 @@ msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:312
-msgctxt "N64"
-msgid "Title"
-msgstr "Название"
-
 #: ../src/libromdata/Console/N64.cpp:325
 msgctxt "N64"
 msgid "Game ID"
 msgstr ""
-
-#: ../src/libromdata/Console/N64.cpp:329
-msgctxt "N64"
-msgid "Revision"
-msgstr "Ревизия"
 
 #: ../src/libromdata/Console/N64.cpp:333
 msgctxt "N64"
@@ -2574,11 +2503,6 @@ msgstr "Образ дискеты FDS (с заголовком fwNES)"
 msgctxt "NES|Format"
 msgid "TDS (Nintendo 3DS Virtual Console)"
 msgstr ""
-
-#: ../src/libromdata/Console/NES.cpp:745 ../src/libromdata/Console/NES.cpp:977
-msgctxt "NES"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Console/NES.cpp:758 ../src/libromdata/Console/NES.cpp:762
 #: ../src/libromdata/Console/NES.cpp:765
@@ -2706,27 +2630,6 @@ msgctxt "NES"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/NES.cpp:896 ../src/libromdata/Console/NES.cpp:898
-#: ../src/libromdata/Console/NES.cpp:1148
-#: ../src/libromdata/Console/NES.cpp:1150
-msgctxt "NES"
-msgid "Publisher"
-msgstr "Издатель"
-
-#: ../src/libromdata/Console/NES.cpp:899 ../src/libromdata/Console/NES.cpp:1105
-#: ../src/libromdata/Console/NES.cpp:1116
-#: ../src/libromdata/Console/NES.cpp:1136
-#: ../src/libromdata/Console/NES.cpp:1151
-#, c-format
-msgctxt "NES"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
-
-#: ../src/libromdata/Console/NES.cpp:903
-msgctxt "NES"
-msgid "Revision"
-msgstr "Ревизия"
-
 #: ../src/libromdata/Console/NES.cpp:908
 msgctxt "NES"
 msgid "Manufacturing Date"
@@ -2759,6 +2662,11 @@ msgctxt "NES|Mirroring"
 msgid "Programmable"
 msgstr ""
 
+#: ../src/libromdata/Console/NES.cpp:977
+msgctxt "NES"
+msgid "Unknown"
+msgstr "Неизвестно"
+
 #: ../src/libromdata/Console/NES.cpp:987 ../src/libromdata/Console/NES.cpp:1133
 #: ../src/libromdata/Console/NES.cpp:1135
 msgctxt "NES"
@@ -2788,13 +2696,25 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1101
 #: ../src/libromdata/Console/NES.cpp:1112
 msgctxt "NES"
-msgid "Not Set"
+msgid "Not set"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1141
 msgctxt "NES"
 msgid "Board Type"
 msgstr ""
+
+#: ../src/libromdata/Console/NES.cpp:1148
+#: ../src/libromdata/Console/NES.cpp:1150
+msgctxt "NES"
+msgid "Publisher"
+msgstr "Издатель"
+
+#: ../src/libromdata/Console/NES.cpp:1151
+#, c-format
+msgctxt "NES"
+msgid "Unknown (0x%02X)"
+msgstr "Неизвестно (0x%02X)"
 
 #: ../src/libromdata/Console/PlayStationSave.cpp:531
 msgctxt "PlayStationSave"
@@ -2809,11 +2729,6 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:418
 msgctxt "Sega8Bit"
 msgid "Product Code"
-msgstr ""
-
-#: ../src/libromdata/Console/Sega8Bit.cpp:430
-msgctxt "Sega8Bit"
-msgid "Version"
 msgstr ""
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:437
@@ -2846,22 +2761,6 @@ msgstr ""
 msgctxt "Sega8Bit"
 msgid "System"
 msgstr ""
-
-#: ../src/libromdata/Console/Sega8Bit.cpp:464
-#: ../src/libromdata/Console/Sega8Bit.cpp:466
-msgctxt "Sega8Bit"
-msgid "Unknown"
-msgstr "Неизвестно"
-
-#: ../src/libromdata/Console/Sega8Bit.cpp:465
-msgctxt "Sega8Bit"
-msgid "Region Code"
-msgstr ""
-
-#: ../src/libromdata/Console/Sega8Bit.cpp:469
-msgctxt "Sega8Bit"
-msgid "Checksum"
-msgstr "Контрольная сумма"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:481
 #: ../src/libromdata/Console/Sega8Bit.cpp:506
@@ -2901,61 +2800,30 @@ msgid "Build Date"
 msgstr ""
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:531
-msgctxt "Sega8Bit"
+msgctxt "RomData"
 msgid "Author"
 msgstr ""
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:533
-msgctxt "Sega8Bit"
+#: ../src/libromdata/Console/WiiWAD.cpp:760
+msgctxt "RomData"
 msgid "Name"
-msgstr ""
+msgstr "Назавние"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:535
-msgctxt "Sega8Bit"
+msgctxt "RomData"
 msgid "Description"
-msgstr ""
+msgstr "Описание"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:542
 msgctxt "Sega8Bit"
 msgid "M404 Copyright Header"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:550
-msgctxt "SegaSaturn"
-msgid "Title"
-msgstr "Название"
-
-#: ../src/libromdata/Console/SegaSaturn.cpp:555
-msgctxt "SegaSaturn"
-msgid "Publisher"
-msgstr "Издатель"
-
 #: ../src/libromdata/Console/SegaSaturn.cpp:560
 msgctxt "SegaSaturn"
 msgid "Product #"
 msgstr ""
-
-#: ../src/libromdata/Console/SegaSaturn.cpp:565
-msgctxt "SegaSaturn"
-msgid "Version"
-msgstr ""
-
-#: ../src/libromdata/Console/SegaSaturn.cpp:571
-msgctxt "SegaSaturn"
-msgid "Release Date"
-msgstr ""
-
-#: ../src/libromdata/Console/SegaSaturn.cpp:590
-msgctxt "SegaSaturn"
-msgid "Region Code"
-msgstr ""
-
-# See [Dreamcast] Disc #
-#: ../src/libromdata/Console/SegaSaturn.cpp:597
-#: ../src/libromdata/Console/SegaSaturn.cpp:602
-msgctxt "SegaSaturn"
-msgid "Disc #"
-msgstr "Диск №"
 
 #. tr: Disc X of Y (for multi-disc games)
 #: ../src/libromdata/Console/SegaSaturn.cpp:599
@@ -2963,11 +2831,6 @@ msgstr "Диск №"
 msgctxt "SegaSaturn|Disc"
 msgid "%1$u of %2$u"
 msgstr "%1$u из %2$u"
-
-#: ../src/libromdata/Console/SegaSaturn.cpp:603
-msgctxt "SegaSaturn"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Console/SegaSaturn.cpp:608
 msgctxt "SegaSaturn|Peripherals"
@@ -3049,13 +2912,6 @@ msgctxt "SegaSaturn"
 msgid "Peripherals"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:760
-#: ../src/libromdata/Console/SNES.cpp:803
-#: ../src/libromdata/Console/SNES.cpp:809
-msgctxt "SNES"
-msgid "Unknown"
-msgstr "Неизвестно"
-
 #: ../src/libromdata/Console/SNES.cpp:796
 msgctxt "SNES"
 msgid "Title"
@@ -3067,23 +2923,11 @@ msgctxt "SNES"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:808
-msgctxt "SNES"
-msgid "Publisher"
-msgstr "Издатель"
-
 #: ../src/libromdata/Console/SNES.cpp:847
 #: ../src/libromdata/Console/SNES.cpp:850
 msgctxt "SNES"
 msgid "ROM Mapping"
 msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:851
-#: ../src/libromdata/Console/SNES.cpp:894
-#, c-format
-msgctxt "SNES"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
 
 #: ../src/libromdata/Console/SNES.cpp:856
 msgctxt "SNES"
@@ -3122,11 +2966,6 @@ msgctxt "Region"
 msgid "Other"
 msgstr ""
 
-#: ../src/libromdata/Console/SNES.cpp:893
-msgctxt "SNES"
-msgid "Region"
-msgstr "Регион"
-
 #: ../src/libromdata/Console/SNES.cpp:898
 msgctxt "SNES"
 msgid "Revision"
@@ -3152,12 +2991,6 @@ msgstr ""
 msgctxt "SNES"
 msgid "Program Type"
 msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:962
-#, c-format
-msgctxt "SNES"
-msgid "Unknown (0x%08X)"
-msgstr "Неизвестно (0x%08X)"
 
 #: ../src/libromdata/Console/SNES.cpp:979
 #: ../src/libromdata/Console/SNES.cpp:982
@@ -3208,31 +3041,15 @@ msgctxt "WiiU"
 msgid "Unknown (%02X %02X %02X %02X)"
 msgstr "Неизвестно (%02X %02X %02X %02X)"
 
-#: ../src/libromdata/Console/WiiU.cpp:507
-msgctxt "WiiU"
-msgid "Publisher"
-msgstr "Издатель"
-
-#: ../src/libromdata/Console/WiiU.cpp:511
-msgctxt "WiiU"
-msgid "Version"
-msgstr ""
-
 #: ../src/libromdata/Console/WiiU.cpp:516
 msgctxt "WiiU"
 msgid "OS Version"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiU.cpp:524
-msgctxt "WiiU"
-msgid "Region"
-msgstr "Регион"
-
 #: ../src/libromdata/Console/WiiWAD.cpp:730
-#, fuzzy
 msgctxt "WiiWAD"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr "Неверные параметры. (ЭТО БАГ!)"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiWAD.cpp:732
 msgctxt "WiiWAD"
@@ -3244,21 +3061,10 @@ msgctxt "WiiWAD"
 msgid "Early Devkit"
 msgstr ""
 
-#: ../src/libromdata/Console/WiiWAD.cpp:753
-#: ../src/libromdata/Console/WiiWAD.cpp:932
-msgctxt "WiiWAD"
-msgid "Unknown"
-msgstr "Неизвестно"
-
 #: ../src/libromdata/Console/WiiWAD.cpp:756
 msgctxt "WiiWAD"
 msgid "Type"
 msgstr "Тип"
-
-#: ../src/libromdata/Console/WiiWAD.cpp:760
-msgctxt "WiiWAD"
-msgid "Name"
-msgstr "Назавние"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:765
 msgctxt "WiiWAD"
@@ -3281,18 +3087,6 @@ msgstr ""
 msgctxt "WiiWAD"
 msgid "%1$s (%2$s)"
 msgstr "%1$s (%2$s)"
-
-#: ../src/libromdata/Console/WiiWAD.cpp:848
-#: ../src/libromdata/Console/WiiWAD.cpp:850
-msgctxt "WiiWAD"
-msgid "Region"
-msgstr "Регион"
-
-#: ../src/libromdata/Console/WiiWAD.cpp:851
-#, c-format
-msgctxt "WiiWAD"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:860
 #: ../src/libromdata/Console/WiiWAD.cpp:865
@@ -3344,6 +3138,11 @@ msgstr ""
 msgctxt "WiiWAD|EncKey"
 msgid "Debug"
 msgstr ""
+
+#: ../src/libromdata/Console/WiiWAD.cpp:932
+msgctxt "WiiWAD"
+msgid "Unknown"
+msgstr "Неизвестно"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:934
 msgctxt "WiiWAD"
@@ -3561,27 +3360,12 @@ msgctxt "Nintendo3DSSysTitles"
 msgid "amiibo Settings"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:635
-#: ../src/libromdata/Handheld/DMG.cpp:659
-#: ../src/libromdata/Handheld/DMG.cpp:684
-msgctxt "DMG"
-msgid "Title"
-msgstr "Название"
-
 #: ../src/libromdata/Handheld/DMG.cpp:638
 #: ../src/libromdata/Handheld/DMG.cpp:680
 #: ../src/libromdata/Handheld/DMG.cpp:686
 msgctxt "DMG"
 msgid "Game ID"
 msgstr ""
-
-#: ../src/libromdata/Handheld/DMG.cpp:638
-#: ../src/libromdata/Handheld/DMG.cpp:686
-#: ../src/libromdata/Handheld/DMG.cpp:807
-#: ../src/libromdata/Handheld/DMG.cpp:823
-msgctxt "DMG"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Handheld/DMG.cpp:714
 msgctxt "DMG"
@@ -3610,14 +3394,9 @@ msgstr "Неизвестно (%02X %02X)"
 
 #: ../src/libromdata/Handheld/DMG.cpp:782
 #, c-format
-msgctxt "DMG"
+msgctxt "RomData"
 msgid "Unknown (%02X)"
 msgstr "Неизвестно (%02X)"
-
-#: ../src/libromdata/Handheld/DMG.cpp:786
-msgctxt "DMG"
-msgid "Publisher"
-msgstr "Издатель"
 
 #: ../src/libromdata/Handheld/DMG.cpp:789
 msgctxt "DMG"
@@ -3630,27 +3409,27 @@ msgid "RAM"
 msgstr "ОЗУ"
 
 #: ../src/libromdata/Handheld/DMG.cpp:795
-#: ../src/libromdata/Handheld/DMG.cpp:1016
+#: ../src/libromdata/Handheld/DMG.cpp:1019
 msgctxt "DMG|Features"
 msgid "Battery"
 msgstr "Батарея"
 
 #: ../src/libromdata/Handheld/DMG.cpp:796
-#: ../src/libromdata/Handheld/DMG.cpp:1018
+#: ../src/libromdata/Handheld/DMG.cpp:1021
 msgctxt "DMG|Features"
 msgid "Timer"
 msgstr "Таймер"
 
 # not sure if correct term
 #: ../src/libromdata/Handheld/DMG.cpp:797
-#: ../src/libromdata/Handheld/DMG.cpp:1017
+#: ../src/libromdata/Handheld/DMG.cpp:1020
 #, fuzzy
 msgctxt "DMG|Features"
 msgid "Rumble"
 msgstr "Виброотдача"
 
 #: ../src/libromdata/Handheld/DMG.cpp:801
-#: ../src/libromdata/Handheld/DMG.cpp:1022
+#: ../src/libromdata/Handheld/DMG.cpp:1025
 msgctxt "DMG"
 msgid "Features"
 msgstr ""
@@ -3658,10 +3437,15 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:807
 #: ../src/libromdata/Handheld/DMG.cpp:811
 #: ../src/libromdata/Handheld/DMG.cpp:816
-#: ../src/libromdata/Handheld/DMG.cpp:1027
+#: ../src/libromdata/Handheld/DMG.cpp:1030
 msgctxt "DMG"
 msgid "ROM Size"
 msgstr "Размер ПЗУ"
+
+#: ../src/libromdata/Handheld/DMG.cpp:807
+msgctxt "DMG"
+msgid "Unknown"
+msgstr "Неизвестно"
 
 #: ../src/libromdata/Handheld/DMG.cpp:812
 #: ../src/libromdata/Handheld/DMG.cpp:838
@@ -3685,7 +3469,7 @@ msgstr "%u КиБ"
 #: ../src/libromdata/Handheld/DMG.cpp:833
 #: ../src/libromdata/Handheld/DMG.cpp:837
 #: ../src/libromdata/Handheld/DMG.cpp:842
-#: ../src/libromdata/Handheld/DMG.cpp:1032
+#: ../src/libromdata/Handheld/DMG.cpp:1035
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr "Размер ОЗУ"
@@ -3701,75 +3485,51 @@ msgctxt "DMG"
 msgid "No RAM"
 msgstr "Отсутствует"
 
-#: ../src/libromdata/Handheld/DMG.cpp:851
-#: ../src/libromdata/Handheld/DMG.cpp:854
-#: ../src/libromdata/Handheld/DMG.cpp:858
-msgctxt "DMG"
-msgid "Region"
-msgstr "Регион"
-
-#: ../src/libromdata/Handheld/DMG.cpp:851
+#: ../src/libromdata/Handheld/DMG.cpp:852
 msgctxt "Region|DMG"
 msgid "Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:854
+#: ../src/libromdata/Handheld/DMG.cpp:856
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:859
+#: ../src/libromdata/Handheld/DMG.cpp:861
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (INVALID)"
 msgstr "0x%02X (НЕПРАВИЛЬНЫЙ)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:864
-msgctxt "DMG"
-msgid "Revision"
-msgstr "Ревизия"
-
-#: ../src/libromdata/Handheld/DMG.cpp:878
-#: ../src/libromdata/Handheld/DMG.cpp:882
-msgctxt "DMG"
-msgid "Checksum"
-msgstr "Контрольная сумма"
-
-#: ../src/libromdata/Handheld/DMG.cpp:879
+#: ../src/libromdata/Handheld/DMG.cpp:881
 #, c-format
 msgctxt "DMG"
 msgid "0x%1$02X (INVALID; should be 0x%2$02X)"
 msgstr "0x%1$02X (НЕПРАВИЛЬНАЯ; должна быть 0x%2$02X)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:883
+#: ../src/libromdata/Handheld/DMG.cpp:885
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (valid)"
 msgstr "0x%02X (правильная)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:894
-#, fuzzy
+#: ../src/libromdata/Handheld/DMG.cpp:896
 msgctxt "DMG"
 msgid "GBX Version"
-msgstr "Версия"
+msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:895
-#, fuzzy, c-format
+#: ../src/libromdata/Handheld/DMG.cpp:897
+#, c-format
 msgctxt "DMG"
 msgid "%1$u.%2$u"
 msgstr "%1$u.%2$u"
 
-#: ../src/libromdata/Handheld/DMG.cpp:977
-#: ../src/libromdata/Handheld/DMG.cpp:987
-#: ../src/libromdata/Handheld/DMG.cpp:992
+#: ../src/libromdata/Handheld/DMG.cpp:980
+#: ../src/libromdata/Handheld/DMG.cpp:990
+#: ../src/libromdata/Handheld/DMG.cpp:995
 msgctxt "DMG"
 msgid "Mapper"
 msgstr "Маппер"
-
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:295
-msgctxt "GameBoyAdvance"
-msgid "Title"
-msgstr "Название"
 
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:308
 msgctxt "GameBoyAdvance"
@@ -3788,16 +3548,6 @@ msgctxt "GameBoyAdvance"
 msgid "Unknown (%02X %02X)"
 msgstr "Неизвестно (%02X %02X)"
 
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:327
-msgctxt "GameBoyAdvance"
-msgid "Publisher"
-msgstr "Издатель"
-
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:330
-msgctxt "GameBoyAdvance"
-msgid "Revision"
-msgstr "Ревизия"
-
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:346
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:351
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:359
@@ -3810,11 +3560,6 @@ msgstr "Точка входа"
 msgctxt "GameBoyAdvance"
 msgid "Not bootable (Nintendo DS expansion)"
 msgstr ""
-
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:366
-msgctxt "GameBoyAdvance"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:374
 msgctxt "GameBoyAdvance"
@@ -3834,11 +3579,6 @@ msgctxt "GameBoyAdvance"
 msgid "No"
 msgstr "Выкл."
 
-#: ../src/libromdata/Handheld/GameCom.cpp:518
-msgctxt "GameCom"
-msgid "Title"
-msgstr ""
-
 #: ../src/libromdata/Handheld/GameCom.cpp:523
 msgctxt "GameCom"
 msgid "Game ID"
@@ -3848,11 +3588,6 @@ msgstr ""
 msgctxt "GameCom"
 msgid "Entry Point"
 msgstr "Точка входа"
-
-#: ../src/libromdata/Handheld/Lynx.cpp:249
-msgctxt "Lynx"
-msgid "Title"
-msgstr "Название"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:252
 msgctxt "Lynx"
@@ -3878,11 +3613,6 @@ msgstr ""
 msgctxt "Lynx"
 msgid "Rotation"
 msgstr ""
-
-#: ../src/libromdata/Handheld/Lynx.cpp:263
-msgctxt "Lynx"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:265
 msgctxt "Lynx"
@@ -3915,12 +3645,6 @@ msgctxt "Nintendo3DS"
 msgid "Content Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:900
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1803
-msgctxt "Nintendo3DS"
-msgid "Unknown"
-msgstr "Неизвестно"
-
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:929
 msgctxt "Nintendo3DS|Logo"
 msgid "Custom"
@@ -3944,14 +3668,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1323
 msgctxt "Nintendo3DS"
 msgid "Services"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1839
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1853
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1930
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:1947
-msgctxt "Nintendo3DS"
-msgid "Warning"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1840
@@ -4022,12 +3738,6 @@ msgstr ""
 msgctxt "Nintendo3DS"
 msgid "Media Type"
 msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS.cpp:2044
-#, c-format
-msgctxt "Nintendo3DS"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2049
 msgctxt "Nintendo3DS"
@@ -4225,13 +3935,6 @@ msgctxt "Nintendo3DSFirm"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:323
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:383
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:396
-msgctxt "Nintendo3DSFirm"
-msgid "Unknown"
-msgstr "Неизвестно"
-
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:326
 msgctxt "Nintendo3DSFirm"
 msgid "FIRM Version"
@@ -4240,16 +3943,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:331
 msgctxt "Nintendo3DSFirm"
 msgid "System Version"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:386
-msgctxt "Nintendo3DSFirm"
-msgid "Title"
-msgstr "Название"
-
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:391
-msgctxt "Nintendo3DSFirm"
-msgid "Version"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:401
@@ -4270,16 +3963,6 @@ msgstr "Название"
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:453
 msgctxt "Nintendo3DS"
 msgid "Full Title"
-msgstr ""
-
-#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:457
-msgctxt "Nintendo3DS"
-msgid "Publisher"
-msgstr "Издатель"
-
-#: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:474
-msgctxt "Nintendo3DS"
-msgid "Region Code"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:512
@@ -4312,11 +3995,6 @@ msgctxt "NintendoDS"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1069
-msgctxt "NintendoDS"
-msgid "Title"
-msgstr "Название"
-
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1076
 msgctxt "NintendoDS"
 msgid "Full Title"
@@ -4327,21 +4005,12 @@ msgctxt "NintendoDS"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1087
-msgctxt "NintendoDS"
-msgid "Publisher"
-msgstr "Издатель"
-
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1089
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1396
+#, c-format
 msgctxt "NintendoDS"
 msgid "Unknown (%.2s)"
 msgstr "Неизвестно (%.2s)"
-
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1092
-msgctxt "NintendoDS"
-msgid "Revision"
-msgstr "Ревизия"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1096
 msgctxt "NintendoDS"
@@ -4362,6 +4031,11 @@ msgstr "Неизвестно"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1121
 msgctxt "NintendoDS"
 msgid "Hardware"
+msgstr ""
+
+#: ../src/libromdata/Handheld/NintendoDS.cpp:1147
+msgctxt "NintendoDS"
+msgid "DS Region Code"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1161
@@ -4407,25 +4081,14 @@ msgctxt "NintendoDS"
 msgid "DSi ROM Type"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1199
-#, c-format
-msgctxt "NintendoDS"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
-
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1217
 msgctxt "NintendoDS"
 msgid "Key Index"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NintendoDS.cpp:1220
-msgctxt "NintendoDS"
-msgid "Region Code"
-msgstr ""
-
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1221
 msgctxt "NintendoDS"
-msgid "DSi Region"
+msgid "DSi Region Code"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1273
@@ -4464,10 +4127,9 @@ msgid "Game Card Power On"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1286
-#, fuzzy
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Shared2 File"
-msgstr "Файл сохранения"
+msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1287
 msgctxt "NintendoDS|DSi_Permissions"
@@ -4520,10 +4182,9 @@ msgid "Game Card Save Write Access"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1320
-#, fuzzy
 msgctxt "NintendoDS"
 msgid "Permissions"
-msgstr "Версия %s"
+msgstr ""
 
 #. tr: Uses the DSi-specific touchscreen protocol.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1327
@@ -4574,11 +4235,6 @@ msgctxt "NintendoDS"
 msgid "Flags"
 msgstr ""
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:374
-msgctxt "VirtualBoy"
-msgid "Title"
-msgstr "Название"
-
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:380
 msgctxt "VirtualBoy"
 msgid "Game ID"
@@ -4596,25 +4252,10 @@ msgctxt "VirtualBoy"
 msgid "Unknown (%02X %02X)"
 msgstr "Неизвестно (%02X %02X)"
 
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:399
-msgctxt "VirtualBoy"
-msgid "Publisher"
-msgstr "Издатель"
-
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:402
-msgctxt "VirtualBoy"
-msgid "Revision"
-msgstr "Ревизия"
-
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:415
 msgctxt "VirtualBoy"
 msgid "Unknown"
 msgstr "Неизвестно"
-
-#: ../src/libromdata/Handheld/VirtualBoy.cpp:418
-msgctxt "VirtualBoy"
-msgid "Region"
-msgstr "Регион"
 
 #: ../src/libromdata/Other/Amiibo.cpp:435
 msgctxt "Amiibo"
@@ -4652,23 +4293,10 @@ msgctxt "Amiibo"
 msgid "amiibo Type"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:464
-#, c-format
-msgctxt "Amiibo"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
-
 #: ../src/libromdata/Other/Amiibo.cpp:469
 msgctxt "Amiibo"
 msgid "Character Series"
 msgstr ""
-
-#: ../src/libromdata/Other/Amiibo.cpp:470
-#: ../src/libromdata/Other/Amiibo.cpp:475
-#: ../src/libromdata/Other/Amiibo.cpp:480
-msgctxt "Amiibo"
-msgid "Unknown"
-msgstr "Неизвестно"
 
 #: ../src/libromdata/Other/Amiibo.cpp:474
 msgctxt "Amiibo"
@@ -4790,12 +4418,6 @@ msgctxt "ELF"
 msgid "CPU Level"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1261
-#, c-format
-msgctxt "ELF"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
-
 #: ../src/libromdata/Other/ELF.cpp:1267
 msgctxt "ELF|MIPSFlags"
 msgid "No Reorder"
@@ -4867,49 +4489,44 @@ msgctxt "ELF"
 msgid "ABI Version"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1366 ../src/libromdata/Other/ELF.cpp:1372
+#: ../src/libromdata/Other/ELF.cpp:1366 ../src/libromdata/Other/ELF.cpp:1373
 msgctxt "ELF"
 msgid "Format"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1372
-msgctxt "ELF"
-msgid "Unknown"
-msgstr "Неизвестно"
-
-#: ../src/libromdata/Other/ELF.cpp:1376
+#: ../src/libromdata/Other/ELF.cpp:1378
 msgctxt "ELF"
 msgid "Linkage"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1378
+#: ../src/libromdata/Other/ELF.cpp:1380
 msgctxt "ELF|Linkage"
 msgid "Dynamic"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1379
+#: ../src/libromdata/Other/ELF.cpp:1381
 msgctxt "ELF|Linkage"
 msgid "Static"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1383
+#: ../src/libromdata/Other/ELF.cpp:1385
 msgctxt "ELF"
 msgid "Interpreter"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1388
+#: ../src/libromdata/Other/ELF.cpp:1390
 msgctxt "ELF"
 msgid "OS Version"
 msgstr ""
 
 #. tr: Entry point, then "Position-Independent".
-#: ../src/libromdata/Other/ELF.cpp:1404
+#: ../src/libromdata/Other/ELF.cpp:1406
 #, c-format
 msgctxt "ELF"
 msgid "%s (Position-Independent)"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1407
+#: ../src/libromdata/Other/ELF.cpp:1409
 msgctxt "ELF"
 msgid "Entry Point"
 msgstr "Точка входа"
@@ -4963,12 +4580,6 @@ msgstr ""
 msgctxt "EXE"
 msgid "File OS"
 msgstr ""
-
-#: ../src/libromdata/Other/EXE.cpp:182 ../src/libromdata/Other/EXE.cpp:211
-#, c-format
-msgctxt "EXE"
-msgid "Unknown (0x%08X)"
-msgstr "Неизвестно (0x%08X)"
 
 #. tr: VFT_APP
 #: ../src/libromdata/Other/EXE.cpp:190
@@ -5106,13 +4717,6 @@ msgctxt "EXE"
 msgid "File Subtype"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE.cpp:282 ../src/libromdata/Other/EXE.cpp:399
-#: ../src/libromdata/Other/EXE_NE.cpp:153
-#, c-format
-msgctxt "EXE"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
-
 #: ../src/libromdata/Other/EXE.cpp:299
 msgctxt "EXE"
 msgid "File Time"
@@ -5156,7 +4760,7 @@ msgstr ""
 
 #: ../src/libromdata/Other/EXE.cpp:386 ../src/libromdata/Other/EXE_PE.cpp:232
 #, c-format
-msgctxt "EXE"
+msgctxt "RomData"
 msgid "Unknown (0x%04X)"
 msgstr "Неизвестно (0x%04X)"
 
@@ -5172,7 +4776,7 @@ msgctxt "EXE"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE.cpp:851 ../src/libromdata/Other/EXE_PE.cpp:281
+#: ../src/libromdata/Other/EXE.cpp:851
 msgctxt "EXE"
 msgid "Unknown"
 msgstr "Неизвестно"
@@ -5728,11 +5332,6 @@ msgctxt "NintendoBadge"
 msgid "Set ID"
 msgstr ""
 
-#: ../src/libromdata/Other/NintendoBadge.cpp:746
-msgctxt "NintendoBadge"
-msgid "Unknown"
-msgstr "Неизвестно"
-
 #. tr: Parameter is a number; it's formatted elsewhere.
 #: ../src/libromdata/tests/disc/FstPrint.cpp:231
 #, c-format
@@ -5807,210 +5406,199 @@ msgctxt "GcnFstPrint"
 msgid "*** WARNING: FST has errors and may be unusable."
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1105
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1116
 msgctxt "DirectDrawSurface"
 msgid "Texture Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1112
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1123
 msgctxt "DirectDrawSurface"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1113
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1124
 msgctxt "DirectDrawSurface"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1120
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1131
 msgctxt "DirectDrawSurface"
 msgid "Mipmap Count"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1128
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1138
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1140
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1147
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1149
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1154
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1141
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1151
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1153
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1160
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1162
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1172
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1167
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1173
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1175
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1185
 msgctxt "DirectDrawSurface"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1150
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1163
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Alpha (%u-bit)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1155
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1168
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "YUV (%u-bit)"
 msgstr ""
 
 #. tr: %1$s == pixel format name; %2$u == bits per pixel
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1164
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1177
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "%1$s (%2$u-bit)"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1166
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1179
 msgctxt "DirectDrawSurface"
 msgid "Luminance + Alpha"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1167
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1180
 msgctxt "DirectDrawSurface"
 msgid "Luminance"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1172
-msgctxt "DirectDrawSurface"
-msgid "Unknown"
-msgstr "Неизвестно"
-
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1183
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1192
 msgctxt "DirectDrawSurface"
 msgid "DX10 Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1185
-#, c-format
-msgctxt "DirectDrawSurface"
-msgid "Unknown (0x%08X)"
-msgstr "Неизвестно (0x%08X)"
-
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1191
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1200
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Caps"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1192
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1201
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Height"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1193
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1202
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Width"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1194
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1203
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1200
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1209
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1204
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1213
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Mipmap Count"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1206
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1215
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1209
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1218
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Depth"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1213
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1222
 msgctxt "DirectDrawSurface"
 msgid "Flags"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1220
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1229
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Complex"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1226
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1235
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1232
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1241
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Mipmap"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1236
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1245
 msgctxt "DirectDrawSurface"
 msgid "Caps"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1247
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1256
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Cubemap"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1248
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1257
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1249
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1258
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1251
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1260
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1252
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1261
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1253
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1262
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1254
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1263
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1259
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1268
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1263
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1272
 msgctxt "DirectDrawSurface"
 msgid "Caps2"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1270
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1279
 msgctxt "DirectDrawSurface"
 msgid "Tile Mode"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1271
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1280
 msgctxt "DirectDrawSurface"
 msgid "Base Alignment"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1273
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1282
 msgctxt "DirectDrawSurface"
 msgid "Data Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1275
+#: ../src/libromdata/Texture/DirectDrawSurface.cpp:1284
 msgctxt "DirectDrawSurface"
 msgid "XDK Version"
 msgstr ""
@@ -6072,13 +5660,6 @@ msgstr ""
 msgctxt "SegaPVR"
 msgid "Pixel Format"
 msgstr ""
-
-#: ../src/libromdata/Texture/SegaPVR.cpp:1022
-#: ../src/libromdata/Texture/SegaPVR.cpp:1030
-#, c-format
-msgctxt "SegaPVR"
-msgid "Unknown (0x%02X)"
-msgstr "Неизвестно (0x%02X)"
 
 #: ../src/libromdata/Texture/SegaPVR.cpp:1027
 #: ../src/libromdata/Texture/SegaPVR.cpp:1029
@@ -6306,7 +5887,7 @@ msgstr ""
 #: ../src/libromdata/Texture/ValveVTF.cpp:972
 #: ../src/libromdata/Texture/ValveVTF.cpp:995
 #, c-format
-msgctxt "ValveVTF"
+msgctxt "RomData"
 msgid "Unknown (%d)"
 msgstr "Неизвестно (%d)"
 
