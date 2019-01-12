@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.3.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-01-11 23:28-0500\n"
+"POT-Creation-Date: 2019-01-12 01:05-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,14 +139,26 @@ msgstr ""
 #: ../src/gtk/gnome/rom-properties-provider.cpp:132
 #: ../src/gtk/xfce/rom-properties-page.cpp:156
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:98
-#: ../src/win32/RP_ShellPropSheetExt.cpp:2102
+#: ../src/win32/RP_ShellPropSheetExt.cpp:2108
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr ""
 
-#. tr: %1$s == system name, %2$s == file type
-#: ../src/gtk/RomDataView.cpp:622 ../src/kde/RomDataView.cpp:262
+#: ../src/gtk/RomDataView.cpp:620 ../src/kde/RomDataView.cpp:260
+#: ../src/win32/RP_ShellPropSheetExt.cpp:664
+msgctxt "RomDataView"
+msgid "(unknown system)"
+msgstr ""
+
+#: ../src/gtk/RomDataView.cpp:623 ../src/kde/RomDataView.cpp:263
 #: ../src/win32/RP_ShellPropSheetExt.cpp:667
+msgctxt "RomDataView"
+msgid "(unknown filetype)"
+msgstr ""
+
+#. tr: %1$s == system name, %2$s == file type
+#: ../src/gtk/RomDataView.cpp:628 ../src/kde/RomDataView.cpp:268
+#: ../src/win32/RP_ShellPropSheetExt.cpp:673
 #, c-format
 msgctxt "RomDataView"
 msgid ""
@@ -155,22 +167,22 @@ msgid ""
 msgstr ""
 
 #. tr: Invalid date/time.
-#: ../src/gtk/RomDataView.cpp:1036 ../src/kde/RomDataView.cpp:640
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1334
+#: ../src/gtk/RomDataView.cpp:1042 ../src/kde/RomDataView.cpp:646
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1340
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr ""
 
 #. tr: No age ratings data.
-#: ../src/gtk/RomDataView.cpp:1104 ../src/kde/RomDataView.cpp:723
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1449
+#: ../src/gtk/RomDataView.cpp:1110 ../src/kde/RomDataView.cpp:729
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1455
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr ""
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1306 ../src/kde/RomDataView.cpp:877
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1655
+#: ../src/gtk/RomDataView.cpp:1312 ../src/kde/RomDataView.cpp:883
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1661
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
@@ -461,7 +473,7 @@ msgstr[1] ""
 
 #. tr: Wii keys.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:433
-#: ../src/win32/config/KeyManagerTab.cpp:1529
+#: ../src/win32/config/KeyManagerTab.cpp:1530
 msgctxt "KeyManagerTab"
 msgid "Select Wii keys.bin File"
 msgstr ""
@@ -487,7 +499,7 @@ msgstr ""
 
 #. tr: 3DS boot9.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:473
-#: ../src/win32/config/KeyManagerTab.cpp:1575
+#: ../src/win32/config/KeyManagerTab.cpp:1574
 msgctxt "KeyManagerTab"
 msgid "Select 3DS boot9.bin File"
 msgstr ""
@@ -501,7 +513,7 @@ msgstr ""
 #. tr: 3DS aeskeydb.bin dialog title.
 #. tr: aeskeydb.bin dialog title.
 #: ../src/kde/config/KeyManagerTab.cpp:493
-#: ../src/win32/config/KeyManagerTab.cpp:1598
+#: ../src/win32/config/KeyManagerTab.cpp:1596
 msgctxt "KeyManagerTab"
 msgid "Select 3DS aeskeydb.bin File"
 msgstr ""
@@ -4657,17 +4669,17 @@ msgctxt "EXE"
 msgid "Target OS"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE.cpp:849 ../src/libromdata/Other/EXE.cpp:851
+#: ../src/libromdata/Other/EXE.cpp:856 ../src/libromdata/Other/EXE.cpp:858
 msgctxt "EXE"
 msgid "Type"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE.cpp:851
+#: ../src/libromdata/Other/EXE.cpp:858
 msgctxt "EXE"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE.cpp:880
+#: ../src/libromdata/Other/EXE.cpp:887
 msgctxt "EXE"
 msgid "MZ Header"
 msgstr ""
@@ -6577,7 +6589,7 @@ msgid "I&mport..."
 msgstr ""
 
 #. tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1531
+#: ../src/win32/config/KeyManagerTab.cpp:1532
 msgctxt "KeyManagerTab"
 msgid "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
@@ -6589,20 +6601,20 @@ msgid "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1577
+#: ../src/win32/config/KeyManagerTab.cpp:1576
 msgctxt "KeyManagerTab"
 msgid "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-#: ../src/win32/config/KeyManagerTab.cpp:1600
+#: ../src/win32/config/KeyManagerTab.cpp:1598
 msgctxt "KeyManagerTab"
 msgid ""
 "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/KeyManagerTab.cpp:1640
+#: ../src/win32/config/KeyManagerTab.cpp:1636
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
 msgstr ""
