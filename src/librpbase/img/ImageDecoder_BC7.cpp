@@ -23,6 +23,8 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "common.h"
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
@@ -304,7 +306,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	const uint64_t *bc7_src = reinterpret_cast<const uint64_t*>(img_buf);
 
 	// Temporary tile buffer.
-	argb32_t tileBuf[4*4];
+	ALIGNED_VAR(16, argb32_t tileBuf[4*4]);
 
 	// Anchor indexes.
 	// Subset 0 is always anchored at 0.
@@ -318,8 +320,12 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 
 		// Endpoints.
 		// - [6]: Individual endpoints.
-		// - [3]: RGB components.
-		uint8_t endpoints[6][3];
+		// - [4]: RGBx components. (idx3 is unused)
+		// TODO: Align to 32-bit.
+		union {
+			uint8_t   u8[6][4];
+			uint32_t u32[6];
+		} endpoints;
 
 		// Alpha components.
 		// If no alpha is present, this will be 255.
@@ -415,7 +421,7 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		const unsigned int component_count = endpoint_count * 3;
 		uint8_t ep_idx = 0, comp_idx = 0;
 		for (unsigned int i = 0; i < component_count; i++) {
-			endpoints[ep_idx][comp_idx] = (lsb & endpoint_mask) << endpoint_shamt;
+			endpoints.u8[ep_idx][comp_idx] = (lsb & endpoint_mask) << endpoint_shamt;
 			ep_idx++;
 			if (ep_idx == endpoint_count) {
 				// Next component.
@@ -459,35 +465,28 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			// whole 64-bit and/or 128-bit value multiple times.
 			unsigned int lsb8 = (lsb & 0xFF);
 			if (mode == 1) {
-				// Mode 1: Two P-bits for four subsets.
-				const uint8_t p_bit0 = (lsb8 & 1) << 1;
-				const uint8_t p_bit1 = (lsb8 & 2);
+				// Mode 1: Two P-bits for four endpoints.
 
 				// Subset 0
-				endpoints[0][0] |= p_bit0;
-				endpoints[0][1] |= p_bit0;
-				endpoints[0][2] |= p_bit0;
-				endpoints[1][0] |= p_bit0;
-				endpoints[1][1] |= p_bit0;
-				endpoints[1][2] |= p_bit0;
+				if (lsb & 1) {
+					endpoints.u32[0] |= 0x02020202;
+					endpoints.u32[1] |= 0x02020202;
+				}
 
 				// Subset 1
-				endpoints[2][0] |= p_bit1;
-				endpoints[2][1] |= p_bit1;
-				endpoints[2][2] |= p_bit1;
-				endpoints[3][0] |= p_bit1;
-				endpoints[3][1] |= p_bit1;
-				endpoints[3][2] |= p_bit1;
+				if (lsb & 2) {
+					endpoints.u32[2] |= 0x02020202;
+					endpoints.u32[3] |= 0x02020202;
+				}
 
 				rshift128(msb, lsb, 2);
 			} else {
-				// Other modes: Unique P-bit for each subset.
+				// Other modes: Unique P-bit for each endpoint.
 				const uint8_t p_ep_shamt = 7 - endpoint_bits;
 				for (unsigned int i = 0; i < endpoint_count; i++, lsb8 >>= 1) {
-					const uint8_t p_bit = (lsb8 & 1) << p_ep_shamt;
-					endpoints[i][0] |= p_bit;
-					endpoints[i][1] |= p_bit;
-					endpoints[i][2] |= p_bit;
+					if (lsb8 & 1) {
+						endpoints.u32[i] |= (0x01010101 << p_ep_shamt);
+					}
 				}
 
 				if (alpha_bits > 0) {
@@ -515,9 +514,9 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		// Expand the endpoints and alpha components.
 		if (endpoint_bits < 8) {
 			for (unsigned int i = 0; i < endpoint_count; i++) {
-				endpoints[i][0] = endpoints[i][0] | (endpoints[i][0] >> endpoint_bits);
-				endpoints[i][1] = endpoints[i][1] | (endpoints[i][1] >> endpoint_bits);
-				endpoints[i][2] = endpoints[i][2] | (endpoints[i][2] >> endpoint_bits);
+				endpoints.u8[i][0] = endpoints.u8[i][0] | (endpoints.u8[i][0] >> endpoint_bits);
+				endpoints.u8[i][1] = endpoints.u8[i][1] | (endpoints.u8[i][1] >> endpoint_bits);
+				endpoints.u8[i][2] = endpoints.u8[i][2] | (endpoints.u8[i][2] >> endpoint_bits);
 			}
 		}
 		if (alpha_bits != 0 && alpha_bits < 8) {
@@ -585,9 +584,9 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			}
 
 			const uint8_t ep_idx = subset_idx * 2;
-			tileBuf[i].r = interpolate_component(index_bits, data_idx, endpoints[ep_idx][0], endpoints[ep_idx+1][0]);
-			tileBuf[i].g = interpolate_component(index_bits, data_idx, endpoints[ep_idx][1], endpoints[ep_idx+1][1]);
-			tileBuf[i].b = interpolate_component(index_bits, data_idx, endpoints[ep_idx][2], endpoints[ep_idx+1][2]);
+			tileBuf[i].r = interpolate_component(index_bits, data_idx, endpoints.u8[ep_idx][0], endpoints.u8[ep_idx+1][0]);
+			tileBuf[i].g = interpolate_component(index_bits, data_idx, endpoints.u8[ep_idx][1], endpoints.u8[ep_idx+1][1]);
+			tileBuf[i].b = interpolate_component(index_bits, data_idx, endpoints.u8[ep_idx][2], endpoints.u8[ep_idx+1][2]);
 		}
 
 		// Alpha handling.

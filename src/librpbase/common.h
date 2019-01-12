@@ -147,6 +147,19 @@
  */
 #define ASSERT_ALIGNMENT(a, ptr)	assert(reinterpret_cast<uintptr_t>(ptr) % 16 == 0);
 
+/**
+ * Aligned variable macro.
+ * @param a Alignment value.
+ * @param decl Variable declaration.
+ */
+#if defined(__GNUC__)
+# define ALIGNED_VAR(a, decl)	decl __attribute__((aligned(a)))
+#elif defined(_MSC_VER)
+# define ALIGNED_VAR(a, decl)	__declspec(align(a)) decl
+#else
+# error No aligned variable macro for this compiler.
+#endif
+
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
 #ifdef _MSC_VER
