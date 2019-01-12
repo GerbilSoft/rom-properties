@@ -750,14 +750,14 @@ int WiiWAD::loadFieldData(void)
 			break;
 
 		default:
-			s_wadType = C_("WiiWAD", "Unknown");
+			s_wadType = C_("RomData", "Unknown");
 			break;
 	}
 	d->fields->addField_string(C_("WiiWAD", "Type"), s_wadType);
 
 	// Internal name. (Early WADs only)
 	if (!d->wadName.empty()) {
-		d->fields->addField_string(C_("WiiWAD", "Name"), d->wadName);
+		d->fields->addField_string(C_("RomData", "Name"), d->wadName);
 	}
 
 	// Title ID.
@@ -845,10 +845,10 @@ int WiiWAD::loadFieldData(void)
 			s_region = region;
 		}
 
-		d->fields->addField_string(C_("WiiWAD", "Region"), s_region);
+		d->fields->addField_string(C_("RomData", "Region Code"), s_region);
 	} else {
-		d->fields->addField_string(C_("WiiWAD", "Region"),
-			rp_sprintf(C_("WiiWAD", "Unknown (0x%02X)"), gcnRegion));
+		d->fields->addField_string(C_("RomData", "Region Code"),
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
 	}
 
 	// Required IOS version.

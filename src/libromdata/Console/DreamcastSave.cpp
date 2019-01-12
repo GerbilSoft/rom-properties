@@ -1266,7 +1266,7 @@ int DreamcastSave::loadFieldData(void)
 		case DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
 		case DreamcastSavePrivate::DC_HAVE_VMI |
 		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
-			d->fields->addField_string(C_("DreamcastSave", "Warning"),
+			d->fields->addField_string(C_("RomData", "Warning"),
 				// tr: VMS file is missing.
 				C_("DreamcastSave", "The VMS file was not found."),
 				RomFields::STRF_WARNING);
@@ -1274,7 +1274,7 @@ int DreamcastSave::loadFieldData(void)
 
 		case DreamcastSavePrivate::DC_HAVE_VMS:
 		case DreamcastSavePrivate::DC_IS_ICONDATA_VMS:
-			d->fields->addField_string(C_("DreamcastSave", "Warning"),
+			d->fields->addField_string(C_("RomData", "Warning"),
 				// tr: VMI file is missing.
 				C_("DreamcastSave", "The VMI file was not found."),
 				RomFields::STRF_WARNING);
@@ -1282,7 +1282,7 @@ int DreamcastSave::loadFieldData(void)
 
 		default:
 			assert(!"DreamcastSave: Unrecognized VMS/VMI combination.");
-			d->fields->addField_string(C_("DreamcastSave", "Warning"),
+			d->fields->addField_string(C_("RomData", "Warning"),
 				// tr: Should not happen...
 				C_("DreamcastSave", "Unrecognized VMS/VMI combination."),
 				RomFields::STRF_WARNING);
@@ -1347,7 +1347,7 @@ int DreamcastSave::loadFieldData(void)
 	} else {
 		// Unknown file type.
 		d->fields->addField_string(C_("DreamcastSave", "File Type"),
-			rp_sprintf(C_("DreamcastSave", "Unknown (0x%02X)"),
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 				d->vms_dirent.filetype));
 	}
 
@@ -1371,7 +1371,7 @@ int DreamcastSave::loadFieldData(void)
 		} else {
 			// Unknown copy protection.
 			d->fields->addField_string(C_("DreamcastSave", "Copy Protect"),
-				rp_sprintf(C_("DreamcastSave", "Unknown (0x%02X)"), d->vms_dirent.protect));
+				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), d->vms_dirent.protect));
 		}
 
 		// Filename.

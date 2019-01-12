@@ -324,13 +324,13 @@ int ADX::loadFieldData(void)
 			break;
 		default:
 			// NOTE: This should not be reachable...
-			format = C_("ADX|Format", "Unknown");
+			format = C_("RomData", "Unknown");
 			break;
 	}
-	d->fields->addField_string(C_("ADX", "Format"), format);
+	d->fields->addField_string(C_("RomData|Audio", "Format"), format);
 
 	// Number of channels.
-	d->fields->addField_string_numeric(C_("ADX", "Channels"), adxHeader->channel_count);
+	d->fields->addField_string_numeric(C_("RomData|Audio", "Channels"), adxHeader->channel_count);
 
 	// Sample rate and sample count.
 	const uint32_t sample_rate = be32_to_cpu(adxHeader->sample_rate);
@@ -340,10 +340,10 @@ int ADX::loadFieldData(void)
 	// NOTE: Using ostringstream for localized numeric formatting.
 	ostringstream oss;
 	oss << sample_rate << " Hz";
-	d->fields->addField_string(C_("ADX", "Sample Rate"), oss.str());
+	d->fields->addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
 
 	// Length. (non-looping)
-	d->fields->addField_string(C_("ADX", "Length"),
+	d->fields->addField_string(C_("RomData|Audio", "Length"),
 		formatSampleAsTime(sample_count, sample_rate));
 
 #if 0

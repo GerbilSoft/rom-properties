@@ -969,7 +969,7 @@ int ValveVTF::loadFieldData(void)
 			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
 	} else {
 		d->fields->addField_string(C_("ValveVTF", "High-Res Image Format"),
-			rp_sprintf(C_("ValveVTF", "Unknown (%d)"), vtfHeader->highResImageFormat));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->highResImageFormat));
 	}
 
 	// Mipmap count.
@@ -992,7 +992,7 @@ int ValveVTF::loadFieldData(void)
 			vtfHeader->lowResImageHeight);
 	} else {
 		d->fields->addField_string(C_("ValveVTF", "Low-Res Image Format"),
-			rp_sprintf(C_("ValveVTF", "Unknown (%d)"), vtfHeader->highResImageFormat));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->highResImageFormat));
 	}
 
 	if (vtfHeader->version[0] > 7 ||

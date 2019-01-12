@@ -294,7 +294,7 @@ string formatFileSize(int64_t size)
 		frac_part = 0;
 	} else if (size < (2LL << 10)) {
 		// tr: Bytes (< 1,024)
-		suffix = NC_("TextFuncs|FileSize", "byte", "bytes", (int)size);
+		suffix = NC_("TextFuncs|FileSize", "byte", "bytes", static_cast<int>(size));
 		whole_part = static_cast<int>(size);
 		frac_part = 0;
 	} else if (size < (2LL << 20)) {

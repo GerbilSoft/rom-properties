@@ -252,28 +252,28 @@ int GBS::loadFieldData(void)
 
 	// Title.
 	if (gbsHeader->title[0] != 0) {
-		d->fields->addField_string(C_("GBS", "Title"),
+		d->fields->addField_string(C_("RomData|Audio", "Title"),
 			cp1252_sjis_to_utf8(gbsHeader->title, sizeof(gbsHeader->title)));
 	}
 
 	// Composer.
 	if (gbsHeader->composer[0] != 0) {
-		d->fields->addField_string(C_("GBS", "Composer"),
+		d->fields->addField_string(C_("RomData|Audio", "Composer"),
 			cp1252_sjis_to_utf8(gbsHeader->composer, sizeof(gbsHeader->composer)));
 	}
 
 	// Copyright.
 	if (gbsHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("GBS", "Copyright"),
+		d->fields->addField_string(C_("RomData|Audio", "Copyright"),
 			cp1252_sjis_to_utf8(gbsHeader->copyright, sizeof(gbsHeader->copyright)));
 	}
 
 	// Number of tracks.
-	d->fields->addField_string_numeric(C_("GBS", "Track Count"),
+	d->fields->addField_string_numeric(C_("RomData|Audio", "Track Count"),
 		gbsHeader->track_count);
 
 	// Default track number.
-	d->fields->addField_string_numeric(C_("GBS", "Default Track #"),
+	d->fields->addField_string_numeric(C_("RomData|Audio", "Default Track #"),
 		gbsHeader->default_track);
 
 	// Load address.

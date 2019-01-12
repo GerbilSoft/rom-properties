@@ -1258,7 +1258,7 @@ int ELF::loadFieldData(void)
 				d->fields->addField_string(C_("ELF", "CPU Level"), mips_levels[level]);
 			} else {
 				d->fields->addField_string(C_("ELF", "CPU Level"),
-					rp_sprintf(C_("ELF", "Unknown (0x%02X)"), level));
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), level));
 			}
 
 			// MIPS CPU flags.
@@ -1363,13 +1363,15 @@ int ELF::loadFieldData(void)
 	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
 	    d->elfFormat < ARRAY_SIZE(elf_formats))
 	{
-		d->fields->addField_string(C_("ELF", "Format"), elf_formats[d->elfFormat]);
+		d->fields->addField_string(C_("ELF", "Format"),
+			elf_formats[d->elfFormat]);
 	}
 	else
 	{
 		// TODO: Show individual values.
 		// NOTE: This shouldn't happen...
-		d->fields->addField_string(C_("ELF", "Format"), C_("ELF", "Unknown"));
+		d->fields->addField_string(C_("ELF", "Format"),
+			C_("RomData", "Unknown"));
 	}
 
 	// Linkage.

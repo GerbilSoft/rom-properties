@@ -848,13 +848,13 @@ int SNDH::loadFieldData(void)
 
 	// Song title.
 	if (!tags.title.empty()) {
-		d->fields->addField_string(C_("SNDH", "Song Title"),
+		d->fields->addField_string(C_("RomData|Audio", "Song Title"),
 			tags.title, RomFields::STRF_TRIM_END);
 	}
 
 	// Composer.
 	if (!tags.composer.empty()) {
-		d->fields->addField_string(C_("SNDH", "Composer"),
+		d->fields->addField_string(C_("RomData|Audio", "Composer"),
 			tags.composer, RomFields::STRF_TRIM_END);
 	}
 
@@ -995,7 +995,7 @@ int SNDH::loadFieldData(void)
 		const uint32_t min = duration / 60;
 		const uint32_t sec = duration % 60;
 
-		d->fields->addField_string(C_("SNDH", "Duration"),
+		d->fields->addField_string(C_("RomData|Audio", "Duration"),
 			rp_sprintf("%u:%02u", min, sec));
 	}
 

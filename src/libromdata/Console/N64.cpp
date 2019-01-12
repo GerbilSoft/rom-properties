@@ -309,7 +309,7 @@ int N64::loadFieldData(void)
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addField_string(C_("N64", "Title"),
+	d->fields->addField_string(C_("RomData", "Title"),
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
@@ -326,7 +326,7 @@ int N64::loadFieldData(void)
 		latin1_to_utf8(id4, 4));
 
 	// Revision.
-	d->fields->addField_string_numeric(C_("N64", "Revision"),
+	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->revision, RomFields::FB_DEC, 2);
 
 	// Entry point.

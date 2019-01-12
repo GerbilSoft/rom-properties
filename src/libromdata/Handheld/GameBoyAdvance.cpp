@@ -292,7 +292,7 @@ int GameBoyAdvance::loadFieldData(void)
 	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	// Game title.
-	d->fields->addField_string(C_("GameBoyAdvance", "Title"),
+	d->fields->addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
@@ -324,10 +324,10 @@ int GameBoyAdvance::loadFieldData(void)
 				static_cast<uint8_t>(romHeader->company[1]));
 		}
 	}
-	d->fields->addField_string(C_("GameBoyAdvance", "Publisher"), s_publisher);
+	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// ROM version.
-	d->fields->addField_string_numeric(C_("GameBoyAdvance", "Revision"),
+	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Entry point.
@@ -363,7 +363,7 @@ int GameBoyAdvance::loadFieldData(void)
 		default:
 			// Unknown ROM type.
 			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
-				C_("GameBoyAdvance", "Unknown"));
+				C_("RomData", "Unknown"));
 			break;
 	}
 

@@ -150,7 +150,7 @@ void EXEPrivate::addFields_NE(void)
 		fields->addField_string(C_("EXE", "Target OS"), targetOS);
 	} else {
 		fields->addField_string(C_("EXE", "Target OS"),
-			rp_sprintf(C_("EXE", "Unknown (0x%02X)"), hdr.ne.targOS));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), hdr.ne.targOS));
 	}
 
 	// DGroup type.

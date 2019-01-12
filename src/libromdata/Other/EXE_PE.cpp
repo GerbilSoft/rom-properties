@@ -229,7 +229,7 @@ void EXEPrivate::addFields_PE(void)
 	if (cpu != nullptr) {
 		s_cpu = cpu;
 	} else {
-		s_cpu = rp_sprintf(C_("EXE", "Unknown (0x%04X)"), machine);
+		s_cpu = rp_sprintf(C_("RomData", "Unknown (0x%04X)"), machine);
 	}
 	if (dotnet) {
 		// .NET executable.
@@ -278,7 +278,7 @@ void EXEPrivate::addFields_PE(void)
 		rp_sprintf("%s %u.%u",
 			(pe_subsystem < ARRAY_SIZE(subsysNames)
 				? dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem])
-				: C_("EXE", "Unknown")),
+				: C_("RomData", "Unknown")),
 			subsystem_ver_major, subsystem_ver_minor));
 
 	// PE flags. (characteristics)

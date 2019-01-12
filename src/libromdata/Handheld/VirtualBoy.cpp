@@ -371,7 +371,7 @@ int VirtualBoy::loadFieldData(void)
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Title
-	d->fields->addField_string(C_("VirtualBoy", "Title"),
+	d->fields->addField_string(C_("RomData", "Title"),
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
@@ -396,10 +396,10 @@ int VirtualBoy::loadFieldData(void)
 				static_cast<uint8_t>(romHeader->publisher[1]));
 		}
 	}
-	d->fields->addField_string(C_("VirtualBoy", "Publisher"), s_publisher);
+	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Revision
-	d->fields->addField_string_numeric(C_("VirtualBoy", "Revision"),
+	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// Region
@@ -415,7 +415,7 @@ int VirtualBoy::loadFieldData(void)
 			region = C_("VirtualBoy", "Unknown");
 			break;
 	}
-	d->fields->addField_string(C_("VirtualBoy", "Region"), region);
+	d->fields->addField_string(C_("RomData", "Region Code"), region);
 
 	return static_cast<int>(d->fields->count());
 }

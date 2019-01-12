@@ -427,7 +427,7 @@ string GameCubePrivate::getPublisher(void) const
 	    ISALNUM(discHeader.company[1]))
 	{
 		// Disc ID is alphanumeric.
-		return rp_sprintf(C_("GameCube", "Unknown (%.2s)"),
+		return rp_sprintf(C_("RomData", "Unknown (%.2s)"),
 			discHeader.company);
 	}
 
@@ -1393,7 +1393,7 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_ALL:	// TODO: Assume JP?
 		default:
 			// USA/PAL uses cp1252.
-			d->fields->addField_string(C_("GameCube", "Title"),
+			d->fields->addField_string(C_("RomData", "Title"),
 				cp1252_to_utf8(
 					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
@@ -1401,7 +1401,7 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_JPN:
 		case GCN_REGION_KOR:
 			// Japan uses Shift-JIS.
-			d->fields->addField_string(C_("GameCube", "Title"),
+			d->fields->addField_string(C_("RomData", "Title"),
 				cp1252_sjis_to_utf8(
 					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
@@ -1420,12 +1420,12 @@ int GameCube::loadFieldData(void)
 		latin1_to_utf8(discHeader->id6, ARRAY_SIZE(discHeader->id6)));
 
 	// Publisher.
-	d->fields->addField_string(C_("GameCube", "Publisher"), d->getPublisher());
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Other fields.
-	d->fields->addField_string_numeric(C_("GameCube", "Disc #"),
+	d->fields->addField_string_numeric(C_("RomData", "Disc #"),
 		discHeader->disc_number+1, RomFields::FB_DEC);
-	d->fields->addField_string_numeric(C_("GameCube", "Revision"),
+	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		discHeader->revision, RomFields::FB_DEC, 2);
 
 	// The remaining fields are not located in the disc header.
@@ -1459,11 +1459,11 @@ int GameCube::loadFieldData(void)
 			s_region = region;
 		}
 
-		d->fields->addField_string(C_("GameCube", "Region"), s_region);
+		d->fields->addField_string(C_("RomData", "Region Code"), s_region);
 	} else {
 		// Invalid region code.
-		d->fields->addField_string(C_("GameCube", "Region"),
-			rp_sprintf(C_("GameCube", "Unknown (0x%08X)"), d->gcnRegion));
+		d->fields->addField_string(C_("RomData", "Region Code"),
+			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->gcnRegion));
 	}
 
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=

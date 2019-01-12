@@ -246,7 +246,7 @@ int Lynx::loadFieldData(void)
 	const Lynx_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
-	d->fields->addField_string(C_("Lynx", "Title"),
+	d->fields->addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->cartname, sizeof(romHeader->cartname)));
 
 	d->fields->addField_string(C_("Lynx", "Manufacturer"),
@@ -260,7 +260,7 @@ int Lynx::loadFieldData(void)
 	d->fields->addField_string(C_("Lynx", "Rotation"),
 		(romHeader->rotation < ARRAY_SIZE(rotation_names)
 			? dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation", rotation_names[romHeader->rotation])
-			: C_("Lynx", "Unknown")));
+			: C_("RomData", "Unknown")));
 
 	d->fields->addField_string(C_("Lynx", "Bank 0 Size"),
 		LibRpBase::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));

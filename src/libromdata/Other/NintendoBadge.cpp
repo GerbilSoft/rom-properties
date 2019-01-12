@@ -743,7 +743,8 @@ int NintendoBadge::loadFieldData(void)
 		default:
 			// Unknown.
 			assert(!"Unknown badge type. (Should not get here!)");
-			d->fields->addField_string(C_("NintendoBadge", "Type"), C_("NintendoBadge", "Unknown"));
+			d->fields->addField_string(C_("NintendoBadge", "Type"),
+				C_("RomData", "Unknown"));
 			break;
 	}
 

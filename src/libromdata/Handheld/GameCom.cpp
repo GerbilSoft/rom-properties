@@ -515,7 +515,7 @@ int GameCom::loadFieldData(void)
 	d->fields->reserve(3);	// Maximum of 3 fields.
 
 	// Game title.
-	d->fields->addField_string(C_("GameCom", "Title"),
+	d->fields->addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 

@@ -1182,7 +1182,8 @@ int DirectDrawSurface::loadFieldData(void)
 		}
 	} else {
 		// Unknown pixel format.
-		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), C_("DirectDrawSurface", "Unknown"));
+		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+			C_("RomData", "Unknown"));
 	}
 
 	if (d->dxgi_format != 0) {
@@ -1190,7 +1191,7 @@ int DirectDrawSurface::loadFieldData(void)
 		const char *texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
 		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
-				rp_sprintf(C_("DirectDrawSurface", "Unknown (0x%08X)"), d->dxgi_format)));
+				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->dxgi_format)));
 	}
 
 	// dwFlags

@@ -1019,7 +1019,7 @@ int SegaPVR::loadFieldData(void)
 			d->fields->addField_string(C_("SegaPVR", "Pixel Format"), pxfmt);
 		} else {
 			d->fields->addField_string(C_("SegaPVR", "Pixel Format"),
-				rp_sprintf(C_("SegaPVR", "Unknown (0x%02X)"), px_format));
+				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), px_format));
 		}
 	}
 
@@ -1027,7 +1027,7 @@ int SegaPVR::loadFieldData(void)
 		d->fields->addField_string(C_("SegaPVR", "Image Data Type"), idt);
 	} else {
 		d->fields->addField_string(C_("SegaPVR", "Image Data Type"),
-			rp_sprintf(C_("SegaPVR", "Unknown (0x%02X)"), img_data_type));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), img_data_type));
 	}
 
 	// Global index (if present).

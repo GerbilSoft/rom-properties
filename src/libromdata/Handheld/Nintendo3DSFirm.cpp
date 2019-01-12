@@ -320,7 +320,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 	if (firmBin) {
 		// Official firmware binary fields.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
-			(firmBinDesc ? firmBinDesc : C_("Nintendo3DSFirm", "Unknown")));
+			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 
 		// FIRM version.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "FIRM Version"),
@@ -380,20 +380,20 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 		// Add the firmware type field.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
-			(firmBinDesc ? firmBinDesc : C_("Nintendo3DSFirm", "Unknown")));
+			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 
 		if (arm9VerStr_title) {
-			d->fields->addField_string(C_("Nintendo3DSFirm", "Title"), arm9VerStr_title);
+			d->fields->addField_string(C_("RomData", "Title"), arm9VerStr_title);
 		}
 
 		// If the version was found, add it.
 		if (!s_verstr.empty()) {
-			d->fields->addField_string(C_("Nintendo3DSFirm", "Version"), s_verstr);
+			d->fields->addField_string(C_("RomData", "Version"), s_verstr);
 		}
 	} else {
 		// Add the firmware type field.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
-			(firmBinDesc ? firmBinDesc : C_("Nintendo3DSFirm", "Unknown")));
+			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 	}
 
 	// Entry Points

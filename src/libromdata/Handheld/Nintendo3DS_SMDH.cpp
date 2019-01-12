@@ -454,7 +454,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			smdhHeader->titles[lang].desc_long, ARRAY_SIZE(smdhHeader->titles[lang].desc_long)));
 	}
 	if (smdhHeader->titles[lang].publisher[0] != '\0') {
-		d->fields->addField_string(C_("Nintendo3DS", "Publisher"), utf16le_to_utf8(
+		d->fields->addField_string(C_("RomData", "Publisher"), utf16le_to_utf8(
 			smdhHeader->titles[lang].publisher, ARRAY_SIZE(smdhHeader->titles[lang].publisher)));
 	}
 
@@ -471,7 +471,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	};
 	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
-	d->fields->addField_bitfield(C_("Nintendo3DS", "Region Code"),
+	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_n3ds_region_bitfield_names, 3, le32_to_cpu(smdhHeader->settings.region_code));
 
 	// Age rating(s).

@@ -742,7 +742,7 @@ int NES::loadFieldData(void)
 
 		default:
 			d->fields->setTabName(0, "NES");
-			rom_format = C_("NES", "Unknown");
+			rom_format = C_("RomData", "Unknown");
 			romOK = false;
 			break;
 	}
@@ -893,14 +893,14 @@ int NES::loadFieldData(void)
 		const char *const publisher =
 			NintendoPublishers::lookup_fds(d->header.fds.publisher_code);
 		if (publisher) {
-			d->fields->addField_string(C_("NES", "Publisher"), publisher);
+			d->fields->addField_string(C_("RomData", "Publisher"), publisher);
 		} else {
-			d->fields->addField_string(C_("NES", "Publisher"),
-				rp_sprintf(C_("NES", "Unknown (0x%02X)"), d->header.fds.publisher_code));
+			d->fields->addField_string(C_("RomData", "Publisher"),
+				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), d->header.fds.publisher_code));
 		}
 
 		// Revision.
-		d->fields->addField_string_numeric(C_("NES", "Revision"),
+		d->fields->addField_string_numeric(C_("RomData", "Revision"),
 			d->header.fds.revision, RomFields::FB_DEC, 2);
 
 		// Manufacturing Date.
@@ -1098,11 +1098,11 @@ int NES::loadFieldData(void)
 			// PRG ROM size.
 			string s_prg_size;
 			if (prg_sz_idx == 0) {
-				s_prg_size = C_("NES", "Not Set");
+				s_prg_size = C_("NES", "Not set");
 			} else if (prg_size != 0) {
 				s_prg_size = d->formatBankSizeKiB(prg_size);
 			} else {
-				s_prg_size = rp_sprintf(C_("NES", "Unknown (0x%02X)"), prg_sz_idx);
+				s_prg_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), prg_sz_idx);
 			}
 			d->fields->addField_string(C_("NES", "PRG ROM Size"), s_prg_size);
 
@@ -1113,7 +1113,7 @@ int NES::loadFieldData(void)
 			} else if (chr_size != 0) {
 				s_chr_size = d->formatBankSizeKiB(chr_size);
 			} else {
-				s_chr_size = rp_sprintf(C_("NES", "Unknown (0x%02X)"), chr_sz_idx);
+				s_chr_size = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), chr_sz_idx);
 			}
 			d->fields->addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
 
@@ -1133,7 +1133,7 @@ int NES::loadFieldData(void)
 				d->fields->addField_string(C_("NES", "Mirroring"), mirroring);
 			} else {
 				d->fields->addField_string(C_("NES", "Mirroring"),
-					rp_sprintf(C_("NES", "Unknown (0x%02X)"), intFooter.board_info >> 4));
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), intFooter.board_info >> 4));
 			}
 
 			// Board type.

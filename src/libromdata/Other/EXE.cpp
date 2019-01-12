@@ -179,7 +179,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		fields->addField_string(C_("EXE", "File OS"), file_os);
 	} else {
 		fields->addField_string(C_("EXE", "File OS"),
-			rp_sprintf(C_("EXE", "Unknown (0x%08X)"), pVsFfi->dwFileOS));
+			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileOS));
 	}
 
 	// File type.
@@ -208,7 +208,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileType));
 	} else {
 		fields->addField_string(C_("EXE", "File Type"),
-			rp_sprintf(C_("EXE", "Unknown (0x%08X)"), pVsFfi->dwFileType));
+			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
 	}
 
 	// File subtype.
@@ -279,7 +279,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", fileSubtype));
 		} else {
 			fields->addField_string(C_("EXE", "File Subtype"),
-				rp_sprintf(C_("EXE", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));
+				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));
 		}
 	}
 
@@ -383,7 +383,7 @@ void EXEPrivate::addFields_LE(void)
 		fields->addField_string(C_("EXE", "CPU"), cpu);
 	} else {
 		fields->addField_string(C_("EXE", "CPU"),
-			rp_sprintf(C_("EXE", "Unknown (0x%04X)"), cpu_type));
+			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), cpu_type));
 	}
 
 	// Target OS.
@@ -396,7 +396,7 @@ void EXEPrivate::addFields_LE(void)
 		fields->addField_string(C_("EXE", "Target OS"), targetOS);
 	} else {
 		fields->addField_string(C_("EXE", "Target OS"),
-			rp_sprintf(C_("EXE", "Unknown (0x%02X)"), targOS));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), targOS));
 	}
 }
 

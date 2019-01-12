@@ -897,7 +897,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			const char *const content_type = ncch->contentType();
 			// TODO: Remove context from "Unknown" and "Invalid" strings.
 			fields->addField_string(C_("Nintendo3DS", "Content Type"),
-				(content_type ? content_type : C_("Nintendo3DS", "Unknown")));
+				(content_type ? content_type : C_("RomData", "Unknown")));
 		}
 
 		// Logo.
@@ -1800,7 +1800,7 @@ int Nintendo3DS::loadFieldData(void)
 
 	// TODO: Disambiguate the various NCCHReader pointers.
 	// TODO: Split up into smaller functions?
-	const char *const s_unknown = C_("Nintendo3DS", "Unknown");
+	const char *const s_unknown = C_("RomData", "Unknown");
 
 	// Maximum of 20 fields.
 	// Tested with several CCI, CIA, and NCCH files.
@@ -1836,7 +1836,7 @@ int Nintendo3DS::loadFieldData(void)
 		if (!ncch) {
 			// Unable to open the primary NCCH section.
 			if (!shownWarning) {
-				d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+				d->fields->addField_string(C_("RomData", "Warning"),
 					C_("Nintendo3DS", "Unable to open the primary NCCH section."),
 					RomFields::STRF_WARNING);
 				shownWarning = true;
@@ -1850,7 +1850,7 @@ int Nintendo3DS::loadFieldData(void)
 					if (!err) {
 						err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
 					}
-					d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+					d->fields->addField_string(C_("RomData", "Warning"),
 						err, RomFields::STRF_WARNING);
 					shownWarning = true;
 				}
@@ -1927,7 +1927,7 @@ int Nintendo3DS::loadFieldData(void)
 		if (!ncch) {
 			// Unable to open the primary NCCH section.
 			if (!shownWarning) {
-				d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+				d->fields->addField_string(C_("RomData", "Warning"),
 					C_("Nintendo3DS", "Unable to open the primary NCCH section."),
 					RomFields::STRF_WARNING);
 				shownWarning = true;
@@ -1944,7 +1944,7 @@ int Nintendo3DS::loadFieldData(void)
 				if (!err) {
 					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
 				}
-				d->fields->addField_string(C_("Nintendo3DS", "Warning"),
+				d->fields->addField_string(C_("RomData", "Warning"),
 					err, RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
@@ -2041,7 +2041,7 @@ int Nintendo3DS::loadFieldData(void)
 					media_type_tbl[media_type]);
 			} else {
 				d->fields->addField_string(C_("Nintendo3DS", "Media Type"),
-					rp_sprintf(C_("Nintendo3DS", "Unknown (0x%02X)"), media_type));
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), media_type));
 			}
 
 			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {

@@ -504,11 +504,11 @@ int WiiU::loadFieldData(void)
 				static_cast<uint8_t>(publisher_code[3]));
 		}
 	}
-	d->fields->addField_string(C_("WiiU", "Publisher"), s_publisher);
+	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Game version.
 	// TODO: Validate the version characters.
-	d->fields->addField_string(C_("WiiU", "Version"),
+	d->fields->addField_string(C_("RomData", "Version"),
 		latin1_to_utf8(d->discHeader.version, sizeof(d->discHeader.version)));
 
 	// OS version.
@@ -521,7 +521,7 @@ int WiiU::loadFieldData(void)
 
 	// Region.
 	// TODO: Compare against list of regions and show the fancy name.
-	d->fields->addField_string(C_("WiiU", "Region"),
+	d->fields->addField_string(C_("RomData", "Region Code"),
 		latin1_to_utf8(d->discHeader.region, sizeof(d->discHeader.region)));
 
 	// Finished reading the field data.

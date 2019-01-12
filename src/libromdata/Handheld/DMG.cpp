@@ -632,10 +632,10 @@ int DMG::loadFieldData(void)
 	 */
 	if (romHeader->cgbflag < 0x80) {
 		// Assuming 16-character title for non-CGB.
-		d->fields->addField_string(C_("DMG", "Title"),
+		d->fields->addField_string(C_("RomData", "Title"),
 			latin1_to_utf8(romHeader->title16, sizeof(romHeader->title16)));
 		// Game ID is not present.
-		d->fields->addField_string(C_("DMG", "Game ID"), C_("DMG", "Unknown"));
+		d->fields->addField_string(C_("DMG", "Game ID"), C_("RomData", "Unknown"));
 	} else {
 		// Check if CGB flag is present.
 		bool isGameID;
@@ -656,7 +656,7 @@ int DMG::loadFieldData(void)
 
 		if (isGameID) {
 			// Game ID is present.
-			d->fields->addField_string(C_("DMG", "Title"),
+			d->fields->addField_string(C_("RomData", "Title"),
 				latin1_to_utf8(romHeader->title11, sizeof(romHeader->title11)));
 
 			// Append the publisher code to make an ID6.
@@ -681,9 +681,9 @@ int DMG::loadFieldData(void)
 				latin1_to_utf8(id6, sizeof(id6)));
 		} else {
 			// Game ID is not present.
-			d->fields->addField_string(C_("DMG", "Title"),
+			d->fields->addField_string(C_("RomData", "Title"),
 				latin1_to_utf8(romHeader->title15, sizeof(romHeader->title15)));
-			d->fields->addField_string(C_("DMG", "Game ID"), C_("DMG", "Unknown"));
+			d->fields->addField_string(C_("DMG", "Game ID"), C_("RomData", "Unknown"));
 		}
 	}
 
@@ -779,11 +779,11 @@ int DMG::loadFieldData(void)
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X)"),
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
 				romHeader->old_publisher_code);
 		}
 	}
-	d->fields->addField_string(C_("DMG", "Publisher"), s_publisher);
+	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Hardware
 	d->fields->addField_string(C_("DMG", "Hardware"),
@@ -820,7 +820,7 @@ int DMG::loadFieldData(void)
 
 	// RAM Size
 	if (romHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)) {
-		d->fields->addField_string(C_("DMG", "RAM Size"), C_("DMG", "Unknown"));
+		d->fields->addField_string(C_("DMG", "RAM Size"), C_("RomData", "Unknown"));
 	} else {
 		uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
 		if (ram_size == 0 &&
@@ -845,23 +845,25 @@ int DMG::loadFieldData(void)
 		}
 	}
 
-	// Region
+	// Region Code
 	switch (romHeader->region) {
 		case 0:
-			d->fields->addField_string(C_("DMG", "Region"), C_("Region|DMG", "Japanese"));
+			d->fields->addField_string(C_("RomData", "Region Code"),
+				C_("Region|DMG", "Japanese"));
 			break;
 		case 1:
-			d->fields->addField_string(C_("DMG", "Region"), C_("Region|DMG", "Non-Japanese"));
+			d->fields->addField_string(C_("RomData", "Region Code"),
+				C_("Region|DMG", "Non-Japanese"));
 			break;
 		default:
 			// Invalid value.
-			d->fields->addField_string(C_("DMG", "Region"),
+			d->fields->addField_string(C_("RomData", "Region Code"),
 				rp_sprintf(C_("DMG", "0x%02X (INVALID)"), romHeader->region));
 			break;
 	}
 
 	// Revision
-	d->fields->addField_string_numeric(C_("DMG", "Revision"),
+	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// Header checksum.
@@ -875,11 +877,11 @@ int DMG::loadFieldData(void)
 	}
 
 	if (checksum - romHeader->header_checksum != 0) {
-		d->fields->addField_string(C_("DMG", "Checksum"),
+		d->fields->addField_string(C_("RomData", "Checksum"),
 			rp_sprintf_p(C_("DMG", "0x%1$02X (INVALID; should be 0x%2$02X)"),
 				romHeader->header_checksum, checksum));
 	} else {
-		d->fields->addField_string(C_("DMG", "Checksum"),
+		d->fields->addField_string(C_("RomData", "Checksum"),
 			rp_sprintf(C_("DMG", "0x%02X (valid)"), checksum));
 	}
 
@@ -897,6 +899,7 @@ int DMG::loadFieldData(void)
 				be32_to_cpu(gbxFooter->version.minor)));
 
 		// Mapper.
+		// TODO: Use a lookup table instead of switch/case?
 		const char *mapper;
 		switch (be32_to_cpu(gbxFooter->mapper_id)) {
 			default:

@@ -887,8 +887,8 @@ int GameCubeSave::loadFieldData(void)
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(direntry->company);
-	d->fields->addField_string(C_("GameCubeSave", "Publisher"),
-		publisher ? publisher : C_("GameCubeSave", "Unknown"));
+	d->fields->addField_string(C_("RomData", "Publisher"),
+		publisher ? publisher : C_("RomData", "Unknown"));
 
 	// Filename.
 	// TODO: Remove trailing spaces.

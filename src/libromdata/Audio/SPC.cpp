@@ -707,7 +707,7 @@ int SPC::loadFieldData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->fields->addField_string(C_("SPC", "Song Name"), kv.getStr(data));
+			d->fields->addField_string(C_("RomData|Audio", "Song Name"), kv.getStr(data));
 		}
 	}
 
@@ -727,7 +727,7 @@ int SPC::loadFieldData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->fields->addField_string(C_("SPC", "Artist"), kv.getStr(data));
+			d->fields->addField_string(C_("RomData|Audio", "Artist"), kv.getStr(data));
 		}
 	}
 
@@ -771,7 +771,7 @@ int SPC::loadFieldData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			d->fields->addField_string(C_("SPC", "Comments"), kv.getStr(data));
+			d->fields->addField_string(C_("RomData|Audio", "Comments"), kv.getStr(data));
 		}
 	}
 
@@ -801,7 +801,7 @@ int SPC::loadFieldData(void)
 				d->fields->addField_string(C_("SPC", "Emulator Used"), emu);
 			} else {
 				d->fields->addField_string(C_("SPC", "Emulator Used"),
-					rp_sprintf(C_("SPC", "Unknown (0x%02X)"), data.uvalue));
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), data.uvalue));
 			}
 		}
 	}

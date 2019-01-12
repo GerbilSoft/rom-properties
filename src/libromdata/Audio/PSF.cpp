@@ -581,7 +581,7 @@ int PSF::loadFieldData(void)
 		d->fields->addField_string(C_("PSF", "System"), sysname);
 	} else {
 		d->fields->addField_string(C_("PSF", "System"),
-			rp_sprintf(C_("PSF", "Unknown (0x%02X)"), psfHeader->version));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psfHeader->version));
 	}
 
 	// Parse the tags.
@@ -594,13 +594,13 @@ int PSF::loadFieldData(void)
 		// Title
 		auto iter = tags.find("title");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Title"), iter->second);
+			d->fields->addField_string(C_("RomData|Audio", "Title"), iter->second);
 		}
 
 		// Artist
 		iter = tags.find("artist");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Artist"), iter->second);
+			d->fields->addField_string(C_("RomData|Audio", "Artist"), iter->second);
 		}
 
 		// Game
@@ -613,19 +613,19 @@ int PSF::loadFieldData(void)
 		// NOTE: The tag is "year", but it may be YYYY-MM-DD.
 		iter = tags.find("year");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Release Date"), iter->second);
+			d->fields->addField_string(C_("RomData", "Release Date"), iter->second);
 		}
 
 		// Genre
 		iter = tags.find("genre");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Genre"), iter->second);
+			d->fields->addField_string(C_("RomData|Audio", "Genre"), iter->second);
 		}
 
 		// Copyright
 		iter = tags.find("copyright");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Copyright"), iter->second);
+			d->fields->addField_string(C_("RomData|Audio", "Copyright"), iter->second);
 		}
 
 		// Ripped By
@@ -659,7 +659,7 @@ int PSF::loadFieldData(void)
 		// Commas are also accepted.
 		iter = tags.find("length");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Duration"), iter->second);
+			d->fields->addField_string(C_("RomData|Audio", "Duration"), iter->second);
 		}
 
 		// Fadeout duration
@@ -672,7 +672,7 @@ int PSF::loadFieldData(void)
 		// Comment
 		iter = tags.find("comment");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Comment"), iter->second);
+			d->fields->addField_string(C_("RomData|Audio", "Comment"), iter->second);
 		}
 	}
 

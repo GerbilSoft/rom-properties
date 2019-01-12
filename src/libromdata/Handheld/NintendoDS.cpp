@@ -1066,7 +1066,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_string(C_("NintendoDS", "Type"), nds_romType);
 
 	// Title.
-	d->fields->addField_string(C_("NintendoDS", "Title"),
+	d->fields->addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, ARRAY_SIZE(romHeader->title)));
 
 	// Full title.
@@ -1084,12 +1084,12 @@ int NintendoDS::loadFieldData(void)
 
 	// Publisher.
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	d->fields->addField_string(C_("NintendoDS", "Publisher"),
+	d->fields->addField_string(C_("RomData", "Publisher"),
 		publisher ? publisher :
 			rp_sprintf(C_("NintendoDS", "Unknown (%.2s)"), romHeader->company));
 
 	// ROM version.
-	d->fields->addField_string_numeric(C_("NintendoDS", "Revision"),
+	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Is the security data present?
@@ -1144,7 +1144,7 @@ int NintendoDS::loadFieldData(void)
 	};
 	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
-	d->fields->addField_bitfield(C_("NintendoDS", "DS Region"),
+	d->fields->addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
 	
@@ -1196,7 +1196,7 @@ int NintendoDS::loadFieldData(void)
 	} else {
 		// Invalid file type.
 		d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"),
-			rp_sprintf(C_("NintendoDS", "Unknown (0x%02X)"), romHeader->dsi.filetype));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romHeader->dsi.filetype));
 	}
 
 	// Key index. Determined by title ID.
@@ -1217,8 +1217,8 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
 
 	const char *const region_code_name = (d->cia
-			? C_("NintendoDS", "Region Code")
-			: C_("NintendoDS", "DSi Region"));
+			? C_("RomData", "Region Code")
+			: C_("NintendoDS", "DSi Region Code"));
 
 	// DSi Region.
 	// Maps directly to the header field.

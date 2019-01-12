@@ -252,28 +252,28 @@ int NSF::loadFieldData(void)
 
 	// Title.
 	if (nsfHeader->title[0] != 0) {
-		d->fields->addField_string(C_("NSF", "Title"),
+		d->fields->addField_string(C_("RomData|Audio", "Title"),
 			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 	}
 
 	// Composer.
 	if (nsfHeader->composer[0] != 0) {
-		d->fields->addField_string(C_("NSF", "Composer"),
+		d->fields->addField_string(C_("RomData|Audio", "Composer"),
 			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 	}
 
 	// Copyright.
 	if (nsfHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("NSF", "Copyright"),
+		d->fields->addField_string(C_("RomData|Audio", "Copyright"),
 			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
 
 	// Number of tracks.
-	d->fields->addField_string_numeric(C_("NSF", "Track Count"),
+	d->fields->addField_string_numeric(C_("RomData|Audio", "Track Count"),
 		nsfHeader->track_count);
 
 	// Default track number.
-	d->fields->addField_string_numeric(C_("NSF", "Default Track #"),
+	d->fields->addField_string_numeric(C_("RomData|Audio", "Default Track #"),
 		nsfHeader->default_track);
 
 	// Load address.

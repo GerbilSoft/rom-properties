@@ -269,24 +269,24 @@ int SID::loadFieldData(void)
 
 	// Version.
 	// TODO: Check for PSIDv2NG?
-	d->fields->addField_string_numeric(C_("SID", "Version"),
+	d->fields->addField_string_numeric(C_("RomData", "Version"),
 		be16_to_cpu(sidHeader->version));
 
 	// Name.
 	if (sidHeader->name[0] != 0) {
-		d->fields->addField_string(C_("SID", "Name"),
+		d->fields->addField_string(C_("RomData|Audio", "Name"),
 			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
 	}
 
 	// Author.
 	if (sidHeader->author[0] != 0) {
-		d->fields->addField_string(C_("SID", "Author"),
+		d->fields->addField_string(C_("RomData|Audio", "Author"),
 			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
 	}
 
 	// Copyright.
 	if (sidHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("SID", "Copyright"),
+		d->fields->addField_string(C_("RomData|Audio", "Copyright"),
 			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
 	}
 
@@ -306,11 +306,11 @@ int SID::loadFieldData(void)
 		RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
 	// Number of songs.
-	d->fields->addField_string_numeric(C_("SID", "# of Songs"),
+	d->fields->addField_string_numeric(C_("RomData|Audio", "# of Songs"),
 		be16_to_cpu(sidHeader->songs));
 
 	// Starting song number.
-	d->fields->addField_string_numeric(C_("SID", "Starting Song #"),
+	d->fields->addField_string_numeric(C_("RomData|Audio", "Starting Song #"),
 		be16_to_cpu(sidHeader->startSong));
 
 	// TODO: Speed?

@@ -412,7 +412,7 @@ int VGM::loadFieldData(void)
 			// TODO: Optimize line count checking?
 			const size_t line_count = v_gd3.size();
 			if (line_count >= 1 && !v_gd3[0].empty()) {
-				d->fields->addField_string(C_("VGM", "Track Name"), v_gd3[0]);
+				d->fields->addField_string(C_("RomData|Audio", "Track Name"), v_gd3[0]);
 			}
 			if (line_count >= 3 && !v_gd3[2].empty()) {
 				d->fields->addField_string(C_("VGM", "Game Name"), v_gd3[2]);
@@ -422,16 +422,16 @@ int VGM::loadFieldData(void)
 			}
 			if (line_count >= 7 && !v_gd3[6].empty()) {
 				// TODO: Multiple composer handling.
-				d->fields->addField_string(C_("VGM", "Composer"), v_gd3[6]);
+				d->fields->addField_string(C_("RomData|Audio", "Composer"), v_gd3[6]);
 			}
 			if (line_count >= 9 && !v_gd3[8].empty()) {
-				d->fields->addField_string(C_("VGM", "Release Date"), v_gd3[8]);
+				d->fields->addField_string(C_("RomData", "Release Date"), v_gd3[8]);
 			}
 			if (line_count >= 10 && !v_gd3[9].empty()) {
 				d->fields->addField_string(C_("VGM", "VGM Ripper"), v_gd3[9]);
 			}
 			if (line_count >= 11 && !v_gd3[10].empty()) {
-				d->fields->addField_string(C_("VGM", "Notes"), v_gd3[10]);
+				d->fields->addField_string(C_("RomData|Audio", "Notes"), v_gd3[10]);
 			}
 		}
 	}

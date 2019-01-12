@@ -427,7 +427,7 @@ int Sega8Bit::loadFieldData(void)
 		bcdbuf[1] = ('0' + digit - 10);
 		bcdbuf[2] = 0;
 	}
-	d->fields->addField_string(C_("Sega8Bit", "Version"), bcdbuf);
+	d->fields->addField_string(C_("RomData", "Version"), bcdbuf);
 
 	// Region code and system ID.
 	const char *sysID;
@@ -461,12 +461,12 @@ int Sega8Bit::loadFieldData(void)
 			region = nullptr;
 	}
 	d->fields->addField_string(C_("Sega8Bit", "System"),
-		(sysID ? sysID : C_("Sega8Bit", "Unknown")));
-	d->fields->addField_string(C_("Sega8Bit", "Region Code"),
-		(region ? region : C_("Sega8Bit", "Unknown")));
+		(sysID ? sysID : C_("RomData", "Unknown")));
+	d->fields->addField_string(C_("RomData", "Region Code"),
+		(region ? region : C_("RomData", "Unknown")));
 
 	// Checksum.
-	d->fields->addField_string_numeric(C_("Sega8Bit", "Checksum"),
+	d->fields->addField_string_numeric(C_("RomData", "Checksum"),
 		le16_to_cpu(tmr->checksum), RomFields::FB_HEX, 4,
 		RomFields::STRF_MONOSPACE);
 
@@ -528,11 +528,11 @@ int Sega8Bit::loadFieldData(void)
 		);
 
 		// SDSC string fields.
-		d->fields->addField_string(C_("Sega8Bit", "Author"),
+		d->fields->addField_string(C_("RomData", "Author"),
 			d->getSdscString(le16_to_cpu(sdsc->author_ptr)));
-		d->fields->addField_string(C_("Sega8Bit", "Name"),
+		d->fields->addField_string(C_("RomData", "Name"),
 			d->getSdscString(le16_to_cpu(sdsc->name_ptr)));
-		d->fields->addField_string(C_("Sega8Bit", "Description"),
+		d->fields->addField_string(C_("RomData", "Description"),
 			d->getSdscString(le16_to_cpu(sdsc->desc_ptr)));
 	} else if (!memcmp(d->romHeader.m404_copyright, "COPYRIGHT SEGA", 14) ||
 		   !memcmp(d->romHeader.m404_copyright, "COPYRIGHTSEGA", 13))

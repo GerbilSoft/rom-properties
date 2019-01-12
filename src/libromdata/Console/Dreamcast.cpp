@@ -628,12 +628,12 @@ int Dreamcast::loadFieldData(void)
 	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	// Title. (TODO: Encoding?)
-	d->fields->addField_string(C_("Dreamcast", "Title"),
+	d->fields->addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomFields::STRF_TRIM_END);
 
 	// Publisher.
-	d->fields->addField_string(C_("Dreamcast", "Publisher"), d->getPublisher());
+	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
@@ -643,13 +643,13 @@ int Dreamcast::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Product version.
-	d->fields->addField_string(C_("Dreamcast", "Version"),
+	d->fields->addField_string(C_("RomData", "Version"),
 		latin1_to_utf8(discHeader->product_version, sizeof(discHeader->product_version)),
 		RomFields::STRF_TRIM_END);
 
 	// Release date.
 	time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
-	d->fields->addField_dateTime(C_("Dreamcast", "Release Date"), release_date,
+	d->fields->addField_dateTime(C_("RomData", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
 	);
@@ -658,13 +658,13 @@ int Dreamcast::loadFieldData(void)
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0) {
-		d->fields->addField_string(C_("Dreamcast", "Disc #"),
+		d->fields->addField_string(C_("RomData", "Disc #"),
 			// tr: Disc X of Y (for multi-disc games)
 			rp_sprintf_p(C_("Dreamcast|Disc", "%1$u of %2$u"),
 				disc_num, disc_total));
 	} else {
-		d->fields->addField_string(C_("Dreamcast", "Disc #"),
-			C_("Dreamcast", "Unknown"));
+		d->fields->addField_string(C_("RomData", "Disc #"),
+			C_("RomData", "Unknown"));
 	}
 
 	// Region code.
@@ -683,7 +683,7 @@ int Dreamcast::loadFieldData(void)
 	};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	d->fields->addField_bitfield(C_("Dreamcast", "Region Code"),
+	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 
 	// Boot filename.
@@ -716,17 +716,17 @@ int Dreamcast::loadFieldData(void)
 	if (crc16_expected < 0x10000) {
 		if (crc16_expected == crc16_actual) {
 			// CRC16 is correct.
-			d->fields->addField_string(C_("Dreamcast", "Checksum"),
+			d->fields->addField_string(C_("RomData", "Checksum"),
 				rp_sprintf(C_("Dreamcast", "0x%04X (valid)"), crc16_expected));
 		} else {
 			// CRC16 is incorrect.
-			d->fields->addField_string(C_("Dreamcast", "Checksum"),
+			d->fields->addField_string(C_("RomData", "Checksum"),
 				rp_sprintf_p(C_("Dreamcast", "0x%1$04X (INVALID; should be 0x%2$04X)"),
 					crc16_expected, crc16_actual));
 		}
 	} else {
 		// CRC16 in header is invalid.
-		d->fields->addField_string(C_("Dreamcast", "Checksum"),
+		d->fields->addField_string(C_("RomData", "Checksum"),
 			rp_sprintf_p(C_("Dreamcast", "0x%1$04X (HEADER is INVALID: %2$.4s)"),
 				crc16_expected, discHeader->device_info));
 	}

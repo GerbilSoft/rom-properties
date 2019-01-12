@@ -258,7 +258,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 	fields->addField_string(C_("MegaDrive", "System"),
 		cp1252_sjis_to_utf8(pRomHeader->system, sizeof(pRomHeader->system)),
 			RomFields::STRF_TRIM_END);
-	fields->addField_string(C_("MegaDrive", "Copyright"),
+	fields->addField_string(C_("RomData", "Copyright"),
 		cp1252_sjis_to_utf8(pRomHeader->copyright, sizeof(pRomHeader->copyright)),
 			RomFields::STRF_TRIM_END);
 
@@ -291,14 +291,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 
 	if (publisher) {
 		// Publisher identified.
-		fields->addField_string(C_("MegaDrive", "Publisher"), publisher);
+		fields->addField_string(C_("RomData", "Publisher"), publisher);
 	} else if (t_code > 0) {
 		// Unknown publisher, but there is a valid T code.
-		fields->addField_string(C_("MegaDrive", "Publisher"), rp_sprintf("T-%u", t_code));
+		fields->addField_string(C_("RomData", "Publisher"), rp_sprintf("T-%u", t_code));
 	} else {
 		// Unknown publisher.
-		fields->addField_string(C_("MegaDrive", "Publisher"),
-			C_("MegaDrive", "Unknown"));
+		fields->addField_string(C_("RomData", "Publisher"),
+			C_("RomData", "Unknown"));
 	}
 
 	// Titles, serial number, and checksum.
@@ -313,7 +313,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 			RomFields::STRF_TRIM_END);
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
-		fields->addField_string_numeric(C_("MegaDrive", "Checksum"),
+		fields->addField_string_numeric(C_("RomData", "Checksum"),
 			be16_to_cpu(pRomHeader->checksum), RomFields::FB_HEX, 4,
 			RomFields::STRF_MONOSPACE);
 	}
@@ -418,7 +418,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 	};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	fields->addField_bitfield(C_("MegaDrive", "Region Code"),
+	fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region);
 }
 

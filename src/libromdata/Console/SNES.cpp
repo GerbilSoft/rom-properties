@@ -757,7 +757,7 @@ int SNES::loadFieldData(void)
 				}
 			} else {
 				// Unknown cartridge HW.
-				cart_hw = C_("SNES", "Unknown");
+				cart_hw = C_("RomData", "Unknown");
 			}
 
 			break;
@@ -800,13 +800,13 @@ int SNES::loadFieldData(void)
 		d->fields->addField_string(C_("SNES", "Game ID"), gameID);
 	} else if (d->romType == SNESPrivate::ROM_SNES) {
 		// Unknown game ID.
-		d->fields->addField_string(C_("SNES", "Game ID"), C_("SNES", "Unknown"));
+		d->fields->addField_string(C_("SNES", "Game ID"), C_("RomData", "Unknown"));
 	}
 
 	// Publisher.
 	// TODO: Print the publisher code if the lookup returns nullptr.
-	d->fields->addField_string(C_("SNES", "Publisher"),
-		publisher ? publisher : C_("SNES", "Unknown"));
+	d->fields->addField_string(C_("RomData", "Publisher"),
+		publisher ? publisher : C_("RomData", "Unknown"));
 
 	// ROM mapping.
 	// NOTE: Not translatable!
@@ -848,7 +848,7 @@ int SNES::loadFieldData(void)
 	} else {
 		// Unknown ROM mapping.
 		d->fields->addField_string(C_("SNES", "ROM Mapping"),
-			rp_sprintf(C_("SNES", "Unknown (0x%02X)"), rom_mapping));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), rom_mapping));
 	}
 
 	// Cartridge HW.
@@ -888,10 +888,10 @@ int SNES::loadFieldData(void)
 		case SNESPrivate::ROM_SNES: {
 			// Region
 			const char *const region = (region_lkup
-				? dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup)
+				? dpgettext_expr(RP_I18N_DOMAIN, "Region Code", region_lkup)
 				: nullptr);
-			d->fields->addField_string(C_("SNES", "Region"),
-				region ? region : rp_sprintf(C_("SNES", "Unknown (0x%02X)"),
+			d->fields->addField_string(C_("RomData", "Region Code"),
+				region ? region : rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 					romHeader->snes.destination_code));
 
 			// Revision
@@ -959,7 +959,7 @@ int SNES::loadFieldData(void)
 				d->fields->addField_string(C_("SNES", "Program Type"), program_type);
 			} else {
 				d->fields->addField_string(C_("SNES", "Program Type"),
-					rp_sprintf(C_("SNES", "Unknown (0x%08X)"),
+					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
 						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
 

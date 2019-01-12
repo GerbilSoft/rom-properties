@@ -630,12 +630,12 @@ int SAP::loadFieldData(void)
 
 	// Author.
 	if (!tags.author.empty()) {
-		d->fields->addField_string(C_("SAP", "Author"), tags.author);
+		d->fields->addField_string(C_("RomData|Audio", "Author"), tags.author);
 	}
 
 	// Song title.
 	if (!tags.name.empty()) {
-		d->fields->addField_string(C_("SAP", "Song Title"), tags.name);
+		d->fields->addField_string(C_("RomData|Audio", "Song Title"), tags.name);
 	}
 
 	// Date. (TODO: Parse?)
@@ -644,11 +644,11 @@ int SAP::loadFieldData(void)
 	}
 
 	// Number of songs.
-	d->fields->addField_string_numeric(C_("SAP", "# of Songs"), tags.songs);
+	d->fields->addField_string_numeric(C_("RomData|Audio", "# of Songs"), tags.songs);
 
 	// Default song number.
 	if (tags.songs > 1) {
-		d->fields->addField_string_numeric(C_("SAP", "Default Song #"), tags.def_song);
+		d->fields->addField_string_numeric(C_("RomData|Audio", "Default Song #"), tags.def_song);
 	}
 
 	// Flags: NTSC/PAL, Stereo
