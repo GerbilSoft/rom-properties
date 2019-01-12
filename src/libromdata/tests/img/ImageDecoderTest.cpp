@@ -520,7 +520,7 @@ TEST_P(ImageDecoderTest, decodeTest_ssse3)
 	const ImageDecoderTest_mode &mode = GetParam();
 	if (mode.dds_gz_filename.find("BC7/") != 0) {
 		// Not a BC7 test.
-		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping benchmark.\n");
+		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping test.\n");
 		return;
 	} else if (!RP_CPU_HasSSSE3()) {
 		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
@@ -672,7 +672,7 @@ TEST_P(ImageDecoderTest, decodeBenchmark_ssse3)
 		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping benchmark.\n");
 		return;
 	} else if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping benchmark.\n");
 		return;
 	}
 
