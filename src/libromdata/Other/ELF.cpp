@@ -856,6 +856,7 @@ ELF::ELF(IRpFile *file)
 
 		case ELFPrivate::ELF_FORMAT_32SWAP: {
 			// 32-bit, swapped endian.
+			// NOTE: Not swapping the magic number.
 			Elf32_Ehdr *const elf32 = &d->Elf_Header.elf32;
 			elf32->e_type		= __swab16(elf32->e_type);
 			elf32->e_machine	= __swab16(elf32->e_machine);
@@ -875,6 +876,7 @@ ELF::ELF(IRpFile *file)
 
 		case ELFPrivate::ELF_FORMAT_64SWAP: {
 			// 64-bit, swapped endian.
+			// NOTE: Not swapping the magic number.
 			Elf64_Ehdr *const elf64 = &d->Elf_Header.elf64;
 			elf64->e_type		= __swab16(elf64->e_type);
 			elf64->e_machine	= __swab16(elf64->e_machine);
