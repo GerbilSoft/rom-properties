@@ -144,7 +144,9 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			, m_gzDds(nullptr)
 			, m_f_dds(nullptr)
 			, m_romData(nullptr)
+#ifdef BC7_HAS_SSSE3
 			, cpu_flags_old(0)
+#endif /* BC7_HAS_SSSE3 */
 		{ }
 
 		void SetUp(void) final;
