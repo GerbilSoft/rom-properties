@@ -385,11 +385,11 @@ int MachO::loadFieldData(void)
 	static const char *const cpu_tbl[2][19] = {
 		{
 			// 32-bit CPUs
-			nullptr, "VAX", nullptr, nullptr,
-			nullptr, nullptr, "MC680x0", "i386",
-			"MIPS", nullptr, "MC98000", "HPPA",
+			nullptr, "VAX", nullptr, "ROMP",
+			"NS32032", "NS32332", "MC680x0", "i386",
+			"MIPS", "NS32532", "MC98000", "HPPA",
 			"ARM", "MC88000", "SPARC", "i860",
-			"Alpha", nullptr, "PowerPC"
+			"Alpha", "RS/6000", "PowerPC"
 		},
 		{
 			// 64-bit CPUs
