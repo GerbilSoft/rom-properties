@@ -90,7 +90,7 @@ IF(PNG_LIBRARY)
 ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
-ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*benchmark*")
+ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*Benchmark*")
 
 # Copy the reference images to:
 # - bin/ImageDecoder_data/ (TODO: Subdirectory?)
