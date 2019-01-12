@@ -1144,7 +1144,7 @@ int NintendoDS::loadFieldData(void)
 	};
 	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
-	d->fields->addField_bitfield("DS Region",
+	d->fields->addField_bitfield(C_("NintendoDS", "DS Region"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
 	
