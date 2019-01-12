@@ -650,12 +650,19 @@ const char *EXE::systemName(unsigned int type) const
 
 	// New Executable (and Linear Executable) operating systems.
 	static const char *const sysNames_NE[6][4] = {
-		{nullptr, nullptr, nullptr, nullptr},				// NE_OS_UNKNOWN
-		{"IBM OS/2", "OS/2", "OS/2", nullptr},				// NE_OS_OS2
-		{"Microsoft Windows", "Windows", "Windows", nullptr},		// NE_OS_WIN
-		{"European MS-DOS 4.x", "EuroDOS 4.x", "EuroDOS 4.x", nullptr},	// NE_OS_DOS4
-		{"Microsoft Windows", "Windows", "Windows", nullptr},		// NE_OS_WIN386 (TODO)
-		{"Borland Operating System Services", "BOSS", "BOSS", nullptr},	// NE_OS_BOSS
+		// NE_OS_UNKNOWN
+		// NOTE: Windows 1.0 executables have this value.
+		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		// NE_OS_OS2
+		{"IBM OS/2", "OS/2", "OS/2", nullptr},
+		// NE_OS_WIN
+		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		// NE_OS_DOS4
+		{"European MS-DOS 4.x", "EuroDOS 4.x", "EuroDOS 4.x", nullptr},
+		// NE_OS_WIN386 (TODO)
+		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		// NE_OS_BOSS
+		{"Borland Operating System Services", "BOSS", "BOSS", nullptr},
 	};
 
 	switch (d->exeType) {
