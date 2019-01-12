@@ -24,6 +24,7 @@
 // - https://opensource.apple.com/source/xnu/xnu-792/EXTERNAL_HEADERS/mach-o/fat.h.auto.html
 // - https://opensource.apple.com/source/xnu/xnu-792/EXTERNAL_HEADERS/mach-o/loader.h.auto.html
 // - https://opensource.apple.com/source/xnu/xnu-792/osfmk/mach/machine.h.auto.html
+// - https://github.com/file/file/blob/master/magic/Magdir/mach
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__

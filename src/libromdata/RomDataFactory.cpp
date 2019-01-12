@@ -99,6 +99,7 @@ using std::vector;
 #include "Other/Amiibo.hpp"
 #include "Other/ELF.hpp"
 #include "Other/EXE.hpp"
+#include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 
 // Special case for Dreamcast save files.
@@ -296,6 +297,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(MachO, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL),
 
 	// The following formats have 16-bit magic numbers,

@@ -53,6 +53,7 @@ SET(libromdata_SRCS
 	Other/EXE.cpp
 	Other/EXE_NE.cpp
 	Other/EXE_PE.cpp
+	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 
 	data/SegaPublishers.cpp
@@ -181,11 +182,13 @@ SET(libromdata_H
 	Other/ELF.hpp
 	Other/EXE.hpp
 	Other/EXE_p.hpp
+	Other/MachO.hpp
 	Other/NintendoBadge.hpp
 
 	Other/badge_structs.h
 	Other/elf_structs.h
 	Other/exe_structs.h
+	Other/macho_structs.h
 	Other/nfp_structs.h
 
 	data/SegaPublishers.hpp

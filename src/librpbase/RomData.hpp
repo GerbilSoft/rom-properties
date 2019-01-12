@@ -232,6 +232,7 @@ class RomData
 			FTYPE_CORE_DUMP,		// Core Dump
 			FTYPE_AUDIO_FILE,		// Audio file
 			FTYPE_BOOT_SECTOR,		// Boot sector
+			FTYPE_BUNDLE,			// Bundle (Mac OS X)
 
 			FTYPE_LAST			// End of FileType.
 		};

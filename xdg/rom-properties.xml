@@ -414,6 +414,94 @@
   </mime-type>
   -->
 
+  <!-- Mach-O -->
+  <!-- FIXME: Using the standard MIME types breaks KDE. -->
+  <mime-type type="application/x-mach-executable">
+    <comment>Mach-O executable</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="50">
+      <match value="0xFEEDFACE" type="big32" offset="0">
+        <match value="2" type="big32" offset="12"/>
+        <match value="5" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="big32" offset="0">
+        <match value="2" type="big32" offset="12"/>
+        <match value="5" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACE" type="little32" offset="0">
+        <match value="2" type="little32" offset="12"/>
+        <match value="5" type="little32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="little32" offset="0">
+        <match value="2" type="little32" offset="12"/>
+        <match value="5" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-sharedlib">
+    <comment>Mach-O shared library</comment>
+    <sub-class-of type="application/x-sharedlib"/>
+    <generic-icon name="application-x-sharedlib"/>
+    <magic priority="50">
+      <match value="0xFEEDFACE" type="big32" offset="0">
+        <match value="3" type="big32" offset="12"/>
+        <match value="6" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="big32" offset="0">
+        <match value="3" type="big32" offset="12"/>
+        <match value="6" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACE" type="little32" offset="0">
+        <match value="3" type="little32" offset="12"/>
+        <match value="6" type="little32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="little32" offset="0">
+        <match value="3" type="little32" offset="12"/>
+        <match value="6" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-core">
+    <comment>Mach-O core dump</comment>
+    <sub-class-of type="application/x-core"/>
+    <generic-icon name="application-x-core"/>
+    <magic priority="50">
+      <match value="0xFEEDFACE" type="big32" offset="0">
+        <match value="4" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="big32" offset="0">
+        <match value="4" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACE" type="little32" offset="0">
+        <match value="4" type="little32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="little32" offset="0">
+        <match value="4" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <!-- TODO: Is there a more common MIME type for bundles? -->
+  <mime-type type="application/x-mach-bundle">
+    <comment>Mach-O bundle</comment>
+    <sub-class-of type="application/x-archive"/>
+    <generic-icon name="application-x-archive"/>
+    <magic priority="50">
+      <match value="0xFEEDFACE" type="big32" offset="0">
+        <match value="8" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="big32" offset="0">
+        <match value="8" type="big32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACE" type="little32" offset="0">
+        <match value="8" type="little32" offset="12"/>
+      </match>
+      <match value="0xFEEDFACF" type="little32" offset="0">
+        <match value="8" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+
   <!-- NintendoBadge -->
   <!-- FIXME: This is too generic. -->
   <!--
