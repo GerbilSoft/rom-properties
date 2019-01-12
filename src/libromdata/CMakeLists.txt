@@ -68,6 +68,7 @@ SET(libromdata_SRCS
 	data/NintendoLanguage.cpp
 	data/ELFData.cpp
 	data/DX10Formats.cpp
+	data/MachOData.cpp
 
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -203,6 +204,7 @@ SET(libromdata_H
 	data/NintendoLanguage.hpp
 	data/ELFData.hpp
 	data/DX10Formats.hpp
+	data/MachOData.hpp
 
 	disc/WbfsReader.hpp
 	disc/libwbfs.h
