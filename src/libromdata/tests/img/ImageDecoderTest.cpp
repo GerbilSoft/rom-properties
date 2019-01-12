@@ -150,7 +150,8 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			const rp_image *pImgActual);
 
 		// Number of iterations for benchmarks.
-		static const unsigned int BENCHMARK_ITERATIONS = 100000;
+		static const unsigned int BENCHMARK_ITERATIONS = 1000;
+		static const unsigned int BENCHMARK_ITERATIONS_BC7 = 100;
 
 	public:
 		// Image buffers.
@@ -412,40 +413,156 @@ TEST_P(ImageDecoderTest, decodeTest)
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
 
 	// Determine the image type by checking the last 7 characters of the filename.
+	const char *filetype = nullptr;
 	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
 	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
 	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
 		// DDS image
+		filetype = "DDS";
 		m_romData = new DirectDrawSurface(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
 		// PVR/GVR image
+		filetype = "PVR";
 		m_romData = new SegaPVR(m_f_dds);
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// Needs GzFile, a gzip-decompressing IRpFile subclass.
+		filetype = "KTX";
 		m_romData = new KhronosKTX(m_f_dds);
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
+		filetype = "VTF3";
 		m_romData = new ValveVTF3(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
+		filetype = "VTF";
 		m_romData = new ValveVTF(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
-	ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
-	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
+	ASSERT_TRUE(m_romData->isValid()) << "Could not load the " << filetype << " image.";
+	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the " << filetype << " image.";
 
 	// Get the DDS image as an rp_image.
 	const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
-	ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
+	ASSERT_TRUE(img_dds != nullptr) << "Could not load the " << filetype << " image as rp_image.";
 
 	// Compare the image data.
 	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds));
+}
+
+/**
+ * Benchmark an ImageDecoder test.
+ */
+TEST_P(ImageDecoderTest, decodeBenchmark)
+{
+	// Parameterized test.
+	const ImageDecoderTest_mode &mode = GetParam();
+
+	// Open the image as an IRpFile.
+	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
+
+	// NOTE: We can't simply decode the image multiple times.
+	// We have to reopen the RomData subclass every time.
+
+	// Benchmark iterations.
+	// BC7 has fewer iterations because it's more complicated.
+	unsigned int max_iterations;
+	if (mode.dds_gz_filename.find("BC7/") == 0) {
+		// This is BC7.
+		max_iterations = BENCHMARK_ITERATIONS_BC7;
+	} else {
+		// Not BC7.
+		max_iterations = BENCHMARK_ITERATIONS;
+	}
+
+	// Determine the image type by checking the last 7 characters of the filename.
+	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
+	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
+	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
+		// DDS image
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new DirectDrawSurface(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
+
+			// Get the DDS image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
+		// PVR/GVR image
+		m_romData = new SegaPVR(m_f_dds);
+
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new SegaPVR(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the PVR image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the PVR image.";
+
+			// Get the PVR image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the PVR image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+#ifdef ENABLE_GL
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
+		// Khronos KTX image
+		// TODO: Use .zktx format instead of .ktx.gz?
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new KhronosKTX(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the KTX image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the KTX image.";
+
+			// Get the KTX image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the KTX image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+#endif /* ENABLE_GL */
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
+		// Valve Texture File (PS3)
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new ValveVTF3(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VTF3 image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF3 image.";
+
+			// Get the VTF3 image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF3 image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
+		// Valve Texture File
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new ValveVTF(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VTF image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF image.";
+
+			// Get the VTF3 image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else {
+		ASSERT_TRUE(false) << "Unknown image type.";
+	}
 }
 
 /**
@@ -999,6 +1116,9 @@ INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
 extern "C" int gtest_main(int argc, char *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: ImageDecoder tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u (%u for BC7)\n",
+		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS,
+		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS_BC7);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
