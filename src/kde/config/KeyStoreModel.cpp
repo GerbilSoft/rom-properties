@@ -79,6 +79,9 @@ class KeyStoreModelPrivate
 		 * slot might be run *after* the KeyStore is deleted.
 		 */
 		int sectCount;
+
+		// Translated column names.
+		QString columnNames[3];
 };
 
 // Windows-style LOWORD()/HIWORD()/MAKELONG() functions.
@@ -101,7 +104,16 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 	: q_ptr(q)
 	, keyStore(nullptr)
 	, sectCount(0)
-{ }
+{
+	// Translate and cache the column names.
+
+	// tr: Column 0: Key Name.
+	columnNames[0] = U82Q(C_("KeyManagerTab", "Key Name"));
+	// tr: Column 1: Value.
+	columnNames[1] = U82Q(C_("KeyManagerTab", "Value"));
+	// tr: Column 2: Verification status.
+	columnNames[2] = U82Q(C_("KeyManagerTab", "Valid?"));
+}
 
 /**
  * Initialize the style variables.
@@ -419,19 +431,9 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
 
 	switch (role) {
 		case Qt::DisplayRole:
-			switch (section) {
-				case COL_KEY_NAME:
-					// tr: Column 0: Key Name.
-					return U82Q(C_("KeyManagerTab", "Key Name"));
-				case COL_VALUE:
-					// tr: Column 1: Value.
-					return U82Q(C_("KeyManagerTab", "Value"));
-				case COL_ISVALID:
-					// tr: Column 2: Verification status.
-					return U82Q(C_("KeyManagerTab", "Valid?"));
-
-				default:
-					break;
+			if (section >= 0 && section <= 2) {
+				RP_D(const KeyStoreModel);
+				return d->columnNames[section];
 			}
 			break;
 
