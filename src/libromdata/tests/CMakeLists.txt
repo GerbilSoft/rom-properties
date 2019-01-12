@@ -90,7 +90,7 @@ IF(PNG_LIBRARY)
 ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
-ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*benchmark*")
+ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*Benchmark*")
 
 # Copy the reference images to:
 # - bin/ImageDecoder_data/ (TODO: Subdirectory?)
@@ -98,7 +98,7 @@ ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*benchm
 # NOTE: Although the test executable is in bin/, CTest still
 # uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
 # Hence, we have to copy the files to both places.
-FOREACH(test_dir Alpha ARGB Luma RGB S3TC PVR GVR KTX VTF VTF3 tctest)
+FOREACH(test_dir Alpha ARGB Luma RGB S3TC BC7 PVR GVR KTX VTF VTF3 tctest)
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E make_directory
@@ -114,6 +114,7 @@ ENDFOREACH(test_dir ${ImageDecoderTest_dirs})
 FILE(GLOB_RECURSE ImageDecoderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data"
 	img/ImageDecoder_data/*.png
 	img/ImageDecoder_data/*.gz
+	img/ImageDecoder_data/*.dds
 	)
 FOREACH(test_image ${ImageDecoderTest_images})
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD

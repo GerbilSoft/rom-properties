@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ImageDecoder.cpp: Image decoding functions.                             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -662,6 +662,19 @@ class ImageDecoder
 		 */
 		static rp_image *fromETC2_RGB_A1(int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz);
+
+		/* BC7 */
+
+		/**
+		 * Convert a BC7 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf BC7 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromBC7(int width, int height,
+			const uint8_t *img_buf, int img_siz);
 };
 
 /**

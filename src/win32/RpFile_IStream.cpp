@@ -107,6 +107,9 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 						// Otherwise, inflateInit() will crash.
 						m_pZstm = static_cast<z_stream*>(calloc(1, sizeof(z_stream)));
 						if (m_pZstm) {
+							// Make sure the CRC32 table is initialized.
+							get_crc_table();
+
 							int err = inflateInit2(m_pZstm, 16+MAX_WBITS);
 							if (err != Z_OK) {
 								// Error initializing zlib.

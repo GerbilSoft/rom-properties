@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -598,6 +598,9 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC5_TYPELESS:
 			case DXGI_FORMAT_BC5_UNORM:
 			case DXGI_FORMAT_BC5_SNORM:
+			case DXGI_FORMAT_BC7_TYPELESS:
+			case DXGI_FORMAT_BC7_UNORM:
+			case DXGI_FORMAT_BC7_UNORM_SRGB:
 				// 16 pixels compressed into 128 bits. (8bpp)
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
 				break;
@@ -683,6 +686,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC5_UNORM:
 			case DXGI_FORMAT_BC5_SNORM:
 				img = ImageDecoder::fromBC5(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size);
+				break;
+
+			case DXGI_FORMAT_BC7_TYPELESS:
+			case DXGI_FORMAT_BC7_UNORM:
+			case DXGI_FORMAT_BC7_UNORM_SRGB:
+				img = ImageDecoder::fromBC7(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;

@@ -134,6 +134,7 @@ SET(librpbase_SRCS
 	img/ImageDecoder_S3TC.cpp
 	img/ImageDecoder_DC.cpp
 	img/ImageDecoder_ETC1.cpp
+	img/ImageDecoder_BC7.cpp
 	img/un-premultiply.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp

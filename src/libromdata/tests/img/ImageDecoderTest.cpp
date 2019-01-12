@@ -26,9 +26,8 @@
 
 // zlib and libpng
 #include <zlib.h>
-
 #ifdef HAVE_PNG
-#include <png.h>
+# include <png.h>
 #endif /* HAVE_PNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
@@ -63,6 +62,19 @@ using namespace LibRpBase;
 
 // DirectDraw Surface structs.
 #include "Texture/dds_structs.h"
+
+#include "cpu_dispatch.h"
+#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
+// MSVC always provides the intrinsics.
+// For GCC, since we're using inlines, we have to have
+// gcc-4.4 to enable per-function optimization.
+// TODO: Minimum clang version.
+# if defined(_MSC_VER) || defined(__clang__) || \
+     (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)))
+#  define BC7_HAS_SSSE3 1
+#  include "cpuflags_x86.h"
+# endif /* _MSC_VER || __GNUC__ */
+#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
 // C includes.
 #include <stdint.h>
@@ -122,8 +134,8 @@ struct ImageDecoderTest_mode
 };
 
 // Maximum file size for images.
-static const int64_t MAX_DDS_IMAGE_FILESIZE = 2*1024*1024;
-static const int64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
+static const size_t MAX_DDS_IMAGE_FILESIZE = 3*1024*1024;
+static const size_t MAX_PNG_IMAGE_FILESIZE = 2*1024*1024;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 {
@@ -133,6 +145,9 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			, m_gzDds(nullptr)
 			, m_f_dds(nullptr)
 			, m_romData(nullptr)
+#ifdef BC7_HAS_SSSE3
+			, cpu_flags_old(0)
+#endif /* BC7_HAS_SSSE3 */
 		{ }
 
 		void SetUp(void) final;
@@ -151,7 +166,8 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			const rp_image *pImgActual);
 
 		// Number of iterations for benchmarks.
-		static const unsigned int BENCHMARK_ITERATIONS = 100000;
+		static const unsigned int BENCHMARK_ITERATIONS = 1000;
+		static const unsigned int BENCHMARK_ITERATIONS_BC7 = 100;
 
 	public:
 		// Image buffers.
@@ -169,6 +185,11 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		RpMemFile *m_f_dds;
 		RomData *m_romData;
 
+#ifdef BC7_HAS_SSSE3
+		// CPU flags to save and restore.
+		uint32_t cpu_flags_old;
+#endif /* BC7_HAS_SSSE3 */
+
 	public:
 		/** Test case parameters. **/
 
@@ -184,6 +205,16 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		 * @param path Pathname.
 		 */
 		static inline void replace_slashes(string &path);
+
+		/**
+		 * Internal test function.
+		 */
+		void decodeTest_internal(void);
+
+		/**
+		 * Internal benchmark function.
+		 */
+		void decodeBenchmark_internal(void);
 };
 
 /**
@@ -218,6 +249,11 @@ inline void ImageDecoderTest::replace_slashes(string &path)
  */
 void ImageDecoderTest::SetUp(void)
 {
+#ifdef BC7_HAS_SSSE3
+	// Save CPU flags.
+	cpu_flags_old = RP_CPU_Flags;
+#endif /* BC7_HAS_SSSE3 */
+
 	if (::testing::UnitTest::GetInstance()->current_test_info()->value_param() == nullptr) {
 		// Not a parameterized test.
 		return;
@@ -312,6 +348,11 @@ void ImageDecoderTest::TearDown(void)
 		gzclose_r(m_gzDds);
 		m_gzDds = nullptr;
 	}
+
+#ifdef BC7_HAS_SSSE3
+	// Restore CPU flags.
+	RP_CPU_Flags = cpu_flags_old;
+#endif /* BC7_HAS_SSSE3 */
 }
 
 /**
@@ -373,23 +414,30 @@ void ImageDecoderTest::Compare_RpImage(
 
 	// Compare the two images.
 	// TODO: rp_image::operator==()?
-	const uint8_t *pBitsExpected = static_cast<const uint8_t*>(pImgExpected->bits());
-	const uint8_t *pBitsActual   = static_cast<const uint8_t*>(pImgActual->bits());
-	const int row_bytes = pImgExpected->row_bytes();
-	const int stride_expected = pImgExpected->stride();
-	const int stride_actual   = pImgActual->stride();
-	for (unsigned int y = static_cast<unsigned int>(pImgExpected->height()); y > 0; y--) {
-		ASSERT_EQ(0, memcmp(pBitsExpected, pBitsActual, row_bytes)) <<
-			"Decoded image does not match the expected PNG image.";
-		pBitsExpected += stride_expected;
-		pBitsActual   += stride_actual;
+	const uint32_t *pBitsExpected = static_cast<const uint32_t*>(pImgExpected->bits());
+	const uint32_t *pBitsActual   = static_cast<const uint32_t*>(pImgActual->bits());
+	const int stride_diff_exp = (pImgExpected->stride() - pImgExpected->row_bytes()) / sizeof(uint32_t);
+	const int stride_diff_act = (pImgActual->stride() - pImgActual->row_bytes()) / sizeof(uint32_t);
+	const unsigned int width  = static_cast<unsigned int>(pImgExpected->width());
+	const unsigned int height = static_cast<unsigned int>(pImgExpected->height());
+	for (unsigned int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < width; x++, pBitsExpected++, pBitsActual++) {
+			if (*pBitsExpected != *pBitsActual) {
+				printf("ERR: (%u,%u): expected %08X, got %08X\n",
+					x, y, *pBitsExpected, *pBitsActual);
+			}
+			ASSERT_EQ(*pBitsExpected, *pBitsActual) <<
+				"Decoded image does not match the expected PNG image.";
+		}
+		pBitsExpected += stride_diff_exp;
+		pBitsActual   += stride_diff_act;
 	}
 }
 
 /**
- * Run an ImageDecoder test.
+ * Internal test function.
  */
-TEST_P(ImageDecoderTest, decodeTest)
+void ImageDecoderTest::decodeTest_internal(void)
 {
 	// Parameterized test.
 	const ImageDecoderTest_mode &mode = GetParam();
@@ -406,40 +454,234 @@ TEST_P(ImageDecoderTest, decodeTest)
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
 
 	// Determine the image type by checking the last 7 characters of the filename.
+	const char *filetype = nullptr;
 	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
-	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz")) {
+	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
+	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
 		// DDS image
+		filetype = "DDS";
 		m_romData = new DirectDrawSurface(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
 		// PVR/GVR image
+		filetype = "PVR";
 		m_romData = new SegaPVR(m_f_dds);
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// Needs GzFile, a gzip-decompressing IRpFile subclass.
+		filetype = "KTX";
 		m_romData = new KhronosKTX(m_f_dds);
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
+		filetype = "VTF3";
 		m_romData = new ValveVTF3(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
+		filetype = "VTF";
 		m_romData = new ValveVTF(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
-	ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
-	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
+	ASSERT_TRUE(m_romData->isValid()) << "Could not load the " << filetype << " image.";
+	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the " << filetype << " image.";
 
 	// Get the DDS image as an rp_image.
 	const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
-	ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
+	ASSERT_TRUE(img_dds != nullptr) << "Could not load the " << filetype << " image as rp_image.";
 
 	// Compare the image data.
 	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds));
 }
+
+/**
+ * Run an ImageDecoder test.
+ */
+TEST_P(ImageDecoderTest, decodeTest)
+{
+#ifdef BC7_HAS_SSSE3
+	// Temporarily disable all CPU flags.
+	RP_CPU_Flags = 0;
+#endif /* BC7_HAS_SSSE3 */
+
+	ASSERT_NO_FATAL_FAILURE(decodeTest_internal());
+}
+
+#ifdef BC7_HAS_SSSE3
+/**
+ * Run an ImageDecoder test.
+ * (SSSE3 optimizations enabled)
+ */
+TEST_P(ImageDecoderTest, decodeTest_ssse3)
+{
+	// NOTE: Only for BC7 tests right now.
+	const ImageDecoderTest_mode &mode = GetParam();
+	if (mode.dds_gz_filename.find("BC7/") != 0) {
+		// Not a BC7 test.
+		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping benchmark.\n");
+		return;
+	} else if (!RP_CPU_HasSSSE3()) {
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
+		return;
+	}
+
+	// Temporarily disable all CPU flags except for SSSE3.
+	RP_CPU_Flags = RP_CPUFLAG_X86_SSSE3;
+
+	ASSERT_NO_FATAL_FAILURE(decodeTest_internal());
+}
+#endif /* BC7_HAS_SSSE3 */
+
+/**
+ * Internal benchmark function.
+ */
+void ImageDecoderTest::decodeBenchmark_internal(void)
+{
+	// Parameterized test.
+	const ImageDecoderTest_mode &mode = GetParam();
+
+	// Open the image as an IRpFile.
+	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
+
+	// NOTE: We can't simply decode the image multiple times.
+	// We have to reopen the RomData subclass every time.
+
+	// Benchmark iterations.
+	// BC7 has fewer iterations because it's more complicated.
+	unsigned int max_iterations;
+	if (mode.dds_gz_filename.find("BC7/") == 0) {
+		// This is BC7.
+		max_iterations = BENCHMARK_ITERATIONS_BC7;
+	} else {
+		// Not BC7.
+		max_iterations = BENCHMARK_ITERATIONS;
+	}
+
+	// Determine the image type by checking the last 7 characters of the filename.
+	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
+	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
+	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
+		// DDS image
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new DirectDrawSurface(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
+
+			// Get the DDS image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
+		// PVR/GVR image
+		m_romData = new SegaPVR(m_f_dds);
+
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new SegaPVR(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the PVR image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the PVR image.";
+
+			// Get the PVR image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the PVR image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+#ifdef ENABLE_GL
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
+		// Khronos KTX image
+		// TODO: Use .zktx format instead of .ktx.gz?
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new KhronosKTX(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the KTX image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the KTX image.";
+
+			// Get the KTX image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the KTX image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+#endif /* ENABLE_GL */
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
+		// Valve Texture File (PS3)
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new ValveVTF3(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VTF3 image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF3 image.";
+
+			// Get the VTF3 image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF3 image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
+		// Valve Texture File
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new ValveVTF(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VTF image.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF image.";
+
+			// Get the VTF3 image as an rp_image.
+			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF image as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else {
+		ASSERT_TRUE(false) << "Unknown image type.";
+	}
+}
+
+/**
+ * Benchmark an ImageDecoder test.
+ * (SSSE3 optimizations disabled)
+ */
+TEST_P(ImageDecoderTest, decodeBenchmark)
+{
+#ifdef BC7_HAS_SSSE3
+	// Temporarily disable all CPU flags.
+	RP_CPU_Flags = 0;
+#endif /* BC7_HAS_SSSE3 */
+
+	ASSERT_NO_FATAL_FAILURE(decodeBenchmark_internal());
+}
+
+#ifdef BC7_HAS_SSSE3
+/**
+ * Benchmark an ImageDecoder test.
+ * (SSSE3 optimizations enabled)
+ */
+TEST_P(ImageDecoderTest, decodeBenchmark_ssse3)
+{
+	// NOTE: Only for BC7 tests right now.
+	const ImageDecoderTest_mode &mode = GetParam();
+	if (mode.dds_gz_filename.find("BC7/") != 0) {
+		// Not a BC7 test.
+		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping benchmark.\n");
+		return;
+	} else if (!RP_CPU_HasSSSE3()) {
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
+		return;
+	}
+
+	// Temporarily disable all CPU flags except for SSSE3.
+	RP_CPU_Flags = RP_CPUFLAG_X86_SSSE3;
+
+	ASSERT_NO_FATAL_FAILURE(decodeBenchmark_internal());
+}
+#endif /* BC7_HAS_SSSE3 */
 
 /**
  * Test case suffix generator.
@@ -953,6 +1195,36 @@ INSTANTIATE_TEST_CASE_P(TCtest_S2TC, ImageDecoderTest,
 			"tctest/example-dxt5.s2tc.dds.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+
+// BC7 tests.
+INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"BC7/w5_grass200_abd_a.dds.gz",
+			"BC7/w5_grass200_abd_a.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_grass201_abd.dds.gz",
+			"BC7/w5_grass201_abd.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_grass206_abd.dds.gz",
+			"BC7/w5_grass206_abd.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_rock805_abd.dds.gz",
+			"BC7/w5_rock805_abd.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_rock805_nrm.dds.gz",
+			"BC7/w5_rock805_nrm.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_rope801_prm.dds",
+			"BC7/w5_rope801_prm.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_sand504_abd_a.dds.gz",
+			"BC7/w5_sand504_abd_a.png"),
+		ImageDecoderTest_mode(
+			"BC7/w5_wood503_prm.dds.gz",
+			"BC7/w5_wood503_prm.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 } }
 
 /**
@@ -962,10 +1234,15 @@ INSTANTIATE_TEST_CASE_P(TCtest_S2TC, ImageDecoderTest,
 extern "C" int gtest_main(int argc, char *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: ImageDecoder tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u (%u for BC7)\n",
+		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS,
+		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS_BC7);
 	fflush(nullptr);
 
-	// Make sure the CRC32 table is initialized.
-	get_crc_table();
+#ifdef BC7_HAS_SSSE3
+	// Initialize CPU flags.
+	RP_CPU_InitCPUFlags();
+#endif /* BC7_HAS_SSSE3 */
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);

@@ -576,6 +576,9 @@ void RpFile::init(void)
 							// underlying Windows handle.
 							int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
 							if (gzfd_dup >= 0) {
+								// Make sure the CRC32 table is initialized.
+								get_crc_table();
+
 								d->gzfd = gzdopen(gzfd_dup, "r");
 								if (!d->gzfd) {
 									// gzdopen() failed.

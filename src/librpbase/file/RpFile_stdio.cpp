@@ -265,6 +265,9 @@ void RpFile::init(void)
 						// Uncompressed size looks valid.
 						d->gzsz = (int64_t)uncomp_sz;
 
+						// Make sure the CRC32 table is initialized.
+						get_crc_table();
+
 						// Open the file with gzdopen().
 						::rewind(d->file.get());
 						::fflush(d->file.get());
