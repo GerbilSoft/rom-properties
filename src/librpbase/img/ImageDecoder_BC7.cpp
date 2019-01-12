@@ -37,6 +37,22 @@
 #  include "cpuflags_x86.h"
 // SSSE3 headers.
 #  if defined(__GNUC__) && !defined(__clang__)
+// gcc-4.8's tmmintrin.h fails if __SSSE3__ is not defined.
+#   ifndef __SSSE3__
+#    define __SSSE3__ 1
+#   endif
+#   ifndef __SSE3__
+#    define __SSE3__ 1
+#   endif
+#   ifndef __SSE2__
+#    define __SSE2__ 1
+#   endif
+#   ifndef __SSE__
+#    define __SSE__ 1
+#   endif
+#   ifndef __MMX__
+#    define __MMX__ 1
+#   endif
 #   pragma GCC push_options
 #   pragma GCC target("ssse3")
 #  endif /* defined(__GNUC__) && !defined(__clang__) */
