@@ -487,67 +487,95 @@ int MachO::loadFieldData(void)
 		return 0;
 	}
 
-	const mach_header *const machHeader = &d->machHeaders[0];
-	int machFormat = d->machFormats[0];
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	// Maximum of 4 fields per architecture.
+	const int n_tabs = (int)sizeof(d->machHeaders.size());
+	d->fields->reserve(4*n_tabs);
+	d->fields->reserveTabs(n_tabs);
 
-	// Executable format.
-	static const char *const exec_type_tbl[] = {
-		NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
-		NOP_C_("RomData|ExecType", "64-bit Little Endian"),
-		NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
-		NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
-	};
-	if (machFormat > MachOPrivate::MACH_FORMAT_UNKNOWN &&
-	    machFormat < ARRAY_SIZE(exec_type_tbl))
+	auto fmtIter = d->machFormats.cbegin();
+	int i = 0;
+	for (auto hdrIter = d->machHeaders.cbegin();
+	     hdrIter != d->machHeaders.cend(); ++hdrIter, ++fmtIter, i++)
 	{
-		d->fields->addField_string(C_("MachO", "Format"),
-			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[machFormat]));
-	} else {
-		// TODO: Show individual values.
-		// NOTE: This shouldn't happen...
-		d->fields->addField_string(C_("MachO", "Format"),
-			C_("RomData", "Unknown"));
-	}
+		const mach_header *const machHeader = &(*hdrIter);
+		const int machFormat = *fmtIter;
 
-	// CPU type.
-	const char *const s_cpu = MachOData::lookup_cpu_type(machHeader->cputype);
-	if (s_cpu) {
-		d->fields->addField_string(C_("Mach-O", "CPU"), s_cpu);
-	} else {
-		d->fields->addField_string(C_("Mach-O", "CPU"),
-			rp_sprintf(C_("ELF", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
-	}
+		// Use the CPU name for the tab title.
+		const char *const s_cpu = MachOData::lookup_cpu_type(machHeader->cputype);
 
-	// CPU subtype.
-	const char *const s_cpu_subtype = MachOData::lookup_cpu_subtype(
-		machHeader->cputype, machHeader->cpusubtype);
-	if (s_cpu_subtype) {
-		d->fields->addField_string(C_("Mach-O", "CPU Subtype"), s_cpu_subtype);
-	}
+		// TODO: Change addTab() behavior to set the first tab's name?
+		if (i == 0) {
+			if (s_cpu) {
+				d->fields->setTabName(i, s_cpu);
+			} else {
+				d->fields->setTabName(i,
+					rp_sprintf("0x%08X", machHeader->cputype).c_str());
+			}
+		} else {
+			if (s_cpu) {
+				d->fields->addTab(s_cpu);
+			} else {
+				d->fields->addTab(rp_sprintf("0x%08X", machHeader->cputype).c_str());
+			}
+		}
 
-	// Flags.
-	// I/O support bitfield.
-	static const char *const flags_bitfield_names[] = {
-		// 0x00000000
-		"NoUndefs", "IncrLink", "DyldLink", "BindAtLoad",
-		// 0x00000010
-		"Prebound", "SplitSegs", "LazyInit", "TwoLevel",
-		// 0x00000100
-		"ForceFlat", "NoMultiDefs", "NoFixPrebinding", "Prebindable",
-		// 0x00001000
-		"AllModsBound", "Subsections", "Canonical", "WeakDefines",
-		// 0x00010000
-		"BindsToWeak", "StackExec", "RootSafe", "SetuidSafe",
-		// 0x00100000
-		"NoReexport", "PIE", "DeadStrip", "TLVDescriptors",
-		// 0x01000000
-		"NoHeapExec", "AppExtSafe"
-	};
-	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
-		flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
-	d->fields->addField_bitfield(C_("MachO", "Flags"),
-		v_flags_bitfield_names, 3, machHeader->flags);
+		// Executable format.
+		static const char *const exec_type_tbl[] = {
+			NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
+			NOP_C_("RomData|ExecType", "64-bit Little Endian"),
+			NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
+			NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
+		};
+		if (machFormat > MachOPrivate::MACH_FORMAT_UNKNOWN &&
+		    machFormat < ARRAY_SIZE(exec_type_tbl))
+		{
+			d->fields->addField_string(C_("MachO", "Format"),
+				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[machFormat]));
+		} else {
+			// TODO: Show individual values.
+			// NOTE: This shouldn't happen...
+			d->fields->addField_string(C_("MachO", "Format"),
+				C_("RomData", "Unknown"));
+		}
+
+		// CPU type.
+		if (s_cpu) {
+			d->fields->addField_string(C_("Mach-O", "CPU"), s_cpu);
+		} else {
+			d->fields->addField_string(C_("Mach-O", "CPU"),
+				rp_sprintf(C_("ELF", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
+		}
+
+		// CPU subtype.
+		const char *const s_cpu_subtype = MachOData::lookup_cpu_subtype(
+			machHeader->cputype, machHeader->cpusubtype);
+		if (s_cpu_subtype) {
+			d->fields->addField_string(C_("Mach-O", "CPU Subtype"), s_cpu_subtype);
+		}
+
+		// Flags.
+		// I/O support bitfield.
+		static const char *const flags_bitfield_names[] = {
+			// 0x00000000
+			"NoUndefs", "IncrLink", "DyldLink", "BindAtLoad",
+			// 0x00000010
+			"Prebound", "SplitSegs", "LazyInit", "TwoLevel",
+			// 0x00000100
+			"ForceFlat", "NoMultiDefs", "NoFixPrebinding", "Prebindable",
+			// 0x00001000
+			"AllModsBound", "Subsections", "Canonical", "WeakDefines",
+			// 0x00010000
+			"BindsToWeak", "StackExec", "RootSafe", "SetuidSafe",
+			// 0x00100000
+			"NoReexport", "PIE", "DeadStrip", "TLVDescriptors",
+			// 0x01000000
+			"NoHeapExec", "AppExtSafe"
+		};
+		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
+			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+		d->fields->addField_bitfield(C_("MachO", "Flags"),
+			v_flags_bitfield_names, 3, machHeader->flags);
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
