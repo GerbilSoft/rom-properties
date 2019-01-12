@@ -135,7 +135,8 @@ static uint8_t interpolate_component(unsigned int bits, unsigned int index, uint
 static inline int get_mode(uint32_t dword0)
 {
 	// TODO: ctz/_BitScanForward?
-	for (int i = 0; i < 8; i++, dword0 >>= 1) {
+	// Benchmarks showed it was *slower* than this function...
+	for (unsigned int i = 0; i < 8; i++, dword0 >>= 1) {
 		if (dword0 & 1) {
 			// Found the mode number.
 			return i;
