@@ -446,7 +446,7 @@ int MachO::loadFieldData(void)
 		case CPU_TYPE_I386: {
 			// 32-bit
 			if (!abi) {
-				switch (cpu_subtype) {
+				switch (cpu_subtype & 0xF) {
 					default:
 						break;
 					case CPU_SUBTYPE_386:
@@ -461,21 +461,94 @@ int MachO::loadFieldData(void)
 					case CPU_SUBTYPE_PENT:
 						s_cpu_subtype = "Pentium";
 						break;
+
 					case CPU_SUBTYPE_INTEL(6, 0):
-						s_cpu_subtype = "i686";
+						// i686 class
+						switch (cpu_subtype >> 4) {
+							default:
+							case 0:
+								s_cpu_subtype = "i686";
+								break;
+							case 1:
+								s_cpu_subtype = "Pentium Pro";
+								break;
+							case 2:
+								s_cpu_subtype = "Pentium II (M2)";
+								break;
+							case 3:
+								s_cpu_subtype = "Pentium II (M3)";
+								break;
+							case 4:
+								s_cpu_subtype = "Pentium II (M4)";
+								break;
+							case 5:
+								s_cpu_subtype = "Pentium II (M5)";
+								break;
+						}
 						break;
-					case CPU_SUBTYPE_PENTPRO:
-						s_cpu_subtype = "Pentium Pro";
+
+					case CPU_SUBTYPE_CELERON:
+						// Celeron
+						if (cpu_subtype != CPU_SUBTYPE_CELERON_MOBILE) {
+							s_cpu_subtype = "Celeron";
+						} else {
+							s_cpu_subtype = "Celeron (Mobile)";
+						}
 						break;
-					case CPU_SUBTYPE_PENTII_M3:
-						s_cpu_subtype = "Pentium II (M3)";
+
+					case CPU_SUBTYPE_PENTIII:
+						// Pentium III
+						switch (cpu_subtype >> 4) {
+							default:
+							case 0:
+								s_cpu_subtype = "Pentium III";
+								break;
+							case 1:
+								s_cpu_subtype = "Pentium III-M";
+								break;
+							case 2:
+								s_cpu_subtype = "Pentium III Xeon";
+								break;
+						}
 						break;
-					case CPU_SUBTYPE_PENTII_M5:
-						s_cpu_subtype = "Pentium II (M5)";
+
+					case CPU_SUBTYPE_PENTIUM_M:
+						s_cpu_subtype = "Pentium M";
+						break;
+
+					case CPU_SUBTYPE_PENTIUM_4:
+						s_cpu_subtype = "Pentium 4";
+						break;
+
+					case CPU_SUBTYPE_ITANIUM:
+						if (cpu_subtype == CPU_SUBTYPE_ITANIUM_2) {
+							s_cpu_subtype = "Itanium 2";
+						} else {
+							s_cpu_subtype = "Itanium";
+						}
+						break;
+
+					case CPU_SUBTYPE_XEON:
+						if (cpu_subtype != CPU_SUBTYPE_XEON_MP) {
+							s_cpu_subtype = "Xeon MP";
+						} else {
+							s_cpu_subtype = "Xeon MP";
+						}
+						break;
+				}
+			} else {
+				switch (cpu_subtype) {
+					default:
+						break;
+					case CPU_SUBTYPE_AMD64_ARCH1:
+						s_cpu_subtype = "arch1";
+						break;
+					case CPU_SUBTYPE_AMD64_HASWELL:
+						s_cpu_subtype = "Haswell";
 						break;
 				}
 			}
-			// TODO: 64-bit subtypes?
+
 			break;
 		}
 
@@ -512,6 +585,24 @@ int MachO::loadFieldData(void)
 			};
 			if (cpu_subtype < ARRAY_SIZE(cpu_subtype_m88k_tbl)) {
 				s_cpu_subtype = cpu_subtype_m88k_tbl[cpu_subtype];
+			}
+			break;
+		}
+
+		case CPU_TYPE_ARM: {
+			if (abi && cpu_subtype == CPU_SUBTYPE_ARM64_V8) {
+				s_cpu_subtype = "ARMv8";
+			} else if (!abi) {
+				static const char *const cpu_subtype_arm_tbl[] = {
+					nullptr, nullptr, nullptr, nullptr,
+					nullptr, "ARMv4T", "ARMv6", "ARMv5TEJ",
+					"XScale", "ARMv7", "ARMv7f", "ARMv7s",
+					"ARMv7k", "ARMv8", "ARMv6-M", "ARMv7-M",
+					"ARMv7E-M"
+				};
+				if (cpu_subtype < ARRAY_SIZE(cpu_subtype_arm_tbl)) {
+					s_cpu_subtype = cpu_subtype_arm_tbl[cpu_subtype];
+				}
 			}
 			break;
 		}
