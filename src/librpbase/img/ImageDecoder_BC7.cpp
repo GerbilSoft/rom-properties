@@ -64,6 +64,13 @@
 # endif /* _MSC_VER || __GNUC__ */
 #endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
+// TODO: Move to common.h?
+#if defined(__GNUC__) || defined(__clang__)
+# define ATTR_TARGET(str) __attribute__((target(str)))
+#else
+# define ATTR_TARGET(str)
+#endif
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
@@ -297,7 +304,7 @@ static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
  * @param rotation_mode Rotation mode.
  * @param tileBuf Tile buffer.
  */
-__attribute__((target("ssse3")))
+ATTR_TARGET("ssse3")
 static inline void rotate_components_SSSE3(uint8_t rotation_mode, argb32_t tileBuf[16])
 {
 	// FIXME: Verify the masks.
