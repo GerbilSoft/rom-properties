@@ -1141,12 +1141,33 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields->reserve(10);	// Maximum of 11 fields.
 
 	d->fields->reserveTabs(2);
 	d->fields->setTabName(0, "ELF");
 
 	// NOTE: Executable type is used as File Type.
+
+	// Bitness/Endianness. (consolidated as "format")
+	static const char *const exec_type_tbl[] = {
+		C_("RomData|ExecType", "32-bit Little-Endian"),
+		C_("RomData|ExecType", "64-bit Little-Endian"),
+		C_("RomData|ExecType", "32-bit Big-Endian"),
+		C_("RomData|ExecType", "64-bit Big-Endian"),
+	};
+	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
+	    d->elfFormat < ARRAY_SIZE(exec_type_tbl))
+	{
+		d->fields->addField_string(C_("ELF", "Format"),
+			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[d->elfFormat]));
+	}
+	else
+	{
+		// TODO: Show individual values.
+		// NOTE: This shouldn't happen...
+		d->fields->addField_string(C_("ELF", "Format"),
+			C_("RomData", "Unknown"));
+	}
 
 	// CPU.
 	const char *const cpu = ELFData::lookup_cpu(primary->e_machine);
@@ -1354,27 +1375,6 @@ int ELF::loadFieldData(void)
 	if (!d->isWiiU) {
 		d->fields->addField_string_numeric(C_("ELF", "ABI Version"),
 			primary->e_osabiversion);
-	}
-
-	// Bitness/Endianness. (consolidated as "format")
-	static const char *const elf_formats[] = {
-		"32-bit Little-Endian",
-		"64-bit Little-Endian",
-		"32-bit Big-Endian",
-		"64-bit Big-Endian",
-	};
-	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
-	    d->elfFormat < ARRAY_SIZE(elf_formats))
-	{
-		d->fields->addField_string(C_("ELF", "Format"),
-			elf_formats[d->elfFormat]);
-	}
-	else
-	{
-		// TODO: Show individual values.
-		// NOTE: This shouldn't happen...
-		d->fields->addField_string(C_("ELF", "Format"),
-			C_("RomData", "Unknown"));
 	}
 
 	// Linkage.
