@@ -611,11 +611,17 @@ rom_data_view_init_header_row(RomDataView *page)
 
 	// System name and file type.
 	// TODO: System logo and/or game title?
-	const char *const systemName = page->romData->systemName(
+	const char *systemName = page->romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *const fileType = page->romData->fileType_string();
+	const char *fileType = page->romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
+	if (!systemName) {
+		systemName = C_("RomDataView", "(unknown system)");
+	}
+	if (!fileType) {
+		fileType = C_("RomDataView", "(unknown filetype)");
+	}
 
 	const string sysInfo = rp_sprintf_p(
 		// tr: %1$s == system name, %2$s == file type
