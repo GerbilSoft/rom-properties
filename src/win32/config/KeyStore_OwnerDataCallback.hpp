@@ -32,6 +32,8 @@ class KeyStore_OwnerDataCallback : public LibWin32Common::ComBase<IOwnerDataCall
 {
 	public:
 		explicit KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore);
+	protected:
+		virtual ~KeyStore_OwnerDataCallback() { }
 
 	private:
 		typedef LibWin32Common::ComBase<IOwnerDataCallback> super;

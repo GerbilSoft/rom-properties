@@ -50,6 +50,7 @@ RP_ShellPropSheetExt : public LibWin32Common::ComBase2<IShellExtInit, IShellProp
 {
 	public:
 		RP_ShellPropSheetExt();
+	protected:
 		virtual ~RP_ShellPropSheetExt();
 
 	private:

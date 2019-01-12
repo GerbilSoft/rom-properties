@@ -44,6 +44,7 @@ RP_ExtractIcon : public LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IE
 {
 	public:
 		RP_ExtractIcon();
+	protected:
 		virtual ~RP_ExtractIcon();
 
 	private:

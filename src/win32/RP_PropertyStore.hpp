@@ -44,6 +44,7 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 {
 	public:
 		RP_PropertyStore();
+	protected:
 		virtual ~RP_PropertyStore();
 
 	private:

@@ -43,6 +43,7 @@ RP_ExtractImage : public LibWin32Common::ComBase2<IPersistFile, IExtractImage2>
 {
 	public:
 		RP_ExtractImage();
+	protected:
 		virtual ~RP_ExtractImage();
 
 	private:

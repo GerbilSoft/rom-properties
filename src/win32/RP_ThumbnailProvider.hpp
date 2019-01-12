@@ -49,6 +49,7 @@ RP_ThumbnailProvider : public LibWin32Common::ComBase2<IInitializeWithStream, IT
 {
 	public:
 		RP_ThumbnailProvider();
+	protected:
 		virtual ~RP_ThumbnailProvider();
 
 	private:

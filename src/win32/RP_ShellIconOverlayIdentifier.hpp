@@ -44,6 +44,7 @@ RP_ShellIconOverlayIdentifier : public LibWin32Common::ComBase<IShellIconOverlay
 {
 	public:
 		RP_ShellIconOverlayIdentifier();
+	protected:
 		virtual ~RP_ShellIconOverlayIdentifier();
 
 	private:

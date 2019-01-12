@@ -41,6 +41,7 @@ class IStreamWrapper : public LibWin32Common::ComBase<IStream>
 		 * @param file IRpFile.
 		 */
 		explicit IStreamWrapper(IRpFile *file);
+	protected:
 		virtual ~IStreamWrapper();
 
 	private:
