@@ -841,7 +841,8 @@ ELF::ELF(IRpFile *file)
 	// Swap endianness if needed.
 	switch (d->elfFormat) {
 		default:
-			// Unsupported...
+			// Should not get here...
+			assert(!"Should not get here...");
 			d->isValid = false;
 			d->elfFormat = ELFPrivate::ELF_FORMAT_UNKNOWN;
 			delete d->file;
