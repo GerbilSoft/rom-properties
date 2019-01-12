@@ -730,10 +730,12 @@ public:
 ROMOutput::ROMOutput(const RomData *romdata) : romdata(romdata) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
-	const char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
-	const char *fileType = romdata->fileType_string();
+	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const char *const fileType = romdata->fileType_string();
+	assert(systemName != nullptr);
+	assert(fileType != nullptr);
 
-	os << "-- " << (sysName ? sysName : "(unknown system)") <<
+	os << "-- " << (systemName ? systemName : "(unknown system)") <<
 	      ' ' << (fileType ? fileType : "(unknown filetype)") <<
 	      " detected" << endl;
 	os << FieldsOutput(*(romdata->fields())) << endl;
@@ -784,12 +786,14 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
 
-	const char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
-	const char *fileType = romdata->fileType_string();
+	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const char *const fileType = romdata->fileType_string();
+	assert(systemName != nullptr);
+	assert(fileType != nullptr);
 
 	os << "{\"system\":";
-	if (sysName) {
-		os << JSONString(sysName);
+	if (systemName) {
+		os << JSONString(systemName);
 	} else {
 		os << "\"unknown\"";
 	}
