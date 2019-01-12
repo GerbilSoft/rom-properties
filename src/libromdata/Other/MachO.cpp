@@ -356,7 +356,7 @@ int MachO::loadFieldData(void)
 
 	// Mach-O header.
 	const mach_header *const machHeader = &d->machHeader;
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields->reserve(3);	// Maximum of 3 fields.
 
 	// Executable format.
 	static const char *const exec_type_tbl[] = {
@@ -414,7 +414,128 @@ int MachO::loadFieldData(void)
 	}
 
 	// CPU subtype.
-	// TODO
+	const unsigned int cpu_subtype = (machHeader->cpusubtype & 0xFFFFFF);
+	const char *s_cpu_subtype = nullptr;
+	switch (cpu) {
+		default:
+			break;
+
+		case CPU_TYPE_VAX: {
+			static const char *const cpu_subtype_vax_tbl[] = {
+				nullptr, "VAX-11/780", "VAX-11/785", "VAX-11/750",
+				"VAX-11/730", "MicroVAX I", "MicroVAX II", "VAX 8200",
+				"VAX 8500", "VAX 8600", "VAX 8650", "VAX 8800",
+				"MicroVAX III"
+			};
+			if (cpu_subtype < ARRAY_SIZE(cpu_subtype_vax_tbl)) {
+				s_cpu_subtype = cpu_subtype_vax_tbl[cpu_subtype];
+			}
+			break;
+		}
+
+		case CPU_TYPE_MC680x0: {
+			static const char *const cpu_subtype_m68k_tbl[] = {
+				nullptr, nullptr, "MC68040", "MC68030"
+			};
+			if (cpu_subtype < ARRAY_SIZE(cpu_subtype_m68k_tbl)) {
+				s_cpu_subtype = cpu_subtype_m68k_tbl[cpu_subtype];
+			}
+			break;
+		}
+
+		case CPU_TYPE_I386: {
+			// 32-bit
+			if (!abi) {
+				switch (cpu_subtype) {
+					default:
+						break;
+					case CPU_SUBTYPE_386:
+						s_cpu_subtype = "i386";
+						break;
+					case CPU_SUBTYPE_486:
+						s_cpu_subtype = "i486";
+						break;
+					case CPU_SUBTYPE_486SX:
+						s_cpu_subtype = "i486SX";
+						break;
+					case CPU_SUBTYPE_PENT:
+						s_cpu_subtype = "Pentium";
+						break;
+					case CPU_SUBTYPE_INTEL(6, 0):
+						s_cpu_subtype = "i686";
+						break;
+					case CPU_SUBTYPE_PENTPRO:
+						s_cpu_subtype = "Pentium Pro";
+						break;
+					case CPU_SUBTYPE_PENTII_M3:
+						s_cpu_subtype = "Pentium II (M3)";
+						break;
+					case CPU_SUBTYPE_PENTII_M5:
+						s_cpu_subtype = "Pentium II (M5)";
+						break;
+				}
+			}
+			// TODO: 64-bit subtypes?
+			break;
+		}
+
+		case CPU_TYPE_MIPS: {
+			static const char *const cpu_subtype_mips_tbl[] = {
+				nullptr, "R2300", "R2600", "R2800",
+				"R2000a", "R2000", "R3000a", "R3000"
+			};
+			if (cpu_subtype < ARRAY_SIZE(cpu_subtype_mips_tbl)) {
+				s_cpu_subtype = cpu_subtype_mips_tbl[cpu_subtype];
+			}
+			break;
+		}
+
+		case CPU_TYPE_MC98000:
+			if (cpu_subtype == CPU_SUBTYPE_MC98601) {
+				s_cpu_subtype = "MC98601";
+			}
+			break;
+
+		case CPU_TYPE_HPPA: {
+			static const char *const cpu_subtype_hppa_tbl[] = {
+				nullptr, "HP/PA 7100", "HP/PA 7100LC"
+			};
+			if (cpu_subtype < ARRAY_SIZE(cpu_subtype_hppa_tbl)) {
+				s_cpu_subtype = cpu_subtype_hppa_tbl[cpu_subtype];
+			}
+			break;
+		}
+
+		case CPU_TYPE_MC88000: {
+			static const char *const cpu_subtype_m88k_tbl[] = {
+				nullptr, "MC88100", "MC88110"
+			};
+			if (cpu_subtype < ARRAY_SIZE(cpu_subtype_m88k_tbl)) {
+				s_cpu_subtype = cpu_subtype_m88k_tbl[cpu_subtype];
+			}
+			break;
+		}
+
+		case CPU_TYPE_POWERPC: {
+			static const char *const cpu_subtype_ppc_tbl[] = {
+				nullptr, "601", "602", "603",
+				"603e", "603ev", "604", "604e",
+				"620", "750", "7400", "7450"
+			};
+			if (cpu_subtype < ARRAY_SIZE(cpu_subtype_ppc_tbl)) {
+				s_cpu_subtype = cpu_subtype_ppc_tbl[cpu_subtype];
+			} else if (cpu_subtype == CPU_SUBTYPE_POWERPC_970) {
+				s_cpu_subtype = "970";
+			}
+			break;
+		}
+	}
+
+	if (s_cpu_subtype) {
+		d->fields->addField_string(C_("Mach-O", "CPU Subtype"), s_cpu_subtype);
+	}
+
+	// TODO: Flags.
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
