@@ -1525,12 +1525,11 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	// tr: Wii keys.bin dialog title.
-	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii keys.bin File"));
-	// tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-
-	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	string filename = getOpenFileName(
+		// tr: Wii keys.bin dialog title.
+		U82W_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
+		// tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+		U82W_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
@@ -1548,12 +1547,11 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	// tr: Wii U otp.bin dialog title.
-	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select Wii U otp.bin File"));
-	// tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-
-	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	string filename = getOpenFileName(
+		// tr: Wii U otp.bin dialog title.
+		U82W_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
+		// tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+		U82W_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
@@ -1571,12 +1569,11 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	if (!hWndPropSheet)
 		return;
 
-	// tr: 3DS boot9.bin dialog title.
-	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File"));
-	// tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-
-	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	string filename = getOpenFileName(
+		// tr: 3DS boot9.bin dialog title.
+		U82W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
+		// tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+		U82W_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
@@ -1594,12 +1591,11 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	if (!hWndPropSheet)
 		return;
 
-	// tr: aeskeydb.bin dialog title.
-	const wstring wsDlgTitle = U82W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"));
-	// tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-	wstring wsFileFilter = U82W_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
-
-	string filename = getOpenFileName(wsDlgTitle.c_str(), wsFileFilter.c_str());
+	string filename = getOpenFileName(
+		// tr: aeskeydb.bin dialog title.
+		U82W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
+		// tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
+		U82W_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
