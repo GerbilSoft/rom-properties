@@ -416,7 +416,7 @@ int MachO::loadFieldData(void)
 	// CPU subtype.
 	const unsigned int cpu_subtype = (machHeader->cpusubtype & 0xFFFFFF);
 	const char *s_cpu_subtype = nullptr;
-	switch (cpu) {
+	switch (cpu & 0xFFFFFF) {
 		default:
 			break;
 
