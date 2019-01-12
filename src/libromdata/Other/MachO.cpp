@@ -42,6 +42,10 @@ using namespace LibRpBase;
 using std::string;
 using std::vector;
 
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
+
 namespace LibRomData {
 
 ROMDATA_IMPL(MachO)
@@ -88,10 +92,10 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 
 			MACHO_FORMAT_MAX
 		};
-		int machFormat;
 
-		// Mach-O header.
-		mach_header machHeader;
+		// Mach-O formats and headers.
+		vector<int8_t> machFormats;
+		ao::uvector<mach_header> machHeaders;
 
 		/**
 		 * Check the Mach-O magic number.
@@ -106,11 +110,7 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 MachOPrivate::MachOPrivate(MachO *q, IRpFile *file)
 	: super(q, file)
 	, execFormat(EXEC_FORMAT_UNKNOWN)
-	, machFormat(MACH_FORMAT_UNKNOWN)
-{
-	// Clear the structs.
-	memset(&machHeader, 0, sizeof(machHeader));
-}
+{ }
 
 /**
  * Check the Mach-O magic number.
@@ -191,9 +191,12 @@ MachO::MachO(IRpFile *file)
 	// Load the Mach header.
 	switch (d->execFormat) {
 		case MachOPrivate::EXEC_FORMAT_MACH:
-			// Standar Mach executable.
-			memcpy(&d->machHeader, header, sizeof(d->machHeader));
-			d->machFormat = d->checkMachMagicNumber(d->machHeader.magic);
+			// Standard Mach executable.
+			d->machFormats.resize(1);
+			d->machHeaders.resize(1);
+			memcpy(&d->machHeaders[0], header, sizeof(mach_header));
+			d->machFormats[0] = d->checkMachMagicNumber(d->machHeaders[0].magic);
+			d->isValid = (d->machFormats[0] >= 0);
 			break;
 
 		case MachOPrivate::EXEC_FORMAT_FAT:
@@ -203,42 +206,59 @@ MachO::MachO(IRpFile *file)
 
 		default:
 			// Not supported.
+			d->isValid = false;
 			break;
 	}
 
+	if (d->machFormats.empty() || d->machHeaders.empty()) {
+		// No headers...
+		d->isValid = false;
+	}
+
+	if (!d->isValid) {
+		d->execFormat = MachOPrivate::EXEC_FORMAT_UNKNOWN;
+		d->machFormats.clear();
+		d->machHeaders.clear();
+		delete d->file;
+		d->file = nullptr;
+		return;
+	}
+
 	// Swap endianness if needed.
-	d->isValid = (d->machFormat >= 0);
-	switch (d->machFormat) {
-		default:
-			d->isValid = false;
-			d->execFormat = MachOPrivate::EXEC_FORMAT_UNKNOWN;
-			d->machFormat = MachOPrivate::MACH_FORMAT_UNKNOWN;
-			delete d->file;
-			d->file = nullptr;
-			return;
+	assert(d->machFormats.size() == d->machHeaders.size());
+	auto hdrIter = d->machHeaders.begin();
+	for (auto fmtIter = d->machFormats.cbegin();
+	     fmtIter != d->machFormats.cend(); ++fmtIter, ++hdrIter)
+	{
+		switch (*fmtIter) {
+			default:
+				// Invalid format. Continue anyway...
+				break;
 
-		case MachOPrivate::MACH_FORMAT_32HOST:
-		case MachOPrivate::MACH_FORMAT_64HOST:
-			// Host-endian. Nothing to do.
-			break;
+			case MachOPrivate::MACH_FORMAT_32HOST:
+			case MachOPrivate::MACH_FORMAT_64HOST:
+				// Host-endian. Nothing to do.
+				break;
 
-		case MachOPrivate::MACH_FORMAT_32SWAP:
-		case MachOPrivate::MACH_FORMAT_64SWAP: {
-			// Swapped endian.
-			// NOTE: Not swapping the magic number.
-			mach_header *const machHeader = &d->machHeader;
-			machHeader->cputype	= __swab32(machHeader->cputype);
-			machHeader->cpusubtype	= __swab32(machHeader->cpusubtype);
-			machHeader->filetype	= __swab32(machHeader->filetype);
-			machHeader->ncmds	= __swab32(machHeader->ncmds);
-			machHeader->sizeofcmds	= __swab32(machHeader->sizeofcmds);
-			machHeader->flags	= __swab32(machHeader->flags);
-			break;
+			case MachOPrivate::MACH_FORMAT_32SWAP:
+			case MachOPrivate::MACH_FORMAT_64SWAP: {
+				// Swapped endian.
+				// NOTE: Not swapping the magic number.
+				mach_header *const machHeader = &(*hdrIter);
+				machHeader->cputype	= __swab32(machHeader->cputype);
+				machHeader->cpusubtype	= __swab32(machHeader->cpusubtype);
+				machHeader->filetype	= __swab32(machHeader->filetype);
+				machHeader->ncmds	= __swab32(machHeader->ncmds);
+				machHeader->sizeofcmds	= __swab32(machHeader->sizeofcmds);
+				machHeader->flags	= __swab32(machHeader->flags);
+				break;
+			}
 		}
 	}
 
 	// Determine the file type.
-	switch (d->machHeader.filetype) {
+	// NOTE: This assumes all architectures have the same file type.
+	switch (d->machHeaders[0].filetype) {
 		default:
 			// Should not happen...
 			d->fileType = FTYPE_UNKNOWN;
@@ -426,7 +446,13 @@ int MachO::loadFieldData(void)
 	}
 
 	// Mach-O header.
-	const mach_header *const machHeader = &d->machHeader;
+	// TODO: Show multiple headers.
+	if (d->machHeaders.empty()) {
+		// No headers at all...
+		return 0;
+	}
+
+	const mach_header *const machHeader = &d->machHeaders[0];
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Executable format.
