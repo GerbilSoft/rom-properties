@@ -1109,7 +1109,7 @@ int NES::loadFieldData(void)
 			// CHR ROM size.
 			string s_chr_size;
 			if (chr_sz_idx == 0) {
-				s_chr_size = C_("NES", "Not Set");
+				s_chr_size = C_("NES", "Not set");
 			} else if (chr_size != 0) {
 				s_chr_size = d->formatBankSizeKiB(chr_size);
 			} else {
