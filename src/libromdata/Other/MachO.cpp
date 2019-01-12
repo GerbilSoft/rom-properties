@@ -35,6 +35,12 @@ using namespace LibRpBase;
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
+
 namespace LibRomData {
 
 ROMDATA_IMPL(MachO)
@@ -357,7 +363,7 @@ int MachO::loadFieldData(void)
 
 	// Mach-O header.
 	const mach_header *const machHeader = &d->machHeader;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Executable format.
 	const char *const s_cpu = MachOData::lookup_cpu_type(machHeader->cputype);
@@ -375,7 +381,18 @@ int MachO::loadFieldData(void)
 		d->fields->addField_string(C_("Mach-O", "CPU Subtype"), s_cpu_subtype);
 	}
 
-	// TODO: Flags.
+	// Flags.
+	// I/O support bitfield.
+	static const char *const flags_bitfield_names[] = {
+		// 0x00000000
+		"NoUndefs", "IncrLink", "DyldLink", "BindAtLoad",
+		// 0x00000010
+		"Prebound"
+	};
+	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
+		flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+	d->fields->addField_bitfield(C_("MachO", "Flags"),
+		v_flags_bitfield_names, 3, machHeader->flags);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
