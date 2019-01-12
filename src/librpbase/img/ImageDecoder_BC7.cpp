@@ -35,8 +35,11 @@
 #  define BC7_HAS_SSSE3 1
 #  include "cpuflags_x86.h"
 // SSSE3 headers.
+#  pragma GCC push_options
+#  pragma GCC target("ssse3")
 #  include <emmintrin.h>
 #  include <tmmintrin.h>
+#  pragma GCC pop_options
 # endif /* _MSC_VER || __GNUC__ */
 #endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
