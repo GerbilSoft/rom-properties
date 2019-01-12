@@ -88,6 +88,8 @@
   * GameCube: Fix bug that prevented "EUR" and "JPN" from being appended
     to region code descriptions if the game's BI2 region doesn't match
     the ID4 region.
+  * EXE: Fixed a crash that occurred when viewing the properties of a
+    Windows 1.0 executable in any UI frontend other than rpcli.
 
 ## v1.3.3 (released 2018/08/25)
 
