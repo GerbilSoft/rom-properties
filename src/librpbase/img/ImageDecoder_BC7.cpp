@@ -281,24 +281,14 @@ static inline void rotate_components_SSSE3(uint8_t rotation_mode, argb32_t tileB
 	assert(rotation_mode <= 3);
 	ASSERT_ALIGNMENT(16, tileBuf);
 
-	__m128i shuf_mask;
-	switch (rotation_mode & 3) {
-		case 0:
-			// ARGB: No rotation.
-			return;
-		case 1:
-			// RAGB: Swap A and R.
-			shuf_mask = _mm_setr_epi8(0,1,3,2, 4,5,7,6, 8,9,11,10, 12,13,15,14);
-			break;
-		case 2:
-			// GRAB: Swap A and G.
-			shuf_mask = _mm_setr_epi8(0,3,2,1, 4,7,6,5, 8,11,10,9, 12,15,14,13);
-			break;
-		case 3:
-			// BRGA: Swap A and B.
-			shuf_mask = _mm_setr_epi8(3,1,2,0, 7,5,6,4, 11,9,10,8, 15,13,14,12);
-			break;
-	}
+	// Shuffle masks.
+	static const uint8_t shuf_mask_data[4][16] = {
+		{0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15},
+		{0,1,3,2, 4,5,7,6, 8,9,11,10, 12,13,15,14},
+		{0,3,2,1, 4,7,6,5, 8,11,10,9, 12,15,14,13},
+		{3,1,2,0, 7,5,6,4, 11,9,10,8, 15,13,14,12},
+	};
+	__m128i shuf_mask = _mm_load_si128(reinterpret_cast<const __m128i*>(shuf_mask_data[rotation_mode & 3]));
 
 	// Process four pixels per XMM register.
 	__m128i *const xmm_tileBuf = reinterpret_cast<__m128i*>(tileBuf);
