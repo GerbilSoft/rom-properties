@@ -38,6 +38,7 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;
@@ -93,6 +94,9 @@ class MachOPrivate : public LibRpBase::RomDataPrivate
 
 			MACHO_FORMAT_MAX
 		};
+
+		// Maximum number of Mach-O headers to read.
+		#define MAX_MACH_HEADERS 16U
 
 		// Mach-O formats and headers.
 		vector<int8_t> machFormats;
@@ -171,7 +175,7 @@ MachO::MachO(IRpFile *file)
 	// - Mach-O header: 7 DWORDs
 	// - Universal header: 2 DWORDs, plus 5 DWORDs per architecture.
 	// Assuming up to 16 architectures, read 2+(5*16) = 82 DWORDs, or 328 bytes.
-	uint8_t header[328];
+	uint8_t header[(2+(5*MAX_MACH_HEADERS))*sizeof(uint32_t)];
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
@@ -200,10 +204,40 @@ MachO::MachO(IRpFile *file)
 			d->isValid = (d->machFormats[0] >= 0);
 			break;
 
-		case MachOPrivate::EXEC_FORMAT_FAT:
-			// TODO: Read the first architecture.
-			// TODO: Read all architectures?
+		case MachOPrivate::EXEC_FORMAT_FAT: {
+			// Read up to 16 architectures.
+			const fat_header *const fatHeader =
+				reinterpret_cast<const fat_header*>(info.header.pData);
+			const unsigned int nfat_arch = std::min(
+				MAX_MACH_HEADERS, be32_to_cpu(fatHeader->nfat_arch));
+			d->machFormats.reserve(nfat_arch);
+			d->machHeaders.reserve(nfat_arch);
+
+			const fat_arch *fatArch =
+				reinterpret_cast<const fat_arch*>(info.header.pData + 8);
+			for (unsigned int i = 0; i < nfat_arch; i++, fatArch++) {
+				const uint32_t offset = be32_to_cpu(fatArch->offset);
+				if (offset < sizeof(fat_header)) {
+					continue;
+				}
+
+				size_t idx = d->machFormats.size();
+				d->machFormats.resize(idx+1);
+				d->machHeaders.resize(idx+1);
+				size_t size = d->file->seekAndRead(offset, &d->machHeaders[i], sizeof(mach_header));
+				if (size == sizeof(mach_header)) {
+					d->machFormats[idx] = d->checkMachMagicNumber(d->machHeaders[idx].magic);
+				} else {
+					// Unable to read this header.
+					// TODO: Show an error?
+					d->machFormats.resize(idx);
+					d->machHeaders.resize(idx);
+				}
+			}
+
+			d->isValid = !d->machFormats.empty();
 			break;
+		}
 
 		default:
 			// Not supported.
