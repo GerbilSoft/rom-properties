@@ -387,7 +387,17 @@ int MachO::loadFieldData(void)
 		// 0x00000000
 		"NoUndefs", "IncrLink", "DyldLink", "BindAtLoad",
 		// 0x00000010
-		"Prebound"
+		"Prebound", "SplitSegs", "LazyInit", "TwoLevel",
+		// 0x00000100
+		"ForceFlat", "NoMultiDefs", "NoFixPrebinding", "Prebindable",
+		// 0x00001000
+		"AllModsBound", "Subsections", "Canonical", "WeakDefines",
+		// 0x00010000
+		"BindsToWeak", "StackExec", "RootSafe", "SetuidSafe",
+		// 0x00100000
+		"NoReexport", "PIE", "DeadStrip", "TLVDescriptors",
+		// 0x01000000
+		"NoHeapExec", "AppExtSafe"
 	};
 	vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
 		flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));

@@ -282,6 +282,29 @@ typedef enum {
 				// linker when loaded
 	MH_PREBOUND	= 0x10,	// the file has its dynamic undefined
 				// references prebound
+
+	// Flags from `file`'s magic listing.
+	MH_SPLIT_SEGS			= 0x20,
+	MH_LAZY_INIT			= 0x40,
+	MH_TWOLEVEL			= 0x80,
+	MH_FORCE_FLAT			= 0x100,
+	MH_NOMULTIDEFS			= 0x200,
+	MH_NOFIXPREBINDING		= 0x400,
+	MH_PREBINDABLE			= 0x800,
+	MH_ALLMODSBOUND			= 0x1000,
+	MH_SUBSECTIONS_VIA_SYMBOLS	= 0x2000,
+	MH_CANONICAL			= 0x4000,
+	MH_WEAK_DEFINES			= 0x8000,
+	MH_BINDS_TO_WEAK		= 0x10000,
+	MH_ALLOW_STACK_EXECUTION	= 0x20000,
+	MH_ROOT_SAFE			= 0x40000,
+	MH_SETUID_SAFE			= 0x80000,
+	MH_NO_REEXPORTED_DYLIBS		= 0x100000,
+	MH_PIE				= 0x200000,
+	MH_DEAD_STRIPPABLE_DYLIB	= 0x400000,
+	MH_HAS_TLV_DESCRIPTORS		= 0x800000,
+	MH_NO_HEAP_EXECUTION		= 0x1000000,
+	MH_APP_EXTENSION_SAFE		= 0x2000000,
 } mh_flags_t;
 
 #pragma pack()
