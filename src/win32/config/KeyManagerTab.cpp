@@ -169,7 +169,7 @@ class KeyManagerTabPrivate
 		bool bCancelEdit;	// True if the edit is being cancelled.
 		bool bAllowKanji;	// Allow kanji in the editor.
 
-		// Is this COMCTL32.dll 6.10 or later?
+		// Is this COMCTL32.dll v6.10 or later?
 		bool isComCtl32_610;
 
 		// Icons for the "Valid?" column.
@@ -1312,7 +1312,7 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 				case 2: {
 					// "Valid?" column.
 					// Draw the icon manually.
-					const KeyStoreWin32::Key *key = keyStore->getKey((int)plvcd->nmcd.dwItemSpec);
+					const KeyStoreWin32::Key *const key = keyStore->getKey((int)plvcd->nmcd.dwItemSpec);
 					assert(key != nullptr);
 					if (!key)
 						break;
