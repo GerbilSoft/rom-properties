@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -62,19 +62,6 @@ using namespace LibRpBase;
 
 // DirectDraw Surface structs.
 #include "Texture/dds_structs.h"
-
-#include "cpu_dispatch.h"
-#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-// MSVC always provides the intrinsics.
-// For GCC, since we're using inlines, we have to have
-// gcc-4.4 to enable per-function optimization.
-// TODO: Minimum clang version.
-# if defined(_MSC_VER) || defined(__clang__) || \
-     (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)))
-#  define BC7_HAS_SSSE3 1
-#  include "cpuflags_x86.h"
-# endif /* _MSC_VER || __GNUC__ */
-#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
 // C includes.
 #include <stdint.h>
@@ -145,9 +132,6 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			, m_gzDds(nullptr)
 			, m_f_dds(nullptr)
 			, m_romData(nullptr)
-#ifdef BC7_HAS_SSSE3
-			, cpu_flags_old(0)
-#endif /* BC7_HAS_SSSE3 */
 		{ }
 
 		void SetUp(void) final;
@@ -184,11 +168,6 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		// delete it before deleting the RomData object.
 		RpMemFile *m_f_dds;
 		RomData *m_romData;
-
-#ifdef BC7_HAS_SSSE3
-		// CPU flags to save and restore.
-		uint32_t cpu_flags_old;
-#endif /* BC7_HAS_SSSE3 */
 
 	public:
 		/** Test case parameters. **/
@@ -249,11 +228,6 @@ inline void ImageDecoderTest::replace_slashes(string &path)
  */
 void ImageDecoderTest::SetUp(void)
 {
-#ifdef BC7_HAS_SSSE3
-	// Save CPU flags.
-	cpu_flags_old = RP_CPU_Flags;
-#endif /* BC7_HAS_SSSE3 */
-
 	if (::testing::UnitTest::GetInstance()->current_test_info()->value_param() == nullptr) {
 		// Not a parameterized test.
 		return;
@@ -348,11 +322,6 @@ void ImageDecoderTest::TearDown(void)
 		gzclose_r(m_gzDds);
 		m_gzDds = nullptr;
 	}
-
-#ifdef BC7_HAS_SSSE3
-	// Restore CPU flags.
-	RP_CPU_Flags = cpu_flags_old;
-#endif /* BC7_HAS_SSSE3 */
 }
 
 /**
@@ -501,38 +470,8 @@ void ImageDecoderTest::decodeTest_internal(void)
  */
 TEST_P(ImageDecoderTest, decodeTest)
 {
-#ifdef BC7_HAS_SSSE3
-	// Temporarily disable all CPU flags.
-	RP_CPU_Flags = 0;
-#endif /* BC7_HAS_SSSE3 */
-
 	ASSERT_NO_FATAL_FAILURE(decodeTest_internal());
 }
-
-#ifdef BC7_HAS_SSSE3
-/**
- * Run an ImageDecoder test.
- * (SSSE3 optimizations enabled)
- */
-TEST_P(ImageDecoderTest, decodeTest_ssse3)
-{
-	// NOTE: Only for BC7 tests right now.
-	const ImageDecoderTest_mode &mode = GetParam();
-	if (mode.dds_gz_filename.find("BC7/") != 0) {
-		// Not a BC7 test.
-		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping test.\n");
-		return;
-	} else if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
-		return;
-	}
-
-	// Temporarily disable all CPU flags except for SSSE3.
-	RP_CPU_Flags = RP_CPUFLAG_X86_SSSE3;
-
-	ASSERT_NO_FATAL_FAILURE(decodeTest_internal());
-}
-#endif /* BC7_HAS_SSSE3 */
 
 /**
  * Internal benchmark function.
@@ -646,42 +585,11 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 /**
  * Benchmark an ImageDecoder test.
- * (SSSE3 optimizations disabled)
  */
 TEST_P(ImageDecoderTest, decodeBenchmark)
 {
-#ifdef BC7_HAS_SSSE3
-	// Temporarily disable all CPU flags.
-	RP_CPU_Flags = 0;
-#endif /* BC7_HAS_SSSE3 */
-
 	ASSERT_NO_FATAL_FAILURE(decodeBenchmark_internal());
 }
-
-#ifdef BC7_HAS_SSSE3
-/**
- * Benchmark an ImageDecoder test.
- * (SSSE3 optimizations enabled)
- */
-TEST_P(ImageDecoderTest, decodeBenchmark_ssse3)
-{
-	// NOTE: Only for BC7 tests right now.
-	const ImageDecoderTest_mode &mode = GetParam();
-	if (mode.dds_gz_filename.find("BC7/") != 0) {
-		// Not a BC7 test.
-		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping benchmark.\n");
-		return;
-	} else if (!RP_CPU_HasSSSE3()) {
-		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping benchmark.\n");
-		return;
-	}
-
-	// Temporarily disable all CPU flags except for SSSE3.
-	RP_CPU_Flags = RP_CPUFLAG_X86_SSSE3;
-
-	ASSERT_NO_FATAL_FAILURE(decodeBenchmark_internal());
-}
-#endif /* BC7_HAS_SSSE3 */
 
 /**
  * Test case suffix generator.
@@ -1238,11 +1146,6 @@ extern "C" int gtest_main(int argc, char *argv[])
 		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS,
 		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS_BC7);
 	fflush(nullptr);
-
-#ifdef BC7_HAS_SSSE3
-	// Initialize CPU flags.
-	RP_CPU_InitCPUFlags();
-#endif /* BC7_HAS_SSSE3 */
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);

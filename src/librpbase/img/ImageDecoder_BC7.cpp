@@ -25,52 +25,6 @@
 
 #include "common.h"
 
-#include "cpu_dispatch.h"
-#if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
-// MSVC always provides the intrinsics.
-// For GCC, since we're using inlines, we have to have
-// gcc-4.4 to enable per-function optimization.
-// TODO: Minimum clang version.
-# if defined(_MSC_VER) || defined(__clang__) || \
-     (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)))
-#  define BC7_HAS_SSSE3 1
-#  include "cpuflags_x86.h"
-// SSSE3 headers.
-#  if defined(__GNUC__) && !defined(__clang__)
-// gcc-4.8's tmmintrin.h fails if __SSSE3__ is not defined.
-#   ifndef __SSSE3__
-#    define __SSSE3__ 1
-#   endif
-#   ifndef __SSE3__
-#    define __SSE3__ 1
-#   endif
-#   ifndef __SSE2__
-#    define __SSE2__ 1
-#   endif
-#   ifndef __SSE__
-#    define __SSE__ 1
-#   endif
-#   ifndef __MMX__
-#    define __MMX__ 1
-#   endif
-#   pragma GCC push_options
-#   pragma GCC target("ssse3")
-#  endif /* defined(__GNUC__) && !defined(__clang__) */
-#  include <emmintrin.h>
-#  include <tmmintrin.h>
-#  if defined(__GNUC__) && !defined(__clang__)
-#   pragma GCC pop_options
-#  endif /* defined(__GNUC__) && !defined(__clang__) */
-# endif /* _MSC_VER || __GNUC__ */
-#endif /* RP_CPU_I386 || RP_CPU_AMD64 */
-
-// TODO: Move to common.h?
-#if defined(__GNUC__) || defined(__clang__)
-# define ATTR_TARGET(str) __attribute__((target(str)))
-#else
-# define ATTR_TARGET(str)
-#endif
-
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
@@ -297,84 +251,6 @@ static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
 	msb >>= shamt;
 }
 
-#ifdef BC7_HAS_SSSE3
-/**
- * Rotate components.
- * SSSE3-optimized version.
- * @param rotation_mode Rotation mode.
- * @param tileBuf Tile buffer.
- */
-ATTR_TARGET("ssse3")
-static inline void rotate_components_SSSE3(uint8_t rotation_mode, argb32_t tileBuf[16])
-{
-	// FIXME: Verify the masks.
-	assert(rotation_mode <= 3);
-	ASSERT_ALIGNMENT(16, tileBuf);
-
-	// Shuffle masks.
-	static const uint8_t shuf_mask_data[4][16] = {
-		{0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15},
-		{0,1,3,2, 4,5,7,6, 8,9,11,10, 12,13,15,14},
-		{0,3,2,1, 4,7,6,5, 8,11,10,9, 12,15,14,13},
-		{3,1,2,0, 7,5,6,4, 11,9,10,8, 15,13,14,12},
-	};
-	__m128i shuf_mask = _mm_load_si128(reinterpret_cast<const __m128i*>(shuf_mask_data[rotation_mode & 3]));
-
-	// Process four pixels per XMM register.
-	__m128i *const xmm_tileBuf = reinterpret_cast<__m128i*>(tileBuf);
-
-	__m128i reg0 = _mm_load_si128(&xmm_tileBuf[0]);
-	__m128i reg1 = _mm_load_si128(&xmm_tileBuf[1]);
-	__m128i reg2 = _mm_load_si128(&xmm_tileBuf[2]);
-	__m128i reg3 = _mm_load_si128(&xmm_tileBuf[3]);
-
-	_mm_store_si128(&xmm_tileBuf[0], _mm_shuffle_epi8(reg0, shuf_mask));
-	_mm_store_si128(&xmm_tileBuf[1], _mm_shuffle_epi8(reg1, shuf_mask));
-	_mm_store_si128(&xmm_tileBuf[2], _mm_shuffle_epi8(reg2, shuf_mask));
-	_mm_store_si128(&xmm_tileBuf[3], _mm_shuffle_epi8(reg3, shuf_mask));
-}
-#endif /* BC7_HAS_SSSE3 */
-
-/**
- * Rotate components.
- * Standard version using regular C++ code.
- * @param rotation_mode Rotation mode.
- * @param tileBuf Tile buffer.
- */
-static inline void rotate_components_cpp(uint8_t rotation_mode, argb32_t tileBuf[16])
-{
-	assert(rotation_mode <= 3);
-	switch (rotation_mode & 3) {
-		case 0:
-			// ARGB: No rotation.
-			break;
-		case 1:
-			// RAGB: Swap A and R.
-			for (unsigned int i = 0; i < 16; i++) {
-				const uint8_t a = tileBuf[i].a;
-				tileBuf[i].a = tileBuf[i].r;
-				tileBuf[i].r = a;
-			}
-			break;
-		case 2:
-			// GRAB: Swap A and G.
-			for (unsigned int i = 0; i < 16; i++) {
-				const uint8_t a = tileBuf[i].a;
-				tileBuf[i].a = tileBuf[i].g;
-				tileBuf[i].g = a;
-			}
-			break;
-		case 3:
-			// BRGA: Swap A and B.
-			for (unsigned int i = 0; i < 16; i++) {
-				const uint8_t a = tileBuf[i].a;
-				tileBuf[i].a = tileBuf[i].b;
-				tileBuf[i].b = a;
-			}
-			break;
-	}
-}
-
 /**
  * Convert a BC7 image to rp_image.
  * @param width Image width.
@@ -414,11 +290,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		delete img;
 		return nullptr;
 	}
-
-	// Use SSSE3 optimization for rotation?
-#ifdef BC7_HAS_SSSE3
-	const bool useSSSE3 = !!(RP_CPU_HasSSSE3());
-#endif
 
 	// sBIT metadata.
 	// The alpha value is set depending on whether or not
@@ -791,18 +662,34 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 		}
 
 		// Component rotation.
-		if (rotation_mode != 0) {
-			// NOTE: Not using a separate dispatch function
-			// in order to reduce RP_CPU_HasSSSE3() calls
-			// and static initialization.
-#ifdef BC7_HAS_SSSE3
-			if (useSSSE3) {
-				rotate_components_SSSE3(rotation_mode, tileBuf);
-			} else
-#endif /* defined(RP_CPU_I386) || defined(RP_CPU_AMD64) */
-			{
-				rotate_components_cpp(rotation_mode, tileBuf);
-			}
+		switch (rotation_mode & 3) {
+			case 0:
+				// ARGB: No rotation.
+				break;
+			case 1:
+				// RAGB: Swap A and R.
+				for (unsigned int i = 0; i < 16; i++) {
+					const uint8_t a = tileBuf[i].a;
+					tileBuf[i].a = tileBuf[i].r;
+					tileBuf[i].r = a;
+				}
+				break;
+			case 2:
+				// GRAB: Swap A and G.
+				for (unsigned int i = 0; i < 16; i++) {
+					const uint8_t a = tileBuf[i].a;
+					tileBuf[i].a = tileBuf[i].g;
+					tileBuf[i].g = a;
+				}
+				break;
+			case 3:
+				// BRGA: Swap A and B.
+				for (unsigned int i = 0; i < 16; i++) {
+					const uint8_t a = tileBuf[i].a;
+					tileBuf[i].a = tileBuf[i].b;
+					tileBuf[i].b = a;
+				}
+				break;
 		}
 
 		// Blit the tile to the main image buffer.
