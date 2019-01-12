@@ -204,6 +204,11 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 		static inline void replace_slashes(string &path);
 
 		/**
+		 * Internal test function.
+		 */
+		void decodeTest_internal(void);
+
+		/**
 		 * Internal benchmark function.
 		 */
 		void decodeBenchmark_internal(void);
@@ -427,9 +432,9 @@ void ImageDecoderTest::Compare_RpImage(
 }
 
 /**
- * Run an ImageDecoder test.
+ * Internal test function.
  */
-TEST_P(ImageDecoderTest, decodeTest)
+void ImageDecoderTest::decodeTest_internal(void)
 {
 	// Parameterized test.
 	const ImageDecoderTest_mode &mode = GetParam();
@@ -487,6 +492,44 @@ TEST_P(ImageDecoderTest, decodeTest)
 	// Compare the image data.
 	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds));
 }
+
+/**
+ * Run an ImageDecoder test.
+ */
+TEST_P(ImageDecoderTest, decodeTest)
+{
+#ifdef BC7_HAS_SSSE3
+	// Temporarily disable all CPU flags.
+	RP_CPU_Flags = 0;
+#endif /* BC7_HAS_SSSE3 */
+
+	ASSERT_NO_FATAL_FAILURE(decodeTest_internal());
+}
+
+#ifdef BC7_HAS_SSSE3
+/**
+ * Run an ImageDecoder test.
+ * (SSSE3 optimizations enabled)
+ */
+TEST_P(ImageDecoderTest, decodeTest_ssse3)
+{
+	// NOTE: Only for BC7 tests right now.
+	const ImageDecoderTest_mode &mode = GetParam();
+	if (mode.dds_gz_filename.find("BC7/") != 0) {
+		// Not a BC7 test.
+		fprintf(stderr, "*** This function does not have SSSE3 optimizations. Skipping benchmark.\n");
+		return;
+	} else if (!RP_CPU_HasSSSE3()) {
+		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
+		return;
+	}
+
+	// Temporarily disable all CPU flags except for SSSE3.
+	RP_CPU_Flags = RP_CPUFLAG_X86_SSSE3;
+
+	ASSERT_NO_FATAL_FAILURE(decodeTest_internal());
+}
+#endif /* BC7_HAS_SSSE3 */
 
 /**
  * Internal benchmark function.
