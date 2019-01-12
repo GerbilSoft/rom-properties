@@ -46,7 +46,7 @@ class ELFData
 
 		/**
 		 * Look up an ELF OS ABI.
-		 * @param cpu ELF OS ABI.
+		 * @param osabi ELF OS ABI.
 		 * @return OS ABI name, or nullptr if not found.
 		 */
 		static const char *lookup_osabi(uint8_t osabi);
