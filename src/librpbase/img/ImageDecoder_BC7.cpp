@@ -30,16 +30,21 @@
 // MSVC always provides the intrinsics.
 // For GCC, since we're using inlines, we have to have
 // gcc-4.4 to enable per-function optimization.
-# if defined(_MSC_VER) || \
+// TODO: Minimum clang version.
+# if defined(_MSC_VER) || defined(__clang__) || \
      (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)))
 #  define BC7_HAS_SSSE3 1
 #  include "cpuflags_x86.h"
 // SSSE3 headers.
-#  pragma GCC push_options
-#  pragma GCC target("ssse3")
+#  if defined(__GNUC__) && !defined(__clang__)
+#   pragma GCC push_options
+#   pragma GCC target("ssse3")
+#  endif /* defined(__GNUC__) && !defined(__clang__) */
 #  include <emmintrin.h>
 #  include <tmmintrin.h>
-#  pragma GCC pop_options
+#  if defined(__GNUC__) && !defined(__clang__)
+#   pragma GCC pop_options
+#  endif /* defined(__GNUC__) && !defined(__clang__) */
 # endif /* _MSC_VER || __GNUC__ */
 #endif /* RP_CPU_I386 || RP_CPU_AMD64 */
 
@@ -270,14 +275,13 @@ static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
 }
 
 #ifdef BC7_HAS_SSSE3
-# pragma GCC push_options
-# pragma GCC target("ssse3")
 /**
  * Rotate components.
  * SSSE3-optimized version.
  * @param rotation_mode Rotation mode.
  * @param tileBuf Tile buffer.
  */
+__attribute__((target("ssse3")))
 static inline void rotate_components_SSSE3(uint8_t rotation_mode, argb32_t tileBuf[16])
 {
 	// FIXME: Verify the masks.
@@ -306,7 +310,6 @@ static inline void rotate_components_SSSE3(uint8_t rotation_mode, argb32_t tileB
 	_mm_store_si128(&xmm_tileBuf[2], _mm_shuffle_epi8(reg2, shuf_mask));
 	_mm_store_si128(&xmm_tileBuf[3], _mm_shuffle_epi8(reg3, shuf_mask));
 }
-# pragma GCC pop_options
 #endif /* BC7_HAS_SSSE3 */
 
 /**

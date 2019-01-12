@@ -68,7 +68,8 @@ using namespace LibRpBase;
 // MSVC always provides the intrinsics.
 // For GCC, since we're using inlines, we have to have
 // gcc-4.4 to enable per-function optimization.
-# if defined(_MSC_VER) || \
+// TODO: Minimum clang version.
+# if defined(_MSC_VER) || defined(__clang__) || \
      (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)))
 #  define BC7_HAS_SSSE3 1
 #  include "cpuflags_x86.h"
