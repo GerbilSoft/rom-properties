@@ -178,6 +178,7 @@ int ADX::isRomSupported_static(const DetectInfo *info)
 		case ADX_FORMAT_FIXED_COEFF_ADPCM:
 		case ADX_FORMAT_ADX:
 		case ADX_FORMAT_ADX_EXP_SCALE:
+		case ADX_FORMAT_AHX_DC:
 		case ADX_FORMAT_AHX:
 			// Valid format.
 			break;
@@ -317,6 +318,10 @@ int ADX::loadFieldData(void)
 			break;
 		case ADX_FORMAT_ADX_EXP_SCALE:
 			format = C_("ADX|Format", "ADX with Exponential Scale");
+			break;
+		case ADX_FORMAT_AHX_DC:
+			// NOTE: Not translatable.
+			format = "AHX (Dreamcast)";
 			break;
 		case ADX_FORMAT_AHX:
 			// NOTE: Not translatable.
