@@ -106,6 +106,7 @@ button.
 |             System            | Properties Tab | Metadata | Internal Images | External Scans |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Atari Lynx                    |       Yes      |    No    |       N/A       |       No       |
+| Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |       No       |
 | Nintendo Game Boy (Color)     |       Yes      |    No    |       N/A       |       No       |
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |       No       |
 | Nintendo Game Boy Advance     |       Yes      |    No    |       N/A       |       No       |
