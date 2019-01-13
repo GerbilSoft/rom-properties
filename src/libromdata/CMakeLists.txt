@@ -24,9 +24,9 @@ SET(libromdata_SRCS
 	Console/WiiWIBN.cpp
 
 	Handheld/DMG.cpp
-	Handheld/Lynx.cpp
 	Handheld/GameBoyAdvance.cpp
 	Handheld/GameCom.cpp
+	Handheld/Lynx.cpp
 	Handheld/Nintendo3DS.cpp
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/Nintendo3DS_SMDH.cpp
@@ -56,36 +56,36 @@ SET(libromdata_SRCS
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 
-	data/SegaPublishers.cpp
-	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
-	data/WiiSystemMenuVersion.cpp
-	data/NESMappers.cpp
+	data/DX10Formats.cpp
+	data/ELFData.cpp
 	data/EXEData.cpp
-	data/WiiUData.cpp
+	data/MachOData.cpp
+	data/NESMappers.cpp
+	data/NintendoPublishers.cpp
 	data/Nintendo3DSFirmData.cpp
 	data/Nintendo3DSSysTitles.cpp
 	data/NintendoLanguage.cpp
-	data/ELFData.cpp
-	data/DX10Formats.cpp
-	data/MachOData.cpp
+	data/SegaPublishers.cpp
+	data/WiiSystemMenuVersion.cpp
+	data/WiiUData.cpp
 
-	disc/WbfsReader.cpp
+	disc/Cdrom2352Reader.cpp
+	disc/CIAReader.cpp
 	disc/CisoGcnReader.cpp
+	disc/GcnFst.cpp
 	disc/GcnPartition.cpp
 	disc/GcnPartitionPrivate.cpp
-	disc/WiiPartition.cpp
-	disc/GcnFst.cpp
-	disc/IResourceReader.cpp
-	disc/PEResourceReader.cpp
-	disc/NEResourceReader.cpp
-	disc/NCCHReader.cpp
-	disc/CIAReader.cpp
-	disc/Cdrom2352Reader.cpp
-	disc/IsoPartition.cpp
 	disc/GdiReader.cpp
-	disc/WuxReader.cpp
+	disc/IResourceReader.cpp
+	disc/IsoPartition.cpp
 	disc/NASOSReader.cpp
+	disc/NCCHReader.cpp
+	disc/NEResourceReader.cpp
+	disc/PEResourceReader.cpp
+	disc/WbfsReader.cpp
+	disc/WiiPartition.cpp
+	disc/WuxReader.cpp
 
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
@@ -134,9 +134,9 @@ SET(libromdata_H
 	Console/wiiu_structs.h
 
 	Handheld/DMG.hpp
-	Handheld/Lynx.hpp
 	Handheld/GameBoyAdvance.hpp
 	Handheld/GameCom.hpp
+	Handheld/Lynx.hpp
 	Handheld/Nintendo3DS.hpp
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/Nintendo3DS_SMDH.hpp
@@ -192,41 +192,41 @@ SET(libromdata_H
 	Other/macho_structs.h
 	Other/nfp_structs.h
 
-	data/SegaPublishers.hpp
-	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
-	data/WiiSystemMenuVersion.hpp
-	data/NESMappers.hpp
+	data/DX10Formats.hpp
+	data/ELFData.hpp
 	data/EXEData.hpp
-	data/WiiUData.hpp
+	data/MachOData.hpp
+	data/NESMappers.hpp
 	data/Nintendo3DSFirmData.hpp
 	data/Nintendo3DSSysTitles.hpp
 	data/NintendoLanguage.hpp
-	data/ELFData.hpp
-	data/DX10Formats.hpp
-	data/MachOData.hpp
+	data/NintendoPublishers.hpp
+	data/SegaPublishers.hpp
+	data/WiiSystemMenuVersion.hpp
+	data/WiiUData.hpp
 
-	disc/WbfsReader.hpp
-	disc/libwbfs.h
-	disc/CisoGcnReader.hpp
+	disc/Cdrom2352Reader.hpp
+	disc/CIAReader.hpp
 	disc/ciso_gcn.h
+	disc/CisoGcnReader.hpp
+	disc/GcnFst.hpp
 	disc/GcnPartition.hpp
 	disc/GcnPartitionPrivate.hpp
-	disc/WiiPartition.hpp
-	disc/GcnFst.hpp
+	disc/GdiReader.hpp
 	disc/IResourceReader.hpp
-	disc/PEResourceReader.hpp
-	disc/NEResourceReader.hpp
+	disc/IsoPartition.hpp
+	disc/libwbfs.h
+	disc/nasos_gcn.h
+	disc/NASOSReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
-	disc/CIAReader.hpp
-	disc/Cdrom2352Reader.hpp
-	disc/IsoPartition.hpp
-	disc/GdiReader.hpp
+	disc/NEResourceReader.hpp
+	disc/PEResourceReader.hpp
+	disc/WbfsReader.hpp
+	disc/WiiPartition.hpp
 	disc/WuxReader.hpp
 	disc/wux_structs.h
-	disc/NASOSReader.hpp
-	disc/nasos_gcn.h
 
 	config/TImageTypesConfig.hpp
 	img/TCreateThumbnail.hpp
