@@ -301,7 +301,7 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: SMDH-specific, or just use Nintendo 3DS?
 	static const char *const sysNames[4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr

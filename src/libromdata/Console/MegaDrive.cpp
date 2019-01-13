@@ -756,7 +756,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 	}
 
 	// sysNames[] bitfield:
-	// - Bits 0-1: Type. (short, long, abbreviation)
+	// - Bits 0-1: Type. (long, short, abbreviation)
 	// - Bits 2-4: System type.
 	unsigned int idx = (romSys << 2) | (type & SYSNAME_TYPE_MASK);
 	if (idx >= 20) {

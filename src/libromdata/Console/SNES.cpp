@@ -536,7 +536,7 @@ const char *SNES::systemName(unsigned int type) const
 		return nullptr;
 
 	// sysNames[] bitfield:
-	// - Bits 0-1: Type. (short, long, abbreviation)
+	// - Bits 0-1: Type. (long, short, abbreviation)
 	// - Bits 2-3: Region.
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 

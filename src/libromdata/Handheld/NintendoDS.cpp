@@ -804,7 +804,7 @@ const char *NintendoDS::systemName(unsigned int type) const
 	static_assert(SYSNAME_REGION_MASK == (1 << 2),
 		"NintendoDS::systemName() array index optimization needs to be updated.");
 
-	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
 	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
 	static const char *const sysNames[16] = {

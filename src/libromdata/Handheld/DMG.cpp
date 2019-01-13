@@ -524,7 +524,7 @@ const char *DMG::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
 
-	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Game Boy Color. (DMG-specific)
 	static const char *const sysNames[8] = {
 		"Nintendo Game Boy", "Game Boy", "GB", nullptr,

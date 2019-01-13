@@ -172,7 +172,7 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles.
 	static const char *const sysNames[4] = {
 		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr

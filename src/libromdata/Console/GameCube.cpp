@@ -1181,7 +1181,7 @@ const char *GameCube::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameCube::systemName() array index optimization needs to be updated.");
 
-	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
 
 	static const char *const sysNames[16] = {

@@ -1078,7 +1078,7 @@ const char *DreamcastSave::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
 		"Sega Dreamcast", "Dreamcast", "DC", nullptr
 	};
