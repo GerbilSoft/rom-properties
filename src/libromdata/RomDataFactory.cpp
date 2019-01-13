@@ -69,6 +69,7 @@ using std::vector;
 #include "Handheld/GameBoyAdvance.hpp"
 #include "Handheld/GameCom.hpp"
 #include "Handheld/Lynx.hpp"
+#include "Handheld/NGPC.hpp"
 #include "Handheld/Nintendo3DS.hpp"
 #include "Handheld/Nintendo3DSFirm.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
@@ -239,6 +240,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(DMG, ATTR_NONE, 0x104, 0xCEED6666),
 	GetRomDataFns_addr(GameBoyAdvance, ATTR_NONE, 0x04, 0x24FFAE51),
 	GetRomDataFns_addr(Lynx, ATTR_NONE, 0, 'LYNX'),
+	GetRomDataFns_addr(NGPC, ATTR_NONE, 12, ' SNK'),
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL, 0, 'SMDH'),
 
