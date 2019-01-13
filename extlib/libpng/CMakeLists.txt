@@ -1015,9 +1015,12 @@ if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
 endif()
 
 # Create an export file that CMake users can include() to import our targets.
+# rom-properties: Disabled.
+IF(0)
 if(NOT SKIP_INSTALL_EXPORT AND NOT SKIP_INSTALL_ALL)
   install(EXPORT libpng DESTINATION lib/libpng FILE lib${PNG_LIB_NAME}.cmake)
 endif()
+ENDIF(0) # rom-properties
 
 # what's with libpng-manual.txt and all the extra files?
 
