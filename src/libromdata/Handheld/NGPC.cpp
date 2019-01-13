@@ -330,4 +330,40 @@ int NGPC::loadFieldData(void)
 	return static_cast<int>(d->fields->count());
 }
 
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int NGPC::loadMetaData(void)
+{
+	RP_D(NGPC);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// NGPC ROM header
+	const NGPC_RomHeader *const romHeader = &d->romHeader;
+
+	// Title.
+	// NOTE: It's listed as ASCII. We'll use Latin-1.
+	d->metaData->addMetaData_string(Property::Title,
+		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
+		RomMetaData::STRF_TRIM_END);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
 }
