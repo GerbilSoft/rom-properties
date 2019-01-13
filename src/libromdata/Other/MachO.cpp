@@ -362,7 +362,7 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 		// Note that this is the same magic number as Java classes,
 		// so check the second value (number of architectures)
 		// to verify. We're assuming a maximum of 16 architectures
-		// per executbale.
+		// per executable.
 		if (be32_to_cpu(pu32[1]) <= 16) {
 			// Mach-O universal binary.
 			return MachOPrivate::EXEC_FORMAT_FAT;
