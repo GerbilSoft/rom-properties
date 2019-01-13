@@ -611,7 +611,7 @@ int DMG::loadFieldData(void)
 	// DMG ROM header, excluding the RST table.
 	const DMG_RomHeader *const romHeader = &d->romHeader;
 
-	// NES ROM header:
+	// DMG ROM header:
 	// - 12 regular fields.
 	// - 5 fields for the GBX footer.
 	d->fields->reserve(12+5);
