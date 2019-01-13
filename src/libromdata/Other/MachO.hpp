@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * ELFData.hpp: Executable and Linkable Format data.                       *
+ * MachO.hpp: Mach-O executable format.                                    *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -18,40 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_ELFDATA_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DATA_ELFDATA_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_HPP__
 
-#include "librpbase/common.h"
-
-// C includes.
-#include <stdint.h>
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
-class ELFData
-{
-	private:
-		// Static class.
-		ELFData();
-		~ELFData();
-		RP_DISABLE_COPY(ELFData)
-
-	public:
-		/**
-		 * Look up an ELF machine type. (CPU)
-		 * @param cpu ELF machine type.
-		 * @return Machine type name, or nullptr if not found.
-		 */
-		static const char *lookup_cpu(uint16_t cpu);
-
-		/**
-		 * Look up an ELF OS ABI.
-		 * @param osabi ELF OS ABI.
-		 * @return OS ABI name, or nullptr if not found.
-		 */
-		static const char *lookup_osabi(uint8_t osabi);
-};
+ROMDATA_DECL_BEGIN(MachO)
+ROMDATA_DECL_END()
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_ELFDATA_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_HPP__ */

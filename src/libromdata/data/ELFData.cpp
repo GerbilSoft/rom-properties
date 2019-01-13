@@ -398,7 +398,7 @@ const char *ELFData::lookup_cpu(uint16_t cpu)
 
 /**
  * Look up an ELF OS ABI.
- * @param cpu ELF OS ABI.
+ * @param osabi ELF OS ABI.
  * @return OS ABI name, or nullptr if not found.
  */
 const char *ELFData::lookup_osabi(uint8_t osabi)

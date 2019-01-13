@@ -53,6 +53,7 @@ SET(libromdata_SRCS
 	Other/EXE.cpp
 	Other/EXE_NE.cpp
 	Other/EXE_PE.cpp
+	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 
 	data/SegaPublishers.cpp
@@ -67,6 +68,7 @@ SET(libromdata_SRCS
 	data/NintendoLanguage.cpp
 	data/ELFData.cpp
 	data/DX10Formats.cpp
+	data/MachOData.cpp
 
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -181,11 +183,13 @@ SET(libromdata_H
 	Other/ELF.hpp
 	Other/EXE.hpp
 	Other/EXE_p.hpp
+	Other/MachO.hpp
 	Other/NintendoBadge.hpp
 
 	Other/badge_structs.h
 	Other/elf_structs.h
 	Other/exe_structs.h
+	Other/macho_structs.h
 	Other/nfp_structs.h
 
 	data/SegaPublishers.hpp
@@ -200,6 +204,7 @@ SET(libromdata_H
 	data/NintendoLanguage.hpp
 	data/ELFData.hpp
 	data/DX10Formats.hpp
+	data/MachOData.hpp
 
 	disc/WbfsReader.hpp
 	disc/libwbfs.h

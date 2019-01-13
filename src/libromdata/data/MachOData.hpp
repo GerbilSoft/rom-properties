@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * ELFData.hpp: Executable and Linkable Format data.                       *
+ * MachOData.hpp: Mach-O executable format data.                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -18,8 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_ELFDATA_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DATA_ELFDATA_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__
 
 #include "librpbase/common.h"
 
@@ -28,30 +28,31 @@
 
 namespace LibRomData {
 
-class ELFData
+class MachOData
 {
 	private:
 		// Static class.
-		ELFData();
-		~ELFData();
-		RP_DISABLE_COPY(ELFData)
+		MachOData();
+		~MachOData();
+		RP_DISABLE_COPY(MachOData)
 
 	public:
 		/**
-		 * Look up an ELF machine type. (CPU)
-		 * @param cpu ELF machine type.
-		 * @return Machine type name, or nullptr if not found.
+		 * Look up a Mach-O CPU type.
+		 * @param cputype Mach-O CPU type.
+		 * @return CPU type name, or nullptr if not found.
 		 */
-		static const char *lookup_cpu(uint16_t cpu);
+		static const char *lookup_cpu_type(uint32_t cputype);
 
 		/**
-		 * Look up an ELF OS ABI.
-		 * @param osabi ELF OS ABI.
+		 * Look up a Mach-O CPU subtype.
+		 * @param cputype Mach-O CPU type.
+		 * @param cpusubtype Mach-O CPU subtype.
 		 * @return OS ABI name, or nullptr if not found.
 		 */
-		static const char *lookup_osabi(uint8_t osabi);
+		static const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype);
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_ELFDATA_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__ */

@@ -24,6 +24,9 @@
 // - https://opensource.apple.com/source/xnu/xnu-792/EXTERNAL_HEADERS/mach-o/fat.h.auto.html
 // - https://opensource.apple.com/source/xnu/xnu-792/EXTERNAL_HEADERS/mach-o/loader.h.auto.html
 // - https://opensource.apple.com/source/xnu/xnu-792/osfmk/mach/machine.h.auto.html
+// - https://github.com/file/file/blob/master/magic/Magdir/mach
+// - https://github.com/aidansteele/osx-abi-macho-file-format-reference
+// - https://opensource.apple.com/source/xnu/xnu-344/EXTERNAL_HEADERS/mach-o/fat.h.auto.html
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
@@ -45,9 +48,13 @@ extern "C" {
 typedef enum {
 	CPU_TYPE_ANY		= -1,
 	CPU_TYPE_VAX		= 1,
+	CPU_TYPE_ROMP		= 2,
+	CPU_TYPE_NS32032	= 4,
+	CPU_TYPE_NS32332	= 5,
 	CPU_TYPE_MC680x0	= 6,
 	CPU_TYPE_I386		= 7,
 	CPU_TYPE_MIPS		= 8,
+	CPU_TYPE_NS32532	= 9,
 	CPU_TYPE_MC98000	= 10,
 	CPU_TYPE_HPPA		= 11,
 	CPU_TYPE_ARM		= 12,
@@ -55,6 +62,7 @@ typedef enum {
 	CPU_TYPE_SPARC		= 14,
 	CPU_TYPE_I860		= 15,
 	CPU_TYPE_ALPHA		= 16,
+	CPU_TYPE_RS6000		= 17,
 	CPU_TYPE_POWERPC	= 18,
 	CPU_TYPE_POWERPC64	= (CPU_TYPE_POWERPC | CPU_ARCH_ABI64),
 } cpu_type_t;
@@ -97,7 +105,7 @@ typedef enum {
 	CPU_SUBTYPE_MC68030_ONLY	= 3,
 } cpu_subtype_mc680x0_t;
 
-// CPU subtype for CPU_TYPE_I386.
+// CPU subtype for CPU_TYPE_I386. (32-bit)
 typedef enum {
 	CPU_SUBTYPE_I386_ALL	= 3,
 	CPU_SUBTYPE_386		= 3,
@@ -107,9 +115,34 @@ typedef enum {
 #define CPU_SUBTYPE_INTEL(f, m) ((f) + ((m) << 4))
 	CPU_SUBTYPE_PENT	= CPU_SUBTYPE_INTEL(5, 0),
 	CPU_SUBTYPE_PENTPRO	= CPU_SUBTYPE_INTEL(6, 1),
+	CPU_SUBTYPE_PENTII_M2	= CPU_SUBTYPE_INTEL(6, 2),	// from `file`
 	CPU_SUBTYPE_PENTII_M3	= CPU_SUBTYPE_INTEL(6, 3),
+	CPU_SUBTYPE_PENTII_M4	= CPU_SUBTYPE_INTEL(6, 4),	// from `file`
 	CPU_SUBTYPE_PENTII_M5	= CPU_SUBTYPE_INTEL(6, 5),
+
+	// from `file`
+	CPU_SUBTYPE_CELERON		= CPU_SUBTYPE_INTEL(7, 0),
+	CPU_SUBTYPE_CELERON_MOBILE	= CPU_SUBTYPE_INTEL(7, 7),
+
+	// from `file`
+	CPU_SUBTYPE_PENTIII		= CPU_SUBTYPE_INTEL(8, 0),
+	CPU_SUBTYPE_PENTIII_M		= CPU_SUBTYPE_INTEL(8, 1),
+	CPU_SUBTYPE_PENTIII_XEON	= CPU_SUBTYPE_INTEL(8, 2),
+
+	// from `file`
+	CPU_SUBTYPE_PENTIUM_M		= CPU_SUBTYPE_INTEL(9, 0),
+	CPU_SUBTYPE_PENTIUM_4		= CPU_SUBTYPE_INTEL(10, 0),
+	CPU_SUBTYPE_ITANIUM		= CPU_SUBTYPE_INTEL(11, 0),
+	CPU_SUBTYPE_ITANIUM_2		= CPU_SUBTYPE_INTEL(11, 1),
+	CPU_SUBTYPE_XEON		= CPU_SUBTYPE_INTEL(12, 0),
+	CPU_SUBTYPE_XEON_MP		= CPU_SUBTYPE_INTEL(12, 1),
 } cpu_subtype_i386_t;
+
+// CPU subtype for CPU_TYPE_I386. (32-bit)
+typedef enum {
+	CPU_SUBTYPE_AMD64_ARCH1		= 4,
+	CPU_SUBTYPE_AMD64_HASWELL	= 8,
+} cpu_subtype_amd64_t;
 
 #define CPU_SUBTYPE_INTEL_FAMILY(x)	((x) & 15)
 #define CPU_SUBTYPE_INTEL_FAMILY_MAX	15
@@ -164,6 +197,27 @@ typedef enum {
 	CPU_SUBTYPE_I860_ALL	= 0,
 	CPU_SUBTYPE_I860_860	= 1,
 } cpu_subtype_i860_t;
+
+// CPU subtype for CPU_TYPE_ARM.
+typedef enum {
+	CPU_SUBTYPE_ARM_V4T	= 5,
+	CPU_SUBTYPE_ARM_V6	= 6,
+	CPU_SUBTYPE_ARM_V5TEJ	= 7,
+	CPU_SUBTYPE_ARM_XSCALE	= 8,
+	CPU_SUBTYPE_ARM_V7	= 9,
+	CPU_SUBTYPE_ARM_V7F	= 10,
+	CPU_SUBTYPE_ARM_V7S	= 11,
+	CPU_SUBTYPE_ARM_V7K	= 12,
+	CPU_SUBTYPE_ARM_V8	= 13,
+	CPU_SUBTYPE_ARM_V6M	= 14,
+	CPU_SUBTYPE_ARM_V7M	= 15,
+	CPU_SUBTYPE_ARM_V7EM	= 16,
+} cpu_subtype_arm;
+
+// CPU subtype for CPU_TYPE_ARM. (64-bit)
+typedef enum {
+	CPU_SUBTYPE_ARM64_V8	= 1,
+} cpu_subtype_arm64;
 
 // CPU subtype for CPU_TYPE_POWERPC.
 typedef enum {
@@ -230,7 +284,49 @@ typedef enum {
 				// linker when loaded
 	MH_PREBOUND	= 0x10,	// the file has its dynamic undefined
 				// references prebound
+
+	// Flags from `file`'s magic listing.
+	MH_SPLIT_SEGS			= 0x20,
+	MH_LAZY_INIT			= 0x40,
+	MH_TWOLEVEL			= 0x80,
+	MH_FORCE_FLAT			= 0x100,
+	MH_NOMULTIDEFS			= 0x200,
+	MH_NOFIXPREBINDING		= 0x400,
+	MH_PREBINDABLE			= 0x800,
+	MH_ALLMODSBOUND			= 0x1000,
+	MH_SUBSECTIONS_VIA_SYMBOLS	= 0x2000,
+	MH_CANONICAL			= 0x4000,
+	MH_WEAK_DEFINES			= 0x8000,
+	MH_BINDS_TO_WEAK		= 0x10000,
+	MH_ALLOW_STACK_EXECUTION	= 0x20000,
+	MH_ROOT_SAFE			= 0x40000,
+	MH_SETUID_SAFE			= 0x80000,
+	MH_NO_REEXPORTED_DYLIBS		= 0x100000,
+	MH_PIE				= 0x200000,
+	MH_DEAD_STRIPPABLE_DYLIB	= 0x400000,
+	MH_HAS_TLV_DESCRIPTORS		= 0x800000,
+	MH_NO_HEAP_EXECUTION		= 0x1000000,
+	MH_APP_EXTENSION_SAFE		= 0x2000000,
 } mh_flags_t;
+
+/**
+ * Fat header for Universal Binaries.
+ * NOTE: Universal Binary header is *always* in big-endian.
+ */
+#define FAT_MAGIC	0xCAFEBABE
+
+typedef struct PACKED _fat_header {
+	uint32_t magic;		/* FAT_MAGIC */
+	uint32_t nfat_arch;	/* number of structs that follow */
+} fat_header;
+
+typedef struct PACKED _fat_arch {
+	uint32_t cputype;	/* cpu specifier (int) */
+	uint32_t cpusubtype;	/* machine specifier (int) */
+	uint32_t offset;	/* file offset to this object file */
+	uint32_t size;		/* size of this object file */
+	uint32_t align;		/* alignment as a power of 2 */
+} fat_arch;
 
 #pragma pack()
 

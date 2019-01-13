@@ -31,6 +31,8 @@
   * WiiWIBN: Wii banner files. These are contained in encrypted Wii save
     files and Wii DLC WADs, and are present as standalone files in unencrypted
     Wii save directories as `banner.bin`.
+  * MachO: Mach-O binary parser for Mac OS X and related operating systems.
+    Includes support for Universal Binaries.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
