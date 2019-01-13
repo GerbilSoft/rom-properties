@@ -1050,6 +1050,7 @@ int DMG::loadFieldData(void)
 		}
 	}
 
+	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
 }
 
