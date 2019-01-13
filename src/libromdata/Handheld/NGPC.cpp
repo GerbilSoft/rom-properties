@@ -356,7 +356,7 @@ int NGPC::loadMetaData(void)
 	// NGPC ROM header
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
 
-	// Title.
+	// Title
 	// NOTE: It's listed as ASCII. We'll use Latin-1.
 	d->metaData->addMetaData_string(Property::Title,
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
