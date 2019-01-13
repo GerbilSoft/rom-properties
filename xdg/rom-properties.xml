@@ -209,7 +209,7 @@
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
     <glob pattern="*.sav"/>
-    <magic priority="50">
+    <magic priority="90">
       <match value="DATELGC_SAVE" type="string" offset="0"/>
     </magic>
   </mime-type>
