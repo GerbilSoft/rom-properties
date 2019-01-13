@@ -540,9 +540,9 @@ int MachO::loadFieldData(void)
 
 		// CPU type.
 		if (s_cpu) {
-			d->fields->addField_string(C_("Mach-O", "CPU"), s_cpu);
+			d->fields->addField_string(C_("MachO", "CPU"), s_cpu);
 		} else {
-			d->fields->addField_string(C_("Mach-O", "CPU"),
+			d->fields->addField_string(C_("MachO", "CPU"),
 				rp_sprintf(C_("ELF", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
 		}
 
@@ -550,7 +550,7 @@ int MachO::loadFieldData(void)
 		const char *const s_cpu_subtype = MachOData::lookup_cpu_subtype(
 			machHeader->cputype, machHeader->cpusubtype);
 		if (s_cpu_subtype) {
-			d->fields->addField_string(C_("Mach-O", "CPU Subtype"), s_cpu_subtype);
+			d->fields->addField_string(C_("MachO", "CPU Subtype"), s_cpu_subtype);
 		}
 
 		// Flags.

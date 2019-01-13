@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.3.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-01-12 20:53-0500\n"
+"POT-Creation-Date: 2019-01-12 21:52-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5165,12 +5165,12 @@ msgid "Format"
 msgstr ""
 
 #: ../src/libromdata/Other/MachO.cpp:543 ../src/libromdata/Other/MachO.cpp:545
-msgctxt "Mach-O"
+msgctxt "MachO"
 msgid "CPU"
 msgstr ""
 
 #: ../src/libromdata/Other/MachO.cpp:553
-msgctxt "Mach-O"
+msgctxt "MachO"
 msgid "CPU Subtype"
 msgstr ""
 
