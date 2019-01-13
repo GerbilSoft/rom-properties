@@ -127,7 +127,7 @@ TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rpbase)
 TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
-ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest)
+ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest "--gtest_filter=-*benchmark*")
 
 # UnPremultiplyTest.
 ADD_EXECUTABLE(UnPremultiplyTest
@@ -141,4 +141,4 @@ TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rpbase)
 TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(UnPremultiplyTest)
 SET_WINDOWS_SUBSYSTEM(UnPremultiplyTest CONSOLE)
-ADD_TEST(NAME UnPremultiplyTest COMMAND UnPremultiplyTest)
+ADD_TEST(NAME UnPremultiplyTest COMMAND UnPremultiplyTest "--gtest_filter=-*benchmark*")
