@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-01-12 01:05-0500\n"
+"POT-Creation-Date: 2019-01-12 20:53-0500\n"
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
@@ -573,17 +573,17 @@ msgctxt "KeyManagerTab"
 msgid "Valid?"
 msgstr "Válido?"
 
-#: ../src/libromdata/Audio/ADX.cpp:312
+#: ../src/libromdata/Audio/ADX.cpp:313
 msgctxt "ADX|Format"
 msgid "Fixed Coefficient ADPCM"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:319
+#: ../src/libromdata/Audio/ADX.cpp:320
 msgctxt "ADX|Format"
 msgid "ADX with Exponential Scale"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:327
+#: ../src/libromdata/Audio/ADX.cpp:332
 #: ../src/libromdata/Console/Dreamcast.cpp:667
 #: ../src/libromdata/Console/GameCubeSave.cpp:891
 #: ../src/libromdata/Console/MegaDrive.cpp:301
@@ -607,65 +607,65 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:396
 #: ../src/libromdata/Other/Amiibo.cpp:470
 #: ../src/libromdata/Other/Amiibo.cpp:475
-#: ../src/libromdata/Other/Amiibo.cpp:480 ../src/libromdata/Other/ELF.cpp:1374
-#: ../src/libromdata/Other/EXE_PE.cpp:281
+#: ../src/libromdata/Other/Amiibo.cpp:480 ../src/libromdata/Other/ELF.cpp:1169
+#: ../src/libromdata/Other/EXE_PE.cpp:281 ../src/libromdata/Other/MachO.cpp:538
 #: ../src/libromdata/Other/NintendoBadge.cpp:747
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1186
 msgctxt "RomData"
 msgid "Unknown"
 msgstr "ERRO"
 
-#: ../src/libromdata/Audio/ADX.cpp:330
+#: ../src/libromdata/Audio/ADX.cpp:335
 msgctxt "RomData|Audio"
 msgid "Format"
 msgstr "Formato"
 
-#: ../src/libromdata/Audio/ADX.cpp:333
+#: ../src/libromdata/Audio/ADX.cpp:338
 msgctxt "RomData|Audio"
 msgid "Channels"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:343
+#: ../src/libromdata/Audio/ADX.cpp:348
 msgctxt "RomData|Audio"
 msgid "Sample Rate"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:346
+#: ../src/libromdata/Audio/ADX.cpp:351
 msgctxt "RomData|Audio"
 msgid "Length"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:355
+#: ../src/libromdata/Audio/ADX.cpp:360
 msgctxt "ADX"
 msgid "High-Pass Cutoff"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:359
+#: ../src/libromdata/Audio/ADX.cpp:364
 msgctxt "ADX"
 msgid "Encrypted"
 msgstr "Codificado"
 
-#: ../src/libromdata/Audio/ADX.cpp:361 ../src/libromdata/Audio/ADX.cpp:369
+#: ../src/libromdata/Audio/ADX.cpp:366 ../src/libromdata/Audio/ADX.cpp:374
 msgctxt "ADX"
 msgid "Yes"
 msgstr "Sim"
 
-#: ../src/libromdata/Audio/ADX.cpp:362 ../src/libromdata/Audio/ADX.cpp:370
+#: ../src/libromdata/Audio/ADX.cpp:367 ../src/libromdata/Audio/ADX.cpp:375
 msgctxt "ADX"
 msgid "No"
 msgstr "Não"
 
-#: ../src/libromdata/Audio/ADX.cpp:367
+#: ../src/libromdata/Audio/ADX.cpp:372
 msgctxt "ADX"
 msgid "Looping"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:372
+#: ../src/libromdata/Audio/ADX.cpp:377
 msgctxt "ADX"
 msgid "Loop Start"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:374
+#: ../src/libromdata/Audio/ADX.cpp:379
 msgctxt "ADX"
 msgid "Loop End"
 msgstr ""
@@ -844,7 +844,7 @@ msgstr "Sistema"
 #: ../src/libromdata/Console/WiiWAD.cpp:851
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2044
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1199
-#: ../src/libromdata/Other/Amiibo.cpp:464 ../src/libromdata/Other/ELF.cpp:1261
+#: ../src/libromdata/Other/Amiibo.cpp:464 ../src/libromdata/Other/ELF.cpp:1285
 #: ../src/libromdata/Other/EXE.cpp:282 ../src/libromdata/Other/EXE.cpp:399
 #: ../src/libromdata/Other/EXE_NE.cpp:153
 #: ../src/libromdata/Texture/SegaPVR.cpp:1022
@@ -4291,197 +4291,217 @@ msgctxt "Amiibo"
 msgid "Credits"
 msgstr "Créditos"
 
-#: ../src/libromdata/Other/ELF.cpp:1151 ../src/libromdata/Other/ELF.cpp:1153
+#: ../src/libromdata/Other/ELF.cpp:1153 ../src/libromdata/Other/MachO.cpp:524
+msgctxt "RomData|ExecType"
+msgid "32-bit Little-Endian"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1154 ../src/libromdata/Other/MachO.cpp:525
+msgctxt "RomData|ExecType"
+msgid "64-bit Little-Endian"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1155 ../src/libromdata/Other/MachO.cpp:526
+msgctxt "RomData|ExecType"
+msgid "32-bit Big-Endian"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1156 ../src/libromdata/Other/MachO.cpp:527
+msgctxt "RomData|ExecType"
+msgid "64-bit Big-Endian"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1161 ../src/libromdata/Other/ELF.cpp:1168
+msgctxt "ELF"
+msgid "Format"
+msgstr "Formato"
+
+#: ../src/libromdata/Other/ELF.cpp:1175 ../src/libromdata/Other/ELF.cpp:1177
 msgctxt "ELF"
 msgid "CPU"
 msgstr "CPU"
 
-#: ../src/libromdata/Other/ELF.cpp:1154
+#: ../src/libromdata/Other/ELF.cpp:1178
 #, c-format
 msgctxt "ELF"
 msgid "Unknown (0x%04X)"
 msgstr "Desconhecido(a) (0x%04X)"
 
-#: ../src/libromdata/Other/ELF.cpp:1184
+#: ../src/libromdata/Other/ELF.cpp:1208
 msgctxt "ELF"
 msgid "Instruction Set"
 msgstr "Conjunto de instruções"
 
-#: ../src/libromdata/Other/ELF.cpp:1207
+#: ../src/libromdata/Other/ELF.cpp:1231
 msgctxt "ELF|SPARC_MM"
 msgid "Total Store Ordering"
 msgstr "Ordem de armazenamento total"
 
-#: ../src/libromdata/Other/ELF.cpp:1208
+#: ../src/libromdata/Other/ELF.cpp:1232
 msgctxt "ELF|SPARC_MM"
 msgid "Partial Store Ordering"
 msgstr "Ordem de armazenamento parcial"
 
-#: ../src/libromdata/Other/ELF.cpp:1209
+#: ../src/libromdata/Other/ELF.cpp:1233
 msgctxt "ELF|SPARC_MM"
 msgid "Relaxed Memory Ordering"
 msgstr "Ordem de memória relaxada"
 
-#: ../src/libromdata/Other/ELF.cpp:1210
+#: ../src/libromdata/Other/ELF.cpp:1234
 msgctxt "ELF|SPARC_MM"
 msgid "Invalid"
 msgstr "Inválido(a)"
 
-#: ../src/libromdata/Other/ELF.cpp:1212
+#: ../src/libromdata/Other/ELF.cpp:1236
 msgctxt "ELF"
 msgid "Memory Ordering"
 msgstr "Ordem de memória"
 
-#: ../src/libromdata/Other/ELF.cpp:1222
+#: ../src/libromdata/Other/ELF.cpp:1246
 msgctxt "ELF|SPARCFlags"
 msgid "SPARC V8+"
 msgstr "SPARC V8+"
 
-#: ../src/libromdata/Other/ELF.cpp:1223
+#: ../src/libromdata/Other/ELF.cpp:1247
 msgctxt "ELF|SPARCFlags"
 msgid "UltraSPARC I"
 msgstr "UltraSPARC I"
 
-#: ../src/libromdata/Other/ELF.cpp:1224
+#: ../src/libromdata/Other/ELF.cpp:1248
 msgctxt "ELF|SPARCFlags"
 msgid "HaL R1"
 msgstr "HaL R1"
 
-#: ../src/libromdata/Other/ELF.cpp:1225
+#: ../src/libromdata/Other/ELF.cpp:1249
 msgctxt "ELF|SPARCFlags"
 msgid "UltraSPARC III"
 msgstr "UltraSPARC III"
 
 #. tr: Little-Endian Data
-#: ../src/libromdata/Other/ELF.cpp:1233
+#: ../src/libromdata/Other/ELF.cpp:1257
 msgctxt "ELF|SPARCFlags"
 msgid "LE Data"
 msgstr "Dados LE"
 
-#: ../src/libromdata/Other/ELF.cpp:1237 ../src/libromdata/Other/ELF.cpp:1283
+#: ../src/libromdata/Other/ELF.cpp:1261 ../src/libromdata/Other/ELF.cpp:1307
 msgctxt "ELF"
 msgid "CPU Flags"
 msgstr "Parâmetros de CPU"
 
-#: ../src/libromdata/Other/ELF.cpp:1246
+#: ../src/libromdata/Other/ELF.cpp:1270
 msgctxt "ELF"
 msgid "MIPS ABI"
 msgstr "ABI MIPS "
 
-#: ../src/libromdata/Other/ELF.cpp:1258 ../src/libromdata/Other/ELF.cpp:1260
+#: ../src/libromdata/Other/ELF.cpp:1282 ../src/libromdata/Other/ELF.cpp:1284
 msgctxt "ELF"
 msgid "CPU Level"
 msgstr "Nível de CPU"
 
-#: ../src/libromdata/Other/ELF.cpp:1267
+#: ../src/libromdata/Other/ELF.cpp:1291
 msgctxt "ELF|MIPSFlags"
 msgid "No Reorder"
 msgstr "Sem reordenação"
 
-#: ../src/libromdata/Other/ELF.cpp:1268
+#: ../src/libromdata/Other/ELF.cpp:1292
 msgctxt "ELF|MIPSFlags"
 msgid "PIC"
 msgstr "PIC"
 
-#: ../src/libromdata/Other/ELF.cpp:1269
+#: ../src/libromdata/Other/ELF.cpp:1293
 msgctxt "ELF|MIPSFlags"
 msgid "CPIC"
 msgstr "CPIC"
 
-#: ../src/libromdata/Other/ELF.cpp:1270
+#: ../src/libromdata/Other/ELF.cpp:1294
 msgctxt "ELF|MIPSFlags"
 msgid "XGOT"
 msgstr "XGOT"
 
-#: ../src/libromdata/Other/ELF.cpp:1272
+#: ../src/libromdata/Other/ELF.cpp:1296
 msgctxt "ELF|MIPSFlags"
 msgid "64-bit Whirl"
 msgstr "Whirl de 64 bits"
 
-#: ../src/libromdata/Other/ELF.cpp:1273
+#: ../src/libromdata/Other/ELF.cpp:1297
 msgctxt "ELF|MIPSFlags"
 msgid "ABI2"
 msgstr "ABI2"
 
-#: ../src/libromdata/Other/ELF.cpp:1274
+#: ../src/libromdata/Other/ELF.cpp:1298
 msgctxt "ELF|MIPSFlags"
 msgid "ABI ON32"
 msgstr "ABI ON32"
 
-#: ../src/libromdata/Other/ELF.cpp:1278
+#: ../src/libromdata/Other/ELF.cpp:1302
 msgctxt "ELF|MIPSFlags"
 msgid "FP64"
 msgstr "FP64"
 
-#: ../src/libromdata/Other/ELF.cpp:1279
+#: ../src/libromdata/Other/ELF.cpp:1303
 msgctxt "ELF|MIPSFlags"
 msgid "NaN 2008"
 msgstr "NaN 2008"
 
-#: ../src/libromdata/Other/ELF.cpp:1290
+#: ../src/libromdata/Other/ELF.cpp:1314
 msgctxt "ELF"
 msgid "PA-RISC Version"
 msgstr "Versão do PA-RISC"
 
-#: ../src/libromdata/Other/ELF.cpp:1331
+#: ../src/libromdata/Other/ELF.cpp:1355
 msgctxt "ELF"
 msgid "ARM EABI"
 msgstr "ARM EABI"
 
-#: ../src/libromdata/Other/ELF.cpp:1344 ../src/libromdata/Other/ELF.cpp:1346
+#: ../src/libromdata/Other/ELF.cpp:1368 ../src/libromdata/Other/ELF.cpp:1370
 msgctxt "ELF"
 msgid "OS ABI"
 msgstr "ABI do SO"
 
-#: ../src/libromdata/Other/ELF.cpp:1347
+#: ../src/libromdata/Other/ELF.cpp:1371 ../src/libromdata/Other/MachO.cpp:546
 #, c-format
 msgctxt "ELF"
 msgid "Unknown (%u)"
 msgstr "Desconhecido(a) (%u)"
 
-#: ../src/libromdata/Other/ELF.cpp:1352
+#: ../src/libromdata/Other/ELF.cpp:1376
 msgctxt "ELF"
 msgid "ABI Version"
 msgstr "Versão da ABI"
 
-#: ../src/libromdata/Other/ELF.cpp:1366 ../src/libromdata/Other/ELF.cpp:1373
-msgctxt "ELF"
-msgid "Format"
-msgstr "Formato"
-
-#: ../src/libromdata/Other/ELF.cpp:1378
+#: ../src/libromdata/Other/ELF.cpp:1381
 msgctxt "ELF"
 msgid "Linkage"
 msgstr "Ligação"
 
-#: ../src/libromdata/Other/ELF.cpp:1380
+#: ../src/libromdata/Other/ELF.cpp:1383
 msgctxt "ELF|Linkage"
 msgid "Dynamic"
 msgstr "Dinâmica"
 
-#: ../src/libromdata/Other/ELF.cpp:1381
+#: ../src/libromdata/Other/ELF.cpp:1384
 msgctxt "ELF|Linkage"
 msgid "Static"
 msgstr "Estática"
 
-#: ../src/libromdata/Other/ELF.cpp:1385
+#: ../src/libromdata/Other/ELF.cpp:1388
 msgctxt "ELF"
 msgid "Interpreter"
 msgstr "Interpretador"
 
-#: ../src/libromdata/Other/ELF.cpp:1390
+#: ../src/libromdata/Other/ELF.cpp:1393
 msgctxt "ELF"
 msgid "OS Version"
 msgstr "Versão do SO"
 
 #. tr: Entry point, then "Position-Independent".
-#: ../src/libromdata/Other/ELF.cpp:1406
+#: ../src/libromdata/Other/ELF.cpp:1409
 #, c-format
 msgctxt "ELF"
 msgid "%s (Position-Independent)"
 msgstr "%s (Independente de posição)"
 
-#: ../src/libromdata/Other/ELF.cpp:1409
+#: ../src/libromdata/Other/ELF.cpp:1412
 msgctxt "ELF"
 msgid "Entry Point"
 msgstr "Ponto de entrada"
@@ -5196,6 +5216,28 @@ msgctxt "EXE"
 msgid "Not set"
 msgstr "Não definido(a)"
 
+#: ../src/libromdata/Other/MachO.cpp:532 ../src/libromdata/Other/MachO.cpp:537
+msgctxt "MachO"
+msgid "Format"
+msgstr "Formato"
+
+#: ../src/libromdata/Other/MachO.cpp:543 ../src/libromdata/Other/MachO.cpp:545
+msgctxt "Mach-O"
+msgid "CPU"
+msgstr "CPU"
+
+#: ../src/libromdata/Other/MachO.cpp:553
+#, fuzzy
+msgctxt "Mach-O"
+msgid "CPU Subtype"
+msgstr "Subtipo de CPU"
+
+#: ../src/libromdata/Other/MachO.cpp:576
+#, fuzzy
+msgctxt "MachO"
+msgid "Flags"
+msgstr "Atributos"
+
 #: ../src/libromdata/Other/NintendoBadge.cpp:609
 #: ../src/libromdata/Other/NintendoBadge.cpp:704
 #: ../src/libromdata/Other/NintendoBadge.cpp:746
@@ -5562,12 +5604,14 @@ msgstr "Tanho de textura"
 
 #: ../src/libromdata/Texture/KhronosKTX.cpp:825
 #: ../src/libromdata/Texture/KhronosKTX.cpp:834
+#, fuzzy
 msgctxt "KhronosKTX"
 msgid "Little-Endian"
 msgstr "Crescente"
 
 #: ../src/libromdata/Texture/KhronosKTX.cpp:827
 #: ../src/libromdata/Texture/KhronosKTX.cpp:832
+#, fuzzy
 msgctxt "KhronosKTX"
 msgid "Big-Endian"
 msgstr "Decrescente"
@@ -6068,62 +6112,68 @@ msgctxt "RomData|FileType"
 msgid "Boot Sector"
 msgstr ""
 
+#. tr: FTYPE_BUNDLE (Mac OS X bundle)
+#: ../src/librpbase/RomData.cpp:501
+msgctxt "RomData|FileType"
+msgid "Bundle"
+msgstr ""
+
 #. tr: IMG_INT_ICON
-#: ../src/librpbase/RomData.cpp:736
+#: ../src/librpbase/RomData.cpp:738
 msgctxt "RomData|ImageType"
 msgid "Internal icon"
 msgstr "Ícone interno"
 
 #. tr: IMG_INT_BANNER
-#: ../src/librpbase/RomData.cpp:738
+#: ../src/librpbase/RomData.cpp:740
 msgctxt "RomData|ImageType"
 msgid "Internal banner"
 msgstr "Banner interno"
 
 #. tr: IMG_INT_MEDIA
-#: ../src/librpbase/RomData.cpp:740
+#: ../src/librpbase/RomData.cpp:742
 msgctxt "RomData|ImageType"
 msgid "Internal media scan"
 msgstr "Arte interna"
 
 #. tr: IMG_INT_IMAGE
-#: ../src/librpbase/RomData.cpp:742
+#: ../src/librpbase/RomData.cpp:744
 msgctxt "RomData|ImageType"
 msgid "Internal image"
 msgstr "Textura"
 
 #. tr: IMG_EXT_MEDIA
-#: ../src/librpbase/RomData.cpp:747
+#: ../src/librpbase/RomData.cpp:749
 msgctxt "RomData|ImageType"
 msgid "External media scan"
 msgstr "Imagem de terceiros"
 
 #. tr: IMG_EXT_COVER
-#: ../src/librpbase/RomData.cpp:749
+#: ../src/librpbase/RomData.cpp:751
 msgctxt "RomData|ImageType"
 msgid "External cover scan"
 msgstr "Capa de terceiros"
 
 #. tr: IMG_EXT_COVER_3D
-#: ../src/librpbase/RomData.cpp:751
+#: ../src/librpbase/RomData.cpp:753
 msgctxt "RomData|ImageType"
 msgid "External cover scan (3D version)"
 msgstr "Imagem de terceiros (3D)"
 
 #. tr: IMG_EXT_COVER_FULL
-#: ../src/librpbase/RomData.cpp:753
+#: ../src/librpbase/RomData.cpp:755
 msgctxt "RomData|ImageType"
 msgid "External cover scan (front and back)"
 msgstr "Capa de terceiros (frente e verso)"
 
 #. tr: IMG_EXT_BOX
-#: ../src/librpbase/RomData.cpp:755
+#: ../src/librpbase/RomData.cpp:757
 msgctxt "RomData|ImageType"
 msgid "External box scan"
 msgstr "Foto de embalagem de terceiros"
 
 #. tr: IMG_EXT_TITLE_SCREEN
-#: ../src/librpbase/RomData.cpp:757
+#: ../src/librpbase/RomData.cpp:759
 msgctxt "RomData|ImageType"
 msgid "External title screen"
 msgstr ""
