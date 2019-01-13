@@ -277,7 +277,7 @@ int NGPC::loadFieldData(void)
 
 	// NGPC ROM header
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(12+5);	// Maximum of N fields.
+	d->fields->reserve(6);	// Maximum of 6 fields.
 
 	// Title
 	// NOTE: It's listed as ASCII. We'll use Latin-1.
