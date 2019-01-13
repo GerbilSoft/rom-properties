@@ -443,6 +443,7 @@
     <comment>Mach-O shared library</comment>
     <sub-class-of type="application/x-sharedlib"/>
     <generic-icon name="application-x-sharedlib"/>
+    <glob pattern="*.dylib"/>
     <magic priority="50">
       <match value="0xFEEDFACE" type="big32" offset="0">
         <match value="3" type="big32" offset="12"/>
@@ -486,6 +487,7 @@
     <comment>Mach-O bundle</comment>
     <sub-class-of type="application/x-archive"/>
     <generic-icon name="application-x-archive"/>
+    <glob pattern="*.bundle"/>
     <magic priority="50">
       <match value="0xFEEDFACE" type="big32" offset="0">
         <match value="8" type="big32" offset="12"/>
@@ -498,6 +500,33 @@
       </match>
       <match value="0xFEEDFACF" type="little32" offset="0">
         <match value="8" type="little32" offset="12"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-mach-fat-binary">
+    <comment>Mach-O fat binary</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <!-- Conflicts with Java's compiled class files. -->
+    <!-- Assuming a maximum of 16 architectures per universal binary. -->
+    <magic priority="75">
+      <match value="0xCAFEBABE" type="big32" offset="0">
+        <match value="1" type="big32" offset="4"/>
+        <match value="2" type="big32" offset="4"/>
+        <match value="3" type="big32" offset="4"/>
+        <match value="4" type="big32" offset="4"/>
+        <match value="5" type="big32" offset="4"/>
+        <match value="6" type="big32" offset="4"/>
+        <match value="7" type="big32" offset="4"/>
+        <match value="8" type="big32" offset="4"/>
+        <match value="9" type="big32" offset="4"/>
+        <match value="10" type="big32" offset="4"/>
+        <match value="11" type="big32" offset="4"/>
+        <match value="12" type="big32" offset="4"/>
+        <match value="13" type="big32" offset="4"/>
+        <match value="14" type="big32" offset="4"/>
+        <match value="15" type="big32" offset="4"/>
+        <match value="16" type="big32" offset="4"/>
       </match>
     </magic>
   </mime-type>
