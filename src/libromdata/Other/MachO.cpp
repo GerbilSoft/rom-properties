@@ -208,7 +208,7 @@ MachO::MachO(IRpFile *file)
 			// Read up to 16 architectures.
 			const fat_header *const fatHeader =
 				reinterpret_cast<const fat_header*>(info.header.pData);
-			const unsigned int nfat_arch = std::min(
+			const unsigned int nfat_arch = std::min<uint32_t>(
 				MAX_MACH_HEADERS, be32_to_cpu(fatHeader->nfat_arch));
 			d->machFormats.reserve(nfat_arch);
 			d->machHeaders.reserve(nfat_arch);
