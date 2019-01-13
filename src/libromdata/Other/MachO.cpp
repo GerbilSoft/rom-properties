@@ -522,7 +522,7 @@ int MachO::loadFieldData(void)
 		// Executable format.
 		static const char *const exec_type_tbl[] = {
 			NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
-			NOP_C_("RomData|ExecType", "64-bit Little Endian"),
+			NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 		};
