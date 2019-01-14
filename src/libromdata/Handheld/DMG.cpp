@@ -803,6 +803,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// Entry Point
+	const char *const entry_point_title = C_("DMG", "Entry Point");
 	if ((romHeader->entry[0] == 0x00 ||	// NOP
 	     romHeader->entry[0] == 0xF3 ||	// DI
 	     romHeader->entry[0] == 0x7F ||	// LD A,A
@@ -813,12 +814,12 @@ int DMG::loadFieldData(void)
 		// This is the "standard" way of doing the entry point.
 		// NOTE: Some titles use a different opcode instead of NOP.
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
-		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+		d->fields->addField_string_numeric(entry_point_title,
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0xC3) {
 		// JP nnnn without a NOP.
 		const uint16_t entry_address = (romHeader->entry[1] | (romHeader->entry[2] << 8));
-		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+		d->fields->addField_string_numeric(entry_point_title,
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0x18) {
 		// JR nnnn
@@ -827,10 +828,10 @@ int DMG::loadFieldData(void)
 		// Current PC: 0x100
 		// Add displacement, plus 2.
 		const uint16_t entry_address = 0x100 + disp + 2;
-		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+		d->fields->addField_string_numeric(entry_point_title,
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	} else {
-		d->fields->addField_string_hexdump(C_("DMG", "Entry Point"),
+		d->fields->addField_string_hexdump(entry_point_title,
 			romHeader->entry, 4, RomFields::STRF_MONOSPACE);
 	}
 
@@ -855,62 +856,65 @@ int DMG::loadFieldData(void)
 		v_feature_bitfield_names, 0, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	// ROM Size
-	int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
+	const char *const rom_size_title = C_("DMG", "ROM Size");
+	const int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
 	if (rom_size < 0) {
-		d->fields->addField_string(C_("DMG", "ROM Size"), C_("DMG", "Unknown"));
+		d->fields->addField_string(rom_size_title, C_("DMG", "Unknown"));
 	} else {
 		if (rom_size > 32) {
 			const int banks = rom_size / 16;
-			d->fields->addField_string(C_("DMG", "ROM Size"),
+			d->fields->addField_string(rom_size_title,
 				rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 					static_cast<unsigned int>(rom_size),
 					static_cast<unsigned int>(banks)));
 		} else {
-			d->fields->addField_string(C_("DMG", "ROM Size"),
+			d->fields->addField_string(rom_size_title,
 				rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(rom_size)));
 		}
 	}
 
 	// RAM Size
+	const char *const ram_size_title = C_("DMG", "RAM Size");
 	if (romHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)) {
-		d->fields->addField_string(C_("DMG", "RAM Size"), C_("RomData", "Unknown"));
+		d->fields->addField_string(ram_size_title, C_("RomData", "Unknown"));
 	} else {
-		uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
+		const uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
 		if (ram_size == 0 &&
 		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_HW_MBC2)
 		{
-			d->fields->addField_string(C_("DMG", "RAM Size"),
+			d->fields->addField_string(ram_size_title,
 				// tr: MBC2 internal memory - Not really RAM, but whatever.
 				C_("DMG", "512 x 4 bits"));
 		} else if(ram_size == 0) {
-			d->fields->addField_string(C_("DMG", "RAM Size"), C_("DMG", "No RAM"));
+			d->fields->addField_string(ram_size_title, C_("DMG", "No RAM"));
 		} else {
 			if (ram_size > 8) {
 				const int banks = ram_size / 16;
-				d->fields->addField_string(C_("DMG", "RAM Size"),
+				d->fields->addField_string(ram_size_title,
 					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 						static_cast<unsigned int>(ram_size),
 						static_cast<unsigned int>(banks)));
 			} else {
-				d->fields->addField_string(C_("DMG", "RAM Size"),
+				d->fields->addField_string(ram_size_title,
 					rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(ram_size)));
 			}
 		}
 	}
 
 	// Region Code
+	const char *const region_code_title = C_("RomData", "Region Code");
 	switch (romHeader->region) {
 		case 0:
-			d->fields->addField_string(C_("RomData", "Region Code"),
+			d->fields->addField_string(region_code_title,
 				C_("Region|DMG", "Japanese"));
 			break;
 		case 1:
-			d->fields->addField_string(C_("RomData", "Region Code"),
+			d->fields->addField_string(region_code_title,
 				C_("Region|DMG", "Non-Japanese"));
 			break;
 		default:
 			// Invalid value.
-			d->fields->addField_string(C_("RomData", "Region Code"),
+			d->fields->addField_string(region_code_title,
 				rp_sprintf(C_("DMG", "0x%02X (INVALID)"), romHeader->region));
 			break;
 	}
@@ -929,12 +933,13 @@ int DMG::loadFieldData(void)
 		checksum -= romHeader8[i];
 	}
 
+	const char *const checksum_title = C_("RomData", "Checksum");
 	if (checksum - romHeader->header_checksum != 0) {
-		d->fields->addField_string(C_("RomData", "Checksum"),
+		d->fields->addField_string(checksum_title,
 			rp_sprintf_p(C_("DMG", "0x%1$02X (INVALID; should be 0x%2$02X)"),
 				romHeader->header_checksum, checksum));
 	} else {
-		d->fields->addField_string(C_("RomData", "Checksum"),
+		d->fields->addField_string(checksum_title,
 			rp_sprintf(C_("DMG", "0x%02X (valid)"), checksum));
 	}
 
