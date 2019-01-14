@@ -394,7 +394,7 @@ const char *MachO::systemName(unsigned int type) const
 		"MachO::systemName() array index optimization needs to be updated.");
 
 	static const char *const sysNames[4] = {
-		"Mach-O Microkernel", "Mach-O", "Mach-O", nullptr
+		"Mach Microkernel", "Mach", "Mach", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
