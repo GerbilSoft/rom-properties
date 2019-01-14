@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RomDataView.hpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -861,6 +861,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// TODO: Ensure the description column has the
 	// same width on all tabs.
 
+	// tr: Field description label.
+	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+
 	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
 		const RomFields::Field *field = fields->field(i);
@@ -880,7 +883,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 
 		// tr: Field description label.
-		string txt = rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str());
+		string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
 		QLabel *lblDesc = new QLabel(U82Q(txt.c_str()), q);
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);

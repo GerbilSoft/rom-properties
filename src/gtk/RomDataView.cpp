@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -1254,6 +1254,9 @@ rom_data_view_update_display(RomDataView *page)
 	// need to manage it ourselves.
 	GtkSizeGroup *const size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 
+	// tr: Field description label.
+	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+
 	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
 		const RomFields::Field *field = fields->field(i);
@@ -1309,7 +1312,7 @@ rom_data_view_update_display(RomDataView *page)
 			auto &tab = page->tabs->at(tabIdx);
 
 			// tr: Field description label.
-			string txt = rp_sprintf(C_("RomDataView", "%s:"), field->name.c_str());
+			string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
