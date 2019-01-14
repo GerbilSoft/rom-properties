@@ -179,6 +179,24 @@ class DMGPrivate : public RomDataPrivate
 			PartitionFile *file;	// uses reader
 			GBS *data;
 		} gbs;
+
+		/**
+		 * Get the title and game ID.
+		 *
+		 * NOTE: These have to be handled at the same time because
+		 * later games take bytes away from the title field to use
+		 * for the CGB flag and the game ID.
+		 *
+		 * @param s_title	[out] Title.
+		 * @param s_gameID	[out] Game ID, or "Unknown" if not available.
+		 */
+		void getTitleAndGameID(string &s_title, string &s_gameID) const;
+
+		/**
+		 * Get the publisher.
+		 * @return Publisher, or "Unknown (xxx)" if unknown.
+		 */
+		string getPublisher(void) const;
 };
 
 /** DMGPrivate **/
@@ -335,6 +353,125 @@ const uint8_t DMGPrivate::dmg_nintendo[0x18] = {
 	0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
 	0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E
 };
+
+/**
+ * Get the title and game ID.
+ *
+ * NOTE: These have to be handled at the same time because
+ * later games take bytes away from the title field to use
+ * for the CGB flag and the game ID.
+ *
+ * @param s_title	[out] Title.
+ * @param s_gameID	[out] Game ID, or "Unknown" if not available.
+ */
+void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
+{
+	/* NOTE: there are two approaches for doing this, when the 15 bytes are all used
+	 * 1) prioritize id
+	 * 2) prioritize title
+	 * Both of those have counter examples:
+	 * If you do the first, you will get "SUPER MARIO" and "LAND" on super mario land rom
+	 * With the second one, you will get "MARIO DELUXAHYJ" and Unknown on super mario deluxe rom
+	 *
+	 * Current method is the first one.
+	 */
+	if (romHeader.cgbflag < 0x80) {
+		// Assuming 16-character title for non-CGB.
+		// Game ID is not present.
+		s_title = latin1_to_utf8(romHeader.title16, sizeof(romHeader.title16));
+		s_gameID = C_("RomData", "Unknown");
+		return;
+	}
+
+	// Check if CGB flag is set.
+	bool isGameID;
+	if ((romHeader.cgbflag & 0x3F) == 0) {
+		// CGB flag is set.
+		// Check if a Game ID is present.
+		isGameID = true;
+		for (unsigned int i = 11; i < 15; i++) {
+			if (!ISALNUM(romHeader.title15[i])) {
+				// Not a Game ID.
+				isGameID = false;
+				break;
+			}
+		}
+	} else {
+		// Not CGB. No Game ID.
+		isGameID = false;
+	}
+
+	if (isGameID) {
+		// Game ID is present.
+		s_title = latin1_to_utf8(romHeader.title11, sizeof(romHeader.title11));
+
+		// Append the publisher code to make an ID6.
+		s_gameID.clear();
+		s_gameID.resize(6);
+		s_gameID[0] = romHeader.id4[0];
+		s_gameID[1] = romHeader.id4[1];
+		s_gameID[2] = romHeader.id4[2];
+		s_gameID[3] = romHeader.id4[3];
+		if (romHeader.old_publisher_code == 0x33) {
+			// New publisher code.
+			s_gameID[4] = romHeader.new_publisher_code[0];
+			s_gameID[5] = romHeader.new_publisher_code[1];
+		} else {
+			// Old publisher code.
+			// FIXME: This probably won't ever happen,
+			// since Game ID was added *after* CGB.
+			static const char hex_lookup[16] = {
+				'0','1','2','3','4','5','6','7',
+				'8','9','A','B','C','D','E','F'
+			};
+			s_gameID[4] = hex_lookup[romHeader.old_publisher_code >> 4];
+			s_gameID[5] = hex_lookup[romHeader.old_publisher_code & 0x0F];
+		}
+	} else {
+		// Game ID is not present.
+		s_title = latin1_to_utf8(romHeader.title15, sizeof(romHeader.title15));
+		s_gameID = C_("RomData", "Unknown");
+	}
+}
+
+/**
+ * Get the publisher.
+ * @return Publisher, or "Unknown (xxx)" if unknown.
+ */
+string DMGPrivate::getPublisher(void) const
+{
+	const char* publisher;
+	string s_publisher;
+	if (romHeader.old_publisher_code == 0x33) {
+		// New publisher code.
+		publisher = NintendoPublishers::lookup(romHeader.new_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			if (ISALNUM(romHeader.new_publisher_code[0]) &&
+			    ISALNUM(romHeader.new_publisher_code[1]))
+			{
+				s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
+					romHeader.new_publisher_code);
+			} else {
+				s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X %02X)"),
+					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
+					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
+			}
+		}
+	} else {
+		// Old publisher code.
+		publisher = NintendoPublishers::lookup_old(romHeader.old_publisher_code);
+		if (publisher) {
+			s_publisher = publisher;
+		} else {
+			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
+				romHeader.old_publisher_code);
+		}
+	}
+
+	return s_publisher;
+}
 
 /** DMG **/
 
@@ -620,72 +757,14 @@ int DMG::loadFieldData(void)
 	// DMG, GBX, GBS
 	d->fields->reserveTabs(3);
 
-	// Game title & Game ID
-	/* NOTE: there are two approaches for doing this, when the 15 bytes are all used
-	 * 1) prioritize id
-	 * 2) prioritize title
-	 * Both of those have counter examples:
-	 * If you do the first, you will get "SUPER MARIO" and "LAND" on super mario land rom
-	 * With the second one, you will get "MARIO DELUXAHYJ" and Unknown on super mario deluxe rom
-	 * 
-	 * Current method is the first one.
-	 */
-	if (romHeader->cgbflag < 0x80) {
-		// Assuming 16-character title for non-CGB.
-		d->fields->addField_string(C_("RomData", "Title"),
-			latin1_to_utf8(romHeader->title16, sizeof(romHeader->title16)));
-		// Game ID is not present.
-		d->fields->addField_string(C_("DMG", "Game ID"), C_("RomData", "Unknown"));
-	} else {
-		// Check if CGB flag is present.
-		bool isGameID;
-		if ((romHeader->cgbflag & 0x3F) == 0) {
-		// Check if a Game ID is present.
-			isGameID = true;
-			for (int i = 11; i < 15; i++) {
-				if (!ISALNUM(romHeader->title15[i])) {
-					// Not a Game ID.
-					isGameID = false;
-					break;
-				}
-			}
-		} else {
-			// Not CGB. No Game ID.
-			isGameID = false;
-		}
-
-		if (isGameID) {
-			// Game ID is present.
-			d->fields->addField_string(C_("RomData", "Title"),
-				latin1_to_utf8(romHeader->title11, sizeof(romHeader->title11)));
-
-			// Append the publisher code to make an ID6.
-			char id6[6];
-			memcpy(id6, romHeader->id4, 4);
-			if (romHeader->old_publisher_code == 0x33) {
-				// New publisher code.
-				id6[4] = romHeader->new_publisher_code[0];
-				id6[5] = romHeader->new_publisher_code[1];
-			} else {
-				// Old publisher code.
-				// FIXME: This probably won't ever happen,
-				// since Game ID was added *after* CGB.
-				static const char hex_lookup[16] = {
-					'0','1','2','3','4','5','6','7',
-					'8','9','A','B','C','D','E','F'
-				};
-				id6[4] = hex_lookup[romHeader->old_publisher_code >> 4];
-				id6[5] = hex_lookup[romHeader->old_publisher_code & 0x0F];
-			}
-			d->fields->addField_string(C_("DMG", "Game ID"),
-				latin1_to_utf8(id6, sizeof(id6)));
-		} else {
-			// Game ID is not present.
-			d->fields->addField_string(C_("RomData", "Title"),
-				latin1_to_utf8(romHeader->title15, sizeof(romHeader->title15)));
-			d->fields->addField_string(C_("DMG", "Game ID"), C_("RomData", "Unknown"));
-		}
-	}
+	// Title and game ID
+	// NOTE: These have to be handled at the same time because
+	// later games take bytes away from the title field to use
+	// for the CGB flag and the game ID.
+	string s_title, s_gameID;
+	d->getTitleAndGameID(s_title, s_gameID);
+	d->fields->addField_string(C_("RomData", "Title"), s_title);
+	d->fields->addField_string(C_("DMG", "Game ID"), s_gameID);
 
 	// System
 	uint32_t dmg_system = 0;
@@ -724,6 +803,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// Entry Point
+	const char *const entry_point_title = C_("DMG", "Entry Point");
 	if ((romHeader->entry[0] == 0x00 ||	// NOP
 	     romHeader->entry[0] == 0xF3 ||	// DI
 	     romHeader->entry[0] == 0x7F ||	// LD A,A
@@ -734,12 +814,12 @@ int DMG::loadFieldData(void)
 		// This is the "standard" way of doing the entry point.
 		// NOTE: Some titles use a different opcode instead of NOP.
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
-		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+		d->fields->addField_string_numeric(entry_point_title,
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0xC3) {
 		// JP nnnn without a NOP.
 		const uint16_t entry_address = (romHeader->entry[1] | (romHeader->entry[2] << 8));
-		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+		d->fields->addField_string_numeric(entry_point_title,
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0x18) {
 		// JR nnnn
@@ -748,42 +828,16 @@ int DMG::loadFieldData(void)
 		// Current PC: 0x100
 		// Add displacement, plus 2.
 		const uint16_t entry_address = 0x100 + disp + 2;
-		d->fields->addField_string_numeric(C_("DMG", "Entry Point"),
+		d->fields->addField_string_numeric(entry_point_title,
 			entry_address, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	} else {
-		d->fields->addField_string_hexdump(C_("DMG", "Entry Point"),
+		d->fields->addField_string_hexdump(entry_point_title,
 			romHeader->entry, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Publisher
-	const char* publisher;
-	string s_publisher;
-	if (romHeader->old_publisher_code == 0x33) {
-		publisher = NintendoPublishers::lookup(romHeader->new_publisher_code);
-		if (publisher) {
-			s_publisher = publisher;
-		} else {
-			if (ISALNUM(romHeader->new_publisher_code[0]) &&
-			    ISALNUM(romHeader->new_publisher_code[1]))
-			{
-				s_publisher = rp_sprintf(C_("DMG", "Unknown (%.2s)"),
-					romHeader->new_publisher_code);
-			} else {
-				s_publisher = rp_sprintf(C_("DMG", "Unknown (%02X %02X)"),
-					static_cast<uint8_t>(romHeader->new_publisher_code[0]),
-					static_cast<uint8_t>(romHeader->new_publisher_code[1]));
-			}
-		}
-	} else {
-		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
-		if (publisher) {
-			s_publisher = publisher;
-		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
-				romHeader->old_publisher_code);
-		}
-	}
-	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
+	d->fields->addField_string(C_("RomData", "Publisher"),
+		d->getPublisher());
 
 	// Hardware
 	d->fields->addField_string(C_("DMG", "Hardware"),
@@ -802,62 +856,65 @@ int DMG::loadFieldData(void)
 		v_feature_bitfield_names, 0, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	// ROM Size
-	int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
+	const char *const rom_size_title = C_("DMG", "ROM Size");
+	const int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
 	if (rom_size < 0) {
-		d->fields->addField_string(C_("DMG", "ROM Size"), C_("DMG", "Unknown"));
+		d->fields->addField_string(rom_size_title, C_("DMG", "Unknown"));
 	} else {
 		if (rom_size > 32) {
 			const int banks = rom_size / 16;
-			d->fields->addField_string(C_("DMG", "ROM Size"),
+			d->fields->addField_string(rom_size_title,
 				rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 					static_cast<unsigned int>(rom_size),
 					static_cast<unsigned int>(banks)));
 		} else {
-			d->fields->addField_string(C_("DMG", "ROM Size"),
+			d->fields->addField_string(rom_size_title,
 				rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(rom_size)));
 		}
 	}
 
 	// RAM Size
+	const char *const ram_size_title = C_("DMG", "RAM Size");
 	if (romHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)) {
-		d->fields->addField_string(C_("DMG", "RAM Size"), C_("RomData", "Unknown"));
+		d->fields->addField_string(ram_size_title, C_("RomData", "Unknown"));
 	} else {
-		uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
+		const uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
 		if (ram_size == 0 &&
 		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_HW_MBC2)
 		{
-			d->fields->addField_string(C_("DMG", "RAM Size"),
+			d->fields->addField_string(ram_size_title,
 				// tr: MBC2 internal memory - Not really RAM, but whatever.
 				C_("DMG", "512 x 4 bits"));
 		} else if(ram_size == 0) {
-			d->fields->addField_string(C_("DMG", "RAM Size"), C_("DMG", "No RAM"));
+			d->fields->addField_string(ram_size_title, C_("DMG", "No RAM"));
 		} else {
 			if (ram_size > 8) {
 				const int banks = ram_size / 16;
-				d->fields->addField_string(C_("DMG", "RAM Size"),
+				d->fields->addField_string(ram_size_title,
 					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 						static_cast<unsigned int>(ram_size),
 						static_cast<unsigned int>(banks)));
 			} else {
-				d->fields->addField_string(C_("DMG", "RAM Size"),
+				d->fields->addField_string(ram_size_title,
 					rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(ram_size)));
 			}
 		}
 	}
 
 	// Region Code
+	const char *const region_code_title = C_("RomData", "Region Code");
 	switch (romHeader->region) {
 		case 0:
-			d->fields->addField_string(C_("RomData", "Region Code"),
+			d->fields->addField_string(region_code_title,
 				C_("Region|DMG", "Japanese"));
 			break;
 		case 1:
-			d->fields->addField_string(C_("RomData", "Region Code"),
+			d->fields->addField_string(region_code_title,
 				C_("Region|DMG", "Non-Japanese"));
 			break;
 		default:
 			// Invalid value.
-			d->fields->addField_string(C_("RomData", "Region Code"),
+			d->fields->addField_string(region_code_title,
 				rp_sprintf(C_("DMG", "0x%02X (INVALID)"), romHeader->region));
 			break;
 	}
@@ -876,12 +933,13 @@ int DMG::loadFieldData(void)
 		checksum -= romHeader8[i];
 	}
 
+	const char *const checksum_title = C_("RomData", "Checksum");
 	if (checksum - romHeader->header_checksum != 0) {
-		d->fields->addField_string(C_("RomData", "Checksum"),
+		d->fields->addField_string(checksum_title,
 			rp_sprintf_p(C_("DMG", "0x%1$02X (INVALID; should be 0x%2$02X)"),
 				romHeader->header_checksum, checksum));
 	} else {
-		d->fields->addField_string(C_("RomData", "Checksum"),
+		d->fields->addField_string(checksum_title,
 			rp_sprintf(C_("DMG", "0x%02X (valid)"), checksum));
 	}
 
@@ -1052,6 +1110,48 @@ int DMG::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int DMG::loadMetaData(void)
+{
+	RP_D(DMG);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// DMG ROM header
+	//const DMG_RomHeader *const romHeader = &d->romHeader;
+
+	// Title
+	// NOTE: We don't actually need the game ID right now,
+	// but the function retrieves both at the same time.
+	string s_title, s_gameID;
+	d->getTitleAndGameID(s_title, s_gameID);
+	d->metaData->addMetaData_string(Property::Title,
+		s_title, RomMetaData::STRF_TRIM_END);
+
+	// Publisher
+	d->metaData->addMetaData_string(Property::Publisher,
+		d->getPublisher(), RomMetaData::STRF_TRIM_END);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }

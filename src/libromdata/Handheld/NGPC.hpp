@@ -1,9 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
+ * NGPC.hpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
- * Copyright (c) 2016-2018 by Egor.                                        *
+ * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,18 +18,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DMG_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DMG_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_HANDHELD_NGPC_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_HANDHELD_NGPC_HPP__
 
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN(DMG)
-ROMDATA_DECL_CLOSE()
+ROMDATA_DECL_BEGIN(NGPC)
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DMG_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_HANDHELD_NGPC_HPP__ */

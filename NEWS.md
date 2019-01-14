@@ -33,6 +33,7 @@
     Wii save directories as `banner.bin`.
   * MachO: Mach-O binary parser for Mac OS X and related operating systems.
     Includes support for Universal Binaries.
+  * NGPC: Neo Geo Pocket (Color) ROM image parser.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.

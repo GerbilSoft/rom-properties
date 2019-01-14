@@ -31,6 +31,7 @@ SET(libromdata_SRCS
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
+	Handheld/NGPC.cpp
 	Handheld/VirtualBoy.cpp
 
 	Texture/DirectDrawSurface.cpp
@@ -137,6 +138,7 @@ SET(libromdata_H
 	Handheld/GameBoyAdvance.hpp
 	Handheld/GameCom.hpp
 	Handheld/Lynx.hpp
+	Handheld/NGPC.hpp
 	Handheld/Nintendo3DS.hpp
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/Nintendo3DS_SMDH.hpp
@@ -148,6 +150,7 @@ SET(libromdata_H
 	Handheld/gcom_structs.h
 	Handheld/n3ds_structs.h
 	Handheld/nds_structs.h
+	Handheld/ngpc_structs.h
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h
 
