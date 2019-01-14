@@ -1647,8 +1647,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	SIZE textSize;
 
 	// tr: Field description label.
-	const wstring desc_text = U82W_s(rp_sprintf(
-		C_("RomDataView", "%s:"), field->name.c_str()));
+	const char *const desc_label_fmt = C_("RomDataView", "%s:");
 	for (int i = 0; i < count; i++) {
 		const RomFields::Field *field = fields->field(i);
 		assert(field != nullptr);
@@ -1659,6 +1658,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			w_desc_text.push_back(wstring());
 			continue;
 		}
+
+		const wstring desc_text = U82W_s(rp_sprintf(
+			desc_label_fmt, field->name.c_str()));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
