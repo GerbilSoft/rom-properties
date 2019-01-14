@@ -1133,12 +1133,13 @@ int DirectDrawSurface::loadFieldData(void)
 
 	// Pixel format.
 	const DDS_PIXELFORMAT &ddspf = ddsHeader->ddspf;
+	const char *const pixel_format_title = C_("DirectDrawSurface", "Pixel Format");
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
 		// TODO: Union of uint32_t and char?
 		// NOTE: dwFourCC is byteswapped from 'big-endian'
 		// to host-endian, so it needs to be reversed here.
-		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+		d->fields->addField_string(pixel_format_title,
 			rp_sprintf("%c%c%c%c",
 				(ddspf.dwFourCC >> 24) & 0xFF,
 				(ddspf.dwFourCC >> 16) & 0xFF,
@@ -1148,31 +1149,31 @@ int DirectDrawSurface::loadFieldData(void)
 		// Uncompressed RGB data.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
+			d->fields->addField_string(pixel_format_title, pxfmt);
 		} else {
-			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+			d->fields->addField_string(pixel_format_title,
 				rp_sprintf("RGB (%u-bit)", ddspf.dwRGBBitCount));
 		}
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
+			d->fields->addField_string(pixel_format_title, pxfmt);
 		} else {
-			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+			d->fields->addField_string(pixel_format_title,
 				rp_sprintf(C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount));
 		}
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
-		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+		d->fields->addField_string(pixel_format_title,
 			rp_sprintf(C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount));
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
 		if (pxfmt) {
-			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"), pxfmt);
+			d->fields->addField_string(pixel_format_title, pxfmt);
 		} else {
-			d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+			d->fields->addField_string(pixel_format_title,
 				// tr: %1$s == pixel format name; %2$u == bits per pixel
 				rp_sprintf_p(C_("DirectDrawSurface", "%1$s (%2$u-bit)"),
 					((ddspf.dwFlags & DDPF_ALPHAPIXELS)
@@ -1182,7 +1183,7 @@ int DirectDrawSurface::loadFieldData(void)
 		}
 	} else {
 		// Unknown pixel format.
-		d->fields->addField_string(C_("DirectDrawSurface", "Pixel Format"),
+		d->fields->addField_string(pixel_format_title,
 			C_("RomData", "Unknown"));
 	}
 

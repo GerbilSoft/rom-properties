@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNES.cpp: Super Nintendo ROM image reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -792,23 +792,24 @@ int SNES::loadFieldData(void)
 
 	/** Add the field data. **/
 
-	// Title.
+	// Title
 	d->fields->addField_string(C_("SNES", "Title"), title);
 
-	// Game ID.
+	// Game ID
+	const char *const game_id_title = C_("SNES", "Game ID");
 	if (gameID[0] != 0) {
-		d->fields->addField_string(C_("SNES", "Game ID"), gameID);
+		d->fields->addField_string(game_id_title, gameID);
 	} else if (d->romType == SNESPrivate::ROM_SNES) {
 		// Unknown game ID.
-		d->fields->addField_string(C_("SNES", "Game ID"), C_("RomData", "Unknown"));
+		d->fields->addField_string(game_id_title, C_("RomData", "Unknown"));
 	}
 
-	// Publisher.
+	// Publisher
 	// TODO: Print the publisher code if the lookup returns nullptr.
 	d->fields->addField_string(C_("RomData", "Publisher"),
 		publisher ? publisher : C_("RomData", "Unknown"));
 
-	// ROM mapping.
+	// ROM mapping
 	// NOTE: Not translatable!
 	const char *s_rom_mapping;
 	switch (rom_mapping) {
@@ -843,20 +844,21 @@ int SNES::loadFieldData(void)
 			s_rom_mapping = nullptr;
 			break;
 	}
+	const char *const rom_mapping_title = C_("SNES", "ROM Mapping");
 	if (s_rom_mapping) {
-		d->fields->addField_string(C_("SNES", "ROM Mapping"), s_rom_mapping);
+		d->fields->addField_string(rom_mapping_title, s_rom_mapping);
 	} else {
 		// Unknown ROM mapping.
-		d->fields->addField_string(C_("SNES", "ROM Mapping"),
+		d->fields->addField_string(rom_mapping_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), rom_mapping));
 	}
 
-	// Cartridge HW.
+	// Cartridge HW
 	if (!cart_hw.empty()) {
 		d->fields->addField_string(C_("SNES", "Cartridge HW"), cart_hw);
 	}
 
-	// Region.
+	// Region
 	// NOTE: Not listed for BS-X because BS-X is Japan only.
 	static const char *const region_tbl[0x15] = {
 		NOP_C_("Region", "Japan"),
@@ -902,7 +904,7 @@ int SNES::loadFieldData(void)
 		}
 
 		case SNESPrivate::ROM_BSX: {
-			// Date.
+			// Date
 			// Verify that the date field is valid.
 			// NOTE: Not verifying the low bits. (should be 0)
 			time_t unixtime = -1;
@@ -939,7 +941,7 @@ int SNES::loadFieldData(void)
 				RomFields::RFT_DATETIME_NO_YEAR		// No year.
 			);
 
-			// Program type.
+			// Program type
 			const char *program_type;
 			switch (le32_to_cpu(romHeader->bsx.ext.program_type)) {
 				case SNES_BSX_PRG_65c816:
@@ -955,31 +957,33 @@ int SNES::loadFieldData(void)
 					program_type = nullptr;
 					break;
 			}
+			const char *const program_type_title = C_("SNES", "Program Type");
 			if (program_type) {
-				d->fields->addField_string(C_("SNES", "Program Type"), program_type);
+				d->fields->addField_string(program_type_title, program_type);
 			} else {
-				d->fields->addField_string(C_("SNES", "Program Type"),
+				d->fields->addField_string(program_type_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
 						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
 
 			// TODO: block_alloc
 
-			// Limited starts.
+			// Limited starts
 			// Bit 15: 0 for unlimited; 1 for limited.
 			// If limited:
 			// - Bits 14-0: 1 for playthrough allowed, 0 for not.
 			// - Each bit counts as a playthrough, so up to 15
 			//   plays are possible. After bootup, the bits are
 			//   cleared in MSB to LSB order.
+			const char *const limited_starts_title = C_("SNES", "Limited Starts");
 			const uint16_t limited_starts = le16_to_cpu(romHeader->bsx.limited_starts);
 			if (limited_starts & 0x8000) {
 				// Limited.
 				const unsigned int n = popcount(limited_starts & ~0x8000);
-				d->fields->addField_string_numeric(C_("SNES", "Limited Starts"), n);
+				d->fields->addField_string_numeric(limited_starts_title, n);
 			} else {
 				// Unlimited.
-				d->fields->addField_string(C_("SNES", "Limited Starts"), C_("SNES", "Unlimited"));
+				d->fields->addField_string(limited_starts_title, C_("SNES", "Unlimited"));
 			}
 
 			// TODO: Show region == Japan?

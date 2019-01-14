@@ -526,23 +526,25 @@ int MachO::loadFieldData(void)
 			NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 		};
+		const char *const format_title = C_("MachO", "Format");
 		if (machFormat > MachOPrivate::MACH_FORMAT_UNKNOWN &&
 		    machFormat < ARRAY_SIZE(exec_type_tbl))
 		{
-			d->fields->addField_string(C_("MachO", "Format"),
+			d->fields->addField_string(format_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[machFormat]));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...
-			d->fields->addField_string(C_("MachO", "Format"),
+			d->fields->addField_string(format_title,
 				C_("RomData", "Unknown"));
 		}
 
 		// CPU type.
+		const char *const cpu_title = C_("MachO", "CPU");
 		if (s_cpu) {
-			d->fields->addField_string(C_("MachO", "CPU"), s_cpu);
+			d->fields->addField_string(cpu_title, s_cpu);
 		} else {
-			d->fields->addField_string(C_("MachO", "CPU"),
+			d->fields->addField_string(cpu_title,
 				rp_sprintf(C_("ELF", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
 		}
 

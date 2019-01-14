@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Amiibo.cpp: Nintendo amiibo NFC dump reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -411,10 +411,10 @@ int Amiibo::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NTAG215 data.
+	// NTAG215 data
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
-	// Serial number.
+	// Serial number
 
 	// Convert the 7-byte serial number to ASCII.
 	static const char hex_lookup[16] = {
@@ -436,7 +436,7 @@ int Amiibo::loadFieldData(void)
 		latin1_to_utf8(buf, 7*2),
 		RomFields::STRF_MONOSPACE);
 
-	// NFP data.
+	// NFP data
 	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
 	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
 
@@ -455,26 +455,27 @@ int Amiibo::loadFieldData(void)
 		// tr: NFP_TYPE_YARN == yarn amiibo
 		NOP_C_("Amiibo|Type", "Yarn"),
 	};
+	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
-		d->fields->addField_string(C_("Amiibo", "amiibo Type"),
+		d->fields->addField_string(amiibo_type_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", amiibo_type_tbl[char_id & 0xFF]));
 	} else {
 		// Invalid amiibo type.
-		d->fields->addField_string(C_("Amiibo", "amiibo Type"),
+		d->fields->addField_string(amiibo_type_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), (char_id & 0xFF)));
 	}
 
-	// Character series.
+	// Character series
 	const char *const char_series = AmiiboData::lookup_char_series_name(char_id);
 	d->fields->addField_string(C_("Amiibo", "Character Series"),
 		char_series ? char_series : C_("RomData", "Unknown"));
 
-	// Character name.
+	// Character name
 	const char *const char_name = AmiiboData::lookup_char_name(char_id);
 	d->fields->addField_string(C_("Amiibo", "Character Name"),
 		char_name ? char_name : C_("RomData", "Unknown"));
 
-	// amiibo series.
+	// amiibo series
 	const char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
 	d->fields->addField_string(C_("Amiibo", "amiibo Series"),
 		amiibo_series ? amiibo_series : C_("RomData", "Unknown"));

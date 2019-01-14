@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -175,10 +175,11 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			break;
 	}
 
+	const char *const fileOS_title = C_("EXE", "File OS");
 	if (file_os) {
-		fields->addField_string(C_("EXE", "File OS"), file_os);
+		fields->addField_string(fileOS_title, file_os);
 	} else {
-		fields->addField_string(C_("EXE", "File OS"),
+		fields->addField_string(fileOS_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileOS));
 	}
 
@@ -200,14 +201,15 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		// tr: VFT_STATIC_LIB
 		NOP_C_("EXE|FileType", "Static Library"),
 	};
+	const char *const fileType_title = C_("EXE", "File Type");
 	const char *fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes)
 					? fileTypes[pVsFfi->dwFileType]
 					: nullptr);
 	if (fileType) {
-		fields->addField_string(C_("EXE", "File Type"),
+		fields->addField_string(fileType_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileType));
 	} else {
-		fields->addField_string(C_("EXE", "File Type"),
+		fields->addField_string(fileType_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
 	}
 
@@ -274,11 +276,12 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	if (hasSubtype) {
+		const char *const fileSubType_title = C_("EXE", "File Subtype");
 		if (fileSubtype) {
-			fields->addField_string(C_("EXE", "File Subtype"),
+			fields->addField_string(fileSubType_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", fileSubtype));
 		} else {
-			fields->addField_string(C_("EXE", "File Subtype"),
+			fields->addField_string(fileSubType_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));
 		}
 	}
@@ -377,25 +380,27 @@ void EXEPrivate::addFields_LE(void)
 	fields->setTabIndex(0);
 
 	// CPU.
+	const char *const cpu_title = C_("EXE", "CPU");
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
 	const char *const cpu = EXEData::lookup_le_cpu(cpu_type);
 	if (cpu) {
-		fields->addField_string(C_("EXE", "CPU"), cpu);
+		fields->addField_string(cpu_title, cpu);
 	} else {
-		fields->addField_string(C_("EXE", "CPU"),
+		fields->addField_string(cpu_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), cpu_type));
 	}
 
 	// Target OS.
 	// NOTE: Same as NE.
+	const char *const targetOS_title = C_("EXE", "Target OS");
 	const uint16_t targOS = le16_to_cpu(hdr.le.targOS);
 	const char *const targetOS = (targOS < ARRAY_SIZE(NE_TargetOSes))
 					? NE_TargetOSes[targOS]
 					: nullptr;
 	if (targetOS) {
-		fields->addField_string(C_("EXE", "Target OS"), targetOS);
+		fields->addField_string(targetOS_title, targetOS);
 	} else {
-		fields->addField_string(C_("EXE", "Target OS"),
+		fields->addField_string(targetOS_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), targOS));
 	}
 }
@@ -852,10 +857,11 @@ int EXE::loadFieldData(void)
 		"32-bit Portable Executable",	// EXE_TYPE_PE
 		"64-bit Portable Executable",	// EXE_TYPE_PE32PLUS
 	};
+	const char *const type_title = C_("EXE", "Type");
 	if (d->exeType >= EXEPrivate::EXE_TYPE_MZ && d->exeType < EXEPrivate::EXE_TYPE_LAST) {
-		d->fields->addField_string(C_("EXE", "Type"), exeTypes[d->exeType]);
+		d->fields->addField_string(type_title, exeTypes[d->exeType]);
 	} else {
-		d->fields->addField_string(C_("EXE", "Type"), C_("EXE", "Unknown"));
+		d->fields->addField_string(type_title, C_("EXE", "Unknown"));
 	}
 
 	switch (d->exeType) {

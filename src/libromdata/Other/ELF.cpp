@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -1155,26 +1155,28 @@ int ELF::loadFieldData(void)
 		C_("RomData|ExecType", "32-bit Big-Endian"),
 		C_("RomData|ExecType", "64-bit Big-Endian"),
 	};
+	const char *const format_title = C_("ELF", "Format");
 	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
 	    d->elfFormat < ARRAY_SIZE(exec_type_tbl))
 	{
-		d->fields->addField_string(C_("ELF", "Format"),
+		d->fields->addField_string(format_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[d->elfFormat]));
 	}
 	else
 	{
 		// TODO: Show individual values.
 		// NOTE: This shouldn't happen...
-		d->fields->addField_string(C_("ELF", "Format"),
+		d->fields->addField_string(format_title,
 			C_("RomData", "Unknown"));
 	}
 
 	// CPU.
+	const char *const cpu_title = C_("ELF", "CPU");
 	const char *const cpu = ELFData::lookup_cpu(primary->e_machine);
 	if (cpu) {
-		d->fields->addField_string(C_("ELF", "CPU"), cpu);
+		d->fields->addField_string(cpu_title, cpu);
 	} else {
-		d->fields->addField_string(C_("ELF", "CPU"),
+		d->fields->addField_string(cpu_title,
 			rp_sprintf(C_("ELF", "Unknown (0x%04X)"), primary->e_machine));
 	}
 
@@ -1278,10 +1280,11 @@ int ELF::loadFieldData(void)
 				"MIPS64 rel2", "MIPS32 rel6", "MIPS64 rel6"
 			};
 			const unsigned int level = (flags >> 28);
+			const char *const cpu_level_title = C_("ELF", "CPU Level");
 			if (level < ARRAY_SIZE(mips_levels)) {
-				d->fields->addField_string(C_("ELF", "CPU Level"), mips_levels[level]);
+				d->fields->addField_string(cpu_level_title, mips_levels[level]);
 			} else {
-				d->fields->addField_string(C_("ELF", "CPU Level"),
+				d->fields->addField_string(cpu_level_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), level));
 			}
 
@@ -1363,11 +1366,12 @@ int ELF::loadFieldData(void)
 	}
 
 	// OS ABI.
+	const char *const osabi_title = C_("ELF", "OS ABI");
 	const char *const osabi = ELFData::lookup_osabi(primary->e_osabi);
 	if (osabi) {
-		d->fields->addField_string(C_("ELF", "OS ABI"), osabi);
+		d->fields->addField_string(osabi_title, osabi);
 	} else {
-		d->fields->addField_string(C_("ELF", "OS ABI"),
+		d->fields->addField_string(osabi_title,
 			rp_sprintf(C_("ELF", "Unknown (%u)"), primary->e_osabi));
 	}
 

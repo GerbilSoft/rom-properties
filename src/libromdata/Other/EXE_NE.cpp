@@ -3,7 +3,7 @@
  * EXE_NE.cpp: DOS/Windows executable reader.                              *
  * 16-bit New Executable format.                                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -146,10 +146,11 @@ void EXEPrivate::addFields_NE(void)
 		}
 	}
 
+	const char *const targetOS_title = C_("EXE", "Target OS");
 	if (targetOS) {
-		fields->addField_string(C_("EXE", "Target OS"), targetOS);
+		fields->addField_string(targetOS_title, targetOS);
 	} else {
-		fields->addField_string(C_("EXE", "Target OS"),
+		fields->addField_string(targetOS_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), hdr.ne.targOS));
 	}
 

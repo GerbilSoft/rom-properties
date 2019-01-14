@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ADX.hpp: CRI ADX audio reader.                                          *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -302,11 +302,11 @@ int ADX::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ADX header.
+	// ADX header
 	const ADX_Header *const adxHeader = &d->adxHeader;
 	d->fields->reserve(8);	// Maximum of 8 fields.
 
-	// Format.
+	// Format
 	const char *format;
 	switch (adxHeader->format) {
 		case ADX_FORMAT_FIXED_COEFF_ADPCM:
@@ -334,14 +334,14 @@ int ADX::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("RomData|Audio", "Format"), format);
 
-	// Number of channels.
+	// Number of channels
 	d->fields->addField_string_numeric(C_("RomData|Audio", "Channels"), adxHeader->channel_count);
 
-	// Sample rate and sample count.
+	// Sample rate and sample count
 	const uint32_t sample_rate = be32_to_cpu(adxHeader->sample_rate);
 	const uint32_t sample_count = be32_to_cpu(adxHeader->sample_count);
 
-	// Sample rate.
+	// Sample rate
 	// NOTE: Using ostringstream for localized numeric formatting.
 	ostringstream oss;
 	oss << sample_rate << " Hz";
@@ -352,7 +352,7 @@ int ADX::loadFieldData(void)
 		formatSampleAsTime(sample_count, sample_rate));
 
 #if 0
-	// High-pass cutoff.
+	// High-pass cutoff
 	// TODO: What does this value represent?
 	// FIXME: Disabling until I figure this out.
 	oss.str("");
@@ -360,19 +360,19 @@ int ADX::loadFieldData(void)
 	d->fields->addField_string(C_("ADX", "High-Pass Cutoff"), oss.str());
 #endif
 
-	// Encryption.
-	d->fields->addField_string(C_("ADX", "Encrypted"),
-		(adxHeader->flags & ADX_FLAG_ENCRYPTED
-			? C_("ADX", "Yes")
-			: C_("ADX", "No")));
+	// Translated strings
+	const char *const s_yes = C_("ADX", "Yes");
+	const char *const s_no  = C_("ADX", "No");
 
-	// Looping.
+	// Encryption
+	d->fields->addField_string(C_("ADX", "Encrypted"),
+		(adxHeader->flags & ADX_FLAG_ENCRYPTED ? s_yes : s_no));
+
+	// Looping
 	const ADX_LoopData *const pLoopData = d->pLoopData;
 	const bool isLooping = (pLoopData && pLoopData->loop_flag != 0);
 	d->fields->addField_string(C_("ADX", "Looping"),
-		(isLooping
-			? C_("ADX", "Yes")
-			: C_("ADX", "No")));
+		(isLooping ? s_yes : s_no));
 	if (isLooping) {
 		d->fields->addField_string(C_("ADX", "Loop Start"),
 			formatSampleAsTime(be32_to_cpu(pLoopData->start_sample), sample_rate));
@@ -407,17 +407,17 @@ int ADX::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
-	// ADX header.
+	// ADX header
 	const ADX_Header *const adxHeader = &d->adxHeader;
 
-	// Number of channels.
+	// Number of channels
 	d->metaData->addMetaData_integer(Property::Channels, adxHeader->channel_count);
 
-	// Sample rate.
+	// Sample rate
 	d->metaData->addMetaData_integer(Property::SampleRate,
 		be32_to_cpu(adxHeader->sample_rate));
 
-	// Length, in milliseconds. (non-looping)
+	// Length, in milliseconds (non-looping)
 	d->metaData->addMetaData_integer(Property::Duration,
 		convSampleToMs(be32_to_cpu(adxHeader->sample_count),
 			be32_to_cpu(adxHeader->sample_rate)));

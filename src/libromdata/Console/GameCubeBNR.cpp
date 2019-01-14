@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeBNR.cpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -422,20 +422,22 @@ int GameCubeBNR::loadFieldData(void)
 	// Currently showing full if it's there; otherwise, normal.
 
 	// Game name.
+	const char *const game_name_title = C_("GameCubeBNR", "Game Name");
 	if (comment->gamename_full[0] != '\0') {
-		d->fields->addField_string(C_("GameCubeBNR", "Game Name"),
+		d->fields->addField_string(game_name_title,
 			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
 	} else if (comment->gamename[0] != '\0') {
-		d->fields->addField_string(C_("GameCubeBNR", "Game Name"),
+		d->fields->addField_string(game_name_title,
 			cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
 	}
 
 	// Company.
+	const char *const company_title = C_("GameCubeBNR", "Company");
 	if (comment->company_full[0] != '\0') {
-		d->fields->addField_string(C_("GameCubeBNR", "Company"),
+		d->fields->addField_string(company_title,
 			cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
 	} else if (comment->company[0] != '\0') {
-		d->fields->addField_string(C_("GameCubeBNR", "Company"),
+		d->fields->addField_string(company_title,
 			cp1252_to_utf8(comment->company, sizeof(comment->company)));
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaPVR.cpp: Sega PVR image reader.                                     *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -1013,20 +1013,22 @@ int SegaPVR::loadFieldData(void)
 	}
 
 	// NOTE: Pixel Format is not valid for GVR.
+	const char *const pixel_format_title = C_("SegaPVR", "Pixel Format");
 	const bool hasPxFmt = (d->pvrType != SegaPVRPrivate::PVR_TYPE_GVR);
 	if (hasPxFmt) {
 		if (pxfmt) {
-			d->fields->addField_string(C_("SegaPVR", "Pixel Format"), pxfmt);
+			d->fields->addField_string(pixel_format_title, pxfmt);
 		} else {
-			d->fields->addField_string(C_("SegaPVR", "Pixel Format"),
+			d->fields->addField_string(pixel_format_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), px_format));
 		}
 	}
 
+	const char *const image_data_type_title = C_("SegaPVR", "Image Data Type");
 	if (idt) {
-		d->fields->addField_string(C_("SegaPVR", "Image Data Type"), idt);
+		d->fields->addField_string(image_data_type_title, idt);
 	} else {
-		d->fields->addField_string(C_("SegaPVR", "Image Data Type"),
+		d->fields->addField_string(image_data_type_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), img_data_type));
 	}
 

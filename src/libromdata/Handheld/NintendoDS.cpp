@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -1099,11 +1099,8 @@ int NintendoDS::loadFieldData(void)
 	// Secure Area.
 	// TODO: Verify the CRC.
 	const char *secure_area = d->checkNDSSecureArea();
-	if (secure_area) {
-		d->fields->addField_string(C_("NintendoDS", "Secure Area"), secure_area);
-	} else {
-		d->fields->addField_string(C_("NintendoDS", "Secure Area"), C_("NintendoDS", "Unknown"));
-	}
+	d->fields->addField_string(C_("NintendoDS", "Secure Area"),
+		secure_area ? secure_area : C_("NintendoDS", "Unknown"));
 
 	// Hardware type.
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
@@ -1191,11 +1188,12 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// TODO: Is the field name too long?
+	const char *const dsi_rom_type_title = C_("NintendoDS", "DSi ROM Type");
 	if (filetype) {
-		d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"), filetype);
+		d->fields->addField_string(dsi_rom_type_title, filetype);
 	} else {
 		// Invalid file type.
-		d->fields->addField_string(C_("NintendoDS", "DSi ROM Type"),
+		d->fields->addField_string(dsi_rom_type_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romHeader->dsi.filetype));
 	}
 

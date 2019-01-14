@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -2036,11 +2036,12 @@ int Nintendo3DS::loadFieldData(void)
 				"Extended Device",
 			};
 			const uint8_t media_type = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX];
+			const char *const media_type_title = C_("Nintendo3DS", "Media Type");
 			if (media_type < ARRAY_SIZE(media_type_tbl)) {
-				d->fields->addField_string(C_("Nintendo3DS", "Media Type"),
+				d->fields->addField_string(media_type_title,
 					media_type_tbl[media_type]);
 			} else {
-				d->fields->addField_string(C_("Nintendo3DS", "Media Type"),
+				d->fields->addField_string(media_type_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), media_type));
 			}
 
@@ -2069,11 +2070,12 @@ int Nintendo3DS::loadFieldData(void)
 				NOP_C_("Nintendo3DS|CDev", "None"),
 				NOP_C_("Nintendo3DS|CDev", "Bluetooth"),
 			};
+			const char *const card_device_title = C_("Nintendo3DS", "Card Device");
 			if (card_dev_id >= 1 && card_dev_id < ARRAY_SIZE(card_dev_tbl)) {
-				d->fields->addField_string(C_("Nintendo3DS", "Card Device"),
+				d->fields->addField_string(card_device_title,
 					dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|CDev", card_dev_tbl[card_dev_id]));
 			} else {
-				d->fields->addField_string(C_("Nintendo3DS", "Card Device"),
+				d->fields->addField_string(card_device_title,
 					rp_sprintf_p(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"),
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));
@@ -2222,12 +2224,13 @@ int Nintendo3DS::loadFieldData(void)
 			issuer = nullptr;
 		}
 
+		const char *const issuer_title = C_("Nintendo3DS", "Issuer");
 		if (issuer) {
 			// tr: Ticket issuer. (retail or debug)
-			d->fields->addField_string(C_("Nintendo3DS", "Issuer"), issuer);
+			d->fields->addField_string(issuer_title, issuer);
 		} else {
 			// Unknown issuer. Print it as-is.
-			d->fields->addField_string(C_("Nintendo3DS", "Issuer"),
+			d->fields->addField_string(issuer_title,
 				latin1_to_utf8(d->mxh.ticket.issuer, sizeof(d->mxh.ticket.issuer)));
 		}
 
@@ -2397,12 +2400,13 @@ int Nintendo3DS::loadFieldData(void)
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
 			NOP_C_("Nintendo3DS|ApplType", "SysModule"),
 		};
+		const char *const type_title = C_("Nintendo3DS", "Type");
 		const uint8_t appl_type = ncch_exheader->aci.arm11_local.res_limit_category;
 		if (appl_type < ARRAY_SIZE(appl_type_tbl)) {
-			d->fields->addField_string(C_("Nintendo3DS", "Type"),
+			d->fields->addField_string(type_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|ApplType", appl_type_tbl[appl_type]));
 		} else {
-			d->fields->addField_string(C_("Nintendo3DS", "Type"),
+			d->fields->addField_string(type_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), appl_type));
 		}
 
@@ -2434,17 +2438,18 @@ int Nintendo3DS::loadFieldData(void)
 			{"Dev3", 72},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3
 			{"Dev4", 32},	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4
 		};
+		const char *const old3ds_sys_mode_title = C_("Nintendo3DS", "Old3DS Sys Mode");
 		const uint8_t old3ds_sys_mode = (ncch_exheader->aci.arm11_local.flags[2] &
 			N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
 		if (old3ds_sys_mode < ARRAY_SIZE(old3ds_sys_mode_tbl) &&
 		    old3ds_sys_mode_tbl[old3ds_sys_mode].name[0] != '\0')
 		{
 			const auto &ptbl = &old3ds_sys_mode_tbl[old3ds_sys_mode];
-			d->fields->addField_string(C_("Nintendo3DS", "Old3DS Sys Mode"),
+			d->fields->addField_string(old3ds_sys_mode_title,
 				// tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
 				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
 		} else {
-			d->fields->addField_string(C_("Nintendo3DS", "Old3DS Sys Mode"),
+			d->fields->addField_string(old3ds_sys_mode_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), old3ds_sys_mode));
 		}
 
@@ -2456,15 +2461,16 @@ int Nintendo3DS::loadFieldData(void)
 			{"Dev1", 178},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
 			{"Dev2", 124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2
 		};
+		const char *const new3ds_sys_mode_title = C_("Nintendo3DS", "New3DS Sys Mode");
 		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] &
 			N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
 		if (new3ds_sys_mode < ARRAY_SIZE(new3ds_sys_mode_tbl)) {
 			const auto &ptbl = &new3ds_sys_mode_tbl[new3ds_sys_mode];
-			d->fields->addField_string(C_("Nintendo3DS", "New3DS Sys Mode"),
+			d->fields->addField_string(new3ds_sys_mode_title,
 				// tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
 				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
 		} else {
-			d->fields->addField_string(C_("Nintendo3DS", "New3DS Sys Mode"),
+			d->fields->addField_string(new3ds_sys_mode_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), new3ds_sys_mode));
 		}
 

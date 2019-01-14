@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSF.hpp: PSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -577,10 +577,11 @@ int PSF::loadFieldData(void)
 			break;
 	}
 
+	const char *const system_title = C_("PSF", "System");
 	if (sysname) {
-		d->fields->addField_string(C_("PSF", "System"), sysname);
+		d->fields->addField_string(system_title, sysname);
 	} else {
-		d->fields->addField_string(C_("PSF", "System"),
+		d->fields->addField_string(system_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psfHeader->version));
 	}
 
@@ -631,14 +632,15 @@ int PSF::loadFieldData(void)
 		// Ripped By
 		// NOTE: The tag varies based on PSF version.
 		const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
+		const char *const ripped_by_title = C_("PSF", "Ripped By");
 		iter = tags.find(ripped_by_tag);
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Ripped By"), iter->second);
+			d->fields->addField_string(ripped_by_title, iter->second);
 		} else {
 			// Try "psfby" if the system-specific one isn't there.
 			iter = tags.find("psfby");
 			if (iter != tags.end()) {
-				d->fields->addField_string(C_("PSF", "Ripped By"), iter->second);
+				d->fields->addField_string(ripped_by_title, iter->second);
 			}
 		}
 

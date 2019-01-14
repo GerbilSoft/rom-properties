@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -335,16 +335,17 @@ int N64::loadFieldData(void)
 
 	// OS version.
 	// TODO: ISALPHA(), or ISUPPER()?
+	const char *const os_version_title = C_("N64", "OS Version");
 	if (romHeader->os_version[0] == 0x00 &&
 	    romHeader->os_version[1] == 0x00 &&
 	    ISALPHA(romHeader->os_version[3]))
 	{
 		snprintf(buf, sizeof(buf), "OS %u%c",
 			romHeader->os_version[2], romHeader->os_version[3]);
-		d->fields->addField_string(C_("N64", "OS Version"), buf);
+		d->fields->addField_string(os_version_title, buf);
 	} else {
 		// Unrecognized Release field.
-		d->fields->addField_string_hexdump(C_("N64", "OS Version"),
+		d->fields->addField_string_hexdump(os_version_title,
 			romHeader->os_version, sizeof(romHeader->os_version),
 			RomFields::STRF_MONOSPACE);
 	}

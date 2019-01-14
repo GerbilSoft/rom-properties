@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.cpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -289,12 +289,13 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		}
 	}
 
+	const char *const publisher_title = C_("RomData", "Publisher");
 	if (publisher) {
 		// Publisher identified.
-		fields->addField_string(C_("RomData", "Publisher"), publisher);
+		fields->addField_string(publisher_title, publisher);
 	} else if (t_code > 0) {
 		// Unknown publisher, but there is a valid T code.
-		fields->addField_string(C_("RomData", "Publisher"), rp_sprintf("T-%u", t_code));
+		fields->addField_string(publisher_title, rp_sprintf("T-%u", t_code));
 	} else {
 		// Unknown publisher.
 		fields->addField_string(C_("RomData", "Publisher"),
@@ -359,6 +360,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 
 		// Check for external memory.
 		const uint32_t sram_info = be32_to_cpu(pRomHeader->sram_info);
+		const char *const sram_range_title = C_("MegaDrive", "SRAM Range");
 		if ((sram_info & 0xFFFFA7FF) == 0x5241A020) {
 			// SRAM is present.
 			// Format: 'R', 'A', %1x1yz000, 0x20
@@ -382,12 +384,12 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 					break;
 			}
 
-			fields->addField_string_address_range(C_("MegaDrive", "SRAM Range"),
+			fields->addField_string_address_range(sram_range_title,
 				be32_to_cpu(pRomHeader->sram_start),
 				be32_to_cpu(pRomHeader->sram_end),
 				suffix, 8, RomFields::STRF_MONOSPACE);
 		} else {
-			fields->addField_string(C_("MegaDrive", "SRAM Range"), C_("MegaDrive", "None"));
+			fields->addField_string(sram_range_title, C_("MegaDrive", "None"));
 		}
 
 		// Check for an extra ROM chip.

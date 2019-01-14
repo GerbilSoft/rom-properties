@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -1387,13 +1387,14 @@ int GameCube::loadFieldData(void)
 
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
+	const char *const title_title = C_("RomData", "Title");
 	switch (d->gcnRegion) {
 		case GCN_REGION_USA:
 		case GCN_REGION_EUR:
 		case GCN_REGION_ALL:	// TODO: Assume JP?
 		default:
 			// USA/PAL uses cp1252.
-			d->fields->addField_string(C_("RomData", "Title"),
+			d->fields->addField_string(title_title,
 				cp1252_to_utf8(
 					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
@@ -1401,7 +1402,7 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_JPN:
 		case GCN_REGION_KOR:
 			// Japan uses Shift-JIS.
-			d->fields->addField_string(C_("RomData", "Title"),
+			d->fields->addField_string(title_title,
 				cp1252_sjis_to_utf8(
 					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
@@ -1443,6 +1444,7 @@ int GameCube::loadFieldData(void)
 	bool isDefault;
 	const char *const region =
 		GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
+	const char *const region_code_title = C_("RomData", "Region Code");
 	if (region) {
 		// Append the GCN region name (USA/JPN/EUR/KOR) if
 		// the ID4 value differs.
@@ -1459,13 +1461,14 @@ int GameCube::loadFieldData(void)
 			s_region = region;
 		}
 
-		d->fields->addField_string(C_("RomData", "Region Code"), s_region);
+		d->fields->addField_string(region_code_title, s_region);
 	} else {
 		// Invalid region code.
-		d->fields->addField_string(C_("RomData", "Region Code"),
+		d->fields->addField_string(region_code_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->gcnRegion));
 	}
 
+	const char *const game_info_title = C_("GameCube", "Game Info");
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
 	    GameCubePrivate::DISC_SYSTEM_WII)
 	{
@@ -1475,7 +1478,7 @@ int GameCube::loadFieldData(void)
 		string comment = d->gcn_getGameInfo();
 		if (!comment.empty()) {
 			// Show the comment.
-			d->fields->addField_string(C_("GameCube", "Game Info"), comment);
+			d->fields->addField_string(game_info_title, comment);
 		}
 
 		// Finished reading the field data.
@@ -1550,18 +1553,18 @@ int GameCube::loadFieldData(void)
 		// Get the game name from opening.bnr.
 		string game_name = d->wii_getBannerName();
 		if (!game_name.empty()) {
-			d->fields->addField_string(C_("GameCube", "Game Info"), game_name);
+			d->fields->addField_string(game_info_title, game_name);
 		} else {
 			// Empty game name may be either because it's
 			// homebrew, a prototype, or a key error.
 			if (!d->gamePartition) {
 				// No game partition.
-				d->fields->addField_string(C_("GameCube", "Game Info"),
+				d->fields->addField_string(game_info_title,
 					C_("GameCube", "ERROR: No game partition was found."));
 			} else if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
 				// Key error.
 				const char *status = d->wii_getCryptoStatus(d->gamePartition);
-				d->fields->addField_string(C_("GameCube", "Game Info"),
+				d->fields->addField_string(game_info_title,
 					rp_sprintf(C_("GameCube", "ERROR: %s"),
 						(status ? status : C_("GameCube", "Unknown"))));
 			}
@@ -1643,8 +1646,9 @@ int GameCube::loadFieldData(void)
 			}
 		}
 
+		const char *const update_title = C_("GameCube", "Update");
 		if (isDebugIOS || ios_retail_count == 1) {
-			d->fields->addField_string(C_("GameCube", "Update"),
+			d->fields->addField_string(update_title,
 				rp_sprintf("IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
 					(ios_major << 8) | ios_minor));
 		} else {
@@ -1655,7 +1659,7 @@ int GameCube::loadFieldData(void)
 					sysMenu = d->wii_getCryptoStatus(d->updatePartition);
 				}
 			}
-			d->fields->addField_string(C_("GameCube", "Update"), sysMenu);
+			d->fields->addField_string(update_title, sysMenu);
 		}
 
 		// Partition table.

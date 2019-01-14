@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -957,6 +957,8 @@ int ValveVTF::loadFieldData(void)
 		"UVLX8888",
 	};
 	static_assert(ARRAY_SIZE(img_format_tbl) == VTF_IMAGE_FORMAT_MAX, "Missing VTF image formats.");
+
+	const char *const high_res_image_format_title = C_("ValveVTF", "High-Res Image Format");
 	const char *img_format = nullptr;
 	if (vtfHeader->highResImageFormat < ARRAY_SIZE(img_format_tbl)) {
 		img_format = img_format_tbl[vtfHeader->highResImageFormat];
@@ -965,10 +967,10 @@ int ValveVTF::loadFieldData(void)
 	}
 
 	if (img_format) {
-		d->fields->addField_string(C_("ValveVTF", "High-Res Image Format"),
+		d->fields->addField_string(high_res_image_format_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
 	} else {
-		d->fields->addField_string(C_("ValveVTF", "High-Res Image Format"),
+		d->fields->addField_string(high_res_image_format_title,
 			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->highResImageFormat));
 	}
 
@@ -976,6 +978,7 @@ int ValveVTF::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("ValveVTF", "Mipmap Count"), vtfHeader->mipmapCount);
 
 	// Low-resolution image format.
+	const char *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
 	img_format = nullptr;
 	if (vtfHeader->lowResImageFormat < ARRAY_SIZE(img_format_tbl)) {
 		img_format = img_format_tbl[vtfHeader->lowResImageFormat];
@@ -984,14 +987,14 @@ int ValveVTF::loadFieldData(void)
 	}
 
 	if (img_format) {
-		d->fields->addField_string(C_("ValveVTF", "Low-Res Image Format"),
+		d->fields->addField_string(low_res_image_format_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
 		// Low-res image size.
 		d->fields->addField_dimensions(C_("ValveVTF", "Low-Res Size"),
 			vtfHeader->lowResImageWidth,
 			vtfHeader->lowResImageHeight);
 	} else {
-		d->fields->addField_string(C_("ValveVTF", "Low-Res Image Format"),
+		d->fields->addField_string(low_res_image_format_title,
 			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->highResImageFormat));
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DreamcastSave.cpp: Sega Dreamcast save file reader.                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -1342,11 +1342,12 @@ int DreamcastSave::loadFieldData(void)
 		}
 	}
 
+	const char *const filetype_title = C_("DreamcastSave", "File Type");
 	if (filetype) {
-		d->fields->addField_string(C_("DreamcastSave", "File Type"), filetype);
+		d->fields->addField_string(filetype_title, filetype);
 	} else {
 		// Unknown file type.
-		d->fields->addField_string(C_("DreamcastSave", "File Type"),
+		d->fields->addField_string(filetype_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 				d->vms_dirent.filetype));
 	}
@@ -1366,11 +1367,12 @@ int DreamcastSave::loadFieldData(void)
 				break;
 		}
 
+		const char *const protect_title = C_("DreamcastSave", "Copy Protect");
 		if (protect) {
-			d->fields->addField_string(C_("DreamcastSave", "Copy Protect"), protect);
+			d->fields->addField_string(protect_title, protect);
 		} else {
 			// Unknown copy protection.
-			d->fields->addField_string(C_("DreamcastSave", "Copy Protect"),
+			d->fields->addField_string(protect_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), d->vms_dirent.protect));
 		}
 
@@ -1388,12 +1390,13 @@ int DreamcastSave::loadFieldData(void)
 		);
 	}
 
+	const char *const vms_description_title = C_("DreamcastSave", "VMS Description");
 	if (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS) {
 		// DC ICONDATA_VMS header.
 		const DC_VMS_ICONDATA_Header *const icondata_vms = &d->vms_header.icondata_vms;
 
 		// VMS description.
-		d->fields->addField_string(C_("DreamcastSave", "VMS Description"),
+		d->fields->addField_string(vms_description_title,
 			cp1252_sjis_to_utf8(
 				icondata_vms->vms_description, sizeof(icondata_vms->vms_description)),
 				RomFields::STRF_TRIM_END);
@@ -1405,7 +1408,7 @@ int DreamcastSave::loadFieldData(void)
 		const DC_VMS_Header *const vms_header = &d->vms_header;
 
 		// VMS description.
-		d->fields->addField_string(C_("DreamcastSave", "VMS Description"),
+		d->fields->addField_string(vms_description_title,
 			cp1252_sjis_to_utf8(
 				vms_header->vms_description, sizeof(vms_header->vms_description)),
 				RomFields::STRF_TRIM_END);

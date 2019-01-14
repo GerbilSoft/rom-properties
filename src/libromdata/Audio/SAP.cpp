@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -628,25 +628,25 @@ int SAP::loadFieldData(void)
 	// SAP header.
 	d->fields->reserve(11);	// Maximum of 11 fields.
 
-	// Author.
+	// Author
 	if (!tags.author.empty()) {
 		d->fields->addField_string(C_("RomData|Audio", "Author"), tags.author);
 	}
 
-	// Song title.
+	// Song title
 	if (!tags.name.empty()) {
 		d->fields->addField_string(C_("RomData|Audio", "Song Title"), tags.name);
 	}
 
-	// Date. (TODO: Parse?)
+	// Date (TODO: Parse?)
 	if (!tags.date.empty()) {
 		d->fields->addField_string(C_("SAP", "Date"), tags.date);
 	}
 
-	// Number of songs.
+	// Number of songs
 	d->fields->addField_string_numeric(C_("RomData|Audio", "# of Songs"), tags.songs);
 
-	// Default song number.
+	// Default song number
 	if (tags.songs > 1) {
 		d->fields->addField_string_numeric(C_("RomData|Audio", "Default Song #"), tags.def_song);
 	}
@@ -666,13 +666,14 @@ int SAP::loadFieldData(void)
 	d->fields->addField_bitfield(C_("SAP", "Flags"),
 		v_flags_names, 0, flags);
 
-	// Type.
+	// Type
 	// TODO: Verify that the type is valid?
+	const char *const type_title = C_("SAP", "Type");
 	if (ISALPHA(tags.type)) {
-		d->fields->addField_string(C_("SAP", "Type"),
+		d->fields->addField_string(type_title,
 			rp_sprintf("%c", tags.type));
 	} else {
-		d->fields->addField_string(C_("SAP", "Type"),
+		d->fields->addField_string(type_title,
 			rp_sprintf("0x%02X", tags.type),
 			RomFields::STRF_MONOSPACE);
 	}
@@ -785,19 +786,19 @@ int SAP::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(4);	// Maximum of 4 metadata properties.
 
-	// Composer.
+	// Composer
 	if (!tags.author.empty()) {
 		d->metaData->addMetaData_string(Property::Composer, tags.author);
 	}
 
-	// Song title.
+	// Song title
 	if (!tags.name.empty()) {
 		d->metaData->addMetaData_string(Property::Title, tags.name);
 	}
 
-	// TODO: Date.
+	// TODO: Date
 
-	// Number of channels.
+	// Number of channels
 	d->metaData->addMetaData_integer(Property::Channels, (tags.stereo ? 2 : 1));
 
 	// NOTE: Including all songs in the duration.

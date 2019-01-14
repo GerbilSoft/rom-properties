@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD.cpp: Nintendo Wii WAD file reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -829,6 +829,7 @@ int WiiWAD::loadFieldData(void)
 	const char id4_region = (char)tmdHeader->title_id.u8[7];
 	const char *const region =
 		GameCubeRegions::gcnRegionToString(gcnRegion, id4_region, &isDefault);
+	const char *const region_code_title = C_("RomData", "Region Code");
 	if (region) {
 		// Append the GCN region name (USA/JPN/EUR/KOR) if
 		// the ID4 value differs.
@@ -845,24 +846,25 @@ int WiiWAD::loadFieldData(void)
 			s_region = region;
 		}
 
-		d->fields->addField_string(C_("RomData", "Region Code"), s_region);
+		d->fields->addField_string(region_code_title, s_region);
 	} else {
-		d->fields->addField_string(C_("RomData", "Region Code"),
+		d->fields->addField_string(region_code_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
 	}
 
 	// Required IOS version.
+	const char *const ios_version_title = C_("WiiWAD", "IOS Version");
 	const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
 	if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
 	    ios_lo > 2 && ios_lo < 0x300)
 	{
 		// Standard IOS slot.
-		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
+		d->fields->addField_string(ios_version_title,
 			rp_sprintf("IOS%u", ios_lo));
 	} else if (tmdHeader->sys_version.id != 0) {
 		// Non-standard IOS slot.
 		// Print the full title ID.
-		d->fields->addField_string(C_("WiiWAD", "IOS Version"),
+		d->fields->addField_string(ios_version_title,
 			rp_sprintf("%08X-%08X",
 				be32_to_cpu(tmdHeader->sys_version.hi),
 				be32_to_cpu(tmdHeader->sys_version.lo)));

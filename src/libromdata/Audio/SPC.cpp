@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SPC.hpp: SPC audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -797,10 +797,11 @@ int SPC::loadFieldData(void)
 					break;
 			}
 
+			const char *const emulator_used_title = C_("SPC", "Emulator Used");
 			if (emu) {
-				d->fields->addField_string(C_("SPC", "Emulator Used"), emu);
+				d->fields->addField_string(emulator_used_title, emu);
 			} else {
-				d->fields->addField_string(C_("SPC", "Emulator Used"),
+				d->fields->addField_string(emulator_used_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), data.uvalue));
 			}
 		}

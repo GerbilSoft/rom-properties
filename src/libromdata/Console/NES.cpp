@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
- * Copyright (c) 2016-2018 by Egor.                                        *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -747,6 +747,7 @@ int NES::loadFieldData(void)
 			break;
 	}
 
+	const char *const format_title = C_("NES", "Format");
 	if (d->romType & NESPrivate::ROM_SPECIAL_WIIU_VC) {
 		// Wii U Virtual Console.
 		const int romFormat = (d->romType & NESPrivate::ROM_FORMAT_MASK);
@@ -755,14 +756,14 @@ int NES::loadFieldData(void)
 		if (romFormat >= NESPrivate::ROM_FORMAT_OLD_INES &&
 		    romFormat <= NESPrivate::ROM_FORMAT_NES2)
 		{
-			d->fields->addField_string(C_("NES", "Format"),
+			d->fields->addField_string(format_title,
 				// tr: ROM format, e.g. iNES or FDS disk image.
 				rp_sprintf(C_("NES|Format", "%s (Wii U Virtual Console)"), rom_format));
 		} else {
-			d->fields->addField_string(C_("NES", "Format"), rom_format);
+			d->fields->addField_string(format_title, rom_format);
 		}
 	} else {
-		d->fields->addField_string(C_("NES", "Format"), rom_format);
+		d->fields->addField_string(format_title, rom_format);
 	}
 
 	// Display the fields.
@@ -771,6 +772,7 @@ int NES::loadFieldData(void)
 		return static_cast<int>(d->fields->count());
 	}
 
+	const char *const mapper_title = C_("NES", "Mapper");
 	if (mapper >= 0) {
 		// Look up the mapper name.
 		string s_mapper;
@@ -785,14 +787,14 @@ int NES::loadFieldData(void)
 			s_mapper = rp_sprintf(C_("NES|Mapper", "%u"),
 				static_cast<unsigned int>(mapper));
 		}
-		d->fields->addField_string(C_("NES", "Mapper"), s_mapper);
+		d->fields->addField_string(mapper_title, s_mapper);
 	} else {
 		// No mapper. If this isn't TNES,
 		// then it's probably an FDS image.
 		if (tnes_mapper >= 0) {
 			// This has a TNES mapper.
 			// It *should* map to an iNES mapper...
-			d->fields->addField_string(C_("NES", "Mapper"),
+			d->fields->addField_string(mapper_title,
 				C_("NES", "[Missing TNES mapping!]"));
 		}
 	}
@@ -824,7 +826,7 @@ int NES::loadFieldData(void)
 			tnes_mapper, RomFields::FB_DEC);
 	}
 
-	// TV mode.
+	// TV mode
 	// NOTE: Dendy PAL isn't supported in any headers at the moment.
 	const char *const tv_mode_tbl[] = {
 		NOP_C_("NES|TVMode", "NTSC"),
@@ -837,7 +839,7 @@ int NES::loadFieldData(void)
 			dpgettext_expr(RP_I18N_DOMAIN, "NES|TVMode", tv_mode_tbl[tv_mode]));
 	}
 
-	// ROM features.
+	// ROM features
 	const char *rom_features = nullptr;
 	if (prg_ram_battery_size > 0 && has_trainer) {
 		rom_features = C_("NES|Features", "Save RAM, Trainer");
@@ -850,7 +852,7 @@ int NES::loadFieldData(void)
 		d->fields->addField_string(C_("NES", "Features"), rom_features);
 	}
 
-	// ROM sizes.
+	// ROM sizes
 	if (prg_rom_size > 0) {
 		d->fields->addField_string(C_("NES", "PRG ROM Size"),
 			d->formatBankSizeKiB(prg_rom_size));
@@ -860,7 +862,7 @@ int NES::loadFieldData(void)
 			d->formatBankSizeKiB(chr_rom_size));
 	}
 
-	// RAM sizes.
+	// RAM sizes
 	if (chr_ram_size > 0) {
 		d->fields->addField_string(C_("NES", "CHR RAM Size"),
 			d->formatBankSizeKiB(chr_ram_size));
@@ -882,24 +884,25 @@ int NES::loadFieldData(void)
 
 	// Check for FDS fields.
 	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
-		// Game ID.
+		// Game ID
 		// TODO: Check for invalid characters?
 		d->fields->addField_string(C_("NES", "Game ID"),
 			rp_sprintf("%s-%.3s",
 				(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
 				d->header.fds.game_id));
 
-		// Publisher.
+		// Publisher
+		const char *const publisher_title = C_("RomData", "Publisher");
 		const char *const publisher =
 			NintendoPublishers::lookup_fds(d->header.fds.publisher_code);
 		if (publisher) {
-			d->fields->addField_string(C_("RomData", "Publisher"), publisher);
+			d->fields->addField_string(publisher_title, publisher);
 		} else {
-			d->fields->addField_string(C_("RomData", "Publisher"),
+			d->fields->addField_string(publisher_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), d->header.fds.publisher_code));
 		}
 
-		// Revision.
+		// Revision
 		d->fields->addField_string_numeric(C_("RomData", "Revision"),
 			d->header.fds.revision, RomFields::FB_DEC, 2);
 
@@ -919,7 +922,7 @@ int NES::loadFieldData(void)
 			case NESPrivate::ROM_FORMAT_OLD_INES:
 			case NESPrivate::ROM_FORMAT_INES:
 			case NESPrivate::ROM_FORMAT_NES2:
-				// Mirroring.
+				// Mirroring
 				// TODO: Detect mappers that have programmable mirroring.
 				// TODO: Also One Screen, e.g. AxROM.
 				if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
@@ -956,7 +959,7 @@ int NES::loadFieldData(void)
 				break;
 
 			case NESPrivate::ROM_FORMAT_TNES:
-				// Mirroring.
+				// Mirroring
 				switch (d->header.tnes.mirroring) {
 					case TNES_MIRRORING_PROGRAMMABLE:
 						// For all mappers except AxROM, this is programmable.
@@ -983,8 +986,9 @@ int NES::loadFieldData(void)
 				break;
 		}
 
+		const char *const mirroring_title = C_("NES", "Mirroring");
 		if (mirroring) {
-			d->fields->addField_string(C_("NES", "Mirroring"), mirroring);
+			d->fields->addField_string(mirroring_title, mirroring);
 		}
 		if (vs_ppu) {
 			d->fields->addField_string(C_("NES", "VS. PPU"), vs_ppu);
@@ -1058,24 +1062,24 @@ int NES::loadFieldData(void)
 			// Found the internal footer.
 			d->fields->addTab("Internal Footer");
 
-			// Internal name. (Assuming ASCII.)
+			// Internal name (Assuming ASCII)
 			if (firstNonFF < (unsigned int)sizeof(intFooter.name)) {
 				d->fields->addField_string(C_("NES", "Internal Name"),
 					latin1_to_utf8(&intFooter.name[firstNonFF], sizeof(intFooter.name)-firstNonFF),
 					RomFields::STRF_TRIM_END);
 			}
 
-			// PRG checksum.
+			// PRG checksum
 			d->fields->addField_string_numeric(C_("NES", "PRG Checksum"),
 				le16_to_cpu(intFooter.prg_checksum),
 				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
-			// CHR checksum.
+			// CHR checksum
 			d->fields->addField_string_numeric(C_("NES", "CHR Checksum"),
 				le16_to_cpu(intFooter.chr_checksum),
 				RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 
-			// ROM sizes.
+			// ROM sizes
 			static const uint32_t sz_lookup[] = {
 				0,		// 0
 				0,		// 1
@@ -1095,7 +1099,7 @@ int NES::loadFieldData(void)
 				chr_size = sz_lookup[chr_sz_idx];
 			}
 
-			// PRG ROM size.
+			// PRG ROM size
 			string s_prg_size;
 			if (prg_sz_idx == 0) {
 				s_prg_size = C_("NES", "Not set");
@@ -1106,7 +1110,7 @@ int NES::loadFieldData(void)
 			}
 			d->fields->addField_string(C_("NES", "PRG ROM Size"), s_prg_size);
 
-			// CHR ROM size.
+			// CHR ROM size
 			string s_chr_size;
 			if (chr_sz_idx == 0) {
 				s_chr_size = C_("NES", "Not set");
@@ -1117,7 +1121,7 @@ int NES::loadFieldData(void)
 			}
 			d->fields->addField_string(C_("NES", "CHR ROM Size"), s_chr_size);
 
-			// Mirroring.
+			// Mirroring
 			switch (intFooter.board_info >> 4) {
 				case 0:
 					mirroring = C_("NES|Mirroring", "Horizontal");
@@ -1130,24 +1134,25 @@ int NES::loadFieldData(void)
 					break;
 			}
 			if (mirroring) {
-				d->fields->addField_string(C_("NES", "Mirroring"), mirroring);
+				d->fields->addField_string(mirroring_title, mirroring);
 			} else {
-				d->fields->addField_string(C_("NES", "Mirroring"),
+				d->fields->addField_string(mirroring_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), intFooter.board_info >> 4));
 			}
 
-			// Board type.
+			// Board type
 			// TODO: Lookup table.
 			d->fields->addField_string_numeric(C_("NES", "Board Type"),
 				intFooter.board_info & 0x0F);
 
-			// Publisher.
+			// Publisher
+			const char *const publisher_title = C_("RomData", "Publisher");
 			const char *const publisher =
 				NintendoPublishers::lookup_old(intFooter.publisher_code);
 			if (publisher) {
-				d->fields->addField_string(C_("NES", "Publisher"), publisher);
+				d->fields->addField_string(publisher_title, publisher);
 			} else {
-				d->fields->addField_string(C_("NES", "Publisher"),
+				d->fields->addField_string(publisher_title,
 					rp_sprintf(C_("NES", "Unknown (0x%02X)"), intFooter.publisher_code));
 			}
 		}

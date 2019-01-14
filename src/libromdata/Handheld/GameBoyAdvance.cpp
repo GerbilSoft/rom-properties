@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameBoyAdvance.hpp: Nintendo Game Boy Advance ROM reader.               *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -331,6 +331,7 @@ int GameBoyAdvance::loadFieldData(void)
 		romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Entry point.
+	const char *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
 	switch (d->romType) {
 		case GameBoyAdvancePrivate::ROM_GBA:
 		case GameBoyAdvancePrivate::ROM_GBA_PASSTHRU:
@@ -343,12 +344,12 @@ int GameBoyAdvance::loadFieldData(void)
 				if (entry_point & 0x02000000) {
 					entry_point |= 0xFC000000;
 				}
-				d->fields->addField_string_numeric(C_("GameBoyAdvance", "Entry Point"),
+				d->fields->addField_string_numeric(entry_point_title,
 					entry_point, RomFields::FB_HEX, 8,
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Non-standard entry point instruction.
-				d->fields->addField_string_hexdump(C_("GameBoyAdvance", "Entry Point"),
+				d->fields->addField_string_hexdump(entry_point_title,
 					romHeader->entry_point_bytes, 4,
 					RomFields::STRF_MONOSPACE);
 			}
@@ -356,13 +357,13 @@ int GameBoyAdvance::loadFieldData(void)
 
 		case GameBoyAdvancePrivate::ROM_NDS_EXP:
 			// Not bootable.
-			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
+			d->fields->addField_string(entry_point_title,
 				C_("GameBoyAdvance", "Not bootable (Nintendo DS expansion)"));
 			break;
 
 		default:
 			// Unknown ROM type.
-			d->fields->addField_string(C_("GameBoyAdvance", "Entry Point"),
+			d->fields->addField_string(entry_point_title,
 				C_("RomData", "Unknown"));
 			break;
 	}

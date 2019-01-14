@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Dreamcast.hpp: Sega Dreamcast disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -657,13 +657,14 @@ int Dreamcast::loadFieldData(void)
 	// Disc number.
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
+	const char *const disc_number_title = C_("RomData", "Disc #");
 	if (disc_num != 0) {
-		d->fields->addField_string(C_("RomData", "Disc #"),
+		d->fields->addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
 			rp_sprintf_p(C_("Dreamcast|Disc", "%1$u of %2$u"),
 				disc_num, disc_total));
 	} else {
-		d->fields->addField_string(C_("RomData", "Disc #"),
+		d->fields->addField_string(disc_number_title,
 			C_("RomData", "Unknown"));
 	}
 

@@ -3,7 +3,7 @@
  * EXE_PE.cpp: DOS/Windows executable reader.                              *
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -323,14 +323,15 @@ void EXEPrivate::addFields_PE(void)
 	// TODO: Windows 10 modules have hashes here instead of timestamps.
 	// We should detect that by checking for obviously out-of-range values.
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
+	const char *const timestamp_title = C_("EXE", "Timestamp");
 	uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
 	if (timestamp != 0) {
-		fields->addField_dateTime(C_("EXE", "Timestamp"),
+		fields->addField_dateTime(timestamp_title,
 			static_cast<time_t>(timestamp),
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
-		fields->addField_string(C_("EXE", "Timestamp"), C_("EXE", "Not set"));
+		fields->addField_string(timestamp_title, C_("EXE", "Not set"));
 	}
 
 	// Load resources.
