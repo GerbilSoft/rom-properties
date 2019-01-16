@@ -217,7 +217,7 @@
   <!-- NES -->
   <mime-type type="application/x-nes-rom">
     <!-- NOTE: This is already upstream, but is missing magic numbers. -->
-    <_comment>NES ROM</_comment>
+    <comment>NES ROM</comment>
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.nes"/>
     <glob pattern="*.nez"/>
@@ -231,7 +231,7 @@
   </mime-type>
   <mime-type type="application/x-fds-disk">
     <!-- NOTE: This is already upstream, but is missing support for fwNES headers. -->
-    <_comment>Nintendo FDS disk image</_comment>
+    <comment>Nintendo FDS disk image</comment>
     <acronym>FDS</acronym>
     <expanded-acronym>Famicom Disk System</expanded-acronym>
     <glob pattern="*.fds"/>
@@ -292,7 +292,7 @@
 
   <!-- GameBoyAdvance -->
   <mime-type type="application/x-gba-rom">
-    <_comment>Game Boy Advance ROM</_comment>
+    <comment>Game Boy Advance ROM</comment>
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.gba"/>
     <glob pattern="*.agb"/>
@@ -365,7 +365,7 @@
 
   <!-- Nintendo3DSFirm -->
   <mime-type type="application/x-nintendo-3ds-firm">
-    <_comment>Nintendo 3DS firmware binary</_comment>
+    <comment>Nintendo 3DS firmware binary</comment>
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.firm"/>
     <glob pattern="*.bin"/>
@@ -376,15 +376,29 @@
 
   <!-- NintendoDS -->
   <mime-type type="application/x-nintendo-ds-rom">
-    <_comment>Nintendo DS ROM</_comment>
+    <comment>Nintendo DS ROM</comment>
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.nds"/>
     <glob pattern="*.dsi"/>
     <glob pattern="*.ids"/>
     <glob pattern="*.srl"/>
-    <magic priority="50">
+    <magic priority="70">
       <match value="\x24\xFF\xAE\x51\x69\x9A\xA2\x21\x3D\x84\x82\x0A\x84\xE4\x09\xAD" type="string" offset="192"/>
       <match value="\xC8\x60\x4F\xE2\x01\x70\x8F\xE2\x17\xFF\x2F\xE1\x12\x4F\x11\x48" type="string" offset="192"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-nintendo-dsi-rom">
+    <comment>Nintendo DSi ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.nds"/>
+    <glob pattern="*.dsi"/>
+    <glob pattern="*.ids"/>
+    <glob pattern="*.srl"/>
+    <magic priority="80">
+      <match value="0x03" mask="0x03" type="byte" offset="18">
+        <match value="\x24\xFF\xAE\x51\x69\x9A\xA2\x21\x3D\x84\x82\x0A\x84\xE4\x09\xAD" type="string" offset="192"/>
+        <match value="\xC8\x60\x4F\xE2\x01\x70\x8F\xE2\x17\xFF\x2F\xE1\x12\x4F\x11\x48" type="string" offset="192"/>
+      </match>
     </magic>
   </mime-type>
 

@@ -884,6 +884,10 @@ const char *const *NintendoDS::supportedMimeTypes_static(void)
 		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-nintendo-ds-rom",
 
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"application/x-nintendo-dsi-rom",
+
 		nullptr
 	};
 	return mimeTypes;
