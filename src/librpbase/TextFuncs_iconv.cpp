@@ -223,9 +223,9 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 			for (auto p = ret.begin(); p != ret.end(); ++p) {
 				if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) {
 					// Found a wave dash.
-					p[0] = (dest_type)0xEF;
-					p[1] = (dest_type)0xBD;
-					p[2] = (dest_type)0x9E;
+					p[0] = (uint8_t)0xEF;
+					p[1] = (uint8_t)0xBD;
+					p[2] = (uint8_t)0x9E;
 					p += 2;
 				}
 			}
