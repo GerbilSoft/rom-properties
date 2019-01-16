@@ -566,6 +566,7 @@ const char *const *NES::supportedFileExtensions_static(void)
 
 	static const char *const exts[] = {
 		".nes",	// iNES
+		".nez",	// Compressed iNES?
 		".fds",	// Famicom Disk System
 		".qd",	// FDS (Animal Crossing)
 		".tds",	// FDS (3DS Virtual Console)

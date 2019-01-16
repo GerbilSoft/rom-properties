@@ -235,6 +235,7 @@
     <acronym>FDS</acronym>
     <expanded-acronym>Famicom Disk System</expanded-acronym>
     <glob pattern="*.fds"/>
+    <glob pattern="*.qd"/>
     <magic priority="50">
       <match type="string" value="*NINTENDO-HVC*" offset="1"/>
       <match type="string" value="FDS\x1A" offset="0">
