@@ -235,7 +235,7 @@ static uint8_t getAnchorIndex(uint8_t partition, uint8_t subset, uint8_t subsetC
  * @param lsb	[in/out] LSB QWORD
  * @param shamt [in] Shift amount
  */
-static inline void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
+static FORCEINLINE void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int shamt)
 {
 	assert(shamt < 64);
 	if (shamt == 0) {
