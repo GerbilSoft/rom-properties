@@ -142,195 +142,36 @@ static char *rp_iconv(const char *src, int len,
 	return nullptr;
 }
 
-
-/** Public text conversion functions. **/
-
-// TODO: Use templates instead of macros?
-// TODO: Instead of inlining, specify encodings as parameters?
-// This will reduce inlining overhead.
-
-/**
- * Convert from one encoding to another.
- * Base version with no encoding fallbacks.
- * Trailing NULL bytes will be removed.
- * @param src_prefix	Function suffix. (destination encoding)
- * @param src_type	Source character type.
- * @param iconv_src0	Source encoding.
- * @param dest_suffix	Function prefix. (source encoding)
- * @param dest_type	Destination character type.
- * @param iconv_dest	Destination encoding.
- */
-#define ICONV_FUNCTION_1(src_prefix, src_type, iconv_src0, dest_suffix, dest_type, iconv_dest) \
-basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
-{ \
-	len = check_NULL_terminator(str, len); \
-	\
-	basic_string<dest_type> ret; \
-	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
-	if (mbs) { \
-		ret = mbs; \
-		free(mbs); \
-	} \
-	\
-	return ret; \
-}
-
-/**
- * Convert from one encoding to another.
- * One encoding fallback is provided.
- * Trailing NULL bytes will be removed.
- * @param src_prefix	Function suffix. (destination encoding)
- * @param src_type	Source character type.
- * @param iconv_src0	Source encoding.
- * @param iconv_src1	Fallback encoding.
- * @param dest_suffix	Function prefix. (source encoding)
- * @param dest_type	Destination character type.
- * @param iconv_dest	Destination encoding.
- */
-#define ICONV_FUNCTION_2(src_prefix, src_type, iconv_src0, iconv_src1, dest_suffix, dest_type, iconv_dest) \
-basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
-{ \
-	len = check_NULL_terminator(str, len); \
-	\
-	/* First encoding. */ \
-	basic_string<dest_type> ret; \
-	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
-	if (mbs) { \
-		ret = mbs; \
-		free(mbs); \
-	} else { \
-		/* Second encoding. */ \
-		mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src1, iconv_dest)); \
-		if (mbs) { \
-			ret = mbs; \
-			free(mbs); \
-		} \
-	} \
-	\
-	return ret; \
-}
-
-/**
- * libiconv: Convert U+301C (Wave Dash) to U+FF5E (Fullwidth Tilde).
- * libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
- * behavior for Shift-JIS, but cp932 should map it to U+FF5E.
- * @param dest_type Destination type.
- * @param buf String buffer. (Must be NULL-terminated.)
- */
-#ifdef HAVE_ICONV_LIBICONV
-# define ICONV_SJIS_POSTPROCESS(dest_type, buf) do { \
-	if (buf.empty()) \
-		break; \
-	\
-	auto p = (buf).begin(); \
-	if (sizeof(dest_type) == 1) { \
-		/* UTF-8 version. */ \
-		for (; p != (buf).end(); ++p) { \
-			if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) { \
-				/* Found a wave dash. */ \
-				p[0] = (dest_type)0xEF; \
-				p[1] = (dest_type)0xBD; \
-				p[2] = (dest_type)0x9E; \
-				p += 2; \
-			} \
-		} \
-	} else if (sizeof(dest_type) == 2) { \
-		/* UTF-16 version. */ \
-		for (; p != (buf).end(); ++p) { \
-			if (*p == 0x301C) { \
-				/* Found a wave dash. */ \
-				*p = (dest_type)0xFF5E; \
-			} \
-		} \
-	} else { \
-		/* Should not get here... */ \
-		assert(!"Not UTF-8 or UTF-16."); \
-	} \
-} while (0)
-#else
-# define ICONV_SJIS_POSTPROCESS(dest_type, buf) do { } while (0)
-#endif
-
-/**
- * Convert from one encoding to another.
- * Two encoding fallbacks are provided.
- * Trailing NULL bytes will be removed.
- * @param src_prefix	Function suffix. (destination encoding)
- * @param src_type	Source character type.
- * @param iconv_src0	Source encoding.
- * @param iconv_src1	Fallback encoding #1.
- * @param iconv_src2	Fallback encoding #2.
- * @param dest_suffix	Function prefix. (source encoding)
- * @param dest_type	Destination character type.
- * @param iconv_dest	Destination encoding.
- */
-#define ICONV_FUNCTION_3(src_prefix, src_type, iconv_src0, iconv_src1, iconv_src2, dest_suffix, dest_type, iconv_dest) \
-basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
-{ \
-	len = check_NULL_terminator(str, len); \
-	\
-	/* First encoding. */ \
-	basic_string<dest_type> ret; \
-	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
-	if (mbs) { \
-		ret = mbs; \
-		free(mbs); \
-	} else { \
-		/* Second encoding. */ \
-		mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src1, iconv_dest)); \
-		if (mbs) { \
-			ret = mbs; \
-			free(mbs); \
-		} else { \
-			/* Third encoding. */ \
-			mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src2, iconv_dest)); \
-			if (mbs) { \
-				ret = mbs; \
-				free(mbs); \
-			} \
-		} \
-	} \
-	\
-	ICONV_SJIS_POSTPROCESS(dest_type, ret); \
-	return ret; \
-}
-
-/** Code Page 1252 **/
-ICONV_FUNCTION_2(cp1252, char, "CP1252//IGNORE", "LATIN1//IGNORE", utf8, char, "UTF-8")
-ICONV_FUNCTION_2(cp1252, char, "CP1252//IGNORE", "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
-
-ICONV_FUNCTION_1(utf8, char, "UTF-8", cp1252, char, "CP1252//IGNORE")
-ICONV_FUNCTION_1(utf16, char16_t, RP_ICONV_UTF16_ENCODING, cp1252, char, "CP1252//IGNORE")
-
-/** Code Page 1252 + Shift-JIS (932) **/
-ICONV_FUNCTION_3(cp1252_sjis, char, "CP932", "CP1252//IGNORE", "LATIN1//IGNORE", utf8, char, "UTF-8")
-ICONV_FUNCTION_3(cp1252_sjis, char, "CP932", "CP1252//IGNORE", "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
-
-/** Latin-1 (ISO-8859-1) **/
-ICONV_FUNCTION_1(latin1, char, "LATIN1//IGNORE", utf8, char, "UTF-8")
-ICONV_FUNCTION_1(latin1, char, "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
-ICONV_FUNCTION_1(utf8, char, "UTF-8", latin1, char, "LATIN1//IGNORE")
-ICONV_FUNCTION_1(utf16, char16_t, RP_ICONV_UTF16_ENCODING, latin1, char, "LATIN1//IGNORE")
-
-/** UTF-8 to UTF-16 and vice-versa **/
-ICONV_FUNCTION_1(utf8, char, "UTF-8", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
-ICONV_FUNCTION_1(utf16le, char16_t, "UTF-16LE", utf8, char, "UTF-8")
-ICONV_FUNCTION_1(utf16be, char16_t, "UTF-16BE", utf8, char, "UTF-8")
-
 /** Generic code page functions. **/
 
 /**
- * Convert ANSI text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str	[in] ANSI text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
+ * Convert a code page to an encoding name.
+ * @param enc_name	[out] Buffer for encoding name.
+ * @param len		[in] Length of enc_name.
+ * @param cp		[in] Code page number.
+ * @param flags		[in] Flags. (See TextConv_Flags_e.)
  */
-string ansi_to_utf8(const char *str, int len)
+static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp, unsigned int flags)
 {
-	// FIXME: Determine the correct 8-bit encoding on non-Windows systems.
-	// Assuming Latin-1. (ISO-8859-1)
-	return latin1_to_utf8(str, len);
+	// If TEXTCONV_FLAG_CP1252_FALLBACK is set, this is the
+	// primary code page, so we should fail on error.
+	// Otherwise, this is the fallback codepage.
+	const char *const ignore = (flags & TEXTCONV_FLAG_CP1252_FALLBACK) ? "" : "//IGNORE";
+
+	// Check for "special" code pages.
+	switch (cp) {
+		case CP_ACP:
+		case CP_LATIN1:
+			// NOTE: Handling "ANSI" as Latin-1 for now.
+			snprintf(enc_name, len, "LATIN1%s", ignore);
+			break;
+		case CP_UTF8:
+			snprintf(enc_name, len, "UTF-8%s", ignore);
+			break;
+		default:
+			snprintf(enc_name, len, "CP%u%s", cp, ignore);
+			break;
+	}
 }
 
 /**
@@ -338,28 +179,222 @@ string ansi_to_utf8(const char *str, int len)
  * Trailing NULL bytes will be removed.
  *
  * The specified code page number will be used.
- * Invalid characters will be ignored.
  *
  * @param cp	[in] Code page number.
- * @param str	[in] ANSI text.
+ * @param str	[in] 8-bit text.
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @param flags	[in] Flags. (See TextConv_Flags_e.)
  * @return UTF-8 string.
  */
-string cpN_to_utf8(unsigned int cp, const char *str, int len)
+string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
 	len = check_NULL_terminator(str, len);
 
-	// Create the iconv encoding name.
-	char cp_name[32];
-	snprintf(cp_name, sizeof(cp_name), "CP%u//IGNORE", cp);
+	// Get the encoding name for the primary code page.
+	char cp_name[20];
+	codePageToEncName(cp_name, sizeof(cp_name), cp, flags);
 
+	// Attempt to convert the text to UTF-8.
+	// NOTE: "//IGNORE" sometimes doesn't work, so we won't
+	// check for TEXTCONV_FLAG_CP1252_FALLBACK here.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len, cp_name, "UTF-8"));
-	if (mbs) {
-		ret = mbs;
-		free(mbs);
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, "UTF-8"));
+	if (!mbs /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
+		// Try cp1252 fallback.
+		if (cp != 1252) {
+			mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "CP1252//IGNORE", "UTF-8"));
+		}
+		if (!mbs) {
+			// Try Latin-1 fallback.
+			if (cp != CP_LATIN1) {
+				mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "LATIN1//IGNORE", "UTF-8"));
+			}
+		}
 	}
 
+	if (mbs) {
+		ret.assign(mbs);
+		free(mbs);
+
+#ifdef HAVE_ICONV_LIBICONV
+		if (cp == 932) {
+			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
+			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
+			for (auto iter = ret.begin(); p != ret.end(); ++p) {
+				if ((uint8_t)p[0] == 0xE3 && (uint8_t)p[1] == 0x80 && (uint8_t)p[2] == 0x9C) {
+					// Found a wave dash.
+					p[0] = (dest_type)0xEF;
+					p[1] = (dest_type)0xBD;
+					p[2] = (dest_type)0x9E;
+					p += 2;
+				}
+			}
+		}
+#endif /* HAVE_ICONV_LIBICONV */
+	}
+	return ret;
+}
+
+/**
+ * Convert 8-bit text to UTF-16.
+ * Trailing NULL bytes will be removed.
+ *
+ * The specified code page number will be used.
+ *
+ * @param cp	[in] Code page number.
+ * @param str	[in] 8-bit text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @param flags	[in] Flags. (See TextConv_Flags_e.)
+ * @return UTF-16 string.
+ */
+u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int flags)
+{
+	len = check_NULL_terminator(str, len);
+
+	// Get the encoding name for the primary code page.
+	char cp_name[20];
+	codePageToEncName(cp_name, sizeof(cp_name), cp, flags);
+
+	// Attempt to convert the text to UTF-16.
+	// NOTE: "//IGNORE" sometimes doesn't work, so we won't
+	// check for TEXTCONV_FLAG_CP1252_FALLBACK here.
+	u16string ret;
+	char16_t *wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, RP_ICONV_UTF16_ENCODING));
+	if (!wcs /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
+		// Try cp1252 fallback.
+		if (cp != 1252) {
+			wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING));
+		}
+		if (!wcs) {
+			// Try Latin-1 fallback.
+			if (cp != CP_LATIN1) {
+				wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), "LATIN1//IGNORE", RP_ICONV_UTF16_ENCODING));
+			}
+		}
+	}
+
+	if (wcs) {
+		ret.assign(wcs);
+		free(wcs);
+
+#ifdef HAVE_ICONV_LIBICONV
+		if (cp == 932) {
+			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
+			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
+			for (auto iter = ret.begin(); p != ret.end(); ++p) {
+				if (*p == 0x301C) {
+					// Found a wave dash.
+					*p = (char16_t)0xFF5E;
+				}
+			}
+		}
+#endif /* HAVE_ICONV_LIBICONV */
+	}
+	return ret;
+}
+
+/**
+ * Convert UTF-8 to 8-bit text.
+ * Trailing NULL bytes will be removed.
+ *
+ * The specified code page number will be used.
+ * Invalid characters will be ignored.
+ *
+ * @param cp	[in] Code page number.
+ * @param str	[in] UTF-8 text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return 8-bit text.
+ */
+string utf8_to_cpN(unsigned int cp, const char *str, int len)
+{
+	len = check_NULL_terminator(str, len);
+
+	// Get the encoding name for the primary code page.
+	char cp_name[20];
+	codePageToEncName(cp_name, sizeof(cp_name), cp, TEXTCONV_FLAG_CP1252_FALLBACK);
+
+	// Attempt to convert the text from UTF-8.
+	string ret;
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name));
+	if (mbs) {
+		ret.assign(mbs);
+		free(mbs);
+	}
+	return ret;
+}
+
+/**
+ * Convert UTF-16 to 8-bit text.
+ * Trailing NULL bytes will be removed.
+ *
+ * The specified code page number will be used.
+ * Invalid characters will be ignored.
+ *
+ * @param cp	[in] Code page number.
+ * @param wcs	[in] UTF-16 text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return 8-bit text.
+ */
+string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
+{
+	len = check_NULL_terminator(wcs, len);
+
+	// Get the encoding name for the primary code page.
+	char cp_name[20];
+	const unsigned int flags = (cp == CP_UTF8 ? 0 : TEXTCONV_FLAG_CP1252_FALLBACK);
+	codePageToEncName(cp_name, sizeof(cp_name), cp, flags);
+
+	// Attempt to convert the text from UTF-8.
+	string ret;
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name));
+	if (mbs) {
+		ret.assign(mbs);
+		free(mbs);
+	}
+	return ret;
+}
+
+/** Specialized UTF-16 conversion functions. **/
+
+/**
+ * Convert UTF-16LE text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param wcs	[in] UTF-16LE text.
+ * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+string utf16le_to_utf8(const char16_t *wcs, int len)
+{
+	len = check_NULL_terminator(wcs, len);
+
+	// Attempt to convert the text from UTF-16LE to UTF-8.
+	string ret;
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), "UTF-16LE", "UTF-8"));
+	if (mbs) {
+		ret.assign(mbs);
+		free(mbs);
+	}
+	return ret;
+}
+
+/**
+ * Convert UTF-16BE text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param wcs	[in] UTF-16BE text.
+ * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+string utf16be_to_utf8(const char16_t *wcs, int len)
+{
+	len = check_NULL_terminator(wcs, len);
+
+	// Attempt to convert the text from UTF-16BE to UTF-8.
+	string ret;
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), "UTF-16BE", "UTF-8"));
+	if (mbs) {
+		ret.assign(mbs);
+		free(mbs);
+	}
 	return ret;
 }
 
