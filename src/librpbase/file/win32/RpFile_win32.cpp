@@ -23,6 +23,7 @@
 // librpbase
 #include "byteswap.h"
 #include "TextFuncs.hpp"
+#include "TextFuncs_wchar.hpp"
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"

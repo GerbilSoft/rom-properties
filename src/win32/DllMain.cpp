@@ -53,6 +53,7 @@ using LibRpBase::rp_image;
 
 // Text conversion functions and macros.
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"

@@ -20,8 +20,9 @@
 
 #include "../FileSystem.hpp"
 
-// libromdata
+// librpbase
 #include "TextFuncs.hpp"
+#include "TextFuncs_wchar.hpp"
 
 // One-time initialization.
 #include "threads/pthread_once.h"

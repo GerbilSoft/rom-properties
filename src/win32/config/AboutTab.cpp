@@ -29,6 +29,7 @@
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 

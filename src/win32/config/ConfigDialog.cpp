@@ -24,9 +24,10 @@
 #include "res/resource.h"
 
 // librpbase
-#include "librpbase/config/Config.hpp"
 #include "librpbase/TextFuncs.hpp"
-using LibRpBase::Config;
+#include "librpbase/TextFuncs_wchar.hpp"
+#include "librpbase/config/Config.hpp"
+using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"

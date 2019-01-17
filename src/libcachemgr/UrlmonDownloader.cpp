@@ -28,6 +28,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/RpFile.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::RpFile;

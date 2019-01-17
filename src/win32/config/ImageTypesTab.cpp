@@ -26,8 +26,10 @@
 #include "libwin32common/WinUI.hpp"
 
 // librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
-using LibRpBase::Config;
+using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"

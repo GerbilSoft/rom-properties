@@ -25,6 +25,7 @@
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;

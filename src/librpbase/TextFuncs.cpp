@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.cpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2018 by David Korth.                                 *
+ * Copyright (c) 2009-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -348,7 +348,8 @@ string formatFileSize(int64_t size)
 		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
 # if defined(HAVE_STRUCT_LCONV_WCHAR_T)
 		// MSVCRT: `struct lconv` has wchar_t fields.
-		s_value << W2U8(localeconv()->_W_decimal_point);
+		s_value << utf16_to_utf8(
+			reinterpret_cast<const char16_t*>(localeconv()->_W_decimal_point), -1);
 # else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 		// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 		// NOTE: The `char` fields are ANSI.

@@ -34,6 +34,7 @@
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;

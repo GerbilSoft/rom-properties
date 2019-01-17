@@ -636,10 +636,4 @@ unsigned int convSampleToMs(unsigned int sample, unsigned int rate);
 }
 #endif /* __cplusplus */
 
-#ifdef _WIN32
-// wchar_t text conversion macros.
-// Generally used only on Windows.
-#include "TextFuncs_wchar.hpp"
-#endif
-
 #endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_HPP__ */

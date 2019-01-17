@@ -46,6 +46,7 @@ using std::string;
 # include "libwin32common/secoptions.h"
 # include <io.h>
 # include "librpbase/TextFuncs.hpp"
+# include "librpbase/TextFuncs_wchar.hpp"
 using std::u16string;
 #endif /* _WIN32 */
 
@@ -141,7 +142,7 @@ int RP_C_API main(int argc, char *argv[])
 	// Reference: https://lists.gnu.org/archive/html/bug-gnulib/2013-01/msg00007.html
 	if (isatty(fileno(stdout))) {
 		// Convert to wchar_t, then print it.
-		fputws(U82W_s(fst_str), stdout);
+		_fputts(U82T_s(fst_str), stdout);
 	} else {
 		// Writing to file. Print the original UTF-8.
 		fputs(fst_str.c_str(), stdout);
