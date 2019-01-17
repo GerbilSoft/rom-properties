@@ -3,7 +3,7 @@
  * RP_ShellIconOverlayIdentifier_Register.cpp: IShellIconOverlayIdentifier *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -26,15 +26,11 @@
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
-// C++ includes.
-#include <string>
-using std::wstring;
-
 #define CLSID_RP_ShellIconOverlayIdentifier_String	TEXT("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
-extern const wchar_t RP_ProgID[];
+extern const TCHAR RP_ProgID[];
 
 // Overlay handler name.
-static const wchar_t RP_OverlayHandler[] = L"RpDangerousPermissionsOverlay";
+static const TCHAR RP_OverlayHandler[] = _T("RpDangerousPermissionsOverlay");
 
 /**
  * Register the COM object.
@@ -42,7 +38,7 @@ static const wchar_t RP_OverlayHandler[] = L"RpDangerousPermissionsOverlay";
  */
 LONG RP_ShellIconOverlayIdentifier::RegisterCLSID(void)
 {
-	static const wchar_t description[] = L"ROM Properties Page - Shell Icon Overlay Identifier";
+	static const TCHAR description[] = _T("ROM Properties Page - Shell Icon Overlay Identifier");
 
 	// Register the COM object.
 	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ShellIconOverlayIdentifier), RP_ProgID, description);
@@ -57,7 +53,7 @@ LONG RP_ShellIconOverlayIdentifier::RegisterCLSID(void)
 	}
 
 	// Register as a shell icon overlay handler.
-	RegKey hklm_SIOI(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers", KEY_READ, false);
+	RegKey hklm_SIOI(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers"), KEY_READ, false);
 	if (!hklm_SIOI.isOpen())
 		return hklm_SIOI.lOpenRes();
 
@@ -86,7 +82,7 @@ LONG RP_ShellIconOverlayIdentifier::UnregisterCLSID(void)
 	}
 
 	// Remove the shell icon overlay handler.
-	RegKey hklm_SIOI(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers", KEY_READ, false);
+	RegKey hklm_SIOI(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers"), KEY_READ, false);
 	if (hklm_SIOI.isOpen()) {
 		hklm_SIOI.deleteSubKey(RP_OverlayHandler);
 

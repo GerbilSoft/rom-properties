@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_Fallback.cpp: IThumbnailProvider implementation.   *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "stdafx.h"
@@ -59,21 +58,28 @@ HRESULT RP_ThumbnailProvider_Private::Fallback_int(RegKey &hkey_Assoc,
 	UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha)
 {
 	// Is RP_Fallback present?
-	RegKey hkey_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ, false);
+	RegKey hkey_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_READ, false);
 	if (!hkey_RP_Fallback.isOpen()) {
 		return hkey_RP_Fallback.lOpenRes();
 	}
 
 	// Get the IThumbnailProvider key.
-	wstring clsid_reg = hkey_RP_Fallback.read(L"IThumbnailProvider");
+	const tstring clsid_reg = hkey_RP_Fallback.read(_T("IThumbnailProvider"));
 	if (clsid_reg.empty()) {
 		// No CLSID.
 		return E_FAIL;
 	}
 
-	// Convert the CLSID from the string.
+	// Parse the CLSID string.
+	// TODO: Use IIDFromString() instead to skip ProgID handling?
+	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20151015-00/?p=91351
 	CLSID clsidThumbnailProvider;
+#ifdef UNICODE
 	HRESULT hr = CLSIDFromString(clsid_reg.c_str(), &clsidThumbnailProvider);
+#else /* !UNICODE */
+	// FIXME: CLSIDFromStringA() implementation?
+	HRESULT hr = E_FAIL;
+#endif /* UNICODE */
 	if (FAILED(hr)) {
 		// Failed to convert the CLSID from string.
 		return hr;
@@ -141,13 +147,13 @@ HRESULT RP_ThumbnailProvider_Private::Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPH
 	}
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82W_c(file_ext), KEY_READ, false);
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82T_c(file_ext), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}
 
 	// If we have a ProgID, check it first.
-	wstring progID = hkey_Assoc.read(nullptr);
+	const tstring progID = hkey_Assoc.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		// TODO: Get the correct top-level registry key.

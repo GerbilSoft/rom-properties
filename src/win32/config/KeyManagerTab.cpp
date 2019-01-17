@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -68,7 +68,7 @@ class KeyManagerTabPrivate
 	public:
 		// Property for "D pointer".
 		// This points to the KeyManagerTabPrivate object.
-		static const wchar_t D_PTR_PROP[];
+		static const TCHAR D_PTR_PROP[];
 
 	public:
 		/**
@@ -203,7 +203,7 @@ class KeyManagerTabPrivate
 
 		// Starting directory for importing keys.
 		// TODO: Save this in the configuration file?
-		wstring wsKeyFileDir;
+		tstring tsKeyFileDir;
 
 		/**
 		 * Get a filename using the Open File Name dialog.
@@ -216,7 +216,7 @@ class KeyManagerTabPrivate
 		 * @param filterSpec Filter specification. (pipe-delimited)
 		 * @return Filename (in UTF-8), or empty string on error.
 		 */
-		string getOpenFileName(const wchar_t *dlgTitle, const wchar_t *filterSpec);
+		string getOpenFileName(const TCHAR *dlgTitle, const TCHAR *filterSpec);
 
 		/**
 		 * Import keys from Wii keys.bin. (BootMii format)
@@ -274,7 +274,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	hbrAltRow = CreateSolidBrush(colorAltRow);
 
 	// Check the COMCTL32.DLL version.
-	HMODULE hComCtl32 = GetModuleHandle(L"COMCTL32");
+	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
 	assert(hComCtl32 != nullptr);
 	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
 	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
@@ -325,7 +325,7 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 
 // Property for "D pointer".
 // This points to the KeyManagerTabPrivate object.
-const wchar_t KeyManagerTabPrivate::D_PTR_PROP[] = L"KeyManagerTabPrivate";
+const TCHAR KeyManagerTabPrivate::D_PTR_PROP[] = _T("KeyManagerTabPrivate");
 
 /**
  * Initialize the UI.
@@ -362,7 +362,7 @@ void KeyManagerTabPrivate::initUI(void)
 		// COMCTL32 is older than v6.10. Use a regular button.
 		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
 		// Maybe we *should* use ownerdraw...
-		SetWindowText(hBtnImport, U82W_c(C_("KeyManagerTab", "I&mport...")));
+		SetWindowText(hBtnImport, U82T_c(C_("KeyManagerTab", "I&mport...")));
 	}
 
 	// Initialize the ListView.
@@ -382,25 +382,25 @@ void KeyManagerTabPrivate::initUI(void)
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
 	// Column title.
-	wstring wsColTitle;
+	tstring tsColTitle;
 
 	// tr: Column 0: Key Name.
-	wsColTitle = U82W_c(C_("KeyManagerTab", "Key Name"));
+	tsColTitle = U82T_c(C_("KeyManagerTab", "Key Name"));
 	LVCOLUMN lvCol;
 	memset(&lvCol, 0, sizeof(lvCol));
 	lvCol.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
 	lvCol.fmt = LVCFMT_LEFT;
-	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
+	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	ListView_InsertColumn(hListView, 0, &lvCol);
 
 	// tr: Column 1: Value.
-	wsColTitle = U82W_c(C_("KeyManagerTab", "Value"));
-	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
+	tsColTitle = U82T_c(C_("KeyManagerTab", "Value"));
+	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	ListView_InsertColumn(hListView, 1, &lvCol);
 
 	// tr: Column 2: Verification status.
-	wsColTitle = U82W_c(C_("KeyManagerTab", "Valid?"));
-	lvCol.pszText = const_cast<LPWSTR>(wsColTitle.c_str());
+	tsColTitle = U82T_c(C_("KeyManagerTab", "Valid?"));
+	lvCol.pszText = const_cast<LPTSTR>(tsColTitle.c_str());
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
 	if (isComCtl32_610) {
@@ -436,6 +436,7 @@ void KeyManagerTabPrivate::initUI(void)
 		if (hasIListView) {
 			// Create groups for each section.
 			// NOTE: We have to use the Vista+ LVGROUP definition.
+			// NOTE: LVGROUP always uses Unicode strings.
 #if _WIN32_WINNT < 0x0600
 # error Windows Vista SDK or later is required.
 #endif
@@ -468,12 +469,12 @@ void KeyManagerTabPrivate::initUI(void)
 	// Make sure the "Value" column is at least 32 characters wide.
 	// NOTE: ListView_GetStringWidth() doesn't adjust for the monospaced font.
 	SIZE szValue;
-	int ret = LibWin32Common::measureTextSize(hListView, hFontMono, L"0123456789ABCDEF0123456789ABCDEF", &szValue);
+	int ret = LibWin32Common::measureTextSize(hListView, hFontMono, _T("0123456789ABCDEF0123456789ABCDEF"), &szValue);
 	assert(ret == 0);
 	if (ret == 0) {
 		column_width[1] = szValue.cx + column_padding[1];
 	}
-	//column_width[1] = ListView_GetStringWidth(hListView, L"0123456789ABCDEF0123456789ABCDEF") + column_padding[1];
+	//column_width[1] = ListView_GetStringWidth(hListView, _T("0123456789ABCDEF0123456789ABCDEF")) + column_padding[1];
 
 	for (int i = keyStore->totalKeyCount()-1; i >= 0; i--) {
 		const KeyStoreWin32::Key *key = keyStore->getKey(i);
@@ -482,13 +483,13 @@ void KeyManagerTabPrivate::initUI(void)
 			continue;
 
 		int tmp_width[2];
-		tmp_width[0] = ListView_GetStringWidth(hListView, U82W_s(key->name)) + column_padding[0];
-		//tmp_width[1] = ListView_GetStringWidth(hListView, U82W_s(key->value)) + column_padding[1];
+		tmp_width[0] = ListView_GetStringWidth(hListView, U82T_s(key->name)) + column_padding[0];
+		//tmp_width[1] = ListView_GetStringWidth(hListView, U82T_s(key->value)) + column_padding[1];
 
 		column_width[0] = std::max(column_width[0], tmp_width[0]);
 		//column_width[1] = std::max(column_width[1], tmp_width[1]);
 
-		ret = LibWin32Common::measureTextSize(hListView, hFontMono, U82W_s(key->value), &szValue);
+		ret = LibWin32Common::measureTextSize(hListView, hFontMono, U82T_s(key->value), &szValue);
 		assert(ret == 0);
 		if (ret == 0) {
 			column_width[1] = std::max(column_width[1], (int)szValue.cx + column_padding[1]);
@@ -631,7 +632,7 @@ void KeyManagerTabPrivate::save(void)
 			continue;
 
 		// Save this key.
-		WritePrivateProfileString(L"Keys", U82W_s(pKey->name), U82W_s(pKey->value), U82W_c(filename));
+		WritePrivateProfileString(_T("Keys"), U82T_s(pKey->name), U82T_s(pKey->value), U82T_c(filename));
 	}
 
 	// Clear the modified status.
@@ -718,11 +719,11 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 						switch (plvItem->iSubItem) {
 							case 0:
 								// Key name.
-								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82W_s(key->name));
+								_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->name));
 								return TRUE;
 							case 1:
 								// Value.
-								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82W_s(key->value));
+								_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->value));
 								return TRUE;
 							default:
 								// No text for "Valid?".
@@ -1016,7 +1017,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 				break;
 
 			// Copy the text from the ListView to the EDIT control.
-			wchar_t szItemText[128];
+			TCHAR szItemText[128];
 			ListView_GetItemText(hWnd, iItem, lvhti.iSubItem, szItemText, ARRAY_SIZE(szItemText));
 			SetWindowText(d->hEditBox, szItemText);
 			// FIXME: ES_AUTOHSCROLL causes some initial scrolling weirdness here,
@@ -1091,10 +1092,10 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 				break;
 
 			// Save the key.
-			wchar_t buf[128];
-			buf[0] = 0;
-			GetWindowText(hWnd, buf, ARRAY_SIZE(buf));
-			d->keyStore->setKey(d->iEditItem, W2U8(buf));
+			TCHAR tbuf[128];
+			tbuf[0] = 0;
+			GetWindowText(hWnd, tbuf, ARRAY_SIZE(tbuf));
+			d->keyStore->setKey(d->iEditItem, T2U8(tbuf));
 
 			// Item is no longer being edited.
 			d->iEditItem = -1;
@@ -1177,7 +1178,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 				return TRUE;
 			}
 
-			const wchar_t *const pchData = static_cast<const wchar_t*>(GlobalLock(hClipboardData));
+			const TCHAR *const pchData = static_cast<const TCHAR*>(GlobalLock(hClipboardData));
 			if (!pchData) {
 				// No data.
 				CloseClipboard();
@@ -1191,20 +1192,21 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			}
 
 			// Filter out invalid characters.
-			wstring wstr;
-			wstr.reserve(wcslen(pchData));
-			for (const wchar_t *p = pchData; *p != 0; p++) {
+			tstring tstr;
+			tstr.reserve(_tcslen(pchData));
+			for (const TCHAR *p = pchData; *p != 0; p++) {
 				// Allow hexadecimal digits.
-				if (iswxdigit(*p)) {
-					wstr += *p;
+				if (_istxdigit(*p)) {
+					tstr += *p;
 				} else if (d->bAllowKanji) {
+#ifdef UNICODE
 					// Allow kanji.
 					// Reference: http://www.localizingjapan.com/blog/2012/01/20/regular-expressions-for-japanese-text/
 					if ((*p >= 0x3400 && *p <= 0x4DB5) ||
 					    (*p >= 0x4E00 && *p <= 0x9FCB) ||
 					    (*p >= 0xF900 && *p <= 0xFA6A))
 					{
-						wstr += *p;
+						tstr += *p;
 					} else {
 						// Invalid character.
 						// Prevent the paste.
@@ -1212,6 +1214,13 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 						CloseClipboard();
 						return TRUE;
 					}
+#else /* !UNICODE */
+					// TODO: Shift-JIS support?
+					// For now, assuming this is invalid.
+					GlobalUnlock(hClipboardData);
+					CloseClipboard();
+					return TRUE;
+#endif /* UNICODE */
 				} else {
 					// Invalid character.
 					// Prevent the paste.
@@ -1224,10 +1233,10 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			GlobalUnlock(hClipboardData);
 			CloseClipboard();
 
-			if (!wstr.empty()) {
+			if (!tstr.empty()) {
 				// Insert the text.
 				// TODO: Paste even if empty?
-				Edit_ReplaceSel(hWnd, wstr.c_str());
+				Edit_ReplaceSel(hWnd, tstr.c_str());
 			}
 			return TRUE;
 		}
@@ -1414,7 +1423,7 @@ void KeyManagerTabPrivate::loadImages(void)
 	// Load the icons.
 	// NOTE: Using IDI_* will only return the 32x32 icon.
 	// Need to get the icon from USER32 directly.
-	HMODULE hUser32 = GetModuleHandle(L"user32");
+	HMODULE hUser32 = GetModuleHandle(_T("user32"));
 	assert(hUser32 != nullptr);
 	if (hUser32) {
 		hIconUnknown = (HICON)LoadImage(hUser32,
@@ -1445,7 +1454,7 @@ void KeyManagerTabPrivate::loadImages(void)
  * @param filterSpec Filter specification. (pipe-delimited)
  * @return Filename (in UTF-8), or empty string on error.
  */
-string KeyManagerTabPrivate::getOpenFileName(const wchar_t *dlgTitle, const wchar_t *filterSpec)
+string KeyManagerTabPrivate::getOpenFileName(const TCHAR *dlgTitle, const TCHAR *filterSpec)
 {
 	assert(dlgTitle != nullptr);
 	assert(filterSpec != nullptr);
@@ -1467,25 +1476,25 @@ string KeyManagerTabPrivate::getOpenFileName(const wchar_t *dlgTitle, const wcha
 		// This is needed because Win32 file filters use embedded
 		// NULL characters, but gettext doesn't support that because
 		// it uses C strings.
-		wstring ws_filterSpec(filterSpec);
-		for (auto iter = ws_filterSpec.begin(); iter != ws_filterSpec.end(); ++iter) {
-			if (*iter == L'|') {
-				*iter = L'\0';
+		tstring ts_filterSpec(filterSpec);
+		for (auto iter = ts_filterSpec.begin(); iter != ts_filterSpec.end(); ++iter) {
+			if (*iter == _T('|')) {
+				*iter = _T('\0');
 			}
 		}
 
-		wchar_t filename[MAX_PATH];
+		TCHAR filename[MAX_PATH];
 		filename[0] = 0;
 
 		OPENFILENAME ofn;
 		memset(&ofn, 0, sizeof(ofn));
 		ofn.lStructSize = sizeof(ofn);
 		ofn.hwndOwner = hWndPropSheet;
-		ofn.lpstrFilter = ws_filterSpec.c_str();
+		ofn.lpstrFilter = ts_filterSpec.c_str();
 		ofn.lpstrCustomFilter = nullptr;
 		ofn.lpstrFile = filename;
 		ofn.nMaxFile = ARRAY_SIZE(filename);
-		ofn.lpstrInitialDir = wsKeyFileDir.c_str();
+		ofn.lpstrInitialDir = tsKeyFileDir.c_str();
 		ofn.lpstrTitle = dlgTitle;
 		ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
 
@@ -1493,22 +1502,22 @@ string KeyManagerTabPrivate::getOpenFileName(const wchar_t *dlgTitle, const wcha
 		if (!bRet || filename[0] == 0)
 			return s_ret;
 
-		// Save the UTF-16 filename for wsKeyFileDir.
-		wsKeyFileDir = filename;
+		// Save the native filename for tsKeyFileDir.
+		tsKeyFileDir = filename;
 		// Convert to UTF-8 for the return value.
-		s_ret = W2U8(wsKeyFileDir);
+		s_ret = T2U8(tsKeyFileDir);
 	}
 
-	// Assuming the filename has been saved in wsKeyFileDir.
+	// Assuming the filename has been saved in tsKeyFileDir.
 	// Remove everything after the first backslash.
 	// NOTE: If this is the root directory, the backslash is left intact.
 	// Otherwise, the backslash is removed.
-	size_t bspos = wsKeyFileDir.rfind(L'\\');
-	if (bspos != wstring::npos) {
+	size_t bspos = tsKeyFileDir.rfind(_T('\\'));
+	if (bspos != tstring::npos) {
 		if (bspos > 2) {
-			wsKeyFileDir.resize(bspos);
+			tsKeyFileDir.resize(bspos);
 		} else if (bspos == 2) {
-			wsKeyFileDir.resize(3);
+			tsKeyFileDir.resize(3);
 		}
 	}
 
@@ -1527,15 +1536,15 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 
 	string filename = getOpenFileName(
 		// tr: Wii keys.bin dialog title.
-		U82W_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
+		U82T_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		// tr: Wii keys.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82W_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
+		U82T_c(C_("KeyManagerTab", "keys.bin|keys.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, L"Wii keys.bin", iret);
+	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii keys.bin")), iret);
 }
 
 /**
@@ -1549,15 +1558,15 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 
 	string filename = getOpenFileName(
 		// tr: Wii U otp.bin dialog title.
-		U82W_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
+		U82T_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		// tr: Wii U otp.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82W_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
+		U82T_c(C_("KeyManagerTab", "otp.bin|otp.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, L"Wii U otp.bin", iret);
+	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii U otp.bin"), iret);
 }
 
 /**
@@ -1571,15 +1580,15 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 
 	string filename = getOpenFileName(
 		// tr: 3DS boot9.bin dialog title.
-		U82W_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
+		U82T_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		// tr: 3DS boot9.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82W_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
+		U82T_c(C_("KeyManagerTab", "boot9.bin|boot9.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, L"3DS boot9.bin", iret);
+	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS boot9.bin"), iret);
 }
 
 /**
@@ -1593,15 +1602,15 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 
 	string filename = getOpenFileName(
 		// tr: aeskeydb.bin dialog title.
-		U82W_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
+		U82T_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		// tr: aeskeydb.bin file filter. (Win32) [Use '|' instead of '\0'! gettext() doesn't support embedded nulls.]
-		U82W_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
+		U82T_c(C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|Binary Files (*.bin)|*.bin|All Files (*.*)|*.*||")));
 	if (filename.empty())
 		return;
 
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(filename.c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, L"3DS aeskeydb.bin", iret);
+	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS aeskeydb.bin"), iret);
 }
 
 /** KeyManagerTab **/
@@ -1633,7 +1642,7 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("KeyManagerTab", "Key Manager"));
+	const tstring tsTabTitle = U82T_c(C_("KeyManagerTab", "Key Manager"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
@@ -1641,7 +1650,7 @@ HPROPSHEETPAGE KeyManagerTab::getHPropSheetPage(void)
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pResource = LoadDialog_i18n(IDD_CONFIG_KEYMANAGER);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = wsTabTitle.c_str();
+	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = KeyManagerTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

@@ -58,7 +58,7 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 	, pfnSHGetStockIconInfo(nullptr)
 {
 	// Get SHGetStockIconInfo().
-	hShell32_dll = LoadLibrary(L"shell32.dll");
+	hShell32_dll = LoadLibrary(_T("shell32.dll"));
 	if (hShell32_dll) {
 		pfnSHGetStockIconInfo = (PFNSHGETSTOCKICONINFO)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
 	}

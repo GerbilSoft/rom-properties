@@ -41,7 +41,7 @@ void incRpGlobalRefCount(void)
 		return;
 
 	// First initialization. Load QISearch().
-	hShlwapi = LoadLibrary(L"shlwapi.dll");
+	hShlwapi = LoadLibrary(_T("shlwapi.dll"));
 	assert(hShlwapi != nullptr);
 	if (hShlwapi) {
 		pQISearch = reinterpret_cast<PFNQISEARCH>(GetProcAddress(hShlwapi, MAKEINTRESOURCEA(219)));

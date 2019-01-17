@@ -65,8 +65,15 @@ typedef unsigned char bool;
 #endif /* __cplusplus */
 
 // File paths
-static const wchar_t str_rp32path[] = L"i386\\rom-properties.dll";
-static const wchar_t str_rp64path[] = L"amd64\\rom-properties.dll";
+static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
+static const TCHAR str_rp64path[] = _T("amd64\\rom-properties.dll");
+
+// Bullet symbol
+#ifdef _UNICODE
+# define BULLET _T("\x2022")
+#else /* !_UNICODE */
+# define BULLET _T("*")
+#endif
 
 // Globals
 
@@ -101,7 +108,7 @@ static RECT rectStatus1_icon;
  * @param line2 Line 2. (May contain up to 3 lines and have links.)
  * @param uType Icon type. (Use MessageBox constants.)
  */
-static void ShowStatusMessage(HWND hDlg, const wchar_t *line1, const wchar_t *line2, UINT uType)
+static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2, UINT uType)
 {
 	HICON hIcon;
 	int sw_status;
@@ -177,7 +184,7 @@ static inline void EnableButtons(HWND hDlg, bool enable)
  * @param is64		[in] If true, use the 64-bit System directory.
  * @return Length of path in characters, excluding NULL terminator, on success; negative POSIX error code on error.
  */
-static int GetSystemDirFilePath(wchar_t *pszPath, size_t cchPath, const wchar_t *filename, bool is64)
+static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *filename, bool is64)
 {
 	unsigned int len, cchFilename;
 
@@ -200,7 +207,7 @@ static int GetSystemDirFilePath(wchar_t *pszPath, size_t cchPath, const wchar_t 
 	}
 
 	// Make sure we have enough space for the System directory and filename.
-	cchFilename = (unsigned int)wcslen(filename);
+	cchFilename = (unsigned int)_tcslen(filename);
 	if (len + cchFilename + 11 >= cchPath) {
 		// Not enough space.
 		return -ENOMEM;
@@ -208,15 +215,15 @@ static int GetSystemDirFilePath(wchar_t *pszPath, size_t cchPath, const wchar_t 
 
 	// Append the System directory name.
 #ifdef _WIN64
-	wcscpy_s(&pszPath[len], cchPath-len, (is64 ? L"System32\\" : L"SysWOW64\\"));
+	_tcscpy_s(&pszPath[len], cchPath-len, (is64 ? _T("System32\\") : _T("SysWOW64\\")));
 	len += 9;
 #else /* !_WIN64 */
-	wcscpy_s(&pszPath[len], cchPath-len, (is64 ? L"Sysnative\\" : L"System32\\"));
+	_tcscpy_s(&pszPath[len], cchPath-len, (is64 ? _T("Sysnative\\") : _T("System32\\")));
 	len += (is64 ? 10 : 9);
 #endif /* _WIN64 */
 
 	// Append the filename.
-	wcscpy_s(&pszPath[len], cchPath-len, filename);
+	_tcscpy_s(&pszPath[len], cchPath-len, filename);
 	return len + cchFilename;
 }
 
@@ -225,7 +232,7 @@ static int GetSystemDirFilePath(wchar_t *pszPath, size_t cchPath, const wchar_t 
  * @param filename Filename.
  * @return True if the file exists; false if not.
  */
-static inline bool fileExists(const wchar_t *filename)
+static inline bool fileExists(const TCHAR *filename)
 {
 	return (GetFileAttributes(filename) != INVALID_FILE_ATTRIBUTES);
 }
@@ -239,8 +246,8 @@ static inline bool fileExists(const wchar_t *filename)
 static bool CheckMsvc(bool is64)
 {
 	// Determine the MSVCRT DLL name.
-	wchar_t msvcrt_path[MAX_PATH];
-	int ret = GetSystemDirFilePath(msvcrt_path, ARRAY_SIZE(msvcrt_path), L"msvcp140.dll", is64);
+	TCHAR msvcrt_path[MAX_PATH];
+	int ret = GetSystemDirFilePath(msvcrt_path, ARRAY_SIZE(msvcrt_path), _T("msvcp140.dll"), is64);
 	if (ret <= 0) {
 		// Unable to get the path.
 		// Assume the file exists.
@@ -282,17 +289,17 @@ typedef enum {
  */
 static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pErrorCode)
 {
-	wchar_t regsvr32_path[MAX_PATH];
-	wchar_t args[14 + MAX_PATH + 4 + 3 + ARRAY_SIZE(str_rp64path)] = L"regsvr32.exe \"";
+	TCHAR regsvr32_path[MAX_PATH];
+	TCHAR args[14 + MAX_PATH + 4 + 3 + ARRAY_SIZE(str_rp64path)] = _T("regsvr32.exe \"");
 	DWORD szModuleFn;
-	wchar_t *bs;
+	TCHAR *bs;
 
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	DWORD status;
 
 	// Determine the REGSVR32 path.
-	int ret = GetSystemDirFilePath(regsvr32_path, ARRAY_SIZE(regsvr32_path), L"regsvr32.exe", is64);
+	int ret = GetSystemDirFilePath(regsvr32_path, ARRAY_SIZE(regsvr32_path), _T("regsvr32.exe"), is64);
 	if (ret <= 0) {
 		// Unable to get the path.
 		return ISR_FATAL_ERROR;
@@ -309,7 +316,7 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	}
 
 	// Find the last backslash in the module filename.
-	bs = wcsrchr(args, L'\\');
+	bs = _tcsrchr(args, _T('\\'));
 	if (!bs) {
 		// No backslashes...
 		return ISR_FATAL_ERROR;
@@ -317,14 +324,14 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	// Remove the EXE filename, then append the DLL relative path.
 	bs[1] = 0;
-	wcscat_s(args, ARRAY_SIZE(args), is64 ? str_rp64path : str_rp32path);
+	_tcscat_s(args, ARRAY_SIZE(args), is64 ? str_rp64path : str_rp32path);
 	if (!fileExists(&args[14])) {
 		// File not found.
 		return ISR_FILE_NOT_FOUND;
 	}
 
 	// Append /s (silent) key, and optionally append /u (uninstall) key.
-	wcscat_s(args, ARRAY_SIZE(args), isUninstall ? L"\" /s /u" : L"\" /s");
+	_tcscat_s(args, ARRAY_SIZE(args), isUninstall ? _T("\" /s /u") : _T("\" /s"));
 
 	memset(&si, 0, sizeof(si));
 	memset(&pi, 0, sizeof(pi));
@@ -376,9 +383,9 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
  */
 static InstallServerResult TryInstallServer(HWND hWnd,
 	bool isUninstall, bool is64,
-	wchar_t *sErrBuf, size_t cchErrBuf)
+	TCHAR *sErrBuf, size_t cchErrBuf)
 {
-	const wchar_t *dll_path, *entry_point;
+	const TCHAR *dll_path, *entry_point;
 	DWORD errorCode;
 	InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
 
@@ -389,52 +396,52 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 
 	dll_path = (is64 ? str_rp64path : str_rp32path);
 	entry_point = (isUninstall
-		? L"DllUnregisterServer"
-		: L"DllRegisterServer");
+		? _T("DllUnregisterServer")
+		: _T("DllRegisterServer"));
 
-	// NOTE: Using wcscpy_s() instead of wcsncpy() because
-	// wcsncpy() zeroes the rest of the buffer.
+	// NOTE: Using _tcscpy_s() instead of _tcsncpy() because
+	// _tcsncpy() zeroes the rest of the buffer.
 	switch (res) {
 		case ISR_OK:
 			// No error.
 			if (cchErrBuf > 0) {
-				sErrBuf[0] = L'\0';
+				sErrBuf[0] = _T('\0');
 			}
 			break;
 		case ISR_FATAL_ERROR:
 		default:
-			wcscpy_s(sErrBuf, cchErrBuf, L"An unknown fatal error occurred.");
+			_tcscpy_s(sErrBuf, cchErrBuf, _T("An unknown fatal error occurred."));
 			break;
 		case ISR_FILE_NOT_FOUND:
-			swprintf(sErrBuf, cchErrBuf, L"%s is missing.", dll_path);
+			_sntprintf(sErrBuf, cchErrBuf, _T("%s is missing."), dll_path);
 			break;
 		case ISR_CREATEPROCESS_FAILED:
-			swprintf(sErrBuf, cchErrBuf, L"Could not start REGSVR32.exe. (Err:%u)", errorCode);
+			_sntprintf(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:%u)"), errorCode);
 			break;
 		case ISR_PROCESS_STILL_ACTIVE:
-			wcscpy_s(sErrBuf, cchErrBuf, L"The REGSVR32 process never completed.");
+			_tcscpy_s(sErrBuf, cchErrBuf, _T("The REGSVR32 process never completed."));
 			break;
 		case ISR_REGSVR32_EXIT_CODE:
 			switch (errorCode) {
 				case REGSVR32_FAIL_ARGS:
-					wcscpy_s(sErrBuf, cchErrBuf, L"REGSVR32 failed: Invalid argument.");
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Invalid argument."));
 					break;
 				case REGSVR32_FAIL_OLE:
-					wcscpy_s(sErrBuf, cchErrBuf, L"REGSVR32 failed: OleInitialize() failed.");
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: OleInitialize() failed."));
 					break;
 				case REGSVR32_FAIL_LOAD:
-					swprintf(sErrBuf, cchErrBuf, L"REGSVR32 failed: %s is not a valid DLL.", dll_path);
+					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s is not a valid DLL."), dll_path);
 					break;
 				case REGSVR32_FAIL_ENTRY:
-					swprintf(sErrBuf, cchErrBuf, L"REGSVR32 failed: %s is missing %s().",
+					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s is missing %s()."),
 						dll_path, entry_point);
 					break;
 				case REGSVR32_FAIL_REG:
-					swprintf(sErrBuf, cchErrBuf, L"REGSVR32 failed: %s() returned an error.",
+					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s() returned an error."),
 						entry_point);
 					break;
 				default:
-					swprintf(sErrBuf, cchErrBuf, L"REGSVR32 failed: Unknown exit code %u.", errorCode);
+					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code %u."), errorCode);
 					break;
 			}
 			break;
@@ -455,7 +462,7 @@ typedef struct _ThreadParams {
  */
 static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 {
-	wchar_t msg32[256], msg64[256];
+	TCHAR msg32[256], msg64[256];
 	InstallServerResult res32 = ISR_OK, res64 = ISR_OK;
 
 	ThreadParams *const params = (ThreadParams*)lpParameter;
@@ -470,46 +477,46 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 
 	if (res32 == ISR_OK && res64 == ISR_OK) {
 		// DLL(s) registered successfully.
-		const wchar_t *msg;
+		const TCHAR *msg;
 		if (g_is64bit) {
 			msg = (params->isUninstall
-				? L"DLLs unregistered successfully."
-				: L"DLLs registered successfully.");
+				? _T("DLLs unregistered successfully.")
+				: _T("DLLs registered successfully."));
 		} else {
 			msg = (params->isUninstall
-				? L"DLL unregistered successfully."
-				: L"DLL registered successfully.");
+				? _T("DLL unregistered successfully.")
+				: _T("DLL registered successfully."));
 		}
-		ShowStatusMessage(params->hWnd, msg, L"", MB_ICONINFORMATION);
+		ShowStatusMessage(params->hWnd, msg, _T(""), MB_ICONINFORMATION);
 		MessageBeep(MB_ICONINFORMATION);
 	} else {
 		// At least one of the DLLs failed to register.
-		const wchar_t *msg1;
-		wchar_t msg2[540];
-		msg2[0] = L'\0';
+		const TCHAR *msg1;
+		TCHAR msg2[540];
+		msg2[0] = _T('\0');
 
 		if (g_is64bit) {
 			msg1 = (params->isUninstall
-				? L"An error occurred while unregistering the DLLs:"
-				: L"An error occurred while registering the DLLs:");
+				? _T("An error occurred while unregistering the DLLs:")
+				: _T("An error occurred while registering the DLLs:"));
 		} else {
 			msg1 = (params->isUninstall
-				? L"An error occurred while unregistering the DLL:"
-				: L"An error occurred while registering the DLL:");
+				? _T("An error occurred while unregistering the DLL:")
+				: _T("An error occurred while registering the DLL:"));
 		}
 
 		if (res32 != ISR_OK) {
 			if (g_is64bit) {
-				wcscpy_s(msg2, ARRAY_SIZE(msg2), L"\x2022 32-bit: ");
+				_tcscpy_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 32-bit: "));
 			}
-			wcscat_s(msg2, ARRAY_SIZE(msg2), msg32);
+			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg32);
 		}
 		if (res64 != ISR_OK) {
-			if (msg2[0] != L'\0') {
-				wcscat_s(msg2, ARRAY_SIZE(msg2), L"\n");
+			if (msg2[0] != _T('\0')) {
+				_tcscat_s(msg2, ARRAY_SIZE(msg2), _T("\n"));
 			}
-			wcscat_s(msg2, ARRAY_SIZE(msg2), L"\x2022 64-bit: ");
-			wcscat_s(msg2, ARRAY_SIZE(msg2), msg64);
+			_tcscat_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 64-bit: "));
+			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg64);
 		}
 
 		ShowStatusMessage(params->hWnd, msg1, msg2, MB_ICONSTOP);
@@ -539,20 +546,20 @@ static void InitDialog(HWND hDlg)
 	static const SIZE szIcon = {16, 16};
 
 	// Main dialog description.
-	static const wchar_t strdlg_desc[] =
-		L"This installer will register the ROM Properties Page DLL with the system, "
-		L"which will provide extra functionality for supported files in Windows Explorer.\n\n"
-		L"Note that the DLL locations are hard-coded in the registry. If you move the DLLs, "
-		L"you will have to rerun this installer. In addition, the DLLs will usually be locked "
-		L"by Explorer, so you will need to use this program to uninstall the DLLs first and "
-		L"then restart Explorer in order to move the DLLs.\n\n"
-		L"Uninstalling will unregister the ROM Properties DLL, which will disable the extra "
-		L"functionality provided by the DLL for supported ROM files.";
+	static const TCHAR strdlg_desc[] =
+		_T("This installer will register the ROM Properties Page DLL with the system, ")
+		_T("which will provide extra functionality for supported files in Windows Explorer.\n\n")
+		_T("Note that the DLL locations are hard-coded in the registry. If you move the DLLs, ")
+		_T("you will have to rerun this installer. In addition, the DLLs will usually be locked ")
+		_T("by Explorer, so you will need to use this program to uninstall the DLLs first and ")
+		_T("then restart Explorer in order to move the DLLs.\n\n")
+		_T("Uninstalling will unregister the ROM Properties DLL, which will disable the extra ")
+		_T("functionality provided by the DLL for supported ROM files.");
 
 	HWND hStatus1, hExclaim;
 	HMODULE hUser32;
 	bool bHasMsvc32, bErr;
-	const wchar_t *line1 = NULL, *line2 = NULL;
+	const TCHAR *line1 = NULL, *line2 = NULL;
 
 	if (hIconDialog) {
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIconDialog);
@@ -574,7 +581,7 @@ static void InitDialog(HWND hDlg)
 	// Load the icons.
 	// NOTE: Using IDI_EXCLAMATION will only return the 32x32 icon.
 	// Need to get the icon from USER32 directly.
-	hUser32 = GetModuleHandle(L"user32");
+	hUser32 = GetModuleHandle(_T("user32"));
 	assert(hUser32 != NULL);
 	if (hUser32) {
 		hIconExclaim = (HICON)LoadImage(hUser32,
@@ -615,10 +622,10 @@ static void InitDialog(HWND hDlg)
 		// 32-bit system.
 		if (!bHasMsvc32) {
 			// 32-bit MSVCRT is missing.
-			line1 = L"The 32-bit MSVC 2017 runtime is not installed.";
-			line2 = L"You can download the 32-bit MSVC 2017 runtime at:\n"
-				L"\x2022 <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">"
-					L"https://aka.ms/vs/15/release/vc_redist.x86.exe</a>";
+			line1 = _T("The 32-bit MSVC 2017 runtime is not installed.");
+			line2 = _T("You can download the 32-bit MSVC 2017 runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/15/release/vc_redist.x86.exe</a>");
 		}
 	} else
 #endif /* !_WIN64 */
@@ -627,24 +634,24 @@ static void InitDialog(HWND hDlg)
 		const bool bHasMsvc64 = CheckMsvc(true);
 		if (!bHasMsvc32 && !bHasMsvc64) {
 			// Both 32-bit and 64-bit MSVCRT are missing.
-			line1 = L"The 32-bit and 64-bit MSVC 2017 runtimes are not installed.";
-			line2 = L"You can download the MSVC 2017 runtime at:\n"
-				L"\x2022 32-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">"
-					L"https://aka.ms/vs/15/release/vc_redist.x86.exe</a>\n"
-				L"\x2022 64-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">"
-					L"https://aka.ms/vs/15/release/vc_redist.x64.exe</a>";
+			line1 = _T("The 32-bit and 64-bit MSVC 2017 runtimes are not installed.");
+			line2 = _T("You can download the MSVC 2017 runtime at:\n")
+				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/15/release/vc_redist.x86.exe</a>\n")
+				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">")
+					_T("https://aka.ms/vs/15/release/vc_redist.x64.exe</a>");
 		} else if (!bHasMsvc32 && bHasMsvc64) {
 			// 32-bit MSVCRT is missing.
-			line1 = L"The 32-bit MSVC 2017 runtime is not installed.";
-			line2 = L"You can download the 32-bit MSVC 2017 runtime at:\n"
-				L"\x2022 <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">"
-					L"https://aka.ms/vs/15/release/vc_redist.x86.exe</a>";
+			line1 = _T("The 32-bit MSVC 2017 runtime is not installed.");
+			line2 = _T("You can download the 32-bit MSVC 2017 runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/15/release/vc_redist.x86.exe</a>");
 		} else if (bHasMsvc32 && !bHasMsvc64) {
 			// 64-bit MSVCRT is missing.
-			line1 = L"The 64-bit MSVC 2017 runtime is not installed.";
-			line2 = L"You can download the 64-bit MSVC 2017 runtime at:\n"
-				L"\x2022 <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">"
-					L"https://aka.ms/vs/15/release/vc_redist.x64.exe</a>";
+			line1 = _T("The 64-bit MSVC 2017 runtime is not installed.");
+			line2 = _T("You can download the 64-bit MSVC 2017 runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">")
+					_T("https://aka.ms/vs/15/release/vc_redist.x64.exe</a>");
 		}
 	}
 
@@ -681,7 +688,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case IDC_BUTTON_UNINSTALL: {
 					ThreadParams *params;
 					HANDLE hThread;
-					const wchar_t *msg;
+					const TCHAR *msg;
 					bool isUninstall;
 
 					if (g_inProgress) {
@@ -698,14 +705,14 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 					if (g_is64bit) {
 						msg = (isUninstall
-							? L"\n\nUnregistering DLLs..."
-							: L"\n\nRegistering DLLs...");
+							? _T("\n\nUnregistering DLLs...")
+							: _T("\n\nRegistering DLLs..."));
 					} else {
 						msg = (isUninstall
-							? L"\n\nUnregistering DLL..."
-							: L"\n\nRegistering DLL...");
+							? _T("\n\nUnregistering DLL...")
+							: _T("\n\nRegistering DLL..."));
 					}
-					ShowStatusMessage(hDlg, msg, L"", 0);
+					ShowStatusMessage(hDlg, msg, _T(""), 0);
 
 					EnableButtons(hDlg, false);
 					g_inProgress = true;
@@ -717,10 +724,10 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, params, 0, NULL);
 					if (!hThread) {
 						// Couldn't start the worker thread.
-						wchar_t threadErr[128];
-						swprintf(threadErr, ARRAY_SIZE(threadErr),
-							L"\x2022 Win32 error code: %u", GetLastError());
-						ShowStatusMessage(hDlg, L"An error occurred while starting the worker thread.", threadErr, MB_ICONSTOP);
+						TCHAR threadErr[128];
+						_sntprintf(threadErr, ARRAY_SIZE(threadErr),
+							BULLET _T(" Win32 error code: %u"), GetLastError());
+						ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
 						MessageBeep(MB_ICONSTOP);
 						EnableButtons(hDlg, true);
 						g_inProgress = false;
@@ -755,6 +762,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			const NMHDR *const pHdr = (const NMHDR*)lParam;
 			assert(pHdr != NULL);
 			switch (pHdr->code) {
+#ifdef UNICODE
 				case NM_CLICK:
 				case NM_RETURN: {
 					const NMLINK *pNMLink;
@@ -769,17 +777,18 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153(v=vs.85).aspx
 					// - https://blogs.msdn.microsoft.com/oldnewthing/20061108-05/?p=29083
 					pNMLink = (const NMLINK*)pHdr;
-					ret = (int)(INT_PTR)ShellExecute(NULL, L"open", pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
+					ret = (int)(INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
 					if (ret <= 32) {
 						// ShellExecute() failed.
-						wchar_t err[128];
-						swprintf(err, ARRAY_SIZE(err),
-							L"Could not open the URL.\n\n"
-							L"Win32 error code: %d", ret);
-						MessageBox(hDlg, err, L"Could not open URL", MB_ICONERROR);
+						TCHAR err[128];
+						_sntprintf(err, ARRAY_SIZE(err),
+							_T("Could not open the URL.\n\n")
+							_T("Win32 error code: %d"), ret);
+						MessageBox(hDlg, err, _T("Could not open URL"), MB_ICONERROR);
 					}
 					return TRUE;
 				}
+#endif
 
 				default:
 					break;
@@ -820,11 +829,11 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// References:
 	// - https://stackoverflow.com/questions/4191465/how-to-run-only-one-instance-of-application
 	// - https://stackoverflow.com/a/33531179
-	hSingleInstanceMutex = CreateMutex(NULL, TRUE, L"Local\\com.gerbilsoft.rom-properties.svrplus");
+	hSingleInstanceMutex = CreateMutex(NULL, TRUE, _T("Local\\com.gerbilsoft.rom-properties.svrplus"));
 	if (!hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
 		// Mutex already exists.
 		// Set focus to the existing instance.
-		HWND hWnd = FindWindow(L"#32770", L"ROM Properties Page Installer");
+		HWND hWnd = FindWindow(_T("#32770"), _T("ROM Properties Page Installer"));
 		if (hWnd) {
 			SetForegroundWindow(hWnd);
 		}
@@ -836,7 +845,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 #ifndef _WIN64
 	// Check if this is a 64-bit system. (Wow64)
-	hKernel32 = GetModuleHandle(L"kernel32");
+	hKernel32 = GetModuleHandle(_T("kernel32"));
 	assert(hKernel32 != NULL);
 	if (!hKernel32) {
 		CloseHandle(hSingleInstanceMutex);
@@ -869,7 +878,8 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		GetSystemMetrics(SM_CXSMICON),
 		GetSystemMetrics(SM_CYSMICON), 0);
 
-	// Run the dialog
+	// Run the dialog.
+	// FIXME: SysLink controls won't work in ANSI builds.
 	DialogBox(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), NULL, DialogProc);
 
 	// Delete the icons.

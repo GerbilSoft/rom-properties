@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -99,7 +99,7 @@ class AboutTabPrivate
 	public:
 		// Property for "D pointer".
 		// This points to the AboutTabPrivate object.
-		static const wchar_t D_PTR_PROP[];
+		static const TCHAR D_PTR_PROP[];
 
 	public:
 		/**
@@ -231,9 +231,9 @@ AboutTabPrivate::AboutTabPrivate()
 
 	// Load the RichEdit DLLs.
 	// TODO: What if this fails?
-	hRichEd20_dll = LoadLibrary(L"RICHED20.DLL");
+	hRichEd20_dll = LoadLibrary(_T("RICHED20.DLL"));
 #ifdef MSFTEDIT_USE_41
-	hMsftEdit_dll = LoadLibrary(L"MSFTEDIT.DLL");
+	hMsftEdit_dll = LoadLibrary(_T("MSFTEDIT.DLL"));
 #endif /* MSFTEDIT_USE_41 */
 }
 
@@ -254,7 +254,7 @@ AboutTabPrivate::~AboutTabPrivate()
 
 // Property for "D pointer".
 // This points to the AboutTabPrivate object.
-const wchar_t AboutTabPrivate::D_PTR_PROP[] = L"AboutTabPrivate";
+const TCHAR AboutTabPrivate::D_PTR_PROP[] = _T("AboutTabPrivate");
 
 /**
  * Dialog procedure.
@@ -314,7 +314,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 					ENLINK *pENLink = reinterpret_cast<ENLINK*>(pHdr);
 					if (pENLink->msg == WM_LBUTTONUP) {
-						wchar_t urlbuf[256];
+						TCHAR urlbuf[256];
 						if ((pENLink->chrg.cpMax - pENLink->chrg.cpMin) >= ARRAY_SIZE(urlbuf)) {
 							// URL is too big.
 							break;
@@ -324,7 +324,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 						range.lpstrText = urlbuf;
 						LRESULT lResult = SendMessage(pHdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM)&range);
 						if (lResult > 0 && lResult < ARRAY_SIZE(urlbuf)) {
-							ShellExecute(nullptr, L"open", urlbuf, nullptr, nullptr, SW_SHOW);
+							ShellExecute(nullptr, _T("open"), urlbuf, nullptr, nullptr, SW_SHOW);
 						}
 					}
 				}
@@ -556,7 +556,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 			s_version += AboutTabText::git_describe;
 		}
 	}
-	SetWindowText(hStaticVersion, U82W_s(s_version));
+	SetWindowText(hStaticVersion, U82T_s(s_version));
 
 	// Set the icon.
 	HICON hIcon = PropSheetIcon::get96Icon();
@@ -692,10 +692,10 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += '}';
 
 	// Add the "Credits" tab.
-	const wstring wsTabTitle = U82W_c(C_("AboutTab", "Credits"));
+	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Credits"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
+	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 0, &tcItem);
 }
 
@@ -756,10 +756,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += "}";
 
 	// Add the "Libraries" tab.
-	const wstring wsTabTitle = U82W_c(C_("AboutTab", "Libraries"));
+	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Libraries"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
+	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 1, &tcItem);
 }
 
@@ -798,10 +798,10 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport += ">}";
 
 	// Add the "Support" tab.
-	const wstring wsTabTitle = U82W_c(C_("AboutTab", "Support"));
+	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Support"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = const_cast<LPWSTR>(wsTabTitle.c_str());
+	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
 	TabCtrl_InsertItem(GetDlgItem(hWndPropSheet, IDC_ABOUT_TABCONTROL), 2, &tcItem);
 }
 
@@ -865,7 +865,7 @@ void AboutTabPrivate::init(void)
 	}
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
-	tcItem.pszText = L"DUMMY";
+	tcItem.pszText = _T("DUMMY");
 	TabCtrl_InsertItem(hTabControl, MAX_TABS, &tcItem);
 
 	// Adjust the RichEdit position.
@@ -899,7 +899,7 @@ void AboutTabPrivate::init(void)
 	if (hMsftEdit_dll) {
 		HWND hRichEdit41 = CreateWindowEx(
 			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_LEFT | WS_EX_CLIENTEDGE,
-			MSFTEDIT_CLASS, L"",
+			MSFTEDIT_CLASS, _T(""),
 			WS_TABSTOP | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL | WS_VISIBLE | WS_CHILD,
 			0, 0, 0, 0,
 			hWndPropSheet, nullptr, nullptr, nullptr);
@@ -977,7 +977,7 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("AboutTab", "About"));
+	const tstring tsTabTitle = U82T_c(C_("AboutTab", "About"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
@@ -985,7 +985,7 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pResource = LoadDialog_i18n(IDD_CONFIG_ABOUT);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = wsTabTitle.c_str();
+	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = AboutTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.cpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -131,14 +131,30 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 		// Only CD-ROM (and similar) drives are supported.
 		// TODO: Verify if opening by drive letter works,
 		// or if we have to resolve the physical device name.
-		if (GetDriveType(pszFileName) != DRIVE_CDROM) {
+		UINT driveType;
+#ifdef UNICODE
+		driveType = GetDriveType(pszFileName);
+#else /* !UNICODE */
+		// ANSI workaround.
+		char pszFileNameA[4];
+		pszFileNameA[0] = pszFileName[0] & 0xFF;
+		pszFileNameA[1] = pszFileName[1] & 0xFF;
+		pszFileNameA[2] = pszFileName[2] & 0xFF;
+		pszFileNameA[3] = '\0';
+		driveType = GetDriveType(pszFileNameA);
+#endif /* UNICODE */
+		if (driveType != DRIVE_CDROM) {
 			// Not a CD-ROM drive.
 			return E_UNEXPECTED;
 		}
 	} else {
 		// Make sure this isn't a directory.
 		// TODO: Other checks?
+#ifdef UNICODE
 		DWORD dwAttr = GetFileAttributes(pszFileName);
+#else /* !UNICODE */
+		DWORD dwAttr = GetFileAttributes(W2A(pszFileName).c_str());
+#endif /* UNICODE */
 		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
 		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
 		{

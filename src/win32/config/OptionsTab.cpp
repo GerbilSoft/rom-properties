@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -35,7 +35,7 @@ using LibRpBase::Config;
 
 // C++ includes.
 #include <string>
-using std::wstring;
+using std::tstring;
 
 class OptionsTabPrivate
 {
@@ -48,7 +48,7 @@ class OptionsTabPrivate
 	public:
 		// Property for "D pointer".
 		// This points to the OptionsTabPrivate object.
-		static const wchar_t D_PTR_PROP[];
+		static const TCHAR D_PTR_PROP[];
 
 	protected:
 		/**
@@ -65,8 +65,8 @@ class OptionsTabPrivate
 		 * @param value BST_CHECKED or BST_UNCHECKED.
 		 * @return Bool string.
 		 */
-		static inline const wchar_t *bstCheckedToBoolString(unsigned int value) {
-			return (value == BST_CHECKED ? L"true" : L"false");
+		static inline const TCHAR *bstCheckedToBoolString(unsigned int value) {
+			return (value == BST_CHECKED ? _T("true") : _T("false"));
 		}
 
 		/**
@@ -133,7 +133,7 @@ OptionsTabPrivate::OptionsTabPrivate()
 
 // Property for "D pointer".
 // This points to the OptionsTabPrivate object.
-const wchar_t OptionsTabPrivate::D_PTR_PROP[] = L"OptionsTabPrivate";
+const TCHAR OptionsTabPrivate::D_PTR_PROP[] = _T("OptionsTabPrivate");
 
 /**
  * Reset the configuration.
@@ -216,17 +216,17 @@ void OptionsTabPrivate::save(void)
 		return;
 	}
 
-	const wchar_t *bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
-	WritePrivateProfileString(L"Downloads", L"ExtImageDownload", bstr, U82W_c(filename));
+	const TCHAR *btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
+	WritePrivateProfileString(_T("Downloads"), _T("ExtImageDownload"), btstr, U82T_c(filename));
 
-	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
-	WritePrivateProfileString(L"Downloads", L"UseIntIconForSmallSizes", bstr, U82W_c(filename));
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
+	WritePrivateProfileString(_T("Downloads"), _T("UseIntIconForSmallSizes"), btstr, U82T_c(filename));
 
-	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
-	WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, U82W_c(filename));
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
+	WritePrivateProfileString(_T("Downloads"), _T("DownloadHighResScans"), btstr, U82T_c(filename));
 
-	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
-	WritePrivateProfileString(L"Options", L"ShowDangerousPermissionsOverlayIcon", bstr, U82W_c(filename));
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
+	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, U82T_c(filename));
 
 	// No longer changed.
 	changed = false;
@@ -408,7 +408,7 @@ HPROPSHEETPAGE OptionsTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("OptionsTab", "Options"));
+	const tstring tsTabTitle = U82T_c(C_("OptionsTab", "Options"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
@@ -416,7 +416,7 @@ HPROPSHEETPAGE OptionsTab::getHPropSheetPage(void)
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pResource = LoadDialog_i18n(IDD_CONFIG_OPTIONS);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = wsTabTitle.c_str();
+	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = OptionsTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

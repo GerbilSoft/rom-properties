@@ -231,6 +231,29 @@ static inline std::string ansi_to_utf8(const std::string &str)
 	return cpN_to_utf8(CP_ACP, str.data(), static_cast<int>(str.size()));
 }
 
+/**
+ * Convert UTF-8 text to ANSI
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] UTF-8 text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return ANSI string.
+ */
+static inline std::string utf8_to_ansi(const char *str, int len)
+{
+	return utf8_to_cpN(CP_ACP, str, len);
+}
+
+/**
+ * Convert UTF-8 text to ANSI
+ * Trailing NULL bytes will be removed.
+ * @param str	[in] ANSI text.
+ * @return ANSI string.
+ */
+static inline std::string utf8_to_ansi(const std::string &str)
+{
+	return utf8_to_cpN(CP_ACP, str.data(), static_cast<int>(str.size()));
+}
+
 /* cp1252 */
 
 /**

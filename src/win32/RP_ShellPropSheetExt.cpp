@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -117,7 +117,7 @@ class RP_ShellPropSheetExt_Private
 	public:
 		// Property for "D pointer".
 		// This points to the ConfigDialogPrivate object.
-		static const wchar_t D_PTR_PROP[];
+		static const TCHAR D_PTR_PROP[];
 
 	public:
 		// ROM filename.
@@ -234,12 +234,12 @@ class RP_ShellPropSheetExt_Private
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
-		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
+		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
 		 * @return Field height, in pixels.
 		 */
 		int initString(HWND hDlg, HWND hWndTab,
 			const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Field *field, LPCWSTR wcs);
+			const RomFields::Field *field, LPCTSTR str);
 
 		/**
 		 * Initialize a bitfield layout.
@@ -366,7 +366,7 @@ class RP_ShellPropSheetExt_Private
 
 // Property for "D pointer".
 // This points to the ConfigDialogPrivate object.
-const wchar_t RP_ShellPropSheetExt_Private::D_PTR_PROP[] = L"RP_ShellPropSheetExt_Private";
+const TCHAR RP_ShellPropSheetExt_Private::D_PTR_PROP[] = _T("RP_ShellPropSheetExt_Private");
 
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q)
 	: q_ptr(q)
@@ -400,7 +400,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
 	// TODO: Move this to RP_ComBase so we don't have to look it up
 	// every time the property dialog is loaded?
-	hUxTheme_dll = LoadLibrary(L"uxtheme.dll");
+	hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
 	if (hUxTheme_dll) {
 		pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(hUxTheme_dll, "IsThemeActive");
 	}
@@ -667,14 +667,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
-	const wstring wSysInfo =
-		LibWin32Common::unix2dos(U82W_s(rp_sprintf_p(
+	const tstring tSysInfo =
+		LibWin32Common::unix2dos(U82T_s(rp_sprintf_p(
 			// tr: %1$s == system name, %2$s == file type
 			C_("RomDataView", "%1$s\n%2$s"), systemName, fileType)));
 
-	if (!wSysInfo.empty()) {
+	if (!tSysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = LibWin32Common::measureTextSize(hDlg, hFont, wSysInfo, &sz_lblSysInfo);
+		int ret = LibWin32Common::measureTextSize(hDlg, hFont, tSysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
@@ -713,7 +713,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// lblSysInfo
 	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
 		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, wSysInfo.c_str(),
+			WC_STATIC, tSysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
@@ -748,12 +748,12 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
- * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
+ * @param str		[in,opt] String data. (If nullptr, field data is used.)
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Field *field, LPCWSTR wcs)
+	const RomFields::Field *field, LPCTSTR str)
 {
 	assert(hDlg != nullptr);
 	assert(hWndTab != nullptr);
@@ -768,18 +768,18 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	// If string data wasn't specified, get the RFT_STRING data
 	// from the RomFields::Field object.
 	int lf_count = 0;
-	wstring wstr;
-	if (!wcs) {
+	tstring str_nl;
+	if (!str) {
 		if (field->type != RomFields::RFT_STRING)
 			return 0;
 
 		// TODO: NULL string == empty string?
 		if (field->data.str) {
-			wstr = LibWin32Common::unix2dos(U82W_s(*(field->data.str)), &lf_count);
+			str_nl = LibWin32Common::unix2dos(U82T_s(*(field->data.str)), &lf_count);
 		}
 	} else {
 		// Use the specified string.
-		wstr = LibWin32Common::unix2dos(wcs, &lf_count);
+		str_nl = LibWin32Common::unix2dos(str, &lf_count);
 	}
 
 	// Field height.
@@ -839,6 +839,14 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		RECT winRect;
 		GetClientRect(hWndTab, &winRect);
 
+		// FIXME: SysLink does not support ANSI.
+		// Remove links from the text if this is an ANSI build.
+#ifdef UNICODE
+# define SYSLINK_CONTROL WC_LINK
+#else /* !UNICODE */
+# define SYSLINK_CONTROL WC_STATIC
+#endif /* UNICODE */
+
 		// Create a SysLink widget.
 		// SysLink allows the user to click a link and
 		// open a webpage. It does NOT allow highlighting.
@@ -848,7 +856,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// - Verify behavior of LWS_TRANSPARENT.
 		// - Show below subtabs.
 		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_LINK, wstr.c_str(),
+			SYSLINK_CONTROL, str_nl.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
 			hWndTab, cId, nullptr, nullptr);
@@ -862,7 +870,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
-		LibWin32Common::measureTextSizeLink(hWndTab, hFont, wstr, &szText);
+		LibWin32Common::measureTextSizeLink(hWndTab, hFont, str_nl, &szText);
 
 		// Determine the position.
 		const int x = (((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left;
@@ -887,7 +895,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
 		}
 		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_EDIT, wstr.c_str(), dwStyle,
+			WC_EDIT, str_nl.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
 			hWndTab, cId, nullptr, nullptr);
@@ -969,18 +977,19 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	GetClientRect(hWndTab, &rectDlg);
 	const int max_width = rectDlg.right - pt_start.x;
 
-	// Convert the bitfield description names to UTF-16 once.
-	vector<wstring> wnames;
-	wnames.reserve(count);
+	// Convert the bitfield description names to the
+	// native Windows encoding once.
+	vector<tstring> tnames;
+	tnames.reserve(count);
 	for (auto iter = bitfieldDesc.names->cbegin();
 	     iter != bitfieldDesc.names->cend(); ++iter)
 	{
 		const string &name = *iter;
 		if (name.empty()) {
-			// Skip U82W_s() for empty strings.
-			wnames.push_back(wstring());
+			// Skip U82T_s() for empty strings.
+			tnames.push_back(tstring());
 		} else {
-			wnames.push_back(U82W_s(name));
+			tnames.push_back(U82T_s(name));
 		}
 	}
 
@@ -1000,16 +1009,16 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		for (; elemsPerRow > 1; elemsPerRow--) {
 			col_widths.resize(elemsPerRow);
 			row = 0; col = 0;
-			auto iter = wnames.cbegin();
+			auto iter = tnames.cbegin();
 			for (int j = 0; j < count; ++iter, j++) {
-				const wstring &wname = *iter;
-				if (wname.empty())
+				const tstring &tname = *iter;
+				if (tname.empty())
 					continue;
 
 				// Get the width of this specific entry.
 				// TODO: Use measureTextSize()?
 				SIZE textSize;
-				GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
+				GetTextExtentPoint32(hDC, tname.data(), (int)tname.size(), &textSize);
 				int chk_w = rect_chkbox.right + textSize.cx;
 				if (chk_w > col_widths[col]) {
 					col_widths[col] = chk_w;
@@ -1061,10 +1070,10 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	pt.y -= rect_subtract.bottom;
 
 	row = 0; col = 0;
-	auto iter = wnames.cbegin();
+	auto iter = tnames.cbegin();
 	for (int j = 0; j < count; ++iter, j++) {
-		const wstring &wname = *iter;
-		if (wname.empty())
+		const tstring &tname = *iter;
+		if (tname.empty())
 			continue;
 
 		// Get the text size.
@@ -1073,7 +1082,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			// Get the width of this specific entry.
 			// TODO: Use measureTextSize()?
 			SIZE textSize;
-			GetTextExtentPoint32(hDC, wname.data(), (int)wname.size(), &textSize);
+			GetTextExtentPoint32(hDC, tname.data(), (int)tname.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
 			if (col == elemsPerRow) {
@@ -1090,7 +1099,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 		// FIXME: Tab ordering?
 		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_BUTTON, wname.c_str(),
+			WC_BUTTON, tname.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
@@ -1191,14 +1200,14 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		for (int i = 0; i < col_count; ++iter, i++) {
 			const string &str = *iter;
 			if (!str.empty()) {
-				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				const wstring wstr = U82W_s(str);
-				lvColumn.pszText = const_cast<LPWSTR>(wstr.c_str());
+				// NOTE: pszText is LPTSTR, not LPCTSTR...
+				const tstring tstr = U82T_s(str);
+				lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
 				ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			} else {
 				// Don't show this column.
 				// FIXME: Zero-width column is a bad hack...
-				lvColumn.pszText = L"";
+				lvColumn.pszText = _T("");
 				lvColumn.mask |= LVCF_WIDTH;
 				lvColumn.cx = 0;
 				ListView_InsertColumn(hDlgItem, i, &lvColumn);
@@ -1232,9 +1241,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				lvItem.iSubItem = col;
-				// NOTE: pszText is LPWSTR, not LPCWSTR...
-				const wstring wstr = U82W_s(*iter);
-				lvItem.pszText = const_cast<LPWSTR>(wstr.c_str());
+				// NOTE: pszText is LPTSTR, not LPCTSTR...
+				const tstring tstr = U82T_s(*iter);
+				lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 				if (col == 0) {
 					// Column 0: Insert the item.
 					ListView_InsertItem(hDlgItem, &lvItem);
@@ -1337,11 +1346,11 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
 		return initString(hDlg, hWndTab, pt_start, idx, size, field,
-			U82W_c(C_("RomDataView", "Unknown")));
+			U82T_c(C_("RomDataView", "Unknown")));
 	}
 
 	// Format the date/time using the system locale.
-	wchar_t dateTimeStr[256];
+	TCHAR dateTimeStr[256];
 	int start_pos = 0;
 	int cchBuf = ARRAY_SIZE(dateTimeStr);
 
@@ -1371,7 +1380,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 			// TODO: Windows 10 has DATE_MONTHDAY.
 			ret = GetDateFormat(
 				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-				0, &st, L"MMM d", &dateTimeStr[start_pos], cchBuf);
+				0, &st, _T("MMM d"), &dateTimeStr[start_pos], cchBuf);
 		} else {
 			ret = GetDateFormat(
 				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
@@ -1452,13 +1461,13 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	if (!age_ratings) {
 		// No age ratings data.
 		return initString(hDlg, hWndTab, pt_start, idx, size, field,
-			U82W_c(C_("RomDataView", "ERROR")));
+			U82T_c(C_("RomDataView", "ERROR")));
 	}
 
 	// Convert the age ratings field to a string.
 	string str = RomFields::ageRatingsDecode(age_ratings);
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, U82W_s(str));
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, U82T_s(str));
 }
 
 /**
@@ -1487,21 +1496,21 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
 
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field->data.dimensions;
-	wchar_t wbuf[64];
+	TCHAR tbuf[64];
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			swprintf(wbuf, ARRAY_SIZE(wbuf), L"%dx%dx%d",
+			_sntprintf(tbuf, ARRAY_SIZE(tbuf), _T("%dx%dx%d"),
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			swprintf(wbuf, ARRAY_SIZE(wbuf), L"%dx%d",
+			_sntprintf(tbuf, ARRAY_SIZE(tbuf), _T("%dx%d"),
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		swprintf(wbuf, ARRAY_SIZE(wbuf), L"%d", dimensions[0]);
+		_sntprintf(tbuf, ARRAY_SIZE(tbuf), _T("%d"), dimensions[0]);
 	}
 
 	// Initialize the string field.
-	return initString(hDlg, hWndTab, pt_start, idx, size, field, wbuf);
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, tbuf);
 }
 
 /**
@@ -1637,9 +1646,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	initBoldFont(hFontDlg);
 	initMonospacedFont(hFontDlg);
 
-	// Convert the field description labels to UTF-16 once.
-	vector<wstring> w_desc_text;
-	w_desc_text.reserve(count);
+	// Convert the bitfield description names to the
+	// native Windows encoding once.
+	vector<tstring> t_desc_text;
+	t_desc_text.reserve(count);
 
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
@@ -1652,14 +1662,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		const RomFields::Field *field = fields->field(i);
 		assert(field != nullptr);
 		if (!field || !field->isValid) {
-			w_desc_text.push_back(wstring());
+			t_desc_text.push_back(tstring());
 			continue;
 		} else if (field->name.empty()) {
-			w_desc_text.push_back(wstring());
+			t_desc_text.push_back(tstring());
 			continue;
 		}
 
-		const wstring desc_text = U82W_s(rp_sprintf(
+		const tstring desc_text = U82T_s(rp_sprintf(
 			desc_label_fmt, field->name.c_str()));
 
 		// Get the width of this specific entry.
@@ -1681,13 +1691,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// Save for later.
-		w_desc_text.push_back(std::move(desc_text));
+		t_desc_text.push_back(std::move(desc_text));
 	}
 
 	// Add additional spacing between the ':' and the field.
 	// TODO: Use measureTextSize()?
 	// TODO: Reduce to 1 space?
-	GetTextExtentPoint32(hDC, L"  ", 2, &textSize);
+	GetTextExtentPoint32(hDC, _T("  "), 2, &textSize);
 	max_text_width += textSize.cx;
 
 	// Create the ROM field widgets.
@@ -1763,8 +1773,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Skip this tab.
 				continue;
 			}
-			const wstring wstr = U82W_c(name);
-			tcItem.pszText = const_cast<LPWSTR>(wstr.c_str());
+			const tstring tstr = U82T_c(name);
+			tcItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 			// FIXME: Does the index work correctly if a tab is skipped?
 			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
 		}
@@ -1838,7 +1848,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, w_desc_text.at(idx).c_str(),
+			WC_STATIC, t_desc_text.at(idx).c_str(),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
@@ -1998,7 +2008,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
-	wchar_t *filename = nullptr;
+	TCHAR *tfilename = nullptr;
 	unique_ptr<IRpFile> file;
 	RomData *romData = nullptr;
 
@@ -2018,26 +2028,27 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	filename = (wchar_t*)malloc((cchFilename+1) * sizeof(wchar_t));
-	if (!filename) {
+	tfilename = (TCHAR*)malloc((cchFilename+1) * sizeof(TCHAR));
+	if (!tfilename) {
 		// Memory allocation failed.
 		goto cleanup;
 	}
-	cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename+1);
+	cchFilename = DragQueryFile(hDrop, 0, tfilename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
 		goto cleanup;
 	}
 
 	// Check if this is a drive letter.
-	if (cchFilename == 3 && iswalpha(filename[0]) &&
-	    filename[1] == L':' && filename[2] == L'\\')
+	// FIXME: Dedupe this code.
+	if (cchFilename == 3 && _istalpha(tfilename[0]) &&
+	    tfilename[1] == L':' && tfilename[2] == L'\\')
 	{
 		// This is a drive letter.
 		// Only CD-ROM (and similar) drives are supported.
 		// TODO: Verify if opening by drive letter works,
 		// or if we have to resolve the physical device name.
-		if (GetDriveType(filename) != DRIVE_CDROM) {
+		if (GetDriveType(tfilename) != DRIVE_CDROM) {
 			// Not a CD-ROM drive.
 			hr = E_UNEXPECTED;	// same as icon/image
 			goto cleanup;
@@ -2046,7 +2057,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		// Make sure this isn't a directory.
 		// TODO: Other checks?
 		// TODO: Check if it's actually called for directories.
-		DWORD dwAttr = GetFileAttributes(filename);
+		DWORD dwAttr = GetFileAttributes(tfilename);
 		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
 		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
 		{
@@ -2057,7 +2068,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file.reset(new RpFile(W2U8(filename, cchFilename), RpFile::FM_OPEN_READ_GZ));
+	file.reset(new RpFile(T2U8(tfilename, cchFilename), RpFile::FM_OPEN_READ_GZ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -2081,14 +2092,14 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	if (!d_ptr) {
 		d_ptr = new RP_ShellPropSheetExt_Private(this);
 	}
-	d_ptr->filename = W2U8(filename, cchFilename);
+	d_ptr->filename = T2U8(tfilename, cchFilename);
 
 	hr = S_OK;
 
 cleanup:
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
-	free(filename);
+	free(tfilename);
 
 	// If any value other than S_OK is returned from the method, the property 
 	// sheet is not displayed.
@@ -2107,7 +2118,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("RomDataView", "ROM Properties"));
+	const tstring tsTabTitle = U82T_c(C_("RomDataView", "ROM Properties"));
 
 	// Create a property sheet page.
 	PROPSHEETPAGE psp;
@@ -2116,7 +2127,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_PROPERTY_SHEET);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = wsTabTitle.c_str();
+	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = RP_ShellPropSheetExt_Private::DlgProc;
 	psp.pcRefParent = nullptr;
 	psp.pfnCallback = RP_ShellPropSheetExt_Private::CallbackProc;
@@ -2179,19 +2190,22 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			stopAnimTimer();
 			break;
 
+#ifdef UNICODE
 		case NM_CLICK:
 		case NM_RETURN: {
 			// Check if this is a SysLink control.
+			// NOTE: SysLink control only supports Unicode.
 			if (hwndSysLinkControls.find(pHdr->hwndFrom) !=
 			    hwndSysLinkControls.end())
 			{
 				// It's a SysLink control.
 				// Open the URL.
 				PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
-				ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+				ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
 			}
 			break;
 		}
+#endif /* UNICODE */
 
 		case TCN_SELCHANGE: {
 			// Tab change. Make sure this is the correct WC_TABCONTROL.
