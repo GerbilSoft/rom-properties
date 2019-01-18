@@ -28,6 +28,7 @@
 #include "threads/pthread_once.h"
 
 // C includes.
+#include <sys/stat.h>
 #include <sys/utime.h>
 
 // C includes. (C++ namespace)
@@ -228,7 +229,7 @@ int64_t filesize(const string &filename)
 {
 	const tstring tfilename = makeWinPath(filename);
 	struct _stati64 buf;
-	int ret = _tstati64(tfilename.c_str(), &buf);
+	int ret = ::_tstati64(tfilename.c_str(), &buf);
 
 	if (ret != 0) {
 		// stat() failed.
