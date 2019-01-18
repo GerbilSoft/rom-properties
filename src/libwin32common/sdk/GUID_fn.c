@@ -43,9 +43,17 @@ int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA,
 
 	// CLSID strings only have ASCII characters,
 	// so we can convert it the easy way.
-	for (pW = szClsidW; cchMax > 0; lpszClsidA++, pW++) {
+	for (pW = szClsidW; cchMax > 0; lpszClsidA++, pW++, cchMax--) {
 		*lpszClsidA = (*pW & 0xFF);
+		if (*pW == L'\0')
+			break;
 	}
+
+	// Make sure the string is NULL-terminated.
+	if (cchMax == 0) {
+		*(lpszClsidA-1) = '\0';
+	}
+
 	return lResult;
 }
 
