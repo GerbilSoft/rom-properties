@@ -25,6 +25,7 @@
 
 // Our functions
 #include "GUID_fn.h"
+#include <assert.h>
 
 /**
  * StringFromGUID2() wrapper function for ANSI builds.
@@ -35,9 +36,17 @@
 #undef StringFromGUID2
 int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA, _In_ int cchMax)
 {
-	wchar_t szClsidW[48];	// maybe only 40 is needed?
+	wchar_t szClsidW[40];
 	const wchar_t *pW;
-	LONG lResult = StringFromGUID2(rclsid, szClsidW, sizeof(szClsidW)/sizeof(szClsidW[0]));
+	LONG lResult;
+
+	assert(cchMax >= 39);
+	if (cchMax < 39) {
+		// Not enough space to convert the GUID.
+		return ERROR_INSUFFICIENT_BUFFER;
+	}
+
+	lResult = StringFromGUID2(rclsid, szClsidW, sizeof(szClsidW)/sizeof(szClsidW[0]));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
 
