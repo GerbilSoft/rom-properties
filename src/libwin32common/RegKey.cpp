@@ -34,31 +34,9 @@ using std::tstring;
 
 // Windows SDK.
 #include <objbase.h>
+#include "sdk/GUID_fn.h"
 
 namespace LibWin32Common {
-
-#ifndef UNICODE
-/**
- * StringFromGUID2() wrapper function for ANSI builds.
- * ANSI FIXME: Move to another file, and also add CLSIDFromStringA().
- */
-int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA, _In_ int cchMax)
-{
-	wchar_t szClsidW[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(rclsid, szClsidW, sizeof(szClsidW)/sizeof(szClsidW[0]));
-	if (lResult <= 0)
-		return ERROR_INVALID_PARAMETER;
-
-	// CLSID strings only have ASCII characters,
-	// so we can convert it the easy way.
-	const wchar_t *pW = szClsidW;
-	for (; cchMax > 0; lpszClsidA++, pW++) {
-		*lpszClsidA = (*pW & 0xFF);
-	}
-	return lResult;
-}
-#define StringFromGUID2(rclsid, lpszClsidA, cchMax) StringFromGUID2A((rclsid), (lpszClsidA), (cchMax))
-#endif /* !UNICODE */
 
 /**
  * Create or open a registry key.
