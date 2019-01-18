@@ -609,7 +609,7 @@ LONG RegKey::RegisterFileType(LPCTSTR fileType, RegKey **pHkey_Assoc)
  */
 LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR description)
 {
-	TCHAR szClsid[48];	// maybe only 40 is needed?
+	TCHAR szClsid[40];
 	LONG lResult = StringFromGUID2(rclsid, szClsid, sizeof(szClsid)/sizeof(szClsid[0]));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
@@ -674,7 +674,7 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
  */
 LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
 {
-	TCHAR szClsid[48];	// maybe only 40 is needed?
+	TCHAR szClsid[40];
 	LONG lResult = StringFromGUID2(rclsid, szClsid, sizeof(szClsid)/sizeof(szClsid[0]));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
@@ -700,7 +700,7 @@ LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
  */
 LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCTSTR progID)
 {
-	TCHAR szClsid[48];	// maybe only 40 is needed?
+	TCHAR szClsid[40];
 	LONG lResult = StringFromGUID2(rclsid, szClsid, sizeof(szClsid)/sizeof(szClsid[0]));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
