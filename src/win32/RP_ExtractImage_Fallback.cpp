@@ -31,6 +31,7 @@ using namespace LibRpBase;
 
 // libwin32common
 #include "libwin32common/RegKey.hpp"
+#include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
 
 // C++ includes.
@@ -70,12 +71,7 @@ HRESULT RP_ExtractImage_Private::Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmp
 	// TODO: Use IIDFromString() instead to skip ProgID handling?
 	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20151015-00/?p=91351
 	CLSID clsidExtractImage;
-#ifdef UNICODE
 	HRESULT hr = CLSIDFromString(clsid_reg.c_str(), &clsidExtractImage);
-#else /* !UNICODE */
-	// FIXME: CLSIDFromStringA() implementation?
-	HRESULT hr = E_FAIL;
-#endif /* UNICODE */
 	if (FAILED(hr)) {
 		// Failed to convert the CLSID from string.
 		return hr;

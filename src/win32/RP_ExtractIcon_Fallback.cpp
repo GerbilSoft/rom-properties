@@ -31,6 +31,7 @@ using namespace LibRpBase;
 
 // libwin32common
 #include "libwin32common/RegKey.hpp"
+#include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
 
 // C++ includes.
@@ -221,12 +222,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		// TODO: Use IIDFromString() instead to skip ProgID handling?
 		// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20151015-00/?p=91351
 		CLSID clsidIconHandler;
-#ifdef UNICODE
 		HRESULT hr = CLSIDFromString(iconHandler.c_str(), &clsidIconHandler);
-#else /* !UNICODE */
-		// ANSI FIXME: CLSIDFromStringA() implementation?
-		HRESULT hr = E_FAIL;
-#endif /* UNICODE */
 		if (FAILED(hr)) {
 			// Failed to convert the CLSID from string.
 			return ERROR_FILE_NOT_FOUND;

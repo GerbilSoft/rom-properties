@@ -33,6 +33,7 @@ using namespace LibRpBase;
 // libwin32common
 #include "libwin32common/RegKey.hpp"
 #include "libwin32common/sdk/commctrl_ts.h"
+#include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
@@ -429,12 +430,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		return 4;
 	}
 	CLSID clsidThumbnailCacheCleaner;
-#ifdef UNICODE
 	HRESULT hr = CLSIDFromString(s_clsidThumbnailCacheCleaner.c_str(), &clsidThumbnailCacheCleaner);
-#else /* !UNICODE */
-	// ANSI FIXME: CLSIDFromStringA() implementation?
-	HRESULT hr = E_FAIL;
-#endif /* UNICODE */
 	if (FAILED(hr)) {
 		// Failed to convert the CLSID from string.
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab|Win32",

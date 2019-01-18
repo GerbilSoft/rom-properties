@@ -31,12 +31,11 @@
 #include <stdio.h>
 
 /**
- * StringFromGUID2() wrapper function for ANSI builds.
+ * StringFromGUID2() implementation for ANSI builds.
  * @param rclsid	[in] CLSID
  * @param lpszClsidA	[out] Buffer for the CLSID string.
  * @param cchMax	[in] Length of lpszClsidA, in characters.
  */
-#undef StringFromGUID2
 int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA, _In_ int cchMax)
 {
 	// NOTE: This is only correct on little-endian systems.
@@ -46,6 +45,22 @@ int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA,
 		rclsid->Data4[0], rclsid->Data4[1], rclsid->Data4[2], rclsid->Data4[3],
 		rclsid->Data4[4], rclsid->Data4[5], rclsid->Data4[6], rclsid->Data4[7]);
 	return ERROR_SUCCESS;
+}
+
+/**
+ * CLSIDFromString() implementation for ANSI builds.
+ * NOTE: This implementation does NOT do ProgId lookups.
+ * @param lpsz		[in] CLSID string.
+ * @param pclsid	[out] CLSID
+ * @return S_OK on success; E_FAIL on error.
+ */
+HRESULT CLSIDFromStringA(_In_ LPCSTR lpsz, _Out_ LPCLSID pclsid)
+{
+	int ret = sscanf(lpsz, "{%08X-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}",
+		&pclsid->Data1, &pclsid->Data2, &pclsid->Data3,
+		&pclsid->Data4[0], &pclsid->Data4[1], &pclsid->Data4[2], &pclsid->Data4[3],
+		&pclsid->Data4[4], &pclsid->Data4[5], &pclsid->Data4[6], &pclsid->Data4[7]);
+	return (ret == 11 ? S_OK : E_FAIL);
 }
 
 #endif /* !UNICODE */
