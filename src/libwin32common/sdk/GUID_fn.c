@@ -25,7 +25,10 @@
 
 // Our functions
 #include "GUID_fn.h"
+
+// C includes.
 #include <assert.h>
+#include <stdio.h>
 
 /**
  * StringFromGUID2() wrapper function for ANSI builds.
@@ -36,34 +39,13 @@
 #undef StringFromGUID2
 int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA, _In_ int cchMax)
 {
-	wchar_t szClsidW[40];
-	const wchar_t *pW;
-	LONG lResult;
-
-	assert(cchMax >= 39);
-	if (cchMax < 39) {
-		// Not enough space to convert the GUID.
-		return ERROR_INSUFFICIENT_BUFFER;
-	}
-
-	lResult = StringFromGUID2(rclsid, szClsidW, sizeof(szClsidW)/sizeof(szClsidW[0]));
-	if (lResult <= 0)
-		return ERROR_INVALID_PARAMETER;
-
-	// CLSID strings only have ASCII characters,
-	// so we can convert it the easy way.
-	for (pW = szClsidW; cchMax > 0; lpszClsidA++, pW++, cchMax--) {
-		*lpszClsidA = (*pW & 0xFF);
-		if (*pW == L'\0')
-			break;
-	}
-
-	// Make sure the string is NULL-terminated.
-	if (cchMax == 0) {
-		*(lpszClsidA-1) = '\0';
-	}
-
-	return lResult;
+	// NOTE: This is only correct on little-endian systems.
+	// Windows only supports little-endian, so that's fine.
+	snprintf(lpszClsidA, cchMax, "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+		rclsid->Data1, rclsid->Data2, rclsid->Data3,
+		rclsid->Data4[0], rclsid->Data4[1], rclsid->Data4[2], rclsid->Data4[3],
+		rclsid->Data4[4], rclsid->Data4[5], rclsid->Data4[6], rclsid->Data4[7]);
+	return ERROR_SUCCESS;
 }
 
 #endif /* !UNICODE */
