@@ -43,7 +43,7 @@ tstring unix2dos(const TCHAR *tstr_unix, int *lf_count)
 {
 	// TODO: Optimize this!
 	tstring tstr_dos;
-	tstr_dos.reserve(_tcslen(tstr_unix));
+	tstr_dos.reserve(_tcslen(tstr_unix) + 16);
 	int lf = 0;
 	for (; *tstr_unix != _T('\0'); tstr_unix++) {
 		if (*tstr_unix == _T('\n')) {
