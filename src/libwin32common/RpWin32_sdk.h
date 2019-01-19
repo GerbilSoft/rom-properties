@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RpWin32_sdk.h: Windows SDK defines and includes.                        *
  *                                                                         *
- * Copyright (c) 2009-2017 by David Korth.                                 *
+ * Copyright (c) 2009-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__
@@ -85,6 +84,16 @@
 #define NOMCX 1
 
 #include <windows.h>
+#include <tchar.h>
+
+#if defined(__cplusplus) && !defined(tstring)
+// FIXME: Would be better to use typedef, but oh well.
+# ifdef _UNICODE
+#  define tstring wstring
+# else /* !_UNICODE */
+#  define tstring string
+# endif /* _UNICODE */
+#endif /* defined(__cplusplus) && !defined(tstring) */
 
 #if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502 && defined(__cplusplus)
 /**

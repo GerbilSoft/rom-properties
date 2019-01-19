@@ -26,6 +26,7 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
 using namespace LibRpBase;
@@ -43,7 +44,7 @@ using LibRomData::RomDataFactory;
 #include <memory>
 #include <string>
 using std::unique_ptr;
-using std::wstring;
+using std::tstring;
 
 // CLSID
 const CLSID CLSID_RP_ExtractImage =
@@ -135,14 +136,30 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 		// Only CD-ROM (and similar) drives are supported.
 		// TODO: Verify if opening by drive letter works,
 		// or if we have to resolve the physical device name.
-		if (GetDriveType(pszFileName) != DRIVE_CDROM) {
+		UINT driveType;
+#ifdef UNICODE
+		driveType = GetDriveType(pszFileName);
+#else /* !UNICODE */
+		// ANSI workaround.
+		char pszFileNameA[4];
+		pszFileNameA[0] = pszFileName[0] & 0xFF;
+		pszFileNameA[1] = pszFileName[1] & 0xFF;
+		pszFileNameA[2] = pszFileName[2] & 0xFF;
+		pszFileNameA[3] = '\0';
+		driveType = GetDriveType(pszFileNameA);
+#endif /* UNICODE */
+		if (driveType != DRIVE_CDROM) {
 			// Not a CD-ROM drive.
 			return E_UNEXPECTED;
 		}
 	} else {
 		// Make sure this isn't a directory.
 		// TODO: Other checks?
+#ifdef UNICODE
 		DWORD dwAttr = GetFileAttributes(pszFileName);
+#else /* !UNICODE */
+		DWORD dwAttr = GetFileAttributes(W2A(pszFileName).c_str());
+#endif /* UNICODE */
 		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
 		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
 		{
@@ -286,8 +303,11 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
 		return E_INVALIDARG;
 	}
 
-	// open the file and get last write time
-	HANDLE hFile = CreateFile(U82W_s(d->filename),
+	// Open the file and get the last write time.
+	// NOTE: LibRpBase::FileSystem::get_mtime() exists,
+	// but its resolution is seconds, less than FILETIME.
+	const tstring tfilename = U82T_s(d->filename);
+	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (!hFile) {

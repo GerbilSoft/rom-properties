@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ConfReader.hpp: Configuration reader base class.                        *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -22,11 +22,12 @@
 #include "ConfReader.hpp"
 #include "ConfReader_p.hpp"
 
-// libromdata
+// librpbase
 #include "file/FileSystem.hpp"
-
-// Text conversion functions and macros.
 #include "TextFuncs.hpp"
+#ifdef _WIN32
+# include "TextFuncs_wchar.hpp"
+#endif
 
 // C includes.
 #include <stdlib.h>
@@ -190,8 +191,13 @@ int ConfReader::load(bool force)
 	// manage the file itself.
 #ifdef _WIN32
 	// Win32: Use ini_parse_w().
-	int ret = ini_parse_w(U82W_s(d->conf_filename),
+#ifdef UNICODE
+	int ret = ini_parse_w(U82T_s(d->conf_filename),
 			ConfReaderPrivate::processConfigLine_static, d);
+#else /* !UNICODE */
+	int ret = ini_parse(U82T_s(d->conf_filename),
+			ConfReaderPrivate::processConfigLine_static, d);
+#endif /* UNICODE */
 #else /* !_WIN32 */
 	// Linux or other systems: Use ini_parse().
 	int ret = ini_parse(d->conf_filename.c_str(),

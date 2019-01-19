@@ -16,6 +16,7 @@ SET(libwin32common_SRCS
 	ComBase.cpp
 	propsys_xp.c
 	sdk/win_iid.c
+	sdk/GUID_fn.c
 	)
 SET(libwin32common_H
 	RpWin32_sdk.h
@@ -35,6 +36,7 @@ SET(libwin32common_H
 	sdk/tsbase.h
 	sdk/windowsx_ts.h
 	sdk/commctrl_ts.h
+	sdk/GUID_fn.h
 	)
 
 IF(MSVC)

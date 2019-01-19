@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.cpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -206,7 +206,7 @@ int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
  */
 void SystemRegionPrivate::getSystemRegion(void)
 {
-	wchar_t locale[16];
+	TCHAR locale[16];
 	int ret;
 
 	// Check if LC_MESSAGES or LC_ALL is set.
@@ -237,15 +237,15 @@ void SystemRegionPrivate::getSystemRegion(void)
 			case 3:
 				// 2-character country code.
 				// (ret == 3 due to the NULL terminator.)
-				cc = (((towupper(locale[0]) & 0xFF) << 8) |
-				       (towupper(locale[1]) & 0xFF));
+				cc = (((_totupper(locale[0]) & 0xFF) << 8) |
+				       (_totupper(locale[1]) & 0xFF));
 				break;
 			case 4:
 				// 3-character country code.
 				// (ret == 4 due to the NULL terminator.)
-				cc = (((towupper(locale[0]) & 0xFF) << 16) |
-				      ((towupper(locale[1]) & 0xFF) << 8) |
-				       (towupper(locale[2]) & 0xFF));
+				cc = (((_totupper(locale[0]) & 0xFF) << 16) |
+				      ((_totupper(locale[1]) & 0xFF) << 8) |
+				       (_totupper(locale[2]) & 0xFF));
 				break;
 
 			default:
@@ -264,15 +264,15 @@ void SystemRegionPrivate::getSystemRegion(void)
 			case 3:
 				// 2-character language code.
 				// (ret == 3 due to the NULL terminator.)
-				lc = (((towlower(locale[0]) & 0xFF) << 8) |
-				       (towlower(locale[1]) & 0xFF));
+				lc = (((_totlower(locale[0]) & 0xFF) << 8) |
+				       (_totlower(locale[1]) & 0xFF));
 				break;
 			case 4:
 				// 3-character language code.
 				// (ret == 4 due to the NULL terminator.)
-				lc = (((towlower(locale[0]) & 0xFF) << 16) |
-				      ((towlower(locale[1]) & 0xFF) << 8) |
-				       (towlower(locale[2]) & 0xFF));
+				lc = (((_totlower(locale[0]) & 0xFF) << 16) |
+				      ((_totlower(locale[1]) & 0xFF) << 8) |
+				       (_totlower(locale[2]) & 0xFF));
 				break;
 
 			default:

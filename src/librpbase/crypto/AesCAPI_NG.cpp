@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCAPI_NG.cpp: AES decryption class using Win32 CryptoAPI NG.          *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "AesCAPI_NG.hpp"
@@ -198,7 +197,7 @@ int AesCAPI_NG_Private::load_bcrypt(void)
 	}
 
 	// Attempt to load bcrypt.dll.
-	hBcryptDll = LoadLibrary(L"bcrypt.dll");
+	hBcryptDll = LoadLibrary(_T("bcrypt.dll"));
 	if (!hBcryptDll) {
 		// bcrypt.dll not found.
 		return -ENOENT;
@@ -272,7 +271,7 @@ bool AesCAPI_NG::isUsable(void)
 	// so assume it works as long as bcrypt.dll is present and
 	// BCryptOpenAlgorithmProvider exists.
 	bool bRet = false;
-	HMODULE hBcryptDll = LoadLibrary(L"bcrypt.dll");
+	HMODULE hBcryptDll = LoadLibrary(_T("bcrypt.dll"));
 	if (hBcryptDll) {
 		bRet = (GetProcAddress(hBcryptDll, "BCryptOpenAlgorithmProvider") != nullptr);
 		FreeLibrary(hBcryptDll);

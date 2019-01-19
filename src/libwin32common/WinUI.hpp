@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__
@@ -32,33 +31,33 @@ namespace LibWin32Common {
 
 /**
  * Convert UNIX line endings to DOS line endings.
- * @param wstr_unix	[in] Wide string with UNIX line endings.
+ * @param tstr_unix	[in] String with UNIX line endings.
  * @param lf_count	[out,opt] Number of LF characters found.
- * @return wstring with DOS line endings.
+ * @return tstring with DOS line endings.
  */
-std::wstring unix2dos(const wchar_t *wstr_unix, int *lf_count = nullptr);
+std::tstring unix2dos(const TCHAR *tstr_unix, int *lf_count = nullptr);
 
 /**
  * Measure text size using GDI.
  * @param hWnd		[in] hWnd.
  * @param hFont		[in] Font.
- * @param wstr		[in] String.
+ * @param tstr		[in] String.
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
-int measureTextSize(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSize);
+int measureTextSize(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize);
 
 /**
  * Measure text size using GDI.
  * @param hWnd		[in] hWnd.
  * @param hFont		[in] Font.
- * @param wstr		[in] String.
+ * @param tstr		[in] String.
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
-static inline int measureTextSize(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpSize)
+static inline int measureTextSize(HWND hWnd, HFONT hFont, const std::tstring &tstr, LPSIZE lpSize)
 {
-	return measureTextSize(hWnd, hFont, wstr.c_str(), lpSize);
+	return measureTextSize(hWnd, hFont, tstr.c_str(), lpSize);
 }
 
 /**
@@ -67,11 +66,11 @@ static inline int measureTextSize(HWND hWnd, HFONT hFont, const std::wstring &ws
  * calling the regular measureTextSize() function.
  * @param hWnd		[in] hWnd.
  * @param hFont		[in] Font.
- * @param wstr		[in] String.
+ * @param tstr		[in] String.
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
-int measureTextSizeLink(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSize);
+int measureTextSizeLink(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize);
 
 /**
  * Measure text size using GDI.
@@ -79,13 +78,13 @@ int measureTextSizeLink(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSi
  * calling the regular measureTextSize() function.
  * @param hWnd		[in] hWnd.
  * @param hFont		[in] Font.
- * @param wstr		[in] String.
+ * @param tstr		[in] String.
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
-static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpSize)
+static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::tstring &tstr, LPSIZE lpSize)
 {
-	return measureTextSizeLink(hWnd, hFont, wstr.c_str(), lpSize);
+	return measureTextSizeLink(hWnd, hFont, tstr.c_str(), lpSize);
 }
 
 /**

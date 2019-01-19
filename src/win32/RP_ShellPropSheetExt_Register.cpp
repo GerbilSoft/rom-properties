@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_Register.cpp: IShellPropSheetExt implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "stdafx.h"
@@ -28,9 +27,10 @@ using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <string>
-using std::wstring;
+using std::tstring;
 
 #define CLSID_RP_ShellPropSheetExt_String	TEXT("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
+extern const TCHAR RP_ProgID[];
 
 /**
  * Register the COM object.
@@ -38,8 +38,7 @@ using std::wstring;
  */
 LONG RP_ShellPropSheetExt::RegisterCLSID(void)
 {
-	static const wchar_t description[] = L"ROM Properties Page - Property Sheet";
-	extern const wchar_t RP_ProgID[];
+	static const TCHAR description[] = _T("ROM Properties Page - Property Sheet");
 
 	// Register the COM object.
 	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID, description);
@@ -68,13 +67,11 @@ LONG RP_ShellPropSheetExt::RegisterCLSID(void)
  */
 LONG RP_ShellPropSheetExt::RegisterFileType_int(RegKey &hkey_Assoc)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Register as a property sheet handler for this file association.
 
 	// Create/open the "ShellEx\\PropertySheetHandlers\\rom-properties" key.
 	// NOTE: This will recursively create the keys if necessary.
-	wstring keyname = L"ShellEx\\PropertySheetHandlers\\";
+	tstring keyname = _T("ShellEx\\PropertySheetHandlers\\");
 	keyname += RP_ProgID;
 	RegKey hkcr_PropSheet(hkey_Assoc, keyname.c_str(), KEY_WRITE, true);
 	if (!hkcr_PropSheet.isOpen()) {
@@ -97,7 +94,7 @@ LONG RP_ShellPropSheetExt::RegisterFileType_int(RegKey &hkey_Assoc)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -114,7 +111,7 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 	// Is a custom ProgID registered?
 	// If so, and it has a DefaultIcon registered,
 	// we'll need to update the custom ProgID.
-	wstring progID = hkcr_ext.read(nullptr);
+	const tstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
@@ -139,8 +136,6 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
  */
 LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID);
 	if (lResult != ERROR_SUCCESS) {
@@ -162,12 +157,10 @@ LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
  */
 LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Unregister as a property sheet handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkey_Assoc, _T("ShellEx"), KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_ShellEx.lOpenRes();
@@ -178,7 +171,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 	}
 
 	// Open the "ShellEx\\PropertySheetHandlers" key.
-	RegKey hkcr_PropSheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
+	RegKey hkcr_PropSheetHandlers(hkcr_ShellEx, _T("PropertySheetHandlers"), KEY_READ, false);
 	if (!hkcr_PropSheetHandlers.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_PropSheetHandlers.lOpenRes();
@@ -199,7 +192,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 		return lResult;
 	}
 	// Check if the default value matches the CLSID.
-	wstring str_PropSheetCLSID = hkcr_PropSheet.read(nullptr);
+	const tstring str_PropSheetCLSID = hkcr_PropSheet.read(nullptr);
 	if (str_PropSheetCLSID == CLSID_RP_ShellPropSheetExt_String) {
 		// Default value matches.
 		// Remove the subkey.
@@ -219,7 +212,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 	if (hkcr_PropSheetHandlers.isKeyEmpty()) {
 		// No subkeys. Delete this key.
 		hkcr_PropSheetHandlers.close();
-		LONG lResult = hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
+		LONG lResult = hkcr_ShellEx.deleteSubKey(_T("PropertySheetHandlers"));
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
@@ -235,7 +228,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
@@ -258,7 +251,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	// Is a custom ProgID registered?
 	// If so, and it has a DefaultIcon registered,
 	// we'll need to update the custom ProgID.
-	wstring progID = hkcr_ext.read(nullptr);
+	const tstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);

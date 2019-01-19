@@ -70,13 +70,13 @@ void PropSheetIconPrivate::getPropSheetIcons(void)
 {
 	// Check for a DLL containing a usable ROM chip icon.
 	struct IconDllData_t {
-		const wchar_t *dll_filename;
-		LPWSTR pszIcon;
+		const TCHAR *dll_filename;
+		LPTSTR pszIcon;
 	};
 
 	static const IconDllData_t iconDllData[] = {
-		{L"imageres.dll", MAKEINTRESOURCE(34)},	// Vista+
-		{L"shell32.dll",  MAKEINTRESOURCE(13)},
+		{_T("imageres.dll"), MAKEINTRESOURCE(34)},	// Vista+
+		{_T("shell32.dll"),  MAKEINTRESOURCE(13)},
 	};
 
 	for (unsigned int i = 0; i < ARRAY_SIZE(iconDllData); i++) {

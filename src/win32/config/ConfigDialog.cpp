@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -24,9 +24,10 @@
 #include "res/resource.h"
 
 // librpbase
-#include "librpbase/config/Config.hpp"
 #include "librpbase/TextFuncs.hpp"
-using LibRpBase::Config;
+#include "librpbase/TextFuncs_wchar.hpp"
+#include "librpbase/config/Config.hpp"
+using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -43,7 +44,7 @@ using LibRpBase::Config;
 
 // C++ includes.
 #include <string>
-using std::wstring;
+using std::tstring;
 
 #include "libi18n/config.libi18n.h"
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
@@ -75,7 +76,7 @@ class ConfigDialogPrivate
 	public:
 		// Property for "D pointer".
 		// This points to the ConfigDialogPrivate object.
-		static const wchar_t D_PTR_PROP[];
+		static const TCHAR D_PTR_PROP[];
 
 	public:
 		// Property sheet variables.
@@ -102,7 +103,7 @@ class ConfigDialogPrivate
 
 // Property for "D pointer".
 // This points to the ConfigDialogPrivate object.
-const wchar_t ConfigDialogPrivate::D_PTR_PROP[] = L"ConfigDialogPrivate";
+const TCHAR ConfigDialogPrivate::D_PTR_PROP[] = _T("ConfigDialogPrivate");
 
 ConfigDialogPrivate::ConfigDialogPrivate()
 {
@@ -229,8 +230,8 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 	switch (uMsg) {
 		case WM_SHOWWINDOW: {
 			// tr: Dialog title.
-			const wstring wsTitle = U82W_c(C_("ConfigDialog", "ROM Properties Page Configuration"));
-			SetWindowText(hWnd, wsTitle.c_str());
+			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page Configuration"));
+			SetWindowText(hWnd, tsTitle.c_str());
 
 			// Create the "Reset" and "Defaults" buttons.
 			if (GetDlgItem(hWnd, IDC_RP_RESET) != nullptr) {
@@ -271,7 +272,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			HWND hBtnReset = CreateWindowEx(0, WC_BUTTON,
 				// tr: "Reset" button.
-				U82W_c(C_("ConfigDialog", "Reset")),
+				U82T_c(C_("ConfigDialog", "Reset")),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
 				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_RESET, nullptr, nullptr);
@@ -289,7 +290,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
 			HWND hBtnDefaults = CreateWindowEx(0, WC_BUTTON,
 				// tr: "Defaults" button.
-				U82W_c(C_("ConfigDialog", "Defaults")),
+				U82T_c(C_("ConfigDialog", "Defaults")),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
 				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_DEFAULTS, nullptr, nullptr);
@@ -436,14 +437,14 @@ int CALLBACK rp_show_config_dialog(
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
-		#define LIBGNUINTL_DLL L"libgnuintl-8.dll"
+		#define LIBGNUINTL_DLL _T("libgnuintl-8.dll")
 		MessageBox(hWnd,
-			LIBGNUINTL_DLL L" could not be loaded.\n\n"
-			L"This build of rom-properties has localization enabled,\n"
-			L"which requires the use of GNU texttext.\n\n"
-			L"Please redownload rom-properties and copy the\n"
-			LIBGNUINTL_DLL L" file to the installation directory.",
-			LIBGNUINTL_DLL L" not found",
+			LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
+			_T("This build of rom-properties has localization enabled,\n")
+			_T("which requires the use of GNU texttext.\n\n")
+			_T("Please redownload rom-properties and copy the\n")
+			LIBGNUINTL_DLL _T(" file to the installation directory."),
+			LIBGNUINTL_DLL _T(" not found"),
 			MB_ICONSTOP);
 		return EXIT_FAILURE;
 	}

@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * APNG_dlopen.hpp: APNG dlopen()'d function pointers.                     *
+ * APNG_dlopen.c: APNG dlopen()'d function pointers.                       *
  *                                                                         *
- * Copyright (c) 2014-2018 by David Korth.                                 *
+ * Copyright (c) 2014-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -81,7 +81,7 @@ static int init_apng(void)
 {
 #ifdef _WIN32
 	BOOL bRet;
-	wchar_t png_dll_filename[16];
+	TCHAR png_dll_filename[16];
 #else /* !_WIN32 */
 	char png_so_filename[16];
 #endif /* _WIN32 */
@@ -98,11 +98,11 @@ static int init_apng(void)
 	// ensure that it's loaded before calling this function!
 	// Otherwise, this will fail.
 #ifndef NDEBUG
-	swprintf(png_dll_filename, _countof(png_dll_filename),
-		 L"libpng%ud.dll", PNG_LIBPNG_VER_DLLNUM);
+	_sntprintf(png_dll_filename, _countof(png_dll_filename),
+		_T("libpng%ud.dll"), PNG_LIBPNG_VER_DLLNUM);
 #else
-	swprintf(png_dll_filename, _countof(png_dll_filename),
-		 L"libpng%u.dll", PNG_LIBPNG_VER_DLLNUM);
+	_sntprintf(png_dll_filename, _countof(png_dll_filename),
+		_T("libpng%u.dll"), PNG_LIBPNG_VER_DLLNUM);
 #endif
 	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
 	assert(bRet != FALSE);
@@ -114,7 +114,7 @@ static int init_apng(void)
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
 	snprintf(png_so_filename, sizeof(png_so_filename),
-		 "libpng%u.so", PNG_LIBPNG_VER_SONUM);
+		"libpng%u.so", PNG_LIBPNG_VER_SONUM);
 	libpng_dll = dlopen(png_so_filename, RTLD_LOCAL|RTLD_NOW);
 	if (!libpng_dll)
 		return -1;

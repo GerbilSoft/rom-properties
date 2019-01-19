@@ -31,7 +31,7 @@
  * NOTE 2: The UTF-8 versions return c_str() from
  * temporary strings. Therefore, you *must* assign
  * the result to an std::wstring or std::string if
- * storing it, since a wchar_t* or rp_char* will
+ * storing it, since a wchar_t* or char* will
  * result in a dangling pointer.
  */
 
@@ -39,35 +39,47 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/common.h"
 
+#ifdef _WIN32
+# include <tchar.h>
+# if defined(__cplusplus) && !defined(tstring)
+// FIXME: Would be better to use typedef, but oh well.
+#  ifdef _UNICODE
+#   define tstring wstring
+#  else /* !_UNICODE */
+#   define tstring string
+#  endif /* _UNICODE */
+# endif /* defined(__cplusplus) && !defined(tstring) */
+#endif /* _WIN32 */
+
 #ifndef RP_WIS16
 #error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
 #endif /* RP_WIS16 */
 
+/** wchar_t (Unicode) **/
+
 /**
- * Get const wchar_t* from const char*.
- * @param str const rp_char*
- * @return const wchar_t*
+ * Convert UTF-8 const char* to UTF-16 const wchar_t*.
+ * @param str UTF-8 const char*
+ * @return UTF-16 const wchar_t*
  */
 #define U82W_c(str) \
 	(reinterpret_cast<const wchar_t*>( \
 		LibRpBase::utf8_to_utf16(str, -1).c_str()))
 
 /**
- * Get const wchar_t* from std::string.
- * @param str std::string
- * @return const wchar_t*
+ * Convert UTF-8 std::string to UTF-16 const wchar_t*.
+ * @param str UTF-8 std::string
+ * @return UTF-16 const wchar_t*
  */
 #define U82W_s(str) \
 	(reinterpret_cast<const wchar_t*>( \
 		LibRpBase::utf8_to_utf16(str).c_str()))
 
-// FIXME: In-place conversion of std::u16string to std::wstring?
-
 /**
- * Get std::string (UTF-8) from const wchar_t*.
- * @param wcs const wchar_t*
+ * Convert UTF-16 const wchar_t* to UTF-8 std::string.
+ * @param wcs UTF-16 const wchar_t*
  * @param len Length. (If -1, assuming this is a C string.)
- * @return std::string (UTF-8)
+ * @return UTF-8 std::string.
  */
 static inline std::string W2U8(const wchar_t *wcs, int len = -1)
 {
@@ -76,9 +88,9 @@ static inline std::string W2U8(const wchar_t *wcs, int len = -1)
 }
 
 /**
- * Get std::string (UTF-8) from std::wstring.
- * @param wcs std::wstring
- * @return std::string (UTF-8)
+ * Convert UTF-16 std::wstring to UTF-8 std::string.
+ * @param wcs UTF-16 std::wstring
+ * @return UTF-8 std::string
  */
 static inline std::string W2U8(const std::wstring &wcs)
 {
@@ -86,5 +98,152 @@ static inline std::string W2U8(const std::wstring &wcs)
 		reinterpret_cast<const char16_t*>(
 			wcs.data()), static_cast<int>(wcs.size()));
 }
+
+/** char (ANSI) **/
+
+/**
+ * Convert UTF-8 const char* to ANSI const char*.
+ * @param str UTF-8 const char*
+ * @return ANSI const char*
+ */
+#define U82A_c(str) \
+	(LibRpBase::utf8_to_ansi(str, -1).c_str())
+
+/**
+ * Convert UTF-8 std::string to ANSI const char*.
+ * @param str UTF-8 std::string
+ * @return ANSI const char*
+ */
+#define U82A_s(str) \
+	(LibRpBase::utf8_to_ansi(str).c_str())
+
+/**
+ * Convert ANSI const char* to UTF-8 std::string.
+ * @param str ANSI const char*
+ * @param len Length. (If -1, assuming this is a C string.)
+ * @return UTF-8 std::string.
+ */
+static inline std::string A2U8(const char *str, int len = -1)
+{
+	return LibRpBase::ansi_to_utf8(str, len);
+}
+
+/**
+ * Convert ANSI std::string to UTF-8 std::string.
+ * @param str ANSI std::string
+ * @return UTF-8 std::string
+ */
+static inline std::string A2U8(const std::string &str)
+{
+	return LibRpBase::ansi_to_utf8(
+		str.data(), static_cast<int>(str.size()));
+}
+
+/** UTF-16 to ANSI and vice-versa **/
+
+/**
+ * Convert ANSI const char* to UTF-16 const wchar_t*.
+ * @param str ANSI const char*
+ * @return UTF-16 const wchar_t*
+ */
+#define A2W_c(str) \
+	(reinterpret_cast<const wchar_t*>( \
+		LibRpBase::cpN_to_utf16(CP_ACP, str, -1).c_str()))
+
+/**
+ * Convert ANSI std::string to UTF-16 const wchar_t*.
+ * @param str ANSI std::string
+ * @return UTF-16 const wchar_t*
+ */
+#define A2W_s(str) \
+	(reinterpret_cast<const wchar_t*>( \
+		LibRpBase::cpN_to_utf16( \
+			CP_ACP, str.data(), static_cast<int>(str.size())).c_str()))
+
+/**
+ * Convert UTF-16 const wchar_t* to ANSI std::string.
+ * @param wcs UTF-16 const wchar_t*
+ * @param len Length. (If -1, assuming this is a C string.)
+ * @return ANSI std::string.
+ */
+static inline std::string W2A(const wchar_t *wcs, int len = -1)
+{
+	return LibRpBase::utf16_to_cpN(
+		CP_ACP, reinterpret_cast<const char16_t*>(wcs), len);
+}
+
+/**
+ * Convert UTF-16 std::wstring to ANSI std::string.
+ * @param wcs UTF-16 std::wstring
+ * @return ANSI std::string
+ */
+static inline std::string W2A(const std::wstring &wcs)
+{
+	return LibRpBase::utf16_to_cpN(
+		CP_ACP, reinterpret_cast<const char16_t*>(
+			wcs.data()), static_cast<int>(wcs.size()));
+}
+
+/** TCHAR **/
+
+// TODO: Check for UNICODE or _UNICODE?
+// We're using Windows functions, not libc functions,
+// for text conversion, so UNICODE makes more sense.
+
+#ifdef _WIN32
+#ifdef UNICODE
+
+#define U82T_c(tcs) U82W_c(tcs)
+#define U82T_s(tcs) U82W_s(tcs)
+
+/**
+ * Convert const TCHAR* to UTF-8 std::string.
+ * @param tcs const TCHAR*
+ * @param len Length. (If -1, assuming this is a C string.)
+ * @return UTF-8 std::string.
+ */
+static inline std::string T2U8(const TCHAR *tcs, int len = -1)
+{
+	return W2U8(tcs, len);
+}
+
+/**
+ * Convert TCHAR std::string to UTF-8 std::string.
+ * @param tcs TCHAR std::string
+ * @return UTF-8 std::string
+ */
+static inline std::string T2U8(const std::tstring &tcs)
+{
+	return W2U8(tcs);
+}
+
+#else /* !UNICODE */
+
+#define U82T_c(tcs) U82A_c(tcs)
+#define U82T_s(tcs) U82A_s(tcs)
+
+/**
+ * Convert const TCHAR* to UTF-8 std::string.
+ * @param str const TCHAR*
+ * @param len Length. (If -1, assuming this is a C string.)
+ * @return UTF-8 std::string.
+ */
+static inline std::string T2U8(const TCHAR *tcs, int len = -1)
+{
+	return A2U8(tcs, len);
+}
+
+/**
+ * Convert TCHAR std::tstring to UTF-8 std::string.
+ * @param str TCHAR std::string
+ * @return UTF-8 std::string
+ */
+static inline std::string T2U8(const std::tstring &tcs)
+{
+	return A2U8(tcs);
+}
+
+#endif /* UNICODE */
+#endif /* _WIN32 */
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__ */

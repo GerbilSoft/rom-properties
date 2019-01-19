@@ -43,9 +43,9 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 // Architecture-specific subdirectory.
 #if defined(__i386__) || defined(_M_IX86)
-static const wchar_t rp_subdir[] = L"i386\\";
+static const TCHAR rp_subdir[] = _T("i386\\");
 #elif defined(__amd64__) || defined(_M_X64)
-static const wchar_t rp_subdir[] = L"amd64\\";
+static const TCHAR rp_subdir[] = _T("amd64\\");
 #else
 # error Unsupported CPU architecture.
 #endif
@@ -68,9 +68,9 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 		"\x0C" "libgnuintl-8",
 	};
 
-	wchar_t dll_fullpath[MAX_PATH+64];
-	const wchar_t *bs;
-	wchar_t *dest;
+	TCHAR dll_fullpath[MAX_PATH+64];
+	const TCHAR *bs;
+	TCHAR *dest;
 	LPCSTR pszDll;
 	HMODULE hDll;
 	
@@ -106,7 +106,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	}
 
 	// Find the last backslash in dll_fullpath[].
-	bs = wcsrchr(dll_fullpath, L'\\');
+	bs = _tcsrchr(dll_fullpath, _T('\\'));
 	if (!bs) {
 		// No backslashes...
 		return nullptr;
@@ -119,7 +119,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	     *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
 	     dest++, pszDll++)
 	{
-		*dest = (wchar_t)(unsigned int)*pszDll;
+		*dest = (TCHAR)(unsigned int)*pszDll;
 	}
 	*dest = 0;
 
@@ -131,7 +131,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	}
 
 	// Check the architecture-specific subdirectory.
-	wcscpy(&dll_fullpath[path_len], rp_subdir);
+	_tcscpy(&dll_fullpath[path_len], rp_subdir);
 	path_len += _countof(rp_subdir) - 1;
 
 	dest = &dll_fullpath[path_len];
@@ -139,7 +139,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	     *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
 	     dest++, pszDll++)
 	{
-		*dest = (wchar_t)(unsigned int)*pszDll;
+		*dest = (TCHAR)(unsigned int)*pszDll;
 	}
 	*dest = 0;
 

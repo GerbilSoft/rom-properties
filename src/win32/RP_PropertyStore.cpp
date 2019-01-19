@@ -31,6 +31,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomMetaData.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/RpFile.hpp"
 using namespace LibRpBase;
 

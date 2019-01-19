@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ImageTypesTab.cpp: Image type priorities tab. (Part of ConfigDialog.)   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -26,8 +26,10 @@
 #include "libwin32common/WinUI.hpp"
 
 // librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
-using LibRpBase::Config;
+using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -37,7 +39,7 @@ using LibRpBase::Config;
 
 // C++ includes.
 #include <string>
-using std::wstring;
+using std::tstring;
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
@@ -57,7 +59,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 	public:
 		// Property for "D pointer".
 		// This points to the ImageTypesTabPrivate object.
-		static const wchar_t D_PTR_PROP[];
+		static const TCHAR D_PTR_PROP[];
 
 	protected:
 		/** TImageTypesConfig functions. (protected) **/
@@ -155,7 +157,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 
 		// Temporary configuration filename.
 		// Set by saveStart(); cleared by saveFinish().
-		wchar_t *tmp_conf_filename;
+		TCHAR *tmp_conf_filename;
 };
 
 // Control base ID.
@@ -191,7 +193,7 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 
 // Property for "D pointer".
 // This points to the ImageTypesTabPrivate object.
-const wchar_t ImageTypesTabPrivate::D_PTR_PROP[] = L"ImageTypesTabPrivate";
+const TCHAR ImageTypesTabPrivate::D_PTR_PROP[] = _T("ImageTypesTabPrivate");
 
 /** TImageTypesConfig functions. (protected) **/
 
@@ -242,7 +244,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82W_c(imageTypeName(i)), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(imageTypeName(i)), &szCur);
 		h_lbl[i] = szCur.cy;
 		if (szCur.cx > sz_lblImageType.cx) {
 			sz_lblImageType.cx = szCur.cx;
@@ -256,7 +258,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblSysName = {0, 0};
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82W_c(sysName(sys)), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(sysName(sys)), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
 			sz_lblSysName.cx = szCur.cx;
 		}
@@ -293,7 +295,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 
 		const int y_lbl = curPt.y + (sz_lblImageType.cy - h_lbl[i]);
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, U82W_c(imageTypeName(i)),
+			WC_STATIC, U82T_c(imageTypeName(i)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
 			curPt.x, y_lbl, sz_lblImageType.cx, h_lbl[i],
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
@@ -318,7 +320,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, U82W_c(sysName(sys)),
+			WC_STATIC, U82T_c(sysName(sys)),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
 			curPt.x, curPt.y,
 			sz_lblSysName.cx, sz_lblSysName.cy,
@@ -417,7 +419,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
 	for (int i = 0; i <= max_prio; i++) {
-		ComboBox_AddString(cboImageType, U82W_c(
+		ComboBox_AddString(cboImageType, U82T_c(
 			dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesTab|Values", s_values[i])));
 	}
 	ComboBox_SetCurSel(cboImageType, 0);
@@ -470,7 +472,7 @@ int ImageTypesTabPrivate::saveStart(void)
 		// Shouldn't be set here...
 		free(tmp_conf_filename);
 	}
-	tmp_conf_filename = wcsdup(U82W_s(filename));
+	tmp_conf_filename = _tcsdup(U82T_s(filename));
 	return 0;
 }
 
@@ -486,7 +488,7 @@ int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageT
 	if (!tmp_conf_filename) {
 		return -ENOENT;
 	}
-	WritePrivateProfileString(L"ImageTypes", U82W_c(sysName), U82W_c(imageTypeList), tmp_conf_filename);
+	WritePrivateProfileString(_T("ImageTypes"), U82T_c(sysName), U82T_c(imageTypeList), tmp_conf_filename);
 	return 0;
 }
 
@@ -589,15 +591,18 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					}
 					break;
 
+#ifdef UNICODE
 				case NM_CLICK:
 				case NM_RETURN:
 					// SysLink control notification.
+					// NOTE: SysLink control only supports Unicode.
 					if (pHdr->idFrom == IDC_IMAGETYPES_CREDITS) {
 						// Open the URL.
 						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(lParam);
-						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+						ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
 					}
 					break;
+#endif /* UNICODE */
 
 				case PSN_SETACTIVE:
 					// Enable the "Defaults" button.
@@ -733,8 +738,10 @@ HPROPSHEETPAGE ImageTypesTab::getHPropSheetPage(void)
 		return nullptr;
 	}
 
+	// FIXME: SysLink controls won't work in ANSI builds.
+
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("ImageTypesTab", "Image Types"));
+	const tstring tsTabTitle = U82T_c(C_("ImageTypesTab", "Image Types"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);	
@@ -742,7 +749,7 @@ HPROPSHEETPAGE ImageTypesTab::getHPropSheetPage(void)
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pResource = LoadDialog_i18n(IDD_CONFIG_IMAGETYPES);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = wsTabTitle.c_str();
+	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = ImageTypesTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

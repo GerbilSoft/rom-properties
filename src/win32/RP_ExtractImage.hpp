@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -70,7 +70,7 @@ RP_ExtractImage : public LibWin32Common::ComBase2<IPersistFile, IExtractImage2>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -84,7 +84,7 @@ RP_ExtractImage : public LibWin32Common::ComBase2<IPersistFile, IExtractImage2>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
 
 	public:
 		// IPersist (IPersistFile base class)

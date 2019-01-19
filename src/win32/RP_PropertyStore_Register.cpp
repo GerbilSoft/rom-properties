@@ -3,7 +3,7 @@
  * RP_PropSheet_Register.cpp: IPropertyStore implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -28,9 +28,10 @@ using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <string>
-using std::wstring;
+using std::tstring;
 
 #define CLSID_RP_PropertyStore_String	TEXT("{4A1E3510-50BD-4B03-A801-E4C954F43B96}")
+extern const TCHAR RP_ProgID[];
 
 /**
  * Register the COM object.
@@ -38,8 +39,7 @@ using std::wstring;
  */
 LONG RP_PropertyStore::RegisterCLSID(void)
 {
-	static const wchar_t description[] = L"ROM Properties Page - Property Store";
-	extern const wchar_t RP_ProgID[];
+	static const TCHAR description[] = _T("ROM Properties Page - Property Store");
 
 	// Register the COM object.
 	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_PropertyStore), RP_ProgID, description);
@@ -60,61 +60,61 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 
 	// PreviewDetails.
 	// NOTE: Default properties should go *after* these.
-	static const wchar_t PreviewDetails[] = L"prop:"
+	static const TCHAR PreviewDetails[] = _T("prop:")
 		// Custom properties.
-		L"System.Title;"
-		L"System.Company;"
-		L"System.Author;"
-		L"System.Music.Composer;"
-		L"System.Media.Copyright;"
-		L"System.Image.Dimensions;"
-		L"System.Media.Duration;"
-		L"System.Media.SampleRate;";
+		_T("System.Title;")
+		_T("System.Company;")
+		_T("System.Author;")
+		_T("System.Music.Composer;")
+		_T("System.Media.Copyright;")
+		_T("System.Image.Dimensions;")
+		_T("System.Media.Duration;")
+		_T("System.Media.SampleRate;");
 
 	// InfoTip.
 	// NOTE: Default properties should go *before* these.
-	static const wchar_t InfoTip[] =
+	static const TCHAR InfoTip[] =
 		// Custom properties.
-		L"System.Title;"
-		L"System.Company;"
-		L"System.Author;"
-		L"System.Music.Composer;"
-		L"System.Media.Copyright;"
-		L"System.Image.Dimensions;"
-		L"System.Media.Duration;"
-		L"System.Media.SampleRate";
+		_T("System.Title;")
+		_T("System.Company;")
+		_T("System.Author;")
+		_T("System.Music.Composer;")
+		_T("System.Media.Copyright;")
+		_T("System.Image.Dimensions;")
+		_T("System.Media.Duration;")
+		_T("System.Media.SampleRate");
 
 #if 0
 	// FIXME: FullDetails will show empty properties if
 	// they're listed here but aren't set by RP_PropertyStore.
 	// We'll need to register multiple ProgIDs for different
 	// classes of files, but maybe later...
-	static const wchar_t FullDetails[] = L"prop:"
-		L"System.PropGroup.General;"
-		L"System.Title;"
-		L"System.Company;"
-		L"System.PropGroup.Image;"
-		L"System.Image.Dimensions;"
-		L"System.Image.Width;"
-		L"System.Image.Height;"
-		L"System.PropGroup.Audio;"
-		L"System.Media.Duration;"
-		L"System.Audio.SampleRate;"
-		L"System.Audio.SampleSize";
+	static const TCHAR FullDetails[] = _T("prop:")
+		_T("System.PropGroup.General;")
+		_T("System.Title;")
+		_T("System.Company;")
+		_T("System.PropGroup.Image;")
+		_T("System.Image.Dimensions;")
+		_T("System.Image.Width;")
+		_T("System.Image.Height;")
+		_T("System.PropGroup.Audio;")
+		_T("System.Media.Duration;")
+		_T("System.Audio.SampleRate;")
+		_T("System.Audio.SampleSize");
 #endif
 
-	RegKey hkcr_All(HKEY_CLASSES_ROOT, L"*", KEY_READ, false);
+	RegKey hkcr_All(HKEY_CLASSES_ROOT, _T("*"), KEY_READ, false);
 	if (!hkcr_All.isOpen())
 		return hkcr_All.lOpenRes();
-	wstring s_reg;
+	tstring s_reg;
 
 	// Get the default "PreviewDetails" and append them
 	// to the custom "FullDetails".
-	wstring s_previewDetails(PreviewDetails, ARRAY_SIZE(PreviewDetails)-1);
-	s_reg = hkcr_All.read(L"PreviewDetails");
+	tstring s_previewDetails(PreviewDetails, ARRAY_SIZE(PreviewDetails)-1);
+	s_reg = hkcr_All.read(_T("PreviewDetails"));
 	if (s_reg.size() > 5) {
 		// First 5 characters should be "prop:".
-		if (!wcsncasecmp(s_reg.c_str(), L"prop:", 5)) {
+		if (!_tcsnicmp(s_reg.c_str(), _T("prop:"), 5)) {
 			// Append the properties.
 			s_previewDetails += L';';
 			s_previewDetails.append(s_reg.c_str()+5, s_reg.size()-5);
@@ -123,18 +123,18 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 
 	// Get the default "InfoTip" and prepend them
 	// to the custom "InfoTip".
-	wstring s_infoTip;
-	s_reg = hkcr_All.read(L"PreviewDetails");
+	tstring s_infoTip;
+	s_reg = hkcr_All.read(_T("PreviewDetails"));
 	if (s_reg.size() > 5) {
 		// First 5 characters should be "prop:".
-		if (!wcsncasecmp(s_reg.c_str(), L"prop:", 5)) {
+		if (!_tcsnicmp(s_reg.c_str(), _T("prop:"), 5)) {
 			// Prepend the properties.
 			s_infoTip = s_reg;
 		}
 	}
 	if (s_infoTip.empty()) {
 		// Prepend with "prop:".
-		s_infoTip = L"prop:";
+		s_infoTip = _T("prop:");
 	}
 	s_infoTip.append(InfoTip, ARRAY_SIZE(InfoTip)-1);
 
@@ -142,12 +142,12 @@ LONG RP_PropertyStore::RegisterCLSID(void)
 	RegKey hkey_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, true);
 	if (!hkey_ProgID.isOpen())
 		return hkey_ProgID.lOpenRes();
-	lResult = hkey_ProgID.write(L"PreviewDetails", s_previewDetails);
+	lResult = hkey_ProgID.write(_T("PreviewDetails"), s_previewDetails);
 	if (lResult != ERROR_SUCCESS) return lResult;
-	lResult = hkey_ProgID.write(L"InfoTip", s_infoTip);
+	lResult = hkey_ProgID.write(_T("InfoTip"), s_infoTip);
 	if (lResult != ERROR_SUCCESS) return lResult;
 #if 0
-	lResult = hkey_ProgID.write(L"FullDetails", s_fullDetails);
+	lResult = hkey_ProgID.write(_T("FullDetails"), s_fullDetails);
 	if (lResult != ERROR_SUCCESS) return lResult;
 #endif
 
@@ -161,10 +161,10 @@ LONG RP_PropertyStore::RegisterCLSID(void)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_PropertyStore::RegisterFileType(RegKey &hklm, LPCWSTR ext)
+LONG RP_PropertyStore::RegisterFileType(RegKey &hklm, LPCTSTR ext)
 {
 	// Open the "PropertyHandlers" key.
-	RegKey hklm_PropertyHandlers(hklm, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers", KEY_READ, false);
+	RegKey hklm_PropertyHandlers(hklm, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers"), KEY_READ, false);
 	if (!hklm_PropertyHandlers.isOpen()) {
 		return hklm_PropertyHandlers.lOpenRes();
 	}
@@ -187,8 +187,6 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hklm, LPCWSTR ext)
  */
 LONG RP_PropertyStore::UnregisterCLSID(void)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_PropertyStore), RP_ProgID);
 	if (lResult != ERROR_SUCCESS) {
@@ -198,10 +196,10 @@ LONG RP_PropertyStore::UnregisterCLSID(void)
 	// Remove the ProgID property store values.
 	RegKey hkey_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_READ|KEY_WRITE, false);
 	if (hkey_ProgID.isOpen()) {
-		hkey_ProgID.deleteValue(L"InfoTip");
-		hkey_ProgID.deleteValue(L"FullDetails");
-		hkey_ProgID.deleteValue(L"PreviewDetails");
-		hkey_ProgID.deleteValue(L"PreviewTitle");
+		hkey_ProgID.deleteValue(_T("InfoTip"));
+		hkey_ProgID.deleteValue(_T("FullDetails"));
+		hkey_ProgID.deleteValue(_T("PreviewDetails"));
+		hkey_ProgID.deleteValue(_T("PreviewTitle"));
 	}
 
 	return ERROR_SUCCESS;
@@ -213,10 +211,10 @@ LONG RP_PropertyStore::UnregisterCLSID(void)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_PropertyStore::UnregisterFileType(RegKey &hklm, LPCWSTR ext)
+LONG RP_PropertyStore::UnregisterFileType(RegKey &hklm, LPCTSTR ext)
 {
 	// Open the "PropertyHandlers" key.
-	RegKey hklm_PropertyHandlers(hklm, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers", KEY_READ, false);
+	RegKey hklm_PropertyHandlers(hklm, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers"), KEY_READ, false);
 	if (!hklm_PropertyHandlers.isOpen()) {
 		return hklm_PropertyHandlers.lOpenRes();
 	}
@@ -233,7 +231,7 @@ LONG RP_PropertyStore::UnregisterFileType(RegKey &hklm, LPCWSTR ext)
 
 	// If our GUID is present as the property sheet handler,
 	// remove it.
-	wstring def_value = hklmph_ext.read(nullptr);
+	const tstring def_value = hklmph_ext.read(nullptr);
 	if (def_value == CLSID_RP_PropertyStore_String) {
 		// Remove the default value.
 		LONG lResult = hklmph_ext.deleteValue(nullptr);

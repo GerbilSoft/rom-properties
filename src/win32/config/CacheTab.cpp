@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -33,6 +33,7 @@ using namespace LibRpBase;
 // libwin32common
 #include "libwin32common/RegKey.hpp"
 #include "libwin32common/sdk/commctrl_ts.h"
+#include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
@@ -70,7 +71,7 @@ class CacheTabPrivate
 	public:
 		// Property for "D pointer".
 		// This points to the CacheTabPrivate object.
-		static const wchar_t D_PTR_PROP[];
+		static const TCHAR D_PTR_PROP[];
 
 	public:
 		/**
@@ -101,7 +102,7 @@ class CacheTabPrivate
 		 * @param rvec	[in/out] Return vector for filenames and attributes.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int recursiveScan(const wchar_t *path, vector<pair<wstring, DWORD> > &rvec);
+		int recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD> > &rvec);
 
 		/**
 		 * Clear the rom-properties cache.
@@ -152,7 +153,7 @@ CacheTabPrivate::CacheTabPrivate()
 	, isVista(false)
 {
 	// Determine which dialog we should use.
-	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
+	RegKey hKey(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache"), KEY_READ, false);
 	if (hKey.isOpen()) {
 		// Windows Vista Thumbnail Cache cleaner is available.
 		isVista = true;
@@ -177,7 +178,7 @@ CacheTabPrivate::~CacheTabPrivate()
 
 // Property for "D pointer".
 // This points to the CacheTabPrivate object.
-const wchar_t CacheTabPrivate::D_PTR_PROP[] = L"CacheTabPrivate";
+const TCHAR CacheTabPrivate::D_PTR_PROP[] = _T("CacheTabPrivate");
 
 /**
  * Initialize the dialog.
@@ -185,7 +186,7 @@ const wchar_t CacheTabPrivate::D_PTR_PROP[] = L"CacheTabPrivate";
 void CacheTabPrivate::initDialog(void)
 {
 	// Initialize strings.
-	SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESCRIPTION), U82W_c(isVista
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_CACHE_DESCRIPTION), U82T_c(isVista
 		// tr: Windows Vista and later. Has a centralized thumbnails cache.
 		? C_("CacheTab", "If any image type settings were changed, you will need to clear the system thumbnail cache.")
 		// tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
@@ -248,7 +249,7 @@ void CacheTabPrivate::enumDrivesXP(void)
 	DWORD dwDrives = GetLogicalDrives();
 
 	// Check each drive.
-	wchar_t path[] = L"X:\\";
+	TCHAR path[] = _T("X:\\");
 	SHFILEINFO sfi;
 	LVITEM lvi;
 	memset(&lvi, 0, sizeof(lvi));
@@ -288,7 +289,7 @@ void CacheTabPrivate::updateDrivesXP(DWORD unitmask)
 		return;
 	}
 
-	wchar_t path[] = L"X:\\";
+	TCHAR path[] = _T("X:\\");
 	SHFILEINFO sfi;
 	LVITEM lviNew, lviCur;
 	memset(&lviNew, 0, sizeof(lviNew));
@@ -378,18 +379,19 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		DWORD dwErr = GetLastError();
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"), dwErr);
-		SetWindowText(hStatusLabel, U82W_c(errbuf));
+		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 1;
 	}
+
 	// Ignore all drives that aren't fixed HDDs.
-	wchar_t szDrivePath[4] = L"X:\\";
+	TCHAR szDrivePath[4] = _T("X:\\");
 	unsigned int driveCount = 0;
 	for (unsigned int bit = 0; bit < 26; bit++) {
 		const uint32_t mask = (1 << bit);
 		if (!(driveLetters & mask))
 			continue;
-		szDrivePath[0] = L'A' + bit;
+		szDrivePath[0] = _T('A') + bit;
 		if (GetDriveType(szDrivePath) != DRIVE_FIXED) {
 			// Not a fixed HDD.
 			driveLetters &= ~mask;
@@ -400,29 +402,29 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	}
 	if (driveLetters == 0) {
 		// No fixed hard drives detected...
-		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab|Win32",
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab|Win32",
 			"ERROR: No fixed HDDs or SSDs detected.")));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 2;
 	}
 
 	// Open the registry key for the thumbnail cache cleaner.
-	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
+	RegKey hKey(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache"), KEY_READ, false);
 	if (!hKey.isOpen()) {
 		// Failed to open the registry key.
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 			"ERROR: Thumbnail Cache cleaner not found. (res == %ld)"),
 			hKey.lOpenRes());
-		SetWindowText(hStatusLabel, U82W_c(errbuf));
+		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 3;
 	}
 
 	// Get the CLSID.
-	wstring s_clsidThumbnailCacheCleaner = hKey.read(nullptr);
+	tstring s_clsidThumbnailCacheCleaner = hKey.read(nullptr);
 	if (s_clsidThumbnailCacheCleaner.size() != 38) {
 		// Not a CLSID.
-		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab|Win32",
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab|Win32",
 			"ERROR: Thumbnail Cache cleaner CLSID is invalid.")));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 4;
@@ -431,7 +433,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	HRESULT hr = CLSIDFromString(s_clsidThumbnailCacheCleaner.c_str(), &clsidThumbnailCacheCleaner);
 	if (FAILED(hr)) {
 		// Failed to convert the CLSID from string.
-		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab|Win32",
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab|Win32",
 			"ERROR: Thumbnail Cache cleaner CLSID is invalid.")));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 5;
@@ -447,7 +449,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		// Failed...
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)"), hr);
-		SetWindowText(hStatusLabel, U82W_c(errbuf));
+		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 6;
 	}
@@ -468,6 +470,13 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	// Thumbnail cache callback.
 	RP_EmptyVolumeCacheCallback *pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
 
+	// NOTE: IEmptyVolumeCache only supports Unicode strings.
+#ifdef UNICODE
+# define szDrivePathW szDrivePath
+#else /* !UNICODE */
+	wchar_t szDrivePathW[4] = L"X:\\";
+#endif /* UNICODE */
+
 	pCallback->m_baseProgress = 0;
 	unsigned int clearCount = 0;	// Number of drives actually cleared. (S_OK)
 	for (unsigned int bit = 0; bit < 26; bit++) {
@@ -479,8 +488,9 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		LPWSTR pwszDisplayName = nullptr;
 		LPWSTR pwszDescription = nullptr;
 		DWORD dwFlags = 0;
-		szDrivePath[0] = L'A' + bit;
-		hr = pCleaner->Initialize(hKey.handle(), szDrivePath, &pwszDisplayName, &pwszDescription, &dwFlags);
+		szDrivePathW[0] = L'A' + bit;
+		hr = pCleaner->Initialize(hKey.handle(), szDrivePathW,
+			&pwszDisplayName, &pwszDescription, &dwFlags);
 
 		// Free the display name and description,
 		// since we don't need them.
@@ -503,7 +513,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"),
 				(char)szDrivePath[0], hr);
-			SetWindowText(hStatusLabel, U82W_c(errbuf));
+			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
 			EnableWindow(hClearSysThumbs, TRUE);
@@ -520,7 +530,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"),
 				(char)szDrivePath[0], hr);
-			SetWindowText(hStatusLabel, U82W_c(errbuf));
+			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
 			EnableWindow(hClearSysThumbs, TRUE);
@@ -543,7 +553,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	} else {
 		success_message = C_("CacheTab", "System thumbnail cache is already empty. Nothing to do here.");
 	}
-	SetWindowText(hStatusLabel, U82W_c(success_message));
+	SetWindowText(hStatusLabel, U82T_c(success_message));
 	pCallback->Release();
 	EnableWindow(hClearSysThumbs, TRUE);
 	EnableWindow(hClearRpDl, TRUE);
@@ -558,10 +568,10 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
  * @param rvec	[in/out] Return vector for filenames and attributes.
  * @return 0 on success; non-zero on error.
  */
-int CacheTabPrivate::recursiveScan(const wchar_t *path, vector<pair<wstring, DWORD> > &rvec)
+int CacheTabPrivate::recursiveScan(const TCHAR *path, vector<pair<tstring, DWORD> > &rvec)
 {
-	wstring findFilter(path);
-	findFilter += L"\\*";
+	tstring findFilter(path);
+	findFilter += _T("\\*");
 
 	WIN32_FIND_DATA findFileData;
 	HANDLE hFindFile = FindFirstFile(findFilter.c_str(), &findFileData);
@@ -582,14 +592,14 @@ int CacheTabPrivate::recursiveScan(const wchar_t *path, vector<pair<wstring, DWO
 		// Make sure we should delete this file.
 		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 			size_t len;
-			wchar_t *pExt;
+			TCHAR *pExt;
 
 			// Thumbs.db files can be deleted.
-			if (!wcscasecmp(findFileData.cFileName, L"Thumbs.db"))
+			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db")))
 				goto isok;
 
 			// Check the extension.
-			len = wcslen(findFileData.cFileName);
+			len = _tcslen(findFileData.cFileName);
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				FindClose(hFindFile);
@@ -597,8 +607,8 @@ int CacheTabPrivate::recursiveScan(const wchar_t *path, vector<pair<wstring, DWO
 			}
 
 			pExt = &findFileData.cFileName[len-4];
-			if (wcscasecmp(pExt, L".png") != 0 &&
-			    wcscasecmp(pExt, L".jpg") != 0)
+			if (_tcsicmp(pExt, _T(".png")) != 0 &&
+			    _tcsicmp(pExt, _T(".jpg")) != 0)
 			{
 				// Extension is not valid.
 				FindClose(hFindFile);
@@ -609,8 +619,8 @@ int CacheTabPrivate::recursiveScan(const wchar_t *path, vector<pair<wstring, DWO
 		}
 	isok:
 
-		wstring fullFileName(path);
-		fullFileName += L'\\';
+		tstring fullFileName(path);
+		fullFileName += _T('\\');
 		fullFileName += findFileData.cFileName;
 
 		// If this is a directory, recursively scan it, then add it.
@@ -654,7 +664,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 			bscount++;
 	}
 	if (cacheDir.size() < 8 || bscount < 6) {
-		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "ERROR: Unable to get the cache directory path.")));
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: Unable to get the cache directory path.")));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		// FIXME: Not working...
@@ -667,8 +677,8 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// prepended, since we don't want to display this to the user.
 	// RpFile_Win32 normally prepends it automatically, but we're not
 	// using that here.
-	wstring cacheDirW = L"\\\\?\\";
-	cacheDirW += U82W_s(cacheDir);
+	tstring cacheDirT = _T("\\\\?\\");
+	cacheDirT += U82T_s(cacheDir);
 
 	// Disable the buttons until we're done.
 	// TODO: Disable the main tab control too?
@@ -678,7 +688,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	EnableWindow(hClearRpDl, FALSE);
 	SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-	SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "Clearing the rom-properties cache...")));
+	SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "Clearing the rom-properties cache...")));
 
 	// Initialize the progress bar.
 	// TODO: Before or after scanning?
@@ -689,11 +699,11 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a vector? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
-	vector<pair<wstring, DWORD> > rvec;
-	int ret = recursiveScan(cacheDirW.c_str(), rvec);
+	vector<pair<tstring, DWORD> > rvec;
+	int ret = recursiveScan(cacheDirT.c_str(), rvec);
 	if (ret != 0) {
 		// Non-image file found.
-		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "ERROR: rom-properties cache has unexpected files. Not clearing it.")));
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: rom-properties cache has unexpected files. Not clearing it.")));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
@@ -705,7 +715,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		return 0;
 	} else if (rvec.empty()) {
 		// Nothing to do!
-		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
@@ -756,12 +766,12 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 
 	if (dirErrs > 0 || fileErrs > 0) {
 		// TODO: Localize this string.
-		SetWindowText(hStatusLabel, U82W_s(
+		SetWindowText(hStatusLabel, U82T_s(
 			rp_sprintf("Error: Unable to delete %u file(s) and/or %u dir(s).",
 				fileErrs, dirErrs)));
 		MessageBeep(MB_ICONWARNING);
 	} else {
-		SetWindowText(hStatusLabel, U82W_c(C_("CacheTab", "rom-properties cache cleared successfully.")));
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache cleared successfully.")));
 		MessageBeep(MB_ICONINFORMATION);
 	}
 
@@ -1011,14 +1021,14 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 	}
 
 	// tr: Tab title.
-	const wstring wsTabTitle = U82W_c(C_("CacheTab", "Thumbnail Cache"));
+	const tstring tsTabTitle = U82T_c(C_("CacheTab", "Thumbnail Cache"));
 
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pszIcon = nullptr;
-	psp.pszTitle = wsTabTitle.c_str();
+	psp.pszTitle = tsTabTitle.c_str();
 	psp.pfnDlgProc = CacheTabPrivate::dlgProc;
 	psp.lParam = reinterpret_cast<LPARAM>(d);
 	psp.pcRefParent = nullptr;

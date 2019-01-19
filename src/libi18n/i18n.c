@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.c: Internationalization support code.                              *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -47,9 +47,9 @@
 #ifdef _WIN32
 // Architecture name.
 #if defined(_M_X64) || defined(__amd64__)
-# define ARCH_NAME L"amd64"
+# define ARCH_NAME _T("amd64")
 #elif defined(_M_IX86) || defined(__i386__)
-# define ARCH_NAME L"i386"
+# define ARCH_NAME _T("i386")
 #else
 # error Unsupported CPU architecture.
 #endif
@@ -64,9 +64,16 @@ int rp_i18n_init(void)
 {
 	// Windows: Use the application-specific locale directory.
 	DWORD dwResult, dwAttrs;
-	wchar_t pathnameW[MAX_PATH+16];
-	char pathnameU8[MAX_PATH+16];
-	wchar_t *bs;
+	int ret;
+	TCHAR tpathname[MAX_PATH+16];
+#ifndef UNICODE
+	wchar_t wpathname[MAX_PATH+16];
+#else
+# define wpathname tpathname
+#endif
+	char u8pathname[MAX_PATH+16];
+
+	TCHAR *bs;
 	const char *base;
 
 	// Get the current module filename.
@@ -74,7 +81,7 @@ int rp_i18n_init(void)
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
 	SetLastError(ERROR_SUCCESS);
 	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
-		pathnameW, ARRAY_SIZE(pathnameW));
+		tpathname, ARRAY_SIZE(tpathname));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
@@ -82,23 +89,23 @@ int rp_i18n_init(void)
 		return -1;
 	}
 
-	// Find the last backslash in pathnameW[].
-	bs = wcsrchr(pathnameW, L'\\');
+	// Find the last backslash in tpathname[].
+	bs = _tcsrchr(tpathname, _T('\\'));
 	if (!bs) {
 		// No backslashes...
 		return -1;
 	}
 
 	// Append the "locale" subdirectory.
-	wcscpy(bs+1, L"locale");
-	dwAttrs = GetFileAttributes(pathnameW);
+	_tcscpy(bs+1, _T("locale"));
+	dwAttrs = GetFileAttributes(tpathname);
 	if (dwAttrs == INVALID_FILE_ATTRIBUTES ||
 	    !(dwAttrs & FILE_ATTRIBUTE_DIRECTORY))
 	{
 		// Not found, or not a directory.
 		// Try one level up.
 		*bs = 0;
-		bs = wcsrchr(pathnameW, L'\\');
+		bs = _tcsrchr(tpathname, _T('\\'));
 		if (!bs) {
 			// No backslashes...
 			return -1;
@@ -106,14 +113,14 @@ int rp_i18n_init(void)
 
 		// Make sure the current subdirectory matches
 		// the DLL architecture.
-		if (wcscmp(bs+1, ARCH_NAME) != 0) {
+		if (_tcscmp(bs+1, ARCH_NAME) != 0) {
 			// Not a match.
 			return -1;
 		}
 
 		// Append the "locale" subdirectory.
-		wcscpy(bs+1, L"locale");
-		dwAttrs = GetFileAttributes(pathnameW);
+		_tcscpy(bs+1, _T("locale"));
+		dwAttrs = GetFileAttributes(tpathname);
 		if (dwAttrs == INVALID_FILE_ATTRIBUTES ||
 		    !(dwAttrs & FILE_ATTRIBUTE_DIRECTORY))
 		{
@@ -126,8 +133,23 @@ int rp_i18n_init(void)
 	// Bind the gettext domain.
 	// NOTE: The bundled copy of gettext supports UTF-8 paths.
 	// Results with other versions may vary.
-	WideCharToMultiByte(CP_UTF8, 0, pathnameW, -1, pathnameU8, ARRAY_SIZE(pathnameU8), NULL, NULL);
-	base = bindtextdomain(RP_I18N_DOMAIN, pathnameU8);
+
+#ifndef UNICODE
+	// Convert the pathname from ANSI to UTF-16 first.
+	ret = MultiByteToWideChar(CP_ACP, 0, tpathname, -1, wpathname, ARRAY_SIZE(wpathname));
+	if (ret <= 0) {
+		// Error converting the pathname.
+		return -1;
+	}
+#endif /* !UNICODE */
+	// Convert the pathname from UTF-16 to UTF-8.
+	ret = WideCharToMultiByte(CP_UTF8, 0, wpathname, -1, u8pathname, ARRAY_SIZE(u8pathname), NULL, NULL);
+	if (ret <= 0) {
+		// Error converting the pathname.
+		return -1;
+	}
+
+	base = bindtextdomain(RP_I18N_DOMAIN, u8pathname);
 	if (!base) {
 		// bindtextdomain() failed.
 		return -1;

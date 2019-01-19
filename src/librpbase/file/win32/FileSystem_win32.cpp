@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * FileSystem_posix.cpp: File system functions. (Win32 implementation)     *
+ * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -20,13 +20,15 @@
 
 #include "../FileSystem.hpp"
 
-// libromdata
+// librpbase
 #include "TextFuncs.hpp"
+#include "TextFuncs_wchar.hpp"
 
 // One-time initialization.
 #include "threads/pthread_once.h"
 
 // C includes.
+#include <sys/stat.h>
 #include <sys/utime.h>
 
 // C includes. (C++ namespace)
@@ -61,6 +63,7 @@ static string cache_dir;
 // User's configuration directory.
 static string config_dir;
 
+#ifdef UNICODE
 /**
  * Prepend "\\\\?\\" to an absolute Windows path.
  * This is needed in order to support filenames longer than MAX_PATH.
@@ -112,6 +115,35 @@ static inline wstring makeWinPath(const string &filename)
 	}
 	return filenameW;
 }
+#else /* !UNICODE */
+/**
+ * Convert a path from ANSI to UTF-8.
+ *
+ * Windows' ANSI functions doesn't support the use of
+ * "\\\\?\\" for paths longer than MAX_PATH.
+ *
+ * @param filename UTF-8 filename.
+ * @return ANSI filename.
+ */
+static inline tstring makeWinPath(const char *filename)
+{
+	return utf8_to_ansi(filename);
+}
+
+/**
+ * Convert a path from ANSI to UTF-8.
+ *
+ * Windows' ANSI functions doesn't support the use of
+ * "\\\\?\\" for paths longer than MAX_PATH.
+ *
+ * @param filename UTF-8 filename.
+ * @return ANSI filename.
+ */
+static inline tstring makeWinPath(const string &filename)
+{
+	return utf8_to_ansi(filename);
+}
+#endif /* UNICODE */
 
 /**
  * Recursively mkdir() subdirectories.
@@ -137,11 +169,12 @@ int rmkdir(const string &path)
 #endif
 
 	// TODO: makeWinPath()?
-	wstring path16 = U82W_s(path);
-	if (path16.size() == 3) {
+	tstring tpath = U82T_s(path);
+
+	if (tpath.size() == 3) {
 		// 3 characters. Root directory is always present.
 		return 0;
-	} else if (path16.size() < 3) {
+	} else if (tpath.size() < 3) {
 		// Less than 3 characters. Path isn't valid.
 		return -EINVAL;
 	}
@@ -149,12 +182,12 @@ int rmkdir(const string &path)
 	// Find all backslashes and ensure the directory component exists.
 	// (Skip the drive letter and root backslash.)
 	size_t slash_pos = 4;
-	while ((slash_pos = path16.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != string::npos) {
+	while ((slash_pos = tpath.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != string::npos) {
 		// Temporarily NULL out this slash.
-		path16[slash_pos] = 0;
+		tpath[slash_pos] = 0;
 
 		// Attempt to create this directory.
-		if (::_wmkdir(path16.c_str()) != 0) {
+		if (::_tmkdir(tpath.c_str()) != 0) {
 			// Could not create the directory.
 			// If it exists already, that's fine.
 			// Otherwise, something went wrong.
@@ -165,7 +198,7 @@ int rmkdir(const string &path)
 		}
 
 		// Put the slash back in.
-		path16[slash_pos] = DIR_SEP_CHR;
+		tpath[slash_pos] = DIR_SEP_CHR;
 		slash_pos++;
 	}
 
@@ -182,9 +215,9 @@ int rmkdir(const string &path)
 int access(const string &pathname, int mode)
 {
 	// Windows doesn't recognize X_OK.
-	const wstring pathnameW = makeWinPath(pathname);
+	const tstring tpathname = makeWinPath(pathname);
 	mode &= ~X_OK;
-	return ::_waccess(pathnameW.c_str(), mode);
+	return ::_taccess(tpathname.c_str(), mode);
 }
 
 /**
@@ -194,9 +227,9 @@ int access(const string &pathname, int mode)
  */
 int64_t filesize(const string &filename)
 {
-	const wstring filenameW = makeWinPath(filename);
+	const tstring tfilename = makeWinPath(filename);
 	struct _stati64 buf;
-	int ret = _wstati64(filenameW.c_str(), &buf);
+	int ret = ::_tstati64(tfilename.c_str(), &buf);
 
 	if (ret != 0) {
 		// stat() failed.
@@ -219,7 +252,7 @@ int64_t filesize(const string &filename)
  */
 static void initConfigDirectories(void)
 {
-	wchar_t path[MAX_PATH];
+	TCHAR path[MAX_PATH];
 	HRESULT hr;
 
 	/** Cache directory. **/
@@ -230,7 +263,7 @@ static void initConfigDirectories(void)
 	hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
 		nullptr, SHGFP_TYPE_CURRENT, path);
 	if (hr == S_OK) {
-		cache_dir = W2U8(path);
+		cache_dir = T2U8(path);
 		if (!cache_dir.empty()) {
 			// Add a trailing backslash if necessary.
 			if (cache_dir.at(cache_dir.size()-1) != '\\') {
@@ -250,7 +283,7 @@ static void initConfigDirectories(void)
 	hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
 		nullptr, SHGFP_TYPE_CURRENT, path);
 	if (hr == S_OK) {
-		config_dir = W2U8(path);
+		config_dir = T2U8(path);
 		if (!config_dir.empty()) {
 			// Add a trailing backslash if necessary.
 			if (config_dir.at(config_dir.size()-1) != '\\') {
@@ -308,12 +341,12 @@ int set_mtime(const string &filename, time_t mtime)
 #if _USE_32BIT_TIME_T
 #error 32-bit time_t is not supported. Get a newer compiler.
 #endif
-	const wstring filenameW = makeWinPath(filename);
+	const tstring tfilename = makeWinPath(filename);
 
 	struct __utimbuf64 utbuf;
 	utbuf.actime = _time64(nullptr);
 	utbuf.modtime = mtime;
-	int ret = _wutime64(filenameW.c_str(), &utbuf);
+	int ret = _tutime64(tfilename.c_str(), &utbuf);
 
 	return (ret == 0 ? 0 : -errno);
 }
@@ -329,7 +362,7 @@ int get_mtime(const string &filename, time_t *pMtime)
 	if (!pMtime) {
 		return -EINVAL;
 	}
-	const wstring filenameW = makeWinPath(filename);
+	const tstring tfilename = makeWinPath(filename);
 
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -338,7 +371,7 @@ int get_mtime(const string &filename, time_t *pMtime)
 #error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 	// Use GetFileTime() instead of _stati64().
-	HANDLE hFile = CreateFile(filenameW.c_str(),
+	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (!hFile) {
@@ -369,9 +402,9 @@ int delete_file(const char *filename)
 	if (unlikely(!filename || filename[0] == 0))
 		return -EINVAL;
 	int ret = 0;
-	const wstring filenameW = makeWinPath(filename);
+	const tstring tfilename = makeWinPath(filename);
 
-	BOOL bRet = DeleteFile(filenameW.c_str());
+	BOOL bRet = DeleteFile(tfilename.c_str());
 	if (!bRet) {
 		// Error deleting file.
 		ret = -w32err_to_posix(GetLastError());
@@ -388,12 +421,12 @@ bool is_symlink(const char *filename)
 {
 	if (unlikely(!filename || filename[0] == 0))
 		return false;
-	const wstring filenameW = makeWinPath(filename);
+	const tstring tfilename = makeWinPath(filename);
 
 	// Check the reparse point type.
 	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
 	WIN32_FIND_DATA findFileData;
-	HANDLE hFind = FindFirstFile(filenameW.c_str(), &findFileData);
+	HANDLE hFind = FindFirstFile(tfilename.c_str(), &findFileData);
 	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
 		// Cannot find the file.
 		return false;
@@ -410,24 +443,37 @@ bool is_symlink(const char *filename)
 }
 
 // GetFinalPathnameByHandleW() lookup.
-static pthread_once_t once_gfpbhw = PTHREAD_ONCE_INIT;
+static pthread_once_t once_gfpbh = PTHREAD_ONCE_INIT;
+typedef DWORD (WINAPI *PFNGETFINALPATHNAMEBYHANDLEA)(
+	_In_  HANDLE hFile,
+	_Out_ LPSTR lpszFilePath,
+	_In_  DWORD  cchFilePath,
+	_In_  DWORD  dwFlags
+);
 typedef DWORD (WINAPI *PFNGETFINALPATHNAMEBYHANDLEW)(
 	_In_  HANDLE hFile,
 	_Out_ LPWSTR lpszFilePath,
 	_In_  DWORD  cchFilePath,
 	_In_  DWORD  dwFlags
 );
-static PFNGETFINALPATHNAMEBYHANDLEW pfnGetFinalPathnameByHandleW = nullptr;
+#ifdef UNICODE
+# define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEW
+# define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleW"
+#else /* !UNICODE */
+# define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEA
+# define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleA"
+#endif /* UNICODE */
+static PFNGETFINALPATHNAMEBYHANDLE pfnGetFinalPathnameByHandle = nullptr;
 
 /**
  * Look up GetFinalPathnameByHandleW().
  */
-static void LookupGetFinalPathnameByHandleW(void)
+static void LookupGetFinalPathnameByHandle(void)
 {
-	HMODULE hKernel32 = GetModuleHandle(L"kernel32");
+	HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
 	if (hKernel32) {
-		pfnGetFinalPathnameByHandleW = reinterpret_cast<PFNGETFINALPATHNAMEBYHANDLEW>(
-			GetProcAddress(hKernel32, "GetFinalPathNameByHandleW"));
+		pfnGetFinalPathnameByHandle = reinterpret_cast<PFNGETFINALPATHNAMEBYHANDLE>(
+			GetProcAddress(hKernel32, GETFINALPATHNAMEBYHANDLE_FN));
 	}
 }
 
@@ -445,15 +491,16 @@ string resolve_symlink(const char *filename)
 	if (unlikely(!filename || filename[0] == 0))
 		return string();
 
-	pthread_once(&once_gfpbhw, LookupGetFinalPathnameByHandleW);
-	if (!pfnGetFinalPathnameByHandleW) {
-		// GetFinalPathnameByHandleW() not available.
+	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
+	if (!pfnGetFinalPathnameByHandle) {
+		// GetFinalPathnameByHandle() not available.
 		return string();
 	}
 
 	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
 	// TODO: Enable write sharing in regular IRpFile?
-	HANDLE hFile = CreateFile(U82W_c(filename),
+	const tstring tfilename = makeWinPath(filename);
+	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ,
 		FILE_SHARE_READ|FILE_SHARE_WRITE,
 		nullptr,
@@ -466,16 +513,23 @@ string resolve_symlink(const char *filename)
 	}
 
 	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
-	DWORD cchDeref = pfnGetFinalPathnameByHandleW(hFile, nullptr, 0, VOLUME_NAME_DOS);
+	DWORD cchDeref = pfnGetFinalPathnameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
 	if (cchDeref == 0) {
 		// Error...
 		CloseHandle(hFile);
 		return string();
 	}
 
-	wchar_t *szDeref = new wchar_t[cchDeref+1];
-	pfnGetFinalPathnameByHandleW(hFile, szDeref, cchDeref+1, VOLUME_NAME_DOS);
-	string ret = W2U8(szDeref, cchDeref);
+	// NOTE: cchDeref may include the NULL terminator on ANSI systems.
+	// We'll add one anyway, just in case it doesn't.
+	TCHAR *szDeref = new TCHAR[cchDeref+1];
+	pfnGetFinalPathnameByHandle(hFile, szDeref, cchDeref+1, VOLUME_NAME_DOS);
+	if (szDeref[cchDeref-1] == '\0') {
+		// Extra NULL terminator found.
+		cchDeref--;
+	}
+
+	string ret = T2U8(szDeref, cchDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;

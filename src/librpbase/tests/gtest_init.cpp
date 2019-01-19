@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.c: Google Test initialization.                               *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -52,9 +52,9 @@ int RP_C_API main(int argc, char *argv[])
 	// TODO: setenv() wrapper in config.librpbase.h.in?
 #if defined(HAVE_SETENV)
 	setenv("LC_ALL", "C", true);
-#elif defined(HAVE__WPUTENV_S)
+#elif defined(_UNICODE) && defined(HAVE__WPUTENV_S)
 	_wputenv_s(L"LC_ALL", L"C");
-#elif defined(HAVE__WPUTENV)
+#elif defined(_UNICODE) && defined(HAVE__WPUTENV)
 	_wputenv(L"LC_ALL=C");
 #elif defined(HAVE_PUTENV)
 	putenv("LC_ALL=C");

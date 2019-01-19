@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * UrlmonDownloader.cpp: urlmon-based file downloader.                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -26,7 +26,9 @@
 #include "libwin32common/w32time.h"
 
 // librpbase
+#include "librpbase/common.h"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/RpFile.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::RpFile;
@@ -37,8 +39,9 @@ using LibRpBase::RpFile;
 // C++ includes.
 #include <memory>
 #include <string>
-using std::unique_ptr;
 using std::string;
+using std::unique_ptr;
+using std::wstring;
 
 // Windows includes.
 #include <urlmon.h>
@@ -70,10 +73,11 @@ int UrlmonDownloader::download(void)
 	// TODO: Replace with WinInet?
 
 	// Buffer for cache filename.
-	wchar_t szFileName[MAX_PATH];
+	TCHAR szFileName[MAX_PATH];
 
-	HRESULT hr = URLDownloadToCacheFile(nullptr, U82W_s(m_url),
-		szFileName, sizeof(szFileName)/sizeof(szFileName[0]),
+	const tstring t_url = U82T_s(m_url);
+	HRESULT hr = URLDownloadToCacheFile(nullptr, t_url.c_str(),
+		szFileName, ARRAY_SIZE(szFileName),
 		0, nullptr /* TODO */);
 
 	if (FAILED(hr)) {
@@ -82,7 +86,7 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Open the cached file.
-	unique_ptr<IRpFile> file(new RpFile(W2U8(szFileName), RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(T2U8(szFileName), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		return -1;
@@ -90,7 +94,7 @@ int UrlmonDownloader::download(void)
 
 	// Get the cache information.
 	DWORD cbCacheEntryInfo = 0;
-	BOOL bRet = GetUrlCacheEntryInfo(U82W_s(m_url), nullptr, &cbCacheEntryInfo);
+	BOOL bRet = GetUrlCacheEntryInfo(t_url.c_str(), nullptr, &cbCacheEntryInfo);
 	if (bRet) {
 		uint8_t *pCacheEntryInfoBuf =
 			static_cast<uint8_t*>(malloc(cbCacheEntryInfo));
@@ -100,7 +104,7 @@ int UrlmonDownloader::download(void)
 		}
 		INTERNET_CACHE_ENTRY_INFO *pCacheEntryInfo =
 			reinterpret_cast<INTERNET_CACHE_ENTRY_INFO*>(pCacheEntryInfoBuf);
-		bRet = GetUrlCacheEntryInfo(U82W_s(m_url), pCacheEntryInfo, &cbCacheEntryInfo);
+		bRet = GetUrlCacheEntryInfo(t_url.c_str(), pCacheEntryInfo, &cbCacheEntryInfo);
 		if (bRet) {
 			// Convert from Win32 FILETIME to Unix time.
 			m_mtime = FileTimeToUnixTime(&pCacheEntryInfo->LastModifiedTime);

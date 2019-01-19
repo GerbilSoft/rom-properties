@@ -23,6 +23,7 @@
 
 // Text conversion functions and macros.
 #include "../../TextFuncs.hpp"
+#include "../../TextFuncs_wchar.hpp"
 
 // C++ includes.
 #include <string>

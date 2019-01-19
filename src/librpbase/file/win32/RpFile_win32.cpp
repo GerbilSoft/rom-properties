@@ -23,6 +23,7 @@
 // librpbase
 #include "byteswap.h"
 #include "TextFuncs.hpp"
+#include "TextFuncs_wchar.hpp"
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
@@ -225,8 +226,8 @@ int RpFilePrivate::reOpenFile(void)
 		return -1;
 	}
 
-	// Unicode filename.
-	wstring filenameW;
+	// Converted filename for Windows.
+	tstring tfilename;
 
 	// Check if the path starts with a drive letter.
 	bool isBlockDevice = false;
@@ -240,7 +241,7 @@ int RpFilePrivate::reOpenFile(void)
 			// Only CD-ROM (and similar) drives are supported.
 			// TODO: Verify if opening by drive letter works,
 			// or if we have to resolve the physical device name.
-			if (GetDriveType(U82W_s(filename)) != DRIVE_CDROM) {
+			if (GetDriveType(U82T_s(filename)) != DRIVE_CDROM) {
 				// Not a CD-ROM drive.
 				q->m_lastError = ENOTSUP;
 				return -2;
@@ -248,19 +249,24 @@ int RpFilePrivate::reOpenFile(void)
 
 			// Create a raw device filename.
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
-			filenameW = L"\\\\.\\X:";
-			filenameW[4] = filename[0];
+			tfilename = _T("\\\\.\\X:");
+			tfilename[4] = filename[0];
 			isBlockDevice = true;
 		} else {
 			// Absolute path.
-			// Prepend "\\?\" in order to support filenames longer than MAX_PATH.
-			filenameW = L"\\\\?\\";
-			filenameW += U82W_s(filename);
+#ifdef UNICODE
+			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
+			tfilename = _T("\\\\?\\");
+			tfilename += U82T_s(filename);
+#else /* !UNICODE */
+			// ANSI: Use the filename directly.
+			tfilename = U82T_s(filename);
+#endif /* UNICODE */
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_s(filename);
+		tfilename = U82T_s(filename);
 	}
 
 	if (isBlockDevice && (mode & RpFile::FM_WRITE)) {
@@ -270,7 +276,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Open the file.
-	file.reset(CreateFile(filenameW.c_str(),
+	file.reset(CreateFile(tfilename.c_str(),
 			dwDesiredAccess,
 			dwShareMode,
 			nullptr,
@@ -291,7 +297,8 @@ int RpFilePrivate::reOpenFile(void)
 		DWORD dwSectorsPerCluster, dwBytesPerSector;
 		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
 		DWORD w32err = 0;
-		BOOL bRet = GetDiskFreeSpace(U82W_s(filename),
+		// FIXME: NEEDS TESTING: Does tfilename work for GetDiskFreeSpace?
+		BOOL bRet = GetDiskFreeSpace(tfilename.c_str(),
 			&dwSectorsPerCluster, &dwBytesPerSector,
 			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
 		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {

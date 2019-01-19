@@ -26,6 +26,7 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
@@ -58,7 +59,7 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 	, pfnSHGetStockIconInfo(nullptr)
 {
 	// Get SHGetStockIconInfo().
-	hShell32_dll = LoadLibrary(L"shell32.dll");
+	hShell32_dll = LoadLibrary(_T("shell32.dll"));
 	if (hShell32_dll) {
 		pfnSHGetStockIconInfo = (PFNSHGETSTOCKICONINFO)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
 	}

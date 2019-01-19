@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_Register.cpp: IThumbnailProvider implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "stdafx.h"
@@ -29,10 +28,11 @@ using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <string>
-using std::wstring;
+using std::tstring;
 
 #define IID_IThumbnailProvider_String		TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")
 #define CLSID_RP_ThumbnailProvider_String	TEXT("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
+extern const TCHAR RP_ProgID[];
 
 /**
  * Register the COM object.
@@ -40,8 +40,7 @@ using std::wstring;
  */
 LONG RP_ThumbnailProvider::RegisterCLSID(void)
 {
-	static const wchar_t description[] = L"ROM Properties Page - Thumbnail Provider";
-	extern const wchar_t RP_ProgID[];
+	static const TCHAR description[] = _T("ROM Properties Page - Thumbnail Provider");
 
 	// Register the COM object.
 	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID, description);
@@ -74,15 +73,15 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 
 	// Create/open the "ShellEx\\{IID_IThumbnailProvider}" key.
 	// NOTE: This will recursively create the keys if necessary.
-	RegKey hkcr_IThumbnailProvider(hkey_Assoc, L"ShellEx\\" IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, true);
+	RegKey hkcr_IThumbnailProvider(hkey_Assoc, _T("ShellEx\\" IID_IThumbnailProvider_String), KEY_READ|KEY_WRITE, true);
 	if (!hkcr_IThumbnailProvider.isOpen()) {
 		return hkcr_IThumbnailProvider.lOpenRes();
 	}
 
 	// Is a custom IThumbnailProvider already registered?
 	DWORD dwTypeTreatment;
-	wstring clsid_reg = hkcr_IThumbnailProvider.read(nullptr);
-	DWORD treatment = hkey_Assoc.read_dword(L"Treatment", &dwTypeTreatment);
+	const tstring clsid_reg = hkcr_IThumbnailProvider.read(nullptr);
+	DWORD treatment = hkey_Assoc.read_dword(_T("Treatment"), &dwTypeTreatment);
 	if (!clsid_reg.empty() && clsid_reg != CLSID_RP_ThumbnailProvider_String) {
 		// Something else is registered.
 		// Copy it to the fallback key.
@@ -94,24 +93,24 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 		// try the IExtractImage interface if IThumbnailProvider exists,
 		// even if IThumbnailProvider fails.
 
-		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
+		RegKey hkcr_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_WRITE, true);
 		if (!hkcr_RP_Fallback.isOpen()) {
 			return hkcr_RP_Fallback.lOpenRes();
 		}
-		LONG lResult = hkcr_RP_Fallback.write(L"IThumbnailProvider", clsid_reg);
+		LONG lResult = hkcr_RP_Fallback.write(_T("IThumbnailProvider"), clsid_reg);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
 
 		if (dwTypeTreatment == REG_DWORD) {
 			// Copy the treatment value.
-			lResult = hkcr_RP_Fallback.write_dword(L"Treatment", treatment);
+			lResult = hkcr_RP_Fallback.write_dword(_T("Treatment"), treatment);
 			if (lResult != ERROR_SUCCESS) {
 				return lResult;
 			}
 		} else {
 			// Delete the Treatment value if it's there.
-			lResult = hkcr_RP_Fallback.deleteValue(L"Treatment");
+			lResult = hkcr_RP_Fallback.deleteValue(_T("Treatment"));
 			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 				return lResult;
 			}
@@ -129,7 +128,7 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Set the "Treatment" value.
-	lResult = hkey_Assoc.write_dword(L"Treatment", 0);
+	lResult = hkey_Assoc.write_dword(_T("Treatment"), 0);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -144,7 +143,7 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -161,7 +160,7 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 	// Is a custom ProgID registered?
 	// If so, and it has a DefaultIcon registered,
 	// we'll need to update the custom ProgID.
-	wstring progID = hkcr_ext.read(nullptr);
+	const tstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
@@ -186,8 +185,6 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
  */
 LONG RP_ThumbnailProvider::UnregisterCLSID(void)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID);
 	if (lResult != ERROR_SUCCESS) {
@@ -212,7 +209,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	// Unregister as the thumbnail handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkey_Assoc, _T("ShellEx"), KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_ShellEx.lOpenRes();
@@ -234,22 +231,22 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Check if the default value matches the CLSID.
-	wstring wstr_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
-	if (wstr_IThumbnailProvider != CLSID_RP_ThumbnailProvider_String) {
+	const tstring str_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
+	if (str_IThumbnailProvider != CLSID_RP_ThumbnailProvider_String) {
 		// Not our IThumbnailProvider.
 		// We're done here.
 		return ERROR_SUCCESS;
 	}
 
 	// Restore the fallbacks if we have any.
-	wstring clsid_reg;
+	tstring clsid_reg;
 	DWORD dwTypeTreatment = 0;
 	DWORD treatment = 0;
-	RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ|KEY_WRITE, false);
+	RegKey hkcr_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_READ|KEY_WRITE, false);
 	if (hkcr_RP_Fallback.isOpen()) {
 		// Read the fallbacks.
-		clsid_reg = hkcr_RP_Fallback.read(L"IThumbnailProvider");
-		treatment = hkcr_RP_Fallback.read_dword(L"Treatment", &dwTypeTreatment);
+		clsid_reg = hkcr_RP_Fallback.read(_T("IThumbnailProvider"));
+		treatment = hkcr_RP_Fallback.read_dword(_T("Treatment"), &dwTypeTreatment);
 	}
 
 	if (!clsid_reg.empty()) {
@@ -260,14 +257,14 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		}
 		// Restore the "Treatment" value.
 		if (dwTypeTreatment == REG_DWORD) {
-			lResult = hkey_Assoc.write_dword(L"Treatment", treatment);
+			lResult = hkey_Assoc.write_dword(_T("Treatment"), treatment);
 			if (lResult != ERROR_SUCCESS) {
 				return lResult;
 			}
 		} else {
 			// No "Treatment" value to restore.
 			// Delete the current one if it's present.
-			lResult = hkey_Assoc.deleteValue(L"Treatment");
+			lResult = hkey_Assoc.deleteValue(_T("Treatment"));
 			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 				return lResult;
 			}
@@ -282,7 +279,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		}
 
 		// Remove the "Treatment" value if it's present.
-		lResult = hkey_Assoc.deleteValue(L"Treatment");
+		lResult = hkey_Assoc.deleteValue(_T("Treatment"));
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
@@ -291,11 +288,11 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	// Remove the fallbacks.
 	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
-		lResult = hkcr_RP_Fallback.deleteValue(L"IThumbnailProvider");
+		lResult = hkcr_RP_Fallback.deleteValue(_T("IThumbnailProvider"));
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
-		lResult = hkcr_RP_Fallback.deleteValue(L"Treatment");
+		lResult = hkcr_RP_Fallback.deleteValue(_T("Treatment"));
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			lResult = ERROR_SUCCESS;
 		}
@@ -311,7 +308,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
@@ -334,7 +331,7 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	// Is a custom ProgID registered?
 	// If so, and it has a DefaultIcon registered,
 	// we'll need to update the custom ProgID.
-	wstring progID = hkcr_ext.read(nullptr);
+	const tstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);

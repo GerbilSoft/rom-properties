@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__
@@ -41,7 +40,7 @@ class RegKey
 		 * @param samDesired Desired access rights.
 		 * @param create If true, create the key if it doesn't exist.
 		 */
-		RegKey(HKEY hKeyRoot, LPCWSTR path, REGSAM samDesired, bool create = false);
+		RegKey(HKEY hKeyRoot, LPCTSTR path, REGSAM samDesired, bool create = false);
 
 		/**
 		 * Create or open a registry key.
@@ -50,7 +49,7 @@ class RegKey
 		 * @param samDesired Desired access rights.
 		 * @param create If true, create the key if it doesn't exist.
 		 */
-		RegKey(const RegKey& root, LPCWSTR path, REGSAM samDesired, bool create = false);
+		RegKey(const RegKey& root, LPCTSTR path, REGSAM samDesired, bool create = false);
 
 		~RegKey();
 
@@ -111,7 +110,7 @@ class RegKey
 		 * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE, REG_SZ, or REG_EXPAND_SZ)
 		 * @return String value, or empty string on error. (check lpType)
 		 */
-		std::wstring read(LPCWSTR lpValueName, LPDWORD lpType = nullptr) const;
+		std::tstring read(LPCTSTR lpValueName, LPDWORD lpType = nullptr) const;
 
 		/**
 		 * Read a string value from a key. (REG_SZ, REG_EXPAND_SZ)
@@ -120,7 +119,7 @@ class RegKey
 		 * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE, REG_SZ, or REG_EXPAND_SZ)
 		 * @return String value, or empty string on error. (check lpType)
 		 */
-		std::wstring read_expand(LPCWSTR lpValueName, LPDWORD lpType = nullptr) const;
+		std::tstring read_expand(LPCTSTR lpValueName, LPDWORD lpType = nullptr) const;
 
 		/**
 		 * Read a DWORD value from a key. (REG_DWORD)
@@ -128,7 +127,7 @@ class RegKey
 		 * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE or REG_DWORD)
 		 * @return DWORD value, or 0 on error. (check lpType)
 		 */
-		DWORD read_dword(LPCWSTR lpValueName, LPDWORD lpType = nullptr) const;
+		DWORD read_dword(LPCTSTR lpValueName, LPDWORD lpType = nullptr) const;
 
 		/**
 		 * Write a string value to this key.
@@ -137,7 +136,7 @@ class RegKey
 		 * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
 		 * @return RegSetValueEx() return value.
 		 */
-		LONG write(LPCWSTR lpValueName, LPCWSTR value, DWORD dwType = REG_SZ);
+		LONG write(LPCTSTR lpValueName, LPCTSTR value, DWORD dwType = REG_SZ);
 
 		/**
 		 * Write a string value to this key.
@@ -146,7 +145,7 @@ class RegKey
 		 * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
 		 * @return RegSetValueEx() return value.
 		 */
-		LONG write(LPCWSTR lpValueName, const std::wstring& value, DWORD dwType = REG_SZ);
+		LONG write(LPCTSTR lpValueName, const std::tstring& value, DWORD dwType = REG_SZ);
 
 		/**
 		 * Write a DWORD value to this key.
@@ -154,14 +153,14 @@ class RegKey
 		 * @param value Value.
 		 * @return RegSetValueEx() return value.
 		 */
-		LONG write_dword(LPCWSTR lpValueName, DWORD value);
+		LONG write_dword(LPCTSTR lpValueName, DWORD value);
 
 		/**
 		 * Delete a value.
 		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @return RegDeleteValue() return value.
 		 */
-		LONG deleteValue(LPCWSTR lpValueName);
+		LONG deleteValue(LPCTSTR lpValueName);
 
 		/**
 		 * Recursively delete a subkey.
@@ -169,14 +168,14 @@ class RegKey
 		 * @param lpSubKey Subkey name.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG deleteSubKey(HKEY hKeyRoot, LPCWSTR lpSubKey);
+		static LONG deleteSubKey(HKEY hKeyRoot, LPCTSTR lpSubKey);
 
 		/**
 		 * Recursively delete a subkey.
 		 * @param lpSubKey Subkey name.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		inline LONG deleteSubKey(LPCWSTR lpSubKey)
+		inline LONG deleteSubKey(LPCTSTR lpSubKey)
 		{
 			return deleteSubKey(m_hKey, lpSubKey);
 		}
@@ -186,7 +185,7 @@ class RegKey
 		 * @param lstSubKeys List to place the subkey names in.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		LONG enumSubKeys(std::list<std::wstring> &vSubKeys);
+		LONG enumSubKeys(std::list<std::tstring> &vSubKeys);
 
 		/**
 		 * Is the key empty?
@@ -204,7 +203,7 @@ class RegKey
 		* @param pHkey_Assoc Pointer to RegKey* to store opened registry key on success. (If nullptr, key will be closed.)
 		* @return ERROR_SUCCESS on success; WinAPI error on error.
 		*/
-		static LONG RegisterFileType(LPCWSTR fileType, RegKey **pHkey_Assoc);
+		static LONG RegisterFileType(LPCTSTR fileType, RegKey **pHkey_Assoc);
 
 		/**
 		 * Register a COM object in this DLL.
@@ -213,7 +212,7 @@ class RegKey
 		 * @param description Description of the COM object.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		static LONG RegisterComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description);
+		static LONG RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR description);
 
 		/**
 		 * Register a shell extension as an approved extension.
@@ -221,7 +220,7 @@ class RegKey
 		 * @param description Description of the shell extension.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		static LONG RegisterApprovedExtension(REFCLSID rclsid, LPCWSTR description);
+		static LONG RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description);
 
 		/**
 		 * Unregister a COM object in this DLL.
@@ -229,7 +228,7 @@ class RegKey
 		 * @param progID ProgID.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		static LONG UnregisterComObject(REFCLSID rclsid, LPCWSTR progID);
+		static LONG UnregisterComObject(REFCLSID rclsid, LPCTSTR progID);
 
 	protected:
 		HKEY m_hKey;		// Registry key handle.

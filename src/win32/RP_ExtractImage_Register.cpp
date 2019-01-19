@@ -3,7 +3,7 @@
  * RP_ExtractImage_Register.cpp: IExtractImage implementation.             *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "stdafx.h"
@@ -29,10 +28,11 @@ using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <string>
-using std::wstring;
+using std::tstring;
 
 #define IID_IExtractImage_String	TEXT("{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}")
 #define CLSID_RP_ExtractImage_String	TEXT("{84573BC0-9502-42F8-8066-CC527D0779E5}")
+extern const TCHAR RP_ProgID[];
 
 /**
  * Register the COM object.
@@ -40,8 +40,7 @@ using std::wstring;
  */
 LONG RP_ExtractImage::RegisterCLSID(void)
 {
-	static const wchar_t description[] = L"ROM Properties Page - Image Extractor";
-	extern const wchar_t RP_ProgID[];
+	static const TCHAR description[] = _T("ROM Properties Page - Image Extractor");
 
 	// Register the COM object.
 	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractImage), RP_ProgID, description);
@@ -74,21 +73,21 @@ LONG RP_ExtractImage_Private::RegisterFileType(RegKey &hkey_Assoc)
 
 	// Create/open the "ShellEx\\{IID_IExtractImage}" key.
 	// NOTE: This will recursively create the keys if necessary.
-	RegKey hkcr_IExtractImage(hkey_Assoc, L"ShellEx\\" IID_IExtractImage_String, KEY_READ|KEY_WRITE, true);
+	RegKey hkcr_IExtractImage(hkey_Assoc, _T("ShellEx\\") IID_IExtractImage_String, KEY_READ|KEY_WRITE, true);
 	if (!hkcr_IExtractImage.isOpen()) {
 		return hkcr_IExtractImage.lOpenRes();
 	}
 
 	// Is a custom IExtractImage already registered?
-	wstring clsid_reg = hkcr_IExtractImage.read(nullptr);
+	const tstring clsid_reg = hkcr_IExtractImage.read(nullptr);
 	if (!clsid_reg.empty() && clsid_reg != CLSID_RP_ExtractImage_String) {
 		// Something else is registered.
 		// Copy it to the fallback key.
-		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
+		RegKey hkcr_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_WRITE, true);
 		if (!hkcr_RP_Fallback.isOpen()) {
 			return hkcr_RP_Fallback.lOpenRes();
 		}
-		LONG lResult = hkcr_RP_Fallback.write(L"IExtractImage", clsid_reg);
+		LONG lResult = hkcr_RP_Fallback.write(_T("IExtractImage"), clsid_reg);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
@@ -114,7 +113,7 @@ LONG RP_ExtractImage_Private::RegisterFileType(RegKey &hkey_Assoc)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -131,7 +130,7 @@ LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 	// Is a custom ProgID registered?
 	// If so, and it has a DefaultIcon registered,
 	// we'll need to update the custom ProgID.
-	wstring progID = hkcr_ext.read(nullptr);
+	const tstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
@@ -156,8 +155,6 @@ LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
  */
 LONG RP_ExtractImage::UnregisterCLSID(void)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
 	if (lResult != ERROR_SUCCESS) {
@@ -182,7 +179,7 @@ LONG RP_ExtractImage_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	// Unregister as the image handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkey_Assoc, _T("ShellEx"), KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_ShellEx.lOpenRes();
@@ -204,19 +201,19 @@ LONG RP_ExtractImage_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Check if the default value matches the CLSID.
-	wstring wstr_IExtractImage = hkcr_IExtractImage.read(nullptr);
-	if (wstr_IExtractImage != CLSID_RP_ExtractImage_String) {
+	const tstring str_IExtractImage = hkcr_IExtractImage.read(nullptr);
+	if (str_IExtractImage != CLSID_RP_ExtractImage_String) {
 		// Not our IExtractImage.
 		// We're done here.
 		return ERROR_SUCCESS;
 	}
 
 	// Restore the fallbacks if we have any.
-	wstring clsid_reg;
-	RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ|KEY_WRITE, false);
+	tstring clsid_reg;
+	RegKey hkcr_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_READ|KEY_WRITE, false);
 	if (hkcr_RP_Fallback.isOpen()) {
 		// Read the fallback.
-		clsid_reg = hkcr_RP_Fallback.read(L"IExtractImage");
+		clsid_reg = hkcr_RP_Fallback.read(_T("IExtractImage"));
 	}
 
 	if (!clsid_reg.empty()) {
@@ -238,7 +235,7 @@ LONG RP_ExtractImage_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	// Remove the fallbacks.
 	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
-		lResult = hkcr_RP_Fallback.deleteValue(L"IExtractImage");
+		lResult = hkcr_RP_Fallback.deleteValue(_T("IExtractImage"));
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			lResult = ERROR_SUCCESS;
 		}
@@ -254,7 +251,7 @@ LONG RP_ExtractImage_Private::UnregisterFileType(RegKey &hkey_Assoc)
  * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
@@ -277,7 +274,7 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	// Is a custom ProgID registered?
 	// If so, and it has a DefaultIcon registered,
 	// we'll need to update the custom ProgID.
-	wstring progID = hkcr_ext.read(nullptr);
+	const tstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
