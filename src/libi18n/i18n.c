@@ -64,10 +64,15 @@ int rp_i18n_init(void)
 {
 	// Windows: Use the application-specific locale directory.
 	DWORD dwResult, dwAttrs;
-	TCHAR pathnameW[MAX_PATH+16];
-#ifdef UNICODE
-	char pathnameU8[MAX_PATH+16];
+	int ret;
+	TCHAR tpathname[MAX_PATH+16];
+#ifndef UNICODE
+	wchar_t wpathname[MAX_PATH+16];
+#else
+# define wpathname tpathname
 #endif
+	char u8pathname[MAX_PATH+16];
+
 	TCHAR *bs;
 	const char *base;
 
@@ -76,7 +81,7 @@ int rp_i18n_init(void)
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
 	SetLastError(ERROR_SUCCESS);
 	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
-		pathnameW, ARRAY_SIZE(pathnameW));
+		tpathname, ARRAY_SIZE(tpathname));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
@@ -84,8 +89,8 @@ int rp_i18n_init(void)
 		return -1;
 	}
 
-	// Find the last backslash in pathnameW[].
-	bs = _tcsrchr(pathnameW, L'\\');
+	// Find the last backslash in tpathname[].
+	bs = _tcsrchr(tpathname, _T('\\'));
 	if (!bs) {
 		// No backslashes...
 		return -1;
@@ -93,14 +98,14 @@ int rp_i18n_init(void)
 
 	// Append the "locale" subdirectory.
 	_tcscpy(bs+1, _T("locale"));
-	dwAttrs = GetFileAttributes(pathnameW);
+	dwAttrs = GetFileAttributes(tpathname);
 	if (dwAttrs == INVALID_FILE_ATTRIBUTES ||
 	    !(dwAttrs & FILE_ATTRIBUTE_DIRECTORY))
 	{
 		// Not found, or not a directory.
 		// Try one level up.
 		*bs = 0;
-		bs = _tcsrchr(pathnameW, _T('\\'));
+		bs = _tcsrchr(tpathname, _T('\\'));
 		if (!bs) {
 			// No backslashes...
 			return -1;
@@ -115,7 +120,7 @@ int rp_i18n_init(void)
 
 		// Append the "locale" subdirectory.
 		_tcscpy(bs+1, _T("locale"));
-		dwAttrs = GetFileAttributes(pathnameW);
+		dwAttrs = GetFileAttributes(tpathname);
 		if (dwAttrs == INVALID_FILE_ATTRIBUTES ||
 		    !(dwAttrs & FILE_ATTRIBUTE_DIRECTORY))
 		{
@@ -128,13 +133,23 @@ int rp_i18n_init(void)
 	// Bind the gettext domain.
 	// NOTE: The bundled copy of gettext supports UTF-8 paths.
 	// Results with other versions may vary.
-#ifdef UNICODE
-	WideCharToMultiByte(CP_UTF8, 0, pathnameW, -1, pathnameU8, ARRAY_SIZE(pathnameU8), NULL, NULL);
-	base = bindtextdomain(RP_I18N_DOMAIN, pathnameU8);
-#else /* !UNICODE */
-	// ANSI FIXME: Convert from ANSI to UTF-8.
-	base = bindtextdomain(RP_I18N_DOMAIN, pathnameW);
-#endif /* UNICODE */
+
+#ifndef UNICODE
+	// Convert the pathname from ANSI to UTF-16 first.
+	ret = MultiByteToWideChar(CP_ACP, 0, tpathname, -1, wpathname, ARRAY_SIZE(wpathname));
+	if (ret <= 0) {
+		// Error converting the pathname.
+		return -1;
+	}
+#endif /* !UNICODE */
+	// Convert the pathname from UTF-16 to UTF-8.
+	ret = WideCharToMultiByte(CP_UTF8, 0, wpathname, -1, u8pathname, ARRAY_SIZE(u8pathname), NULL, NULL);
+	if (ret <= 0) {
+		// Error converting the pathname.
+		return -1;
+	}
+
+	base = bindtextdomain(RP_I18N_DOMAIN, u8pathname);
 	if (!base) {
 		// bindtextdomain() failed.
 		return -1;
