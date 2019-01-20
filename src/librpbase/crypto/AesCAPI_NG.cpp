@@ -377,7 +377,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 
 	// Save the key data.
 	memcpy(d->key, pKey, size);
-	d->key_len = size;
+	d->key_len = static_cast<unsigned int>(size);
 	return 0;
 }
 

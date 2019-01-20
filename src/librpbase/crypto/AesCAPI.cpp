@@ -220,7 +220,7 @@ int AesCAPI::setKey(const uint8_t *RESTRICT pKey, size_t size)
 	blob.hdr.bVersion = CUR_BLOB_VERSION;
 	blob.hdr.reserved = 0;
 	blob.hdr.aiKeyAlg = alg_id;
-	blob.keySize = size;
+	blob.keySize = static_cast<DWORD>(size);
 	memcpy(blob.bytes, pKey, size);
 
 	// Calculate the blob size based on the

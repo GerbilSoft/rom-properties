@@ -663,7 +663,7 @@ SNDH::SNDH(IRpFile *file)
 	// Check if this file is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = size;
+	info.header.size = static_cast<uint32_t>(size);
 	info.header.pData = buf;
 	info.ext = nullptr;	// Not needed for SNDH.
 	info.szFile = 0;	// Not needed for SNDH.

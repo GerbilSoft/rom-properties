@@ -639,7 +639,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
-	const unsigned int hexlen = 4+(u16str.size()*4);
+	const size_t hexlen = 4+(u16str.size()*4);
 	unique_ptr<char[]> hexstr(new char[hexlen]);
 	char *pHex = hexstr.get();
 	memcpy(pHex, "FFFE", 4);
