@@ -85,6 +85,8 @@ RP_ExtractImage::~RP_ExtractImage()
 
 IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
+#pragma warning(push)
+#pragma warning(disable: 4365 4838)
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ExtractImage, IPersist),
 		QITABENT(RP_ExtractImage, IPersistFile),
@@ -92,6 +94,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		QITABENT(RP_ExtractImage, IExtractImage2),
 		{ 0 }
 	};
+#pragma warning(pop)
 	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 

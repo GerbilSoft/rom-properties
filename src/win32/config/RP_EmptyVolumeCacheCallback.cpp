@@ -32,10 +32,13 @@ RP_EmptyVolumeCacheCallback::RP_EmptyVolumeCacheCallback(HWND hProgressBar)
 
 IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
+#pragma warning(push)
+#pragma warning(disable: 4365 4838)
 	static const QITAB rgqit[] = {
 		QITABENT(RP_EmptyVolumeCacheCallback, IEmptyVolumeCacheCallBack),
 		{ 0 }
 	};
+#pragma warning(pop)
 	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 

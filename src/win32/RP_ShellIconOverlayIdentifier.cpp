@@ -88,10 +88,13 @@ RP_ShellIconOverlayIdentifier::~RP_ShellIconOverlayIdentifier()
 
 IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
+#pragma warning(push)
+#pragma warning(disable: 4365 4838)
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ShellIconOverlayIdentifier, IShellIconOverlayIdentifier),
 		{ 0, 0 }
 	};
+#pragma warning(pop)
 	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 

@@ -87,11 +87,14 @@ RP_ThumbnailProvider::~RP_ThumbnailProvider()
 
 IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
+#pragma warning(push)
+#pragma warning(disable: 4365 4838)
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ThumbnailProvider, IInitializeWithStream),
 		QITABENT(RP_ThumbnailProvider, IThumbnailProvider),
 		{ 0, 0 }
 	};
+#pragma warning(pop)
 	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 

@@ -33,10 +33,13 @@ KeyStore_OwnerDataCallback::KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyS
 
 IFACEMETHODIMP KeyStore_OwnerDataCallback::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
+#pragma warning(push)
+#pragma warning(disable: 4365 4838)
 	static const QITAB rgqit[] = {
 		QITABENT(KeyStore_OwnerDataCallback, IOwnerDataCallback),
 		{ 0 }
 	};
+#pragma warning(pop)
 	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 

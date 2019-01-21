@@ -62,10 +62,13 @@ class RP_ClassFactory : public LibWin32Common::ComBase<IClassFactory>, public cr
 				return E_UNEXPECTED;
 			}
 
+#pragma warning(push)
+#pragma warning(disable: 4365 4838)
 			static const QITAB rgqit[] = {
 				QITABENT(RP_ClassFactory, IClassFactory),
 				{ 0, 0 }
 			};
+#pragma warning(pop)
 			return LibWin32Common::pQISearch(this, rgqit, riid, ppvObject);
 		}
 
