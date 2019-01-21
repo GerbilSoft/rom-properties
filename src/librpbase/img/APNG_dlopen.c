@@ -104,6 +104,7 @@ static int init_apng(void)
 	_sntprintf(png_dll_filename, _countof(png_dll_filename),
 		_T("libpng%u.dll"), PNG_LIBPNG_VER_DLLNUM);
 #endif
+	png_dll_filename[_countof(png_dll_filename)-1] = _T('\0');
 	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
 	assert(bRet != FALSE);
 	if (!bRet) {
