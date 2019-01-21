@@ -245,13 +245,13 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 	}
 
 	// First line should contain the number of tracks.
-	char *linesaveptr;
+	char *linesaveptr = nullptr;
 	const char *linetoken = strtok_r(gdibuf, "\n", &linesaveptr);
 	if (!linetoken || linetoken[0] == 0) {
 		return -EIO;
 	}
 
-	char *endptr;
+	char *endptr = nullptr;
 	int trackCount = strtol(linetoken, &endptr, 10);
 	if (trackCount <= 0 || trackCount > 99 || (*endptr != 0 && *endptr != '\r')) {
 		// Track count is invalid.

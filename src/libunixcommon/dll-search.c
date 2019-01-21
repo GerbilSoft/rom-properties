@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.c: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -139,7 +139,7 @@ static RP_Frontend walk_proc_tree(void)
 				// parent processes.
 			} else if (!strncmp(buf, "PPid:\t", 6)) {
 				// Found the "PPid:" row.
-				char *endptr;
+				char *endptr = NULL;
 				ppid = (pid_t)strtol(&buf[6], &endptr, 10);
 				if (*endptr != 0 && *endptr != '\n') {
 					// Invalid numeric value...

@@ -260,7 +260,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 	}
 
 	// Parse each line.
-	char *saveptr;
+	char *saveptr = nullptr;
 	for (char *token = strtok_r(str, "\n", &saveptr);
 	     token != nullptr; token = strtok_r(nullptr, "\n", &saveptr))
 	{
@@ -360,7 +360,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					if (!params)
 						break;
 
-					char *endptr;
+					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 10);
 					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
 						*(static_cast<uint16_t*>(kwd->ptr)) = static_cast<uint16_t>(val);
@@ -373,7 +373,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					if (!params)
 						break;
 
-					char *endptr;
+					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 16);
 					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
 						*(static_cast<uint16_t*>(kwd->ptr)) = static_cast<uint16_t>(val);

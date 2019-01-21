@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -126,7 +126,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		s_val[val_len] = 0;
 
 		// Convert the Content-Length to an int64_t.
-		char *endptr;
+		char *endptr = nullptr;
 		int64_t fileSize = strtoll(s_val, &endptr, 10);
 
 		// *endptr should be \0 or a whitespace character.

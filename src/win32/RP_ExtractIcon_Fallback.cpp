@@ -274,11 +274,11 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	if (comma != tstring::npos) {
 		// Found the comma.
 		if (comma > 0 && comma < defaultIcon.size()-1) {
-			TCHAR *endptr;
+			TCHAR *endptr = nullptr;
 			errno = 0;
 			nIconIndex = (int)_tcstol(&defaultIcon[comma+1], &endptr, 10);
 			if (errno == ERANGE || *endptr != 0) {
-				// strtol() failed.
+				// _tcstol() failed.
 				// DefaultIcon is invalid.
 				return ERROR_FILE_NOT_FOUND;
 			}
