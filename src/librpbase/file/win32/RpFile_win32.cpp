@@ -308,7 +308,8 @@ int RpFilePrivate::reOpenFile(void)
 			// Save the device size and sector size.
 			// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
 			// but it doesn't provide dwBytesPerSector.
-			device_size = static_cast<int64_t>(dwBytesPerSector * dwSectorsPerCluster) *
+			device_size = static_cast<int64_t>(dwBytesPerSector) *
+				      static_cast<int64_t>(dwSectorsPerCluster) *
 				      static_cast<int64_t>(dwTotalNumberOfClusters);
 			sector_size = dwBytesPerSector;
 		} else {
