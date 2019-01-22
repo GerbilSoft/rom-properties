@@ -31,6 +31,7 @@
 
 // C includes.
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 // from tumbler-utils.h
@@ -538,6 +539,8 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	const gchar *md5_string;	// owned by md5 object
 	const struct request_info *req;	// request info from the map
 	gchar *cache_filename = NULL;	// cache filename (g_strdup_printf())
+	size_t cache_filename_sz;	// size of cache_filename
+	int pos, pos2;			// snprintf() position
 	int ret;
 
 	// Process one thumbnail.
@@ -587,8 +590,26 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	// TODO: Make sure the URI to thumbnail is not in the cache directory.
 
 	// Make sure the thumbnail directory exists.
-	cache_filename = g_strdup_printf("%s/thumbnails/%s",
+	// g_malloc() sizes:
+	// - "/thumbnails/" == 12
+	// - "large" / "normal" == 6
+	// - "/" == 1
+	// - MD5 as a string == 32
+	// - ".png" == 4
+	// NULL terminator == 1
+	cache_filename_sz = strlen(thumbnailer->cache_dir) + 12 + 6 + 1 + 32 + 4 + 1;
+	cache_filename = g_malloc(cache_filename_sz);
+	pos = snprintf(cache_filename, cache_filename_sz, "%s/thumbnails/%s",
 		thumbnailer->cache_dir, (req->large ? "large" : "normal"));
+	// pos does NOT include the NULL terminator, so check >=.
+	if (pos < 0 || ((size_t)pos + 1 + 32 + 4) > cache_filename_sz) {
+		// Not enough memory.
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, req->uri,
+			0, "Cannot snprintf() the thumbnail cache directory name.");
+		goto finished;
+	}
+
 	if (g_mkdir_with_parents(cache_filename, 0777) != 0) {
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, handle, req->uri,
@@ -610,10 +631,16 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	g_checksum_update(md5, (const guchar*)req->uri, strlen(req->uri));
 	md5_string = g_checksum_get_string(md5);
 
-	// TODO: Don't reallocate the string.
-	g_free(cache_filename);
-	cache_filename = g_strdup_printf("%s/thumbnails/%s/%s.png",
-		thumbnailer->cache_dir, (req->large ? "large" : "normal"), md5_string);
+	// Append the MD5.
+	pos2 = snprintf(&cache_filename[pos], cache_filename_sz - pos, "/%s.png", md5_string);
+	// pos and pos2 do NOT include the NULL terminator, so check >=.
+	if (pos < 0 || ((size_t)(pos + pos2)) >= cache_filename_sz) {
+		// Not enough memory.
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, req->uri,
+			0, "Cannot snprintf() the thumbnail filename.");
+		goto finished;
+	}
 
 	// Thumbnail the image.
 	ret = thumbnailer->pfn_rp_create_thumbnail(filename, cache_filename,
