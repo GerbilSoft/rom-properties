@@ -463,7 +463,7 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	// NOTE: Currently handling all flavors that aren't "large" as "normal".
 	struct request_info *req = g_malloc(sizeof(struct request_info));
 	req->uri = g_strdup(uri);
-	req->large = (g_ascii_strcasecmp(flavor, "large") == 0);
+	req->large = flavor && (g_ascii_strcasecmp(flavor, "large") == 0);
 	req->urgent = urgent;
 	g_hash_table_insert(thumbnailer->uri_map, GUINT_TO_POINTER(handle), req);
 	g_queue_push_tail(thumbnailer->handle_queue, GUINT_TO_POINTER(handle));
