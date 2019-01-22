@@ -111,11 +111,12 @@ struct _RpThumbnailerClass {
 // Thumbnail request information.
 struct request_info {
 	gchar *uri;
+	guint handle;
 	bool large;	// False for 'normal' (128x128); true for 'large' (256x256)
 	bool urgent;	// 'urgent' value
 };
 
-static void request_info_free(gpointer data)
+static void request_info_free(gpointer data, G_GNUC_UNUSED gpointer user_data)
 {
 	if (data) {
 		struct request_info *const req = (struct request_info*)data;
@@ -140,12 +141,8 @@ struct _RpThumbnailer {
 	// Last handle value.
 	guint last_handle;
 
-	// URI queue.
-	// Note that queued thumbnail requests are
-	// referenced by handle, so we store the
-	// handles in a GQueue and the URIs in a map.
-	GQueue *handle_queue;	// element is guint
-	GHashTable *uri_map;	// key = guint, value = request_info
+	// Request queue.
+	GQueue *request_queue;	// element is struct request_info*
 
 	/** Properties. **/
 
@@ -249,8 +246,7 @@ rp_thumbnailer_init(GTypeInstance *instance, gpointer g_class)
 	thumbnailer->timeout_id = 0;
 	thumbnailer->idle_process = 0;
 	thumbnailer->last_handle = 0;
-	thumbnailer->handle_queue = g_queue_new();
-	thumbnailer->uri_map = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, request_info_free);
+	thumbnailer->request_queue = g_queue_new();
 	// TODO: Is there a GHashTable reserve function?
 
 	/** Properties. **/
@@ -321,8 +317,9 @@ rp_thumbnailer_finalize(GObject *object)
 		g_object_unref(thumbnailer->skeleton);
 	}
 
-	g_queue_free(thumbnailer->handle_queue);
-	g_hash_table_destroy(thumbnailer->uri_map);
+	// Delete any remaining requests and free the queue.
+	g_queue_foreach(thumbnailer->request_queue, request_info_free, 0);
+	g_queue_free(thumbnailer->request_queue);
 
 	/** Properties. **/
 	g_free(thumbnailer->cache_dir);
@@ -464,10 +461,10 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	// NOTE: Currently handling all flavors that aren't "large" as "normal".
 	struct request_info *req = g_malloc(sizeof(struct request_info));
 	req->uri = g_strdup(uri);
+	req->handle = handle;
 	req->large = flavor && (g_ascii_strcasecmp(flavor, "large") == 0);
 	req->urgent = urgent;
-	g_hash_table_insert(thumbnailer->uri_map, GUINT_TO_POINTER(handle), req);
-	g_queue_push_tail(thumbnailer->handle_queue, GUINT_TO_POINTER(handle));
+	g_queue_push_tail(thumbnailer->request_queue, req);
 
 	// Make sure the idle process is started.
 	// TODO: Make it multi-threaded?
@@ -510,7 +507,7 @@ static gboolean
 rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 {
 	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), false);
-	if (!g_queue_is_empty(thumbnailer->handle_queue)) {
+	if (!g_queue_is_empty(thumbnailer->request_queue)) {
 		// Still processing stuff.
 		return true;
 	}
@@ -533,7 +530,6 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 {
 	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), FALSE);
 
-	guint handle;
 	gchar *filename;
 	GChecksum *md5 = NULL;
 	const gchar *md5_string;	// owned by md5 object
@@ -544,19 +540,10 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	int ret;
 
 	// Process one thumbnail.
-	handle = GPOINTER_TO_UINT(g_queue_pop_head(thumbnailer->handle_queue));
-	if (handle == 0) {
+	req = (struct request_info*)g_queue_pop_head(thumbnailer->request_queue);
+	if (req == NULL) {
 		// Nothing in the queue.
 		goto cleanup;
-	}
-
-	req = g_hash_table_lookup(thumbnailer->uri_map, GUINT_TO_POINTER(handle));
-	if (!req || !req->uri) {
-		// Request not found, or request has no URI.
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, "",
-			0, "Handle has no associated URI.");
-		goto finished;
 	}
 
 	// Verify that the specified URI is local.
@@ -565,7 +552,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	if (!filename) {
 		// URI is not describing a local file.
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, req->uri,
+			thumbnailer->skeleton, req->handle, req->uri,
 			0, "URI is not describing a local file.");
 		goto finished;
 	}
@@ -575,14 +562,14 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	if (!thumbnailer->cache_dir || thumbnailer->cache_dir[0] == 0) {
 		// No cache directory...
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, "",
+			thumbnailer->skeleton, req->handle, "",
 			0, "Thumbnail cache directory is empty.");
 		goto finished;
 	}
 	if (!thumbnailer->pfn_rp_create_thumbnail) {
 		// No thumbnailer function.
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, "",
+			thumbnailer->skeleton, req->handle, "",
 			0, "No thumbnailer function is available.");
 		goto finished;
 	}
@@ -605,14 +592,14 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	if (pos < 0 || ((size_t)pos + 1 + 32 + 4) > cache_filename_sz) {
 		// Not enough memory.
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, req->uri,
+			thumbnailer->skeleton, req->handle, req->uri,
 			0, "Cannot snprintf() the thumbnail cache directory name.");
 		goto finished;
 	}
 
 	if (g_mkdir_with_parents(cache_filename, 0777) != 0) {
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, req->uri,
+			thumbnailer->skeleton, req->handle, req->uri,
 			0, "Cannot mkdir() the thumbnail cache directory.");
 		goto finished;
 	}
@@ -624,7 +611,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 		// Cannot allocate an MD5...
 		// TODO: Test for this early.
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, req->uri,
+			thumbnailer->skeleton, req->handle, req->uri,
 			0, "g_checksum_new() does not support MD5.");
 		goto finished;
 	}
@@ -637,7 +624,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	if (pos < 0 || ((size_t)(pos + pos2)) >= cache_filename_sz) {
 		// Not enough memory.
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, req->uri,
+			thumbnailer->skeleton, req->handle, req->uri,
 			0, "Cannot snprintf() the thumbnail filename.");
 		goto finished;
 	}
@@ -649,22 +636,19 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 		// Image thumbnailed successfully.
 		g_debug("rom-properties thumbnail: %s -> %s [OK]", filename, cache_filename);
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_ready(
-			thumbnailer->skeleton, handle, req->uri);
+			thumbnailer->skeleton, req->handle, req->uri);
 	} else {
 		// Error thumbnailing the image...
 		g_debug("rom-properties thumbnail: %s -> %s [ERR=%d]", filename, cache_filename, ret);
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
-			thumbnailer->skeleton, handle, req->uri,
+			thumbnailer->skeleton, req->handle, req->uri,
 			2, "Image thumbnailing failed... (TODO: return code)");
 	}
 
 finished:
 	// Request is finished. Emit the finished signal.
-	org_freedesktop_thumbnails_specialized_thumbnailer1_emit_finished(thumbnailer->skeleton, handle);
-	if (handle != 0) {
-		// Remove the URI from the map.
-		g_hash_table_remove(thumbnailer->uri_map, GUINT_TO_POINTER(handle));
-	}
+	org_freedesktop_thumbnails_specialized_thumbnailer1_emit_finished(
+		thumbnailer->skeleton, req->handle);
 
 cleanup:
 	// Free allocated things.
@@ -672,7 +656,7 @@ cleanup:
 	g_free(cache_filename);
 
 	// Return TRUE if we still have more thumbnails queued.
-	const bool isEmpty = g_queue_is_empty(thumbnailer->handle_queue);
+	const bool isEmpty = g_queue_is_empty(thumbnailer->request_queue);
 	if (isEmpty) {
 		// Clear the idle process.
 		// FIXME: Atomic compare and/or mutex? (assuming multi-threaded...)
