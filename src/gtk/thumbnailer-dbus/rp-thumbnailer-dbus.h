@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
- * rp-thumbnailer-dbus.hpp: D-Bus thumbnailer service.                     *
+ * rp-thumbnailer-dbus.h: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *

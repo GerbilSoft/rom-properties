@@ -34,12 +34,12 @@ IF(CFLAG_Wno_unused_parameter)
 ENDIF(CFLAG_Wno_unused_parameter)
 
 SET(rp-thumbnailer-dbus_SRCS
-	rp-thumbnailer-dbus.cpp
+	rp-thumbnailer-dbus.c
 	rp-thumbnailer-main.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	)
 SET(rp-thumbnailer-dbus_H
-	rp-thumbnailer-dbus.hpp
+	rp-thumbnailer-dbus.h
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.h
 	)
 

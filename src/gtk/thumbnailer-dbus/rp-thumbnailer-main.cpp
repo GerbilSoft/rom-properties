@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME)                            *
  * rp-thumbnailer-main.cpp: D-Bus thumbnailerer service: main()            *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -21,7 +21,7 @@
 #include "librpbase/common.h"
 #include "libunixcommon/userdirs.hpp"
 #include "libunixcommon/dll-search.h"
-#include "rp-thumbnailer-dbus.hpp"
+#include "rp-thumbnailer-dbus.h"
 
 // C includes. (C++ namespace)
 #include <cstdarg>
