@@ -282,43 +282,85 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		assert(keyManager != nullptr);
 
 		// Get the common key.
-		// TODO: Test debug vs. retail.
-		// Assuming retail for now.
-		KeyManager::KeyData_t keyData;
+		// TODO: Show the key in use.
+
+		// Zero data..
+		uint8_t zero16[16];
+		memset(zero16, 0, sizeof(zero16));
+
+		// Key data.
+		// - 0: retail
+		// - 1: debug (pseudo-keydata)
+		KeyManager::KeyData_t keyData[2];
+		unsigned int idx0 = 0;
+
+		// Debug key
+		keyData[1].key = zero16;
+		keyData[1].length = 16;
+
+		// Try to load the retail key.
 		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
-			EncryptionKeyNames[0], &keyData,
+			EncryptionKeyNames[0], &keyData[0],
 			EncryptionKeyVerifyData[0], 16);
 		if (verifyResult != KeyManager::VERIFY_OK) {
-			// An error occurred loading while the common key.
-			return nullptr;
+			// An error occurred while loading the retail key.
+			// Start with the debug key.
+			idx0 = 1;
 		}
 
-		// Load the common key. (CBC mode)
+		// IAesCipher instance.
 		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
-		int ret = cipher->setKey(keyData.key, keyData.length);
-		ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
-		if (ret != 0) {
-			// Error initializing the cipher.
-			return nullptr;
+
+		for (unsigned int i = idx0; i < ARRAY_SIZE(keyData); i++) {
+			// Load the common key. (CBC mode)
+			int ret = cipher->setKey(keyData[i].key, keyData[i].length);
+			ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
+			if (ret != 0) {
+				// Error initializing the cipher.
+				continue;
+			}
+
+			// Decrypt the title key.
+			uint8_t title_key[16];
+			memcpy(title_key, xex2Security.title_key, sizeof(title_key));
+			if (cipher->decrypt(title_key, sizeof(title_key), zero16, sizeof(zero16)) != sizeof(title_key)) {
+				// Error decrypting the title key.
+				continue;
+			}
+
+			// Initialize the CBCReader.
+			reader = new CBCReader(file, xex2Header.pe_offset, pe_length, title_key, zero16);
+			if (!reader->isOpen()) {
+				// Unable to open the CBCReader.
+				delete reader;
+				reader = nullptr;
+				continue;
+			}
+
+			// Verify the MZ header.
+			uint16_t mz;
+			size = reader->read(&mz, sizeof(mz));
+			if (size != sizeof(mz)) {
+				// Read error.
+				delete reader;
+				reader = nullptr;
+				continue;
+			}
+
+			if (mz != cpu_to_be16('MZ')) {
+				// Not MZ.
+				delete reader;
+				reader = nullptr;
+				continue;
+			}
+
+			// MZ matches.
+			// TODO: Check for more magic?
+			break;
 		}
-
-		// Zero IV.
-		uint8_t iv_zero[16];
-		memset(iv_zero, 0, sizeof(iv_zero));
-
-		// Decrypt the title key.
-		uint8_t title_key[16];
-		memcpy(title_key, xex2Security.title_key, sizeof(title_key));
-		if (cipher->decrypt(title_key, sizeof(title_key), iv_zero, sizeof(iv_zero)) != sizeof(title_key)) {
-			// Error decrypting the title key.
-			return nullptr;
-		}
-
-		// Initialize the CBCReader.
-		reader = new CBCReader(file, xex2Header.pe_offset, pe_length, title_key, iv_zero);
 	}
 
-	if (!reader->isOpen()) {
+	if (!reader || !reader->isOpen()) {
 		// Unable to open the CBCReader.
 		delete reader;
 		return nullptr;
