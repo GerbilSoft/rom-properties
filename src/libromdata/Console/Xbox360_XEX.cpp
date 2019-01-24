@@ -92,6 +92,7 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		ao::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
 
 		// File format info. (XEX2_OPTHDR_FILE_FORMAT_INFO)
+		// Initialized by initPeReader().
 		XEX2_File_Format_Info fileFormatInfo;
 
 		// Basic compression: Data segments.
@@ -121,6 +122,12 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 * @return peReader on success; nullptr on error.
 		 */
 		CBCReader *initPeReader(void);
+
+		/**
+		 * Initialize the Xbox360_XDBF object.
+		 * @return Xbox360_XDBF object on success; nullptr on error.
+		 */
+		Xbox360_XDBF *initXDBF(void);
 
 #ifdef ENABLE_DECRYPTION
 	public:
@@ -374,6 +381,75 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	return reader;
 }
 
+/**
+ * Initialize the Xbox360_XDBF object.
+ * @return Xbox360_XDBF object on success; nullptr on error.
+ */
+Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
+{
+	if (pe_xdbf) {
+		// XDBF is already initialized.
+		return pe_xdbf;
+	}
+
+	// Initialize the PE reader.
+	if (!initPeReader()) {
+		// Error initializing the PE reader.
+		return nullptr;
+	}
+
+	// Get the resource information.
+	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(XEX2_OPTHDR_RESOURCE_INFO);
+	if (!entry) {
+		// No resource information.
+		return nullptr;
+	}
+
+	XEX2_Resource_Info resInfo;
+	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &resInfo, sizeof(resInfo));
+	if (size != sizeof(resInfo)) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	const uint32_t xdbf_length = be32_to_cpu(resInfo.resource_size);
+	uint32_t xdbf_physaddr = be32_to_cpu(resInfo.resource_vaddr) -
+				 be32_to_cpu(xex2Security.load_address);
+
+	if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
+		// File has zero padding removed.
+		// Determine the actual physical address.
+		for (auto iter = basicZDataSegments.cbegin();
+		     iter != basicZDataSegments.cend(); ++iter)
+		{
+			if (xdbf_physaddr >= iter->vaddr &&
+			    xdbf_physaddr < (iter->vaddr + iter->length))
+			{
+				// Found the correct segment.
+				// Adjust the physical address.
+				xdbf_physaddr -= (iter->vaddr - iter->physaddr);
+				break;
+			}
+		}
+	}
+
+	PartitionFile *const peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, xdbf_length);
+	if (peFile_tmp->isOpen()) {
+		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp);
+		if (pe_xdbf_tmp->isOpen()) {
+			peFile = peFile_tmp;
+			pe_xdbf = pe_xdbf_tmp;
+		} else {
+			pe_xdbf_tmp->unref();
+			delete peFile_tmp;
+		}
+	} else {
+		delete peFile_tmp;
+	}
+
+	return pe_xdbf;
+}
+
 /** Xbox360_XEX **/
 
 /**
@@ -462,59 +538,6 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		delete d->file;
 		d->file = nullptr;
 		return;
-	}
-
-	// Attempt to open the PE executable.
-	if (d->initPeReader()) {
-		// Get the resource information.
-		// Get the file format info.
-		const XEX2_Optional_Header_Tbl *const entry = d->getOptHdrTblEntry(XEX2_OPTHDR_RESOURCE_INFO);
-		if (!entry) {
-			// No resource info.
-			return;
-		}
-
-		XEX2_Resource_Info resInfo;
-		size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &resInfo, sizeof(resInfo));
-		if (size != sizeof(resInfo)) {
-			// Seek and/or read error.
-			return;
-		}
-
-		const uint32_t xdbf_length = be32_to_cpu(resInfo.resource_size);
-		uint32_t xdbf_physaddr = be32_to_cpu(resInfo.resource_vaddr) -
-					 be32_to_cpu(d->xex2Security.load_address);
-
-		if (d->fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
-			// File has zero padding removed.
-			// Determine the actual physical address.
-			for (auto iter = d->basicZDataSegments.cbegin();
-			     iter != d->basicZDataSegments.cend(); ++iter)
-			{
-				if (xdbf_physaddr >= iter->vaddr &&
-				    xdbf_physaddr < (iter->vaddr + iter->length))
-				{
-					// Found the correct segment.
-					// Adjust the physical address.
-					xdbf_physaddr -= (iter->vaddr - iter->physaddr);
-					break;
-				}
-			}
-		}
-
-		PartitionFile *const peFile_tmp = new PartitionFile(d->peReader, xdbf_physaddr, xdbf_length);
-		if (peFile_tmp->isOpen()) {
-			Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp);
-			if (pe_xdbf_tmp->isOpen()) {
-				d->peFile = peFile_tmp;
-				d->pe_xdbf = pe_xdbf_tmp;
-			} else {
-				pe_xdbf_tmp->unref();
-				delete peFile_tmp;
-			}
-		} else {
-			delete peFile_tmp;
-		}
 	}
 }
 
@@ -643,9 +666,7 @@ const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
 uint32_t Xbox360_XEX::supportedImageTypes(void) const
 {
 	RP_D(const Xbox360_XEX);
-
-	// FIXME: Load the PE section if it isn't already loaded.
-	if (d->pe_xdbf) {
+	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
 		return d->pe_xdbf->supportedImageTypes();
 	}
 
@@ -662,9 +683,7 @@ vector<RomData::ImageSizeDef> Xbox360_XEX::supportedImageSizes(ImageType imageTy
 	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const Xbox360_XEX);
-
-	// FIXME: Load the PE section if it isn't already loaded.
-	if (d->pe_xdbf) {
+	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
 		return d->pe_xdbf->supportedImageSizes(imageType);
 	}
 	
@@ -685,9 +704,7 @@ uint32_t Xbox360_XEX::imgpf(ImageType imageType) const
 	ASSERT_imgpf(imageType);
 
 	RP_D(const Xbox360_XEX);
-
-	// FIXME: Load the PE section if it isn't already loaded.
-	if (d->pe_xdbf) {
+	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
 		return d->pe_xdbf->imgpf(imageType);
 	}
 
