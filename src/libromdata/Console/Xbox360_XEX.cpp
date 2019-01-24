@@ -345,8 +345,8 @@ int Xbox360_XEX::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 4 fields.
-	d->fields->reserve(4);
+	// Maximum of 8 fields.
+	d->fields->reserve(8);
 	d->fields->setTabName(0, "XEX");
 
 	// TODO: Game name from XDBF.
@@ -355,9 +355,8 @@ int Xbox360_XEX::loadFieldData(void)
 	const XEX2_Optional_Header_Tbl *entry = d->getOptHdrTblEntry(XEX2_OPTHDR_ORIGINAL_PE_NAME);
 	if (entry) {
 		// Read the filename length.
-		const uint32_t addr = be32_to_cpu(entry->offset);
 		uint32_t length = 0;
-		size_t size = d->file->seekAndRead(addr, &length, sizeof(length));
+		size_t size = d->file->seekAndRead(be32_to_cpu(entry->offset), &length, sizeof(length));
 		if (size == sizeof(length)) {
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 			length = be32_to_cpu(length);
@@ -506,6 +505,49 @@ int Xbox360_XEX::loadFieldData(void)
 		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
+
+	/** Execution ID **/
+	entry = d->getOptHdrTblEntry(XEX2_OPTHDR_EXECUTION_ID);
+	if (entry) {
+		XEX2_Execution_ID execution_id;
+		size_t size = d->file->seekAndRead(be32_to_cpu(entry->offset), &execution_id, sizeof(execution_id));
+		if (size == sizeof(execution_id)) {
+			// Media ID
+			d->fields->addField_string_numeric(C_("Xbox360_XEX", "Media ID"),
+				be32_to_cpu(execution_id.media_id),
+				RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+
+			// Title ID
+			// FIXME: Verify behavior on big-endian.
+			d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
+				rp_sprintf_p(C_("Xbox360_HEX", "0x%1$08X (%2$.2s-%3$u)"),
+					be32_to_cpu(execution_id.title_id.u32),
+					execution_id.title_id.c,
+					be16_to_cpu(execution_id.title_id.u16)),
+				RomFields::STRF_MONOSPACE);
+
+			// Savegame ID
+			d->fields->addField_string_numeric(C_("Xbox360_XEX", "Savegame ID"),
+				be32_to_cpu(execution_id.savegame_id),
+				RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+
+			// Disc number
+			// NOTE: Not shown for single-disc games.
+			const char *const disc_number_title = C_("RomData", "Disc #");
+			if (execution_id.disc_number != 0 && execution_id.disc_count > 1) {
+				if (execution_id.disc_number > 0) {
+					d->fields->addField_string(disc_number_title,
+						// tr: Disc X of Y (for multi-disc games)
+						rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+							execution_id.disc_number,
+							execution_id.disc_count));
+				} else {
+					d->fields->addField_string(disc_number_title,
+						C_("RomData", "Unknown"));
+				}
+			}
+		}
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

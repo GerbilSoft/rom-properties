@@ -317,6 +317,7 @@ typedef enum {
 /**
  * XEX2: Title ID
  * Contains two characters and a 16-bit number.
+ * NOTE: Struct positioning only works with the original BE32 value.
  */
 typedef union PACKED _XEX2_Title_ID {
 	struct {
