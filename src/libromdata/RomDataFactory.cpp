@@ -236,7 +236,7 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
-	GetRomDataFns_addr(Xbox360_XDBF, ATTR_NONE, 0, 'XDBF'),
+	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
 
 	// Handhelds
 	GetRomDataFns_addr(DMG, ATTR_NONE, 0x104, 0xCEED6666),

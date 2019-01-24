@@ -31,7 +31,9 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/RpMemFile.hpp"
 #include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 
 // libi18n
@@ -57,6 +59,8 @@ using std::vector;
 namespace LibRomData {
 
 ROMDATA_IMPL(Xbox360_XDBF)
+ROMDATA_IMPL_IMG_TYPES(Xbox360_XDBF)
+ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_XDBFPrivate Xbox360_XDBF_Private
@@ -70,6 +74,10 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox360_XDBF_Private)
+
+	public:
+		// Internal icon.
+		rp_image *img_icon;
 
 	public:
 		// XDBF header.
@@ -115,12 +123,19 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		 * @return XDBF language ID.
 		 */
 		XDBF_Language_e getLangID(void) const;
+
+		/**
+		 * Load the main title icon.
+		 * @return Icon, or nullptr on error.
+		 */
+		const rp_image *loadIcon(void);
 };
 
 /** Xbox360_XDBF_Private **/
 
 Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file)
 	: super(q, file)
+	, img_icon(nullptr)
 	, entryTable(nullptr)
 	, data_offset(0)
 {
@@ -133,6 +148,7 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file)
 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
+	delete img_icon;
 	delete[] entryTable;
 
 	// Delete any allocated string tables.
@@ -323,6 +339,65 @@ XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
 	return XDBF_LANGUAGE_ENGLISH;
 }
 
+/**
+ * Load the main title icon.
+ * @return Icon, or nullptr on error.
+ */
+const rp_image *Xbox360_XDBF_Private::loadIcon(void)
+{
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!file || !isValid) {
+		// Can't load the icon.
+		return nullptr;
+	}
+
+	// Make sure the entry table is loaded.
+	if (!entryTable) {
+		// Not loaded. Cannot load an icon.
+		return nullptr;
+	}
+
+	// Icons are stored in PNG format.
+	// TODO: Achievement icons?
+
+	// Get the icon resource.
+	const XDBF_Entry *entry = findResource(XDBF_NAMESPACE_IMAGE, XDBF_ID_TITLE);
+	if (!entry) {
+		// Not found...
+		return nullptr;
+	}
+
+	// Load the icon.
+	const unsigned int addr = be32_to_cpu(entry->offset) + this->data_offset;
+	const unsigned int length = be32_to_cpu(entry->length);
+	// Sanity check:
+	// - Size must be at least 16 bytes. [TODO: Smallest PNG?]
+	// - Size must be a maximum of 1 MB.
+	assert(length >= 16);
+	assert(length <= 1024*1024);
+	if (length < 16 || length > 1024*1024) {
+		// Size is out of range.
+		return nullptr;
+	}
+
+	unique_ptr<uint8_t[]> png_buf(new uint8_t[length]);
+	size_t size = file->seekAndRead(addr, png_buf.get(), length);
+	if (size != length) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Create an RpMemFile.
+	// TODO: For rpcli, shortcut to extract the PNG directly.
+	RpMemFile *const f_mem = new RpMemFile(png_buf.get(), length);
+	img_icon = RpPng::load(f_mem);
+	delete f_mem;
+
+	return img_icon;
+}
+
 /** Xbox360_XDBF **/
 
 /**
@@ -508,6 +583,63 @@ const char *const *Xbox360_XDBF::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Xbox360_XDBF::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> Xbox360_XDBF::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	if (imageType != IMG_INT_ICON) {
+		// Only icons are supported.
+		return vector<ImageSizeDef>();
+	}
+
+	// FIXME: Get the actual icon size from the PNG image.
+	// For now, assuming all games use 64x64.
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, 64, 64, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t Xbox360_XDBF::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Use nearest-neighbor scaling.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -557,6 +689,41 @@ int Xbox360_XDBF::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Xbox360_XDBF::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+
+	RP_D(Xbox360_XDBF);
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by 3DS.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->img_icon) {
+		// Image has already been loaded.
+		*pImage = d->img_icon;
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		*pImage = nullptr;
+		return -EBADF;
+	} else if (!d->isValid) {
+		// SMDH file isn't valid.
+		*pImage = nullptr;
+		return -EIO;
+	}
+
+	// Load the icon.
+	*pImage = d->loadIcon();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }
