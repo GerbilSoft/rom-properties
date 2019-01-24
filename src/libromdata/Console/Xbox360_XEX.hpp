@@ -28,6 +28,10 @@ namespace LibRomData {
 
 class Xbox360_XEX_Private;
 ROMDATA_DECL_BEGIN(Xbox360_XEX)
+ROMDATA_DECL_CLOSE()
+ROMDATA_DECL_IMGSUPPORT()
+ROMDATA_DECL_IMGPF()
+ROMDATA_DECL_IMGINT()
 
 	public:
 		// Encryption key indexes.

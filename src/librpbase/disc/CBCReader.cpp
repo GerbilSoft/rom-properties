@@ -219,42 +219,39 @@ size_t CBCReader::read(void *ptr, size_t size)
 	}
 
 #ifdef ENABLE_DECRYPTION
+	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
+
 	// TODO: Handle reads that aren't a multiple of 16 bytes.
-	assert(d->pos % 16 == 0);
-	assert(size % 16 == 0);
-	if (d->pos % 16 != 0 || size % 16 != 0) {
-		// Cannot read now.
-		return 0;
+	int64_t final_pos = d->pos + size;
+	if (final_pos > d->length) {
+		// Reduce size so it doesn't go out of bounds.
+		final_pos = d->length;
+		size = final_pos - d->pos;
 	}
 
-	// Physical address.
-	int64_t phys_addr = d->offset + d->pos;
+	uint8_t iv[16];
 
-	// Determine the current IV.
-	uint8_t cur_iv[16];
-	if (d->pos >= 16) {
-		// Subtract 16 in order to read the IV.
-		phys_addr -= 16;
-	}
-	int ret = d->file->seek(phys_addr);
-	if (ret != 0) {
-		// Seek error.
-		m_lastError = d->file->lastError();
-		if (m_lastError == 0) {
-			m_lastError = EIO;
-		}
-		return 0;
-	}
+	// Read the first block.
+	// NOTE: If we're in the middle of a block, round it down.
+	const int64_t orig_pos = d->pos;
+	d->pos &= ~15LL;
 
-	if (d->pos < 16) {
-		// Start of encrypted data.
+	// Total number of bytes read.
+	size_t total_sz_read = 0;
+
+	// Get the IV.
+	if (d->pos == 0) {
+		// Start of data.
 		// Use the specified IV.
-		memcpy(cur_iv, d->iv, sizeof(cur_iv));
+		memcpy(iv, d->iv, sizeof(iv));
+		d->file->seek(d->offset);
 	} else {
-		// IV is the previous 16 bytes.
-		// TODO: Cache this?
-		size_t sz_read = d->file->read(cur_iv, sizeof(cur_iv));
-		if (sz_read != sizeof(cur_iv)) {
+		// Not start of data.
+		// Read the IV from the previous 16 bytes.
+		// TODO: Cache it!
+		d->file->seek(d->offset + d->pos - 16);
+		size_t size = d->file->read(iv, sizeof(iv));
+		if (size != sizeof(iv)) {
 			// Read error.
 			m_lastError = d->file->lastError();
 			if (m_lastError == 0) {
@@ -264,35 +261,101 @@ size_t CBCReader::read(void *ptr, size_t size)
 		}
 	}
 
-	// Read the data.
-	size_t sz_read = d->file->read(ptr, size);
-	if (sz_read != size) {
-		// Short read.
-		// Cannot decrypt with a short read.
-		m_lastError = d->file->lastError();
-		if (m_lastError == 0) {
-			m_lastError = EIO;
-		}
-		return 0;
-	}
-
-	// Decrypt the data.
-	ret = d->cipher->setIV(cur_iv, sizeof(cur_iv));
+	// Set the IV.
+	int ret = d->cipher->setIV(iv, sizeof(iv));
 	if (ret != 0) {
 		// setIV() failed.
 		m_lastError = EIO;
 		return 0;
 	}
-	size_t sz_dec = d->cipher->decrypt(
-		static_cast<uint8_t*>(ptr), size);
-	if (sz_dec != size) {
-		// decrypt() failed.
-		m_lastError = EIO;
-		return 0;
+
+	uint8_t block_tmp[16];
+	if (orig_pos != d->pos) {
+		// We're in the middle of a block.
+		// Read and decrypt the full block, and copy out
+		// the necessary bytes.
+		unsigned int sz = 16 - (orig_pos & 15);
+		size_t sz_read = d->file->read(block_tmp, sizeof(block_tmp));
+		if (sz_read != sizeof(block_tmp)) {
+			// Read error.
+			m_lastError = d->file->lastError();
+			if (m_lastError == 0) {
+				m_lastError = EIO;
+			}
+			return 0;
+		}
+
+		// Decrypt the data.
+		size_t sz_dec = d->cipher->decrypt(block_tmp, sizeof(block_tmp));
+		if (sz_dec != sizeof(block_tmp)) {
+			// decrypt() failed.
+			m_lastError = EIO;
+			return 0;
+		}
+
+		memcpy(ptr8, &block_tmp[orig_pos & 15], sz);
+		ptr8 += sz;
+		size -= sz;
+		total_sz_read += sz;
+	}
+
+	// Read full blocks.
+	size_t full_block_sz = size & ~15LL;
+	if (full_block_sz > 0) {
+		size_t sz_read = d->file->read(ptr8, full_block_sz);
+		if (sz_read != full_block_sz) {
+			// Short read.
+			// Cannot decrypt with a short read.
+			m_lastError = d->file->lastError();
+			if (m_lastError == 0) {
+				m_lastError = EIO;
+			}
+			return 0;
+		}
+
+		// Decrypt the data.
+		size_t sz_dec = d->cipher->decrypt(ptr8, full_block_sz);
+		if (sz_dec != full_block_sz) {
+			// decrypt() failed.
+			m_lastError = EIO;
+			return 0;
+		}
+
+		ptr8 += sz_read;
+		size -= sz_read;
+		total_sz_read += sz_read;
+	}
+
+	if (size > 0) {
+		// We need to decrypt a partial block at the end.
+		// Read and decrypt the full block, and copy out
+		// the necessary bytes.
+		size_t sz_read = d->file->read(block_tmp, sizeof(block_tmp));
+		if (sz_read != sizeof(block_tmp)) {
+			// Read error.
+			m_lastError = d->file->lastError();
+			if (m_lastError == 0) {
+				m_lastError = EIO;
+			}
+			return 0;
+		}
+
+		// Decrypt the data.
+		size_t sz_dec = d->cipher->decrypt(block_tmp, sizeof(block_tmp));
+		if (sz_dec != sizeof(block_tmp)) {
+			// decrypt() failed.
+			m_lastError = EIO;
+			return 0;
+		}
+
+		memcpy(ptr8, block_tmp, size);
+		ptr8 += size;
+		total_sz_read += size;
+		size = 0;
 	}
 
 	// Data read and decrypted successfully.
-	return sz_read;
+	return total_sz_read;
 #else
 	// Cannot decrypt data if decryption is disabled.
 	return 0;

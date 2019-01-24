@@ -21,6 +21,7 @@
 #include "librpbase/config.librpbase.h"
 
 #include "Xbox360_XEX.hpp"
+#include "Xbox360_XDBF.hpp"
 #include "librpbase/RomData_p.hpp"
 
 #include "xbox360_xex_structs.h"
@@ -29,8 +30,16 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/disc/CBCReader.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
+
+#ifdef ENABLE_DECRYPTION
+# include "librpbase/crypto/IAesCipher.hpp"
+# include "librpbase/crypto/AesCipherFactory.hpp"
+# include "librpbase/crypto/KeyManager.hpp"
+#endif /* ENABLE_DECRYPTION */
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -66,6 +75,7 @@ class Xbox360_XEX_Private : public RomDataPrivate
 {
 	public:
 		Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file);
+		virtual ~Xbox360_XEX_Private();
 
 	private:
 		typedef RomDataPrivate super;
@@ -87,6 +97,19 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 * @return Optional header table entry, or nullptr if not found.
 		 */
 		const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
+
+	public:
+		// CBC reader for encrypted PE executables.
+		// Also used for unencrypted executables.
+		CBCReader *peReader;
+		PartitionFile *peFile;	// uses peReader
+		Xbox360_XDBF *pe_xdbf;	// uses file
+
+		/**
+		 * Initialize the PE executable reader.
+		 * @return peReader on success; nullptr on error.
+		 */
+		CBCReader *initPeReader(void);
 
 #ifdef ENABLE_DECRYPTION
 	public:
@@ -118,10 +141,22 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 
 Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	: super(q, file)
+	, peReader(nullptr)
+	, peFile(nullptr)
+	, pe_xdbf(nullptr)
 {
 	// Clear the headers.
 	memset(&xex2Header, 0, sizeof(xex2Header));
 	memset(&xex2Security, 0, sizeof(xex2Security));
+}
+
+Xbox360_XEX_Private::~Xbox360_XEX_Private()
+{
+	if (pe_xdbf) {
+		pe_xdbf->unref();
+	}
+	delete peFile;
+	delete peReader;
 }
 
 /**
@@ -151,6 +186,100 @@ const XEX2_Optional_Header_Tbl *Xbox360_XEX_Private::getOptHdrTblEntry(uint32_t 
 
 	// Not found.
 	return nullptr;
+}
+
+/**
+ * Initialize the PE executable reader.
+ * @return peReader on success; nullptr on error.
+ */
+CBCReader *Xbox360_XEX_Private::initPeReader(void)
+{
+	if (peReader) {
+		// PE Reader is already initialized.
+		return peReader;
+	}
+
+	// Get the file format info.
+	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(XEX2_OPTHDR_FILE_FORMAT_INFO);
+	if (!entry) {
+		// No file format info.
+		return nullptr;
+	}
+
+	XEX2_File_Format_Info ffi;
+	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &ffi, sizeof(ffi));
+	if (size != sizeof(ffi)) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// TODO: Verify structure size.
+	// FIXME: Sonic'06 has compression type "normal", but it isn't compressed?
+	// Unless that's the section padding compression...
+#if 0
+	if (ffi.compression_type != cpu_to_be16(XEX2_COMPRESSION_TYPE_NONE)) {
+		// Compressed PE executables aren't supported at the moment.
+		return nullptr;
+	}
+#endif
+
+	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;
+	CBCReader *reader;
+	if (ffi.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
+		// No encryption.
+		reader = new CBCReader(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
+	} else {
+		// Decrypt the title key.
+		// Get the Key Manager instance.
+		KeyManager *const keyManager = KeyManager::instance();
+		assert(keyManager != nullptr);
+
+		// Get the common key.
+		// TODO: Test debug vs. retail.
+		// Assuming retail for now.
+		KeyManager::KeyData_t keyData;
+		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
+			EncryptionKeyNames[0], &keyData,
+			EncryptionKeyVerifyData[0], 16);
+		if (verifyResult != KeyManager::VERIFY_OK) {
+			// An error occurred loading while the common key.
+			return nullptr;
+		}
+
+		// Load the common key. (CBC mode)
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
+		int ret = cipher->setKey(keyData.key, keyData.length);
+		ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
+		if (ret != 0) {
+			// Error initializing the cipher.
+			return nullptr;
+		}
+
+		// Zero IV.
+		uint8_t iv_zero[16];
+		memset(iv_zero, 0, sizeof(iv_zero));
+
+		// Decrypt the title key.
+		uint8_t title_key[16];
+		memcpy(title_key, xex2Security.title_key, sizeof(title_key));
+		if (cipher->decrypt(title_key, sizeof(title_key), iv_zero, sizeof(iv_zero)) != sizeof(title_key)) {
+			// Error decrypting the title key.
+			return nullptr;
+		}
+
+		// Initialize the CBCReader.
+		reader = new CBCReader(file, xex2Header.pe_offset, pe_length, title_key, iv_zero);
+	}
+
+	if (!reader->isOpen()) {
+		// Unable to open the CBCReader.
+		delete reader;
+		return nullptr;
+	}
+
+	// CBCReader is open.
+	this->peReader = reader;
+	return reader;
 }
 
 /** Xbox360_XEX **/
@@ -242,6 +371,52 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		d->file = nullptr;
 		return;
 	}
+
+	// Attempt to open the PE executable.
+	if (d->initPeReader()) {
+		// FIXME: This is a hard-coded value for Sonic'06.
+		// Need to handle padding properly to decode the resource vaddr.
+		static const uint32_t xdbf_address = 0xD36900;
+		static const uint32_t xdbf_length = 235264;
+		PartitionFile *const peFile_tmp = new PartitionFile(d->peReader, xdbf_address, xdbf_length);
+		printf("open: A\n");
+		if (peFile_tmp->isOpen()) {
+			printf("open: B\n");
+			Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp);
+			if (pe_xdbf_tmp->isOpen()) {
+				printf("open: C\n");
+				d->peFile = peFile_tmp;
+				d->pe_xdbf = pe_xdbf_tmp;
+			} else {
+				printf("open: D\n");
+				pe_xdbf_tmp->unref();
+				delete peFile_tmp;
+			}
+		} else {
+			printf("open: E\n");
+			delete peFile_tmp;
+		}
+	}
+}
+
+/**
+ * Close the opened file.
+ */
+void Xbox360_XEX::close(void)
+{
+	RP_D(Xbox360_XEX);
+	if (d->pe_xdbf) {
+		d->pe_xdbf->unref();
+		d->pe_xdbf = nullptr;
+	}
+
+	delete d->peFile;
+	delete d->peReader;
+	d->peFile = nullptr;
+	d->peReader = nullptr;
+
+	// Call the superclass function.
+	super::close();
 }
 
 /** ROM detection functions. **/
@@ -340,6 +515,64 @@ const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
 		nullptr
 	};
 	return mimeTypes;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Xbox360_XEX::supportedImageTypes(void) const
+{
+	RP_D(const Xbox360_XEX);
+
+	// FIXME: Load the PE section if it isn't already loaded.
+	if (d->pe_xdbf) {
+		return d->pe_xdbf->supportedImageTypes();
+	}
+
+	return 0;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> Xbox360_XEX::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	RP_D(const Xbox360_XEX);
+
+	// FIXME: Load the PE section if it isn't already loaded.
+	if (d->pe_xdbf) {
+		return d->pe_xdbf->supportedImageSizes(imageType);
+	}
+	
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t Xbox360_XEX::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	RP_D(const Xbox360_XEX);
+
+	// FIXME: Load the PE section if it isn't already loaded.
+	if (d->pe_xdbf) {
+		return d->pe_xdbf->imgpf(imageType);
+	}
+
+	return 0;
 }
 
 /**
@@ -576,6 +809,27 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Xbox360_XEX::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+
+	RP_D(Xbox360_XEX);
+
+	// FIXME: Load the PE section if it isn't already loaded.
+	if (d->pe_xdbf) {
+		return d->pe_xdbf->loadInternalImage(imageType, pImage);
+	}
+
+	return -ENOENT;
 }
 
 #ifdef ENABLE_DECRYPTION

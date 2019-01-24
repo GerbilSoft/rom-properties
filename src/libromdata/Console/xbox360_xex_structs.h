@@ -80,7 +80,7 @@ typedef struct PACKED _XEX2_Security_Info {
 	uint32_t import_table_count;		// [0x128] Import table count
 	uint8_t import_table_sha1[0x14];	// [0x12C] Import table SHA-1
 	uint8_t xgd2_media_id[0x10];		// [0x140] XGD2 media ID
-	uint8_t aes_key[0x10];			// [0x150] AES-128 encryption key (encrypted?)
+	uint8_t title_key[0x10];		// [0x150] AES-128 title key (encrypted)
 	uint32_t export_table;			// [0x160] Export table offset (0 if none)
 	uint8_t header_sha1[0x14];		// [0x164] Header SHA-1
 	uint32_t region_code;			// [0x178] Region code (See XEX2_Region_Code_e)
