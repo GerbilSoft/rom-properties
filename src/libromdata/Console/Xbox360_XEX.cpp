@@ -127,7 +127,7 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 * Initialize the Xbox360_XDBF object.
 		 * @return Xbox360_XDBF object on success; nullptr on error.
 		 */
-		Xbox360_XDBF *initXDBF(void);
+		const Xbox360_XDBF *initXDBF(void);
 
 #ifdef ENABLE_DECRYPTION
 	public:
@@ -385,7 +385,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
  * Initialize the Xbox360_XDBF object.
  * @return Xbox360_XDBF object on success; nullptr on error.
  */
-Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
+const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 {
 	if (pe_xdbf) {
 		// XDBF is already initialized.
@@ -739,11 +739,18 @@ int Xbox360_XEX::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 8 fields.
-	d->fields->reserve(8);
+	// Maximum of 9 fields.
+	d->fields->reserve(9);
 	d->fields->setTabName(0, "XEX");
 
-	// TODO: Game name from XDBF.
+	// Game name.
+	const Xbox360_XDBF *xdbf = d->initXDBF();
+	if (xdbf) {
+		string title = xdbf->getGameTitle();
+		if (!title.empty()) {
+			d->fields->addField_string(C_("RomData", "Title"), title);
+		}
+	}
 
 	// Original executable name
 	const XEX2_Optional_Header_Tbl *entry = d->getOptHdrTblEntry(XEX2_OPTHDR_ORIGINAL_PE_NAME);

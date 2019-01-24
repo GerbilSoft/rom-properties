@@ -684,7 +684,7 @@ int Xbox360_XDBF::loadFieldData(void)
 	// Language ID.
 	const XDBF_Language_e langID = d->getLangID();
 
-	// Find the English string table.
+	// Game title.
 	string title = d->loadString(langID, XDBF_ID_TITLE);
 	d->fields->addField_string(C_("RomData", "Title"),
 		!title.empty() ? title : C_("RomData", "Unknown"));
@@ -726,6 +726,19 @@ int Xbox360_XDBF::loadInternalImage(ImageType imageType, const rp_image **pImage
 	// Load the icon.
 	*pImage = d->loadIcon();
 	return (*pImage != nullptr ? 0 : -EIO);
+}
+
+/** Special XDBF accessor functions. **/
+
+/**
+ * Get the game title.
+ * @return Game title, or empty string on error.
+ */
+std::string Xbox360_XDBF::getGameTitle(void) const
+{
+	RP_D(const Xbox360_XDBF);
+	return const_cast<Xbox360_XDBF_Private*>(d)->loadString(
+		d->getLangID(), XDBF_ID_TITLE);
 }
 
 }

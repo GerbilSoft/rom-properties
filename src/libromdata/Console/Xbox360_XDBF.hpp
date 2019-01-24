@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XDBF_HPP__
 
 #include "librpbase/RomData.hpp"
+#include <string>
 
 namespace LibRomData {
 
@@ -31,6 +32,16 @@ ROMDATA_DECL_BEGIN(Xbox360_XDBF)
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
+
+	public:
+		/** Special XDBF accessor functions. **/
+
+		/**
+		 * Get the game title.
+		 * @return Game title, or empty string on error.
+		 */
+		std::string getGameTitle(void) const;
+
 ROMDATA_DECL_END()
 
 }
