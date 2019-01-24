@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -117,6 +117,8 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, IRpFile *file,
 	// Passthru only.
 	assert(key == nullptr);
 	assert(iv == nullptr);
+	RP_UNUSED(key);
+	RP_UNUSED(iv);
 #endif /* ENABLE_DECRYPTION */
 }
 
