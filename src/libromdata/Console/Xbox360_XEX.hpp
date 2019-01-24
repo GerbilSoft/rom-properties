@@ -21,12 +21,47 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_HPP__
 
+#include "librpbase/config.librpbase.h"
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class Xbox360_XEX_Private;
 ROMDATA_DECL_BEGIN(Xbox360_XEX)
+
+	public:
+		// Encryption key indexes.
+		// NOTE: Debug key is all zeroes,
+		// so it's not included here.
+		enum EncryptionKeys {
+			Key_XEX_Retail,
+
+			Key_Max
+		};
+
+#ifdef ENABLE_DECRYPTION
+	public:
+		/**
+		 * Get the total number of encryption key names.
+		 * @return Number of encryption key names.
+		 */
+		static int encryptionKeyCount_static(void);
+
+		/**
+		 * Get an encryption key name.
+		 * @param keyIdx Encryption key index.
+		 * @return Encryption key name (in ASCII), or nullptr on error.
+		 */
+		static const char *encryptionKeyName_static(int keyIdx);
+
+		/**
+		 * Get the verification data for a given encryption key index.
+		 * @param keyIdx Encryption key index.
+		 * @return Verification data. (16 bytes)
+		 */
+		static const uint8_t *encryptionVerifyData_static(int keyIdx);
+#endif /* ENABLE_DECRYPTION */
+
 ROMDATA_DECL_END()
 
 }

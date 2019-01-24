@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * verifykeys.hpp: Verify encryption keys.                                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
@@ -39,6 +39,7 @@ using namespace LibRpBase;
 #include "libromdata/disc/WiiPartition.hpp"
 #include "libromdata/crypto/CtrKeyScrambler.hpp"
 #include "libromdata/crypto/N3DSVerifyKeys.hpp"
+#include "libromdata/Console/Xbox360_XEX.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -71,6 +72,7 @@ static const EncKeyFns_t encKeyFns[] = {
 	ENCKEYFNS(WiiPartition),
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(N3DSVerifyKeys),
+	ENCKEYFNS(Xbox360_XEX),
 
 	{nullptr, nullptr, nullptr, nullptr}
 };

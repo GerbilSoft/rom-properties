@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.cpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2018 by David Korth.                                 *
+ * Copyright (c) 2012-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -33,6 +33,7 @@ using namespace LibRpBase;
 #include "../disc/WiiPartition.hpp"
 #include "../crypto/CtrKeyScrambler.hpp"
 #include "../crypto/N3DSVerifyKeys.hpp"
+#include "../Console/Xbox360_XEX.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -147,6 +148,7 @@ class KeyStoreUIPrivate
 			Section_WiiPartition = 0,
 			Section_CtrKeyScrambler,
 			Section_N3DSVerifyKeys,
+			Section_Xbox360_XEX,
 		};
 
 		struct KeyBinAddress {
@@ -212,6 +214,7 @@ const KeyStoreUIPrivate::EncKeyFns_t KeyStoreUIPrivate::encKeyFns[] = {
 	ENCKEYFNS(WiiPartition),
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(N3DSVerifyKeys),
+	ENCKEYFNS(Xbox360_XEX),
 };
 
 // Hexadecimal lookup table.
@@ -854,6 +857,7 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
+		NOP_C_("KeyStoreUI|Section", "Microsoft Xbox 360 AES Keys"),
 	};
 	static_assert(ARRAY_SIZE(sectNames) == ARRAY_SIZE(d->encKeyFns),
 		"sectNames[] is out of sync with d->encKeyFns[].");

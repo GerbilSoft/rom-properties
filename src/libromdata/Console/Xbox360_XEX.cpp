@@ -87,7 +87,32 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 * @return Optional header table entry, or nullptr if not found.
 		 */
 		const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
+
+#ifdef ENABLE_DECRYPTION
+	public:
+		// Verification key names.
+		static const char *const EncryptionKeyNames[Xbox360_XEX::Key_Max];
+
+		// Verification key data.
+		static const uint8_t EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16];
+#endif
 };
+
+#ifdef ENABLE_DECRYPTION
+// Verification key names.
+const char *const Xbox360_XEX_Private::EncryptionKeyNames[Xbox360_XEX::Key_Max] = {
+	// Retail
+	"xbox360-xex-retail",
+};
+
+const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][16] = {
+	/** Retail **/
+
+	// xbox360-xex-retail
+	{0xAC,0xA0,0xC9,0xE3,0x78,0xD3,0xC6,0x54,
+	 0xA3,0x1D,0x65,0x67,0x38,0xAB,0xB0,0x6B},
+};
+#endif /* ENABLE_DECRYPTION */
 
 /** Xbox360_XEX_Private **/
 
@@ -552,5 +577,46 @@ int Xbox360_XEX::loadFieldData(void)
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
 }
+
+#ifdef ENABLE_DECRYPTION
+/** Encryption keys. **/
+
+/**
+ * Get the total number of encryption key names.
+ * @return Number of encryption key names.
+ */
+int Xbox360_XEX::encryptionKeyCount_static(void)
+{
+	return Key_Max;
+}
+
+/**
+ * Get an encryption key name.
+ * @param keyIdx Encryption key index.
+ * @return Encryption key name (in ASCII), or nullptr on error.
+ */
+const char *Xbox360_XEX::encryptionKeyName_static(int keyIdx)
+{
+	assert(keyIdx >= 0);
+	assert(keyIdx < Key_Max);
+	if (keyIdx < 0 || keyIdx >= Key_Max)
+		return nullptr;
+	return Xbox360_XEX_Private::EncryptionKeyNames[keyIdx];
+}
+
+/**
+ * Get the verification data for a given encryption key index.
+ * @param keyIdx Encryption key index.
+ * @return Verification data. (16 bytes)
+ */
+const uint8_t *Xbox360_XEX::encryptionVerifyData_static(int keyIdx)
+{
+	assert(keyIdx >= 0);
+	assert(keyIdx < Key_Max);
+	if (keyIdx < 0 || keyIdx >= Key_Max)
+		return nullptr;
+	return Xbox360_XEX_Private::EncryptionKeyVerifyData[keyIdx];
+}
+#endif /* ENABLE_DECRYPTION */
 
 }
