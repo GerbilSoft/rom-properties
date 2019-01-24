@@ -379,21 +379,16 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		static const uint32_t xdbf_address = 0xD36900;
 		static const uint32_t xdbf_length = 235264;
 		PartitionFile *const peFile_tmp = new PartitionFile(d->peReader, xdbf_address, xdbf_length);
-		printf("open: A\n");
 		if (peFile_tmp->isOpen()) {
-			printf("open: B\n");
 			Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp);
 			if (pe_xdbf_tmp->isOpen()) {
-				printf("open: C\n");
 				d->peFile = peFile_tmp;
 				d->pe_xdbf = pe_xdbf_tmp;
 			} else {
-				printf("open: D\n");
 				pe_xdbf_tmp->unref();
 				delete peFile_tmp;
 			}
 		} else {
-			printf("open: E\n");
 			delete peFile_tmp;
 		}
 	}

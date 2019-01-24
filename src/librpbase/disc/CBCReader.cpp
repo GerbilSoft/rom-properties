@@ -221,26 +221,23 @@ size_t CBCReader::read(void *ptr, size_t size)
 #ifdef ENABLE_DECRYPTION
 	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
 
-	// TODO: Handle reads that aren't a multiple of 16 bytes.
-	int64_t final_pos = d->pos + size;
-	if (final_pos > d->length) {
+	// TODO: Check for overflow.
+	if (d->pos + (int64_t)size > d->length) {
 		// Reduce size so it doesn't go out of bounds.
-		final_pos = d->length;
-		size = final_pos - d->pos;
+		size = d->length - d->pos;
 	}
 
 	uint8_t iv[16];
 
 	// Read the first block.
 	// NOTE: If we're in the middle of a block, round it down.
-	const int64_t orig_pos = d->pos;
-	d->pos &= ~15LL;
+	const int64_t pos_block = d->pos & ~15LL;
 
 	// Total number of bytes read.
 	size_t total_sz_read = 0;
 
 	// Get the IV.
-	if (d->pos == 0) {
+	if (pos_block == 0) {
 		// Start of data.
 		// Use the specified IV.
 		memcpy(iv, d->iv, sizeof(iv));
@@ -249,7 +246,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 		// Not start of data.
 		// Read the IV from the previous 16 bytes.
 		// TODO: Cache it!
-		d->file->seek(d->offset + d->pos - 16);
+		d->file->seek(d->offset + pos_block - 16);
 		size_t size = d->file->read(iv, sizeof(iv));
 		if (size != sizeof(iv)) {
 			// Read error.
@@ -270,11 +267,11 @@ size_t CBCReader::read(void *ptr, size_t size)
 	}
 
 	uint8_t block_tmp[16];
-	if (orig_pos != d->pos) {
+	if (d->pos != pos_block) {
 		// We're in the middle of a block.
 		// Read and decrypt the full block, and copy out
 		// the necessary bytes.
-		unsigned int sz = 16 - (orig_pos & 15);
+		unsigned int sz = 16 - (d->pos & 15);
 		size_t sz_read = d->file->read(block_tmp, sizeof(block_tmp));
 		if (sz_read != sizeof(block_tmp)) {
 			// Read error.
@@ -293,10 +290,11 @@ size_t CBCReader::read(void *ptr, size_t size)
 			return 0;
 		}
 
-		memcpy(ptr8, &block_tmp[orig_pos & 15], sz);
+		memcpy(ptr8, &block_tmp[d->pos & 15], sz);
 		ptr8 += sz;
 		size -= sz;
 		total_sz_read += sz;
+		d->pos += sz;
 	}
 
 	// Read full blocks.
@@ -324,6 +322,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 		ptr8 += sz_read;
 		size -= sz_read;
 		total_sz_read += sz_read;
+		d->pos += sz_read;
 	}
 
 	if (size > 0) {
@@ -351,6 +350,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 		memcpy(ptr8, block_tmp, size);
 		ptr8 += size;
 		total_sz_read += size;
+		d->pos += size;
 		size = 0;
 	}
 
