@@ -99,8 +99,9 @@ typedef enum {
 	IMAGE_FILE_MACHINE_THUMB	= 0x01C2, /* Thumb */
 	IMAGE_FILE_MACHINE_ARMNT	= 0x01C4, /* Thumb-2 */
 	IMAGE_FILE_MACHINE_AM33		= 0x01D3, /* Matsushita AM33 */
-	IMAGE_FILE_MACHINE_POWERPC	= 0x01F0, /* Power PC little endian */
-	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01F1, /* Power PC with floating point support */
+	IMAGE_FILE_MACHINE_POWERPC	= 0x01F0, /* PowerPC little-endian */
+	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01F1, /* PowerPC with floating point support */
+	IMAGE_FILE_MACHINE_POWERPCBE	= 0x01F2, /* PowerPC big-endian (Xbox 360) */
 	IMAGE_FILE_MACHINE_IA64		= 0x0200, /* Intel Itanium processor family */
 	IMAGE_FILE_MACHINE_MIPS16	= 0x0266, /* MIPS16 */
 	IMAGE_FILE_MACHINE_M68K		= 0x0268, /* Motorola 68000 */
@@ -182,13 +183,13 @@ ASSERT_STRUCT(IMAGE_DOS_HEADER, 64);
  * All fields are little-endian.
  */
 typedef struct PACKED _IMAGE_FILE_HEADER {
-	uint16_t Machine;		// See PE_Machine.
+	uint16_t Machine;		// See PE_Machine
 	uint16_t NumberOfSections;
-	uint32_t TimeDateStamp;		// UNIX timestamp.
+	uint32_t TimeDateStamp;		// UNIX timestamp
 	uint32_t PointerToSymbolTable;
 	uint32_t NumberOfSymbols;
 	uint16_t SizeOfOptionalHeader;
-	uint16_t Characteristics;
+	uint16_t Characteristics;	// See PE_Characteristics
 } IMAGE_FILE_HEADER;
 ASSERT_STRUCT(IMAGE_FILE_HEADER, IMAGE_SIZEOF_FILE_HEADER);
 
