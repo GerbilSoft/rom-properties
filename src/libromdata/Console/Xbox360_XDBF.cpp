@@ -665,7 +665,6 @@ int Xbox360_XDBF::loadFieldData(void)
 
 	// Parse the XDBF file.
 	// NOTE: The magic number is NOT byteswapped in the constructor.
-	// COMMIT NOTE: Find other classes that leave magic unswapped.
 	const XDBF_Header *const xdbfHeader = &d->xdbfHeader;
 	if (xdbfHeader->magic != cpu_to_be32(XDBF_MAGIC)) {
 		// Invalid magic number.
