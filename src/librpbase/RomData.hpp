@@ -233,6 +233,7 @@ class RomData
 			FTYPE_AUDIO_FILE,		// Audio file
 			FTYPE_BOOT_SECTOR,		// Boot sector
 			FTYPE_BUNDLE,			// Bundle (Mac OS X)
+			FTYPE_RESOURCE_FILE,		// Resource file
 
 			FTYPE_LAST			// End of FileType.
 		};

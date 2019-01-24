@@ -22,6 +22,7 @@ SET(libromdata_SRCS
 	Console/WiiU.cpp
 	Console/WiiWAD.cpp
 	Console/WiiWIBN.cpp
+	Console/Xbox360_XDBF.cpp
 
 	Handheld/DMG.cpp
 	Handheld/GameBoyAdvance.cpp
@@ -117,6 +118,7 @@ SET(libromdata_H
 	Console/WiiU.hpp
 	Console/WiiWAD.hpp
 	Console/WiiWIBN.hpp
+	Console/Xbox360_XDBF.hpp
 
 	Console/dc_structs.h
 	Console/gcn_structs.h
@@ -133,6 +135,7 @@ SET(libromdata_H
 	Console/wii_banner.h
 	Console/wii_wad.h
 	Console/wiiu_structs.h
+	Console/xbox360_xdbf_structs.h
 
 	Handheld/DMG.hpp
 	Handheld/GameBoyAdvance.hpp

@@ -63,6 +63,7 @@ using std::vector;
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
+#include "Console/Xbox360_XDBF.hpp"
 
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"
@@ -234,7 +235,8 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 // TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
-	GetRomDataFns_addr(WiiWIBN, RomDataFactory::RDA_HAS_THUMBNAIL, 0, 'WIBN'),
+	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
+	GetRomDataFns_addr(Xbox360_XDBF, ATTR_NONE, 0, 'XDBF'),
 
 	// Handhelds
 	GetRomDataFns_addr(DMG, ATTR_NONE, 0x104, 0xCEED6666),
