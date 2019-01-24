@@ -255,6 +255,25 @@ typedef enum {
 } XEX2_Compression_Type_e;
 
 /**
+ * XEX2: Basic compression block.
+ * Used with XEX2_COMPRESSION_TYPE_BASIC.
+ *
+ * Indicates how many bytes of data are in the block,
+ * and then how many bytes after the block are zeroes.
+ *
+ * Located immediately after XEX2_File_Format_Info.
+ * XEX2_File_Format_Info's size field can be used to
+ * determine the total number of basic compression blocks.
+ *
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XEX2_Compression_Basic_Info {
+	uint32_t data_size;	// [0x000] Number of valid data bytes.
+	uint32_t zero_size;	// [0x004] Number of zero bytes to be inserted after the data bytes.
+} XEX2_Compression_Basic_Info;
+ASSERT_STRUCT(XEX2_Compression_Basic_Info, 2*sizeof(uint32_t));
+
+/**
  * XEX2: Checksum and timestamp (0x18002)
  * All fields are in big-endian.
  */

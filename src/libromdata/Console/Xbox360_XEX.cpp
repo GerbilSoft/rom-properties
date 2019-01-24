@@ -91,6 +91,17 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// NOTE: **NOT** byteswapped!
 		ao::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
 
+		// File format info. (XEX2_OPTHDR_FILE_FORMAT_INFO)
+		XEX2_File_Format_Info fileFormatInfo;
+
+		// Basic compression: Data segments.
+		struct BasicZDataSeg_t {
+			uint32_t vaddr;		// Virtual address in memory
+			uint32_t physaddr;	// Physical address in the PE executable
+			uint32_t length;	// Length of segment
+		};
+		ao::uvector<BasicZDataSeg_t> basicZDataSegments;
+
 		/**
 		 * Get the specified optional header table entry.
 		 * @param header_id Optional header ID.
@@ -148,6 +159,7 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	// Clear the headers.
 	memset(&xex2Header, 0, sizeof(xex2Header));
 	memset(&xex2Security, 0, sizeof(xex2Security));
+	memset(&fileFormatInfo, 0, sizeof(fileFormatInfo));
 }
 
 Xbox360_XEX_Private::~Xbox360_XEX_Private()
@@ -206,26 +218,61 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		return nullptr;
 	}
 
-	XEX2_File_Format_Info ffi;
-	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &ffi, sizeof(ffi));
-	if (size != sizeof(ffi)) {
+	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &fileFormatInfo, sizeof(fileFormatInfo));
+	if (size != sizeof(fileFormatInfo)) {
 		// Seek and/or read error.
 		return nullptr;
 	}
 
-	// TODO: Verify structure size.
-	// FIXME: Sonic'06 has compression type "normal", but it isn't compressed?
-	// Unless that's the section padding compression...
-#if 0
-	if (ffi.compression_type != cpu_to_be16(XEX2_COMPRESSION_TYPE_NONE)) {
-		// Compressed PE executables aren't supported at the moment.
-		return nullptr;
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the fileFormatInfo struct.
+	fileFormatInfo.size             = be32_to_cpu(fileFormatInfo.size);
+	fileFormatInfo.encryption_type  = be16_to_cpu(fileFormatInfo.encryption_type);
+	fileFormatInfo.compression_type = be16_to_cpu(fileFormatInfo.compression_type);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// Check the compression type.
+	switch (fileFormatInfo.compression_type) {
+		case XEX2_COMPRESSION_TYPE_NONE:
+			// No compression.
+			break;
+
+		case XEX2_COMPRESSION_TYPE_BASIC: {
+			// Basic compression.
+			// Load the compression information, then convert it
+			// to physical addresses.
+			// TODO: IDiscReader subclass to handle this?
+			assert(fileFormatInfo.size > sizeof(fileFormatInfo));
+			if (fileFormatInfo.size <= sizeof(fileFormatInfo)) {
+				// No segment information is available.
+				return nullptr;
+			}
+
+			const uint32_t seg_len = fileFormatInfo.size - sizeof(fileFormatInfo);
+			assert(seg_len % sizeof(XEX2_Compression_Basic_Info) == 0);
+			const unsigned int seg_count = seg_len / sizeof(XEX2_Compression_Basic_Info);
+			unique_ptr<XEX2_Compression_Basic_Info[]> cbi(new XEX2_Compression_Basic_Info[seg_count]);
+			size = file->read(cbi.get(), seg_len);
+
+			uint32_t vaddr = 0, physaddr = 0;
+			basicZDataSegments.resize(seg_len);
+			const XEX2_Compression_Basic_Info *p = cbi.get();
+			for (unsigned int i = 0; i < seg_count; i++, p++) {
+				const uint32_t data_size = be32_to_cpu(p->data_size);
+				basicZDataSegments[i].vaddr = vaddr;
+				basicZDataSegments[i].physaddr = physaddr;
+				basicZDataSegments[i].length = data_size;
+				vaddr += data_size;
+				vaddr += be32_to_cpu(p->zero_size);
+				physaddr += data_size;
+			}
+			break;
+		}
 	}
-#endif
 
 	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;
 	CBCReader *reader;
-	if (ffi.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
+	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
 		// No encryption.
 		reader = new CBCReader(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
 	} else {
@@ -374,11 +421,43 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 
 	// Attempt to open the PE executable.
 	if (d->initPeReader()) {
-		// FIXME: This is a hard-coded value for Sonic'06.
-		// Need to handle padding properly to decode the resource vaddr.
-		static const uint32_t xdbf_address = 0xD36900;
-		static const uint32_t xdbf_length = 235264;
-		PartitionFile *const peFile_tmp = new PartitionFile(d->peReader, xdbf_address, xdbf_length);
+		// Get the resource information.
+		// Get the file format info.
+		const XEX2_Optional_Header_Tbl *const entry = d->getOptHdrTblEntry(XEX2_OPTHDR_RESOURCE_INFO);
+		if (!entry) {
+			// No resource info.
+			return;
+		}
+
+		XEX2_Resource_Info resInfo;
+		size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &resInfo, sizeof(resInfo));
+		if (size != sizeof(resInfo)) {
+			// Seek and/or read error.
+			return;
+		}
+
+		const uint32_t xdbf_length = be32_to_cpu(resInfo.resource_size);
+		uint32_t xdbf_physaddr = be32_to_cpu(resInfo.resource_vaddr) -
+					 be32_to_cpu(d->xex2Security.load_address);
+
+		if (d->fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
+			// File has zero padding removed.
+			// Determine the actual physical address.
+			for (auto iter = d->basicZDataSegments.cbegin();
+			     iter != d->basicZDataSegments.cend(); ++iter)
+			{
+				if (xdbf_physaddr >= iter->vaddr &&
+				    xdbf_physaddr < (iter->vaddr + iter->length))
+				{
+					// Found the correct segment.
+					// Adjust the physical address.
+					xdbf_physaddr -= (iter->vaddr - iter->physaddr);
+					break;
+				}
+			}
+		}
+
+		PartitionFile *const peFile_tmp = new PartitionFile(d->peReader, xdbf_physaddr, xdbf_length);
 		if (peFile_tmp->isOpen()) {
 			Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp);
 			if (pe_xdbf_tmp->isOpen()) {
