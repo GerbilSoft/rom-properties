@@ -222,7 +222,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 {
 	// This class handles SMDH files and/or sections only.
 	RP_D(Nintendo3DS_SMDH);
-	d->className = "Nintendo3DS";	// Using same image settings as Nintendo3DS.
+	d->className = "Nintendo3DS";	// Using the same image settings as Nintendo3DS.
 	d->fileType = FTYPE_ICON_FILE;
 
 	if (!d->file) {

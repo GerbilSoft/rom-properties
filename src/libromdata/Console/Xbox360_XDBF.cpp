@@ -421,7 +421,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
 {
 	// This class handles XDBF files and/or sections only.
 	RP_D(Xbox360_XDBF);
-	d->className = "Xbox360_XEX";	// Using same image settings as Xbox360_XEX.
+	d->className = "Xbox360_XEX";	// Using the same image settings as Xbox360_XEX.
 	d->fileType = FTYPE_RESOURCE_FILE;
 
 	if (!d->file) {
