@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -64,6 +64,7 @@ using std::vector;
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
 #include "Console/Xbox360_XDBF.hpp"
+#include "Console/Xbox360_XEX.hpp"
 
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"
@@ -237,6 +238,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	// Consoles
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
+	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX2'),
 
 	// Handhelds
 	GetRomDataFns_addr(DMG, ATTR_NONE, 0x104, 0xCEED6666),
