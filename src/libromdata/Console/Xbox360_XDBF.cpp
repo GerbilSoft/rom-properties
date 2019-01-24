@@ -322,6 +322,9 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
 		}
 	}
 
+	// TODO: Strings may contain newlines, which are CRLF.
+	// They needs to be converted to LF.
+
 	return ret;
 }
 
