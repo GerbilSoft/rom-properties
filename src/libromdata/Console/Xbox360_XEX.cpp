@@ -41,6 +41,7 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -75,6 +76,17 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// NOTE: Only xex2Header is byteswapped, except for the magic number.
 		XEX2_Header xex2Header;
 		XEX2_Security_Info xex2Security;
+
+		// Optional header table.
+		// NOTE: **NOT** byteswapped!
+		ao::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
+
+		/**
+		 * Get the specified optional header table entry.
+		 * @param header_id Optional header ID.
+		 * @return Optional header table entry, or nullptr if not found.
+		 */
+		const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
 };
 
 /** Xbox360_XEX_Private **/
@@ -85,6 +97,35 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	// Clear the headers.
 	memset(&xex2Header, 0, sizeof(xex2Header));
 	memset(&xex2Security, 0, sizeof(xex2Security));
+}
+
+/**
+ * Get the specified optional header table entry.
+ * @param header_id Optional header ID.
+ * @return Optional header table entry, or nullptr if not found.
+ */
+const XEX2_Optional_Header_Tbl *Xbox360_XEX_Private::getOptHdrTblEntry(uint32_t header_id) const
+{
+	if (optHdrTbl.empty()) {
+		// No optional headers...
+		return nullptr;
+	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the ID to make it easier to find things.
+	header_id = cpu_to_be32(header_id);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// Search for the header.
+	for (auto iter = optHdrTbl.cbegin(); iter != optHdrTbl.cend(); ++iter) {
+		if (iter->header_id == header_id) {
+			// Found the header.
+			return &(*iter);
+		}
+	}
+
+	// Not found.
+	return nullptr;
 }
 
 /** Xbox360_XEX **/
@@ -161,7 +202,21 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		return;
 	}
 
-	// TODO: Read the optional header table.
+	// Read the optional header table.
+	// Maximum of 32 optional headers.
+	assert(d->xex2Header.opt_header_count <= 32);
+	const unsigned int opt_header_count = std::min(d->xex2Header.opt_header_count, 32U);
+	d->optHdrTbl.resize(opt_header_count);
+	const size_t opt_header_sz = (size_t)opt_header_count * sizeof(XEX2_Optional_Header_Tbl);
+	size = d->file->seekAndRead(sizeof(d->xex2Header), d->optHdrTbl.data(), opt_header_sz);
+	if (size != opt_header_sz) {
+		// Seek and/or read error.
+		d->optHdrTbl.clear();
+		d->xex2Header.magic = 0;
+		delete d->file;
+		d->file = nullptr;
+		return;
+	}
 }
 
 /** ROM detection functions. **/
@@ -290,9 +345,39 @@ int Xbox360_XEX::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 3 fields.
-	d->fields->reserve(3);
+	// Maximum of 4 fields.
+	d->fields->reserve(4);
 	d->fields->setTabName(0, "XEX");
+
+	// TODO: Game name from XDBF.
+
+	// Original executable name
+	const XEX2_Optional_Header_Tbl *entry = d->getOptHdrTblEntry(XEX2_OPTHDR_ORIGINAL_PE_NAME);
+	if (entry) {
+		// Read the filename length.
+		const uint32_t addr = be32_to_cpu(entry->offset);
+		uint32_t length = 0;
+		size_t size = d->file->seekAndRead(addr, &length, sizeof(length));
+		if (size == sizeof(length)) {
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			length = be32_to_cpu(length);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+			// Length includes the length DWORD.
+			// Sanity check: Actual filename must be less than 260 bytes. (PATH_MAX)
+			assert(length > sizeof(uint32_t));
+			assert(length <= 260+sizeof(uint32_t));
+			if (length > sizeof(uint32_t) && length <= 260+sizeof(uint32_t)) {
+				// Remove the DWORD length from the filename length.
+				length -= sizeof(uint32_t);
+				unique_ptr<char[]> pe_filename(new char[length+1]);
+				size = d->file->read(pe_filename.get(), length);
+				if (size == length) {
+					d->fields->addField_string(C_("Xbox360_XEX", "PE Filename"),
+						pe_filename.get(), RomFields::STRF_TRIM_END);
+				}
+			}
+		}
+	}
 
 	// Module flags
 	static const char *const module_flags_tbl[] = {
