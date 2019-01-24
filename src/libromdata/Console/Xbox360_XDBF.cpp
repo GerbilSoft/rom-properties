@@ -80,6 +80,14 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		uint32_t data_offset;
 
 		/**
+		 * Find a resource in the entry table.
+		 * @param namespace_id Namespace ID.
+		 * @param resource_id Resource ID.
+		 * @return XDBF_Entry*, or nullptr if not found.
+		 */
+		const XDBF_Entry *findResource(uint16_t namespace_id, uint64_t resource_id) const;
+
+		/**
 		 * Get the language ID to use for the title fields.
 		 * @return XDBF language ID.
 		 */
@@ -100,6 +108,40 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file)
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
 	delete[] entryTable;
+}
+
+/**
+ * Find a resource in the entry table.
+ * @param namespace_id Namespace ID.
+ * @param resource_id Resource ID.
+ * @return XDBF_Entry*, or nullptr if not found.
+ */
+const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint64_t resource_id) const
+{
+	if (!entryTable) {
+		// Entry table isn't loaded...
+		return nullptr;
+	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the IDs to make it easier to find things.
+	namespace_id = cpu_to_be16(namespace_id);
+	resource_id  = cpu_to_be64(resource_id);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	const XDBF_Entry *p = entryTable;
+	const XDBF_Entry *const p_end = p + xdbfHeader.entry_table_length;
+	for (; p < p_end; p++) {
+		if (p->namespace_id == namespace_id &&
+		    p->resource_id == resource_id)
+		{
+			// Found a match!
+			return p;
+		}
+	}
+
+	// No match.
+	return nullptr;
 }
 
 /**
@@ -342,21 +384,13 @@ int Xbox360_XDBF::loadFieldData(void)
 
 	// Find the English string table.
 	// TODO: Get the system and/or default locale.
-	const XDBF_Entry *entry = d->entryTable;
-	const XDBF_Entry *const end = d->entryTable + d->xdbfHeader.entry_table_length;
-	for (; entry < end; entry++) {
-		if (entry->namespace_id != cpu_to_be16(XDBF_NAMESPACE_STRING_TABLE))
-			continue;
-		if (entry->id == cpu_to_be64(XDBF_LANGUAGE_ENGLISH))
-			break;
-	}
-
 	string title;
-	if (entry < end) {
+	const XDBF_Entry *const res_strTbl = d->findResource(XDBF_NAMESPACE_STRING_TABLE, XDBF_LANGUAGE_ENGLISH);
+	if (res_strTbl) {
 		// Found the English string table.
 		// Load it into memory.
-		const unsigned int str_tbl_addr = be32_to_cpu(entry->offset) + d->data_offset;
-		const unsigned int str_tbl_sz = be32_to_cpu(entry->length);
+		const unsigned int str_tbl_addr = be32_to_cpu(res_strTbl->offset) + d->data_offset;
+		const unsigned int str_tbl_sz = be32_to_cpu(res_strTbl->length);
 		unique_ptr<char[]> str_tbl(new char[str_tbl_sz]);
 		size_t size = d->file->seekAndRead(str_tbl_addr, str_tbl.get(), str_tbl_sz);
 		if (size == str_tbl_sz) {
@@ -376,7 +410,7 @@ int Xbox360_XDBF::loadFieldData(void)
 					const XDBF_String_Table_Entry_Header *const hdr =
 						reinterpret_cast<const XDBF_String_Table_Entry_Header*>(p);
 					const uint16_t length = be16_to_cpu(hdr->length);
-					if (hdr->id == cpu_to_be16(XDBF_ID_TITLE)) {
+					if (hdr->string_id == cpu_to_be16(XDBF_ID_TITLE)) {
 						// Found the title string.
 						// Verify that it doesn't go out of bounds.
 						const char *const p_str = p + sizeof(XDBF_String_Table_Entry_Header);

@@ -71,7 +71,7 @@ ASSERT_STRUCT(XDBF_Header, 0x18);
  */
 typedef struct PACKED _XDBF_Entry {
 	uint16_t namespace_id;		// [0x000] See XDBF_Namespace_e
-	uint64_t id;			// [0x002] ID
+	uint64_t resource_id;		// [0x002] ID
 	uint32_t offset;		// [0x00A] Offset specifier
 	uint32_t length;		// [0x00E] Length
 } XDBF_Entry;
@@ -150,7 +150,7 @@ ASSERT_STRUCT(XDBF_String_Table_Header, 14);
  * All fields are in big-endian.
  */
 typedef struct PACKED _XDBF_String_Table_Entry_Header {
-	uint16_t id;		// [0x000] ID
+	uint16_t string_id;	// [0x000] ID
 	uint16_t length;	// [0x002] String length (NOT NULL-terminated)
 } XDBF_String_Table_Entry_Header;
 ASSERT_STRUCT(XDBF_String_Table_Entry_Header, sizeof(uint32_t));
