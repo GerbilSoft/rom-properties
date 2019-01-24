@@ -271,11 +271,13 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	}
 
 	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;
-	CBCReader *reader;
+	CBCReader *reader = nullptr;
 	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
 		// No encryption.
 		reader = new CBCReader(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
-	} else {
+	}
+#ifdef ENABLE_DECRYPTION
+	else {
 		// Decrypt the title key.
 		// Get the Key Manager instance.
 		KeyManager *const keyManager = KeyManager::instance();
@@ -359,6 +361,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			break;
 		}
 	}
+#endif /* ENABLE_DECRYPTION */
 
 	if (!reader || !reader->isOpen()) {
 		// Unable to open the CBCReader.
