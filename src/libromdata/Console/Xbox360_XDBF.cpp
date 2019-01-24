@@ -50,6 +50,10 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
+
 namespace LibRomData {
 
 ROMDATA_IMPL(Xbox360_XDBF)
@@ -79,6 +83,10 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		// Data start offset within the file.
 		uint32_t data_offset;
 
+		// String tables.
+		// NOTE: These are *pointers* to ao::uvector<>.
+		ao::uvector<char> *strTbl[XDBF_LANGUAGE_MAX];
+
 		/**
 		 * Find a resource in the entry table.
 		 * @param namespace_id Namespace ID.
@@ -86,6 +94,21 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		 * @return XDBF_Entry*, or nullptr if not found.
 		 */
 		const XDBF_Entry *findResource(uint16_t namespace_id, uint64_t resource_id) const;
+
+		/**
+		 * Load a string table.
+		 * @param language_id Language ID.
+		 * @return Pointer to string table on success; nullptr on error.
+		 */
+		const ao::uvector<char> *loadStringTable(XDBF_Language_e language_id);
+
+		/**
+		 * Get a string from a string table.
+		 * @param language_id Language ID.
+		 * @param string_id String ID.
+		 * @return String, or empty string on error.
+		 */
+		string loadString(XDBF_Language_e language_id, uint16_t string_id);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -103,11 +126,21 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file)
 {
 	// Clear the header.
 	memset(&xdbfHeader, 0, sizeof(xdbfHeader));
+
+	// Clear the string table pointers.
+	memset(strTbl, 0, sizeof(strTbl));
 }
 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
 	delete[] entryTable;
+
+	// Delete any allocated string tables.
+	for (int i = ARRAY_SIZE(strTbl)-1; i >= 0; i--) {
+		if (strTbl[i]) {
+			delete strTbl[i];
+		}
+	}
 }
 
 /**
@@ -142,6 +175,138 @@ const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint
 
 	// No match.
 	return nullptr;
+}
+
+/**
+ * Load a string table.
+ * @param language_id Language ID.
+ * @return Pointer to string table on success; nullptr on error.
+ */
+const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e language_id)
+{
+	assert(language_id >= 0);
+	assert(language_id < XDBF_LANGUAGE_MAX);
+	if (language_id < 0 || language_id >= XDBF_LANGUAGE_MAX)
+		return nullptr;
+
+	// Is the string table already loaded?
+	if (this->strTbl[language_id]) {
+		return this->strTbl[language_id];
+	}
+
+	// Can we load the string table?
+	if (!file || !isValid) {
+		// Can't load the string table.
+		return nullptr;
+	}
+
+	// Find the string table entry.
+	const XDBF_Entry *const entry = findResource(
+		XDBF_NAMESPACE_STRING_TABLE, static_cast<uint64_t>(language_id));
+	if (!entry) {
+		// Not found.
+		return nullptr;
+	}
+
+	// Allocate memory and load the string table.
+	const unsigned int str_tbl_sz = be32_to_cpu(entry->length);
+	// Sanity check:
+	// - Size must be larger than sizeof(XDBF_String_Table_Header)
+	// - Size must be a maximum of 1 MB.
+	assert(str_tbl_sz > sizeof(XDBF_String_Table_Header));
+	assert(str_tbl_sz <= 1024*1024);
+	if (str_tbl_sz <= sizeof(XDBF_String_Table_Header) || str_tbl_sz > 1024*1024) {
+		// Size is out of range.
+		return nullptr;
+	}
+	ao::uvector<char> *vec = new ao::uvector<char>(str_tbl_sz);
+
+	const unsigned int str_tbl_addr = be32_to_cpu(entry->offset) + this->data_offset;
+	size_t size = file->seekAndRead(str_tbl_addr, vec->data(), str_tbl_sz);
+	if (size != str_tbl_sz) {
+		// Seek and/or read error.
+		delete vec;
+		return nullptr;
+	}
+
+	// Validate the string table magic.
+	const XDBF_String_Table_Header *const tblHdr =
+		reinterpret_cast<const XDBF_String_Table_Header*>(vec->data());
+	if (tblHdr->magic != cpu_to_be32(XDBF_XSTR_MAGIC) ||
+	    tblHdr->version != cpu_to_be32(XDBF_XSTR_VERSION))
+	{
+		// Magic is invalid.
+		// TODO: Report an error?
+		delete vec;
+		return nullptr;
+	}
+
+	// String table loaded successfully.
+	this->strTbl[language_id] = vec;
+	return vec;
+}
+
+/**
+ * Get a string from a string table.
+ * @param language_id Language ID.
+ * @param string_id String ID.
+ * @return String, or empty string on error.
+ */
+string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t string_id)
+{
+	string ret;
+
+	assert(language_id >= 0);
+	assert(language_id < XDBF_LANGUAGE_MAX);
+	if (language_id < 0 || language_id >= XDBF_LANGUAGE_MAX)
+		return ret;
+
+	// Get the string table.
+	const ao::uvector<char> *vec = strTbl[language_id];
+	if (!vec) {
+		vec = loadStringTable(language_id);
+		if (!vec) {
+			// Unable to load the string table.
+			return ret;
+		}
+	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the ID to make it easier to find things.
+	string_id = cpu_to_be16(string_id);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// TODO: Optimize by creating an unordered_map of IDs to strings?
+	// Might not be a good optimization if we don't have that many strings...
+
+	// Search for the specified string.
+	const char *p = vec->data() + sizeof(XDBF_String_Table_Header);
+	const char *const p_end = p + vec->size() - sizeof(XDBF_String_Table_Header);
+	while (p < p_end) {
+		// TODO: Verify alignment.
+		const XDBF_String_Table_Entry_Header *const hdr =
+			reinterpret_cast<const XDBF_String_Table_Entry_Header*>(p);
+		const uint16_t length = be16_to_cpu(hdr->length);
+		if (hdr->string_id == string_id) {
+			// Found the string.
+			// Verify that it doesn't go out of bounds.
+			const char *const p_str = p + sizeof(XDBF_String_Table_Entry_Header);
+			const char *const p_str_end = p_str + length;
+			if (p_str_end <= p_end) {
+				// Bounds are OK.
+				// Copy the string as-is, since the string table
+				// uses UTF-8 encoding.
+				ret.assign(p_str, length);
+			}
+			break;
+		} else {
+			// Not the requested string.
+			// Go to the next string.
+			p += sizeof(XDBF_String_Table_Entry_Header) + length;
+		}
+	}
+
+	return ret;
 }
 
 /**
@@ -384,56 +549,8 @@ int Xbox360_XDBF::loadFieldData(void)
 
 	// Find the English string table.
 	// TODO: Get the system and/or default locale.
-	string title;
-	const XDBF_Entry *const res_strTbl = d->findResource(XDBF_NAMESPACE_STRING_TABLE, XDBF_LANGUAGE_ENGLISH);
-	if (res_strTbl) {
-		// Found the English string table.
-		// Load it into memory.
-		const unsigned int str_tbl_addr = be32_to_cpu(res_strTbl->offset) + d->data_offset;
-		const unsigned int str_tbl_sz = be32_to_cpu(res_strTbl->length);
-		unique_ptr<char[]> str_tbl(new char[str_tbl_sz]);
-		size_t size = d->file->seekAndRead(str_tbl_addr, str_tbl.get(), str_tbl_sz);
-		if (size == str_tbl_sz) {
-			// Search for the title string.
-			// ID: 0x8001
-			const XDBF_String_Table_Header *const tblHdr =
-				reinterpret_cast<const XDBF_String_Table_Header*>(str_tbl.get());
-			if (tblHdr->magic == cpu_to_be32(XDBF_XSTR_MAGIC) &&
-			    tblHdr->version == cpu_to_be32(XDBF_XSTR_VERSION))
-			{
-				// Valid string table.
-				// TODO: Validate tblHdr->size and tblHdr->string_count?
-				const char *p = str_tbl.get() + sizeof(XDBF_String_Table_Header);
-				const char *const p_end = p + str_tbl_sz - sizeof(XDBF_String_Table_Header);
-				while (p < p_end) {
-					// TODO: Verify alignment.
-					const XDBF_String_Table_Entry_Header *const hdr =
-						reinterpret_cast<const XDBF_String_Table_Entry_Header*>(p);
-					const uint16_t length = be16_to_cpu(hdr->length);
-					if (hdr->string_id == cpu_to_be16(XDBF_ID_TITLE)) {
-						// Found the title string.
-						// Verify that it doesn't go out of bounds.
-						const char *const p_str = p + sizeof(XDBF_String_Table_Entry_Header);
-						const char *const p_str_end = p_str + length;
-						if (p_str_end <= p_end) {
-							// Bounds are OK.
-							// Copy the string as-is, since the string table
-							// uses UTF-8 encoding.
-							title.assign(p_str, length);
-						}
-						break;
-					} else {
-						// Not the title string.
-						// Go to the next string.
-						p += sizeof(XDBF_String_Table_Entry_Header) + length;
-					}
-				}
-			}
-		}
-	}
-
-	// TODO: XDBF or RomData context?
-	d->fields->addField_string(C_("XDBF", "Title"),
+	string title = d->loadString(XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
+	d->fields->addField_string(C_("RomData", "Title"),
 		!title.empty() ? title : C_("RomData", "Unknown"));
 
 	// Finished reading the field data.

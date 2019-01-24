@@ -124,6 +124,8 @@ typedef enum {
 	XDBF_LANGUAGE_ITALIAN	= 6,
 	XDBF_LANGUAGE_KOREAN	= 7,
 	XDBF_LANGUAGE_CHINESE	= 8,
+
+	XDBF_LANGUAGE_MAX
 } XDBF_Language_e;
 
 /** String tables **/
