@@ -744,7 +744,7 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->setTabName(0, "XEX");
 
 	// Game name.
-	const Xbox360_XDBF *xdbf = d->initXDBF();
+	const Xbox360_XDBF *const xdbf = d->initXDBF();
 	if (xdbf) {
 		string title = xdbf->getGameTitle();
 		if (!title.empty()) {
@@ -952,6 +952,46 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Xbox360_XEX::loadMetaData(void)
+{
+	RP_D(Xbox360_XEX);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// SMDH file isn't valid.
+		return -EIO;
+	}
+
+	// Make sure the XDBF section is loaded.
+	const Xbox360_XDBF *const xdbf = d->initXDBF();
+	if (!xdbf) {
+		// Unable to load the XDBF section.
+		return 0;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Title.
+	string title = xdbf->getGameTitle();
+	if (!title.empty()) {
+		d->metaData->addMetaData_string(Property::Title, title);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
