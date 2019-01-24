@@ -547,9 +547,11 @@ int Xbox360_XDBF::loadFieldData(void)
 	// TODO: Convenience function to look up a resource
 	// given a namespace ID and resource ID.
 
+	// Language ID.
+	const XDBF_Language_e langID = d->getLangID();
+
 	// Find the English string table.
-	// TODO: Get the system and/or default locale.
-	string title = d->loadString(XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
+	string title = d->loadString(langID, XDBF_ID_TITLE);
 	d->fields->addField_string(C_("RomData", "Title"),
 		!title.empty() ? title : C_("RomData", "Unknown"));
 
