@@ -255,7 +255,7 @@ public:
 		}
 
 		// Row data
-		unique_ptr<unsigned int[]> nl_count(new unsigned int[list_data->size()]);
+		unique_ptr<unsigned int[]> nl_count(new unsigned int[list_data->size()]());
 		unsigned int row = 0;
 		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it, row++) {
 			unsigned int col = 0;
@@ -327,23 +327,63 @@ public:
 			// Those spaces will not be used in the text area.
 			colSize[0] -= 4;
 		}
-		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-			if (!skipFirstNL) {
-				os << endl;
-				if (!separateRow) {
-					os << Pad(field.width);
+
+		// Current line position.
+		// NOTE: Special handling is needed for npos due to the use of unsigned int.
+		unique_ptr<unsigned int[]> linePos(new unsigned int[col_count]);
+
+		row = 0;
+		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it, row++) {
+			// Print one line at a time for multi-line entries.
+			// TODO: Better formatting for multi-line?
+			// Right now we're assuming that at least one column is a single line.
+			// If all columns are multi-line, then everything will look like it's
+			// all single-line entries.
+			memset(linePos.get(), 0, col_count * sizeof(unsigned int));
+			// NOTE: nl_count[row] is 0 for single-line items.
+			for (int line = nl_count[row]; line >= 0; line--) {
+				if (!skipFirstNL) {
+					os << endl;
+					if (!separateRow) {
+						os << Pad(field.width);
+					}
+				} else {
+					skipFirstNL = false;
 				}
-			} else {
-				skipFirstNL = false;
-			}
-			os << '|';
-			if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-				os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
-				checkboxes >>= 1;
-			}
-			unsigned int i = 0;
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++i) {
-				os << setw(colSize[i]) << SafeString(jt->c_str(), false) << '|';
+				os << '|';
+				if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+					os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
+					checkboxes >>= 1;
+				}
+				unsigned int col = 0;
+				for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++col) {
+					os << setw(colSize[col]);
+					if (nl_count[row] == 0) {
+						// No newlines. Print the string directly.
+						os << SafeString(jt->c_str(), false);
+					} else if (linePos[col] == (unsigned int)string::npos) {
+						// End of string.
+						os << "";
+					} else {
+						// Find the next newline.
+						size_t nl_pos = jt->find('\n', linePos[col]);
+						if (nl_pos == string::npos) {
+							// No more newlines.
+							os << SafeString(jt->c_str() + linePos[col], false);
+							linePos[col] = (unsigned int)string::npos;
+						} else {
+							// Found a newline.
+							// TODO: Update SafeString to take a length parameter instead of creating a temporary string.
+							os << jt->substr(linePos[col], nl_pos - linePos[col]);
+							linePos[col] = (unsigned int)(nl_pos + 1);
+							if (linePos[col] > (unsigned int)jt->size()) {
+								// End of string.
+								linePos[col] = (unsigned int)string::npos;
+							}
+						}
+					}
+					os << '|';
+				}
 			}
 		}
 		return os;
