@@ -20,6 +20,8 @@
     disguised as a retail game.
     * NOTE: The Windows implementation currently requires Windows Vista
       or later.
+  * rpcli will now print multi-line entries in lists using multiple lines
+    instead of showing a U+240A symbol between lines.
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
