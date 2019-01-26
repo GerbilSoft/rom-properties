@@ -227,11 +227,11 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 	// Allocate memory and load the string table.
 	const unsigned int str_tbl_sz = be32_to_cpu(entry->length);
 	// Sanity check:
-	// - Size must be larger than sizeof(XDBF_String_Table_Header)
+	// - Size must be larger than sizeof(XDBF_XSTR_Header)
 	// - Size must be a maximum of 1 MB.
-	assert(str_tbl_sz > sizeof(XDBF_String_Table_Header));
+	assert(str_tbl_sz > sizeof(XDBF_XSTR_Header));
 	assert(str_tbl_sz <= 1024*1024);
-	if (str_tbl_sz <= sizeof(XDBF_String_Table_Header) || str_tbl_sz > 1024*1024) {
+	if (str_tbl_sz <= sizeof(XDBF_XSTR_Header) || str_tbl_sz > 1024*1024) {
 		// Size is out of range.
 		return nullptr;
 	}
@@ -246,8 +246,8 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 	}
 
 	// Validate the string table magic.
-	const XDBF_String_Table_Header *const tblHdr =
-		reinterpret_cast<const XDBF_String_Table_Header*>(vec->data());
+	const XDBF_XSTR_Header *const tblHdr =
+		reinterpret_cast<const XDBF_XSTR_Header*>(vec->data());
 	if (tblHdr->magic != cpu_to_be32(XDBF_XSTR_MAGIC) ||
 	    tblHdr->version != cpu_to_be32(XDBF_XSTR_VERSION))
 	{
@@ -296,17 +296,17 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
 	// Might not be a good optimization if we don't have that many strings...
 
 	// Search for the specified string.
-	const char *p = vec->data() + sizeof(XDBF_String_Table_Header);
-	const char *const p_end = p + vec->size() - sizeof(XDBF_String_Table_Header);
+	const char *p = vec->data() + sizeof(XDBF_XSTR_Header);
+	const char *const p_end = p + vec->size() - sizeof(XDBF_XSTR_Header);
 	while (p < p_end) {
 		// TODO: Verify alignment.
-		const XDBF_String_Table_Entry_Header *const hdr =
-			reinterpret_cast<const XDBF_String_Table_Entry_Header*>(p);
+		const XDBF_XSTR_Entry_Header *const hdr =
+			reinterpret_cast<const XDBF_XSTR_Entry_Header*>(p);
 		const uint16_t length = be16_to_cpu(hdr->length);
 		if (hdr->string_id == string_id) {
 			// Found the string.
 			// Verify that it doesn't go out of bounds.
-			const char *const p_str = p + sizeof(XDBF_String_Table_Entry_Header);
+			const char *const p_str = p + sizeof(XDBF_XSTR_Entry_Header);
 			const char *const p_str_end = p_str + length;
 			if (p_str_end <= p_end) {
 				// Bounds are OK.
@@ -318,7 +318,7 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
 		} else {
 			// Not the requested string.
 			// Go to the next string.
-			p += sizeof(XDBF_String_Table_Entry_Header) + length;
+			p += sizeof(XDBF_XSTR_Entry_Header) + length;
 		}
 	}
 
