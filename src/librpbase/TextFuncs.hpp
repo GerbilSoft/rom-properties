@@ -624,6 +624,17 @@ void trimEnd(std::string &str);
  */
 std::string dos2unix(const char *str_dos, int len = -1, int *lf_count = nullptr);
 
+/**
+ * Convert DOS (CRLF) line endings to UNIX (LF) line endings.
+ * @param str_dos	[in] String with DOS line endings.
+ * @param lf_count	[out,opt] Number of CRLF pairs found.
+ * @return String with UNIX line endings.
+ */
+static inline std::string dos2unix(const std::string &str_dos, int *lf_count = nullptr)
+{
+	return dos2unix(str_dos.data(), static_cast<int>(str_dos.size()), lf_count);
+}
+
 /** Audio functions. **/
 
 /**
