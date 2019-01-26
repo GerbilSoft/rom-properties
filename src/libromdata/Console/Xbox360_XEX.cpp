@@ -95,6 +95,15 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// Initialized by initPeReader().
 		XEX2_File_Format_Info fileFormatInfo;
 
+		// Encryption key in use.
+		// If fileFormatInfo indicates the PE is encrypted:
+		// - -1: Unknown
+		// -  0: Retail
+		// -  1: Debug
+		// NOTE: We can't use EncryptionKeys because the debug key
+		// is all zeroes, so we're not handling it here.
+		int keyInUse;
+
 		// Basic compression: Data segments.
 		struct BasicZDataSeg_t {
 			uint32_t vaddr;		// Virtual address in memory
@@ -159,6 +168,7 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 
 Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	: super(q, file)
+	, keyInUse(-1)
 	, peReader(nullptr)
 	, peFile(nullptr)
 	, pe_xdbf(nullptr)
@@ -320,7 +330,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		// IAesCipher instance.
 		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 
-		for (unsigned int i = idx0; i < ARRAY_SIZE(keyData); i++) {
+		for (int i = idx0; i < (int)ARRAY_SIZE(keyData); i++) {
 			// Load the common key. (CBC mode)
 			int ret = cipher->setKey(keyData[i].key, keyData[i].length);
 			ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
@@ -365,6 +375,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 
 			// MZ matches.
 			// TODO: Check for more magic?
+			keyInUse = i;
 			break;
 		}
 	}
@@ -739,8 +750,8 @@ int Xbox360_XEX::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 9 fields.
-	d->fields->reserve(9);
+	// Maximum of 11 fields.
+	d->fields->reserve(11);
 	d->fields->setTabName(0, "XEX");
 
 	// Game name.
@@ -948,6 +959,47 @@ int Xbox360_XEX::loadFieldData(void)
 				}
 			}
 		}
+	}
+
+	/** File format info **/
+	// Loaded by initPeReader(), which is called by initXDBF().
+
+	// Encryption key
+	const char *s_encryption_key;
+	if (d->fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
+		// No encryption.
+		s_encryption_key = C_("Xbox360_XEX|EncKey", "None");
+	} else {
+		switch (d->keyInUse) {
+			default:
+			case -1:
+				s_encryption_key = C_("RomData", "Unknown");
+				break;
+			case 0:
+				s_encryption_key = C_("Xbox360_XEX|EncKey", "Retail");
+				break;
+			case 1:
+				s_encryption_key = C_("Xbox360_XEX|EncKey", "Debug");
+				break;
+		}
+	}
+	d->fields->addField_string(C_("Xbox360_XEX", "Encryption Key"), s_encryption_key);
+
+	// Compression
+	static const char *const compression_tbl[] = {
+		NOP_C_("Xbox360_XEX|Compression", "None"),
+		NOP_C_("Xbox360_XEX|Compression", "Basic (Sparse)"),
+		NOP_C_("Xbox360_XEX|Compression", "Normal (LZX)"),
+		NOP_C_("Xbox360_XEX|Compression", "Delta"),
+	};
+	if (d->fileFormatInfo.compression_type < ARRAY_SIZE(compression_tbl)) {
+		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
+			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XEX|Compression",
+				compression_tbl[d->fileFormatInfo.compression_type]));
+	} else {
+		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+				d->fileFormatInfo.compression_type));
 	}
 
 	// Finished reading the field data.
