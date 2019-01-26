@@ -242,6 +242,9 @@ public:
 			return os << "[ERROR: No list data.]";
 		}
 
+		/** Calculate the column widths. **/
+
+		// Column names
 		unique_ptr<unsigned int[]> colSize(new unsigned int[col_count]());
 		unsigned int totalWidth = col_count + 1;
 		if (listDataDesc.names) {
@@ -251,18 +254,45 @@ public:
 			}
 		}
 
-		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-			unsigned int i = 0;
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-				colSize[i] = max(static_cast<unsigned int>(jt->length()), colSize[i]);
-				i++;
+		// Row data
+		unique_ptr<unsigned int[]> nl_count(new unsigned int[list_data->size()]);
+		unsigned int row = 0;
+		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it, row++) {
+			unsigned int col = 0;
+			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, col++) {
+				// Check for newlines.
+				unsigned int nl_row = 0;
+				const size_t str_sz = jt->size();
+				size_t prev_pos = 0;
+				size_t cur_pos;
+				do {
+					unsigned int cur_sz;
+					cur_pos = jt->find('\n', prev_pos);
+					if (cur_pos == string::npos) {
+						// End of string.
+						cur_sz = (unsigned int)(str_sz - prev_pos);
+					} else {
+						// Found a newline.
+						cur_sz = (unsigned int)(cur_pos - prev_pos);
+						prev_pos = cur_pos + 1;
+						nl_row++;
+					}
+					colSize[col] = max(cur_sz, colSize[col]);
+				} while (cur_pos != string::npos && prev_pos < str_sz);
+
+				// Update the newline count for this row.
+				nl_count[row] = max(nl_count[row], nl_row);
 			}
 		}
+
+		// Extra spacing for checkboxes
 		// TODO: Use a separate column for the checkboxes?
 		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Prepend 4 spaces in column 0 for "[x] ".
 			colSize[0] += 4;
 		}
+
+		/** Print the list data. **/
 
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
