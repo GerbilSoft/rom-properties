@@ -125,6 +125,13 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		XDBF_Language_e getLangID(void) const;
 
 		/**
+		 * Load an image resource.
+		 * @param image_id Image ID.
+		 * @return Decoded image, or nullptr on error.
+		 */
+		rp_image *loadImage(uint64_t image_id);
+
+		/**
 		 * Load the main title icon.
 		 * @return Icon, or nullptr on error.
 		 */
@@ -343,6 +350,63 @@ XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
 }
 
 /**
+ * Load an image resource.
+ * @param image_id Image ID.
+ * @return Decoded image, or nullptr on error.
+ */
+rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
+{
+	if (!entryTable) {
+		// Entry table isn't loaded...
+		return nullptr;
+	}
+
+	// Can we load the image?
+	if (!file || !isValid) {
+		// Can't load the image.
+		return nullptr;
+	}
+
+	// Icons are stored in PNG format.
+
+	// Get the icon resource.
+	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_IMAGE, image_id);
+	if (!entry) {
+		// Not found...
+		return nullptr;
+	}
+
+	// Load the image.
+	const uint32_t addr = be32_to_cpu(entry->offset) + this->data_offset;
+	const uint32_t length = be32_to_cpu(entry->length);
+
+	// Sanity check:
+	// - Size must be at least 16 bytes. [TODO: Smallest PNG?]
+	// - Size must be a maximum of 1 MB.
+	assert(length >= 16);
+	assert(length <= 1024*1024);
+	if (length < 16 || length > 1024*1024) {
+		// Size is out of range.
+		return nullptr;
+	}
+
+	unique_ptr<uint8_t[]> png_buf(new uint8_t[length]);
+	size_t size = file->seekAndRead(addr, png_buf.get(), length);
+	if (size != length) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Create an RpMemFile and decode the image.
+	// TODO: For rpcli, shortcut to extract the PNG directly.
+	RpMemFile *const f_mem = new RpMemFile(png_buf.get(), length);
+	rp_image *img = RpPng::load(f_mem);
+	delete f_mem;
+
+	return img;
+}
+
+/**
  * Load the main title icon.
  * @return Icon, or nullptr on error.
  */
@@ -362,42 +426,8 @@ const rp_image *Xbox360_XDBF_Private::loadIcon(void)
 		return nullptr;
 	}
 
-	// Icons are stored in PNG format.
-	// TODO: Achievement icons?
-
-	// Get the icon resource.
-	const XDBF_Entry *entry = findResource(XDBF_SPA_NAMESPACE_IMAGE, XDBF_ID_TITLE);
-	if (!entry) {
-		// Not found...
-		return nullptr;
-	}
-
-	// Load the icon.
-	const unsigned int addr = be32_to_cpu(entry->offset) + this->data_offset;
-	const unsigned int length = be32_to_cpu(entry->length);
-	// Sanity check:
-	// - Size must be at least 16 bytes. [TODO: Smallest PNG?]
-	// - Size must be a maximum of 1 MB.
-	assert(length >= 16);
-	assert(length <= 1024*1024);
-	if (length < 16 || length > 1024*1024) {
-		// Size is out of range.
-		return nullptr;
-	}
-
-	unique_ptr<uint8_t[]> png_buf(new uint8_t[length]);
-	size_t size = file->seekAndRead(addr, png_buf.get(), length);
-	if (size != length) {
-		// Seek and/or read error.
-		return nullptr;
-	}
-
-	// Create an RpMemFile.
-	// TODO: For rpcli, shortcut to extract the PNG directly.
-	RpMemFile *const f_mem = new RpMemFile(png_buf.get(), length);
-	img_icon = RpPng::load(f_mem);
-	delete f_mem;
-
+	// Get the icon.
+	img_icon = loadImage(XDBF_ID_TITLE);
 	return img_icon;
 }
 
