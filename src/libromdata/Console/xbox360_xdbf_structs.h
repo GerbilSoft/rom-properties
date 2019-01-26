@@ -44,6 +44,7 @@ extern "C" {
  * - https://github.com/xenia-project/xenia/blob/HEAD/src/xenia/kernel/util/xdbf_utils.cc
  * - https://free60project.github.io/wiki/XDBF.html
  * - https://free60project.github.io/wiki/GPD.html
+ * - https://free60project.github.io/wiki/SPA.html
  *
  * All fields are in big-endian.
  */
@@ -89,10 +90,10 @@ typedef struct PACKED _XDBF_Free_Space_Entry {
  * XDBF: Namespace IDs
  */
 typedef enum {
-	// NOTE: These namespace IDs are valid for XEX resources only!
-	XDBF_NAMESPACE_METADATA			= 1,	// Metadata
-	XDBF_NAMESPACE_IMAGE			= 2,	// Image (usually PNG format)
-	XDBF_NAMESPACE_STRING_TABLE		= 3,	// String table (ID == XDBF_Language_e)
+	/** SPA (XEX XDBF) **/
+	XDBF_SPA_NAMESPACE_METADATA		= 1,	// Metadata
+	XDBF_SPA_NAMESPACE_IMAGE		= 2,	// Image (usually PNG format)
+	XDBF_SPA_NAMESPACE_STRING_TABLE		= 3,	// String table (ID == XDBF_Language_e)
 } XDBF_Namespace_e;
 
 /**

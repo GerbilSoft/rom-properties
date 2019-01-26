@@ -218,7 +218,7 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 
 	// Find the string table entry.
 	const XDBF_Entry *const entry = findResource(
-		XDBF_NAMESPACE_STRING_TABLE, static_cast<uint64_t>(language_id));
+		XDBF_SPA_NAMESPACE_STRING_TABLE, static_cast<uint64_t>(language_id));
 	if (!entry) {
 		// Not found.
 		return nullptr;
@@ -366,7 +366,7 @@ const rp_image *Xbox360_XDBF_Private::loadIcon(void)
 	// TODO: Achievement icons?
 
 	// Get the icon resource.
-	const XDBF_Entry *entry = findResource(XDBF_NAMESPACE_IMAGE, XDBF_ID_TITLE);
+	const XDBF_Entry *entry = findResource(XDBF_SPA_NAMESPACE_IMAGE, XDBF_ID_TITLE);
 	if (!entry) {
 		// Not found...
 		return nullptr;
@@ -556,6 +556,7 @@ const char *const *Xbox360_XDBF::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".xdbf",
+		".spa",		// XEX XDBF files
 		//".gpd",	// Gamer Profile Data
 
 		nullptr
