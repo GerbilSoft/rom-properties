@@ -615,6 +615,15 @@ std::string formatFileSize(int64_t fileSize);
  */
 void trimEnd(std::string &str);
 
+/**
+ * Convert DOS (CRLF) line endings to UNIX (LF) line endings.
+ * @param str_dos	[in] String with DOS line endings.
+ * @param len		[in] Length of str, in characters. (-1 for NULL-terminated string)
+ * @param lf_count	[out,opt] Number of CRLF pairs found.
+ * @return String with UNIX line endings.
+ */
+std::string dos2unix(const char *str_dos, int len = -1, int *lf_count = nullptr);
+
 /** Audio functions. **/
 
 /**

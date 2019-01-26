@@ -323,9 +323,10 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
 			const char *const p_str_end = p_str + length;
 			if (p_str_end <= p_end) {
 				// Bounds are OK.
-				// Copy the string as-is, since the string table
-				// uses UTF-8 encoding.
-				ret.assign(p_str, length);
+				// Character set conversion isn't needed, since
+				// the string table is UTF-8, but we do need to
+				// convert from DOS to UNIX line endings.
+				ret = dos2unix(p_str, length);
 			}
 			break;
 		} else {
@@ -334,9 +335,6 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
 			p += sizeof(XDBF_XSTR_Entry_Header) + length;
 		}
 	}
-
-	// TODO: Strings may contain newlines, which are CRLF.
-	// They needs to be converted to LF.
 
 	return ret;
 }
@@ -552,7 +550,6 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 		}
 
 		// TODO: Formatting value indicating the first line should be bold.
-		// TODO: Convert CRLF to LF if necessary.
 		data_row.push_back(std::move(desc));
 
 		// Gamerscore
