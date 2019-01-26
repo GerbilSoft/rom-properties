@@ -267,6 +267,12 @@ public:
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
 
+		// Print the list on a separate row from the field name?
+		const bool separateRow = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
+		if (separateRow) {
+			os << endl;
+		}
+
 		bool skipFirstNL = true;
 		if (listDataDesc.names) {
 			// Print the column names.
@@ -275,7 +281,11 @@ public:
 				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
 				os << '|' << setw(colSize[i]) << *it;
 			}
-			os << '|' << endl << Pad(field.width) << string(totalWidth, '-');
+			os << '|' << endl;
+			if (!separateRow) {
+				os << Pad(field.width);
+			}
+			os << string(totalWidth, '-');
 			// Don't skip the first newline, since we're
 			// printing headers.
 			skipFirstNL = false;
@@ -289,7 +299,10 @@ public:
 		}
 		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 			if (!skipFirstNL) {
-				os << endl << Pad(field.width);
+				os << endl;
+				if (!separateRow) {
+					os << Pad(field.width);
+				}
 			} else {
 				skipFirstNL = false;
 			}
