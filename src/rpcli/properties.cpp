@@ -312,10 +312,16 @@ public:
 				os << '|' << setw(colSize[i]) << *it;
 			}
 			os << '|' << endl;
+
+			// Separator between the headers and the data.
 			if (!separateRow) {
 				os << Pad(field.width);
 			}
-			os << string(totalWidth, '-');
+			for (i = 0; i < col_count; i++) {
+				os << '|' << string(colSize[i], '-');
+			}
+			os << '|';
+
 			// Don't skip the first newline, since we're
 			// printing headers.
 			skipFirstNL = false;
