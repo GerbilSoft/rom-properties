@@ -136,6 +136,12 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		 * @return Icon, or nullptr on error.
 		 */
 		const rp_image *loadIcon(void);
+
+		/**
+		 * Add the Achievements RFT_LISTDATA field.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addFields_achievements(void);
 };
 
 /** Xbox360_XDBF_Private **/
@@ -431,6 +437,136 @@ const rp_image *Xbox360_XDBF_Private::loadIcon(void)
 	return img_icon;
 }
 
+/**
+ * Add the Achievements RFT_LISTDATA field.
+ * @return 0 on success; non-zero on error.
+ */
+int Xbox360_XDBF_Private::addFields_achievements(void)
+{
+	if (!entryTable) {
+		// Entry table isn't loaded...
+		return 1;
+	}
+
+	// Can we load the achievements?
+	if (!file || !isValid) {
+		// Can't load the achievements.
+		return 2;
+	}
+
+	// Get the achievements table.
+	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_METADATA, XDBF_XACH_MAGIC);
+	if (!entry) {
+		// Not found...
+		return 3;
+	}
+
+	// Load the achievements table.
+	const uint32_t addr = be32_to_cpu(entry->offset) + this->data_offset;
+	const uint32_t length = be32_to_cpu(entry->length);
+
+	// Sanity check:
+	// - Size must be at least sizeof(XDBF_XACH_Header).
+	// - Size must be a maximum of sizeof(XDBF_XACH_Header) + (sizeof(XDBF_XACH_Entry) * 512).
+	static const unsigned int XACH_MAX_COUNT = 512;
+	static const uint32_t XACH_MIN_SIZE = (uint32_t)sizeof(XDBF_XACH_Header);
+	static const uint32_t XACH_MAX_SIZE = XACH_MIN_SIZE + (uint32_t)(sizeof(XDBF_XACH_Entry) * XACH_MAX_COUNT);
+	assert(length > XACH_MIN_SIZE);
+	assert(length <= XACH_MAX_SIZE);
+	if (length < XACH_MIN_SIZE || length > XACH_MAX_SIZE) {
+		// Size is out of range.
+		return 4;
+	}
+
+	unique_ptr<uint8_t[]> xach_buf(new uint8_t[length]);
+	size_t size = file->seekAndRead(addr, xach_buf.get(), length);
+	if (size != length) {
+		// Seek and/or read error.
+		return 5;
+	}
+
+	// XACH header.
+	const XDBF_XACH_Header *const hdr =
+		reinterpret_cast<const XDBF_XACH_Header*>(xach_buf.get());
+	// Validate the header.
+	if (hdr->magic != cpu_to_be32(XDBF_XACH_MAGIC) ||
+	    hdr->version != cpu_to_be32(XDBF_XACH_VERSION))
+	{
+		// Magic is invalid.
+		// TODO: Report an error?
+		return 6;
+	}
+
+	// Validate the entry count.
+	unsigned int xach_count = be16_to_cpu(hdr->achievement_count);
+	if (xach_count > XACH_MAX_COUNT) {
+		// Too many entries.
+		// Reduce it to XACH_MAX_COUNT.
+		xach_count = XACH_MAX_COUNT;
+	} else if (xach_count > ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry))) {
+		// Entry count is too high.
+		xach_count = ((length - sizeof(XDBF_XACH_Header)) / sizeof(XDBF_XACH_Entry));
+	}
+
+	const XDBF_XACH_Entry *p =
+		reinterpret_cast<const XDBF_XACH_Entry*>(xach_buf.get() + sizeof(*hdr));
+	const XDBF_XACH_Entry *const p_end = p + xach_count;
+
+	// TODO: Achievement icons.
+	// Icons don't have their own column name; they're considered
+	// a virtual column, much like checkboxes.
+
+	// Language ID
+	const XDBF_Language_e langID = getLangID();
+
+	// Columns
+	static const char *const xach_col_names[] = {
+		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
+		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
+		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
+	};
+	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
+		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
+
+	auto vv_xach = new vector<vector<string> >();
+	vv_xach->resize(xach_count);
+	for (auto iter = vv_xach->begin();
+	     p < p_end && iter != vv_xach->end(); p++, ++iter)
+	{
+		auto &data_row = *iter;
+
+		// Achievement ID
+		data_row.push_back(std::move(rp_sprintf("%u", be16_to_cpu(p->achievement_id))));
+
+		// Title and locked description
+		// TODO: Unlocked description?
+		string desc = loadString(langID, be16_to_cpu(p->title_id));
+		string lck_desc = loadString(langID, be16_to_cpu(p->locked_desc_id));
+		if (!lck_desc.empty()) {
+			if (!desc.empty()) {
+				desc += '\n';
+				desc += lck_desc;
+			} else {
+				desc = std::move(lck_desc);
+			}
+		}
+
+		// TODO: Formatting value indicating the first line should be bold.
+		// TODO: Convert CRLF to LF if necessary.
+		data_row.push_back(std::move(desc));
+
+		// Gamerscore
+		// TODO: std::move() rp_sprintf()? [does it make a code size diff]
+		data_row.push_back(rp_sprintf("%u", be16_to_cpu(p->gamerscore)));
+	}
+
+	// Add the list data.
+	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"),
+		v_xach_col_names, vv_xach, 0,
+		RomFields::RFT_LISTDATA_SEPARATE_ROW);
+	return 0;
+}
+
 /** Xbox360_XDBF **/
 
 /**
@@ -702,8 +838,8 @@ int Xbox360_XDBF::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 1 field.
-	d->fields->reserve(1);
+	// Maximum of 2 fields.
+	d->fields->reserve(2);
 	d->fields->setTabName(0, "XDBF");
 
 	// TODO: XSTR string table handling class.
@@ -712,13 +848,16 @@ int Xbox360_XDBF::loadFieldData(void)
 	// TODO: Convenience function to look up a resource
 	// given a namespace ID and resource ID.
 
-	// Language ID.
+	// Language ID
 	const XDBF_Language_e langID = d->getLangID();
 
-	// Game title.
+	// Game title
 	string title = d->loadString(langID, XDBF_ID_TITLE);
 	d->fields->addField_string(C_("RomData", "Title"),
 		!title.empty() ? title : C_("RomData", "Unknown"));
+
+	// Achievements
+	d->addFields_achievements();
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
