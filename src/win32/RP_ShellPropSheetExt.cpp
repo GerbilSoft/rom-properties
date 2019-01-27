@@ -2361,18 +2361,35 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 		// Fill in the ImageList index.
 		// NOTE: Only valid for the base item.
 		if (plvItem->iSubItem == 0) {
-			// Get the vector of ImageList indexes for this ListView.
-			auto lvIdIter = map_lvImageList.find(idFrom);
-			if (lvIdIter != map_lvImageList.end()) {
-				const auto &lvImageList = lvIdIter->second;
+			// Check for checkboxes first.
+			// LVS_OWNERDATA prevents LVS_EX_CHECKBOXES from working correctly,
+			// so we have to implement it here.
+			// Reference: https://www.codeproject.com/Articles/29064/CGridListCtrlEx-Grid-Control-Based-on-CListCtrl
+			auto lvChkIdIter = map_lvCheckboxes.find(idFrom);
+			if (lvChkIdIter != map_lvCheckboxes.end()) {
+				// Found checkboxes.
+				const uint32_t checkboxes = lvChkIdIter->second;
 
-				// Is this row in range?
-				if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(lvImageList.size())) {
-					const int iImage = lvImageList[plvItem->iItem];
-					if (iImage >= 0) {
-						// Set the ImageList index.
-						plvItem->iImage = iImage;
-						ret = true;
+				// Enable state handling.
+				plvItem->mask |= LVIF_STATE;
+				plvItem->stateMask = LVIS_STATEIMAGEMASK;
+				plvItem->state = INDEXTOSTATEIMAGEMASK(
+					((checkboxes & (1 << plvItem->iItem)) ? 2 : 1));
+				ret = true;
+			} else {
+				// No checkboxes. Check for ImageList.
+				auto lvImgIdIter = map_lvImageList.find(idFrom);
+				if (lvImgIdIter != map_lvImageList.end()) {
+					const auto &lvImageList = lvImgIdIter->second;
+
+					// Is this row in range?
+					if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(lvImageList.size())) {
+						const int iImage = lvImageList[plvItem->iItem];
+						if (iImage >= 0) {
+							// Set the ImageList index.
+							plvItem->iImage = iImage;
+							ret = true;
+						}
 					}
 				}
 			}
