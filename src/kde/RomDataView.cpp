@@ -601,7 +601,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	Q_Q(RomDataView);
 	QTreeWidget *const treeWidget = new QTreeWidgetOpt(q);
 	treeWidget->setRootIsDecorated(false);
-	treeWidget->setUniformRowHeights(true);
+	treeWidget->setUniformRowHeights(false);
 	treeWidget->setAlternatingRowColors(true);
 
 	// Set up the column names.
