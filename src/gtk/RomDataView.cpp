@@ -1015,7 +1015,8 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// and/or the system theme is changed.
 	// TODO: Set an actual default number of rows, or let Qt handle it?
 	// (Windows uses 5.)
-	g_object_set_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible", GINT_TO_POINTER(listDataDesc.rows_visible));
+	g_object_set_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible",
+		GINT_TO_POINTER(listDataDesc.rows_visible));
 	if (listDataDesc.rows_visible > 0) {
 		g_signal_connect(treeView, "realize",
 			reinterpret_cast<GCallback>(tree_view_realize_signal_handler), page);
@@ -1388,6 +1389,11 @@ rom_data_view_update_display(RomDataView *page)
 				}
 
 				if (doVBox) {
+					// Unset this property to prevent the event filter from
+					// setting a fixed height.
+					g_object_set_data(G_OBJECT(widget), "RFT_LISTDATA_rows_visible",
+						GINT_TO_POINTER(0));
+
 					// Add the widget to the GtkVBox.
 					gtk_box_pack_start(GTK_BOX(tab.vbox), widget, FALSE, FALSE, 0);
 					if (tab.lblCredits) {
