@@ -244,7 +244,7 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	if (is_warning) {
 		// Use the "Warning" format.
 		pango_attr_list_insert(attr_lst,
-			pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
+			pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 		pango_attr_list_insert(attr_lst,
 			pango_attr_foreground_new(65535, 0, 0));
 	}
@@ -274,7 +274,7 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			if (!is_warning) {
 				// Text style: Bold
 				pango_attr_list_insert(attr_lst,
-					pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
+					pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 			}
 			break;
 
@@ -366,7 +366,7 @@ rom_data_view_init(RomDataView *page)
 	// Make lblSysInfo bold.
 	PangoAttrList *attr_lst = pango_attr_list_new();
 	pango_attr_list_insert(attr_lst,
-		pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
+		pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
 	pango_attr_list_unref(attr_lst);
 
@@ -750,7 +750,7 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 		// "Warning" font?
 		if (field->desc.flags & RomFields::STRF_WARNING) {
 			pango_attr_list_insert(attr_lst,
-				pango_attr_weight_new(PANGO_WEIGHT_HEAVY));
+				pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 			pango_attr_list_insert(attr_lst,
 				pango_attr_foreground_new(65535, 0, 0));
 		}
