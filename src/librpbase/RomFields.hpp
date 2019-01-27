@@ -191,15 +191,15 @@ class RomFields
 
 				// RFT_LISTDATA
 				struct {
-					const std::vector<std::vector<std::string> > *list_data;
+					const std::vector<std::vector<std::string> > *data;
 					union {
 						// Requires RFT_LISTDATA_CHECKBOXES.
-						uint32_t list_checkboxes;
+						uint32_t checkboxes;
 
 						// Requires RFT_LISTDATA_ICONS.
-						const std::vector<const rp_image*> *list_icons;
+						const std::vector<const rp_image*> *icons;
 					};
-				};
+				} list_data;
 
 				// RFT_DATETIME (UNIX format)
 				// NOTE: -1 is used to indicate

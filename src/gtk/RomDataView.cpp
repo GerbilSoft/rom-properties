@@ -875,7 +875,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	const auto list_data = field->data.list_data;
+	const auto list_data = field->data.list_data.data;
 	assert(list_data != nullptr);
 
 	int col_count = 1;
@@ -915,7 +915,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	// Add the row data.
 	if (list_data) {
-		uint32_t checkboxes = field->data.list_checkboxes;
+		uint32_t checkboxes = field->data.list_data.checkboxes;
 		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?

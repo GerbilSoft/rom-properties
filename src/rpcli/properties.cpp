@@ -221,7 +221,7 @@ public:
 		// NOTE: listDataDesc.names can be nullptr,
 		// which means we don't have any column headers.
 
-		const auto list_data = romField->data.list_data;
+		const auto list_data = romField->data.list_data.data;
 		assert(list_data != nullptr);
 		if (!list_data) {
 			return os << "[ERROR: No list data.]";
@@ -327,7 +327,7 @@ public:
 			skipFirstNL = false;
 		}
 
-		uint32_t checkboxes = romField->data.list_checkboxes;
+		uint32_t checkboxes = romField->data.list_data.checkboxes;
 		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Remove the 4 spaces in column 0.
 			// Those spaces will not be used in the text area.
@@ -708,10 +708,10 @@ public:
 					os << ",\"names\":[]";
 				}
 				os << "},\"data\":[";
-				const auto list_data = romField->data.list_data;
+				const auto list_data = romField->data.list_data.data;
 				assert(list_data != nullptr);
 				if (list_data) {
-					uint32_t checkboxes = romField->data.list_checkboxes;
+					uint32_t checkboxes = romField->data.list_data.checkboxes;
 					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 						if (it != list_data->cbegin()) os << ',';
 						os << '[';

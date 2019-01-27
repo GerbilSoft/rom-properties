@@ -527,7 +527,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	const auto list_data = field->data.list_data;
+	const auto list_data = field->data.list_data.data;
 	assert(list_data != nullptr);
 
 	unsigned int col_count = 1;
@@ -572,7 +572,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	// Add the row data.
 	if (list_data) {
-		uint32_t checkboxes = field->data.list_checkboxes;
+		uint32_t checkboxes = field->data.list_data.checkboxes;
 		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?

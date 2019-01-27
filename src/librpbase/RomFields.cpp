@@ -160,9 +160,9 @@ void RomFieldsPrivate::delete_data(void)
 				break;
 			case RomFields::RFT_LISTDATA:
 				delete const_cast<vector<string>*>(field.desc.list_data.names);
-				delete const_cast<vector<vector<string> >*>(field.data.list_data);
+				delete const_cast<vector<vector<string> >*>(field.data.list_data.data);
 				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
-					delete const_cast<vector<const rp_image*>*>(field.data.list_icons);
+					delete const_cast<vector<const rp_image*>*>(field.data.list_data.icons);
 				}
 				break;
 			case RomFields::RFT_AGE_RATINGS:
@@ -284,22 +284,22 @@ void RomFields::detach(void)
 				} else {
 					field_new.desc.list_data.names = nullptr;
 				}
-				if (field_old.data.list_data) {
-					field_new.data.list_data = new vector<vector<string> >(*(field_old.data.list_data));
+				if (field_old.data.list_data.data) {
+					field_new.data.list_data.data = new vector<vector<string> >(*(field_old.data.list_data.data));
 				} else {
-					field_new.data.list_data = nullptr;
+					field_new.data.list_data.data = nullptr;
 				}
 				if (field_old.desc.list_data.flags & RFT_LISTDATA_ICONS) {
 					// Icons: Copy the icon vector if set.
-					if (field_old.data.list_icons) {
-						field_new.data.list_icons = new vector<const rp_image*>(*(field_old.data.list_icons));
+					if (field_old.data.list_data.icons) {
+						field_new.data.list_data.icons = new vector<const rp_image*>(*(field_old.data.list_data.icons));
 					} else {
-						field_new.data.list_icons = nullptr;
+						field_new.data.list_data.icons = nullptr;
 					}
 				} else {
 					// No icons. Copy checkboxes.
-					field_new.data.list_checkboxes =
-						field_old.data.list_checkboxes;
+					field_new.data.list_data.checkboxes =
+						field_old.data.list_data.checkboxes;
 				}
 				break;
 			case RFT_DATETIME:
@@ -809,18 +809,18 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.desc.list_data.names = (field_src.desc.list_data.names
 						? new vector<string>(*(field_src.desc.list_data.names))
 						: nullptr);
-				field_dest.data.list_data = (field_src.data.list_data
-						? new vector<vector<string> >(*(field_src.data.list_data))
+				field_dest.data.list_data.data = (field_src.data.list_data.data
+						? new vector<vector<string> >(*(field_src.data.list_data.data))
 						: nullptr);
 				if (field_src.desc.list_data.flags & RFT_LISTDATA_ICONS) {
 					// Icons: Copy the icon vector if set.
-					field_dest.data.list_icons = (field_src.data.list_icons
-						? new vector<const rp_image*>(*(field_src.data.list_icons))
+					field_dest.data.list_data.icons = (field_src.data.list_data.icons
+						? new vector<const rp_image*>(*(field_src.data.list_data.icons))
 						: nullptr);
 				} else {
 					// No icons. Copy checkboxes.
-					field_dest.data.list_checkboxes =
-						field_src.data.list_checkboxes;
+					field_dest.data.list_data.checkboxes =
+						field_src.data.list_data.checkboxes;
 				}
 				break;
 			case RFT_DATETIME:
@@ -1115,8 +1115,8 @@ int RomFields::addField_listData(const char *name,
 	field.desc.list_data.flags = flags;
 	field.desc.list_data.rows_visible = rows_visible;
 	field.desc.list_data.names = headers;
-	field.data.list_data = list_data;
-	field.data.list_checkboxes = checkboxes;
+	field.data.list_data.data = list_data;
+	field.data.list_data.checkboxes = checkboxes;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return static_cast<int>(idx);
@@ -1176,8 +1176,8 @@ int RomFields::addField_listData_icons(const char *name,
 	field.desc.list_data.flags = flags;
 	field.desc.list_data.rows_visible = rows_visible;
 	field.desc.list_data.names = headers;
-	field.data.list_data = list_data;
-	field.data.list_icons = icons;
+	field.data.list_data.data = list_data;
+	field.data.list_data.icons = icons;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return static_cast<int>(idx);
