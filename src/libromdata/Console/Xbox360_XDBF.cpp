@@ -540,6 +540,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	const XDBF_Language_e langID = getLangID();
 
 	// Columns
+	// TODO: Right-align the Gamerscore column. (per-column formatting?)
 	static const char *const xach_col_names[] = {
 		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
