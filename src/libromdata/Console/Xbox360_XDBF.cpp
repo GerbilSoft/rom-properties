@@ -548,15 +548,21 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
 		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
 
-	auto vv_xach = new vector<vector<string> >();
-	vv_xach->resize(xach_count);
-	for (auto iter = vv_xach->begin();
-	     p < p_end && iter != vv_xach->end(); p++, ++iter)
+	// Vectors.
+	auto vv_xach = new vector<vector<string> >(xach_count);
+	auto vv_icons = new vector<const rp_image*>(xach_count);
+	auto xach_iter = vv_xach->begin();
+	auto icon_iter = vv_icons->begin();
+	for (; p < p_end && xach_iter != vv_xach->end(); p++, ++xach_iter, ++icon_iter)
 	{
-		auto &data_row = *iter;
+		// String data row
+		auto &data_row = *xach_iter;
+
+		// Icon
+		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
 		// Achievement ID
-		data_row.push_back(std::move(rp_sprintf("%u", be16_to_cpu(p->achievement_id))));
+		data_row.push_back(rp_sprintf("%u", be16_to_cpu(p->achievement_id)));
 
 		// Title and locked description
 		// TODO: Unlocked description?
@@ -571,18 +577,20 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 			}
 		}
 
-		// TODO: Formatting value indicating the first line should be bold.
+		// TODO: Formatting value indicating that the first line should be bold.
 		data_row.push_back(std::move(desc));
 
 		// Gamerscore
-		// TODO: std::move() rp_sprintf()? [does it make a code size diff]
 		data_row.push_back(rp_sprintf("%u", be16_to_cpu(p->gamerscore)));
 	}
 
 	// Add the list data.
-	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"),
-		v_xach_col_names, vv_xach, 0,
-		RomFields::RFT_LISTDATA_SEPARATE_ROW);
+	// TODO: Maybe have the icons variant automatically
+	// set RFT_LISTDATA_ICONS instead of having to specify it...
+	fields->addField_listData_icons(C_("Xbox360_XDBF", "Achievements"),
+		v_xach_col_names, vv_xach, vv_icons, 0,
+		RomFields::RFT_LISTDATA_SEPARATE_ROW |
+		RomFields::RFT_LISTDATA_ICONS);
 	return 0;
 }
 
