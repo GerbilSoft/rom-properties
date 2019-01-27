@@ -174,6 +174,12 @@ class RomDataViewPrivate
 		 * @return QPixmap.
 		 */
 		QPixmap imgToPixmap(const QImage &img);
+
+		/**
+		 * Adjust an RFT_LISTDATA field if it's the last field in a tab.
+		 * @param tabIdx Tab index.
+		 */
+		void adjustListData(int tabIdx);
 };
 
 /** RomDataViewPrivate **/
@@ -232,6 +238,47 @@ QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
 		 img_size.height() < min_img_size.height());
 
 	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
+}
+
+/**
+ * Adjust an RFT_LISTDATA field if it's the last field in a tab.
+ * @param tabIdx Tab index.
+ */
+void RomDataViewPrivate::adjustListData(int tabIdx)
+{
+	auto &tab = tabs[tabIdx];
+	assert(tab.formLayout != nullptr);
+	if (!tab.formLayout)
+		return;
+	int row = tab.formLayout->rowCount();
+	if (row <= 0)
+		return;
+	row--;
+
+	QLayoutItem *const liLabel = tab.formLayout->itemAt(row, QFormLayout::LabelRole);
+	QLayoutItem *const liField = tab.formLayout->itemAt(row, QFormLayout::FieldRole);
+	if (liLabel || !liField) {
+		// Either we have a label, or we don't have a field.
+		// This is not RFT_LISTDATA_SEPARATE_ROW.
+		return;
+	}
+
+	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(liField->widget());
+	if (treeWidget) {
+		// Move the treeWidget to the QVBoxLayout.
+		int newRow = tab.vboxLayout->count();
+		if (tab.lblCredits) {
+			newRow--;
+		}
+		assert(newRow >= 0);
+		tab.formLayout->removeItem(liField);
+		tab.vboxLayout->insertWidget(newRow, treeWidget, 999, 0);
+		delete liField;
+
+		// Unset this property to prevent the event filter from
+		// setting a fixed height.
+		treeWidget->setProperty("RFT_LISTDATA_rows_visible", 0);
+	}
 }
 
 /**
@@ -552,7 +599,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	Q_Q(RomDataView);
-	QTreeWidget *treeWidget = new QTreeWidgetOpt(q);
+	QTreeWidget *const treeWidget = new QTreeWidgetOpt(q);
 	treeWidget->setRootIsDecorated(false);
 	treeWidget->setUniformRowHeights(true);
 	treeWidget->setAlternatingRowColors(true);
@@ -603,7 +650,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 				continue;
 			}
 
-			QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
+			QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(treeWidget);
 			if (hasCheckboxes) {
 				// The checkbox will only show up if setCheckState()
 				// is called at least once, regardless of value.
@@ -844,10 +891,11 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Create the QTabWidget.
 	Q_Q(RomDataView);
-	if (fields->tabCount() > 1) {
-		tabs.resize(fields->tabCount());
+	const int tabCount = fields->tabCount();
+	if (tabCount > 1) {
+		tabs.resize(tabCount);
 		ui.tabWidget->show();
-		for (int i = 0; i < fields->tabCount(); i++) {
+		for (int i = 0; i < tabCount; i++) {
 			// Create a tab.
 			const char *name = fields->tabName(i);
 			if (!name) {
@@ -892,8 +940,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
 
 	// Create the data widgets.
+	int prevTabIdx = 0;
 	for (int i = 0; i < count; i++) {
-		const RomFields::Field *field = fields->field(i);
+		const RomFields::Field *const field = fields->field(i);
 		assert(field != nullptr);
 		if (!field || !field->isValid)
 			continue;
@@ -907,6 +956,15 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		} else if (!tabs[tabIdx].formLayout) {
 			// Tab name is empty. Tab is hidden.
 			continue;
+		}
+
+		// Did the tab index change?
+		if (prevTabIdx != tabIdx) {
+			// Check if the last field in the previous tab
+			// was RFT_LISTDATA. If it is, expand it vertically.
+			// NOTE: Only for RFT_LISTDATA_SEPARATE_ROW.
+			adjustListData(prevTabIdx);
+			prevTabIdx = tabIdx;
 		}
 
 		// tr: Field description label.
@@ -945,6 +1003,13 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				initDimensions(lblDesc, field);
 				break;
 		}
+	}
+
+	// Check if the last field in the last tab
+	// was RFT_LISTDATA. If it is, expand it vertically.
+	// NOTE: Only for RFT_LISTDATA_SEPARATE_ROW.
+	if (!tabs.empty()) {
+		adjustListData(static_cast<int>(tabs.size()-1));
 	}
 
 	// Close the file.
@@ -1075,7 +1140,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 	}
 
 	// Make sure this is a QTreeWidget.
-	QTreeWidget *treeWidget = qobject_cast<QTreeWidget*>(object);
+	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(object);
 	if (!treeWidget) {
 		// Not a QTreeWidget.
 		return false;
@@ -1089,6 +1154,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 		// Let Qt decide how to manage its layout.
 		return false;
 	}
+	return false;
 
 	// Get the height of the first item.
 	QTreeWidgetItem *const item = treeWidget->topLevelItem(0);
