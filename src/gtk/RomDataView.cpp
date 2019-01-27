@@ -1355,7 +1355,38 @@ rom_data_view_update_display(RomDataView *page)
 				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
 #endif
 
-				gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
+				// If this is the last field in the tab,
+				// put the RFT_LISTDATA in the GtkGrid instead.
+				bool doVBox = false;
+				if (tabIdx + 1 == tabCount && i == count-1) {
+					// Last tab, and last field.
+					doVBox = true;
+				} else {
+					// Check if the next field is on the next tab.
+					const RomFields::Field *nextField = fields->field(i+1);
+					if (nextField && nextField->tabIdx != tabIdx) {
+						// Next field is on the next tab.
+						doVBox = true;
+					}
+				}
+
+				if (doVBox) {
+					// Unset this property to prevent the event filter from
+					// setting a fixed height.
+					g_object_set_data(G_OBJECT(widget), "RFT_LISTDATA_rows_visible",
+						GINT_TO_POINTER(0));
+
+					// Add the widget to the GtkBox.
+					gtk_box_pack_start(GTK_BOX(tab.vbox), widget, FALSE, FALSE, 0);
+					if (tab.lblCredits) {
+						// Need to move it before credits.
+						// TODO: Verify this.
+						gtk_box_reorder_child(GTK_BOX(tab.vbox), widget, 1);
+					}
+				} else {
+					// Add the widget to the GtkGrid.
+					gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
+				}
 				row += 2;
 			} else {
 				// Single row.
