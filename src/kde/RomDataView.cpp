@@ -544,6 +544,14 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 		return;
 	}
 
+	if (hasIcons) {
+		assert(field->data.list_data.icons != nullptr);
+		if (!field->data.list_data.icons) {
+			// No icons vector...
+			return;
+		}
+	}
+
 	unsigned int col_count = 1;
 	if (listDataDesc.names) {
 		col_count = static_cast<unsigned int>(listDataDesc.names->size());

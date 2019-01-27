@@ -890,6 +890,14 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		return nullptr;
 	}
 
+	if (hasIcons) {
+		assert(field->data.list_data.icons != nullptr);
+		if (!field->data.list_data.icons) {
+			// No icons vector...
+			return nullptr;
+		}
+	}
+
 	int col_count = 1;
 	if (listDataDesc.names) {
 		col_count = (int)listDataDesc.names->size();
