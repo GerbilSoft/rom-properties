@@ -327,7 +327,8 @@ rom_data_view_init(RomDataView *page)
 	 * - GTK+ 3.x: GtkBox
 	 */
 
-	// NOTE: This matches Thunar. Need to verify others.
+	// NOTE: This matches Thunar (GTK+2) and Nautilus (GTK+3).
+	// TODO: If no tabs are present, there seems to be too much spacing in the GtkTable/GtkGrid.
 	g_object_set(page, "border-width", 8, nullptr);
 	g_object_set(page, "border-spacing", 8, nullptr);
 
