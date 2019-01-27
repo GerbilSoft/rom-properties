@@ -161,6 +161,9 @@ void RomFieldsPrivate::delete_data(void)
 			case RomFields::RFT_LISTDATA:
 				delete const_cast<vector<string>*>(field.desc.list_data.names);
 				delete const_cast<vector<vector<string> >*>(field.data.list_data);
+				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
+					delete const_cast<vector<const rp_image*>*>(field.data.list_icons);
+				}
 				break;
 			case RomFields::RFT_AGE_RATINGS:
 				delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
@@ -277,17 +280,27 @@ void RomFields::detach(void)
 				field_new.desc.list_data.rows_visible =
 					field_old.desc.list_data.rows_visible;
 				if (field_old.desc.list_data.names) {
-					field_new.desc.list_data.names = new vector<string>(*field_old.desc.list_data.names);
+					field_new.desc.list_data.names = new vector<string>(*(field_old.desc.list_data.names));
 				} else {
 					field_new.desc.list_data.names = nullptr;
 				}
 				if (field_old.data.list_data) {
-					field_new.data.list_data = new vector<vector<string> >(*field_old.data.list_data);
+					field_new.data.list_data = new vector<vector<string> >(*(field_old.data.list_data));
 				} else {
 					field_new.data.list_data = nullptr;
 				}
-				field_new.data.list_checkboxes =
-					field_old.data.list_checkboxes;
+				if (field_old.desc.list_data.flags & RFT_LISTDATA_ICONS) {
+					// Icons: Copy the icon vector if set.
+					if (field_old.data.list_icons) {
+						field_new.data.list_icons = new vector<const rp_image*>(*(field_old.data.list_icons));
+					} else {
+						field_new.data.list_icons = nullptr;
+					}
+				} else {
+					// No icons. Copy checkboxes.
+					field_new.data.list_checkboxes =
+						field_old.data.list_checkboxes;
+				}
 				break;
 			case RFT_DATETIME:
 				field_new.desc.flags = field_old.desc.flags;
@@ -799,8 +812,16 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.data.list_data = (field_src.data.list_data
 						? new vector<vector<string> >(*(field_src.data.list_data))
 						: nullptr);
-				field_dest.data.list_checkboxes =
-					field_src.data.list_checkboxes;
+				if (field_src.desc.list_data.flags & RFT_LISTDATA_ICONS) {
+					// Icons: Copy the icon vector if set.
+					field_dest.data.list_icons = (field_src.data.list_icons
+						? new vector<const rp_image*>(*(field_src.data.list_icons))
+						: nullptr);
+				} else {
+					// No icons. Copy checkboxes.
+					field_dest.data.list_checkboxes =
+						field_src.data.list_checkboxes;
+				}
 				break;
 			case RFT_DATETIME:
 				field_dest.data.date_time = field_src.data.date_time;
@@ -1056,13 +1077,13 @@ int RomFields::addField_bitfield(const char *name,
 
 /**
  * Add ListData.
- * NOTE: This object takes ownership of the two vectors.
+ * NOTE: This object takes ownership of the vectors.
  * @param name Field name.
  * @param headers Vector of column names.
  * @param list_data ListData.
  * @param rows_visible Number of visible rows, (0 for "default")
  * @param flags Flags.
- * @param checkboxes Checkbox bitfield. (requires RFT_LISTVIEW_CHECKBOXES)
+ * @param checkboxes Checkbox bitfield. (Requires RFT_LISTDATA_CHECKBOXES)
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_listData(const char *name,
@@ -1074,6 +1095,14 @@ int RomFields::addField_listData(const char *name,
 	assert(rows_visible >= 0);
 	if (!name || rows_visible < 0)
 		return -1;
+
+	// Cannot have RFT_LISTDATA_ICONS in this version.
+	assert(!(flags & RFT_LISTDATA_ICONS));
+	if (flags & RFT_LISTDATA_ICONS) {
+		// Cannot add icons.
+		// Allow it anyway, but with no icons.
+		flags &= ~RFT_LISTDATA_ICONS;
+	}
 
 	// RFT_LISTDATA
 	RP_D(RomFields);
@@ -1088,6 +1117,67 @@ int RomFields::addField_listData(const char *name,
 	field.desc.list_data.names = headers;
 	field.data.list_data = list_data;
 	field.data.list_checkboxes = checkboxes;
+	field.tabIdx = d->tabIdx;
+	field.isValid = true;
+	return static_cast<int>(idx);
+}
+
+/**
+ * Add ListData with icons.
+ * NOTE: This object takes ownership of the vectors.
+ * @param name Field name.
+ * @param headers Vector of column names.
+ * @param list_data ListData.
+ * @param icons Vector of rp_image objects to use as icons. Caller retains ownership of the rp_image objects.
+ * @param rows_visible Number of visible rows, (0 for "default")
+ * @param flags Flags. (Must contain RFT_LISTDATA_ICONS)
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_listData_icons(const char *name,
+	const vector<string> *headers,
+	const vector<vector<string> > *list_data,
+	const vector<const rp_image*> *icons,
+	int rows_visible, unsigned int flags)
+{
+	assert(name != nullptr);
+	assert(rows_visible >= 0);
+	if (!name || rows_visible < 0)
+		return -1;
+
+	// Must have RFT_LISTDATA_ICONS.
+	// Cannot have RFT_LISTDATA_CHECKBOXES.
+	assert(flags & RFT_LISTDATA_ICONS);
+	if (!(flags & RFT_LISTDATA_ICONS)) {
+		// Icons isn't specified.
+		// Delete the vector immediately and don't show the icons.
+		delete icons;
+		icons = nullptr;
+	} else if (!icons) {
+		// No icon vector.
+		// Remove the RFT_LISTDATA_ICONS flag.
+		flags &= ~RFT_LISTDATA_ICONS;
+	}
+
+	assert(!(flags & RFT_LISTDATA_CHECKBOXES));
+	if (flags & RFT_LISTDATA_CHECKBOXES) {
+		// Cannot add checkboxes.
+		// Allow it anyway, but with no checkboxes.
+		flags &= ~RFT_LISTDATA_CHECKBOXES;
+	}
+
+	// RFT_LISTDATA
+	RP_D(RomFields);
+	size_t idx = d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	field.name = name;
+	field.type = RFT_LISTDATA;
+	field.desc.list_data.flags = flags;
+	field.desc.list_data.rows_visible = rows_visible;
+	field.desc.list_data.names = headers;
+	field.data.list_data = list_data;
+	field.data.list_icons = icons;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return static_cast<int>(idx);

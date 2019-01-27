@@ -32,6 +32,8 @@
 
 namespace LibRpBase {
 
+class rp_image;
+
 class RomFieldsPrivate;
 class RomFields
 {
@@ -82,7 +84,12 @@ class RomFields
 			RFT_LISTDATA_SEPARATE_ROW = (1 << 0),
 
 			// Enable checkboxes.
+			// NOTE: Mutually exclusive with icons.
 			RFT_LISTDATA_CHECKBOXES = (1 << 1),
+
+			// Enable icons.
+			// NOTE: Mutually exclusive with checkboxes.
+			RFT_LISTDATA_ICONS	= (1 << 2),
 		};
 
 		// Display flags for RFT_DATETIME.
@@ -160,8 +167,10 @@ class RomFields
 				struct _list_data {
 					// Flags.
 					unsigned int flags;
+
 					// Number of visible rows. (0 for "default")
 					int rows_visible;
+
 					// List field names. (headers)
 					// Must be a vector of at least 'fields' strings.
 					// If a name is nullptr, that field is skipped.
@@ -183,7 +192,13 @@ class RomFields
 				// RFT_LISTDATA
 				struct {
 					const std::vector<std::vector<std::string> > *list_data;
-					uint32_t list_checkboxes;	// Requires RFT_LISTDATA_CHECKBOXES.
+					union {
+						// Requires RFT_LISTDATA_CHECKBOXES.
+						uint32_t list_checkboxes;
+
+						// Requires RFT_LISTDATA_ICONS.
+						const std::vector<const rp_image*> *list_icons;
+					};
 				};
 
 				// RFT_DATETIME (UNIX format)
@@ -446,13 +461,13 @@ class RomFields
 
 		/**
 		 * Add ListData.
-		 * NOTE: This object takes ownership of the two vectors.
+		 * NOTE: This object takes ownership of the vectors.
 		 * @param name Field name.
 		 * @param headers Vector of column names. (If NULL, no headers will be shown.)
 		 * @param list_data ListData.
 		 * @param rows_visible Number of visible rows, (0 for "default")
 		 * @param flags Flags.
-		 * @param checkboxes Checkbox bitfield. (requires RFT_LISTDATA_CHECKBOXES)
+		 * @param checkboxes Checkbox bitfield. (Requires RFT_LISTDATA_CHECKBOXES)
 		 *
 		 * NOTE: If headers is nullptr, the column count will be
 		 * determined using the first row in list_data.
@@ -463,6 +478,27 @@ class RomFields
 			const std::vector<std::string> *headers,
 			const std::vector<std::vector<std::string> > *list_data,
 			int rows_visible = 0, unsigned int flags = 0, uint32_t checkboxes = 0);
+
+		/**
+		 * Add ListData with icons.
+		 * NOTE: This object takes ownership of the vectors.
+		 * @param name Field name.
+		 * @param headers Vector of column names. (If NULL, no headers will be shown.)
+		 * @param list_data ListData.
+		 * @param icons Vector of rp_image objects to use as icons. Caller retains ownership of the rp_image objects.
+		 * @param rows_visible Number of visible rows, (0 for "default")
+		 * @param flags Flags. (Must contain RFT_LISTDATA_ICONS)
+		 *
+		 * NOTE: If headers is nullptr, the column count will be
+		 * determined using the first row in list_data.
+		 *
+		 * @return Field index, or -1 on error.
+		 */
+		int addField_listData_icons(const char *name,
+			const std::vector<std::string> *headers,
+			const std::vector<std::vector<std::string> > *list_data,
+			const std::vector<const rp_image*> *icons,
+			int rows_visible = 0, unsigned int flags = 0);
 
 		/**
 		 * Add DateTime.
