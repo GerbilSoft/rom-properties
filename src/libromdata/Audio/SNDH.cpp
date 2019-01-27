@@ -928,9 +928,7 @@ int SNDH::loadFieldData(void)
 		uint64_t duration_total = 0;
 
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
-		auto subtune_list = new vector<vector<string> >();
-		subtune_list->resize(count);
-
+		auto subtune_list = new vector<vector<string> >(count);
 		auto dest_iter = subtune_list->begin();
 		unsigned int idx = 0;
 		for (; dest_iter != subtune_list->end(); ++dest_iter, idx++) {

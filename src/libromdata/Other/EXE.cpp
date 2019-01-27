@@ -316,9 +316,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// random due to unordered_map<>.
 	// TODO: Show certain entries as their own fields?
 	const auto &st = pVsSfi->begin()->second;
-	auto data = new vector<vector<string> >();
-	data->resize(st.size());
-	for (unsigned int i = 0; i < static_cast<unsigned int>(st.size()); i++) {
+	auto data = new vector<vector<string> >(st.size());
+	for (size_t i = 0; i < st.size(); i++) {
 		const auto &st_row = st.at(i);
 		auto &data_row = data->at(i);
 		data_row.reserve(2);

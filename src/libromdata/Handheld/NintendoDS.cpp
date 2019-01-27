@@ -1310,8 +1310,7 @@ int NintendoDS::loadFieldData(void)
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_dsi_perm = new vector<vector<string> >();
-	vv_dsi_perm->resize(ARRAY_SIZE(dsi_permissions_bitfield_names));
+	auto vv_dsi_perm = new vector<vector<string> >(ARRAY_SIZE(dsi_permissions_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
 		data_row.push_back(
@@ -1340,8 +1339,7 @@ int NintendoDS::loadFieldData(void)
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_dsi_flags = new vector<vector<string> >();
-	vv_dsi_flags->resize(ARRAY_SIZE(dsi_flags_bitfield_names));
+	auto vv_dsi_flags = new vector<vector<string> >(ARRAY_SIZE(dsi_flags_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
 		data_row.push_back(
