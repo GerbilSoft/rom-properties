@@ -328,9 +328,7 @@ rom_data_view_init(RomDataView *page)
 	 */
 
 	// NOTE: This matches Thunar (GTK+2) and Nautilus (GTK+3).
-	// TODO: If no tabs are present, there seems to be too much spacing in the GtkTable/GtkGrid.
 	g_object_set(page, "border-width", 8, nullptr);
-	g_object_set(page, "border-spacing", 8, nullptr);
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -1191,6 +1189,9 @@ rom_data_view_update_display(RomDataView *page)
 	if (tabCount > 1) {
 		page->tabs->resize(tabCount);
 		page->tabWidget = gtk_notebook_new();
+
+		// Add spacing between the system info header and the table.
+		g_object_set(page, "spacing", 8, nullptr);
 
 		auto tabIter = page->tabs->begin();
 		for (int i = 0; i < tabCount; i++, ++tabIter) {
