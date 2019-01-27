@@ -530,6 +530,16 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	const auto list_data = field->data.list_data.data;
 	assert(list_data != nullptr);
 
+	// Validate flags.
+	// Cannot have both checkboxes and icons.
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	assert(!(hasCheckboxes && hasIcons));
+	if (hasCheckboxes && hasIcons) {
+		// Both are set. This shouldn't happen...
+		return;
+	}
+
 	unsigned int col_count = 1;
 	if (listDataDesc.names) {
 		col_count = static_cast<unsigned int>(listDataDesc.names->size());
@@ -569,11 +579,21 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 		treeWidget->header()->hide();
 	}
 
-	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	if (hasIcons) {
+		// TODO: Ideal icon size?
+		// Using 32x32 for now.
+		treeWidget->setIconSize(QSize(32, 32));
+	}
+
 	// Add the row data.
 	if (list_data) {
-		uint32_t checkboxes = field->data.list_data.checkboxes;
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
+		uint32_t checkboxes = 0;
+		if (hasCheckboxes) {
+			checkboxes = field->data.list_data.checkboxes;
+		}
+
+		unsigned int row = 0;	// for icons [TODO: Use iterator?]
+		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?
 			// (also check other UI frontends)
@@ -589,7 +609,14 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 				// is called at least once, regardless of value.
 				treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
 				checkboxes >>= 1;
+			} else if (hasIcons) {
+				const rp_image *const icon = field->data.list_data.icons->at(row);
+				if (icon) {
+					treeWidgetItem->setIcon(0, QIcon(
+						QPixmap::fromImage(rpToQImage(icon))));
+				}
 			}
+
 			// Disable user checkability.
 			treeWidgetItem->setFlags(treeWidgetItem->flags() & ~Qt::ItemIsUserCheckable);
 
