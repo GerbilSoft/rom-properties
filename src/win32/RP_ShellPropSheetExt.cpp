@@ -1795,7 +1795,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	headerPt.y += headerH;
 
 	// Do we need to create a tab widget?
-	if (fields->tabCount() > 1) {
+	int tabCount = fields->tabCount();
+	if (tabCount > 1) {
 		// Increase the tab widget width by half of the margin.
 		InflateRect(&dlgRect, dlgMargin.left/2, 0);
 		dlgSize.cx += dlgMargin.left - 1;
@@ -1805,7 +1806,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
 
 		// Create the tab widget.
-		tabs.resize(fields->tabCount());
+		tabs.resize(tabCount);
 		hTabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
@@ -1820,7 +1821,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// otherwise, the tab bar height won't be taken into account.
 		TCITEM tcItem;
 		tcItem.mask = TCIF_TEXT;
-		for (int i = 0; i < fields->tabCount(); i++) {
+		for (int i = 0; i < tabCount; i++) {
 			// Create a tab.
 			const char *name = fields->tabName(i);
 			if (!name) {
@@ -1844,7 +1845,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Create windows for each tab.
 		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
-		for (int i = 0; i < fields->tabCount(); i++) {
+		for (int i = 0; i < tabCount; i++) {
 			if (!fields->tabName(i)) {
 				// Skip this tab.
 				continue;
@@ -1874,6 +1875,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// No tabs.
 		// Don't create a WC_TABCONTROL, but simulate a single
 		// tab in tabs[] to make it easier to work with.
+		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs[0];
 		tab.hDlg = hDlg;
@@ -1936,7 +1938,15 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				POINT pt_ListData = pt_start;
 				if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 					// Separate row.
-					size.cx = dlgSize.cx - dlgMargin.left - 1;
+					size.cx = dlgSize.cx - 1;
+					// NOTE: This varies depending on if we have subtabs.
+					if (tabCount > 1) {
+						// Subtract the dialog margin.
+						size.cx -= dlgMargin.left;
+					} else {
+						// Subtract another pixel.
+						size.cx--;
+					}
 					pt_ListData.x = tab.curPt.x;
 					pt_ListData.y += (descSize.cy - (dlgMargin.top/3));
 				}
