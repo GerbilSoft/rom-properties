@@ -47,9 +47,11 @@ using namespace LibRpBase;
 // C++ includes.
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 using std::string;
 using std::unique_ptr;
+using std::unordered_map;
 using std::vector;
 
 // Uninitialized vector class.
@@ -77,7 +79,13 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 
 	public:
 		// Internal icon.
-		rp_image *img_icon;
+		// Points to an rp_image within map_images.
+		const rp_image *img_icon;
+
+		// Loaded images.
+		// - Key: resource_id
+		// - Value: rp_image*
+		unordered_map<uint64_t, rp_image*> map_images;
 
 	public:
 		// XDBF header.
@@ -161,7 +169,6 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file)
 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
-	delete img_icon;
 	delete[] entryTable;
 
 	// Delete any allocated string tables.
@@ -169,6 +176,11 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 		if (strTbl[i]) {
 			delete strTbl[i];
 		}
+	}
+
+	// Delete any loaded images.
+	for (auto iter = map_images.begin(); iter != map_images.end(); ++iter) {
+		delete iter->second;
 	}
 }
 
@@ -360,6 +372,13 @@ XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
  */
 rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 {
+	// Is the image already loaded?
+	auto iter = map_images.find(image_id);
+	if (iter != map_images.end()) {
+		// We already loaded the image.
+		return iter->second;
+	}
+
 	if (!entryTable) {
 		// Entry table isn't loaded...
 		return nullptr;
@@ -383,7 +402,6 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	// Load the image.
 	const uint32_t addr = be32_to_cpu(entry->offset) + this->data_offset;
 	const uint32_t length = be32_to_cpu(entry->length);
-
 	// Sanity check:
 	// - Size must be at least 16 bytes. [TODO: Smallest PNG?]
 	// - Size must be a maximum of 1 MB.
@@ -406,6 +424,11 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	RpMemFile *const f_mem = new RpMemFile(png_buf.get(), length);
 	rp_image *img = RpPng::load(f_mem);
 	delete f_mem;
+
+	if (img) {
+		// Save the image for later use.
+		map_images.insert(std::make_pair(image_id, img));
+	}
 
 	return img;
 }
@@ -462,7 +485,6 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	// Load the achievements table.
 	const uint32_t addr = be32_to_cpu(entry->offset) + this->data_offset;
 	const uint32_t length = be32_to_cpu(entry->length);
-
 	// Sanity check:
 	// - Size must be at least sizeof(XDBF_XACH_Header).
 	// - Size must be a maximum of sizeof(XDBF_XACH_Header) + (sizeof(XDBF_XACH_Entry) * 512).
