@@ -32,9 +32,14 @@
 #if GTK_CHECK_VERSION(3,10,0)
 # define RP_GTK_USE_CAIRO 1
 # include "CairoImageConv.hpp"
+# include <cairo-gobject.h>
+# define PIMGTYPE_GOBJECT_TYPE CAIRO_GOBJECT_TYPE_SURFACE
+# define GTK_CELL_RENDERER_PIXBUF_PROPERTY "surface"
 typedef cairo_surface_t *PIMGTYPE;
 #else
 # include "GdkImageConv.hpp"
+# define PIMGTYPE_GOBJECT_TYPE GDK_TYPE_PIXBUF
+# define GTK_CELL_RENDERER_PIXBUF_PROPERTY "pixbuf"
 typedef GdkPixbuf *PIMGTYPE;
 #endif
 
