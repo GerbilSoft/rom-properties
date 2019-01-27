@@ -1386,7 +1386,7 @@ rom_data_view_update_display(RomDataView *page)
 						GINT_TO_POINTER(0));
 
 					// Add the widget to the GtkBox.
-					gtk_box_pack_start(GTK_BOX(tab.vbox), widget, FALSE, FALSE, 0);
+					gtk_box_pack_start(GTK_BOX(tab.vbox), widget, true, true, 0);
 					if (tab.lblCredits) {
 						// Need to move it before credits.
 						// TODO: Verify this.
