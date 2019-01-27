@@ -599,8 +599,12 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	Q_Q(RomDataView);
 	QTreeWidget *const treeWidget = new QTreeWidget(q);
 	treeWidget->setRootIsDecorated(false);
-	treeWidget->setUniformRowHeights(false);
 	treeWidget->setAlternatingRowColors(true);
+
+	// DISABLED uniform row heights.
+	// Some Xbox 360 achievements take up two lines,
+	// while others might take up three or more.
+	treeWidget->setUniformRowHeights(false);
 
 	// Set up the column names.
 	treeWidget->setColumnCount(col_count);
