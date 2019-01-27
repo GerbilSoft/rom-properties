@@ -127,6 +127,12 @@ class RomDataViewPrivate
 		void initListData(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
+		 * Adjust an RFT_LISTDATA field if it's the last field in a tab.
+		 * @param tabIdx Tab index.
+		 */
+		void adjustListData(int tabIdx);
+
+		/**
 		 * Initialize a Date/Time field.
 		 * @param lblDesc Description label.
 		 * @param field RomFields::Field
@@ -172,12 +178,6 @@ class RomDataViewPrivate
 		 * @return QPixmap.
 		 */
 		QPixmap imgToPixmap(const QImage &img);
-
-		/**
-		 * Adjust an RFT_LISTDATA field if it's the last field in a tab.
-		 * @param tabIdx Tab index.
-		 */
-		void adjustListData(int tabIdx);
 };
 
 /** RomDataViewPrivate **/
@@ -236,47 +236,6 @@ QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
 		 img_size.height() < min_img_size.height());
 
 	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
-}
-
-/**
- * Adjust an RFT_LISTDATA field if it's the last field in a tab.
- * @param tabIdx Tab index.
- */
-void RomDataViewPrivate::adjustListData(int tabIdx)
-{
-	auto &tab = tabs[tabIdx];
-	assert(tab.formLayout != nullptr);
-	if (!tab.formLayout)
-		return;
-	int row = tab.formLayout->rowCount();
-	if (row <= 0)
-		return;
-	row--;
-
-	QLayoutItem *const liLabel = tab.formLayout->itemAt(row, QFormLayout::LabelRole);
-	QLayoutItem *const liField = tab.formLayout->itemAt(row, QFormLayout::FieldRole);
-	if (liLabel || !liField) {
-		// Either we have a label, or we don't have a field.
-		// This is not RFT_LISTDATA_SEPARATE_ROW.
-		return;
-	}
-
-	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(liField->widget());
-	if (treeWidget) {
-		// Move the treeWidget to the QVBoxLayout.
-		int newRow = tab.vboxLayout->count();
-		if (tab.lblCredits) {
-			newRow--;
-		}
-		assert(newRow >= 0);
-		tab.formLayout->removeItem(liField);
-		tab.vboxLayout->insertWidget(newRow, treeWidget, 999, 0);
-		delete liField;
-
-		// Unset this property to prevent the event filter from
-		// setting a fixed height.
-		treeWidget->setProperty("RFT_LISTDATA_rows_visible", 0);
-	}
 }
 
 /**
@@ -699,6 +658,47 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 
 	// Install the event filter.
 	treeWidget->installEventFilter(q);
+}
+
+/**
+ * Adjust an RFT_LISTDATA field if it's the last field in a tab.
+ * @param tabIdx Tab index.
+ */
+void RomDataViewPrivate::adjustListData(int tabIdx)
+{
+	auto &tab = tabs[tabIdx];
+	assert(tab.formLayout != nullptr);
+	if (!tab.formLayout)
+		return;
+	int row = tab.formLayout->rowCount();
+	if (row <= 0)
+		return;
+	row--;
+
+	QLayoutItem *const liLabel = tab.formLayout->itemAt(row, QFormLayout::LabelRole);
+	QLayoutItem *const liField = tab.formLayout->itemAt(row, QFormLayout::FieldRole);
+	if (liLabel || !liField) {
+		// Either we have a label, or we don't have a field.
+		// This is not RFT_LISTDATA_SEPARATE_ROW.
+		return;
+	}
+
+	QTreeWidget *const treeWidget = qobject_cast<QTreeWidget*>(liField->widget());
+	if (treeWidget) {
+		// Move the treeWidget to the QVBoxLayout.
+		int newRow = tab.vboxLayout->count();
+		if (tab.lblCredits) {
+			newRow--;
+		}
+		assert(newRow >= 0);
+		tab.formLayout->removeItem(liField);
+		tab.vboxLayout->insertWidget(newRow, treeWidget, 999, 0);
+		delete liField;
+
+		// Unset this property to prevent the event filter from
+		// setting a fixed height.
+		treeWidget->setProperty("RFT_LISTDATA_rows_visible", 0);
+	}
 }
 
 /**
