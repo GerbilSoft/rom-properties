@@ -163,6 +163,13 @@ class RP_ShellPropSheetExt_Private
 		COLORREF colorAltRow;
 		bool isFullyInit;		// TRUE if the window is fully initialized.
 
+		/**
+		 * ListView CustomDraw function.
+		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
+		 * @return Return value.
+		 */
+		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
+
 		// Banner.
 		HBITMAP hbmpBanner;
 		POINT ptBanner;
@@ -2271,6 +2278,40 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETP
 /** Property sheet callback functions. **/
 
 /**
+ * ListView CustomDraw function.
+ * @param plvcd	[in/out] NMLVCUSTOMDRAW
+ * @return Return value.
+ */
+inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
+{
+	int result = CDRF_DODEFAULT;
+	switch (plvcd->nmcd.dwDrawStage) {
+		case CDDS_PREPAINT:
+			// Request notifications for individual ListView items.
+			result = CDRF_NOTIFYITEMDRAW;
+			break;
+
+		case CDDS_ITEMPREPAINT: {
+			// Set the background color for alternating row colors.
+			if (plvcd->nmcd.dwItemSpec % 2) {
+				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+				// not the actual default background color.
+				// FIXME: On Windows 7:
+				// - Standard row colors are 19px high.
+				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+				plvcd->clrTextBk = colorAltRow;
+				result = CDRF_NEWFONT;
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
+	return result;
+}
+
+/**
  * WM_NOTIFY handler for the property sheet.
  * @param hDlg Dialog window.
  * @param pHdr NMHDR
@@ -2328,28 +2369,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			// References:
 			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 			// - https://stackoverflow.com/a/40552426
-			NMLVCUSTOMDRAW *const plvcd = reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr);
-			int result = CDRF_DODEFAULT;
-			switch (plvcd->nmcd.dwDrawStage) {
-				case CDDS_PREPAINT:
-					// Request notifications for individual ListView items.
-					result = CDRF_NOTIFYITEMDRAW;
-					break;
-
-				case CDDS_ITEMPREPAINT: {
-					// Set the background color for alternating row colors.
-					if (plvcd->nmcd.dwItemSpec % 2) {
-						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
-						// not the actual default background color.
-						// FIXME: On Windows 7:
-						// - Standard row colors are 19px high.
-						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
-						plvcd->clrTextBk = colorAltRow;
-						result = CDRF_NEWFONT;
-					}
-					break;
-				}
-			}
+			const int result = ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
 			ret = TRUE;
 			break;
