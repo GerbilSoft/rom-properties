@@ -187,12 +187,20 @@ class KeyManagerTabPrivate
 		HBRUSH hbrAltRow;
 
 		/**
+		 * ListView GetDispInfo function.
+		 * @param pHdr	[in] NMHDR
+		 * @param plvdi	[in/out] NMLVDISPINFO
+		 * @return TRUE if handled; FALSE if not.
+		 */
+		inline BOOL ListView_GetDispInfo(const NMHDR *pHdr, NMLVDISPINFO *plvdi);
+
+		/**
 		 * ListView CustomDraw function.
-		 * @param hListView	[in] ListView control.
-		 * @param plvcd		[in/out] NMLVCUSTOMDRAW
+		 * @param pHdr	[in] NMHDR
+		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 		 * @return Return value.
 		 */
-		inline int ListView_CustomDraw(HWND hListView, NMLVCUSTOMDRAW *plvcd);
+		inline int ListView_CustomDraw(const NMHDR *pHdr, NMLVCUSTOMDRAW *plvcd);
 
 		/**
 		 * Load images.
@@ -692,7 +700,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return FALSE;
 			}
 
-			NMHDR *pHdr = reinterpret_cast<NMHDR*>(lParam);
+			const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
 			switch (pHdr->code) {
 				case PSN_APPLY:
 					// Save settings.
@@ -700,39 +708,11 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					break;
 
 				case LVN_GETDISPINFO: {
+					// Get data for an LVS_OWNERDRAW ListView.
 					if (!d->keyStore || pHdr->idFrom != IDC_KEYMANAGER_LIST)
 						break;
 
-					LVITEM *plvItem = &reinterpret_cast<NMLVDISPINFO*>(lParam)->item;
-					if (plvItem->iItem < 0 || plvItem->iItem >= d->keyStore->totalKeyCount()) {
-						// Index is out of range.
-						break;
-					}
-
-					const KeyStoreWin32::Key *key = d->keyStore->getKey(plvItem->iItem);
-					if (!key)
-						break;
-
-					if (plvItem->mask & LVIF_TEXT) {
-						// Fill in text.
-						// NOTE: We need to store the text in a
-						// temporary wstring buffer.
-						switch (plvItem->iSubItem) {
-							case 0:
-								// Key name.
-								_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->name));
-								return TRUE;
-							case 1:
-								// Value.
-								_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->value));
-								return TRUE;
-							default:
-								// No text for "Valid?".
-								plvItem->pszText[0] = 0;
-								return TRUE;
-						}
-					}
-					break;
+					return d->ListView_GetDispInfo(pHdr, reinterpret_cast<NMLVDISPINFO*>(lParam));
 				}
 
 				case NM_CUSTOMDRAW: {
@@ -745,7 +725,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					// References:
 					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 					// - https://stackoverflow.com/a/40552426
-					const int result = d->ListView_CustomDraw(pHdr->hwndFrom, reinterpret_cast<NMLVCUSTOMDRAW*>(lParam));
+					const int result = d->ListView_CustomDraw(pHdr, reinterpret_cast<NMLVCUSTOMDRAW*>(lParam));
 					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
 					return TRUE;
 				}
@@ -1256,12 +1236,54 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 }
 
 /**
+ * ListView GetDispInfo function.
+ * @param pHdr	[in] NMHDR
+ * @param plvdi	[in/out] NMLVDISPINFO
+ * @return TRUE if handled; FALSE if not.
+ */
+inline BOOL KeyManagerTabPrivate::ListView_GetDispInfo(const NMHDR *pHdr, NMLVDISPINFO *plvdi)
+{
+	LVITEM *const plvItem = &plvdi->item;
+	if (plvItem->iItem < 0 || plvItem->iItem >= keyStore->totalKeyCount()) {
+		// Index is out of range.
+		return FALSE;
+	}
+
+	const KeyStoreWin32::Key *const key = keyStore->getKey(plvItem->iItem);
+	if (!key) {
+		// No key...
+		return FALSE;
+	}
+
+	if (plvItem->mask & LVIF_TEXT) {
+		// Fill in text.
+		switch (plvItem->iSubItem) {
+			case 0:
+				// Key name.
+				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->name));
+				return TRUE;
+			case 1:
+				// Value.
+				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->value));
+				return TRUE;
+			default:
+				// No text for "Valid?".
+				plvItem->pszText[0] = 0;
+				return TRUE;
+		}
+	}
+
+	// Nothing to do here...
+	return FALSE;
+}
+
+/**
  * ListView CustomDraw function.
- * @param hListView	[in] ListView control.
- * @param plvcd		[in] NMLVCUSTOMDRAW
+ * @param pHdr	[in] NMHDR
+ * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
  */
-inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMDRAW *plvcd)
+inline int KeyManagerTabPrivate::ListView_CustomDraw(const NMHDR *pHdr, NMLVCUSTOMDRAW *plvcd)
 {
 	// Check if this is an "odd" row.
 	bool isOdd;
@@ -1361,7 +1383,7 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 						// TODO: Increase row height, or decrease icon size?
 						// The icon is slightly too big for the default row
 						// height on XP.
-						BOOL bRet = ListView_GetSubItemRect(hListView, (int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectTmp);
+						BOOL bRet = ListView_GetSubItemRect(pHdr->hwndFrom, (int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectTmp);
 						if (!bRet)
 							break;
 						pRcSubItem = &rectTmp;
