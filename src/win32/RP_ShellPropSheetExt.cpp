@@ -262,11 +262,12 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a default ListView.
+		 * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
 		int initListData(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
+			const POINT &pt_start, int idx, const SIZE &size, bool doResize,
 			const RomFields::Field *field);
 
 		/**
@@ -1125,11 +1126,12 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a default ListView.
+ * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
+	const POINT &pt_start, int idx, const SIZE &size, bool doResize,
 	const RomFields::Field *field)
 {
 	assert(hDlg != nullptr);
@@ -1333,7 +1335,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// Increase the ListView height.
 	// Default: 5 rows, plus the header.
 	int cy = 0;
-	if (ListView_GetItemCount(hDlgItem) > 0) {
+	if (doResize && ListView_GetItemCount(hDlgItem) > 0) {
 		if (listDataDesc.names) {
 			// Get the header rect.
 			HWND hHeader = ListView_GetHeader(hDlgItem);
@@ -1368,6 +1370,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		cy = size.cy;
 	}
 
+	// TODO: Skip this if cy == size.cy?
 	SetWindowPos(hDlgItem, nullptr, 0, 0, size.cx, cy,
 		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 	return cy;
@@ -1936,6 +1939,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Create a ListView control.
 				SIZE size = {dlg_value_width, field_cy*6};
 				POINT pt_ListData = pt_start;
+
+				// Should the RFT_LISTDATA be placed on its own row?
+				bool doVBox = false;
 				if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 					// Separate row.
 					size.cx = dlgSize.cx - 1;
@@ -1949,9 +1955,35 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 					}
 					pt_ListData.x = tab.curPt.x;
 					pt_ListData.y += (descSize.cy - (dlgMargin.top/3));
+
+					// If this is the last RFT_LISTDATA in the tab,
+					// extend it vertically.
+					if (tabIdx + 1 == tabCount && idx == count-1) {
+						// Last tab, and last field.
+						doVBox = true;
+					} else {
+						// Check if the next field is on the next tab.
+						const RomFields::Field *nextField = fields->field(idx+1);
+						if (nextField && nextField->tabIdx != tabIdx) {
+							// Next field is on the next tab.
+							doVBox = true;
+						}
+					}
+
+					if (doVBox) {
+						// Extend it vertically.
+						size.cy = dlgSize.cy - pt_ListData.y;
+						if (tabCount > 1) {
+							// FIXME: This seems a bit wonky...
+							size.cy -= ((dlgMargin.top / 2) + 1);
+						} else {
+							// This also seems wonky...
+							size.cy += dlgRect.top - 1;
+						}
+					}
 				}
 
-				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, field);
+				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, !doVBox, field);
 				if (field_cy > 0) {
 					// Add the extra row if necessary.
 					if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
