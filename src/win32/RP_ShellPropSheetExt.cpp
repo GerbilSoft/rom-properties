@@ -1194,7 +1194,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Set extended ListView styles.
 	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
-	if (!!GetSystemMetrics(SM_REMOTESESSION)) {
+	if (!GetSystemMetrics(SM_REMOTESESSION)) {
 		// Not RDP (or is RemoteFX): Enable double buffering.
 		lvsExStyle |= LVS_EX_DOUBLEBUFFER;
 	}
