@@ -60,10 +60,12 @@ using LibRomData::RomDataFactory;
 #include <array>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 using std::array;
 using std::unique_ptr;
+using std::unordered_map;
 using std::unordered_set;
 using std::string;
 using std::wstring;
@@ -162,6 +164,21 @@ class RP_ShellPropSheetExt_Private
 		// Alternate row color.
 		COLORREF colorAltRow;
 		bool isFullyInit;		// True if the window is fully initialized.
+
+		// ListView string data.
+		// - Key: ListView dialog ID (TODO: Use uint16_t instead?)
+		// - Value: Double-vector of tstrings.
+		unordered_map<unsigned int, vector<vector<tstring> > > map_lvStringData;
+
+		// ListView checkboxes.
+		unordered_map<unsigned int, uint32_t> map_lvCheckboxes;
+
+		/**
+		 * ListView GetDispInfo function.
+		 * @param plvdi	[in/out] NMLVDISPINFO
+		 * @return TRUE if handled; FALSE if not.
+		 */
+		inline BOOL ListView_GetDispInfo(NMLVDISPINFO *plvdi);
 
 		/**
 		 * ListView CustomDraw function.
@@ -1179,15 +1196,17 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: Separate row option is handled by the caller.
 	// TODO: Enable sorting?
 	// TODO: Optimize by not using OR?
-	DWORD lvsStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER;
+	DWORD lvsStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT |
+	                 LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | LVS_OWNERDATA;
 	if (!listDataDesc.names) {
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
+	const unsigned int dlgId = IDC_RFT_LISTDATA(idx);
 	HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y,
 		size.cx, size.cy,
-		hWndTab, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
+		hWndTab, (HMENU)(INT_PTR)(dlgId),
 		nullptr, nullptr);
 	SetWindowFont(hDlgItem, hFontDlg, false);
 	hwndListViewControls.push_back(hDlgItem);
@@ -1244,11 +1263,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 	}
 
+	// FIXME: LVS_OWNERDATA
 	// Add the row data.
 	if (list_data) {
-		uint32_t checkboxes = 0;
+		uint32_t checkboxes = 0, adj_checkboxes = 0;
 		if (hasCheckboxes) {
-			field->data.list_data.checkboxes;
+			checkboxes = field->data.list_data.checkboxes;
 		}
 
 		// FIXME: If an RFT_LISTDATA has multi-line entries,
@@ -1266,69 +1286,61 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			}
 		}
 
-		LVITEM lvItem;
-		lvItem.mask = 0;
-		int lv_row_num = 0, data_row_num = 0;
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
+		// NOTE: We're converting the strings for use with
+		// LVS_OWNERDATA.
+		vector<vector<tstring> > lvStringData;
+		lvStringData.reserve(list_data->size());
+
+		int lv_row_num = 0;
+		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?
 			// (also check other UI frontends)
-			if (hasCheckboxes && data_row.empty()) {
-				// Skip this row.
-				checkboxes >>= 1;
-				continue;
+			if (hasCheckboxes) {
+				if (data_row.empty()) {
+					// Skip this row.
+					checkboxes >>= 1;
+					continue;
+				} else {
+					// Store the checkbox value for this row.
+					if (checkboxes & 1) {
+						adj_checkboxes |= (1 << lv_row_num);
+					}
+					checkboxes >>= 1;
+				}
 			}
 
-			lvItem.iItem = lv_row_num;
-			int col = 0;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
-				lvItem.iSubItem = col;
-				// NOTE: pszText is LPTSTR, not LPCTSTR...
-				// TODO: UTF-8 unix2dos() function?
-				const tstring tstr = LibWin32Common::unix2dos(U82T_s(*iter));
-				lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
-				if (col == 0) {
-					// Column 0: Insert the item.
-					lvItem.mask = LVIF_TEXT;
-					if (himl) {
-						// Add the icon.
-						const rp_image *const icon = field->data.list_data.icons->at(data_row_num);
-						if (icon) {
-							HICON hIcon = RpImageWin32::toHICON(icon);
-							if (hIcon) {
-								int idx = ImageList_AddIcon(himl, hIcon);
-								if (idx >= 0) {
-									// Icon added.
-									lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
-									lvItem.iImage = idx;
-								}
-								// ImageList makes a copy of the icon.
-								DestroyIcon(hIcon);
-							}
-						}
-					}
+			// Destination row.
+			lvStringData.resize(lvStringData.size()+1);
+			auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
+			lv_row_data.reserve(data_row.size());
 
-					ListView_InsertItem(hDlgItem, &lvItem);
-					// Set the checkbox state after inserting the item.
-					// Setting the state when inserting it doesn't seem to work...
-					if (hasCheckboxes) {
-						ListView_SetCheckState(hDlgItem, lv_row_num, (checkboxes & 1));
-						checkboxes >>= 1;
-					}
-				} else {
-					// Columns 1 and higher: Set the subitem.
-					lvItem.mask = LVIF_TEXT;
-					ListView_SetItem(hDlgItem, &lvItem);
-				}
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
+				// TODO: Store the icon index if necessary.
+				lv_row_data.push_back(U82T_s(*iter));
 			}
 
 			// Next row.
 			lv_row_num++;
 		}
+
+		// Adjusted checkboxes value.
+		if (hasCheckboxes) {
+			map_lvCheckboxes.insert(std::make_pair(dlgId, adj_checkboxes));
+		}
+
+		// Set the virtual list item count.
+		ListView_SetItemCountEx(hDlgItem, lv_row_num,
+			LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
+
+		// Save the double-vector for later.
+		map_lvStringData.insert(std::make_pair(dlgId, std::move(lvStringData)));
 	}
 
 	// Resize all of the columns.
 	// TODO: Do this on system theme change?
+	// TODO: Add a flag for 'main data column' and adjust it to
+	// not exceed the viewport.
 	for (int i = 0; i < col_count; i++) {
 		ListView_SetColumnWidth(hDlgItem, i, LVSCW_AUTOSIZE_USEHEADER);
 	}
@@ -1341,6 +1353,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Increase the ListView height.
 	// Default: 5 rows, plus the header.
+	// FIXME: Might not work for LVS_OWNERDATA.
 	int cy = 0;
 	if (doResize && ListView_GetItemCount(hDlgItem) > 0) {
 		if (listDataDesc.names) {
@@ -2278,6 +2291,52 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETP
 /** Property sheet callback functions. **/
 
 /**
+ * ListView GetDispInfo function.
+ * @param plvdi	[in/out] NMLVDISPINFO
+ * @return TRUE if handled; FALSE if not.
+ */
+inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvdi)
+{
+	// TODO: Assertions for row/column indexes.
+	LVITEM *const plvItem = &plvdi->item;
+	const unsigned int idFrom = static_cast<unsigned int>(plvdi->hdr.idFrom);
+
+	if (plvItem->mask & LVIF_TEXT) {
+		// Fill in text.
+
+		// Get the double-vector of strings for this item.
+		auto lvIdIter = map_lvStringData.find(idFrom);
+		if (lvIdIter == map_lvStringData.end()) {
+			// ID not found.
+			return false;
+		}
+		const auto &vv_str = lvIdIter->second;
+
+		// Is this row in range?
+		if (plvItem->iItem < 0 || plvItem->iItem >= static_cast<int>(vv_str.size())) {
+			// Row index is out of range.
+			return false;
+		}
+
+		// Get the row data.
+		const auto &row_data = vv_str.at(plvItem->iItem);
+
+		// Is the column in range?
+		if (plvItem->iSubItem < 0 || plvItem->iSubItem >= static_cast<int>(row_data.size())) {
+			// Column index is out of range.
+			return false;
+		}
+
+		// Return the string data.
+		_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
+		return true;
+	}
+
+	// Nothing to do here...
+	return false;
+}
+
+/**
  * ListView CustomDraw function.
  * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
@@ -2356,6 +2415,15 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 				curTabIndex = newTabIndex;
 				ShowWindow(tabs[newTabIndex].hDlg, SW_SHOW);
 			}
+			break;
+		}
+
+		case LVN_GETDISPINFO: {
+			// Get data for an LVS_OWNERDRAW ListView.
+			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+				break;
+
+			ret = ListView_GetDispInfo(reinterpret_cast<NMLVDISPINFO*>(pHdr));
 			break;
 		}
 
@@ -2759,15 +2827,22 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 	// Propagate NM_CUSTOMDRAW to the parent dialog.
 	if (uMsg == WM_NOTIFY) {
 		const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
-		if (pHdr->code == NM_CUSTOMDRAW || pHdr->code == LVN_ITEMCHANGING) {
-			// NOTE: Since this is a DlgProc, we can't simply return
-			// the CDRF code. It has to be set as DWLP_MSGRESULT.
-			// References:
-			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
-			// - https://stackoverflow.com/a/40552426
-			INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
-			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-			return true;
+		switch (pHdr->code) {
+			case LVN_GETDISPINFO:
+			case NM_CUSTOMDRAW:
+			case LVN_ITEMCHANGING: {
+				// NOTE: Since this is a DlgProc, we can't simply return
+				// the CDRF code. It has to be set as DWLP_MSGRESULT.
+				// References:
+				// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+				// - https://stackoverflow.com/a/40552426
+				INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+				SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+				return true;
+			}
+
+			default:
+				break;
 		}
 	}
 
