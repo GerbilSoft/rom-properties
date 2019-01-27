@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "RomDataView.hpp"
@@ -327,6 +326,10 @@ rom_data_view_init(RomDataView *page)
 	 * - GTK+ 2.x: GtkVBox
 	 * - GTK+ 3.x: GtkBox
 	 */
+
+	// NOTE: This matches Thunar. Need to verify others.
+	g_object_set(page, "border-width", 8, nullptr);
+	g_object_set(page, "border-spacing", 8, nullptr);
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -1182,11 +1185,13 @@ rom_data_view_update_display(RomDataView *page)
 #endif
 
 	// Create the GtkNotebook.
-	if (fields->tabCount() > 1) {
-		page->tabs->resize(fields->tabCount());
+	int tabCount = fields->tabCount();
+	if (tabCount > 1) {
+		page->tabs->resize(tabCount);
 		page->tabWidget = gtk_notebook_new();
+
 		auto tabIter = page->tabs->begin();
-		for (int i = 0; i < fields->tabCount(); i++, ++tabIter) {
+		for (int i = 0; i < tabCount; i++, ++tabIter) {
 			// Create a tab.
 			const char *name = fields->tabName(i);
 			if (!name) {
@@ -1223,9 +1228,11 @@ rom_data_view_update_display(RomDataView *page)
 		// No tabs.
 		// Don't create a GtkNotebook, but simulate a single
 		// tab in page->tabs[] to make it easier to work with.
+		tabCount = 1;
 		page->tabs->resize(1);
 		auto &tab = page->tabs->at(0);
 		tab.vbox = GTK_WIDGET(page);
+
 #if GTK_CHECK_VERSION(3,0,0)
 		tab.table = gtk_grid_new();
 		gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
@@ -1259,7 +1266,7 @@ rom_data_view_update_display(RomDataView *page)
 
 	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
-		const RomFields::Field *field = fields->field(i);
+		const RomFields::Field *const field = fields->field(i);
 		assert(field != nullptr);
 		if (!field || !field->isValid)
 			continue;
@@ -1346,11 +1353,11 @@ rom_data_view_update_display(RomDataView *page)
 				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
 #endif
 
-				gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 1, 1);
+				gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
 				row += 2;
 			} else {
 				// Single row.
-				gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 2, 1);
+				gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
 				row++;
 			}
 #else
@@ -1364,8 +1371,34 @@ rom_data_view_update_display(RomDataView *page)
 				// Make sure the description label is left-aligned.
 				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
 
-				gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 1, row+1, row+2,
-					GTK_FILL, GTK_FILL, 0, 0);
+				// If this is the last field in the tab,
+				// put the RFT_LISTDATA in the GtkVBox instead.
+				bool doVBox = false;
+				if (tabIdx + 1 == tabCount && i == count-1) {
+					// Last tab, and last field.
+					doVBox = true;
+				} else {
+					// Check if the next field is on the next tab.
+					const RomFields::Field *nextField = fields->field(i+1);
+					if (nextField && nextField->tabIdx != tabIdx) {
+						// Next field is on the next tab.
+						doVBox = true;
+					}
+				}
+
+				if (doVBox) {
+					// Add the widget to the GtkVBox.
+					gtk_box_pack_start(GTK_BOX(tab.vbox), widget, FALSE, FALSE, 0);
+					if (tab.lblCredits) {
+						// Need to move it before credits.
+						// TODO: Verify this.
+						gtk_box_reorder_child(GTK_BOX(tab.vbox), widget, 1);
+					}
+				} else {
+					// Add the widget to the GtkTable.
+					gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 2, row+1, row+2,
+						GTK_FILL, GTK_FILL, 0, 0);
+				}
 				row += 2;
 			} else {
 				// Single row.
