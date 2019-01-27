@@ -493,24 +493,20 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// Window background color.
 	// Static controls don't support alpha transparency (?? test),
 	// so we have to fake it.
-	// NOTE: GetSysColor() has swapped R and B channels
-	// compared to GDI+.
 	// TODO: Get the actual background color of the window.
 	// TODO: Use DrawThemeBackground:
 	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
 	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
 	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
+	int colorIndex;
 	if (pfnIsThemeActive && pfnIsThemeActive()) {
 		// Theme is active.
-		colorWinBg = GetSysColor(COLOR_WINDOW);
+		colorIndex = COLOR_WINDOW;
 	} else {
 		// Theme is not active.
-		colorWinBg = GetSysColor(COLOR_3DFACE);
+		colorIndex = COLOR_3DFACE;
 	}
-	Gdiplus::ARGB gdipBgColor =
-		   (colorWinBg & 0x00FF00) | 0xFF000000 |
-		  ((colorWinBg & 0xFF) << 16) |
-		  ((colorWinBg >> 16) & 0xFF);
+	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
 
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
