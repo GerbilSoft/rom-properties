@@ -36,11 +36,13 @@ ENDIF(CPU_i386 OR CPU_amd64)
 SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
 	CreateThumbnail.cpp
+	PIMGTYPE.cpp
 	rp-gtk-enums.c
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
 	GdkImageConv.hpp
+	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	)
 
