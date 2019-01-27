@@ -173,6 +173,9 @@ class RP_ShellPropSheetExt_Private
 		// ListView checkboxes.
 		unordered_map<unsigned int, uint32_t> map_lvCheckboxes;
 
+		// ListView ImageList indexes.
+		unordered_map<unsigned int, vector<int> > map_lvImageList;
+
 		/**
 		 * ListView GetDispInfo function.
 		 * @param plvdi	[in/out] NMLVDISPINFO
@@ -1263,7 +1266,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 	}
 
-	// FIXME: LVS_OWNERDATA
 	// Add the row data.
 	if (list_data) {
 		uint32_t checkboxes = 0, adj_checkboxes = 0;
@@ -1291,8 +1293,13 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		vector<vector<tstring> > lvStringData;
 		lvStringData.reserve(list_data->size());
 
-		int lv_row_num = 0;
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
+		vector<int> lvImageList;
+		if (hasIcons) {
+			lvImageList.reserve(list_data->size());
+		}
+
+		int lv_row_num = 0, data_row_num = 0;
+		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?
 			// (also check other UI frontends)
@@ -1315,6 +1322,27 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
 			lv_row_data.reserve(data_row.size());
 
+			// Icon.
+			if (himl) {
+				// Add the icon.
+				int iImage = -1;
+				const rp_image *const icon = field->data.list_data.icons->at(data_row_num);
+				if (icon) {
+					HICON hIcon = RpImageWin32::toHICON(icon);
+					if (hIcon) {
+						int idx = ImageList_AddIcon(himl, hIcon);
+						if (idx >= 0) {
+							// Icon added.
+							iImage = idx;
+						}
+						// ImageList makes a copy of the icon.
+						DestroyIcon(hIcon);
+					}
+				}
+				lvImageList.push_back(iImage);
+			}
+
+			// String data.
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
 				// TODO: Store the icon index if necessary.
 				lv_row_data.push_back(U82T_s(*iter));
@@ -1327,6 +1355,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// Adjusted checkboxes value.
 		if (hasCheckboxes) {
 			map_lvCheckboxes.insert(std::make_pair(dlgId, adj_checkboxes));
+		}
+		// ImageList indexes.
+		if (hasIcons) {
+			map_lvImageList.insert(std::make_pair(dlgId, std::move(lvImageList)));
 		}
 
 		// Set the virtual list item count.
@@ -2300,40 +2332,54 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 	// TODO: Assertions for row/column indexes.
 	LVITEM *const plvItem = &plvdi->item;
 	const unsigned int idFrom = static_cast<unsigned int>(plvdi->hdr.idFrom);
+	bool ret = false;
 
 	if (plvItem->mask & LVIF_TEXT) {
 		// Fill in text.
 
-		// Get the double-vector of strings for this item.
+		// Get the double-vector of strings for this ListView.
 		auto lvIdIter = map_lvStringData.find(idFrom);
-		if (lvIdIter == map_lvStringData.end()) {
-			// ID not found.
-			return false;
+		if (lvIdIter != map_lvStringData.end()) {
+			const auto &vv_str = lvIdIter->second;
+
+			// Is this row in range?
+			if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(vv_str.size())) {
+				// Get the row data.
+				const auto &row_data = vv_str.at(plvItem->iItem);
+
+				// Is the column in range?
+				if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
+					// Return the string data.
+					_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
+					ret = true;
+				}
+			}
 		}
-		const auto &vv_str = lvIdIter->second;
-
-		// Is this row in range?
-		if (plvItem->iItem < 0 || plvItem->iItem >= static_cast<int>(vv_str.size())) {
-			// Row index is out of range.
-			return false;
-		}
-
-		// Get the row data.
-		const auto &row_data = vv_str.at(plvItem->iItem);
-
-		// Is the column in range?
-		if (plvItem->iSubItem < 0 || plvItem->iSubItem >= static_cast<int>(row_data.size())) {
-			// Column index is out of range.
-			return false;
-		}
-
-		// Return the string data.
-		_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
-		return true;
 	}
 
-	// Nothing to do here...
-	return false;
+	if (plvItem->mask & LVIF_IMAGE) {
+		// Fill in the ImageList index.
+		// NOTE: Only valid for the base item.
+		if (plvItem->iSubItem == 0) {
+			// Get the vector of ImageList indexes for this ListView.
+			auto lvIdIter = map_lvImageList.find(idFrom);
+			if (lvIdIter != map_lvImageList.end()) {
+				const auto &lvImageList = lvIdIter->second;
+
+				// Is this row in range?
+				if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(lvImageList.size())) {
+					const int iImage = lvImageList[plvItem->iItem];
+					if (iImage >= 0) {
+						// Set the ImageList index.
+						plvItem->iImage = iImage;
+						ret = true;
+					}
+				}
+			}
+		}
+	}
+
+	return ret;
 }
 
 /**
