@@ -161,7 +161,7 @@ class RP_ShellPropSheetExt_Private
 
 		// Alternate row color.
 		COLORREF colorAltRow;
-		bool isFullyInit;		// TRUE if the window is fully initialized.
+		bool isFullyInit;		// True if the window is fully initialized.
 
 		/**
 		 * ListView CustomDraw function.
@@ -723,7 +723,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
 			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSysInfo, hFont, FALSE);
+		SetWindowFont(lblSysInfo, hFont, false);
 		curPt.x += sz_lblSysInfo.cx + pt_start.x;
 	}
 
@@ -820,7 +820,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 				// Set the font of the description control.
 				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(idx));
 				if (hStatic) {
-					SetWindowFont(hStatic, hFont, FALSE);
+					SetWindowFont(hStatic, hFont, false);
 					hwndWarningControls.insert(hStatic);
 				}
 			}
@@ -868,7 +868,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
 		assert(hwndSysLinkControls.empty());
 		hwndSysLinkControls.insert(hDlgItem);
-		SetWindowFont(hDlgItem, hFont, FALSE);
+		SetWindowFont(hDlgItem, hFont, false);
 
 		// NOTE: We can't use measureTextSize() because that includes
 		// the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
@@ -904,7 +904,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
 			hWndTab, cId, nullptr, nullptr);
-		SetWindowFont(hDlgItem, hFont, FALSE);
+		SetWindowFont(hDlgItem, hFont, false);
 
 		// Get the EDIT control margins.
 		const DWORD dwMargins = (DWORD)SendMessage(hDlgItem, EM_GETMARGINS, 0, 0);
@@ -1109,7 +1109,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
 			nullptr, nullptr);
-		SetWindowFont(hCheckBox, hFontDlg, FALSE);
+		SetWindowFont(hCheckBox, hFontDlg, false);
 
 		// Set the checkbox state.
 		Button_SetCheck(hCheckBox, (field->data.bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
@@ -1189,7 +1189,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		size.cx, size.cy,
 		hWndTab, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
 		nullptr, nullptr);
-	SetWindowFont(hDlgItem, hFontDlg, FALSE);
+	SetWindowFont(hDlgItem, hFontDlg, false);
 	hwndListViewControls.push_back(hDlgItem);
 
 	// Set extended ListView styles.
@@ -1656,7 +1656,7 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 
 	// Update all existing monospaced controls.
 	for (auto iter = hwndMonoControls.cbegin(); iter != hwndMonoControls.cend(); ++iter) {
-		SetWindowFont(*iter, hFontMonoNew, FALSE);
+		SetWindowFont(*iter, hFontMonoNew, false);
 	}
 
 	// Delete the old font and save the new one.
@@ -1823,7 +1823,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
-		SetWindowFont(hTabWidget, hFontDlg, FALSE);
+		SetWindowFont(hTabWidget, hFontDlg, false);
 		curTabIndex = 0;
 
 		// Add tabs.
@@ -1845,7 +1845,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// Adjust the dialog size for subtabs.
-		TabCtrl_AdjustRect(hTabWidget, FALSE, &dlgRect);
+		TabCtrl_AdjustRect(hTabWidget, false, &dlgRect);
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
@@ -1919,7 +1919,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
 			nullptr, nullptr);
-		SetWindowFont(hStatic, hFontDlg, FALSE);
+		SetWindowFont(hStatic, hFontDlg, false);
 
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
@@ -2319,7 +2319,7 @@ inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plv
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 {
-	INT_PTR ret = FALSE;
+	INT_PTR ret = false;
 
 	switch (pHdr->code) {
 		case PSN_SETACTIVE:
@@ -2371,7 +2371,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			// - https://stackoverflow.com/a/40552426
 			const int result = ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-			ret = TRUE;
+			ret = true;
 			break;
 		}
 
@@ -2386,9 +2386,9 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 			NMLISTVIEW *const pnmlv = reinterpret_cast<NMLISTVIEW*>(pHdr);
 			const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
-			// Set result to TRUE if the state difference is non-zero (i.e. it's changed).
+			// Set result to true if the state difference is non-zero (i.e. it's changed).
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
-			ret = TRUE;
+			ret = true;
 			break;
 		}
 
@@ -2408,7 +2408,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 {
 	if (!hbmpBanner && !hbmpIconFrames[0]) {
 		// Nothing to draw...
-		return FALSE;
+		return false;
 	}
 
 	PAINTSTRUCT ps;
@@ -2436,7 +2436,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	DeleteDC(hdcMem);
 	EndPaint(hDlg, &ps);
 
-	return TRUE;
+	return true;
 }
 
 //
@@ -2454,12 +2454,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// contained in the LPARAM of the PROPSHEETPAGE structure.
 			LPPROPSHEETPAGE pPage = reinterpret_cast<LPPROPSHEETPAGE>(lParam);
 			if (!pPage)
-				return TRUE;
+				return true;
 
 			// Access the property sheet extension from property page.
 			RP_ShellPropSheetExt *const pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
 			if (!pExt)
-				return TRUE;
+				return true;
 			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 
 			// Store the D object pointer with this particular page dialog.
@@ -2474,7 +2474,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// NOTE: We're using WM_SHOWWINDOW instead of WM_SIZE
 			// because WM_SIZE isn't sent for block devices,
 			// e.g. CD-ROM drives.
-			return TRUE;
+			return true;
 		}
 
 		// FIXME: FBI's age rating is cut off on Windows
@@ -2484,7 +2484,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			if (d->isFullyInit) {
@@ -2539,7 +2539,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// The D_PTR_PROP property stored the pointer to the 
 			// RP_ShellPropSheetExt_Private object.
 			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::D_PTR_PROP);
-			return TRUE;
+			return true;
 		}
 
 		case WM_NOTIFY: {
@@ -2547,7 +2547,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
@@ -2558,7 +2558,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 			return d->DlgProc_WM_PAINT(hDlg);
 		}
@@ -2570,7 +2570,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// Reload images in case the background color changed.
@@ -2584,10 +2584,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 					d->ptBanner.x + d->szBanner.cx,
 					d->ptBanner.y + d->szBanner.cy,
 				};
-				InvalidateRect(d->hDlgSheet, &rectBitmap, FALSE);
+				InvalidateRect(d->hDlgSheet, &rectBitmap, false);
 			}
 			if (d->szIcon.cx > 0) {
-				InvalidateRect(d->hDlgSheet, &d->rectIcon, FALSE);
+				InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
 			}
 			break;
 		}
@@ -2611,7 +2611,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
@@ -2629,7 +2629,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// If RDP was connected, disable ListView double-buffering.
@@ -2663,7 +2663,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			break;
 	}
 
-	return FALSE; // Let system deal with other messages
+	return false; // Let system deal with other messages
 }
 
 
@@ -2679,8 +2679,8 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
-			// Must return TRUE to enable the page to be created.
-			return TRUE;
+			// Must return true to enable the page to be created.
+			return true;
 		}
 
 		case PSPCB_RELEASE: {
@@ -2703,7 +2703,7 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 			break;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -2739,7 +2739,7 @@ void CALLBACK RP_ShellPropSheetExt_Private::AnimTimerProc(HWND hWnd, UINT uMsg, 
 		// New frame number.
 		// Update the icon.
 		d->last_frame_number = frame;
-		InvalidateRect(d->hDlgSheet, &d->rectIcon, FALSE);
+		InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
 	}
 
 	// Update the timer.
@@ -2767,10 +2767,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			// - https://stackoverflow.com/a/40552426
 			INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-			return TRUE;
+			return true;
 		}
 	}
 
 	// Dummy callback procedure that does nothing.
-	return FALSE; // Let system deal with other messages
+	return false; // Let system deal with other messages
 }
