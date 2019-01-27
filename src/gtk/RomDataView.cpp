@@ -1386,6 +1386,7 @@ rom_data_view_update_display(RomDataView *page)
 						GINT_TO_POINTER(0));
 
 					// Add the widget to the GtkBox.
+					// FIXME: Expand/Fill aren't working on GTK+ 3.x.
 					gtk_box_pack_start(GTK_BOX(tab.vbox), widget, true, true, 0);
 					if (tab.lblCredits) {
 						// Need to move it before credits.
