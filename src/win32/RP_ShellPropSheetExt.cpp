@@ -1148,6 +1148,24 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	const auto list_data = field->data.list_data.data;
 	assert(list_data != nullptr);
 
+	// Validate flags.
+	// Cannot have both checkboxes and icons.
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	assert(!(hasCheckboxes && hasIcons));
+	if (hasCheckboxes && hasIcons) {
+		// Both are set. This shouldn't happen...
+		return 0;
+	}
+
+	if (hasIcons) {
+		assert(field->data.list_data.icons != nullptr);
+		if (!field->data.list_data.icons) {
+			// No icons vector...
+			return 0;
+		}
+	}
+
 	// Create a ListView widget.
 	// NOTE: Separate row option is handled by the caller.
 	// TODO: Enable sorting?
@@ -1171,7 +1189,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		// Not RDP (or is RemoteFX): Enable double buffering.
 		lvsExStyle |= LVS_EX_DOUBLEBUFFER;
 	}
-	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	if (hasCheckboxes) {
 		lvsExStyle |= LVS_EX_CHECKBOXES;
 	}
@@ -1220,11 +1237,30 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Add the row data.
 	if (list_data) {
-		uint32_t checkboxes = field->data.list_data.checkboxes;
+		uint32_t checkboxes = 0;
+		if (hasCheckboxes) {
+			field->data.list_data.checkboxes;
+		}
+
+		// FIXME: If an RFT_LISTDATA has multi-line entries,
+		// they won't show up as multi-line in the ListView,
+		// **unless** they also have icons.
+		HIMAGELIST himl = nullptr;
+		if (hasIcons) {
+			// TODO: Ideal icon size?
+			// Using 32x32 for now.
+			// ImageList will resize the original icons to 32x32.
+			himl = ImageList_Create(32, 32, ILC_COLOR32, static_cast<int>(list_data->size()), 0);
+			if (himl) {
+				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
+			}
+		}
+
 		LVITEM lvItem;
-		lvItem.mask = LVIF_TEXT;
-		int row_num = 0;
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
+		lvItem.mask = 0;
+		int lv_row_num = 0, data_row_num = 0;
+		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?
 			// (also check other UI frontends)
@@ -1234,30 +1270,51 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				continue;
 			}
 
-			lvItem.iItem = row_num;
+			lvItem.iItem = lv_row_num;
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				lvItem.iSubItem = col;
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
-				const tstring tstr = U82T_s(*iter);
+				// TODO: UTF-8 unix2dos() function?
+				const tstring tstr = LibWin32Common::unix2dos(U82T_s(*iter));
 				lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 				if (col == 0) {
 					// Column 0: Insert the item.
+					lvItem.mask = LVIF_TEXT;
+					if (himl) {
+						// Add the icon.
+						const rp_image *const icon = field->data.list_data.icons->at(data_row_num);
+						if (icon) {
+							HICON hIcon = RpImageWin32::toHICON(icon);
+							if (hIcon) {
+								int idx = ImageList_AddIcon(himl, hIcon);
+								if (idx >= 0) {
+									// Icon added.
+									lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+									lvItem.iImage = idx;
+								}
+								// ImageList makes a copy of the icon.
+								DestroyIcon(hIcon);
+							}
+						}
+					}
+
 					ListView_InsertItem(hDlgItem, &lvItem);
 					// Set the checkbox state after inserting the item.
 					// Setting the state when inserting it doesn't seem to work...
 					if (hasCheckboxes) {
-						ListView_SetCheckState(hDlgItem, row_num, (checkboxes & 1));
+						ListView_SetCheckState(hDlgItem, lv_row_num, (checkboxes & 1));
 						checkboxes >>= 1;
 					}
 				} else {
 					// Columns 1 and higher: Set the subitem.
+					lvItem.mask = LVIF_TEXT;
 					ListView_SetItem(hDlgItem, &lvItem);
 				}
 			}
 
 			// Next row.
-			row_num++;
+			lv_row_num++;
 		}
 	}
 

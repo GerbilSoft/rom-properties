@@ -11,6 +11,46 @@
 #include "tsbase.h"
 #include <commctrl.h>
 
+//====== IMAGE APIS ===========================================================
+#ifndef NOIMAGEAPIS
+
+#undef ImageList_AddIcon
+static FORCEINLINE int ImageList_AddIcon(_In_ HIMAGELIST himl, _In_ HICON hicon)
+{
+	return ImageList_ReplaceIcon(himl, -1, hicon);
+}
+
+#undef ImageList_RemoveAll
+static FORCEINLINE BOOL ImageList_RemoveAll(_In_ HIMAGELIST himl)
+{
+	return ImageList_Remove(himl, -1);
+}
+
+#undef ImageList_ExtractIcon
+static FORCEINLINE HICON ImageList_ExtractIcon(_In_ HINSTANCE hi, _In_ HIMAGELIST himl, _In_ int i)
+{
+	((void)hi);
+	return ImageList_GetIcon(himl, i, 0);
+}
+
+#undef ImageList_LoadBitmap
+static FORCEINLINE HIMAGELIST ImageList_LoadBitmapA(_In_ HINSTANCE hi, _In_ LPCSTR lpbmp, _In_ int cx, _In_ int cGrow, _In_ COLORREF crMask)
+{
+	return ImageList_LoadImageA(hi, lpbmp, cx, cGrow, crMask, IMAGE_BITMAP, 0);
+}
+static FORCEINLINE HIMAGELIST ImageList_LoadBitmapW(_In_ HINSTANCE hi, _In_ LPCWSTR lpbmp, _In_ int cx, _In_ int cGrow, _In_ COLORREF crMask)
+{
+	return ImageList_LoadImageW(hi, lpbmp, cx, cGrow, crMask, IMAGE_BITMAP, 0);
+}
+
+#ifdef UNICODE
+# define ImageList_LoadBitmap ImageList_LoadBitmapW
+#else
+# define ImageList_LoadBitmap ImageList_LoadBitmapA
+#endif
+
+#endif /* NOIMAGEAPIS */
+
 //====== HEADER CONTROL =======================================================
 #ifndef NOHEADER
 
