@@ -446,7 +446,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 
 	PartitionFile *const peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, xdbf_length);
 	if (peFile_tmp->isOpen()) {
-		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp);
+		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
 		if (pe_xdbf_tmp->isOpen()) {
 			peFile = peFile_tmp;
 			pe_xdbf = pe_xdbf_tmp;
@@ -1000,6 +1000,14 @@ int Xbox360_XEX::loadFieldData(void)
 		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 				d->fileFormatInfo.compression_type));
+	}
+
+	// Can we get the XDBF section?
+	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
+	if (pe_xdbf && pe_xdbf->isOpen()) {
+		// Add the fields.
+		d->fields->addTab("XDBF");
+		d->fields->addFields_romFields(pe_xdbf->fields(), 1);
 	}
 
 	// Finished reading the field data.

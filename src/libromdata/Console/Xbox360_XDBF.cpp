@@ -70,7 +70,7 @@ ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
 class Xbox360_XDBF_Private : public RomDataPrivate
 {
 	public:
-		Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file);
+		Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool cia);
 		virtual ~Xbox360_XDBF_Private();
 
 	private:
@@ -98,6 +98,10 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 
 		// Data start offset within the file.
 		uint32_t data_offset;
+
+		// If true, this XDBF section is in an XEX executable.
+		// Some fields shouldn't be displayed.
+		bool xex;
 
 		// String tables.
 		// NOTE: These are *pointers* to ao::uvector<>.
@@ -154,11 +158,12 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 
 /** Xbox360_XDBF_Private **/
 
-Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file)
+Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex)
 	: super(q, file)
 	, img_icon(nullptr)
 	, entryTable(nullptr)
 	, data_offset(0)
+	, xex(xex)
 {
 	// Clear the header.
 	memset(&xdbfHeader, 0, sizeof(xdbfHeader));
@@ -611,7 +616,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
  * @param file Open XDBF file and/or section.
  */
 Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
-	: super(new Xbox360_XDBF_Private(this, file))
+	: super(new Xbox360_XDBF_Private(this, file, false))
 {
 	// This class handles XDBF files and/or sections only.
 	RP_D(Xbox360_XDBF);
@@ -622,6 +627,46 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
 		// Could not dup() the file handle.
 		return;
 	}
+
+	init();
+}
+
+/**
+ * Read an Xbox 360 XDBF file and/or section.
+ *
+ * A ROM image must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM image.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param file Open XDBF file and/or section.
+ * @param xex If true, hide fields that are displayed separately in XEX executables.
+ */
+Xbox360_XDBF::Xbox360_XDBF(LibRpBase::IRpFile *file, bool xex)
+: super(new Xbox360_XDBF_Private(this, file, xex))
+{
+	// This class handles XDBF files and/or sections only.
+	RP_D(Xbox360_XDBF);
+	d->className = "Xbox360_XEX";	// Using the same image settings as Xbox360_XEX.
+	d->fileType = FTYPE_RESOURCE_FILE;
+
+	if (!d->file) {
+		// Could not dup() the file handle.
+		return;
+	}
+
+	init();
+}
+
+/**
+ * Common initialization function for the constructors.
+ */
+void Xbox360_XDBF::init(void)
+{
+	RP_D(Xbox360_XDBF);
 
 	// Read the Xbox360_XDBF header.
 	d->file->rewind();
@@ -866,8 +911,16 @@ int Xbox360_XDBF::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 2 fields.
-	d->fields->reserve(2);
+	// Reserve fields.
+	if (d->xex) {
+		// Embedded in an XEX executable.
+		// Maximum of 1 field.
+		d->fields->reserve(1);
+	} else {
+		// Standalone XDBF file.
+		// Maximum of 2 fields.
+		d->fields->reserve(2);
+	}
 	d->fields->setTabName(0, "XDBF");
 
 	// TODO: XSTR string table handling class.
@@ -879,10 +932,12 @@ int Xbox360_XDBF::loadFieldData(void)
 	// Language ID
 	const XDBF_Language_e langID = d->getLangID();
 
-	// Game title
-	string title = d->loadString(langID, XDBF_ID_TITLE);
-	d->fields->addField_string(C_("RomData", "Title"),
-		!title.empty() ? title : C_("RomData", "Unknown"));
+	if (!d->xex) {
+		// Game title
+		string title = d->loadString(langID, XDBF_ID_TITLE);
+		d->fields->addField_string(C_("RomData", "Title"),
+			!title.empty() ? title : C_("RomData", "Unknown"));
+	}
 
 	// Achievements
 	d->addFields_achievements();

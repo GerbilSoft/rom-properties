@@ -34,6 +34,29 @@ ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()
 
 	public:
+		/**
+		 * Read an Xbox 360 XDBF file and/or section.
+		 *
+		 * A ROM image must be opened by the caller. The file handle
+		 * will be dup()'d and must be kept open in order to load
+		 * data from the ROM image.
+		 *
+		 * To close the file, either delete this object or call close().
+		 *
+		 * NOTE: Check isValid() to determine if this is a valid ROM.
+		 *
+		 * @param file Open XDBF file and/or section.
+		 * @param xex If true, hide fields that are displayed separately in XEX executables.
+		 */
+		explicit Xbox360_XDBF(LibRpBase::IRpFile *file, bool xex);
+
+	private:
+		/**
+		 * Common initialization function for the constructors.
+		 */
+		void init(void);
+
+	public:
 		/** Special XDBF accessor functions. **/
 
 		/**
