@@ -1273,21 +1273,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			checkboxes = field->data.list_data.checkboxes;
 		}
 
-		// FIXME: If an RFT_LISTDATA has multi-line entries,
-		// they won't show up as multi-line in the ListView,
-		// **unless** they also have icons.
-		HIMAGELIST himl = nullptr;
-		if (hasIcons) {
-			// TODO: Ideal icon size?
-			// Using 32x32 for now.
-			// ImageList will resize the original icons to 32x32.
-			himl = ImageList_Create(32, 32, ILC_COLOR32, static_cast<int>(list_data->size()), 0);
-			if (himl) {
-				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
-				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
-			}
-		}
-
 		// NOTE: We're converting the strings for use with
 		// LVS_OWNERDATA.
 		vector<vector<tstring> > lvStringData;
@@ -1299,6 +1284,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 
 		int lv_row_num = 0, data_row_num = 0;
+		int nl_max = 0;	// Highest number of newlines in any string.
 		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?
@@ -1322,34 +1308,73 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
 			lv_row_data.reserve(data_row.size());
 
-			// Icon.
-			if (himl) {
-				// Add the icon.
-				int iImage = -1;
-				const rp_image *const icon = field->data.list_data.icons->at(data_row_num);
-				if (icon) {
-					HICON hIcon = RpImageWin32::toHICON(icon);
-					if (hIcon) {
-						int idx = ImageList_AddIcon(himl, hIcon);
-						if (idx >= 0) {
-							// Icon added.
-							iImage = idx;
-						}
-						// ImageList makes a copy of the icon.
-						DestroyIcon(hIcon);
-					}
-				}
-				lvImageList.push_back(iImage);
-			}
-
 			// String data.
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
+				const string &str = *iter;
+
+				// Count newlines.
+				size_t nl_pos = 0;
+				int nl = 0;
+				while ((nl_pos = str.find('\n', nl_pos)) != string::npos) {
+					nl++;
+					nl_pos++;
+				}
+				nl_max = std::max(nl_max, nl);
+
 				// TODO: Store the icon index if necessary.
 				lv_row_data.push_back(U82T_s(*iter));
 			}
 
 			// Next row.
 			lv_row_num++;
+		}
+
+		// Icons.
+		if (hasIcons) {
+			// TODO: Ideal icon size?
+			// Using 32x32 for now.
+			// ImageList will resize the original icons to 32x32.
+
+			// NOTE: LVS_REPORT doesn't allow variable row sizes,
+			// at least not without using ownerdraw. Hence, we'll
+			// use a hackish workaround: If any entry has more than
+			// two newlines, increase the Imagelist icon size by
+			// 16 pixels.
+			// TODO: Handle this better.
+			// FIXME: This only works if the RFT_LISTDATA has icons.
+			SIZE szIcon = {32, 32};
+			if (nl_max >= 2) {
+				// Two or more newlines.
+				// Add 16px per newline over 1.
+				szIcon.cy += (16 * (nl_max - 1));
+			}
+
+			HIMAGELIST himl = ImageList_Create(szIcon.cx, szIcon.cy,
+				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
+			if (himl) {
+				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
+
+				// Add icons.
+				const auto &icons = field->data.list_data.icons;
+				for (auto iter = icons->cbegin(); iter != icons->cend(); ++iter) {
+					int iImage = -1;
+					const rp_image *const icon = *iter;
+					if (icon) {
+						HICON hIcon = RpImageWin32::toHICON(icon);
+						if (hIcon) {
+							int idx = ImageList_AddIcon(himl, hIcon);
+							if (idx >= 0) {
+								// Icon added.
+								iImage = idx;
+							}
+							// ImageList makes a copy of the icon.
+							DestroyIcon(hIcon);
+						}
+					}
+					lvImageList.push_back(iImage);
+				}
+			}
 		}
 
 		// Adjusted checkboxes value.
