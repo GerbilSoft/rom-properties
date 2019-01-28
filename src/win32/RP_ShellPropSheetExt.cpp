@@ -1342,6 +1342,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// 16 pixels.
 			// TODO: Handle this better.
 			// FIXME: This only works if the RFT_LISTDATA has icons.
+			// FIXME: Vertically center the icon. Requires creating
+			// custom bitmaps and icons, possibly making a toHICON()
+			// overload with size and aspect options.
 			SIZE szIcon = {32, 32};
 			if (nl_max >= 2) {
 				// Two or more newlines.
