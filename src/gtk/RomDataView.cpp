@@ -708,26 +708,33 @@ rom_data_view_init_header_row(RomDataView *page)
 
 /**
  * Initialize a string field.
- * @param page RomDataView object.
- * @param field RomFields::Field
+ * @param page	[in] RomDataView object.
+ * @param field	[in] RomFields::Field
+ * @param str	[in,opt] String data. (If nullptr, field data is used.)
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
+rom_data_view_init_string(RomDataView *page, const RomFields::Field *field, const char *str = nullptr)
 {
 	// String type.
 	GtkWidget *widget = gtk_label_new(nullptr);
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
 	gtk_widget_show(widget);
 
-	if (field->desc.flags & RomFields::STRF_CREDITS) {
+	if (!str && field->data.str) {
+		str = field->data.str->c_str();
+	}
+
+	if (field->type == RomFields::RFT_STRING &&
+	    (field->desc.flags & RomFields::STRF_CREDITS))
+	{
 		// Credits text. Enable formatting and center alignment.
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
 		GTK_WIDGET_HALIGN_CENTER(widget);
 		if (field->data.str) {
 			// NOTE: Pango markup does not support <br/>.
 			// It uses standard newlines for line breaks.
-			gtk_label_set_markup(GTK_LABEL(widget), field->data.str->c_str());
+			gtk_label_set_markup(GTK_LABEL(widget), str);
 		}
 	} else {
 		// Standard text with no formatting.
@@ -735,12 +742,12 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 		GTK_WIDGET_HALIGN_LEFT(widget);
 		if (field->data.str) {
-			gtk_label_set_text(GTK_LABEL(widget), field->data.str->c_str());
+			gtk_label_set_text(GTK_LABEL(widget), str);
 		}
 	}
 
-	// Check for any formatting options.
-	if (field->desc.flags != 0) {
+	// Check for any formatting options. (RFT_STRING only)
+	if (field->type == RomFields::RFT_STRING && field->desc.flags != 0) {
 		PangoAttrList *const attr_lst = pango_attr_list_new();
 
 		// Monospace font?
@@ -759,21 +766,21 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 
 		gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
 		pango_attr_list_unref(attr_lst);
-	}
 
-	if (field->desc.flags & RomFields::STRF_CREDITS) {
-		// Credits row goes at the end.
-		// There should be a maximum of one STRF_CREDITS per tab.
-		auto &tab = page->tabs->at(field->tabIdx);
-		assert(tab.lblCredits == nullptr);
+		if (field->desc.flags & RomFields::STRF_CREDITS) {
+			// Credits row goes at the end.
+			// There should be a maximum of one STRF_CREDITS per tab.
+			auto &tab = page->tabs->at(field->tabIdx);
+			assert(tab.lblCredits == nullptr);
 
-		// Credits row.
-		gtk_box_pack_end(GTK_BOX(tab.vbox), widget, false, false, 0);
+			// Credits row.
+			gtk_box_pack_end(GTK_BOX(tab.vbox), widget, false, false, 0);
 
-		// NULL out widget to hide the description field.
-		// NOTE: Not destroying the widget since we still
-		// need it to be displayed.
-		widget = nullptr;
+			// NULL out widget to hide the description field.
+			// NOTE: Not destroying the widget since we still
+			// need it to be displayed.
+			widget = nullptr;
+		}
 	}
 
 	return widget;
@@ -781,8 +788,8 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 
 /**
  * Initialize a bitfield.
- * @param page RomDataView object.
- * @param field RomFields::Field
+ * @param page	[in] RomDataView object.
+ * @param field	[in] RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
@@ -865,8 +872,8 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 
 /**
  * Initialize a list data field.
- * @param page RomDataView object.
- * @param field RomFields::Field
+ * @param page	[in] RomDataView object.
+ * @param field	[in] RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
@@ -1089,25 +1096,17 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 /**
  * Initialize a Date/Time field.
- * @param page RomDataView object.
- * @param field RomFields::Field
+ * @param page	[in] RomDataView object.
+ * @param field	[in] RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// Date/Time.
-	GtkWidget *widget = gtk_label_new(nullptr);
-	gtk_label_set_use_underline(GTK_LABEL(widget), false);
-	gtk_label_set_selectable(GTK_LABEL(widget), true);
-	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
-	gtk_widget_show(widget);
-	GTK_WIDGET_HALIGN_LEFT(widget);
-
 	if (field->data.date_time == -1) {
 		// tr: Invalid date/time.
-		gtk_label_set_text(GTK_LABEL(widget), C_("RomDataView", "Unknown"));
-		return widget;
+		return rom_data_view_init_string(page, field, C_("RomDataView", "Unknown"));
 	}
 
 	GDateTime *dateTime;
@@ -1132,21 +1131,13 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	const char *const format = formats[field->desc.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK];
 	assert(format != nullptr);
+	GtkWidget *widget = nullptr;
 	if (format) {
 		gchar *str = g_date_time_format(dateTime, format);
-
 		if (str) {
-			gtk_label_set_text(GTK_LABEL(widget), str);
+			widget = rom_data_view_init_string(page, field, str);
 			g_free(str);
-		} else {
-			// Invalid date/time.
-			gtk_widget_destroy(widget);
-			widget = nullptr;
 		}
-	} else {
-		// Invalid format.
-		gtk_widget_destroy(widget);
-		widget = nullptr;
 	}
 
 	g_date_time_unref(dateTime);
@@ -1155,52 +1146,36 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 /**
  * Initialize an Age Ratings field.
- * @param page RomDataView object.
- * @param field RomFields::Field
+ * @param page	[in] RomDataView object.
+ * @param field	[in] RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// Age ratings.
-	GtkWidget *widget = gtk_label_new(nullptr);
-	gtk_label_set_use_underline(GTK_LABEL(widget), false);
-	gtk_label_set_selectable(GTK_LABEL(widget), true);
-	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
-	gtk_widget_show(widget);
-	GTK_WIDGET_HALIGN_LEFT(widget);
-
 	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
-		gtk_label_set_text(GTK_LABEL(widget), C_("RomDataView", "ERROR"));
-		return widget;
+		return rom_data_view_init_string(page, field, C_("RomDataView", "ERROR"));
 	}
 
 	// Convert the age ratings field to a string.
 	string str = RomFields::ageRatingsDecode(age_ratings);
-	gtk_label_set_text(GTK_LABEL(widget), str.c_str());
-	return widget;
+	return rom_data_view_init_string(page, field, str.c_str());
 }
 
 /**
  * Initialize a Dimensions field.
- * @param page RomDataView object.
- * @param field RomFields::Field
+ * @param page	[in] RomDataView object.
+ * @param field	[in] RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// Dimensions.
-	GtkWidget *widget = gtk_label_new(nullptr);
-	gtk_label_set_use_underline(GTK_LABEL(widget), false);
-	gtk_label_set_selectable(GTK_LABEL(widget), true);
-	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
-	gtk_widget_show(widget);
-	GTK_WIDGET_HALIGN_LEFT(widget);
-
 	// TODO: 'x' or '×'? Using 'x' for now.
 	const int *const dimensions = field->data.dimensions;
 	char buf[64];
@@ -1216,8 +1191,7 @@ rom_data_view_init_dimensions(G_GNUC_UNUSED RomDataView *page, const RomFields::
 		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
 	}
 
-	gtk_label_set_text(GTK_LABEL(widget), buf);
-	return widget;
+	return rom_data_view_init_string(page, field, buf);
 }
 
 static void

@@ -107,22 +107,34 @@ class RomDataViewPrivate
 
 		/**
 		 * Initialize a string field.
-		 * @param lblDesc Description label.
-		 * @param field RomFields::Field
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
+		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
 		 */
-		void initString(QLabel *lblDesc, const RomFields::Field *field);
+		void initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str = nullptr);
+
+		/**
+		 * Initialize a string field.
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
+		 * @param str		[in,opt] String data. (If nullptr, field data is used.)
+		 */
+		inline void initString(QLabel *lblDesc, const RomFields::Field *field, const QString &str)
+		{
+			return initString(lblDesc, field, &str);
+		}
 
 		/**
 		 * Initialize a bitfield.
-		 * @param lblDesc Description label.
-		 * @param field RomFields::Field
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
 		 */
 		void initBitfield(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
 		 * Initialize a list data field.
-		 * @param lblDesc Description label.
-		 * @param field RomFields::Field
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
 		 */
 		void initListData(QLabel *lblDesc, const RomFields::Field *field);
 
@@ -134,22 +146,22 @@ class RomDataViewPrivate
 
 		/**
 		 * Initialize a Date/Time field.
-		 * @param lblDesc Description label.
-		 * @param field RomFields::Field
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
 		 */
 		void initDateTime(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
 		 * Initialize an Age Ratings field.
-		 * @param lblDesc Description label.
-		 * @param field RomFields::Field
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
 		 */
 		void initAgeRatings(QLabel *lblDesc, const RomFields::Field *field);
 
 		/**
 		 * Initialize a Dimensions field.
-		 * @param lblDesc Description label.
-		 * @param field RomFields::Field
+		 * @param lblDesc	[in] Description label.
+		 * @param field		[in] RomFields::Field
 		 */
 		void initDimensions(QLabel *lblDesc, const RomFields::Field *field);
 
@@ -388,10 +400,11 @@ void RomDataViewPrivate::clearLayout(QLayout *layout)
 
 /**
  * Initialize a string field.
- * @param lblDesc Description label.
- * @param field RomFields::Field
+ * @param lblDesc	[in] Description label.
+ * @param field		[in] RomFields::Field
+ * @param str		[in,opt] String data. (If nullptr, field data is used.)
  */
-void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *field)
+void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *field, const QString *str)
 {
 	// String type.
 	Q_Q(RomDataView);
@@ -403,18 +416,20 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		lblString->setOpenExternalLinks(true);
 		lblString->setTextInteractionFlags(
 			Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
-		if (field->data.str) {
-			// Replace newlines with "<br/>".
-			QString text = U82Q(*(field->data.str)).replace(QChar(L'\n'), QLatin1String("<br/>"));
-			lblString->setText(text);
-		}
+
+		// Replace newlines with "<br/>".
+		QString text = (str ? *str : U82Q(*(field->data.str)));
+		text.replace(QChar(L'\n'), QLatin1String("<br/>"));
+		lblString->setText(text);
 	} else {
 		// tr: Standard text with no formatting.
 		lblString->setTextInteractionFlags(
 			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
 		lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblString->setTextFormat(Qt::PlainText);
-		if (field->data.str) {
+		if (str) {
+			lblString->setText(*str);
+		} else if (field->data.str) {
 			lblString->setText(U82Q(*(field->data.str)));
 		}
 	}
@@ -422,28 +437,31 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 	// Enable strong focus so we can tab into the label.
 	lblString->setFocusPolicy(Qt::StrongFocus);
 
-	// Check for any formatting options.
+	// Check for any formatting options. (RFT_STRING only)
+	if (field->type == RomFields::RFT_STRING) {
+		// Monospace font?
+		if (field->desc.flags & RomFields::STRF_MONOSPACE) {
+			QFont font(QLatin1String("Monospace"));
+			font.setStyleHint(QFont::TypeWriter);
+			lblString->setFont(font);
+			lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+		}
 
-	// Monospace font?
-	if (field->desc.flags & RomFields::STRF_MONOSPACE) {
-		QFont font(QLatin1String("Monospace"));
-		font.setStyleHint(QFont::TypeWriter);
-		lblString->setFont(font);
-		lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-	}
-
-	// "Warning" font?
-	if (field->desc.flags & RomFields::STRF_WARNING) {
-		// Only expecting a maximum of one "Warning" per ROM,
-		// so we're initializing this here.
-		const QString css = QLatin1String("color: #F00; font-weight: bold;");
-		lblDesc->setStyleSheet(css);
-		lblString->setStyleSheet(css);
+		// "Warning" font?
+		if (field->desc.flags & RomFields::STRF_WARNING) {
+			// Only expecting a maximum of one "Warning" per ROM,
+			// so we're initializing this here.
+			const QString css = QLatin1String("color: #F00; font-weight: bold;");
+			lblDesc->setStyleSheet(css);
+			lblString->setStyleSheet(css);
+		}
 	}
 
 	// Credits?
 	auto &tab = tabs[field->tabIdx];
-	if (field->desc.flags & RomFields::STRF_CREDITS) {
+	if (field->type == RomFields::RFT_STRING &&
+	    (field->desc.flags & RomFields::STRF_CREDITS))
+	{
 		// Credits row goes at the end.
 		// There should be a maximum of one STRF_CREDITS per tab.
 		assert(tab.lblCredits == nullptr);
@@ -717,21 +735,13 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *field)
 {
 	// Date/Time.
-	Q_Q(RomDataView);
-	QLabel *lblDateTime = new QLabel(q);
-	lblDateTime->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-	lblDateTime->setTextFormat(Qt::PlainText);
-	lblDateTime->setTextInteractionFlags(
-		Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-	lblDateTime->setFocusPolicy(Qt::StrongFocus);
-
 	if (field->data.date_time == -1) {
 		// tr: Invalid date/time.
-		lblDateTime->setText(U82Q(C_("RomDataView", "Unknown")));
-		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
+		initString(lblDesc, field, U82Q(C_("RomDataView", "Unknown")));
 		return;
 	}
 
+	Q_Q(RomDataView);
 	QDateTime dateTime;
 	dateTime.setTimeSpec(
 		(field->desc.flags & RomFields::RFT_DATETIME_IS_UTC)
@@ -781,11 +791,9 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	if (!str.isEmpty()) {
-		lblDateTime->setText(str);
-		tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
+		initString(lblDesc, field, str);
 	} else {
 		// Invalid date/time.
-		delete lblDateTime;
 		delete lblDesc;
 	}
 }
