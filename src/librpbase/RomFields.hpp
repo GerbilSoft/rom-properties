@@ -364,10 +364,20 @@ class RomFields
 		 */
 		static std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, int count = -1);
 
+		enum {
+			TabOffset_Ignore = -1,
+			TabOffset_AddTabs = -2,
+		};
+
 		/**
 		 * Add fields from another RomFields object.
 		 * @param other Source RomFields object.
-		 * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)
+		 * @param tabOffset Tab index to add to the original tabs.
+		 *
+		 * Special tabOffset values:
+		 * - -1: Ignore the original tab indexes.
+		 * - -2: Add tabs from the original RomFields.
+		 *
 		 * @return Field index of the last field added.
 		 */
 		int addFields_romFields(const RomFields *other, int tabOffset);

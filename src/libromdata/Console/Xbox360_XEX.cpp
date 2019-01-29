@@ -22,6 +22,7 @@
 
 #include "Xbox360_XEX.hpp"
 #include "Xbox360_XDBF.hpp"
+#include "../Other/EXE.hpp"
 #include "librpbase/RomData_p.hpp"
 
 #include "xbox360_xex_structs.h"
@@ -123,14 +124,22 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// CBC reader for encrypted PE executables.
 		// Also used for unencrypted executables.
 		CBCReader *peReader;
-		PartitionFile *peFile;	// uses peReader
-		Xbox360_XDBF *pe_xdbf;	// uses file
+		PartitionFile *peFile_exe;	// uses peReader
+		EXE *pe_exe;			// uses peFile_exe
+		PartitionFile *peFile_xdbf;	// uses peReader
+		Xbox360_XDBF *pe_xdbf;		// uses peFile_xdbf
 
 		/**
 		 * Initialize the PE executable reader.
 		 * @return peReader on success; nullptr on error.
 		 */
 		CBCReader *initPeReader(void);
+
+		/**
+		 * Initialize the EXE object.
+		 * @return EXE object on success; nullptr on error.
+		 */
+		const EXE *initEXE(void);
 
 		/**
 		 * Initialize the Xbox360_XDBF object.
@@ -170,7 +179,9 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	: super(q, file)
 	, keyInUse(-1)
 	, peReader(nullptr)
-	, peFile(nullptr)
+	, peFile_exe(nullptr)
+	, pe_exe(nullptr)
+	, peFile_xdbf(nullptr)
 	, pe_xdbf(nullptr)
 {
 	// Clear the headers.
@@ -184,7 +195,12 @@ Xbox360_XEX_Private::~Xbox360_XEX_Private()
 	if (pe_xdbf) {
 		pe_xdbf->unref();
 	}
-	delete peFile;
+	if (pe_exe) {
+		pe_exe->unref();
+	}
+
+	delete peFile_xdbf;
+	delete peFile_exe;
 	delete peReader;
 }
 
@@ -393,6 +409,46 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 }
 
 /**
+ * Initialize the EXE object.
+ * @return EXE object on success; nullptr on error.
+ */
+const EXE *Xbox360_XEX_Private::initEXE(void)
+{
+	if (pe_exe) {
+		// EXE is already initialized.
+		return pe_exe;
+	}
+
+	// Initialize the PE reader.
+	if (!initPeReader()) {
+		// Error initializing the PE reader.
+		return nullptr;
+	}
+
+	// The EXE header is located at the beginning of the
+	// PE section, so we don't have to look anything up.
+	// TODO: LZX support.
+
+	// Attempt to open the EXE section.
+	// Assuming a maximum of 8 KB for the PE headers.
+	PartitionFile *const peFile_tmp = new PartitionFile(peReader, 0, 8192);
+	if (peFile_tmp->isOpen()) {
+		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
+		if (pe_exe_tmp->isOpen()) {
+			peFile_exe = peFile_tmp;
+			pe_exe = pe_exe_tmp;
+		} else {
+			pe_exe_tmp->unref();
+			delete peFile_tmp;
+		}
+	} else {
+		delete peFile_tmp;
+	}
+
+	return pe_exe;
+}
+
+/**
  * Initialize the Xbox360_XDBF object.
  * @return Xbox360_XDBF object on success; nullptr on error.
  */
@@ -444,11 +500,12 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		}
 	}
 
+	// Attempt to open the XDBF section.
 	PartitionFile *const peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, xdbf_length);
 	if (peFile_tmp->isOpen()) {
 		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
 		if (pe_xdbf_tmp->isOpen()) {
-			peFile = peFile_tmp;
+			peFile_xdbf = peFile_tmp;
 			pe_xdbf = pe_xdbf_tmp;
 		} else {
 			pe_xdbf_tmp->unref();
@@ -562,10 +619,16 @@ void Xbox360_XEX::close(void)
 		d->pe_xdbf->unref();
 		d->pe_xdbf = nullptr;
 	}
+	if (d->pe_exe) {
+		d->pe_exe->unref();
+		d->pe_exe = nullptr;
+	}
 
-	delete d->peFile;
+	delete d->peFile_xdbf;
+	delete d->peFile_exe;
 	delete d->peReader;
-	d->peFile = nullptr;
+	d->peFile_xdbf = nullptr;
+	d->peFile_exe = nullptr;
 	d->peReader = nullptr;
 
 	// Call the superclass function.
@@ -1002,12 +1065,18 @@ int Xbox360_XEX::loadFieldData(void)
 				d->fileFormatInfo.compression_type));
 	}
 
+	// Can we get the EXE section?
+	const EXE *const pe_exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
+	if (pe_exe && pe_exe->isOpen()) {
+		// Add the fields.
+		d->fields->addFields_romFields(pe_exe->fields(), -2);
+	}
+
 	// Can we get the XDBF section?
 	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
 	if (pe_xdbf && pe_xdbf->isOpen()) {
 		// Add the fields.
-		d->fields->addTab("XDBF");
-		d->fields->addFields_romFields(pe_xdbf->fields(), 1);
+		d->fields->addFields_romFields(pe_xdbf->fields(), RomFields::TabOffset_AddTabs);
 	}
 
 	// Finished reading the field data.

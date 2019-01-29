@@ -755,7 +755,12 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 /**
  * Add fields from another RomFields object.
  * @param other Source RomFields object.
- * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)
+ * @param tabOffset Tab index to add to the original tabs.
+ *
+ * Special tabOffset values:
+ * - -1: Ignore the original tab indexes.
+ * - -2: Add tabs from the original RomFields.
+ *
  * @return Field index of the last field added.
  */
 int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
@@ -771,6 +776,19 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	// - Add all to specified tab or to current tab.
 	// - Use absolute or relative tab offset.
 	d->fields.reserve(d->fields.size() + other->count());
+
+	// Do we need to add the other tabs?
+	if (tabOffset == TabOffset_AddTabs) {
+		// Add the other tabs.
+		d->tabNames.insert(d->tabNames.end(),
+			other->d_ptr->tabNames.begin(), other->d_ptr->tabNames.end());
+
+		// tabOffset will be the first new tab.
+		tabOffset = d->tabIdx + 1;
+
+		// Set the final tab index.
+		d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
+	}
 
 	for (auto old_iter = other->d_ptr->fields.cbegin();
 	     old_iter != other->d_ptr->fields.cend(); ++old_iter)
