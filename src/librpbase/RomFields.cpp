@@ -780,6 +780,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	// Do we need to add the other tabs?
 	if (tabOffset == TabOffset_AddTabs) {
 		// Add the other tabs.
+		d->tabNames.reserve(d->tabNames.size() + other->d_ptr->tabNames.size());
 		d->tabNames.insert(d->tabNames.end(),
 			other->d_ptr->tabNames.begin(), other->d_ptr->tabNames.end());
 
