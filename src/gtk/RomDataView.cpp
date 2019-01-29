@@ -1416,11 +1416,6 @@ rom_data_view_update_display(RomDataView *page)
 
 			if (separate_rows) {
 				// Separate rows.
-#if !GTK_CHECK_VERSION(3,0,0)
-				rowCount++;
-				gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
-#endif
-
 				// Make sure the description label is left-aligned.
 #if GTK_CHECK_VERSION(3,16,0)
 				gtk_label_set_xalign(GTK_LABEL(lblDesc), 0.0);
@@ -1444,29 +1439,64 @@ rom_data_view_update_display(RomDataView *page)
 				}
 
 				if (doVBox) {
+					// FIXME: There still seems to be a good amount of space
+					// between tab.vbox and the RFT_LISTDATA widget here...
+					// (Moreso on Thunar GTK2 than Nautilus.)
+
 					// Unset this property to prevent the event filter from
 					// setting a fixed height.
 					g_object_set_data(G_OBJECT(widget), "RFT_LISTDATA_rows_visible",
 						GINT_TO_POINTER(0));
 
+#if GTK_CHECK_VERSION(3,0,0)
+					// Change valign to FILL.
+					gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
+
+					// Set margin, since it's located outside of the GtkTable/GtkGrid.
+					// NOTE: Setting top margin to 0 due to spacing from the
+					// GtkTable/GtkGrid. (Still has extra spacing that needs to be fixed...)
+					g_object_set(widget,
+						"margin-left", 8, "margin-right",  8,
+						"margin-top",  0, "margin-bottom", 8,
+						nullptr);
+
 					// Add the widget to the GtkBox.
-					// FIXME: Expand/Fill aren't working on GTK+ 3.x.
 					gtk_box_pack_start(GTK_BOX(tab.vbox), widget, true, true, 0);
 					if (tab.lblCredits) {
 						// Need to move it before credits.
 						// TODO: Verify this.
 						gtk_box_reorder_child(GTK_BOX(tab.vbox), widget, 1);
 					}
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+					// Need to use GtkAlignment on GTK+ 2.x.
+					GtkWidget *const alignment = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+					gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 8, 8, 8);
+					gtk_container_add(GTK_CONTAINER(alignment), widget);
+					gtk_widget_show(alignment);
+
+					// Add the GtkAlignment to the GtkBox.
+					gtk_box_pack_start(GTK_BOX(tab.vbox), alignment, true, true, 0);
+					if (tab.lblCredits) {
+						// Need to move it before credits.
+						// TODO: Verify this.
+						gtk_box_reorder_child(GTK_BOX(tab.vbox), alignment, 1);
+					}
+#endif
+					// Increment row by one, since only one widget is
+					// actually being added to the GtkTable/GtkGrid.
+					row++;
 				} else {
 					// Add the widget to the GtkTable/GtkGrid.
 #if GTK_CHECK_VERSION(3,0,0)
 					gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
 #else
+					rowCount++;
+					gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
 					gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 2, row+1, row+2,
 						GTK_FILL, GTK_FILL, 0, 0);
 #endif
+					row += 2;
 				}
-				row += 2;
 			} else {
 				// Single row.
 #if GTK_CHECK_VERSION(3,0,0)
