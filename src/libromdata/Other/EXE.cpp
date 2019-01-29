@@ -375,7 +375,7 @@ void EXEPrivate::addFields_LE(void)
 	fields->reserveTabs(2);
 
 	// LE Header
-	fields->setTabName(0, C_("EXE", "LE Header"));
+	fields->setTabName(0, "LE");
 	fields->setTabIndex(0);
 
 	// CPU.
@@ -901,7 +901,8 @@ int EXE::loadFieldData(void)
 
 	// Add MZ tab for non-MZ executables
 	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
-		d->fields->addTab(C_("EXE", "MZ Header")); // NOTE: doesn't actually create a separate tab for non implemented types.
+		// NOTE: This doesn't actually create a separate tab for non-implemented types.
+		d->fields->addTab("MZ");
 		d->addFields_MZ();
 	}
 

@@ -192,7 +192,7 @@ void EXEPrivate::addFields_PE(void)
 	fields->reserveTabs(4);
 
 	// PE Header
-	fields->setTabName(0, C_("EXE", "PE Header"));
+	fields->setTabName(0, "PE");
 	fields->setTabIndex(0);
 
 	const uint16_t machine = le16_to_cpu(hdr.pe.FileHeader.Machine);
