@@ -1267,6 +1267,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	}
 
 	// Add the row data.
+	const uint32_t bgColorListView = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
 	if (list_data) {
 		uint32_t checkboxes = 0, adj_checkboxes = 0;
 		if (hasCheckboxes) {
@@ -1342,18 +1343,20 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// 16 pixels.
 			// TODO: Handle this better.
 			// FIXME: This only works if the RFT_LISTDATA has icons.
-			// FIXME: Vertically center the icon. Requires creating
-			// custom bitmaps and icons, possibly making a toHICON()
-			// overload with size and aspect options.
 			SIZE szIcon = {32, 32};
+			bool resizeNeeded = false;
+			float factor = 1.0f;
 			if (nl_max >= 2) {
 				// Two or more newlines.
 				// Add 16px per newline over 1.
 				szIcon.cy += (16 * (nl_max - 1));
+				resizeNeeded = true;
+				factor = (float)szIcon.cy / 32.0f;
 			}
 
 			HIMAGELIST himl = ImageList_Create(szIcon.cx, szIcon.cy,
 				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
+			assert(himl != nullptr);
 			if (himl) {
 				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
 				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
@@ -1363,18 +1366,63 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				for (auto iter = icons->cbegin(); iter != icons->cend(); ++iter) {
 					int iImage = -1;
 					const rp_image *const icon = *iter;
-					if (icon) {
-						HICON hIcon = RpImageWin32::toHICON(icon);
-						if (hIcon) {
-							int idx = ImageList_AddIcon(himl, hIcon);
-							if (idx >= 0) {
-								// Icon added.
-								iImage = idx;
+					if (!icon) {
+						// No icon for this row.
+						lvImageList.push_back(iImage);
+						continue;
+					}
+
+					// Resize the icon, if necessary.
+					rp_image *icon_resized = nullptr;
+					if (resizeNeeded) {
+						SIZE szResize = {icon->width(), icon->height()};
+						szResize.cy = static_cast<LONG>(szResize.cy * factor);
+
+						// If the original icon is CI8, it needs to be
+						// converted to ARGB32 first. Otherwise, the
+						// "empty" background area will be black.
+						// NOTE: We still need to specify a background color,
+						// since the ListView highlight won't show up on
+						// alpha-transparent pixels.
+						// TODO: Handle this in rp_image::resized()?
+						// TODO: Handle theme changes?
+						// TODO: Error handling.
+						if (icon->format() != rp_image::FORMAT_ARGB32) {
+							rp_image *icon32 = icon->dup_ARGB32();
+							if (icon32) {
+								icon_resized = icon32->resized(szResize.cx, szResize.cy,
+									rp_image::AlignVCenter, bgColorListView);
+								delete icon32;
 							}
-							// ImageList makes a copy of the icon.
-							DestroyIcon(hIcon);
+						}
+
+						// If the icon wasn't in ARGB32 format, it was resized above.
+						// If it was already in ARGB32 format, it will be resized here.
+						if (!icon_resized) {
+							icon_resized = icon->resized(szResize.cx, szResize.cy,
+								rp_image::AlignVCenter, bgColorListView);
 						}
 					}
+
+					HICON hIcon;
+					if (icon_resized) {
+						hIcon = RpImageWin32::toHICON(icon_resized);
+						delete icon_resized;
+					} else {
+						hIcon = RpImageWin32::toHICON(icon);
+					}
+
+					if (hIcon) {
+						int idx = ImageList_AddIcon(himl, hIcon);
+						if (idx >= 0) {
+							// Icon added.
+							iImage = idx;
+						}
+						// ImageList makes a copy of the icon.
+						DestroyIcon(hIcon);
+					}
+
+					// Save the ImageList index for later.
 					lvImageList.push_back(iImage);
 				}
 			}

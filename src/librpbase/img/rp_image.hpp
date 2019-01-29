@@ -320,20 +320,57 @@ class rp_image
 		rp_image *squared(void) const;
 
 		/**
+		 * Alignment constants for resized().
+		 *
+		 * NOTE: These constants match Qt::Alignment.
+		 */
+		enum Alignment {
+			AlignDefault	= 0x00,
+
+			/* NOT IMPLEMENTED YET */
+#if 0
+			AlignLeft	= 0x01,
+			AlignRight	= 0x02,
+			AlignHCenter	= 0x04,
+			//AlignJustify	= 0x08,
+			//AlignAbsolute	= 0x10,
+			AlignLeading	= AlignLeft,
+			AlignTrailing	= AlignRight,
+#endif
+
+			AlignTop	= 0x20,
+			AlignBottom	= 0x40,
+			AlignVCenter	= 0x80,
+
+			/* NOT IMPLEMENTED due to no AlignHCenter */
+			//AlignCenter	= AlignVCenter | AlignHCenter,
+
+			//AlignHorizontal_Mask	= AlignLeft | AlignRight | AlignHCenter | AlignJustify | AlignAbsolute,
+			AlignVertical_Mask	= AlignTop | AlignBottom | AlignVCenter,
+		};
+
+		/**
 		 * Resize the rp_image.
 		 *
 		 * A new rp_image will be created with the specified dimensions,
 		 * and the current image will be copied into the new image.
-		 * If the new dimensions are smaller than the old dimensions,
-		 * the image will be cropped. If the new dimensions are larger,
-		 * the original image will be in the upper-left corner and the
-		 * new space will be empty. (ARGB: 0x00000000)
 		 *
-		 * @param width New width.
-		 * @param height New height.
+		 * If the new dimensions are smaller than the old dimensions,
+		 * the image will be cropped according to the specified alignment.
+		 *
+		 * If the new dimensions are larger, the original image will be
+		 * aligned to the top, center, or bottom, depending on alignment,
+		 * and if the image is ARGB32, the new space will be set to bgColor.
+		 *
+		 * @param width New width
+		 * @param height New height
+		 * @param alignment Alignment (Vertical only!)
+		 * @param bgColor Background color for empty space. (default is ARGB 0x00000000)
 		 * @return New rp_image with a resized version of the original, or nullptr on error.
 		 */
-		rp_image *resized(int width, int height) const;
+		rp_image *resized(int width, int height,
+			Alignment alignment = AlignDefault,
+			uint32_t bgColor = 0x00000000) const;
 
 		/**
 		 * Un-premultiply this image.
