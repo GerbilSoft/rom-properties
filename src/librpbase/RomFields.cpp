@@ -219,6 +219,7 @@ RomFields &RomFields::operator=(const RomFields &other)
 /**
  * Detach this instance from all other instances.
  * TODO: Move to RomFieldsPrivate?
+ * TODO: Remove this and make RomFields non-copyable?
  */
 void RomFields::detach(void)
 {
@@ -258,19 +259,15 @@ void RomFields::detach(void)
 
 			case RFT_STRING:
 				field_new.desc.flags = field_old.desc.flags;
-				if (field_old.data.str) {
-					field_new.data.str = new string(*field_old.data.str);
-				} else {
-					field_new.data.str = nullptr;
-				}
+				field_new.data.str = (field_old.data.str
+						? new string(*field_old.data.str)
+						: nullptr);
 				break;
 			case RFT_BITFIELD:
 				field_new.desc.bitfield.elemsPerRow = field_old.desc.bitfield.elemsPerRow;
-				if (field_old.desc.bitfield.names) {
-					field_new.desc.bitfield.names = new vector<string>(*field_old.desc.bitfield.names);
-				} else {
-					field_new.desc.bitfield.names = nullptr;
-				}
+				field_new.desc.bitfield.names = (field_old.desc.bitfield.names
+						? new vector<string>(*field_old.desc.bitfield.names)
+						: nullptr);
 				field_new.data.bitfield = field_old.data.bitfield;
 				break;
 			case RFT_LISTDATA:
@@ -279,23 +276,17 @@ void RomFields::detach(void)
 					field_old.desc.list_data.flags;
 				field_new.desc.list_data.rows_visible =
 					field_old.desc.list_data.rows_visible;
-				if (field_old.desc.list_data.names) {
-					field_new.desc.list_data.names = new vector<string>(*(field_old.desc.list_data.names));
-				} else {
-					field_new.desc.list_data.names = nullptr;
-				}
-				if (field_old.data.list_data.data) {
-					field_new.data.list_data.data = new vector<vector<string> >(*(field_old.data.list_data.data));
-				} else {
-					field_new.data.list_data.data = nullptr;
-				}
+				field_new.desc.list_data.names = (field_old.desc.list_data.names
+						? new vector<string>(*(field_old.desc.list_data.names))
+						: field_old.desc.list_data.names);
+				field_new.data.list_data.data = (field_old.data.list_data.data
+						? new vector<vector<string> >(*(field_old.data.list_data.data))
+						: nullptr);
 				if (field_old.desc.list_data.flags & RFT_LISTDATA_ICONS) {
 					// Icons: Copy the icon vector if set.
-					if (field_old.data.list_data.icons) {
-						field_new.data.list_data.icons = new vector<const rp_image*>(*(field_old.data.list_data.icons));
-					} else {
-						field_new.data.list_data.icons = nullptr;
-					}
+					field_new.data.list_data.icons = (field_old.data.list_data.icons
+							? new vector<const rp_image*>(*(field_old.data.list_data.icons))
+							: nullptr);
 				} else {
 					// No icons. Copy checkboxes.
 					field_new.data.list_data.checkboxes =
