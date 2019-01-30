@@ -43,35 +43,10 @@ class RomFieldsPrivate
 {
 	public:
 		RomFieldsPrivate();
-	private:
-		~RomFieldsPrivate();	// call unref() instead
+		~RomFieldsPrivate();
 
 	private:
 		RP_DISABLE_COPY(RomFieldsPrivate)
-
-	public:
-		/** Reference count functions. **/
-
-		/**
-		 * Create a reference of this object.
-		 * @return this
-		 */
-		RomFieldsPrivate *ref(void);
-
-		/**
-		 * Unreference this object.
-		 */
-		void unref(void);
-
-		/**
-		 * Is this object currently shared?
-		 * @return True if ref_cnt > 1; false if not.
-		 */
-		inline bool isShared(void) const;
-
-	private:
-		// Current reference count.
-		volatile int ref_cnt;
 
 	public:
 		// ROM field structs.
@@ -83,7 +58,8 @@ class RomFieldsPrivate
 		vector<string> tabNames;
 
 		/**
-		 * Deletes allocated strings in this->data.
+		 * Delete allocated objects in this->fields.
+		 * The vector will be cleared afterwards.
 		 */
 		void delete_data(void);
 };
@@ -91,8 +67,7 @@ class RomFieldsPrivate
 /** RomFieldsPrivate **/
 
 RomFieldsPrivate::RomFieldsPrivate()
-	: ref_cnt(1)
-	, tabIdx(0)
+	: tabIdx(0)
 { }
 
 RomFieldsPrivate::~RomFieldsPrivate()
@@ -101,43 +76,12 @@ RomFieldsPrivate::~RomFieldsPrivate()
 }
 
 /**
- * Create a reference of this object.
- * @return this
- */
-RomFieldsPrivate *RomFieldsPrivate::ref(void)
-{
-	ATOMIC_INC_FETCH(&ref_cnt);
-	return this;
-}
-
-/**
- * Unreference this object.
- */
-void RomFieldsPrivate::unref(void)
-{
-	assert(ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&ref_cnt) <= 0) {
-		// All references removed.
-		delete this;
-	}
-}
-
-/**
- * Is this object currently shared?
- * @return True if ref_cnt > 1; false if not.
- */
-inline bool RomFieldsPrivate::isShared(void) const
-{
-	assert(ref_cnt > 0);
-	return (ref_cnt > 1);
-}
-
-/**
- * Deletes allocated strings in this->data.
+ * Delete allocated objects in this->fields.
+ * The vector will be cleared afterwards.
  */
 void RomFieldsPrivate::delete_data(void)
 {
-	// Delete all of the allocated strings in this->fields.
+	// Delete all of the allocated objects in this->fields.
 	for (auto iter = fields.begin(); iter != fields.end(); ++iter) {
 		RomFields::Field &field = *iter;
 		if (!field.isValid) {
@@ -192,128 +136,7 @@ RomFields::RomFields()
 
 RomFields::~RomFields()
 {
-	d_ptr->unref();
-}
-
-/**
- * Copy constructor.
- * @param other Other instance.
- */
-RomFields::RomFields(const RomFields &other)
-	: d_ptr(other.d_ptr->ref())
-{ }
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-RomFields &RomFields::operator=(const RomFields &other)
-{
-	RomFieldsPrivate *const d_old = this->d_ptr;
-	this->d_ptr = other.d_ptr->ref();
-	d_old->unref();
-	return *this;
-}
-
-/**
- * Detach this instance from all other instances.
- * TODO: Move to RomFieldsPrivate?
- * TODO: Remove this and make RomFields non-copyable?
- */
-void RomFields::detach(void)
-{
-	if (!d_ptr->isShared()) {
-		// Only one reference.
-		// Nothing to detach from.
-		return;
-	}
-
-	// Need to detach.
-	RomFieldsPrivate *const d_new = new RomFieldsPrivate();
-	RomFieldsPrivate *const d_old = d_ptr;
-	d_new->fields.resize(d_old->fields.size());
-	auto old_iter = d_old->fields.cbegin();
-	auto new_iter = d_new->fields.begin();
-	for (; old_iter != d_old->fields.cend(); ++old_iter, ++new_iter) {
-		const Field &field_old = *old_iter;
-		Field &field_new = *new_iter;
-
-		field_new.name = field_old.name;
-		field_new.type = field_old.type;
-		field_new.isValid = field_old.isValid;
-		if (!field_old.isValid) {
-			// No data here.
-			field_new.desc.flags = 0;
-			field_new.data.generic = 0;
-			continue;
-		}
-
-		switch (field_old.type) {
-			case RFT_INVALID:
-				// No data here
-				field_new.isValid = false;
-				field_new.desc.flags = 0;
-				field_new.data.generic = 0;
-				break;
-
-			case RFT_STRING:
-				field_new.desc.flags = field_old.desc.flags;
-				field_new.data.str = (field_old.data.str
-						? new string(*field_old.data.str)
-						: nullptr);
-				break;
-			case RFT_BITFIELD:
-				field_new.desc.bitfield.elemsPerRow = field_old.desc.bitfield.elemsPerRow;
-				field_new.desc.bitfield.names = (field_old.desc.bitfield.names
-						? new vector<string>(*field_old.desc.bitfield.names)
-						: nullptr);
-				field_new.data.bitfield = field_old.data.bitfield;
-				break;
-			case RFT_LISTDATA:
-				// Copy the ListData.
-				field_new.desc.list_data.flags =
-					field_old.desc.list_data.flags;
-				field_new.desc.list_data.rows_visible =
-					field_old.desc.list_data.rows_visible;
-				field_new.desc.list_data.names = (field_old.desc.list_data.names
-						? new vector<string>(*(field_old.desc.list_data.names))
-						: field_old.desc.list_data.names);
-				field_new.data.list_data.data = (field_old.data.list_data.data
-						? new vector<vector<string> >(*(field_old.data.list_data.data))
-						: nullptr);
-				if (field_old.desc.list_data.flags & RFT_LISTDATA_ICONS) {
-					// Icons: Copy the icon vector if set.
-					field_new.data.list_data.icons = (field_old.data.list_data.icons
-							? new vector<const rp_image*>(*(field_old.data.list_data.icons))
-							: nullptr);
-				} else {
-					// No icons. Copy checkboxes.
-					field_new.data.list_data.checkboxes =
-						field_old.data.list_data.checkboxes;
-				}
-				break;
-			case RFT_DATETIME:
-				field_new.desc.flags = field_old.desc.flags;
-				field_new.data.date_time = field_old.data.date_time;
-				break;
-			case RFT_AGE_RATINGS:
-				field_new.data.age_ratings = field_old.data.age_ratings;
-				break;
-			case RFT_DIMENSIONS:
-				memcpy(field_new.data.dimensions, field_old.data.dimensions, sizeof(field_old.data.dimensions));
-				break;
-
-			default:
-				// ERROR!
-				assert(!"Unsupported RomFields::RomFieldsType.");
-				break;
-		}
-	}
-
-	// Detached.
-	d_ptr = d_new;
-	d_old->unref();
+	delete d_ptr;
 }
 
 /**

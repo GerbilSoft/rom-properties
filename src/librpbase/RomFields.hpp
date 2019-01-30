@@ -21,6 +21,8 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_ROMFIELDS_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_ROMFIELDS_HPP__
 
+#include "common.h"
+
 // C includes.
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
@@ -223,13 +225,12 @@ class RomFields
 		 */
 		RomFields();
 		~RomFields();
-	public:
-		RomFields(const RomFields &other);
-		RomFields &operator=(const RomFields &other);
 
 	private:
+		RP_DISABLE_COPY(RomFields)
+	private:
 		friend class RomFieldsPrivate;
-		RomFieldsPrivate *d_ptr;
+		RomFieldsPrivate *const d_ptr;
 
 	public:
 		/** Field accessors. **/
@@ -252,13 +253,6 @@ class RomFields
 		 * @return True if empty; false if not.
 		 */
 		bool empty(void) const;
-
-	private:
-		/**
-		 * Detach this instance from all other instances.
-		 * TODO: Move to RomFieldsPrivate?
-		 */
-		void detach(void);
 
 	public:
 		/**

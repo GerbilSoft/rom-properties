@@ -21,8 +21,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
 
-#include "librpbase/common.h"
-
+#include "common.h"
 #include "RomData_decl.hpp"
 
 // C includes.
