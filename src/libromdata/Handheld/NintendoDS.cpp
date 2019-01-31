@@ -1272,7 +1272,7 @@ int NintendoDS::loadFieldData(void)
 			age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
 		}
 	}
-	d->fields->addField_ageRatings(C_("NintendoDS", "Age Rating"), age_ratings);
+	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	// Permissions and flags.
 	d->fields->addTab("Permissions");

@@ -509,7 +509,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			age_ratings[i] = RomFields::AGEBF_ACTIVE | (n3ds_rating & 0x1F);
 		}
 	}
-	d->fields->addField_ageRatings(C_("Nintendo3DS", "Age Rating"), age_ratings);
+	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
