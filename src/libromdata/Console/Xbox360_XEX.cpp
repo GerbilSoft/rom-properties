@@ -120,6 +120,14 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 */
 		const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
 
+		/**
+		 * Convert game ratings from Xbox 360 format to RomFields format.
+		 * @param age_ratings RomFields::age_ratings_t
+		 * @param game_ratings XEX2_Game_Ratings
+		 */
+		static void convertGameRatings(RomFields::age_ratings_t &age_ratings,
+			const XEX2_Game_Ratings &game_ratings);
+
 	public:
 		// CBC reader for encrypted PE executables.
 		// Also used for unencrypted executables.
@@ -406,6 +414,109 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	// CBCReader is open.
 	this->peReader = reader;
 	return reader;
+}
+
+/**
+ * Convert game ratings from Xbox 360 format to RomFields format.
+ * @param age_ratings RomFields::age_ratings_t
+ * @param game_ratings XEX2_Game_Ratings
+ */
+void Xbox360_XEX_Private::convertGameRatings(
+	RomFields::age_ratings_t &age_ratings,
+	const XEX2_Game_Ratings &game_ratings)
+{
+	// RomFields::age_ratings_t uses a format that matches
+	// Nintendo's systems.
+
+	// Clear the ratings first.
+	age_ratings.fill(0);
+
+	// Region conversion table:
+	// - Index: Xbox 360 region (-1 if not supported)
+	// - Value: RomFields::age_ratings_t region
+	static const int8_t region_conv[14] = {
+		RomFields::AGE_USA,
+		RomFields::AGE_EUROPE,
+		RomFields::AGE_FINLAND,
+		RomFields::AGE_PORTUGAL,
+		RomFields::AGE_ENGLAND,
+		RomFields::AGE_JAPAN,
+		RomFields::AGE_GERMANY,
+		RomFields::AGE_AUSTRALIA,
+		-1,	// TODO: NZ (usually the same as AU)
+		RomFields::AGE_SOUTH_KOREA,
+		-1,	// TODO: Brazil
+		-1,	// TODO: FPB?
+		RomFields::AGE_TAIWAN,
+		-1,	// TODO: Singapore
+	};
+
+	// Rating conversion table:
+	// - Primary index: Xbox 360 region
+	// - Secondary index: Xbox 360 age value, from 0-15
+	// - Value: RomFields::age_ratings_t age value.
+	// If the Xbox 360 age value is over 15, the rating is invalid.
+	// If the age_ratings_t value is 0xFF, the rating is invalid.
+	//
+	// Values are set using the following formula:
+	// - If rating A is 0, and rating B is 2:
+	//   - The value for "A" gets slot 0.
+	//   - The value for "B" gets slots 1 and 2.
+	static const uint8_t region_values[14][16] = {
+		// AGE_USA (ESRB)
+		{3, 6, 6, 10, 10, 13, 13, 17, 17, 18, 18, 18, 18, 18, 18, 0xFF},
+		// AGE_EUROPE (PEGI)
+		{3, 4, 4, 4, 4, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, 0xFF},
+		// AGE_FINLAND (PEGI-FI/MEKU)
+		{3, 7, 7, 7, 7, 11, 11, 11, 11, 15, 15, 15, 15, 18, 18, 0xFF},
+		// AGE_PORTUGAL (PEGI-PT)
+		{4, 4, 6, 6, 12, 12, 12, 12, 12, 12, 16, 16, 16, 16, 18, 0xFF},
+		// AGE_ENGLAND (BBFC)
+		// TODO: How are Universal and PG handled for Nintendo?
+		{3, 3, 7, 7, 7, 7, 12, 12, 12, 12, 15, 15, 15, 16, 18, 0xFF},
+		// AGE_JAPAN (CERO)
+		{0, 12, 12, 15, 15, 17, 17, 18, 18,            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// AGE_GERMANY (USK)
+		{0, 6, 6, 12, 12, 16, 16, 18, 18,              0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// AGE_AUSTRALIA (OFLC_AU)
+		// TODO: Is R18+ available on Xbox 360?
+		{0, 7, 7, 14, 14, 15, 15, 0xFF,           0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// TODO: NZ
+		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// AGE_SOUTH_KOREA (KMRB/GRB)
+		{0, 12, 12, 15, 15, 18, 18, 0xFF,         0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// TODO: Brazil
+		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// TODO: FPB?
+		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// TODO: Taiwan
+		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+		// TODO: Singapore
+		{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+	};
+
+	// 14 ratings for Xbox 360 games.
+	for (unsigned int ridx = 0; ridx < 14; ridx++) {
+		const int8_t ar_idx = region_conv[ridx];
+		if (ar_idx < 0) {
+			// Not supported.
+			continue;
+		}
+
+		const uint8_t xb_val = game_ratings.ratings[ridx];
+		if (xb_val > 16) {
+			// Invalid rating.
+			continue;
+		}
+
+		uint8_t rf_val = region_values[ridx][xb_val];
+		if (rf_val == 0xFF) {
+			// Invalid rating.
+			continue;
+		}
+
+		age_ratings[ar_idx] = rf_val | RomFields::AGEBF_ACTIVE;
+	}
 }
 
 /**
@@ -1063,6 +1174,21 @@ int Xbox360_XEX::loadFieldData(void)
 		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 				d->fileFormatInfo.compression_type));
+	}
+
+	/** Age ratings **/
+	// NOTE: RomFields' RFT_AGE_RATINGS type uses a format that matches
+	// Nintendo's systems. For Xbox 360, we'll need to convert the format.
+	entry = d->getOptHdrTblEntry(XEX2_OPTHDR_GAME_RATINGS);
+	if (entry) {
+		XEX2_Game_Ratings game_ratings;
+		size_t size = d->file->seekAndRead(be32_to_cpu(entry->offset), &game_ratings, sizeof(game_ratings));
+		if (size == sizeof(game_ratings)) {
+			// Convert the game ratings.
+			RomFields::age_ratings_t age_ratings;
+			d->convertGameRatings(age_ratings, game_ratings);
+			d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+		}
 	}
 
 	// Can we get the EXE section?
