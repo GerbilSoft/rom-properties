@@ -41,7 +41,7 @@ class RomFields
 {
 	public:
 		// ROM field types.
-		enum RomFieldType {
+		enum RomFieldType : uint8_t {
 			RFT_INVALID,		// Invalid. (skips the field)
 			RFT_STRING,		// Basic string.
 			RFT_BITFIELD,		// Bitfield.
@@ -52,7 +52,7 @@ class RomFields
 		};
 
 		// String format flags. (RFT_STRING)
-		enum StringFormat {
+		enum StringFormat : unsigned int {
 			// Print the string using a monospaced font.
 			STRF_MONOSPACE	= (1 << 0),
 
@@ -80,7 +80,7 @@ class RomFields
 		};
 
 		// Display flags for RFT_LISTDATA.
-		enum ListDataFlags {
+		enum ListDataFlags : unsigned int {
 			// Show the ListView on a separate row
 			// from the description label.
 			RFT_LISTDATA_SEPARATE_ROW = (1 << 0),
@@ -95,7 +95,7 @@ class RomFields
 		};
 
 		// Display flags for RFT_DATETIME.
-		enum DateTimeFlags {
+		enum DateTimeFlags : unsigned int {
 			// Show the date value.
 			RFT_DATETIME_HAS_DATE = (1 << 0),
 
@@ -133,7 +133,7 @@ class RomFields
 		};
 
 		// Age Ratings bitfields.
-		enum AgeRatingsBitfield {
+		enum AgeRatingsBitfield : uint16_t {
 			AGEBF_MIN_AGE_MASK	= 0x001F,	// Low 5 bits indicate the minimum age.
 			AGEBF_ACTIVE		= 0x0020,	// Rating is only valid if this is set.
 			AGEBF_PENDING		= 0x0040,	// Rating is pending.
