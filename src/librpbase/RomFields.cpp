@@ -150,7 +150,7 @@ const char *RomFields::ageRatingAbbrev(int country)
 	static const char abbrevs[16][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"AGCB", "GRB",  "CGSRR",   "",
+		"ACB",  "GRB",  "CGSRR",   "",
 		"",     "",     "",        "",
 	};
 

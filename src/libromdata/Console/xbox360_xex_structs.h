@@ -503,6 +503,7 @@ typedef enum {
 
 /**
  * XEX2: KMRB ratings value.
+ * NOTE: This is now the GRB.
  */
 typedef enum {
 	XEX2_GAME_RATINGS_KMRB_ALL	= 0,

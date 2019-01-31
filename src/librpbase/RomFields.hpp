@@ -125,8 +125,8 @@ class RomFields
 			AGE_FINLAND	= 5,	// Finland (MEKU)
 			AGE_PORTUGAL	= 6,	// Portugal (PEGI-PT)
 			AGE_ENGLAND	= 7,	// England (BBFC)
-			AGE_AUSTRALIA	= 8,	// Australia (AGCB)
-			AGE_SOUTH_KOREA	= 9,	// South Korea (GRB)
+			AGE_AUSTRALIA	= 8,	// Australia (ACB)
+			AGE_SOUTH_KOREA	= 9,	// South Korea (GRB, formerly KMRB)
 			AGE_TAIWAN	= 10,	// Taiwan (CGSRR)
 
 			AGE_MAX		= 16	// Maximum number of age rating fields
