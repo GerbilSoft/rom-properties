@@ -122,7 +122,6 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		struct BasicZDataSeg_t {
 			uint32_t vaddr;		// Virtual address in memory (base address is 0)
 			uint32_t physaddr;	// Physical address in the PE executable
-						// TODO: Make this relative to the XEX, not the PE?
 			uint32_t length;	// Length of segment
 		};
 		ao::uvector<BasicZDataSeg_t> basicZDataSegments;
@@ -471,7 +470,6 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				return nullptr;
 			}
 
-			// TODO: Make physaddr relative to the XEX, not the PE?
 			uint32_t vaddr = 0, physaddr = 0;
 			basicZDataSegments.resize(seg_len);
 			const XEX2_Compression_Basic_Info *p = cbi.get();
