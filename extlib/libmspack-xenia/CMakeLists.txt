@@ -21,6 +21,7 @@ CONFIGURE_FILE(config.h.in config.h)
 SET(libmspack_SRCS
 	lzxd.c
 	system.c
+	xenia_lzx.c
 	)
 # Headers.
 SET(libmspack_H
@@ -29,6 +30,7 @@ SET(libmspack_H
 	readbits.h
 	readhuff.h
 	system.h
+	xenia_lzx.h
 	)
 
 ######################

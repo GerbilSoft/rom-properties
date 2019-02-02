@@ -188,6 +188,12 @@ Files:
 Copyright: (C) 2003-2018 Stuart Caie
 License: LGPL-2.1
 
+Files:
+ extlib/libmspack-xenia/xenia_lzx.c
+ extlib/libmspack-xenia/xenia_lzx.h
+Copyright: 2013 Ben Vanik. All rights reserved.
+License: BSD-3-clause
+
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
