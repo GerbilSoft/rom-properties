@@ -21,10 +21,13 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
 
+/* Define to 1 if OpenGL support is enabled. */
+#cmakedefine ENABLE_GL 1
+
 /* Define to 1 if UnICE68 is enabled. */
 #cmakedefine ENABLE_UNICE68 1
 
-/* Define to 1 if OpenGL support is enabled. */
-#cmakedefine ENABLE_GL 1
+/* Define to 1 if libmspack-xenia is enabled. */
+#cmakedefine ENABLE_LIBMSPACK 1
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_H__ */

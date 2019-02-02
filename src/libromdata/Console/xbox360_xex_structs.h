@@ -274,6 +274,44 @@ typedef struct PACKED _XEX2_Compression_Basic_Info {
 ASSERT_STRUCT(XEX2_Compression_Basic_Info, 2*sizeof(uint32_t));
 
 /**
+ * XEX2: Normal compression block. (LZX)
+ * Used with XEX2_COMPRESSION_TYPE_NORMAL.
+ *
+ * Each section contains the block size and an SHA-1 hash
+ * of the decompressed data.
+ *
+ * The first block is located immediately after XEX2_Compression_Normal_Header.
+ * Subsequent block information is located in the compressed data.
+ *
+ * The uncompressed block size is the first 16-bit BE value
+ * of the compressed data block.
+ *
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XEX2_Compression_Normal_Info {
+	uint32_t block_size;	// [0x000] Compressed block size.
+	uint8_t sha1_hash[20];	// [0x004] SHA-1 hash.
+} XEX2_Compression_Normal_Info;
+ASSERT_STRUCT(XEX2_Compression_Normal_Info, 24);
+
+/**
+ * XEX2: Normal compression header. (LZX)
+ * Used with XEX2_COMPRESSION_TYPE_NORMAL.
+ *
+ * Located immediately after XEX2_File_Format_Info.
+ * XEX2_File_Format_Info's size field can be used to
+ * determine the total number of normal compression blocks
+ * located after this header.
+ *
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XEX2_Compression_Normal_Header {
+	uint32_t window_size;				// [0x000] LZX compression window size.
+	XEX2_Compression_Normal_Info first_block;	// [0x004] First block information.
+} XEX2_Compression_Normal_Header;
+ASSERT_STRUCT(XEX2_Compression_Normal_Header, sizeof(uint32_t) + 24);
+
+/**
  * XEX2: Checksum and timestamp (0x18002)
  * All fields are in big-endian.
  */

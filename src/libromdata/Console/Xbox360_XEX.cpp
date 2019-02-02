@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
+#include "libromdata/config.libromdata.h"
 
 #include "Xbox360_XEX.hpp"
 #include "Xbox360_XDBF.hpp"
@@ -412,11 +413,200 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			}
 			break;
 		}
+
+#ifdef ENABLE_LIBMSPACK
+		case XEX2_COMPRESSION_TYPE_NORMAL: {
+			// Normal (LZX) compression.
+			// Load the block segment data.
+			// TODO: IDiscReader subclass to handle this?
+			assert(fileFormatInfo.size >= sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header));
+			if (fileFormatInfo.size < sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header)) {
+				// No segment information is available.
+				delete reader[0];
+				delete reader[1];
+				return nullptr;
+			}
+
+			// Window size.
+			// NOTE: Technically part of XEX2_Compression_Normal_Header,
+			// but we're not using that in order to be
+			// able to swap lzx_blocks.
+			uint32_t window_size;
+			size = file->read(&window_size, sizeof(window_size));
+			if (size != sizeof(window_size)) {
+				// Seek and/or read error.
+				delete reader[0];
+				delete reader[1];
+				return nullptr;
+			}
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			window_size = be32_to_cpu(window_size);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+			// First block.
+			XEX2_Compression_Normal_Info lzx_blocks[2];
+			unsigned int lzx_idx = 0;
+			size = file->read(&lzx_blocks[0], sizeof(lzx_blocks[0]));
+			if (size != sizeof(lzx_blocks[0])) {
+				// Seek and/or read error.
+				delete reader[0];
+				delete reader[1];
+				return nullptr;
+			}
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			lzx_blocks[0].block_size = be32_to_cpu(lzx_blocks[0].block_size);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+			// First block header is stored in the XEX header.
+			// Second block header is stored at the beginning of the compressed data.
+
+			// NOTE: We can't easily randomly seek within the compressed data,
+			// since the uncompressed block size isn't stored anywhere.
+			// We'll have to load the entire executable into memory,
+			// save the relevant portions, then free it.
+			const int64_t fileSize = file->size();
+			const uint32_t image_size = be32_to_cpu(xex2Security.image_size);
+			if (fileSize > 64*1024*1024 || image_size > 64*1024*1024) {
+				// 64 MB is our compressed and uncompressed limit.
+				delete reader[0];
+				delete reader[1];
+				return nullptr;
+			}
+
+			// Compressed EXE buffer.
+			// We have to de-block the compressed data first.
+			const size_t compressed_size = static_cast<size_t>(fileSize) - xex2Header.pe_offset;
+			unique_ptr<uint8_t[]> compressed_deblock(new uint8_t[compressed_size]);
+
+			// Pointer within the deblocked compressed data.
+			uint8_t *p_dblk = compressed_deblock.get();
+			uint8_t *const p_dblk_end = p_dblk + compressed_size;
+
+			// CBCReader index.
+			// If a block size is invalid, we'll switch to the other one.
+			// If both are invalid, we have a problem.
+			unsigned int rd_idx = (reader[0] ? 0 : 1);
+			if (!reader[rd_idx]) {
+				// No readers available...
+				return nullptr;
+			}
+
+			// Start at the beginning.
+			reader[rd_idx]->rewind();
+
+			// Based on: https://github.com/xenia-project/xenia/blob/5f764fc752c82674981a9f402f1bbd96b399112a/src/xenia/cpu/xex_module.cc
+			while (lzx_blocks[lzx_idx].block_size != 0) {
+				// Read the next block header.
+				size = reader[rd_idx]->read(&lzx_blocks[!lzx_idx], sizeof(lzx_blocks[!lzx_idx]));
+				if (size != sizeof(lzx_blocks[!lzx_idx])) {
+					// Seek and/or read error.
+					delete reader[0];
+					delete reader[1];
+					return nullptr;
+				}
+
+				// Does the block size make sense?
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+				lzx_blocks[!lzx_idx].block_size = be32_to_cpu(lzx_blocks[!lzx_idx].block_size);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+				if (lzx_blocks[!lzx_idx].block_size > 65536) {
+					// Block size is invalid.
+					// Switch to the other reader.
+					if (rd_idx == 1) {
+						// No more readers...
+						delete reader[1];
+						return nullptr;
+					}
+					rd_idx = 1;
+
+					// FIXME: Start over from the beginning.
+					// Seek reader[1] to reader[0]'s position.
+					// TODO: Check for errors.
+					reader[1]->seek(reader[0]->tell() - sizeof(lzx_blocks[!lzx_idx]));
+					delete reader[0];
+					reader[0] = nullptr;
+
+					// Try reading it again.
+					continue;
+				}
+
+				// Read the current block.
+				uint32_t block_size = lzx_blocks[lzx_idx].block_size;
+				assert(block_size > sizeof(lzx_blocks[!lzx_idx]));
+				if (block_size <= sizeof(lzx_blocks[!lzx_idx])) {
+					// Block is missing the "next block" header...
+					delete reader[0];
+					delete reader[1];
+					return nullptr;
+				}
+				block_size -= sizeof(lzx_blocks[!lzx_idx]);
+
+				while (block_size > 2) {
+					// Get the chunk size.
+					uint16_t chunk_size;
+					size = reader[rd_idx]->read(&chunk_size, sizeof(chunk_size));
+					if (size != sizeof(chunk_size)) {
+						// Seek and/or read error.
+						delete reader[0];
+						delete reader[1];
+						return nullptr;
+					}
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+					chunk_size = be16_to_cpu(chunk_size);
+#endif /* SYS_BYTEORDER = SYS_LIL_ENDIAN */
+					block_size -= 2;
+					if (chunk_size == 0 || chunk_size > block_size) {
+						// End of block, or not enough data is available.
+						break;
+					}
+
+					// Do we have enough space?
+					if (p_dblk + chunk_size >= p_dblk_end) {
+						// Out of memory.
+						// TODO: Error reporting.
+						delete reader[0];
+						delete reader[1];
+						return nullptr;
+					}
+
+					size = reader[rd_idx]->read(p_dblk, chunk_size);
+					if (size != chunk_size) {
+						// Seek and/or read error.
+						delete reader[0];
+						delete reader[1];
+						return nullptr;
+					}
+
+					p_dblk += chunk_size;
+					block_size -= chunk_size;
+				}
+				if (block_size > 0) {
+					// Empty data at the end of the block.
+					// TODO: Error handling.
+					// TODO: SEEK_CUR?
+					reader[rd_idx]->seek(reader[rd_idx]->tell() + block_size);
+				}
+
+				// Next block.
+				lzx_idx = !lzx_idx;
+			}
+
+			// TODO: Decompress the data.
+
+			// Save the correct reader.
+			this->peReader = reader[rd_idx];
+			reader[rd_idx] = nullptr;
+
+			// TODO: Decompress the first block to get the PE header.
+			break;
+		}
+#endif /* ENABLE_LIBMSPACK */
 	}
 
 	// Verify the MZ header.
 	uint16_t mz;
 	for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
+		if (!reader[i])
+			break;
 		size_t size = reader[i]->read(&mz, sizeof(mz));
 		if (size == sizeof(mz)) {
 			if (mz == cpu_to_be16('MZ')) {
