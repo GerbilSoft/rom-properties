@@ -1370,7 +1370,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				// Add 16px per newline over 1.
 				szLstIcon.cy += (16 * (nl_max - 1));
 				resizeNeeded = true;
-				factor = (float)szIcon.cy / 32.0f;
+				factor = (float)szLstIcon.cy / 32.0f;
 			}
 
 			HIMAGELIST himl = ImageList_Create(szLstIcon.cx, szLstIcon.cy,
