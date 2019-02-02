@@ -380,6 +380,8 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			assert(fileFormatInfo.size > sizeof(fileFormatInfo));
 			if (fileFormatInfo.size <= sizeof(fileFormatInfo)) {
 				// No segment information is available.
+				delete reader[0];
+				delete reader[1];
 				return nullptr;
 			}
 
@@ -390,6 +392,8 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			size = file->read(cbi.get(), seg_len);
 			if (size != seg_len) {
 				// Seek and/or read error.
+				delete reader[0];
+				delete reader[1];
 				return nullptr;
 			}
 
