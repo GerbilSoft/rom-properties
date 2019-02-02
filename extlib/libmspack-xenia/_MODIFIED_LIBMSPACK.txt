@@ -11,7 +11,7 @@ The following changes have been made to the original:
 
 - Removed Xenia-specific function calls.
 
-- Silenced compiled warnings about unused parameters. [-Wunused-parameter]
+- Silenced compiler warnings about unused parameters. [-Wunused-parameter]
 
 To obtain the original libmspack:
 - Original: https://www.cabextract.org.uk/libmspack/

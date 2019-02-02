@@ -35,6 +35,7 @@ typedef struct mspack_memory_file_t {
 } mspack_memory_file;
 mspack_memory_file* mspack_memory_open(struct mspack_system* sys, void* buffer,
                                        const size_t buffer_size) {
+  ((void)sys);
   assert_true(buffer_size < INT_MAX);
   if (buffer_size >= INT_MAX) {
     return NULL;
@@ -70,6 +71,7 @@ int mspack_memory_write(struct mspack_file* file, void* buffer, int chars) {
   return (int)total;
 }
 void* mspack_memory_alloc(struct mspack_system* sys, size_t chars) {
+  ((void)sys);
   return calloc(chars, 1);
 }
 void mspack_memory_free(void* ptr) { free(ptr); }
