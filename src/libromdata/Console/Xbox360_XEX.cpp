@@ -107,8 +107,9 @@ class Xbox360_XEX_Private : public RomDataPrivate
 
 		// Basic compression: Data segments.
 		struct BasicZDataSeg_t {
-			uint32_t vaddr;		// Virtual address in memory
+			uint32_t vaddr;		// Virtual address in memory (base address is 0)
 			uint32_t physaddr;	// Physical address in the PE executable
+						// TODO: Make this relative to the XEX, not the PE?
 			uint32_t length;	// Length of segment
 		};
 		ao::uvector<BasicZDataSeg_t> basicZDataSegments;
@@ -272,6 +273,99 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	fileFormatInfo.compression_type = be16_to_cpu(fileFormatInfo.compression_type);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
+	// NOTE: Using two CBCReader instances.
+	// - [0]: Retail key and/or no encryption.
+	// - [1]: Debug key
+	//
+	// If encrypted but the retail key isn't available,
+	// [0] will be nullptr, and [1] will be valid.
+	//
+	// We need to decrypt before we decompress, so we can't check
+	// if the decryption key works until decompression is done.
+	CBCReader *reader[2] = {nullptr, nullptr};
+
+	// Create the CBCReader for decryption.
+	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;
+	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
+		// No encryption.
+		reader[0] = new CBCReader(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
+	}
+#ifdef ENABLE_DECRYPTION
+	else {
+		// Decrypt the title key.
+		// Get the Key Manager instance.
+		KeyManager *const keyManager = KeyManager::instance();
+		assert(keyManager != nullptr);
+
+		// Get the common keys.
+
+		// Zero data.
+		uint8_t zero16[16];
+		memset(zero16, 0, sizeof(zero16));
+
+		// Key data.
+		// - 0: retail
+		// - 1: debug (pseudo-keydata)
+		KeyManager::KeyData_t keyData[2];
+		unsigned int idx0 = 0;
+
+		// Debug key
+		keyData[1].key = zero16;
+		keyData[1].length = 16;
+
+		// Try to load the retail key.
+		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
+			EncryptionKeyNames[0], &keyData[0],
+			EncryptionKeyVerifyData[0], 16);
+		if (verifyResult != KeyManager::VERIFY_OK) {
+			// An error occurred while loading the retail key.
+			// Start with the debug key.
+			idx0 = 1;
+		}
+
+		// IAesCipher instance.
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
+
+		for (unsigned int i = idx0; i < ARRAY_SIZE(keyData); i++) {
+			// Load the common key. (CBC mode)
+			int ret = cipher->setKey(keyData[i].key, keyData[i].length);
+			ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
+			if (ret != 0) {
+				// Error initializing the cipher.
+				continue;
+			}
+
+			// Decrypt the title key.
+			uint8_t title_key[16];
+			memcpy(title_key, xex2Security.title_key, sizeof(title_key));
+			if (cipher->decrypt(title_key, sizeof(title_key), zero16, sizeof(zero16)) != sizeof(title_key)) {
+				// Error decrypting the title key.
+				continue;
+			}
+
+			// Initialize the CBCReader.
+			reader[i] = new CBCReader(file, xex2Header.pe_offset, pe_length, title_key, zero16);
+			if (!reader[i]->isOpen()) {
+				// Unable to open the CBCReader.
+				delete reader[i];
+				reader[i] = nullptr;
+				continue;
+			}
+
+			// PE header will be verified later.
+		}
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	if ((!reader[0] || !reader[0]->isOpen()) &&
+	    (!reader[1] || !reader[1]->isOpen()))
+	{
+		// Unable to open any CBCReader.
+		delete reader[0];
+		delete reader[1];
+		return nullptr;
+	}
+
 	// Check the compression type.
 	switch (fileFormatInfo.compression_type) {
 		case XEX2_COMPRESSION_TYPE_NONE:
@@ -299,6 +393,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				return nullptr;
 			}
 
+			// TODO: Make physaddr relative to the XEX, not the PE?
 			uint32_t vaddr = 0, physaddr = 0;
 			basicZDataSegments.resize(seg_len);
 			const XEX2_Compression_Basic_Info *p = cbi.get();
@@ -315,109 +410,28 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		}
 	}
 
-	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;
-	CBCReader *reader = nullptr;
-	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
-		// No encryption.
-		reader = new CBCReader(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
-	}
-#ifdef ENABLE_DECRYPTION
-	else {
-		// Decrypt the title key.
-		// Get the Key Manager instance.
-		KeyManager *const keyManager = KeyManager::instance();
-		assert(keyManager != nullptr);
-
-		// Get the common key.
-		// TODO: Show the key in use.
-
-		// Zero data..
-		uint8_t zero16[16];
-		memset(zero16, 0, sizeof(zero16));
-
-		// Key data.
-		// - 0: retail
-		// - 1: debug (pseudo-keydata)
-		KeyManager::KeyData_t keyData[2];
-		unsigned int idx0 = 0;
-
-		// Debug key
-		keyData[1].key = zero16;
-		keyData[1].length = 16;
-
-		// Try to load the retail key.
-		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
-			EncryptionKeyNames[0], &keyData[0],
-			EncryptionKeyVerifyData[0], 16);
-		if (verifyResult != KeyManager::VERIFY_OK) {
-			// An error occurred while loading the retail key.
-			// Start with the debug key.
-			idx0 = 1;
-		}
-
-		// IAesCipher instance.
-		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
-
-		for (int i = idx0; i < (int)ARRAY_SIZE(keyData); i++) {
-			// Load the common key. (CBC mode)
-			int ret = cipher->setKey(keyData[i].key, keyData[i].length);
-			ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
-			if (ret != 0) {
-				// Error initializing the cipher.
-				continue;
+	// Verify the MZ header.
+	uint16_t mz;
+	for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
+		size_t size = reader[i]->read(&mz, sizeof(mz));
+		if (size == sizeof(mz)) {
+			if (mz == cpu_to_be16('MZ')) {
+				// MZ header is valid.
+				// TODO: Other checks?
+				this->peReader = reader[i];
+				reader[i] = nullptr;
+				keyInUse = i;
+				break;
 			}
-
-			// Decrypt the title key.
-			uint8_t title_key[16];
-			memcpy(title_key, xex2Security.title_key, sizeof(title_key));
-			if (cipher->decrypt(title_key, sizeof(title_key), zero16, sizeof(zero16)) != sizeof(title_key)) {
-				// Error decrypting the title key.
-				continue;
-			}
-
-			// Initialize the CBCReader.
-			reader = new CBCReader(file, xex2Header.pe_offset, pe_length, title_key, zero16);
-			if (!reader->isOpen()) {
-				// Unable to open the CBCReader.
-				delete reader;
-				reader = nullptr;
-				continue;
-			}
-
-			// Verify the MZ header.
-			uint16_t mz;
-			size = reader->read(&mz, sizeof(mz));
-			if (size != sizeof(mz)) {
-				// Read error.
-				delete reader;
-				reader = nullptr;
-				continue;
-			}
-
-			if (mz != cpu_to_be16('MZ')) {
-				// Not MZ.
-				delete reader;
-				reader = nullptr;
-				continue;
-			}
-
-			// MZ matches.
-			// TODO: Check for more magic?
-			keyInUse = i;
-			break;
 		}
 	}
-#endif /* ENABLE_DECRYPTION */
 
-	if (!reader || !reader->isOpen()) {
-		// Unable to open the CBCReader.
-		delete reader;
-		return nullptr;
-	}
+	// Delete the incorrect CBCReaders.
+	delete reader[0];
+	delete reader[1];
 
-	// CBCReader is open.
-	this->peReader = reader;
-	return reader;
+	// CBCReader is open and file decompression has been initialized.
+	return this->peReader;
 }
 
 /**
