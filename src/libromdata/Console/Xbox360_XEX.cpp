@@ -127,6 +127,9 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		};
 		ao::uvector<BasicZDataSeg_t> basicZDataSegments;
 
+		// Amount of data we'll read for the PE header.
+		static const unsigned int PE_HEADER_SIZE = 8192;
+
 #ifdef ENABLE_LIBMSPACK
 		// Decompressed EXE header.
 		ao::uvector<uint8_t> lzx_peHeader;
@@ -496,6 +499,15 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				return nullptr;
 			}
 
+			// Image size must be at least 8 KB.
+			assert(be32_to_cpu(xex2Security.image_size >= PE_HEADER_SIZE));
+			if (xex2Security.image_size < PE_HEADER_SIZE) {
+				// Too small.
+				delete reader[0];
+				delete reader[1];
+				return nullptr;
+			}
+
 			// Window size.
 			// NOTE: Technically part of XEX2_Compression_Normal_Header,
 			// but we're not using that in order to be
@@ -674,11 +686,20 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				return nullptr;
 			}
 
+			// Verify the MZ header.
+			uint16_t mz;
+			memcpy(&mz, decompressed_exe.get(), sizeof(mz));
+			if (mz != cpu_to_be16('MZ')) {
+				// MZ header is not valid.
+				// TODO: Other checks?
+				delete reader[0];
+				delete reader[1];
+				return nullptr;
+			}
+
 			// Copy the PE header.
-			// NOTE: Assuming pe_header_sz will be >0.
-			size_t pe_header_sz = std::min(8192U, image_size);
-			lzx_peHeader.resize(pe_header_sz);
-			memcpy(lzx_peHeader.data(), decompressed_exe.get(), pe_header_sz);
+			lzx_peHeader.resize(PE_HEADER_SIZE);
+			memcpy(lzx_peHeader.data(), decompressed_exe.get(), PE_HEADER_SIZE);
 
 			// Copy the XDBF section.
 			const XEX2_Resource_Info *const pResInfo = getXdbfResInfo();
@@ -702,26 +723,13 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 #endif /* ENABLE_LIBMSPACK */
 	}
 
-	// Verify the MZ header.
-	uint16_t mz;
-	if (lzx_peHeader.size() > sizeof(mz)) {
-		// Check the decompressed PE header.
-		// TODO: Check this above when copying?
-		memcpy(&mz, lzx_peHeader.data(), sizeof(mz));
-		if (mz == cpu_to_be16('MZ')) {
-			// MZ header is valid.
-			// TODO: Other checks?
-		} else {
-			// MZ header is not valid.
-			lzx_peHeader.clear();
-			lzx_xdbfSection.clear();
-			this->peReader = nullptr;
-		}
-	} else {
+	// Verify the MZ header for non-LZX compression.
+	if (lzx_peHeader.empty()) {
 		// Check the CBCReader objects.
 		for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
 			if (!reader[i])
 				break;
+			uint16_t mz;
 			size_t size = reader[i]->read(&mz, sizeof(mz));
 			if (size == sizeof(mz)) {
 				if (mz == cpu_to_be16('MZ')) {
@@ -874,7 +882,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	if (!lzx_peHeader.empty()) {
 		peFile_tmp = new RpMemFile(lzx_peHeader.data(), lzx_peHeader.size());
 	} else {
-		peFile_tmp = new PartitionFile(peReader, 0, 8192);
+		peFile_tmp = new PartitionFile(peReader, 0, PE_HEADER_SIZE);
 	}
 	if (peFile_tmp->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
