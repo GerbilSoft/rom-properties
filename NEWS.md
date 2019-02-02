@@ -98,6 +98,9 @@
     the ID4 region.
   * EXE: Fixed a crash that occurred when viewing the properties of a
     Windows 1.0 executable in any UI frontend other than rpcli.
+  * CBCReader: Added unaligned read support and fixed positioning issues
+    when reading unencrypted data. This only affected the Xbox360_XEX
+    parser; WiiSave, WiiWAD, and CIAReader were not affected.
 
 ## v1.3.3 (released 2018/08/25)
 
