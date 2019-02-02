@@ -380,7 +380,7 @@ public:
 						} else {
 							// Found a newline.
 							// TODO: Update SafeString to take a length parameter instead of creating a temporary string.
-							os << jt->substr(linePos[col], nl_pos - linePos[col]);
+							os << SafeString(jt->substr(linePos[col], nl_pos - linePos[col]).c_str(), false);
 							linePos[col] = (unsigned int)(nl_pos + 1);
 							if (linePos[col] > (unsigned int)jt->size()) {
 								// End of string.
