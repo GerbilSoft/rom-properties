@@ -294,6 +294,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			const unsigned int seg_count = seg_len / sizeof(XEX2_Compression_Basic_Info);
 			unique_ptr<XEX2_Compression_Basic_Info[]> cbi(new XEX2_Compression_Basic_Info[seg_count]);
 			size = file->read(cbi.get(), seg_len);
+			if (size != seg_len) {
+				// Seek and/or read error.
+				return nullptr;
+			}
 
 			uint32_t vaddr = 0, physaddr = 0;
 			basicZDataSegments.resize(seg_len);
