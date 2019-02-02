@@ -215,6 +215,14 @@ IF(ENABLE_UNICE68)
 	SET_EXTLIB_PROPERTIES(unice68_exe)
 ENDIF(ENABLE_UNICE68)
 
+# libmspack-xenia for LZX-compressed Xbox 360 executables.
+IF(ENABLE_LIBMSPACK)
+	SET(BUILD_STATIC_LIBS ON)
+	SET(BUILD_SHARED_LIBS OFF)
+	ADD_SUBDIRECTORY(libmspack-xenia)
+	SET_EXTLIB_PROPERTIES(libmspack)
+ENDIF(ENABLE_LIBMSPACK)
+
 # Google Test
 IF(BUILD_TESTING)
 	# Reference: http://stackoverflow.com/questions/12540970/how-to-make-gtest-build-mdd-instead-of-mtd-by-default-using-cmake
