@@ -329,7 +329,7 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	// Some malformed images may have a smaller width in the header,
 	// so calculate the row width here.
 	int row_width = vtfHeader.width;
-	if (popcount(row_width) != 1) {
+	if (!isPow2(row_width)) {
 		// Adjust to the next power of two.
 		// We need to calculate the actual stride in order to
 		// prevent crashes in the SSE2 code.
