@@ -1188,8 +1188,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	}
 
 	if (hasIcons) {
-		assert(field->data.list_data.icons != nullptr);
-		if (!field->data.list_data.icons) {
+		assert(field->data.list_data.mxd.icons != nullptr);
+		if (!field->data.list_data.mxd.icons) {
 			// No icons vector...
 			return 0;
 		}
@@ -1271,7 +1271,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (list_data) {
 		uint32_t checkboxes = 0, adj_checkboxes = 0;
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.checkboxes;
+			checkboxes = field->data.list_data.mxd.checkboxes;
 		}
 
 		// NOTE: We're converting the strings for use with
@@ -1362,7 +1362,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
 
 				// Add icons.
-				const auto &icons = field->data.list_data.icons;
+				const auto &icons = field->data.list_data.mxd.icons;
 				for (auto iter = icons->cbegin(); iter != icons->cend(); ++iter) {
 					int iImage = -1;
 					const rp_image *const icon = *iter;

@@ -563,8 +563,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	if (hasIcons) {
-		assert(field->data.list_data.icons != nullptr);
-		if (!field->data.list_data.icons) {
+		assert(field->data.list_data.mxd.icons != nullptr);
+		if (!field->data.list_data.mxd.icons) {
 			// No icons vector...
 			return;
 		}
@@ -623,7 +623,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	if (list_data) {
 		uint32_t checkboxes = 0;
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.checkboxes;
+			checkboxes = field->data.list_data.mxd.checkboxes;
 		}
 
 		unsigned int row = 0;	// for icons [TODO: Use iterator?]
@@ -644,7 +644,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 				treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
 				checkboxes >>= 1;
 			} else if (hasIcons) {
-				const rp_image *const icon = field->data.list_data.icons->at(row);
+				const rp_image *const icon = field->data.list_data.mxd.icons->at(row);
 				if (icon) {
 					treeWidgetItem->setIcon(0, QIcon(
 						QPixmap::fromImage(rpToQImage(icon))));

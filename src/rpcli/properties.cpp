@@ -327,7 +327,7 @@ public:
 			skipFirstNL = false;
 		}
 
-		uint32_t checkboxes = romField->data.list_data.checkboxes;
+		uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
 		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Remove the 4 spaces in column 0.
 			// Those spaces will not be used in the text area.
@@ -711,7 +711,7 @@ public:
 				const auto list_data = romField->data.list_data.data;
 				assert(list_data != nullptr);
 				if (list_data) {
-					uint32_t checkboxes = romField->data.list_data.checkboxes;
+					uint32_t checkboxes = romField->data.list_data.mxd.checkboxes;
 					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 						if (it != list_data->cbegin()) os << ',';
 						os << '[';

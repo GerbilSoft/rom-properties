@@ -898,8 +898,8 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	}
 
 	if (hasIcons) {
-		assert(field->data.list_data.icons != nullptr);
-		if (!field->data.list_data.icons) {
+		assert(field->data.list_data.mxd.icons != nullptr);
+		if (!field->data.list_data.mxd.icons) {
 			// No icons vector...
 			return nullptr;
 		}
@@ -952,7 +952,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	if (list_data) {
 		uint32_t checkboxes = 0;
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.checkboxes;
+			checkboxes = field->data.list_data.mxd.checkboxes;
 		}
 		unsigned int row = 0;	// for icons [TODO: Use iterator?]
 		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, row++) {
@@ -975,7 +975,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			} else if (hasIcons) {
 				// Icon column.
 				PIMGTYPE pixbuf = rp_image_to_PIMGTYPE(
-					field->data.list_data.icons->at(row));
+					field->data.list_data.mxd.icons->at(row));
 				if (pixbuf) {
 					// TODO: Ideal icon size?
 					// Using 32x32 for now.

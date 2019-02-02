@@ -477,11 +477,12 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
 	};
 
-	auto vectors_info = new vector<vector<string> >(ARRAY_SIZE(vectors_names));
+	auto vv_vectors = new vector<vector<string> >(ARRAY_SIZE(vectors_names));
 	for (size_t i = 0; i < ARRAY_SIZE(vectors_names); i++) {
 		// No vectors are skipped yet.
 		// TODO: Add a mapping table when skipping some.
-		auto &data_row = vectors_info->at(i);
+		// TODO: Use an iterator?
+		auto &data_row = vv_vectors->at(i);
 
 		// Actual vector number.
 		const uint8_t vector_index = vectors_map[i];
@@ -504,9 +505,11 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
 		"MegaDrive|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
-	fields->addField_listData(C_("MegaDrive", "Vector Table"),
-		v_vectors_headers, vectors_info,
-		8, RomFields::RFT_LISTDATA_SEPARATE_ROW);
+
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
+	params.headers = v_vectors_headers;
+	params.list_data = vv_vectors;
+	fields->addField_listData(C_("MegaDrive", "Vector Table"), &params);
 }
 
 /** MegaDrive **/
