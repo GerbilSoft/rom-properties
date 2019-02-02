@@ -218,6 +218,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 			}
 			return 0;
 		}
+		d->pos += size;
 		return sz_read;
 	}
 
