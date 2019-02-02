@@ -320,11 +320,16 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
  */
 CBCReader *Xbox360_XEX_Private::initPeReader(void)
 {
-	if (peReader || !lzx_peHeader.empty()) {
-		// PE Reader is already initialized,
-		// and/or LZX has been decompressed.
+	if (peReader) {
+		// PE Reader is already initialized.
 		return peReader;
 	}
+#ifdef ENABLE_LIBMSPACK
+	if (!lzx_peHeader.empty()) {
+		// LZX has been decompressed.
+		return peReader;
+	}
+#endif /* ENABLE_LIBMSPACK */
 
 	// Get the file format info.
 	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(XEX2_OPTHDR_FILE_FORMAT_INFO);
@@ -722,7 +727,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	}
 
 	// Verify the MZ header for non-LZX compression.
-	if (lzx_peHeader.empty()) {
+#ifdef ENABLE_LIBMSPACK
+	if (lzx_peHeader.empty())
+#endif /* ENABLE_LIBMSPACK */
+	{
 		// Check the CBCReader objects.
 		for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
 			if (!reader[i])
@@ -877,9 +885,12 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	// Attempt to open the EXE section.
 	// Assuming a maximum of 8 KB for the PE headers.
 	IRpFile *peFile_tmp;
+#ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
 		peFile_tmp = new RpMemFile(lzx_peHeader.data(), lzx_peHeader.size());
-	} else {
+	} else
+#endif /* ENABLE_LIBMSPACK */
+	{
 		peFile_tmp = new PartitionFile(peReader, 0, PE_HEADER_SIZE);
 	}
 	if (peFile_tmp->isOpen()) {
@@ -917,9 +928,12 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 
 	// Attempt to open the XDBF section.
 	IRpFile *peFile_tmp;
+#ifdef ENABLE_LIBMSPACK
 	if (!lzx_xdbfSection.empty()) {
 		peFile_tmp = new RpMemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size());
-	} else {
+	} else
+#endif /* ENABLE_LIBMSPACK */
+	{
 		// Get the XDBF resource information.
 		const XEX2_Resource_Info *const pResInfo = getXdbfResInfo();
 		if (!pResInfo) {
@@ -1079,10 +1093,12 @@ void Xbox360_XEX::close(void)
 	d->peFile_exe = nullptr;
 	d->peReader = nullptr;
 
+#ifdef ENABLE_LIBMSPACK
 	d->lzx_peHeader.clear();
 	d->lzx_peHeader.shrink_to_fit();
 	d->lzx_xdbfSection.clear();
 	d->lzx_xdbfSection.shrink_to_fit();
+#endif /* ENABLE_LIBMSPACK */
 
 	// Call the superclass function.
 	super::close();
