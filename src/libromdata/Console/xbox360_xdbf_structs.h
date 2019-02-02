@@ -108,10 +108,10 @@ typedef enum {
 typedef struct PACKED _XDBF_Default_Language {
 	uint32_t magic;			// [0x000] 'XSTC'
 	uint32_t version;		// [0x004] Version (1)
-	uint32_t size;			// [0x008] sizeof(XDBF_Default_Language) - sizeof(uint32_t)
+	uint32_t size;			// [0x008] sizeof(XDBF_XSTC) - sizeof(uint32_t)
 	uint32_t default_language;	// [0x00C] See XDBF_Language_e
-} XDBF_Default_Language;
-ASSERT_STRUCT(XDBF_Default_Language, 4*sizeof(uint32_t));
+} XDBF_XSTC;
+ASSERT_STRUCT(XDBF_XSTC, 4*sizeof(uint32_t));
 
 /**
  * XDBF: Language IDs

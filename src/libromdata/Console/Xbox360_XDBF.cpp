@@ -25,6 +25,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "xbox360_xdbf_structs.h"
+#include "data/XboxLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -99,6 +100,9 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		// Data start offset within the file.
 		uint32_t data_offset;
 
+		// Cached language ID.
+		XDBF_Language_e m_langID;
+
 		// If true, this XDBF section is in an XEX executable.
 		// Some fields shouldn't be displayed.
 		bool xex;
@@ -163,6 +167,7 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool 
 	, img_icon(nullptr)
 	, entryTable(nullptr)
 	, data_offset(0)
+	, m_langID(XDBF_LANGUAGE_UNKNOWN)
 	, xex(xex)
 {
 	// Clear the header.
@@ -232,7 +237,8 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable(XDBF_Language_e l
 {
 	assert(language_id >= 0);
 	assert(language_id < XDBF_LANGUAGE_MAX);
-	if (language_id < 0 || language_id >= XDBF_LANGUAGE_MAX)
+	// TODO: Do any games have string tables with language ID XDBF_LANGUAGE_UNKNOWN?
+	if (language_id <= XDBF_LANGUAGE_UNKNOWN || language_id >= XDBF_LANGUAGE_MAX)
 		return nullptr;
 
 	// Is the string table already loaded?
@@ -362,12 +368,87 @@ string Xbox360_XDBF_Private::loadString(XDBF_Language_e language_id, uint16_t st
  */
 XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
 {
-	// TODO: Get the system language.
-	// Assuming English for now.
+	// TODO: Show the default language (XSTC) in a field?
+	// (for both Xbox360_XDBF and Xbox360_XEX)
+	if (m_langID != XDBF_LANGUAGE_UNKNOWN) {
+		// We already got the language ID.
+		return m_langID;
+	}
 
-	// TODO: Also get the fallback language from XSTC.
+	// Non-const pointer.
+	Xbox360_XDBF_Private *const ncthis = const_cast<Xbox360_XDBF_Private*>(this);
 
-	return XDBF_LANGUAGE_ENGLISH;
+	// Get the system language.
+	XDBF_Language_e langID = static_cast<XDBF_Language_e>(XboxLanguage::getXbox360Language());
+	if (langID > XDBF_LANGUAGE_UNKNOWN && langID < XDBF_LANGUAGE_MAX) {
+		// System language obtained.
+		// Make sure the string table exists.
+		if (ncthis->loadStringTable(langID) != nullptr) {
+			// String table loaded.
+			ncthis->m_langID = langID;
+			return langID;
+		}
+	}
+
+	// Not supported.
+	// Get the XSTC struct to determine the default language.
+	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_METADATA, XDBF_XSTC_MAGIC);
+	if (!entry) {
+		// Not found...
+		return XDBF_LANGUAGE_UNKNOWN;
+	}
+
+	// Load the XSTC entry.
+	const uint32_t addr = be32_to_cpu(entry->offset) + this->data_offset;
+	if (be32_to_cpu(entry->length) != sizeof(XDBF_XSTC)) {
+		// Invalid size.
+		return XDBF_LANGUAGE_UNKNOWN;
+	}
+	
+	XDBF_XSTC xstc;
+	size_t size = file->seekAndRead(addr, &xstc, sizeof(xstc));
+	if (size != sizeof(xstc)) {
+		// Seek and/or read error.
+		return XDBF_LANGUAGE_UNKNOWN;
+	}
+
+	// Validate magic, version, and size.
+	if (xstc.magic != cpu_to_be32(XDBF_XSTC_MAGIC) ||
+	    xstc.version != cpu_to_be32(XDBF_XSTC_VERSION) ||
+	    xstc.size != cpu_to_be32(sizeof(XDBF_XSTC) - sizeof(uint32_t)))
+	{
+		// Invalid fields.
+		return XDBF_LANGUAGE_UNKNOWN;
+	}
+
+	// TODO: Check if the XSTC language matches langID,
+	// and if so, skip the XSTC check.
+	langID = static_cast<XDBF_Language_e>(be32_to_cpu(xstc.default_language));
+	if (langID <= XDBF_LANGUAGE_UNKNOWN || langID >= XDBF_LANGUAGE_MAX) {
+		// Out of range.
+		return XDBF_LANGUAGE_UNKNOWN;
+	}
+
+	// Default language obtained.
+	// Make sure the string table exists.
+	if (ncthis->loadStringTable(langID) != nullptr) {
+		// String table loaded.
+		ncthis->m_langID = langID;
+		return langID;
+	}
+
+	// One last time: Try using English as a fallback language.
+	if (langID != XDBF_LANGUAGE_ENGLISH) {
+		langID = XDBF_LANGUAGE_ENGLISH;
+		if (ncthis->loadStringTable(langID) != nullptr) {
+			// String table loaded.
+			ncthis->m_langID = langID;
+			return langID;
+		}
+	}
+
+	// No languages are available...
+	return XDBF_LANGUAGE_UNKNOWN;
 }
 
 /**
@@ -572,19 +653,29 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 
 		// Title and locked description
 		// TODO: Unlocked description?
-		string desc = loadString(langID, be16_to_cpu(p->title_id));
-		string lck_desc = loadString(langID, be16_to_cpu(p->locked_desc_id));
-		if (!lck_desc.empty()) {
-			if (!desc.empty()) {
-				desc += '\n';
-				desc += lck_desc;
-			} else {
-				desc = std::move(lck_desc);
+		if (langID != XDBF_LANGUAGE_UNKNOWN) {
+			string desc = loadString(langID, be16_to_cpu(p->title_id));
+			string lck_desc = loadString(langID, be16_to_cpu(p->locked_desc_id));
+			if (!lck_desc.empty()) {
+				if (!desc.empty()) {
+					desc += '\n';
+					desc += lck_desc;
+				} else {
+					desc = std::move(lck_desc);
+				}
 			}
-		}
 
-		// TODO: Formatting value indicating that the first line should be bold.
-		data_row.push_back(std::move(desc));
+			// TODO: Formatting value indicating that the first line should be bold.
+			data_row.push_back(std::move(desc));
+		} else {
+			// Unknown language ID.
+			// Show the string table IDs instead.
+			data_row.push_back(rp_sprintf(
+				C_("Xbox360_XDBF|Achievements", "Title: 0x%04X | Locked: 0x%04X | Unlocked: 0x%04X"),
+					be16_to_cpu(p->title_id),
+					be16_to_cpu(p->locked_desc_id),
+					be16_to_cpu(p->unlocked_desc_id)));
+		}
 
 		// Gamerscore
 		data_row.push_back(rp_sprintf("%u", be16_to_cpu(p->gamerscore)));
