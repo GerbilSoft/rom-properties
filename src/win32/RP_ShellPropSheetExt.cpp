@@ -1361,6 +1361,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// two newlines, increase the Imagelist icon size by
 			// 16 pixels.
 			// TODO: Handle this better.
+			// TODO: Use alternating row colors?
 			// FIXME: This only works if the RFT_LISTDATA has icons.
 			SIZE szLstIcon = {32, 32};
 			bool resizeNeeded = false;
