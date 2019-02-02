@@ -528,18 +528,19 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 			// First block.
-			XEX2_Compression_Normal_Info lzx_blocks[2];
+			XEX2_Compression_Normal_Info first_block, lzx_blocks[2];
 			unsigned int lzx_idx = 0;
-			size = file->read(&lzx_blocks[0], sizeof(lzx_blocks[0]));
-			if (size != sizeof(lzx_blocks[0])) {
+			size = file->read(&first_block, sizeof(first_block));
+			if (size != sizeof(first_block)) {
 				// Seek and/or read error.
 				delete reader[0];
 				delete reader[1];
 				return nullptr;
 			}
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			lzx_blocks[0].block_size = be32_to_cpu(lzx_blocks[0].block_size);
+			first_block.block_size = be32_to_cpu(first_block.block_size);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+			memcpy(&lzx_blocks[0], &first_block, sizeof(first_block));
 			// First block header is stored in the XEX header.
 			// Second block header is stored at the beginning of the compressed data.
 
@@ -602,16 +603,23 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 						delete reader[1];
 						return nullptr;
 					}
-					rd_idx = 1;
-
-					// FIXME: Start over from the beginning.
-					// Seek reader[1] to reader[0]'s position.
-					// TODO: Check for errors.
-					reader[1]->seek(reader[0]->tell() - sizeof(lzx_blocks[!lzx_idx]));
 					delete reader[0];
 					reader[0] = nullptr;
 
-					// Try reading it again.
+					// reader[1] might be nullptr here...
+					if (!reader[1]) {
+						// Cannot continue.
+						return nullptr;
+					}
+					rd_idx = 1;
+
+					// Restart decompression in case the first few blocks
+					// were decompressed without any "errors".
+					// TODO: Also do this for errors after reading the block size?
+					reader[1]->rewind();
+					lzx_idx = 0;
+					memcpy(&lzx_blocks[0], &first_block, sizeof(first_block));
+					p_dblk = compressed_deblock.get();
 					continue;
 				}
 
