@@ -379,7 +379,7 @@ XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
 	Xbox360_XDBF_Private *const ncthis = const_cast<Xbox360_XDBF_Private*>(this);
 
 	// Get the system language.
-	XDBF_Language_e langID = static_cast<XDBF_Language_e>(XboxLanguage::getXbox360Language());
+	const XDBF_Language_e langID = static_cast<XDBF_Language_e>(XboxLanguage::getXbox360Language());
 	if (langID > XDBF_LANGUAGE_UNKNOWN && langID < XDBF_LANGUAGE_MAX) {
 		// System language obtained.
 		// Make sure the string table exists.
@@ -423,27 +423,28 @@ XDBF_Language_e Xbox360_XDBF_Private::getLangID(void) const
 
 	// TODO: Check if the XSTC language matches langID,
 	// and if so, skip the XSTC check.
-	langID = static_cast<XDBF_Language_e>(be32_to_cpu(xstc.default_language));
-	if (langID <= XDBF_LANGUAGE_UNKNOWN || langID >= XDBF_LANGUAGE_MAX) {
-		// Out of range.
-		return XDBF_LANGUAGE_UNKNOWN;
-	}
+	const XDBF_Language_e langID_xstc = static_cast<XDBF_Language_e>(be32_to_cpu(xstc.default_language));
+	if (langID_xstc != langID) {
+		if (langID_xstc <= XDBF_LANGUAGE_UNKNOWN || langID_xstc >= XDBF_LANGUAGE_MAX) {
+			// Out of range.
+			return XDBF_LANGUAGE_UNKNOWN;
+		}
 
-	// Default language obtained.
-	// Make sure the string table exists.
-	if (ncthis->loadStringTable(langID) != nullptr) {
-		// String table loaded.
-		ncthis->m_langID = langID;
-		return langID;
+		// Default language obtained.
+		// Make sure the string table exists.
+		if (ncthis->loadStringTable(langID_xstc) != nullptr) {
+			// String table loaded.
+			ncthis->m_langID = langID_xstc;
+			return langID_xstc;
+		}
 	}
 
 	// One last time: Try using English as a fallback language.
-	if (langID != XDBF_LANGUAGE_ENGLISH) {
-		langID = XDBF_LANGUAGE_ENGLISH;
-		if (ncthis->loadStringTable(langID) != nullptr) {
+	if (langID != XDBF_LANGUAGE_ENGLISH && langID_xstc != XDBF_LANGUAGE_ENGLISH) {
+		if (ncthis->loadStringTable(XDBF_LANGUAGE_ENGLISH) != nullptr) {
 			// String table loaded.
-			ncthis->m_langID = langID;
-			return langID;
+			ncthis->m_langID = XDBF_LANGUAGE_ENGLISH;
+			return XDBF_LANGUAGE_ENGLISH;
 		}
 	}
 
