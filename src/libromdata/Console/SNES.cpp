@@ -977,9 +977,9 @@ int SNES::loadFieldData(void)
 			//   cleared in MSB to LSB order.
 			const char *const limited_starts_title = C_("SNES", "Limited Starts");
 			const uint16_t limited_starts = le16_to_cpu(romHeader->bsx.limited_starts);
-			if (limited_starts & 0x8000) {
+			if (limited_starts & 0x8000U) {
 				// Limited.
-				const unsigned int n = popcount(limited_starts & ~0x8000);
+				const unsigned int n = popcount(limited_starts & ~0x8000U);
 				d->fields->addField_string_numeric(limited_starts_title, n);
 			} else {
 				// Unlimited.
