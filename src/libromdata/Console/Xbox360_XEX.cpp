@@ -1051,6 +1051,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	if (size != opt_header_sz) {
 		// Seek and/or read error.
 		d->optHdrTbl.clear();
+		d->optHdrTbl.shrink_to_fit();
 		d->xex2Header.magic = 0;
 		delete d->file;
 		d->file = nullptr;
@@ -1079,6 +1080,11 @@ void Xbox360_XEX::close(void)
 	d->peFile_xdbf = nullptr;
 	d->peFile_exe = nullptr;
 	d->peReader = nullptr;
+
+	d->lzx_peHeader.clear();
+	d->lzx_peHeader.shrink_to_fit();
+	d->lzx_xdbfSection.clear();
+	d->lzx_xdbfSection.shrink_to_fit();
 
 	// Call the superclass function.
 	super::close();
