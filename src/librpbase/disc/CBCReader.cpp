@@ -35,6 +35,9 @@
 #include <cstdio>
 #include <cstring>
 
+// C++ namespace.
+#include <algorithm>
+
 namespace LibRpBase {
 
 class CBCReaderPrivate
@@ -271,7 +274,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 		// We're in the middle of a block.
 		// Read and decrypt the full block, and copy out
 		// the necessary bytes.
-		unsigned int sz = 16 - (d->pos & 15);
+		const size_t sz = std::min(16U - (static_cast<size_t>(d->pos) & 15U), size);
 		size_t sz_read = d->file->read(block_tmp, sizeof(block_tmp));
 		if (sz_read != sizeof(block_tmp)) {
 			// Read error.
@@ -399,7 +402,7 @@ int64_t CBCReader::tell(void)
 	RP_D(CBCReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
-	if (!d->file ||  !d->file->isOpen()) {
+	if (!d->file || !d->file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
