@@ -1321,7 +1321,7 @@ static FORCEINLINE void Edit_SetHilite(_In_ HWND hwndCtl, _In_ int ichStart, _In
 	{ (void)SNDMSG(hwndCtl, EM_SETHILITE, STATIC_CAST(WPARAM)(ichStart), STATIC_CAST(LPARAM)(ichEnd)); }
 #undef Edit_GetHilite
 static FORCEINLINE DWORD Edit_GetHilite(_In_ HWND hwndCtl)
-	{ (void)SNDMSG(hwndCtl, EM_GETHILITE, 0L, 0L); }
+	{ return STATIC_CAST(DWORD)(SNDMSG(hwndCtl, EM_GETHILITE, 0L, 0L)); }
 #endif /* _WIN32_WINNT */
 
 #endif /* NOEDIT */
