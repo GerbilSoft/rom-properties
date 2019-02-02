@@ -1239,10 +1239,29 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
-		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
-		lvColumn.fmt = LVCFMT_LEFT;
+		// NOTE: ListView header alignment matches data alignment.
+		// We'll prefer the data alignment value.
+		uint32_t align = listDataDesc.alignment.data;
 		auto iter = listDataDesc.names->cbegin();
-		for (int i = 0; i < col_count; ++iter, i++) {
+		for (int i = 0; i < col_count; ++iter, i++, align >>= 2) {
+			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
+			switch (align & 3) {
+				default:
+				case TXA_D:
+				case TXA_L:
+					// Left alignment (default)
+					lvColumn.fmt = LVCFMT_LEFT;
+					break;
+				case TXA_C:
+					// Center alignment
+					lvColumn.fmt = LVCFMT_CENTER;
+					break;
+				case TXA_R:
+					// Center alignment
+					lvColumn.fmt = LVCFMT_RIGHT;
+					break;
+			}
+
 			const string &str = *iter;
 			if (!str.empty()) {
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
