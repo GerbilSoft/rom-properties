@@ -35,6 +35,7 @@
 #include "librpbase/disc/CBCReader.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/RpMemFile.hpp"
 using namespace LibRpBase;
 
 #ifdef ENABLE_DECRYPTION
@@ -42,6 +43,11 @@ using namespace LibRpBase;
 # include "librpbase/crypto/AesCipherFactory.hpp"
 # include "librpbase/crypto/KeyManager.hpp"
 #endif /* ENABLE_DECRYPTION */
+
+#ifdef ENABLE_LIBMSPACK
+# include "mspack.h"
+# include "xenia_lzx.h"
+#endif /* ENABLE_LIBMSPACK */
 
 // libi18n
 #include "libi18n/i18n.h"
@@ -90,11 +96,17 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		XEX2_Security_Info xex2Security;
 
 		// Optional header table.
-		// NOTE: **NOT** byteswapped!
+		// NOTE: This array of structs **IS NOT** byteswapped!
 		ao::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
+
+		// Resource information. (XEX2_OPTHDR_RESOURCE_INFO)
+		// Initialized by getXdbfResInfo().
+		// NOTE: This struct **IS** byteswapped.
+		XEX2_Resource_Info resInfo;
 
 		// File format info. (XEX2_OPTHDR_FILE_FORMAT_INFO)
 		// Initialized by initPeReader().
+		// NOTE: This struct **IS** byteswapped.
 		XEX2_File_Format_Info fileFormatInfo;
 
 		// Encryption key in use.
@@ -115,12 +127,25 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		};
 		ao::uvector<BasicZDataSeg_t> basicZDataSegments;
 
+#ifdef ENABLE_LIBMSPACK
+		// Decompressed EXE header.
+		ao::uvector<uint8_t> lzx_peHeader;
+		// Decompressed XDBF section.
+		ao::uvector<uint8_t> lzx_xdbfSection;
+#endif /* ENABLE_LIBMSPACK */
+
 		/**
 		 * Get the specified optional header table entry.
 		 * @param header_id Optional header ID.
 		 * @return Optional header table entry, or nullptr if not found.
 		 */
 		const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
+
+		/**
+		 * Get the resource information.
+		 * @return Resource information, or nullptr on error.
+		 */
+		const XEX2_Resource_Info *getXdbfResInfo(void);
 
 		/**
 		 * Convert game ratings from Xbox 360 format to RomFields format.
@@ -134,10 +159,10 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// CBC reader for encrypted PE executables.
 		// Also used for unencrypted executables.
 		CBCReader *peReader;
-		PartitionFile *peFile_exe;	// uses peReader
-		EXE *pe_exe;			// uses peFile_exe
-		PartitionFile *peFile_xdbf;	// uses peReader
-		Xbox360_XDBF *pe_xdbf;		// uses peFile_xdbf
+		IRpFile *peFile_exe;	// uses peReader or lzx_peHeader
+		EXE *pe_exe;		// uses peFile_exe
+		IRpFile *peFile_xdbf;	// uses peReader or lzx_xdbfSection
+		Xbox360_XDBF *pe_xdbf;	// uses peFile_xdbf
 
 		/**
 		 * Initialize the PE executable reader.
@@ -197,6 +222,7 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	// Clear the headers.
 	memset(&xex2Header, 0, sizeof(xex2Header));
 	memset(&xex2Security, 0, sizeof(xex2Security));
+	memset(&resInfo, 0, sizeof(resInfo));
 	memset(&fileFormatInfo, 0, sizeof(fileFormatInfo));
 }
 
@@ -244,13 +270,57 @@ const XEX2_Optional_Header_Tbl *Xbox360_XEX_Private::getOptHdrTblEntry(uint32_t 
 }
 
 /**
+ * Get the resource information.
+ * @return Resource information, or nullptr on error.
+ */
+const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
+{
+	if (resInfo.resource_vaddr != 0) {
+		// Already loaded.
+		return &resInfo;
+	}
+
+	// Get the resource information.
+	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(XEX2_OPTHDR_RESOURCE_INFO);
+	if (!entry) {
+		// No resource information.
+		return nullptr;
+	}
+
+	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &resInfo, sizeof(resInfo));
+	if (size != sizeof(resInfo)) {
+		// Seek and/or read error.
+		resInfo.resource_vaddr = 0;
+		return nullptr;
+	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the resInfo struct.
+	resInfo.size		= be32_to_cpu(resInfo.size);
+	resInfo.resource_vaddr	= be32_to_cpu(resInfo.resource_vaddr);
+	resInfo.resource_size	= be32_to_cpu(resInfo.resource_size);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// Sanity check: resource_size should be less than 2 MB.
+	assert(resInfo.resource_size <= 2*1024*1024);
+	if (resInfo.resource_size > 2*1024*1024) {
+		// That's too much!
+		resInfo.resource_vaddr = 0;
+		return nullptr;
+	}
+
+	return &resInfo;
+}
+
+/**
  * Initialize the PE executable reader.
  * @return peReader on success; nullptr on error.
  */
 CBCReader *Xbox360_XEX_Private::initPeReader(void)
 {
-	if (peReader) {
-		// PE Reader is already initialized.
+	if (peReader || !lzx_peHeader.empty()) {
+		// PE Reader is already initialized,
+		// and/or LZX has been decompressed.
 		return peReader;
 	}
 
@@ -418,7 +488,6 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		case XEX2_COMPRESSION_TYPE_NORMAL: {
 			// Normal (LZX) compression.
 			// Load the block segment data.
-			// TODO: IDiscReader subclass to handle this?
 			assert(fileFormatInfo.size >= sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header));
 			if (fileFormatInfo.size < sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header)) {
 				// No segment information is available.
@@ -463,6 +532,8 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			// since the uncompressed block size isn't stored anywhere.
 			// We'll have to load the entire executable into memory,
 			// save the relevant portions, then free it.
+			// FIXME: It *might* be possible to randomly seek...
+			// Need to analyze the format more.
 			const int64_t fileSize = file->size();
 			const uint32_t image_size = be32_to_cpu(xex2Security.image_size);
 			if (fileSize > 64*1024*1024 || image_size > 64*1024*1024) {
@@ -590,13 +661,42 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 				lzx_idx = !lzx_idx;
 			}
 
-			// TODO: Decompress the data.
+			// Decompress the data.
+			unique_ptr<uint8_t[]> decompressed_exe(new uint8_t[image_size]);
+			int res = lzx_decompress(compressed_deblock.get(),
+				static_cast<size_t>(p_dblk - compressed_deblock.get()),
+				decompressed_exe.get(), image_size,
+				window_size, nullptr, 0);
+			if (res != MSPACK_ERR_OK) {
+				// Error decompressing the data.
+				delete reader[0];
+				delete reader[1];
+				return nullptr;
+			}
+
+			// Copy the PE header.
+			// NOTE: Assuming pe_header_sz will be >0.
+			size_t pe_header_sz = std::min(8192U, image_size);
+			lzx_peHeader.resize(pe_header_sz);
+			memcpy(lzx_peHeader.data(), decompressed_exe.get(), pe_header_sz);
+
+			// Copy the XDBF section.
+			const XEX2_Resource_Info *const pResInfo = getXdbfResInfo();
+			if (pResInfo) {
+				const uint32_t xdbf_physaddr = pResInfo->resource_vaddr -
+							       be32_to_cpu(xex2Security.load_address);
+				if (xdbf_physaddr + pResInfo->resource_size <= image_size) {
+					lzx_xdbfSection.resize(pResInfo->resource_size);
+					memcpy(lzx_xdbfSection.data(),
+						decompressed_exe.get() + xdbf_physaddr,
+						pResInfo->resource_size);
+				}
+			}
 
 			// Save the correct reader.
 			this->peReader = reader[rd_idx];
 			reader[rd_idx] = nullptr;
-
-			// TODO: Decompress the first block to get the PE header.
+			keyInUse = rd_idx;
 			break;
 		}
 #endif /* ENABLE_LIBMSPACK */
@@ -604,18 +704,34 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 
 	// Verify the MZ header.
 	uint16_t mz;
-	for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
-		if (!reader[i])
-			break;
-		size_t size = reader[i]->read(&mz, sizeof(mz));
-		if (size == sizeof(mz)) {
-			if (mz == cpu_to_be16('MZ')) {
-				// MZ header is valid.
-				// TODO: Other checks?
-				this->peReader = reader[i];
-				reader[i] = nullptr;
-				keyInUse = i;
+	if (lzx_peHeader.size() > sizeof(mz)) {
+		// Check the decompressed PE header.
+		// TODO: Check this above when copying?
+		memcpy(&mz, lzx_peHeader.data(), sizeof(mz));
+		if (mz == cpu_to_be16('MZ')) {
+			// MZ header is valid.
+			// TODO: Other checks?
+		} else {
+			// MZ header is not valid.
+			lzx_peHeader.clear();
+			lzx_xdbfSection.clear();
+			this->peReader = nullptr;
+		}
+	} else {
+		// Check the CBCReader objects.
+		for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
+			if (!reader[i])
 				break;
+			size_t size = reader[i]->read(&mz, sizeof(mz));
+			if (size == sizeof(mz)) {
+				if (mz == cpu_to_be16('MZ')) {
+					// MZ header is valid.
+					// TODO: Other checks?
+					this->peReader = reader[i];
+					reader[i] = nullptr;
+					keyInUse = i;
+					break;
+				}
 			}
 		}
 	}
@@ -754,7 +870,12 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 
 	// Attempt to open the EXE section.
 	// Assuming a maximum of 8 KB for the PE headers.
-	PartitionFile *const peFile_tmp = new PartitionFile(peReader, 0, 8192);
+	IRpFile *peFile_tmp;
+	if (!lzx_peHeader.empty()) {
+		peFile_tmp = new RpMemFile(lzx_peHeader.data(), lzx_peHeader.size());
+	} else {
+		peFile_tmp = new PartitionFile(peReader, 0, 8192);
+	}
 	if (peFile_tmp->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
 		if (pe_exe_tmp->isOpen()) {
@@ -788,43 +909,40 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		return nullptr;
 	}
 
-	// Get the resource information.
-	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(XEX2_OPTHDR_RESOURCE_INFO);
-	if (!entry) {
-		// No resource information.
-		return nullptr;
-	}
+	// Attempt to open the XDBF section.
+	IRpFile *peFile_tmp;
+	if (!lzx_xdbfSection.empty()) {
+		peFile_tmp = new RpMemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size());
+	} else {
+		// Get the XDBF resource information.
+		const XEX2_Resource_Info *const pResInfo = getXdbfResInfo();
+		if (!pResInfo) {
+			// No XDBF section.
+			return nullptr;
+		}
 
-	XEX2_Resource_Info resInfo;
-	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &resInfo, sizeof(resInfo));
-	if (size != sizeof(resInfo)) {
-		// Seek and/or read error.
-		return nullptr;
-	}
+		// Calculate the XDBF physical address.
+		uint32_t xdbf_physaddr = pResInfo->resource_vaddr -
+					 be32_to_cpu(xex2Security.load_address);
 
-	const uint32_t xdbf_length = be32_to_cpu(resInfo.resource_size);
-	uint32_t xdbf_physaddr = be32_to_cpu(resInfo.resource_vaddr) -
-				 be32_to_cpu(xex2Security.load_address);
-
-	if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
-		// File has zero padding removed.
-		// Determine the actual physical address.
-		for (auto iter = basicZDataSegments.cbegin();
-		     iter != basicZDataSegments.cend(); ++iter)
-		{
-			if (xdbf_physaddr >= iter->vaddr &&
-			    xdbf_physaddr < (iter->vaddr + iter->length))
+		if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
+			// File has zero padding removed.
+			// Determine the actual physical address.
+			for (auto iter = basicZDataSegments.cbegin();
+			     iter != basicZDataSegments.cend(); ++iter)
 			{
-				// Found the correct segment.
-				// Adjust the physical address.
-				xdbf_physaddr -= (iter->vaddr - iter->physaddr);
-				break;
+				if (xdbf_physaddr >= iter->vaddr &&
+				    xdbf_physaddr < (iter->vaddr + iter->length))
+				{
+					// Found the correct segment.
+					// Adjust the physical address.
+					xdbf_physaddr -= (iter->vaddr - iter->physaddr);
+					break;
+				}
 			}
 		}
+		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->resource_size);
 	}
-
-	// Attempt to open the XDBF section.
-	PartitionFile *const peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, xdbf_length);
 	if (peFile_tmp->isOpen()) {
 		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
 		if (pe_xdbf_tmp->isOpen()) {
