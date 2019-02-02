@@ -9,14 +9,12 @@ SET(rom-properties-kde_SRCS
 	RomThumbCreator.cpp
 	RpQt.cpp
 	RpQImageBackend.cpp
-	QTreeWidgetOpt.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
 	config/ImageTypesTab.cpp
 	config/OptionsTab.cpp
 	config/AboutTab.cpp
-	config/QTreeViewOpt.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
@@ -24,14 +22,12 @@ SET(rom-properties-kde_H
 	RomThumbCreator.hpp
 	RpQt.hpp
 	RpQImageBackend.hpp
-	QTreeWidgetOpt.hpp
 	QImageData_qt4.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
 	config/OptionsTab.hpp
 	config/AboutTab.hpp
-	config/QTreeViewOpt.hpp
 	)
 SET(rom-properties-kde_UIS
 	RomDataView.ui

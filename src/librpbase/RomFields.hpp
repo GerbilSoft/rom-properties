@@ -21,6 +21,8 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_ROMFIELDS_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_ROMFIELDS_HPP__
 
+#include "common.h"
+
 // C includes.
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
@@ -32,12 +34,14 @@
 
 namespace LibRpBase {
 
+class rp_image;
+
 class RomFieldsPrivate;
 class RomFields
 {
 	public:
 		// ROM field types.
-		enum RomFieldType {
+		enum RomFieldType : uint8_t {
 			RFT_INVALID,		// Invalid. (skips the field)
 			RFT_STRING,		// Basic string.
 			RFT_BITFIELD,		// Bitfield.
@@ -48,7 +52,7 @@ class RomFields
 		};
 
 		// String format flags. (RFT_STRING)
-		enum StringFormat {
+		enum StringFormat : unsigned int {
 			// Print the string using a monospaced font.
 			STRF_MONOSPACE	= (1 << 0),
 
@@ -76,17 +80,22 @@ class RomFields
 		};
 
 		// Display flags for RFT_LISTDATA.
-		enum ListDataFlags {
+		enum ListDataFlags : unsigned int {
 			// Show the ListView on a separate row
 			// from the description label.
 			RFT_LISTDATA_SEPARATE_ROW = (1 << 0),
 
 			// Enable checkboxes.
+			// NOTE: Mutually exclusive with icons.
 			RFT_LISTDATA_CHECKBOXES = (1 << 1),
+
+			// Enable icons.
+			// NOTE: Mutually exclusive with checkboxes.
+			RFT_LISTDATA_ICONS	= (1 << 2),
 		};
 
 		// Display flags for RFT_DATETIME.
-		enum DateTimeFlags {
+		enum DateTimeFlags : unsigned int {
 			// Show the date value.
 			RFT_DATETIME_HAS_DATE = (1 << 0),
 
@@ -116,15 +125,15 @@ class RomFields
 			AGE_FINLAND	= 5,	// Finland (MEKU)
 			AGE_PORTUGAL	= 6,	// Portugal (PEGI-PT)
 			AGE_ENGLAND	= 7,	// England (BBFC)
-			AGE_AUSTRALIA	= 8,	// Australia (AGCB)
-			AGE_SOUTH_KOREA	= 9,	// South Korea (GRB)
+			AGE_AUSTRALIA	= 8,	// Australia (ACB)
+			AGE_SOUTH_KOREA	= 9,	// South Korea (GRB, formerly KMRB)
 			AGE_TAIWAN	= 10,	// Taiwan (CGSRR)
 
 			AGE_MAX		= 16	// Maximum number of age rating fields
 		};
 
 		// Age Ratings bitfields.
-		enum AgeRatingsBitfield {
+		enum AgeRatingsBitfield : uint16_t {
 			AGEBF_MIN_AGE_MASK	= 0x001F,	// Low 5 bits indicate the minimum age.
 			AGEBF_ACTIVE		= 0x0020,	// Rating is only valid if this is set.
 			AGEBF_PENDING		= 0x0040,	// Rating is pending.
@@ -160,8 +169,10 @@ class RomFields
 				struct _list_data {
 					// Flags.
 					unsigned int flags;
+
 					// Number of visible rows. (0 for "default")
 					int rows_visible;
+
 					// List field names. (headers)
 					// Must be a vector of at least 'fields' strings.
 					// If a name is nullptr, that field is skipped.
@@ -182,9 +193,15 @@ class RomFields
 
 				// RFT_LISTDATA
 				struct {
-					const std::vector<std::vector<std::string> > *list_data;
-					uint32_t list_checkboxes;	// Requires RFT_LISTDATA_CHECKBOXES.
-				};
+					const std::vector<std::vector<std::string> > *data;
+					union {
+						// Requires RFT_LISTDATA_CHECKBOXES.
+						uint32_t checkboxes;
+
+						// Requires RFT_LISTDATA_ICONS.
+						const std::vector<const rp_image*> *icons;
+					};
+				} list_data;
 
 				// RFT_DATETIME (UNIX format)
 				// NOTE: -1 is used to indicate
@@ -208,13 +225,12 @@ class RomFields
 		 */
 		RomFields();
 		~RomFields();
-	public:
-		RomFields(const RomFields &other);
-		RomFields &operator=(const RomFields &other);
 
 	private:
+		RP_DISABLE_COPY(RomFields)
+	private:
 		friend class RomFieldsPrivate;
-		RomFieldsPrivate *d_ptr;
+		RomFieldsPrivate *const d_ptr;
 
 	public:
 		/** Field accessors. **/
@@ -237,13 +253,6 @@ class RomFields
 		 * @return True if empty; false if not.
 		 */
 		bool empty(void) const;
-
-	private:
-		/**
-		 * Detach this instance from all other instances.
-		 * TODO: Move to RomFieldsPrivate?
-		 */
-		void detach(void);
 
 	public:
 		/**
@@ -349,10 +358,20 @@ class RomFields
 		 */
 		static std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, int count = -1);
 
+		enum {
+			TabOffset_Ignore = -1,
+			TabOffset_AddTabs = -2,
+		};
+
 		/**
 		 * Add fields from another RomFields object.
 		 * @param other Source RomFields object.
-		 * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)
+		 * @param tabOffset Tab index to add to the original tabs.
+		 *
+		 * Special tabOffset values:
+		 * - -1: Ignore the original tab indexes.
+		 * - -2: Add tabs from the original RomFields.
+		 *
 		 * @return Field index of the last field added.
 		 */
 		int addFields_romFields(const RomFields *other, int tabOffset);
@@ -446,13 +465,13 @@ class RomFields
 
 		/**
 		 * Add ListData.
-		 * NOTE: This object takes ownership of the two vectors.
+		 * NOTE: This object takes ownership of the vectors.
 		 * @param name Field name.
 		 * @param headers Vector of column names. (If NULL, no headers will be shown.)
 		 * @param list_data ListData.
 		 * @param rows_visible Number of visible rows, (0 for "default")
 		 * @param flags Flags.
-		 * @param checkboxes Checkbox bitfield. (requires RFT_LISTDATA_CHECKBOXES)
+		 * @param checkboxes Checkbox bitfield. (Requires RFT_LISTDATA_CHECKBOXES)
 		 *
 		 * NOTE: If headers is nullptr, the column count will be
 		 * determined using the first row in list_data.
@@ -463,6 +482,27 @@ class RomFields
 			const std::vector<std::string> *headers,
 			const std::vector<std::vector<std::string> > *list_data,
 			int rows_visible = 0, unsigned int flags = 0, uint32_t checkboxes = 0);
+
+		/**
+		 * Add ListData with icons.
+		 * NOTE: This object takes ownership of the vectors.
+		 * @param name Field name.
+		 * @param headers Vector of column names. (If NULL, no headers will be shown.)
+		 * @param list_data ListData.
+		 * @param icons Vector of rp_image objects to use as icons. Caller retains ownership of the rp_image objects.
+		 * @param rows_visible Number of visible rows, (0 for "default")
+		 * @param flags Flags. (Must contain RFT_LISTDATA_ICONS)
+		 *
+		 * NOTE: If headers is nullptr, the column count will be
+		 * determined using the first row in list_data.
+		 *
+		 * @return Field index, or -1 on error.
+		 */
+		int addField_listData_icons(const char *name,
+			const std::vector<std::string> *headers,
+			const std::vector<std::vector<std::string> > *list_data,
+			const std::vector<const rp_image*> *icons,
+			int rows_visible = 0, unsigned int flags = 0);
 
 		/**
 		 * Add DateTime.

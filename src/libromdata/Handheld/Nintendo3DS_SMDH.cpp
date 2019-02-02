@@ -222,7 +222,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 {
 	// This class handles SMDH files and/or sections only.
 	RP_D(Nintendo3DS_SMDH);
-	d->className = "Nintendo3DS";	// Using same image settings as Nintendo3DS.
+	d->className = "Nintendo3DS";	// Using the same image settings as Nintendo3DS.
 	d->fileType = FTYPE_ICON_FILE;
 
 	if (!d->file) {
@@ -509,7 +509,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			age_ratings[i] = RomFields::AGEBF_ACTIVE | (n3ds_rating & 0x1F);
 		}
 	}
-	d->fields->addField_ageRatings(C_("Nintendo3DS", "Age Rating"), age_ratings);
+	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

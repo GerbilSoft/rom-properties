@@ -299,16 +299,21 @@ rp_image *rp_image::squared(void) const
  *
  * A new rp_image will be created with the specified dimensions,
  * and the current image will be copied into the new image.
- * If the new dimensions are smaller than the old dimensions,
- * the image will be cropped. If the new dimensions are larger,
- * the original image will be in the upper-left corner and the
- * new space will be empty. (ARGB: 0x00000000)
  *
- * @param width New width.
- * @param height New height.
+ * If the new dimensions are smaller than the old dimensions,
+ * the image will be cropped according to the specified alignment.
+ *
+ * If the new dimensions are larger, the original image will be
+ * aligned to the top, center, or bottom, depending on alignment,
+ * and if the image is ARGB32, the new space will be set to bgColor.
+ *
+ * @param width New width
+ * @param height New height
+ * @param alignment Alignment (Vertical only!)
+ * @param bgColor Background color for empty space. (default is ARGB 0x00000000)
  * @return New rp_image with a resized version of the original, or nullptr on error.
  */
-rp_image *rp_image::resized(int width, int height) const
+rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t bgColor) const
 {
 	assert(width > 0);
 	assert(height > 0);
@@ -353,10 +358,136 @@ rp_image *rp_image::resized(int width, int height) const
 		row_bytes *= sizeof(uint32_t);
 	}
 
-	for (unsigned int y = (unsigned int)std::min(height, orig_height); y > 0; y--) {
+	// Are we copying to a taller or shorter image?
+	unsigned int copy_height;
+	if (height < orig_height) {
+		// New image is shorter.
+		switch (alignment & AlignVertical_Mask) {
+			default:
+			case AlignTop:
+				// Top alignment.
+				// No adjustment needed.
+				break;
+			case AlignVCenter:
+				// Middle alignment.
+				// Start at the middle of the original image.
+				// If the original image is 64px tall,
+				// and the new image is 32px tall,
+				// we want to start at 16px: ((64 - 32) / 2)
+				src += (src_stride * ((orig_height - height) / 2));
+				break;
+			case AlignBottom:
+				// Bottom alignment.
+				// Start at the bottom of the original image.
+				src += (src_stride * (orig_height - height));
+				break;
+		}
+		copy_height = height;
+	} else if (height > orig_height) {
+		// New image is taller.
+		switch (alignment & AlignVertical_Mask) {
+			default:
+			case AlignTop:
+				// Top alignment.
+				// No adjustment needed.
+				break;
+			case AlignVCenter:
+				// Center alignment.
+				// Start at the middle of the new image.
+				// If the original image is 32px tall,
+				// and the new image is 64px tall,
+				// we want to start at 16px: ((64 - 32) / 2)
+
+				// If this is ARGB32, set the background color of the top half.
+				// TODO: Optimize this.
+				if (format == rp_image::FORMAT_ARGB32 && bgColor != 0x00000000) {
+					for (unsigned int y = (height - orig_height) / 2; y > 0; y--) {
+						uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
+						for (unsigned int x = width; x > 0; x--) {
+							*dest32++ = bgColor;
+						}
+						dest += dest_stride;
+					}
+				} else {
+					// Just skip the blank area.
+					dest += (dest_stride * ((height - orig_height) / 2));
+				}
+				break;
+			case AlignBottom:
+				// Bottom alignment.
+				// Start at the bottom of new original image.
+
+				// If this is ARGB32, set the background color of the blank area.
+				// TODO: Optimize this.
+				if (format == rp_image::FORMAT_ARGB32 && bgColor != 0x00000000) {
+					for (unsigned int y = (height - orig_height); y > 0; y--) {
+						uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
+						for (unsigned int x = width; x > 0; x--) {
+							*dest32++ = bgColor;
+						}
+						dest += dest_stride;
+					}
+				} else {
+					// Just skip the blank area.
+					dest += (dest_stride * (height - orig_height));
+				}
+				break;
+		}
+		copy_height = orig_height;
+	} else {
+		// New image has the same height.
+		copy_height = orig_height;
+	}
+
+	for (; copy_height > 0; copy_height--) {
 		memcpy(dest, src, row_bytes);
 		dest += dest_stride;
 		src += src_stride;
+	}
+
+	// If the image is taller, we may need to clear the bottom section.
+	if (height > orig_height && format == rp_image::FORMAT_ARGB32) {
+		switch (alignment & AlignVertical_Mask) {
+			default:
+			case AlignTop:
+				// Top alignment.
+				// Set the background color of the blank area.
+				for (unsigned int y = (height - orig_height); y > 0; y--) {
+					uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
+					for (unsigned int x = width; x > 0; x--) {
+						*dest32++ = bgColor;
+					}
+					dest += dest_stride;
+				}
+				break;
+
+			case AlignVCenter: {
+				// Center alignment.
+				// Set the background color of the bottom half.
+				unsigned int y = height - orig_height;
+				if (y & 1) {
+					// y is odd, so draw the extra odd line on the bottom.
+					y = (y / 2) + 1;
+				} else {
+					// y is even.
+					y /= 2;
+				}
+
+				for (; y > 0; y--) {
+					uint32_t *dest32 = reinterpret_cast<uint32_t*>(dest);
+					for (unsigned int x = width; x > 0; x--) {
+						*dest32++ = bgColor;
+					}
+					dest += dest_stride;
+				}
+				break;
+			}
+
+			case AlignBottom:
+				// Bottom alignment.
+				// Nothing to do here...
+				break;
+		}
 	}
 
 	// If CI8, copy the palette.

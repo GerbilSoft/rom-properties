@@ -187,12 +187,18 @@ class KeyManagerTabPrivate
 		HBRUSH hbrAltRow;
 
 		/**
+		 * ListView GetDispInfo function.
+		 * @param plvdi	[in/out] NMLVDISPINFO
+		 * @return True if handled; false if not.
+		 */
+		inline BOOL ListView_GetDispInfo(NMLVDISPINFO *plvdi);
+
+		/**
 		 * ListView CustomDraw function.
-		 * @param hListView	[in] ListView control.
-		 * @param plvcd		[in/out] NMLVCUSTOMDRAW
+		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
 		 * @return Return value.
 		 */
-		inline int ListView_CustomDraw(HWND hListView, NMLVCUSTOMDRAW *plvcd);
+		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
 		/**
 		 * Load images.
@@ -513,7 +519,7 @@ void KeyManagerTabPrivate::initUI(void)
 		WS_CHILDWINDOW | WS_BORDER | ES_LEFT | ES_AUTOHSCROLL | ES_UPPERCASE | ES_WANTRETURN,
 		0, 0, 0, 0,
 		hListView, (HMENU)IDC_KEYMANAGER_EDIT, nullptr, nullptr);
-	SetWindowFont(hEditBox, hFontMono ? hFontMono : hFontDlg, FALSE);
+	SetWindowFont(hEditBox, hFontMono ? hFontMono : hFontDlg, false);
 	SetWindowSubclass(hEditBox, ListViewEditSubclassProc,
 		IDC_KEYMANAGER_EDIT, reinterpret_cast<DWORD_PTR>(this));
 
@@ -655,12 +661,12 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// contained in the LPARAM of the PROPSHEETPAGE structure.
 			LPPROPSHEETPAGE pPage = reinterpret_cast<LPPROPSHEETPAGE>(lParam);
 			if (!pPage)
-				return TRUE;
+				return true;
 
 			// Get the pointer to the KeyManagerTabPrivate object.
 			KeyManagerTabPrivate *const d = reinterpret_cast<KeyManagerTabPrivate*>(pPage->lParam);
 			if (!d)
-				return TRUE;
+				return true;
 
 			assert(d->hWndPropSheet == nullptr);
 			d->hWndPropSheet = hDlg;
@@ -673,7 +679,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 			// Reset the configuration.
 			d->reset();
-			return TRUE;
+			return true;
 		}
 
 		case WM_DESTROY: {
@@ -681,7 +687,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// The D_PTR_PROP property stored the pointer to the 
 			// KeyManagerTabPrivate object.
 			RemoveProp(hDlg, D_PTR_PROP);
-			return TRUE;
+			return true;
 		}
 
 		case WM_NOTIFY: {
@@ -689,10 +695,10 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
-			NMHDR *pHdr = reinterpret_cast<NMHDR*>(lParam);
+			NMHDR *const pHdr = reinterpret_cast<NMHDR*>(lParam);
 			switch (pHdr->code) {
 				case PSN_APPLY:
 					// Save settings.
@@ -700,39 +706,11 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					break;
 
 				case LVN_GETDISPINFO: {
+					// Get data for an LVS_OWNERDRAW ListView.
 					if (!d->keyStore || pHdr->idFrom != IDC_KEYMANAGER_LIST)
 						break;
 
-					LVITEM *plvItem = &reinterpret_cast<NMLVDISPINFO*>(lParam)->item;
-					if (plvItem->iItem < 0 || plvItem->iItem >= d->keyStore->totalKeyCount()) {
-						// Index is out of range.
-						break;
-					}
-
-					const KeyStoreWin32::Key *key = d->keyStore->getKey(plvItem->iItem);
-					if (!key)
-						break;
-
-					if (plvItem->mask & LVIF_TEXT) {
-						// Fill in text.
-						// NOTE: We need to store the text in a
-						// temporary wstring buffer.
-						switch (plvItem->iSubItem) {
-							case 0:
-								// Key name.
-								_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->name));
-								return TRUE;
-							case 1:
-								// Value.
-								_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->value));
-								return TRUE;
-							default:
-								// No text for "Valid?".
-								plvItem->pszText[0] = 0;
-								return TRUE;
-						}
-					}
-					break;
+					return d->ListView_GetDispInfo(reinterpret_cast<NMLVDISPINFO*>(lParam));
 				}
 
 				case NM_CUSTOMDRAW: {
@@ -745,9 +723,9 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					// References:
 					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 					// - https://stackoverflow.com/a/40552426
-					const int result = d->ListView_CustomDraw(pHdr->hwndFrom, reinterpret_cast<NMLVCUSTOMDRAW*>(lParam));
+					const int result = d->ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
 					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-					return TRUE;
+					return true;
 				}
 
 				case PSN_SETACTIVE:
@@ -766,7 +744,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			switch (LOWORD(wParam)) {
@@ -778,7 +756,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 					if (!d->hMenuImport) {
 						// Unable to create the "Import" popup menu.
-						return TRUE;
+						return true;
 					}
 
 					HMENU hSubMenu = GetSubMenu(d->hMenuImport, 0);
@@ -788,15 +766,15 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 						TrackPopupMenu(hSubMenu, TPM_LEFTALIGN|TPM_TOPALIGN,
 							btnRect.left, btnRect.bottom, 0, hDlg, nullptr);
 					}
-					return TRUE;
+					return true;
 				}
 
 				case IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN:
 					d->importWiiKeysBin();
-					return TRUE;
+					return true;
 				case IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN:
 					d->importWiiUOtpBin();
-					return TRUE;
+					return true;
 				case IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN:
 					d->import3DSboot9bin();
 					break;
@@ -815,7 +793,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// Reset the tab.
@@ -854,7 +832,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// Update the row.
@@ -863,7 +841,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			if (hListView) {
 				ListView_RedrawItems(hListView, (int)lParam, (int)lParam);
 			}
-			return TRUE;
+			return true;
 		}
 
 		case WM_KEYSTORE_ALLKEYSCHANGED: {
@@ -871,7 +849,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// Update all rows.
@@ -880,7 +858,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			if (hListView) {
 				ListView_RedrawItems(hListView, 0, d->keyStore->totalKeyCount()-1);
 			}
-			return TRUE;
+			return true;
 		}
 
 		case WM_KEYSTORE_MODIFIED: {
@@ -888,12 +866,12 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// Key was modified.
 			PropSheet_Changed(GetParent(hDlg), hDlg);
-			return TRUE;
+			return true;
 		}
 
 		case WM_WTSSESSION_CHANGE: {
@@ -901,7 +879,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No KeyManagerTabPrivate. Can't do anything...
-				return FALSE;
+				return false;
 			}
 			HWND hListView = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_LIST);
 			assert(hListView != nullptr);
@@ -930,7 +908,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 	}
 
-	return FALSE; // Let system deal with other messages
+	return false; // Let system deal with other messages
 }
 
 /**
@@ -944,8 +922,8 @@ UINT CALLBACK KeyManagerTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
-			// Must return TRUE to enable the page to be created.
-			return TRUE;
+			// Must return true to enable the page to be created.
+			return true;
 		}
 
 		case PSPCB_RELEASE: {
@@ -957,7 +935,7 @@ UINT CALLBACK KeyManagerTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 			break;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -987,7 +965,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 				reinterpret_cast<KeyManagerTabPrivate*>(dwRefData);
 			assert(d->hWndPropSheet != nullptr);
 			if (!d->hWndPropSheet)
-				return FALSE;
+				return false;
 
 			// Check for a double-click in the ListView.
 			// ListView only directly supports editing of the
@@ -1037,7 +1015,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 				rectSubItem.bottom - rectSubItem.top,
 				SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW);
 			SetFocus(d->hEditBox);
-			return TRUE;
+			return true;
 		}
 
 		case WM_NCDESTROY:
@@ -1077,7 +1055,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 		reinterpret_cast<KeyManagerTabPrivate*>(dwRefData);
 	assert(d->hWndPropSheet != nullptr);
 	if (!d->hWndPropSheet)
-		return FALSE;
+		return false;
 
 	switch (uMsg) {
 		case WM_KILLFOCUS: {
@@ -1113,12 +1091,12 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 					// Finished editing.
 					d->bCancelEdit = false;
 					ShowWindow(hWnd, SW_HIDE);
-					return TRUE;
+					return true;
 				case VK_ESCAPE:
 					// Cancel editing.
 					d->bCancelEdit = true;
 					ShowWindow(hWnd, SW_HIDE);
-					return TRUE;
+					return true;
 				default:
 					break;
 			}
@@ -1144,7 +1122,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			}
 
 			// Character is not allowed.
-			return TRUE;
+			return true;
 		}
 
 		case WM_KEYDOWN:
@@ -1155,12 +1133,12 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 					// Finished editing.
 					d->bCancelEdit = false;
 					ShowWindow(hWnd, SW_HIDE);
-					return TRUE;
+					return true;
 				case VK_ESCAPE:
 					// Cancel editing.
 					d->bCancelEdit = true;
 					ShowWindow(hWnd, SW_HIDE);
-					return TRUE;
+					return true;
 				default:
 					break;
 			}
@@ -1171,25 +1149,25 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			// Filter out text pasted in from the clipboard.
 			// Reference: https://stackoverflow.com/questions/22263612/properly-handle-wm-paste-in-subclass-procedure
 			if (!OpenClipboard(hWnd))
-				return TRUE;
+				return true;
 
 			HANDLE hClipboardData = GetClipboardData(CF_UNICODETEXT);
 			if (!hClipboardData) {
 				CloseClipboard();
-				return TRUE;
+				return true;
 			}
 
 			const TCHAR *const pchData = static_cast<const TCHAR*>(GlobalLock(hClipboardData));
 			if (!pchData) {
 				// No data.
 				CloseClipboard();
-				return TRUE;
+				return true;
 			} else if (pchData[0] == 0) {
 				// Empty string.
 				// TODO: Paste anyway?
 				GlobalUnlock(hClipboardData);
 				CloseClipboard();
-				return TRUE;
+				return true;
 			}
 
 			// Filter out invalid characters.
@@ -1213,21 +1191,21 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 						// Prevent the paste.
 						GlobalUnlock(hClipboardData);
 						CloseClipboard();
-						return TRUE;
+						return true;
 					}
 #else /* !UNICODE */
 					// TODO: Shift-JIS support?
 					// For now, assuming this is invalid.
 					GlobalUnlock(hClipboardData);
 					CloseClipboard();
-					return TRUE;
+					return true;
 #endif /* UNICODE */
 				} else {
 					// Invalid character.
 					// Prevent the paste.
 					GlobalUnlock(hClipboardData);
 					CloseClipboard();
-					return TRUE;
+					return true;
 				}
 			}
 
@@ -1239,7 +1217,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 				// TODO: Paste even if empty?
 				Edit_ReplaceSel(hWnd, tstr.c_str());
 			}
-			return TRUE;
+			return true;
 		}
 
 		case WM_NCDESTROY:
@@ -1256,12 +1234,52 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 }
 
 /**
+ * ListView GetDispInfo function.
+ * @param plvdi	[in/out] NMLVDISPINFO
+ * @return True if handled; false if not.
+ */
+inline BOOL KeyManagerTabPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvdi)
+{
+	LVITEM *const plvItem = &plvdi->item;
+	if (plvItem->iItem < 0 || plvItem->iItem >= keyStore->totalKeyCount()) {
+		// Index is out of range.
+		return false;
+	}
+
+	const KeyStoreWin32::Key *const key = keyStore->getKey(plvItem->iItem);
+	if (!key) {
+		// No key...
+		return false;
+	}
+
+	if (plvItem->mask & LVIF_TEXT) {
+		// Fill in text.
+		switch (plvItem->iSubItem) {
+			case 0:
+				// Key name.
+				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->name));
+				return true;
+			case 1:
+				// Value.
+				_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, U82T_s(key->value));
+				return true;
+			default:
+				// No text for "Valid?".
+				plvItem->pszText[0] = 0;
+				return true;
+		}
+	}
+
+	// Nothing to do here...
+	return false;
+}
+
+/**
  * ListView CustomDraw function.
- * @param hListView	[in] ListView control.
- * @param plvcd		[in] NMLVCUSTOMDRAW
+ * @param plvcd	[in/out] NMLVCUSTOMDRAW
  * @return Return value.
  */
-inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMDRAW *plvcd)
+inline int KeyManagerTabPrivate::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
 {
 	// Check if this is an "odd" row.
 	bool isOdd;
@@ -1361,7 +1379,8 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 						// TODO: Increase row height, or decrease icon size?
 						// The icon is slightly too big for the default row
 						// height on XP.
-						BOOL bRet = ListView_GetSubItemRect(hListView, (int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectTmp);
+						BOOL bRet = ListView_GetSubItemRect(plvcd->nmcd.hdr.hwndFrom,
+							(int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectTmp);
 						if (!bRet)
 							break;
 						pRcSubItem = &rectTmp;

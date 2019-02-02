@@ -277,6 +277,28 @@
     </magic>
   </mime-type>
 
+  <!-- Xbox360_XDBF -->
+  <mime-type type="application/x-xbox360-xdbf">
+    <comment>Xbox 360 resource database file</comment>
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <glob pattern="*.xdbf"/>
+    <magic priority="50">
+      <match value="XDBF" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- Xbox360_XDBF -->
+  <mime-type type="application/x-xbox360-xex">
+    <comment>Xbox 360 executable</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.xex"/>
+    <magic priority="50">
+      <match value="XEX2" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- *** Handheld *** -->
 
   <!-- GameCom -->

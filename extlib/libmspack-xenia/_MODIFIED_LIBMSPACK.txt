@@ -1,0 +1,18 @@
+This copy of libmspack is a modified version of Xenia's copy of libmspack.
+
+Commit 7f4f90b1ea877ad30b695d2e1a79d22a465ce9b4
+Emit mspack debug messages to Xenia.
+
+The following changes have been made to the original:
+
+- Added CMakeLists.txt.
+
+- config.h.in: Modified for cmake; removed unnecessary checks.
+
+- Removed Xenia-specific function calls.
+
+- Silenced compiler warnings about unused parameters. [-Wunused-parameter]
+
+To obtain the original libmspack:
+- Original: https://www.cabextract.org.uk/libmspack/
+- Xenia: https://github.com/xenia-project/xenia/tree/master/third_party/mspack

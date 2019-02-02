@@ -1546,7 +1546,7 @@ int GameCube::loadFieldData(void)
 			age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
 		}
 	}
-	d->fields->addField_ageRatings("Age Rating", age_ratings);
+	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	// Display the Wii partition table(s).
 	if (wiiPtLoaded == 0) {

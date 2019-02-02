@@ -20,6 +20,8 @@
     disguised as a retail game.
     * NOTE: The Windows implementation currently requires Windows Vista
       or later.
+  * rpcli will now print multi-line entries in lists using multiple lines
+    instead of showing a U+240A symbol between lines.
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
@@ -34,6 +36,9 @@
   * MachO: Mach-O binary parser for Mac OS X and related operating systems.
     Includes support for Universal Binaries.
   * NGPC: Neo Geo Pocket (Color) ROM image parser.
+  * Xbox360_XDBF: Xbox 360 XDBF resource files. Only the variant used by
+    XEX executables is supported at the moment.
+  * Xbox360_XEX: Xbox 360 executables.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
@@ -93,6 +98,9 @@
     the ID4 region.
   * EXE: Fixed a crash that occurred when viewing the properties of a
     Windows 1.0 executable in any UI frontend other than rpcli.
+  * CBCReader: Added unaligned read support and fixed positioning issues
+    when reading unencrypted data. This only affected the Xbox360_XEX
+    parser; WiiSave, WiiWAD, and CIAReader were not affected.
 
 ## v1.3.3 (released 2018/08/25)
 

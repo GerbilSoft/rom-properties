@@ -401,6 +401,47 @@ void trimEnd(string &str)
 	str.resize(sz);
 }
 
+/**
+ * Convert DOS (CRLF) line endings to UNIX (LF) line endings.
+ * @param str_dos	[in] String with DOS line endings.
+ * @param len		[in] Length of str, in characters. (-1 for NULL-terminated string)
+ * @param lf_count	[out,opt] Number of CRLF pairs found.
+ * @return String with UNIX line endings.
+ */
+std::string dos2unix(const char *str_dos, int len, int *lf_count)
+{
+	// TODO: Optimize this!
+	string str_unix;
+	if (len < 0) {
+		len = strlen(str_dos);
+	}
+	str_unix.reserve(len);
+
+	int lf = 0;
+	for (; len > 1; str_dos++, len--) {
+		if (str_dos[0] == '\r' && str_dos[1] == '\n') {
+			str_unix += '\n';
+			str_dos++;
+			lf++;
+		} else {
+			str_unix += *str_dos;
+		}
+	}
+	// Last character cannot be '\r\n'.
+	// If it's '\r', assume it's a newline.
+	if (*str_dos == '\r') {
+		str_unix += '\n';
+		lf++;
+	} else {
+		str_unix += *str_dos;
+	}
+
+	if (lf_count) {
+		*lf_count = lf;
+	}
+	return str_unix;
+}
+
 /** Audio functions. **/
 
 /**

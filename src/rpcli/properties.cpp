@@ -221,7 +221,7 @@ public:
 		// NOTE: listDataDesc.names can be nullptr,
 		// which means we don't have any column headers.
 
-		const auto list_data = romField->data.list_data;
+		const auto list_data = romField->data.list_data.data;
 		assert(list_data != nullptr);
 		if (!list_data) {
 			return os << "[ERROR: No list data.]";
@@ -242,6 +242,9 @@ public:
 			return os << "[ERROR: No list data.]";
 		}
 
+		/** Calculate the column widths. **/
+
+		// Column names
 		unique_ptr<unsigned int[]> colSize(new unsigned int[col_count]());
 		unsigned int totalWidth = col_count + 1;
 		if (listDataDesc.names) {
@@ -251,21 +254,54 @@ public:
 			}
 		}
 
-		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-			unsigned int i = 0;
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-				colSize[i] = max(static_cast<unsigned int>(jt->length()), colSize[i]);
-				i++;
+		// Row data
+		unique_ptr<unsigned int[]> nl_count(new unsigned int[list_data->size()]());
+		unsigned int row = 0;
+		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it, row++) {
+			unsigned int col = 0;
+			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, col++) {
+				// Check for newlines.
+				unsigned int nl_row = 0;
+				const size_t str_sz = jt->size();
+				size_t prev_pos = 0;
+				size_t cur_pos;
+				do {
+					unsigned int cur_sz;
+					cur_pos = jt->find('\n', prev_pos);
+					if (cur_pos == string::npos) {
+						// End of string.
+						cur_sz = (unsigned int)(str_sz - prev_pos);
+					} else {
+						// Found a newline.
+						cur_sz = (unsigned int)(cur_pos - prev_pos);
+						prev_pos = cur_pos + 1;
+						nl_row++;
+					}
+					colSize[col] = max(cur_sz, colSize[col]);
+				} while (cur_pos != string::npos && prev_pos < str_sz);
+
+				// Update the newline count for this row.
+				nl_count[row] = max(nl_count[row], nl_row);
 			}
 		}
+
+		// Extra spacing for checkboxes
 		// TODO: Use a separate column for the checkboxes?
 		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Prepend 4 spaces in column 0 for "[x] ".
 			colSize[0] += 4;
 		}
 
+		/** Print the list data. **/
+
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
+
+		// Print the list on a separate row from the field name?
+		const bool separateRow = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
+		if (separateRow) {
+			os << endl;
+		}
 
 		bool skipFirstNL = true;
 		if (listDataDesc.names) {
@@ -275,32 +311,85 @@ public:
 				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
 				os << '|' << setw(colSize[i]) << *it;
 			}
-			os << '|' << endl << Pad(field.width) << string(totalWidth, '-');
+			os << '|' << endl;
+
+			// Separator between the headers and the data.
+			if (!separateRow) {
+				os << Pad(field.width);
+			}
+			for (i = 0; i < col_count; i++) {
+				os << '|' << string(colSize[i], '-');
+			}
+			os << '|';
+
 			// Don't skip the first newline, since we're
 			// printing headers.
 			skipFirstNL = false;
 		}
 
-		uint32_t checkboxes = romField->data.list_checkboxes;
+		uint32_t checkboxes = romField->data.list_data.checkboxes;
 		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Remove the 4 spaces in column 0.
 			// Those spaces will not be used in the text area.
 			colSize[0] -= 4;
 		}
-		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-			if (!skipFirstNL) {
-				os << endl << Pad(field.width);
-			} else {
-				skipFirstNL = false;
-			}
-			os << '|';
-			if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
-				os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
-				checkboxes >>= 1;
-			}
-			unsigned int i = 0;
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++i) {
-				os << setw(colSize[i]) << SafeString(jt->c_str(), false) << '|';
+
+		// Current line position.
+		// NOTE: Special handling is needed for npos due to the use of unsigned int.
+		unique_ptr<unsigned int[]> linePos(new unsigned int[col_count]);
+
+		row = 0;
+		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it, row++) {
+			// Print one line at a time for multi-line entries.
+			// TODO: Better formatting for multi-line?
+			// Right now we're assuming that at least one column is a single line.
+			// If all columns are multi-line, then everything will look like it's
+			// all single-line entries.
+			memset(linePos.get(), 0, col_count * sizeof(unsigned int));
+			// NOTE: nl_count[row] is 0 for single-line items.
+			for (int line = nl_count[row]; line >= 0; line--) {
+				if (!skipFirstNL) {
+					os << endl;
+					if (!separateRow) {
+						os << Pad(field.width);
+					}
+				} else {
+					skipFirstNL = false;
+				}
+				os << '|';
+				if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+					os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
+					checkboxes >>= 1;
+				}
+				unsigned int col = 0;
+				for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++col) {
+					os << setw(colSize[col]);
+					if (nl_count[row] == 0) {
+						// No newlines. Print the string directly.
+						os << SafeString(jt->c_str(), false);
+					} else if (linePos[col] == (unsigned int)string::npos) {
+						// End of string.
+						os << "";
+					} else {
+						// Find the next newline.
+						size_t nl_pos = jt->find('\n', linePos[col]);
+						if (nl_pos == string::npos) {
+							// No more newlines.
+							os << SafeString(jt->c_str() + linePos[col], false);
+							linePos[col] = (unsigned int)string::npos;
+						} else {
+							// Found a newline.
+							// TODO: Update SafeString to take a length parameter instead of creating a temporary string.
+							os << SafeString(jt->substr(linePos[col], nl_pos - linePos[col]).c_str(), false);
+							linePos[col] = (unsigned int)(nl_pos + 1);
+							if (linePos[col] > (unsigned int)jt->size()) {
+								// End of string.
+								linePos[col] = (unsigned int)string::npos;
+							}
+						}
+					}
+					os << '|';
+				}
 			}
 		}
 		return os;
@@ -619,10 +708,10 @@ public:
 					os << ",\"names\":[]";
 				}
 				os << "},\"data\":[";
-				const auto list_data = romField->data.list_data;
+				const auto list_data = romField->data.list_data.data;
 				assert(list_data != nullptr);
 				if (list_data) {
-					uint32_t checkboxes = romField->data.list_checkboxes;
+					uint32_t checkboxes = romField->data.list_data.checkboxes;
 					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 						if (it != list_data->cbegin()) os << ',';
 						os << '[';

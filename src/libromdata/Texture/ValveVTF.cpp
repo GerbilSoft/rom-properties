@@ -897,8 +897,7 @@ int ValveVTF::loadFieldData(void)
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_flags = new vector<vector<string> >();
-	vv_flags->resize(ARRAY_SIZE(flags_names));
+	auto vv_flags = new vector<vector<string> >(ARRAY_SIZE(flags_names));
 	for (int i = ARRAY_SIZE(flags_names)-1; i >= 0; i--) {
 		auto &data_row = vv_flags->at(i);
 		if (flags_names[i]) {

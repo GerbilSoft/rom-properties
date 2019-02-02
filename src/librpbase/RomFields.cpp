@@ -43,35 +43,10 @@ class RomFieldsPrivate
 {
 	public:
 		RomFieldsPrivate();
-	private:
-		~RomFieldsPrivate();	// call unref() instead
+		~RomFieldsPrivate();
 
 	private:
 		RP_DISABLE_COPY(RomFieldsPrivate)
-
-	public:
-		/** Reference count functions. **/
-
-		/**
-		 * Create a reference of this object.
-		 * @return this
-		 */
-		RomFieldsPrivate *ref(void);
-
-		/**
-		 * Unreference this object.
-		 */
-		void unref(void);
-
-		/**
-		 * Is this object currently shared?
-		 * @return True if ref_cnt > 1; false if not.
-		 */
-		inline bool isShared(void) const;
-
-	private:
-		// Current reference count.
-		volatile int ref_cnt;
 
 	public:
 		// ROM field structs.
@@ -83,7 +58,8 @@ class RomFieldsPrivate
 		vector<string> tabNames;
 
 		/**
-		 * Deletes allocated strings in this->data.
+		 * Delete allocated objects in this->fields.
+		 * The vector will be cleared afterwards.
 		 */
 		void delete_data(void);
 };
@@ -91,8 +67,7 @@ class RomFieldsPrivate
 /** RomFieldsPrivate **/
 
 RomFieldsPrivate::RomFieldsPrivate()
-	: ref_cnt(1)
-	, tabIdx(0)
+	: tabIdx(0)
 { }
 
 RomFieldsPrivate::~RomFieldsPrivate()
@@ -101,43 +76,12 @@ RomFieldsPrivate::~RomFieldsPrivate()
 }
 
 /**
- * Create a reference of this object.
- * @return this
- */
-RomFieldsPrivate *RomFieldsPrivate::ref(void)
-{
-	ATOMIC_INC_FETCH(&ref_cnt);
-	return this;
-}
-
-/**
- * Unreference this object.
- */
-void RomFieldsPrivate::unref(void)
-{
-	assert(ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&ref_cnt) <= 0) {
-		// All references removed.
-		delete this;
-	}
-}
-
-/**
- * Is this object currently shared?
- * @return True if ref_cnt > 1; false if not.
- */
-inline bool RomFieldsPrivate::isShared(void) const
-{
-	assert(ref_cnt > 0);
-	return (ref_cnt > 1);
-}
-
-/**
- * Deletes allocated strings in this->data.
+ * Delete allocated objects in this->fields.
+ * The vector will be cleared afterwards.
  */
 void RomFieldsPrivate::delete_data(void)
 {
-	// Delete all of the allocated strings in this->fields.
+	// Delete all of the allocated objects in this->fields.
 	for (auto iter = fields.begin(); iter != fields.end(); ++iter) {
 		RomFields::Field &field = *iter;
 		if (!field.isValid) {
@@ -160,7 +104,10 @@ void RomFieldsPrivate::delete_data(void)
 				break;
 			case RomFields::RFT_LISTDATA:
 				delete const_cast<vector<string>*>(field.desc.list_data.names);
-				delete const_cast<vector<vector<string> >*>(field.data.list_data);
+				delete const_cast<vector<vector<string> >*>(field.data.list_data.data);
+				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
+					delete const_cast<vector<const rp_image*>*>(field.data.list_data.icons);
+				}
 				break;
 			case RomFields::RFT_AGE_RATINGS:
 				delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
@@ -189,127 +136,7 @@ RomFields::RomFields()
 
 RomFields::~RomFields()
 {
-	d_ptr->unref();
-}
-
-/**
- * Copy constructor.
- * @param other Other instance.
- */
-RomFields::RomFields(const RomFields &other)
-	: d_ptr(other.d_ptr->ref())
-{ }
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-RomFields &RomFields::operator=(const RomFields &other)
-{
-	RomFieldsPrivate *const d_old = this->d_ptr;
-	this->d_ptr = other.d_ptr->ref();
-	d_old->unref();
-	return *this;
-}
-
-/**
- * Detach this instance from all other instances.
- * TODO: Move to RomFieldsPrivate?
- */
-void RomFields::detach(void)
-{
-	if (!d_ptr->isShared()) {
-		// Only one reference.
-		// Nothing to detach from.
-		return;
-	}
-
-	// Need to detach.
-	RomFieldsPrivate *const d_new = new RomFieldsPrivate();
-	RomFieldsPrivate *const d_old = d_ptr;
-	d_new->fields.resize(d_old->fields.size());
-	auto old_iter = d_old->fields.cbegin();
-	auto new_iter = d_new->fields.begin();
-	for (; old_iter != d_old->fields.cend(); ++old_iter, ++new_iter) {
-		const Field &field_old = *old_iter;
-		Field &field_new = *new_iter;
-
-		field_new.name = field_old.name;
-		field_new.type = field_old.type;
-		field_new.isValid = field_old.isValid;
-		if (!field_old.isValid) {
-			// No data here.
-			field_new.desc.flags = 0;
-			field_new.data.generic = 0;
-			continue;
-		}
-
-		switch (field_old.type) {
-			case RFT_INVALID:
-				// No data here
-				field_new.isValid = false;
-				field_new.desc.flags = 0;
-				field_new.data.generic = 0;
-				break;
-
-			case RFT_STRING:
-				field_new.desc.flags = field_old.desc.flags;
-				if (field_old.data.str) {
-					field_new.data.str = new string(*field_old.data.str);
-				} else {
-					field_new.data.str = nullptr;
-				}
-				break;
-			case RFT_BITFIELD:
-				field_new.desc.bitfield.elemsPerRow = field_old.desc.bitfield.elemsPerRow;
-				if (field_old.desc.bitfield.names) {
-					field_new.desc.bitfield.names = new vector<string>(*field_old.desc.bitfield.names);
-				} else {
-					field_new.desc.bitfield.names = nullptr;
-				}
-				field_new.data.bitfield = field_old.data.bitfield;
-				break;
-			case RFT_LISTDATA:
-				// Copy the ListData.
-				field_new.desc.list_data.flags =
-					field_old.desc.list_data.flags;
-				field_new.desc.list_data.rows_visible =
-					field_old.desc.list_data.rows_visible;
-				if (field_old.desc.list_data.names) {
-					field_new.desc.list_data.names = new vector<string>(*field_old.desc.list_data.names);
-				} else {
-					field_new.desc.list_data.names = nullptr;
-				}
-				if (field_old.data.list_data) {
-					field_new.data.list_data = new vector<vector<string> >(*field_old.data.list_data);
-				} else {
-					field_new.data.list_data = nullptr;
-				}
-				field_new.data.list_checkboxes =
-					field_old.data.list_checkboxes;
-				break;
-			case RFT_DATETIME:
-				field_new.desc.flags = field_old.desc.flags;
-				field_new.data.date_time = field_old.data.date_time;
-				break;
-			case RFT_AGE_RATINGS:
-				field_new.data.age_ratings = field_old.data.age_ratings;
-				break;
-			case RFT_DIMENSIONS:
-				memcpy(field_new.data.dimensions, field_old.data.dimensions, sizeof(field_old.data.dimensions));
-				break;
-
-			default:
-				// ERROR!
-				assert(!"Unsupported RomFields::RomFieldsType.");
-				break;
-		}
-	}
-
-	// Detached.
-	d_ptr = d_new;
-	d_old->unref();
+	delete d_ptr;
 }
 
 /**
@@ -323,7 +150,7 @@ const char *RomFields::ageRatingAbbrev(int country)
 	static const char abbrevs[16][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"AGCB", "GRB",  "CGSRR",   "",
+		"ACB",  "GRB",  "CGSRR",   "",
 		"",     "",     "",        "",
 	};
 
@@ -742,7 +569,12 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 /**
  * Add fields from another RomFields object.
  * @param other Source RomFields object.
- * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)
+ * @param tabOffset Tab index to add to the original tabs.
+ *
+ * Special tabOffset values:
+ * - -1: Ignore the original tab indexes.
+ * - -2: Add tabs from the original RomFields.
+ *
  * @return Field index of the last field added.
  */
 int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
@@ -758,6 +590,20 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	// - Add all to specified tab or to current tab.
 	// - Use absolute or relative tab offset.
 	d->fields.reserve(d->fields.size() + other->count());
+
+	// Do we need to add the other tabs?
+	if (tabOffset == TabOffset_AddTabs) {
+		// Add the other tabs.
+		d->tabNames.reserve(d->tabNames.size() + other->d_ptr->tabNames.size());
+		d->tabNames.insert(d->tabNames.end(),
+			other->d_ptr->tabNames.begin(), other->d_ptr->tabNames.end());
+
+		// tabOffset will be the first new tab.
+		tabOffset = d->tabIdx + 1;
+
+		// Set the final tab index.
+		d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
+	}
 
 	for (auto old_iter = other->d_ptr->fields.cbegin();
 	     old_iter != other->d_ptr->fields.cend(); ++old_iter)
@@ -796,11 +642,19 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.desc.list_data.names = (field_src.desc.list_data.names
 						? new vector<string>(*(field_src.desc.list_data.names))
 						: nullptr);
-				field_dest.data.list_data = (field_src.data.list_data
-						? new vector<vector<string> >(*(field_src.data.list_data))
+				field_dest.data.list_data.data = (field_src.data.list_data.data
+						? new vector<vector<string> >(*(field_src.data.list_data.data))
 						: nullptr);
-				field_dest.data.list_checkboxes =
-					field_src.data.list_checkboxes;
+				if (field_src.desc.list_data.flags & RFT_LISTDATA_ICONS) {
+					// Icons: Copy the icon vector if set.
+					field_dest.data.list_data.icons = (field_src.data.list_data.icons
+						? new vector<const rp_image*>(*(field_src.data.list_data.icons))
+						: nullptr);
+				} else {
+					// No icons. Copy checkboxes.
+					field_dest.data.list_data.checkboxes =
+						field_src.data.list_data.checkboxes;
+				}
 				break;
 			case RFT_DATETIME:
 				field_dest.data.date_time = field_src.data.date_time;
@@ -1056,13 +910,13 @@ int RomFields::addField_bitfield(const char *name,
 
 /**
  * Add ListData.
- * NOTE: This object takes ownership of the two vectors.
+ * NOTE: This object takes ownership of the vectors.
  * @param name Field name.
  * @param headers Vector of column names.
  * @param list_data ListData.
  * @param rows_visible Number of visible rows, (0 for "default")
  * @param flags Flags.
- * @param checkboxes Checkbox bitfield. (requires RFT_LISTVIEW_CHECKBOXES)
+ * @param checkboxes Checkbox bitfield. (Requires RFT_LISTDATA_CHECKBOXES)
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_listData(const char *name,
@@ -1075,6 +929,14 @@ int RomFields::addField_listData(const char *name,
 	if (!name || rows_visible < 0)
 		return -1;
 
+	// Cannot have RFT_LISTDATA_ICONS in this version.
+	assert(!(flags & RFT_LISTDATA_ICONS));
+	if (flags & RFT_LISTDATA_ICONS) {
+		// Cannot add icons.
+		// Allow it anyway, but with no icons.
+		flags &= ~RFT_LISTDATA_ICONS;
+	}
+
 	// RFT_LISTDATA
 	RP_D(RomFields);
 	size_t idx = d->fields.size();
@@ -1086,8 +948,69 @@ int RomFields::addField_listData(const char *name,
 	field.desc.list_data.flags = flags;
 	field.desc.list_data.rows_visible = rows_visible;
 	field.desc.list_data.names = headers;
-	field.data.list_data = list_data;
-	field.data.list_checkboxes = checkboxes;
+	field.data.list_data.data = list_data;
+	field.data.list_data.checkboxes = checkboxes;
+	field.tabIdx = d->tabIdx;
+	field.isValid = true;
+	return static_cast<int>(idx);
+}
+
+/**
+ * Add ListData with icons.
+ * NOTE: This object takes ownership of the vectors.
+ * @param name Field name.
+ * @param headers Vector of column names.
+ * @param list_data ListData.
+ * @param icons Vector of rp_image objects to use as icons. Caller retains ownership of the rp_image objects.
+ * @param rows_visible Number of visible rows, (0 for "default")
+ * @param flags Flags. (Must contain RFT_LISTDATA_ICONS)
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_listData_icons(const char *name,
+	const vector<string> *headers,
+	const vector<vector<string> > *list_data,
+	const vector<const rp_image*> *icons,
+	int rows_visible, unsigned int flags)
+{
+	assert(name != nullptr);
+	assert(rows_visible >= 0);
+	if (!name || rows_visible < 0)
+		return -1;
+
+	// Must have RFT_LISTDATA_ICONS.
+	// Cannot have RFT_LISTDATA_CHECKBOXES.
+	assert(flags & RFT_LISTDATA_ICONS);
+	if (!(flags & RFT_LISTDATA_ICONS)) {
+		// Icons isn't specified.
+		// Delete the vector immediately and don't show the icons.
+		delete icons;
+		icons = nullptr;
+	} else if (!icons) {
+		// No icon vector.
+		// Remove the RFT_LISTDATA_ICONS flag.
+		flags &= ~RFT_LISTDATA_ICONS;
+	}
+
+	assert(!(flags & RFT_LISTDATA_CHECKBOXES));
+	if (flags & RFT_LISTDATA_CHECKBOXES) {
+		// Cannot add checkboxes.
+		// Allow it anyway, but with no checkboxes.
+		flags &= ~RFT_LISTDATA_CHECKBOXES;
+	}
+
+	// RFT_LISTDATA
+	RP_D(RomFields);
+	size_t idx = d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	field.name = name;
+	field.type = RFT_LISTDATA;
+	field.desc.list_data.flags = flags;
+	field.desc.list_data.rows_visible = rows_visible;
+	field.desc.list_data.names = headers;
+	field.data.list_data.data = list_data;
+	field.data.list_data.icons = icons;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return static_cast<int>(idx);

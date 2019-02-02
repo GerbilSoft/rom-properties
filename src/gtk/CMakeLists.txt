@@ -41,6 +41,7 @@ SET(rom-properties-gtk_SRCS
 SET(rom-properties-gtk_H
 	RomDataView.hpp
 	GdkImageConv.hpp
+	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	)
 
@@ -49,7 +50,7 @@ SET(rom-properties-gtk2_SRCS GdkImageConv.cpp)
 SET(rom-properties-gtk2_H GdkImageConv.hpp)
 
 # GTK3 sources and headers.
-SET(rom-properties-gtk3_SRCS CairoImageConv.cpp)
+SET(rom-properties-gtk3_SRCS CairoImageConv.cpp PIMGTYPE.cpp)
 SET(rom-properties-gtk3_H CairoImageConv.hpp)
 
 # Common libraries required for both GTK+ 2.x and 3.x.

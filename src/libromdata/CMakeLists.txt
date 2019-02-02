@@ -22,6 +22,8 @@ SET(libromdata_SRCS
 	Console/WiiU.cpp
 	Console/WiiWAD.cpp
 	Console/WiiWIBN.cpp
+	Console/Xbox360_XDBF.cpp
+	Console/Xbox360_XEX.cpp
 
 	Handheld/DMG.cpp
 	Handheld/GameBoyAdvance.cpp
@@ -70,6 +72,7 @@ SET(libromdata_SRCS
 	data/SegaPublishers.cpp
 	data/WiiSystemMenuVersion.cpp
 	data/WiiUData.cpp
+	data/XboxLanguage.cpp
 
 	disc/Cdrom2352Reader.cpp
 	disc/CIAReader.cpp
@@ -117,6 +120,8 @@ SET(libromdata_H
 	Console/WiiU.hpp
 	Console/WiiWAD.hpp
 	Console/WiiWIBN.hpp
+	Console/Xbox360_XDBF.hpp
+	Console/Xbox360_XEX.hpp
 
 	Console/dc_structs.h
 	Console/gcn_structs.h
@@ -133,6 +138,8 @@ SET(libromdata_H
 	Console/wii_banner.h
 	Console/wii_wad.h
 	Console/wiiu_structs.h
+	Console/xbox360_xdbf_structs.h
+	Console/xbox360_xex_structs.h
 
 	Handheld/DMG.hpp
 	Handheld/GameBoyAdvance.hpp
@@ -208,6 +215,7 @@ SET(libromdata_H
 	data/SegaPublishers.hpp
 	data/WiiSystemMenuVersion.hpp
 	data/WiiUData.hpp
+	data/XboxLanguage.hpp
 
 	disc/Cdrom2352Reader.hpp
 	disc/CIAReader.hpp
@@ -373,6 +381,10 @@ ENDIF(ENABLE_GL AND OPENGL_FOUND)
 IF(ENABLE_UNICE68)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE unice68_lib)
 ENDIF(ENABLE_UNICE68)
+
+IF(ENABLE_LIBMSPACK)
+	TARGET_LINK_LIBRARIES(romdata PRIVATE mspack)
+ENDIF(ENABLE_LIBMSPACK)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

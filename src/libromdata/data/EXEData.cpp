@@ -71,6 +71,7 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_AM33,	"Matsushita AM33"},
 	{IMAGE_FILE_MACHINE_POWERPC,	"PowerPC"},
 	{IMAGE_FILE_MACHINE_POWERPCFP,	"PowerPC with FPU"},
+	{IMAGE_FILE_MACHINE_POWERPCBE,	"PowerPC (big-endian)"},
 	{IMAGE_FILE_MACHINE_IA64,	"Intel Itanium"},
 	{IMAGE_FILE_MACHINE_MIPS16,	"MIPS16"},
 	{IMAGE_FILE_MACHINE_M68K,	"Motorola 68000"},

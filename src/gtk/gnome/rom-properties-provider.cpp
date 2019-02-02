@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME)                            *
  * rom-properties-provider.cpp: Nautilus Provider Definition.              *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -148,9 +148,9 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 {
 	gchar *uri;
 	gchar *filename;
-	gboolean supported = FALSE;
+	gboolean supported = false;
 
-	g_return_val_if_fail(info != nullptr || NAUTILUS_IS_FILE_INFO(info), FALSE);
+	g_return_val_if_fail(info != nullptr || NAUTILUS_IS_FILE_INFO(info), false);
 
 	// TODO: Support for gvfs.
 	uri = nautilus_file_info_get_uri(info);
@@ -158,7 +158,7 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 	g_free(uri);
 
 	if (G_UNLIKELY(filename == nullptr))
-		return FALSE;
+		return false;
 
 	// TODO: Check file extensions and/or MIME types?
 
@@ -171,7 +171,7 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 		// saying "yes" while new RomData() says "no".
 		RomData *romData = RomDataFactory::create(file);
 		if (romData != nullptr) {
-			supported = TRUE;
+			supported = true;
 			romData->unref();
 		}
 		delete file;

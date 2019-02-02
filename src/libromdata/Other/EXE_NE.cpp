@@ -130,7 +130,7 @@ void EXEPrivate::addFields_NE(void)
 	fields->reserveTabs(3);
 
 	// NE Header
-	fields->setTabName(0, C_("EXE", "NE Header"));
+	fields->setTabName(0, "NE");
 	fields->setTabIndex(0);
 
 	// Target OS.

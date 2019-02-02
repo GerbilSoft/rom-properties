@@ -128,6 +128,22 @@ class RpPngPrivate
 		 */
 		static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr);
 
+		/** Error handler functions. **/
+
+#ifdef PNG_WARNINGS_SUPPORTED
+		/**
+		 * libpng warning handler function that simply ignores warnings.
+		 *
+		 * Certain PNG images have "known incorrect" sRGB profiles,
+		 * and we don't want libpng to spam stderr with warnings
+		 * about them.
+		 *
+		 * @param png_ptr	[in] PNG pointer.
+		 * @param msg		[in] Warning message.
+		 */
+		static void PNGCAPI png_warning_fn(png_structp png_ptr, png_const_charp msg);
+#endif /* PNG_WARNINGS_SUPPORTED */
+
 		/** Read functions. **/
 
 		/**
@@ -210,6 +226,25 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 
 	// TODO: IRpFile::flush()
 }
+
+#ifdef PNG_WARNINGS_SUPPORTED
+/**
+ * libpng warning handler function that simply ignores warnings.
+ *
+ * Certain PNG images have "known incorrect" sRGB profiles,
+ * and we don't want libpng to spam stderr with warnings
+ * about them.
+ *
+ * @param png_ptr	[in] PNG pointer.
+ * @param msg		[in] Warning message.
+ */
+void PNGCAPI RpPngPrivate::png_warning_fn(png_structp png_ptr, png_const_charp msg)
+{
+	// Nothing to do here...
+	RP_UNUSED(png_ptr);
+	RP_UNUSED(msg);
+}
+#endif /* PNG_WARNINGS_SUPPORTED */
 
 /** Read functions. **/
 
@@ -516,6 +551,11 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 		png_destroy_read_struct(&png_ptr, nullptr, nullptr);
 		return nullptr;
 	}
+
+#ifdef PNG_WARNINGS_SUPPORTED
+	// Initialize the custom warning handler.
+	png_set_error_fn(png_ptr, nullptr, nullptr, RpPngPrivate::png_warning_fn);
+#endif /* PNG_WARNINGS_SUPPORTED */
 
 	// Initialize the custom I/O handler for IRpFile.
 	png_set_read_fn(png_ptr, file, RpPngPrivate::png_io_IRpFile_read);

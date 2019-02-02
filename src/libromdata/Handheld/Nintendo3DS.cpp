@@ -1256,8 +1256,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_fs = new vector<vector<string> >();
-	vv_fs->resize(ARRAY_SIZE(perm_fs_access));
+	auto vv_fs = new vector<vector<string> >(ARRAY_SIZE(perm_fs_access));
 	for (int i = ARRAY_SIZE(perm_fs_access)-1; i >= 0; i--) {
 		auto &data_row = vv_fs->at(i);
 		data_row.push_back(perm_fs_access[i]);
@@ -1288,8 +1287,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	    perm.ioAccessVersion == 3)
 	{
 		// Convert to vector<vector<string> > for RFT_LISTDATA.
-		auto vv_arm9 = new vector<vector<string> >();
-		vv_arm9->resize(ARRAY_SIZE(perm_arm9_access));
+		auto vv_arm9 = new vector<vector<string> >(ARRAY_SIZE(perm_arm9_access));
 		for (int i = ARRAY_SIZE(perm_arm9_access)-1; i >= 0; i--) {
 			auto &data_row = vv_arm9->at(i);
 			data_row.push_back(perm_arm9_access[i]);

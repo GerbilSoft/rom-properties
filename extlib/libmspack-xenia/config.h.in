@@ -1,0 +1,27 @@
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Turn debugging mode on? */
+/* #undef DEBUG */
+
+/* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
+#cmakedefine HAVE_FSEEKO 1
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#cmakedefine HAVE_INTTYPES_H 1
+
+/* The size of `off_t', as computed by sizeof. */
+#cmakedefine SIZEOF_OFF_T @SIZEOF_OFF_T@
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
+#endif
+
+/* Define to `int' if <sys/types.h> does not define. */
+/* #undef mode_t */
+
+/* Define to `long int' if <sys/types.h> does not define. */
+/* #undef off_t */
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+/* #undef size_t */

@@ -477,10 +477,8 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
 	};
 
-	auto vectors_info = new vector<vector<string> >();
-	vectors_info->resize(ARRAY_SIZE(vectors_names));
-
-	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++) {
+	auto vectors_info = new vector<vector<string> >(ARRAY_SIZE(vectors_names));
+	for (size_t i = 0; i < ARRAY_SIZE(vectors_names); i++) {
 		// No vectors are skipped yet.
 		// TODO: Add a mapping table when skipping some.
 		auto &data_row = vectors_info->at(i);

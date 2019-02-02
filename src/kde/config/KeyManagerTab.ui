@@ -12,7 +12,7 @@
   </property>
   <layout class="QVBoxLayout" name="vboxMain" stretch="1,0">
    <item>
-    <widget class="QTreeViewOpt" name="treeKeyStore">
+    <widget class="QTreeView" name="treeKeyStore">
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
@@ -76,13 +76,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QTreeViewOpt</class>
-   <extends>QTreeView</extends>
-   <header>config/QTreeViewOpt.hpp</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

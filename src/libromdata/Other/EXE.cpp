@@ -316,9 +316,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// random due to unordered_map<>.
 	// TODO: Show certain entries as their own fields?
 	const auto &st = pVsSfi->begin()->second;
-	auto data = new vector<vector<string> >();
-	data->resize(st.size());
-	for (unsigned int i = 0; i < static_cast<unsigned int>(st.size()); i++) {
+	auto data = new vector<vector<string> >(st.size());
+	for (size_t i = 0; i < st.size(); i++) {
 		const auto &st_row = st.at(i);
 		auto &data_row = data->at(i);
 		data_row.reserve(2);
@@ -376,7 +375,7 @@ void EXEPrivate::addFields_LE(void)
 	fields->reserveTabs(2);
 
 	// LE Header
-	fields->setTabName(0, C_("EXE", "LE Header"));
+	fields->setTabName(0, "LE");
 	fields->setTabIndex(0);
 
 	// CPU.
@@ -736,11 +735,23 @@ const char *EXE::systemName(unsigned int type) const
 				}
 
 				case IMAGE_SUBSYSTEM_XBOX: {
-					// TODO: Which Xbox?
-					static const char *const sysNames_Xbox[4] = {
-						"Microsoft Xbox", "Xbox", "Xbox", nullptr
+					// Check the CPU type.
+					static const char *const sysNames_Xbox[3][4] = {
+						{"Microsoft Xbox", "Xbox", "Xbox", nullptr},
+						{"Microsoft Xbox 360", "Xbox 360", "X360", nullptr},
+						{"Microsoft Xbox One", "Xbox One", "Xbone", nullptr},
 					};
-					return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
+					switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
+						default:
+						case IMAGE_FILE_MACHINE_I386:
+							// TODO: Verify for original Xbox.
+							return sysNames_Xbox[0][type & SYSNAME_TYPE_MASK];
+						case IMAGE_FILE_MACHINE_POWERPCBE:
+							return sysNames_Xbox[1][type & SYSNAME_TYPE_MASK];
+						case IMAGE_FILE_MACHINE_AMD64:
+							// TODO: Verify for Xbox One.
+							return sysNames_Xbox[2][type & SYSNAME_TYPE_MASK];
+					}
 				}
 
 				default:
@@ -890,7 +901,8 @@ int EXE::loadFieldData(void)
 
 	// Add MZ tab for non-MZ executables
 	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
-		d->fields->addTab(C_("EXE", "MZ Header")); // NOTE: doesn't actually create a separate tab for non implemented types.
+		// NOTE: This doesn't actually create a separate tab for non-implemented types.
+		d->fields->addTab("MZ");
 		d->addFields_MZ();
 	}
 

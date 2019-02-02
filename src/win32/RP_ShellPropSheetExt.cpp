@@ -60,10 +60,12 @@ using LibRomData::RomDataFactory;
 #include <array>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 using std::array;
 using std::unique_ptr;
+using std::unordered_map;
 using std::unordered_set;
 using std::string;
 using std::wstring;
@@ -161,7 +163,32 @@ class RP_ShellPropSheetExt_Private
 
 		// Alternate row color.
 		COLORREF colorAltRow;
-		bool isFullyInit;		// TRUE if the window is fully initialized.
+		bool isFullyInit;		// True if the window is fully initialized.
+
+		// ListView string data.
+		// - Key: ListView dialog ID (TODO: Use uint16_t instead?)
+		// - Value: Double-vector of tstrings.
+		unordered_map<unsigned int, vector<vector<tstring> > > map_lvStringData;
+
+		// ListView checkboxes.
+		unordered_map<unsigned int, uint32_t> map_lvCheckboxes;
+
+		// ListView ImageList indexes.
+		unordered_map<unsigned int, vector<int> > map_lvImageList;
+
+		/**
+		 * ListView GetDispInfo function.
+		 * @param plvdi	[in/out] NMLVDISPINFO
+		 * @return TRUE if handled; FALSE if not.
+		 */
+		inline BOOL ListView_GetDispInfo(NMLVDISPINFO *plvdi);
+
+		/**
+		 * ListView CustomDraw function.
+		 * @param plvcd	[in/out] NMLVCUSTOMDRAW
+		 * @return Return value.
+		 */
+		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
 		// Banner.
 		HBITMAP hbmpBanner;
@@ -262,11 +289,12 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a default ListView.
+		 * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
 		int initListData(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, int idx, const SIZE &size,
+			const POINT &pt_start, int idx, const SIZE &size, bool doResize,
 			const RomFields::Field *field);
 
 		/**
@@ -493,24 +521,20 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// Window background color.
 	// Static controls don't support alpha transparency (?? test),
 	// so we have to fake it.
-	// NOTE: GetSysColor() has swapped R and B channels
-	// compared to GDI+.
 	// TODO: Get the actual background color of the window.
 	// TODO: Use DrawThemeBackground:
 	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
 	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
 	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
+	int colorIndex;
 	if (pfnIsThemeActive && pfnIsThemeActive()) {
 		// Theme is active.
-		colorWinBg = GetSysColor(COLOR_WINDOW);
+		colorIndex = COLOR_WINDOW;
 	} else {
 		// Theme is not active.
-		colorWinBg = GetSysColor(COLOR_3DFACE);
+		colorIndex = COLOR_3DFACE;
 	}
-	Gdiplus::ARGB gdipBgColor =
-		   (colorWinBg & 0x00FF00) | 0xFF000000 |
-		  ((colorWinBg & 0xFF) << 16) |
-		  ((colorWinBg >> 16) & 0xFF);
+	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
 
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
@@ -719,7 +743,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
 			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSysInfo, hFont, FALSE);
+		SetWindowFont(lblSysInfo, hFont, false);
 		curPt.x += sz_lblSysInfo.cx + pt_start.x;
 	}
 
@@ -816,7 +840,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 				// Set the font of the description control.
 				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(idx));
 				if (hStatic) {
-					SetWindowFont(hStatic, hFont, FALSE);
+					SetWindowFont(hStatic, hFont, false);
 					hwndWarningControls.insert(hStatic);
 				}
 			}
@@ -864,7 +888,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
 		assert(hwndSysLinkControls.empty());
 		hwndSysLinkControls.insert(hDlgItem);
-		SetWindowFont(hDlgItem, hFont, FALSE);
+		SetWindowFont(hDlgItem, hFont, false);
 
 		// NOTE: We can't use measureTextSize() because that includes
 		// the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
@@ -900,7 +924,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
 			hWndTab, cId, nullptr, nullptr);
-		SetWindowFont(hDlgItem, hFont, FALSE);
+		SetWindowFont(hDlgItem, hFont, false);
 
 		// Get the EDIT control margins.
 		const DWORD dwMargins = (DWORD)SendMessage(hDlgItem, EM_GETMARGINS, 0, 0);
@@ -1105,7 +1129,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
 			nullptr, nullptr);
-		SetWindowFont(hCheckBox, hFontDlg, FALSE);
+		SetWindowFont(hCheckBox, hFontDlg, false);
 
 		// Set the checkbox state.
 		Button_SetCheck(hCheckBox, (field->data.bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
@@ -1129,11 +1153,12 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a default ListView.
+ * @param doResize	[in] If true, resize the ListView to accomodate rows_visible.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, int idx, const SIZE &size,
+	const POINT &pt_start, int idx, const SIZE &size, bool doResize,
 	const RomFields::Field *field)
 {
 	assert(hDlg != nullptr);
@@ -1149,33 +1174,52 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: listDataDesc.names can be nullptr,
 	// which means we don't have any column headers.
 
-	const auto list_data = field->data.list_data;
+	const auto list_data = field->data.list_data.data;
 	assert(list_data != nullptr);
+
+	// Validate flags.
+	// Cannot have both checkboxes and icons.
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	assert(!(hasCheckboxes && hasIcons));
+	if (hasCheckboxes && hasIcons) {
+		// Both are set. This shouldn't happen...
+		return 0;
+	}
+
+	if (hasIcons) {
+		assert(field->data.list_data.icons != nullptr);
+		if (!field->data.list_data.icons) {
+			// No icons vector...
+			return 0;
+		}
+	}
 
 	// Create a ListView widget.
 	// NOTE: Separate row option is handled by the caller.
 	// TODO: Enable sorting?
 	// TODO: Optimize by not using OR?
-	DWORD lvsStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER;
+	DWORD lvsStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT |
+	                 LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | LVS_OWNERDATA;
 	if (!listDataDesc.names) {
 		lvsStyle |= LVS_NOCOLUMNHEADER;
 	}
+	const unsigned int dlgId = IDC_RFT_LISTDATA(idx);
 	HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y,
 		size.cx, size.cy,
-		hWndTab, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
+		hWndTab, (HMENU)(INT_PTR)(dlgId),
 		nullptr, nullptr);
-	SetWindowFont(hDlgItem, hFontDlg, FALSE);
+	SetWindowFont(hDlgItem, hFontDlg, false);
 	hwndListViewControls.push_back(hDlgItem);
 
 	// Set extended ListView styles.
 	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
-	if (!!GetSystemMetrics(SM_REMOTESESSION)) {
+	if (!GetSystemMetrics(SM_REMOTESESSION)) {
 		// Not RDP (or is RemoteFX): Enable double buffering.
 		lvsExStyle |= LVS_EX_DOUBLEBUFFER;
 	}
-	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	if (hasCheckboxes) {
 		lvsExStyle |= LVS_EX_CHECKBOXES;
 	}
@@ -1223,50 +1267,188 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	}
 
 	// Add the row data.
+	const uint32_t bgColorListView = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
 	if (list_data) {
-		uint32_t checkboxes = field->data.list_checkboxes;
-		LVITEM lvItem;
-		lvItem.mask = LVIF_TEXT;
-		int row_num = 0;
-		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter) {
+		uint32_t checkboxes = 0, adj_checkboxes = 0;
+		if (hasCheckboxes) {
+			checkboxes = field->data.list_data.checkboxes;
+		}
+
+		// NOTE: We're converting the strings for use with
+		// LVS_OWNERDATA.
+		vector<vector<tstring> > lvStringData;
+		lvStringData.reserve(list_data->size());
+
+		vector<int> lvImageList;
+		if (hasIcons) {
+			lvImageList.reserve(list_data->size());
+		}
+
+		int lv_row_num = 0, data_row_num = 0;
+		int nl_max = 0;	// Highest number of newlines in any string.
+		for (auto iter = list_data->cbegin(); iter != list_data->cend(); ++iter, data_row_num++) {
 			const vector<string> &data_row = *iter;
 			// FIXME: Skip even if we don't have checkboxes?
 			// (also check other UI frontends)
-			if (hasCheckboxes && data_row.empty()) {
-				// Skip this row.
-				checkboxes >>= 1;
-				continue;
-			}
-
-			lvItem.iItem = row_num;
-			int col = 0;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
-				lvItem.iSubItem = col;
-				// NOTE: pszText is LPTSTR, not LPCTSTR...
-				const tstring tstr = U82T_s(*iter);
-				lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
-				if (col == 0) {
-					// Column 0: Insert the item.
-					ListView_InsertItem(hDlgItem, &lvItem);
-					// Set the checkbox state after inserting the item.
-					// Setting the state when inserting it doesn't seem to work...
-					if (hasCheckboxes) {
-						ListView_SetCheckState(hDlgItem, row_num, (checkboxes & 1));
-						checkboxes >>= 1;
-					}
+			if (hasCheckboxes) {
+				if (data_row.empty()) {
+					// Skip this row.
+					checkboxes >>= 1;
+					continue;
 				} else {
-					// Columns 1 and higher: Set the subitem.
-					ListView_SetItem(hDlgItem, &lvItem);
+					// Store the checkbox value for this row.
+					if (checkboxes & 1) {
+						adj_checkboxes |= (1 << lv_row_num);
+					}
+					checkboxes >>= 1;
 				}
 			}
 
+			// Destination row.
+			lvStringData.resize(lvStringData.size()+1);
+			auto &lv_row_data = lvStringData.at(lvStringData.size()-1);
+			lv_row_data.reserve(data_row.size());
+
+			// String data.
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
+				const string &str = *iter;
+
+				// Count newlines.
+				size_t nl_pos = 0;
+				int nl = 0;
+				while ((nl_pos = str.find('\n', nl_pos)) != string::npos) {
+					nl++;
+					nl_pos++;
+				}
+				nl_max = std::max(nl_max, nl);
+
+				// TODO: Store the icon index if necessary.
+				lv_row_data.push_back(U82T_s(*iter));
+			}
+
 			// Next row.
-			row_num++;
+			lv_row_num++;
 		}
+
+		// Icons.
+		if (hasIcons) {
+			// TODO: Ideal icon size?
+			// Using 32x32 for now.
+			// ImageList will resize the original icons to 32x32.
+
+			// NOTE: LVS_REPORT doesn't allow variable row sizes,
+			// at least not without using ownerdraw. Hence, we'll
+			// use a hackish workaround: If any entry has more than
+			// two newlines, increase the Imagelist icon size by
+			// 16 pixels.
+			// TODO: Handle this better.
+			// FIXME: This only works if the RFT_LISTDATA has icons.
+			SIZE szLstIcon = {32, 32};
+			bool resizeNeeded = false;
+			float factor = 1.0f;
+			if (nl_max >= 2) {
+				// Two or more newlines.
+				// Add 16px per newline over 1.
+				szLstIcon.cy += (16 * (nl_max - 1));
+				resizeNeeded = true;
+				factor = (float)szIcon.cy / 32.0f;
+			}
+
+			HIMAGELIST himl = ImageList_Create(szLstIcon.cx, szLstIcon.cy,
+				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
+			assert(himl != nullptr);
+			if (himl) {
+				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
+
+				// Add icons.
+				const auto &icons = field->data.list_data.icons;
+				for (auto iter = icons->cbegin(); iter != icons->cend(); ++iter) {
+					int iImage = -1;
+					const rp_image *const icon = *iter;
+					if (!icon) {
+						// No icon for this row.
+						lvImageList.push_back(iImage);
+						continue;
+					}
+
+					// Resize the icon, if necessary.
+					rp_image *icon_resized = nullptr;
+					if (resizeNeeded) {
+						SIZE szResize = {icon->width(), icon->height()};
+						szResize.cy = static_cast<LONG>(szResize.cy * factor);
+
+						// If the original icon is CI8, it needs to be
+						// converted to ARGB32 first. Otherwise, the
+						// "empty" background area will be black.
+						// NOTE: We still need to specify a background color,
+						// since the ListView highlight won't show up on
+						// alpha-transparent pixels.
+						// TODO: Handle this in rp_image::resized()?
+						// TODO: Handle theme changes?
+						// TODO: Error handling.
+						if (icon->format() != rp_image::FORMAT_ARGB32) {
+							rp_image *icon32 = icon->dup_ARGB32();
+							if (icon32) {
+								icon_resized = icon32->resized(szResize.cx, szResize.cy,
+									rp_image::AlignVCenter, bgColorListView);
+								delete icon32;
+							}
+						}
+
+						// If the icon wasn't in ARGB32 format, it was resized above.
+						// If it was already in ARGB32 format, it will be resized here.
+						if (!icon_resized) {
+							icon_resized = icon->resized(szResize.cx, szResize.cy,
+								rp_image::AlignVCenter, bgColorListView);
+						}
+					}
+
+					HICON hIcon;
+					if (icon_resized) {
+						hIcon = RpImageWin32::toHICON(icon_resized);
+						delete icon_resized;
+					} else {
+						hIcon = RpImageWin32::toHICON(icon);
+					}
+
+					if (hIcon) {
+						int idx = ImageList_AddIcon(himl, hIcon);
+						if (idx >= 0) {
+							// Icon added.
+							iImage = idx;
+						}
+						// ImageList makes a copy of the icon.
+						DestroyIcon(hIcon);
+					}
+
+					// Save the ImageList index for later.
+					lvImageList.push_back(iImage);
+				}
+			}
+		}
+
+		// Adjusted checkboxes value.
+		if (hasCheckboxes) {
+			map_lvCheckboxes.insert(std::make_pair(dlgId, adj_checkboxes));
+		}
+		// ImageList indexes.
+		if (hasIcons) {
+			map_lvImageList.insert(std::make_pair(dlgId, std::move(lvImageList)));
+		}
+
+		// Set the virtual list item count.
+		ListView_SetItemCountEx(hDlgItem, lv_row_num,
+			LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
+
+		// Save the double-vector for later.
+		map_lvStringData.insert(std::make_pair(dlgId, std::move(lvStringData)));
 	}
 
 	// Resize all of the columns.
 	// TODO: Do this on system theme change?
+	// TODO: Add a flag for 'main data column' and adjust it to
+	// not exceed the viewport.
 	for (int i = 0; i < col_count; i++) {
 		ListView_SetColumnWidth(hDlgItem, i, LVSCW_AUTOSIZE_USEHEADER);
 	}
@@ -1279,8 +1461,9 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Increase the ListView height.
 	// Default: 5 rows, plus the header.
+	// FIXME: Might not work for LVS_OWNERDATA.
 	int cy = 0;
-	if (ListView_GetItemCount(hDlgItem) > 0) {
+	if (doResize && ListView_GetItemCount(hDlgItem) > 0) {
 		if (listDataDesc.names) {
 			// Get the header rect.
 			HWND hHeader = ListView_GetHeader(hDlgItem);
@@ -1315,6 +1498,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		cy = size.cy;
 	}
 
+	// TODO: Skip this if cy == size.cy?
 	SetWindowPos(hDlgItem, nullptr, 0, 0, size.cx, cy,
 		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 	return cy;
@@ -1593,7 +1777,7 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 
 	// Update all existing monospaced controls.
 	for (auto iter = hwndMonoControls.cbegin(); iter != hwndMonoControls.cend(); ++iter) {
-		SetWindowFont(*iter, hFontMonoNew, FALSE);
+		SetWindowFont(*iter, hFontMonoNew, false);
 	}
 
 	// Delete the old font and save the new one.
@@ -1742,7 +1926,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	headerPt.y += headerH;
 
 	// Do we need to create a tab widget?
-	if (fields->tabCount() > 1) {
+	int tabCount = fields->tabCount();
+	if (tabCount > 1) {
 		// Increase the tab widget width by half of the margin.
 		InflateRect(&dlgRect, dlgMargin.left/2, 0);
 		dlgSize.cx += dlgMargin.left - 1;
@@ -1752,14 +1937,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
 
 		// Create the tab widget.
-		tabs.resize(fields->tabCount());
+		tabs.resize(tabCount);
 		hTabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
-		SetWindowFont(hTabWidget, hFontDlg, FALSE);
+		SetWindowFont(hTabWidget, hFontDlg, false);
 		curTabIndex = 0;
 
 		// Add tabs.
@@ -1767,7 +1952,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// otherwise, the tab bar height won't be taken into account.
 		TCITEM tcItem;
 		tcItem.mask = TCIF_TEXT;
-		for (int i = 0; i < fields->tabCount(); i++) {
+		for (int i = 0; i < tabCount; i++) {
 			// Create a tab.
 			const char *name = fields->tabName(i);
 			if (!name) {
@@ -1781,7 +1966,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// Adjust the dialog size for subtabs.
-		TabCtrl_AdjustRect(hTabWidget, FALSE, &dlgRect);
+		TabCtrl_AdjustRect(hTabWidget, false, &dlgRect);
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
@@ -1791,7 +1976,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Create windows for each tab.
 		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
-		for (int i = 0; i < fields->tabCount(); i++) {
+		for (int i = 0; i < tabCount; i++) {
 			if (!fields->tabName(i)) {
 				// Skip this tab.
 				continue;
@@ -1821,6 +2006,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// No tabs.
 		// Don't create a WC_TABCONTROL, but simulate a single
 		// tab in tabs[] to make it easier to work with.
+		tabCount = 1;
 		tabs.resize(1);
 		auto &tab = tabs[0];
 		tab.hDlg = hDlg;
@@ -1854,7 +2040,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
 			nullptr, nullptr);
-		SetWindowFont(hStatic, hFontDlg, FALSE);
+		SetWindowFont(hStatic, hFontDlg, false);
 
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
@@ -1881,14 +2067,51 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Create a ListView control.
 				SIZE size = {dlg_value_width, field_cy*6};
 				POINT pt_ListData = pt_start;
+
+				// Should the RFT_LISTDATA be placed on its own row?
+				bool doVBox = false;
 				if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 					// Separate row.
-					size.cx = dlgSize.cx - dlgMargin.left - 1;
+					size.cx = dlgSize.cx - 1;
+					// NOTE: This varies depending on if we have subtabs.
+					if (tabCount > 1) {
+						// Subtract the dialog margin.
+						size.cx -= dlgMargin.left;
+					} else {
+						// Subtract another pixel.
+						size.cx--;
+					}
 					pt_ListData.x = tab.curPt.x;
 					pt_ListData.y += (descSize.cy - (dlgMargin.top/3));
+
+					// If this is the last RFT_LISTDATA in the tab,
+					// extend it vertically.
+					if (tabIdx + 1 == tabCount && idx == count-1) {
+						// Last tab, and last field.
+						doVBox = true;
+					} else {
+						// Check if the next field is on the next tab.
+						const RomFields::Field *nextField = fields->field(idx+1);
+						if (nextField && nextField->tabIdx != tabIdx) {
+							// Next field is on the next tab.
+							doVBox = true;
+						}
+					}
+
+					if (doVBox) {
+						// Extend it vertically.
+						size.cy = dlgSize.cy - pt_ListData.y;
+						if (tabCount > 1) {
+							// FIXME: This seems a bit wonky...
+							size.cy -= ((dlgMargin.top / 2) + 1);
+						} else {
+							// This also seems wonky...
+							size.cy += dlgRect.top - 1;
+						}
+					}
 				}
 
-				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, field);
+				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, !doVBox, field);
 				if (field_cy > 0) {
 					// Add the extra row if necessary.
 					if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
@@ -2176,6 +2399,117 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETP
 /** Property sheet callback functions. **/
 
 /**
+ * ListView GetDispInfo function.
+ * @param plvdi	[in/out] NMLVDISPINFO
+ * @return TRUE if handled; FALSE if not.
+ */
+inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvdi)
+{
+	// TODO: Assertions for row/column indexes.
+	LVITEM *const plvItem = &plvdi->item;
+	const unsigned int idFrom = static_cast<unsigned int>(plvdi->hdr.idFrom);
+	bool ret = false;
+
+	if (plvItem->mask & LVIF_TEXT) {
+		// Fill in text.
+
+		// Get the double-vector of strings for this ListView.
+		auto lvIdIter = map_lvStringData.find(idFrom);
+		if (lvIdIter != map_lvStringData.end()) {
+			const auto &vv_str = lvIdIter->second;
+
+			// Is this row in range?
+			if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(vv_str.size())) {
+				// Get the row data.
+				const auto &row_data = vv_str.at(plvItem->iItem);
+
+				// Is the column in range?
+				if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
+					// Return the string data.
+					_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
+					ret = true;
+				}
+			}
+		}
+	}
+
+	if (plvItem->mask & LVIF_IMAGE) {
+		// Fill in the ImageList index.
+		// NOTE: Only valid for the base item.
+		if (plvItem->iSubItem == 0) {
+			// Check for checkboxes first.
+			// LVS_OWNERDATA prevents LVS_EX_CHECKBOXES from working correctly,
+			// so we have to implement it here.
+			// Reference: https://www.codeproject.com/Articles/29064/CGridListCtrlEx-Grid-Control-Based-on-CListCtrl
+			auto lvChkIdIter = map_lvCheckboxes.find(idFrom);
+			if (lvChkIdIter != map_lvCheckboxes.end()) {
+				// Found checkboxes.
+				const uint32_t checkboxes = lvChkIdIter->second;
+
+				// Enable state handling.
+				plvItem->mask |= LVIF_STATE;
+				plvItem->stateMask = LVIS_STATEIMAGEMASK;
+				plvItem->state = INDEXTOSTATEIMAGEMASK(
+					((checkboxes & (1 << plvItem->iItem)) ? 2 : 1));
+				ret = true;
+			} else {
+				// No checkboxes. Check for ImageList.
+				auto lvImgIdIter = map_lvImageList.find(idFrom);
+				if (lvImgIdIter != map_lvImageList.end()) {
+					const auto &lvImageList = lvImgIdIter->second;
+
+					// Is this row in range?
+					if (plvItem->iItem >= 0 && plvItem->iItem < static_cast<int>(lvImageList.size())) {
+						const int iImage = lvImageList[plvItem->iItem];
+						if (iImage >= 0) {
+							// Set the ImageList index.
+							plvItem->iImage = iImage;
+							ret = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * ListView CustomDraw function.
+ * @param plvcd	[in/out] NMLVCUSTOMDRAW
+ * @return Return value.
+ */
+inline int RP_ShellPropSheetExt_Private::ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd)
+{
+	int result = CDRF_DODEFAULT;
+	switch (plvcd->nmcd.dwDrawStage) {
+		case CDDS_PREPAINT:
+			// Request notifications for individual ListView items.
+			result = CDRF_NOTIFYITEMDRAW;
+			break;
+
+		case CDDS_ITEMPREPAINT: {
+			// Set the background color for alternating row colors.
+			if (plvcd->nmcd.dwItemSpec % 2) {
+				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+				// not the actual default background color.
+				// FIXME: On Windows 7:
+				// - Standard row colors are 19px high.
+				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+				plvcd->clrTextBk = colorAltRow;
+				result = CDRF_NEWFONT;
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
+	return result;
+}
+
+/**
  * WM_NOTIFY handler for the property sheet.
  * @param hDlg Dialog window.
  * @param pHdr NMHDR
@@ -2183,7 +2517,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETP
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 {
-	INT_PTR ret = FALSE;
+	INT_PTR ret = false;
 
 	switch (pHdr->code) {
 		case PSN_SETACTIVE:
@@ -2223,6 +2557,15 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			break;
 		}
 
+		case LVN_GETDISPINFO: {
+			// Get data for an LVS_OWNERDRAW ListView.
+			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+				break;
+
+			ret = ListView_GetDispInfo(reinterpret_cast<NMLVDISPINFO*>(pHdr));
+			break;
+		}
+
 		case NM_CUSTOMDRAW: {
 			// Custom drawing notification.
 			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
@@ -2233,30 +2576,9 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			// References:
 			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 			// - https://stackoverflow.com/a/40552426
-			NMLVCUSTOMDRAW *const plvcd = reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr);
-			int result = CDRF_DODEFAULT;
-			switch (plvcd->nmcd.dwDrawStage) {
-				case CDDS_PREPAINT:
-					// Request notifications for individual ListView items.
-					result = CDRF_NOTIFYITEMDRAW;
-					break;
-
-				case CDDS_ITEMPREPAINT: {
-					// Set the background color for alternating row colors.
-					if (plvcd->nmcd.dwItemSpec % 2) {
-						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
-						// not the actual default background color.
-						// FIXME: On Windows 7:
-						// - Standard row colors are 19px high.
-						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
-						plvcd->clrTextBk = colorAltRow;
-						result = CDRF_NEWFONT;
-					}
-					break;
-				}
-			}
+			const int result = ListView_CustomDraw(reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr));
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-			ret = TRUE;
+			ret = true;
 			break;
 		}
 
@@ -2271,9 +2593,9 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 			NMLISTVIEW *const pnmlv = reinterpret_cast<NMLISTVIEW*>(pHdr);
 			const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
-			// Set result to TRUE if the state difference is non-zero (i.e. it's changed).
+			// Set result to true if the state difference is non-zero (i.e. it's changed).
 			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
-			ret = TRUE;
+			ret = true;
 			break;
 		}
 
@@ -2293,7 +2615,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 {
 	if (!hbmpBanner && !hbmpIconFrames[0]) {
 		// Nothing to draw...
-		return FALSE;
+		return false;
 	}
 
 	PAINTSTRUCT ps;
@@ -2321,7 +2643,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	DeleteDC(hdcMem);
 	EndPaint(hDlg, &ps);
 
-	return TRUE;
+	return true;
 }
 
 //
@@ -2339,12 +2661,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// contained in the LPARAM of the PROPSHEETPAGE structure.
 			LPPROPSHEETPAGE pPage = reinterpret_cast<LPPROPSHEETPAGE>(lParam);
 			if (!pPage)
-				return TRUE;
+				return true;
 
 			// Access the property sheet extension from property page.
 			RP_ShellPropSheetExt *const pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
 			if (!pExt)
-				return TRUE;
+				return true;
 			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 
 			// Store the D object pointer with this particular page dialog.
@@ -2359,7 +2681,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// NOTE: We're using WM_SHOWWINDOW instead of WM_SIZE
 			// because WM_SIZE isn't sent for block devices,
 			// e.g. CD-ROM drives.
-			return TRUE;
+			return true;
 		}
 
 		// FIXME: FBI's age rating is cut off on Windows
@@ -2369,7 +2691,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			if (d->isFullyInit) {
@@ -2424,7 +2746,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// The D_PTR_PROP property stored the pointer to the 
 			// RP_ShellPropSheetExt_Private object.
 			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::D_PTR_PROP);
-			return TRUE;
+			return true;
 		}
 
 		case WM_NOTIFY: {
@@ -2432,7 +2754,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			return d->DlgProc_WM_NOTIFY(hDlg, reinterpret_cast<NMHDR*>(lParam));
@@ -2443,7 +2765,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 			return d->DlgProc_WM_PAINT(hDlg);
 		}
@@ -2455,7 +2777,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// Reload images in case the background color changed.
@@ -2469,10 +2791,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 					d->ptBanner.x + d->szBanner.cx,
 					d->ptBanner.y + d->szBanner.cy,
 				};
-				InvalidateRect(d->hDlgSheet, &rectBitmap, FALSE);
+				InvalidateRect(d->hDlgSheet, &rectBitmap, false);
 			}
 			if (d->szIcon.cx > 0) {
-				InvalidateRect(d->hDlgSheet, &d->rectIcon, FALSE);
+				InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
 			}
 			break;
 		}
@@ -2496,7 +2818,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
@@ -2514,7 +2836,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No RP_ShellPropSheetExt_Private. Can't do anything...
-				return FALSE;
+				return false;
 			}
 
 			// If RDP was connected, disable ListView double-buffering.
@@ -2548,7 +2870,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			break;
 	}
 
-	return FALSE; // Let system deal with other messages
+	return false; // Let system deal with other messages
 }
 
 
@@ -2564,8 +2886,8 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
-			// Must return TRUE to enable the page to be created.
-			return TRUE;
+			// Must return true to enable the page to be created.
+			return true;
 		}
 
 		case PSPCB_RELEASE: {
@@ -2588,7 +2910,7 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 			break;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -2624,7 +2946,7 @@ void CALLBACK RP_ShellPropSheetExt_Private::AnimTimerProc(HWND hWnd, UINT uMsg, 
 		// New frame number.
 		// Update the icon.
 		d->last_frame_number = frame;
-		InvalidateRect(d->hDlgSheet, &d->rectIcon, FALSE);
+		InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
 	}
 
 	// Update the timer.
@@ -2644,18 +2966,25 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 	// Propagate NM_CUSTOMDRAW to the parent dialog.
 	if (uMsg == WM_NOTIFY) {
 		const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
-		if (pHdr->code == NM_CUSTOMDRAW || pHdr->code == LVN_ITEMCHANGING) {
-			// NOTE: Since this is a DlgProc, we can't simply return
-			// the CDRF code. It has to be set as DWLP_MSGRESULT.
-			// References:
-			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
-			// - https://stackoverflow.com/a/40552426
-			INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
-			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
-			return TRUE;
+		switch (pHdr->code) {
+			case LVN_GETDISPINFO:
+			case NM_CUSTOMDRAW:
+			case LVN_ITEMCHANGING: {
+				// NOTE: Since this is a DlgProc, we can't simply return
+				// the CDRF code. It has to be set as DWLP_MSGRESULT.
+				// References:
+				// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+				// - https://stackoverflow.com/a/40552426
+				INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+				SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+				return true;
+			}
+
+			default:
+				break;
 		}
 	}
 
 	// Dummy callback procedure that does nothing.
-	return FALSE; // Let system deal with other messages
+	return false; // Let system deal with other messages
 }

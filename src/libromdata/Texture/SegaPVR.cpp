@@ -375,7 +375,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				// Seek error.
 				break;
 			}
-			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
+			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
 			size = file->read(pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
@@ -412,7 +412,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				// Seek error.
 				break;
 			}
-			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
+			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
 			size = file->read(pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.

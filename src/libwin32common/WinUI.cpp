@@ -296,6 +296,8 @@ COLORREF getAltRowColor(void)
 	return rgb.color;
 }
 
+/** Window procedure subclasses **/
+
 /**
  * Subclass procedure for multi-line EDIT and RICHEDIT controls.
  * This procedure does the following:

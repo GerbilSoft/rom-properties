@@ -105,6 +105,25 @@ int findMonospacedFont(LOGFONT *plfFontMono);
 COLORREF getAltRowColor(void);
 
 /**
+ * Get a Windows system color in ARGB32 format.
+ *
+ * Both GDI+ and rp_image use ARGB32 format,
+ * whereas Windows' GetSysColor() uses ABGR32.
+ *
+ * @param nIndex System color index.
+ * @return ARGB32 system color.
+ */
+static inline uint32_t GetSysColor_ARGB32(int nIndex)
+{
+	const COLORREF color = GetSysColor(nIndex);
+	return  (color & 0x00FF00) | 0xFF000000 |
+	       ((color & 0xFF) << 16) |
+	       ((color >> 16) & 0xFF);
+}
+
+/** Window procedure subclasses **/
+
+/**
  * Subclass procedure for multi-line EDIT and RICHEDIT controls.
  * This procedure does the following:
  * - ENTER and ESCAPE are forwarded to the parent window.

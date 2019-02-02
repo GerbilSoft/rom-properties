@@ -719,9 +719,7 @@ int SAP::loadFieldData(void)
 
 	// Song list.
 	if (!tags.durations.empty()) {
-		auto song_list = new vector<vector<string> >();
-		song_list->resize(tags.durations.size());
-
+		auto song_list = new vector<vector<string> >(tags.durations.size());
 		auto src_iter = tags.durations.cbegin();
 		auto dest_iter = song_list->begin();
 		unsigned int song_num = 0;

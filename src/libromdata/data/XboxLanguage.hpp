@@ -1,9 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * QTreeViewOpt.hpp: QTreeView with drawing optimizations.                 *
- * Specifically, don't update rows that are offscreen.                     *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * XboxLanguage.hpp: Get the system language for Microsoft Xbox systems.   *
  *                                                                         *
- * Copyright (c) 2013-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,32 +18,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_QTREEVIEWOPT_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_QTREEVIEWOPT_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_XBOXLANGUAGE_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DATA_XBOXLANGUAGE_HPP__
 
-// Qt includes and classes.
-#include <QTreeView>
+#include "librpbase/common.h"
 
-class QTreeViewOpt : public QTreeView
+// C includes.
+#include <stdint.h>
+
+namespace LibRomData {
+
+class XboxLanguage
 {
-	Q_OBJECT
-
-	public:
-		explicit QTreeViewOpt(QWidget *parent = 0);
-
 	private:
-		typedef QTreeView super;
-		Q_DISABLE_COPY(QTreeViewOpt);
+		// XboxLanguage is a static class.
+		XboxLanguage();
+		~XboxLanguage();
+		RP_DISABLE_COPY(XboxLanguage)
 
 	public:
-#if QT_VERSION >= 0x050000
-		void dataChanged(const QModelIndex &topLeft,
-			const QModelIndex &bottomRight,
-			const QVector<int> &roles = QVector<int>()) final;
-#else /* QT_VERSION < 0x050000 */
-		void dataChanged(const QModelIndex &topLeft,
-			const QModelIndex &bottomRight) final;
-#endif
+		/**
+		 * Determine the system language for Xbox 360.
+		 * @return XDBF_Language_e. (If unknown, returns XDBF_LANGUAGE_UNKNOWN.)
+		 */
+		static int getXbox360Language(void);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_QTREEVIEWOPT_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBROMDATA_DATA_XBOXLANGUAGE_HPP__ */

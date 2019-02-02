@@ -27,6 +27,9 @@
 #include "librpbase/img/RpGdiplusBackend.hpp"
 using namespace LibRpBase;
 
+// libwin32common
+#include "libwin32common/WinUI.hpp"
+
 // C++ includes.
 #include <memory>
 #include <string>
@@ -216,13 +219,8 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 	// so blend the image with COLOR_WINDOW. This works for the
 	// most part, at least with Windows Explorer, but the cached
 	// Thumbs.db images won't reflect color scheme changes.
-	// NOTE 2: GetSysColor() has swapped R and B channels
-	// compared to GDI+.
-	COLORREF bgColor = GetSysColor(COLOR_WINDOW);
-	bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
-		  ((bgColor & 0xFF) << 16) |
-		  ((bgColor >> 16) & 0xFF);
-	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(
+		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW));
 }
 
 /**
@@ -244,15 +242,11 @@ HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const I
 	// so blend the image with COLOR_WINDOW. This works for the
 	// most part, at least with Windows Explorer, but the cached
 	// Thumbs.db images won't reflect color scheme changes.
-	// NOTE 2: GetSysColor() has swapped R and B channels
-	// compared to GDI+.
-	COLORREF bgColor = GetSysColor(COLOR_WINDOW);
-	bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
-		  ((bgColor & 0xFF) << 16) |
-		  ((bgColor >> 16) & 0xFF);
 
 	// Resize the image.
 	// TODO: "nearest" parameter.
 	const SIZE win_sz = {sz.width, sz.height};
-	return RpImageWin32::toHBITMAP(img.get(), bgColor, win_sz, true);
+	return RpImageWin32::toHBITMAP(img.get(),
+		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
+		win_sz, true);
 }

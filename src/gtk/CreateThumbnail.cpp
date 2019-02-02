@@ -170,39 +170,7 @@ void CreateThumbnailPrivate::freeImgClass(PIMGTYPE &imgClass) const
 PIMGTYPE CreateThumbnailPrivate::rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz) const
 {
 	// TODO: Interpolation option?
-
-#ifdef RP_GTK_USE_CAIRO
-	ImgSize szSrc;
-	int ret = getImgClassSize(imgClass, &szSrc);
-	assert(ret == 0);
-	if (unlikely(ret != 0)) {
-		return cairo_surface_reference(imgClass);
-	}
-
-	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, sz.width, sz.height);
-	assert(surface != nullptr);
-	assert(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!surface || cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)) {
-		return cairo_surface_reference(imgClass);
-	}
-
-	cairo_t *cr = cairo_create(surface);
-	assert(cr != nullptr);
-	assert(cairo_status(cr) == CAIRO_STATUS_SUCCESS);
-	if (unlikely(!cr || cairo_status(cr) != CAIRO_STATUS_SUCCESS)) {
-		cairo_surface_destroy(imgClass);
-		return cairo_surface_reference(imgClass);
-	}
-
-	cairo_scale(cr, (double)sz.width / (double)szSrc.width, (double)sz.height / (double)szSrc.height);
-	cairo_set_source_surface(cr, imgClass, 0, 0);
-	cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-	cairo_paint(cr);
-	cairo_destroy(cr);
-	return surface;
-#else /* !RP_GTK_USE_CAIRO */
-	return gdk_pixbuf_scale_simple(imgClass, sz.width, sz.height, GDK_INTERP_NEAREST);
-#endif
+	return PIMGTYPE_scale(imgClass, sz.width, sz.height, false);
 }
 
 /**
