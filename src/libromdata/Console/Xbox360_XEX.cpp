@@ -503,8 +503,9 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			}
 
 			// Image size must be at least 8 KB.
-			assert(be32_to_cpu(xex2Security.image_size >= PE_HEADER_SIZE));
-			if (xex2Security.image_size < PE_HEADER_SIZE) {
+			const uint32_t image_size = be32_to_cpu(xex2Security.image_size);
+			assert(image_size >= PE_HEADER_SIZE);
+			if (image_size < PE_HEADER_SIZE) {
 				// Too small.
 				delete reader[0];
 				delete reader[1];
@@ -551,7 +552,6 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			// FIXME: It *might* be possible to randomly seek...
 			// Need to analyze the format more.
 			const int64_t fileSize = file->size();
-			const uint32_t image_size = be32_to_cpu(xex2Security.image_size);
 			if (fileSize > 64*1024*1024 || image_size > 64*1024*1024) {
 				// 64 MB is our compressed and uncompressed limit.
 				delete reader[0];
