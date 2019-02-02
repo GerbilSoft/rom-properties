@@ -642,6 +642,10 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.desc.list_data.names = (field_src.desc.list_data.names
 						? new vector<string>(*(field_src.desc.list_data.names))
 						: nullptr);
+				field_dest.desc.list_data.alignment.headers =
+					field_src.desc.list_data.alignment.headers;
+				field_dest.desc.list_data.alignment.data =
+					field_src.desc.list_data.alignment.data;
 				field_dest.data.list_data.data = (field_src.data.list_data.data
 						? new vector<vector<string> >(*(field_src.data.list_data.data))
 						: nullptr);
@@ -957,6 +961,9 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 		field.desc.list_data.rows_visible = 0;
 	}
 	field.desc.list_data.names = params->headers;
+	field.desc.list_data.alignment.headers = params->alignment.headers;
+	field.desc.list_data.alignment.data = params->alignment.data;
+
 	field.data.list_data.data = params->list_data;
 	if (flags & RFT_LISTDATA_CHECKBOXES) {
 		field.data.list_data.mxd.checkboxes = params->mxd.checkboxes;

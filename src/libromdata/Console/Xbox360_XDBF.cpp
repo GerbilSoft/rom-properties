@@ -687,6 +687,9 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 				      RomFields::RFT_LISTDATA_ICONS, 0);
 	params.headers = v_xach_col_names;
 	params.list_data = vv_xach;
+	// TODO: Header alignment?
+	params.alignment.headers = 0;
+	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;

@@ -101,38 +101,52 @@ public:
 	SafeString(const string* str, bool quotes = true, size_t width=0) :quotes(quotes), width(width) {
 		this->str = (str ? str->c_str() : nullptr);
 	}
+
+private:
+	static string process(const SafeString& cp)
+	{
+		// NOTE: We have to use a temporary string here because
+		// the caller might be using setw() for field padding.
+		// TODO: Try optimizing it out while preserving setw().
+
+		string escaped;
+		escaped.reserve(strlen(cp.str) + (cp.quotes ? 2 : 0));
+		if (cp.quotes) {
+			escaped += '\'';
+		}
+
+		for (const char *p = cp.str; *p != 0; p++) {
+			if (cp.width && *p == '\n') {
+				escaped += '\n';
+				escaped.append(cp.width + (cp.quotes ? 1 : 0), ' ');
+			} else if ((unsigned char)*p < 0x20) {
+				// Encode control characters using U+2400 through U+241F.
+				escaped += "\xE2\x90";
+				escaped += (char)(0x80 + (unsigned char)*p);
+			} else {
+				escaped += *p;
+			}
+		}
+
+		if (cp.quotes) {
+			escaped += '\'';
+		}
+
+		return escaped;
+	}
+
+public:
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
 		if (!cp.str) {
 			//assert(!"RomData should never return a null string"); // disregard that
 			return os << "(null)";
 		}
 
-		// NOTE: We have to use a temporary string here because
-		// the caller might be using setw() for field padding.
-		// TODO: Try optimizing it out while preserving setw().
-		string escaped;
-		escaped.reserve(strlen(cp.str));
+		return os << process(cp);
+	}
 
-		for (const char* str = cp.str; *str != 0; str++) {
-			if (cp.width && *str == '\n') {
-				escaped += '\n';
-				escaped.append(cp.width + (cp.quotes?1:0), ' ');
-			} else if ((unsigned char)*str < 0x20) {
-				// Encode control characters using U+2400 through U+241F.
-				escaped += "\xE2\x90";
-				escaped += (char)(0x80 + (unsigned char)*str);
-			} else {
-				escaped += *str;
-			}
-		}
-
-		if (cp.quotes) {
-			os << '\'' << escaped << '\'';
-		} else {
-			os << escaped;
-		}
-
-		return os;
+	operator string() {
+		return process(*this);
 	}
 };
 class StringField {
@@ -306,19 +320,49 @@ public:
 		bool skipFirstNL = true;
 		if (listDataDesc.names) {
 			// Print the column names.
-			unsigned int i = 0;
-			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
-				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
-				os << '|' << setw(colSize[i]) << *it;
+			unsigned int col = 0;
+			uint32_t align = listDataDesc.alignment.headers;
+			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++col, align >>= 2) {
+				// FIXME: What was this used for?
+				totalWidth += colSize[col]; // this could be in a separate loop, but whatever
+				os << setw(0) << '|';
+				switch (align & 3) {
+					case TXA_L:
+						// Left alignment
+						os << setw(colSize[col]) << std::left;
+						os << *it;
+						break;
+					default:
+					case TXA_D:
+					case TXA_C: {
+						// Center alignment (default)
+						// For odd sizes, the extra space
+						// will be on the right.
+						const size_t spc = colSize[col] - it->size();
+						os << setw(spc/2);
+						os << "";
+						os << setw(0);
+						os << *it;
+						os << setw((spc/2) + (spc%2));
+						os << "";
+						break;
+					}
+					case TXA_R:
+						// Right alignment
+						os << setw(colSize[col]) << std::right;
+						os << *it;
+						break;
+				}
 			}
+			os << setw(0) << std::right;
 			os << '|' << endl;
 
 			// Separator between the headers and the data.
 			if (!separateRow) {
 				os << Pad(field.width);
 			}
-			for (i = 0; i < col_count; i++) {
-				os << '|' << string(colSize[i], '-');
+			for (col = 0; col < col_count; col++) {
+				os << '|' << string(colSize[col], '-');
 			}
 			os << '|';
 
@@ -362,25 +406,25 @@ public:
 					checkboxes >>= 1;
 				}
 				unsigned int col = 0;
-				for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++col) {
-					os << setw(colSize[col]);
+				uint32_t align = listDataDesc.alignment.data;
+				for (auto jt = it->cbegin(); jt != it->cend(); ++jt, ++col, align >>= 2) {
+					string str;
 					if (nl_count[row] == 0) {
 						// No newlines. Print the string directly.
-						os << SafeString(jt->c_str(), false);
+						str = SafeString(jt->c_str(), false);
 					} else if (linePos[col] == (unsigned int)string::npos) {
 						// End of string.
-						os << "";
 					} else {
 						// Find the next newline.
 						size_t nl_pos = jt->find('\n', linePos[col]);
 						if (nl_pos == string::npos) {
 							// No more newlines.
-							os << SafeString(jt->c_str() + linePos[col], false);
+							str = SafeString(jt->c_str() + linePos[col], false);
 							linePos[col] = (unsigned int)string::npos;
 						} else {
 							// Found a newline.
 							// TODO: Update SafeString to take a length parameter instead of creating a temporary string.
-							os << SafeString(jt->substr(linePos[col], nl_pos - linePos[col]).c_str(), false);
+							str = SafeString(jt->substr(linePos[col], nl_pos - linePos[col]).c_str(), false);
 							linePos[col] = (unsigned int)(nl_pos + 1);
 							if (linePos[col] > (unsigned int)jt->size()) {
 								// End of string.
@@ -388,7 +432,36 @@ public:
 							}
 						}
 					}
-					os << '|';
+
+					// Align the data.
+					switch (align & 3) {
+						default:
+						case TXA_D:
+						case TXA_L:
+							// Left alignment (default)
+							os << setw(colSize[col]) << std::left;
+							os << str;
+							break;
+						case TXA_C: {
+							// Center alignment
+							// For odd sizes, the extra space
+							// will be on the right.
+							const size_t spc = colSize[col] - str.size();
+							os << setw(spc/2);
+							os << "";
+							os << setw(0);
+							os << str;
+							os << setw((spc/2) + (spc%2));
+							os << "";
+							break;
+						}
+						case TXA_R:
+							// Right alignment
+							os << setw(colSize[col]) << std::right;
+							os << str;
+							break;
+					}
+					os << setw(0) << std::right << '|';
 				}
 			}
 		}
