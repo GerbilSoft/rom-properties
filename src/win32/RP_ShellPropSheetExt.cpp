@@ -1343,18 +1343,18 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// 16 pixels.
 			// TODO: Handle this better.
 			// FIXME: This only works if the RFT_LISTDATA has icons.
-			SIZE szIcon = {32, 32};
+			SIZE szLstIcon = {32, 32};
 			bool resizeNeeded = false;
 			float factor = 1.0f;
 			if (nl_max >= 2) {
 				// Two or more newlines.
 				// Add 16px per newline over 1.
-				szIcon.cy += (16 * (nl_max - 1));
+				szLstIcon.cy += (16 * (nl_max - 1));
 				resizeNeeded = true;
 				factor = (float)szIcon.cy / 32.0f;
 			}
 
-			HIMAGELIST himl = ImageList_Create(szIcon.cx, szIcon.cy,
+			HIMAGELIST himl = ImageList_Create(szLstIcon.cx, szLstIcon.cy,
 				ILC_COLOR32, static_cast<int>(list_data->size()), 0);
 			assert(himl != nullptr);
 			if (himl) {
