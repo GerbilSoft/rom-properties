@@ -27,6 +27,7 @@
 
 // librpbase
 #include "librpbase/byteswap.h"
+#include "librpbase/bitstuff.h"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
@@ -106,14 +107,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	// - Minimum: WUX_BLOCK_SIZE_MIN (256 bytes, 1 << 8)
 	// - Maximum: WUX_BLOCK_SIZE_MAX (128 MB, 1 << 28)
 	block_size = le32_to_cpu(wuxHeader.sectorSize);
-	bool isPow2 = false;
-	for (unsigned int i = 8; i <= 28; i++) {
-		if (block_size == (1U << i)) {
-			isPow2 = true;
-			break;
-		}
-	}
-	if (!isPow2) {
+	if (!isPow2(block_size)) {
 		// Block size is out of range.
 		delete this->file;
 		this->file = nullptr;

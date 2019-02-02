@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoGcnReader.hpp: GameCube/Wii CISO disc image reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -28,6 +28,7 @@
 
 // librpbase
 #include "librpbase/byteswap.h"
+#include "librpbase/bitstuff.h"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
@@ -111,14 +112,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	// - Minimum: CISO_BLOCK_SIZE_MIN (32 KB, 1 << 15)
 	// - Maximum: CISO_BLOCK_SIZE_MAX (16 MB, 1 << 24)
 	block_size = le32_to_cpu(cisoHeader.block_size);
-	bool isPow2 = false;
-	for (unsigned int i = 15; i <= 24; i++) {
-		if (block_size == (1U << i)) {
-			isPow2 = true;
-			break;
-		}
-	}
-	if (!isPow2) {
+	if (!isPow2(block_size)) {
 		// Block size is out of range.
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is

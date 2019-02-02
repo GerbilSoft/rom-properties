@@ -76,6 +76,19 @@ static inline unsigned int popcount(unsigned int x)
 #endif
 }
 
+/**
+ * Check if a value is a power of 2. (also must be non-zero)
+ * @param x Value.
+ * @return True if this is value is a power of 2 and is non-zero; false if not.
+ */
+static inline bool isPow2(unsigned int x)
+{
+	// References:
+	// - https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2
+	// - https://stackoverflow.com/a/600492
+	return (x != 0 && ((x & (x - 1)) == 0));
+}
+
 #ifdef __cplusplus
 }
 #endif
