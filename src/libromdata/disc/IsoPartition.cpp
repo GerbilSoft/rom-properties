@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.cpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -520,9 +520,9 @@ IRpFile *IsoPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	IRpFile *file = new PartitionFile(this, file_addr, dirEntry_found->size.he);
+	PartitionFile *file = new PartitionFile(this, file_addr, dirEntry_found->size.he);
 	if (!file) {
-		delete file;
+		file->unref();
 		file = nullptr;
 	}
 	return file;

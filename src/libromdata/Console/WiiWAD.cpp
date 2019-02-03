@@ -172,7 +172,9 @@ WiiWADPrivate::~WiiWADPrivate()
 	if (wibnData) {
 		wibnData->unref();
 	}
-	delete wibnFile;
+	if (wibnFile) {
+		wibnFile->unref();
+	}
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
 }
@@ -226,7 +228,7 @@ string WiiWADPrivate::getGameInfo(void)
  * Read a Nintendo Wii WAD file.
  *
  * A WAD file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the WAD file.
  *
  * To close the file, either delete this object or call close().
@@ -244,7 +246,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	d->fileType = FTYPE_APPLICATION_PACKAGE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -252,7 +254,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->wadHeader, sizeof(d->wadHeader));
 	if (size != sizeof(d->wadHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -267,7 +269,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	d->wadType = isRomSupported_static(&info);
 	d->isValid = (d->wadType >= 0);
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -319,7 +321,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 
 		default:
 			assert(!"Should not get here...");
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 	}
@@ -330,7 +332,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	if (size != sizeof(d->ticket)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -338,7 +340,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 	if (size != sizeof(d->tmdHeader)) {
 		// Seek and/or read error.
 		d->isValid = false;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -433,12 +435,12 @@ WiiWAD::WiiWAD(IRpFile *file)
 				// Create the PartitionFile and WiiWIBN subclass.
 				// NOTE: Not sure how big the WIBN data is, so we'll
 				// allow it to read the rest of the file.
-				PartitionFile *ptFile = new PartitionFile(d->cbcReader,
+				PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
 					sizeof(d->contentHeader),
 					d->data_size - sizeof(d->contentHeader));
 				if (ptFile->isOpen()) {
 					// Open the WiiWIBN.
-					WiiWIBN *wibn = new WiiWIBN(ptFile);
+					WiiWIBN *const wibn = new WiiWIBN(ptFile);
 					if (wibn->isOpen()) {
 						// Opened successfully.
 						d->wibnFile = ptFile;
@@ -446,11 +448,11 @@ WiiWAD::WiiWAD(IRpFile *file)
 					} else {
 						// Unable to open the WiiWIBN.
 						wibn->unref();
-						delete ptFile;
+						ptFile->unref();
 					}
 				} else {
 					// Unable to open the PartitionFile.
-					delete ptFile;
+					ptFile->unref();
 				}
 			}
 		}
@@ -475,7 +477,9 @@ void WiiWAD::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	delete d->wibnFile;
+	if (d->wibnFile) {
+		d->wibnFile->unref();
+	}
 	delete d->cbcReader;
 	d->wibnFile = nullptr;
 	d->cbcReader = nullptr;

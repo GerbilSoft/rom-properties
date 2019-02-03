@@ -35,8 +35,8 @@ class NASOSReader : public LibRpBase::SparseDiscReader
 	public:
 		/**
 		 * Construct a NASOSReader with the specified file.
-		 * The file is dup()'d, so the original file can be
-		 * closed afterwards.
+		 * The file is ref()'d, so the original file can be
+		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
 		explicit NASOSReader(LibRpBase::IRpFile *file);

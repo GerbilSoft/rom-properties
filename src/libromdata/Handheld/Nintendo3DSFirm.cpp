@@ -84,7 +84,7 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file
  * Read a Nintendo 3DS firmware binary.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -101,7 +101,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->fileType = FTYPE_FIRMWARE_BINARY;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -109,7 +109,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->firmHeader, sizeof(d->firmHeader));
 	if (size != sizeof(d->firmHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -124,7 +124,7 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

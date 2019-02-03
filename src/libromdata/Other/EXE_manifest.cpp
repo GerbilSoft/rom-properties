@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_manifest.cpp: DOS/Windows executable reader. (PE manifest reader)   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -88,15 +88,15 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	};
 
 	// Search for a PE manifest resource.
-	unique_ptr<IRpFile> f_manifest = nullptr;
+	IRpFile *f_manifest = nullptr;
 	unsigned int id_idx;
 	for (id_idx = 0; id_idx < ARRAY_SIZE(resource_ids); id_idx++) {
-		f_manifest.reset(rsrcReader->open(RT_MANIFEST, resource_ids[id_idx].id, -1));
+		f_manifest = rsrcReader->open(RT_MANIFEST, resource_ids[id_idx].id, -1);
 		if (f_manifest != nullptr)
 			break;
 	}
 
-	if (!f_manifest || id_idx >= ARRAY_SIZE(resource_ids)) {
+	if (!f_manifest) {
 		// No manifest resource.
 		return -ENOENT;
 	}
@@ -105,17 +105,18 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	// Assuming a limit of 64 KB for manifests.
 	if (f_manifest->size() > 65536) {
 		// Manifest is too big.
+		f_manifest->unref();
 		return -ENOMEM;
 	}
 	unsigned int xml_size = static_cast<unsigned int>(f_manifest->size());
 	unique_ptr<char[]> xml(new char[xml_size+1]);
 	size_t size = f_manifest->read(xml.get(), xml_size);
+	f_manifest->unref();
 	if (size != xml_size) {
 		// Read error.
 		return -EIO;
 	}
 	xml[xml_size] = 0;
-	f_manifest.reset();
 
 	// Parse the XML.
 	XMLDocument doc;

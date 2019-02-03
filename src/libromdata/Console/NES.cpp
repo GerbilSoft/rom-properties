@@ -209,7 +209,7 @@ time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_b
  * Read an NES ROM.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -225,7 +225,7 @@ NES::NES(IRpFile *file)
 	d->className = "NES";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 	
@@ -236,7 +236,7 @@ NES::NES(IRpFile *file)
 	uint8_t header[128];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -283,7 +283,7 @@ NES::NES(IRpFile *file)
 			size_t szret = d->file->seekAndRead(0x2010, &d->header.fds, sizeof(d->header.fds));
 			if (szret != sizeof(d->header.fds)) {
 				// Seek and/or read error.
-				delete d->file;
+				d->file->unref();
 				d->file = nullptr;
 				d->fileType = FTYPE_UNKNOWN;
 				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
@@ -296,7 +296,7 @@ NES::NES(IRpFile *file)
 
 		default:
 			// Unknown ROM type.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			d->fileType = FTYPE_UNKNOWN;
 			d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;

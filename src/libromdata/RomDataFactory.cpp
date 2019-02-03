@@ -394,8 +394,8 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 
 	// Attempt to create a DreamcastSave using both the
 	// VMS and VMI files.
-	DreamcastSave *dcSave = new DreamcastSave(vms_file, vmi_file);
-	delete *other_file;	// Not needed anymore.
+	DreamcastSave *const dcSave = new DreamcastSave(vms_file, vmi_file);
+	(*other_file)->unref();	// Not needed anymore.
 	if (!dcSave->isValid()) {
 		// Not valid.
 		dcSave->unref();

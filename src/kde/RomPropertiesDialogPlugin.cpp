@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin.                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 /**
@@ -43,10 +42,6 @@ using LibRpBase::RpFile;
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
-
-// C++ includes.
-#include <memory>
-using std::unique_ptr;
 
 // Qt includes.
 #include <QtCore/QFileInfo>
@@ -80,13 +75,15 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 	// TODO: Use KIO and transparent decompression?
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ));
-	if (!file || !file->isOpen())
+	RpFile *const file = new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
+		file->unref();
 		return;
+	}
 
 	// Get the appropriate RomData class for this ROM.
-	// file is dup()'d by RomData.
-	RomData *const romData = RomDataFactory::create(file.get());
+	RomData *const romData = RomDataFactory::create(file);
+	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return;

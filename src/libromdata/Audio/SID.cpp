@@ -76,7 +76,7 @@ SIDPrivate::SIDPrivate(SID *q, IRpFile *file)
  * Read an SID audio file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -93,7 +93,7 @@ SID::SID(IRpFile *file)
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -101,7 +101,7 @@ SID::SID(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->sidHeader, sizeof(d->sidHeader));
 	if (size != sizeof(d->sidHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -116,7 +116,7 @@ SID::SID(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}

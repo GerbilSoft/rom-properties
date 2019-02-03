@@ -39,12 +39,12 @@ class RpMemFile : public IRpFile
 		 * @param size Size of memory buffer.
 		 */
 		RpMemFile(const void *buf, size_t size);
+	protected:
+		virtual ~RpMemFile() { }	// call unref() instead
 
 	private:
 		typedef IRpFile super;
-	public:
-		RpMemFile(const RpMemFile &other);
-		RpMemFile &operator=(const RpMemFile &other);
+		RP_DISABLE_COPY(RpMemFile)
 
 	public:
 		/**
@@ -53,19 +53,6 @@ class RpMemFile : public IRpFile
 		 * @return True if the file is open; false if it isn't.
 		 */
 		bool isOpen(void) const final;
-
-		/**
-		 * dup() the file handle.
-		 *
-		 * Needed because IRpFile* objects are typically
-		 * pointers, not actual instances of the object.
-		 *
-		 * NOTE: For RpMemFile, this will simply copy the
-		 * memory buffer pointer and size values.
-		 *
-		 * @return dup()'d file, or nullptr on error.
-		 */
-		IRpFile *dup(void) final;
 
 		/**
 		 * Close the file.

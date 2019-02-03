@@ -623,7 +623,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
  * Read an SNDH audio file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -640,7 +640,7 @@ SNDH::SNDH(IRpFile *file)
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -655,7 +655,7 @@ SNDH::SNDH(IRpFile *file)
 	// ICE-compressed SNDH files are really small.
 	// - Lowe_Al/Kings_Quest_II.sndh: 453 bytes.
 	if (size < 12) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -670,7 +670,7 @@ SNDH::SNDH(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}

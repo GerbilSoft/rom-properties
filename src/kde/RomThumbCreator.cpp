@@ -309,16 +309,17 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(source_file, RpFile::FM_OPEN_READ_GZ));
-	if (!file || !file->isOpen()) {
+	IRpFile *const file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
 		// Could not open the file.
+		file->unref();
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_THUMBNAIL);
-	file.reset(nullptr);	// file is dup()'d by RomData.
+	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
@@ -326,7 +327,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 
 	// Create the thumbnail.
 	// TODO: If image is larger than maximum_size, resize down.
-	RomThumbCreatorPrivate *d = new RomThumbCreatorPrivate();
+	RomThumbCreatorPrivate *const d = new RomThumbCreatorPrivate();
 	QImage ret_img;
 	rp_image::sBIT_t sBIT;
 	int ret = d->getThumbnail(romData, maximum_size, ret_img, &sBIT);

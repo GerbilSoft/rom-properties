@@ -91,7 +91,7 @@ N64Private::N64Private(N64 *q, IRpFile *file)
  * Read a Nintendo 64 ROM image.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -107,7 +107,7 @@ N64::N64(IRpFile *file)
 	d->className = "N64";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -115,7 +115,7 @@ N64::N64(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -161,7 +161,7 @@ N64::N64(IRpFile *file)
 		default:
 			// Unknown ROM type.
 			d->romType = N64Private::ROM_TYPE_UNKNOWN;
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 	}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IStreamWrapper.hpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *

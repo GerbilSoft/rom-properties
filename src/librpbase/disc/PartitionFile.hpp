@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -39,14 +39,12 @@ class PartitionFile : public IRpFile
 		 * @param size File size.
 		 */
 		PartitionFile(IDiscReader *partition, int64_t offset, int64_t size);
-	public:
-		virtual ~PartitionFile();
+	protected:
+		virtual ~PartitionFile() { }	// call unref() instead
 
 	private:
 		typedef IRpFile super;
-	public:
-		PartitionFile(const PartitionFile &other);
-		PartitionFile &operator=(const PartitionFile &other);
+		RP_DISABLE_COPY(PartitionFile)
 
 	public:
 		/**
@@ -55,19 +53,6 @@ class PartitionFile : public IRpFile
 		 * @return True if the file is open; false if it isn't.
 		 */
 		bool isOpen(void) const final;
-
-		/**
-		 * dup() the file handle.
-		 *
-		 * Needed because IRpFile* objects are typically
-		 * pointers, not actual instances of the object.
-		 *
-		 * NOTE: The dup()'d IRpFile* does NOT have a separate
-		 * file pointer. This is due to how dup() works.
-		 *
-		 * @return dup()'d file, or nullptr on error.
-		 */
-		IRpFile *dup(void) final;
 
 		/**
 		 * Close the file.

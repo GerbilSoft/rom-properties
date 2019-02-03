@@ -37,10 +37,8 @@ using LibRpBase::RpFile;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
 using std::string;
-using std::unique_ptr;
 using std::wstring;
 
 // Windows includes.
@@ -86,9 +84,10 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Open the cached file.
-	unique_ptr<IRpFile> file(new RpFile(T2U8(szFileName), RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
+	RpFile *const file = new RpFile(T2U8(szFileName), RpFile::FM_OPEN_READ);
+	if (!file->isOpen()) {
 		// Unable to open the file.
+		file->unref();
 		return -1;
 	}
 
@@ -100,6 +99,7 @@ int UrlmonDownloader::download(void)
 			static_cast<uint8_t*>(malloc(cbCacheEntryInfo));
 		if (!pCacheEntryInfoBuf) {
 			// ENOMEM
+			file->unref();
 			return -ENOMEM;
 		}
 		INTERNET_CACHE_ENTRY_INFO *pCacheEntryInfo =
@@ -116,9 +116,11 @@ int UrlmonDownloader::download(void)
 	const int64_t fileSize = file->size();
 	m_data.resize(static_cast<size_t>(fileSize));
 	size_t ret = file->read(m_data.data(), static_cast<size_t>(fileSize));
+	file->unref();
 	if (ret != fileSize) {
 		// Error reading the file.
 		m_data.clear();
+		m_data.shrink_to_fit();
 		return -2;
 	}
 

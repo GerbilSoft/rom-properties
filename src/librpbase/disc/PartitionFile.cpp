@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -52,43 +52,6 @@ PartitionFile::PartitionFile(IDiscReader *partition, int64_t offset, int64_t siz
 	// TODO: Reference counting?
 }
 
-PartitionFile::~PartitionFile()
-{
-	// TODO: Reference counting?
-}
-
-/**
- * Copy constructor.
- * @param other Other instance.
- */
-PartitionFile::PartitionFile(const PartitionFile &other)
-	: super()
-	, m_partition(other.m_partition)
-	, m_offset(other.m_offset)
-	, m_size(other.m_size)
-	, m_pos(0)
-{
-	// TODO: Copy m_pos? (RpMemFile doesn't.)
-	// TODO: Reference counting?
-}
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-PartitionFile &PartitionFile::operator=(const PartitionFile &other)
-{
-	// TODO: Reference counting?
-	m_partition = other.m_partition;
-	m_offset = other.m_offset;
-	m_size = other.m_size;
-	m_pos = 0;
-
-	m_lastError = (m_partition ? 0 : EBADF);
-	return *this;
-}
-
 /**
  * Is the file open?
  * This usually only returns false if an error occurred.
@@ -97,22 +60,6 @@ PartitionFile &PartitionFile::operator=(const PartitionFile &other)
 bool PartitionFile::isOpen(void) const
 {
 	return (m_partition != nullptr);
-}
-
-/**
- * dup() the file handle.
- *
- * Needed because IRpFile* objects are typically
- * pointers, not actual instances of the object.
- *
- * NOTE: The dup()'d IRpFile* does NOT have a separate
- * file pointer. This is due to how dup() works.
- *
- * @return dup()'d file, or nullptr on error.
- */
-IRpFile *PartitionFile::dup(void)
-{
-	return new PartitionFile(*this);
 }
 
 /**

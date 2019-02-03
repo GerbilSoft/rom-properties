@@ -211,7 +211,7 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
  * Read a Sega 8-bit (SMS/GG) ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -227,7 +227,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	d->className = "Sega8Bit";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -235,7 +235,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	size_t size = d->file->seekAndRead(0x7FE0, &d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
 		// Seek and/or read error.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -250,7 +250,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

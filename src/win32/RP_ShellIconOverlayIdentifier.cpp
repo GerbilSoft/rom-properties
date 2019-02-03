@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -39,10 +39,6 @@ using LibRomData::RomDataFactory;
 #include <cassert>
 #include <cstdio>
 #include <cstring>
-
-// C++ includes.
-#include <memory>
-using std::unique_ptr;
 
 // CLSID
 const CLSID CLSID_RP_ShellIconOverlayIdentifier =
@@ -120,14 +116,16 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	}
 
 	// Open the ROM file.
-	unique_ptr<RpFile> file(new RpFile(W2U8(pwszPath), RpFile::FM_OPEN_READ_GZ));
-	if (!file || file->lastError() != 0) {
+	RpFile *const file = new RpFile(W2U8(pwszPath), RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
 		// Error opening the ROM file.
+		file->unref();
 		return E_FAIL;
 	}
 
 	// Attempt to create a RomData object.
-	RomData *const romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_DPOVERLAY);
+	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_DPOVERLAY);
+	file->unref();
 	if (!romData) {
 		// ROM is not supported.
 		return S_FALSE;

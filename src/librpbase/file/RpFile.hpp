@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile.hpp: Standard file object.                                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -65,14 +65,12 @@ class RpFile : public IRpFile
 		RpFile(const std::string &filename, FileMode mode);
 	private:
 		void init(void);
-	public:
-		virtual ~RpFile();
+	protected:
+		virtual ~RpFile();	// call unref() instead
 
 	private:
 		typedef IRpFile super;
-	public:
-		RpFile(const RpFile &other);
-		RpFile &operator=(const RpFile &other);
+		RP_DISABLE_COPY(RpFile)
 	protected:
 		friend class RpFilePrivate;
 		RpFilePrivate *const d_ptr;
@@ -84,19 +82,6 @@ class RpFile : public IRpFile
 		 * @return True if the file is open; false if it isn't.
 		 */
 		bool isOpen(void) const final;
-
-		/**
-		 * dup() the file handle.
-		 *
-		 * Needed because IRpFile* objects are typically
-		 * pointers, not actual instances of the object.
-		 *
-		 * NOTE: The dup()'d IRpFile* does NOT have a separate
-		 * file pointer. This is due to how dup() works.
-		 *
-		 * @return dup()'d file, or nullptr on error.
-		 */
-		IRpFile *dup(void) final;
 
 		/**
 		 * Close the file.

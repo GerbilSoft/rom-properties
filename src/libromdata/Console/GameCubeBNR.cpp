@@ -140,7 +140,7 @@ const rp_image *GameCubeBNRPrivate::loadBanner(void)
  * Read a Nintendo GameCube banner file.
  *
  * A save file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the disc image.
  *
  * To close the file, either delete this object or call close().
@@ -160,7 +160,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	d->fileType = FTYPE_BANNER_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -169,7 +169,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&bnr_magic, sizeof(bnr_magic));
 	if (size != sizeof(bnr_magic)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -185,7 +185,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	d->isValid = (d->bannerType >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}

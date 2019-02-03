@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -42,11 +42,9 @@ using LibRomData::RomDataFactory;
 #include <cassert>
 
 // C++ includes.
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 // Qt includes.
@@ -120,15 +118,17 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 	// Single file, and it's local.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ));
-	if (!file || !file->isOpen()) {
+	RpFile *const file = new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
 		// Could not open the file.
+		file->unref();
 		return sl;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	RomData *const romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_DPOVERLAY);
+	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_DPOVERLAY);
+	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// No RomData.
 		return sl;

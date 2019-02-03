@@ -82,7 +82,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	blockMap.fill(0xFFFF);
 
 	if (!this->file) {
-		// File could not be dup()'d.
+		// File could not be ref()'d.
 		return;
 	}
 
@@ -93,7 +93,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	size_t sz = this->file->read(&cisoHeader, sizeof(cisoHeader));
 	if (sz != sizeof(cisoHeader)) {
 		// Error reading the CISO header.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -102,7 +102,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	// Verify the CISO header.
 	if (memcmp(cisoHeader.magic, CISO_MAGIC, sizeof(CISO_MAGIC)) != 0) {
 		// Invalid magic.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -117,7 +117,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is
 		// the CISO header size.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -138,7 +138,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 				break;
 			default:
 				// Invalid entry.
-				delete this->file;
+				this->file->unref();
 				this->file = nullptr;
 				q->m_lastError = EIO;
 				return;

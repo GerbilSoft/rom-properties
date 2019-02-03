@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -16,9 +16,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "DiscReader.hpp"
@@ -32,8 +31,8 @@ namespace LibRpBase {
 
 /**
  * Construct a DiscReader with the specified file.
- * The file is dup()'d, so the original file can be
- * closed afterwards.
+ * The file is ref()'d, so the original file can be
+ * unref()'d afterwards.
  * @param file File to read from.
  */
 DiscReader::DiscReader(IRpFile *file)
@@ -46,7 +45,7 @@ DiscReader::DiscReader(IRpFile *file)
 		return;
 	}
 	// TODO: Propagate errors.
-	m_file = file->dup();
+	m_file = file->ref();
 	m_length = file->size();
 	if (m_length < 0) {
 		m_length = 0;
@@ -55,8 +54,8 @@ DiscReader::DiscReader(IRpFile *file)
 
 /**
  * Construct a DiscReader with the specified file.
- * The file is dup()'d, so the original file can be
- * closed afterwards.
+ * The file is ref()'d, so the original file can be
+ * unref()'d afterwards.
  * @param file File to read from.
  * @param offset Starting offset.
  * @param length Disc length. (-1 for "until end of file")
@@ -71,7 +70,7 @@ DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
 		return;
 	}
 	// TODO: Propagate errors.
-	m_file = file->dup();
+	m_file = file->ref();
 
 	// Validate offset and filesize.
 	const int64_t filesize = file->size();
@@ -88,7 +87,9 @@ DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
 
 DiscReader::~DiscReader()
 {
-	delete m_file;
+	if (m_file) {
+		m_file->unref();
+	}
 }
 
 /**

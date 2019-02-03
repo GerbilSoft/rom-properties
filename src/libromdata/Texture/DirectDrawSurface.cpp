@@ -797,7 +797,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
  * Read a DirectDraw Surface image file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -815,7 +815,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->fileType = FTYPE_TEXTURE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -824,7 +824,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size < 4+sizeof(DDS_HEADER)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -839,7 +839,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -861,7 +861,7 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 		}
 		if (size < headerSize) {
 			// Extra headers weren't read.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			d->isValid = false;
 			return;

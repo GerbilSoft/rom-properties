@@ -134,7 +134,7 @@ bool inline VirtualBoyPrivate::isGameID(char c){
  * Read a Virtual Boy ROM image.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -150,7 +150,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->className = "VirtualBoy";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -160,7 +160,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	// and cannot be larger than 16 MB.
 	if (filesize < 0x220 || filesize > (16*1024*1024)) {
 		// File size is out of range.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -170,7 +170,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->file->seek(header_addr);
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -185,7 +185,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	d->isValid = (isRomSupported(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

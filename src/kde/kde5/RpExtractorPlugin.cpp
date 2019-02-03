@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -42,11 +42,9 @@ using LibRomData::RomDataFactory;
 #include <cassert>
 
 // C++ includes.
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 // Qt includes.
@@ -106,23 +104,23 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 	// Single file, and it's local.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<RpFile> file(new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ));
-	if (!file || !file->isOpen()) {
+	RpFile *const file = new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
 		// Could not open the file.
 		return;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file.get());
-	file.reset(nullptr);	// file is dup()'d by RomData.
+	RomData *const romData = RomDataFactory::create(file);
+	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return;
 	}
 
 	// Get the metadata properties.
-	const RomMetaData *metaData = romData->metaData();
+	const RomMetaData *const metaData = romData->metaData();
 	if (!metaData || metaData->empty()) {
 		// No metadata properties.
 		romData->unref();
@@ -132,7 +130,7 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 	// Process the metadata.
 	const int count = metaData->count();
 	for (int i = 0; i < count; i++) {
-		const RomMetaData::MetaData *prop = metaData->prop(i);
+		const RomMetaData::MetaData *const prop = metaData->prop(i);
 		assert(prop != nullptr);
 		if (!prop)
 			continue;

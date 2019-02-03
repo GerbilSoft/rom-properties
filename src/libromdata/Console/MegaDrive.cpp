@@ -518,7 +518,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
  * Read a Sega Mega Drive ROM.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -534,7 +534,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	d->className = "MegaDrive";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -545,7 +545,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	uint8_t header[0x400];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -632,7 +632,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 			d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
 	} else {
 		// Not valid. Close the file.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

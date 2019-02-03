@@ -48,7 +48,7 @@ class RomData
 		 * ROM data base class.
 		 *
 		 * A ROM file must be opened by the caller. The file handle
-		 * will be dup()'d and must be kept open in order to load
+		 * will be ref()'d and must be kept open in order to load
 		 * data from the ROM.
 		 *
 		 * To close the file, either delete this object or call close().
@@ -63,7 +63,7 @@ class RomData
 		 * ROM data base class.
 		 *
 		 * A ROM file must be opened by the caller. The file handle
-		 * will be dup()'d and must be kept open in order to load
+		 * will be ref()'d and must be kept open in order to load
 		 * data from the ROM.
 		 *
 		 * To close the file, either delete this object or call close().

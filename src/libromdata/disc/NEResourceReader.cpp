@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.cpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -717,7 +717,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Open the VS_VERSION_INFO resource.
-	unique_ptr<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	unique_IRpFile<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
 	if (!f_ver) {
 		// Not found.
 		return -ENOENT;

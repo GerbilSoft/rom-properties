@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
@@ -44,9 +43,7 @@ using LibRomData::RomDataFactory;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
-using std::unique_ptr;
 using std::wstring;
 
 // CLSID
@@ -68,7 +65,7 @@ RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
 {
 	// pstream is owned by file,
 	// so don't Release() it here.
-	delete file;
+	file->unref();
 }
 
 /** RP_ThumbnailProvider **/
@@ -107,21 +104,21 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
-	IRpFile *file = new RpFile_IStream(pstream, true);
-	if (file->lastError() != 0) {
+	RpFile_IStream *const file = new RpFile_IStream(pstream, true);
+	if (!file->isOpen() || file->lastError() != 0) {
 		// Error initializing the IRpFile.
-		delete file;
+		file->unref();
 		return E_FAIL;
 	}
 
 	RP_D(RP_ThumbnailProvider);
 	if (d->file) {
-		// Delete the old file first.
-		IRpFile *old_file = d->file;
+		// unref() the old file first.
+		IRpFile *const old_file = d->file;
 		d->file = file;
-		delete old_file;
+		old_file->unref();
 	} else {
-		// No old file to delete.
+		// No old file to unref().
 		d->file = file;
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IStreamWrapper.cpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "IStreamWrapper.hpp"
@@ -33,14 +32,14 @@ namespace LibRpBase {
 
 /**
  * Create an IStream wrapper for IRpFile.
- * The IRpFile is dup()'d.
+ * The IRpFile is ref()'d.
  * @param file IRpFile.
  */
 IStreamWrapper::IStreamWrapper(IRpFile *file)
 {
 	if (file) {
-		// dup() the file.
-		m_file = file->dup();
+		// ref() the file.
+		m_file = file->ref();
 	} else {
 		// No file specified.
 		m_file = nullptr;
@@ -49,7 +48,9 @@ IStreamWrapper::IStreamWrapper(IRpFile *file)
 
 IStreamWrapper::~IStreamWrapper()
 {
-	delete m_file;
+	if (m_file) {
+		m_file->unref();
+	}
 }
 
 /**
@@ -69,16 +70,16 @@ IRpFile *IStreamWrapper::file(void) const
 void IStreamWrapper::setFile(IRpFile *file)
 {
 	if (m_file) {
-		IRpFile *old = m_file;
+		IRpFile *const old = m_file;
 		if (file) {
-			m_file = file->dup();
+			m_file = file->ref();
 		} else {
 			m_file = nullptr;
 		}
-		delete old;
+		old->unref();
 	} else {
 		if (file) {
-			m_file = file->dup();
+			m_file = file->ref();
 		}
 	}
 }

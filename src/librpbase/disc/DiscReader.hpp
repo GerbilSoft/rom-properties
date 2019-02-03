@@ -33,16 +33,16 @@ class DiscReader : public IDiscReader
 	public:
 		/**
 		 * Construct a DiscReader with the specified file.
-		 * The file is dup()'d, so the original file can be
-		 * closed afterwards.
+		 * The file is ref()'d, so the original file can be
+		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 */
 		explicit DiscReader(IRpFile *file);
 
 		/**
 		 * Construct a DiscReader with the specified file.
-		 * The file is dup()'d, so the original file can be
-		 * closed afterwards.
+		 * The file is ref()'d, so the original file can be
+		 * unref()'d by the caller afterwards.
 		 * @param file File to read from.
 		 * @param offset Starting offset.
 		 * @param length Disc length. (-1 for "until end of file")

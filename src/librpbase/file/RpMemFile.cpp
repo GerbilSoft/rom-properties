@@ -54,36 +54,6 @@ RpMemFile::RpMemFile(const void *buf, size_t size)
 }
 
 /**
- * Copy constructor.
- * @param other Other instance.
- */
-RpMemFile::RpMemFile(const RpMemFile &other)
-	: super()
-	, m_buf(other.m_buf)
-	, m_size(other.m_size)
-	, m_pos(0)
-{
-	// If there's no buffer specified, that's an error.
-	m_lastError = (m_buf ? other.m_lastError : EBADF);
-}
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-RpMemFile &RpMemFile::operator=(const RpMemFile &other)
-{
-	m_buf = other.m_buf;
-	m_size = other.m_size;
-	m_pos = 0;
-
-	// If there's no buffer specified, that's an error.
-	m_lastError = (m_buf ? other.m_lastError : EBADF);
-	return *this;
-}
-
-/**
  * Is the file open?
  * This usually only returns false if an error occurred.
  * @return True if the file is open; false if it isn't.
@@ -91,21 +61,6 @@ RpMemFile &RpMemFile::operator=(const RpMemFile &other)
 bool RpMemFile::isOpen(void) const
 {
 	return (m_buf != nullptr);
-}
-
-/**
- * dup() the file handle.
- *
- * Needed because IRpFile* objects are typically
- * pointers, not actual instances of the object.
- *
- * NOTE: For RpMemFile, this will simply copy the
- * memory buffer pointer and size values.
- * @return dup()'d file, or nullptr on error.
- */
-IRpFile *RpMemFile::dup(void)
-{
-	return new RpMemFile(*this);
 }
 
 /**

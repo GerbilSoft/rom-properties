@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -250,16 +250,17 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// Attempt to open the ROM file.
 	// TODO: RpGVfsFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(source_file, RpFile::FM_OPEN_READ_GZ));
-	if (!file || !file->isOpen()) {
+	RpFile *const file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
 		// Could not open the file.
+		file->unref();
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_THUMBNAIL);
-	file.reset(nullptr);	// file is dup()'d by RomData.
+	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;

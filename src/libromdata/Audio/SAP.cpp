@@ -450,7 +450,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
  * Read an SAP audio file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -467,7 +467,7 @@ SAP::SAP(IRpFile *file)
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -476,7 +476,7 @@ SAP::SAP(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(buf, sizeof(buf));
 	if (size != sizeof(buf)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -491,7 +491,7 @@ SAP::SAP(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}

@@ -76,7 +76,7 @@ NSFPrivate::NSFPrivate(NSF *q, IRpFile *file)
  * Read an NSF audio file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -93,7 +93,7 @@ NSF::NSF(IRpFile *file)
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -101,7 +101,7 @@ NSF::NSF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->nsfHeader, sizeof(d->nsfHeader));
 	if (size != sizeof(d->nsfHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -116,7 +116,7 @@ NSF::NSF(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}

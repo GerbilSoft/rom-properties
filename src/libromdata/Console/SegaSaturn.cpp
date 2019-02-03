@@ -327,7 +327,7 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
  * Read a Sega Saturn disc image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -345,7 +345,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -355,7 +355,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size != sizeof(sector)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -370,7 +370,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	d->discType = isRomSupported_static(&info);
 
 	if (d->discType < 0) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -393,7 +393,7 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 			break;
 		default:
 			// Unsupported.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 	}

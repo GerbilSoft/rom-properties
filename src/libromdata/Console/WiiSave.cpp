@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSave.cpp: Nintendo Wii save game file reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -139,7 +139,9 @@ WiiSavePrivate::~WiiSavePrivate()
 	if (wibnData) {
 		wibnData->unref();
 	}
-	delete wibnFile;
+	if (wibnFile) {
+		wibnFile->unref();
+	}
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
 }
@@ -148,7 +150,7 @@ WiiSavePrivate::~WiiSavePrivate()
  * Read a Nintendo Wii save game file.
  *
  * A WAD file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the WAD file.
  *
  * To close the file, either delete this object or call close().
@@ -166,7 +168,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -187,7 +189,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(svData.get(), svSizeTotal);
 	if (size < svSizeMin) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	} else if (size > svSizeTotal) {
@@ -212,7 +214,7 @@ WiiSave::WiiSave(IRpFile *file)
 	if (d->bkHeader.magic != cpu_to_be16(WII_BK_MAGIC)) {
 		// Bk header not found.
 		d->isValid = false;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -279,12 +281,12 @@ WiiSave::WiiSave(IRpFile *file)
 		// Create the PartitionFile.
 		// TODO: Only if the save game header is valid?
 		// TODO: Get the size from the save game header?
-		PartitionFile *ptFile = new PartitionFile(d->cbcReader,
+		PartitionFile *const ptFile = new PartitionFile(d->cbcReader,
 			sizeof(Wii_SaveGame_Header_t),
 			bkHeaderAddr - sizeof(Wii_SaveGame_Header_t));
 		if (ptFile->isOpen()) {
 			// Open the WiiWIBN.
-			WiiWIBN *wibn = new WiiWIBN(ptFile);
+			WiiWIBN *const wibn = new WiiWIBN(ptFile);
 			if (wibn->isOpen()) {
 				// Opened successfully.
 				d->wibnFile = ptFile;
@@ -292,11 +294,11 @@ WiiSave::WiiSave(IRpFile *file)
 			} else {
 				// Unable to open the WiiWIBN.
 				wibn->unref();
-				delete ptFile;
+				ptFile->unref();
 			}
 		} else {
 			// Unable to open the PartitionFile.
-			delete ptFile;
+			ptFile->unref();
 		}
 	}
 #else /* !ENABLE_DECRYPTION */
@@ -320,7 +322,9 @@ void WiiSave::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	delete d->wibnFile;
+	if (d->wibnFile) {
+		d->wibnFile->unref();
+	}
 	delete d->cbcReader;
 	d->wibnFile = nullptr;
 	d->cbcReader = nullptr;

@@ -237,8 +237,13 @@ Xbox360_XEX_Private::~Xbox360_XEX_Private()
 		pe_exe->unref();
 	}
 
-	delete peFile_xdbf;
-	delete peFile_exe;
+	if (peFile_xdbf) {
+		peFile_xdbf->unref();
+	}
+	if (peFile_exe) {
+		peFile_exe->unref();
+	}
+
 	delete peReader;
 }
 
@@ -908,10 +913,10 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 			pe_exe = pe_exe_tmp;
 		} else {
 			pe_exe_tmp->unref();
-			delete peFile_tmp;
+			peFile_tmp->unref();
 		}
 	} else {
-		delete peFile_tmp;
+		peFile_tmp->unref();
 	}
 
 	return pe_exe;
@@ -978,10 +983,10 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 			pe_xdbf = pe_xdbf_tmp;
 		} else {
 			pe_xdbf_tmp->unref();
-			delete peFile_tmp;
+			peFile_tmp->unref();
 		}
 	} else {
-		delete peFile_tmp;
+		peFile_tmp->unref();
 	}
 
 	return pe_xdbf;
@@ -993,7 +998,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
  * Read an Xbox 360 XEX file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the disc image.
  *
  * To close the file, either delete this object or call close().
@@ -1011,7 +1016,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	d->fileType = FTYPE_EXECUTABLE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -1020,7 +1025,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	size_t size = d->file->read(&d->xex2Header, sizeof(d->xex2Header));
 	if (size != sizeof(d->xex2Header)) {
 		d->xex2Header.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -1036,7 +1041,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 
 	if (!d->isValid) {
 		d->xex2Header.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -1056,7 +1061,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	if (size != sizeof(d->xex2Security)) {
 		// Seek and/or read error.
 		d->xex2Header.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -1073,7 +1078,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		d->optHdrTbl.clear();
 		d->optHdrTbl.shrink_to_fit();
 		d->xex2Header.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -1085,6 +1090,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 void Xbox360_XEX::close(void)
 {
 	RP_D(Xbox360_XEX);
+
 	if (d->pe_xdbf) {
 		d->pe_xdbf->unref();
 		d->pe_xdbf = nullptr;
@@ -1094,8 +1100,13 @@ void Xbox360_XEX::close(void)
 		d->pe_exe = nullptr;
 	}
 
-	delete d->peFile_xdbf;
-	delete d->peFile_exe;
+	if (d->peFile_xdbf) {
+		d->peFile_xdbf->unref();
+	}
+	if (d->peFile_exe) {
+		d->peFile_exe->unref();
+	}
+
 	delete d->peReader;
 	d->peFile_xdbf = nullptr;
 	d->peFile_exe = nullptr;
