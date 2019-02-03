@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCom.hpp: Tiger game.com ROM reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -160,7 +160,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 
 	// Create the icon.
 	// TODO: Split into an ImageDecoder function?
-	rp_image *icon = new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::FORMAT_CI8);
+	unique_ptr<rp_image> tmp_icon(new rp_image(GCOM_ICON_W, GCOM_ICON_H, rp_image::FORMAT_CI8));
 
 	// Set the palette.
 	// NOTE: Index 0 is white; index 3 is black.
@@ -172,11 +172,10 @@ const rp_image *GameComPrivate::loadIcon(void)
 		0xFF000000,
 	};
 
-	uint32_t *const palette = icon->palette();
+	uint32_t *const palette = tmp_icon->palette();
 	assert(palette != nullptr);
-	assert(icon->palette_len() >= 4);
-	if (!palette || icon->palette_len() < 4) {
-		delete icon;
+	assert(tmp_icon->palette_len() >= 4);
+	if (!palette || tmp_icon->palette_len() < 4) {
 		return nullptr;
 	}
 	memcpy(palette, gcom_palette, sizeof(gcom_palette));
@@ -188,7 +187,6 @@ const rp_image *GameComPrivate::loadIcon(void)
 	size_t size = file->seekAndRead(icon_file_offset, icon_data.get(), icon_data_len);
 	if (size != icon_data_len) {
 		// Short read.
-		delete icon;
 		return nullptr;
 	}
 
@@ -212,8 +210,8 @@ const rp_image *GameComPrivate::loadIcon(void)
 	} else {
 		// Y is a multiple of 4.
 		// Blit directly to rp_image.
-		pDestBase = static_cast<uint8_t*>(icon->bits());
-		dest_stride = icon->stride();
+		pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
+		dest_stride = tmp_icon->stride();
 	}
 
 	const uint8_t *pSrc = icon_data.get();
@@ -241,8 +239,8 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// Copy the temporary buffer into the icon if necessary.
 	if (iconYalign != 0) {
 		pSrc = &tmpbuf[GCOM_ICON_W * iconYalign];
-		pDestBase = static_cast<uint8_t*>(icon->bits());
-		dest_stride = icon->stride();
+		pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
+		dest_stride = tmp_icon->stride();
 		if (dest_stride == GCOM_ICON_W) {
 			// Stride matches. Copy everything all at once.
 			memcpy(pDestBase, pSrc, GCOM_ICON_W*GCOM_ICON_H);
@@ -259,11 +257,11 @@ const rp_image *GameComPrivate::loadIcon(void)
 	// Set the sBIT metadata.
 	// TODO: Use grayscale instead of RGB.
 	static const rp_image::sBIT_t sBIT = {2,2,2,0,0};
-	icon->set_sBIT(&sBIT);
+	tmp_icon->set_sBIT(&sBIT);
 
 	// Save and return the icon.
-	this->icon = icon;
-	return icon;
+	this->icon = tmp_icon.release();
+	return this->icon;
 }
 
 /** GameCom **/
