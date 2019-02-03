@@ -2111,7 +2111,6 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Partition table.
-		// TODO: Show the ListView on a separate row?
 		auto vv_partitions = new vector<vector<string> >();
 		vv_partitions->reserve(8);
 
@@ -2204,7 +2203,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Add the partitions list data.
-		RomFields::AFLD_PARAMS params;
+		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
 		params.headers = v_partitions_names;
 		params.list_data = vv_partitions;
 		d->fields->addField_listData(C_("Nintendo3DS", "Partitions"), &params);
@@ -2265,7 +2264,6 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Contents table.
-		// TODO: Show the ListView on a separate row?
 		auto vv_contents = new vector<vector<string> >();
 		vv_contents->reserve(d->content_count);
 
@@ -2397,7 +2395,7 @@ int Nintendo3DS::loadFieldData(void)
 		vector<string> *const v_contents_names = RomFields::strArrayToVector_i18n(
 			"Nintendo3DS|CtNames", contents_names, ARRAY_SIZE(contents_names));
 
-		RomFields::AFLD_PARAMS params;
+		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
 		params.headers = v_contents_names;
 		params.list_data = vv_contents;
 		d->fields->addField_listData(C_("Nintendo3DS", "Contents"), &params);
@@ -2450,7 +2448,7 @@ int Nintendo3DS::loadFieldData(void)
 		// System Mode struct.
 		typedef struct _ModeTbl_t {
 			char name[7];	// Mode name.
-			uint8_t mb;		// RAM allocation, in megabytes.
+			uint8_t mb;	// RAM allocation, in megabytes.
 		} ModeTbl_t;
 		ASSERT_STRUCT(ModeTbl_t, 8);
 
@@ -2483,9 +2481,9 @@ int Nintendo3DS::loadFieldData(void)
 		// NOTE: Mode names are NOT translatable!
 		static const ModeTbl_t new3ds_sys_mode_tbl[4] = {
 			{"Legacy", 64},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy
-			{"Prod", 124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
-			{"Dev1", 178},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
-			{"Dev2", 124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2
+			{"Prod",  124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
+			{"Dev1",  178},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
+			{"Dev2",  124},	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2
 		};
 		const char *const new3ds_sys_mode_title = C_("Nintendo3DS", "New3DS Sys Mode");
 		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] &
