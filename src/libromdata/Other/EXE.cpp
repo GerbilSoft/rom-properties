@@ -184,7 +184,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	}
 
 	// File type.
-	static const char *const fileTypes[] = {
+	static const char *const fileTypes_tbl[] = {
 		// VFT_UNKNOWN
 		nullptr,
 		// tr: VFT_APP
@@ -202,12 +202,12 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileType", "Static Library"),
 	};
 	const char *const fileType_title = C_("EXE", "File Type");
-	const char *fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes)
-					? fileTypes[pVsFfi->dwFileType]
+	const char *s_fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl)
+					? fileTypes_tbl[pVsFfi->dwFileType]
 					: nullptr);
-	if (fileType) {
+	if (s_fileType) {
 		fields->addField_string(fileType_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileType));
+			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", s_fileType));
 	} else {
 		fields->addField_string(fileType_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
