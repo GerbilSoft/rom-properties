@@ -1498,16 +1498,11 @@ int Xbox360_XEX::loadFieldData(void)
 			// NOTE: Not shown for single-disc games.
 			const char *const disc_number_title = C_("RomData", "Disc #");
 			if (execution_id.disc_number != 0 && execution_id.disc_count > 1) {
-				if (execution_id.disc_number > 0) {
-					d->fields->addField_string(disc_number_title,
-						// tr: Disc X of Y (for multi-disc games)
-						rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
-							execution_id.disc_number,
-							execution_id.disc_count));
-				} else {
-					d->fields->addField_string(disc_number_title,
-						C_("RomData", "Unknown"));
-				}
+				d->fields->addField_string(disc_number_title,
+					// tr: Disc X of Y (for multi-disc games)
+					rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+						execution_id.disc_number,
+						execution_id.disc_count));
 			}
 		}
 	}
