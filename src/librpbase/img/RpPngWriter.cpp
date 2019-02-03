@@ -232,6 +232,19 @@ class RpPngWriterPrivate
 			}
 
 			void setFrom(const rp_image *img) {
+				if (!img) {
+					this->width = 0;
+					this->height = 0;
+					this->format = rp_image::FORMAT_NONE;
+					this->palette_len = 0;
+					this->palette = nullptr;
+#ifdef PNG_sBIT_SUPPORTED
+					this->has_sBIT = false;
+					this->skip_alpha = false;
+#endif /* PNG_sBIT_SUPPORTED */
+					return;
+				}
+
 				this->width = img->width();
 				this->height = img->height();
 				this->format = img->format();
