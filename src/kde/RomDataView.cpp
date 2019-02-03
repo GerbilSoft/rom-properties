@@ -591,6 +591,17 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	// while others might take up three or more.
 	treeWidget->setUniformRowHeights(false);
 
+	// Format table.
+	// All values are known to fit in uint8_t.
+	// NOTE: Need to include AlignVCenter.
+	static const uint8_t align_tbl[4] = {
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		Qt::AlignLeft | Qt::AlignVCenter,
+		Qt::AlignLeft | Qt::AlignVCenter,
+		Qt::AlignCenter,
+		Qt::AlignRight | Qt::AlignVCenter,
+	};
+
 	// Set up the column names.
 	treeWidget->setColumnCount(col_count);
 	if (listDataDesc.names) {
@@ -600,23 +611,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 		uint32_t align = listDataDesc.alignment.headers;
 		auto iter = listDataDesc.names->cbegin();
 		for (int col = 0; col < (int)col_count; col++, ++iter, align >>= 2) {
-			// NOTE: Need to include AlignVCenter.
-			switch (align & 3) {
-				default:
-				case TXA_D:
-				case TXA_L:
-					// Left alignment (default)
-					header->setTextAlignment(col, Qt::AlignLeft | Qt::AlignVCenter);
-					break;
-				case TXA_C:
-					// Center alignment
-					header->setTextAlignment(col, Qt::AlignCenter);
-					break;
-				case TXA_R:
-					// Right alignment
-					header->setTextAlignment(col, Qt::AlignRight | Qt::AlignVCenter);
-					break;
-			}
+			header->setTextAlignment(col, align_tbl[align & 3]);
 
 			const string &name = *iter;
 			if (!name.empty()) {
@@ -678,24 +673,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 			uint32_t align = listDataDesc.alignment.data;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col, align >>= 2) {
 				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter));
-
-				// NOTE: Need to include AlignVCenter.
-				switch (align & 3) {
-					default:
-					case TXA_D:
-					case TXA_L:
-						// Left alignment (default)
-						treeWidgetItem->setTextAlignment(col, Qt::AlignLeft | Qt::AlignVCenter);
-						break;
-					case TXA_C:
-						// Center alignment
-						treeWidgetItem->setTextAlignment(col, Qt::AlignCenter);
-						break;
-					case TXA_R:
-						// Right alignment
-						treeWidgetItem->setTextAlignment(col, Qt::AlignRight | Qt::AlignVCenter);
-						break;
-				}
+				treeWidgetItem->setTextAlignment(col, align_tbl[align & 3]);
 			}
 		}
 	}

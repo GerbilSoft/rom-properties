@@ -1046,6 +1046,18 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 	}
 
+	// Format tables.
+	// Pango enum values are known to fit in uint8_t.
+	static const gfloat align_tbl_xalign[4] = {
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		0.0f, 0.0f, 0.5f, 1.0f
+	};
+	static const uint8_t align_tbl_pango[4] = {
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		PANGO_ALIGN_LEFT, PANGO_ALIGN_LEFT,
+		PANGO_ALIGN_CENTER, PANGO_ALIGN_RIGHT
+	};
+
 	// Set up the column names.
 	uint32_t align_headers = listDataDesc.alignment.headers;
 	uint32_t align_data = listDataDesc.alignment.data;
@@ -1060,46 +1072,11 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 
 		// Header alignment
-		float header_xalign;
-		switch (align_headers & 3) {
-			default:
-			case TXA_D:
-			case TXA_L:
-				// Left alignment (default)
-				header_xalign = 0.0f;
-				break;
-			case TXA_C:
-				// Center alignment
-				header_xalign = 0.5f;
-				break;
-			case TXA_R:
-				// Right alignment
-				header_xalign = 1.0f;
-				break;
-		}
-
+		const float header_xalign = align_tbl_xalign[align_headers & 3];
 		// Data alignment
-		float data_xalign;
-		PangoAlignment data_alignment;
-		switch (align_data & 3) {
-			default:
-			case TXA_D:
-			case TXA_L:
-				// Left alignment (default)
-				data_xalign = 0.0f;
-				data_alignment = PANGO_ALIGN_LEFT;
-				break;
-			case TXA_C:
-				// Center alignment
-				data_xalign = 0.5f;
-				data_alignment = PANGO_ALIGN_CENTER;
-				break;
-			case TXA_R:
-				// Right alignment
-				data_xalign = 1.0f;
-				data_alignment = PANGO_ALIGN_RIGHT;
-				break;
-		}
+		const float data_xalign = align_tbl_xalign[align_data & 3];
+		const PangoAlignment data_alignment =
+			static_cast<PangoAlignment>(align_tbl_pango[align_data & 3]);
 
 		g_object_set(column, "alignment", header_xalign, nullptr);
 		g_object_set(renderer,

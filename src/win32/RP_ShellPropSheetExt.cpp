@@ -1239,28 +1239,20 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
+		// Format table.
+		// All values are known to fit in uint8_t.
+		static const uint8_t align_tbl[4] = {
+			// Order: TXA_D, TXA_L, TXA_C, TXA_R
+			LVCFMT_LEFT, LVCFMT_LEFT, LVCFMT_CENTER, LVCFMT_RIGHT
+		};
+
 		// NOTE: ListView header alignment matches data alignment.
 		// We'll prefer the data alignment value.
 		uint32_t align = listDataDesc.alignment.data;
 		auto iter = listDataDesc.names->cbegin();
 		for (int i = 0; i < col_count; ++iter, i++, align >>= 2) {
 			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
-			switch (align & 3) {
-				default:
-				case TXA_D:
-				case TXA_L:
-					// Left alignment (default)
-					lvColumn.fmt = LVCFMT_LEFT;
-					break;
-				case TXA_C:
-					// Center alignment
-					lvColumn.fmt = LVCFMT_CENTER;
-					break;
-				case TXA_R:
-					// Center alignment
-					lvColumn.fmt = LVCFMT_RIGHT;
-					break;
-			}
+			lvColumn.fmt = align_tbl[align & 3];
 
 			const string &str = *iter;
 			if (!str.empty()) {
