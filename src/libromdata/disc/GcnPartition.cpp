@@ -199,8 +199,9 @@ int64_t GcnPartition::partition_size_used(void) const
 	}
 
 	// FST offset and size.
-	// TODO: Convert both fst_offset and fst_size to int64_t before adding/shifting?
-	int64_t size = static_cast<int64_t>(d->bootBlock.fst_offset + d->bootBlock.fst_size) << d->offsetShift;
+	int64_t size = static_cast<int64_t>(d->bootBlock.fst_offset) +
+				   static_cast<int64_t>(d->bootBlock.fst_size);
+	size <<= d->offsetShift;
 	
 	// Get the FST used size.
 	size += d->fst->totalUsedSize();
