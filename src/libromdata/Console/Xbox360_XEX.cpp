@@ -859,7 +859,7 @@ void Xbox360_XEX_Private::convertGameRatings(
 		}
 
 		const uint8_t xb_val = game_ratings.ratings[ridx];
-		if (xb_val > 16) {
+		if (xb_val >= 16) {
 			// Invalid rating.
 			continue;
 		}
