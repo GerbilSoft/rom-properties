@@ -464,7 +464,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	// since we have a subclass for reading the object.
 	// since we don't need to access more than one file.
 	unique_ptr<GcnPartition> gcnPartition(new GcnPartition(discReader, 0));
-	if (!gcnPartition || !gcnPartition->isOpen()) {
+	if (!gcnPartition->isOpen()) {
 		// Could not open the partition.
 		return -EIO;
 	}
