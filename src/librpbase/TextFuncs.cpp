@@ -268,7 +268,7 @@ static inline int calc_frac_part(int64_t size, int64_t mask)
 
 	// MSVC added round() and roundf() in MSVC 2013.
 	// Use our own rounding code instead.
-	int round_adj = (frac_part % 10 > 5);
+	int round_adj = ((frac_part % 10) > 5);
 	frac_part /= 10;
 	frac_part += round_adj;
 	return frac_part;
@@ -337,7 +337,7 @@ string formatFileSize(int64_t size)
 		// Fractional part.
 		int frac_digits = 2;
 		if (whole_part >= 10) {
-			int round_adj = (frac_part % 10 > 5);
+			int round_adj = ((frac_part % 10) > 5);
 			frac_part /= 10;
 			frac_part += round_adj;
 			frac_digits = 1;
