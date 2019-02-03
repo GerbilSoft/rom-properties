@@ -119,8 +119,10 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	, offsetShift(offsetShift)
 	, fstDirCount(0)
 {
-	if (len < sizeof(GCN_FST_Entry)) {
-		// Invalid FST length.
+	assert(fstData != nullptr);
+	assert(len >= sizeof(GCN_FST_Entry));
+	if (!fstData || len < sizeof(GCN_FST_Entry)) {
+		// Invalid parameters.
 		hasErrors = true;
 		return;
 	}
