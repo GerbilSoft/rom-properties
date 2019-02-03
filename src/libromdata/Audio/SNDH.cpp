@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNDH.hpp: Atari ST SNDH audio reader.                                   *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -928,10 +928,10 @@ int SNDH::loadFieldData(void)
 		uint64_t duration_total = 0;
 
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
-		auto subtune_list = new vector<vector<string> >(count);
-		auto dest_iter = subtune_list->begin();
+		auto vv_subtune_list = new vector<vector<string> >(count);
+		auto dest_iter = vv_subtune_list->begin();
 		unsigned int idx = 0;
-		for (; dest_iter != subtune_list->end(); ++dest_iter, idx++) {
+		for (; dest_iter != vv_subtune_list->end(); ++dest_iter, idx++) {
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
@@ -961,7 +961,7 @@ int SNDH::loadFieldData(void)
 
 		if (!has_SN && has_TIME && duration_total == 0) {
 			// No durations. Don't bother showing the list.
-			delete subtune_list;
+			delete vv_subtune_list;
 		} else {
 			static const char *subtune_list_hdr[3] = {
 				NOP_C_("SNDH|SubtuneList", "#"),
@@ -981,7 +981,11 @@ int SNDH::loadFieldData(void)
 
 			vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
 				"SNDH|SubtuneList", subtune_list_hdr, col_count);
-			d->fields->addField_listData("Subtune List", v_subtune_list_hdr, subtune_list);
+
+			RomFields::AFLD_PARAMS params;
+			params.headers = v_subtune_list_hdr;
+			params.list_data = vv_subtune_list;
+			d->fields->addField_listData(C_("SNDH", "Subtune List"), &params);
 		}
 	} else if (tags.subtune_names.empty() && tags.subtune_lengths.size() == 1) {
 		// No subtune names, but we have one subtune length.

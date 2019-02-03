@@ -563,8 +563,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	if (hasIcons) {
-		assert(field->data.list_data.icons != nullptr);
-		if (!field->data.list_data.icons) {
+		assert(field->data.list_data.mxd.icons != nullptr);
+		if (!field->data.list_data.mxd.icons) {
 			// No icons vector...
 			return;
 		}
@@ -591,20 +591,35 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	// while others might take up three or more.
 	treeWidget->setUniformRowHeights(false);
 
+	// Format table.
+	// All values are known to fit in uint8_t.
+	// NOTE: Need to include AlignVCenter.
+	static const uint8_t align_tbl[4] = {
+		// Order: TXA_D, TXA_L, TXA_C, TXA_R
+		Qt::AlignLeft | Qt::AlignVCenter,
+		Qt::AlignLeft | Qt::AlignVCenter,
+		Qt::AlignCenter,
+		Qt::AlignRight | Qt::AlignVCenter,
+	};
+
 	// Set up the column names.
 	treeWidget->setColumnCount(col_count);
 	if (listDataDesc.names) {
 		QStringList columnNames;
 		columnNames.reserve(col_count);
+		QTreeWidgetItem *const header = treeWidget->headerItem();
+		uint32_t align = listDataDesc.alignment.headers;
 		auto iter = listDataDesc.names->cbegin();
-		for (unsigned int i = 0; i < col_count; i++, ++iter) {
+		for (int col = 0; col < (int)col_count; col++, ++iter, align >>= 2) {
+			header->setTextAlignment(col, align_tbl[align & 3]);
+
 			const string &name = *iter;
 			if (!name.empty()) {
 				columnNames.append(U82Q(name));
 			} else {
 				// Don't show this column.
 				columnNames.append(QString());
-				treeWidget->setColumnHidden(static_cast<int>(i), true);
+				treeWidget->setColumnHidden(col, true);
 			}
 		}
 		treeWidget->setHeaderLabels(columnNames);
@@ -623,7 +638,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	if (list_data) {
 		uint32_t checkboxes = 0;
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.checkboxes;
+			checkboxes = field->data.list_data.mxd.checkboxes;
 		}
 
 		unsigned int row = 0;	// for icons [TODO: Use iterator?]
@@ -644,7 +659,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 				treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
 				checkboxes >>= 1;
 			} else if (hasIcons) {
-				const rp_image *const icon = field->data.list_data.icons->at(row);
+				const rp_image *const icon = field->data.list_data.mxd.icons->at(row);
 				if (icon) {
 					treeWidgetItem->setIcon(0, QIcon(
 						QPixmap::fromImage(rpToQImage(icon))));
@@ -655,8 +670,10 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 			treeWidgetItem->setFlags(treeWidgetItem->flags() & ~Qt::ItemIsUserCheckable);
 
 			int col = 0;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
+			uint32_t align = listDataDesc.alignment.data;
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col, align >>= 2) {
 				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter));
+				treeWidgetItem->setTextAlignment(col, align_tbl[align & 3]);
 			}
 		}
 	}

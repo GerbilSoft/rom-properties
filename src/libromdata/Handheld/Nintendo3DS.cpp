@@ -1262,8 +1262,11 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		data_row.push_back(perm_fs_access[i]);
 	}
 
-	fields->addField_listData(C_("Nintendo3DS", "FS Access"), nullptr, vv_fs,
-		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES, perm.fsAccess);
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
+	params.headers = nullptr;
+	params.list_data = vv_fs;
+	params.mxd.checkboxes = perm.fsAccess;
+	fields->addField_listData(C_("Nintendo3DS", "FS Access"), &params);
 
 	// ARM9 access.
 	static const char *const perm_arm9_access[] = {
@@ -1293,8 +1296,9 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 			data_row.push_back(perm_arm9_access[i]);
 		}
 
-		fields->addField_listData(C_("Nintendo3DS", "ARM9 Access"), nullptr, vv_arm9,
-			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES, perm.ioAccess);
+		params.list_data = vv_arm9;
+		params.mxd.checkboxes = perm.ioAccess;
+		fields->addField_listData(C_("Nintendo3DS", "ARM9 Access"), &params);
 	}
 
 	// Services. Each service is a maximum of 8 characters.
@@ -1318,7 +1322,9 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	}
 
 	if (likely(!vv_svc->empty())) {
-		fields->addField_listData(C_("Nintendo3DS", "Services"), nullptr, vv_svc, rows_visible, 0);
+		params.flags = 0;
+		params.list_data = vv_svc;
+		fields->addField_listData(C_("Nintendo3DS", "Services"), &params);
 	} else {
 		// No services.
 		delete vv_svc;
@@ -2089,8 +2095,8 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Partition table.
 		// TODO: Show the ListView on a separate row?
-		auto partitions = new vector<vector<string> >();
-		partitions->reserve(8);
+		auto vv_partitions = new vector<vector<string> >();
+		vv_partitions->reserve(8);
 
 		// Process the partition table.
 		for (unsigned int i = 0; i < 8; i++) {
@@ -2104,9 +2110,9 @@ int Nintendo3DS::loadFieldData(void)
 			if (ret == -ENOENT)
 				continue;
 
-			const size_t vidx = partitions->size();
-			partitions->resize(vidx+1);
-			auto &data_row = partitions->at(vidx);
+			const size_t vidx = vv_partitions->size();
+			vv_partitions->resize(vidx+1);
+			auto &data_row = vv_partitions->at(vidx);
 			data_row.reserve(5);
 
 			// Partition number.
@@ -2181,8 +2187,10 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Add the partitions list data.
-		d->fields->addField_listData(C_("Nintendo3DS", "Partitions"),
-			v_partitions_names, partitions);
+		RomFields::AFLD_PARAMS params;
+		params.headers = v_partitions_names;
+		params.list_data = vv_partitions;
+		d->fields->addField_listData(C_("Nintendo3DS", "Partitions"), &params);
 	}
 
 	// Is the TMD header loaded?
@@ -2241,8 +2249,8 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Contents table.
 		// TODO: Show the ListView on a separate row?
-		auto contents = new vector<vector<string> >();
-		contents->reserve(d->content_count);
+		auto vv_contents = new vector<vector<string> >();
+		vv_contents->reserve(d->content_count);
 
 		// Process the contents.
 		// TODO: Content types?
@@ -2254,9 +2262,9 @@ int Nintendo3DS::loadFieldData(void)
 			if (ret == -ENOENT)
 				continue;
 
-			const size_t vidx = contents->size();
-			contents->resize(vidx+1);
-			auto &data_row = contents->at(vidx);
+			const size_t vidx = vv_contents->size();
+			vv_contents->resize(vidx+1);
+			auto &data_row = vv_contents->at(vidx);
 			data_row.reserve(5);
 
 			// Content index.
@@ -2372,7 +2380,11 @@ int Nintendo3DS::loadFieldData(void)
 		};
 		vector<string> *const v_contents_names = RomFields::strArrayToVector_i18n(
 			"Nintendo3DS|CtNames", contents_names, ARRAY_SIZE(contents_names));
-		d->fields->addField_listData(C_("Nintendo3DS", "Contents"), v_contents_names, contents);
+
+		RomFields::AFLD_PARAMS params;
+		params.headers = v_contents_names;
+		params.list_data = vv_contents;
+		d->fields->addField_listData(C_("Nintendo3DS", "Contents"), &params);
 	}
 
 	// Get the NCCH Extended Header.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -903,7 +903,11 @@ int KhronosKTX::loadFieldData(void)
 		vector<vector<string> > *const p_kv_data = new vector<vector<string> >(d->kv_data);
 		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
 			"KhronosKTX|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
-		d->fields->addField_listData("Key/Value Data", v_kv_field_names, p_kv_data);
+
+		RomFields::AFLD_PARAMS params;
+		params.headers = v_kv_field_names;
+		params.list_data = p_kv_data;
+		d->fields->addField_listData(C_("KhronosKTX", "Key/Value Data"), &params);
 	}
 
 	// Finished reading the field data.

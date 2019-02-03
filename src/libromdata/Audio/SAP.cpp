@@ -747,7 +747,11 @@ int SAP::loadFieldData(void)
 		};
 		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n(
 			"SAP|SongList", song_list_hdr, ARRAY_SIZE(song_list_hdr));
-		d->fields->addField_listData("Song List", v_song_list_hdr, song_list);
+
+		RomFields::AFLD_PARAMS params;
+		params.headers = v_song_list_hdr;
+		params.list_data = song_list;
+		d->fields->addField_listData(C_("SAP", "Song List"), &params);
 	}
 
 	// Finished reading the field data.

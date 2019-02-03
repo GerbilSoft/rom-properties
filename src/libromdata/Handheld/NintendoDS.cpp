@@ -1318,9 +1318,11 @@ int NintendoDS::loadFieldData(void)
 				dsi_permissions_bitfield_names[i]));
 	}
 
-	d->fields->addField_listData(C_("NintendoDS", "Permissions"), nullptr, vv_dsi_perm,
-		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-		le32_to_cpu(romHeader->dsi.access_control));
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
+	params.headers = nullptr;
+	params.list_data = vv_dsi_perm;
+	params.mxd.checkboxes = le32_to_cpu(romHeader->dsi.access_control);
+	d->fields->addField_listData(C_("NintendoDS", "Permissions"), &params);
 
 	// Flags.
 	static const char *const dsi_flags_bitfield_names[] = {
@@ -1347,9 +1349,10 @@ int NintendoDS::loadFieldData(void)
 				dsi_flags_bitfield_names[i]));
 	}
 
-	d->fields->addField_listData(C_("NintendoDS", "Flags"), nullptr, vv_dsi_flags,
-		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
-		romHeader->dsi.flags);
+	params.headers = nullptr;
+	params.list_data = vv_dsi_flags;
+	params.mxd.checkboxes = romHeader->dsi.flags;
+	d->fields->addField_listData(C_("NintendoDS", "Flags"), &params);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

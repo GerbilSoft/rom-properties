@@ -1663,12 +1663,12 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Partition table.
-		auto partitions = new vector<vector<string> >();
-		partitions->resize(d->wiiPtbl.size());
+		auto vv_partitions = new vector<vector<string> >();
+		vv_partitions->resize(d->wiiPtbl.size());
 
 		auto src_iter = d->wiiPtbl.cbegin();
-		auto dest_iter = partitions->begin();
-		for ( ; dest_iter != partitions->end(); ++src_iter, ++dest_iter) {
+		auto dest_iter = vv_partitions->begin();
+		for ( ; dest_iter != vv_partitions->end(); ++src_iter, ++dest_iter) {
 			vector<string> &data_row = *dest_iter;
 			data_row.reserve(5);	// 5 fields per row.
 
@@ -1784,7 +1784,11 @@ int GameCube::loadFieldData(void)
 		};
 		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
 			"GameCube|Partition", partitions_names, ARRAY_SIZE(partitions_names));
-		d->fields->addField_listData("Partitions", v_partitions_names, partitions);
+
+		RomFields::AFLD_PARAMS params;
+		params.headers = v_partitions_names;
+		params.list_data = vv_partitions;
+		d->fields->addField_listData(C_("GameCube", "Partitions"), &params);
 	} else {
 		// Could not load partition tables.
 		// FIXME: Show an error?

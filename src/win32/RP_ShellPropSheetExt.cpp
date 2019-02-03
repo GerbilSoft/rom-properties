@@ -1188,8 +1188,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	}
 
 	if (hasIcons) {
-		assert(field->data.list_data.icons != nullptr);
-		if (!field->data.list_data.icons) {
+		assert(field->data.list_data.mxd.icons != nullptr);
+		if (!field->data.list_data.mxd.icons) {
 			// No icons vector...
 			return 0;
 		}
@@ -1239,10 +1239,21 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
-		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
-		lvColumn.fmt = LVCFMT_LEFT;
+		// Format table.
+		// All values are known to fit in uint8_t.
+		static const uint8_t align_tbl[4] = {
+			// Order: TXA_D, TXA_L, TXA_C, TXA_R
+			LVCFMT_LEFT, LVCFMT_LEFT, LVCFMT_CENTER, LVCFMT_RIGHT
+		};
+
+		// NOTE: ListView header alignment matches data alignment.
+		// We'll prefer the data alignment value.
+		uint32_t align = listDataDesc.alignment.data;
 		auto iter = listDataDesc.names->cbegin();
-		for (int i = 0; i < col_count; ++iter, i++) {
+		for (int i = 0; i < col_count; ++iter, i++, align >>= 2) {
+			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
+			lvColumn.fmt = align_tbl[align & 3];
+
 			const string &str = *iter;
 			if (!str.empty()) {
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
@@ -1271,7 +1282,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	if (list_data) {
 		uint32_t checkboxes = 0, adj_checkboxes = 0;
 		if (hasCheckboxes) {
-			checkboxes = field->data.list_data.checkboxes;
+			checkboxes = field->data.list_data.mxd.checkboxes;
 		}
 
 		// NOTE: We're converting the strings for use with
@@ -1342,6 +1353,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// two newlines, increase the Imagelist icon size by
 			// 16 pixels.
 			// TODO: Handle this better.
+			// TODO: Use alternating row colors?
 			// FIXME: This only works if the RFT_LISTDATA has icons.
 			SIZE szLstIcon = {32, 32};
 			bool resizeNeeded = false;
@@ -1351,7 +1363,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				// Add 16px per newline over 1.
 				szLstIcon.cy += (16 * (nl_max - 1));
 				resizeNeeded = true;
-				factor = (float)szIcon.cy / 32.0f;
+				factor = (float)szLstIcon.cy / 32.0f;
 			}
 
 			HIMAGELIST himl = ImageList_Create(szLstIcon.cx, szLstIcon.cy,
@@ -1362,7 +1374,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
 
 				// Add icons.
-				const auto &icons = field->data.list_data.icons;
+				const auto &icons = field->data.list_data.mxd.icons;
 				for (auto iter = icons->cbegin(); iter != icons->cend(); ++iter) {
 					int iImage = -1;
 					const rp_image *const icon = *iter;

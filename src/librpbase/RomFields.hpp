@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.hpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -35,6 +35,25 @@
 namespace LibRpBase {
 
 class rp_image;
+
+// RFT_LISTDATA alignment macros.
+// - # indicates number of columns.
+// - Parameters are for columns 0, 1, 2, 3, etc.
+// - This does NOT include checkboxes or icons.
+#define TXA_D	(RomFields::TextAlign::TXA_DEFAULT)
+#define TXA_L	(RomFields::TextAlign::TXA_LEFT)
+#define TXA_C	(RomFields::TextAlign::TXA_CENTER)
+#define TXA_R	(RomFields::TextAlign::TXA_RIGHT)
+#define AFLD_ALIGN1(a)				((a)&3U)
+#define AFLD_ALIGN2(a,b)			(AFLD_ALIGN1(a)|(((b)&3U)<<2U))
+#define AFLD_ALIGN3(a,b,c)			(AFLD_ALIGN2(a,b)|(((c)&3U)<<4U))
+#define AFLD_ALIGN4(a,b,c,d)			(AFLD_ALIGN3(a,b,c)|(((d)&3U)<<6U))
+#define AFLD_ALIGN5(a,b,c,d,e)			(AFLD_ALIGN4(a,b,c,d)|(((e)&3U)<<8U))
+#define AFLD_ALIGN6(a,b,c,d,e,f)		(AFLD_ALIGN5(a,b,c,d,e)|(((f)&3U)<<10U))
+#define AFLD_ALIGN7(a,b,c,d,e,f,g)		(AFLD_ALIGN6(a,b,c,d,e,f)|(((g)&3U)<<12U))
+#define AFLD_ALIGN8(a,b,c,d,e,f,g,h)		(AFLD_ALIGN7(a,b,c,d,e,f,g)|(((h)&3U)<<14U))
+#define AFLD_ALIGN9(a,b,c,d,e,f,g,h,i)		(AFLD_ALIGN8(a,b,c,d,e,f,g,h)|(((i)&3U)<<16U))
+#define AFLD_ALIGN10(a,b,c,d,e,f,g,h,i,j)	(AFLD_ALIGN9(a,b,c,d,e,f,g,h,i)|(((j)&3U)<<18U))
 
 class RomFieldsPrivate;
 class RomFields
@@ -145,6 +164,14 @@ class RomFields
 		// Age Ratings type.
 		typedef std::array<uint16_t, AGE_MAX> age_ratings_t;
 
+		// Text alignment for RFT_LISTDATA.
+		enum TextAlign : uint32_t {
+			TXA_DEFAULT	= 0,	// OS default
+			TXA_LEFT	= 1,
+			TXA_CENTER	= 2,
+			TXA_RIGHT	= 3,
+		};
+
 		// ROM field struct.
 		// Dynamically allocated.
 		struct Field {
@@ -177,6 +204,17 @@ class RomFields
 					// Must be a vector of at least 'fields' strings.
 					// If a name is nullptr, that field is skipped.
 					const std::vector<std::string> *names;
+
+					// Column text alignment.
+					// Up to 16 columns can be specified using
+					// two bits each, with the two LSBs indicating
+					// column 0, next two bits column 1, etc.
+					// See the TextAlign enum.
+					struct {
+						// TODO: Reduce to uint16_t?
+						uint32_t headers;	// Header alignment
+						uint32_t data;		// Data alignment
+					} alignment;
 				} list_data;
 			} desc;
 
@@ -195,12 +233,14 @@ class RomFields
 				struct {
 					const std::vector<std::vector<std::string> > *data;
 					union {
+						// Checkbox bitfield.
 						// Requires RFT_LISTDATA_CHECKBOXES.
 						uint32_t checkboxes;
 
+						// Icons vector.
 						// Requires RFT_LISTDATA_ICONS.
 						const std::vector<const rp_image*> *icons;
-					};
+					} mxd;
 				} list_data;
 
 				// RFT_DATETIME (UNIX format)
@@ -464,45 +504,65 @@ class RomFields
 			int elemsPerRow, uint32_t bitfield);
 
 		/**
+		 * addField_listData() parameter struct.
+		 */
+		struct AFLD_PARAMS {
+			AFLD_PARAMS()
+				: flags(0), rows_visible(0)
+			{
+				alignment.headers = 0;
+				alignment.data = 0;
+			}
+			AFLD_PARAMS(unsigned int flags, int rows_visible)
+				: flags(flags), rows_visible(rows_visible)
+			{
+				alignment.headers = 0;
+				alignment.data = 0;
+			}
+
+			// Formatting
+			unsigned int flags;
+			int rows_visible;
+
+			// Column text alignment.
+			// Up to 16 columns can be specified using
+			// two bits each, with the two LSBs indicating
+			// column 0, next two bits column 1, etc.
+			// See the TextAlign enum.
+			struct {
+				// TODO: Reduce to uint16_t?
+				uint32_t headers;	// Header alignment
+				uint32_t data;		// Data alignment
+			} alignment;
+
+			// Data
+			const std::vector<std::string> *headers;
+			const std::vector<std::vector<std::string> > *list_data;
+
+			// Mutually-exclusive data.
+			union {
+				// Checkbox bitfield.
+				// Requires RFT_LISTDATA_CHECKBOXES.
+				uint32_t checkboxes;
+
+				// Icons vector.
+				// Requires RFT_LISTDATA_ICONS.
+				const std::vector<const rp_image*> *icons;
+			} mxd;
+		};
+
+		/**
 		 * Add ListData.
 		 * NOTE: This object takes ownership of the vectors.
 		 * @param name Field name.
-		 * @param headers Vector of column names. (If NULL, no headers will be shown.)
-		 * @param list_data ListData.
-		 * @param rows_visible Number of visible rows, (0 for "default")
-		 * @param flags Flags.
-		 * @param checkboxes Checkbox bitfield. (Requires RFT_LISTDATA_CHECKBOXES)
+		 * @param params Parameters.
 		 *
 		 * NOTE: If headers is nullptr, the column count will be
 		 * determined using the first row in list_data.
 		 *
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_listData(const char *name,
-			const std::vector<std::string> *headers,
-			const std::vector<std::vector<std::string> > *list_data,
-			int rows_visible = 0, unsigned int flags = 0, uint32_t checkboxes = 0);
-
-		/**
-		 * Add ListData with icons.
-		 * NOTE: This object takes ownership of the vectors.
-		 * @param name Field name.
-		 * @param headers Vector of column names. (If NULL, no headers will be shown.)
-		 * @param list_data ListData.
-		 * @param icons Vector of rp_image objects to use as icons. Caller retains ownership of the rp_image objects.
-		 * @param rows_visible Number of visible rows, (0 for "default")
-		 * @param flags Flags. (Must contain RFT_LISTDATA_ICONS)
-		 *
-		 * NOTE: If headers is nullptr, the column count will be
-		 * determined using the first row in list_data.
-		 *
-		 * @return Field index, or -1 on error.
-		 */
-		int addField_listData_icons(const char *name,
-			const std::vector<std::string> *headers,
-			const std::vector<std::vector<std::string> > *list_data,
-			const std::vector<const rp_image*> *icons,
-			int rows_visible = 0, unsigned int flags = 0);
+		int addField_listData(const char *name, const AFLD_PARAMS *params);
 
 		/**
 		 * Add DateTime.

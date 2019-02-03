@@ -905,8 +905,11 @@ int ValveVTF::loadFieldData(void)
 		}
 	}
 
-	d->fields->addField_listData(C_("ValveVTF", "Flags"), nullptr, vv_flags,
-		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES, vtfHeader->flags);
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
+	params.headers = nullptr;
+	params.list_data = vv_flags;
+	params.mxd.checkboxes = vtfHeader->flags;
+	d->fields->addField_listData(C_("ValveVTF", "Flags"), &params);
 
 	// Number of frames.
 	d->fields->addField_string_numeric(C_("ValveVTF", "# of Frames"), vtfHeader->frames);

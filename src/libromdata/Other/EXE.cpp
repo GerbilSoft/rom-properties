@@ -316,10 +316,10 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	// random due to unordered_map<>.
 	// TODO: Show certain entries as their own fields?
 	const auto &st = pVsSfi->begin()->second;
-	auto data = new vector<vector<string> >(st.size());
+	auto vv_data = new vector<vector<string> >(st.size());
 	for (size_t i = 0; i < st.size(); i++) {
 		const auto &st_row = st.at(i);
-		auto &data_row = data->at(i);
+		auto &data_row = vv_data->at(i);
 		data_row.reserve(2);
 		data_row.push_back(st_row.first);
 		data_row.push_back(st_row.second);
@@ -333,7 +333,10 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		field_names, ARRAY_SIZE(field_names));
 
 	// Add the StringFileInfo.
-	fields->addField_listData("StringFileInfo", v_field_names, data);
+	RomFields::AFLD_PARAMS params;
+	params.headers = v_field_names;
+	params.list_data = vv_data;
+	fields->addField_listData("StringFileInfo", &params);
 }
 
 /** MZ-specific **/
