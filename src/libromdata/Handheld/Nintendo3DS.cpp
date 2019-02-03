@@ -1157,7 +1157,7 @@ int Nintendo3DSPrivate::loadPermissions(void)
 	const NCCHReader *const ncch = loadNCCH();
 	if (!ncch || !ncch->isOpen()) {
 		// Can't open the primary NCCH.
-		return false;
+		return -1;
 	}
 
 	// Get the NCCH Header.
@@ -1165,14 +1165,14 @@ int Nintendo3DSPrivate::loadPermissions(void)
 	const N3DS_NCCH_Header_NoSig_t *const ncch_header = ncch->ncchHeader();
 	if (!ncch_header) {
 		// Can't get the header.
-		return false;
+		return -2;
 	}
 
 	// Get the NCCH Extended Header.
 	const N3DS_NCCH_ExHeader_t *const ncch_exheader = ncch->ncchExHeader();
 	if (!ncch_exheader) {
 		// Can't get the ExHeader.
-		return false;
+		return -3;
 	}
 
 	// Save the permissions.
