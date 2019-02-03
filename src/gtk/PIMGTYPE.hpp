@@ -126,7 +126,7 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 static inline PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 {
 	return gdk_pixbuf_scale_simple(pImgType, width, height,
-		(bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_BILINEAR));
+		(bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
 }
 #endif /* RP_GTK_USE_CAIRO */
 
