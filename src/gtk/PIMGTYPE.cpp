@@ -36,8 +36,8 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 {
 	// TODO: Maintain aspect ratio, and use nearest-neighbor
 	// when scaling up from small sizes.
-	int srcWidth = cairo_image_surface_get_width(pImgType);
-	int srcHeight = cairo_image_surface_get_width(pImgType);
+	const int srcWidth = cairo_image_surface_get_width(pImgType);
+	const int srcHeight = cairo_image_surface_get_height(pImgType);
 	assert(srcWidth > 0 && srcHeight > 0);
 	if (unlikely(srcWidth <= 0 || srcHeight <= 0)) {
 		return cairo_surface_reference(pImgType);
