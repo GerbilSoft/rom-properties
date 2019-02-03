@@ -621,7 +621,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	// Append the MD5.
 	pos2 = snprintf(&cache_filename[pos], cache_filename_sz - pos, "/%s.png", md5_string);
 	// pos and pos2 do NOT include the NULL terminator, so check >=.
-	if (pos < 0 || ((size_t)(pos + pos2)) >= cache_filename_sz) {
+	if (pos < 0 || ((size_t)pos + (size_t)pos2) >= cache_filename_sz) {
 		// Not enough memory.
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,

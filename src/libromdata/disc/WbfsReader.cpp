@@ -386,7 +386,7 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 	}
 
 	// lastBlock+1 * WBFS block size == filesize.
-	return static_cast<int64_t>(lastBlock + 1) * static_cast<int64_t>(p->wbfs_sec_sz);
+	return (static_cast<int64_t>(lastBlock) + 1) * static_cast<int64_t>(p->wbfs_sec_sz);
 }
 
 /** WbfsReader **/
