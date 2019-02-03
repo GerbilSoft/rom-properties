@@ -1316,7 +1316,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	// Allocate string pointer arrays for kv_vector.
 	// Since kv_vector is Latin-1, we don't have to
 	// strdup() the strings.
-	unique_ptr<png_text> text(new png_text[kv.size()]);
+	unique_ptr<png_text[]> text(new png_text[kv.size()]);
 	png_text *pTxt = text.get();
 	for (auto iter = kv.cbegin(); iter != kv.cend(); ++iter, ++pTxt) {
 		// Check if the string is ASCII, Latin-1, or other.
