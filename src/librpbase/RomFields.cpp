@@ -401,7 +401,7 @@ void RomFields::reserveTabs(int n)
 	assert(n > 0);
 	if (n > 0) {
 		RP_D(RomFields);
-		d->fields.reserve(n);
+		d->tabNames.reserve(n);
 	}
 }
 
