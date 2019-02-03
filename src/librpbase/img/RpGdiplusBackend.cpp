@@ -326,10 +326,6 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 			// automatically replace CI8 color 8 with white.
 			// Hence, we have to manually copy the image for CI8.
 			pBmp = new Gdiplus::Bitmap(this->width, this->height, PixelFormat32bppARGB);
-			assert(pBmp != nullptr);
-			if (!pBmp) {
-				return nullptr;
-			}
 
 			const Gdiplus::Rect bmpDestRect(0, 0, this->width, this->height);
 			Gdiplus::BitmapData bmpDestData;
