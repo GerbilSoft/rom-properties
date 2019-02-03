@@ -1032,44 +1032,79 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	if (hasCheckboxes) {
 		// Prepend an extra column for checkboxes.
-		GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
-		GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+		GtkCellRenderer *const renderer = gtk_cell_renderer_toggle_new();
+		GtkTreeViewColumn *const column = gtk_tree_view_column_new_with_attributes(
 			"", renderer, "active", 0, nullptr);
 		gtk_tree_view_column_set_resizable(column, true);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 	} else if (hasIcons) {
 		// Prepend an extra column for icons.
-		GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
-		GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+		GtkCellRenderer *const renderer = gtk_cell_renderer_pixbuf_new();
+		GtkTreeViewColumn *const column = gtk_tree_view_column_new_with_attributes(
 			"", renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, 0, nullptr);
 		gtk_tree_view_column_set_resizable(column, true);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 	}
 
 	// Set up the column names.
-	if (listDataDesc.names) {
-		auto iter = listDataDesc.names->cbegin();
-		for (int i = 0; i < col_count; i++, ++iter) {
-			const string &name = *iter;
-			if (name.empty())
-				break;
+	uint32_t align_headers = listDataDesc.alignment.headers;
+	uint32_t align_data = listDataDesc.alignment.data;
+	for (int i = 0; i < col_count; i++, align_headers >>= 2, align_data >>= 2) {
+		// NOTE: Not skipping empty column names.
+		// TODO: Hide them.
+		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
+		GtkTreeViewColumn *const column = gtk_tree_view_column_new_with_attributes(
+			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""),
+			renderer, "text", i+col_start, nullptr);
+		gtk_tree_view_column_set_resizable(column, true);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 
-			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
-				name.c_str(), renderer,
-				"text", i+col_start, nullptr);
-			gtk_tree_view_column_set_resizable(column, true);
-			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
+		// Header alignment
+		float header_xalign;
+		switch (align_headers & 3) {
+			default:
+			case TXA_D:
+			case TXA_L:
+				// Left alignment (default)
+				header_xalign = 0.0f;
+				break;
+			case TXA_C:
+				// Center alignment
+				header_xalign = 0.5f;
+				break;
+			case TXA_R:
+				// Right alignment
+				header_xalign = 1.0f;
+				break;
 		}
-	} else {
-		for (int i = 0; i < col_count; i++) {
-			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
-				"", renderer,
-				"text", i+col_start, nullptr);
-			gtk_tree_view_column_set_resizable(column, true);
-			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
+
+		// Data alignment
+		float data_xalign;
+		PangoAlignment data_alignment;
+		switch (align_data & 3) {
+			default:
+			case TXA_D:
+			case TXA_L:
+				// Left alignment (default)
+				data_xalign = 0.0f;
+				data_alignment = PANGO_ALIGN_LEFT;
+				break;
+			case TXA_C:
+				// Center alignment
+				data_xalign = 0.5f;
+				data_alignment = PANGO_ALIGN_CENTER;
+				break;
+			case TXA_R:
+				// Right alignment
+				data_xalign = 1.0f;
+				data_alignment = PANGO_ALIGN_RIGHT;
+				break;
 		}
+
+		g_object_set(column, "alignment", header_xalign, nullptr);
+		g_object_set(renderer,
+			"xalign", data_xalign,
+			"alignment", data_alignment, nullptr);
 	}
 
 	// Set a minimum height for the scroll area.
