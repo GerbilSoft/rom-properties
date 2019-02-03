@@ -1,5 +1,5 @@
 /* minizip.c
-   Version 2.8.2, January 8, 2019
+   Version 2.8.3, January 26, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -145,6 +145,8 @@ int32_t minizip_list(const char *path)
         /* Display a '*' if the file is encrypted */
         if (file_info->flag & MZ_ZIP_FLAG_ENCRYPTED)
             crypt = '*';
+        else
+            crypt = ' ';
 
         switch (file_info->compression_method)
         {

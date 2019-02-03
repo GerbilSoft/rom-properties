@@ -1,5 +1,5 @@
 /* mz.h -- Errors codes, zip flags and magic
-   Version 2.8.2, January 8, 2019
+   Version 2.8.3, January 26, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -15,7 +15,7 @@
 /***************************************************************************/
 
 /* MZ_VERSION */
-#define MZ_VERSION                      ("2.8.2")
+#define MZ_VERSION                      ("2.8.3")
 
 /* MZ_ERROR */
 #define MZ_OK                           (0)  /* zlib */
@@ -141,6 +141,12 @@
 #endif
 #ifndef MZ_CUSTOM_FREE
 #define MZ_FREE(PTR)                    (free(PTR))
+#endif
+
+#if defined(_WINDOWS) && defined(MZ_EXPORTS)
+#define MZ_EXPORT __declspec(dllexport)
+#else
+#define MZ_EXPORT
 #endif
 
 /***************************************************************************/
