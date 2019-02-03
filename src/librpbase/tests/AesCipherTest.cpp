@@ -253,7 +253,7 @@ TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
 
 	// Set the cipher settings.
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
 	switch (mode.chainingMode) {
@@ -275,8 +275,7 @@ TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 	// Decrypt the data.
 	vector<uint8_t> buf(mode.cipherText_len);
 	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
-	EXPECT_EQ((unsigned int)buf.size(),
-		m_cipher->decrypt(buf.data(), (unsigned int)buf.size()));
+	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size()));
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
@@ -294,7 +293,7 @@ TEST_P(AesCipherTest, decryptTest_chainingThenKey)
 
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
-	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
 
 	switch (mode.chainingMode) {
 		case IAesCipher::CM_CBC:
@@ -315,8 +314,7 @@ TEST_P(AesCipherTest, decryptTest_chainingThenKey)
 	// Decrypt the data.
 	vector<uint8_t> buf(mode.cipherText_len);
 	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
-	EXPECT_EQ((unsigned int)buf.size(),
-		m_cipher->decrypt(buf.data(), (unsigned int)buf.size()));
+	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size()));
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
