@@ -65,8 +65,8 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	if (!file)
 		return;
 
-	// dup() the file.
-	this->file = file->dup();
+	// Reference the file.
+	this->file = file->ref();
 }
 
 RomDataPrivate::~RomDataPrivate()
@@ -74,8 +74,10 @@ RomDataPrivate::~RomDataPrivate()
 	delete fields;
 	delete metaData;
 
-	// Close the file if it's still open.
-	delete this->file;
+	// Unreference the file.
+	if (this->file) {
+		this->file->unref();
+	}
 }
 
 /** Convenience functions. **/
@@ -327,7 +329,7 @@ time_t RomDataPrivate::bcd_to_unix_time(const uint8_t *bcd_tm, size_t size)
  * ROM data base class.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -342,7 +344,7 @@ RomData::RomData(IRpFile *file)
  * ROM data base class.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -364,7 +366,7 @@ RomData::~RomData()
  * Take a reference to this RomData* object.
  * @return this
  */
-LibRpBase::RomData *RomData::ref(void)
+RomData *RomData::ref(void)
 {
 	RP_D(RomData);
 	ATOMIC_INC_FETCH(&d->ref_cnt);
@@ -410,9 +412,12 @@ bool RomData::isOpen(void) const
  */
 void RomData::close(void)
 {
+	// Unreference the file.
 	RP_D(RomData);
-	delete d->file;
-	d->file = nullptr;
+	if (d->file) {
+		d->file->unref();
+		d->file = nullptr;
+	}
 }
 
 /**

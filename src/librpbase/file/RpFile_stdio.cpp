@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -29,8 +29,6 @@
 
 // C++ includes.
 #include <string>
-#include <memory>
-using std::shared_ptr;
 using std::string;
 using std::u16string;
 
@@ -68,24 +66,17 @@ typedef char mode_str_t;
 
 namespace LibRpBase {
 
-// Deleter for std::unique_ptr<FILE> d->file.
-struct myFile_deleter {
-	void operator()(FILE *p) const {
-		if (p != nullptr) {
-			fclose(p);
-		}
-	}
-};
-
 /** RpFilePrivate **/
 
 class RpFilePrivate
 {
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), filename(filename), mode(mode), gzfd(nullptr), gzsz(-1) { }
+			: q_ptr(q), file(nullptr), filename(filename), mode(mode)
+			, gzfd(nullptr), gzsz(-1) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), filename(filename), mode(mode), gzfd(nullptr), gzsz(-1) { }
+			: q_ptr(q), file(nullptr), filename(filename), mode(mode)
+			, gzfd(nullptr), gzsz(-1) { }
 		~RpFilePrivate();
 
 	private:
@@ -93,7 +84,7 @@ class RpFilePrivate
 		RpFile *const q_ptr;
 
 	public:
-		shared_ptr<FILE> file;	// File pointer.
+		FILE *file;		// File pointer.
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
 
@@ -124,6 +115,9 @@ RpFilePrivate::~RpFilePrivate()
 {
 	if (gzfd) {
 		gzclose_r(gzfd);
+	}
+	if (file) {
+		fclose(file);
 	}
 }
 
@@ -180,10 +174,16 @@ int RpFilePrivate::reOpenFile(void)
 		filenameW = U82W_s(filename);
 	}
 
-	file.reset(_wfopen(filenameW.c_str(), mode_str), myFile_deleter());
+	if (file) {
+		fclose(file);
+	}
+	file = _wfopen(filenameW.c_str(), mode_str);
 #else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames directly.
-	file.reset(fopen(filename.c_str(), mode_str), myFile_deleter());
+	if (file) {
+		fclose(file);
+	}
+	file = fopen(filename.c_str(), mode_str);
 #endif /* _WIN32 */
 
 	// Return 0 if it's *not* nullptr.
@@ -249,17 +249,17 @@ void RpFile::init(void)
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
 	if (d->mode == FM_OPEN_READ_GZ) {
 		uint16_t gzmagic;
-		size_t size = fread(&gzmagic, 1, sizeof(gzmagic), d->file.get());
+		size_t size = fread(&gzmagic, 1, sizeof(gzmagic), d->file);
 		if (size == sizeof(gzmagic) && gzmagic == be16_to_cpu(0x1F8B)) {
 			// This is a gzipped file.
 			// Get the uncompressed size at the end of the file.
-			fseeko(d->file.get(), 0, SEEK_END);
-			int64_t real_sz = ftello(d->file.get());
+			fseeko(d->file, 0, SEEK_END);
+			int64_t real_sz = ftello(d->file);
 			if (real_sz > 10+8) {
-				int ret = fseeko(d->file.get(), real_sz-4, SEEK_SET);
+				int ret = fseeko(d->file, real_sz-4, SEEK_SET);
 				if (!ret) {
 					uint32_t uncomp_sz;
-					size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file.get());
+					size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
 					uncomp_sz = le32_to_cpu(uncomp_sz);
 					if (size == sizeof(uncomp_sz) && uncomp_sz >= real_sz-(10+8)) {
 						// Uncompressed size looks valid.
@@ -269,9 +269,9 @@ void RpFile::init(void)
 						get_crc_table();
 
 						// Open the file with gzdopen().
-						::rewind(d->file.get());
-						::fflush(d->file.get());
-						int gzfd_dup = ::dup(fileno(d->file.get()));
+						::rewind(d->file);
+						::fflush(d->file);
+						int gzfd_dup = ::dup(fileno(d->file));
 						if (gzfd_dup >= 0) {
 							d->gzfd = gzdopen(gzfd_dup, "r");
 							if (!d->gzfd) {
@@ -288,8 +288,8 @@ void RpFile::init(void)
 		if (!d->gzfd) {
 			// Not a gzipped file.
 			// Rewind and flush the file.
-			::rewind(d->file.get());
-			::fflush(d->file.get());
+			::rewind(d->file);
+			::fflush(d->file);
 		}
 	}
 }
@@ -300,100 +300,6 @@ RpFile::~RpFile()
 }
 
 /**
- * Copy constructor.
- * @param other Other instance.
- */
-RpFile::RpFile(const RpFile &other)
-	: super()
-	, d_ptr(new RpFilePrivate(this, other.d_ptr->filename, other.d_ptr->mode))
-{
-	RP_D(RpFile);
-	m_lastError = other.m_lastError;
-
-	// NOTE: If the file is gzipped, we can't simply dup()
-	// the file handle because gzdopen() won't work correctly.
-	// TODO: Consolidate with init() and others.
-	if (other.d_ptr->gzfd) {
-		// Re-open the file.
-		if (!d->reOpenFile()) {
-			// Open as gzip without checking modes,
-			// since we know it was already gzipped.
-			::rewind(d->file.get());
-			::fflush(d->file.get());
-			int gzfd_dup = ::dup(fileno(d->file.get()));
-			if (gzfd_dup >= 0) {
-				d->gzfd = gzdopen(gzfd_dup, "r");
-				if (d->gzfd) {
-					// Copy the uncompressed size and seek position.
-					d->gzsz = other.d_ptr->gzsz;
-					gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
-				} else {
-					// gzdopen() failed.
-					// Close the dup()'d handle to prevent a leak.
-					::close(gzfd_dup);
-				}
-			}
-		}
-	} else {
-		// Not gzipped.
-		d->file = other.d_ptr->file;
-	}
-}
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-RpFile &RpFile::operator=(const RpFile &other)
-{
-	RP_D(RpFile);
-	d->filename = other.d_ptr->filename;
-	d->mode = other.d_ptr->mode;
-	m_lastError = other.m_lastError;
-
-	// NOTE: If the file is gzipped, we can't simply dup()
-	// the file handle because gzdopen() won't work correctly.
-	// TODO: Consolidate with init() and others.
-	if (other.d_ptr->gzfd) {
-		// Re-open the file.
-		const mode_str_t *mode_str = d->mode_to_str(d->mode);
-#ifdef _WIN32
-		// Windows: Use U82W_s() to convert the filename to wchar_t.
-		wstring filenameW = U82W_s(d->filename);
-		d->file.reset(_wfopen(filenameW.c_str(), mode_str), myFile_deleter());
-#else /* !_WIN32 */
-		// Linux: Use UTF-8 filenames directly.
-		d->file.reset(fopen(d->filename.c_str(), mode_str), myFile_deleter());
-#endif /* _WIN32 */
-		if (d->file) {
-			// Open as gzip without checking modes,
-			// since we know it was already gzipped.
-			::rewind(d->file.get());
-			::fflush(d->file.get());
-			int gzfd_dup = ::dup(fileno(d->file.get()));
-			if (gzfd_dup >= 0) {
-				d->gzfd = gzdopen(gzfd_dup, "r");
-				if (d->gzfd) {
-					// Copy the uncompressed size and seek position.
-					d->gzsz = other.d_ptr->gzsz;
-					gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
-				} else {
-					// gzdopen() failed.
-					// Close the dup()'d handle to prevent a leak.
-					::close(gzfd_dup);
-				}
-			}
-		}
-	} else {
-		// Not gzipped.
-		d->file = other.d_ptr->file;
-	}
-
-	return *this;
-}
-
-/**
  * Is the file open?
  * This usually only returns false if an error occurred.
  * @return True if the file is open; false if it isn't.
@@ -401,23 +307,7 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	RP_D(const RpFile);
-	return (d->file.get() != nullptr);
-}
-
-/**
- * dup() the file handle.
- *
- * Needed because IRpFile* objects are typically
- * pointers, not actual instances of the object.
- *
- * NOTE: The dup()'d IRpFile* does NOT have a separate
- * file pointer. This is due to how dup() works.
- *
- * @return dup()'d file, or nullptr on error.
- */
-IRpFile *RpFile::dup(void)
-{
-	return new RpFile(*this);
+	return (d->file != nullptr);
 }
 
 /**
@@ -430,7 +320,10 @@ void RpFile::close(void)
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
 	}
-	d->file.reset();
+	if (d->file) {
+		fclose(d->file);
+		d->file = nullptr;
+	}
 }
 
 /**
@@ -458,8 +351,8 @@ size_t RpFile::read(void *ptr, size_t size)
 			m_lastError = errno;
 		}
 	} else {
-		ret = fread(ptr, 1, size, d->file.get());
-		if (ferror(d->file.get())) {
+		ret = fread(ptr, 1, size, d->file);
+		if (ferror(d->file)) {
 			// An error occurred.
 			m_lastError = errno;
 		}
@@ -483,8 +376,8 @@ size_t RpFile::write(const void *ptr, size_t size)
 		return 0;
 	}
 
-	size_t ret = fwrite(ptr, 1, size, d->file.get());
-	if (ferror(d->file.get())) {
+	size_t ret = fwrite(ptr, 1, size, d->file);
+	if (ferror(d->file)) {
 		// An error occurred.
 		m_lastError = errno;
 	}
@@ -515,12 +408,12 @@ int RpFile::seek(int64_t pos)
 			m_lastError = -EIO;
 		}
 	} else {
-		ret = fseeko(d->file.get(), pos, SEEK_SET);
+		ret = fseeko(d->file, pos, SEEK_SET);
 		if (ret != 0) {
 			m_lastError = errno;
 		}
 	}
-	::fflush(d->file.get());	// needed for some things like gzip
+	::fflush(d->file);	// needed for some things like gzip
 	return ret;
 }
 
@@ -539,7 +432,7 @@ int64_t RpFile::tell(void)
 	if (d->gzfd) {
 		return (int64_t)gztell(d->gzfd);
 	}
-	return ftello(d->file.get());
+	return ftello(d->file);
 }
 
 /**
@@ -561,18 +454,18 @@ int RpFile::truncate(int64_t size)
 	}
 
 	// Get the current position.
-	int64_t pos = ftello(d->file.get());
+	int64_t pos = ftello(d->file);
 	if (pos < 0) {
 		m_lastError = errno;
 		return -1;
 	}
 
 	// Truncate the file.
-	fflush(d->file.get());
+	fflush(d->file);
 #ifdef _WIN32
-	int ret = _chsize_s(fileno(d->file.get()), size);
+	int ret = _chsize_s(fileno(d->file), size);
 #else
-	int ret = ftruncate(fileno(d->file.get()), size);
+	int ret = ftruncate(fileno(d->file), size);
 #endif
 	if (ret != 0) {
 		m_lastError = errno;
@@ -582,7 +475,7 @@ int RpFile::truncate(int64_t size)
 	// If the previous position was past the new
 	// file size, reset the pointer.
 	if (pos > size) {
-		ret = fseeko(d->file.get(), size, SEEK_SET);
+		ret = fseeko(d->file, size, SEEK_SET);
 		if (ret != 0) {
 			m_lastError = errno;
 			return -1;
@@ -616,14 +509,14 @@ int64_t RpFile::size(void)
 	}
 
 	// Save the current position.
-	int64_t cur_pos = ftello(d->file.get());
+	int64_t cur_pos = ftello(d->file);
 
 	// Seek to the end of the file and record its position.
-	fseeko(d->file.get(), 0, SEEK_END);
-	int64_t end_pos = ftello(d->file.get());
+	fseeko(d->file, 0, SEEK_END);
+	int64_t end_pos = ftello(d->file);
 
 	// Go back to the previous position.
-	fseeko(d->file.get(), cur_pos, SEEK_SET);
+	fseeko(d->file, cur_pos, SEEK_SET);
 
 	// Return the file size.
 	return end_pos;

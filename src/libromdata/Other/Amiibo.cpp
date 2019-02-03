@@ -106,7 +106,7 @@ bool AmiiboPrivate::calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t
  * Read a Nintendo amiibo NFC dump.
  *
  * An NFC dump must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the NFC dump.
  *
  * To close the file, either delete this object or call close().
@@ -124,7 +124,7 @@ Amiibo::Amiibo(IRpFile *file)
 	d->fileType = FTYPE_NFC_DUMP;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -151,7 +151,7 @@ Amiibo::Amiibo(IRpFile *file)
 
 		default:
 			// Unsupported file size.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 	}
@@ -166,7 +166,7 @@ Amiibo::Amiibo(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

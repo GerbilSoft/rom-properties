@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,21 +14,55 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "IRpFile.hpp"
+#include "threads/Atomics.h"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstdio>
 
 namespace LibRpBase {
 
+// Total reference count for all files.
+volatile int IRpFile::ms_refCntTotal = 0;
+
 IRpFile::IRpFile()
 	: m_lastError(0)
-{ }
+	, m_refCnt(1)
+{
+	// Increment the total reference count.
+	ATOMIC_INC_FETCH(&ms_refCntTotal);
+}
+
+/**
+ * Take a reference to this RomData* object.
+ * @return this
+ */
+IRpFile *IRpFile::ref(void)
+{
+	ATOMIC_INC_FETCH(&m_refCnt);
+	ATOMIC_INC_FETCH(&ms_refCntTotal);
+	return this;
+}
+
+/**
+ * Unreference this RomData* object.
+ * If ref_cnt reaches 0, the RomData* object is deleted.
+ */
+void IRpFile::unref(void)
+{
+	assert(m_refCnt > 0);
+	assert(ms_refCntTotal > 0);
+	if (ATOMIC_DEC_FETCH(&m_refCnt) <= 0) {
+		// All references removed.
+		delete this;
+	}
+	ATOMIC_DEC_FETCH(&ms_refCntTotal);
+}
 
 /**
  * Get the last error.

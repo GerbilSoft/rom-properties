@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
@@ -281,7 +281,9 @@ DMGPrivate::~DMGPrivate()
 	if (gbs.data) {
 		gbs.data->unref();
 	}
-	delete gbs.file;
+	if (gbs.file) {
+		gbs.file->unref();
+	}
 	delete gbs.reader;
 }
 
@@ -479,7 +481,7 @@ string DMGPrivate::getPublisher(void) const
  * Read a Game Boy ROM.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -495,7 +497,7 @@ DMG::DMG(IRpFile *file)
 	d->className = "DMG";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -506,7 +508,7 @@ DMG::DMG(IRpFile *file)
 	uint8_t header[0x150];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -526,7 +528,7 @@ DMG::DMG(IRpFile *file)
 		// TODO: Save the RST table?
 		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
 	} else {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -584,7 +586,9 @@ DMG::DMG(IRpFile *file)
 					if (gbs) {
 						gbs->unref();
 					}
-					delete ptFile;
+					if (ptFile) {
+						ptFile->unref();
+					}
 					delete reader;
 				}
 			}
@@ -600,10 +604,12 @@ void DMG::close(void)
 	RP_D(DMG);
 	if (d->gbs.data) {
 		d->gbs.data->unref();
-		d->gbs.data = nullptr;
 	}
-	delete d->gbs.file;
+	if (d->gbs.file) {
+		d->gbs.file->unref();
+	}
 	delete d->gbs.reader;
+	d->gbs.data = nullptr;
 	d->gbs.file = nullptr;
 	d->gbs.reader = nullptr;
 }

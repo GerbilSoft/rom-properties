@@ -42,9 +42,7 @@ using LibRomData::RomDataFactory;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
-using std::unique_ptr;
 using std::wstring;
 
 // CLSID
@@ -168,14 +166,16 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	}
 
 	// Attempt to open the ROM file.
-	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ));
-	if (!file || !file->isOpen()) {
+	RpFile *file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
+		file->unref();
 		return E_FAIL;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	d->romData = RomDataFactory::create(file.get(), RomDataFactory::RDA_HAS_THUMBNAIL);
+	d->romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	file->unref();
 
 	// NOTE: Since this is the registered icon handler
 	// for the file type, we have to implement our own

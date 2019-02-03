@@ -205,7 +205,7 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
  * Read a PlayStation save file.
  *
  * A save file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -223,7 +223,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -232,7 +232,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -265,7 +265,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			break;
 		default:
 			// Unknown save type.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			d->saveType = PlayStationSavePrivate::SAVE_TYPE_UNKNOWN;
 			return;

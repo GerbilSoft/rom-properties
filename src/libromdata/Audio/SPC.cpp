@@ -521,7 +521,7 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
  * Read an SPC audio file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -538,7 +538,7 @@ SPC::SPC(IRpFile *file)
 	d->fileType = FTYPE_AUDIO_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -546,7 +546,7 @@ SPC::SPC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->spcHeader, sizeof(d->spcHeader));
 	if (size != sizeof(d->spcHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -561,7 +561,7 @@ SPC::SPC(IRpFile *file)
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}

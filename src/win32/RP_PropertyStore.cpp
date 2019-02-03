@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.cpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -52,9 +52,7 @@ using LibRomData::RomDataFactory;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
 #include <string>
-using std::unique_ptr;
 using std::wstring;
 
 // CLSID
@@ -193,7 +191,7 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 
 	// pstream is owned by file,
 	// so don't Release() it here.
-	delete file;
+	file->unref();
 
 	// Clear property variants.
 	for (auto iter = prop_val.begin(); iter != prop_val.end(); ++iter) {
@@ -238,21 +236,21 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
-	IRpFile *file = new RpFile_IStream(pstream, true);
+	RpFile_IStream *const file = new RpFile_IStream(pstream, true);
 	if (file->lastError() != 0) {
 		// Error initializing the IRpFile.
-		delete file;
+		file->unref();
 		return E_FAIL;
 	}
 
 	RP_D(RP_PropertyStore);
 	if (d->file) {
-		// Delete the old file first.
+		// unref() the old file first.
 		IRpFile *old_file = d->file;
 		d->file = file;
-		delete old_file;
+		old_file->unref();
 	} else {
-		// No old file to delete.
+		// No old file to unref().
 		d->file = file;
 	}
 

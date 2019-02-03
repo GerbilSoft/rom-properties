@@ -148,7 +148,9 @@ DreamcastPrivate::~DreamcastPrivate()
 	if (pvrData) {
 		pvrData->unref();
 	}
-	delete pvrFile;
+	if (pvrFile) {
+		pvrFile->unref();
+	}
 	delete discReader;
 	delete isoPartition;
 }
@@ -222,7 +224,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	// Sanity check: PVR shouldn't be larger than 4 MB.
 	if (pvrFile_tmp->size() > 4*1024*1024) {
 		// PVR is too big.
-		delete pvrFile_tmp;
+		pvrFile_tmp->unref();
 		return nullptr;
 	}
 
@@ -237,7 +239,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 
 	// PVR is invalid.
 	pvrData_tmp->unref();
-	delete pvrFile_tmp;
+	pvrFile_tmp->unref();
 	return nullptr;
 }
 
@@ -308,7 +310,7 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
  * Read a Sega Dreamcast disc image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -326,7 +328,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -337,7 +339,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&sector, sizeof(sector));
 	if (size == 0 || size > sizeof(sector)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -353,7 +355,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	d->discType = isRomSupported_static(&info);
 
 	if (d->discType < 0) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -389,7 +391,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			if (lba_track03 < 0) {
 				// Error getting the track 03 LBA.
 				delete d->gdiReader;
-				delete d->file;
+				d->file->unref();
 				d->gdiReader = nullptr;
 				d->file = nullptr;
 				return;
@@ -405,6 +407,32 @@ Dreamcast::Dreamcast(IRpFile *file)
 	}
 
 	d->isValid = true;
+}
+
+/**
+ * Close the opened file.
+ */
+void Dreamcast::close(void)
+{
+	RP_D(Dreamcast);
+
+	// Close any child RomData subclasses.
+	if (d->pvrData) {
+		d->pvrData->unref();
+		d->pvrData = nullptr;
+	}
+	if (d->pvrFile) {
+		d->pvrFile->unref();
+		d->pvrFile = nullptr;
+	}
+
+	delete d->discReader;
+	delete d->isoPartition;
+	d->discReader = nullptr;
+	d->isoPartition = nullptr;
+
+	// Call the superclass function.
+	super::close();
 }
 
 /**

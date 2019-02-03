@@ -109,7 +109,7 @@ WiiUPrivate::~WiiUPrivate()
  * Read a Nintendo Wii U disc image.
  *
  * A disc image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the disc image.
  *
  * To close the file, either delete this object or call close().
@@ -127,7 +127,7 @@ WiiU::WiiU(IRpFile *file)
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -140,7 +140,7 @@ WiiU::WiiU(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -155,7 +155,7 @@ WiiU::WiiU(IRpFile *file)
 	d->discType = isRomSupported_static(&info);
 	if (d->discType < 0) {
 		// Disc image is invalid.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -186,7 +186,7 @@ WiiU::WiiU(IRpFile *file)
 
 	if (d->discType < 0) {
 		// Nothing else to do here.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -197,7 +197,7 @@ WiiU::WiiU(IRpFile *file)
 		if (size != sizeof(header)) {
 			// Seek and/or read error.
 			delete d->discReader;
-			delete d->file;
+			d->file->unref();
 			d->discReader = nullptr;
 			d->file = nullptr;
 			d->discType = WiiUPrivate::DISC_UNKNOWN;
@@ -211,7 +211,7 @@ WiiU::WiiU(IRpFile *file)
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
 		delete d->discReader;
-		delete d->file;
+		d->file->unref();
 		d->discReader = nullptr;
 		d->file = nullptr;
 		d->discType = WiiUPrivate::DISC_UNKNOWN;
@@ -227,7 +227,7 @@ WiiU::WiiU(IRpFile *file)
 	} else {
 		// No match.
 		delete d->discReader;
-		delete d->file;
+		d->file->unref();
 		d->discReader = nullptr;
 		d->file = nullptr;
 		d->discType = WiiUPrivate::DISC_UNKNOWN;

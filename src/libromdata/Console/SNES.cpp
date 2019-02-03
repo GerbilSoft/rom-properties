@@ -278,7 +278,7 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
  * Read a Super Nintendo ROM image.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -294,7 +294,7 @@ SNES::SNES(IRpFile *file)
 	d->className = "SNES";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -323,7 +323,7 @@ SNES::SNES(IRpFile *file)
 			size_t size = d->file->seekAndRead(bsx_addrs[i], buf, sizeof(buf));
 			if (size != sizeof(buf)) {
 				// Read error.
-				delete d->file;
+				d->file->unref();
 				d->file = nullptr;
 				return;
 			}
@@ -352,7 +352,7 @@ SNES::SNES(IRpFile *file)
 		d->file->rewind();
 		size_t size = d->file->read(&smdHeader, sizeof(smdHeader));
 		if (size != sizeof(smdHeader)) {
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 		}
@@ -452,7 +452,7 @@ SNES::SNES(IRpFile *file)
 
 	if (d->header_address == 0) {
 		// No ROM header.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		d->romType = SNESPrivate::ROM_UNKNOWN;
 		d->isValid = false;

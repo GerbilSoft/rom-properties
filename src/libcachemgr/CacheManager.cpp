@@ -44,9 +44,7 @@ using namespace LibRpBase::FileSystem;
 #endif /* _MSC_VER */
 
 // C++ includes.
-#include <memory>
 #include <string>
-using std::unique_ptr;
 using std::string;
 
 // TODO: DownloaderFactory?
@@ -396,11 +394,11 @@ string CacheManager::download(
 	int ret = m_downloader->download();
 
 	// Write the file to the cache.
-	unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_CREATE_WRITE));
-
-	if (ret != 0 || !file || !file->isOpen()) {
+	RpFile *const file = new RpFile(cache_filename, RpFile::FM_CREATE_WRITE);
+	if (ret != 0 || !file->isOpen()) {
 		// Error downloading the file, or error opening
 		// the file in the local cache.
+		file->unref();
 
 		// TODO: Only keep a negative cache if it's a 404.
 		// Keep the cached file as a 0-byte file to indicate
@@ -410,7 +408,8 @@ string CacheManager::download(
 
 	// Write the file.
 	file->write((void*)m_downloader->data(), m_downloader->dataSize());
-	file->close();
+	file->close();	// NOTE: May be redundant.
+	file->unref();
 
 	// Set the file's mtime if it was obtained by the downloader.
 	// TODO: IRpFile::set_mtime()?

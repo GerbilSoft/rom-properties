@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WuxReader.cpp: Wii U .wux disc image reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -77,7 +77,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	memset(&wuxHeader, 0, sizeof(wuxHeader));
 
 	if (!this->file) {
-		// File could not be dup()'d.
+		// File could not be ref()'d.
 		return;
 	}
 
@@ -86,7 +86,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	size_t sz = this->file->read(&wuxHeader, sizeof(wuxHeader));
 	if (sz != sizeof(wuxHeader)) {
 		// Error reading the .wux header.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -97,7 +97,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	    wuxHeader.magic[1] != cpu_to_le32(WUX_MAGIC_1))
 	{
 		// Invalid magic.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -109,7 +109,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	block_size = le32_to_cpu(wuxHeader.sectorSize);
 	if (!isPow2(block_size)) {
 		// Block size is out of range.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -119,7 +119,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	disc_size = static_cast<int64_t>(le64_to_cpu(wuxHeader.uncompressedSize));
 	if (disc_size < 0 || disc_size > 50LL*1024*1024*1024) {
 		// Disc size is out of range.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -134,7 +134,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 		// Read error.
 		idxTbl.clear();
 		disc_size = 0;
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;

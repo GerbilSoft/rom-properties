@@ -208,7 +208,7 @@ N3DS_Language_ID Nintendo3DS_SMDH_Private::getLangID(void) const
  * Read a Nintendo 3DS SMDH file and/or section.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the disc image.
  *
  * To close the file, either delete this object or call close().
@@ -226,7 +226,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	d->fileType = FTYPE_ICON_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -235,7 +235,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	size_t size = d->file->read(&d->smdh, sizeof(d->smdh));
 	if (size != sizeof(d->smdh)) {
 		d->smdh.header.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -251,7 +251,7 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 
 	if (!d->isValid) {
 		d->smdh.header.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}

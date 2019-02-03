@@ -787,7 +787,7 @@ int ELFPrivate::addPtDynamicFields(void)
  * Read an ELF executable.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -806,7 +806,7 @@ ELF::ELF(IRpFile *file)
 	d->fileType = FTYPE_UNKNOWN;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -816,7 +816,7 @@ ELF::ELF(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->Elf_Header, sizeof(d->Elf_Header));
 	if (size != sizeof(d->Elf_Header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -833,7 +833,7 @@ ELF::ELF(IRpFile *file)
 	d->isValid = (d->elfFormat >= 0);
 	if (!d->isValid) {
 		// Not an ELF executable.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -845,7 +845,7 @@ ELF::ELF(IRpFile *file)
 			assert(!"Should not get here...");
 			d->isValid = false;
 			d->elfFormat = ELFPrivate::ELF_FORMAT_UNKNOWN;
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 

@@ -87,7 +87,7 @@ NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
  * Read a Neo Geo Pocket (Color) ROM.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -103,7 +103,7 @@ NGPC::NGPC(IRpFile *file)
 	d->className = "NGPC";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -114,7 +114,7 @@ NGPC::NGPC(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -130,7 +130,7 @@ NGPC::NGPC(IRpFile *file)
 	d->isValid = (d->romType >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

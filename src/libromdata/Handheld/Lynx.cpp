@@ -69,7 +69,7 @@ LynxPrivate::LynxPrivate(Lynx *q, IRpFile *file)
  * Read an Atari Lynx ROM.
  *
  * A ROM file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM.
  *
  * To close the file, either delete this object or call close().
@@ -85,7 +85,7 @@ Lynx::Lynx(IRpFile *file)
 	d->className = "Lynx";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -96,7 +96,7 @@ Lynx::Lynx(IRpFile *file)
 	uint8_t header[0x40];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -114,7 +114,7 @@ Lynx::Lynx(IRpFile *file)
 		// Save the header for later.
 		memcpy(&d->romHeader, header, sizeof(d->romHeader));
 	} else {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

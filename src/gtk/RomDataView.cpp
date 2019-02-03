@@ -1508,9 +1508,10 @@ rom_data_view_load_rom_data(gpointer data)
 	// TODO: gvfs support.
 	if (G_LIKELY(page->filename != nullptr)) {
 		// Open the ROM file.
-		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ_GZ);
+		RpFile *const file = new RpFile(page->filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {
 			// Create the RomData object.
+			// file is ref()'d by RomData.
 			page->romData = RomDataFactory::create(file);
 
 			// Update the display widgets.
@@ -1523,7 +1524,7 @@ rom_data_view_load_rom_data(gpointer data)
 				page->romData->close();
 			}
 		}
-		delete file;
+		file->unref();
 	}
 
 	// Animation timer will be started when the page

@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "stdafx.h"
@@ -232,71 +231,6 @@ zero_all_values:
 }
 
 /**
- * Copy constructor.
- * @param other Other instance.
- */
-RpFile_IStream::RpFile_IStream(const RpFile_IStream &other)
-	: super()
-	, m_pStream(other.m_pStream)
-	, m_z_uncomp_sz(0)
-	, m_z_filepos(0)
-	, m_z_realpos(0)
-	, m_pZstm(nullptr)
-	// zlib buffer
-	, m_pZbuf(nullptr)
-	, m_zbufLen(0)
-	, m_zcurPos(0)
-{
-	// TODO: Combine with the assignment constructor?
-
-	int ret = copyZlibStream(other);
-	if (ret != 0) {
-		// Error copying the zlib stream.
-		m_pStream = nullptr;
-		return;
-	}
-
-	// Take a reference to the other IStream.
-	m_pStream->AddRef();
-	m_lastError = other.m_lastError;
-
-	// Nothing else to do, since we can't actually
-	// clone the stream.
-}
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-RpFile_IStream &RpFile_IStream::operator=(const RpFile_IStream &other)
-{
-	// TODO: Combine with copy constructor?
-
-	// If we have a stream open, close it first.
-	if (m_pStream) {
-		m_pStream->Release();
-		m_pStream = nullptr;
-	}
-
-	// Copy the zlib stream.
-	int ret = copyZlibStream(other);
-	if (ret != 0) {
-		// Error copying the zlib stream.
-		return *this;
-	}
-
-	// Take a reference to the other IStream.
-	m_pStream = other.m_pStream;
-	m_pStream->AddRef();
-
-	// Nothing else to do, since we can't actually
-	// clone the stream.
-	m_lastError = other.m_lastError;
-	return *this;
-}
-
-/**
  * Is the file open?
  * This usually only returns false if an error occurred.
  * @return True if the file is open; false if it isn't.
@@ -304,22 +238,6 @@ RpFile_IStream &RpFile_IStream::operator=(const RpFile_IStream &other)
 bool RpFile_IStream::isOpen(void) const
 {
 	return (m_pStream != nullptr);
-}
-
-/**
- * dup() the file handle.
- *
- * Needed because IRpFile* objects are typically
- * pointers, not actual instances of the object.
- *
- * NOTE: The dup()'d IRpFile* does NOT have a separate
- * file pointer. This is due to how dup() works.
- *
- * @return dup()'d file, or nullptr on error.
- */
-IRpFile *RpFile_IStream::dup(void)
-{
-	return new RpFile_IStream(*this);
 }
 
 /**

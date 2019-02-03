@@ -58,13 +58,11 @@ using LibRomData::RomDataFactory;
 
 // C++ includes.
 #include <array>
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 using std::array;
-using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::string;
@@ -2248,7 +2246,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
 	TCHAR *tfilename = nullptr;
-	unique_ptr<IRpFile> file;
+	RpFile *file = nullptr;
 	RomData *romData = nullptr;
 
 	// Determine how many files are involved in this operation. This
@@ -2307,15 +2305,15 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file.reset(new RpFile(T2U8(tfilename, cchFilename), RpFile::FM_OPEN_READ_GZ));
-	if (!file || !file->isOpen()) {
+	file = new RpFile(T2U8(tfilename, cchFilename), RpFile::FM_OPEN_READ_GZ);
+	if (!file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	romData = RomDataFactory::create(file.get());
+	romData = RomDataFactory::create(file);
 	if (!romData) {
 		// Could not open the RomData object.
 		goto cleanup;
@@ -2336,6 +2334,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	hr = S_OK;
 
 cleanup:
+	if (file) {
+		file->unref();
+	}
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
 	free(tfilename);
@@ -2712,12 +2713,15 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Open the RomData object.
-			unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ));
-			if (!file || !file->isOpen()) {
+			RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
+			if (!file->isOpen()) {
 				// Unable to open the file.
+				file->unref();
 				break;
 			}
-			d->romData = RomDataFactory::create(file.get());
+
+			d->romData = RomDataFactory::create(file);
+			file->unref();
 			if (!d->romData) {
 				// Unable to get a RomData object.
 				break;

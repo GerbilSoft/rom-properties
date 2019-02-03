@@ -88,7 +88,7 @@ GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
  * Read a Nintendo Game Boy Advance ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -104,7 +104,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	d->className = "GameBoyAdvance";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -112,7 +112,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -128,7 +128,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 
 	d->isValid = (d->romType >= 0);
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

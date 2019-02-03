@@ -38,7 +38,7 @@ ROMDATA_DECL_IMGINT()
 		 * Read an Xbox 360 XDBF file and/or section.
 		 *
 		 * A ROM image must be opened by the caller. The file handle
-		 * will be dup()'d and must be kept open in order to load
+		 * will be ref()'d and must be kept open in order to load
 		 * data from the ROM image.
 		 *
 		 * To close the file, either delete this object or call close().

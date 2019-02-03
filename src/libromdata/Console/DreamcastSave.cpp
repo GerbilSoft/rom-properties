@@ -230,7 +230,9 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q, IRpFile *file)
 
 DreamcastSavePrivate::~DreamcastSavePrivate()
 {
-	delete vmi_file;
+	if (vmi_file) {
+		vmi_file->unref();
+	}
 
 	delete img_banner;
 	if (iconAnimData) {
@@ -758,7 +760,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
  * Read a Sega Dreamcast save file.
  *
  * A save file must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the disc image.
  *
  * To close the file, either delete this object or call close().
@@ -776,7 +778,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -841,7 +843,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		int ret = d->readVmiHeader(d->file);
 		if (ret != 0) {
 			// Read error.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 		}
@@ -852,7 +854,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	} else {
 		// Not valid.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -872,7 +874,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 		}
@@ -898,7 +900,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 				d->loaded_headers |= headerLoaded;
 			} else {
 				// Not valid.
-				delete d->file;
+				d->file->unref();
 				d->file = nullptr;
 				return;
 			}
@@ -916,7 +918,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
  * - .VMS file (main save file)
  * - .VMI file (directory entry)
  *
- * Both files will be dup()'d.
+ * Both files will be ref()'d.
  * The .VMS file will be used as the main file for the RomData class.
  *
  * To close the files, either delete this object or call close().
@@ -934,15 +936,15 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
-	// dup() the VMI file.
-	d->vmi_file = vmi_file->dup();
+	// ref() the VMI file.
+	d->vmi_file = vmi_file->ref();
 	if (!d->vmi_file) {
-		// Could not dup() the VMI file.
-		delete d->file;
+		// Could not ref() the VMI file.
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -957,8 +959,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	      vmi_fileSize != DC_VMI_Header_SIZE)
 	{
 		// Invalid file(s).
-		delete d->vmi_file;
-		delete d->file;
+		d->vmi_file->unref();
+		d->file->unref();
 		d->vmi_file = nullptr;
 		d->file = nullptr;
 		return;
@@ -974,8 +976,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	int ret = d->readVmiHeader(d->vmi_file);
 	if (ret != 0) {
 		// Error reading the VMI header.
-		delete d->vmi_file;
-		delete d->file;
+		d->vmi_file->unref();
+		d->file->unref();
 		d->vmi_file = nullptr;
 		d->file = nullptr;
 		return;
@@ -995,8 +997,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 			d->loaded_headers |= headerLoaded;
 		} else {
 			// Not valid.
-			delete d->vmi_file;
-			delete d->file;
+			d->vmi_file->unref();
+			d->file->unref();
 			d->vmi_file = nullptr;
 			d->file = nullptr;
 			return;
@@ -1007,7 +1009,22 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	d->isValid = true;
 }
 
-/** ROM detection functions. **/
+/**
+ * Close the opened file.
+ */
+void DreamcastSave::close(void)
+{
+	RP_D(DreamcastSave);
+
+	// Close the VMI file if it's open.
+	if (d->vmi_file) {
+		d->vmi_file->unref();
+		d->vmi_file = nullptr;
+	}
+
+	// Call the superclass function.
+	super::close();
+}
 
 /**
  * Is a ROM image supported by this class?

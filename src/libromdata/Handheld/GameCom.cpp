@@ -272,7 +272,7 @@ const rp_image *GameComPrivate::loadIcon(void)
  * Read a Tiger game.com ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -288,7 +288,7 @@ GameCom::GameCom(IRpFile *file)
 	d->className = "GameCom";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -322,7 +322,7 @@ GameCom::GameCom(IRpFile *file)
 
 	if (!d->isValid) {
 		// Still not valid.
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

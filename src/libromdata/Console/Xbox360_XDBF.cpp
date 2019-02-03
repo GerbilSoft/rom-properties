@@ -510,7 +510,7 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 	// TODO: For rpcli, shortcut to extract the PNG directly.
 	RpMemFile *const f_mem = new RpMemFile(png_buf.get(), length);
 	rp_image *img = RpPng::load(f_mem);
-	delete f_mem;
+	f_mem->unref();
 
 	if (img) {
 		// Save the image for later use.
@@ -701,7 +701,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
  * Read an Xbox 360 XDBF file and/or section.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the disc image.
  *
  * To close the file, either delete this object or call close().
@@ -719,7 +719,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
 	d->fileType = FTYPE_RESOURCE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -730,7 +730,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
  * Read an Xbox 360 XDBF file and/or section.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -749,7 +749,7 @@ Xbox360_XDBF::Xbox360_XDBF(LibRpBase::IRpFile *file, bool xex)
 	d->fileType = FTYPE_RESOURCE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -768,7 +768,7 @@ void Xbox360_XDBF::init(void)
 	size_t size = d->file->read(&d->xdbfHeader, sizeof(d->xdbfHeader));
 	if (size != sizeof(d->xdbfHeader)) {
 		d->xdbfHeader.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -784,7 +784,7 @@ void Xbox360_XDBF::init(void)
 
 	if (!d->isValid) {
 		d->xdbfHeader.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -813,7 +813,7 @@ void Xbox360_XDBF::init(void)
 		delete[] d->entryTable;
 		d->entryTable = nullptr;
 		d->xdbfHeader.magic = 0;
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

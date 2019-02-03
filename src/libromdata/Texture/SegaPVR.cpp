@@ -568,7 +568,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
  * Read a Sega PVR image file.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -586,7 +586,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->fileType = FTYPE_TEXTURE_FILE;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -597,7 +597,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->file->rewind();
 	size_t sz_header = d->file->read(header, sizeof(header));
 	if (sz_header < 32) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -613,7 +613,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	d->isValid = (d->pvrType >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -645,7 +645,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 		assert(d->gbix_len <= 128);
 		if (d->gbix_len < 4 || d->gbix_len > 128 || (d->gbix_len > (sz_header-8))) {
 			// Invalid GBIX header.
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
 			d->isValid = false;
@@ -677,7 +677,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 		default:
 			// Should not get here...
 			assert(!"Invalid PVR type.");
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			d->pvrType = SegaPVRPrivate::PVR_TYPE_UNKNOWN;
 			d->isValid = false;

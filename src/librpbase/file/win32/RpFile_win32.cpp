@@ -39,7 +39,6 @@
 // C++ includes.
 #include <memory>
 #include <string>
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::wstring;
@@ -73,29 +72,17 @@ namespace LibRpBase {
 DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #endif /* _MSC_VER */
 
-/**
- * Deleter for std::unique_ptr<void> d->file,
- * where the pointer is actually a HANDLE.
- */
-struct myFile_deleter {
-	void operator()(HANDLE p) const {
-		if (p != nullptr && p != INVALID_HANDLE_VALUE) {
-			CloseHandle(p);
-		}
-	}
-};
-
 /** RpFilePrivate **/
 
 class RpFilePrivate
 {
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), filename(filename), mode(mode)
-			, gzfd(nullptr), gzsz(0), sector_size(0) { }
+			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
+			, mode(mode), gzfd(nullptr), gzsz(0), sector_size(0) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), filename(filename), mode(mode)
-			, gzfd(nullptr), gzsz(0), sector_size(0) { }
+			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
+			, mode(mode), gzfd(nullptr), gzsz(0), sector_size(0) { }
 		~RpFilePrivate();
 
 	private:
@@ -103,11 +90,7 @@ class RpFilePrivate
 		RpFile *const q_ptr;
 
 	public:
-		// NOTE: file is a HANDLE, but shared_ptr doesn't
-		// work correctly with pointer types as the
-		// template parameter.
-
-		shared_ptr<void> file;	// File handle.
+		HANDLE file;		// File handle.
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
 
@@ -163,6 +146,9 @@ RpFilePrivate::~RpFilePrivate()
 {
 	if (gzfd) {
 		gzclose_r(gzfd);
+	}
+	if (file && file != INVALID_HANDLE_VALUE) {
+		CloseHandle(file);
 	}
 }
 
@@ -276,14 +262,17 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Open the file.
-	file.reset(CreateFile(tfilename.c_str(),
+	if (file && file != INVALID_HANDLE_VALUE) {
+		CloseHandle(file);
+	}
+	file = CreateFile(tfilename.c_str(),
 			dwDesiredAccess,
 			dwShareMode,
 			nullptr,
 			dwCreationDisposition,
 			FILE_ATTRIBUTE_NORMAL,
-			nullptr), myFile_deleter());
-	if (!file || file.get() == INVALID_HANDLE_VALUE) {
+			nullptr);
+	if (!file || file == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		q->m_lastError = w32err_to_posix(GetLastError());
 		return -4;
@@ -321,7 +310,7 @@ int RpFilePrivate::reOpenFile(void)
 				// Try IOCTL_DISK_GET_DRIVE_GEOMETRY_EX instead.
 				DISK_GEOMETRY_EX dg;
 				DWORD dwBytesReturned;  // TODO: Check this?
-				if (DeviceIoControl(file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+				if (DeviceIoControl(file, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
 				    NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL) != 0)
 				{
 					// Device geometry retrieved.
@@ -344,13 +333,14 @@ int RpFilePrivate::reOpenFile(void)
 			if (q->m_lastError == 0) {
 				q->m_lastError = EIO;
 			}
-			file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
+			CloseHandle(file);
+			file = INVALID_HANDLE_VALUE;
 			return -5;
 		}
 	}
 
 	// Return 0 if it's *not* nullptr or INVALID_HANDLE_VALUE.
-	return (!file || file.get() == INVALID_HANDLE_VALUE);
+	return (!file || file == INVALID_HANDLE_VALUE);
 }
 
 /**
@@ -409,7 +399,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 
 		// Read the first block.
 		DWORD bytesRead;
-		BOOL bRet = ReadFile(file.get(), sector_buffer.get(), sector_size, &bytesRead, nullptr);
+		BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != sector_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());
@@ -447,7 +437,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		// Read the next block.
 		// FIXME: Read all of the contiguous blocks at once.
 		DWORD bytesRead;
-		BOOL bRet = ReadFile(file.get(), ptr8, sector_size, &bytesRead, nullptr);
+		BOOL bRet = ReadFile(file, ptr8, sector_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != sector_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());
@@ -465,7 +455,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		pos = q->tell();
 		assert(pos % sector_size == 0);
 		DWORD bytesRead;
-		BOOL bRet = ReadFile(file.get(), sector_buffer.get(), sector_size, &bytesRead, nullptr);
+		BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != sector_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());
@@ -546,34 +536,34 @@ void RpFile::init(void)
 		BOOL bRet;
 
 		uint16_t gzmagic;
-		bRet = ReadFile(d->file.get(), &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
+		bRet = ReadFile(d->file, &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
 		if (bRet && bytesRead == sizeof(gzmagic) && gzmagic == be16_to_cpu(0x1F8B)) {
 			// This is a gzipped file.
 			// Get the uncompressed size at the end of the file.
 			LARGE_INTEGER liFileSize;
-			bRet = GetFileSizeEx(d->file.get(), &liFileSize);
+			bRet = GetFileSizeEx(d->file, &liFileSize);
 			if (bRet && liFileSize.QuadPart > 10+8) {
 				LARGE_INTEGER liSeekPos;
 				liSeekPos.QuadPart = liFileSize.QuadPart - 4;
-				bRet = SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+				bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
 				if (bRet) {
 					uint32_t uncomp_sz;
-					bRet = ReadFile(d->file.get(), &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
+					bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
 					uncomp_sz = le32_to_cpu(uncomp_sz);
 					if (bRet && bytesRead == sizeof(uncomp_sz) && uncomp_sz >= liFileSize.QuadPart-(10+8)) {
 						// Uncompressed size looks valid.
 						d->gzsz = (int64_t)uncomp_sz;
 
 						liSeekPos.QuadPart = 0;
-						SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+						SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
 						// NOTE: Not sure if this is needed on Windows.
-						FlushFileBuffers(d->file.get());
+						FlushFileBuffers(d->file);
 
 						// Open the file with gzdopen().
 						HANDLE hGzDup;
 						BOOL bRet = DuplicateHandle(
 							GetCurrentProcess(),	// hSourceProcessHandle
-							d->file.get(),		// hSourceHandle
+							d->file,		// hSourceHandle
 							GetCurrentProcess(),	// hTargetProcessHandle
 							&hGzDup,		// lpTargetHandle
 							0,			// dwDesiredAccess
@@ -608,9 +598,9 @@ void RpFile::init(void)
 			// Rewind and flush the file.
 			LARGE_INTEGER liSeekPos;
 			liSeekPos.QuadPart = 0;
-			SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+			SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
 			// NOTE: Not sure if this is needed on Windows.
-			FlushFileBuffers(d->file.get());
+			FlushFileBuffers(d->file);
 		}
 	}
 }
@@ -621,121 +611,6 @@ RpFile::~RpFile()
 }
 
 /**
- * Copy constructor.
- * @param other Other instance.
- */
-RpFile::RpFile(const RpFile &other)
-	: super()
-	, d_ptr(new RpFilePrivate(this, other.d_ptr->filename, other.d_ptr->mode))
-{
-	RP_D(RpFile);
-	d->device_size = other.d_ptr->device_size;
-	d->sector_size = other.d_ptr->sector_size;
-	m_lastError = other.m_lastError;
-
-	// NOTE: If the file is gzipped, we can't simply dup()
-	// the file handle because gzdopen() won't work correctly.
-	// TODO: Consolidate with init() and others.
-	if (other.d_ptr->gzfd) {
-		// Re-open the file.
-		if (!d->reOpenFile()) {
-			// Open as gzip without checking modes,
-			// since we know it was already gzipped.
-			HANDLE hGzDup;
-			BOOL bRet = DuplicateHandle(
-				GetCurrentProcess(),	// hSourceProcessHandle
-				d->file.get(),		// hSourceHandle
-				GetCurrentProcess(),	// hTargetProcessHandle
-				&hGzDup,		// lpTargetHandle
-				0,			// dwDesiredAccess
-				FALSE,			// bInheritHandle
-				DUPLICATE_SAME_ACCESS);	// dwOptions
-			if (bRet) {
-				// NOTE: close() on gzfd_dup() will close the
-				// underlying Windows handle.
-				int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
-				if (gzfd_dup >= 0) {
-					d->gzfd = gzdopen(gzfd_dup, "r");
-					if (d->gzfd) {
-						// Copy the seek position.
-						gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
-					} else {
-						// gzdopen() failed.
-						// Close the dup()'d handle to prevent a leak.
-						_close(gzfd_dup);
-					}
-				} else {
-					// Unable to open an fd.
-					CloseHandle(hGzDup);
-				}
-			}
-		}
-	} else {
-		// Not gzipped.
-		d->file = other.d_ptr->file;
-	}
-}
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-RpFile &RpFile::operator=(const RpFile &other)
-{
-	RP_D(RpFile);
-	d->filename = other.d_ptr->filename;
-	d->mode = other.d_ptr->mode;
-	d->device_size = other.d_ptr->device_size;
-	d->sector_size = other.d_ptr->sector_size;
-	m_lastError = other.m_lastError;
-
-	// NOTE: If the file is gzipped, we can't simply dup()
-	// the file handle because gzdopen() won't work correctly.
-	// TODO: Consolidate with init() and others.
-	if (other.d_ptr->gzfd) {
-		// Re-open the file.
-		if (!d->reOpenFile()) {
-			// Open as gzip without checking modes,
-			// since we know it was already gzipped.
-			HANDLE hGzDup;
-			BOOL bRet = DuplicateHandle(
-				GetCurrentProcess(),	// hSourceProcessHandle
-				d->file.get(),		// hSourceHandle
-				GetCurrentProcess(),	// hTargetProcessHandle
-				&hGzDup,		// lpTargetHandle
-				0,			// dwDesiredAccess
-				FALSE,			// bInheritHandle
-				DUPLICATE_SAME_ACCESS);	// dwOptions
-			if (bRet) {
-				// NOTE: close() on gzfd_dup() will close the
-				// underlying Windows handle.
-				int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
-				if (gzfd_dup >= 0) {
-					d->gzfd = gzdopen(gzfd_dup, "r");
-					if (d->gzfd) {
-						// Copy the seek position.
-						gzseek(d->gzfd, gztell(other.d_ptr->gzfd), SEEK_SET);
-					} else {
-						// gzdopen() failed.
-						// Close the dup()'d handle to prevent a leak.
-						_close(gzfd_dup);
-					}
-				} else {
-					// Unable to open an fd.
-					CloseHandle(hGzDup);
-				}
-			}
-		}
-	} else {
-		// Not gzipped.
-		d->file = other.d_ptr->file;
-	}
-
-	return *this;
-}
-
-/**
  * Is the file open?
  * This usually only returns false if an error occurred.
  * @return True if the file is open; false if it isn't.
@@ -743,23 +618,7 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	RP_D(const RpFile);
-	return (d->file.get() != nullptr && d->file.get() != INVALID_HANDLE_VALUE);
-}
-
-/**
- * dup() the file handle.
- *
- * Needed because IRpFile* objects are typically
- * pointers, not actual instances of the object.
- *
- * NOTE: The dup()'d IRpFile* does NOT have a separate
- * file pointer. This is due to how dup() works.
- *
- * @return dup()'d file, or nullptr on error.
- */
-IRpFile *RpFile::dup(void)
-{
-	return new RpFile(*this);
+	return (d->file != nullptr && d->file != INVALID_HANDLE_VALUE);
 }
 
 /**
@@ -772,7 +631,10 @@ void RpFile::close(void)
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
 	}
-	d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
+	if (d->file && d->file != INVALID_HANDLE_VALUE) {
+		CloseHandle(d->file);
+		d->file = INVALID_HANDLE_VALUE;
+	}
 }
 
 /**
@@ -784,7 +646,7 @@ void RpFile::close(void)
 size_t RpFile::read(void *ptr, size_t size)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
+	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return 0;
 	} else if (size == 0) {
@@ -808,7 +670,7 @@ size_t RpFile::read(void *ptr, size_t size)
 			m_lastError = errno;
 		}
 	} else {
-		BOOL bRet = ReadFile(d->file.get(), ptr, static_cast<DWORD>(size), &bytesRead, nullptr);
+		BOOL bRet = ReadFile(d->file, ptr, static_cast<DWORD>(size), &bytesRead, nullptr);
 		if (!bRet) {
 			// An error occurred.
 			m_lastError = w32err_to_posix(GetLastError());
@@ -828,7 +690,7 @@ size_t RpFile::read(void *ptr, size_t size)
 size_t RpFile::write(const void *ptr, size_t size)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
+	if (!d->file || d->file == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -842,7 +704,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 	}
 
 	DWORD bytesWritten;
-	BOOL bRet = WriteFile(d->file.get(), ptr, static_cast<DWORD>(size), &bytesWritten, nullptr);
+	BOOL bRet = WriteFile(d->file, ptr, static_cast<DWORD>(size), &bytesWritten, nullptr);
 	if (!bRet) {
 		// An error occurred.
 		m_lastError = w32err_to_posix(GetLastError());
@@ -860,7 +722,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 int RpFile::seek(int64_t pos)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
+	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -879,7 +741,7 @@ int RpFile::seek(int64_t pos)
 	} else {
 		LARGE_INTEGER liSeekPos;
 		liSeekPos.QuadPart = pos;
-		BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
+		BOOL bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
 		if (bRet) {
 			ret = 0;
 		} else {
@@ -898,7 +760,7 @@ int RpFile::seek(int64_t pos)
 int64_t RpFile::tell(void)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
+	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -909,7 +771,7 @@ int64_t RpFile::tell(void)
 
 	LARGE_INTEGER liSeekPos, liSeekRet;
 	liSeekPos.QuadPart = 0;
-	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
+	BOOL bRet = SetFilePointerEx(d->file, liSeekPos, &liSeekRet, FILE_CURRENT);
 	if (!bRet) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
@@ -926,7 +788,7 @@ int64_t RpFile::tell(void)
 int RpFile::truncate(int64_t size)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
+	if (!d->file || d->file == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -940,14 +802,14 @@ int RpFile::truncate(int64_t size)
 	// get the current file position.
 	LARGE_INTEGER liSeekPos, liSeekRet;
 	liSeekPos.QuadPart = size;
-	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
+	BOOL bRet = SetFilePointerEx(d->file, liSeekPos, &liSeekRet, FILE_CURRENT);
 	if (!bRet) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
 	// Truncate the file.
-	bRet = SetEndOfFile(d->file.get());
+	bRet = SetEndOfFile(d->file);
 	if (!bRet) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
@@ -956,7 +818,7 @@ int RpFile::truncate(int64_t size)
 	// Restore the original position if it was
 	// less than the new size.
 	if (liSeekRet.QuadPart < size) {
-		bRet = SetFilePointerEx(d->file.get(), liSeekRet, nullptr, FILE_BEGIN);
+		bRet = SetFilePointerEx(d->file, liSeekRet, nullptr, FILE_BEGIN);
 		if (!bRet) {
 			m_lastError = w32err_to_posix(GetLastError());
 			return -1;
@@ -976,7 +838,7 @@ int RpFile::truncate(int64_t size)
 int64_t RpFile::size(void)
 {
 	RP_D(RpFile);
-	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
+	if (!d->file || d->file == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -994,7 +856,7 @@ int64_t RpFile::size(void)
 
 	// Regular file.
 	LARGE_INTEGER liFileSize;
-	if (!GetFileSizeEx(d->file.get(), &liFileSize)) {
+	if (!GetFileSizeEx(d->file, &liFileSize)) {
 		// Could not get the file size.
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;

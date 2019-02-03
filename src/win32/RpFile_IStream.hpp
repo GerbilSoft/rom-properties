@@ -36,12 +36,12 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		 * @param gzip		[in] If true, handle gzipped files automatically.
 		 */
 		explicit RpFile_IStream(IStream *pStream, bool gzip = false);
-		virtual ~RpFile_IStream();
+	protected:
+		virtual ~RpFile_IStream();	// call unref() instead
 
 	private:
 		typedef LibRpBase::IRpFile super;
-		RpFile_IStream(const RpFile_IStream &other);
-		RpFile_IStream &operator=(const RpFile_IStream &other);
+		RP_DISABLE_COPY(RpFile_IStream)
 
 	public:
 		/**
@@ -50,19 +50,6 @@ class RpFile_IStream : public LibRpBase::IRpFile
 		 * @return True if the file is open; false if it isn't.
 		 */
 		bool isOpen(void) const final;
-
-		/**
-		 * dup() the file handle.
-		 *
-		 * Needed because IRpFile* objects are typically
-		 * pointers, not actual instances of the object.
-		 *
-		 * NOTE: The dup()'d IRpFile* does NOT have a separate
-		 * file pointer. This is due to how dup() works.
-		 *
-		 * @return dup()'d file, or nullptr on error.
-		 */
-		IRpFile *dup(void) final;
 
 		/**
 		 * Close the file.

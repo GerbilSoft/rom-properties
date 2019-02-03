@@ -315,15 +315,21 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 		if (sbptr.smdh.data) {
 			sbptr.smdh.data->unref();
 		}
-		delete sbptr.file;
+		if (sbptr.file) {
+			sbptr.file->unref();
+		}
 		delete sbptr.reader;
-		delete sbptr.smdh.ncch_f_icon;
+		if (sbptr.smdh.ncch_f_icon) {
+			sbptr.smdh.ncch_f_icon->unref();
+		}
 	} else {
 		// No SMDH header. May have DSiWare.
 		if (sbptr.srl.data) {
 			sbptr.srl.data->unref();
 		}
-		delete sbptr.file;
+		if (sbptr.file) {
+			sbptr.file->unref();
+		}
 		delete sbptr.reader;
 	}
 
@@ -469,9 +475,13 @@ err:
 	if (smdhData) {
 		smdhData->unref();
 	}
-	delete smdhFile;
+	if (smdhFile) {
+		smdhFile->unref();
+	}
 	delete smdhReader;
-	delete ncch_f_icon;
+	if (ncch_f_icon) {
+		ncch_f_icon->unref();
+	}
 	return -99;
 }
 
@@ -834,7 +844,9 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 				if (srlData) {
 					srlData->unref();
 				}
-				delete srlFile;
+				if (srlFile) {
+					srlFile->unref();
+				}
 				delete srlReader;
 			}
 		}
@@ -904,7 +916,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		// NOTE: All known official logo binaries are 8 KB.
 		// The original and new "Homebrew" logos are also 8 KB.
 		uint32_t crc = 0;
-		unique_ptr<IRpFile> f_logo(ncch->openLogo());
+		IRpFile *const f_logo = ncch->openLogo();
 		const int64_t szFile = (f_logo ? f_logo->size() : 0);
 		if (szFile == 8192) {
 			// Calculate the CRC32.
@@ -917,6 +929,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			// Some other custom logo.
 			crc = 1;
 		}
+		f_logo->unref();
 
 		const char *logo_name;
 		switch (crc) {
@@ -1339,7 +1352,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
  * Read a Nintendo 3DS ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the disc image.
  *
  * To close the file, either delete this object or call close().
@@ -1358,7 +1371,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	d->fileType = FTYPE_UNKNOWN;
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -1367,7 +1380,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	d->file->rewind();
 	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -1428,7 +1441,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 		default:
 			// Unknown ROM format.
 			d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
-			delete d->file;
+			d->file->unref();
 			d->file = nullptr;
 			return;
 	}
@@ -1457,7 +1470,9 @@ void Nintendo3DS::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	delete d->sbptr.file;
+	if (d->sbptr.file) {
+		d->sbptr.file->unref();
+	}
 	delete d->sbptr.reader;
 	d->sbptr.file = nullptr;
 	d->sbptr.reader = nullptr;

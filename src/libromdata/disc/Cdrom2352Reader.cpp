@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 /**
@@ -74,7 +73,7 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file
 	, blockCount(0)
 {
 	if (!this->file) {
-		// File could not be dup()'d.
+		// File could not be ref()'d.
 		return;
 	}
 
@@ -83,7 +82,7 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file
 	int64_t fileSize = file->size();
 	if (fileSize <= 0 || fileSize % 2352 != 0) {
 		// Invalid disc size.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;

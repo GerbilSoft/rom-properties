@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -115,7 +115,7 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	, blockCount(0)
 {
 	if (!this->file) {
-		// File could not be dup()'d.
+		// File could not be ref()'d.
 		return;
 	}
 
@@ -126,7 +126,7 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	int64_t fileSize = file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -139,7 +139,7 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	size_t size = file->read(gdibuf.get(), gdisize);
 	if (size != gdisize) {
 		// Read error.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -219,13 +219,13 @@ GdiReaderPrivate::~GdiReaderPrivate()
 void GdiReaderPrivate::close(void)
 {
 	for (auto iter = blockRanges.begin(); iter != blockRanges.end(); ++iter) {
-		delete iter->file;
+		iter->file->unref();
 	}
 	blockRanges.clear();
 	trackMappings.clear();
 
 	// GDI file.
-	delete this->file;
+	this->file->unref();
 	this->file = nullptr;
 }
 
@@ -397,14 +397,14 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	int64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid flie...
-		delete file;
+		this->file->unref();
 		return -EIO;
 	}
 
 	// Is the file a multiple of the sector size?
 	if (fileSize % blockRange->sectorSize != 0) {
 		// Not a multiple of the sector size.
-		delete file;
+		this->file->unref();
 		return -EIO;
 	}
 

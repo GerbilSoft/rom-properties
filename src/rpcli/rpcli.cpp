@@ -181,7 +181,7 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
 	}
-	delete file;
+	file->unref();
 }
 
 /**

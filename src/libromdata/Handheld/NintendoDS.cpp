@@ -652,7 +652,7 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
  * Read a Nintendo DS ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -668,7 +668,7 @@ NintendoDS::NintendoDS(IRpFile *file)
 	d->className = "NintendoDS";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -679,7 +679,7 @@ NintendoDS::NintendoDS(IRpFile *file)
  * Read a Nintendo DS ROM image.
  *
  * A ROM image must be opened by the caller. The file handle
- * will be dup()'d and must be kept open in order to load
+ * will be ref()'d and must be kept open in order to load
  * data from the ROM image.
  *
  * To close the file, either delete this object or call close().
@@ -696,7 +696,7 @@ NintendoDS::NintendoDS(IRpFile *file, bool cia)
 	d->className = "NintendoDS";
 
 	if (!d->file) {
-		// Could not dup() the file handle.
+		// Could not ref() the file handle.
 		return;
 	}
 
@@ -714,7 +714,7 @@ void NintendoDS::init(void)
 	d->file->rewind();
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader)) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
@@ -730,7 +730,7 @@ void NintendoDS::init(void)
 	d->isValid = (d->romType >= 0);
 
 	if (!d->isValid) {
-		delete d->file;
+		d->file->unref();
 		d->file = nullptr;
 	}
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NASOSReader.hpp: GameCube/Wii NASOS (.iso.dec) disc image reader.       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -87,7 +87,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 	memset(&header, 0, sizeof(header));
 
 	if (!this->file) {
-		// File could not be dup()'d.
+		// File could not be ref()'d.
 		return;
 	}
 
@@ -96,7 +96,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 	size_t sz = this->file->read(&header, sizeof(header));
 	if (sz != sizeof(header)) {
 		// Error reading the NASOS header.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -123,7 +123,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 		blockMapShift = 8;
 	} else {
 		// Invalid magic.
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;
@@ -139,7 +139,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 	if (sz != sz_blockMap) {
 		// Error reading the block map.
 		blockMap.clear();
-		delete this->file;
+		this->file->unref();
 		this->file = nullptr;
 		q->m_lastError = EIO;
 		return;

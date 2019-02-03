@@ -32,7 +32,7 @@ ROMDATA_DECL_BEGIN(NintendoDS)
 		 * Read a Nintendo DS ROM image.
 		 *
 		 * A ROM image must be opened by the caller. The file handle
-		 * will be dup()'d and must be kept open in order to load
+		 * will be ref()'d and must be kept open in order to load
 		 * data from the ROM image.
 		 *
 		 * To close the file, either delete this object or call close().

@@ -163,19 +163,19 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 	// TODO: Check file extensions and/or MIME types?
 
 	// Open the ROM file.
-	RpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
 		// Is this ROM file supported?
 		// NOTE: We have to create an instance here in order to
 		// prevent false positives caused by isRomSupported()
 		// saying "yes" while new RomData() says "no".
-		RomData *romData = RomDataFactory::create(file);
+		RomData *const romData = RomDataFactory::create(file);
 		if (romData != nullptr) {
 			supported = true;
 			romData->unref();
 		}
-		delete file;
 	}
+	file->unref();
 
 	g_free(filename);
 	return supported;
