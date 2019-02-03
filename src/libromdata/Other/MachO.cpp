@@ -488,7 +488,7 @@ int MachO::loadFieldData(void)
 	}
 
 	// Maximum of 4 fields per architecture.
-	const int n_tabs = (int)sizeof(d->machHeaders.size());
+	const int n_tabs = static_cast<int>(d->machHeaders.size());
 	d->fields->reserve(4*n_tabs);
 	d->fields->reserveTabs(n_tabs);
 
