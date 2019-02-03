@@ -347,7 +347,7 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	RegKey hkey_ext(hkcr, t_ext.c_str(), KEY_READ|KEY_WRITE, false);
 	if (hkey_ext.isOpen()) {
 		RegKey hkey_OpenWithProgids(hkey_ext, _T("OpenWithProgids"), KEY_READ|KEY_WRITE, false);
-		if (hkey_ext.isOpen()) {
+		if (hkey_OpenWithProgids.isOpen()) {
 			hkey_OpenWithProgids.deleteValue(RP_ProgID);
 			if (hkey_OpenWithProgids.isKeyEmpty()) {
 				// OpenWithProgids is empty. Delete it.
