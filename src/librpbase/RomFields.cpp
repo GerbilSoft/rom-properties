@@ -710,7 +710,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	field.isValid = (name != nullptr);
 
 	// Handle string trimming flags.
-	if (field.data.str && (flags & STRF_TRIM_END)) {
+	if (nstr && (flags & STRF_TRIM_END)) {
 		trimEnd(*nstr);
 	}
 	return static_cast<int>(idx);
