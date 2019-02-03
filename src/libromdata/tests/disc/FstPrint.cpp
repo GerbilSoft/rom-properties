@@ -171,7 +171,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 
 			// Print the attributes. (address, size)
 			char attrs[48];
-			snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRIu64 "]",
+			snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRId64 "]",
 				 dirent->offset, dirent->size);
 
 			// Check if any more entries are present.
