@@ -304,9 +304,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
 			jpeg_destroy_decompress(&cinfo);
-			if (img) {
-				delete img;
-			}
+			delete img;
 			return nullptr;
 		}
 	}

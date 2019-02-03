@@ -183,9 +183,7 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 
 	// Delete any allocated string tables.
 	for (int i = ARRAY_SIZE(strTbl)-1; i >= 0; i--) {
-		if (strTbl[i]) {
-			delete strTbl[i];
-		}
+		delete strTbl[i];
 	}
 
 	// Delete any loaded images.

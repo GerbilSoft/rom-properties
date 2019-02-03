@@ -399,9 +399,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	}
 
 	// readSector() needs aes_title.
-	if (aes_title) {
-		delete aes_title;
-	}
+	delete aes_title;
 	aes_title = cipher.release();
 
 	// Read sector 0, which contains a disc header.
