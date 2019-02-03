@@ -520,12 +520,7 @@ IRpFile *IsoPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	PartitionFile *file = new PartitionFile(this, file_addr, dirEntry_found->size.he);
-	if (!file) {
-		file->unref();
-		file = nullptr;
-	}
-	return file;
+	return new PartitionFile(this, file_addr, dirEntry_found->size.he);
 }
 
 }
