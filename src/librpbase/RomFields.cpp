@@ -524,7 +524,7 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, int cou
 
 	for (; strArray != nullptr && count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		pVec->push_back(*strArray ? *strArray : "");
+		pVec->push_back(*strArray ? *strArray : string());
 	}
 
 	return pVec;

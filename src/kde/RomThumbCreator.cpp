@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -24,6 +24,7 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
@@ -42,6 +43,7 @@ using LibRomData::TCreateThumbnail;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cinttypes>
 
 // C++ includes.
 #include <memory>
@@ -387,8 +389,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	QFileInfo fi_src(qs_source_file);
 	int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 	if (mtime > 0) {
-		kv.push_back(std::make_pair("Thumb::MTime",
-			string(QString::number(mtime).toUtf8().constData())));
+		kv.push_back(std::make_pair("Thumb::Size", rp_sprintf("%" PRId64, mtime)));
 	}
 
 	// MIME type.
@@ -410,8 +411,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// File size.
 	int64_t szFile = fi_src.size();
 	if (szFile > 0) {
-		kv.push_back(std::make_pair("Thumb::Size",
-			string(QString::number(szFile).toUtf8().constData())));
+		kv.push_back(std::make_pair("Thumb::Size", rp_sprintf("%" PRId64, szFile)));
 	}
 
 	// URI.
