@@ -2289,15 +2289,15 @@ int Nintendo3DS::loadFieldData(void)
 
 			// TODO: Use content_chunk->index?
 			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = nullptr;
-			const char *noncch_cnt_type = nullptr;
+			const char *content_type = nullptr;
 			if (pNcch) {
 				if (pNcch->isOpen()) {
 					content_ncch_header = pNcch->ncchHeader();
-				} else {
-					// This might be a non-NCCH content that
-					// we still recognize.
-					noncch_cnt_type = pNcch->contentType();
 				}
+				// Get the content type regardless of whether or not
+				// the NCCH is open, since it might be a non-NCCH
+				// content that we still recognize.
+				content_type = pNcch->contentType();
 			}
 			if (!content_ncch_header) {
 				// Invalid content index, or this content isn't an NCCH.
@@ -2311,8 +2311,8 @@ int Nintendo3DS::loadFieldData(void)
 
 				if (i == 0 && d->sbptr.srl.data) {
 					// This is an SRL.
-					if (!noncch_cnt_type) {
-						noncch_cnt_type = "SRL";
+					if (!content_type) {
+						content_type = "SRL";
 					}
 					// TODO: Do SRLs have encryption besides CIA encryption?
 					if (!crypto) {
@@ -2320,11 +2320,11 @@ int Nintendo3DS::loadFieldData(void)
 					}
 				} else {
 					// Something else...
-					if (!noncch_cnt_type) {
-						noncch_cnt_type = s_unknown;
+					if (!content_type) {
+						content_type = s_unknown;
 					}
 				}
-				data_row.push_back(noncch_cnt_type);
+				data_row.push_back(content_type);
 
 				// Encryption.
 				data_row.push_back(crypto ? crypto : s_unknown);
@@ -2342,7 +2342,6 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Content type.
-			const char *content_type = pNcch->contentType();
 			data_row.push_back(content_type ? content_type : s_unknown);
 
 			// Encryption.
