@@ -917,19 +917,21 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		// The original and new "Homebrew" logos are also 8 KB.
 		uint32_t crc = 0;
 		IRpFile *const f_logo = ncch->openLogo();
-		const int64_t szFile = (f_logo ? f_logo->size() : 0);
-		if (szFile == 8192) {
-			// Calculate the CRC32.
-			unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
-			size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
-			if (size == static_cast<unsigned int>(szFile)) {
-				crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
+		if (f_logo) {
+			const int64_t szFile = f_logo->size();
+			if (szFile == 8192) {
+				// Calculate the CRC32.
+				unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
+				size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
+				if (size == static_cast<unsigned int>(szFile)) {
+					crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
+				}
+			} else if (szFile > 0) {
+				// Some other custom logo.
+				crc = 1;
 			}
-		} else if (szFile > 0) {
-			// Some other custom logo.
-			crc = 1;
+			f_logo->unref();
 		}
-		f_logo->unref();
 
 		const char *logo_name;
 		switch (crc) {
