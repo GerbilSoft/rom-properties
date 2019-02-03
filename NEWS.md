@@ -98,8 +98,10 @@
   * GameCube: Fix bug that prevented "EUR" and "JPN" from being appended
     to region code descriptions if the game's BI2 region doesn't match
     the ID4 region.
-  * EXE: Fixed a crash that occurred when viewing the properties of a
-    Windows 1.0 executable in any UI frontend other than rpcli.
+  * EXE:
+    * Fixed a crash that occurred when viewing the properties of a
+      Windows 1.0 executable in any UI frontend other than rpcli.
+    * Fixed inverted "windowsSetting" flags.
   * CBCReader: Added unaligned read support and fixed positioning issues
     when reading unencrypted data. This only affected the Xbox360_XEX
     parser; WiiSave, WiiWAD, and CIAReader were not affected.
