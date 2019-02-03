@@ -456,12 +456,14 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int req_size,
 		if (sBIT) {
 			memset(sBIT, 0, sizeof(*sBIT));
 		}
+		file->unref();
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
+	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		if (sBIT) {
