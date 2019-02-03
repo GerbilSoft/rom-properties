@@ -143,14 +143,13 @@ class GameCubePrivate : public RomDataPrivate
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			uint8_t vg;		// Volume group number.
-			uint8_t pt;		// Partition number.
-
 			int64_t start;		// Starting address, in bytes.
 			int64_t size;		// Estimated partition size, in bytes.
 
-			uint32_t type;		// Partition type. (See WiiPartitionType.)
 			WiiPartition *partition;	// Partition object.
+			uint32_t type;		// Partition type. (See WiiPartitionType.)
+			uint8_t vg;		// Volume group number.
+			uint8_t pt;		// Partition number.
 		};
 
 		vector<WiiPartEntry> wiiPtbl;

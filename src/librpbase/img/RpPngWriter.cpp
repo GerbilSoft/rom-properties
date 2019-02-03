@@ -206,28 +206,28 @@ class RpPngWriterPrivate
 			rp_image::Format format;
 
 			// Palette for CI8 images.
-			const uint32_t *palette;
 			int palette_len;
+			const uint32_t *palette;
 
 #ifdef PNG_sBIT_SUPPORTED
 			// sBIT data. If we have sBIT, and alpha == 0,
 			// we'll skip saving the alpha channel.
+			rp_image::sBIT_t sBIT;
 			bool has_sBIT;
 			bool skip_alpha;
-			rp_image::sBIT_t sBIT;
 #endif /* PNG_sBIT_SUPPORTED */
 
 			cache_t()
 				: width(0)
 				, height(0)
 				, format(rp_image::FORMAT_NONE)
-				, palette(nullptr)
 				, palette_len(0)
+				, palette(nullptr)
 			{
 #ifdef PNG_sBIT_SUPPORTED
+				memset(&sBIT, 0, sizeof(sBIT));
 				has_sBIT = false;
 				skip_alpha = false;
-				memset(&sBIT, 0, sizeof(sBIT));
 #endif /* PNG_sBIT_SUPPORTED */
 			}
 
@@ -237,8 +237,8 @@ class RpPngWriterPrivate
 				this->format = img->format();
 				if (this->format == rp_image::FORMAT_CI8) {
 					// Get the palette.
-					this->palette = img->palette();
 					this->palette_len = img->palette_len();
+					this->palette = img->palette();
 				}
 #ifdef PNG_sBIT_SUPPORTED
 				// Get the rp_image's sBIT data.
