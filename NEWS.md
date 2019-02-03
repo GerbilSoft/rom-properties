@@ -22,6 +22,8 @@
       or later.
   * rpcli will now print multi-line entries in lists using multiple lines
     instead of showing a U+240A symbol between lines.
+  * RFT_LISTDATA fields (ListView, etc.) can now have text alignment set
+    by the various RomData subclasses.
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other
