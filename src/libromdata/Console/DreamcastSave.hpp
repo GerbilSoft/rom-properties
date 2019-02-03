@@ -46,6 +46,7 @@ ROMDATA_DECL_BEGIN(DreamcastSave)
 		 */
 		DreamcastSave(LibRpBase::IRpFile *vms_file, LibRpBase::IRpFile *vmi_file);
 
+ROMDATA_DECL_CLOSE()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
 ROMDATA_DECL_IMGINT()

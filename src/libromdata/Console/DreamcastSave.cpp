@@ -1009,7 +1009,22 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	d->isValid = true;
 }
 
-/** ROM detection functions. **/
+/**
+ * Close the opened file.
+ */
+void DreamcastSave::close(void)
+{
+	RP_D(DreamcastSave);
+
+	// Close the VMI file if it's open.
+	if (d->vmi_file) {
+		d->vmi_file->unref();
+		d->vmi_file = nullptr;
+	}
+
+	// Call the superclass function.
+	super::close();
+}
 
 /**
  * Is a ROM image supported by this class?

@@ -410,6 +410,32 @@ Dreamcast::Dreamcast(IRpFile *file)
 }
 
 /**
+ * Close the opened file.
+ */
+void Dreamcast::close(void)
+{
+	RP_D(Dreamcast);
+
+	// Close any child RomData subclasses.
+	if (d->pvrData) {
+		d->pvrData->unref();
+		d->pvrData = nullptr;
+	}
+	if (d->pvrFile) {
+		d->pvrFile->unref();
+		d->pvrFile = nullptr;
+	}
+
+	delete d->discReader;
+	delete d->isoPartition;
+	d->discReader = nullptr;
+	d->isoPartition = nullptr;
+
+	// Call the superclass function.
+	super::close();
+}
+
+/**
  * Is a ROM image supported by this class?
  * @param info DetectInfo containing ROM detection information.
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
