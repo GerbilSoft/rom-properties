@@ -146,7 +146,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	}
 
 	// Calculate the disc size based on the highest logical block index.
-	disc_size = static_cast<int64_t>(maxLogicalBlockUsed+1) * static_cast<int64_t>(block_size);
+	disc_size = (static_cast<int64_t>(maxLogicalBlockUsed) + 1) * static_cast<int64_t>(block_size);
 
 	// Reset the disc position.
 	pos = 0;
