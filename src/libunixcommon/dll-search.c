@@ -110,25 +110,28 @@ static RP_Frontend walk_proc_tree(void)
 			// Otherwise, continue until we find "PPid:\t".
 			if (!strncmp(buf, "Name:\t", 6)) {
 				// Found the "Name:" row.
-				const char *const chr = memchr(buf, '\n', sizeof(buf)-6);
+				const char *const s_value = &buf[6];
+				const size_t s_value_sz = sizeof(buf)-6;
+
+				const char *const chr = memchr(s_value, '\n', s_value_sz);
 				if (!chr)
 					continue;
 
-				const int len = chr - buf - 6;
+				const int len = (int)(chr - s_value);
 				if (len == 8) {
-					if (!strncmp(&buf[6], "kdeinit5", 8)) {
+					if (!strncmp(s_value, "kdeinit5", 8)) {
 						// Found kdeinit5.
 						ret = RP_FE_KDE5;
 						ppid = 0;
 						break;
-					} else if (!strncmp(&buf[6], "kdeinit4", 8)) {
+					} else if (!strncmp(s_value, "kdeinit4", 8)) {
 						// Found kdeinit4.
 						ret = RP_FE_KDE4;
 						ppid = 0;
 						break;
 					}
-				} else if ((len == 11 && !strncmp(&buf[6], "gnome-panel", 11)) ||
-					   (len == 13 && !strncmp(&buf[6], "gnome-session", 13)))
+				} else if ((len == 11 && !strncmp(s_value, "gnome-panel", 11)) ||
+					   (len == 13 && !strncmp(s_value, "gnome-session", 13)))
 				{
 					// GNOME session.
 					ret = RP_FE_GNOME;
