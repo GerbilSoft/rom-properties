@@ -35,13 +35,14 @@ typedef struct mspack_memory_file_t {
 } mspack_memory_file;
 mspack_memory_file* mspack_memory_open(struct mspack_system* sys, void* buffer,
                                        const size_t buffer_size) {
+  mspack_memory_file* memfile;
   ((void)sys);
+
   assert_true(buffer_size < INT_MAX);
   if (buffer_size >= INT_MAX) {
     return NULL;
   }
-  mspack_memory_file* memfile =
-      (mspack_memory_file*)calloc(1, sizeof(mspack_memory_file));
+  memfile = (mspack_memory_file*)calloc(1, sizeof(mspack_memory_file));
   if (!memfile) {
     return NULL;
   }
@@ -98,21 +99,25 @@ int lzx_decompress(const void* lzx_data, size_t lzx_len, void* dest,
                    size_t window_data_len) {
   uint32_t window_bits = 0;
   uint32_t temp_sz = window_size;
-  for (size_t m = 0; m < 32; m++, window_bits++) {
+  size_t m;
+  int result_code = 1;
+
+  struct mspack_system* sys;
+  mspack_memory_file* lzxsrc;
+  mspack_memory_file* lzxdst;
+  struct lzxd_stream* lzxd;
+
+  for (m = 0; m < 32; m++, window_bits++) {
     temp_sz >>= 1;
     if (temp_sz == 0x00000000) {
       break;
     }
   }
 
-  int result_code = 1;
-
-  struct mspack_system* sys = mspack_memory_sys_create();
-  mspack_memory_file* lzxsrc =
-      mspack_memory_open(sys, (void*)lzx_data, lzx_len);
-  mspack_memory_file* lzxdst = mspack_memory_open(sys, dest, dest_len);
-  struct lzxd_stream* lzxd =
-      lzxd_init(sys, (struct mspack_file*)lzxsrc, (struct mspack_file*)lzxdst,
+  sys = mspack_memory_sys_create();
+  lzxsrc = mspack_memory_open(sys, (void*)lzx_data, lzx_len);
+  lzxdst = mspack_memory_open(sys, dest, dest_len);
+  lzxd = lzxd_init(sys, (struct mspack_file*)lzxsrc, (struct mspack_file*)lzxdst,
                 window_bits, 0, 0x8000, (off_t)dest_len, 0);
 
   if (lzxd) {
