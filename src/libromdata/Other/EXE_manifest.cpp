@@ -250,7 +250,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		FIRST_CHILD_ELEMENT(child_elem, parent_elem, #setting_name); \
 		if (child_elem) { \
 			const char *text = child_elem->GetText(); \
-			if (text && strcasecmp(text, "true")) { \
+			if (text && !strcasecmp(text, "true")) { \
 				settings |= (Setting_##setting_name); \
 			} \
 		} \
