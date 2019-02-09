@@ -434,7 +434,7 @@ int BCSTM::loadFieldData(void)
 
 	// BCSTM headers
 	const BCSTM_Header *const bcstmHeader = &d->bcstmHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->reserve(9);	// Maximum of 9 fields.
 
 	// Type
 	// Disambiguates between the supported formats.
