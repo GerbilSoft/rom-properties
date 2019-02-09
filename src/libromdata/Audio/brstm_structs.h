@@ -31,6 +31,16 @@ extern "C" {
 #pragma pack(1)
 
 /**
+ * BRSTM chunk information.
+ * Endianness depends on the byte-order mark.
+ */
+typedef struct _BRSTM_ChunkInfo {
+	uint32_t offset;	// [0x000] Offset
+	uint32_t size;		// [0x004] Size
+} BRSTM_ChunkInfo;
+ASSERT_STRUCT(BRSTM_ChunkInfo, 8);
+
+/**
  * BRSTM header.
  * This matches the BRSTM header format exactly.
  * Reference: https://wiibrew.org/wiki/BRSTM_file
@@ -38,7 +48,7 @@ extern "C" {
  * Offsets in the BRSTM header are absolute addresses.
  * (aka: relative to the start of the BRSTM header)
  *
- * Field endian is determined by the byte-order mark.
+ * Endianness depends on the byte-order mark.
  */
 #define BRSTM_MAGIC 'RSTM'
 #define BRSTM_BOM_HOST 0xFEFF	// UTF-8 BOM; matches host-endian.
@@ -56,12 +66,9 @@ typedef struct PACKED _BRSTM_Header {
 	// HEAD and DATA chunks must exist.
 	// ADPC chunk is optional.
 	uint16_t chunk_count;	// [0x00E] Number of chunks
-	uint32_t head_offset;	// [0x010] HEAD chunk offset
-	uint32_t head_size;	// [0x014] HEAD chunk size
-	uint32_t adpc_offset;	// [0x018] ADPC chunk offset
-	uint32_t adpc_size;	// [0x01C] ADPC chunk size
-	uint32_t data_offset;	// [0x020] DATA chunk offset
-	uint32_t data_size;	// [0x024] DATA chunk size
+	BRSTM_ChunkInfo head;	// [0x010] HAED chunk
+	BRSTM_ChunkInfo adpc;	// [0x018] ADPC chunk
+	BRSTM_ChunkInfo data;	// [0x020] DATA chunk
 
 	// There's usually 24 bytes of padding here,
 	// but we'll leave that out.

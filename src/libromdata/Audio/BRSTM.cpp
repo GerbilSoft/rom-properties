@@ -153,8 +153,8 @@ BRSTM::BRSTM(IRpFile *file)
 
 	// Get the HEAD header.
 	BRSTM_HEAD_Header headHeader;
-	const uint32_t head_offset = d->brstm32_to_cpu(d->brstmHeader.head_offset);
-	const uint32_t head_size = d->brstm32_to_cpu(d->brstmHeader.head_size);
+	const uint32_t head_offset = d->brstm32_to_cpu(d->brstmHeader.head.offset);
+	const uint32_t head_size = d->brstm32_to_cpu(d->brstmHeader.head.size);
 	if (head_offset == 0 || head_size < sizeof(headHeader)) {
 		// Invalid HEAD chunk.
 		d->isValid = false;
@@ -260,10 +260,10 @@ int BRSTM::isRomSupported_static(const DetectInfo *info)
 
 	// HEAD and DATA offset and sizes must both be non-zero.
 	// No byteswapping is needed here.
-	if (brstmHeader->head_offset == 0 ||
-	    brstmHeader->head_size == 0 ||
-	    brstmHeader->data_offset == 0 ||
-	    brstmHeader->data_size == 0)
+	if (brstmHeader->head.offset == 0 ||
+	    brstmHeader->head.size == 0 ||
+	    brstmHeader->data.offset == 0 ||
+	    brstmHeader->data.size == 0)
 	{
 		// Missing a required chunk.
 		return -1;
