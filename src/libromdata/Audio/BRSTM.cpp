@@ -377,7 +377,7 @@ int BRSTM::loadFieldData(void)
 			: C_("BRSTM", "Little-Endian"));
 
 	// Codec
-	const char *const codec_tbl[] = {
+	static const char *const codec_tbl[] = {
 		NOP_C_("BRSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BRSTM|Codec", "Signed 16-bit PCM"),
 		NOP_C_("BRSTM|Codec", "4-bit THP ADPCM"),
