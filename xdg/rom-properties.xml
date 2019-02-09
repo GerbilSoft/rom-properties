@@ -9,6 +9,16 @@
     <glob pattern="*.adx"/>
   </mime-type>
 
+  <!-- BRSTM -->
+  <mime-type type="audio/x-brstm">
+    <comment>Nintendo Wii BRSTM audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.brstm"/>
+    <magic priority="50">
+      <match value="RSTM" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- GBS -->
   <mime-type type="audio/x-gbs">
     <comment>Game Boy Sound System audio</comment>
