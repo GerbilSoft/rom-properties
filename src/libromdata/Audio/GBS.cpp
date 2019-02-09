@@ -171,10 +171,7 @@ const char *GBS::systemName(unsigned int type) const
 		"GBS::systemName() array index optimization needs to be updated.");
 
 	static const char *const sysNames[4] = {
-		"Nintendo Sound Format",
-		"GBS",
-		"GBS",
-		nullptr
+		"Game Boy Sound System", "GBS", "GBS", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
