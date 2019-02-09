@@ -87,11 +87,12 @@ ASSERT_STRUCT(BCSTM_SizedRef, 12);
  */
 #define BCSTM_MAGIC 'CSTM'
 #define BFSTM_MAGIC 'FSTM'
+#define BCWAV_MAGIC 'CWAV'
 #define BCSTM_BOM_HOST 0xFEFF	// UTF-8 BOM; matches host-endian.
 #define BCSTM_BOM_SWAP 0xFFFE	// UTF-8 BOM; matches swapped-endian.
 #define BCSTM_VERSION 0x02000000
 typedef struct PACKED _BCSTM_Header {
-	uint32_t magic;		// [0x000] 'CSTM', 'FSTM'
+	uint32_t magic;		// [0x000] 'CSTM', 'FSTM', 'CWAV'
 	uint16_t bom;		// [0x004] Byte-order mark
 	uint16_t header_size;	// [0x006] Header size (0x40 due to Info Block alignment)
 	uint32_t version;	// [0x008] Version (0x02000000)
@@ -101,9 +102,17 @@ typedef struct PACKED _BCSTM_Header {
 
 	// Sized References
 	// Offsets are relative to the start of the file.
+	// NOTE: CWAV does not have a SEEK block.
 	BCSTM_SizedRef info;	// [0x014] Info block
-	BCSTM_SizedRef seek;	// [0x020] Seek block
-	BCSTM_SizedRef data;	// [0x02C] Data block
+	union {
+		struct {
+			BCSTM_SizedRef seek;	// [0x020] Seek block
+			BCSTM_SizedRef data;	// [0x02C] Data block
+		} cstm;
+		struct {
+			BCSTM_SizedRef data;	// [0x020] Data block
+		} cwav;
+	};
 } BCSTM_Header;
 ASSERT_STRUCT(BCSTM_Header, 0x38);
 
@@ -165,7 +174,7 @@ typedef enum {
 } BCSTM_Codec_e;
 
 /**
- * INFO block.
+ * BCSTM/BFSTM INFO block.
  * This contains references to other fields.
  *
  * Note that the full block is not included, since
@@ -189,6 +198,32 @@ typedef struct PACKED _BCSTM_INFO_Block {
 	// The remainder of the INFO block is variable-length.
 } BCSTM_INFO_Block;
 ASSERT_STRUCT(BCSTM_INFO_Block, 0x58);
+
+/**
+ * BCWAV INFO block.
+ * This is similar to BCSTM_Stream_Info,
+ * but has fewer fields.
+ *
+ * Note that the full block is not included, since
+ * the channel info tables are variable-length.
+ *
+ * Endianness depends on the byte-order mark.
+ */
+typedef struct PACKED _BCWAV_INFO_Block {
+	uint32_t magic;		// [0x000] 'INFO'
+	uint32_t size;		// [0x004] Size of the info blokc.
+	uint8_t codec;		// [0x008] Codec (See BCSTM_Codec_e)
+				//         (listed as Encoding on 3dbrew)
+	uint8_t loop_flag;	// [0x009] Loop flag
+	uint8_t padding[2];	// [0x00A]
+	uint32_t sample_rate;	// [0x00C] Sample rate
+	uint32_t loop_start;	// [0x010] Loop start frame
+	uint32_t loop_end;	// [0x014] Loop end frame
+	uint8_t reserved[4];	// [0x018]
+
+	// The remainder of the INFO block is variable-length.
+} BCWAV_INFO_Block;
+ASSERT_STRUCT(BCWAV_INFO_Block, 0x1C);
 
 #pragma pack()
 
