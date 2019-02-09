@@ -436,6 +436,20 @@ int BCSTM::loadFieldData(void)
 	const BCSTM_Header *const bcstmHeader = &d->bcstmHeader;
 	d->fields->reserve(8);	// Maximum of 8 fields.
 
+	// Type
+	// Disambiguates between the supported formats.
+	static const char type_tbl[][8] = {
+		"BCSTM", "BFSTM", "BCWAV"
+	};
+	if (d->audioFormat > BCSTMPrivate::AUDIO_FORMAT_UNKNOWN &&
+	    d->audioFormat < ARRAY_SIZE(type_tbl))
+	{
+		d->fields->addField_string(C_("BCSTM", "Type"), type_tbl[d->audioFormat]);
+	} else {
+		d->fields->addField_string(C_("BCSTM", "Type"),
+			rp_sprintf(C_("RomData", "Unknown (%d)"), d->audioFormat));
+	}
+
 	// TODO: Show the version field?
 
 	// Endianness
@@ -489,7 +503,7 @@ int BCSTM::loadFieldData(void)
 	}
 
 	// Codec
-	const char *const codec_tbl[] = {
+	static const char *const codec_tbl[] = {
 		NOP_C_("BCSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		NOP_C_("BCSTM|Codec", "DSP ADPCM"),
