@@ -291,7 +291,7 @@ const char *BRSTM::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
-		"Nintendo Wii BRSTM", "BRSTM", "BRSTM", nullptr
+		"Nintendo Wii", "Wii", "Wii", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -365,6 +365,12 @@ int BRSTM::loadFieldData(void)
 	const BRSTM_Header *const brstmHeader = &d->brstmHeader;
 	const BRSTM_HEAD_Chunk1 *const headChunk1 = &d->headChunk1;
 	d->fields->reserve(8);	// Maximum of 8 fields.
+
+	// Type
+	// NOTE: This is for consistency with BCSTM, and it's needed
+	// because we don't show the format in systemName().
+	// TODO: Add more formats?
+	d->fields->addField_string(C_("BRSTM", "Type"), "BRSTM");
 
 	// Version
 	d->fields->addField_string(C_("RomData", "Version"),
