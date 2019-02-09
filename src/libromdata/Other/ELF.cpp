@@ -1010,6 +1010,8 @@ const char *ELF::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// ELF has the sam names worldwide, so we can
+	// ignore the region selection.
 	// TODO: Identify the OS, or list that in the fields instead?
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"ELF::systemName() array index optimization needs to be updated.");
@@ -1018,17 +1020,10 @@ const char *ELF::systemName(unsigned int type) const
 
 	if (d->isWiiU) {
 		// This is a Wii U RPX/RPL executable.
-		if (d->fileType == FTYPE_SHARED_LIBRARY) {
-			static const char *const sysNames_RPL[4] = {
-				"Nintendo Wii U RPL", "RPL", "RPL", nullptr
-			};
-			return sysNames_RPL[type];
-		} else {
-			static const char *const sysNames_RPX[4] = {
-				"Nintendo Wii U RPX", "RPX", "RPX", nullptr
-			};
-			return sysNames_RPX[type];
-		}
+		static const char *const sysNames_WiiU[4] = {
+			"Nintendo Wii U", "Wii U", "Wii U", nullptr
+		};
+		return sysNames_WiiU[type];
 	}
 
 	// Standard ELF executable.
