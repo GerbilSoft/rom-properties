@@ -154,7 +154,9 @@ BCSTM::BCSTM(IRpFile *file)
 	// Get the INFO block.
 	const uint32_t info_offset = d->bcstm32_to_cpu(d->bcstmHeader.info.ref.offset);
 	const uint32_t info_size = d->bcstm32_to_cpu(d->bcstmHeader.info.size);
-	if (info_offset == 0 || info_size < sizeof(d->infoBlock)) {
+	if (info_offset == 0 || info_offset == ~0 ||
+	    info_size < sizeof(d->infoBlock))
+	{
 		// Invalid INFO block.
 		d->isValid = false;
 		d->file->unref();
@@ -238,14 +240,21 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// INFO, SEEK, and DATA offset and sizes must both be non-zero.
+	// INFO, SEEK, and DATA offset and sizes must both be valid.
+	// Invalid values: 0, ~0 (0xFFFFFFFF)
 	// No byteswapping is needed here.
 	if (bcstmHeader->info.ref.offset == 0 ||
+	    bcstmHeader->info.ref.offset == ~0 ||
 	    bcstmHeader->info.size == 0 ||
+	    bcstmHeader->info.size == ~0 ||
 	    bcstmHeader->seek.ref.offset == 0 ||
+	    bcstmHeader->seek.ref.offset == ~0 ||
 	    bcstmHeader->seek.size == 0 ||
+	    bcstmHeader->seek.size == ~0 ||
 	    bcstmHeader->data.ref.offset == 0 ||
-	    bcstmHeader->data.size == 0)
+	    bcstmHeader->data.ref.offset == ~0 ||
+	    bcstmHeader->data.size == 0 ||
+	    bcstmHeader->data.size == ~0)
 	{
 		// Missing a required block.
 		return -1;

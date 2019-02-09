@@ -37,11 +37,28 @@ extern "C" {
  * Endianness depends on the byte-order mark.
  */
 typedef struct PACKED _BCSTM_Reference {
-	uint16_t type_id;	// [0x000] Type ID
+	uint16_t type_id;	// [0x000] Type ID (See BCSTM_Block_Type_e)
 	uint16_t padding;	// [0x002] Padding
 	uint32_t offset;	// [0x004] Offset (~0 for "null")
 } BCSTM_Reference;
 ASSERT_STRUCT(BCSTM_Reference, 8);
+
+/**
+ * BCSTM block types.
+ */
+typedef enum {
+	BCSTM_BLOCK_TYPE_BYTE_TABLE	= 0x0100,
+	BCSTM_BLOCK_TYPE_REF_TABLE	= 0x0101,
+	BCSTM_BLOCK_TYPE_ADPCM_DSP_INFO	= 0x0300,
+	BCSTM_BLOCK_TYPE_ADPCM_IMA_INFO	= 0x0301,
+	BCSTM_BLOCK_TYPE_SAMPLE_DATA	= 0x1F00,
+	BCSTM_BLOCK_TYPE_INFO_BLOCK	= 0x4000,
+	BCSTM_BLOCK_TYPE_SEEK_BLOCK	= 0x4001,
+	BCSTM_BLOCK_TYPE_DATA_BLOCK	= 0x4002,
+	BCSTM_BLOCK_TYPE_STREAM_INFO	= 0x4100,
+	BCSTM_BLOCK_TYPE_TRACK_INFO	= 0x4101,
+	BCSTM_BLOCK_TYPE_CHANNEL_INFO	= 0x4102,
+} BCSTM_Block_Type_e;
 
 /**
  * BCSTM sized reference.
