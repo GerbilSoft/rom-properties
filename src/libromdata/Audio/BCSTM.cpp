@@ -357,7 +357,7 @@ int BCSTM::loadFieldData(void)
 	// BCSTM headers
 	const BCSTM_Header *const bcstmHeader = &d->bcstmHeader;
 	const BCSTM_Stream_Info *const streamInfo = &d->infoBlock.stream_info;
-	d->fields->reserve(9);	// Maximum of 9 fields.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// TODO: Show the version field?
 
@@ -371,7 +371,8 @@ int BCSTM::loadFieldData(void)
 	const char *const codec_tbl[] = {
 		NOP_C_("BCSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
-		NOP_C_("BCSTM|Codec", "4-bit THP ADPCM"),
+		NOP_C_("BCSTM|Codec", "DSP ADPCM"),
+		NOP_C_("BCSTM|Codec", "IMA ADPCM"),
 	};
 	if (streamInfo->codec < ARRAY_SIZE(codec_tbl)) {
 		d->fields->addField_string(C_("BCSTM", "Codec"),
