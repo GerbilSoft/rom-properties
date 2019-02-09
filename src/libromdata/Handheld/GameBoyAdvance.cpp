@@ -208,6 +208,7 @@ const char *GameBoyAdvance::systemName(unsigned int type) const
 
 	// GBA has the same name worldwide, so we can
 	// ignore the region selection.
+	// TODO: Abbreviation might be different... (Japan uses AGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameBoyAdvance::systemName() array index optimization needs to be updated.");
 

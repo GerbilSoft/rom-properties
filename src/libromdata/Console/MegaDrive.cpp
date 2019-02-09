@@ -761,24 +761,20 @@ const char *MegaDrive::systemName(unsigned int type) const
 	// sysNames[] bitfield:
 	// - Bits 0-1: Type. (long, short, abbreviation)
 	// - Bits 2-4: System type.
-	unsigned int idx = (romSys << 2) | (type & SYSNAME_TYPE_MASK);
-	if (idx >= 20) {
-		// Invalid index...
-		idx &= SYSNAME_TYPE_MASK;
-	}
 
 	static_assert(SYSNAME_REGION_MASK == (1 << 2),
 		"MegaDrive::systemName() region type optimization needs to be updated.");
+	const unsigned int idx = (type & SYSNAME_TYPE_MASK);
 	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
 		// Generic system name.
-		static const char *const sysNames[20] = {
-			"Sega Mega Drive", "Mega Drive", "MD", nullptr,
-			"Sega Mega CD", "Mega CD", "MCD", nullptr,
-			"Sega 32X", "Sega 32X", "32X", nullptr,
-			"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr,
-			"Sega Pico", "Pico", "Pico", nullptr
+		static const char *const sysNames[5][4] = {
+			{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
+			{"Sega Mega CD", "Mega CD", "MCD", nullptr},
+			{"Sega 32X", "Sega 32X", "32X", nullptr},
+			{"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr},
+			{"Sega Pico", "Pico", "Pico", nullptr}
 		};
-		return sysNames[idx];
+		return sysNames[romSys][idx];
 	}
 
 	// Get the system branding region.
@@ -787,60 +783,60 @@ const char *MegaDrive::systemName(unsigned int type) const
 	switch (md_bregion) {
 		case MegaDriveRegions::MD_BREGION_JAPAN:
 		default: {
-			static const char *const sysNames_JP[20] = {
-				"Sega Mega Drive", "Mega Drive", "MD", nullptr,
-				"Sega Mega CD", "Mega CD", "MCD", nullptr,
-				"Sega Super 32X", "Super 32X", "32X", nullptr,
-				"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr,
-				"Sega Kids Computer Pico", "Kids Computer Pico", "Pico", nullptr
+			static const char *const sysNames_JP[5][4] = {
+				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
+				{"Sega Mega CD", "Mega CD", "MCD", nullptr},
+				{"Sega Super 32X", "Super 32X", "32X", nullptr},
+				{"Sega Mega CD 32X", "Mega CD 32X", "MCD32X", nullptr},
+				{"Sega Kids Computer Pico", "Kids Computer Pico", "Pico", nullptr}
 			};
-			return sysNames_JP[idx];
+			return sysNames_JP[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BREGION_USA: {
-			static const char *const sysNames_US[20] = {
+			static const char *const sysNames_US[5][4] = {
 				// TODO: "MD" or "Gen"?
-				"Sega Genesis", "Genesis", "MD", nullptr,
-				"Sega CD", "Sega CD", "MCD", nullptr,
-				"Sega 32X", "Sega 32X", "32X", nullptr,
-				"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr,
-				"Sega Pico", "Pico", "Pico", nullptr
+				{"Sega Genesis", "Genesis", "MD", nullptr},
+				{"Sega CD", "Sega CD", "MCD", nullptr},
+				{"Sega 32X", "Sega 32X", "32X", nullptr},
+				{"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr},
+				{"Sega Pico", "Pico", "Pico", nullptr}
 			};
-			return sysNames_US[idx];
+			return sysNames_US[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BREGION_EUROPE: {
-			static const char *const sysNames_EU[20] = {
-				"Sega Mega Drive", "Mega Drive", "MD", nullptr,
-				"Sega Mega CD", "Mega CD", "MCD", nullptr,
-				"Sega Mega Drive 32X", "Mega Drive 32X", "32X", nullptr,
-				"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr,
-				"Sega Pico", "Pico", "Pico", nullptr
+			static const char *const sysNames_EU[5][4] = {
+				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
+				{"Sega Mega CD", "Mega CD", "MCD", nullptr},
+				{"Sega Mega Drive 32X", "Mega Drive 32X", "32X", nullptr},
+				{"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr},
+				{"Sega Pico", "Pico", "Pico", nullptr}
 			};
-			return sysNames_EU[idx];
+			return sysNames_EU[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BREGION_SOUTH_KOREA: {
-			static const char *const sysNames_KR[20] = {
+			static const char *const sysNames_KR[5][4] = {
 				// TODO: "MD" or something else?
-				"Samsung Super Aladdin Boy", "Super Aladdin Boy", "MD", nullptr,
-				"Samsung CD Aladdin Boy", "CD Aladdin Boy", "MCD", nullptr,
-				"Samsung Super 32X", "Super 32X", "32X", nullptr,
-				"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr,
-				"Sega Pico", "Pico", "Pico", nullptr
+				{"Samsung Super Aladdin Boy", "Super Aladdin Boy", "MD", nullptr},
+				{"Samsung CD Aladdin Boy", "CD Aladdin Boy", "MCD", nullptr},
+				{"Samsung Super 32X", "Super 32X", "32X", nullptr},
+				{"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr},
+				{"Sega Pico", "Pico", "Pico", nullptr}
 			};
-			return sysNames_KR[idx];
+			return sysNames_KR[romSys][idx];
 		}
 
 		case MegaDriveRegions::MD_BREGION_BRAZIL: {
-			static const char *const sysNames_BR[20] = {
-				"Sega Mega Drive", "Mega Drive", "MD", nullptr,
-				"Sega CD", "Sega CD", "MCD", nullptr,
-				"Sega Mega 32X", "Mega 32X", "32X", nullptr,
-				"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr,
-				"Sega Pico", "Pico", "Pico", nullptr
+			static const char *const sysNames_BR[5][4] = {
+				{"Sega Mega Drive", "Mega Drive", "MD", nullptr},
+				{"Sega CD", "Sega CD", "MCD", nullptr},
+				{"Sega Mega 32X", "Mega 32X", "32X", nullptr},
+				{"Sega CD 32X", "Sega CD 32X", "MCD32X", nullptr},
+				{"Sega Pico", "Pico", "Pico", nullptr}
 			};
-			return sysNames_BR[idx];
+			return sysNames_BR[romSys][idx];
 		}
 	}
 

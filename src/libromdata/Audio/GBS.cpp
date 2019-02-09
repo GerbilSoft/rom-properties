@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GBS.hpp: GBS audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -170,6 +170,7 @@ const char *GBS::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GBS::systemName() array index optimization needs to be updated.");
 
+	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
 		"Game Boy Sound System", "GBS", "GBS", nullptr
 	};

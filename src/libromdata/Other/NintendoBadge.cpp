@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -419,7 +419,7 @@ const char *NintendoBadge::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// PVR has the same name worldwide, so we can
+	// Nintendo Badge Arcade has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NintendoBadge::systemName() array index optimization needs to be updated.");

@@ -3,7 +3,7 @@
  * NES.cpp: Nintendo Entertainment System/Famicom ROM reader.              *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
- * Copyright (c) 2016-2019 by Egor.                                        *
+ * Copyright (c) 2016-2018 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -476,36 +476,36 @@ const char *NES::systemName(unsigned int type) const
 	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
 		case NESPrivate::ROM_SYSTEM_NES:
 		default: {
-			static const char *const sysNames_NES[] = {
+			static const char *const sysNames_NES[3][4] = {
 				// NES (International)
-				"Nintendo Entertainment System",
-				"Nintendo Entertainment System",
-				"NES", nullptr,
+				{"Nintendo Entertainment System",
+				 "Nintendo Entertainment System",
+				 "NES", nullptr},
 
 				// Famicom (Japan)
-				"Nintendo Famicom",
-				"Famicom",
-				"FC", nullptr,
+				{"Nintendo Famicom",
+				 "Famicom",
+				 "FC", nullptr},
 
 				// Hyundai Comboy (South Korea)
-				"Hyundai Comboy",
-				"Comboy",
-				"CB", nullptr,
+				{"Hyundai Comboy",
+				 "Comboy",
+				 "CB", nullptr},
 			};
 
 			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
 				// Use the international name.
-				return sysNames_NES[idx];
+				return sysNames_NES[0][idx];
 			}
 
 			// Get the system region.
 			switch (SystemRegion::getCountryCode()) {
 				case 'JP':
-					return sysNames_NES[idx + 4];
+					return sysNames_NES[1][idx];
 				case 'KR':
-					return sysNames_NES[idx + 8];
+					return sysNames_NES[2][idx];
 				default:
-					return sysNames_NES[idx];
+					return sysNames_NES[0][idx];
 			}
 		}
 

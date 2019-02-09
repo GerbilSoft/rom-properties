@@ -678,6 +678,11 @@ const char *KhronosKTX::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// Khronos KTX has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"KhronosKTX::systemName() array index optimization needs to be updated.");
+
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
 		"Khronos KTX Texture", "Khronos KTX", "KTX", nullptr

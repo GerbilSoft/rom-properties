@@ -61,6 +61,8 @@ class NGPCPrivate : public RomDataPrivate
 			ROM_UNKNOWN	= -1,	// Unknown ROM type.
 			ROM_NGP		= 0,	// Neo Geo Pocket
 			ROM_NGPC	= 1,	// Neo Geo Pocket Color
+
+			ROM_MAX
 		};
 		int romType;
 
@@ -190,26 +192,23 @@ const char *NGPC::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// GB/GBC have the same names worldwide, so we can
+	// NGPC has the same name worldwide, so we can
 	// ignore the region selection.
-	// TODO: Abbreviation might be different... (Japan uses NGPC/CGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
+		"NGPC::systemName() array index optimization needs to be updated.");
+	static_assert(NGPCPrivate::ROM_MAX == 2,
 		"NGPC::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Machine type. (0 == NGP, 1 == NGPC)
-	static const char *const sysNames[8] = {
-		"Neo Geo Pocket", "NGP", "NGP", nullptr,
-		"Neo Geo Pocket Color", "NGPC", "NGPC", nullptr
+	static const char *const sysNames[2][4] = {
+		{"Neo Geo Pocket", "NGP", "NGP", nullptr},
+		{"Neo Geo Pocket Color", "NGPC", "NGPC", nullptr}
 	};
 
-	unsigned int idx = (d->romType << 2) | (type & SYSNAME_TYPE_MASK);
-	if (idx >= ARRAY_SIZE(sysNames)) {
-		// Invalid index...
-		idx &= SYSNAME_TYPE_MASK;
-	}
-
-	return sysNames[idx];
+	// NOTE: This might return an incorrect system name if
+	// d->romType is ROM_TYPE_UNKNOWN.
+	return sysNames[d->romType & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**

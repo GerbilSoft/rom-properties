@@ -545,11 +545,9 @@ const char *SAP::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SAP::systemName() array index optimization needs to be updated.");
 
+	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
-		"Atari 8-bit SAP Audio",
-		"SAP",
-		"SAP",
-		nullptr
+		"Atari 8-bit SAP Audio", "SAP", "SAP", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

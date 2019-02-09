@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Virtual Boy ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
@@ -291,6 +291,8 @@ const char *VirtualBoy::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// VirtualBoy has the same name worldwide, so we can
+	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"VirtualBoy::systemName() array index optimization needs to be updated.");
 	

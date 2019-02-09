@@ -277,6 +277,11 @@ const char *GameCubeBNR::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// GameCube has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"GameCubeBNR::systemName() array index optimization needs to be updated.");
+
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
 		// FIXME: "NGC" in Japan?

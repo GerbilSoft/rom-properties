@@ -161,6 +161,8 @@ class DMGPrivate : public RomDataPrivate
 			ROM_UNKNOWN	= -1,	// Unknown ROM type.
 			ROM_DMG		= 0,	// Game Boy
 			ROM_CGB		= 1,	// Game Boy Color
+
+			ROM_MAX
 		};
 
 		// ROM type.
@@ -666,21 +668,19 @@ const char *DMG::systemName(unsigned int type) const
 	// TODO: Abbreviation might be different... (Japan uses DMG/CGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
+	static_assert(DMGPrivate::ROM_MAX == 2,
+		"DMG::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Game Boy Color. (DMG-specific)
-	static const char *const sysNames[8] = {
-		"Nintendo Game Boy", "Game Boy", "GB", nullptr,
-		"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr
+	static const char *const sysNames[2][4] = {
+		{"Nintendo Game Boy", "Game Boy", "GB", nullptr},
+		{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr}
 	};
 
-	unsigned int idx = (d->romType << 2) | (type & SYSNAME_TYPE_MASK);
-	if (idx >= ARRAY_SIZE(sysNames)) {
-		// Invalid index...
-		idx &= SYSNAME_TYPE_MASK;
-	}
-
-	return sysNames[idx];
+	// NOTE: This might return an incorrect system name if
+	// d->romType is ROM_TYPE_UNKNOWN.
+	return sysNames[d->romType & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**

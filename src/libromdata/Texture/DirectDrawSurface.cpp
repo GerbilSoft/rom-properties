@@ -981,6 +981,11 @@ const char *DirectDrawSurface::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// DirectDraw Surface has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"DirectDrawSurface::systemName() array index optimization needs to be updated.");
+
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
 		"DirectDraw Surface", "DirectDraw Surface", "DDS", nullptr

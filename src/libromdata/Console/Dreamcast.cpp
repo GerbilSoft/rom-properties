@@ -520,6 +520,7 @@ const char *Dreamcast::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Dreamcast::systemName() array index optimization needs to be updated.");
 
+	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
 		"Sega Dreamcast", "Dreamcast", "DC", nullptr
 	};

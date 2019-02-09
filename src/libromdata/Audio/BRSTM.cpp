@@ -289,11 +289,9 @@ const char *BRSTM::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"BRSTM::systemName() array index optimization needs to be updated.");
 
+	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
-		"Nintendo Wii BRSTM",
-		"BRSTM",
-		"BRSTM",
-		nullptr
+		"Nintendo Wii BRSTM", "BRSTM", "BRSTM", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

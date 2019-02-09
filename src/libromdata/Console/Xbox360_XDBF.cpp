@@ -862,6 +862,11 @@ const char *Xbox360_XDBF::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// Xbox 360 has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"Xbox360_XDBF::systemName() array index optimization needs to be updated.");
+
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: XDBF-specific, or just use Xbox 360?
 	static const char *const sysNames[4] = {
