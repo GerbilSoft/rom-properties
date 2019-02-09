@@ -413,14 +413,16 @@ int ADX::loadMetaData(void)
 	// Number of channels
 	d->metaData->addMetaData_integer(Property::Channels, adxHeader->channel_count);
 
+	// Sample rate and sample count
+	const uint32_t sample_rate = be32_to_cpu(adxHeader->sample_rate);
+	const uint32_t sample_count = be32_to_cpu(adxHeader->sample_count);
+
 	// Sample rate
-	d->metaData->addMetaData_integer(Property::SampleRate,
-		be32_to_cpu(adxHeader->sample_rate));
+	d->metaData->addMetaData_integer(Property::SampleRate, sample_rate);
 
 	// Length, in milliseconds (non-looping)
 	d->metaData->addMetaData_integer(Property::Duration,
-		convSampleToMs(be32_to_cpu(adxHeader->sample_count),
-			be32_to_cpu(adxHeader->sample_rate)));
+		convSampleToMs(sample_count, sample_rate));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
