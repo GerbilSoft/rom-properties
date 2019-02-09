@@ -366,7 +366,7 @@ int BRSTM::loadFieldData(void)
 	// BRSTM headers
 	const BRSTM_Header *const brstmHeader = &d->brstmHeader;
 	const BRSTM_HEAD_Chunk1 *const headChunk1 = &d->headChunk1;
-	d->fields->reserve(9);	// Maximum of 9 fields.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Version
 	d->fields->addField_string(C_("RomData", "Version"),
