@@ -137,6 +137,7 @@ button.
 | Nintendo 3DS BCSTM            |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Wii BRSTM            |       Yes      |    Yes   |       N/A       |       N/A      |
+| Nintendo Wii U BFSTM          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Portable Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
 | Super NES SPC Format          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Video Game Music              |       Yes      |    Yes   |       N/A       |       N/A      |

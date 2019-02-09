@@ -74,8 +74,11 @@ ASSERT_STRUCT(BCSTM_SizedRef, 12);
 
 /**
  * BCSTM header.
- * This matches the BCSTM header format exactly.
- * Reference: https://www.3dbrew.org/wiki/BCSTM
+ * This matches the BCSTM and BFSTM header formats exactly.
+ *
+ * References:
+ * - https://www.3dbrew.org/wiki/BCSTM
+ * - http://mk8.tockdom.com/wiki/BFSTM_(File_Format)
  *
  * Offsets in the BCSTM header are absolute addresses.
  * (aka: relative to the start of the BCSTM header)
@@ -83,11 +86,12 @@ ASSERT_STRUCT(BCSTM_SizedRef, 12);
  * Endianness depends on the byte-order mark.
  */
 #define BCSTM_MAGIC 'CSTM'
+#define BFSTM_MAGIC 'FSTM'
 #define BCSTM_BOM_HOST 0xFEFF	// UTF-8 BOM; matches host-endian.
 #define BCSTM_BOM_SWAP 0xFFFE	// UTF-8 BOM; matches swapped-endian.
 #define BCSTM_VERSION 0x02000000
 typedef struct PACKED _BCSTM_Header {
-	uint32_t magic;		// [0x000] 'CSTM'
+	uint32_t magic;		// [0x000] 'CSTM', 'FSTM'
 	uint16_t bom;		// [0x004] Byte-order mark
 	uint16_t header_size;	// [0x006] Header size (0x40 due to Info Block alignment)
 	uint32_t version;	// [0x008] Version (0x02000000)
@@ -114,10 +118,13 @@ typedef struct PACKED _BCSTM_Stream_Info {
 					//         (listed as Encoding on 3dbrew)
 	uint8_t loop_flag;		// [0x001] Loop flag
 	uint8_t channel_count;		// [0x002] Channel count
-	uint8_t padding;		// [0x003]
+	uint8_t region_count;		// [0x003] Number of regions (BFSTM only)
 	uint32_t sample_rate;		// [0x004] Sample rate
 	uint32_t loop_start;		// [0x008] Loop start frame
-	uint32_t loop_end;		// [0x00C] Loop end frame
+	union {
+		uint32_t loop_end;	// [0x00C] (BCSTM) Loop end frame
+		uint32_t frame_count;	// [0x00C] (BFSTM) Total number of frames
+	};
 
 	uint32_t sample_block_count;	// [0x010] Sample block count
 	uint32_t sample_block_size;	// [0x014] Sample block size
@@ -131,6 +138,19 @@ typedef struct PACKED _BCSTM_Stream_Info {
 	uint32_t seek_interval_sample_count;	// [0x02C] Seek interval count
 	BCSTM_Reference sample_data;		// [0x030] Sample data reference
 						//         (relative to Data Block field)
+
+	// NOTE: The following region data is BFSTM-specific.
+	// The definitions are kept here for reference purpose,
+	// but they're disabled in the build.
+#if 0
+	uint16_t region_info_size;	// [0x038] Size of each region info.
+	uint16_t region_padding;	// [0x03A]
+	BCSTM_Reference region_info;	// [0x03C] Region info reference
+
+	// for v0.4.0.0+
+	uint32_t orig_loop_start;	// [0x044] Original loop start
+	uint32_t orig_loop_end;		// [0x048] Original loop end
+#endif
 } BCSTM_Stream_Info;
 ASSERT_STRUCT(BCSTM_Stream_Info, 0x38);
 

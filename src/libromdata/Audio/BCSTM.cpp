@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * BCSTM.cpp: Nintendo 3DS BCSTM audio reader.                             *
+ * BCSTM.cpp: Nintendo 3DS BCSTM and Nintendo Wii U BFSTM audio reader.    *
  *                                                                         *
  * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
@@ -57,6 +57,18 @@ class BCSTMPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(BCSTMPrivate)
 
 	public:
+		// Audio format.
+		enum AudioFormat {
+			AUDIO_FORMAT_UNKNOWN = -1,	// Unknown file type.
+
+			AUDIO_FORMAT_BCSTM = 0,	// BCSTM
+			AUDIO_FORMAT_BFSTM = 1,	// BFSTM
+
+			AUDIO_FORMAT_MAX
+		};
+		int audioFormat;
+
+	public:
 		// BCSTM headers.
 		// NOTE: Uses the endianness specified by the byte-order mark.
 		BCSTM_Header bcstmHeader;
@@ -90,6 +102,7 @@ class BCSTMPrivate : public RomDataPrivate
 
 BCSTMPrivate::BCSTMPrivate(BCSTM *q, IRpFile *file)
 	: super(q, file)
+	, audioFormat(AUDIO_FORMAT_UNKNOWN)
 	, needsByteswap(false)
 {
 	// Clear the BCSTM header structs.
@@ -140,9 +153,9 @@ BCSTM::BCSTM(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->bcstmHeader);
 	info.ext = nullptr;	// Not needed for BCSTM.
 	info.szFile = 0;	// Not needed for BCSTM.
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->audioFormat = isRomSupported_static(&info);
 
-	if (!d->isValid) {
+	if (d->audioFormat < 0) {
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -158,7 +171,7 @@ BCSTM::BCSTM(IRpFile *file)
 	    info_size < sizeof(d->infoBlock))
 	{
 		// Invalid INFO block.
-		d->isValid = false;
+		d->audioFormat = BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -166,7 +179,7 @@ BCSTM::BCSTM(IRpFile *file)
 	size = d->file->seekAndRead(info_offset, &d->infoBlock, sizeof(d->infoBlock));
 	if (size != sizeof(d->infoBlock)) {
 		// Seek and/or read error.
-		d->isValid = false;
+		d->audioFormat = BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -175,13 +188,14 @@ BCSTM::BCSTM(IRpFile *file)
 	// Verify the INFO block.
 	if (d->infoBlock.magic != cpu_to_be32(BCSTM_INFO_MAGIC)) {
 		// Incorrect magic number.
-		d->isValid = false;
+		d->audioFormat = BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
 		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
 
 	// TODO: Verify anything else in the info block?
+	d->isValid = true;
 }
 
 /**
@@ -206,10 +220,17 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 	const BCSTM_Header *const bcstmHeader =
 		reinterpret_cast<const BCSTM_Header*>(info->header.pData);
 
-	// Check the BCSTM magic number.
-	if (bcstmHeader->magic != cpu_to_be32(BCSTM_MAGIC)) {
-		// Not the BCSTM magic number.
-		return -1;
+	// Check the BCSTM/BFSTM magic number.
+	int audioFormat;
+	if (bcstmHeader->magic == cpu_to_be32(BCSTM_MAGIC)) {
+		// BCSTM magic number.
+		audioFormat = BCSTMPrivate::AUDIO_FORMAT_BCSTM;
+	} else if (bcstmHeader->magic == cpu_to_be32(BFSTM_MAGIC)) {
+		// BFSTM magic number.
+		audioFormat = BCSTMPrivate::AUDIO_FORMAT_BFSTM;
+	} else {
+		// Invalid magic number.
+		return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
 	}
 
 	// Check the byte-order mark.
@@ -225,7 +246,7 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 			break;
 		default:
 			// Invalid.
-			return -1;
+			return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
 	}
 
 	// TODO: Check the version number, file size, and header size?
@@ -237,7 +258,7 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 		: bcstmHeader->block_count);
 	if (block_count < 3) {
 		// Not enough blocks.
-		return -1;
+		return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
 	}
 
 	// INFO, SEEK, and DATA offset and sizes must both be valid.
@@ -257,11 +278,11 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 	    bcstmHeader->data.size == ~0U)
 	{
 		// Missing a required block.
-		return -1;
+		return BCSTMPrivate::AUDIO_FORMAT_UNKNOWN;
 	}
 
-	// This is a BCSTM file.
-	return 0;
+	// This is a BCSTM or BFSTM file.
+	return audioFormat;
 }
 
 /**
@@ -280,14 +301,22 @@ const char *BCSTM::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"BCSTM::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Nintendo 3DS BCSTM",
-		"BCSTM",
-		"BCSTM",
-		nullptr
+	assert(d->audioFormat > BCSTMPrivate::AUDIO_FORMAT_UNKNOWN);
+	assert(d->audioFormat < BCSTMPrivate::AUDIO_FORMAT_MAX);
+	if (d->audioFormat <= BCSTMPrivate::AUDIO_FORMAT_UNKNOWN ||
+	    d->audioFormat >= BCSTMPrivate::AUDIO_FORMAT_MAX)
+	{
+		// Invalid file type.
+		// NOTE: Should not happen...
+		return nullptr;
+	}
+
+	static const char *const sysNames[2][4] = {
+		{"Nintendo 3DS BCSTM", "BCSTM", "BCSTM", nullptr},
+		{"Nintendo Wii U BFSTM", "BFSTM", "BFSTM", nullptr},
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	return sysNames[d->audioFormat][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -387,13 +416,20 @@ int BCSTM::loadFieldData(void)
 
 	// Sample rate and sample count
 	const uint32_t sample_rate = d->bcstm32_to_cpu(streamInfo->sample_rate);
-	// Sample count needs to be calculated based on
-	// sample block count, number of samples per block,
-	// and number of samples in the last block.
-	const uint32_t sample_count =
-		(d->bcstm32_to_cpu(streamInfo->sample_block_count - 1) *
-		 d->bcstm32_to_cpu(streamInfo->sample_block_sample_count)) +
-		d->bcstm32_to_cpu(streamInfo->last_sample_block_sample_count);
+	uint32_t sample_count;
+	if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BFSTM) {
+		// BFSTM: Sample block count is too high for some reason.
+		// Use the total frame count instead.
+		sample_count = d->bcstm32_to_cpu(streamInfo->frame_count);
+	} else {
+		// BCSTM: Sample count needs to be calculated based on
+		// sample block count, number of samples per block, and
+		// number of samples in the last block.
+		sample_count =
+			(d->bcstm32_to_cpu(streamInfo->sample_block_count - 1) *
+			d->bcstm32_to_cpu(streamInfo->sample_block_sample_count)) +
+			d->bcstm32_to_cpu(streamInfo->last_sample_block_sample_count);
+	}
 
 	// Sample rate
 	// NOTE: Using ostringstream for localized numeric formatting.
@@ -411,8 +447,11 @@ int BCSTM::loadFieldData(void)
 	if (streamInfo->loop_flag) {
 		d->fields->addField_string(C_("BCSTM", "Loop Start"),
 			formatSampleAsTime(d->bcstm32_to_cpu(streamInfo->loop_start), sample_rate));
-		d->fields->addField_string(C_("BCSTM", "Loop End"),
-			formatSampleAsTime(d->bcstm32_to_cpu(streamInfo->loop_end), sample_rate));
+		if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BCSTM) {
+			// TODO: Verify that this isn't used in looping BFSTMs.
+			d->fields->addField_string(C_("BCSTM", "Loop End"),
+				formatSampleAsTime(d->bcstm32_to_cpu(streamInfo->loop_end), sample_rate));
+		}
 	}
 
 	// Finished reading the field data.
@@ -450,13 +489,20 @@ int BCSTM::loadMetaData(void)
 
 	// Sample rate and sample count
 	const uint32_t sample_rate = d->bcstm32_to_cpu(streamInfo->sample_rate);
-	// Sample count needs to be calculated based on
-	// sample block count, number of samples per block,
-	// and number of samples in the last block.
-	const uint32_t sample_count =
-		(d->bcstm32_to_cpu(streamInfo->sample_block_count - 1) *
-		 d->bcstm32_to_cpu(streamInfo->sample_block_sample_count)) +
-		d->bcstm32_to_cpu(streamInfo->last_sample_block_sample_count);
+	uint32_t sample_count;
+	if (d->audioFormat == BCSTMPrivate::AUDIO_FORMAT_BFSTM) {
+		// BFSTM: Sample block count is too high for some reason.
+		// Use the total frame count instead.
+		sample_count = d->bcstm32_to_cpu(streamInfo->frame_count) / streamInfo->channel_count;
+	} else {
+		// BCSTM: Sample count needs to be calculated based on
+		// sample block count, number of samples per block, and
+		// number of samples in the last block.
+		sample_count =
+			(d->bcstm32_to_cpu(streamInfo->sample_block_count - 1) *
+			d->bcstm32_to_cpu(streamInfo->sample_block_sample_count)) +
+			d->bcstm32_to_cpu(streamInfo->last_sample_block_sample_count);
+	}
 
 	// Sample rate
 	d->metaData->addMetaData_integer(Property::SampleRate, sample_rate);

@@ -259,7 +259,6 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL, 0, 'VTF3'),
 
 	// Audio
-	GetRomDataFns_addr(BCSTM, ATTR_NONE, 0, 'CSTM'),
 	GetRomDataFns_addr(BRSTM, ATTR_NONE, 0, 'RSTM'),
 	GetRomDataFns_addr(GBS, ATTR_NONE, 0, 'GBS\x01'),
 	GetRomDataFns_addr(NSF, ATTR_NONE, 0, 'NESM'),
@@ -300,6 +299,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_NONE),
+	GetRomDataFns(BCSTM, ATTR_NONE),
 	GetRomDataFns(PSF, ATTR_NONE),
 	GetRomDataFns(SAP, ATTR_NONE),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
 	GetRomDataFns(SNDH, ATTR_NONE),	// "SNDH", or "ICE!" or "Ice!" if packed.
