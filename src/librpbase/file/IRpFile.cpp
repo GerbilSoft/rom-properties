@@ -39,7 +39,7 @@ IRpFile::IRpFile()
 }
 
 /**
- * Take a reference to this RomData* object.
+ * Take a reference to this IRpFile* object.
  * @return this
  */
 IRpFile *IRpFile::ref(void)
@@ -50,8 +50,8 @@ IRpFile *IRpFile::ref(void)
 }
 
 /**
- * Unreference this RomData* object.
- * If ref_cnt reaches 0, the RomData* object is deleted.
+ * Unreference this IRpFile* object.
+ * If ref_cnt reaches 0, the IRpFile* object is deleted.
  */
 void IRpFile::unref(void)
 {
