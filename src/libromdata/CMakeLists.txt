@@ -42,6 +42,7 @@ SET(libromdata_SRCS
 	Texture/ValveVTF3.cpp
 
 	Audio/ADX.cpp
+	Audio/BCSTM.cpp
 	Audio/BRSTM.cpp
 	Audio/GBS.cpp
 	Audio/NSF.cpp
@@ -173,6 +174,7 @@ SET(libromdata_H
 	Texture/vtf3_structs.h
 
 	Audio/ADX.hpp
+	Audio/BCSTM.hpp
 	Audio/BRSTM.hpp
 	Audio/GBS.hpp
 	Audio/NSF.hpp
@@ -184,6 +186,7 @@ SET(libromdata_H
 	Audio/VGM.hpp
 
 	Audio/adx_structs.h
+	Audio/bcstm_structs.h
 	Audio/brstm_structs.h
 	Audio/gbs_structs.h
 	Audio/nsf_structs.h

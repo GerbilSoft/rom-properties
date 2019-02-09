@@ -89,6 +89,7 @@ using std::vector;
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
+#include "Audio/BCSTM.hpp"
 #include "Audio/BRSTM.hpp"
 #include "Audio/GBS.hpp"
 #include "Audio/NSF.hpp"
@@ -258,6 +259,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL, 0, 'VTF3'),
 
 	// Audio
+	GetRomDataFns_addr(BCSTM, ATTR_NONE, 0, 'CSTM'),
 	GetRomDataFns_addr(BRSTM, ATTR_NONE, 0, 'RSTM'),
 	GetRomDataFns_addr(GBS, ATTR_NONE, 0, 'GBS\x01'),
 	GetRomDataFns_addr(NSF, ATTR_NONE, 0, 'NESM'),

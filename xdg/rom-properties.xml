@@ -9,6 +9,16 @@
     <glob pattern="*.adx"/>
   </mime-type>
 
+  <!-- BCSTM -->
+  <mime-type type="audio/x-bcstm">
+    <comment>Nintendo 3DS BCSTM audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.bcstm"/>
+    <magic priority="50">
+      <match value="CSTM" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- BRSTM -->
   <mime-type type="audio/x-brstm">
     <comment>Nintendo Wii BRSTM audio</comment>
