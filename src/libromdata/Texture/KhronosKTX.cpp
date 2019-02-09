@@ -827,19 +827,19 @@ int KhronosKTX::loadFieldData(void)
 	if (ktxHeader->endianness == KTX_ENDIAN_MAGIC) {
 		// Matches host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("KhronosKTX", "Little-Endian");
+		endian_str = C_("RomData", "Little-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("KhronosKTX", "Big-Endian");
+		endian_str = C_("RomData", "Big-Endian");
 #endif
 	} else {
 		// Does not match host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("KhronosKTX", "Big-Endian");
+		endian_str = C_("RomData", "Big-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("KhronosKTX", "Little-Endian");
+		endian_str = C_("RomData", "Little-Endian");
 #endif
 	}
-	d->fields->addField_string(C_("KhronosKTX", "Endianness"), endian_str);
+	d->fields->addField_string(C_("RomData", "Endianness"), endian_str);
 
 	// NOTE: GL field names should not be localized.
 

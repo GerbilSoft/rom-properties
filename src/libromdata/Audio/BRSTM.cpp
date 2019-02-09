@@ -377,10 +377,10 @@ int BRSTM::loadFieldData(void)
 		rp_sprintf("%u.%u", brstmHeader->version_major, brstmHeader->version_minor));
 
 	// Endianness
-	d->fields->addField_string(C_("BRSTM", "Endianness"),
+	d->fields->addField_string(C_("RomData", "Endianness"),
 		(brstmHeader->bom == cpu_to_be16(BRSTM_BOM_HOST))
-			? C_("BRSTM", "Big-Endian")
-			: C_("BRSTM", "Little-Endian"));
+			? C_("RomData", "Big-Endian")
+			: C_("RomData", "Little-Endian"));
 
 	// Codec
 	static const char *const codec_tbl[] = {

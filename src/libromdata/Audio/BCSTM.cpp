@@ -453,10 +453,10 @@ int BCSTM::loadFieldData(void)
 	// TODO: Show the version field?
 
 	// Endianness
-	d->fields->addField_string(C_("BCSTM", "Endianness"),
+	d->fields->addField_string(C_("RomData", "Endianness"),
 		(bcstmHeader->bom == cpu_to_be16(BCSTM_BOM_HOST))
-			? C_("BCSTM", "Big-Endian")
-			: C_("BCSTM", "Little-Endian"));
+			? C_("RomData", "Big-Endian")
+			: C_("RomData", "Little-Endian"));
 
 	// Get stream info data.
 	uint8_t codec, loop_flag, channel_count;
