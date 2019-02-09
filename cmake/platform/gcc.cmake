@@ -100,7 +100,7 @@ ENDIF(ENABLE_COVERAGE)
 # Test for common LDFLAGS.
 # TODO: Doesn't work on OS X. (which means it's not really testing it!)
 IF(NOT APPLE)
-	FOREACH(FLAG_TEST "-Wl,-O1" "-Wl,--sort-common" "-Wl,--as-needed")
+	FOREACH(FLAG_TEST "-Wl,-O1" "-Wl,--sort-common" "-Wl,--as-needed" "-Wl,--build-id")
 		CHECK_C_COMPILER_FLAG("${FLAG_TEST}" LDFLAG_${FLAG_TEST})
 		IF(LDFLAG_${FLAG_TEST})
 			SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
