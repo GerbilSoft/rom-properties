@@ -390,7 +390,7 @@ int BCSTM::loadFieldData(void)
 	// sample block count, number of samples per block,
 	// and number of samples in the last block.
 	const uint32_t sample_count =
-		(d->bcstm32_to_cpu(streamInfo->sample_block_count) *
+		(d->bcstm32_to_cpu(streamInfo->sample_block_count - 1) *
 		 d->bcstm32_to_cpu(streamInfo->sample_block_sample_count)) +
 		d->bcstm32_to_cpu(streamInfo->last_sample_block_sample_count);
 
@@ -453,7 +453,7 @@ int BCSTM::loadMetaData(void)
 	// sample block count, number of samples per block,
 	// and number of samples in the last block.
 	const uint32_t sample_count =
-		(d->bcstm32_to_cpu(streamInfo->sample_block_count) *
+		(d->bcstm32_to_cpu(streamInfo->sample_block_count - 1) *
 		 d->bcstm32_to_cpu(streamInfo->sample_block_sample_count)) +
 		d->bcstm32_to_cpu(streamInfo->last_sample_block_sample_count);
 
