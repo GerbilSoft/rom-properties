@@ -149,14 +149,24 @@ class ELFPrivate : public LibRpBase::RomDataPrivate
 		 * @param x Value to swap.
 		 * @return Swapped value.
 		 */
-		inline uint32_t elf32_to_cpu(uint32_t x);
+		inline uint32_t elf32_to_cpu(uint32_t x)
+		{
+			return (Elf_Header.primary.e_data == ELFDATAHOST)
+				? x
+				: __swab32(x);
+		}
 
 		/**
 		 * Byteswap a uint64_t value from ELF to CPU.
 		 * @param x Value to swap.
 		 * @return Swapped value.
 		 */
-		inline uint64_t elf64_to_cpu(uint64_t x);
+		inline uint64_t elf64_to_cpu(uint64_t x)
+		{
+			return (Elf_Header.primary.e_data == ELFDATAHOST)
+				? x
+				: __swab64(x);
+		}
 
 		/**
 		 * Check program headers.
@@ -223,42 +233,6 @@ ELFPrivate::hdr_info_t ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 	}
 
 	return info;
-}
-
-/**
- * Byteswap a uint32_t value from ELF to CPU.
- * @param x Value to swap.
- * @return Swapped value.
- */
-inline uint32_t ELFPrivate::elf32_to_cpu(uint32_t x)
-{
-	if (Elf_Header.primary.e_data == ELFDATAHOST) {
-		return x;
-	} else {
-		return __swab32(x);
-	}
-
-	// Should not get here...
-	assert(!"Should not get here...");
-	return ~0;
-}
-
-/**
- * Byteswap a uint64_t value from ELF to CPU.
- * @param x Value to swap.
- * @return Swapped value.
- */
-inline uint64_t ELFPrivate::elf64_to_cpu(uint64_t x)
-{
-	if (Elf_Header.primary.e_data == ELFDATAHOST) {
-		return x;
-	} else {
-		return __swab64(x);
-	}
-
-	// Should not get here...
-	assert(!"Should not get here...");
-	return ~0;
 }
 
 /**
