@@ -33,7 +33,7 @@ extern "C" {
 /**
  * BRSTM header.
  * This matches the BRSTM header format exactly.
- * Reference: http://wiibrew.org/wiki/BRSTM_file
+ * Reference: https://wiibrew.org/wiki/BRSTM_file
  *
  * Offsets in the BRSTM header are absolute addresses.
  * (aka: relative to the start of the BRSTM header)

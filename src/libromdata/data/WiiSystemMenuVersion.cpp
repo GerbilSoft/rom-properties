@@ -37,8 +37,8 @@ class WiiSystemMenuVersionPrivate {
 		/**
 		 * Nintendo Wii System Menu version list.
 		 * References:
-		 * - http://wiibrew.org/wiki/System_Menu
-		 * - http://wiiubrew.org/wiki/Title_database
+		 * - https://wiibrew.org/wiki/System_Menu
+		 * - https://wiiubrew.org/wiki/Title_database
 		 * - https://yls8.mtheall.com/ninupdates/reports.php
 		 */
 		struct SysVersionEntry_t {
@@ -62,13 +62,13 @@ class WiiSystemMenuVersionPrivate {
 /**
  * Nintendo Wii System Menu version list.
  * References:
- * - http://wiibrew.org/wiki/System_Menu
- * - http://wiiubrew.org/wiki/Title_database
+ * - https://wiibrew.org/wiki/System_Menu
+ * - https://wiiubrew.org/wiki/Title_database
  * - https://yls8.mtheall.com/ninupdates/reports.php
  */
 const WiiSystemMenuVersionPrivate::SysVersionEntry_t WiiSystemMenuVersionPrivate::sysVersionList[] = {
 	// Wii
-	// Reference: http://wiibrew.org/wiki/System_Menu
+	// Reference: https://wiibrew.org/wiki/System_Menu
 	{ 33, "1.0"},
 	{ 97, "2.0U"}, {128, "2.0J"}, {130, "2.0E"},
 	{162, "2.1E"},
@@ -86,7 +86,7 @@ const WiiSystemMenuVersionPrivate::SysVersionEntry_t WiiSystemMenuVersionPrivate
 
 	// vWii
 	// References:
-	// - http://wiiubrew.org/wiki/Title_database
+	// - https://wiiubrew.org/wiki/Title_database
 	// - https://yls8.mtheall.com/ninupdates/reports.php
 	// NOTE: These are all listed as 4.3.
 	// NOTE 2: vWii also has 512, 513, and 514.

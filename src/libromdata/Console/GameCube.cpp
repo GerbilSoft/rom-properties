@@ -308,7 +308,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Read the volume group table.
 	// References:
-	// - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+	// - https://wiibrew.org/wiki/Wii_Disc#Partitions_information
 	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
 	size_t size = discReader->seekAndRead(RVL_VolumeGroupTable_ADDRESS, &vgtbl, sizeof(vgtbl));
 	if (size != sizeof(vgtbl)) {
