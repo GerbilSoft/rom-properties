@@ -383,6 +383,8 @@ const char *const *BCSTM::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".bcstm",
+		".bfstm",
+		".bcwav",
 
 		nullptr
 	};
