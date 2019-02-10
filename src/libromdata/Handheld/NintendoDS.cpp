@@ -1148,7 +1148,6 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
-	
 	if (!(hw_type & NintendoDSPrivate::DS_HW_DSi)) {
 		// Not a DSi-enhanced or DSi-exclusive ROM image.
 		return static_cast<int>(d->fields->count());

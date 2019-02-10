@@ -1062,7 +1062,7 @@ int SNDH::loadMetaData(void)
 	}
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->metaData->count());
 }
 
 }

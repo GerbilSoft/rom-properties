@@ -578,7 +578,7 @@ int PlayStationSave::loadMetaData(void)
 		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
 
 	// Finished reading the metadata.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->metaData->count());
 }
 
 /**
