@@ -68,6 +68,82 @@ class XboxXPR0Private : public RomDataPrivate
 		rp_image *img;
 
 		/**
+		 * Generate swizzle masks for unswizzling ARGB textures.
+		 * Based on Cxbx-Reloaded's unswizzling code:
+		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+		 *
+		 * This should be pretty straightforward.
+		 * It creates a bit pattern like ..zyxzyxzyx from ..xxx, ..yyy and ..zzz
+		 * If there are no bits left from any component it will pack the other masks
+		 * more tighly (Example: zzxzxzyx = Fewer x than z and even fewer y)
+		 *
+		 * @param width
+		 * @param height
+		 * @param depth
+		 * @param mask_x
+		 * @param mask_y
+		 * @param mask_z
+		 */
+		static void generate_swizzle_masks(
+			unsigned int width, unsigned int height, unsigned int depth,
+			uint32_t *mask_x, uint32_t *mask_y, uint32_t *mask_z);
+
+		/**
+		 * This fills a pattern with a value if your value has bits abcd and your
+		 * pattern is 11010100100 this will return: 0a0b0c00d00
+		 *
+		 * Based on Cxbx-Reloaded's unswizzling code:
+		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+		 *
+		 * @param pattern
+		 * @param value
+		 * @return
+		 */
+		static uint32_t fill_pattern(uint32_t pattern, uint32_t value);
+
+		/**
+		 * Get a swizzled texture offset.
+		 * Based on Cxbx-Reloaded's unswizzling code:
+		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+		 *
+		 * @param x
+		 * @param y
+		 * @param z
+		 * @param mask_x
+		 * @param mask_y
+		 * @param mask_z
+		 * @param bytes_per_pixel
+		 * @return
+		 */
+		static inline unsigned int get_swizzled_offset(
+			unsigned int x, unsigned int y, unsigned int z,
+			uint32_t mask_x, uint32_t mask_y, uint32_t mask_z,
+			unsigned int bytes_per_pixel);
+
+		/**
+		 * Unswizzle an ARGB texture.
+		 * Based on Cxbx-Reloaded's unswizzling code:
+		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+		 *
+		 * @param src_buf
+		 * @param width
+		 * @param height
+		 * @param depth
+		 * @param dst_buf
+		 * @param row_pitch
+		 * @param slice_pitch
+		 * @param bytes_per_pixel
+		 */
+		static void unswizzle_box(const uint8_t *src_buf,
+			unsigned int width, unsigned int height, unsigned int depth,
+			uint8_t *dst_buf, unsigned int row_pitch, unsigned int slice_pitch,
+			unsigned int bytes_per_pixel);
+
+		/**
 		 * Load the XboxXPR0 image.
 		 * @return Image, or nullptr on error.
 		 */
@@ -87,6 +163,120 @@ XboxXPR0Private::XboxXPR0Private(XboxXPR0 *q, IRpFile *file)
 XboxXPR0Private::~XboxXPR0Private()
 {
 	delete img;
+}
+
+/**
+ * Generate swizzle masks for unswizzling ARGB textures.
+ * Based on Cxbx-Reloaded's unswizzling code:
+ * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+ * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+ *
+ * This should be pretty straightforward.
+ * It creates a bit pattern like ..zyxzyxzyx from ..xxx, ..yyy and ..zzz
+ * If there are no bits left from any component it will pack the other masks
+ * more tighly (Example: zzxzxzyx = Fewer x than z and even fewer y)
+ *
+ * @param width
+ * @param height
+ * @param depth
+ * @param mask_x
+ * @param mask_y
+ * @param mask_z
+ */
+void XboxXPR0Private::generate_swizzle_masks(
+	unsigned int width, unsigned int height, unsigned int depth,
+	uint32_t *mask_x, uint32_t *mask_y, uint32_t *mask_z)
+{
+	uint32_t x = 0, y = 0, z = 0;
+	uint32_t bit = 1;
+	uint32_t mask_bit = 1;
+	bool done;
+	do {
+		done = true;
+		if (bit < width) { x |= mask_bit; mask_bit <<= 1; done = false; }
+		if (bit < height) { y |= mask_bit; mask_bit <<= 1; done = false; }
+		if (bit < depth) { z |= mask_bit; mask_bit <<= 1; done = false; }
+		bit <<= 1;
+	} while(!done);
+	assert(((x ^ y) ^ z) == (mask_bit - 1));
+	*mask_x = x;
+	*mask_y = y;
+	*mask_z = z;
+}
+
+/**
+ * This fills a pattern with a value if your value has bits abcd and your
+ * pattern is 11010100100 this will return: 0a0b0c00d00
+ *
+ * Based on Cxbx-Reloaded's unswizzling code:
+ * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+ * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+ *
+ * @param pattern
+ * @param value
+ * @return
+ */
+uint32_t XboxXPR0Private::fill_pattern(uint32_t pattern, uint32_t value)
+{
+	uint32_t result = 0;
+	uint32_t bit = 1;
+	while(value) {
+		if (pattern & bit) {
+			/* Copy bit to result */
+			result |= value & 1 ? bit : 0;
+			value >>= 1;
+		}
+		bit <<= 1;
+	}
+	return result;
+}
+
+/**
+ * Get a swizzled texture offset.
+ * Based on Cxbx-Reloaded's unswizzling code:
+ * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+ * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+ *
+ * @param x
+ * @param y
+ * @param z
+ * @param mask_x
+ * @param mask_y
+ * @param mask_z
+ * @param bytes_per_pixel
+ * @return
+ */
+inline unsigned int XboxXPR0Private::get_swizzled_offset(
+	unsigned int x, unsigned int y, unsigned int z,
+	uint32_t mask_x, uint32_t mask_y, uint32_t mask_z,
+	unsigned int bytes_per_pixel)
+{
+	return bytes_per_pixel * (fill_pattern(mask_x, x)
+	                       |  fill_pattern(mask_y, y)
+	                       |  fill_pattern(mask_z, z));
+}
+
+void XboxXPR0Private::unswizzle_box(const uint8_t *src_buf,
+	unsigned int width, unsigned int height, unsigned int depth,
+	uint8_t *dst_buf, unsigned int row_pitch, unsigned int slice_pitch,
+	unsigned int bytes_per_pixel)
+{
+	uint32_t mask_x, mask_y, mask_z;
+	generate_swizzle_masks(width, height, depth, &mask_x, &mask_y, &mask_z);
+
+	unsigned int x, y, z;
+	for (z = 0; z < depth; z++) {
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
+				const uint8_t *src = src_buf +
+					get_swizzled_offset(x, y, z, mask_x, mask_y, mask_z,
+						bytes_per_pixel);
+				uint8_t *dst = dst_buf + y * row_pitch + x * bytes_per_pixel;
+				memcpy(dst, src, bytes_per_pixel);
+			}
+		}
+		dst_buf += slice_pitch;
+	}
 }
 
 /**
@@ -168,34 +358,38 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 
 	const int width  = 1 << (xpr0Header.width_pow2 >> 4);
 	const int height = 1 << (xpr0Header.height_pow2 & 0x0F);
+	bool swizzled = false;
 	switch (xpr0Header.pixel_format) {
-		// TODO: Swizzling.
 		case XPR0_PIXEL_FORMAT_ARGB1555:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB1555,
 				width, height,
 				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			swizzled = true;
 			break;
 		case XPR0_PIXEL_FORMAT_ARGB4444:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
 				width, height,
 				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			swizzled = true;
 			break;
 		case XPR0_PIXEL_FORMAT_RGB565:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
 				width, height,
 				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			swizzled = true;
 			break;
 
-		// TODO: Swizzling.
 		case XPR0_PIXEL_FORMAT_ARGB8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
 				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			swizzled = true;
 			break;
 		case XPR0_PIXEL_FORMAT_xRGB8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_xRGB8888,
 				width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			swizzled = true;
 			break;
 
 		case XPR0_PIXEL_FORMAT_DXT1:
@@ -243,6 +437,44 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 			// Unsupported...
 			return nullptr;
 	}
+
+	if (swizzled) {
+		// Image is swizzled.
+		// Unswizzling code is based on Cxbx-Reloaded:
+		// https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+
+		// Image dimensions must be a multiple of 4.
+		assert(width % 4 == 0);
+		assert(height % 4 == 0);
+		if (width % 4 != 0 || height % 4 != 0) {
+			// Not a multiple of 4.
+			// Return the image as-is.
+			return img;
+		}
+
+		// Assuming we don't have any extra bytes of stride,
+		// since the image must be a multiple of 4px wide.
+		// 4px ARGB32 is 16 bytes.
+		assert(img->stride() == img->row_bytes());
+		if (img->stride() != img->row_bytes()) {
+			// We have extra bytes.
+			// Can't unswizzle this image right now.
+			// Return the image as-is.
+			return img;
+		}
+
+		// Assuming img is ARGB32, since we're converting it
+		// from either a 16-bit or 32-bit ARGB format.
+		rp_image *const imgunswz = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+		unswizzle_box(static_cast<const uint8_t*>(img->bits()),
+			width, height, 1,
+			static_cast<uint8_t*>(imgunswz->bits()),
+			img->stride(), 0, sizeof(uint32_t));
+		delete img;
+		img = imgunswz;
+		return imgunswz;
+	}
+
 	return img;
 }
 
