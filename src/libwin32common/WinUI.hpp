@@ -105,6 +105,18 @@ int findMonospacedFont(LOGFONT *plfFontMono);
 COLORREF getAltRowColor(void);
 
 /**
+ * Get the alternate row color for ListViews in ARGB32 format.
+ * @return Alternate row color for ListViews in ARGB32 format.
+ */
+static inline uint32_t getAltRowColor_ARGB32(void)
+{
+	const COLORREF color = getAltRowColor();
+	return  (color & 0x00FF00) | 0xFF000000 |
+	       ((color & 0xFF) << 16) |
+	       ((color >> 16) & 0xFF);
+}
+
+/**
  * Get a Windows system color in ARGB32 format.
  *
  * Both GDI+ and rp_image use ARGB32 format,

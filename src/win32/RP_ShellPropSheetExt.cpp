@@ -1290,7 +1290,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	AutoGetDC hDC(hWndTab, hFontDlg);
 
 	// Add the row data.
-	const uint32_t bgColorListView = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
 	if (list_data) {
 		uint32_t checkboxes = 0, adj_checkboxes = 0;
 		if (hasCheckboxes) {
@@ -1393,7 +1392,6 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// two newlines, increase the Imagelist icon size by
 			// 16 pixels.
 			// TODO: Handle this better.
-			// TODO: Use alternating row colors?
 			// FIXME: This only works if the RFT_LISTDATA has icons.
 			SIZE szLstIcon = {32, 32};
 			bool resizeNeeded = false;
@@ -1411,11 +1409,19 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			assert(himl != nullptr);
 			if (himl) {
 				// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
+				// TODO: The row highlight doesn't surround the empty area
+				// of the icon. LVS_OWNERDRAW is probably needed for that.
 				ListView_SetImageList(hDlgItem, himl, LVSIL_SMALL);
+				uint32_t lvBgColor[2];
+				lvBgColor[0] = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
+				lvBgColor[1] = LibWin32Common::getAltRowColor_ARGB32();
 
 				// Add icons.
 				const auto &icons = field->data.list_data.mxd.icons;
-				for (auto iter = icons->cbegin(); iter != icons->cend(); ++iter) {
+				uint8_t rowColorIdx = 0;
+				for (auto iter = icons->cbegin(); iter != icons->cend();
+				     ++iter, rowColorIdx = !rowColorIdx)
+				{
 					int iImage = -1;
 					const rp_image *const icon = *iter;
 					if (!icon) {
@@ -1440,10 +1446,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 						// TODO: Handle theme changes?
 						// TODO: Error handling.
 						if (icon->format() != rp_image::FORMAT_ARGB32) {
-							rp_image *icon32 = icon->dup_ARGB32();
+							rp_image *const icon32 = icon->dup_ARGB32();
 							if (icon32) {
 								icon_resized = icon32->resized(szResize.cx, szResize.cy,
-									rp_image::AlignVCenter, bgColorListView);
+									rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
 								delete icon32;
 							}
 						}
@@ -1452,7 +1458,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 						// If it was already in ARGB32 format, it will be resized here.
 						if (!icon_resized) {
 							icon_resized = icon->resized(szResize.cx, szResize.cy,
-								rp_image::AlignVCenter, bgColorListView);
+								rp_image::AlignVCenter, lvBgColor[rowColorIdx]);
 						}
 					}
 
