@@ -47,35 +47,10 @@ class RomMetaDataPrivate
 {
 	public:
 		RomMetaDataPrivate();
-	private:
-		~RomMetaDataPrivate();	// call unref() instead
+		~RomMetaDataPrivate();
 
 	private:
 		RP_DISABLE_COPY(RomMetaDataPrivate)
-
-	public:
-		/** Reference count functions. **/
-
-		/**
-		 * Create a reference of this object.
-		 * @return this
-		 */
-		RomMetaDataPrivate *ref(void);
-
-		/**
-		 * Unreference this object.
-		 */
-		void unref(void);
-
-		/**
-		 * Is this object currently shared?
-		 * @return True if ref_cnt > 1; false if not.
-		 */
-		inline bool isShared(void) const;
-
-	private:
-		// Current reference count.
-		volatile int ref_cnt;
 
 	public:
 		// ROM field structs.
@@ -185,7 +160,6 @@ const uint8_t RomMetaDataPrivate::PropertyTypeMap[] = {
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
-	: ref_cnt(1)
 {
 	static_assert(ARRAY_SIZE(RomMetaDataPrivate::PropertyTypeMap) == Property::PropertyCount,
 		      "PropertyTypeMap needs to be updated!");
@@ -194,38 +168,6 @@ RomMetaDataPrivate::RomMetaDataPrivate()
 RomMetaDataPrivate::~RomMetaDataPrivate()
 {
 	delete_data();
-}
-
-/**
- * Create a reference of this object.
- * @return this
- */
-RomMetaDataPrivate *RomMetaDataPrivate::ref(void)
-{
-	ATOMIC_INC_FETCH(&ref_cnt);
-	return this;
-}
-
-/**
- * Unreference this object.
- */
-void RomMetaDataPrivate::unref(void)
-{
-	assert(ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&ref_cnt) <= 0) {
-		// All references removed.
-		delete this;
-	}
-}
-
-/**
- * Is this object currently shared?
- * @return True if ref_cnt > 1; false if not.
- */
-inline bool RomMetaDataPrivate::isShared(void) const
-{
-	assert(ref_cnt > 0);
-	return (ref_cnt > 1);
 }
 
 /**
@@ -278,83 +220,7 @@ RomMetaData::RomMetaData()
 
 RomMetaData::~RomMetaData()
 {
-	d_ptr->unref();
-}
-
-/**
- * Copy constructor.
- * @param other Other instance.
- */
-RomMetaData::RomMetaData(const RomMetaData &other)
-	: d_ptr(other.d_ptr->ref())
-{ }
-
-/**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
- */
-RomMetaData &RomMetaData::operator=(const RomMetaData &other)
-{
-	RomMetaDataPrivate *const d_old = this->d_ptr;
-	this->d_ptr = other.d_ptr->ref();
-	d_old->unref();
-	return *this;
-}
-
-/**
- * Detach this instance from all other instances.
- * TODO: Move to RomMetaDataPrivate?
- */
-void RomMetaData::detach(void)
-{
-	if (!d_ptr->isShared()) {
-		// Only one reference.
-		// Nothing to detach from.
-		return;
-	}
-
-	// Need to detach.
-	RomMetaDataPrivate *const d_new = new RomMetaDataPrivate();
-	RomMetaDataPrivate *const d_old = d_ptr;
-	d_new->metaData.resize(d_old->metaData.size());
-	for (int i = static_cast<int>(d_old->metaData.size() - 1); i >= 0; i--) {
-		const MetaData &metaData_old = d_old->metaData.at(i);
-		MetaData &metaData_new = d_new->metaData.at(i);
-		metaData_new.name = metaData_old.name;
-
-		assert(metaData_new.name > Property::FirstProperty);
-		assert(metaData_new.name < Property::PropertyCount);
-		if (metaData_new.name <= Property::FirstProperty ||
-		    metaData_new.name >= Property::PropertyCount)
-		{
-			continue;
-		}
-
-		metaData_new.type = metaData_old.type;
-		switch (metaData_old.type) {
-			case PropertyType::Integer:
-				metaData_new.data.ivalue = metaData_old.data.ivalue;
-				break;
-			case PropertyType::UnsignedInteger:
-				metaData_new.data.uvalue = metaData_old.data.uvalue;
-				break;
-			case PropertyType::String:
-				metaData_new.data.str = new string(*metaData_old.data.str);
-				break;
-			case PropertyType::Timestamp:
-				metaData_new.data.timestamp = metaData_old.data.timestamp;
-				break;
-			default:
-				// ERROR!
-				assert(!"Unsupported RomMetaData PropertyType.");
-				break;
-		}
-	}
-
-	// Detached.
-	d_ptr = d_new;
-	d_old->unref();
+	delete d_ptr;
 }
 
 /** Metadata accessors. **/

@@ -25,6 +25,8 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_ROMMETADATA_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_ROMMETADATA_HPP__
 
+#include "common.h"
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -184,10 +186,9 @@ class RomMetaData
 		 */
 		RomMetaData();
 		~RomMetaData();
-	public:
-		RomMetaData(const RomMetaData &other);
-		RomMetaData &operator=(const RomMetaData &other);
 
+	private:
+		RP_DISABLE_COPY(RomMetaData)
 	private:
 		friend class RomMetaDataPrivate;
 		RomMetaDataPrivate *d_ptr;
@@ -213,13 +214,6 @@ class RomMetaData
 		 * @return True if empty; false if not.
 		 */
 		bool empty(void) const;
-
-	private:
-		/**
-		 * Detach this instance from all other instances.
-		 * TODO: Move to RomMetaDataPrivate?
-		 */
-		void detach(void);
 
 	public:
 		/** Convenience functions for RomData subclasses. **/
