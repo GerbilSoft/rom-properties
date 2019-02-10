@@ -78,16 +78,17 @@ class XboxXPR0Private : public RomDataPrivate
 		 * If there are no bits left from any component it will pack the other masks
 		 * more tighly (Example: zzxzxzyx = Fewer x than z and even fewer y)
 		 *
+		 * rom-properties modification: Removed depth, since we're only
+		 * handling 2D textures.
+		 *
 		 * @param width
 		 * @param height
-		 * @param depth
 		 * @param mask_x
 		 * @param mask_y
-		 * @param mask_z
 		 */
 		static void generate_swizzle_masks(
-			unsigned int width, unsigned int height, unsigned int depth,
-			uint32_t *mask_x, uint32_t *mask_y, uint32_t *mask_z);
+			unsigned int width, unsigned int height,
+			uint32_t *mask_x, uint32_t *mask_y);
 
 		/**
 		 * This fills a pattern with a value if your value has bits abcd and your
@@ -109,18 +110,19 @@ class XboxXPR0Private : public RomDataPrivate
 		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
 		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
 		 *
+		 * rom-properties modification: Removed depth, since we're only
+		 * handling 2D textures.
+		 *
 		 * @param x
 		 * @param y
-		 * @param z
 		 * @param mask_x
 		 * @param mask_y
-		 * @param mask_z
 		 * @param bytes_per_pixel
 		 * @return
 		 */
 		static inline unsigned int get_swizzled_offset(
-			unsigned int x, unsigned int y, unsigned int z,
-			uint32_t mask_x, uint32_t mask_y, uint32_t mask_z,
+			unsigned int x, unsigned int y,
+			uint32_t mask_x, uint32_t mask_y,
 			unsigned int bytes_per_pixel);
 
 		/**
@@ -129,18 +131,21 @@ class XboxXPR0Private : public RomDataPrivate
 		 * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
 		 * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
 		 *
+		 * rom-properties modification: Removed depth, since we're only
+		 * handling 2D textures. Also removed slice_pitch, since we don't
+		 * have any slices here.
+		 *
 		 * @param src_buf
 		 * @param width
 		 * @param height
-		 * @param depth
 		 * @param dst_buf
 		 * @param row_pitch
 		 * @param slice_pitch
 		 * @param bytes_per_pixel
 		 */
 		static void unswizzle_box(const uint8_t *src_buf,
-			unsigned int width, unsigned int height, unsigned int depth,
-			uint8_t *dst_buf, unsigned int row_pitch, unsigned int slice_pitch,
+			unsigned int width, unsigned int height,
+			uint8_t *dst_buf, unsigned int row_pitch,
 			unsigned int bytes_per_pixel);
 
 		/**
@@ -176,18 +181,19 @@ XboxXPR0Private::~XboxXPR0Private()
  * If there are no bits left from any component it will pack the other masks
  * more tighly (Example: zzxzxzyx = Fewer x than z and even fewer y)
  *
+ * rom-properties modification: Removed depth, since we're only
+ * handling 2D textures.
+ *
  * @param width
  * @param height
- * @param depth
  * @param mask_x
  * @param mask_y
- * @param mask_z
  */
 void XboxXPR0Private::generate_swizzle_masks(
-	unsigned int width, unsigned int height, unsigned int depth,
-	uint32_t *mask_x, uint32_t *mask_y, uint32_t *mask_z)
+	unsigned int width, unsigned int height,
+	uint32_t *mask_x, uint32_t *mask_y)
 {
-	uint32_t x = 0, y = 0, z = 0;
+	uint32_t x = 0, y = 0;
 	uint32_t bit = 1;
 	uint32_t mask_bit = 1;
 	bool done;
@@ -195,13 +201,11 @@ void XboxXPR0Private::generate_swizzle_masks(
 		done = true;
 		if (bit < width) { x |= mask_bit; mask_bit <<= 1; done = false; }
 		if (bit < height) { y |= mask_bit; mask_bit <<= 1; done = false; }
-		if (bit < depth) { z |= mask_bit; mask_bit <<= 1; done = false; }
 		bit <<= 1;
 	} while(!done);
-	assert(((x ^ y) ^ z) == (mask_bit - 1));
+	assert((x ^ y) == (mask_bit - 1));
 	*mask_x = x;
 	*mask_y = y;
-	*mask_z = z;
 }
 
 /**
@@ -237,45 +241,58 @@ uint32_t XboxXPR0Private::fill_pattern(uint32_t pattern, uint32_t value)
  * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
  * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
  *
+ * rom-properties modification: Removed depth, since we're only
+ * handling 2D textures.
+ *
  * @param x
  * @param y
- * @param z
  * @param mask_x
  * @param mask_y
- * @param mask_z
  * @param bytes_per_pixel
  * @return
  */
 inline unsigned int XboxXPR0Private::get_swizzled_offset(
-	unsigned int x, unsigned int y, unsigned int z,
-	uint32_t mask_x, uint32_t mask_y, uint32_t mask_z,
+	unsigned int x, unsigned int y,
+	uint32_t mask_x, uint32_t mask_y,
 	unsigned int bytes_per_pixel)
 {
 	return bytes_per_pixel * (fill_pattern(mask_x, x)
-	                       |  fill_pattern(mask_y, y)
-	                       |  fill_pattern(mask_z, z));
+	                       |  fill_pattern(mask_y, y));
 }
 
+/**
+ * Unswizzle an ARGB texture.
+ * Based on Cxbx-Reloaded's unswizzling code:
+ * https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
+ * Original license: LGPLv2 (GPLv2 for contributions after 2012/01/13)
+ *
+ * rom-properties modification: Removed depth, since we're only
+ * handling 2D textures. Also removed slice_pitch, since we don't
+ * have any slices here.
+ *
+ * @param src_buf
+ * @param width
+ * @param height
+ * @param dst_buf
+ * @param row_pitch
+ * @param slice_pitch
+ * @param bytes_per_pixel
+ */
 void XboxXPR0Private::unswizzle_box(const uint8_t *src_buf,
-	unsigned int width, unsigned int height, unsigned int depth,
-	uint8_t *dst_buf, unsigned int row_pitch, unsigned int slice_pitch,
+	unsigned int width, unsigned int height,
+	uint8_t *dst_buf, unsigned int row_pitch,
 	unsigned int bytes_per_pixel)
 {
-	uint32_t mask_x, mask_y, mask_z;
-	generate_swizzle_masks(width, height, depth, &mask_x, &mask_y, &mask_z);
+	uint32_t mask_x, mask_y;
+	generate_swizzle_masks(width, height, &mask_x, &mask_y);
 
-	unsigned int x, y, z;
-	for (z = 0; z < depth; z++) {
-		for (y = 0; y < height; y++) {
-			for (x = 0; x < width; x++) {
-				const uint8_t *src = src_buf +
-					get_swizzled_offset(x, y, z, mask_x, mask_y, mask_z,
-						bytes_per_pixel);
-				uint8_t *dst = dst_buf + y * row_pitch + x * bytes_per_pixel;
-				memcpy(dst, src, bytes_per_pixel);
-			}
+	for (unsigned int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < width; x++) {
+			const uint8_t *src = src_buf +
+				get_swizzled_offset(x, y, mask_x, mask_y, bytes_per_pixel);
+			uint8_t *dst = dst_buf + y * row_pitch + x * bytes_per_pixel;
+			memcpy(dst, src, bytes_per_pixel);
 		}
-		dst_buf += slice_pitch;
 	}
 }
 
@@ -467,9 +484,9 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 		// from either a 16-bit or 32-bit ARGB format.
 		rp_image *const imgunswz = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 		unswizzle_box(static_cast<const uint8_t*>(img->bits()),
-			width, height, 1,
+			width, height,
 			static_cast<uint8_t*>(imgunswz->bits()),
-			img->stride(), 0, sizeof(uint32_t));
+			img->stride(), sizeof(uint32_t));
 		delete img;
 		img = imgunswz;
 		return imgunswz;
