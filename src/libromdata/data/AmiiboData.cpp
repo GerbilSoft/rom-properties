@@ -297,6 +297,12 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x36C
 	nullptr,				// 0x370
 	"Cereal",				// 0x374
+	nullptr,				// 0x378
+	nullptr,				// 0x37C
+	nullptr,				// 0x380
+	nullptr,				// 0x384
+	nullptr,				// 0x388
+	"Diablo",				// 0x38C
 };
 
 // Character variants.
@@ -1031,10 +1037,13 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Star Fox (character series = 0x058)
 	AMIIBO_CHAR_ID_ONE(0x0580, "Fox"),
 	AMIIBO_CHAR_ID_ONE(0x0581, "Falco"),
+	// TODO: 0x0582, 0x0583
+	AMIIBO_CHAR_ID_ONE(0x0584, "Wolf"),
 
 	// Metroid (character series = 0x05C)
 	AMIIBO_CHAR_ID_VAR(0x05C0, "Samus", metroid_samus_variants),
 	AMIIBO_CHAR_ID_ONE(0x05C1, "Metroid"),
+	AMIIBO_CHAR_ID_ONE(0x05C2, "Ridley"),
 
 	// F-Zero (character series = 0x060)
 	AMIIBO_CHAR_ID_ONE(0x0600, "Captain Falcon"),
@@ -1166,6 +1175,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Cereal (character series = 0x374)
 	AMIIBO_CHAR_ID_VAR(0x3740, "Super Mario Cereal", cereal_smb_variants),
+
+	// Diablo (character series = 0x38C)
+	AMIIBO_CHAR_ID_ONE(0x38C0, "Loot Goblin"),
 };
 
 /**
@@ -1210,6 +1222,7 @@ const char *const AmiiboDataPrivate::amiibo_series_names[] = {
 	"Metroid",				// 0x13
 	"Other",				// 0x14
 	"Mega Man",				// 0x15
+	"Diablo",				// 0x16
 };
 
 // amiibo IDs.
@@ -2168,12 +2181,22 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Mega Man [0x0379]
 	{  0, 0, "Mega Man"},			// 0x0379
 
-	// Unused [0x037A-0x38D]
+	// Unused [0x037A-0x038D]
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037A,0x037B
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037C,0x037D
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037E,0x037F
+
+	// SSBU: Wave 11 [0x037E-0x037F]
+	{ 65, 11, "Wolf"},			// 0x037E
+	{ 64, 11, "Ridley"},
+
+	// Unused [0x0380-0x0381]
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0380,0x0381
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0382,0x0383
+
+	// SSBU: Wave 11 [0x0382]
+	{ 63, 11, "Inkling"},			// 0x0382
+
+	// Unused [0x0383-0x038D]
+	{  0, 0, nullptr},			// 0x0383
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0384,0x0385
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0386,0x0387
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0388,0x0389
@@ -2184,6 +2207,9 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 5, "Octoling Girl"},		// 0x038E
 	{  0, 5, "Octoling Boy"},		// 0x038F
 	{  0, 5, "Octoling Octopus"},		// 0x0390
+
+	// Diablo [0x0391]
+	{  0, 0, "Loot Goblin"},		// 0x0391
 };
 
 /** AmiiboData **/
@@ -2195,7 +2221,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
  */
 const char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x374/4)+1,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x38C/4)+1,
 		"char_series_names[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (char_id >> 22) & 0x3FF;
@@ -2265,7 +2291,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0390)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0391)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
