@@ -523,10 +523,6 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 
 	// Read the IMET struct.
 	unique_ptr<Wii_IMET_t> pBanner(new Wii_IMET_t);
-	if (!pBanner) {
-		f_opening_bnr->unref();
-		return -ENOMEM;
-	}
 	size_t size = f_opening_bnr->read(pBanner.get(), sizeof(*pBanner));
 	if (size != sizeof(*pBanner)) {
 		// Read error.
