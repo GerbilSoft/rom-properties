@@ -615,11 +615,9 @@ const char *SPC::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SPC::systemName() array index optimization needs to be updated.");
 
+	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
-		"Super NES SPC Audio",
-		"SPC",
-		"SPC",
-		nullptr
+		"Super NES SPC Audio", "SPC", "SPC", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

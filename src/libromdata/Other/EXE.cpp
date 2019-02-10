@@ -651,6 +651,11 @@ const char *EXE::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// EXE has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"EXE::systemName() array index optimization needs to be updated.");
+
 	static const char *const sysNames_Windows[4] = {
 		"Microsoft Windows", "Windows", "Windows", nullptr
 	};

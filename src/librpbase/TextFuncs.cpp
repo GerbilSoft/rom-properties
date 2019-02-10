@@ -455,6 +455,12 @@ string formatSampleAsTime(unsigned int sample, unsigned int rate)
 	char buf[32];
 	unsigned int min, sec, cs;
 
+	assert(rate != 0);
+	if (rate == 0) {
+		// Division by zero! Someone goofed.
+		return "#DIV/0!";
+	}
+
 	const unsigned int cs_frames = (sample % rate);
 	if (cs_frames != 0) {
 		// Calculate centiseconds.

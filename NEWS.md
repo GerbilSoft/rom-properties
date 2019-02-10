@@ -41,6 +41,9 @@
   * Xbox360_XDBF: Xbox 360 XDBF resource files. Only the variant used by
     XEX executables is supported at the moment.
   * Xbox360_XEX: Xbox 360 executables.
+  * BRSTM: Nintendo Wii BRSTM audio files.
+  * BCSTM: Nintendo 3DS BCSTM and BCWAV audio files.
+    * Also supports Nintendo Wii U BFSTM audio files.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.

@@ -9,6 +9,42 @@
     <glob pattern="*.adx"/>
   </mime-type>
 
+  <!-- BCSTM -->
+  <mime-type type="audio/x-bcstm">
+    <comment>Nintendo 3DS BCSTM audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.bcstm"/>
+    <magic priority="50">
+      <match value="CSTM" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="audio/x-bfstm">
+    <comment>Nintendo Wii U BFSTM audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.bfstm"/>
+    <magic priority="50">
+      <match value="FSTM" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="audio/x-bfstm">
+    <comment>Nintendo Wii U BCWAV audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.bcwav"/>
+    <magic priority="50">
+      <match value="CWAV" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- BRSTM -->
+  <mime-type type="audio/x-brstm">
+    <comment>Nintendo Wii BRSTM audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.brstm"/>
+    <magic priority="50">
+      <match value="RSTM" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- GBS -->
   <mime-type type="audio/x-gbs">
     <comment>Game Boy Sound System audio</comment>

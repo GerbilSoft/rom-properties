@@ -678,6 +678,11 @@ const char *KhronosKTX::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// Khronos KTX has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"KhronosKTX::systemName() array index optimization needs to be updated.");
+
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
 		"Khronos KTX Texture", "Khronos KTX", "KTX", nullptr
@@ -822,19 +827,19 @@ int KhronosKTX::loadFieldData(void)
 	if (ktxHeader->endianness == KTX_ENDIAN_MAGIC) {
 		// Matches host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("KhronosKTX", "Little-Endian");
+		endian_str = C_("RomData", "Little-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("KhronosKTX", "Big-Endian");
+		endian_str = C_("RomData", "Big-Endian");
 #endif
 	} else {
 		// Does not match host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("KhronosKTX", "Big-Endian");
+		endian_str = C_("RomData", "Big-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("KhronosKTX", "Little-Endian");
+		endian_str = C_("RomData", "Little-Endian");
 #endif
 	}
-	d->fields->addField_string(C_("KhronosKTX", "Endianness"), endian_str);
+	d->fields->addField_string(C_("RomData", "Endianness"), endian_str);
 
 	// NOTE: GL field names should not be localized.
 

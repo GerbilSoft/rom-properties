@@ -389,6 +389,8 @@ const char *MachO::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// Mach-O has the same name worldwide, so we can
+	// ignore the region selection.
 	// TODO: Identify the OS, or list that in the fields instead?
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"MachO::systemName() array index optimization needs to be updated.");

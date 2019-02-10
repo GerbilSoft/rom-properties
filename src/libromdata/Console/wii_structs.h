@@ -41,7 +41,7 @@ typedef uint32_t uint34_rshift2_t;
  * Wii volume group table.
  * Contains information about the (maximum of) four volume groups.
  * References:
- * - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+ * - https://wiibrew.org/wiki/Wii_Disc#Partitions_information
  * - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
  *
  * All fields are big-endian.
@@ -57,7 +57,7 @@ typedef struct PACKED _RVL_VolumeGroupTable {
 /**
  * Wii partition table entry.
  * Contains information about an individual partition.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Partition_table_entry
+ * Reference: https://wiibrew.org/wiki/Wii_Disc#Partition_table_entry
  *
  * All fields are big-endian.
  */
@@ -73,7 +73,7 @@ typedef struct PACKED _RVL_PartitionTableEntry {
 
 /**
  * Time limit structs for Wii ticket.
- * Reference: http://wiibrew.org/wiki/Ticket
+ * Reference: https://wiibrew.org/wiki/Ticket
  */
 typedef struct PACKED _RVL_TimeLimit {
 	uint32_t enable;	// 1 == enable; 0 == disable
@@ -97,7 +97,7 @@ ASSERT_STRUCT(RVL_TitleID_t, 8);
 
 /**
  * Wii ticket.
- * Reference: http://wiibrew.org/wiki/Ticket
+ * Reference: https://wiibrew.org/wiki/Ticket
  */
 typedef struct PACKED _RVL_Ticket {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
@@ -128,7 +128,7 @@ ASSERT_STRUCT(RVL_Ticket, 0x2A4);
 
 /**
  * Wii TMD header.
- * Reference: http://wiibrew.org/wiki/Tmd_file_structure
+ * Reference: https://wiibrew.org/wiki/Tmd_file_structure
  */
 typedef struct PACKED _RVL_TMD_Header {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
@@ -175,7 +175,7 @@ typedef enum {
 
 /**
  * Wii partition header.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Partition
+ * Reference: https://wiibrew.org/wiki/Wii_Disc#Partition
  */
 typedef struct PACKED _RVL_PartitionHeader {
 	RVL_Ticket ticket;			// [0x000]
@@ -207,7 +207,7 @@ typedef enum {
 
 /**
  * Region setting and age ratings.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Region_setting
+ * Reference: https://wiibrew.org/wiki/Wii_Disc#Region_setting
  */
 #define RVL_RegionSetting_ADDRESS 0x4E000
 typedef struct PACKED _RVL_RegionSetting {

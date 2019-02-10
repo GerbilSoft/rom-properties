@@ -134,7 +134,10 @@ button.
 | CRI ADX ADPCM                 |       Yes      |    Yes   |       N/A       |       N/A      |
 | Commodore 64 SID Music        |       Yes      |    Yes   |       N/A       |       N/A      |
 | Game Boy Sound System         |       Yes      |    Yes   |       N/A       |       N/A      |
+| Nintendo 3DS BCSTM and BCWAV  |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
+| Nintendo Wii BRSTM            |       Yes      |    Yes   |       N/A       |       N/A      |
+| Nintendo Wii U BFSTM          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Portable Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
 | Super NES SPC Format          |       Yes      |    Yes   |       N/A       |       N/A      |
 | Video Game Music              |       Yes      |    Yes   |       N/A       |       N/A      |

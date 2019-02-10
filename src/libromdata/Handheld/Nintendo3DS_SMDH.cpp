@@ -3,7 +3,7 @@
  * Nintendo3DS_SMDH.hpp: Nintendo 3DS SMDH reader.                         *
  * Handles SMDH files and SMDH sections.                                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -300,6 +300,11 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	RP_D(const Nintendo3DS_SMDH);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
+
+	// Nintendo 3DS has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"Nintendo3DS_SMDH::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: SMDH-specific, or just use Nintendo 3DS?

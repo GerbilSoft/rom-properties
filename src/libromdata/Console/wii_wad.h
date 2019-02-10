@@ -22,8 +22,8 @@
 #define __ROMPROPERTIES_LIBROMDATA_WII_WAD_H__
 
 // References:
-// - http://wiibrew.org/wiki/WAD_files
-// - http://wiibrew.org/wiki/Content.bin
+// - https://wiibrew.org/wiki/WAD_files
+// - https://wiibrew.org/wiki/Content.bin
 
 #include "librpbase/common.h"
 #include <stdint.h>
@@ -40,7 +40,7 @@ extern "C" {
 
 /**
  * Nintendo Wii WAD file header.
- * Reference: http://wiibrew.org/wiki/WAD_files
+ * Reference: https://wiibrew.org/wiki/WAD_files
  * 
  * All fields are big-endian.
  */
@@ -92,7 +92,7 @@ ASSERT_STRUCT(Wii_WAD_Header_EARLY, 32);
  * - Wii_IMET_t: IMET header. (most WADs)
  * - Wii_WIBN_Header_t: WIBN header. (DLC WADs)
  *
- * Reference: http://wiibrew.org/wiki/Content.bin
+ * Reference: https://wiibrew.org/wiki/Content.bin
  *
  * All fields are big-endian.
  */

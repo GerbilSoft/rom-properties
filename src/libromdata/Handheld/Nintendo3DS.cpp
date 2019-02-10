@@ -1602,6 +1602,11 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
+	// Nintendo 3DS has the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"Nintendo3DS::systemName() array index optimization needs to be updated.");
+
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles.
 	static const char *const sysNames[4] = {

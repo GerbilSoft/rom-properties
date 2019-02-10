@@ -81,7 +81,7 @@ typedef enum {
 /**
  * DVD Boot Block.
  * References:
- * - http://wiibrew.org/wiki/Wii_Disc#Decrypted
+ * - https://wiibrew.org/wiki/Wii_Disc#Decrypted
  * - http://hitmen.c02.at/files/yagcd/yagcd/chap13.html
  * - http://www.gc-forever.com/wiki/index.php?title=Apploader
  *

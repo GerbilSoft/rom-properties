@@ -308,7 +308,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Read the volume group table.
 	// References:
-	// - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+	// - https://wiibrew.org/wiki/Wii_Disc#Partitions_information
 	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
 	size_t size = discReader->seekAndRead(RVL_VolumeGroupTable_ADDRESS, &vgtbl, sizeof(vgtbl));
 	if (size != sizeof(vgtbl)) {
@@ -1190,16 +1190,15 @@ const char *GameCube::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
 
-	static const char *const sysNames[16] = {
+	static const char *const sysNames[4][4] = {
 		// FIXME: "NGC" in Japan?
-		"Nintendo GameCube", "GameCube", "GCN", nullptr,
-		"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr,
-		"Nintendo Wii", "Wii", "Wii", nullptr,
-		nullptr, nullptr, nullptr, nullptr
+		{"Nintendo GameCube", "GameCube", "GCN", nullptr},
+		{"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr},
+		{"Nintendo Wii", "Wii", "Wii", nullptr},
+		{nullptr, nullptr, nullptr, nullptr},
 	};
 
-	const unsigned int idx = (type & SYSNAME_TYPE_MASK) | ((d->discType & 3) << 2);
-	return sysNames[idx];
+	return sysNames[d->discType & 3][type & SYSNAME_TYPE_MASK];
 }
 
 /**
