@@ -459,8 +459,8 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 		return nullptr;
 	}
 
-	if (file->size() > 128*1024*1024) {
-		// Sanity check: GVR files shouldn't be more than 128 MB.
+	if (file->size() > 16*1024*1024) {
+		// Sanity check: GVR files shouldn't be more than 16 MB.
 		return nullptr;
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
