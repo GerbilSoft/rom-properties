@@ -124,6 +124,7 @@ button.
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft Xbox XPR0 Textures  |       Yes      |    Yes   |      Image      |       N/A      |
 
 ### Audio Formats
 

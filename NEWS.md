@@ -41,9 +41,8 @@
   * Xbox360_XDBF: Xbox 360 XDBF resource files. Only the variant used by
     XEX executables is supported at the moment.
   * Xbox360_XEX: Xbox 360 executables.
-  * BRSTM: Nintendo Wii BRSTM audio files.
-  * BCSTM: Nintendo 3DS BCSTM and BCWAV audio files.
-    * Also supports Nintendo Wii U BFSTM audio files.
+  * XboxXPR0: Xbox XPR0 textures.
+    * Used in save files and elsewhere.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
@@ -59,6 +58,9 @@
   * SPC: Super NES SPC-700 audio format.
   * VGM: Video Game Music format. Used for all sorts of video game
     audio rips, including Sega Mega Drive and Neo Geo Pocket
+  * BRSTM: Nintendo Wii BRSTM audio files.
+  * BCSTM: Nintendo 3DS BCSTM and BCWAV audio files.
+    * Also supports Nintendo Wii U BFSTM audio files.
 
 * New parser features:
   * DMG: Added support for the GBX footer. This is used to indicate certain
