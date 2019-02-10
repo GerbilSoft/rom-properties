@@ -185,7 +185,7 @@ typedef enum {
 #define BCSTM_INFO_MAGIC 'INFO'
 typedef struct PACKED _BCSTM_INFO_Block {
 	uint32_t magic;				// [0x000] 'INFO'
-	uint32_t size;				// [0x004] Size of the info blokc.
+	uint32_t size;				// [0x004] Size of the info block.
 	BCSTM_Reference stream_info_ref;	// [0x008] Stream Info
 	BCSTM_Reference track_info_ref;		// [0x010] Track Info
 	BCSTM_Reference channel_info_ref;	// [0x018] Channel Info
@@ -211,7 +211,7 @@ ASSERT_STRUCT(BCSTM_INFO_Block, 0x58);
  */
 typedef struct PACKED _BCWAV_INFO_Block {
 	uint32_t magic;		// [0x000] 'INFO'
-	uint32_t size;		// [0x004] Size of the info blokc.
+	uint32_t size;		// [0x004] Size of the info block.
 	uint8_t codec;		// [0x008] Codec (See BCSTM_Codec_e)
 				//         (listed as Encoding on 3dbrew)
 	uint8_t loop_flag;	// [0x009] Loop flag
