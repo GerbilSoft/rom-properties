@@ -57,12 +57,15 @@ using LibRomData::RomDataFactory;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <array>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 using std::array;
+using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::string;
@@ -888,8 +891,8 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		hwndSysLinkControls.insert(hDlgItem);
 		SetWindowFont(hDlgItem, hFont, false);
 
-		// NOTE: We can't use measureTextSize() because that includes
-		// the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
+		// NOTE: We can't use LibWin32Common::measureTextSize() because
+		// that includes the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
@@ -1039,7 +1042,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 					continue;
 
 				// Get the width of this specific entry.
-				// TODO: Use measureTextSize()?
+				// TODO: Use LibWin32Common::measureTextSize()?
 				SIZE textSize;
 				GetTextExtentPoint32(hDC, tname.data(), (int)tname.size(), &textSize);
 				int chk_w = rect_chkbox.right + textSize.cx;
@@ -1103,7 +1106,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		int chk_w;
 		if (elemsPerRow == 0) {
 			// Get the width of this specific entry.
-			// TODO: Use measureTextSize()?
+			// TODO: Use LibWin32Common::measureTextSize()?
 			SIZE textSize;
 			GetTextExtentPoint32(hDC, tname.data(), (int)tname.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
@@ -1235,6 +1238,11 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		}
 	}
 
+	// Column widths.
+	// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+	// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+	unique_ptr<int[]> col_width(new int[col_count]);
+
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {
 		// Format table.
@@ -1266,14 +1274,20 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				lvColumn.cx = 0;
 				ListView_InsertColumn(hDlgItem, i, &lvColumn);
 			}
+			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
 	} else {
 		lvColumn.mask = LVCF_FMT;
 		lvColumn.fmt = LVCFMT_LEFT;
 		for (int i = 0; i < col_count; i++) {
 			ListView_InsertColumn(hDlgItem, i, &lvColumn);
+			col_width[i] = LVSCW_AUTOSIZE_USEHEADER;
 		}
 	}
+
+	// Dialog font and device context.
+	// NOTE: Using the parent dialog's font.
+	AutoGetDC hDC(hWndTab, hFontDlg);
 
 	// Add the row data.
 	const uint32_t bgColorListView = LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW);
@@ -1319,20 +1333,48 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			lv_row_data.reserve(data_row.size());
 
 			// String data.
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter) {
-				const string &str = *iter;
+			int col = 0;
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, col++) {
+				tstring tstr = U82T_s(*iter);
 
 				// Count newlines.
-				size_t nl_pos = 0;
+				size_t prev_nl_pos = 0;
+				size_t cur_nl_pos;
 				int nl = 0;
-				while ((nl_pos = str.find('\n', nl_pos)) != string::npos) {
+				// TODO: Actual padding value?
+				static const int COL_WIDTH_PADDING = 8*2;
+				while ((cur_nl_pos = tstr.find(_T('\n'), prev_nl_pos)) != tstring::npos) {
+					// Measure the width, plus padding on both sides.
+					//
+					// LVSCW_AUTOSIZE_USEHEADER doesn't work for entries with newlines.
+					// This allows us to set a good initial size, but it won't help if
+					// someone double-clicks the column splitter, triggering an automatic
+					// resize.
+					//
+					// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
+					// NOTE: Not using LibWin32Common::measureTextSize()
+					// because that does its own newline checks.
+					// TODO: Verify the values here.
+					if (col < col_count) {
+						SIZE textSize;
+						GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(cur_nl_pos - prev_nl_pos), &textSize);
+						col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
+					}
+
 					nl++;
-					nl_pos++;
+					prev_nl_pos = cur_nl_pos + 1;
+				}
+				if (nl > 0 && col < col_count) {
+					// Measure the last line.
+					// TODO: Verify the values here.
+					SIZE textSize;
+					GetTextExtentPoint32(hDC, &tstr[prev_nl_pos], (int)(tstr.size() - prev_nl_pos), &textSize);
+					col_width[col] = std::max<int>(col_width[col], textSize.cx + COL_WIDTH_PADDING);
 				}
 				nl_max = std::max(nl_max, nl);
 
 				// TODO: Store the icon index if necessary.
-				lv_row_data.push_back(U82T_s(*iter));
+				lv_row_data.push_back(std::move(tstr));
 			}
 
 			// Next row.
@@ -1460,7 +1502,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// TODO: Add a flag for 'main data column' and adjust it to
 	// not exceed the viewport.
 	for (int i = 0; i < col_count; i++) {
-		ListView_SetColumnWidth(hDlgItem, i, LVSCW_AUTOSIZE_USEHEADER);
+		ListView_SetColumnWidth(hDlgItem, i, col_width[i]);
 	}
 
 	// Get the dialog margin.
