@@ -310,8 +310,8 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 		return nullptr;
 	}
 
+	// Sanity check: XPR0 files shouldn't be more than 16 MB.
 	if (file->size() > 16*1024*1024) {
-		// Sanity check: XPR0 files shouldn't be more than 16 MB.
 		return nullptr;
 	}
 
@@ -322,6 +322,18 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 	// Divide the image area by 2.
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 	const uint32_t data_offset = le32_to_cpu(xpr0Header.data_offset);
+
+	// Sanity check: Image dimensions must be non-zero.
+	// Not checking maximum; the 4-bit shift amount has a
+	// maximum of pow(2,15), which is 32768 (our maximum).
+	assert((xpr0Header.width_pow2 >> 4) > 0);
+	assert((xpr0Header.height_pow2 & 0x0F) > 0);
+	if ((xpr0Header.width_pow2 >> 4) == 0 ||
+	    (xpr0Header.height_pow2 & 0x0F) == 0)
+	{
+		// Invalid image dimensions.
+		return nullptr;
+	}
 
 	// Determine the expected size based on the pixel format.
 	const unsigned int area_shift = (xpr0Header.width_pow2 >> 4) +
