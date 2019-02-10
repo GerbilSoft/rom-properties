@@ -40,6 +40,7 @@ SET(libromdata_SRCS
 	Texture/SegaPVR.cpp
 	Texture/ValveVTF.cpp
 	Texture/ValveVTF3.cpp
+	Texture/XboxXPR0.cpp
 
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
@@ -167,11 +168,13 @@ SET(libromdata_H
 	Texture/SegaPVR.hpp
 	Texture/ValveVTF.hpp
 	Texture/ValveVTF3.hpp
+	Texture/XboxXPR0.cpp
 
 	Texture/dds_structs.h
 	Texture/pvr_structs.h
 	Texture/vtf_structs.h
 	Texture/vtf3_structs.h
+	Texture/xbox_xpr0_structs.h
 
 	Audio/ADX.hpp
 	Audio/BCSTM.hpp

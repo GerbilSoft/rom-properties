@@ -704,4 +704,15 @@
       <match value="VTF3" type="string" offset="0"/>
     </magic>
   </mime-type>
+
+  <!-- XboxXPR0 -->
+  <mime-type type="image/x-xbox-xpr0">
+    <comment>Microsoft Xbox XPR0 texture file</comment>
+    <sub-class-of type="image/x-generic"/>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.xbx"/>
+    <magic priority="50">
+      <match value="XPR0" type="string" offset="0"/>
+    </magic>
+  </mime-type>
 </mime-info>

@@ -86,6 +86,7 @@ using std::vector;
 #include "Texture/SegaPVR.hpp"
 #include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
+#include "Texture/XboxXPR0.hpp"
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
@@ -257,6 +258,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 #endif /* ENABLE_GL */
 	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL, 0, 'VTF\0'),
 	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL, 0, 'VTF3'),
+	GetRomDataFns_addr(XboxXPR0, ATTR_HAS_THUMBNAIL, 0, 'XPR0'),
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_NONE, 0, 'RSTM'),

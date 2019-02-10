@@ -585,7 +585,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	// Check if this KTX texture is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(size);
+	info.header.size = sizeof(d->ktxHeader);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->ktxHeader);
 	info.ext = nullptr;	// Not needed for KTX.
 	info.szFile = file->size();
@@ -649,11 +649,11 @@ int KhronosKTX::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Verify the KTX magic.
-	if (!memcmp(info->header.pData, KTX_IDENTIFIER, sizeof(KTX_IDENTIFIER)-1)) {
+	const KTX_Header *const ktxHeader =
+		reinterpret_cast<const KTX_Header*>(info->header.pData);
+	if (!memcmp(ktxHeader->identifier, KTX_IDENTIFIER, sizeof(KTX_IDENTIFIER)-1)) {
 		// KTX magic is present.
 		// Check the endianness value.
-		const KTX_Header *const ktxHeader =
-			reinterpret_cast<const KTX_Header*>(info->header.pData);
 		if (ktxHeader->endianness == KTX_ENDIAN_MAGIC ||
 		    ktxHeader->endianness == __swab32(KTX_ENDIAN_MAGIC))
 		{
