@@ -117,15 +117,17 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 	const uint32_t data_offset = le32_to_cpu(xpr0Header.data_offset);
 
 	// Determine the expected size based on the pixel format.
+	const unsigned int area_shift = (xpr0Header.width_pow2 >> 4) +
+					(xpr0Header.height_pow2 & 0x0F);
 	uint32_t expected_size;
 	switch (xpr0Header.pixel_format) {
 		case XPR0_PIXEL_FORMAT_DXT1:
 			// 8 bytes per 4x4 block
-			expected_size = 1U << ((xpr0Header.pow2size * 2) - 1);
+			expected_size = static_cast<uint32_t>(1U << (area_shift - 1));
 			break;
 		case XPR0_PIXEL_FORMAT_DXT5:
 			// 16 bytes per 4x4 block
-			expected_size = 1U << (xpr0Header.pow2size * 2);
+			expected_size = static_cast<uint32_t>(1U << area_shift);
 			break;
 		default:
 			// Unsupported...
@@ -145,15 +147,16 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 		return nullptr;
 	}
 
-	const int img_dimension = 1 << xpr0Header.pow2size;
+	const int width  = 1 << (xpr0Header.width_pow2 >> 4);
+	const int height = 1 << (xpr0Header.height_pow2 & 0x0F);
 	switch (xpr0Header.pixel_format) {
 		case XPR0_PIXEL_FORMAT_DXT1:
 			// NOTE: Assuming we have transparent pixels.
-			img = ImageDecoder::fromDXT1_A1(img_dimension, img_dimension,
+			img = ImageDecoder::fromDXT1_A1(width, height,
 				buf.get(), expected_size);
 			break;
 		case XPR0_PIXEL_FORMAT_DXT5:
-			img = ImageDecoder::fromDXT5(img_dimension, img_dimension,
+			img = ImageDecoder::fromDXT5(width, height,
 				buf.get(), expected_size);
 			break;
 		default:
@@ -339,8 +342,11 @@ vector<RomData::ImageSizeDef> XboxXPR0::supportedImageSizes(ImageType imageType)
 	}
 
 	// Return the image's size.
-	const unsigned short img_dimension = 1U << d->xpr0Header.pow2size;
-	const ImageSizeDef imgsz[] = {{nullptr, img_dimension, img_dimension, 0}};
+	const ImageSizeDef imgsz[] = {{nullptr,
+		static_cast<uint16_t>(1U << (d->xpr0Header.width_pow2 >> 4)),
+		static_cast<uint16_t>(1U << (d->xpr0Header.height_pow2 & 0x0F)),
+		0
+	}};
 	return vector<ImageSizeDef>(imgsz, imgsz + 1);
 }
 
@@ -366,7 +372,9 @@ uint32_t XboxXPR0::imgpf(ImageType imageType) const
 	// If both dimensions of the texture are 64 or less,
 	// specify nearest-neighbor scaling.
 	uint32_t ret = 0;
-	if (d->xpr0Header.pow2size <= 6 /* pow(2,6) == 64 */) {
+	if ((d->xpr0Header.width_pow2 >> 4) <= 6 ||
+	    (d->xpr0Header.height_pow2 & 0x0F) <= 6)
+	{
 		// 64x64 or smaller.
 		ret = IMGPF_RESCALE_NEAREST;
 	}
@@ -417,9 +425,9 @@ int XboxXPR0::loadFieldData(void)
 	}
 
 	// Texture size
-	const int img_dimension = 1 << xpr0Header->pow2size;
 	d->fields->addField_dimensions(C_("XboxXPR0", "Texture Size"),
-		img_dimension, img_dimension);
+		1 << (xpr0Header->width_pow2 >> 4),
+		1 << (xpr0Header->height_pow2 & 0x0F));
 
 	// TODO: More fields.
 
@@ -454,9 +462,8 @@ int XboxXPR0::loadMetaData(void)
 	const Xbox_XPR0_Header *const xpr0Header = &d->xpr0Header;
 
 	// Dimensions.
-	const int img_dimension = 1 << xpr0Header->pow2size;
-	d->metaData->addMetaData_integer(Property::Width, img_dimension);
-	d->metaData->addMetaData_integer(Property::Height, img_dimension);
+	d->metaData->addMetaData_integer(Property::Width, 1 << (xpr0Header->width_pow2 >> 4));
+	d->metaData->addMetaData_integer(Property::Height, 1 << (xpr0Header->height_pow2 & 0x0F));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

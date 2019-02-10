@@ -49,8 +49,8 @@ typedef struct PACKED _Xbox_XPR0_Header {
 	uint8_t reserved1[8];	// [0x010]
 	uint8_t unknown;	// [0x018]
 	uint8_t pixel_format;	// [0x019] Pixel format (See XPR0_Pixel_Format_e)
-	uint8_t unknown2;	// [0x01A]
-	uint8_t pow2size;	// [0x01B] Texture dimension (square) as a power of 2
+	uint8_t width_pow2;	// [0x01A] Width (high nybble) as a power of 2
+	uint8_t height_pow2;	// [0x01B] Height (low nybble) as a power of 2
 	uint32_t reserved2;	// [0x01C]
 
 	// 0x020-0x03F are garbage data, usually 0xFFFFFFFF
