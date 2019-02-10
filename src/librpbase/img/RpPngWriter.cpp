@@ -408,6 +408,10 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 	// but let's do it anyway.
 	file->rewind();
 
+	// ref() the file.
+	// This must be done *before* initializing PNG write structs.
+	this->file = file->ref();
+
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
 	if (ret != 0) {
@@ -421,9 +425,6 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 	cache.width = width;
 	cache.height = height;
 	cache.format = format;
-
-	// ref() the file.
-	this->file = file->ref();
 }
 
 void RpPngWriterPrivate::init(IRpFile *file, const rp_image *img)
@@ -469,6 +470,10 @@ void RpPngWriterPrivate::init(IRpFile *file, const rp_image *img)
 	// but let's do it anyway.
 	file->rewind();
 
+	// ref() the file.
+	// This must be done *before* initializing PNG write structs.
+	this->file = file->ref();
+
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
 	if (ret != 0) {
@@ -479,9 +484,6 @@ void RpPngWriterPrivate::init(IRpFile *file, const rp_image *img)
 	// Cache the image parameters.
 	imageTag = IMGT_RP_IMAGE;
 	cache.setFrom(img);
-
-	// ref() the file.
-	this->file = file->ref();
 }
 
 void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
@@ -557,16 +559,16 @@ void RpPngWriterPrivate::init(IRpFile *file, const IconAnimData *iconAnimData)
 		cache.setFrom(img);
 	}
 
+	// ref() the file.
+	// This must be done *before* initializing PNG write structs.
+	this->file = file->ref();
+
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
 	if (ret != 0) {
 		// FIXME: Unlink the file if necessary.
 		lastError = -ret;
-		return;
 	}
-
-	// ref() the file.
-	this->file = file->ref();
 }
 
 RpPngWriterPrivate::~RpPngWriterPrivate()
