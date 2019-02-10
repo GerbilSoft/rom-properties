@@ -191,7 +191,9 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 
 	// pstream is owned by file,
 	// so don't Release() it here.
-	file->unref();
+	if (file) {
+		file->unref();
+	}
 
 	// Clear property variants.
 	for (auto iter = prop_val.begin(); iter != prop_val.end(); ++iter) {
@@ -246,7 +248,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 	RP_D(RP_PropertyStore);
 	if (d->file) {
 		// unref() the old file first.
-		IRpFile *old_file = d->file;
+		IRpFile *const old_file = d->file;
 		d->file = file;
 		old_file->unref();
 	} else {
