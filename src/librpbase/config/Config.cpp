@@ -252,8 +252,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		}
 
 		// Parse the comma-separated values.
-		// TODO: Use size_t?
-		const unsigned int vStartPos = static_cast<unsigned int>(vImgTypePrio.size());
+		const size_t vStartPos = vImgTypePrio.size();
 		unsigned int count = 0;	// Number of image types.
 		uint32_t imgbf = 0;	// Image type bitfield to prevent duplicates.
 		while (*pos) {
@@ -267,7 +266,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 			// If no comma was found, read the remainder of the field.
 			// Otherwise, read from pos to comma-1.
-			unsigned int len = (comma ? (unsigned int)(comma-pos) : (unsigned int)strlen(pos));
+			size_t len = (comma ? static_cast<size_t>(comma-pos) : strlen(pos));
 
 			// If the first entry is "no", then all thumbnails
 			// for this system are disabled.
@@ -328,7 +327,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 			RomData::ImageType imgType = static_cast<RomData::ImageType>(-1);
 			for (int i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
-				if (static_cast<unsigned int>(imageTypeNames[i][0]) == len &&
+				if (static_cast<size_t>(imageTypeNames[i][0]) == len &&
 				    !strncasecmp(pos, &imageTypeNames[i][1], len))
 				{
 					// Found a match!
@@ -360,7 +359,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 				// Too many image types...
 				break;
 			}
-			vImgTypePrio.push_back((uint8_t)imgType);
+			vImgTypePrio.push_back(static_cast<uint8_t>(imgType));
 			count++;
 
 			if (!comma)
@@ -376,7 +375,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			std::transform(className.begin(), className.end(), className.begin(), ::tolower);
 
 			// Add the class name information to the map.
-			uint32_t keyIdx = vStartPos;
+			uint32_t keyIdx = static_cast<uint32_t>(vStartPos);
 			keyIdx |= (count << 24);
 			mapImgTypePrio.insert(std::make_pair(className, keyIdx));
 		}
