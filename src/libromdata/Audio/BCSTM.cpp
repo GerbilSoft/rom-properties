@@ -350,11 +350,20 @@ const char *BCSTM::systemName(unsigned int type) const
 		}
 
 		case BCSTMPrivate::AUDIO_FORMAT_BFSTM: {
-			// Wii U
-			static const char *const sysNames_WiiU[4] = {
-				"Nintendo Wii U", "Wii U", "Wii U", nullptr
-			};
-			return sysNames_WiiU[type & SYSNAME_TYPE_MASK];
+			// Wii U and/or Switch
+			if (d->bcstmHeader.bom == cpu_to_be16(BCSTM_BOM_HOST)) {
+				// Big-Endian
+				static const char *const sysNames_WiiU[4] = {
+					"Nintendo Wii U", "Wii U", "Wii U", nullptr
+				};
+				return sysNames_WiiU[type & SYSNAME_TYPE_MASK];
+			} else /*if (d->bcstmHeader.bom == cpu_to_le16(BCSTM_BOM_HOST))*/ {
+				// Little-Endian
+				static const char *const sysNames_Switch[4] = {
+					"Nintendo Switch", "Switch", "NSW", nullptr
+				};
+				return sysNames_Switch[type & SYSNAME_TYPE_MASK];
+			}
 		}
 
 		default:
