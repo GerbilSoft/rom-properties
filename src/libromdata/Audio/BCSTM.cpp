@@ -416,6 +416,8 @@ const char *const *BCSTM::supportedMimeTypes_static(void)
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
 		"audio/x-bcstm",
+		"audio/x-bfstm",
+		"audio/x-bcwav",
 
 		nullptr
 	};
