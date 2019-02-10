@@ -47,7 +47,8 @@ typedef struct PACKED _Xbox_XPR0_Header {
 	uint32_t data_offset;	// [0x008] Offset to image data
 	uint32_t flags;		// [0x00C] Unknown flags
 	uint8_t reserved1[8];	// [0x010]
-	uint16_t unknown1;	// [0x018]
+	uint8_t unknown;	// [0x018]
+	uint8_t pixel_format;	// [0x019] Pixel format (See XPR0_Pixel_Format_e)
 	uint8_t unknown2;	// [0x01A]
 	uint8_t pow2size;	// [0x01B] Texture dimension (square) as a power of 2
 	uint32_t reserved2;	// [0x01C]
@@ -56,6 +57,14 @@ typedef struct PACKED _Xbox_XPR0_Header {
 	// followed by all 0xADADADAD.
 } Xbox_XPR0_Header;
 ASSERT_STRUCT(Xbox_XPR0_Header, 32);
+
+/**
+ * Pixel format.
+ */
+typedef enum {
+	XPR0_PIXEL_FORMAT_DXT1	= 0x0C,
+	XPR0_PIXEL_FORMAT_DXT5	= 0x0E,
+} XPR0_Pixel_Format_e;
 
 #pragma pack()
 

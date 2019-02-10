@@ -115,7 +115,23 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 	// Divide the image area by 2.
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 	const uint32_t data_offset = le32_to_cpu(xpr0Header.data_offset);
-	const uint32_t expected_size = 1U << ((xpr0Header.pow2size * 2) - 1);
+
+	// Determine the expected size based on the pixel format.
+	uint32_t expected_size;
+	switch (xpr0Header.pixel_format) {
+		case XPR0_PIXEL_FORMAT_DXT1:
+			// 8 bytes per 4x4 block
+			expected_size = 1U << ((xpr0Header.pow2size * 2) - 1);
+			break;
+		case XPR0_PIXEL_FORMAT_DXT5:
+			// 16 bytes per 4x4 block
+			expected_size = 1U << (xpr0Header.pow2size * 2);
+			break;
+		default:
+			// Unsupported...
+			return nullptr;
+	}
+
 	if (expected_size > file_sz - data_offset) {
 		// File is too small.
 		return nullptr;
@@ -129,10 +145,21 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 		return nullptr;
 	}
 
-	// NOTE: Assuming we have transparent pixels.
 	const int img_dimension = 1 << xpr0Header.pow2size;
-	img = ImageDecoder::fromDXT1_A1(img_dimension, img_dimension,
-		buf.get(), expected_size);
+	switch (xpr0Header.pixel_format) {
+		case XPR0_PIXEL_FORMAT_DXT1:
+			// NOTE: Assuming we have transparent pixels.
+			img = ImageDecoder::fromDXT1_A1(img_dimension, img_dimension,
+				buf.get(), expected_size);
+			break;
+		case XPR0_PIXEL_FORMAT_DXT5:
+			img = ImageDecoder::fromDXT5(img_dimension, img_dimension,
+				buf.get(), expected_size);
+			break;
+		default:
+			// Unsupported...
+			return nullptr;
+	}
 	return img;
 }
 
@@ -365,11 +392,31 @@ int XboxXPR0::loadFieldData(void)
 		return -EIO;
 	}
 
-	// XboxXPR0 header.
+	// XboxXPR0 header
 	const Xbox_XPR0_Header *const xpr0Header = &d->xpr0Header;
-	d->fields->reserve(1);	// Maximum of 1 field.
+	d->fields->reserve(2);	// Maximum of 2 fields.
 
-	// Texture size.
+	// Pixel format
+	const char *s_pixel_format;
+	switch (xpr0Header->pixel_format) {
+		case XPR0_PIXEL_FORMAT_DXT1:
+			s_pixel_format = "DXT1";
+			break;
+		case XPR0_PIXEL_FORMAT_DXT5:
+			s_pixel_format = "DXT5";
+			break;
+		default:
+			s_pixel_format = nullptr;
+			break;
+	}
+	if (s_pixel_format) {
+		d->fields->addField_string(C_("XboxXPR0", "Pixel Format"), s_pixel_format);
+	} else {
+		d->fields->addField_string(C_("XboxXPR0", "Pixel Format"),
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), s_pixel_format));
+	}
+
+	// Texture size
 	const int img_dimension = 1 << xpr0Header->pow2size;
 	d->fields->addField_dimensions(C_("XboxXPR0", "Texture Size"),
 		img_dimension, img_dimension);
