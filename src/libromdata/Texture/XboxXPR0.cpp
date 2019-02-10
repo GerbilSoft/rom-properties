@@ -121,13 +121,31 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 					(xpr0Header.height_pow2 & 0x0F);
 	uint32_t expected_size;
 	switch (xpr0Header.pixel_format) {
+		case XPR0_PIXEL_FORMAT_ARGB1555:
+		case XPR0_PIXEL_FORMAT_ARGB4444:
+		case XPR0_PIXEL_FORMAT_RGB565:
+		case XPR0_PIXEL_FORMAT_LIN_ARGB1555:
+		case XPR0_PIXEL_FORMAT_LIN_RGB565:
+		case XPR0_PIXEL_FORMAT_LIN_ARGB4444:
+			// 16bpp
+			expected_size = static_cast<uint32_t>(1U << (area_shift + 1));
+			break;
+		case XPR0_PIXEL_FORMAT_ARGB8888:
+		case XPR0_PIXEL_FORMAT_xRGB8888:
+		case XPR0_PIXEL_FORMAT_LIN_ARGB8888:
+		case XPR0_PIXEL_FORMAT_LIN_xRGB8888:
+			// 32bpp
+			expected_size = static_cast<uint32_t>(1U << (area_shift + 2));
+			break;
 		case XPR0_PIXEL_FORMAT_DXT1:
-			// 8 bytes per 4x4 block
+			// 4bpp
+			// DXTn: 8 bytes per 4x4 block
 			expected_size = static_cast<uint32_t>(1U << (area_shift - 1));
 			break;
 		case XPR0_PIXEL_FORMAT_DXT2:
 		case XPR0_PIXEL_FORMAT_DXT4:
-			// 16 bytes per 4x4 block
+			// 8bpp
+			// DXTn: 16 bytes per 4x4 block
 			expected_size = static_cast<uint32_t>(1U << area_shift);
 			break;
 		default:
@@ -151,6 +169,35 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 	const int width  = 1 << (xpr0Header.width_pow2 >> 4);
 	const int height = 1 << (xpr0Header.height_pow2 & 0x0F);
 	switch (xpr0Header.pixel_format) {
+		// TODO: Swizzling.
+		case XPR0_PIXEL_FORMAT_ARGB1555:
+			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB1555,
+				width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			break;
+		case XPR0_PIXEL_FORMAT_ARGB4444:
+			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
+				width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			break;
+		case XPR0_PIXEL_FORMAT_RGB565:
+			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
+				width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			break;
+
+		// TODO: Swizzling.
+		case XPR0_PIXEL_FORMAT_ARGB8888:
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
+				width, height,
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			break;
+		case XPR0_PIXEL_FORMAT_xRGB8888:
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_xRGB8888,
+				width, height,
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			break;
+
 		case XPR0_PIXEL_FORMAT_DXT1:
 			// NOTE: Assuming we have transparent pixels.
 			img = ImageDecoder::fromDXT1_A1(width, height,
@@ -164,6 +211,34 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 			img = ImageDecoder::fromDXT4(width, height,
 				buf.get(), expected_size);
 			break;
+
+		case XPR0_PIXEL_FORMAT_LIN_ARGB1555:
+			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB1555,
+				width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			break;
+		case XPR0_PIXEL_FORMAT_LIN_RGB565:
+			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
+				width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			break;
+		case XPR0_PIXEL_FORMAT_LIN_ARGB4444:
+			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
+				width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+			break;
+
+		case XPR0_PIXEL_FORMAT_LIN_ARGB8888:
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
+				width, height,
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			break;
+		case XPR0_PIXEL_FORMAT_LIN_xRGB8888:
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_xRGB8888,
+				width, height,
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			break;
+
 		default:
 			// Unsupported...
 			return nullptr;
