@@ -1341,7 +1341,7 @@ int ELF::loadFieldData(void)
 		d->fields->addField_string(osabi_title, osabi);
 	} else {
 		d->fields->addField_string(osabi_title,
-			rp_sprintf(C_("ELF", "Unknown (%u)"), primary->e_osabi));
+			rp_sprintf(C_("RomData", "Unknown (%u)"), primary->e_osabi));
 	}
 
 	// ABI version.

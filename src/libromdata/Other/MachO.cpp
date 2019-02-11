@@ -547,7 +547,7 @@ int MachO::loadFieldData(void)
 			d->fields->addField_string(cpu_title, s_cpu);
 		} else {
 			d->fields->addField_string(cpu_title,
-				rp_sprintf(C_("ELF", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
+				rp_sprintf(C_("RomData", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
 		}
 
 		// CPU subtype.

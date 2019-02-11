@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-02-10 23:46-0500\n"
+"POT-Creation-Date: 2019-02-10 23:52-0500\n"
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
@@ -736,6 +736,7 @@ msgid "Codec"
 msgstr ""
 
 #: ../src/libromdata/Audio/BCSTM.cpp:528 ../src/libromdata/Audio/BRSTM.cpp:396
+#: ../src/libromdata/Other/ELF.cpp:1344 ../src/libromdata/Other/MachO.cpp:550
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%u)"
@@ -4843,12 +4844,6 @@ msgstr "ARM EABI"
 msgctxt "ELF"
 msgid "OS ABI"
 msgstr "ABI do SO"
-
-#: ../src/libromdata/Other/ELF.cpp:1344 ../src/libromdata/Other/MachO.cpp:550
-#, c-format
-msgctxt "ELF"
-msgid "Unknown (%u)"
-msgstr "Desconhecido(a) (%u)"
 
 #: ../src/libromdata/Other/ELF.cpp:1349
 msgctxt "ELF"
