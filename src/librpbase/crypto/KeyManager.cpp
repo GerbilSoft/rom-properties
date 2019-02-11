@@ -468,8 +468,8 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 	for (; len > 0; len--, str += 2, buf++) {
 		// Process two characters at a time.
 		// Two hexadecimal digits == one byte.
-		if (static_cast<unsigned int>(str[0]) > 0x80 ||
-			static_cast<unsigned int>(str[1]) > 0x80)
+		if (static_cast<unsigned int>(str[0]) >= 0x80 ||
+			static_cast<unsigned int>(str[1]) >= 0x80)
 		{
 			// Invalid character.
 			return -EINVAL;
