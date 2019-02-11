@@ -351,7 +351,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	// Index is XPR0_Pixel_Format_e.
 	// Reference: https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/c709f9e3054ad8e1dae62816f25bef06248415c4/src/core/hle/D3D8/XbConvert.cpp#L871
 	// TODO: Test these formats.
-	// Tested formats: ARGB8888, DXT1, DXT2
+	// Tested formats: ARGB4444, ARGB8888, DXT1, DXT2
 	static const struct {
 		uint8_t bpp;	// Bits per pixel (4, 8, 16, 32; 0 for invalid)
 				// TODO: Use a shift amount instead?
