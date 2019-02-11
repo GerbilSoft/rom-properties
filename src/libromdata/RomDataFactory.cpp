@@ -86,7 +86,7 @@ using std::vector;
 #include "Texture/SegaPVR.hpp"
 #include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
-#include "Texture/XboxXPR0.hpp"
+#include "Texture/XboxXPR.hpp"
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
@@ -297,7 +297,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Textures
 	GetRomDataFns(SegaPVR, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(XboxXPR0, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(XboxXPR, ATTR_HAS_THUMBNAIL),
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_NONE),

@@ -41,8 +41,11 @@
   * Xbox360_XDBF: Xbox 360 XDBF resource files. Only the variant used by
     XEX executables is supported at the moment.
   * Xbox360_XEX: Xbox 360 executables.
-  * XboxXPR0: Xbox XPR0 textures.
+  * XboxXPR: Xbox XPR textures.
     * Used in save files and elsewhere.
+    * Fully supports XPR0.
+    * XPR1 is detected but not thumbnailed yet, and the displayed metadata
+      is incorrect because the header format is different.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.

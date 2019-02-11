@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * XboxXPR0.hpp: Microsoft Xbox XPR0 image reader.                         *
+ * XboxXPR.hpp: Microsoft Xbox XPR0 image reader.                          *
  *                                                                         *
  * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
@@ -18,14 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOXXPR0_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOXXPR0_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOXXPR_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOXXPR_HPP__
 
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN(XboxXPR0)
+ROMDATA_DECL_BEGIN(XboxXPR)
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()
@@ -34,4 +34,4 @@ ROMDATA_DECL_END()
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOXXPR0_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOXXPR_HPP__ */

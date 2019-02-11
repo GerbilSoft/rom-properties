@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * XboxXPR0.hpp: Microsoft Xbox XPR0 image reader.                         *
+ * XboxXPR.cpp: Microsoft Xbox XPR0 image reader.                          *
  *                                                                         *
  * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
@@ -18,10 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "XboxXPR0.hpp"
+#include "XboxXPR.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "xbox_xpr0_structs.h"
+#include "xbox_xpr_structs.h"
 
 // librpbase
 #include "librpbase/common.h"
@@ -47,20 +47,31 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(XboxXPR0)
-ROMDATA_IMPL_IMG_TYPES(XboxXPR0)
+ROMDATA_IMPL(XboxXPR)
+ROMDATA_IMPL_IMG_TYPES(XboxXPR)
 
-class XboxXPR0Private : public RomDataPrivate
+class XboxXPRPrivate : public RomDataPrivate
 {
 	public:
-		XboxXPR0Private(XboxXPR0 *q, IRpFile *file);
-		~XboxXPR0Private();
+		XboxXPRPrivate(XboxXPR *q, IRpFile *file);
+		~XboxXPRPrivate();
 
 	private:
 		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(XboxXPR0Private)
+		RP_DISABLE_COPY(XboxXPRPrivate)
 
 	public:
+		enum XPRType {
+			XPR_TYPE_UNKNOWN	= -1,	// Unknown image type.
+			XPR_TYPE_XPR0		= 0,	// XPR0
+			XPR_TYPE_XPR1		= 1,	// XPR1
+
+			XPR_TYPE_MAX
+		};
+
+		// XPR type.
+		int xprType;
+
 		// XPR0 header.
 		Xbox_XPR0_Header xpr0Header;
 
@@ -149,23 +160,24 @@ class XboxXPR0Private : public RomDataPrivate
 			unsigned int bytes_per_pixel);
 
 		/**
-		 * Load the XboxXPR0 image.
+		 * Load the XboxXPR image.
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadXboxXPR0Image(void);
 };
 
-/** XboxXPR0Private **/
+/** XboxXPRPrivate **/
 
-XboxXPR0Private::XboxXPR0Private(XboxXPR0 *q, IRpFile *file)
+XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
 	: super(q, file)
+	, xprType(XPR_TYPE_UNKNOWN)
 	, img(nullptr)
 {
-	// Clear the XboxXPR0 header struct.
+	// Clear the XPR0 header struct.
 	memset(&xpr0Header, 0, sizeof(xpr0Header));
 }
 
-XboxXPR0Private::~XboxXPR0Private()
+XboxXPRPrivate::~XboxXPRPrivate()
 {
 	delete img;
 }
@@ -189,7 +201,7 @@ XboxXPR0Private::~XboxXPR0Private()
  * @param mask_x
  * @param mask_y
  */
-void XboxXPR0Private::generate_swizzle_masks(
+void XboxXPRPrivate::generate_swizzle_masks(
 	unsigned int width, unsigned int height,
 	uint32_t *mask_x, uint32_t *mask_y)
 {
@@ -220,7 +232,7 @@ void XboxXPR0Private::generate_swizzle_masks(
  * @param value
  * @return
  */
-uint32_t XboxXPR0Private::fill_pattern(uint32_t pattern, uint32_t value)
+uint32_t XboxXPRPrivate::fill_pattern(uint32_t pattern, uint32_t value)
 {
 	uint32_t result = 0;
 	uint32_t bit = 1;
@@ -251,7 +263,7 @@ uint32_t XboxXPR0Private::fill_pattern(uint32_t pattern, uint32_t value)
  * @param bytes_per_pixel
  * @return
  */
-inline unsigned int XboxXPR0Private::get_swizzled_offset(
+inline unsigned int XboxXPRPrivate::get_swizzled_offset(
 	unsigned int x, unsigned int y,
 	uint32_t mask_x, uint32_t mask_y,
 	unsigned int bytes_per_pixel)
@@ -278,7 +290,7 @@ inline unsigned int XboxXPR0Private::get_swizzled_offset(
  * @param slice_pitch
  * @param bytes_per_pixel
  */
-void XboxXPR0Private::unswizzle_box(const uint8_t *src_buf,
+void XboxXPRPrivate::unswizzle_box(const uint8_t *src_buf,
 	unsigned int width, unsigned int height,
 	uint8_t *dst_buf, unsigned int row_pitch,
 	unsigned int bytes_per_pixel)
@@ -297,10 +309,10 @@ void XboxXPR0Private::unswizzle_box(const uint8_t *src_buf,
 }
 
 /**
- * Load the XboxXPR0 image.
+ * Load the XPR0 image.
  * @return Image, or nullptr on error.
  */
-const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
+const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 {
 	if (img) {
 		// Image has already been loaded.
@@ -534,7 +546,7 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 	return img;
 }
 
-/** XboxXPR0 **/
+/** XboxXPR **/
 
 /**
  * Read a Microsoft Xbox XPR0 image file.
@@ -549,12 +561,12 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
  *
  * @param file Open ROM image.
  */
-XboxXPR0::XboxXPR0(IRpFile *file)
-	: super(new XboxXPR0Private(this, file))
+XboxXPR::XboxXPR(IRpFile *file)
+	: super(new XboxXPRPrivate(this, file))
 {
 	// This class handles texture files.
-	RP_D(XboxXPR0);
-	d->className = "XboxXPR0";
+	RP_D(XboxXPR);
+	d->className = "XboxXPR";
 	d->fileType = FTYPE_TEXTURE_FILE;
 
 	if (!d->file) {
@@ -571,14 +583,15 @@ XboxXPR0::XboxXPR0(IRpFile *file)
 		return;
 	}
 
-	// Check if this XPR0 image is supported.
+	// Check if this XPR image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
 	info.header.size = sizeof(d->xpr0Header);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->xpr0Header);
-	info.ext = nullptr;	// Not needed for XPR0.
+	info.ext = nullptr;	// Not needed for XPR.
 	info.szFile = file->size();
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->xprType = isRomSupported_static(&info);
+	d->isValid = (d->xprType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -591,7 +604,7 @@ XboxXPR0::XboxXPR0(IRpFile *file)
  * @param info DetectInfo containing ROM detection information.
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int XboxXPR0::isRomSupported_static(const DetectInfo *info)
+int XboxXPR::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
@@ -608,16 +621,16 @@ int XboxXPR0::isRomSupported_static(const DetectInfo *info)
 	// Verify the XPR0 magic.
 	const Xbox_XPR0_Header *const xpr0Header =
 		reinterpret_cast<const Xbox_XPR0_Header*>(info->header.pData);
-	if (xpr0Header->magic == cpu_to_be32(XBOX_XPR0_MAGIC) ||
-	    xpr0Header->magic == cpu_to_be32(XBOX_XPR1_MAGIC))
-	{
-		// Valid magic.
-		// TODO: What are the changes in XPR1?
-		return 0;
+	if (xpr0Header->magic == cpu_to_be32(XBOX_XPR0_MAGIC)) {
+		// This is an XPR0 image.
+		return XboxXPRPrivate::XPR_TYPE_XPR0;
+	} else if (xpr0Header->magic == cpu_to_be32(XBOX_XPR1_MAGIC)) {
+		// This is an XPR1 image.
+		return XboxXPRPrivate::XPR_TYPE_XPR1;
 	}
 
 	// Not supported.
-	return -1;
+	return XboxXPRPrivate::XPR_TYPE_UNKNOWN;
 }
 
 /**
@@ -625,16 +638,16 @@ int XboxXPR0::isRomSupported_static(const DetectInfo *info)
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const char *XboxXPR0::systemName(unsigned int type) const
+const char *XboxXPR::systemName(unsigned int type) const
 {
-	RP_D(const XboxXPR0);
+	RP_D(const XboxXPR);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Microsoft Xbox has the same name worldwide, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"XboxXPR0::systemName() array index optimization needs to be updated.");
+		"XboxXPR::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
@@ -657,10 +670,10 @@ const char *XboxXPR0::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const char *const *XboxXPR0::supportedFileExtensions_static(void)
+const char *const *XboxXPR::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".xbx",
+		".xbx", ".xpr",
 
 		nullptr
 	};
@@ -677,7 +690,7 @@ const char *const *XboxXPR0::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const char *const *XboxXPR0::supportedMimeTypes_static(void)
+const char *const *XboxXPR::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
@@ -693,7 +706,7 @@ const char *const *XboxXPR0::supportedMimeTypes_static(void)
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
-uint32_t XboxXPR0::supportedImageTypes_static(void)
+uint32_t XboxXPR::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_IMAGE;
 }
@@ -703,11 +716,11 @@ uint32_t XboxXPR0::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-vector<RomData::ImageSizeDef> XboxXPR0::supportedImageSizes(ImageType imageType) const
+vector<RomData::ImageSizeDef> XboxXPR::supportedImageSizes(ImageType imageType) const
 {
 	ASSERT_supportedImageSizes(imageType);
 
-	RP_D(const XboxXPR0);
+	RP_D(const XboxXPR);
 	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
@@ -730,11 +743,11 @@ vector<RomData::ImageSizeDef> XboxXPR0::supportedImageSizes(ImageType imageType)
  * @param imageType Image type.
  * @return Bitfield of ImageProcessingBF operations to perform.
  */
-uint32_t XboxXPR0::imgpf(ImageType imageType) const
+uint32_t XboxXPR::imgpf(ImageType imageType) const
 {
 	ASSERT_imgpf(imageType);
 
-	RP_D(const XboxXPR0);
+	RP_D(const XboxXPR);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by PVR.
 		return 0;
@@ -757,9 +770,9 @@ uint32_t XboxXPR0::imgpf(ImageType imageType) const
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
  */
-int XboxXPR0::loadFieldData(void)
+int XboxXPR::loadFieldData(void)
 {
-	RP_D(XboxXPR0);
+	RP_D(XboxXPR);
 	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -771,9 +784,22 @@ int XboxXPR0::loadFieldData(void)
 		return -EIO;
 	}
 
-	// XboxXPR0 header
+	// XboxXPR header
 	const Xbox_XPR0_Header *const xpr0Header = &d->xpr0Header;
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields->reserve(3);	// Maximum of 2 fields.
+
+	// Type
+	static const char *const type_tbl[] = {
+		"XPR0", "XPR1"
+	};
+	if (d->xprType > XboxXPRPrivate::XPR_TYPE_UNKNOWN &&
+	    d->xprType < ARRAY_SIZE(type_tbl))
+	{
+		d->fields->addField_string(C_("XboxXPR", "Type"), type_tbl[d->xprType]);
+	} else {
+		d->fields->addField_string(C_("XboxXPR", "Type"),
+			rp_sprintf(C_("RomData", "Unknown (%d)"), type_tbl[d->xprType]));
+	}
 
 	// Pixel format
 	static const char *const pxfmt_tbl[] = {
@@ -832,15 +858,15 @@ int XboxXPR0::loadFieldData(void)
 		"Index16",
 	};
 	if (xpr0Header->pixel_format < ARRAY_SIZE(pxfmt_tbl)) {
-		d->fields->addField_string(C_("XboxXPR0", "Pixel Format"),
+		d->fields->addField_string(C_("XboxXPR", "Pixel Format"),
 			pxfmt_tbl[xpr0Header->pixel_format]);
 	} else {
-		d->fields->addField_string(C_("XboxXPR0", "Pixel Format"),
+		d->fields->addField_string(C_("XboxXPR", "Pixel Format"),
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), xpr0Header->pixel_format));
 	}
 
 	// Texture size
-	d->fields->addField_dimensions(C_("XboxXPR0", "Texture Size"),
+	d->fields->addField_dimensions(C_("XboxXPR", "Texture Size"),
 		1 << (xpr0Header->width_pow2 >> 4),
 		1 << (xpr0Header->height_pow2 & 0x0F));
 
@@ -855,9 +881,9 @@ int XboxXPR0::loadFieldData(void)
  * Called by RomData::metaData() if the field data hasn't been loaded yet.
  * @return Number of metadata properties read on success; negative POSIX error code on error.
  */
-int XboxXPR0::loadMetaData(void)
+int XboxXPR::loadMetaData(void)
 {
-	RP_D(XboxXPR0);
+	RP_D(XboxXPR);
 	if (d->metaData != nullptr) {
 		// Metadata *has* been loaded...
 		return 0;
@@ -873,7 +899,7 @@ int XboxXPR0::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
-	// XboxXPR0 header.
+	// XboxXPR header.
 	const Xbox_XPR0_Header *const xpr0Header = &d->xpr0Header;
 
 	// Dimensions.
@@ -891,11 +917,11 @@ int XboxXPR0::loadMetaData(void)
  * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XboxXPR0::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int XboxXPR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
-	RP_D(XboxXPR0);
+	RP_D(XboxXPR);
 	if (imageType != IMG_INT_IMAGE) {
 		// Only IMG_INT_IMAGE is supported by PVR.
 		*pImage = nullptr;
@@ -911,7 +937,20 @@ int XboxXPR0::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	// Load the image.
-	*pImage = d->loadXboxXPR0Image();
+	switch (d->xprType) {
+		case XboxXPRPrivate::XPR_TYPE_XPR0:
+			*pImage = d->loadXboxXPR0Image();
+			break;
+		case XboxXPRPrivate::XPR_TYPE_XPR1:
+			// TODO
+			*pImage = nullptr;
+			return -EIO;
+		default:
+			// Unsupported.
+			*pImage = nullptr;
+			return -EIO;
+	}
+
 	return (*pImage != nullptr ? 0 : -EIO);
 }
 

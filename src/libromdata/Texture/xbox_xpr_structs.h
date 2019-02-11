@@ -35,9 +35,6 @@ extern "C" {
  * Microsoft Xbox XPR0: File header.
  * Reverse-engineered from Xbox save files.
  *
- * TODO: Is an image format specified somewhere?
- * Assuming DXT1 for now.
- *
  * All fields are in little-endian.
  */
 #define XBOX_XPR0_MAGIC 'XPR0'
