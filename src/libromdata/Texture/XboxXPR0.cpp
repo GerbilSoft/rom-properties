@@ -608,8 +608,11 @@ int XboxXPR0::isRomSupported_static(const DetectInfo *info)
 	// Verify the XPR0 magic.
 	const Xbox_XPR0_Header *const xpr0Header =
 		reinterpret_cast<const Xbox_XPR0_Header*>(info->header.pData);
-	if (xpr0Header->magic == cpu_to_be32(XBOX_XPR0_MAGIC)) {
+	if (xpr0Header->magic == cpu_to_be32(XBOX_XPR0_MAGIC) ||
+	    xpr0Header->magic == cpu_to_be32(XBOX_XPR1_MAGIC)
+	{
 		// Valid magic.
+		// TODO: What are the changes in XPR1?
 		return 0;
 	}
 

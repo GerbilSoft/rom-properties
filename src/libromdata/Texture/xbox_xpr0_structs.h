@@ -41,6 +41,7 @@ extern "C" {
  * All fields are in little-endian.
  */
 #define XBOX_XPR0_MAGIC 'XPR0'
+#define XBOX_XPR1_MAGIC 'XPR1'
 typedef struct PACKED _Xbox_XPR0_Header {
 	uint32_t magic;		// [0x000] 'XPR0'
 	uint32_t filesize;	// [0x004] Size of the entire file
