@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-02-10 19:56-0500\n"
+"POT-Creation-Date: 2019-02-10 23:46-0500\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -639,17 +639,20 @@ msgctxt "RomData|Audio"
 msgid "Format"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:336
+#: ../src/libromdata/Audio/ADX.cpp:336 ../src/libromdata/Audio/BCSTM.cpp:532
+#: ../src/libromdata/Audio/BRSTM.cpp:400
 msgctxt "RomData|Audio"
 msgid "Channels"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:346
+#: ../src/libromdata/Audio/ADX.cpp:346 ../src/libromdata/Audio/BCSTM.cpp:538
+#: ../src/libromdata/Audio/BRSTM.cpp:410
 msgctxt "RomData|Audio"
 msgid "Sample Rate"
 msgstr ""
 
-#: ../src/libromdata/Audio/ADX.cpp:349
+#: ../src/libromdata/Audio/ADX.cpp:349 ../src/libromdata/Audio/BCSTM.cpp:543
+#: ../src/libromdata/Audio/BRSTM.cpp:413
 msgctxt "RomData|Audio"
 msgid "Length"
 msgstr ""
@@ -687,6 +690,142 @@ msgstr ""
 #: ../src/libromdata/Audio/ADX.cpp:377
 msgctxt "ADX"
 msgid "Loop End"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:458 ../src/libromdata/Audio/BCSTM.cpp:460
+msgctxt "BCSTM"
+msgid "Type"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:461
+#: ../src/libromdata/Texture/ValveVTF.cpp:981
+#: ../src/libromdata/Texture/ValveVTF.cpp:1005
+#: ../src/libromdata/Texture/XboxXPR.cpp:801
+#, c-format
+msgctxt "RomData"
+msgid "Unknown (%d)"
+msgstr "Невідомо (%d)"
+
+#: ../src/libromdata/Audio/BCSTM.cpp:467 ../src/libromdata/Audio/BRSTM.cpp:380
+#: ../src/libromdata/Texture/KhronosKTX.cpp:842
+msgctxt "RomData"
+msgid "Endianness"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:469 ../src/libromdata/Audio/BRSTM.cpp:382
+#: ../src/libromdata/Texture/KhronosKTX.cpp:832
+#: ../src/libromdata/Texture/KhronosKTX.cpp:837
+msgctxt "RomData"
+msgid "Big-Endian"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:470 ../src/libromdata/Audio/BRSTM.cpp:383
+#: ../src/libromdata/Texture/KhronosKTX.cpp:830
+#: ../src/libromdata/Texture/KhronosKTX.cpp:839
+msgctxt "RomData"
+msgid "Little-Endian"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:518
+msgctxt "BCSTM|Codec"
+msgid "Signed 8-bit PCM"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:519
+msgctxt "BCSTM|Codec"
+msgid "Signed 16-bit PCM"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:520
+msgctxt "BCSTM|Codec"
+msgid "DSP ADPCM"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:521
+msgctxt "BCSTM|Codec"
+msgid "IMA ADPCM"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:524 ../src/libromdata/Audio/BCSTM.cpp:527
+msgctxt "BCSTM"
+msgid "Codec"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:528 ../src/libromdata/Audio/BRSTM.cpp:396
+#, c-format
+msgctxt "RomData"
+msgid "Unknown (%u)"
+msgstr "Невідомо (%u)"
+
+#: ../src/libromdata/Audio/BCSTM.cpp:548
+msgctxt "BCSTM"
+msgid "Looping"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:549 ../src/libromdata/Audio/BRSTM.cpp:418
+msgctxt "RomData"
+msgid "Yes"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:549 ../src/libromdata/Audio/BRSTM.cpp:418
+#, fuzzy
+msgctxt "RomData"
+msgid "No"
+msgstr "Вимк."
+
+#: ../src/libromdata/Audio/BCSTM.cpp:551
+msgctxt "BCSTM"
+msgid "Loop Start"
+msgstr ""
+
+#: ../src/libromdata/Audio/BCSTM.cpp:555
+msgctxt "BCSTM"
+msgid "Loop End"
+msgstr ""
+
+#: ../src/libromdata/Audio/BRSTM.cpp:373
+msgctxt "BRSTM"
+msgid "Type"
+msgstr ""
+
+#: ../src/libromdata/Audio/BRSTM.cpp:376 ../src/libromdata/Audio/SID.cpp:270
+#: ../src/libromdata/Console/Dreamcast.cpp:675
+#: ../src/libromdata/Console/Sega8Bit.cpp:430
+#: ../src/libromdata/Console/SegaSaturn.cpp:565
+#: ../src/libromdata/Console/WiiU.cpp:516
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:396
+msgctxt "RomData"
+msgid "Version"
+msgstr "Версія"
+
+#: ../src/libromdata/Audio/BRSTM.cpp:387
+msgctxt "BRSTM|Codec"
+msgid "Signed 8-bit PCM"
+msgstr ""
+
+#: ../src/libromdata/Audio/BRSTM.cpp:388
+msgctxt "BRSTM|Codec"
+msgid "Signed 16-bit PCM"
+msgstr ""
+
+#: ../src/libromdata/Audio/BRSTM.cpp:389
+msgctxt "BRSTM|Codec"
+msgid "4-bit THP ADPCM"
+msgstr ""
+
+#: ../src/libromdata/Audio/BRSTM.cpp:392 ../src/libromdata/Audio/BRSTM.cpp:395
+msgctxt "BRSTM"
+msgid "Codec"
+msgstr ""
+
+#: ../src/libromdata/Audio/BRSTM.cpp:417
+msgctxt "BRSTM"
+msgid "Looping"
+msgstr ""
+
+#: ../src/libromdata/Audio/BRSTM.cpp:420
+msgctxt "BRSTM"
+msgid "Loop Start"
 msgstr ""
 
 #: ../src/libromdata/Audio/GBS.cpp:253 ../src/libromdata/Audio/NSF.cpp:253
@@ -870,6 +1009,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:154
 #: ../src/libromdata/Texture/SegaPVR.cpp:1023
 #: ../src/libromdata/Texture/SegaPVR.cpp:1032
+#: ../src/libromdata/Texture/XboxXPR.cpp:865
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%02X)"
@@ -1027,16 +1167,6 @@ msgstr ""
 msgctxt "SID"
 msgid "Type"
 msgstr ""
-
-#: ../src/libromdata/Audio/SID.cpp:270
-#: ../src/libromdata/Console/Dreamcast.cpp:675
-#: ../src/libromdata/Console/Sega8Bit.cpp:430
-#: ../src/libromdata/Console/SegaSaturn.cpp:565
-#: ../src/libromdata/Console/WiiU.cpp:516
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:396
-msgctxt "RomData"
-msgid "Version"
-msgstr "Версія"
 
 #: ../src/libromdata/Audio/SID.cpp:275
 msgctxt "RomData|Audio"
@@ -5808,23 +5938,6 @@ msgctxt "KhronosKTX"
 msgid "Texture Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/KhronosKTX.cpp:830
-#: ../src/libromdata/Texture/KhronosKTX.cpp:839
-msgctxt "RomData"
-msgid "Little-Endian"
-msgstr ""
-
-#: ../src/libromdata/Texture/KhronosKTX.cpp:832
-#: ../src/libromdata/Texture/KhronosKTX.cpp:837
-msgctxt "RomData"
-msgid "Big-Endian"
-msgstr ""
-
-#: ../src/libromdata/Texture/KhronosKTX.cpp:842
-msgctxt "RomData"
-msgid "Endianness"
-msgstr ""
-
 #: ../src/libromdata/Texture/KhronosKTX.cpp:885
 msgctxt "KhronosKTX"
 msgid "# of Array Elements"
@@ -6086,13 +6199,6 @@ msgctxt "ValveVTF|ImageFormat"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/Texture/ValveVTF.cpp:981
-#: ../src/libromdata/Texture/ValveVTF.cpp:1005
-#, c-format
-msgctxt "RomData"
-msgid "Unknown (%d)"
-msgstr "Невідомо (%d)"
-
 #: ../src/libromdata/Texture/ValveVTF.cpp:985
 msgctxt "ValveVTF"
 msgid "Mipmap Count"
@@ -6111,6 +6217,23 @@ msgstr ""
 #: ../src/libromdata/Texture/ValveVTF.cpp:1013
 msgctxt "ValveVTF"
 msgid "# of Resources"
+msgstr ""
+
+#: ../src/libromdata/Texture/XboxXPR.cpp:798
+#: ../src/libromdata/Texture/XboxXPR.cpp:800
+msgctxt "XboxXPR"
+msgid "Type"
+msgstr ""
+
+#: ../src/libromdata/Texture/XboxXPR.cpp:861
+#: ../src/libromdata/Texture/XboxXPR.cpp:864
+msgctxt "XboxXPR"
+msgid "Pixel Format"
+msgstr ""
+
+#: ../src/libromdata/Texture/XboxXPR.cpp:869
+msgctxt "XboxXPR"
+msgid "Texture Size"
 msgstr ""
 
 #. tr: VERIFY_OK
