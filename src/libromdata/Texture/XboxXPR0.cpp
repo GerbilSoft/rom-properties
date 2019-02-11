@@ -335,42 +335,102 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 		return nullptr;
 	}
 
+	// Mode table.
+	// Index is XPR0_Pixel_Format_e.
+	// Reference: https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/c709f9e3054ad8e1dae62816f25bef06248415c4/src/core/hle/D3D8/XbConvert.cpp#L871
+	// TODO: Test these formats.
+	// Tested formats: ARGB8888, DXT1, DXT2
+	static const struct {
+		uint8_t bpp;	// Bits per pixel (4, 8, 16, 32; 0 for invalid)
+				// TODO: Use a shift amount instead?
+		uint8_t pxf;	// ImageDecoder::PixelFormat
+		uint8_t dxtn;	// DXTn version (pxf must be PXF_UNKNOWN)
+		bool swizzled;	// True if the format needs to be unswizzled
+				// DXTn is automatically unswizzled by the DXTn
+				// functions, so those should be false.
+	} mode_tbl[] = {
+		{ 8, ImageDecoder::PXF_L8,		0, true},	// 0x00: L8
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x01: AL8 (TODO)
+		{16, ImageDecoder::PXF_ARGB1555, 	0, true},	// 0x02: ARGB1555
+		{16, ImageDecoder::PXF_RGB555,		0, true},	// 0x03: RGB555
+		{16, ImageDecoder::PXF_ARGB4444,	0, true},	// 0x04: ARGB4444
+		{16, ImageDecoder::PXF_RGB565,		0, true},	// 0x05: RGB565
+		{32, ImageDecoder::PXF_ARGB8888,	0, true},	// 0x06: ARGB8888
+		{32, ImageDecoder::PXF_xRGB8888,	0, true},	// 0x07: xRGB8888
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x08: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x09: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x0A: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x0B: P8 (TODO)
+		{ 4, ImageDecoder::PXF_UNKNOWN,		1, false},	// 0x0C: DXT1
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x0D: undefined
+		{ 8, ImageDecoder::PXF_UNKNOWN,		2, false},	// 0x0E: DXT2
+		{ 8, ImageDecoder::PXF_UNKNOWN,		4, false},	// 0x0F: DXT4
+
+		{16, ImageDecoder::PXF_ARGB1555,	0, false},	// 0x10: Linear ARGB1555
+		{16, ImageDecoder::PXF_RGB565,		0, false},	// 0x11: Linear RGB565
+		{32, ImageDecoder::PXF_ARGB8888,	0, false},	// 0x12: Linear ARGB8888
+		{ 8, ImageDecoder::PXF_L8,		0, false},	// 0x13: Linear L8
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x14: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x15: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x16: Linear R8B8 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x17: Linear G8B8 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x18: undefined
+		{ 8, ImageDecoder::PXF_A8,		0, true},	// 0x19: A8
+		{16, ImageDecoder::PXF_A8L8,		0, true},	// 0x1A: A8L8
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x1B: Linear AL8 (TODO)
+		{16, ImageDecoder::PXF_RGB555,		0, false},	// 0x1C: Linear RGB555
+		{16, ImageDecoder::PXF_ARGB4444,	0, false},	// 0x1D: Linear ARGB4444
+		{32, ImageDecoder::PXF_xRGB8888,	0, false},	// 0x1E: Linear xRGB8888
+		{ 8, ImageDecoder::PXF_A8,		0, false},	// 0x1F: Linear A8
+
+		{16, ImageDecoder::PXF_A8L8,		0, false},	// 0x20: Linear A8L8
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x21: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x22: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x23: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x24: YUY2 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x25: YUY2 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x26: undefined
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x27: L6V5U5 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x28: V8U8 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x29: R8B8 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2A: D24S8 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2B: F24S8 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2C: D16 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x2D: F16 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x2E: Linear D24S8 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x2F: Linear F24S8 (TODO)
+
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x30: Linear D16 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x31: Linear F16 (TODO)
+		{16, ImageDecoder::PXF_L16,		0, true},	// 0x32: L16
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, true},	// 0x33: V16U16 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x34: undefined
+		{ 0, ImageDecoder::PXF_L16,		0, false},	// 0x35: Linear L16
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x36: Linear V16U16 (TODO)
+		{ 0, ImageDecoder::PXF_UNKNOWN,		0, false},	// 0x37: Linear L6V5U5 (TODO)
+		{16, ImageDecoder::PXF_RGBA5551,	0, true},	// 0x38: RGBA5551
+		{16, ImageDecoder::PXF_RGBA4444,	0, true},	// 0x39: RGBA4444
+		{32, ImageDecoder::PXF_ABGR8888,	0, true},	// 0x3A: QWVU8888 (same as ABGR8888)
+		{32, ImageDecoder::PXF_BGRA8888,	0, true},	// 0x3B: BGRA8888
+		{32, ImageDecoder::PXF_RGBA8888,	0, true},	// 0x3C: RGBA8888
+		{16, ImageDecoder::PXF_RGBA5551,	0, false},	// 0x3D: Linear RGBA5551
+		{16, ImageDecoder::PXF_RGBA4444,	0, false},	// 0x3E: Linear RGBA4444
+		{32, ImageDecoder::PXF_ABGR8888,	0, false},	// 0x3F: Linear ABGR8888
+
+		{32, ImageDecoder::PXF_BGRA8888,	0, false},	// 0x3F: Linear BGRA8888
+		{32, ImageDecoder::PXF_RGBA8888,	0, false},	// 0x3F: Linear RGBA8888
+	};
+
+	if (xpr0Header.pixel_format >= ARRAY_SIZE(mode_tbl)) {
+		// Invalid pixel format.
+		return nullptr;
+	}
+
 	// Determine the expected size based on the pixel format.
 	const unsigned int area_shift = (xpr0Header.width_pow2 >> 4) +
 					(xpr0Header.height_pow2 & 0x0F);
-	uint32_t expected_size;
-	switch (xpr0Header.pixel_format) {
-		case XPR0_PIXEL_FORMAT_ARGB1555:
-		case XPR0_PIXEL_FORMAT_ARGB4444:
-		case XPR0_PIXEL_FORMAT_RGB565:
-		case XPR0_PIXEL_FORMAT_LIN_ARGB1555:
-		case XPR0_PIXEL_FORMAT_LIN_RGB565:
-		case XPR0_PIXEL_FORMAT_LIN_ARGB4444:
-			// 16bpp
-			expected_size = static_cast<uint32_t>(1U << (area_shift + 1));
-			break;
-		case XPR0_PIXEL_FORMAT_ARGB8888:
-		case XPR0_PIXEL_FORMAT_xRGB8888:
-		case XPR0_PIXEL_FORMAT_LIN_ARGB8888:
-		case XPR0_PIXEL_FORMAT_LIN_xRGB8888:
-			// 32bpp
-			expected_size = static_cast<uint32_t>(1U << (area_shift + 2));
-			break;
-		case XPR0_PIXEL_FORMAT_DXT1:
-			// 4bpp
-			// DXTn: 8 bytes per 4x4 block
-			expected_size = static_cast<uint32_t>(1U << (area_shift - 1));
-			break;
-		case XPR0_PIXEL_FORMAT_DXT2:
-		case XPR0_PIXEL_FORMAT_DXT4:
-			// 8bpp
-			// DXTn: 16 bytes per 4x4 block
-			expected_size = static_cast<uint32_t>(1U << area_shift);
-			break;
-		default:
-			// Unsupported...
-			return nullptr;
-	}
+	const auto &mode = mode_tbl[xpr0Header.pixel_format];
+	const uint32_t expected_size = (1U << area_shift) * mode.bpp / 8U;
 
 	if (expected_size > file_sz - data_offset) {
 		// File is too small.
@@ -387,87 +447,54 @@ const rp_image *XboxXPR0Private::loadXboxXPR0Image(void)
 
 	const int width  = 1 << (xpr0Header.width_pow2 >> 4);
 	const int height = 1 << (xpr0Header.height_pow2 & 0x0F);
-	bool swizzled = false;
-	switch (xpr0Header.pixel_format) {
-		case XPR0_PIXEL_FORMAT_ARGB1555:
-			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB1555,
-				width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
-			swizzled = true;
-			break;
-		case XPR0_PIXEL_FORMAT_ARGB4444:
-			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
-				width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
-			swizzled = true;
-			break;
-		case XPR0_PIXEL_FORMAT_RGB565:
-			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
-				width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
-			swizzled = true;
-			break;
-
-		case XPR0_PIXEL_FORMAT_ARGB8888:
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
-				width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
-			swizzled = true;
-			break;
-		case XPR0_PIXEL_FORMAT_xRGB8888:
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_xRGB8888,
-				width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
-			swizzled = true;
-			break;
-
-		case XPR0_PIXEL_FORMAT_DXT1:
-			// NOTE: Assuming we have transparent pixels.
-			img = ImageDecoder::fromDXT1_A1(width, height,
-				buf.get(), expected_size);
-			break;
-		case XPR0_PIXEL_FORMAT_DXT2:
-			img = ImageDecoder::fromDXT2(width, height,
-				buf.get(), expected_size);
-			break;
-		case XPR0_PIXEL_FORMAT_DXT4:
-			img = ImageDecoder::fromDXT4(width, height,
-				buf.get(), expected_size);
-			break;
-
-		case XPR0_PIXEL_FORMAT_LIN_ARGB1555:
-			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB1555,
-				width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
-			break;
-		case XPR0_PIXEL_FORMAT_LIN_RGB565:
-			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
-				width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
-			break;
-		case XPR0_PIXEL_FORMAT_LIN_ARGB4444:
-			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
-				width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
-			break;
-
-		case XPR0_PIXEL_FORMAT_LIN_ARGB8888:
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
-				width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
-			break;
-		case XPR0_PIXEL_FORMAT_LIN_xRGB8888:
-			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_xRGB8888,
-				width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
-			break;
-
-		default:
-			// Unsupported...
-			return nullptr;
+	if (mode.dxtn != 0) {
+		// DXTn
+		switch (mode.dxtn) {
+			case 1:
+				// NOTE: Assuming we have transparent pixels.
+				img = ImageDecoder::fromDXT1_A1(width, height,
+					buf.get(), expected_size);
+				break;
+			case 2:
+				img = ImageDecoder::fromDXT2(width, height,
+					buf.get(), expected_size);
+				break;
+			case 4:
+				img = ImageDecoder::fromDXT4(width, height,
+					buf.get(), expected_size);
+				break;
+			default:
+				assert(!"Unsupported DXTn format.");
+				return nullptr;
+		}
+	} else {
+		switch (mode.bpp) {
+			case 8:
+				img = ImageDecoder::fromLinear8(
+					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
+					width, height,
+					buf.get(), expected_size);
+				break;
+			case 16:
+				img = ImageDecoder::fromLinear16(
+					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
+					width, height,
+					reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+				break;
+			case 32:
+				img = ImageDecoder::fromLinear32(
+					static_cast<ImageDecoder::PixelFormat>(mode.pxf),
+					width, height,
+					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+				break;
+			case 0:
+			default:
+				assert(!"Unsupported bpp value.");
+				return nullptr;
+		}
 	}
 
-	if (swizzled) {
+	if (mode.swizzled) {
 		// Image is swizzled.
 		// Unswizzling code is based on Cxbx-Reloaded:
 		// https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/5d79c0b66e58bf38d39ea28cb4de954209d1e8ad/src/devices/video/swizzle.cpp
@@ -748,18 +775,58 @@ int XboxXPR0::loadFieldData(void)
 	// Pixel format
 	static const char *const pxfmt_tbl[] = {
 		// 0x00
-		nullptr, nullptr, "ARGB1555", nullptr,
+		"L8", "AL8", "ARGB1555", "RGB555",
 		"ARGB4444", "RGB565", "ARGB8888", "xRGB8888",
+
 		// 0x08
-		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, "P8",
 		"DXT1", nullptr, "DXT2", "DXT4",
+
 		// 0x10
 		"Linear ARGB1555", "Linear RGB565",
-		"Linear ARGB8888", nullptr,
-		nullptr, nullptr, nullptr, nullptr,
+		"Linear ARGB8888", "Linear L8",
+		nullptr, nullptr,
+		"Linear R8B8", "Linear G8B8",
+
 		// 0x18
+		nullptr, "A8", "A8L8", "Linear AL8",
+		"Linear RGB555", "Linear ARGB4444",
+		"Linear xRGB8888", "Linear A8",
+
+		// 0x20
+		"Linear A8L8", nullptr, nullptr, nullptr,
+		"YUY2", "UYVY", nullptr, "L6V5U5",
+
+		// 0x28
+		"V8U8", "R8B8", "D24S8", "F24S8",
+		"D16", "F16", "Linear D24S8", "Linear F24S8",
+
+		// 0x30
+		"Linear D16", "Linear F16", "L16", "V16U16",
+		nullptr, "Linear L16", "Linear V16U16", "Linear L6V5U5",
+
+		// 0x38
+		"RGBA5551", "RGBA4444", "QWVU8888", "BGRA8888",
+		"RGBA8888", "Linear RGBA5551",
+		"Linear RGBA4444", "Linear ABGR8888",
+
+		// 0x40
+		"Linear BGRA8888", "Linear RGBA8888", nullptr, nullptr,
 		nullptr, nullptr, nullptr, nullptr,
-		nullptr, "Linear ARGB4444", "Linear xRGB8888", nullptr,
+
+		// 0x48
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr,
+
+		// 0x50
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr,
+
+		// 0x60
+		nullptr, nullptr, nullptr, "Vertex Data",
+		"Index16",
 	};
 	if (xpr0Header->pixel_format < ARRAY_SIZE(pxfmt_tbl)) {
 		d->fields->addField_string(C_("XboxXPR0", "Pixel Format"),
