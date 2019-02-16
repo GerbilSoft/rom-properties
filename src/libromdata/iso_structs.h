@@ -161,75 +161,98 @@ typedef enum {
 } ISO_File_Flags_t;
 
 /**
- * Volume descriptor. Located at 0x8000.
+ * Volume descriptor header.
  */
-#define ISO_MAGIC "CD001"
-#define ISO_VD_VERSION 0x01
-typedef struct PACKED _ISO_Volume_Descriptor {
+typedef struct PACKED _ISO_Volume_Descriptor_Header {
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CD001"
 	uint8_t version;	// Volume descriptor version. (0x01)
+} ISO_Volume_Descriptor_Header;
+ASSERT_STRUCT(ISO_Volume_Descriptor_Header, 7);
 
+/**
+ * Boot volume descriptor.
+ */
+typedef struct PACKED _ISO_Boot_Volume_Descriptor {
+	ISO_Volume_Descriptor_Header header;
+	char sysID[32];		// (strA) System identifier.
+	char bootID[32];	// (strA) Boot identifier.
 	union {
-		uint8_t data[2041];
-
-		// Boot record.
-		struct {
-			char sysID[32];		// (strA) System identifier.
-			char bootID[32];	// (strA) Boot identifier.
-			union {
-				uint32_t boot_catalog_addr;	// (LE32) Block address of the El Torito boot catalog.
-				uint8_t boot_system_use[1977];
-			};
-		} boot;
-
-		// Volume descriptor.
-		struct {
-			uint8_t reserved1;			// 0x00
-			char sysID[32];				// (strA) System identifier.
-			char volID[32];				// (strD) Volume identifier.
-			uint8_t reserved2[8];			// All zeroes.
-			uint32_lsb_msb_t volume_space_size;	// Size of volume, in blocks.
-			uint8_t reserved3[32];			// All zeroes.
-			uint16_lsb_msb_t volume_set_size;	// Size of the logical volume. (number of discs)
-			uint16_lsb_msb_t volume_seq_number;	// Disc number in the volume set.
-			uint16_lsb_msb_t logical_block_size;	// Logical block size. (usually 2048)
-			uint32_lsb_msb_t path_table_size;	// Path table size, in bytes.
-			uint32_t path_table_lba_L;		// (LE32) Path table LBA. (contains LE values only)
-			uint32_t path_table_optional_lba_L;	// (LE32) Optional path table LBA. (contains LE values only)
-			uint32_t path_table_lba_M;		// (BE32) Path table LBA. (contains BE values only)
-			uint32_t path_table_optional_lba_M;	// (BE32) Optional path table LBA. (contains BE values only)
-			ISO_DirEntry dir_entry_root;		// Root directory record.
-			char dir_entry_root_filename;		// Root directory filename. (NULL byte)
-			char volume_set_id[128];		// (strD) Volume set identifier.
-
-			// For the following fields:
-			// - "\x5F" "FILENAME.BIN" to refer to a file in the root directory.
-			// - If empty, fill with all 0x20.
-			char publisher[128];			// (strA) Volume publisher.
-			char data_preparer[128];		// (strA) Data preparer.
-			char application[128];			// (strA) Application.
-
-			// For the following fields:
-			// - Filenames must be in the root directory.
-			// - If empty, fill with all 0x20.
-			char copyright_file[38];		// (strD) Filename of the copyright file.
-			char abstract_file[36];			// (strD) Filename of the abstract file.
-			char bibliographic_file[37];		// (strD) Filename of the bibliographic file.
-
-			// Timestamps.
-			ISO_PVD_DateTime_t btime;		// Volume creation time.
-			ISO_PVD_DateTime_t mtime;		// Volume modification time.
-			ISO_PVD_DateTime_t exptime;		// Volume expiration time.
-			ISO_PVD_DateTime_t efftime;		// Volume effective time.
-
-			uint8_t file_structure_version;		// Directory records and path table version. (0x01)
-			uint8_t reserved4;			// 0x00
-
-			uint8_t application_data[512];		// Not defined by ISO-9660.
-			uint8_t iso_reserved[653];		// Reserved by ISO.
-		} pri;
+		uint32_t boot_catalog_addr;	// (LE32) Block address of the El Torito boot catalog.
+		uint8_t boot_system_use[1977];
 	};
+} ISO_Boot_Volume_Descriptor;
+ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+
+/**
+ * Primary volume descriptor.
+ */
+typedef struct PACKED _ISO_Primary_Volume_Descriptor {
+	ISO_Volume_Descriptor_Header header;
+
+	uint8_t reserved1;			// 0x00
+	char sysID[32];				// (strA) System identifier.
+	char volID[32];				// (strD) Volume identifier.
+	uint8_t reserved2[8];			// All zeroes.
+	uint32_lsb_msb_t volume_space_size;	// Size of volume, in blocks.
+	uint8_t reserved3[32];			// All zeroes.
+	uint16_lsb_msb_t volume_set_size;	// Size of the logical volume. (number of discs)
+	uint16_lsb_msb_t volume_seq_number;	// Disc number in the volume set.
+	uint16_lsb_msb_t logical_block_size;	// Logical block size. (usually 2048)
+	uint32_lsb_msb_t path_table_size;	// Path table size, in bytes.
+	uint32_t path_table_lba_L;		// (LE32) Path table LBA. (contains LE values only)
+	uint32_t path_table_optional_lba_L;	// (LE32) Optional path table LBA. (contains LE values only)
+	uint32_t path_table_lba_M;		// (BE32) Path table LBA. (contains BE values only)
+	uint32_t path_table_optional_lba_M;	// (BE32) Optional path table LBA. (contains BE values only)
+	ISO_DirEntry dir_entry_root;		// Root directory record.
+	char dir_entry_root_filename;		// Root directory filename. (NULL byte)
+	char volume_set_id[128];		// (strD) Volume set identifier.
+
+	// For the following fields:
+	// - "\x5F" "FILENAME.BIN" to refer to a file in the root directory.
+	// - If empty, fill with all 0x20.
+	char publisher[128];			// (strA) Volume publisher.
+	char data_preparer[128];		// (strA) Data preparer.
+	char application[128];			// (strA) Application.
+
+	// For the following fields:
+	// - Filenames must be in the root directory.
+	// - If empty, fill with all 0x20.
+	char copyright_file[38];		// (strD) Filename of the copyright file.
+	char abstract_file[36];			// (strD) Filename of the abstract file.
+	char bibliographic_file[37];		// (strD) Filename of the bibliographic file.
+
+	// Timestamps.
+	ISO_PVD_DateTime_t btime;		// Volume creation time.
+	ISO_PVD_DateTime_t mtime;		// Volume modification time.
+	ISO_PVD_DateTime_t exptime;		// Volume expiration time.
+	ISO_PVD_DateTime_t efftime;		// Volume effective time.
+
+	uint8_t file_structure_version;		// Directory records and path table version. (0x01)
+	uint8_t reserved4;			// 0x00
+
+	uint8_t application_data[512];		// Not defined by ISO-9660.
+	uint8_t iso_reserved[653];		// Reserved by ISO.
+} ISO_Primary_Volume_Descriptor;
+ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+
+/**
+ * Volume descriptor.
+ *
+ * Primary volume descriptor is located at 0x8000.
+ */
+#define ISO_MAGIC "CD001"
+#define ISO_VD_VERSION 0x01
+typedef union PACKED _ISO_Volume_Descriptor {
+	ISO_Volume_Descriptor_Header header;
+
+	struct {
+		uint8_t header8[7];
+		uint8_t data[2041];
+	};
+
+	ISO_Boot_Volume_Descriptor boot;
+	ISO_Primary_Volume_Descriptor pri;
 } ISO_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 

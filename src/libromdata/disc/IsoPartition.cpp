@@ -65,7 +65,7 @@ class IsoPartitionPrivate
 		int iso_start_offset;
 
 		// ISO primary volume descriptor.
-		ISO_Volume_Descriptor pvd;
+		ISO_Primary_Volume_Descriptor pvd;
 
 		// Root directory.
 		// NOTE: Directory entries are variable-length, so this
@@ -111,8 +111,9 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	}
 
 	// Verify the signature and volume descriptor type.
-	if (pvd.type != ISO_VDT_PRIMARY || pvd.version != ISO_VD_VERSION ||
-	    memcmp(pvd.identifier, ISO_MAGIC, sizeof(pvd.identifier)) != 0)
+	if (pvd.header.type != ISO_VDT_PRIMARY ||
+	    pvd.header.version != ISO_VD_VERSION ||
+	    memcmp(pvd.header.identifier, ISO_MAGIC, sizeof(pvd.header.identifier)) != 0)
 	{
 		// Invalid volume descriptor.
 		memset(&pvd, 0, sizeof(pvd));
@@ -136,7 +137,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 	if (unlikely(!rootDir_data.empty())) {
 		// Root directory is already loaded.
 		return 0;
-	} else if (unlikely(pvd.type != ISO_VDT_PRIMARY)) {
+	} else if (unlikely(pvd.header.type != ISO_VDT_PRIMARY)) {
 		// PVD isn't loaded.
 		q->m_lastError = EIO;
 		return -q->m_lastError;
@@ -144,10 +145,10 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 
 	// Block size.
 	// Should be 2048, but other values are possible.
-	const unsigned int block_size = pvd.pri.logical_block_size.he;
+	const unsigned int block_size = pvd.logical_block_size.he;
 
 	// Check the root directory entry.
-	const ISO_DirEntry *const rootdir = &pvd.pri.dir_entry_root;
+	const ISO_DirEntry *const rootdir = &pvd.dir_entry_root;
 	if (rootdir->size.he > 16*1024*1024) {
 		// Root directory is too big.
 		q->m_lastError = EIO;
@@ -504,7 +505,7 @@ IRpFile *IsoPartition::open(const char *filename)
 
 	// Block size.
 	// Should be 2048, but other values are possible.
-	const unsigned int block_size = d->pvd.pri.logical_block_size.he;
+	const unsigned int block_size = d->pvd.logical_block_size.he;
 
 	// Make sure the file is in bounds.
 	const int64_t file_addr = (static_cast<int64_t>(dirEntry_found->block.he) - d->iso_start_offset) * block_size;
