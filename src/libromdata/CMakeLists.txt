@@ -59,6 +59,7 @@ SET(libromdata_SRCS
 	Other/EXE.cpp
 	Other/EXE_NE.cpp
 	Other/EXE_PE.cpp
+	Other/ISO.cpp
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 
@@ -202,6 +203,7 @@ SET(libromdata_H
 	Other/ELF.hpp
 	Other/EXE.hpp
 	Other/EXE_p.hpp
+	Other/ISO.hpp
 	Other/MachO.hpp
 	Other/NintendoBadge.hpp
 

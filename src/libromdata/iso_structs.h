@@ -186,53 +186,55 @@ ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 
 /**
  * Primary volume descriptor.
+ *
+ * NOTE: All fields are space-padded. (0x20, ' ')
  */
 typedef struct PACKED _ISO_Primary_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
-	uint8_t reserved1;			// 0x00
-	char sysID[32];				// (strA) System identifier.
-	char volID[32];				// (strD) Volume identifier.
-	uint8_t reserved2[8];			// All zeroes.
-	uint32_lsb_msb_t volume_space_size;	// Size of volume, in blocks.
-	uint8_t reserved3[32];			// All zeroes.
-	uint16_lsb_msb_t volume_set_size;	// Size of the logical volume. (number of discs)
-	uint16_lsb_msb_t volume_seq_number;	// Disc number in the volume set.
-	uint16_lsb_msb_t logical_block_size;	// Logical block size. (usually 2048)
-	uint32_lsb_msb_t path_table_size;	// Path table size, in bytes.
-	uint32_t path_table_lba_L;		// (LE32) Path table LBA. (contains LE values only)
-	uint32_t path_table_optional_lba_L;	// (LE32) Optional path table LBA. (contains LE values only)
-	uint32_t path_table_lba_M;		// (BE32) Path table LBA. (contains BE values only)
-	uint32_t path_table_optional_lba_M;	// (BE32) Optional path table LBA. (contains BE values only)
-	ISO_DirEntry dir_entry_root;		// Root directory record.
-	char dir_entry_root_filename;		// Root directory filename. (NULL byte)
-	char volume_set_id[128];		// (strD) Volume set identifier.
+	uint8_t reserved1;			// [0x007] 0x00
+	char sysID[32];				// [0x008] (strA) System identifier.
+	char volID[32];				// [0x028] (strD) Volume identifier.
+	uint8_t reserved2[8];			// [0x048] All zeroes.
+	uint32_lsb_msb_t volume_space_size;	// [0x050] Size of volume, in blocks.
+	uint8_t reserved3[32];			// [0x058] All zeroes.
+	uint16_lsb_msb_t volume_set_size;	// [0x078] Size of the logical volume. (number of discs)
+	uint16_lsb_msb_t volume_seq_number;	// [0x07C] Disc number in the volume set.
+	uint16_lsb_msb_t logical_block_size;	// [0x080] Logical block size. (usually 2048)
+	uint32_lsb_msb_t path_table_size;	// [0x084] Path table size, in bytes.
+	uint32_t path_table_lba_L;		// [0x08C] (LE32) Path table LBA. (contains LE values only)
+	uint32_t path_table_optional_lba_L;	// [0x090] (LE32) Optional path table LBA. (contains LE values only)
+	uint32_t path_table_lba_M;		// [0x094] (BE32) Path table LBA. (contains BE values only)
+	uint32_t path_table_optional_lba_M;	// [0x098] (BE32) Optional path table LBA. (contains BE values only)
+	ISO_DirEntry dir_entry_root;		// [0x09C] Root directory record.
+	char dir_entry_root_filename;		// [0x0BD] Root directory filename. (NULL byte)
+	char volume_set_id[128];		// [0x0BE] (strD) Volume set identifier.
 
 	// For the following fields:
 	// - "\x5F" "FILENAME.BIN" to refer to a file in the root directory.
 	// - If empty, fill with all 0x20.
-	char publisher[128];			// (strA) Volume publisher.
-	char data_preparer[128];		// (strA) Data preparer.
-	char application[128];			// (strA) Application.
+	char publisher[128];			// [0x13E] (strA) Volume publisher.
+	char data_preparer[128];		// [0x1BE] (strA) Data preparer.
+	char application[128];			// [0x23E] (strA) Application.
 
 	// For the following fields:
 	// - Filenames must be in the root directory.
 	// - If empty, fill with all 0x20.
-	char copyright_file[38];		// (strD) Filename of the copyright file.
-	char abstract_file[36];			// (strD) Filename of the abstract file.
-	char bibliographic_file[37];		// (strD) Filename of the bibliographic file.
+	char copyright_file[38];		// [0x2BE] (strD) Filename of the copyright file.
+	char abstract_file[36];			// [0x2E4] (strD) Filename of the abstract file.
+	char bibliographic_file[37];		// [0x308] (strD) Filename of the bibliographic file.
 
 	// Timestamps.
-	ISO_PVD_DateTime_t btime;		// Volume creation time.
-	ISO_PVD_DateTime_t mtime;		// Volume modification time.
-	ISO_PVD_DateTime_t exptime;		// Volume expiration time.
-	ISO_PVD_DateTime_t efftime;		// Volume effective time.
+	ISO_PVD_DateTime_t btime;		// [0x32D] Volume creation time.
+	ISO_PVD_DateTime_t mtime;		// [0x33E] Volume modification time.
+	ISO_PVD_DateTime_t exptime;		// [0x34F] Volume expiration time.
+	ISO_PVD_DateTime_t efftime;		// [0x360] Volume effective time.
 
-	uint8_t file_structure_version;		// Directory records and path table version. (0x01)
-	uint8_t reserved4;			// 0x00
+	uint8_t file_structure_version;		// [0x371] Directory records and path table version. (0x01)
+	uint8_t reserved4;			// [0x372] 0x00
 
-	uint8_t application_data[512];		// Not defined by ISO-9660.
-	uint8_t iso_reserved[653];		// Reserved by ISO.
+	uint8_t application_data[512];		// [0x373] Not defined by ISO-9660.
+	uint8_t iso_reserved[653];		// [0x573] Reserved by ISO.
 } ISO_Primary_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 
@@ -243,6 +245,7 @@ ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
  */
 #define ISO_MAGIC "CD001"
 #define ISO_VD_VERSION 0x01
+#define ISO_PVD_ADDRESS 0x8000
 typedef union PACKED _ISO_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 

@@ -105,6 +105,7 @@ using std::vector;
 #include "Other/Amiibo.hpp"
 #include "Other/ELF.hpp"
 #include "Other/EXE.hpp"
+#include "Other/ISO.hpp"
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 
@@ -327,6 +328,12 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// The 0 address is checked above.
 	GetRomDataFns_addr(GameCom, ATTR_HAS_THUMBNAIL, 0x40000, 0x20),
 
+	// Last chance: ISO-9660 disc images.
+	// NOTE: This might include some console-specific disc images
+	// that don't have an identifying boot sector at 0x0000.
+	// NOTE: Keeping the same address, since ISO only checks the file extension.
+	GetRomDataFns_addr(ISO, ATTR_NONE, 0x40000, 0x20),
+
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
@@ -529,15 +536,31 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 			// for file types that don't use this.
 			// TODO: Don't hard-code this.
 			// Use a pointer to supportedFileExtensions_static() instead?
+			static const char *const exts[] = {
+				".bin",		/* generic .bin */
+				".sms",		/* Sega Master System */
+				".gg",		/* Game Gear */
+				".tgc",		/* game.com */
+				".iso",		/* ISO-9660 */
+				".xiso",	/* Xbox disc image */
+				nullptr
+			};
+
 			if (info.ext == nullptr) {
 				// No file extension...
 				break;
-			} else if (strcasecmp(info.ext, ".bin") != 0 &&	/* generic .bin */
-				   strcasecmp(info.ext, ".sms") != 0 &&	/* Sega Master System */
-				   strcasecmp(info.ext, ".gg") != 0 &&	/* Game Gear */
-				   strcasecmp(info.ext, ".tgc") != 0)	/* game.com */
-			{
-				// Not SMS, Game Gear, or game.com.
+			}
+
+			// Check for a matching extension.
+			bool found = false;
+			for (const char *const *ext = exts; *ext != nullptr; ext++) {
+				if (!strcasecmp(info.ext, *ext)) {
+					// Found a match!
+					found = true;
+				}
+			}
+			if (!found) {
+				// No match.
 				break;
 			}
 
