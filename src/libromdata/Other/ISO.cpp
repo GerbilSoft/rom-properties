@@ -312,7 +312,6 @@ ISO::ISO(IRpFile *file)
 int ISO::isRomSupported_static(const DetectInfo *info)
 {
 	// NOTE: Only checking for supported file extensions.
-	printf("ext: %s\n", info->ext);
 	assert(info->ext != nullptr);
 	if (!info->ext) {
 		// No file extension specified...
