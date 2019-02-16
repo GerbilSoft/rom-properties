@@ -46,6 +46,10 @@
     * Fully supports XPR0.
     * XPR1 is detected but not thumbnailed yet, and the displayed metadata
       is incorrect because the header format is different.
+  * ISO: ISO-9660 parser.
+    * Parses the Primary Volume Descriptor for ISO-9660 images.
+    * Sega Mega CD, Sega Saturn, and Sega Dreamcast parsers now show
+      the ISO-9660 PVD using the new ISO-9660 parser.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.

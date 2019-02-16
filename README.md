@@ -148,6 +148,7 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
+| ISO-9660 Disc Images           |       Yes      |    No    |        No       |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |
