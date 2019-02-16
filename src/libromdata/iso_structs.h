@@ -38,6 +38,10 @@ extern "C" {
 #define ISO_SECTOR_SIZE_MODE1_RAW    2352
 #define ISO_SECTOR_SIZE_MODE1_COOKED 2048
 
+// Data offsets.
+#define ISO_DATA_OFFSET_MODE1_RAW    16
+#define ISO_DATA_OFFSET_MODE1_COOKED 0
+
 // strD: [A-Z0-9_]
 // strA: strD plus: ! " % & ' ( ) * + , - . / : ; < = > ?
 
@@ -244,7 +248,9 @@ ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
  */
 #define ISO_VD_MAGIC "CD001"
 #define ISO_VD_VERSION 0x01
-#define ISO_PVD_ADDRESS (0x10 * ISO_SECTOR_SIZE_MODE1_COOKED)
+#define ISO_PVD_LBA 0x10
+#define ISO_PVD_ADDRESS_2048 (ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_COOKED)
+#define ISO_PVD_ADDRESS_2352 (ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW)
 typedef union PACKED _ISO_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 

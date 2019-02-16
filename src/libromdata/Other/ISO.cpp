@@ -60,6 +60,14 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		// ISO primary volume descriptor.
 		ISO_Primary_Volume_Descriptor pvd;
 
+		// Sector size.
+		// Usually 2048 or 2352.
+		unsigned int sector_size;
+
+		// Sector offset.
+		// Usually 0 (for 2048) or 16 (for 2352).
+		unsigned int sector_offset;
+
 		// UDF version.
 		// TODO: Descriptors?
 		const char *s_udf_version;
@@ -82,6 +90,8 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 
 ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
 	: super(q, file)
+	, sector_size(0)
+	, sector_offset(0)
 	, s_udf_version(nullptr)
 {
 	// Clear the disc header structs.
@@ -98,13 +108,13 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	// TODO: Boot record?
 
 	// Starting address.
-	int64_t addr = ISO_PVD_ADDRESS;
-	const int64_t maxaddr = 0x100 * ISO_SECTOR_SIZE_MODE1_COOKED;
+	int64_t addr = (ISO_PVD_LBA * sector_size) + sector_offset;
+	const int64_t maxaddr = 0x100 * sector_size;
 
 	ISO_Volume_Descriptor_Header deschdr;
 	bool foundVDT = false;
 	while (addr < maxaddr) {
-		addr += ISO_SECTOR_SIZE_MODE1_COOKED;
+		addr += sector_size;
 		size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
 		if (size != sizeof(deschdr)) {
 			// Seek and/or read error.
@@ -128,7 +138,7 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	}
 
 	// Check for a UDF extended descriptor section.
-	addr += ISO_SECTOR_SIZE_MODE1_COOKED;
+	addr += sector_size;
 	size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
 	if (size != sizeof(deschdr)) {
 		// Seek and/or read error.
@@ -141,7 +151,7 @@ void ISOPrivate::checkVolumeDescriptors(void)
 
 	// Look for NSR02/NSR03.
 	while (addr < maxaddr) {
-		addr += ISO_SECTOR_SIZE_MODE1_COOKED;
+		addr += sector_size;
 		size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
 		if (size != sizeof(deschdr)) {
 			// Seek and/or read error.
@@ -269,11 +279,11 @@ ISO::ISO(IRpFile *file)
 		return;
 	}
 
-	// TODO: Check for 2352-byte sectors.
-
-	// Read the PVD.
-	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS, &d->pvd, sizeof(d->pvd));
+	// Read the PVD. (2048-byte sector address)
+	size_t size = d->file->seekAndRead(ISO_PVD_ADDRESS_2048 + ISO_DATA_OFFSET_MODE1_COOKED,
+		&d->pvd, sizeof(d->pvd));
 	if (size != sizeof(d->pvd)) {
+		// Seek and/or read error.
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -282,15 +292,37 @@ ISO::ISO(IRpFile *file)
 	// Check if the PVD is valid.
 	// NOTE: Not using isRomSupported_static(), since this function
 	// only checks the file extension.
-	if (d->pvd.header.type != ISO_VDT_PRIMARY ||
-	    d->pvd.header.version != ISO_VD_VERSION ||
-	    memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)) != 0)
+	if (d->pvd.header.type == ISO_VDT_PRIMARY &&
+	    d->pvd.header.version == ISO_VD_VERSION &&
+	    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
 	{
-		// Not a PVD.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
-		return;
+		// Found the PVD using 2048-byte sectors.
+		d->sector_size = ISO_SECTOR_SIZE_MODE1_COOKED;
+		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
+	} else {
+		// Try again using 2352-byte sectors.
+		size = d->file->seekAndRead(ISO_PVD_ADDRESS_2352 + ISO_DATA_OFFSET_MODE1_RAW,
+			&d->pvd, sizeof(d->pvd));
+		if (size != sizeof(d->pvd)) {
+			// Seek and/or read error.
+			d->file->unref();
+			d->file = nullptr;
+			return;
+		}
+
+		if (d->pvd.header.type == ISO_VDT_PRIMARY &&
+		    d->pvd.header.version == ISO_VD_VERSION &&
+		    !memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)))
+		{
+			// Found the PVD using 2352-byte sectors.
+			d->sector_size = ISO_SECTOR_SIZE_MODE1_RAW;
+			d->sector_offset = ISO_DATA_OFFSET_MODE1_RAW;
+		} else {
+			// Not a PVD.
+			d->file->unref();
+			d->file = nullptr;
+			return;
+		}
 	}
 
 	// This is a valid PVD.
