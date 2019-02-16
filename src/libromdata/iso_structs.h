@@ -220,8 +220,8 @@ typedef struct PACKED _ISO_Primary_Volume_Descriptor {
 	// For the following fields:
 	// - Filenames must be in the root directory.
 	// - If empty, fill with all 0x20.
-	char copyright_file[38];		// [0x2BE] (strD) Filename of the copyright file.
-	char abstract_file[36];			// [0x2E4] (strD) Filename of the abstract file.
+	char copyright_file[37];		// [0x2BE] (strD) Filename of the copyright file.
+	char abstract_file[37];			// [0x2E3] (strD) Filename of the abstract file.
 	char bibliographic_file[37];		// [0x308] (strD) Filename of the bibliographic file.
 
 	// Timestamps.
