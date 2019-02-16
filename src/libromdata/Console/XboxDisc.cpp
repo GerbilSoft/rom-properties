@@ -70,6 +70,7 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 			DISC_TYPE_XGD3	= 2,	// XGD3 (Xbox 360)
 		};
 		int discType;
+		uint8_t wave;
 
 		// XDVDFS starting address.
 		int64_t xdvdfs_addr;
@@ -84,6 +85,7 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 	: super(q, file)
 	, discType(DISC_UNKNOWN)
+	, wave(0)
 	, xdvdfs_addr(0)
 {
 	// Clear the various headers.
@@ -131,7 +133,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
-	d->discType = isRomSupported_static(&pvd);
+	d->discType = isRomSupported_static(&pvd, &d->wave);
 
 	switch (d->discType) {
 		case XboxDiscPrivate::DISC_TYPE_XGD1:
@@ -201,9 +203,11 @@ int XboxDisc::isRomSupported_static(const DetectInfo *info)
 /**
  * Is a ROM image supported by this class?
  * @param pvd ISO-9660 Primary Volume Descriptor.
+ * @param pWave If non-zero, receives the wave number. (0 if none; non-zero otherwise.)
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int XboxDisc::isRomSupported_static(const ISO_Primary_Volume_Descriptor *pvd)
+int XboxDisc::isRomSupported_static(
+	const ISO_Primary_Volume_Descriptor *pvd, uint8_t *pWave)
 {
 	// Xbox PVDs from the same manufacturing wave
 	// match, so we can check the PVD timestamp
@@ -237,8 +241,10 @@ int XboxDisc::isRomSupported_static(const ISO_Primary_Volume_Descriptor *pvd)
 	};
 
 	static const xgd_pvd_t xgd_tbl[] = {
-		// TODO: XGD1
+		// XGD1
+		{1,  0, 1000334575},	// XGD1: 2001-09-13 10:42:55.00 '0' (+12:00)
 
+		// XGD2
 		{2,  1, 1128716326},	// XGD2 Wave 1:  2005-10-07 12:18:46.00 -08:00
 		{2,  2, 1141708147},	// XGD2 Wave 2:  2006-03-06 21:09:07.00 -08:00
 		{2,  3, 1231977600},	// XGD2 Wave 3:  2009-01-14 16:00:00.00 -08:00
@@ -275,6 +281,9 @@ int XboxDisc::isRomSupported_static(const ISO_Primary_Volume_Descriptor *pvd)
 	for (const xgd_pvd_t *pXgd = xgd_tbl; pXgd->xgd != 0; pXgd++) {
 		if (pXgd->btime == btime) {
 			// Found a match!
+			if (pWave) {
+				*pWave = pXgd->wave;
+			}
 			return pXgd->xgd - 1;
 		}
 	}
@@ -291,6 +300,9 @@ int XboxDisc::isRomSupported_static(const ISO_Primary_Volume_Descriptor *pvd)
 	for (const char *pXgd = &xgd3_pvd_times[0][0]; pXgd[0] != '\0'; pXgd++) {
 		if (!memcmp(&pvd->btime.full[8], pXgd, 9)) {
 			// Found a match!
+			if (pWave) {
+				*pWave = 0;
+			}
 			return XboxDiscPrivate::DISC_TYPE_XGD3;
 		}
 	}
@@ -393,11 +405,31 @@ int XboxDisc::loadFieldData(void)
 
 	// XDVDFS header.
 	const XDVDFS_Header *const xdvdfsHeader = &d->xdvdfsHeader;
-	d->fields->reserve(1);	// Maximum of 1 field.
+	d->fields->reserve(2);	// Maximum of 2 fields.
 	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
 		d->fields->setTabName(0, "Xbox 360");
 	} else {
 		d->fields->setTabName(0, "Xbox");
+	}
+
+	// Disc type
+	const char *const s_disc_type = C_("XboxDisc", "Disc Type");
+	// NOTE: Not translating "Xbox Game Disc".
+	switch (d->discType) {
+		case XboxDiscPrivate::DISC_TYPE_XGD1:
+			d->fields->addField_string(s_disc_type, "Xbox Game Disc 1");
+			break;
+		case XboxDiscPrivate::DISC_TYPE_XGD2:
+			d->fields->addField_string(s_disc_type,
+				rp_sprintf("Xbox Game Disc 2 (Wave %u)", d->wave));
+			break;
+		case XboxDiscPrivate::DISC_TYPE_XGD3:
+			d->fields->addField_string(s_disc_type, "Xbox Game Disc 3");
+			break;
+		default:
+			d->fields->addField_string(s_disc_type,
+				rp_sprintf(C_("RomData", "Unknown (%u)"), d->wave));
+			break;
 	}
 
 	// Timestamp

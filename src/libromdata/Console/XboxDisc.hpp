@@ -32,9 +32,11 @@ ROMDATA_DECL_BEGIN(XboxDisc)
 		/**
 		 * Is a ROM image supported by this class?
 		 * @param pvd ISO-9660 Primary Volume Descriptor.
+		 * @param pWave If non-zero, receives the wave number. (0 if none; non-zero otherwise.)
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		static int isRomSupported_static(const ISO_Primary_Volume_Descriptor *pvd);
+		static int isRomSupported_static(
+			const ISO_Primary_Volume_Descriptor *pvd, uint8_t *pWave = nullptr);
 
 ROMDATA_DECL_END()
 
