@@ -836,7 +836,16 @@ int Dreamcast::loadFieldData(void)
 	// are used for field info only.
 	// TODO: Get from GdiReader for GDI.
 	if (d->discType == DreamcastPrivate::DISC_GDI) {
-		// TODO
+		// Open track 3 as ISO-9660.
+		ISO *const isoData = d->gdiReader->openIsoRomData(3);
+		if (isoData) {
+			if (isoData->isOpen()) {
+				// Add the fields.
+				d->fields->addFields_romFields(isoData->fields(),
+					RomFields::TabOffset_AddTabs);
+			}
+			isoData->unref();
+		}
 	} else {
 		// ISO object for ISO-9660 PVD
 		PartitionFile *const isoFile = new PartitionFile(d->discReader, 0, d->discReader->size());

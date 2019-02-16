@@ -30,6 +30,12 @@
 #include "librpbase/file/RelatedFile.hpp"
 using namespace LibRpBase;
 
+// DiscReader
+#include "librpbase/disc/PartitionFile.hpp"
+
+// Other RomData subclasses
+#include "Other/ISO.hpp"
+
 // C includes.
 #include <stdlib.h>
 
@@ -627,6 +633,48 @@ IsoPartition *GdiReader::openIsoPartition(int trackNumber)
 	// Logical block size is 2048.
 	// ISO starting offset is the LBA.
 	return new IsoPartition(this, lba * 2048, lba);
+}
+
+/**
+ * Create an ISO RomData object for a given track number.
+ * @param trackNumber Track number. (1-based)
+ * @return ISO object, or nullptr on error.
+ */
+ISO *GdiReader::openIsoRomData(int trackNumber)
+{
+	// Make sure the track is open.
+	RP_D(GdiReader);
+	if (d->openTrack(trackNumber) != 0) {
+		// Cannot open the track.
+		return nullptr;
+	}
+
+	if (d->trackMappings.size() < static_cast<size_t>(trackNumber)) {
+		// Invalid track number.
+		return nullptr;
+	}
+	GdiReaderPrivate::BlockRange *const blockRange = d->trackMappings[trackNumber-1];
+
+	// Calculate the track length.
+	const int lba_start = blockRange->blockStart;
+	const int lba_size = blockRange->blockEnd - lba_start + 1;
+
+	// ISO object for ISO-9660 PVD
+	ISO *isoData = nullptr;
+
+	PartitionFile *const isoFile = new PartitionFile(this,
+		static_cast<int64_t>(lba_start) * 2048,
+		static_cast<int64_t>(lba_size) * 2048);
+	if (isoFile->isOpen()) {
+		isoData = new ISO(isoFile);
+		if (!isoData->isOpen()) {
+			// Unable to open ISO object.
+			isoData->unref();
+			isoData = nullptr;
+		}
+	}
+	isoFile->unref();
+	return isoData;
 }
 
 }
