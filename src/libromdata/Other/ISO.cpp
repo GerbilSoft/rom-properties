@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * ISO.hpp: ISO-9660 disc image parser.                                    *
+ * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
  * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
@@ -83,7 +83,12 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		 * @param pvd_time PVD timestamp
 		 * @return UNIX time, or -1 if invalid or not set.
 		 */
-		static time_t pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time);
+		static inline time_t pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time)
+		{
+			// Wrapper for RomData::pvd_time_to_unix_time(),
+			// which doesn't take an ISO_PVD_DateTime_t struct.
+			return RomDataPrivate::pvd_time_to_unix_time(pvd_time->full, pvd_time->tz_offset);
+		}
 };
 
 /** ISOPrivate **/
@@ -186,75 +191,10 @@ void ISOPrivate::checkVolumeDescriptors(void)
 	// TODO: More descriptors?
 }
 
-/**
- * Convert an ISO PVD timestamp to UNIX time.
- * @param pvd_time PVD timestamp
- * @return UNIX time, or -1 if invalid or not set.
- */
-time_t ISOPrivate::pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time)
-{
-	assert(pvd_time != nullptr);
-
-	// PVD time is in ASCII format:
-	// YYYYMMDDHHmmssccz
-	// - YYYY: Year
-	// - MM: Month
-	// - DD: Day
-	// - HH: Hour
-	// - mm: Minute
-	// - ss: Second
-	// - cc: Centisecond (not supported in UNIX time)
-	// - z: (int8) Timezone offset in 15min intervals: [0, 100] -> [-48, 52]
-	//   - -48: GMT-1200
-	//   -  52: GMT+1300
-
-	// NOTE: pvd_time is NOT null-terminated, so we need to
-	// copy it to a temporary buffer.
-	char buf[17];
-	memcpy(buf, pvd_time->full, 16);
-	buf[16] = '\0';
-
-	struct tm pvdtime;
-	int csec;
-	int ret = sscanf(buf, "%04d%02d%02d%02d%02d%02d%02d",
-		&pvdtime.tm_year, &pvdtime.tm_mon, &pvdtime.tm_mday,
-		&pvdtime.tm_hour, &pvdtime.tm_min, &pvdtime.tm_sec, &csec);
-	if (ret != 7) {
-		// Some argument wasn't parsed correctly.
-		return -1;
-	}
-
-	// If year is 0, the entry is probably all zeroes.
-	if (pvdtime.tm_year == 0) {
-		return -1;
-	}
-
-	// Adjust values for struct tm.
-	pvdtime.tm_year -= 1900;	// struct tm: year - 1900
-	pvdtime.tm_mon--;		// struct tm: 0-11
-
-	// tm_wday and tm_yday are output variables.
-	pvdtime.tm_wday = 0;
-	pvdtime.tm_yday = 0;
-	pvdtime.tm_isdst = 0;
-
-	// If conversion fails, this will return -1.
-	time_t unixtime = timegm(&pvdtime);
-	if (unixtime == -1)
-		return -1;
-
-	// Convert to UTC using the timezone offset.
-	// NOTE: Timezone offset is negative for west of GMT,
-	// so we need to subtract it from the UNIX timestamp.
-	// TODO: Return the timezone offset separately.
-	unixtime -= (static_cast<int>(pvd_time->tz_offset) * (15*60));
-	return unixtime;
-}
-
 /** ISO **/
 
 /**
- * Read an ISO-9660 executable.
+ * Read an ISO-9660 disc image.
  *
  * A ROM file must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -330,8 +270,6 @@ ISO::ISO(IRpFile *file)
 
 	// Check for additional volume descriptors.
 	d->checkVolumeDescriptors();
-
-	// TODO: Search for Xbox disc images.
 }
 
 /** ROM detection functions. **/
@@ -379,7 +317,7 @@ const char *ISO::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"ISO::systemName() array index optimization needs to be updated.");
 
-	// TODO: UDF, XDVDFS, HFS, others?
+	// TODO: UDF, HFS, others?
 	static const char *const sysNames[4] = {
 		"ISO-9660", "ISO", "ISO", nullptr
 	};
@@ -429,8 +367,7 @@ const char *const *ISO::supportedMimeTypes_static(void)
 		// Unofficial MIME types from FreeDesktop.org..
 		"application/x-iso9660-image",
 
-		// TODO: BIN (2352), XDVDFS?
-
+		// TODO: BIN (2352)?
 		nullptr
 	};
 	return mimeTypes;
