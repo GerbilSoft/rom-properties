@@ -336,11 +336,22 @@ const char *XboxDisc::systemName(unsigned int type) const
 
 	// TODO: Check for default.xbe and/or default.xex
 	// to determine if it's Xbox or Xbox 360.
-	static const char *const sysNames[4] = {
-		"Microsoft Xbox", "Xbox", "Xbox", nullptr
-	};
+	// For now, assuming >=XGD2 is 360.
+	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
+		static const char *const sysNames_X360[4] = {
+			"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
+		};
+		return sysNames_X360[type & SYSNAME_TYPE_MASK];
+	} else {
+		static const char *const sysNames_Xbox[4] = {
+			"Microsoft Xbox", "Xbox", "Xbox", nullptr
+		};
+		return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
+	}
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	// Should not get here...
+	assert(!"XboxDisc::systemName(): Invalid system name.");
+	return nullptr;
 }
 
 /**
