@@ -731,7 +731,7 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field, cons
 		// Credits text. Enable formatting and center alignment.
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
 		GTK_WIDGET_HALIGN_CENTER(widget);
-		if (field->data.str) {
+		if (str) {
 			// NOTE: Pango markup does not support <br/>.
 			// It uses standard newlines for line breaks.
 			gtk_label_set_markup(GTK_LABEL(widget), str);
@@ -741,7 +741,7 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field, cons
 		gtk_label_set_selectable(GTK_LABEL(widget), true);
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 		GTK_WIDGET_HALIGN_LEFT(widget);
-		if (field->data.str) {
+		if (str) {
 			gtk_label_set_text(GTK_LABEL(widget), str);
 		}
 	}

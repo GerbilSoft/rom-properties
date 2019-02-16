@@ -418,7 +418,12 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 			Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
 
 		// Replace newlines with "<br/>".
-		QString text = (str ? *str : U82Q(*(field->data.str)));
+		QString text;
+		if (str) {
+			text = *str;
+		} else if (field->data.str) {
+			text = U82Q(*(field->data.str));
+		}
 		text.replace(QChar(L'\n'), QLatin1String("<br/>"));
 		lblString->setText(text);
 	} else {
