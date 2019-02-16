@@ -35,6 +35,7 @@ using namespace LibRpBase;
 #include <cassert>
 #include <cerrno>
 #include <cstring>
+#include <ctime>
 
 // C++ includes.
 #include <string>
