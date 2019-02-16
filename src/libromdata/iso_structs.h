@@ -240,11 +240,11 @@ ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 /**
  * Volume descriptor.
  *
- * Primary volume descriptor is located at 0x8000.
+ * Primary volume descriptor is located at sector 0x10. (0x8000)
  */
-#define ISO_MAGIC "CD001"
+#define ISO_VD_MAGIC "CD001"
 #define ISO_VD_VERSION 0x01
-#define ISO_PVD_ADDRESS 0x8000
+#define ISO_PVD_ADDRESS (0x10 * ISO_SECTOR_SIZE_MODE1_COOKED)
 typedef union PACKED _ISO_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
@@ -268,6 +268,18 @@ typedef enum {
 	ISO_VDT_PARTITION = 3,
 	ISO_VDT_TERMINATOR = 255,
 } ISO_Volume_Descriptor_Type;
+
+/**
+ * UDF volume descriptors.
+ *
+ * Reference: https://wiki.osdev.org/UDF
+ */
+#define UDF_VD_BEA01 "BEA01"
+#define UDF_VD_NSR01 "NSR01"	/* UDF 1.00 */
+#define UDF_VD_NSR02 "NSR02"	/* UDF 1.50 */
+#define UDF_VD_NSR03 "NSR03"	/* UDF 2.00 */
+#define UDF_VD_BOOT2 "BOOT2"
+#define UDF_VD_TEA01 "TEA01"
 
 #pragma pack()
 

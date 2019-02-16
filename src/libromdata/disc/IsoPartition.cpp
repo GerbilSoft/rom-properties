@@ -113,7 +113,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	// Verify the signature and volume descriptor type.
 	if (pvd.header.type != ISO_VDT_PRIMARY ||
 	    pvd.header.version != ISO_VD_VERSION ||
-	    memcmp(pvd.header.identifier, ISO_MAGIC, sizeof(pvd.header.identifier)) != 0)
+	    memcmp(pvd.header.identifier, ISO_VD_MAGIC, sizeof(pvd.header.identifier)) != 0)
 	{
 		// Invalid volume descriptor.
 		memset(&pvd, 0, sizeof(pvd));

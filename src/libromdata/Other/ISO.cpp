@@ -59,7 +59,16 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 		// ISO primary volume descriptor.
 		ISO_Primary_Volume_Descriptor pvd;
 
+		// UDF version.
+		// TODO: Descriptors?
+		const char *s_udf_version;
+
 	public:
+		/**
+		 * Check additional volume descirptors.
+		 */
+		void checkVolumeDescriptors(void);
+
 		/**
 		 * Convert an ISO PVD timestamp to UNIX time.
 		 * @param pvd_time PVD timestamp
@@ -72,9 +81,98 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 
 ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
 	: super(q, file)
+	, s_udf_version(nullptr)
 {
 	// Clear the disc header structs.
 	memset(&pvd, 0, sizeof(pvd));
+}
+
+/**
+ * Check additional volume descirptors.
+ */
+void ISOPrivate::checkVolumeDescriptors(void)
+{
+	// Check for additional descriptors.
+	// First, we want to find the volume descriptor terminator.
+	// TODO: Boot record?
+
+	// Starting address.
+	int64_t addr = ISO_PVD_ADDRESS;
+	const int64_t maxaddr = 0x100 * ISO_SECTOR_SIZE_MODE1_COOKED;
+
+	ISO_Volume_Descriptor_Header deschdr;
+	bool foundVDT = false;
+	while (addr < maxaddr) {
+		addr += ISO_SECTOR_SIZE_MODE1_COOKED;
+		size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
+		if (size != sizeof(deschdr)) {
+			// Seek and/or read error.
+			break;
+		}
+
+		if (memcmp(deschdr.identifier, ISO_VD_MAGIC, sizeof(deschdr.identifier)) != 0) {
+			// Incorrect identifier.
+			break;
+		}
+
+		if (deschdr.type == ISO_VDT_TERMINATOR) {
+			// Found the terminator.
+			foundVDT = true;
+			break;
+		}
+	}
+	if (!foundVDT) {
+		// No terminator...
+		return;
+	}
+
+	// Check for a UDF extended descriptor section.
+	addr += ISO_SECTOR_SIZE_MODE1_COOKED;
+	size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
+	if (size != sizeof(deschdr)) {
+		// Seek and/or read error.
+		return;
+	}
+	if (memcmp(deschdr.identifier, UDF_VD_BEA01, sizeof(deschdr.identifier)) != 0) {
+		// Not an extended descriptor section.
+		return;
+	}
+
+	// Look for NSR02/NSR03.
+	while (addr < maxaddr) {
+		addr += ISO_SECTOR_SIZE_MODE1_COOKED;
+		size_t size = file->seekAndRead(addr, &deschdr, sizeof(deschdr));
+		if (size != sizeof(deschdr)) {
+			// Seek and/or read error.
+			break;
+		}
+
+		if (!memcmp(deschdr.identifier, "NSR0", 4)) {
+			// Found an NSR descriptor.
+			switch (deschdr.identifier[4]) {
+				case '1':
+					s_udf_version = "1.00";
+					break;
+				case '2':
+					s_udf_version = "1.50";
+					break;
+				case '3':
+					s_udf_version = "2.00";
+					break;
+				default:
+					s_udf_version = nullptr;
+			}
+			break;
+		}
+
+		if (!memcmp(deschdr.identifier, UDF_VD_TEA01, sizeof(deschdr.identifier))) {
+			// End of extended descriptor section.
+			break;
+		}
+	}
+
+	// Done reading UDF for now.
+	// TODO: More descriptors?
 }
 
 /**
@@ -185,7 +283,7 @@ ISO::ISO(IRpFile *file)
 	// only checks the file extension.
 	if (d->pvd.header.type != ISO_VDT_PRIMARY ||
 	    d->pvd.header.version != ISO_VD_VERSION ||
-	    memcmp(d->pvd.header.identifier, ISO_MAGIC, sizeof(d->pvd.header.identifier)) != 0)
+	    memcmp(d->pvd.header.identifier, ISO_VD_MAGIC, sizeof(d->pvd.header.identifier)) != 0)
 	{
 		// Not a PVD.
 		d->isValid = false;
@@ -197,7 +295,9 @@ ISO::ISO(IRpFile *file)
 	// This is a valid PVD.
 	d->isValid = true;
 
-	// TODO: Read more descriptors.
+	// Check for additional volume descriptors.
+	d->checkVolumeDescriptors();
+
 	// TODO: Search for Xbox disc images.
 }
 
@@ -326,7 +426,7 @@ int ISO::loadFieldData(void)
 	// ISO-9660 Primary Volume Descriptor.
 	// TODO: Other descriptors?
 	const ISO_Primary_Volume_Descriptor *const pvd = &d->pvd;
-	d->fields->reserve(11);	// Maximum of 11 fields.
+	d->fields->reserve(16);	// Maximum of 16 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
@@ -424,6 +524,14 @@ int ISO::loadFieldData(void)
 		d->pvd_time_to_unix_time(&pvd->efftime),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
+
+	if (d->s_udf_version) {
+		// UDF version.
+		// TODO: Parse the UDF volume descriptors and
+		// show a separate tab for UDF?
+		d->fields->addField_string(C_("ISO", "UDF Version"),
+			d->s_udf_version);
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
