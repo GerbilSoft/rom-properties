@@ -161,10 +161,8 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// CBC reader for encrypted PE executables.
 		// Also used for unencrypted executables.
 		CBCReader *peReader;
-		IRpFile *peFile_exe;	// uses peReader or lzx_peHeader
-		EXE *pe_exe;		// uses peFile_exe
-		IRpFile *peFile_xdbf;	// uses peReader or lzx_xdbfSection
-		Xbox360_XDBF *pe_xdbf;	// uses peFile_xdbf
+		EXE *pe_exe;
+		Xbox360_XDBF *pe_xdbf;
 
 		/**
 		 * Initialize the PE executable reader.
@@ -216,9 +214,7 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	: super(q, file)
 	, keyInUse(-1)
 	, peReader(nullptr)
-	, peFile_exe(nullptr)
 	, pe_exe(nullptr)
-	, peFile_xdbf(nullptr)
 	, pe_xdbf(nullptr)
 {
 	// Clear the headers.
@@ -235,13 +231,6 @@ Xbox360_XEX_Private::~Xbox360_XEX_Private()
 	}
 	if (pe_exe) {
 		pe_exe->unref();
-	}
-
-	if (peFile_xdbf) {
-		peFile_xdbf->unref();
-	}
-	if (peFile_exe) {
-		peFile_exe->unref();
 	}
 
 	delete peReader;
@@ -909,15 +898,12 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	if (peFile_tmp->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
 		if (pe_exe_tmp->isOpen()) {
-			peFile_exe = peFile_tmp;
 			pe_exe = pe_exe_tmp;
 		} else {
-			pe_exe_tmp->unref();
 			peFile_tmp->unref();
 		}
-	} else {
-		peFile_tmp->unref();
 	}
+	peFile_tmp->unref();
 
 	return pe_exe;
 }
@@ -979,15 +965,13 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	if (peFile_tmp->isOpen()) {
 		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
 		if (pe_xdbf_tmp->isOpen()) {
-			peFile_xdbf = peFile_tmp;
 			pe_xdbf = pe_xdbf_tmp;
 		} else {
 			pe_xdbf_tmp->unref();
 			peFile_tmp->unref();
 		}
-	} else {
-		peFile_tmp->unref();
 	}
+	peFile_tmp->unref();
 
 	return pe_xdbf;
 }
@@ -1100,16 +1084,7 @@ void Xbox360_XEX::close(void)
 		d->pe_exe = nullptr;
 	}
 
-	if (d->peFile_xdbf) {
-		d->peFile_xdbf->unref();
-	}
-	if (d->peFile_exe) {
-		d->peFile_exe->unref();
-	}
-
 	delete d->peReader;
-	d->peFile_xdbf = nullptr;
-	d->peFile_exe = nullptr;
 	d->peReader = nullptr;
 
 #ifdef ENABLE_LIBMSPACK

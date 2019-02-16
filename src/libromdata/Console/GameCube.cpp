@@ -120,7 +120,6 @@ class GameCubePrivate : public RomDataPrivate
 			struct {
 				// opening.bnr file and object.
 				GcnPartition *partition;
-				IRpFile *file;
 				GameCubeBNR *data;
 			} gcn;
 			struct {
@@ -260,9 +259,6 @@ GameCubePrivate::~GameCubePrivate()
 			case DISC_SYSTEM_GCN:
 				if (opening_bnr.gcn.data) {
 					opening_bnr.gcn.data->unref();
-				}
-				if (opening_bnr.gcn.file) {
-					opening_bnr.gcn.file->unref();
 				}
 				delete opening_bnr.gcn.partition;
 				break;
@@ -476,16 +472,15 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 
 	// Attempt to open a GameCubeBNR subclass.
 	GameCubeBNR *const bnr = new GameCubeBNR(f_opening_bnr);
+	f_opening_bnr->unref();
 	if (!bnr->isOpen()) {
 		// Unable to open the subcalss.
 		bnr->unref();
-		f_opening_bnr->unref();
 		return -EIO;
 	}
 
 	// GameCubeBNR subclass is open.
 	opening_bnr.gcn.partition = gcnPartition.release();
-	opening_bnr.gcn.file = f_opening_bnr;
 	opening_bnr.gcn.data = bnr;
 	return 0;
 }
@@ -1003,11 +998,7 @@ void GameCube::close(void)
 				if (d->opening_bnr.gcn.data) {
 					d->opening_bnr.gcn.data->close();
 				}
-				if (d->opening_bnr.gcn.file) {
-					d->opening_bnr.gcn.file->unref();
-				}
 				delete d->opening_bnr.gcn.partition;
-				d->opening_bnr.gcn.file = nullptr;
 				d->opening_bnr.gcn.partition = nullptr;
 				break;
 			case GameCubePrivate::DISC_SYSTEM_WII:

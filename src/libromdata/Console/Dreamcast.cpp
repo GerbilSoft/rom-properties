@@ -100,7 +100,6 @@ class DreamcastPrivate : public RomDataPrivate
 		int iso_start_offset;
 
 		// 0GDTEX.PVR image.
-		IRpFile *pvrFile;	// uses discReader
 		SegaPVR *pvrData;	// SegaPVR object
 
 		/**
@@ -138,7 +137,6 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, iso_start_offset(-1)
-	, pvrFile(nullptr)
 	, pvrData(nullptr)
 {
 	// Clear the disc header struct.
@@ -149,9 +147,6 @@ DreamcastPrivate::~DreamcastPrivate()
 {
 	if (pvrData) {
 		pvrData->unref();
-	}
-	if (pvrFile) {
-		pvrFile->unref();
 	}
 
 	delete discReader;
@@ -233,16 +228,15 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 
 	// Create the SegaPVR object.
 	SegaPVR *const pvrData_tmp = new SegaPVR(pvrFile_tmp);
+	pvrFile_tmp->unref();
 	if (pvrData_tmp->isValid()) {
 		// PVR is valid. Save it.
-		this->pvrFile = pvrFile_tmp;
 		this->pvrData = pvrData_tmp;
 		return pvrData->image(RomData::IMG_INT_IMAGE);
 	}
 
 	// PVR is invalid.
 	pvrData_tmp->unref();
-	pvrFile_tmp->unref();
 	return nullptr;
 }
 
@@ -423,10 +417,6 @@ void Dreamcast::close(void)
 	if (d->pvrData) {
 		d->pvrData->unref();
 		d->pvrData = nullptr;
-	}
-	if (d->pvrFile) {
-		d->pvrFile->unref();
-		d->pvrFile = nullptr;
 	}
 
 	delete d->discReader;

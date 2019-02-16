@@ -180,6 +180,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// For subclasses:
 			// - SMDH: reader uses ncch_f_icon
 			// - SRL: reader uses this->file
+			// TODO: Remove IRpFile pointers; not needed due to ref counting.
 			IDiscReader *reader;	// uses ncch_f_icon
 			PartitionFile *file;	// uses reader
 

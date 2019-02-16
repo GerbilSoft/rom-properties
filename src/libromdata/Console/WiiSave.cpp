@@ -97,8 +97,7 @@ class WiiSavePrivate : public RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
-		PartitionFile *wibnFile;	// uses CBCReader
-		WiiWIBN *wibnData;		// uses wibnFile
+		WiiWIBN *wibnData;
 #endif /* ENABLE_DECRYPTION */
 		// Key indexes. (0 == AES, 1 == IV)
 		WiiPartition::EncryptionKeys key_idx[2];
@@ -118,7 +117,6 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	, svLoaded(false)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
-	, wibnFile(nullptr)
 	, wibnData(nullptr)
 #endif /* ENABLE_DECRYPTION */
 {
@@ -138,9 +136,6 @@ WiiSavePrivate::~WiiSavePrivate()
 #ifdef ENABLE_DECRYPTION
 	if (wibnData) {
 		wibnData->unref();
-	}
-	if (wibnFile) {
-		wibnFile->unref();
 	}
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
@@ -289,17 +284,13 @@ WiiSave::WiiSave(IRpFile *file)
 			WiiWIBN *const wibn = new WiiWIBN(ptFile);
 			if (wibn->isOpen()) {
 				// Opened successfully.
-				d->wibnFile = ptFile;
 				d->wibnData = wibn;
 			} else {
 				// Unable to open the WiiWIBN.
 				wibn->unref();
-				ptFile->unref();
 			}
-		} else {
-			// Unable to open the PartitionFile.
-			ptFile->unref();
 		}
+		ptFile->unref();
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt anything...
@@ -322,11 +313,7 @@ void WiiSave::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	if (d->wibnFile) {
-		d->wibnFile->unref();
-	}
 	delete d->cbcReader;
-	d->wibnFile = nullptr;
 	d->cbcReader = nullptr;
 #endif /* ENABLE_DECRYPTION */
 
