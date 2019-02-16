@@ -423,6 +423,7 @@ int XboxDisc::loadFieldData(void)
 	// XDVDFS header.
 	const XDVDFS_Header *const xdvdfsHeader = &d->xdvdfsHeader;
 	d->fields->reserve(2);	// Maximum of 2 fields.
+	// TODO: Check for default.xbe and/or default.xex.
 	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
 		d->fields->setTabName(0, "Xbox 360");
 	} else {
