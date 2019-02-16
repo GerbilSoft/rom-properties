@@ -52,7 +52,9 @@ SparseDiscReaderPrivate::SparseDiscReaderPrivate(SparseDiscReader *q, IRpFile *f
 
 SparseDiscReaderPrivate::~SparseDiscReaderPrivate()
 {
-	this->file->unref();
+	if (this->file) {
+		this->file->unref();
+	}
 }
 
 /** SparseDiscReader **/

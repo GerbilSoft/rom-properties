@@ -219,14 +219,18 @@ GdiReaderPrivate::~GdiReaderPrivate()
 void GdiReaderPrivate::close(void)
 {
 	for (auto iter = blockRanges.begin(); iter != blockRanges.end(); ++iter) {
-		iter->file->unref();
+		if (iter->file) {
+			iter->file->unref();
+		}
 	}
 	blockRanges.clear();
 	trackMappings.clear();
 
 	// GDI file.
-	this->file->unref();
-	this->file = nullptr;
+	if (this->file) {
+		this->file->unref();
+		this->file = nullptr;
+	}
 }
 
 /**
