@@ -290,7 +290,7 @@ int XboxDisc::isRomSupported_static(
 			if (pWave) {
 				*pWave = pXgd->wave;
 			}
-			return pXgd->xgd - 1;
+			return pXgd->xgd;
 		}
 	}
 
