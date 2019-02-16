@@ -686,11 +686,12 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		// "BIN/2048", and "BIN/2352". I don't think that's
 		// right; there should only be 2048 and 2352.
 		// TODO: Detect Sega CD 32X.
-		if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic))) {
+		// TODO: Use a struct instead of raw bytes?
+		if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic)-1)) {
 			// Found a Sega CD disc image. (2352-byte sectors)
 			return MegaDrivePrivate::ROM_SYSTEM_MCD |
 			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
-		} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic))) {
+		} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic)-1)) {
 			// Found a Sega CD disc image. (2048-byte sectors)
 			return MegaDrivePrivate::ROM_SYSTEM_MCD |
 			       MegaDrivePrivate::ROM_FORMAT_DISC_2048;

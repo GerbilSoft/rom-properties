@@ -1,6 +1,6 @@
 # Changes
 
-## v1.4 (released 2018/??/??)
+## v1.4 (released 2019/??/??)
 
 * New features:
   * The Cairo graphics library is now used for GTK+ 3.x builds.
@@ -113,6 +113,8 @@
   * CBCReader: Added unaligned read support and fixed positioning issues
     when reading unencrypted data. This only affected the Xbox360_XEX
     parser; WiiSave, WiiWAD, and CIAReader were not affected.
+  * MegaDrive: Fixed an off-by-one error that caused Mega CD disc images
+    to be detected as Mega Drive ROM images.
 
 ## v1.3.3 (released 2018/08/25)
 
