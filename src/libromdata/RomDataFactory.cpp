@@ -68,6 +68,7 @@ using std::vector;
 
 // Special handling for Xbox discs.
 #include "iso_structs.h"
+#include "Console/xdvdfs_structs.h"
 #include "Console/XboxDisc.hpp"
 
 // RomData subclasses: Handhelds
@@ -458,8 +459,25 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 	// Try various game disc file systems.
 
 	// Xbox / Xbox 360
-	// TODO: Also check for trimmed XDVDFS. (offset == 0)
-	if (XboxDisc::isRomSupported_static(&pvd) >= 0) {
+	bool mayBeXbox = (XboxDisc::isRomSupported_static(&pvd) >= 0);
+	if (!mayBeXbox) {
+		// This might be an extracted XDVDFS.
+		// Check for the magic number at the base offset.
+		XDVDFS_Header xdvdfsHeader;
+		size = file->seekAndRead(XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE,
+			&xdvdfsHeader, sizeof(xdvdfsHeader));
+		if (size == sizeof(xdvdfsHeader)) {
+			// Check the magic numbers.
+			if (!memcmp(xdvdfsHeader.magic, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic)) &&
+			    !memcmp(xdvdfsHeader.magic_footer, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic_footer)))
+			{
+				// It's a match!
+				mayBeXbox = true;
+			}
+		}
+	}
+
+	if (mayBeXbox) {
 		RomData *const romData = new XboxDisc(file);
 		if (romData->isValid()) {
 			// Got an Xbox disc.

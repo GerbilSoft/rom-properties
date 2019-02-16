@@ -65,9 +65,10 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 		enum DiscType {
 			DISC_UNKNOWN = -1,	// Unknown disc type.
 
-			DISC_TYPE_XGD1	= 0,	// XGD1 (Original Xbox)
-			DISC_TYPE_XGD2	= 1,	// XGD2 (Xbox 360)
-			DISC_TYPE_XGD3	= 2,	// XGD3 (Xbox 360)
+			DISC_TYPE_EXTRACTED	= 0,	// Extracted XDVDFS
+			DISC_TYPE_XGD1		= 1,	// XGD1 (Original Xbox)
+			DISC_TYPE_XGD2		= 2,	// XGD2 (Xbox 360)
+			DISC_TYPE_XGD3		= 3,	// XGD3 (Xbox 360)
 		};
 		int discType;
 		uint8_t wave;
@@ -146,10 +147,9 @@ XboxDisc::XboxDisc(IRpFile *file)
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			break;
 		default:
-			// Not supported.
-			d->file->unref();
-			d->file = nullptr;
-			return;
+			// This might be an extracted XDVDFS.
+			d->xdvdfs_addr = 0;
+			break;
 	}
 
 	// Read the XDVDFS header.
@@ -171,6 +171,12 @@ XboxDisc::XboxDisc(IRpFile *file)
 		d->file->unref();
 		d->file = nullptr;
 		return;
+	}
+
+	// Magic strings are correct.
+	if (d->discType <= XboxDiscPrivate::DISC_UNKNOWN) {
+		// This is an extracted XDVDFS.
+		d->discType = XboxDiscPrivate::DISC_TYPE_EXTRACTED;
 	}
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
@@ -416,6 +422,10 @@ int XboxDisc::loadFieldData(void)
 	const char *const s_disc_type = C_("XboxDisc", "Disc Type");
 	// NOTE: Not translating "Xbox Game Disc".
 	switch (d->discType) {
+		case XboxDiscPrivate::DISC_TYPE_EXTRACTED:
+			d->fields->addField_string(s_disc_type,
+				C_("XboxDisc", "Extracted XDVDFS"));
+			break;
 		case XboxDiscPrivate::DISC_TYPE_XGD1:
 			d->fields->addField_string(s_disc_type, "Xbox Game Disc 1");
 			break;
@@ -447,13 +457,15 @@ int XboxDisc::loadFieldData(void)
 	// TODO: Get the XBE and/or XEX.
 
 	// ISO object for ISO-9660 PVD
-	ISO *const isoData = new ISO(d->file);
-	if (isoData->isOpen()) {
-		// Add the fields.
-		d->fields->addFields_romFields(isoData->fields(),
-			RomFields::TabOffset_AddTabs);
+	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD1) {
+		ISO *const isoData = new ISO(d->file);
+		if (isoData->isOpen()) {
+			// Add the fields.
+			d->fields->addFields_romFields(isoData->fields(),
+				RomFields::TabOffset_AddTabs);
+		}
+		isoData->unref();
 	}
-	isoData->unref();
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
