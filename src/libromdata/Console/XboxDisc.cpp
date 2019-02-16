@@ -32,6 +32,9 @@
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
+// Other RomData subclasses
+#include "Other/ISO.hpp"
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
@@ -391,6 +394,11 @@ int XboxDisc::loadFieldData(void)
 	// XDVDFS header.
 	const XDVDFS_Header *const xdvdfsHeader = &d->xdvdfsHeader;
 	d->fields->reserve(1);	// Maximum of 1 field.
+	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
+		d->fields->setTabName(0, "Xbox 360");
+	} else {
+		d->fields->setTabName(0, "Xbox");
+	}
 
 	// Timestamp
 	// NOTE: Timestamp is stored in Windows FILETIME format,
@@ -405,6 +413,15 @@ int XboxDisc::loadFieldData(void)
 		RomFields::RFT_DATETIME_HAS_TIME);
 
 	// TODO: Get the XBE and/or XEX.
+
+	// ISO object for ISO-9660 PVD
+	ISO *const isoData = new ISO(d->file);
+	if (isoData->isOpen()) {
+		// Add the fields.
+		d->fields->addFields_romFields(isoData->fields(),
+			RomFields::TabOffset_AddTabs);
+	}
+	isoData->unref();
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
