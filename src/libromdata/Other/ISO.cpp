@@ -58,6 +58,14 @@ class ISOPrivate : public LibRpBase::RomDataPrivate
 	public:
 		// ISO primary volume descriptor.
 		ISO_Primary_Volume_Descriptor pvd;
+
+	public:
+		/**
+		 * Convert an ISO PVD timestamp to UNIX time.
+		 * @param pvd_time PVD timestamp
+		 * @return UNIX time, or -1 if invalid or not set.
+		 */
+		static time_t pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time);
 };
 
 /** ISOPrivate **/
@@ -67,6 +75,71 @@ ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
 {
 	// Clear the disc header structs.
 	memset(&pvd, 0, sizeof(pvd));
+}
+
+/**
+ * Convert an ISO PVD timestamp to UNIX time.
+ * @param pvd_time PVD timestamp
+ * @return UNIX time, or -1 if invalid or not set.
+ */
+time_t ISOPrivate::pvd_time_to_unix_time(const ISO_PVD_DateTime_t *pvd_time)
+{
+	assert(pvd_time != nullptr);
+
+	// PVD time is in ASCII format:
+	// YYYYMMDDHHmmssccz
+	// - YYYY: Year
+	// - MM: Month
+	// - DD: Day
+	// - HH: Hour
+	// - mm: Minute
+	// - ss: Second
+	// - cc: Centisecond (not supported in UNIX time)
+	// - z: (int8) Timezone offset in 15min intervals: [0, 100] -> [-48, 52]
+	//   - -48: GMT-1200
+	//   -  52: GMT+1300
+
+	// NOTE: pvd_time is NOT null-terminated, so we need to
+	// copy it to a temporary buffer.
+	char buf[17];
+	memcpy(buf, pvd_time->full, 16);
+	buf[16] = '\0';
+
+	struct tm pvdtime;
+	int csec;
+	int ret = sscanf(buf, "%04d%02d%02d%02d%02d%02d%02d",
+		&pvdtime.tm_year, &pvdtime.tm_mon, &pvdtime.tm_mday,
+		&pvdtime.tm_hour, &pvdtime.tm_min, &pvdtime.tm_sec, &csec);
+	if (ret != 7) {
+		// Some argument wasn't parsed correctly.
+		return -1;
+	}
+
+	// If year is 0, the entry is probably all zeroes.
+	if (pvdtime.tm_year == 0) {
+		return -1;
+	}
+
+	// Adjust values for struct tm.
+	pvdtime.tm_year -= 1900;	// struct tm: year - 1900
+	pvdtime.tm_mon--;		// struct tm: 0-11
+
+	// tm_wday and tm_yday are output variables.
+	pvdtime.tm_wday = 0;
+	pvdtime.tm_yday = 0;
+	pvdtime.tm_isdst = 0;
+
+	// If conversion fails, this will return -1.
+	time_t unixtime = timegm(&pvdtime);
+	if (unixtime == -1)
+		return -1;
+
+	// Convert to UTC using the timezone offset.
+	// NOTE: Timezone offset is negative for west of GMT,
+	// so we need to subtract it from the UNIX timestamp.
+	// TODO: Return the timezone offset separately.
+	unixtime -= (static_cast<int>(pvd_time->tz_offset) * (15*60));
+	return unixtime;
 }
 
 /** ISO **/
@@ -324,7 +397,33 @@ int ISO::loadFieldData(void)
 		latin1_to_utf8(pvd->bibliographic_file, sizeof(pvd->bibliographic_file)),
 		RomFields::STRF_TRIM_END);
 
-	// TODO: Timestamps.
+	/** Timestamps **/
+	// TODO: Show the original timezone?
+	// For now, converting to UTC and showing as local time.
+
+	// Volume creation time
+	d->fields->addField_dateTime(C_("ISO", "Creation Time"),
+		d->pvd_time_to_unix_time(&pvd->btime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
+
+	// Volume modification time
+	d->fields->addField_dateTime(C_("ISO", "Modification Time"),
+		d->pvd_time_to_unix_time(&pvd->mtime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
+
+	// Volume expiration time
+	d->fields->addField_dateTime(C_("ISO", "Expiration Time"),
+		d->pvd_time_to_unix_time(&pvd->exptime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
+
+	// Volume effective time
+	d->fields->addField_dateTime(C_("ISO", "Effective Time"),
+		d->pvd_time_to_unix_time(&pvd->efftime),
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

@@ -109,9 +109,8 @@ typedef struct PACKED _ISO_PVD_DateTime_t {
 	};
 
 	// Timezone offset, in 15-minute intervals.
-	//   0 == interval -48 (GMT-1200)
-	// 100 == interval  52 (GMT+1300)
-	uint8_t tz_offset;
+	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
+	int8_t tz_offset;
 } ISO_PVD_DateTime_t;
 ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
 
