@@ -1572,7 +1572,7 @@ int Xbox360_XEX::loadFieldData(void)
 	const EXE *const pe_exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
 	if (pe_exe && pe_exe->isOpen()) {
 		// Add the fields.
-		d->fields->addFields_romFields(pe_exe->fields(), -2);
+		d->fields->addFields_romFields(pe_exe->fields(), RomFields::TabOffset_AddTabs);
 	}
 
 	// Can we get the XDBF section?
