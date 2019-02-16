@@ -658,8 +658,7 @@ int Dreamcast::loadFieldData(void)
 	// Dreamcast disc header.
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
 	d->fields->reserve(12);	// Maximum of 12 fields.
-
-	d->fields->setTabName(0, "Dreamcast");
+	d->fields->setTabName(0, C_("Dreamcast", "Dreamcast"));
 
 	// Title. (TODO: Encoding?)
 	d->fields->addField_string(C_("RomData", "Title"),

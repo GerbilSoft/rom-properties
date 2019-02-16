@@ -32,8 +32,11 @@
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
-// CD-ROM reader.
+// CD-ROM reader
 #include "disc/Cdrom2352Reader.hpp"
+
+// Other RomData subclasses
+#include "Other/ISO.hpp"
 
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
@@ -545,6 +548,7 @@ int SegaSaturn::loadFieldData(void)
 	// Sega Saturn disc header.
 	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
 	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->setTabName(0, C_("SegaSaturn", "Saturn"));
 
 	// Title. (TODO: Encoding?)
 	d->fields->addField_string(C_("RomData", "Title"),
@@ -625,6 +629,17 @@ int SegaSaturn::loadFieldData(void)
 	uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
 	d->fields->addField_bitfield(C_("SegaSaturn", "Peripherals"),
 		v_peripherals_bitfield_names, 3, peripherals);
+
+	// Try to open the ISO-9660 object.
+	// NOTE: Only done here because the ISO-9660 fields
+	// are used for field info only.
+	ISO *const isoData = new ISO(d->file);
+	if (isoData->isOpen()) {
+		// Add the fields.
+		d->fields->addFields_romFields(isoData->fields(),
+			RomFields::TabOffset_AddTabs);
+	}
+	isoData->unref();
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());

@@ -259,7 +259,7 @@ int ISO::loadFieldData(void)
 	// TODO: ascii_to_utf8()?
 
 	// ISO-9660 PVD
-	d->fields->setTabName(0, "ISO-9660 PVD");
+	d->fields->setTabName(0, C_("ISO", "ISO-9660 PVD"));
 
 	// System ID
 	d->fields->addField_string(C_("ISO", "System ID"),

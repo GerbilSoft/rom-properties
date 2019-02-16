@@ -36,6 +36,9 @@
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
+// Other RomData subclasses
+#include "Other/ISO.hpp"
+
 // C includes.
 #include <stdlib.h>
 
@@ -982,6 +985,19 @@ int MegaDrive::loadFieldData(void)
 				d->addFields_romHeader(lockon_header);
 			}
 		}
+	}
+
+	// Try to open the ISO-9660 object.
+	// NOTE: Only done here because the ISO-9660 fields
+	// are used for field info only.
+	if (d->isDisc()) {
+		ISO *const isoData = new ISO(d->file);
+		if (isoData->isOpen()) {
+			// Add the fields.
+			d->fields->addFields_romFields(isoData->fields(),
+				RomFields::TabOffset_AddTabs);
+		}
+		isoData->unref();
 	}
 
 	// Finished reading the field data.
