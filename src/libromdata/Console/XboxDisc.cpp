@@ -108,6 +108,25 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 		 * @return RomData* on success; nullptr on error.
 		 */
 		RomData *openDefaultExe(int *pExeType = nullptr);
+
+		enum ConsoleType {
+			CONSOLE_TYPE_UNKNOWN	= -1,
+
+			CONSOLE_TYPE_XBOX	= 0,	// Xbox
+			CONSOLE_TYPE_XBOX_360	= 1,	// Xbox 360
+
+			CONSOLE_TYPE_MAX
+		};
+
+		/**
+		 * Get the console type.
+		 *
+		 * This is based on the EXE type, or disc type
+		 * if the EXE cannot be loaded for some reason.
+		 *
+		 * @return Console type.
+		 */
+		ConsoleType getConsoleType(void) const;
 };
 
 /** XboxDiscPrivate **/
@@ -196,6 +215,41 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 
 	// Unable to open the default executable.
 	return nullptr;
+}
+
+/**
+ * Get the console type.
+ *
+ * This is based on the EXE type, or disc type
+ * if the EXE cannot be loaded for some reason.
+ *
+ * @return Console type.
+ */
+XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
+{
+	// Check for the default executable.
+	int exeType;
+	RomData *const defaultExeData = const_cast<XboxDiscPrivate*>(this)->openDefaultExe(&exeType);
+	if (defaultExeData) {
+		// Default executable loaded.
+		switch (exeType) {
+			case EXE_TYPE_XBE:
+				return CONSOLE_TYPE_XBOX;
+			case EXE_TYPE_XEX:
+				return CONSOLE_TYPE_XBOX_360;
+			default:
+				break;
+		}
+	}
+
+	// Unable to load the EXE.
+	// Use the disc type.
+	if (discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
+		return CONSOLE_TYPE_XBOX_360;
+	}
+
+	// Assume Xbox for XGD1 and extracted XDVDFS.
+	return CONSOLE_TYPE_XBOX;
 }
 
 /** XboxDisc **/
@@ -450,19 +504,22 @@ const char *XboxDisc::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"XboxDisc::systemName() array index optimization needs to be updated.");
 
-	// TODO: Check for default.xbe and/or default.xex
-	// to determine if it's Xbox or Xbox 360.
-	// For now, assuming >=XGD2 is 360.
-	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
-		static const char *const sysNames_X360[4] = {
-			"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
-		};
-		return sysNames_X360[type & SYSNAME_TYPE_MASK];
-	} else {
-		static const char *const sysNames_Xbox[4] = {
-			"Microsoft Xbox", "Xbox", "Xbox", nullptr
-		};
-		return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
+	XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
+	switch (consoleType) {
+		default:
+		case XboxDiscPrivate::CONSOLE_TYPE_XBOX: {
+			static const char *const sysNames_Xbox[4] = {
+				"Microsoft Xbox", "Xbox", "Xbox", nullptr
+			};
+			return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
+		}
+
+		case XboxDiscPrivate::CONSOLE_TYPE_XBOX_360: {
+			static const char *const sysNames_X360[4] = {
+				"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
+			};
+			return sysNames_X360[type & SYSNAME_TYPE_MASK];
+		}
 	}
 
 	// Should not get here...
@@ -599,12 +656,20 @@ int XboxDisc::loadFieldData(void)
 		return 0;
 	}
 	d->fields->reserve(3);	// Maximum of 3 fields.
-	// TODO: Check for default.xbe and/or default.xex.
-	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
-		d->fields->setTabName(0, "Xbox 360");
-	} else {
-		d->fields->setTabName(0, "Xbox");
+
+	// Get the console name.
+	XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
+	const char *s_tab_name;
+	switch (consoleType) {
+		default:
+		case XboxDiscPrivate::CONSOLE_TYPE_XBOX:
+			s_tab_name = "Xbox";
+			break;
+		case XboxDiscPrivate::CONSOLE_TYPE_XBOX_360:
+			s_tab_name = "Xbox 360";
+			break;
 	}
+	d->fields->setTabName(0, s_tab_name);
 
 	// Disc type
 	const char *const s_disc_type = C_("XboxDisc", "Disc Type");
