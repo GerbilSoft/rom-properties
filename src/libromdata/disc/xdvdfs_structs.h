@@ -74,8 +74,10 @@ ASSERT_STRUCT(XDVDFS_Header, XDVDFS_BLOCK_SIZE);
  * If the filename does not end on a DWORD boundary, it is
  * padded using 0xFF.
  *
+ * Subtree offsets are relative to the start of the directory.
+ *
  * If left_offset or right_offset are 0, those subtrees don't exist.
- * If left_Offset or right_offset are 0xFFFF, we've probably reached
+ * If left_offset or right_offset are 0xFFFF, we've probably reached
  * the end of the directory.
  *
  * All fields are in little-endian.

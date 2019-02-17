@@ -39,6 +39,7 @@ using namespace LibRpBase;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
+#include "Xbox360_XEX.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -75,6 +76,8 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 			DISC_TYPE_XGD1		= 1,	// XGD1 (Original Xbox)
 			DISC_TYPE_XGD2		= 2,	// XGD2 (Xbox 360)
 			DISC_TYPE_XGD3		= 3,	// XGD3 (Xbox 360)
+
+			DISC_TYPE_MAX
 		};
 		int discType;
 		uint8_t wave;
@@ -85,6 +88,26 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 		// XDVDFSPartition
 		DiscReader *discReader;
 		XDVDFSPartition *xdvdfsPartition;
+
+		// default.xbe / default.xex
+		RomData *defaultExeData;
+
+		enum ExeType {
+			EXE_TYPE_UNKNOWN	= -1,
+
+			EXE_TYPE_XBE		= 0,	// Xbox XBE
+			EXE_TYPE_XEX		= 1,	// Xbox 360 XEX
+
+			EXE_TYPE_MAX
+		};
+		int exeType;
+
+		/**
+		 * Open default.xbe / default.xex.
+		 * @param pExeType	[out] EXE type.
+		 * @return RomData* on success; nullptr on error.
+		 */
+		RomData *openDefaultExe(int *pExeType = nullptr);
 };
 
 /** XboxDiscPrivate **/
@@ -96,13 +119,83 @@ XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 	, xdvdfs_addr(0)
 	, discReader(nullptr)
 	, xdvdfsPartition(nullptr)
+	, defaultExeData(nullptr)
+	, exeType(EXE_TYPE_UNKNOWN)
 {
 }
 
 XboxDiscPrivate::~XboxDiscPrivate()
 {
+	if (defaultExeData) {
+		defaultExeData->unref();
+	}
 	delete xdvdfsPartition;
 	delete discReader;
+}
+
+/**
+ * Open default.xbe / default.xex.
+ * @param pExeType	[out] EXE type.
+ * @return RomData* on success; nullptr on error.
+ */
+RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
+{
+	if (defaultExeData) {
+		// default.xbe / default.xex is already open.
+		if (pExeType) {
+			*pExeType = exeType;
+		}
+		return defaultExeData;
+	}
+
+	if (!xdvdfsPartition || !xdvdfsPartition->isOpen()) {
+		// XDVDFS partition is not open.
+		return nullptr;
+	}
+
+	// Try to open default.xex.
+	IRpFile *f_defaultExe = xdvdfsPartition->open("/default.xex");
+	if (f_defaultExe) {
+		RomData *const xexData = new Xbox360_XEX(f_defaultExe);
+		f_defaultExe->unref();
+		if (xexData->isValid()) {
+			// default.xex is open and valid.
+			defaultExeData = xexData;
+			exeType = EXE_TYPE_XEX;
+			if (pExeType) {
+				*pExeType = EXE_TYPE_XEX;
+			}
+			return xexData;
+		}
+	}
+
+	// Try to open default.xbe.
+	// TODO: What about discs that have both?
+	f_defaultExe = xdvdfsPartition->open("/default.xbe");
+	if (f_defaultExe) {
+		// TODO: XboxXBE
+#if 0
+		RomData *const xbeData = new XboxXBE(f_defaultExe);
+		f_defaultExe->unref();
+		if (xbeData->isValid()) {
+			// default.xex is open and valid.
+			defaultExeData = xbeData;
+			exeType = EXE_TYPE_XBE;
+			if (pExeType) {
+				*pExeType = EXE_TYPE_XBE;
+			}
+			return xbeData;
+		}
+#endif
+		f_defaultExe->unref();
+		exeType = EXE_TYPE_XBE;
+		if (pExeType) {
+			*pExeType = EXE_TYPE_XBE;
+		}
+	}
+
+	// Unable to open the default executable.
+	return nullptr;
 }
 
 /** XboxDisc **/
@@ -198,6 +291,12 @@ XboxDisc::XboxDisc(IRpFile *file)
 void XboxDisc::close(void)
 {
 	RP_D(XboxDisc);
+
+	if (d->defaultExeData) {
+		d->defaultExeData->unref();
+		d->defaultExeData = nullptr;
+	}
+
 	delete d->xdvdfsPartition;
 	delete d->discReader;
 	d->xdvdfsPartition = nullptr;
@@ -443,7 +542,7 @@ int XboxDisc::loadFieldData(void)
 		// XDVDFS partition isn't open.
 		return 0;
 	}
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields->reserve(3);	// Maximum of 3 fields.
 	// TODO: Check for default.xbe and/or default.xex.
 	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
 		d->fields->setTabName(0, "Xbox 360");
@@ -476,12 +575,44 @@ int XboxDisc::loadFieldData(void)
 	}
 
 	// Timestamp
-	d->fields->addField_dateTime(C_("XboxDisc", "Timestamp"),
+	d->fields->addField_dateTime(C_("XboxDisc", "Disc Timestamp"),
 		xdvdfsPartition->xdvdfsTimestamp(),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
 
-	// TODO: Get the XBE and/or XEX.
+	// Do we have an XBE or XEX?
+	// If so, add it to the current tab.
+	int exeType;
+	RomData *const defaultExeData = d->openDefaultExe(&exeType);
+	if (defaultExeData) {
+		// Boot filename.
+		const char *s_boot_filename;
+		switch (exeType) {
+			case XboxDiscPrivate::EXE_TYPE_XBE:
+				s_boot_filename = "default.xbe";
+				break;
+			case XboxDiscPrivate::EXE_TYPE_XEX:
+				s_boot_filename = "default.xex";
+				break;
+			default:
+				s_boot_filename = nullptr;
+				break;
+		}
+		d->fields->addField_string(C_("XboxDisc", "Boot Filename"),
+			(s_boot_filename ? s_boot_filename : C_("RomData", "Unknown")));
+
+		// Add the fields.
+		// NOTE: Adding tabs manually so we can show the disc info in
+		// the primary tab.
+		const RomFields *const exeFields = defaultExeData->fields();
+		int exeTabCount = exeFields->tabCount();
+		for (int i = 1; i < exeTabCount; i++) {
+			d->fields->setTabName(i, exeFields->tabName(i));
+		}
+		d->fields->setTabIndex(0);
+		d->fields->addFields_romFields(exeFields, 0);
+		d->fields->setTabIndex(exeTabCount - 1);
+	}
 
 	// ISO object for ISO-9660 PVD
 	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD1) {

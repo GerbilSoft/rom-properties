@@ -75,6 +75,15 @@ class XDVDFSPartitionPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadRootDirectory(void);
+
+		/**
+		 * XDVDFS strcasecmp() implementation.
+		 * Uses generic ASCII handling instead of locale-specific case folding.
+		 * @param s1 String 1
+		 * @param s2 String 2
+		 * @return 0 (==), negative (<), or positive (>).
+		 */
+		static int xdvdfs_strcasecmp(const char *s1, const char *s2);
 };
 
 /** XDVDFSPartitionPrivate **/
@@ -128,6 +137,34 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q, IDiscReader *
 
 XDVDFSPartitionPrivate::~XDVDFSPartitionPrivate()
 { }
+
+/**
+ * XDVDFS strcasecmp() implementation.
+ * Uses generic ASCII handling instead of locale-specific case folding.
+ * @param s1 String 1
+ * @param s2 String 2
+ * @return 0 (==), negative (<), or positive (>).
+ */
+int XDVDFSPartitionPrivate::xdvdfs_strcasecmp(const char *s1, const char *s2)
+{
+	// Reference: https://github.com/XboxDev/extract-xiso/blob/master/extract-xiso.c
+	// av1_compare_key()
+	while (true) {
+		char a = *s1++;
+		char b = *s2++;
+
+		// Convert to uppercase.
+		if (a >= 'a' && a <= 'z') a &= ~0x20;
+		if (b >= 'a' && b <= 'z') b &= ~0x20;
+
+		if (a) {
+			if (b) {
+				if (a < b) return -1;
+				if (a > b) return 1;
+			} else return 1;
+		} else return (b ? -1 : 0);
+	}
+}
 
 /**
  * Load the root directory.
@@ -424,10 +461,11 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 
 	// Find the file in the root directory.
 	// NOTE: Filenames are case-insensitive.
-	const unsigned int filename_len = static_cast<unsigned int>(s_filename.size());
 	const XDVDFS_DirEntry *dirEntry_found = nullptr;
-	const uint8_t *p = d->rootDir_data.data();
-	const uint8_t *const p_end = p + d->rootDir_data.size();
+	const uint8_t *const p_start = d->rootDir_data.data();
+	const uint8_t *const p_end = p_start + d->rootDir_data.size();
+	const uint8_t *p = p_start;
+	string s_entry_filename;	// Temporary for NULL termination.
 	while (p < p_end) {
 		const XDVDFS_DirEntry *dirEntry = reinterpret_cast<const XDVDFS_DirEntry*>(p);
 		const char *entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
@@ -436,10 +474,14 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 			break;
 		}
 
+		// NOTE: Filename might not be NULL-terminated.
+		// Temporarily cache the filename.
+		s_entry_filename.assign(entry_filename, dirEntry->name_length);
+
 		// Check the filename.
 		// TODO: Use non-locale-specific case-insensitive check? (only letters)
 		uint16_t subtree_offset = 0;
-		int cmp = strncasecmp(entry_filename, s_filename.c_str(), filename_len);
+		int cmp = d->xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
 		if (cmp == 0) {
 			// Found it!
 			dirEntry_found = dirEntry;
@@ -455,7 +497,7 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 			// End of directory.
 			break;
 		}
-		p += (subtree_offset * sizeof(uint32_t));
+		p = p_start + (subtree_offset * sizeof(uint32_t));
 	}
 
 	if (!dirEntry_found) {
