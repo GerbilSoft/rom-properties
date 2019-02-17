@@ -1208,8 +1208,9 @@ const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
 uint32_t Xbox360_XEX::supportedImageTypes(void) const
 {
 	RP_D(const Xbox360_XEX);
-	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
-		return d->pe_xdbf->supportedImageTypes();
+	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
+	if (pe_xdbf) {
+		return pe_xdbf->supportedImageTypes();
 	}
 
 	return 0;
@@ -1225,10 +1226,11 @@ vector<RomData::ImageSizeDef> Xbox360_XEX::supportedImageSizes(ImageType imageTy
 	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const Xbox360_XEX);
-	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
-		return d->pe_xdbf->supportedImageSizes(imageType);
+	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
+	if (pe_xdbf) {
+		return pe_xdbf->supportedImageSizes(imageType);
 	}
-	
+
 	return vector<ImageSizeDef>();
 }
 
@@ -1246,8 +1248,9 @@ uint32_t Xbox360_XEX::imgpf(ImageType imageType) const
 	ASSERT_imgpf(imageType);
 
 	RP_D(const Xbox360_XEX);
-	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
-		return d->pe_xdbf->imgpf(imageType);
+	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
+	if (pe_xdbf) {
+		return pe_xdbf->imgpf(imageType);
 	}
 
 	return 0;
@@ -1286,9 +1289,9 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->setTabName(0, "XEX");
 
 	// Game name.
-	const Xbox360_XDBF *const xdbf = d->initXDBF();
-	if (xdbf) {
-		string title = xdbf->getGameTitle();
+	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
+	if (pe_xdbf) {
+		string title = pe_xdbf->getGameTitle();
 		if (!title.empty()) {
 			d->fields->addField_string(C_("RomData", "Title"), title);
 		}
@@ -1545,14 +1548,13 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Can we get the EXE section?
 	const EXE *const pe_exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
-	if (pe_exe && pe_exe->isOpen()) {
+	if (pe_exe) {
 		// Add the fields.
 		d->fields->addFields_romFields(pe_exe->fields(), RomFields::TabOffset_AddTabs);
 	}
 
 	// Can we get the XDBF section?
-	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
-	if (pe_xdbf && pe_xdbf->isOpen()) {
+	if (pe_xdbf) {
 		// Add the fields.
 		d->fields->addFields_romFields(pe_xdbf->fields(), RomFields::TabOffset_AddTabs);
 	}
@@ -1613,10 +1615,9 @@ int Xbox360_XEX::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Xbox360_XEX);
-
-	// FIXME: Load the PE section if it isn't already loaded.
-	if (d->pe_xdbf) {
-		return d->pe_xdbf->loadInternalImage(imageType, pImage);
+	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
+	if (pe_xdbf) {
+		return const_cast<Xbox360_XDBF*>(pe_xdbf)->loadInternalImage(imageType, pImage);
 	}
 
 	return -ENOENT;
