@@ -518,6 +518,61 @@ const char *const *XboxDisc::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t XboxDisc::supportedImageTypes(void) const
+{
+	RP_D(const XboxDisc);
+	RomData *const defaultExeData = const_cast<XboxDiscPrivate*>(d)->openDefaultExe();
+	if (defaultExeData) {
+		return defaultExeData->supportedImageTypes();
+	}
+
+	return 0;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> XboxDisc::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	RP_D(const XboxDisc);
+	RomData *const defaultExeData = const_cast<XboxDiscPrivate*>(d)->openDefaultExe();
+	if (defaultExeData) {
+		return defaultExeData->supportedImageSizes(imageType);
+	}
+	
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t XboxDisc::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	RP_D(const XboxDisc);
+	RomData *const defaultExeData = const_cast<XboxDiscPrivate*>(d)->openDefaultExe();
+	if (defaultExeData) {
+		return defaultExeData->imgpf(imageType);
+	}
+
+	return 0;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -627,6 +682,26 @@ int XboxDisc::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XboxDisc::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+
+	RP_D(XboxDisc);
+	const RomData *const defaultExeData = d->openDefaultExe();
+	if (defaultExeData) {
+		return const_cast<RomData*>(defaultExeData)->loadInternalImage(imageType, pImage);
+	}
+
+	return -ENOENT;
 }
 
 }

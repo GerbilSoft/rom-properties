@@ -349,7 +349,8 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// NOTE: This might include some console-specific disc images
 	// that don't have an identifying boot sector at 0x0000.
 	// NOTE: Keeping the same address, since ISO only checks the file extension.
-	GetRomDataFns_addr(ISO, ATTR_CHECK_ISO, 0x40000, 0x20),
+	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
+	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_CHECK_ISO, 0x40000, 0x20),
 
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
