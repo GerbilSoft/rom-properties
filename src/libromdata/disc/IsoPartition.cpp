@@ -93,7 +93,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	memset(&pvd, 0, sizeof(pvd));
 
 	if (!discReader->isOpen()) {
-		q->m_lastError = discReader->lastError();
+		this->discReader = nullptr;
 		return;
 	}
 
@@ -106,7 +106,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	size_t size = discReader->seekAndRead(partition_offset + 0x8000, &pvd, sizeof(pvd));
 	if (size != sizeof(pvd)) {
 		// Seek and/or read error.
-		memset(&pvd, 0, sizeof(pvd));
+		this->discReader = nullptr;
 		return;
 	}
 
@@ -116,7 +116,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	    memcmp(pvd.header.identifier, ISO_VD_MAGIC, sizeof(pvd.header.identifier)) != 0)
 	{
 		// Invalid volume descriptor.
-		memset(&pvd, 0, sizeof(pvd));
+		this->discReader = nullptr;
 		return;
 	}
 
@@ -137,6 +137,10 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 	if (unlikely(!rootDir_data.empty())) {
 		// Root directory is already loaded.
 		return 0;
+	} else if (unlikely(!this->discReader)) {
+		// DiscReader isn't open.
+		q->m_lastError = EIO;
+		return -q->m_lastError;
 	} else if (unlikely(pvd.header.type != ISO_VDT_PRIMARY)) {
 		// PVD isn't loaded.
 		q->m_lastError = EIO;
@@ -207,7 +211,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
  *
  * @param discReader IDiscReader.
  * @param partition_offset Partition start offset.
- * @@param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
+ * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
  */
 IsoPartition::IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset)
 	: d_ptr(new IsoPartitionPrivate(this, discReader, partition_offset, iso_start_offset))
@@ -407,6 +411,14 @@ int IsoPartition::closedir(IFst::Dir *dirp)
  */
 IRpFile *IsoPartition::open(const char *filename)
 {
+	RP_D(IsoPartition);
+	assert(d->discReader != nullptr);
+	assert(d->discReader->isOpen());
+	if (!d->discReader ||  !d->discReader->isOpen()) {
+		m_lastError = EBADF;
+		return nullptr;
+	}
+
 	// TODO: File reference counter.
 	// This might be difficult to do because PartitionFile is a separate class.
 
@@ -431,7 +443,6 @@ IRpFile *IsoPartition::open(const char *filename)
 	// Assuming cp1252...
 	string s_filename = utf8_to_cp1252(filename, -1);
 
-	RP_D(IsoPartition);
 	if (d->rootDir_data.empty()) {
 		// Root directory isn't loaded.
 		if (d->loadRootDirectory() != 0) {

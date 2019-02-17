@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.hpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -22,7 +22,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_ISOPARTITION_HPP__
 
 #include "librpbase/disc/IPartition.hpp"
-#include "librpbase/disc/IFst.hpp"
+//#include "librpbase/disc/IFst.hpp"
 
 namespace LibRpBase {
 	class IRpFile;
@@ -42,7 +42,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 *
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
-		 * @@param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
+		 * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
 		 */
 		IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset = -1);
 		virtual ~IsoPartition();
