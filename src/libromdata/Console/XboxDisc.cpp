@@ -22,7 +22,8 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "../iso_structs.h"
-#include "xdvdfs_structs.h"
+#include "../disc/xdvdfs_structs.h"
+#include "../disc/XDVDFSPartition.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -31,6 +32,10 @@
 #include "librpbase/file/IRpFile.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// XDVDFSPartition
+#include "librpbase/disc/DiscReader.hpp"
+#include "../disc/XDVDFSPartition.hpp"
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
@@ -55,6 +60,7 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
 		XboxDiscPrivate(XboxDisc *q, LibRpBase::IRpFile *file);
+		virtual ~XboxDiscPrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -76,9 +82,9 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 		// XDVDFS starting address.
 		int64_t xdvdfs_addr;
 
-		// XDVDFS header.
-		// All fields are byteswapped in the constructor.
-		XDVDFS_Header xdvdfsHeader;
+		// XDVDFSPartition
+		DiscReader *discReader;
+		XDVDFSPartition *xdvdfsPartition;
 };
 
 /** XboxDiscPrivate **/
@@ -88,9 +94,15 @@ XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 	, discType(DISC_UNKNOWN)
 	, wave(0)
 	, xdvdfs_addr(0)
+	, discReader(nullptr)
+	, xdvdfsPartition(nullptr)
 {
-	// Clear the various headers.
-	memset(&xdvdfsHeader, 0, sizeof(xdvdfsHeader));
+}
+
+XboxDiscPrivate::~XboxDiscPrivate()
+{
+	delete xdvdfsPartition;
+	delete discReader;
 }
 
 /** XboxDisc **/
@@ -152,42 +164,47 @@ XboxDisc::XboxDisc(IRpFile *file)
 			break;
 	}
 
-	// Read the XDVDFS header.
-	size = d->file->seekAndRead(
-		d->xdvdfs_addr + (XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE),
-		&d->xdvdfsHeader, sizeof(d->xdvdfsHeader));
-	if (size != sizeof(d->xdvdfsHeader)) {
-		// Seek and/or read error.
-		d->file->unref();
-		d->file = nullptr;
+	// Create the DiscReader and XDVDFSPartition.
+	d->discReader = new DiscReader(d->file);
+	if (!d->discReader->isOpen()) {
+		// Unable to open the discReader.
+		delete d->discReader;
+		d->discReader = nullptr;
+		return;
+	}
+	d->xdvdfsPartition = new XDVDFSPartition(d->discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
+	if (!d->xdvdfsPartition->isOpen()) {
+		// Unable to open the XDVDFSPartition.
+		delete d->xdvdfsPartition;
+		delete d->discReader;
+		d->xdvdfsPartition = nullptr;
+		d->discReader = nullptr;
 		return;
 	}
 
-	// Verify the magic strings.
-	if (memcmp(d->xdvdfsHeader.magic, XDVDFS_MAGIC, sizeof(d->xdvdfsHeader.magic)) != 0 ||
-	    memcmp(d->xdvdfsHeader.magic_footer, XDVDFS_MAGIC, sizeof(d->xdvdfsHeader.magic_footer)) != 0)
-	{
-		// One or both of the magic strings are incorrect.
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
-
-	// Magic strings are correct.
+	// XDVDFS partition is open.
 	if (d->discType <= XboxDiscPrivate::DISC_UNKNOWN) {
 		// This is an extracted XDVDFS.
 		d->discType = XboxDiscPrivate::DISC_TYPE_EXTRACTED;
 	}
 
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	// Byteswap the fields.
-	d->xdvdfsHeader.root_dir_sector	= le32_to_cpu(d->xdvdfsHeader.root_dir_sector);
-	d->xdvdfsHeader.root_dir_size	= le32_to_cpu(d->xdvdfsHeader.root_dir_size);
-	d->xdvdfsHeader.timestamp	= le64_to_cpu(d->xdvdfsHeader.timestamp);
-#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-
 	// Disc image is ready.
 	d->isValid = true;
+}
+
+/**
+ * Close the opened file.
+ */
+void XboxDisc::close(void)
+{
+	RP_D(XboxDisc);
+	delete d->xdvdfsPartition;
+	delete d->discReader;
+	d->xdvdfsPartition = nullptr;
+	d->discReader = nullptr;
+
+	// Call the superclass function.
+	super::close();
 }
 
 /** ROM detection functions. **/
@@ -420,8 +437,12 @@ int XboxDisc::loadFieldData(void)
 		return -EIO;
 	}
 
-	// XDVDFS header.
-	const XDVDFS_Header *const xdvdfsHeader = &d->xdvdfsHeader;
+	// XDVDFS partition.
+	const XDVDFSPartition *const xdvdfsPartition = d->xdvdfsPartition;
+	if (!xdvdfsPartition) {
+		// XDVDFS partition isn't open.
+		return 0;
+	}
 	d->fields->reserve(2);	// Maximum of 2 fields.
 	// TODO: Check for default.xbe and/or default.xex.
 	if (d->discType >= XboxDiscPrivate::DISC_TYPE_XGD2) {
@@ -455,14 +476,8 @@ int XboxDisc::loadFieldData(void)
 	}
 
 	// Timestamp
-	// NOTE: Timestamp is stored in Windows FILETIME format,
-	// which is 100ns units since 1601/01/01 00:00:00 UTC.
-	// Based on libwin32common/w32time.h.
-#define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
-#define HECTONANOSEC_PER_SEC 10000000LL
-	time_t timestamp = static_cast<time_t>(
-		(xdvdfsHeader->timestamp - FILETIME_1970) / HECTONANOSEC_PER_SEC);
-	d->fields->addField_dateTime(C_("XboxDisc", "Timestamp"), timestamp,
+	d->fields->addField_dateTime(C_("XboxDisc", "Timestamp"),
+		xdvdfsPartition->xdvdfsTimestamp(),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
 

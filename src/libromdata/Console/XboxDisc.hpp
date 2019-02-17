@@ -27,6 +27,7 @@
 namespace LibRomData {
 
 ROMDATA_DECL_BEGIN(XboxDisc)
+ROMDATA_DECL_CLOSE()
 
 	public:
 		/**

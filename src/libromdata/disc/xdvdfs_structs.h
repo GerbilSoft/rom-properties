@@ -24,8 +24,8 @@
 // - https://github.com/multimediamike/xbfuse/blob/master/src/xdvdfs.c
 // - https://www.eurasia.nu/wiki/index.php/XboxFileSystemDetails
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XDVDFS_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XDVDFS_STRUCTS_H__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_XDVDFS_STRUCTS_H__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_XDVDFS_STRUCTS_H__
 
 #include "librpbase/common.h"
 #include "librpbase/byteorder.h"
@@ -108,4 +108,4 @@ typedef enum {
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONSOLE_XDVDFS_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_XDVDFS_STRUCTS_H__ */

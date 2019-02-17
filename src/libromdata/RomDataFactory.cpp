@@ -68,8 +68,8 @@ using std::vector;
 
 // Special handling for Xbox discs.
 #include "iso_structs.h"
-#include "Console/xdvdfs_structs.h"
 #include "Console/XboxDisc.hpp"
+#include "disc/xdvdfs_structs.h"
 
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"

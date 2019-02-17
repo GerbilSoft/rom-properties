@@ -95,6 +95,7 @@ SET(libromdata_SRCS
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
 	disc/WuxReader.cpp
+	disc/XDVDFSPartition.cpp
 
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
@@ -251,6 +252,8 @@ SET(libromdata_H
 	disc/WiiPartition.hpp
 	disc/WuxReader.hpp
 	disc/wux_structs.h
+	disc/XDVDFSPartition.cpp
+	disc/xdvdfs_structs.h
 
 	config/TImageTypesConfig.hpp
 	img/TCreateThumbnail.hpp
