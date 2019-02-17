@@ -510,6 +510,7 @@ const char *const *XboxDisc::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types from FreeDesktop.org..
 		"application/x-iso9660-image",
+		"application/x-cd-image",
 
 		// TODO: XDVDFS?
 		nullptr
@@ -682,6 +683,43 @@ int XboxDisc::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int XboxDisc::loadMetaData(void)
+{
+	RP_D(XboxDisc);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->discType < 0) {
+		// Unknown disc type.
+		return -EIO;
+	}
+
+	// Make sure the default executable is loaded.
+	const RomData *const defaultExeData = d->openDefaultExe();
+	if (!defaultExeData) {
+		// Unable to load the default executable.
+		return 0;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+
+	// Add metadata properties from the default executable.
+	// TODO: Also ISO PVD?
+	d->metaData->addMetaData_metaData(defaultExeData->metaData());
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**

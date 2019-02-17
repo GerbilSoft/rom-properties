@@ -366,6 +366,7 @@ const char *const *ISO::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types from FreeDesktop.org..
 		"application/x-iso9660-image",
+		"application/x-cd-image",
 
 		// TODO: BIN (2352)?
 		nullptr

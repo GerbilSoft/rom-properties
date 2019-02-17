@@ -1578,7 +1578,7 @@ int Xbox360_XEX::loadMetaData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid) {
-		// SMDH file isn't valid.
+		// XEX file isn't valid.
 		return -EIO;
 	}
 
@@ -1593,7 +1593,7 @@ int Xbox360_XEX::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// Title.
+	// Title
 	string title = xdbf->getGameTitle();
 	if (!title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, title);
