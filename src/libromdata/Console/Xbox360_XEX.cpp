@@ -1466,7 +1466,7 @@ int Xbox360_XEX::loadFieldData(void)
 			// Title ID
 			// FIXME: Verify behavior on big-endian.
 			d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-				rp_sprintf_p(C_("Xbox360_XEX", "0x%1$08X (%2$.2s-%3$u)"),
+				rp_sprintf_p(C_("Xbox360_XEX", "0x%1$08X (%2$.2s-%3$04u)"),
 					be32_to_cpu(execution_id.title_id.u32),
 					execution_id.title_id.c,
 					be16_to_cpu(execution_id.title_id.u16)),
