@@ -35,7 +35,7 @@ class RpFilePrivate;
 class RpFile : public IRpFile
 {
 	public:
-		enum FileMode {
+		enum FileMode : uint8_t {
 			FM_READ = 0,		// Read-only.
 			FM_WRITE = 1,		// Read/write.
 			FM_OPEN = 0,		// Open the file. (Must exist!)
@@ -125,7 +125,7 @@ class RpFile : public IRpFile
 		int truncate(int64_t size = 0) final;
 
 	public:
-		/** File properties. **/
+		/** File properties **/
 
 		/**
 		 * Get the file size.
@@ -138,6 +138,15 @@ class RpFile : public IRpFile
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		std::string filename(void) const final;
+
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is this a device file?
+		 * @return True if this is a device file; false if not.
+		 */
+		bool isDevice(void) const final;
 };
 
 }

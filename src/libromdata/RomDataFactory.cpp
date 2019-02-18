@@ -533,11 +533,19 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		return nullptr;
 	}
 
-	// Get the file extension.
+	// File extension.
+	string file_ext;	// temporary storage
 	info.ext = nullptr;
-	const string filename = file->filename();
-	if (!filename.empty()) {
-		info.ext = FileSystem::file_ext(filename);
+	if (file->isDevice()) {
+		// Device file. Assume it's a CD-ROM.
+		info.ext = ".iso";
+	} else {
+		// Get the actual file extension.
+		const string filename = file->filename();
+		if (!filename.empty()) {
+			file_ext = FileSystem::file_ext(filename);
+			info.ext = file_ext.c_str();
+		}
 	}
 
 	// Special handling for Dreamcast .VMI+.VMS pairs.

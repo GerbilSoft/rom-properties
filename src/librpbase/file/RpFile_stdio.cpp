@@ -24,6 +24,9 @@
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 
+// C includes.
+#include <sys/stat.h>
+
 // C includes. (C++ namespace)
 #include <cerrno>
 
@@ -45,11 +48,12 @@ using std::u16string;
 #endif
 
 #ifdef _WIN32
-// Windows: _wfopen() requires a Unicode mode string.
-typedef wchar_t mode_str_t;
-#define _MODE(str) (L ##str)
+// Windows: _tfopen() requires a TCHAR mode string.
+typedef TCHAR mode_str_t;
+#define _MODE(str) _T(##str)
 #include "RpWin32.hpp"
-// Needed for using "\\?\" to bypass MAX_PATH.
+// Needed for using "\\\\?\\" to bypass MAX_PATH.
+using std::string;
 using std::wstring;
 #include "librpbase/ctypex.h"
 // _chsize()
@@ -72,10 +76,12 @@ class RpFilePrivate
 {
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename), mode(mode)
+			: q_ptr(q), file(nullptr), filename(filename)
+			, mode(mode), isDevice(false)
 			, gzfd(nullptr), gzsz(-1) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename), mode(mode)
+			: q_ptr(q), file(nullptr), filename(filename)
+			, mode(mode), isDevice(false)
 			, gzfd(nullptr), gzsz(-1) { }
 		~RpFilePrivate();
 
@@ -87,9 +93,10 @@ class RpFilePrivate
 		FILE *file;		// File pointer.
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
+		bool isDevice;		// Is this a device file?
 
-		gzFile gzfd;			// Used for transparent gzip decompression.
-		int64_t gzsz;			// Uncompressed file size.
+		gzFile gzfd;		// Used for transparent gzip decompression.
+		int64_t gzsz;		// Uncompressed file size.
 
 	public:
 		/**
@@ -157,27 +164,77 @@ int RpFilePrivate::reOpenFile(void)
 
 #ifdef _WIN32
 	// Windows: Use U82W_s() to convert the filename to wchar_t.
+	bool isDevice_tmp;
 
 	// If this is an absolute path, make sure it starts with
 	// "\\?\" in order to support filenames longer than MAX_PATH.
-	wstring filenameW;
+	tstring tfilename;
 	if (filename.size() > 3 &&
-	    ISASCII(d->filename[0]) && ISALPHA(filename[0]) &&
+	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
-		filenameW = L"\\\\?\\";
-		filenameW += U82W_s(filename);
+		tfilename = _T("\\\\?\\");
+		tfilename += U82T_s(filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_s(filename);
+		tfilename = U82T_s(filename);
+	}
+
+	// Validate the file type first.
+	// NOTE: Checking the UTF-8 filename to avoid having to
+	// deal with L"\\\\?\\".
+	if (filename.size() == 3 && ISALPHA(filename[0]) &&
+	    filename[1] == L':' && filename[2] == '\\')
+	{
+		// This is a drive letter.
+		// Only CD-ROM (and similar) drives are supported.
+		// TODO: Verify if opening by drive letter works,
+		// or if we have to resolve the physical device name.
+		// NOTE: filename is UTF-8, but we can use it as if
+		// it's ANSI for a drive letter.
+		const UINT driveType = GetDriveTypeA(filename.c_str());
+		switch (driveType) {
+			case DRIVE_CDROM:
+				// CD-ROM works.
+				break;
+			case DRIVE_UNKNOWN:
+			case DRIVE_NO_ROOT_DIR:
+				// No drive.
+				isDevice = false;
+				q->m_lastError = ENODEV;
+				return -ENODEV;
+			default:
+				// Not a CD-ROM drive.
+				isDevice = false;
+				q->m_lastError = ENOTSUP;
+				return -ENOTSUP;
+		}
+		isDevice_tmp = true;
+	} else {
+		// Make sure this isn't a directory.
+		// TODO: Other checks?
+		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
+		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+			// File cannot be opened.
+			RP_Q(RpFile);
+			q->m_lastError = EIO;
+			return -EIO;
+		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
+			// File is a directory.
+			RP_Q(RpFile);
+			q->m_lastError = EISDIR;
+			return -EISDIR;
+		}
+		isDevice_tmp = false;
 	}
 
 	if (file) {
 		fclose(file);
 	}
-	file = _wfopen(filenameW.c_str(), mode_str);
+	file = _tfopen(tfilename.c_str(), mode_str);
+	isDevice = isDevice_tmp;
 #else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames directly.
 	if (file) {
@@ -195,6 +252,19 @@ int RpFilePrivate::reOpenFile(void)
 		}
 		return q->m_lastError;
 	}
+
+	// Check if this is a device.
+	struct stat sb;
+	int ret = fstat(fileno(file), &sb);
+	if (ret == 0) {
+		// fstat() succeeded.
+		isDevice = (S_ISBLK(sb.st_mode) || S_ISCHR(sb.st_mode));
+	} else {
+		// Unable to fstat().
+		// Assume this is not a device.
+		isDevice = false;
+	}
+
 	return 0;
 }
 
@@ -486,7 +556,7 @@ int RpFile::truncate(int64_t size)
 	return 0;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.
@@ -530,6 +600,18 @@ string RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return d->filename;
+}
+
+/** Device file functions **/
+
+/**
+ * Is this a device file?
+ * @return True if this is a device file; false if not.
+ */
+bool RpFile::isDevice(void) const
+{
+	RP_D(const RpFile);
+	return d->isDevice;
 }
 
 }

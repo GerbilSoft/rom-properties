@@ -79,10 +79,12 @@ class RpFilePrivate
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), gzfd(nullptr), gzsz(0), sector_size(0) { }
+			, mode(mode), isDevice(false)
+			, gzfd(nullptr), gzsz(0), sector_size(0) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), gzfd(nullptr), gzsz(0), sector_size(0) { }
+			, mode(mode), isDevice(false)
+			, gzfd(nullptr), gzsz(0), sector_size(0) { }
 		~RpFilePrivate();
 
 	private:
@@ -93,6 +95,7 @@ class RpFilePrivate
 		HANDLE file;		// File handle.
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
+		bool isDevice;		// Is this a device file?
 
 		// gzip parameters.
 		gzFile gzfd;			// Used for transparent gzip decompression.
@@ -209,14 +212,13 @@ int RpFilePrivate::reOpenFile(void)
 	if (mode_to_win32(mode, &dwDesiredAccess, &dwShareMode, &dwCreationDisposition) != 0) {
 		// Invalid mode.
 		q->m_lastError = EINVAL;
-		return -1;
+		return -EINVAL;
 	}
 
 	// Converted filename for Windows.
 	tstring tfilename;
 
 	// Check if the path starts with a drive letter.
-	bool isBlockDevice = false;
 	if (filename.size() >= 3 &&
 	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
@@ -227,19 +229,34 @@ int RpFilePrivate::reOpenFile(void)
 			// Only CD-ROM (and similar) drives are supported.
 			// TODO: Verify if opening by drive letter works,
 			// or if we have to resolve the physical device name.
-			if (GetDriveType(U82T_s(filename)) != DRIVE_CDROM) {
-				// Not a CD-ROM drive.
-				q->m_lastError = ENOTSUP;
-				return -2;
+			// NOTE: filename is UTF-8, but we can use it as if
+			// it's ANSI for a drive letter.
+			const UINT driveType = GetDriveTypeA(filename.c_str());
+			switch (driveType) {
+				case DRIVE_CDROM:
+					// CD-ROM works.
+					break;
+				case DRIVE_UNKNOWN:
+				case DRIVE_NO_ROOT_DIR:
+					// No drive.
+					isDevice = false;
+					q->m_lastError = ENODEV;
+					return -ENODEV;
+				default:
+					// Not a CD-ROM drive.
+					isDevice = false;
+					q->m_lastError = ENOTSUP;
+					return -ENOTSUP;
 			}
 
 			// Create a raw device filename.
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
 			tfilename = _T("\\\\.\\X:");
 			tfilename[4] = filename[0];
-			isBlockDevice = true;
+			isDevice = true;
 		} else {
 			// Absolute path.
+			isDevice = false;
 #ifdef UNICODE
 			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
@@ -252,13 +269,31 @@ int RpFilePrivate::reOpenFile(void)
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
+		isDevice = false;
 		tfilename = U82T_s(filename);
 	}
 
-	if (isBlockDevice && (mode & RpFile::FM_WRITE)) {
+	if (!isDevice) {
+		// Make sure this isn't a directory.
+		// TODO: Other checks?
+		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
+		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+			// File cannot be opened.
+			RP_Q(RpFile);
+			q->m_lastError = EIO;
+			return -EIO;
+		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
+			// File is a directory.
+			RP_Q(RpFile);
+			q->m_lastError = EISDIR;
+			return -EISDIR;
+		}
+	}
+
+	if (isDevice && (mode & RpFile::FM_WRITE)) {
 		// Writing to block devices is not allowed.
 		q->m_lastError = EINVAL;
-		return -3;
+		return -EINVAL;
 	}
 
 	// Open the file.
@@ -275,10 +310,10 @@ int RpFilePrivate::reOpenFile(void)
 	if (!file || file == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		q->m_lastError = w32err_to_posix(GetLastError());
-		return -4;
+		return -q->m_lastError;
 	}
 
-	if (isBlockDevice) {
+	if (isDevice) {
 		// Get the disk space.
 		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX seems to report 512-byte sectors
 		// for certain emulated CD-ROM device, e.g. the Verizon LG G2.
@@ -286,8 +321,9 @@ int RpFilePrivate::reOpenFile(void)
 		DWORD dwSectorsPerCluster, dwBytesPerSector;
 		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
 		DWORD w32err = 0;
-		// FIXME: NEEDS TESTING: Does tfilename work for GetDiskFreeSpace?
-		BOOL bRet = GetDiskFreeSpace(tfilename.c_str(),
+		// NOTE: tfilename doesn't work here.
+		// Use the original UTF-8 filename as if it's ANSI.
+		BOOL bRet = GetDiskFreeSpaceA(filename.c_str(),
 			&dwSectorsPerCluster, &dwBytesPerSector,
 			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
 		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {
@@ -335,7 +371,7 @@ int RpFilePrivate::reOpenFile(void)
 			}
 			CloseHandle(file);
 			file = INVALID_HANDLE_VALUE;
-			return -5;
+			return -q->m_lastError;
 		}
 	}
 
@@ -829,7 +865,7 @@ int RpFile::truncate(int64_t size)
 	return 0;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.
@@ -874,6 +910,18 @@ string RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return d->filename;
+}
+
+/** Device file functions **/
+
+/**
+ * Is this a device file?
+ * @return True if this is a device file; false if not.
+ */
+bool RpFile::isDevice(void) const
+{
+	RP_D(const RpFile);
+	return d->isDevice;
 }
 
 }

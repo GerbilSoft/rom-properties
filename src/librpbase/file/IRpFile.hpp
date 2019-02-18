@@ -126,7 +126,7 @@ class IRpFile
 		virtual int truncate(int64_t size = 0) = 0;
 
 	public:
-		/** File properties. **/
+		/** File properties **/
 
 		/**
 		 * Get the file size.
@@ -139,6 +139,19 @@ class IRpFile
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		virtual std::string filename(void) const = 0;
+
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is this a device file?
+		 * @return True if this is a device file; false if not.
+		 */
+		virtual bool isDevice(void) const
+		{
+			// Default is standard file.
+			return false;
+		}
 
 	public:
 		/** Convenience functions implemented for all IRpFile classes. **/
