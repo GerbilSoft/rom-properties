@@ -28,6 +28,7 @@
 
 // C++ includes.
 #include <memory>
+#include <vector>
 
 namespace LibRpBase {
 
@@ -147,6 +148,42 @@ class RpFile : public IRpFile
 		 * @return True if this is a device file; false if not.
 		 */
 		bool isDevice(void) const final;
+
+		// Kreon features.
+		enum KreonFeatures : uint16_t {
+			KREON_FEATURE_HEADER_0		= 0xA55A,	// always the first feature
+			KREON_FEATURE_HEADER_1		= 0x5AA5,	// always the second feature
+			KREON_FEATURE_UNLOCK_1_X360	= 0x0100,	// Unlock state 1 (xtreme) for Xbox 360
+			KREON_FEATURE_UNLOCK_2_X360	= 0x0101,	// Unlock state 2 (wxripper) for Xbox 360
+			KREON_FEATURE_UNLOCK_1a_X360	= 0x0120,	// Unlock state 1 (xtreme) for Xbox 360
+			KREON_FEATURE_FULL_CHLNG_X360	= 0x0121,	// Full challenge functionality for Xbox 360
+			KREON_FEATURE_UNLOCK_1_XBOX	= 0x0200,	// Unlock state 1 (xtreme) for Xbox
+			KREON_FEATURE_UNLOCK_2_XBOX	= 0x0201,	// Unlock state 2 (wxripper) for Xbox
+			KREON_FEATURE_UNLOCK_1a_XBOX	= 0x0220,	// Unlock state 1 (xtreme) for Xbox
+			KREON_FEATURE_FULL_CHLNG_XBOX	= 0x0221,	// Full challenge functionality for Xbox
+			KREON_FEATURE_LOCK_COMMAND	= 0xF000,	// Lock (cancel unlock state) command
+			KREON_FEATURE_ERROR_SKIPPING	= 0xF001,	// Error skipping
+		};
+
+		/**
+		 * Get a list of supported Kreon features.
+		 * @return List of Kreon feature IDs, or empty vector if not supported.
+		 */
+		std::vector<uint16_t> getKreonFeatureList(void) const;
+
+		/**
+		 * Set Kreon error skip state.
+		 * @param skip True to skip; false for normal operation.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int setKreonErrorSkipState(bool skip);
+
+		/**
+		 * Set Kreon lock state
+		 * @param lockState 0 == locked; 1 == Unlock State 1 (xtreme); 2 == Unlock State 2 (wxripper)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int setKreonLockState(uint8_t lockState);
 };
 
 }

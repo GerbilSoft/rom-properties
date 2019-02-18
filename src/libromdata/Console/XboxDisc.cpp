@@ -30,6 +30,7 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/RpFile.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
@@ -128,6 +129,19 @@ class XboxDiscPrivate : public LibRpBase::RomDataPrivate
 		 * @return Console type.
 		 */
 		ConsoleType getConsoleType(void) const;
+
+		// Are we using a Kreon drive?
+		bool isKreon;
+
+		/**
+		 * Unlock the Kreon drive.
+		 */
+		inline void unlockKreonDrive(void);
+
+		/**
+		 * Lock the Kreon drive.
+		 */
+		inline void lockKreonDrive(void);
 };
 
 /** XboxDiscPrivate **/
@@ -141,6 +155,7 @@ XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 	, xdvdfsPartition(nullptr)
 	, defaultExeData(nullptr)
 	, exeType(EXE_TYPE_UNKNOWN)
+	, isKreon(false)
 {
 }
 
@@ -250,6 +265,36 @@ XboxDiscPrivate::ConsoleType XboxDiscPrivate::getConsoleType(void) const
 	return CONSOLE_TYPE_XBOX;
 }
 
+/**
+ * Unlock the Kreon drive.
+ */
+inline void XboxDiscPrivate::unlockKreonDrive(void)
+{
+	if (!isKreon)
+		return;
+
+	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
+	if (rpFile) {
+		rpFile->setKreonErrorSkipState(true);
+		rpFile->setKreonLockState(2);
+	}
+}
+
+/**
+ * Lock the Kreon drive.
+ */
+inline void XboxDiscPrivate::lockKreonDrive(void)
+{
+	if (!isKreon)
+		return;
+
+	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
+	if (rpFile) {
+		rpFile->setKreonErrorSkipState(false);
+		rpFile->setKreonLockState(0);
+	}
+}
+
 /** XboxDisc **/
 
 /**
@@ -309,12 +354,27 @@ XboxDisc::XboxDisc(IRpFile *file)
 			break;
 	}
 
+	// If this is a Kreon drive, unlock it.
+	RpFile *const rpFile = dynamic_cast<RpFile*>(d->file);
+	if (rpFile) {
+		vector<uint16_t> features = rpFile->getKreonFeatureList();
+		if (!features.empty()) {
+			// Found Kreon features.
+			// TODO: Check the feature list?
+			d->isKreon = true;
+
+			// Unlock the drive.
+			d->unlockKreonDrive();
+		}
+	}
+
 	// Create the DiscReader and XDVDFSPartition.
 	d->discReader = new DiscReader(d->file);
 	if (!d->discReader->isOpen()) {
 		// Unable to open the discReader.
 		delete d->discReader;
 		d->discReader = nullptr;
+		d->lockKreonDrive();
 		return;
 	}
 	d->xdvdfsPartition = new XDVDFSPartition(d->discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
@@ -324,6 +384,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		delete d->discReader;
 		d->xdvdfsPartition = nullptr;
 		d->discReader = nullptr;
+		d->lockKreonDrive();
 		return;
 	}
 
@@ -335,6 +396,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 
 	// Disc image is ready.
 	d->isValid = true;
+	d->lockKreonDrive();
 }
 
 /**
@@ -647,10 +709,14 @@ int XboxDisc::loadFieldData(void)
 		return -EIO;
 	}
 
+	// Unlock the Kreon drive in order to read the executable.
+	d->unlockKreonDrive();
+
 	// XDVDFS partition.
 	const XDVDFSPartition *const xdvdfsPartition = d->xdvdfsPartition;
 	if (!xdvdfsPartition) {
 		// XDVDFS partition isn't open.
+		d->lockKreonDrive();
 		return 0;
 	}
 	d->fields->reserve(3);	// Maximum of 3 fields.
@@ -744,6 +810,9 @@ int XboxDisc::loadFieldData(void)
 		isoData->unref();
 	}
 
+	// Re-lock the Kreon drive.
+	d->lockKreonDrive();
+
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
 }
@@ -767,10 +836,14 @@ int XboxDisc::loadMetaData(void)
 		return -EIO;
 	}
 
+	// Unlock the Kreon drive in order to read the executable.
+	d->unlockKreonDrive();
+
 	// Make sure the default executable is loaded.
 	const RomData *const defaultExeData = d->openDefaultExe();
 	if (!defaultExeData) {
 		// Unable to load the default executable.
+		d->lockKreonDrive();
 		return 0;
 	}
 
@@ -780,6 +853,9 @@ int XboxDisc::loadMetaData(void)
 	// Add metadata properties from the default executable.
 	// TODO: Also ISO PVD?
 	d->metaData->addMetaData_metaData(defaultExeData->metaData());
+
+	// Re-lock the Kreon drive.
+	d->lockKreonDrive();
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
@@ -799,7 +875,10 @@ int XboxDisc::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	RP_D(XboxDisc);
 	const RomData *const defaultExeData = d->openDefaultExe();
 	if (defaultExeData) {
-		return const_cast<RomData*>(defaultExeData)->loadInternalImage(imageType, pImage);
+		d->unlockKreonDrive();
+		const int ret = const_cast<RomData*>(defaultExeData)->loadInternalImage(imageType, pImage);
+		d->lockKreonDrive();
+		return ret;
 	}
 
 	return -ENOENT;

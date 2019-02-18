@@ -228,6 +228,10 @@ ELSE(WIN32)
 		TextFuncs_iconv.cpp
 		file/FileSystem_posix.cpp
 		file/RpFile_stdio.cpp
+		file/RpFile_stdio_Kreon.cpp
+		)
+	SET(librpbase_OS_H
+		file/RpFile_stdio_p.hpp
 		)
 ENDIF(WIN32)
 

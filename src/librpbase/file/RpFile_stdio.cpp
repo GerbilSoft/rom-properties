@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "RpFile.hpp"
+#include "RpFile_stdio_p.hpp"
 
 // librpbase
 #include "byteswap.h"
@@ -27,96 +28,9 @@
 // C includes.
 #include <sys/stat.h>
 
-// C includes. (C++ namespace)
-#include <cerrno>
-
-// C++ includes.
-#include <string>
-using std::string;
-using std::u16string;
-
-// zlib for transparent gzip decompression.
-#include <zlib.h>
-// gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
-#if (ZLIB_VER_MAJOR > 1) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR > 2) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
-// zlib-1.2.4 or later
-#else
-# define gzclose_r(file) gzclose(file)
-# define gzclose_w(file) gzclose(file)
-#endif
-
-#ifdef _WIN32
-// Windows: _tfopen() requires a TCHAR mode string.
-typedef TCHAR mode_str_t;
-#define _MODE(str) _T(##str)
-#include "RpWin32.hpp"
-// Needed for using "\\\\?\\" to bypass MAX_PATH.
-using std::string;
-using std::wstring;
-#include "librpbase/ctypex.h"
-// _chsize()
-#include <io.h>
-
-#else /* !_WIN32 */
-
-// Other: fopen() requires an 8-bit mode string.
-typedef char mode_str_t;
-#define _MODE(str) (str)
-// ftruncate()
-#include <unistd.h>
-#endif
-
 namespace LibRpBase {
 
 /** RpFilePrivate **/
-
-class RpFilePrivate
-{
-	public:
-		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename)
-			, mode(mode), isDevice(false)
-			, gzfd(nullptr), gzsz(-1) { }
-		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename)
-			, mode(mode), isDevice(false)
-			, gzfd(nullptr), gzsz(-1) { }
-		~RpFilePrivate();
-
-	private:
-		RP_DISABLE_COPY(RpFilePrivate)
-		RpFile *const q_ptr;
-
-	public:
-		FILE *file;		// File pointer.
-		string filename;	// Filename.
-		RpFile::FileMode mode;	// File mode.
-		bool isDevice;		// Is this a device file?
-
-		gzFile gzfd;		// Used for transparent gzip decompression.
-		int64_t gzsz;		// Uncompressed file size.
-
-	public:
-		/**
-		 * Convert an RpFile::FileMode to an fopen() mode string.
-		 * @param mode	[in] FileMode
-		 * @return fopen() mode string.
-		 */
-		static inline const mode_str_t *mode_to_str(RpFile::FileMode mode);
-
-		/**
-		 * (Re-)Open the main file.
-		 *
-		 * INTERNAL FUNCTION. This does NOT affect gzfd.
-		 * NOTE: This function sets q->m_lastError.
-		 *
-		 * Uses parameters stored in this->filename and this->mode.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int reOpenFile(void);
-};
 
 RpFilePrivate::~RpFilePrivate()
 {

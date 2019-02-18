@@ -34,8 +34,6 @@ SET(RP_EXE_LINKER_FLAGS_COMMON "")
 
 UNSET(RP_C11_CFLAG)
 UNSET(RP_CXX11_CXXFLAG)
-UNSET(RP_CXX_NO_RTTI_CXXFLAG)
-UNSET(RP_CXX_NO_EXCEPTIONS_CXXFLAG)
 
 # Test for common CFLAGS and CXXFLAGS.
 FOREACH(FLAG_TEST "-Wall" "-Wextra" "-Wno-multichar" "-fstrict-aliasing" "-fno-common")
