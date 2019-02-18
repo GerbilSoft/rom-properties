@@ -30,6 +30,10 @@
 # include <linux/cdrom.h>
 #endif /* __linux__ */
 
+// C++ includes.
+#include <vector>
+using std::vector;
+
 namespace LibRpBase {
 
 /**
