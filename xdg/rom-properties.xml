@@ -313,6 +313,17 @@
     </magic>
   </mime-type>
 
+  <!-- Xbox_XBE -->
+  <mime-type type="application/x-xbox-xbe">
+    <comment>Xbox executable</comment>
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <glob pattern="*.xbe"/>
+    <magic priority="50">
+      <match value="XBEH" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- Xbox360_XDBF -->
   <mime-type type="application/x-xbox360-xdbf">
     <comment>Xbox 360 resource database file</comment>
@@ -324,7 +335,7 @@
     </magic>
   </mime-type>
 
-  <!-- Xbox360_XDBF -->
+  <!-- Xbox360_XEX -->
   <mime-type type="application/x-xbox360-xex">
     <comment>Xbox 360 executable</comment>
     <sub-class-of type="application/x-executable"/>
