@@ -33,17 +33,26 @@ using namespace LibRpBase;
 // libi18n
 #include "libi18n/i18n.h"
 
+// DiscReader
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
+
+// Other RomData subclasses
+#include "Texture/XboxXPR.hpp"
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 using std::ostringstream;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -57,29 +66,172 @@ class Xbox_XBE_Private : public RomDataPrivate
 {
 	public:
 		Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file);
+		virtual ~Xbox_XBE_Private();
 
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox_XBE_Private)
 
 	public:
-		// XBE header.
+		// XBE header
 		// NOTE: **NOT** byteswapped.
 		XBE_Header xbeHeader;
 
-		// XBE certificate.
+		// XBE certificate
 		// NOTE: **NOT** byteswapped.
 		XBE_Certificate xbeCertificate;
+
+		// Title image ($$XTIMAGE)
+		// TODO: Also get the save image? ($$XSIMAGE)
+		DiscReader *xpr0_discReader;
+		XboxXPR *xpr0_xtImage;
+
+		/**
+		 * Initialize the title image object.
+		 * @return XboxXPR object on success; nullptr on error.
+		 */
+		const XboxXPR *initXPR0_xtImage(void);
 };
 
 /** Xbox_XBE_Private **/
 
 Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
 	: super(q, file)
+	, xpr0_discReader(nullptr)
+	, xpr0_xtImage(nullptr)
 {
 	// Clear the XBE structs.
 	memset(&xbeHeader, 0, sizeof(xbeHeader));
 	memset(&xbeCertificate, 0, sizeof(xbeCertificate));
+}
+
+Xbox_XBE_Private::~Xbox_XBE_Private()
+{
+	if (xpr0_xtImage) {
+		xpr0_xtImage->unref();
+	}
+	delete xpr0_discReader;
+}
+
+/**
+ * Initialize the title image object.
+ * @return XboxXPR object on success; nullptr on error.
+ */
+const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
+{
+	if (xpr0_xtImage) {
+		// Title image is already initialized.
+		return xpr0_xtImage;
+	}
+
+	if (!file || !file->isOpen()) {
+		// File is not open.
+		return nullptr;
+	}
+
+	// We're loading the first 64 KB of the executable.
+	// Section headers and names are usually there.
+	// TODO: Find any exceptions?
+	static const size_t XBE_READ_SIZE = 64*1024;
+
+	// Load the section headers.
+	const uint32_t base_address = le32_to_cpu(xbeHeader.base_address);
+	const uint32_t section_headers_address = le32_to_cpu(xbeHeader.section_headers_address);
+	if (section_headers_address <= base_address) {
+		// Out of range.
+		// NOTE: <= - base address would have the magic number.
+		return nullptr;
+	}
+
+	const uint32_t shdr_address_phys = section_headers_address - base_address;
+	if (shdr_address_phys >= XBE_READ_SIZE) {
+		// Section headers is not in the first 64 KB.
+		return nullptr;
+	}
+
+	// Read the XBE header.
+	unique_ptr<uint8_t[]> first64KB(new uint8_t[XBE_READ_SIZE]);
+	size_t size = file->seekAndRead(0, first64KB.get(), XBE_READ_SIZE);
+	if (size != XBE_READ_SIZE) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Section count.
+	unsigned int section_count = le32_to_cpu(xbeHeader.section_count);
+	// If this goes over the 64 KB limit, reduce the section count.
+	if (shdr_address_phys + (section_count * sizeof(XBE_Section_Header)) > XBE_READ_SIZE) {
+		// Out of bounds. Reduce it.
+		section_count = (XBE_READ_SIZE - shdr_address_phys) / sizeof(XBE_Section_Header);
+	}
+
+	// First section header.
+	const XBE_Section_Header *pHdr = reinterpret_cast<const XBE_Section_Header*>(
+		&first64KB[shdr_address_phys]);
+	const XBE_Section_Header *const pHdr_end = pHdr + section_count;
+
+	// Find the $$XTIMAGE section.
+	// TODO: Cache a "not found" result so we don't have to
+	// re-check the section headers again?
+	const XBE_Section_Header *pHdr_xtImage = nullptr;
+	for (; pHdr < pHdr_end; pHdr++) {
+		char section_name[16];	// Allow up to 15 chars plus NULL terminator.
+
+		const uint32_t name_address = le32_to_cpu(pHdr->section_name_address);
+		if (name_address <= base_address) {
+			// Out of range.
+			continue;
+		}
+
+		// Read the name.
+		size = file->seekAndRead(name_address - base_address, section_name, sizeof(section_name));
+		if (size != sizeof(section_name)) {
+			// Seek and/or read error.
+			return nullptr;
+		}
+		section_name[sizeof(section_name)-1] = '\0';
+
+		if (!strcmp(section_name, "$$XTIMAGE")) {
+			// Found it!
+			pHdr_xtImage = pHdr;
+			break;
+		}
+	}
+	if (!pHdr_xtImage) {
+		// Not found.
+		return nullptr;
+	}
+
+	// paddr/psize have absolute addresses.
+	// Create the DiscReader and PartitionFile.
+	DiscReader *const discReader = new DiscReader(this->file);
+	if (discReader->isOpen()) {
+		IRpFile *const ptFile = new PartitionFile(discReader,
+			pHdr_xtImage->paddr, pHdr_xtImage->psize);
+		if (ptFile->isOpen()) {
+			XboxXPR *const xpr0 = new XboxXPR(ptFile);
+			ptFile->unref();
+			if (xpr0->isOpen()) {
+				// XPR0 image opened.
+				this->xpr0_discReader = discReader;
+				this->xpr0_xtImage = xpr0;
+			} else {
+				// Unable to open the XPR0 image.
+				xpr0->unref();
+				delete discReader;
+			}
+		} else {
+			// Unable to open the file.
+			ptFile->unref();
+			delete discReader;
+		}
+	} else {
+		// Unable to create the DiscReader.
+		delete discReader;
+	}
+
+	// Image loaded.
+	return this->xpr0_xtImage;
 }
 
 /** Xbox_XBE **/
@@ -148,6 +300,25 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 			d->xbeCertificate.size = 0;
 		}
 	}
+}
+
+/**
+ * Close the opened file.
+ */
+void Xbox_XBE::close(void)
+{
+	RP_D(Xbox_XBE);
+
+	if (d->xpr0_xtImage) {
+		d->xpr0_xtImage->unref();
+		d->xpr0_xtImage = nullptr;
+	}
+
+	delete d->xpr0_discReader;
+	d->xpr0_discReader = nullptr;
+
+	// Call the superclass function.
+	super::close();
 }
 
 /** ROM detection functions. **/
@@ -250,6 +421,61 @@ const char *const *Xbox_XBE::supportedMimeTypes_static(void)
 		nullptr
 	};
 	return mimeTypes;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Xbox_XBE::supportedImageTypes(void) const
+{
+	RP_D(const Xbox_XBE);
+	const XboxXPR *const xpr0_xtImage = const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
+	if (xpr0_xtImage) {
+		return xpr0_xtImage->supportedImageTypes();
+	}
+
+	return 0;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> Xbox_XBE::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	RP_D(const Xbox_XBE);
+	const XboxXPR *const xpr0_xtImage = const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
+	if (xpr0_xtImage) {
+		return xpr0_xtImage->supportedImageSizes(imageType);
+	}
+
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t Xbox_XBE::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	RP_D(const Xbox_XBE);
+	const XboxXPR *const xpr0_xtImage = const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
+	if (xpr0_xtImage) {
+		return xpr0_xtImage->imgpf(imageType);
+	}
+
+	return 0;
 }
 
 /**
@@ -436,6 +662,27 @@ int Xbox_XBE::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Xbox_XBE::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+
+	RP_D(Xbox_XBE);
+	const XboxXPR *const xpr0_xtImage = d->initXPR0_xtImage();
+	if (xpr0_xtImage) {
+		return const_cast<XboxXPR*>(xpr0_xtImage)->loadInternalImage(imageType, pImage);
+	}
+
+	// TODO: -EIO for unsupported imageType?
+	return -ENOENT;
 }
 
 }

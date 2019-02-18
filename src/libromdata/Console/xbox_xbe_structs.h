@@ -189,7 +189,7 @@ typedef struct PACKED _XBE_Section_Header {
 	uint32_t vsize;			// [0x008] Size of this section
 	uint32_t paddr;			// [0x00C] Physical address in the XBE file
 	uint32_t psize;			// [0x010] Physical size of this section
-	uint32_t section_name_address;	// [0x014]
+	uint32_t section_name_address;	// [0x014] Address of the section name (in memory)
 	uint32_t section_name_refcount;	// [0x018]
 	uint32_t head_shared_page_recount_address;	// [0x01C]
 	uint32_t tail_shared_page_recount_address;	// [0x020]
