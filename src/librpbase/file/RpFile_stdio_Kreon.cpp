@@ -202,7 +202,6 @@ vector<uint16_t> RpFile::getKreonFeatureList(void) const
 int RpFile::setKreonErrorSkipState(bool skip)
 {
 	RP_D(const RpFile);
-	vector<uint16_t> vec;
 
 #ifdef __linux__
 	// NOTE: On Linux, this ioctl will fail if not running as root.
@@ -254,7 +253,6 @@ int RpFile::setKreonErrorSkipState(bool skip)
 int RpFile::setKreonLockState(uint8_t lockState)
 {
 	RP_D(const RpFile);
-	vector<uint16_t> vec;
 
 #ifdef __linux__
 	// NOTE: On Linux, this ioctl will fail if not running as root.
