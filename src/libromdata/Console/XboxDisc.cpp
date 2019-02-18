@@ -39,6 +39,7 @@ using namespace LibRpBase;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
+#include "Xbox_XBE.hpp"
 #include "Xbox360_XEX.hpp"
 
 // C includes. (C++ namespace)
@@ -192,9 +193,7 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 	// TODO: What about discs that have both?
 	f_defaultExe = xdvdfsPartition->open("/default.xbe");
 	if (f_defaultExe) {
-		// TODO: XboxXBE
-#if 0
-		RomData *const xbeData = new XboxXBE(f_defaultExe);
+		RomData *const xbeData = new Xbox_XBE(f_defaultExe);
 		f_defaultExe->unref();
 		if (xbeData->isValid()) {
 			// default.xex is open and valid.
@@ -205,7 +204,6 @@ RomData *XboxDiscPrivate::openDefaultExe(int *pExeType)
 			}
 			return xbeData;
 		}
-#endif
 		f_defaultExe->unref();
 		exeType = EXE_TYPE_XBE;
 		if (pExeType) {
