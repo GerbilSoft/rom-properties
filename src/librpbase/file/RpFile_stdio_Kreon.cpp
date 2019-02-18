@@ -33,6 +33,98 @@
 namespace LibRpBase {
 
 /**
+ * Is this a supported Kreon drive?
+ *
+ * NOTE: This only checks the drive vendor and model.
+ * Check the feature list to determine if it's actually
+ * using Kreon firmware.
+ *
+ * @return True if the drive supports Kreon firmware; false if not.
+ */
+bool RpFile::isKreonDriveModel(void) const
+{
+	RP_D(const RpFile);
+
+#ifdef __linux__
+	// NOTE: On Linux, this ioctl will fail if not running as root.
+	if (!d->isDevice) {
+		// Not a device.
+		return false;
+	}
+
+	/* INQUIRY response for Standard Inquiry Data. (EVPD == 0, PageCode == 0) */
+	typedef struct PACKED _SCSI_RESP_INQUIRY_STD {
+		uint8_t PeripheralDeviceType;	/* High 3 bits == qualifier; low 5 bits == type */
+		uint8_t RMB_DeviceTypeModifier;
+		uint8_t Version;
+		uint8_t ResponseDataFormat;
+		uint8_t AdditionalLength;
+		uint8_t Reserved1[2];
+		uint8_t Flags;
+		char vendor_id[8];
+		char product_id[16];
+		char product_revision_level[4];
+		uint8_t VendorSpecific[20];
+		uint8_t Reserved2[40];
+	} SCSI_RESP_INQUIRY_STD;
+
+	// SCSI command buffers.
+	struct sg_io_hdr sg_io;
+	union {
+		struct request_sense s;
+		uint8_t u[18];
+	} _sense;
+
+	// TODO: Consolidate this.
+	memset(&sg_io, 0, sizeof(sg_io));
+	sg_io.interface_id = 'S';
+	sg_io.mx_sb_len = sizeof(_sense);
+	sg_io.sbp = _sense.u;
+	sg_io.flags = SG_FLAG_LUN_INHIBIT | SG_FLAG_DIRECT_IO;
+
+	// SCSI INQUIRY command.
+	uint8_t cdb[6] = {0x12, 0x00, 0x00,
+		sizeof(SCSI_RESP_INQUIRY_STD) >> 8,
+		sizeof(SCSI_RESP_INQUIRY_STD) & 0xFF,
+		0x00};
+	sg_io.cmdp = cdb;
+	sg_io.cmd_len = sizeof(cdb);
+
+	SCSI_RESP_INQUIRY_STD resp;
+	sg_io.dxfer_direction = SG_DXFER_FROM_DEV;
+	sg_io.dxferp = &resp;
+	sg_io.dxfer_len = sizeof(resp);
+
+	if (ioctl(fileno(d->file), SG_IO, &sg_io) != 0) {
+		// ioctl failed.
+		return false;
+	}
+
+	// Check the drive vendor and product ID.
+	if (!memcmp(resp.vendor_id, "TSSTcorp", 8)) {
+		// Correct vendor ID.
+		// Check for supported product IDs.
+		// NOTE: More drive models are supported, but the
+		// Kreon firmware only uses these product IDs.
+		static const char *const product_id_tbl[] = {
+			"DVD-ROM SH-D162C",
+			"DVD-ROM TS-H353A",
+			"DVD-ROM SH-D163B",
+		};
+		for (int i = 0; i < ARRAY_SIZE(product_id_tbl); i++) {
+			if (!memcmp(resp.product_id, product_id_tbl[i], sizeof(resp.product_id))) {
+				// Found a match.
+				return true;
+			}
+		}
+	}
+#endif /* __linux__ */
+
+	// Not supported.
+	return false;
+}
+
+/**
  * Get a list of supported Kreon features.
  * @return List of Kreon feature IDs, or empty vector if not supported.
  */
@@ -40,8 +132,6 @@ vector<uint16_t> RpFile::getKreonFeatureList(void) const
 {
 	RP_D(const RpFile);
 	vector<uint16_t> vec;
-
-	// TODO: Check the drive vendor first.
 
 #ifdef __linux__
 	// NOTE: On Linux, this ioctl will fail if not running as root.

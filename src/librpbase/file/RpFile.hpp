@@ -149,6 +149,17 @@ class RpFile : public IRpFile
 		 */
 		bool isDevice(void) const final;
 
+		/**
+		 * Is this a supported Kreon drive?
+		 *
+		 * NOTE: This only checks the drive vendor and model.
+		 * Check the feature list to determine if it's actually
+		 * using Kreon firmware.
+		 *
+		 * @return True if the drive supports Kreon firmware; false if not.
+		 */
+		bool isKreonDriveModel(void) const;
+
 		// Kreon features.
 		enum KreonFeatures : uint16_t {
 			KREON_FEATURE_HEADER_0		= 0xA55A,	// always the first feature
