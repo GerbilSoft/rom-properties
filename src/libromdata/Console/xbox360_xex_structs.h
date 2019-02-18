@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * xex_structs.h: Microsoft Xbox executable data structures.               *
+ * xbox360_xex_structs.h: Microsoft Xbox 360 executable data structures.   *
  *                                                                         *
  * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
