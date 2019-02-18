@@ -218,6 +218,15 @@ int RpFilePrivate::reOpenFile(void)
 	// Converted filename for Windows.
 	tstring tfilename;
 
+	// If the filename is "X:", change it to "X:\\".
+	if (filename.size() == 2 &&
+	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':')
+	{
+		// Drive letter. Append '\\'.
+		filename += '\\';
+	}
+
 	// Check if the path starts with a drive letter.
 	if (filename.size() >= 3 &&
 	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&

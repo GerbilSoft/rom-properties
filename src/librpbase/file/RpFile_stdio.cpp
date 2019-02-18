@@ -166,6 +166,15 @@ int RpFilePrivate::reOpenFile(void)
 	// Windows: Use U82W_s() to convert the filename to wchar_t.
 	bool isDevice_tmp;
 
+	// If the filename is "X:", change it to "X:\\".
+	if (filename.size() == 2 &&
+	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':')
+	{
+		// Drive letter. Append '\\'.
+		filename += '\\';
+	}
+
 	// If this is an absolute path, make sure it starts with
 	// "\\?\" in order to support filenames longer than MAX_PATH.
 	tstring tfilename;
