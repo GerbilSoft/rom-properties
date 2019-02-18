@@ -1288,7 +1288,7 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->reserve(11);
 	d->fields->setTabName(0, "XEX");
 
-	// Game name.
+	// Game name
 	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
 	if (pe_xdbf) {
 		string title = pe_xdbf->getGameTitle();
@@ -1358,9 +1358,9 @@ int Xbox360_XEX::loadFieldData(void)
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
 			NOP_C_("Xbox360_XEX", "DVD X2"),
 			NOP_C_("Xbox360_XEX", "DVD / CD"),
-			NOP_C_("Xbox360_XEX", "DVD (Single Layer)"),
+			NOP_C_("Xbox360_XEX", "DVD-ROM SL"),
 			// 4
-			NOP_C_("Xbox360_XEX", "DVD (Dual Layer)"),
+			NOP_C_("Xbox360_XEX", "DVD-ROM DL"),
 			NOP_C_("Xbox360_XEX", "Internal Flash Memory"),
 			nullptr,
 			NOP_C_("Xbox360_XEX", "Memory Unit"),
@@ -1466,9 +1466,10 @@ int Xbox360_XEX::loadFieldData(void)
 			// Title ID
 			// FIXME: Verify behavior on big-endian.
 			d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-				rp_sprintf_p(C_("Xbox360_XEX", "0x%1$08X (%2$.2s-%3$04u)"),
+				rp_sprintf_p(C_("Xbox360_XEX", "0x%1$08X (%2$c%3$c-%4$04u)"),
 					be32_to_cpu(execution_id.title_id.u32),
-					execution_id.title_id.c,
+					execution_id.title_id.a,
+					execution_id.title_id.b,
 					be16_to_cpu(execution_id.title_id.u16)),
 				RomFields::STRF_MONOSPACE);
 

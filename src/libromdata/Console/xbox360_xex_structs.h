@@ -378,7 +378,8 @@ typedef enum {
  */
 typedef union PACKED _XEX2_Title_ID {
 	struct {
-		char c[2];
+		char a;
+		char b;
 		uint16_t u16;
 	};
 	uint32_t u32;
