@@ -213,6 +213,7 @@ IF(WIN32)
 		TextFuncs_win32.cpp
 		file/win32/FileSystem_win32.cpp
 		file/win32/RpFile_win32.cpp
+		file/win32/RpFile_win32_Kreon.cpp
 		file/win32/IStreamWrapper.cpp
 		img/GdiplusHelper.cpp
 		img/RpGdiplusBackend.cpp

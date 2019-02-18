@@ -355,19 +355,21 @@ XboxDisc::XboxDisc(IRpFile *file)
 	}
 
 	// If this is a Kreon drive, unlock it.
-	RpFile *const rpFile = dynamic_cast<RpFile*>(d->file);
-	if (rpFile) {
-		// Check if this is a supported drive model.
-		if (rpFile->isKreonDriveModel()) {
-			// Do we have Kreon features?
-			vector<uint16_t> features = rpFile->getKreonFeatureList();
-			if (!features.empty()) {
-				// Found Kreon features.
-				// TODO: Check the feature list?
-				d->isKreon = true;
+	if (d->file->isDevice()) {
+		RpFile *const rpFile = dynamic_cast<RpFile*>(d->file);
+		if (rpFile) {
+			// Check if this is a supported drive model.
+			if (rpFile->isKreonDriveModel()) {
+				// Do we have Kreon features?
+				vector<uint16_t> features = rpFile->getKreonFeatureList();
+				if (!features.empty()) {
+					// Found Kreon features.
+					// TODO: Check the feature list?
+					d->isKreon = true;
 
-				// Unlock the drive.
-				d->unlockKreonDrive();
+					// Unlock the drive.
+					d->unlockKreonDrive();
+				}
 			}
 		}
 	}
