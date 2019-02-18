@@ -27,6 +27,9 @@ namespace LibRpBase {
 	class IRpFile;
 }
 
+// C includes. (C++ namespace)
+#include <ctime>
+
 namespace LibRomData {
 
 class XDVDFSPartitionPrivate;
