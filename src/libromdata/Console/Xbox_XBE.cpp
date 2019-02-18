@@ -405,4 +405,37 @@ int Xbox_XBE::loadFieldData(void)
 	return static_cast<int>(d->fields->count());
 }
 
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Xbox_XBE::loadMetaData(void)
+{
+	RP_D(Xbox_XBE);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// XBE file isn't valid.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	const XBE_Certificate *const xbeCertificate = &d->xbeCertificate;
+
+	// Title
+	d->metaData->addMetaData_string(Property::Title,
+		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE(xbeCertificate->title_name)));
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
 }

@@ -28,6 +28,7 @@ namespace LibRomData {
 
 class Xbox_XBE_Private;
 ROMDATA_DECL_BEGIN(Xbox_XBE)
+ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
 }
