@@ -84,6 +84,7 @@ button.
 |:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | NES                       |       Yes      |    No    |       N/A       |       No       |
 | Super NES                 |       Yes      |    No    |       N/A       |       No       |
+| Microsoft Xbox Game Disc  |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
 | Nintendo GameCube         |       Yes      |    Yes   |      Banner     |      Disc      |

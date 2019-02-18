@@ -50,6 +50,9 @@
     * Parses the Primary Volume Descriptor for ISO-9660 images.
     * Sega Mega CD, Sega Saturn, and Sega Dreamcast parsers now show
       the ISO-9660 PVD using the new ISO-9660 parser.
+  * XboxDisc: Xbox and Xbox 360 disc image parser.
+    * Reads default.xbe and/or default.xex from the XDVDFS partition and
+      calls the appropriate parser to handle thise files.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
