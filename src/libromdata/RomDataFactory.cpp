@@ -543,8 +543,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		// Get the actual file extension.
 		const string filename = file->filename();
 		if (!filename.empty()) {
-			file_ext = FileSystem::file_ext(filename);
-			info.ext = file_ext.c_str();
+			const char *pExt = FileSystem::file_ext(filename);
+			if (pExt) {
+				file_ext = pExt;
+				info.ext = file_ext.c_str();
+			}
 		}
 	}
 
