@@ -21,7 +21,7 @@
 #include "RpFile.hpp"
 
 #include "scsi_protocol.h"
-#include "librpbase/byteswap.h"
+#include "../byteswap.h"
 
 #ifdef _WIN32
 # include "libwin32common/w32err.h"
@@ -68,7 +68,7 @@ namespace LibRpBase {
  * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
  * @param data_len	[in] Length of data
  * @param direction	[in] Data direction
- * @return 0 on success, positive for SCSI sense key, negative for OS error.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
 int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	void *data, size_t data_len,
@@ -213,6 +213,89 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 # error No SCSI implementation for this OS.
 #endif
 	return ret;
+}
+
+/**
+ * Get the capacity of the device using SCSI commands.
+ * @param pDeviceSize	[out] Retrieves the device size, in bytes.
+ * @param pBlockSize	[out,opt] If not NULL, retrieves the block size.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pBlockSize)
+{
+	assert(pDeviceSize != nullptr);
+	if (!pDeviceSize)
+		return -EINVAL;
+
+	RP_D(RpFile);
+	if (!d->isDevice) {
+		// Not a device.
+		return false;
+	}
+
+	// SCSI command buffers.
+	union {
+		SCSI_CDB_READ_CAPACITY_10 cdb10;
+		SCSI_CDB_READ_CAPACITY_16 cdb16;
+	};
+	union {
+		SCSI_RESP_READ_CAPACITY_10 resp10;
+		SCSI_RESP_READ_CAPACITY_16 resp16;
+	};
+
+	// NOTE: The returned LBA is the *last* LBA,
+	// not the total number of LBAs. Hence, we'll
+	// need to add one.
+
+	// Try READ CAPACITY(10) first.
+	cdb10.OpCode = SCSI_OP_READ_CAPACITY_10;
+	cdb10.RelAdr = 0;
+	cdb10.LBA = 0;
+	cdb10.Reserved[0] = 0;
+	cdb10.Reserved[1] = 0;
+	cdb10.PMI = 0;
+	cdb10.Control = 0;
+
+	int ret = scsi_send_cdb(&cdb10, sizeof(cdb10), &resp10, sizeof(resp10), SCSI_DIR_IN);
+	if (ret != 0) {
+		// SCSI command failed.
+		return ret;
+	}
+
+	if (resp10.LBA != 0xFFFFFFFF) {
+		// READ CAPACITY(10) has the full capacity.
+		const uint32_t blockSize = be32_to_cpu(resp10.BlockLen);
+		if (pBlockSize) {
+			*pBlockSize = blockSize;
+		}
+		*pDeviceSize = static_cast<int64_t>(be32_to_cpu(resp10.LBA) + 1) *
+			       static_cast<int64_t>(blockSize);
+		return 0;
+	}
+
+	// READ CAPACITY(10) is truncated.
+	// Try READ CAPACITY(16).
+	cdb16.OpCode = SCSI_OP_SERVICE_ACTION_IN_16;
+	cdb16.SAIn_OpCode = SCSI_SAIN_OP_READ_CAPACITY_16;
+	cdb16.LBA = 0;
+	cdb16.AllocLen = 0;
+	cdb16.Reserved = 0;
+	cdb16.Control = 0;
+
+	ret = scsi_send_cdb(&cdb16, sizeof(cdb16), &resp16, sizeof(resp16), SCSI_DIR_IN);
+	if (ret != 0) {
+		// SCSI command failed.
+		// TODO: Return 0xFFFFFFFF+1 blocks anyway?
+		return ret;
+	}
+
+	const uint32_t blockSize = be32_to_cpu(resp16.BlockLen);
+	if (pBlockSize) {
+		*pBlockSize = blockSize;
+	}
+	*pDeviceSize = static_cast<int64_t>(be64_to_cpu(resp16.LBA) + 1) *
+		       static_cast<int64_t>(blockSize);
+	return 0;
 }
 
 /**

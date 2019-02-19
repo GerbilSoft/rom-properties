@@ -163,11 +163,19 @@ class RpFile : public IRpFile
 		 * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
 		 * @param data_len	[in] Length of data
 		 * @param direction	[in] Data direction
-		 * @return 0 on success, positive for SCSI sense key, negative for OS error.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
 		int scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 			void *data, size_t data_len,
 			ScsiDirection direction);
+
+		/**
+		 * Get the capacity of the device using SCSI commands.
+		 * @param pDeviceSize	[out] Retrieves the device size, in bytes.
+		 * @param pBlockSize	[out,opt] If not NULL, retrieves the block size.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pBlockSize = nullptr);
 
 	public:
 		/**
