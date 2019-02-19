@@ -19,7 +19,9 @@
  ***************************************************************************/
 
 #include "RpFile.hpp"
+
 #include "scsi_protocol.h"
+#include "librpbase/byteswap.h"
 
 #ifdef _WIN32
 # include "libwin32common/w32err.h"
@@ -231,13 +233,15 @@ bool RpFile::isKreonDriveModel(void)
 	}
 
 	// SCSI INQUIRY command.
-	uint8_t cdb[6] = {0x12, 0x00, 0x00,
-		sizeof(SCSI_RESP_INQUIRY_STD) >> 8,
-		sizeof(SCSI_RESP_INQUIRY_STD) & 0xFF,
-		0x00};
+	SCSI_CDB_INQUIRY cdb;
+	cdb.OpCode = SCSI_OP_INQUIRY;
+	cdb.EVPD = 0;
+	cdb.PageCode = 0;
+	cdb.AllocLen = cpu_to_be16(sizeof(SCSI_RESP_INQUIRY_STD));
+	cdb.Control = 0;
 
 	SCSI_RESP_INQUIRY_STD resp;
-	int ret = scsi_send_cdb(cdb, sizeof(cdb), &resp, sizeof(resp), SCSI_DIR_IN);
+	int ret = scsi_send_cdb(&cdb, sizeof(cdb), &resp, sizeof(resp), SCSI_DIR_IN);
 	if (ret != 0) {
 		// SCSI command failed.
 		return false;
