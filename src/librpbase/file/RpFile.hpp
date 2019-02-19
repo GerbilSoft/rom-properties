@@ -149,6 +149,15 @@ class RpFile : public IRpFile
 		 */
 		bool isDevice(void) const final;
 
+		/**
+		 * Re-read device size using SCSI commands.
+		 * This may be needed for Kreon devices.
+		 * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int rereadDeviceSizeScsi(int64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
+
 	protected:
 		enum ScsiDirection {
 			SCSI_DIR_NONE,
@@ -172,10 +181,10 @@ class RpFile : public IRpFile
 		/**
 		 * Get the capacity of the device using SCSI commands.
 		 * @param pDeviceSize	[out] Retrieves the device size, in bytes.
-		 * @param pBlockSize	[out,opt] If not NULL, retrieves the block size.
+		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
-		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pBlockSize = nullptr);
+		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
 
 	public:
 		/**

@@ -216,12 +216,53 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 }
 
 /**
- * Get the capacity of the device using SCSI commands.
- * @param pDeviceSize	[out] Retrieves the device size, in bytes.
- * @param pBlockSize	[out,opt] If not NULL, retrieves the block size.
+ * Re-read device size using SCSI commands.
+ * This may be needed for Kreon devices.
+ * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+ * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
-int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pBlockSize)
+int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
+{
+	RP_D(RpFile);
+	if (!d->isDevice) {
+		// Not a device.
+		return -ENOTSUP;
+	}
+
+	int64_t device_size;
+	uint32_t sector_size;
+	int ret = scsi_read_capacity(&device_size, &sector_size);
+	if (ret != 0) {
+		// Error reading capacity.
+		return ret;
+	}
+
+#ifdef _WIN32
+	// Sector size should match.
+	assert(d->sector_size == sector_size);
+
+	// Update the device size.
+	d->device_size = device_size;
+#endif /* _WIN32 */
+
+	// Return the values.
+	if (pDeviceSize) {
+		*pDeviceSize = device_size;
+	}
+	if (pSectorSize) {
+		*pSectorSize = sector_size;
+	}
+	return 0;
+}
+
+/**
+ * Get the capacity of the device using SCSI commands.
+ * @param pDeviceSize	[out] Retrieves the device size, in bytes.
+ * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
 {
 	assert(pDeviceSize != nullptr);
 	if (!pDeviceSize)
@@ -264,12 +305,12 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pBlockSize)
 
 	if (resp10.LBA != 0xFFFFFFFF) {
 		// READ CAPACITY(10) has the full capacity.
-		const uint32_t blockSize = be32_to_cpu(resp10.BlockLen);
-		if (pBlockSize) {
-			*pBlockSize = blockSize;
+		const uint32_t sector_size = be32_to_cpu(resp10.BlockLen);
+		if (pSectorSize) {
+			*pSectorSize = sector_size;
 		}
 		*pDeviceSize = static_cast<int64_t>(be32_to_cpu(resp10.LBA) + 1) *
-			       static_cast<int64_t>(blockSize);
+			       static_cast<int64_t>(sector_size);
 		return 0;
 	}
 
@@ -289,12 +330,12 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pBlockSize)
 		return ret;
 	}
 
-	const uint32_t blockSize = be32_to_cpu(resp16.BlockLen);
-	if (pBlockSize) {
-		*pBlockSize = blockSize;
+	const uint32_t sector_size = be32_to_cpu(resp16.BlockLen);
+	if (pSectorSize) {
+		*pSectorSize = sector_size;
 	}
 	*pDeviceSize = static_cast<int64_t>(be64_to_cpu(resp16.LBA) + 1) *
-		       static_cast<int64_t>(blockSize);
+		       static_cast<int64_t>(sector_size);
 	return 0;
 }
 

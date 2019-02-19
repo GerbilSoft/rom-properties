@@ -369,6 +369,11 @@ XboxDisc::XboxDisc(IRpFile *file)
 
 					// Unlock the drive.
 					d->unlockKreonDrive();
+
+					// Re-read the device size.
+					// Windows doesn't return the full device size
+					// while the drive is locked, but Linux does.
+					rpFile->rereadDeviceSizeScsi();
 				}
 			}
 		}
