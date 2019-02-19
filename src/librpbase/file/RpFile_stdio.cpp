@@ -74,6 +74,7 @@ inline const mode_str_t *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
  */
 int RpFilePrivate::reOpenFile(void)
 {
+	RP_Q(RpFile);
 	const mode_str_t *const mode_str = mode_to_str(mode);
 
 #ifdef _WIN32
@@ -141,12 +142,10 @@ int RpFilePrivate::reOpenFile(void)
 		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
 		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
 			// File cannot be opened.
-			RP_Q(RpFile);
 			q->m_lastError = EIO;
 			return -EIO;
 		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
 			// File is a directory.
-			RP_Q(RpFile);
 			q->m_lastError = EISDIR;
 			return -EISDIR;
 		}
@@ -168,7 +167,6 @@ int RpFilePrivate::reOpenFile(void)
 
 	// Return 0 if it's *not* nullptr.
 	if (!file) {
-		RP_Q(RpFile);
 		q->m_lastError = errno;
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
@@ -181,12 +179,57 @@ int RpFilePrivate::reOpenFile(void)
 	int ret = fstat(fileno(file), &sb);
 	if (ret == 0) {
 		// fstat() succeeded.
+		if (S_ISDIR(sb.st_mode)) {
+			// This is a directory.
+			fclose(file);
+			file = nullptr;
+			q->m_lastError = EISDIR;
+			return -EISDIR;
+		}
 		isDevice = (S_ISBLK(sb.st_mode) || S_ISCHR(sb.st_mode));
 	} else {
 		// Unable to fstat().
 		// Assume this is not a device.
 		isDevice = false;
 	}
+
+#ifndef _WIN32
+	// NOTE: Opening certain device files can cause crashes
+	// and/or hangs (e.g. stdin). Only allow device files
+	// that match certain patterns.
+	// TODO: May need updates for *BSD, Mac OS X, etc.
+	// TODO: Check if a block device is a CD-ROM or something else.
+	if (isDevice) {
+		// NOTE: Some Unix systems use character devices for "raw"
+		// block devices. Linux does not, so we're only checking
+		// for block devices for now.
+		// TODO: Add checks for other Unix systems.
+		if (S_ISCHR(sb.st_mode)) {
+			// Character device. Not supported.
+			fclose(file);
+			file = nullptr;
+			isDevice = false;
+			q->m_lastError = ENOTSUP;
+			return -ENOTSUP;
+		}
+
+		// Check the filename pattern.
+		// TODO: Use an array?
+		// TODO: More systems.
+		if (strncmp(filename.c_str(), "/dev/sr", 7) != 0 &&
+		    strncmp(filename.c_str(), "/dev/scd", 8) != 0 &&
+		    strncmp(filename.c_str(), "/dev/disk/", 10) != 0 &&
+		    strncmp(filename.c_str(), "/dev/block/", 11) != 0)
+		{
+			// Not a match.
+			fclose(file);
+			file = nullptr;
+			isDevice = false;
+			q->m_lastError = ENOTSUP;
+			return -ENOTSUP;
+		}
+	}
+#endif /* _WIN32 */
 
 	return 0;
 }
