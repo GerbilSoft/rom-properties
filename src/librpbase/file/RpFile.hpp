@@ -149,6 +149,27 @@ class RpFile : public IRpFile
 		 */
 		bool isDevice(void) const final;
 
+	protected:
+		enum ScsiDirection {
+			SCSI_DIR_NONE,
+			SCSI_DIR_IN,
+			SCSI_DIR_OUT,
+		};
+
+		/**
+		 * Send a SCSI command to the device.
+		 * @param cdb		[in] SCSI command descriptor block
+		 * @param cdb_len	[in] Length of cdb
+		 * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
+		 * @param data_len	[in] Length of data
+		 * @param direction	[in] Data direction
+		 * @return 0 on success, positive for SCSI sense key, negative for OS error.
+		 */
+		int scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+			void *data, size_t data_len,
+			ScsiDirection direction);
+
+	public:
 		/**
 		 * Is this a supported Kreon drive?
 		 *
@@ -158,7 +179,7 @@ class RpFile : public IRpFile
 		 *
 		 * @return True if the drive supports Kreon firmware; false if not.
 		 */
-		bool isKreonDriveModel(void) const;
+		bool isKreonDriveModel(void);
 
 		// Kreon features.
 		enum KreonFeatures : uint16_t {
@@ -180,7 +201,7 @@ class RpFile : public IRpFile
 		 * Get a list of supported Kreon features.
 		 * @return List of Kreon feature IDs, or empty vector if not supported.
 		 */
-		std::vector<uint16_t> getKreonFeatureList(void) const;
+		std::vector<uint16_t> getKreonFeatureList(void);
 
 		/**
 		 * Set Kreon error skip state.
