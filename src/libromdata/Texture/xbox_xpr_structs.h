@@ -129,7 +129,6 @@ typedef enum {
 	// 0x42 to 0x63 undefined
 
 	XPR0_PIXEL_FORMAT_VERTEXDATA	= 0x64,
-	XPR0_PIXEL_FORMAT_INDEX16	= 0x65,
 } XPR0_Pixel_Format_e;
 
 #pragma pack()
