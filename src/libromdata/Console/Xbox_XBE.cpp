@@ -416,7 +416,7 @@ const char *const *Xbox_XBE::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox-xbe",
+		"application/x-xbox-executable",
 
 		nullptr
 	};

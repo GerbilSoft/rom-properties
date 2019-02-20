@@ -1194,7 +1194,7 @@ const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox360-xex",
+		"application/x-xbox360-executable",
 
 		nullptr
 	};

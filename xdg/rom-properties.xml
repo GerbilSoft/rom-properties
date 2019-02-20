@@ -314,7 +314,7 @@
   </mime-type>
 
   <!-- Xbox_XBE -->
-  <mime-type type="application/x-xbox-xbe">
+  <mime-type type="application/x-xbox-executable">
     <comment>Xbox executable</comment>
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
@@ -336,7 +336,7 @@
   </mime-type>
 
   <!-- Xbox360_XEX -->
-  <mime-type type="application/x-xbox360-xex">
+  <mime-type type="application/x-xbox360-executable">
     <comment>Xbox 360 executable</comment>
     <sub-class-of type="application/x-executable"/>
     <generic-icon name="application-x-executable"/>
