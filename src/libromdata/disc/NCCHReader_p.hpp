@@ -179,8 +179,6 @@ class NCCHReaderPrivate
 		 */
 		int findEncSection(uint32_t address) const;
 
-		// KeyY index for title key encryption. (CIA only)
-		uint8_t titleKeyEncIdx;
 		// TMD content index.
 		uint16_t tmd_content_index;
 #endif /* ENABLE_DECRYPTION */

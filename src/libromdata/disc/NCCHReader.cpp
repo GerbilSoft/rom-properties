@@ -60,7 +60,6 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
-	, titleKeyEncIdx(0)
 	, tmd_content_index(0)
 #endif /* ENABLE_DECRYPTION */
 {
@@ -88,7 +87,6 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IDiscReader *discReader,
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
-	, titleKeyEncIdx(0)
 	, tmd_content_index(0)
 #endif /* ENABLE_DECRYPTION */
 {
@@ -158,7 +156,9 @@ void NCCHReaderPrivate::init(void)
 	tid_be = __swab64(ncch_header.hdr.program_id.id);
 
 	// Determine the keyset to use.
-	verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header, titleKeyEncIdx);
+	// NOTE: Assuming Retail by default. Will fall back to
+	// Debug if ExeFS header decryption fails.
+	verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header, N3DS_TICKET_TITLEKEY_ISSUER_RETAIL);
 	if (verifyResult != KeyManager::VERIFY_OK) {
 		// Failed to load the keyset.
 		// Zero out the keys.
@@ -213,6 +213,53 @@ void NCCHReaderPrivate::init(void)
 			ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
 			cipher->setIV(ctr.u8, sizeof(ctr.u8));
 			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
+
+			// First file should be ".code".
+			if (strcmp(exefs_header.files[0].name, ".code") != 0) {
+				// Retail keys failed.
+				// Try again with debug keys.
+				// TODO: Consolidate this code.
+				verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
+					N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
+				if (verifyResult != KeyManager::VERIFY_OK) {
+					// Failed to load the keyset.
+					// Zero out the keys.
+					memset(ncch_keys, 0, sizeof(ncch_keys));
+					q->m_lastError = EIO;
+					delete cipher;
+					cipher = nullptr;
+					this->file = nullptr;
+					return;
+				}
+
+				// Reload the ExeFS header.
+				size = readFromROM(exefs_offset, &exefs_header, sizeof(exefs_header));
+				if (size != sizeof(exefs_header)) {
+					// Read error.
+					// NOTE: readFromROM() sets q->m_lastError.
+					delete cipher;
+					cipher = nullptr;
+					this->file = nullptr;
+					return;
+				}
+
+				// Decrypt the ExeFS header.
+				// ExeFS header uses ncchKey0.
+				cipher->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
+				ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
+				cipher->setIV(ctr.u8, sizeof(ctr.u8));
+				cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
+
+				// First file should be ".code".
+				if (strcmp(exefs_header.files[0].name, ".code") != 0) {
+					// Still not usable.
+					delete cipher;
+					q->m_lastError = EIO;
+					cipher = nullptr;
+					this->file = nullptr;
+					return;
+				}
+			}
 		}
 
 		// Initialize encrypted section handling.

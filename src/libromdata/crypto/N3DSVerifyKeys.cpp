@@ -204,7 +204,6 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
  * @param pKeyOut		[out] Output key data. (array of 2 keys)
  * @param pNcchHeader		[in] NCCH header, with signature.
  * @param issuer		[in] Issuer type. (N3DS_Ticket_TitleKey_KeyY)
- *                                   If unknown, will try Debug, then Retail.
  * @return VerifyResult.
  */
 KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
@@ -223,7 +222,6 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 	KeyManager *const keyManager = KeyManager::instance();
 
 	// Determine the keyset to use.
-	// TODO: If issuer is unknown, try Debug, then Retail.
 	const bool isDebug = ((issuer & N3DS_TICKET_TITLEKEY_ISSUER_MASK) == N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
 
 	// KeyX array.
