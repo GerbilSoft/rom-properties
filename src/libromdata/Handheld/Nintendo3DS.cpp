@@ -910,6 +910,29 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			// TODO: Remove context from "Unknown" and "Invalid" strings.
 			fields->addField_string(C_("Nintendo3DS", "Content Type"),
 				(content_type ? content_type : C_("RomData", "Unknown")));
+
+			// Also show encryption type.
+			const N3DS_NCCH_Header_NoSig_t *const part_ncch_header = ncch->ncchHeader();
+			if (part_ncch_header) {
+				// Encryption.
+				const char *const s_encryption = C_("Nintendo3DS", "Encryption");
+				const char *const s_unknown = C_("RomData", "Unknown");
+				NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
+				int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
+				if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
+					// Not encrypted, or not using a predefined keyslot.
+					fields->addField_string(s_encryption,
+						cryptoType.name
+							? latin1_to_utf8(cryptoType.name, -1)
+							: s_unknown);
+				} else {
+					fields->addField_string(s_encryption,
+						rp_sprintf("%s%s (0x%02X)",
+							(cryptoType.name ? cryptoType.name : s_unknown),
+							(cryptoType.seed ? "+Seed" : ""),
+							cryptoType.keyslot));
+				}
+			}
 		}
 
 		// Logo.
@@ -2159,7 +2182,7 @@ int Nintendo3DS::loadFieldData(void)
 							data_row.push_back(s_unknown);
 						}
 					} else {
-						data_row.push_back(rp_sprintf("%s %s (0x%02X)",
+						data_row.push_back(rp_sprintf("%s%s (0x%02X)",
 							(cryptoType.name ? cryptoType.name : s_unknown),
 							(cryptoType.seed ? "+Seed" : ""),
 							cryptoType.keyslot));
