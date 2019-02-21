@@ -61,6 +61,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	, tid_be(0)
 	, cipher(nullptr)
 	, tmd_content_index(0)
+	, isDebug(false)
 #endif /* ENABLE_DECRYPTION */
 {
 	// Clear the various structs.
@@ -88,6 +89,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IDiscReader *discReader,
 	, tid_be(0)
 	, cipher(nullptr)
 	, tmd_content_index(0)
+	, isDebug(false)
 #endif /* ENABLE_DECRYPTION */
 {
 	// Clear the various structs.
@@ -161,11 +163,19 @@ void NCCHReaderPrivate::init(void)
 	verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header, N3DS_TICKET_TITLEKEY_ISSUER_RETAIL);
 	if (verifyResult != KeyManager::VERIFY_OK) {
 		// Failed to load the keyset.
-		// Zero out the keys.
-		memset(ncch_keys, 0, sizeof(ncch_keys));
-		q->m_lastError = EIO;
-		this->file = nullptr;
-		return;
+		// Try debug keys instead.
+		verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header,
+			N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
+		if (verifyResult != KeyManager::VERIFY_OK) {
+			// Debug keys didn't work.
+			// Zero out the keys.
+			memset(ncch_keys, 0, sizeof(ncch_keys));
+			q->m_lastError = EIO;
+			this->file = nullptr;
+			return;
+		}
+		// Debug keys worked.
+		isDebug = true;
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not available, so only NoCrypto is allowed.
@@ -216,6 +226,17 @@ void NCCHReaderPrivate::init(void)
 
 			// First file should be ".code".
 			if (strcmp(exefs_header.files[0].name, ".code") != 0) {
+				if (isDebug) {
+					// We already tried both sets.
+					// Zero out the keys.
+					memset(ncch_keys, 0, sizeof(ncch_keys));
+					q->m_lastError = EIO;
+					delete cipher;
+					cipher = nullptr;
+					this->file = nullptr;
+					return;
+				}
+
 				// Retail keys failed.
 				// Try again with debug keys.
 				// TODO: Consolidate this code.
@@ -259,6 +280,9 @@ void NCCHReaderPrivate::init(void)
 					this->file = nullptr;
 					return;
 				}
+
+				// We're using debug keys.
+				isDebug = true;
 			}
 		}
 
@@ -944,6 +968,18 @@ KeyManager::VerifyResult NCCHReader::verifyResult(void) const
 	RP_D(const NCCHReader);
 	return d->verifyResult;
 }
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Are we using debug keys?
+ * @return True if using debug keys; false if not.
+ */
+bool NCCHReader::isDebug(void) const
+{
+	RP_D(const NCCHReader);
+	return d->isDebug;
+}
+#endif /* ENABLE_DECRYPTION */
 
 /**
  * Get the content type as a string.

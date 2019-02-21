@@ -187,6 +187,14 @@ class NCCHReader : public LibRpBase::IPartition
 		 */
 		LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
 
+#ifdef ENABLE_DECRYPTION
+		/**
+		 * Are we using debug keys?
+		 * @return True if using debug keys; false if not.
+		 */
+		bool isDebug(void) const;
+#endif /* ENABLE_DECRYPTION */
+
 		/**
 		 * Get the content type as a string.
 		 * @return Content type, or nullptr on error.

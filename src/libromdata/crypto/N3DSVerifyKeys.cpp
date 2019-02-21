@@ -238,6 +238,12 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 		return KeyManager::VERIFY_OK;
 	} else if (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
 		// Fixed key.
+		if (!isDebug) {
+			// Not valid on retail.
+			// TODO: Better return code?
+			return KeyManager::VERIFY_KEY_INVALID;
+		}
+
 		if (le32_to_cpu(pNcchHeader->hdr.program_id.hi) & 0x10) {
 			// Using the fixed debug key.
 			// TODO: Is there a retail equivalent?

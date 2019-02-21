@@ -181,6 +181,9 @@ class NCCHReaderPrivate
 
 		// TMD content index.
 		uint16_t tmd_content_index;
+
+		// Are we using debug keys?
+		bool isDebug;
 #endif /* ENABLE_DECRYPTION */
 };
 

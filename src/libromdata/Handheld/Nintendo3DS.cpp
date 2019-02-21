@@ -914,6 +914,13 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			// Also show encryption type.
 			const N3DS_NCCH_Header_NoSig_t *const part_ncch_header = ncch->ncchHeader();
 			if (part_ncch_header) {
+#ifdef ENABLE_DECRYPTION
+				fields->addField_string(C_("Nintendo3DS", "Issuer"),
+					ncch->isDebug()
+						? C_("Nintendo3DS", "Debug")
+						: C_("Nintendo3DS", "Retail"));
+#endif /* ENABLE_DECRYPTION */
+
 				// Encryption.
 				const char *const s_encryption = C_("Nintendo3DS", "Encryption");
 				const char *const s_unknown = C_("RomData", "Unknown");
