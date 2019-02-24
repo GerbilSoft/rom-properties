@@ -22,6 +22,7 @@
 #include "RpFile_win32_p.hpp"
 
 // librpbase
+#include "bitstuff.h"
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "TextFuncs_wchar.hpp"
@@ -404,21 +405,20 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	// Must be on a sector boundary now.
 	assert(q->tell() % sector_size == 0);
 
-	// Read entire blocks.
-	for (; size >= sector_size;
-	    size -= sector_size, ptr8 += sector_size,
-	    ret += sector_size)
-	{
-		// Read the next block.
-		// FIXME: Read all of the contiguous blocks at once.
-		DWORD bytesRead;
-		BOOL bRet = ReadFile(file, ptr8, sector_size, &bytesRead, nullptr);
-		if (bRet == 0 || bytesRead != sector_size) {
-			// Read error.
-			q->m_lastError = w32err_to_posix(GetLastError());
-			return ret + bytesRead;
-		}
+	// Read contiguous blocks.
+	// NOTE: sector_size must be a power of two.
+	assert(isPow2(sector_size));
+	size_t contig_size = size & ~(static_cast<size_t>(sector_size) - 1);
+	DWORD bytesRead;
+	BOOL bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
+	if (bRet == 0 || bytesRead != contig_size) {
+		// Read error.
+		q->m_lastError = w32err_to_posix(GetLastError());
+		return ret + bytesRead;
 	}
+	size -= contig_size;
+	ptr8 += contig_size;
+	ret += contig_size;
 
 	// Check if we still have data left. (not a full block)
 	if (size > 0) {
