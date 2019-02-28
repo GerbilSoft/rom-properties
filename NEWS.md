@@ -87,6 +87,7 @@
     * Added support for NASOS images. (GCML, WII5, and WII9)
       * GCMM images are not supported yet because there doesn't seem to
         be any documentation on how to create one.
+    * Added China and Taiwan region codes.
   * NES: Added support for the internal footer present in some ROMs. This
     footer is used for, among other things, FamicomBox.
   * Nintendo3DS: Split the SMDH code into a separate parser. This should
