@@ -135,6 +135,22 @@ const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRe
 			}
 			return C_("Region", "South Korea");
 
+		case GCN_REGION_CHN:
+			// Possible game ID regions:
+			// - C: China
+			if (pIsDefault) {
+				*pIsDefault = true;
+			}
+			return C_("Region", "China");
+
+		case GCN_REGION_TWN:
+			// Possible game ID regions:
+			// - W: Taiwan
+			if (pIsDefault) {
+				*pIsDefault = true;
+			}
+			return C_("Region", "Taiwan");
+
 		// Other.
 		case GCN_REGION_ALL:
 			// Region-Free.
@@ -308,6 +324,18 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 			// - Q: South Korea with Japanese language
 			// - T: South Korea with English language
 			ret.push_back("KO");
+			break;
+
+		case GCN_REGION_CHN:
+			// Possible game ID regions:
+			// - C: China
+			ret.push_back("ZHCN");
+			break;
+
+		case GCN_REGION_TWN:
+			// Possible game ID regions:
+			// - W: Taiwan
+			ret.push_back("ZHTW");
 			break;
 
 		case GCN_REGION_ALL:

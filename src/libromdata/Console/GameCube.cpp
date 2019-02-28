@@ -641,6 +641,8 @@ string GameCubePrivate::gcn_getGameInfo(void) const
 
 			case GCN_REGION_JPN:
 			case GCN_REGION_KOR:
+			case GCN_REGION_CHN:
+			case GCN_REGION_TWN:
 				// Japan uses Shift-JIS.
 				gameInfo = cp1252_sjis_to_utf8(gameInfo);
 				break;
@@ -1402,6 +1404,8 @@ int GameCube::loadFieldData(void)
 
 		case GCN_REGION_JPN:
 		case GCN_REGION_KOR:
+		case GCN_REGION_CHN:
+		case GCN_REGION_TWN:
 			// Japan uses Shift-JIS.
 			d->fields->addField_string(title_title,
 				cp1252_sjis_to_utf8(
@@ -1874,6 +1878,8 @@ int GameCube::loadMetaData(void)
 
 			case GCN_REGION_JPN:
 			case GCN_REGION_KOR:
+			case GCN_REGION_CHN:
+			case GCN_REGION_TWN:
 				// Japan uses Shift-JIS.
 				d->metaData->addMetaData_string(Property::Title,
 					cp1252_sjis_to_utf8(

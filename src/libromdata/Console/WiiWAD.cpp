@@ -814,6 +814,12 @@ int WiiWAD::loadFieldData(void)
 					case 'K':
 						gcnRegion = GCN_REGION_KOR;
 						break;
+					case 'C':
+						gcnRegion = GCN_REGION_CHN;
+						break;
+					case 'T':
+						gcnRegion = GCN_REGION_TWN;
+						break;
 					default:
 						gcnRegion = 255;
 						break;

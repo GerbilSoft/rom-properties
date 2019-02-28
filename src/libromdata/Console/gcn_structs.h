@@ -75,7 +75,12 @@ typedef enum {
 	GCN_REGION_USA = 1,	// USA
 	GCN_REGION_EUR = 2,	// Europe / Australia
 	GCN_REGION_ALL = 3,	// Region-Free
+
+	// The following region codes are Wii-specific,
+	// but we'll allow them for GameCube.
 	GCN_REGION_KOR = 4,	// South Korea
+	GCN_REGION_CHN = 5,	// China
+	GCN_REGION_TWN = 6,	// Taiwan
 } GCN_Region_Code;
 
 /**
