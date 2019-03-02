@@ -220,6 +220,13 @@ typedef struct PACKED _XEX2_Resource_Info {
 					//         get the location of the XDBF section
 					//         in the decrypted PE executable.
 	uint32_t resource_size;		// [0x010] Size of XDBF, in bytes.
+
+#if 0
+	// Some newer XEX2s have extra fields. (XGD3-related?)
+	// They're documented here but aren't useful for us.
+	char hash_sec[8];		// [0x014] "HashSec\x00"
+	uint8_t unknown[8];		// [0x01C] Security data?
+#endif
 } XEX2_Resource_Info;
 ASSERT_STRUCT(XEX2_Resource_Info, 5*sizeof(uint32_t));
 
