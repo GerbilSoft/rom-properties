@@ -156,6 +156,12 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int addFields_achievements(void);
+
+		/**
+		 * Add the Avatar Awards RFT_LISTDATA field.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addFields_avatarAwards(void);
 };
 
 /** Xbox360_XDBF_Private **/
@@ -615,7 +621,6 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 		reinterpret_cast<const XDBF_XACH_Entry*>(xach_buf.get() + sizeof(*hdr));
 	const XDBF_XACH_Entry *const p_end = p + xach_count;
 
-	// TODO: Achievement icons.
 	// Icons don't have their own column name; they're considered
 	// a virtual column, much like checkboxes.
 
@@ -623,7 +628,6 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	const XDBF_Language_e langID = getLangID();
 
 	// Columns
-	// TODO: Right-align the Gamerscore column. (per-column formatting?)
 	static const char *const xach_col_names[] = {
 		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
@@ -688,6 +692,149 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	params.alignment.data = AFLD_ALIGN3(TXA_L, TXA_L, TXA_C);
 	params.mxd.icons = vv_icons;
 	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
+	return 0;
+}
+
+/**
+ * Add the Achievements RFT_LISTDATA field.
+ * @return 0 on success; non-zero on error.
+ */
+int Xbox360_XDBF_Private::addFields_avatarAwards(void)
+{
+	if (!entryTable) {
+		// Entry table isn't loaded...
+		return 1;
+	}
+
+	// Can we load the achievements?
+	if (!file || !isValid) {
+		// Can't load the achievements.
+		return 2;
+	}
+
+	// Get the achievements table.
+	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_METADATA, XDBF_XGAA_MAGIC);
+	if (!entry) {
+		// Not found...
+		return 3;
+	}
+
+	// Load the avatar awards table.
+	const uint32_t addr = be32_to_cpu(entry->offset) + this->data_offset;
+	const uint32_t length = be32_to_cpu(entry->length);
+	// Sanity check:
+	// - Size must be at least sizeof(XDBF_XGAA_Header).
+	// - Size must be a maximum of sizeof(XDBF_XGAA_Header) + (sizeof(XDBF_XGAA_Entry) * 16).
+	static const unsigned int XGAA_MAX_COUNT = 16;
+	static const uint32_t XGAA_MIN_SIZE = (uint32_t)sizeof(XDBF_XACH_Header);
+	static const uint32_t XGAA_MAX_SIZE = XGAA_MIN_SIZE + (uint32_t)(sizeof(XDBF_XACH_Entry) * XGAA_MAX_COUNT);
+	assert(length > XGAA_MIN_SIZE);
+	assert(length <= XGAA_MAX_SIZE);
+	if (length < XGAA_MIN_SIZE || length > XGAA_MAX_SIZE) {
+		// Size is out of range.
+		return 4;
+	}
+
+	unique_ptr<uint8_t[]> xgaa_buf(new uint8_t[length]);
+	size_t size = file->seekAndRead(addr, xgaa_buf.get(), length);
+	if (size != length) {
+		// Seek and/or read error.
+		return 5;
+	}
+
+	// XGAA header.
+	const XDBF_XGAA_Header *const hdr =
+		reinterpret_cast<const XDBF_XGAA_Header*>(xgaa_buf.get());
+	// Validate the header.
+	if (hdr->magic != cpu_to_be32(XDBF_XGAA_MAGIC) ||
+	    hdr->version != cpu_to_be32(XDBF_XGAA_VERSION))
+	{
+		// Magic is invalid.
+		// TODO: Report an error?
+		return 6;
+	}
+
+	// Validate the entry count.
+	unsigned int xgaa_count = be16_to_cpu(hdr->xgaa_count);
+	if (xgaa_count > XGAA_MAX_COUNT) {
+		// Too many entries.
+		// Reduce it to XGAA_MAX_COUNT.
+		xgaa_count = XGAA_MAX_COUNT;
+	} else if (xgaa_count > ((length - sizeof(XDBF_XGAA_Header)) / sizeof(XDBF_XGAA_Entry))) {
+		// Entry count is too high.
+		xgaa_count = ((length - sizeof(XDBF_XGAA_Header)) / sizeof(XDBF_XGAA_Entry));
+	}
+
+	const XDBF_XGAA_Entry *p =
+		reinterpret_cast<const XDBF_XGAA_Entry*>(xgaa_buf.get() + sizeof(*hdr));
+	const XDBF_XGAA_Entry *const p_end = p + xgaa_count;
+
+	// Icons don't have their own column name; they're considered
+	// a virtual column, much like checkboxes.
+
+	// Language ID
+	const XDBF_Language_e langID = getLangID();
+
+	// Columns
+	static const char *const xgaa_col_names[] = {
+		NOP_C_("Xbox360_XDBF|AvatarAwards", "ID"),
+		NOP_C_("Xbox360_XDBF|AvatarAwards", "Description"),
+	};
+	vector<string> *const v_xgaa_col_names = RomFields::strArrayToVector_i18n(
+		"Xbox360_XDBF|AvatarAwards", xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
+
+	// Vectors.
+	auto vv_xgaa = new vector<vector<string> >(xgaa_count);
+	auto vv_icons = new vector<const rp_image*>(xgaa_count);
+	auto xgaa_iter = vv_xgaa->begin();
+	auto icon_iter = vv_icons->begin();
+	for (; p < p_end && xgaa_iter != vv_xgaa->end(); p++, ++xgaa_iter, ++icon_iter)
+	{
+		// String data row
+		auto &data_row = *xgaa_iter;
+
+		// Icon
+		*icon_iter = loadImage(be32_to_cpu(p->image_id));
+
+		// Achievement ID
+		data_row.push_back(rp_sprintf("%u", be16_to_cpu(p->avatar_award_id)));
+
+		// Title and locked description
+		// TODO: Unlocked description?
+		if (langID != XDBF_LANGUAGE_UNKNOWN) {
+			string desc = loadString(langID, be16_to_cpu(p->name_id));
+			string lck_desc = loadString(langID, be16_to_cpu(p->locked_desc_id));
+			if (!lck_desc.empty()) {
+				if (!desc.empty()) {
+					desc += '\n';
+					desc += lck_desc;
+				} else {
+					desc = std::move(lck_desc);
+				}
+			}
+
+			// TODO: Formatting value indicating that the first line should be bold.
+			data_row.push_back(std::move(desc));
+		} else {
+			// Unknown language ID.
+			// Show the string table IDs instead.
+			data_row.push_back(rp_sprintf(
+				C_("Xbox360_XDBF|AvatarAwards", "Name: 0x%04X | Locked: 0x%04X | Unlocked: 0x%04X"),
+					be16_to_cpu(p->name_id),
+					be16_to_cpu(p->locked_desc_id),
+					be16_to_cpu(p->unlocked_desc_id)));
+		}
+	}
+
+	// Add the list data.
+	// TODO: Improve the display? On KDE, it seems to be limited to
+	// one row due to achievements taking up all the space.
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW |
+				      RomFields::RFT_LISTDATA_ICONS, 2);
+	params.headers = v_xgaa_col_names;
+	params.list_data = vv_xgaa;
+	params.mxd.icons = vv_icons;
+	fields->addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
 	return 0;
 }
 
@@ -1034,6 +1181,11 @@ int Xbox360_XDBF::loadFieldData(void)
 		d->fields->addField_string(C_("RomData", "Title"),
 			!title.empty() ? title : C_("RomData", "Unknown"));
 	}
+
+	// Avatar Awards
+	// NOTE: Displayed before achievements because achievements uses up
+	// the rest of the window.
+	d->addFields_avatarAwards();
 
 	// Achievements
 	d->addFields_achievements();

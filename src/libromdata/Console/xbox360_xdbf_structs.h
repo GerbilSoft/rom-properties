@@ -241,6 +241,40 @@ typedef enum {
 	XDBF_TITLE_TYPE_DOWNLOAD	= 3,	// Download game (XBLA, etc)
 } XDBF_Title_Type_e;
 
+/**
+ * XDBF: XGAA - Avatar awards
+ * All fields are in big-endian.
+ */
+#define XDBF_XGAA_MAGIC 'XGAA'
+#define XDBF_XGAA_VERSION 1
+typedef struct PACKED _XDBF_XGAA_Header {
+	uint32_t magic;		// [0x000] 'XGAA'
+	uint32_t version;	// [0x004] Version (1)
+	uint32_t size;		// [0x008] Size (must be at least 14)
+	uint16_t xgaa_count;	// [0x00C] Number of avatar awards
+	// Following XDBF_XGAA_Header are xgaa_count instances
+	// of XDBF_XGAA_Entry.
+} XDBF_XGAA_Header;
+ASSERT_STRUCT(XDBF_XGAA_Header, 14);
+
+/**
+ * XDBF: XGAA - Avatar award entry
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XDBF_XGAA_Entry {
+	uint32_t unk_0x000;		// [0x000] ???
+	uint16_t avatar_award_id;	// [0x004] Avatar award ID
+	uint16_t unk_0x006;		// [0x006] ???
+	uint8_t unk_0x008[8];		// [0x008] ???
+	uint16_t name_id;		// [0x010] Name ID (string table)
+	uint16_t unlocked_desc_id;	// [0x012] Unlocked description ID (string table)
+	uint16_t locked_desc_id;	// [0x014] Locked description ID (string table)
+	uint16_t unk_0x016;		// [0x016] ???
+	uint32_t image_id;		// [0x018] Image ID
+	uint8_t unk_0x01C[8];		// [0x01C] ???
+} XDBF_XGAA_Entry;
+ASSERT_STRUCT(XDBF_XGAA_Entry, 36);
+
 #pragma pack()
 
 #ifdef __cplusplus
