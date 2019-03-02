@@ -190,7 +190,7 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 * @param pId Media ID or disc profile ID. (16 bytes)
 		 * @return Formatted ID.
 		 */
-		string formatMediaID(const uint8_t *pId);
+		static string formatMediaID(const uint8_t *pId);
 
 		/**
 		 * Convert game ratings from Xbox 360 format to RomFields format.
