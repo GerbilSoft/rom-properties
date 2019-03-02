@@ -1004,10 +1004,13 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		return;
 	}
 
-	// Read the XEX2 header.
+	// Read the XEX2 header and optional header table.
+	// NOTE: Reading all at once to reduce seeking.
+	// NOTE: Limiting to one DVD sector.
+	uint8_t header[2048];
 	d->file->rewind();
-	size_t size = d->file->read(&d->xex2Header, sizeof(d->xex2Header));
-	if (size != sizeof(d->xex2Header)) {
+	size_t size = d->file->read(header, sizeof(header));
+	if (size != sizeof(header)) {
 		d->xex2Header.magic = 0;
 		d->file->unref();
 		d->file = nullptr;
@@ -1017,8 +1020,8 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	// Check if this file is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(d->xex2Header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->xex2Header);
+	info.header.size = sizeof(header);
+	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for XEX.
 	info.szFile = 0;	// Not needed for XEX.
 	d->isValid = (isRomSupported_static(&info) >= 0);
@@ -1030,6 +1033,8 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		return;
 	}
 
+	// Copy the XEX2 header.
+	memcpy(&d->xex2Header, header, sizeof(d->xex2Header));
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Byteswap the header for little-endian systems.
 	// NOTE: The magic number is *not* byteswapped here.
@@ -1041,6 +1046,9 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Read the security info.
+	// NOTE: This must be done after copying the XEX2 header,
+	// since the security info offset is stored in the header.
+	// TODO: Read the offset directly before copying?
 	size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->xex2Security, sizeof(d->xex2Security));
 	if (size != sizeof(d->xex2Security)) {
 		// Seek and/or read error.
@@ -1051,23 +1059,13 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		return;
 	}
 
-	// Read the optional header table.
-	// Maximum of 32 optional headers.
-	assert(d->xex2Header.opt_header_count <= 32);
-	const unsigned int opt_header_count = std::min(d->xex2Header.opt_header_count, 32U);
+	// Copy the optional header table.
+	// Maximum of 64 optional headers.
+	assert(d->xex2Header.opt_header_count <= 64);
+	const unsigned int opt_header_count = std::min(d->xex2Header.opt_header_count, 64U);
 	d->optHdrTbl.resize(opt_header_count);
 	const size_t opt_header_sz = (size_t)opt_header_count * sizeof(XEX2_Optional_Header_Tbl);
-	size = d->file->seekAndRead(sizeof(d->xex2Header), d->optHdrTbl.data(), opt_header_sz);
-	if (size != opt_header_sz) {
-		// Seek and/or read error.
-		d->optHdrTbl.clear();
-		d->optHdrTbl.shrink_to_fit();
-		d->xex2Header.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
-		d->isValid = false;
-		return;
-	}
+	memcpy(d->optHdrTbl.data(), &header[sizeof(d->xex2Header)], opt_header_sz);
 }
 
 /**
