@@ -511,20 +511,6 @@ NCCHReader::~NCCHReader()
 /** IDiscReader **/
 
 /**
- * Is the partition open?
- * This usually only returns false if an error occurred.
- * @return True if the partition is open; false if it isn't.
- */
-bool NCCHReader::isOpen(void) const
-{
-	if (m_hasDiscReader) {
-		return (m_discReader && m_discReader->isOpen());
-	} else {
-		return (m_file && m_file->isOpen());
-	}
-}
-
-/**
  * Read data from the file.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.

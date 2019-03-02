@@ -62,7 +62,7 @@ class IDiscReader
 		 * This usually only returns false if an error occurred.
 		 * @return True if the disc image is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const = 0;
+		bool isOpen(void) const;
 
 		/**
 		 * Get the last error.

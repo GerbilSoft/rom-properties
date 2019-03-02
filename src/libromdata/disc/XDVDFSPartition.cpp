@@ -242,16 +242,6 @@ XDVDFSPartition::~XDVDFSPartition()
 /** IDiscReader **/
 
 /**
- * Is the partition open?
- * This usually only returns false if an error occurred.
- * @return True if the partition is open; false if it isn't.
- */
-bool XDVDFSPartition::isOpen(void) const
-{
-	return (m_discReader && m_discReader->isOpen());
-}
-
-/**
  * Read data from the file.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.

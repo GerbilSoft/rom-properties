@@ -52,6 +52,20 @@ IDiscReader::~IDiscReader()
 }
 
 /**
+ * Is the disc image open?
+ * This usually only returns false if an error occurred.
+ * @return True if the disc image is open; false if it isn't.
+ */
+bool IDiscReader::isOpen(void) const
+{
+	if (!m_hasDiscReader) {
+		return (m_file && m_file->isOpen());
+	} else {
+		return (m_discReader && m_discReader->isOpen());
+	}
+}
+
+/**
  * Get the last error.
  * @return Last POSIX error, or 0 if no error.
  */

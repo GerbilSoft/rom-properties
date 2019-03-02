@@ -113,16 +113,6 @@ int DiscReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 }
 
 /**
- * Is the disc image open?
- * This usually only returns false if an error occurred.
- * @return True if the disc image is open; false if it isn't.
- */
-bool DiscReader::isOpen(void) const
-{
-	return (m_file != nullptr);
-}
-
-/**
  * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
