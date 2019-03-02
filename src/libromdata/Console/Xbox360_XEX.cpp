@@ -401,9 +401,11 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
 	}
 
 	// Get the resource information.
+	// TODO: Gears of War 3 has a 36-byte resource information header.
+	// We're only expecting 20 bytes.
 	ao::uvector<uint8_t> u8_resInfo;
 	size_t size = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO, u8_resInfo);
-	if (size != sizeof(resInfo)) {
+	if (size < sizeof(resInfo)) {
 		// No resource information.
 		resInfo.resource_vaddr = 0;
 		return nullptr;
