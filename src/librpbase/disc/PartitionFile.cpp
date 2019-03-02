@@ -56,7 +56,7 @@ PartitionFile::PartitionFile(IDiscReader *partition, int64_t offset, int64_t siz
 	// If caching is specified, cache the file.
 	// Maximum cache size is 4 MB.
 	if (cache) {
-		static const int64_t CACHE_SIZE_MAX = 4*1024*1024;
+		static const int64_t CACHE_SIZE_MAX = 32*1024*1024;
 		assert(size <= CACHE_SIZE_MAX);
 		if (size <= CACHE_SIZE_MAX) {
 			m_cache = new uint8_t[size];
@@ -89,7 +89,7 @@ PartitionFile::~PartitionFile()
  */
 bool PartitionFile::isOpen(void) const
 {
-	return (m_partition != nullptr);
+	return (m_cache != nullptr || m_partition != nullptr);
 }
 
 /**

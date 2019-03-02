@@ -801,13 +801,15 @@ int XboxDisc::loadFieldData(void)
 		// NOTE: Adding tabs manually so we can show the disc info in
 		// the primary tab.
 		const RomFields *const exeFields = defaultExeData->fields();
-		int exeTabCount = exeFields->tabCount();
-		for (int i = 1; i < exeTabCount; i++) {
-			d->fields->setTabName(i, exeFields->tabName(i));
+		if (exeFields) {
+			int exeTabCount = exeFields->tabCount();
+			for (int i = 1; i < exeTabCount; i++) {
+				d->fields->setTabName(i, exeFields->tabName(i));
+			}
+			d->fields->setTabIndex(0);
+			d->fields->addFields_romFields(exeFields, 0);
+			d->fields->setTabIndex(exeTabCount - 1);
 		}
-		d->fields->setTabIndex(0);
-		d->fields->addFields_romFields(exeFields, 0);
-		d->fields->setTabIndex(exeTabCount - 1);
 	}
 
 	// ISO object for ISO-9660 PVD
@@ -815,8 +817,11 @@ int XboxDisc::loadFieldData(void)
 		ISO *const isoData = new ISO(d->file);
 		if (isoData->isOpen()) {
 			// Add the fields.
-			d->fields->addFields_romFields(isoData->fields(),
-				RomFields::TabOffset_AddTabs);
+			const RomFields *const isoFields = isoData->fields();
+			if (isoFields) {
+				d->fields->addFields_romFields(isoFields,
+					RomFields::TabOffset_AddTabs);
+			}
 		}
 		isoData->unref();
 	}

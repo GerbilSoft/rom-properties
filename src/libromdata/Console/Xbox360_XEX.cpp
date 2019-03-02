@@ -1047,6 +1047,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		d->xex2Header.magic = 0;
 		d->file->unref();
 		d->file = nullptr;
+		d->isValid = false;
 		return;
 	}
 
@@ -1064,6 +1065,7 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		d->xex2Header.magic = 0;
 		d->file->unref();
 		d->file = nullptr;
+		d->isValid = false;
 		return;
 	}
 }
@@ -1551,13 +1553,19 @@ int Xbox360_XEX::loadFieldData(void)
 	const EXE *const pe_exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
 	if (pe_exe) {
 		// Add the fields.
-		d->fields->addFields_romFields(pe_exe->fields(), RomFields::TabOffset_AddTabs);
+		const RomFields *const exeFields = pe_exe->fields();
+		if (exeFields) {
+			d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+		}
 	}
 
 	// Can we get the XDBF section?
 	if (pe_xdbf) {
 		// Add the fields.
-		d->fields->addFields_romFields(pe_xdbf->fields(), RomFields::TabOffset_AddTabs);
+		const RomFields *const xdbfFields = pe_xdbf->fields();
+		if (xdbfFields) {
+			d->fields->addFields_romFields(xdbfFields, RomFields::TabOffset_AddTabs);
+		}
 	}
 
 	// Finished reading the field data.
