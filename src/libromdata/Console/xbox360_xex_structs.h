@@ -22,6 +22,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_STRUCTS_H__
 
 #include "librpbase/common.h"
+#include "librpbase/byteorder.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -318,6 +319,67 @@ typedef struct PACKED _XEX2_Compression_Normal_Header {
 ASSERT_STRUCT(XEX2_Compression_Normal_Header, sizeof(uint32_t) + 24);
 
 /**
+ * XEX2: Import libraries (0x103FF)
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XEX2_Import_Libraries_Header {
+	uint32_t size;		// [0x000] Size of the library header
+	uint32_t str_tbl_size;	// [0x004] String table size, in bytes
+	uint32_t str_tbl_count;	// [0x008] Number of string table entries
+
+	// The string table is located immediately after
+	// this header. Located immediately after the
+	// string table is the list of import libraries.
+} XEX2_Import_Libraries_Header;
+ASSERT_STRUCT(XEX2_Import_Libraries_Header, 3*sizeof(uint32_t));
+
+/**
+ * XEX2: Version number
+ * All fields are in big-endian.
+ * NOTE: Bitfields are in HOST-endian. u32 value
+ * must be converted before using the bitfields.
+ * TODO: Verify behavior on various platforms!
+ * TODO: Static assertions?
+ */
+typedef union _XEX2_Version_t {
+	uint32_t u32;
+	struct {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+		uint32_t major : 4;
+		uint32_t minor : 4;
+		uint32_t build : 16;
+		uint32_t qfe : 8;
+#else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+		uint32_t qfe : 8;
+		uint32_t build : 16;
+		uint32_t minor : 4;
+		uint32_t major : 4;
+#endif
+	};
+} XEX2_Version_t;
+ASSERT_STRUCT(XEX2_Version_t, sizeof(uint32_t));
+
+/**
+ * XEX2: Import library entry.
+ * Located immediately after the import library string table.
+ *
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XEX2_Import_Library_Entry {
+	uint32_t size;			// [0x000] Size of entry
+	uint8_t next_import_digest[20];	// [0x004] SHA1 of the *next* entry?
+	uint32_t id;			// [0x018] Library ID
+	XEX2_Version_t version;		// [0x01C] Library version
+	XEX2_Version_t version_min;	// [0x020] Minimum library version
+	uint16_t name_index;		// [0x024] Library name (index in string table)
+	uint16_t count;			// [0x026] Number of imports
+
+	// The import listing for this library is located immediately
+	// after this struct. Each import is a single 32-bit value.
+} XEX2_Import_Library_Entry;
+ASSERT_STRUCT(XEX2_Import_Library_Entry, 0x28);
+
+/**
  * XEX2: Checksum and timestamp (0x18002)
  * All fields are in big-endian.
  */
@@ -398,8 +460,8 @@ ASSERT_STRUCT(XEX2_Title_ID, sizeof(uint32_t));
  */
 typedef struct PACKED _XEX2_Execution_ID {
 	uint32_t media_id;		// [0x000] Media ID
-	uint32_t version;		// [0x004] Version (4-bit major, 4-bit minor, 16-bit build, 8-bit qfe)
-	uint32_t base_version;		// [0x008] Base version
+	XEX2_Version_t version;		// [0x004] Version (4-bit major, 4-bit minor, 16-bit build, 8-bit qfe)
+	XEX2_Version_t base_version;	// [0x008] Base version
 	XEX2_Title_ID title_id;		// [0x00C] Title ID (two characters, and uint16_t)
 	uint8_t platform;		// [0x010] Platform
 	uint8_t exec_type;		// [0x011] Executable type

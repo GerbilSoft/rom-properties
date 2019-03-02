@@ -200,6 +200,12 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		static void convertGameRatings(RomFields::age_ratings_t &age_ratings,
 			const XEX2_Game_Ratings &game_ratings);
 
+		/**
+		 * Get the minimum kernel version required for this XEX.
+		 * @return Minimum kernel version, or 0 on error.
+		 */
+		XEX2_Version_t getMinKernelVersion(void);
+
 	public:
 		// CBC reader for encrypted PE executables.
 		// Also used for unencrypted executables.
@@ -425,8 +431,8 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
 		const XEX2_Execution_ID *const pLdExecutionId =
 			reinterpret_cast<const XEX2_Execution_ID*>(u8_data.data());
 		executionID.media_id		= be32_to_cpu(pLdExecutionId->media_id);
-		executionID.version		= be32_to_cpu(pLdExecutionId->version);
-		executionID.base_version	= be32_to_cpu(pLdExecutionId->base_version);
+		executionID.version.u32		= be32_to_cpu(pLdExecutionId->version.u32);
+		executionID.base_version.u32	= be32_to_cpu(pLdExecutionId->base_version.u32);
 		// NOTE: Not byteswapping the title ID.
 		executionID.title_id		= pLdExecutionId->title_id;
 		executionID.savegame_id		= be32_to_cpu(pLdExecutionId->savegame_id);
@@ -1064,6 +1070,50 @@ void Xbox360_XEX_Private::convertGameRatings(
 }
 
 /**
+ * Get the minimum kernel version required for this XEX.
+ * @return Minimum kernel version, or 0 on error.
+ */
+XEX2_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
+{
+	XEX2_Version_t rver;
+	rver.u32 = 0;
+
+	// Minimum kernel version is determined by checking the
+	// import libraries and taking the maximum version.
+	ao::uvector<uint8_t> u8_implib;
+	size_t size = getOptHdrData(XEX2_OPTHDR_IMPORT_LIBRARIES, u8_implib);
+	if (size < sizeof(XEX2_Import_Libraries_Header) + (sizeof(XEX2_Import_Library_Entry) * 2)) {
+		// Too small...
+		return rver;
+	}
+
+	const XEX2_Import_Libraries_Header *const pLibHdr =
+		reinterpret_cast<const XEX2_Import_Libraries_Header*>(u8_implib.data());
+
+	// Pointers
+	const uint8_t *p = u8_implib.data();
+	const uint8_t *const p_end = p + u8_implib.size();
+
+	// Skip the string table.
+	p += sizeof(*pLibHdr) + be32_to_cpu(pLibHdr->str_tbl_size);
+
+	while (p + sizeof(XEX2_Import_Library_Entry) < p_end) {
+		// Check the minimum version of this import library.
+		const XEX2_Import_Library_Entry *const entry =
+			reinterpret_cast<const XEX2_Import_Library_Entry*>(p);
+		const uint32_t vmin = be32_to_cpu(entry->version_min.u32);
+		if (vmin > rver.u32) {
+			rver.u32 = vmin;
+		}
+
+		// Next import library entry.
+		p += be32_to_cpu(entry->size);
+	}
+
+	return rver;
+}
+
+/**
  * Initialize the EXE object.
  * @return EXE object on success; nullptr on error.
  */
@@ -1516,6 +1566,17 @@ int Xbox360_XEX::loadFieldData(void)
 					u8_data.data() + sizeof(uint32_t)), len),
 				RomFields::STRF_TRIM_END);
 		}
+	}
+
+	// tr: Minimum kernel version (i.e. dashboard)
+	const char *const s_minver = C_("Xbox360_XEX", "Min. Kernel");
+	XEX2_Version_t minver = d->getMinKernelVersion();
+	if (minver.u32 != 0) {
+		d->fields->addField_string(s_minver,
+			rp_sprintf("%u.%u.%u.%u",
+				   minver.major, minver.minor, minver.build, minver.qfe));
+	} else {
+		d->fields->addField_string(s_minver, C_("RomData", "Unknown"));
 	}
 
 	// Module flags
