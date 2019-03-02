@@ -181,13 +181,13 @@ ASSERT_STRUCT(XDBF_Title_ID, sizeof(uint32_t));
 #define XDBF_XACH_MAGIC 'XACH'
 #define XDBF_XACH_VERSION 1
 typedef struct PACKED _XDBF_XACH_Header {
-	uint32_t magic;			// [0x000] 'XACH'
-	uint32_t version;		// [0x004] Version (1)
-	uint32_t size;			// [0x008] Structure size, minus magic
-	uint16_t achievement_count;	// [0x00C] Achivement count.
-					// NOTE: Should be compared to structure size
-					// and XDBF table entry.
-	// Following XDBF_XACH_Header are achievement_count instances
+	uint32_t magic;		// [0x000] 'XACH'
+	uint32_t version;	// [0x004] Version (1)
+	uint32_t size;		// [0x008] Structure size, minus magic
+	uint16_t xach_count;	// [0x00C] Achivement count.
+				// NOTE: Should be compared to structure size
+				// and XDBF table entry.
+	// Following XDBF_XACH_Header are xach_count instances
 	// of XDBF_XACH_Entry.
 } XDBF_XACH_Header;
 ASSERT_STRUCT(XDBF_XACH_Header, 14);
@@ -198,7 +198,7 @@ ASSERT_STRUCT(XDBF_XACH_Header, 14);
  */
 typedef struct PACKED _XDBF_XACH_Entry {
 	uint16_t achievement_id;	// [0x000] Achievement ID
-	uint16_t title_id;		// [0x002] Title ID (string table)
+	uint16_t name_id;		// [0x002] Name ID (string table)
 	uint16_t unlocked_desc_id;	// [0x004] Unlocked description ID (string table)
 	uint16_t locked_desc_id;	// [0x006] Locked description ID (string table)
 	uint32_t image_id;		// [0x008] Image ID

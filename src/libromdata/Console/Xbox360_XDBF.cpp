@@ -601,7 +601,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	}
 
 	// Validate the entry count.
-	unsigned int xach_count = be16_to_cpu(hdr->achievement_count);
+	unsigned int xach_count = be16_to_cpu(hdr->xach_count);
 	if (xach_count > XACH_MAX_COUNT) {
 		// Too many entries.
 		// Reduce it to XACH_MAX_COUNT.
@@ -651,7 +651,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 		// Title and locked description
 		// TODO: Unlocked description?
 		if (langID != XDBF_LANGUAGE_UNKNOWN) {
-			string desc = loadString(langID, be16_to_cpu(p->title_id));
+			string desc = loadString(langID, be16_to_cpu(p->name_id));
 			string lck_desc = loadString(langID, be16_to_cpu(p->locked_desc_id));
 			if (!lck_desc.empty()) {
 				if (!desc.empty()) {
@@ -668,8 +668,8 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 			// Unknown language ID.
 			// Show the string table IDs instead.
 			data_row.push_back(rp_sprintf(
-				C_("Xbox360_XDBF|Achievements", "Title: 0x%04X | Locked: 0x%04X | Unlocked: 0x%04X"),
-					be16_to_cpu(p->title_id),
+				C_("Xbox360_XDBF|Achievements", "Name: 0x%04X | Locked: 0x%04X | Unlocked: 0x%04X"),
+					be16_to_cpu(p->name_id),
 					be16_to_cpu(p->locked_desc_id),
 					be16_to_cpu(p->unlocked_desc_id)));
 		}
