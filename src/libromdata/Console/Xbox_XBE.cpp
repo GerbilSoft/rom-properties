@@ -566,8 +566,8 @@ int Xbox_XBE::loadFieldData(void)
 	static const char *const media_type_tbl[] = {
 		// 0
 		NOP_C_("Xbox_XBE", "Hard Disk"),
-		NOP_C_("Xbox_XBE", "DVD X2"),
-		NOP_C_("Xbox_XBE", "DVD / CD"),
+		NOP_C_("Xbox_XBE", "XGD1"),
+		NOP_C_("Xbox_XBE", "DVD/CD"),
 		NOP_C_("Xbox_XBE", "CD-ROM"),
 		// 4
 		NOP_C_("Xbox_XBE", "DVD-ROM SL"),

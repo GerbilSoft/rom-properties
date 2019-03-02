@@ -1542,29 +1542,30 @@ int Xbox360_XEX::loadFieldData(void)
 	// are all of these set, and in most cases, none are.
 	// TODO: RFT_LISTDATA?
 	if (image_flags & XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY) {
-		// XGD2 media only.
+		// XGD2/XGD3 media only.
+		// TODO: Check the Burger King games. (XGD1)
 		d->fields->addField_string(C_("Xbox360_XEX", "Media Types"),
-			C_("Xbox360_XEX", "XGD2 only"));
+			C_("Xbox360_XEX", "Xbox 360 Game Disc only"));
 	} else {
 		// Other types.
 		static const char *const media_type_tbl[] = {
 			// 0
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
-			NOP_C_("Xbox360_XEX", "DVD X2"),
+			NOP_C_("Xbox360_XEX", "XGD1"),
 			NOP_C_("Xbox360_XEX", "DVD / CD"),
 			NOP_C_("Xbox360_XEX", "DVD-ROM SL"),
 			// 4
 			NOP_C_("Xbox360_XEX", "DVD-ROM DL"),
-			NOP_C_("Xbox360_XEX", "Internal Flash Memory"),
+			NOP_C_("Xbox360_XEX", "System Flash Memory"),
 			nullptr,
 			NOP_C_("Xbox360_XEX", "Memory Unit"),
 			// 8
 			NOP_C_("Xbox360_XEX", "USB Mass Storage Device"),
 			NOP_C_("Xbox360_XEX", "Network"),
-			NOP_C_("Xbox360_XEX", "Direct from Memory"),
-			NOP_C_("Xbox360_XEX", "Hard RAM Drive"),
+			NOP_C_("Xbox360_XEX", "Direct from RAM"),
+			NOP_C_("Xbox360_XEX", "RAM Drive"),
 			// 12
-			NOP_C_("Xbox360_XEX", "SVOD"),
+			NOP_C_("Xbox360_XEX", "Secure Virtual Optical Device"),
 			nullptr, nullptr, nullptr,
 			// 16
 			nullptr, nullptr, nullptr, nullptr,
