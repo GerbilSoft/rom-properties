@@ -636,8 +636,12 @@ int SegaSaturn::loadFieldData(void)
 	ISO *const isoData = new ISO(d->file);
 	if (isoData->isOpen()) {
 		// Add the fields.
-		d->fields->addFields_romFields(isoData->fields(),
-			RomFields::TabOffset_AddTabs);
+		const RomFields *const isoFields = isoData->fields();
+		assert(isoFields != nullptr);
+		if (isoFields) {
+			d->fields->addFields_romFields(isoFields,
+				RomFields::TabOffset_AddTabs);
+		}
 	}
 	isoData->unref();
 

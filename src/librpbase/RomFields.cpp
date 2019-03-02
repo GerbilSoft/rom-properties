@@ -585,6 +585,11 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	if (!other)
 		return -1;
 
+	if (other->empty()) {
+		// Nothing to add...
+		return 0;
+	}
+
 	// TODO: More tab options:
 	// - Add original tab names if present.
 	// - Add all to specified tab or to current tab.

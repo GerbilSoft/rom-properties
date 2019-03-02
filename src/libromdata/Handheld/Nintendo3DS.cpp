@@ -1899,14 +1899,16 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Add the SMDH fields from the Nintendo3DS_SMDH object.
-		const RomFields *smdh_fields = d->sbptr.smdh.data->fields();
+		const RomFields *const smdh_fields = d->sbptr.smdh.data->fields();
+		assert(smdh_fields != nullptr);
 		if (smdh_fields) {
 			// Add the SMDH fields.
 			d->fields->addFields_romFields(smdh_fields, 0);
 		}
 	} else if (d->sbptr.srl.data) {
 		// DSiWare SRL.
-		const RomFields *srl_fields = d->sbptr.srl.data->fields();
+		const RomFields *const srl_fields = d->sbptr.srl.data->fields();
+		assert(srl_fields != nullptr);
 		if (srl_fields) {
 			d->fields->setTabName(0, C_("Nintendo3DS", "DSiWare"));
 

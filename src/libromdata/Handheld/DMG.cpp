@@ -177,7 +177,7 @@ class DMGPrivate : public RomDataPrivate
 
 		// GBS subclass.
 		struct {
-			IDiscReader *reader;	// uses ncch_f_icon
+			IDiscReader *reader;
 			GBS *data;
 		} gbs;
 
@@ -1095,13 +1095,10 @@ int DMG::loadFieldData(void)
 	if (d->gbs.data) {
 		// This is a GBS Player ROM.
 		// TODO: GBS metadata.
-		const RomFields *gbsFields = d->gbs.data->fields();
+		const RomFields *const gbsFields = d->gbs.data->fields();
 		assert(gbsFields != nullptr);
-		assert(!gbsFields->empty());
-		if (gbsFields && !gbsFields->empty()) {
-			const int tabOffset = d->fields->tabCount();
-			d->fields->addTab("GBS");
-			d->fields->addFields_romFields(gbsFields, tabOffset);
+		if (gbsFields) {
+			d->fields->addFields_romFields(gbsFields, RomFields::TabOffset_AddTabs);
 		}
 	}
 

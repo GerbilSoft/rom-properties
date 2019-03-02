@@ -244,6 +244,7 @@ int GBS::loadFieldData(void)
 	// GBS header.
 	const GBS_Header *const gbsHeader = &d->gbsHeader;
 	d->fields->reserve(9);	// Maximum of 9 fields.
+	d->fields->setTabName(0, "GBS");
 
 	// NOTE: The GBS specification says ASCII, but I'm assuming
 	// the text is cp1252 and/or Shift-JIS.

@@ -931,7 +931,11 @@ int WiiWAD::loadFieldData(void)
 	// If so, we don't have IMET data.
 	if (d->wibnData) {
 		// Add the WIBN data.
-		d->fields->addFields_romFields(d->wibnData->fields(), 0);
+		const RomFields *const wibnFields = d->wibnData->fields();
+		assert(wibnFields != nullptr);
+		if (wibnFields) {
+			d->fields->addFields_romFields(wibnFields, 0);
+		}
 	} else
 #endif /* ENABLE_DECRYPTION */
 	{

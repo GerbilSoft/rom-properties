@@ -831,8 +831,12 @@ int Dreamcast::loadFieldData(void)
 		if (isoData) {
 			if (isoData->isOpen()) {
 				// Add the fields.
-				d->fields->addFields_romFields(isoData->fields(),
-					RomFields::TabOffset_AddTabs);
+				const RomFields *const isoFields = isoData->fields();
+				assert(isoFields != nullptr);
+				if (isoFields) {
+					d->fields->addFields_romFields(isoFields,
+						RomFields::TabOffset_AddTabs);
+				}
 			}
 			isoData->unref();
 		}
@@ -843,8 +847,12 @@ int Dreamcast::loadFieldData(void)
 			ISO *const isoData = new ISO(isoFile);
 			if (isoData->isOpen()) {
 				// Add the fields.
-				d->fields->addFields_romFields(isoData->fields(),
-					RomFields::TabOffset_AddTabs);
+				const RomFields *const isoFields = isoData->fields();
+				assert(isoFields != nullptr);
+				if (isoFields) {
+					d->fields->addFields_romFields(isoFields,
+						RomFields::TabOffset_AddTabs);
+				}
 			}
 			isoData->unref();
 		}
