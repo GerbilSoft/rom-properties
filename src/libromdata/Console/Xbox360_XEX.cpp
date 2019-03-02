@@ -176,6 +176,17 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		const XEX2_Resource_Info *getXdbfResInfo(void);
 
 		/**
+		 * Format a media ID or disc profile ID.
+		 *
+		 * The last four bytes are separated from the rest of the ID.
+		 * This format is used by abgx360.
+		 *
+		 * @param pId Media ID or disc profile ID. (16 bytes)
+		 * @return Formatted ID.
+		 */
+		string formatMediaID(const uint8_t *pId);
+
+		/**
 		 * Convert game ratings from Xbox 360 format to RomFields format.
 		 * @param age_ratings RomFields::age_ratings_t
 		 * @param game_ratings XEX2_Game_Ratings
@@ -873,6 +884,38 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 }
 
 /**
+ * Format a media ID or disc profile ID.
+ *
+ * The last four bytes are separated from the rest of the ID.
+ * This format is used by abgx360.
+ *
+ * @param pId Media ID or disc profile ID. (16 bytes)
+ * @return Formatted ID.
+ */
+string Xbox360_XEX_Private::formatMediaID(const uint8_t *pId)
+{
+	static const char hex_lookup[16] = {
+		'0','1','2','3','4','5','6','7',
+		'8','9','A','B','C','D','E','F',
+	};
+
+	// TODO: Use a string here?
+	char buf[(16*2)+2];
+	char *p = buf;
+	for (unsigned int i = 16; i > 0; i--, pId++, p += 2) {
+		p[0] = hex_lookup[*pId >> 4];
+		p[1] = hex_lookup[*pId & 0x0F];
+		if (i == 5) {
+			p[2] = '-';
+			p++;
+		}
+	}
+	*p = '\0';
+
+	return string(buf, (16*2)+1);
+}
+
+/**
  * Convert game ratings from Xbox 360 format to RomFields format.
  * @param age_ratings RomFields::age_ratings_t
  * @param game_ratings XEX2_Game_Ratings
@@ -1562,29 +1605,16 @@ int Xbox360_XEX::loadFieldData(void)
 		v_region_code, 4, region_code);
 
 	// Media ID
-	// NOTE: Displaying the full 16-byte media ID,
-	// since this is needed for tools like abgx360.
-	{
-		char media_id[(16*2)+2];
-		static const char hex_lookup[16] = {
-			'0','1','2','3','4','5','6','7',
-			'8','9','A','B','C','D','E','F',
-		};
+	d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
+		d->formatMediaID(xex2Security->xgd2_media_id),
+		RomFields::STRF_MONOSPACE);
 
-		const uint8_t *pMidOrig = xex2Security->xgd2_media_id;
-		char *pMidAscii = media_id;
-		for (unsigned int i = 16; i > 0; i--, pMidOrig++, pMidAscii += 2) {
-			pMidAscii[0] = hex_lookup[*pMidOrig >> 4];
-			pMidAscii[1] = hex_lookup[*pMidOrig & 0x0F];
-			if (i == 5) {
-				pMidAscii[2] = '-';
-				pMidAscii++;
-			}
-		}
-		*pMidAscii = '\0';
-
-		d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
-			media_id, RomFields::STRF_MONOSPACE);
+	// Disc Profile ID
+	size = d->getOptHdrData(XEX2_OPTHDR_DISC_PROFILE_ID, u8_data);
+	if (size == 16) {
+		d->fields->addField_string(C_("Xbox360_XEX", "Disc Profile ID"),
+			d->formatMediaID(u8_data.data()),
+			RomFields::STRF_MONOSPACE);
 	}
 
 	/** Execution ID **/
