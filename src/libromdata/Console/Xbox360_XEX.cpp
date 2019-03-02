@@ -99,6 +99,12 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// NOTE: This array of structs **IS NOT** byteswapped!
 		ao::uvector<XEX2_Optional_Header_Tbl> optHdrTbl;
 
+		// Execution ID. (XEX2_OPTHDR_EXECUTION_ID)
+		// Initialized by getXdbfResInfo().
+		// NOTE: This struct **IS** byteswapped,
+		// except for the title ID.
+		XEX2_Execution_ID executionID;
+
 		// Resource information. (XEX2_OPTHDR_RESOURCE_INFO)
 		// Initialized by getXdbfResInfo().
 		// NOTE: This struct **IS** byteswapped.
@@ -257,6 +263,7 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	// Clear the headers.
 	memset(&xex2Header, 0, sizeof(xex2Header));
 	memset(&xex2Security, 0, sizeof(xex2Security));
+	memset(&executionID, 0, sizeof(executionID));
 	memset(&resInfo, 0, sizeof(resInfo));
 	memset(&fileFormatInfo, 0, sizeof(fileFormatInfo));
 }
@@ -406,34 +413,72 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, ao::uvector<uint8_
  */
 const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
 {
-	if (resInfo.resource_vaddr != 0) {
+	if (resInfo.vaddr != 0) {
 		// Already loaded.
 		return &resInfo;
 	}
 
-	// Get the resource information.
-	// TODO: Gears of War 3 has a 36-byte resource information header.
-	// We're only expecting 20 bytes.
-	ao::uvector<uint8_t> u8_resInfo;
-	size_t size = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO, u8_resInfo);
-	if (size < sizeof(resInfo)) {
-		// No resource information.
-		resInfo.resource_vaddr = 0;
+	// Get the execution ID.
+	ao::uvector<uint8_t> u8_data;
+	size_t size = getOptHdrData(XEX2_OPTHDR_EXECUTION_ID, u8_data);
+	if (size == sizeof(XEX2_Execution_ID)) {
+		const XEX2_Execution_ID *const pLdExecutionId =
+			reinterpret_cast<const XEX2_Execution_ID*>(u8_data.data());
+		executionID.media_id		= be32_to_cpu(pLdExecutionId->media_id);
+		executionID.version		= be32_to_cpu(pLdExecutionId->version);
+		executionID.base_version	= be32_to_cpu(pLdExecutionId->base_version);
+		// NOTE: Not byteswapping the title ID.
+		executionID.title_id		= pLdExecutionId->title_id;
+		executionID.savegame_id		= be32_to_cpu(pLdExecutionId->savegame_id);
+	} else {
+		// Unable to read the execution ID...
+		// Can't get the title ID.
+		resInfo.vaddr = 0;
 		return nullptr;
 	}
 
-	// Copy the resource information.
-	const XEX2_Resource_Info *const pLdResInfo =
-		reinterpret_cast<const XEX2_Resource_Info*>(u8_resInfo.data());
-	resInfo.size		= be32_to_cpu(pLdResInfo->size);
-	resInfo.resource_vaddr	= be32_to_cpu(pLdResInfo->resource_vaddr);
-	resInfo.resource_size	= be32_to_cpu(pLdResInfo->resource_size);
+	// Get the resource information.
+	size = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO, u8_data);
+	if (size < sizeof(uint32_t) + sizeof(resInfo)) {
+		// No resource information.
+		resInfo.vaddr = 0;
+		return nullptr;
+	}
 
-	// Sanity check: resource_size should be less than 2 MB.
-	assert(resInfo.resource_size <= 2*1024*1024);
-	if (resInfo.resource_size > 2*1024*1024) {
+	// Search the resource table for the title ID.
+	unsigned int res_count = (size - sizeof(uint32_t)) / sizeof(XEX2_Resource_Info);
+	if (res_count == 0) {
+		// No resource information...
+		resInfo.vaddr = 0;
+		return nullptr;
+	}
+
+	// ASCII title ID.
+	char title_id[9];
+	snprintf(title_id, sizeof(title_id), "%08X", be32_to_cpu(executionID.title_id.u32));
+
+	const XEX2_Resource_Info *p =
+		reinterpret_cast<const XEX2_Resource_Info*>(u8_data.data() + sizeof(uint32_t));
+	for (unsigned int i = 0; i < res_count; i++, p++) {
+		if (!memcmp(title_id, p->resource_id, sizeof(p->resource_id))) {
+			// Found a match!
+			memcpy(resInfo.resource_id, p->resource_id, sizeof(p->resource_id));
+			resInfo.vaddr	= be32_to_cpu(p->vaddr);
+			resInfo.size	= be32_to_cpu(p->size);
+			break;
+		}
+	}
+
+	if (resInfo.vaddr == 0) {
+		// Not found.
+		return nullptr;
+	}
+
+	// Sanity check: Resource_size should be 2 MB or less.
+	assert(resInfo.size <= 2*1024*1024);
+	if (resInfo.size > 2*1024*1024) {
 		// That's too much!
-		resInfo.resource_vaddr = 0;
+		resInfo.vaddr = 0;
 		return nullptr;
 	}
 
@@ -832,13 +877,13 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			// Copy the XDBF section.
 			const XEX2_Resource_Info *const pResInfo = getXdbfResInfo();
 			if (pResInfo) {
-				const uint32_t xdbf_physaddr = pResInfo->resource_vaddr -
+				const uint32_t xdbf_physaddr = pResInfo->vaddr -
 							       be32_to_cpu(xex2Security.load_address);
-				if (xdbf_physaddr + pResInfo->resource_size <= image_size) {
-					lzx_xdbfSection.resize(pResInfo->resource_size);
+				if (xdbf_physaddr + pResInfo->size <= image_size) {
+					lzx_xdbfSection.resize(pResInfo->size);
 					memcpy(lzx_xdbfSection.data(),
 						decompressed_exe.get() + xdbf_physaddr,
-						pResInfo->resource_size);
+						pResInfo->size);
 				}
 			}
 
@@ -1096,7 +1141,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		}
 
 		// Calculate the XDBF physical address.
-		uint32_t xdbf_physaddr = pResInfo->resource_vaddr -
+		uint32_t xdbf_physaddr = pResInfo->vaddr -
 					 be32_to_cpu(xex2Security.load_address);
 
 		if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
@@ -1115,7 +1160,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 				}
 			}
 		}
-		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->resource_size);
+		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->size);
 	}
 	if (peFile_tmp->isOpen()) {
 		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
@@ -1618,35 +1663,33 @@ int Xbox360_XEX::loadFieldData(void)
 	}
 
 	/** Execution ID **/
-	size = d->getOptHdrData(XEX2_OPTHDR_EXECUTION_ID, u8_data);
-	if (size == sizeof(XEX2_Execution_ID)) {
-		const XEX2_Execution_ID *const pLdExecutionId =
-			reinterpret_cast<const XEX2_Execution_ID*>(u8_data.data());
-
+	// NOTE: Initialized by d->getXdbfResInfo().
+	d->getXdbfResInfo();
+	if (d->executionID.media_id != 0) {
 		// Title ID
 		// FIXME: Verify behavior on big-endian.
 		d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
 			rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$c%3$c-%4$04u)"),
-				be32_to_cpu(pLdExecutionId->title_id.u32),
-				pLdExecutionId->title_id.a,
-				pLdExecutionId->title_id.b,
-				be16_to_cpu(pLdExecutionId->title_id.u16)),
+				be32_to_cpu(d->executionID.title_id.u32),
+				d->executionID.title_id.a,
+				d->executionID.title_id.b,
+				be16_to_cpu(d->executionID.title_id.u16)),
 			RomFields::STRF_MONOSPACE);
 
 		// Savegame ID
 		d->fields->addField_string_numeric(C_("Xbox360_XEX", "Savegame ID"),
-			be32_to_cpu(pLdExecutionId->savegame_id),
+			d->executionID.savegame_id,
 			RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 
 		// Disc number
 		// NOTE: Not shown for single-disc games.
 		const char *const disc_number_title = C_("RomData", "Disc #");
-		if (pLdExecutionId->disc_number != 0 && pLdExecutionId->disc_count > 1) {
+		if (d->executionID.disc_number != 0 && d->executionID.disc_count > 1) {
 			d->fields->addField_string(disc_number_title,
 				// tr: Disc X of Y (for multi-disc games)
 				rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
-					pLdExecutionId->disc_number,
-					pLdExecutionId->disc_count));
+					d->executionID.disc_number,
+					d->executionID.disc_count));
 		}
 	}
 
