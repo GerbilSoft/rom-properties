@@ -144,6 +144,32 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		const XEX2_Optional_Header_Tbl *getOptHdrTblEntry(uint32_t header_id) const;
 
 		/**
+		 * Get data from an optional header.
+		 *
+		 * This function is for headers that either have a 32-bit value
+		 * stored as the offset (low byte == 0x00), or have a single
+		 * DWORD stored in the file (low byte == 0x01).
+		 *
+		 * @param header_id	[in] Optional header ID.
+		 * @param pOut32	[out] Pointer to uint32_t to store the DWORD.
+		 * @return Number of bytes read on success; 0 on error.
+		 */
+		size_t getOptHdrData(uint32_t header_id, uint32_t *pOut32);
+
+		/**
+		 * Get data from an optional header.
+		 *
+		 * This function is for headers that have either a fixed size
+		 * (low byte is between 0x02 and 0xFE), or have a size stored
+		 * at the beginning of the data (low byte == 0xFF).
+		 *
+		 * @param header_id	[in] Optional header ID.
+		 * @param pVec		[out] ao::uvector<uint8_t>&
+		 * @return Number of bytes read on success; 0 on error.
+		 */
+		size_t getOptHdrData(uint32_t header_id, ao::uvector<uint8_t> &pVec);
+
+		/**
 		 * Get the resource information.
 		 * @return Resource information, or nullptr on error.
 		 */
@@ -266,6 +292,104 @@ const XEX2_Optional_Header_Tbl *Xbox360_XEX_Private::getOptHdrTblEntry(uint32_t 
 }
 
 /**
+ * Get data from an optional header.
+ *
+ * This function is for headers that either have a 32-bit value
+ * stored as the offset (low byte == 0x00), or have a single
+ * DWORD stored in the file (low byte == 0x01).
+ *
+ * @param header_id	[in] Optional header ID.
+ * @param pOut32	[out] Pointer to uint32_t to store the DWORD.
+ * @return Number of bytes read on success; 0 on error.
+ */
+size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, uint32_t *pOut32)
+{
+	assert(pOut32 != nullptr);
+	assert((header_id & 0xFF) <= 0x01);
+	if ((header_id & 0xFF) > 0x01) {
+		// Not supported by this function.
+		return 0;
+	}
+
+	// Get the entry.
+	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(header_id);
+	if (!entry) {
+		// Not found.
+		return 0;
+	}
+
+	if ((header_id & 0xFF) == 0) {
+		// The value is stored as the offset.
+		*pOut32 = be32_to_cpu(entry->offset);
+		return sizeof(uint32_t);
+	}
+
+	// Read the DWORD from the file.
+	uint32_t dwData;
+	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &dwData, sizeof(dwData));
+	if (size != sizeof(dwData)) {
+		// Seek and/or read error.
+		return 0;
+	}
+
+	*pOut32 = be32_to_cpu(dwData);
+	return sizeof(uint32_t);
+}
+
+/**
+ * Get data from an optional header.
+ *
+ * This function is for headers that have either a fixed size
+ * (low byte is between 0x02 and 0xFE), or have a size stored
+ * at the beginning of the data (low byte == 0xFF).
+ *
+ * @param header_id	[in] Optional header ID.
+ * @param pVec		[out] ao::uvector<uint8_t>&
+ * @return Number of bytes read on success; 0 on error.
+ */
+size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, ao::uvector<uint8_t> &pVec)
+{
+	assert((header_id & 0xFF) > 0x01);
+	if ((header_id & 0xFF) <= 0x01) {
+		// Not supported by this function.
+		return 0;
+	}
+
+	// Get the entry.
+	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(header_id);
+	if (!entry) {
+		// Not found.
+		return 0;
+	}
+
+	size_t size;
+	const uint32_t offset = be32_to_cpu(entry->offset);
+	if ((header_id & 0xFF) != 0xFF) {
+		// Size is the low byte, in DWORD units.
+		size = (header_id & 0xFF) * sizeof(uint32_t);
+	} else {
+		// Size is the first DWORD of the data.
+		uint32_t dwSize = 0;
+		size_t sz_read = file->seekAndRead(offset, &dwSize, sizeof(dwSize));
+		if (sz_read != sizeof(dwSize)) {
+			// Seek and/or read error.
+			return 0;
+		}
+		size = be32_to_cpu(dwSize);
+	}
+
+	// Read the data.
+	// NOTE: This includes the size value for 0xFF structs.
+	pVec.resize(size);
+	size_t sz_read = file->seekAndRead(offset, pVec.data(), size);
+	if (sz_read != size) {
+		// Seek and/or read error.
+		return 0;
+	}
+	return size;
+}
+
+/**
  * Get the resource information.
  * @return Resource information, or nullptr on error.
  */
@@ -277,25 +401,20 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
 	}
 
 	// Get the resource information.
-	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(XEX2_OPTHDR_RESOURCE_INFO);
-	if (!entry) {
-		// No resource information.
-		return nullptr;
-	}
-
-	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &resInfo, sizeof(resInfo));
+	ao::uvector<uint8_t> u8_resInfo;
+	size_t size = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO, u8_resInfo);
 	if (size != sizeof(resInfo)) {
-		// Seek and/or read error.
+		// No resource information.
 		resInfo.resource_vaddr = 0;
 		return nullptr;
 	}
 
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	// Byteswap the resInfo struct.
-	resInfo.size		= be32_to_cpu(resInfo.size);
-	resInfo.resource_vaddr	= be32_to_cpu(resInfo.resource_vaddr);
-	resInfo.resource_size	= be32_to_cpu(resInfo.resource_size);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+	// Copy the resource information.
+	const XEX2_Resource_Info *const pLdResInfo =
+		reinterpret_cast<const XEX2_Resource_Info*>(u8_resInfo.data());
+	resInfo.size		= be32_to_cpu(pLdResInfo->size);
+	resInfo.resource_vaddr	= be32_to_cpu(pLdResInfo->resource_vaddr);
+	resInfo.resource_size	= be32_to_cpu(pLdResInfo->resource_size);
 
 	// Sanity check: resource_size should be less than 2 MB.
 	assert(resInfo.resource_size <= 2*1024*1024);
@@ -326,24 +445,19 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 #endif /* ENABLE_LIBMSPACK */
 
 	// Get the file format info.
-	const XEX2_Optional_Header_Tbl *const entry = getOptHdrTblEntry(XEX2_OPTHDR_FILE_FORMAT_INFO);
-	if (!entry) {
-		// No file format info.
-		return nullptr;
-	}
-
-	size_t size = file->seekAndRead(be32_to_cpu(entry->offset), &fileFormatInfo, sizeof(fileFormatInfo));
-	if (size != sizeof(fileFormatInfo)) {
+	ao::uvector<uint8_t> u8_ffi;
+	size_t size = getOptHdrData(XEX2_OPTHDR_FILE_FORMAT_INFO, u8_ffi);
+	if (size < sizeof(fileFormatInfo)) {
 		// Seek and/or read error.
 		return nullptr;
 	}
 
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	// Byteswap the fileFormatInfo struct.
-	fileFormatInfo.size             = be32_to_cpu(fileFormatInfo.size);
-	fileFormatInfo.encryption_type  = be16_to_cpu(fileFormatInfo.encryption_type);
-	fileFormatInfo.compression_type = be16_to_cpu(fileFormatInfo.compression_type);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+	// Copy the file format information.
+	const XEX2_File_Format_Info *const pLdFileFormatInfo =
+		reinterpret_cast<const XEX2_File_Format_Info*>(u8_ffi.data());
+	fileFormatInfo.size             = be32_to_cpu(pLdFileFormatInfo->size);
+	fileFormatInfo.encryption_type  = be16_to_cpu(pLdFileFormatInfo->encryption_type);
+	fileFormatInfo.compression_type = be16_to_cpu(pLdFileFormatInfo->compression_type);
 
 	// NOTE: Using two CBCReader instances.
 	// - [0]: Retail key and/or no encryption.
@@ -358,7 +472,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 
 	// Create the CBCReader for decryption.
 	const size_t pe_length = (size_t)file->size() - xex2Header.pe_offset;
-	if (fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
+	if (fileFormatInfo.encryption_type == XEX2_ENCRYPTION_TYPE_NONE) {
 		// No encryption.
 		reader[0] = new CBCReader(file, xex2Header.pe_offset, pe_length, nullptr, nullptr);
 	}
@@ -460,18 +574,11 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			const uint32_t seg_len = fileFormatInfo.size - sizeof(fileFormatInfo);
 			assert(seg_len % sizeof(XEX2_Compression_Basic_Info) == 0);
 			const unsigned int seg_count = seg_len / sizeof(XEX2_Compression_Basic_Info);
-			unique_ptr<XEX2_Compression_Basic_Info[]> cbi(new XEX2_Compression_Basic_Info[seg_count]);
-			size = file->read(cbi.get(), seg_len);
-			if (size != seg_len) {
-				// Seek and/or read error.
-				delete reader[0];
-				delete reader[1];
-				return nullptr;
-			}
 
 			uint32_t vaddr = 0, physaddr = 0;
 			basicZDataSegments.resize(seg_len);
-			const XEX2_Compression_Basic_Info *p = cbi.get();
+			const XEX2_Compression_Basic_Info *p =
+				reinterpret_cast<const XEX2_Compression_Basic_Info*>(u8_ffi.data() + sizeof(XEX2_File_Format_Info));
 			for (unsigned int i = 0; i < seg_count; i++, p++) {
 				const uint32_t data_size = be32_to_cpu(p->data_size);
 				basicZDataSegments[i].vaddr = vaddr;
@@ -488,6 +595,9 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		case XEX2_COMPRESSION_TYPE_NORMAL: {
 			// Normal (LZX) compression.
 			// Load the block segment data.
+			// FIXME: Read directly from u8_ffi instead of re-reading from the file.
+			file->seek(file->tell() - u8_ffi.size() + sizeof(fileFormatInfo));
+
 			assert(fileFormatInfo.size >= sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header));
 			if (fileFormatInfo.size < sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header)) {
 				// No segment information is available.
@@ -1304,30 +1414,20 @@ int Xbox360_XEX::loadFieldData(void)
 	}
 
 	// Original executable name
-	const XEX2_Optional_Header_Tbl *entry = d->getOptHdrTblEntry(XEX2_OPTHDR_ORIGINAL_PE_NAME);
-	if (entry) {
-		// Read the filename length.
-		uint32_t length = 0;
-		size_t size = d->file->seekAndRead(be32_to_cpu(entry->offset), &length, sizeof(length));
-		if (size == sizeof(length)) {
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			length = be32_to_cpu(length);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-			// Length includes the length DWORD.
-			// Sanity check: Actual filename must be less than 260 bytes. (PATH_MAX)
-			assert(length > sizeof(uint32_t));
-			assert(length <= 260+sizeof(uint32_t));
-			if (length > sizeof(uint32_t) && length <= 260+sizeof(uint32_t)) {
-				// Remove the DWORD length from the filename length.
-				length -= sizeof(uint32_t);
-				unique_ptr<char[]> pe_filename(new char[length+1]);
-				size = d->file->read(pe_filename.get(), length);
-				if (size == length) {
-					pe_filename[size] = '\0';
-					d->fields->addField_string(C_("Xbox360_XEX", "PE Filename"),
-						pe_filename.get(), RomFields::STRF_TRIM_END);
-				}
-			}
+	ao::uvector<uint8_t> u8_data;
+	size_t size = d->getOptHdrData(XEX2_OPTHDR_ORIGINAL_PE_NAME, u8_data);
+	if (size > sizeof(uint32_t)) {
+		// Sanity check: Must be less than 260 bytes. (PATH_MAX)
+		assert(size <= 260+sizeof(uint32_t));
+		if (size <= 260+sizeof(uint32_t)) {
+			// Got the filename.
+			// NOTE: May or may not be NULL-terminated.
+			// TODO: What encoding? Assuming cp1252...
+			int len = static_cast<int>(size - sizeof(uint32_t));
+			d->fields->addField_string(C_("Xbox360_XEX", "PE Filename"),
+				cp1252_to_utf8(reinterpret_cast<const char*>(
+					u8_data.data() + sizeof(uint32_t)), len),
+				RomFields::STRF_TRIM_END);
 		}
 	}
 
@@ -1486,36 +1586,35 @@ int Xbox360_XEX::loadFieldData(void)
 	}
 
 	/** Execution ID **/
-	entry = d->getOptHdrTblEntry(XEX2_OPTHDR_EXECUTION_ID);
-	if (entry) {
-		XEX2_Execution_ID execution_id;
-		size_t size = d->file->seekAndRead(be32_to_cpu(entry->offset), &execution_id, sizeof(execution_id));
-		if (size == sizeof(execution_id)) {
-			// Title ID
-			// FIXME: Verify behavior on big-endian.
-			d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-				rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$c%3$c-%4$04u)"),
-					be32_to_cpu(execution_id.title_id.u32),
-					execution_id.title_id.a,
-					execution_id.title_id.b,
-					be16_to_cpu(execution_id.title_id.u16)),
-				RomFields::STRF_MONOSPACE);
+	size = d->getOptHdrData(XEX2_OPTHDR_EXECUTION_ID, u8_data);
+	if (size == sizeof(XEX2_Execution_ID)) {
+		const XEX2_Execution_ID *const pLdExecutionId =
+			reinterpret_cast<const XEX2_Execution_ID*>(u8_data.data());
 
-			// Savegame ID
-			d->fields->addField_string_numeric(C_("Xbox360_XEX", "Savegame ID"),
-				be32_to_cpu(execution_id.savegame_id),
-				RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+		// Title ID
+		// FIXME: Verify behavior on big-endian.
+		d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
+			rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$c%3$c-%4$04u)"),
+				be32_to_cpu(pLdExecutionId->title_id.u32),
+				pLdExecutionId->title_id.a,
+				pLdExecutionId->title_id.b,
+				be16_to_cpu(pLdExecutionId->title_id.u16)),
+			RomFields::STRF_MONOSPACE);
 
-			// Disc number
-			// NOTE: Not shown for single-disc games.
-			const char *const disc_number_title = C_("RomData", "Disc #");
-			if (execution_id.disc_number != 0 && execution_id.disc_count > 1) {
-				d->fields->addField_string(disc_number_title,
-					// tr: Disc X of Y (for multi-disc games)
-					rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
-						execution_id.disc_number,
-						execution_id.disc_count));
-			}
+		// Savegame ID
+		d->fields->addField_string_numeric(C_("Xbox360_XEX", "Savegame ID"),
+			be32_to_cpu(pLdExecutionId->savegame_id),
+			RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+
+		// Disc number
+		// NOTE: Not shown for single-disc games.
+		const char *const disc_number_title = C_("RomData", "Disc #");
+		if (pLdExecutionId->disc_number != 0 && pLdExecutionId->disc_count > 1) {
+			d->fields->addField_string(disc_number_title,
+				// tr: Disc X of Y (for multi-disc games)
+				rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+					pLdExecutionId->disc_number,
+					pLdExecutionId->disc_count));
 		}
 	}
 
@@ -1563,16 +1662,17 @@ int Xbox360_XEX::loadFieldData(void)
 	/** Age ratings **/
 	// NOTE: RomFields' RFT_AGE_RATINGS type uses a format that matches
 	// Nintendo's systems. For Xbox 360, we'll need to convert the format.
-	entry = d->getOptHdrTblEntry(XEX2_OPTHDR_GAME_RATINGS);
-	if (entry) {
-		XEX2_Game_Ratings game_ratings;
-		size_t size = d->file->seekAndRead(be32_to_cpu(entry->offset), &game_ratings, sizeof(game_ratings));
-		if (size == sizeof(game_ratings)) {
-			// Convert the game ratings.
-			RomFields::age_ratings_t age_ratings;
-			d->convertGameRatings(age_ratings, game_ratings);
-			d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
-		}
+	// NOTE: The actual game ratings field is 64 bytes, but only the first
+	// 14 bytes are actually used.
+	size = d->getOptHdrData(XEX2_OPTHDR_GAME_RATINGS, u8_data);
+	if (size >= sizeof(XEX2_Game_Ratings)) {
+		const XEX2_Game_Ratings *const pLdGameRatings =
+			reinterpret_cast<const XEX2_Game_Ratings*>(u8_data.data());
+
+		// Convert the game ratings.
+		RomFields::age_ratings_t age_ratings;
+		d->convertGameRatings(age_ratings, *pLdGameRatings);
+		d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 	}
 
 	// Can we get the EXE section?
