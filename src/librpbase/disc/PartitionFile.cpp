@@ -23,7 +23,9 @@
 #include "IDiscReader.hpp"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cerrno>
+#include <cstring>
 
 // C++ includes.
 #include <string>
@@ -34,22 +36,50 @@ namespace LibRpBase {
 /**
  * Open a file from an IPartition.
  * NOTE: These files are read-only.
- * @param partition IPartition (or IDiscReader) object.
- * @param offset File starting offset.
- * @param size File size.
+ * @param partition	[in] IPartition (or IDiscReader) object.
+ * @param offset	[in] File starting offset.
+ * @param size		[in] File size.
+ * @param cache		[in] If true, cache the entire file to reduce seeking.
  */
-PartitionFile::PartitionFile(IDiscReader *partition, int64_t offset, int64_t size)
+PartitionFile::PartitionFile(IDiscReader *partition, int64_t offset, int64_t size, bool cache)
 	: super()
 	, m_partition(partition)
 	, m_offset(offset)
 	, m_size(size)
 	, m_pos(0)
+	, m_cache(nullptr)
 {
 	if (!partition) {
 		m_lastError = EBADF;
 	}
 
+	// If caching is specified, cache the file.
+	// Maximum cache size is 4 MB.
+	if (cache) {
+		static const int64_t CACHE_SIZE_MAX = 4*1024*1024;
+		assert(size <= CACHE_SIZE_MAX);
+		if (size <= CACHE_SIZE_MAX) {
+			m_cache = new uint8_t[size];
+			size_t rsz = partition->seekAndRead(offset, m_cache, size);
+			assert(rsz == static_cast<size_t>(size));
+			if (rsz == static_cast<size_t>(size)) {
+				// Caching succeeded.
+				// We no longer need to reference the partition.
+				m_partition = nullptr;
+			} else {
+				// Caching the data failed.
+				delete[] m_cache;
+				m_cache = nullptr;
+			}
+		}
+	}
+
 	// TODO: Reference counting?
+}
+
+PartitionFile::~PartitionFile()
+{
+	delete[] m_cache;
 }
 
 /**
@@ -67,6 +97,8 @@ bool PartitionFile::isOpen(void) const
  */
 void PartitionFile::close(void)
 {
+	delete[] m_cache;
+	m_cache = nullptr;
 	m_partition = nullptr;
 }
 
@@ -78,15 +110,8 @@ void PartitionFile::close(void)
  */
 size_t PartitionFile::read(void *ptr, size_t size)
 {
-	if (!m_partition) {
+	if (!m_cache && !m_partition) {
 		m_lastError = EBADF;
-		return 0;
-	}
-
-	m_partition->clearError();
-	int iRet = m_partition->seek(m_offset + m_pos);
-	if (iRet != 0) {
-		m_lastError = m_partition->lastError();
 		return 0;
 	}
 
@@ -95,6 +120,25 @@ size_t PartitionFile::read(void *ptr, size_t size)
 		// Not enough data.
 		// Copy whatever's left in the file.
 		size = static_cast<size_t>(m_size - m_pos);
+		if (size == 0) {
+			// Nothing left.
+			// TODO: Set an error?
+			return 0;
+		}
+	}
+
+	if (m_cache) {
+		// Read from the cache.
+		memcpy(ptr, &m_cache[m_pos], size);
+		m_pos += size;
+		return size;
+	}
+
+	m_partition->clearError();
+	int iRet = m_partition->seek(m_offset + m_pos);
+	if (iRet != 0) {
+		m_lastError = m_partition->lastError();
+		return 0;
 	}
 
 	size_t ret = 0;
@@ -131,7 +175,7 @@ size_t PartitionFile::write(const void *ptr, size_t size)
  */
 int PartitionFile::seek(int64_t pos)
 {
-	if (!m_partition) {
+	if (!m_cache && !m_partition) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -153,7 +197,7 @@ int PartitionFile::seek(int64_t pos)
  */
 int64_t PartitionFile::tell(void)
 {
-	if (!m_partition) {
+	if (!m_cache && !m_partition) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -182,7 +226,7 @@ int PartitionFile::truncate(int64_t size)
  */
 int64_t PartitionFile::size(void)
 {
-	if (!m_partition) {
+	if (!m_cache && !m_partition) {
 		m_lastError = EBADF;
 		return -1;
 	}
