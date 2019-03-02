@@ -37,11 +37,10 @@ class PartitionFile : public IRpFile
 		 * @param partition	[in] IPartition (or IDiscReader) object.
 		 * @param offset	[in] File starting offset.
 		 * @param size		[in] File size.
-		 * @param cache		[in] If true, cache the entire file to reduce seeking.
 		 */
-		PartitionFile(IDiscReader *partition, int64_t offset, int64_t size, bool cache = false);
+		PartitionFile(IDiscReader *partition, int64_t offset, int64_t size);
 	protected:
-		virtual ~PartitionFile();	// call unref() instead
+		virtual ~PartitionFile() { }	// call unref() instead
 
 	private:
 		typedef IRpFile super;
@@ -117,9 +116,6 @@ class PartitionFile : public IRpFile
 		int64_t m_offset;	// File starting offset.
 		int64_t m_size;		// File size.
 		int64_t m_pos;		// Current position.
-
-		// Cached file data.
-		uint8_t *m_cache;
 };
 
 }

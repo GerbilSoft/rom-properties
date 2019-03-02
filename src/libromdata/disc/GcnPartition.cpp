@@ -343,7 +343,7 @@ IRpFile *GcnPartition::open(const char *filename)
 	// This is an IRpFile implementation that uses an
 	// IPartition as the reader and takes an offset
 	// and size as the file parameters.
-	return new PartitionFile(this, dirent.offset, dirent.size, d->discReader->isDevice());
+	return new PartitionFile(this, dirent.offset, dirent.size);
 }
 
 }
