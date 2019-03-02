@@ -1458,21 +1458,42 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
 
+	// Media ID
+	// NOTE: Displaying the full 16-byte media ID,
+	// since this is needed for tools like abgx360.
+	{
+		char media_id[(16*2)+2];
+		static const char hex_lookup[16] = {
+			'0','1','2','3','4','5','6','7',
+			'8','9','A','B','C','D','E','F',
+		};
+
+		const uint8_t *pMidOrig = xex2Security->xgd2_media_id;
+		char *pMidAscii = media_id;
+		for (unsigned int i = 16; i > 0; i--, pMidOrig++, pMidAscii += 2) {
+			pMidAscii[0] = hex_lookup[*pMidOrig >> 4];
+			pMidAscii[1] = hex_lookup[*pMidOrig & 0x0F];
+			if (i == 5) {
+				pMidAscii[2] = '-';
+				pMidAscii++;
+			}
+		}
+		*pMidAscii = '\0';
+
+		d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
+			media_id, RomFields::STRF_MONOSPACE);
+	}
+
 	/** Execution ID **/
 	entry = d->getOptHdrTblEntry(XEX2_OPTHDR_EXECUTION_ID);
 	if (entry) {
 		XEX2_Execution_ID execution_id;
 		size_t size = d->file->seekAndRead(be32_to_cpu(entry->offset), &execution_id, sizeof(execution_id));
 		if (size == sizeof(execution_id)) {
-			// Media ID
-			d->fields->addField_string_numeric(C_("Xbox360_XEX", "Media ID"),
-				be32_to_cpu(execution_id.media_id),
-				RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
-
 			// Title ID
 			// FIXME: Verify behavior on big-endian.
 			d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-				rp_sprintf_p(C_("Xbox360_XEX", "0x%1$08X (%2$c%3$c-%4$04u)"),
+				rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$c%3$c-%4$04u)"),
 					be32_to_cpu(execution_id.title_id.u32),
 					execution_id.title_id.a,
 					execution_id.title_id.b,
