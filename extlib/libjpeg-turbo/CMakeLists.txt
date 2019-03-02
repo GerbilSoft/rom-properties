@@ -6,7 +6,7 @@ if(CMAKE_EXECUTABLE_SUFFIX)
 endif()
 
 project(libjpeg-turbo C)
-set(VERSION 2.0.1)
+set(VERSION 2.0.2)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -115,10 +115,6 @@ endif()
 
 include(cmakescripts/GNUInstallDirs.cmake)
 
-if(ENABLE_SHARED)
-  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
-endif()
-
 macro(report_directory var)
   if(CMAKE_INSTALL_${var} STREQUAL CMAKE_INSTALL_FULL_${var})
     message(STATUS "CMAKE_INSTALL_${var} = ${CMAKE_INSTALL_${var}}")
@@ -216,6 +212,10 @@ endif()
 
 report_option(ENABLE_SHARED "Shared libraries")
 report_option(ENABLE_STATIC "Static libraries")
+
+if(ENABLE_SHARED)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
+endif()
 
 if(WITH_12BIT)
   set(WITH_ARITH_DEC 0)
@@ -494,8 +494,8 @@ if(UNIX AND NOT APPLE)
       # still work.
       file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/conftest.map
         "VERS_1 { global: foo;  local: *; }; VERS_2 { global: foo2; } VERS_1;")
-      set(CMAKE_REQUIRED_FLAGS "-Wl,-M,${CMAKE_CURRENT_BINARY_DIR}/conftest.map")
-      check_c_source_compiles("void foo() {} void foo2() {} int main(void) { return 0; }"
+      set(CMAKE_REQUIRED_FLAGS "-Wl,-M,${CMAKE_CURRENT_BINARY_DIR}/conftest.map -shared")
+      check_c_source_compiles("int foo() { return 0; } int foo2() { return 2; }"
         HAVE_MAPFILE)
       set(CMAKE_REQUIRED_FLAGS)
       file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/conftest.map)
@@ -1053,6 +1053,8 @@ foreach(libtype ${TEST_LIBTYPES})
 
   add_test(djpeg-${libtype}-rgb-islow-icc-cmp
     ${MD5CMP} b06a39d730129122e85c1363ed1bbc9e testout_rgb_islow.icc)
+  set_tests_properties(djpeg-${libtype}-rgb-islow-icc-cmp PROPERTIES
+    DEPENDS djpeg-${libtype}-rgb-islow)
 
   add_bittest(jpegtran icc "-copy;all;-icc;${TESTIMAGES}/test2.icc"
     testout_rgb_islow2.jpg testout_rgb_islow.jpg ${MD5_JPEG_RGB_ISLOW2})
@@ -1385,12 +1387,22 @@ if(WITH_TURBOJPEG)
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
+      CMAKE_C_LINKER_SUPPORTS_PDB)
+      install(FILES "$<TARGET_PDB_FILE:turbojpeg>"
+        DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+    endif()
   endif()
   if(ENABLE_STATIC)
     install(TARGETS turbojpeg-static ARCHIVE
       DESTINATION ${CMAKE_INSTALL_LIBDIR})
     if(NOT ENABLE_SHARED)
-      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/tjbench-static${EXE}
+      if(MSVC_IDE)
+        set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
+      else()
+        set(DIR ${CMAKE_CURRENT_BINARY_DIR})
+      endif()
+      install(PROGRAMS ${DIR}/tjbench-static${EXE}
         DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME tjbench${EXE})
     endif()
   endif()
@@ -1403,11 +1415,16 @@ if(ENABLE_STATIC)
   # rom-properties: Disable example programs.
   IF(0)
   if(NOT ENABLE_SHARED)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/cjpeg-static${EXE}
+    if(MSVC_IDE)
+      set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
+    else()
+      set(DIR ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+    install(PROGRAMS ${DIR}/cjpeg-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME cjpeg${EXE})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/djpeg-static${EXE}
+    install(PROGRAMS ${DIR}/djpeg-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME djpeg${EXE})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/jpegtran-static${EXE}
+    install(PROGRAMS ${DIR}/jpegtran-static${EXE}
       DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpegtran${EXE})
   endif()
   ENDIF(0) # rom-properties

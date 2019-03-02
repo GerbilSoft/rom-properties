@@ -56,9 +56,10 @@ if(MAPFLAG)
   set_target_properties(jpeg PROPERTIES
     LINK_FLAGS "${MAPFLAG}${CMAKE_CURRENT_BINARY_DIR}/../libjpeg.map")
 endif()
-# rom-properties: Set POSTFIX instead of using SUFFIX.
+# rom-properties: Set POSTFIX instead of using RUNTIME_OUTPUT_NAME.
 if(MSVC)
-  #set_target_properties(jpeg PROPERTIES SUFFIX ${SO_MAJOR_VERSION}.dll)
+  #set_target_properties(jpeg PROPERTIES
+  #  RUNTIME_OUTPUT_NAME jpeg${SO_MAJOR_VERSION})
   SET_TARGET_PROPERTIES(jpeg PROPERTIES DEBUG_POSTFIX "${SO_MAJOR_VERSION}${CMAKE_DEBUG_POSTFIX}")
   SET_TARGET_PROPERTIES(jpeg PROPERTIES RELEASE_POSTFIX "${SO_MAJOR_VERSION}${CMAKE_RELEASE_POSTFIX}")
   # The jsimd_*.c file is built using /MT, so this prevents a linker warning.
@@ -110,6 +111,11 @@ install(TARGETS jpeg cjpeg djpeg jpegtran
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(NOT CMAKE_VERSION VERSION_LESS "3.1" AND MSVC AND
+  CMAKE_C_LINKER_SUPPORTS_PDB)
+  install(FILES "$<TARGET_PDB_FILE:jpeg>"
+    DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+endif()
 ENDIF(0) # rom-properties
 
 # rom-properties: Use our own INSTALL().
