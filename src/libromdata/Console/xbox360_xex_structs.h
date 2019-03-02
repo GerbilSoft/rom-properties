@@ -215,6 +215,12 @@ typedef enum {
  */
 typedef struct PACKED _XEX2_Resource_Info {
 	uint32_t size;			// [0x000] Structure size
+
+	// A game can have multiple resources.
+	// TODO: Rewrite this to use a resource substruct?
+
+	// The first resource is usually identified by the title ID,
+	// and it contains the XDBF resource.
 	char title_id[8];		// [0x004] Title ID, as an ASCII hex string
 	uint32_t resource_vaddr;	// [0x00C] XDBF virtual address.
 					//         Subtract the image base address to
@@ -223,10 +229,11 @@ typedef struct PACKED _XEX2_Resource_Info {
 	uint32_t resource_size;		// [0x010] Size of XDBF, in bytes.
 
 #if 0
-	// Some newer XEX2s have extra fields. (XGD3-related?)
-	// They're documented here but aren't useful for us.
+	// Some newer XEX2s have a "HashSec" resource, which
+	// may be related to XGD3 security data.
 	char hash_sec[8];		// [0x014] "HashSec\x00"
-	uint8_t unknown[8];		// [0x01C] Security data?
+	uint32_t hash_sec_vaddr;	// [0x01C]
+	uint32_t hash-sec_size;		// [0x020]
 #endif
 } XEX2_Resource_Info;
 ASSERT_STRUCT(XEX2_Resource_Info, 5*sizeof(uint32_t));
