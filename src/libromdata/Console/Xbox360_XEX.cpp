@@ -1323,6 +1323,7 @@ int Xbox360_XEX::loadFieldData(void)
 				unique_ptr<char[]> pe_filename(new char[length+1]);
 				size = d->file->read(pe_filename.get(), length);
 				if (size == length) {
+					pe_filename[size] = '\0';
 					d->fields->addField_string(C_("Xbox360_XEX", "PE Filename"),
 						pe_filename.get(), RomFields::STRF_TRIM_END);
 				}
