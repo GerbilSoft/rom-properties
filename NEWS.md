@@ -53,6 +53,9 @@
   * XboxDisc: Xbox and Xbox 360 disc image parser.
     * Reads default.xbe and/or default.xex from the XDVDFS partition and
       calls the appropriate parser to handle thise files.
+    * Supports reading original discs if a supported DVD-ROM drive with Kreon
+      firmware is connected. (Linux only at the moment; Windows support will
+      be added before the release of v1.4.)
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
