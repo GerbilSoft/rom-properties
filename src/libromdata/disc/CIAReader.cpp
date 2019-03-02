@@ -326,6 +326,18 @@ int64_t CIAReader::size(void)
 	return ret;
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool CIAReader::isDevice(void) const
+{
+	RP_D(const CIAReader);
+	return (d->file && d->file->isDevice());
+}
+
 /** IPartition **/
 
 /**

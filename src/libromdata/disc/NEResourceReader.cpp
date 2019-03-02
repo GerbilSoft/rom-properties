@@ -605,6 +605,18 @@ int64_t NEResourceReader::size(void)
 	return static_cast<int64_t>(d->file->size());
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool NEResourceReader::isDevice(void) const
+{
+	RP_D(const NEResourceReader);
+	return (d->file && d->file->isDevice());
+}
+
 /** IPartition **/
 
 /**

@@ -97,6 +97,16 @@ class GcnPartition : public LibRpBase::IPartition
 		 */
 		int64_t size(void) final;
 
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is the underlying file a device file?
+		 * @return True if the underlying file is a device file; false if not.
+		 */
+		bool isDevice(void) const final;
+
+	public:
 		/** IPartition **/
 
 		/**
@@ -114,6 +124,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 */
 		int64_t partition_size_used(void) const final;
 
+	public:
 		/** IFst wrapper functions. **/
 
 		/**

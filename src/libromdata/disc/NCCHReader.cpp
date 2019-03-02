@@ -701,6 +701,18 @@ int64_t NCCHReader::size(void)
 	return (ret >= 0 ? ret : 0);
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool NCCHReader::isDevice(void) const
+{
+	RP_D(const NCCHReader);
+	return (d->discReader && d->discReader->isDevice());
+}
+
 /** IPartition **/
 
 /**

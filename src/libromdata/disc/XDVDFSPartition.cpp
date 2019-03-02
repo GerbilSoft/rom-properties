@@ -357,6 +357,18 @@ int64_t XDVDFSPartition::partition_size_used(void) const
 	return partition_size();
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool XDVDFSPartition::isDevice(void) const
+{
+	RP_D(const XDVDFSPartition);
+	return (d->discReader && d->discReader->isDevice());
+}
+
 /** XDVDFSPartition **/
 
 /** GcnFst wrapper functions. **/

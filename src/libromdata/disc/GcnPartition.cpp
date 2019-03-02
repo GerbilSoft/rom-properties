@@ -161,6 +161,18 @@ int64_t GcnPartition::size(void)
 	return d->data_size;
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool GcnPartition::isDevice(void) const
+{
+	RP_D(const GcnPartition);
+	return (d->discReader && d->discReader->isDevice());
+}
+
 /** IPartition **/
 
 /**

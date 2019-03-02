@@ -209,4 +209,15 @@ int64_t DiscReader::size(void)
 	return m_length;
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool DiscReader::isDevice(void) const
+{
+	return (m_file && m_file->isDevice());
+}
+
 }

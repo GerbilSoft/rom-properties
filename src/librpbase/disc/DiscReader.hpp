@@ -108,6 +108,15 @@ class DiscReader : public IDiscReader
 		 */
 		int64_t size(void) override;
 
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is the underlying file a device file?
+		 * @return True if the underlying file is a device file; false if not.
+		 */
+		bool isDevice(void) const final;
+
 	protected:
 		IRpFile *m_file;
 

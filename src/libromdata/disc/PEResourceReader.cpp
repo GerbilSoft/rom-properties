@@ -697,6 +697,18 @@ int64_t PEResourceReader::size(void)
 	return static_cast<int64_t>(d->rsrc_size);
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool PEResourceReader::isDevice(void) const
+{
+	RP_D(const PEResourceReader);
+	return (d->file && d->file->isDevice());
+}
+
 /** IPartition **/
 
 /**

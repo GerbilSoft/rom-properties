@@ -451,4 +451,16 @@ int64_t CBCReader::partition_size_used(void) const
 	return d->length;
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool CBCReader::isDevice(void) const
+{
+	RP_D(const CBCReader);
+	return (d->file && d->file->isDevice());
+}
+
 }

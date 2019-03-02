@@ -314,6 +314,18 @@ int64_t IsoPartition::size(void)
 	return d->partition_size;
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool IsoPartition::isDevice(void) const
+{
+	RP_D(const IsoPartition);
+	return (d->discReader && d->discReader->isDevice());
+}
+
 /** IPartition **/
 
 /**

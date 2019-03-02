@@ -87,6 +87,16 @@ class NEResourceReader : public IResourceReader
 		 */
 		int64_t size(void) final;
 
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is the underlying file a device file?
+		 * @return True if the underlying file is a device file; false if not.
+		 */
+		bool isDevice(void) const final;
+
+	public:
 		/** IPartition **/
 
 		/**

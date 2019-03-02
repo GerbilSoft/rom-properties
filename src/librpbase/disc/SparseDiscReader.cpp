@@ -246,6 +246,20 @@ int64_t SparseDiscReader::size(void)
 	return d->disc_size;
 }
 
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool SparseDiscReader::isDevice(void) const
+{
+	RP_D(const SparseDiscReader);
+	return (d->file && d->file->isDevice());
+}
+
+/** SparseDiscReader **/
+
 /**
  * Read the specified block.
  *

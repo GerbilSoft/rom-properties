@@ -121,6 +121,18 @@ class IDiscReader
 		 */
 		size_t seekAndRead(int64_t pos, void *ptr, size_t size);
 
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is the underlying file a device file?
+		 * @return True if the underlying file is a device file; false if not.
+		 */
+		// TODO: De-virtualize this by moving m_file here?
+		// Might not be doable due to e.g. GcnPartition, which
+		// uses an IDiscReader instead of an IRpFile...
+		virtual bool isDevice(void) const = 0;
+
 	protected:
 		int m_lastError;
 };
