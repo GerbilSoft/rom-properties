@@ -37,13 +37,12 @@ using namespace LibRpBase;
 #include <cassert>
 
 // C++ includes.
-#include <sstream>
 #include <string>
-using std::ostringstream;
 using std::string;
 
 // Qt includes.
 #include <QFileDialog>
+#include <QLocale>
 #include <QMenu>
 
 // KDE includes.
@@ -136,6 +135,9 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	string msg;
 	msg.reserve(1024);
 
+	// Filename, minus directory.
+	const QString fileNoPath = QFileInfo(filename).fileName();
+
 	// TODO: Localize POSIX error messages?
 	// TODO: Thread-safe strerror()?
 
@@ -154,13 +156,13 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
 					"An error occurred while opening '%1$s': %2$s"),
-					QFileInfo(filename).fileName().toUtf8().constData(),
+					fileNoPath.toUtf8().constData(),
 					strerror(iret.error_code));
 			} else {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %s == filename
 					"An error occurred while opening '%s'."),
-					QFileInfo(filename).fileName().toUtf8().constData());
+					fileNoPath.toUtf8().constData());
 			}
 			type = KMessageWidget::Error;
 			icon = QStyle::SP_MessageBoxCritical;
@@ -172,13 +174,13 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
 					"An error occurred while reading '%1$s': %2$s"),
-					QFileInfo(filename).fileName().toUtf8().constData(),
+					fileNoPath.toUtf8().constData(),
 					strerror(iret.error_code));
 			} else {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %s == filename
 					"An error occurred while reading '%s'."),
-					QFileInfo(filename).fileName().toUtf8().constData());
+					fileNoPath.toUtf8().constData());
 			}
 			type = KMessageWidget::Error;
 			icon = QStyle::SP_MessageBoxCritical;
@@ -188,7 +190,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			msg = rp_sprintf_p(C_("KeyManagerTab",
 				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
-				QFileInfo(filename).fileName().toUtf8().constData(),
+				fileNoPath.toUtf8().constData(),
 				keyType.toUtf8().constData());
 			type = KMessageWidget::Warning;
 			icon = QStyle::SP_MessageBoxWarning;
@@ -198,25 +200,21 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			msg = rp_sprintf(C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
-				QFileInfo(filename).fileName().toUtf8().constData());
+				fileNoPath.toUtf8().constData());
 			type = KMessageWidget::Information;
 			icon = QStyle::SP_MessageBoxInformation;
 			showKeyStats = true;
 			break;
 
 		case KeyStoreQt::Import_KeysImported: {
-			// NOTE: Formatting numbers using ostringstream() because
-			// MSVC's printf() doesn't support thousands separators.
-			// TODO: CMake checks?
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
-			ostringstream s_keyCount;
-			s_keyCount << keyCount;
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
 				// tr: %1$s == number of keys (formatted), %2$u == filename
 				"%1$s key was imported from '%2$s'.",
 				"%1$s keys were imported from '%2$s'.",
-				keyCount), s_keyCount.str().c_str(),
-				QFileInfo(filename).fileName().toUtf8().constData());
+				keyCount),
+				QLocale::system().toString(keyCount).toUtf8().constData(),
+				fileNoPath.toUtf8().constData());
 			type = KMessageWidget::Positive;
 			icon = QStyle::SP_DialogOkButton;
 			showKeyStats = true;
@@ -228,73 +226,63 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	static const char nl_bullet[] = "\n\xE2\x80\xA2 ";
 
 	if (showKeyStats) {
-		// NOTE: Formatting numbers using ostringstream() because
-		// MSVC's printf() doesn't support thousands separators.
-		// TODO: CMake checks?
-		ostringstream s_num;
-
 		if (iret.keysExist > 0) {
-			s_num << (unsigned int)iret.keysExist;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key already exists in the Key Manager.",
 				"%s keys already exist in the Key Manager.",
-				iret.keysExist), s_num.str().c_str());
+				iret.keysExist),
+				QLocale::system().toString(iret.keysExist).toUtf8().constData());
 		}
 		if (iret.keysInvalid > 0) {
-			s_num.str("");
-			s_num << (unsigned int)iret.keysInvalid;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is incorrect.",
 				"%s keys were not imported because they are incorrect.",
-				iret.keysInvalid), s_num.str().c_str());
+				iret.keysInvalid),
+				QLocale::system().toString(iret.keysInvalid).toUtf8().constData());
 		}
 		if (iret.keysNotUsed > 0) {
-			s_num.str("");
-			s_num << (unsigned int)iret.keysNotUsed;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it isn't used by rom-properties.",
 				"%s keys were not imported because they aren't used by rom-properties.",
-				iret.keysNotUsed), s_num.str().c_str());
+				iret.keysNotUsed),
+				QLocale::system().toString(iret.keysNotUsed).toUtf8().constData());
 		}
 		if (iret.keysCantDecrypt > 0) {
-			s_num.str("");
-			s_num << (unsigned int)iret.keysCantDecrypt;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is encrypted and the master key isn't available.",
 				"%s keys were not imported because they are encrypted and the master key isn't available.",
-				iret.keysCantDecrypt), s_num.str().c_str());
+				iret.keysCantDecrypt),
+				QLocale::system().toString(iret.keysCantDecrypt).toUtf8().constData());
 		}
 		if (iret.keysImportedVerify > 0) {
-			s_num.str("");
-			s_num << (unsigned int)iret.keysImportedVerify;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key has been imported and verified as correct.",
 				"%s keys have been imported and verified as correct.",
-				iret.keysImportedVerify), s_num.str().c_str());
+				iret.keysImportedVerify),
+				QLocale::system().toString(iret.keysImportedVerify).toUtf8().constData());
 		}
 		if (iret.keysImportedNoVerify > 0) {
-			s_num.str("");
-			s_num << (unsigned int)iret.keysImportedNoVerify;
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				"%s key has been imported without verification.",
 				"%s keys have been imported without verification.",
-				iret.keysImportedNoVerify), s_num.str().c_str());
+				iret.keysImportedNoVerify),
+				QLocale::system().toString(iret.keysImportedNoVerify).toUtf8().constData());
 		}
 	}
 
 	Q_Q(KeyManagerTab);
-	KMessageWidget *widget = new KMessageWidget(q);
+	KMessageWidget *const widget = new KMessageWidget(q);
 	widget->setCloseButtonVisible(true);
 	widget->setWordWrap(true);
 	widget->setMessageType(type);
@@ -332,7 +320,7 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	d->ui.treeKeyStore->setItemDelegate(new KeyStoreItemDelegate(this));
 
 	// Create the dropdown menu for the "Import" button.
-	QMenu *menuImport = new QMenu(U82Q(C_("KeyManagerTab", "I&mport")), d->ui.btnImport);
+	QMenu *const menuImport = new QMenu(U82Q(C_("KeyManagerTab", "I&mport")), d->ui.btnImport);
 	menuImport->addAction(d->ui.actionImportWiiKeysBin);
 	menuImport->addAction(d->ui.actionImportWiiUOtpBin);
 	menuImport->addAction(d->ui.actionImport3DSboot9bin);
