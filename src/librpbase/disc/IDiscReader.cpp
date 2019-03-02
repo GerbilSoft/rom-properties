@@ -66,23 +66,6 @@ bool IDiscReader::isOpen(void) const
 }
 
 /**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int IDiscReader::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void IDiscReader::clearError(void)
-{
-	m_lastError = 0;
-}
-
-/**
  * Seek to the specified address, then read data.
  * @param pos	[in] Requested seek address.
  * @param ptr	[out] Output data buffer.

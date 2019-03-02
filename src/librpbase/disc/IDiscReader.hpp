@@ -68,12 +68,18 @@ class IDiscReader
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
-		int lastError(void) const;
+		inline int lastError(void) const
+		{
+			return m_lastError;
+		}
 
 		/**
 		 * Clear the last error.
 		 */
-		void clearError(void);
+		inline void clearError(void)
+		{
+			m_lastError = 0;
+		}
 
 		/**
 		 * Read data from the disc image.

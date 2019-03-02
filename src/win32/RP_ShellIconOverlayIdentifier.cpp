@@ -47,6 +47,8 @@ const CLSID CLSID_RP_ShellIconOverlayIdentifier =
 /** RP_ShellIconOverlayIdentifier_Private **/
 #include "RP_ShellIconOverlayIdentifier_p.hpp"
 
+// FIXME: Crashing when scrolling through %TEMP%...
+
 RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 #if 0
 	: romData(nullptr)
@@ -140,6 +142,8 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 {
 	if (!pwszIconFile || !pIndex || !pdwFlags) {
 		return E_POINTER;
+	} else if (cchMax < 1) {
+		return E_INVALIDARG;
 	}
 
 	// Get the "dangerous" permissions overlay.
@@ -159,7 +163,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 			*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
 		} else {
 			// Unable to get the filename.
-			pwszIconFile[0] = '\0';
+			pwszIconFile[0] = L'\0';
 			*pIndex = 0;
 			*pdwFlags = 0;
 		}
