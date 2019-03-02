@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -52,7 +52,7 @@ namespace LibRomData {
 class WiiPartitionPrivate : public GcnPartitionPrivate
 {
 	public:
-		WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader,
+		WiiPartitionPrivate(WiiPartition *q,
 			int64_t partition_offset, int64_t partition_size, WiiPartition::CryptoMethod cryptoMethod);
 		virtual ~WiiPartitionPrivate();
 
@@ -173,9 +173,9 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 #endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
-		IDiscReader *discReader, int64_t partition_offset,
+		int64_t partition_offset,
 		int64_t partition_size, WiiPartition::CryptoMethod cryptoMethod)
-	: super(q, discReader, partition_offset, 2)
+	: super(q, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
 	, encKey(WiiPartition::ENCKEY_UNKNOWN)
@@ -207,17 +207,17 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	// Clear the partition header struct.
 	memset(&partitionHeader, 0, sizeof(partitionHeader));
 
-	if (!discReader->isOpen()) {
-		q->m_lastError = discReader->lastError();
+	// q->m_lastError is handled by GcnPartitionPrivate's constructor.
+	if (!q->m_discReader || !q->m_discReader->isOpen()) {
 		return;
 	}
 
 	// Read the partition header.
-	if (discReader->seek(partition_offset) != 0) {
-		q->m_lastError = discReader->lastError();
+	if (q->m_discReader->seek(partition_offset) != 0) {
+		q->m_lastError = q->m_discReader->lastError();
 		return;
 	}
-	size_t size = discReader->read(&partitionHeader, sizeof(partitionHeader));
+	size_t size = q->m_discReader->read(&partitionHeader, sizeof(partitionHeader));
 	if (size != sizeof(partitionHeader)) {
 		q->m_lastError = EIO;
 		return;
@@ -465,13 +465,13 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	int64_t sector_addr = partition_offset + data_offset;
 	sector_addr += (static_cast<int64_t>(sector_num) * SECTOR_SIZE_ENCRYPTED);
 
-	int ret = discReader->seek(sector_addr);
+	int ret = q->m_discReader->seek(sector_addr);
 	if (ret != 0) {
-		q->m_lastError = discReader->lastError();
+		q->m_lastError = q->m_discReader->lastError();
 		return ret;
 	}
 
-	size_t sz = discReader->read(sector_buf, sizeof(sector_buf));
+	size_t sz = q->m_discReader->read(sector_buf, sizeof(sector_buf));
 	if (sz != SECTOR_SIZE_ENCRYPTED) {
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
@@ -513,7 +513,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  */
 WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
 		int64_t partition_size, CryptoMethod cryptoMethod)
-	: super(new WiiPartitionPrivate(this, discReader, partition_offset, partition_size, cryptoMethod))
+	: super(new WiiPartitionPrivate(this, partition_offset, partition_size, cryptoMethod), discReader)
 { }
 
 WiiPartition::~WiiPartition()
@@ -530,9 +530,9 @@ WiiPartition::~WiiPartition()
 size_t WiiPartition::read(void *ptr, size_t size)
 {
 	RP_D(WiiPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader || !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader || !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
@@ -708,9 +708,9 @@ size_t WiiPartition::read(void *ptr, size_t size)
 int WiiPartition::seek(int64_t pos)
 {
 	RP_D(WiiPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader ||  !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader ||  !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -735,9 +735,9 @@ int WiiPartition::seek(int64_t pos)
 int64_t WiiPartition::tell(void)
 {
 	RP_D(const WiiPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader ||  !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader ||  !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}

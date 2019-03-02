@@ -21,10 +21,6 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_CONFIG_H__
 #define __ROMPROPERTIES_LIBRPBASE_CONFIG_H__
 
-#ifdef __cplusplus
-#include <string>
-#endif /* __cplusplus */
-
 /* Define to 1 if you have zlib. */
 #cmakedefine HAVE_ZLIB 1
 

@@ -84,6 +84,7 @@ button.
 |:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | NES                       |       Yes      |    No    |       N/A       |       No       |
 | Super NES                 |       Yes      |    No    |       N/A       |       No       |
+| Microsoft Xbox Game Disc  |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
 | Nintendo GameCube         |       Yes      |    Yes   |      Banner     |      Disc      |
@@ -148,6 +149,7 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
+| ISO-9660 Disc Images           |       Yes      |    No    |        No       |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |

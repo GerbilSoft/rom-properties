@@ -1,6 +1,6 @@
 # Changes
 
-## v1.4 (released 2018/??/??)
+## v1.4 (released 2019/??/??)
 
 * New features:
   * The Cairo graphics library is now used for GTK+ 3.x builds.
@@ -46,6 +46,16 @@
     * Fully supports XPR0.
     * XPR1 is detected but not thumbnailed yet, and the displayed metadata
       is incorrect because the header format is different.
+  * ISO: ISO-9660 parser.
+    * Parses the Primary Volume Descriptor for ISO-9660 images.
+    * Sega Mega CD, Sega Saturn, and Sega Dreamcast parsers now show
+      the ISO-9660 PVD using the new ISO-9660 parser.
+  * XboxDisc: Xbox and Xbox 360 disc image parser.
+    * Reads default.xbe and/or default.xex from the XDVDFS partition and
+      calls the appropriate parser to handle thise files.
+    * Supports reading original discs if a supported DVD-ROM drive with Kreon
+      firmware is connected. (Linux only at the moment; Windows support will
+      be added before the release of v1.4.)
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
@@ -114,6 +124,8 @@
   * CBCReader: Added unaligned read support and fixed positioning issues
     when reading unencrypted data. This only affected the Xbox360_XEX
     parser; WiiSave, WiiWAD, and CIAReader were not affected.
+  * MegaDrive: Fixed an off-by-one error that caused Mega CD disc images
+    to be detected as Mega Drive ROM images.
 
 ## v1.3.3 (released 2018/08/25)
 

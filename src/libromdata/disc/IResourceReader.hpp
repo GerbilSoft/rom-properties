@@ -41,11 +41,12 @@ namespace LibRomData {
 class IResourceReader : public LibRpBase::IPartition
 {
 	protected:
-		IResourceReader() { }
+		IResourceReader(LibRpBase::IRpFile *file) : super(file) { }
 	public:
 		virtual ~IResourceReader() = 0;
 
 	private:
+		typedef LibRpBase::IPartition super;
 		RP_DISABLE_COPY(IResourceReader)
 
 	public:

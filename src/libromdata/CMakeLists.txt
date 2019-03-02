@@ -22,8 +22,10 @@ SET(libromdata_SRCS
 	Console/WiiU.cpp
 	Console/WiiWAD.cpp
 	Console/WiiWIBN.cpp
+	Console/Xbox_XBE.cpp
 	Console/Xbox360_XDBF.cpp
 	Console/Xbox360_XEX.cpp
+	Console/XboxDisc.cpp
 
 	Handheld/DMG.cpp
 	Handheld/GameBoyAdvance.cpp
@@ -59,6 +61,7 @@ SET(libromdata_SRCS
 	Other/EXE.cpp
 	Other/EXE_NE.cpp
 	Other/EXE_PE.cpp
+	Other/ISO.cpp
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
 
@@ -93,6 +96,7 @@ SET(libromdata_SRCS
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
 	disc/WuxReader.cpp
+	disc/XDVDFSPartition.cpp
 
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
@@ -123,8 +127,10 @@ SET(libromdata_H
 	Console/WiiU.hpp
 	Console/WiiWAD.hpp
 	Console/WiiWIBN.hpp
+	Console/Xbox_XBE.hpp
 	Console/Xbox360_XDBF.hpp
 	Console/Xbox360_XEX.hpp
+	Console/XboxDisc.hpp
 
 	Console/dc_structs.h
 	Console/gcn_structs.h
@@ -141,6 +147,7 @@ SET(libromdata_H
 	Console/wii_banner.h
 	Console/wii_wad.h
 	Console/wiiu_structs.h
+	Console/xbox_xbe_structs.h
 	Console/xbox360_xdbf_structs.h
 	Console/xbox360_xex_structs.h
 
@@ -202,6 +209,7 @@ SET(libromdata_H
 	Other/ELF.hpp
 	Other/EXE.hpp
 	Other/EXE_p.hpp
+	Other/ISO.hpp
 	Other/MachO.hpp
 	Other/NintendoBadge.hpp
 
@@ -247,6 +255,8 @@ SET(libromdata_H
 	disc/WiiPartition.hpp
 	disc/WuxReader.hpp
 	disc/wux_structs.h
+	disc/XDVDFSPartition.cpp
+	disc/xdvdfs_structs.h
 
 	config/TImageTypesConfig.hpp
 	img/TCreateThumbnail.hpp

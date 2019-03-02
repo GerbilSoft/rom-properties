@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.hpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
@@ -33,12 +32,14 @@
 
 namespace LibRpBase {
 
+class IRpFile;
 class IDiscReader
 {
 	protected:
-		IDiscReader();
+		IDiscReader(IRpFile *file);
+		IDiscReader(IDiscReader *discReader);
 	public:
-		virtual ~IDiscReader() = 0;
+		virtual ~IDiscReader();
 
 	private:
 		RP_DISABLE_COPY(IDiscReader)
@@ -61,18 +62,24 @@ class IDiscReader
 		 * This usually only returns false if an error occurred.
 		 * @return True if the disc image is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const = 0;
+		bool isOpen(void) const;
 
 		/**
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
-		int lastError(void) const;
+		inline int lastError(void) const
+		{
+			return m_lastError;
+		}
 
 		/**
 		 * Clear the last error.
 		 */
-		void clearError(void);
+		inline void clearError(void)
+		{
+			m_lastError = 0;
+		}
 
 		/**
 		 * Read data from the disc image.
@@ -121,16 +128,26 @@ class IDiscReader
 		 */
 		size_t seekAndRead(int64_t pos, void *ptr, size_t size);
 
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is the underlying file a device file?
+		 * @return True if the underlying file is a device file; false if not.
+		 */
+		bool isDevice(void) const;
+
 	protected:
+		// Subclasses may have an underlying file, or may
+		// stack another IDiscReader object.
+		union {
+			IRpFile *m_file;
+			IDiscReader *m_discReader;
+		};
+		bool m_hasDiscReader;
+
 		int m_lastError;
 };
-
-/**
- * Both gcc and MSVC fail to compile unless we provide
- * an empty implementation, even though the function is
- * declared as pure-virtual.
- */
-inline IDiscReader::~IDiscReader() { }
 
 }
 

@@ -45,7 +45,7 @@ namespace LibRomData {
 
 class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file);
+		Cdrom2352ReaderPrivate(Cdrom2352Reader *q);
 
 	private:
 		typedef SparseDiscReaderPrivate super;
@@ -68,22 +68,22 @@ class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 const uint8_t Cdrom2352ReaderPrivate::CDROM_2352_MAGIC[12] =
 	{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00};
 
-Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file)
-	: super(q, file)
+Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q)
+	: super(q)
 	, blockCount(0)
 {
-	if (!this->file) {
+	if (!q->m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
 	// Check the disc size.
 	// Should be a multiple of 2352.
-	int64_t fileSize = file->size();
+	int64_t fileSize = q->m_file->size();
 	if (fileSize <= 0 || fileSize % 2352 != 0) {
 		// Invalid disc size.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -101,7 +101,7 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file
 /** Cdrom2352Reader **/
 
 Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
-	: super(new Cdrom2352ReaderPrivate(this, file))
+	: super(new Cdrom2352ReaderPrivate(this), file)
 { }
 
 /**

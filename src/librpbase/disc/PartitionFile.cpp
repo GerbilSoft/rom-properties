@@ -34,9 +34,9 @@ namespace LibRpBase {
 /**
  * Open a file from an IPartition.
  * NOTE: These files are read-only.
- * @param partition IPartition (or IDiscReader) object.
- * @param offset File starting offset.
- * @param size File size.
+ * @param partition	[in] IPartition (or IDiscReader) object.
+ * @param offset	[in] File starting offset.
+ * @param size		[in] File size.
  */
 PartitionFile::PartitionFile(IDiscReader *partition, int64_t offset, int64_t size)
 	: super()
@@ -83,18 +83,23 @@ size_t PartitionFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	m_partition->clearError();
-	int iRet = m_partition->seek(m_offset + m_pos);
-	if (iRet != 0) {
-		m_lastError = m_partition->lastError();
-		return 0;
-	}
-
 	// Check if size is in bounds.
 	if (m_pos > m_size - static_cast<int64_t>(size)) {
 		// Not enough data.
 		// Copy whatever's left in the file.
 		size = static_cast<size_t>(m_size - m_pos);
+		if (size == 0) {
+			// Nothing left.
+			// TODO: Set an error?
+			return 0;
+		}
+	}
+
+	m_partition->clearError();
+	int iRet = m_partition->seek(m_offset + m_pos);
+	if (iRet != 0) {
+		m_lastError = m_partition->lastError();
+		return 0;
 	}
 
 	size_t ret = 0;

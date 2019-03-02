@@ -138,7 +138,6 @@ private:
 public:
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
 		if (!cp.str) {
-			//assert(!"RomData should never return a null string"); // disregard that
 			return os << "(null)";
 		}
 
@@ -155,9 +154,16 @@ class StringField {
 public:
 	StringField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
 	friend ostream& operator<<(ostream& os, const StringField& field) {
+		// NOTE: nullptr string is an empty string, not an error.
 		auto romField = field.romField;
-		return os << ColonPad(field.width, romField->name.c_str())
-			  << SafeString(romField->data.str, true, field.width);
+		os << ColonPad(field.width, romField->name.c_str());
+		if (romField->data.str) {
+			os << SafeString(romField->data.str, true, field.width);
+		} else {
+			// Empty string.
+			os << "''";
+		}
+		return os;
 	}
 };
 
@@ -659,11 +665,10 @@ class JSONString {
 public:
 	explicit JSONString(const char* str) :str(str) {}
 	friend ostream& operator<<(ostream& os, const JSONString& js) {
-		//assert(js.str); // not all strings can't be null, apparently
 		if (!js.str) {
 			// NULL string.
-			// Print "0" to indicate this.
-			return os << '0';
+			// Treat this like an empty string.
+			return os << "\"\"";
 		}
 
 		// Certain characters need to be escaped.

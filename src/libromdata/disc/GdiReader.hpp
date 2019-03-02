@@ -30,6 +30,7 @@ namespace LibRpBase {
 namespace LibRomData {
 
 class IsoPartition;
+class ISO;
 
 class GdiReaderPrivate;
 class GdiReader : public LibRpBase::SparseDiscReader
@@ -117,6 +118,13 @@ class GdiReader : public LibRpBase::SparseDiscReader
 		 * @return IsoPartition, or nullptr on error.
 		 */
 		IsoPartition *openIsoPartition(int trackNumber);
+
+		/**
+		 * Create an ISO RomData object for a given track number.
+		 * @param trackNumber Track number. (1-based)
+		 * @return ISO object, or nullptr on error.
+		 */
+		ISO *openIsoRomData(int trackNumber);
 };
 
 }

@@ -19,97 +19,18 @@
  ***************************************************************************/
 
 #include "RpFile.hpp"
+#include "RpFile_stdio_p.hpp"
 
 // librpbase
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 
-// C includes. (C++ namespace)
-#include <cerrno>
-
-// C++ includes.
-#include <string>
-using std::string;
-using std::u16string;
-
-// zlib for transparent gzip decompression.
-#include <zlib.h>
-// gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
-#if (ZLIB_VER_MAJOR > 1) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR > 2) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
-// zlib-1.2.4 or later
-#else
-# define gzclose_r(file) gzclose(file)
-# define gzclose_w(file) gzclose(file)
-#endif
-
-#ifdef _WIN32
-// Windows: _wfopen() requires a Unicode mode string.
-typedef wchar_t mode_str_t;
-#define _MODE(str) (L ##str)
-#include "RpWin32.hpp"
-// Needed for using "\\?\" to bypass MAX_PATH.
-using std::wstring;
-#include "librpbase/ctypex.h"
-// _chsize()
-#include <io.h>
-
-#else /* !_WIN32 */
-
-// Other: fopen() requires an 8-bit mode string.
-typedef char mode_str_t;
-#define _MODE(str) (str)
-// ftruncate()
-#include <unistd.h>
-#endif
+// C includes.
+#include <sys/stat.h>
 
 namespace LibRpBase {
 
 /** RpFilePrivate **/
-
-class RpFilePrivate
-{
-	public:
-		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename), mode(mode)
-			, gzfd(nullptr), gzsz(-1) { }
-		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename), mode(mode)
-			, gzfd(nullptr), gzsz(-1) { }
-		~RpFilePrivate();
-
-	private:
-		RP_DISABLE_COPY(RpFilePrivate)
-		RpFile *const q_ptr;
-
-	public:
-		FILE *file;		// File pointer.
-		string filename;	// Filename.
-		RpFile::FileMode mode;	// File mode.
-
-		gzFile gzfd;			// Used for transparent gzip decompression.
-		int64_t gzsz;			// Uncompressed file size.
-
-	public:
-		/**
-		 * Convert an RpFile::FileMode to an fopen() mode string.
-		 * @param mode	[in] FileMode
-		 * @return fopen() mode string.
-		 */
-		static inline const mode_str_t *mode_to_str(RpFile::FileMode mode);
-
-		/**
-		 * (Re-)Open the main file.
-		 *
-		 * INTERNAL FUNCTION. This does NOT affect gzfd.
-		 * NOTE: This function sets q->m_lastError.
-		 *
-		 * Uses parameters stored in this->filename and this->mode.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int reOpenFile(void);
-};
 
 RpFilePrivate::~RpFilePrivate()
 {
@@ -153,31 +74,89 @@ inline const mode_str_t *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
  */
 int RpFilePrivate::reOpenFile(void)
 {
+	RP_Q(RpFile);
 	const mode_str_t *const mode_str = mode_to_str(mode);
 
 #ifdef _WIN32
 	// Windows: Use U82W_s() to convert the filename to wchar_t.
+	bool isDevice_tmp;
+
+	// If the filename is "X:", change it to "X:\\".
+	if (filename.size() == 2 &&
+	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':')
+	{
+		// Drive letter. Append '\\'.
+		filename += '\\';
+	}
 
 	// If this is an absolute path, make sure it starts with
 	// "\\?\" in order to support filenames longer than MAX_PATH.
-	wstring filenameW;
+	tstring tfilename;
 	if (filename.size() > 3 &&
-	    ISASCII(d->filename[0]) && ISALPHA(filename[0]) &&
+	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Absolute path. Prepend "\\?\" to the path.
-		filenameW = L"\\\\?\\";
-		filenameW += U82W_s(filename);
+		tfilename = _T("\\\\?\\");
+		tfilename += U82T_s(filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_s(filename);
+		tfilename = U82T_s(filename);
+	}
+
+	// Validate the file type first.
+	// NOTE: Checking the UTF-8 filename to avoid having to
+	// deal with L"\\\\?\\".
+	if (filename.size() == 3 && ISALPHA(filename[0]) &&
+	    filename[1] == L':' && filename[2] == '\\')
+	{
+		// This is a drive letter.
+		// Only CD-ROM (and similar) drives are supported.
+		// TODO: Verify if opening by drive letter works,
+		// or if we have to resolve the physical device name.
+		// NOTE: filename is UTF-8, but we can use it as if
+		// it's ANSI for a drive letter.
+		const UINT driveType = GetDriveTypeA(filename.c_str());
+		switch (driveType) {
+			case DRIVE_CDROM:
+				// CD-ROM works.
+				break;
+			case DRIVE_UNKNOWN:
+			case DRIVE_NO_ROOT_DIR:
+				// No drive.
+				isDevice = false;
+				q->m_lastError = ENODEV;
+				return -ENODEV;
+			default:
+				// Not a CD-ROM drive.
+				isDevice = false;
+				q->m_lastError = ENOTSUP;
+				return -ENOTSUP;
+		}
+		isDevice_tmp = true;
+	} else {
+		// Make sure this isn't a directory.
+		// TODO: Other checks?
+		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
+		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+			// File cannot be opened.
+			q->m_lastError = EIO;
+			return -EIO;
+		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
+			// File is a directory.
+			q->m_lastError = EISDIR;
+			return -EISDIR;
+		}
+		isDevice_tmp = false;
 	}
 
 	if (file) {
 		fclose(file);
 	}
-	file = _wfopen(filenameW.c_str(), mode_str);
+	file = _tfopen(tfilename.c_str(), mode_str);
+	isDevice = isDevice_tmp;
 #else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames directly.
 	if (file) {
@@ -188,13 +167,70 @@ int RpFilePrivate::reOpenFile(void)
 
 	// Return 0 if it's *not* nullptr.
 	if (!file) {
-		RP_Q(RpFile);
 		q->m_lastError = errno;
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
 		return q->m_lastError;
 	}
+
+	// Check if this is a device.
+	struct stat sb;
+	int ret = fstat(fileno(file), &sb);
+	if (ret == 0) {
+		// fstat() succeeded.
+		if (S_ISDIR(sb.st_mode)) {
+			// This is a directory.
+			fclose(file);
+			file = nullptr;
+			q->m_lastError = EISDIR;
+			return -EISDIR;
+		}
+		isDevice = (S_ISBLK(sb.st_mode) || S_ISCHR(sb.st_mode));
+	} else {
+		// Unable to fstat().
+		// Assume this is not a device.
+		isDevice = false;
+	}
+
+#ifndef _WIN32
+	// NOTE: Opening certain device files can cause crashes
+	// and/or hangs (e.g. stdin). Only allow device files
+	// that match certain patterns.
+	// TODO: May need updates for *BSD, Mac OS X, etc.
+	// TODO: Check if a block device is a CD-ROM or something else.
+	if (isDevice) {
+		// NOTE: Some Unix systems use character devices for "raw"
+		// block devices. Linux does not, so we're only checking
+		// for block devices for now.
+		// TODO: Add checks for other Unix systems.
+		if (S_ISCHR(sb.st_mode)) {
+			// Character device. Not supported.
+			fclose(file);
+			file = nullptr;
+			isDevice = false;
+			q->m_lastError = ENOTSUP;
+			return -ENOTSUP;
+		}
+
+		// Check the filename pattern.
+		// TODO: Use an array?
+		// TODO: More systems.
+		if (strncmp(filename.c_str(), "/dev/sr", 7) != 0 &&
+		    strncmp(filename.c_str(), "/dev/scd", 8) != 0 &&
+		    strncmp(filename.c_str(), "/dev/disk/", 10) != 0 &&
+		    strncmp(filename.c_str(), "/dev/block/", 11) != 0)
+		{
+			// Not a match.
+			fclose(file);
+			file = nullptr;
+			isDevice = false;
+			q->m_lastError = ENOTSUP;
+			return -ENOTSUP;
+		}
+	}
+#endif /* _WIN32 */
+
 	return 0;
 }
 
@@ -486,7 +522,7 @@ int RpFile::truncate(int64_t size)
 	return 0;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.
@@ -530,6 +566,18 @@ string RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return d->filename;
+}
+
+/** Device file functions **/
+
+/**
+ * Is this a device file?
+ * @return True if this is a device file; false if not.
+ */
+bool RpFile::isDevice(void) const
+{
+	RP_D(const RpFile);
+	return d->isDevice;
 }
 
 }

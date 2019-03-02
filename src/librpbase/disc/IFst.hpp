@@ -32,6 +32,9 @@
 // Based on dirent.h from glibc-2.23.
 #include "d_type.h"
 
+// C++ includes.
+#include <string>
+
 namespace LibRpBase {
 
 class IFst

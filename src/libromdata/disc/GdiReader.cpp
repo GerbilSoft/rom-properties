@@ -30,6 +30,12 @@
 #include "librpbase/file/RelatedFile.hpp"
 using namespace LibRpBase;
 
+// DiscReader
+#include "librpbase/disc/PartitionFile.hpp"
+
+// Other RomData subclasses
+#include "Other/ISO.hpp"
+
 // C includes.
 #include <stdlib.h>
 
@@ -52,7 +58,7 @@ namespace LibRomData {
 
 class GdiReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		GdiReaderPrivate(GdiReader *q, IRpFile *file);
+		GdiReaderPrivate(GdiReader *q);
 		virtual ~GdiReaderPrivate();
 
 	private:
@@ -110,24 +116,24 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 
 /** GdiReaderPrivate **/
 
-GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
-	: super(q, file)
+GdiReaderPrivate::GdiReaderPrivate(GdiReader *q)
+	: super(q)
 	, blockCount(0)
 {
-	if (!this->file) {
+	if (!q->m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
 	// Save the filename for later.
-	filename = this->file->filename();
+	filename = q->m_file->filename();
 
 	// GDI file should be 4k or less.
-	int64_t fileSize = file->size();
+	int64_t fileSize = q->m_file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -135,12 +141,12 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	// Read the GDI and parse the track information.
 	const unsigned int gdisize = static_cast<unsigned int>(fileSize);
 	unique_ptr<char[]> gdibuf(new char[gdisize+1]);
-	file->rewind();
-	size_t size = file->read(gdibuf.get(), gdisize);
+	q->m_file->rewind();
+	size_t size = q->m_file->read(gdibuf.get(), gdisize);
 	if (size != gdisize) {
 		// Read error.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -219,14 +225,19 @@ GdiReaderPrivate::~GdiReaderPrivate()
 void GdiReaderPrivate::close(void)
 {
 	for (auto iter = blockRanges.begin(); iter != blockRanges.end(); ++iter) {
-		iter->file->unref();
+		if (iter->file) {
+			iter->file->unref();
+		}
 	}
 	blockRanges.clear();
 	trackMappings.clear();
 
 	// GDI file.
-	this->file->unref();
-	this->file = nullptr;
+	RP_Q(GdiReader);
+	if (q->m_file) {
+		q->m_file->unref();
+		q->m_file = nullptr;
+	}
 }
 
 /**
@@ -394,17 +405,18 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// File opened. Get its size and calculate the end block.
-	int64_t fileSize = file->size();
+	RP_Q(GdiReader);
+	const int64_t fileSize = q->m_file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid flie...
-		this->file->unref();
+		q->m_file->unref();
 		return -EIO;
 	}
 
 	// Is the file a multiple of the sector size?
 	if (fileSize % blockRange->sectorSize != 0) {
 		// Not a multiple of the sector size.
-		this->file->unref();
+		q->m_file->unref();
 		return -EIO;
 	}
 
@@ -417,7 +429,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 /** GdiReader **/
 
 GdiReader::GdiReader(IRpFile *file)
-	: super(new GdiReaderPrivate(this, file))
+	: super(new GdiReaderPrivate(this), file)
 { }
 
 /**
@@ -623,6 +635,48 @@ IsoPartition *GdiReader::openIsoPartition(int trackNumber)
 	// Logical block size is 2048.
 	// ISO starting offset is the LBA.
 	return new IsoPartition(this, lba * 2048, lba);
+}
+
+/**
+ * Create an ISO RomData object for a given track number.
+ * @param trackNumber Track number. (1-based)
+ * @return ISO object, or nullptr on error.
+ */
+ISO *GdiReader::openIsoRomData(int trackNumber)
+{
+	// Make sure the track is open.
+	RP_D(GdiReader);
+	if (d->openTrack(trackNumber) != 0) {
+		// Cannot open the track.
+		return nullptr;
+	}
+
+	if (d->trackMappings.size() < static_cast<size_t>(trackNumber)) {
+		// Invalid track number.
+		return nullptr;
+	}
+	GdiReaderPrivate::BlockRange *const blockRange = d->trackMappings[trackNumber-1];
+
+	// Calculate the track length.
+	const int lba_start = blockRange->blockStart;
+	const int lba_size = blockRange->blockEnd - lba_start + 1;
+
+	// ISO object for ISO-9660 PVD
+	ISO *isoData = nullptr;
+
+	PartitionFile *const isoFile = new PartitionFile(this,
+		static_cast<int64_t>(lba_start) * 2048,
+		static_cast<int64_t>(lba_size) * 2048);
+	if (isoFile->isOpen()) {
+		isoData = new ISO(isoFile);
+		if (!isoData->isOpen()) {
+			// Unable to open ISO object.
+			isoData->unref();
+			isoData = nullptr;
+		}
+	}
+	isoFile->unref();
+	return isoData;
 }
 
 }

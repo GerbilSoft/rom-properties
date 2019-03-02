@@ -120,8 +120,7 @@ class WiiWADPrivate : public RomDataPrivate
 #ifdef ENABLE_DECRYPTION
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
-		PartitionFile *wibnFile;	// uses CBCReader
-		WiiWIBN *wibnData;		// uses wibnFile
+		WiiWIBN *wibnData;
 
 		// Main data headers.
 		Wii_Content_Bin_Header contentHeader;
@@ -149,7 +148,6 @@ WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
 	, data_size(0)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
-	, wibnFile(nullptr)
 	, wibnData(nullptr)
 #endif /* ENABLE_DECRYPTION */
 	, key_idx(WiiPartition::Key_Max)
@@ -171,9 +169,6 @@ WiiWADPrivate::~WiiWADPrivate()
 #ifdef ENABLE_DECRYPTION
 	if (wibnData) {
 		wibnData->unref();
-	}
-	if (wibnFile) {
-		wibnFile->unref();
 	}
 	delete cbcReader;
 #endif /* ENABLE_DECRYPTION */
@@ -443,17 +438,13 @@ WiiWAD::WiiWAD(IRpFile *file)
 					WiiWIBN *const wibn = new WiiWIBN(ptFile);
 					if (wibn->isOpen()) {
 						// Opened successfully.
-						d->wibnFile = ptFile;
 						d->wibnData = wibn;
 					} else {
 						// Unable to open the WiiWIBN.
 						wibn->unref();
-						ptFile->unref();
 					}
-				} else {
-					// Unable to open the PartitionFile.
-					ptFile->unref();
 				}
+				ptFile->unref();
 			}
 		}
 	}
@@ -477,11 +468,7 @@ void WiiWAD::close(void)
 	}
 
 	// Close associated files used with child RomData subclasses.
-	if (d->wibnFile) {
-		d->wibnFile->unref();
-	}
 	delete d->cbcReader;
-	d->wibnFile = nullptr;
 	d->cbcReader = nullptr;
 #endif /* ENABLE_DECRYPTION */
 
@@ -950,7 +937,11 @@ int WiiWAD::loadFieldData(void)
 	// If so, we don't have IMET data.
 	if (d->wibnData) {
 		// Add the WIBN data.
-		d->fields->addFields_romFields(d->wibnData->fields(), 0);
+		const RomFields *const wibnFields = d->wibnData->fields();
+		assert(wibnFields != nullptr);
+		if (wibnFields) {
+			d->fields->addFields_romFields(wibnFields, 0);
+		}
 	} else
 #endif /* ENABLE_DECRYPTION */
 	{

@@ -19,8 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
-
 #include "Xbox360_XDBF.hpp"
 #include "librpbase/RomData_p.hpp"
 

@@ -43,6 +43,7 @@ class NEResourceReader : public IResourceReader
 		virtual ~NEResourceReader();
 
 	private:
+		typedef IResourceReader super;
 		RP_DISABLE_COPY(NEResourceReader)
 	protected:
 		friend class NEResourceReaderPrivate;
@@ -50,13 +51,6 @@ class NEResourceReader : public IResourceReader
 
 	public:
 		/** IDiscReader **/
-
-		/**
-		 * Is the partition open?
-		 * This usually only returns false if an error occurred.
-		 * @return True if the partition is open; false if it isn't.
-		 */
-		bool isOpen(void) const final;
 
 		/**
 		 * Read data from the partition.
@@ -87,6 +81,7 @@ class NEResourceReader : public IResourceReader
 		 */
 		int64_t size(void) final;
 
+	public:
 		/** IPartition **/
 
 		/**

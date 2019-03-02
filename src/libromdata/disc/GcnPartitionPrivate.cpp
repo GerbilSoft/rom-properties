@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartitionPrivate.cpp: GameCube partition private class.              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -37,30 +37,35 @@ using LibRpBase::IDiscReader;
 
 namespace LibRomData {
 
-GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReader,
+GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
 	int64_t partition_offset, uint8_t offsetShift)
 	: q_ptr(q)
-	, offsetShift(offsetShift)
-	, discReader(discReader)
 	, partition_offset(partition_offset)
 	, data_offset(-1)	// -1 == invalid
 	, partition_size(-1)
 	, data_size(-1)
 	, bootLoaded(false)
+	, offsetShift(offsetShift)
 	, fst(nullptr)
 {
 	// Clear the various structs.
 	memset(&bootBlock, 0, sizeof(bootBlock));
 	memset(&bootInfo, 0, sizeof(bootInfo));
 
-	if (!discReader->isOpen()) {
-		q->m_lastError = discReader->lastError();
+	if (!q->m_discReader) {
+		q->m_lastError = EIO;
 		return;
+	} else if (!q->m_discReader->isOpen()) {
+		q->m_lastError = q->m_discReader->lastError();
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		q->m_discReader = nullptr;
 	}
 
 	// Save important data.
 	data_offset     = partition_offset;
-	data_size       = discReader->size();
+	data_size       = q->m_discReader->size();
 	partition_size  = data_size;
 }
 

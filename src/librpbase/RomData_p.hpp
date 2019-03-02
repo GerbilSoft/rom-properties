@@ -132,6 +132,14 @@ class RomDataPrivate
 		 * video game consoles were released in the late 1970s.
 		 */
 		static time_t bcd_to_unix_time(const uint8_t *bcd_tm, size_t size);
+
+		/**
+		 * Convert an ISO PVD timestamp to UNIX time.
+		 * @param pvd_time PVD timestamp (16-char buffer)
+		 * @param tz_offset PVD timezone offset
+		 * @return UNIX time, or -1 if invalid or not set.
+		 */
+		static time_t pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_offset);
 };
 
 }

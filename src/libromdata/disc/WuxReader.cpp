@@ -48,7 +48,7 @@ namespace LibRomData {
 
 class WuxReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		WuxReaderPrivate(WuxReader *q, IRpFile *file);
+		WuxReaderPrivate(WuxReader *q);
 
 	private:
 		typedef SparseDiscReaderPrivate super;
@@ -69,25 +69,25 @@ class WuxReaderPrivate : public SparseDiscReaderPrivate {
 
 /** WuxReaderPrivate **/
 
-WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
-	: super(q, file)
+WuxReaderPrivate::WuxReaderPrivate(WuxReader *q)
+	: super(q)
 	, dataOffset(0)
 {
 	// Clear the .wux header struct.
 	memset(&wuxHeader, 0, sizeof(wuxHeader));
 
-	if (!this->file) {
+	if (!q->m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
 	// Read the .wux header.
-	this->file->rewind();
-	size_t sz = this->file->read(&wuxHeader, sizeof(wuxHeader));
+	q->m_file->rewind();
+	size_t sz = q->m_file->read(&wuxHeader, sizeof(wuxHeader));
 	if (sz != sizeof(wuxHeader)) {
 		// Error reading the .wux header.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -97,8 +97,8 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	    wuxHeader.magic[1] != cpu_to_le32(WUX_MAGIC_1))
 	{
 		// Invalid magic.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -109,8 +109,8 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	block_size = le32_to_cpu(wuxHeader.sectorSize);
 	if (!isPow2(block_size)) {
 		// Block size is out of range.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -119,8 +119,8 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 	disc_size = static_cast<int64_t>(le64_to_cpu(wuxHeader.uncompressedSize));
 	if (disc_size < 0 || disc_size > 50LL*1024*1024*1024) {
 		// Disc size is out of range.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -129,13 +129,13 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 		(disc_size + (block_size-1)) / block_size);
 	const size_t idxTbl_size = idxTbl_count * sizeof(uint32_t);
 	idxTbl.resize(idxTbl_count);
-	sz = this->file->read(idxTbl.data(), idxTbl_size);
+	sz = q->m_file->read(idxTbl.data(), idxTbl_size);
 	if (sz != idxTbl_size) {
 		// Read error.
 		idxTbl.clear();
 		disc_size = 0;
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -152,7 +152,7 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q, IRpFile *file)
 /** WuxReader **/
 
 WuxReader::WuxReader(IRpFile *file)
-	: super(new WuxReaderPrivate(this, file))
+	: super(new WuxReaderPrivate(this), file)
 { }
 
 /**

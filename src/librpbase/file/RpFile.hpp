@@ -28,6 +28,7 @@
 
 // C++ includes.
 #include <memory>
+#include <vector>
 
 namespace LibRpBase {
 
@@ -35,7 +36,7 @@ class RpFilePrivate;
 class RpFile : public IRpFile
 {
 	public:
-		enum FileMode {
+		enum FileMode : uint8_t {
 			FM_READ = 0,		// Read-only.
 			FM_WRITE = 1,		// Read/write.
 			FM_OPEN = 0,		// Open the file. (Must exist!)
@@ -125,7 +126,7 @@ class RpFile : public IRpFile
 		int truncate(int64_t size = 0) final;
 
 	public:
-		/** File properties. **/
+		/** File properties **/
 
 		/**
 		 * Get the file size.
@@ -138,6 +139,100 @@ class RpFile : public IRpFile
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		std::string filename(void) const final;
+
+	public:
+		/** Device file functions **/
+
+		/**
+		 * Is this a device file?
+		 * @return True if this is a device file; false if not.
+		 */
+		bool isDevice(void) const final;
+
+		/**
+		 * Re-read device size using SCSI commands.
+		 * This may be needed for Kreon devices.
+		 * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int rereadDeviceSizeScsi(int64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
+
+	protected:
+		enum ScsiDirection {
+			SCSI_DIR_NONE,
+			SCSI_DIR_IN,
+			SCSI_DIR_OUT,
+		};
+
+		/**
+		 * Send a SCSI command to the device.
+		 * @param cdb		[in] SCSI command descriptor block
+		 * @param cdb_len	[in] Length of cdb
+		 * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
+		 * @param data_len	[in] Length of data
+		 * @param direction	[in] Data direction
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+			void *data, size_t data_len,
+			ScsiDirection direction);
+
+		/**
+		 * Get the capacity of the device using SCSI commands.
+		 * @param pDeviceSize	[out] Retrieves the device size, in bytes.
+		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
+
+	public:
+		/**
+		 * Is this a supported Kreon drive?
+		 *
+		 * NOTE: This only checks the drive vendor and model.
+		 * Check the feature list to determine if it's actually
+		 * using Kreon firmware.
+		 *
+		 * @return True if the drive supports Kreon firmware; false if not.
+		 */
+		bool isKreonDriveModel(void);
+
+		// Kreon features.
+		enum KreonFeatures : uint16_t {
+			KREON_FEATURE_HEADER_0		= 0xA55A,	// always the first feature
+			KREON_FEATURE_HEADER_1		= 0x5AA5,	// always the second feature
+			KREON_FEATURE_UNLOCK_1_X360	= 0x0100,	// Unlock state 1 (xtreme) for Xbox 360
+			KREON_FEATURE_UNLOCK_2_X360	= 0x0101,	// Unlock state 2 (wxripper) for Xbox 360
+			KREON_FEATURE_UNLOCK_1a_X360	= 0x0120,	// Unlock state 1 (xtreme) for Xbox 360
+			KREON_FEATURE_FULL_CHLNG_X360	= 0x0121,	// Full challenge functionality for Xbox 360
+			KREON_FEATURE_UNLOCK_1_XBOX	= 0x0200,	// Unlock state 1 (xtreme) for Xbox
+			KREON_FEATURE_UNLOCK_2_XBOX	= 0x0201,	// Unlock state 2 (wxripper) for Xbox
+			KREON_FEATURE_UNLOCK_1a_XBOX	= 0x0220,	// Unlock state 1 (xtreme) for Xbox
+			KREON_FEATURE_FULL_CHLNG_XBOX	= 0x0221,	// Full challenge functionality for Xbox
+			KREON_FEATURE_LOCK_COMMAND	= 0xF000,	// Lock (cancel unlock state) command
+			KREON_FEATURE_ERROR_SKIPPING	= 0xF001,	// Error skipping
+		};
+
+		/**
+		 * Get a list of supported Kreon features.
+		 * @return List of Kreon feature IDs, or empty vector if not supported.
+		 */
+		std::vector<uint16_t> getKreonFeatureList(void);
+
+		/**
+		 * Set Kreon error skip state.
+		 * @param skip True to skip; false for normal operation.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int setKreonErrorSkipState(bool skip);
+
+		/**
+		 * Set Kreon lock state
+		 * @param lockState 0 == locked; 1 == Unlock State 1 (xtreme); 2 == Unlock State 2 (wxripper)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int setKreonLockState(uint8_t lockState);
 };
 
 }

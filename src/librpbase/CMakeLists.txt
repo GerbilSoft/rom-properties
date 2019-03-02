@@ -120,6 +120,7 @@ SET(librpbase_SRCS
 	RomMetaData.cpp
 	SystemRegion.cpp
 	file/IRpFile.cpp
+	file/RpFile_Kreon.cpp
 	file/RpMemFile.cpp
 	file/FileSystem_common.cpp
 	file/RelatedFile.cpp
@@ -173,6 +174,7 @@ SET(librpbase_H
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
 	file/RelatedFile.hpp
+	file/scsi_protocol.h
 	img/rp_image.hpp
 	img/rp_image_p.hpp
 	img/rp_image_backend.hpp
@@ -228,6 +230,9 @@ ELSE(WIN32)
 		TextFuncs_iconv.cpp
 		file/FileSystem_posix.cpp
 		file/RpFile_stdio.cpp
+		)
+	SET(librpbase_OS_H
+		file/RpFile_stdio_p.hpp
 		)
 ENDIF(WIN32)
 

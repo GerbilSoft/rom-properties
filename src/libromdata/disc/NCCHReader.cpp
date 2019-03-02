@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
@@ -44,41 +43,10 @@ namespace LibRomData {
 
 /** NCCHReaderPrivate **/
 
-NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
+NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	uint8_t media_unit_shift,
 	int64_t ncch_offset, uint32_t ncch_length)
 	: q_ptr(q)
-	, useDiscReader(false)
-	, file(file)
-	, ncch_offset(ncch_offset)
-	, ncch_length(ncch_length)
-	, media_unit_shift(media_unit_shift)
-	, pos(0)
-	, headers_loaded(0)
-	, verifyResult(KeyManager::VERIFY_UNKNOWN)
-	, nonNcchContentType(NONCCH_UNKNOWN)
-#ifdef ENABLE_DECRYPTION
-	, tid_be(0)
-	, cipher(nullptr)
-	, tmd_content_index(0)
-	, isDebug(false)
-#endif /* ENABLE_DECRYPTION */
-{
-	// Clear the various structs.
-	memset(&ncch_header, 0, sizeof(ncch_header));
-	memset(&ncch_exheader, 0, sizeof(ncch_exheader));
-	memset(&exefs_header, 0, sizeof(exefs_header));
-
-	// Run the common init function.
-	init();
-}
-
-NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IDiscReader *discReader,
-	uint8_t media_unit_shift,
-	int64_t ncch_offset, uint32_t ncch_length)
-	: q_ptr(q)
-	, useDiscReader(true)
-	, discReader(discReader)
 	, ncch_offset(ncch_offset)
 	, ncch_length(ncch_length)
 	, media_unit_shift(media_unit_shift)
@@ -97,15 +65,6 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IDiscReader *discReader,
 	memset(&ncch_exheader, 0, sizeof(ncch_exheader));
 	memset(&exefs_header, 0, sizeof(exefs_header));
 
-	// Run the common init function.
-	init();
-}
-
-/**
- * Common init function.
- */
-void NCCHReaderPrivate::init(void)
-{
 	// Read the NCCH header.
 	// We're including the signature, since the first 16 bytes
 	// are used for encryption in certain cases.
@@ -115,12 +74,16 @@ void NCCHReaderPrivate::init(void)
 		// NOTE: readFromROM() sets q->m_lastError.
 		// TODO: Better verifyResult?
 		verifyResult = KeyManager::VERIFY_WRONG_KEY;
-		this->file = nullptr;
+		if (q->m_hasDiscReader) {
+			q->m_discReader = nullptr;
+		} else {
+			q->m_file->unref();
+			q->m_file = nullptr;
+		}
 		return;
 	}
 
 	// Verify the NCCH magic number.
-	RP_Q(NCCHReader);
 	if (ncch_header.hdr.magic != cpu_to_be32(N3DS_NCCH_HEADER_MAGIC)) {
 		// NCCH magic number is incorrect.
 		// Check for non-NCCH types.
@@ -129,7 +92,12 @@ void NCCHReaderPrivate::init(void)
 			// 0004800F-484E4841
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NDHT;
-			this->file = nullptr;
+			if (q->m_hasDiscReader) {
+				q->m_discReader = nullptr;
+			} else {
+				q->m_file->unref();
+				q->m_file = nullptr;
+			}
 			return;
 		}
 
@@ -139,7 +107,12 @@ void NCCHReaderPrivate::init(void)
 			// 0004800F-484E4C41
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NARC;
-			this->file = nullptr;
+			if (q->m_hasDiscReader) {
+				q->m_discReader = nullptr;
+			} else {
+				q->m_file->unref();
+				q->m_file = nullptr;
+			}
 			return;
 		}
 
@@ -148,7 +121,12 @@ void NCCHReaderPrivate::init(void)
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		this->file = nullptr;
+		if (q->m_hasDiscReader) {
+			q->m_discReader = nullptr;
+		} else {
+			q->m_file->unref();
+			q->m_file = nullptr;
+		}
 		return;
 	}
 	headers_loaded |= HEADER_NCCH;
@@ -171,7 +149,12 @@ void NCCHReaderPrivate::init(void)
 			// Zero out the keys.
 			memset(ncch_keys, 0, sizeof(ncch_keys));
 			q->m_lastError = EIO;
-			this->file = nullptr;
+			if (q->m_hasDiscReader) {
+				q->m_discReader = nullptr;
+			} else {
+				q->m_file->unref();
+				q->m_file = nullptr;
+			}
 			return;
 		}
 		// Debug keys worked.
@@ -183,7 +166,12 @@ void NCCHReaderPrivate::init(void)
 		// Unsupported.
 		verifyResult = KeyManager::VERIFY_NO_SUPPORT;
 		q->m_lastError = EIO;
-		this->file = nullptr;
+		if (q->m_hasDiscReader) {
+			q->m_discReader = nullptr;
+		} else {
+			q->m_file->unref();
+			q->m_file = nullptr;
+		}
 		return;
 	}
 	// No decryption is required.
@@ -201,7 +189,12 @@ void NCCHReaderPrivate::init(void)
 		if (size != sizeof(exefs_header)) {
 			// Read error.
 			// NOTE: readFromROM() sets q->m_lastError.
-			this->file = nullptr;
+			if (q->m_hasDiscReader) {
+				q->m_discReader = nullptr;
+			} else {
+				q->m_file->unref();
+				q->m_file = nullptr;
+			}
 			return;
 		}
 
@@ -233,7 +226,12 @@ void NCCHReaderPrivate::init(void)
 					q->m_lastError = EIO;
 					delete cipher;
 					cipher = nullptr;
-					this->file = nullptr;
+					if (q->m_hasDiscReader) {
+						q->m_discReader = nullptr;
+					} else {
+						q->m_file->unref();
+						q->m_file = nullptr;
+					}
 					return;
 				}
 
@@ -249,7 +247,12 @@ void NCCHReaderPrivate::init(void)
 					q->m_lastError = EIO;
 					delete cipher;
 					cipher = nullptr;
-					this->file = nullptr;
+					if (q->m_hasDiscReader) {
+						q->m_discReader = nullptr;
+					} else {
+						q->m_file->unref();
+						q->m_file = nullptr;
+					}
 					return;
 				}
 
@@ -260,7 +263,12 @@ void NCCHReaderPrivate::init(void)
 					// NOTE: readFromROM() sets q->m_lastError.
 					delete cipher;
 					cipher = nullptr;
-					this->file = nullptr;
+					if (q->m_hasDiscReader) {
+						q->m_discReader = nullptr;
+					} else {
+						q->m_file->unref();
+						q->m_file = nullptr;
+					}
 					return;
 				}
 
@@ -277,7 +285,12 @@ void NCCHReaderPrivate::init(void)
 					delete cipher;
 					q->m_lastError = EIO;
 					cipher = nullptr;
-					this->file = nullptr;
+					if (q->m_hasDiscReader) {
+						q->m_discReader = nullptr;
+					} else {
+						q->m_file->unref();
+						q->m_file = nullptr;
+					}
 					return;
 				}
 
@@ -373,12 +386,6 @@ NCCHReaderPrivate::~NCCHReaderPrivate()
 #ifdef ENABLE_DECRYPTION
 	delete cipher;
 #endif /* ENABLE_DECRYPTION */
-
-	if (useDiscReader) {
-		// Delete the IDiscReader, since it's
-		// most likely a temporary CIAReader.
-		delete discReader;
-	}
 }
 
 #ifdef ENABLE_DECRYPTION
@@ -433,14 +440,14 @@ size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
 	// Seek to the start of the data and read it.
 	const int64_t phys_addr = ncch_offset + offset;
 	size_t sz_read;
-	if (useDiscReader) {
-		sz_read = discReader->seekAndRead(phys_addr, ptr, size);
+	if (q->m_hasDiscReader) {
+		sz_read = q->m_discReader->seekAndRead(phys_addr, ptr, size);
 	} else {
-		sz_read = file->seekAndRead(phys_addr, ptr, size);
+		sz_read = q->m_file->seekAndRead(phys_addr, ptr, size);
 	}
 	if (sz_read != size) {
 		// Seek and/or read error.
-		q->m_lastError = (useDiscReader ? discReader->lastError() : file->lastError());
+		q->m_lastError = (q->m_hasDiscReader ? q->m_discReader->lastError() : q->m_file->lastError());
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
@@ -499,7 +506,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 				     &ncch_exheader, exheader_length);
 	if (size != exheader_length) {
 		// Seek and/or read error.
-		q->m_lastError = file->lastError();
+		q->m_lastError = q->m_file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
@@ -556,7 +563,8 @@ int NCCHReaderPrivate::loadExHeader(void)
  */
 NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
 		int64_t ncch_offset, uint32_t ncch_length)
-	: d_ptr(new NCCHReaderPrivate(this, file, media_unit_shift, ncch_offset, ncch_length))
+	: super(file)
+	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
 { }
 
 /**
@@ -575,30 +583,23 @@ NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
  */
 NCCHReader::NCCHReader(IDiscReader *discReader, uint8_t media_unit_shift,
 		int64_t ncch_offset, uint32_t ncch_length)
-	: d_ptr(new NCCHReaderPrivate(this, discReader, media_unit_shift, ncch_offset, ncch_length))
+	: super(discReader)
+	, d_ptr(new NCCHReaderPrivate(this, media_unit_shift, ncch_offset, ncch_length))
 { }
 
 NCCHReader::~NCCHReader()
 {
 	delete d_ptr;
+
+	if (m_hasDiscReader) {
+		// Delete the IDiscReader, since it's
+		// most likely a temporary CIAReader.
+		// TODO: Use reference counting?
+		delete m_discReader;
+	}
 }
 
 /** IDiscReader **/
-
-/**
- * Is the partition open?
- * This usually only returns false if an error occurred.
- * @return True if the partition is open; false if it isn't.
- */
-bool NCCHReader::isOpen(void) const
-{
-	RP_D(const NCCHReader);
-	if (d->useDiscReader) {
-		return (d->discReader && d->discReader->isOpen());
-	} else {
-		return (d->file && d->file->isOpen());
-	}
-}
 
 /**
  * Read data from the file.

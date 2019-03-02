@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.hpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -45,10 +45,10 @@ class GcnPartition : public LibRpBase::IPartition
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
 		 */
-		GcnPartition(IDiscReader *discReader, int64_t partition_offset);
+		explicit GcnPartition(IDiscReader *discReader, int64_t partition_offset);
 		virtual ~GcnPartition();
 	protected:
-		explicit GcnPartition(GcnPartitionPrivate *d);
+		explicit GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader);
 
 	private:
 		typedef IPartition super;
@@ -60,13 +60,6 @@ class GcnPartition : public LibRpBase::IPartition
 
 	public:
 		/** IDiscReader **/
-
-		/**
-		 * Is the partition open?
-		 * This usually only returns false if an error occurred.
-		 * @return True if the partition is open; false if it isn't.
-		 */
-		bool isOpen(void) const final;
 
 		/**
 		 * Read data from the partition.
@@ -97,6 +90,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 */
 		int64_t size(void) final;
 
+	public:
 		/** IPartition **/
 
 		/**
@@ -114,6 +108,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 */
 		int64_t partition_size_used(void) const final;
 
+	public:
 		/** IFst wrapper functions. **/
 
 		/**

@@ -4,7 +4,7 @@
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -16,9 +16,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_DISC_SPARSEDISCREADER_P_HPP__
@@ -35,9 +34,9 @@ class SparseDiscReader;
 class SparseDiscReaderPrivate
 {
 	protected:
-		SparseDiscReaderPrivate(SparseDiscReader *q, IRpFile *file);
+		SparseDiscReaderPrivate(SparseDiscReader *q);
 	public:
-		virtual ~SparseDiscReaderPrivate();
+		virtual ~SparseDiscReaderPrivate() { };
 
 	private:
 		RP_DISABLE_COPY(SparseDiscReaderPrivate)
@@ -46,7 +45,6 @@ class SparseDiscReaderPrivate
 		SparseDiscReader *const q_ptr;
 
 	public:
-		IRpFile *file;		// Disc image file.
 		int64_t disc_size;	// Virtual disc image size.
 		int64_t pos;		// Read position.
 		unsigned int block_size;	// Block size.

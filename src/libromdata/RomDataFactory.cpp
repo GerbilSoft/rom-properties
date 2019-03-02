@@ -63,8 +63,14 @@ using std::vector;
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
+#include "Console/Xbox_XBE.hpp"
 #include "Console/Xbox360_XDBF.hpp"
 #include "Console/Xbox360_XEX.hpp"
+
+// Special handling for Xbox discs.
+#include "iso_structs.h"
+#include "Console/XboxDisc.hpp"
+#include "disc/xdvdfs_structs.h"
 
 // RomData subclasses: Handhelds
 #include "Handheld/DMG.hpp"
@@ -105,6 +111,7 @@ using std::vector;
 #include "Other/Amiibo.hpp"
 #include "Other/ELF.hpp"
 #include "Other/EXE.hpp"
+#include "Other/ISO.hpp"
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 
@@ -219,6 +226,17 @@ class RomDataFactoryPrivate
 		 * Internal function; must be called using pthread_once().
 		 */
 		static void init_supportedMimeTypes(void);
+
+		/**
+		 * Check an ISO-9660 disc image for a game-specific file system.
+		 *
+		 * If this is a valid ISO-9660 disc image, but no game-specific
+		 * RomData subclasses support it, an ISO object will be returned.
+		 *
+		 * @param file ISO-9660 disc image
+		 * @return Game-specific RomData subclass, or nullptr if none are supported.
+		 */
+		static RomData *checkISO(IRpFile *file);
 };
 
 /** RomDataFactoryPrivate **/
@@ -228,9 +246,10 @@ vector<const char*> RomDataFactoryPrivate::vec_mimeTypes;
 pthread_once_t RomDataFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
 pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 
-#define ATTR_NONE RomDataFactory::RDA_NONE
-#define ATTR_HAS_THUMBNAIL RomDataFactory::RDA_HAS_THUMBNAIL
-#define ATTR_HAS_DPOVERLAY RomDataFactory::RDA_HAS_DPOVERLAY
+#define ATTR_NONE		RomDataFactory::RDA_NONE
+#define ATTR_HAS_THUMBNAIL	RomDataFactory::RDA_HAS_THUMBNAIL
+#define ATTR_HAS_DPOVERLAY	RomDataFactory::RDA_HAS_DPOVERLAY
+#define ATTR_CHECK_ISO		RomDataFactory::RDA_CHECK_ISO
 
 // RomData subclasses that use a header at 0 and
 // definitely have a 32-bit magic number in the header.
@@ -240,6 +259,7 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
+	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL, 0, 'XBEH'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX2'),
 
@@ -327,6 +347,13 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// The 0 address is checked above.
 	GetRomDataFns_addr(GameCom, ATTR_HAS_THUMBNAIL, 0x40000, 0x20),
 
+	// Last chance: ISO-9660 disc images.
+	// NOTE: This might include some console-specific disc images
+	// that don't have an identifying boot sector at 0x0000.
+	// NOTE: Keeping the same address, since ISO only checks the file extension.
+	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
+	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_CHECK_ISO, 0x40000, 0x20),
+
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
@@ -412,6 +439,61 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	return dcSave;
 }
 
+/**
+ * Check an ISO-9660 disc image for a game-specific file system.
+ *
+ * If this is a valid ISO-9660 disc image, but no game-specific
+ * RomData subclasses support it, an ISO object will be returned.
+ *
+ * @param file ISO-9660 disc image
+ * @return Game-specific RomData subclass, or nullptr if none are supported.
+ */
+RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
+{
+	// Check for specific disc file systems.
+	// TODO: 2352-byte sector handling?
+	ISO_Primary_Volume_Descriptor pvd;
+	size_t size = file->seekAndRead(ISO_PVD_ADDRESS_2048, &pvd, sizeof(pvd));
+	if (size != sizeof(pvd)) {
+		// Unable to read the PVD.
+		return nullptr;
+	}
+
+	// Try various game disc file systems.
+
+	// Xbox / Xbox 360
+	bool mayBeXbox = (XboxDisc::isRomSupported_static(&pvd) >= 0);
+	if (!mayBeXbox) {
+		// This might be an extracted XDVDFS.
+		// Check for the magic number at the base offset.
+		XDVDFS_Header xdvdfsHeader;
+		size = file->seekAndRead(XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE,
+			&xdvdfsHeader, sizeof(xdvdfsHeader));
+		if (size == sizeof(xdvdfsHeader)) {
+			// Check the magic numbers.
+			if (!memcmp(xdvdfsHeader.magic, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic)) &&
+			    !memcmp(xdvdfsHeader.magic_footer, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic_footer)))
+			{
+				// It's a match!
+				mayBeXbox = true;
+			}
+		}
+	}
+
+	if (mayBeXbox) {
+		RomData *const romData = new XboxDisc(file);
+		if (romData->isValid()) {
+			// Got an Xbox disc.
+			return romData;
+		}
+		romData->unref();
+	}
+
+	// Not a game-specific file system.
+	// Use the generic ISO-9660 parser.
+	return new ISO(file);
+}
+
 /** RomDataFactory **/
 
 /**
@@ -451,11 +533,22 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		return nullptr;
 	}
 
-	// Get the file extension.
+	// File extension.
+	string file_ext;	// temporary storage
 	info.ext = nullptr;
-	const string filename = file->filename();
-	if (!filename.empty()) {
-		info.ext = FileSystem::file_ext(filename);
+	if (file->isDevice()) {
+		// Device file. Assume it's a CD-ROM.
+		info.ext = ".iso";
+	} else {
+		// Get the actual file extension.
+		const string filename = file->filename();
+		if (!filename.empty()) {
+			const char *pExt = FileSystem::file_ext(filename);
+			if (pExt) {
+				file_ext = pExt;
+				info.ext = file_ext.c_str();
+			}
+		}
 	}
 
 	// Special handling for Dreamcast .VMI+.VMS pairs.
@@ -529,15 +622,31 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 			// for file types that don't use this.
 			// TODO: Don't hard-code this.
 			// Use a pointer to supportedFileExtensions_static() instead?
+			static const char *const exts[] = {
+				".bin",		/* generic .bin */
+				".sms",		/* Sega Master System */
+				".gg",		/* Game Gear */
+				".tgc",		/* game.com */
+				".iso",		/* ISO-9660 */
+				".xiso",	/* Xbox disc image */
+				nullptr
+			};
+
 			if (info.ext == nullptr) {
 				// No file extension...
 				break;
-			} else if (strcasecmp(info.ext, ".bin") != 0 &&	/* generic .bin */
-				   strcasecmp(info.ext, ".sms") != 0 &&	/* Sega Master System */
-				   strcasecmp(info.ext, ".gg") != 0 &&	/* Game Gear */
-				   strcasecmp(info.ext, ".tgc") != 0)	/* game.com */
-			{
-				// Not SMS, Game Gear, or game.com.
+			}
+
+			// Check for a matching extension.
+			bool found = false;
+			for (const char *const *ext = exts; *ext != nullptr; ext++) {
+				if (!strcasecmp(info.ext, *ext)) {
+					// Found a match!
+					found = true;
+				}
+			}
+			if (!found) {
+				// No match.
 				break;
 			}
 
@@ -567,14 +676,23 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		}
 
 		if (fns->isRomSupported(&info) >= 0) {
-			RomData *const romData = fns->newRomData(file);
-			if (romData->isValid()) {
-				// RomData subclass obtained.
-				return romData;
+			RomData *romData;
+			if (fns->attrs & RDA_CHECK_ISO) {
+				// Check for a game-specific ISO subclass.
+				romData = RomDataFactoryPrivate::checkISO(file);
+			} else {
+				// Standard RomData subclass.
+				romData = fns->newRomData(file);
 			}
 
-			// Not actually supported.
-			romData->unref();
+			if (romData) {
+				if (romData->isValid()) {
+					// RomData subclass obtained.
+					return romData;
+				}
+				// Not actually supported.
+				romData->unref();
+			}
 		}
 	}
 

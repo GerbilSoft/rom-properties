@@ -38,6 +38,10 @@ extern "C" {
 #define ISO_SECTOR_SIZE_MODE1_RAW    2352
 #define ISO_SECTOR_SIZE_MODE1_COOKED 2048
 
+// Data offsets.
+#define ISO_DATA_OFFSET_MODE1_RAW    16
+#define ISO_DATA_OFFSET_MODE1_COOKED 0
+
 // strD: [A-Z0-9_]
 // strA: strD plus: ! " % & ' ( ) * + , - . / : ; < = > ?
 
@@ -109,9 +113,8 @@ typedef struct PACKED _ISO_PVD_DateTime_t {
 	};
 
 	// Timezone offset, in 15-minute intervals.
-	//   0 == interval -48 (GMT-1200)
-	// 100 == interval  52 (GMT+1300)
-	uint8_t tz_offset;
+	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
+	int8_t tz_offset;
 } ISO_PVD_DateTime_t;
 ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
 
@@ -161,75 +164,103 @@ typedef enum {
 } ISO_File_Flags_t;
 
 /**
- * Volume descriptor. Located at 0x8000.
+ * Volume descriptor header.
  */
-#define ISO_MAGIC "CD001"
-#define ISO_VD_VERSION 0x01
-typedef struct PACKED _ISO_Volume_Descriptor {
+typedef struct PACKED _ISO_Volume_Descriptor_Header {
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CD001"
 	uint8_t version;	// Volume descriptor version. (0x01)
+} ISO_Volume_Descriptor_Header;
+ASSERT_STRUCT(ISO_Volume_Descriptor_Header, 7);
 
+/**
+ * Boot volume descriptor.
+ */
+typedef struct PACKED _ISO_Boot_Volume_Descriptor {
+	ISO_Volume_Descriptor_Header header;
+	char sysID[32];		// (strA) System identifier.
+	char bootID[32];	// (strA) Boot identifier.
 	union {
-		uint8_t data[2041];
-
-		// Boot record.
-		struct {
-			char sysID[32];		// (strA) System identifier.
-			char bootID[32];	// (strA) Boot identifier.
-			union {
-				uint32_t boot_catalog_addr;	// (LE32) Block address of the El Torito boot catalog.
-				uint8_t boot_system_use[1977];
-			};
-		} boot;
-
-		// Volume descriptor.
-		struct {
-			uint8_t reserved1;			// 0x00
-			char sysID[32];				// (strA) System identifier.
-			char volID[32];				// (strD) Volume identifier.
-			uint8_t reserved2[8];			// All zeroes.
-			uint32_lsb_msb_t volume_space_size;	// Size of volume, in blocks.
-			uint8_t reserved3[32];			// All zeroes.
-			uint16_lsb_msb_t volume_set_size;	// Size of the logical volume. (number of discs)
-			uint16_lsb_msb_t volume_seq_number;	// Disc number in the volume set.
-			uint16_lsb_msb_t logical_block_size;	// Logical block size. (usually 2048)
-			uint32_lsb_msb_t path_table_size;	// Path table size, in bytes.
-			uint32_t path_table_lba_L;		// (LE32) Path table LBA. (contains LE values only)
-			uint32_t path_table_optional_lba_L;	// (LE32) Optional path table LBA. (contains LE values only)
-			uint32_t path_table_lba_M;		// (BE32) Path table LBA. (contains BE values only)
-			uint32_t path_table_optional_lba_M;	// (BE32) Optional path table LBA. (contains BE values only)
-			ISO_DirEntry dir_entry_root;		// Root directory record.
-			char dir_entry_root_filename;		// Root directory filename. (NULL byte)
-			char volume_set_id[128];		// (strD) Volume set identifier.
-
-			// For the following fields:
-			// - "\x5F" "FILENAME.BIN" to refer to a file in the root directory.
-			// - If empty, fill with all 0x20.
-			char publisher[128];			// (strA) Volume publisher.
-			char data_preparer[128];		// (strA) Data preparer.
-			char application[128];			// (strA) Application.
-
-			// For the following fields:
-			// - Filenames must be in the root directory.
-			// - If empty, fill with all 0x20.
-			char copyright_file[38];		// (strD) Filename of the copyright file.
-			char abstract_file[36];			// (strD) Filename of the abstract file.
-			char bibliographic_file[37];		// (strD) Filename of the bibliographic file.
-
-			// Timestamps.
-			ISO_PVD_DateTime_t btime;		// Volume creation time.
-			ISO_PVD_DateTime_t mtime;		// Volume modification time.
-			ISO_PVD_DateTime_t exptime;		// Volume expiration time.
-			ISO_PVD_DateTime_t efftime;		// Volume effective time.
-
-			uint8_t file_structure_version;		// Directory records and path table version. (0x01)
-			uint8_t reserved4;			// 0x00
-
-			uint8_t application_data[512];		// Not defined by ISO-9660.
-			uint8_t iso_reserved[653];		// Reserved by ISO.
-		} pri;
+		uint32_t boot_catalog_addr;	// (LE32) Block address of the El Torito boot catalog.
+		uint8_t boot_system_use[1977];
 	};
+} ISO_Boot_Volume_Descriptor;
+ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+
+/**
+ * Primary volume descriptor.
+ *
+ * NOTE: All fields are space-padded. (0x20, ' ')
+ */
+typedef struct PACKED _ISO_Primary_Volume_Descriptor {
+	ISO_Volume_Descriptor_Header header;
+
+	uint8_t reserved1;			// [0x007] 0x00
+	char sysID[32];				// [0x008] (strA) System identifier.
+	char volID[32];				// [0x028] (strD) Volume identifier.
+	uint8_t reserved2[8];			// [0x048] All zeroes.
+	uint32_lsb_msb_t volume_space_size;	// [0x050] Size of volume, in blocks.
+	uint8_t reserved3[32];			// [0x058] All zeroes.
+	uint16_lsb_msb_t volume_set_size;	// [0x078] Size of the logical volume. (number of discs)
+	uint16_lsb_msb_t volume_seq_number;	// [0x07C] Disc number in the volume set.
+	uint16_lsb_msb_t logical_block_size;	// [0x080] Logical block size. (usually 2048)
+	uint32_lsb_msb_t path_table_size;	// [0x084] Path table size, in bytes.
+	uint32_t path_table_lba_L;		// [0x08C] (LE32) Path table LBA. (contains LE values only)
+	uint32_t path_table_optional_lba_L;	// [0x090] (LE32) Optional path table LBA. (contains LE values only)
+	uint32_t path_table_lba_M;		// [0x094] (BE32) Path table LBA. (contains BE values only)
+	uint32_t path_table_optional_lba_M;	// [0x098] (BE32) Optional path table LBA. (contains BE values only)
+	ISO_DirEntry dir_entry_root;		// [0x09C] Root directory record.
+	char dir_entry_root_filename;		// [0x0BD] Root directory filename. (NULL byte)
+	char volume_set_id[128];		// [0x0BE] (strD) Volume set identifier.
+
+	// For the following fields:
+	// - "\x5F" "FILENAME.BIN" to refer to a file in the root directory.
+	// - If empty, fill with all 0x20.
+	char publisher[128];			// [0x13E] (strA) Volume publisher.
+	char data_preparer[128];		// [0x1BE] (strA) Data preparer.
+	char application[128];			// [0x23E] (strA) Application.
+
+	// For the following fields:
+	// - Filenames must be in the root directory.
+	// - If empty, fill with all 0x20.
+	char copyright_file[37];		// [0x2BE] (strD) Filename of the copyright file.
+	char abstract_file[37];			// [0x2E3] (strD) Filename of the abstract file.
+	char bibliographic_file[37];		// [0x308] (strD) Filename of the bibliographic file.
+
+	// Timestamps.
+	ISO_PVD_DateTime_t btime;		// [0x32D] Volume creation time.
+	ISO_PVD_DateTime_t mtime;		// [0x33E] Volume modification time.
+	ISO_PVD_DateTime_t exptime;		// [0x34F] Volume expiration time.
+	ISO_PVD_DateTime_t efftime;		// [0x360] Volume effective time.
+
+	uint8_t file_structure_version;		// [0x371] Directory records and path table version. (0x01)
+	uint8_t reserved4;			// [0x372] 0x00
+
+	uint8_t application_data[512];		// [0x373] Not defined by ISO-9660.
+	uint8_t iso_reserved[653];		// [0x573] Reserved by ISO.
+} ISO_Primary_Volume_Descriptor;
+ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+
+/**
+ * Volume descriptor.
+ *
+ * Primary volume descriptor is located at sector 0x10. (0x8000)
+ */
+#define ISO_VD_MAGIC "CD001"
+#define ISO_VD_VERSION 0x01
+#define ISO_PVD_LBA 0x10
+#define ISO_PVD_ADDRESS_2048 (ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_COOKED)
+#define ISO_PVD_ADDRESS_2352 (ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW)
+typedef union PACKED _ISO_Volume_Descriptor {
+	ISO_Volume_Descriptor_Header header;
+
+	struct {
+		uint8_t header8[7];
+		uint8_t data[2041];
+	};
+
+	ISO_Boot_Volume_Descriptor boot;
+	ISO_Primary_Volume_Descriptor pri;
 } ISO_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 
@@ -243,6 +274,18 @@ typedef enum {
 	ISO_VDT_PARTITION = 3,
 	ISO_VDT_TERMINATOR = 255,
 } ISO_Volume_Descriptor_Type;
+
+/**
+ * UDF volume descriptors.
+ *
+ * Reference: https://wiki.osdev.org/UDF
+ */
+#define UDF_VD_BEA01 "BEA01"
+#define UDF_VD_NSR01 "NSR01"	/* UDF 1.00 */
+#define UDF_VD_NSR02 "NSR02"	/* UDF 1.50 */
+#define UDF_VD_NSR03 "NSR03"	/* UDF 2.00 */
+#define UDF_VD_BOOT2 "BOOT2"
+#define UDF_VD_TEA01 "TEA01"
 
 #pragma pack()
 

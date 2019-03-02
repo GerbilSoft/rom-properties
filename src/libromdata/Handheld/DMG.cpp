@@ -177,8 +177,7 @@ class DMGPrivate : public RomDataPrivate
 
 		// GBS subclass.
 		struct {
-			IDiscReader *reader;	// uses ncch_f_icon
-			PartitionFile *file;	// uses reader
+			IDiscReader *reader;
 			GBS *data;
 		} gbs;
 
@@ -282,9 +281,6 @@ DMGPrivate::~DMGPrivate()
 {
 	if (gbs.data) {
 		gbs.data->unref();
-	}
-	if (gbs.file) {
-		gbs.file->unref();
 	}
 	delete gbs.reader;
 }
@@ -573,23 +569,22 @@ DMG::DMG(IRpFile *file)
 					ptFile = new PartitionFile(reader, 0, length);
 				}
 
-				if (ptFile && ptFile->isOpen()) {
-					// Open the GBS.
-					gbs = new GBS(ptFile);
+				if (ptFile) {
+					if (ptFile->isOpen()) {
+						// Open the GBS.
+						gbs = new GBS(ptFile);
+					}
+					ptFile->unref();
 				}
 
 				if (gbs && gbs->isOpen()) {
 					// GBS opened.
 					d->gbs.reader = reader;
-					d->gbs.file = ptFile;
 					d->gbs.data = gbs;
 				} else {
 					// Unable to open the GBS.
 					if (gbs) {
 						gbs->unref();
-					}
-					if (ptFile) {
-						ptFile->unref();
 					}
 					delete reader;
 				}
@@ -607,12 +602,8 @@ void DMG::close(void)
 	if (d->gbs.data) {
 		d->gbs.data->unref();
 	}
-	if (d->gbs.file) {
-		d->gbs.file->unref();
-	}
 	delete d->gbs.reader;
 	d->gbs.data = nullptr;
-	d->gbs.file = nullptr;
 	d->gbs.reader = nullptr;
 }
 
@@ -1104,13 +1095,10 @@ int DMG::loadFieldData(void)
 	if (d->gbs.data) {
 		// This is a GBS Player ROM.
 		// TODO: GBS metadata.
-		const RomFields *gbsFields = d->gbs.data->fields();
+		const RomFields *const gbsFields = d->gbs.data->fields();
 		assert(gbsFields != nullptr);
-		assert(!gbsFields->empty());
-		if (gbsFields && !gbsFields->empty()) {
-			const int tabOffset = d->fields->tabCount();
-			d->fields->addTab("GBS");
-			d->fields->addFields_romFields(gbsFields, tabOffset);
+		if (gbsFields) {
+			d->fields->addFields_romFields(gbsFields, RomFields::TabOffset_AddTabs);
 		}
 	}
 

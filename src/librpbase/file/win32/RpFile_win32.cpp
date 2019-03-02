@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * RpFile_Win32.cpp: Standard file object. (Win32 implementation)          *
+ * RpFile_win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
@@ -19,14 +19,15 @@
  ***************************************************************************/
 
 #include "../RpFile.hpp"
+#include "RpFile_win32_p.hpp"
 
 // librpbase
+#include "bitstuff.h"
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "TextFuncs_wchar.hpp"
 
 // libwin32common
-#include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.h"
 
 // C includes.
@@ -43,23 +44,6 @@ using std::string;
 using std::unique_ptr;
 using std::wstring;
 
-// zlib for transparent gzip decompression.
-#include <zlib.h>
-// gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
-#if (ZLIB_VER_MAJOR > 1) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR > 2) || \
-    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
-// zlib-1.2.4 or later
-#else
-# define gzclose_r(file) gzclose(file)
-# define gzclose_w(file) gzclose(file)
-#endif
-
-// Windows SDK
-#include <windows.h>
-#include <winioctl.h>
-#include <io.h>
-
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
 #include "libwin32common/DelayLoadHelper.h"
@@ -71,74 +55,6 @@ namespace LibRpBase {
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #endif /* _MSC_VER */
-
-/** RpFilePrivate **/
-
-class RpFilePrivate
-{
-	public:
-		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), gzfd(nullptr), gzsz(0), sector_size(0) { }
-		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), gzfd(nullptr), gzsz(0), sector_size(0) { }
-		~RpFilePrivate();
-
-	private:
-		RP_DISABLE_COPY(RpFilePrivate)
-		RpFile *const q_ptr;
-
-	public:
-		HANDLE file;		// File handle.
-		string filename;	// Filename.
-		RpFile::FileMode mode;	// File mode.
-
-		// gzip parameters.
-		gzFile gzfd;			// Used for transparent gzip decompression.
-		union {
-			int64_t gzsz;			// Uncompressed file size.
-			int64_t device_size;		// Device size. (for block devices)
-		};
-
-		// Block device parameters.
-		// Set to 0 if this is a regular file.
-		unsigned int sector_size;	// Sector size. (bytes per sector)
-
-	public:
-		/**
-		 * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
-		 * @param mode				[in] FileMode
-		 * @param pdwDesiredAccess		[out] dwDesiredAccess
-		 * @param pdwShareMode			[out] dwShareMode
-		 * @param pdwCreationDisposition	[out] dwCreationDisposition
-		 * @return 0 on success; non-zero on error.
-		 */
-		static inline int mode_to_win32(RpFile::FileMode mode,
-			DWORD *pdwDesiredAccess,
-			DWORD *pdwShareMode,
-			DWORD *pdwCreationDisposition);
-
-		/**
-		 * (Re-)Open the main file.
-		 *
-		 * INTERNAL FUNCTION. This does NOT affect gzfd.
-		 * NOTE: This function sets q->m_lastError.
-		 *
-		 * Uses parameters stored in this->filename and this->mode.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int reOpenFile(void);
-
-		/**
-		 * Read using block reads.
-		 * Required for block devices.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
-		 * @return Number of bytes read.
-		 */
-		size_t readUsingBlocks(void *ptr, size_t size);
-};
 
 /** RpFilePrivate **/
 
@@ -209,14 +125,22 @@ int RpFilePrivate::reOpenFile(void)
 	if (mode_to_win32(mode, &dwDesiredAccess, &dwShareMode, &dwCreationDisposition) != 0) {
 		// Invalid mode.
 		q->m_lastError = EINVAL;
-		return -1;
+		return -EINVAL;
 	}
 
 	// Converted filename for Windows.
 	tstring tfilename;
 
+	// If the filename is "X:", change it to "X:\\".
+	if (filename.size() == 2 &&
+	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':')
+	{
+		// Drive letter. Append '\\'.
+		filename += '\\';
+	}
+
 	// Check if the path starts with a drive letter.
-	bool isBlockDevice = false;
 	if (filename.size() >= 3 &&
 	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
@@ -227,19 +151,34 @@ int RpFilePrivate::reOpenFile(void)
 			// Only CD-ROM (and similar) drives are supported.
 			// TODO: Verify if opening by drive letter works,
 			// or if we have to resolve the physical device name.
-			if (GetDriveType(U82T_s(filename)) != DRIVE_CDROM) {
-				// Not a CD-ROM drive.
-				q->m_lastError = ENOTSUP;
-				return -2;
+			// NOTE: filename is UTF-8, but we can use it as if
+			// it's ANSI for a drive letter.
+			const UINT driveType = GetDriveTypeA(filename.c_str());
+			switch (driveType) {
+				case DRIVE_CDROM:
+					// CD-ROM works.
+					break;
+				case DRIVE_UNKNOWN:
+				case DRIVE_NO_ROOT_DIR:
+					// No drive.
+					isDevice = false;
+					q->m_lastError = ENODEV;
+					return -ENODEV;
+				default:
+					// Not a CD-ROM drive.
+					isDevice = false;
+					q->m_lastError = ENOTSUP;
+					return -ENOTSUP;
 			}
 
 			// Create a raw device filename.
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
 			tfilename = _T("\\\\.\\X:");
 			tfilename[4] = filename[0];
-			isBlockDevice = true;
+			isDevice = true;
 		} else {
 			// Absolute path.
+			isDevice = false;
 #ifdef UNICODE
 			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
@@ -252,13 +191,37 @@ int RpFilePrivate::reOpenFile(void)
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
+		isDevice = false;
 		tfilename = U82T_s(filename);
 	}
 
-	if (isBlockDevice && (mode & RpFile::FM_WRITE)) {
-		// Writing to block devices is not allowed.
-		q->m_lastError = EINVAL;
-		return -3;
+	if (!isDevice) {
+		// Make sure this isn't a directory.
+		// TODO: Other checks?
+		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
+		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+			// File cannot be opened.
+			RP_Q(RpFile);
+			q->m_lastError = EIO;
+			return -EIO;
+		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
+			// File is a directory.
+			RP_Q(RpFile);
+			q->m_lastError = EISDIR;
+			return -EISDIR;
+		}
+	}
+
+	if (isDevice) {
+		if (mode & RpFile::FM_WRITE) {
+			// Writing to block devices is not allowed.
+			q->m_lastError = EINVAL;
+			return -EINVAL;
+		}
+		// NOTE: We need WRITE permission for
+		// DeviceIoControl() to function properly.
+		dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+		dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 	}
 
 	// Open the file.
@@ -272,13 +235,25 @@ int RpFilePrivate::reOpenFile(void)
 			dwCreationDisposition,
 			FILE_ATTRIBUTE_NORMAL,
 			nullptr);
+	if (isDevice) {
+		if (!file || file == INVALID_HANDLE_VALUE) {
+			// Try again without WRITE permission.
+			file = CreateFile(tfilename.c_str(),
+					GENERIC_READ,
+					FILE_SHARE_READ,
+					nullptr,
+					dwCreationDisposition,
+					FILE_ATTRIBUTE_NORMAL,
+					nullptr);
+		}
+	}
 	if (!file || file == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		q->m_lastError = w32err_to_posix(GetLastError());
-		return -4;
+		return -q->m_lastError;
 	}
 
-	if (isBlockDevice) {
+	if (isDevice) {
 		// Get the disk space.
 		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX seems to report 512-byte sectors
 		// for certain emulated CD-ROM device, e.g. the Verizon LG G2.
@@ -286,8 +261,9 @@ int RpFilePrivate::reOpenFile(void)
 		DWORD dwSectorsPerCluster, dwBytesPerSector;
 		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
 		DWORD w32err = 0;
-		// FIXME: NEEDS TESTING: Does tfilename work for GetDiskFreeSpace?
-		BOOL bRet = GetDiskFreeSpace(tfilename.c_str(),
+		// NOTE: tfilename doesn't work here.
+		// Use the original UTF-8 filename as if it's ANSI.
+		BOOL bRet = GetDiskFreeSpaceA(filename.c_str(),
 			&dwSectorsPerCluster, &dwBytesPerSector,
 			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
 		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {
@@ -335,7 +311,7 @@ int RpFilePrivate::reOpenFile(void)
 			}
 			CloseHandle(file);
 			file = INVALID_HANDLE_VALUE;
-			return -5;
+			return -q->m_lastError;
 		}
 	}
 
@@ -429,21 +405,20 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	// Must be on a sector boundary now.
 	assert(q->tell() % sector_size == 0);
 
-	// Read entire blocks.
-	for (; size >= sector_size;
-	    size -= sector_size, ptr8 += sector_size,
-	    ret += sector_size)
-	{
-		// Read the next block.
-		// FIXME: Read all of the contiguous blocks at once.
-		DWORD bytesRead;
-		BOOL bRet = ReadFile(file, ptr8, sector_size, &bytesRead, nullptr);
-		if (bRet == 0 || bytesRead != sector_size) {
-			// Read error.
-			q->m_lastError = w32err_to_posix(GetLastError());
-			return ret + bytesRead;
-		}
+	// Read contiguous blocks.
+	// NOTE: sector_size must be a power of two.
+	assert(isPow2(sector_size));
+	size_t contig_size = size & ~(static_cast<size_t>(sector_size) - 1);
+	DWORD bytesRead;
+	BOOL bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
+	if (bRet == 0 || bytesRead != contig_size) {
+		// Read error.
+		q->m_lastError = w32err_to_posix(GetLastError());
+		return ret + bytesRead;
 	}
+	size -= contig_size;
+	ptr8 += contig_size;
+	ret += contig_size;
 
 	// Check if we still have data left. (not a full block)
 	if (size > 0) {
@@ -829,7 +804,7 @@ int RpFile::truncate(int64_t size)
 	return 0;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.
@@ -874,6 +849,18 @@ string RpFile::filename(void) const
 {
 	RP_D(const RpFile);
 	return d->filename;
+}
+
+/** Device file functions **/
+
+/**
+ * Is this a device file?
+ * @return True if this is a device file; false if not.
+ */
+bool RpFile::isDevice(void) const
+{
+	RP_D(const RpFile);
+	return d->isDevice;
 }
 
 }

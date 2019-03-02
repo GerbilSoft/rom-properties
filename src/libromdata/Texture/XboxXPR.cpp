@@ -798,7 +798,7 @@ int XboxXPR::loadFieldData(void)
 		d->fields->addField_string(C_("XboxXPR", "Type"), type_tbl[d->xprType]);
 	} else {
 		d->fields->addField_string(C_("XboxXPR", "Type"),
-			rp_sprintf(C_("RomData", "Unknown (%d)"), type_tbl[d->xprType]));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), d->xprType));
 	}
 
 	// Pixel format

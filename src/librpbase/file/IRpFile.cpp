@@ -65,23 +65,6 @@ void IRpFile::unref(void)
 }
 
 /**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int IRpFile::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void IRpFile::clearError(void)
-{
-	m_lastError = 0;
-}
-
-/**
  * Get a single character (byte) from the file
  * @return Character from file, or EOF on end of file or error.
  */

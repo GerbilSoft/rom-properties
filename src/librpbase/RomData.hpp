@@ -406,6 +406,9 @@ class RomData
 		 */
 		virtual int loadMetaData(void);
 
+	public:
+		// NOTE: This function needs to be public because it might be
+		// called by RomData subclasses that own other RomData subclasses.
 		/**
 		 * Load an internal image.
 		 * Called by RomData::image().

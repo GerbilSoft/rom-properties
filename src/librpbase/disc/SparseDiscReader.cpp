@@ -33,32 +33,26 @@ namespace LibRpBase {
 
 /** SparseDiscReaderPrivate **/
 
-SparseDiscReaderPrivate::SparseDiscReaderPrivate(SparseDiscReader *q, IRpFile *file)
+SparseDiscReaderPrivate::SparseDiscReaderPrivate(SparseDiscReader *q)
 	: q_ptr(q)
-	, file(nullptr)
 	, disc_size(0)
 	, pos(-1)
 	, block_size(0)
 {
-	if (!file) {
+	if (!q->m_file) {
 		q->m_lastError = EBADF;
 		return;
 	}
-	this->file = file->ref();
 
 	// disc_size, pos, and block_size must be
 	// set by the subclass.
 }
 
-SparseDiscReaderPrivate::~SparseDiscReaderPrivate()
-{
-	this->file->unref();
-}
-
 /** SparseDiscReader **/
 
-SparseDiscReader::SparseDiscReader(SparseDiscReaderPrivate *d)
-	: d_ptr(d)
+SparseDiscReader::SparseDiscReader(SparseDiscReaderPrivate *d, IRpFile *file)
+	: super(file)
+	, d_ptr(d)
 { }
 
 SparseDiscReader::~SparseDiscReader()
@@ -69,17 +63,6 @@ SparseDiscReader::~SparseDiscReader()
 /** IDiscReader functions. **/
 
 /**
- * Is the disc image open?
- * This usually only returns false if an error occurred.
- * @return True if the disc image is open; false if it isn't.
- */
-bool SparseDiscReader::isOpen(void) const
-{
-	RP_D(const SparseDiscReader);
-	return (d->file != nullptr);
-}
-
-/**
  * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -88,11 +71,11 @@ bool SparseDiscReader::isOpen(void) const
 size_t SparseDiscReader::read(void *ptr, size_t size)
 {
 	RP_D(SparseDiscReader);
-	assert(d->file != nullptr);
+	assert(m_file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);
 	assert(d->block_size != 0);
-	if (!d->file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
+	if (!m_file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
 		// Disc image wasn't initialized properly.
 		m_lastError = EBADF;
 		return -1;
@@ -181,11 +164,11 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 int SparseDiscReader::seek(int64_t pos)
 {
 	RP_D(SparseDiscReader);
-	assert(d->file != nullptr);
+	assert(m_file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);
 	assert(d->block_size != 0);
-	if (!d->file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
+	if (!m_file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
 		// Disc image wasn't initialized properly.
 		m_lastError = EBADF;
 		return -1;
@@ -211,11 +194,11 @@ int SparseDiscReader::seek(int64_t pos)
 int64_t SparseDiscReader::tell(void)
 {
 	RP_D(const SparseDiscReader);
-	assert(d->file != nullptr);
+	assert(m_file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);
 	assert(d->block_size != 0);
-	if (!d->file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
+	if (!m_file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
 		// Disc image wasn't initialized properly.
 		m_lastError = EBADF;
 		return -1;
@@ -231,11 +214,11 @@ int64_t SparseDiscReader::tell(void)
 int64_t SparseDiscReader::size(void)
 {
 	RP_D(const SparseDiscReader);
-	assert(d->file != nullptr);
+	assert(m_file != nullptr);
 	assert(d->disc_size > 0);
 	assert(d->pos >= 0);
 	assert(d->block_size != 0);
-	if (!d->file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
+	if (!m_file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
 		// Disc image wasn't initialized properly.
 		m_lastError = EBADF;
 		return -1;
@@ -243,6 +226,8 @@ int64_t SparseDiscReader::size(void)
 
 	return d->disc_size;
 }
+
+/** SparseDiscReader **/
 
 /**
  * Read the specified block.
@@ -291,8 +276,8 @@ int SparseDiscReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t si
 	}
 
 	// Read from the block.
-	size_t sz_read = d->file->seekAndRead(physBlockAddr + pos, ptr, size);
-	m_lastError = d->file->lastError();
+	size_t sz_read = m_file->seekAndRead(physBlockAddr + pos, ptr, size);
+	m_lastError = m_file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);
 }
 

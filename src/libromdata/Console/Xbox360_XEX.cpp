@@ -161,10 +161,8 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// CBC reader for encrypted PE executables.
 		// Also used for unencrypted executables.
 		CBCReader *peReader;
-		IRpFile *peFile_exe;	// uses peReader or lzx_peHeader
-		EXE *pe_exe;		// uses peFile_exe
-		IRpFile *peFile_xdbf;	// uses peReader or lzx_xdbfSection
-		Xbox360_XDBF *pe_xdbf;	// uses peFile_xdbf
+		EXE *pe_exe;
+		Xbox360_XDBF *pe_xdbf;
 
 		/**
 		 * Initialize the PE executable reader.
@@ -216,9 +214,7 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	: super(q, file)
 	, keyInUse(-1)
 	, peReader(nullptr)
-	, peFile_exe(nullptr)
 	, pe_exe(nullptr)
-	, peFile_xdbf(nullptr)
 	, pe_xdbf(nullptr)
 {
 	// Clear the headers.
@@ -235,13 +231,6 @@ Xbox360_XEX_Private::~Xbox360_XEX_Private()
 	}
 	if (pe_exe) {
 		pe_exe->unref();
-	}
-
-	if (peFile_xdbf) {
-		peFile_xdbf->unref();
-	}
-	if (peFile_exe) {
-		peFile_exe->unref();
 	}
 
 	delete peReader;
@@ -909,15 +898,12 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	if (peFile_tmp->isOpen()) {
 		EXE *const pe_exe_tmp = new EXE(peFile_tmp);
 		if (pe_exe_tmp->isOpen()) {
-			peFile_exe = peFile_tmp;
 			pe_exe = pe_exe_tmp;
 		} else {
-			pe_exe_tmp->unref();
 			peFile_tmp->unref();
 		}
-	} else {
-		peFile_tmp->unref();
 	}
+	peFile_tmp->unref();
 
 	return pe_exe;
 }
@@ -979,15 +965,13 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	if (peFile_tmp->isOpen()) {
 		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
 		if (pe_xdbf_tmp->isOpen()) {
-			peFile_xdbf = peFile_tmp;
 			pe_xdbf = pe_xdbf_tmp;
 		} else {
 			pe_xdbf_tmp->unref();
 			peFile_tmp->unref();
 		}
-	} else {
-		peFile_tmp->unref();
 	}
+	peFile_tmp->unref();
 
 	return pe_xdbf;
 }
@@ -1020,10 +1004,13 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		return;
 	}
 
-	// Read the XEX2 header.
+	// Read the XEX2 header and optional header table.
+	// NOTE: Reading all at once to reduce seeking.
+	// NOTE: Limiting to one DVD sector.
+	uint8_t header[2048];
 	d->file->rewind();
-	size_t size = d->file->read(&d->xex2Header, sizeof(d->xex2Header));
-	if (size != sizeof(d->xex2Header)) {
+	size_t size = d->file->read(header, sizeof(header));
+	if (size != sizeof(header)) {
 		d->xex2Header.magic = 0;
 		d->file->unref();
 		d->file = nullptr;
@@ -1033,8 +1020,8 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	// Check if this file is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(d->xex2Header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->xex2Header);
+	info.header.size = sizeof(header);
+	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for XEX.
 	info.szFile = 0;	// Not needed for XEX.
 	d->isValid = (isRomSupported_static(&info) >= 0);
@@ -1046,6 +1033,8 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 		return;
 	}
 
+	// Copy the XEX2 header.
+	memcpy(&d->xex2Header, header, sizeof(d->xex2Header));
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Byteswap the header for little-endian systems.
 	// NOTE: The magic number is *not* byteswapped here.
@@ -1057,31 +1046,32 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Read the security info.
-	size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->xex2Security, sizeof(d->xex2Security));
-	if (size != sizeof(d->xex2Security)) {
-		// Seek and/or read error.
-		d->xex2Header.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
-		return;
+	// NOTE: This must be done after copying the XEX2 header,
+	// since the security info offset is stored in the header.
+	// TODO: Read the offset directly before copying?
+	if (d->xex2Header.sec_info_offset + sizeof(d->xex2Security) <= 2048) {
+		// Security info is in the first sector.
+		memcpy(&d->xex2Security, &header[d->xex2Header.sec_info_offset], sizeof(d->xex2Security));
+	} else {
+		// Security info is not fully located in the first sector.
+		size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->xex2Security, sizeof(d->xex2Security));
+		if (size != sizeof(d->xex2Security)) {
+			// Seek and/or read error.
+			d->xex2Header.magic = 0;
+			d->file->unref();
+			d->file = nullptr;
+			d->isValid = false;
+			return;
+		}
 	}
 
-	// Read the optional header table.
-	// Maximum of 32 optional headers.
-	assert(d->xex2Header.opt_header_count <= 32);
-	const unsigned int opt_header_count = std::min(d->xex2Header.opt_header_count, 32U);
+	// Copy the optional header table.
+	// Maximum of 64 optional headers.
+	assert(d->xex2Header.opt_header_count <= 64);
+	const unsigned int opt_header_count = std::min(d->xex2Header.opt_header_count, 64U);
 	d->optHdrTbl.resize(opt_header_count);
 	const size_t opt_header_sz = (size_t)opt_header_count * sizeof(XEX2_Optional_Header_Tbl);
-	size = d->file->seekAndRead(sizeof(d->xex2Header), d->optHdrTbl.data(), opt_header_sz);
-	if (size != opt_header_sz) {
-		// Seek and/or read error.
-		d->optHdrTbl.clear();
-		d->optHdrTbl.shrink_to_fit();
-		d->xex2Header.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
+	memcpy(d->optHdrTbl.data(), &header[sizeof(d->xex2Header)], opt_header_sz);
 }
 
 /**
@@ -1100,16 +1090,7 @@ void Xbox360_XEX::close(void)
 		d->pe_exe = nullptr;
 	}
 
-	if (d->peFile_xdbf) {
-		d->peFile_xdbf->unref();
-	}
-	if (d->peFile_exe) {
-		d->peFile_exe->unref();
-	}
-
 	delete d->peReader;
-	d->peFile_xdbf = nullptr;
-	d->peFile_exe = nullptr;
 	d->peReader = nullptr;
 
 #ifdef ENABLE_LIBMSPACK
@@ -1219,7 +1200,7 @@ const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox360-xex",
+		"application/x-xbox360-executable",
 
 		nullptr
 	};
@@ -1233,8 +1214,9 @@ const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
 uint32_t Xbox360_XEX::supportedImageTypes(void) const
 {
 	RP_D(const Xbox360_XEX);
-	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
-		return d->pe_xdbf->supportedImageTypes();
+	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
+	if (pe_xdbf) {
+		return pe_xdbf->supportedImageTypes();
 	}
 
 	return 0;
@@ -1250,10 +1232,11 @@ vector<RomData::ImageSizeDef> Xbox360_XEX::supportedImageSizes(ImageType imageTy
 	ASSERT_supportedImageSizes(imageType);
 
 	RP_D(const Xbox360_XEX);
-	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
-		return d->pe_xdbf->supportedImageSizes(imageType);
+	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
+	if (pe_xdbf) {
+		return pe_xdbf->supportedImageSizes(imageType);
 	}
-	
+
 	return vector<ImageSizeDef>();
 }
 
@@ -1271,8 +1254,9 @@ uint32_t Xbox360_XEX::imgpf(ImageType imageType) const
 	ASSERT_imgpf(imageType);
 
 	RP_D(const Xbox360_XEX);
-	if (const_cast<Xbox360_XEX_Private*>(d)->initXDBF()) {
-		return d->pe_xdbf->imgpf(imageType);
+	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
+	if (pe_xdbf) {
+		return pe_xdbf->imgpf(imageType);
 	}
 
 	return 0;
@@ -1310,10 +1294,10 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->reserve(11);
 	d->fields->setTabName(0, "XEX");
 
-	// Game name.
-	const Xbox360_XDBF *const xdbf = d->initXDBF();
-	if (xdbf) {
-		string title = xdbf->getGameTitle();
+	// Game name
+	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
+	if (pe_xdbf) {
+		string title = pe_xdbf->getGameTitle();
 		if (!title.empty()) {
 			d->fields->addField_string(C_("RomData", "Title"), title);
 		}
@@ -1380,9 +1364,9 @@ int Xbox360_XEX::loadFieldData(void)
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
 			NOP_C_("Xbox360_XEX", "DVD X2"),
 			NOP_C_("Xbox360_XEX", "DVD / CD"),
-			NOP_C_("Xbox360_XEX", "DVD (Single Layer)"),
+			NOP_C_("Xbox360_XEX", "DVD-ROM SL"),
 			// 4
-			NOP_C_("Xbox360_XEX", "DVD (Dual Layer)"),
+			NOP_C_("Xbox360_XEX", "DVD-ROM DL"),
 			NOP_C_("Xbox360_XEX", "Internal Flash Memory"),
 			nullptr,
 			NOP_C_("Xbox360_XEX", "Memory Unit"),
@@ -1488,9 +1472,10 @@ int Xbox360_XEX::loadFieldData(void)
 			// Title ID
 			// FIXME: Verify behavior on big-endian.
 			d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-				rp_sprintf_p(C_("Xbox360_HEX", "0x%1$08X (%2$.2s-%3$u)"),
+				rp_sprintf_p(C_("Xbox360_XEX", "0x%1$08X (%2$c%3$c-%4$04u)"),
 					be32_to_cpu(execution_id.title_id.u32),
-					execution_id.title_id.c,
+					execution_id.title_id.a,
+					execution_id.title_id.b,
 					be16_to_cpu(execution_id.title_id.u16)),
 				RomFields::STRF_MONOSPACE);
 
@@ -1570,16 +1555,21 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Can we get the EXE section?
 	const EXE *const pe_exe = const_cast<Xbox360_XEX_Private*>(d)->initEXE();
-	if (pe_exe && pe_exe->isOpen()) {
+	if (pe_exe) {
 		// Add the fields.
-		d->fields->addFields_romFields(pe_exe->fields(), -2);
+		const RomFields *const exeFields = pe_exe->fields();
+		if (exeFields) {
+			d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+		}
 	}
 
 	// Can we get the XDBF section?
-	const Xbox360_XDBF *const pe_xdbf = const_cast<Xbox360_XEX_Private*>(d)->initXDBF();
-	if (pe_xdbf && pe_xdbf->isOpen()) {
+	if (pe_xdbf) {
 		// Add the fields.
-		d->fields->addFields_romFields(pe_xdbf->fields(), RomFields::TabOffset_AddTabs);
+		const RomFields *const xdbfFields = pe_xdbf->fields();
+		if (xdbfFields) {
+			d->fields->addFields_romFields(xdbfFields, RomFields::TabOffset_AddTabs);
+		}
 	}
 
 	// Finished reading the field data.
@@ -1601,7 +1591,7 @@ int Xbox360_XEX::loadMetaData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid) {
-		// SMDH file isn't valid.
+		// XEX file isn't valid.
 		return -EIO;
 	}
 
@@ -1616,7 +1606,7 @@ int Xbox360_XEX::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// Title.
+	// Title
 	string title = xdbf->getGameTitle();
 	if (!title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, title);
@@ -1638,10 +1628,9 @@ int Xbox360_XEX::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(Xbox360_XEX);
-
-	// FIXME: Load the PE section if it isn't already loaded.
-	if (d->pe_xdbf) {
-		return d->pe_xdbf->loadInternalImage(imageType, pImage);
+	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
+	if (pe_xdbf) {
+		return const_cast<Xbox360_XDBF*>(pe_xdbf)->loadInternalImage(imageType, pImage);
 	}
 
 	return -ENOENT;

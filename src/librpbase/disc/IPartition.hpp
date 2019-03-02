@@ -28,7 +28,8 @@ namespace LibRpBase {
 class IPartition : public IDiscReader
 {
 	protected:
-		IPartition() { }
+		IPartition(IRpFile *file) : super(file) { }
+		IPartition(IDiscReader *discReader) : super(discReader) { }
 	public:
 		virtual ~IPartition() = 0;
 

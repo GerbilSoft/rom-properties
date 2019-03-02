@@ -3,7 +3,7 @@
  * NCCHReader_p.hpp: Nintendo 3DS NCCH reader.                             *
  * Private class declaration.                                              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -15,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_P_HPP__
@@ -51,16 +50,9 @@ namespace LibRomData {
 class NCCHReaderPrivate
 {
 	public:
-		NCCHReaderPrivate(NCCHReader *q, LibRpBase::IRpFile *file,
-			uint8_t media_unit_shift,
-			int64_t ncch_offset, uint32_t ncch_length);
-		NCCHReaderPrivate(NCCHReader *q, LibRpBase::IDiscReader *discReader,
-			uint8_t media_unit_shift,
+		NCCHReaderPrivate(NCCHReader *q, uint8_t media_unit_shift,
 			int64_t ncch_offset, uint32_t ncch_length);
 		~NCCHReaderPrivate();
-
-	private:
-		void init(void);
 
 	private:
 		RP_DISABLE_COPY(NCCHReaderPrivate)
@@ -68,12 +60,6 @@ class NCCHReaderPrivate
 		NCCHReader *const q_ptr;
 
 	public:
-		bool useDiscReader;	// TODO: Make IDiscReader a subclass of IRpFile?
-		union {
-			LibRpBase::IRpFile *file;		// 3DS ROM image.
-			LibRpBase::IDiscReader *discReader;	// Disc reader for encrypted CIAs.
-		};
-
 		// NCCH offsets.
 		const int64_t ncch_offset;	// NCCH start offset, in bytes.
 		const uint32_t ncch_length;	// NCCH length, in bytes.

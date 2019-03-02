@@ -44,6 +44,7 @@ class PEResourceReader : public IResourceReader
 		virtual ~PEResourceReader();
 
 	private:
+		typedef IResourceReader super;
 		RP_DISABLE_COPY(PEResourceReader)
 	protected:
 		friend class PEResourceReaderPrivate;
@@ -51,13 +52,6 @@ class PEResourceReader : public IResourceReader
 
 	public:
 		/** IDiscReader **/
-
-		/**
-		 * Is the partition open?
-		 * This usually only returns false if an error occurred.
-		 * @return True if the partition is open; false if it isn't.
-		 */
-		bool isOpen(void) const final;
 
 		/**
 		 * Read data from the partition.
@@ -88,6 +82,7 @@ class PEResourceReader : public IResourceReader
 		 */
 		int64_t size(void) final;
 
+	public:
 		/** IPartition **/
 
 		/**

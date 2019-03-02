@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.cpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -53,7 +53,8 @@ namespace LibRomData {
  * @param partition_offset Partition start offset.
  */
 GcnPartition::GcnPartition(IDiscReader *discReader, int64_t partition_offset)
-	: d_ptr(new GcnPartitionPrivate(this, discReader, partition_offset))
+	: super(discReader)
+	, d_ptr(new GcnPartitionPrivate(this, partition_offset))
 { }
 
 GcnPartition::~GcnPartition()
@@ -64,23 +65,14 @@ GcnPartition::~GcnPartition()
 /**
  * Construct a GcnPartition. (subclass version)
  * @param d GcnPartitionPrivate subclass.
+ * @param discReader IDiscReader.
  */
-GcnPartition::GcnPartition(GcnPartitionPrivate *d)
-	: d_ptr(d)
+GcnPartition::GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader)
+	: super(discReader)
+	, d_ptr(d)
 { }
 
 /** IDiscReader **/
-
-/**
- * Is the partition open?
- * This usually only returns false if an error occurred.
- * @return True if the partition is open; false if it isn't.
- */
-bool GcnPartition::isOpen(void) const
-{
-	RP_D(const GcnPartition);
-	return (d->discReader && d->discReader->isOpen());
-}
 
 /**
  * Read data from the file.
@@ -90,17 +82,16 @@ bool GcnPartition::isOpen(void) const
  */
 size_t GcnPartition::read(void *ptr, size_t size)
 {
-	RP_D(GcnPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader || !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader || !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
 	// GCN partitions are stored as-is.
 	// TODO: data_size checks?
-	return d->discReader->read(ptr, size);
+	return m_discReader->read(ptr, size);
 }
 
 /**
@@ -111,17 +102,17 @@ size_t GcnPartition::read(void *ptr, size_t size)
 int GcnPartition::seek(int64_t pos)
 {
 	RP_D(GcnPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader ||  !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader ||  !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
-	int ret = d->discReader->seek(d->data_offset + pos);
+	int ret = m_discReader->seek(d->data_offset + pos);
 	if (ret != 0) {
-		m_lastError = d->discReader->lastError();
+		m_lastError = m_discReader->lastError();
 	}
 	return ret;
 }
@@ -132,18 +123,17 @@ int GcnPartition::seek(int64_t pos)
  */
 int64_t GcnPartition::tell(void)
 {
-	RP_D(GcnPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader ||  !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader || !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
-	int64_t ret = d->discReader->tell();
+	int64_t ret = m_discReader->tell();
 	if (ret < 0) {
-		m_lastError = d->discReader->lastError();
+		m_lastError = m_discReader->lastError();
 	}
 	return ret;
 }

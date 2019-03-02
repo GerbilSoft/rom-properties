@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartitionPrivate.hpp: GCN/Wii partition private class.               *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITIONPRIVATE_HPP__
@@ -24,10 +23,6 @@
 
 #include <stdint.h>
 #include "../Console/gcn_structs.h"
-
-namespace LibRpBase {
-	class IDiscReader;
-}
 
 namespace LibRomData {
 
@@ -37,7 +32,7 @@ class GcnFst;
 class GcnPartitionPrivate
 {
 	public:
-		GcnPartitionPrivate(GcnPartition *q, LibRpBase::IDiscReader *discReader,
+		GcnPartitionPrivate(GcnPartition *q,
 			int64_t partition_offset, uint8_t offsetShift = 0);
 		virtual ~GcnPartitionPrivate();
 
@@ -47,10 +42,6 @@ class GcnPartitionPrivate
 		GcnPartition *const q_ptr;
 
 	public:
-		uint8_t offsetShift;	// GCN == 0, Wii == 2
-
-		LibRpBase::IDiscReader *discReader;
-
 		// Offsets. (-1 == error)
 		// For GCN, these are usually 0.
 		// For Wii, partition_offset is the start of the partition,
@@ -70,6 +61,8 @@ class GcnPartitionPrivate
 		GCN_Boot_Block bootBlock;
 		GCN_Boot_Info bootInfo;		// bi2.bin
 		bool bootLoaded;
+
+		uint8_t offsetShift;		// GCN == 0, Wii == 2
 
 		/**
 		 * Load the boot block and boot info.

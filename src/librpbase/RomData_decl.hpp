@@ -197,6 +197,10 @@ class klass : public LibRpBase::RomData { \
 
 /**
  * RomData subclass function declaration for loading internal images.
+ *
+ * NOTE: This function needs to be public because it might be
+ * called by RomData subclasses that own other RomData subclasses.
+ *
  */
 #define ROMDATA_DECL_IMGINT() \
 	public: \

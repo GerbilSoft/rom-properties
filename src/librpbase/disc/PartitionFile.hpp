@@ -34,9 +34,9 @@ class PartitionFile : public IRpFile
 		/**
 		 * Open a file from an IPartition.
 		 * NOTE: These files are read-only.
-		 * @param partition IPartition (or IDiscReader) object.
-		 * @param offset File starting offset.
-		 * @param size File size.
+		 * @param partition	[in] IPartition (or IDiscReader) object.
+		 * @param offset	[in] File starting offset.
+		 * @param size		[in] File size.
 		 */
 		PartitionFile(IDiscReader *partition, int64_t offset, int64_t size);
 	protected:

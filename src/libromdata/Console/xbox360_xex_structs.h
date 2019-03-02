@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * xex_structs.h: Microsoft Xbox executable data structures.               *
+ * xbox360_xex_structs.h: Microsoft Xbox 360 executable data structures.   *
  *                                                                         *
  * Copyright (c) 2019 by David Korth.                                      *
  *                                                                         *
@@ -378,7 +378,8 @@ typedef enum {
  */
 typedef union PACKED _XEX2_Title_ID {
 	struct {
-		char c[2];
+		char a;
+		char b;
 		uint16_t u16;
 	};
 	uint32_t u32;
