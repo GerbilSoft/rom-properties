@@ -658,7 +658,7 @@ int NES::loadFieldData(void)
 
 		case NESPrivate::ROM_FORMAT_INES:
 			d->fields->setTabName(0, "iNES");
-			rom_format = C_("NES|Format", "iNES");
+			rom_format = "iNES";	// NOT translatable!
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
@@ -686,7 +686,7 @@ int NES::loadFieldData(void)
 
 		case NESPrivate::ROM_FORMAT_NES2:
 			d->fields->setTabName(0, "NES 2.0");
-			rom_format = C_("NES|Format", "NES 2.0");
+			rom_format = "NES 2.0";	// NOT translatable!
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0) |
 				 ((d->header.ines.nes2.mapper_hi2 & 0x0F) << 8);
@@ -785,8 +785,7 @@ int NES::loadFieldData(void)
 				static_cast<unsigned int>(mapper), mapper_name);
 		} else {
 			// tr: Print only the mapper ID.
-			s_mapper = rp_sprintf(C_("NES|Mapper", "%u"),
-				static_cast<unsigned int>(mapper));
+			s_mapper = rp_sprintf("%u", static_cast<unsigned int>(mapper));
 		}
 		d->fields->addField_string(mapper_title, s_mapper);
 	} else {
@@ -814,8 +813,7 @@ int NES::loadFieldData(void)
 				static_cast<unsigned int>(submapper), submapper_name);
 		} else {
 			// tr: Print only the submapper ID.
-			s_submapper = rp_sprintf(C_("NES|Mapper", "%u"),
-				static_cast<unsigned int>(submapper));
+			s_submapper = rp_sprintf("%u", static_cast<unsigned int>(submapper));
 		}
 		d->fields->addField_string(C_("NES", "Submapper"), s_submapper);
 	}
@@ -943,7 +941,7 @@ int NES::loadFieldData(void)
 				{
 					// Check the VS. PPU type.
 					// NOTE: Not translatable!
-					static const char *vs_ppu_types[16] = {
+					static const char *const vs_ppu_types[16] = {
 						"RP2C03B",     "RP2C03G",
 						"RP2C04-0001", "RP2C04-0002",
 						"RP2C04-0003", "RP2C04-0004",
@@ -978,7 +976,7 @@ int NES::loadFieldData(void)
 						mirroring = C_("NES|Mirroring", "Vertical");
 						break;
 					default:
-						mirroring = C_("NES", "Unknown");
+						mirroring = C_("RomData", "Unknown");
 						break;
 				}
 				break;
@@ -1154,7 +1152,7 @@ int NES::loadFieldData(void)
 				d->fields->addField_string(publisher_title, publisher);
 			} else {
 				d->fields->addField_string(publisher_title,
-					rp_sprintf(C_("NES", "Unknown (0x%02X)"), intFooter.publisher_code));
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), intFooter.publisher_code));
 			}
 		}
 	}
