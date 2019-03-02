@@ -65,6 +65,12 @@ ROMDATA_DECL_IMGINT()
 		 */
 		std::string getGameTitle(void) const;
 
+		/**
+		 * Get the title type as a string.
+		 * @return Title type, or nullptr if not found.
+		 */
+		const char *getTitleType(void) const;
+
 ROMDATA_DECL_END()
 
 }

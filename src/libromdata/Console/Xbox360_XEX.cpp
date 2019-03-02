@@ -1490,17 +1490,23 @@ int Xbox360_XEX::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 11 fields.
-	d->fields->reserve(11);
+	// Maximum of 14 fields, not including RomData subclasses.
+	d->fields->reserve(14);
 	d->fields->setTabName(0, "XEX");
 
-	// Game name
+	// XDBF fields
 	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
 	if (pe_xdbf) {
+		// Game title
 		string title = pe_xdbf->getGameTitle();
 		if (!title.empty()) {
 			d->fields->addField_string(C_("RomData", "Title"), title);
 		}
+
+		// Title type
+		const char *const title_type = pe_xdbf->getTitleType();
+		d->fields->addField_string(C_("RomData", "Type"),
+			title_type ? title_type : C_("RomData", "Unknown"));
 	}
 
 	// Original executable name

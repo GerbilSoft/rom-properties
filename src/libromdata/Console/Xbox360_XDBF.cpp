@@ -1180,6 +1180,11 @@ int Xbox360_XDBF::loadFieldData(void)
 		string title = d->loadString(langID, XDBF_ID_TITLE);
 		d->fields->addField_string(C_("RomData", "Title"),
 			!title.empty() ? title : C_("RomData", "Unknown"));
+
+		// Title type
+		const char *const title_type = getTitleType();
+		d->fields->addField_string(C_("RomData", "Type"),
+			title_type ? title_type : C_("RomData", "Unknown"));
 	}
 
 	// Avatar Awards
@@ -1240,6 +1245,52 @@ std::string Xbox360_XDBF::getGameTitle(void) const
 	RP_D(const Xbox360_XDBF);
 	return const_cast<Xbox360_XDBF_Private*>(d)->loadString(
 		d->getLangID(), XDBF_ID_TITLE);
+}
+
+/**
+ * Get the title type as a string.
+ * @return Title type, or nullptr if not found.
+ */
+const char *Xbox360_XDBF::getTitleType(void) const
+{
+	// Get the XTHD struct.
+	// TODO: Cache it?
+	RP_D(const Xbox360_XDBF);
+	const XDBF_Entry *const entry = d->findResource(XDBF_SPA_NAMESPACE_METADATA, XDBF_XTHD_MAGIC);
+	if (!entry) {
+		// Not found...
+		return nullptr;
+	}
+
+	// Load the XTHD entry.
+	const uint32_t addr = be32_to_cpu(entry->offset) + d->data_offset;
+	if (be32_to_cpu(entry->length) != sizeof(XDBF_XTHD)) {
+		// Invalid size.
+		return nullptr;
+	}
+	
+	XDBF_XTHD xthd;
+	size_t size = d->file->seekAndRead(addr, &xthd, sizeof(xthd));
+	if (size != sizeof(xthd)) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	static const char *const title_type_tbl[] = {
+		NOP_C_("Xbox360_XDBF|TitleType", "System Title"),
+		NOP_C_("Xbox360_XDBF|TitleType", "Full Game"),
+		NOP_C_("Xbox360_XDBF|TitleType", "Demo"),
+		NOP_C_("Xbox360_XDBF|TitleType", "Download"),
+	};
+
+	const uint32_t title_type = be32_to_cpu(xthd.title_type);
+	if (title_type < ARRAY_SIZE(title_type_tbl)) {
+		return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
+			title_type_tbl[title_type]);
+	}
+
+	// Not found...
+	return nullptr;
 }
 
 }
