@@ -626,6 +626,10 @@ int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
 	fields->addField_string(C_("RomData", "Type"),
 		title_type ? title_type : C_("RomData", "Unknown"));
 
+	// TODO: Get more fields from the .xlast resource. (XSRC)
+	// - gzipped XML file, in UTF-16LE
+	// - Has string IDs as well as the translated strings.
+
 	// All fields added successfully.
 	return 0;
 }

@@ -275,6 +275,38 @@ typedef struct PACKED _XDBF_XGAA_Entry {
 } XDBF_XGAA_Entry;
 ASSERT_STRUCT(XDBF_XGAA_Entry, 36);
 
+/**
+ * XDBF: XSRC - xlast XML data
+ *
+ * Contains a gzipped UTF-16LE translation file, which can be
+ * used to get things like developer, publisher, genre, and
+ * description.
+ *
+ * All fields are in big-endian.
+ */
+#define XDBF_XSRC_MAGIC 'XSRC'
+#define XDBF_XSRC_VERSION 1
+typedef struct PACKED _XDBF_XSRC_Header {
+	uint32_t magic;		// [0x000] 'XSRC'
+	uint32_t version;	// [0x004] Version (1)
+	uint32_t size;		// [0x008] Size of entire struct, including gzipped data.
+	uint32_t filename_len;	// [0x00C] Length of the original filename.
+
+	// Following this header is the original filename,
+	// then XDBF_XSRC_Header2.
+} XDBF_XSRC_Header;
+ASSERT_STRUCT(XDBF_XSRC_Header, 4*sizeof(uint32_t));
+
+/**
+ * XDBF: XSRC - second header, stored after the filename.
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XDBF_XSRC_Header2 {
+	uint32_t uncompressed_size;	// [0x000] Uncompressed data size
+	uint32_t compressed_size;	// [0x004] Compressed data size
+} XDBF_XSRC_Header2;
+ASSERT_STRUCT(XDBF_XSRC_Header2, 2*sizeof(uint32_t));
+
 #pragma pack()
 
 #ifdef __cplusplus
