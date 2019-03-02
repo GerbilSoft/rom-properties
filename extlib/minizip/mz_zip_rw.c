@@ -1,5 +1,5 @@
 /* mz_zip_rw.c -- Zip reader/writer
-   Version 2.8.3, January 26, 2019
+   Version 2.8.4, February 14, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -874,6 +874,9 @@ int32_t mz_zip_reader_save_all(void *handle, const char *destination_dir)
     char resolved_name[256];
 
     err = mz_zip_reader_goto_first_entry(handle);
+
+    if (err == MZ_END_OF_LIST)
+        return err;
 
     while (err == MZ_OK)
     {

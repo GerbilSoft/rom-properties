@@ -1,10 +1,10 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit 2e2f995eda043092ec7e28948dc13d6497a05225
-Version 2.8.3.
+commit edfe61418417daaf43926bfddef338eb90b99047
+Fixed multiple anchor tags with the same name.
 
-Tag: 2.8.3
+Tag: 2.8.4
 
 The following changes have been made to the original:
 

@@ -5,15 +5,10 @@
 #                         schmieder.matthias@gmail.com
 #***************************************************************************
 
-# rom-properties: Not needed.
-IF(0)
 cmake_minimum_required(VERSION 3.0.2)
 
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
-ENDIF(0) # rom-properties
 
-# rom-properties: Disabled these options.
-IF(0)
 option(MZ_COMPAT "Enables compatibility layer" ON)
 option(MZ_ZLIB "Enables ZLIB compression" ON)
 option(MZ_BZIP2 "Enables BZIP2 compression" ON)
@@ -29,19 +24,17 @@ option(MZ_BUILD_TEST "Builds minizip test executable" OFF)
 option(MZ_BUILD_UNIT_TEST "Builds minizip unit test project" OFF)
 option(MZ_BUILD_FUZZ_TEST "Builds minizip fuzzer executables" OFF)
 
-# MZ_ZLIB_ROOT - Parent directory of zlib installation
-# MZ_BZIP2_ROOT - Parent directory of BZip2 installation
-# MZ_OPENSSL_ROOT - Parent directory of OpenSSL installation
-ENDIF(0)
-
-# rom-properties: Using ZLIB.
-SET(MZ_ZLIB ON)
-include_directories(${ZLIB_INCLUDE_DIRS})
+if(POLICY CMP0074)
+    cmake_policy(SET CMP0074 OLD) 
+endif()
+# ZLIB_ROOT - Parent directory of zlib installation
+# BZIP2_ROOT - Parent directory of BZip2 installation
+# OPENSSL_ROOT - Parent directory of OpenSSL installation
 
 enable_language(C)
 
 # Minizip library version
-set(VERSION "2.8.3")
+set(VERSION "2.8.4")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -51,9 +44,6 @@ include(CheckSymbolExists)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckTypeSize)
-
-# rom-properties: Disabled installation.
-IF(0)
 include(GNUInstallDirs)
 include(ExternalProject)
 
@@ -63,23 +53,14 @@ set(INSTALL_INC_DIR ${CMAKE_INSTALL_FULL_INCLUDEDIR} CACHE PATH "Installation di
 set(INSTALL_MAN_DIR ${CMAKE_INSTALL_FULL_MANDIR} CACHE PATH "Installation directory for manual pages")
 set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 set(INSTALL_CMAKE_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/minizip" CACHE PATH "Installation directory for cmake files.")
-ENDIF(0)
 
-# rom-properties: Not using pkgconfig.
-IF(0)
 set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/minizip.pc)
 if(EXISTS ${MINIZIP_PC}.cmakein)
     configure_file(${MINIZIP_PC}.cmakein ${MINIZIP_PC} @ONLY)
 endif()
-ENDIF(0) # rom-properties
-
-set(PROJECT_NAME libminizip)
 
 # Check if zlib installation is present
 if(MZ_ZLIB AND NOT MZ_LIBCOMP)
-    # rom-properties: We're using CheckZLIB later.
-    IF(0)
-    set(ZLIB_ROOT ${MZ_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
     find_package(ZLIB)
     if(ZLIB_FOUND)
         message(STATUS "Using ZLIB ${ZLIB_VERSION_STRING}")
@@ -99,19 +80,8 @@ if(MZ_ZLIB AND NOT MZ_LIBCOMP)
         set(ZLIB_INCLUDE_DIRS ${ZLIB_INSTALL_DIR}/include)
 
         if(WIN32)
-            if(${CMAKE_GENERATOR} MATCHES "Visual Studio.*")
-                set(ZLIB_LIBRARIES
-                    debug ${ZLIB_INSTALL_DIR}/lib/zlibstaticd.lib
-                    optimized ${ZLIB_INSTALL_DIR}/lib/zlibstatic.lib)
-            else()
-                if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-                    set(ZLIB_LIBRARIES
-                        ${ZLIB_INSTALL_DIR}/lib/zlibstaticd.lib)
-                else()
-                    set(ZLIB_LIBRARIES
-                        ${ZLIB_INSTALL_DIR}/lib/zlibstatic.lib)
-                endif()
-            endif()
+            set(ZLIB_LIBRARIES
+                ${ZLIB_INSTALL_DIR}/lib/zlibstatic$<$<CONFIG:Debug>:d>.lib)
         else()
             set(ZLIB_LIBRARIES
                 ${ZLIB_INSTALL_DIR}/lib/libz.a)
@@ -147,14 +117,11 @@ if(MZ_ZLIB AND NOT MZ_LIBCOMP)
             CMAKE_ARGS "${CMAKE_ARGS};-DCMAKE_INSTALL_PREFIX:STRING=${ZLIB_INSTALL_DIR}")
 
         include_directories(${ZLIB_INCLUDE_DIRS})
-        
     endif()
-    ENDIF(0)
 endif()
 
 # Check if bzip2 installation is present
 if(MZ_BZIP2)
-    set(BZIP2_ROOT ${MZ_BZIP2_ROOT} CACHE PATH "Parent directory of bzip2 installation")
     find_package(BZip2)
     if(BZIP2_FOUND)
         message(STATUS "Using BZIP2 ${BZIP2_VERSION_STRING}")
@@ -165,19 +132,11 @@ endif()
 
 # Check to see if openssl installation is present
 if (MZ_OPENSSL)
-    set(OPENSSL_ROOT ${MZ_OPENSSL_ROOT} CACHE PATH "Parent directory of openssl installation")
     find_package(OpenSSL)
     if (OPENSSL_FOUND)
         message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
         include_directories(${OPENSSL_INCLUDE_DIRS})
     endif()
-endif()
-
-# Enable compiler warnings
-if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-    add_compile_options(/W3)
-else()
-    add_compile_options(-W -Wall)
 endif()
 
 # Check for system includes
@@ -205,38 +164,40 @@ if(NOT HAVE_FSEEKO)
     add_definitions(-DNO_FSEEKO)
 endif()
 
-# Enable x86 optimizations if supported
-# rom-properties: TODO
-IF(0)
-if(CMAKE_BUILD_TYPE MATCHES Release)
-    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        include(CheckCCompilerFlag)
-
-        macro(enable_option_if_supported option variable)
-            check_c_compiler_flag(
-                "-Werror=unused-command-line-argument ${option}" ${variable})
-            if(${variable})
-                add_compile_options(${option})
-            endif()
-        endmacro()
-
-        # rom-properties: Disabled - this breaks compatibility with older CPUs
-        enable_option_if_supported(-msse3 check_opt_sse3)
-        enable_option_if_supported(-msse4.1 check_opt_sse41)
-        enable_option_if_supported(-maes check_opt_aes)
-    endif()
-
-    if(NOT CMAKE_C_COMPILER_ID MATCHES "MSVC")
-        add_compile_options(-O3)
-    endif()
+# Enable compiler warnings
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+    add_compile_options(/W3)
 else()
-    if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi")
-    else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-    endif()
+    add_compile_options(-W -Wall)
 endif()
-ENDIF(0) # rom-properties
+# Enable x86 optimizations if supported
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    include(CheckCCompilerFlag)
+
+    macro(enable_option_if_supported option variable)
+        check_c_compiler_flag(
+            "-Werror=unused-command-line-argument ${option}" ${variable})
+        if(${variable})
+            add_compile_options("$<$<CONFIG:Release>:${option}>")
+        endif()
+    endmacro()
+
+    enable_option_if_supported(-msse3 check_opt_sse3)
+    enable_option_if_supported(-msse4.1 check_opt_sse41)
+    enable_option_if_supported(-maes check_opt_aes)
+endif()
+# Set compiler options
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+    add_compile_options(
+        $<$<CONFIG:Debug>:/Zi>
+        $<$<CONFIG:Debug>:/Od>
+        $<$<CONFIG:Release>:/Ox>
+        $<$<CONFIG:Release>:/Os>)
+else()
+    add_compile_options(
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Release>:-Os>)
+endif()
 
 # Initial source files
 set(MINIZIP_SRC
@@ -287,7 +248,6 @@ if(WIN32)
         endif()
     endif()
 endif()
-
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     add_definitions(-DMZ_WINRT_API)
 endif()
@@ -437,17 +397,6 @@ if(MZ_ZLIB)
 
         list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
         list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
-        
-        # rom-properties: Disabled for now.
-        IF(0)
-        if (ZLIB_FOUND)
-            include(CheckFunctionExists)
-            check_function_exists(z_get_crc_table NEEDS_Z_PREFIX)
-            if(NEEDS_Z_PREFIX)
-                add_definitions(-DZ_PREFIX)
-            endif()
-        endif()
-        ENDIF(0) # rom-properties
     endif()
 endif()
 
@@ -630,62 +579,47 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                         VERSION ${VERSION} 
                         SOVERSION ${SOVERSION}
                         LINKER_LANGUAGE C
-                        PREFIX ""
                         DEFINE_SYMBOL "MZ_EXPORTS"
                         POSITION_INDEPENDENT_CODE 1)
+
 if(MZ_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 endif()
 
 # Link with external libraries
 if(MZ_ZLIB AND NOT MZ_LIBCOMP)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
-    if(NOT ZLIB_FOUND OR NOT ZLIB_LIBRARIES)
-        # rom-properties: Fatal error.
-        MESSAGE(FATAL_ERROR "ZLIB_LIBRARIES has not been set by CheckZLIB.cmake.")
+    target_link_libraries(${PROJECT_NAME} ${ZLIB_LIBRARIES})
+    if(NOT ZLIB_FOUND)
         add_dependencies(${PROJECT_NAME} zlib)
     endif()
 endif()
 if(MZ_BZIP2 AND BZIP2_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${BZIP2_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} ${BZIP2_LIBRARIES})
 endif()
 if(MZ_LIBCOMP)
-    target_link_libraries(${PROJECT_NAME} PRIVATE compression)
+    target_link_libraries(${PROJECT_NAME} compression)
 endif()
 if(Iconv_FOUND AND NOT Iconv_IS_BUILT_IN)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${Iconv_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} ${Iconv_LIBRARIES})
 endif()
 if(MZ_OPENSSL AND OPENSSL_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENSSL_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
 elseif(UNIX)
     if(APPLE AND NOT MZ_BRG)
         message(STATUS "Using CoreFoundation Framework")
         find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-        target_link_libraries(${PROJECT_NAME} PRIVATE ${COREFOUNDATION_LIBRARY})
+        target_link_libraries(${PROJECT_NAME} ${COREFOUNDATION_LIBRARY})
         message(STATUS "Using Security Framework")
         find_library(SECURITY_LIBRARY Security)
-        target_link_libraries(${PROJECT_NAME} PRIVATE ${SECURITY_LIBRARY})
+        target_link_libraries(${PROJECT_NAME} ${SECURITY_LIBRARY})
         set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-F/Library/Frameworks")
     else()
-        target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBBSD_LIBRARIES})
+        target_link_libraries(${PROJECT_NAME} ${LIBBSD_LIBRARIES})
     endif()
 endif()
 
-# rom-properties: Set include directory to the source path; enable ZLIB_CONST.
-#target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(${PROJECT_NAME} PUBLIC ZLIB_CONST)
+target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
 
-# rom-properties: Needed to prevent build errors in other projects.
-if(HAVE_STDINT_H)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_STDINT_H)
-endif()
-if(HAVE_INTTYPES_H)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_INTTYPES_H)
-endif()
-
-# rom-properties: Disable installation and tests.
-IF(0)
 # Install files
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
@@ -837,18 +771,17 @@ if(MZ_BUILD_FUZZ_TEST)
 
     if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
         enable_language(CXX)
-        target_link_libraries(zip_fuzzer PRIVATE "FuzzingEngine")
+        target_link_libraries(zip_fuzzer "FuzzingEngine")
         set_target_properties(zip_fuzzer PROPERTIES LINKER_LANGUAGE CXX)
-        target_link_libraries(unzip_fuzzer PRIVATE "FuzzingEngine")
+        target_link_libraries(unzip_fuzzer "FuzzingEngine")
         set_target_properties(unzip_fuzzer PROPERTIES LINKER_LANGUAGE CXX)
     endif()
 
-    target_link_libraries(zip_fuzzer PRIVATE ${PROJECT_NAME})
-    target_link_libraries(unzip_fuzzer PRIVATE ${PROJECT_NAME})
+    target_link_libraries(zip_fuzzer ${PROJECT_NAME})
+    target_link_libraries(unzip_fuzzer ${PROJECT_NAME})
 
     if(NOT SKIP_INSTALL_BINARIES AND NOT SKIP_INSTALL_ALL)
         install(TARGETS zip_fuzzer RUNTIME DESTINATION "bin")
         install(TARGETS unzip_fuzzer RUNTIME DESTINATION "bin")
     endif()
 endif()
-ENDIF(0)
