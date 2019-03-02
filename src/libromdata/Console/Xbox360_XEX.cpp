@@ -1049,14 +1049,20 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	// NOTE: This must be done after copying the XEX2 header,
 	// since the security info offset is stored in the header.
 	// TODO: Read the offset directly before copying?
-	size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->xex2Security, sizeof(d->xex2Security));
-	if (size != sizeof(d->xex2Security)) {
-		// Seek and/or read error.
-		d->xex2Header.magic = 0;
-		d->file->unref();
-		d->file = nullptr;
-		d->isValid = false;
-		return;
+	if (d->xex2Header.sec_info_offset + sizeof(d->xex2Security) <= 2048) {
+		// Security info is in the first sector.
+		memcpy(&d->xex2Security, &header[d->xex2Header.sec_info_offset], sizeof(d->xex2Security));
+	} else {
+		// Security info is not fully located in the first sector.
+		size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->xex2Security, sizeof(d->xex2Security));
+		if (size != sizeof(d->xex2Security)) {
+			// Seek and/or read error.
+			d->xex2Header.magic = 0;
+			d->file->unref();
+			d->file = nullptr;
+			d->isValid = false;
+			return;
+		}
 	}
 
 	// Copy the optional header table.
