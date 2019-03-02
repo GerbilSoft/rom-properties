@@ -1497,16 +1497,7 @@ int Xbox360_XEX::loadFieldData(void)
 	// XDBF fields
 	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
 	if (pe_xdbf) {
-		// Game title
-		string title = pe_xdbf->getGameTitle();
-		if (!title.empty()) {
-			d->fields->addField_string(C_("RomData", "Title"), title);
-		}
-
-		// Title type
-		const char *const title_type = pe_xdbf->getTitleType();
-		d->fields->addField_string(C_("RomData", "Type"),
-			title_type ? title_type : C_("RomData", "Unknown"));
+		pe_xdbf->addFields_strings(d->fields);
 	}
 
 	// Original executable name
@@ -1810,7 +1801,7 @@ int Xbox360_XEX::loadMetaData(void)
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// Title
-	string title = xdbf->getGameTitle();
+	string title = xdbf->getString(Property::Title);
 	if (!title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, title);
 	}

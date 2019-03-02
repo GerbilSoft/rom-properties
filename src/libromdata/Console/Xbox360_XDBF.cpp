@@ -151,6 +151,20 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		 */
 		const rp_image *loadIcon(void);
 
+	public:
+		/**
+		 * Get the title type as a string.
+		 * @return Title type, or nullptr if not found.
+		 */
+		const char *getTitleType(void) const;
+
+		/**
+		 * Add string fields.
+		 * @param fields RomFields*
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addFields_strings(RomFields *fields) const;
+
 		/**
 		 * Add the Achievements RFT_LISTDATA field.
 		 * @return 0 on success; non-zero on error.
@@ -545,6 +559,75 @@ const rp_image *Xbox360_XDBF_Private::loadIcon(void)
 	// Get the icon.
 	img_icon = loadImage(XDBF_ID_TITLE);
 	return img_icon;
+}
+
+/**
+ * Get the title type as a string.
+ * @return Title type, or nullptr if not found.
+ */
+const char *Xbox360_XDBF_Private::getTitleType(void) const
+{
+	// Get the XTHD struct.
+	// TODO: Cache it?
+	const XDBF_Entry *const entry = findResource(XDBF_SPA_NAMESPACE_METADATA, XDBF_XTHD_MAGIC);
+	if (!entry) {
+		// Not found...
+		return nullptr;
+	}
+
+	// Load the XTHD entry.
+	const uint32_t addr = be32_to_cpu(entry->offset) + data_offset;
+	if (be32_to_cpu(entry->length) != sizeof(XDBF_XTHD)) {
+		// Invalid size.
+		return nullptr;
+	}
+
+	XDBF_XTHD xthd;
+	size_t size = file->seekAndRead(addr, &xthd, sizeof(xthd));
+	if (size != sizeof(xthd)) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	static const char *const title_type_tbl[] = {
+		NOP_C_("Xbox360_XDBF|TitleType", "System Title"),
+		NOP_C_("Xbox360_XDBF|TitleType", "Full Game"),
+		NOP_C_("Xbox360_XDBF|TitleType", "Demo"),
+		NOP_C_("Xbox360_XDBF|TitleType", "Download"),
+	};
+
+	const uint32_t title_type = be32_to_cpu(xthd.title_type);
+	if (title_type < ARRAY_SIZE(title_type_tbl)) {
+		return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
+			title_type_tbl[title_type]);
+	}
+
+	// Not found...
+	return nullptr;
+}
+
+/**
+ * Add the various XDBF string fields.
+ * @param fields RomFields*
+ * @return 0 on success; non-zero on error.
+ */
+int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
+{
+	// Language ID
+	const XDBF_Language_e langID = getLangID();
+
+	// Game title
+	string title = const_cast<Xbox360_XDBF_Private*>(this)->loadString(langID, XDBF_ID_TITLE);
+	fields->addField_string(C_("RomData", "Title"),
+		!title.empty() ? title : C_("RomData", "Unknown"));
+
+	// Title type
+	const char *const title_type = getTitleType();
+	fields->addField_string(C_("RomData", "Type"),
+		title_type ? title_type : C_("RomData", "Unknown"));
+
+	// All fields added successfully.
+	return 0;
 }
 
 /**
@@ -1154,16 +1237,7 @@ int Xbox360_XDBF::loadFieldData(void)
 		return 0;
 	}
 
-	// Reserve fields.
-	if (d->xex) {
-		// Embedded in an XEX executable.
-		// Maximum of 1 field.
-		d->fields->reserve(1);
-	} else {
-		// Standalone XDBF file.
-		// Maximum of 2 fields.
-		d->fields->reserve(2);
-	}
+	// Default tab name.
 	d->fields->setTabName(0, "XDBF");
 
 	// TODO: XSTR string table handling class.
@@ -1172,20 +1246,11 @@ int Xbox360_XDBF::loadFieldData(void)
 	// TODO: Convenience function to look up a resource
 	// given a namespace ID and resource ID.
 
-	// Language ID
-	const XDBF_Language_e langID = d->getLangID();
-
 	if (!d->xex) {
-		// Game title
-		string title = d->loadString(langID, XDBF_ID_TITLE);
-		d->fields->addField_string(C_("RomData", "Title"),
-			!title.empty() ? title : C_("RomData", "Unknown"));
-
-		// Title type
-		const char *const title_type = getTitleType();
-		d->fields->addField_string(C_("RomData", "Type"),
-			title_type ? title_type : C_("RomData", "Unknown"));
+		d->addFields_strings(d->fields);
 	}
+
+	// TODO: Create a separate tab for avatar awards and achievements?
 
 	// Avatar Awards
 	// NOTE: Displayed before achievements because achievements uses up
@@ -1237,60 +1302,41 @@ int Xbox360_XDBF::loadInternalImage(ImageType imageType, const rp_image **pImage
 /** Special XDBF accessor functions. **/
 
 /**
- * Get the game title.
- * @return Game title, or empty string on error.
+ * Add the various XDBF string fields.
+ * @param fields RomFields*
+ * @return 0 on success; non-zero on error.
  */
-std::string Xbox360_XDBF::getGameTitle(void) const
+int Xbox360_XDBF::addFields_strings(LibRpBase::RomFields *fields) const
 {
 	RP_D(const Xbox360_XDBF);
-	return const_cast<Xbox360_XDBF_Private*>(d)->loadString(
-		d->getLangID(), XDBF_ID_TITLE);
+	return d->addFields_strings(fields);
 }
 
 /**
- * Get the title type as a string.
- * @return Title type, or nullptr if not found.
+ * Get a particular string property for RomMetaData.
+ * @param property Property
+ * @return String, or empty string if not found.
  */
-const char *Xbox360_XDBF::getTitleType(void) const
+string Xbox360_XDBF::getString(LibRpBase::Property::Property property) const
 {
-	// Get the XTHD struct.
-	// TODO: Cache it?
+	uint16_t string_id = 0;
+	switch (property) {
+		case LibRpBase::Property::Title:
+			string_id = XDBF_ID_TITLE;
+			break;
+		default:
+			break;
+	}
+
+	assert(string_id != 0);
+	if (string_id == 0) {
+		// Not supported.
+		return string();
+	}
+
 	RP_D(const Xbox360_XDBF);
-	const XDBF_Entry *const entry = d->findResource(XDBF_SPA_NAMESPACE_METADATA, XDBF_XTHD_MAGIC);
-	if (!entry) {
-		// Not found...
-		return nullptr;
-	}
-
-	// Load the XTHD entry.
-	const uint32_t addr = be32_to_cpu(entry->offset) + d->data_offset;
-	if (be32_to_cpu(entry->length) != sizeof(XDBF_XTHD)) {
-		// Invalid size.
-		return nullptr;
-	}
-	
-	XDBF_XTHD xthd;
-	size_t size = d->file->seekAndRead(addr, &xthd, sizeof(xthd));
-	if (size != sizeof(xthd)) {
-		// Seek and/or read error.
-		return nullptr;
-	}
-
-	static const char *const title_type_tbl[] = {
-		NOP_C_("Xbox360_XDBF|TitleType", "System Title"),
-		NOP_C_("Xbox360_XDBF|TitleType", "Full Game"),
-		NOP_C_("Xbox360_XDBF|TitleType", "Demo"),
-		NOP_C_("Xbox360_XDBF|TitleType", "Download"),
-	};
-
-	const uint32_t title_type = be32_to_cpu(xthd.title_type);
-	if (title_type < ARRAY_SIZE(title_type_tbl)) {
-		return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
-			title_type_tbl[title_type]);
-	}
-
-	// Not found...
-	return nullptr;
+	return const_cast<Xbox360_XDBF_Private*>(d)->loadString(
+		d->getLangID(), string_id);
 }
 
 }

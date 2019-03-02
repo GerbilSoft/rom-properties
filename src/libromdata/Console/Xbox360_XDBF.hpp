@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XDBF_HPP__
 
 #include "librpbase/RomData.hpp"
+#include "librpbase/RomMetaData.hpp"
 #include <string>
 
 namespace LibRomData {
@@ -60,16 +61,18 @@ ROMDATA_DECL_IMGINT()
 		/** Special XDBF accessor functions. **/
 
 		/**
-		 * Get the game title.
-		 * @return Game title, or empty string on error.
+		 * Add the various XDBF string fields.
+		 * @param fields RomFields*
+		 * @return 0 on success; non-zero on error.
 		 */
-		std::string getGameTitle(void) const;
+		int addFields_strings(LibRpBase::RomFields *fields) const;
 
 		/**
-		 * Get the title type as a string.
-		 * @return Title type, or nullptr if not found.
+		 * Get a particular string property for RomMetaData.
+		 * @param property Property
+		 * @return String, or empty string if not found.
 		 */
-		const char *getTitleType(void) const;
+		std::string getString(LibRpBase::Property::Property property) const;
 
 ROMDATA_DECL_END()
 
