@@ -379,22 +379,30 @@ bool RpFile::isKreonDriveModel(void)
 		return false;
 	}
 
-	// Check the drive vendor and product ID.
-	if (!memcmp(resp.vendor_id, "TSSTcorp", 8)) {
-		// Correct vendor ID.
-		// Check for supported product IDs.
-		// NOTE: More drive models are supported, but the
-		// Kreon firmware only uses these product IDs.
-		static const char *const product_id_tbl[] = {
-			"DVD-ROM SH-D162C",
-			"DVD-ROM TS-H353A",
-			"DVD-ROM SH-D163B",
-		};
-		for (int i = 0; i < ARRAY_SIZE(product_id_tbl); i++) {
-			if (!memcmp(resp.product_id, product_id_tbl[i], sizeof(resp.product_id))) {
-				// Found a match.
-				return true;
-			}
+	// Check the device type, vendor, and product ID.
+	if ((resp.PeripheralDeviceType & 0x1F) != SCSI_DEVICE_TYPE_CDROM) {
+		// Wrong type of device.
+		return false;
+	}
+
+	if (memcmp(resp.vendor_id, "TSSTcorp", 8) != 0) {
+		// Not the correct vendor ID.
+		return false;
+	}
+
+	// Correct vendor ID.
+	// Check for supported product IDs.
+	// NOTE: More drive models are supported, but the
+	// Kreon firmware only uses these product IDs.
+	static const char *const product_id_tbl[] = {
+		"DVD-ROM SH-D162C",
+		"DVD-ROM TS-H353A",
+		"DVD-ROM SH-D163B",
+	};
+	for (int i = 0; i < ARRAY_SIZE(product_id_tbl); i++) {
+		if (!memcmp(resp.product_id, product_id_tbl[i], sizeof(resp.product_id))) {
+			// Found a match.
+			return true;
 		}
 	}
 
