@@ -44,7 +44,7 @@ namespace LibRomData {
 class IsoPartitionPrivate
 {
 	public:
-		IsoPartitionPrivate(IsoPartition *q, LibRpBase::IDiscReader *discReader,
+		IsoPartitionPrivate(IsoPartition *q,
 			int64_t partition_offset, int iso_start_offset);
 		~IsoPartitionPrivate();
 
@@ -54,8 +54,6 @@ class IsoPartitionPrivate
 		IsoPartition *const q_ptr;
 
 	public:
-		LibRpBase::IDiscReader *discReader;
-
 		// Partition start offset. (in bytes)
 		int64_t partition_offset;
 		int64_t partition_size;		// Calculated partition size.
@@ -81,10 +79,9 @@ class IsoPartitionPrivate
 
 /** IsoPartitionPrivate **/
 
-IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReader,
+IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	int64_t partition_offset, int iso_start_offset)
 	: q_ptr(q)
-	, discReader(discReader)
 	, partition_offset(partition_offset)
 	, partition_size(0)
 	, iso_start_offset(iso_start_offset)
@@ -92,21 +89,28 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	// Clear the PVD struct.
 	memset(&pvd, 0, sizeof(pvd));
 
-	if (!discReader->isOpen()) {
-		this->discReader = nullptr;
+	if (!q->m_discReader) {
+		q->m_lastError = EIO;
+		return;
+	} else if (!q->m_discReader->isOpen()) {
+		q->m_lastError = q->m_discReader->lastError();
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		q->m_discReader = nullptr;
 		return;
 	}
 
 	// Calculated partition size.
-	partition_size = discReader->size() - partition_offset;
+	partition_size = q->m_discReader->size() - partition_offset;
 
 	// Load the primary volume descriptor.
 	// TODO: Assuming this is the first one.
 	// Check for multiple?
-	size_t size = discReader->seekAndRead(partition_offset + 0x8000, &pvd, sizeof(pvd));
+	size_t size = q->m_discReader->seekAndRead(partition_offset + 0x8000, &pvd, sizeof(pvd));
 	if (size != sizeof(pvd)) {
 		// Seek and/or read error.
-		this->discReader = nullptr;
+		q->m_discReader = nullptr;
 		return;
 	}
 
@@ -116,7 +120,7 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q, IDiscReader *discReade
 	    memcmp(pvd.header.identifier, ISO_VD_MAGIC, sizeof(pvd.header.identifier)) != 0)
 	{
 		// Invalid volume descriptor.
-		this->discReader = nullptr;
+		q->m_discReader = nullptr;
 		return;
 	}
 
@@ -137,7 +141,7 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 	if (unlikely(!rootDir_data.empty())) {
 		// Root directory is already loaded.
 		return 0;
-	} else if (unlikely(!this->discReader)) {
+	} else if (unlikely(!q->m_discReader)) {
 		// DiscReader isn't open.
 		q->m_lastError = EIO;
 		return -q->m_lastError;
@@ -186,11 +190,11 @@ int IsoPartitionPrivate::loadRootDirectory(void)
 	rootDir_data.resize(rootdir->size.he);
 	const int64_t rootDir_addr = partition_offset +
 		static_cast<int64_t>(rootdir->block.he - iso_start_offset) * block_size;
-	size_t size = discReader->seekAndRead(rootDir_addr, rootDir_data.data(), rootDir_data.size());
+	size_t size = q->m_discReader->seekAndRead(rootDir_addr, rootDir_data.data(), rootDir_data.size());
 	if (size != rootDir_data.size()) {
 		// Seek and/or read error.
 		rootDir_data.clear();
-		q->m_lastError = discReader->lastError();
+		q->m_lastError = q->m_discReader->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
@@ -214,7 +218,8 @@ int IsoPartitionPrivate::loadRootDirectory(void)
  * @param iso_start_offset ISO start offset, in blocks. (If -1, uses heuristics.)
  */
 IsoPartition::IsoPartition(IDiscReader *discReader, int64_t partition_offset, int iso_start_offset)
-	: d_ptr(new IsoPartitionPrivate(this, discReader, partition_offset, iso_start_offset))
+	: super(discReader)
+	, d_ptr(new IsoPartitionPrivate(this, partition_offset, iso_start_offset))
 { }
 
 IsoPartition::~IsoPartition()
@@ -231,8 +236,7 @@ IsoPartition::~IsoPartition()
  */
 bool IsoPartition::isOpen(void) const
 {
-	RP_D(const IsoPartition);
-	return (d->discReader && d->discReader->isOpen());
+	return (m_discReader && m_discReader->isOpen());
 }
 
 /**
@@ -243,17 +247,16 @@ bool IsoPartition::isOpen(void) const
  */
 size_t IsoPartition::read(void *ptr, size_t size)
 {
-	RP_D(IsoPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader || !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader || !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
 	// GCN partitions are stored as-is.
 	// TODO: data_size checks?
-	return d->discReader->read(ptr, size);
+	return m_discReader->read(ptr, size);
 }
 
 /**
@@ -264,16 +267,16 @@ size_t IsoPartition::read(void *ptr, size_t size)
 int IsoPartition::seek(int64_t pos)
 {
 	RP_D(IsoPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader ||  !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader ||  !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	int ret = d->discReader->seek(d->partition_offset + pos);
+	int ret = m_discReader->seek(d->partition_offset + pos);
 	if (ret != 0) {
-		m_lastError = d->discReader->lastError();
+		m_lastError = m_discReader->lastError();
 	}
 	return ret;
 }
@@ -285,16 +288,16 @@ int IsoPartition::seek(int64_t pos)
 int64_t IsoPartition::tell(void)
 {
 	RP_D(IsoPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader ||  !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader ||  !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	int64_t ret = d->discReader->tell() - d->partition_offset;
+	int64_t ret = m_discReader->tell() - d->partition_offset;
 	if (ret < 0) {
-		m_lastError = d->discReader->lastError();
+		m_lastError = m_discReader->lastError();
 	}
 	return ret;
 }
@@ -309,22 +312,12 @@ int64_t IsoPartition::size(void)
 {
 	// TODO: Restrict partition size?
 	RP_D(const IsoPartition);
-	if (!d->discReader)
+	if (!m_discReader)
 		return -1;
 	return d->partition_size;
 }
 
 /** Device file functions **/
-
-/**
- * Is the underlying file a device file?
- * @return True if the underlying file is a device file; false if not.
- */
-bool IsoPartition::isDevice(void) const
-{
-	RP_D(const IsoPartition);
-	return (d->discReader && d->discReader->isDevice());
-}
 
 /** IPartition **/
 
@@ -337,7 +330,7 @@ int64_t IsoPartition::partition_size(void) const
 {
 	// TODO: Restrict partition size?
 	RP_D(const IsoPartition);
-	if (!d->discReader)
+	if (!m_discReader)
 		return -1;
 	return d->partition_size;
 }
@@ -424,9 +417,9 @@ int IsoPartition::closedir(IFst::Dir *dirp)
 IRpFile *IsoPartition::open(const char *filename)
 {
 	RP_D(IsoPartition);
-	assert(d->discReader != nullptr);
-	assert(d->discReader->isOpen());
-	if (!d->discReader ||  !d->discReader->isOpen()) {
+	assert(m_discReader != nullptr);
+	assert(m_discReader->isOpen());
+	if (!m_discReader ||  !m_discReader->isOpen()) {
 		m_lastError = EBADF;
 		return nullptr;
 	}

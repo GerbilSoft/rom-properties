@@ -3,7 +3,7 @@
  * SparseDiscReader.hpp: Disc reader base class for disc image formats     *
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -30,7 +30,7 @@ class SparseDiscReaderPrivate;
 class SparseDiscReader : public IDiscReader
 {
 	protected:
-		explicit SparseDiscReader(SparseDiscReaderPrivate *d);
+		explicit SparseDiscReader(SparseDiscReaderPrivate *d, IRpFile *file);
 	public:
 		virtual ~SparseDiscReader();
 
@@ -77,15 +77,6 @@ class SparseDiscReader : public IDiscReader
 		 * @return Disc image size, or -1 on error.
 		 */
 		int64_t size(void) final;
-
-	public:
-		/** Device file functions **/
-
-		/**
-		 * Is the underlying file a device file?
-		 * @return True if the underlying file is a device file; false if not.
-		 */
-		bool isDevice(void) const final;
 
 	protected:
 		/** Virtual functions for SparseDiscReader subclasses. **/

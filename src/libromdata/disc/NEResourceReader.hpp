@@ -43,6 +43,7 @@ class NEResourceReader : public IResourceReader
 		virtual ~NEResourceReader();
 
 	private:
+		typedef IResourceReader super;
 		RP_DISABLE_COPY(NEResourceReader)
 	protected:
 		friend class NEResourceReaderPrivate;
@@ -86,15 +87,6 @@ class NEResourceReader : public IResourceReader
 		 * @return Data size, or -1 on error.
 		 */
 		int64_t size(void) final;
-
-	public:
-		/** Device file functions **/
-
-		/**
-		 * Is the underlying file a device file?
-		 * @return True if the underlying file is a device file; false if not.
-		 */
-		bool isDevice(void) const final;
 
 	public:
 		/** IPartition **/

@@ -51,7 +51,7 @@ namespace LibRomData {
 class NEResourceReaderPrivate
 {
 	public:
-		NEResourceReaderPrivate(NEResourceReader *q, IRpFile *file,
+		NEResourceReaderPrivate(NEResourceReader *q,
 			uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size);
 
 	private:
@@ -110,27 +110,27 @@ class NEResourceReaderPrivate
 /** NEResourceReaderPrivate **/
 
 NEResourceReaderPrivate::NEResourceReaderPrivate(
-		NEResourceReader *q, IRpFile *file,
+		NEResourceReader *q,
 		uint32_t rsrc_tbl_addr,
 		uint32_t rsrc_tbl_size)
 	: q_ptr(q)
-	, file(file)
 	, rsrc_tbl_addr(rsrc_tbl_addr)
 	, rsrc_tbl_size(rsrc_tbl_size)
 {
-	if (!file) {
-		this->file = nullptr;
+	if (!q->m_file) {
 		q->m_lastError = -EBADF;
 		return;
 	} else if (rsrc_tbl_addr == 0) {
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = -EIO;
 		return;
 	} else if (rsrc_tbl_size < 6 || rsrc_tbl_size >= 65536) {
 		// 64 KB is the segment size, so this shouldn't be possible.
 		// Also, it should be at least 6 bytes.
 		// (TODO: Larger minimum size?)
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -144,7 +144,8 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	const int64_t fileSize_i64 = file->size();
 	if (fileSize_i64 > fileSize_MAX) {
 		// A Win16 executable larger than 16 MB doesn't make any sense.
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -156,7 +157,8 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	{
 		// Starting address is past the end of the file,
 		// or resource ends past the end of the file.
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -165,7 +167,8 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	int ret = loadResTbl();
 	if (ret != 0) {
 		// No resources, or an error occurred.
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 	}
 }
 
@@ -195,10 +198,10 @@ int NEResourceReaderPrivate::loadResTbl(void)
 
 	// Load the resource table.
 	unique_ptr<uint8_t[]> rsrcTblData(new uint8_t[rsrc_tbl_size]);
-	size_t size = file->seekAndRead(rsrc_tbl_addr, rsrcTblData.get(), rsrc_tbl_size);
+	size_t size = q->m_file->seekAndRead(rsrc_tbl_addr, rsrcTblData.get(), rsrc_tbl_size);
 	if (size != rsrc_tbl_size) {
 		// Seek and/or read error.
-		q->m_lastError = file->lastError();
+		q->m_lastError = q->m_file->lastError();
 		return q->m_lastError;
 	}
 
@@ -399,7 +402,6 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// TODO: Better error code?
 		return -EIO;
 	}
-
 	// DWORD alignment.
 	IResourceReader::alignFileDWORD(file);
 
@@ -498,7 +500,8 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * @param rsrc_tbl_size Resource table size.
  */
 NEResourceReader::NEResourceReader(IRpFile *file, uint32_t rsrc_tbl_addr, uint32_t rsrc_tbl_size)
-	: d_ptr(new NEResourceReaderPrivate(this, file, rsrc_tbl_addr, rsrc_tbl_size))
+	: super(file)
+	, d_ptr(new NEResourceReaderPrivate(this, rsrc_tbl_addr, rsrc_tbl_size))
 { }
 
 NEResourceReader::~NEResourceReader()
@@ -515,8 +518,7 @@ NEResourceReader::~NEResourceReader()
  */
 bool NEResourceReader::isOpen(void) const
 {
-	RP_D(const NEResourceReader);
-	return (d->file && d->file->isOpen());
+	return (m_file && m_file->isOpen());
 }
 
 /**
@@ -527,10 +529,9 @@ bool NEResourceReader::isOpen(void) const
  */
 size_t NEResourceReader::read(void *ptr, size_t size)
 {
-	RP_D(NEResourceReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
@@ -538,7 +539,7 @@ size_t NEResourceReader::read(void *ptr, size_t size)
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return d->file->read(ptr, size);
+	return m_file->read(ptr, size);
 }
 
 /**
@@ -548,10 +549,9 @@ size_t NEResourceReader::read(void *ptr, size_t size)
  */
 int NEResourceReader::seek(int64_t pos)
 {
-	RP_D(NEResourceReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -559,7 +559,7 @@ int NEResourceReader::seek(int64_t pos)
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return d->file->seek(pos);
+	return m_file->seek(pos);
 }
 
 /**
@@ -568,10 +568,9 @@ int NEResourceReader::seek(int64_t pos)
  */
 int64_t NEResourceReader::tell(void)
 {
-	RP_D(NEResourceReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -579,7 +578,7 @@ int64_t NEResourceReader::tell(void)
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return d->file->tell();
+	return m_file->tell();
 }
 
 /**
@@ -591,10 +590,9 @@ int64_t NEResourceReader::tell(void)
 int64_t NEResourceReader::size(void)
 {
 	// TODO: Errors?
-	RP_D(NEResourceReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -602,19 +600,7 @@ int64_t NEResourceReader::size(void)
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return static_cast<int64_t>(d->file->size());
-}
-
-/** Device file functions **/
-
-/**
- * Is the underlying file a device file?
- * @return True if the underlying file is a device file; false if not.
- */
-bool NEResourceReader::isDevice(void) const
-{
-	RP_D(const NEResourceReader);
-	return (d->file && d->file->isDevice());
+	return static_cast<int64_t>(m_file->size());
 }
 
 /** IPartition **/
@@ -627,12 +613,11 @@ bool NEResourceReader::isDevice(void) const
 int64_t NEResourceReader::partition_size(void) const
 {
 	// TODO: Errors?
-	RP_D(const NEResourceReader);
 
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return static_cast<int64_t>(d->file->size());
+	return static_cast<int64_t>(m_file->size());
 }
 
 /**
@@ -644,12 +629,11 @@ int64_t NEResourceReader::partition_size(void) const
 int64_t NEResourceReader::partition_size_used(void) const
 {
 	// TODO: Errors?
-	RP_D(const NEResourceReader);
 
 	// There isn't a separate resource "section" in
 	// NE executables, so forward all read requests
 	// to the underlying file.
-	return static_cast<int64_t>(d->file->size());
+	return static_cast<int64_t>(m_file->size());
 }
 
 /** Resource access functions. **/

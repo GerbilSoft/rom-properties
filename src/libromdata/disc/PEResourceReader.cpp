@@ -51,7 +51,7 @@ namespace LibRomData {
 class PEResourceReaderPrivate
 {
 	public:
-		PEResourceReaderPrivate(PEResourceReader *q, IRpFile *file,
+		PEResourceReaderPrivate(PEResourceReader *q,
 			uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 
 	private:
@@ -147,32 +147,32 @@ class PEResourceReaderPrivate
 /** PEResourceReaderPrivate **/
 
 PEResourceReaderPrivate::PEResourceReaderPrivate(
-		PEResourceReader *q, IRpFile *file,
+		PEResourceReader *q,
 		uint32_t rsrc_addr, uint32_t rsrc_size,
 		uint32_t rsrc_va)
 	: q_ptr(q)
-	, file(file)
 	, rsrc_addr(rsrc_addr)
 	, rsrc_size(rsrc_size)
 	, rsrc_va(rsrc_va)
 	, pos(0)
 {
-	if (!file) {
-		this->file = nullptr;
+	if (!q->m_file) {
 		q->m_lastError = -EBADF;
 		return;
 	} else if (rsrc_addr == 0 || rsrc_size == 0) {
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = -EIO;
 		return;
 	}
 
 	// Validate the starting address and size.
 	static const uint32_t fileSize_MAX = 2U*1024*1024*1024;
-	const int64_t fileSize_i64 = file->size();
+	const int64_t fileSize_i64 = q->m_file->size();
 	if (fileSize_i64 > fileSize_MAX) {
 		// A Win32/Win64 executable larger than 2 GB doesn't make any sense.
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -184,7 +184,8 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	{
 		// Starting address is past the end of the file,
 		// or resource ends past the end of the file.
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = -EIO;
 		return;
 	}
@@ -193,7 +194,8 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	int ret = loadResDir(0, res_types);
 	if (ret <= 0) {
 		// No resources, or an error occurred.
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 	}
 }
 
@@ -212,10 +214,10 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	RP_Q(PEResourceReader);
 
 	IMAGE_RESOURCE_DIRECTORY root;
-	size_t size = file->seekAndRead(rsrc_addr + addr, &root, sizeof(root));
+	size_t size = q->m_file->seekAndRead(rsrc_addr + addr, &root, sizeof(root));
 	if (size != sizeof(root)) {
 		// Seek and/or read error.
-		q->m_lastError = file->lastError();
+		q->m_lastError = q->m_file->lastError();
 		return q->m_lastError;
 	}
 
@@ -228,10 +230,10 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	}
 	uint32_t szToRead = static_cast<uint32_t>(entryCount * sizeof(IMAGE_RESOURCE_DIRECTORY_ENTRY));
 	unique_ptr<IMAGE_RESOURCE_DIRECTORY_ENTRY[]> irdEntries(new IMAGE_RESOURCE_DIRECTORY_ENTRY[entryCount]);
-	size = file->read(irdEntries.get(), szToRead);
+	size = q->m_file->read(irdEntries.get(), szToRead);
 	if (size != szToRead) {
 		// Read error.
-		q->m_lastError = file->lastError();
+		q->m_lastError = q->m_file->lastError();
 		return q->m_lastError;
 	}
 
@@ -474,7 +476,6 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// TODO: Better error code?
 		return -EIO;
 	}
-
 	// DWORD alignment.
 	IResourceReader::alignFileDWORD(file);
 
@@ -580,7 +581,8 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
  * @param rsrc_va .rsrc virtual address.
  */
 PEResourceReader::PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va)
-	: d_ptr(new PEResourceReaderPrivate(this, file, rsrc_addr, rsrc_size, rsrc_va))
+	: super(file)
+	, d_ptr(new PEResourceReaderPrivate(this, rsrc_addr, rsrc_size, rsrc_va))
 { }
 
 PEResourceReader::~PEResourceReader()
@@ -597,8 +599,7 @@ PEResourceReader::~PEResourceReader()
  */
 bool PEResourceReader::isOpen(void) const
 {
-	RP_D(const PEResourceReader);
-	return (d->file && d->file->isOpen());
+	return (m_file && m_file->isOpen());
 }
 
 /**
@@ -610,9 +611,9 @@ bool PEResourceReader::isOpen(void) const
 size_t PEResourceReader::read(void *ptr, size_t size)
 {
 	RP_D(PEResourceReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	}
@@ -630,10 +631,10 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 	}
 
 	// Read the data.
-	size_t read = d->file->seekAndRead(static_cast<int64_t>(d->rsrc_addr) + static_cast<int64_t>(d->pos), ptr, size);
+	size_t read = m_file->seekAndRead(static_cast<int64_t>(d->rsrc_addr) + static_cast<int64_t>(d->pos), ptr, size);
 	if (read != size) {
 		// Seek and/or read error.
-		m_lastError = d->file->lastError();
+		m_lastError = m_file->lastError();
 	}
 	d->pos += read;
 	return read;
@@ -647,9 +648,9 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 int PEResourceReader::seek(int64_t pos)
 {
 	RP_D(PEResourceReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -674,9 +675,9 @@ int PEResourceReader::seek(int64_t pos)
 int64_t PEResourceReader::tell(void)
 {
 	RP_D(const PEResourceReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -695,18 +696,6 @@ int64_t PEResourceReader::size(void)
 	// TODO: Errors?
 	RP_D(const PEResourceReader);
 	return static_cast<int64_t>(d->rsrc_size);
-}
-
-/** Device file functions **/
-
-/**
- * Is the underlying file a device file?
- * @return True if the underlying file is a device file; false if not.
- */
-bool PEResourceReader::isDevice(void) const
-{
-	RP_D(const PEResourceReader);
-	return (d->file && d->file->isDevice());
 }
 
 /** IPartition **/
@@ -794,10 +783,10 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 
 	// Get the IMAGE_RESOURCE_DATA_ENTRY.
 	IMAGE_RESOURCE_DATA_ENTRY irdata;
-	size_t size = d->file->seekAndRead(d->rsrc_addr + dirEntry->addr, &irdata, sizeof(irdata));
+	size_t size = m_file->seekAndRead(d->rsrc_addr + dirEntry->addr, &irdata, sizeof(irdata));
 	if (size != sizeof(irdata)) {
 		// Seek and/or read error.
-		m_lastError = d->file->lastError();
+		m_lastError = m_file->lastError();
 		return nullptr;
 	}
 

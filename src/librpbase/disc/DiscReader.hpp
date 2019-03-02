@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -49,9 +49,8 @@ class DiscReader : public IDiscReader
 		 */
 		DiscReader(IRpFile *file, int64_t offset, int64_t length);
 
-		virtual ~DiscReader();
-
 	private:
+		typedef IDiscReader super;
 		RP_DISABLE_COPY(DiscReader)
 
 	public:
@@ -108,18 +107,7 @@ class DiscReader : public IDiscReader
 		 */
 		int64_t size(void) override;
 
-	public:
-		/** Device file functions **/
-
-		/**
-		 * Is the underlying file a device file?
-		 * @return True if the underlying file is a device file; false if not.
-		 */
-		bool isDevice(void) const final;
-
 	protected:
-		IRpFile *m_file;
-
 		// Offset/length. Useful for e.g. GameCube TGC.
 		int64_t m_offset;
 		int64_t m_length;

@@ -58,7 +58,7 @@ namespace LibRomData {
 
 class GdiReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		GdiReaderPrivate(GdiReader *q, IRpFile *file);
+		GdiReaderPrivate(GdiReader *q);
 		virtual ~GdiReaderPrivate();
 
 	private:
@@ -116,24 +116,24 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 
 /** GdiReaderPrivate **/
 
-GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
-	: super(q, file)
+GdiReaderPrivate::GdiReaderPrivate(GdiReader *q)
+	: super(q)
 	, blockCount(0)
 {
-	if (!this->file) {
+	if (!q->m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
 	// Save the filename for later.
-	filename = this->file->filename();
+	filename = q->m_file->filename();
 
 	// GDI file should be 4k or less.
-	int64_t fileSize = file->size();
+	int64_t fileSize = q->m_file->size();
 	if (fileSize <= 0 || fileSize > 4096) {
 		// Invalid GDI file size.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -141,12 +141,12 @@ GdiReaderPrivate::GdiReaderPrivate(GdiReader *q, IRpFile *file)
 	// Read the GDI and parse the track information.
 	const unsigned int gdisize = static_cast<unsigned int>(fileSize);
 	unique_ptr<char[]> gdibuf(new char[gdisize+1]);
-	file->rewind();
-	size_t size = file->read(gdibuf.get(), gdisize);
+	q->m_file->rewind();
+	size_t size = q->m_file->read(gdibuf.get(), gdisize);
 	if (size != gdisize) {
 		// Read error.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -233,9 +233,10 @@ void GdiReaderPrivate::close(void)
 	trackMappings.clear();
 
 	// GDI file.
-	if (this->file) {
-		this->file->unref();
-		this->file = nullptr;
+	RP_Q(GdiReader);
+	if (q->m_file) {
+		q->m_file->unref();
+		q->m_file = nullptr;
 	}
 }
 
@@ -404,17 +405,18 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// File opened. Get its size and calculate the end block.
-	int64_t fileSize = file->size();
+	RP_Q(GdiReader);
+	const int64_t fileSize = q->m_file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid flie...
-		this->file->unref();
+		q->m_file->unref();
 		return -EIO;
 	}
 
 	// Is the file a multiple of the sector size?
 	if (fileSize % blockRange->sectorSize != 0) {
 		// Not a multiple of the sector size.
-		this->file->unref();
+		q->m_file->unref();
 		return -EIO;
 	}
 
@@ -427,7 +429,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 /** GdiReader **/
 
 GdiReader::GdiReader(IRpFile *file)
-	: super(new GdiReaderPrivate(this, file))
+	: super(new GdiReaderPrivate(this), file)
 { }
 
 /**

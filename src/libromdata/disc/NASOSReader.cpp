@@ -44,7 +44,7 @@ namespace LibRomData {
 
 class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		NASOSReaderPrivate(NASOSReader *q, IRpFile *file);
+		NASOSReaderPrivate(NASOSReader *q);
 
 	private:
 		typedef SparseDiscReaderPrivate super;
@@ -78,26 +78,26 @@ class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 
 /** NASOSReaderPrivate **/
 
-NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
-	: super(q, file)
+NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
+	: super(q)
 	, discType(DT_UNKNOWN)
 	, blockMapShift(0)
 {
 	// Clear the NASOSHeader structs.
 	memset(&header, 0, sizeof(header));
 
-	if (!this->file) {
+	if (!q->m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
 	// Read the NASOS header.
-	this->file->rewind();
-	size_t sz = this->file->read(&header, sizeof(header));
+	q->m_file->rewind();
+	size_t sz = q->m_file->read(&header, sizeof(header));
 	if (sz != sizeof(header)) {
 		// Error reading the NASOS header.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -123,8 +123,8 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 		blockMapShift = 8;
 	} else {
 		// Invalid magic.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -135,12 +135,12 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 	// TODO: Restrict the maximum block count?
 	blockMap.resize(blockCount);
 	const size_t sz_blockMap = blockMap.size() * sizeof(uint32_t);
-	sz = this->file->seekAndRead(blockMapStart, blockMap.data(), sz_blockMap);
+	sz = q->m_file->seekAndRead(blockMapStart, blockMap.data(), sz_blockMap);
 	if (sz != sz_blockMap) {
 		// Error reading the block map.
 		blockMap.clear();
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -155,7 +155,7 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q, IRpFile *file)
 /** NASOSReader **/
 
 NASOSReader::NASOSReader(IRpFile *file)
-	: super(new NASOSReaderPrivate(this, file))
+	: super(new NASOSReaderPrivate(this), file)
 { }
 
 /**

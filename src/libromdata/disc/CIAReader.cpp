@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.cpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -43,7 +43,7 @@ namespace LibRomData {
 class CIAReaderPrivate
 {
 	public:
-		CIAReaderPrivate(CIAReader *q, LibRpBase::IRpFile *file,
+		CIAReaderPrivate(CIAReader *q,
 			int64_t content_offset, uint32_t content_length,
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
@@ -55,7 +55,6 @@ class CIAReaderPrivate
 		CIAReader *const q_ptr;
 
 	public:
-		LibRpBase::IRpFile *file;	// 3DS CIA file.
 		CBCReader *cbcReader;		// CBC reader.
 
 #ifdef ENABLE_DECRYPTION
@@ -68,11 +67,10 @@ class CIAReaderPrivate
 
 /** CIAReaderPrivate **/
 
-CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
+CIAReaderPrivate::CIAReaderPrivate(CIAReader *q,
 	int64_t content_offset, uint32_t content_length,
 	const N3DS_Ticket_t *ticket, uint16_t tmd_content_index)
 	: q_ptr(q)
-	, file(file)
 	, cbcReader(nullptr)
 #ifdef ENABLE_DECRYPTION
 	, titleKeyEncIdx(0)
@@ -83,11 +81,17 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 	RP_UNUSED(tmd_content_index);
 #endif /* ENABLE_DECRYPTION */
 
+	assert(q->m_file != nullptr);
+	if (!q->m_file) {
+		// No file...
+		return;
+	}
+
 	assert(ticket != nullptr);
 	if (!ticket) {
 		// No ticket. Assuming no encryption.
 		// Create a passthru CBCReader anyway.
-		cbcReader = new CBCReader(file, content_offset, content_length, nullptr, nullptr);
+		cbcReader = new CBCReader(q->m_file, content_offset, content_length, nullptr, nullptr);
 		return;
 	}
 
@@ -175,17 +179,19 @@ CIAReaderPrivate::CIAReaderPrivate(CIAReader *q, IRpFile *file,
 		memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
 
 		// Create a CBC reader to decrypt the CIA.
-		cbcReader = new CBCReader(file, content_offset, content_length, title_key, cia_iv.u8);
+		cbcReader = new CBCReader(q->m_file, content_offset, content_length, title_key, cia_iv.u8);
 	} else {
 		// Unable to get the CIA encryption keys.
 		// TODO: Set an error.
 		//verifyResult = res;
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Cannot decrypt the CIA.
 	// TODO: Set an error.
-	this->file = nullptr;
+	q->m_file->unref();
+	q->m_file = nullptr;
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -212,7 +218,8 @@ CIAReader::CIAReader(IRpFile *file,
 		int64_t content_offset, uint32_t content_length,
 		const N3DS_Ticket_t *ticket,
 		uint16_t tmd_content_index)
-	: d_ptr(new CIAReaderPrivate(this, file, content_offset, content_length, ticket, tmd_content_index))
+	: super(file)
+	, d_ptr(new CIAReaderPrivate(this, content_offset, content_length, ticket, tmd_content_index))
 { }
 
 CIAReader::~CIAReader()
@@ -229,8 +236,7 @@ CIAReader::~CIAReader()
  */
 bool CIAReader::isOpen(void) const
 {
-	RP_D(const CIAReader);
-	return (d->file && d->file->isOpen());
+	return (m_file && m_file->isOpen());
 }
 
 /**
@@ -243,13 +249,13 @@ size_t CIAReader::read(void *ptr, size_t size)
 {
 	RP_D(CIAReader);
 	assert(ptr != nullptr);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
 	assert(d->cbcReader != nullptr);
 	if (!ptr) {
 		m_lastError = EINVAL;
 		return 0;
-	} else if (!d->file || !d->file->isOpen() || !d->cbcReader) {
+	} else if (!m_file || !m_file->isOpen() || !d->cbcReader) {
 		m_lastError = EBADF;
 		return 0;
 	} else if (size == 0) {
@@ -270,10 +276,10 @@ size_t CIAReader::read(void *ptr, size_t size)
 int CIAReader::seek(int64_t pos)
 {
 	RP_D(CIAReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
 	assert(d->cbcReader != nullptr);
-	if (!d->file ||  !d->file->isOpen() || !d->cbcReader) {
+	if (!m_file ||  !m_file->isOpen() || !d->cbcReader) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -292,9 +298,9 @@ int CIAReader::seek(int64_t pos)
 int64_t CIAReader::tell(void)
 {
 	RP_D(const CIAReader);
-	assert(d->file != nullptr);
+	assert(m_file != nullptr);
 	assert(d->cbcReader != nullptr);
-	if (!d->file ||  !d->file->isOpen() || !d->cbcReader) {
+	if (!m_file ||  !m_file->isOpen() || !d->cbcReader) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -313,10 +319,10 @@ int64_t CIAReader::tell(void)
 int64_t CIAReader::size(void)
 {
 	RP_D(const CIAReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
 	assert(d->cbcReader != nullptr);
-	if (!d->file ||  !d->file->isOpen() || !d->cbcReader) {
+	if (!m_file ||  !m_file->isOpen() || !d->cbcReader) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -324,18 +330,6 @@ int64_t CIAReader::size(void)
 	int64_t ret = d->cbcReader->size();
 	m_lastError = d->cbcReader->lastError();
 	return ret;
-}
-
-/** Device file functions **/
-
-/**
- * Is the underlying file a device file?
- * @return True if the underlying file is a device file; false if not.
- */
-bool CIAReader::isDevice(void) const
-{
-	RP_D(const CIAReader);
-	return (d->file && d->file->isDevice());
 }
 
 /** IPartition **/

@@ -36,16 +36,16 @@ namespace LibRpBase {
  * @param file File to read from.
  */
 DiscReader::DiscReader(IRpFile *file)
-	: m_file(nullptr)
+	: super(file)
 	, m_offset(0)
 	, m_length(0)
 {
-	if (!file) {
+	if (!m_file) {
 		m_lastError = EBADF;
 		return;
 	}
+
 	// TODO: Propagate errors.
-	m_file = file->ref();
 	m_length = file->size();
 	if (m_length < 0) {
 		m_length = 0;
@@ -61,19 +61,18 @@ DiscReader::DiscReader(IRpFile *file)
  * @param length Disc length. (-1 for "until end of file")
  */
 DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
-	: m_file(nullptr)
+	: super(file)
 	, m_offset(0)
 	, m_length(0)
 {
-	if (!file) {
+	if (!m_file) {
 		m_lastError = EBADF;
 		return;
 	}
-	// TODO: Propagate errors.
-	m_file = file->ref();
 
+	// TODO: Propagate errors.
 	// Validate offset and filesize.
-	const int64_t filesize = file->size();
+	const int64_t filesize = m_file->size();
 	if (offset > filesize) {
 		offset = filesize;
 	}
@@ -83,13 +82,6 @@ DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
 
 	m_offset = offset;
 	m_length = length;
-}
-
-DiscReader::~DiscReader()
-{
-	if (m_file) {
-		m_file->unref();
-	}
 }
 
 /**
@@ -207,17 +199,6 @@ int64_t DiscReader::size(void)
 	}
 	// TODO: Propagate errors.
 	return m_length;
-}
-
-/** Device file functions **/
-
-/**
- * Is the underlying file a device file?
- * @return True if the underlying file is a device file; false if not.
- */
-bool DiscReader::isDevice(void) const
-{
-	return (m_file && m_file->isDevice());
 }
 
 }

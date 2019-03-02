@@ -43,7 +43,7 @@ namespace LibRpBase {
 class CBCReaderPrivate
 {
 	public:
-		CBCReaderPrivate(CBCReader *q, LibRpBase::IRpFile *file, int64_t offset, int64_t length,
+		CBCReaderPrivate(CBCReader *q, int64_t offset, int64_t length,
 			const uint8_t *key, const uint8_t *iv);
 		~CBCReaderPrivate();
 
@@ -53,7 +53,6 @@ class CBCReaderPrivate
 		CBCReader *const q_ptr;
 
 	public:
-		LibRpBase::IRpFile *file;	// File with encrypted data.
 		const int64_t offset;		// Encrypted data start offset, in bytes.
 		const int64_t length;		// Encrypted data length, in bytes.
 
@@ -71,11 +70,10 @@ class CBCReaderPrivate
 
 /** CBCReaderPrivate **/
 
-CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, IRpFile *file,
+CBCReaderPrivate::CBCReaderPrivate(CBCReader *q,
 	int64_t offset, int64_t length,
 	const uint8_t *key, const uint8_t *iv)
 	: q_ptr(q)
-	, file(file)
 	, offset(offset)
 	, length(length)
 	, pos(0)
@@ -83,6 +81,12 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, IRpFile *file,
 	, cipher(nullptr)
 #endif
 {
+	assert(q->m_file != nullptr);
+	if (!q->m_file) {
+		// No file...
+		return;
+	}
+
 #ifdef ENABLE_DECRYPTION
 	if (!key) {
 		// No key. Assuming passthru with no encryption.
@@ -106,7 +110,8 @@ CBCReaderPrivate::CBCReaderPrivate(CBCReader *q, IRpFile *file,
 	if (!cipher) {
 		// Unable to initialize decryption.
 		// TODO: Error code.
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		return;
 	}
 
@@ -148,7 +153,8 @@ CBCReaderPrivate::~CBCReaderPrivate()
  */
 CBCReader::CBCReader(LibRpBase::IRpFile *file, int64_t offset, int64_t length,
 		const uint8_t *key, const uint8_t *iv)
-	: d_ptr(new CBCReaderPrivate(this, file, offset, length, key, iv))
+	: super(file)
+	, d_ptr(new CBCReaderPrivate(this, offset, length, key, iv))
 { }
 
 CBCReader::~CBCReader()
@@ -165,8 +171,7 @@ CBCReader::~CBCReader()
  */
 bool CBCReader::isOpen(void) const
 {
-	RP_D(CBCReader);
-	return (d->file && d->file->isOpen());
+	return (m_file && m_file->isOpen());
 }
 
 /**
@@ -179,12 +184,12 @@ size_t CBCReader::read(void *ptr, size_t size)
 {
 	RP_D(CBCReader);
 	assert(ptr != nullptr);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
 	if (!ptr) {
 		m_lastError = EINVAL;
 		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
+	} else if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return 0;
 	} else if (size == 0) {
@@ -209,10 +214,10 @@ size_t CBCReader::read(void *ptr, size_t size)
 #endif /* ENABLE_DECRYPTION */
 	{
 		// No encryption. Read directly from the file.
-		size_t sz_read = d->file->seekAndRead(d->offset + d->pos, ptr, size);
+		size_t sz_read = m_file->seekAndRead(d->offset + d->pos, ptr, size);
 		if (sz_read != size) {
 			// Seek and/or read error.
-			m_lastError = d->file->lastError();
+			m_lastError = m_file->lastError();
 			if (m_lastError == 0) {
 				m_lastError = EIO;
 			}
@@ -245,16 +250,16 @@ size_t CBCReader::read(void *ptr, size_t size)
 		// Start of data.
 		// Use the specified IV.
 		memcpy(iv, d->iv, sizeof(iv));
-		d->file->seek(d->offset);
+		m_file->seek(d->offset);
 	} else {
 		// Not start of data.
 		// Read the IV from the previous 16 bytes.
 		// TODO: Cache it!
-		d->file->seek(d->offset + pos_block - 16);
-		size_t size = d->file->read(iv, sizeof(iv));
+		m_file->seek(d->offset + pos_block - 16);
+		size_t size = m_file->read(iv, sizeof(iv));
 		if (size != sizeof(iv)) {
 			// Read error.
-			m_lastError = d->file->lastError();
+			m_lastError = m_file->lastError();
 			if (m_lastError == 0) {
 				m_lastError = EIO;
 			}
@@ -276,10 +281,10 @@ size_t CBCReader::read(void *ptr, size_t size)
 		// Read and decrypt the full block, and copy out
 		// the necessary bytes.
 		const size_t sz = std::min(16U - (static_cast<size_t>(d->pos) & 15U), size);
-		size_t sz_read = d->file->read(block_tmp, sizeof(block_tmp));
+		size_t sz_read = m_file->read(block_tmp, sizeof(block_tmp));
 		if (sz_read != sizeof(block_tmp)) {
 			// Read error.
-			m_lastError = d->file->lastError();
+			m_lastError = m_file->lastError();
 			if (m_lastError == 0) {
 				m_lastError = EIO;
 			}
@@ -304,11 +309,11 @@ size_t CBCReader::read(void *ptr, size_t size)
 	// Read full blocks.
 	size_t full_block_sz = size & ~15LL;
 	if (full_block_sz > 0) {
-		size_t sz_read = d->file->read(ptr8, full_block_sz);
+		size_t sz_read = m_file->read(ptr8, full_block_sz);
 		if (sz_read != full_block_sz) {
 			// Short read.
 			// Cannot decrypt with a short read.
-			m_lastError = d->file->lastError();
+			m_lastError = m_file->lastError();
 			if (m_lastError == 0) {
 				m_lastError = EIO;
 			}
@@ -333,10 +338,10 @@ size_t CBCReader::read(void *ptr, size_t size)
 		// We need to decrypt a partial block at the end.
 		// Read and decrypt the full block, and copy out
 		// the necessary bytes.
-		size_t sz_read = d->file->read(block_tmp, sizeof(block_tmp));
+		size_t sz_read = m_file->read(block_tmp, sizeof(block_tmp));
 		if (sz_read != sizeof(block_tmp)) {
 			// Read error.
-			m_lastError = d->file->lastError();
+			m_lastError = m_file->lastError();
 			if (m_lastError == 0) {
 				m_lastError = EIO;
 			}
@@ -374,9 +379,9 @@ size_t CBCReader::read(void *ptr, size_t size)
 int CBCReader::seek(int64_t pos)
 {
 	RP_D(CBCReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file ||  !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file ||  !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -401,9 +406,9 @@ int CBCReader::seek(int64_t pos)
 int64_t CBCReader::tell(void)
 {
 	RP_D(CBCReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	assert(m_file != nullptr);
+	assert(m_file->isOpen());
+	if (!m_file || !m_file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -449,18 +454,6 @@ int64_t CBCReader::partition_size_used(void) const
 	// NOTE: For CBCReader, this is the same as partition_size().
 	RP_D(const CBCReader);
 	return d->length;
-}
-
-/** Device file functions **/
-
-/**
- * Is the underlying file a device file?
- * @return True if the underlying file is a device file; false if not.
- */
-bool CBCReader::isDevice(void) const
-{
-	RP_D(const CBCReader);
-	return (d->file && d->file->isDevice());
 }
 
 }

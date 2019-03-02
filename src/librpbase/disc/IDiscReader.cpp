@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.cpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,18 +14,42 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "IDiscReader.hpp"
+#include "../file/IRpFile.hpp"
 
 namespace LibRpBase {
 
-IDiscReader::IDiscReader()
-	: m_lastError(0)
-{ }
+IDiscReader::IDiscReader(IRpFile *file)
+	: m_hasDiscReader(false)
+	, m_lastError(0)
+{
+	if (file) {
+		m_file = file->ref();
+	} else {
+		m_file = nullptr;
+	}
+}
+
+IDiscReader::IDiscReader(IDiscReader *discReader)
+	: m_hasDiscReader(true)
+	, m_lastError(0)
+{
+	// TODO: Reference counting?
+	m_discReader = discReader;
+}
+
+IDiscReader::~IDiscReader()
+{
+	if (!m_hasDiscReader) {
+		if (m_file) {
+			m_file->unref();
+		}
+	}
+}
 
 /**
  * Get the last error.
@@ -59,6 +83,21 @@ size_t IDiscReader::seekAndRead(int64_t pos, void *ptr, size_t size)
 		return 0;
 	}
 	return this->read(ptr, size);
+}
+
+/** Device file functions **/
+
+/**
+ * Is the underlying file a device file?
+ * @return True if the underlying file is a device file; false if not.
+ */
+bool IDiscReader::isDevice(void) const
+{
+	if (!m_hasDiscReader) {
+		return (m_file && m_file->isDevice());
+	} else {
+		return (m_discReader && m_discReader->isDevice());
+	}
 }
 
 }

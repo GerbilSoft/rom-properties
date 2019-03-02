@@ -39,7 +39,7 @@ namespace LibRomData {
 
 class WbfsReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		WbfsReaderPrivate(WbfsReader *q, IRpFile *file);
+		WbfsReaderPrivate(WbfsReader *q);
 		virtual ~WbfsReaderPrivate();
 
 	private:
@@ -102,13 +102,13 @@ class WbfsReaderPrivate : public SparseDiscReaderPrivate {
 // WBFS magic number.
 const uint8_t WbfsReaderPrivate::WBFS_MAGIC[4] = {'W','B','F','S'};
 
-WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q, IRpFile *file)
-	: super(q, file)
+WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q)
+	: super(q)
 	, m_wbfs(nullptr)
 	, m_wbfs_disc(nullptr)
 	, wlba_table(nullptr)
 {
-	if (!this->file) {
+	if (!q->m_file) {
 		// File could not be ref()'d.
 		return;
 	}
@@ -117,8 +117,8 @@ WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q, IRpFile *file)
 	m_wbfs = readWbfsHeader();
 	if (!m_wbfs) {
 		// Error reading the WBFS header.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -129,8 +129,8 @@ WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q, IRpFile *file)
 		// Error opening the WBFS disc.
 		freeWbfsHeader(m_wbfs);
 		m_wbfs = nullptr;
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -183,8 +183,9 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	}
 
 	// Read the WBFS header.
-	file->rewind();
-	size_t size = file->read(head, hd_sec_sz);
+	RP_Q(WbfsReader);
+	q->m_file->rewind();
+	size_t size = q->m_file->read(head, hd_sec_sz);
 	if (size != hd_sec_sz) {
 		// Read error.
 		free(head);
@@ -236,8 +237,8 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 		}
 
 		// Re-read the WBFS header.
-		file->rewind();
-		size = file->read(head, hd_sec_sz);
+		q->m_file->rewind();
+		size = q->m_file->read(head, hd_sec_sz);
 		if (size != hd_sec_sz) {
 			// Read error.
 			// TODO: Return errno?
@@ -303,6 +304,7 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 {
 	// Based on libwbfs.c's wbfs_open_disc()
 	// and wbfs_get_disc_info().
+	RP_Q(WbfsReader);
 	const wbfs_head_t *const head = p->head;
 	uint32_t count = 0;
 	for (uint32_t i = 0; i < p->max_disc; i++) {
@@ -324,8 +326,8 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 					free(disc);
 					return nullptr;
 				}
-				size_t size = file->seekAndRead((p->hd_sec_sz + (i*p->disc_info_sz)),
-								disc->header, p->disc_info_sz);
+				size_t size = q->m_file->seekAndRead((p->hd_sec_sz + (i*p->disc_info_sz)),
+					disc->header, p->disc_info_sz);
 				if (size != p->disc_info_sz) {
 					// Error reading the disc information.
 					free(disc->header);
@@ -392,7 +394,7 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 /** WbfsReader **/
 
 WbfsReader::WbfsReader(IRpFile *file)
-	: super(new WbfsReaderPrivate(this, file))
+	: super(new WbfsReaderPrivate(this), file)
 { }
 
 /**

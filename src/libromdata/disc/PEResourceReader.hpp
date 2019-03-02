@@ -44,6 +44,7 @@ class PEResourceReader : public IResourceReader
 		virtual ~PEResourceReader();
 
 	private:
+		typedef IResourceReader super;
 		RP_DISABLE_COPY(PEResourceReader)
 	protected:
 		friend class PEResourceReaderPrivate;
@@ -87,15 +88,6 @@ class PEResourceReader : public IResourceReader
 		 * @return Data size, or -1 on error.
 		 */
 		int64_t size(void) final;
-
-	public:
-		/** Device file functions **/
-
-		/**
-		 * Is the underlying file a device file?
-		 * @return True if the underlying file is a device file; false if not.
-		 */
-		bool isDevice(void) const final;
 
 	public:
 		/** IPartition **/

@@ -45,7 +45,7 @@ namespace LibRomData {
 
 class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file);
+		CisoGcnReaderPrivate(CisoGcnReader *q);
 
 	private:
 		typedef SparseDiscReaderPrivate super;
@@ -72,8 +72,8 @@ class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
 // CISO magic.
 const char CisoGcnReaderPrivate::CISO_MAGIC[4] = {'C','I','S','O'};
 
-CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
-	: super(q, file)
+CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
+	: super(q)
 	, maxLogicalBlockUsed(-1)
 {
 	// Clear the CISO header struct.
@@ -81,7 +81,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	// Clear the CISO block map initially.
 	blockMap.fill(0xFFFF);
 
-	if (!this->file) {
+	if (!q->m_file) {
 		// File could not be ref()'d.
 		return;
 	}
@@ -89,12 +89,12 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	// Read the CISO header.
 	static_assert(sizeof(CISOHeader) == CISO_HEADER_SIZE,
 		"CISOHeader is the wrong size. (Should be 32,768 bytes.)");
-	this->file->rewind();
-	size_t sz = this->file->read(&cisoHeader, sizeof(cisoHeader));
+	q->m_file->rewind();
+	size_t sz = q->m_file->read(&cisoHeader, sizeof(cisoHeader));
 	if (sz != sizeof(cisoHeader)) {
 		// Error reading the CISO header.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -102,8 +102,8 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	// Verify the CISO header.
 	if (memcmp(cisoHeader.magic, CISO_MAGIC, sizeof(CISO_MAGIC)) != 0) {
 		// Invalid magic.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -117,8 +117,8 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is
 		// the CISO header size.
-		this->file->unref();
-		this->file = nullptr;
+		q->m_file->unref();
+		q->m_file = nullptr;
 		q->m_lastError = EIO;
 		return;
 	}
@@ -138,8 +138,8 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 				break;
 			default:
 				// Invalid entry.
-				this->file->unref();
-				this->file = nullptr;
+				q->m_file->unref();
+				q->m_file = nullptr;
 				q->m_lastError = EIO;
 				return;
 		}
@@ -155,7 +155,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 /** CisoGcnReader **/
 
 CisoGcnReader::CisoGcnReader(IRpFile *file)
-	: super(new CisoGcnReaderPrivate(this, file))
+	: super(new CisoGcnReaderPrivate(this), file)
 { }
 
 /**
