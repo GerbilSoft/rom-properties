@@ -743,7 +743,16 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 		// TODO: Unlocked description?
 		if (langID != XDBF_LANGUAGE_UNKNOWN) {
 			string desc = loadString(langID, be16_to_cpu(p->name_id));
-			string lck_desc = loadString(langID, be16_to_cpu(p->locked_desc_id));
+
+			uint16_t desc_id = be16_to_cpu(p->locked_desc_id);
+			if (desc_id == 0xFFFF) {
+				// No locked description.
+				// Use the unlocked description.
+				// (May be a hidden achievement? TODO)
+				desc_id = be16_to_cpu(p->unlocked_desc_id);
+			}
+
+			string lck_desc = loadString(langID, desc_id);
 			if (!lck_desc.empty()) {
 				if (!desc.empty()) {
 					desc += '\n';
@@ -890,7 +899,16 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		// TODO: Unlocked description?
 		if (langID != XDBF_LANGUAGE_UNKNOWN) {
 			string desc = loadString(langID, be16_to_cpu(p->name_id));
-			string lck_desc = loadString(langID, be16_to_cpu(p->locked_desc_id));
+
+			uint16_t desc_id = be16_to_cpu(p->locked_desc_id);
+			if (desc_id == 0xFFFF) {
+				// No locked description.
+				// Use the unlocked description.
+				// (May be a hidden avatar award? TODO)
+				desc_id = be16_to_cpu(p->unlocked_desc_id);
+			}
+
+			string lck_desc = loadString(langID, desc_id);
 			if (!lck_desc.empty()) {
 				if (!desc.empty()) {
 					desc += '\n';
