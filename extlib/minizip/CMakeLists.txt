@@ -9,6 +9,8 @@ cmake_minimum_required(VERSION 3.0.2)
 
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
+# rom-properties: Disabled these options.
+IF(0)
 option(MZ_COMPAT "Enables compatibility layer" ON)
 option(MZ_ZLIB "Enables ZLIB compression" ON)
 option(MZ_BZIP2 "Enables BZIP2 compression" ON)
@@ -23,6 +25,11 @@ option(MZ_DECOMPRESS_ONLY "Only support decompression" OFF)
 option(MZ_BUILD_TEST "Builds minizip test executable" OFF)
 option(MZ_BUILD_UNIT_TEST "Builds minizip unit test project" OFF)
 option(MZ_BUILD_FUZZ_TEST "Builds minizip fuzzer executables" OFF)
+ENDIF(0)
+
+# rom-properties: Using ZLIB.
+SET(MZ_ZLIB ON)
+include_directories(${ZLIB_INCLUDE_DIRS})
 
 if(POLICY CMP0074)
     cmake_policy(SET CMP0074 OLD) 
