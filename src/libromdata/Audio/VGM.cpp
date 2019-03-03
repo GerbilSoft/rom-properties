@@ -676,35 +676,21 @@ int VGM::loadFieldData(void)
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				const char *chip_name;
-				switch (vgmHeader->ay8910_type) {
-					default:
-						// TODO: Print the type ID?
-						chip_name = "AYxxxx";
-						break;
-					case 0x00:
-						chip_name = "AY8910";
-						break;
-					case 0x01:
-						chip_name = "AY8912";
-						break;
-					case 0x02:
-						chip_name = "AY8913";
-						break;
-					case 0x03:
-						chip_name = "AY8930";
-						break;
-					case 0x10:
-						chip_name = "YM2149";
-						break;
-					case 0x11:
-						chip_name = "YM3439";
-						break;
-					case 0x12:
-						chip_name = "YMZ284";
-						break;
-					case 0x13:
-						chip_name = "YMZ294";
-						break;
+				// Use a lookup table.
+				// Valid bits: xxxCxxBA
+				if (!(vgmHeader->ay8910_type & ~0x13)) {
+					// Convert to xxxxxCBA.
+					uint8_t lkup = vgmHeader->ay8910_type;
+					lkup = (lkup >> 2) | (lkup & 3);
+
+					static const char chip_name_tbl[8][8] = {
+						"AY8910", "AY8912", "AY8913", "AY8930",
+						"YM2139", "YM3439", "YMZ284", "YMZ294",
+					};
+					chip_name = chip_name_tbl[lkup];
+				} else {
+					// TODO: Print the type ID?
+					chip_name = "AYxxxx";
 				}
 
 				d->fields->addField_string(
