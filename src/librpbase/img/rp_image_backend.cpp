@@ -53,15 +53,16 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 {
 	// Sanity check: Maximum of 32768x32768.
 	// Also make sure the format is valid.
+	// NOTE: FORMAT_NONE *is* valid here.
 	assert(width > 0);
 	assert(width <= 32768);
 	assert(height > 0);
 	assert(height <= 32768);
-	assert(format > rp_image::FORMAT_NONE);
+	assert(format >= rp_image::FORMAT_NONE);
 	assert(format <= rp_image::FORMAT_ARGB32);
 	if (width <= 0 || width > 32768 ||
 	    height <= 0 || height > 32768 ||
-	    format < rp_image::FORMAT_NONE || format > rp_image::FORMAT_ARGB32)
+	    format < rp_image::FORMAT_NONE || format >= rp_image::FORMAT_MAX)
 	{
 		// Invalid values.
 		clear_properties();

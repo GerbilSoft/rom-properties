@@ -73,7 +73,7 @@ class rp_image
 			FORMAT_CI8,		// Color index, 8-bit palette.
 			FORMAT_ARGB32,		// 32-bit ARGB.
 
-			FORMAT_LAST		// End of Format.
+			FORMAT_MAX		// End of Format.
 		};
 
 		/**

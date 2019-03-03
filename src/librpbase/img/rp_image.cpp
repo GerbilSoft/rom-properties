@@ -488,8 +488,8 @@ void rp_image::set_tr_idx(int tr_idx)
 */
 const char *rp_image::getFormatName(Format format)
 {
-	assert(format >= FORMAT_NONE && format < FORMAT_LAST);
-	if (format < FORMAT_NONE || format >= FORMAT_LAST) {
+	assert(format >= FORMAT_NONE && format < FORMAT_MAX);
+	if (format < FORMAT_NONE || format >= FORMAT_MAX) {
 		return nullptr;
 	}
 
@@ -498,7 +498,7 @@ const char *rp_image::getFormatName(Format format)
 		"CI8",
 		"ARGB32",
 	};
-	static_assert(ARRAY_SIZE(format_names) == FORMAT_LAST,
+	static_assert(ARRAY_SIZE(format_names) == FORMAT_MAX,
 		"format_names[] needs to be updated.");
 
 	return format_names[format];
