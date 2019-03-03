@@ -279,7 +279,7 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	RP_D(RpFile);
 	if (!d->isDevice) {
 		// Not a device.
-		return false;
+		return -ENODEV;
 	}
 
 	// SCSI command buffers.
