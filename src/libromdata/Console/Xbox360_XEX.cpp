@@ -659,8 +659,6 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		case XEX2_COMPRESSION_TYPE_NORMAL: {
 			// Normal (LZX) compression.
 			// Load the block segment data.
-			// FIXME: Read directly from u8_ffi instead of re-reading from the file.
-			file->seek(file->tell() - u8_ffi.size() + sizeof(fileFormatInfo));
 
 			assert(fileFormatInfo.size >= sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header));
 			if (fileFormatInfo.size < sizeof(fileFormatInfo) + sizeof(XEX2_Compression_Normal_Header)) {
@@ -684,28 +682,15 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			// NOTE: Technically part of XEX2_Compression_Normal_Header,
 			// but we're not using that in order to be
 			// able to swap lzx_blocks.
-			uint32_t window_size;
-			size = file->read(&window_size, sizeof(window_size));
-			if (size != sizeof(window_size)) {
-				// Seek and/or read error.
-				delete reader[0];
-				delete reader[1];
-				return nullptr;
-			}
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-			window_size = be32_to_cpu(window_size);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+			const uint8_t *p = u8_ffi.data() + sizeof(fileFormatInfo);
+			const uint32_t *const pWindowSize =
+				reinterpret_cast<const uint32_t*>(p);
+			const uint32_t window_size = be32_to_cpu(*pWindowSize);
 
 			// First block.
 			XEX2_Compression_Normal_Info first_block, lzx_blocks[2];
 			unsigned int lzx_idx = 0;
-			size = file->read(&first_block, sizeof(first_block));
-			if (size != sizeof(first_block)) {
-				// Seek and/or read error.
-				delete reader[0];
-				delete reader[1];
-				return nullptr;
-			}
+			memcpy(&first_block, p+sizeof(window_size), sizeof(first_block));
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 			first_block.block_size = be32_to_cpu(first_block.block_size);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
@@ -1132,7 +1117,6 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 
 	// The EXE header is located at the beginning of the
 	// PE section, so we don't have to look anything up.
-	// TODO: LZX support.
 
 	// Attempt to open the EXE section.
 	// Assuming a maximum of 8 KB for the PE headers.
