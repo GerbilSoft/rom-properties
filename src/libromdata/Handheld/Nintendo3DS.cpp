@@ -2012,10 +2012,6 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Add more fields?
 		const N3DS_NCSD_Header_NoSig_t *const ncsd_header = &d->mxh.ncsd_header;
 
-		// Is this eMMC?
-		const bool emmc = (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC);
-		const bool new3ds = (ncsd_header->emmc_part_tbl.crypt_type[4] == 3);
-
 		// Partition type names.
 		// TODO: Translate?
 		static const char *const partition_types[2][8] = {
@@ -2040,7 +2036,7 @@ int Nintendo3DS::loadFieldData(void)
 		const char *const *pt_types;
 		const uint8_t *keyslots = nullptr;
 		vector<string> *v_partitions_names;
-		if (!emmc) {
+		if (d->romType != Nintendo3DSPrivate::ROM_TYPE_eMMC) {
 			// CCI (3DS cartridge dump)
 
 			// Partition type names.
@@ -2060,6 +2056,9 @@ int Nintendo3DS::loadFieldData(void)
 			// eMMC (NAND dump)
 
 			// eMMC type.
+			// Old3DS uses encryption type 2 for CTR NAND.
+			// New3DS uses encryption type 3 for CTR NAND.
+			const bool new3ds = (ncsd_header->emmc_part_tbl.crypt_type[4] == 3);
 			d->fields->addField_string(C_("Nintendo3DS|eMMC", "Type"),
 				(new3ds ? "New3DS / New2DS" : "Old3DS / 2DS"));
 
@@ -2177,7 +2176,7 @@ int Nintendo3DS::loadFieldData(void)
 			const char *type = (pt_types[i] ? pt_types[i] : s_unknown);
 			data_row.push_back(type);
 
-			if (!emmc) {
+			if (d->romType != Nintendo3DSPrivate::ROM_TYPE_eMMC) {
 				const N3DS_NCCH_Header_NoSig_t *const part_ncch_header =
 					(pNcch && pNcch->isOpen() ? pNcch->ncchHeader() : nullptr);
 				if (part_ncch_header) {
