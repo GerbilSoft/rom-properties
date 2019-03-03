@@ -58,7 +58,6 @@ class DMGPrivate : public RomDataPrivate
 {
 	public:
 		DMGPrivate(DMG *q, IRpFile *file);
-		virtual ~DMGPrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -175,12 +174,6 @@ class DMGPrivate : public RomDataPrivate
 		// GBX footer.
 		GBX_Footer gbxFooter;
 
-		// GBS subclass.
-		struct {
-			IDiscReader *reader;
-			GBS *data;
-		} gbs;
-
 		/**
 		 * Get the title and game ID.
 		 *
@@ -274,15 +267,6 @@ DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
 	memset(&gbxFooter, 0, sizeof(gbxFooter));
-	memset(&gbs, 0, sizeof(gbs));
-}
-
-DMGPrivate::~DMGPrivate()
-{
-	if (gbs.data) {
-		gbs.data->unref();
-	}
-	delete gbs.reader;
 }
 
 /**
@@ -541,70 +525,6 @@ DMG::DMG(IRpFile *file)
 			d->gbxFooter.magic = 0;
 		}
 	}
-
-	// Check for GBS.
-	uint8_t gbs_jmp[3];
-	size = file->seekAndRead(0, gbs_jmp, sizeof(gbs_jmp));
-	if (size == sizeof(gbs_jmp) && gbs_jmp[0] == 0xC3) {
-		// Read the jump address.
-		// GBS header is at the jump address minus sizeof(GBS_Header).
-		uint16_t jp_addr = (gbs_jmp[2] << 8) | gbs_jmp[1];
-		if (jp_addr >= sizeof(GBS_Header)) {
-			jp_addr -= sizeof(GBS_Header);
-			// Read the GBS magic number.
-			uint32_t gbs_magic;
-			size = file->seekAndRead(jp_addr, &gbs_magic, sizeof(gbs_magic));
-			if (size == sizeof(gbs_magic) && gbs_magic == cpu_to_be32(GBS_MAGIC)) {
-				// Found the GBS magic number.
-				// Open the GBS.
-				// TODO: Separate function and use more nested `if` statements
-				// to eliminate NULL checks? (same with Nintendo3DS's SRL stuff)
-				PartitionFile *ptFile = nullptr;
-				GBS *gbs = nullptr;
-
-				const int64_t length = file->size() - jp_addr;
-				DiscReader *const reader = new DiscReader(file, jp_addr, length);
-				if (reader->isOpen()) {
-					// Create a PartitionFile.
-					ptFile = new PartitionFile(reader, 0, length);
-				}
-
-				if (ptFile) {
-					if (ptFile->isOpen()) {
-						// Open the GBS.
-						gbs = new GBS(ptFile);
-					}
-					ptFile->unref();
-				}
-
-				if (gbs && gbs->isOpen()) {
-					// GBS opened.
-					d->gbs.reader = reader;
-					d->gbs.data = gbs;
-				} else {
-					// Unable to open the GBS.
-					if (gbs) {
-						gbs->unref();
-					}
-					delete reader;
-				}
-			}
-		}
-	}
-}
-
-/**
- * Close the opened file.
- */
-void DMG::close(void)
-{
-	RP_D(DMG);
-	if (d->gbs.data) {
-		d->gbs.data->unref();
-	}
-	delete d->gbs.reader;
-	d->gbs.data = nullptr;
-	d->gbs.reader = nullptr;
 }
 
 /** ROM detection functions. **/
@@ -750,7 +670,7 @@ int DMG::loadFieldData(void)
 	// - 5 fields for the GBX footer.
 	d->fields->reserve(12+5);
 
-	// Reserve at least 2 tabs:
+	// Reserve at least 3 tabs:
 	// DMG, GBX, GBS
 	d->fields->reserveTabs(3);
 
@@ -1092,13 +1012,48 @@ int DMG::loadFieldData(void)
 	}
 
 	/** GBS **/
-	if (d->gbs.data) {
-		// This is a GBS Player ROM.
-		// TODO: GBS metadata.
-		const RomFields *const gbsFields = d->gbs.data->fields();
-		assert(gbsFields != nullptr);
-		if (gbsFields) {
-			d->fields->addFields_romFields(gbsFields, RomFields::TabOffset_AddTabs);
+	// Check for GBS.
+	// NOTE: Loaded on demand, since GBS isn't used for metadata at the moment.
+	// TODO: Maybe it should be?
+	uint8_t gbs_jmp[3];
+	size_t size = d->file->seekAndRead(0, gbs_jmp, sizeof(gbs_jmp));
+	if (size == sizeof(gbs_jmp) && gbs_jmp[0] == 0xC3) {
+		// Read the jump address.
+		// GBS header is at the jump address minus sizeof(GBS_Header).
+		uint16_t jp_addr = (gbs_jmp[2] << 8) | gbs_jmp[1];
+		if (jp_addr >= sizeof(GBS_Header)) {
+			jp_addr -= sizeof(GBS_Header);
+			// Read the GBS magic number.
+			uint32_t gbs_magic;
+			size = d->file->seekAndRead(jp_addr, &gbs_magic, sizeof(gbs_magic));
+			if (size == sizeof(gbs_magic) && gbs_magic == cpu_to_be32(GBS_MAGIC)) {
+				// Found the GBS magic number.
+				// Open the GBS.
+				const int64_t fileSize = d->file->size();
+				DiscReader *const reader = new DiscReader(d->file, 0, fileSize);
+				if (reader->isOpen()) {
+					// Create a PartitionFile.
+					const int64_t length = fileSize - jp_addr;
+					PartitionFile *const ptFile = new PartitionFile(reader, jp_addr, length);
+					if (ptFile->isOpen()) {
+						// Open the GBS.
+						GBS *const gbs = new GBS(ptFile);
+						if (gbs->isOpen()) {
+							// Add the fields.
+							const RomFields *const gbsFields = gbs->fields();
+							assert(gbsFields != nullptr);
+							assert(!gbsFields->empty());
+							if (gbsFields && !gbsFields->empty()) {
+								d->fields->addFields_romFields(gbsFields,
+									RomFields::TabOffset_AddTabs);
+							}
+						}
+						gbs->unref();
+					}
+					ptFile->unref();
+				}
+				delete reader;
+			}
 		}
 	}
 
