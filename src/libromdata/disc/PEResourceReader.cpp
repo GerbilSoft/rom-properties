@@ -60,9 +60,6 @@ class PEResourceReaderPrivate
 		PEResourceReader *const q_ptr;
 
 	public:
-		// EXE file.
-		IRpFile *file;
-
 		// .rsrc section.
 		uint32_t rsrc_addr;
 		uint32_t rsrc_size;

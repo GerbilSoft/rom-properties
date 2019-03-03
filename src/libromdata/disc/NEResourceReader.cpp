@@ -60,9 +60,6 @@ class NEResourceReaderPrivate
 		NEResourceReader *const q_ptr;
 
 	public:
-		// EXE file.
-		IRpFile *file;
-
 		// Resource segment table.
 		uint32_t rsrc_tbl_addr;
 		uint32_t rsrc_tbl_size;
@@ -141,7 +138,7 @@ NEResourceReaderPrivate::NEResourceReaderPrivate(
 	static const uint32_t fileSize_MAX = 16U*1024*1024;
 
 	// Validate the starting address and size.
-	const int64_t fileSize_i64 = file->size();
+	const int64_t fileSize_i64 = q->m_file->size();
 	if (fileSize_i64 > fileSize_MAX) {
 		// A Win16 executable larger than 16 MB doesn't make any sense.
 		q->m_file->unref();
