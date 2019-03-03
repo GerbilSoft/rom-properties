@@ -36,10 +36,11 @@ ROMDATA_DECL_IMGINT()
 
 	public:
 		// Encryption key indexes.
-		// NOTE: Debug key is all zeroes,
+		// NOTE: XEX2 debug key is all zeroes,
 		// so it's not included here.
 		enum EncryptionKeys {
-			Key_XEX_Retail,
+			Key_XEX1,
+			Key_XEX2,
 
 			Key_Max
 		};

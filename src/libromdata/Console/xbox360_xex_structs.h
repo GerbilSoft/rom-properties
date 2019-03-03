@@ -41,6 +41,7 @@ extern "C" {
  * 
  * All fields are in big-endian.
  */
+#define XEX1_MAGIC 'XEX1'
 #define XEX2_MAGIC 'XEX2'
 typedef struct PACKED _XEX2_Header {
 	uint32_t magic;			// [0x000] 'XEX2'
@@ -74,7 +75,7 @@ typedef struct PACKED _XEX2_Security_Info {
 	uint32_t header_size;			// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
 	uint32_t image_size;			// [0x004] Image size (slightly larger than the .xex file)
 	uint8_t rsa_signature[0x100];		// [0x008] RSA-2048 signature
-	uint32_t unk_108;			// [0x108]
+	uint32_t unk_0x108;			// [0x108]
 	uint32_t image_flags;			// [0x10C] Image flags (See XEX2_Image_Flags_e)
 	uint32_t load_address;			// [0x110] Load address
 	uint8_t section_sha1[0x14];		// [0x114] SHA-1 of something
