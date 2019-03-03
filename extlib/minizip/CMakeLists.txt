@@ -66,6 +66,8 @@ if(EXISTS ${MINIZIP_PC}.cmakein)
     configure_file(${MINIZIP_PC}.cmakein ${MINIZIP_PC} @ONLY)
 endif()
 
+set(PROJECT_NAME minizip)
+
 # Check if zlib installation is present
 if(MZ_ZLIB AND NOT MZ_LIBCOMP)
     find_package(ZLIB)
@@ -625,7 +627,9 @@ elseif(UNIX)
     endif()
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
+#target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ZLIB_CONST)
 
 # Install files
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
