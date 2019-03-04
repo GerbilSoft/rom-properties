@@ -93,7 +93,9 @@ class AmiiboDataPrivate {
 		static const char_variant_t mii_variants[];
 		static const char_variant_t splatoon_inkling_variants[];
 		static const char_variant_t splatoon_octoling_variants[];
+		static const char_variant_t ff_cloud_variants[];
 		static const char_variant_t fe_corrin_variants[];
+		static const char_variant_t bayonetta_variants[];
 
 		static const char_variant_t mss_mario_variants[];
 		static const char_variant_t mss_luigi_variants[];
@@ -392,9 +394,19 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_octoling_var
 	{0x03, "Octoling Octopus"},
 };
 
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ff_cloud_variants[] = {
+	{0x00, "Cloud"},
+	{0x01, "Cloud (Player 2)"},
+};
+
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::fe_corrin_variants[] = {
 	{0x00, "Corrin"},
 	{0x01, "Corrin (Player 2)"},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::bayonetta_variants[] = {
+	{0x00, "Bayonetta"},
+	{0x01, "Bayonetta (Player 2)"},
 };
 
 // Mario Sports Superstars
@@ -1152,7 +1164,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x3200, "Sonic"),
 
 	// Bayonetta (character series = 0x324)
-	AMIIBO_CHAR_ID_ONE(0x3240, "Bayonetta"),
+	AMIIBO_CHAR_ID_VAR(0x3240, "Bayonetta", bayonetta_variants),
 
 	// Pac-Man (character series = 0x334)
 	AMIIBO_CHAR_ID_ONE(0x3340, "Pac-Man"),
@@ -1177,7 +1189,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x35C0, "Shovel Knight"),
 
 	// Final Fantasy (character series = 0x360)
-	AMIIBO_CHAR_ID_ONE(0x3600, "Cloud"),
+	AMIIBO_CHAR_ID_VAR(0x3600, "Cloud", ff_cloud_variants),
 
 	// Cereal (character series = 0x374)
 	AMIIBO_CHAR_ID_VAR(0x3740, "Super Mario Cereal", cereal_smb_variants),
