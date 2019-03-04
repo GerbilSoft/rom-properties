@@ -1271,7 +1271,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 21, 3, "Lucario"},		// 0x0011 (Wave 3, out of order)
 	{ 18, 2, "Captain Falcon"},	// 0x0012
 
-	// Waves 3+ [0x0013-0x0033]
+	// SSB: Waves 3+ [0x0013-0x0033]
 	{ 19, 3, "Rosalina & Luma"},	// 0x0013
 	{ 20, 3, "Bowser"},		// 0x0014
 	{ 43, 6, "Bowser Jr."},		// 0x0015
