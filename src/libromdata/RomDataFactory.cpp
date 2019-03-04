@@ -261,6 +261,8 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL, 0, 'XBEH'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
+	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX1'),
+	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX2'),
 
 	// Handhelds
 	GetRomDataFns_addr(DMG, ATTR_NONE, 0x104, 0xCEED6666),
@@ -275,8 +277,15 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 #ifdef ENABLE_GL
 	GetRomDataFns_addr(KhronosKTX, ATTR_HAS_THUMBNAIL, 0, (uint32_t)'\xABKTX'),
 #endif /* ENABLE_GL */
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'PVRT'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'GVRT'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'PVRX'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'GBIX'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'GCIX'),
 	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL, 0, 'VTF\0'),
 	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL, 0, 'VTF3'),
+	// TODO: XPR1/XPR2
+	GetRomDataFns_addr(XboxXPR, ATTR_HAS_THUMBNAIL, 0, 'XPR0'),
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_NONE, 0, 'RSTM'),
@@ -309,15 +318,10 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(WiiU, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(Xbox360_XEX, ATTR_HAS_THUMBNAIL),
 
 	// Handhelds
 	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
 	GetRomDataFns(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
-
-	// Textures
-	GetRomDataFns(SegaPVR, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(XboxXPR, ATTR_HAS_THUMBNAIL),
 
 	// Audio
 	GetRomDataFns(ADX, ATTR_NONE),
