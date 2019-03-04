@@ -44,10 +44,12 @@ extern "C" {
  * - PVRX: Little-endian.
  * - GVR:  Big-endian.
  */
+#define PVR_MAGIC_GBIX 'GBIX'
+#define PVR_MAGIC_GCIX 'GCIX'
 typedef struct PACKED _PVR_GBIX_Header {
-	char magic[4];		// "GBIX" (or "GCIX" in Wii games)
-	uint32_t length;	// Length of GBIX header. (***ALWAYS*** little-endian!)
-	uint32_t index;		// Global index.
+	uint32_t magic;		// [0x000] 'GBIX' (or 'GCIX' in Wii games)
+	uint32_t length;	// [0x004] Length of GBIX header. (***ALWAYS*** little-endian!)
+	uint32_t index;		// [0x008] Global index.
 
 	// NOTE: GBIX may or may not have an extra 4 bytes of padding.
 	// It usually does, so length == 8.
@@ -60,23 +62,26 @@ ASSERT_STRUCT(PVR_GBIX_Header, 12);
  * - Dreamcast PVR: All fields are little-endian.
  * - GameCube GVR: All fields are big-endian.
  */
+#define PVR_MAGIC_PVRT 'PVRT'
+#define PVR_MAGIC_GVRT 'GVRT'
+#define PVR_MAGIC_PVRX 'PVRX'
 typedef struct PACKED _PVR_Header {
-	char magic[4];		// "PVRT"
-	uint32_t length;	// Length of the file, starting at px_format.
+	uint32_t magic;		// [0x000] 'PVRT', 'GVRT', or 'PVRX'
+	uint32_t length;	// [0x004] Length of the file, starting at px_format.
 	union {
 		struct {
-			uint8_t px_format;	// Pixel format.
-			uint8_t img_data_type;	// Image data type.
-			uint8_t reserved[2];	// 0x0000
+			uint8_t px_format;	// [0x008] Pixel format.
+			uint8_t img_data_type;	// [0x009] Image data type.
+			uint8_t reserved[2];	// [0x00A] 0x0000
 		} pvr;
 		struct {
-			uint8_t reserved[2];	// 0x0000
-			uint8_t px_format;	// Pixel format.
-			uint8_t img_data_type;	// Image data type.
+			uint8_t reserved[2];	// [0x008] 0x0000
+			uint8_t px_format;	// [0x00A] Pixel format.
+			uint8_t img_data_type;	// [0x00B] Image data type.
 		} gvr;
 	};
-	uint16_t width;		// Width
-	uint16_t height;	// Height
+	uint16_t width;		// [0x00C] Width
+	uint16_t height;	// [0x00E] Height
 } PVR_Header;
 ASSERT_STRUCT(PVR_Header, 16);
 

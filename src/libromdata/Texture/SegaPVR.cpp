@@ -708,13 +708,13 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 
 	// Check if we have a GBIX header.
 	// (or GCIX for some Wii titles)
-	if (!memcmp(info->header.pData, "GBIX", 4) ||
-	    !memcmp(info->header.pData, "GCIX", 4))
+	const PVR_GBIX_Header *const gbixHeader =
+		reinterpret_cast<const PVR_GBIX_Header*>(info->header.pData);
+	if (gbixHeader->magic == cpu_to_be32(PVR_MAGIC_GBIX) ||
+	    gbixHeader->magic == cpu_to_be32(PVR_MAGIC_GCIX))
 	{
 		// GBIX header is present.
 		// Length should be between 4 and 16.
-		const PVR_GBIX_Header *const gbixHeader =
-			reinterpret_cast<const PVR_GBIX_Header*>(info->header.pData);
 
 		// Try little-endian.
 		unsigned int gbix_len = le32_to_cpu(gbixHeader->length);
@@ -735,21 +735,19 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
 		}
 
 		pvrHeader = reinterpret_cast<const PVR_Header*>(&info->header.pData[8+gbix_len]);
-	}
-	else
-	{
+	} else {
 		// No GBIX header.
 		pvrHeader = reinterpret_cast<const PVR_Header*>(info->header.pData);
 	}
 
 	// Check the PVR header magic.
-	if (!memcmp(pvrHeader->magic, "PVRT", 4)) {
+	if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_PVRT)) {
 		// Sega Dreamcast PVR.
 		return SegaPVRPrivate::PVR_TYPE_PVR;
-	} else if (!memcmp(pvrHeader->magic, "GVRT", 4)) {
+	} else if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_GVRT)) {
 		// GameCube GVR.
 		return SegaPVRPrivate::PVR_TYPE_GVR;
-	} else if (!memcmp(pvrHeader->magic, "PVRX", 4)) {
+	} else if (pvrHeader->magic == cpu_to_be32(PVR_MAGIC_PVRX)) {
 		// Xbox PVRX.
 		return SegaPVRPrivate::PVR_TYPE_PVRX;
 	}
