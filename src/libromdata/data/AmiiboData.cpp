@@ -512,7 +512,7 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_toby_variants[] = 
 	{0x01, "Toby (Sanrio)"},
 };
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_etoile_variants[] = {
-	{0x01, "\xC3\x89toile"},
+	{0x01, "\xC3\x89toile (Sanrio)"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_rathalos_variants[] = {
