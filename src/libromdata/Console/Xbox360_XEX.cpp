@@ -1644,7 +1644,7 @@ int Xbox360_XEX::loadFieldData(void)
 		// XGD2/XGD3 media only.
 		// TODO: Check the Burger King games. (XGD1)
 		d->fields->addField_string(C_("Xbox360_XEX", "Media Types"),
-			C_("Xbox360_XEX", "Xbox 360 Game Disc only"));
+			C_("Xbox360_XEX", "Xbox Game Disc only"));
 	} else {
 		// Other types.
 		static const char *const media_type_tbl[] = {
