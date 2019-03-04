@@ -324,6 +324,8 @@ const XEX2_Optional_Header_Tbl *Xbox360_XEX_Private::getOptHdrTblEntry(uint32_t 
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Search for the header.
+	// TODO: Can we assume that the optional headers are sorted
+	// and use a binary search?
 	for (auto iter = optHdrTbl.cbegin(); iter != optHdrTbl.cend(); ++iter) {
 		if (iter->header_id == header_id) {
 			// Found the header.
