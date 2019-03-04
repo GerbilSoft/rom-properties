@@ -2210,7 +2210,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 
 	// SSBU: Wave 11 [0x037E-0x037F]
 	{ 65, 11, "Wolf"},			// 0x037E
-	{ 64, 11, "Ridley"},
+	{ 64, 11, "Ridley"},			// 0x037F
 
 	// Unused [0x0380]
 	{  0, 0, nullptr},			// 0x0380
