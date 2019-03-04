@@ -394,7 +394,7 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_octoling_var
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::fe_corrin_variants[] = {
 	{0x00, "Corrin"},
-	{0x01, "Corrin (Player 2"},
+	{0x01, "Corrin (Player 2)"},
 };
 
 // Mario Sports Superstars
