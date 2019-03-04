@@ -180,7 +180,7 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	"Super Mario Bros.",	// 0x000
 	nullptr,		// 0x004
 	"Yoshi",		// 0x008
-	nullptr,		// 0x00C
+	"Donkey Kong",		// 0x00C
 	"The Legend of Zelda",	// 0x010
 	"The Legend of Zelda",	// 0x014
 
@@ -564,9 +564,13 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x0015, "Goomba"),
 	AMIIBO_CHAR_ID_ONE(0x0017, "Boo"),
 	AMIIBO_CHAR_ID_ONE(0x0023, "Koopa Troopa"),
+	AMIIBO_CHAR_ID_ONE(0x0024, "Piranha Plant"),
 
 	// Yoshi (character series = 0x008)
 	AMIIBO_CHAR_ID_VAR(0x0080, "Poochy", yoshi_poochy_variants),
+
+	// Donkey Kong (character series = 0x00C)
+	AMIIBO_CHAR_ID_ONE(0x00C0, "King K. Rool"),
 
 	// The Legend of Zelda (character series = 0x010)
 	AMIIBO_CHAR_ID_VAR(0x0100, "Link", tloz_link_variants),
@@ -1067,6 +1071,8 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x0780, "Mr. Game & Watch"),
 	AMIIBO_CHAR_ID_ONE(0x0781, "R.O.B."),	// NES/Famicom variant is in Page 22, amiibo series.
 	AMIIBO_CHAR_ID_ONE(0x0782, "Duck Hunt"),
+	// TODO: 0x0783?
+	AMIIBO_CHAR_ID_ONE(0x0784, "Ice Climbers"),
 
 	// Mii (character series = 0x07C)
 	AMIIBO_CHAR_ID_VAR(0x07C0, "Mii Brawler", mii_variants),
@@ -2181,27 +2187,38 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Mega Man [0x0379]
 	{  0, 0, "Mega Man"},			// 0x0379
 
-	// Unused [0x037A-0x038D]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037A,0x037B
+	// Unused [0x037A]
+	{  0, 0, nullptr},			// 0x037A
+
+	// SSBU: Wave 12 [0x037B]
+	{ 66, 12, "King K. Rool"},		// 0x037B
+
+	// Unused [0x037C-0x037D]
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037C,0x037D
 
 	// SSBU: Wave 11 [0x037E-0x037F]
 	{ 65, 11, "Wolf"},			// 0x037E
 	{ 64, 11, "Ridley"},
 
-	// Unused [0x0380-0x0381]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0380,0x0381
+	// Unused [0x0380]
+	{  0, 0, nullptr},			// 0x0380
+
+	// SSBU: Wave 12 [0x0381]
+	{ 67, 12, "Ice Climbers"},		// 0x0381
 
 	// SSBU: Wave 11 [0x0382]
 	{ 63, 11, "Inkling"},			// 0x0382
 
-	// Unused [0x0383-0x038D]
+	// Unused [0x0383-0x038C]
 	{  0, 0, nullptr},			// 0x0383
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0384,0x0385
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0386,0x0387
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0388,0x0389
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x038A,0x038B
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x038C,0x038D
+	{  0, 0, nullptr},
+
+	// SSBU: Wave 12 [0x038D]
+	{ 68, 12, "Piranha Plant"},		// 0x038D
 
 	// Splatoon: Wave 5 [0x038E-0x0390]
 	{  0, 5, "Octoling Girl"},		// 0x038E
