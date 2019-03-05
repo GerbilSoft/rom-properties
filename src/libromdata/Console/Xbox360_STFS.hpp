@@ -27,6 +27,7 @@ namespace LibRomData {
 
 class Xbox360_STFS_Private;
 ROMDATA_DECL_BEGIN(Xbox360_STFS)
+ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
 }

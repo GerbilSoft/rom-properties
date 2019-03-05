@@ -283,8 +283,8 @@ int Xbox360_STFS::loadFieldData(void)
 	// NOTE: The STFS headers are **NOT** byteswapped.
 	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
 
-	// Maximum of 14 fields, not including RomData subclasses.
-	d->fields->reserve(14);
+	// Maximum of 10 fields.
+	d->fields->reserve(10);
 	d->fields->setTabName(0, "STFS");
 
 	// Display name
@@ -376,6 +376,55 @@ int Xbox360_STFS::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int Xbox360_STFS::loadMetaData(void)
+{
+	RP_D(Xbox360_STFS);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->stfsType < 0) {
+		// STFS file isn't valid.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
+
+	const STFS_Package_Metadata *const stfsMetadata = &d->stfsMetadata;
+
+	// Display name and/or title
+	// TODO: Which one to prefer?
+	// TODO: Language ID?
+	if (stfsMetadata->display_name[0][0] != 0) {
+		d->metaData->addMetaData_string(Property::Title,
+			utf16be_to_utf8(stfsMetadata->display_name[0],
+				ARRAY_SIZE(stfsMetadata->display_name[0])));
+	} else if (stfsMetadata->title_name[0] != 0) {
+		d->metaData->addMetaData_string(Property::Title,
+			utf16be_to_utf8(stfsMetadata->title_name,
+				ARRAY_SIZE(stfsMetadata->title_name)));
+	}		
+
+	// Publisher
+	if (stfsMetadata->publisher_name[0] != 0) {
+		d->metaData->addMetaData_string(Property::Publisher,
+			utf16be_to_utf8(stfsMetadata->publisher_name,
+				ARRAY_SIZE(stfsMetadata->publisher_name)));
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
