@@ -90,9 +90,9 @@ const Xbox360_STFS_ContentTypePrivate::ContentTypeEntry Xbox360_STFS_ContentType
 	{STFS_CONTENT_TYPE_MOVIE,		NOP_C_("Xbox360_STFS|ContentType", "Movie")},
 	{STFS_CONTENT_TYPE_TV,			NOP_C_("Xbox360_STFS|ContentType", "TV")},
 	{STFS_CONTENT_TYPE_MUSIC_VIDEO,		NOP_C_("Xbox360_STFS|ContentType", "Music Video")},
+	{STFS_CONTENT_TYPE_GAME_VIDEO,		NOP_C_("Xbox360_STFS|ContentType", "Game Video")},
 	{STFS_CONTENT_TYPE_PODCAST_VIDEO,	NOP_C_("Xbox360_STFS|ContentType", "Podcast Video")},
 	{STFS_CONTENT_TYPE_VIRAL_VIDEO,		NOP_C_("Xbox360_STFS|ContentType", "Viral Video")},
-	{STFS_CONTENT_TYPE_GAME_VIDEO,		NOP_C_("Xbox360_STFS|ContentType", "Game Video")},
 	{STFS_CONTENT_TYPE_COMMUNITY_GAME,	NOP_C_("Xbox360_STFS|ContentType", "Community Game")},
 
 	{0, nullptr}
