@@ -23,6 +23,7 @@ SET(libromdata_SRCS
 	Console/WiiWAD.cpp
 	Console/WiiWIBN.cpp
 	Console/Xbox_XBE.cpp
+	Console/Xbox360_STFS.cpp
 	Console/Xbox360_XDBF.cpp
 	Console/Xbox360_XEX.cpp
 	Console/XboxDisc.cpp
@@ -128,6 +129,7 @@ SET(libromdata_H
 	Console/WiiWAD.hpp
 	Console/WiiWIBN.hpp
 	Console/Xbox_XBE.hpp
+	Console/Xbox360_STFS.hpp
 	Console/Xbox360_XDBF.hpp
 	Console/Xbox360_XEX.hpp
 	Console/XboxDisc.hpp
@@ -148,6 +150,8 @@ SET(libromdata_H
 	Console/wii_wad.h
 	Console/wiiu_structs.h
 	Console/xbox_xbe_structs.h
+	Console/xbox360_common_structs.h
+	Console/xbox360_stfs_structs.h
 	Console/xbox360_xdbf_structs.h
 	Console/xbox360_xex_structs.h
 

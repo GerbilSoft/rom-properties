@@ -56,6 +56,7 @@
     * Supports reading original discs if a supported DVD-ROM drive with Kreon
       firmware is connected. (Linux only at the moment; Windows support will
       be added before the release of v1.4.)
+  * Xbox360_STFS: Xbox 360 packages.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.

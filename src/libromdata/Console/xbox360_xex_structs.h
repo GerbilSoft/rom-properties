@@ -21,9 +21,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_STRUCTS_H__
 
-#include "librpbase/common.h"
-#include "librpbase/byteorder.h"
-#include <stdint.h>
+#include "xbox360_common_structs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -361,32 +359,6 @@ typedef struct PACKED _XEX2_Import_Libraries_Header {
 ASSERT_STRUCT(XEX2_Import_Libraries_Header, 3*sizeof(uint32_t));
 
 /**
- * XEX2: Version number
- * All fields are in big-endian.
- * NOTE: Bitfields are in HOST-endian. u32 value
- * must be converted before using the bitfields.
- * TODO: Verify behavior on various platforms!
- * TODO: Static assertions?
- */
-typedef union _XEX2_Version_t {
-	uint32_t u32;
-	struct {
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-		uint32_t major : 4;
-		uint32_t minor : 4;
-		uint32_t build : 16;
-		uint32_t qfe : 8;
-#else /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-		uint32_t qfe : 8;
-		uint32_t build : 16;
-		uint32_t minor : 4;
-		uint32_t major : 4;
-#endif
-	};
-} XEX2_Version_t;
-ASSERT_STRUCT(XEX2_Version_t, sizeof(uint32_t));
-
-/**
  * XEX2: Import library entry.
  * Located immediately after the import library string table.
  *
@@ -396,8 +368,8 @@ typedef struct PACKED _XEX2_Import_Library_Entry {
 	uint32_t size;			// [0x000] Size of entry
 	uint8_t next_import_digest[20];	// [0x004] SHA1 of the *next* entry?
 	uint32_t id;			// [0x018] Library ID
-	XEX2_Version_t version;		// [0x01C] Library version
-	XEX2_Version_t version_min;	// [0x020] Minimum library version
+	Xbox360_Version_t version;	// [0x01C] Library version
+	Xbox360_Version_t version_min;	// [0x020] Minimum library version
 	uint16_t name_index;		// [0x024] Library name (index in string table)
 	uint16_t count;			// [0x026] Number of imports
 
@@ -467,29 +439,14 @@ typedef enum {
 } XEX2_System_Flags_e;
 
 /**
- * XEX2: Title ID
- * Contains two characters and a 16-bit number.
- * NOTE: Struct positioning only works with the original BE32 value.
- */
-typedef union PACKED _XEX2_Title_ID {
-	struct {
-		char a;
-		char b;
-		uint16_t u16;
-	};
-	uint32_t u32;
-} XEX2_Title_ID;
-ASSERT_STRUCT(XEX2_Title_ID, sizeof(uint32_t));
-
-/**
  * XEX2: Execution ID (0x40006)
  * All fields are in big-endian.
  */
 typedef struct PACKED _XEX2_Execution_ID {
 	uint32_t media_id;		// [0x000] Media ID
-	XEX2_Version_t version;		// [0x004] Version
-	XEX2_Version_t base_version;	// [0x008] Base version
-	XEX2_Title_ID title_id;		// [0x00C] Title ID (two characters, and uint16_t)
+	Xbox360_Version_t version;	// [0x004] Version
+	Xbox360_Version_t base_version;	// [0x008] Base version
+	Xbox360_Title_ID title_id;	// [0x00C] Title ID (two characters, and uint16_t)
 	uint8_t platform;		// [0x010] Platform
 	uint8_t exec_type;		// [0x011] Executable type
 	uint8_t disc_number;		// [0x012] Disc number

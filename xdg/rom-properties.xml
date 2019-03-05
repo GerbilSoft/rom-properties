@@ -324,6 +324,19 @@
     </magic>
   </mime-type>
 
+  <!-- Xbox360_STFS -->
+  <mime-type type="application/x-xbox360-stfs">
+    <comment>Xbox 360 executable</comment>
+    <!-- TODO: Generic package type? -->
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="50">
+      <match value="CON " type="string" offset="0"/>
+      <match value="LIVE" type="string" offset="0"/>
+      <match value="PIRS" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- Xbox360_XDBF -->
   <mime-type type="application/x-xbox360-xdbf">
     <comment>Xbox 360 resource database file</comment>

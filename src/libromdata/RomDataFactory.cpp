@@ -64,6 +64,7 @@ using std::vector;
 #include "Console/WiiWAD.hpp"
 #include "Console/WiiWIBN.hpp"
 #include "Console/Xbox_XBE.hpp"
+#include "Console/Xbox360_STFS.hpp"
 #include "Console/Xbox360_XDBF.hpp"
 #include "Console/Xbox360_XEX.hpp"
 
@@ -260,6 +261,9 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	// Consoles
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL, 0, 'XBEH'),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL, 0, 'CON '),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL, 0, 'PIRS'),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL, 0, 'LIVE'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX1'),
 	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX2'),

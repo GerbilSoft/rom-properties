@@ -220,7 +220,7 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		 * Get the minimum kernel version required for this XEX.
 		 * @return Minimum kernel version, or 0 on error.
 		 */
-		XEX2_Version_t getMinKernelVersion(void);
+		Xbox360_Version_t getMinKernelVersion(void);
 
 	public:
 		// CBC reader for encrypted PE executables.
@@ -1120,9 +1120,9 @@ void Xbox360_XEX_Private::convertGameRatings(
  * Get the minimum kernel version required for this XEX.
  * @return Minimum kernel version, or 0 on error.
  */
-XEX2_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
+Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 {
-	XEX2_Version_t rver;
+	Xbox360_Version_t rver;
 	rver.u32 = 0;
 
 	// Minimum kernel version is determined by checking the
@@ -1619,7 +1619,7 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// tr: Minimum kernel version (i.e. dashboard)
 	//const char *const s_minver = C_("Xbox360_XEX", "Min. Kernel");
-	XEX2_Version_t minver = d->getMinKernelVersion();
+	Xbox360_Version_t minver = d->getMinKernelVersion();
 	string s_minver;
 	if (minver.u32 != 0) {
 		s_minver = rp_sprintf("%u.%u.%u.%u",
