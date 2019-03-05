@@ -1183,7 +1183,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 		if (pe_exe_tmp->isOpen()) {
 			pe_exe = pe_exe_tmp;
 		} else {
-			peFile_tmp->unref();
+			pe_exe_tmp->unref();
 		}
 	}
 	peFile_tmp->unref();
@@ -1251,7 +1251,6 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 			pe_xdbf = pe_xdbf_tmp;
 		} else {
 			pe_xdbf_tmp->unref();
-			peFile_tmp->unref();
 		}
 	}
 	peFile_tmp->unref();
