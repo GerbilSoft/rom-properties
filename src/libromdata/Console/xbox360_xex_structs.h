@@ -121,7 +121,7 @@ typedef enum {
  */
 typedef enum {
 	XEX2_MEDIA_TYPE_HARDDISK		= (1 <<  0),
-	XEX2_MEDIA_TYPE_DVD_X2			= (1 <<  1),
+	XEX2_MEDIA_TYPE_XGD1			= (1 <<  1),
 	XEX2_MEDIA_TYPE_DVD_CD			= (1 <<  2),
 	XEX2_MEDIA_TYPE_DVD_5			= (1 <<  3),
 	XEX2_MEDIA_TYPE_DVD_9			= (1 <<  4),

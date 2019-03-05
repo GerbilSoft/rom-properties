@@ -114,7 +114,7 @@ typedef enum {
  * Contains two characters and a 16-bit number.
  * NOTE: Struct positioning only works with the original LE32 value.
  */
-typedef union PACKED _XEX2_Title_ID {
+typedef union PACKED _XBE_Title_ID {
 	struct {
 		uint16_t u16;
 		char b;
@@ -152,7 +152,7 @@ ASSERT_STRUCT(XBE_Certificate, 0x1D0);
  */
 typedef enum {
 	XBE_MEDIA_TYPE_HARD_DISK		= 0x00000001,
-	XBE_MEDIA_TYPE_DVD_X2			= 0x00000002,
+	XBE_MEDIA_TYPE_XGD1			= 0x00000002,
 	XBE_MEDIA_TYPE_DVD_CD			= 0x00000004,
 	XBE_MEDIA_TYPE_CD			= 0x00000008,
 	XBE_MEDIA_TYPE_DVD_5_RO			= 0x00000010,
