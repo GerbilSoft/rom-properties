@@ -22,6 +22,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "xbox360_stfs_structs.h"
+#include "data/Xbox360_STFS_ContentType.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -335,107 +336,8 @@ int Xbox360_STFS::loadFieldData(void)
 	}
 
 	// Content type
-	// TODO: Use binary search instead of switch/case?
-	// TODO: Move to a data file.
-	const char *s_content_type;
-	switch (be32_to_cpu(stfsMetadata->content_type)) {
-		case STFS_CONTENT_TYPE_SAVED_GAME:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Saved Game");
-			break;
-		case STFS_CONTENT_TYPE_MARKETPLACE_CONTENT:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Marketplace Content");
-			break;
-		case STFS_CONTENT_TYPE_PUBLISHER:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Publisher");
-			break;
-		case STFS_CONTENT_TYPE_XBOX_360_TITLE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Xbox 360 Game");
-			break;
-		case STFS_CONTENT_TYPE_IPTV_PAUSE_BUFFER:
-			s_content_type = C_("Xbox360_STFS|ContentType", "IPTV Pause Buffer");
-			break;
-		case STFS_CONTENT_TYPE_INSTALLED_GAME:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Installed Game");
-			break;
-		case STFS_CONTENT_TYPE_XBOX_ORIGINAL_GAME:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Original Xbox Game");
-			break;
-		case STFS_CONTENT_TYPE_AVATAR_ITEM:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Avatar Item");
-			break;
-		case STFS_CONTENT_TYPE_PROFILE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Profile");
-			break;
-		case STFS_CONTENT_TYPE_GAMER_PICTURE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Gamer Picture");
-			break;
-		case STFS_CONTENT_TYPE_THEME:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Theme");
-			break;
-		case STFS_CONTENT_TYPE_CACHE_FILE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Cache File");
-			break;
-		case STFS_CONTENT_TYPE_STORAGE_DOWNLOAD:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Storage Download");
-			break;
-		case STFS_CONTENT_TYPE_XBOX_SAVED_GAME:
-			// TODO: Verify.
-			s_content_type = C_("Xbox360_STFS|ContentType", "Original Xbox Saved Game");
-			break;
-		case STFS_CONTENT_TYPE_XBOX_DOWNLOAD:
-			// TODO: Verify.
-			s_content_type = C_("Xbox360_STFS|ContentType", "Original Xbox Download");
-			break;
-		case STFS_CONTENT_TYPE_GAME_DEMO:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Game Demo");
-			break;
-		case STFS_CONTENT_TYPE_VIDEO:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Video");
-			break;
-		case STFS_CONTENT_TYPE_GAME_TITLE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Game");
-			break;
-		case STFS_CONTENT_TYPE_INSTALLER:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Installer");
-			break;
-		case STFS_CONTENT_TYPE_GAME_TRAILER:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Game Trailer");
-			break;
-		case STFS_CONTENT_TYPE_ARCADE_TITLE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Arcade Game");
-			break;
-		case STFS_CONTENT_TYPE_XNA:
-			s_content_type = C_("Xbox360_STFS|ContentType", "XNA");
-			break;
-		case STFS_CONTENT_TYPE_LICENSE_STORE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "License Store");
-			break;
-		case STFS_CONTENT_TYPE_MOVIE:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Movie");
-			break;
-		case STFS_CONTENT_TYPE_TV:
-			s_content_type = C_("Xbox360_STFS|ContentType", "TV");
-			break;
-		case STFS_CONTENT_TYPE_MUSIC_VIDEO:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Music Video");
-			break;
-		case STFS_CONTENT_TYPE_PODCAST_VIDEO:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Podcast Video");
-			break;
-		case STFS_CONTENT_TYPE_VIRAL_VIDEO:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Viral Video");
-			break;
-		case STFS_CONTENT_TYPE_GAME_VIDEO:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Game Video");
-			break;
-		case STFS_CONTENT_TYPE_COMMUNITY_GAME:
-			s_content_type = C_("Xbox360_STFS|ContentType", "Community Game");
-			break;
-		default:
-			s_content_type = nullptr;
-			break;
-	}
-
+	const char *const s_content_type = Xbox360_STFS_ContentType::lookup(
+		be32_to_cpu(stfsMetadata->content_type));
 	if (s_content_type) {
 		d->fields->addField_string(C_("Xbox360_STFS", "Content Type"), s_content_type);
 	} else {

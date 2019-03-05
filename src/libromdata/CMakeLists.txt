@@ -80,6 +80,7 @@ SET(libromdata_SRCS
 	data/WiiSystemMenuVersion.cpp
 	data/WiiUData.cpp
 	data/XboxLanguage.cpp
+	data/Xbox360_STFS_ContentType.cpp
 
 	disc/Cdrom2352Reader.cpp
 	disc/CIAReader.cpp
@@ -237,6 +238,7 @@ SET(libromdata_H
 	data/WiiSystemMenuVersion.hpp
 	data/WiiUData.hpp
 	data/XboxLanguage.hpp
+	data/Xbox360_STFS_ContentType.hpp
 
 	disc/Cdrom2352Reader.hpp
 	disc/CIAReader.hpp
