@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-03-03 19:17-0500\n"
+"POT-Creation-Date: 2019-03-05 01:22-0500\n"
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
-"Language: pt\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -593,10 +593,11 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:807
 #: ../src/libromdata/Console/SNES.cpp:813
 #: ../src/libromdata/Console/WiiWAD.cpp:744
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:335
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:622
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:627
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1612
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1813
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1628
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1840
 #: ../src/libromdata/Console/XboxDisc.cpp:798
 #: ../src/libromdata/Console/Xbox_XBE.cpp:532
 #: ../src/libromdata/Console/Xbox_XBE.cpp:536
@@ -992,7 +993,7 @@ msgstr "Sistema"
 #: ../src/libromdata/Console/SNES.cpp:856
 #: ../src/libromdata/Console/SNES.cpp:899
 #: ../src/libromdata/Console/WiiWAD.cpp:849
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1838
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1865
 #: ../src/libromdata/Handheld/NGPC.cpp:326
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2103
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1200
@@ -1666,6 +1667,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1384
 #: ../src/libromdata/Console/N64.cpp:317
 #: ../src/libromdata/Console/SegaSaturn.cpp:554
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:315
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:621
 #: ../src/libromdata/Console/Xbox_XBE.cpp:514
 #: ../src/libromdata/Handheld/DMG.cpp:683
@@ -1689,6 +1691,7 @@ msgstr "Nome"
 #: ../src/libromdata/Console/SegaSaturn.cpp:559
 #: ../src/libromdata/Console/SNES.cpp:812
 #: ../src/libromdata/Console/WiiU.cpp:512
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:308
 #: ../src/libromdata/Handheld/DMG.cpp:756
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:328
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:462
@@ -1706,7 +1709,7 @@ msgstr "Nº de produto"
 #: ../src/libromdata/Console/Dreamcast.cpp:684
 #: ../src/libromdata/Console/GameCube.cpp:1423
 #: ../src/libromdata/Console/SegaSaturn.cpp:601
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1791
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1818
 #: ../src/libromdata/Other/ISO.cpp:427
 msgctxt "RomData"
 msgid "Disc #"
@@ -1715,7 +1718,7 @@ msgstr "Nº de disco"
 #. tr: Disc X of Y (for multi-disc games)
 #: ../src/libromdata/Console/Dreamcast.cpp:687
 #: ../src/libromdata/Console/SegaSaturn.cpp:604
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1795
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1822
 #: ../src/libromdata/Other/ISO.cpp:430
 #, c-format
 msgctxt "RomData|Disc"
@@ -1729,7 +1732,7 @@ msgstr "%1$u de %2$u"
 #: ../src/libromdata/Console/Sega8Bit.cpp:447
 #: ../src/libromdata/Console/SegaSaturn.cpp:587
 #: ../src/libromdata/Console/SNES.cpp:867
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1713
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1737
 #: ../src/libromdata/Console/Xbox_XBE.cpp:619
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:469
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1227
@@ -1742,7 +1745,7 @@ msgstr "Japão"
 #: ../src/libromdata/Console/GameCubeRegions.cpp:126
 #: ../src/libromdata/Console/MegaDrive.cpp:421
 #: ../src/libromdata/Console/SegaSaturn.cpp:589
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1712
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1736
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:470
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1228
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:414
@@ -1754,7 +1757,7 @@ msgstr "EUA"
 #: ../src/libromdata/Console/MegaDrive.cpp:422
 #: ../src/libromdata/Console/SegaSaturn.cpp:590
 #: ../src/libromdata/Console/SNES.cpp:869
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1716
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1740
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:471
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1229
 msgctxt "Region"
@@ -1769,7 +1772,7 @@ msgstr "Europa"
 #: ../src/libromdata/Console/SNES.cpp:898
 #: ../src/libromdata/Console/WiiU.cpp:529
 #: ../src/libromdata/Console/WiiWAD.cpp:829
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1749
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1776
 #: ../src/libromdata/Console/Xbox_XBE.cpp:625
 #: ../src/libromdata/Handheld/DMG.cpp:822
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:479
@@ -2115,8 +2118,9 @@ msgid "%1$s (%2$s)"
 msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1464
-#: ../src/libromdata/Console/SNES.cpp:968 ../src/libromdata/Other/EXE.cpp:183
-#: ../src/libromdata/Other/EXE.cpp:213
+#: ../src/libromdata/Console/SNES.cpp:968
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:345
+#: ../src/libromdata/Other/EXE.cpp:183 ../src/libromdata/Other/EXE.cpp:213
 #: ../src/libromdata/Texture/DirectDrawSurface.cpp:1200
 #, c-format
 msgctxt "RomData"
@@ -2145,7 +2149,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1545
 #: ../src/libromdata/Console/WiiWAD.cpp:913
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1855
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1882
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:517
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1274
 #, fuzzy
@@ -2295,7 +2299,7 @@ msgstr "Coreia do Sul"
 #: ../src/libromdata/Console/GameCubeRegions.cpp:80
 #: ../src/libromdata/Console/GameCubeRegions.cpp:144
 #: ../src/libromdata/Console/SNES.cpp:877
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1714
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1738
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:473
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1144
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1231
@@ -2345,7 +2349,7 @@ msgstr "Espanha"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:112
 #: ../src/libromdata/Console/SNES.cpp:883
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1717
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1741
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:472
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1230
 msgctxt "Region"
@@ -2540,7 +2544,7 @@ msgid "ExtROM Range"
 msgstr "Faixa da ROM estendida"
 
 #: ../src/libromdata/Console/MegaDrive.cpp:420
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1715
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1739
 msgctxt "Region"
 msgid "Asia"
 msgstr "Ásia"
@@ -2896,11 +2900,13 @@ msgstr "Autor"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:533
 #: ../src/libromdata/Console/WiiWAD.cpp:751
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:293
 msgctxt "RomData"
 msgid "Name"
 msgstr "Nome"
 
 #: ../src/libromdata/Console/Sega8Bit.cpp:535
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:301
 msgctxt "RomData"
 msgid "Description"
 msgstr "Descrição"
@@ -3259,6 +3265,69 @@ msgctxt "WiiWIBN"
 msgid "Flags"
 msgstr "Atributos"
 
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:323
+msgctxt "Xbox360_STFS|FileType"
+msgid "Console-Specific Package"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:324
+msgctxt "Xbox360_STFS|FileType"
+msgid "Non-Xbox Live Package"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:325
+msgctxt "Xbox360_STFS|FileType"
+msgid "Xbox Live Package"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:330
+msgctxt "Xbox360_STFS"
+msgid "Package Type"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:334
+#, fuzzy
+msgctxt "Xbox360_STFS|RomData"
+msgid "Type"
+msgstr "Tipo"
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:342
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:344
+#, fuzzy
+msgctxt "Xbox360_STFS"
+msgid "Content Type"
+msgstr "Tipo de conteúdo"
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:350
+#, fuzzy
+msgctxt "Xbox360_STFS"
+msgid "Media ID"
+msgstr "Código de mídia"
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:357
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1803
+msgctxt "Xbox360_XEX"
+msgid "Title ID"
+msgstr "Código de nome"
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:358
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1804
+#, c-format
+msgctxt "Xbox360_XEX"
+msgid "%1$08X (%2$c%3$c-%4$04u)"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:370
+#, fuzzy
+msgctxt "Xbox360_XEX"
+msgid "Version"
+msgstr "Versão"
+
+#: ../src/libromdata/Console/Xbox360_STFS.cpp:373
+msgctxt "Xbox360_XEX"
+msgid "Base Version"
+msgstr ""
+
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:593
 msgctxt "Xbox360_XDBF|TitleType"
 msgid "System Title"
@@ -3332,238 +3401,227 @@ msgctxt "Xbox360_XDBF"
 msgid "Avatar Awards"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1597
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1613
 #, fuzzy
 msgctxt "Xbox360_XEX"
 msgid "PE Filename"
 msgstr "Nome de arquivo de PE"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1618
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1634
 msgctxt "Xbox360_XEX"
 msgid "Min. Kernel"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1622
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1638
 msgctxt "Xbox360_XEX"
 msgid "Title"
 msgstr "Nome"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1623
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1639
 msgctxt "Xbox360_XEX"
 msgid "Exports"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1624
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1640
 msgctxt "Xbox360_XEX"
 msgid "Debugger"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1625
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1641
 msgctxt "Xbox360_XEX"
 msgid "DLL"
 msgstr "DLL"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1626
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1642
 msgctxt "Xbox360_XEX"
 msgid "Module Patch"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1627
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1643
 msgctxt "Xbox360_XEX"
 msgid "Full Patch"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1628
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1644
 msgctxt "Xbox360_XEX"
 msgid "Delta Patch"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1629
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1645
 msgctxt "Xbox360_XEX"
 msgid "User Mode"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1633
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1649
 msgctxt "Xbox360_XEX"
 msgid "Module Flags"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1646
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1705
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1666
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1729
 #, fuzzy
 msgctxt "Xbox360_XEX"
 msgid "Media Types"
 msgstr "Tipos de mídia"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1647
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1667
 msgctxt "Xbox360_XEX"
 msgid "Xbox Game Disc only"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1652
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1672
 msgctxt "Xbox360_XEX"
 msgid "Hard Disk"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1653
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1673
 msgctxt "Xbox360_XEX"
 msgid "XGD1"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1654
-msgctxt "Xbox360_XEX"
-msgid "DVD / CD"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1655
-msgctxt "Xbox360_XEX"
-msgid "DVD-ROM SL"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1657
-msgctxt "Xbox360_XEX"
-msgid "DVD-ROM DL"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1658
-msgctxt "Xbox360_XEX"
-msgid "System Flash Memory"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1660
-msgctxt "Xbox360_XEX"
-msgid "Memory Unit"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1662
-msgctxt "Xbox360_XEX"
-msgid "USB Mass Storage Device"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1663
-msgctxt "Xbox360_XEX"
-msgid "Network"
-msgstr "Rede"
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1664
-msgctxt "Xbox360_XEX"
-msgid "Direct from RAM"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1665
-msgctxt "Xbox360_XEX"
-msgid "RAM Drive"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1667
-msgctxt "Xbox360_XEX"
-msgid "Secure Virtual Optical Device"
-msgstr ""
-
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1674
 msgctxt "Xbox360_XEX"
-msgid "Insecure Package"
+msgid "DVD/CD"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1675
 msgctxt "Xbox360_XEX"
-msgid "Savegame Package"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1676
-msgctxt "Xbox360_XEX"
-msgid "Locally Signed Package"
+msgid "DVD-ROM SL"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1677
 msgctxt "Xbox360_XEX"
+msgid "DVD-ROM DL"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1678
+msgctxt "Xbox360_XEX"
+msgid "System Flash Memory"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1680
+msgctxt "Xbox360_XEX"
+msgid "Memory Unit"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1682
+msgctxt "Xbox360_XEX"
+msgid "USB Mass Storage Device"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1683
+msgctxt "Xbox360_XEX"
+msgid "Network"
+msgstr "Rede"
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1684
+msgctxt "Xbox360_XEX"
+msgid "Direct from RAM"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1685
+msgctxt "Xbox360_XEX"
+msgid "RAM Drive"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1687
+msgctxt "Xbox360_XEX"
+msgid "Secure Virtual Optical Device"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1694
+msgctxt "Xbox360_XEX"
+msgid "Insecure Package"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1695
+msgctxt "Xbox360_XEX"
+msgid "Savegame Package"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1696
+msgctxt "Xbox360_XEX"
+msgid "Locally Signed Package"
+msgstr ""
+
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1697
+msgctxt "Xbox360_XEX"
 msgid "Xbox Live Signed Package"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1679
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1699
 msgctxt "Xbox360_XEX"
 msgid "Xbox Package"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1706
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1730
 msgctxt "Xbox360_XEX"
 msgid "None"
 msgstr "Nenhum"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1718
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1742
 msgctxt "Region"
 msgid "New Zealand"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1757
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1782
 #, fuzzy
 msgctxt "Xbox360_XEX"
 msgid "Media ID"
 msgstr "Código de mídia"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1765
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1792
 msgctxt "Xbox360_XEX"
 msgid "Disc Profile ID"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1776
-msgctxt "Xbox360_XEX"
-msgid "Title ID"
-msgstr "Código de nome"
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1777
-#, c-format
-msgctxt "Xbox360_XEX"
-msgid "%1$08X (%2$c%3$c-%4$04u)"
-msgstr ""
-
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1785
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1812
 msgctxt "Xbox360_XEX"
 msgid "Savegame ID"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1808
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1835
 msgctxt "Xbox360_XEX|EncKey"
 msgid "None"
 msgstr "Nenhum"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1816
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1843
 msgctxt "Xbox360_XEX|EncKey"
 msgid "Retail"
 msgstr "Aluguel"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1819
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1846
 msgctxt "Xbox360_XEX|EncKey"
 msgid "Debug"
 msgstr "Depuração"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1823
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1850
 msgctxt "Xbox360_XEX"
 msgid "Encryption Key"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1827
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1854
 msgctxt "Xbox360_XEX|Compression"
 msgid "None"
 msgstr "Nenhum"
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1828
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1855
 msgctxt "Xbox360_XEX|Compression"
 msgid "Basic (Sparse)"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1829
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1856
 msgctxt "Xbox360_XEX|Compression"
 msgid "Normal (LZX)"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1830
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1857
 msgctxt "Xbox360_XEX|Compression"
 msgid "Delta"
 msgstr ""
 
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1833
-#: ../src/libromdata/Console/Xbox360_XEX.cpp:1837
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1860
+#: ../src/libromdata/Console/Xbox360_XEX.cpp:1864
 msgctxt "Xbox360_XEX"
 msgid "Compression"
 msgstr ""
@@ -3879,6 +3937,158 @@ msgstr "Aplicativo de comentários Miiverso"
 msgctxt "Nintendo3DSSysTitles"
 msgid "amiibo Settings"
 msgstr "Configurações de amiibo"
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:65
+#, fuzzy
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Saved Game"
+msgstr "Dados de gravação"
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:66
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Marketplace Content"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:67
+#, fuzzy
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Publisher"
+msgstr "Distribuidor(a)"
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:68
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Xbox 360 Game"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:69
+msgctxt "Xbox360_STFS|ContentType"
+msgid "IPTV Pause Buffer"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:70
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Installed Game"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:71
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Original Xbox Game"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:72
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Avatar Item"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:73
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Profile"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:74
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Gamer Picture"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:75
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Theme"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:76
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Cache File"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:77
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Storage Download"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:79
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Original Xbox Saved Game"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:81
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Original Xbox Download"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:82
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Game Demo"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:83
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Video"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:84
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Game"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:85
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Installer"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:86
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Game Trailer"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:87
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Arcade Game"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:88
+msgctxt "Xbox360_STFS|ContentType"
+msgid "XNA"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:89
+msgctxt "Xbox360_STFS|ContentType"
+msgid "License Store"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:90
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Movie"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:91
+msgctxt "Xbox360_STFS|ContentType"
+msgid "TV"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:92
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Music Video"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:93
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Game Video"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:94
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Podcast Video"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:95
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Viral Video"
+msgstr ""
+
+#: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:96
+msgctxt "Xbox360_STFS|ContentType"
+msgid "Community Game"
+msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:438
 #, c-format
