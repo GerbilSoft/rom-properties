@@ -91,7 +91,7 @@ class Xbox360_XEX_Private : public RomDataPrivate
 
 	public:
 		// XEX type.
-		enum RomType {
+		enum XexType {
 			XEX_TYPE_UNKNOWN = -1,	// Unknown XEX type.
 
 			XEX_TYPE_XEX1	= 0,	// XEX1
