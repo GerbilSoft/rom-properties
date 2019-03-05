@@ -1589,8 +1589,8 @@ int Xbox360_XEX::loadFieldData(void)
 	// NOTE: The magic number is NOT byteswapped in the constructor.
 	const XEX2_Header *const xex2Header = &d->xex2Header;
 
-	// Maximum of 14 fields, not including RomData subclasses.
-	d->fields->reserve(14);
+	// Maximum of 13 fields, not including RomData subclasses.
+	d->fields->reserve(13);
 	d->fields->setTabName(0, "XEX");
 
 	// XDBF fields
