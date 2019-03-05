@@ -44,17 +44,17 @@ extern "C" {
 #define XEX1_MAGIC 'XEX1'
 #define XEX2_MAGIC 'XEX2'
 typedef struct PACKED _XEX2_Header {
-	uint32_t magic;			// [0x000] 'XEX2'
-	uint32_t module_flags;		// [0x004] See XEX2_Flags_e.
-	uint32_t pe_offset;		// [0x008] PE data offset.
+	uint32_t magic;			// [0x000] 'XEX2' or 'XEX1'
+	uint32_t module_flags;		// [0x004] See XEX2_Flags_e
+	uint32_t pe_offset;		// [0x008] PE data offset
 	uint32_t reserved;		// [0x00C]
-	uint32_t sec_info_offset;	// [0x010] Security info offset. (See XEX2_Security_Info.)
-	uint32_t opt_header_count;	// [0x014] Optional header count.
+	uint32_t sec_info_offset;	// [0x010] Security info offset (See XEX2_Security_Info)
+	uint32_t opt_header_count;	// [0x014] Optional header count
 } XEX2_Header;
 ASSERT_STRUCT(XEX2_Header, 24);
 
 /**
- * XEX2 flags.
+ * XEX2: Module flags
  */
 typedef enum {
 	XEX2_MODULE_FLAG_TITLE			= (1 << 0),
@@ -68,31 +68,52 @@ typedef enum {
 } XEX2_Module_Flags_e;
 
 /**
- * XEX2: Security info.
+ * XEX1: Security info.
+ * All fields are in big-endian.
+ */
+typedef struct PACKED _XEX1_Security_Info {
+	// TODO: Verify some of these fields.
+	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
+	uint32_t image_size;		// [0x004] Image size (slightly larger than the .xex file)
+	uint8_t rsa_signature[0x100];	// [0x008] RSA-2048 signature
+	uint8_t unk_0x108[40];		// [0x108]
+	uint32_t load_address;		// [0x130] Load address
+	uint8_t title_key[0x10];	// [0x134] AES-128 title key (encrypted)
+	uint8_t xgd2_media_id[0x10];	// [0x144] XGD2 media ID (TODO: Verify?)
+	uint32_t region_code;		// [0x154] Region code (See XEX2_Region_Code_e)
+	uint32_t unk_0x158;		// [0x158]
+	uint32_t unk_0x15C_vaddr;	// [0x15C] Some virtual address
+	uint32_t allowed_media_types;	// [0x160] Allowed media types (See XEX2_Media_Types_e)
+	uint32_t page_descriptor_count;	// [0x164] Page descriptor count (these follow XEX2_Security_Info) [VERIFY?]
+} XEX1_Security_Info;
+ASSERT_STRUCT(XEX1_Security_Info, 0x168);
+
+/**
+ * XEX2: Security info
  * All fields are in big-endian.
  */
 typedef struct PACKED _XEX2_Security_Info {
-	uint32_t header_size;			// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
-	uint32_t image_size;			// [0x004] Image size (slightly larger than the .xex file)
-	uint8_t rsa_signature[0x100];		// [0x008] RSA-2048 signature
-	uint32_t unk_0x108;			// [0x108]
-	uint32_t image_flags;			// [0x10C] Image flags (See XEX2_Image_Flags_e)
-	uint32_t load_address;			// [0x110] Load address
-	uint8_t section_sha1[0x14];		// [0x114] SHA-1 of something
-	uint32_t import_table_count;		// [0x128] Import table count
-	uint8_t import_table_sha1[0x14];	// [0x12C] Import table SHA-1
-	uint8_t xgd2_media_id[0x10];		// [0x140] XGD2 media ID
-	uint8_t title_key[0x10];		// [0x150] AES-128 title key (encrypted)
-	uint32_t export_table;			// [0x160] Export table offset (0 if none)
-	uint8_t header_sha1[0x14];		// [0x164] Header SHA-1
-	uint32_t region_code;			// [0x178] Region code (See XEX2_Region_Code_e)
-	uint32_t allowed_media_types;		// [0x17C] Allowed media types (See XEX2_Media_Types_e)
-	uint32_t page_descriptor_count;		// [0x180] Page descriptor count (these follow XEX2_Security_Info)
+	uint32_t header_size;		// [0x000] Header size [should be at least sizeof(XEX2_Security_Info)]
+	uint32_t image_size;		// [0x004] Image size (slightly larger than the .xex file)
+	uint8_t rsa_signature[0x100];	// [0x008] RSA-2048 signature
+	uint32_t unk_0x108;		// [0x108]
+	uint32_t image_flags;		// [0x10C] Image flags (See XEX2_Image_Flags_e)
+	uint32_t load_address;		// [0x110] Load address
+	uint8_t section_sha1[0x14];	// [0x114] SHA-1 of something
+	uint32_t import_table_count;	// [0x128] Import table count
+	uint8_t import_table_sha1[0x14]; // [0x12C] Import table SHA-1
+	uint8_t xgd2_media_id[0x10];	// [0x140] XGD2 media ID
+	uint8_t title_key[0x10];	// [0x150] AES-128 title key (encrypted)
+	uint32_t export_table;		// [0x160] Export table offset (0 if none)
+	uint8_t header_sha1[0x14];	// [0x164] Header SHA-1
+	uint32_t region_code;		// [0x178] Region code (See XEX2_Region_Code_e)
+	uint32_t allowed_media_types;	// [0x17C] Allowed media types (See XEX2_Media_Types_e)
+	uint32_t page_descriptor_count;	// [0x180] Page descriptor count (these follow XEX2_Security_Info)
 } XEX2_Security_Info;
 ASSERT_STRUCT(XEX2_Security_Info, 0x184);
 
 /**
- * XEX2: Image flags.
+ * XEX2: Image flags
  */
 typedef enum {
 	XEX2_IMAGE_FLAG_MANUFACTURING_UTILITY		= (1 <<  1),
@@ -116,7 +137,7 @@ typedef enum {
 } XEX2_Image_Flags_e;
 
 /**
- * XEX2: Media types.
+ * XEX2: Media types
  * NOTE: Might be ignored if XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY is set.
  */
 typedef enum {
@@ -140,7 +161,7 @@ typedef enum {
 } XEX2_Media_Types_e;
 
 /**
- * XEX2: Region code.
+ * XEX2: Region code
  * Note that certain bits are country-specific.
  */
 typedef enum {
@@ -161,20 +182,25 @@ typedef enum {
  * An array of this struct is located after the XEX2 header.
  * Count is determined by the `opt_header_count` field.
  *
+ * All offsets are absolute addresses, relative to the beginning
+ * of the file.
+ *
  * All fields are in big-endian.
  */
 typedef struct PACKED _XEX2_Optional_Header_Tbl {
 	uint32_t header_id;	// [0x000] Header ID. (See XEX2_Optional_Header_e.)
 	uint32_t offset;	// [0x004] Data/offset, depending on the low byte of Header ID:
-				// - 0x00: Field contains an address. (??)
-				// - 0x01: Field contains data; anything else, it's an offset to the data.
-				//         (relative to the beginning of the file)
-				// - 0xFF: Data structure has its own size value.
-				// - Else: Low byte is the size of the structure, in DWORDs.
+				// - 0x00: Field contains a 32-bit value.
+				// - 0x01-0xFE: Field contains an address pointing
+				//   to a struct, and that struct is 0x01-0xFE
+				//   DWORDs in size.
+				// - 0xFF: Field contains an address pointing to
+				//   a struct, and the first DWORD of the struct
+				//   contains its size, in bytes.
 } XEX2_Optional_Header_Tbl;
 
 /**
- * XEX2 optional header IDs.
+ * XEX2 optional header IDs
  */
 typedef enum {
 	XEX2_OPTHDR_RESOURCE_INFO		=    0x2FF,
@@ -461,7 +487,7 @@ ASSERT_STRUCT(XEX2_Title_ID, sizeof(uint32_t));
  */
 typedef struct PACKED _XEX2_Execution_ID {
 	uint32_t media_id;		// [0x000] Media ID
-	XEX2_Version_t version;		// [0x004] Version (4-bit major, 4-bit minor, 16-bit build, 8-bit qfe)
+	XEX2_Version_t version;		// [0x004] Version
 	XEX2_Version_t base_version;	// [0x008] Base version
 	XEX2_Title_ID title_id;		// [0x00C] Title ID (two characters, and uint16_t)
 	uint8_t platform;		// [0x010] Platform
@@ -503,12 +529,12 @@ ASSERT_STRUCT(XEX2_Game_Ratings, 14);
  * XEX2: ESRB ratings value.
  */
 typedef enum {
-	XEX2_GAME_RATINGS_ESRB_eC	= 0x00,
-	XEX2_GAME_RATINGS_ESRB_E	= 0x02,
-	XEX2_GAME_RATINGS_ESRB_E10	= 0x04,
-	XEX2_GAME_RATINGS_ESRB_T	= 0x06,
-	XEX2_GAME_RATINGS_ESRB_M	= 0x08,
-	XEX2_GAME_RATINGS_ESRB_AO	= 0x0E,
+	XEX2_GAME_RATINGS_ESRB_eC	= 0,
+	XEX2_GAME_RATINGS_ESRB_E	= 2,
+	XEX2_GAME_RATINGS_ESRB_E10	= 4,
+	XEX2_GAME_RATINGS_ESRB_T	= 6,
+	XEX2_GAME_RATINGS_ESRB_M	= 8,
+	XEX2_GAME_RATINGS_ESRB_AO	= 14,
 	XEX2_GAME_RATINGS_ESRB_UNRATED	= 0xFF,
 } XEX2_Game_Ratings_ESRB_e;
 

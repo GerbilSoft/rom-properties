@@ -105,7 +105,10 @@ class Xbox360_XEX_Private : public RomDataPrivate
 		// XEX headers.
 		// NOTE: Only xex2Header is byteswapped, except for the magic number.
 		XEX2_Header xex2Header;
-		XEX2_Security_Info xex2Security;
+		union {
+			XEX1_Security_Info xex1;
+			XEX2_Security_Info xex2;
+		} secInfo;
 
 		// Optional header table.
 		// NOTE: This array of structs **IS NOT** byteswapped!
@@ -288,7 +291,7 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 {
 	// Clear the headers.
 	memset(&xex2Header, 0, sizeof(xex2Header));
-	memset(&xex2Security, 0, sizeof(xex2Security));
+	memset(&secInfo, 0, sizeof(secInfo));
 	memset(&executionID, 0, sizeof(executionID));
 	memset(&resInfo, 0, sizeof(resInfo));
 	memset(&fileFormatInfo, 0, sizeof(fileFormatInfo));
@@ -491,7 +494,8 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
 	}
 
 	// Search the resource table for the title ID.
-	unsigned int res_count = (size - sizeof(uint32_t)) / sizeof(XEX2_Resource_Info);
+	unsigned int res_count = static_cast<unsigned int>(
+		(size - sizeof(uint32_t)) / sizeof(XEX2_Resource_Info));
 	if (res_count == 0) {
 		// No resource information...
 		resInfo.vaddr = 0;
@@ -567,11 +571,6 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 	fileFormatInfo.encryption_type  = be16_to_cpu(pLdFileFormatInfo->encryption_type);
 	fileFormatInfo.compression_type = be16_to_cpu(pLdFileFormatInfo->compression_type);
 
-	// FIXME: Security information section is different for XEX1.
-	if (xexType == XEX_TYPE_XEX1) {
-		return nullptr;
-	}
-
 	// NOTE: Using two CBCReader instances.
 	// - [0]: Retail key and/or no encryption.
 	// - [1]: Debug key
@@ -613,6 +612,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		keyData[1].length = 16;
 
 		// Try to load the XEX key.
+		// TODO: Show a warning if it didn't work.
 		KeyManager::VerifyResult verifyResult = keyManager->getAndVerify(
 			EncryptionKeyNames[this->xexType], &keyData[0],
 			EncryptionKeyVerifyData[this->xexType], 16);
@@ -621,6 +621,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			// Start with the all-zero key used on devkits.
 			idx0 = 1;
 		}
+
+		// Title key.
+		const uint8_t *const pTitleKey =
+			(xexType != XEX_TYPE_XEX1
+				? secInfo.xex2.title_key
+				: secInfo.xex1.title_key);
 
 		// IAesCipher instance.
 		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
@@ -635,15 +641,15 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			}
 
 			// Decrypt the title key.
-			uint8_t title_key[16];
-			memcpy(title_key, xex2Security.title_key, sizeof(title_key));
-			if (cipher->decrypt(title_key, sizeof(title_key), zero16, sizeof(zero16)) != sizeof(title_key)) {
+			uint8_t dec_title_key[16];
+			memcpy(dec_title_key, pTitleKey, sizeof(dec_title_key));
+			if (cipher->decrypt(dec_title_key, sizeof(dec_title_key), zero16, sizeof(zero16)) != sizeof(dec_title_key)) {
 				// Error decrypting the title key.
 				continue;
 			}
 
 			// Initialize the CBCReader.
-			reader[i] = new CBCReader(file, xex2Header.pe_offset, pe_length, title_key, zero16);
+			reader[i] = new CBCReader(file, xex2Header.pe_offset, pe_length, dec_title_key, zero16);
 			if (!reader[i]->isOpen()) {
 				// Unable to open the CBCReader.
 				delete reader[i];
@@ -718,7 +724,10 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			}
 
 			// Image size must be at least 8 KB.
-			const uint32_t image_size = be32_to_cpu(xex2Security.image_size);
+			const uint32_t image_size = be32_to_cpu(
+				(xexType != XEX_TYPE_XEX1
+					? secInfo.xex2.image_size
+					: secInfo.xex1.image_size));
 			assert(image_size >= PE_HEADER_SIZE);
 			if (image_size < PE_HEADER_SIZE) {
 				// Too small.
@@ -917,8 +926,12 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 			// Copy the XDBF section.
 			const XEX2_Resource_Info *const pResInfo = getXdbfResInfo();
 			if (pResInfo) {
-				const uint32_t xdbf_physaddr = pResInfo->vaddr -
-							       be32_to_cpu(xex2Security.load_address);
+				const uint32_t load_address = be32_to_cpu(
+					(xexType != XEX_TYPE_XEX1
+						? secInfo.xex2.load_address
+						: secInfo.xex1.load_address));
+
+				const uint32_t xdbf_physaddr = pResInfo->vaddr - load_address;
 				if (xdbf_physaddr + pResInfo->size <= image_size) {
 					lzx_xdbfSection.resize(pResInfo->size);
 					memcpy(lzx_xdbfSection.data(),
@@ -1224,8 +1237,11 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		}
 
 		// Calculate the XDBF physical address.
-		uint32_t xdbf_physaddr = pResInfo->vaddr -
-					 be32_to_cpu(xex2Security.load_address);
+		const uint32_t load_address = be32_to_cpu(
+			(xexType != XEX_TYPE_XEX1
+				? secInfo.xex2.load_address
+				: secInfo.xex1.load_address));
+		uint32_t xdbf_physaddr = pResInfo->vaddr - load_address;
 
 		if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
 			// File has zero padding removed.
@@ -1246,6 +1262,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->size);
 	}
 	if (peFile_tmp->isOpen()) {
+		// FIXME: XEX1 XDBF is either encrypted or garbage...
 		Xbox360_XDBF *const pe_xdbf_tmp = new Xbox360_XDBF(peFile_tmp, true);
 		if (pe_xdbf_tmp->isOpen()) {
 			pe_xdbf = pe_xdbf_tmp;
@@ -1331,13 +1348,14 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	// NOTE: This must be done after copying the XEX2 header,
 	// since the security info offset is stored in the header.
 	// TODO: Read the offset directly before copying?
-	if (d->xex2Header.sec_info_offset + sizeof(d->xex2Security) <= 2048) {
+	// TODO: Use the XEX1 security info size for XEX1?
+	if (d->xex2Header.sec_info_offset + sizeof(d->secInfo) <= 2048) {
 		// Security info is in the first sector.
-		memcpy(&d->xex2Security, &header[d->xex2Header.sec_info_offset], sizeof(d->xex2Security));
+		memcpy(&d->secInfo, &header[d->xex2Header.sec_info_offset], sizeof(d->secInfo));
 	} else {
 		// Security info is not fully located in the first sector.
-		size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->xex2Security, sizeof(d->xex2Security));
-		if (size != sizeof(d->xex2Security)) {
+		size = d->file->seekAndRead(d->xex2Header.sec_info_offset, &d->secInfo, sizeof(d->secInfo));
+		if (size != sizeof(d->secInfo)) {
 			// Seek and/or read error.
 			d->file->unref();
 			d->file = nullptr;
@@ -1570,7 +1588,6 @@ int Xbox360_XEX::loadFieldData(void)
 	// Parse the XEX file.
 	// NOTE: The magic number is NOT byteswapped in the constructor.
 	const XEX2_Header *const xex2Header = &d->xex2Header;
-	const XEX2_Security_Info *const xex2Security = &d->xex2Security;
 
 	// Maximum of 14 fields, not including RomData subclasses.
 	d->fields->reserve(14);
@@ -1633,7 +1650,11 @@ int Xbox360_XEX::loadFieldData(void)
 		v_module_flags, 4, xex2Header->module_flags);
 
 	// TODO: Show image flags as-is?
-	const uint32_t image_flags = be32_to_cpu(d->xex2Security.image_flags);
+	// TODO: XEX1 image flags.
+	uint32_t image_flags = 0;
+	if (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1) {
+		image_flags = be32_to_cpu(d->secInfo.xex2.image_flags);
+	}
 
 	// Media types
 	// NOTE: Using a string instead of a bitfield because very rarely
@@ -1650,7 +1671,7 @@ int Xbox360_XEX::loadFieldData(void)
 			// 0
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
 			NOP_C_("Xbox360_XEX", "XGD1"),
-			NOP_C_("Xbox360_XEX", "DVD / CD"),
+			NOP_C_("Xbox360_XEX", "DVD/CD"),
 			NOP_C_("Xbox360_XEX", "DVD-ROM SL"),
 			// 4
 			NOP_C_("Xbox360_XEX", "DVD-ROM DL"),
@@ -1678,9 +1699,13 @@ int Xbox360_XEX::loadFieldData(void)
 			NOP_C_("Xbox360_XEX", "Xbox Package"),
 		};
 
+		uint32_t media_types = be32_to_cpu(
+			(d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1
+				? d->secInfo.xex2.allowed_media_types
+				: d->secInfo.xex1.allowed_media_types));
+
 		ostringstream oss;
 		unsigned int found = 0;
-		uint32_t media_types = be32_to_cpu(xex2Security->allowed_media_types);
 		for (unsigned int i = 0; i < ARRAY_SIZE(media_type_tbl); i++, media_types >>= 1) {
 			if (!(media_types & 1))
 				continue;
@@ -1721,7 +1746,10 @@ int Xbox360_XEX::loadFieldData(void)
 	// TODO: xex2Security layout is different for XEX1.
 	if (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1) {
 
-	const uint32_t region_code_xbx = be32_to_cpu(xex2Security->region_code);
+	const uint32_t region_code_xbx = be32_to_cpu(
+		(d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1
+			? d->secInfo.xex2.region_code
+			: d->secInfo.xex1.region_code));
 	uint32_t region_code = 0;
 	if (region_code_xbx & XEX2_REGION_CODE_NTSC_U) {
 		region_code |= (1 << 0);
@@ -1751,12 +1779,12 @@ int Xbox360_XEX::loadFieldData(void)
 	}
 
 	// Media ID
-	// TODO: xex2Security layout is different for XEX1.
-	if (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1) {
-		d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
-			d->formatMediaID(xex2Security->xgd2_media_id),
-			RomFields::STRF_MONOSPACE);
-	}
+	d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
+		d->formatMediaID(
+			(d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1
+				? d->secInfo.xex2.xgd2_media_id
+				: d->secInfo.xex1.xgd2_media_id)),
+		RomFields::STRF_MONOSPACE);
 
 	// Disc Profile ID
 	size = d->getOptHdrData(XEX2_OPTHDR_DISC_PROFILE_ID, u8_data);
