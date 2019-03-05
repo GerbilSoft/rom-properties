@@ -31,7 +31,7 @@ extern "C" {
 
 /**
  * Microsoft Xbox 360 content package header.
- * Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md
+ * Reference: https://free60project.github.io/wiki/STFS.html
  * 
  * All fields are in big-endian.
  */
