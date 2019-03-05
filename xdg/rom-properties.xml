@@ -342,6 +342,7 @@
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.xex"/>
     <magic priority="50">
+      <match value="XEX1" type="string" offset="0"/>
       <match value="XEX2" type="string" offset="0"/>
     </magic>
   </mime-type>
