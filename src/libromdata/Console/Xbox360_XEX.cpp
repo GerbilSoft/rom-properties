@@ -944,7 +944,7 @@ CBCReader *Xbox360_XEX_Private::initPeReader(void)
 		// Check the CBCReader objects.
 		for (unsigned int i = 0; i < ARRAY_SIZE(reader); i++) {
 			if (!reader[i])
-				break;
+				continue;
 			uint16_t mz;
 			size_t size = reader[i]->read(&mz, sizeof(mz));
 			if (size == sizeof(mz)) {
