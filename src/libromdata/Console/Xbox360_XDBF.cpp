@@ -988,7 +988,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
  * @param file Open XDBF file and/or section.
  * @param xex If true, hide fields that are displayed separately in XEX executables.
  */
-Xbox360_XDBF::Xbox360_XDBF(LibRpBase::IRpFile *file, bool xex)
+Xbox360_XDBF::Xbox360_XDBF(IRpFile *file, bool xex)
 : super(new Xbox360_XDBF_Private(this, file, xex))
 {
 	// This class handles XDBF files and/or sections only.
