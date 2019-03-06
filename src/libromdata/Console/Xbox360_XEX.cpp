@@ -1591,7 +1591,8 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Maximum of 13 fields, not including RomData subclasses.
 	d->fields->reserve(13);
-	d->fields->setTabName(0, "XEX");
+	d->fields->setTabName(0,
+		d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1 ? "XEX2" : "XEX1");
 
 	// XDBF fields
 	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
