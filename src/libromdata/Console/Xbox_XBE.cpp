@@ -559,7 +559,7 @@ int Xbox_XBE::loadFieldData(void)
 	}
 
 	d->fields->addField_string(C_("Xbox_XBE", "Title ID"),
-		rp_sprintf_p(C_("Xbox_XBE", "0x%1$08X (%2$s-%3$03u)"),
+		rp_sprintf_p(C_("Xbox_XBE", "%1$08X (%2$s-%3$03u)"),
 			le32_to_cpu(xbeCertificate->title_id.u32),
 			tid_str.c_str(),
 			le16_to_cpu(xbeCertificate->title_id.u16)),
