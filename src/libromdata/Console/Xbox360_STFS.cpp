@@ -38,6 +38,10 @@ using namespace LibRpBase;
 #include <cassert>
 #include <cerrno>
 
+// C++ includes.
+#include <string>
+using std::string;
+
 namespace LibRomData {
 
 ROMDATA_IMPL(Xbox360_STFS)
@@ -352,13 +356,31 @@ int Xbox360_STFS::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// Title ID
-	// TODO: Consolidate the Title ID formatting function?
 	// FIXME: Verify behavior on big-endian.
+	// TODO: Consolidate implementations into a shared function.
+	string tid_str;
+	char hexbuf[4];
+	if (stfsMetadata->title_id.a >= 0x20) {
+		tid_str += (char)stfsMetadata->title_id.a;
+	} else {
+		tid_str += "\\x";
+		snprintf(hexbuf, sizeof(hexbuf), "%02X",
+			(uint8_t)stfsMetadata->title_id.a);
+		tid_str.append(hexbuf, 2);
+	}
+	if (stfsMetadata->title_id.b >= 0x20) {
+		tid_str += (char)stfsMetadata->title_id.b;
+	} else {
+		tid_str += "\\x";
+		snprintf(hexbuf, sizeof(hexbuf), "%02X",
+			(uint8_t)stfsMetadata->title_id.b);
+		tid_str.append(hexbuf, 2);
+	}
+
 	d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-		rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$c%3$c-%4$04u)"),
+		rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
 			be32_to_cpu(stfsMetadata->title_id.u32),
-			stfsMetadata->title_id.a,
-			stfsMetadata->title_id.b,
+			tid_str.c_str(),
 			be16_to_cpu(stfsMetadata->title_id.u16)),
 		RomFields::STRF_MONOSPACE);
 

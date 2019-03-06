@@ -1801,11 +1801,30 @@ int Xbox360_XEX::loadFieldData(void)
 	if (d->isExecutionIDLoaded) {
 		// Title ID
 		// FIXME: Verify behavior on big-endian.
+		// TODO: Consolidate implementations into a shared function.
+		string tid_str;
+		char hexbuf[4];
+		if (d->executionID.title_id.a >= 0x20) {
+			tid_str += (char)d->executionID.title_id.a;
+		} else {
+			tid_str += "\\x";
+			snprintf(hexbuf, sizeof(hexbuf), "%02X",
+				(uint8_t)d->executionID.title_id.a);
+			tid_str.append(hexbuf, 2);
+		}
+		if (d->executionID.title_id.b >= 0x20) {
+			tid_str += (char)d->executionID.title_id.b;
+		} else {
+			tid_str += "\\x";
+			snprintf(hexbuf, sizeof(hexbuf), "%02X",
+				(uint8_t)d->executionID.title_id.b);
+			tid_str.append(hexbuf, 2);
+		}
+			
 		d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-			rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$c%3$c-%4$04u)"),
+			rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
 				be32_to_cpu(d->executionID.title_id.u32),
-				d->executionID.title_id.a,
-				d->executionID.title_id.b,
+				tid_str.c_str(),
 				be16_to_cpu(d->executionID.title_id.u16)),
 			RomFields::STRF_MONOSPACE);
 

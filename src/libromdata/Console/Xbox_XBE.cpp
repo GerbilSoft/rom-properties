@@ -538,11 +538,30 @@ int Xbox_XBE::loadFieldData(void)
 
 	// Title ID
 	// FIXME: Verify behavior on big-endian.
+	// TODO: Consolidate implementations into a shared function.
+	string tid_str;
+	char hexbuf[4];
+	if (xbeCertificate->title_id.a >= 0x20) {
+		tid_str += (char)xbeCertificate->title_id.a;
+	} else {
+		tid_str += "\\x";
+		snprintf(hexbuf, sizeof(hexbuf), "%02X",
+			(uint8_t)xbeCertificate->title_id.a);
+		tid_str.append(hexbuf, 2);
+	}
+	if (xbeCertificate->title_id.b >= 0x20) {
+		tid_str += (char)xbeCertificate->title_id.b;
+	} else {
+		tid_str += "\\x";
+		snprintf(hexbuf, sizeof(hexbuf), "%02X",
+			(uint8_t)xbeCertificate->title_id.b);
+		tid_str.append(hexbuf, 2);
+	}
+
 	d->fields->addField_string(C_("Xbox_XBE", "Title ID"),
-		rp_sprintf_p(C_("Xbox_XBE", "0x%1$08X (%2$c%3$c-%4$03u)"),
+		rp_sprintf_p(C_("Xbox_XBE", "0x%1$08X (%2$s-%3$03u)"),
 			le32_to_cpu(xbeCertificate->title_id.u32),
-			xbeCertificate->title_id.a,
-			xbeCertificate->title_id.b,
+			tid_str.c_str(),
 			le16_to_cpu(xbeCertificate->title_id.u16)),
 		RomFields::STRF_MONOSPACE);
 
