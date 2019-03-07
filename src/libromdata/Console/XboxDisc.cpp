@@ -536,21 +536,25 @@ int XboxDisc::isRomSupported_static(
 	}
 
 	// No match in the XGD table.
-	// Check for XGD3.
-	static const char xgd3_pvd_times[][9+1] = {
-		"17000000\xE4",	// 17:00:00.00 -07:00
-		"16000000\xE0",	// 16:00:00.00 -08:00
+	if (btime >= 1293811200) {
+		// Timestamp is after 2011/01/01 00:00:00.00 -08:00.
+		// Check for XGD3.
+		static const char xgd3_pvd_times[][9+1] = {
+			"17000000\xE4",	// 17:00:00.00 -07:00
+			"16000000\xE0",	// 16:00:00.00 -08:00
 
-		"\0"
-	};
-	// TODO: Verify that this works correctly.
-	for (const char *pXgd = &xgd3_pvd_times[0][0]; pXgd[0] != '\0'; pXgd++) {
-		if (!memcmp(&pvd->btime.full[8], pXgd, 9)) {
-			// Found a match!
-			if (pWave) {
-				*pWave = 0;
+			"\0"
+		};
+
+		// TODO: Verify that this works correctly.
+		for (const char *pXgd = &xgd3_pvd_times[0][0]; pXgd[0] != '\0'; pXgd++) {
+			if (!memcmp(&pvd->btime.full[8], pXgd, 9)) {
+				// Found a match!
+				if (pWave) {
+					*pWave = 0;
+				}
+				return XboxDiscPrivate::DISC_TYPE_XGD3;
 			}
-			return XboxDiscPrivate::DISC_TYPE_XGD3;
 		}
 	}
 
