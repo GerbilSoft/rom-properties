@@ -56,6 +56,7 @@
     * Supports reading original discs if a supported DVD-ROM drive with Kreon
       firmware is connected. (Linux only at the moment; Windows support will
       be added before the release of v1.4.)
+  * Xbox_XBE: Original Xbox executables.
   * Xbox360_STFS: Xbox 360 packages.
 
 * New audio parsers:
