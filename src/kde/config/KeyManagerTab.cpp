@@ -131,6 +131,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 {
 	KMessageWidget::MessageType type = KMessageWidget::Information;
 	QStyle::StandardPixmap icon = QStyle::SP_MessageBoxInformation;
+	const QLocale sysLocale = QLocale::system();
 	bool showKeyStats = false;
 	string msg;
 	msg.reserve(1024);
@@ -213,7 +214,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%1$s key was imported from '%2$s'.",
 				"%1$s keys were imported from '%2$s'.",
 				keyCount),
-				QLocale::system().toString(keyCount).toUtf8().constData(),
+				sysLocale.toString(keyCount).toUtf8().constData(),
 				fileNoPath.toUtf8().constData());
 			type = KMessageWidget::Positive;
 			icon = QStyle::SP_DialogOkButton;
@@ -233,7 +234,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%s key already exists in the Key Manager.",
 				"%s keys already exist in the Key Manager.",
 				iret.keysExist),
-				QLocale::system().toString(iret.keysExist).toUtf8().constData());
+				sysLocale.toString(iret.keysExist).toUtf8().constData());
 		}
 		if (iret.keysInvalid > 0) {
 			msg += nl_bullet;
@@ -242,7 +243,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%s key was not imported because it is incorrect.",
 				"%s keys were not imported because they are incorrect.",
 				iret.keysInvalid),
-				QLocale::system().toString(iret.keysInvalid).toUtf8().constData());
+				sysLocale.toString(iret.keysInvalid).toUtf8().constData());
 		}
 		if (iret.keysNotUsed > 0) {
 			msg += nl_bullet;
@@ -251,7 +252,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%s key was not imported because it isn't used by rom-properties.",
 				"%s keys were not imported because they aren't used by rom-properties.",
 				iret.keysNotUsed),
-				QLocale::system().toString(iret.keysNotUsed).toUtf8().constData());
+				sysLocale.toString(iret.keysNotUsed).toUtf8().constData());
 		}
 		if (iret.keysCantDecrypt > 0) {
 			msg += nl_bullet;
@@ -260,7 +261,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%s key was not imported because it is encrypted and the master key isn't available.",
 				"%s keys were not imported because they are encrypted and the master key isn't available.",
 				iret.keysCantDecrypt),
-				QLocale::system().toString(iret.keysCantDecrypt).toUtf8().constData());
+				sysLocale.toString(iret.keysCantDecrypt).toUtf8().constData());
 		}
 		if (iret.keysImportedVerify > 0) {
 			msg += nl_bullet;
@@ -269,7 +270,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%s key has been imported and verified as correct.",
 				"%s keys have been imported and verified as correct.",
 				iret.keysImportedVerify),
-				QLocale::system().toString(iret.keysImportedVerify).toUtf8().constData());
+				sysLocale.toString(iret.keysImportedVerify).toUtf8().constData());
 		}
 		if (iret.keysImportedNoVerify > 0) {
 			msg += nl_bullet;
@@ -277,7 +278,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				"%s key has been imported without verification.",
 				"%s keys have been imported without verification.",
 				iret.keysImportedNoVerify),
-				QLocale::system().toString(iret.keysImportedNoVerify).toUtf8().constData());
+				sysLocale.toString(iret.keysImportedNoVerify).toUtf8().constData());
 		}
 	}
 
