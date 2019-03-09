@@ -24,6 +24,10 @@
 #include <stdint.h>
 #include "../Console/gcn_structs.h"
 
+namespace LibRpBase {
+	class IDiscReader;
+}
+
 namespace LibRomData {
 
 class GcnPartition;
@@ -33,7 +37,8 @@ class GcnPartitionPrivate
 {
 	public:
 		GcnPartitionPrivate(GcnPartition *q,
-			int64_t partition_offset, uint8_t offsetShift = 0);
+			int64_t partition_offset, int64_t data_size,
+			uint8_t offsetShift = 0);
 		virtual ~GcnPartitionPrivate();
 
 	private:

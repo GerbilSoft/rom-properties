@@ -54,7 +54,7 @@ namespace LibRomData {
  */
 GcnPartition::GcnPartition(IDiscReader *discReader, int64_t partition_offset)
 	: super(discReader)
-	, d_ptr(new GcnPartitionPrivate(this, partition_offset))
+	, d_ptr(new GcnPartitionPrivate(this, partition_offset, discReader->size()))
 { }
 
 GcnPartition::~GcnPartition()

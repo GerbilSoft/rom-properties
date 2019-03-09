@@ -38,7 +38,7 @@ using LibRpBase::IDiscReader;
 namespace LibRomData {
 
 GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
-	int64_t partition_offset, uint8_t offsetShift)
+	int64_t partition_offset, int64_t data_size, uint8_t offsetShift)
 	: q_ptr(q)
 	, partition_offset(partition_offset)
 	, data_offset(-1)	// -1 == invalid
@@ -48,25 +48,18 @@ GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q,
 	, offsetShift(offsetShift)
 	, fst(nullptr)
 {
+	// NOTE: The discReader parameter is needed because
+	// WiiPartitionPrivate is created *before* the
+	// WiiPartition superclass's discReader field is set.
+
 	// Clear the various structs.
 	memset(&bootBlock, 0, sizeof(bootBlock));
 	memset(&bootInfo, 0, sizeof(bootInfo));
 
-	if (!q->m_discReader) {
-		q->m_lastError = EIO;
-		return;
-	} else if (!q->m_discReader->isOpen()) {
-		q->m_lastError = q->m_discReader->lastError();
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		q->m_discReader = nullptr;
-	}
-
 	// Save important data.
-	data_offset     = partition_offset;
-	data_size       = q->m_discReader->size();
-	partition_size  = data_size;
+	this->data_offset    = partition_offset;
+	this->data_size      = data_size;
+	this->partition_size = data_size;
 }
 
 GcnPartitionPrivate::~GcnPartitionPrivate()

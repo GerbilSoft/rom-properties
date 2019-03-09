@@ -52,8 +52,8 @@ namespace LibRomData {
 class WiiPartitionPrivate : public GcnPartitionPrivate
 {
 	public:
-		WiiPartitionPrivate(WiiPartition *q,
-			int64_t partition_offset, int64_t partition_size, WiiPartition::CryptoMethod cryptoMethod);
+		WiiPartitionPrivate(WiiPartition *q, int64_t data_size,
+			int64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
 		virtual ~WiiPartitionPrivate();
 
 	private:
@@ -173,9 +173,9 @@ const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[WiiPartition::Key_Max
 #endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
-		int64_t partition_offset,
-		int64_t partition_size, WiiPartition::CryptoMethod cryptoMethod)
-	: super(q, partition_offset, 2)
+		int64_t data_size, int64_t partition_offset,
+		WiiPartition::CryptoMethod cryptoMethod)
+	: super(q, partition_offset, data_size, 2)
 #ifdef ENABLE_DECRYPTION
 	, verifyResult(KeyManager::VERIFY_UNKNOWN)
 	, encKey(WiiPartition::ENCKEY_UNKNOWN)
@@ -193,6 +193,9 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	, sector_num(~0)
 #endif /* ENABLE_DECRYPTION */
 {
+	// NOTE: The discReader parameter is needed because
+	// WiiPartitionPrivate is created *before* the
+	// WiiPartition superclass's discReader field is set.
 	if ((cryptoMethod & WiiPartition::CM_MASK_ENCRYPTED) == WiiPartition::CM_UNENCRYPTED) {
 		// No encryption. (RVT-H)
 		verifyResult = KeyManager::VERIFY_OK;
@@ -207,45 +210,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q,
 	// Clear the partition header struct.
 	memset(&partitionHeader, 0, sizeof(partitionHeader));
 
-	// q->m_lastError is handled by GcnPartitionPrivate's constructor.
-	if (!q->m_discReader || !q->m_discReader->isOpen()) {
-		return;
-	}
-
-	// Read the partition header.
-	if (q->m_discReader->seek(partition_offset) != 0) {
-		q->m_lastError = q->m_discReader->lastError();
-		return;
-	}
-	size_t size = q->m_discReader->read(&partitionHeader, sizeof(partitionHeader));
-	if (size != sizeof(partitionHeader)) {
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Make sure the signature type is correct.
-	if (partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
-		// TODO: Better error?
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Save important data.
-	data_offset     = static_cast<int64_t>(be32_to_cpu(partitionHeader.data_offset)) << 2;
-	data_size       = static_cast<int64_t>(be32_to_cpu(partitionHeader.data_size)) << 2;
-	if (data_size == 0) {
-		// NoCrypto RVT-H images sometimes have this set to 0.
-		// Use the calculated partition size.
-		data_size = partition_size - data_offset;
-	}
-
-	this->partition_size  = data_size + data_offset;
-#ifdef ENABLE_DECRYPTION
-	pos_7C00	= 0;
-#endif /* ENABLE_DECRYPTION */
-
-	// Encryption will not be initialized until
-	// read() is called.
+	// Partition header will be read in the WiiPartition constructor.
 }
 
 /**
@@ -513,8 +478,54 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  */
 WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset,
 		int64_t partition_size, CryptoMethod cryptoMethod)
-	: super(new WiiPartitionPrivate(this, partition_offset, partition_size, cryptoMethod), discReader)
-{ }
+	: super(new WiiPartitionPrivate(this, discReader->size(),
+		partition_offset, cryptoMethod), discReader)
+{
+	// q->m_lastError is handled by GcnPartitionPrivate's constructor.
+	if (!discReader || !discReader->isOpen()) {
+		this->m_discReader = nullptr;
+		return;
+	}
+
+	// Read the partition header.
+	RP_D(WiiPartition);
+	if (discReader->seek(partition_offset) != 0) {
+		m_lastError = discReader->lastError();
+		this->m_discReader = nullptr;
+		return;
+	}
+	size_t size = discReader->read(&d->partitionHeader, sizeof(d->partitionHeader));
+	if (size != sizeof(d->partitionHeader)) {
+		m_lastError = EIO;
+		this->m_discReader = nullptr;
+		return;
+	}
+
+	// Make sure the signature type is correct.
+	if (d->partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
+		// TODO: Better error?
+		m_lastError = EIO;
+		this->m_discReader = nullptr;
+		return;
+	}
+
+	// Save important data.
+	d->data_offset = static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_offset)) << 2;
+	d->data_size   = static_cast<int64_t>(be32_to_cpu(d->partitionHeader.data_size)) << 2;
+	if (d->data_size == 0) {
+		// NoCrypto RVT-H images sometimes have this set to 0.
+		// Use the calculated partition size.
+		d->data_size = partition_size - d->data_offset;
+	}
+
+	d->partition_size = d->data_size + d->data_offset;
+#ifdef ENABLE_DECRYPTION
+	d->pos_7C00 = 0;
+#endif /* ENABLE_DECRYPTION */
+
+	// Encryption will not be initialized until
+	// read() is called.
+}
 
 WiiPartition::~WiiPartition()
 { }
