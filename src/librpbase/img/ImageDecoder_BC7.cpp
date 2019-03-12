@@ -292,10 +292,9 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	}
 
 	// sBIT metadata.
-	// The alpha value is set depending on whether or not
-	// a block with alpha bits set is encountered.
-	// TODO: Check rotation?
-	rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	// TODO: Dynamically determine if we have alpha?
+	// Rotation bits makes this difficult...
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 
 	// BC7 has eight block modes with varying properties, including
 	// bitfields of different lengths. As such, the only guaranteed
@@ -440,7 +439,6 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			// We have alpha components.
 			// TODO: Might not actually be alpha if rotation is enabled...
 			// TODO: Or, rotation might enable alpha...
-			sBIT.alpha = 8;
 			const uint8_t alpha_mask = (1U << alpha_bits) - 1;
 			const uint8_t alpha_shamt = 8U - alpha_bits;
 			for (unsigned int i = 0; i < endpoint_count; i++) {
