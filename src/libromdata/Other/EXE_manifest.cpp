@@ -83,7 +83,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, "Isolation-Aware, No Static Import"},
 
 		// Windows XP's explorer.exe uses resource ID 123.
-		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
+		// Reference: https://docs.microsoft.com/en-us/windows/desktop/Controls/cookbook-overview
 		{XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID, "Visual Style"},
 	};
 
