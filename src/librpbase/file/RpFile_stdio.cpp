@@ -21,6 +21,10 @@
 #include "RpFile.hpp"
 #include "RpFile_stdio_p.hpp"
 
+#ifdef _WIN32
+# error RpFile_stdio is not supported on Windows, use RpFile_win32.
+#endif /* _WIN32 */
+
 // librpbase
 #include "byteswap.h"
 #include "TextFuncs.hpp"
@@ -47,16 +51,16 @@ RpFilePrivate::~RpFilePrivate()
  * @param mode	[in] FileMode
  * @return fopen() mode string.
  */
-inline const mode_str_t *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
+inline const char *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
 {
 	switch (mode & RpFile::FM_MODE_MASK) {
 		case RpFile::FM_OPEN_READ:
-			return _MODE("rb");
+			return "rb";
 		case RpFile::FM_OPEN_WRITE:
-			return _MODE("rb+");
+			return "rb+";
 		case RpFile::FM_CREATE|RpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
 		case RpFile::FM_CREATE_WRITE:
-			return _MODE("wb+");
+			return "wb+";
 		default:
 			// Invalid mode.
 			return nullptr;
@@ -75,95 +79,13 @@ inline const mode_str_t *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
 int RpFilePrivate::reOpenFile(void)
 {
 	RP_Q(RpFile);
-	const mode_str_t *const mode_str = mode_to_str(mode);
+	const char *const mode_str = mode_to_str(mode);
 
-#ifdef _WIN32
-	// Windows: Use U82W_s() to convert the filename to wchar_t.
-	bool isDevice_tmp;
-
-	// If the filename is "X:", change it to "X:\\".
-	if (filename.size() == 2 &&
-	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
-	    filename[1] == ':')
-	{
-		// Drive letter. Append '\\'.
-		filename += '\\';
-	}
-
-	// If this is an absolute path, make sure it starts with
-	// "\\?\" in order to support filenames longer than MAX_PATH.
-	tstring tfilename;
-	if (filename.size() > 3 &&
-	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
-	    filename[1] == ':' && filename[2] == '\\')
-	{
-		// Absolute path. Prepend "\\?\" to the path.
-		tfilename = _T("\\\\?\\");
-		tfilename += U82T_s(filename);
-	} else {
-		// Not an absolute path, or "\\?\" is already
-		// prepended. Use it as-is.
-		tfilename = U82T_s(filename);
-	}
-
-	// Validate the file type first.
-	// NOTE: Checking the UTF-8 filename to avoid having to
-	// deal with L"\\\\?\\".
-	if (filename.size() == 3 && ISALPHA(filename[0]) &&
-	    filename[1] == L':' && filename[2] == '\\')
-	{
-		// This is a drive letter.
-		// Only CD-ROM (and similar) drives are supported.
-		// TODO: Verify if opening by drive letter works,
-		// or if we have to resolve the physical device name.
-		// NOTE: filename is UTF-8, but we can use it as if
-		// it's ANSI for a drive letter.
-		const UINT driveType = GetDriveTypeA(filename.c_str());
-		switch (driveType) {
-			case DRIVE_CDROM:
-				// CD-ROM works.
-				break;
-			case DRIVE_UNKNOWN:
-			case DRIVE_NO_ROOT_DIR:
-				// No drive.
-				isDevice = false;
-				q->m_lastError = ENODEV;
-				return -ENODEV;
-			default:
-				// Not a CD-ROM drive.
-				isDevice = false;
-				q->m_lastError = ENOTSUP;
-				return -ENOTSUP;
-		}
-		isDevice_tmp = true;
-	} else {
-		// Make sure this isn't a directory.
-		// TODO: Other checks?
-		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
-		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
-			// File cannot be opened.
-			q->m_lastError = EIO;
-			return -EIO;
-		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
-			// File is a directory.
-			q->m_lastError = EISDIR;
-			return -EISDIR;
-		}
-		isDevice_tmp = false;
-	}
-
-	if (file) {
-		fclose(file);
-	}
-	file = _tfopen(tfilename.c_str(), mode_str);
-	isDevice = isDevice_tmp;
-#else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames directly.
 	if (file) {
 		fclose(file);
 	}
 	file = fopen(filename.c_str(), mode_str);
-#endif /* _WIN32 */
 
 	// Return 0 if it's *not* nullptr.
 	if (!file) {
@@ -193,7 +115,6 @@ int RpFilePrivate::reOpenFile(void)
 		isDevice = false;
 	}
 
-#ifndef _WIN32
 	// NOTE: Opening certain device files can cause crashes
 	// and/or hangs (e.g. stdin). Only allow device files
 	// that match certain patterns.
@@ -229,7 +150,6 @@ int RpFilePrivate::reOpenFile(void)
 			return -ENOTSUP;
 		}
 	}
-#endif /* _WIN32 */
 
 	return 0;
 }
@@ -498,11 +418,7 @@ int RpFile::truncate(int64_t size)
 
 	// Truncate the file.
 	fflush(d->file);
-#ifdef _WIN32
-	int ret = _chsize_s(fileno(d->file), size);
-#else
 	int ret = ftruncate(fileno(d->file), size);
-#endif
 	if (ret != 0) {
 		m_lastError = errno;
 		return -1;

@@ -43,26 +43,11 @@ using std::vector;
 #endif
 
 #ifdef _WIN32
-// Windows: _tfopen() requires a TCHAR mode string.
-typedef TCHAR mode_str_t;
-#define _MODE(str) _T(##str)
-#include "RpWin32.hpp"
-// Needed for using "\\\\?\\" to bypass MAX_PATH.
-using std::string;
-using std::wstring;
-#include "librpbase/ctypex.h"
-// _chsize()
-#include <io.h>
+# error RpFile_stdio is not supported on Windows, use RpFile_win32.
+#endif /* _WIN32 */
 
-#else /* !_WIN32 */
-
-// Other: fopen() requires an 8-bit mode string.
-typedef char mode_str_t;
-#define _MODE(str) (str)
 // ftruncate()
 #include <unistd.h>
-
-#endif
 
 namespace LibRpBase {
 
@@ -100,7 +85,7 @@ class RpFilePrivate
 		 * @param mode	[in] FileMode
 		 * @return fopen() mode string.
 		 */
-		static inline const mode_str_t *mode_to_str(RpFile::FileMode mode);
+		static inline const char *mode_to_str(RpFile::FileMode mode);
 
 		/**
 		 * (Re-)Open the main file.
