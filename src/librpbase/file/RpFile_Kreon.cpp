@@ -25,7 +25,6 @@
 
 #ifdef _WIN32
 # include "libwin32common/w32err.h"
-# include "win32/RpFile_win32_p.hpp"
 // NT DDK SCSI functions.
 # if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 // Old MinGW has the NT DDK headers in include/ddk/.
@@ -40,9 +39,11 @@
 # endif
 #endif
 
-#ifndef _WIN32
+#ifdef _WIN32
+# include "win32/RpFile_win32_p.hpp"
+#else /* !_WIN32 */
 # include "RpFile_stdio_p.hpp"
-#endif
+#endif /* _WIN32 */
 
 // SCSI and CD-ROM IOCTLs.
 #ifdef __linux__
