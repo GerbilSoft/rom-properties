@@ -874,85 +874,55 @@ int DMG::loadFieldData(void)
 				be32_to_cpu(gbxFooter->version.minor)));
 
 		// Mapper.
-		// TODO: Use a lookup table instead of switch/case?
-		const char *mapper;
-		switch (be32_to_cpu(gbxFooter->mapper_id)) {
-			default:
-				mapper = nullptr;
-				break;
+		struct gbx_mapper_tbl_t {
+			GBX_Mapper_e mapper_id;	// Host-endian
+			const char *desc;
+		};
 
+		// TODO: Localization?
+		// TODO: bsearch()?
+		static const gbx_mapper_tbl_t gbx_mapper_tbl[] = {
 			// Nintendo
-			case GBX_MAPPER_ROM_ONLY:
-				mapper = "ROM only";
-				break;
-			case GBX_MAPPER_MBC1:
-				mapper = "Nintendo MBC1";
-				break;
-			case GBX_MAPPER_MBC2:
-				mapper = "Nintendo MBC2";
-				break;
-			case GBX_MAPPER_MBC3:
-				mapper = "Nintendo MBC3";
-				break;
-			case GBX_MAPPER_MBC5:
-				mapper = "Nintendo MBC5";
-				break;
-			case GBX_MAPPER_MBC7:
-				mapper = "Nintendo MBC7 (tilt sensor)";
-				break;
-			case GBX_MAPPER_MBC1_MULTICART:
-				mapper = "Nintendo MBC1 multicart";
-				break;
-			case GBX_MAPPER_MMM01:
-				mapper = "Nintendo/Mani MMM01";
-				break;
-			case GBX_MAPPER_POCKET_CAMERA:
-				mapper = "Nintendo Game Boy Camera";
-				break;
+			{GBX_MAPPER_ROM_ONLY,		"ROM only"},
+			{GBX_MAPPER_MBC1,		"Nintendo MBC1"},
+			{GBX_MAPPER_MBC2,		"Nintendo MBC2"},
+			{GBX_MAPPER_MBC3,		"Nintendo MBC3"},
+			{GBX_MAPPER_MBC5,		"Nintendo MBC5"},
+			{GBX_MAPPER_MBC7,		"Nintendo MBC7 (tilt sensor)"},
+			{GBX_MAPPER_MBC1_MULTICART,	"Nintendo MBC1 multicart"},
+			{GBX_MAPPER_MMM01,		"Nintendo/Mani MMM01"},
+			{GBX_MAPPER_POCKET_CAMERA,	"Nintendo Game Boy Camera"},
 
 			// Licensed third-party
-			case GBX_MAPPER_HuC1:
-				mapper = "Hudson HuC1";
-				break;
-			case GBX_MAPPER_HuC3:
-				mapper = "Hudson HuC3";
-				break;
-			case GBX_MAPPER_TAMA5:
-				mapper = "Bandai TAMA5";
-				break;
+			{GBX_MAPPER_HuC1,		"Hudson HuC1"},
+			{GBX_MAPPER_HuC3,		"Hudson HuC3"},
+			{GBX_MAPPER_TAMA5,		"Bandai TAMA5"},
 
 			// Unlicensed
-			case GBX_MAPPER_BBD:
-				mapper = "BBD";
-				break;
-			case GBX_MAPPER_HITEK:
-				mapper = "Hitek";
-				break;
-			case GBX_MAPPER_SINTAX:
-				mapper = "Sintax";
-				break;
-			case GBX_MAPPER_NT_OLDER_TYPE_1:
-				mapper = "NT older type 1";
-				break;
-			case GBX_MAPPER_NT_OLDER_TYPE_2:
-				mapper = "NT older type 2";
-				break;
-			case GBX_MAPPER_NT_NEWER:
-				mapper = "NT newer";
-				break;
-			case GBX_MAPPER_LI_CHENG:
-				mapper = "Li Cheng";
-				break;
-			case GBX_MAPPER_LAST_BIBLE:
-				mapper = "\"Last Bible\" multicart";
-				break;
-			case GBX_MAPPER_LIEBAO:
-				mapper = "Liebao Technology";
-				break;
+			{GBX_MAPPER_BBD,		"BBD"},
+			{GBX_MAPPER_HITEK,		"Hitek"},
+			{GBX_MAPPER_SINTAX,		"Sintax"},
+			{GBX_MAPPER_NT_OLDER_TYPE_1,	"NT older type 1"},
+			{GBX_MAPPER_NT_OLDER_TYPE_2,	"NT older type 2"},
+			{GBX_MAPPER_NT_NEWER,		"NT newer"},
+			{GBX_MAPPER_LI_CHENG,		"Li Cheng"},
+			{GBX_MAPPER_LAST_BIBLE,		"\"Last Bible\" multicart"},
+			{GBX_MAPPER_LIEBAO,		"Liebao Technology"},
+
+			{(GBX_Mapper_e)0, nullptr}
+		};
+
+		const char *s_mapper = nullptr;
+		const uint32_t lkup = be32_to_cpu(gbxFooter->mapper_id);
+		for (const gbx_mapper_tbl_t *pMapper = gbx_mapper_tbl; pMapper->mapper_id != 0; pMapper++) {
+			if (pMapper->mapper_id == lkup) {
+				// Found the mapper.
+				s_mapper = pMapper->desc;
+			}
 		}
 
-		if (mapper) {
-			d->fields->addField_string(C_("DMG", "Mapper"), mapper);
+		if (s_mapper) {
+			d->fields->addField_string(C_("DMG", "Mapper"), s_mapper);
 		} else {
 			// If the mapper ID is all printable characters, print the mapper as text.
 			// Otherwise, print a hexdump.
