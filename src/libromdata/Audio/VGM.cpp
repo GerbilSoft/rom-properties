@@ -415,34 +415,44 @@ int VGM::loadFieldData(void)
 		VGMPrivate::gd3_tags_t *const gd3_tags = d->loadGD3(addr);
 		if (gd3_tags) {
 			// TODO: Option to show Japanese instead of English.
-			if (!(*gd3_tags)[GD3_TAG_TRACK_NAME_EN].empty()) {
-				d->fields->addField_string(C_("RomData|Audio", "Track Name"),
-					(*gd3_tags)[GD3_TAG_TRACK_NAME_EN]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_GAME_NAME_EN].empty()) {
-				d->fields->addField_string(C_("VGM", "Game Name"),
-					(*gd3_tags)[GD3_TAG_GAME_NAME_EN]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN].empty()) {
-				d->fields->addField_string(C_("VGM", "System Name"),
-					(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN].empty()) {
-				// TODO: Multiple composer handling.
-				d->fields->addField_string(C_("RomData|Audio", "Composer"),
-					(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].empty()) {
-				d->fields->addField_string(C_("RomData", "Release Date"),
-					(*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_VGM_RIPPER].empty()) {
-				d->fields->addField_string(C_("VGM", "VGM Ripper"),
-					(*gd3_tags)[GD3_TAG_VGM_RIPPER]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_NOTES].empty()) {
-				d->fields->addField_string(C_("RomData|Audio", "Notes"),
-					(*gd3_tags)[GD3_TAG_NOTES]);
+
+			// Array of GD3 tag indexes and translatable strings.
+#ifdef ENABLE_NLS
+			struct gd3_tag_tbl_t {
+				const char *ctx;	// Translation context
+				const char *desc;	// Description
+				GD3_TAG_ID idx;	// GD3 tag index
+			};
+#define GD3_TAG_TBL_ENTRY(ctx, desc, idx) \
+			{(ctx), (desc), (idx)}
+#else /* !ENABLE_NLS */
+			struct gd3_tag_tbl_t {
+				const char *desc;	// Description
+				GD3_TAG_ID idx;	// GD3 tag index
+			};
+#define GD3_TAG_TBL_ENTRY(ctx, desc, idx) \
+			{(desc), (idx)}
+#endif /* ENABLE_NLS */
+
+			// TODO: Multiple composer handling.
+			static const gd3_tag_tbl_t gd3_tag_tbl[] = {
+				GD3_TAG_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Track Name"),	GD3_TAG_TRACK_NAME_EN),
+				GD3_TAG_TBL_ENTRY("VGM",		NOP_C_("VGM", "Game Name"),		GD3_TAG_GAME_NAME_EN),
+				GD3_TAG_TBL_ENTRY("VGM",		NOP_C_("VGM", "System Name"),		GD3_TAG_SYSTEM_NAME_EN),
+				GD3_TAG_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Composer"),	GD3_TAG_TRACK_AUTHOR_EN),
+				GD3_TAG_TBL_ENTRY("RomData",		NOP_C_("RomData", "Release Date"),	GD3_TAG_DATE_GAME_RELEASE),
+				GD3_TAG_TBL_ENTRY("VGM",		NOP_C_("VGM", "VGM Ripper"),		GD3_TAG_VGM_RIPPER),
+				GD3_TAG_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Notes"),	GD3_TAG_NOTES),
+
+				GD3_TAG_TBL_ENTRY(nullptr, nullptr, GD3_TAG_MAX)
+			};
+
+			for (const gd3_tag_tbl_t *pTag = gd3_tag_tbl; pTag->desc != nullptr; pTag++) {
+				const string &str = (*gd3_tags)[pTag->idx];
+				if (!str.empty()) {
+					d->fields->addField_string(
+						dpgettext_expr(RP_I18N_DOMAIN, pTag->ctx, pTag->desc), str);
+				}
 			}
 
 			delete gd3_tags;
