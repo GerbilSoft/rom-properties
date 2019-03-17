@@ -418,36 +418,36 @@ int VGM::loadFieldData(void)
 
 			// Array of GD3 tag indexes and translatable strings.
 #ifdef ENABLE_NLS
-			struct gd3_tag_tbl_t {
+			struct gd3_tag_field_tbl_t {
 				const char *ctx;	// Translation context
 				const char *desc;	// Description
 				GD3_TAG_ID idx;	// GD3 tag index
 			};
-#define GD3_TAG_TBL_ENTRY(ctx, desc, idx) \
+#define GD3_TAG_FIELD_TBL_ENTRY(ctx, desc, idx) \
 			{(ctx), (desc), (idx)}
 #else /* !ENABLE_NLS */
-			struct gd3_tag_tbl_t {
+			struct gd3_tag_field_tbl_t {
 				const char *desc;	// Description
 				GD3_TAG_ID idx;	// GD3 tag index
 			};
-#define GD3_TAG_TBL_ENTRY(ctx, desc, idx) \
+#define GD3_TAG_FIELD_TBL_ENTRY(ctx, desc, idx) \
 			{(desc), (idx)}
 #endif /* ENABLE_NLS */
 
 			// TODO: Multiple composer handling.
-			static const gd3_tag_tbl_t gd3_tag_tbl[] = {
-				GD3_TAG_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Track Name"),	GD3_TAG_TRACK_NAME_EN),
-				GD3_TAG_TBL_ENTRY("VGM",		NOP_C_("VGM", "Game Name"),		GD3_TAG_GAME_NAME_EN),
-				GD3_TAG_TBL_ENTRY("VGM",		NOP_C_("VGM", "System Name"),		GD3_TAG_SYSTEM_NAME_EN),
-				GD3_TAG_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Composer"),	GD3_TAG_TRACK_AUTHOR_EN),
-				GD3_TAG_TBL_ENTRY("RomData",		NOP_C_("RomData", "Release Date"),	GD3_TAG_DATE_GAME_RELEASE),
-				GD3_TAG_TBL_ENTRY("VGM",		NOP_C_("VGM", "VGM Ripper"),		GD3_TAG_VGM_RIPPER),
-				GD3_TAG_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Notes"),	GD3_TAG_NOTES),
+			static const gd3_tag_field_tbl_t gd3_tag_field_tbl[] = {
+				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Track Name"),	GD3_TAG_TRACK_NAME_EN),
+				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "Game Name"),		GD3_TAG_GAME_NAME_EN),
+				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "System Name"),		GD3_TAG_SYSTEM_NAME_EN),
+				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Composer"),	GD3_TAG_TRACK_AUTHOR_EN),
+				GD3_TAG_FIELD_TBL_ENTRY("RomData",		NOP_C_("RomData", "Release Date"),	GD3_TAG_DATE_GAME_RELEASE),
+				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "VGM Ripper"),		GD3_TAG_VGM_RIPPER),
+				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Notes"),	GD3_TAG_NOTES),
 
-				GD3_TAG_TBL_ENTRY(nullptr, nullptr, GD3_TAG_MAX)
+				GD3_TAG_FIELD_TBL_ENTRY(nullptr, nullptr, GD3_TAG_MAX)
 			};
 
-			for (const gd3_tag_tbl_t *pTag = gd3_tag_tbl; pTag->desc != nullptr; pTag++) {
+			for (const gd3_tag_field_tbl_t *pTag = gd3_tag_field_tbl; pTag->desc != nullptr; pTag++) {
 				const string &str = (*gd3_tags)[pTag->idx];
 				if (!str.empty()) {
 					d->fields->addField_string(
@@ -917,52 +917,55 @@ int VGM::loadMetaData(void)
 		VGMPrivate::gd3_tags_t *const gd3_tags = d->loadGD3(addr);
 		if (gd3_tags) {
 			// TODO: Option to show Japanese instead of English.
-			if (!(*gd3_tags)[GD3_TAG_TRACK_NAME_EN].empty()) {
-				d->metaData->addMetaData_string(Property::Title,
-					(*gd3_tags)[GD3_TAG_TRACK_NAME_EN]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_GAME_NAME_EN].empty()) {
-				// NOTE: Not exactly "album"...
-				d->metaData->addMetaData_string(Property::Album,
-					(*gd3_tags)[GD3_TAG_GAME_NAME_EN]);
-			}
-			/*if (!(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN].empty()) {
-				// FIXME: No property for this...
-				d->metaData->addMetaData_string(Property::SystemName,
-					(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN]);
-			}*/
-			if (!(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN].empty()) {
-				// TODO: Multiple composer handling.
-				d->metaData->addMetaData_string(Property::Composer,
-					(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN]);
-			}
-			if (!(*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].empty()) {
-				// Parse the release date.
-				// NOTE: Only year is supported.
-				int year;
-				char chr;
-				int s = sscanf((*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].c_str(), "%04d%c", &year, &chr);
-				if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
-					// Year seems to be valid.
-					// Make sure the number is acceptable:
-					// - No negatives.
-					// - Four-digit only. (lol Y10K)
-					if (year >= 0 && year < 10000) {
-						d->metaData->addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
-					}
-				}
-			}
-			/*if (!(*gd3_tags)[GD3_TAG_VGM_RIPPER].empty()) {
-				// FIXME: No property for this...
-				d->metaData->addMetaData_string(Property::VGMRipper,
-					(*gd3_tags)[GD3_TAG_VGM_RIPPER]);
-			}*/
-			if (!(*gd3_tags)[GD3_TAG_NOTES].empty()) {
+
+			// Array of GD3 tag indexes and properties.
+			struct gd3_tag_prop_tbl_t {
+				Property::Property prop;	// Metadata property index
+				GD3_TAG_ID idx;			// GD3 tag index
+			};
+
+			static const gd3_tag_prop_tbl_t gd3_tag_prop_tbl[] = {
+				{Property::Title,	GD3_TAG_TRACK_NAME_EN},
+				{Property::Album,	GD3_TAG_GAME_NAME_EN},		// NOTE: Not exactly "album"...
+				//{Property::SystemName,	GD3_TAG_SYSTEM_NAME_EN),	// FIXME: No property for this...
+				{Property::Composer,	GD3_TAG_TRACK_AUTHOR_EN},	// TODO: Multiple composer handling.
+				{Property::ReleaseYear,	GD3_TAG_DATE_GAME_RELEASE},
+				//{Property::VGMRipper,	GD3_TAG_VGM_RIPPER},		// FIXME: No property for this...
+
 				// TODO: Property::Comment is assumed to be user-added
 				// on KDE Dolphin 18.08.1. Needs a description property.
 				// Also needs verification on Windows.
-				d->metaData->addMetaData_string(Property::Subject,
-					(*gd3_tags)[GD3_TAG_NOTES]);
+				{Property::Subject,	GD3_TAG_NOTES},
+
+				{Property::Empty,	GD3_TAG_MAX}
+			};
+
+			for (const gd3_tag_prop_tbl_t *pTag = gd3_tag_prop_tbl; pTag->prop != Property::Empty; pTag++) {
+				const string &str = (*gd3_tags)[pTag->idx];
+				if (str.empty())
+					continue;
+
+				if (pTag->prop == Property::ReleaseYear) {
+					// Special handling for ReleaseYear.
+
+					// Parse the release date.
+					// NOTE: Only year is supported.
+					int year;
+					char chr;
+					int s = sscanf((*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].c_str(), "%04d%c", &year, &chr);
+					if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
+						// Year seems to be valid.
+						// Make sure the number is acceptable:
+						// - No negatives.
+						// - Four-digit only. (lol Y10K)
+						if (year >= 0 && year < 10000) {
+							d->metaData->addMetaData_uint(Property::ReleaseYear, (unsigned int)year);
+						}
+					}
+				} else {
+					// Standard string property.
+					d->metaData->addMetaData_string(pTag->prop, str);
+				}
 			}
 
 			delete gd3_tags;
