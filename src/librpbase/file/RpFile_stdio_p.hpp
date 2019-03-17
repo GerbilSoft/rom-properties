@@ -18,6 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
+#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_STDIO_P_HPP__
+#define __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_STDIO_P_HPP__
+
 #include "RpFile.hpp"
 
 // C includes. (C++ namespace)
@@ -100,3 +103,5 @@ class RpFilePrivate
 };
 
 }
+
+#endif /* __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_STDIO_P_HPP__ */
