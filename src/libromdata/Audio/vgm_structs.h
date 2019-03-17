@@ -173,7 +173,7 @@ typedef struct PACKED _VGM_Header {
 ASSERT_STRUCT(VGM_Header, 232);
 
 /**
- * GD3 header.
+ * GD3 header
  */
 #define GD3_MAGIC 0x20336447U	/* "Gd3 " (little-endian) */
 typedef struct PACKED _GD3_Header {
@@ -182,6 +182,25 @@ typedef struct PACKED _GD3_Header {
 	uint32_t length;	// [0x008] Length of the GD3 data.
 } GD3_Header;
 ASSERT_STRUCT(GD3_Header, 12);
+
+/**
+ * GD3 tag indexes
+ */
+enum GD3_TAG_ID {
+	GD3_TAG_TRACK_NAME_EN		= 0,
+	GD3_TAG_TRACK_NAME_JP		= 1,
+	GD3_TAG_GAME_NAME_EN		= 2,
+	GD3_TAG_GAME_NAME_JP		= 3,
+	GD3_TAG_SYSTEM_NAME_EN		= 4,
+	GD3_TAG_SYSTEM_NAME_JP		= 5,
+	GD3_TAG_TRACK_AUTHOR_EN		= 6,
+	GD3_TAG_TRACK_AUTHOR_JP		= 7,
+	GD3_TAG_DATE_GAME_RELEASE	= 8,
+	GD3_TAG_VGM_RIPPER		= 9,
+	GD3_TAG_NOTES			= 10,
+
+	GD3_TAG_MAX
+};
 
 /**
  * VGM 1.10: SN76489 LFSR patterns.

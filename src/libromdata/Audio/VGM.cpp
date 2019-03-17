@@ -39,9 +39,11 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>
+using std::array;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -71,12 +73,16 @@ class VGMPrivate : public RomDataPrivate
 		 */
 		string formatClockRate(unsigned int clock_rate);
 
+		// GD3 tags.
+		// All strings must be in UTF-8 format.
+		typedef array<string, GD3_TAG_MAX> gd3_tags_t;
+
 		/**
 		 * Load GD3 tags.
 		 * @param addr Starting address of the GD3 tag block.
-		 * @return Vector of tags, or empty vector on error.
+		 * @return Allocated GD3 tags, or nullptr on error.
 		 */
-		vector<string> loadGD3(unsigned int addr);
+		gd3_tags_t *loadGD3(unsigned int addr);
 };
 
 /** VGMPrivate **/
@@ -121,23 +127,21 @@ string VGMPrivate::formatClockRate(unsigned int clock_rate)
 /**
  * Load GD3 tags.
  * @param addr Starting address of the GD3 tag block.
- * @return Vector of tags, or empty vector on error.
+ * @return Allocated GD3 tags, or nullptr on error.
  */
-vector<string> VGMPrivate::loadGD3(unsigned int addr)
+VGMPrivate::gd3_tags_t *VGMPrivate::loadGD3(unsigned int addr)
 {
-	vector<string> v_gd3;
-
 	assert(file != nullptr);
 	assert(file->isOpen());
 	if (!file || !file->isOpen()) {
-		return v_gd3;
+		return nullptr;
 	}
 
 	GD3_Header gd3Header;
 	size_t size = file->seekAndRead(addr, &gd3Header, sizeof(gd3Header));
 	if (size != sizeof(gd3Header)) {
 		// Seek and/or read error.
-		return v_gd3;
+		return nullptr;
 	}
 
 	// Validate the header.
@@ -146,7 +150,7 @@ vector<string> VGMPrivate::loadGD3(unsigned int addr)
 	{
 		// Incorrect header.
 		// TODO: Require exactly v1.00?
-		return v_gd3;
+		return nullptr;
 	}
 
 	// Length limitations:
@@ -155,7 +159,7 @@ vector<string> VGMPrivate::loadGD3(unsigned int addr)
 	const unsigned int length = le32_to_cpu(gd3Header.length);
 	if (length % 2 != 0 || length < 11*2 || length > 16*1024) {
 		// Incorrect length value.
-		return v_gd3;
+		return nullptr;
 	}
 
 	// Read the GD3 data.
@@ -164,31 +168,36 @@ vector<string> VGMPrivate::loadGD3(unsigned int addr)
 	size = file->read(gd3.get(), length);
 	if (size != length) {
 		// Read error.
-		return v_gd3;
+		return nullptr;
 	}
 
 	// Make sure the end of the GD3 data is NULL-terminated.
 	if (gd3[length16-1] != 0) {
 		// Not NULL-terminated.
-		return v_gd3;
+		return nullptr;
 	}
 
-	// Convert from NULL-terminated strings to a vector.
+	gd3_tags_t *gd3_tags = new gd3_tags_t;
+
+	// Convert from NULL-terminated strings to gd3_tags_t.
 	// TODO: Optimize on systems where wchar_t functions are 16-bit?
+	size_t tag_idx = 0;
 	const char16_t *start = gd3.get();
 	const char16_t *const endptr = start + length16;
-	for (const char16_t *p = start; p < endptr; p++) {
+	for (const char16_t *p = start; p < endptr && tag_idx < gd3_tags->size(); p++) {
 		// Check for a NULL.
+		// TODO: Optimize by using memchr()?
 		if (*p == 0) {
 			// Found a NULL!
-			v_gd3.push_back(utf16le_to_utf8(start, (int)(p-start)));
+			(*gd3_tags)[tag_idx] = utf16le_to_utf8(start, (int)(p-start));
 			// Next string.
 			start = p + 1;
+			tag_idx++;
 		}
 	}
 
-	// TODO: Verify that it's 11 strings?
-	return v_gd3;
+	// TODO: Return an error if there's more than GD3_TAG_MAX strings?
+	return gd3_tags;
 }
 
 /** VGM **/
@@ -403,34 +412,40 @@ int VGM::loadFieldData(void)
 	if (d->vgmHeader.gd3_offset != 0) {
 		// TODO: Make sure the GD3 offset is stored after the header.
 		const unsigned int addr = le32_to_cpu(d->vgmHeader.gd3_offset) + offsetof(VGM_Header, gd3_offset);
-		vector<string> v_gd3 = d->loadGD3(addr);
-
-		if (!v_gd3.empty()) {
+		VGMPrivate::gd3_tags_t *const gd3_tags = d->loadGD3(addr);
+		if (gd3_tags) {
 			// TODO: Option to show Japanese instead of English.
-			// TODO: Optimize line count checking?
-			const size_t line_count = v_gd3.size();
-			if (line_count >= 1 && !v_gd3[0].empty()) {
-				d->fields->addField_string(C_("RomData|Audio", "Track Name"), v_gd3[0]);
+			if (!(*gd3_tags)[GD3_TAG_TRACK_NAME_EN].empty()) {
+				d->fields->addField_string(C_("RomData|Audio", "Track Name"),
+					(*gd3_tags)[GD3_TAG_TRACK_NAME_EN]);
 			}
-			if (line_count >= 3 && !v_gd3[2].empty()) {
-				d->fields->addField_string(C_("VGM", "Game Name"), v_gd3[2]);
+			if (!(*gd3_tags)[GD3_TAG_GAME_NAME_EN].empty()) {
+				d->fields->addField_string(C_("VGM", "Game Name"),
+					(*gd3_tags)[GD3_TAG_GAME_NAME_EN]);
 			}
-			if (line_count >= 5 && !v_gd3[4].empty()) {
-				d->fields->addField_string(C_("VGM", "System Name"), v_gd3[4]);
+			if (!(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN].empty()) {
+				d->fields->addField_string(C_("VGM", "System Name"),
+					(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN]);
 			}
-			if (line_count >= 7 && !v_gd3[6].empty()) {
+			if (!(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN].empty()) {
 				// TODO: Multiple composer handling.
-				d->fields->addField_string(C_("RomData|Audio", "Composer"), v_gd3[6]);
+				d->fields->addField_string(C_("RomData|Audio", "Composer"),
+					(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN]);
 			}
-			if (line_count >= 9 && !v_gd3[8].empty()) {
-				d->fields->addField_string(C_("RomData", "Release Date"), v_gd3[8]);
+			if (!(*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].empty()) {
+				d->fields->addField_string(C_("RomData", "Release Date"),
+					(*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE]);
 			}
-			if (line_count >= 10 && !v_gd3[9].empty()) {
-				d->fields->addField_string(C_("VGM", "VGM Ripper"), v_gd3[9]);
+			if (!(*gd3_tags)[GD3_TAG_VGM_RIPPER].empty()) {
+				d->fields->addField_string(C_("VGM", "VGM Ripper"),
+					(*gd3_tags)[GD3_TAG_VGM_RIPPER]);
 			}
-			if (line_count >= 11 && !v_gd3[10].empty()) {
-				d->fields->addField_string(C_("RomData|Audio", "Notes"), v_gd3[10]);
+			if (!(*gd3_tags)[GD3_TAG_NOTES].empty()) {
+				d->fields->addField_string(C_("RomData|Audio", "Notes"),
+					(*gd3_tags)[GD3_TAG_NOTES]);
 			}
+
+			delete gd3_tags;
 		}
 	}
 
@@ -889,32 +904,34 @@ int VGM::loadMetaData(void)
 	if (d->vgmHeader.gd3_offset != 0) {
 		// TODO: Make sure the GD3 offset is stored after the header.
 		const unsigned int addr = le32_to_cpu(d->vgmHeader.gd3_offset) + offsetof(VGM_Header, gd3_offset);
-		vector<string> v_gd3 = d->loadGD3(addr);
-		if (!v_gd3.empty()) {
+		VGMPrivate::gd3_tags_t *const gd3_tags = d->loadGD3(addr);
+		if (gd3_tags) {
 			// TODO: Option to show Japanese instead of English.
-			// TODO: Optimize line count checking?
-			const size_t line_count = v_gd3.size();
-			if (line_count >= 1 && !v_gd3[0].empty()) {
-				d->metaData->addMetaData_string(Property::Title, v_gd3[0]);
+			if (!(*gd3_tags)[GD3_TAG_TRACK_NAME_EN].empty()) {
+				d->metaData->addMetaData_string(Property::Title,
+					(*gd3_tags)[GD3_TAG_TRACK_NAME_EN]);
 			}
-			if (line_count >= 3 && !v_gd3[2].empty()) {
+			if (!(*gd3_tags)[GD3_TAG_GAME_NAME_EN].empty()) {
 				// NOTE: Not exactly "album"...
-				d->metaData->addMetaData_string(Property::Album, v_gd3[2]);
+				d->metaData->addMetaData_string(Property::Album,
+					(*gd3_tags)[GD3_TAG_GAME_NAME_EN]);
 			}
-			/*if (line_count >= 5 && !v_gd3[4].empty()) {
+			/*if (!(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN].empty()) {
 				// FIXME: No property for this...
-				d->metaData->addMetaData_string(Property::SystemName, v_gd3[4]);
+				d->metaData->addMetaData_string(Property::SystemName,
+					(*gd3_tags)[GD3_TAG_SYSTEM_NAME_EN]);
 			}*/
-			if (line_count >= 7 && !v_gd3[6].empty()) {
+			if (!(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN].empty()) {
 				// TODO: Multiple composer handling.
-				d->metaData->addMetaData_string(Property::Composer, v_gd3[6]);
+				d->metaData->addMetaData_string(Property::Composer,
+					(*gd3_tags)[GD3_TAG_TRACK_AUTHOR_EN]);
 			}
-			if (line_count >= 9 && !v_gd3[8].empty()) {
+			if (!(*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].empty()) {
 				// Parse the release date.
 				// NOTE: Only year is supported.
 				int year;
 				char chr;
-				int s = sscanf(v_gd3[8].c_str(), "%04d%c", &year, &chr);
+				int s = sscanf((*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].c_str(), "%04d%c", &year, &chr);
 				if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
 					// Year seems to be valid.
 					// Make sure the number is acceptable:
@@ -925,16 +942,20 @@ int VGM::loadMetaData(void)
 					}
 				}
 			}
-			/*if (line_count >= 10 && !v_gd3[9].empty()) {
+			/*if (!(*gd3_tags)[GD3_TAG_VGM_RIPPER].empty()) {
 				// FIXME: No property for this...
-				d->metaData->addMetaData_string(Property::VGMRipper, v_gd3[9]);
+				d->metaData->addMetaData_string(Property::VGMRipper,
+					(*gd3_tags)[GD3_TAG_VGM_RIPPER]);
 			}*/
-			if (line_count >= 11 && !v_gd3[10].empty()) {
+			if (!(*gd3_tags)[GD3_TAG_NOTES].empty()) {
 				// TODO: Property::Comment is assumed to be user-added
 				// on KDE Dolphin 18.08.1. Needs a description property.
 				// Also needs verification on Windows.
-				d->metaData->addMetaData_string(Property::Subject, v_gd3[10]);
+				d->metaData->addMetaData_string(Property::Subject,
+					(*gd3_tags)[GD3_TAG_NOTES]);
 			}
+
+			delete gd3_tags;
 		}
 	}
 
