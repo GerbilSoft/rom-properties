@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ciso_gcn.h: GameCube/Wii CISO structs.                                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -43,10 +43,16 @@ extern "C" {
 #define CISO_BLOCK_SIZE_MIN (32768)
 #define CISO_BLOCK_SIZE_MAX (16*1024*1024)
 
+/**
+ * CISO (GameCube) header struct.
+ *
+ * All fields are in little-endian.
+ */
+#define CISO_MAGIC 'CISO'
 typedef struct PACKED _CISOHeader {
-	char magic[4];			// "CISO"
-	uint32_t block_size;		// LE32
-	uint8_t map[CISO_MAP_SIZE];	// 0 == unused; 1 == used; other == invalid
+	uint32_t magic;			// [0x000] 'CISO'
+	uint32_t block_size;		// [0x004] LE32
+	uint8_t map[CISO_MAP_SIZE];	// [0x008] 0 == unused; 1 == used; other == invalid
 } CISOHeader;
 
 #pragma pack()

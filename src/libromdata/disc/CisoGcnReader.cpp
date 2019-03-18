@@ -52,9 +52,6 @@ class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
 		RP_DISABLE_COPY(CisoGcnReaderPrivate)
 
 	public:
-		// CISO magic.
-		static const char CISO_MAGIC[4];
-
 		// CISO header.
 		CISOHeader cisoHeader;
 
@@ -68,9 +65,6 @@ class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
 };
 
 /** CisoGcnReaderPrivate **/
-
-// CISO magic.
-const char CisoGcnReaderPrivate::CISO_MAGIC[4] = {'C','I','S','O'};
 
 CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
 	: super(q)
@@ -100,7 +94,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
 	}
 
 	// Verify the CISO header.
-	if (memcmp(cisoHeader.magic, CISO_MAGIC, sizeof(CISO_MAGIC)) != 0) {
+	if (cisoHeader.magic == cpu_to_be32(CISO_MAGIC)) {
 		// Invalid magic.
 		q->m_file->unref();
 		q->m_file = nullptr;
@@ -172,7 +166,8 @@ int CisoGcnReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 	}
 
 	// Check the CISO magic.
-	if (memcmp(pHeader, CisoGcnReaderPrivate::CISO_MAGIC, sizeof(CisoGcnReaderPrivate::CISO_MAGIC)) != 0) {
+	const CISOHeader *const cisoHeader = reinterpret_cast<const CISOHeader*>(pHeader);
+	if (cisoHeader->magic == cpu_to_be32(CISO_MAGIC)) {
 		// Invalid magic.
 		return -1;
 	}
@@ -180,8 +175,7 @@ int CisoGcnReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 	// Check if the block size is a supported power of two.
 	// - Minimum: CISO_BLOCK_SIZE_MIN (32 KB, 1 << 15)
 	// - Maximum: CISO_BLOCK_SIZE_MAX (16 MB, 1 << 24)
-	const uint32_t *pHeader32 = reinterpret_cast<const uint32_t*>(pHeader);
-	const unsigned int block_size = le32_to_cpu(pHeader32[1]);
+	const uint32_t block_size = le32_to_cpu(cisoHeader->block_size);
 	bool isPow2 = false;
 	for (unsigned int i = 15; i <= 24; i++) {
 		if (block_size == (1U << i)) {
