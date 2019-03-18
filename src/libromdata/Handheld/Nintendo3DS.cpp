@@ -964,47 +964,50 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			f_logo->unref();
 		}
 
-		const char *logo_name;
-		switch (crc) {
-			case 0:
-				// No logo.
-				logo_name = nullptr;
-				break;
-			default:
+		struct logo_crc_tbl_t {
+			uint32_t crc;
+			const char *name;
+		};
+		static const logo_crc_tbl_t logo_crc_tbl[] = {
+			// Official logos
+			// NOTE: Not translatable!
+			{0xCFD0EB8BU,	"Nintendo"},
+			{0x1093522BU,	"Licensed by Nintendo"},
+			{0x4FA8771CU,	"Distributed by Nintendo"},
+			{0x7F68B548U,	"iQue"},
+			{0xD8907ED7U,	"iQue (System)"},
+
+			// Homebrew logos
+			// TODO: Make them translatable?
+
+			// "Old" static Homebrew logo.
+			// Included with `makerom`.
+			{0x343A79D9U,	"Homebrew (static)"},
+
+			// "New" animated Homebrew logo.
+			// Uses the Homebrew Launcher theme.
+			// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
+			{0xF257BD67U,	"Homebrew (animated)"},
+
+			{0U, nullptr}
+		};
+
+		// If CRC is zero, we don't have a valid logo section.
+		// Otherwise, search for a matching logo.
+		const char *logo_name = nullptr;
+		if (crc != 0) {
+			// Search for a matching logo.
+			for (const logo_crc_tbl_t *pLogo = logo_crc_tbl; pLogo->crc != 0; pLogo++) {
+				if (pLogo->crc == crc) {
+					// Found a matching logo.
+					logo_name = pLogo->name;
+				}
+			}
+
+			if (!logo_name) {
 				// Custom logo.
 				logo_name = C_("Nintendo3DS|Logo", "Custom");
-				break;
-
-			// Official logos.
-			// NOTE: Not translatable!
-			case 0xCFD0EB8B:
-				logo_name = "Nintendo";
-				break;
-			case 0x1093522B:
-				logo_name = "Licensed by Nintendo";
-				break;
-			case 0x4FA8771C:
-				logo_name = "Distributed by Nintendo";
-				break;
-			case 0x7F68B548:
-				logo_name = "iQue";
-				break;
-			case 0xD8907ED7:
-				logo_name = "iQue (System)";
-				break;
-
-			// Homebrew logos.
-			case 0x343A79D9:
-				// "Old" static Homebrew logo.
-				// Included with `makerom`.
-				logo_name = "Homebrew (static)";
-				break;
-			case 0xF257BD67:
-				// "New" animated Homebrew logo.
-				// Uses the Homebrew Launcher theme.
-				// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
-				logo_name = "Homebrew (animated)";
-				break;
+			}
 		}
 
 		if (logo_name) {
