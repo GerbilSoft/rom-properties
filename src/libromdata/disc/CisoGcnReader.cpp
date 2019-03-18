@@ -106,7 +106,9 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
 	// - Minimum: CISO_BLOCK_SIZE_MIN (32 KB, 1 << 15)
 	// - Maximum: CISO_BLOCK_SIZE_MAX (16 MB, 1 << 24)
 	block_size = le32_to_cpu(cisoHeader.block_size);
-	if (!isPow2(block_size)) {
+	if (!isPow2(block_size) ||
+	    block_size < CISO_BLOCK_SIZE_MIN || block_size > CISO_BLOCK_SIZE_MAX)
+	{
 		// Block size is out of range.
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is
@@ -176,14 +178,9 @@ int CisoGcnReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 	// - Minimum: CISO_BLOCK_SIZE_MIN (32 KB, 1 << 15)
 	// - Maximum: CISO_BLOCK_SIZE_MAX (16 MB, 1 << 24)
 	const uint32_t block_size = le32_to_cpu(cisoHeader->block_size);
-	bool isPow2 = false;
-	for (unsigned int i = 15; i <= 24; i++) {
-		if (block_size == (1U << i)) {
-			isPow2 = true;
-			break;
-		}
-	}
-	if (!isPow2) {
+	if (!isPow2(block_size) ||
+	    block_size < CISO_BLOCK_SIZE_MIN || block_size > CISO_BLOCK_SIZE_MAX)
+	{
 		// Block size is out of range.
 		// If the block size is 0x18, then this is
 		// actually a PSP CISO, and this field is
