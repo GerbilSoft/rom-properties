@@ -41,11 +41,10 @@
   * Xbox360_XDBF: Xbox 360 XDBF resource files. Only the variant used by
     XEX executables is supported at the moment.
   * Xbox360_XEX: Xbox 360 executables.
-  * XboxXPR: Xbox XPR textures.
+  * XboxXPR: Xbox XPR0 textures.
     * Used in save files and elsewhere.
-    * Fully supports XPR0.
-    * XPR1 is detected but not thumbnailed yet, and the displayed metadata
-      is incorrect because the header format is different.
+    * Currently only supports XPR0. XPR1 and XPR2 are texture archives,
+      and support for those may be added later.
   * ISO: ISO-9660 parser.
     * Parses the Primary Volume Descriptor for ISO-9660 images.
     * Sega Mega CD, Sega Saturn, and Sega Dreamcast parsers now show
