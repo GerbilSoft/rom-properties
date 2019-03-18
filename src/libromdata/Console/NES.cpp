@@ -640,6 +640,7 @@ int NES::loadFieldData(void)
 	unsigned int chr_ram_battery_size = 0;	// CHR RAM with battery (rare but it exists)
 	unsigned int prg_ram_size = 0;		// PRG RAM ($6000-$7FFF)
 	unsigned int prg_ram_battery_size = 0;	// PRG RAM with battery (save RAM)
+
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 		case NESPrivate::ROM_FORMAT_OLD_INES:
 			d->fields->setTabName(0, "iNES");
@@ -777,7 +778,7 @@ int NES::loadFieldData(void)
 	if (mapper >= 0) {
 		// Look up the mapper name.
 		string s_mapper;
-		s_mapper.reserve(64);
+
 		const char *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
 			// tr: Print the mapper ID followed by the mapper name.
@@ -802,7 +803,6 @@ int NES::loadFieldData(void)
 	if (submapper >= 0) {
 		// Submapper. (NES 2.0 only)
 		string s_submapper;
-		s_submapper.reserve(64);
 
 		// Look up the submapper name.
 		// TODO: Needs testing.
@@ -915,8 +915,8 @@ int NES::loadFieldData(void)
 		// TODO: Disk Writer fields.
 	} else {
 		// Add non-FDS fields.
-		const char *mirroring = nullptr;
-		const char *vs_ppu = nullptr;
+		const char *s_mirroring = nullptr;
+		const char *s_vs_ppu = nullptr;
 		switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 			case NESPrivate::ROM_FORMAT_OLD_INES:
 			case NESPrivate::ROM_FORMAT_INES:
@@ -926,13 +926,13 @@ int NES::loadFieldData(void)
 				// TODO: Also One Screen, e.g. AxROM.
 				if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
 					// Four screens using extra VRAM.
-					mirroring = C_("NES|Mirroring", "Four Screens");
+					s_mirroring = C_("NES|Mirroring", "Four Screens");
 				} else {
 					// TODO: There should be a "one screen" option...
 					if (d->header.ines.mapper_lo & INES_F6_MIRROR_VERT) {
-						mirroring = C_("NES|Mirroring", "Vertical");
+						s_mirroring = C_("NES|Mirroring", "Vertical");
 					} else {
-						mirroring = C_("NES|Mirroring", "Horizontal");
+						s_mirroring = C_("NES|Mirroring", "Horizontal");
 					}
 				}
 
@@ -941,19 +941,21 @@ int NES::loadFieldData(void)
 				{
 					// Check the VS. PPU type.
 					// NOTE: Not translatable!
-					static const char *const vs_ppu_types[16] = {
+					static const char vs_ppu_types[13][12] = {
 						"RP2C03B",     "RP2C03G",
 						"RP2C04-0001", "RP2C04-0002",
 						"RP2C04-0003", "RP2C04-0004",
 						"RP2C03B",     "RP2C03C",
 						"RP2C05-01",   "RP2C05-02",
 						"RP2C05-03",   "RP2C05-04",
-						"RP2C05-05",   nullptr,
-						nullptr,       nullptr
+						"RP2C05-05"
 					};
-					vs_ppu = vs_ppu_types[d->header.ines.nes2.vs_hw & 0x0F];
+					const unsigned int vs_ppu = (d->header.ines.nes2.vs_hw & 0x0F);
+					if (vs_ppu < ARRAY_SIZE(vs_ppu_types)) {
+						s_vs_ppu = vs_ppu_types[vs_ppu];
+					}
 
-					// TODO: VS. copy protection hardware?
+					// TODO: VS. copy-protection hardware?
 				}
 				break;
 
@@ -964,19 +966,19 @@ int NES::loadFieldData(void)
 						// For all mappers except AxROM, this is programmable.
 						// For AxROM, this is One Screen.
 						if (tnes_mapper == TNES_MAPPER_AxROM) {
-							mirroring = C_("NES|Mirroring", "One Screen");
+							s_mirroring = C_("NES|Mirroring", "One Screen");
 						} else {
-							mirroring = C_("NES|Mirroring", "Programmable");
+							s_mirroring = C_("NES|Mirroring", "Programmable");
 						}
 						break;
 					case TNES_MIRRORING_HORIZONTAL:
-						mirroring = C_("NES|Mirroring", "Horizontal");
+						s_mirroring = C_("NES|Mirroring", "Horizontal");
 						break;
 					case TNES_MIRRORING_VERTICAL:
-						mirroring = C_("NES|Mirroring", "Vertical");
+						s_mirroring = C_("NES|Mirroring", "Vertical");
 						break;
 					default:
-						mirroring = C_("RomData", "Unknown");
+						s_mirroring = C_("RomData", "Unknown");
 						break;
 				}
 				break;
@@ -986,11 +988,11 @@ int NES::loadFieldData(void)
 		}
 
 		const char *const mirroring_title = C_("NES", "Mirroring");
-		if (mirroring) {
-			d->fields->addField_string(mirroring_title, mirroring);
+		if (s_mirroring) {
+			d->fields->addField_string(mirroring_title, s_mirroring);
 		}
-		if (vs_ppu) {
-			d->fields->addField_string(C_("NES", "VS. PPU"), vs_ppu);
+		if (s_vs_ppu) {
+			d->fields->addField_string(C_("NES", "VS. PPU"), s_vs_ppu);
 		}
 
 		// Check for the internal NES footer.
@@ -1123,17 +1125,17 @@ int NES::loadFieldData(void)
 			// Mirroring
 			switch (intFooter.board_info >> 4) {
 				case 0:
-					mirroring = C_("NES|Mirroring", "Horizontal");
+					s_mirroring = C_("NES|Mirroring", "Horizontal");
 					break;
 				case 1:
-					mirroring = C_("NES|Mirroring", "Vertical");
+					s_mirroring = C_("NES|Mirroring", "Vertical");
 					break;
 				default:
-					mirroring = nullptr;
+					s_mirroring = nullptr;
 					break;
 			}
-			if (mirroring) {
-				d->fields->addField_string(mirroring_title, mirroring);
+			if (s_mirroring) {
+				d->fields->addField_string(mirroring_title, s_mirroring);
 			} else {
 				d->fields->addField_string(mirroring_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), intFooter.board_info >> 4));
