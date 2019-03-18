@@ -33,9 +33,7 @@ extern "C" {
 /**
  * Neo geo Pocket (Color) ROM header.
  * This matches the ROM header format exactly.
- * References:
- * - http://devrs.com/ngp/files/DoNotLink/ngpcspec.txt
- * - http://gbdev.gg8.se/wiki/articles/The_Cartridge_Header
+ * Reference: http://devrs.com/ngp/files/DoNotLink/ngpcspec.txt
  *
  * All fields are in little-endian.
  * NOTE: Strings are NOT necessarily null-terminated!

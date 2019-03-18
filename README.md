@@ -259,7 +259,7 @@ https://github.com/GerbilSoft/rom-properties/issues
 * [GBATEK](http://problemkaputt.de/gbatek.htm): Game Boy Advance, Nintendo DS,
   and Nintendo DSi technical information.
 * [WiiBrew](http://wiibrew.org/wiki/Main_Page): Wii homebrew and reverse
-  engineering. Used for Wii and GameCube disc format information.
+  engineering. Used for Wii and GameCube disc and file format information.
 * [GameTDB](http://www.gametdb.com/): Database of games for various game
   consoles. Used for automatic downloading of disc scans for Wii and GameCube.
 * [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
@@ -294,3 +294,13 @@ https://github.com/GerbilSoft/rom-properties/issues
   Super NES and Satellaview BS-X technical information.
 * [Homebrew Development Kit for the Tiger game.com](https://github.com/Tpot-SSL/GameComHDK)
   by @Tpot-SSL: game.com technical information.
+* [Low Level Bits: Parsing Mach-O Files](https://lowlevelbits.org/parsing-mach-o-files/)
+  for Mac OS X Mach-O binary information.
+* [Free60.org Wiki archive](https://free60project.github.io/wiki/) for Xbox 360
+  technical information.
+* [Xenia Project](https://github.com/xenia-project/xenia) for Xbox 360 technical information.
+* [Xbox Dev Wiki](https://xboxdevwiki.net/) for Original Xbox technical information.
+* [.XBE File Format by Caustik](http://www.caustik.com/cxbx/download/xbe.htm) for
+  information about the Original Xbox .XBE executable format.
+* [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded) for Original Xbox
+  technical information, including XPR pixel formats.
