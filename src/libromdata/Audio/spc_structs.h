@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * spc_structs.h: SPC audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -94,10 +94,10 @@ typedef enum {
  */
 #define SPC_MAGIC "SNES-SPC700 Sound File Data v0.30"
 typedef struct PACKED _SPC_Header {
-	char magic[33];		// [0x000] SPC_MAGIC
-	uint8_t d26[2];		// [0x021] 26, 26 (TODO: Include as part of SPC_MAGIC?)
-	uint8_t has_id666;	// [0x023] 26 = has ID666; 27 = no ID666
-	uint8_t version;	// [0x024] Minor version number, i.e. 30.
+	char magic[sizeof(SPC_MAGIC)-1];// [0x000] SPC_MAGIC
+	uint8_t d26[2];			// [0x021] 26, 26 (TODO: Include as part of SPC_MAGIC?)
+	uint8_t has_id666;		// [0x023] 26 = has ID666; 27 = no ID666
+	uint8_t version;		// [0x024] Minor version number, i.e. 30.
 
 	// Initial registers.
 	struct {
