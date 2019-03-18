@@ -71,7 +71,7 @@ msgctxt "ImageTypesTab"
 msgid ""
 "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images<br/>are "
 "provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.<br/>\n"
-"amiibo images are provided by <a href=\"http://amiibo.life/\">amiibo.life</"
+"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
 "a>, the Unofficial amiibo Database."
 msgstr ""
 

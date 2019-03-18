@@ -496,7 +496,7 @@ int Amiibo::loadFieldData(void)
 	// tr: Credits for amiibo image downloads.
 	const string credits = rp_sprintf(
 		C_("Amiibo", "amiibo images provided by %s,\nthe Unofficial amiibo Database."),
-		"<a href=\"http://amiibo.life/\">amiibo.life</a>");
+		"<a href=\"https://amiibo.life/\">amiibo.life</a>");
 	d->fields->addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.

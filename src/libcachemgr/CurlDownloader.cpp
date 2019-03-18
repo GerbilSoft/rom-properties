@@ -201,7 +201,8 @@ int CurlDownloader::download(void)
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
 	// Fail on HTTP errors. (>= 400)
 	curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
-	// Redirection is required for http://amiibo.life/nfc/%08X-%08X
+	// Redirection is required for https://amiibo.life/nfc/%08X-%08X
+	// TODO: Limit the number of redirects?
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
 
 	// Header and data functions.
