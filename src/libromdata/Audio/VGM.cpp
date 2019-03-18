@@ -186,7 +186,6 @@ VGMPrivate::gd3_tags_t *VGMPrivate::loadGD3(unsigned int addr)
 	const char16_t *const endptr = start + length16;
 	for (const char16_t *p = start; p < endptr && tag_idx < gd3_tags->size(); p++) {
 		// Check for a NULL.
-		// TODO: Optimize by using memchr()?
 		if (*p == 0) {
 			// Found a NULL!
 			(*gd3_tags)[tag_idx] = utf16le_to_utf8(start, (int)(p-start));
