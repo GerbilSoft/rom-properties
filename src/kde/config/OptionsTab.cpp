@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -97,6 +97,7 @@ void OptionsTab::reset(void)
 	d->ui.chkUseIntIconForSmallSizes->setChecked(config->useIntIconForSmallSizes());
 	d->ui.chkDownloadHighResScans->setChecked(config->downloadHighResScans());
 	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
+	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->enableThumbnailOnNetworkFS());
 }
 
 /**
@@ -112,6 +113,7 @@ void OptionsTab::loadDefaults(void)
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
+	static const bool enableThumbnailOnNetworkFS = false;
 	bool isDefChanged = false;
 
 	Q_D(OptionsTab);
@@ -132,6 +134,10 @@ void OptionsTab::loadDefaults(void)
 	{
 		d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(
 			showDangerousPermissionsOverlayIcon_default);
+		isDefChanged = true;
+	}
+	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != enableThumbnailOnNetworkFS) {
+		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(enableThumbnailOnNetworkFS);
 		isDefChanged = true;
 	}
 
@@ -165,6 +171,8 @@ void OptionsTab::save(QSettings *pSettings)
 	pSettings->beginGroup(QLatin1String("Options"));
 	pSettings->setValue(QLatin1String("ShowDangerousPermissionsOverlayIcon"),
 		d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked());
+	pSettings->setValue(QLatin1String("EnableThumbnailOnNetworkFS"),
+		d->ui.chkEnableThumbnailOnNetworkFS->isChecked());
 	pSettings->endGroup();
 }
 

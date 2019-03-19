@@ -106,6 +106,7 @@
 #define IDC_INTICONSMALL                        40102
 #define IDC_HIGHRESDL                           40103
 #define IDC_DANGEROUSPERMISSIONS                40104
+#define IDC_ENABLETHUMBNAILONNETWORKFS          40105
 
 // Thumbnail cache
 #define IDC_CACHE_DESCRIPTION                   40201

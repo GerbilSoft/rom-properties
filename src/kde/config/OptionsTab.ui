@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>466</width>
-    <height>258</height>
+    <height>307</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -36,6 +36,14 @@
         <property name="text">
          <string>Download high-resolution scans if viewing large thumbnails.
 This may increase bandwidth usage.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkEnableThumbnailOnNetworkFS">
+        <property name="text">
+         <string>Enable thumbnailing and metadata extraction on network
+file systems. This may slow down file browsing.</string>
         </property>
        </widget>
       </item>
@@ -78,7 +86,7 @@ This may increase bandwidth usage.</string>
  <connections>
   <connection>
    <sender>chkExtImgDownloadEnabled</sender>
-   <signal>clicked(bool)</signal>
+   <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
    <slot>checkBox_clicked()</slot>
    <hints>
@@ -94,7 +102,7 @@ This may increase bandwidth usage.</string>
   </connection>
   <connection>
    <sender>chkUseIntIconForSmallSizes</sender>
-   <signal>clicked(bool)</signal>
+   <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
    <slot>checkBox_clicked()</slot>
    <hints>
@@ -110,7 +118,7 @@ This may increase bandwidth usage.</string>
   </connection>
   <connection>
    <sender>chkDownloadHighResScans</sender>
-   <signal>clicked(bool)</signal>
+   <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
    <slot>checkBox_clicked()</slot>
    <hints>
@@ -126,17 +134,33 @@ This may increase bandwidth usage.</string>
   </connection>
   <connection>
    <sender>chkShowDangerousPermissionsOverlayIcon</sender>
-   <signal>clicked(bool)</signal>
+   <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
    <slot>checkBox_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>51</x>
-     <y>212</y>
+     <x>65</x>
+     <y>286</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
      <y>219</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkEnableThumbnailOnNetworkFS</sender>
+   <signal>clicked()</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>47</x>
+     <y>166</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1</x>
+     <y>169</y>
     </hint>
    </hints>
   </connection>

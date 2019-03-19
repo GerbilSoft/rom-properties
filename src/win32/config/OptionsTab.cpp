@@ -153,6 +153,8 @@ void OptionsTabPrivate::reset(void)
 	CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(config->downloadHighResScans()));
 	CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
 		boolToBstChecked(config->showDangerousPermissionsOverlayIcon()));
+	CheckDlgButton(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS,
+		boolToBstChecked(config->enableThumbnailOnNetworkFS()));
 
 	// No longer changed.
 	changed = false;
@@ -170,6 +172,7 @@ void OptionsTabPrivate::loadDefaults(void)
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
+	static const bool enableThumbnailOnNetworkFS_default = false;
 	bool isDefChanged = false;
 
 	bool cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
@@ -191,6 +194,12 @@ void OptionsTabPrivate::loadDefaults(void)
 	if (cur != downloadHighResScans_default) {
 		CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
 			boolToBstChecked(showDangerousPermissionsOverlayIcon_default));
+		isDefChanged = true;
+	}
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
+	if (cur != enableThumbnailOnNetworkFS_default) {
+		CheckDlgButton(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS,
+			boolToBstChecked(enableThumbnailOnNetworkFS_default));
 		isDefChanged = true;
 	}
 
@@ -228,6 +237,9 @@ void OptionsTabPrivate::save(void)
 
 	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
 	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, U82T_c(filename));
+
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
+	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, U82T_c(filename));
 
 	// No longer changed.
 	changed = false;

@@ -59,8 +59,9 @@ BEGIN
     AUTOCHECKBOX    "Always use the internal icon (if present) for small sizes.", IDC_INTICONSMALL, 15, 33, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Download high-resolution scans if viewing large thumbnails.\nThis may increase bandwidth usage.", IDC_HIGHRESDL, 15, 47, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 
-    GROUPBOX        "&Options", IDC_STATIC, 7, 71, 397, 35, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Options", IDC_STATIC, 7, 71, 397, 55, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 83, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
