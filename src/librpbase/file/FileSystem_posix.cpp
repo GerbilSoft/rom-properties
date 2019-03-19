@@ -43,6 +43,9 @@
 # ifndef MQUEUE_MAGIC
 #  define MQUEUE_MAGIC 0x19800202
 # endif /* MQUEUE_MAGIC */
+# ifndef TRACEFS_MAGIC
+#  define TRACEFS_MAGIC 0x74726163
+# endif /* TRACEFS_MAGIC */
 # ifndef CIFS_MAGIC_NUMBER
 #  define CIFS_MAGIC_NUMBER 0xff534d42
 # endif /* CIFS_MAGIC_NUMBER */
@@ -52,6 +55,9 @@
 # ifndef FUSE_SUPER_MAGIC
 #  define FUSE_SUPER_MAGIC 0x65735546
 # endif /* FUSE_SUPER_MAGIC */
+# ifndef OCFS2_SUPER_MAGIC
+#  define OCFS2_SUPER_MAGIC 0x7461636f
+# endif /* OCFS2_SUPER_MAGIC */
 #endif /* __linux__ */
 
 // C includes. (C++ namespace)
