@@ -43,6 +43,7 @@ typedef enum {
 	RPCT_SOURCE_FILE_NO_IMAGE	= 4,	// Source file has no image.
 	RPCT_OUTPUT_FILE_FAILED		= 5,	// Failed to save the output file.
 	RPCT_SOURCE_FILE_CLASS_DISABLED	= 6,	// User configuration has disabled thumbnails for this class.
+	RPCT_SOURCE_FILE_BAD_FS		= 7,	// Source file is located on a "bad" file system.
 } RpCreateThumbnailError;
 
 /**

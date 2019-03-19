@@ -27,6 +27,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/TextFuncs_wchar.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
@@ -39,6 +40,10 @@ using LibRomData::RomDataFactory;
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+
+// C++ includes.
+#include <string>
+using std::string;
 
 // CLSID
 const CLSID CLSID_RP_ShellIconOverlayIdentifier =
@@ -117,8 +122,20 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 		return S_FALSE;
 	}
 
+	// Convert the filename to UTF-8.
+	const string u8filename = W2U8(pwszPath);
+
+	// Check for "bad" file systems.
+	// TODO: Combine with the above "slow" check?
+	if (LibRpBase::FileSystem::isOnBadFS(u8filename.c_str(),
+	    config->enableThumbnailOnNetworkFS()))
+	{
+		// This file is on a "bad" file system.
+		return S_FALSE;
+	}
+
 	// Open the ROM file.
-	RpFile *const file = new RpFile(W2U8(pwszPath), RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(u8filename.c_str(), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Error opening the ROM file.
 		file->unref();

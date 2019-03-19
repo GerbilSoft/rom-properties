@@ -25,6 +25,7 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
@@ -269,11 +270,19 @@ RomThumbCreator::~RomThumbCreator()
 bool RomThumbCreator::create(const QString &path, int width, int height, QImage &img)
 {
 	Q_UNUSED(height);
+	const QByteArray u8path = path.toUtf8();
+
+	// Check for "bad" file systems.
+	const Config *const config = Config::instance();
+	if (FileSystem::isOnBadFS(u8path.constData(), config->enableThumbnailOnNetworkFS())) {
+		// This file is on a "bad" file system.
+		return RPCT_SOURCE_FILE_BAD_FS;
+	}
 
 	// Assuming width and height are the same.
 	// TODO: What if they aren't?
 	Q_D(RomThumbCreator);
-	int ret = d->getThumbnail(Q2U8(path), width, img);
+	int ret = d->getThumbnail(u8path.constData(), width, img);
 	return (ret == 0);
 }
 
@@ -307,6 +316,13 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+
+	// Check for "bad" file systems.
+	const Config *const config = Config::instance();
+	if (FileSystem::isOnBadFS(source_file, config->enableThumbnailOnNetworkFS())) {
+		// This file is on a "bad" file system.
+		return RPCT_SOURCE_FILE_BAD_FS;
+	}
 
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.

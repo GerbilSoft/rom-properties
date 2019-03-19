@@ -30,10 +30,6 @@
 #include "librpbase/img/RpImageLoader.hpp"
 using namespace LibRpBase;
 
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
-
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
 
@@ -102,6 +98,9 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 {
 	// Ignoring grfMode for now. (always read-only)
 	RP_UNUSED(grfMode);
+
+	// TODO: Check for network file systems and disable
+	// thumbnailing if it's too slow.
 
 	// Create an IRpFile wrapper for the IStream.
 	RpFile_IStream *const file = new RpFile_IStream(pstream, true);

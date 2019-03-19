@@ -24,6 +24,9 @@
     instead of showing a U+240A symbol between lines.
   * RFT_LISTDATA fields (ListView, etc.) can now have text alignment set
     by the various RomData subclasses.
+  * Added an option to disable thumbnailing and metadata extraction on
+    network file systems and "bad" file systems. The option is set by
+    default to reduce slowdown.
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other

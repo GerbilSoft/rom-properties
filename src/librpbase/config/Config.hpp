@@ -127,6 +127,12 @@ class Config : public ConfReader
 		 * @return True if we should show the overlay icon; false if not.
 		 */
 		bool showDangerousPermissionsOverlayIcon(void) const;
+
+		/**
+		 * Enable thumbnailing and metadata on network filesystems?
+		 * @return True if we should enable; false if not.
+		 */
+		bool enableThumbnailOnNetworkFS(void) const;
 };
 
 }

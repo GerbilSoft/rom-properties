@@ -165,6 +165,19 @@ bool is_symlink(const char *filename);
  */
 std::string resolve_symlink(const char *filename);
 
+/**
+ * Is a file located on a "bad" file system?
+ *
+ * We don't want to check files on e.g. procfs,
+ * or on network file systems if the option is disabled.
+ *
+ * @param filename Filename.
+ * @param netFS If true, allow network file systems.
+ *
+ * @return True if this file is on a "bad" file system; false if not.
+ */
+bool isOnBadFS(const char *filename, bool netFS = false);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_FILESYSTEM_HPP__ */

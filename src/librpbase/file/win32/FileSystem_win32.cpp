@@ -535,4 +535,31 @@ string resolve_symlink(const char *filename)
 	return ret;
 }
 
+/**
+ * Is a file located on a "bad" file system?
+ *
+ * We don't want to check files on e.g. procfs,
+ * or on network file systems if the option is disabled.
+ *
+ * @param filename Filename.
+ * @param netFS If true, allow network file systems.
+ *
+ * @return True if this file is on a "bad" file system; false if not.
+ */
+bool isOnBadFS(const char *filename, bool netFS)
+{
+	// TODO: More comprehensive check.
+	// For now, merely checking if it starts with "\\\\"
+	// and the third character is not '?' or '.'.
+	if (filename[0] == '\\' && filename[1] == '\\' &&
+	    filename[2] != '\0' && filename[2] != '?' && filename[2] != '.')
+	{
+		// This file is located on a network share.
+		return !netFS;
+	}
+
+	// Not on a network share.
+	return false;
+}
+
 } }

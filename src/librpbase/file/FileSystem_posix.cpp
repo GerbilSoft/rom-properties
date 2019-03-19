@@ -35,6 +35,25 @@
 #include <utime.h>
 #include <unistd.h>
 
+#ifdef __linux__
+// TODO: Remove once /proc/mounts parsing is implemented.
+# include <sys/vfs.h>
+# include <linux/magic.h>
+// from `man 2 fstatfs`, but not present in linux/magic.h on 4.14-r1
+# ifndef MQUEUE_MAGIC
+#  define MQUEUE_MAGIC 0x19800202
+# endif /* MQUEUE_MAGIC */
+# ifndef CIFS_MAGIC_NUMBER
+#  define CIFS_MAGIC_NUMBER 0xff534d42
+# endif /* CIFS_MAGIC_NUMBER */
+# ifndef COH_SUPER_MAGIC
+#  define COH_SUPER_MAGIC 0x012ff7b7
+# endif /* COH_SUPER_MAGIC */
+# ifndef FUSE_SUPER_MAGIC
+#  define FUSE_SUPER_MAGIC 0x65735546
+# endif /* FUSE_SUPER_MAGIC */
+#endif /* __linux__ */
+
 // C includes. (C++ namespace)
 #include <cerrno>
 #include <cstring>
@@ -309,6 +328,76 @@ string resolve_symlink(const char *filename)
 		free(resolved_path);
 	}
 	return ret;
+}
+
+/**
+ * Is a file located on a "bad" file system?
+ *
+ * We don't want to check files on e.g. procfs,
+ * or on network file systems if the option is disabled.
+ *
+ * @param filename Filename.
+ * @param netFS If true, allow network file systems.
+ *
+ * @return True if this file is on a "bad" file system; false if not.
+ */
+bool isOnBadFS(const char *filename, bool netFS)
+{
+	bool bRet = false;
+
+#ifdef __linux__
+	// TODO: Get the mount point, then look it up in /proc/mounts.
+
+	struct statfs sfbuf;
+	int ret = statfs(filename, &sfbuf);
+	if (ret != 0) {
+		// statfs() failed.
+		// Assume this isn't a network file system.
+		return false;
+	}
+
+	switch (sfbuf.f_type) {
+		case DEBUGFS_MAGIC:
+		case DEVPTS_SUPER_MAGIC:
+		case EFIVARFS_MAGIC:
+		case FUTEXFS_SUPER_MAGIC:
+		case MQUEUE_MAGIC:
+		case PIPEFS_MAGIC:
+		case PROC_SUPER_MAGIC:
+		case PSTOREFS_MAGIC:
+		case SECURITYFS_MAGIC:
+		case SMACK_MAGIC:
+		case SOCKFS_MAGIC:
+		case TRACEFS_MAGIC:
+		case USBDEVICE_SUPER_MAGIC:
+			// Bad file systems.
+			bRet = true;
+			break;
+
+		case AFS_SUPER_MAGIC:
+		case CIFS_MAGIC_NUMBER:
+		case CODA_SUPER_MAGIC:
+		case COH_SUPER_MAGIC:
+		case FUSE_SUPER_MAGIC:	// TODO: Check the actual fs type.
+		case NCP_SUPER_MAGIC:
+		case NFS_SUPER_MAGIC:
+		case OCFS2_SUPER_MAGIC:
+		case SMB_SUPER_MAGIC:
+		case V9FS_MAGIC:
+			// Network file system.
+			// Allow it if we're allowing network file systems.
+			bRet = !netFS;
+			break;
+
+		default:
+			// Other file system.
+			break;
+	}
+#else
+	// TODO: Support for other systems.
+#endif
+
+	return bRet;
 }
 
 } }

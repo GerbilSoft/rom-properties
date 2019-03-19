@@ -39,8 +39,10 @@ using LibWin32Common::AutoGetDC;
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/TextFuncs_wchar.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
+#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
 // libi18n
@@ -2297,6 +2299,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	RpFile *file = nullptr;
 	RomData *romData = nullptr;
 
+	string u8filename;
+	const Config *config;
+
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
 	// one file is selected.
@@ -2324,8 +2329,20 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
+	// Convert the filename to UTF-8.
+	u8filename = T2U8(tfilename, cchFilename);
+
+	// Check for "bad" file systems.
+	config = Config::instance();
+	if (LibRpBase::FileSystem::isOnBadFS(u8filename.c_str(),
+	    config->enableThumbnailOnNetworkFS()))
+	{
+		// This file is on a "bad" file system.
+		goto cleanup;
+	}
+
 	// Open the file.
-	file = new RpFile(T2U8(tfilename, cchFilename), RpFile::FM_OPEN_READ_GZ);
+	file = new RpFile(u8filename.c_str(), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;

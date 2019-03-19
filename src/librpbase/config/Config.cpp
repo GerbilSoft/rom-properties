@@ -107,6 +107,7 @@ class ConfigPrivate : public ConfReaderPrivate
 		bool useIntIconForSmallSizes;
 		bool downloadHighResScans;
 		bool showDangerousPermissionsOverlayIcon;
+		bool enableThumbnailOnNetworkFS;
 };
 
 /** ConfigPrivate **/
@@ -142,6 +143,8 @@ ConfigPrivate::ConfigPrivate()
 	, downloadHighResScans(true)
 	/* Overlay icon */
 	, showDangerousPermissionsOverlayIcon(true)
+	/* Enable thumbnailing and metadata on network FS */
+	, enableThumbnailOnNetworkFS(false)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
 }
@@ -162,12 +165,14 @@ void ConfigPrivate::reset(void)
 	mapImgTypePrio.reserve(16);
 #endif
 
-	// Download options.
+	// Download options
 	extImgDownloadEnabled = true;
 	useIntIconForSmallSizes = true;
 	downloadHighResScans = true;
-	// Overlay icon.
+	// Overlay icon
 	showDangerousPermissionsOverlayIcon = true;
+	// Enable thumbnail and metadata on network FS
+	enableThumbnailOnNetworkFS = false;
 }
 
 /**
@@ -221,6 +226,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		bool *param;
 		if (!strcasecmp(name, "ShowDangerousPermissionsOverlayIcon")) {
 			param = &showDangerousPermissionsOverlayIcon;
+		} else if (!strcasecmp(name, "EnableThumbnailOnNetworkFS")) {
+			param = &enableThumbnailOnNetworkFS;
 		} else {
 			// Invalid option.
 			return 1;
@@ -526,6 +533,16 @@ bool Config::showDangerousPermissionsOverlayIcon(void) const
 {
 	RP_D(const Config);
 	return d->showDangerousPermissionsOverlayIcon;
+}
+
+/**
+ * Enable thumbnailing and metadata on network filesystems?
+ * @return True if we should enable; false if not.
+ */
+bool Config::enableThumbnailOnNetworkFS(void) const
+{
+	RP_D(const Config);
+	return d->enableThumbnailOnNetworkFS;
 }
 
 }

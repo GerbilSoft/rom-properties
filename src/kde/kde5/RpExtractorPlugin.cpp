@@ -28,11 +28,10 @@
 // librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomMetaData.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RpFile.hpp"
-using LibRpBase::RomData;
-using LibRpBase::RomMetaData;
-using LibRpBase::IRpFile;
-using LibRpBase::RpFile;
+#include "librpbase/config/Config.hpp"
+using namespace LibRpBase;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -102,9 +101,18 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 		return;
 
 	// Single file, and it's local.
+	const QByteArray u8filename = filename.toUtf8();
+
+	// Check for "bad" file systems.
+	const Config *const config = Config::instance();
+	if (FileSystem::isOnBadFS(u8filename.constData(), config->enableThumbnailOnNetworkFS())) {
+		// This file is on a "bad" file system.
+		return;
+	}
+
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(u8filename.constData(), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		return;

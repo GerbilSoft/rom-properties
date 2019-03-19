@@ -21,6 +21,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/RomData.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
@@ -246,6 +247,13 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// NOTE: TCreateThumbnail() has wrappers for opening the
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
+
+	// Check for "bad" file systems.
+	const Config *const config = Config::instance();
+	if (FileSystem::isOnBadFS(source_file, config->enableThumbnailOnNetworkFS())) {
+		// This file is on a "bad" file system.
+		return RPCT_SOURCE_FILE_BAD_FS;
+	}
 
 	// Attempt to open the ROM file.
 	// TODO: RpGVfsFile wrapper.

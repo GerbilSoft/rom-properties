@@ -27,8 +27,10 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/TextFuncs_wchar.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
+#include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -127,6 +129,13 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
 	d->filename = W2U8(pszFileName);
+
+	// Check for "bad" file systems.
+	const Config *const config = Config::instance();
+	if (FileSystem::isOnBadFS(d->filename.c_str(), config->enableThumbnailOnNetworkFS())) {
+		// This file is on a "bad" file system.
+		return E_FAIL;
+	}
 
 	// Attempt to open the ROM file.
 	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
