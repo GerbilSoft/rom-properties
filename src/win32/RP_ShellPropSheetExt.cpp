@@ -2324,34 +2324,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	// Check if this is a drive letter.
-	// FIXME: Dedupe this code.
-	if (cchFilename == 3 && _istalpha(tfilename[0]) &&
-	    tfilename[1] == L':' && tfilename[2] == L'\\')
-	{
-		// This is a drive letter.
-		// Only CD-ROM (and similar) drives are supported.
-		// TODO: Verify if opening by drive letter works,
-		// or if we have to resolve the physical device name.
-		if (GetDriveType(tfilename) != DRIVE_CDROM) {
-			// Not a CD-ROM drive.
-			hr = E_UNEXPECTED;	// same as icon/image
-			goto cleanup;
-		}
-	} else {
-		// Make sure this isn't a directory.
-		// TODO: Other checks?
-		// TODO: Check if it's actually called for directories.
-		DWORD dwAttr = GetFileAttributes(tfilename);
-		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
-		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
-		{
-			// File cannot be opened or is a directory.
-			hr = E_UNEXPECTED;	// same as icon/image
-			goto cleanup;
-		}
-	}
-
 	// Open the file.
 	file = new RpFile(T2U8(tfilename, cchFilename), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {

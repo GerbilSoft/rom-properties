@@ -128,47 +128,6 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	// TODO: If the file was already loaded, don't reload it.
 	d->filename = W2U8(pszFileName);
 
-	// Check if this is a drive letter.
-	// TODO: Move to GetLocation()?
-	if (iswalpha(pszFileName[0]) && pszFileName[1] == L':' &&
-	    pszFileName[2] == L'\\' && pszFileName[3] == L'\0')
-	{
-		// This is a drive letter.
-		// Only CD-ROM (and similar) drives are supported.
-		// TODO: Verify if opening by drive letter works,
-		// or if we have to resolve the physical device name.
-		UINT driveType;
-#ifdef UNICODE
-		driveType = GetDriveType(pszFileName);
-#else /* !UNICODE */
-		// ANSI workaround.
-		char pszFileNameA[4];
-		pszFileNameA[0] = pszFileName[0] & 0xFF;
-		pszFileNameA[1] = pszFileName[1] & 0xFF;
-		pszFileNameA[2] = pszFileName[2] & 0xFF;
-		pszFileNameA[3] = '\0';
-		driveType = GetDriveType(pszFileNameA);
-#endif /* UNICODE */
-		if (driveType != DRIVE_CDROM) {
-			// Not a CD-ROM drive.
-			return E_UNEXPECTED;
-		}
-	} else {
-		// Make sure this isn't a directory.
-		// TODO: Other checks?
-#ifdef UNICODE
-		DWORD dwAttr = GetFileAttributes(pszFileName);
-#else /* !UNICODE */
-		DWORD dwAttr = GetFileAttributes(W2A(pszFileName).c_str());
-#endif /* UNICODE */
-		if (dwAttr == INVALID_FILE_ATTRIBUTES ||
-		    (dwAttr & FILE_ATTRIBUTE_DIRECTORY))
-		{
-			// File cannot be opened or is a directory.
-			return E_UNEXPECTED;
-		}
-	}
-
 	// Attempt to open the ROM file.
 	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
