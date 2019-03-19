@@ -94,7 +94,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
 	}
 
 	// Verify the CISO header.
-	if (cisoHeader.magic == cpu_to_be32(CISO_MAGIC)) {
+	if (cisoHeader.magic != cpu_to_be32(CISO_MAGIC)) {
 		// Invalid magic.
 		q->m_file->unref();
 		q->m_file = nullptr;
@@ -169,7 +169,7 @@ int CisoGcnReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 
 	// Check the CISO magic.
 	const CISOHeader *const cisoHeader = reinterpret_cast<const CISOHeader*>(pHeader);
-	if (cisoHeader->magic == cpu_to_be32(CISO_MAGIC)) {
+	if (cisoHeader->magic != cpu_to_be32(CISO_MAGIC)) {
 		// Invalid magic.
 		return -1;
 	}
