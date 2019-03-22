@@ -32,7 +32,7 @@ SET(MZ_ZLIB ON)
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 if(POLICY CMP0074)
-    cmake_policy(SET CMP0074 OLD) 
+    cmake_policy(SET CMP0074 OLD)
 endif()
 # ZLIB_ROOT - Parent directory of zlib installation
 # BZIP2_ROOT - Parent directory of BZip2 installation
@@ -41,7 +41,7 @@ endif()
 enable_language(C)
 
 # Minizip library version
-set(VERSION "2.8.4")
+set(VERSION "2.8.5")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -61,12 +61,9 @@ set(INSTALL_MAN_DIR ${CMAKE_INSTALL_FULL_MANDIR} CACHE PATH "Installation direct
 set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 set(INSTALL_CMAKE_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/minizip" CACHE PATH "Installation directory for cmake files.")
 
-set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/minizip.pc)
-if(EXISTS ${MINIZIP_PC}.cmakein)
-    configure_file(${MINIZIP_PC}.cmakein ${MINIZIP_PC} @ONLY)
-endif()
-
 set(PROJECT_NAME minizip)
+set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/minizip.pc)
+configure_file(minizip.pc.cmakein ${MINIZIP_PC} @ONLY)
 
 # Check if zlib installation is present
 if(MZ_ZLIB AND NOT MZ_LIBCOMP)
@@ -265,16 +262,16 @@ endif()
 if(UNIX)
     add_definitions(-D_POSIX_C_SOURCE=200112L)
     list(APPEND MINIZIP_SRC "mz_os_posix.c" "mz_strm_os_posix.c")
-    
+
     if ((MZ_PKCRYPT OR MZ_WZAES) AND NOT (MZ_OPENSSL AND OPENSSL_FOUND))
-        
+
         if (APPLE AND NOT MZ_BRG)
             list(APPEND MINIZIP_SRC "mz_crypt_apple.c")
         else()
             set(MZ_BRG TRUE)
         endif()
 
-        # Check to see which random generation functions we have 
+        # Check to see which random generation functions we have
         check_symbol_exists("getrandom" "sys/random.h" HAVE_GETRANDOM)
         if (HAVE_GETRANDOM)
             add_definitions(-DHAVE_GETRANDOM)
@@ -294,7 +291,7 @@ if(UNIX)
 
             pkg_check_modules(LIBBSD libbsd)
             if (LIBBSD_FOUND)
-                check_library_exists("${LIBBSD_LIBRARIES}" "arc4random_buf" 
+                check_library_exists("${LIBBSD_LIBRARIES}" "arc4random_buf"
                     "${LIBBSD_LIBRARY_DIRS}" HAVE_LIBBSD_ARC4RANDOM_BUF)
                 if (HAVE_LIBBSD_ARC4RANDOM_BUF)
                     add_definitions(-DHAVE_LIBBSD)
@@ -332,7 +329,7 @@ if(MZ_COMPAT)
     string(REPLACE "file.h" "zip.h" ZIP_COMPAT_HEADER ${COMPAT_HEADER})
     string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_ZIP" ZIP_COMPAT_HEADER ${ZIP_COMPAT_HEADER})
     file(WRITE "zip.h" ${ZIP_COMPAT_HEADER})
-    list(APPEND MINIZIP_PUBLIC_HEADERS "zip.h") 
+    list(APPEND MINIZIP_PUBLIC_HEADERS "zip.h")
 
     string(REPLACE "file.h" "unzip.h" UNZIP_COMPAT_HEADER ${COMPAT_HEADER})
     string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_UNZIP" UNZIP_COMPAT_HEADER ${UNZIP_COMPAT_HEADER})
@@ -409,7 +406,7 @@ if(MZ_ZLIB)
     endif()
 endif()
 
-# Include BZIP2 
+# Include BZIP2
 if(MZ_BZIP2)
     add_definitions(-DHAVE_BZIP2)
 
@@ -438,7 +435,7 @@ if(MZ_BZIP2)
     endif()
 endif()
 
-# Include LZMA 
+# Include LZMA
 if(MZ_LZMA)
     add_definitions(-DHAVE_LZMA)
     add_definitions(-DLZMA_API_STATIC)
@@ -584,8 +581,8 @@ add_library(${PROJECT_NAME}
                 ${BZIP2_SRC} ${BZIP2_PUBLIC_HEADERS}
                 ${LZMA_SRC} ${LZMA_PUBLIC_HEADERS})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES 
-                        VERSION ${VERSION} 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+                        VERSION ${VERSION}
                         SOVERSION ${SOVERSION}
                         LINKER_LANGUAGE C
                         DEFINE_SYMBOL "MZ_EXPORTS"
@@ -690,7 +687,7 @@ if(MZ_BUILD_UNIT_TEST)
             list(GET COMPRESS_METHOD_NAMES ${INDEX} COMPRESS_METHOD_NAME)
             list(GET COMPRESS_METHOD_ARGS ${INDEX} COMPRESS_METHOD_ARG)
             add_test(NAME ${COMPRESS_METHOD_NAME}-zip-${EXTRA_NAME}
-                     COMMAND minizip_cmd ${COMPRESS_METHOD_ARG} -o ${EXTRA_ARGS} 
+                     COMMAND minizip_cmd ${COMPRESS_METHOD_ARG} -o ${EXTRA_ARGS}
                         result.zip test.c test.h empty.txt random.bin uniform.bin fuzz
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
             add_test(NAME ${COMPRESS_METHOD_NAME}-list-${EXTRA_NAME}
@@ -702,7 +699,7 @@ if(MZ_BUILD_UNIT_TEST)
                          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
             endif()
             add_test(NAME ${COMPRESS_METHOD_NAME}-append-${EXTRA_NAME}
-                    COMMAND minizip_cmd ${COMPRESS_METHOD_ARG} -a ${EXTRA_ARGS} 
+                    COMMAND minizip_cmd ${COMPRESS_METHOD_ARG} -a ${EXTRA_ARGS}
                         result.zip single.txt
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
             if(NOT MZ_COMPRESS_ONLY)
@@ -711,7 +708,7 @@ if(MZ_BUILD_UNIT_TEST)
                             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
             endif()
             add_test(NAME ${COMPRESS_METHOD_NAME}-erase-${EXTRA_NAME}
-                    COMMAND minizip_cmd -o -e result.zip test.c test.h 
+                    COMMAND minizip_cmd -o -e result.zip test.c test.h
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
             if(NOT MZ_COMPRESS_ONLY)
                 add_test(NAME ${COMPRESS_METHOD_NAME}-erase-unzip-${EXTRA_NAME}
@@ -739,7 +736,7 @@ if(MZ_BUILD_UNIT_TEST)
     if(NOT MZ_COMPRESS_ONLY)
         if(MZ_ZLIB)
             add_test(NAME unzip-tiny
-                     COMMAND minizip_cmd -x -o ${EXTRA_ARGS} -d out 
+                     COMMAND minizip_cmd -x -o ${EXTRA_ARGS} -d out
                         fuzz/unzip_fuzzer_seed_corpus/tiny.zip
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
         endif()

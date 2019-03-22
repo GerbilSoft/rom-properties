@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.8.4, February 14, 2019
+   Version 2.8.5, March 17, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -351,6 +351,11 @@ int32_t mz_os_make_dir(const char *path)
 
     if (path == NULL)
         return MZ_PARAM_ERROR;
+
+    /* Don't try to create a drive letter */
+    if ((path[0] != 0) && (strlen(path) <= 3) && (path[1] == ':'))
+        return mz_os_is_dir(path);
+
     path_wide = mz_os_unicode_string_create(path, MZ_ENCODING_UTF8);
     if (path_wide == NULL)
         return MZ_PARAM_ERROR;

@@ -1,5 +1,5 @@
 /* mz_crypt.c -- Crypto/hash functions
-   Version 2.8.4, February 14, 2019
+   Version 2.8.5, March 17, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -182,9 +182,11 @@ int32_t  mz_crypt_pbkdf2(uint8_t *password, int32_t password_length, uint8_t *sa
             key[k++] = ux[j++];
     }
 
+    /* hmac3 uses the same provider as hmac2, so it must be deleted 
+       before the context is destroyed. */
+    mz_crypt_hmac_delete(&hmac3);
     mz_crypt_hmac_delete(&hmac1);
     mz_crypt_hmac_delete(&hmac2);
-    mz_crypt_hmac_delete(&hmac3);
 
     return err;
 }

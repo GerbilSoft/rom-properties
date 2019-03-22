@@ -1,5 +1,5 @@
 /* mz_crypt_win32.c -- Crypto/hash functions for Windows
-   Version 2.8.4, February 14, 2019
+   Version 2.8.5, March 17, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -510,6 +510,12 @@ int32_t mz_crypt_hmac_copy(void *src_handle, void *target_handle)
     mz_crypt_hmac *target = (mz_crypt_hmac *)target_handle;
     int32_t result = 0;
     int32_t err = MZ_OK;
+
+    if (target->hash)
+    {
+        CryptDestroyHash(target->hash);
+        target->hash = 0;
+    }
 
     result = CryptDuplicateHash(source->hash, NULL, 0, &target->hash);
 
