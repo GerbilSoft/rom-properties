@@ -39,6 +39,7 @@ using namespace LibRpBase;
 
 // Other RomData subclasses
 #include "Texture/XboxXPR.hpp"
+#include "Other/EXE.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -86,11 +87,22 @@ class Xbox_XBE_Private : public RomDataPrivate
 		DiscReader *xpr0_discReader;
 		XboxXPR *xpr0_xtImage;
 
+		// PE executable
+		DiscReader *pe_exe_discReader;
+		EXE *pe_exe;
+
+	public:
 		/**
 		 * Initialize the title image object.
 		 * @return XboxXPR object on success; nullptr on error.
 		 */
 		const XboxXPR *initXPR0_xtImage(void);
+
+		/**
+		 * Initialize the PE executable object.
+		 * @return EXE object on success; nullptr on error.
+		 */
+		const EXE *initEXE(void);
 };
 
 /** Xbox_XBE_Private **/
@@ -99,6 +111,8 @@ Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
 	: super(q, file)
 	, xpr0_discReader(nullptr)
 	, xpr0_xtImage(nullptr)
+	, pe_exe_discReader(nullptr)
+	, pe_exe(nullptr)
 {
 	// Clear the XBE structs.
 	memset(&xbeHeader, 0, sizeof(xbeHeader));
@@ -107,6 +121,11 @@ Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
 
 Xbox_XBE_Private::~Xbox_XBE_Private()
 {
+	if (pe_exe) {
+		pe_exe->unref();
+	}
+	delete pe_exe_discReader;
+
 	if (xpr0_xtImage) {
 		xpr0_xtImage->unref();
 	}
@@ -234,6 +253,63 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 	return this->xpr0_xtImage;
 }
 
+/**
+ * Initialize the PE executable object.
+ * @return EXE object on success; nullptr on error.
+ */
+const EXE *Xbox_XBE_Private::initEXE(void)
+{
+	if (pe_exe) {
+		// EXE is already initialized.
+		return pe_exe;
+	}
+
+	if (!file || !file->isOpen()) {
+		// File is not open.
+		return nullptr;
+	}
+
+	// EXE is located at (pe_base_address - base_address).
+	const int64_t fileSize = file->size();
+	const uint32_t exe_address =
+		le32_to_cpu(xbeHeader.pe_base_address) -
+		le32_to_cpu(xbeHeader.base_address);
+	if (exe_address < sizeof(xbeHeader) || exe_address >= fileSize) {
+		// Out of range.
+		return nullptr;
+	}
+
+	// Create the DiscReader and PartitionFile.
+	DiscReader *const discReader = new DiscReader(this->file);
+	if (discReader->isOpen()) {
+		IRpFile *const ptFile = new PartitionFile(discReader,
+			exe_address, fileSize - exe_address);
+		if (ptFile->isOpen()) {
+			EXE *const pe_exe_tmp = new EXE(ptFile);
+			ptFile->unref();
+			if (pe_exe_tmp->isOpen()) {
+				// EXE opened.
+				this->pe_exe_discReader = discReader;
+				this->pe_exe = pe_exe_tmp;
+			} else {
+				// Unable to open the XPR0 image.
+				pe_exe_tmp->unref();
+				delete discReader;
+			}
+		} else {
+			// Unable to open the file.
+			ptFile->unref();
+			delete discReader;
+		}
+	} else {
+		// Unable to create the DiscReader.
+		delete discReader;
+	}
+
+	// EXE loaded.
+	return this->pe_exe;
+}
+
 /** Xbox_XBE **/
 
 /**
@@ -308,6 +384,13 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 void Xbox_XBE::close(void)
 {
 	RP_D(Xbox_XBE);
+
+	if (d->pe_exe) {
+		d->pe_exe->unref();
+		d->pe_exe = nullptr;
+	}
+	delete d->pe_exe_discReader;
+	d->pe_exe_discReader = nullptr;
 
 	if (d->xpr0_xtImage) {
 		d->xpr0_xtImage->unref();
@@ -645,6 +728,16 @@ int Xbox_XBE::loadFieldData(void)
 		v_region_code, 3, region_code);
 
 	// TODO: Age ratings, disc number
+
+	// Can we get the EXE section?
+	const EXE *const pe_exe = const_cast<Xbox_XBE_Private*>(d)->initEXE();
+	if (pe_exe) {
+		// Add the fields.
+		const RomFields *const exeFields = pe_exe->fields();
+		if (exeFields) {
+			d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+		}
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
