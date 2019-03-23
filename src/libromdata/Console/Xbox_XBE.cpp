@@ -82,14 +82,11 @@ class Xbox_XBE_Private : public RomDataPrivate
 		// NOTE: **NOT** byteswapped.
 		XBE_Certificate xbeCertificate;
 
-		// Title image ($$XTIMAGE)
+		// RomData subclasses.
 		// TODO: Also get the save image? ($$XSIMAGE)
-		DiscReader *xpr0_discReader;
-		XboxXPR *xpr0_xtImage;
-
-		// PE executable
-		DiscReader *pe_exe_discReader;
-		EXE *pe_exe;
+		DiscReader *discReader;	// Common DiscReader
+		XboxXPR *xpr0_xtImage;	// Title image ($$XTIMAGE)
+		EXE *pe_exe;		// PE executable
 
 	public:
 		/**
@@ -109,9 +106,8 @@ class Xbox_XBE_Private : public RomDataPrivate
 
 Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
 	: super(q, file)
-	, xpr0_discReader(nullptr)
+	, discReader(nullptr)
 	, xpr0_xtImage(nullptr)
-	, pe_exe_discReader(nullptr)
 	, pe_exe(nullptr)
 {
 	// Clear the XBE structs.
@@ -124,12 +120,12 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 	if (pe_exe) {
 		pe_exe->unref();
 	}
-	delete pe_exe_discReader;
 
 	if (xpr0_xtImage) {
 		xpr0_xtImage->unref();
 	}
-	delete xpr0_discReader;
+
+	delete discReader;
 }
 
 /**
@@ -221,32 +217,33 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 		return nullptr;
 	}
 
+	// Create the DiscReader if it isn't open already.
+	if (!discReader) {
+		DiscReader *const discReader_tmp = new DiscReader(this->file);
+		if (!discReader->isOpen()) {
+			// Unable to open the DiscReader.
+			delete discReader_tmp;
+			return nullptr;
+		}
+	}
+
+	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
-	// Create the DiscReader and PartitionFile.
-	DiscReader *const discReader = new DiscReader(this->file);
-	if (discReader->isOpen()) {
-		IRpFile *const ptFile = new PartitionFile(discReader,
-			pHdr_xtImage->paddr, pHdr_xtImage->psize);
-		if (ptFile->isOpen()) {
-			XboxXPR *const xpr0 = new XboxXPR(ptFile);
-			ptFile->unref();
-			if (xpr0->isOpen()) {
-				// XPR0 image opened.
-				this->xpr0_discReader = discReader;
-				this->xpr0_xtImage = xpr0;
-			} else {
-				// Unable to open the XPR0 image.
-				xpr0->unref();
-				delete discReader;
-			}
+	IRpFile *const ptFile = new PartitionFile(discReader,
+		pHdr_xtImage->paddr, pHdr_xtImage->psize);
+	if (ptFile->isOpen()) {
+		XboxXPR *const xpr0 = new XboxXPR(ptFile);
+		ptFile->unref();
+		if (xpr0->isOpen()) {
+			// XPR0 image opened.
+			this->xpr0_xtImage = xpr0;
 		} else {
-			// Unable to open the file.
-			ptFile->unref();
-			delete discReader;
+			// Unable to open the XPR0 image.
+			xpr0->unref();
 		}
 	} else {
-		// Unable to create the DiscReader.
-		delete discReader;
+		// Unable to open the file.
+		ptFile->unref();
 	}
 
 	// Image loaded.
@@ -279,31 +276,32 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		return nullptr;
 	}
 
-	// Create the DiscReader and PartitionFile.
-	DiscReader *const discReader = new DiscReader(this->file);
-	if (discReader->isOpen()) {
-		IRpFile *const ptFile = new PartitionFile(discReader,
-			exe_address, fileSize - exe_address);
-		if (ptFile->isOpen()) {
-			EXE *const pe_exe_tmp = new EXE(ptFile);
-			ptFile->unref();
-			if (pe_exe_tmp->isOpen()) {
-				// EXE opened.
-				this->pe_exe_discReader = discReader;
-				this->pe_exe = pe_exe_tmp;
-			} else {
-				// Unable to open the XPR0 image.
-				pe_exe_tmp->unref();
-				delete discReader;
-			}
+	// Create the DiscReader if it isn't open already.
+	if (!discReader) {
+		DiscReader *const discReader_tmp = new DiscReader(this->file);
+		if (!discReader->isOpen()) {
+			// Unable to open the DiscReader.
+			delete discReader_tmp;
+			return nullptr;
+		}
+	}
+
+	// Open the EXE file.
+	IRpFile *const ptFile = new PartitionFile(discReader,
+		exe_address, fileSize - exe_address);
+	if (ptFile->isOpen()) {
+		EXE *const pe_exe_tmp = new EXE(ptFile);
+		ptFile->unref();
+		if (pe_exe_tmp->isOpen()) {
+			// EXE opened.
+			this->pe_exe = pe_exe_tmp;
 		} else {
-			// Unable to open the file.
-			ptFile->unref();
-			delete discReader;
+			// Unable to open the XPR0 image.
+			pe_exe_tmp->unref();
 		}
 	} else {
-		// Unable to create the DiscReader.
-		delete discReader;
+		// Unable to open the file.
+		ptFile->unref();
 	}
 
 	// EXE loaded.
@@ -389,16 +387,14 @@ void Xbox_XBE::close(void)
 		d->pe_exe->unref();
 		d->pe_exe = nullptr;
 	}
-	delete d->pe_exe_discReader;
-	d->pe_exe_discReader = nullptr;
 
 	if (d->xpr0_xtImage) {
 		d->xpr0_xtImage->unref();
 		d->xpr0_xtImage = nullptr;
 	}
 
-	delete d->xpr0_discReader;
-	d->xpr0_discReader = nullptr;
+	delete d->discReader;
+	d->discReader = nullptr;
 
 	// Call the superclass function.
 	super::close();
