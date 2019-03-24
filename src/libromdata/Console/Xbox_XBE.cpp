@@ -220,7 +220,7 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 	// Create the DiscReader if it isn't open already.
 	if (!discReader) {
 		DiscReader *const discReader_tmp = new DiscReader(this->file);
-		if (!discReader->isOpen()) {
+		if (!discReader_tmp->isOpen()) {
 			// Unable to open the DiscReader.
 			delete discReader_tmp;
 			return nullptr;
@@ -279,7 +279,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 	// Create the DiscReader if it isn't open already.
 	if (!discReader) {
 		DiscReader *const discReader_tmp = new DiscReader(this->file);
-		if (!discReader->isOpen()) {
+		if (!discReader_tmp->isOpen()) {
 			// Unable to open the DiscReader.
 			delete discReader_tmp;
 			return nullptr;
