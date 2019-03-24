@@ -153,7 +153,7 @@ typedef int32_t fn_offset_t;
 # define CALL_isRomSupported(pRdf, info)	(((pRdf)->isRomSupported)(info))
 # define CALL_newRomData(pRdf, file)		(((pRdf)->newRomData)(file))
 # define CALL_supportedFileExtensions(pRdf)	(((pRdf)->supportedFileExtensions)())
-# define CALL_supportedMimeTypes(pRdf)		(((pRdf)->supportedMimeTypes())
+# define CALL_supportedMimeTypes(pRdf)		(((pRdf)->supportedMimeTypes)())
 #endif /* IS64 */
 
 // Function pointer types.
