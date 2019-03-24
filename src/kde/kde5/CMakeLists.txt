@@ -15,10 +15,6 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 	LIST(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 	INCLUDE(KDEInstallDirs)
 	INCLUDE(KDECMakeSettings)
-	INCLUDE(KDECompilerSettings)
-
-	# Get rid of the explicit C90 setting.
-	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 	# Qt5 requires "-fpic -fPIC" due to reduced relocations.
 	SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
