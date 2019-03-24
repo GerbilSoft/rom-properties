@@ -119,7 +119,48 @@ using std::vector;
 // Special case for Dreamcast save files.
 #include "Console/dc_structs.h"
 
+#if defined(__LP64__) || defined(_WIN64) || defined(__amd64__)
+# define IS64 1
+#elif defined(IS64)
+# undef IS64
+#endif
+
 namespace LibRomData {
+
+#ifdef IS64
+// On 64-bit, the RomDataFns struct contains function pointer offsets
+// relative to RomDataFactory::create().
+typedef int32_t fn_offset_t;
+#define NULL_PFN 0
+// NOTE: pfn must be cast to void* to avoid an error with MSVC 2017
+// (and earlier versions?) regarding casting a templated function to
+// a pointer.
+// References:
+// - https://stackoverflow.com/questions/51967446/reinterpret-cast-cannot-convert-from-overloaded-function-to-intptr-t-with
+// - https://stackoverflow.com/a/51968302
+// - Google: "cannot convert from overloaded-function to intptr_t" (no quotes) [2019/03/23 11:56 AM EDT]
+# define OFFSET(pfn)				(static_cast<fn_offset_t>(reinterpret_cast<intptr_t>((void*)pfn) - reinterpret_cast<intptr_t>(RomDataFactory::create)))
+# define UNOFFSET(offset)			(reinterpret_cast<void*>(static_cast<intptr_t>(offset) + reinterpret_cast<intptr_t>(RomDataFactory::create)))
+# define CALL_isRomSupported(pRdf, info)	((reinterpret_cast<pfnIsRomSupported_t>(UNOFFSET((pRdf)->isRomSupported)))(info))
+# define CALL_newRomData(pRdf, file)		((reinterpret_cast<pfnNewRomData_t>(UNOFFSET((pRdf)->newRomData)))(file))
+# define CALL_supportedFileExtensions(pRdf)	((reinterpret_cast<pfnSupportedFileExtensions_t>(UNOFFSET((pRdf)->supportedFileExtensions)))())
+# define CALL_supportedMimeTypes(pRdf)		((reinterpret_cast<pfnSupportedMimeTypes_t>(UNOFFSET((pRdf)->supportedMimeTypes)))())
+#else /* !IS64 */
+// On 32-bit, the RomDataFns struct contains actual function pointers.
+# define NULL_PFN nullptr
+# define OFFSET(pfn)				(pfn)
+# define UNOFFSET(offset)			(offset)
+# define CALL_isRomSupported(pRdf, info)	(((pRdf)->isRomSupported)(info))
+# define CALL_newRomData(pRdf, file)		(((pRdf)->newRomData)(file))
+# define CALL_supportedFileExtensions(pRdf)	(((pRdf)->supportedFileExtensions)())
+# define CALL_supportedMimeTypes(pRdf)		(((pRdf)->supportedMimeTypes())
+#endif /* IS64 */
+
+// Function pointer types.
+typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
+typedef const char *const * (*pfnSupportedFileExtensions_t)(void);
+typedef const char *const * (*pfnSupportedMimeTypes_t)(void);
+typedef RomData* (*pfnNewRomData_t)(IRpFile *file);
 
 class RomDataFactoryPrivate
 {
@@ -131,16 +172,20 @@ class RomDataFactoryPrivate
 		RP_DISABLE_COPY(RomDataFactoryPrivate)
 
 	public:
-		typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
-		typedef const char *const * (*pfnSupportedFileExtensions_t)(void);
-		typedef const char *const * (*pfnSupportedMimeTypes_t)(void);
-		typedef RomData* (*pfnNewRomData_t)(IRpFile *file);
-
 		struct RomDataFns {
+#ifdef IS64
+			fn_offset_t isRomSupported;
+			fn_offset_t newRomData;
+			fn_offset_t supportedFileExtensions;
+			fn_offset_t supportedMimeTypes;
+#else /* !IS64 */
 			pfnIsRomSupported_t isRomSupported;
 			pfnNewRomData_t newRomData;
 			pfnSupportedFileExtensions_t supportedFileExtensions;
 			pfnSupportedMimeTypes_t supportedMimeTypes;
+#endif /* IS64 */
+
+			// RomData subclass attributes.
 			unsigned int attrs;
 
 			// Extra fields for files whose headers
@@ -160,17 +205,17 @@ class RomDataFactoryPrivate
 		}
 
 #define GetRomDataFns(sys, attrs) \
-	{sys::isRomSupported_static, \
-	 RomDataFactoryPrivate::RomData_ctor<sys>, \
-	 sys::supportedFileExtensions_static, \
-	 sys::supportedMimeTypes_static, \
+	{OFFSET(sys::isRomSupported_static), \
+	 OFFSET(RomDataFactoryPrivate::RomData_ctor<sys>), \
+	 OFFSET(sys::supportedFileExtensions_static), \
+	 OFFSET(sys::supportedMimeTypes_static), \
 	 attrs, 0, 0}
 
 #define GetRomDataFns_addr(sys, attrs, address, size) \
-	{sys::isRomSupported_static, \
-	 RomDataFactoryPrivate::RomData_ctor<sys>, \
-	 sys::supportedFileExtensions_static, \
-	 sys::supportedMimeTypes_static, \
+	{OFFSET(sys::isRomSupported_static), \
+	 OFFSET(RomDataFactoryPrivate::RomData_ctor<sys>), \
+	 OFFSET(sys::supportedFileExtensions_static), \
+	 OFFSET(sys::supportedMimeTypes_static), \
 	 attrs, address, size}
 
 		// RomData subclasses that use a header at 0 and
@@ -301,7 +346,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, '\177ELF'),
 
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	{NULL_PFN, NULL_PFN, NULL_PFN, NULL_PFN, ATTR_NONE, 0, 0}
 };
 
 // RomData subclasses that use a header.
@@ -362,13 +407,13 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
 	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_CHECK_ISO, 0x40000, 0x20),
 
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	{NULL_PFN, NULL_PFN, NULL_PFN, NULL_PFN, ATTR_NONE, 0, 0}
 };
 
 // RomData subclasses that use a footer.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	{NULL_PFN, NULL_PFN, NULL_PFN, NULL_PFN, ATTR_NONE, 0, 0}
 };
 
 // Table of pointers to tables.
@@ -583,7 +628,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// and definitely have a 32-bit magic number in the header.
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->supportedFileExtensions != NULL_PFN; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -598,8 +643,8 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		uint32_t magic = header.u32[fns->address/4];
 		if (be32_to_cpu(magic) == fns->size) {
 			// Found a matching magic number.
-			if (fns->isRomSupported(&info) >= 0) {
-				RomData *const romData = fns->newRomData(file);
+			if (CALL_isRomSupported(fns, &info) >= 0) {
+				RomData *const romData = CALL_newRomData(fns, file);
 				if (romData->isValid()) {
 					// RomData subclass obtained.
 					return romData;
@@ -614,7 +659,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// Check other RomData subclasses that take a header,
 	// but don't have a simple 32-bit magic number check.
 	fns = &RomDataFactoryPrivate::romDataFns_header[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->supportedFileExtensions != NULL_PFN; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -683,14 +728,14 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				continue;
 		}
 
-		if (fns->isRomSupported(&info) >= 0) {
+		if (CALL_isRomSupported(fns, &info) >= 0) {
 			RomData *romData;
 			if (fns->attrs & RDA_CHECK_ISO) {
 				// Check for a game-specific ISO subclass.
 				romData = RomDataFactoryPrivate::checkISO(file);
 			} else {
 				// Standard RomData subclass.
-				romData = fns->newRomData(file);
+				romData = CALL_newRomData(fns, file);
 			}
 
 			if (romData) {
@@ -713,7 +758,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 	bool readFooter = false;
 	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->supportedFileExtensions != NULL_PFN; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -742,8 +787,8 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 			readFooter = true;
 		}
 
-		if (fns->isRomSupported(&info) >= 0) {
-			RomData *const romData = fns->newRomData(file);
+		if (CALL_isRomSupported(fns, &info) >= 0) {
+			RomData *const romData = CALL_newRomData(fns, file);
 			if (romData->isValid()) {
 				// RomData subclass obtained.
 				return romData;
@@ -791,8 +836,8 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	     *tblptr != nullptr; tblptr++)
 	{
 		const RomDataFns *fns = *tblptr;
-		for (; fns->supportedFileExtensions != nullptr; fns++) {
-			const char *const *sys_exts = fns->supportedFileExtensions();
+		for (; fns->supportedFileExtensions != NULL_PFN; fns++) {
+			const char *const *sys_exts = CALL_supportedFileExtensions(fns);
 			if (!sys_exts)
 				continue;
 
@@ -862,8 +907,8 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	     *tblptr != nullptr; tblptr++)
 	{
 		const RomDataFns *fns = *tblptr;
-		for (; fns->supportedFileExtensions != nullptr; fns++) {
-			const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+		for (; fns->supportedFileExtensions != NULL_PFN; fns++) {
+			const char *const *sys_mimeTypes = CALL_supportedMimeTypes(fns);
 			if (!sys_mimeTypes)
 				continue;
 
