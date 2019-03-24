@@ -276,7 +276,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	const Config *const config = Config::instance();
 	if (FileSystem::isOnBadFS(u8path.constData(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
-		return RPCT_SOURCE_FILE_BAD_FS;
+		return false;
 	}
 
 	// Assuming width and height are the same.
