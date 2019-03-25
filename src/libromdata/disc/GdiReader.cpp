@@ -119,100 +119,7 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 GdiReaderPrivate::GdiReaderPrivate(GdiReader *q)
 	: super(q)
 	, blockCount(0)
-{
-	if (!q->m_file) {
-		// File could not be ref()'d.
-		return;
-	}
-
-	// Save the filename for later.
-	filename = q->m_file->filename();
-
-	// GDI file should be 4k or less.
-	int64_t fileSize = q->m_file->size();
-	if (fileSize <= 0 || fileSize > 4096) {
-		// Invalid GDI file size.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Read the GDI and parse the track information.
-	const unsigned int gdisize = static_cast<unsigned int>(fileSize);
-	unique_ptr<char[]> gdibuf(new char[gdisize+1]);
-	q->m_file->rewind();
-	size_t size = q->m_file->read(gdibuf.get(), gdisize);
-	if (size != gdisize) {
-		// Read error.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Make sure the string is NULL-terminated.
-	gdibuf[gdisize] = 0;
-
-	// Parse the GDI file.
-	int ret = parseGdiFile(gdibuf.get());
-	if (ret != 0) {
-		// Error parsing the GDI file.
-		close();
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Open track 03 (primary data track) and the last data track.
-	if (trackMappings.size() >= 3) {
-		ret = openTrack(3);
-		if (ret != 0) {
-			// Error opening track 03.
-			close();
-			q->m_lastError = -ret;
-			return;
-		}
-	}
-
-	// Find the last data track.
-	// NOTE: Searching in reverse order.
-	int lastDataTrack = 0;	// 1-based; 0 is invalid.
-	for (auto iter = trackMappings.crbegin(); iter != trackMappings.crend(); ++iter) {
-		const BlockRange *blockRange = *iter;
-		if (blockRange) {
-			if (static_cast<int>(blockRange->trackNumber) > lastDataTrack) {
-				lastDataTrack = blockRange->trackNumber;
-			}
-		}
-	}
-
-	if (lastDataTrack > 0 && lastDataTrack != 3) {
-		ret = openTrack(lastDataTrack);
-		if (ret != 0) {
-			// Error opening the last data track.
-			close();
-			q->m_lastError = -ret;
-			return;
-		}
-	}
-
-	const BlockRange *const lastBlockRange = trackMappings[lastDataTrack-1];
-	if (!lastBlockRange) {
-		// Should not get here...
-		close();
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Disc parameters.
-	// A full Dreamcast disc has 549,150 sectors.
-	block_size = 2048;
-	blockCount = lastBlockRange->blockEnd + 1;
-	disc_size = blockCount * 2048;
-
-	// Reset the disc position.
-	pos = 0;
-}
+{ }
 
 GdiReaderPrivate::~GdiReaderPrivate()
 {
@@ -430,7 +337,101 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 
 GdiReader::GdiReader(IRpFile *file)
 	: super(new GdiReaderPrivate(this), file)
-{ }
+{
+	if (!m_file) {
+		// File could not be ref()'d.
+		return;
+	}
+
+	// Save the filename for later.
+	RP_D(GdiReader);
+	d->filename = m_file->filename();
+
+	// GDI file should be 4k or less.
+	int64_t fileSize = m_file->size();
+	if (fileSize <= 0 || fileSize > 4096) {
+		// Invalid GDI file size.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Read the GDI and parse the track information.
+	const unsigned int gdisize = static_cast<unsigned int>(fileSize);
+	unique_ptr<char[]> gdibuf(new char[gdisize+1]);
+	m_file->rewind();
+	size_t size = m_file->read(gdibuf.get(), gdisize);
+	if (size != gdisize) {
+		// Read error.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Make sure the string is NULL-terminated.
+	gdibuf[gdisize] = 0;
+
+	// Parse the GDI file.
+	int ret = d->parseGdiFile(gdibuf.get());
+	if (ret != 0) {
+		// Error parsing the GDI file.
+		d->close();
+		m_lastError = EIO;
+		return;
+	}
+
+	// Open track 03 (primary data track) and the last data track.
+	if (d->trackMappings.size() >= 3) {
+		ret = d->openTrack(3);
+		if (ret != 0) {
+			// Error opening track 03.
+			d->close();
+			m_lastError = -ret;
+			return;
+		}
+	}
+
+	// Find the last data track.
+	// NOTE: Searching in reverse order.
+	int lastDataTrack = 0;	// 1-based; 0 is invalid.
+	for (auto iter = d->trackMappings.crbegin(); iter != d->trackMappings.crend(); ++iter) {
+		const GdiReaderPrivate::BlockRange *blockRange = *iter;
+		if (blockRange) {
+			if (static_cast<int>(blockRange->trackNumber) > lastDataTrack) {
+				lastDataTrack = blockRange->trackNumber;
+			}
+		}
+	}
+
+	if (lastDataTrack > 0 && lastDataTrack != 3) {
+		ret = d->openTrack(lastDataTrack);
+		if (ret != 0) {
+			// Error opening the last data track.
+			d->close();
+			m_lastError = -ret;
+			return;
+		}
+	}
+
+	const GdiReaderPrivate::BlockRange *const lastBlockRange = d->trackMappings[lastDataTrack-1];
+	if (!lastBlockRange) {
+		// Should not get here...
+		d->close();
+		m_lastError = EIO;
+		return;
+	}
+
+	// Disc parameters.
+	// A full Dreamcast disc has 549,150 sectors.
+	d->block_size = 2048;
+	d->blockCount = lastBlockRange->blockEnd + 1;
+	d->disc_size = d->blockCount * 2048;
+
+	// Reset the disc position.
+	d->pos = 0;
+}
 
 /**
  * Is a disc image supported by this class?

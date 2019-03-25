@@ -71,38 +71,39 @@ const uint8_t Cdrom2352ReaderPrivate::CDROM_2352_MAGIC[12] =
 Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q)
 	: super(q)
 	, blockCount(0)
+{ }
+
+/** Cdrom2352Reader **/
+
+Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
+	: super(new Cdrom2352ReaderPrivate(this), file)
 {
-	if (!q->m_file) {
+	if (!m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
 	// Check the disc size.
 	// Should be a multiple of 2352.
-	int64_t fileSize = q->m_file->size();
+	int64_t fileSize = m_file->size();
 	if (fileSize <= 0 || fileSize % 2352 != 0) {
 		// Invalid disc size.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
 		return;
 	}
 
 	// Disc parameters.
 	// TODO: 64-bit block count?
-	blockCount = static_cast<unsigned int>(fileSize / 2352);
-	block_size = 2048;
-	disc_size = fileSize / 2352 * 2048;
+	RP_D(Cdrom2352Reader);
+	d->blockCount = static_cast<unsigned int>(fileSize / 2352);
+	d->block_size = 2048;
+	d->disc_size = fileSize / 2352 * 2048;
 
 	// Reset the disc position.
-	pos = 0;
+	d->pos = 0;
 }
-
-/** Cdrom2352Reader **/
-
-Cdrom2352Reader::Cdrom2352Reader(IRpFile *file)
-	: super(new Cdrom2352ReaderPrivate(this), file)
-{ }
 
 /**
  * Is a disc image supported by this class?

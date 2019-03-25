@@ -85,20 +85,27 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
 {
 	// Clear the NASOSHeader structs.
 	memset(&header, 0, sizeof(header));
+}
 
-	if (!q->m_file) {
+/** NASOSReader **/
+
+NASOSReader::NASOSReader(IRpFile *file)
+	: super(new NASOSReaderPrivate(this), file)
+{
+	if (!m_file) {
 		// File could not be ref()'d.
 		return;
 	}
 
 	// Read the NASOS header.
-	q->m_file->rewind();
-	size_t sz = q->m_file->read(&header, sizeof(header));
-	if (sz != sizeof(header)) {
+	RP_D(NASOSReader);
+	m_file->rewind();
+	size_t sz = m_file->read(&d->header, sizeof(d->header));
+	if (sz != sizeof(d->header)) {
 		// Error reading the NASOS header.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
 		return;
 	}
 
@@ -106,26 +113,26 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
 	// TODO: WII9 magic?
 	// TODO: Check the actual disc header magic?
 	unsigned int blockMapStart, blockCount;
-	if (header.nasos.magic == cpu_to_be32(NASOS_MAGIC_GCML)) {
-		discType = DT_GCML;
-		block_size = 2048;			// NOTE: Not stored in the header.
-		blockMapStart = sizeof(header.gcml);
+	if (d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_GCML)) {
+		d->discType = NASOSReaderPrivate::DT_GCML;
+		d->block_size = 2048;			// NOTE: Not stored in the header.
+		blockMapStart = sizeof(d->header.gcml);
 		blockCount = NASOS_GCML_BlockCount;	// NOTE: Not stored in the header.
-		blockMapShift = 0;
-	} else if ((header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII5)) ||
-		   (header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII9)))
+		d->blockMapShift = 0;
+	} else if ((d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII5)) ||
+		   (d->header.nasos.magic == cpu_to_be32(NASOS_MAGIC_WII9)))
 	{
-		discType = DT_WIIx;
-		block_size = 1024;	// TODO: Is this stored in the header?
-		blockMapStart = sizeof(header.wiix);
+		d->discType = NASOSReaderPrivate::DT_WIIx;
+		d->block_size = 1024;	// TODO: Is this stored in the header?
+		blockMapStart = sizeof(d->header.wiix);
 		// TODO: Verify against WII5 (0x460900) and WII9 (0x7ED380).
-		blockCount = le32_to_cpu(header.wiix.block_count) >> 8;
-		blockMapShift = 8;
+		blockCount = le32_to_cpu(d->header.wiix.block_count) >> 8;
+		d->blockMapShift = 8;
 	} else {
 		// Invalid magic.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
 		return;
 	}
 
@@ -133,30 +140,24 @@ NASOSReaderPrivate::NASOSReaderPrivate(NASOSReader *q)
 
 	// Read the block map.
 	// TODO: Restrict the maximum block count?
-	blockMap.resize(blockCount);
-	const size_t sz_blockMap = blockMap.size() * sizeof(uint32_t);
-	sz = q->m_file->seekAndRead(blockMapStart, blockMap.data(), sz_blockMap);
+	d->blockMap.resize(blockCount);
+	const size_t sz_blockMap = d->blockMap.size() * sizeof(uint32_t);
+	sz = m_file->seekAndRead(blockMapStart, d->blockMap.data(), sz_blockMap);
 	if (sz != sz_blockMap) {
 		// Error reading the block map.
-		blockMap.clear();
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
+		d->blockMap.clear();
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
 		return;
 	}
 
 	// Disc size is based on the block map size.
-	disc_size = static_cast<int64_t>(blockMap.size()) * block_size;
+	d->disc_size = static_cast<int64_t>(d->blockMap.size()) * d->block_size;
 
 	// Reset the disc position.
-	pos = 0;
+	d->pos = 0;
 }
-
-/** NASOSReader **/
-
-NASOSReader::NASOSReader(IRpFile *file)
-	: super(new NASOSReaderPrivate(this), file)
-{ }
 
 /**
  * Is a disc image supported by this class?

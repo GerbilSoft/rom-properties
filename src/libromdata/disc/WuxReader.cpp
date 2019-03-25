@@ -75,87 +75,88 @@ WuxReaderPrivate::WuxReaderPrivate(WuxReader *q)
 {
 	// Clear the .wux header struct.
 	memset(&wuxHeader, 0, sizeof(wuxHeader));
-
-	if (!q->m_file) {
-		// File could not be ref()'d.
-		return;
-	}
-
-	// Read the .wux header.
-	q->m_file->rewind();
-	size_t sz = q->m_file->read(&wuxHeader, sizeof(wuxHeader));
-	if (sz != sizeof(wuxHeader)) {
-		// Error reading the .wux header.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Verify the .wux header.
-	if (wuxHeader.magic[0] != cpu_to_le32(WUX_MAGIC_0) ||
-	    wuxHeader.magic[1] != cpu_to_le32(WUX_MAGIC_1))
-	{
-		// Invalid magic.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Check if the block size is a supported power of two.
-	// - Minimum: WUX_BLOCK_SIZE_MIN (256 bytes, 1 << 8)
-	// - Maximum: WUX_BLOCK_SIZE_MAX (128 MB, 1 << 28)
-	block_size = le32_to_cpu(wuxHeader.sectorSize);
-	if (!isPow2(block_size) ||
-	    block_size < WUX_BLOCK_SIZE_MIN || block_size > WUX_BLOCK_SIZE_MAX)
-	{
-		// Block size is out of range.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Read the index table.
-	disc_size = static_cast<int64_t>(le64_to_cpu(wuxHeader.uncompressedSize));
-	if (disc_size < 0 || disc_size > 50LL*1024*1024*1024) {
-		// Disc size is out of range.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	const uint32_t idxTbl_count = static_cast<uint32_t>(
-		(disc_size + (block_size-1)) / block_size);
-	const size_t idxTbl_size = idxTbl_count * sizeof(uint32_t);
-	idxTbl.resize(idxTbl_count);
-	sz = q->m_file->read(idxTbl.data(), idxTbl_size);
-	if (sz != idxTbl_size) {
-		// Read error.
-		idxTbl.clear();
-		disc_size = 0;
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Data starts after the index table,
-	// aligned to a block_size boundary.
-	dataOffset = sizeof(wuxHeader) + (idxTbl_count * sizeof(uint32_t));
-	dataOffset = ALIGN(block_size, dataOffset);
-
-	// Reset the disc position.
-	pos = 0;
 }
 
 /** WuxReader **/
 
 WuxReader::WuxReader(IRpFile *file)
 	: super(new WuxReaderPrivate(this), file)
-{ }
+{
+	if (!m_file) {
+		// File could not be ref()'d.
+		return;
+	}
+
+	// Read the .wux header.
+	RP_D(WuxReader);
+	m_file->rewind();
+	size_t sz = m_file->read(&d->wuxHeader, sizeof(d->wuxHeader));
+	if (sz != sizeof(d->wuxHeader)) {
+		// Error reading the .wux header.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Verify the .wux header.
+	if (d->wuxHeader.magic[0] != cpu_to_le32(WUX_MAGIC_0) ||
+	    d->wuxHeader.magic[1] != cpu_to_le32(WUX_MAGIC_1))
+	{
+		// Invalid magic.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Check if the block size is a supported power of two.
+	// - Minimum: WUX_BLOCK_SIZE_MIN (256 bytes, 1 << 8)
+	// - Maximum: WUX_BLOCK_SIZE_MAX (128 MB, 1 << 28)
+	d->block_size = le32_to_cpu(d->wuxHeader.sectorSize);
+	if (!isPow2(d->block_size) ||
+	    d->block_size < WUX_BLOCK_SIZE_MIN || d->block_size > WUX_BLOCK_SIZE_MAX)
+	{
+		// Block size is out of range.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Read the index table.
+	d->disc_size = static_cast<int64_t>(le64_to_cpu(d->wuxHeader.uncompressedSize));
+	if (d->disc_size < 0 || d->disc_size > 50LL*1024*1024*1024) {
+		// Disc size is out of range.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	const uint32_t idxTbl_count = static_cast<uint32_t>(
+		(d->disc_size + (d->block_size-1)) / d->block_size);
+	const size_t idxTbl_size = idxTbl_count * sizeof(uint32_t);
+	d->idxTbl.resize(idxTbl_count);
+	sz = m_file->read(d->idxTbl.data(), idxTbl_size);
+	if (sz != idxTbl_size) {
+		// Read error.
+		d->idxTbl.clear();
+		d->disc_size = 0;
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Data starts after the index table,
+	// aligned to a block_size boundary.
+	d->dataOffset = sizeof(d->wuxHeader) + (idxTbl_count * sizeof(uint32_t));
+	d->dataOffset = ALIGN(d->block_size, d->dataOffset);
+
+	// Reset the disc position.
+	d->pos = 0;
+}
 
 /**
  * Is a disc image supported by this class?

@@ -74,85 +74,86 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q)
 	memset(&cisoHeader, 0, sizeof(cisoHeader));
 	// Clear the CISO block map initially.
 	blockMap.fill(0xFFFF);
-
-	if (!q->m_file) {
-		// File could not be ref()'d.
-		return;
-	}
-
-	// Read the CISO header.
-	static_assert(sizeof(CISOHeader) == CISO_HEADER_SIZE,
-		"CISOHeader is the wrong size. (Should be 32,768 bytes.)");
-	q->m_file->rewind();
-	size_t sz = q->m_file->read(&cisoHeader, sizeof(cisoHeader));
-	if (sz != sizeof(cisoHeader)) {
-		// Error reading the CISO header.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Verify the CISO header.
-	if (cisoHeader.magic != cpu_to_be32(CISO_MAGIC)) {
-		// Invalid magic.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Check if the block size is a supported power of two.
-	// - Minimum: CISO_BLOCK_SIZE_MIN (32 KB, 1 << 15)
-	// - Maximum: CISO_BLOCK_SIZE_MAX (16 MB, 1 << 24)
-	block_size = le32_to_cpu(cisoHeader.block_size);
-	if (!isPow2(block_size) ||
-	    block_size < CISO_BLOCK_SIZE_MIN || block_size > CISO_BLOCK_SIZE_MAX)
-	{
-		// Block size is out of range.
-		// If the block size is 0x18, then this is
-		// actually a PSP CISO, and this field is
-		// the CISO header size.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Parse the CISO block map.
-	uint16_t physBlockIdx = 0;
-	for (int i = 0; i < static_cast<int>(blockMap.size()); i++) {
-		switch (cisoHeader.map[i]) {
-			case 0:
-				// Empty block.
-				continue;
-			case 1:
-				// Used block.
-				blockMap[i] = physBlockIdx;
-				physBlockIdx++;
-				maxLogicalBlockUsed = i;
-				break;
-			default:
-				// Invalid entry.
-				q->m_file->unref();
-				q->m_file = nullptr;
-				q->m_lastError = EIO;
-				return;
-		}
-	}
-
-	// Calculate the disc size based on the highest logical block index.
-	disc_size = (static_cast<int64_t>(maxLogicalBlockUsed) + 1) * static_cast<int64_t>(block_size);
-
-	// Reset the disc position.
-	pos = 0;
 }
 
 /** CisoGcnReader **/
 
 CisoGcnReader::CisoGcnReader(IRpFile *file)
 	: super(new CisoGcnReaderPrivate(this), file)
-{ }
+{
+	if (!m_file) {
+		// File could not be ref()'d.
+		return;
+	}
+
+	// Read the CISO header.
+	RP_D(CisoGcnReader);
+	static_assert(sizeof(CISOHeader) == CISO_HEADER_SIZE,
+		"CISOHeader is the wrong size. (Should be 32,768 bytes.)");
+	m_file->rewind();
+	size_t sz = m_file->read(&d->cisoHeader, sizeof(d->cisoHeader));
+	if (sz != sizeof(d->cisoHeader)) {
+		// Error reading the CISO header.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Verify the CISO header.
+	if (d->cisoHeader.magic != cpu_to_be32(CISO_MAGIC)) {
+		// Invalid magic.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Check if the block size is a supported power of two.
+	// - Minimum: CISO_BLOCK_SIZE_MIN (32 KB, 1 << 15)
+	// - Maximum: CISO_BLOCK_SIZE_MAX (16 MB, 1 << 24)
+	d->block_size = le32_to_cpu(d->cisoHeader.block_size);
+	if (!isPow2(d->block_size) ||
+	    d->block_size < CISO_BLOCK_SIZE_MIN || d->block_size > CISO_BLOCK_SIZE_MAX)
+	{
+		// Block size is out of range.
+		// If the block size is 0x18, then this is
+		// actually a PSP CISO, and this field is
+		// the CISO header size.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Parse the CISO block map.
+	uint16_t physBlockIdx = 0;
+	for (int i = 0; i < static_cast<int>(d->blockMap.size()); i++) {
+		switch (d->cisoHeader.map[i]) {
+			case 0:
+				// Empty block.
+				continue;
+			case 1:
+				// Used block.
+				d->blockMap[i] = physBlockIdx;
+				physBlockIdx++;
+				d->maxLogicalBlockUsed = i;
+				break;
+			default:
+				// Invalid entry.
+				m_file->unref();
+				m_file = nullptr;
+				m_lastError = EIO;
+				return;
+		}
+	}
+
+	// Calculate the disc size based on the highest logical block index.
+	d->disc_size = (static_cast<int64_t>(d->maxLogicalBlockUsed) + 1) * static_cast<int64_t>(d->block_size);
+
+	// Reset the disc position.
+	d->pos = 0;
+}
 
 /**
  * Is a disc image supported by this class?

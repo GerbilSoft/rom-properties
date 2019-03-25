@@ -107,42 +107,7 @@ WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q)
 	, m_wbfs(nullptr)
 	, m_wbfs_disc(nullptr)
 	, wlba_table(nullptr)
-{
-	if (!q->m_file) {
-		// File could not be ref()'d.
-		return;
-	}
-
-	// Read the WBFS header.
-	m_wbfs = readWbfsHeader();
-	if (!m_wbfs) {
-		// Error reading the WBFS header.
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Open the first disc.
-	m_wbfs_disc = openWbfsDisc(m_wbfs, 0);
-	if (!m_wbfs_disc) {
-		// Error opening the WBFS disc.
-		freeWbfsHeader(m_wbfs);
-		m_wbfs = nullptr;
-		q->m_file->unref();
-		q->m_file = nullptr;
-		q->m_lastError = EIO;
-		return;
-	}
-
-	// Save important values for later.
-	wlba_table = m_wbfs_disc->header->wlba_table;
-	block_size = m_wbfs->wbfs_sec_sz;
-	pos = 0;	// Reset the read position.
-
-	// Get the size of the WBFS disc.
-	disc_size = getWbfsDiscSize(m_wbfs_disc);
-}
+{ }
 
 WbfsReaderPrivate::~WbfsReaderPrivate()
 {
@@ -395,7 +360,43 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 
 WbfsReader::WbfsReader(IRpFile *file)
 	: super(new WbfsReaderPrivate(this), file)
-{ }
+{
+	if (!m_file) {
+		// File could not be ref()'d.
+		return;
+	}
+
+	// Read the WBFS header.
+	RP_D(WbfsReader);
+	d->m_wbfs = d->readWbfsHeader();
+	if (!d->m_wbfs) {
+		// Error reading the WBFS header.
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Open the first disc.
+	d->m_wbfs_disc = d->openWbfsDisc(d->m_wbfs, 0);
+	if (!d->m_wbfs_disc) {
+		// Error opening the WBFS disc.
+		d->freeWbfsHeader(d->m_wbfs);
+		d->m_wbfs = nullptr;
+		m_file->unref();
+		m_file = nullptr;
+		m_lastError = EIO;
+		return;
+	}
+
+	// Save important values for later.
+	d->wlba_table = d->m_wbfs_disc->header->wlba_table;
+	d->block_size = d->m_wbfs->wbfs_sec_sz;
+	d->pos = 0;	// Reset the read position.
+
+	// Get the size of the WBFS disc.
+	d->disc_size = d->getWbfsDiscSize(d->m_wbfs_disc);
+}
 
 /**
  * Is a disc image supported by this class?
