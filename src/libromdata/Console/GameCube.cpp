@@ -888,6 +888,9 @@ GameCube::GameCube(IRpFile *file)
 			// Update partition.
 			pt.type = RVL_PT_UPDATE;
 			d->updatePartition = pt.partition;
+		} else if (title_id.lo == be32_to_cpu('\0INS')) {
+			// Channel partition.
+			pt.type = RVL_PT_CHANNEL;
 		} else {
 			// Game partition.
 			pt.type = RVL_PT_GAME;
@@ -2043,8 +2046,11 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	}
 
 	// Check for known unusable game IDs.
-	// - RELSAB: Generic ID used for prototypes.
-	if (!memcmp(d->discHeader.id6, "RELSAB", 6)) {
+	// - RELSAB: Generic ID used for prototypes and Wii update partitions.
+	// - _INSZZ: Channel partition.
+	if (d->discHeader.id4[0] == '_' ||
+	    !memcmp(d->discHeader.id6, "RELSAB", 6))
+	{
 		// Cannot download images for this game ID.
 		return -ENOENT;
 	}
