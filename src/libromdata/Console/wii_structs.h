@@ -66,6 +66,12 @@ typedef struct PACKED _RVL_PartitionTableEntry {
 	uint32_t type;		// Type of partition. (0 == Game, 1 == Update, 2 == Channel Installer, other = title ID)
 } RVL_PartitionTableEntry;
 
+enum RVL_PartitionType {
+	RVL_PT_GAME	= 0,
+	RVL_PT_UPDATE	= 1,
+	RVL_PT_CHANNEL	= 2,
+};
+
 // Wii ticket constants.
 #define RVL_SIGNATURE_TYPE_RSA2048 0x10001
 #define RVL_COMMON_KEY_INDEX_DEFAULT 0

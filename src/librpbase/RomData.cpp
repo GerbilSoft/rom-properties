@@ -575,6 +575,8 @@ const char *RomData::fileType_string(void) const
 		NOP_C_("RomData|FileType", "Bundle"),
 		// tr: FTYPE_RESOURCE_FILE
 		NOP_C_("RomData|FileType", "Resource File"),
+		// tr: FTYPE_PARTITION
+		NOP_C_("RomData|FileType", "Partition"),
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");

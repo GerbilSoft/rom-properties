@@ -89,20 +89,21 @@ class GameCubePrivate : public RomDataPrivate
 			DISC_UNKNOWN = -1,	// Unknown disc type.
 
 			// Low byte: System ID.
-			DISC_SYSTEM_GCN = 0,		// GameCube disc image.
-			DISC_SYSTEM_TRIFORCE = 1,	// Triforce disc/ROM image. [TODO]
-			DISC_SYSTEM_WII = 2,		// Wii disc image.
+			DISC_SYSTEM_GCN = 0,		// GameCube disc image
+			DISC_SYSTEM_TRIFORCE = 1,	// Triforce disc/ROM image [TODO]
+			DISC_SYSTEM_WII = 2,		// Wii disc image
 			DISC_SYSTEM_UNKNOWN = 0xFF,
 			DISC_SYSTEM_MASK = 0xFF,
 
 			// High byte: Image format.
-			DISC_FORMAT_RAW   = (0 << 8),	// Raw image. (ISO, GCM)
-			DISC_FORMAT_SDK   = (1 << 8),	// Raw image with SDK header.
-			DISC_FORMAT_TGC   = (2 << 8),	// TGC (embedded disc image) (GCN only?)
-			DISC_FORMAT_WBFS  = (3 << 8),	// WBFS image. (Wii only)
-			DISC_FORMAT_CISO  = (4 << 8),	// CISO image.
-			DISC_FORMAT_WIA   = (5 << 8),	// WIA image. (Header only!)
-			DISC_FORMAT_NASOS = (6 << 8),	// NASOS image.
+			DISC_FORMAT_RAW   = (0 << 8),		// Raw image (ISO, GCM)
+			DISC_FORMAT_SDK   = (1 << 8),		// Raw image with SDK header
+			DISC_FORMAT_TGC   = (2 << 8),		// TGC (embedded disc image) (GCN only?)
+			DISC_FORMAT_WBFS  = (3 << 8),		// WBFS image (Wii only)
+			DISC_FORMAT_CISO  = (4 << 8),		// CISO image
+			DISC_FORMAT_WIA   = (5 << 8),		// WIA image (Header only!)
+			DISC_FORMAT_NASOS = (6 << 8),		// NASOS image
+			DISC_FORMAT_PARTITION = (7 << 8),	// Standalone Wii partition
 			DISC_FORMAT_UNKNOWN = (0xFF << 8),
 			DISC_FORMAT_MASK = (0xFF << 8),
 		};
@@ -776,6 +777,7 @@ GameCube::GameCube(IRpFile *file)
 	if (d->discType >= 0) {
 		switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
 			case GameCubePrivate::DISC_FORMAT_RAW:
+			case GameCubePrivate::DISC_FORMAT_PARTITION:
 				d->discReader = new DiscReader(d->file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_SDK:
@@ -805,6 +807,7 @@ GameCube::GameCube(IRpFile *file)
 				// For now, only the header will be readable.
 				d->discReader = nullptr;
 				break;
+
 			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
 			default:
 				d->fileType = FTYPE_UNKNOWN;
@@ -839,16 +842,78 @@ GameCube::GameCube(IRpFile *file)
 
 	// Save the disc header for later.
 	d->discReader->rewind();
-	size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
-	if (size != sizeof(d->discHeader)) {
-		// Error reading the disc header.
-		delete d->discReader;
-		d->file->unref();
-		d->discReader = nullptr;
-		d->file = nullptr;
-		d->discType = GameCubePrivate::DISC_UNKNOWN;
-		d->isValid = false;
-		return;
+	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) != GameCubePrivate::DISC_FORMAT_PARTITION) {
+		// Regular disc image.
+		size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
+		if (size != sizeof(d->discHeader)) {
+			// Error reading the disc header.
+			delete d->discReader;
+			d->file->unref();
+			d->discReader = nullptr;
+			d->file = nullptr;
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			d->isValid = false;
+			return;
+		}
+	} else {
+		// Standalone partition.
+		d->fileType = FTYPE_PARTITION;
+
+		// Determine the partition type.
+		// If title ID low is '\0UPD' or '\0UPE', assume it's an update partition.
+		// Otherwise, it's probably a game partition.
+		// TODO: Identify channel partitions by the title ID high?
+		RVL_TitleID_t title_id;
+		size = d->file->seekAndRead(offsetof(RVL_Ticket, title_id), &title_id, sizeof(title_id));
+		if (size != sizeof(title_id)) {
+			// Error reading the title ID.
+			delete d->discReader;
+			d->file->unref();
+			d->discReader = nullptr;
+			d->file = nullptr;
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			d->isValid = false;
+			return;
+		}
+
+		d->wiiPtbl.resize(1);
+		GameCubePrivate::WiiPartEntry &pt = d->wiiPtbl[0];
+		pt.start = 0;
+		pt.size = d->file->size();
+		pt.vg = 0;
+		pt.pt = 0;
+		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
+
+		if (title_id.lo == be32_to_cpu('\0UPD') || title_id.lo == be32_to_cpu('\0UPE')) {
+			// Update partition.
+			pt.type = RVL_PT_UPDATE;
+			d->updatePartition = pt.partition;
+		} else {
+			// Game partition.
+			pt.type = RVL_PT_GAME;
+			d->gamePartition = pt.partition;
+		}
+
+		// Read the partition header.
+		size = pt.partition->read(&d->discHeader, sizeof(d->discHeader));
+		if (size != sizeof(d->discHeader)) {
+			// Error reading the partition header.
+			delete pt.partition;
+			d->wiiPtbl.clear();
+
+			delete d->discReader;
+			d->file->unref();
+			d->discReader = nullptr;
+			d->file = nullptr;
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			d->isValid = false;
+			return;
+		}
+
+		// Need to change encryption bytes to 00.
+		d->discHeader.hash_verify = 0;
+		d->discHeader.disc_noCrypto = 0;
+		d->wiiPtblLoaded = true;
 	}
 
 	if (((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) &&
@@ -1154,6 +1219,18 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	} else if (pData32[0] == cpu_to_be32(NASOS_MAGIC_WII5)) {
 		// Wii NASOS image. (single-layer)
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_NASOS);
+	}
+
+	// Check for a standalone Wii partition.
+	if (pData32[0] == cpu_to_be32(0x00010001)) {
+		// Signature type is correct.
+		// TODO: Allow signature type only without the issuer?
+		if (info->header.size >= 0x144) {
+			if (pData32[0x140/4] == cpu_to_be32('Root')) {
+				// Issuer field starts with "Root".
+				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_PARTITION);
+			}
+		}
 	}
 
 	// Not supported.
