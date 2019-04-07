@@ -131,6 +131,7 @@ class GameCubePrivate : public RomDataPrivate
 
 		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
 		uint32_t gcnRegion;
+		bool hasRegionCode;
 
 		enum WiiPartitionType {
 			PARTITION_GAME = 0,
@@ -232,6 +233,7 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, gcnRegion(~0)
+	, hasRegionCode(false)
 	, wiiPtblLoaded(false)
 	, updatePartition(nullptr)
 	, gamePartition(nullptr)
@@ -855,6 +857,7 @@ GameCube::GameCube(IRpFile *file)
 			d->isValid = false;
 			return;
 		}
+		d->hasRegionCode = true;
 	} else {
 		// Standalone partition.
 		d->fileType = FTYPE_PARTITION;
@@ -917,6 +920,9 @@ GameCube::GameCube(IRpFile *file)
 		d->discHeader.hash_verify = 0;
 		d->discHeader.disc_noCrypto = 0;
 		d->wiiPtblLoaded = true;
+
+		// TODO: Figure out region code for standalone partitions.
+		d->hasRegionCode = false;
 	}
 
 	if (((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) &&
@@ -1022,23 +1028,27 @@ GameCube::GameCube(IRpFile *file)
 			}
 
 			d->gcnRegion = be32_to_cpu(bootInfo.region_code);
+			d->hasRegionCode = true;
 			break;
 		}
 
 		case GameCubePrivate::DISC_SYSTEM_WII:
-			size = d->discReader->seekAndRead(RVL_RegionSetting_ADDRESS, &d->regionSetting, sizeof(d->regionSetting));
-			if (size != sizeof(d->regionSetting)) {
-				// Cannot read RVL_RegionSetting.
-				delete d->discReader;
-				d->file->unref();
-				d->discReader = nullptr;
-				d->file = nullptr;
-				d->discType = GameCubePrivate::DISC_UNKNOWN;
-				d->isValid = false;
-				return;
-			}
+			// TODO: Figure out region code for standalone partitions.
+			if (d->hasRegionCode) {
+				size = d->discReader->seekAndRead(RVL_RegionSetting_ADDRESS, &d->regionSetting, sizeof(d->regionSetting));
+				if (size != sizeof(d->regionSetting)) {
+					// Cannot read RVL_RegionSetting.
+					delete d->discReader;
+					d->file->unref();
+					d->discReader = nullptr;
+					d->file = nullptr;
+					d->discType = GameCubePrivate::DISC_UNKNOWN;
+					d->isValid = false;
+					return;
+				}
 
-			d->gcnRegion = be32_to_cpu(d->regionSetting.region_code);
+				d->gcnRegion = be32_to_cpu(d->regionSetting.region_code);
+			}
 			break;
 
 		default:
@@ -1514,51 +1524,52 @@ int GameCube::loadFieldData(void)
 		return static_cast<int>(d->fields->count());
 	}
 
+	const char *const game_info_title = C_("GameCube", "Game Info");
+
 	// Region code.
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
-	bool isDefault;
-	const char *const region =
-		GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
-	const char *const region_code_title = C_("RomData", "Region Code");
-	if (region) {
-		// Append the GCN region name (USA/JPN/EUR/KOR) if
-		// the ID4 value differs.
-		const char *suffix = nullptr;
-		if (!isDefault) {
-			suffix = GameCubeRegions::gcnRegionToAbbrevString(d->gcnRegion);
-		}
+	if (d->hasRegionCode) {
+		bool isDefault;
+		const char *const region =
+			GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
+		const char *const region_code_title = C_("RomData", "Region Code");
+		if (region) {
+			// Append the GCN region name (USA/JPN/EUR/KOR) if
+			// the ID4 value differs.
+			const char *suffix = nullptr;
+			if (!isDefault) {
+				suffix = GameCubeRegions::gcnRegionToAbbrevString(d->gcnRegion);
+			}
 
-		string s_region;
-		if (suffix) {
-			// tr: %1%s == full region name, %2$s == abbreviation
-			s_region = rp_sprintf_p(C_("GameCube", "%1$s (%2$s)"), region, suffix);
+			string s_region;
+			if (suffix) {
+				// tr: %1%s == full region name, %2$s == abbreviation
+				s_region = rp_sprintf_p(C_("GameCube", "%1$s (%2$s)"), region, suffix);
+			} else {
+				s_region = region;
+			}
+
+			d->fields->addField_string(region_code_title, s_region);
 		} else {
-			s_region = region;
+			// Invalid region code.
+			d->fields->addField_string(region_code_title,
+				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->gcnRegion));
 		}
 
-		d->fields->addField_string(region_code_title, s_region);
-	} else {
-		// Invalid region code.
-		d->fields->addField_string(region_code_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->gcnRegion));
-	}
+		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII) {
+			// GameCube-specific fields.
 
-	const char *const game_info_title = C_("GameCube", "Game Info");
-	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
-	    GameCubePrivate::DISC_SYSTEM_WII)
-	{
-		// GameCube-specific fields.
+			// Game information from opening.bnr.
+			string comment = d->gcn_getGameInfo();
+			if (!comment.empty()) {
+				// Show the comment.
+				d->fields->addField_string(game_info_title, comment);
+			}
 
-		// Game information from opening.bnr.
-		string comment = d->gcn_getGameInfo();
-		if (!comment.empty()) {
-			// Show the comment.
-			d->fields->addField_string(game_info_title, comment);
+			// Finished reading the field data.
+			return static_cast<int>(d->fields->count());
 		}
-
-		// Finished reading the field data.
-		return static_cast<int>(d->fields->count());
 	}
 
 	/** Wii-specific fields. **/
@@ -1593,36 +1604,38 @@ int GameCube::loadFieldData(void)
 	// Note that not all 16 fields are present on GCN,
 	// though the fields do match exactly, so no
 	// mapping is necessary.
-	RomFields::age_ratings_t age_ratings;
-	// Valid ratings: 0-1, 3-9
-	static const uint16_t valid_ratings = 0x3FB;
+	if (d->hasRegionCode) {
+		RomFields::age_ratings_t age_ratings;
+		// Valid ratings: 0-1, 3-9
+		static const uint16_t valid_ratings = 0x3FB;
 
-	for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
-		if (!(valid_ratings & (1 << i))) {
-			// Rating is not applicable for GameCube.
-			age_ratings[i] = 0;
-			continue;
-		}
+		for (int i = static_cast<int>(age_ratings.size())-1; i >= 0; i--) {
+			if (!(valid_ratings & (1 << i))) {
+				// Rating is not applicable for GameCube.
+				age_ratings[i] = 0;
+				continue;
+			}
 
-		// GCN ratings field:
-		// - 0x1F: Age rating.
-		// - 0x20: Has online play if set.
-		// - 0x80: Unused if set.
-		const uint8_t rvl_rating = d->regionSetting.ratings[i];
-		if (rvl_rating & 0x80) {
-			// Rating is unused.
-			age_ratings[i] = 0;
-			continue;
-		}
-		// Set active | age value.
-		age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
+			// GCN ratings field:
+			// - 0x1F: Age rating.
+			// - 0x20: Has online play if set.
+			// - 0x80: Unused if set.
+			const uint8_t rvl_rating = d->regionSetting.ratings[i];
+			if (rvl_rating & 0x80) {
+				// Rating is unused.
+				age_ratings[i] = 0;
+				continue;
+			}
+			// Set active | age value.
+			age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
 
-		// Is "rating may change during online play" set?
-		if (rvl_rating & 0x20) {
-			age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+			// Is "rating may change during online play" set?
+			if (rvl_rating & 0x20) {
+				age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
+			}
 		}
+		d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 	}
-	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	// Display the Wii partition table(s).
 	if (wiiPtLoaded == 0) {
@@ -1635,8 +1648,10 @@ int GameCube::loadFieldData(void)
 			// homebrew, a prototype, or a key error.
 			if (!d->gamePartition) {
 				// No game partition.
-				d->fields->addField_string(game_info_title,
-					C_("GameCube", "ERROR: No game partition was found."));
+				if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) != GameCubePrivate::DISC_FORMAT_PARTITION) {
+					d->fields->addField_string(game_info_title,
+						C_("GameCube", "ERROR: No game partition was found."));
+				}
 			} else if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
 				// Key error.
 				const char *status = d->wii_getCryptoStatus(d->gamePartition);
