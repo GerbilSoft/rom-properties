@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IconAnimHelper.hpp: Icon animation helper.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -23,16 +23,30 @@
 #define __ROMPROPERTIES_LIBRPBASE_IMG_ICONANIMHELPER_HPP__
 
 #include "common.h"
+#include "IconAnimData.hpp"
 
 namespace LibRpBase {
-
-struct IconAnimData;
 
 class IconAnimHelper
 {
 	public:
-		IconAnimHelper();
-		explicit IconAnimHelper(const IconAnimData *iconAnimData);
+		IconAnimHelper()
+			: m_iconAnimData(nullptr)
+			, m_seq_idx(0)
+			, m_frame(0)
+			, m_delay(0)
+			, m_last_valid_frame(0)
+		{ }
+
+		explicit IconAnimHelper(const IconAnimData *iconAnimData)
+			: m_iconAnimData(iconAnimData)
+			, m_seq_idx(0)
+			, m_frame(0)
+			, m_delay(0)
+			, m_last_valid_frame(0)
+		{
+			reset();
+		}
 
 	private:
 		RP_DISABLE_COPY(IconAnimHelper);
@@ -42,13 +56,20 @@ class IconAnimHelper
 		 * Set the iconAnimData.
 		 * @param iconAnimData New iconAnimData.
 		 */
-		void setIconAnimData(const IconAnimData *iconAnimData);
+		void setIconAnimData(const IconAnimData *iconAnimData)
+		{
+			m_iconAnimData = iconAnimData;
+			reset();
+		}
 
 		/**
 		 * Get the iconAnimData.
 		 * @return iconAnimData.
 		 */
-		const IconAnimData *iconAnimData(void) const;
+		const IconAnimData *iconAnimData(void) const
+		{
+			return m_iconAnimData;
+		}
 
 		/**
 		 * Is this an animated icon?
@@ -58,7 +79,13 @@ class IconAnimHelper
 		 *
 		 * @return True if this is an animated icon; false if not.
 		 */
-		bool isAnimated(void) const;
+		bool isAnimated(void) const
+		{
+			// TODO: Verify that the sequence references more than one frame?
+			return (m_iconAnimData &&
+				m_iconAnimData->count > 0 &&
+				m_iconAnimData->seq_count > 0);
+		}
 
 		/**
 		 * Get the current frame number.
@@ -68,13 +95,19 @@ class IconAnimHelper
 		 *
 		 * @return Frame number.
 		 */
-		int frameNumber(void) const;
+		int frameNumber(void) const
+		{
+			return m_last_valid_frame;
+		}
 
 		/**
 		 * Get the current frame's delay.
 		 * @return Current frame's delay, in milliseconds.
 		 */
-		int frameDelay(void) const;
+		int frameDelay(void) const
+		{
+			return m_delay;
+		}
 
 		/**
 		 * Reset the animation.

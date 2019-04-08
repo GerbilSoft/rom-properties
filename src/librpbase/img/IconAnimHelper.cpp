@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IconAnimHelper.cpp: Icon animation helper.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -20,88 +20,12 @@
  ***************************************************************************/
 
 #include "IconAnimHelper.hpp"
-#include "IconAnimData.hpp"
 #include "rp_image.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
 
 namespace LibRpBase {
-
-IconAnimHelper::IconAnimHelper()
-	: m_iconAnimData(nullptr)
-	, m_seq_idx(0)
-	, m_frame(0)
-	, m_delay(0)
-	, m_last_valid_frame(0)
-{ }
-
-IconAnimHelper::IconAnimHelper(const IconAnimData *iconAnimData)
-	: m_iconAnimData(iconAnimData)
-	, m_seq_idx(0)
-	, m_frame(0)
-	, m_delay(0)
-	, m_last_valid_frame(0)
-{
-	reset();
-}
-
-/**
- * Set the iconAnimData.
- * @param iconAnimData New iconAnimData.
- */
-void IconAnimHelper::setIconAnimData(const IconAnimData *iconAnimData)
-{
-	m_iconAnimData = iconAnimData;
-	reset();
-}
-
-/**
- * Get the iconAnimData.
- * @return iconAnimData.
- */
-const IconAnimData *IconAnimHelper::iconAnimData(void) const
-{
-	return m_iconAnimData;
-}
-
-/**
- * Is this an animated icon?
- *
- * This checks if iconAnimData is set and has an animation
- * sequence that refers to more than one frame.
- *
- * @return True if this is an animated icon; false if not.
- */
-bool IconAnimHelper::isAnimated(void) const
-{
-	// TODO: Verify that the sequence references more than one frame?
-	return (m_iconAnimData &&
-		m_iconAnimData->count > 0 &&
-		m_iconAnimData->seq_count > 0);
-}
-
-/**
- * Get the current frame number.
- *
- * Note that this is actually the last valid frame
- * that had a valid image.
- *
- * @return Frame number.
- */
-int IconAnimHelper::frameNumber(void) const
-{
-	return m_last_valid_frame;
-}
-
-/**
- * Get the current frame's delay.
- * @return Current frame's delay, in milliseconds.
- */
-int IconAnimHelper::frameDelay(void) const
-{
-	return m_delay;
-}
 
 /**
  * Reset the animation.
