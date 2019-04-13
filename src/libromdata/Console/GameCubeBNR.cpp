@@ -422,6 +422,9 @@ int GameCubeBNR::loadFieldData(void)
 
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
+	const char *const game_name_title = C_("GameCubeBNR", "Game Name");
+	const char *const company_title = C_("GameCubeBNR", "Company");
+	const char *const description_title = C_("GameCubeBNR", "Description");
 
 	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
@@ -429,7 +432,6 @@ int GameCubeBNR::loadFieldData(void)
 		// false positive with Metroid Prime. (GM8E01)
 
 		// Game name.
-		const char *const game_name_title = C_("GameCubeBNR", "Game Name");
 		if (comment->gamename_full[0] != '\0') {
 			d->fields->addField_string(game_name_title,
 				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
@@ -439,7 +441,6 @@ int GameCubeBNR::loadFieldData(void)
 		}
 
 		// Company.
-		const char *const company_title = C_("GameCubeBNR", "Company");
 		if (comment->company_full[0] != '\0') {
 			d->fields->addField_string(company_title,
 				cp1252_sjis_to_utf8(comment->company_full, sizeof(comment->company_full)));
@@ -450,14 +451,13 @@ int GameCubeBNR::loadFieldData(void)
 
 		// Game description.
 		if (comment->gamedesc[0] != '\0') {
-			d->fields->addField_string(C_("GameCubeBNR", "Description"),
+			d->fields->addField_string(description_title,
 				cp1252_sjis_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
 		}
 	} else {
 		// BNR2: Assuming cp1252.
 
 		// Game name.
-		const char *const game_name_title = C_("GameCubeBNR", "Game Name");
 		if (comment->gamename_full[0] != '\0') {
 			d->fields->addField_string(game_name_title,
 				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
@@ -467,7 +467,6 @@ int GameCubeBNR::loadFieldData(void)
 		}
 
 		// Company.
-		const char *const company_title = C_("GameCubeBNR", "Company");
 		if (comment->company_full[0] != '\0') {
 			d->fields->addField_string(company_title,
 				cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
@@ -478,7 +477,7 @@ int GameCubeBNR::loadFieldData(void)
 
 		// Game description.
 		if (comment->gamedesc[0] != '\0') {
-			d->fields->addField_string(C_("GameCubeBNR", "Description"),
+			d->fields->addField_string(description_title,
 				cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
 		}
 	}
