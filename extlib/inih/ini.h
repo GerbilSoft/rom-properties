@@ -57,12 +57,6 @@ typedef char* (INIHCALL *ini_reader)(char* str, int num, void* stream);
 */
 int ini_parse(const char* filename, ini_handler handler, void* user);
 
-#ifdef _WIN32
-/* Same as ini_parse(), but takes a wide character filename. Needed for
-   Unicode filenames on Windows. */
-int ini_parse_w(const wchar_t* filename, ini_handler handler, void* user);
-#endif /* _WIN32 */
-
 /* Same as ini_parse(), but takes a FILE* instead of filename. This doesn't
    close the file when it's finished -- the caller must do that. */
 int ini_parse_file(FILE* file, ini_handler handler, void* user);
@@ -86,7 +80,7 @@ int ini_parse_string(const char* string, ini_handler handler, void* user);
 #endif
 
 /* Nonzero to allow a UTF-8 BOM sequence (0xEF 0xBB 0xBF) at the start of
-   the file. See http://code.google.com/p/inih/issues/detail?id=21 */
+   the file. See https://github.com/benhoyt/inih/issues/21 */
 #ifndef INI_ALLOW_BOM
 #define INI_ALLOW_BOM 1
 #endif

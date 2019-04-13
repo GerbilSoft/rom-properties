@@ -190,18 +190,29 @@ int ConfReader::load(bool force)
 	// on the local file system, and it's easier to let inih
 	// manage the file itself.
 #ifdef _WIN32
-	// Win32: Use ini_parse_w().
-#ifdef UNICODE
-	int ret = ini_parse_w(U82T_s(d->conf_filename),
-			ConfReaderPrivate::processConfigLine_static, d);
-#else /* !UNICODE */
+# ifdef _UNICODE
+	// Win32, Unicode: Open the file using _wfopen(),
+	// then parse it using ini_parse_file().
+	int ret = 0;
+	errno = 0;
+	FILE *f_ini = _wfopen(U82T_s(d->conf_filename), "rb");
+	if (f_ini) {
+		// Parse the INI file.
+		ret = ini_parse_file(f_ini, ConfReaderPrivate::processConfigLine_static, d);
+		fclose(f_ini);
+	} else {
+		// Error opening the INI file.
+		ret = errno;
+	}
+# else /* !_UNICODE */
+	// Win32, ANSI: Use ini_parse().
 	int ret = ini_parse(U82T_s(d->conf_filename),
-			ConfReaderPrivate::processConfigLine_static, d);
-#endif /* UNICODE */
+		ConfReaderPrivate::processConfigLine_static, d);
+# endif /* _UNICODE */
 #else /* !_WIN32 */
 	// Linux or other systems: Use ini_parse().
 	int ret = ini_parse(d->conf_filename.c_str(),
-			ConfReaderPrivate::processConfigLine_static, d);
+		ConfReaderPrivate::processConfigLine_static, d);
 #endif /* _WIN32 */
 	if (ret != 0) {
 		// Error parsing the INI file.

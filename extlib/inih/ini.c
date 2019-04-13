@@ -87,7 +87,7 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
     char* line;
     int max_line = INI_INITIAL_ALLOC;
 #endif
-#if INI_ALLOW_REALLOC
+#if INI_ALLOW_REALLOC && !INI_USE_STACK
     char* new_line;
     int offset;
 #endif
@@ -116,7 +116,7 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
 
     /* Scan through stream line by line */
     while (reader(line, max_line, stream) != NULL) {
-#if INI_ALLOW_REALLOC
+#if INI_ALLOW_REALLOC && !INI_USE_STACK
         offset = strlen(line);
         while (offset == max_line - 1 && line[offset - 1] != '\n') {
             max_line *= 2;
@@ -166,6 +166,10 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
                 *end = '\0';
                 strncpy0(section, start + 1, sizeof(section));
                 *prev_name = '\0';
+#if INI_CALL_HANDLER_ON_NEW_SECTION
+                if (!HANDLER(user, section, NULL, NULL) && !error)
+                    error = lineno;
+#endif
             }
             else if (!error) {
                 /* No ']' found on section line */
@@ -230,22 +234,6 @@ int ini_parse(const char* filename, ini_handler handler, void* user)
     fclose(file);
     return error;
 }
-
-#ifdef _WIN32
-/* See documentation in header file. */
-int ini_parse_w(const wchar_t* filename, ini_handler handler, void* user)
-{
-    FILE* file;
-    int error;
-
-    file = _wfopen(filename, L"rb");
-    if (!file)
-        return -1;
-    error = ini_parse_file(file, handler, user);
-    fclose(file);
-    return error;
-}
-#endif /* _WIN32 */
 
 /* An ini_reader function to read the next line from a string buffer. This
    is the fgets() equivalent used by ini_parse_string(). */

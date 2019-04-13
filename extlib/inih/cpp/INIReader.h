@@ -18,7 +18,7 @@ class INIReader
 public:
     // Construct INIReader and parse given filename. See ini.h for more info
     // about the parsing.
-    INIReader(const std::string& filename);
+    explicit INIReader(const std::string& filename);
 
     // Return the result of ini_parse(), i.e., 0 on success, line number of
     // first error on parse error, or -1 on file open error.
@@ -26,6 +26,11 @@ public:
 
     // Get a string value from INI file, returning default_value if not found.
     std::string Get(const std::string& section, const std::string& name,
+                    const std::string& default_value) const;
+    
+    // Get a string value from INI file, returning default_value if not found,
+    // empty, or contains only whitespace.
+    std::string GetString(const std::string& section, const std::string& name,
                     const std::string& default_value) const;
 
     // Get an integer (long) value from INI file, returning default_value if
@@ -41,6 +46,9 @@ public:
     // not a valid true/false value. Valid true values are "true", "yes", "on", "1",
     // and valid false values are "false", "no", "off", "0" (not case sensitive).
     bool GetBoolean(const std::string& section, const std::string& name, bool default_value) const;
+
+    // Return true if a value exists with the given section and field names.
+    bool HasValue(const std::string& section, const std::string& name) const;
 
 private:
     int _error;

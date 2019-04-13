@@ -1,3 +1,7 @@
+# inih (INI Not Invented Here)
+
+[![TravisCI Build](https://travis-ci.org/benhoyt/inih.svg)](https://travis-ci.org/benhoyt/inih)
+
 **inih (INI Not Invented Here)** is a simple [.INI file](http://en.wikipedia.org/wiki/INI_file) parser written in C. It's only a couple of pages of code, and it was designed to be _small and simple_, so it's good for embedded systems. It's also more or less compatible with Python's [ConfigParser](http://docs.python.org/library/configparser.html) style of .INI files, including RFC 822-style multi-line syntax and `name: value` entries.
 
 To use it, just give `ini_parse()` an INI file, and it will call a callback for every `name=value` pair parsed, giving you strings for the section, name, and value. It's done this way ("SAX style") because it works well on low-memory embedded systems, but also because it makes for a KISS implementation.
@@ -22,6 +26,7 @@ You can control various aspects of inih using preprocessor defines:
 
   * **Stop on first error:** By default, inih keeps parsing the rest of the file after an error. To stop parsing on the first error, add `-DINI_STOP_ON_FIRST_ERROR=1`.
   * **Report line numbers:** By default, the `ini_handler` callback doesn't receive the line number as a parameter. If you need that, add `-DINI_HANDLER_LINENO=1`.
+  * **Call handler on new section:** By default, inih only calls the handler on each `name=value` pair. To detect new sections (e.g., the INI file has multiple sections with the same name), add `-DINI_CALL_HANDLER_ON_NEW_SECTION=1`. Your handler function will then be called each time a new section is encountered, with `section` set to the new section name but `name` and `value` set to NULL.
 
 ### Memory options ###
 
