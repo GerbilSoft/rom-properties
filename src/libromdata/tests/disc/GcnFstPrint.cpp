@@ -122,10 +122,23 @@ int RP_C_API main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// Check for NKit FST recovery data.
+	// These FSTs have an extra header at the top, indicating what
+	// disc the FST belongs to.
+	unsigned int fst_start_offset = 0;
+	static const uint8_t root_dir_data[] = {1,0,0,0,0,0,0,0,0,0};
+	if (rd_size >= 0x60) {
+		if (!memcmp(&fstData[0x50], root_dir_data, sizeof(root_dir_data))) {
+			// Found an NKit FST.
+			fst_start_offset = 0x50;
+		}
+	}
+
 	// Parse the FST.
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
-	GcnFst *fst = new GcnFst(fstData, static_cast<uint32_t>(filesize), offsetShift);
+	GcnFst *fst = new GcnFst(&fstData[fst_start_offset],
+		static_cast<uint32_t>(filesize - fst_start_offset), offsetShift);
 	if (!fst->isOpen()) {
 		puts(C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));
 		free(fstData);

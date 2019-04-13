@@ -185,8 +185,21 @@ void GcnFstTest::SetUp(void)
 
 	ASSERT_GT(getFileFromZip(zip_filename, mode.fst_filename.c_str(), m_fst_buf, MAX_GCN_FST_BIN_FILESIZE), 0);
 
+	// Check for NKit FST recovery data.
+	// These FSTs have an extra header at the top, indicating what
+	// disc the FST belongs to.
+	unsigned int fst_start_offset = 0;
+	static const uint8_t root_dir_data[] = {1,0,0,0,0,0,0,0,0,0};
+	if (m_fst_buf.size() >= 0x60) {
+		if (!memcmp(&m_fst_buf[0x50], root_dir_data, sizeof(root_dir_data))) {
+			// Found an NKit FST.
+			fst_start_offset = 0x50;
+		}
+	}
+
 	// Create the GcnFst object.
-	m_fst = new GcnFst(m_fst_buf.data(), static_cast<uint32_t>(m_fst_buf.size()), mode.offsetShift);
+	m_fst = new GcnFst(&m_fst_buf[fst_start_offset],
+		static_cast<uint32_t>(m_fst_buf.size() - fst_start_offset), mode.offsetShift);
 	ASSERT_TRUE(m_fst->isOpen());
 }
 
