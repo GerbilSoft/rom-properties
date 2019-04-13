@@ -420,36 +420,67 @@ int GameCubeBNR::loadFieldData(void)
 	}
 	d->fields->reserve(3);	// Maximum of 3 fields.
 
-	// TODO: If BNR1, check for Shift-JIS characters.
-	// Assuming cp1252 for now.
-
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
 
-	// Game name.
-	const char *const game_name_title = C_("GameCubeBNR", "Game Name");
-	if (comment->gamename_full[0] != '\0') {
-		d->fields->addField_string(game_name_title,
-			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-	} else if (comment->gamename[0] != '\0') {
-		d->fields->addField_string(game_name_title,
-			cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
-	}
+	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
+		// BNR1: Assuming Shift-JIS with cp1252 fallback.
+		// TODO: Improve Shift-JIS detection to eliminate the
+		// false positive with Metroid Prime. (GM8E01)
 
-	// Company.
-	const char *const company_title = C_("GameCubeBNR", "Company");
-	if (comment->company_full[0] != '\0') {
-		d->fields->addField_string(company_title,
-			cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
-	} else if (comment->company[0] != '\0') {
-		d->fields->addField_string(company_title,
-			cp1252_to_utf8(comment->company, sizeof(comment->company)));
-	}
+		// Game name.
+		const char *const game_name_title = C_("GameCubeBNR", "Game Name");
+		if (comment->gamename_full[0] != '\0') {
+			d->fields->addField_string(game_name_title,
+				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+		} else if (comment->gamename[0] != '\0') {
+			d->fields->addField_string(game_name_title,
+				cp1252_sjis_to_utf8(comment->gamename, sizeof(comment->gamename)));
+		}
 
-	// Game description.
-	if (comment->gamedesc[0] != '\0') {
-		d->fields->addField_string(C_("GameCubeBNR", "Description"),
-			cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		// Company.
+		const char *const company_title = C_("GameCubeBNR", "Company");
+		if (comment->company_full[0] != '\0') {
+			d->fields->addField_string(company_title,
+				cp1252_sjis_to_utf8(comment->company_full, sizeof(comment->company_full)));
+		} else if (comment->company[0] != '\0') {
+			d->fields->addField_string(company_title,
+				cp1252_sjis_to_utf8(comment->company, sizeof(comment->company)));
+		}
+
+		// Game description.
+		if (comment->gamedesc[0] != '\0') {
+			d->fields->addField_string(C_("GameCubeBNR", "Description"),
+				cp1252_sjis_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		}
+	} else {
+		// BNR2: Assuming cp1252.
+
+		// Game name.
+		const char *const game_name_title = C_("GameCubeBNR", "Game Name");
+		if (comment->gamename_full[0] != '\0') {
+			d->fields->addField_string(game_name_title,
+				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+		} else if (comment->gamename[0] != '\0') {
+			d->fields->addField_string(game_name_title,
+				cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
+		}
+
+		// Company.
+		const char *const company_title = C_("GameCubeBNR", "Company");
+		if (comment->company_full[0] != '\0') {
+			d->fields->addField_string(company_title,
+				cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
+		} else if (comment->company[0] != '\0') {
+			d->fields->addField_string(company_title,
+				cp1252_to_utf8(comment->company, sizeof(comment->company)));
+		}
+
+		// Game description.
+		if (comment->gamedesc[0] != '\0') {
+			d->fields->addField_string(C_("GameCubeBNR", "Description"),
+				cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		}
 	}
 
 	// Finished reading the field data.
@@ -486,37 +517,69 @@ int GameCubeBNR::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
-	// TODO: If BNR1, check for Shift-JIS characters.
-	// Assuming cp1252 for now.
-
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
 
-	// Game name.
-	if (comment->gamename_full[0] != '\0') {
-		d->metaData->addMetaData_string(Property::Title,
-			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-	} else if (comment->gamename[0] != '\0') {
-		d->metaData->addMetaData_string(Property::Title,
-			cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
-	}
+	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
+		// BNR1: Assuming Shift-JIS with cp1252 fallback.
+		// TODO: Improve Shift-JIS detection to eliminate the
+		// false positive with Metroid Prime. (GM8E01)
 
-	// Company.
-	if (comment->company_full[0] != '\0') {
-		d->metaData->addMetaData_string(Property::Publisher,
-			cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
-	} else if (comment->company[0] != '\0') {
-		d->metaData->addMetaData_string(Property::Publisher,
-			cp1252_to_utf8(comment->company, sizeof(comment->company)));
-	}
+		// Game name.
+		if (comment->gamename_full[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+		} else if (comment->gamename[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+		}
 
-	// Game description.
-	if (comment->gamedesc[0] != '\0') {
-		// TODO: Property::Comment is assumed to be user-added
-		// on KDE Dolphin 18.08.1. Needs a description property.
-		// Also needs verification on Windows.
-		d->metaData->addMetaData_string(Property::Subject,
-			cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		// Company.
+		if (comment->company_full[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Publisher,
+				cp1252_sjis_to_utf8(comment->company_full, sizeof(comment->company_full)));
+		} else if (comment->company[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Publisher,
+				cp1252_sjis_to_utf8(comment->company, sizeof(comment->company)));
+		}
+
+		// Game description.
+		if (comment->gamedesc[0] != '\0') {
+			// TODO: Property::Comment is assumed to be user-added
+			// on KDE Dolphin 18.08.1. Needs a description property.
+			// Also needs verification on Windows.
+			d->metaData->addMetaData_string(Property::Subject,
+				cp1252_sjis_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		}
+	} else {
+		// BNR2: Assuming cp1252.
+
+		// Game name.
+		if (comment->gamename_full[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+		} else if (comment->gamename[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Title,
+				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+		}
+
+		// Company.
+		if (comment->company_full[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Publisher,
+				cp1252_to_utf8(comment->company_full, sizeof(comment->company_full)));
+		} else if (comment->company[0] != '\0') {
+			d->metaData->addMetaData_string(Property::Publisher,
+				cp1252_to_utf8(comment->company, sizeof(comment->company)));
+		}
+
+		// Game description.
+		if (comment->gamedesc[0] != '\0') {
+			// TODO: Property::Comment is assumed to be user-added
+			// on KDE Dolphin 18.08.1. Needs a description property.
+			// Also needs verification on Windows.
+			d->metaData->addMetaData_string(Property::Subject,
+				cp1252_to_utf8(comment->gamedesc, sizeof(comment->gamedesc)));
+		}
 	}
 
 	// Finished reading the metadata.
