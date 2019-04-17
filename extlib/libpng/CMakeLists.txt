@@ -37,7 +37,7 @@ ENDIF(0)
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_RELEASE 36)
+set(PNGLIB_RELEASE 37)
 set(PNGLIB_NAME libpng${PNGLIB_MAJOR}${PNGLIB_MINOR})
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_RELEASE})
 
@@ -565,7 +565,7 @@ set(png_fix_itxt_sources
 
 if(MSVC)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-endif(MSVC)
+endif()
 
 # rom-properties: Add -DPNG_DEBUG=0 in debug builds.
 #if(PNG_DEBUG)
@@ -911,14 +911,14 @@ endif()
 # SET UP LINKS
 if(PNG_SHARED)
   set_target_properties(png PROPERTIES
-#   VERSION 16.${PNGLIB_RELEASE}.1.6.36
+#   VERSION 16.${PNGLIB_RELEASE}.1.6.37
     VERSION 16.${PNGLIB_RELEASE}.0
     SOVERSION 16
     CLEAN_DIRECT_OUTPUT 1)
 endif()
 
 # INSTALL
-if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
+if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
   # rom-properties:
   # - Disabled installation of import libraries.
   # - Disabled EXPORT, since it causes problems
