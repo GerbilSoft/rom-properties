@@ -892,7 +892,7 @@ ELF::ELF(IRpFile *file)
 				break;
 			case 0xFE01:
 				// This matches some homebrew software.
-				d->fileType = RomData::FTYPE_EXECUTABLE;
+				d->fileType = FTYPE_EXECUTABLE;
 				break;
 		}
 	} else {
@@ -1350,11 +1350,13 @@ int ELF::loadFieldData(void)
 			primary->e_osabiversion);
 	}
 
-	// Linkage.
-	d->fields->addField_string(C_("ELF", "Linkage"),
-		d->pt_dynamic.addr != 0
-			? C_("ELF|Linkage", "Dynamic")
-			: C_("ELF|Linkage", "Static"));
+	// Linkage. (Executables only)
+	if (d->fileType == FTYPE_EXECUTABLE) {
+		d->fields->addField_string(C_("ELF", "Linkage"),
+			d->pt_dynamic.addr != 0
+				? C_("ELF|Linkage", "Dynamic")
+				: C_("ELF|Linkage", "Static"));
+	}
 
 	// Interpreter.
 	if (!d->interpreter.empty()) {

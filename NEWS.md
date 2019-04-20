@@ -87,9 +87,11 @@
     * For non-DX10 textures, the equivalent DX10 format is now shown if it
       can be determined.
     * BC7 texture compression is now supported.
-  * ELF: Two PT_DYNAMIC headers are now displayed if present:
-    * DT_FLAGS
-    * DT_FLAGS_1
+  * ELF:
+    * Two PT_DYNAMIC headers are now displayed if present:
+      * DT_FLAGS
+      * DT_FLAGS_1
+    * Linkage is now only shown for executables.
   * GameCube:
     * Split the GameCube opening.bnr code into a separate parser.
       This allows standalone GameCube opening.bnr files to be handled.
