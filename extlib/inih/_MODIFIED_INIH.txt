@@ -1,4 +1,4 @@
-This copy of inih-r43 is a modified version of the original.
+This copy of inih-r44 is a modified version of the original.
 
 The following changes have been made to the original:
 
@@ -8,5 +8,5 @@ The following changes have been made to the original:
   they work properly if compiling with 32-bit MSVC using /Gz.
   (default stdcall)
 
-To obtain the original inih-r43, visit:
+To obtain the original inih-r44, visit:
 https://github.com/benhoyt/inih
