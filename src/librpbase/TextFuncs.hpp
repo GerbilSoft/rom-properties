@@ -453,7 +453,7 @@ static inline std::u16string utf8_to_utf16(const std::string &str)
 	return cpN_to_utf16(CP_UTF8, str.data(), static_cast<int>(str.size()));
 }
 
-/** Specialized UTF-16 conversion functions. **/
+/* Specialized UTF-16 conversion functions */
 
 /**
  * Convert UTF-16LE text to UTF-8.
@@ -488,6 +488,8 @@ static inline std::string utf16_to_utf8(const char16_t *wcs, int len)
 	return utf16be_to_utf8(wcs, len);
 #endif
 }
+
+/** UTF-16 to UTF-16 conversion functions **/
 
 /**
  * Byteswap and return UTF-16 text.

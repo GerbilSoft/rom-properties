@@ -292,7 +292,6 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 
 	// Convert from UTF-16 to `cp`.
 	string ret;
-	// Convert from UTF-16 to `cp`.
 	int cbMbs;
 	char *mbs = W32U_UTF16_to_mbs(wcs, len, cp, &cbMbs);
 	if (mbs && cbMbs > 0) {
