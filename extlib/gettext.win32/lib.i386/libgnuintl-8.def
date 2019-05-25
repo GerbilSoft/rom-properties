@@ -1,4 +1,3 @@
-LIBRARY libgnuintl-8.dll
 EXPORTS
     __imp_libintl_version @1 DATA
     __printf__ @2
@@ -38,28 +37,28 @@ EXPORTS
     libintl_dgettext @36
     libintl_dngettext @37
     libintl_fprintf @38
-    libintl_fwprintf @39
-    libintl_gettext @40
-    libintl_gettext_extract_plural @41
-    libintl_gettext_free_exp @42
-    libintl_gettext_germanic_plural @43 DATA
-    libintl_gettextparse @44
-    libintl_hash_string @45
-    libintl_lock_destroy_func @46
-    libintl_lock_init_func @47
-    libintl_lock_lock_func @48
-    libintl_lock_unlock_func @49
-    libintl_ngettext @50
-    libintl_nl_current_default_domain @51 DATA
-    libintl_nl_default_default_domain @52 DATA
-    libintl_nl_default_dirname @53 DATA
-    libintl_nl_domain_bindings @54 DATA
-    libintl_once_func @55
-    libintl_recursive_lock_destroy_func @56
-    libintl_recursive_lock_init_func @57
-    libintl_recursive_lock_lock_func @58
-    libintl_recursive_lock_unlock_func @59
-    libintl_relocate @60
+    libintl_gettext @39
+    libintl_gettext_extract_plural @40
+    libintl_gettext_free_exp @41
+    libintl_gettext_germanic_plural @42 DATA
+    libintl_gettextparse @43
+    libintl_hash_string @44
+    libintl_lock_destroy_func @45
+    libintl_lock_init_func @46
+    libintl_lock_lock_func @47
+    libintl_lock_unlock_func @48
+    libintl_ngettext @49
+    libintl_nl_current_default_domain @50 DATA
+    libintl_nl_default_default_domain @51 DATA
+    libintl_nl_default_dirname @52 DATA
+    libintl_nl_domain_bindings @53 DATA
+    libintl_once_func @54
+    libintl_recursive_lock_destroy_func @55
+    libintl_recursive_lock_init_func @56
+    libintl_recursive_lock_lock_func @57
+    libintl_recursive_lock_unlock_func @58
+    libintl_relocate @59
+    libintl_relocate2 @60
     libintl_rwlock_destroy_func @61
     libintl_rwlock_init_func @62
     libintl_rwlock_rdlock_func @63
@@ -69,24 +68,18 @@ EXPORTS
     libintl_setlocale @67
     libintl_snprintf @68
     libintl_sprintf @69
-    libintl_swprintf @70
-    libintl_textdomain @71
-    libintl_vasnprintf @72
-    libintl_vasnwprintf @73
-    libintl_vasprintf @74
-    libintl_version @75 DATA
-    libintl_vfprintf @76
-    libintl_vfwprintf @77
-    libintl_vprintf @78
-    libintl_vsnprintf @79
-    libintl_vsprintf @80
-    libintl_vswprintf @81
-    libintl_vwprintf @82
-    libintl_wprintf @83
-    locale_charset @84
-    ngettext @85
-    textdomain @86
-    xmax @87
-    xsum @88
-    xsum3 @89
-    xsum4 @90
+    libintl_textdomain @70
+    libintl_vasnprintf @71
+    libintl_vasprintf @72
+    libintl_version @73 DATA
+    libintl_vfprintf @74
+    libintl_vprintf @75
+    libintl_vsnprintf @76
+    libintl_vsprintf @77
+    locale_charset @78
+    ngettext @79
+    textdomain @80
+    xmax @81
+    xsum @82
+    xsum3 @83
+    xsum4 @84

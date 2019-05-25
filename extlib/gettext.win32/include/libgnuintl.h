@@ -1,5 +1,5 @@
 /* Message catalogs for internationalization.
-   Copyright (C) 1995-1997, 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997, 2000-2016, 2018-2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as published by
@@ -12,7 +12,10 @@
    GNU Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+
+#ifndef _LIBINTL_H
+#define _LIBINTL_H 1
 
 /** rom-properties: Modified for __cdecl in MSVC builds. **/
 #ifdef _MSC_VER
@@ -20,9 +23,6 @@
 #else
 # define INTLCALL
 #endif
-
-#ifndef _LIBINTL_H
-#define _LIBINTL_H 1
 
 #if 1 && BUILDING_LIBINTL
 #define LIBINTL_DLL_EXPORTED __attribute__((__visibility__("default")))
@@ -67,7 +67,7 @@ extern "C" {
 
 
 /* Version number: (major<<16) + (minor<<8) + subminor */
-#define LIBINTL_VERSION 0x001308
+#define LIBINTL_VERSION 0x001400
 extern LIBINTL_DLL_EXPORTED __declspec (dllimport) int libintl_version;
 
 
@@ -124,7 +124,7 @@ extern LIBINTL_DLL_EXPORTED __declspec (dllimport) int libintl_version;
 /* _INTL_MAY_RETURN_STRING_ARG(n) declares that the given function may return
    its n-th argument literally.  This enables GCC to warn for example about
    printf (gettext ("foo %y")).  */
-#if defined __GNUC__ && __GNUC__ >= 3 && !(defined __APPLE_CC__ && __APPLE_CC__ > 1 && defined __cplusplus)
+#if defined __GNUC__ && __GNUC__ >= 3 && !(defined __APPLE_CC__ && __APPLE_CC__ > 1 && !(defined __clang__ && __clang__ && __clang_major__ >= 3) && defined __cplusplus)
 # define _INTL_MAY_RETURN_STRING_ARG(n) __attribute__ ((__format_arg__ (n)))
 #else
 # define _INTL_MAY_RETURN_STRING_ARG(n)
@@ -136,7 +136,9 @@ extern LIBINTL_DLL_EXPORTED __declspec (dllimport) int libintl_version;
 #ifdef _INTL_REDIRECT_INLINE
 extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_gettext (const char *__msgid)
        _INTL_MAY_RETURN_STRING_ARG (1);
-static inline char *gettext (const char *__msgid)
+static inline
+_INTL_MAY_RETURN_STRING_ARG (1)
+char *gettext (const char *__msgid)
 {
   return libintl_gettext (__msgid);
 }
@@ -154,7 +156,9 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL gettext (const char *__msgid)
 #ifdef _INTL_REDIRECT_INLINE
 extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dgettext (const char *__domainname, const char *__msgid)
        _INTL_MAY_RETURN_STRING_ARG (2);
-static inline char *dgettext (const char *__domainname, const char *__msgid)
+static inline
+_INTL_MAY_RETURN_STRING_ARG (2)
+char *dgettext (const char *__domainname, const char *__msgid)
 {
   return libintl_dgettext (__domainname, __msgid);
 }
@@ -173,8 +177,9 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL dgettext (const char *__domainname, 
 extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dcgettext (const char *__domainname, const char *__msgid,
                                 int __category)
        _INTL_MAY_RETURN_STRING_ARG (2);
-static inline char *dcgettext (const char *__domainname, const char *__msgid,
-                               int __category)
+static inline
+_INTL_MAY_RETURN_STRING_ARG (2)
+char *dcgettext (const char *__domainname, const char *__msgid, int __category)
 {
   return libintl_dcgettext (__domainname, __msgid, __category);
 }
@@ -195,8 +200,10 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL dcgettext (const char *__domainname,
 extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_ngettext (const char *__msgid1, const char *__msgid2,
                                unsigned long int __n)
        _INTL_MAY_RETURN_STRING_ARG (1) _INTL_MAY_RETURN_STRING_ARG (2);
-static inline char *ngettext (const char *__msgid1, const char *__msgid2,
-                              unsigned long int __n)
+static inline
+_INTL_MAY_RETURN_STRING_ARG (1) _INTL_MAY_RETURN_STRING_ARG (2)
+char *ngettext (const char *__msgid1, const char *__msgid2,
+                unsigned long int __n)
 {
   return libintl_ngettext (__msgid1, __msgid2, __n);
 }
@@ -216,8 +223,10 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL ngettext (const char *__msgid1, cons
 extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dngettext (const char *__domainname, const char *__msgid1,
                                 const char *__msgid2, unsigned long int __n)
        _INTL_MAY_RETURN_STRING_ARG (2) _INTL_MAY_RETURN_STRING_ARG (3);
-static inline char *dngettext (const char *__domainname, const char *__msgid1,
-                               const char *__msgid2, unsigned long int __n)
+static inline
+_INTL_MAY_RETURN_STRING_ARG (2) _INTL_MAY_RETURN_STRING_ARG (3)
+char *dngettext (const char *__domainname, const char *__msgid1,
+                 const char *__msgid2, unsigned long int __n)
 {
   return libintl_dngettext (__domainname, __msgid1, __msgid2, __n);
 }
@@ -239,9 +248,11 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL libintl_dcngettext (const char *__do
                                  const char *__msgid1, const char *__msgid2,
                                  unsigned long int __n, int __category)
        _INTL_MAY_RETURN_STRING_ARG (2) _INTL_MAY_RETURN_STRING_ARG (3);
-static inline char *dcngettext (const char *__domainname,
-                                const char *__msgid1, const char *__msgid2,
-                                unsigned long int __n, int __category)
+static inline
+_INTL_MAY_RETURN_STRING_ARG (2) _INTL_MAY_RETURN_STRING_ARG (3)
+char *dcngettext (const char *__domainname,
+                  const char *__msgid1, const char *__msgid2,
+                  unsigned long int __n, int __category)
 {
   return libintl_dcngettext (__domainname, __msgid1, __msgid2, __n, __category);
 }
@@ -409,7 +420,7 @@ extern LIBINTL_DLL_EXPORTED int INTLCALL vasprintf (char **, const char *, va_li
 
 #endif
 
-#if 0
+#if 1
 
 #undef fwprintf
 #define fwprintf libintl_fwprintf
@@ -437,8 +448,32 @@ extern LIBINTL_DLL_EXPORTED int INTLCALL vswprintf (wchar_t *, size_t, const wch
 #endif
 
 
+/* Support for retrieving the name of a locale_t object.  */
+#if 0
+
+#ifndef GNULIB_defined_newlocale /* don't override gnulib */
+#undef newlocale
+#define newlocale libintl_newlocale
+extern LIBINTL_DLL_EXPORTED locale_t INTLCALL newlocale (int, const char *, locale_t);
+#endif
+
+#ifndef GNULIB_defined_duplocale /* don't override gnulib */
+#undef duplocale
+#define duplocale libintl_duplocale
+extern LIBINTL_DLL_EXPORTED locale_t INTLCALL duplocale (locale_t);
+#endif
+
+#ifndef GNULIB_defined_freelocale /* don't override gnulib */
+#undef freelocale
+#define freelocale libintl_freelocale
+extern LIBINTL_DLL_EXPORTED void INTLCALL freelocale (locale_t);
+#endif
+
+#endif
+
+
 /* Support for the locale chosen by the user.  */
-#if (defined __APPLE__ && defined __MACH__) || defined _WIN32 || defined __WIN32__ || defined __CYGWIN__
+#if (defined __APPLE__ && defined __MACH__) || defined _WIN32 || defined __CYGWIN__
 
 #ifndef GNULIB_defined_setlocale /* don't override gnulib */
 #undef setlocale
@@ -450,7 +485,10 @@ extern LIBINTL_DLL_EXPORTED char * INTLCALL setlocale (int, const char *);
 
 #undef newlocale
 #define newlocale libintl_newlocale
+/* Declare newlocale() only if the system headers define the 'locale_t' type. */
+#if !(defined __CYGWIN__ && !defined LC_ALL_MASK)
 extern LIBINTL_DLL_EXPORTED locale_t INTLCALL newlocale (int, const char *, locale_t);
+#endif
 
 #endif
 
