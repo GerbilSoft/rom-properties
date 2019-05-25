@@ -32,13 +32,19 @@
 #include "stdafx.h"
 #include "config.version.h"
 
+// FIXME: Overlay icon handler is crashing in some cases.
+// Uncomment this to enable the overlay icon handler.
+//#define ENABLE_OVERLAY_ICON_HANDLER 1
+
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
 #include "RP_ExtractImage.hpp"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_PropertyStore.hpp"
-#include "RP_ShellIconOverlayIdentifier.hpp"
+#ifdef ENABLE_OVERLAY_ICON_HANDLER
+# include "RP_ShellIconOverlayIdentifier.hpp"
+#endif
 
 // libwin32common
 #include "libwin32common/ComBase.hpp"
@@ -184,7 +190,9 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	else CHECK_INTERFACE(RP_ShellPropSheetExt)
 	else CHECK_INTERFACE(RP_ThumbnailProvider)
 	else CHECK_INTERFACE(RP_PropertyStore)
+#ifdef ENABLE_OVERLAY_ICON_HANDLER
 	else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
+#endif
 	else {
 		// Class not available.
 		hr = CLASS_E_CLASSNOTAVAILABLE;
@@ -609,8 +617,10 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_PropertyStore::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#ifdef ENABLE_OVERLAY_ICON_HANDLER
 	lResult = RP_ShellIconOverlayIdentifier::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+#endif
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
