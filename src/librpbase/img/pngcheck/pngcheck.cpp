@@ -32,6 +32,7 @@
  *   implied warranty.
  *
  *===========================================================================*/
+/* SPDX-License-Identifier: libpng-2.0 */
 
 #define VERSION "2.3.0 of 7 July 2007"
 
