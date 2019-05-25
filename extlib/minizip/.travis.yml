@@ -12,7 +12,7 @@ matrix:
       compiler: clang
       before_deploy:
         - cd Release
-        - 7z a -tzip minizip-$TRAVIS_OS_NAME.zip *minizip*
+        - 7z a -tzip minizip-$TRAVIS_OS_NAME.zip *mini*zip*
       deploy: &deploy_base
         provider: releases
         api_key: 
@@ -66,7 +66,7 @@ matrix:
       compiler: clang
       env: TOOL="-DMZ_OPENSSL=ON"
       before_deploy:
-        - ls *minizip* | tar -czvf minizip-$TRAVIS_OS_NAME.tar.gz -T -
+        - ls *mini*zip* | tar -czvf minizip-$TRAVIS_OS_NAME.tar.gz -T -
       deploy:
         <<: *deploy_base
         file: minizip-$TRAVIS_OS_NAME.tar.gz
@@ -77,7 +77,7 @@ matrix:
       os: osx
       compiler: clang
       before_deploy:
-        - ls *minizip* | tar -czvf minizip-$TRAVIS_OS_NAME.tar.gz -T -
+        - ls *mini*zip* | tar -czvf minizip-$TRAVIS_OS_NAME.tar.gz -T -
       deploy:
         <<: *deploy_base
         file: minizip-$TRAVIS_OS_NAME.tar.gz
@@ -98,6 +98,16 @@ matrix:
       before_install:
         - brew install openssl
       env: TOOL="-DMZ_OPENSSL=ON -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_INCLUDE_DIRS=/usr/local/opt/openssl/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/opt/openssl/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/opt/openssl/lib/libssl.dylib"
+    - stage: macintosh
+      os: osx
+      name: Podspec
+      before_script:
+        - mkdir example
+        - cd example
+        - cmake -G Xcode ..
+        - echo "target 'minizip' do pod 'Minizip', :path => '..'; platform :osx; end" > Podfile
+      script:
+        - pod install
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -y install libbsd-dev libssl-dev; fi

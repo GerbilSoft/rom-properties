@@ -41,7 +41,7 @@ endif()
 enable_language(C)
 
 # Minizip library version
-set(VERSION "2.8.6")
+set(VERSION "2.8.8")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -270,7 +270,13 @@ if(UNIX)
     if ((MZ_PKCRYPT OR MZ_WZAES) AND NOT (MZ_OPENSSL AND OPENSSL_FOUND))
 
         if (APPLE AND NOT MZ_BRG)
-            list(APPEND MINIZIP_SRC "mz_crypt_apple.c")
+            check_include_file(CommonCrypto/CommonCrypto.h COMMONCRYPTO_FOUND)
+            if (COMMONCRYPTO_FOUND)
+                list(APPEND MINIZIP_SRC "mz_crypt_apple.c")
+            else()
+                message(STATUS "CommonCrypto not found, using BRG instead")
+                set(MZ_BRG TRUE)
+            endif()
         else()
             set(MZ_BRG TRUE)
         endif()
@@ -339,6 +345,10 @@ if(MZ_COMPAT)
     string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_UNZIP" UNZIP_COMPAT_HEADER ${UNZIP_COMPAT_HEADER})
     file(WRITE "unzip.h" ${UNZIP_COMPAT_HEADER})
     list(APPEND MINIZIP_PUBLIC_HEADERS "unzip.h")
+
+    if(MZ_COMPAT_VERSION)
+        add_definitions(-DMZ_COMPAT_VERSION=${MZ_COMPAT_VERSION})
+    endif()
 endif()
 
 # Include PKCRYPT
@@ -650,8 +660,18 @@ if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${MINIZIP_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
 endif()
 
-# Build test executable
+# Build test executables
 if(MZ_BUILD_TEST)
+    if(MZ_ZLIB AND NOT MZ_LIBCOMP)
+        add_executable(minigzip_cmd "minigzip.c")
+        set_target_properties(minigzip_cmd PROPERTIES OUTPUT_NAME minigzip)
+        target_link_libraries(minigzip_cmd ${PROJECT_NAME})
+
+        if(NOT SKIP_INSTALL_BINARIES AND NOT SKIP_INSTALL_ALL)
+            install(TARGETS minigzip_cmd RUNTIME DESTINATION "bin")
+        endif()
+    endif()
+
     add_executable(minizip_cmd "minizip.c" "test/test.c" "test/test.h")
     set_target_properties(minizip_cmd PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
     target_link_libraries(minizip_cmd ${PROJECT_NAME})
@@ -736,6 +756,7 @@ if(MZ_BUILD_UNIT_TEST)
         create_compress_tests("signed" "-h;ia.p12;-w;test")
         create_compress_tests("secure" "-z;-h;ia.p12;-w;test")
     endif()
+
     # Perform tests on others
     if(NOT MZ_COMPRESS_ONLY)
         if(MZ_ZLIB)
@@ -769,7 +790,16 @@ if(MZ_BUILD_UNIT_TEST)
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
         endif()
     endif()
-
+    if(NOT MZ_COMPRESS_ONLY AND NOT MZ_DECOMPRESS_ONLY)
+        if(MZ_ZLIB AND NOT MZ_LIBCOMP)
+            add_test(NAME gz
+                COMMAND minigzip_cmd random.bin
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+            add_test(NAME ungz
+                COMMAND minigzip_cmd -x -d out random.bin.gz
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+        endif()
+    endif()
 endif()
 
 #Build fuzzer executables

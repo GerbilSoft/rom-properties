@@ -1,4 +1,4 @@
-# minizip 2.8.6
+# minizip 2.8.8
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux. 
 
@@ -38,6 +38,7 @@ the library as version 2 because it had become difficult to maintain and code re
 + NTFS timestamp support for UTC last modified, last accessed, and creation dates.
 + Disk split support for splitting zip archives into multiple files.
 + Preservation of file attributes across file systems.
++ Follow and store symbolic links.
 + Unicode filename support through UTF-8 encoding.
 + Legacy character encoding support CP437, CP932, CP936, CP950.
 + Turn off compilation of compression, decompression, or encryption.

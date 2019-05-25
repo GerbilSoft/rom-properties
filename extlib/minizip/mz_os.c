@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.8.6, April 8, 2019
+   Version 2.8.8, May 22, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -37,11 +37,58 @@ int32_t mz_path_combine(char *path, const char *join, int32_t max_path)
     }
     else
     {
-        if (path[path_len - 1] != '\\' && path[path_len - 1] != '/')
-            strncat(path, "/", max_path - path_len - 1);
+        mz_path_append_slash(path, max_path, MZ_PATH_SLASH_PLATFORM);
         strncat(path, join, max_path - path_len);
     }
 
+    return MZ_OK;
+}
+
+int32_t mz_path_append_slash(char *path, int32_t max_path, char slash)
+{
+    int32_t path_len = (int32_t)strlen(path);
+    if ((path_len + 2) >= max_path)
+        return MZ_BUF_ERROR;
+    if (path[path_len - 1] != '\\' && path[path_len - 1] != '/')
+    {
+        path[path_len] = slash;
+        path[path_len + 1] = 0;
+    }
+    return MZ_OK;
+}
+
+int32_t mz_path_remove_slash(char *path)
+{   
+    int32_t path_len = (int32_t)strlen(path);
+    while (path_len > 0)
+    {
+        if (path[path_len - 1] == '\\' || path[path_len - 1] == '/')
+            path[path_len - 1] = 0;
+        else
+            break;
+
+        path_len -= 1;
+    }
+    return MZ_OK;
+}
+
+int32_t mz_path_has_slash(const char *path)
+{
+    int32_t path_len = (int32_t)strlen(path);
+    if (path[path_len - 1] != '\\' && path[path_len - 1] != '/')
+        return MZ_EXIST_ERROR;
+    return MZ_OK;
+}
+
+int32_t mz_path_convert_slashes(char *path, char slash)
+{
+    int32_t i = 0;
+
+    for (i = 0; i < (int32_t)strlen(path); i += 1)
+    {
+        if (path[i] == '\\' || path[i] == '/')
+            path[i] = slash;
+    }
     return MZ_OK;
 }
 
@@ -220,6 +267,34 @@ int32_t mz_path_remove_filename(char *path)
     return MZ_OK;
 }
 
+int32_t mz_path_remove_extension(char *path)
+{
+    char *path_ptr = NULL;
+
+    if (path == NULL)
+        return MZ_PARAM_ERROR;
+
+    path_ptr = path + strlen(path) - 1;
+
+    while (path_ptr > path)
+    {
+        if ((*path_ptr == '/') || (*path_ptr == '\\'))
+            break;
+        if (*path_ptr == '.')
+        {
+            *path_ptr = 0;
+            break;
+        }
+
+        path_ptr -= 1;
+    }
+
+    if (path_ptr == path)
+        *path_ptr = 0;
+
+    return MZ_OK;
+}
+
 int32_t mz_path_get_filename(const char *path, const char **filename)
 {
     const char *match = NULL;
@@ -259,9 +334,7 @@ int32_t mz_dir_make(const char *path)
         return MZ_MEM_ERROR;
 
     strcpy(current_dir, path);
-
-    if (current_dir[len - 1] == '/')
-        current_dir[len - 1] = 0;
+    mz_path_remove_slash(current_dir);
 
     err = mz_os_make_dir(current_dir);
     if (err != MZ_OK)

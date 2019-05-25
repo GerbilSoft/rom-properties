@@ -1,5 +1,5 @@
 /* minizip.c
-   Version 2.8.6, April 8, 2019
+   Version 2.8.8, May 22, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -31,6 +31,8 @@ typedef struct minizip_opt_s {
     uint8_t     overwrite;
     uint8_t     append;
     int64_t     disk_size;
+    uint8_t     follow_links;
+    uint8_t     store_links;
     uint8_t     zip_cd;
     int32_t     encoding;
     uint8_t     verbose;
@@ -69,14 +71,16 @@ int32_t minizip_banner(void)
 
 int32_t minizip_help(void)
 {
-    printf("Usage : minizip [-x -d dir|-l|-e] [-o] [-c codepage] [-a] [-j] [-0 to -9] [-b|-m] [-k 512] [-p pwd] [-s] file.zip [files]\n\n" \
+    printf("Usage: minizip [-x][-d dir|-l|-e][-o][-f][-y][-c cp][-a][-j][-0 to -9][-b|-m][-k 512][-p pwd][-s] file.zip [files]\n\n" \
            "  -x  Extract files\n" \
            "  -l  List files\n" \
            "  -d  Destination directory\n" \
            "  -o  Overwrite existing files\n" \
-           "  -c  File names use cp437 encoding\n" \
+           "  -c  File names use cp437 encoding (or specified codepage)\n" \
            "  -a  Append to existing zip file\n" \
            "  -i  Include full path of files\n" \
+           "  -f  Follow symbolic links\n" \
+           "  -y  Store symbolic links\n" \
            "  -v  Verbose info\n" \
            "  -0  Store only\n" \
            "  -1  Compress faster\n" \
@@ -290,8 +294,9 @@ int32_t minizip_add(const char *path, const char *password, minizip_opt *options
     mz_zip_writer_set_password(writer, password);
     mz_zip_writer_set_compress_method(writer, options->compress_method);
     mz_zip_writer_set_compress_level(writer, options->compress_level);
+    mz_zip_writer_set_follow_links(writer, options->follow_links);
+    mz_zip_writer_set_store_links(writer, options->store_links);
     mz_zip_writer_set_overwrite_cb(writer, options, minizip_add_overwrite_cb);
-    mz_zip_writer_set_comment(writer, "xyz");
     mz_zip_writer_set_progress_cb(writer, options, minizip_add_progress_cb);
     mz_zip_writer_set_entry_cb(writer, options, minizip_add_entry_cb);
     mz_zip_writer_set_zip_cd(writer, options->zip_cd);
@@ -565,7 +570,7 @@ int32_t minizip_erase(const char *src_path, const char *target_path, int32_t arg
             strncat(bak_path, ".bak", sizeof(bak_path) - strlen(bak_path) - 1);
 
             if (mz_os_file_exists(bak_path) == MZ_OK)
-                mz_os_delete(bak_path);
+                mz_os_unlink(bak_path);
 
             if (mz_os_rename(src_path, bak_path) != MZ_OK)
                 printf("Error backing up archive before replacing %s\n", bak_path);
@@ -627,6 +632,10 @@ int main(int argc, const char *argv[])
                 options.append = 1;
             else if ((c == 'o') || (c == 'O'))
                 options.overwrite = 1;
+            else if ((c == 'f') || (c == 'F'))
+                options.follow_links = 1;
+            else if ((c == 'y') || (c == 'Y'))
+                options.store_links = 1;
             else if ((c == 'i') || (c == 'I'))
                 options.include_path = 1;
             else if ((c == 'z') || (c == 'Z'))

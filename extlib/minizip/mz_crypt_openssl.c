@@ -1,5 +1,5 @@
 /* mz_crypt_openssl.c -- Crypto/hash functions for OpenSSL
-   Version 2.8.6, April 8, 2019
+   Version 2.8.8, May 22, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -214,6 +214,7 @@ int32_t mz_crypt_aes_encrypt(void *handle, uint8_t *buf, int32_t size)
         return MZ_PARAM_ERROR;
 
     AES_encrypt(buf, buf, &aes->key);
+    /* Equivalent to AES_ecb_encrypt with AES_ENCRYPT */
     return size;
 }
 
@@ -226,6 +227,7 @@ int32_t mz_crypt_aes_decrypt(void *handle, uint8_t *buf, int32_t size)
         return MZ_PARAM_ERROR;
 
     AES_decrypt(buf, buf, &aes->key);
+    /* Equivalent to AES_ecb_encrypt with AES_DECRYPT */
     return size;
 }
 
@@ -459,6 +461,7 @@ void mz_crypt_hmac_delete(void **handle)
 
 /***************************************************************************/
 
+#if !defined(MZ_ZIP_NO_SIGNING)
 int32_t mz_crypt_sign(uint8_t *message, int32_t message_size, uint8_t *cert_data, int32_t cert_data_size, 
     const char *cert_pwd, uint8_t **signature, int32_t *signature_size)
 {
@@ -652,3 +655,4 @@ int32_t mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *si
 
     return err;
 }
+#endif
