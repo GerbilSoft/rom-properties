@@ -30,9 +30,7 @@
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_PropertyStore.hpp"
-#ifdef ENABLE_OVERLAY_ICON_HANDLER
-# include "RP_ShellIconOverlayIdentifier.hpp"
-#endif
+#include "RP_ShellIconOverlayIdentifier.hpp"
 
 // libwin32common
 #include "libwin32common/ComBase.hpp"
