@@ -15,6 +15,7 @@
 #include "mz_strm_os.h"
 
 #include <windows.h>
+#include <winioctl.h>
 
 /***************************************************************************/
 
