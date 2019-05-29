@@ -66,11 +66,14 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 		}
 	}
 
-	string s_ext = ext;
-#ifndef _WIN32
+	// NOTE: Windows 10 1709 supports per-directory case-sensitivity on NTFS,
+	// and Linux 5.2 supports per-directory case-insensitivity on EXT4.
+	// Hence, we should check for both uppercase and lowercase extensions
+	// on all platforms.
+
 	// Check for uppercase extensions first.
+	string s_ext = ext;
 	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::toupper);
-#endif /* !_WIN32 */
 
 	// Attempt to open the related file.
 	string rel_filename = s_dir + s_basename + s_ext;
@@ -78,13 +81,8 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 	if (!test_file->isOpen()) {
 		// Error opening the related file.
 		test_file->unref();
-#ifdef _WIN32
-		// Windows uses case-insensitive filenames,
-		// so we're done here.
-		test_file = nullptr;
-#else /* _WIN32 */
+
 		// Try again with a lowercase extension.
-		// (Non-Windows platforms only.)
 		std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(), ::tolower);
 		rel_filename.replace(rel_filename.size() - s_ext.size(), s_ext.size(), s_ext);
 		test_file = new RpFile(rel_filename, RpFile::FM_OPEN_READ);
@@ -93,7 +91,6 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 			test_file->unref();
 			test_file = nullptr;
 		}
-#endif /* _WIN32 */
 	}
 
 	if (!test_file && FileSystem::is_symlink(filename)) {
