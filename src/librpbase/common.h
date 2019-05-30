@@ -38,10 +38,6 @@
  * static_asserts size of a structure
  * Also defines a constant of form StructName_SIZE
  */
-/**
- * static_asserts size of a structure
- * Also defines a constant of form StructName_SIZE
- */
 // TODO: Check MSVC support for static_assert() in C mode.
 #if defined(__cplusplus)
 # define ASSERT_STRUCT(st,sz) enum { st##_SIZE = (sz), }; \
