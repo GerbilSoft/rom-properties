@@ -76,7 +76,7 @@ ASSERT_STRUCT(DMG_RomHeader, 80);
  * - http://hhug.me/gbx/1.0
  * - https://github.com/GerbilSoft/rom-properties/issues/125
  */
-#define GBX_MAGIC 0x47425821	// "GBX!" (big-endian)
+#define GBX_MAGIC 'GBX!'
 typedef struct _GBX_Footer {
 	/** Cartridge information. **/
 	union {
