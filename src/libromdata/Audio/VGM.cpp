@@ -133,7 +133,7 @@ VGMPrivate::gd3_tags_t *VGMPrivate::loadGD3(unsigned int addr)
 	}
 
 	// Validate the header.
-	if (gd3Header.magic != cpu_to_le32(GD3_MAGIC) ||
+	if (gd3Header.magic != cpu_to_be32(GD3_MAGIC) ||
 	    le32_to_cpu(gd3Header.version) < 0x0100)
 	{
 		// Incorrect header.

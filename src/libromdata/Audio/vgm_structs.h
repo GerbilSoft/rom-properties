@@ -30,7 +30,7 @@ extern "C" {
  *
  * All pointer offsets are relative to that field's address.
  */
-#define VGM_MAGIC 'Vgm '	// Magic number
+#define VGM_MAGIC 'Vgm '
 #define VGM_SAMPLE_RATE 44100U	// All VGM sample values use this rate.
 #define VGM_CLK_FLAG_ALTMODE	(1U << 31)	/* alternate mode for some sound chips */
 #define VGM_CLK_FLAG_DUALCHIP	(1U << 30)	/* dual-chip mode for some sound chips */
@@ -163,7 +163,7 @@ ASSERT_STRUCT(VGM_Header, 232);
 /**
  * GD3 header
  */
-#define GD3_MAGIC 0x20336447U	/* "Gd3 " (little-endian) */
+#define GD3_MAGIC 'Gd3 '
 typedef struct PACKED _GD3_Header {
 	uint32_t magic;		// [0x000] "Gd3 "
 	uint32_t version;	// [0x004] Version number, in BCD. (v1.00)
