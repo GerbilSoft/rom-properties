@@ -91,6 +91,7 @@ typedef struct PACKED _card_header {
 	uint16_t chksum1;	// Checksum.
 	uint16_t chksum2;	// Inverted checksum.
 } card_header;
+ASSERT_STRUCT(card_header, 512);
 
 /**
  * Directory control block.
@@ -101,6 +102,7 @@ typedef struct PACKED _card_dircntrl {
 	uint16_t chksum1;	// Checksum 1.
 	uint16_t chksum2;	// Checksum 2.
 } card_dircntrl;
+ASSERT_STRUCT(card_dircntrl, 64);
 
 /**
  * Directory entry.
@@ -128,6 +130,7 @@ typedef struct PACKED _card_direntry {
 	uint16_t pad_01;	// Padding. (0xFFFF)
 	uint32_t commentaddr;	// Comment address.
 } card_direntry;
+ASSERT_STRUCT(card_direntry, 64);
 
 /**
  * Directory table.
@@ -136,6 +139,7 @@ typedef struct PACKED _card_dat {
 	struct _card_direntry entries[CARD_MAXFILES];
 	struct _card_dircntrl dircntrl;
 } card_dat;
+ASSERT_STRUCT(card_dat, 8192);
 
 /**
  * Block allocation table.
@@ -151,6 +155,7 @@ typedef struct PACKED _card_bat {
 	// before looking it up in the FAT!
 	uint16_t fat[0xFFB];	// File allocation table.
 } card_bat;
+ASSERT_STRUCT(card_bat, 8192);
 
 // File attributes.
 #define CARD_ATTRIB_PUBLIC	0x04
