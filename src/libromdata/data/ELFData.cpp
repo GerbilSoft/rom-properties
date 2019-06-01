@@ -189,7 +189,7 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 	nullptr,
 	"Altium TSK3000 core",
 	"Freescale RS08",
-	nullptr,
+	"Analog Devices SHARC family",
 	"Cyan Technology eCOG2",
 	"Sunplus S+core7 RISC",
 	"New Japan Radio (NJR) 24-bit DSP",
@@ -247,9 +247,13 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 	// 190
 	"NVIDIA CUDA architecture",
 	"Tilera TILE-Gx",
-	nullptr, nullptr, nullptr, nullptr, nullptr,
+	"CloudShield",
+	"KIPO-KAIST Core-A 1st gen.",
+	"KIPO-KAIST Core-A 2nd gen.",
+	"Synopsys ARCompact V2",
+	"Open8 RISC",
 	"Renesas RL78 family",
-	nullptr,
+	"Broadcom VideoCore V",
 	"Renesas 68K0R",
 
 	// 200
@@ -270,6 +274,14 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 	"Cognitive Smart Memory",
 	"iCelero CoolEngine",
 	"Nanoradio Optimized RISC",
+	"CSR Kalimba",
+
+	// 220
+	"Zilog Z80",
+	"Controls and Data Services VISIUMcore",
+	"FTDI Chip FT32",
+	"Moxie processor",
+	"AMD GPU",
 
 	nullptr
 };
@@ -280,6 +292,7 @@ const ELFDataPrivate::MachineType ELFDataPrivate::machineTypes_other[] = {
 	{243,		"UCB RISC-V"},
 	{247,		"eBPF"},
 	{251,		"NEC VE"},
+	{252,		"C-SKY"},
 
 	// The following are unofficial and/or obsolete types.
 	// TODO: Indicate unofficial/obsolete using a separate flag?
@@ -365,7 +378,7 @@ int RP_C_API ELFDataPrivate::MachineType_compar(const void *a, const void *b)
  */
 const char *ELFData::lookup_cpu(uint16_t cpu)
 {
-	static_assert(ARRAY_SIZE(ELFDataPrivate::machineTypes_low) == 218+2,
+	static_assert(ARRAY_SIZE(ELFDataPrivate::machineTypes_low) == 224+2,
 		"ELFDataPrivate::machineTypes_low[] is missing entries.");
 	if (cpu < ARRAY_SIZE(ELFDataPrivate::machineTypes_low)-1) {
 		// CPU ID is in the contiguous low IDs array.
