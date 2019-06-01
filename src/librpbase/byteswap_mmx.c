@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * byteswap_sse2.c: Byteswapping functions.                                *
+ * byteswap_mmx.c: Byteswapping functions.                                 *
  * MMX-optimized version.                                                  *
  *                                                                         *
  * Copyright (c) 2008-2017 by David Korth                                  *
