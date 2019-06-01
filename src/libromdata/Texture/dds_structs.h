@@ -88,7 +88,7 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-#define DDS_MAGIC "DDS "
+#define DDS_MAGIC 'DDS '
 typedef struct PACKED _DDS_HEADER {
 	uint32_t dwSize;
 	uint32_t dwFlags;		// See DDS_HEADER_FLAGS

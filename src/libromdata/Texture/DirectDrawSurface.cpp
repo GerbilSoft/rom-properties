@@ -922,10 +922,12 @@ int DirectDrawSurface::isRomSupported_static(const DetectInfo *info)
 
 	// Verify the DDS magic.
 	// TODO: Other checks?
-	if (!memcmp(info->header.pData, DDS_MAGIC, 4)) {
+	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
+	if (pData32[0] == cpu_to_be32(DDS_MAGIC)) {
 		// DDS magic is present.
 		// Check the structure sizes.
-		const DDS_HEADER *const ddsHeader = reinterpret_cast<const DDS_HEADER*>(&info->header.pData[4]);
+		const DDS_HEADER *const ddsHeader =
+			reinterpret_cast<const DDS_HEADER*>(&info->header.pData[4]);
 		if (le32_to_cpu(ddsHeader->dwSize) == sizeof(*ddsHeader) &&
 		    le32_to_cpu(ddsHeader->ddspf.dwSize) == sizeof(ddsHeader->ddspf))
 		{
@@ -1109,15 +1111,13 @@ int DirectDrawSurface::loadFieldData(void)
 	const char *const pixel_format_title = C_("DirectDrawSurface", "Pixel Format");
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
-		// TODO: Union of uint32_t and char?
-		// NOTE: dwFourCC is byteswapped from 'big-endian'
-		// to host-endian, so it needs to be reversed here.
-		d->fields->addField_string(pixel_format_title,
-			rp_sprintf("%c%c%c%c",
-				(ddspf.dwFourCC >> 24) & 0xFF,
-				(ddspf.dwFourCC >> 16) & 0xFF,
-				(ddspf.dwFourCC >>  8) & 0xFF,
-				 ddspf.dwFourCC        & 0xFF));
+		char cFourCC[5];
+		cFourCC[0] = (ddspf.dwFourCC >> 24) & 0xFF;
+		cFourCC[1] = (ddspf.dwFourCC >> 16) & 0xFF;
+		cFourCC[2] = (ddspf.dwFourCC >>  8) & 0xFF;
+		cFourCC[3] =  ddspf.dwFourCC        & 0xFF;
+		cFourCC[4] = '\0';
+		d->fields->addField_string(pixel_format_title, cFourCC);
 	} else if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
 		const char *pxfmt = d->getPixelFormatName(ddspf);
