@@ -302,123 +302,103 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	// Check if a FourCC is specified.
 	if (ddspf.dwFourCC != 0) {
 		// FourCC is specified.
-		switch (ddspf.dwFourCC) {
-			case DDPF_FOURCC_DXT1:
-				dxgi_format = DXGI_FORMAT_BC1_UNORM;
+		static const struct {
+			uint32_t dwFourCC;
+			uint8_t dxgi_format;
+			uint8_t dxgi_alpha;
+		} fourCC_dxgi_lkup_tbl[] = {
+			{DDPF_FOURCC_DXT1, DXGI_FORMAT_BC1_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_DXT2, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_PREMULTIPLIED},
+			{DDPF_FOURCC_DXT3, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_DXT4, DXGI_FORMAT_BC3_UNORM, DDS_ALPHA_MODE_PREMULTIPLIED},
+			{DDPF_FOURCC_DXT5, DXGI_FORMAT_BC3_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+
+			{DDPF_FOURCC_ATI1, DXGI_FORMAT_BC4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_BC4U, DXGI_FORMAT_BC4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+
+			{DDPF_FOURCC_ATI2, DXGI_FORMAT_BC5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_BC5U, DXGI_FORMAT_BC5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+
+			{0, 0, 0}
+		};
+
+		for (const auto *p = fourCC_dxgi_lkup_tbl; p->dwFourCC != 0; p++) {
+			if (ddspf.dwFourCC == p->dwFourCC) {
+				// Found a match.
+				dxgi_format = p->dxgi_format;
+				dxgi_alpha = p->dxgi_alpha;
 				break;
-			case DDPF_FOURCC_DXT2:
-				dxgi_format = DXGI_FORMAT_BC2_UNORM;
-				dxgi_alpha = DDS_ALPHA_MODE_PREMULTIPLIED;
-				break;
-			case DDPF_FOURCC_DXT3:
-				dxgi_format = DXGI_FORMAT_BC2_UNORM;
-				break;
-			case DDPF_FOURCC_DXT4:
-				dxgi_format = DXGI_FORMAT_BC3_UNORM;
-				dxgi_alpha = DDS_ALPHA_MODE_PREMULTIPLIED;
-				break;
-			case DDPF_FOURCC_DXT5:
-				dxgi_format = DXGI_FORMAT_BC3_UNORM;
-				break;
+			}
+		}
 
-			case DDPF_FOURCC_ATI1:
-			case DDPF_FOURCC_BC4U:
-				dxgi_format = DXGI_FORMAT_BC4_UNORM;
-				break;
+		// TODO: Check DX10/XBOX before the other FourCCs?
+		if (dxgi_format == 0 && (ddspf.dwFourCC == DDPF_FOURCC_DX10 || ddspf.dwFourCC == DDPF_FOURCC_XBOX)) {
+			// Check the DX10 format.
+			// TODO: Handle typeless, signed, sRGB, float.
+			dxgi_format = dxt10Header.dxgiFormat;
+			dxgi_alpha = dxt10Header.miscFlags2;
 
-			case DDPF_FOURCC_ATI2:
-			case DDPF_FOURCC_BC5U:
-				dxgi_format = DXGI_FORMAT_BC5_UNORM;
-				break;
+			static const struct {
+				uint8_t dxgi_format;
+				uint8_t pxf_uncomp;
+				uint8_t bytespp;
+			} dx10_lkup_tbl[] = {
+				{DXGI_FORMAT_R10G10B10A2_TYPELESS,	ImageDecoder::PXF_A2B10G10R10, 4},
+				{DXGI_FORMAT_R10G10B10A2_UNORM,		ImageDecoder::PXF_A2B10G10R10, 4},
+				{DXGI_FORMAT_R10G10B10A2_UINT,		ImageDecoder::PXF_A2B10G10R10, 4},
 
-			case DDPF_FOURCC_DX10:
-			case DDPF_FOURCC_XBOX:
-				// Check the DX10 format.
-				// TODO: Handle typeless, signed, sRGB, float.
-				// TODO: Make this a lookup table with three fields?
-				dxgi_format = dxt10Header.dxgiFormat;
-				dxgi_alpha = dxt10Header.miscFlags2;
-				switch (dxgi_format) {
-					case DXGI_FORMAT_R10G10B10A2_TYPELESS:
-					case DXGI_FORMAT_R10G10B10A2_UNORM:
-					case DXGI_FORMAT_R10G10B10A2_UINT:
-						pxf_uncomp = ImageDecoder::PXF_A2B10G10R10;
-						bytespp = 4;
-						break;
+				{DXGI_FORMAT_R8G8B8A8_TYPELESS,		ImageDecoder::PXF_ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_UNORM,		ImageDecoder::PXF_ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,	ImageDecoder::PXF_ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_UINT,		ImageDecoder::PXF_ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_SNORM,		ImageDecoder::PXF_ABGR8888, 4},
+				{DXGI_FORMAT_R8G8B8A8_SINT,		ImageDecoder::PXF_ABGR8888, 4},
 
-					case DXGI_FORMAT_R8G8B8A8_TYPELESS:
-					case DXGI_FORMAT_R8G8B8A8_UNORM:
-					case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-					case DXGI_FORMAT_R8G8B8A8_UINT:
-					case DXGI_FORMAT_R8G8B8A8_SNORM:
-					case DXGI_FORMAT_R8G8B8A8_SINT:
-						pxf_uncomp = ImageDecoder::PXF_ABGR8888;
-						bytespp = 4;
-						break;
+				{DXGI_FORMAT_R16G16_TYPELESS,		ImageDecoder::PXF_G16R16, 4},
+				{DXGI_FORMAT_R16G16_FLOAT,		ImageDecoder::PXF_G16R16, 4},
+				{DXGI_FORMAT_R16G16_UNORM,		ImageDecoder::PXF_G16R16, 4},
+				{DXGI_FORMAT_R16G16_UINT,		ImageDecoder::PXF_G16R16, 4},
+				{DXGI_FORMAT_R16G16_SNORM,		ImageDecoder::PXF_G16R16, 4},
+				{DXGI_FORMAT_R16G16_SINT,		ImageDecoder::PXF_G16R16, 4},
 
-					case DXGI_FORMAT_R16G16_TYPELESS:
-					case DXGI_FORMAT_R16G16_FLOAT:
-					case DXGI_FORMAT_R16G16_UNORM:
-					case DXGI_FORMAT_R16G16_UINT:
-					case DXGI_FORMAT_R16G16_SNORM:
-					case DXGI_FORMAT_R16G16_SINT:
-						pxf_uncomp = ImageDecoder::PXF_G16R16;
-						bytespp = 4;
-						break;
+				{DXGI_FORMAT_R8G8_TYPELESS,		ImageDecoder::PXF_GR88, 2},
+				{DXGI_FORMAT_R8G8_UNORM,		ImageDecoder::PXF_GR88, 2},
+				{DXGI_FORMAT_R8G8_UINT,			ImageDecoder::PXF_GR88, 2},
+				{DXGI_FORMAT_R8G8_SNORM,		ImageDecoder::PXF_GR88, 2},
+				{DXGI_FORMAT_R8G8_SINT,			ImageDecoder::PXF_GR88, 2},
 
-					case DXGI_FORMAT_R8G8_TYPELESS:
-					case DXGI_FORMAT_R8G8_UNORM:
-					case DXGI_FORMAT_R8G8_UINT:
-					case DXGI_FORMAT_R8G8_SNORM:
-					case DXGI_FORMAT_R8G8_SINT:
-						pxf_uncomp = ImageDecoder::PXF_GR88;
-						bytespp = 2;
-						break;
+				{DXGI_FORMAT_A8_UNORM,			ImageDecoder::PXF_A8, 1},
+				{DXGI_FORMAT_B5G6R5_UNORM,		ImageDecoder::PXF_RGB565, 2},
+				{DXGI_FORMAT_B5G5R5A1_UNORM,		ImageDecoder::PXF_ARGB1555, 2},
 
-					case DXGI_FORMAT_A8_UNORM:
-						pxf_uncomp = ImageDecoder::PXF_A8;
-						bytespp = 1;
-						break;
+				{DXGI_FORMAT_B8G8R8A8_UNORM,		ImageDecoder::PXF_ARGB8888, 4},
+				{DXGI_FORMAT_B8G8R8A8_TYPELESS,		ImageDecoder::PXF_ARGB8888, 4},
+				{DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,	ImageDecoder::PXF_ARGB8888, 4},
 
-					case DXGI_FORMAT_B5G6R5_UNORM:
-						pxf_uncomp = ImageDecoder::PXF_RGB565;
-						bytespp = 2;
-						break;
+				{DXGI_FORMAT_B8G8R8X8_UNORM,		ImageDecoder::PXF_xRGB8888, 4},
+				{DXGI_FORMAT_B8G8R8X8_TYPELESS,		ImageDecoder::PXF_xRGB8888, 4},
+				{DXGI_FORMAT_B8G8R8X8_UNORM_SRGB,	ImageDecoder::PXF_xRGB8888, 4},
 
-					case DXGI_FORMAT_B5G5R5A1_UNORM:
-						pxf_uncomp = ImageDecoder::PXF_ARGB1555;
-						bytespp = 2;
-						break;
+				{DXGI_FORMAT_B4G4R4A4_UNORM,		ImageDecoder::PXF_ARGB4444, 2},
 
-					case DXGI_FORMAT_B8G8R8A8_UNORM:
-					case DXGI_FORMAT_B8G8R8A8_TYPELESS:
-					case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
-						pxf_uncomp = ImageDecoder::PXF_ARGB8888;
-						bytespp = 4;
-						break;
+				{0, 0, 0}
+			};
 
-					case DXGI_FORMAT_B8G8R8X8_UNORM:
-					case DXGI_FORMAT_B8G8R8X8_TYPELESS:
-					case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
-						pxf_uncomp = ImageDecoder::PXF_xRGB8888;
-						bytespp = 4;
-						break;
-
-					case DXGI_FORMAT_B4G4R4A4_UNORM:
-						pxf_uncomp = ImageDecoder::PXF_ARGB4444;
-						bytespp = 2;
-						break;
-
-					default:
-						// Use the DX10 format as-is. (Assume it's compressed.)
-						break;
+			// If the dxgi_format is not listed in the table, we'll use it
+			// as-is, assuming it's compressed.
+			for (const auto *p = dx10_lkup_tbl; p->dxgi_format != 0; p++) {
+				if (dxgi_format == p->dxgi_format) {
+					// Found a match.
+					pxf_uncomp = p->pxf_uncomp;
+					bytespp = p->bytespp;
 				}
-				break;
+			}
+		}
 
-			default:
-				// Unsupported FourCC.
-				ret = -ENOTSUP;
-				break;
+		if (dxgi_format == 0) {
+			// Unsupported FourCC.
+			dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
+			ret = -ENOTSUP;
 		}
 	} else {
 		// No FourCC.
