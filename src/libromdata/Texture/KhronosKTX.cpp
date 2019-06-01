@@ -72,8 +72,13 @@ class KhronosKTXPrivate : public RomDataPrivate
 		// Some textures may be stored upside-down due to
 		// the way GL texture coordinates are interpreted.
 		// Default without KTXorientation is HFlip=false, VFlip=true
-		bool isHFlipNeeded;
-		bool isVFlipNeeded;
+		uint8_t isFlipNeeded;
+		enum FlipBits : uint8_t {
+			FLIP_NONE	= 0,
+			FLIP_V		= (1 << 0),
+			FLIP_H		= (1 << 1),
+			FLIP_HV		= FLIP_H | FLIP_V,
+		};
 
 		// Texture data start address.
 		unsigned int texDataStartAddr;
@@ -104,8 +109,7 @@ class KhronosKTXPrivate : public RomDataPrivate
 KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, IRpFile *file)
 	: super(q, file)
 	, isByteswapNeeded(false)
-	, isHFlipNeeded(false)
-	, isVFlipNeeded(true)
+	, isFlipNeeded(FLIP_V)
 	, texDataStartAddr(0)
 	, img(nullptr)
 {
@@ -412,7 +416,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 	// Post-processing: Check if VFlip is needed.
 	// TODO: Handle HFlip too?
-	if (img && isVFlipNeeded && height > 1) {
+	if (img && (isFlipNeeded & FLIP_V) && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
 		rp_image *flipimg = img->vflip();
 		if (flipimg) {
@@ -508,23 +512,27 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 			hasKTXorientation = true;
 			// Check for known values.
 			// NOTE: Ignoring the R component.
+			// NOTE: str[7] does NOT have a NULL terminator.
 			const char *const v = k_end + 1;
-			if (!strncmp(v, "S=r,T=d", 7)) {
-				// Origin is upper-left.
-				isHFlipNeeded = false;
-				isVFlipNeeded = false;
-			} else if (!strncmp(v, "S=r,T=u", 7)) {
-				// Origin is lower-left.
-				isHFlipNeeded = false;
-				isVFlipNeeded = true;
-			} else if (!strncmp(v, "S=l,T=d", 7)) {
-				// Origin is upper-right.
-				isHFlipNeeded = true;
-				isVFlipNeeded = false;
-			} else if (!strncmp(v, "S=l,T=u", 7)) {
-				// Origin is lower-right.
-				isHFlipNeeded = true;
-				isVFlipNeeded = true;
+
+			static const struct {
+				char str[7];
+				uint8_t flip;
+			} orientation_lkup_tbl[] = {
+				{{'S','=','r',',','T','=','d'}, FLIP_NONE},
+				{{'S','=','r',',','T','=','u'}, FLIP_V},
+				{{'S','=','l',',','T','=','d'}, FLIP_H},
+				{{'S','=','l',',','T','=','u'}, FLIP_HV},
+
+				{"", 0}
+			};
+
+			for (const auto *p = orientation_lkup_tbl; p->str[0] != '\0'; p++) {
+				if (!strncmp(v, p->str, 7)) {
+					// Found a match.
+					isFlipNeeded = p->flip;
+					break;
+				}
 			}
 		}
 
