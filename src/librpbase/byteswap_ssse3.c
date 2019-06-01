@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * byteswap_sse2.c: Byteswapping functions.                                *
+ * byteswap_ssse3.c: Byteswapping functions.                               *
  * SSSE3-optimized version.                                                *
  *                                                                         *
  * Copyright (c) 2008-2018 by David Korth                                  *
@@ -32,7 +32,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n)
 	assert((n & 1) == 0);
 	n &= ~1;
 
-	// TODO: Don't bother with SSE2 if n is below a certain size?
+	// TODO: Don't bother with SSSE3 if n is below a certain size?
 
 	// If vptr isn't 16-byte aligned, swap WORDs
 	// manually until we get to 16-byte alignment.
