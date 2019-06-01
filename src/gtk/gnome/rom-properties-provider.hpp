@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__
 #define __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__
 
-#include <libnautilus-extension/nautilus-property-page-provider.h>
+#include <nautilus-extension.h>
 
 G_BEGIN_DECLS;
 
