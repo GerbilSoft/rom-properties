@@ -102,7 +102,7 @@ ASSERT_STRUCT(DDS_NVTT_Header, 11*sizeof(uint32_t));
 
 /**
  * DirectDraw Surface: File header.
- * This does NOT include the "DDS " magic.
+ * This does NOT include the 'DDS ' magic.
  * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx
  *
  * All fields are in little-endian.
