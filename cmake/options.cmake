@@ -28,10 +28,11 @@ IF(UNIX AND NOT APPLE)
 	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)")
 	OPTION_UI(XFCE3 "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)")
 	OPTION_UI(GNOME "Build the GNOME (GTK+ 3.x) plugin.")
+	OPTION_UI(MATE "Build the MATE (GTK+ 3.x) plugin.")
 
 	# Set BUILD_GTK2 and/or BUILD_GTK3 depending on frontends.
 	SET(BUILD_GTK2 ${BUILD_XFCE} CACHE "Check for GTK+ 2.x." INTERNAL FORCE)
-	IF(BUILD_GNOME OR BUILD_XFCE3)
+	IF(BUILD_GNOME OR BUILD_XFCE3 OR BUILD_MATE)
 		SET(BUILD_GTK3 ON CACHE "Check for GTK+ 3.x." INTERNAL FORCE)
 	ELSE()
 		SET(BUILD_GTK3 OFF CACHE "Check for GTK+ 3.x." INTERNAL FORCE)
