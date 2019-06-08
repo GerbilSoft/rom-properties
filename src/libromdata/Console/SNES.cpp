@@ -645,8 +645,10 @@ const char *const *SNES::supportedFileExtensions_static(void)
 const char *const *SNES::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
+		// Vendor-specific MIME types from FreeDesktop.org.
 		"application/vnd.nintendo.snes.rom",
+
+		// Unofficial MIME types from FreeDesktop.org.
 		"application/x-snes-rom",
 
 		nullptr

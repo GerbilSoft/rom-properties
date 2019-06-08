@@ -731,6 +731,10 @@ const char *const *ValveVTF::supportedFileExtensions_static(void)
 const char *const *ValveVTF::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
+		// Vendor-specific MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/vnd.valve.source.texture",
+
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
 		"image/x-vtf",

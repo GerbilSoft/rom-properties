@@ -709,10 +709,11 @@
   </mime-type>
 
   <!-- ValveVTF -->
-  <mime-type type="image/x-vtf">
+  <mime-type type="image/vnd.valve.source.texture">
     <comment>Valve texture file</comment>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
+    <alias type="image/x-vtf"/>
     <glob pattern="*.vtf"/>
     <magic priority="50">
       <match value="VTF\0" type="string" offset="0"/>
