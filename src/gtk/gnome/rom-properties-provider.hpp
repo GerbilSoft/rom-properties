@@ -18,11 +18,10 @@
 # else /* !HAVE_NAUTILUS_EXTENSION_H */
 #  include <libnautilus-extension/nautilus-property-page-provider.h>
 # endif /* HAVE_NAUTILUS_EXTENSION_H */
-typedef NautilusFileInfo RpGtk3FileInfo;
 #elif defined(RP_UI_GTK3_MATE)
 // MATE desktop (v1.18.0+; GTK+ 3.x)
 # include <libcaja-extension/caja-property-page-provider.h>
-typedef CajaFileInfo RpGtk3FileInfo;
+typedef CajaFileInfo NautilusFileInfo;
 #else
 # error GTK3 desktop environment not set and/or supported.
 #endif
@@ -44,7 +43,7 @@ GType		rom_properties_provider_get_type	(void) G_GNUC_CONST G_GNUC_INTERNAL;
 /* NOTE: G_DEFINE_DYNAMIC_TYPE() declares the actual function as static. */
 void		rom_properties_provider_register_type_ext(GTypeModule *module) G_GNUC_INTERNAL;
 
-gboolean	rom_properties_get_file_supported	(RpGtk3FileInfo *info) G_GNUC_INTERNAL;
+gboolean	rom_properties_get_file_supported	(NautilusFileInfo *info) G_GNUC_INTERNAL;
 
 G_END_DECLS;
 

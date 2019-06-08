@@ -33,30 +33,22 @@ using LibRomData::RomDataFactory;
 
 #if defined(RP_UI_GTK3_GNOME)
 // GNOME 3 desktop
-typedef NautilusPropertyPageProviderIface		RpGtk3PropertyPageProviderIface;
-typedef NautilusPropertyPageProvider			RpGtk3PropertyPageProvider;
-typedef NautilusPropertyPage				RpGtk3PropertyPage;
-# define RPGTK3_TYPE_PROPERTY_PAGE_PROVIDER		NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER
-# define RPGTK3_FILE_INFO(obj)				NAUTILUS_FILE_INFO(obj)
-# define RPGTK3_IS_FILE_INFO(obj)			NAUTILUS_IS_FILE_INFO(obj)
-# define RpGtk3_file_info_get_uri(file)			nautilus_file_info_get_uri(file)
-# define RpGtk3_property_page_new(name, label, page)	nautilus_property_page_new((name), (label), (page))
 #elif defined(RP_UI_GTK3_MATE)
 // MATE desktop (v1.18.0+; GTK+ 3.x)
-typedef CajaPropertyPageProviderIface			RpGtk3PropertyPageProviderIface;
-typedef CajaPropertyPageProvider			RpGtk3PropertyPageProvider;
-typedef CajaPropertyPage				RpGtk3PropertyPage;
-# define RPGTK3_TYPE_PROPERTY_PAGE_PROVIDER		CAJA_TYPE_PROPERTY_PAGE_PROVIDER
-# define RPGTK3_FILE_INFO(obj)				CAJA_FILE_INFO(obj)
-# define RPGTK3_IS_FILE_INFO(obj)			CAJA_IS_FILE_INFO(obj)
-# define RpGtk3_file_info_get_uri(file)			caja_file_info_get_uri(file)
-# define RpGtk3_property_page_new(name, label, page)	caja_property_page_new((name), (label), (page))
+typedef CajaPropertyPageProviderIface			NautilusPropertyPageProviderIface;
+typedef CajaPropertyPageProvider			NautilusPropertyPageProvider;
+typedef CajaPropertyPage				NautilusPropertyPage;
+# define NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER		CAJA_TYPE_PROPERTY_PAGE_PROVIDER
+# define NAUTILUS_FILE_INFO(obj)			CAJA_FILE_INFO(obj)
+# define NAUTILUS_IS_FILE_INFO(obj)			CAJA_IS_FILE_INFO(obj)
+# define nautilus_file_info_get_uri(file)		caja_file_info_get_uri(file)
+# define nautilus_property_page_new(name, label, page)	caja_property_page_new((name), (label), (page))
 #else
 # error GTK3 desktop environment not set and/or supported.
 #endif
 
-static void   rom_properties_provider_page_provider_init	(RpGtk3PropertyPageProviderIface	*iface);
-static GList *rom_properties_provider_get_pages			(RpGtk3PropertyPageProvider		*provider,
+static void   rom_properties_provider_page_provider_init	(NautilusPropertyPageProviderIface	*iface);
+static GList *rom_properties_provider_get_pages			(NautilusPropertyPageProvider		*provider,
 								 GList					*files);
 
 struct _RomPropertiesProviderClass {
@@ -71,7 +63,7 @@ struct _RomPropertiesProvider {
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
 	G_TYPE_OBJECT, 0,
-	G_IMPLEMENT_INTERFACE(RPGTK3_TYPE_PROPERTY_PAGE_PROVIDER,
+	G_IMPLEMENT_INTERFACE(NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER,
 			rom_properties_provider_page_provider_init));
 
 void
@@ -99,18 +91,18 @@ rom_properties_provider_init(RomPropertiesProvider *sbr_provider)
 }
 
 static void
-rom_properties_provider_page_provider_init(RpGtk3PropertyPageProviderIface *iface)
+rom_properties_provider_page_provider_init(NautilusPropertyPageProviderIface *iface)
 {
 	iface->get_pages = rom_properties_provider_get_pages;
 }
 
 static GList*
-rom_properties_provider_get_pages(RpGtk3PropertyPageProvider *provider, GList *files)
+rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
 {
 	RP_UNUSED(provider);
 	GList *pages = nullptr;
 	GList *file;
-	RpGtk3FileInfo *info;
+	NautilusFileInfo *info;
 
 	if (g_list_length(files) != 1) 
 		return nullptr;
@@ -119,11 +111,11 @@ rom_properties_provider_get_pages(RpGtk3PropertyPageProvider *provider, GList *f
 	if (G_UNLIKELY(file == nullptr))
 		return nullptr;
 
-	info = RPGTK3_FILE_INFO(file->data);
+	info = NAUTILUS_FILE_INFO(file->data);
 
 	if (G_LIKELY(rom_properties_get_file_supported(info))) {
 		// Get the filename.
-		gchar *uri = RpGtk3_file_info_get_uri(info);
+		gchar *uri = nautilus_file_info_get_uri(info);
 		gchar *filename = g_filename_from_uri(uri, nullptr, nullptr);
 		g_free(uri);
 
@@ -143,7 +135,7 @@ rom_properties_provider_get_pages(RpGtk3PropertyPageProvider *provider, GList *f
 		const char *const tabTitle = C_("RomDataView", "ROM Properties");
 
 		// Create the NautilusPropertyPage.
-		RpGtk3PropertyPage *page = RpGtk3_property_page_new(
+		NautilusPropertyPage *page = nautilus_property_page_new(
 			"RomPropertiesPage::property_page",
 			gtk_label_new(tabTitle), romDataView);
 
@@ -155,16 +147,16 @@ rom_properties_provider_get_pages(RpGtk3PropertyPageProvider *provider, GList *f
 }
 
 gboolean
-rom_properties_get_file_supported(RpGtk3FileInfo *info)
+rom_properties_get_file_supported(NautilusFileInfo *info)
 {
 	gchar *uri;
 	gchar *filename;
 	gboolean supported = false;
 
-	g_return_val_if_fail(info != nullptr || RPGTK3_IS_FILE_INFO(info), false);
+	g_return_val_if_fail(info != nullptr || NAUTILUS_IS_FILE_INFO(info), false);
 
 	// TODO: Support for gvfs.
-	uri = RpGtk3_file_info_get_uri(info);
+	uri = nautilus_file_info_get_uri(info);
 	filename = g_filename_from_uri(uri, nullptr, nullptr);
 	g_free(uri);
 
