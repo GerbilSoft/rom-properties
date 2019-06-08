@@ -157,56 +157,41 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {
-		switch (peripherals[i]) {
-			case SATURN_IO_CONTROL_PAD:
-				ret |= SATURN_IOBF_CONTROL_PAD;
+		// TODO: Sort by character and use bsearch()?
+		#define SATURN_IO_SUPPORT_ENTRY(entry) {SATURN_IO_##entry, SATURN_IOBF_##entry}
+		static const struct {
+			char io_chr;
+			uint32_t io_bf;
+		} saturn_io_lkup_tbl[] = {
+			{' ', 0},	// quick exit for empty entries
+			SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
+			SATURN_IO_SUPPORT_ENTRY(ANALOG_CONTROLLER),
+			SATURN_IO_SUPPORT_ENTRY(MOUSE),
+			SATURN_IO_SUPPORT_ENTRY(KEYBOARD),
+			SATURN_IO_SUPPORT_ENTRY(STEERING),
+			SATURN_IO_SUPPORT_ENTRY(MULTITAP),
+			SATURN_IO_SUPPORT_ENTRY(LIGHT_GUN),
+			SATURN_IO_SUPPORT_ENTRY(RAM_CARTRIDGE),
+			SATURN_IO_SUPPORT_ENTRY(3D_CONTROLLER),
+
+			// TODO: Are these actually the same thing?
+			{SATURN_IO_LINK_CABLE_JPN, SATURN_IOBF_LINK_CABLE},
+			{SATURN_IO_LINK_CABLE_USA, SATURN_IOBF_LINK_CABLE},
+
+			SATURN_IO_SUPPORT_ENTRY(NETLINK),
+			SATURN_IO_SUPPORT_ENTRY(PACHINKO),
+			SATURN_IO_SUPPORT_ENTRY(FDD),
+			SATURN_IO_SUPPORT_ENTRY(ROM_CARTRIDGE),
+			SATURN_IO_SUPPORT_ENTRY(MPEG_CARD),
+
+			{0, 0}
+		};
+
+		for (const auto *p = saturn_io_lkup_tbl; p->io_chr != 0; p++) {
+			if (p->io_chr == peripherals[i]) {
+				ret |= p->io_bf;
 				break;
-			case SATURN_IO_ANALOG_CONTROLLER:
-				ret |= SATURN_IOBF_ANALOG_CONTROLLER;
-				break;
-			case SATURN_IO_MOUSE:
-				ret |= SATURN_IOBF_MOUSE;
-				break;
-			case SATURN_IO_KEYBOARD:
-				ret |= SATURN_IOBF_KEYBOARD;
-				break;
-			case SATURN_IO_STEERING:
-				ret |= SATURN_IOBF_STEERING;
-				break;
-			case SATURN_IO_MULTITAP:
-				ret |= SATURN_IOBF_MULTITAP;
-				break;
-			case SATURN_IO_LIGHT_GUN:
-				ret |= SATURN_IOBF_LIGHT_GUN;
-				break;
-			case SATURN_IO_RAM_CARTRIDGE:
-				ret |= SATURN_IOBF_RAM_CARTRIDGE;
-				break;
-			case SATURN_IO_3D_CONTROLLER:
-				ret |= SATURN_IOBF_3D_CONTROLLER;
-				break;
-			case SATURN_IO_LINK_CABLE_JPN:
-			case SATURN_IO_LINK_CABLE_USA:
-				// TODO: Are these actually the same thing?
-				ret |= SATURN_IOBF_LINK_CABLE;
-				break;
-			case SATURN_IO_NETLINK:
-				ret |= SATURN_IOBF_NETLINK;
-				break;
-			case SATURN_IO_PACHINKO:
-				ret |= SATURN_IOBF_PACHINKO;
-				break;
-			case SATURN_IO_FDD:
-				ret |= SATURN_IOBF_FDD;
-				break;
-			case SATURN_IO_ROM_CARTRIDGE:
-				ret |= SATURN_IOBF_ROM_CARTRIDGE;
-				break;
-			case SATURN_IO_MPEG_CARD:
-				ret |= SATURN_IOBF_MPEG_CARD;
-				break;
-			default:
-				break;
+			}
 		}
 	}
 
