@@ -185,32 +185,31 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	for (int i = size-1; i >= 0; i--) {
 		// TODO: Sort by character and use bsearch()?
 		#define MD_IO_SUPPORT_ENTRY(entry) {MD_IO_##entry, MD_IOBF_##entry}
-		static const struct {
-			char io_chr;
-			uint32_t io_bf;
-		} md_io_lkup_tbl[] = {
-			{' ', 0},	// quick exit for empty entries
-			MD_IO_SUPPORT_ENTRY(JOYPAD_3),
-			MD_IO_SUPPORT_ENTRY(JOYPAD_6),
-			MD_IO_SUPPORT_ENTRY(JOYPAD_SMS),
-			MD_IO_SUPPORT_ENTRY(TEAM_PLAYER),
-			MD_IO_SUPPORT_ENTRY(KEYBOARD),
-			MD_IO_SUPPORT_ENTRY(SERIAL),
-			MD_IO_SUPPORT_ENTRY(PRINTER),
-			MD_IO_SUPPORT_ENTRY(TABLET),
-			MD_IO_SUPPORT_ENTRY(TRACKBALL),
-			MD_IO_SUPPORT_ENTRY(PADDLE),
-			MD_IO_SUPPORT_ENTRY(FDD),
-			MD_IO_SUPPORT_ENTRY(CDROM),
-			MD_IO_SUPPORT_ENTRY(ACTIVATOR),
-			MD_IO_SUPPORT_ENTRY(MEGA_MOUSE),
+		static const char md_io_chr_tbl[] = {
+			// This MUST be in the same order as MD_IO_Support_Bitfield!
+			MD_IO_JOYPAD_3,
+			MD_IO_JOYPAD_6,
+			MD_IO_JOYPAD_SMS,
+			MD_IO_TEAM_PLAYER,
+			MD_IO_KEYBOARD,
+			MD_IO_SERIAL,
+			MD_IO_PRINTER,
+			MD_IO_TABLET,
+			MD_IO_TRACKBALL,
+			MD_IO_PADDLE,
+			MD_IO_FDD,
+			MD_IO_CDROM,
+			MD_IO_ACTIVATOR,
+			MD_IO_MEGA_MOUSE,
 
-			{0, 0}
+			'\0'
 		};
 
-		for (const auto *p = md_io_lkup_tbl; p->io_chr != 0; p++) {
-			if (p->io_chr == io_support[i]) {
-				ret |= p->io_bf;
+		uint32_t io_bit = 1;
+		const char io_cur = io_support[i];
+		for (const auto *p = md_io_chr_tbl; *p != '\0'; p++, io_bit <<= 1) {
+			if (io_cur == *p) {
+				ret |= io_bit;
 				break;
 			}
 		}
