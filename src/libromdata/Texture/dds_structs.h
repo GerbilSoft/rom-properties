@@ -38,14 +38,14 @@ extern "C" {
  * All fields are in little-endian.
  */
 typedef struct PACKED _DDS_PIXELFORMAT {
-	uint32_t dwSize;
-	uint32_t dwFlags;		// See DDS_PIXELFORMAT_FLAGS
-	uint32_t dwFourCC;		// See DDS_PIXELFORMAT_FOURCC
-	uint32_t dwRGBBitCount;
-	uint32_t dwRBitMask;
-	uint32_t dwGBitMask;
-	uint32_t dwBBitMask;
-	uint32_t dwABitMask;
+	uint32_t dwSize;		// [0x000]
+	uint32_t dwFlags;		// [0x004] See DDS_PIXELFORMAT_FLAGS
+	uint32_t dwFourCC;		// [0x008] See DDS_PIXELFORMAT_FOURCC
+	uint32_t dwRGBBitCount;		// [0x00C]
+	uint32_t dwRBitMask;		// [0x010]
+	uint32_t dwGBitMask;		// [0x014]
+	uint32_t dwBBitMask;		// [0x018]
+	uint32_t dwABitMask;		// [0x01C]
 } DDS_PIXELFORMAT;
 ASSERT_STRUCT(DDS_PIXELFORMAT, 32);
 
@@ -82,6 +82,25 @@ typedef enum {
 } DDS_PIXELFORMAT_FOURCC;
 
 /**
+ * DirectDraw Surface: NVTT header.
+ * This is present within the DDS header if the DDS was created by
+ * nVidia Texture Tools.
+ *
+ * Reference: https://github.com/castano/nvidia-texture-tools/blob/9489aed825c6a0a931dfdd75e8ab6f97292b31a7/src/nvimage/DirectDrawSurface.cpp#L511
+ *
+ * All fields are in little-endian.
+ */
+#define NVTT_MAGIC 'NVTT'
+typedef struct PACKED _DDS_NVTT_Header {
+	uint32_t dwNvttReserved[9];	// [0x000]
+	uint32_t dwNvttMagic;		// [0x024] 'NVTT'
+	// TODO: Separate uint8_t values for major/minor/revision?
+	uint32_t dwNvttVersion;		// [0x028] Version number.
+					//         (major << 16) | (minor << 8) | (revision)
+} DDS_NVTT_Header;
+ASSERT_STRUCT(DDS_NVTT_Header, 11*sizeof(uint32_t));
+
+/**
  * DirectDraw Surface: File header.
  * This does NOT include the "DDS " magic.
  * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx
@@ -90,20 +109,23 @@ typedef enum {
  */
 #define DDS_MAGIC 'DDS '
 typedef struct PACKED _DDS_HEADER {
-	uint32_t dwSize;
-	uint32_t dwFlags;		// See DDS_HEADER_FLAGS
-	uint32_t dwHeight;
-	uint32_t dwWidth;
-	uint32_t dwPitchOrLinearSize;
-	uint32_t dwDepth;
-	uint32_t dwMipMapCount;
-	uint32_t dwReserved1[11];
-	DDS_PIXELFORMAT ddspf;
-	uint32_t dwCaps;
-	uint32_t dwCaps2;
-	uint32_t dwCaps3;
-	uint32_t dwCaps4;
-	uint32_t dwReserved2;
+	uint32_t dwSize;		// [0x000]
+	uint32_t dwFlags;		// [0x004] See DDS_HEADER_FLAGS
+	uint32_t dwHeight;		// [0x008]
+	uint32_t dwWidth;		// [0x00C]
+	uint32_t dwPitchOrLinearSize;	// [0x010]
+	uint32_t dwDepth;		// [0x014]
+	uint32_t dwMipMapCount;		// [0x018]
+	union {
+		uint32_t dwReserved1[11];	// [0x01C]
+		DDS_NVTT_Header nvtt;		// [0x01C] NVTT header
+	};
+	DDS_PIXELFORMAT ddspf;		// [0x048]
+	uint32_t dwCaps;		// [0x068]
+	uint32_t dwCaps2;		// [0x06C]
+	uint32_t dwCaps3;		// [0x070]
+	uint32_t dwCaps4;		// [0x074]
+	uint32_t dwReserved2;		// [0x078]
 } DDS_HEADER;
 ASSERT_STRUCT(DDS_HEADER, 124);
 

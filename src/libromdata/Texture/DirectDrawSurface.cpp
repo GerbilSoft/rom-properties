@@ -1085,7 +1085,7 @@ int DirectDrawSurface::loadFieldData(void)
 
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->fields->reserve(12);	// Maximum of 12 fields.
+	d->fields->reserve(13);	// Maximum of 13 fields.
 
 	// Texture size.
 	d->fields->addField_dimensions(C_("DirectDrawSurface", "Texture Size"),
@@ -1166,6 +1166,16 @@ int DirectDrawSurface::loadFieldData(void)
 		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
 				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->dxgi_format)));
+	}
+
+	// nVidia Texture Tools header
+	if (ddsHeader->nvtt.dwNvttMagic == cpu_to_be32(NVTT_MAGIC)) {
+		const uint32_t nvtt_version = le32_to_cpu(ddsHeader->nvtt.dwNvttVersion);
+		d->fields->addField_string(C_("DirectDrawSurface", "NVTT Version"),
+			rp_sprintf(C_("DirectDrawSurface", "%u.%u.%u"),
+				   (nvtt_version >> 16) & 0xFF,
+				   (nvtt_version >>  8) & 0xFF,
+				    nvtt_version        & 0xFF));
 	}
 
 	// dwFlags
