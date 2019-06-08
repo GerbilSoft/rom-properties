@@ -24,7 +24,9 @@ typedef enum {
 	RP_FE_KDE4,
 	RP_FE_KDE5,
 	RP_FE_XFCE,
+	RP_FE_XFCE3,
 	RP_FE_GNOME,
+	RP_FE_MATE,
 
 	RP_FE_MAX
 } RP_Frontend;
@@ -46,8 +48,18 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
+#ifdef ThunarX3_EXTENSIONS_DIR
+	ThunarX3_EXTENSIONS_DIR "/rom-properties-xfce3.so",
+#else
+	NULL,
+#endif
 #ifdef LibNautilusExtension_EXTENSION_DIR
 	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gnome.so",
+#else
+	NULL,
+#endif
+#ifdef LibCajaExtension_EXTENSION_DIR
+	LibCajaExtension_EXTENSION_DIR "/rom-properties-mate.so",
 #else
 	NULL,
 #endif
@@ -56,11 +68,13 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 // Plugin priority order.
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
-static const uint8_t plugin_prio[4][4] = {
-	{RP_FE_KDE4, RP_FE_KDE5, RP_FE_XFCE, RP_FE_GNOME},	// RP_FE_KDE4
-	{RP_FE_KDE5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE},	// RP_FE_KDE5
-	{RP_FE_XFCE, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE
-	{RP_FE_GNOME, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_GNOME
+static const uint8_t plugin_prio[6][6] = {
+	{RP_FE_KDE4, RP_FE_KDE5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_MATE},	// RP_FE_KDE4
+	{RP_FE_KDE5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE},	// RP_FE_KDE4
+	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE
+	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_MATE, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE3
+	{RP_FE_GNOME, RP_FE_MATE, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_GNOME
+	{RP_FE_MATE, RP_FE_MATE, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_MATE
 };
 
 /**
@@ -125,6 +139,13 @@ static RP_Frontend walk_proc_tree(void)
 					ret = RP_FE_GNOME;
 					ppid = 0;
 					break;
+				} else if ((len == 10 && !strncmp(s_value, "mate-panel", 10)) ||
+					   (len == 12 && !strncmp(s_value, "mate-session", 12)))
+				{
+					// MATE session.
+					ret = RP_FE_MATE;
+					ppid = 0;
+					break;
 				}
 				// NOTE: Unity and XFCE don't have unique
 				// parent processes.
@@ -180,8 +201,11 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	} else if (!strcasecmp(name, "XFCE") ||
 		   !strcasecmp(name, "LXDE"))
 	{
-		// GTK2-based desktop environment.
-		return RP_FE_XFCE;
+		// This *may* be GTK3, but it may be GTK2.
+		return RP_FE_XFCE3;
+	} else if (!strcasecmp(name, "MATE")) {
+		// MATE desktop.
+		return RP_FE_MATE;
 	}
 
 	// NOTE: "KDE4" and "KDE5" are not actually used.

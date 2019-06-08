@@ -44,7 +44,9 @@ IF(NOT APPLE)
 
 	# XFCE and GNOME.
 	FIND_PACKAGE(ThunarX2)
+	FIND_PACKAGE(ThunarX3)
 	FIND_PACKAGE(LibNautilusExtension 3.0.0)
+	FIND_PACKAGE(LibCajaExtension 1.18.0)
 
 ENDIF(NOT APPLE)
 
