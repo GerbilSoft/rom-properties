@@ -802,39 +802,32 @@ int SNES::loadFieldData(void)
 
 	// ROM mapping
 	// NOTE: Not translatable!
-	const char *s_rom_mapping;
-	switch (rom_mapping) {
-		case SNES_ROMMAPPING_LoROM:
-			s_rom_mapping = "LoROM";
+	static const struct {
+		uint8_t rom_mapping;
+		const char *s_rom_mapping;
+	} rom_mapping_tbl[] = {
+		{SNES_ROMMAPPING_LoROM,			"LoROM"},
+		{SNES_ROMMAPPING_HiROM,			"HiROM"},
+		{SNES_ROMMAPPING_LoROM_S_DD1,		"LoROM + S-DD1"},
+		{SNES_ROMMAPPING_LoROM_SA_1,		"LoROM + SA-1"},
+		{SNES_ROMMAPPING_ExHiROM,		"ExHiROM"},
+		{SNES_ROMMAPPING_LoROM_FastROM,		"LoROM + FastROM"},
+		{SNES_ROMMAPPING_HiROM_FastROM,		"HiROM + FastROM"},
+		{SNES_ROMMAPPING_ExLoROM_FastROM,	"ExLoROM + FastROM"},
+		{SNES_ROMMAPPING_ExHiROM_FastROM,	"ExHiROM + FastROM"},
+
+		{0, nullptr}
+	};
+
+	const char *s_rom_mapping = nullptr;
+	for (const auto *p = rom_mapping_tbl; p->rom_mapping != 0; p++) {
+		if (p->rom_mapping == rom_mapping) {
+			// Found a match.
+			s_rom_mapping = p->s_rom_mapping;
 			break;
-		case SNES_ROMMAPPING_HiROM:
-			s_rom_mapping = "HiROM";
-			break;
-		case SNES_ROMMAPPING_LoROM_S_DD1:
-			s_rom_mapping = "LoROM + S-DD1";
-			break;
-		case SNES_ROMMAPPING_LoROM_SA_1:
-			s_rom_mapping = "LoROM + SA-1";
-			break;
-		case SNES_ROMMAPPING_ExHiROM:
-			s_rom_mapping = "ExHiROM";
-			break;
-		case SNES_ROMMAPPING_LoROM_FastROM:
-			s_rom_mapping = "LoROM + FastROM";
-			break;
-		case SNES_ROMMAPPING_HiROM_FastROM:
-			s_rom_mapping = "HiROM + FastROM";
-			break;
-		case SNES_ROMMAPPING_ExLoROM_FastROM:
-			s_rom_mapping = "ExLoROM + FastROM";
-			break;
-		case SNES_ROMMAPPING_ExHiROM_FastROM:
-			s_rom_mapping = "ExHiROM + FastROM";
-			break;
-		default:
-			s_rom_mapping = nullptr;
-			break;
+		}
 	}
+
 	const char *const rom_mapping_title = C_("SNES", "ROM Mapping");
 	if (s_rom_mapping) {
 		d->fields->addField_string(rom_mapping_title, s_rom_mapping);
