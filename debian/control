@@ -81,7 +81,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-gnome
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-stub
+Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-stub, rom-properties-gtk3-common
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
@@ -90,6 +90,18 @@ Description: ROM Properties Page shell extension
  .
  This package contains the Nautilus (GNOME 3, Unity) version.
  The stub package is required for thumbnailing.
+
+Package: rom-properties-gtk3-common
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-stub
+Recommends: rom-properties-lang
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the thumbnailer file used by the GNOME and
+ MATE desktops.
 
 Package: rom-properties-cli
 Architecture: any

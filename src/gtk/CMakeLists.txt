@@ -105,6 +105,16 @@ IF(BUILD_GTK3)
 		ADD_SUBDIRECTORY(gnome)
 		ADD_SUBDIRECTORY(xfce3)
 		ADD_SUBDIRECTORY(mate)
+
+		IF(BUILD_GNOME OR BUILD_MATE)
+			# Process the .thumbnailer file.
+			INCLUDE(DirInstallPaths)
+			CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
+			INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
+				DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
+				COMPONENT "plugin"
+				)
+		ENDIF(BUILD_GNOME OR BUILD_MATE)
 	ELSE(GTK3_FOUND)
 		SET(BUILD_GTK3 OFF CACHE "" INTERNAL FORCE)
 		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)

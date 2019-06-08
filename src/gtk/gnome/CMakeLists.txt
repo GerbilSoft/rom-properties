@@ -78,10 +78,6 @@ SET(rom-properties-gnome_H
 	rom-properties-provider.hpp
 	)
 
-# Process the .thumbnailer file.
-INCLUDE(DirInstallPaths)
-CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
-
 IF(BUILD_GNOME)
 	ADD_LIBRARY(rom-properties-gnome MODULE
 		${rom-properties-gnome_SRCS}
@@ -114,10 +110,6 @@ ENDIF(BUILD_GNOME)
 IF(BUILD_GNOME)
 	INSTALL(TARGETS rom-properties-gnome
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
-		COMPONENT "plugin"
-		)
-	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
-		DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
 		COMPONENT "plugin"
 		)
 
