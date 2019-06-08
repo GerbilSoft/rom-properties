@@ -208,7 +208,7 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 		const char io_cur = io_support[i];
 		uint32_t io_bit = 1;
 		for (const auto *p = md_io_chr_tbl; *p != '\0'; p++, io_bit <<= 1) {
-			if (io_cur == *p) {
+			if (*p == io_cur) {
 				ret |= io_bit;
 				break;
 			}
