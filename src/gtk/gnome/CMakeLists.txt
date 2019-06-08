@@ -10,11 +10,18 @@ IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# Find the Nautilus extension library.
 	# TODO: Minimum version, and ensure it's 3, not 4?
 	FIND_PACKAGE(LibNautilusExtension ${REQUIRE_GNOME} 3.0.0)
-	IF(NOT LibNautilusExtension_FOUND)
+	IF(LibNautilusExtension_FOUND)
+		# Check if we have nautilus-extension.h. (added in nautilus-3.30)
+		SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
+		LIST(APPEND CMAKE_REQUIRED_INCLUDES ${LibNautilusExtension_INCLUDE_DIRS})
+		CHECK_INCLUDE_FILES("nautilus-extension.h" HAVE_NAUTILUS_EXTENSION_H)
+		SET(CMAKE_REQUIRED_INCLUDES ${OLD_CMAKE_REQUIRED_INCLUDES})
+		UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
+	ELSE(LibNautilusExtension_FOUND)
 		# Nautilus extension library was not found.
 		# Disable the GNOME frontend.
 		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
-	ENDIF(NOT LibNautilusExtension_FOUND)
+	ENDIF(LibNautilusExtension_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.

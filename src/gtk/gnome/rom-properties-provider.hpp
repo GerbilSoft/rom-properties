@@ -9,7 +9,14 @@
 #ifndef __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__
 #define __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__
 
-#include <nautilus-extension.h>
+#include "config.gnome.h"
+
+#ifdef HAVE_NAUTILUS_EXTENSION_H
+// introduced with Nautilus 3.30
+# include <nautilus-extension.h>
+#else /* !HAVE_NAUTILUS_EXTENSION_H */
+# include <libnautilus-extension/nautilus-property-page-provider.h>
+#endif /* HAVE_NAUTILUS_EXTENSION_H */
 
 G_BEGIN_DECLS;
 

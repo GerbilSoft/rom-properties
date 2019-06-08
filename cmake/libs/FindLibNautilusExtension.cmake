@@ -1,9 +1,9 @@
 # Find Gnome's libnautilus-extension libraries and headers.
 # If found, the following variables will be defined:
-# - LibNautilusExtension_FOUND: System has ThunarX.
-# - LibNautilusExtension_INCLUDE_DIRS: ThunarX include directories.
-# - LibNautilusExtension_LIBRARIES: ThunarX libraries.
-# - LibNautilusExtension_DEFINITIONS: Compiler switches required for using ThunarX.
+# - LibNautilusExtension_FOUND: System has libnautilus-extension.
+# - LibNautilusExtension_INCLUDE_DIRS: libnautilus-extension include directories.
+# - LibNautilusExtension_LIBRARIES: libnautilus-extension libraries.
+# - LibNautilusExtension_DEFINITIONS: Compiler switches required for using libnautilus-extension.
 # - LibNautilusExtension_EXTENSION_DIR: Extensions directory. (for installation)
 #
 # In addition, a target Gnome::libnautilus-extension will be created with all of
