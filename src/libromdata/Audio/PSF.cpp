@@ -114,9 +114,10 @@ unordered_map<string, string> PSFPrivate::parseTags(int64_t tag_addr)
 	// Since we won't be able to determine this until we're finished
 	// decoding variables, we'll have to do character conversion
 	// *after* kv is populated.
-	unique_ptr<char[]> tag_data(new char[data_len]);
-	size = file->read(tag_data.get(), data_len);
-	if (size != (size_t)data_len) {
+	const size_t data_len_sz = static_cast<size_t>(data_len);
+	unique_ptr<char[]> tag_data(new char[data_len_sz]);
+	size = file->read(tag_data.get(), data_len_sz);
+	if (size != data_len_sz) {
 		// Read error.
 		return kv;
 	}
@@ -182,26 +183,32 @@ unordered_map<string, string> PSFPrivate::parseTags(int64_t tag_addr)
  */
 const char *PSFPrivate::getRippedByTagName(uint8_t version)
 {
-	switch (version) {
-		default:
-		case PSF_VERSION_PLAYSTATION:
-		case PSF_VERSION_PLAYSTATION_2:
-			return "psfby";
-		case PSF_VERSION_SATURN:
-			return "ssfby";
-		case PSF_VERSION_DREAMCAST:
-			return "dsfby";
-		case PSF_VERSION_MEGA_DRIVE:
-			return "msfby";	// FIXME: May be incorrect.
-		case PSF_VERSION_N64:
-			return "usfby";
-		case PSF_VERSION_GBA:
-			return "gsfby";
-		case PSF_VERSION_SNES:
-			return "snsfby";
-		case PSF_VERSION_QSOUND:
-			return "qsfby";
+	static const struct {
+		uint8_t version;
+		char tag_name[7];
+	} psfby_lkup_tbl[] = {
+		{PSF_VERSION_PLAYSTATION,	"psfby"},
+		{PSF_VERSION_PLAYSTATION_2,	"psfby"},
+		{PSF_VERSION_SATURN,		"ssfby"},
+		{PSF_VERSION_DREAMCAST,		"dsfby"},
+		{PSF_VERSION_MEGA_DRIVE,	"msfby"}, // FIXME: May be incorrect.
+		{PSF_VERSION_N64,		"usfby"},
+		{PSF_VERSION_GBA,		"gsfby"},
+		{PSF_VERSION_SNES,		"snsfby"},
+		{PSF_VERSION_QSOUND,		"qsfby"},
+
+		{0, ""}
+	};
+
+	for (const auto *p = psfby_lkup_tbl; p->version != 0; p++) {
+		if (p->version == version) {
+			// Found a match.
+			return p->tag_name;
+		}
 	}
+
+	// No match. Assume it's PSF.
+	return psfby_lkup_tbl[0].tag_name;
 }
 
 /**
@@ -529,46 +536,40 @@ int PSF::loadFieldData(void)
 	d->fields->reserve(1+11);
 
 	// System.
-	const char *sysname;
-	switch (psfHeader->version) {
-		default:
-			sysname = nullptr;
+	static const struct {
+		uint8_t version;
+		const char *sysname;
+	} sysname_lkup_tbl[] = {
+		{PSF_VERSION_PLAYSTATION,	NOP_C_("PSF|System", "Sony PlayStation")},
+		{PSF_VERSION_PLAYSTATION_2,	NOP_C_("PSF|System", "Sony PlayStation 2")},
+		{PSF_VERSION_SATURN,		NOP_C_("PSF|System", "Sega Saturn")},
+		{PSF_VERSION_DREAMCAST,		NOP_C_("PSF|System", "Sega Dreamcast")},
+		{PSF_VERSION_MEGA_DRIVE,	NOP_C_("PSF|System", "Sega Mega Drive")},
+		{PSF_VERSION_N64,		NOP_C_("PSF|System", "Nintendo 64")},
+		{PSF_VERSION_GBA,		NOP_C_("PSF|System", "Game Boy Advance")},
+		{PSF_VERSION_SNES,		NOP_C_("PSF|System", "Super NES")},
+		{PSF_VERSION_QSOUND,		NOP_C_("PSF|System", "Capcom QSound")},
+
+		{0, nullptr}
+	};
+
+	const uint8_t psf_version = psfHeader->version;
+	const char *sysname = nullptr;
+	for (const auto *p = sysname_lkup_tbl; p->version != 0; p++) {
+		if (p->version == psf_version) {
+			// Found a match.
+			sysname = p->sysname;
 			break;
-		case PSF_VERSION_PLAYSTATION:
-			sysname = C_("PSF", "Sony PlayStation");
-			break;
-		case PSF_VERSION_PLAYSTATION_2:
-			sysname = C_("PSF", "Sony PlayStation 2");
-			break;
-		case PSF_VERSION_SATURN:
-			sysname = C_("PSF", "Sega Saturn");
-			break;
-		case PSF_VERSION_DREAMCAST:
-			sysname = C_("PSF", "Sega Dreamcast");
-			break;
-		case PSF_VERSION_MEGA_DRIVE:
-			sysname = C_("PSF", "Sega Mega Drive");
-			break;
-		case PSF_VERSION_N64:
-			sysname = C_("PSF", "Nintendo 64");
-			break;
-		case PSF_VERSION_GBA:
-			sysname = C_("PSF", "Game Boy Advance");
-			break;
-		case PSF_VERSION_SNES:
-			sysname = C_("PSF", "Super NES");
-			break;
-		case PSF_VERSION_QSOUND:
-			sysname = C_("PSF", "Capcom QSound");
-			break;
+		}
 	}
 
 	const char *const system_title = C_("PSF", "System");
 	if (sysname) {
-		d->fields->addField_string(system_title, sysname);
+		d->fields->addField_string(system_title,
+			dpgettext_expr(RP_I18N_DOMAIN, "PSF|System", sysname));
 	} else {
 		d->fields->addField_string(system_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psfHeader->version));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psf_version));
 	}
 
 	// Parse the tags.
