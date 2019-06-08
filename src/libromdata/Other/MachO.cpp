@@ -281,37 +281,22 @@ MachO::MachO(IRpFile *file)
 
 	// Determine the file type.
 	// NOTE: This assumes all architectures have the same file type.
-	switch (d->machHeaders[0].filetype) {
-		default:
-			// Should not happen...
-			d->fileType = FTYPE_UNKNOWN;
-			break;
-		case MH_OBJECT:
-			d->fileType = FTYPE_RELOCATABLE_OBJECT;
-			break;
-		case MH_EXECUTE:
-		case MH_PRELOAD:
-			// TODO: Special FTYPE for MH_PRELOAD?
-			d->fileType = FTYPE_EXECUTABLE;
-			break;
-		case MH_FVMLIB:
-			// "Fixed VM" library file.
-			// TODO: Add a separate FTYPE?
-			d->fileType = FTYPE_SHARED_LIBRARY;
-			break;
-		case MH_CORE:
-			d->fileType = FTYPE_CORE_DUMP;
-			break;
-		case MH_DYLIB:
-			d->fileType = FTYPE_SHARED_LIBRARY;
-			break;
-		case MH_DYLINKER:
-			// TODO
-			d->fileType = FTYPE_UNKNOWN;
-			break;
-		case MH_BUNDLE:
-			d->fileType = FTYPE_BUNDLE;
-			break;
+	static const uint8_t fileTypes_tbl[] = {
+		FTYPE_UNKNOWN,			// 0
+		FTYPE_RELOCATABLE_OBJECT,	// MH_OBJECT
+		FTYPE_EXECUTABLE,		// MH_EXECUTE
+		FTYPE_EXECUTABLE,		// MH_PRELOAD (TODO: Special FTYPE?)
+		FTYPE_SHARED_LIBRARY,		// MH_FVMLIB: "Fixed VM" library file. (TODO: Add a separate FTYPE?)
+		FTYPE_CORE_DUMP,		// MH_CORE
+		FTYPE_SHARED_LIBRARY,		// MH_DYLIB
+		FTYPE_UNKNOWN,			// MH_DYLINKER (TODO)
+		FTYPE_BUNDLE,			// MH_BUNDLE
+	};
+
+	// d->fileType is set to FTYPE_UNKNOWN above, so only set it
+	// if the filetype is known.
+	if (d->machHeaders[0].filetype < ARRAY_SIZE(fileTypes_tbl)) {
+		d->fileType = static_cast<RomData::FileType>(fileTypes_tbl[d->machHeaders[0].filetype]);
 	}
 }
 
