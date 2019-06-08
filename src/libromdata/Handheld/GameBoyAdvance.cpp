@@ -278,7 +278,7 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// GBA ROM header.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(7);	// Maximum of 7 fields.
 
 	// Game title.
 	d->fields->addField_string(C_("RomData", "Title"),
