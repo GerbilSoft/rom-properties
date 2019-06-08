@@ -393,19 +393,25 @@ int VirtualBoy::loadFieldData(void)
 		romHeader->version, RomFields::FB_DEC, 2);
 
 	// Region
-	const char *region;
+	const char *s_region;
 	switch (romHeader->gameid[3]) {
 		case 'J':
-			region = C_("Region", "Japan");
+			s_region = C_("Region", "Japan");
 			break;
 		case 'E':
-			region = C_("Region", "USA");
+			s_region = C_("Region", "USA");
 			break;
 		default:
-			region = C_("VirtualBoy", "Unknown");
+			s_region = nullptr;
 			break;
 	}
-	d->fields->addField_string(C_("RomData", "Region Code"), region);
+	if (s_region) {
+		d->fields->addField_string(C_("RomData", "Region Code"), s_region);
+	} else {
+		d->fields->addField_string(C_("RomData", "Region Code"),
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+				static_cast<uint8_t>(romHeader->gameid[3])));
+	}
 
 	return static_cast<int>(d->fields->count());
 }
