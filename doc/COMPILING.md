@@ -10,6 +10,7 @@ packages:
 * XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev
 * XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev
 * GNOME: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev
+* MATE: libglib2.0-dev libgtk-3-dev libcairo2-dev libcaja-extension-dev
 
 NOTE: libkf5kio-dev was called kio-dev prior to Ubuntu 18.04.
 
@@ -21,6 +22,7 @@ and the following development packages:
 * XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel
 * XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel
 * GNOME: glib2-devel gtk3-devel cairo-devel nautilus-devel
+* MATE: glib2-devel gtk3-devel cairo-devel caja-devel
 
 NOTE: XFCE's Thunar file browser requires the Tumbler D-Bus daemon to be
 installed in order to create thumbnails.

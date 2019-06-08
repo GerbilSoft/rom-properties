@@ -27,6 +27,8 @@
   * Added an option to disable thumbnailing and metadata extraction on
     network file systems and "bad" file systems. The option is set by
     default to reduce slowdown.
+  * Added a UI frontend for the MATE Desktop Environment using the Caja
+    file browser. MATE 1.18 or later is required. (GTK+ 3.x)
 
 * New parsers:
   * WiiWAD: Wii WAD packages. Contains WiiWare, Virtual Console, and other

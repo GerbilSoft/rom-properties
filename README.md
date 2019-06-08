@@ -38,6 +38,7 @@ following platforms:
 * KDE Frameworks 5.x
 * XFCE (GTK+ 2.x)
 * GNOME and Unity (GTK+ 3.x)
+* MATE (1.18+; GTK+ 3.x)
 * Windows XP (and later)
 
 On Windows, you will need the MSVC 2017 runtime:
