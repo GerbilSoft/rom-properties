@@ -114,61 +114,50 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
 
 	// File OS.
-	const char *file_os;
-	switch (pVsFfi->dwFileOS) {
-		case VOS_DOS:
-			file_os = "MS-DOS";
-			break;
-		case VOS_NT:
-			file_os = "Windows NT";
-			break;
-		case VOS__WINDOWS16:
-			file_os = "Windows (16-bit)";
-			break;
-		case VOS__WINDOWS32:
-			file_os = "Windows (32-bit)";
-			break;
-		case VOS_OS216:
-			file_os = "OS/2 (16-bit)";
-			break;
-		case VOS_OS232:
-			file_os = "OS/2 (32-bit)";
-			break;
-		case VOS__PM16:
-			file_os = "Presentation Manager (16-bit)";
-			break;
-		case VOS__PM32:
-			file_os = "Presentation Manager (32-bit)";
-			break;
+	// NOTE: Not translatable.
+	static const struct {
+		uint32_t dwFileOS;
+		const char *s_fileOS;
+	} fileOS_lkup_tbl[] = {
+		// TODO: Reorder based on how common each OS is?
+		// VOS_NT_WINDOWS32 is probably the most common nowadays.
 
-		case VOS_DOS_WINDOWS16:
-			file_os = "Windows on MS-DOS (16-bit)";
-			break;
-		case VOS_DOS_WINDOWS32:
-			file_os = "Windows 9x (32-bit)";
-			break;
-		case VOS_NT_WINDOWS32:
-			file_os = "Windows NT";
-			break;
-		case VOS_OS216_PM16:
-			file_os = "OS/2 with Presentation Manager (16-bit)";
-			break;
-		case VOS_OS232_PM32:
-			file_os = "OS/2 with Presentation Manager (32-bit)";
-			break;
+		{VOS_DOS,		"MS-DOS"},
+		{VOS_OS216,		"OS/2 (16-bit)"},
+		{VOS_OS232,		"OS/2 (32-bit)"},
+		{VOS_NT,		"Windows NT"},
+		{VOS_WINCE,		"Windows CE"},
 
-		case VOS_UNKNOWN:
-		default:
-			file_os = nullptr;
+		{VOS__WINDOWS16,	"Windows (16-bit)"},
+		{VOS__WINDOWS32,	"Windows (32-bit)"},
+		{VOS__PM16,		"Presentation Manager (16-bit)"},
+		{VOS__PM32,		"Presentation Manager (32-bit)"},
+
+		{VOS_DOS_WINDOWS16,	"Windows on MS-DOS (16-bit)"},
+		{VOS_DOS_WINDOWS32,	"Windows 9x (32-bit)"},
+		{VOS_OS216_PM16,	"OS/2 with Presentation Manager (16-bit)"},
+		{VOS_OS232_PM32,	"OS/2 with Presentation Manager (32-bit)"},
+		{VOS_NT_WINDOWS32,	"Windows NT"},
+
+		{0, nullptr}
+	};
+
+	const uint32_t dwFileOS = pVsFfi->dwFileOS;
+	const char *s_fileOS = nullptr;
+	for (const auto *p = fileOS_lkup_tbl; p->dwFileOS != 0; p++) {
+		if (p->dwFileOS == dwFileOS) {
+			// Found a match.
+			s_fileOS = p->s_fileOS;
 			break;
+		}
 	}
 
 	const char *const fileOS_title = C_("EXE", "File OS");
-	if (file_os) {
-		fields->addField_string(fileOS_title, file_os);
+	if (s_fileOS) {
+		fields->addField_string(fileOS_title, s_fileOS);
 	} else {
 		fields->addField_string(fileOS_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileOS));
+			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), dwFileOS));
 	}
 
 	// File type.
