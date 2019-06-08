@@ -1151,41 +1151,45 @@ int NintendoDS::loadFieldData(void)
 			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 
 	// DSi filetype.
-	// TODO: String table?
-	const char *filetype = nullptr;
-	switch (romHeader->dsi.filetype) {
-		case DSi_FTYPE_CARTRIDGE:
-			// tr: DSi-enhanced or DSi-exclusive cartridge.
-			filetype = C_("NintendoDS|DSiFileType", "Cartridge");
+	static const struct {
+		uint8_t dsi_filetype;
+		const char *s_dsi_filetype;
+	} dsi_filetype_lkup_tbl[] = {
+		// tr: DSi-enhanced or DSi-exclusive cartridge.
+		{DSi_FTYPE_CARTRIDGE,		NOP_C_("NintendoDS|DSiFileType", "Cartridge")},
+		// tr: DSiWare (download-only title)
+		{DSi_FTYPE_DSiWARE,		NOP_C_("NintendoDS|DSiFileType", "DSiWare")},
+		// tr: DSi_FTYPE_SYSTEM_FUN_TOOL
+		{DSi_FTYPE_SYSTEM_FUN_TOOL,	NOP_C_("NintendoDS|DSiFileType", "System Fun Tool")},
+		// tr: Data file, e.g. DS cartridge whitelist.
+		{DSi_FTYPE_NONEXEC_DATA,	NOP_C_("NintendoDS|DSiFileType", "Non-Executable Data File")},
+		// tr: DSi_FTYPE_SYSTEM_BASE_TOOL
+		{DSi_FTYPE_SYSTEM_BASE_TOOL,	NOP_C_("NintendoDS|DSiFileType", "System Base Tool")},
+		// tr: System Menu
+		{DSi_FTYPE_SYSTEM_MENU,		NOP_C_("NintendoDS|DSiFileType", "System Menu")},
+
+		{0, nullptr}
+	};
+
+	const uint8_t dsi_filetype = romHeader->dsi.filetype;
+	const char *s_dsi_filetype = nullptr;
+	for (const auto *p = dsi_filetype_lkup_tbl; p->s_dsi_filetype != nullptr; p++) {
+		if (p->dsi_filetype == dsi_filetype) {
+			// Found a match.
+			s_dsi_filetype = p->s_dsi_filetype;
 			break;
-		case DSi_FTYPE_DSiWARE:
-			filetype = C_("NintendoDS|DSiFileType", "DSiWare");
-			break;
-		case DSi_FTYPE_SYSTEM_FUN_TOOL:
-			filetype = C_("NintendoDS|DSiFileType", "System Fun Tool");
-			break;
-		case DSi_FTYPE_NONEXEC_DATA:
-			// tr: Data file, e.g. DS cartridge whitelist.
-			filetype = C_("NintendoDS|DSiFileType", "Non-Executable Data File");
-			break;
-		case DSi_FTYPE_SYSTEM_BASE_TOOL:
-			filetype = C_("NintendoDS|DSiFileType", "System Base Tool");
-			break;
-		case DSi_FTYPE_SYSTEM_MENU:
-			filetype = C_("NintendoDS|DSiFileType", "System Menu");
-			break;
-		default:
-			break;
+		}
 	}
 
 	// TODO: Is the field name too long?
 	const char *const dsi_rom_type_title = C_("NintendoDS", "DSi ROM Type");
-	if (filetype) {
-		d->fields->addField_string(dsi_rom_type_title, filetype);
+	if (s_dsi_filetype) {
+		d->fields->addField_string(dsi_rom_type_title,
+			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSiFileType", s_dsi_filetype));
 	} else {
 		// Invalid file type.
 		d->fields->addField_string(dsi_rom_type_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romHeader->dsi.filetype));
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), dsi_filetype));
 	}
 
 	// Key index. Determined by title ID.
