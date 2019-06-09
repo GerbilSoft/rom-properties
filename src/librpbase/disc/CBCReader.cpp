@@ -20,7 +20,6 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
-#include <cstdio>
 #include <cstring>
 
 // C++ namespace.

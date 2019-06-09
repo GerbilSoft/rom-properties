@@ -1,9 +1,9 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs_libc.c: Reimplementations of libc functions that aren't       *
+ * TextFuncs_libc.h: Reimplementations of libc functions that aren't       *
  * present on this system.                                                 *
  *                                                                         *
- * Copyright (c) 2009-2018 by David Korth.                                 *
+ * Copyright (c) 2009-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_LIBC_H__
 
 #include "config.librpbase.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,7 +25,7 @@ extern "C" {
  * @returns equivivalent to min(strlen(str), maxlen) without buffer overruns
  */
 size_t strnlen(const char *str, size_t maxlen);
-#endif /* HAVE_STRNLEN */
+#endif /* !HAVE_STRNLEN */
 
 #ifndef HAVE_MEMMEM
 /**
@@ -38,7 +38,7 @@ size_t strnlen(const char *str, size_t maxlen);
  */
 void *memmem(const void *haystack, size_t haystacklen,
 	     const void *needle, size_t needlelen);
-#endif /* HAVE_MEMMEM */
+#endif /* !HAVE_MEMMEM */
 
 #ifdef __cplusplus
 }

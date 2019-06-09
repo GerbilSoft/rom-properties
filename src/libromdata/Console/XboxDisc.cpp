@@ -9,10 +9,6 @@
 #include "XboxDisc.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "../iso_structs.h"
-#include "../disc/xdvdfs_structs.h"
-#include "../disc/XDVDFSPartition.hpp"
-
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
@@ -24,6 +20,8 @@ using namespace LibRpBase;
 
 // XDVDFSPartition
 #include "librpbase/disc/DiscReader.hpp"
+#include "../iso_structs.h"
+#include "../disc/xdvdfs_structs.h"
 #include "../disc/XDVDFSPartition.hpp"
 
 // Other RomData subclasses

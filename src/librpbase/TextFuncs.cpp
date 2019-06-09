@@ -17,19 +17,22 @@
 #include <stdlib.h>
 #ifdef HAVE_NL_LANGINFO
 # include <langinfo.h>
+#else /* !HAVE_NL_LANGINFO */
+# include <clocale>
 #endif /* HAVE_NL_LANGINFO */
 
 // C includes. (C++ namespace)
 #include <cassert>
-#include <clocale>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
 #include <cwctype>
 
+// for strnlen() if not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
+
 // C++ includes.
 #include <iomanip>
-#include <locale>
 #include <memory>
 #include <sstream>
 #include <string>

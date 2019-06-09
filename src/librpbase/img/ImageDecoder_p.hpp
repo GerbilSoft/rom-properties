@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_IMG_IMAGEDECODER_P_HPP__
 
 #include "common.h"
-#include "img/rp_image.hpp"
+#include "./rp_image.hpp"
 #include "byteswap.h"
 
 // C includes. (C++ namespace)

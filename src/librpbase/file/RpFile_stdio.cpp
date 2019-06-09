@@ -15,7 +15,6 @@
 
 // librpbase
 #include "byteswap.h"
-#include "TextFuncs.hpp"
 
 // C includes.
 #include <sys/stat.h>

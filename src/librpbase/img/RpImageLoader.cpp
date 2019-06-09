@@ -2,20 +2,19 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpImageLoader.cpp: Image loader class.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "config.librpbase.h"
 
 #include "RpImageLoader.hpp"
-#include "rp_image.hpp"
 #include "../file/IRpFile.hpp"
 
 // Image loaders.
 #include "RpPng.hpp"
 #ifdef HAVE_JPEG
-#include "RpJpeg.hpp"
+# include "RpJpeg.hpp"
 #endif /* HAVE_JPEG */
 
 // C includes. (C++ namespace)

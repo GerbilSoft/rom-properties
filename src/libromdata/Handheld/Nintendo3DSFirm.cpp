@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
-
 #include "Nintendo3DSFirm.hpp"
 #include "librpbase/RomData_p.hpp"
 
@@ -26,6 +24,9 @@ using namespace LibRpBase;
 #include <cassert>
 #include <cerrno>
 #include <cstring>
+
+// for memmem() if not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
 
 // C++ includes.
 #include <memory>

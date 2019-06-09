@@ -9,7 +9,6 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX_XBE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX_XBE_HPP__
 
-#include "librpbase/config.librpbase.h"
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {

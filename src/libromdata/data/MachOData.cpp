@@ -9,9 +9,6 @@
 #include "MachOData.hpp"
 #include "Other/macho_structs.h"
 
-// C includes.
-#include <stdlib.h>
-
 namespace LibRomData {
 
 /**

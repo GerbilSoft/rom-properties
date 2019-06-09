@@ -9,8 +9,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IDISCREADER_HPP__
 
-#include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "../common.h"
 
 // C includes.
 #include <stdint.h>

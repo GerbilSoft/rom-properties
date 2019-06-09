@@ -11,9 +11,6 @@
 
 #include "IRpFile.hpp"
 
-// C includes. (C++ namespace)
-#include <cstdio>
-
 // C++ includes.
 #include <memory>
 #include <vector>

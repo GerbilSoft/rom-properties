@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,6 @@
 
 #include "common.h"
 #include "aligned_malloc.h"
-
-// C includes.
-#include <stdlib.h>
 
 // C includes. (C++ namespace)
 #include <cassert>

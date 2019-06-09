@@ -9,8 +9,6 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_HPP__
 
-#include "config.librpbase.h"
-
 // System byteorder is needed for conversions from UTF-16.
 // Conversions to UTF-16 always use host-endian.
 #include "byteorder.h"
@@ -30,11 +28,13 @@
 // C++ includes.
 #include <string>
 
-// Reimplementations of libc functions that aren't present on this system.
-#include "TextFuncs_libc.h"
-
 #ifdef __cplusplus
 namespace LibRpBase {
+
+/* Define to 1 if the system has a 16-bit wchar_t. */
+#ifdef _WIN32
+# define RP_WIS16 1
+#endif
 
 /** UTF-16 string functions. **/
 

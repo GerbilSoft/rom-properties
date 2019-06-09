@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_RP_IMAGE_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_RP_IMAGE_HPP__
 
-#include "librpbase/config.librpbase.h"
 #include "../common.h"
 #include "../byteorder.h"
 #include "cpu_dispatch.h"

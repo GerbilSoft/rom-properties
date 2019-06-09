@@ -9,9 +9,6 @@
 #include "DX10Formats.hpp"
 #include "Texture/dds_structs.h"
 
-// C includes.
-#include <stdlib.h>
-
 namespace LibRomData {
 
 class DX10FormatsPrivate

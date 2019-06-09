@@ -9,7 +9,6 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_DISC_PARTITIONFILE_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_DISC_PARTITIONFILE_HPP__
 
-#include "librpbase/config.librpbase.h"
 #include "../file/IRpFile.hpp"
 
 namespace LibRpBase {

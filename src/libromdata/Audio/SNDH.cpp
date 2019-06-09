@@ -18,7 +18,6 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_libc.h"
 #include "librpbase/file/IRpFile.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
@@ -34,6 +33,9 @@ using namespace LibRpBase;
 #include <cerrno>
 #include <cstring>
 #include <ctime>
+
+// for memmem() if not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
 
 // C++ includes.
 #include <algorithm>

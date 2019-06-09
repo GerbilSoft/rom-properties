@@ -13,6 +13,7 @@
 
 // C includes. (C++ namespace)
 #include <cerrno>
+#include <cstdio>
 #include <cstring>
 
 // C++ includes.

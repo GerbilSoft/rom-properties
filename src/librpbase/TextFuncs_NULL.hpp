@@ -15,8 +15,8 @@
 // C includes. (C++ namespace)
 #include <cstring>
 
-// Reimplementations of libc functions that aren't present on this system.
-#include "TextFuncs_libc.h"
+// for strnlen() if not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
 
 namespace LibRpBase {
 

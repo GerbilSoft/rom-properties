@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_iconv.cpp: Text encoding functions. (iconv version)           *
  *                                                                         *
- * Copyright (c) 2009-2018 by David Korth.                                 *
+ * Copyright (c) 2009-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,13 +10,10 @@
 #include "TextFuncs.hpp"
 #include "TextFuncs_NULL.hpp"
 
-// C includes. (C++ namespace)
-#include <cstdio>
-
 #if defined(_WIN32)
-#error TextFuncs_iconv.cpp is not supported on Windows.
+# error TextFuncs_iconv.cpp is not supported on Windows.
 #elif !defined(HAVE_ICONV)
-#error TextFuncs_iconv.cpp requires the iconv() function.
+# error TextFuncs_iconv.cpp requires the iconv() function.
 #endif
 
 // Determine the system encodings.
@@ -34,8 +31,7 @@
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
+#include <cstdio>
 
 // C++ includes.
 #include <string>

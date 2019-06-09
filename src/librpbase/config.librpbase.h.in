@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * config.librpbase.h.in: LibRpBase configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,7 @@
 
 /* Define to 1 if zlib is a DLL. */
 #if !defined(USE_INTERNAL_ZLIB) || defined(USE_INTERNAL_ZLIB_DLL)
-#define ZLIB_IS_DLL 1
+# define ZLIB_IS_DLL 1
 #endif
 
 /* Define to 1 if you have libpng. */
@@ -34,7 +34,7 @@
 
 /* Define to 1 if libpng is a DLL. */
 #if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
-#define PNG_IS_DLL 1
+# define PNG_IS_DLL 1
 #endif
 
 /* Define to 1 if you have libjpeg. */
@@ -48,7 +48,7 @@
 
 /* Define to 1 if libjpeg is a DLL. */
 #if !defined(USE_INTERNAL_JPEG) || defined(USE_INTERNAL_JPEG_DLL)
-#define JPEG_IS_DLL 1
+# define JPEG_IS_DLL 1
 #endif
 
 /* Define to 1 if you have the `strnlen' function. */
@@ -92,7 +92,7 @@
 
 /* Define to 1 if TinyXML2 is a DLL. */
 #if !defined(USE_INTERNAL_XML) || defined(USE_INTERNAL_XML_DLL)
-#define XML_IS_DLL 1
+# define XML_IS_DLL 1
 #endif
 
 /* Define to 1 if OpenGL support should be enabled. */
@@ -130,11 +130,6 @@
 
 /* Define to 1 if the system uses POSIX threads. */
 #cmakedefine HAVE_PTHREADS 1
-
-/* Define to 1 if the system has a 16-bit wchar_t. */
-#ifdef _WIN32
-#define RP_WIS16 1
-#endif
 
 /** putenv() and related **/
 

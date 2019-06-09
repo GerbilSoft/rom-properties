@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * FileSystem_posix.cpp: File system functions. (POSIX implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,6 @@
 #include "libunixcommon/userdirs.hpp"
 // librpbase
 #include "common.h"
-#include "TextFuncs.hpp"
 
 // One-time initialization.
 #include "threads/pthread_once.h"
@@ -50,7 +49,6 @@
 
 // C includes. (C++ namespace)
 #include <cerrno>
-#include <cstring>
 #include <ctime>
 
 // C++ includes.

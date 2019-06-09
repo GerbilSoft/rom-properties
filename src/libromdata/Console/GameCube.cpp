@@ -38,6 +38,9 @@ using namespace LibRpBase;
 // For sections delegated to other RomData subclasses.
 #include "GameCubeBNR.hpp"
 
+// for strnlen() if not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
+
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
 #include <cassert>
