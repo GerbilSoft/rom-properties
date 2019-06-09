@@ -334,7 +334,7 @@ string CacheManager::download(
 			if (get_mtime(cache_filename, &filetime) != 0)
 				return string();
 
-			time_t systime = time(nullptr);
+			const time_t systime = time(nullptr);
 			if ((systime - filetime) < (86400*7)) {
 				// Less than a week old.
 				return string();
