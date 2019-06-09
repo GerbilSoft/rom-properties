@@ -98,9 +98,6 @@
 /* Define to 1 if OpenGL support should be enabled. */
 #cmakedefine ENABLE_GL 1
 
-/* Define to 1 if S3TC decompression should be enabled. */
-#cmakedefine ENABLE_S3TC 1
-
 /** Aligned malloc() functions. **/
 
 /* Define to 1 if you have the MSVC-specific `_aligned_malloc` function. */

@@ -137,6 +137,12 @@
   * MegaDrive: Fixed an off-by-one error that caused Mega CD disc images
     to be detected as Mega Drive ROM images.
 
+* Other changes:
+  * Removed S2TC decoding. The first version of rom-properties with support
+    for S3TC, v1.2, was released *after* the S3TC patents expired. Since
+    the patents expired, S3TC can be unconditionally enabled, and we don't
+    need the S2TC decoder or test images anymore.
+
 ## v1.3.3 (released 2018/08/25)
 
 * GameCube: Fixed a crash when downloading external images for Disc 2

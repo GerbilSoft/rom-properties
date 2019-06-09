@@ -75,27 +75,19 @@ struct ImageDecoderTest_mode
 {
 	string dds_gz_filename;	// Source texture to test.
 	string png_filename;	// PNG image for comparison.
-	bool s3tc;		// Enable S3TC.
 
 	ImageDecoderTest_mode(
 		const char *dds_gz_filename,
-		const char *png_filename,
-#ifdef ENABLE_S3TC
-		bool s3tc = true
-#else /* !ENABLE_S3TC */
-		bool s3tc = false
-#endif /* ENABLE_S3TC */
+		const char *png_filename
 		)
 		: dds_gz_filename(dds_gz_filename)
 		, png_filename(png_filename)
-		, s3tc(s3tc)
 	{ }
 
 	// May be required for MSVC 2010?
 	ImageDecoderTest_mode(const ImageDecoderTest_mode &other)
 		: dds_gz_filename(other.dds_gz_filename)
 		, png_filename(other.png_filename)
-		, s3tc(other.s3tc)
 	{ }
 
 	// Required for MSVC 2010.
@@ -103,7 +95,6 @@ struct ImageDecoderTest_mode
 	{
 		dds_gz_filename = other.dds_gz_filename;
 		png_filename = other.png_filename;
-		s3tc = other.s3tc;
 		return *this;
 	}
 };
@@ -223,14 +214,6 @@ void ImageDecoderTest::SetUp(void)
 
 	// Parameterized test.
 	const ImageDecoderTest_mode &mode = GetParam();
-
-#ifdef ENABLE_S3TC
-	// Enable/disable S3TC.
-	ImageDecoder::EnableS3TC = mode.s3tc;
-#else /* !ENABLE_S3TC */
-	// Can't test S3TC in this build.
-	ASSERT_FALSE(mode.s3tc) << "Cannot test S3TC compression in this build. Recompile with -DENABLE_S3TC";
-#endif /* ENABLE_S3TC */
 
 	// Open the gzipped DDS texture file being tested.
 	string path = "ImageDecoder_data";
@@ -605,7 +588,6 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 // Test cases.
 
-#ifdef ENABLE_S3TC
 // DirectDrawSurface tests. (S3TC)
 INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
 	::testing::Values(
@@ -642,45 +624,6 @@ INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"S3TC/bc5.dds.gz",
 			"S3TC/bc5.s3tc.png"))
-	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_S3TC */
-
-// DirectDrawSurface tests. (S2TC)
-INSTANTIATE_TEST_CASE_P(DDS_S2TC, ImageDecoderTest,
-	::testing::Values(
-		ImageDecoderTest_mode(
-			"S3TC/dxt1-rgb.dds.gz",
-			"S3TC/dxt1-rgb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt2-rgb.dds.gz",
-			"S3TC/dxt2-rgb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt2-argb.dds.gz",
-			"S3TC/dxt2-argb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt3-rgb.dds.gz",
-			"S3TC/dxt3-rgb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt3-argb.dds.gz",
-			"S3TC/dxt3-argb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt4-rgb.dds.gz",
-			"S3TC/dxt4-rgb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt4-argb.dds.gz",
-			"S3TC/dxt4-argb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt5-rgb.dds.gz",
-			"S3TC/dxt5-rgb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/dxt5-argb.dds.gz",
-			"S3TC/dxt5-argb.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/bc4.dds.gz",
-			"S3TC/bc4.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"S3TC/bc5.dds.gz",
-			"S3TC/bc5.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests. (Uncompressed 16-bit RGB)
@@ -834,20 +777,6 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 			"GVR/weeklytitle.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// GVR tests. (DXT1, S2TC)
-INSTANTIATE_TEST_CASE_P(GVR_DXT1_S2TC, ImageDecoderTest,
-	::testing::Values(
-		ImageDecoderTest_mode(
-			"GVR/paldam_off.gvr.gz",
-			"GVR/paldam_off.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"GVR/paldam_on.gvr.gz",
-			"GVR/paldam_on.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"GVR/weeklytitle.gvr.gz",
-			"GVR/weeklytitle.s2tc.png", false))
-	, ImageDecoderTest::test_case_suffix_generator);
-
 #ifdef ENABLE_GL
 // KTX tests.
 INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
@@ -988,7 +917,6 @@ INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
 			"Alpha/A8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-#ifdef ENABLE_S3TC
 // Valve VTF tests. (S3TC)
 INSTANTIATE_TEST_CASE_P(VTF_S3TC, ImageDecoderTest,
 	::testing::Values(
@@ -1005,26 +933,7 @@ INSTANTIATE_TEST_CASE_P(VTF_S3TC, ImageDecoderTest,
 			"VTF/DXT5.vtf.gz",
 			"VTF/DXT5.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_S3TC */
 
-// Valve VTF tests. (S2TC)
-INSTANTIATE_TEST_CASE_P(VTF_S2TC, ImageDecoderTest,
-	::testing::Values(
-		ImageDecoderTest_mode(
-			"VTF/DXT1.vtf.gz",
-			"VTF/DXT1.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"VTF/DXT1_A1.vtf.gz",
-			"VTF/DXT1_A1.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"VTF/DXT3.vtf.gz",
-			"VTF/DXT3.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"VTF/DXT5.vtf.gz",
-			"VTF/DXT5.s2tc.png", false))
-	, ImageDecoderTest::test_case_suffix_generator);
-
-#ifdef ENABLE_S3TC
 // Valve VTF3 tests. (S3TC)
 INSTANTIATE_TEST_CASE_P(VTF3_S3TC, ImageDecoderTest,
 	::testing::Values(
@@ -1034,18 +943,6 @@ INSTANTIATE_TEST_CASE_P(VTF3_S3TC, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"VTF3/elevator_screen_colour.ps3.vtf.gz",
 			"VTF3/elevator_screen_colour.ps3.s3tc.png"))
-	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_S3TC */
-
-// Valve VTF3 tests. (S2TC)
-INSTANTIATE_TEST_CASE_P(VTF3_S2TC, ImageDecoderTest,
-	::testing::Values(
-		ImageDecoderTest_mode(
-			"VTF3/elevator_screen_broken_normal.ps3.vtf.gz",
-			"VTF3/elevator_screen_broken_normal.ps3.s2tc.png", false),
-		ImageDecoderTest_mode(
-			"VTF3/elevator_screen_colour.ps3.vtf.gz",
-			"VTF3/elevator_screen_colour.ps3.s2tc.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 #ifdef ENABLE_GL
@@ -1062,7 +959,6 @@ INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_GL */
 
-#ifdef ENABLE_S3TC
 // texture-compressor tests. (S3TC)
 INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
 	::testing::Values(
@@ -1075,21 +971,6 @@ INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"tctest/example-dxt5.dds.gz",
 			"tctest/example-dxt5.s3tc.dds.png"))
-	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_S3TC */
-
-// texture-compressor tests. (S2TC)
-INSTANTIATE_TEST_CASE_P(TCtest_S2TC, ImageDecoderTest,
-	::testing::Values(
-		ImageDecoderTest_mode(
-			"tctest/example-dxt1.dds.gz",
-			"tctest/example-dxt1.s2tc.dds.png", false),
-		ImageDecoderTest_mode(
-			"tctest/example-dxt3.dds.gz",
-			"tctest/example-dxt5.s2tc.dds.png", false),
-		ImageDecoderTest_mode(
-			"tctest/example-dxt5.dds.gz",
-			"tctest/example-dxt5.s2tc.dds.png", false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 

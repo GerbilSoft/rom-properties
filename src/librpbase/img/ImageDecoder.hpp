@@ -422,23 +422,6 @@ class ImageDecoder
 		/* S3TC */
 
 		/**
-		 * Global flag for enabling S3TC decompression.
-		 * If S3TC is enabled, this defaults to true.
-		 * If S3TC is disabled, this is always false.
-		 *
-		 * This is primarily used for the ImageDecoder test suite,
-		 * since there's no point in using S2TC if S3TC is available.
-		 *
-		 * WARNING: Modifying this variable is NOT thread-safe. Do NOT modify
-		 * this in multi-threaded environments unless you know what you're doing.
-		 */
-#ifdef ENABLE_S3TC
-		static bool EnableS3TC;
-#else /* !ENABLE_S3TC */
-		static const bool EnableS3TC;
-#endif
-
-		/**
 		 * Convert a GameCube DXT1 image to rp_image.
 		 * The GameCube variant has 2x2 block tiling in addition to 4x4 pixel tiling.
 		 * S3TC palette index 3 will be interpreted as fully transparent.
