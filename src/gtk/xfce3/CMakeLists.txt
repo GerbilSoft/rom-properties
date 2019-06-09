@@ -14,12 +14,12 @@ IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	IF(NOT ThunarX3_FOUND)
 		# ThunarX 3 was not found.
 		# Disable the XFCE frontend.
-		SET(BUILD_XFCE3 OFF CACHE "" INTERNAL FORCE)
+		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 	ENDIF(NOT ThunarX3_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
-	SET(BUILD_XFCE3 OFF CACHE "" INTERNAL FORCE)
+	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)

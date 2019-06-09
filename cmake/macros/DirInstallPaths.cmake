@@ -33,8 +33,8 @@ IF(UNIX AND NOT APPLE)
 	# NOTE: CMake doesn't use Debian-style multiarch for libexec,
 	# so we have to check for that.
 	IF(CMAKE_INSTALL_LIBDIR MATCHES .*gnu.*)
-		SET(CMAKE_INSTALL_LIBEXECDIR "${CMAKE_INSTALL_LIBDIR}/libexec" CACHE "libexec override for Debian multi-arch" INTERNAL FORCE)
-		SET(CMAKE_INSTALL_FULL_LIBEXECDIR "${CMAKE_INSTALL_FULL_LIBDIR}/libexec" CACHE "libexec override for Debian multi-arch" INTERNAL FORCE)
+		SET(CMAKE_INSTALL_LIBEXECDIR "${CMAKE_INSTALL_LIBDIR}/libexec" CACHE INTERNAL "libexec override for Debian multi-arch" FORCE)
+		SET(CMAKE_INSTALL_FULL_LIBEXECDIR "${CMAKE_INSTALL_FULL_LIBDIR}/libexec" CACHE INTERNAL "libexec override for Debian multi-arch" FORCE)
 	ENDIF()
 	SET(DIR_INSTALL_EXE "${CMAKE_INSTALL_BINDIR}")
 	SET(DIR_INSTALL_DLL "${CMAKE_INSTALL_LIBDIR}")

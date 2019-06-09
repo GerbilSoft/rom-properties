@@ -14,12 +14,12 @@ IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	IF(NOT LibCajaExtension_FOUND)
 		# Caja extension library was not found.
 		# Disable the MATE frontend.
-		SET(BUILD_MATE OFF CACHE "" INTERNAL FORCE)
+		SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
 	ENDIF(NOT LibCajaExtension_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the MATE frontend.
-	SET(BUILD_MATE OFF CACHE "" INTERNAL FORCE)
+	SET(BUILD_MATE OFF CACHE INTERNAL "Build the MATE (GTK+ 3.x) plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)

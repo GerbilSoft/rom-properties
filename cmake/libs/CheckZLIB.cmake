@@ -21,7 +21,7 @@ IF(NOT USE_INTERNAL_ZLIB)
 	ELSE()
 		# System ZLIB was not found.
 		MESSAGE(STATUS "Using the internal copy of zlib since a system version was not found.")
-		SET(USE_INTERNAL_ZLIB ON CACHE STRING "Use the internal copy of zlib." FORCE)
+		SET(USE_INTERNAL_ZLIB ON CACHE BOOL "Use the internal copy of zlib" FORCE)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of zlib.")
@@ -35,11 +35,11 @@ IF(USE_INTERNAL_ZLIB)
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
 		SET(USE_INTERNAL_ZLIB_DLL ON)
-		SET(ZLIB_LIBRARY zlib CACHE "ZLIB library." INTERNAL FORCE)
+		SET(ZLIB_LIBRARY zlib CACHE INTERNAL "ZLIB library" FORCE)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_ZLIB_DLL OFF)
-		SET(ZLIB_LIBRARY zlibstatic CACHE "ZLIB library." INTERNAL FORCE)
+		SET(ZLIB_LIBRARY zlibstatic CACHE INTERNAL "ZLIB library" FORCE)
 	ENDIF()
 	SET(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
 	# FIXME: When was it changed from DIR to DIRS?

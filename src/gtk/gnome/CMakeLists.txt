@@ -20,12 +20,12 @@ IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	ELSE(LibNautilusExtension_FOUND)
 		# Nautilus extension library was not found.
 		# Disable the GNOME frontend.
-		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
+		SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 	ENDIF(LibNautilusExtension_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
-	SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
+	SET(BUILD_GNOME OFF CACHE INTERNAL "Build the GNOME (GTK+ 3.x) plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)

@@ -14,12 +14,12 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	IF(NOT ThunarX2_FOUND)
 		# ThunarX 2 was not found.
 		# Disable the XFCE frontend.
-		SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
+		SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
 	ENDIF(NOT ThunarX2_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
-	SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
+	SET(BUILD_XFCE OFF CACHE INTERNAL "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)" FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)

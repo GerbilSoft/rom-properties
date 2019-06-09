@@ -31,11 +31,11 @@ IF(UNIX AND NOT APPLE)
 	OPTION_UI(MATE "Build the MATE (GTK+ 3.x) plugin.")
 
 	# Set BUILD_GTK2 and/or BUILD_GTK3 depending on frontends.
-	SET(BUILD_GTK2 ${BUILD_XFCE} CACHE "Check for GTK+ 2.x." INTERNAL FORCE)
+	SET(BUILD_GTK2 ${BUILD_XFCE} CACHE INTERNAL "Check for GTK+ 2.x." FORCE)
 	IF(BUILD_GNOME OR BUILD_XFCE3 OR BUILD_MATE)
-		SET(BUILD_GTK3 ON CACHE "Check for GTK+ 3.x." INTERNAL FORCE)
+		SET(BUILD_GTK3 ON CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
 	ELSE()
-		SET(BUILD_GTK3 OFF CACHE "Check for GTK+ 3.x." INTERNAL FORCE)
+		SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x." FORCE)
 	ENDIF()
 
 	# QT_SELECT must be unset before compiling.
@@ -61,7 +61,7 @@ ELSE(WIN32)
 	OPTION(ENABLE_JPEG "Enable JPEG decoding using libjpeg." ON)
 	#OPTION(USE_INTERNAL_JPEG "Use the internal copy of libjpeg-turbo." OFF)
 	IF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
-		SET(USE_INTERNAL_JPEG OFF CACHE "Use the internal copy of libjpeg-turbo." INTERNAL FORCE)
+		SET(USE_INTERNAL_JPEG OFF CACHE INTERNAL "Use the internal copy of libjpeg-turbo." FORCE)
 		MESSAGE(WARNING "Cannot use the internal libjpeg-turbo on this platform.\nUsing system libjpeg if available.")
 	ENDIF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
 	OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
@@ -103,7 +103,7 @@ OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
 OPTION(INSTALL_DEBUG "Install the split debug files." ON)
 IF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 	# Cannot install debug files if we're not splitting them.
-	SET(INSTALL_DEBUG OFF CACHE "Install the split debug files." INTERNAL FORCE)
+	SET(INSTALL_DEBUG OFF CACHE INTERNAL "Install the split debug files." FORCE)
 ENDIF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 
 # Enable coverage checking. (gcc/clang only)

@@ -19,7 +19,7 @@ IF(NOT USE_INTERNAL_XML)
 	ELSE()
 		# System TinyXML2 was not found.
 		MESSAGE(STATUS "Using the internal copy of TinyXML2 since a system version was not found.")
-		SET(USE_INTERNAL_XML ON CACHE STRING "Use the internal copy of TinyXML2." FORCE)
+		SET(USE_INTERNAL_XML ON CACHE BOOL "Use the internal copy of TinyXML2" FORCE)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of TinyXML2.")
@@ -41,7 +41,7 @@ IF(USE_INTERNAL_XML)
 	ENDIF()
 	# TinyXML2 v7.0.0's CMakeLists.txt uses the same target for
 	# both DLL and static library builds.
-	SET(TinyXML2_LIBRARY tinyxml2 CACHE "TinyXML2 library." INTERNAL FORCE)
+	SET(TinyXML2_LIBRARY tinyxml2 CACHE INTERNAL "TinyXML2 library" FORCE)
 	SET(TinyXML2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/extlib/tinyxml2")
 ELSE(USE_INTERNAL_XML)
 	SET(USE_INTERNAL_XML_DLL OFF)

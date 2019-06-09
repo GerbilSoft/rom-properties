@@ -17,20 +17,20 @@ MACRO(CHECK_GETTEXT)
 			SET(gettext_BIN "${gettext_ROOT}/bin.i386")
 		ENDIF(arch STREQUAL "amd64")
 
-		SET(Intl_INCLUDE_DIR "${gettext_ROOT}/include" CACHE "libintl include directory." INTERNAL FORCE)
+		SET(Intl_INCLUDE_DIR "${gettext_ROOT}/include" CACHE INTERNAL "libintl include directory." FORCE)
 		IF(MSVC)
 			# MSVC: Link to the import library.
-			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl-8.lib" CACHE "libintl libraries." INTERNAL FORCE)
+			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl-8.lib" CACHE INTERNAL "libintl libraries" FORCE)
 		ELSE(MSVC)
 			# MinGW: Link to the import library. (TODO: Link to the DLL?)
-			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl.dll.a" CACHE "libintl libraries." INTERNAL FORCE)
+			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl.dll.a" CACHE INTERNAL "libintl libraries" FORCE)
 		ENDIF(MSVC)
 
 		# Executables.
-		SET(GETTEXT_MSGFMT_EXECUTABLE "${gettext_BIN}/msgfmt.exe" CACHE "msgfmt executable." INTERNAL FORCE)
-		SET(GETTEXT_MSGMERGE_EXECUTABLE "${gettext_BIN}/msgmerge.exe" CACHE "msgmerge executable." INTERNAL FORCE)
-		SET(GETTEXT_XGETTEXT_EXECUTABLE "${gettext_BIN}/xgettext.exe" CACHE "xgettext executable." INTERNAL FORCE)
-		SET(GETTEXT_MSGINIT_EXECUTABLE "${gettext_BIN}/msginit.exe" CACHE "msginit executable." INTERNAL FORCE)
+		SET(GETTEXT_MSGFMT_EXECUTABLE "${gettext_BIN}/msgfmt.exe" CACHE INTERNAL "msgfmt executable" FORCE)
+		SET(GETTEXT_MSGMERGE_EXECUTABLE "${gettext_BIN}/msgmerge.exe" CACHE INTERNAL "msgmerge executable" FORCE)
+		SET(GETTEXT_XGETTEXT_EXECUTABLE "${gettext_BIN}/xgettext.exe" CACHE INTERNAL "xgettext executable" FORCE)
+		SET(GETTEXT_MSGINIT_EXECUTABLE "${gettext_BIN}/msginit.exe" CACHE INTERNAL "msginit executable" FORCE)
 
 		IF(NOT TARGET libgnuintl_dll_target)
 			# Destination directory.
