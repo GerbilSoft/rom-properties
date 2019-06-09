@@ -102,6 +102,8 @@ class WiiPartition : public GcnPartition
 			ENCKEY_VWII = 2,	// vWii common key
 			ENCKEY_DEBUG = 3,	// RVT-R debug key
 			ENCKEY_NONE = 4,	// No encryption (RVT-H)
+
+			ENCKEY_MAX
 		};
 
 		/**

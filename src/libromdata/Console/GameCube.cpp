@@ -1808,35 +1808,29 @@ int GameCube::loadFieldData(void)
 				encKey = entry.partition->encKey();
 			}
 
-			const char *key_name;
-			switch (encKey) {
-				default:
-				case WiiPartition::ENCKEY_UNKNOWN:
-					// tr: Unknown encryption key.
-					key_name = C_("GameCube|KeyIdx", "Unknown");
-					break;
-				case WiiPartition::ENCKEY_COMMON:
-					// tr: Retail encryption key.
-					key_name = C_("GameCube|KeyIdx", "Retail");
-					break;
-				case WiiPartition::ENCKEY_KOREAN:
-					// tr: Korean encryption key.
-					key_name = C_("GameCube|KeyIdx", "Korean");
-					break;
-				case WiiPartition::ENCKEY_VWII:
-					// tr: vWii-specific encryption key.
-					key_name = C_("GameCube|KeyIdx", "vWii");
-					break;
-				case WiiPartition::ENCKEY_DEBUG:
-					// tr: Debug encryption key.
-					key_name = C_("GameCube|KeyIdx", "Debug");
-					break;
-				case WiiPartition::ENCKEY_NONE:
-					// tr: No encryption.
-					key_name = C_("GameCube|KeyIdx", "None");
-					break;
+			static const char *const wii_key_tbl[] = {
+				// tr: WiiPartition::ENCKEY_COMMON - Retail encryption key.
+				NOP_C_("GameCube|KeyIdx", "Retail"),
+				// tr: WiiPartition::ENCKEY_KOREAN - Korean encryption key.
+				NOP_C_("GameCube|KeyIdx", "Korean"),
+				// tr: WiiPartition::ENCKEY_VWII - vWii-specific encryption key.
+				NOP_C_("GameCube|KeyIdx", "vWii"),
+				// tr: WiiPartition::ENCKEY_DEBUG - Debug encryption key.
+				NOP_C_("GameCube|KeyIdx", "Debug"),
+				// tr: WiiPartition::ENCKEY_NONE - No encryption.
+				NOP_C_("GameCube|KeyIdx", "None"),
+			};
+			static_assert(ARRAY_SIZE(wii_key_tbl) == WiiPartition::ENCKEY_MAX,
+				"wii_key_tbl[] size is incorrect.");
+
+			const char *s_key_name;
+			if (encKey >= 0 && encKey < ARRAY_SIZE(wii_key_tbl)) {
+				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "GameCube|KeyIdx", wii_key_tbl[encKey]);
+			} else {
+				// WiiPartition::ENCKEY_UNKNOWN
+				s_key_name = C_("RomData", "Unknown");
 			}
-			data_row.push_back(key_name);
+			data_row.push_back(s_key_name);
 
 			// Used size.
 			const int64_t used_size = entry.partition->partition_size_used();
