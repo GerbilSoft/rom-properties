@@ -136,64 +136,67 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 {
 	unsigned int expected_size = width * height;
 
-	switch (format) {
-		case VTF_IMAGE_FORMAT_RGBA8888:
-		case VTF_IMAGE_FORMAT_ABGR8888:
-		case VTF_IMAGE_FORMAT_ARGB8888:
-		case VTF_IMAGE_FORMAT_BGRA8888:
-		case VTF_IMAGE_FORMAT_BGRx8888:
-		case VTF_IMAGE_FORMAT_UVWQ8888:
-		case VTF_IMAGE_FORMAT_UVLX8888:
-			// 32-bit color formats.
-			expected_size *= 4;
-			break;
+	enum OpCode {
+		OP_UNKNOWN	= 0,
+		OP_NONE,
+		OP_MULTIPLY_2,
+		OP_MULTIPLY_3,
+		OP_MULTIPLY_4,
+		OP_MULTIPLY_8,
+		OP_DIVIDE_2,
 
-		case VTF_IMAGE_FORMAT_RGB888:
-		case VTF_IMAGE_FORMAT_BGR888:
-		case VTF_IMAGE_FORMAT_RGB888_BLUESCREEN:
-		case VTF_IMAGE_FORMAT_BGR888_BLUESCREEN:
-			// 24-bit color formats.
-			expected_size *= 3;
-			break;
+		OP_MAX		= 7
+	};
 
-		case VTF_IMAGE_FORMAT_RGB565:
-		case VTF_IMAGE_FORMAT_IA88:
-		case VTF_IMAGE_FORMAT_BGR565:
-		case VTF_IMAGE_FORMAT_BGRx5551:
-		case VTF_IMAGE_FORMAT_BGRA4444:
-		case VTF_IMAGE_FORMAT_BGRA5551:
-		case VTF_IMAGE_FORMAT_UV88:
-			// 16-bit color formats.
-			expected_size *= 2;
-			break;
+	static const uint8_t mul_tbl[] = {
+		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_RGBA8888
+		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_ABGR8888
+		OP_MULTIPLY_3,	// VTF_IMAGE_FORMAT_RGB888
+		OP_MULTIPLY_3,	// VTF_IMAGE_FORMAT_BGR888
+		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_RGB565
+		OP_NONE,	// VTF_IMAGE_FORMAT_I8
+		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_IA88
+		OP_NONE,	// VTF_IMAGE_FORMAT_P8
+		OP_NONE,	// VTF_IMAGE_FORMAT_A8
+		OP_MULTIPLY_3,	// VTF_IMAGE_FORMAT_RGB888_BLUESCREEN
+		OP_MULTIPLY_3,	// VTF_IMAGE_FORMAT_BGR888_BLUESCREEN
+		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_ARGB8888
+		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_BGRA8888
+		OP_DIVIDE_2,	// VTF_IMAGE_FORMAT_DXT1
+		OP_NONE,	// VTF_IMAGE_FORMAT_DXT3
+		OP_NONE,	// VTF_IMAGE_FORMAT_DXT5
+		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_BGRx8888
+		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGR565
+		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGRx5551
+		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGRA4444
+		OP_DIVIDE_2,	// VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA
+		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_BGRA5551
+		OP_MULTIPLY_2,	// VTF_IMAGE_FORMAT_UV88
+		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_UVWQ8888
+		OP_MULTIPLY_8,	// VTF_IMAGE_FORMAT_RGBA16161616F
+		OP_MULTIPLY_8,	// VTF_IMAGE_FORMAT_RGBA16161616
+		OP_MULTIPLY_4,	// VTF_IMAGE_FORMAT_UVLX8888
+	};
+	static_assert(ARRAY_SIZE(mul_tbl) == VTF_IMAGE_FORMAT_MAX,
+		"mul_tbl[] is not the correct size.");
 
-		case VTF_IMAGE_FORMAT_I8:
-		case VTF_IMAGE_FORMAT_P8:
-		case VTF_IMAGE_FORMAT_A8:
-			// 8-bit color formats.
-			break;
+	if (format < 0 || format >= ARRAY_SIZE(mul_tbl)) {
+		// Invalid format.
+		return 0;
+	}
 
-		case VTF_IMAGE_FORMAT_DXT1:
-		case VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA:
-			// 16 pixels compressed into 64 bits. (4bpp)
-			expected_size /= 2;
-			break;
-
-		case VTF_IMAGE_FORMAT_DXT3:
-		case VTF_IMAGE_FORMAT_DXT5:
-			// 16 pixels compressed into 128 bits. (8bpp)
-			break;
-
-		case VTF_IMAGE_FORMAT_RGBA16161616F:
-		case VTF_IMAGE_FORMAT_RGBA16161616:
-			// 64-bit color formats.
-			expected_size *= 8;
-			break;
-
+	switch (mul_tbl[format]) {
 		default:
-			// Not supported.
-			expected_size = 0;
-			break;
+		case OP_UNKNOWN:
+			// Invalid opcode.
+			return 0;
+
+		case OP_NONE:					break;
+		case OP_MULTIPLY_2:	expected_size *= 2;	break;
+		case OP_MULTIPLY_3:	expected_size *= 3;	break;
+		case OP_MULTIPLY_4:	expected_size *= 4;	break;
+		case OP_MULTIPLY_8:	expected_size *= 8;	break;
+		case OP_DIVIDE_2:	expected_size /= 2;	break;
 	}
 
 	return expected_size;
