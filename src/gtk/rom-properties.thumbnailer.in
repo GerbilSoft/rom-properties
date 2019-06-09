@@ -1,5 +1,5 @@
 [Thumbnailer Entry]
-# Thumbnailer entry for Nautilus. (GNOME 3)
+# Thumbnailer entry for Nautilus (GNOME 3) and Caja (MATE 1.18+).
 # Reference: https://developer.gnome.org/gnome-desktop3/stable/GnomeDesktopThumbnailFactory.html
 Exec=@CMAKE_INSTALL_FULL_LIBEXECDIR@/rp-thumbnail -s %s %i %o
 
