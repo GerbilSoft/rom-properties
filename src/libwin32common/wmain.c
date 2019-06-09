@@ -11,6 +11,7 @@
 
 // C includes.
 #include <stdlib.h>
+#include <string.h>
 
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
