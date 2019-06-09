@@ -683,7 +683,8 @@ const char *const *XboxXPR::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-xbox-xpr",
+		// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
+		"image/x-xbox-xpr0",
 
 		nullptr
 	};
