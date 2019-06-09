@@ -63,11 +63,27 @@ struct _RomPropertiesPage {
 	gulong file_changed_signal_handler_id;
 };
 
+#if !GLIB_CHECK_VERSION(2,59,1)
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+/* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
+#  if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#   pragma GCC diagnostic push
+#  endif
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
+#endif /* !GLIB_CHECK_VERSION(2,59,1) */
+
 // FIXME: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 //THUNARX_DEFINE_TYPE(RomPropertiesPage, rom_properties_page, THUNARX_TYPE_PROPERTY_PAGE);
 THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesPage, rom_properties_page,
 	THUNARX_TYPE_PROPERTY_PAGE, static_cast<GTypeFlags>(0), {});
+
+#if !GLIB_CHECK_VERSION(2,59,1)
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic pop
+# endif
+#endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 static GParamSpec *properties[PROP_LAST];
 

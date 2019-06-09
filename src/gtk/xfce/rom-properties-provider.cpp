@@ -30,6 +30,15 @@ struct _RomPropertiesProvider {
 	GObject __parent__;
 };
 
+#if !GLIB_CHECK_VERSION(2,59,1)
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+/* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
+#  if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#   pragma GCC diagnostic push
+#  endif
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
+#endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 // FIXME: THUNARX_DEFINE_TYPE_WITH_CODE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -37,6 +46,12 @@ THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
 	G_TYPE_OBJECT, static_cast<GTypeFlags>(0),
 	THUNARX_IMPLEMENT_INTERFACE(THUNARX_TYPE_PROPERTY_PAGE_PROVIDER,
 			rom_properties_provider_page_provider_init));
+
+#if !GLIB_CHECK_VERSION(2,59,1)
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic pop
+# endif
+#endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 static void
 rom_properties_provider_class_init (RomPropertiesProviderClass *klass)
