@@ -22,14 +22,8 @@ using namespace LibRpBase::FileSystem;
 # include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
-// gettimeofday()
-// NOTE: MSVC doesn't actually have gettimeofday().
-// We have our own version in msvc_common.h.
-#ifdef _MSC_VER
-# include "libwin32common/msvc_common.h"
-#else /* !_MSC_VER */
-# include <sys/time.h>
-#endif /* _MSC_VER */
+// C includes. (C++ namespace)
+#include <ctime>
 
 // C++ includes.
 #include <string>
@@ -340,10 +334,8 @@ string CacheManager::download(
 			if (get_mtime(cache_filename, &filetime) != 0)
 				return string();
 
-			struct timeval systime;
-			if (gettimeofday(&systime, nullptr) != 0)
-				return string();
-			if ((systime.tv_sec - filetime) < (86400*7)) {
+			time_t systime = time(nullptr);
+			if ((systime - filetime) < (86400*7)) {
 				// Less than a week old.
 				return string();
 			}

@@ -26,7 +26,6 @@ SET(libwin32common_H
 	AutoGetDC.hpp
 	WinUI.hpp
 	w32err.h
-	msvc_common.h
 	w32time.h
 	ComBase.hpp
 	propsys_xp.h
@@ -38,10 +37,6 @@ SET(libwin32common_H
 	sdk/commctrl_ts.h
 	sdk/GUID_fn.h
 	)
-
-IF(MSVC)
-	SET(libwin32common_SRCS ${libwin32common_SRCS} msvc_common.c)
-ENDIF(MSVC)
 
 ######################
 # Build the library. #
