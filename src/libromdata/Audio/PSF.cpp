@@ -500,8 +500,9 @@ const char *const *PSF::supportedFileExtensions_static(void)
 const char *const *PSF::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
+		// Unofficial MIME types from FreeDesktop.org.
 		"audio/x-psf",
+		"audio/x-minipsf",
 
 		nullptr
 	};
