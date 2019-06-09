@@ -50,12 +50,17 @@ FOREACH(_lingua ${LINGUAS})
 	# Custom target to update a .po file.
 	# Use this after adding new strings to the source code.
 	# TODO: ${_lingua}@quot
+	IF(WIN32)
+		SET(MV move)
+	ELSE(WIN32)
+		SET(MV mv)
+	ENDIF(WIN32)
 	ADD_CUSTOM_TARGET(update-${_lingua}.po
 		COMMAND ${GETTEXT_MSGMERGE_EXECUTABLE}
 			--lang=${_lingua}
 			${_lingua}.po ${DOMAIN}.pot
 			-o ${_lingua}.new.po
-		COMMAND mv ${_lingua}.new.po ${_lingua}.po
+		COMMAND ${MV} ${_lingua}.new.po ${_lingua}.po
 		DEPENDS ${_lingua}.po
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 		VERBATIM
