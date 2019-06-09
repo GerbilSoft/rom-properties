@@ -26,7 +26,7 @@
       <match value="FSTM" type="string" offset="0"/>
     </magic>
   </mime-type>
-  <mime-type type="audio/x-bfstm">
+  <mime-type type="audio/x-bcwav">
     <comment>Nintendo Wii U BCWAV audio</comment>
     <generic-icon name="audio-x-generic"/>
     <glob pattern="*.bcwav"/>
