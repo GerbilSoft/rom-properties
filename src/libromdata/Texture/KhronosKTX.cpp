@@ -278,6 +278,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 	// TODO: Byteswapping.
 	// TODO: Handle variants. Check for channel sizes in glInternalFormat?
+	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
