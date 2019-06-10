@@ -747,9 +747,11 @@ static void decodeBlock_ETC2_alpha(uint32_t tileBuf[4*4], const etc2_alpha *alph
 	// Pixel index.
 	uint64_t alpha48 = extract48(alpha);
 
-	for (unsigned int i = 0; i < 16; i++, alpha48 >>= 3) {
+	// NOTE: alpha is stored *backwards*.
+	// TODO: Optimize to eliminate double-shifting.
+	for (unsigned int i = 0; i < 16; i++, alpha48 <<= 3) {
 		// Calculate the alpha value for this pixel.
-		int A = base + (tbl[alpha48 & 0x07] * mult);
+		int A = base + (tbl[(alpha48 >> 45) & 0x07] * mult);
 		if (A > 255) {
 			A = 255;
 		} else if (A < 0) {

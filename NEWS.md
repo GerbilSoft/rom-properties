@@ -136,6 +136,9 @@
     parser; WiiSave, WiiWAD, and CIAReader were not affected.
   * MegaDrive: Fixed an off-by-one error that caused Mega CD disc images
     to be detected as Mega Drive ROM images.
+  * ETC2: Fixed alpha decoding for GL_COMPRESSED_RGBA8_ETC2_EAC. Note that
+    the test case image used the incorrect decoding, so tests didn't catch
+    this bug.
 
 * Other changes:
   * Removed S2TC decoding. The first version of rom-properties with support
