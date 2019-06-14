@@ -78,8 +78,8 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_MC680x0: {
-			static const char *const cpu_subtype_m68k_tbl[] = {
-				nullptr, nullptr, "MC68040", "MC68030"
+			static const char cpu_subtype_m68k_tbl[][8] = {
+				"", "", "MC68040", "MC68030"
 			};
 			if (cpusubtype < ARRAY_SIZE(cpu_subtype_m68k_tbl)) {
 				s_cpu_subtype = cpu_subtype_m68k_tbl[cpusubtype];
@@ -197,8 +197,8 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_MIPS: {
-			static const char *const cpu_subtype_mips_tbl[] = {
-				nullptr, "R2300", "R2600", "R2800",
+			static const char cpu_subtype_mips_tbl[][8] = {
+				"", "R2300", "R2600", "R2800",
 				"R2000a", "R2000", "R3000a", "R3000"
 			};
 			if (cpusubtype < ARRAY_SIZE(cpu_subtype_mips_tbl)) {
@@ -224,8 +224,8 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_MC88000: {
-			static const char *const cpu_subtype_m88k_tbl[] = {
-				nullptr, "MC88100", "MC88110"
+			static const char cpu_subtype_m88k_tbl[][8] = {
+				"", "MC88100", "MC88110"
 			};
 			if (cpusubtype < ARRAY_SIZE(cpu_subtype_m88k_tbl)) {
 				s_cpu_subtype = cpu_subtype_m88k_tbl[cpusubtype];
@@ -252,8 +252,8 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 		}
 
 		case CPU_TYPE_POWERPC: {
-			static const char *const cpu_subtype_ppc_tbl[] = {
-				nullptr, "601", "602", "603",
+			static const char cpu_subtype_ppc_tbl[][8] = {
+				"", "601", "602", "603",
 				"603e", "603ev", "604", "604e",
 				"620", "750", "7400", "7450"
 			};
@@ -264,6 +264,12 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 			}
 			break;
 		}
+	}
+
+	if (s_cpu_subtype && s_cpu_subtype[0] == '\0') {
+		// Empty string in a no-pointer array.
+		// Change it to nullptr.
+		s_cpu_subtype = nullptr;
 	}
 
 	return s_cpu_subtype;
