@@ -51,6 +51,7 @@ using namespace LibRpBase;
 // ROM images. Used for console-specific image formats.
 #include "Console/DreamcastSave.hpp"
 #include "Console/GameCubeSave.hpp"
+#include "Console/PlayStationSave.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 
 // DirectDraw Surface structs.
@@ -447,6 +448,10 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// Sega Dreamcast save file
 		filetype = "VMS";
 		m_romData = new DreamcastSave(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
+		// Sony PlayStation save file
+		filetype = "PSV";
+		m_romData = new PlayStationSave(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -621,6 +626,22 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			// Get the VMS icon as an rp_image.
 			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VMS's icon as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
+		// Sony PlayStation save file
+		// NOTE: Increased iterations due to smaller files.
+		max_iterations *= 10;
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new PlayStationSave(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the PSV file.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the PSV file.";
+
+			// Get the PSV icon as an rp_image.
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the PSV's icon as rp_image.";
 
 			m_romData->unref();
 			m_romData = nullptr;
@@ -1275,6 +1296,19 @@ INSTANTIATE_TEST_CASE_P(VMS, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"Misc/SONIC2C.VMS.gz",
 			"Misc/SONIC2C.png",
+			RomData::IMG_INT_ICON))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// PSV tests.
+INSTANTIATE_TEST_CASE_P(PSV, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"Misc/BASCUS-94228535059524F.PSV.gz",
+			"Misc/BASCUS-94228535059524F.png",
+			RomData::IMG_INT_ICON),
+		ImageDecoderTest_mode(
+			"Misc/BASCUS-949003034323235383937.PSV.gz",
+			"Misc/BASCUS-949003034323235383937.png",
 			RomData::IMG_INT_ICON))
 	, ImageDecoderTest::test_case_suffix_generator);
 
