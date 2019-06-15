@@ -126,6 +126,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 			}
 		}
 		if (!found) {
+			// TODO: Return an error code?
 			if (it->image_type == -1) {
 				cerr << "-- " << C_("rpcli", "Animated icon not found") << endl;
 			} else {
