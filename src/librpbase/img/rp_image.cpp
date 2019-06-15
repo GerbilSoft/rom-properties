@@ -478,7 +478,7 @@ const char *rp_image::getFormatName(Format format)
 		return nullptr;
 	}
 
-	static const char *const format_names[] = {
+	static const char format_names[][8] = {
 		"None",
 		"CI8",
 		"ARGB32",
