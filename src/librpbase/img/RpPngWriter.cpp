@@ -138,7 +138,9 @@ class RpPngWriterPrivate
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
 			init(file, width, height, format);
-			file->unref();
+			if (file) {
+				file->unref();
+			}
 		}
 		RpPngWriterPrivate(const char *filename, const rp_image *img)
 			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
@@ -146,7 +148,9 @@ class RpPngWriterPrivate
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
 			init(file, img);
-			file->unref();
+			if (file) {
+				file->unref();
+			}
 		}
 		RpPngWriterPrivate(const char *filename, const IconAnimData *iconAnimData)
 			: lastError(0), file(nullptr), imageTag(IMGT_INVALID)
@@ -154,7 +158,9 @@ class RpPngWriterPrivate
 		{
 			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
 			init(file, iconAnimData);
-			file->unref();
+			if (file) {
+				file->unref();
+			}
 		}
 
 		~RpPngWriterPrivate();
@@ -620,8 +626,10 @@ void RpPngWriterPrivate::close(void)
 	}
 
 	// unref() the file.
-	this->file->unref();
-	this->file = nullptr;
+	if (this->file) {
+		this->file->unref();
+		this->file = nullptr;
+	}
 }
 
 /**
