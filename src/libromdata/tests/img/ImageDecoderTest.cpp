@@ -49,6 +49,7 @@ using namespace LibRpBase;
 #include "Texture/ValveVTF3.hpp"
 
 // ROM images. Used for console-specific image formats.
+#include "Console/GameCubeSave.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 
 // DirectDraw Surface structs.
@@ -76,21 +77,25 @@ namespace LibRomData { namespace Tests {
 
 struct ImageDecoderTest_mode
 {
-	string dds_gz_filename;	// Source texture to test.
-	string png_filename;	// PNG image for comparison.
+	string dds_gz_filename;
+	string png_filename;
+	RomData::ImageType imgType;
 
 	ImageDecoderTest_mode(
 		const char *dds_gz_filename,
-		const char *png_filename
+		const char *png_filename,
+		RomData::ImageType imgType = RomData::IMG_INT_IMAGE
 		)
 		: dds_gz_filename(dds_gz_filename)
 		, png_filename(png_filename)
+		, imgType(imgType)
 	{ }
 
 	// May be required for MSVC 2010?
 	ImageDecoderTest_mode(const ImageDecoderTest_mode &other)
 		: dds_gz_filename(other.dds_gz_filename)
 		, png_filename(other.png_filename)
+		, imgType(other.imgType)
 	{ }
 
 	// Required for MSVC 2010.
@@ -98,6 +103,7 @@ struct ImageDecoderTest_mode
 	{
 		dds_gz_filename = other.dds_gz_filename;
 		png_filename = other.png_filename;
+		imgType = other.imgType;
 		return *this;
 	}
 };
@@ -397,9 +403,6 @@ void ImageDecoderTest::decodeTest_internal(void)
 	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
 
-	// Image type. (Usually IMG_INT_IMAGE.)
-	RomData::ImageType imgType = RomData::IMG_INT_IMAGE;
-
 	// Determine the image type by checking the last 7 characters of the filename.
 	const char *filetype = nullptr;
 	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
@@ -432,10 +435,14 @@ void ImageDecoderTest::decodeTest_internal(void)
 	} else if (mode.dds_gz_filename.size() >= 8U &&
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
-		// Nintendo 3DS SMDH file.
+		// Nintendo 3DS SMDH file
 		filetype = "SMDH";
 		m_romData = new Nintendo3DS_SMDH(m_f_dds);
-		imgType = RomData::IMG_INT_ICON;
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz"))
+	{
+		// Nintendo GameCube save file
+		filetype = "GCI";
+		m_romData = new GameCubeSave(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -443,7 +450,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the " << filetype << " image.";
 
 	// Get the DDS image as an rp_image.
-	const rp_image *const img_dds = m_romData->image(imgType);
+	const rp_image *const img_dds = m_romData->image(mode.imgType);
 	ASSERT_TRUE(img_dds != nullptr) << "Could not load the " << filetype << " image as rp_image.";
 
 	// Compare the image data.
@@ -495,7 +502,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 			// Get the DDS image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 			m_romData->unref();
@@ -512,7 +519,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the PVR image.";
 
 			// Get the PVR image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the PVR image as rp_image.";
 
 			m_romData->unref();
@@ -528,7 +535,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the KTX image.";
 
 			// Get the KTX image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the KTX image as rp_image.";
 
 			m_romData->unref();
@@ -543,7 +550,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF3 image.";
 
 			// Get the VTF3 image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF3 image as rp_image.";
 
 			m_romData->unref();
@@ -557,7 +564,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF image.";
 
 			// Get the VTF3 image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_IMAGE);
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF image as rp_image.";
 
 			m_romData->unref();
@@ -566,7 +573,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	} else if (mode.dds_gz_filename.size() >= 8U &&
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
-		// Nintendo 3DS SMDH file.
+		// Nintendo 3DS SMDH file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
 		for (unsigned int i = max_iterations; i > 0; i--) {
@@ -575,8 +582,25 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the SMDH file.";
 
 			// Get the VTF3 image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(RomData::IMG_INT_ICON);
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the SMDH's icon as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
+		// Nintendo GameCube save file
+		// NOTE: Increased iterations due to smaller files.
+		max_iterations *= 10;
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new GameCubeSave(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the GCI file.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the GCI file.";
+
+			// Get the VTF3 image as an rp_image.
+			// TODO: imgType to string?
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the GCI's icon/banner as rp_image.";
 
 			m_romData->unref();
 			m_romData = nullptr;
@@ -1035,71 +1059,190 @@ INSTANTIATE_TEST_CASE_P(BC7, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // SMDH tests.
+// From *New* Nintendo 3DS 9.2.0-20J.
+#define SMDH_TEST(file) ImageDecoderTest_mode( \
+			"SMDH/" file ".smdh.gz", \
+			"SMDH/" file ".png", \
+			RomData::IMG_INT_ICON)
 INSTANTIATE_TEST_CASE_P(SMDH, ImageDecoderTest,
 	::testing::Values(
-		ImageDecoderTest_mode(
-			"SMDH/0004001000020000.smdh.gz",
-			"SMDH/0004001000020000.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004001000020100.smdh.gz",
-			"SMDH/0004001000020100.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004001000020400.smdh.gz",
-			"SMDH/0004001000020400.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004001000020900.smdh.gz",
-			"SMDH/0004001000020900.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004001000020A00.smdh.gz",
-			"SMDH/0004001000020A00.png"),
-		ImageDecoderTest_mode(
-			"SMDH/000400100002BF00.smdh.gz",
-			"SMDH/000400100002BF00.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004001020020300.smdh.gz",
-			"SMDH/0004001020020300.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004001020020D00.smdh.gz",
-			"SMDH/0004001020020D00.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004001020023100.smdh.gz",
-			"SMDH/0004001020023100.png"),
-		ImageDecoderTest_mode(
-			"SMDH/000400102002C800.smdh.gz",
-			"SMDH/000400102002C800.png"),
-		ImageDecoderTest_mode(
-			"SMDH/000400102002C900.smdh.gz",
-			"SMDH/000400102002C900.png"),
-		ImageDecoderTest_mode(
-			"SMDH/000400102002CB00.smdh.gz",
-			"SMDH/000400102002CB00.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004003000008302.smdh.gz",
-			"SMDH/0004003000008302.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004003000008402.smdh.gz",
-			"SMDH/0004003000008402.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004003000008602.smdh.gz",
-			"SMDH/0004003000008602.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004003000008702.smdh.gz",
-			"SMDH/0004003000008702.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004003000008D02.smdh.gz",
-			"SMDH/0004003000008D02.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004003000008E02.smdh.gz",
-			"SMDH/0004003000008E02.png"),
-		ImageDecoderTest_mode(
-			"SMDH/000400300000BC02.smdh.gz",
-			"SMDH/000400300000BC02.png"),
-		ImageDecoderTest_mode(
-			"SMDH/000400300000C602.smdh.gz",
-			"SMDH/000400300000C602.png"),
-		ImageDecoderTest_mode(
-			"SMDH/0004003020008802.smdh.gz",
-			"SMDH/0004003020008802.png"))
+		SMDH_TEST("0004001000020000"),
+		SMDH_TEST("0004001000020100"),
+		SMDH_TEST("0004001000020400"),
+		SMDH_TEST("0004001000020900"),
+		SMDH_TEST("0004001000020A00"),
+		SMDH_TEST("000400100002BF00"),
+		SMDH_TEST("0004001020020300"),
+		SMDH_TEST("0004001020020D00"),
+		SMDH_TEST("0004001020023100"),
+		SMDH_TEST("000400102002C800"),
+		SMDH_TEST("000400102002C900"),
+		SMDH_TEST("000400102002CB00"),
+		SMDH_TEST("0004003000008302"),
+		SMDH_TEST("0004003000008402"),
+		SMDH_TEST("0004003000008602"),
+		SMDH_TEST("0004003000008702"),
+		SMDH_TEST("0004003000008D02"),
+		SMDH_TEST("0004003000008E02"),
+		SMDH_TEST("000400300000BC02"),
+		SMDH_TEST("000400300000C602"),
+		SMDH_TEST("0004003020008802"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// GCI tests.
+// TODO: Use something like GcnFstTest that uses an array of filenames
+// to generate tests at runtime instead of compile-time?
+#define GCI_ICON_TEST(file) ImageDecoderTest_mode( \
+			"GCI/" file ".gci.gz", \
+			"GCI/" file ".icon.png", \
+			RomData::IMG_INT_ICON)
+#define GCI_BANNER_TEST(file) ImageDecoderTest_mode( \
+			"GCI/" file ".gci.gz", \
+			"GCI/" file ".banner.png", \
+			RomData::IMG_INT_BANNER)
+
+INSTANTIATE_TEST_CASE_P(GCI_Icon_1, ImageDecoderTest,
+	::testing::Values(
+		GCI_ICON_TEST("01-D43E-ZELDA"),
+		GCI_ICON_TEST("01-G2ME-MetroidPrime2"),
+		GCI_ICON_TEST("01-G4SE-gc4sword"),
+		GCI_ICON_TEST("01-G8ME-mariost_save_file"),
+		GCI_ICON_TEST("01-GAFE-DobutsunomoriP_MURA"),
+		GCI_ICON_TEST("01-GALE-SuperSmashBros0110290334"),
+		GCI_ICON_TEST("01-GC6E-pokemon_colosseum"),
+		GCI_ICON_TEST("01-GEDE-Eternal Darkness"),
+		GCI_ICON_TEST("01-GFEE-FIREEMBLEM8J"),
+		GCI_ICON_TEST("01-GKGE-DONKEY KONGA SAVEDATA"),
+		GCI_ICON_TEST("01-GLME-LUIGI_MANSION_SAVEDATA_v3"),
+		GCI_ICON_TEST("01-GM4E-MarioKart Double Dash!!"),
+		GCI_ICON_TEST("01-GM8E-MetroidPrime A"),
+		GCI_ICON_TEST("01-GMPE-MARIPA4BOX0"),
+		GCI_ICON_TEST("01-GMPE-MARIPA4BOX1"),
+		GCI_ICON_TEST("01-GMPE-MARIPA4BOX2"),
+		GCI_ICON_TEST("01-GMSE-super_mario_sunshine"),
+		GCI_ICON_TEST("01-GP5E-MARIPA5"),
+		GCI_ICON_TEST("01-GP6E-MARIPA6"),
+		GCI_ICON_TEST("01-GP7E-MARIPA7"),
+		GCI_ICON_TEST("01-GPIE-Pikmin dataFile"),
+		GCI_ICON_TEST("01-GPVE-Pikmin2_SaveData"),
+		GCI_ICON_TEST("01-GPXE-pokemon_rs_memory_box"),
+		GCI_ICON_TEST("01-GXXE-PokemonXD"),
+		GCI_ICON_TEST("01-GYBE-MainData"),
+		GCI_ICON_TEST("01-GZ2E-gczelda2"),
+		GCI_ICON_TEST("01-GZLE-gczelda"),
+		GCI_ICON_TEST("01-PZLE-NES_ZELDA1_SAVE"),
+		GCI_ICON_TEST("01-PZLE-NES_ZELDA2_SAVE"),
+		GCI_ICON_TEST("01-PZLE-ZELDA1"),
+		GCI_ICON_TEST("01-PZLE-ZELDA2"),
+		GCI_ICON_TEST("51-GTKE-Save Game0"),
+		GCI_ICON_TEST("52-GTDE-SK5sbltitgaSK5sbltitga"),
+		GCI_ICON_TEST("52-GTDE-SK5sirpvsicSK5sirpvsic"),
+		GCI_ICON_TEST("52-GTDE-SK5xwkqsbafSK5xwkqsbaf"),
+		GCI_ICON_TEST("5D-GE9E-EDEDDNEDDYTHEMIS-EDVENTURES"),
+		GCI_ICON_TEST("69-GHSE-POTTERCOS"),
+		GCI_ICON_TEST("69-GO7E-BOND"),
+		GCI_ICON_TEST("78-GW3E-__2f__w_mania2002"),
+		GCI_ICON_TEST("7D-GCBE-CRASHWOC"),
+		GCI_ICON_TEST("7D-GCNE-all"),
+		GCI_ICON_TEST("8P-G2XE-SONIC GEMS_00"),
+		GCI_ICON_TEST("8P-G2XE-SONIC_R"),
+		GCI_ICON_TEST("8P-G2XE-STF.DAT"),
+		GCI_ICON_TEST("8P-G9SE-SONICHEROES_00"),
+		GCI_ICON_TEST("8P-G9SE-SONICHEROES_01"),
+		GCI_ICON_TEST("8P-G9SE-SONICHEROES_02"),
+		GCI_ICON_TEST("8P-GEZE-billyhatcher"),
+		GCI_ICON_TEST("8P-GFZE-f_zero.dat"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_CASE_P(GCI_Icon_2, ImageDecoderTest,
+	::testing::Values(
+		GCI_ICON_TEST("8P-GM2E-rep0000010000C900002497A48E.dat"),
+		GCI_ICON_TEST("8P-GM2E-super_monkey_ball_2.dat"),
+		GCI_ICON_TEST("8P-GMBE-smkb0058556041f42afb"),
+		GCI_ICON_TEST("8P-GMBE-super_monkey_ball.sys"),
+		GCI_ICON_TEST("8P-GPUE-Puyo Pop Fever Replay01"),
+		GCI_ICON_TEST("8P-GPUE-Puyo Pop Fever System"),
+		GCI_ICON_TEST("8P-GSNE-SONIC2B__5f____5f__S01"),
+		GCI_ICON_TEST("8P-GSOE-S_MEGA_SYS"),
+		GCI_ICON_TEST("8P-GUPE-SHADOWTHEHEDGEHOG"),
+		GCI_ICON_TEST("8P-GXEE-SONICRIDERS_GAMEDATA_01"),
+		GCI_ICON_TEST("8P-GXSE-SONICADVENTURE_DX_PLAYRECORD_1"),
+		GCI_ICON_TEST("AF-GNME-NAMCOMUSEUM"),
+		GCI_ICON_TEST("AF-GP2E-PMW2SAVE"),
+		GCI_ICON_TEST("AF-GPME-PACMANFEVER"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// NOTE: Some files don't have banners. They're left in the list for
+// consistency, but are commented out.
+INSTANTIATE_TEST_CASE_P(GCI_Banner_1, ImageDecoderTest,
+	::testing::Values(
+		GCI_BANNER_TEST("01-D43E-ZELDA"),
+		GCI_BANNER_TEST("01-G2ME-MetroidPrime2"),
+		GCI_BANNER_TEST("01-G4SE-gc4sword"),
+		GCI_BANNER_TEST("01-G8ME-mariost_save_file"),
+		GCI_BANNER_TEST("01-GAFE-DobutsunomoriP_MURA"),
+		GCI_BANNER_TEST("01-GALE-SuperSmashBros0110290334"),
+		GCI_BANNER_TEST("01-GC6E-pokemon_colosseum"),
+		GCI_BANNER_TEST("01-GEDE-Eternal Darkness"),
+		GCI_BANNER_TEST("01-GFEE-FIREEMBLEM8J"),
+		GCI_BANNER_TEST("01-GKGE-DONKEY KONGA SAVEDATA"),
+		GCI_BANNER_TEST("01-GLME-LUIGI_MANSION_SAVEDATA_v3"),
+		GCI_BANNER_TEST("01-GM4E-MarioKart Double Dash!!"),
+		GCI_BANNER_TEST("01-GM8E-MetroidPrime A"),
+		GCI_BANNER_TEST("01-GMPE-MARIPA4BOX0"),
+		GCI_BANNER_TEST("01-GMPE-MARIPA4BOX1"),
+		GCI_BANNER_TEST("01-GMPE-MARIPA4BOX2"),
+		GCI_BANNER_TEST("01-GMSE-super_mario_sunshine"),
+		GCI_BANNER_TEST("01-GP5E-MARIPA5"),
+		GCI_BANNER_TEST("01-GP6E-MARIPA6"),
+		GCI_BANNER_TEST("01-GP7E-MARIPA7"),
+		GCI_BANNER_TEST("01-GPIE-Pikmin dataFile"),
+		GCI_BANNER_TEST("01-GPVE-Pikmin2_SaveData"),
+		GCI_BANNER_TEST("01-GPXE-pokemon_rs_memory_box"),
+		GCI_BANNER_TEST("01-GXXE-PokemonXD"),
+		GCI_BANNER_TEST("01-GYBE-MainData"),
+		GCI_BANNER_TEST("01-GZ2E-gczelda2"),
+		GCI_BANNER_TEST("01-GZLE-gczelda"),
+		GCI_BANNER_TEST("01-PZLE-NES_ZELDA1_SAVE"),
+		GCI_BANNER_TEST("01-PZLE-NES_ZELDA2_SAVE"),
+		GCI_BANNER_TEST("01-PZLE-ZELDA1"),
+		GCI_BANNER_TEST("01-PZLE-ZELDA2"),
+		//GCI_BANNER_TEST("51-GTKE-Save Game0"),
+		GCI_BANNER_TEST("52-GTDE-SK5sbltitgaSK5sbltitga"),
+		GCI_BANNER_TEST("52-GTDE-SK5sirpvsicSK5sirpvsic"),
+		GCI_BANNER_TEST("52-GTDE-SK5xwkqsbafSK5xwkqsbaf"),
+		//GCI_BANNER_TEST("5D-GE9E-EDEDDNEDDYTHEMIS-EDVENTURES"),
+		//GCI_BANNER_TEST("69-GHSE-POTTERCOS"),
+		GCI_BANNER_TEST("69-GO7E-BOND"),
+		GCI_BANNER_TEST("78-GW3E-__2f__w_mania2002"),
+		//GCI_BANNER_TEST("7D-GCBE-CRASHWOC"),
+		GCI_BANNER_TEST("7D-GCNE-all"),
+		GCI_BANNER_TEST("8P-G2XE-SONIC GEMS_00"),
+		GCI_BANNER_TEST("8P-G2XE-SONIC_R"),
+		GCI_BANNER_TEST("8P-G2XE-STF.DAT"),
+		GCI_BANNER_TEST("8P-G9SE-SONICHEROES_00"),
+		GCI_BANNER_TEST("8P-G9SE-SONICHEROES_01"),
+		GCI_BANNER_TEST("8P-G9SE-SONICHEROES_02"),
+		GCI_BANNER_TEST("8P-GEZE-billyhatcher"),
+		GCI_BANNER_TEST("8P-GFZE-f_zero.dat"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_CASE_P(GCI_Banner_2, ImageDecoderTest,
+	::testing::Values(
+		GCI_BANNER_TEST("8P-GM2E-rep0000010000C900002497A48E.dat"),
+		GCI_BANNER_TEST("8P-GM2E-super_monkey_ball_2.dat"),
+		GCI_BANNER_TEST("8P-GMBE-smkb0058556041f42afb"),
+		GCI_BANNER_TEST("8P-GMBE-super_monkey_ball.sys"),
+		//GCI_BANNER_TEST("8P-GPUE-Puyo Pop Fever Replay01"),
+		//GCI_BANNER_TEST("8P-GPUE-Puyo Pop Fever System"),
+		GCI_BANNER_TEST("8P-GSNE-SONIC2B__5f____5f__S01"),
+		GCI_BANNER_TEST("8P-GSOE-S_MEGA_SYS"),
+		GCI_BANNER_TEST("8P-GUPE-SHADOWTHEHEDGEHOG"),
+		GCI_BANNER_TEST("8P-GXEE-SONICRIDERS_GAMEDATA_01"),
+		GCI_BANNER_TEST("8P-GXSE-SONICADVENTURE_DX_PLAYRECORD_1"),
+		GCI_BANNER_TEST("AF-GNME-NAMCOMUSEUM"),
+		GCI_BANNER_TEST("AF-GP2E-PMW2SAVE"),
+		GCI_BANNER_TEST("AF-GPME-PACMANFEVER"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
