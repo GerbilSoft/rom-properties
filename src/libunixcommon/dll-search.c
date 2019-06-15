@@ -296,8 +296,12 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 	// Debug: Print the active desktop environment.
 	if (pfnDebug) {
 		static const char *const de_name_tbl[] = {
-			"KDE4", "KDE5", "XFCE", "GNOME"
+			"KDE4", "KDE5",
+			"XFCE (GTK+ 2.x)", "XFCE (GTK+ 3.x)",
+			"GNOME", "MATE"
 		};
+		static_assert(sizeof(de_name_tbl)/sizeof(de_name_tbl[0]) == RP_FE_MAX,
+			"de_name_tbl[] needs to be updated.");
 		if (cur_desktop == RP_FE_MAX) {
 			pfnDebug(LEVEL_DEBUG, "*** Could not determine active desktop environment. Defaulting to GNOME.");
 		} else {
