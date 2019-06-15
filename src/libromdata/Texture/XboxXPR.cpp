@@ -777,7 +777,7 @@ int XboxXPR::loadFieldData(void)
 	d->fields->reserve(3);	// Maximum of 2 fields.
 
 	// Type
-	static const char *const type_tbl[] = {
+	static const char type_tbl[][8] = {
 		"XPR0", "XPR1"
 	};
 	if (d->xprType > XboxXPRPrivate::XPR_TYPE_UNKNOWN &&
