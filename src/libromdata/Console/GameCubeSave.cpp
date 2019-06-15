@@ -748,9 +748,7 @@ const char *const *GameCubeSave::supportedMimeTypes_static(void)
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-gamecube-gci",	// .gci
-		"application/x-gamecube-gcs",	// .gcs
-		"application/x-gamecube-sav",	// .sav
+		"application/x-gamecube-save",
 
 		nullptr
 	};
@@ -944,6 +942,80 @@ int GameCubeSave::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int GameCubeSave::loadMetaData(void)
+{
+	RP_D(GameCubeSave);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->saveType < 0 || d->dataOffset < 0) {
+		// Unknown disc image type.
+		return -EIO;
+	}
+
+	// Save file header is read and byteswapped in the constructor.
+	const card_direntry *const direntry = &d->direntry;
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(3);	// Maximum of 4 metadata properties.
+
+	// Look up the publisher.
+	const char *publisher = NintendoPublishers::lookup(direntry->company);
+	if (publisher) {
+		d->metaData->addMetaData_string(Property::Publisher, publisher);
+	}
+
+	// Description. (using this as the Title)
+	// TODO: Consolidate with loadFieldData()?
+	char desc_buf[64];
+	size_t size = d->file->seekAndRead(d->dataOffset + direntry->commentaddr,
+					   desc_buf, sizeof(desc_buf));
+	if (size == sizeof(desc_buf)) {
+		// Add the description.
+		// NOTE: Some games have garbage after the first NULL byte
+		// in the two description fields, which prevents the rest
+		// of the field from being displayed.
+
+		// Check for a NULL byte in the game description.
+		int desc_len = 32;
+		const char *null_pos = static_cast<const char*>(memchr(desc_buf, 0, 32));
+		if (null_pos) {
+			// Found a NULL byte.
+			desc_len = static_cast<int>(null_pos - desc_buf);
+		}
+		string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
+		desc += '\n';
+
+		// Check for a NULL byte in the file description.
+		null_pos = static_cast<const char*>(memchr(&desc_buf[32], 0, 32));
+		if (null_pos) {
+			// Found a NULL byte.
+			desc_len = static_cast<int>(null_pos - desc_buf - 32);
+		}
+		desc += cp1252_sjis_to_utf8(&desc_buf[32], desc_len);
+
+		d->metaData->addMetaData_string(Property::Title, desc);
+	}
+
+	// Last Modified timestamp.
+	// NOTE: Using "CreationDate".
+	// TODO: Adjust for local timezone, since it's UTC.
+	d->metaData->addMetaData_timestamp(Property::CreationDate,
+		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 /**

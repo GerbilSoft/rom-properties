@@ -226,24 +226,12 @@
 
   <!-- GameCubeSave -->
   <mime-type type="application/x-gamecube-save">
-    <comment>GameCube USB Memory Adapter save file</comment>
+    <comment>GameCube save file</comment>
     <!-- FIXME: Better icon. -->
     <sub-class-of type="application/octet-stream"/>
     <generic-icon name="application-octet-stream"/>
     <glob pattern="*.gci"/>
-  </mime-type>
-  <mime-type type="application/x-gamecube-save">
-    <comment>GameCube GameShark save file</comment>
-    <!-- FIXME: Better icon. -->
-    <sub-class-of type="application/octet-stream"/>
-    <generic-icon name="application-octet-stream"/>
     <glob pattern="*.gcs"/>
-  </mime-type>
-  <mime-type type="application/x-gamecube-save">
-    <comment>GameCube MaxDrive save file</comment>
-    <!-- FIXME: Better icon. -->
-    <sub-class-of type="application/octet-stream"/>
-    <generic-icon name="application-octet-stream"/>
     <glob pattern="*.sav"/>
     <magic priority="90">
       <match value="DATELGC_SAVE" type="string" offset="0"/>

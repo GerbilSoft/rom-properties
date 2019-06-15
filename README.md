@@ -91,7 +91,7 @@ button.
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
 | Nintendo GameCube         |       Yes      |    Yes   |      Banner     |      Disc      |
 | Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |      Disc      |
-| Nintendo GameCube Saves   |       Yes      |    No    |       Icon      |       N/A      |
+| Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A      |
 | Nintendo Wii (Discs)      |       Yes      |    Yes   |        No       |  Disc, Covers  |
 | Nintendo Wii (WADs)       |       Yes      |    Yes   |       Yes*      |  Title, Covers |
 | Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A      |
