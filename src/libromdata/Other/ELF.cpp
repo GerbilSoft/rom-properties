@@ -481,7 +481,7 @@ int ELFPrivate::checkSectionHeaders(void)
 					memcpy(desc, pData, sizeof(desc));
 
 					const uint32_t os_id = elf32_to_cpu(desc[0]);
-					const char *const os_tbl[] = {
+					static const char *const os_tbl[] = {
 						"Linux", "Hurd", "Solaris", "kFreeBSD", "kNetBSD"
 					};
 
@@ -1107,10 +1107,10 @@ int ELF::loadFieldData(void)
 
 	// Bitness/Endianness. (consolidated as "format")
 	static const char *const exec_type_tbl[] = {
-		C_("RomData|ExecType", "32-bit Little-Endian"),
-		C_("RomData|ExecType", "64-bit Little-Endian"),
-		C_("RomData|ExecType", "32-bit Big-Endian"),
-		C_("RomData|ExecType", "64-bit Big-Endian"),
+		NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
+		NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
+		NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
+		NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 	};
 	const char *const format_title = C_("ELF", "Format");
 	if (d->elfFormat > ELFPrivate::ELF_FORMAT_UNKNOWN &&
