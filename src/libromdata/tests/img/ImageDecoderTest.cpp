@@ -66,6 +66,7 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <functional>
 #include <memory>
 #include <string>
 using std::string;
@@ -500,154 +501,71 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		max_iterations = BENCHMARK_ITERATIONS;
 	}
 
+	// Constructor function.
+	std::function<RomData*(IRpFile*)> fn_ctor;
+
 	// Determine the image type by checking the last 7 characters of the filename.
 	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
 	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
 	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
 		// DDS image
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new DirectDrawSurface(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
-
-			// Get the DDS image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new DirectDrawSurface(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
 		// PVR/GVR image
-		m_romData = new SegaPVR(m_f_dds);
-
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new SegaPVR(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the PVR image.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the PVR image.";
-
-			// Get the PVR image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the PVR image as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new SegaPVR(file); };
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new KhronosKTX(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the KTX image.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the KTX image.";
-
-			// Get the KTX image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the KTX image as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new KhronosKTX(file); };
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new ValveVTF3(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VTF3 image.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF3 image.";
-
-			// Get the VTF3 image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF3 image as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new ValveVTF3(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new ValveVTF(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VTF image.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VTF image.";
-
-			// Get the VTF3 image as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VTF image as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new ValveVTF(file); };
 	} else if (mode.dds_gz_filename.size() >= 8U &&
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
 		// Nintendo 3DS SMDH file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new Nintendo3DS_SMDH(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the SMDH file.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the SMDH file.";
-
-			// Get the SMDH icon as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the SMDH's icon as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new Nintendo3DS_SMDH(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
 		// Nintendo GameCube save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new GameCubeSave(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the GCI file.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the GCI file.";
-
-			// Get the GCI icon/banner as an rp_image.
-			// TODO: imgType to string?
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the GCI's icon/banner as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new GameCubeSave(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
 		// Sega Dreamcast save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new DreamcastSave(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VMS file.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VMS file.";
-
-			// Get the VMS icon as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VMS's icon as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new DreamcastSave(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
 		// Sony PlayStation save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		for (unsigned int i = max_iterations; i > 0; i--) {
-			m_romData = new PlayStationSave(m_f_dds);
-			ASSERT_TRUE(m_romData->isValid()) << "Could not load the PSV file.";
-			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the PSV file.";
-
-			// Get the PSV icon as an rp_image.
-			const rp_image *const img_dds = m_romData->image(mode.imgType);
-			ASSERT_TRUE(img_dds != nullptr) << "Could not load the PSV's icon as rp_image.";
-
-			m_romData->unref();
-			m_romData = nullptr;
-		}
+		fn_ctor = [](IRpFile *file) { return new PlayStationSave(file); };
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
+	}
+
+	ASSERT_TRUE(fn_ctor) << "Unable to get a constructor function.";
+
+	for (unsigned int i = max_iterations; i > 0; i--) {
+		m_romData = fn_ctor(m_f_dds);
+		ASSERT_TRUE(m_romData->isValid()) << "Could not load the source image.";
+		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the source image.";
+
+		// Get the source image as an rp_image.
+		// TODO: imgType to string?
+		const rp_image *const img_dds = m_romData->image(mode.imgType);
+		ASSERT_TRUE(img_dds != nullptr) << "Could not load the source image as rp_image.";
+
+		m_romData->unref();
+		m_romData = nullptr;
 	}
 }
 
