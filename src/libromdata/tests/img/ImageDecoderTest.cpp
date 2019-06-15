@@ -49,6 +49,7 @@ using namespace LibRpBase;
 #include "Texture/ValveVTF3.hpp"
 
 // ROM images. Used for console-specific image formats.
+#include "Console/DreamcastSave.hpp"
 #include "Console/GameCubeSave.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 
@@ -438,11 +439,14 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// Nintendo 3DS SMDH file
 		filetype = "SMDH";
 		m_romData = new Nintendo3DS_SMDH(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz"))
-	{
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
 		// Nintendo GameCube save file
 		filetype = "GCI";
 		m_romData = new GameCubeSave(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
+		// Sega Dreamcast save file
+		filetype = "VMS";
+		m_romData = new DreamcastSave(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -581,7 +585,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isValid()) << "Could not load the SMDH file.";
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the SMDH file.";
 
-			// Get the VTF3 image as an rp_image.
+			// Get the SMDH icon as an rp_image.
 			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the SMDH's icon as rp_image.";
 
@@ -597,10 +601,26 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 			ASSERT_TRUE(m_romData->isValid()) << "Could not load the GCI file.";
 			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the GCI file.";
 
-			// Get the VTF3 image as an rp_image.
+			// Get the GCI icon/banner as an rp_image.
 			// TODO: imgType to string?
 			const rp_image *const img_dds = m_romData->image(mode.imgType);
 			ASSERT_TRUE(img_dds != nullptr) << "Could not load the GCI's icon/banner as rp_image.";
+
+			m_romData->unref();
+			m_romData = nullptr;
+		}
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
+		// Sega Dreamcast save file
+		// NOTE: Increased iterations due to smaller files.
+		max_iterations *= 10;
+		for (unsigned int i = max_iterations; i > 0; i--) {
+			m_romData = new DreamcastSave(m_f_dds);
+			ASSERT_TRUE(m_romData->isValid()) << "Could not load the VMS file.";
+			ASSERT_TRUE(m_romData->isOpen()) << "Could not load the VMS file.";
+
+			// Get the VMS icon as an rp_image.
+			const rp_image *const img_dds = m_romData->image(mode.imgType);
+			ASSERT_TRUE(img_dds != nullptr) << "Could not load the VMS's icon as rp_image.";
 
 			m_romData->unref();
 			m_romData = nullptr;
@@ -1243,6 +1263,19 @@ INSTANTIATE_TEST_CASE_P(GCI_Banner_2, ImageDecoderTest,
 		GCI_BANNER_TEST("AF-GNME-NAMCOMUSEUM"),
 		GCI_BANNER_TEST("AF-GP2E-PMW2SAVE"),
 		GCI_BANNER_TEST("AF-GPME-PACMANFEVER"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// VMS tests.
+INSTANTIATE_TEST_CASE_P(VMS, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"Misc/BIOS002.VMS.gz",
+			"Misc/BIOS002.png",
+			RomData::IMG_INT_ICON),
+		ImageDecoderTest_mode(
+			"Misc/SONIC2C.VMS.gz",
+			"Misc/SONIC2C.png",
+			RomData::IMG_INT_ICON))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
