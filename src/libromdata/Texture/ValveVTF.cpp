@@ -209,73 +209,44 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 */
 unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 {
-	unsigned int minBlockSize;
+	static const uint8_t block_size_tbl[] = {
+		4,	// VTF_IMAGE_FORMAT_RGBA8888
+		4,	// VTF_IMAGE_FORMAT_ABGR8888
+		3,	// VTF_IMAGE_FORMAT_RGB888
+		3,	// VTF_IMAGE_FORMAT_BGR888
+		2,	// VTF_IMAGE_FORMAT_RGB565
+		1,	// VTF_IMAGE_FORMAT_I8
+		2,	// VTF_IMAGE_FORMAT_IA88
+		1,	// VTF_IMAGE_FORMAT_P8
+		1,	// VTF_IMAGE_FORMAT_A8
+		3,	// VTF_IMAGE_FORMAT_RGB888_BLUESCREEN
+		3,	// VTF_IMAGE_FORMAT_BGR888_BLUESCREEN
+		4,	// VTF_IMAGE_FORMAT_ARGB8888
+		4,	// VTF_IMAGE_FORMAT_BGRA8888
+		8,	// VTF_IMAGE_FORMAT_DXT1
+		16,	// VTF_IMAGE_FORMAT_DXT3
+		16,	// VTF_IMAGE_FORMAT_DXT5
+		4,	// VTF_IMAGE_FORMAT_BGRx8888
+		2,	// VTF_IMAGE_FORMAT_BGR565
+		2,	// VTF_IMAGE_FORMAT_BGRx5551
+		2,	// VTF_IMAGE_FORMAT_BGRA4444
+		8,	// VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA
+		2,	// VTF_IMAGE_FORMAT_BGRA5551
+		2,	// VTF_IMAGE_FORMAT_UV88
+		4,	// VTF_IMAGE_FORMAT_UVWQ8888
+		8,	// VTF_IMAGE_FORMAT_RGBA16161616F
+		8,	// VTF_IMAGE_FORMAT_RGBA16161616
+		4,	// VTF_IMAGE_FORMAT_UVLX8888
+	};
+	static_assert(ARRAY_SIZE(block_size_tbl) == VTF_IMAGE_FORMAT_MAX,
+		"block_size_tbl[] is not the correct size.");
 
-	switch (format) {
-		case VTF_IMAGE_FORMAT_RGBA8888:
-		case VTF_IMAGE_FORMAT_ABGR8888:
-		case VTF_IMAGE_FORMAT_ARGB8888:
-		case VTF_IMAGE_FORMAT_BGRA8888:
-		case VTF_IMAGE_FORMAT_BGRx8888:
-		case VTF_IMAGE_FORMAT_UVWQ8888:
-		case VTF_IMAGE_FORMAT_UVLX8888:
-			// 32-bit color formats.
-			minBlockSize = 4;
-			break;
-
-		case VTF_IMAGE_FORMAT_RGB888:
-		case VTF_IMAGE_FORMAT_BGR888:
-		case VTF_IMAGE_FORMAT_RGB888_BLUESCREEN:
-		case VTF_IMAGE_FORMAT_BGR888_BLUESCREEN:
-			// 24-bit color formats.
-			minBlockSize = 3;
-			break;
-
-		case VTF_IMAGE_FORMAT_RGB565:
-		case VTF_IMAGE_FORMAT_IA88:
-		case VTF_IMAGE_FORMAT_BGR565:
-		case VTF_IMAGE_FORMAT_BGRx5551:
-		case VTF_IMAGE_FORMAT_BGRA4444:
-		case VTF_IMAGE_FORMAT_BGRA5551:
-		case VTF_IMAGE_FORMAT_UV88:
-			// 16-bit color formats.
-			minBlockSize = 2;
-			break;
-
-		case VTF_IMAGE_FORMAT_I8:
-		case VTF_IMAGE_FORMAT_P8:
-		case VTF_IMAGE_FORMAT_A8:
-			// 8-bit color formats.
-			minBlockSize = 1;
-			break;
-
-		case VTF_IMAGE_FORMAT_DXT1:
-		case VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA:
-			// 16 pixels compressed into 64 bits. (4bpp)
-			// Minimum block size is 8 bytes.
-			minBlockSize = 8;
-			break;
-
-		case VTF_IMAGE_FORMAT_DXT3:
-		case VTF_IMAGE_FORMAT_DXT5:
-			// 16 pixels compressed into 128 bits. (8bpp)
-			// Minimum block size is 16 bytes.
-			minBlockSize = 16;
-			break;
-
-		case VTF_IMAGE_FORMAT_RGBA16161616F:
-		case VTF_IMAGE_FORMAT_RGBA16161616:
-			// 64-bit color formats.
-			minBlockSize = 8;
-			break;
-
-		default:
-			// Not supported.
-			minBlockSize = 0;
-			break;
+	if (format < 0 || format >= ARRAY_SIZE(block_size_tbl)) {
+		// Invalid format.
+		return 0;
 	}
 
-	return minBlockSize;
+	return block_size_tbl[format];
 }
 
 /**
