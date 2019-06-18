@@ -180,6 +180,7 @@ unsigned int ValveVTFPrivate::calcImageSize(VTF_IMAGE_FORMAT format, unsigned in
 	static_assert(ARRAY_SIZE(mul_tbl) == VTF_IMAGE_FORMAT_MAX,
 		"mul_tbl[] is not the correct size.");
 
+	assert(format >= 0 && format < ARRAY_SIZE(mul_tbl));
 	if (format < 0 || format >= ARRAY_SIZE(mul_tbl)) {
 		// Invalid format.
 		return 0;
@@ -241,6 +242,7 @@ unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 	static_assert(ARRAY_SIZE(block_size_tbl) == VTF_IMAGE_FORMAT_MAX,
 		"block_size_tbl[] is not the correct size.");
 
+	assert(format >= 0 && format < ARRAY_SIZE(block_size_tbl));
 	if (format < 0 || format >= ARRAY_SIZE(block_size_tbl)) {
 		// Invalid format.
 		return 0;
