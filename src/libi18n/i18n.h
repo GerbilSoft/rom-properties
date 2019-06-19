@@ -14,6 +14,11 @@
 #define RP_I18N_DOMAIN "rom-properties"
 #define DEFAULT_TEXT_DOMAIN RP_I18N_DOMAIN
 
+#ifdef _WIN32
+# include <tchar.h>
+# define LIBGNUINTL_DLL _T("libgnuintl-8.dll")
+#endif /* _WIN32 */
+
 /**
  * i18n macros for gettext().
  * All strings should be compile-time constants.

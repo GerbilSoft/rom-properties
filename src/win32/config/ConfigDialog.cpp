@@ -425,7 +425,6 @@ int CALLBACK rp_show_config_dialog(
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
-		#define LIBGNUINTL_DLL _T("libgnuintl-8.dll")
 		MessageBox(hWnd,
 			LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
 			_T("This build of rom-properties has localization enabled,\n")

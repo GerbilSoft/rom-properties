@@ -226,12 +226,11 @@ int RP_C_API main(int argc, char *argv[])
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
-		#define LIBGNUINTL_DLL "libgnuintl-8.dll"
-		fputs("*** ERROR: " LIBGNUINTL_DLL " could not be loaded.\n\n"
-			"This build of rom-properties has localization enabled,\n"
-			"which requires the use of GNU gettext.\n\n"
-			"Please redownload rom-properties and copy the\n"
-			LIBGNUINTL_DLL " file to the installation directory.\n",
+		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
+			_T("This build of rom-properties has localization enabled,\n")
+			_T("which requires the use of GNU gettext.\n\n")
+			_T("Please redownload rom-properties and copy the\n")
+			LIBGNUINTL_DLL _T(" file to the installation directory.\n"),
 			stderr);
 		return EXIT_FAILURE;
 	}
