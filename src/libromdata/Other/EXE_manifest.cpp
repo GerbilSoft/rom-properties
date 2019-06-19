@@ -91,12 +91,13 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 	// Read the entire resource into memory.
 	// Assuming a limit of 64 KB for manifests.
-	if (f_manifest->size() > 65536) {
+	const size_t xml_size = static_cast<size_t>(f_manifest->size());
+	if (xml_size > 65536) {
 		// Manifest is too big.
+		// (Or, it's negative, and wraps around due to unsigned.)
 		f_manifest->unref();
 		return -ENOMEM;
 	}
-	unsigned int xml_size = static_cast<unsigned int>(f_manifest->size());
 	unique_ptr<char[]> xml(new char[xml_size+1]);
 	size_t size = f_manifest->read(xml.get(), xml_size);
 	f_manifest->unref();
