@@ -52,6 +52,7 @@ using namespace LibRpBase;
 #include "Console/DreamcastSave.hpp"
 #include "Console/GameCubeSave.hpp"
 #include "Console/PlayStationSave.hpp"
+#include "Handheld/NintendoDS.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 
 // DirectDraw Surface structs.
@@ -112,7 +113,7 @@ struct ImageDecoderTest_mode
 };
 
 // Maximum file size for images.
-static const size_t MAX_DDS_IMAGE_FILESIZE = 3*1024*1024;
+static const size_t MAX_DDS_IMAGE_FILESIZE = 4*1024*1024;
 static const size_t MAX_PNG_IMAGE_FILESIZE = 2*1024*1024;
 
 class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
@@ -453,6 +454,10 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// Sony PlayStation save file
 		filetype = "PSV";
 		m_romData = new PlayStationSave(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
+		// Nintendo DS ROM image
+		filetype = "NDS";
+		m_romData = new NintendoDS(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -548,6 +553,11 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
 		fn_ctor = [](IRpFile *file) { return new PlayStationSave(file); };
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
+		// Nintendo DS ROM image
+		// NOTE: Increased iterations due to smaller files.
+		max_iterations *= 10;
+		fn_ctor = [](IRpFile *file) { return new NintendoDS(file); };
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -1228,6 +1238,46 @@ INSTANTIATE_TEST_CASE_P(PSV, ImageDecoderTest,
 			"Misc/BASCUS-949003034323235383937.PSV.gz",
 			"Misc/BASCUS-949003034323235383937.png",
 			RomData::IMG_INT_ICON))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// NDS tests.
+// TODO: Use something like GcnFstTest that uses an array of filenames
+// to generate tests at runtime instead of compile-time?
+#define NDS_ICON_TEST(file) ImageDecoderTest_mode( \
+			"NDS/" file ".header-icon.nds.gz", \
+			"NDS/" file ".header-icon.png", \
+			RomData::IMG_INT_ICON)
+
+INSTANTIATE_TEST_CASE_P(NDS, ImageDecoderTest,
+	::testing::Values(
+		NDS_ICON_TEST("A2DE01"),
+		NDS_ICON_TEST("A3YE8P"),
+		NDS_ICON_TEST("AIZE01"),
+		NDS_ICON_TEST("AKWE01"),
+		NDS_ICON_TEST("AMHE01"),
+		NDS_ICON_TEST("ANDE01"),
+		NDS_ICON_TEST("ANME01"),
+		NDS_ICON_TEST("AOSE01"),
+		NDS_ICON_TEST("APAE01"),
+		NDS_ICON_TEST("ASCE8P"),
+		NDS_ICON_TEST("ASME01"),
+		NDS_ICON_TEST("ATKE01"),
+		NDS_ICON_TEST("AY9E8P"),
+		NDS_ICON_TEST("AYWE01"),
+		NDS_ICON_TEST("BFUE41"),
+		NDS_ICON_TEST("BOOE08"),
+		NDS_ICON_TEST("BSLEWR"),
+		NDS_ICON_TEST("BXSE8P"),
+		NDS_ICON_TEST("CBQEG9"),
+		NDS_ICON_TEST("COLE8P"),
+		NDS_ICON_TEST("CS3E8P"),
+		NDS_ICON_TEST("DMFEA4"),
+		NDS_ICON_TEST("DSYESZ"),
+		NDS_ICON_TEST("NTRJ01.Tetris-THQ"),
+		NDS_ICON_TEST("VSOE8P"),
+		NDS_ICON_TEST("YDLE20"),
+		NDS_ICON_TEST("YLZE01"),
+		NDS_ICON_TEST("YWSE8P"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
