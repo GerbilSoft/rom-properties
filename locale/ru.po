@@ -4887,87 +4887,87 @@ msgid "DSi Region Code"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1273
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Common Key"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1274
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "AES Slot B"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1275
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "AES Slot C"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1276
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "SD Card"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1277
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "eMMC Access"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1278
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Game Card Power On"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1279
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Shared2 File"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1280
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Sign JPEG for Launcher"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1281
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Game Card NTR Mode"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1282
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "SSL Client Cert"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1283
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Sign JPEG for User"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1284
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Photo Read Access"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1285
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Photo Write Access"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1286
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "SD Card Read Access"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1287
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "SD Card Write Access"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1288
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Game Card Save Read Access"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1289
-msgctxt "NintendoDS|DSi_Permissions"
+msgctxt "NintendoDS|DSi_Flags"
 msgid "Game Card Save Write Access"
 msgstr ""
 

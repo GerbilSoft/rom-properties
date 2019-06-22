@@ -161,6 +161,12 @@ class NintendoDSPrivate : public RomDataPrivate
 		 */
 		static vector<const char*> ndsRegionToGameTDB(
 			uint8_t ndsRegion, uint32_t dsiRegion, char idRegion);
+
+		/**
+		 * Get the DSi flags string vector.
+		 * @return DSi flags string vector.
+		 */
+		static vector<vector<string> > *getDSiFlagsStringVector(void);
 };
 
 /** NintendoDSPrivate **/
@@ -632,6 +638,39 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 	}
 
 	return ret;
+}
+
+/**
+ * Get the DSi flags string vector.
+ * @return DSi flags string vector.
+ */
+vector<vector<string> > *NintendoDSPrivate::getDSiFlagsStringVector(void)
+{
+	static const char *const dsi_flags_bitfield_names[] = {
+		// tr: Uses the DSi-specific touchscreen protocol.
+		NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
+		// tr: Game requires agreeing to the Nintendo online services agreement.
+		NOP_C_("NintendoDS|DSi_Flags", "Require EULA"),
+		// tr: Custom icon is used from the save file.
+		NOP_C_("NintendoDS|DSi_Flags", "Custom Icon"),
+		// tr: Game supports Nintendo Wi-Fi Connection.
+		NOP_C_("NintendoDS|DSi_Flags", "Nintendo WFC"),
+		NOP_C_("NintendoDS|DSi_Flags", "DS Wireless"),
+		NOP_C_("NintendoDS|DSi_Flags", "NDS Icon SHA-1"),
+		NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
+		NOP_C_("NintendoDS|DSi_Flags", "Developer"),
+	};
+
+	// Convert to vector<vector<string> > for RFT_LISTDATA.
+	auto vv_dsi_flags = new vector<vector<string> >(ARRAY_SIZE(dsi_flags_bitfield_names));
+	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
+		auto &data_row = vv_dsi_flags->at(i);
+		data_row.push_back(
+			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Flags",
+				dsi_flags_bitfield_names[i]));
+	}
+
+	return vv_dsi_flags;
 }
 
 /** NintendoDS **/
@@ -1138,6 +1177,18 @@ int NintendoDS::loadFieldData(void)
 
 	if (!(hw_type & NintendoDSPrivate::DS_HW_DSi)) {
 		// Not a DSi-enhanced or DSi-exclusive ROM image.
+		if (romHeader->dsi.flags != 0) {
+			// DSi flags.
+			// NOTE: These are present in NDS games released after the DSi,
+			// even if the game isn't DSi-enhanced.
+			d->fields->addTab("DSi");
+			auto vv_dsi_flags = d->getDSiFlagsStringVector();
+			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
+			params.headers = nullptr;
+			params.list_data = vv_dsi_flags;
+			params.mxd.checkboxes = romHeader->dsi.flags;
+			d->fields->addField_listData(C_("NintendoDS", "Flags"), &params);
+		}
 		return static_cast<int>(d->fields->count());
 	}
 
@@ -1315,31 +1366,8 @@ int NintendoDS::loadFieldData(void)
 	params.mxd.checkboxes = le32_to_cpu(romHeader->dsi.access_control);
 	d->fields->addField_listData(C_("NintendoDS", "Permissions"), &params);
 
-	// Flags.
-	static const char *const dsi_flags_bitfield_names[] = {
-		// tr: Uses the DSi-specific touchscreen protocol.
-		NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
-		// tr: Game requires agreeing to the Nintendo online services agreement.
-		NOP_C_("NintendoDS|DSi_Flags", "Require EULA"),
-		// tr: Custom icon is used from the save file.
-		NOP_C_("NintendoDS|DSi_Flags", "Custom Icon"),
-		// tr: Game supports Nintendo Wi-Fi Connection.
-		NOP_C_("NintendoDS|DSi_Flags", "Nintendo WFC"),
-		NOP_C_("NintendoDS|DSi_Flags", "DS Wireless"),
-		NOP_C_("NintendoDS|DSi_Flags", "NDS Icon SHA-1"),
-		NOP_C_("NintendoDS|DSi_Flags", "NDS Header RSA"),
-		NOP_C_("NintendoDS|DSi_Flags", "Developer"),
-	};
-
-	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_dsi_flags = new vector<vector<string> >(ARRAY_SIZE(dsi_flags_bitfield_names));
-	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
-		auto &data_row = vv_dsi_flags->at(i);
-		data_row.push_back(
-			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
-				dsi_flags_bitfield_names[i]));
-	}
-
+	// DSi flags.
+	auto vv_dsi_flags = d->getDSiFlagsStringVector();
 	params.headers = nullptr;
 	params.list_data = vv_dsi_flags;
 	params.mxd.checkboxes = romHeader->dsi.flags;
