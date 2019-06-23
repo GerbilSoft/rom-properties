@@ -85,15 +85,16 @@ button.
 |:-------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | NES                       |       Yes      |    No    |       N/A       |       No       |
 | Super NES                 |       Yes      |    No    |       N/A       |       No       |
-| Microsoft Xbox Game Disc  |       Yes      |    Yes   |       Icon      |       No       |
+| Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |       No       |
 | Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |        No       |       No       |
+| Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |       No       |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
-| Nintendo GameCube         |       Yes      |    Yes   |      Banner     |      Disc      |
-| Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |      Disc      |
+| Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |  Disc, Covers  |
+| Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |       No       |
 | Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A      |
-| Nintendo Wii (Discs)      |       Yes      |    Yes   |        No       |  Disc, Covers  |
-| Nintendo Wii (WADs)       |       Yes      |    Yes   |       Yes*      |  Title, Covers |
+| Nintendo Wii Discs        |       Yes      |    Yes   |        No       |  Disc, Covers  |
+| Nintendo Wii WADs         |       Yes      |    Yes   |       Yes*      |  Title, Covers |
 | Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A      |
 | Nintendo Wii U            |       Yes      |    No    |        No       |  Disc, Covers  |
 | Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |       No       |
