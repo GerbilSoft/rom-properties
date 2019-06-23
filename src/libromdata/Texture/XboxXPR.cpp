@@ -416,8 +416,8 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 		{16, ImageDecoder::PXF_RGBA4444,	0, false},	// 0x3E: Linear RGBA4444
 		{32, ImageDecoder::PXF_ABGR8888,	0, false},	// 0x3F: Linear ABGR8888
 
-		{32, ImageDecoder::PXF_BGRA8888,	0, false},	// 0x3F: Linear BGRA8888
-		{32, ImageDecoder::PXF_RGBA8888,	0, false},	// 0x3F: Linear RGBA8888
+		{32, ImageDecoder::PXF_BGRA8888,	0, false},	// 0x40: Linear BGRA8888
+		{32, ImageDecoder::PXF_RGBA8888,	0, false},	// 0x41: Linear RGBA8888
 	};
 
 	if (xpr0Header.pixel_format >= ARRAY_SIZE(mode_tbl)) {
