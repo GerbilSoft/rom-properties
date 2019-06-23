@@ -20,11 +20,12 @@ using namespace LibRpBase;
 #if defined(_MSC_VER) && _MSC_VER < 1700
 // MSVC 2012 added inttypes.h.
 // Older versions don't have it.
-#define PRIu64 "I64u"
-#define PRIX64 "I64X"
+# define PRIu64 "I64u"
+# define PRIX64 "I64X"
+# define PRId64 "I64d"
 #else
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
+# define __STDC_FORMAT_MACROS
+# include <inttypes.h>
 #endif
 
 // C++ includes.

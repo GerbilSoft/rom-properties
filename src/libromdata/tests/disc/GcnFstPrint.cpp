@@ -89,7 +89,7 @@ int RP_C_API main(int argc, char *argv[])
 		fclose(f);
 		return EXIT_FAILURE;
 	}
-	fseek(f, 0, SEEK_SET);
+	fseeko(f, 0, SEEK_SET);
 
 	// Read the FST into memory.
 	uint8_t *fstData = static_cast<uint8_t*>(malloc(filesize));

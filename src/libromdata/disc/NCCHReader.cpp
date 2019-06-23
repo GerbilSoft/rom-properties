@@ -680,7 +680,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 
 			// Decrypt the data.
 			// FIXME: Round up to 16 if a short read occurred?
-			ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), static_cast<unsigned int>(ret_sz));
+			ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), ret_sz);
 		}
 
 		d->pos += static_cast<uint32_t>(ret_sz);

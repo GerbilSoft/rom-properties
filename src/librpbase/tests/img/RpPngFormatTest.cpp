@@ -388,7 +388,7 @@ void RpPngFormatTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src
 	// Calculate the CRC32.
 	// This includes the chunk name and data section.
 	const uint32_t chunk_crc = static_cast<uint32_t>(
-		crc32(0, reinterpret_cast<const Bytef*>(&ihdr_full.chunk_name),
+		crc32(0, reinterpret_cast<const Bytef*>(ihdr_full.chunk_name),
 		      sizeof(ihdr_full.chunk_name) + sizeof(ihdr_full.data)));
 
 	// Byteswap the values.
@@ -665,7 +665,7 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 		// each pixel is a single byte.
 		const uint8_t *pSrc = static_cast<const uint8_t*>(img->scanLine(y));
 		xor_result |= memcmp(pSrc, pBits, width);
-		pBits += width;
+		pBits += width;	// FIXME: This might skip the mod8...
 
 		if (mod8 > 0) {
 			// Image isn't a multiple of 8 pixels wide.

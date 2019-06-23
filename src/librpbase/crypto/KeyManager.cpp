@@ -175,7 +175,7 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 
 	// Check the value length.
 	// TODO: Check for <= 0?
-	const int value_len = static_cast<int>(strlen(value));
+	const size_t value_len = strlen(value);
 	if (value_len > 255) {
 		// Key is long.
 		return 1;
@@ -185,8 +185,8 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	uint8_t len = static_cast<uint8_t>(value_len / 2);
 
 	// Parse the value.
-	const unsigned int vKeys_start_pos = static_cast<unsigned int>(vKeys.size());
-	unsigned int vKeys_pos = vKeys_start_pos;
+	const size_t vKeys_start_pos = vKeys.size();
+	size_t vKeys_pos = vKeys_start_pos;
 	// Reserve space for half of the key string.
 	// Key string is ASCII hex, so two characters make up one byte.
 	vKeys.resize(vKeys.size() + len);

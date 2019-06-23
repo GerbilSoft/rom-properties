@@ -31,7 +31,7 @@ struct AesCipherTest_mode
 {
 	// Cipher settings.
 	IAesCipher::ChainingMode chainingMode;
-	unsigned int key_len;
+	size_t key_len;
 
 	// Cipher text.
 	const uint8_t *cipherText;	// Cipher text.
@@ -39,7 +39,7 @@ struct AesCipherTest_mode
 
 	AesCipherTest_mode(
 		IAesCipher::ChainingMode chainingMode,
-		unsigned int key_len,
+		size_t key_len,
 		const uint8_t *cipherText, size_t cipherText_len)
 		: chainingMode(chainingMode)
 		, key_len(key_len)

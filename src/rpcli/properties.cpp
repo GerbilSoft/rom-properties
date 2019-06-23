@@ -253,12 +253,12 @@ public:
 		/** Calculate the column widths. **/
 
 		// Column names
-		unique_ptr<unsigned int[]> colSize(new unsigned int[col_count]());
+		unique_ptr<size_t[]> colSize(new size_t[col_count]());
 		unsigned int totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
 			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
-				colSize[i] = static_cast<unsigned int>(it->size());
+				colSize[i] = it->size();
 			}
 		}
 
@@ -274,14 +274,14 @@ public:
 				size_t prev_pos = 0;
 				size_t cur_pos;
 				do {
-					unsigned int cur_sz;
+					size_t cur_sz;
 					cur_pos = jt->find('\n', prev_pos);
 					if (cur_pos == string::npos) {
 						// End of string.
-						cur_sz = (unsigned int)(str_sz - prev_pos);
+						cur_sz = str_sz - prev_pos;
 					} else {
 						// Found a newline.
-						cur_sz = (unsigned int)(cur_pos - prev_pos);
+						cur_sz = cur_pos - prev_pos;
 						prev_pos = cur_pos + 1;
 						nl_row++;
 					}
