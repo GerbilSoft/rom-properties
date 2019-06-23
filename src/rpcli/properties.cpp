@@ -170,7 +170,7 @@ public:
 		const unsigned int perRow = static_cast<unsigned int>(
 			(bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4));
 
-		unique_ptr<unsigned int[]> colSize(new unsigned int[perRow]());
+		unique_ptr<size_t[]> colSize(new size_t[perRow]());
 		unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
 		assert(count <= 32);
 		if (count > 32)
@@ -183,7 +183,7 @@ public:
 			if (name.empty())
 				continue;
 
-			colSize[col] = max(static_cast<unsigned int>(name.size()), colSize[col]);
+			colSize[col] = max(name.size(), colSize[col]);
 			col++;
 			if (col == perRow) {
 				col = 0;
@@ -383,7 +383,7 @@ public:
 			// Right now we're assuming that at least one column is a single line.
 			// If all columns are multi-line, then everything will look like it's
 			// all single-line entries.
-			memset(linePos.get(), 0, col_count * sizeof(unsigned int));
+			memset(linePos.get(), 0, col_count * sizeof(linePos[0]));
 			// NOTE: nl_count[row] is 0 for single-line items.
 			for (int line = nl_count[row]; line >= 0; line--) {
 				if (!skipFirstNL) {
