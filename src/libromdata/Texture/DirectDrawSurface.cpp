@@ -1162,7 +1162,7 @@ int DirectDrawSurface::loadFieldData(void)
 
 	if (d->dxgi_format != 0) {
 		// DX10 texture format.
-		const char *texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
+		const char *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
 		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
 				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->dxgi_format)));
