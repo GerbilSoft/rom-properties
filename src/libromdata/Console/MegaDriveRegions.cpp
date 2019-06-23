@@ -46,6 +46,7 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 			// 'E'. This is probably Europe.
 			// If interpreted as a hex code, this would be
 			// Asia, USA, and Europe, with Japan excluded.
+			// TODO: Check for other regions? ("EUJ", etc.)
 			ret = MD_REGION_EUROPE;
 		} else if (code >= 'A' && code <= 'F') {
 			// Letter code from 'A' to 'F'.
