@@ -730,4 +730,22 @@
       <match value="XPR0" type="string" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="image/x-xbox-xpr1">
+    <comment>Microsoft Xbox XPR0 texture archive</comment>
+    <sub-class-of type="image/x-generic"/>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.xpr"/>
+    <magic priority="75">
+      <match value="XPR1" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-xbox-xpr2">
+    <comment>Microsoft Xbox XPR2 texture archive</comment>
+    <sub-class-of type="image/x-generic"/>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.xpr"/>
+    <magic priority="75">
+      <match value="XPR2" type="string" offset="0"/>
+    </magic>
+  </mime-type>
 </mime-info>

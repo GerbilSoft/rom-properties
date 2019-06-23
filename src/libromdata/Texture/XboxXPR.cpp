@@ -51,7 +51,8 @@ class XboxXPRPrivate : public RomDataPrivate
 		enum XPRType {
 			XPR_TYPE_UNKNOWN	= -1,	// Unknown image type.
 			XPR_TYPE_XPR0		= 0,	// XPR0
-			XPR_TYPE_XPR1		= 1,	// XPR1
+			XPR_TYPE_XPR1		= 1,	// XPR1 (archive)
+			XPR_TYPE_XPR2		= 2,	// XPR2 (archive)
 
 			XPR_TYPE_MAX
 		};
@@ -612,8 +613,11 @@ int XboxXPR::isRomSupported_static(const DetectInfo *info)
 		// This is an XPR0 image.
 		return XboxXPRPrivate::XPR_TYPE_XPR0;
 	} else if (xpr0Header->magic == cpu_to_be32(XBOX_XPR1_MAGIC)) {
-		// This is an XPR1 image.
+		// This is an XPR1 archive.
 		return XboxXPRPrivate::XPR_TYPE_XPR1;
+	} else if (xpr0Header->magic == cpu_to_be32(XBOX_XPR2_MAGIC)) {
+		// This is an XPR2 archive.
+		return XboxXPRPrivate::XPR_TYPE_XPR2;
 	}
 
 	// Not supported.
@@ -778,7 +782,7 @@ int XboxXPR::loadFieldData(void)
 
 	// Type
 	static const char type_tbl[][8] = {
-		"XPR0", "XPR1"
+		"XPR0", "XPR1", "XPR2"
 	};
 	if (d->xprType > XboxXPRPrivate::XPR_TYPE_UNKNOWN &&
 	    d->xprType < ARRAY_SIZE(type_tbl))
@@ -930,6 +934,7 @@ int XboxXPR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 			*pImage = d->loadXboxXPR0Image();
 			break;
 		case XboxXPRPrivate::XPR_TYPE_XPR1:
+		case XboxXPRPrivate::XPR_TYPE_XPR2:
 			// TODO
 			*pImage = nullptr;
 			return -EIO;
