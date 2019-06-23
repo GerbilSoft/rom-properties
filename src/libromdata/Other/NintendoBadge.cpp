@@ -436,7 +436,7 @@ const char *const *NintendoBadge::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".prb",	// PRBS file
-		".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB)
+		".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
 
 		nullptr
 	};
