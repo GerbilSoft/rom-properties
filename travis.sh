@@ -32,7 +32,7 @@ case "$OSTYPE" in
 			-DBUILD_XFCE=ON \
 			-DBUILD_XFCE3=OFF \
 			-DBUILD_GNOME=ON \
-			-DBUILD_MATE=OFF
+			-DBUILD_MATE=OFF \
 			|| exit 1
 esac
 
