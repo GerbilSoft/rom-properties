@@ -261,9 +261,6 @@ if(WIN32)
             list(APPEND MINIZIP_SRC "mz_crypt_win32.c")
         endif()
     endif()
-
-    # rom-properties: Needs Windows 2000 or later for FSCTL_GET_REPARSE_POINT.
-    ADD_DEFINITIONS(-D_WIN32_WINNT=0x0600)
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     add_definitions(-DMZ_WINRT_API)
