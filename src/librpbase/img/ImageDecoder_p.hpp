@@ -403,9 +403,11 @@ inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
 	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32 = 0xFF000000U;
-	px32 |= ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
-		((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
-		((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+	px32 |= ((px16 << 8) & 0xF80000) |	// Red
+		((px16 << 3) & 0x0000F8);	// Blue
+	px32 |=  (px32 >> 5) & 0x070007;	// Expand from 5-bit to 8-bit
+	// Green
+	px32 |= (((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300));
 	return px32;
 }
 
@@ -419,9 +421,11 @@ inline uint32_t ImageDecoderPrivate::BGR565_to_ARGB32(uint16_t px16)
 	// RGB565: BBBBBGGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32 = 0xFF000000U;
-	px32 |= ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
-		((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
-		((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
+	px32 |= ((px16 << 19) & 0xF80000) |	// Red
+		((px16 >>  8) & 0x0000F8);	// Blue
+	px32 |=  (px32 >>  5) & 0x070007;	// Expand from 5-bit to 8-bit
+	// Green
+	px32 |= (((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300));
 	return px32;
 }
 
@@ -435,9 +439,10 @@ inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
 	// ARGB1555: ARRRRRGG GGGBBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32;
-	px32 = ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
-	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
-	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+	px32 = (((px16 << 9) & 0xF80000)) |	// Red
+	       (((px16 << 6) & 0x00F800)) |	// Green
+	       (((px16 << 3) & 0x0000F8));	// Blue
+	px32 |= ((px32 >> 5) & 0x070707);	// Expand from 5-bit to 8-bit
 	// Alpha channel.
 	if (px16 & 0x8000) {
 		px32 |= 0xFF000000U;
@@ -455,9 +460,10 @@ inline uint32_t ImageDecoderPrivate::ABGR1555_to_ARGB32(uint16_t px16)
 	// ABGR1555: ABBBBBGG GGGRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32;
-	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
-	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
-	       ((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
+	px32 = (((px16 << 19) & 0xF80000)) |	// Red
+	       (((px16 <<  6) & 0x00F800)) |	// Green
+	       (((px16 >>  7) & 0x0000F8));	// Blue
+	px32 |= ((px32 >>  5) & 0x070707);	// Expand from 5-bit to 8-bit
 	// Alpha channel.
 	if (px16 & 0x8000) {
 		px32 |= 0xFF000000U;
@@ -475,9 +481,10 @@ inline uint32_t ImageDecoderPrivate::RGBA5551_to_ARGB32(uint16_t px16)
 	// RGBA5551: RRRRRGGG GGBBBBBA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32;
-	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
-	       ((((px16 <<  5) & 0x00F800) | ((px16      ) & 0x000700))) |	// Green
-	       ((((px16 <<  2) & 0x0000F8) | ((px16 >>  3) & 0x000007)));	// Blue
+	px32 = (((px16 << 8) & 0xF80000)) |	// Red
+	       (((px16 << 5) & 0x00F800)) |	// Green
+	       (((px16 << 2) & 0x0000F8));	// Blue
+	px32 |= ((px32 >> 5) & 0x070707);	// Expand from 5-bit to 8-bit
 	// Alpha channel.
 	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
@@ -495,9 +502,10 @@ inline uint32_t ImageDecoderPrivate::BGRA5551_to_ARGB32(uint16_t px16)
 	// BGRA5551: BBBBBGGG GGRRRRRA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32;
-	px32 = ((((px16 << 18) & 0xF80000) | ((px16 << 13) & 0x070000))) |	// Red
-	       ((((px16 <<  5) & 0x00F800) | ((px16      ) & 0x000700))) |	// Green
-	       ((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
+	px32 = (((px16 << 18) & 0xF80000)) |	// Red
+	       (((px16 <<  5) & 0x00F800)) |	// Green
+	       (((px16 >>  8) & 0x0000F8));	// Blue
+	px32 |= ((px32 >>  5) & 0x070707);	// Expand from 5-bit to 8-bit
 	// Alpha channel.
 	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
@@ -701,14 +709,15 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 		// BGR555: xRRRRRGG GGGBBBBB
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		px32  = 0xFF000000U;	// no alpha channel
-		px32 |= (((px16 << 3) & 0x0000F8) | ((px16 >> 2) & 0x000007));	// B
-		px32 |= (((px16 << 6) & 0x00F800) | ((px16 << 1) & 0x000700));	// G
-		px32 |= (((px16 << 9) & 0xF80000) | ((px16 << 4) & 0x070000));	// R
+		px32 |= ((px16 << 3) & 0x0000F8);	// Blue
+		px32 |= ((px16 << 6) & 0x00F800);	// Green
+		px32 |= ((px16 << 9) & 0xF80000);	// Red
+		px32 |= ((px32 >> 5) & 0x070707);	// Expand from 5-bit to 8-bit
 	} else {
 		// RGB4A3
-		px32  =  (px16 & 0x000F);	// B
-		px32 |= ((px16 & 0x00F0) << 4);	// G
-		px32 |= ((px16 & 0x0F00) << 8);	// R
+		px32  =  (px16 & 0x000F);	// Blue
+		px32 |= ((px16 & 0x00F0) << 4);	// Green
+		px32 |= ((px16 & 0x0F00) << 8);	// Red
 		px32 |= (px32 << 4);		// Copy to the top nybble.
 
 		// Calculate the alpha channel.
@@ -753,9 +762,11 @@ inline uint32_t ImageDecoderPrivate::RGB565_A4_to_ARGB32(uint16_t px16, uint8_t 
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	a4 &= 0x0F;
 	uint32_t px32 = (a4 << 24) | (a4 << 28);				// Alpha
-	px32 |= ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
-		((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
-		((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+	px32 |= ((px16 << 8) & 0xF80000) |	// Red
+		((px16 << 3) & 0x0000F8);	// Blue
+	px32 |=  (px32 >> 5) & 0x070007;	// Expand from 5-bit to 8-bit
+	// Green
+	px32 |= (((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300));
 	return px32;
 }
 
@@ -771,9 +782,10 @@ inline uint32_t ImageDecoderPrivate::RGB555_to_ARGB32(uint16_t px16)
 	// RGB555: xRRRRRGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32 = 0xFF000000U;
-	px32 |= ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
-		((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
-		((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+	px32 |= ((px16 << 9) & 0xF80000) |	// Red
+		((px16 << 6) & 0x00F800) |	// Green
+		((px16 << 3) & 0x0000F8);	// Blue
+	px32 |= ((px32 >> 5) & 0x070707);	// Expand from 5-bit to 8-bit
 	return px32;
 }
 
@@ -787,9 +799,10 @@ inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
 	// BGR555: xBBBBBGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32 = 0xFF000000U;
-	px32 |= ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
-		((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
-		((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
+	px32 |= ((px16 << 19) & 0xF80000) |	// Red
+		((px16 <<  6) & 0x00F800) |	// Green
+		((px16 >>  7) & 0x0000F8);	// Blue
+	px32 |= ((px32 >>  5) & 0x070707);	// Expand from 5-bit to 8-bit
 	return px32;
 }
 
