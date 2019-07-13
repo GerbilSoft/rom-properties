@@ -1,10 +1,10 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit fbfd4e82f7a3e0aa3b39fa97958c8d25f90db940
-Version 2.8.8.
+commit 2cbffcdb476d7ef12b29a635aed37a221fc3945d
+Fix BUILD_BYPRODUCTS argument for zlib
 
-Tag: 2.8.8
+Tag: 2.8.9 (+1 commit)
 
 The following changes have been made to the original:
 
