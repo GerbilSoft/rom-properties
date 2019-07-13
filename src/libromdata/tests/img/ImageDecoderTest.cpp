@@ -54,6 +54,7 @@ using namespace LibRpBase;
 #include "Console/PlayStationSave.hpp"
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
+#include "Other/NintendoBadge.hpp"
 
 // DirectDraw Surface structs.
 #include "Texture/dds_structs.h"
@@ -458,6 +459,11 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// Nintendo DS ROM image
 		filetype = "NDS";
 		m_romData = new NintendoDS(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz")) {
+		// Nintendo Badge Arcade texture
+		filetype = "NintendoBadge";
+		m_romData = new NintendoBadge(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -558,6 +564,12 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
 		fn_ctor = [](IRpFile *file) { return new NintendoDS(file); };
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz")) {
+		// Nintendo Badge Arcade texture
+		// NOTE: Increased iterations due to smaller files.
+		max_iterations *= 10;
+		fn_ctor = [](IRpFile *file) { return new NintendoBadge(file); };
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -604,6 +616,19 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 		if (!ISALNUM(*iter)) {
 			*iter = '_';
 		}
+	}
+
+	// Append the image type to allow checking multiple types
+	// of images in the same file.
+	static const char s_imgType[][8] = {
+		"_Icon", "_Banner", "_Media", "_Image"
+	};
+	static_assert(ARRAY_SIZE(s_imgType) == RomData::IMG_INT_MAX - RomData::IMG_INT_MIN + 1,
+		"s_imgType[] needs to be updated.");
+	assert(info.param.imgType >= RomData::IMG_INT_MIN);
+	assert(info.param.imgType <= RomData::IMG_INT_MAX);
+	if (info.param.imgType >= RomData::IMG_INT_MIN && info.param.imgType <= RomData::IMG_INT_MAX) {
+		suffix += s_imgType[info.param.imgType - RomData::IMG_INT_MIN];
 	}
 
 	// TODO: Convert to ASCII?
@@ -1278,6 +1303,30 @@ INSTANTIATE_TEST_CASE_P(NDS, ImageDecoderTest,
 		NDS_ICON_TEST("YDLE20"),
 		NDS_ICON_TEST("YLZE01"),
 		NDS_ICON_TEST("YWSE8P"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// NintendoBadge tests.
+// TODO: Use something like GcnFstTest that uses an array of filenames
+// to generate tests at runtime instead of compile-time?
+#define BADGE_IMAGE_ONLY_TEST(file) ImageDecoderTest_mode( \
+			"Misc/" file ".gz", \
+			"Misc/" file ".image.png", \
+			RomData::IMG_INT_IMAGE)
+#define BADGE_ICON_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"Misc/" file ".gz", \
+			"Misc/" file ".icon.png", \
+			RomData::IMG_INT_ICON), \
+			BADGE_IMAGE_ONLY_TEST(file)
+INSTANTIATE_TEST_CASE_P(NintendoBadge, ImageDecoderTest,
+	::testing::Values(
+		BADGE_ICON_IMAGE_TEST("MroKrt8.cab"),
+		BADGE_IMAGE_ONLY_TEST("MroKrt8_Chara_Luigi000.prb"),
+		BADGE_IMAGE_ONLY_TEST("MroKrt8_Chara_Mario000.prb"),
+		BADGE_IMAGE_ONLY_TEST("MroKrt8_Chara_Peach000.prb"),
+		BADGE_IMAGE_ONLY_TEST("Pr_Animal_12Sc_edit.prb"),
+		BADGE_ICON_IMAGE_TEST("Pr_Animal_17Sc_mset.prb"),
+		BADGE_ICON_IMAGE_TEST("Pr_FcRemix_2_drM_item05.prb"),
+		BADGE_ICON_IMAGE_TEST("Pr_FcRemix_2_punch_char01_3_Sep.prb"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
