@@ -610,10 +610,10 @@ static void InitDialog(HWND hDlg)
 		// 32-bit system.
 		if (!bHasMsvc32) {
 			// 32-bit MSVCRT is missing.
-			line1 = _T("The 32-bit MSVC 2017 runtime is not installed.");
-			line2 = _T("You can download the 32-bit MSVC 2017 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/15/release/vc_redist.x86.exe</a>");
+			line1 = _T("The 32-bit MSVC 2015-2019 runtime is not installed.");
+			line2 = _T("You can download the 32-bit MSVC 2015-2019 runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>");
 		}
 	} else
 #endif /* !_WIN64 */
@@ -622,24 +622,24 @@ static void InitDialog(HWND hDlg)
 		const bool bHasMsvc64 = CheckMsvc(true);
 		if (!bHasMsvc32 && !bHasMsvc64) {
 			// Both 32-bit and 64-bit MSVCRT are missing.
-			line1 = _T("The 32-bit and 64-bit MSVC 2017 runtimes are not installed.");
-			line2 = _T("You can download the MSVC 2017 runtime at:\n")
-				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/15/release/vc_redist.x86.exe</a>\n")
-				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/15/release/vc_redist.x64.exe</a>");
+			line1 = _T("The 32-bit and 64-bit MSVC 2015-2019 runtimes are not installed.");
+			line2 = _T("You can download the MSVC 2015-2019 runtime at:\n")
+				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>\n")
+				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/16/release/vc_redist.x64.exe\">")
+					_T("https://aka.ms/vs/16/release/vc_redist.x64.exe</a>");
 		} else if (!bHasMsvc32 && bHasMsvc64) {
 			// 32-bit MSVCRT is missing.
-			line1 = _T("The 32-bit MSVC 2017 runtime is not installed.");
-			line2 = _T("You can download the 32-bit MSVC 2017 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/15/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/15/release/vc_redist.x86.exe</a>");
+			line1 = _T("The 32-bit MSVC 2015-2019 runtime is not installed.");
+			line2 = _T("You can download the 32-bit MSVC 2015-2019 runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
+					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>");
 		} else if (bHasMsvc32 && !bHasMsvc64) {
 			// 64-bit MSVCRT is missing.
-			line1 = _T("The 64-bit MSVC 2017 runtime is not installed.");
-			line2 = _T("You can download the 64-bit MSVC 2017 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/15/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/15/release/vc_redist.x64.exe</a>");
+			line1 = _T("The 64-bit MSVC 2015-2019 runtime is not installed.");
+			line2 = _T("You can download the 64-bit MSVC 2015-2019 runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x64.exe\">")
+					_T("https://aka.ms/vs/16/release/vc_redist.x64.exe</a>");
 		}
 	}
 
