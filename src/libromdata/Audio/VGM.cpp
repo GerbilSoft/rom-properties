@@ -312,7 +312,7 @@ const char *const *VGM::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".vgm",
-		".vgz",	// TODO: Automatic gzip detection.
+		".vgz",	// gzipped
 		//".vgm.gz",	// NOTE: Windows doesn't support this.
 
 		nullptr
