@@ -76,7 +76,7 @@
     compressed using the ICE! algorithm.
   * SPC: Super NES SPC-700 audio format.
   * VGM: Video Game Music format. Used for all sorts of video game
-    audio rips, including Sega Mega Drive and Neo Geo Pocket
+    audio rips, including Sega Mega Drive and Neo Geo Pocket.
   * BRSTM: Nintendo Wii BRSTM audio files.
   * BCSTM: Nintendo 3DS BCSTM and BCWAV audio files.
     * Also supports Nintendo Wii U BFSTM audio files.
