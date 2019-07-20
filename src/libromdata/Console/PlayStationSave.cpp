@@ -18,6 +18,7 @@
 
 // librpbase
 #include "librpbase/common.h"
+#include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 
@@ -282,60 +283,78 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	const uint8_t *header = info->header.pData;
+	// Check for PSV+SC.
+	if (info->header.size >= sizeof(PS1_PSV_Header) + sizeof(PS1_SC_Struct)) {
+		// Check for SC magic.
+		const PS1_SC_Struct *const scHeader =
+			reinterpret_cast<const PS1_SC_Struct*>(
+				&info->header.pData[sizeof(PS1_PSV_Header)]);
+		if (scHeader->magic == cpu_to_be16(PS1_SC_MAGIC)) {
+			// Check the PSV magic.
+			const PS1_PSV_Header *const psvHeader =
+				reinterpret_cast<const PS1_PSV_Header*>(info->header.pData);
+			if (psvHeader->magic == cpu_to_be64(PS1_PSV_MAGIC)) {
+				// This is a PSV (PS1 on PS3) save file.
+				return PlayStationSavePrivate::SAVE_TYPE_PSV;
+			}
 
-	// Check the SC struct magic.
-	static const char sc_magic[2] = { 'S','C' };
-	if (info->header.size >= sizeof(PS1_PSV_Header) + sizeof(PS1_SC_Struct) &&
-	    memcmp(&header[sizeof(PS1_PSV_Header)], sc_magic, sizeof(sc_magic)) == 0)
-	{
-		// Check the PSV magic.
-		static const char psv_magic[8] = {
-			0x00, 0x56, 0x53, 0x50, 0x00, 0x00, 0x00, 0x00
-		};
-		if (memcmp(header, psv_magic, sizeof(psv_magic)) != 0) {
 			// PSV magic is incorrect.
 			return -1;
 		}
-
-		// This is a PSV (PS1 on PS3) save file.
-		return PlayStationSavePrivate::SAVE_TYPE_PSV;
 	}
-	else if (info->header.size >= sizeof(PS1_Block_Entry) + sizeof(PS1_SC_Struct) &&
-		 memcmp(&header[sizeof(PS1_Block_Entry)], sc_magic, sizeof(sc_magic)) == 0)
-	{
-		// Check the block magic.
-		static const char block_magic[4] = {
-			PS1_ENTRY_ALLOC_FIRST, 0x00, 0x00, 0x00,
-		};
-		if (memcmp(header, block_magic, sizeof(block_magic)) != 0) {
-			// Block magic is incorrect.
-			return -1;
+
+	// Check for Block Entry + SC.
+	if (info->header.size >= sizeof(PS1_Block_Entry) + sizeof(PS1_SC_Struct)) {
+		// Check for SC magic.
+		const PS1_SC_Struct *const scHeader =
+			reinterpret_cast<const PS1_SC_Struct*>(
+				&info->header.pData[sizeof(PS1_Block_Entry)]);
+		if (scHeader->magic == cpu_to_be16(PS1_SC_MAGIC)) {
+			const uint8_t *const header = info->header.pData;
+
+			// Check the block magic.
+			static const uint8_t block_magic[4] = {
+				PS1_ENTRY_ALLOC_FIRST, 0x00, 0x00, 0x00,
+			};
+			if (memcmp(header, block_magic, sizeof(block_magic)) != 0) {
+				// Block magic is incorrect.
+				return -1;
+			}
+
+			// Check the checksum
+			uint8_t checksum = 0;
+			for (int i = sizeof(PS1_Block_Entry)-1; i >= 0; i--) {
+				checksum ^= header[i];
+			}
+			if (checksum != 0) return -1;
+
+			return PlayStationSavePrivate::SAVE_TYPE_BLOCK;
 		}
+	}
 
-		// Check the checksum
-		uint8_t checksum = 0;
-		for (int i = sizeof(PS1_Block_Entry)-1; i >= 0; i--) {
-			checksum ^= header[i];
+	// Check for PS1 54.
+	if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct)) {
+		// Check for SC magic.
+		const PS1_SC_Struct *const scHeader =
+			reinterpret_cast<const PS1_SC_Struct*>(
+				&info->header.pData[sizeof(PS1_54_Header)]);
+		if (scHeader->magic == cpu_to_be16(PS1_SC_MAGIC)) {
+			// Extra filesize check to prevent false-positives
+			if (info->szFile % 8192 != 54) return -1;
+			return PlayStationSavePrivate::SAVE_TYPE_54;
 		}
-		if (checksum != 0) return -1;
+	}
 
-		return PlayStationSavePrivate::SAVE_TYPE_BLOCK;
-	}
-	else if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct) &&
-		 memcmp(&header[sizeof(PS1_54_Header)], sc_magic, sizeof(sc_magic)) == 0)
-	{
-		// Extra filesize check to prevent false-positives
-		if (info->szFile % 8192 != 54) return -1;
-		return PlayStationSavePrivate::SAVE_TYPE_54;
-	}
-	else if (memcmp(header, sc_magic, sizeof(sc_magic)) == 0)
-	{
+	// Check for PS1 SC by itself.
+	const PS1_SC_Struct *const scHeader =
+		reinterpret_cast<const PS1_SC_Struct*>(info->header.pData);
+	if (scHeader->magic == cpu_to_be16(PS1_SC_MAGIC)) {
 		// Extra filesize check to prevent false-positives
 		if (info->szFile % 8192 != 0) return -1;
 		return PlayStationSavePrivate::SAVE_TYPE_RAW;
 	}
 
+	// Not supported.
 	return -1;
 }
 

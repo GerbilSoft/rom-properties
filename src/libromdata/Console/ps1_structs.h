@@ -78,26 +78,29 @@ typedef enum {
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#define PS1_SC_MAGIC "SC"
+#define PS1_SC_MAGIC 		'SC'
+#define PS1_POCKETSTATION_MCX0	'MCX0'
+#define PS1_POCKETSTATION_MCX1	'MCX1'
+#define PS1_POCKETSTATION_CRD0	'CRD0'
 typedef struct PACKED _PS1_SC_Struct {
-	char magic[2];		// Magic. ("SC")
-	uint8_t icon_flag;	// Icon display flag.
-	uint8_t blocks;		// Number of PS1 blocks per save file.
-	char title[64];		// Save data title. (Shift-JIS)
+	uint16_t magic;		// [0x000] Magic. ("SC")
+	uint8_t icon_flag;	// [0x002] Icon display flag.
+	uint8_t blocks;		// [0x003] Number of PS1 blocks per save file.
+	char title[64];		// [0x004] Save data title. (Shift-JIS)
 
-	uint8_t reserved1[12];
+	uint8_t reserved1[12];	// [0x044]
 
 	// PocketStation.
-	uint16_t pocket_mcicon;	// Number of PokcetStation MCicon frames.
-	char pocket_magic[4];	// PocketStation magic. ("MCX0", "MCX1", "CRD0")
-	uint16_t pocket_apicon;	// Number of PocketStation APicon frames.
+	uint16_t pocket_mcicon;	// [0x050] Number of PokcetStation MCicon frames.
+	uint32_t pocket_magic;	// [0x052] PocketStation magic. ("MCX0", "MCX1", "CRD0")
+	uint16_t pocket_apicon;	// [0x056] Number of PocketStation APicon frames.
 
-	uint8_t reserved2[8];
+	uint8_t reserved2[8];	// [0x058]
 
 	// PlayStation icon.
 	// NOTE: A palette entry of $0000 is transparent.
-	uint16_t icon_pal[16];		// Icon palette. (RGB555)
-	uint8_t icon_data[3][16*16/2];	// Icon data. (16x16, 4bpp; up to 3 frames)
+	uint16_t icon_pal[16];		// [0x060] Icon palette. (RGB555)
+	uint8_t icon_data[3][16*16/2];	// [0x080] Icon data. (16x16, 4bpp; up to 3 frames)
 } PS1_SC_Struct;
 ASSERT_STRUCT(PS1_SC_Struct, 512);
 
@@ -107,28 +110,29 @@ ASSERT_STRUCT(PS1_SC_Struct, 512);
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
+#define PS1_PSV_MAGIC 0x0056535000000000ULL	// "\0VSP\0\0\0\0"
 typedef struct PACKED _PS1_PSV_Header {
-	char magic[8];		// Magic. ("\0VSP\0\0\0\0")
-	uint8_t key_seed[20];	// Key seed.
-	uint8_t sha1_hmac[20];	// SHA1 HMAC digest.
+	uint64_t magic;		// [0x000] Magic. ("\0VSP\0\0\0\0")
+	uint8_t key_seed[20];	// [0x008] Key seed.
+	uint8_t sha1_hmac[20];	// [0x01C] SHA1 HMAC digest.
 
 	// 0x30
-	uint8_t reserved1[8];
-	uint8_t reserved2[8];	// 14 00 00 00 01 00 00 00
+	uint8_t reserved1[8];	// [0x030]
+	uint8_t reserved2[8];	// [0x038] 14 00 00 00 01 00 00 00
 
 	// 0x40
-	uint32_t size;			// Size displayed on XMB.
-	uint32_t data_block_offset;	// Offset of Data Block 1. (PS1_SC_Struct)
-	uint32_t unknown1;		// 00 02 00 00
+	uint32_t size;			// [0x040] Size displayed on XMB.
+	uint32_t data_block_offset;	// [0x044] Offset of Data Block 1. (PS1_SC_Struct)
+	uint32_t unknown1;		// [0x048] 00 02 00 00
 
 	// 0x5C
-	uint8_t reserved3[16];
-	uint32_t unknown2;		// 00 20 00 00
-	uint32_t unknown3;		// 03 90 00 00
+	uint8_t reserved3[16];	// [0x04C]
+	uint32_t unknown2;	// [0x05C] 00 20 00 00
+	uint32_t unknown3;	// [0x060] 03 90 00 00
 
-	char filename[20];	// Filename. (filename[6] == 'P' for PocketStation)
+	char filename[20];	// [0x064] Filename. (filename[6] == 'P' for PocketStation)
 
-	uint8_t reserved4[12];
+	uint8_t reserved4[12];	// [0x078]
 } PS1_PSV_Header;
 ASSERT_STRUCT(PS1_PSV_Header, 0x84);
 
