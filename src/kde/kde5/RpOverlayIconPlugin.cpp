@@ -61,7 +61,7 @@ extern "C" {
 	Q_DECL_EXPORT RpOverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
 	{
 		if (getuid() == 0 || geteuid() == 0) {
-			qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+			qCritical("*** overlayiconplugin_rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
 			return nullptr;
 		}
 
