@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 // References:
-// - http://www.psdevwiki.com/ps3/Game_Saves#Game_Saves_PS1
+// - https://www.psdevwiki.com/ps3/PS1_Savedata
 // - http://problemkaputt.de/psx-spx.htm#memorycarddataformat
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__
