@@ -58,6 +58,11 @@ namespace RomPropertiesKDE {
 extern "C" {
 	Q_DECL_EXPORT RpExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
 	{
+		if (getuid() == 0 || geteuid() == 0) {
+			qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+			return nullptr;
+		}
+
 		return new RpExtractorPlugin(parent);
 	}
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GNOME)                            *
  * rom-properties-plugin.c: Nautilus Plugin Definition.                    *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,10 +21,8 @@ static GType type_list[1];
 
 #if defined(RP_UI_GTK3_GNOME)
 // GNOME 3 desktop
-# define RP_EXTENSION_NAME		"rom-properties-gnome"
 #elif defined(RP_UI_GTK3_MATE)
 // MATE desktop (v1.18.0+; GTK+ 3.x)
-# define RP_EXTENSION_NAME		"rom-properties-mate"
 # define nautilus_module_initialize	caja_module_initialize
 # define nautilus_module_shutdown	caja_module_shutdown
 # define nautilus_module_list_types	caja_module_list_types
@@ -40,8 +38,13 @@ G_MODULE_EXPORT void nautilus_module_list_types		(const GType	**types,
 G_MODULE_EXPORT void
 nautilus_module_initialize(GTypeModule *module)
 {
+	if (getuid() == 0 || geteuid() == 0) {
+		g_critical("*** " G_LOG_DOMAIN " does not support running as root.");
+		return;
+	}
+
 #ifdef G_ENABLE_DEBUG
-	g_message("Initializing " RP_EXTENSION_NAME " extension");
+	g_message("Initializing " G_LOG_DOMAIN " extension");
 #endif
 
 	/* Register the types provided by this module */
@@ -57,7 +60,7 @@ G_MODULE_EXPORT void
 nautilus_module_shutdown(void)
 {
 #ifdef G_ENABLE_DEBUG
-	g_message("Shutting down " RP_EXTENSION_NAME " extension");
+	g_message("Shutting down " G_LOG_DOMAIN " extension");
 #endif
 }
 

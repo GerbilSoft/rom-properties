@@ -118,6 +118,11 @@ int main(int argc, char *argv[])
 	RP_UNUSED(argc);
 	RP_UNUSED(argv);
 
+	if (getuid() == 0 || geteuid() == 0) {
+		fprintf(stderr, "*** %s does not support running as root.", argv[0]);
+		return EXIT_FAILURE;
+	}
+
 #if !GLIB_CHECK_VERSION(2,36,0)
 	// g_type_init() is automatic as of glib-2.36.0
 	// and is marked deprecated.

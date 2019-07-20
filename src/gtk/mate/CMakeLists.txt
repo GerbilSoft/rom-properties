@@ -90,8 +90,10 @@ IF(BUILD_MATE)
 	TARGET_LINK_LIBRARIES(rom-properties-mate PUBLIC Mate::libcaja-extension)
 	TARGET_LINK_LIBRARIES(rom-properties-mate PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-mate PUBLIC Gtk3::gtk3 GLib2::gobject GLib2::glib)
-	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-mate\")
-	ADD_DEFINITIONS(-DRP_UI_GTK3_MATE)
+	TARGET_COMPILE_DEFINITIONS(rom-properties-mate
+		PRIVATE G_LOG_DOMAIN=\"rom-properties-mate\"
+			RP_UI_GTK3_MATE
+		)
 ENDIF(BUILD_MATE)
 
 #######################

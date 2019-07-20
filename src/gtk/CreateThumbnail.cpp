@@ -226,6 +226,11 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
 
+	if (getuid() == 0 || geteuid() == 0) {
+		g_critical("*** " G_LOG_DOMAIN " does not support running as root.");
+		return RPCT_RUNNING_AS_ROOT;
+	}
+
 	// Make sure glib is initialized.
 	// NOTE: This is a no-op as of glib-2.36.
 #if !GLIB_CHECK_VERSION(2,36,0)

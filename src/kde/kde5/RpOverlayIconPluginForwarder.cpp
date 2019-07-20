@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,6 +33,11 @@ RpOverlayIconPluginForwarder::RpOverlayIconPluginForwarder(QObject *parent)
 #ifndef PLUGIN_INSTALL_DIR
 # error PLUGIN_INSTALL_DIR is not set.
 #endif
+	if (getuid() == 0 || geteuid() == 0) {
+		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		return;
+	}
+
 	// FIXME: Check the .desktop file?
 	QString pluginPath(QString::fromUtf8(PLUGIN_INSTALL_DIR));
 	pluginPath += QLatin1String("/rom-properties-kde5.so");

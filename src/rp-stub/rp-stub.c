@@ -136,6 +136,11 @@ int main(int argc, char *argv[])
 	 * TODO: Support URIs in addition to paths?
 	 */
 
+	if (getuid() == 0 || geteuid() == 0) {
+		fprintf(stderr, "*** %s does not support running as root.\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+
 	// Set the C locale.
 	// TODO: Stub may need to set the C++ locale.
 	setlocale(LC_ALL, "");

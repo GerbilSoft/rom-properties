@@ -301,6 +301,11 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
 
+	if (getuid() == 0 || geteuid() == 0) {
+		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		return RPCT_RUNNING_AS_ROOT;
+	}
+
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);

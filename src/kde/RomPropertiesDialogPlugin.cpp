@@ -37,6 +37,11 @@ using LibRomData::RomDataFactory;
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: super(props)
 {
+	if (getuid() == 0 || geteuid() == 0) {
+		qCritical("*** rom-properties-kde%u does not support running as root.", QT_VERSION >> 16);
+		return;
+	}
+
 	// Check if a single file was specified.
 	KFileItemList items = props->items();
 	if (items.size() != 1) {

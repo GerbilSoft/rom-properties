@@ -86,7 +86,9 @@ IF(BUILD_XFCE3)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PUBLIC Xfce::thunarx-3)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PRIVATE Cairo::cairo)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PUBLIC Gtk3::gtk3 GLib2::gobject GLib2::glib)
-	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-xfce3\")
+	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce3
+		PRIVATE G_LOG_DOMAIN=\"rom-properties-xfce3\"
+		)
 ENDIF(BUILD_XFCE3)
 
 #######################

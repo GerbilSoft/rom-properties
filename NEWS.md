@@ -148,6 +148,8 @@
     for S3TC, v1.2, was released *after* the S3TC patents expired. Since
     the patents expired, S3TC can be unconditionally enabled, and we don't
     need the S2TC decoder or test images anymore.
+  * The Linux UI frontends will no longer initialize if running as root.
+    `rpcli` will still run as root for now, though it's not recommended.
 
 ## v1.3.3 (released 2018/08/25)
 
