@@ -128,6 +128,12 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 #ifndef CP_UTF8
 # define CP_UTF8 65001
 #endif
+#ifndef CP_SJIS
+# define CP_SJIS 932
+#endif
+#ifndef CP_GB2312
+# define CP_GB2312 936
+#endif
 
 // Text conversion flags.
 typedef enum {

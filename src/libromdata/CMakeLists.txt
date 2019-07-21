@@ -4,14 +4,15 @@ PROJECT(libromdata)
 SET(libromdata_SRCS
 	RomDataFactory.cpp
 
-	Console/MegaDrive.cpp
-	Console/MegaDriveRegions.cpp
 	Console/Dreamcast.cpp
 	Console/DreamcastSave.cpp
 	Console/GameCube.cpp
 	Console/GameCubeBNR.cpp
 	Console/GameCubeSave.cpp
 	Console/GameCubeRegions.cpp
+	Console/iQueN64.cpp
+	Console/MegaDrive.cpp
+	Console/MegaDriveRegions.cpp
 	Console/N64.cpp
 	Console/NES.cpp
 	Console/Sega8Bit.cpp
@@ -117,6 +118,7 @@ SET(libromdata_H
 	Console/GameCubeBNR.hpp
 	Console/GameCubeSave.hpp
 	Console/GameCubeRegions.hpp
+	Console/iQueN64.hpp
 	Console/MegaDrive.hpp
 	Console/MegaDriveRegions.hpp
 	Console/N64.hpp
@@ -139,6 +141,7 @@ SET(libromdata_H
 	Console/gcn_structs.h
 	Console/gcn_banner.h
 	Console/gcn_card.h
+	Console/ique_n64_structs.h
 	Console/md_structs.h
 	Console/n64_structs.h
 	Console/nes_structs.h

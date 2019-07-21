@@ -40,6 +40,7 @@ using std::vector;
 #include "Console/GameCube.hpp"
 #include "Console/GameCubeBNR.hpp"
 #include "Console/GameCubeSave.hpp"
+#include "Console/iQueN64.hpp"
 #include "Console/MegaDrive.hpp"
 #include "Console/N64.hpp"
 #include "Console/NES.hpp"
@@ -302,6 +303,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(iQueN64, ATTR_NONE),
 	GetRomDataFns(MegaDrive, ATTR_NONE),
 	GetRomDataFns(N64, ATTR_NONE),
 	GetRomDataFns(NES, ATTR_NONE),
