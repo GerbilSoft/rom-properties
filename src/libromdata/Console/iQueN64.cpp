@@ -33,6 +33,9 @@ using namespace LibRpBase;
 #include <cstdio>
 #include <cstring>
 
+// for memmem() if it's not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
+
 // C++ includes.
 #include <memory>
 #include <string>
@@ -176,26 +179,51 @@ int iQueN64Private::getTitleAndISBN(string &title, string &isbn)
 	title.clear();
 	isbn.clear();
 
-	// Find the first NULL.
-	// This will give us the title.
+	/// Find the title. (first string)
+
+	// Check for "\xEF\xBB\xBF" (UTF-8 BOM).
+	// Title 00201b2c (Dongwu Senlin) uses this separator instead
+	// of a NULL character for some reason.
+	static const char utf8bom[] = "\xEF\xBB\xBF";
 	const char *p = title_buf.get();
-	const char *p_end = static_cast<const char*>(memchr(p, '\0', title_buf_sz));
+	const char *p_end = static_cast<const char*>(memmem(p, title_buf_sz, utf8bom, sizeof(utf8bom)-1));
 	if (p_end && p_end > p) {
+		// Found the UTF-8 BOM.
 		// Convert from GB2312 to UTF-8.
 		title = cpN_to_utf8(CP_GB2312, p, p_end - p);
+
+		// Adjust p to point to the next string.
+		p = p_end + 3;
+	} else {
+		// No UTF-8 BOM. Check for NULL instead.
+		p_end = static_cast<const char*>(memchr(p, '\0', title_buf_sz));
+		if (p_end && p_end > p) {
+			// Convert from GB2312 to UTF-8.
+			title = cpN_to_utf8(CP_GB2312, p, p_end - p);
+
+			// Adjust p to point to the next string.
+			p = p_end + 1;
+		}
+	}
+
+	if (!p_end) {
+		// No NULL found.
+		// The description is invalid.
+		return 3;
 	}
 
 	// Find the second NULL.
 	// This will give us the ISBN.
 	// NOTE: May be ASCII, but we'll decode as GB2312 just in case.
 	const size_t isbn_buf_sz = title_buf_sz - (p_end - p) - 1;
-	p = p_end + 1;
 	p_end = static_cast<const char*>(memchr(p, '\0', isbn_buf_sz));
 	if (p_end && p_end > p) {
 		// Convert from GB2312 to UTF-8.
 		isbn = cpN_to_utf8(CP_GB2312, p, p_end - p);
 	}
 
+	// TODO: There might be other fields with NULL or UTF-8 BOM separators.
+	// Check 00201b2c.cmd for more information.
 	return 0;
 }
 
