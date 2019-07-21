@@ -353,7 +353,7 @@ const rp_image *iQueN64Private::loadTitleImage(void)
 	}
 
 	// Get the thumbnail address and size.
-	static const int64_t title_addr = sizeof(contentDesc) + be16_to_cpu(contentDesc.thumb_image_size);
+	const int64_t title_addr = sizeof(contentDesc) + be16_to_cpu(contentDesc.thumb_image_size);
 	const size_t z_title_size = be16_to_cpu(contentDesc.title_image_size);
 	if (z_title_size > 0x10000) {
 		// Out of range.
