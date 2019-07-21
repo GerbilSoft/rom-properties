@@ -59,8 +59,10 @@ ASSERT_STRUCT(iQueN64_contentDesc, 0x48);
 // Image sizes.
 #define IQUEN64_THUMB_W 56
 #define IQUEN64_THUMB_H 56
+#define IQUEN64_THUMB_SIZE (IQUEN64_THUMB_W * IQUEN64_THUMB_H * 2)
 #define IQUEN64_TITLE_W 184
 #define IQUEN64_TITLE_H 24
+#define IQUEN64_TITLE_SIZE (IQUEN64_TITLE_W * IQUEN64_TITLE_H * 2)
 
 /**
  * Content metadata header.

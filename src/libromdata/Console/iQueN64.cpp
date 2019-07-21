@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 #include "iQueN64.hpp"
 #include "librpbase/RomData_p.hpp"
 
@@ -14,8 +16,13 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/ImageDecoder.hpp"
+
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
@@ -33,14 +40,28 @@ using namespace LibRpBase;
 using std::string;
 using std::vector;
 
+// zlib
+#include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+# include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
+
 namespace LibRomData {
 
 ROMDATA_IMPL(iQueN64)
+ROMDATA_IMPL_IMG(iQueN64)
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+#endif /* _MSC_VER */
 
 class iQueN64Private : public RomDataPrivate
 {
 	public:
 		iQueN64Private(iQueN64 *q, IRpFile *file);
+		virtual ~iQueN64Private();
 
 	private:
 		typedef RomDataPrivate super;
@@ -51,6 +72,9 @@ class iQueN64Private : public RomDataPrivate
 		iQueN64_contentDesc contentDesc;
 		iQueN64_BbContentMetaDataHead bbContentMetaDataHead;
 
+		// Internal images.
+		rp_image *img_thumbnail;
+
 	public:
 		/**
 		 * Get the ROM title and ISBN.
@@ -59,16 +83,29 @@ class iQueN64Private : public RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int getTitleAndISBN(string &title, string &isbn);
+
+	public:
+		/**
+		 * Load the thumbnail image.
+		 * @return Thumbnail image, or nullptr on error.
+		 */
+		const rp_image *loadThumbnailImage(void);
 };
 
 /** iQueN64Private **/
 
 iQueN64Private::iQueN64Private(iQueN64 *q, IRpFile *file)
 	: super(q, file)
+	, img_thumbnail(nullptr)
 {
 	// Clear the .cmd structs.
 	memset(&contentDesc, 0, sizeof(contentDesc));
 	memset(&bbContentMetaDataHead, 0, sizeof(bbContentMetaDataHead));
+}
+
+iQueN64Private::~iQueN64Private()
+{
+	delete img_thumbnail;
 }
 
 /**
@@ -89,14 +126,12 @@ int iQueN64Private::getTitleAndISBN(string &title, string &isbn)
 		be16_to_cpu(contentDesc.title_image_size);
 	if (title_addr >= (int64_t)title_buf_sz) {
 		// Out of range.
-		printf("A\n");
 		return 1;
 	}
 
 	const size_t title_sz = title_buf_sz - title_addr;
 	size_t size = file->seekAndRead(title_addr, title_buf.get(), title_sz);
 	if (size != title_sz) {
-		printf("B\n");
 		// Seek and/or read error.
 		return 2;
 	}
@@ -126,6 +161,91 @@ int iQueN64Private::getTitleAndISBN(string &title, string &isbn)
 	}
 
 	return 0;
+}
+
+/**
+ * Load the thumbnail image.
+ * @return Thumbnail image, or nullptr on error.
+ */
+const rp_image *iQueN64Private::loadThumbnailImage(void)
+{
+	if (img_thumbnail) {
+		// Thumbnail is already loaded.
+		return img_thumbnail;
+	} else if (!this->file || !this->isValid) {
+		// Can't load the banner.
+		return nullptr;
+	}
+
+	// Get the thumbnail address and size.
+	static const int64_t thumb_addr = sizeof(contentDesc);
+	const size_t z_thumb_size = be16_to_cpu(contentDesc.thumb_image_size);
+	if (z_thumb_size > 0x4000) {
+		// Out of range.
+		return nullptr;
+	}
+
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlibVersion() != 0) {
+		// Delay load failed.
+		// Can't decompress the thumbnail image.
+		return nullptr;
+	}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	// Read the compressed thumbnail image.
+	std::unique_ptr<uint8_t[]> z_thumb_buf(new uint8_t[z_thumb_size]);
+	size_t size = file->seekAndRead(thumb_addr, z_thumb_buf.get(), z_thumb_size);
+	if (size != z_thumb_size) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Decompress the thumbnail image.
+	// Decompressed size must be 0x1880 bytes. (56*56*2)
+	auto thumb_buf = aligned_uptr<uint16_t>(16, IQUEN64_THUMB_SIZE/2);
+
+	// Initialize zlib.
+	// Reference: https://zlib.net/zlib_how.html
+	// NOTE: Raw deflate is used, so we need to specify -15.
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = 0;
+	int ret = inflateInit2(&strm, -15);
+	if (ret != Z_OK) {
+		// Error initializing zlib.
+		return nullptr;
+	}
+
+	strm.avail_in = static_cast<uInt>(z_thumb_size);
+	strm.next_in = z_thumb_buf.get();
+
+	strm.avail_out = IQUEN64_THUMB_SIZE;
+	strm.next_out = reinterpret_cast<Bytef*>(thumb_buf.get());
+
+	ret = inflate(&strm, Z_FINISH);
+	inflateEnd(&strm);
+	if (ret != Z_OK && ret != Z_STREAM_END) {
+		// Error decompressing.
+		return nullptr;
+	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the image first.
+	// TODO: Integrate this into image decoding?
+	__byte_swap_16_array(thumb_buf.get(), IQUEN64_THUMB_SIZE);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// Convert the thumbnail image from RGBA5551.
+	img_thumbnail = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGBA5551,
+		IQUEN64_THUMB_W, IQUEN64_THUMB_H,
+		thumb_buf.get(), IQUEN64_THUMB_SIZE);
+	return img_thumbnail;
 }
 
 /** iQueN64 **/
@@ -307,6 +427,63 @@ const char *const *iQueN64::supportedMimeTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t iQueN64::supportedImageTypes_static(void)
+{
+	// TODO: IMGBF_INT_TITLE?
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> iQueN64::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	if (imageType != IMG_INT_ICON) {
+		// Only icons are supported.
+		return vector<ImageSizeDef>();
+	}
+
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, IQUEN64_THUMB_W, IQUEN64_THUMB_H, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t iQueN64::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	if (imageType == IMG_INT_ICON) {
+		// Use nearest-neighbor scaling.
+		return IMGPF_RESCALE_NEAREST;
+	}
+
+	// Nothing else is supported.
+	return 0;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -401,6 +578,41 @@ int iQueN64::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int iQueN64::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	ASSERT_loadInternalImage(imageType, pImage);
+
+	RP_D(iQueN64);
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by iQueN64.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->img_thumbnail) {
+		// Image has already been loaded.
+		*pImage = d->img_thumbnail;
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		*pImage = nullptr;
+		return -EBADF;
+	} else if (!d->isValid) {
+		// ROM image isn't valid.
+		*pImage = nullptr;
+		return -EIO;
+	}
+
+	// Load the icon.
+	*pImage = d->loadThumbnailImage();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }
