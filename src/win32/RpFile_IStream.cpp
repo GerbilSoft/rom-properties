@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+
+#include "config.librpbase.h"
 #include "RpFile_IStream.hpp"
 
 // librpbase
