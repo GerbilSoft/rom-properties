@@ -62,7 +62,7 @@
       be added before the release of v1.4.)
   * Xbox_XBE: Original Xbox executables.
   * Xbox360_STFS: Xbox 360 packages.
-  * iQueN64: iQue N64 .cmd files.
+  * iQueN64: iQue N64 .cmd and .dat files.
 
 * New audio parsers:
   * ADX: CRI ADX audio format. Used by many Sega games.
