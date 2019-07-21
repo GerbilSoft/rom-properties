@@ -213,13 +213,12 @@ int iQueN64Private::getTitleAndISBN(string &title, string &isbn)
 	}
 
 	// Find the second NULL.
-	// This will give us the ISBN.
-	// NOTE: May be ASCII, but we'll decode as GB2312 just in case.
+	// This will give us the ISBN. (ASCII)
 	const size_t isbn_buf_sz = title_buf_sz - (p_end - p) - 1;
 	p_end = static_cast<const char*>(memchr(p, '\0', isbn_buf_sz));
 	if (p_end && p_end > p) {
-		// Convert from GB2312 to UTF-8.
-		isbn = cpN_to_utf8(CP_GB2312, p, p_end - p);
+		// Convert from ASCII (well, Latin-1) to UTF-8.
+		isbn = latin1_to_utf8(p, p_end - p);
 	}
 
 	// TODO: There might be other fields with NULL or UTF-8 BOM separators.
