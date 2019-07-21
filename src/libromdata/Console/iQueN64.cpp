@@ -73,7 +73,8 @@ class iQueN64Private : public RomDataPrivate
 		iQueN64_BbContentMetaDataHead bbContentMetaDataHead;
 
 		// Internal images.
-		rp_image *img_thumbnail;
+		rp_image *img_thumbnail;	// handled as icon
+		rp_image *img_title;		// handled as banner
 
 	public:
 		/**
@@ -84,12 +85,34 @@ class iQueN64Private : public RomDataPrivate
 		 */
 		int getTitleAndISBN(string &title, string &isbn);
 
+	private:
+		/**
+		 * Load an image. (internal function)
+		 * @param address	[in] Starting address.
+		 * @param z_size	[in] Compressed size.
+		 * @param unz_size	[in] Expected decompressed size.
+		 * @param px_format	[in] 16-bit pixel format.
+		 * @param w		[in] Image width.
+		 * @param h		[in] Image height.
+		 * @param byteswap	[in] If true, byteswap before decoding if needed.
+		 * @return Image, or nullptr on error.
+		 */
+		rp_image *loadImage(int64_t address, size_t z_size, size_t unz_size,
+			ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap);
+
 	public:
 		/**
 		 * Load the thumbnail image.
 		 * @return Thumbnail image, or nullptr on error.
 		 */
 		const rp_image *loadThumbnailImage(void);
+
+		/**
+		 * Load the title image.
+		 * This is the game title in Chinese.
+		 * @return Title image, or nullptr on error.
+		 */
+		const rp_image *loadTitleImage(void);
 };
 
 /** iQueN64Private **/
@@ -97,6 +120,7 @@ class iQueN64Private : public RomDataPrivate
 iQueN64Private::iQueN64Private(iQueN64 *q, IRpFile *file)
 	: super(q, file)
 	, img_thumbnail(nullptr)
+	, img_title(nullptr)
 {
 	// Clear the .cmd structs.
 	memset(&contentDesc, 0, sizeof(contentDesc));
@@ -106,6 +130,7 @@ iQueN64Private::iQueN64Private(iQueN64 *q, IRpFile *file)
 iQueN64Private::~iQueN64Private()
 {
 	delete img_thumbnail;
+	delete img_title;
 }
 
 /**
@@ -164,6 +189,88 @@ int iQueN64Private::getTitleAndISBN(string &title, string &isbn)
 }
 
 /**
+ * Load an image. (internal function)
+ * @param address	[in] Starting address.
+ * @param z_size	[in] Compressed size.
+ * @param unz_size	[in] Expected decompressed size.
+ * @param px_format	[in] 16-bit pixel format.
+ * @param w		[in] Image width.
+ * @param h		[in] Image height.
+ * @param byteswap	[in] If true, byteswap before decoding if needed.
+ * @return Image, or nullptr on error.
+ */
+rp_image *iQueN64Private::loadImage(int64_t address, size_t z_size, size_t unz_size,
+	ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap)
+{
+	assert(address >= static_cast<int64_t>(sizeof(contentDesc)));
+	assert(z_size != 0);
+	assert(unz_size > z_size);
+	assert(unz_size == static_cast<size_t>(w * h * 2));
+
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlibVersion() != 0) {
+		// Delay load failed.
+		// Can't decompress the thumbnail image.
+		return nullptr;
+	}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+	// Read the compressed thumbnail image.
+	std::unique_ptr<uint8_t[]> z_buf(new uint8_t[z_size]);
+	size_t size = file->seekAndRead(address, z_buf.get(), z_size);
+	if (size != z_size) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Decompress the thumbnail image.
+	// Decompressed size must be 0x1880 bytes. (56*56*2)
+	auto img_buf = aligned_uptr<uint16_t>(16, unz_size/2);
+
+	// Initialize zlib.
+	// Reference: https://zlib.net/zlib_how.html
+	// NOTE: Raw deflate is used, so we need to specify -15.
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = 0;
+	int ret = inflateInit2(&strm, -15);
+	if (ret != Z_OK) {
+		// Error initializing zlib.
+		return nullptr;
+	}
+
+	strm.avail_in = static_cast<uInt>(z_size);
+	strm.next_in = z_buf.get();
+
+	strm.avail_out = unz_size;
+	strm.next_out = reinterpret_cast<Bytef*>(img_buf.get());
+
+	ret = inflate(&strm, Z_FINISH);
+	inflateEnd(&strm);
+	if (ret != Z_OK && ret != Z_STREAM_END) {
+		// Error decompressing.
+		return nullptr;
+	}
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	if (byteswap) {
+		// Byteswap the image first.
+		// TODO: Integrate this into image decoding?
+		__byte_swap_16_array(img_buf.get(), unz_size);
+	}
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// Convert the image.
+	return ImageDecoder::fromLinear16(px_format,
+		w, h, img_buf.get(), unz_size);
+}
+
+/**
  * Load the thumbnail image.
  * @return Thumbnail image, or nullptr on error.
  */
@@ -185,67 +292,46 @@ const rp_image *iQueN64Private::loadThumbnailImage(void)
 		return nullptr;
 	}
 
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
-		// Delay load failed.
-		// Can't decompress the thumbnail image.
-		return nullptr;
-	}
-#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
-
-	// Read the compressed thumbnail image.
-	std::unique_ptr<uint8_t[]> z_thumb_buf(new uint8_t[z_thumb_size]);
-	size_t size = file->seekAndRead(thumb_addr, z_thumb_buf.get(), z_thumb_size);
-	if (size != z_thumb_size) {
-		// Seek and/or read error.
-		return nullptr;
-	}
-
-	// Decompress the thumbnail image.
-	// Decompressed size must be 0x1880 bytes. (56*56*2)
-	auto thumb_buf = aligned_uptr<uint16_t>(16, IQUEN64_THUMB_SIZE/2);
-
-	// Initialize zlib.
-	// Reference: https://zlib.net/zlib_how.html
-	// NOTE: Raw deflate is used, so we need to specify -15.
-	z_stream strm;
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
-	strm.avail_in = 0;
-	strm.next_in = 0;
-	int ret = inflateInit2(&strm, -15);
-	if (ret != Z_OK) {
-		// Error initializing zlib.
-		return nullptr;
-	}
-
-	strm.avail_in = static_cast<uInt>(z_thumb_size);
-	strm.next_in = z_thumb_buf.get();
-
-	strm.avail_out = IQUEN64_THUMB_SIZE;
-	strm.next_out = reinterpret_cast<Bytef*>(thumb_buf.get());
-
-	ret = inflate(&strm, Z_FINISH);
-	inflateEnd(&strm);
-	if (ret != Z_OK && ret != Z_STREAM_END) {
-		// Error decompressing.
-		return nullptr;
-	}
-
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	// Byteswap the image first.
-	// TODO: Integrate this into image decoding?
-	__byte_swap_16_array(thumb_buf.get(), IQUEN64_THUMB_SIZE);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-
-	// Convert the thumbnail image from RGBA5551.
-	img_thumbnail = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGBA5551,
-		IQUEN64_THUMB_W, IQUEN64_THUMB_H,
-		thumb_buf.get(), IQUEN64_THUMB_SIZE);
+	// Load the image.
+	img_thumbnail = loadImage(thumb_addr, z_thumb_size, IQUEN64_THUMB_SIZE,
+		ImageDecoder::PXF_RGBA5551, IQUEN64_THUMB_W, IQUEN64_THUMB_H, true);
 	return img_thumbnail;
+}
+
+/**
+ * Load the title image.
+ * This is the game title in Chinese.
+ * @return Title image, or nullptr on error.
+ */
+const rp_image *iQueN64Private::loadTitleImage(void)
+{
+	if (img_title) {
+		// Title is already loaded.
+		return img_title;
+	} else if (!this->file || !this->isValid) {
+		// Can't load the banner.
+		return nullptr;
+	}
+
+	// Get the thumbnail address and size.
+	static const int64_t title_addr = sizeof(contentDesc) + be16_to_cpu(contentDesc.thumb_image_size);
+	const size_t z_title_size = be16_to_cpu(contentDesc.title_image_size);
+	if (z_title_size > 0x10000) {
+		// Out of range.
+		return nullptr;
+	}
+
+	// Load the image.
+	// NOTE: Using A8L8 format, not IA8, which is GameCube-specific.
+	// TODO: Add ImageDecoder::fromLinear16() support for IA8 later.
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	img_title = loadImage(title_addr, z_title_size, IQUEN64_TITLE_SIZE,
+		ImageDecoder::PXF_L8A8, IQUEN64_TITLE_W, IQUEN64_TITLE_H, false);
+#else
+	img_title = loadImage(title_addr, z_title_size, IQUEN64_TITLE_SIZE,
+		ImageDecoder::PXF_A8L8, IQUEN64_TITLE_W, IQUEN64_TITLE_H, false);
+#endif
+	return img_title;
 }
 
 /** iQueN64 **/
@@ -432,8 +518,7 @@ const char *const *iQueN64::supportedMimeTypes_static(void)
  */
 uint32_t iQueN64::supportedImageTypes_static(void)
 {
-	// TODO: IMGBF_INT_TITLE?
-	return IMGBF_INT_ICON;
+	return IMGBF_INT_ICON | IMGBF_INT_BANNER;
 }
 
 /**
@@ -449,16 +534,29 @@ vector<RomData::ImageSizeDef> iQueN64::supportedImageSizes_static(ImageType imag
 {
 	ASSERT_supportedImageSizes(imageType);
 
-	if (imageType != IMG_INT_ICON) {
-		// Only icons are supported.
-		return vector<ImageSizeDef>();
+	switch (imageType) {
+		case IMG_INT_ICON: {
+			// Icon (thumbnail)
+			static const ImageSizeDef sz_INT_ICON[] = {
+				{nullptr, IQUEN64_THUMB_W, IQUEN64_THUMB_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+		}
+		case IMG_INT_BANNER: {
+			// Banner (title)
+			static const ImageSizeDef sz_INT_BANNER[] = {
+				{nullptr, IQUEN64_TITLE_W, IQUEN64_TITLE_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+		default:
+			break;
 	}
 
-	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, IQUEN64_THUMB_W, IQUEN64_THUMB_H, 0},
-	};
-	return vector<ImageSizeDef>(sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
 }
 
 /**
@@ -474,13 +572,20 @@ uint32_t iQueN64::imgpf(ImageType imageType) const
 {
 	ASSERT_imgpf(imageType);
 
-	if (imageType == IMG_INT_ICON) {
-		// Use nearest-neighbor scaling.
-		return IMGPF_RESCALE_NEAREST;
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+		case IMG_INT_BANNER:
+			// Use nearest-neighbor scaling.
+			ret = IMGPF_RESCALE_NEAREST;
+			break;
+
+		default:
+			// Nothing else is supported.
+			break;
 	}
 
-	// Nothing else is supported.
-	return 0;
+	return ret;
 }
 
 /**
@@ -592,26 +697,49 @@ int iQueN64::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	ASSERT_loadInternalImage(imageType, pImage);
 
 	RP_D(iQueN64);
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by iQueN64.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (d->img_thumbnail) {
-		// Image has already been loaded.
-		*pImage = d->img_thumbnail;
-		return 0;
-	} else if (!d->file) {
+	switch (imageType) {
+		case IMG_INT_ICON:
+			if (d->img_thumbnail) {
+				// Icon (thumbnail) is loaded.
+				*pImage = d->img_thumbnail;
+				return 0;
+			}
+			break;
+		case IMG_INT_BANNER:
+			if (d->img_title) {
+				// Banner (title) is loaded.
+				*pImage = d->img_title;
+				return 0;
+			}
+			break;
+		default:
+			// Unsupported image type.
+			*pImage = nullptr;
+			return 0;
+	}
+
+	if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
-		// ROM image isn't valid.
-		*pImage = nullptr;
+		// Save file isn't valid.
 		return -EIO;
 	}
 
-	// Load the icon.
-	*pImage = d->loadThumbnailImage();
+	// Load the image.
+	switch (imageType) {
+		case IMG_INT_ICON:
+			*pImage = d->loadThumbnailImage();
+			break;
+		case IMG_INT_BANNER:
+			*pImage = d->loadTitleImage();
+			break;
+		default:
+			// Unsupported.
+			return -ENOENT;
+	}
+
+	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
 	return (*pImage != nullptr ? 0 : -EIO);
 }
 

@@ -295,6 +295,14 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t A8L8_to_ARGB32(uint16_t px16);
 
+		/**
+		 * Convert an L8A8 pixel to ARGB32.
+		 * NOTE: Uses a grayscale palette.
+		 * @param px16 A8L8 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t L8A8_to_ARGB32(uint16_t px16);
+
 		// Alpha
 
 		/**
@@ -927,6 +935,24 @@ inline uint32_t ImageDecoderPrivate::A8L8_to_ARGB32(uint16_t px16)
 	       ((px16 & 0xFF) << 8) |		// Green
 	       ((px16 & 0xFF) << 16) |		// Blue
 	       ((px16 << 16) & 0xFF000000);	// Alpha
+	return argb;
+}
+
+/**
+ * Convert an L8A8 pixel to ARGB32.
+ * NOTE: Uses a grayscale palette.
+ * @param px16 A8L8 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::L8A8_to_ARGB32(uint16_t px16)
+{
+	//   L8A8: LLLLLLLL AAAAAAAA
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb;
+	argb =  (px16 >> 8) |			// Red
+	        (px16 & 0xFF00) |		// Green
+	       ((px16 << 8) & 0x00FF0000) |	// Blue
+	       ((px16 & 0xFF) << 24);		// Alpha
 	return argb;
 }
 
