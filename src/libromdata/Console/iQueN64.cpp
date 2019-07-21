@@ -148,7 +148,7 @@ iQueN64::iQueN64(IRpFile *file)
 {
 	RP_D(iQueN64);
 	d->className = "iQueN64";
-	d->fileType = FTYPE_ICON_FILE;	// TODO: Metadata file?
+	d->fileType = FTYPE_METADATA_FILE;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
