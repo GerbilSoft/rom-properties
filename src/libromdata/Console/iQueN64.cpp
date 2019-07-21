@@ -520,6 +520,7 @@ const char *const *iQueN64::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".cmd",		// NOTE: Conflicts with Windows NT batch files.
 		".dat",		// NOTE: Conflicts with lots of files.
+
 		nullptr
 	};
 	return exts;
