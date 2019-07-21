@@ -68,9 +68,18 @@ class iQueN64Private : public RomDataPrivate
 		RP_DISABLE_COPY(iQueN64Private)
 
 	public:
+		// File type.
+		enum FileType {
+			FT_IQUE_UNKNOWN	= -1,	// Unknown ROM type.
+			FT_IQUE_CMD	= 0,	// .cmd file (content metadata)
+			FT_IQUE_DAT	= 1,	// .dat file (ticket)
+		};
+		int fileType;
+
 		// .cmd structs.
 		iQueN64_contentDesc contentDesc;
 		iQueN64_BbContentMetaDataHead bbContentMetaDataHead;
+		iQueN64_BBTicketHead bbTicketHead;
 
 		// Internal images.
 		rp_image *img_thumbnail;	// handled as icon
@@ -119,12 +128,14 @@ class iQueN64Private : public RomDataPrivate
 
 iQueN64Private::iQueN64Private(iQueN64 *q, IRpFile *file)
 	: super(q, file)
+	, fileType(FT_IQUE_UNKNOWN)
 	, img_thumbnail(nullptr)
 	, img_title(nullptr)
 {
 	// Clear the .cmd structs.
 	memset(&contentDesc, 0, sizeof(contentDesc));
 	memset(&bbContentMetaDataHead, 0, sizeof(bbContentMetaDataHead));
+	memset(&bbTicketHead, 0, sizeof(bbTicketHead));
 }
 
 iQueN64Private::~iQueN64Private()
@@ -362,7 +373,11 @@ iQueN64::iQueN64(IRpFile *file)
 	}
 
 	// Check the filesize.
-	if (file->size() != IQUEN64_CMD_FILESIZE) {
+	// TODO: Identify CMD vs. Ticket and display ticket-specific information?
+	const int64_t filesize = file->size();
+	if (filesize != IQUEN64_CMD_FILESIZE &&
+	    filesize != IQUEN64_DAT_FILESIZE)
+	{
 		// Incorrect filesize.
 		d->file->unref();
 		d->file = nullptr;
@@ -378,14 +393,15 @@ iQueN64::iQueN64(IRpFile *file)
 		return;
 	}
 
-	// Check if this .cmd file is supported.
+	// Check if this file is supported.
 	DetectInfo info;
 	info.header.addr = 0;
 	info.header.size = sizeof(d->contentDesc);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->contentDesc);
 	info.ext = nullptr;	// Not needed for iQueN64.
-	info.szFile = IQUEN64_CMD_FILESIZE;
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	info.szFile = filesize;
+	d->fileType = isRomSupported_static(&info);
+	d->isValid = (d->fileType >= 0);
 
 	if (!d->isValid) {
 		d->file->unref();
@@ -393,13 +409,25 @@ iQueN64::iQueN64(IRpFile *file)
 		return;
 	}
 
-	// Read the bbContentMetaDataHead.
+	// Read the BBContentMetaDataHead.
 	size = d->file->seekAndRead(IQUEN64_BBCONTENTMETADATAHEAD_ADDRESS,
 		&d->bbContentMetaDataHead, sizeof(d->bbContentMetaDataHead));
 	if (size != sizeof(d->bbContentMetaDataHead)) {
+		d->fileType = iQueN64Private::FT_IQUE_UNKNOWN;
 		d->isValid = false;
 		d->file->unref();
 		d->file = nullptr;
+	}
+
+	// If this is a ticket, read the BBTicketHead.
+	if (d->fileType == iQueN64Private::FT_IQUE_DAT) {
+		size = d->file->seekAndRead(IQUEN64_BBTICKETHEAD_ADDRESS,
+			&d->bbTicketHead, sizeof(d->bbTicketHead));
+		if (size != sizeof(d->bbTicketHead)) {
+			// Unable to read the ticket header.
+			// Handle it as a content metadata file.
+			d->fileType = iQueN64Private::FT_IQUE_CMD;
+		}
 	}
 }
 
@@ -424,7 +452,9 @@ int iQueN64::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	if (info->szFile != IQUEN64_CMD_FILESIZE) {
+	if (info->szFile != IQUEN64_CMD_FILESIZE &&
+	    info->szFile != IQUEN64_DAT_FILESIZE)
+	{
 		// Incorrect filesize.
 		return -1;
 	}
@@ -437,7 +467,11 @@ int iQueN64::isRomSupported_static(const DetectInfo *info)
 	// but it appears to be the same for all iQue .cmd files.
 	if (!memcmp(contentDesc->magic, IQUEN64_MAGIC, sizeof(contentDesc->magic))) {
 		// Magic number matches.
-		return 0;
+		if (info->szFile == IQUEN64_DAT_FILESIZE) {
+			return iQueN64Private::FT_IQUE_DAT;
+		} else /*if (info->szFile == IQUEN64_CMD_FILESIZE)*/ {
+			return iQueN64Private::FT_IQUE_CMD;
+		}
 	}
 
 	// Not supported.
@@ -485,6 +519,7 @@ const char *const *iQueN64::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".cmd",		// NOTE: Conflicts with Windows NT batch files.
+		".dat",		// NOTE: Conflicts with lots of files.
 		nullptr
 	};
 	return exts;
@@ -506,6 +541,7 @@ const char *const *iQueN64::supportedMimeTypes_static(void)
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
 		"application/x-ique-cmd",
+		"application/x-ique-dat",
 
 		nullptr
 	};
@@ -602,7 +638,7 @@ int iQueN64::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->fileType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -661,7 +697,7 @@ int iQueN64::loadMetaData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->fileType < 0) {
 		// Unknown ROM image type.
 		return -EIO;
 	}
@@ -721,7 +757,7 @@ int iQueN64::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->fileType < 0) {
 		// Save file isn't valid.
 		return -EIO;
 	}

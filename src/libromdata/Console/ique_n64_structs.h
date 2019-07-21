@@ -18,8 +18,10 @@ extern "C" {
 
 #pragma pack(1)
 
-// .cmd files are always 10,668 bytes.
+// .cmd files are always 10,668 (0x29AC) bytes.
 #define IQUEN64_CMD_FILESIZE 10668
+// .dat (ticket) files are always 11,084 (0x2B4C0 bytes.
+#define IQUEN64_DAT_FILESIZE 11084
 
 /**
  * iQue N64 .cmd header.
@@ -109,6 +111,39 @@ typedef enum {
 	IQUEN64_HW_USB			= (1 << 8),
 	IQUEN64_HW_SK_RAM		= (1 << 9),
 } iQueN64_hwAccessRights_e;
+
+/**
+ * Ticket header.
+ * Located after the content metadata in .dat files.
+ *
+ * Reference: http://www.iquebrew.org/index.php?title=Ticket
+ *
+ * All fields are in big-endian.
+ */
+#define IQUEN64_BBTICKETHEAD_ADDRESS 0x29AC
+typedef struct PACKED _iQueN64_BBTicketHead {
+	uint32_t bbId;			// [0x29AC] Console ID.
+	uint16_t tid;			// [0x29B0] Ticket ID. (if bit 15 is set, this is a trial ticket)
+	uint16_t code;			// [0x29B2] Trial limitation. (See iQueN64_TrialLimitation_e.)
+	uint16_t limit;			// [0x29B4] Number of minutes, or number of launches,
+					//          before limit is exceeded.
+	uint16_t reserved1;		// [0x29B6]
+	uint32_t tsCrlVersion;		// [0x29B8] Ticket CRL version
+	uint8_t cmdIv[16];		// [0x29BC] Title key IV; IV used to re-encrypt title key (with ECDH key)
+	uint8_t serverKey[64];		// [0x29CC] ECC public key used to derive unique title key encryption key
+	char issuer[64];		// [0x2A0C] Certificate used to sign the ticket.
+	uint8_t ticketSign[256];	// [0x2A4C] RSA-2048 signature over CMD *and* above ticket data.
+} iQueN64_BBTicketHead;
+ASSERT_STRUCT(iQueN64_BBTicketHead, 0x2B4C - IQUEN64_BBTICKETHEAD_ADDRESS);
+
+/**
+ * Trial limitations.
+ */
+typedef enum {
+	IQUEN64_TRIAL_TIME_0	= 0,	// Time-based limitation
+	IQUEN64_TRIAL_LAUNCHES	= 1,	// Number of launches
+	IQUEN64_TRIAL_TIME_2	= 2,	// Time-based limitation
+} iQueN64_TrialLimitation_e;
 
 #pragma pack()
 
