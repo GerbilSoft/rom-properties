@@ -365,4 +365,42 @@ int iQueN64::loadFieldData(void)
 	return static_cast<int>(d->fields->count());
 }
 
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int iQueN64::loadMetaData(void)
+{
+	RP_D(iQueN64);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Get the title and ISBN.
+	string rom_title, rom_isbn;
+	int ret = d->getTitleAndISBN(rom_title, rom_isbn);
+	if (ret == 0) {
+		// Title.
+		d->metaData->addMetaData_string(Property::Title, rom_title);
+
+		// TODO: ISBN.
+		//d->metaData->addMetaData_string(Property::ISBN, rom_isbn);
+	}
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
+}
+
 }
