@@ -17,7 +17,7 @@
 /**
  * TODO: Check if the following functions are present:
  * - _aligned_malloc (MSVC)
- * - aligned_alloc (C11)
+ * - aligned_alloc (C11) (FIXME: Not working properly on Mac OS.)
  * - posix_memalign
  * - memalign
  * If none of these are present, we'll use our own custom
@@ -64,7 +64,7 @@ static FORCEINLINE void aligned_free(void *memptr)
 	_aligned_free(memptr);
 }
 
-#elif defined(HAVE_ALIGNED_ALLOC)
+#elif 0 //defined(HAVE_ALIGNED_ALLOC) (FIXME: Not working properly on Mac OS.)
 
 // C11 aligned_alloc()
 #include <stdlib.h>
