@@ -112,8 +112,8 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	RomData *const romData = RomDataFactory::create(file);
+	// file is dup()'d by RomData.
+	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_METADATA);
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.

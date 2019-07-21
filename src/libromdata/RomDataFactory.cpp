@@ -239,6 +239,7 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 #define ATTR_NONE		RomDataFactory::RDA_NONE
 #define ATTR_HAS_THUMBNAIL	RomDataFactory::RDA_HAS_THUMBNAIL
 #define ATTR_HAS_DPOVERLAY	RomDataFactory::RDA_HAS_DPOVERLAY
+#define ATTR_HAS_METADATA	RomDataFactory::RDA_HAS_METADATA
 #define ATTR_CHECK_ISO		RomDataFactory::RDA_CHECK_ISO
 
 // RomData subclasses that use a header at 0 and
@@ -249,43 +250,43 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
-	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL, 0, 'XBEH'),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL, 0, 'CON '),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL, 0, 'PIRS'),
-	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL, 0, 'LIVE'),
+	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CON '),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PIRS'),
+	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL, 0, 'XDBF'),
-	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX1'),
-	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL, 0, 'XEX2'),
+	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX1'),
+	GetRomDataFns_addr(Xbox360_XEX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XEX2'),
 
 	// Handhelds
-	GetRomDataFns_addr(DMG, ATTR_NONE, 0x104, 0xCEED6666),
+	GetRomDataFns_addr(DMG, ATTR_HAS_METADATA, 0x104, 0xCEED6666),
 	GetRomDataFns_addr(GameBoyAdvance, ATTR_NONE, 0x04, 0x24FFAE51),
 	GetRomDataFns_addr(Lynx, ATTR_NONE, 0, 'LYNX'),
-	GetRomDataFns_addr(NGPC, ATTR_NONE, 12, ' SNK'),
+	GetRomDataFns_addr(NGPC, ATTR_HAS_METADATA, 12, ' SNK'),
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
-	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL, 0, 'SMDH'),
+	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 
 	// Textures
-	GetRomDataFns_addr(DirectDrawSurface, ATTR_HAS_THUMBNAIL, 0, 'DDS '),
+	GetRomDataFns_addr(DirectDrawSurface, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'DDS '),
 #ifdef ENABLE_GL
-	GetRomDataFns_addr(KhronosKTX, ATTR_HAS_THUMBNAIL, 0, (uint32_t)'\xABKTX'),
+	GetRomDataFns_addr(KhronosKTX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
 #endif /* ENABLE_GL */
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'PVRT'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'GVRT'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'PVRX'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'GBIX'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL, 0, 'GCIX'),
-	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL, 0, 'VTF\0'),
-	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL, 0, 'VTF3'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRT'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GVRT'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GBIX'),
+	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
+	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
+	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF3'),
 	// TODO: XPR1/XPR2
-	GetRomDataFns_addr(XboxXPR, ATTR_HAS_THUMBNAIL, 0, 'XPR0'),
+	GetRomDataFns_addr(XboxXPR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
 
 	// Audio
-	GetRomDataFns_addr(BRSTM, ATTR_NONE, 0, 'RSTM'),
-	GetRomDataFns_addr(GBS, ATTR_NONE, 0, 'GBS\x01'),
-	GetRomDataFns_addr(NSF, ATTR_NONE, 0, 'NESM'),
-	GetRomDataFns_addr(SPC, ATTR_NONE, 0, 'SNES'),
-	GetRomDataFns_addr(VGM, ATTR_NONE, 0, 'Vgm '),
+	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
+	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 'GBS\x01'),
+	GetRomDataFns_addr(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
+	GetRomDataFns_addr(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
+	GetRomDataFns_addr(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
 
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, '\177ELF'),
@@ -298,32 +299,32 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 // placed at the end of this array.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	// Consoles
-	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(iQueN64, ATTR_NONE),
 	GetRomDataFns(MegaDrive, ATTR_NONE),
-	GetRomDataFns(N64, ATTR_NONE),
+	GetRomDataFns(N64, ATTR_NONE | ATTR_HAS_METADATA),
 	GetRomDataFns(NES, ATTR_NONE),
 	GetRomDataFns(SNES, ATTR_NONE),
-	GetRomDataFns(SegaSaturn, ATTR_NONE),
+	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA),
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(WiiU, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Handhelds
-	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
-	GetRomDataFns(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY),
+	GetRomDataFns(Nintendo3DS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
+	GetRomDataFns(NintendoDS, ATTR_HAS_THUMBNAIL | ATTR_HAS_DPOVERLAY | ATTR_HAS_METADATA),
 
 	// Audio
-	GetRomDataFns(ADX, ATTR_NONE),
-	GetRomDataFns(BCSTM, ATTR_NONE),
-	GetRomDataFns(PSF, ATTR_NONE),
-	GetRomDataFns(SAP, ATTR_NONE),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
-	GetRomDataFns(SNDH, ATTR_NONE),	// "SNDH", or "ICE!" or "Ice!" if packed.
-	GetRomDataFns(SID, ATTR_NONE),	// PSID/RSID; maybe move to _magic[]?
+	GetRomDataFns(ADX, ATTR_HAS_METADATA),
+	GetRomDataFns(BCSTM, ATTR_HAS_METADATA),
+	GetRomDataFns(PSF, ATTR_HAS_METADATA),
+	GetRomDataFns(SAP, ATTR_HAS_METADATA),	// "SAP\r\n", "SAP\n"; maybe move to _magic[]?
+	GetRomDataFns(SNDH, ATTR_HAS_METADATA),	// "SNDH", or "ICE!" or "Ice!" if packed.
+	GetRomDataFns(SID, ATTR_HAS_METADATA),	// PSID/RSID; maybe move to _magic[]?
 
 	// Other
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
@@ -333,17 +334,17 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// The following formats have 16-bit magic numbers,
 	// so they should go at the end of the address=0 section.
 	GetRomDataFns(EXE, ATTR_NONE),	// TODO: Thumbnailing on non-Windows platforms.
-	GetRomDataFns(PlayStationSave, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(PlayStationSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// NOTE: game.com may be at either 0 or 0x40000.
 	// The 0x40000 address is checked below.
-	GetRomDataFns(GameCom, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(GameCom, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Headers with non-zero addresses.
-	GetRomDataFns_addr(Sega8Bit, ATTR_NONE, 0x7FE0, 0x20),
+	GetRomDataFns_addr(Sega8Bit, ATTR_HAS_METADATA, 0x7FE0, 0x20),
 	// NOTE: game.com may be at either 0 or 0x40000.
 	// The 0 address is checked above.
-	GetRomDataFns_addr(GameCom, ATTR_HAS_THUMBNAIL, 0x40000, 0x20),
+	GetRomDataFns_addr(GameCom, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x40000, 0x20),
 
 	// Last chance: ISO-9660 disc images.
 	// NOTE: This might include some console-specific disc images
