@@ -676,14 +676,19 @@ int iQueN64::loadFieldData(void)
 	d->fields->reserve(4);	// Maximum of 4 fields. (TODO: Add more.)
 
 	// Get the title and ISBN.
+	// TODO: Trim trailing newlines?
 	string rom_title, rom_isbn;
 	int ret = d->getTitleAndISBN(rom_title, rom_isbn);
 	if (ret == 0) {
 		// Title.
-		d->fields->addField_string(C_("RomData", "Title"), rom_title);
+		if (!rom_title.empty()) {
+			d->fields->addField_string(C_("RomData", "Title"), rom_title);
+		}
 
 		// ISBN.
-		d->fields->addField_string(C_("RomData", "ISBN"), rom_isbn);
+		if (!rom_isbn.empty()) {
+			d->fields->addField_string(C_("RomData", "ISBN"), rom_isbn);
+		}
 	}
 
 	// Content ID.
@@ -736,14 +741,19 @@ int iQueN64::loadMetaData(void)
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
 	// Get the title and ISBN.
+	// TODO: Trim trailing newlines?
 	string rom_title, rom_isbn;
 	int ret = d->getTitleAndISBN(rom_title, rom_isbn);
 	if (ret == 0) {
 		// Title.
-		d->metaData->addMetaData_string(Property::Title, rom_title);
+		if (!rom_title.empty()) {
+			d->metaData->addMetaData_string(Property::Title, rom_title);
+		}
 
 		// TODO: ISBN.
-		//d->metaData->addMetaData_string(Property::ISBN, rom_isbn);
+		/*if (!rom_isbn.empty()) {
+			d->metaData->addMetaData_string(Property::ISBN, rom_isbn);
+		}*/
 	}
 
 	// Finished reading the metadata.
