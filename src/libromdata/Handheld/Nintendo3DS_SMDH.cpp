@@ -26,6 +26,7 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -431,8 +432,9 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 5 fields.
-	d->fields->reserve(5);
+	// Maximum of 5 fields, plus 3 for iQue 3DS.
+	const bool is_iQue = (le32_to_cpu(smdhHeader->settings.region_code) == N3DS_REGION_CHINA);
+	d->fields->reserve(is_iQue ? 8 : 5);
 	d->fields->setTabName(0, "SMDH");
 
 	// Title fields.
@@ -502,6 +504,38 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		}
 	}
 	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+
+	if (is_iQue) {
+		// Check for iQue 3DS fields.
+		// NOTE: Stored as ASCII, not UTF-16!
+		const char *const ique_data =
+			&reinterpret_cast<const char*>(smdhHeader->titles[N3DS_LANG_CHINESE_SIMP].desc_long)[218];
+		if (ISDIGIT(ique_data[0])) {
+			// Found it.
+			// Each field is fixed-width.
+			// Format:
+			// - ISBN: 17 chars
+			// - Contract Reg. No. [合同登记号]: 11 chars, followed by NULL
+			// - Publishing Approval No.: 7 chars, formatted as: "新出审字 [2012]555号"
+
+			// TODO: Use the fields directly instead of latin1_to_utf8()?
+
+			// ISBN
+			d->fields->addField_string(C_("RomData", "ISBN"),
+				latin1_to_utf8(&ique_data[0], 17));
+
+			// Contract Reg. No.
+			d->fields->addField_string(C_("RomData", "Contract Reg. No."),
+				latin1_to_utf8(&ique_data[17], 11));
+
+			// Publishing Approval No.
+			// Special formatting for this one.
+			d->fields->addField_string(C_("RomData", "Publishing Approval No."),
+				rp_sprintf("新出审字 [%s]%s号",
+					latin1_to_utf8(&ique_data[17+11+1], 4).c_str(),
+					latin1_to_utf8(&ique_data[17+11+1+4], 3).c_str()));
+		}
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
