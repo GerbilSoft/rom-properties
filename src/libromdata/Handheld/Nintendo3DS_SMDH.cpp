@@ -531,8 +531,10 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 
 			// Publishing Approval No.
 			// Special formatting for this one.
+			// NOTE: MSVC is known to mishandle UTF-8 on certain systems.
+			// The UTF-8 text is: "新出审字 [%s]%s号"
 			d->fields->addField_string(C_("RomData", "Publishing Approval No."),
-				rp_sprintf("新出审字 [%s]%s号",
+				rp_sprintf("\xE6\x96\xB0\xE5\x87\xBA\xE5\xAE\xA1\xE5\xAD\x97 [%s]%s\xE5\x8F\xB7",
 					latin1_to_utf8(&ique_data[17+11+1], 4).c_str(),
 					latin1_to_utf8(&ique_data[17+11+1+4], 3).c_str()));
 		}
