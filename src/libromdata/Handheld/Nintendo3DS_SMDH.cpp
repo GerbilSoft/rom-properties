@@ -62,6 +62,7 @@ class Nintendo3DS_SMDH_Private : public RomDataPrivate
 
 	public:
 		// SMDH headers.
+		// NOTE: *NOT* byteswapped!
 		struct {
 			N3DS_SMDH_Header_t header;
 			N3DS_SMDH_Icon_t icon;
@@ -613,7 +614,7 @@ uint32_t Nintendo3DS_SMDH::getRegionCode(void) const
 		// Invalid magic number.
 		return 0;
 	}
-	return d->smdh.header.settings.region_code;
+	return le32_to_cpu(d->smdh.header.settings.region_code);
 }
 
 }
