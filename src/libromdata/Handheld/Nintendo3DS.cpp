@@ -1629,13 +1629,51 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Nintendo3DS::systemName() array index optimization needs to be updated.");
 
+	// 3DS system offset is OR'd with type.
+	type &= SYSNAME_TYPE_MASK;
+
+	// Product code.
+	// Used to determine if it's *New* Nintendo 3DS exclusive.
+	// (KTR instead of CTR)
+	NCCHReader *const ncch = const_cast<Nintendo3DSPrivate*>(d)->loadNCCH();
+	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
+		(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
+	if (ncch_header && ncch_header->product_code[0] == 'K') {
+		// *New* Nintendo 3DS exclusive.
+		type |= (1 << 2);
+	}
+
+	// SMDH contains a region code bitfield.
+	uint32_t smdhRegion = 0;
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
+		// SMDH section loaded.
+		smdhRegion = d->sbptr.smdh.data->getRegionCode();
+	} else {
+		// Load the SMDH section.
+		if (const_cast<Nintendo3DSPrivate*>(d)->loadSMDH() == 0) {
+			// SMDH section loaded.
+			smdhRegion = d->sbptr.smdh.data->getRegionCode();
+		}
+	}
+	if (smdhRegion == N3DS_REGION_CHINA) {
+		// Chinese exclusive.
+		type |= (1 << 3);
+	}
+
 	// Bits 0-1: Type. (long, short, abbreviation)
-	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles.
-	static const char *const sysNames[4] = {
-		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
+	// Bit 2: *New* Nintendo 3DS
+	// Bit 3: iQue
+	static const char *const sysNames[4*4] = {
+		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
+		"*New* Nintendo 3DS", "*New* Nintendo 3DS", "N3DS", nullptr,
+
+		// iQue
+		// NOTE: *New* iQue 3DS wasn't actually released...
+		"iQue 3DS", "iQue 3DS", "3DS", nullptr,
+		"*New* iQue 3DS", "*New* iQue 3DS", "N3DS", nullptr,
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	return sysNames[type];
 }
 
 /**
