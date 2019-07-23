@@ -517,6 +517,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			// - ISBN: 17 chars
 			// - Contract Reg. No. [合同登记号]: 11 chars, followed by NULL
 			// - Publishing Approval No.: 7 chars, formatted as: "新出审字 [2012]555号"
+			// TODO: Figure out what "新出审字" means.
 
 			// TODO: Use the fields directly instead of latin1_to_utf8()?
 
