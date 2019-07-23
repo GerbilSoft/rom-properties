@@ -233,6 +233,12 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		int loadTicketAndTMD(void);
 
 		/**
+		 * Get the SMDH region code.
+		 * @return SMDH region code, or 0 if it could not be obtained.
+		 */
+		uint32_t getSMDHRegionCode(void);
+
+		/**
 		 * Add the title ID, product code, and logo fields.
 		 * Called by loadFieldData().
 		 * @param showContentType If true, show the content type.
@@ -844,6 +850,26 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	// Loaded the TMD header.
 	headers_loaded |= HEADER_TMD;
 	return 0;
+}
+
+/**
+ * Get the SMDH region code.
+ * @return SMDH region code, or 0 if it could not be obtained.
+ */
+uint32_t Nintendo3DSPrivate::getSMDHRegionCode(void)
+{
+	uint32_t smdhRegion = 0;
+	if (headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
+		// SMDH section loaded.
+		smdhRegion = sbptr.smdh.data->getRegionCode();
+	} else {
+		// Load the SMDH section.
+		if (loadSMDH() == 0) {
+			// SMDH section loaded.
+			smdhRegion = sbptr.smdh.data->getRegionCode();
+		}
+	}
+	return smdhRegion;
 }
 
 /**
@@ -1644,17 +1670,7 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	}
 
 	// SMDH contains a region code bitfield.
-	uint32_t smdhRegion = 0;
-	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
-		// SMDH section loaded.
-		smdhRegion = d->sbptr.smdh.data->getRegionCode();
-	} else {
-		// Load the SMDH section.
-		if (const_cast<Nintendo3DSPrivate*>(d)->loadSMDH() == 0) {
-			// SMDH section loaded.
-			smdhRegion = d->sbptr.smdh.data->getRegionCode();
-		}
-	}
+	uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
 	if (smdhRegion == N3DS_REGION_CHINA) {
 		// Chinese exclusive.
 		type |= (1 << 3);
@@ -2860,17 +2876,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// SMDH contains a region code bitfield.
-	uint32_t smdhRegion = 0;
-	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
-		// SMDH section loaded.
-		smdhRegion = d->sbptr.smdh.data->getRegionCode();
-	} else {
-		// Load the SMDH section.
-		if (const_cast<Nintendo3DSPrivate*>(d)->loadSMDH() == 0) {
-			// SMDH section loaded.
-			smdhRegion = d->sbptr.smdh.data->getRegionCode();
-		}
-	}
+	uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
 
 	// Determine the GameTDB region code(s).
 	vector<const char*> tdb_regions = d->n3dsRegionToGameTDB(smdhRegion, id4[3]);
