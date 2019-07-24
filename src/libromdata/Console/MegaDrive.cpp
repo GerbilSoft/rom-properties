@@ -838,7 +838,7 @@ const char *const *MegaDrive::supportedFileExtensions_static(void)
 	static const char *const exts[] = {
 		".gen", ".smd",
 		".32x", ".pco",
-		".sgd",	// Official extension
+		".sgd",	".68k", // Official extensions
 
 		// NOTE: These extensions may cause conflicts on
 		// Windows if fallback handling isn't working.
