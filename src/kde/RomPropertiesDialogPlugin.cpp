@@ -31,6 +31,9 @@ using LibRpBase::RpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
+// C includes.
+#include <unistd.h>
+
 // Qt includes.
 #include <QtCore/QFileInfo>
 

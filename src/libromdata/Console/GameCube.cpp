@@ -38,7 +38,7 @@ using namespace LibRpBase;
 // For sections delegated to other RomData subclasses.
 #include "GameCubeBNR.hpp"
 
-// for strnlen() if not available in <string.h>
+// for strnlen() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
 // C includes. (C++ namespace)
@@ -1345,32 +1345,6 @@ uint32_t GameCube::supportedImageTypes_static(void)
 }
 
 /**
- * Get image processing flags.
- *
- * These specify post-processing operations for images,
- * e.g. applying transparency masks.
- *
- * @param imageType Image type.
- * @return Bitfield of ImageProcessingBF operations to perform.
- */
-uint32_t GameCube::imgpf(ImageType imageType) const
-{
-	ASSERT_imgpf(imageType);
-
-	switch (imageType) {
-		case IMG_INT_BANNER:
-			// Use nearest-neighbor scaling.
-			return IMGPF_RESCALE_NEAREST;
-		default:
-			// GameTDB's GameCube and Wii disc and 3D cover scans
-			// have alpha transparency. Hence, no image processing
-			// is required.
-			break;
-	}
-	return 0;
-}
-
-/**
  * Get a list of all available image sizes for the specified image type.
  *
  * The first item in the returned vector is the "default" size.
@@ -1426,6 +1400,32 @@ vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageType ima
 
 	// Unsupported image type.
 	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t GameCube::imgpf(ImageType imageType) const
+{
+	ASSERT_imgpf(imageType);
+
+	switch (imageType) {
+		case IMG_INT_BANNER:
+			// Use nearest-neighbor scaling.
+			return IMGPF_RESCALE_NEAREST;
+		default:
+			// GameTDB's GameCube and Wii disc and 3D cover scans
+			// have alpha transparency. Hence, no image processing
+			// is required.
+			break;
+	}
+	return 0;
 }
 
 /**

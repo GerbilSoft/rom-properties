@@ -249,7 +249,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 	d->grfMode = grfMode;
 
 	// Attempt to create a RomData object.
-	d->romData = RomDataFactory::create(file);
+	d->romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_METADATA);
 	if (!d->romData) {
 		// No RomData.
 		return E_FAIL;

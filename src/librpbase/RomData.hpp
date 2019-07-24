@@ -222,6 +222,7 @@ class RomData
 			FTYPE_BUNDLE,			// Bundle (Mac OS X)
 			FTYPE_RESOURCE_FILE,		// Resource file
 			FTYPE_PARTITION,		// Partition
+			FTYPE_METADATA_FILE,		// Metadata File
 
 			FTYPE_LAST			// End of FileType.
 		};

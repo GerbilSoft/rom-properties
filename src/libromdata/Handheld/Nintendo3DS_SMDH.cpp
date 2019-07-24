@@ -26,6 +26,7 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -62,6 +63,7 @@ class Nintendo3DS_SMDH_Private : public RomDataPrivate
 
 	public:
 		// SMDH headers.
+		// NOTE: *NOT* byteswapped!
 		struct {
 			N3DS_SMDH_Header_t header;
 			N3DS_SMDH_Icon_t icon;
@@ -430,8 +432,9 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 5 fields.
-	d->fields->reserve(5);
+	// Maximum of 5 fields, plus 3 for iQue 3DS.
+	const bool is_iQue = (le32_to_cpu(smdhHeader->settings.region_code) == N3DS_REGION_CHINA);
+	d->fields->reserve(is_iQue ? 8 : 5);
 	d->fields->setTabName(0, "SMDH");
 
 	// Title fields.
@@ -501,6 +504,41 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		}
 	}
 	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+
+	if (is_iQue) {
+		// Check for iQue 3DS fields.
+		// NOTE: Stored as ASCII, not UTF-16!
+		const char *const ique_data =
+			&reinterpret_cast<const char*>(smdhHeader->titles[N3DS_LANG_CHINESE_SIMP].desc_long)[218];
+		if (ISDIGIT(ique_data[0])) {
+			// Found it.
+			// Each field is fixed-width.
+			// Format:
+			// - ISBN: 17 chars
+			// - Contract Reg. No. [合同登记号]: 11 chars, followed by NULL
+			// - Publishing Approval No.: 7 chars, formatted as: "新出审字 [2012]555号"
+			// TODO: Figure out what "新出审字" means.
+
+			// TODO: Use the fields directly instead of latin1_to_utf8()?
+
+			// ISBN
+			d->fields->addField_string(C_("RomData", "ISBN"),
+				latin1_to_utf8(&ique_data[0], 17));
+
+			// Contract Reg. No.
+			d->fields->addField_string(C_("RomData", "Contract Reg. No."),
+				latin1_to_utf8(&ique_data[17], 11));
+
+			// Publishing Approval No.
+			// Special formatting for this one.
+			// NOTE: MSVC is known to mishandle UTF-8 on certain systems.
+			// The UTF-8 text is: "新出审字 [%s]%s号"
+			d->fields->addField_string(C_("RomData", "Publishing Approval No."),
+				rp_sprintf("\xE6\x96\xB0\xE5\x87\xBA\xE5\xAE\xA1\xE5\xAD\x97 [%s]%s\xE5\x8F\xB7",
+					latin1_to_utf8(&ique_data[17+11+1], 4).c_str(),
+					latin1_to_utf8(&ique_data[17+11+1+4], 3).c_str()));
+		}
+	}
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
@@ -613,7 +651,7 @@ uint32_t Nintendo3DS_SMDH::getRegionCode(void) const
 		// Invalid magic number.
 		return 0;
 	}
-	return d->smdh.header.settings.region_code;
+	return le32_to_cpu(d->smdh.header.settings.region_code);
 }
 
 }

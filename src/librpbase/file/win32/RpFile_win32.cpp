@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 #include "../RpFile.hpp"
 #include "RpFile_win32_p.hpp"
 

@@ -105,6 +105,7 @@ class ImageDecoder
 			PXF_A4L4,	// AAAAllll
 			PXF_L16,	// LLLLLLLL llllllll
 			PXF_A8L8,	// AAAAAAAA LLLLLLLL
+			PXF_L8A8,	// LLLLLLLL AAAAAAAA
 
 			// Alpha formats.
 			PXF_A8,		// AAAAAAAA

@@ -240,7 +240,7 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 	hkey_ext.close();
 
 	// Register the property store handler.
-	if (pHklm) {
+	if (pHklm && (extInfo.attrs & RomDataFactory::RDA_HAS_METADATA)) {
 		lResult = RP_PropertyStore::RegisterFileType(*pHklm, t_ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}

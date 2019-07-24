@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "config.librpbase.h"
 #include "RpPngWriter.hpp"
 
 #include "common.h"

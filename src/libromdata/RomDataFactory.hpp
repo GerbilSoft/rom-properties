@@ -43,9 +43,12 @@ class RomDataFactory
 			// RomData subclass may have "dangerous" permissions.
 			RDA_HAS_DPOVERLAY	= (1 << 1),
 
+			// RomData subclass has metadata.
+			RDA_HAS_METADATA	= (1 << 2),
+
 			// Check for game-specific disc file systems.
 			// (For internal RomDataFactory use only.)
-			RDA_CHECK_ISO		= (1 << 2),
+			RDA_CHECK_ISO		= (1 << 8),
 		};
 
 		/**

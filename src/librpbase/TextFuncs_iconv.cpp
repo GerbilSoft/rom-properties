@@ -201,7 +201,7 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 		free(mbs);
 
 #ifdef HAVE_ICONV_LIBICONV
-		if (cp == 932) {
+		if (cp == CP_SJIS) {
 			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
 			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
 			for (auto p = ret.begin(); p != ret.end(); ++p) {
@@ -262,7 +262,7 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 		free(wcs);
 
 #ifdef HAVE_ICONV_LIBICONV
-		if (cp == 932) {
+		if (cp == CP_SJIS) {
 			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
 			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
 			for (auto p = ret.begin(); p != ret.end(); ++p) {

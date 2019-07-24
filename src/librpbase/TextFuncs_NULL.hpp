@@ -15,7 +15,7 @@
 // C includes. (C++ namespace)
 #include <cstring>
 
-// for strnlen() if not available in <string.h>
+// for strnlen() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
 namespace LibRpBase {

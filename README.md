@@ -90,6 +90,7 @@ button.
 | Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |        No       |       No       |
 | Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |       No       |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |       No       |
+| iQue N64 .cmd/.dat files  |       Yes      |    Yes   |   Icon, Banner  |       No       |
 | Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |  Disc, Covers  |
 | Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |       No       |
 | Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A      |

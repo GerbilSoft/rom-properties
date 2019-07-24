@@ -34,7 +34,7 @@ using namespace LibRpBase;
 #include <cstring>
 #include <ctime>
 
-// for memmem() if not available in <string.h>
+// for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
 // C++ includes.
