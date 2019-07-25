@@ -10,7 +10,7 @@ SET(libromdata_SRCS
 	Console/GameCubeBNR.cpp
 	Console/GameCubeSave.cpp
 	Console/GameCubeRegions.cpp
-	Console/iQueN64.cpp
+	Console/iQuePlayer.cpp
 	Console/MegaDrive.cpp
 	Console/MegaDriveRegions.cpp
 	Console/N64.cpp
@@ -118,7 +118,7 @@ SET(libromdata_H
 	Console/GameCubeBNR.hpp
 	Console/GameCubeSave.hpp
 	Console/GameCubeRegions.hpp
-	Console/iQueN64.hpp
+	Console/iQuePlayer.hpp
 	Console/MegaDrive.hpp
 	Console/MegaDriveRegions.hpp
 	Console/N64.hpp
@@ -141,7 +141,7 @@ SET(libromdata_H
 	Console/gcn_structs.h
 	Console/gcn_banner.h
 	Console/gcn_card.h
-	Console/ique_n64_structs.h
+	Console/ique_player_structs.h
 	Console/md_structs.h
 	Console/n64_structs.h
 	Console/nes_structs.h

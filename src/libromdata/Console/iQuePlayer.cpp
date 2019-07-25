@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * iQueN64.cpp: iQue Nintendo 64 .cmd reader.                              *
+ * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
  * Copyright (c) 2019 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -8,10 +8,10 @@
 
 #include "config.librpbase.h"
 
-#include "iQueN64.hpp"
+#include "iQuePlayer.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "ique_n64_structs.h"
+#include "ique_player_structs.h"
 
 // librpbase
 #include "librpbase/common.h"
@@ -52,23 +52,23 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(iQueN64)
-ROMDATA_IMPL_IMG(iQueN64)
+ROMDATA_IMPL(iQuePlayer)
+ROMDATA_IMPL_IMG(iQuePlayer)
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
 #endif /* _MSC_VER */
 
-class iQueN64Private : public RomDataPrivate
+class iQuePlayerPrivate : public RomDataPrivate
 {
 	public:
-		iQueN64Private(iQueN64 *q, IRpFile *file);
-		virtual ~iQueN64Private();
+		iQuePlayerPrivate(iQuePlayer *q, IRpFile *file);
+		virtual ~iQuePlayerPrivate();
 
 	private:
 		typedef RomDataPrivate super;
-		RP_DISABLE_COPY(iQueN64Private)
+		RP_DISABLE_COPY(iQuePlayerPrivate)
 
 	public:
 		// File type.
@@ -80,9 +80,9 @@ class iQueN64Private : public RomDataPrivate
 		int fileType;
 
 		// .cmd structs.
-		iQueN64_contentDesc contentDesc;
-		iQueN64_BbContentMetaDataHead bbContentMetaDataHead;
-		iQueN64_BBTicketHead bbTicketHead;
+		iQuePlayer_contentDesc contentDesc;
+		iQuePlayer_BbContentMetaDataHead bbContentMetaDataHead;
+		iQuePlayer_BBTicketHead bbTicketHead;
 
 		// Internal images.
 		rp_image *img_thumbnail;	// handled as icon
@@ -127,9 +127,9 @@ class iQueN64Private : public RomDataPrivate
 		const rp_image *loadTitleImage(void);
 };
 
-/** iQueN64Private **/
+/** iQuePlayerPrivate **/
 
-iQueN64Private::iQueN64Private(iQueN64 *q, IRpFile *file)
+iQuePlayerPrivate::iQuePlayerPrivate(iQuePlayer *q, IRpFile *file)
 	: super(q, file)
 	, fileType(FT_IQUE_UNKNOWN)
 	, img_thumbnail(nullptr)
@@ -141,7 +141,7 @@ iQueN64Private::iQueN64Private(iQueN64 *q, IRpFile *file)
 	memset(&bbTicketHead, 0, sizeof(bbTicketHead));
 }
 
-iQueN64Private::~iQueN64Private()
+iQuePlayerPrivate::~iQuePlayerPrivate()
 {
 	delete img_thumbnail;
 	delete img_title;
@@ -153,11 +153,11 @@ iQueN64Private::~iQueN64Private()
  * @param isbn Output string for ISBN.
  * @return 0 on success; non-zero on error.
  */
-int iQueN64Private::getTitleAndISBN(string &title, string &isbn)
+int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 {
 	// Stored immediately after the thumbnail and title images,
 	// and NULL-terminated.
-	static const size_t title_buf_sz = IQUEN64_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
+	static const size_t title_buf_sz = IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
 	std::unique_ptr<char[]> title_buf(new char[title_buf_sz]);
 
 	const int64_t title_addr = sizeof(contentDesc) +
@@ -237,7 +237,7 @@ int iQueN64Private::getTitleAndISBN(string &title, string &isbn)
  * @param byteswap	[in] If true, byteswap before decoding if needed.
  * @return Image, or nullptr on error.
  */
-rp_image *iQueN64Private::loadImage(int64_t address, size_t z_size, size_t unz_size,
+rp_image *iQuePlayerPrivate::loadImage(int64_t address, size_t z_size, size_t unz_size,
 	ImageDecoder::PixelFormat px_format, int w, int h, bool byteswap)
 {
 	assert(address >= static_cast<int64_t>(sizeof(contentDesc)));
@@ -312,7 +312,7 @@ rp_image *iQueN64Private::loadImage(int64_t address, size_t z_size, size_t unz_s
  * Load the thumbnail image.
  * @return Thumbnail image, or nullptr on error.
  */
-const rp_image *iQueN64Private::loadThumbnailImage(void)
+const rp_image *iQuePlayerPrivate::loadThumbnailImage(void)
 {
 	if (img_thumbnail) {
 		// Thumbnail is already loaded.
@@ -331,8 +331,8 @@ const rp_image *iQueN64Private::loadThumbnailImage(void)
 	}
 
 	// Load the image.
-	img_thumbnail = loadImage(thumb_addr, z_thumb_size, IQUEN64_THUMB_SIZE,
-		ImageDecoder::PXF_RGBA5551, IQUEN64_THUMB_W, IQUEN64_THUMB_H, true);
+	img_thumbnail = loadImage(thumb_addr, z_thumb_size, IQUE_PLAYER_THUMB_SIZE,
+		ImageDecoder::PXF_RGBA5551, IQUE_PLAYER_THUMB_W, IQUE_PLAYER_THUMB_H, true);
 	return img_thumbnail;
 }
 
@@ -341,7 +341,7 @@ const rp_image *iQueN64Private::loadThumbnailImage(void)
  * This is the game title in Chinese.
  * @return Title image, or nullptr on error.
  */
-const rp_image *iQueN64Private::loadTitleImage(void)
+const rp_image *iQuePlayerPrivate::loadTitleImage(void)
 {
 	if (img_title) {
 		// Title is already loaded.
@@ -363,19 +363,19 @@ const rp_image *iQueN64Private::loadTitleImage(void)
 	// NOTE: Using A8L8 format, not IA8, which is GameCube-specific.
 	// TODO: Add ImageDecoder::fromLinear16() support for IA8 later.
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	img_title = loadImage(title_addr, z_title_size, IQUEN64_TITLE_SIZE,
-		ImageDecoder::PXF_L8A8, IQUEN64_TITLE_W, IQUEN64_TITLE_H, false);
+	img_title = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
+		ImageDecoder::PXF_L8A8, IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
 #else
-	img_title = loadImage(title_addr, z_title_size, IQUEN64_TITLE_SIZE,
-		ImageDecoder::PXF_A8L8, IQUEN64_TITLE_W, IQUEN64_TITLE_H, false);
+	img_title = loadImage(title_addr, z_title_size, IQUE_PLAYER_TITLE_SIZE,
+		ImageDecoder::PXF_A8L8, IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, false);
 #endif
 	return img_title;
 }
 
-/** iQueN64 **/
+/** iQuePlayer **/
 
 /**
- * Read an iQue N64 .cmd file.
+ * Read an iQue Player .cmd file.
  *
  * A ROM file must be opened by the caller. The file handle
  * will be ref()'d and must be kept open in order to load
@@ -387,11 +387,11 @@ const rp_image *iQueN64Private::loadTitleImage(void)
  *
  * @param file Open ROM image.
  */
-iQueN64::iQueN64(IRpFile *file)
-	: super(new iQueN64Private(this, file))
+iQuePlayer::iQuePlayer(IRpFile *file)
+	: super(new iQuePlayerPrivate(this, file))
 {
-	RP_D(iQueN64);
-	d->className = "iQueN64";
+	RP_D(iQuePlayer);
+	d->className = "iQuePlayer";
 	d->fileType = FTYPE_METADATA_FILE;
 
 	if (!d->file) {
@@ -402,8 +402,8 @@ iQueN64::iQueN64(IRpFile *file)
 	// Check the filesize.
 	// TODO: Identify CMD vs. Ticket and display ticket-specific information?
 	const int64_t filesize = file->size();
-	if (filesize != IQUEN64_CMD_FILESIZE &&
-	    filesize != IQUEN64_DAT_FILESIZE)
+	if (filesize != IQUE_PLAYER_CMD_FILESIZE &&
+	    filesize != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
 		d->file->unref();
@@ -425,7 +425,7 @@ iQueN64::iQueN64(IRpFile *file)
 	info.header.addr = 0;
 	info.header.size = sizeof(d->contentDesc);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->contentDesc);
-	info.ext = nullptr;	// Not needed for iQueN64.
+	info.ext = nullptr;	// Not needed for iQuePlayer.
 	info.szFile = filesize;
 	d->fileType = isRomSupported_static(&info);
 	d->isValid = (d->fileType >= 0);
@@ -437,23 +437,23 @@ iQueN64::iQueN64(IRpFile *file)
 	}
 
 	// Read the BBContentMetaDataHead.
-	size = d->file->seekAndRead(IQUEN64_BBCONTENTMETADATAHEAD_ADDRESS,
+	size = d->file->seekAndRead(IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS,
 		&d->bbContentMetaDataHead, sizeof(d->bbContentMetaDataHead));
 	if (size != sizeof(d->bbContentMetaDataHead)) {
-		d->fileType = iQueN64Private::FT_IQUE_UNKNOWN;
+		d->fileType = iQuePlayerPrivate::FT_IQUE_UNKNOWN;
 		d->isValid = false;
 		d->file->unref();
 		d->file = nullptr;
 	}
 
 	// If this is a ticket, read the BBTicketHead.
-	if (d->fileType == iQueN64Private::FT_IQUE_DAT) {
-		size = d->file->seekAndRead(IQUEN64_BBTICKETHEAD_ADDRESS,
+	if (d->fileType == iQuePlayerPrivate::FT_IQUE_DAT) {
+		size = d->file->seekAndRead(IQUE_PLAYER_BBTICKETHEAD_ADDRESS,
 			&d->bbTicketHead, sizeof(d->bbTicketHead));
 		if (size != sizeof(d->bbTicketHead)) {
 			// Unable to read the ticket header.
 			// Handle it as a content metadata file.
-			d->fileType = iQueN64Private::FT_IQUE_CMD;
+			d->fileType = iQuePlayerPrivate::FT_IQUE_CMD;
 		}
 	}
 }
@@ -465,39 +465,39 @@ iQueN64::iQueN64(IRpFile *file)
  * @param info DetectInfo containing ROM detection information.
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int iQueN64::isRomSupported_static(const DetectInfo *info)
+int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(iQueN64_contentDesc))
+	    info->header.size < sizeof(iQuePlayer_contentDesc))
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
 	}
 
-	if (info->szFile != IQUEN64_CMD_FILESIZE &&
-	    info->szFile != IQUEN64_DAT_FILESIZE)
+	if (info->szFile != IQUE_PLAYER_CMD_FILESIZE &&
+	    info->szFile != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
 		return -1;
 	}
 
-	const iQueN64_contentDesc *const contentDesc =
-		reinterpret_cast<const iQueN64_contentDesc*>(info->header.pData);
+	const iQuePlayer_contentDesc *const contentDesc =
+		reinterpret_cast<const iQuePlayer_contentDesc*>(info->header.pData);
 
 	// Check the magic number.
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all iQue .cmd files.
-	if (!memcmp(contentDesc->magic, IQUEN64_MAGIC, sizeof(contentDesc->magic))) {
+	if (!memcmp(contentDesc->magic, IQUE_PLAYER_MAGIC, sizeof(contentDesc->magic))) {
 		// Magic number matches.
-		if (info->szFile == IQUEN64_DAT_FILESIZE) {
-			return iQueN64Private::FT_IQUE_DAT;
-		} else /*if (info->szFile == IQUEN64_CMD_FILESIZE)*/ {
-			return iQueN64Private::FT_IQUE_CMD;
+		if (info->szFile == IQUE_PLAYER_DAT_FILESIZE) {
+			return iQuePlayerPrivate::FT_IQUE_DAT;
+		} else /*if (info->szFile == IQUE_PLAYER_CMD_FILESIZE)*/ {
+			return iQuePlayerPrivate::FT_IQUE_CMD;
 		}
 	}
 
@@ -510,20 +510,20 @@ int iQueN64::isRomSupported_static(const DetectInfo *info)
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const char *iQueN64::systemName(unsigned int type) const
+const char *iQuePlayer::systemName(unsigned int type) const
 {
-	RP_D(const iQueN64);
+	RP_D(const iQuePlayer);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// iQue was only released in China, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"iQueN64::systemName() array index optimization needs to be updated.");
+		"iQuePlayer::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
-		"iQue", "iQue", "iQue", nullptr
+		"iQue Player", "iQue Player", "iQue", nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
@@ -542,7 +542,7 @@ const char *iQueN64::systemName(unsigned int type) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const char *const *iQueN64::supportedFileExtensions_static(void)
+const char *const *iQuePlayer::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".cmd",		// NOTE: Conflicts with Windows NT batch files.
@@ -563,7 +563,7 @@ const char *const *iQueN64::supportedFileExtensions_static(void)
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const char *const *iQueN64::supportedMimeTypes_static(void)
+const char *const *iQuePlayer::supportedMimeTypes_static(void)
 {
 	static const char *const mimeTypes[] = {
 		// Unofficial MIME types.
@@ -580,7 +580,7 @@ const char *const *iQueN64::supportedMimeTypes_static(void)
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
-uint32_t iQueN64::supportedImageTypes_static(void)
+uint32_t iQuePlayer::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_ICON | IMGBF_INT_BANNER;
 }
@@ -594,7 +594,7 @@ uint32_t iQueN64::supportedImageTypes_static(void)
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
-vector<RomData::ImageSizeDef> iQueN64::supportedImageSizes_static(ImageType imageType)
+vector<RomData::ImageSizeDef> iQuePlayer::supportedImageSizes_static(ImageType imageType)
 {
 	ASSERT_supportedImageSizes(imageType);
 
@@ -602,7 +602,7 @@ vector<RomData::ImageSizeDef> iQueN64::supportedImageSizes_static(ImageType imag
 		case IMG_INT_ICON: {
 			// Icon (thumbnail)
 			static const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, IQUEN64_THUMB_W, IQUEN64_THUMB_H, 0},
+				{nullptr, IQUE_PLAYER_THUMB_W, IQUE_PLAYER_THUMB_H, 0},
 			};
 			return vector<ImageSizeDef>(sz_INT_ICON,
 				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
@@ -610,7 +610,7 @@ vector<RomData::ImageSizeDef> iQueN64::supportedImageSizes_static(ImageType imag
 		case IMG_INT_BANNER: {
 			// Banner (title)
 			static const ImageSizeDef sz_INT_BANNER[] = {
-				{nullptr, IQUEN64_TITLE_W, IQUEN64_TITLE_H, 0},
+				{nullptr, IQUE_PLAYER_TITLE_W, IQUE_PLAYER_TITLE_H, 0},
 			};
 			return vector<ImageSizeDef>(sz_INT_BANNER,
 				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
@@ -632,7 +632,7 @@ vector<RomData::ImageSizeDef> iQueN64::supportedImageSizes_static(ImageType imag
  * @param imageType Image type.
  * @return Bitfield of ImageProcessingBF operations to perform.
  */
-uint32_t iQueN64::imgpf(ImageType imageType) const
+uint32_t iQuePlayer::imgpf(ImageType imageType) const
 {
 	ASSERT_imgpf(imageType);
 
@@ -657,9 +657,9 @@ uint32_t iQueN64::imgpf(ImageType imageType) const
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
  */
-int iQueN64::loadFieldData(void)
+int iQuePlayer::loadFieldData(void)
 {
-	RP_D(iQueN64);
+	RP_D(iQuePlayer);
 	if (!d->fields->empty()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -671,7 +671,7 @@ int iQueN64::loadFieldData(void)
 		return -EIO;
 	}
 
-	const iQueN64_BbContentMetaDataHead *const bbContentMetaDataHead = &d->bbContentMetaDataHead;
+	const iQuePlayer_BbContentMetaDataHead *const bbContentMetaDataHead = &d->bbContentMetaDataHead;
 	d->fields->reserve(4);	// Maximum of 4 fields. (TODO: Add more.)
 
 	// Get the title and ISBN.
@@ -694,7 +694,7 @@ int iQueN64::loadFieldData(void)
 	// NOTE: We don't want the "0x" prefix.
 	// This is sort of like Wii title IDs, but only the
 	// title ID low portion.
-	d->fields->addField_string(C_("iQueN64", "Content ID"),
+	d->fields->addField_string(C_("iQuePlayer", "Content ID"),
 		rp_sprintf("%08X", be32_to_cpu(bbContentMetaDataHead->content_id)),
 		RomFields::STRF_MONOSPACE);
 
@@ -708,8 +708,8 @@ int iQueN64::loadFieldData(void)
 	};
 	vector<string> *const v_hw_access_names = RomFields::strArrayToVector(
 		hw_access_names, ARRAY_SIZE(hw_access_names));
-	
-	d->fields->addField_bitfield(C_("iQueN64", "HW Access"),
+
+	d->fields->addField_bitfield(C_("iQuePlayer", "HW Access"),
 		v_hw_access_names, 3, be32_to_cpu(bbContentMetaDataHead->hwAccessRights));
 
 	// Finished reading the field data.
@@ -721,9 +721,9 @@ int iQueN64::loadFieldData(void)
  * Called by RomData::metaData() if the field data hasn't been loaded yet.
  * @return Number of metadata properties read on success; negative POSIX error code on error.
  */
-int iQueN64::loadMetaData(void)
+int iQuePlayer::loadMetaData(void)
 {
-	RP_D(iQueN64);
+	RP_D(iQuePlayer);
 	if (d->metaData != nullptr) {
 		// Metadata *has* been loaded...
 		return 0;
@@ -766,11 +766,11 @@ int iQueN64::loadMetaData(void)
  * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int iQueN64::loadInternalImage(ImageType imageType, const rp_image **pImage)
+int iQuePlayer::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	ASSERT_loadInternalImage(imageType, pImage);
 
-	RP_D(iQueN64);
+	RP_D(iQuePlayer);
 	switch (imageType) {
 		case IMG_INT_ICON:
 			if (d->img_thumbnail) {

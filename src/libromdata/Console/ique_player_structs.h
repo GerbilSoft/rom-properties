@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * ique_n64_structs.h: iQue N64 data structures.                           *
+ * ique_player_structs.h: iQue Player data structures.                     *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_IQUE_N64_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_IQUE_N64_STRUCTS_H__
+#ifndef __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__
+#define __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__
 
 #include "librpbase/common.h"
 #include <stdint.h>
@@ -19,20 +19,20 @@ extern "C" {
 #pragma pack(1)
 
 // .cmd files are always 10,668 (0x29AC) bytes.
-#define IQUEN64_CMD_FILESIZE 10668
+#define IQUE_PLAYER_CMD_FILESIZE 10668
 // .dat (ticket) files are always 11,084 (0x2B4C0 bytes.
-#define IQUEN64_DAT_FILESIZE 11084
+#define IQUE_PLAYER_DAT_FILESIZE 11084
 
 /**
- * iQue N64 .cmd header.
+ * iQue Player .cmd header.
  * References:
  * - https://github.com/simontime/iQueCMD/blob/master/Program.cs
  * - http://www.iquebrew.org/index.php?title=CMD
  *
  * All fields are in big-endian.
  */
-#define IQUEN64_MAGIC "CAM"
-typedef struct PACKED _iQueN64_contentDesc {
+#define IQUE_PLAYER_MAGIC "CAM"
+typedef struct PACKED _iQuePlayer_contentDesc {
 	uint32_t eeprom_rdram_addr;		// [0x000] EEPROM RDRAM address
 	uint32_t eeprom_rdram_size;		// [0x004] EEPROM RDRAM size
 	uint32_t flash_rdram_addr;		// [0x008] Flash RDRAM address
@@ -55,16 +55,16 @@ typedef struct PACKED _iQueN64_contentDesc {
 	// Following the .cmd header are the two images, both DEFLATE-compressed:
 	// - Thumbnail image: 56x56, RGBA5551
 	// - Title image: 184x24, IA8
-} iQueN64_contentDesc;
-ASSERT_STRUCT(iQueN64_contentDesc, 0x48);
+} iQuePlayer_contentDesc;
+ASSERT_STRUCT(iQuePlayer_contentDesc, 0x48);
 
 // Image sizes.
-#define IQUEN64_THUMB_W 56
-#define IQUEN64_THUMB_H 56
-#define IQUEN64_THUMB_SIZE (IQUEN64_THUMB_W * IQUEN64_THUMB_H * 2)
-#define IQUEN64_TITLE_W 184
-#define IQUEN64_TITLE_H 24
-#define IQUEN64_TITLE_SIZE (IQUEN64_TITLE_W * IQUEN64_TITLE_H * 2)
+#define IQUE_PLAYER_THUMB_W 56
+#define IQUE_PLAYER_THUMB_H 56
+#define IQUE_PLAYER_THUMB_SIZE (IQUE_PLAYER_THUMB_W * IQUE_PLAYER_THUMB_H * 2)
+#define IQUE_PLAYER_TITLE_W 184
+#define IQUE_PLAYER_TITLE_H 24
+#define IQUE_PLAYER_TITLE_SIZE (IQUE_PLAYER_TITLE_W * IQUE_PLAYER_TITLE_H * 2)
 
 /**
  * Content metadata header.
@@ -74,8 +74,8 @@ ASSERT_STRUCT(iQueN64_contentDesc, 0x48);
  *
  * All fields are in big-endian.
  */
-#define IQUEN64_BBCONTENTMETADATAHEAD_ADDRESS 0x2800
-typedef struct PACKED _iQueN64_BbContentMetaDataHead {
+#define IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS 0x2800
+typedef struct PACKED _iQuePlayer_BbContentMetaDataHead {
 	uint32_t unusedPadding;		// [0x000]
 	uint32_t caCrlVersion;		// [0x004]
 	uint32_t cpCrlVersion;		// [0x008]
@@ -85,7 +85,7 @@ typedef struct PACKED _iQueN64_BbContentMetaDataHead {
 	uint8_t hash[20];		// [0x024] SHA-1 hash of the application plaintext.
 	uint8_t iv[16];			// [0x038] Content IV.
 	uint32_t execFlags;		// [0x048]
-	uint32_t hwAccessRights;	// [0x04C] See iQueN64_hwAccessRights_e.
+	uint32_t hwAccessRights;	// [0x04C] See IQUE_PLAYER_hwAccessRights_e.
 	uint32_t secureKernelRights;	// [0x050] Secure kernel calls. (bitfield, 1=allowed)
 	uint32_t bbid;			// [0x054] If non-zero, limited to specific console.
 	char issuer[64];		// [0x058] Certificate used to sign CMD.
@@ -93,24 +93,24 @@ typedef struct PACKED _iQueN64_BbContentMetaDataHead {
 	uint8_t key[16];		// [0x09C] Encrypted title key.
 	uint8_t rsa2048_sig[256];	// [0x0AC] RSA-2048 signature. If key[] is encrypted twice
 					// for non-SA, then this is *before* the second encryption.
-} iQueN64_BbContentMetaDataHead;
-ASSERT_STRUCT(iQueN64_BbContentMetaDataHead, 0x1AC);
+} iQuePlayer_BbContentMetaDataHead;
+ASSERT_STRUCT(iQuePlayer_BbContentMetaDataHead, 0x1AC);
 
 /**
  * Hardware access rights.
  */
 typedef enum {
-	IQUEN64_HW_PI_BUFFER		= (1 << 0),
-	IQUEN64_HW_NAND_FLASH		= (1 << 1),
-	IQUEN64_HW_MEMORY_MAPPER	= (1 << 2),
-	IQUEN64_HW_AES_ENGINE		= (1 << 3),
-	IQUEN64_HW_NEW_PI_DMA		= (1 << 4),
-	IQUEN64_HW_GPIO			= (1 << 5),
-	IQUEN64_HW_EXT_IO		= (1 << 6),
-	IQUEN64_HW_NEW_PI_ERR		= (1 << 7),
-	IQUEN64_HW_USB			= (1 << 8),
-	IQUEN64_HW_SK_RAM		= (1 << 9),
-} iQueN64_hwAccessRights_e;
+	IQUE_PLAYER_HW_PI_BUFFER		= (1 << 0),
+	IQUE_PLAYER_HW_NAND_FLASH		= (1 << 1),
+	IQUE_PLAYER_HW_MEMORY_MAPPER	= (1 << 2),
+	IQUE_PLAYER_HW_AES_ENGINE		= (1 << 3),
+	IQUE_PLAYER_HW_NEW_PI_DMA		= (1 << 4),
+	IQUE_PLAYER_HW_GPIO			= (1 << 5),
+	IQUE_PLAYER_HW_EXT_IO		= (1 << 6),
+	IQUE_PLAYER_HW_NEW_PI_ERR		= (1 << 7),
+	IQUE_PLAYER_HW_USB			= (1 << 8),
+	IQUE_PLAYER_HW_SK_RAM		= (1 << 9),
+} iQuePlayer_hwAccessRights_e;
 
 /**
  * Ticket header.
@@ -120,11 +120,11 @@ typedef enum {
  *
  * All fields are in big-endian.
  */
-#define IQUEN64_BBTICKETHEAD_ADDRESS 0x29AC
-typedef struct PACKED _iQueN64_BBTicketHead {
+#define IQUE_PLAYER_BBTICKETHEAD_ADDRESS 0x29AC
+typedef struct PACKED _iQuePlayer_BBTicketHead {
 	uint32_t bbId;			// [0x29AC] Console ID.
 	uint16_t tid;			// [0x29B0] Ticket ID. (if bit 15 is set, this is a trial ticket)
-	uint16_t code;			// [0x29B2] Trial limitation. (See iQueN64_TrialLimitation_e.)
+	uint16_t code;			// [0x29B2] Trial limitation. (See IQUE_PLAYER_TrialLimitation_e.)
 	uint16_t limit;			// [0x29B4] Number of minutes, or number of launches,
 					//          before limit is exceeded.
 	uint16_t reserved1;		// [0x29B6]
@@ -133,17 +133,17 @@ typedef struct PACKED _iQueN64_BBTicketHead {
 	uint8_t serverKey[64];		// [0x29CC] ECC public key used to derive unique title key encryption key
 	char issuer[64];		// [0x2A0C] Certificate used to sign the ticket.
 	uint8_t ticketSign[256];	// [0x2A4C] RSA-2048 signature over CMD *and* above ticket data.
-} iQueN64_BBTicketHead;
-ASSERT_STRUCT(iQueN64_BBTicketHead, 0x2B4C - IQUEN64_BBTICKETHEAD_ADDRESS);
+} iQuePlayer_BBTicketHead;
+ASSERT_STRUCT(iQuePlayer_BBTicketHead, 0x2B4C - IQUE_PLAYER_BBTICKETHEAD_ADDRESS);
 
 /**
  * Trial limitations.
  */
 typedef enum {
-	IQUEN64_TRIAL_TIME_0	= 0,	// Time-based limitation
-	IQUEN64_TRIAL_LAUNCHES	= 1,	// Number of launches
-	IQUEN64_TRIAL_TIME_2	= 2,	// Time-based limitation
-} iQueN64_TrialLimitation_e;
+	IQUE_PLAYER_TRIAL_TIME_0	= 0,	// Time-based limitation
+	IQUE_PLAYER_TRIAL_LAUNCHES	= 1,	// Number of launches
+	IQUE_PLAYER_TRIAL_TIME_2	= 2,	// Time-based limitation
+} iQuePlayer_TrialLimitation_e;
 
 #pragma pack()
 
@@ -151,4 +151,4 @@ typedef enum {
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_IQUE_N64_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__ */
