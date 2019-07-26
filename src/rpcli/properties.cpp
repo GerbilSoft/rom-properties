@@ -893,7 +893,11 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	os << "-- " << (systemName ? systemName : "(unknown system)") <<
 	      ' ' << (fileType ? fileType : "(unknown filetype)") <<
 	      " detected" << endl;
-	os << FieldsOutput(*(romdata->fields())) << endl;
+	const RomFields *const fields = romdata->fields();
+	assert(fields != nullptr);
+	if (fields) {
+		os << FieldsOutput(*fields) << endl;
+	}
 
 	const int supported = romdata->supportedImageTypes();
 
@@ -958,7 +962,11 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	} else {
 		os << "\"unknown\"";
 	}
-	os << ",\"fields\":" << JSONFieldsOutput(*(romdata->fields()));
+	const RomFields *const fields = romdata->fields();
+	assert(fields != nullptr);
+	if (fields) {
+		os << ",\"fields\":" << JSONFieldsOutput(*fields);
+	}
 
 	const int supported = romdata->supportedImageTypes();
 

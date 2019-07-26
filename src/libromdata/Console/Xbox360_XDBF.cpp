@@ -1066,6 +1066,17 @@ void Xbox360_XDBF::init(void)
 		(d->xdbfHeader.entry_table_length * sizeof(XDBF_Entry)) +
 		(d->xdbfHeader.free_space_table_length * sizeof(XDBF_Free_Space_Entry));
 
+	// Sanity check: Maximum of 1,048,576 entries.
+	//assert(d->xdbfHeader.entry_table_length < 1048576);
+	if (d->xdbfHeader.entry_table_length >= 1048576) {
+		// Too many entries.
+		d->xdbfHeader.magic = 0;
+		d->file->unref();
+		d->file = nullptr;
+		d->isValid = false;
+		return;
+	}
+
 	// Read the entry table.
 	const size_t entry_table_sz = d->xdbfHeader.entry_table_length * sizeof(XDBF_Entry);
 	d->entryTable = new XDBF_Entry[d->xdbfHeader.entry_table_length];
@@ -1077,6 +1088,7 @@ void Xbox360_XDBF::init(void)
 		d->xdbfHeader.magic = 0;
 		d->file->unref();
 		d->file = nullptr;
+		d->isValid = false;
 	}
 }
 
