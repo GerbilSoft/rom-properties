@@ -121,6 +121,7 @@ ADD_CUSTOM_TARGET(rom-properties.pot
 	COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE}
 		-o ${DOMAIN}.pot
 		--default-domain=${DOMAIN}
+		--from-code=UTF-8
 		--add-comments=tr:
 		--keyword=_ --keyword=C_:1c,2 --keyword=N_:1,2 --keyword=NC_:1c,2,3
 		--keyword=NOP_ --keyword=NOP_C_:1c,2 --keyword=NOP_N_:1,2 --keyword=NOP_NC_:1c,2,3
