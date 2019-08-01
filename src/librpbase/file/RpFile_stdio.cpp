@@ -74,7 +74,8 @@ int RpFilePrivate::reOpenFile(void)
 	}
 	file = fopen(filename.c_str(), mode_str);
 
-	// Return 0 if it's *not* nullptr.
+	// If fopen() failed (and returned nullptr),
+	// return the non-zero error code.
 	if (!file) {
 		q->m_lastError = errno;
 		if (q->m_lastError == 0) {
