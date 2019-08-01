@@ -343,9 +343,9 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 		}
 
 		case PXF_ARGB4444: {
-			for (unsigned int i = 0; i < 256; i++) {
-				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
-				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+			for (unsigned int i = 0; i < 256; i += 2) {
+				palette[i+0] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i);
 				}
