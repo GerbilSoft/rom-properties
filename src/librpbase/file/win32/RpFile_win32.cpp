@@ -191,9 +191,13 @@ int RpFilePrivate::reOpenFile(void)
 		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
 		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
 			// File cannot be opened.
-			RP_Q(RpFile);
-			q->m_lastError = EIO;
-			return -EIO;
+			// This is okay if creating a new file, but not if we're
+			// opening an existing file.
+			if (!(mode & RpFile::FM_CREATE)) {
+				RP_Q(RpFile);
+				q->m_lastError = EIO;
+				return -EIO;
+			}
 		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
 			// File is a directory.
 			RP_Q(RpFile);
