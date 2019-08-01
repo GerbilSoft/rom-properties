@@ -104,6 +104,14 @@ class SegaPVRPrivate : public RomDataPrivate
 		 * @return True if format is PVR and pxfmt or idt is SVR; false if not.
 		 */
 		bool isSvrTexture(void) const;
+
+		/**
+		 * Unswizzle a 4-bit or 8-bit SVR texture.
+		 * All 4-bit and 8-bit SVR textures >=128x128 are swizzled.
+		 * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
+		 * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
+		 */
+		static rp_image *svr_unswizzle_4or8(const rp_image *img_swz);
 };
 
 /** SegaPVRPrivate **/
@@ -491,6 +499,15 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
 				pal_buf.get(), svr_pal_buf_sz);
+
+			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
+				// Need to unswizzle the texture.
+				rp_image *const img_unswz = svr_unswizzle_4or8(img);
+				if (img_unswz) {
+					delete img;
+					img = img_unswz;
+				}
+			}
 			break;
 		}
 
@@ -517,6 +534,15 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
 				pal_buf.get(), svr_pal_buf_sz);
+
+			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
+				// Need to unswizzle the texture.
+				rp_image *const img_unswz = svr_unswizzle_4or8(img);
+				if (img_unswz) {
+					delete img;
+					img = img_unswz;
+				}
+			}
 			break;
 		}
 
@@ -679,6 +705,101 @@ bool SegaPVRPrivate::isSvrTexture(void) const
 
 	// Not SVR.
 	return false;
+}
+
+/**
+ * Unswizzle a 4-bit or 8-bit SVR texture.
+ * All 4-bit and 8-bit SVR textures >=128x128 are swizzled.
+ * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
+ * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
+ */
+rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
+{
+	// TODO: Move to ImageDecoder if more PS2 formats are added.
+
+	// NOTE: The original code is for 4-bit textures, but 8-bit
+	// textures use the same algorithm. Since we've already
+	// decoded the 4-bit pixels to 8-bit, we can use the same
+	// function for both.
+
+	// References:
+	// - https://forum.xentax.com/viewtopic.php?f=18&t=3516
+	// - https://gist.github.com/Fireboyd78/1546f5c86ebce52ce05e7837c697dc72
+
+	// Original Delphi version by Dageron:
+	// - https://gta.nick7.com/ps2/swizzling/unswizzle_delphi.txt
+
+	static const uint8_t interlaceMatrix[] = {
+		0x00, 0x10, 0x02, 0x12,
+		0x11, 0x01, 0x13, 0x03,
+	};
+	static const int8_t matrix[] = {0, 1, -1, 0};
+	static const int8_t tileMatrix[] = {4, -4};
+
+	// Only CI8 formats are supported here.
+	assert(img_swz != nullptr);
+	assert(img_swz->isValid());
+	assert(img_swz->format() == rp_image::FORMAT_CI8);
+	if (!img_swz || !img_swz->isValid() ||
+	    img_swz->format() != rp_image::FORMAT_CI8)
+	{
+		return nullptr;
+	}
+
+	const int width = img_swz->width();
+	const int height = img_swz->height();
+
+	rp_image *const img = new rp_image(width, height, img_swz->format());
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// Strides must be equal to the image width.
+	assert(img_swz->stride() == width);
+	assert(img->stride() == width);
+	if (img_swz->stride() != width || img->stride() != width) {
+		delete img;
+		return nullptr;
+	}
+
+	// Copy the palette.
+	int palette_len = std::min(img_swz->palette_len(), img->palette_len());
+	memcpy(img->palette(), img_swz->palette(), palette_len * sizeof(uint32_t));
+
+	const uint8_t *src_pixels = static_cast<const uint8_t*>(img_swz->bits());
+	uint8_t *dest_pixels = static_cast<uint8_t*>(img->bits());
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			bool oddRow = (y & 1);
+
+			int num1 = (y / 4) & 1;
+			int num2 = (x / 4) & 1;
+			int num3 = (y % 4);
+
+			int num4 = ((x / 4) % 4);
+
+			if (oddRow) {
+				num4 += 4;
+			}
+
+			int num5 = ((x * 4) % 16);
+			int num6 = ((x / 16) * 32);
+
+			int num7 = oddRow ? ((y - 1) * width) : (y * width);
+
+			int xx = x + num1 * tileMatrix[num2];
+			int yy = y + matrix[num3];
+
+			int i = interlaceMatrix[num4] + num5 + num6 + num7;
+			int j = yy * width + xx;
+
+			dest_pixels[j] = src_pixels[i];
+		}
+	}
+
+	return img;
 }
 
 /** SegaPVR **/
