@@ -141,14 +141,14 @@ class ImageDecoder
 		 * @param img_buf CI4 image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)/2]
 		 * @param pal_buf Palette buffer.
-		 * @param pal_siz Size of palette data. [must be >= 16*2]
+		 * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
 		 * @return rp_image, or nullptr on error.
 		 */
 		template<bool msn_left>
 		static rp_image *fromLinearCI4(PixelFormat px_format,
 			int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz,
-			const uint16_t *RESTRICT pal_buf, int pal_siz);
+			const void *RESTRICT pal_buf, int pal_siz);
 
 		/**
 		 * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.

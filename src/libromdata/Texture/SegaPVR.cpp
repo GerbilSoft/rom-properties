@@ -237,6 +237,9 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 	}
 
+	// SVR palette size.
+	size_t svr_pal_buf_sz = 0;
+
 	// Determine the image size.
 	switch (pvrHeader.pvr.img_data_type) {
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
@@ -293,6 +296,40 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
 			mipmap_size += pal_siz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 4);
+			break;
+		}
+
+		case SVR_IMG_INDEX4_RGB5A3_RECTANGLE:
+		case SVR_IMG_INDEX4_RGB5A3_SQUARE: {
+			// 16-color palette is located at the beginning of the data.
+			svr_pal_buf_sz = 16*2;
+			mipmap_size = svr_pal_buf_sz;
+			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			break;
+		}
+		case SVR_IMG_INDEX4_ARGB8_RECTANGLE:
+		case SVR_IMG_INDEX4_ARGB8_SQUARE: {
+			// 16-color palette is located at the beginning of the data.
+			svr_pal_buf_sz = 16*4;
+			mipmap_size = svr_pal_buf_sz;
+			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			break;
+		}
+
+		case SVR_IMG_INDEX8_RGB5A3_RECTANGLE:
+		case SVR_IMG_INDEX8_RGB5A3_SQUARE: {
+			// 256-color palette is located at the beginning of the data.
+			svr_pal_buf_sz = 256*2;
+			mipmap_size = svr_pal_buf_sz;
+			expected_size = (pvrHeader.width * pvrHeader.height);
+			break;
+		}
+		case SVR_IMG_INDEX8_ARGB8_RECTANGLE:
+		case SVR_IMG_INDEX8_ARGB8_SQUARE: {
+			// 256-color palette is located at the beginning of the data.
+			svr_pal_buf_sz = 256*4;
+			mipmap_size = svr_pal_buf_sz;
+			expected_size = (pvrHeader.width * pvrHeader.height);
 			break;
 		}
 
@@ -386,13 +423,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// VQ images have a 1024-entry palette.
 			// This is stored before the mipmaps, so we need to read it manually.
 			static const unsigned int pal_siz = 1024*2;
-			ret = file->seek(pvrDataStart);
-			if (ret != 0) {
-				// Seek error.
-				break;
-			}
 			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
-			size = file->read(pal_buf.get(), pal_siz);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
 				break;
@@ -423,13 +455,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// This is stored before the mipmaps, so we need to read it manually.
 			const unsigned int pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
-			ret = file->seek(pvrDataStart);
-			if (ret != 0) {
-				// Seek error.
-				break;
-			}
 			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
-			size = file->read(pal_buf.get(), pal_siz);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
 				break;
@@ -438,6 +465,32 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size, pal_buf.get(), pal_siz);
+			break;
+		}
+
+		// TODO: "Square" formats. (twiddled?)
+		// FIXME: Colors don't seem right... Need to verify.
+		case SVR_IMG_INDEX4_RGB5A3_RECTANGLE:
+		case SVR_IMG_INDEX4_ARGB8_RECTANGLE: {
+			assert(svr_pal_buf_sz != 0);
+			if (svr_pal_buf_sz == 0) {
+				// Invalid palette buffer size.
+				return nullptr;
+			}
+
+			// Palette is located immediately after the PVR header.
+			unique_ptr<uint8_t[]> pal_buf(new uint8_t[svr_pal_buf_sz]);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), svr_pal_buf_sz);
+			if (size != svr_pal_buf_sz) {
+				// Seek and/or read error.
+				return nullptr;
+			}
+
+			// Least-significant nybble is first.
+			img = ImageDecoder::fromLinearCI4<false>(px_format,
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expected_size,
+				pal_buf.get(), svr_pal_buf_sz);
 			break;
 		}
 
