@@ -771,29 +771,31 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	const uint8_t *src_pixels = static_cast<const uint8_t*>(img_swz->bits());
 	uint8_t *dest_pixels = static_cast<uint8_t*>(img->bits());
 	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			bool oddRow = (y & 1);
+		const bool oddRow = (y & 1);
+		const int num1 = (y / 4) & 1;
+		const int num3 = (y % 4);
+		const int yy = y + matrix[num3];
 
-			int num1 = (y / 4) & 1;
-			int num2 = (x / 4) & 1;
-			int num3 = (y % 4);
+		int num7 = y * width;
+		if (oddRow) {
+			num7 -= width;
+		}
+
+		for (int x = 0; x < width; x++) {
+			const int num2 = (x / 4) & 1;
 
 			int num4 = ((x / 4) % 4);
-
 			if (oddRow) {
 				num4 += 4;
 			}
 
-			int num5 = ((x * 4) % 16);
-			int num6 = ((x / 16) * 32);
+			const int num5 = ((x * 4) % 16);
+			const int num6 = ((x / 16) * 32);
 
-			int num7 = oddRow ? ((y - 1) * width) : (y * width);
+			const int xx = x + num1 * tileMatrix[num2];
 
-			int xx = x + num1 * tileMatrix[num2];
-			int yy = y + matrix[num3];
-
-			int i = interlaceMatrix[num4] + num5 + num6 + num7;
-			int j = yy * width + xx;
+			const int i = interlaceMatrix[num4] + num5 + num6 + num7;
+			const int j = yy * width + xx;
 
 			dest_pixels[j] = src_pixels[i];
 		}
