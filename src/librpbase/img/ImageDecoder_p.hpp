@@ -275,6 +275,17 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t A2B10G10R10_to_ARGB32(uint32_t px32);
 
+		// PlayStation 2-specific 32-bit RGB
+
+		/**
+		 * Convert a BGR888_ABGR7888 pixel to ARGB32. (PlayStation 2)
+		 * Similar to GameCube RGB5A3, but with 32-bit channels.
+		 * (Why would you do this... Just set alpha to 0xFF!)
+		 * @param px32 BGR888_ABGR7888 pixel. (Must be host-endian.)
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32);
+
 		// Luminance
 
 		/**
@@ -918,6 +929,41 @@ inline uint32_t ImageDecoderPrivate::A2B10G10R10_to_ARGB32(uint32_t px32)
 	       a2_lookup[px32 >> 30];		// Alpha
 	return argb;
 }
+
+// PlayStation 2-specific 32-bit RGB
+
+/**
+ * Convert a BGR888_ABGR7888 pixel to ARGB32. (PlayStation 2)
+ * Similar to GameCube RGB5A3, but with 32-bit channels.
+ * (Why would you do this... Just set alpha to 0xFF!)
+ * @param px16 BGR888_ABGR7888 pixel. (Must be host-endian.)
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGR888_ABGR7888_to_ARGB32(uint32_t px32)
+{
+	uint32_t argb;
+
+	if (px32 & 0x80000000U) {
+		// BGR888: xxxxxxxx BBBBBBBB GGGGGGGG RRRRRRRR
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		argb = 0xFF000000U;		// no alpha channel
+		argb |= (px32 >> 16) & 0xFF;	// Blue
+		argb |= (px32 & 0x0000FF00U);	// Green
+		argb |= (px32 & 0xFF) << 16;	// Red
+	} else {
+		// ABGR7888: xAAAAAAA BBBBBBBB GGGGGGGG RRRRRRRR
+		//   ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		argb  = (px32 & 0x7F000000U) << 1;	// Alpha
+		argb |= (argb & 0x80000000U) >> 7;	// Alpha LSB
+		argb |= (px32 >> 16) & 0xFF;	// Blue
+		argb |= (px32 & 0x0000FF00U);	// Green
+		argb |= (px32 & 0xFF) << 16;	// Red
+	}
+
+	return argb;
+}
+
+// Luminance
 
 /**
  * Convert an L8 pixel to ARGB32.

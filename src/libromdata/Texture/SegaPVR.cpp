@@ -263,7 +263,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
 					break;
 
-				case SVR_PX_ABGR8888:
+				case SVR_PX_BGR888_ABGR7888:
 					expected_size = ((pvrHeader.width * pvrHeader.height) * 4);
 					break;
 
@@ -383,8 +383,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// TODO: Verify that this works for SVR.
 			px_format = ImageDecoder::PXF_BGR5A3;
 			break;
-		case SVR_PX_ABGR8888:
-			px_format = ImageDecoder::PXF_ABGR8888;
+		case SVR_PX_BGR888_ABGR7888:
+			px_format = ImageDecoder::PXF_BGR888_ABGR7888;
 			is32bit = true;
 			break;
 		default:
@@ -1179,7 +1179,7 @@ int SegaPVR::loadFieldData(void)
 		"8-bit per pixel", nullptr,	// 0x06-0x07
 
 		// Sony PlayStation 2 (SVR)
-		"BGR5A3", "ABGR8888",		// 0x08-0x09
+		"BGR5A3", "BGR888_ABGR7888",	// 0x08-0x09
 	};
 	static const char *const pxfmt_tbl_gvr[] = {
 		// GameCube (GVR)

@@ -66,8 +66,8 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
 		return nullptr;
 	}
 
-	// Handle ABGR8888 palette pixel format for SVR.
-	if (px_format == PXF_ABGR8888) {
+	// Handle BGR888_ABGR7888 palette pixel format for SVR.
+	if (px_format == PXF_BGR888_ABGR7888) {
 		// 32-bit palette required.
 		assert(pal_siz >= 16*4);
 		if (pal_siz < 16*4) {
@@ -203,14 +203,13 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
 			break;
 		}
 
-		case PXF_ABGR8888: {
+		case PXF_BGR888_ABGR7888: {
+			// TODO: Endianness?
+			// Assuming little-endian for SVR right now.
 			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 16; i++, pal_buf32++) {
 				// Swap the R and B channels for ARGB32.
-				const uint32_t c = le32_to_cpu(*pal_buf32);
-				palette[i] = (c & 0xFF00FF00) |
-					     ((c >> 16) & 0xFF) |
-					     ((c & 0xFF) << 16);
+				palette[i] = ImageDecoderPrivate::BGR888_ABGR7888_to_ARGB32(le32_to_cpu(*pal_buf32));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i);
@@ -291,8 +290,8 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Handle ABGR8888 palette pixel format for SVR.
-	if (px_format == PXF_ABGR8888) {
+	// Handle BGR888_ABGR7888 palette pixel format for SVR.
+	if (px_format == PXF_BGR888_ABGR7888) {
 		// 32-bit palette required.
 		assert(pal_siz >= 256*4);
 		if (pal_siz < 256*4) {
@@ -401,23 +400,17 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_ABGR8888: {
+		case PXF_BGR888_ABGR7888: {
+			// TODO: Endianness?
+			// Assuming little-endian for SVR right now.
 			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
-				// Swap the R and B channels for ARGB32.
-				uint32_t c = le32_to_cpu(pal_buf32[0]);
-				palette[i+0] = (c & 0xFF00FF00) |
-					       ((c >> 16) & 0xFF) |
-					       ((c & 0xFF) << 16);
+				palette[i+0] = ImageDecoderPrivate::BGR888_ABGR7888_to_ARGB32(le32_to_cpu(pal_buf32[0]));
 				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-
-				c = le32_to_cpu(pal_buf32[1]);
-				palette[i+1] = (c & 0xFF00FF00) |
-					       ((c >> 16) & 0xFF) |
-					       ((c & 0xFF) << 16);
+				palette[i+1] = ImageDecoderPrivate::BGR888_ABGR7888_to_ARGB32(le32_to_cpu(pal_buf32[1]));
 				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
@@ -1178,6 +1171,9 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 		// For now, truncating it to ARGB32.
 		fromLinear32_convert(A2R10G10B10, 8,8,8,0,2);
 		fromLinear32_convert(A2B10G10R10, 8,8,8,0,2);
+
+		// PS2's wacky 32-bit format.
+		fromLinear32_convert(BGR888_ABGR7888, 8,8,8,0,8);
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");

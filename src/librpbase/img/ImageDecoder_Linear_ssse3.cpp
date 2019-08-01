@@ -208,6 +208,12 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		return nullptr;
 	}
 
+	if (px_format == PXF_BGR888_ABGR7888) {
+		// Not supported right now.
+		// Use the C++ version.
+		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
+	}
+
 	// Stride adjustment.
 	int src_stride_adj = 0;
 	assert(stride >= 0);

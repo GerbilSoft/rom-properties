@@ -86,11 +86,11 @@ typedef enum {
 	PVR_PX_8BIT	= 0x06,
 
 	// Sony PlayStation 2 (SVR)
-	SVR_PX_BGR5A3	= 0x08,
-	SVR_PX_ABGR8888	= 0x09,
+	SVR_PX_BGR5A3		= 0x08,
+	SVR_PX_BGR888_ABGR7888	= 0x09,
 
 	SVR_PX_MIN = SVR_PX_BGR5A3,
-	SVR_PX_MAX = SVR_PX_ABGR8888,
+	SVR_PX_MAX = SVR_PX_BGR888_ABGR7888,
 } PVR_Pixel_Format_t;
 
 /**

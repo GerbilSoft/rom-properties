@@ -91,6 +91,11 @@ class ImageDecoder
 			PXF_RGBx8888,
 			PXF_BGRx8888,
 
+			// PlayStation 2-specific 32-bit
+			PXF_BGR888_ABGR7888,	// Why is this a thing.
+						// If the high bit is set, it's BGR888.
+						// Otherwise, it's ABGR7888.
+
 			// Uncommon 32-bit formats.
 			PXF_G16R16,
 			PXF_A2R10G10B10,
