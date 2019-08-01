@@ -243,11 +243,17 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_RECTANGLE:
+		case SVR_IMG_RECTANGLE:
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:
 				case PVR_PX_RGB565:
 				case PVR_PX_ARGB4444:
+				case SVR_PX_RGB5A3:
 					expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
+					break;
+
+				case SVR_PX_ARGB8888:
+					expected_size = ((pvrHeader.width * pvrHeader.height) * 4);
 					break;
 
 				default:
@@ -317,6 +323,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	// Determine the pixel format.
 	// TODO: Not for 4-bit or 8-bit?
 	ImageDecoder::PixelFormat px_format;
+	bool is32bit = false;
 	switch (pvrHeader.pvr.px_format) {
 		case PVR_PX_ARGB1555:
 			px_format = ImageDecoder::PXF_ARGB1555;
@@ -326,6 +333,14 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		case PVR_PX_ARGB4444:
 			px_format = ImageDecoder::PXF_ARGB4444;
+			break;
+		case SVR_PX_RGB5A3:
+			// TODO: Verify that this works for SVR.
+			px_format = ImageDecoder::PXF_RGB5A3;
+			break;
+		case SVR_PX_ARGB8888:
+			px_format = ImageDecoder::PXF_ARGB8888;
+			is32bit = true;
 			break;
 		default:
 			// Unsupported pixel format.
@@ -338,13 +353,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 			img = ImageDecoder::fromDreamcastSquareTwiddled16(px_format,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 
 		case PVR_IMG_RECTANGLE:
-			img = ImageDecoder::fromLinear16(px_format,
-				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
+		case SVR_IMG_RECTANGLE:
+			if (is32bit) {
+				img = ImageDecoder::fromLinear32(px_format,
+					pvrHeader.width, pvrHeader.height,
+					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			} else {
+				img = ImageDecoder::fromLinear16(px_format,
+					pvrHeader.width, pvrHeader.height,
+					reinterpret_cast<uint16_t*>(buf.get()), expected_size);
+			}
 			break;
 
 		case PVR_IMG_VQ: {
