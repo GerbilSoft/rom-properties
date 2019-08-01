@@ -66,8 +66,8 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
 		return nullptr;
 	}
 
-	// Handle ARGB8888 palette pixel format for SVR.
-	if (px_format == PXF_ARGB8888) {
+	// Handle ABGR8888 palette pixel format for SVR.
+	if (px_format == PXF_ABGR8888) {
 		// 32-bit palette required.
 		assert(pal_siz >= 16*4);
 		if (pal_siz < 16*4) {
@@ -185,12 +185,12 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
 			break;
 		}
 
-		case PXF_RGB5A3: {
+		case PXF_BGR5A3: {
 			// TODO: Endianness?
 			// Assuming little-endian for SVR right now.
 			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 16; i++, pal_buf16++) {
-				palette[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(le16_to_cpu(*pal_buf16));
+				palette[i] = ImageDecoderPrivate::BGR5A3_to_ARGB32(le16_to_cpu(*pal_buf16));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i);
@@ -203,11 +203,14 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
 			break;
 		}
 
-		case PXF_ARGB8888: {
+		case PXF_ABGR8888: {
 			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 16; i++, pal_buf32++) {
-				// ARGB8888 is the same as ARGB32.
-				palette[i] = le16_to_cpu(*pal_buf32);
+				// Swap the R and B channels for ARGB32.
+				const uint32_t c = le32_to_cpu(*pal_buf32);
+				palette[i] = (c & 0xFF00FF00) |
+					     ((c >> 16) & 0xFF) |
+					     ((c & 0xFF) << 16);
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i);
@@ -288,8 +291,8 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Handle ARGB8888 palette pixel format for SVR.
-	if (px_format == PXF_ARGB8888) {
+	// Handle ABGR8888 palette pixel format for SVR.
+	if (px_format == PXF_ABGR8888) {
 		// 32-bit palette required.
 		assert(pal_siz >= 256*4);
 		if (pal_siz < 256*4) {
@@ -375,17 +378,17 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_RGB5A3: {
+		case PXF_BGR5A3: {
 			// TODO: Endianness?
 			// Assuming little-endian for SVR right now.
 			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
-				palette[i+0] = ImageDecoderPrivate::RGB5A3_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				palette[i+0] = ImageDecoderPrivate::BGR5A3_to_ARGB32(le16_to_cpu(pal_buf16[0]));
 				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = ImageDecoderPrivate::RGB5A3_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				palette[i+1] = ImageDecoderPrivate::BGR5A3_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
@@ -398,16 +401,23 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_ARGB8888: {
+		case PXF_ABGR8888: {
 			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
 			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
-				// ARGB8888 is the same as ARGB32.
-				palette[i+0] = le16_to_cpu(pal_buf32[0]);
+				// Swap the R and B channels for ARGB32.
+				uint32_t c = le32_to_cpu(pal_buf32[0]);
+				palette[i+0] = (c & 0xFF00FF00) |
+					       ((c >> 16) & 0xFF) |
+					       ((c & 0xFF) << 16);
 				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = le16_to_cpu(pal_buf32[1]);
+
+				c = le32_to_cpu(pal_buf32[1]);
+				palette[i+1] = (c & 0xFF00FF00) |
+					       ((c >> 16) & 0xFF) |
+					       ((c & 0xFF) << 16);
 				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);

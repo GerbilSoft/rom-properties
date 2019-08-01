@@ -251,11 +251,11 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				case PVR_PX_ARGB1555:
 				case PVR_PX_RGB565:
 				case PVR_PX_ARGB4444:
-				case SVR_PX_RGB5A3:
+				case SVR_PX_BGR5A3:
 					expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
 					break;
 
-				case SVR_PX_ARGB8888:
+				case SVR_PX_ABGR8888:
 					expected_size = ((pvrHeader.width * pvrHeader.height) * 4);
 					break;
 
@@ -299,16 +299,16 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		}
 
-		case SVR_IMG_INDEX4_RGB5A3_RECTANGLE:
-		case SVR_IMG_INDEX4_RGB5A3_SQUARE: {
+		case SVR_IMG_INDEX4_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX4_BGR5A3_SQUARE: {
 			// 16-color palette is located at the beginning of the data.
 			svr_pal_buf_sz = 16*2;
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
 		}
-		case SVR_IMG_INDEX4_ARGB8_RECTANGLE:
-		case SVR_IMG_INDEX4_ARGB8_SQUARE: {
+		case SVR_IMG_INDEX4_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX4_ABGR8_SQUARE: {
 			// 16-color palette is located at the beginning of the data.
 			svr_pal_buf_sz = 16*4;
 			mipmap_size = svr_pal_buf_sz;
@@ -316,16 +316,16 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		}
 
-		case SVR_IMG_INDEX8_RGB5A3_RECTANGLE:
-		case SVR_IMG_INDEX8_RGB5A3_SQUARE: {
+		case SVR_IMG_INDEX8_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX8_BGR5A3_SQUARE: {
 			// 256-color palette is located at the beginning of the data.
 			svr_pal_buf_sz = 256*2;
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = (pvrHeader.width * pvrHeader.height);
 			break;
 		}
-		case SVR_IMG_INDEX8_ARGB8_RECTANGLE:
-		case SVR_IMG_INDEX8_ARGB8_SQUARE: {
+		case SVR_IMG_INDEX8_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX8_ABGR8_SQUARE: {
 			// 256-color palette is located at the beginning of the data.
 			svr_pal_buf_sz = 256*4;
 			mipmap_size = svr_pal_buf_sz;
@@ -371,12 +371,12 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_PX_ARGB4444:
 			px_format = ImageDecoder::PXF_ARGB4444;
 			break;
-		case SVR_PX_RGB5A3:
+		case SVR_PX_BGR5A3:
 			// TODO: Verify that this works for SVR.
-			px_format = ImageDecoder::PXF_RGB5A3;
+			px_format = ImageDecoder::PXF_BGR5A3;
 			break;
-		case SVR_PX_ARGB8888:
-			px_format = ImageDecoder::PXF_ARGB8888;
+		case SVR_PX_ABGR8888:
+			px_format = ImageDecoder::PXF_ABGR8888;
 			is32bit = true;
 			break;
 		default:
@@ -470,8 +470,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 		// TODO: "Square" formats. (twiddled?)
 		// FIXME: Colors don't seem right... Need to verify.
-		case SVR_IMG_INDEX4_RGB5A3_RECTANGLE:
-		case SVR_IMG_INDEX4_ARGB8_RECTANGLE: {
+		case SVR_IMG_INDEX4_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX4_ABGR8_RECTANGLE: {
 			assert(svr_pal_buf_sz != 0);
 			if (svr_pal_buf_sz == 0) {
 				// Invalid palette buffer size.
@@ -496,8 +496,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 		// TODO: "Square" formats. (twiddled?)
 		// FIXME: Colors don't seem right... Need to verify.
-		case SVR_IMG_INDEX8_RGB5A3_RECTANGLE:
-		case SVR_IMG_INDEX8_ARGB8_RECTANGLE: {
+		case SVR_IMG_INDEX8_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX8_ABGR8_RECTANGLE: {
 			assert(svr_pal_buf_sz != 0);
 			if (svr_pal_buf_sz == 0) {
 				// Invalid palette buffer size.
@@ -1057,7 +1057,7 @@ int SegaPVR::loadFieldData(void)
 		"8-bit per pixel", nullptr,	// 0x06-0x07
 
 		// Sony PlayStation 2 (SVR)
-		"RGB5A3", "ARGB8888",		// 0x08-0x09
+		"BGR5A3", "ABGR8888",		// 0x08-0x09
 	};
 	static const char *const pxfmt_tbl_gvr[] = {
 		// GameCube (GVR)
@@ -1111,14 +1111,14 @@ int SegaPVR::loadFieldData(void)
 		nullptr,			// 0x63
 		"8-bit (external palette)",	// 0x64
 		nullptr,			// 0x65
-		"4-bit (RGB5A3), Rectangle",	// 0x66
-		"4-bit (RGB5A3), Square",	// 0x67
-		"4-bit (ARGB8), Rectangle",	// 0x68
-		"4-bit (ARGB8), Square",	// 0x69
-		"8-bit (RGB5A3), Rectangle",	// 0x6A
-		"8-bit (RGB5A3), Square",	// 0x6B
-		"8-bit (ARGB8), Rectangle",	// 0x6C
-		"8-bit (ARGB8), Square",	// 0x6D
+		"4-bit (BGR5A3), Rectangle",	// 0x66
+		"4-bit (BGR5A3), Square",	// 0x67
+		"4-bit (ABGR8), Rectangle",	// 0x68
+		"4-bit (ABGR8), Square",	// 0x69
+		"8-bit (BGR5A3), Rectangle",	// 0x6A
+		"8-bit (BGR5A3), Square",	// 0x6B
+		"8-bit (ABGR8), Rectangle",	// 0x6C
+		"8-bit (ABGR8), Square",	// 0x6D
 	};
 	static const char *const idt_tbl_gvr[] = {
 		// GameCube (GVR)

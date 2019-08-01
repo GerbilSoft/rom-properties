@@ -67,6 +67,10 @@ class ImageDecoder
 			PXF_RGB5A3,	// High bit determines RGB555 or ARGB4444.
 			PXF_IA8,	// Intensity/Alpha.
 
+			// PlayStation 2-specific 16-bit
+			PXF_BGR5A3,	// Like PXF_RGB5A3, but with
+					// swapped R and B channels.
+
 			// 15-bit
 			PXF_RGB555,
 			PXF_BGR555,
