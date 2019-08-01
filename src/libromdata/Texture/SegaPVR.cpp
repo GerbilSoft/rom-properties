@@ -769,7 +769,6 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	memcpy(img->palette(), img_swz->palette(), palette_len * sizeof(uint32_t));
 
 	const uint8_t *src_pixels = static_cast<const uint8_t*>(img_swz->bits());
-	uint8_t *dest_pixels = static_cast<uint8_t*>(img->bits());
 	for (int y = 0; y < height; y++) {
 		const bool oddRow = (y & 1);
 		const int num1 = (y / 4) & 1;
@@ -781,6 +780,7 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 			num7 -= width;
 		}
 
+		uint8_t *const destLine = static_cast<uint8_t*>(img->scanLine(yy));
 		for (int x = 0; x < width; x++) {
 			const int num2 = (x / 4) & 1;
 
@@ -795,9 +795,8 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 			const int xx = x + num1 * tileMatrix[num2];
 
 			const int i = interlaceMatrix[num4] + num5 + num6 + num7;
-			const int j = yy * width + xx;
 
-			dest_pixels[j] = src_pixels[i];
+			destLine[xx] = src_pixels[i];
 		}
 	}
 
