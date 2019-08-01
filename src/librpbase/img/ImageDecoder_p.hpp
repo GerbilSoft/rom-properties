@@ -714,7 +714,7 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 	uint32_t px32;
 
 	if (px16 & 0x8000) {
-		// BGR555: xRRRRRGG GGGBBBBB
+		// RGB555: xRRRRRGG GGGBBBBB
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		px32  = 0xFF000000U;	// no alpha channel
 		px32 |= ((px16 << 3) & 0x0000F8);	// Blue
@@ -722,18 +722,15 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 		px32 |= ((px16 << 9) & 0xF80000);	// Red
 		px32 |= ((px32 >> 5) & 0x070707);	// Expand from 5-bit to 8-bit
 	} else {
-		// RGB4A3
+		// RGB4A3: xAAARRRR GGGGBBBB
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		px32  =  (px16 & 0x000F);	// Blue
 		px32 |= ((px16 & 0x00F0) << 4);	// Green
 		px32 |= ((px16 & 0x0F00) << 8);	// Red
 		px32 |= (px32 << 4);		// Copy to the top nybble.
 
-		// Calculate the alpha channel.
-		uint8_t a = ((px16 >> 7) & 0xE0);
-		a |= (a >> 3);
-		a |= (a >> 3);
-
-		// Apply the alpha channel.
+		// Calculate and apply the alpha channel.
+		uint8_t a = c3_lookup[((px16 >> 12) & 0x07)];
 		px32 |= (a << 24);
 	}
 
