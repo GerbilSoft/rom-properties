@@ -494,6 +494,32 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		}
 
+		// TODO: "Square" formats. (twiddled?)
+		// FIXME: Colors don't seem right... Need to verify.
+		case SVR_IMG_INDEX8_RGB5A3_RECTANGLE:
+		case SVR_IMG_INDEX8_ARGB8_RECTANGLE: {
+			assert(svr_pal_buf_sz != 0);
+			if (svr_pal_buf_sz == 0) {
+				// Invalid palette buffer size.
+				return nullptr;
+			}
+
+			// Palette is located immediately after the PVR header.
+			unique_ptr<uint8_t[]> pal_buf(new uint8_t[svr_pal_buf_sz]);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), svr_pal_buf_sz);
+			if (size != svr_pal_buf_sz) {
+				// Seek and/or read error.
+				return nullptr;
+			}
+
+			// Least-significant nybble is first.
+			img = ImageDecoder::fromLinearCI8(px_format,
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expected_size,
+				pal_buf.get(), svr_pal_buf_sz);
+			break;
+		}
+
 		default:
 			// TODO: Other formats.
 			break;

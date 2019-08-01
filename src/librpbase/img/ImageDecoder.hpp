@@ -158,13 +158,13 @@ class ImageDecoder
 		 * @param img_buf CI8 image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)]
 		 * @param pal_buf Palette buffer.
-		 * @param pal_siz Size of palette data. [must be >= 256*2]
+		 * @param pal_siz Size of palette data. [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromLinearCI8(PixelFormat px_format,
 			int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz,
-			const uint16_t *RESTRICT pal_buf, int pal_siz);
+			const void *RESTRICT pal_buf, int pal_siz);
 
 		/**
 		 * Convert a linear monochrome image to rp_image.

@@ -271,13 +271,13 @@ template rp_image *ImageDecoder::fromLinearCI4<false>(PixelFormat px_format,
  * @param img_buf CI8 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @param pal_buf Palette buffer.
- * @param pal_siz Size of palette data. [must be >= 256*2]
+ * @param pal_siz Size of palette data. [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz)
+	const void *RESTRICT pal_buf, int pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -285,11 +285,25 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 	assert(width > 0);
 	assert(height > 0);
 	assert(img_siz >= (width * height));
-	assert(pal_siz >= 256*2);
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height) || pal_siz < 256*2)
+	    img_siz < (width * height))
 	{
 		return nullptr;
+	}
+
+	// Handle ARGB8888 palette pixel format for SVR.
+	if (px_format == PXF_ARGB8888) {
+		// 32-bit palette required.
+		assert(pal_siz >= 256*4);
+		if (pal_siz < 256*4) {
+			return nullptr;
+		}
+	} else {
+		// 16-bit palette required.
+		assert(pal_siz >= 256*2);
+		if (pal_siz < 256*2) {
+			return nullptr;
+		}
 	}
 
 	// Create an rp_image.
@@ -313,13 +327,14 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 	int tr_idx = -1;
 	switch (px_format) {
 		case PXF_ARGB1555: {
-			for (unsigned int i = 0; i < 256; i += 2) {
-				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i]));
+			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
+				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf16[0]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
-					tr_idx = static_cast<int>(i);
+					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
+				palette[i+1] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
@@ -332,9 +347,10 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 		}
 
 		case PXF_RGB565: {
-			for (unsigned int i = 0; i < 256; i += 2) {
-				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
-				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
+			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
+				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -343,13 +359,14 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 		}
 
 		case PXF_ARGB4444: {
-			for (unsigned int i = 0; i < 256; i += 2) {
-				palette[i+0] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
+				palette[i+0] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf16[0]));
 				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
 					// Found the transparent color.
-					tr_idx = static_cast<int>(i);
+					tr_idx = static_cast<int>(i+0);
 				}
-				palette[i+1] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
+				palette[i+1] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);
@@ -357,6 +374,51 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
+		case PXF_RGB5A3: {
+			// TODO: Endianness?
+			// Assuming little-endian for SVR right now.
+			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
+				palette[i+0] = ImageDecoderPrivate::RGB5A3_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+0);
+				}
+				palette[i+1] = ImageDecoderPrivate::RGB5A3_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+1);
+				}
+			}
+			// Set the sBIT metadata.
+			// TODO: Check if alpha is actually used?
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
+		case PXF_ARGB8888: {
+			const uint32_t *pal_buf32 = reinterpret_cast<const uint32_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf32 += 2) {
+				// ARGB8888 is the same as ARGB32.
+				palette[i+0] = le16_to_cpu(pal_buf32[0]);
+				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+0);
+				}
+				palette[i+1] = le16_to_cpu(pal_buf32[1]);
+				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+1);
+				}
+			}
+			// Set the sBIT metadata.
+			// TODO: Check if alpha is actually used?
+			static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 			img->set_sBIT(&sBIT);
 			break;
 		}
