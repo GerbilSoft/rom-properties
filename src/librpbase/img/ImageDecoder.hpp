@@ -134,8 +134,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
-		 * @tparam msn_left If true, most-significant nybble is the left pixel.
 		 * @param px_format Palette pixel format.
+		 * @param msn_left If true, most-significant nybble is the left pixel.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf CI4 image buffer.
@@ -144,8 +144,7 @@ class ImageDecoder
 		 * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<bool msn_left>
-		static rp_image *fromLinearCI4(PixelFormat px_format,
+		static rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 			int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz,
 			const void *RESTRICT pal_buf, int pal_siz);

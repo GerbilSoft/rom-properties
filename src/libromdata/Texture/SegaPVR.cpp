@@ -487,7 +487,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			}
 
 			// Least-significant nybble is first.
-			img = ImageDecoder::fromLinearCI4<false>(px_format,
+			img = ImageDecoder::fromLinearCI4(px_format, false,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
 				pal_buf.get(), svr_pal_buf_sz);

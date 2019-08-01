@@ -177,8 +177,8 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
 		iconAnimData->seq_index[i] = i;
 
 		// Icon format is linear 16x16 4bpp with RGB555 palette.
-		iconAnimData->frames[i] = ImageDecoder::fromLinearCI4<false>(
-			ImageDecoder::PXF_BGR555_PS1, 16, 16,
+		iconAnimData->frames[i] = ImageDecoder::fromLinearCI4(
+			ImageDecoder::PXF_BGR555_PS1, false, 16, 16,
 			scHeader.icon_data[i], sizeof(scHeader.icon_data[i]),
 			scHeader.icon_pal, sizeof(scHeader.icon_pal));
 	}

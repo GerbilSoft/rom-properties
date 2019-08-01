@@ -31,8 +31,8 @@ const uint8_t ImageDecoderPrivate::c3_lookup[8] = {
 
 /**
  * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
- * @tparam msn_left If true, most-significant nybble is the left pixel.
  * @param px_format Palette pixel format.
+ * @param msn_left If true, most-significant nybble is the left pixel.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI4 image buffer.
@@ -41,8 +41,7 @@ const uint8_t ImageDecoderPrivate::c3_lookup[8] = {
  * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
-template<bool msn_left>
-rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
+rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	const void *RESTRICT pal_buf, int pal_siz)
@@ -252,16 +251,6 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 	// Image has been converted.
 	return img;
 }
-
-// Explicit instantiation.
-template rp_image *ImageDecoder::fromLinearCI4<true>(PixelFormat px_format,
-	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const void *RESTRICT pal_buf, int pal_siz);
-template rp_image *ImageDecoder::fromLinearCI4<false>(PixelFormat px_format,
-	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const void *RESTRICT pal_buf, int pal_siz);
 
 /**
  * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
