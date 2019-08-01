@@ -98,6 +98,12 @@ class SegaPVRPrivate : public RomDataPrivate
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadGvrImage(void);
+
+		/**
+		 * Is this a PlayStation SVR texture?
+		 * @return True if format is PVR and pxfmt or idt is SVR; false if not.
+		 */
+		bool isSvrTexture(void) const;
 };
 
 /** SegaPVRPrivate **/
@@ -550,6 +556,30 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	return img;
 }
 
+/**
+ * Is this a PlayStation SVR texture?
+ * @return True if format is PVR and pxfmt or idt is SVR; false if not.
+ */
+bool SegaPVRPrivate::isSvrTexture(void) const
+{
+	if (pvrType != PVR_TYPE_PVR) {
+		// Not a PVR format file.
+		return false;
+	}
+
+	if ((pvrHeader.pvr.px_format >= SVR_PX_MIN &&
+	     pvrHeader.pvr.px_format <= SVR_PX_MAX) ||
+	    (pvrHeader.pvr.img_data_type >= SVR_IMG_MIN &&
+	     pvrHeader.pvr.img_data_type <= SVR_IMG_MAX))
+	{
+		// Pixel format and/or image data type is SVR.
+		return true;
+	}
+
+	// Not SVR.
+	return false;
+}
+
 /** SegaPVR **/
 
 /**
@@ -759,6 +789,15 @@ const char *SegaPVR::systemName(unsigned int type) const
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SegaPVR::systemName() array index optimization needs to be updated.");
+	type &= SYSNAME_TYPE_MASK;
+
+	if (d->isSvrTexture()) {
+		// SVR texture. This is for PlayStation 2.
+		static const char *const sysNames_SVR[4] = {
+			"Sega SVR for PlayStation 2", "Sega SVR", "SVR", nullptr
+		};
+		return sysNames_SVR[type];
+	}
 
 	static const char *const sysNames[12] = {
 		"Sega Dreamcast PVR", "Sega PVR", "PVR", nullptr,
@@ -766,7 +805,7 @@ const char *SegaPVR::systemName(unsigned int type) const
 		"Sega PVRX for Xbox", "Sega PVRX", "PVRX", nullptr,
 	};
 
-	unsigned int idx = (d->pvrType << 2) | (type & SYSNAME_TYPE_MASK);
+	unsigned int idx = (d->pvrType << 2) | type;
 	if (idx >= ARRAY_SIZE(sysNames)) {
 		// Invalid index...
 		idx &= SYSNAME_TYPE_MASK;
@@ -817,6 +856,7 @@ const char *const *SegaPVR::supportedMimeTypes_static(void)
 		"image/x-sega-pvr",
 		"image/x-sega-gvr",
 		"image/x-sega-pvrx",
+		"image/x-sega-svr",
 
 		nullptr
 	};
@@ -914,6 +954,9 @@ int SegaPVR::loadFieldData(void)
 		"ARGB4444", "YUV422",		// 0x02-0x03
 		"BUMP", "4-bit per pixel",	// 0x04-0x05
 		"8-bit per pixel", nullptr,	// 0x06-0x07
+
+		// Sony PlayStation 2 (SVR)
+		"RGB5A3", "ARGB8888",		// 0x08-0x09
 	};
 	static const char *const pxfmt_tbl_gvr[] = {
 		// GameCube (GVR)
@@ -957,6 +1000,24 @@ int SegaPVR::loadFieldData(void)
 		"Small VQ",				// 0x10
 		"Small VQ (Mipmap)",			// 0x11
 		"Square (Twiddled, Mipmap) (Alt)",	// 0x12
+	};
+	static const char *const idt_tbl_svr[] = {
+		// Sony PlayStation 2 (SVR)
+		// NOTE: First index represents format 0x60.
+		"Rectangle",			// 0x60
+		nullptr,			// 0x61
+		"8-bit (external palette)",	// 0x62
+		nullptr,			// 0x63
+		"8-bit (external palette)",	// 0x64
+		nullptr,			// 0x65
+		"4-bit (RGB5A3), Rectangle",	// 0x66
+		"4-bit (RGB5A3), Square",	// 0x67
+		"4-bit (ARGB8), Rectangle",	// 0x68
+		"4-bit (ARGB8), Square",	// 0x69
+		"8-bit (RGB5A3), Rectangle",	// 0x6A
+		"8-bit (RGB5A3), Square",	// 0x6B
+		"8-bit (ARGB8), Rectangle",	// 0x6C
+		"8-bit (ARGB8), Square",	// 0x6D
 	};
 	static const char *const idt_tbl_gvr[] = {
 		// GameCube (GVR)
@@ -1013,11 +1074,21 @@ int SegaPVR::loadFieldData(void)
 		const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[d->pvrType];
 		const char *const *const p_idt_tbl = idt_tbl_ptrs[d->pvrType];
 		const uint8_t idt_tbl_sz = idt_tbl_sizes[d->pvrType];
+
 		if (px_format < pxfmt_tbl_sz) {
 			pxfmt = p_pxfmt_tbl[px_format];
 		}
-		if (img_data_type < idt_tbl_sz) {
-			idt = p_idt_tbl[img_data_type];
+
+		if (d->pvrType == SegaPVRPrivate::PVR_TYPE_PVR &&
+		    img_data_type >= SVR_IMG_MIN && img_data_type <= SVR_IMG_MAX)
+		{
+			// SVR image data type.
+			idt = idt_tbl_svr[img_data_type - SVR_IMG_MIN];
+		} else {
+			// Other image data type.
+			if (img_data_type < idt_tbl_sz) {
+				idt = p_idt_tbl[img_data_type];
+			}
 		}
 	}
 
