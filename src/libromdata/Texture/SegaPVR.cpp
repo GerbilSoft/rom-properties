@@ -908,93 +908,116 @@ int SegaPVR::loadFieldData(void)
 		pvrHeader->width, pvrHeader->height);
 
 	// Pixel format.
-	static const char *const pxfmt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][8] = {
-		// Sega Dreamcast PVR
-		{"ARGB1555", "RGB565",
-		 "ARGB4444", "YUV422",
-		 "BUMP", "4-bit per pixel",
-		 "8-bit per pixel", nullptr},
+	static const char *const pxfmt_tbl_pvr[] = {
+		// Sega Dreamcast (PVR)
+		"ARGB1555", "RGB565",		// 0x00-0x01
+		"ARGB4444", "YUV422",		// 0x02-0x03
+		"BUMP", "4-bit per pixel",	// 0x04-0x05
+		"8-bit per pixel", nullptr,	// 0x06-0x07
+	};
+	static const char *const pxfmt_tbl_gvr[] = {
+		// GameCube (GVR)
+		"IA8", "RGB565", "RGB5A3",	// 0x00-0x02
+	};
+	static const char *const pxfmt_tbl_pvrx[] = {
+		// Xbox (PVRX) (TODO)
+		nullptr,
+	};
 
-		// GameCube GVR
-		{"IA8", "RGB565", "RGB5A3",
-		 nullptr, nullptr, nullptr, nullptr, nullptr},
-
-		// Xbox PVRX (TODO)
-		{nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr},
+	static const char *const *const pxfmt_tbl_ptrs[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		pxfmt_tbl_pvr,
+		pxfmt_tbl_gvr,
+		pxfmt_tbl_pvrx,
+	};
+	static const uint8_t pxfmt_tbl_sizes[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_pvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_gvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_pvrx)),
 	};
 
 	// Image data type.
-	static const char *const idt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][0x13] = {
-		// Sega Dreamcast PVR
-		{
-			nullptr,				// 0x00
-			"Square (Twiddled)",			// 0x01
-			"Square (Twiddled, Mipmap)",		// 0x02
-			"Vector Quantized",			// 0x03
-			"Vector Quantized (Mipmap)",		// 0x04
-			"8-bit Paletted (Twiddled)",		// 0x05
-			"4-bit Paletted (Twiddled)",		// 0x06
-			"8-bit (Twiddled)",			// 0x07
-			"4-bit (Twiddled)",			// 0x08
-			"Rectangle",				// 0x09
-			nullptr,				// 0x0A
-			"Rectangle (Stride)",			// 0x0B
-			nullptr,				// 0x0C
-			"Rectangle (Twiddled)",			// 0x0D
-			nullptr,				// 0x0E
-			nullptr,				// 0x0F
-			"Small VQ",				// 0x10
-			"Small VQ (Mipmap)",			// 0x11
-			"Square (Twiddled, Mipmap) (Alt)",	// 0x12
-		},
+	static const char *const idt_tbl_pvr[] = {
+		// Sega Dreamcast (PVR)
+		nullptr,				// 0x00
+		"Square (Twiddled)",			// 0x01
+		"Square (Twiddled, Mipmap)",		// 0x02
+		"Vector Quantized",			// 0x03
+		"Vector Quantized (Mipmap)",		// 0x04
+		"8-bit Paletted (Twiddled)",		// 0x05
+		"4-bit Paletted (Twiddled)",		// 0x06
+		"8-bit (Twiddled)",			// 0x07
+		"4-bit (Twiddled)",			// 0x08
+		"Rectangle",				// 0x09
+		nullptr,				// 0x0A
+		"Rectangle (Stride)",			// 0x0B
+		nullptr,				// 0x0C
+		"Rectangle (Twiddled)",			// 0x0D
+		nullptr,				// 0x0E
+		nullptr,				// 0x0F
+		"Small VQ",				// 0x10
+		"Small VQ (Mipmap)",			// 0x11
+		"Square (Twiddled, Mipmap) (Alt)",	// 0x12
+	};
+	static const char *const idt_tbl_gvr[] = {
+		// GameCube (GVR)
+		"I4",			// 0x00
+		"I8",			// 0x01
+		"IA4",			// 0x02
+		"IA8",			// 0x03
+		"RGB565",		// 0x04
+		"RGB5A3",		// 0x05
+		"ARGB8888",		// 0x06
+		nullptr,		// 0x07
+		"CI4",			// 0x08
+		"CI8",			// 0x09
+		nullptr, nullptr,	// 0x0A,0x0B
+		nullptr, nullptr,	// 0x0C,0x0D
+		"DXT1",			// 0x0E
+	};
+	static const char *const idt_tbl_pvrx[] = {
+		// Xbox (PVRX) (TODO)
+		nullptr
+	};
 
-		// GameCube GVR
-		{
-			"I4",			// 0x00
-			"I8",			// 0x01
-			"IA4",			// 0x02
-			"IA8",			// 0x03
-			"RGB565",		// 0x04
-			"RGB5A3",		// 0x05
-			"ARGB8888",		// 0x06
-			nullptr,		// 0x07
-			"CI4",			// 0x08
-			"CI8",			// 0x09
-			nullptr, nullptr,	// 0x0A,0x0B
-			nullptr, nullptr,	// 0x0C,0x0D
-			"DXT1",			// 0x0E
-			nullptr, nullptr,	// 0x0F,0x10
-			nullptr, nullptr, 	// 0x11,0x12
-		},
-
-		// Xbox PVRX (TODO)
-		{nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr},
+	static const char *const *const idt_tbl_ptrs[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		idt_tbl_pvr,
+		idt_tbl_gvr,
+		idt_tbl_pvrx,
+	};
+	static const uint8_t idt_tbl_sizes[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_pvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_gvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_pvrx)),
 	};
 
 	// GVR has these values located at a different offset.
 	// TODO: Verify PVRX.
 	uint8_t px_format, img_data_type;
-	if (d->pvrType == SegaPVRPrivate::PVR_TYPE_GVR) {
-		px_format = pvrHeader->gvr.px_format;
-		img_data_type = pvrHeader->gvr.img_data_type;
-	} else {
-		px_format = pvrHeader->pvr.px_format;
-		img_data_type = pvrHeader->pvr.img_data_type;
+	switch (d->pvrType) {
+		default:
+		case SegaPVRPrivate::PVR_TYPE_PVR:
+		case SegaPVRPrivate::PVR_TYPE_PVRX:	// TODO
+			px_format = pvrHeader->pvr.px_format;
+			img_data_type = pvrHeader->pvr.img_data_type;
+			break;
+		case SegaPVRPrivate::PVR_TYPE_GVR:
+			px_format = pvrHeader->gvr.px_format;
+			img_data_type = pvrHeader->gvr.img_data_type;
+			break;
 	}
 
 	const char *pxfmt = nullptr;
 	const char *idt = nullptr;
 	if (d->pvrType >= 0 && d->pvrType < SegaPVRPrivate::PVR_TYPE_MAX) {
-		if (px_format < 8) {
-			pxfmt = pxfmt_tbl[d->pvrType][px_format];
+		const char *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[d->pvrType];
+		const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[d->pvrType];
+		const char *const *const p_idt_tbl = idt_tbl_ptrs[d->pvrType];
+		const uint8_t idt_tbl_sz = idt_tbl_sizes[d->pvrType];
+		if (px_format < pxfmt_tbl_sz) {
+			pxfmt = p_pxfmt_tbl[px_format];
 		}
-		if (img_data_type < 0x13) {
-			idt = idt_tbl[d->pvrType][img_data_type];
+		if (img_data_type < idt_tbl_sz) {
+			idt = p_idt_tbl[img_data_type];
 		}
 	}
 
