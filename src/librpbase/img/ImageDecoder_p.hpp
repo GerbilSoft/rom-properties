@@ -66,6 +66,10 @@ class ImageDecoderPrivate
 		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
 		static const uint32_t a2_lookup[4];
 
+		// 3-bit alpha lookup table.
+		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
+		static const uint32_t a3_lookup[8];
+
 		// 2-bit color lookup table.
 		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
 		static const uint8_t c2_lookup[4];
@@ -730,8 +734,7 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 		px32 |= (px32 << 4);		// Copy to the top nybble.
 
 		// Calculate and apply the alpha channel.
-		uint8_t a = c3_lookup[((px16 >> 12) & 0x07)];
-		px32 |= (a << 24);
+		px32 |= a3_lookup[((px16 >> 12) & 0x07)];
 	}
 
 	return px32;

@@ -18,6 +18,14 @@ const uint32_t ImageDecoderPrivate::a2_lookup[4] = {
 	0xAA000000, 0xFF000000
 };
 
+// 3-bit alpha lookup table.
+const uint32_t ImageDecoderPrivate::a3_lookup[8] = {
+	0x00000000, 0x24000000,
+	0x49000000, 0x6D000000,
+	0x92000000, 0xB6000000,
+	0xDB000000, 0xFF000000
+};
+
 // 2-bit color lookup table.
 const uint8_t ImageDecoderPrivate::c2_lookup[4] = {
 	0x00, 0x55, 0xAA, 0xFF
