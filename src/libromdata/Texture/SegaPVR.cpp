@@ -782,6 +782,14 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 	const int width = img_swz->width();
 	const int height = img_swz->height();
 
+	// Texture dimensions must be a multiple of 4.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0) {
+		// Unable to unswizzle this texture.
+		return nullptr;
+	}
+
 	rp_image *const img = new rp_image(width, height, img_swz->format());
 	if (!img->isValid()) {
 		// Could not allocate the image.
