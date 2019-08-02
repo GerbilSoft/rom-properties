@@ -500,7 +500,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				buf.get(), expected_size,
 				pal_buf.get(), svr_pal_buf_sz);
 
-			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
+			// Puyo Tools says 128x64 is the minimum for swizzling.
+			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
@@ -529,13 +530,41 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				return nullptr;
 			}
 
+			// NOTE: Bits 3 and 4 in each image data byte is swapped.
+			// Why? Who the hell knows.
+
+			// Instead of swapping everything in the image data,
+			// we'll swap the palette entries.
+			uint8_t *pal_swapped = new uint8_t[svr_pal_buf_sz];
+			if (px_format == ImageDecoder::PXF_BGR5A3) {
+				const uint16_t *pal_src16 = reinterpret_cast<const uint16_t*>(pal_buf.get());
+				uint16_t *pal_dest16 = reinterpret_cast<uint16_t*>(pal_swapped);
+
+				for (unsigned int i = 0; i < 256; i++) {
+					// Swap bits 3 and 4.
+					const unsigned int sw = (i & 0xE7) | ((i & 0x10) >> 1) | ((i & 0x08) << 1);
+					pal_dest16[sw] = pal_src16[i];
+				}
+			} else /*if (px_format == ImageDecoder::PXF_BGR888_ABGR7888)*/ {
+				const uint32_t *pal_src32 = reinterpret_cast<const uint32_t*>(pal_buf.get());
+				uint32_t *pal_dest32 = reinterpret_cast<uint32_t*>(pal_swapped);
+
+				for (unsigned int i = 0; i < 256; i++) {
+					// Swap bits 3 and 4.
+					const unsigned int sw = (i & 0xE7) | ((i & 0x10) >> 1) | ((i & 0x08) << 1);
+					pal_dest32[sw] = pal_src32[i];
+				}
+			}
+			pal_buf.reset(pal_swapped);
+
 			// Least-significant nybble is first.
 			img = ImageDecoder::fromLinearCI8(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size,
 				pal_buf.get(), svr_pal_buf_sz);
 
-			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
+			// Puyo Tools says 128x64 is the minimum for swizzling.
+			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
