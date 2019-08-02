@@ -585,29 +585,15 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// NOTE: Bits 3 and 4 in each image data byte is swapped.
 			// Why? Who the hell knows.
 
-			// Instead of swapping everything in the image data,
-			// we'll swap the palette entries.
-			uint8_t *pal_swapped = new uint8_t[svr_pal_buf_sz];
-			if (px_format == ImageDecoder::PXF_BGR5A3) {
-				const uint16_t *pal_src16 = reinterpret_cast<const uint16_t*>(pal_buf.get());
-				uint16_t *pal_dest16 = reinterpret_cast<uint16_t*>(pal_swapped);
-
-				for (unsigned int i = 0; i < 256; i++) {
-					// Swap bits 3 and 4.
-					const unsigned int sw = (i & 0xE7) | ((i & 0x10) >> 1) | ((i & 0x08) << 1);
-					pal_dest16[sw] = pal_src16[i];
-				}
-			} else /*if (px_format == ImageDecoder::PXF_BGR888_ABGR7888)*/ {
-				const uint32_t *pal_src32 = reinterpret_cast<const uint32_t*>(pal_buf.get());
-				uint32_t *pal_dest32 = reinterpret_cast<uint32_t*>(pal_swapped);
-
-				for (unsigned int i = 0; i < 256; i++) {
-					// Swap bits 3 and 4.
-					const unsigned int sw = (i & 0xE7) | ((i & 0x10) >> 1) | ((i & 0x08) << 1);
-					pal_dest32[sw] = pal_src32[i];
-				}
+			// We need to swap the image data instead of the palette entries
+			// in order to maintain the original palette ordering.
+			// TODO: Optimize by vectorizing.
+			uint8_t *bits = buf.get();
+			uint8_t *const bits_end = bits + expected_size;
+			for (; bits < bits_end; bits++) {
+				const uint8_t sw = (*bits & 0xE7) | ((*bits & 0x10) >> 1) | ((*bits & 0x08) << 1);
+				*bits = sw;
 			}
-			pal_buf.reset(pal_swapped);
 
 			// Least-significant nybble is first.
 			img = ImageDecoder::fromLinearCI8(px_format,
