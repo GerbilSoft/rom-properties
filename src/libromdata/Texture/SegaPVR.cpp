@@ -308,19 +308,25 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		}
 
 		case SVR_IMG_INDEX4_BGR5A3_RECTANGLE:
-		case SVR_IMG_INDEX4_BGR5A3_SQUARE: {
-			// 16-color palette is located at the beginning of the data.
-			// TODO: Require SQUARE to have identical width/height?
-			svr_pal_buf_sz = 16*2;
-			mipmap_size = svr_pal_buf_sz;
-			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
-			break;
-		}
+		case SVR_IMG_INDEX4_BGR5A3_SQUARE:
 		case SVR_IMG_INDEX4_ABGR8_RECTANGLE:
 		case SVR_IMG_INDEX4_ABGR8_SQUARE: {
 			// 16-color palette is located at the beginning of the data.
 			// TODO: Require SQUARE to have identical width/height?
-			svr_pal_buf_sz = 16*4;
+
+			// NOTE: Puyo Tools sometimes uses the wrong image data type
+			// for the palette format. Use pixel format instead.
+			switch (pvrHeader.pvr.px_format) {
+				case SVR_PX_BGR5A3:
+					svr_pal_buf_sz = 16*2;
+					break;
+				case SVR_PX_BGR888_ABGR7888:
+					svr_pal_buf_sz = 16*4;
+					break;
+				default:
+					assert(!"Unsupported pixel format for SVR.");
+					return nullptr;
+			}
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
@@ -330,7 +336,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case SVR_IMG_INDEX8_BGR5A3_SQUARE: {
 			// 256-color palette is located at the beginning of the data.
 			// TODO: Require SQUARE to have identical width/height?
-			svr_pal_buf_sz = 256*2;
+
+			// NOTE: Puyo Tools sometimes uses the wrong image data type
+			// for the palette format. Use pixel format instead.
+			switch (pvrHeader.pvr.px_format) {
+				case SVR_PX_BGR5A3:
+					svr_pal_buf_sz = 256*2;
+					break;
+				case SVR_PX_BGR888_ABGR7888:
+					svr_pal_buf_sz = 256*4;
+					break;
+				default:
+					assert(!"Unsupported pixel format for SVR.");
+					return nullptr;
+			}
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = (pvrHeader.width * pvrHeader.height);
 			break;
@@ -497,6 +516,10 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				// Seek and/or read error.
 				return nullptr;
 			}
+
+			// FIXME: Puyo Tools has palette bit swapping in
+			// swizzled textures, sort of like 8-bit textures.
+			// Find a >=128x128 4-bit texture to test this with.
 
 			// Least-significant nybble is first.
 			img = ImageDecoder::fromLinearCI4(px_format, false,
