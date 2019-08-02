@@ -504,8 +504,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				buf.get(), expected_size,
 				pal_buf.get(), svr_pal_buf_sz);
 
-			// Puyo Tools says 128x64 is the minimum for swizzling.
-			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
+			// Puyo Tools: Minimum swizzle size for 4-bit is 128x128.
+			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
 				if (img_unswz) {
@@ -567,7 +567,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				buf.get(), expected_size,
 				pal_buf.get(), svr_pal_buf_sz);
 
-			// Puyo Tools says 128x64 is the minimum for swizzling.
+			// Puyo Tools: Minimum swizzle size for 8-bit is 128x64.
 			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
 				// Need to unswizzle the texture.
 				rp_image *const img_unswz = svr_unswizzle_4or8(img);
