@@ -310,6 +310,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case SVR_IMG_INDEX4_BGR5A3_RECTANGLE:
 		case SVR_IMG_INDEX4_BGR5A3_SQUARE: {
 			// 16-color palette is located at the beginning of the data.
+			// TODO: Require SQUARE to have identical width/height?
 			svr_pal_buf_sz = 16*2;
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
@@ -318,6 +319,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case SVR_IMG_INDEX4_ABGR8_RECTANGLE:
 		case SVR_IMG_INDEX4_ABGR8_SQUARE: {
 			// 16-color palette is located at the beginning of the data.
+			// TODO: Require SQUARE to have identical width/height?
 			svr_pal_buf_sz = 16*4;
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
@@ -327,6 +329,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case SVR_IMG_INDEX8_BGR5A3_RECTANGLE:
 		case SVR_IMG_INDEX8_BGR5A3_SQUARE: {
 			// 256-color palette is located at the beginning of the data.
+			// TODO: Require SQUARE to have identical width/height?
 			svr_pal_buf_sz = 256*2;
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = (pvrHeader.width * pvrHeader.height);
@@ -335,6 +338,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case SVR_IMG_INDEX8_ABGR8_RECTANGLE:
 		case SVR_IMG_INDEX8_ABGR8_SQUARE: {
 			// 256-color palette is located at the beginning of the data.
+			// TODO: Require SQUARE to have identical width/height?
 			svr_pal_buf_sz = 256*4;
 			mipmap_size = svr_pal_buf_sz;
 			expected_size = (pvrHeader.width * pvrHeader.height);
@@ -476,10 +480,10 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		}
 
-		// TODO: "Square" formats. (twiddled?)
-		// FIXME: Colors don't seem right... Need to verify.
 		case SVR_IMG_INDEX4_BGR5A3_RECTANGLE:
-		case SVR_IMG_INDEX4_ABGR8_RECTANGLE: {
+		case SVR_IMG_INDEX4_BGR5A3_SQUARE:
+		case SVR_IMG_INDEX4_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX4_ABGR8_SQUARE: {
 			assert(svr_pal_buf_sz != 0);
 			if (svr_pal_buf_sz == 0) {
 				// Invalid palette buffer size.
@@ -512,10 +516,10 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		}
 
-		// TODO: "Square" formats. (twiddled?)
-		// FIXME: Colors don't seem right... Need to verify.
 		case SVR_IMG_INDEX8_BGR5A3_RECTANGLE:
-		case SVR_IMG_INDEX8_ABGR8_RECTANGLE: {
+		case SVR_IMG_INDEX8_BGR5A3_SQUARE:
+		case SVR_IMG_INDEX8_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX8_ABGR8_SQUARE: {
 			assert(svr_pal_buf_sz != 0);
 			if (svr_pal_buf_sz == 0) {
 				// Invalid palette buffer size.
