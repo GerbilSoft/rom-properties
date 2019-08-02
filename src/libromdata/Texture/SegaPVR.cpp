@@ -587,12 +587,15 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 			// We need to swap the image data instead of the palette entries
 			// in order to maintain the original palette ordering.
-			// TODO: Optimize by vectorizing.
-			uint8_t *bits = buf.get();
-			uint8_t *const bits_end = bits + expected_size;
+			// TODO: Expand to uint64_t and/or SSE2?
+			assert(expected_size % 4 == 0);
+			uint32_t *bits = reinterpret_cast<uint32_t*>(buf.get());
+			uint32_t *const bits_end = bits + (expected_size / sizeof(uint32_t));
 			for (; bits < bits_end; bits++) {
-				const uint8_t sw = (*bits & 0xE7) | ((*bits & 0x10) >> 1) | ((*bits & 0x08) << 1);
-				*bits = sw;
+				const uint32_t sw = (*bits & 0xE7E7E7E7);
+				const uint32_t b3 = (*bits & 0x10101010) >> 1;
+				const uint32_t b4 = (*bits & 0x08080808) << 1;
+				*bits = (sw | b3 | b4);
 			}
 
 			// Least-significant nybble is first.
