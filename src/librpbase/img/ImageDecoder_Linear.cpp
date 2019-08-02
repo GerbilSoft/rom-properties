@@ -705,6 +705,9 @@ rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
 		fromLinear16_convert(BGRx4444, 4,4,4,0,4);
 		fromLinear16_convert(ARGB8332, 3,3,2,0,8);
 
+		// PlayStation 2.
+		fromLinear16_convert(BGR5A3, 5,5,5,0,4);
+
 		// 15-bit RGB.
 		fromLinear16_convert(RGB555, 5,5,5,0,0);
 		fromLinear16_convert(BGR555, 5,5,5,0,0);

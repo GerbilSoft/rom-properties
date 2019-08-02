@@ -112,6 +112,14 @@ class SegaPVRPrivate : public RomDataPrivate
 		 * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
 		 */
 		static rp_image *svr_unswizzle_4or8(const rp_image *img_swz);
+
+		/**
+		 * Unswizzle a 16-bit SVR texture.
+		 * NOTE: The rp_image must have been converted to ARGB32 format.
+		 * @param img_swz Swizzled 16-bit SVR texture.
+		 * @return Unswizzled 16-bit SVR texture, or nullptr on error.
+		 */
+		static rp_image *svr_unswizzle_16(const rp_image *img_swz);
 };
 
 /** SegaPVRPrivate **/
@@ -255,6 +263,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_RECTANGLE:
 		case SVR_IMG_RECTANGLE:
+		case SVR_IMG_RECTANGLE_SWIZZLED:
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:
 				case PVR_PX_RGB565:
@@ -426,6 +435,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 		case PVR_IMG_RECTANGLE:
 		case SVR_IMG_RECTANGLE:
+		case SVR_IMG_RECTANGLE_SWIZZLED:
 			if (is32bit) {
 				img = ImageDecoder::fromLinear32(px_format,
 					pvrHeader.width, pvrHeader.height,
@@ -434,6 +444,21 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				img = ImageDecoder::fromLinear16(px_format,
 					pvrHeader.width, pvrHeader.height,
 					reinterpret_cast<uint16_t*>(buf.get()), expected_size);
+			}
+
+			if (pvrHeader.pvr.img_data_type == SVR_IMG_RECTANGLE_SWIZZLED) {
+				// If RGB5A3 and >=64x64, this texture is probably swizzled.
+				if (pvrHeader.pvr.px_format == SVR_PX_BGR5A3 &&
+				    pvrHeader.width >= 64 && pvrHeader.height >= 64)
+				{
+					// Need to unswizzle the texture.
+					rp_image *const img_unswz = svr_unswizzle_16(img);
+					if (img_unswz) {
+						delete img;
+						img = img_unswz;
+					}
+				}
+				break;
 			}
 			break;
 
@@ -845,6 +870,106 @@ rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
 		}
 
 		uint8_t *const destLine = static_cast<uint8_t*>(img->scanLine(yy));
+		for (int x = 0; x < width; x++) {
+			const int num2 = (x / 4) & 1;
+
+			int num4 = ((x / 4) % 4);
+			if (oddRow) {
+				num4 += 4;
+			}
+
+			const int num5 = ((x * 4) % 16);
+			const int num6 = ((x / 16) * 32);
+
+			const int xx = x + num1 * tileMatrix[num2];
+
+			const int i = interlaceMatrix[num4] + num5 + num6 + num7;
+
+			destLine[xx] = src_pixels[i];
+		}
+	}
+
+	return img;
+}
+
+/**
+ * Unswizzle a 16-bit SVR texture.
+ * NOTE: The rp_image must have been converted to ARGB32 format.
+ * @param img_swz Swizzled 16-bit SVR texture.
+ * @return Unswizzled 16-bit SVR texture, or nullptr on error.
+ */
+rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
+{
+	// TODO: Move to ImageDecoder if more PS2 formats are added.
+
+	// FIXME: This code is *wrong*, but it's better than leaving it
+	// completely unswizzled...
+
+	// References:
+	// - https://forum.xentax.com/viewtopic.php?f=18&t=3516
+	// - https://gist.github.com/Fireboyd78/1546f5c86ebce52ce05e7837c697dc72
+
+	// Original Delphi version by Dageron:
+	// - https://gta.nick7.com/ps2/swizzling/unswizzle_delphi.txt
+
+	static const uint8_t interlaceMatrix[] = {
+		0x00, 0x10, 0x02, 0x12,
+		0x11, 0x01, 0x13, 0x03,
+	};
+	static const int8_t matrix[] = {0, 1, -1, 0};
+	static const int8_t tileMatrix[] = {4, -4};
+
+	// Only ARGB32 formats are supported here.
+	assert(img_swz != nullptr);
+	assert(img_swz->isValid());
+	assert(img_swz->format() == rp_image::FORMAT_ARGB32);
+	if (!img_swz || !img_swz->isValid() ||
+	    img_swz->format() != rp_image::FORMAT_ARGB32)
+	{
+		return nullptr;
+	}
+
+	const int width = img_swz->width();
+	const int height = img_swz->height();
+
+	// Texture dimensions must be a multiple of 4.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0) {
+		// Unable to unswizzle this texture.
+		return nullptr;
+	}
+
+	rp_image *const img = new rp_image(width, height, img_swz->format());
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// Strides must be equal to the image width.
+	assert(img_swz->stride()/sizeof(uint32_t) == width);
+	assert(img->stride()/sizeof(uint32_t) == width);
+	if (img_swz->stride()/sizeof(uint32_t) != width ||
+	    img->stride()/sizeof(uint32_t) != width)
+	{
+		delete img;
+		return nullptr;
+	}
+
+	const uint32_t *src_pixels = static_cast<const uint32_t*>(img_swz->bits());
+	for (int y = 0; y < height; y++) {
+		const bool oddRow = (y & 1);
+		const int num1 = (y / 4) & 1;
+		const int num3 = (y % 4);
+		const int yy = y + matrix[num3];
+
+		int num7 = y * width;
+		if (oddRow) {
+			num7 -= width;
+		}
+
+		uint32_t *const destLine = static_cast<uint32_t*>(img->scanLine(yy));
 		for (int x = 0; x < width; x++) {
 			const int num2 = (x / 4) & 1;
 
@@ -1292,7 +1417,7 @@ int SegaPVR::loadFieldData(void)
 		// Sony PlayStation 2 (SVR)
 		// NOTE: First index represents format 0x60.
 		"Rectangle",			// 0x60
-		nullptr,			// 0x61
+		"Rectangle (Swizzled)",		// 0x61
 		"8-bit (external palette)",	// 0x62
 		nullptr,			// 0x63
 		"8-bit (external palette)",	// 0x64

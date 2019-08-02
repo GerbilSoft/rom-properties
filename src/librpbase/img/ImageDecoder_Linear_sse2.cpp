@@ -236,6 +236,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 		case PXF_RGB5A3:
 		case PXF_IA8:
 		case PXF_BGR555_PS1:
+		case PXF_BGR5A3:
 		case PXF_L16:
 		case PXF_A8L8:	// TODO: SSSE3
 		case PXF_L8A8:	// TODO: SSSE3
