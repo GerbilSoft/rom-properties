@@ -124,7 +124,7 @@ button.
 
 |             System            | Properties Tab | Metadata | Internal Images | External Scans |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Sega PVR Textures             |       Yes      |    Yes   |      Image      |       N/A      |
+| Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
