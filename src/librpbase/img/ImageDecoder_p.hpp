@@ -822,7 +822,7 @@ inline uint32_t ImageDecoderPrivate::BGR5A3_to_ARGB32(uint16_t px16)
 	} else {
 		// BGR4A3: xAAABBBB GGGGRRRR
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-		px32  = ((px16 & 0x0F00) >>  4);	// Blue
+		px32  = ((px16 & 0x0F00) >>  8);	// Blue
 		px32 |= ((px16 & 0x00F0) <<  4);	// Green
 		px32 |= ((px16 & 0x000F) << 16);	// Red
 		px32 |= (px32 << 4);		// Copy to the top nybble.
