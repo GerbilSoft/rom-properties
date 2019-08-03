@@ -253,8 +253,11 @@ void ImageDecoderTest::SetUp(void)
 	}
 	gzrewind(m_gzDds);
 
+	/* FIXME: Per-type minimum sizes.
+	 * This fails on some very small SVR files.
 	ASSERT_GT(ddsSize, 4+sizeof(DDS_HEADER))
 		<< "DDS test image is too small.";
+	*/
 	ASSERT_LE(ddsSize, MAX_DDS_IMAGE_FILESIZE)
 		<< "DDS test image is too big.";
 
@@ -417,8 +420,9 @@ void ImageDecoderTest::decodeTest_internal(void)
 		filetype = "DDS";
 		m_romData = new DirectDrawSurface(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
-		// PVR/GVR image
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
+		// PVR/GVR/SVR image
 		filetype = "PVR";
 		m_romData = new SegaPVR(m_f_dds);
 #ifdef ENABLE_GL
@@ -522,8 +526,9 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// DDS image
 		fn_ctor = [](IRpFile *file) { return new DirectDrawSurface(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
-		// PVR/GVR image
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
+		// PVR/GVR/SVR image
 		fn_ctor = [](IRpFile *file) { return new SegaPVR(file); };
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
@@ -1327,6 +1332,141 @@ INSTANTIATE_TEST_CASE_P(NintendoBadge, ImageDecoderTest,
 		BADGE_ICON_IMAGE_TEST("Pr_Animal_17Sc_mset.prb"),
 		BADGE_ICON_IMAGE_TEST("Pr_FcRemix_2_drM_item05.prb"),
 		BADGE_ICON_IMAGE_TEST("Pr_FcRemix_2_punch_char01_3_Sep.prb"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// SVR tests.
+// TODO: Use something like GcnFstTest that uses an array of filenames
+// to generate tests at runtime instead of compile-time?
+// FIXME: Puyo Tools doesn't support format 0x61.
+#define SVR_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"SVR/" file ".svr.gz", \
+			"SVR/" file ".png")
+INSTANTIATE_TEST_CASE_P(SVR_1, ImageDecoderTest,
+	::testing::Values(
+		SVR_IMAGE_TEST("1channel_01"),
+		SVR_IMAGE_TEST("1channel_02"),
+		SVR_IMAGE_TEST("1channel_03"),
+		SVR_IMAGE_TEST("1channel_04"),
+		SVR_IMAGE_TEST("1channel_05"),
+		SVR_IMAGE_TEST("1channel_06"),
+		SVR_IMAGE_TEST("2channel_01"),
+		SVR_IMAGE_TEST("2channel_02"),
+		SVR_IMAGE_TEST("2channel_03"),
+		SVR_IMAGE_TEST("3channel_01"),
+		SVR_IMAGE_TEST("3channel_02"),
+		SVR_IMAGE_TEST("3channel_03"),
+		SVR_IMAGE_TEST("al_egg01"),
+		SVR_IMAGE_TEST("ani_han_karada"),
+		SVR_IMAGE_TEST("ani_han_parts"),
+		SVR_IMAGE_TEST("ani_kao_005"),
+		SVR_IMAGE_TEST("c_butterfly_k00"),
+		SVR_IMAGE_TEST("c_env_k00"),
+		//SVR_IMAGE_TEST("c_env_k01"),
+		SVR_IMAGE_TEST("c_env_k02"),
+		SVR_IMAGE_TEST("c_env_k04"),
+		//SVR_IMAGE_TEST("c_gold_k00"),
+		//SVR_IMAGE_TEST("c_green_k00"),
+		SVR_IMAGE_TEST("c_green_k01"),
+		SVR_IMAGE_TEST("channel_off"),
+		SVR_IMAGE_TEST("cha_trt_back01"),
+		//SVR_IMAGE_TEST("cha_trt_shadow01"),
+		SVR_IMAGE_TEST("cha_trt_water01"),
+		SVR_IMAGE_TEST("cha_trt_water02"),
+		SVR_IMAGE_TEST("c_paint_aiai"),
+		SVR_IMAGE_TEST("c_paint_akira"),
+		SVR_IMAGE_TEST("c_paint_amigo"),
+		SVR_IMAGE_TEST("c_paint_cake"),
+		SVR_IMAGE_TEST("c_paint_chao"),
+		SVR_IMAGE_TEST("c_paint_chu"),
+		SVR_IMAGE_TEST("c_paint_egg"),
+		SVR_IMAGE_TEST("c_paint_flower"),
+		SVR_IMAGE_TEST("c_paint_nights"),
+		SVR_IMAGE_TEST("c_paint_puyo"),
+		SVR_IMAGE_TEST("c_paint_shadow"),
+		SVR_IMAGE_TEST("c_paint_soccer"),
+		SVR_IMAGE_TEST("c_paint_sonic"),
+		SVR_IMAGE_TEST("c_paint_taxi"),
+		SVR_IMAGE_TEST("c_paint_urara"),
+		SVR_IMAGE_TEST("c_paint_zombie"),
+		SVR_IMAGE_TEST("c_pumpkinhead"),
+		SVR_IMAGE_TEST("cs_book_02"),
+		//SVR_IMAGE_TEST("c_silver_k00"),
+		SVR_IMAGE_TEST("c_toy_k00"))
+		//SVR_IMAGE_TEST("c_toy_k01"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_CASE_P(SVR_2, ImageDecoderTest,
+	::testing::Values(
+		SVR_IMAGE_TEST("c_toy_k02"),
+		SVR_IMAGE_TEST("c_toy_k03"),
+		SVR_IMAGE_TEST("c_toy_k04"),
+		//SVR_IMAGE_TEST("c_tree_k00"),
+		//SVR_IMAGE_TEST("c_tree_k01"),
+		//SVR_IMAGE_TEST("eft_drop_t01"),
+		//SVR_IMAGE_TEST("eft_ripple01"),
+		//SVR_IMAGE_TEST("eft_splash_t01"),
+		SVR_IMAGE_TEST("kin_blbaketu2"),
+		SVR_IMAGE_TEST("kin_blbaketu"),
+		SVR_IMAGE_TEST("kin_blcarpet"),
+		SVR_IMAGE_TEST("kin_bldai"),
+		SVR_IMAGE_TEST("kin_bldesk1"),
+		SVR_IMAGE_TEST("kin_blfire"),
+		SVR_IMAGE_TEST("kin_blhako1"),
+		SVR_IMAGE_TEST("kin_blhako2"),
+		SVR_IMAGE_TEST("kin_blhako3"),
+		SVR_IMAGE_TEST("kin_blhako4"),
+		SVR_IMAGE_TEST("kin_blhako5"),
+		SVR_IMAGE_TEST("kin_blhako6"),
+		SVR_IMAGE_TEST("kin_blhouki2"),
+		SVR_IMAGE_TEST("kin_blhouki3"),
+		SVR_IMAGE_TEST("kin_blhouki4"),
+		SVR_IMAGE_TEST("kin_blhouki5"),
+		SVR_IMAGE_TEST("kin_blhouki"),
+		SVR_IMAGE_TEST("kin_blkabekake1"),
+		SVR_IMAGE_TEST("kin_blkabekake2"),
+		SVR_IMAGE_TEST("kin_blkasa"),
+		SVR_IMAGE_TEST("kin_blkumo2"),
+		SVR_IMAGE_TEST("kin_blkumo"),
+		SVR_IMAGE_TEST("kin_bllamp1"),
+		SVR_IMAGE_TEST("kin_bllamp2"),
+		SVR_IMAGE_TEST("kin_bllamp3"),
+		SVR_IMAGE_TEST("kin_blmaf"),
+		SVR_IMAGE_TEST("kin_blmask"),
+		SVR_IMAGE_TEST("kin_blphot"),
+		SVR_IMAGE_TEST("kin_blregi2"),
+		SVR_IMAGE_TEST("kin_blregi"),
+		SVR_IMAGE_TEST("kin_blreji3"),
+		SVR_IMAGE_TEST("kin_blreji4"),
+		SVR_IMAGE_TEST("kin_blreji5"),
+		SVR_IMAGE_TEST("kin_blspeeker2"),
+		SVR_IMAGE_TEST("kin_blspeeker3"),
+		SVR_IMAGE_TEST("kin_blspeeker"),
+		SVR_IMAGE_TEST("kin_blvase1"),
+		SVR_IMAGE_TEST("kin_blvase2"),
+		SVR_IMAGE_TEST("kin_blwall2"),
+		SVR_IMAGE_TEST("kin_blwall"),
+		SVR_IMAGE_TEST("kin_cbdoor2"),
+		SVR_IMAGE_TEST("kin_copdwaku2"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
+	::testing::Values(
+		SVR_IMAGE_TEST("kin_doglass1"),
+		SVR_IMAGE_TEST("kin_dolabel2"),
+		SVR_IMAGE_TEST("kin_dolabel3"),
+		SVR_IMAGE_TEST("kin_kagebkaku"),
+		SVR_IMAGE_TEST("kin_kagebmaru"),
+		SVR_IMAGE_TEST("kin_kobookstand"),
+		SVR_IMAGE_TEST("kin_koedbook2"),
+		SVR_IMAGE_TEST("kin_kohibook2"),
+		SVR_IMAGE_TEST("kin_kohibook3"),
+		SVR_IMAGE_TEST("kin_kokami"),
+		SVR_IMAGE_TEST("kin_kophotstand1"),
+		SVR_IMAGE_TEST("kin_koribbon"),
+		SVR_IMAGE_TEST("trt_g00_gass"),
+		SVR_IMAGE_TEST("trt_g00_lawn00small"),
+		SVR_IMAGE_TEST("trt_g00_river01"),
+		SVR_IMAGE_TEST("trt_g00_river02"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
