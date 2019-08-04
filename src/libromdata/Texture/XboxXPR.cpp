@@ -748,7 +748,7 @@ uint32_t XboxXPR::imgpf(ImageType imageType) const
 	// If both dimensions of the texture are 64 or less,
 	// specify nearest-neighbor scaling.
 	uint32_t ret = 0;
-	if ((d->xpr0Header.width_pow2 >> 4) <= 6 ||
+	if ((d->xpr0Header.width_pow2 >> 4) <= 6 &&
 	    (d->xpr0Header.height_pow2 & 0x0F) <= 6)
 	{
 		// 64x64 or smaller.
