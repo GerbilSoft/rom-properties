@@ -321,7 +321,7 @@ uch buffer[BS];
    uch outbuf[BS];
    z_stream zstrm;
 #ifdef RP_PRINTF_ENABLED
-   const char **pass_color;
+   const char *const *pass_color;
    const char *color_off;
 #endif /* RP_PRINTF_ENABLED */
 #endif

@@ -573,8 +573,11 @@ rp_image *RpPng::load(IRpFile *file)
 	// Check the image with pngcheck() first.
 	file->rewind();
 	int ret = pngcheck(file);
-	if (ret != kOK) {
-		// PNG image has errors.
+	// NOTE: BK Pocket Bike Racer's icon is missing the IEND chunk.
+	// pngcheck returns kMinorError in that case.
+	// TODO: Make it a special exception?
+	if (ret != kOK && ret != kMinorError) {
+		// PNG image has major errors.
 		return nullptr;
 	}
 
