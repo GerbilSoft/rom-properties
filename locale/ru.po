@@ -37,7 +37,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.3.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-07-28 12:07-0400\n"
+"POT-Creation-Date: 2019-08-04 14:42-0400\n"
 "PO-Revision-Date: 2018-04-13 04:50+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -645,7 +645,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:619
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1617
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1848
-#: ../src/libromdata/Console/XboxDisc.cpp:788
+#: ../src/libromdata/Console/XboxDisc.cpp:794
 #: ../src/libromdata/Console/Xbox_XBE.cpp:599
 #: ../src/libromdata/Console/Xbox_XBE.cpp:603
 #: ../src/libromdata/Handheld/DMG.cpp:354
@@ -787,7 +787,7 @@ msgid "Codec"
 msgstr ""
 
 #: ../src/libromdata/Audio/BCSTM.cpp:515 ../src/libromdata/Audio/BRSTM.cpp:383
-#: ../src/libromdata/Console/XboxDisc.cpp:759
+#: ../src/libromdata/Console/XboxDisc.cpp:765
 #: ../src/libromdata/Other/ELF.cpp:1332 ../src/libromdata/Other/MachO.cpp:523
 #, c-format
 msgctxt "RomData"
@@ -1028,8 +1028,8 @@ msgid "System"
 msgstr "Система"
 
 #: ../src/libromdata/Audio/PSF.cpp:574 ../src/libromdata/Audio/SPC.cpp:791
-#: ../src/libromdata/Console/DreamcastSave.cpp:1361
-#: ../src/libromdata/Console/DreamcastSave.cpp:1386
+#: ../src/libromdata/Console/DreamcastSave.cpp:1365
+#: ../src/libromdata/Console/DreamcastSave.cpp:1390
 #: ../src/libromdata/Console/NES.cpp:888 ../src/libromdata/Console/NES.cpp:1097
 #: ../src/libromdata/Console/NES.cpp:1108
 #: ../src/libromdata/Console/NES.cpp:1128
@@ -1045,8 +1045,8 @@ msgstr "Система"
 #: ../src/libromdata/Other/Amiibo.cpp:453 ../src/libromdata/Other/ELF.cpp:1245
 #: ../src/libromdata/Other/EXE.cpp:262 ../src/libromdata/Other/EXE.cpp:383
 #: ../src/libromdata/Other/EXE_NE.cpp:142
-#: ../src/libromdata/Texture/SegaPVR.cpp:1009
-#: ../src/libromdata/Texture/SegaPVR.cpp:1018
+#: ../src/libromdata/Texture/SegaPVR.cpp:1515
+#: ../src/libromdata/Texture/SegaPVR.cpp:1524
 #: ../src/libromdata/Texture/XboxXPR.cpp:857
 #, c-format
 msgctxt "RomData"
@@ -2006,9 +2006,9 @@ msgctxt "Dreamcast"
 msgid "Opt. Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1279
-#: ../src/libromdata/Console/DreamcastSave.cpp:1287
-#: ../src/libromdata/Console/DreamcastSave.cpp:1295
+#: ../src/libromdata/Console/DreamcastSave.cpp:1283
+#: ../src/libromdata/Console/DreamcastSave.cpp:1291
+#: ../src/libromdata/Console/DreamcastSave.cpp:1299
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1941
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1955
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2034
@@ -2018,100 +2018,100 @@ msgid "Warning"
 msgstr ""
 
 #. tr: VMS file is missing.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1281
+#: ../src/libromdata/Console/DreamcastSave.cpp:1285
 msgctxt "DreamcastSave"
 msgid "The VMS file was not found."
 msgstr ""
 
 #. tr: VMI file is missing.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1289
+#: ../src/libromdata/Console/DreamcastSave.cpp:1293
 msgctxt "DreamcastSave"
 msgid "The VMI file was not found."
 msgstr ""
 
 #. tr: Should not happen...
-#: ../src/libromdata/Console/DreamcastSave.cpp:1297
+#: ../src/libromdata/Console/DreamcastSave.cpp:1301
 msgctxt "DreamcastSave"
 msgid "Unrecognized VMS/VMI combination."
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1304
+#: ../src/libromdata/Console/DreamcastSave.cpp:1308
 msgctxt "DreamcastSave"
 msgid "VMI Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1308
+#: ../src/libromdata/Console/DreamcastSave.cpp:1312
 msgctxt "DreamcastSave"
 msgid "VMI Copyright"
 msgstr ""
 
 #. tr: ICONDATA_VMS
-#: ../src/libromdata/Console/DreamcastSave.cpp:1318
+#: ../src/libromdata/Console/DreamcastSave.cpp:1322
 msgctxt "DreamcastSave"
 msgid "Icon Data"
 msgstr ""
 
 #. tr: No file type entry.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1324
+#: ../src/libromdata/Console/DreamcastSave.cpp:1328
 msgctxt "DreamcastSave"
 msgid "None"
 msgstr ""
 
 #. tr: Save file.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1328
-#: ../src/libromdata/Console/DreamcastSave.cpp:1343
+#: ../src/libromdata/Console/DreamcastSave.cpp:1332
+#: ../src/libromdata/Console/DreamcastSave.cpp:1347
 msgctxt "DreamcastSave"
 msgid "Save Data"
 msgstr ""
 
 #. tr: VMU game file.
-#: ../src/libromdata/Console/DreamcastSave.cpp:1332
-#: ../src/libromdata/Console/DreamcastSave.cpp:1347
+#: ../src/libromdata/Console/DreamcastSave.cpp:1336
+#: ../src/libromdata/Console/DreamcastSave.cpp:1351
 msgctxt "DreamcastSave"
 msgid "VMU Game"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1355
+#: ../src/libromdata/Console/DreamcastSave.cpp:1359
 msgctxt "DreamcastSave"
 msgid "File Type"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1373
+#: ../src/libromdata/Console/DreamcastSave.cpp:1377
 msgctxt "DreamcastSave"
 msgid "Copy OK"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1376
+#: ../src/libromdata/Console/DreamcastSave.cpp:1380
 msgctxt "DreamcastSave"
 msgid "Copy Protected"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1380
+#: ../src/libromdata/Console/DreamcastSave.cpp:1384
 msgctxt "DreamcastSave"
 msgid "Copy Protect"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1391
+#: ../src/libromdata/Console/DreamcastSave.cpp:1395
 msgctxt "DreamcastSave"
 msgid "Filename"
 msgstr "Имя файла"
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1396
+#: ../src/libromdata/Console/DreamcastSave.cpp:1400
 msgctxt "DreamcastSave"
 msgid "Creation Time"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1403
+#: ../src/libromdata/Console/DreamcastSave.cpp:1407
 msgctxt "DreamcastSave"
 msgid "VMS Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1427
+#: ../src/libromdata/Console/DreamcastSave.cpp:1431
 msgctxt "DreamcastSave"
 msgid "DC Description"
 msgstr ""
 
-#: ../src/libromdata/Console/DreamcastSave.cpp:1436
+#: ../src/libromdata/Console/DreamcastSave.cpp:1440
 msgctxt "DreamcastSave"
 msgid "Game Title"
 msgstr ""
@@ -3694,22 +3694,22 @@ msgctxt "Xbox360_XEX"
 msgid "Compression"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:740
+#: ../src/libromdata/Console/XboxDisc.cpp:746
 msgctxt "XboxDisc"
 msgid "Disc Type"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:745
+#: ../src/libromdata/Console/XboxDisc.cpp:751
 msgctxt "XboxDisc"
 msgid "Extracted XDVDFS"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:764
+#: ../src/libromdata/Console/XboxDisc.cpp:770
 msgctxt "XboxDisc"
 msgid "Disc Timestamp"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:787
+#: ../src/libromdata/Console/XboxDisc.cpp:793
 msgctxt "XboxDisc"
 msgid "Boot Filename"
 msgstr ""
@@ -6536,22 +6536,22 @@ msgctxt "KhronosKTX"
 msgid "Key/Value Data"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:907
+#: ../src/libromdata/Texture/SegaPVR.cpp:1359
 msgctxt "SegaPVR"
 msgid "Texture Size"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:1002
+#: ../src/libromdata/Texture/SegaPVR.cpp:1508
 msgctxt "SegaPVR"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:1013
+#: ../src/libromdata/Texture/SegaPVR.cpp:1519
 msgctxt "SegaPVR"
 msgid "Image Data Type"
 msgstr ""
 
-#: ../src/libromdata/Texture/SegaPVR.cpp:1023
+#: ../src/libromdata/Texture/SegaPVR.cpp:1529
 msgctxt "SegaPVR"
 msgid "Global Index"
 msgstr ""
