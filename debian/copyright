@@ -40,63 +40,27 @@ License: GPL-2+
 Comment:
 
 Files:
- extlib/googletest/googlemock/*
- extlib/googletest/googletest/*
- extlib/googletest/.gitignore
- extlib/googletest/CMakeLists.txt
- extlib/googletest/README.md
+ extlib/googletest/*
 Copyright: 2008-2016, Google Inc.
 License: BSD-3-clause
 
 Files:
- extlib/minizip/*.c
- extlib/minizip/*.h
- extlib/minizip/ChangeLogUnzip
- extlib/minizip/MiniZip64_*.txt
+ extlib/minizip/*
 Copyright:
  1998-2010, Gilles Vollant
  2010, Mathias Svensson
+ 2010-2019, Nathan Moinvaziri
 License: Zlib
 
 Files:
- extlib/zlib/contrib/*
- extlib/zlib/doc/*
- extlib/zlib/test/*
- extlib/zlib/win32/*
- extlib/zlib/*.c
- extlib/zlib/*.h
- extlib/zlib/*.xml
- extlib/zlib/*.cmakein
- extlib/zlib/*.in
- extlib/zlib/*.3
- extlib/zlib/*.pdf
- extlib/zlib/*.map
- extlib/zlib/ChangeLog
- extlib/zlib/CMakeLists.txt
- extlib/zlib/FAQ
- extlib/zlib/INDEX
- extlib/zlib/README
- extlib/zlib/zlib2ansi
+ extlib/zlib/*
 Copyright:
  1995-2017, Jean-loup Gailly
  1995-2017, Mark Adler
 License: Zlib
 
 Files:
- extlib/libpng/arm/*
- extlib/libpng/scripts/*
- extlib/libpng/*.c
- extlib/libpng/*.h
- extlib/libpng/*.in
- extlib/libpng/*.3
- extlib/libpng/*.5
- extlib/libpng/ANNOUNCE
- extlib/libpng/CHANGES
- extlib/libpng/CMakeLists.txt
- extlib/libpng/INSTALL
- extlib/libpng/LICENSE
- extlib/libpng/README
- extlib/libpng/TODO
+ extlib/libpng/*
 Copyright: Copyright (c) 1998-2017 Glenn Randers-Pehrson
 License: libpng
 
@@ -116,60 +80,29 @@ Copyright: 1996, 1997 Andreas Dilger
 License: libpng
 
 Files:
- extlib/libjpeg-turbo/cmakescripts/*
- extlib/libjpeg-turbo/doc/*
- extlib/libjpeg-turbo/release/*
- extlib/libjpeg-turbo/sharedlib/*
- extlib/libjpeg-turbo/simd/*
- extlib/libjpeg-turbo/testimages/*
- extlib/libjpeg-turbo/win/*
- extlib/libjpeg-turbo/*.c
- extlib/libjpeg-turbo/*.h
- extlib/libjpeg-turbo/*.md
- extlib/libjpeg-turbo/*.in
- extlib/libjpeg-turbo/*.ijg
- extlib/libjpeg-turbo/*.log
- extlib/libjpeg-turbo/*.1
- extlib/libjpeg-turbo/CMakeLists.txt
- extlib/libjpeg-turbo/coderules.txt
- extlib/libjpeg-turbo/jconfig.txt
- extlib/libjpeg-turbo/libjpeg.txt
- extlib/libjpeg-turbo/structure.txt
- extlib/libjpeg-turbo/usage.txt
- extlib/libjpeg-turbo/wizard.txt
+ extlib/libjpeg-turbo/*
 Copyright: 1991-2010 Thomas G. Lane
            1991-2011 Guido Vollbeding
            1999-2006 MIYASAKA Masaru
-           2009-2011 D. R. Commander
+           2009-2019 D. R. Commander
            2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
            2009-2011 Nokia Corporation and/or its subsidiary(-ies)
 License: BSD-BY-LC-NE
 
 Files:
- extlib/inih/cpp/*
- extlib/inih/examples/*
- extlib/inih/extra/*
- extlib/inih/tests/*
- extlib/inih/*.c
- extlib/inih/*.h
- extlib/inih/LICENSE.txt
- extlib/inih/README.md
-Copyright: (c) 2009-2018, Ben Hoyt
+ extlib/inih/*
+Copyright: (c) 2009-2019, Ben Hoyt
 License: BSD-3-clause
 
 Files:
- extlib/tinyxml2/contrib/*
- extlib/tinyxml2/resources/*
- extlib/tinyxml2/*.conf
- extlib/tinyxml2/*.cpp
- extlib/tinyxml2/*.h
- extlib/tinyxml2/*.md
- extlib/tinyxml2/*.png
- extlib/tinyxml2/CMakeLists.txt
- extlib/tinyxml2/Makefile
- extlib/tinyxml2/dox
+ extlib/tinyxml2/*
 Copyright: 2011-2018 Lee Thomason (www.grinninglizard.com)
 License: Zlib
+
+Files:
+ extlib/gettext.win32/*
+Copyright: (c) 1995-2019 GNU gettext authors
+License: GPL-3+
 
 Files:
  extlib/unice68/*
@@ -177,14 +110,7 @@ Copyright: (c) 1998-2016 Benjamin Gerard
 License: GPL-3+
 
 Files:
- extlib/libmspack-xenia/config.h.in
- extlib/libmspack-xenia/lzx.h
- extlib/libmspack-xenia/lzxd.c
- extlib/libmspack-xenia/mspack.h
- extlib/libmspack-xenia/readbits.h
- extlib/libmspack-xenia/readhuff.h
- extlib/libmspack-xenia/system.c
- extlib/libmspack-xenia/system.h
+ extlib/libmspack-xenia/*
 Copyright: (C) 2003-2018 Stuart Caie
 License: LGPL-2.1
 
