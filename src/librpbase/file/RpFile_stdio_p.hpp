@@ -50,11 +50,11 @@ class RpFilePrivate
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 			: q_ptr(q), file(nullptr), filename(filename)
-			, mode(mode), isDevice(false)
+			, mode(mode), isDevice(false), isKreonUnlocked(false)
 			, gzfd(nullptr), gzsz(-1) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
 			: q_ptr(q), file(nullptr), filename(filename)
-			, mode(mode), isDevice(false)
+			, mode(mode), isDevice(false), isKreonUnlocked(false)
 			, gzfd(nullptr), gzsz(-1) { }
 		~RpFilePrivate();
 
@@ -67,6 +67,7 @@ class RpFilePrivate
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
 		bool isDevice;		// Is this a device file?
+		bool isKreonUnlocked;	// Is Kreon mode unlocked?
 
 		gzFile gzfd;		// Used for transparent gzip decompression.
 		int64_t gzsz;		// Uncompressed file size.

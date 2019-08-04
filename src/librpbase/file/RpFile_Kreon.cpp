@@ -190,7 +190,10 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	}
 
 	// Check if the command succeeded.
-	if ((sg_io.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
+	if ((sg_io.info & SG_INFO_OK_MASK) == SG_INFO_OK) {
+		// Command succeeded.
+		ret = 0;
+	} else {
 		// Command failed.
 		ret = -EIO;
 		if (sg_io.masked_status & CHECK_CONDITION) {
@@ -338,6 +341,50 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	return 0;
 }
 
+#ifdef _WIN32
+/**
+ * Read data from a device using SCSI commands.
+ * @param lbaStart	[in] Starting LBA of the data to read.
+ * @param lbaCount	[in] Number of LBAs to read.
+ * @param pBuf		[out] Output buffer.
+ * @param bufLen	[in] Output buffer length.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_t bufLen)
+{
+	assert(pBuf != nullptr);
+	if (!pBuf)
+		return -EINVAL;
+
+	// FIXME: d->sector_size is only in the Windows-specific class right now.
+	RP_D(RpFile);
+	assert(bufLen >= (int64_t)lbaCount * (int64_t)d->sector_size);
+	if (bufLen < (int64_t)lbaCount * (int64_t)d->sector_size)
+		return -EIO;	// TODO: Better error code?
+
+	if (!d->isDevice) {
+		// Not a device.
+		return -ENODEV;
+	}
+
+	// SCSI command buffers.
+	// NOTE: Using READ(10), which has 32-bit LBA and transfer length.
+	// READ(6) has 21-bit LBA and 8-bit transfer length.
+	// TODO: May need to use READ(32) for large devices.
+	SCSI_CDB_READ_10 cdb10;
+
+	// SCSI READ(10)
+	cdb10.OpCode = SCSI_OP_READ_10;
+	cdb10.Flags = 0;
+	cdb10.LBA = cpu_to_be32(lbaStart);
+	cdb10.Reserved = 0;
+	cdb10.TransferLen = cpu_to_be16(lbaCount);
+	cdb10.Control = 0;
+
+	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, bufLen, SCSI_DIR_IN);
+}
+#endif /* _WIN32 */
+
 /**
  * Is this a supported Kreon drive?
  *
@@ -469,7 +516,7 @@ int RpFile::setKreonErrorSkipState(bool skip)
  * @param lockState 0 == locked; 1 == Unlock State 1 (xtreme); 2 == Unlock State 2 (wxripper)
  * @return 0 on success; non-zero on error.
  */
-int RpFile::setKreonLockState(uint8_t lockState)
+int RpFile::setKreonLockState(KreonLockState lockState)
 {
 	// NOTE: On Linux, this ioctl will fail if not running as root.
 	RP_D(RpFile);
@@ -480,8 +527,12 @@ int RpFile::setKreonLockState(uint8_t lockState)
 
 	// Kreon "Set Lock State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1309
-	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, (uint8_t)lockState, 0x00};
-	return scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, SCSI_DIR_IN);
+	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, static_cast<uint8_t>(lockState), 0x00};
+	int ret = scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, SCSI_DIR_IN);
+	if (ret == 0) {
+		d->isKreonUnlocked = (lockState != KREON_STATE_LOCKED);
+	}
+	return ret;
 }
 
 }

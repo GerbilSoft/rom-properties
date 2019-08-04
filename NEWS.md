@@ -58,8 +58,7 @@
     * Reads default.xbe and/or default.xex from the XDVDFS partition and
       calls the appropriate parser to handle thise files.
     * Supports reading original discs if a supported DVD-ROM drive with Kreon
-      firmware is connected. (Linux only at the moment; Windows support will
-      be added before the release of v1.4.)
+      firmware is connected.
   * Xbox_XBE: Original Xbox executables.
   * Xbox360_STFS: Xbox 360 packages.
   * iQuePlayer: iQue Player content metadata and ticket files.

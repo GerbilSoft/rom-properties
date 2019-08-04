@@ -147,6 +147,10 @@ XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 
 XboxDiscPrivate::~XboxDiscPrivate()
 {
+	if (isKreon) {
+		lockKreonDrive();
+	}
+
 	if (defaultExeData) {
 		defaultExeData->unref();
 	}
@@ -262,7 +266,7 @@ inline void XboxDiscPrivate::unlockKreonDrive(void)
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(true);
-		rpFile->setKreonLockState(2);
+		rpFile->setKreonLockState(RpFile::KREON_STATE_2_WXRIPPER);
 	}
 }
 
@@ -277,7 +281,7 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(false);
-		rpFile->setKreonLockState(0);
+		rpFile->setKreonLockState(RpFile::KREON_STATE_LOCKED);
 	}
 }
 
@@ -372,6 +376,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		delete d->discReader;
 		d->discReader = nullptr;
 		d->lockKreonDrive();
+		d->isKreon = false;
 		return;
 	}
 	d->xdvdfsPartition = new XDVDFSPartition(d->discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
@@ -382,6 +387,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		d->xdvdfsPartition = nullptr;
 		d->discReader = nullptr;
 		d->lockKreonDrive();
+		d->isKreon = false;
 		return;
 	}
 
@@ -392,8 +398,8 @@ XboxDisc::XboxDisc(IRpFile *file)
 	}
 
 	// Disc image is ready.
+	// NOTE: Kreon drives are left unlocked until the object is deleted.
 	d->isValid = true;
-	d->lockKreonDrive();
 }
 
 /**

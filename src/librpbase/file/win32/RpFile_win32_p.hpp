@@ -42,11 +42,11 @@ class RpFilePrivate
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), isDevice(false)
+			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
 			, gzfd(nullptr), gzsz(0), sector_size(0) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), isDevice(false)
+			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
 			, gzfd(nullptr), gzsz(0), sector_size(0) { }
 		~RpFilePrivate();
 
@@ -58,7 +58,14 @@ class RpFilePrivate
 		HANDLE file;		// File handle.
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
+
 		bool isDevice;		// Is this a device file?
+		bool isKreonUnlocked;	// Is Kreon mode unlocked?
+
+		// SetFilePointerEx() *requires* sector alignment when
+		// accessing device files. Hence, we'll have to maintain
+		// our own device position.
+		int64_t device_pos;	// Device position.
 
 		// gzip parameters.
 		gzFile gzfd;			// Used for transparent gzip decompression.
