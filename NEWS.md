@@ -1,6 +1,6 @@
 # Changes
 
-## v1.4 (released 2019/??/??)
+## v1.4 (released 2019/08/04)
 
 * New features:
   * The Cairo graphics library is now used for GTK+ 3.x builds.

@@ -8,19 +8,17 @@ video game ROM and disc images.
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/5lk15ct43jtmhejs/branch/master?svg=true)](https://ci.appveyor.com/project/GerbilSoft/rom-properties/branch/master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)
 
-## v1.3 - The Internationalization Release
+## v1.4 - The Metadata and Xbox release
 
-This release adds support for internationalization. Now you can have the ROM Properties fields displayed in your own native language. (Currently not supported on Windows; this will be fixed before release.)
+This release was originally focused on adding metadata for file browsers, but it ended up expanding to lots of things, including Xbox and Xbox 360 disc images and executables.
+
+![Xbawks is HUEG](doc/img/v1.4/rp.kde5.XboxDisc.png)
+
+Other file formats added in this release include Wii WADs, encrypted Wii save files, Mach-O binaries, Neo Geo Pocket (Color) ROM images, and iQue Player metadata and ticket files.
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-New systems supported include the Tiger Electronics game.com:
-
-![game.com active](doc/img/v1.3/rp.win7.GameCom.png)
-
-This release also adds support for several new texture file formats, including Khornos KTX and Valve VTF. It also adds support for ETCn-compressed textures.
-
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.3.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.4.
 
 ## Feedback
 
@@ -307,3 +305,5 @@ https://github.com/GerbilSoft/rom-properties/issues
   information about the Original Xbox .XBE executable format.
 * [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded) for Original Xbox
   technical information, including XPR pixel formats.
+* [iQueBrew](http://www.iquebrew.org/index.php?title=Main_Page) for iQue Player
+  technical information.
