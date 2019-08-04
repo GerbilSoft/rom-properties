@@ -1,3 +1,9 @@
+rom-properties (1.4-1ppa2~disco2) disco; urgency=medium
+
+  * Fix the path and filename of the XFCE (GTK+ 3.x) shared library.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 04 Aug 2019 19:04:05 -0400
+
 rom-properties (1.4-1ppa2~disco1) disco; urgency=medium
 
   * Build for Ubuntu 19.04 "Disco" Dingo.
