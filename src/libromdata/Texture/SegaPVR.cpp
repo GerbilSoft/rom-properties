@@ -380,6 +380,13 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 	if ((pvrDataStart + mipmap_size + expected_size) > file_sz) {
 		// File is too small.
+#ifdef _DEBUG
+		if (pvrHeader.pvr.img_data_type == PVR_IMG_SMALL_VQ ||
+		    pvrHeader.pvr.img_data_type == PVR_IMG_SMALL_VQ_MIPMAP)
+		{
+			assert(!"PVR Small VQ file is too small.");
+		}
+#endif /* _DEBUG */
 		return nullptr;
 	}
 
