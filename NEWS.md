@@ -147,6 +147,7 @@
   * ETC2: Fixed alpha decoding for GL_COMPRESSED_RGBA8_ETC2_EAC. Note that
     the test case image used the incorrect decoding, so tests didn't catch
     this bug.
+  * SegaPVR: Fixed Small VQ decoding for 16x16 and 32x32 textures.
 
 * Other changes:
   * Removed S2TC decoding. The first version of rom-properties with support
