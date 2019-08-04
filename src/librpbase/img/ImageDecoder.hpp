@@ -666,7 +666,7 @@ class ImageDecoder
 inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries(int width)
 {
 	if (width <= 16) {
-		return 8*4;
+		return 16*4;
 	} else if (width <= 32) {
 		return 32*4;
 	} else if (width <= 64) {
