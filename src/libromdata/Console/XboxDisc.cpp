@@ -262,7 +262,7 @@ inline void XboxDiscPrivate::unlockKreonDrive(void)
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(true);
-		rpFile->setKreonLockState(2);
+		rpFile->setKreonLockState(RpFile::KREON_STATE_2_WXRIPPER);
 	}
 }
 
@@ -277,7 +277,7 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
 	RpFile *const rpFile = dynamic_cast<RpFile*>(this->file);
 	if (rpFile) {
 		rpFile->setKreonErrorSkipState(false);
-		rpFile->setKreonLockState(0);
+		rpFile->setKreonLockState(RpFile::KREON_STATE_UNLOCKED);
 	}
 }
 

@@ -469,7 +469,7 @@ int RpFile::setKreonErrorSkipState(bool skip)
  * @param lockState 0 == locked; 1 == Unlock State 1 (xtreme); 2 == Unlock State 2 (wxripper)
  * @return 0 on success; non-zero on error.
  */
-int RpFile::setKreonLockState(uint8_t lockState)
+int RpFile::setKreonLockState(KreonLockState lockState)
 {
 	// NOTE: On Linux, this ioctl will fail if not running as root.
 	RP_D(RpFile);
@@ -478,10 +478,19 @@ int RpFile::setKreonLockState(uint8_t lockState)
 		return -ENODEV;
 	}
 
+	// Make sure we don't unlock a drive that's already locked.
+	if (!d->isKreonUnlocked) {
+		assert(lockState != KREON_STATE_UNLOCKED);
+	}
+
 	// Kreon "Set Lock State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1309
-	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, (uint8_t)lockState, 0x00};
-	return scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, SCSI_DIR_IN);
+	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, static_cast<uint8_t>(lockState), 0x00};
+	int ret = scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, SCSI_DIR_IN);
+	if (ret == 0) {
+		d->isKreonUnlocked = (lockState != KREON_STATE_UNLOCKED);
+	}
+	return ret;
 }
 
 }

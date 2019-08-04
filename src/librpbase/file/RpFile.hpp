@@ -212,12 +212,18 @@ class RpFile : public IRpFile
 		 */
 		int setKreonErrorSkipState(bool skip);
 
+		enum KreonLockState : uint8_t {
+			KREON_STATE_UNLOCKED = 0,
+			KREON_STATE_1_XTREME = 1,
+			KREON_STATE_2_WXRIPPER = 2,
+		};
+
 		/**
 		 * Set Kreon lock state
 		 * @param lockState 0 == locked; 1 == Unlock State 1 (xtreme); 2 == Unlock State 2 (wxripper)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKreonLockState(uint8_t lockState);
+		int setKreonLockState(KreonLockState lockState);
 };
 
 }
