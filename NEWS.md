@@ -156,6 +156,9 @@
     need the S2TC decoder or test images anymore.
   * The Linux UI frontends will no longer initialize if running as root.
     `rpcli` will still run as root for now, though it's not recommended.
+  * The XDG MIME database rom-properties.xml is now installed on Linux
+    systems. This provides MIME types for formats not currently present in
+    FreeDesktop.org's shared-mime-info database.
 
 ## v1.3.3 (released 2018/08/25)
 
