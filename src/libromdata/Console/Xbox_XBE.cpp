@@ -246,6 +246,7 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 			delete discReader_tmp;
 			return nullptr;
 		}
+		discReader = discReader_tmp;
 	}
 
 	// Open the XPR0 image.
