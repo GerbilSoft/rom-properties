@@ -806,7 +806,10 @@ INSTANTIATE_TEST_CASE_P(PVR_SmallVQ, ImageDecoderTest,
 			"PVR/drumfuta1.png"),
 		ImageDecoderTest_mode(
 			"PVR/drum_ref.pvr.gz",
-			"PVR/drum_ref.png"))
+			"PVR/drum_ref.png"),
+		ImageDecoderTest_mode(
+			"PVR/sp_blue.pvr.gz",
+			"PVR/sp_blue.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // GVR tests. (RGB5A3)
