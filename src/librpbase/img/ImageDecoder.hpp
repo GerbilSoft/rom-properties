@@ -573,8 +573,9 @@ class ImageDecoder
 
 		/**
 		 * Convert a Dreamcast vector-quantized image to rp_image.
-		 * @tparam smallVQ If true, handle this image as SmallVQ.
 		 * @param px_format Palette pixel format.
+		 * @param smallVQ If true, handle this image as SmallVQ.
+		 * @param hasMipmaps If true, the image has mipmaps. (Needed for SmallVQ.)
 		 * @param width Image width. (Maximum is 4096.)
 		 * @param height Image height. (Must be equal to width.)
 		 * @param img_buf VQ image buffer.
@@ -583,19 +584,29 @@ class ImageDecoder
 		 * @param pal_siz Size of palette data. [must be >= 1024*2; for SmallVQ, 64*2, 256*2, or 512*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<bool smallVQ>
 		static rp_image *fromDreamcastVQ16(PixelFormat px_format,
+			bool smallVQ, bool hasMipmaps,
 			int width, int height,
 			const uint8_t *RESTRICT img_buf, int img_siz,
 			const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 		/**
 		 * Get the number of palette entries for Dreamcast SmallVQ textures.
+		 * This version is for textures without mipmaps.
 		 * TODO: constexpr?
 		 * @param width Texture width.
 		 * @return Number of palette entries.
 		 */
-		static inline int calcDreamcastSmallVQPaletteEntries(int width);
+		static inline int calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width);
+
+		/**
+		 * Get the number of palette entries for Dreamcast SmallVQ textures.
+		 * This version is for textures with mipmaps.
+		 * TODO: constexpr?
+		 * @param width Texture width.
+		 * @return Number of palette entries.
+		 */
+		static inline int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width);
 
 		/* ETC1 */
 
@@ -659,16 +670,37 @@ class ImageDecoder
 
 /**
  * Get the number of palette entries for Dreamcast SmallVQ textures.
+ * This version is for textures without mipmaps.
  * TODO: constexpr?
  * @param width Texture width.
  * @return Number of palette entries.
  */
-inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries(int width)
+inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries_NoMipmaps(int width)
+{
+	if (width <= 16) {
+		return 8*4;
+	} else if (width <= 32) {
+		return 32*4;
+	} else if (width <= 64) {
+		return 128*4;
+	} else {
+		return 256*4;
+	}
+}
+
+/**
+ * Get the number of palette entries for Dreamcast SmallVQ textures.
+ * This version is for textures with mipmaps.
+ * TODO: constexpr?
+ * @param width Texture width.
+ * @return Number of palette entries.
+ */
+inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
 {
 	if (width <= 16) {
 		return 16*4;
 	} else if (width <= 32) {
-		return 32*4;
+		return 64*4;
 	} else if (width <= 64) {
 		return 128*4;
 	} else {

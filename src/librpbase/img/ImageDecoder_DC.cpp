@@ -155,8 +155,9 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 /**
  * Convert a Dreamcast vector-quantized image to rp_image.
- * @tparam smallVQ If true, handle this image as SmallVQ.
  * @param px_format Palette pixel format.
+ * @param smallVQ If true, handle this image as SmallVQ.
+ * @param hasMipmaps If true, the image has mipmaps. (Needed for SmallVQ.)
  * @param width Image width. (Maximum is 4096.)
  * @param height Image height. (Must be equal to width.)
  * @param img_buf VQ image buffer.
@@ -165,8 +166,8 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 1024*2; for SmallVQ, 64*2, 256*2, or 512*2]
  * @return rp_image, or nullptr on error.
  */
-template<bool smallVQ>
 rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
+	bool smallVQ, bool hasMipmaps,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	const uint16_t *RESTRICT pal_buf, int pal_siz)
@@ -188,7 +189,15 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	}
 
 	// Determine the number of palette entries.
-	const int pal_entry_count = (smallVQ ? calcDreamcastSmallVQPaletteEntries(width) : 1024);
+	int pal_entry_count;
+	if (smallVQ) {
+		pal_entry_count = (hasMipmaps
+			? calcDreamcastSmallVQPaletteEntries_WithMipmaps(width)
+			: calcDreamcastSmallVQPaletteEntries_NoMipmaps(width));
+	} else {
+		pal_entry_count = 1024;
+	}
+
 	assert(pal_entry_count % 2 == 0);
 	assert(pal_entry_count * 2 >= pal_siz);
 	if ((pal_entry_count % 2 != 0) ||
@@ -292,17 +301,5 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	// Image has been converted.
 	return img;
 }
-
-// Explicit instantiation.
-template rp_image *ImageDecoder::fromDreamcastVQ16<false>(
-	PixelFormat px_format,
-	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz);
-template rp_image *ImageDecoder::fromDreamcastVQ16<true>(
-	PixelFormat px_format,
-	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz);
 
 }
