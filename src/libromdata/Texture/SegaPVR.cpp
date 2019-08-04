@@ -98,6 +98,28 @@ class SegaPVRPrivate : public RomDataPrivate
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadGvrImage(void);
+
+		/**
+		 * Is this a PlayStation SVR texture?
+		 * @return True if format is PVR and pxfmt or idt is SVR; false if not.
+		 */
+		bool isSvrTexture(void) const;
+
+		/**
+		 * Unswizzle a 4-bit or 8-bit SVR texture.
+		 * All 4-bit and 8-bit SVR textures >=128x128 are swizzled.
+		 * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
+		 * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
+		 */
+		static rp_image *svr_unswizzle_4or8(const rp_image *img_swz);
+
+		/**
+		 * Unswizzle a 16-bit SVR texture.
+		 * NOTE: The rp_image must have been converted to ARGB32 format.
+		 * @param img_swz Swizzled 16-bit SVR texture.
+		 * @return Unswizzled 16-bit SVR texture, or nullptr on error.
+		 */
+		static rp_image *svr_unswizzle_16(const rp_image *img_swz);
 };
 
 /** SegaPVRPrivate **/
@@ -231,17 +253,27 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 	}
 
+	// SVR palette size.
+	size_t svr_pal_buf_sz = 0;
+
 	// Determine the image size.
 	switch (pvrHeader.pvr.img_data_type) {
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_RECTANGLE:
+		case SVR_IMG_RECTANGLE:
+		case SVR_IMG_RECTANGLE_SWIZZLED:
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:
 				case PVR_PX_RGB565:
 				case PVR_PX_ARGB4444:
+				case SVR_PX_BGR5A3:
 					expected_size = ((pvrHeader.width * pvrHeader.height) * 2);
+					break;
+
+				case SVR_PX_BGR888_ABGR7888:
+					expected_size = ((pvrHeader.width * pvrHeader.height) * 4);
 					break;
 
 				default:
@@ -268,7 +300,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// Small VQ images have up to 1024 palette entries based on width,
 			// and the image data is 2bpp.
 			const unsigned int pal_siz =
-				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries_NoMipmaps(pvrHeader.width) * 2;
 			expected_size = pal_siz + ((pvrHeader.width * pvrHeader.height) / 4);
 			break;
 		}
@@ -278,9 +310,66 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// and the image data is 2bpp.
 			// Skip the palette, since that's handled later.
 			const unsigned int pal_siz =
-				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2;
 			mipmap_size += pal_siz;
 			expected_size = ((pvrHeader.width * pvrHeader.height) / 4);
+			break;
+		}
+
+		case SVR_IMG_INDEX4_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX4_BGR5A3_SQUARE:
+		case SVR_IMG_INDEX4_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX4_ABGR8_SQUARE: {
+			// 16-color palette is located at the beginning of the data.
+			// TODO: Require SQUARE to have identical width/height?
+
+			// NOTE: Puyo Tools sometimes uses the wrong image data type
+			// for the palette format. Use pixel format instead.
+			switch (pvrHeader.pvr.px_format) {
+				case SVR_PX_BGR5A3:
+					svr_pal_buf_sz = 16*2;
+					break;
+				case SVR_PX_BGR888_ABGR7888:
+					svr_pal_buf_sz = 16*4;
+					break;
+				default:
+					assert(!"Unsupported pixel format for SVR.");
+					return nullptr;
+			}
+			mipmap_size = svr_pal_buf_sz;
+			expected_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			break;
+		}
+
+		case SVR_IMG_INDEX8_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX8_BGR5A3_SQUARE: {
+			// 256-color palette is located at the beginning of the data.
+			// TODO: Require SQUARE to have identical width/height?
+
+			// NOTE: Puyo Tools sometimes uses the wrong image data type
+			// for the palette format. Use pixel format instead.
+			switch (pvrHeader.pvr.px_format) {
+				case SVR_PX_BGR5A3:
+					svr_pal_buf_sz = 256*2;
+					break;
+				case SVR_PX_BGR888_ABGR7888:
+					svr_pal_buf_sz = 256*4;
+					break;
+				default:
+					assert(!"Unsupported pixel format for SVR.");
+					return nullptr;
+			}
+			mipmap_size = svr_pal_buf_sz;
+			expected_size = (pvrHeader.width * pvrHeader.height);
+			break;
+		}
+		case SVR_IMG_INDEX8_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX8_ABGR8_SQUARE: {
+			// 256-color palette is located at the beginning of the data.
+			// TODO: Require SQUARE to have identical width/height?
+			svr_pal_buf_sz = 256*4;
+			mipmap_size = svr_pal_buf_sz;
+			expected_size = (pvrHeader.width * pvrHeader.height);
 			break;
 		}
 
@@ -291,6 +380,13 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 	if ((pvrDataStart + mipmap_size + expected_size) > file_sz) {
 		// File is too small.
+#ifdef _DEBUG
+		if (pvrHeader.pvr.img_data_type == PVR_IMG_SMALL_VQ ||
+		    pvrHeader.pvr.img_data_type == PVR_IMG_SMALL_VQ_MIPMAP)
+		{
+			assert(!"PVR Small VQ file is too small.");
+		}
+#endif /* _DEBUG */
 		return nullptr;
 	}
 
@@ -311,6 +407,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	// Determine the pixel format.
 	// TODO: Not for 4-bit or 8-bit?
 	ImageDecoder::PixelFormat px_format;
+	bool is32bit = false;
 	switch (pvrHeader.pvr.px_format) {
 		case PVR_PX_ARGB1555:
 			px_format = ImageDecoder::PXF_ARGB1555;
@@ -320,6 +417,14 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 		case PVR_PX_ARGB4444:
 			px_format = ImageDecoder::PXF_ARGB4444;
+			break;
+		case SVR_PX_BGR5A3:
+			// TODO: Verify that this works for SVR.
+			px_format = ImageDecoder::PXF_BGR5A3;
+			break;
+		case SVR_PX_BGR888_ABGR7888:
+			px_format = ImageDecoder::PXF_BGR888_ABGR7888;
+			is32bit = true;
 			break;
 		default:
 			// Unsupported pixel format.
@@ -332,13 +437,36 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 			img = ImageDecoder::fromDreamcastSquareTwiddled16(px_format,
 				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 			break;
 
 		case PVR_IMG_RECTANGLE:
-			img = ImageDecoder::fromLinear16(px_format,
-				pvrHeader.width, pvrHeader.height,
-				reinterpret_cast<uint16_t*>(buf.get()), expected_size);
+		case SVR_IMG_RECTANGLE:
+		case SVR_IMG_RECTANGLE_SWIZZLED:
+			if (is32bit) {
+				img = ImageDecoder::fromLinear32(px_format,
+					pvrHeader.width, pvrHeader.height,
+					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+			} else {
+				img = ImageDecoder::fromLinear16(px_format,
+					pvrHeader.width, pvrHeader.height,
+					reinterpret_cast<uint16_t*>(buf.get()), expected_size);
+			}
+
+			if (pvrHeader.pvr.img_data_type == SVR_IMG_RECTANGLE_SWIZZLED) {
+				// If RGB5A3 and >=64x64, this texture is probably swizzled.
+				if (pvrHeader.pvr.px_format == SVR_PX_BGR5A3 &&
+				    pvrHeader.width >= 64 && pvrHeader.height >= 64)
+				{
+					// Need to unswizzle the texture.
+					rp_image *const img_unswz = svr_unswizzle_16(img);
+					if (img_unswz) {
+						delete img;
+						img = img_unswz;
+					}
+				}
+				break;
+			}
 			break;
 
 		case PVR_IMG_VQ: {
@@ -348,7 +476,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expected_size - pal_siz;
 
-			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16(px_format,
+				false, false,
 				pvrHeader.width, pvrHeader.height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
@@ -358,19 +487,15 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// VQ images have a 1024-entry palette.
 			// This is stored before the mipmaps, so we need to read it manually.
 			static const unsigned int pal_siz = 1024*2;
-			ret = file->seek(pvrDataStart);
-			if (ret != 0) {
-				// Seek error.
-				break;
-			}
 			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
-			size = file->read(pal_buf.get(), pal_siz);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
 				break;
 			}
 
-			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16(px_format,
+				false, true,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size, pal_buf.get(), pal_siz);
 			break;
@@ -379,12 +504,13 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_SMALL_VQ: {
 			// Small VQ images have up to 1024 palette entries based on width.
 			const unsigned int pal_siz =
-				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries_NoMipmaps(pvrHeader.width) * 2;
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
 			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expected_size - pal_siz;
 
-			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16(px_format,
+				true, false,
 				pvrHeader.width, pvrHeader.height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
@@ -394,22 +520,110 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// Small VQ images have up to 1024 palette entries based on width.
 			// This is stored before the mipmaps, so we need to read it manually.
 			const unsigned int pal_siz =
-				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
-			ret = file->seek(pvrDataStart);
-			if (ret != 0) {
-				// Seek error.
-				break;
-			}
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries_WithMipmaps(pvrHeader.width) * 2;
 			unique_ptr<uint16_t[]> pal_buf(new uint16_t[pal_siz/2]);
-			size = file->read(pal_buf.get(), pal_siz);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), pal_siz);
 			if (size != pal_siz) {
 				// Read error.
 				break;
 			}
 
-			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16(px_format,
+				true, true,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expected_size, pal_buf.get(), pal_siz);
+			break;
+		}
+
+		case SVR_IMG_INDEX4_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX4_BGR5A3_SQUARE:
+		case SVR_IMG_INDEX4_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX4_ABGR8_SQUARE: {
+			assert(svr_pal_buf_sz != 0);
+			if (svr_pal_buf_sz == 0) {
+				// Invalid palette buffer size.
+				return nullptr;
+			}
+
+			// Palette is located immediately after the PVR header.
+			unique_ptr<uint8_t[]> pal_buf(new uint8_t[svr_pal_buf_sz]);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), svr_pal_buf_sz);
+			if (size != svr_pal_buf_sz) {
+				// Seek and/or read error.
+				return nullptr;
+			}
+
+			// FIXME: Puyo Tools has palette bit swapping in
+			// swizzled textures, sort of like 8-bit textures.
+			// Find a >=128x128 4-bit texture to test this with.
+
+			// Least-significant nybble is first.
+			img = ImageDecoder::fromLinearCI4(px_format, false,
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expected_size,
+				pal_buf.get(), svr_pal_buf_sz);
+
+			// Puyo Tools: Minimum swizzle size for 4-bit is 128x128.
+			if (pvrHeader.width >= 128 && pvrHeader.height >= 128) {
+				// Need to unswizzle the texture.
+				rp_image *const img_unswz = svr_unswizzle_4or8(img);
+				if (img_unswz) {
+					delete img;
+					img = img_unswz;
+				}
+			}
+			break;
+		}
+
+		case SVR_IMG_INDEX8_BGR5A3_RECTANGLE:
+		case SVR_IMG_INDEX8_BGR5A3_SQUARE:
+		case SVR_IMG_INDEX8_ABGR8_RECTANGLE:
+		case SVR_IMG_INDEX8_ABGR8_SQUARE: {
+			assert(svr_pal_buf_sz != 0);
+			if (svr_pal_buf_sz == 0) {
+				// Invalid palette buffer size.
+				return nullptr;
+			}
+
+			// Palette is located immediately after the PVR header.
+			unique_ptr<uint8_t[]> pal_buf(new uint8_t[svr_pal_buf_sz]);
+			size = file->seekAndRead(pvrDataStart, pal_buf.get(), svr_pal_buf_sz);
+			if (size != svr_pal_buf_sz) {
+				// Seek and/or read error.
+				return nullptr;
+			}
+
+			// NOTE: Bits 3 and 4 in each image data byte is swapped.
+			// Why? Who the hell knows.
+
+			// We need to swap the image data instead of the palette entries
+			// in order to maintain the original palette ordering.
+			// TODO: Expand to uint64_t and/or SSE2?
+			assert(expected_size % 4 == 0);
+			uint32_t *bits = reinterpret_cast<uint32_t*>(buf.get());
+			uint32_t *const bits_end = bits + (expected_size / sizeof(uint32_t));
+			for (; bits < bits_end; bits++) {
+				const uint32_t sw = (*bits & 0xE7E7E7E7);
+				const uint32_t b3 = (*bits & 0x10101010) >> 1;
+				const uint32_t b4 = (*bits & 0x08080808) << 1;
+				*bits = (sw | b3 | b4);
+			}
+
+			// Least-significant nybble is first.
+			img = ImageDecoder::fromLinearCI8(px_format,
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expected_size,
+				pal_buf.get(), svr_pal_buf_sz);
+
+			// Puyo Tools: Minimum swizzle size for 8-bit is 128x64.
+			if (pvrHeader.width >= 128 && pvrHeader.height >= 64) {
+				// Need to unswizzle the texture.
+				rp_image *const img_unswz = svr_unswizzle_4or8(img);
+				if (img_unswz) {
+					delete img;
+					img = img_unswz;
+				}
+			}
 			break;
 		}
 
@@ -547,6 +761,234 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	}
 
 	aligned_free(buf);
+	return img;
+}
+
+/**
+ * Is this a PlayStation SVR texture?
+ * @return True if format is PVR and pxfmt or idt is SVR; false if not.
+ */
+bool SegaPVRPrivate::isSvrTexture(void) const
+{
+	if (pvrType != PVR_TYPE_PVR) {
+		// Not a PVR format file.
+		return false;
+	}
+
+	if ((pvrHeader.pvr.px_format >= SVR_PX_MIN &&
+	     pvrHeader.pvr.px_format <= SVR_PX_MAX) ||
+	    (pvrHeader.pvr.img_data_type >= SVR_IMG_MIN &&
+	     pvrHeader.pvr.img_data_type <= SVR_IMG_MAX))
+	{
+		// Pixel format and/or image data type is SVR.
+		return true;
+	}
+
+	// Not SVR.
+	return false;
+}
+
+/**
+ * Unswizzle a 4-bit or 8-bit SVR texture.
+ * All 4-bit and 8-bit SVR textures >=128x128 are swizzled.
+ * @param img_swz Swizzled 4-bit or 8-bit SVR texture.
+ * @return Unswizzled 4-bit or 8-bit SVR texture, or nullptr on error.
+ */
+rp_image *SegaPVRPrivate::svr_unswizzle_4or8(const rp_image *img_swz)
+{
+	// TODO: Move to ImageDecoder if more PS2 formats are added.
+
+	// NOTE: The original code is for 4-bit textures, but 8-bit
+	// textures use the same algorithm. Since we've already
+	// decoded the 4-bit pixels to 8-bit, we can use the same
+	// function for both.
+
+	// References:
+	// - https://forum.xentax.com/viewtopic.php?f=18&t=3516
+	// - https://gist.github.com/Fireboyd78/1546f5c86ebce52ce05e7837c697dc72
+
+	// Original Delphi version by Dageron:
+	// - https://gta.nick7.com/ps2/swizzling/unswizzle_delphi.txt
+
+	static const uint8_t interlaceMatrix[] = {
+		0x00, 0x10, 0x02, 0x12,
+		0x11, 0x01, 0x13, 0x03,
+	};
+	static const int8_t matrix[] = {0, 1, -1, 0};
+	static const int8_t tileMatrix[] = {4, -4};
+
+	// Only CI8 formats are supported here.
+	assert(img_swz != nullptr);
+	assert(img_swz->isValid());
+	assert(img_swz->format() == rp_image::FORMAT_CI8);
+	if (!img_swz || !img_swz->isValid() ||
+	    img_swz->format() != rp_image::FORMAT_CI8)
+	{
+		return nullptr;
+	}
+
+	const int width = img_swz->width();
+	const int height = img_swz->height();
+
+	// Texture dimensions must be a multiple of 4.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0) {
+		// Unable to unswizzle this texture.
+		return nullptr;
+	}
+
+	rp_image *const img = new rp_image(width, height, img_swz->format());
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// Strides must be equal to the image width.
+	assert(img_swz->stride() == width);
+	assert(img->stride() == width);
+	if (img_swz->stride() != width || img->stride() != width) {
+		delete img;
+		return nullptr;
+	}
+
+	// Copy the palette.
+	int palette_len = std::min(img_swz->palette_len(), img->palette_len());
+	memcpy(img->palette(), img_swz->palette(), palette_len * sizeof(uint32_t));
+
+	const uint8_t *src_pixels = static_cast<const uint8_t*>(img_swz->bits());
+	for (int y = 0; y < height; y++) {
+		const bool oddRow = (y & 1);
+		const int num1 = (y / 4) & 1;
+		const int num3 = (y % 4);
+		const int yy = y + matrix[num3];
+
+		int num7 = y * width;
+		if (oddRow) {
+			num7 -= width;
+		}
+
+		uint8_t *const destLine = static_cast<uint8_t*>(img->scanLine(yy));
+		for (int x = 0; x < width; x++) {
+			const int num2 = (x / 4) & 1;
+
+			int num4 = ((x / 4) % 4);
+			if (oddRow) {
+				num4 += 4;
+			}
+
+			const int num5 = ((x * 4) % 16);
+			const int num6 = ((x / 16) * 32);
+
+			const int xx = x + num1 * tileMatrix[num2];
+
+			const int i = interlaceMatrix[num4] + num5 + num6 + num7;
+
+			destLine[xx] = src_pixels[i];
+		}
+	}
+
+	return img;
+}
+
+/**
+ * Unswizzle a 16-bit SVR texture.
+ * NOTE: The rp_image must have been converted to ARGB32 format.
+ * @param img_swz Swizzled 16-bit SVR texture.
+ * @return Unswizzled 16-bit SVR texture, or nullptr on error.
+ */
+rp_image *SegaPVRPrivate::svr_unswizzle_16(const rp_image *img_swz)
+{
+	// TODO: Move to ImageDecoder if more PS2 formats are added.
+
+	// FIXME: This code is *wrong*, but it's better than leaving it
+	// completely unswizzled...
+
+	// References:
+	// - https://forum.xentax.com/viewtopic.php?f=18&t=3516
+	// - https://gist.github.com/Fireboyd78/1546f5c86ebce52ce05e7837c697dc72
+
+	// Original Delphi version by Dageron:
+	// - https://gta.nick7.com/ps2/swizzling/unswizzle_delphi.txt
+
+	static const uint8_t interlaceMatrix[] = {
+		0x00, 0x10, 0x02, 0x12,
+		0x11, 0x01, 0x13, 0x03,
+	};
+	static const int8_t matrix[] = {0, 1, -1, 0};
+	static const int8_t tileMatrix[] = {4, -4};
+
+	// Only ARGB32 formats are supported here.
+	assert(img_swz != nullptr);
+	assert(img_swz->isValid());
+	assert(img_swz->format() == rp_image::FORMAT_ARGB32);
+	if (!img_swz || !img_swz->isValid() ||
+	    img_swz->format() != rp_image::FORMAT_ARGB32)
+	{
+		return nullptr;
+	}
+
+	const int width = img_swz->width();
+	const int height = img_swz->height();
+
+	// Texture dimensions must be a multiple of 4.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0) {
+		// Unable to unswizzle this texture.
+		return nullptr;
+	}
+
+	rp_image *const img = new rp_image(width, height, img_swz->format());
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// Strides must be equal to the image width.
+	assert(img_swz->stride()/sizeof(uint32_t) == width);
+	assert(img->stride()/sizeof(uint32_t) == width);
+	if (img_swz->stride()/sizeof(uint32_t) != width ||
+	    img->stride()/sizeof(uint32_t) != width)
+	{
+		delete img;
+		return nullptr;
+	}
+
+	const uint32_t *src_pixels = static_cast<const uint32_t*>(img_swz->bits());
+	for (int y = 0; y < height; y++) {
+		const bool oddRow = (y & 1);
+		const int num1 = (y / 4) & 1;
+		const int num3 = (y % 4);
+		const int yy = y + matrix[num3];
+
+		int num7 = y * width;
+		if (oddRow) {
+			num7 -= width;
+		}
+
+		uint32_t *const destLine = static_cast<uint32_t*>(img->scanLine(yy));
+		for (int x = 0; x < width; x++) {
+			const int num2 = (x / 4) & 1;
+
+			int num4 = ((x / 4) % 4);
+			if (oddRow) {
+				num4 += 4;
+			}
+
+			const int num5 = ((x * 4) % 16);
+			const int num6 = ((x / 16) * 32);
+
+			const int xx = x + num1 * tileMatrix[num2];
+
+			const int i = interlaceMatrix[num4] + num5 + num6 + num7;
+
+			destLine[xx] = src_pixels[i];
+		}
+	}
+
 	return img;
 }
 
@@ -759,6 +1201,15 @@ const char *SegaPVR::systemName(unsigned int type) const
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SegaPVR::systemName() array index optimization needs to be updated.");
+	type &= SYSNAME_TYPE_MASK;
+
+	if (d->isSvrTexture()) {
+		// SVR texture. This is for PlayStation 2.
+		static const char *const sysNames_SVR[4] = {
+			"Sega SVR for PlayStation 2", "Sega SVR", "SVR", nullptr
+		};
+		return sysNames_SVR[type];
+	}
 
 	static const char *const sysNames[12] = {
 		"Sega Dreamcast PVR", "Sega PVR", "PVR", nullptr,
@@ -766,7 +1217,7 @@ const char *SegaPVR::systemName(unsigned int type) const
 		"Sega PVRX for Xbox", "Sega PVRX", "PVRX", nullptr,
 	};
 
-	unsigned int idx = (d->pvrType << 2) | (type & SYSNAME_TYPE_MASK);
+	unsigned int idx = (d->pvrType << 2) | type;
 	if (idx >= ARRAY_SIZE(sysNames)) {
 		// Invalid index...
 		idx &= SYSNAME_TYPE_MASK;
@@ -817,6 +1268,7 @@ const char *const *SegaPVR::supportedMimeTypes_static(void)
 		"image/x-sega-pvr",
 		"image/x-sega-gvr",
 		"image/x-sega-pvrx",
+		"image/x-sega-svr",
 
 		nullptr
 	};
@@ -908,93 +1360,147 @@ int SegaPVR::loadFieldData(void)
 		pvrHeader->width, pvrHeader->height);
 
 	// Pixel format.
-	static const char *const pxfmt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][8] = {
-		// Sega Dreamcast PVR
-		{"ARGB1555", "RGB565",
-		 "ARGB4444", "YUV422",
-		 "BUMP", "4-bit per pixel",
-		 "8-bit per pixel", nullptr},
+	static const char *const pxfmt_tbl_pvr[] = {
+		// Sega Dreamcast (PVR)
+		"ARGB1555", "RGB565",		// 0x00-0x01
+		"ARGB4444", "YUV422",		// 0x02-0x03
+		"BUMP", "4-bit per pixel",	// 0x04-0x05
+		"8-bit per pixel", nullptr,	// 0x06-0x07
 
-		// GameCube GVR
-		{"IA8", "RGB565", "RGB5A3",
-		 nullptr, nullptr, nullptr, nullptr, nullptr},
+		// Sony PlayStation 2 (SVR)
+		"BGR5A3", "BGR888_ABGR7888",	// 0x08-0x09
+	};
+	static const char *const pxfmt_tbl_gvr[] = {
+		// GameCube (GVR)
+		"IA8", "RGB565", "RGB5A3",	// 0x00-0x02
+	};
+	static const char *const pxfmt_tbl_pvrx[] = {
+		// Xbox (PVRX) (TODO)
+		nullptr,
+	};
 
-		// Xbox PVRX (TODO)
-		{nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr},
+	static const char *const *const pxfmt_tbl_ptrs[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		pxfmt_tbl_pvr,
+		pxfmt_tbl_gvr,
+		pxfmt_tbl_pvrx,
+	};
+	static const uint8_t pxfmt_tbl_sizes[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_pvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_gvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_pvrx)),
 	};
 
 	// Image data type.
-	static const char *const idt_tbl[SegaPVRPrivate::PVR_TYPE_MAX][0x13] = {
-		// Sega Dreamcast PVR
-		{
-			nullptr,				// 0x00
-			"Square (Twiddled)",			// 0x01
-			"Square (Twiddled, Mipmap)",		// 0x02
-			"Vector Quantized",			// 0x03
-			"Vector Quantized (Mipmap)",		// 0x04
-			"8-bit Paletted (Twiddled)",		// 0x05
-			"4-bit Paletted (Twiddled)",		// 0x06
-			"8-bit (Twiddled)",			// 0x07
-			"4-bit (Twiddled)",			// 0x08
-			"Rectangle",				// 0x09
-			nullptr,				// 0x0A
-			"Rectangle (Stride)",			// 0x0B
-			nullptr,				// 0x0C
-			"Rectangle (Twiddled)",			// 0x0D
-			nullptr,				// 0x0E
-			nullptr,				// 0x0F
-			"Small VQ",				// 0x10
-			"Small VQ (Mipmap)",			// 0x11
-			"Square (Twiddled, Mipmap) (Alt)",	// 0x12
-		},
+	static const char *const idt_tbl_pvr[] = {
+		// Sega Dreamcast (PVR)
+		nullptr,				// 0x00
+		"Square (Twiddled)",			// 0x01
+		"Square (Twiddled, Mipmap)",		// 0x02
+		"Vector Quantized",			// 0x03
+		"Vector Quantized (Mipmap)",		// 0x04
+		"8-bit Paletted (Twiddled)",		// 0x05
+		"4-bit Paletted (Twiddled)",		// 0x06
+		"8-bit (Twiddled)",			// 0x07
+		"4-bit (Twiddled)",			// 0x08
+		"Rectangle",				// 0x09
+		nullptr,				// 0x0A
+		"Rectangle (Stride)",			// 0x0B
+		nullptr,				// 0x0C
+		"Rectangle (Twiddled)",			// 0x0D
+		nullptr,				// 0x0E
+		nullptr,				// 0x0F
+		"Small VQ",				// 0x10
+		"Small VQ (Mipmap)",			// 0x11
+		"Square (Twiddled, Mipmap) (Alt)",	// 0x12
+	};
+	static const char *const idt_tbl_svr[] = {
+		// Sony PlayStation 2 (SVR)
+		// NOTE: First index represents format 0x60.
+		"Rectangle",			// 0x60
+		"Rectangle (Swizzled)",		// 0x61
+		"8-bit (external palette)",	// 0x62
+		nullptr,			// 0x63
+		"8-bit (external palette)",	// 0x64
+		nullptr,			// 0x65
+		"4-bit (BGR5A3), Rectangle",	// 0x66
+		"4-bit (BGR5A3), Square",	// 0x67
+		"4-bit (ABGR8), Rectangle",	// 0x68
+		"4-bit (ABGR8), Square",	// 0x69
+		"8-bit (BGR5A3), Rectangle",	// 0x6A
+		"8-bit (BGR5A3), Square",	// 0x6B
+		"8-bit (ABGR8), Rectangle",	// 0x6C
+		"8-bit (ABGR8), Square",	// 0x6D
+	};
+	static const char *const idt_tbl_gvr[] = {
+		// GameCube (GVR)
+		"I4",			// 0x00
+		"I8",			// 0x01
+		"IA4",			// 0x02
+		"IA8",			// 0x03
+		"RGB565",		// 0x04
+		"RGB5A3",		// 0x05
+		"ARGB8888",		// 0x06
+		nullptr,		// 0x07
+		"CI4",			// 0x08
+		"CI8",			// 0x09
+		nullptr, nullptr,	// 0x0A,0x0B
+		nullptr, nullptr,	// 0x0C,0x0D
+		"DXT1",			// 0x0E
+	};
+	static const char *const idt_tbl_pvrx[] = {
+		// Xbox (PVRX) (TODO)
+		nullptr
+	};
 
-		// GameCube GVR
-		{
-			"I4",			// 0x00
-			"I8",			// 0x01
-			"IA4",			// 0x02
-			"IA8",			// 0x03
-			"RGB565",		// 0x04
-			"RGB5A3",		// 0x05
-			"ARGB8888",		// 0x06
-			nullptr,		// 0x07
-			"CI4",			// 0x08
-			"CI8",			// 0x09
-			nullptr, nullptr,	// 0x0A,0x0B
-			nullptr, nullptr,	// 0x0C,0x0D
-			"DXT1",			// 0x0E
-			nullptr, nullptr,	// 0x0F,0x10
-			nullptr, nullptr, 	// 0x11,0x12
-		},
-
-		// Xbox PVRX (TODO)
-		{nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr, nullptr,
-		 nullptr, nullptr, nullptr},
+	static const char *const *const idt_tbl_ptrs[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		idt_tbl_pvr,
+		idt_tbl_gvr,
+		idt_tbl_pvrx,
+	};
+	static const uint8_t idt_tbl_sizes[SegaPVRPrivate::PVR_TYPE_MAX] = {
+		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_pvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_gvr)),
+		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_pvrx)),
 	};
 
 	// GVR has these values located at a different offset.
 	// TODO: Verify PVRX.
 	uint8_t px_format, img_data_type;
-	if (d->pvrType == SegaPVRPrivate::PVR_TYPE_GVR) {
-		px_format = pvrHeader->gvr.px_format;
-		img_data_type = pvrHeader->gvr.img_data_type;
-	} else {
-		px_format = pvrHeader->pvr.px_format;
-		img_data_type = pvrHeader->pvr.img_data_type;
+	switch (d->pvrType) {
+		default:
+		case SegaPVRPrivate::PVR_TYPE_PVR:
+		case SegaPVRPrivate::PVR_TYPE_PVRX:	// TODO
+			px_format = pvrHeader->pvr.px_format;
+			img_data_type = pvrHeader->pvr.img_data_type;
+			break;
+		case SegaPVRPrivate::PVR_TYPE_GVR:
+			px_format = pvrHeader->gvr.px_format;
+			img_data_type = pvrHeader->gvr.img_data_type;
+			break;
 	}
 
 	const char *pxfmt = nullptr;
 	const char *idt = nullptr;
 	if (d->pvrType >= 0 && d->pvrType < SegaPVRPrivate::PVR_TYPE_MAX) {
-		if (px_format < 8) {
-			pxfmt = pxfmt_tbl[d->pvrType][px_format];
+		const char *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[d->pvrType];
+		const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[d->pvrType];
+		const char *const *const p_idt_tbl = idt_tbl_ptrs[d->pvrType];
+		const uint8_t idt_tbl_sz = idt_tbl_sizes[d->pvrType];
+
+		if (px_format < pxfmt_tbl_sz) {
+			pxfmt = p_pxfmt_tbl[px_format];
 		}
-		if (img_data_type < 0x13) {
-			idt = idt_tbl[d->pvrType][img_data_type];
+
+		if (d->pvrType == SegaPVRPrivate::PVR_TYPE_PVR &&
+		    img_data_type >= SVR_IMG_MIN && img_data_type <= SVR_IMG_MAX)
+		{
+			// SVR image data type.
+			idt = idt_tbl_svr[img_data_type - SVR_IMG_MIN];
+		} else {
+			// Other image data type.
+			if (img_data_type < idt_tbl_sz) {
+				idt = p_idt_tbl[img_data_type];
+			}
 		}
 	}
 

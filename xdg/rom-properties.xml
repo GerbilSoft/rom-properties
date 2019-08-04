@@ -645,7 +645,7 @@
   <!-- SegaPVR -->
   <!-- FIXME: libmirage-gbi.xml is overriding this. -->
   <mime-type type="image/x-sega-pvr">
-    <comment>Sega PVR texture file</comment>
+    <comment>Sega Dreamcast PVR texture file</comment>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.pvr"/>
@@ -662,7 +662,7 @@
     </magic>
   </mime-type>
   <mime-type type="image/x-sega-gvr">
-    <comment>Sega GVR texture file</comment>
+    <comment>Sega GVR for GameCube texture file</comment>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.gvr"/>
@@ -679,7 +679,7 @@
     </magic>
   </mime-type>
   <mime-type type="image/x-sega-pvrx">
-    <comment>Sega PVRX texture file</comment>
+    <comment>Sega PVRX for Xbox texture file</comment>
     <sub-class-of type="image/x-generic"/>
     <generic-icon name="image-x-generic"/>
     <glob pattern="*.pvr"/>

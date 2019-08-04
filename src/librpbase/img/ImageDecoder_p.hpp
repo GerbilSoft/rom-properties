@@ -66,6 +66,10 @@ class ImageDecoderPrivate
 		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
 		static const uint32_t a2_lookup[4];
 
+		// 3-bit alpha lookup table.
+		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
+		static const uint32_t a3_lookup[8];
+
 		// 2-bit color lookup table.
 		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
 		static const uint8_t c2_lookup[4];
@@ -222,6 +226,16 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4);
 
+		// PlayStation 2-specific 16-bit RGB
+
+		/**
+		 * Convert a BGR5A3 pixel to ARGB32. (PlayStation 2)
+		 * Similar to GameCube RGB5A3, but the R and B channels are swapped.
+		 * @param px16 BGR5A3 pixel. (Must be host-endian.)
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t BGR5A3_to_ARGB32(uint16_t px16);
+
 		// 15-bit RGB
 
 		/**
@@ -260,6 +274,17 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t A2B10G10R10_to_ARGB32(uint32_t px32);
+
+		// PlayStation 2-specific 32-bit RGB
+
+		/**
+		 * Convert a BGR888_ABGR7888 pixel to ARGB32. (PlayStation 2)
+		 * Similar to GameCube RGB5A3, but with 32-bit channels.
+		 * (Why would you do this... Just set alpha to 0xFF!)
+		 * @param px32 BGR888_ABGR7888 pixel. (Must be host-endian.)
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t BGR888_ABGR7888_to_ARGB32(uint32_t px32);
 
 		// Luminance
 
@@ -714,7 +739,7 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 	uint32_t px32;
 
 	if (px16 & 0x8000) {
-		// BGR555: xRRRRRGG GGGBBBBB
+		// RGB555: xRRRRRGG GGGBBBBB
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		px32  = 0xFF000000U;	// no alpha channel
 		px32 |= ((px16 << 3) & 0x0000F8);	// Blue
@@ -722,19 +747,15 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 		px32 |= ((px16 << 9) & 0xF80000);	// Red
 		px32 |= ((px32 >> 5) & 0x070707);	// Expand from 5-bit to 8-bit
 	} else {
-		// RGB4A3
+		// RGB4A3: xAAARRRR GGGGBBBB
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		px32  =  (px16 & 0x000F);	// Blue
 		px32 |= ((px16 & 0x00F0) << 4);	// Green
 		px32 |= ((px16 & 0x0F00) << 8);	// Red
 		px32 |= (px32 << 4);		// Copy to the top nybble.
 
-		// Calculate the alpha channel.
-		uint8_t a = ((px16 >> 7) & 0xE0);
-		a |= (a >> 3);
-		a |= (a >> 3);
-
-		// Apply the alpha channel.
-		px32 |= (a << 24);
+		// Calculate and apply the alpha channel.
+		px32 |= a3_lookup[((px16 >> 12) & 0x07)];
 	}
 
 	return px32;
@@ -775,6 +796,41 @@ inline uint32_t ImageDecoderPrivate::RGB565_A4_to_ARGB32(uint16_t px16, uint8_t 
 	px32 |=  (px32 >> 5) & 0x070007;	// Expand from 5-bit to 8-bit
 	// Green
 	px32 |= (((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300));
+	return px32;
+}
+
+// PlayStation 2-specific 16-bit RGB
+
+/**
+ * Convert a BGR5A3 pixel to ARGB32. (PlayStation 2)
+ * Similar to GameCube RGB5A3, but the R and B channels are swapped.
+ * @param px16 BGR5A3 pixel. (Must be host-endian.)
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGR5A3_to_ARGB32(uint16_t px16)
+{
+	uint32_t px32;
+
+	if (px16 & 0x8000) {
+		// BGR555: xBBBBBGG GGGRRRRR
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		px32  = 0xFF000000U;	// no alpha channel
+		px32 |= ((px16 >>  7) & 0x0000F8);	// Blue
+		px32 |= ((px16 <<  6) & 0x00F800);	// Green
+		px32 |= ((px16 << 19) & 0xF80000);	// Red
+		px32 |= ((px32 >>  5) & 0x070707);	// Expand from 5-bit to 8-bit
+	} else {
+		// BGR4A3: xAAABBBB GGGGRRRR
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		px32  = ((px16 & 0x0F00) >>  8);	// Blue
+		px32 |= ((px16 & 0x00F0) <<  4);	// Green
+		px32 |= ((px16 & 0x000F) << 16);	// Red
+		px32 |= (px32 << 4);		// Copy to the top nybble.
+
+		// Calculate and apply the alpha channel.
+		px32 |= a3_lookup[((px16 >> 12) & 0x07)];
+	}
+
 	return px32;
 }
 
@@ -873,6 +929,41 @@ inline uint32_t ImageDecoderPrivate::A2B10G10R10_to_ARGB32(uint32_t px32)
 	       a2_lookup[px32 >> 30];		// Alpha
 	return argb;
 }
+
+// PlayStation 2-specific 32-bit RGB
+
+/**
+ * Convert a BGR888_ABGR7888 pixel to ARGB32. (PlayStation 2)
+ * Similar to GameCube RGB5A3, but with 32-bit channels.
+ * (Why would you do this... Just set alpha to 0xFF!)
+ * @param px16 BGR888_ABGR7888 pixel. (Must be host-endian.)
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGR888_ABGR7888_to_ARGB32(uint32_t px32)
+{
+	uint32_t argb;
+
+	if (px32 & 0x80000000U) {
+		// BGR888: xxxxxxxx BBBBBBBB GGGGGGGG RRRRRRRR
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		argb = 0xFF000000U;		// no alpha channel
+		argb |= (px32 >> 16) & 0xFF;	// Blue
+		argb |= (px32 & 0x0000FF00U);	// Green
+		argb |= (px32 & 0xFF) << 16;	// Red
+	} else {
+		// ABGR7888: xAAAAAAA BBBBBBBB GGGGGGGG RRRRRRRR
+		//   ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		argb  = (px32 & 0x7F000000U) << 1;	// Alpha
+		argb |= (argb & 0x80000000U) >> 7;	// Alpha LSB
+		argb |= (px32 >> 16) & 0xFF;	// Blue
+		argb |= (px32 & 0x0000FF00U);	// Green
+		argb |= (px32 & 0xFF) << 16;	// Red
+	}
+
+	return argb;
+}
+
+// Luminance
 
 /**
  * Convert an L8 pixel to ARGB32.

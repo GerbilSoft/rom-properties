@@ -120,6 +120,10 @@
     * DSi flags are now shown for NDS ROMs released after the DSi, since these
       ROMs have some DSi-specific headers for signature verification, even if
       they aren't DSi-enhanced.
+  * SegaPVR: Support for SVR files used on Sony PlayStation 2.
+    * Most formats are supported, excluding those that require an external palette.
+    * Format 0x61 (rectangle, swizzled) is partially supported.
+    * 4-bit textures >=128x128 might not be unswizzled correctly at the moment.
 
 * Bug fixes:
   * Nintendo 3DS:
@@ -143,6 +147,8 @@
   * ETC2: Fixed alpha decoding for GL_COMPRESSED_RGBA8_ETC2_EAC. Note that
     the test case image used the incorrect decoding, so tests didn't catch
     this bug.
+  * SegaPVR: Fixed Small VQ decoding for 16x16 and 32x32 textures without
+    mipmaps.
 
 * Other changes:
   * Removed S2TC decoding. The first version of rom-properties with support
