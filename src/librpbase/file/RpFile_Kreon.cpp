@@ -423,29 +423,71 @@ bool RpFile::isKreonDriveModel(void)
 		return false;
 	}
 
-	if (memcmp(resp.vendor_id, "TSSTcorp", 8) != 0) {
-		// Not the correct vendor ID.
-		return false;
-	}
+	// TODO: Optimize by removing pointers? Doing so would require
+	// direct use of character arrays, which is ugly...
 
-	// Correct vendor ID.
-	// Check for supported product IDs.
-	// NOTE: More drive models are supported, but the
-	// Kreon firmware only uses these product IDs.
-	static const char *const product_id_tbl[] = {
+	// TSSTcorp (Toshiba/Samsung)
+	static const char *const TSSTcorp_product_tbl[] = {
+		// Kreon
 		"DVD-ROM SH-D162C",
 		"DVD-ROM TS-H353A",
 		"DVD-ROM SH-D163B",
+
+		// 360
+		"DVD-ROM TS-H943A",
+		nullptr
 	};
-	for (int i = 0; i < ARRAY_SIZE(product_id_tbl); i++) {
-		if (!memcmp(resp.product_id, product_id_tbl[i], sizeof(resp.product_id))) {
+
+	// Philips/BenQ Digital Storage
+	static const char *const PBDS_product_tbl[] = {
+		"VAD6038         ",
+		"VAD6038-64930C  ",
+		nullptr
+	};
+
+	// Hitachi-LG Data Storage
+	static const char *const HLDTST_product_tbl[] = {
+		"DVD-ROM GDR3120L",	// Phat
+		nullptr
+	};
+
+	// Vendor table.
+	// NOTE: Vendor strings MUST be 8 characters long.
+	// NOTE: Strings in product ID tables MUST be 16 characters long.
+	static const struct {
+		const char *vendor;
+		const char *const *product_id_tbl;
+	} vendor_tbl[] = {
+		{"TSSTcorp", TSSTcorp_product_tbl},
+		{"PBDS    ", PBDS_product_tbl},
+		{"HL-DT-ST", HLDTST_product_tbl},
+		{nullptr, nullptr}
+	};
+
+	// Find the vendor.
+	const char *const *pProdTbl = nullptr;
+	for (auto *pVendorTbl = vendor_tbl; pVendorTbl->vendor != nullptr; pVendorTbl++) {
+		if (!memcmp(resp.vendor_id, pVendorTbl->vendor, 8)) {
 			// Found a match.
-			return true;
+			pProdTbl = pVendorTbl->product_id_tbl;
+			break;
 		}
 	}
+	if (!pProdTbl) {
+		// Not found.
+		return false;
+	}
 
-	// Drive model is not supported.
-	return false;
+	// Check if the product ID is supported.
+	bool found = false;
+	for (; *pProdTbl != nullptr; pProdTbl++) {
+		if (!memcmp(resp.product_id, *pProdTbl, 16)) {
+			// Found a match.
+			found = true;
+			break;
+		}
+	}
+	return found;
 }
 
 /**
