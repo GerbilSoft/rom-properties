@@ -313,7 +313,6 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				// PNG image opened.
 				xtImage.isInit = true;
 				xtImage.isPng = true;
-				printf("PNG!!\n");
 				xtImage.png = img;
 			} else {
 				// Unable to open the PNG image.
