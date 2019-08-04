@@ -171,6 +171,19 @@ class RpFile : public IRpFile
 		 */
 		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
 
+#ifdef _WIN32
+		// FIXME: d->sector_size is only in the Windows-specific class right now.
+		/**
+		 * Read data from a device using SCSI commands.
+		 * @param lbaStart	[in] Starting LBA of the data to read.
+		 * @param lbaCount	[in] Number of LBAs to read.
+		 * @param pBuf		[out] Output buffer.
+		 * @param bufLen	[in] Output buffer length.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_t bufLen);
+#endif /* _WIN32 */
+
 	public:
 		/**
 		 * Is this a supported Kreon drive?

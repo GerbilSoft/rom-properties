@@ -338,6 +338,50 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	return 0;
 }
 
+#ifdef _WIN32
+/**
+ * Read data from a device using SCSI commands.
+ * @param lbaStart	[in] Starting LBA of the data to read.
+ * @param lbaCount	[in] Number of LBAs to read.
+ * @param pBuf		[out] Output buffer.
+ * @param bufLen	[in] Output buffer length.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_t bufLen)
+{
+	assert(pBuf != nullptr);
+	if (!pBuf)
+		return -EINVAL;
+
+	// FIXME: d->sector_size is only in the Windows-specific class right now.
+	RP_D(RpFile);
+	assert(bufLen >= (int64_t)lbaCount * (int64_t)d->sector_size);
+	if (bufLen < (int64_t)lbaCount * (int64_t)d->sector_size)
+		return -EIO;	// TODO: Better error code?
+
+	if (!d->isDevice) {
+		// Not a device.
+		return -ENODEV;
+	}
+
+	// SCSI command buffers.
+	// NOTE: Using READ(10), which has 32-bit LBA and transfer length.
+	// READ(6) has 21-bit LBA and 8-bit transfer length.
+	// TODO: May need to use READ(32) for large devices.
+	SCSI_CDB_READ_10 cdb10;
+
+	// SCSI READ(10)
+	cdb10.OpCode = SCSI_OP_READ_10;
+	cdb10.Flags = 0;
+	cdb10.LBA = cpu_to_be32(lbaStart);
+	cdb10.Reserved = 0;
+	cdb10.TransferLen = cpu_to_be16(lbaCount);
+	cdb10.Control = 0;
+
+	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, bufLen, SCSI_DIR_IN);
+}
+#endif /* _WIN32 */
+
 /**
  * Is this a supported Kreon drive?
  *

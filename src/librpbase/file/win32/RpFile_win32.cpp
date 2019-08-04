@@ -348,11 +348,15 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	}
 
 	// Seek to the beginning of the first block.
-	// TODO: Make sure sector_size is a power of 2.
-	int seek_ret = q->seek(pos & ~(static_cast<int64_t>(sector_size) - 1));
-	if (seek_ret != 0) {
-		// Seek error.
-		return 0;
+	// NOTE: sector_size must be a power of two.
+	assert(isPow2(sector_size));
+	int64_t lba_cur = pos / sector_size;
+	if (!isKreonUnlocked) {
+		int seek_ret = q->seek(lba_cur * sector_size);
+		if (seek_ret != 0) {
+			// Seek error.
+			return 0;
+		}
 	}
 
 	// Sector buffer.
@@ -368,12 +372,25 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		}
 
 		// Read the first block.
-		DWORD bytesRead;
-		BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
-		if (bRet == 0 || bytesRead != sector_size) {
-			// Read error.
-			q->m_lastError = w32err_to_posix(GetLastError());
-			return bytesRead;
+		if (isKreonUnlocked) {
+			// Kreon drive. Use SCSI commands.
+			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), sector_size);
+			if (sret != 0) {
+				// Read error.
+				// TODO: Handle this properly?
+				q->m_lastError = sret;
+				return 0;
+			}
+			lba_cur++;
+		} else {
+			// Other device. Use Win32 API.
+			DWORD bytesRead;
+			BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
+			if (bRet == 0 || bytesRead != sector_size) {
+				// Read error.
+				q->m_lastError = w32err_to_posix(GetLastError());
+				return bytesRead;
+			}
 		}
 
 		// Copy the data from the sector buffer.
@@ -389,7 +406,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		ret += read_sz;
 	} else {
 		// Seek to the beginning of the first block.
-		seek_ret = q->seek(pos);
+		int seek_ret = q->seek(pos);
 		if (seek_ret != 0) {
 			// Seek error.
 			return 0;
@@ -400,19 +417,40 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	assert(q->tell() % sector_size == 0);
 
 	// Read contiguous blocks.
-	// NOTE: sector_size must be a power of two.
-	assert(isPow2(sector_size));
-	size_t contig_size = size & ~(static_cast<size_t>(sector_size) - 1);
-	DWORD bytesRead;
-	BOOL bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
-	if (bRet == 0 || bytesRead != contig_size) {
-		// Read error.
-		q->m_lastError = w32err_to_posix(GetLastError());
-		return ret + bytesRead;
+	int64_t lba_count = size / sector_size;
+	size_t contig_size = lba_count * sector_size;
+	if (isKreonUnlocked) {
+		// Kreon drive. Use SCSI commands.
+		// NOTE: Reading up to 65535 LBAs at a time due to READ(10) limitations.
+		// TODO: Move the 65535 LBA code down to RpFile::scsi_read()?
+		for (; lba_count > 0; lba_count -= 65535) {
+			const uint16_t lba_cur_count = (lba_count > 65535 ? 65535 : (uint16_t)lba_count);
+			int sret = q->scsi_read(lba_cur, lba_cur_count, ptr8, size);
+			if (sret != 0) {
+				// Read error.
+				// TODO: Handle this properly?
+				q->m_lastError = sret;
+				return ret;
+			}
+			const size_t lba_cur_size = (size_t)lba_cur_count * sector_size;
+			lba_cur += lba_cur_count;
+			size -= lba_cur_size;
+			ptr8 += lba_cur_size;
+			ret += lba_cur_size;
+		}
+	} else {
+		// Other device. Use Win32 API.
+		DWORD bytesRead;
+		BOOL bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
+		if (bRet == 0 || bytesRead != contig_size) {
+			// Read error.
+			q->m_lastError = w32err_to_posix(GetLastError());
+			return ret + bytesRead;
+		}
+		size -= contig_size;
+		ptr8 += contig_size;
+		ret += contig_size;
 	}
-	size -= contig_size;
-	ptr8 += contig_size;
-	ret += contig_size;
 
 	// Check if we still have data left. (not a full block)
 	if (size > 0) {
@@ -421,14 +459,25 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		}
 
 		// Read the last block.
-		pos = q->tell();
-		assert(pos % sector_size == 0);
-		DWORD bytesRead;
-		BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
-		if (bRet == 0 || bytesRead != sector_size) {
-			// Read error.
-			q->m_lastError = w32err_to_posix(GetLastError());
-			return ret + bytesRead;
+		if (isKreonUnlocked) {
+			// Kreon drive. Use SCSI commands.
+			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), sector_size);
+			if (sret != 0) {
+				// Read error.
+				// TODO: Handle this properly?
+				q->m_lastError = sret;
+				return ret;
+			}
+		} else {
+			pos = q->tell();
+			assert(pos % sector_size == 0);
+			DWORD bytesRead;
+			BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
+			if (bRet == 0 || bytesRead != sector_size) {
+				// Read error.
+				q->m_lastError = w32err_to_posix(GetLastError());
+				return ret + bytesRead;
+			}
 		}
 
 		// Copy the data from the sector buffer.
