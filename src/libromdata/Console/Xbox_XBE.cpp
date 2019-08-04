@@ -78,6 +78,14 @@ class Xbox_XBE_Private : public RomDataPrivate
 
 	public:
 		/**
+		 * Find an XBE section header.
+		 * @param name		[in] Section header name.
+		 * @param pOutHeader	[out] Buffer to store the header. (Byteswapped to host-endian.)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int findXbeSectionHeader(const char *name, XBE_Section_Header *pOutHeader);
+
+		/**
 		 * Initialize the title image object.
 		 * @return XboxXPR object on success; nullptr on error.
 		 */
@@ -117,19 +125,17 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 }
 
 /**
- * Initialize the title image object.
- * @return XboxXPR object on success; nullptr on error.
+ * Find an XBE section header.
+ * @param name		[in] Section header name.
+ * @param pOutHeader	[out] Buffer to store the header. (Byteswapped to host-endian.)
+ * @return 0 on success; negative POSIX error code on error.
  */
-const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
+int Xbox_XBE_Private::findXbeSectionHeader(const char *name, XBE_Section_Header *pOutHeader)
 {
-	if (xpr0_xtImage) {
-		// Title image is already initialized.
-		return xpr0_xtImage;
-	}
-
+	// Load the section headers.
 	if (!file || !file->isOpen()) {
 		// File is not open.
-		return nullptr;
+		return -EBADF;
 	}
 
 	// We're loading the first 64 KB of the executable.
@@ -143,13 +149,13 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 	if (section_headers_address <= base_address) {
 		// Out of range.
 		// NOTE: <= - base address would have the magic number.
-		return nullptr;
+		return -EIO;
 	}
 
 	const uint32_t shdr_address_phys = section_headers_address - base_address;
 	if (shdr_address_phys >= XBE_READ_SIZE) {
 		// Section headers is not in the first 64 KB.
-		return nullptr;
+		return -EIO;
 	}
 
 	// Read the XBE header.
@@ -157,7 +163,7 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 	size_t size = file->seekAndRead(0, first64KB.get(), XBE_READ_SIZE);
 	if (size != XBE_READ_SIZE) {
 		// Seek and/or read error.
-		return nullptr;
+		return -EIO;
 	}
 
 	// Section count.
@@ -176,7 +182,6 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 	// Find the $$XTIMAGE section.
 	// TODO: Cache a "not found" result so we don't have to
 	// re-check the section headers again?
-	const XBE_Section_Header *pHdr_xtImage = nullptr;
 	for (; pHdr < pHdr_end; pHdr++) {
 		char section_name[16];	// Allow up to 15 chars plus NULL terminator.
 
@@ -190,17 +195,45 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 		size = file->seekAndRead(name_address - base_address, section_name, sizeof(section_name));
 		if (size != sizeof(section_name)) {
 			// Seek and/or read error.
-			return nullptr;
+			return -EIO;
 		}
 		section_name[sizeof(section_name)-1] = '\0';
 
-		if (!strcmp(section_name, "$$XTIMAGE")) {
+		if (!strcmp(section_name, name)) {
 			// Found it!
-			pHdr_xtImage = pHdr;
-			break;
+			pOutHeader->flags = le32_to_cpu(pHdr->flags);
+			pOutHeader->vaddr = le32_to_cpu(pHdr->vaddr);
+			pOutHeader->vsize = le32_to_cpu(pHdr->vsize);
+			pOutHeader->paddr = le32_to_cpu(pHdr->paddr);
+			pOutHeader->psize = le32_to_cpu(pHdr->psize);
+			pOutHeader->section_name_address		= le32_to_cpu(pHdr->section_name_address);
+			pOutHeader->section_name_refcount		= le32_to_cpu(pHdr->section_name_refcount);
+			pOutHeader->head_shared_page_recount_address	= le32_to_cpu(pHdr->head_shared_page_recount_address);
+			pOutHeader->tail_shared_page_recount_address	= le32_to_cpu(pHdr->tail_shared_page_recount_address);
+			memcpy(pOutHeader->sha1_digest, pHdr->sha1_digest, sizeof(pHdr->sha1_digest));
+			return 0;
 		}
 	}
-	if (!pHdr_xtImage) {
+
+	// Not found.
+	return -ENOENT;
+}
+
+/**
+ * Initialize the title image object.
+ * @return XboxXPR object on success; nullptr on error.
+ */
+const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
+{
+	if (xpr0_xtImage) {
+		// Title image is already initialized.
+		return xpr0_xtImage;
+	}
+
+	// Find the $$XTIMAGE section.
+	XBE_Section_Header hdr_xtImage;
+	int ret = findXbeSectionHeader("$$XTIMAGE", &hdr_xtImage);
+	if (ret != 0) {
 		// Not found.
 		return nullptr;
 	}
@@ -218,7 +251,7 @@ const XboxXPR *Xbox_XBE_Private::initXPR0_xtImage(void)
 	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
 	IRpFile *const ptFile = new PartitionFile(discReader,
-		pHdr_xtImage->paddr, pHdr_xtImage->psize);
+		hdr_xtImage.paddr, hdr_xtImage.psize);
 	if (ptFile->isOpen()) {
 		XboxXPR *const xpr0 = new XboxXPR(ptFile);
 		ptFile->unref();
