@@ -226,7 +226,7 @@ class RpFile : public IRpFile
 		int setKreonErrorSkipState(bool skip);
 
 		enum KreonLockState : uint8_t {
-			KREON_STATE_UNLOCKED = 0,
+			KREON_STATE_LOCKED = 0,
 			KREON_STATE_1_XTREME = 1,
 			KREON_STATE_2_WXRIPPER = 2,
 		};
