@@ -45,7 +45,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -169,7 +169,7 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 		return nullptr;
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_CI8);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
@@ -178,7 +178,7 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 
 	// Convert the palette.
 	// TODO: Optimize using pointers instead of indexes?
-	uint32_t *palette = img->palette();
+	uint32_t *const palette = img->palette();
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
@@ -264,11 +264,11 @@ rp_image *ImageDecoder::fromGcnI8(int width, int height,
 	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	rp_image *const img = new rp_image(width, height, rp_image::FORMAT_CI8);
 
 	// Initialize a grayscale palette.
 	// TODO: Optimize using pointers instead of indexes?
-	uint32_t *palette = img->palette();
+	uint32_t *const palette = img->palette();
 	assert(img->palette_len() >= 256);
 	if (img->palette_len() < 256) {
 		// Not enough colors...
@@ -276,8 +276,8 @@ rp_image *ImageDecoder::fromGcnI8(int width, int height,
 		return nullptr;
 	}
 
-	uint32_t gray = 0;
-	for (unsigned int i = 0; i < 256; i++, gray += 0xFF010101) {
+	uint32_t gray = 0xFF000000U;
+	for (unsigned int i = 0; i < 256; i++, gray += 0x010101U) {
 		palette[i] = gray;
 	}
 	// No transparency here.

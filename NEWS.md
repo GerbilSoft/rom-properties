@@ -1,5 +1,16 @@
 # Changes
 
+## v1.5 (released 2019/??/??)
+
+* New features:
+  * Image handling has been split from librpbase to librptexture. This will
+    allow the texture decoding functionality to be used by other programs.
+
+* Bug fixes:
+  * GameCube I8 image decoder: The palette was being generated incorrectly.
+    This has been fixed, though since I8 images are uncommon, this probably
+    didn't cause too many problems.
+
 ## v1.4 (released 2019/08/04)
 
 * New features:
