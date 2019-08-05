@@ -14,13 +14,16 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // C includes. (C++ namespace)
 #include <cassert>

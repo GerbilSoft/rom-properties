@@ -14,7 +14,7 @@
 
 #include "librpbase/common.h"
 #include "librpbase/cpu_dispatch.h"
-namespace LibRpBase {
+namespace LibRpTexture {
 	class rp_image;
 }
 #include <cairo.h>
@@ -33,7 +33,7 @@ class CairoImageConv
 		 * @param img	[in] rp_image.
 		 * @return cairo_surface_t, or nullptr on error.
 		 */
-		static cairo_surface_t *rp_image_to_cairo_surface_t(const LibRpBase::rp_image *img);
+		static cairo_surface_t *rp_image_to_cairo_surface_t(const LibRpTexture::rp_image *img);
 };
 
 #endif /* __ROMPROPERTIES_GTK_CAIROIMAGECONV_HPP__ */

@@ -21,10 +21,10 @@ using std::locale;
 #include "libwin32common/secoptions.h"
 
 // rp_image backend registration.
-#include "librpbase/img/RpGdiplusBackend.hpp"
-#include "librpbase/img/rp_image.hpp"
-using LibRpBase::RpGdiplusBackend;
-using LibRpBase::rp_image;
+#include "librptexture/img/RpGdiplusBackend.hpp"
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::RpGdiplusBackend;
+using LibRpTexture::rp_image;
 #endif /* _WIN32 */
 
 extern "C" int gtest_main(int argc, char *argv[]);

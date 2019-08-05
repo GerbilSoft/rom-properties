@@ -9,11 +9,11 @@
 #include "stdafx.h"
 #include "RpImageWin32.hpp"
 
-// librpbase
-#include "librpbase/img/rp_image.hpp"
-#include "librpbase/img/RpGdiplusBackend.hpp"
-using LibRpBase::rp_image;
-using LibRpBase::RpGdiplusBackend;
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/img/RpGdiplusBackend.hpp"
+using LibRpTexture::rp_image;
+using LibRpTexture::RpGdiplusBackend;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -33,7 +33,7 @@ namespace Gdiplus {
 	using std::max;
 }
 #include <gdiplus.h>
-#include "librpbase/img/GdiplusHelper.hpp"
+#include "librptexture/img/GdiplusHelper.hpp"
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.

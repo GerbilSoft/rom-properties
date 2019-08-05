@@ -110,19 +110,6 @@ SET(librpbase_SRCS
 	file/RelatedFile.cpp
 	file/scsi/RpFile_Kreon.cpp
 	file/scsi/RpFile_scsi.cpp
-	img/rp_image.cpp
-	img/rp_image_backend.cpp
-	img/rp_image_ops.cpp
-	img/RpImageLoader.cpp
-	img/ImageDecoder_Linear.cpp
-	img/ImageDecoder_GCN.cpp
-	img/ImageDecoder_NDS.cpp
-	img/ImageDecoder_N3DS.cpp
-	img/ImageDecoder_S3TC.cpp
-	img/ImageDecoder_DC.cpp
-	img/ImageDecoder_ETC1.cpp
-	img/ImageDecoder_BC7.cpp
-	img/un-premultiply.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
 	img/IconAnimHelper.cpp
@@ -162,16 +149,8 @@ SET(librpbase_H
 	file/FileSystem.hpp
 	file/RelatedFile.hpp
 	file/scsi/scsi_protocol.h
-	img/rp_image.hpp
-	img/rp_image_p.hpp
-	img/rp_image_backend.hpp
-	img/RpImageLoader.hpp
-	img/ImageDecoder.hpp
-	img/ImageDecoder_p.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
-	img/IconAnimData.hpp
-	img/IconAnimHelper.hpp
 	img/APNG_dlopen.h
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
@@ -191,11 +170,6 @@ IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(librpbase_SRCS ${librpbase_SRCS} img/APNG_dlopen.c)
 	SET(librpbase_NEEDS_DL 1)
 ENDIF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
-
-IF(JPEG_FOUND)
-	SET(librpbase_SRCS ${librpbase_SRCS} img/RpJpeg.cpp)
-	SET(librpbase_H ${librpbase_H} img/RpJpeg.hpp)
-ENDIF(JPEG_FOUND)
 
 # SCSI implementation for Kreon disc drive support.
 IF(WIN32)
@@ -238,14 +212,10 @@ IF(WIN32)
 		file/win32/FileSystem_win32.cpp
 		file/win32/RpFile_win32.cpp
 		file/win32/IStreamWrapper.cpp
-		img/GdiplusHelper.cpp
-		img/RpGdiplusBackend.cpp
 		)
 	SET(librpbase_OS_H
 		TextFuncs_wchar.hpp
 		file/win32/IStreamWrapper.hpp
-		img/GdiplusHelper.hpp
-		img/RpGdiplusBackend.hpp
 		)
 ELSE(WIN32)
 	SET(librpbase_OS_SRCS
@@ -326,25 +296,8 @@ IF(CPU_i386 OR CPU_amd64)
 		SET(librpbase_MMX_SRCS byteswap_mmx.c)
 	ENDIF(CPU_i386)
 
-	SET(librpbase_SSE2_SRCS
-		byteswap_sse2.c
-		img/ImageDecoder_Linear_sse2.cpp
-		img/rp_image_ops_sse2.cpp
-		)
-	SET(librpbase_SSSE3_SRCS
-		byteswap_ssse3.c
-		img/ImageDecoder_Linear_ssse3.cpp
-		)
-	IF(JPEG_FOUND)
-		SET(librpbase_SSSE3_SRCS
-			${librpbase_SSSE3_SRCS}
-			img/RpJpeg_ssse3.cpp
-			)
-	ENDIF(JPEG_FOUND)
-	# TODO: Disable SSE 4.1 if not supported by the compiler?
-	SET(librpbase_SSE41_SRCS
-		img/un-premultiply_sse41.cpp
-		)
+	SET(librpbase_SSE2_SRCS byteswap_sse2.c)
+	SET(librpbase_SSSE3_SRCS byteswap_ssse3.c)
 
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
@@ -352,10 +305,7 @@ IF(CPU_i386 OR CPU_amd64)
 	# it won't do anything.
 	# TODO: Might be supported on other Unix-like operating systems...
 	IF(UNIX AND NOT APPLE)
-		SET(librpbase_IFUNC_SRCS
-			byteswap_ifunc.c
-			img/ImageDecoder_ifunc.cpp
-			)
+		SET(librpbase_IFUNC_SRCS byteswap_ifunc.c)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
 			FOREACH(ifunc_file ${librpbase_IFUNC_SRCS})
@@ -368,13 +318,11 @@ IF(CPU_i386 OR CPU_amd64)
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSE2_FLAG "/arch:SSE2")
 		SET(SSSE3_FLAG "/arch:SSE2")
-		SET(SSE41_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
 		# TODO: Other compilers?
 		SET(MMX_FLAG "-mmmx")
 		SET(SSE2_FLAG "-msse2")
 		SET(SSSE3_FLAG "-mssse3")
-		SET(SSE41_FLAG "-msse4.1")
 	ENDIF()
 
 	IF(MMX_FLAG)
@@ -397,13 +345,6 @@ IF(CPU_i386 OR CPU_amd64)
 				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 		ENDFOREACH()
 	ENDIF(SSSE3_FLAG)
-
-	IF(SSE41_FLAG)
-		FOREACH(sse41_file ${librpbase_SSE41_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${sse41_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE41_FLAG} ")
-		ENDFOREACH()
-	ENDIF(SSE41_FLAG)
 ENDIF()
 UNSET(arch)
 
@@ -446,7 +387,6 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_MMX_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
-	${librpbase_SSE41_SRCS}
 	)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rpbase)
@@ -483,7 +423,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE inih)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
@@ -497,10 +437,6 @@ IF(PNG_FOUND)
 	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${PNG_INCLUDE_DIRS})
 	TARGET_COMPILE_DEFINITIONS(rpbase PRIVATE ${PNG_DEFINITIONS})
 ENDIF(PNG_FOUND)
-IF(JPEG_FOUND)
-	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${JPEG_LIBRARY})
-	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${JPEG_INCLUDE_DIRS})
-ENDIF(JPEG_FOUND)
 IF(NETTLE_FOUND)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${NETTLE_LIBRARY})
 	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${NETTLE_INCLUDE_DIRS})

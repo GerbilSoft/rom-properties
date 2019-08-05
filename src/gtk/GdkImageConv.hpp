@@ -14,7 +14,7 @@
 
 #include "librpbase/common.h"
 #include "librpbase/cpu_dispatch.h"
-namespace LibRpBase {
+namespace LibRpTexture {
 	class rp_image;
 }
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -39,7 +39,7 @@ class GdkImageConv
 		 * @param img	[in] rp_image.
 		 * @return GdkPixbuf, or nullptr on error.
 		 */
-		static GdkPixbuf *rp_image_to_GdkPixbuf_cpp(const LibRpBase::rp_image *img);
+		static GdkPixbuf *rp_image_to_GdkPixbuf_cpp(const LibRpTexture::rp_image *img);
 
 #ifdef GDKIMAGECONV_HAS_SSSE3
 		/**
@@ -48,7 +48,7 @@ class GdkImageConv
 		 * @param img	[in] rp_image.
 		 * @return GdkPixbuf, or nullptr on error.
 		 */
-		static GdkPixbuf *rp_image_to_GdkPixbuf_ssse3(const LibRpBase::rp_image *img);
+		static GdkPixbuf *rp_image_to_GdkPixbuf_ssse3(const LibRpTexture::rp_image *img);
 #endif /* GDKIMAGECONV_HAS_SSSE3 */
 
 		/**
@@ -56,7 +56,7 @@ class GdkImageConv
 		 * @param img	[in] rp_image.
 		 * @return GdkPixbuf, or nullptr on error.
 		 */
-		static IFUNC_INLINE GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpBase::rp_image *img);
+		static IFUNC_INLINE GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img);
 };
 
 #if !defined(RP_HAS_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
@@ -69,7 +69,7 @@ class GdkImageConv
  * @param img rp_image.
  * @return GdkPixbuf, or nullptr on error.
  */
-inline GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const LibRpBase::rp_image *img)
+inline GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
 {
 #ifdef GDKIMAGECONV_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {

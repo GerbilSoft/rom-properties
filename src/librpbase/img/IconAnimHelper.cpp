@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "IconAnimHelper.hpp"
-#include "rp_image.hpp"
+#include "img/rp_image.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

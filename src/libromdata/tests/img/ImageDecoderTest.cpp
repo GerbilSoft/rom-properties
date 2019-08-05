@@ -33,10 +33,13 @@
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/RpMemFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
-#include "librpbase/img/rp_image.hpp"
-#include "librpbase/img/RpImageLoader.hpp"
-#include "librpbase/img/ImageDecoder.hpp"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/img/RpImageLoader.hpp"
+#include "librptexture/decoder/ImageDecoder.hpp"
+using namespace LibRpTexture;
 
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
@@ -1476,7 +1479,7 @@ INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
 
 /**
  * Test suite main function.
- * Called by gtest_init.c.
+ * Called by gtest_init.cpp.
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {

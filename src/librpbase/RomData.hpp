@@ -20,12 +20,15 @@
 #include <string>
 #include <vector>
 
+namespace LibRpTexture {
+	class rp_image;
+}
+
 namespace LibRpBase {
 
 class IRpFile;
 class RomFields;
 class RomMetaData;
-class rp_image;
 struct IconAnimData;
 
 class RomDataPrivate;
@@ -406,7 +409,7 @@ class RomData
 		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage);
+		virtual int loadInternalImage(ImageType imageType, const LibRpTexture::rp_image **pImage);
 
 	public:
 		/**
@@ -439,7 +442,7 @@ class RomData
 		 * @param imageType Image type to load.
 		 * @return Internal image, or nullptr if the ROM doesn't have one.
 		 */
-		const rp_image *image(ImageType imageType) const;
+		const LibRpTexture::rp_image *image(ImageType imageType) const;
 
 		/**
 		 * External URLs for a media type.

@@ -20,11 +20,14 @@ using namespace LibRpBase;
 // libromdata
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRomData;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 #ifdef _WIN32
 // libwin32common

@@ -15,9 +15,9 @@
 #include <cassert>
 #include <cstring>
 
-// librpbase
-#include "librpbase/img/rp_image.hpp"
-using LibRpBase::rp_image;
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 /**
  * Convert an rp_image to GdkPixbuf.

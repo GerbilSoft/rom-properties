@@ -8,6 +8,7 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
+#include "librptexture/config.librptexture.h"
 
 #include "Nintendo3DS.hpp"
 #include "librpbase/RomData_p.hpp"
@@ -21,10 +22,14 @@
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 
-#include "librpbase/img/rp_image.hpp"
-
+// libi18n
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/decoder/ImageDecoder.hpp"
+using namespace LibRpTexture;
 
 // For sections delegated to other RomData subclasses.
 #include "librpbase/disc/DiscReader.hpp"
