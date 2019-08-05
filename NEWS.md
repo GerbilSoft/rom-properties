@@ -20,6 +20,8 @@
     disguised as a retail game.
     * NOTE: The Windows implementation currently requires Windows Vista
       or later.
+    * NOTE 2: The Windows implementation was disabled for this release due
+      to unexplained crashes.
   * rpcli will now print multi-line entries in lists using multiple lines
     instead of showing a U+240A symbol between lines.
   * RFT_LISTDATA fields (ListView, etc.) can now have text alignment set
