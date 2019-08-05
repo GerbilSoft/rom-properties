@@ -41,6 +41,7 @@
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstdio>
 
 // C++ includes.
@@ -71,14 +72,12 @@ static char *rp_iconv(const char *src, int len,
 #else /* !RP_WIS16 */
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif /* RP_WIS16 */
-
-	if (!src || len <= 0)
+	assert(src != nullptr);
+	assert(len > 0);
+	assert(src_charset != nullptr);
+	assert(dest_charset != nullptr);
+	if (!src || len <= 0 || !src_charset || !dest_charset)
 		return nullptr;
-
-	if (!src_charset)
-		src_charset = "";
-	if (!dest_charset)
-		dest_charset = "";
 
 	// Based on examples from:
 	// * http://www.delorie.com/gnu/docs/glibc/libc_101.html
