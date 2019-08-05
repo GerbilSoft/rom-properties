@@ -33,7 +33,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const override;
+		HBITMAP rpImageToImgClass(const LibRpTexture::rp_image *img) const override;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
@@ -99,7 +99,7 @@ class CreateThumbnailNoAlpha : public CreateThumbnail
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const final;
+		HBITMAP rpImageToImgClass(const LibRpTexture::rp_image *img) const final;
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.

@@ -69,7 +69,7 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 
 #ifdef __cplusplus
 #include "librpbase/RomData.hpp"
-#include "librpbase/img/rp_image.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 // C++ includes.
 #include <string>
@@ -110,7 +110,7 @@ class TCreateThumbnail
 		ImgClass getInternalImage(const LibRpBase::RomData *romData,
 			LibRpBase::RomData::ImageType imageType,
 			ImgSize *pOutSize = nullptr,
-			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
+			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Get an external image.
@@ -124,7 +124,7 @@ class TCreateThumbnail
 		ImgClass getExternalImage(
 			const LibRpBase::RomData *romData, LibRpBase::RomData::ImageType imageType,
 			int req_size, ImgSize *pOutSize = nullptr,
-			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
+			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
@@ -135,7 +135,7 @@ class TCreateThumbnail
 		 * @return 0 on success; non-zero on error.
 		 */
 		int getThumbnail(const LibRpBase::RomData *romData, int req_size, ImgClass &ret_img,
-			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
+			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
@@ -146,7 +146,7 @@ class TCreateThumbnail
 		 * @return 0 on success; non-zero on error.
 		 */
 		int getThumbnail(LibRpBase::IRpFile *file, int req_size, ImgClass &ret_img,
-			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
+			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
@@ -157,7 +157,7 @@ class TCreateThumbnail
 		 * @return 0 on success; non-zero on error.
 		 */
 		int getThumbnail(const char *filename, int req_size, ImgClass &ret_img,
-			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
+			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 	protected:
 		/**
@@ -176,7 +176,7 @@ class TCreateThumbnail
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual ImgClass rpImageToImgClass(const LibRpBase::rp_image *img) const = 0;
+		virtual ImgClass rpImageToImgClass(const LibRpTexture::rp_image *img) const = 0;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.

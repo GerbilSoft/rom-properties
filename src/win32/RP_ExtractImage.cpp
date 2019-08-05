@@ -17,9 +17,12 @@
 #include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

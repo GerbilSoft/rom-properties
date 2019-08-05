@@ -12,7 +12,7 @@
 #ifdef RP_HAS_IFUNC
 
 #include "GdkImageConv.hpp"
-using LibRpBase::rp_image;
+using LibRpTexture::rp_image;
 
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {

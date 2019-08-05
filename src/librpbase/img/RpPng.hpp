@@ -11,10 +11,13 @@
 
 #include "../common.h"
 
+namespace LibRpTexture {
+	class rp_image;
+}
+
 namespace LibRpBase {
 
 class IRpFile;
-class rp_image;
 struct IconAnimData;
 
 class RpPng
@@ -35,7 +38,7 @@ class RpPng
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static rp_image *loadUnchecked(IRpFile *file);
+		static LibRpTexture::rp_image *loadUnchecked(IRpFile *file);
 
 		/**
 		 * Load a PNG image from an IRpFile.
@@ -46,7 +49,7 @@ class RpPng
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static rp_image *load(IRpFile *file);
+		static LibRpTexture::rp_image *load(IRpFile *file);
 
 		/**
 		 * Save an image in PNG format to an IRpFile.
@@ -59,7 +62,7 @@ class RpPng
 		 * @param img rp_image to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int save(IRpFile *file, const rp_image *img);
+		static int save(IRpFile *file, const LibRpTexture::rp_image *img);
 
 		/**
 		 * Save an image in PNG format to a file.
@@ -68,7 +71,7 @@ class RpPng
 		 * @param img rp_image to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int save(const char *filename, const rp_image *img);
+		static int save(const char *filename, const LibRpTexture::rp_image *img);
 
 		/**
 		 * Save an animated image in APNG format to an IRpFile.
