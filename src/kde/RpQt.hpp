@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace LibRpBase {
+namespace LibRpTexture {
 	class rp_image;
 }
 
@@ -64,6 +64,6 @@ static inline QString U82Q(const char *str, int len = -1)
  * @param image rp_image.
  * @return QImage.
  */
-QImage rpToQImage(const LibRpBase::rp_image *image);
+QImage rpToQImage(const LibRpTexture::rp_image *image);
 
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

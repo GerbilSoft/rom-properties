@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
+#include "librptexture/config.librptexture.h"
 
 #include "WiiU.hpp"
 #include "librpbase/RomData_p.hpp"
@@ -21,8 +22,10 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// libi18n
+#include "libi18n/i18n.h"
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"

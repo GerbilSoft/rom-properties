@@ -21,8 +21,10 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// libi18n
+#include "libi18n/i18n.h"
 
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"

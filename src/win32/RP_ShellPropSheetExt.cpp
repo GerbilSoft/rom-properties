@@ -29,7 +29,6 @@ using LibWin32Common::AutoGetDC;
 #include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
@@ -37,6 +36,10 @@ using namespace LibRpBase;
 // NOTE: Using "RomDataView" for the context, since that
 // matches what's used for the KDE and GTK+ frontends.
 #include "libi18n/i18n.h"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -70,8 +73,10 @@ namespace Gdiplus {
 	using std::max;
 }
 #include <gdiplus.h>
-#include "librpbase/img/GdiplusHelper.hpp"
-#include "librpbase/img/RpGdiplusBackend.hpp"
+#include "librptexture/img/GdiplusHelper.hpp"
+#include "librptexture/img/RpGdiplusBackend.hpp"
+
+// Icon animation.
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 

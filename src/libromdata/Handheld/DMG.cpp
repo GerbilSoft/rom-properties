@@ -17,8 +17,10 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// libi18n
+#include "libi18n/i18n.h"
 
 // For sections delegated to other RomData subclasses.
 #include "librpbase/disc/DiscReader.hpp"

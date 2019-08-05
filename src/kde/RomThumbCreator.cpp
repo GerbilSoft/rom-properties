@@ -14,9 +14,12 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/FileSystem.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"

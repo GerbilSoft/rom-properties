@@ -23,9 +23,11 @@
 #include <string>
 #include <vector>
 
-namespace LibRpBase {
+namespace LibRpTexture {
+	class rp_image;
+}
 
-class rp_image;
+namespace LibRpBase {
 
 // RFT_LISTDATA alignment macros.
 // - # indicates number of columns.
@@ -230,7 +232,7 @@ class RomFields
 
 						// Icons vector.
 						// Requires RFT_LISTDATA_ICONS.
-						const std::vector<const rp_image*> *icons;
+						const std::vector<const LibRpTexture::rp_image*> *icons;
 					} mxd;
 				} list_data;
 
@@ -538,7 +540,7 @@ class RomFields
 
 				// Icons vector.
 				// Requires RFT_LISTDATA_ICONS.
-				const std::vector<const rp_image*> *icons;
+				const std::vector<const LibRpTexture::rp_image*> *icons;
 			} mxd;
 		};
 

@@ -199,7 +199,7 @@ class klass : public LibRpBase::RomData { \
 		 * @param pImage	[out] Pointer to const rp_image* to store the image in. \
 		 * @return 0 on success; negative POSIX error code on error. \
 		 */ \
-		int loadInternalImage(ImageType imageType, const LibRpBase::rp_image **pImage) final;
+		int loadInternalImage(ImageType imageType, const LibRpTexture::rp_image **pImage) final;
 
 /**
  * RomData subclass function declaration for obtaining URLs for external images.

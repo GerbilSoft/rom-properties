@@ -14,6 +14,10 @@
 #include "TextFuncs.hpp"
 #include "file/RpFile.hpp"
 
+#include "img/rp_image.hpp"
+using LibRpTexture::rp_image;
+using LibRpTexture::argb32_t;
+
 // APNG
 #include "img/IconAnimData.hpp"
 #include "APNG_dlopen.h"
