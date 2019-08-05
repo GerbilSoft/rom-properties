@@ -9,6 +9,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "PixelConversion.hpp"
+using namespace LibRpTexture::PixelConversion;
+
 namespace LibRpTexture {
 
 // N3DS uses 3-level Z-ordered tiling.
@@ -70,8 +73,8 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 			// Convert each tile to ARGB32 manually.
 			// TODO: Optimize using pointers instead of indexes?
 			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2) {
-				tileBuf[N3DS_tile_order[i+0]] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(img_buf[0]));
-				tileBuf[N3DS_tile_order[i+1]] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(img_buf[1]));
+				tileBuf[N3DS_tile_order[i+0]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[0]));
+				tileBuf[N3DS_tile_order[i+1]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[1]));
 			}
 
 			// Blit the tile to the main image buffer.
@@ -143,9 +146,9 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565_A4(int width, int height,
 			// FIXME: Nybble ordering for A4?
 			// Assuming LeftLSN, same as NDS CI4.
 			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2, alpha_buf++) {
-				tileBuf[N3DS_tile_order[i+0]] = ImageDecoderPrivate::RGB565_A4_to_ARGB32(
+				tileBuf[N3DS_tile_order[i+0]] = RGB565_A4_to_ARGB32(
 					le16_to_cpu(img_buf[0]), *alpha_buf & 0x0F);
-				tileBuf[N3DS_tile_order[i+1]] = ImageDecoderPrivate::RGB565_A4_to_ARGB32(
+				tileBuf[N3DS_tile_order[i+1]] = RGB565_A4_to_ARGB32(
 					le16_to_cpu(img_buf[1]), *alpha_buf >> 4);
 			}
 

@@ -11,6 +11,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "PixelConversion.hpp"
+using namespace LibRpTexture::PixelConversion;
+
 // C++ includes.
 #include <memory>
 using std::unique_ptr;
@@ -102,7 +105,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
-					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
+					*px_dest = ARGB1555_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
 				px_dest += dest_stride_adj;
@@ -117,7 +120,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
-					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
+					*px_dest = RGB565_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
 				px_dest += dest_stride_adj;
@@ -132,7 +135,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
 					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
-					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
+					*px_dest = ARGB4444_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
 				px_dest += dest_stride_adj;
@@ -224,8 +227,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_ARGB1555: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = ARGB1555_to_ARGB32(pal_buf[i+0]);
+				palette[i+1] = ARGB1555_to_ARGB32(pal_buf[i+1]);
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
@@ -235,8 +238,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 
 		case PXF_RGB565: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = RGB565_to_ARGB32(pal_buf[i+0]);
+				palette[i+1] = RGB565_to_ARGB32(pal_buf[i+1]);
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -246,8 +249,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 
 		case PXF_ARGB4444: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = ARGB4444_to_ARGB32(pal_buf[i+0]);
+				palette[i+1] = ARGB4444_to_ARGB32(pal_buf[i+1]);
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
