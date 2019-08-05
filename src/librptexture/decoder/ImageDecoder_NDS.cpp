@@ -9,6 +9,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "PixelConversion.hpp"
+using namespace LibRpTexture::PixelConversion;
+
 namespace LibRpTexture {
 
 /**
@@ -65,8 +68,8 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	// so we don't need to clear the remaining colors.
 	for (unsigned int i = 0; i < 16; i += 2) {
 		// NDS color format is BGR555.
-		palette[i+0] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
-		palette[i+1] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
+		palette[i+0] = BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+		palette[i+1] = BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 	}
 	// Color 0 is always transparent.
 	// NOTE: Not special-casing color 0 in order to prevent an off-by-one.

@@ -9,6 +9,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "PixelConversion.hpp"
+using namespace LibRpTexture::PixelConversion;
+
 namespace LibRpTexture {
 
 /**
@@ -63,8 +66,8 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
 					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
-						tileBuf[i+0] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(img_buf[0]));
-						tileBuf[i+1] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(img_buf[1]));
+						tileBuf[i+0] = RGB5A3_to_ARGB32(be16_to_cpu(img_buf[0]));
+						tileBuf[i+1] = RGB5A3_to_ARGB32(be16_to_cpu(img_buf[1]));
 					}
 
 					// Blit the tile to the main image buffer.
@@ -86,8 +89,8 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
 					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
-						tileBuf[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(img_buf[0]));
-						tileBuf[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(img_buf[1]));
+						tileBuf[i+0] = RGB565_to_ARGB32(be16_to_cpu(img_buf[0]));
+						tileBuf[i+1] = RGB565_to_ARGB32(be16_to_cpu(img_buf[1]));
 					}
 
 					// Blit the tile to the main image buffer.
@@ -106,8 +109,8 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
 					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
-						tileBuf[i+0] = ImageDecoderPrivate::IA8_to_ARGB32(be16_to_cpu(img_buf[0]));
-						tileBuf[i+1] = ImageDecoderPrivate::IA8_to_ARGB32(be16_to_cpu(img_buf[1]));
+						tileBuf[i+0] = IA8_to_ARGB32(be16_to_cpu(img_buf[0]));
+						tileBuf[i+1] = IA8_to_ARGB32(be16_to_cpu(img_buf[1]));
 					}
 
 					// Blit the tile to the main image buffer.
@@ -186,12 +189,12 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	int tr_idx = -1;
 	for (unsigned int i = 0; i < 256; i += 2) {
 		// GCN color format is RGB5A3.
-		palette[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
+		palette[i] = RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
 		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 			// Found the transparent color.
 			tr_idx = static_cast<int>(i);
 		}
-		palette[i+1] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i+1]));
+		palette[i+1] = RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i+1]));
 		if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 			// Found the transparent color.
 			tr_idx = static_cast<int>(i+1);
