@@ -163,7 +163,7 @@ static const uint8_t anchorIndexes_subset2of3[64] = {
 };
 
 // Anchor indexes for the third subset (idx == 2) in 3-subset modes.
-static uint8_t anchorIndexes_subset3of3[64] = {
+static const uint8_t anchorIndexes_subset3of3[64] = {
 	15,  8,  8,  3, 15, 15,  3,  8,
 	15, 15, 15, 15, 15, 15, 15,  8,
 	15,  8, 15,  3, 15,  8, 15,  8,
