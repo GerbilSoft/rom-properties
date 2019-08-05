@@ -13,6 +13,9 @@
 
 #include "common.h"
 
+// C++ includes.
+#include <algorithm>
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
@@ -655,25 +658,19 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 			case 1:
 				// RAGB: Swap A and R.
 				for (unsigned int i = 0; i < 16; i++) {
-					const uint8_t a = tileBuf[i].a;
-					tileBuf[i].a = tileBuf[i].r;
-					tileBuf[i].r = a;
+					std::swap(tileBuf[i].a, tileBuf[i].r);
 				}
 				break;
 			case 2:
 				// GRAB: Swap A and G.
 				for (unsigned int i = 0; i < 16; i++) {
-					const uint8_t a = tileBuf[i].a;
-					tileBuf[i].a = tileBuf[i].g;
-					tileBuf[i].g = a;
+					std::swap(tileBuf[i].a, tileBuf[i].g);
 				}
 				break;
 			case 3:
 				// BRGA: Swap A and B.
 				for (unsigned int i = 0; i < 16; i++) {
-					const uint8_t a = tileBuf[i].a;
-					tileBuf[i].a = tileBuf[i].b;
-					tileBuf[i].b = a;
+					std::swap(tileBuf[i].a, tileBuf[i].b);
 				}
 				break;
 		}
