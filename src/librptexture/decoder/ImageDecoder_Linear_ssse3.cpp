@@ -10,6 +10,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "PixelConversion.hpp"
+using namespace LibRpTexture::PixelConversion;
+
 // SSSE3 headers.
 #include <emmintrin.h>
 #include <tmmintrin.h>
@@ -479,7 +482,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 				case PXF_G16R16:
 					// G16R16.
 					for (; x > 0; x--) {
-						*px_dest = ImageDecoderPrivate::G16R16_to_ARGB32(le32_to_cpu(*img_buf));
+						*px_dest = G16R16_to_ARGB32(le32_to_cpu(*img_buf));
 						img_buf++;
 						px_dest++;
 					}
