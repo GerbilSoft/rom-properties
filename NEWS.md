@@ -11,6 +11,8 @@
     performance in many cases, since the various RomData subclasses do small
     reads for certain things instead of one giant read.
     * FIXME: Need to make use of the cache in the "contiguous" read section.
+  * Image handling has been split from librpbase to librptexture. This will
+    allow the texture decoding functionality to be used by other programs.
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
@@ -22,6 +24,9 @@
     once resulted in getting nothing, and on both systems, in some cases,
     passing a buffer larger than the number of requested sectors results in
     the sectors being loaded at the *end* of the buffer, not the beginning.
+  * GameCube I8 image decoder: The palette was being generated incorrectly.
+    This has been fixed, though since I8 images are uncommon, this probably
+    didn't cause too many problems.
 
 ## v1.4 (released 2019/08/04)
 
