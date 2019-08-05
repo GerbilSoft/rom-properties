@@ -9,8 +9,11 @@
 #include "config.librpbase.h"
 
 #include "RpPng.hpp"
-#include "rp_image.hpp"
 #include "../file/IRpFile.hpp"
+
+#include "img/rp_image.hpp"
+using LibRpTexture::rp_image;
+using LibRpTexture::argb32_t;
 
 // PNG writer.
 #include "RpPngWriter.hpp"

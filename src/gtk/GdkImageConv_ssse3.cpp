@@ -17,8 +17,10 @@
 
 // librpbase
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/img/rp_image.hpp"
-using LibRpBase::rp_image;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // SSSE3 headers.
 #include <xmmintrin.h>

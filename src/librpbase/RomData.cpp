@@ -27,6 +27,8 @@
 using std::string;
 using std::vector;
 
+using LibRpTexture::rp_image;
+
 namespace LibRpBase {
 
 /** RomDataPrivate **/

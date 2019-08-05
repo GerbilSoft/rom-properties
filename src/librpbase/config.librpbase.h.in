@@ -37,20 +37,6 @@
 # define PNG_IS_DLL 1
 #endif
 
-/* Define to 1 if you have libjpeg. */
-#cmakedefine HAVE_JPEG 1
-
-/* Define to 1 if we're using the internal copy of libjpeg. */
-#cmakedefine USE_INTERNAL_JPEG 1
-
-/* Define to 1 if we're using the internal copy of libjpeg as a DLL. */
-#cmakedefine USE_INTERNAL_JPEG_DLL 1
-
-/* Define to 1 if libjpeg is a DLL. */
-#if !defined(USE_INTERNAL_JPEG) || defined(USE_INTERNAL_JPEG_DLL)
-# define JPEG_IS_DLL 1
-#endif
-
 /* Define to 1 if you have the `strnlen' function. */
 #cmakedefine HAVE_STRNLEN 1
 

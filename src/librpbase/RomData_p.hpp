@@ -21,12 +21,15 @@
 #include "RomFields.hpp"
 #include "RomMetaData.hpp"
 
+namespace LibRpTexture {
+	class rp_image;
+}
+
 namespace LibRpBase {
 
 class IRpFile;
 class RomData;
 class RomFields;
-class rp_image;
 
 class RomData;
 class RomDataPrivate

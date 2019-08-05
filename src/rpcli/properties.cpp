@@ -35,9 +35,12 @@ using std::vector;
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.

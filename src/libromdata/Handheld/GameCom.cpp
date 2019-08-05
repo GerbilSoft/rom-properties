@@ -17,10 +17,13 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 
-#include "librpbase/img/rp_image.hpp"
-
+// libi18n
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // C includes. (C++ namespace)
 #include <cassert>

@@ -17,11 +17,13 @@
 #include "librpbase/aligned_malloc.h"
 #include "librpbase/file/IRpFile.hpp"
 
-#include "librpbase/img/rp_image.hpp"
-#include "librpbase/img/ImageDecoder.hpp"
-
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/decoder/ImageDecoder.hpp"
+using namespace LibRpTexture;
 
 // C includes. (C++ namespace)
 #include <cassert>

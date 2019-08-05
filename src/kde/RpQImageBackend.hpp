@@ -9,8 +9,8 @@
 #ifndef __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__
 #define __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__
 
-// librpbase
-#include "librpbase/img/rp_image_backend.hpp"
+// librptexture
+#include "librptexture/img/rp_image_backend.hpp"
 
 // Qt
 #include <QtCore/QVector>
@@ -20,20 +20,20 @@
  * rp_image data storage class.
  * This can be overridden for e.g. QImage or GDI+.
  */
-class RpQImageBackend : public LibRpBase::rp_image_backend
+class RpQImageBackend : public LibRpTexture::rp_image_backend
 {
 	public:
-		RpQImageBackend(int width, int height, LibRpBase::rp_image::Format format);
+		RpQImageBackend(int width, int height, LibRpTexture::rp_image::Format format);
 
 	private:
-		typedef LibRpBase::rp_image_backend super;
+		typedef LibRpTexture::rp_image_backend super;
 		Q_DISABLE_COPY(RpQImageBackend)
 
 	public:
 		/**
 		 * Creator function for rp_image::setBackendCreatorFn().
 		 */
-		static LibRpBase::rp_image_backend *creator_fn(int width, int height, LibRpBase::rp_image::Format format);
+		static LibRpTexture::rp_image_backend *creator_fn(int width, int height, LibRpTexture::rp_image::Format format);
 
 		// Image data.
 		void *data(void) final;

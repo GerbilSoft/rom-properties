@@ -18,9 +18,14 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
-#include "librpbase/img/rp_image.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// libi18n
+#include "libi18n/i18n.h"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"

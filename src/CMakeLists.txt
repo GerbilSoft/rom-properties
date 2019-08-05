@@ -28,6 +28,7 @@ ELSE(WIN32)
 	ADD_SUBDIRECTORY(libunixcommon)
 ENDIF(WIN32)
 ADD_SUBDIRECTORY(librpbase)
+ADD_SUBDIRECTORY(librptexture)
 ADD_SUBDIRECTORY(libromdata)
 ADD_SUBDIRECTORY(libcachemgr)
 

@@ -38,10 +38,10 @@
 using LibWin32Common::RegKey;
 
 // rp_image backend registration.
-#include "librpbase/img/RpGdiplusBackend.hpp"
-#include "librpbase/img/rp_image.hpp"
-using LibRpBase::RpGdiplusBackend;
-using LibRpBase::rp_image;
+#include "librptexture/img/RpGdiplusBackend.hpp"
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::RpGdiplusBackend;
+using LibRpTexture::rp_image;
 
 // Text conversion functions and macros.
 #include "librpbase/TextFuncs.hpp"
