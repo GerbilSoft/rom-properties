@@ -10,6 +10,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "PixelConversion.hpp"
+using namespace LibRpTexture::PixelConversion;
+
 // SSE2 intrinsics.
 #include <emmintrin.h>
 
@@ -346,7 +349,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				\
 				/* Remaining pixels. */ \
 				for (; x > 0; x--) { \
-					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(*img_buf); \
+					*px_dest = fmt##_to_ARGB32(*img_buf); \
 					img_buf++; \
 					px_dest++; \
 				} \
@@ -372,7 +375,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 				\
 				/* Remaining pixels. */ \
 				for (; x > 0; x--) { \
-					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(*img_buf); \
+					*px_dest = fmt##_to_ARGB32(*img_buf); \
 					img_buf++; \
 					px_dest++; \
 				} \
@@ -443,7 +446,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 
 				// Remaining pixels.
 				for (; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::RG88_to_ARGB32(*img_buf);
+					*px_dest = RG88_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}
@@ -490,7 +493,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 
 				// Remaining pixels.
 				for (; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::RG88_to_ARGB32(*img_buf);
+					*px_dest = RG88_to_ARGB32(*img_buf);
 					img_buf++;
 					px_dest++;
 				}

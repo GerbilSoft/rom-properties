@@ -18,6 +18,7 @@ SET(librptexture_SRCS
 	decoder/ImageDecoder_DC.cpp
 	decoder/ImageDecoder_ETC1.cpp
 	decoder/ImageDecoder_BC7.cpp
+	decoder/PixelConversion.cpp
 	)
 # Headers.
 SET(librptexture_H
@@ -28,6 +29,7 @@ SET(librptexture_H
 
 	decoder/ImageDecoder.hpp
 	decoder/ImageDecoder_p.hpp
+	decoder/PixelConversion.hpp
 	)
 
 IF(JPEG_FOUND)

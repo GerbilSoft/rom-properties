@@ -11,6 +11,9 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "PixelConversion.hpp"
+using namespace LibRpTexture::PixelConversion;
+
 // C includes. (C++ namespace)
 #include <cerrno>
 
@@ -83,8 +86,8 @@ static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t *RESTRICT pal, c
 		c0 = le16_to_cpu(dxt1_src->color[0]);
 		c1 = le16_to_cpu(dxt1_src->color[1]);
 	}
-	pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c0);
-	pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c1);
+	pal[0].u32 = RGB565_to_ARGB32(c0);
+	pal[1].u32 = RGB565_to_ARGB32(c1);
 
 	// Calculate the second two colors.
 	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
