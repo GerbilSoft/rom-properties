@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
-#include "librptexture/config.librptexture.h"
 
 #include "NintendoDS.hpp"
 #include "librpbase/RomData_p.hpp"
