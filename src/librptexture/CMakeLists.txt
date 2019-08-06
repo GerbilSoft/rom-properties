@@ -1,4 +1,4 @@
-PROJECT(librpbase)
+PROJECT(librptexture)
 
 # ZLIB and libpng are checked in the top-level CMakeLists.txt.
 
