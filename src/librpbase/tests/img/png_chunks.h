@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * png_chunks.h: PNG chunk definitions.                                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_TESTS_PNG_CHUNKS_H__
-#define __ROMPROPERTIES_LIBRPTEXTURE_TESTS_PNG_CHUNKS_H__
+#ifndef __ROMPROPERTIES_LIBRPBASE_TESTS_PNG_CHUNKS_H__
+#define __ROMPROPERTIES_LIBRPBASE_TESTS_PNG_CHUNKS_H__
 
 #include "common.h"
 #include <stdint.h>
@@ -66,4 +66,4 @@ typedef struct PACKED _PNG_IHDR_full_t {
 } PNG_IHDR_full_t;
 #pragma pack()
 
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_TESTS_PNG_CHUNKS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPBASE_TESTS_PNG_CHUNKS_H__ */

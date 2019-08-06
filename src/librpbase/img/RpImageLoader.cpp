@@ -1,20 +1,22 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librptexture)                     *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * RpImageLoader.cpp: Image loader class.                                  *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "config.librptexture.h"
+#include "config.librpbase.h"
 
 #include "RpImageLoader.hpp"
-#include "file/IRpFile.hpp"
-using LibRpBase::IRpFile;
+#include "../file/IRpFile.hpp"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // Image loaders.
-#include "librpbase/img/RpPng.hpp"
-using LibRpBase::RpPng;
+#include "RpPng.hpp"
 #ifdef HAVE_JPEG
 # include "RpJpeg.hpp"
 #endif /* HAVE_JPEG */
@@ -22,7 +24,7 @@ using LibRpBase::RpPng;
 // C includes. (C++ namespace)
 #include <cstring>
 
-namespace LibRpTexture {
+namespace LibRpBase {
 
 class RpImageLoaderPrivate
 {
