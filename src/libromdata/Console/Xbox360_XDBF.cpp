@@ -84,9 +84,8 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 		XDBF_Header xdbfHeader;
 
 		// Entry table.
-		// Size is indicated by xdbfHeader.entry_table_length * sizeof(XDBF_Entry).
 		// NOTE: Data is *not* byteswapped on load.
-		XDBF_Entry *entryTable;
+		ao::uvector<XDBF_Entry> entryTable;
 
 		// Data start offset within the file.
 		uint32_t data_offset;
@@ -176,7 +175,6 @@ class Xbox360_XDBF_Private : public RomDataPrivate
 Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex)
 	: super(q, file)
 	, img_icon(nullptr)
-	, entryTable(nullptr)
 	, data_offset(0)
 	, m_langID(XDBF_LANGUAGE_UNKNOWN)
 	, xex(xex)
@@ -190,8 +188,6 @@ Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool 
 
 Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 {
-	delete[] entryTable;
-
 	// Delete any allocated string tables.
 	for (int i = ARRAY_SIZE(strTbl)-1; i >= 0; i--) {
 		delete strTbl[i];
@@ -211,7 +207,7 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
  */
 const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint64_t resource_id) const
 {
-	if (!entryTable) {
+	if (entryTable.empty()) {
 		// Entry table isn't loaded...
 		return nullptr;
 	}
@@ -222,9 +218,8 @@ const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint
 	resource_id  = cpu_to_be64(resource_id);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
-	const XDBF_Entry *p = entryTable;
-	const XDBF_Entry *const p_end = p + xdbfHeader.entry_table_length;
-	for (; p < p_end; p++) {
+	for (auto iter = entryTable.cbegin(); iter != entryTable.cend(); ++iter) {
+		const XDBF_Entry *p = &(*iter);
 		if (p->namespace_id == namespace_id &&
 		    p->resource_id == resource_id)
 		{
@@ -475,7 +470,7 @@ rp_image *Xbox360_XDBF_Private::loadImage(uint64_t image_id)
 		return iter->second;
 	}
 
-	if (!entryTable) {
+	if (entryTable.empty()) {
 		// Entry table isn't loaded...
 		return nullptr;
 	}
@@ -544,7 +539,7 @@ const rp_image *Xbox360_XDBF_Private::loadIcon(void)
 	}
 
 	// Make sure the entry table is loaded.
-	if (!entryTable) {
+	if (entryTable.empty()) {
 		// Not loaded. Cannot load an icon.
 		return nullptr;
 	}
@@ -633,7 +628,7 @@ int Xbox360_XDBF_Private::addFields_strings(RomFields *fields) const
  */
 int Xbox360_XDBF_Private::addFields_achievements(void)
 {
-	if (!entryTable) {
+	if (entryTable.empty()) {
 		// Entry table isn't loaded...
 		return 1;
 	}
@@ -721,8 +716,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
 	auto vv_icons = new vector<const rp_image*>(xach_count);
 	auto xach_iter = vv_xach->begin();
 	auto icon_iter = vv_icons->begin();
-	for (; p < p_end && xach_iter != vv_xach->end(); p++, ++xach_iter, ++icon_iter)
-	{
+	for (; p < p_end && xach_iter != vv_xach->end(); p++, ++xach_iter, ++icon_iter) {
 		// String data row
 		auto &data_row = *xach_iter;
 
@@ -790,7 +784,7 @@ int Xbox360_XDBF_Private::addFields_achievements(void)
  */
 int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 {
-	if (!entryTable) {
+	if (entryTable.empty()) {
 		// Entry table isn't loaded...
 		return 1;
 	}
@@ -1066,12 +1060,11 @@ void Xbox360_XDBF::init(void)
 
 	// Read the entry table.
 	const size_t entry_table_sz = d->xdbfHeader.entry_table_length * sizeof(XDBF_Entry);
-	d->entryTable = new XDBF_Entry[d->xdbfHeader.entry_table_length];
-	size = d->file->read(d->entryTable, entry_table_sz);
+	d->entryTable.resize(d->xdbfHeader.entry_table_length);
+	size = d->file->read(d->entryTable.data(), entry_table_sz);
 	if (size != entry_table_sz) {
 		// Read error.
-		delete[] d->entryTable;
-		d->entryTable = nullptr;
+		d->entryTable.clear();
 		d->xdbfHeader.magic = 0;
 		d->file->unref();
 		d->file = nullptr;
