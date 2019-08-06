@@ -110,6 +110,7 @@ SET(librpbase_SRCS
 	file/RelatedFile.cpp
 	file/scsi/RpFile_Kreon.cpp
 	file/scsi/RpFile_scsi.cpp
+	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
 	img/IconAnimHelper.cpp
@@ -149,6 +150,7 @@ SET(librpbase_H
 	file/FileSystem.hpp
 	file/RelatedFile.hpp
 	file/scsi/scsi_protocol.h
+	img/RpImageLoader.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h
@@ -170,6 +172,11 @@ IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(librpbase_SRCS ${librpbase_SRCS} img/APNG_dlopen.c)
 	SET(librpbase_NEEDS_DL 1)
 ENDIF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
+
+IF(JPEG_FOUND)
+	SET(librpbase_SRCS ${librpbase_SRCS} img/RpJpeg.cpp)
+	SET(librpbase_H ${librpbase_H} img/RpJpeg.hpp)
+ENDIF(JPEG_FOUND)
 
 # SCSI implementation for Kreon disc drive support.
 IF(WIN32)
@@ -298,6 +305,12 @@ IF(CPU_i386 OR CPU_amd64)
 
 	SET(librpbase_SSE2_SRCS byteswap_sse2.c)
 	SET(librpbase_SSSE3_SRCS byteswap_ssse3.c)
+	IF(JPEG_FOUND)
+		SET(librpbase_SSSE3_SRCS
+			${librpbase_SSSE3_SRCS}
+			img/RpJpeg_ssse3.cpp
+			)
+	ENDIF(JPEG_FOUND)
 
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
@@ -437,6 +450,10 @@ IF(PNG_FOUND)
 	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${PNG_INCLUDE_DIRS})
 	TARGET_COMPILE_DEFINITIONS(rpbase PRIVATE ${PNG_DEFINITIONS})
 ENDIF(PNG_FOUND)
+IF(JPEG_FOUND)
+	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${JPEG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${JPEG_INCLUDE_DIRS})
+ENDIF(JPEG_FOUND)
 IF(NETTLE_FOUND)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${NETTLE_LIBRARY})
 	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${NETTLE_INCLUDE_DIRS})
