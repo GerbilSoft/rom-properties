@@ -1,5 +1,8 @@
 PROJECT(librptexture)
 
+# Find the system threading library.
+FIND_PACKAGE(Threads REQUIRED)
+
 # Sources.
 SET(librptexture_SRCS
 	img/rp_image.cpp
@@ -162,6 +165,9 @@ IF(WIN32)
 	# Windows system libraries
 	TARGET_LINK_LIBRARIES(rptexture PRIVATE gdiplus)
 ENDIF(WIN32)
+IF(CMAKE_THREAD_LIBS_INIT)
+	TARGET_LINK_LIBRARIES(rptexture PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
