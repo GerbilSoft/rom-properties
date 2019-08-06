@@ -19,12 +19,12 @@ using LibCacheMgr::CacheManager;
 #include "librpbase/RomData.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/config/Config.hpp"
+#include "librpbase/img/RpImageLoader.hpp"
 using namespace LibRpBase;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-#include "librptexture/img/RpImageLoader.hpp"
-using namespace LibRpTexture;
+using LibRpTexture::rp_image;
 
 // libromdata
 #include "../RomDataFactory.hpp"

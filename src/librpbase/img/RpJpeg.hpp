@@ -1,23 +1,23 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librptexture)                     *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.hpp: JPEG image handler.                                         *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPJPEG_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPJPEG_HPP__
+#ifndef __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__
+#define __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__
 
-#include "librpbase/common.h"
-
-namespace LibRpBase {
-	class IRpFile;
-}
+#include "../common.h"
 
 namespace LibRpTexture {
+	class rp_image;
+}
 
-class rp_image;
+namespace LibRpBase {
+
+class IRpFile;
 
 class RpJpeg
 {
@@ -37,7 +37,7 @@ class RpJpeg
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static rp_image *loadUnchecked(LibRpBase::IRpFile *file);
+		static LibRpTexture::rp_image *loadUnchecked(IRpFile *file);
 
 		/**
 		 * Load a JPEG image from an IRpFile.
@@ -48,9 +48,9 @@ class RpJpeg
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static rp_image *load(LibRpBase::IRpFile *file);
+		static LibRpTexture::rp_image *load(IRpFile *file);
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPJPEG_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__ */

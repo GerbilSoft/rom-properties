@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librptexture/tests)               *
+ * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpImageLoaderTest.cpp: RpImageLoader class test.                        *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,11 +17,11 @@
 
 /**
  * Test suite main function.
- * Called by gtest_init.cpp.
+ * Called by gtest_init.c.
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibRpTexture test suite: RpImageLoader tests.\n\n");
+	fprintf(stderr, "LibRpBase test suite: RpImageLoader tests.\n\n");
 	fflush(nullptr);
 
 	// Make sure the CRC32 table is initialized.

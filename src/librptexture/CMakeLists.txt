@@ -1,14 +1,11 @@
 PROJECT(librptexture)
 
-# ZLIB and libpng are checked in the top-level CMakeLists.txt.
-
 # Sources.
 SET(librptexture_SRCS
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/rp_image_ops.cpp
 	img/un-premultiply.cpp
-	img/RpImageLoader.cpp
 
 	decoder/ImageDecoder_Linear.cpp
 	decoder/ImageDecoder_GCN.cpp
@@ -25,17 +22,11 @@ SET(librptexture_H
 	img/rp_image.hpp
 	img/rp_image_p.hpp
 	img/rp_image_backend.hpp
-	img/RpImageLoader.hpp
 
 	decoder/ImageDecoder.hpp
 	decoder/ImageDecoder_p.hpp
 	decoder/PixelConversion.hpp
 	)
-
-IF(JPEG_FOUND)
-	SET(librptexture_SRCS ${librptexture_SRCS} img/RpJpeg.cpp)
-	SET(librptexture_H ${librptexture_H} img/RpJpeg.hpp)
-ENDIF(JPEG_FOUND)
 
 IF(WIN32)
 	SET(librptexture_OS_SRCS
@@ -62,12 +53,6 @@ IF(CPU_i386 OR CPU_amd64)
 	SET(librptexture_SSSE3_SRCS
 		decoder/ImageDecoder_Linear_ssse3.cpp
 		)
-	IF(JPEG_FOUND)
-		SET(librptexture_SSSE3_SRCS
-			${librptexture_SSSE3_SRCS}
-			img/RpJpeg_ssse3.cpp
-			)
-	ENDIF(JPEG_FOUND)
 	# TODO: Disable SSE 4.1 if not supported by the compiler?
 	SET(librptexture_SSE41_SRCS
 		img/un-premultiply_sse41.cpp
@@ -164,10 +149,6 @@ TARGET_INCLUDE_DIRECTORIES(rptexture
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
-IF(NOT ZLIB_LIBRARY)
-	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
-ENDIF(NOT ZLIB_LIBRARY)
-TARGET_LINK_LIBRARIES(rptexture PRIVATE ${ZLIB_LIBRARY})
 IF(MSVC)
 	TARGET_LINK_LIBRARIES(rptexture PRIVATE delayimp)
 ENDIF(MSVC)
@@ -175,20 +156,6 @@ ENDIF(MSVC)
 SET_TARGET_PROPERTIES(rptexture PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 # Other libraries.
-IF(ZLIB_FOUND)
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE ${ZLIB_LIBRARIES})
-	TARGET_INCLUDE_DIRECTORIES(rptexture PRIVATE ${ZLIB_INCLUDE_DIRS})
-	TARGET_COMPILE_DEFINITIONS(rptexture PRIVATE ${ZLIB_DEFINITIONS})
-ENDIF(ZLIB_FOUND)
-IF(PNG_FOUND)
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE ${PNG_LIBRARY})
-	TARGET_INCLUDE_DIRECTORIES(rptexture PRIVATE ${PNG_INCLUDE_DIRS})
-	TARGET_COMPILE_DEFINITIONS(rptexture PRIVATE ${PNG_DEFINITIONS})
-ENDIF(PNG_FOUND)
-IF(JPEG_FOUND)
-	TARGET_LINK_LIBRARIES(rptexture PRIVATE ${JPEG_LIBRARY})
-	TARGET_INCLUDE_DIRECTORIES(rptexture PRIVATE ${JPEG_INCLUDE_DIRS})
-ENDIF(JPEG_FOUND)
 IF(WIN32)
 	# libwin32common
 	TARGET_LINK_LIBRARIES(rptexture PRIVATE win32common)

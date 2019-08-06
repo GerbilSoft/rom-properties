@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librptexture)                     *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  * SSSE3-optimized version.                                                *
  *                                                                         *
@@ -9,7 +9,11 @@
 
 #include "RpJpeg_p.hpp"
 
-#include "common.h"
+#include "../common.h"
+
+// librptexture
+using LibRpTexture::rp_image;
+using LibRpTexture::argb32_t;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -18,7 +22,7 @@
 #include <emmintrin.h>
 #include <tmmintrin.h>
 
-namespace LibRpTexture {
+namespace LibRpBase {
 
 /**
  * Decode a 24-bit BGR JPEG to 32-bit ARGB.

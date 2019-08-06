@@ -1,16 +1,18 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librptexture)                     *
+ * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg_p.hpp: JPEG image handler. (Private class)                       *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPJPEG_P_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPJPEG_P_HPP__
+#ifndef __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_P_HPP__
+#define __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_P_HPP__
 
-#include "common.h"
-#include "rp_image.hpp"
+#include "../common.h"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
 
 // jpeglib.h needs stdio included first.
 #include <cstdio>
@@ -36,10 +38,8 @@
 #endif
 
 namespace LibRpBase {
-	class IRpFile;
-}
-    
-namespace LibRpTexture {
+
+class IRpFile;
 
 class RpJpegPrivate
 {
@@ -79,7 +79,7 @@ class RpJpegPrivate
 		struct MySourceMgr {
 			jpeg_source_mgr pub;
 
-			LibRpBase::IRpFile *infile;	// Source stream.
+			IRpFile *infile;	// Source stream.
 			JOCTET *buffer;		// Start of buffer.
 			bool start_of_file;	// Have we gotten any data yet?
 		};
@@ -118,7 +118,7 @@ class RpJpegPrivate
 		 * @param cinfo j_decompress_ptr
 		 * @param file IRpFile
 		 */
-		static void jpeg_IRpFile_src(j_decompress_ptr cinfo, LibRpBase::IRpFile *infile);
+		static void jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile);
 
 	public:
 #ifdef RPJPEG_HAS_SSSE3
@@ -130,10 +130,10 @@ class RpJpegPrivate
 		 * @param cinfo		[in/out] JPEG decompression struct.
 		 * @param buffer 	[in/out] Line buffer. (Must be 16-byte aligned!)
 		 */
-		static void decodeBGRtoARGB(rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer);
+		static void decodeBGRtoARGB(LibRpTexture::rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer);
 #endif /* RPJPEG_HAS_SSSE3 */
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPJPEG_P_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_P_HPP__ */

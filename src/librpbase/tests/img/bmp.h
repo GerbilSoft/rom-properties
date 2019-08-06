@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * bmp.h: BMP image format definitions.                                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_TESTS_BMP_H__
-#define __ROMPROPERTIES_LIBRPTEXTURE_TESTS_BMP_H__
+#ifndef __ROMPROPERTIES_LIBRPBASE_TESTS_BMP_H__
+#define __ROMPROPERTIES_LIBRPBASE_TESTS_BMP_H__
 
 #include "common.h"
 #include <stdint.h>
@@ -89,4 +89,4 @@ typedef struct PACKED tagBITMAPINFOHEADER {
 
 #endif /* _WIN32 */
 
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_TESTS_BMP_H__ */
+#endif /* __ROMPROPERTIES_LIBRPBASE_TESTS_BMP_H__ */

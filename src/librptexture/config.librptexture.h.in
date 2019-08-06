@@ -9,48 +9,6 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
 #define __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
 
-/* Define to 1 if you have zlib. */
-#cmakedefine HAVE_ZLIB 1
-
-/* Define to 1 if we're using the internal copy of zlib. */
-#cmakedefine USE_INTERNAL_ZLIB 1
-
-/* Define to 1 if we're using the internal copy of zlib as a DLL. */
-#cmakedefine USE_INTERNAL_ZLIB_DLL 1
-
-/* Define to 1 if zlib is a DLL. */
-#if !defined(USE_INTERNAL_ZLIB) || defined(USE_INTERNAL_ZLIB_DLL)
-# define ZLIB_IS_DLL 1
-#endif
-
-/* Define to 1 if you have libpng. */
-#cmakedefine HAVE_PNG 1
-
-/* Define to 1 if we're using the internal copy of libpng. */
-#cmakedefine USE_INTERNAL_PNG 1
-
-/* Define to 1 if we're using the internal copy of libpng as a DLL. */
-#cmakedefine USE_INTERNAL_PNG_DLL 1
-
-/* Define to 1 if libpng is a DLL. */
-#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
-# define PNG_IS_DLL 1
-#endif
-
-/* Define to 1 if you have libjpeg. */
-#cmakedefine HAVE_JPEG 1
-
-/* Define to 1 if we're using the internal copy of libjpeg. */
-#cmakedefine USE_INTERNAL_JPEG 1
-
-/* Define to 1 if we're using the internal copy of libjpeg as a DLL. */
-#cmakedefine USE_INTERNAL_JPEG_DLL 1
-
-/* Define to 1 if libjpeg is a DLL. */
-#if !defined(USE_INTERNAL_JPEG) || defined(USE_INTERNAL_JPEG_DLL)
-# define JPEG_IS_DLL 1
-#endif
-
 /* Define to 1 if OpenGL support should be enabled. */
 #cmakedefine ENABLE_GL 1
 
