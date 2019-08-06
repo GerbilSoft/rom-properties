@@ -33,11 +33,11 @@
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/RpMemFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
+#include "librpbase/img/RpImageLoader.hpp"
 using namespace LibRpBase;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-#include "librptexture/img/RpImageLoader.hpp"
 #include "librptexture/decoder/ImageDecoder.hpp"
 using namespace LibRpTexture;
 
