@@ -21,7 +21,7 @@ using std::unique_ptr;
 // One-time initialization.
 #include "threads/pthread_once.h"
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Dreamcast twiddle map.
@@ -68,7 +68,7 @@ static FORCEINLINE void initDreamcastTwiddleMap(void)
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
+rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz)
 {
@@ -169,7 +169,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 1024*2; for SmallVQ, 64*2, 256*2, or 512*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
+rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
@@ -305,4 +305,4 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	return img;
 }
 
-}
+} }

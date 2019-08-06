@@ -20,7 +20,7 @@
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308954(v=vs.85).aspx
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 // Interpolation values.
 static const uint8_t aWeight2[] = {0, 21, 43, 64};
@@ -250,7 +250,7 @@ static FORCEINLINE void rshift128(uint64_t &msb, uint64_t &lsb, unsigned int sha
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromBC7(int width, int height,
+rp_image *fromBC7(int width, int height,
 	const uint8_t *img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -687,4 +687,4 @@ rp_image *ImageDecoder::fromBC7(int width, int height,
 	return img;
 }
 
-}
+} }
