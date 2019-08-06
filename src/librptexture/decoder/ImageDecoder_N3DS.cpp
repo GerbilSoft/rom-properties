@@ -12,7 +12,7 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 // N3DS uses 3-level Z-ordered tiling.
 // References:
@@ -33,7 +33,7 @@ static const uint8_t N3DS_tile_order[] = {
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
+rp_image *fromN3DSTiledRGB565(int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -100,7 +100,7 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
  * @param alpha_siz Size of alpha data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromN3DSTiledRGB565_A4(int width, int height,
+rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz,
 	const uint8_t *RESTRICT alpha_buf, int alpha_siz)
 {
@@ -165,4 +165,4 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565_A4(int width, int height,
 	return img;
 }
 
-}
+} }

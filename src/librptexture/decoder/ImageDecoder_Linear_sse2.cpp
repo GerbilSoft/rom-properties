@@ -23,7 +23,7 @@ using namespace LibRpTexture::PixelConversion;
 # pragma warning(disable: 4309)
 #endif
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Templated function for 15/16-bit RGB conversion using SSE2. (no alpha channel)
@@ -225,7 +225,7 @@ static inline void T_ARGB16_sse2(
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
+rp_image *fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
 {
@@ -519,7 +519,7 @@ rp_image *ImageDecoder::fromLinear16_sse2(PixelFormat px_format,
 	return img;
 }
 
-}
+} }
 
 #ifdef _MSC_VER
 # pragma warning(pop)

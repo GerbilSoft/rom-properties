@@ -17,7 +17,7 @@ using namespace LibRpTexture::PixelConversion;
 #include <emmintrin.h>
 #include <tmmintrin.h>
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Convert a linear 24-bit RGB image to rp_image.
@@ -30,7 +30,7 @@ namespace LibRpTexture {
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
+rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
 {
@@ -182,7 +182,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
+rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
 {
@@ -513,4 +513,4 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	return img;
 }
 
-}
+} }

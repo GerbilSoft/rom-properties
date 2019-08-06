@@ -12,7 +12,7 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Convert a Nintendo DS CI4 image to rp_image.
@@ -24,7 +24,7 @@ namespace LibRpTexture {
  * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
+rp_image *fromNDS_CI4(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	const uint16_t *RESTRICT pal_buf, int pal_siz)
 {
@@ -96,4 +96,4 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	return img;
 }
 
-}
+} }
