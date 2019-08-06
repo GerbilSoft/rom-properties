@@ -12,7 +12,7 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Convert a GameCube 16-bit image to rp_image.
@@ -23,7 +23,7 @@ namespace LibRpTexture {
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
+rp_image *fromGcn16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz)
 {
@@ -145,7 +145,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
  * @param pal_siz Size of palette data. [must be >= 256*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromGcnCI8(int width, int height,
+rp_image *fromGcnCI8(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	const uint16_t *RESTRICT pal_buf, int pal_siz)
 {
@@ -238,7 +238,7 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromGcnI8(int width, int height,
+rp_image *fromGcnI8(int width, int height,
 	const uint8_t *img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -303,4 +303,4 @@ rp_image *ImageDecoder::fromGcnI8(int width, int height,
 	return img;
 }
 
-}
+} }

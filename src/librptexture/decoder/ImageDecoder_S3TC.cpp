@@ -29,7 +29,7 @@ using namespace LibRpTexture::PixelConversion;
 // TODO: Precalculate an alpha "palette" similar to the 4-color tile palettes?
 // Also applies to BC4/BC5 color palettes.
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 // DXT1 block format.
 struct dxt1_block {
@@ -194,7 +194,7 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RES
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
+rp_image *fromDXT1_GCN(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -350,7 +350,7 @@ static rp_image *T_fromDXT1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT1(int width, int height,
+rp_image *fromDXT1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	return T_fromDXT1<0>(width, height, img_buf, img_siz);
@@ -366,7 +366,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT1_A1(int width, int height,
+rp_image *fromDXT1_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	return T_fromDXT1<DXTn_PALETTE_COLOR3_ALPHA>(width, height, img_buf, img_siz);
@@ -380,7 +380,7 @@ rp_image *ImageDecoder::fromDXT1_A1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT2(int width, int height,
+rp_image *fromDXT2(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// TODO: Completely untested. Needs testing!
@@ -409,7 +409,7 @@ rp_image *ImageDecoder::fromDXT2(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT3(int width, int height,
+rp_image *fromDXT3(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -491,7 +491,7 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT4(int width, int height,
+rp_image *fromDXT4(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// TODO: Completely untested. Needs testing!
@@ -520,7 +520,7 @@ rp_image *ImageDecoder::fromDXT4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT5(int width, int height,
+rp_image *fromDXT5(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -601,7 +601,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromBC4(int width, int height,
+rp_image *fromBC4(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -683,7 +683,7 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromBC5(int width, int height,
+rp_image *fromBC5(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -765,7 +765,7 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int ImageDecoder::fromRed8ToL8(rp_image *img)
+int fromRed8ToL8(rp_image *img)
 {
 	assert(img != nullptr);
 	assert(img->format() == rp_image::FORMAT_ARGB32);
@@ -804,7 +804,7 @@ int ImageDecoder::fromRed8ToL8(rp_image *img)
  * @param img rp_image to convert in-place.
  * @return 0 on success; negative POSIX error code on error.
  */
-int ImageDecoder::fromRG8ToLA8(rp_image *img)
+int fromRG8ToLA8(rp_image *img)
 {
 	assert(img != nullptr);
 	assert(img->format() == rp_image::FORMAT_ARGB32);
@@ -837,4 +837,4 @@ int ImageDecoder::fromRG8ToLA8(rp_image *img)
 	return 0;
 }
 
-}
+} }

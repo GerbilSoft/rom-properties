@@ -13,7 +13,7 @@
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 /**
  * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
@@ -27,7 +27,7 @@ namespace LibRpTexture {
  * @param pal_siz Size of palette data. [must be >= 16*2 for 16-bit, >= 16*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
+rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	const void *RESTRICT pal_buf, int pal_siz)
@@ -251,7 +251,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format, bool msn_left,
  * @param pal_siz Size of palette data. [must be >= 256*2 for 16-bit, >= 256*4 for 32-bit]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
+rp_image *fromLinearCI8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
 	const void *RESTRICT pal_buf, int pal_siz)
@@ -436,7 +436,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
  * @param img_siz Size of image data. [must be >= (w*h)/8]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinearMono(int width, int height,
+rp_image *fromLinearMono(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -509,7 +509,7 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
+rp_image *fromLinear8(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
 {
@@ -606,7 +606,7 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
+rp_image *fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
 {
@@ -721,7 +721,7 @@ rp_image *ImageDecoder::fromLinear16_cpp(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
+rp_image *fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
 {
@@ -822,7 +822,7 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
+rp_image *fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
 {
@@ -1166,4 +1166,4 @@ rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 	return img;
 }
 
-}
+} }

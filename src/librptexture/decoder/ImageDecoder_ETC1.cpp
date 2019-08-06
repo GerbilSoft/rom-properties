@@ -14,7 +14,7 @@
 // - https://www.khronos.org/registry/DataFormat/specs/1.1/dataformat.1.1.html#ETC1
 // - https://www.khronos.org/registry/DataFormat/specs/1.1/dataformat.1.1.html#ETC2
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace ImageDecoder {
 
 #pragma pack(1)
 
@@ -607,7 +607,7 @@ static void decodeBlock_ETC_RGB(uint32_t tileBuf[4*4], const etc1_block *etc1_sr
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromETC1(int width, int height,
+rp_image *fromETC1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -669,7 +669,7 @@ rp_image *ImageDecoder::fromETC1(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromETC2_RGB(int width, int height,
+rp_image *fromETC2_RGB(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -771,7 +771,7 @@ static void decodeBlock_ETC2_alpha(uint32_t tileBuf[4*4], const etc2_alpha *alph
  * @param img_siz Size of image data. [must be >= (w*h)]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromETC2_RGBA(int width, int height,
+rp_image *fromETC2_RGBA(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -837,7 +837,7 @@ rp_image *ImageDecoder::fromETC2_RGBA(int width, int height,
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromETC2_RGB_A1(int width, int height,
+rp_image *fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -891,4 +891,4 @@ rp_image *ImageDecoder::fromETC2_RGB_A1(int width, int height,
 	return img;
 }
 
-}
+} }
