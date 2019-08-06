@@ -11,8 +11,7 @@
 #ifdef RP_HAS_IFUNC
 
 #include "ImageDecoder.hpp"
-using LibRpTexture::rp_image;
-using LibRpTexture::ImageDecoder;
+using namespace LibRpTexture;
 
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {
