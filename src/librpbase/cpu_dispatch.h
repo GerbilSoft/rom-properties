@@ -68,15 +68,20 @@
 // - IFUNC_SSE2_INLINE: inline if CPU always has SSE2.
 #ifdef RP_HAS_IFUNC
 # define IFUNC_INLINE
+# define IFUNC_STATIC_INLINE
 # ifdef RP_CPU_AMD64
 #  define IFUNC_SSE2_INLINE inline
+#  define IFUNC_SSE2_STATIC_INLINE static inline
 # else
 #  define IFUNC_SSE2_INLINE
+#  define IFUNC_SSE2_STATIC_INLINE
 # endif
 # define IFUNC_ATTR(func) __attribute__((ifunc(#func)))
 #else
 # define IFUNC_INLINE inline
+# define IFUNC_STATIC_INLINE static inline
 # define IFUNC_SSE2_INLINE inline
+# define IFUNC_SSE2_STATIC_INLINE static inline
 # define IFUNC_ATTR(func)
 #endif
 
