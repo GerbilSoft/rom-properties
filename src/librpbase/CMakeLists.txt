@@ -173,10 +173,13 @@ IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(librpbase_NEEDS_DL 1)
 ENDIF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 
-IF(JPEG_FOUND)
+IF(WIN32)
+	SET(librpbase_SRCS ${librpbase_SRCS} img/RpJpeg_gdiplus.cpp)
+	SET(librpbase_H ${librpbase_H} img/RpJpeg.hpp)
+ELSEIF(JPEG_FOUND)
 	SET(librpbase_SRCS ${librpbase_SRCS} img/RpJpeg.cpp)
 	SET(librpbase_H ${librpbase_H} img/RpJpeg.hpp)
-ENDIF(JPEG_FOUND)
+ENDIF()
 
 # SCSI implementation for Kreon disc drive support.
 IF(WIN32)
@@ -305,12 +308,12 @@ IF(CPU_i386 OR CPU_amd64)
 
 	SET(librpbase_SSE2_SRCS byteswap_sse2.c)
 	SET(librpbase_SSSE3_SRCS byteswap_ssse3.c)
-	IF(JPEG_FOUND)
+	IF(JPEG_FOUND AND NOT WIN32)
 		SET(librpbase_SSSE3_SRCS
 			${librpbase_SSSE3_SRCS}
 			img/RpJpeg_ssse3.cpp
 			)
-	ENDIF(JPEG_FOUND)
+	ENDIF(JPEG_FOUND AND NOT WIN32)
 
 	# IFUNC requires glibc.
 	# We're not checking for glibc here, but we do have preprocessor
