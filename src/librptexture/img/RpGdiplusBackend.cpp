@@ -111,6 +111,106 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 	}
 }
 
+/**
+ * Create an RpGdiplusBackend using the specified Gdiplus::Bitmap.
+ *
+ * NOTE: This RpGdiplusBackend will take ownership of the Gdiplus::Bitmap.
+ *
+ * @param pGdipBmp Gdiplus::Bitmap.
+ */
+RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
+	: super(0, 0, rp_image::FORMAT_NONE)
+	, m_gdipToken(0)
+	, m_pGdipBmp(pGdipBmp)
+	, m_isLocked(false)
+	, m_gdipFmt(0)
+	, m_pGdipPalette(nullptr)
+{
+	assert(pGdipBmp != nullptr);
+	if (!pGdipBmp)
+		return;
+
+	// Initialize GDI+.
+	m_gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(m_gdipToken != 0);
+	if (m_gdipToken == 0) {
+		delete m_pGdipBmp;
+		m_pGdipBmp = nullptr;
+		return;
+	}
+
+	// Check the pixel format.
+	m_gdipFmt = pGdipBmp->GetPixelFormat();
+	switch (m_gdipFmt) {
+		case PixelFormat8bppIndexed:
+			this->format = rp_image::FORMAT_CI8;
+			break;
+
+		case PixelFormat24bppRGB:
+		case PixelFormat32bppRGB:
+			// TODO: Is conversion needed?
+			this->format = rp_image::FORMAT_ARGB32;
+			m_gdipFmt = PixelFormat32bppRGB;
+			break;
+
+		case PixelFormat32bppARGB:
+			this->format = rp_image::FORMAT_ARGB32;
+			break;
+
+		default:
+			// Unsupported format.
+			assert(!"Unsupported Gdiplus::PixelFormat.");
+			delete m_pGdipBmp;
+			m_pGdipBmp = nullptr;
+			return;
+	}
+
+	// Set the width and height.
+	this->width = pGdipBmp->GetWidth();
+	this->height = pGdipBmp->GetHeight();
+
+	// If the image has a palette, load it.
+	if (this->format == rp_image::FORMAT_CI8) {
+		// 256-color palette.
+		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
+		m_pGdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
+		if (!m_pGdipPalette) {
+			// ENOMEM
+			delete m_pGdipBmp;
+			m_pGdipBmp = nullptr;
+			m_gdipFmt = 0;
+			clear_properties();
+		}
+
+		// Actual GDI+ palette size.
+		int palette_size = pGdipBmp->GetPaletteSize();
+		assert(palette_size > 0);
+
+		Gdiplus::Status status = pGdipBmp->GetPalette(m_pGdipPalette, palette_size);
+		if (status != Gdiplus::Status::Ok) {
+			// Failed to retrieve the palette.
+			free(m_pGdipPalette);
+			m_pGdipPalette = nullptr;
+			delete m_pGdipBmp;
+			m_pGdipBmp = nullptr;
+			m_gdipFmt = 0;
+			clear_properties();
+			return;
+		}
+
+		if (m_pGdipPalette->Count < 256) {
+			// Extend the palette to 256 colors.
+			// Additional colors will be set to 0.
+			int diff = 256 - m_pGdipPalette->Count;
+			memset(&m_pGdipPalette->Entries[m_pGdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
+			m_pGdipPalette->Count = 256;
+		}
+	}
+
+	// Do the initial lock.
+	doInitialLock();
+}
+
 RpGdiplusBackend::~RpGdiplusBackend()
 {
 	if (m_pGdipBmp) {
