@@ -49,6 +49,15 @@ class RpGdiplusBackend : public rp_image_backend
 		 */
 		RpGdiplusBackend(int width, int height, rp_image::Format format);
 
+		/**
+		 * Create an RpGdiplusBackend using the specified Gdiplus::Bitmap.
+		 *
+		 * NOTE: This RpGdiplusBackend will take ownership of the Gdiplus::Bitmap.
+		 *
+		 * @param pGdipBmp Gdiplus::Bitmap.
+		 */
+		explicit RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp);
+
 		virtual ~RpGdiplusBackend();
 
 	private:
