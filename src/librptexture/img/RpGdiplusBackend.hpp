@@ -47,7 +47,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @param height Image height.
 		 * @param format Image format.
 		 */
-		RpGdiplusBackend(int width, int height, rp_image::Format format);
+		explicit RpGdiplusBackend(int width, int height, rp_image::Format format);
 
 		/**
 		 * Create an RpGdiplusBackend using the specified Gdiplus::Bitmap.
