@@ -25,6 +25,7 @@ using namespace LibRpBase;
 #include <cassert>
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 

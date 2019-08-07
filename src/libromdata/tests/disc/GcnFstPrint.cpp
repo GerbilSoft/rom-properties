@@ -17,6 +17,7 @@ using LibRomData::GcnFst;
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 

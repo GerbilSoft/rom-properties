@@ -8,6 +8,9 @@
 
 #include "librpbase/config.librpbase.h"
 
+// C includes. (C++ namespace)
+#include <cstdlib>
+
 // C++ includes.
 #include <locale>
 using std::locale;

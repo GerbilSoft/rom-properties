@@ -28,6 +28,10 @@ using namespace LibRpBase;
 # include <inttypes.h>
 #endif
 
+// C includes. (C++ namespace)
+#include <cerrno>
+#include <cstdio>
+
 // C++ includes.
 #include <iomanip>
 #include <sstream>
