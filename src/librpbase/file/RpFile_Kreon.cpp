@@ -203,16 +203,20 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 			}
 		}
 	}
-#elif defined(__APPLE__)
+#else
 	// Mac OS X doesn't allow sending arbitrary SCSI commands
 	// unless an application-specific kernel driver is installed.
 	// References:
 	// - https://stackoverflow.com/questions/7349030/sending-a-specific-scsi-command-to-a-scsi-device-in-mac-os-x
 	// - https://stackoverflow.com/a/7349373
 	// - http://developer.apple.com/library/mac/#documentation/DeviceDrivers/Conceptual/WorkingWithSAM/WWS_SAMDevInt/WWS_SAM_DevInt.html
-	return -ENOSYS;
-#else
-# error No SCSI implementation for this OS.
+	RP_UNUSED(cdb);
+	RP_UNUSED(cdb_len);
+	RP_UNUSED(data);
+	RP_UNUSED(data_len);
+	RP_UNUSED(direction);
+	ret = -ENOSYS;
+# warning No SCSI implementation for this OS.
 #endif
 	return ret;
 }
