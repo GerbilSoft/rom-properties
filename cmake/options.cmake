@@ -46,30 +46,36 @@ ENDIF()
 
 OPTION(BUILD_CLI "Build the `rpcli` command line program." ON)
 
-# ZLIB, libpng, libjpeg-turbo
+# ZLIB, libpng
 # Internal versions are always used on Windows.
 IF(WIN32)
 	SET(USE_INTERNAL_ZLIB ON)
 	SET(USE_INTERNAL_PNG ON)
-	OPTION(ENABLE_JPEG "Enable JPEG decoding using libjpeg." ON)
-	SET(USE_INTERNAL_JPEG ON)
 	OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
 	SET(USE_INTERNAL_XML ON)
 ELSE(WIN32)
 	OPTION(USE_INTERNAL_ZLIB "Use the internal copy of zlib." OFF)
 	OPTION(USE_INTERNAL_PNG "Use the internal copy of libpng." OFF)
-	OPTION(ENABLE_JPEG "Enable JPEG decoding using libjpeg." ON)
-	#OPTION(USE_INTERNAL_JPEG "Use the internal copy of libjpeg-turbo." OFF)
-	IF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
-		SET(USE_INTERNAL_JPEG OFF CACHE INTERNAL "Use the internal copy of libjpeg-turbo." FORCE)
-		MESSAGE(WARNING "Cannot use the internal libjpeg-turbo on this platform.\nUsing system libjpeg if available.")
-	ENDIF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
 	OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
 	OPTION(USE_INTERNAL_XML "Use the internal copy of TinyXML2." OFF)
 ENDIF()
 
 # TODO: If APNG export is added, verify that system libpng
 # supports APNG.
+
+# JPEG (gdiplus on Windows, libjpeg-turbo on other platforms)
+# TODO: Actually enable the use of the internal libjpeg-turbo on other platforms.
+IF(WIN32)
+	SET(ENABLE_JPEG ON)
+	SET(USE_INTERNAL_JPEG OFF)
+ELSE(WIN32)
+	OPTION(ENABLE_JPEG "Enable JPEG decoding using libjpeg." ON)
+	#OPTION(USE_INTERNAL_JPEG "Use the internal copy of libjpeg-turbo." OFF)
+	IF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
+		SET(USE_INTERNAL_JPEG OFF CACHE INTERNAL "Use the internal copy of libjpeg-turbo." FORCE)
+		MESSAGE(WARNING "Cannot use the internal libjpeg-turbo on this platform.\nUsing system libjpeg if available.")
+	ENDIF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
+ENDIF(WIN32)
 
 # Enable decryption for newer ROM and disc images.
 # TODO: Tri-state like UI frontends.
