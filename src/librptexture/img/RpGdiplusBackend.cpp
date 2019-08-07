@@ -123,6 +123,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	, m_gdipToken(0)
 	, m_pGdipBmp(pGdipBmp)
 	, m_isLocked(false)
+	, m_bytesppShift(0)
 	, m_gdipFmt(0)
 	, m_pGdipPalette(nullptr)
 {
@@ -144,6 +145,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	switch (m_gdipFmt) {
 		case PixelFormat8bppIndexed:
 			this->format = rp_image::FORMAT_CI8;
+			m_bytesppShift = 0;
 			break;
 
 		case PixelFormat24bppRGB:
@@ -151,10 +153,12 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 			// TODO: Is conversion needed?
 			this->format = rp_image::FORMAT_ARGB32;
 			m_gdipFmt = PixelFormat32bppRGB;
+			m_bytesppShift = 2;
 			break;
 
 		case PixelFormat32bppARGB:
 			this->format = rp_image::FORMAT_ARGB32;
+			m_bytesppShift = 2;
 			break;
 
 		default:
