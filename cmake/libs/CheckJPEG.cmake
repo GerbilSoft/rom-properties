@@ -2,6 +2,17 @@
 # If libjpeg isn't found, extlib/libjpeg-turbo/ will be used instead.
 IF(ENABLE_JPEG)
 
+IF(WIN32)
+	MESSAGE(STATUS "Using gdiplus for JPEG decoding.")
+	SET(JPEG_FOUND 1)
+	SET(HAVE_JPEG 1)
+	SET(USE_INTERNAL_JPEG_DLL OFF)
+	SET(JPEG_LIBRARY gdiplus CACHE INTERNAL "JPEG library" FORCE)
+ELSE(WIN32)
+
+# NOTE: Keeping internal libjpeg-turbo for now, just in case
+# we need to switch back to it on Windows.
+# TODO: Add support for the internal libjpeg-turbo on non-Windows platforms.
 IF(NOT USE_INTERNAL_JPEG)
 	IF(JPEG_LIBRARY MATCHES "^jpeg$" OR JPEG_LIBRARY MATCHES "^jpeg-static$")
 		# Internal libjpeg was previously in use.
@@ -53,6 +64,8 @@ IF(USE_INTERNAL_JPEG)
 ELSE(USE_INTERNAL_JPEG)
 	SET(USE_INTERNAL_JPEG_DLL OFF)
 ENDIF(USE_INTERNAL_JPEG)
+
+ENDIF(WIN32)
 
 ELSE(ENABLE_JPEG)
 	# Disable JPEG.
