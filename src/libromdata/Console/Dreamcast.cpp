@@ -37,6 +37,7 @@ using namespace LibRpBase;
 #include "librpbase/ctypex.h"
 #include <cassert>
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 
 // C++ includes.
