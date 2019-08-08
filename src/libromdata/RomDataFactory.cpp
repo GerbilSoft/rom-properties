@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
+#include "libromdata/config.libromdata.h"
 
 #include "RomDataFactory.hpp"
 
