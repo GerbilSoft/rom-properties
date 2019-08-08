@@ -1,5 +1,7 @@
 # Changes
 
+## v1.5 (released 2019/??/??)
+
 ## v1.4 (released 2019/08/04)
 
 * New features:
