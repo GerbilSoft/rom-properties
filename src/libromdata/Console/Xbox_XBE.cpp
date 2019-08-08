@@ -945,7 +945,7 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		*pImage = d->xtImage.png;
 	}
 
-	return 0;
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }
