@@ -1,12 +1,7 @@
 # Unix common code.
 PROJECT(libunixcommon)
 
-# TODO: Mac OS X functionality.
-IF(NOT APPLE)
-	# Qt5 requires "-fpic -fPIC" due to reduced relocations.
-	SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
-
+IF(BUILD_KDE4)
 	# Find the framework libraries in order to determine plugin paths.
 	# FIXME: Remove prefix from KDE4's path.
 	# NOTE: Need to skip the uninstall rule due to conflicts
@@ -20,8 +15,13 @@ IF(NOT APPLE)
 	UNSET(PLUGIN_INSTALL_DIR CACHE)
 	# Get rid of the explicit C90 setting. (set by KDE4)
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+ENDIF(BUILD_KDE4)
 
-	# Find the qtpaths executable.
+# Find the qtpaths executable.
+IF(BUILD_KDE5)
+	# Qt5 requires "-fpic -fPIC" due to reduced relocations.
+	SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
 	SET(ENV{QT_SELECT} qt5)
 	FIND_PROGRAM(QTPATHS qtpaths)
 	IF(NOT QTPATHS)
@@ -41,14 +41,21 @@ IF(NOT APPLE)
 	REPLACE_HARDCODED_PREFIX(KDE5_PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")
 	SET(ENV{QT_SELECT} ${QT_SELECT_OLD})
 	UNSET(QT_SELECT_OLD)
+ENDIF(BUILD_KDE5)
 
-	# XFCE and GNOME.
+# XFCE and GNOME.
+IF(BUILD_XFCE)
 	FIND_PACKAGE(ThunarX2)
+ENDIF(BUILD_XFCE)
+IF(BUILD_XFCE3)
 	FIND_PACKAGE(ThunarX3)
+ENDIF(BUILD_XFCE3)
+IF(BUILD_GNOME)
 	FIND_PACKAGE(LibNautilusExtension 3.0.0)
+ENDIF(BUILD_GNOME)
+IF(BUILD_MATE)
 	FIND_PACKAGE(LibCajaExtension 1.18.0)
-
-ENDIF(NOT APPLE)
+ENDIF(BUILD_MATE)
 
 INCLUDE(CheckSymbolExists)
 CHECK_SYMBOL_EXISTS(getpwuid_r "pwd.h" HAVE_GETPWUID_R)
