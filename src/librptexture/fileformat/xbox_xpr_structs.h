@@ -1,13 +1,13 @@
 /****************************************************************************
- * ROM Properties Page shell extension. (libromdata)                        *
+ * ROM Properties Page shell extension. (librptexture)                      *
  * xbox_xpr0_structs.h: Microsoft Xbox XPR0 texture format data structures. *
  *                                                                          *
  * Copyright (c) 2019 by David Korth.                                       *
- * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                *
  ****************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOX_XPR0_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOX_XPR0_STRUCTS_H__
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_XBOX_XPR0_STRUCTS_H__
+#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_XBOX_XPR0_STRUCTS_H__
 
 #include "librpbase/common.h"
 #include <stdint.h>
@@ -125,4 +125,4 @@ typedef enum {
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_TEXTURE_XBOX_XPR0_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_XBOX_XPR0_STRUCTS_H__ */
