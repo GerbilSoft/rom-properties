@@ -83,7 +83,6 @@ using std::vector;
 #include "Texture/SegaPVR.hpp"
 #include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
-#include "Texture/XboxXPR.hpp"
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
@@ -105,6 +104,7 @@ using std::vector;
 #include "Other/ISO.hpp"
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
+#include "Other/RpTextureWrapper.hpp"
 
 // Special case for Dreamcast save files.
 #include "Console/dc_structs.h"
@@ -279,8 +279,9 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
 	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
 	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF3'),
-	// TODO: XPR1/XPR2
-	GetRomDataFns_addr(XboxXPR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
+
+	// RpTextureWrapper
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
