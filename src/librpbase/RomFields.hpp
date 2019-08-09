@@ -15,6 +15,9 @@
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
 
+// C includes. (C++ namespace)
+#include <ctime>
+
 // C++ includes.
 #include <array>
 #include <string>

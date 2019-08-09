@@ -110,9 +110,9 @@ int RpFilePrivate::reOpenFile(void)
 	// TODO: Check if a block device is a CD-ROM or something else.
 	if (isDevice) {
 		// NOTE: Some Unix systems use character devices for "raw"
-		// block devices. Linux does not, so we're only checking
-		// for block devices for now.
-		// TODO: Add checks for other Unix systems.
+		// block devices. Linux does not, so on Linux, we'll only
+		// allow block devices and not character devices.
+#ifdef __linux__
 		if (S_ISCHR(sb.st_mode)) {
 			// Character device. Not supported.
 			fclose(file);
@@ -121,15 +121,38 @@ int RpFilePrivate::reOpenFile(void)
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
+#endif /* __linux__ */
 
 		// Check the filename pattern.
-		// TODO: Use an array?
 		// TODO: More systems.
-		if (strncmp(filename.c_str(), "/dev/sr", 7) != 0 &&
-		    strncmp(filename.c_str(), "/dev/scd", 8) != 0 &&
-		    strncmp(filename.c_str(), "/dev/disk/", 10) != 0 &&
-		    strncmp(filename.c_str(), "/dev/block/", 11) != 0)
-		{
+		// NOTE: "\x08ExtMedia" is interpreted as a 0x8E byte by both
+		// MSVC 2015 and gcc-4.5.2. In order to get it to work correctly,
+		// we have to store the length byte separately from the actual
+		// image type name.
+		static const char *const fileNamePatterns[] = {
+#if defined(__linux__)
+			"\x07" "/dev/sr",
+			"\x08" "/dev/scd",
+			"\x0A" "/dev/disk/",
+			"\x0B" "/dev/block/",
+#elif defined(__FreeBSD__)
+			"\x07" "/dev/cd",
+#else
+# define NO_PATTERNS_FOR_THIS_OS 1
+			"\x00"
+#endif
+		};
+
+#ifndef NO_PATTERNS_FOR_THIS_OS
+		bool isMatch = false;
+		for (int i = 0; i < ARRAY_SIZE(fileNamePatterns); i++) {
+			if (!strncasecmp(filename.c_str(), &fileNamePatterns[i][1], (uint8_t)fileNamePatterns[i][0])) {
+				// Found a match!
+				isMatch = true;
+				break;
+			}
+		}
+		if (!isMatch) {
 			// Not a match.
 			fclose(file);
 			file = nullptr;
@@ -137,6 +160,7 @@ int RpFilePrivate::reOpenFile(void)
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
+#endif /* NO_PATTERNS_FOR_THIS_OS */
 	}
 
 	return 0;

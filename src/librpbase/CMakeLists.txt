@@ -7,23 +7,28 @@ IF(NOT WIN32)
 	# On other systems, we use iconv(), which could be in libc or libiconv.
 	# Figure out which library has iconv().
 
-	# First, check libc for iconv().
+	# FIXME: Verify iconv() detection on FreeBSD.
+	# Functions are prefixed, e.g. libiconv(), in libiconv.so.
+	# libc has iconv() stubs, but the actual functions are in libiconv,
+	# so checking libc first results in errors.
+
+	# First, check for iconv() in libiconv.
 	INCLUDE(CheckLibraryExists)
-	CHECK_LIBRARY_EXISTS(c iconv "" HAVE_ICONV_C)	# libc: iconv()
-	IF(HAVE_ICONV_C)
-		# iconv() found in libc.
-		UNSET(ICONV_LIBRARY)
+	CHECK_LIBRARY_EXISTS(iconv iconv "" HAVE_ICONV_LIBICONV)
+	IF(HAVE_ICONV_LIBICONV)
+		# iconv() found in libiconv.
+		SET(ICONV_LIBRARY "iconv")
 		SET(HAVE_ICONV 1)
-	ELSE(HAVE_ICONV_C)
-		# iconv() not found in libc.
-		# Check in libiconv.
-		CHECK_LIBRARY_EXISTS(iconv iconv "" HAVE_ICONV_LIBICONV)	# libiconv: iconv()
-		IF(HAVE_ICONV_LIBICONV)
-			# iconv() found in libiconv.
-			SET(ICONV_LIBRARY "iconv")
+	ELSE(HAVE_ICONV_LIBICONV)
+		# iconv() not found in libiconv.
+		# Check in libc.
+		CHECK_LIBRARY_EXISTS(c iconv "" HAVE_ICONV_C)
+		IF(HAVE_ICONV_C)
+			# iconv() found in libc.
+			UNSET(ICONV_LIBRARY)
 			SET(HAVE_ICONV 1)
-		ENDIF(HAVE_ICONV_LIBICONV)
-	ENDIF(HAVE_ICONV_C)
+		ENDIF(HAVE_ICONV_C)
+	ENDIF(HAVE_ICONV_LIBICONV)
 
 	IF(NOT HAVE_ICONV)
 		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
