@@ -28,10 +28,9 @@ namespace LibRpTexture {
 namespace LibRpBase {
 
 class IRpFile;
-class RomData;
 class RomFields;
+class RomMetaData;
 
-class RomData;
 class RomDataPrivate
 {
 	public:

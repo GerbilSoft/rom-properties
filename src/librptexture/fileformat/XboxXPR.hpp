@@ -11,21 +11,23 @@
 
 #include "FileFormat.hpp"
 
+namespace LibRpBase {
+	class IRpFile;
+}
+
 namespace LibRpTexture {
 
 class XboxXPRPrivate;
 class XboxXPR : public FileFormat
 {
 	public:
-		XboxXPR(LibRpBase::IRpFile *file);
-		~XboxXPR();
+		explicit XboxXPR(LibRpBase::IRpFile *file);
 
 	private:
 		typedef FileFormat super;
 		RP_DISABLE_COPY(XboxXPR)
 	protected:
 		friend class XboxXPRPrivate;
-		XboxXPRPrivate *const d_ptr;
 
 	public:
 		/** Propety accessors **/
