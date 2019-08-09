@@ -221,7 +221,7 @@ class RpFile : public IRpFile
 		/**
 		 * Set Kreon error skip state.
 		 * @param skip True to skip; false for normal operation.
-		 * @return 0 on success; non-zero on error.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
 		int setKreonErrorSkipState(bool skip);
 
@@ -234,7 +234,7 @@ class RpFile : public IRpFile
 		/**
 		 * Set Kreon lock state
 		 * @param lockState 0 == locked; 1 == Unlock State 1 (xtreme); 2 == Unlock State 2 (wxripper)
-		 * @return 0 on success; non-zero on error.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
 		int setKreonLockState(KreonLockState lockState);
 };

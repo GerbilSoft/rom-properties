@@ -179,7 +179,7 @@ SET(librpbase_H
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
 	file/RelatedFile.hpp
-	file/scsi_protocol.h
+	file/scsi/scsi_protocol.h
 	img/rp_image.hpp
 	img/rp_image_p.hpp
 	img/rp_image_backend.hpp
@@ -214,6 +214,15 @@ IF(JPEG_FOUND)
 	SET(librpbase_SRCS ${librpbase_SRCS} img/RpJpeg.cpp)
 	SET(librpbase_H ${librpbase_H} img/RpJpeg.hpp)
 ENDIF(JPEG_FOUND)
+
+# SCSI implementation for Kreon disc drive support.
+IF(WIN32)
+	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_win32.cpp)
+	SET(RP_OS_SCSI_SUPPORTED 1)
+ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_linux.cpp)
+	SET(RP_OS_SCSI_SUPPORTED 1)
+ENDIF()
 
 IF(WIN32)
 	SET(librpbase_OS_SRCS

@@ -1,0 +1,102 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (librpbase)                        *
+ * RpFile_scsi_linux.cpp: Standard file object. (Linux SCSI)               *
+ *                                                                         *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __linux__
+# error RpFile_scsi_linux.cpp is for Linux ONLY.
+#endif /* __linux__ */
+
+#include "../RpFile.hpp"
+#include "../RpFile_stdio_p.hpp"
+
+#include "scsi_protocol.h"
+
+// SCSI and CD-ROM IOCTLs.
+#include <sys/ioctl.h>
+#include <scsi/sg.h>
+#include <scsi/scsi.h>
+#include <linux/cdrom.h>
+
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cerrno>
+#include <cstring>
+
+namespace LibRpBase {
+
+/**
+ * Send a SCSI command to the device.
+ * @param cdb		[in] SCSI command descriptor block
+ * @param cdb_len	[in] Length of cdb
+ * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
+ * @param data_len	[in] Length of data
+ * @param direction	[in] Data direction
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+	void *data, size_t data_len,
+	ScsiDirection direction)
+{
+	// SCSI command buffers.
+	struct sg_io_hdr sg_io;
+	union {
+		struct request_sense s;
+		uint8_t u[18];
+	} _sense;
+
+	// TODO: Consolidate this.
+	memset(&sg_io, 0, sizeof(sg_io));
+	sg_io.interface_id = 'S';
+	sg_io.mx_sb_len = sizeof(_sense);
+	sg_io.sbp = _sense.u;
+	sg_io.flags = SG_FLAG_LUN_INHIBIT | SG_FLAG_DIRECT_IO;
+
+	sg_io.cmdp = (unsigned char*)cdb;
+	sg_io.cmd_len = cdb_len;
+
+	switch (direction) {
+		case SCSI_DIR_NONE:
+			sg_io.dxfer_direction = SG_DXFER_NONE;
+			break;
+		case SCSI_DIR_IN:
+			sg_io.dxfer_direction = SG_DXFER_FROM_DEV;
+			break;
+		case SCSI_DIR_OUT:
+			sg_io.dxfer_direction = SG_DXFER_TO_DEV;
+			break;
+		default:
+			assert(!"Invalid SCSI direction.");
+			return -EINVAL;
+	}
+	sg_io.dxferp = data;
+	sg_io.dxfer_len = data_len;
+
+	RP_D(RpFile);
+	if (ioctl(fileno(d->file), SG_IO, &sg_io) != 0) {
+		// ioctl failed.
+		return -errno;
+	}
+
+	// Check if the command succeeded.
+	int ret;
+	if ((sg_io.info & SG_INFO_OK_MASK) == SG_INFO_OK) {
+		// Command succeeded.
+		ret = 0;
+	} else {
+		// Command failed.
+		ret = -EIO;
+		if (sg_io.masked_status & CHECK_CONDITION) {
+			ret = ERRCODE(_sense.u);
+			if (ret == 0) {
+				ret = -EIO;
+			}
+		}
+	}
+	return ret;
+}
+
+}

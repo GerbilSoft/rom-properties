@@ -6,40 +6,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 #include "RpFile.hpp"
-
-#include "scsi_protocol.h"
-#include "../byteswap.h"
-
-#ifdef _WIN32
-# include "libwin32common/w32err.h"
-// NT DDK SCSI functions.
-# if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
-// Old MinGW has the NT DDK headers in include/ddk/.
-// IOCTL headers conflict with WinDDK.
-#  include <ddk/ntddscsi.h>
-#  include <ddk/ntddstor.h>
-# else
-// MinGW-w64 and MSVC has the NT DDK headers in include/.
-// IOCTL headers are also required.
-#  include <winioctl.h>
-#  include <ntddscsi.h>
-# endif
-#endif
-
 #ifdef _WIN32
 # include "win32/RpFile_win32_p.hpp"
-#else /* !_WIN32 */
+#else
 # include "RpFile_stdio_p.hpp"
-#endif /* _WIN32 */
+#endif
 
-// SCSI and CD-ROM IOCTLs.
-#ifdef __linux__
-# include <sys/ioctl.h>
-# include <scsi/sg.h>
-# include <scsi/scsi.h>
-# include <linux/cdrom.h>
-#endif /* __linux__ */
+#include "scsi/scsi_protocol.h"
+#include "../byteswap.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -53,175 +30,6 @@ using std::vector;
 namespace LibRpBase {
 
 /**
- * Send a SCSI command to the device.
- * @param cdb		[in] SCSI command descriptor block
- * @param cdb_len	[in] Length of cdb
- * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
- * @param data_len	[in] Length of data
- * @param direction	[in] Data direction
- * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
- */
-int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
-	void *data, size_t data_len,
-	ScsiDirection direction)
-{
-	int ret = -EIO;
-
-#if defined(_WIN32)
-	// SCSI_PASS_THROUGH_DIRECT struct with extra space for sense data.
-	struct srb_t {
-		SCSI_PASS_THROUGH_DIRECT p;
-		struct {
-			SCSI_RESP_REQUEST_SENSE s;
-			uint8_t b[78];	// Additional sense data. (TODO: Best size?)
-		} sense;
-	};
-	srb_t srb;
-	memset(&srb, 0, sizeof(srb));
-
-	// Copy the CDB to the SCSI_PASS_THROUGH structure.
-	assert(cdb_len <= sizeof(srb.p.Cdb));
-	if (cdb_len > sizeof(srb.p.Cdb)) {
-		// CDB is too big.
-		return -EINVAL;
-	}
-	memcpy(srb.p.Cdb, cdb, cdb_len);
-
-	// Data direction and buffer.
-	switch (direction) {
-		case SCSI_DIR_NONE:
-			srb.p.DataIn = SCSI_IOCTL_DATA_UNSPECIFIED;
-			break;
-		case SCSI_DIR_IN:
-			srb.p.DataIn = SCSI_IOCTL_DATA_IN;
-			break;
-		case SCSI_DIR_OUT:
-			srb.p.DataIn = SCSI_IOCTL_DATA_OUT;
-			break;
-		default:
-			assert(!"Invalid SCSI direction.");
-			return -EINVAL;
-	}
-
-	// Parameters.
-	srb.p.DataBuffer = data;
-	srb.p.DataTransferLength = static_cast<ULONG>(data_len);
-	srb.p.CdbLength = cdb_len;
-	srb.p.Length = sizeof(srb.p);
-	srb.p.SenseInfoLength = sizeof(srb.sense);
-	srb.p.SenseInfoOffset = offsetof(srb_t, sense.s);
-	srb.p.TimeOutValue = 5; // 5-second timeout.
-
-	RP_D(RpFile);
-	DWORD dwBytesReturned;
-	BOOL bRet = DeviceIoControl(
-		d->file, IOCTL_SCSI_PASS_THROUGH_DIRECT,
-		(LPVOID)&srb.p, sizeof(srb.p),
-		(LPVOID)&srb, sizeof(srb),
-		&dwBytesReturned, nullptr);
-	if (!bRet) {
-		// DeviceIoControl() failed.
-		// TODO: Convert Win32 to POSIX?
-		return -w32err_to_posix(GetLastError());
-	}
-	// TODO: Check dwBytesReturned.
-
-	// Check if the command succeeded.
-	switch (srb.sense.s.ErrorCode) {
-		case SCSI_ERR_REQUEST_SENSE_CURRENT:
-		case SCSI_ERR_REQUEST_SENSE_DEFERRED:
-			// Error. Return the sense key.
-			ret = (srb.sense.s.SenseKey << 16) |
-			      (srb.sense.s.AddSenseCode << 8) |
-			      (srb.sense.s.AddSenseQual);
-			break;
-
-		case SCSI_ERR_REQUEST_SENSE_CURRENT_DESC:
-		case SCSI_ERR_REQUEST_SENSE_DEFERRED_DESC:
-			// Error, but using descriptor format.
-			// Return a generic error.
-			ret = -EIO;
-			break;
-
-		default:
-			// No error.
-			ret = 0;
-			break;
-	}
-#elif defined(__linux__)
-	// SCSI command buffers.
-	struct sg_io_hdr sg_io;
-	union {
-		struct request_sense s;
-		uint8_t u[18];
-	} _sense;
-
-	// TODO: Consolidate this.
-	memset(&sg_io, 0, sizeof(sg_io));
-	sg_io.interface_id = 'S';
-	sg_io.mx_sb_len = sizeof(_sense);
-	sg_io.sbp = _sense.u;
-	sg_io.flags = SG_FLAG_LUN_INHIBIT | SG_FLAG_DIRECT_IO;
-
-	sg_io.cmdp = (unsigned char*)cdb;
-	sg_io.cmd_len = cdb_len;
-
-	switch (direction) {
-		case SCSI_DIR_NONE:
-			sg_io.dxfer_direction = SG_DXFER_NONE;
-			break;
-		case SCSI_DIR_IN:
-			sg_io.dxfer_direction = SG_DXFER_FROM_DEV;
-			break;
-		case SCSI_DIR_OUT:
-			sg_io.dxfer_direction = SG_DXFER_TO_DEV;
-			break;
-		default:
-			assert(!"Invalid SCSI direction.");
-			return -EINVAL;
-	}
-	sg_io.dxferp = data;
-	sg_io.dxfer_len = data_len;
-
-	RP_D(RpFile);
-	if (ioctl(fileno(d->file), SG_IO, &sg_io) != 0) {
-		// ioctl failed.
-		return -errno;
-	}
-
-	// Check if the command succeeded.
-	if ((sg_io.info & SG_INFO_OK_MASK) == SG_INFO_OK) {
-		// Command succeeded.
-		ret = 0;
-	} else {
-		// Command failed.
-		ret = -EIO;
-		if (sg_io.masked_status & CHECK_CONDITION) {
-			ret = ERRCODE(_sense.u);
-			if (ret == 0) {
-				ret = -EIO;
-			}
-		}
-	}
-#else
-	// Mac OS X doesn't allow sending arbitrary SCSI commands
-	// unless an application-specific kernel driver is installed.
-	// References:
-	// - https://stackoverflow.com/questions/7349030/sending-a-specific-scsi-command-to-a-scsi-device-in-mac-os-x
-	// - https://stackoverflow.com/a/7349373
-	// - http://developer.apple.com/library/mac/#documentation/DeviceDrivers/Conceptual/WorkingWithSAM/WWS_SAMDevInt/WWS_SAM_DevInt.html
-	RP_UNUSED(cdb);
-	RP_UNUSED(cdb_len);
-	RP_UNUSED(data);
-	RP_UNUSED(data_len);
-	RP_UNUSED(direction);
-	ret = -ENOSYS;
-# warning No SCSI implementation for this OS.
-#endif
-	return ret;
-}
-
-/**
  * Re-read device size using SCSI commands.
  * This may be needed for Kreon devices.
  * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
@@ -233,9 +41,10 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	RP_D(RpFile);
 	if (!d->isDevice) {
 		// Not a device.
-		return -ENOTSUP;
+		return -ENODEV;
 	}
 
+#ifdef RP_OS_SCSI_SUPPORTED
 	int64_t device_size;
 	uint32_t sector_size;
 	int ret = scsi_read_capacity(&device_size, &sector_size);
@@ -260,6 +69,10 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 		*pSectorSize = sector_size;
 	}
 	return 0;
+#else /* !RP_OS_SCSI_SUPPORTED */
+	// No SCSI implementation for this OS.
+	return -ENOSYS;
+#endif /* RP_OS_SCSI_SUPPORTED */
 }
 
 /**
@@ -280,6 +93,7 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
 		return -ENODEV;
 	}
 
+#ifdef RP_OS_SCSI_SUPPORTED
 	// SCSI command buffers.
 	union {
 		SCSI_CDB_READ_CAPACITY_10 cdb10;
@@ -343,6 +157,10 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	*pDeviceSize = static_cast<int64_t>(be64_to_cpu(resp16.LBA) + 1) *
 		       static_cast<int64_t>(sector_size);
 	return 0;
+#else /* !RP_OS_SCSI_SUPPORTED */
+	// No SCSI implementation for this OS.
+	return -ENOSYS;
+#endif /* RP_OS_SCSI_SUPPORTED */
 }
 
 #ifdef _WIN32
@@ -360,15 +178,18 @@ int RpFile::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_
 	if (!pBuf)
 		return -EINVAL;
 
-	// FIXME: d->sector_size is only in the Windows-specific class right now.
 	RP_D(RpFile);
-	assert(bufLen >= (int64_t)lbaCount * (int64_t)d->sector_size);
-	if (bufLen < (int64_t)lbaCount * (int64_t)d->sector_size)
-		return -EIO;	// TODO: Better error code?
-
 	if (!d->isDevice) {
 		// Not a device.
 		return -ENODEV;
+	}
+
+#ifdef RP_OS_SCSI_SUPPORTED
+	// FIXME: d->sector_size is only in the Windows-specific class right now.
+	assert(bufLen >= (int64_t)lbaCount * (int64_t)d->sector_size);
+	if (bufLen < (int64_t)lbaCount * (int64_t)d->sector_size) {
+		// TODO: Better error code?
+		return -EIO;
 	}
 
 	// SCSI command buffers.
@@ -386,6 +207,10 @@ int RpFile::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_
 	cdb10.Control = 0;
 
 	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, bufLen, SCSI_DIR_IN);
+#else /* !RP_OS_SCSI_SUPPORTED */
+	// No SCSI implementation for this OS.
+	return -ENOSYS;
+#endif /* RP_OS_SCSI_SUPPORTED */
 }
 #endif /* _WIN32 */
 
@@ -406,6 +231,7 @@ bool RpFile::isKreonDriveModel(void)
 		return false;
 	}
 
+#ifdef RP_OS_SCSI_SUPPORTED
 	// SCSI INQUIRY command.
 	SCSI_CDB_INQUIRY cdb;
 	cdb.OpCode = SCSI_OP_INQUIRY;
@@ -492,6 +318,10 @@ bool RpFile::isKreonDriveModel(void)
 		}
 	}
 	return found;
+#else /* !RP_OS_SCSI_SUPPORTED */
+	// No SCSI implementation for this OS.
+	return -ENOSYS;
+#endif /* _WIN32 */
 }
 
 /**
@@ -508,6 +338,7 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 		return vec;
 	}
 
+#ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Get Feature List" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1223
 	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x10, 0x00, 0x00};
@@ -533,6 +364,7 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 		vec.clear();
 		vec.shrink_to_fit();
 	}
+#endif /* RP_OS_SCSI_SUPPORTED */
 
 	return vec;
 }
@@ -540,7 +372,7 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 /**
  * Set Kreon error skip state.
  * @param skip True to skip; false for normal operation.
- * @return 0 on success; non-zero on error.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
 int RpFile::setKreonErrorSkipState(bool skip)
 {
@@ -551,16 +383,21 @@ int RpFile::setKreonErrorSkipState(bool skip)
 		return -ENODEV;
 	}
 
+#ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Set Error Skip State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1341
 	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x15, (uint8_t)skip, 0x00};
 	return scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, SCSI_DIR_IN);
+#else /* !RP_OS_SCSI_SUPPORTED */
+	// No SCSI implementation for this OS.
+	return -ENOSYS;
+#endif /* _WIN32 */
 }
 
 /**
  * Set Kreon lock state
  * @param lockState 0 == locked; 1 == Unlock State 1 (xtreme); 2 == Unlock State 2 (wxripper)
- * @return 0 on success; non-zero on error.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
 int RpFile::setKreonLockState(KreonLockState lockState)
 {
@@ -571,6 +408,7 @@ int RpFile::setKreonLockState(KreonLockState lockState)
 		return -ENODEV;
 	}
 
+#ifdef RP_OS_SCSI_SUPPORTED
 	// Kreon "Set Lock State" command
 	// Reference: https://github.com/saramibreak/DiscImageCreator/blob/cb9267da4877d32ab68263c25187cbaab3435ad5/DiscImageCreator/execScsiCmdforDVD.cpp#L1309
 	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, static_cast<uint8_t>(lockState), 0x00};
@@ -579,6 +417,10 @@ int RpFile::setKreonLockState(KreonLockState lockState)
 		d->isKreonUnlocked = (lockState != KREON_STATE_LOCKED);
 	}
 	return ret;
+#else /* !RP_OS_SCSI_SUPPORTED */
+	// No SCSI implementation for this OS.
+	return -ENOSYS;
+#endif /* _WIN32 */
 }
 
 }
