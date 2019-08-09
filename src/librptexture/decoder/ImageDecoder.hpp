@@ -777,7 +777,7 @@ static inline rp_image *fromLinear24(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-static rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
+static rp_image *fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
 {
