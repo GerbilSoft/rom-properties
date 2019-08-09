@@ -63,18 +63,11 @@ ENDIF()
 # TODO: If APNG export is added, verify that system libpng
 # supports APNG.
 
-# JPEG (gdiplus on Windows, libjpeg-turbo on other platforms)
-# TODO: Actually enable the use of the internal libjpeg-turbo on other platforms.
+# JPEG (gdiplus on Windows, libjpeg[-turbo] on other platforms)
 IF(WIN32)
 	SET(ENABLE_JPEG ON)
-	SET(USE_INTERNAL_JPEG OFF)
 ELSE(WIN32)
 	OPTION(ENABLE_JPEG "Enable JPEG decoding using libjpeg." ON)
-	#OPTION(USE_INTERNAL_JPEG "Use the internal copy of libjpeg-turbo." OFF)
-	IF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
-		SET(USE_INTERNAL_JPEG OFF CACHE INTERNAL "Use the internal copy of libjpeg-turbo." FORCE)
-		MESSAGE(WARNING "Cannot use the internal libjpeg-turbo on this platform.\nUsing system libjpeg if available.")
-	ENDIF(ENABLE_JPEG AND USE_INTERNAL_JPEG)
 ENDIF(WIN32)
 
 # Enable decryption for newer ROM and disc images.
