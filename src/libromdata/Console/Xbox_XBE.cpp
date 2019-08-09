@@ -474,10 +474,12 @@ void Xbox_XBE::close(void)
 		if (!d->xtImage.isPng) {
 			// XPR0 image
 			delete d->xtImage.xpr0;
+			d->xtImage.xpr0 = nullptr;
 		} else {
 			// PNG image
 			d->xtImage.isPng = false;
 			delete d->xtImage.png;
+			d->xtImage.png = nullptr;
 		}
 	}
 
