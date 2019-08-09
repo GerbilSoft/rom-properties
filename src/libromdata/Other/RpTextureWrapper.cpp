@@ -62,7 +62,9 @@ RpTextureWrapperPrivate::RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *f
 
 RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
 {
-	delete texture;
+	if (texture) {
+		texture->unref();
+	}
 }
 
 /** RpTextureWrapper **/
@@ -116,7 +118,8 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	d->texture = new LibRpTexture::XboxXPR(d->file);
 	if (!d->texture->isValid()) {
 		// Not a valid texture.
-		delete d->texture;
+		d->texture->unref();
+		d->texture = nullptr;
 		d->file->unref();
 		d->file = nullptr;
 		return;

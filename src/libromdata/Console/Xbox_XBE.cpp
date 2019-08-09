@@ -141,7 +141,7 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 	if (xtImage.isInit) {
 		if (!xtImage.isPng) {
 			// XPR0 image
-			delete xtImage.xpr0;
+			xtImage.xpr0->unref();
 		} else {
 			// PNG image
 			delete xtImage.png;
@@ -304,7 +304,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				xtImage.xpr0 = xpr0;
 			} else {
 				// Unable to open the XPR0 image.
-				delete xpr0;
+				xpr0->unref();
 				ret = -EIO;
 			}
 		} else if (magic == cpu_to_be32('\x89PNG')) {
@@ -474,7 +474,7 @@ void Xbox_XBE::close(void)
 		d->xtImage.isInit = false;
 		if (!d->xtImage.isPng) {
 			// XPR0 image
-			delete d->xtImage.xpr0;
+			d->xtImage.xpr0->unref();
 			d->xtImage.xpr0 = nullptr;
 		} else {
 			// PNG image
