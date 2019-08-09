@@ -19,6 +19,8 @@ SET(librptexture_SRCS
 	decoder/ImageDecoder_ETC1.cpp
 	decoder/ImageDecoder_BC7.cpp
 	decoder/PixelConversion.cpp
+
+	fileformat/XboxXPR.cpp
 	)
 # Headers.
 SET(librptexture_H
@@ -29,6 +31,10 @@ SET(librptexture_H
 	decoder/ImageDecoder.hpp
 	decoder/ImageDecoder_p.hpp
 	decoder/PixelConversion.hpp
+
+	fileformat/XboxXPR.hpp
+
+	fileformat/xbox_xpr_structs.h
 	)
 
 IF(WIN32)

@@ -44,7 +44,6 @@ SET(libromdata_SRCS
 	Texture/SegaPVR.cpp
 	Texture/ValveVTF.cpp
 	Texture/ValveVTF3.cpp
-	Texture/XboxXPR.cpp
 
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
@@ -66,6 +65,7 @@ SET(libromdata_SRCS
 	Other/ISO.cpp
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
+	Other/RpTextureWrapper.cpp
 
 	data/AmiiboData.cpp
 	data/DX10Formats.cpp
@@ -183,13 +183,11 @@ SET(libromdata_H
 	Texture/SegaPVR.hpp
 	Texture/ValveVTF.hpp
 	Texture/ValveVTF3.hpp
-	Texture/XboxXPR.cpp
 
 	Texture/dds_structs.h
 	Texture/pvr_structs.h
 	Texture/vtf_structs.h
 	Texture/vtf3_structs.h
-	Texture/xbox_xpr_structs.h
 
 	Audio/ADX.hpp
 	Audio/BCSTM.hpp
@@ -220,6 +218,7 @@ SET(libromdata_H
 	Other/ISO.hpp
 	Other/MachO.hpp
 	Other/NintendoBadge.hpp
+	Other/RpTextureWrapper.hpp
 
 	Other/badge_structs.h
 	Other/elf_structs.h
