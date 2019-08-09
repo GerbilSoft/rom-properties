@@ -20,6 +20,7 @@ SET(librptexture_SRCS
 	decoder/ImageDecoder_BC7.cpp
 	decoder/PixelConversion.cpp
 
+	fileformat/FileFormat.cpp
 	fileformat/XboxXPR.cpp
 	)
 # Headers.
@@ -32,6 +33,8 @@ SET(librptexture_H
 	decoder/ImageDecoder_p.hpp
 	decoder/PixelConversion.hpp
 
+	fileformat/FileFormat.hpp
+	fileformat/FileFormat_p.hpp
 	fileformat/XboxXPR.hpp
 
 	fileformat/xbox_xpr_structs.h

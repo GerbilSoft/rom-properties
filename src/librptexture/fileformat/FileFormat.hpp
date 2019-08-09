@@ -6,65 +6,65 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_HPP__
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
+#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 
 // TODO: Move to librpfile or similar?
 #include "librpbase/common.h"
-#include "librpbase/file/IRpFile.hpp"
 
 namespace LibRpTexture {
 
 class rp_image;
 
+class FileFormatPrivate;
 class FileFormat
 {
 	protected:
-		FileFormat()
-			: file(nullptr)
-			, m_isValid(false)
-		{ }
-	public:
-		virtual ~FileFormat()
-		{
-			// Unreference the file.
-			if (this->file) {
-				this->file->unref();
-			}
-		}
+		explicit FileFormat(FileFormatPrivate *d);
+
+	protected:
+		/**
+		 * FileFormat destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~FileFormat();
 
 	private:
 		RP_DISABLE_COPY(FileFormat)
+	protected:
+		friend class FileFormatPrivate;
+		FileFormatPrivate *const d_ptr;
+
+	public:
+		/**
+		 * Take a reference to this FileFormat* object.
+		 * @return this
+		 */
+		FileFormat *ref(void);
+
+		/**
+		 * Unreference this FileFormat* object.
+		 * If ref_cnt reaches 0, the FileFormat* object is deleted.
+		 */
+		void unref(void);
 
 	public:
 		/**
 		 * Is the texture file valid?
 		 * @return True if valid; false if not.
 		 */
-		inline bool isValid(void) const
-		{
-			return m_isValid;
-		}
+		bool isValid(void) const;
 
 		/**
 		 * Is the texture file open?
 		 * @return True if open; false if not.
 		 */
-		inline bool isOpen(void) const
-		{
-			return (this->file != nullptr);
-		}
+		bool isOpen(void) const;
 
 		/**
-		 * Close the underlying texture file.
+		 * Close the opened file.
 		 */
-		virtual void close(void)
-		{
-			if (this->file) {
-				this->file->unref();
-				this->file = nullptr;
-			}
-		}
+		virtual void close(void);
 
 	public:
 		/** Propety accessors **/
@@ -129,13 +129,8 @@ class FileFormat
 		 * @return Image, or nullptr on error.
 		 */
 		virtual const rp_image *mipmap(int num) const = 0;
-
-	protected:
-		// TODO: Move to a private class?
-		LibRpBase::IRpFile *file;
-		bool m_isValid;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__ */
