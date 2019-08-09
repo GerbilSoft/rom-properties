@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "XboxXPR.hpp"
+#include "FileFormat_p.hpp"
+
 #include "xbox_xpr_structs.h"
 
 // librpbase
@@ -27,17 +29,15 @@ using LibRpBase::IRpFile;
 
 namespace LibRpTexture {
 
-class XboxXPRPrivate
+class XboxXPRPrivate : public FileFormatPrivate
 {
 	public:
 		XboxXPRPrivate(XboxXPR *q, IRpFile *file);
 		~XboxXPRPrivate();
 
 	private:
+		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(XboxXPRPrivate)
-	protected:
-		friend class XboxXPR;
-		XboxXPR *const q_ptr;
 
 	public:
 		enum XPRType {
@@ -152,19 +152,13 @@ class XboxXPRPrivate
 /** XboxXPRPrivate **/
 
 XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
-	: q_ptr(q)
+	: super(q, file)
 	, xprType(XPR_TYPE_UNKNOWN)
 	, img(nullptr)
 {
 	// Clear the structs and arrays.
 	memset(&xpr0Header, 0, sizeof(xpr0Header));
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
-
-	if (file) {
-		// Reference the file.
-		// TODO: Move q->file to FileFormatPrivate?
-		q->file = file->ref();
-	}
 }
 
 XboxXPRPrivate::~XboxXPRPrivate()
@@ -304,18 +298,16 @@ void XboxXPRPrivate::unswizzle_box(const uint8_t *src_buf,
  */
 const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 {
-	// TODO: Move IRpFile to FileFormatPrivate?
-	RP_Q(XboxXPR);
 	if (img) {
 		// Image has already been loaded.
 		return img;
-	} else if (!q->file) {
+	} else if (!this->file) {
 		// Can't load the image.
 		return nullptr;
 	}
 
 	// Sanity check: XPR0 files shouldn't be more than 16 MB.
-	if (q->file->size() > 16*1024*1024) {
+	if (file->size() > 16*1024*1024) {
 		return nullptr;
 	}
 
@@ -324,7 +316,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	// DXT1 is 8 bytes per 4x4 pixel block.
 	// Divide the image area by 2.
-	const uint32_t file_sz = static_cast<uint32_t>(q->file->size());
+	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 	const uint32_t data_offset = le32_to_cpu(xpr0Header.data_offset);
 
 	// Sanity check: Image dimensions must be non-zero.
@@ -443,7 +435,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 
 	// Read the image data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = q->file->seekAndRead(data_offset, buf.get(), expected_size);
+	size_t size = file->seekAndRead(data_offset, buf.get(), expected_size);
 	if (size != expected_size) {
 		// Seek and/or read error.
 		return nullptr;
@@ -554,23 +546,22 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
  * @param file Open ROM image.
  */
 XboxXPR::XboxXPR(IRpFile *file)
-	: d_ptr(new XboxXPRPrivate(this, file))
+	: super(new XboxXPRPrivate(this, file))
 {
 	// This class handles texture files.
 	RP_D(XboxXPR);
 
-	// TODO: Move file to FileFormatPrivate?
-	if (!this->file) {
+	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
 	}
 
 	// Read the XPR0 header.
-	this->file->rewind();
-	size_t size = this->file->read(&d->xpr0Header, sizeof(d->xpr0Header));
+	d->file->rewind();
+	size_t size = d->file->read(&d->xpr0Header, sizeof(d->xpr0Header));
 	if (size != sizeof(d->xpr0Header)) {
-		this->file->unref();
-		this->file = nullptr;
+		d->file->unref();
+		d->file = nullptr;
 		return;
 	}
 
@@ -578,28 +569,23 @@ XboxXPR::XboxXPR(IRpFile *file)
 	if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR0_MAGIC)) {
 		// This is an XPR0 image.
 		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR0;
-		m_isValid = true;
+		d->isValid = true;
 	} else if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR1_MAGIC)) {
 		// This is an XPR1 archive.
 		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR1;
 		// NOT SUPPORTED YET
-		m_isValid = false;
+		d->isValid = false;
 	} else if (d->xpr0Header.magic == cpu_to_be32(XBOX_XPR2_MAGIC)) {
 		// This is an XPR2 archive.
 		d->xprType = XboxXPRPrivate::XPR_TYPE_XPR2;
 		// NOT SUPPORTED YET
-		m_isValid = false;
+		d->isValid = false;
 	}
 
-	if (!m_isValid) {
-		this->file->unref();
-		this->file = nullptr;
+	if (!d->isValid) {
+		d->file->unref();
+		d->file = nullptr;
 	}
-}
-
-XboxXPR::~XboxXPR()
-{
-	delete d_ptr;
 }
 
 /** Propety accessors **/
@@ -623,7 +609,7 @@ const char *XboxXPR::textureFormatName(void) const
 int XboxXPR::width(void) const
 {
 	RP_D(const XboxXPR);
-	if (!m_isValid || d->xprType < 0) {
+	if (!d->isValid || d->xprType < 0) {
 		// Not supported.
 		return 0;
 	}
@@ -638,7 +624,7 @@ int XboxXPR::width(void) const
 int XboxXPR::height(void) const
 {
 	RP_D(const XboxXPR);
-	if (!m_isValid || d->xprType < 0) {
+	if (!d->isValid || d->xprType < 0) {
 		// Not supported.
 		return 0;
 	}
@@ -655,7 +641,7 @@ int XboxXPR::height(void) const
 int XboxXPR::getDimensions(int *pBuf) const
 {
 	RP_D(const XboxXPR);
-	if (!m_isValid || d->xprType < 0) {
+	if (!d->isValid || d->xprType < 0) {
 		// Not supported.
 		return -EBADF;
 	}
@@ -674,7 +660,7 @@ int XboxXPR::getDimensions(int *pBuf) const
 const char *XboxXPR::pixelFormat(void) const
 {
 	RP_D(const XboxXPR);
-	if (!m_isValid || d->xprType < 0) {
+	if (!d->isValid || d->xprType < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -769,10 +755,10 @@ int XboxXPR::mipmapCount(void) const
 const rp_image *XboxXPR::image(void) const
 {
 	RP_D(const XboxXPR);
-	if (!this->file) {
+	if (!d->file) {
 		// File isn't open.
 		return nullptr;
-	} else if (!m_isValid || d->xprType < 0) {
+	} else if (!d->isValid || d->xprType < 0) {
 		// Unknown file type.
 		return nullptr;
 	}
