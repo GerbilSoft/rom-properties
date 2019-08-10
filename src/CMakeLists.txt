@@ -22,11 +22,6 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(libi18n)
-IF(WIN32)
-	ADD_SUBDIRECTORY(libwin32common)
-ELSE(WIN32)
-	ADD_SUBDIRECTORY(libunixcommon)
-ENDIF(WIN32)
 ADD_SUBDIRECTORY(librpbase)
 ADD_SUBDIRECTORY(libromdata)
 ADD_SUBDIRECTORY(libcachemgr)
@@ -49,3 +44,13 @@ ELSEIF(WIN32)
 		ADD_SUBDIRECTORY(svrplus)
 	ENDIF(BUILD_WIN32)
 ENDIF()
+
+# NOTE: libunixcommon must be *after* the UI frontends.
+# Otherwise, the UI frontend checks won't work right, and on
+# Unix systems, the qtpaths check will fail if Qt5 isn't
+# installed and KDE5 isn't explicitly disabled.
+IF(WIN32)
+	ADD_SUBDIRECTORY(libwin32common)
+ELSE(WIN32)
+	ADD_SUBDIRECTORY(libunixcommon)
+ENDIF(WIN32)
