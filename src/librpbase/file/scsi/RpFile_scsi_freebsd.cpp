@@ -30,8 +30,47 @@
 #include <cam/scsi/scsi_message.h>
 #include <cam/scsi/scsi_pass.h>
 #include <sys/cdio.h>
+#include <sys/disk.h>
 
 namespace LibRpBase {
+
+/**
+ * Re-read device size using the native OS API.
+ * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+ * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+ * @return 0 on success, negative for POSIX error code.
+ */
+int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
+{
+	RP_D(RpFile);
+	const int fd = fileno(d->file);
+
+	// NOTE: DIOCGMEDIASIZE uses off_t, not int64_t.
+	off_t device_size = 0;
+
+	if (ioctl(fd, DIOCGMEDIASIZE, &device_size) < 0) {
+		d->device_size = 0;
+		d->sector_size = 0;
+		return -errno;
+	}
+	d->device_size = static_cast<int64_t>(device_size);
+
+	if (ioctl(fd, DIOCGSECTORSIZE, &d->sector_size) < 0) {
+		d->device_size = 0;
+		d->sector_size = 0;
+		return -errno;
+	}
+
+	// Return the values.
+	if (pDeviceSize) {
+		*pDeviceSize = d->device_size;
+	}
+	if (pSectorSize) {
+		*pSectorSize = d->sector_size;
+	}
+
+	return 0;
+}
 
 /**
  * Send a SCSI command to the device.

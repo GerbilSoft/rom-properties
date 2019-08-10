@@ -20,6 +20,7 @@
 #include <scsi/sg.h>
 #include <scsi/scsi.h>
 #include <linux/cdrom.h>
+#include <linux/fs.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -27,6 +28,40 @@
 #include <cstring>
 
 namespace LibRpBase {
+
+/**
+ * Re-read device size using the native OS API.
+ * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+ * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+ * @return 0 on success, negative for POSIX error code.
+ */
+int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
+{
+	RP_D(RpFile);
+	const int fd = fileno(d->file);
+
+	if (ioctl(fd, BLKGETSIZE64, &d->device_size) < 0) {
+		d->device_size = 0;
+		d->sector_size = 0;
+		return -errno;
+	}
+
+	if (ioctl(fd, BLKSSZGET, &d->sector_size) < 0) {
+		d->device_size = 0;
+		d->sector_size = 0;
+		return -errno;
+	}
+
+	// Return the values.
+	if (pDeviceSize) {
+		*pDeviceSize = d->device_size;
+	}
+	if (pSectorSize) {
+		*pSectorSize = d->sector_size;
+	}
+
+	return 0;
+}
 
 /**
  * Send a SCSI command to the device.

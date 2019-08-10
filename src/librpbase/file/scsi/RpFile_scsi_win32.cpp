@@ -37,6 +37,81 @@
 namespace LibRpBase {
 
 /**
+ * Re-read device size using the native OS API.
+ * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+ * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+ * @return 0 on success, negative for POSIX error code.
+ */
+int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
+{
+	// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX seems to report 512-byte sectors
+	// for certain emulated CD-ROM device, e.g. the Verizon LG G2.
+	// GetDiskFreeSpace() reports the correct value (2048).
+	DWORD dwSectorsPerCluster, dwBytesPerSector;
+	DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
+	DWORD w32err = 0;
+
+	// FIXME: What if filename is empty?
+	RP_D(RpFile);
+	const TCHAR drive_name[4] = {d->filename[0], _T(':'), _T('\\'), 0};
+	BOOL bRet = GetDiskFreeSpaceW(drive_name,
+		&dwSectorsPerCluster, &dwBytesPerSector,
+		&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
+	if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {
+		// TODO: Make sure the sector size is a power of 2
+		// and isn't a ridiculous value.
+
+		// Save the device size and sector size.
+		// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
+		// but it doesn't provide dwBytesPerSector.
+		d->device_size = static_cast<int64_t>(dwBytesPerSector) *
+				 static_cast<int64_t>(dwSectorsPerCluster) *
+				 static_cast<int64_t>(dwTotalNumberOfClusters);
+		d->sector_size = dwBytesPerSector;
+	} else {
+		// GetDiskFreeSpace() failed.
+		w32err = GetLastError();
+		if (w32err == ERROR_INVALID_PARAMETER) {
+			// The disk may use some file system that
+			// Windows doesn't recognize.
+			// Try IOCTL_DISK_GET_DRIVE_GEOMETRY_EX instead.
+			DISK_GEOMETRY_EX dg;
+			DWORD dwBytesReturned;  // TODO: Check this?
+			if (DeviceIoControl(d->file, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+				NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL) != 0)
+			{
+				// Device geometry retrieved.
+				w32err = 0;
+				d->device_size = dg.DiskSize.QuadPart;
+				d->sector_size = dg.Geometry.BytesPerSector;
+			} else {
+				// IOCTL failed.
+				d->device_size = 0;
+				d->sector_size = 0;
+
+				w32err = GetLastError();
+				if (w32err == 0) {
+					w32err = ERROR_INVALID_PARAMETER;
+				}
+			}
+		}
+	}
+
+	if (w32err == 0) {
+		// Return the values.
+		if (pDeviceSize) {
+			*pDeviceSize = d->device_size;
+		}
+		if (pSectorSize) {
+			*pSectorSize = d->sector_size;
+		}
+		return 0;
+	}
+
+	return w32err_to_posix(w32err);
+}
+
+/**
  * Send a SCSI command to the device.
  * @param cdb		[in] SCSI command descriptor block
  * @param cdb_len	[in] Length of cdb

@@ -50,12 +50,12 @@ class RpFilePrivate
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 			: q_ptr(q), file(nullptr), filename(filename)
-			, mode(mode), isDevice(false), isKreonUnlocked(false)
-			, gzfd(nullptr), gzsz(-1) { }
+			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
+			, gzfd(nullptr), gzsz(-1), sector_size(0) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
 			: q_ptr(q), file(nullptr), filename(filename)
-			, mode(mode), isDevice(false), isKreonUnlocked(false)
-			, gzfd(nullptr), gzsz(-1) { }
+			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
+			, gzfd(nullptr), gzsz(-1), sector_size(0) { }
 		~RpFilePrivate();
 
 	private:
@@ -66,11 +66,24 @@ class RpFilePrivate
 		FILE *file;		// File pointer.
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
+
 		bool isDevice;		// Is this a device file?
 		bool isKreonUnlocked;	// Is Kreon mode unlocked?
 
+		// SetFilePointerEx() *requires* sector alignment when
+		// accessing device files. Hence, we'll have to maintain
+		// our own device position.
+		int64_t device_pos;	// Device position.
+
 		gzFile gzfd;		// Used for transparent gzip decompression.
-		int64_t gzsz;		// Uncompressed file size.
+		union {
+			int64_t gzsz;		// Uncompressed file size.
+			int64_t device_size;	// Device size. (for block devices)
+		};
+
+		// Block device parameters.
+		// Set to 0 if this is a regular file.
+		unsigned int sector_size;	// Sector size. (bytes per sector)
 
 	public:
 		/**
@@ -90,6 +103,15 @@ class RpFilePrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int reOpenFile(void);
+
+		/**
+		 * Read using block reads.
+		 * Required for block devices.
+		 * @param ptr Output data buffer.
+		 * @param size Amount of data to read, in bytes.
+		 * @return Number of bytes read.
+		 */
+		size_t readUsingBlocks(void *ptr, size_t size);
 };
 
 }

@@ -161,6 +161,9 @@ int RpFilePrivate::reOpenFile(void)
 			return -ENOTSUP;
 		}
 #endif /* NO_PATTERNS_FOR_THIS_OS */
+
+		// Get the device size from the OS.
+		q->rereadDeviceSizeOS();
 	}
 
 	return 0;
@@ -308,6 +311,11 @@ size_t RpFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
+	if (d->isDevice) {
+		// Block device. Need to read in multiples of the block size.
+		return d->readUsingBlocks(ptr, size);
+	}
+
 	size_t ret;
 	if (d->gzfd) {
 		int iret = gzread(d->gzfd, ptr, size);
@@ -363,6 +371,20 @@ int RpFile::seek(int64_t pos)
 	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
+	}
+
+	if (d->isDevice) {
+		// SetFilePointerEx() *requires* sector alignment when
+		// accessing device files. Hence, we'll have to maintain
+		// our own device position.
+		if (pos < 0) {
+			d->device_pos = 0;
+		} else if (pos <= d->device_size) {
+			d->device_pos = pos;
+		} else {
+			d->device_pos = d->device_size;
+		}
+		return 0;
 	}
 
 	int ret;
@@ -466,7 +488,10 @@ int64_t RpFile::size(void)
 
 	// TODO: Error checking?
 
-	if (d->gzfd) {
+	if (d->isDevice) {
+		// Block device. Use the cached device size.
+		return d->device_size;
+	} else if (d->gzfd) {
 		// gzipped files have the uncompressed size stored
 		// at the end of the stream.
 		return d->gzsz;
