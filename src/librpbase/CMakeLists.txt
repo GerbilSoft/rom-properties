@@ -202,6 +202,21 @@ IF(WIN32)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_linux.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
+ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
+	# properly because these header files use FILE*, so we need to
+	# #include <stdio.h>.
+	INCLUDE(CheckIncludeFile)
+	INCLUDE(CheckLibraryExists)
+	#CHECK_INCLUDE_FILE("camlib.h" HAVE_CAMLIB_H)
+	#CHECK_INCLUDE_FILE("cam/scsi/scsi_message.h" HAVE_CAM_SCSI_SCSI_MESSAGE_H)
+	#CHECK_INCLUDE_FILE("cam/scsi/scsi_pass.h" HAVE_CAM_SCSI_SCSI_PASS_H)
+	CHECK_LIBRARY_EXISTS(cam "cam_open_pass" "" HAVE_LIBCAM)
+	IF(HAVE_LIBCAM)
+		SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_freebsd.cpp)
+		SET(SCSI_LIBRARY cam)
+		SET(RP_OS_SCSI_SUPPORTED 1)
+	ENDIF()
 ENDIF()
 
 IF(WIN32)
@@ -492,6 +507,10 @@ ELSE(WIN32)
 	# libunixcommon
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE unixcommon)
 ENDIF(WIN32)
+IF(SCSI_LIBRARY)
+	# An extra library is needed for SCSI support.
+	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${SCSI_LIBRARY})
+ENDIF(SCSI_LIBRARY)
 IF(CMAKE_THREAD_LIBS_INIT)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 ENDIF(CMAKE_THREAD_LIBS_INIT)

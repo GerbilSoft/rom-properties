@@ -43,11 +43,11 @@ class RpFilePrivate
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
 			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
-			, gzfd(nullptr), gzsz(0), sector_size(0) { }
+			, gzfd(nullptr), gzsz(-1), sector_size(0) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
 			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
-			, gzfd(nullptr), gzsz(0), sector_size(0) { }
+			, gzfd(nullptr), gzsz(-1), sector_size(0) { }
 		~RpFilePrivate();
 
 	private:
@@ -70,8 +70,8 @@ class RpFilePrivate
 		// gzip parameters.
 		gzFile gzfd;			// Used for transparent gzip decompression.
 		union {
-			int64_t gzsz;			// Uncompressed file size.
-			int64_t device_size;		// Device size. (for block devices)
+			int64_t gzsz;		// Uncompressed file size.
+			int64_t device_size;	// Device size. (for block devices)
 		};
 
 		// Block device parameters.
