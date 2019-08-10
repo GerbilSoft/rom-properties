@@ -548,7 +548,6 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 XboxXPR::XboxXPR(IRpFile *file)
 	: super(new XboxXPRPrivate(this, file))
 {
-	// This class handles texture files.
 	RP_D(XboxXPR);
 
 	if (!d->file) {
@@ -585,7 +584,13 @@ XboxXPR::XboxXPR(IRpFile *file)
 	if (!d->isValid) {
 		d->file->unref();
 		d->file = nullptr;
+		return;
 	}
+
+	// Cache the texture dimensions.
+	d->dimensions[0] = 1 << (d->xpr0Header.width_pow2 >> 4);
+	d->dimensions[1] = 1 << (d->xpr0Header.height_pow2 & 0x0F);
+	d->dimensions[2] = 0;
 }
 
 /** Propety accessors **/
@@ -598,59 +603,6 @@ const char *XboxXPR::textureFormatName(void) const
 {
 	// TODO: XPR1/XPR2?
 	return "Microsoft Xbox XPR0";
-}
-
-// TODO: Move the dimensions code up to the FileFormat base class.
-
-/**
- * Get the image width.
- * @return Image width.
- */
-int XboxXPR::width(void) const
-{
-	RP_D(const XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
-		// Not supported.
-		return 0;
-	}
-
-	return 1 << (d->xpr0Header.width_pow2 >> 4);
-}
-
-/**
- * Get the image height.
- * @return Image height.
- */
-int XboxXPR::height(void) const
-{
-	RP_D(const XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
-		// Not supported.
-		return 0;
-	}
-
-	return 1 << (d->xpr0Header.height_pow2 & 0x0F);
-}
-
-/**
- * Get the image dimensions.
- * If the image is 2D, then 'z' will be set to zero.
- * @param pBuf Three-element array for [x, y, z].
- * @return 0 on success; negative POSIX error code on error.
- */
-int XboxXPR::getDimensions(int *pBuf) const
-{
-	RP_D(const XboxXPR);
-	if (!d->isValid || d->xprType < 0) {
-		// Not supported.
-		return -EBADF;
-	}
-
-	// XPR textures are 2D.
-	pBuf[0] = 1 << (d->xpr0Header.width_pow2 >> 4);
-	pBuf[1] = 1 << (d->xpr0Header.height_pow2 & 0x0F);
-	pBuf[2] = 0;
-	return 0;
 }
 
 /**
