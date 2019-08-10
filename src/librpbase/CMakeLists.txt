@@ -203,6 +203,8 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_linux.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
+	IF(0) # FIXME
 	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
 	# properly because these header files use FILE*, so we need to
 	# #include <stdio.h>.
@@ -217,6 +219,7 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
 		SET(SCSI_LIBRARY cam)
 		SET(RP_OS_SCSI_SUPPORTED 1)
 	ENDIF()
+	ENDIF(0) # FIXME
 ENDIF()
 
 IF(WIN32)
