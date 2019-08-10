@@ -38,28 +38,6 @@ class XboxXPR : public FileFormat
 		 */
 		const char *textureFormatName(void) const final;
 
-		// TODO: Move the dimensions code up to the FileFormat base class.
-
-		/**
-		 * Get the image width.
-		 * @return Image width.
-		 */
-		int width(void) const final;
-
-		/**
-		 * Get the image height.
-		 * @return Image height.
-		 */
-		int height(void) const final;
-
-		/**
-		 * Get the image dimensions.
-		 * If the image is 2D, then 'z' will be set to zero.
-		 * @param pBuf Three-element array for [x, y, z].
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int getDimensions(int *pBuf) const final;
-
 		/**
 		 * Get the pixel format, e.g. "RGB888" or "DXT1".
 		 * @return Pixel format, or nullptr if unavailable.
