@@ -7,32 +7,12 @@ IF(NOT WIN32)
 	# On other systems, we use iconv(), which could be in libc or libiconv.
 	# Figure out which library has iconv().
 
-	# FIXME: Verify iconv() detection on FreeBSD.
-	# Functions are prefixed, e.g. libiconv(), in libiconv.so.
-	# libc has iconv() stubs, but the actual functions are in libiconv,
-	# so checking libc first results in errors.
-
-	# First, check for iconv() in libiconv.
-	INCLUDE(CheckLibraryExists)
-	CHECK_LIBRARY_EXISTS(iconv iconv "" HAVE_ICONV_LIBICONV)
-	IF(HAVE_ICONV_LIBICONV)
-		# iconv() found in libiconv.
-		SET(ICONV_LIBRARY "iconv")
-		SET(HAVE_ICONV 1)
-	ELSE(HAVE_ICONV_LIBICONV)
-		# iconv() not found in libiconv.
-		# Check in libc.
-		CHECK_LIBRARY_EXISTS(c iconv "" HAVE_ICONV_C)
-		IF(HAVE_ICONV_C)
-			# iconv() found in libc.
-			UNSET(ICONV_LIBRARY)
-			SET(HAVE_ICONV 1)
-		ENDIF(HAVE_ICONV_C)
-	ENDIF(HAVE_ICONV_LIBICONV)
-
-	IF(NOT HAVE_ICONV)
-		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
-	ENDIF(NOT HAVE_ICONV)
+	# Check for iconv().
+	FIND_PACKAGE(Iconv REQUIRED)
+	SET(HAVE_ICONV 1)
+	IF(NOT Iconv_IS_BUILT_IN)
+		SET(HAVE_ICONV_LIBICONV 1)
+	ENDIF(NOT Iconv_IS_BUILT_IN)
 
 	IF(ENABLE_DECRYPTION)
 		FIND_PACKAGE(Nettle REQUIRED)
@@ -479,9 +459,9 @@ ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
 TARGET_LINK_LIBRARIES(rpbase PRIVATE inih)
-IF(ICONV_LIBRARY)
-	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ICONV_LIBRARY})
-ENDIF(ICONV_LIBRARY)
+IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
+	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
+ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 IF(ZLIB_FOUND)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${ZLIB_LIBRARIES})
 	TARGET_INCLUDE_DIRECTORIES(rpbase PRIVATE ${ZLIB_INCLUDE_DIRS})

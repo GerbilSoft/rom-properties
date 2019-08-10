@@ -25,7 +25,17 @@
 #endif
 
 // iconv
-#include <iconv.h>
+#if !defined(_WIN32) && !defined(__linux__) && !defined(HAVE_ICONV_LIBICONV)
+// FreeBSD 10 has its own iconv() implementation, but if
+// GNU libiconv is installed (/usr/local), its header gets
+// used first, so explicitly use the system iconv.h on
+// non-Linux systems.
+# include </usr/include/iconv.h>
+#else
+// iconv() is either in libiconv only, or this is Linux.
+// Use iconv.h normally.
+# include <iconv.h>
+#endif
 
 // C includes.
 #include <stdlib.h>
