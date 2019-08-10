@@ -164,7 +164,7 @@ static RP_Frontend walk_proc_tree(void)
 		fclose(f);
 	}
 #else
-	#error Not implemented.
+# warning walk_proc_tree() is not implemented for this OS.
 #endif
 
 	return ret;
