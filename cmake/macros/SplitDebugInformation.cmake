@@ -59,9 +59,8 @@ IF(SPLIT_OK)
 	# - .strtab: String table.
 	# These sections are split into the .debug file, so there's
 	# no reason to keep them in the executable.
-	# TODO: Check for --compress-debug-sections.
 	ADD_CUSTOM_COMMAND(TARGET ${_target} POST_BUILD
-		COMMAND ${CMAKE_OBJCOPY} --only-keep-debug --compress-debug-sections
+		COMMAND ${CMAKE_OBJCOPY} --only-keep-debug
 			${SPLITDEBUG_SOURCE} ${SPLITDEBUG_TARGET}
 		COMMAND ${CMAKE_STRIP}
 			${SPLITDEBUG_SOURCE}
