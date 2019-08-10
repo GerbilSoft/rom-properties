@@ -39,6 +39,10 @@ class FileFormatPrivate
 		volatile int ref_cnt;		// Reference count.
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
 		LibRpBase::IRpFile *file;	// Open file.
+
+		// Cached parameters.
+		int dimensions[3];		// Dimensions. (width, height, depth)
+						// 2D textures have depth=0.
 };
 
 }
