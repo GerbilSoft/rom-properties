@@ -17,6 +17,7 @@
 
 // C includes. (C++ namespace)
 #include <cstddef>
+#include <ctime>
 
 // C++ includes.
 #include <string>
