@@ -16,6 +16,8 @@ using LibRpBase::IRpFile;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
+#include <cstring>
 
 namespace LibRpTexture {
 
@@ -33,6 +35,9 @@ FileFormatPrivate::FileFormatPrivate(FileFormat *q, IRpFile *file)
 	, isValid(false)
 	, file(nullptr)
 {
+	// Clear the arrays.
+	memset(dimensions, 0, sizeof(dimensions));
+
 	if (file) {
 		// Reference the file.
 		this->file = file->ref();
@@ -114,6 +119,46 @@ void FileFormat::close(void)
 		d->file->unref();
 		d->file = nullptr;
 	}
+}
+
+/** Propety accessors **/
+
+/**
+ * Get the image width.
+ * @return Image width.
+ */
+int FileFormat::width(void) const
+{
+	RP_D(const FileFormat);
+	return d->dimensions[0];
+}
+
+/**
+ * Get the image height.
+ * @return Image height.
+ */
+int FileFormat::height(void) const
+{
+	RP_D(const FileFormat);
+	return d->dimensions[1];
+}
+
+/**
+ * Get the image dimensions.
+ * If the image is 2D, then 'z' will be set to zero.
+ * @param pBuf Three-element array for [x, y, z].
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int FileFormat::getDimensions(int pBuf[3]) const
+{
+	RP_D(const FileFormat);
+	if (!d->isValid) {
+		// Not supported.
+		return -EBADF;
+	}
+
+	memcpy(pBuf, d->dimensions, sizeof(d->dimensions));
+	return 0;
 }
 
 }

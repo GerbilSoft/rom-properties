@@ -77,19 +77,17 @@ class FileFormat
 
 		// TODO: Supported file extensions and MIME types.
 
-		// TODO: Move the dimensions code up to the FileFormat base class.
-
 		/**
 		 * Get the image width.
 		 * @return Image width.
 		 */
-		virtual int width(void) const = 0;
+		int width(void) const;
 
 		/**
 		 * Get the image height.
 		 * @return Image height.
 		 */
-		virtual int height(void) const = 0;
+		int height(void) const;
 
 		/**
 		 * Get the image dimensions.
@@ -97,7 +95,7 @@ class FileFormat
 		 * @param pBuf Three-element array for [x, y, z].
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int getDimensions(int *pBuf) const = 0;
+		int getDimensions(int pBuf[3]) const;
 
 		/**
 		 * Get the pixel format, e.g. "RGB888" or "DXT1".
