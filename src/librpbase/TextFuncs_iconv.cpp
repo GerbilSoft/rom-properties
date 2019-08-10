@@ -59,10 +59,12 @@ namespace LibRpBase {
  * @param len           [in] Source length, in bytes.
  * @param src_charset	[in] Source character set.
  * @param dest_charset	[in] Destination character set.
+ * @param ignoreErr	[in] If true, ignore errors. ("//IGNORE" on glibc/libiconv)
  * @return malloc()'d UTF-8 string, or nullptr on error.
  */
 static char *rp_iconv(const char *src, int len,
-		const char *src_charset, const char *dest_charset)
+	const char *src_charset, const char *dest_charset,
+	bool ignoreErr = false)
 {
 #ifdef RP_WIS16
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
@@ -84,7 +86,22 @@ static char *rp_iconv(const char *src, int len,
 
 	// Open an iconv descriptor.
 	iconv_t cd;
+#if defined(__linux__) || defined(HAVE_ICONV_LIBICONV)
+	// glibc/libiconv: Append "//IGNORE" to the source character set
+	// if ignoreErr == true.
+	// TODO: Destination, not source?
+	if (ignoreErr) {
+		char tmpsrc[32];
+		snprintf(tmpsrc, sizeof(tmpsrc), "%s//IGNORE", src_charset);
+		cd = iconv_open(dest_charset, tmpsrc);
+	} else {
+		// Not ignoring errors.
+		cd = iconv_open(dest_charset, src_charset);
+	}
+#else
 	cd = iconv_open(dest_charset, src_charset);
+#endif
+
 	if (cd == (iconv_t)(-1)) {
 		// Error opening iconv.
 		return nullptr;
@@ -101,9 +118,23 @@ static char *rp_iconv(const char *src, int len,
 	char *inptr = const_cast<char*>(src);	// Input pointer.
 	char *outptr = &outbuf[0];		// Output pointer.
 
+#ifdef __FreeBSD__
+	// Flags for FreeBSD's __iconv().
+	const uint32_t iconv_flags = (ignoreErr ? __ICONV_F_HIDE_INVALID : 0);
+#endif /* __FreeBSD */
+
 	bool success = true;
 	while (src_bytes_len > 0) {
-		if (iconv(cd, &inptr, &src_bytes_len, &outptr, &out_bytes_remaining) == (size_t)(-1)) {
+		size_t size;
+
+#ifdef __FreeBSD__
+		// Use FreeBSD's __iconv() to ignore errors if specified.
+		size = __iconv(cd, &inptr, &src_bytes_len, &outptr, &out_bytes_remaining, iconv_flags, nullptr);
+#else /* !__FreeBSD__ */
+		size = iconv(cd, &inptr, &src_bytes_len, &outptr, &out_bytes_remaining);
+#endif
+
+		if (size == static_cast<size_t>(-1)) {
 			// An error occurred while converting the string.
 			// FIXME: Flag to indicate that we want to have
 			// a partial Shift-JIS conversion?
@@ -143,27 +174,21 @@ static char *rp_iconv(const char *src, int len,
  * @param enc_name	[out] Buffer for encoding name.
  * @param len		[in] Length of enc_name.
  * @param cp		[in] Code page number.
- * @param flags		[in] Flags. (See TextConv_Flags_e.)
  */
-static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp, unsigned int flags)
+static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp)
 {
-	// If TEXTCONV_FLAG_CP1252_FALLBACK is set, this is the
-	// primary code page, so we should fail on error.
-	// Otherwise, this is the fallback codepage.
-	const char *const ignore = (flags & TEXTCONV_FLAG_CP1252_FALLBACK) ? "" : "//IGNORE";
-
 	// Check for "special" code pages.
 	switch (cp) {
 		case CP_ACP:
 		case CP_LATIN1:
 			// NOTE: Handling "ANSI" as Latin-1 for now.
-			snprintf(enc_name, len, "LATIN1%s", ignore);
+			snprintf(enc_name, len, "LATIN1");
 			break;
 		case CP_UTF8:
-			snprintf(enc_name, len, "UTF-8%s", ignore);
+			snprintf(enc_name, len, "UTF-8");
 			break;
 		default:
-			snprintf(enc_name, len, "CP%u%s", cp, ignore);
+			snprintf(enc_name, len, "CP%u", cp);
 			break;
 	}
 }
@@ -186,22 +211,27 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 
 	// Get the encoding name for the primary code page.
 	char cp_name[20];
-	codePageToEncName(cp_name, sizeof(cp_name), cp, flags);
+	codePageToEncName(cp_name, sizeof(cp_name), cp);
+
+	// If we *want* to fall back to cp1252 on error,
+	// then the first conversion should fail on errors.
+	const bool ignoreErr = !(flags & TEXTCONV_FLAG_CP1252_FALLBACK);
 
 	// Attempt to convert the text to UTF-8.
 	// NOTE: "//IGNORE" sometimes doesn't work, so we won't
 	// check for TEXTCONV_FLAG_CP1252_FALLBACK here.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, "UTF-8"));
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, "UTF-8", ignoreErr));
 	if (!mbs /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
 		// Try cp1252 fallback.
+		// NOTE: Sometimes cp1252 fails, even with ignore set.
 		if (cp != 1252) {
-			mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "CP1252//IGNORE", "UTF-8"));
+			mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "CP1252", "UTF-8", true));
 		}
 		if (!mbs) {
 			// Try Latin-1 fallback.
 			if (cp != CP_LATIN1) {
-				mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "LATIN1//IGNORE", "UTF-8"));
+				mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "LATIN1", "UTF-8", true));
 			}
 		}
 	}
@@ -247,22 +277,27 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 
 	// Get the encoding name for the primary code page.
 	char cp_name[20];
-	codePageToEncName(cp_name, sizeof(cp_name), cp, flags);
+	codePageToEncName(cp_name, sizeof(cp_name), cp);
+
+	// If we *want* to fall back to cp1252 on error,
+	// then the first conversion should fail on errors.
+	const bool ignoreErr = !(flags & TEXTCONV_FLAG_CP1252_FALLBACK);
 
 	// Attempt to convert the text to UTF-16.
 	// NOTE: "//IGNORE" sometimes doesn't work, so we won't
 	// check for TEXTCONV_FLAG_CP1252_FALLBACK here.
 	u16string ret;
-	char16_t *wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, RP_ICONV_UTF16_ENCODING));
+	char16_t *wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), cp_name, RP_ICONV_UTF16_ENCODING, ignoreErr));
 	if (!wcs /*&& (flags & TEXTCONV_FLAG_CP1252_FALLBACK)*/) {
 		// Try cp1252 fallback.
+		// NOTE: Sometimes cp1252 fails, even with ignore set.
 		if (cp != 1252) {
-			wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING));
+			wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), "CP1252", RP_ICONV_UTF16_ENCODING, true));
 		}
 		if (!wcs) {
 			// Try Latin-1 fallback.
 			if (cp != CP_LATIN1) {
-				wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), "LATIN1//IGNORE", RP_ICONV_UTF16_ENCODING));
+				wcs = reinterpret_cast<char16_t*>(rp_iconv((char*)str, len*sizeof(*str), "LATIN1//IGNORE", RP_ICONV_UTF16_ENCODING, true));
 			}
 		}
 	}
@@ -305,11 +340,11 @@ string utf8_to_cpN(unsigned int cp, const char *str, int len)
 
 	// Get the encoding name for the primary code page.
 	char cp_name[20];
-	codePageToEncName(cp_name, sizeof(cp_name), cp, TEXTCONV_FLAG_CP1252_FALLBACK);
+	codePageToEncName(cp_name, sizeof(cp_name), cp);
 
 	// Attempt to convert the text from UTF-8.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name));
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)str, len*sizeof(*str), "UTF-8", cp_name, true));
 	if (mbs) {
 		ret.assign(mbs);
 		free(mbs);
@@ -335,12 +370,14 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 
 	// Get the encoding name for the primary code page.
 	char cp_name[20];
-	const unsigned int flags = (cp == CP_UTF8 ? 0 : TEXTCONV_FLAG_CP1252_FALLBACK);
-	codePageToEncName(cp_name, sizeof(cp_name), cp, flags);
+	codePageToEncName(cp_name, sizeof(cp_name), cp);
+
+	// Ignore errors if converting to anything other than UTF-8.
+	const bool ignoreErr = (cp != CP_UTF8);
 
 	// Attempt to convert the text from UTF-8.
 	string ret;
-	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name));
+	char *mbs = reinterpret_cast<char*>(rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, cp_name, ignoreErr));
 	if (mbs) {
 		ret.assign(mbs);
 		free(mbs);
