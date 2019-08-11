@@ -427,14 +427,14 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		// TODO: Move the 65535 LBA code down to RpFile::scsi_read()?
 		for (; lba_count > 0; lba_count -= 65535) {
 			const uint16_t lba_cur_count = (lba_count > 65535 ? 65535 : (uint16_t)lba_count);
-			int sret = q->scsi_read(lba_cur, lba_cur_count, ptr8, size);
+			const size_t lba_cur_size = (size_t)lba_cur_count * sector_size;
+			int sret = q->scsi_read(lba_cur, lba_cur_count, ptr8, lba_cur_size);
 			if (sret != 0) {
 				// Read error.
 				// TODO: Handle this properly?
 				q->m_lastError = sret;
 				return ret;
 			}
-			const size_t lba_cur_size = (size_t)lba_cur_count * sector_size;
 			device_pos += lba_cur_size;
 			lba_cur += lba_cur_count;
 			size -= lba_cur_size;
