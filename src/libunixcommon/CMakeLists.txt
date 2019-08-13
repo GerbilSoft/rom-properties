@@ -1,6 +1,12 @@
 # Unix common code.
 PROJECT(libunixcommon)
 
+# Qt5 requires "-fpic -fPIC" due to reduced relocations.
+# This is also needed in order to link the static library
+# into a shared library.
+SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
+
 IF(BUILD_KDE4)
 	# Find the framework libraries in order to determine plugin paths.
 	# FIXME: Remove prefix from KDE4's path.
@@ -19,9 +25,6 @@ ENDIF(BUILD_KDE4)
 
 # Find the qtpaths executable.
 IF(BUILD_KDE5)
-	# Qt5 requires "-fpic -fPIC" due to reduced relocations.
-	SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
 	SET(ENV{QT_SELECT} qt5)
 	FIND_PROGRAM(QTPATHS qtpaths)
 	IF(NOT QTPATHS)
