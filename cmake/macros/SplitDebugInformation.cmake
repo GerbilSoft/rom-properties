@@ -36,6 +36,29 @@ ELSEIF(NOT CMAKE_STRIP)
 ENDIF()
 
 IF(SPLIT_OK)
+	# If the linker doesn't support --compress-debug-sections=zlib,
+	# check if objcopy supports --compress-debug-sections.
+	IF(HAS_LD_COMPRESS_DEBUG_SECTIONS)
+		# ld supports --compress-debug-sections=zlib.
+		SET(OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM "" CACHE INTERNAL "objcopy parameter to compress debug sections.")
+	ELSEIF(NOT HAS_LD_COMPRESS_DEBUG_SECTIONS AND NOT DEFINED OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM)
+		# Check for objcopy --compress-debug-sections.
+		MESSAGE(STATUS "Checking if objcopy supports --compress-debug-sections")
+		EXECUTE_PROCESS(COMMAND ${CMAKE_OBJCOPY} --help
+			OUTPUT_VARIABLE _xc_out
+			ERROR_QUIET)
+		IF(_xc_out MATCHES "--compress-debug-sections")
+			# objcopy has --compress-debug-sections.
+			MESSAGE(STATUS "Checking if objcopy supports --compress-debug-sections - yes")
+			SET(OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM "--compress-debug-sections" CACHE INTERNAL "objcopy parameter to compress debug sections.")
+		ELSE()
+			# objcopy does *not* have --compress-debug-sections.
+			MESSAGE(STATUS "Checking if objcopy supports --compress-debug-sections - no")
+			SET(OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM "" CACHE INTERNAL "objcopy parameter to compress debug sections.")
+		ENDIF()
+		UNSET(_xc_out)
+	ENDIF()
+
 	# Handle target prefixes if not overridden.
 	# NOTE: Cannot easily use the TYPE property in a generator expression...
 	GET_PROPERTY(TARGET_TYPE TARGET ${_target} PROPERTY TYPE)
@@ -60,7 +83,7 @@ IF(SPLIT_OK)
 	# These sections are split into the .debug file, so there's
 	# no reason to keep them in the executable.
 	ADD_CUSTOM_COMMAND(TARGET ${_target} POST_BUILD
-		COMMAND ${CMAKE_OBJCOPY} --only-keep-debug
+		COMMAND ${CMAKE_OBJCOPY} --only-keep-debug ${OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM}
 			${SPLITDEBUG_SOURCE} ${SPLITDEBUG_TARGET}
 		COMMAND ${CMAKE_STRIP}
 			${SPLITDEBUG_SOURCE}
