@@ -25,10 +25,13 @@
 #include <cerrno>
 #include <cstring>
 
+#include "config.librpbase.h"
 // SCSI and CD-ROM IOCTLs.
+#ifdef RP_OS_SCSI_SUPPORTED
 #include <camlib.h>
 #include <cam/scsi/scsi_message.h>
 #include <cam/scsi/scsi_pass.h>
+#endif /* RP_OS_SCSI_SUPPORTED */
 #include <sys/cdio.h>
 #include <sys/disk.h>
 
@@ -96,6 +99,7 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	void *data, size_t data_len,
 	ScsiDirection direction)
 {
+#ifdef RP_OS_SCSI_SUPPORTED
 	// SCSI command buffer.
 	union ccb ccb;
 	memset(&ccb, 0, sizeof(ccb));
@@ -177,6 +181,10 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 		ret = -EIO;
 	}
 	return ret;
+#else /* !RP_OS_SCSI_SUPPORTED */
+	// Not supported yet.
+	return -ENOSYS;
+#endif /* RP_OS_SCSI_SUPPORTED */
 }
 
 }
