@@ -7,6 +7,10 @@
     * FreeBSD 10.0's iconv() is used if available. Otherwise, libiconv is used.
     * Fix LDFLAG detection for compressed debug sections (and others).
     * General build fixes for differences in e.g. system headers.
+  * The SCSI handlers now have a one-sector cache. This should improve
+    performance in many cases, since the various RomData subclasses do small
+    reads for certain things instead of one giant read.
+    * FIXME: Need to make use of the cache in the "contiguous" read section.
 
 * Bug fixes:
   * In some cases, the SCSI handlers for both Linux and Windows weren't working
