@@ -21,6 +21,7 @@
 #include <unistd.h>	// ftruncate()
 
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <cstring>
 
 namespace LibRpBase {
