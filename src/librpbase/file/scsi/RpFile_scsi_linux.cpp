@@ -11,7 +11,7 @@
 #endif /* __linux__ */
 
 #include "../RpFile.hpp"
-#include "../RpFile_stdio_p.hpp"
+#include "../RpFile_p.hpp"
 
 #include "scsi_protocol.h"
 
@@ -20,6 +20,7 @@
 #include <scsi/sg.h>
 #include <scsi/scsi.h>
 #include <linux/cdrom.h>
+#include <linux/fs.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -27,6 +28,51 @@
 #include <cstring>
 
 namespace LibRpBase {
+
+/**
+ * Re-read device size using the native OS API.
+ * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+ * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+ * @return 0 on success, negative for POSIX error code.
+ */
+int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
+{
+	RP_D(RpFile);
+	const int fd = fileno(d->file);
+
+	if (ioctl(fd, BLKGETSIZE64, &d->devInfo->device_size) < 0) {
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
+		return -errno;
+	}
+
+	if (ioctl(fd, BLKSSZGET, &d->devInfo->sector_size) < 0) {
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
+		return -errno;
+	}
+
+	// Validate the sector size.
+	assert(d->devInfo->sector_size >= 512);
+	assert(d->devInfo->sector_size <= 65536);
+	if (d->devInfo->sector_size < 512 || d->devInfo->sector_size > 65536) {
+		// Sector size is out of range.
+		// TODO: Also check for isPow2()?
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
+		return -EIO;
+	}
+
+	// Return the values.
+	if (pDeviceSize) {
+		*pDeviceSize = d->devInfo->device_size;
+	}
+	if (pSectorSize) {
+		*pSectorSize = d->devInfo->sector_size;
+	}
+
+	return 0;
+}
 
 /**
  * Send a SCSI command to the device.

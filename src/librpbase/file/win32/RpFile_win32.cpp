@@ -9,7 +9,7 @@
 #include "config.librpbase.h"
 
 #include "../RpFile.hpp"
-#include "RpFile_win32_p.hpp"
+#include "../RpFile_p.hpp"
 
 // librpbase
 #include "bitstuff.h"
@@ -56,6 +56,7 @@ RpFilePrivate::~RpFilePrivate()
 	if (file && file != INVALID_HANDLE_VALUE) {
 		CloseHandle(file);
 	}
+	delete devInfo;
 }
 
 /**
@@ -131,6 +132,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Check if the path starts with a drive letter.
+	bool isDevice = false;
 	if (filename.size() >= 3 &&
 	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
@@ -151,12 +153,10 @@ int RpFilePrivate::reOpenFile(void)
 				case DRIVE_UNKNOWN:
 				case DRIVE_NO_ROOT_DIR:
 					// No drive.
-					isDevice = false;
 					q->m_lastError = ENODEV;
 					return -ENODEV;
 				default:
 					// Not a CD-ROM drive.
-					isDevice = false;
 					q->m_lastError = ENOTSUP;
 					return -ENOTSUP;
 			}
@@ -168,7 +168,6 @@ int RpFilePrivate::reOpenFile(void)
 			isDevice = true;
 		} else {
 			// Absolute path.
-			isDevice = false;
 #ifdef UNICODE
 			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
@@ -181,7 +180,6 @@ int RpFilePrivate::reOpenFile(void)
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		isDevice = false;
 		tfilename = U82T_s(filename);
 	}
 
@@ -207,6 +205,11 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	if (isDevice) {
+		// Allocate devInfo.
+		// NOTE: This is kept around until RpFile is deleted,
+		// even if the device can't be opeend for some reason.
+		devInfo = new DeviceInfo();
+
 		if (mode & RpFile::FM_WRITE) {
 			// Writing to block devices is not allowed.
 			q->m_lastError = EINVAL;
@@ -249,55 +252,8 @@ int RpFilePrivate::reOpenFile(void)
 
 	if (isDevice) {
 		// Get the disk space.
-		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX seems to report 512-byte sectors
-		// for certain emulated CD-ROM device, e.g. the Verizon LG G2.
-		// GetDiskFreeSpace() reports the correct value (2048).
-		DWORD dwSectorsPerCluster, dwBytesPerSector;
-		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
-		DWORD w32err = 0;
-		// NOTE: tfilename doesn't work here.
-		// Use the original UTF-8 filename as if it's ANSI.
-		BOOL bRet = GetDiskFreeSpaceA(filename.c_str(),
-			&dwSectorsPerCluster, &dwBytesPerSector,
-			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
-		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {
-			// TODO: Make sure the sector size is a power of 2
-			// and isn't a ridiculous value.
-
-			// Save the device size and sector size.
-			// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
-			// but it doesn't provide dwBytesPerSector.
-			device_size = static_cast<int64_t>(dwBytesPerSector) *
-				      static_cast<int64_t>(dwSectorsPerCluster) *
-				      static_cast<int64_t>(dwTotalNumberOfClusters);
-			sector_size = dwBytesPerSector;
-		} else {
-			// GetDiskFreeSpace() failed.
-			w32err = GetLastError();
-			if (w32err == ERROR_INVALID_PARAMETER) {
-				// The disk may use some file system that
-				// Windows doesn't recognize.
-				// Try IOCTL_DISK_GET_DRIVE_GEOMETRY_EX instead.
-				DISK_GEOMETRY_EX dg;
-				DWORD dwBytesReturned;  // TODO: Check this?
-				if (DeviceIoControl(file, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
-				    NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL) != 0)
-				{
-					// Device geometry retrieved.
-					w32err = 0;
-					device_size = dg.DiskSize.QuadPart;
-					sector_size = dg.Geometry.BytesPerSector;
-				} else {
-					// IOCTL failed.
-					w32err = GetLastError();
-					if (w32err == 0) {
-						w32err = ERROR_INVALID_PARAMETER;
-					}
-				}
-			}
-		}
-
-		if (w32err != 0) {
+		int ret = q->rereadDeviceSizeOS();
+		if (ret != 0) {
 			// An error occurred...
 			q->m_lastError = w32err_to_posix(GetLastError());
 			if (q->m_lastError == 0) {
@@ -311,189 +267,6 @@ int RpFilePrivate::reOpenFile(void)
 
 	// Return 0 if it's *not* nullptr or INVALID_HANDLE_VALUE.
 	return (!file || file == INVALID_HANDLE_VALUE);
-}
-
-/**
- * Read using block reads.
- * Required for block devices.
- * @param ptr Output data buffer.
- * @param size Amount of data to read, in bytes.
- * @return Number of bytes read.
- */
-size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
-{
-	assert(device_size > 0);
-	assert(sector_size >= 512);
-	if (device_size <= 0 || sector_size < 512) {
-		// Not a block device...
-		return 0;
-	}
-
-	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
-	size_t ret = 0;
-
-	RP_Q(RpFile);
-
-	// Are we already at the end of the block device?
-	if (device_pos >= device_size) {
-		// End of the block device.
-		return 0;
-	}
-
-	// Make sure device_pos + size <= d->device_size.
-	// If it isn't, we'll do a short read.
-	if (device_pos + static_cast<int64_t>(size) >= device_size) {
-		size = static_cast<size_t>(device_size - device_pos);
-	}
-
-	// Seek to the beginning of the first block.
-	// NOTE: sector_size must be a power of two.
-	assert(isPow2(sector_size));
-	// TODO: 64-bit LBAs?
-	uint32_t lba_cur = static_cast<uint32_t>(device_pos / sector_size);
-	if (!isKreonUnlocked) {
-		LARGE_INTEGER liSeekPos;
-		liSeekPos.QuadPart = lba_cur * sector_size;
-		BOOL bRet = SetFilePointerEx(file, liSeekPos, nullptr, FILE_BEGIN);
-		if (bRet == 0) {
-			// Seek error.
-			q->m_lastError = w32err_to_posix(GetLastError());
-			return 0;
-		}
-	}
-
-	// Sector buffer.
-	unique_ptr<uint8_t[]> sector_buffer;
-
-	// Check if we're not starting on a block boundary.
-	const uint32_t blockStartOffset = device_pos % sector_size;
-	if (blockStartOffset != 0) {
-		// Not a block boundary.
-		// Read the end of the first block.
-		if (!sector_buffer) {
-			sector_buffer.reset(new uint8_t[sector_size]);
-		}
-
-		// Read the first block.
-		if (isKreonUnlocked) {
-			// Kreon drive. Use SCSI commands.
-			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), sector_size);
-			if (sret != 0) {
-				// Read error.
-				// TODO: Handle this properly?
-				q->m_lastError = sret;
-				return 0;
-			}
-			lba_cur++;
-		} else {
-			// Other device. Use Win32 API.
-			DWORD bytesRead;
-			BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
-			if (bRet == 0 || bytesRead != sector_size) {
-				// Read error.
-				q->m_lastError = w32err_to_posix(GetLastError());
-				return bytesRead;
-			}
-		}
-
-		// Copy the data from the sector buffer.
-		uint32_t read_sz = sector_size - blockStartOffset;
-		if (size < static_cast<size_t>(read_sz)) {
-			read_sz = static_cast<uint32_t>(size);
-		}
-		memcpy(ptr8, &sector_buffer[blockStartOffset], read_sz);
-
-		// Starting block read.
-		device_pos += read_sz;
-		size -= read_sz;
-		ptr8 += read_sz;
-		ret += read_sz;
-	}
-
-	if (size == 0) {
-		// Nothing else to read here.
-		return ret;
-	}
-
-	// Must be on a sector boundary now.
-	assert(device_pos % sector_size == 0);
-
-	// Read contiguous blocks.
-	int64_t lba_count = size / sector_size;
-	size_t contig_size = lba_count * sector_size;
-	if (isKreonUnlocked) {
-		// Kreon drive. Use SCSI commands.
-		// NOTE: Reading up to 65535 LBAs at a time due to READ(10) limitations.
-		// TODO: Move the 65535 LBA code down to RpFile::scsi_read()?
-		for (; lba_count > 0; lba_count -= 65535) {
-			const uint16_t lba_cur_count = (lba_count > 65535 ? 65535 : (uint16_t)lba_count);
-			const size_t lba_cur_size = (size_t)lba_cur_count * sector_size;
-			int sret = q->scsi_read(lba_cur, lba_cur_count, ptr8, lba_cur_size);
-			if (sret != 0) {
-				// Read error.
-				// TODO: Handle this properly?
-				q->m_lastError = sret;
-				return ret;
-			}
-			device_pos += lba_cur_size;
-			lba_cur += lba_cur_count;
-			size -= lba_cur_size;
-			ptr8 += lba_cur_size;
-			ret += lba_cur_size;
-		}
-	} else {
-		// Other device. Use Win32 API.
-		DWORD bytesRead;
-		BOOL bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
-		if (bRet == 0 || bytesRead != contig_size) {
-			// Read error.
-			q->m_lastError = w32err_to_posix(GetLastError());
-			return ret + bytesRead;
-		}
-		device_pos += contig_size;
-		size -= contig_size;
-		ptr8 += contig_size;
-		ret += contig_size;
-	}
-
-	// Check if we still have data left. (not a full block)
-	if (size > 0) {
-		if (!sector_buffer) {
-			sector_buffer.reset(new uint8_t[sector_size]);
-		}
-
-		// Must be on a sector boundary now.
-		assert(device_pos % sector_size == 0);
-
-		// Read the last block.
-		if (isKreonUnlocked) {
-			// Kreon drive. Use SCSI commands.
-			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), sector_size);
-			if (sret != 0) {
-				// Read error.
-				// TODO: Handle this properly?
-				q->m_lastError = sret;
-				return ret;
-			}
-		} else {
-			DWORD bytesRead;
-			BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
-			if (bRet == 0 || bytesRead != sector_size) {
-				// Read error.
-				q->m_lastError = w32err_to_posix(GetLastError());
-				return ret + bytesRead;
-			}
-		}
-
-		// Copy the data from the sector buffer.
-		memcpy(ptr8, sector_buffer.get(), size);
-
-		device_pos += size;
-		ret += size;
-	}
-
-	// Finished reading the data.
-	return ret;
 }
 
 /** RpFile **/
@@ -545,7 +318,7 @@ void RpFile::init(void)
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	if (d->sector_size == 0 && d->mode == FM_OPEN_READ_GZ) {
+	if (!d->devInfo && d->mode == FM_OPEN_READ_GZ) {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
@@ -651,6 +424,15 @@ bool RpFile::isOpen(void) const
 void RpFile::close(void)
 {
 	RP_D(RpFile);
+
+	// NOTE: devInfo is not deleted here,
+	// since the properties may still be used.
+	// We *will* close any handles and free the
+	// sector cache, though.
+	if (d->devInfo) {
+		d->devInfo->close();
+	}
+
 	if (d->gzfd) {
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
@@ -678,7 +460,7 @@ size_t RpFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Block device. Need to read in multiples of the block size.
 		return d->readUsingBlocks(ptr, size);
 	}
@@ -721,7 +503,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 		return 0;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Writing to block devices is not allowed.
 		m_lastError = EBADF;
 		return 0;
@@ -751,16 +533,16 @@ int RpFile::seek(int64_t pos)
 		return -1;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// SetFilePointerEx() *requires* sector alignment when
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
 		if (pos < 0) {
-			d->device_pos = 0;
-		} else if (pos <= d->device_size) {
-			d->device_pos = pos;
+			d->devInfo->device_pos = 0;
+		} else if (pos <= d->devInfo->device_size) {
+			d->devInfo->device_pos = pos;
 		} else {
-			d->device_pos = d->device_size;
+			d->devInfo->device_pos = d->devInfo->device_size;
 		}
 		return 0;
 	}
@@ -803,11 +585,11 @@ int64_t RpFile::tell(void)
 		return -1;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// SetFilePointerEx() *requires* sector alignment when
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
-		return d->device_pos;
+		return d->devInfo->device_pos;
 	}
 
 	if (d->gzfd) {
@@ -843,7 +625,7 @@ int RpFile::truncate(int64_t size)
 		return -1;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Operation not supported.
 		m_lastError = ENOTSUP;
 		return -1;
@@ -896,9 +678,9 @@ int64_t RpFile::size(void)
 
 	// TODO: Error checking?
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Block device. Use the cached device size.
-		return d->device_size;
+		return d->devInfo->device_size;
 	} else if (d->gzfd) {
 		// gzipped files have the uncompressed size stored
 		// at the end of the stream.
@@ -936,7 +718,7 @@ string RpFile::filename(void) const
 bool RpFile::isDevice(void) const
 {
 	RP_D(const RpFile);
-	return d->isDevice;
+	return d->devInfo;
 }
 
 }

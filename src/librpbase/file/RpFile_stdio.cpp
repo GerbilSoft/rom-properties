@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "RpFile.hpp"
-#include "RpFile_stdio_p.hpp"
+#include "RpFile_p.hpp"
 
 #ifdef _WIN32
 # error RpFile_stdio is not supported on Windows, use RpFile_win32.
@@ -18,6 +18,11 @@
 
 // C includes.
 #include <sys/stat.h>
+#include <unistd.h>	// ftruncate()
+
+// C includes. (C++ namespace)
+#include <cerrno>
+#include <cstring>
 
 namespace LibRpBase {
 
@@ -31,6 +36,7 @@ RpFilePrivate::~RpFilePrivate()
 	if (file) {
 		fclose(file);
 	}
+	delete devInfo;
 }
 
 /**
@@ -85,6 +91,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Check if this is a device.
+	bool isDevice = false;
 	struct stat sb;
 	int ret = fstat(fileno(file), &sb);
 	if (ret == 0) {
@@ -97,10 +104,6 @@ int RpFilePrivate::reOpenFile(void)
 			return -EISDIR;
 		}
 		isDevice = (S_ISBLK(sb.st_mode) || S_ISCHR(sb.st_mode));
-	} else {
-		// Unable to fstat().
-		// Assume this is not a device.
-		isDevice = false;
 	}
 
 	// NOTE: Opening certain device files can cause crashes
@@ -161,6 +164,14 @@ int RpFilePrivate::reOpenFile(void)
 			return -ENOTSUP;
 		}
 #endif /* NO_PATTERNS_FOR_THIS_OS */
+
+		// Allocate devInfo.
+		// NOTE: This is kept around until RpFile is deleted,
+		// even if the device can't be opeend for some reason.
+		devInfo = new DeviceInfo();
+
+		// Get the device size from the OS.
+		q->rereadDeviceSizeOS();
 	}
 
 	return 0;
@@ -284,6 +295,15 @@ bool RpFile::isOpen(void) const
 void RpFile::close(void)
 {
 	RP_D(RpFile);
+
+	// NOTE: devInfo is not deleted here,
+	// since the properties may still be used.
+	// We *will* close any handles and free the
+	// sector cache, though.
+	if (d->devInfo) {
+		d->devInfo->close();
+	}
+
 	if (d->gzfd) {
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
@@ -306,6 +326,11 @@ size_t RpFile::read(void *ptr, size_t size)
 	if (!d->file) {
 		m_lastError = EBADF;
 		return 0;
+	}
+
+	if (d->devInfo) {
+		// Block device. Need to read in multiples of the block size.
+		return d->readUsingBlocks(ptr, size);
 	}
 
 	size_t ret;
@@ -363,6 +388,20 @@ int RpFile::seek(int64_t pos)
 	if (!d->file) {
 		m_lastError = EBADF;
 		return -1;
+	}
+
+	if (d->devInfo) {
+		// SetFilePointerEx() *requires* sector alignment when
+		// accessing device files. Hence, we'll have to maintain
+		// our own device position.
+		if (pos < 0) {
+			d->devInfo->device_pos = 0;
+		} else if (pos <= d->devInfo->device_size) {
+			d->devInfo->device_pos = pos;
+		} else {
+			d->devInfo->device_pos = d->devInfo->device_size;
+		}
+		return 0;
 	}
 
 	int ret;
@@ -466,7 +505,10 @@ int64_t RpFile::size(void)
 
 	// TODO: Error checking?
 
-	if (d->gzfd) {
+	if (d->devInfo) {
+		// Block device. Use the cached device size.
+		return d->devInfo->device_size;
+	} else if (d->gzfd) {
 		// gzipped files have the uncompressed size stored
 		// at the end of the stream.
 		return d->gzsz;
@@ -505,7 +547,7 @@ string RpFile::filename(void) const
 bool RpFile::isDevice(void) const
 {
 	RP_D(const RpFile);
-	return d->isDevice;
+	return d->devInfo;
 }
 
 }

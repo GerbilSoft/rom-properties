@@ -135,6 +135,14 @@ class RpFile : public IRpFile
 		bool isDevice(void) const final;
 
 		/**
+		 * Re-read device size using the native OS API.
+		 * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
+		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+		 * @return 0 on success, negative for POSIX error code.
+		 */
+		int rereadDeviceSizeOS(int64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
+
+		/**
 		 * Re-read device size using SCSI commands.
 		 * This may be needed for Kreon devices.
 		 * @param pDeviceSize	[out,opt] If not NULL, retrieves the device size, in bytes.
@@ -171,8 +179,6 @@ class RpFile : public IRpFile
 		 */
 		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
 
-#ifdef _WIN32
-		// FIXME: d->sector_size is only in the Windows-specific class right now.
 		/**
 		 * Read data from a device using SCSI commands.
 		 * @param lbaStart	[in] Starting LBA of the data to read.
@@ -182,7 +188,6 @@ class RpFile : public IRpFile
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
 		int scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_t bufLen);
-#endif /* _WIN32 */
 
 	public:
 		/**
