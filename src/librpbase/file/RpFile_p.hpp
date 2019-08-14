@@ -11,6 +11,9 @@
 
 #include "RpFile.hpp"
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -86,17 +89,36 @@ class RpFilePrivate
 		// Only used if the underlying file
 		// is a device node.
 		struct DeviceInfo {
-			int64_t device_pos;		// Device position.
-			int64_t device_size;		// Device size.
-			unsigned int sector_size;	// Sector size. (bytes per sector)
-			bool isKreonUnlocked;		// Is Kreon mode unlocked?
+			int64_t device_pos;	// Device position.
+			int64_t device_size;	// Device size.
+			uint32_t sector_size;	// Sector size. (bytes per sector)
+			bool isKreonUnlocked;	// Is Kreon mode unlocked?
+
+			// Sector cache.
+			uint8_t *sector_cache;	// Sector cache.
+			uint32_t lba_cache;	// Last LBA cached.
 
 			DeviceInfo()
 				: device_pos(0)
 				, device_size(0)
 				, sector_size(0)
 				, isKreonUnlocked(0)
+				, sector_cache(nullptr)
+				, lba_cache(~0U)
 			{ }
+
+			~DeviceInfo() { delete[] sector_cache; }
+
+			void alloc_sector_cache(void)
+			{
+				assert(sector_size != 0);
+				assert(sector_size <= 65536);
+				if (!sector_cache) {
+					if (sector_size > 0 && sector_size <= 65536) {
+						sector_cache = new uint8_t[sector_size];
+					}
+				}
+			}
 		};
 
 		DeviceInfo *devInfo;
