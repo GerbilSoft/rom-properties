@@ -295,6 +295,15 @@ bool RpFile::isOpen(void) const
 void RpFile::close(void)
 {
 	RP_D(RpFile);
+
+	// NOTE: devInfo is not deleted here,
+	// since the properties may still be used.
+	// We *will* close any handles and free the
+	// sector cache, though.
+	if (d->devInfo) {
+		d->devInfo->close();
+	}
+
 	if (d->gzfd) {
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
@@ -303,8 +312,6 @@ void RpFile::close(void)
 		fclose(d->file);
 		d->file = nullptr;
 	}
-	// NOTE: devInfo is not deleted here,
-	// since the properties may still be used.
 }
 
 /**

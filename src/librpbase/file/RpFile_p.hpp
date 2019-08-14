@@ -141,6 +141,19 @@ class RpFilePrivate
 					}
 				}
 			}
+
+			void close(void)
+			{
+				delete[] sector_cache;
+				sector_cache = nullptr;
+
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+				if (cam) {
+					cam_close_device(cam);
+					cam = nullptr;
+				}
+#endif
+			}
 		};
 
 		DeviceInfo *devInfo;
