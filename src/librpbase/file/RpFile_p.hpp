@@ -48,6 +48,11 @@ using std::vector;
 # define INVALID_HANDLE_VALUE nullptr
 #endif
 
+// OS-specific headers for DeviceInfo.
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+# include <camlib.h>
+#endif
+
 namespace LibRpBase {
 
 /** RpFilePrivate **/
@@ -98,6 +103,11 @@ class RpFilePrivate
 			uint8_t *sector_cache;	// Sector cache.
 			uint32_t lba_cache;	// Last LBA cached.
 
+			// OS-specific buffers.
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+			struct cam_device *cam;
+#endif
+
 			DeviceInfo()
 				: device_pos(0)
 				, device_size(0)
@@ -105,9 +115,21 @@ class RpFilePrivate
 				, isKreonUnlocked(0)
 				, sector_cache(nullptr)
 				, lba_cache(~0U)
-			{ }
+			{
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+				cam = nullptr;
+#endif
+			}
 
-			~DeviceInfo() { delete[] sector_cache; }
+			~DeviceInfo()
+			{
+				delete[] sector_cache;
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+				if (cam) {
+					cam_close_device(cam);
+				}
+#endif
+			}
 
 			void alloc_sector_cache(void)
 			{

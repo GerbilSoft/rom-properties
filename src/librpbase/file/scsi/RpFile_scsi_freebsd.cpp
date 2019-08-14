@@ -100,27 +100,30 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	union ccb ccb;
 	memset(&ccb, 0, sizeof(ccb));
 
-	// FIXME: Don't repeatedly open/close the CAM device.
-	// Store the struct somewhere and delete it on RpFile delete.
-
-	// Get the device name for CAM.
 	RP_D(RpFile);
-	const int fd = fileno(d->file);
-	if (ioctl(fd, CDIOCALLOW) == -1) {
-		// CDIOCALLOW failed.
-		return -errno;
-	}
-	if (ioctl(fd, CAMGETPASSTHRU, &ccb) < 0) {
-		// CAMGETPASSTHRU failed.
-		return -errno;
-	}
-	char pass[128];
-	snprintf(pass, sizeof(pass), "/dev/%.15s%u", ccb.cgdl.periph_name, ccb.cgdl.unit_number);
-
-	struct cam_device *cam = cam_open_pass(pass, O_RDWR, nullptr);
+	struct cam_device *cam = d->devInfo->cam;
 	if (!cam) {
-		// Unable to open the CAM device.
-		return -EIO;
+		// Get the device name for CAM.
+		const int fd = fileno(d->file);
+		if (ioctl(fd, CDIOCALLOW) == -1) {
+			// CDIOCALLOW failed.
+			return -errno;
+		}
+		if (ioctl(fd, CAMGETPASSTHRU, &ccb) < 0) {
+			// CAMGETPASSTHRU failed.
+			return -errno;
+		}
+		char pass[40];
+		snprintf(pass, sizeof(pass), "/dev/%.15s%u", ccb.cgdl.periph_name, ccb.cgdl.unit_number);
+
+		struct cam_device *cam = cam_open_pass(pass, O_RDWR, nullptr);
+		if (!cam) {
+			// Unable to open the CAM device.
+			return -EIO;
+		}
+
+		// Save the CAM device for later.
+		d->devInfo->cam = cam;
 	}
 
 	// Create the command.
@@ -160,11 +163,9 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	// Attempt to send the CDB.
 	if (cam_send_ccb(cam, &ccb) < 0) {
 		// Error sending the CDB.
-		cam_close_device(cam);
 		return -errno;
 	}
 
-	cam_close_device(cam);
 	if ((ccb.ccb_h.status & CAM_STATUS_MASK) == CAM_REQ_CMP) {
 		// CDB submitted successfully.
 		return 0;
