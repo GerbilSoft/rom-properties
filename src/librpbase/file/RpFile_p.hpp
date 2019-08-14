@@ -9,6 +9,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_P_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_P_HPP__
 
+#include "config.librpbase.h"
 #include "RpFile.hpp"
 
 // C includes. (C++ namespace)
@@ -48,10 +49,12 @@ using std::vector;
 # define INVALID_HANDLE_VALUE nullptr
 #endif
 
+#ifdef RP_OS_SCSI_SUPPORTED
 // OS-specific headers for DeviceInfo.
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-# include <camlib.h>
-#endif
+# if defined(__FreeBSD__) || defined(__DragonFly__)
+#  include <camlib.h>
+# endif /* __FreeBSD__ || __DragonFly__ */
+#endif /* RP_OS_SCSI_SUPPORTED */
 
 namespace LibRpBase {
 
@@ -103,10 +106,12 @@ class RpFilePrivate
 			uint8_t *sector_cache;	// Sector cache.
 			uint32_t lba_cache;	// Last LBA cached.
 
+#ifdef RP_OS_SCSI_SUPPORTED
 			// OS-specific buffers.
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+# if defined(__FreeBSD__) || defined(__DragonFly__)
 			struct cam_device *cam;
-#endif
+# endif /* __FreeBSD__ || __DragonFly__ */
+#endif /* RP_OS_SCSI_SUPPORTED */
 
 			DeviceInfo()
 				: device_pos(0)
@@ -116,19 +121,23 @@ class RpFilePrivate
 				, sector_cache(nullptr)
 				, lba_cache(~0U)
 			{
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#ifdef RP_OS_SCSI_SUPPORTED
+# if defined(__FreeBSD__) || defined(__DragonFly__)
 				cam = nullptr;
-#endif
+# endif /* __FreeBSD__ || __DragonFly__ */
+#endif /* RP_OS_SCSI_SUPPORTED */
 			}
 
 			~DeviceInfo()
 			{
 				delete[] sector_cache;
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#ifdef RP_OS_SCSI_SUPPORTED
+# if defined(__FreeBSD__) || defined(__DragonFly__)
 				if (cam) {
 					cam_close_device(cam);
 				}
-#endif
+# endif /* __FreeBSD__ || __DragonFly__ */
+#endif /* RP_OS_SCSI_SUPPORTED */
 			}
 
 			void alloc_sector_cache(void)
@@ -147,12 +156,14 @@ class RpFilePrivate
 				delete[] sector_cache;
 				sector_cache = nullptr;
 
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#ifdef RP_OS_SCSI_SUPPORTED
+# if defined(__FreeBSD__) || defined(__DragonFly__)
 				if (cam) {
 					cam_close_device(cam);
 					cam = nullptr;
 				}
-#endif
+# endif /* __FreeBSD__ || __DragonFly__ */
+#endif /* RP_OS_SCSI_SUPPORTED */
 			}
 		};
 
