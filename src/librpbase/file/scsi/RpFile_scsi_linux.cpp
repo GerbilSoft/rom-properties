@@ -40,24 +40,24 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	RP_D(RpFile);
 	const int fd = fileno(d->file);
 
-	if (ioctl(fd, BLKGETSIZE64, &d->device_size) < 0) {
-		d->device_size = 0;
-		d->sector_size = 0;
+	if (ioctl(fd, BLKGETSIZE64, &d->devInfo->device_size) < 0) {
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
 		return -errno;
 	}
 
-	if (ioctl(fd, BLKSSZGET, &d->sector_size) < 0) {
-		d->device_size = 0;
-		d->sector_size = 0;
+	if (ioctl(fd, BLKSSZGET, &d->devInfo->sector_size) < 0) {
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
 		return -errno;
 	}
 
 	// Return the values.
 	if (pDeviceSize) {
-		*pDeviceSize = d->device_size;
+		*pDeviceSize = d->devInfo->device_size;
 	}
 	if (pSectorSize) {
-		*pSectorSize = d->sector_size;
+		*pSectorSize = d->devInfo->sector_size;
 	}
 
 	return 0;

@@ -64,10 +64,11 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 		// Save the device size and sector size.
 		// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
 		// but it doesn't provide dwBytesPerSector.
-		d->device_size = static_cast<int64_t>(dwBytesPerSector) *
-				 static_cast<int64_t>(dwSectorsPerCluster) *
-				 static_cast<int64_t>(dwTotalNumberOfClusters);
-		d->sector_size = dwBytesPerSector;
+		d->devInfo->device_size =
+			static_cast<int64_t>(dwBytesPerSector) *
+			 static_cast<int64_t>(dwSectorsPerCluster) *
+			 static_cast<int64_t>(dwTotalNumberOfClusters);
+		d->devInfo->sector_size = dwBytesPerSector;
 	} else {
 		// GetDiskFreeSpace() failed.
 		w32err = GetLastError();
@@ -82,12 +83,12 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 			{
 				// Device geometry retrieved.
 				w32err = 0;
-				d->device_size = dg.DiskSize.QuadPart;
-				d->sector_size = dg.Geometry.BytesPerSector;
+				d->devInfo->device_size = dg.DiskSize.QuadPart;
+				d->devInfo->sector_size = dg.Geometry.BytesPerSector;
 			} else {
 				// IOCTL failed.
-				d->device_size = 0;
-				d->sector_size = 0;
+				d->devInfo->device_size = 0;
+				d->devInfo->sector_size = 0;
 
 				w32err = GetLastError();
 				if (w32err == 0) {
@@ -100,10 +101,10 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	if (w32err == 0) {
 		// Return the values.
 		if (pDeviceSize) {
-			*pDeviceSize = d->device_size;
+			*pDeviceSize = d->devInfo->device_size;
 		}
 		if (pSectorSize) {
-			*pSectorSize = d->sector_size;
+			*pSectorSize = d->devInfo->sector_size;
 		}
 		return 0;
 	}

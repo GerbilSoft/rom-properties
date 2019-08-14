@@ -49,24 +49,24 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	off_t device_size = 0;
 
 	if (ioctl(fd, DIOCGMEDIASIZE, &device_size) < 0) {
-		d->device_size = 0;
-		d->sector_size = 0;
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
 		return -errno;
 	}
-	d->device_size = static_cast<int64_t>(device_size);
+	d->devInfo->device_size = static_cast<int64_t>(device_size);
 
-	if (ioctl(fd, DIOCGSECTORSIZE, &d->sector_size) < 0) {
-		d->device_size = 0;
-		d->sector_size = 0;
+	if (ioctl(fd, DIOCGSECTORSIZE, &d->devInfo->sector_size) < 0) {
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
 		return -errno;
 	}
 
 	// Return the values.
 	if (pDeviceSize) {
-		*pDeviceSize = d->device_size;
+		*pDeviceSize = d->devInfo->device_size;
 	}
 	if (pSectorSize) {
-		*pSectorSize = d->sector_size;
+		*pSectorSize = d->devInfo->sector_size;
 	}
 
 	return 0;

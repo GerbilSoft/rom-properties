@@ -33,6 +33,10 @@ using std::string;
 #include <winioctl.h>
 #include <io.h>
 
+// TODO: Combine with RpFile_stdio_p.hpp,
+// since these are basically the same except
+// for INVALID_HANDLE_VALUE and HANDLE vs. FILE*.
+
 namespace LibRpBase {
 
 /** RpFilePrivate **/
@@ -42,12 +46,10 @@ class RpFilePrivate
 	public:
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
-			, gzfd(nullptr), gzsz(-1), sector_size(0) { }
+			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), isDevice(false), isKreonUnlocked(false), device_pos(0)
-			, gzfd(nullptr), gzsz(-1), sector_size(0) { }
+			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
 		~RpFilePrivate();
 
 	private:
@@ -59,24 +61,30 @@ class RpFilePrivate
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
 
-		bool isDevice;		// Is this a device file?
-		bool isKreonUnlocked;	// Is Kreon mode unlocked?
+		gzFile gzfd;		// Used for transparent gzip decompression.
+		int64_t gzsz;		// Uncompressed file size.
 
-		// SetFilePointerEx() *requires* sector alignment when
-		// accessing device files. Hence, we'll have to maintain
-		// our own device position.
-		int64_t device_pos;	// Device position.
+		// Device information struct.
+		// Only used if the underlying file
+		// is a device node.
+		struct DeviceInfo {
+			// SetFilePointerEx() *requires* sector alignment when
+			// accessing device files. Hence, we'll have to maintain
+			// our own device position.
+			int64_t device_pos;		// Device position.
+			int64_t device_size;		// Device size.
+			unsigned int sector_size;	// Sector size. (bytes per sector)
+			bool isKreonUnlocked;		// Is Kreon mode unlocked?
 
-		// gzip parameters.
-		gzFile gzfd;			// Used for transparent gzip decompression.
-		union {
-			int64_t gzsz;		// Uncompressed file size.
-			int64_t device_size;	// Device size. (for block devices)
+			DeviceInfo()
+				: device_pos(0)
+				, device_size(0)
+				, sector_size(0)
+				, isKreonUnlocked(0)
+			{ }
 		};
 
-		// Block device parameters.
-		// Set to 0 if this is a regular file.
-		unsigned int sector_size;	// Sector size. (bytes per sector)
+		DeviceInfo *devInfo;
 
 	public:
 		/**

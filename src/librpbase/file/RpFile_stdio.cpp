@@ -31,6 +31,7 @@ RpFilePrivate::~RpFilePrivate()
 	if (file) {
 		fclose(file);
 	}
+	delete devInfo;
 }
 
 /**
@@ -85,6 +86,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Check if this is a device.
+	bool isDevice = false;
 	struct stat sb;
 	int ret = fstat(fileno(file), &sb);
 	if (ret == 0) {
@@ -97,10 +99,6 @@ int RpFilePrivate::reOpenFile(void)
 			return -EISDIR;
 		}
 		isDevice = (S_ISBLK(sb.st_mode) || S_ISCHR(sb.st_mode));
-	} else {
-		// Unable to fstat().
-		// Assume this is not a device.
-		isDevice = false;
 	}
 
 	// NOTE: Opening certain device files can cause crashes
@@ -161,6 +159,11 @@ int RpFilePrivate::reOpenFile(void)
 			return -ENOTSUP;
 		}
 #endif /* NO_PATTERNS_FOR_THIS_OS */
+
+		// Allocate devInfo.
+		// NOTE: This is kept around until RpFile is deleted,
+		// even if the device can't be opeend for some reason.
+		devInfo = new DeviceInfo();
 
 		// Get the device size from the OS.
 		q->rereadDeviceSizeOS();
@@ -295,6 +298,8 @@ void RpFile::close(void)
 		fclose(d->file);
 		d->file = nullptr;
 	}
+	// NOTE: devInfo is not deleted here,
+	// since the properties may still be used.
 }
 
 /**
@@ -311,7 +316,7 @@ size_t RpFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Block device. Need to read in multiples of the block size.
 		return d->readUsingBlocks(ptr, size);
 	}
@@ -373,16 +378,16 @@ int RpFile::seek(int64_t pos)
 		return -1;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// SetFilePointerEx() *requires* sector alignment when
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
 		if (pos < 0) {
-			d->device_pos = 0;
-		} else if (pos <= d->device_size) {
-			d->device_pos = pos;
+			d->devInfo->device_pos = 0;
+		} else if (pos <= d->devInfo->device_size) {
+			d->devInfo->device_pos = pos;
 		} else {
-			d->device_pos = d->device_size;
+			d->devInfo->device_pos = d->devInfo->device_size;
 		}
 		return 0;
 	}
@@ -488,9 +493,9 @@ int64_t RpFile::size(void)
 
 	// TODO: Error checking?
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Block device. Use the cached device size.
-		return d->device_size;
+		return d->devInfo->device_size;
 	} else if (d->gzfd) {
 		// gzipped files have the uncompressed size stored
 		// at the end of the stream.
@@ -530,7 +535,7 @@ string RpFile::filename(void) const
 bool RpFile::isDevice(void) const
 {
 	RP_D(const RpFile);
-	return d->isDevice;
+	return d->devInfo;
 }
 
 }

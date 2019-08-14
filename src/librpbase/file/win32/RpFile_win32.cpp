@@ -56,6 +56,7 @@ RpFilePrivate::~RpFilePrivate()
 	if (file && file != INVALID_HANDLE_VALUE) {
 		CloseHandle(file);
 	}
+	delete devInfo;
 }
 
 /**
@@ -131,6 +132,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Check if the path starts with a drive letter.
+	bool isDevice = false;
 	if (filename.size() >= 3 &&
 	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
@@ -151,12 +153,10 @@ int RpFilePrivate::reOpenFile(void)
 				case DRIVE_UNKNOWN:
 				case DRIVE_NO_ROOT_DIR:
 					// No drive.
-					isDevice = false;
 					q->m_lastError = ENODEV;
 					return -ENODEV;
 				default:
 					// Not a CD-ROM drive.
-					isDevice = false;
 					q->m_lastError = ENOTSUP;
 					return -ENOTSUP;
 			}
@@ -168,7 +168,6 @@ int RpFilePrivate::reOpenFile(void)
 			isDevice = true;
 		} else {
 			// Absolute path.
-			isDevice = false;
 #ifdef UNICODE
 			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
@@ -181,7 +180,6 @@ int RpFilePrivate::reOpenFile(void)
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		isDevice = false;
 		tfilename = U82T_s(filename);
 	}
 
@@ -207,6 +205,11 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	if (isDevice) {
+		// Allocate devInfo.
+		// NOTE: This is kept around until RpFile is deleted,
+		// even if the device can't be opeend for some reason.
+		devInfo = new DeviceInfo();
+
 		if (mode & RpFile::FM_WRITE) {
 			// Writing to block devices is not allowed.
 			q->m_lastError = EINVAL;
@@ -315,7 +318,7 @@ void RpFile::init(void)
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	if (d->sector_size == 0 && d->mode == FM_OPEN_READ_GZ) {
+	if (!d->devInfo && d->mode == FM_OPEN_READ_GZ) {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
@@ -429,6 +432,8 @@ void RpFile::close(void)
 		CloseHandle(d->file);
 		d->file = INVALID_HANDLE_VALUE;
 	}
+	// NOTE: devInfo is not deleted here,
+	// since the properties may still be used.
 }
 
 /**
@@ -448,7 +453,7 @@ size_t RpFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Block device. Need to read in multiples of the block size.
 		return d->readUsingBlocks(ptr, size);
 	}
@@ -491,7 +496,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 		return 0;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Writing to block devices is not allowed.
 		m_lastError = EBADF;
 		return 0;
@@ -521,16 +526,16 @@ int RpFile::seek(int64_t pos)
 		return -1;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// SetFilePointerEx() *requires* sector alignment when
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
 		if (pos < 0) {
-			d->device_pos = 0;
-		} else if (pos <= d->device_size) {
-			d->device_pos = pos;
+			d->devInfo->device_pos = 0;
+		} else if (pos <= d->devInfo->device_size) {
+			d->devInfo->device_pos = pos;
 		} else {
-			d->device_pos = d->device_size;
+			d->devInfo->device_pos = d->devInfo->device_size;
 		}
 		return 0;
 	}
@@ -573,11 +578,11 @@ int64_t RpFile::tell(void)
 		return -1;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// SetFilePointerEx() *requires* sector alignment when
 		// accessing device files. Hence, we'll have to maintain
 		// our own device position.
-		return d->device_pos;
+		return d->devInfo->device_pos;
 	}
 
 	if (d->gzfd) {
@@ -613,7 +618,7 @@ int RpFile::truncate(int64_t size)
 		return -1;
 	}
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Operation not supported.
 		m_lastError = ENOTSUP;
 		return -1;
@@ -666,9 +671,9 @@ int64_t RpFile::size(void)
 
 	// TODO: Error checking?
 
-	if (d->isDevice) {
+	if (d->devInfo) {
 		// Block device. Use the cached device size.
-		return d->device_size;
+		return d->devInfo->device_size;
 	} else if (d->gzfd) {
 		// gzipped files have the uncompressed size stored
 		// at the end of the stream.
@@ -706,7 +711,7 @@ string RpFile::filename(void) const
 bool RpFile::isDevice(void) const
 {
 	RP_D(const RpFile);
-	return d->isDevice;
+	return d->devInfo;
 }
 
 }

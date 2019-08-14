@@ -44,10 +44,12 @@ namespace LibRpBase {
  */
 size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 {
-	assert(device_size > 0);
-	assert(sector_size >= 512);
-	if (device_size <= 0 || sector_size < 512) {
+	assert(devInfo != nullptr);
+	assert(devInfo->device_size > 0);
+	assert(devInfo->sector_size >= 512);
+	if (!devInfo) {
 		// Not a block device...
+		// NOTE: Not checking device_size or sector_size anymore.
 		return 0;
 	}
 
@@ -57,26 +59,26 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	RP_Q(RpFile);
 
 	// Are we already at the end of the block device?
-	if (device_pos >= device_size) {
+	if (devInfo->device_pos >= devInfo->device_size) {
 		// End of the block device.
 		return 0;
 	}
 
 	// Make sure device_pos + size <= d->device_size.
 	// If it isn't, we'll do a short read.
-	if (device_pos + static_cast<int64_t>(size) >= device_size) {
-		size = static_cast<size_t>(device_size - device_pos);
+	if (devInfo->device_pos + static_cast<int64_t>(size) >= devInfo->device_size) {
+		size = static_cast<size_t>(devInfo->device_size - devInfo->device_pos);
 	}
 
 	// Seek to the beginning of the first block.
 	// NOTE: sector_size must be a power of two.
-	assert(isPow2(sector_size));
+	assert(isPow2(devInfo->sector_size));
 	// TODO: 64-bit LBAs?
-	uint32_t lba_cur = static_cast<uint32_t>(device_pos / sector_size);
-	if (!isKreonUnlocked) {
+	uint32_t lba_cur = static_cast<uint32_t>(devInfo->device_pos / devInfo->sector_size);
+	if (!devInfo->isKreonUnlocked) {
 		// Not a Kreon drive. Use the OS API.
 		// TODO: Call RpFile::seek()?
-		const int64_t seek_pos = lba_cur * sector_size;
+		const int64_t seek_pos = lba_cur * devInfo->sector_size;
 #ifdef _WIN32
 		LARGE_INTEGER liSeekPos;
 		liSeekPos.QuadPart = seek_pos;
@@ -100,18 +102,18 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	unique_ptr<uint8_t[]> sector_buffer;
 
 	// Check if we're not starting on a block boundary.
-	const uint32_t blockStartOffset = device_pos % sector_size;
+	const uint32_t blockStartOffset = devInfo->device_pos % devInfo->sector_size;
 	if (blockStartOffset != 0) {
 		// Not a block boundary.
 		// Read the end of the first block.
 		if (!sector_buffer) {
-			sector_buffer.reset(new uint8_t[sector_size]);
+			sector_buffer.reset(new uint8_t[devInfo->sector_size]);
 		}
 
 		// Read the first block.
-		if (isKreonUnlocked) {
+		if (devInfo->isKreonUnlocked) {
 			// Kreon drive. Use SCSI commands.
-			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), sector_size);
+			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), devInfo->sector_size);
 			if (sret != 0) {
 				// Read error.
 				// TODO: Handle this properly?
@@ -124,15 +126,15 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 			// TODO: Call RpFile::read()?
 #ifdef _WIN32
 			DWORD bytesRead;
-			BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
-			if (bRet == 0 || bytesRead != sector_size) {
+			BOOL bRet = ReadFile(file, sector_buffer.get(), devInfo->sector_size, &bytesRead, nullptr);
+			if (bRet == 0 || bytesRead != devInfo->sector_size) {
 				// Read error.
 				q->m_lastError = w32err_to_posix(GetLastError());
 				return bytesRead;
 			}
 #else /* !_WIN32 */
-			size_t bytesRead = fread(sector_buffer.get(), 1, sector_size, file);
-			if (ferror(file) || ret != sector_size) {
+			size_t bytesRead = fread(sector_buffer.get(), 1, devInfo->sector_size, file);
+			if (ferror(file) || ret != devInfo->sector_size) {
 				// Read error.
 				q->m_lastError = errno;
 				return bytesRead;
@@ -141,14 +143,14 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		}
 
 		// Copy the data from the sector buffer.
-		uint32_t read_sz = sector_size - blockStartOffset;
+		uint32_t read_sz = devInfo->sector_size - blockStartOffset;
 		if (size < static_cast<size_t>(read_sz)) {
 			read_sz = static_cast<uint32_t>(size);
 		}
 		memcpy(ptr8, &sector_buffer[blockStartOffset], read_sz);
 
 		// Starting block read.
-		device_pos += read_sz;
+		devInfo->device_pos += read_sz;
 		size -= read_sz;
 		ptr8 += read_sz;
 		ret += read_sz;
@@ -160,21 +162,21 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	}
 
 	// Must be on a sector boundary now.
-	assert(device_pos % sector_size == 0);
+	assert(devInfo->device_pos % devInfo->sector_size == 0);
 
 	// Read contiguous blocks.
-	int64_t lba_count = size / sector_size;
-	size_t contig_size = lba_count * sector_size;
-	if (isKreonUnlocked) {
+	int64_t lba_count = size / devInfo->sector_size;
+	size_t contig_size = lba_count * devInfo->sector_size;
+	if (devInfo->isKreonUnlocked) {
 		// Kreon drive. Use SCSI commands.
 		// NOTE: Reading up to 65535 LBAs at a time due to READ(10) limitations.
 		// TODO: Move the 65535 LBA code down to RpFile::scsi_read()?
 		// FIXME: Seems to have issues above a certain number of LBAs on Linux...
 		// Reducing it to 64 KB maximum reads.
-		uint32_t lba_increment = 65536 / sector_size;
+		uint32_t lba_increment = 65536 / devInfo->sector_size;
 		for (; lba_count > 0; lba_count -= lba_increment) {
 			const uint16_t lba_cur_count = (lba_count > lba_increment ? lba_increment : (uint16_t)lba_count);
-			const size_t lba_cur_size = (size_t)lba_cur_count * sector_size;
+			const size_t lba_cur_size = (size_t)lba_cur_count * devInfo->sector_size;
 			int sret = q->scsi_read(lba_cur, lba_cur_count, ptr8, lba_cur_size);
 			if (sret != 0) {
 				// Read error.
@@ -182,7 +184,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 				q->m_lastError = sret;
 				return ret;
 			}
-			device_pos += lba_cur_size;
+			devInfo->device_pos += lba_cur_size;
 			lba_cur += lba_cur_count;
 			size -= lba_cur_size;
 			ptr8 += lba_cur_size;
@@ -208,7 +210,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		}
 #endif /* _WIN32 */
 
-		device_pos += contig_size;
+		devInfo->device_pos += contig_size;
 		size -= contig_size;
 		ptr8 += contig_size;
 		ret += contig_size;
@@ -217,16 +219,16 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	// Check if we still have data left. (not a full block)
 	if (size > 0) {
 		if (!sector_buffer) {
-			sector_buffer.reset(new uint8_t[sector_size]);
+			sector_buffer.reset(new uint8_t[devInfo->sector_size]);
 		}
 
 		// Must be on a sector boundary now.
-		assert(device_pos % sector_size == 0);
+		assert(devInfo->device_pos % devInfo->sector_size == 0);
 
 		// Read the last block.
-		if (isKreonUnlocked) {
+		if (devInfo->isKreonUnlocked) {
 			// Kreon drive. Use SCSI commands.
-			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), sector_size);
+			int sret = q->scsi_read(lba_cur, 1, sector_buffer.get(), devInfo->sector_size);
 			if (sret != 0) {
 				// Read error.
 				// TODO: Handle this properly?
@@ -238,15 +240,15 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 			// TODO: Call RpFile::read()?
 #ifdef _WIN32
 			DWORD bytesRead;
-			BOOL bRet = ReadFile(file, sector_buffer.get(), sector_size, &bytesRead, nullptr);
-			if (bRet == 0 || bytesRead != sector_size) {
+			BOOL bRet = ReadFile(file, sector_buffer.get(), devInfo->sector_size, &bytesRead, nullptr);
+			if (bRet == 0 || bytesRead != devInfo->sector_size) {
 				// Read error.
 				q->m_lastError = w32err_to_posix(GetLastError());
 				return ret + bytesRead;
 			}
 #else /* !_WIN32 */
-			size_t bytesRead = fread(sector_buffer.get(), 1, sector_size, file);
-			if (ferror(file) || bytesRead != sector_size) {
+			size_t bytesRead = fread(sector_buffer.get(), 1, devInfo->sector_size, file);
+			if (ferror(file) || bytesRead != devInfo->sector_size) {
 				// Read error.
 				q->m_lastError = errno;
 				return ret + bytesRead;
@@ -257,7 +259,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		// Copy the data from the sector buffer.
 		memcpy(ptr8, sector_buffer.get(), size);
 
-		device_pos += size;
+		devInfo->device_pos += size;
 		ret += size;
 	}
 
@@ -277,7 +279,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 {
 	RP_D(RpFile);
-	if (!d->isDevice) {
+	if (!d->devInfo) {
 		// Not a device.
 		return -ENODEV;
 	}
@@ -293,10 +295,10 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 
 #ifdef _WIN32
 	// Sector size should match.
-	assert(d->sector_size == sector_size);
+	assert(d->devInfo->sector_size == sector_size);
 
 	// Update the device size.
-	d->device_size = device_size;
+	d->devInfo->device_size = device_size;
 #endif /* _WIN32 */
 
 	// Return the values.
@@ -326,7 +328,7 @@ int RpFile::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize)
 		return -EINVAL;
 
 	RP_D(RpFile);
-	if (!d->isDevice) {
+	if (!d->devInfo) {
 		// Not a device.
 		return -ENODEV;
 	}
@@ -416,15 +418,15 @@ int RpFile::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_
 		return -EINVAL;
 
 	RP_D(RpFile);
-	if (!d->isDevice) {
+	if (!d->devInfo) {
 		// Not a device.
 		return -ENODEV;
 	}
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	// FIXME: d->sector_size is only in the Windows-specific class right now.
-	assert(bufLen >= (int64_t)lbaCount * (int64_t)d->sector_size);
-	if (bufLen < (int64_t)lbaCount * (int64_t)d->sector_size) {
+	assert(bufLen >= (int64_t)lbaCount * (int64_t)d->devInfo->sector_size);
+	if (bufLen < (int64_t)lbaCount * (int64_t)d->devInfo->sector_size) {
 		// TODO: Better error code?
 		return -EIO;
 	}
@@ -462,7 +464,7 @@ int RpFile::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_
 bool RpFile::isKreonDriveModel(void)
 {
 	RP_D(RpFile);
-	if (!d->isDevice) {
+	if (!d->devInfo) {
 		// Not a device.
 		return false;
 	}
@@ -569,7 +571,7 @@ vector<uint16_t> RpFile::getKreonFeatureList(void)
 	// NOTE: On Linux, this ioctl will fail if not running as root.
 	RP_D(RpFile);
 	vector<uint16_t> vec;
-	if (!d->isDevice) {
+	if (!d->devInfo) {
 		// Not a device.
 		return vec;
 	}
@@ -614,7 +616,7 @@ int RpFile::setKreonErrorSkipState(bool skip)
 {
 	// NOTE: On Linux, this ioctl will fail if not running as root.
 	RP_D(RpFile);
-	if (!d->isDevice) {
+	if (!d->devInfo) {
 		// Not a device.
 		return -ENODEV;
 	}
@@ -639,7 +641,7 @@ int RpFile::setKreonLockState(KreonLockState lockState)
 {
 	// NOTE: On Linux, this ioctl will fail if not running as root.
 	RP_D(RpFile);
-	if (!d->isDevice) {
+	if (!d->devInfo) {
 		// Not a device.
 		return -ENODEV;
 	}
@@ -650,7 +652,7 @@ int RpFile::setKreonLockState(KreonLockState lockState)
 	uint8_t cdb[6] = {0xFF, 0x08, 0x01, 0x11, static_cast<uint8_t>(lockState), 0x00};
 	int ret = scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, SCSI_DIR_IN);
 	if (ret == 0) {
-		d->isKreonUnlocked = (lockState != KREON_STATE_LOCKED);
+		d->devInfo->isKreonUnlocked = (lockState != KREON_STATE_LOCKED);
 	}
 	return ret;
 #else /* !RP_OS_SCSI_SUPPORTED */
