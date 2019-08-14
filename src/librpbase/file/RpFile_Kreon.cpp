@@ -306,13 +306,11 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 		return ret;
 	}
 
-#ifdef _WIN32
 	// Sector size should match.
 	assert(d->devInfo->sector_size == sector_size);
 
 	// Update the device size.
 	d->devInfo->device_size = device_size;
-#endif /* _WIN32 */
 
 	// Return the values.
 	if (pDeviceSize) {
