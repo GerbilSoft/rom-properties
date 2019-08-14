@@ -606,6 +606,10 @@ XboxXPR::XboxXPR(IRpFile *file)
  */
 const char *XboxXPR::textureFormatName(void) const
 {
+	RP_D(const XboxXPR);
+	if (!d->isValid)
+		return nullptr;
+
 	// TODO: XPR1/XPR2?
 	return "Microsoft Xbox XPR0";
 }
