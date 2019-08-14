@@ -490,6 +490,11 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 		}
 	}
 
+	if (!img) {
+		// Unable to decode the image.
+		return nullptr;
+	}
+
 	if (mode.swizzled) {
 		// Image is swizzled.
 		// Unswizzling code is based on Cxbx-Reloaded:
