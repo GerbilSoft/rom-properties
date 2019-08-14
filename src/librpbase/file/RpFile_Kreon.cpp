@@ -169,8 +169,11 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		// Kreon drive. Use SCSI commands.
 		// NOTE: Reading up to 65535 LBAs at a time due to READ(10) limitations.
 		// TODO: Move the 65535 LBA code down to RpFile::scsi_read()?
-		for (; lba_count > 0; lba_count -= 65535) {
-			const uint16_t lba_cur_count = (lba_count > 65535 ? 65535 : (uint16_t)lba_count);
+		// FIXME: Seems to have issues above a certain number of LBAs on Linux...
+		// Reducing it to 64 KB maximum reads.
+		uint32_t lba_increment = 65536 / sector_size;
+		for (; lba_count > 0; lba_count -= lba_increment) {
+			const uint16_t lba_cur_count = (lba_count > lba_increment ? lba_increment : (uint16_t)lba_count);
 			const size_t lba_cur_size = (size_t)lba_cur_count * sector_size;
 			int sret = q->scsi_read(lba_cur, lba_cur_count, ptr8, lba_cur_size);
 			if (sret != 0) {
