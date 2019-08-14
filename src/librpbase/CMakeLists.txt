@@ -203,7 +203,7 @@ IF(WIN32)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_linux.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
-ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Dragonfly")
 	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
 	IF(0) # FIXME
 	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work

@@ -8,9 +8,9 @@
 
 // Partially based on libcdio-2.1.0's freebsd_cam.c.
 
-#ifndef __FreeBSD__
-# error RpFile_scsi_freebsd.cpp is for FreeBSD ONLY.
-#endif /* __FreeBSD__ */
+#if !defined(__FreeBSD__) && !defined(__DragonFly__)
+# error RpFile_scsi_freebsd.cpp is for FreeBSD and DragonFly BSD ONLY.
+#endif /* !__FreeBSD__ && !__DragonFly__ */
 
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"

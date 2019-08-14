@@ -25,8 +25,8 @@
 #endif
 
 // iconv
-#if !defined(_WIN32) && !defined(__linux__) && !defined(HAVE_ICONV_LIBICONV)
-// FreeBSD 10 has its own iconv() implementation, but if
+#if (defined(__FreeBSD__) || defined(__DragonFly__)) && !defined(HAVE_ICONV_LIBICONV)
+// FreeBSD 10.0 has its own iconv() implementation, but if
 // GNU libiconv is installed (/usr/local), its header gets
 // used first, so explicitly use the system iconv.h on
 // non-Linux systems.
