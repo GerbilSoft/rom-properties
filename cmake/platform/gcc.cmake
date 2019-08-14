@@ -103,7 +103,7 @@ EXECUTE_PROCESS(COMMAND ${CMAKE_LINKER} --help
 	OUTPUT_VARIABLE _ld_out
 	ERROR_QUIET)
 
-FOREACH(FLAG_TEST "-O" "--sort-common" "--as-needed" "--build-id")
+FOREACH(FLAG_TEST "--sort-common" "--as-needed" "--build-id")
 	IF(NOT DEFINED LDFLAG_${FLAG_TEST})
 		MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST}")
 		IF(_ld_out MATCHES "${FLAG_TEST}")
@@ -119,6 +119,24 @@ FOREACH(FLAG_TEST "-O" "--sort-common" "--as-needed" "--build-id")
 		SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} -Wl,${FLAG_TEST}")
 	ENDIF(LDFLAG_${FLAG_TEST})
 ENDFOREACH()
+
+# Special case for -O/-O1.
+SET(FLAG_TEST "-O")
+	IF(NOT DEFINED LDFLAG_${FLAG_TEST})
+		MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST}")
+		IF(_ld_out MATCHES "${FLAG_TEST}")
+			MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST} - yes")
+			SET(LDFLAG_${FLAG_TEST} 1 CACHE INTERNAL "Linker supports ${FLAG_TEST}")
+		ELSE()
+			MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST} - no")
+			SET(LDFLAG_${FLAG_TEST} "" CACHE INTERNAL "Linker supports ${FLAG_TEST}")
+		ENDIF()
+	ENDIF()
+
+	IF(LDFLAG_${FLAG_TEST})
+		SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} -Wl,-O1")
+	ENDIF(LDFLAG_${FLAG_TEST})
+UNSET(FLAG_TEST)
 
 # Special case for --compress-debug-sections.
 SET(FLAG_TEST "--compress-debug-sections")
