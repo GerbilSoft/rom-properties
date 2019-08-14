@@ -13,7 +13,7 @@
 #endif /* __FreeBSD__ */
 
 #include "../RpFile.hpp"
-#include "../RpFile_stdio_p.hpp"
+#include "../RpFile_p.hpp"
 
 #include "scsi_protocol.h"
 

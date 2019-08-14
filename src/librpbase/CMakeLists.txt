@@ -156,6 +156,7 @@ SET(librpbase_H
 	bitstuff.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
+	file/RpFile_p.hpp
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
 	file/RelatedFile.hpp
@@ -242,9 +243,6 @@ ELSE(WIN32)
 		TextFuncs_iconv.cpp
 		file/FileSystem_posix.cpp
 		file/RpFile_stdio.cpp
-		)
-	SET(librpbase_OS_H
-		file/RpFile_stdio_p.hpp
 		)
 ENDIF(WIN32)
 

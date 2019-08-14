@@ -11,7 +11,7 @@
 #endif /* _WIN32 */
 
 #include "../RpFile.hpp"
-#include "../win32/RpFile_win32_p.hpp"
+#include "../RpFile_p.hpp"
 
 #include "scsi_protocol.h"
 

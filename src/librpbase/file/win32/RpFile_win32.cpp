@@ -9,7 +9,7 @@
 #include "config.librpbase.h"
 
 #include "../RpFile.hpp"
-#include "RpFile_win32_p.hpp"
+#include "../RpFile_p.hpp"
 
 // librpbase
 #include "bitstuff.h"

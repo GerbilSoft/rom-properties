@@ -9,11 +9,9 @@
 #include "config.librpbase.h"
 
 #include "RpFile.hpp"
+#include "RpFile_p.hpp"
 #ifdef _WIN32
-# include "win32/RpFile_win32_p.hpp"
 # include "libwin32common/w32err.h"
-#else
-# include "RpFile_stdio_p.hpp"
 #endif
 
 #include "scsi/scsi_protocol.h"

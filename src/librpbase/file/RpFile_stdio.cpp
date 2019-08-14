@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "RpFile.hpp"
-#include "RpFile_stdio_p.hpp"
+#include "RpFile_p.hpp"
 
 #ifdef _WIN32
 # error RpFile_stdio is not supported on Windows, use RpFile_win32.
@@ -18,6 +18,10 @@
 
 // C includes.
 #include <sys/stat.h>
+#include <unistd.h>	// ftruncate()
+
+// C includes. (C++ namespace)
+#include <cstring>
 
 namespace LibRpBase {
 

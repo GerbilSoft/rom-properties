@@ -1,20 +1,15 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * RpFile_stdio_p.hpp: Standard file object. (PRIVATE CLASS)               *
+ * RpFile_p.hpp: Standard file object. (PRIVATE CLASS)                     *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_STDIO_P_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_STDIO_P_HPP__
+#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_P_HPP__
+#define __ROMPROPERTIES_LIBRPBASE_FILE_RPFILE_P_HPP__
 
 #include "RpFile.hpp"
-
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
 
 // C++ includes.
 #include <string>
@@ -35,11 +30,20 @@ using std::vector;
 #endif
 
 #ifdef _WIN32
-# error RpFile_stdio is not supported on Windows, use RpFile_win32.
+// Windows SDK
+# include <windows.h>
+# include <winioctl.h>
+# include <io.h>
+#else /* !_WIN32 */
+// C includes. (C++ namespace)
+# include <cstdio>
 #endif /* _WIN32 */
 
-// ftruncate()
-#include <unistd.h>
+// Windows uses INVALID_HANDLE_VALUE for invalid handles.
+// Other systems generally use nullptr.
+#ifndef _WIN32
+# define INVALID_HANDLE_VALUE nullptr
+#endif
 
 namespace LibRpBase {
 
@@ -48,11 +52,21 @@ namespace LibRpBase {
 class RpFilePrivate
 {
 	public:
+		// NOTE: Using #define instead of static const
+		// to work around C2864 on MSVC.
+#ifdef _WIN32
+		typedef HANDLE FILE_TYPE;
+# define FILE_INIT INVALID_HANDLE_VALUE
+#else /* !_WIN32 */
+		typedef FILE *FILE_TYPE;
+# define FILE_INIT nullptr
+#endif /* _WIN32 */
+
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename)
+			: q_ptr(q), file(FILE_INIT), filename(filename)
 			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(nullptr), filename(filename)
+			: q_ptr(q), file(FILE_INIT), filename(filename)
 			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
 		~RpFilePrivate();
 
@@ -61,7 +75,7 @@ class RpFilePrivate
 		RpFile *const q_ptr;
 
 	public:
-		FILE *file;		// File pointer.
+		FILE_TYPE file;		// File pointer.
 		string filename;	// Filename.
 		RpFile::FileMode mode;	// File mode.
 
@@ -88,12 +102,27 @@ class RpFilePrivate
 		DeviceInfo *devInfo;
 
 	public:
+#ifdef _WIN32
+		/**
+		 * Convert an RpFile::FileMode to Win32 CreateFile() parameters.
+		 * @param mode				[in] FileMode
+		 * @param pdwDesiredAccess		[out] dwDesiredAccess
+		 * @param pdwShareMode			[out] dwShareMode
+		 * @param pdwCreationDisposition	[out] dwCreationDisposition
+		 * @return 0 on success; non-zero on error.
+		 */
+		static inline int mode_to_win32(RpFile::FileMode mode,
+			DWORD *pdwDesiredAccess,
+			DWORD *pdwShareMode,
+			DWORD *pdwCreationDisposition);
+#else /* !_WIN32 */
 		/**
 		 * Convert an RpFile::FileMode to an fopen() mode string.
 		 * @param mode	[in] FileMode
 		 * @return fopen() mode string.
 		 */
 		static inline const char *mode_to_str(RpFile::FileMode mode);
+#endif /* _WIN32 */
 
 		/**
 		 * (Re-)Open the main file.
