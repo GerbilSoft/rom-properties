@@ -2,6 +2,19 @@
 
 ## v1.5 (released 2019/??/??)
 
+* New features:
+  * Improved support for FreeBSD and DragonFly BSD:
+    * FreeBSD 10.0's iconv() is used if available. Otherwise, libiconv is used.
+    * Fix LDFLAG detection for compressed debug sections (and others).
+    * General build fixes for differences in e.g. system headers.
+
+* Bug fixes:
+  * In some cases, the SCSI handlers for both Linux and Windows weren't working
+    properly. In particular, on Linux, attempting to read "too much" data at
+    once resulted in getting nothing, and on both systems, in some cases,
+    passing a buffer larger than the number of requested sectors results in
+    the sectors being loaded at the *end* of the buffer, not the beginning.
+
 ## v1.4 (released 2019/08/04)
 
 * New features:
