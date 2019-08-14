@@ -111,10 +111,10 @@ class RpFilePrivate
 
 			void alloc_sector_cache(void)
 			{
-				assert(sector_size != 0);
+				assert(sector_size >= 512);
 				assert(sector_size <= 65536);
 				if (!sector_cache) {
-					if (sector_size > 0 && sector_size <= 65536) {
+					if (sector_size >= 512 && sector_size <= 65536) {
 						sector_cache = new uint8_t[sector_size];
 					}
 				}

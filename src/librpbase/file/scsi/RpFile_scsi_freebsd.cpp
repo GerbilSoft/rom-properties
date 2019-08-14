@@ -61,6 +61,17 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 		return -errno;
 	}
 
+	// Validate the sector size.
+	assert(d->devInfo->sector_size >= 512);
+	assert(d->devInfo->sector_size <= 65536);
+	if (d->devInfo->sector_size < 512 || d->devInfo->sector_size > 65536) {
+		// Sector size is out of range.
+		// TODO: Also check for isPow2()?
+		d->devInfo->device_size = 0;
+		d->devInfo->sector_size = 0;
+		return -EIO;
+	}
+
 	// Return the values.
 	if (pDeviceSize) {
 		*pDeviceSize = d->devInfo->device_size;
