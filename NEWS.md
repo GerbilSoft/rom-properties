@@ -22,6 +22,11 @@
   * GameCube I8 image decoder: The palette was being generated incorrectly.
     This has been fixed, though since I8 images are uncommon, this probably
     didn't cause too many problems.
+  * GameCube I8 image decoder: The palette was being generated incorrectly.
+    This has been fixed, though since I8 images are uncommon, this probably
+    didn't cause too many problems.
+  * Xbox XPR0 texture decoder: Fix a NULL pointer dereference that might
+    happen if the texture format is swizzled but texture decoding fails.
 
 ## v1.4.3 (released 2019/09/16)
 
