@@ -158,6 +158,13 @@ class RpFilePrivate
 		int reOpenFile(void);
 
 		/**
+		 * Read one sector into the sector cache.
+		 * @param lba LBA to read.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int readOneLBA(uint32_t lba);
+
+		/**
 		 * Read using block reads.
 		 * Required for block devices.
 		 * @param ptr Output data buffer.

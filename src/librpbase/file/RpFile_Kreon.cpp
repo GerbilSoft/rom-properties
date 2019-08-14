@@ -34,6 +34,64 @@ namespace LibRpBase {
 /** RpFilePrivate **/
 
 /**
+ * Read one sector into the sector cache.
+ * @param lba LBA to read.
+ * @return 0 on success; non-zero on error.
+ */
+int RpFilePrivate::readOneLBA(uint32_t lba)
+{
+	if (!devInfo) {
+		// Not a device.
+		return -ENODEV;
+	}
+
+	if (lba == devInfo->lba_cache) {
+		// This LBA is already cached.
+		// TODO: Special case for ~0U?
+		return 0;
+	}
+
+	// Read the first block.
+	RP_Q(RpFile);
+	if (devInfo->isKreonUnlocked) {
+		// Kreon drive. Use SCSI commands.
+		int sret = q->scsi_read(lba, 1, devInfo->sector_cache, devInfo->sector_size);
+		if (sret != 0) {
+			// Read error.
+			// TODO: Handle this properly?
+			devInfo->lba_cache = ~0U;
+			q->m_lastError = sret;
+			return sret;
+		}
+	} else {
+		// Not a Kreon drive. Use the OS API.
+		// TODO: Call RpFile::read()?
+#ifdef _WIN32
+		DWORD bytesRead;
+		BOOL bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
+		if (bRet == 0 || bytesRead != devInfo->sector_size) {
+			// Read error.
+			devInfo->lba_cache = ~0U;
+			q->m_lastError = w32err_to_posix(GetLastError());
+			return -q->m_lastError;
+		}
+#else /* !_WIN32 */
+		size_t bytesRead = fread(devInfo->sector_cache, 1, devInfo->sector_size, file);
+		if (ferror(file) || bytesRead != devInfo->sector_size) {
+			// Read error.
+			devInfo->lba_cache = ~0U;
+			q->m_lastError = errno;
+			return -q->m_lastError;
+		}
+#endif /* _WIN32 */
+	}
+
+	// Sector cache has been updated.
+	devInfo->lba_cache = lba;
+	return 0;
+}
+
+/**
  * Read using block reads.
  * Required for block devices.
  * @param ptr Output data buffer.
@@ -110,44 +168,14 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	if (blockStartOffset != 0) {
 		// Not a block boundary.
 		// Read the end of the first block.
-		if (devInfo->lba_cache != lba_cur) {
-			// Read the first block.
-			if (devInfo->isKreonUnlocked) {
-				// Kreon drive. Use SCSI commands.
-				int sret = q->scsi_read(lba_cur, 1, devInfo->sector_cache, devInfo->sector_size);
-				if (sret != 0) {
-					// Read error.
-					// TODO: Handle this properly?
-					devInfo->lba_cache = ~0U;
-					q->m_lastError = sret;
-					return 0;
-				}
-			} else {
-				// Not a Kreon drive. Use the OS API.
-				// TODO: Call RpFile::read()?
-#ifdef _WIN32
-				DWORD bytesRead;
-				BOOL bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
-				if (bRet == 0 || bytesRead != devInfo->sector_size) {
-					// Read error.
-					devInfo->lba_cache = ~0U;
-					q->m_lastError = w32err_to_posix(GetLastError());
-					return bytesRead;
-				}
-#else /* !_WIN32 */
-				size_t bytesRead = fread(devInfo->sector_cache, 1, devInfo->sector_size, file);
-				if (ferror(file) || ret != devInfo->sector_size) {
-					// Read error.
-					devInfo->lba_cache = ~0U;
-					q->m_lastError = errno;
-					return bytesRead;
-				}
-#endif /* _WIN32 */
-			}
-
-			devInfo->lba_cache = lba_cur;
+		int lret = readOneLBA(lba_cur);
+		if (lret != 0) {
+			// Read error.
+			// NOTE: q->m_lastError is set by readOneLBA().
+			// TODO: readOneLBA() should return number of bytes read,
+			// then return that value instead of 0?
+			return 0;
 		}
-		lba_cur++;
 
 		// Copy the data from the sector buffer.
 		uint32_t read_sz = devInfo->sector_size - blockStartOffset;
@@ -157,6 +185,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		memcpy(ptr8, &devInfo->sector_cache[blockStartOffset], read_sz);
 
 		// Starting block read.
+		lba_cur++;
 		devInfo->device_pos += read_sz;
 		size -= read_sz;
 		ptr8 += read_sz;
@@ -231,41 +260,13 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		assert(devInfo->device_pos % devInfo->sector_size == 0);
 
 		// Read the last block.
-		if (devInfo->lba_cache != lba_cur) {
-			if (devInfo->isKreonUnlocked) {
-				// Kreon drive. Use SCSI commands.
-				int sret = q->scsi_read(lba_cur, 1, devInfo->sector_cache, devInfo->sector_size);
-				if (sret != 0) {
-					// Read error.
-					// TODO: Handle this properly?
-					devInfo->lba_cache = ~0U;
-					q->m_lastError = sret;
-					return ret;
-				}
-			} else {
-				// Not a Kreon drive. Use the OS API.
-				// TODO: Call RpFile::read()?
-#ifdef _WIN32
-				DWORD bytesRead;
-				BOOL bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
-				if (bRet == 0 || bytesRead != devInfo->sector_size) {
-					// Read error.
-					devInfo->lba_cache = ~0U;
-					q->m_lastError = w32err_to_posix(GetLastError());
-					return ret + bytesRead;
-				}
-#else /* !_WIN32 */
-				size_t bytesRead = fread(devInfo->sector_cache, 1, devInfo->sector_size, file);
-				if (ferror(file) || bytesRead != devInfo->sector_size) {
-					// Read error.
-					devInfo->lba_cache = ~0U;
-					q->m_lastError = errno;
-					return ret + bytesRead;
-				}
-#endif /* _WIN32 */
-			}
-
-			devInfo->lba_cache = lba_cur;
+		int lret = readOneLBA(lba_cur);
+		if (lret != 0) {
+			// Read error.
+			// NOTE: q->m_lastError is set by readOneLBA().
+			// TODO: readOneLBA() should return number of bytes read,
+			// then add it to ret?
+			return ret;
 		}
 
 		// Copy the data from the sector buffer.
