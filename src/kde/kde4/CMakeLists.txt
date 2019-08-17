@@ -77,10 +77,6 @@ IF(BUILD_KDE4)
 	ENDIF(HAVE_PNG)
 ENDIF(BUILD_KDE4)
 
-# Define -DQT_NO_DEBUG in release builds.
-SET(CMAKE_C_FLAGS_RELEASE   "-DQT_NO_DEBUG ${CMAKE_C_FLAGS_RELEASE}")
-SET(CMAKE_CXX_FLAGS_RELEASE "-DQT_NO_DEBUG ${CMAKE_CXX_FLAGS_RELEASE}")
-
 #######################
 # Install the plugin. #
 #######################

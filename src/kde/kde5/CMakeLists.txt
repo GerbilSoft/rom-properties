@@ -187,10 +187,6 @@ IF(BUILD_KDE5)
 	ENDIF(GCC_5xx_LTO_ISSUES AND ENABLE_DECRYPTION)
 ENDIF(BUILD_KDE5)
 
-# Define -DQT_NO_DEBUG in release builds.
-SET(CMAKE_C_FLAGS_RELEASE   "-DQT_NO_DEBUG ${CMAKE_C_FLAGS_RELEASE}")
-SET(CMAKE_CXX_FLAGS_RELEASE "-DQT_NO_DEBUG ${CMAKE_CXX_FLAGS_RELEASE}")
-
 #######################
 # Install the plugin. #
 #######################
