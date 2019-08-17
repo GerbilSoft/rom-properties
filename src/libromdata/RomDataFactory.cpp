@@ -81,7 +81,6 @@ using std::vector;
 #include "Texture/KhronosKTX.hpp"
 #endif /* ENABLE_GL */
 #include "Texture/SegaPVR.hpp"
-#include "Texture/ValveVTF.hpp"
 #include "Texture/ValveVTF3.hpp"
 
 // RomData subclasses: Audio
@@ -278,10 +277,10 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),
 	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GBIX'),
 	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
-	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
 	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF3'),
 
 	// RpTextureWrapper
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
 
 	// Audio
