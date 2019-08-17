@@ -224,6 +224,9 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Drago
 		SET(RP_OS_SCSI_SUPPORTED 1)
 	ENDIF()
 	ENDIF(0) # FIXME
+ELSE()
+	# Dummy implementation for RpFile::rereadDeviceSizeOS().
+	SET(librpbase_SRCS ${librpbase_SRCS} file/scsi/RpFile_scsi_dummy.cpp)
 ENDIF()
 
 IF(WIN32)
