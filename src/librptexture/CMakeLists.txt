@@ -21,6 +21,7 @@ SET(librptexture_SRCS
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
+	fileformat/ValveVTF.cpp
 	fileformat/XboxXPR.cpp
 	)
 # Headers.
@@ -35,8 +36,10 @@ SET(librptexture_H
 
 	fileformat/FileFormat.hpp
 	fileformat/FileFormat_p.hpp
+	fileformat/ValveVTF.hpp
 	fileformat/XboxXPR.hpp
 
+	fileformat/vtf_structs.h
 	fileformat/xbox_xpr_structs.h
 	)
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.cpp: Valve VTF image reader.                                   *
  *                                                                         *
  * Copyright (c) 2017-2019 by David Korth.                                 *
@@ -12,7 +12,7 @@
  */
 
 #include "ValveVTF.hpp"
-#include "librpbase/RomData_p.hpp"
+#include "FileFormat_p.hpp"
 
 #include "vtf_structs.h"
 
@@ -21,16 +21,12 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/bitstuff.h"
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
-using namespace LibRpTexture;
+#include "img/rp_image.hpp"
+#include "decoder/ImageDecoder.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -38,26 +34,23 @@ using namespace LibRpTexture;
 #include <cstring>
 
 // C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
-using std::string;
-using std::unique_ptr;
-using std::vector;
+//#include <memory>
+//#include <string>
+//#include <vector>
+//using std::string;
+//using std::unique_ptr;
+//using std::vector;
 
-namespace LibRomData {
+namespace LibRpTexture {
 
-ROMDATA_IMPL(ValveVTF)
-ROMDATA_IMPL_IMG_TYPES(ValveVTF)
-
-class ValveVTFPrivate : public RomDataPrivate
+class ValveVTFPrivate : public FileFormatPrivate
 {
 	public:
 		ValveVTFPrivate(ValveVTF *q, IRpFile *file);
 		~ValveVTFPrivate();
 
 	private:
-		typedef RomDataPrivate super;
+		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(ValveVTFPrivate)
 
 	public:
@@ -70,6 +63,14 @@ class ValveVTFPrivate : public RomDataPrivate
 		// Decoded image.
 		rp_image *img;
 
+		// Invalid pixel format message.
+		char invalid_pixel_format[24];
+
+	public:
+		// Image format table.
+		static const char *const img_format_tbl[];
+
+	public:
 		/**
 		 * Calculate an image size.
 		 * @param format VTF image format.
@@ -113,13 +114,49 @@ class ValveVTFPrivate : public RomDataPrivate
 
 /** ValveVTFPrivate **/
 
+// Image format table.
+const char *const ValveVTFPrivate::img_format_tbl[] = {
+	"RGBA8888",
+	"ABGR8888",
+	"RGB888",
+	"BGR888",
+	"RGB565",
+	"I8",
+	"IA88",
+	"P8",
+	"A8",
+	"RGB888 (Bluescreen)",	// FIXME: Localize?
+	"BGR888 (Bluescreen)",	// FIXME: Localize?
+	"ARGB8888",
+	"BGRA8888",
+	"DXT1",
+	"DXT3",
+	"DXT5",
+	"BGRx8888",
+	"BGR565",
+	"BGRx5551",
+	"BGRA4444",
+	"DXT1_A1",
+	"BGRA5551",
+	"UV88",
+	"UVWQ8888",
+	"RGBA16161616F",
+	"RGBA16161616",
+	"UVLX8888",
+	nullptr
+};
+
+static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl)-1 == VTF_IMAGE_FORMAT_MAX,
+	"Missing VTF image formats.");
+
 ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
 	: super(q, file)
 	, texDataStartAddr(0)
 	, img(nullptr)
 {
-	// Clear the VTF header struct.
+	// Clear the structs and arrays.
 	memset(&vtfHeader, 0, sizeof(vtfHeader));
+	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 ValveVTFPrivate::~ValveVTFPrivate()
@@ -553,10 +590,7 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 ValveVTF::ValveVTF(IRpFile *file)
 	: super(new ValveVTFPrivate(this, file))
 {
-	// This class handles texture files.
 	RP_D(ValveVTF);
-	d->className = "ValveVTF";
-	d->fileType = FTYPE_TEXTURE_FILE;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -572,20 +606,17 @@ ValveVTF::ValveVTF(IRpFile *file)
 		return;
 	}
 
-	// Check if this VTF texture is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(size);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->vtfHeader);
-	info.ext = nullptr;	// Not needed for VTF.
-	info.szFile = file->size();
-	d->isValid = (isRomSupported_static(&info) >= 0);
-
-	if (!d->isValid) {
+	// Verify the VTF magic.
+	if (d->vtfHeader.signature != cpu_to_be32(VTF_SIGNATURE)) {
+		// Incorrect magic.
+		d->isValid = false;
 		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
+
+	// File is valid.
+	d->isValid = true;
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Header is stored in little-endian, so it always
@@ -616,171 +647,65 @@ ValveVTF::ValveVTF(IRpFile *file)
 	// TODO: Verify header size against sizeof(VTFHEADER).
 	// Test VTFs are 7.2 with 80-byte headers; sizeof(VTFHEADER) is 72...
 	d->texDataStartAddr = d->vtfHeader.headerSize;
-}
 
-/**
- * Is a ROM image supported by this class?
- * @param info DetectInfo containing ROM detection information.
- * @return Class-specific system ID (>= 0) if supported; -1 if not.
- */
-int ValveVTF::isRomSupported_static(const DetectInfo *info)
-{
-	assert(info != nullptr);
-	assert(info->header.pData != nullptr);
-	assert(info->header.addr == 0);
-	if (!info || !info->header.pData ||
-	    info->header.addr != 0 ||
-	    info->header.size < sizeof(VTFHEADER))
+	// Cache the dimensions for the FileFormat base class.
+	d->dimensions[0] = d->vtfHeader.width;
+	d->dimensions[1] = d->vtfHeader.height;
+	// 7.2+ supports 3D textures.
+	if ((d->vtfHeader.version[0] > 7 ||
+	    (d->vtfHeader.version[0] == 7 && d->vtfHeader.version[1] >= 2)))
 	{
-		// Either no detection information was specified,
-		// or the header is too small.
-		return -1;
+		if (d->vtfHeader.depth > 1) {
+			d->dimensions[2] = d->vtfHeader.depth;
+		}
 	}
-
-	// Verify the VTF signature.
-	const VTFHEADER *const vtfHeader =
-		reinterpret_cast<const VTFHEADER*>(info->header.pData);
-	if (vtfHeader->signature == cpu_to_be32(VTF_SIGNATURE)) {
-		// VTF signature is correct.
-		return 0;
-	}
-
-	// Not supported.
-	return -1;
 }
 
+/** Propety accessors **/
+
 /**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
+ * Get the texture format name.
+ * @return Texture format name, or nullptr on error.
  */
-const char *ValveVTF::systemName(unsigned int type) const
+const char *ValveVTF::textureFormatName(void) const
 {
 	RP_D(const ValveVTF);
-	if (!d->isValid || !isSystemNameTypeValid(type))
+	if (!d->isValid)
 		return nullptr;
 
-	// Valve VTF has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"ValveVTF::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Valve VTF Texture", "Valve VTF", "VTF", nullptr
-	};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	return "Valve VTF";
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ * Get the pixel format, e.g. "RGB888" or "DXT1".
+ * @return Pixel format, or nullptr if unavailable.
  */
-const char *const *ValveVTF::supportedFileExtensions_static(void)
+const char *ValveVTF::pixelFormat(void) const
 {
-	static const char *const exts[] = {
-		".vtf",
-		//".vtx",	// TODO: Some files might use the ".vtx" extension.
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ValveVTF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Vendor-specific MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/vnd.valve.source.texture",
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-vtf",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
- * Get a bitfield of image types this class can retrieve.
- * @return Bitfield of supported image types. (ImageTypesBF)
- */
-uint32_t ValveVTF::supportedImageTypes_static(void)
-{
-	return IMGBF_INT_IMAGE;
-}
-
-/**
- * Get a list of all available image sizes for the specified image type.
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
- */
-vector<RomData::ImageSizeDef> ValveVTF::supportedImageSizes(ImageType imageType) const
-{
-	ASSERT_supportedImageSizes(imageType);
-
 	RP_D(const ValveVTF);
-	if (!d->isValid || imageType != IMG_INT_IMAGE) {
-		return vector<ImageSizeDef>();
+	if (!d->isValid)
+		return nullptr;
+
+	const unsigned int fmt = d->vtfHeader.highResImageFormat;
+
+	if (fmt < ARRAY_SIZE(d->img_format_tbl)) {
+		return d->img_format_tbl[fmt];
+	} else if (fmt == static_cast<unsigned int>(-1)) {
+		// TODO: Localization?
+		return "None";
 	}
 
-	// Return the image's size.
-	const ImageSizeDef imgsz[] = {{nullptr,
-		d->vtfHeader.width,
-		d->vtfHeader.height, 0}};
-	return vector<ImageSizeDef>(imgsz, imgsz + 1);
+	// Invalid pixel format.
+	if (d->invalid_pixel_format[0] == '\0') {
+		snprintf(const_cast<ValveVTFPrivate*>(d)->invalid_pixel_format,
+			sizeof(d->invalid_pixel_format),
+			"Unknown (%u)", fmt);
+	}
+	return d->invalid_pixel_format;
 }
 
-/**
- * Get image processing flags.
- *
- * These specify post-processing operations for images,
- * e.g. applying transparency masks.
- *
- * @param imageType Image type.
- * @return Bitfield of ImageProcessingBF operations to perform.
- */
-uint32_t ValveVTF::imgpf(ImageType imageType) const
-{
-	ASSERT_imgpf(imageType);
-
-	RP_D(const ValveVTF);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by DDS.
-		return 0;
-	}
-
-	// If both dimensions of the texture are 64 or less,
-	// specify nearest-neighbor scaling.
-	uint32_t ret = 0;
-	if (d->vtfHeader.width <= 64 && d->vtfHeader.height <= 64) {
-		// 64x64 or smaller.
-		ret = IMGPF_RESCALE_NEAREST;
-	}
-	return ret;
-}
-
+// FIXME: RpTextureWrapper needs to show non-standard fields.
+#if 0
 /**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
@@ -816,17 +741,6 @@ int ValveVTF::loadFieldData(void)
 	// VTF version.
 	d->fields->addField_string(C_("ValveVTF", "VTF Version"),
 		rp_sprintf("%u.%u", vtfHeader->version[0], vtfHeader->version[1]));
-
-	// Texture size.
-	// 7.2+ supports 3D textures.
-	int depth = 0;
-	if ((vtfHeader->version[0] > 7 || (vtfHeader->version[0] == 7 && vtfHeader->version[1] >= 2)) &&
-	     vtfHeader->depth > 1)
-	{
-		depth = vtfHeader->depth;
-	}
-	d->fields->addField_dimensions(C_("ValveVTF", "Texture Size"),
-		vtfHeader->width, vtfHeader->height, depth);
 
 	// Flags.
 	// TODO: Show "deprecated" flags for older versions.
@@ -903,57 +817,6 @@ int ValveVTF::loadFieldData(void)
 	d->fields->addField_string(C_("ValveVTF", "Bumpmap Scale"),
 		rp_sprintf("%0.1f", vtfHeader->bumpmapScale));
 
-	// High-resolution image format.
-	static const char *const img_format_tbl[] = {
-		"RGBA8888",
-		"ABGR8888",
-		"RGB888",
-		"BGR888",
-		"RGB565",
-		"I8",
-		"IA88",
-		"P8",
-		"A8",
-		NOP_C_("ValveVTF|ImageFormat", "RGB888 (Bluescreen)"),
-		NOP_C_("ValveVTF|ImageFormat", "BGR888 (Bluescreen)"),
-		"ARGB8888",
-		"BGRA8888",
-		"DXT1",
-		"DXT3",
-		"DXT5",
-		"BGRx8888",
-		"BGR565",
-		"BGRx5551",
-		"BGRA4444",
-		"DXT1_A1",
-		"BGRA5551",
-		"UV88",
-		"UVWQ8888",
-		"RGBA16161616F",
-		"RGBA16161616",
-		"UVLX8888",
-	};
-	static_assert(ARRAY_SIZE(img_format_tbl) == VTF_IMAGE_FORMAT_MAX, "Missing VTF image formats.");
-
-	const char *const high_res_image_format_title = C_("ValveVTF", "High-Res Image Format");
-	const char *img_format = nullptr;
-	if (vtfHeader->highResImageFormat < ARRAY_SIZE(img_format_tbl)) {
-		img_format = img_format_tbl[vtfHeader->highResImageFormat];
-	} else if (vtfHeader->highResImageFormat == static_cast<unsigned int>(-1)) {
-		img_format = NOP_C_("ValveVTF|ImageFormat", "None");
-	}
-
-	if (img_format) {
-		d->fields->addField_string(high_res_image_format_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
-	} else {
-		d->fields->addField_string(high_res_image_format_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->highResImageFormat));
-	}
-
-	// Mipmap count.
-	d->fields->addField_string_numeric(C_("ValveVTF", "Mipmap Count"), vtfHeader->mipmapCount);
-
 	// Low-resolution image format.
 	const char *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
 	img_format = nullptr;
@@ -987,71 +850,56 @@ int ValveVTF::loadFieldData(void)
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
 }
+#endif
 
 /**
- * Load metadata properties.
- * Called by RomData::metaData() if the field data hasn't been loaded yet.
- * @return Number of metadata properties read on success; negative POSIX error code on error.
+ * Get the mipmap count.
+ * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
  */
-int ValveVTF::loadMetaData(void)
+int ValveVTF::mipmapCount(void) const
 {
-	RP_D(ValveVTF);
-	if (d->metaData != nullptr) {
-		// Metadata *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
-		// Unknown file type.
-		return -EIO;
-	}
+	RP_D(const ValveVTF);
+	if (!d->isValid)
+		return -1;
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
-	// VTF header.
-	const VTFHEADER *const vtfHeader = &d->vtfHeader;
-
-	// Dimensions.
-	// TODO: Don't add height for 1D textures?
-	d->metaData->addMetaData_integer(Property::Width, vtfHeader->width);
-	d->metaData->addMetaData_integer(Property::Height, vtfHeader->height);
-
-	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
+	return d->vtfHeader.mipmapCount;
 }
 
 /**
- * Load an internal image.
- * Called by RomData::image().
- * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
- * @return 0 on success; negative POSIX error code on error.
+ * Get the image.
+ * For textures with mipmaps, this is the largest mipmap.
+ * The image is owned by this object.
+ * @return Image, or nullptr on error.
  */
-int ValveVTF::loadInternalImage(ImageType imageType, const rp_image **pImage)
+const rp_image *ValveVTF::image(void) const
 {
-	ASSERT_loadInternalImage(imageType, pImage);
-
-	RP_D(ValveVTF);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by DDS.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
+	RP_D(const ValveVTF);
+	if (!d->file) {
 		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
+		return nullptr;
 	} else if (!d->isValid) {
-		// DDS texture isn't valid.
-		*pImage = nullptr;
-		return -EIO;
+		// Unknown file type.
+		return nullptr;
 	}
 
 	// Load the image.
-	*pImage = d->loadImage();
-	return (*pImage != nullptr ? 0 : -EIO);
+	return const_cast<ValveVTFPrivate*>(d)->loadImage();
+}
+
+/**
+ * Get the image for the specified mipmap.
+ * Mipmap 0 is the largest image.
+ * @param num Mipmap number.
+ * @return Image, or nullptr on error.
+ */
+const rp_image *ValveVTF::mipmap(int num) const
+{
+	// TODO: Actually implement this!
+	// For now, acting like we don't have any mipmaps.
+	if (num == 0) {
+		return image();
+	}
+	return nullptr;
 }
 
 }
