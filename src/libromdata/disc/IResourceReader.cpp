@@ -23,7 +23,7 @@ int IResourceReader::alignFileDWORD(IRpFile *file)
 	int ret = 0;
 	int64_t pos = file->tell();
 	if (pos % 4 != 0) {
-		pos = ALIGN(4, pos);
+		pos = ALIGN_BYTES(4, pos);
 		ret = file->seek(pos);
 	}
 	return ret;

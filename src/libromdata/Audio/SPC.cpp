@@ -373,7 +373,7 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 					// NOTE: Must be DWORD-aligned.
 					const unsigned int slen = data[i+2] | (data[i+3] << 8);
 					i += 4 + slen;
-					i = ALIGN(4, i);
+					i = ALIGN_BYTES(4, i);
 					i--;
 				}
 				break;
@@ -409,7 +409,7 @@ SPCPrivate::TagData SPCPrivate::parseTags(void)
 
 				// DWORD alignment.
 				i += 4 + slen;
-				i = ALIGN(4, i);
+				i = ALIGN_BYTES(4, i);
 				i--; // for loop iterator
 				break;
 			}

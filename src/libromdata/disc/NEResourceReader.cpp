@@ -314,7 +314,7 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
 	// NOTE: sizeof(fields) == 4, so it's already WORD-aligned.
 	unsigned int keyData_len = key_len + 1;
-	keyData_len = ALIGN(4, keyData_len);
+	keyData_len = ALIGN_BYTES(4, keyData_len);
 	unique_ptr<char[]> keyData(new char[keyData_len]);
 	size = file->read(keyData.get(), keyData_len);
 	if (size != keyData_len) {
@@ -442,7 +442,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// DWORD alignment is required here.
 		tblPos += (key_len + 1);
-		tblPos  = ALIGN(4, tblPos);
+		tblPos  = ALIGN_BYTES(4, tblPos);
 
 		// Value must be NULL-terminated.
 		const char *value = reinterpret_cast<const char*>(&strTblData[tblPos]);
@@ -465,7 +465,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;
-		tblPos  = ALIGN(4, tblPos);
+		tblPos  = ALIGN_BYTES(4, tblPos);
 	}
 
 	// String table loaded successfully.

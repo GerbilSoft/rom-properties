@@ -484,7 +484,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 	}
 
 	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
-	exheader_length = ALIGN(16, exheader_length);
+	exheader_length = ALIGN_BYTES(16, exheader_length);
 
 	// Load the ExHeader.
 	// ExHeader is stored immediately after the main header.

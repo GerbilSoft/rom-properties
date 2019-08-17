@@ -182,7 +182,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
 			// 24-bit RGB.
-			stride = ALIGN(4, ktxHeader.pixelWidth * 3);
+			stride = ALIGN_BYTES(4, ktxHeader.pixelWidth * 3);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
@@ -194,7 +194,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 		case GL_LUMINANCE:
 			// 8-bit luminance.
-			stride = ALIGN(4, ktxHeader.pixelWidth);
+			stride = ALIGN_BYTES(4, ktxHeader.pixelWidth);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
@@ -544,7 +544,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 		}
 
 		// Next key/value pair.
-		p += ALIGN(4, sz);
+		p += ALIGN_BYTES(4, sz);
 	}
 }
 
@@ -624,7 +624,7 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 
 	// Texture data start address.
 	// NOTE: Always 4-byte aligned.
-	d->texDataStartAddr = ALIGN(4, sizeof(d->ktxHeader) + d->ktxHeader.bytesOfKeyValueData);
+	d->texDataStartAddr = ALIGN_BYTES(4, sizeof(d->ktxHeader) + d->ktxHeader.bytesOfKeyValueData);
 
 	// Load key/value data.
 	// This function also checks for KTXorientation

@@ -140,7 +140,7 @@ WuxReader::WuxReader(IRpFile *file)
 	// Data starts after the index table,
 	// aligned to a block_size boundary.
 	d->dataOffset = sizeof(d->wuxHeader) + (idxTbl_count * sizeof(uint32_t));
-	d->dataOffset = ALIGN(d->block_size, d->dataOffset);
+	d->dataOffset = ALIGN_BYTES(d->block_size, d->dataOffset);
 
 	// Reset the disc position.
 	d->pos = 0;

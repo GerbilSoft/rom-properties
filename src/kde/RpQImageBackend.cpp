@@ -31,11 +31,11 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	switch (format) {
 		case rp_image::FORMAT_CI8:
 			qfmt = QImage::Format_Indexed8;
-			this->stride = ALIGN(16, width);
+			this->stride = ALIGN_BYTES(16, width);
 			break;
 		case rp_image::FORMAT_ARGB32:
 			qfmt = QImage::Format_ARGB32;
-			this->stride = ALIGN(16, width * sizeof(uint32_t));
+			this->stride = ALIGN_BYTES(16, width * sizeof(uint32_t));
 			break;
 		default:
 			assert(!"Unsupported rp_image::Format.");

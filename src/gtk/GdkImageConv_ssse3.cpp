@@ -52,7 +52,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 	// only guarantees 4-byte alignment.
 	const int width = img->width();
 	const int height = img->height();
-	const int rowstride = ALIGN(16, width * sizeof(uint32_t));
+	const int rowstride = ALIGN_BYTES(16, width * sizeof(uint32_t));
 	uint32_t *px_dest = static_cast<uint32_t*>(aligned_malloc(16, height * rowstride));
 	assert(px_dest != nullptr);
 	if (unlikely(!px_dest)) {
