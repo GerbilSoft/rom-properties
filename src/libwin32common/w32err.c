@@ -19,24 +19,24 @@ typedef struct _errmap {
 
 static const errmap w32_to_posix[] = {
 	{ERROR_SUCCESS,			0         },  // 0
-        {ERROR_INVALID_FUNCTION,	EINVAL    },  // 1
-        {ERROR_FILE_NOT_FOUND,		ENOENT    },  // 2
-        {ERROR_PATH_NOT_FOUND,		ENOENT    },  // 3
-        {ERROR_TOO_MANY_OPEN_FILES,	EMFILE    },  // 4
-        {ERROR_ACCESS_DENIED,		EACCES    },  // 5
-        {ERROR_INVALID_HANDLE,		EBADF     },  // 6
-        {ERROR_ARENA_TRASHED,		ENOMEM    },  // 7
-        {ERROR_NOT_ENOUGH_MEMORY,	ENOMEM    },  // 8
-        {ERROR_INVALID_BLOCK,		ENOMEM    },  // 9
-        {ERROR_BAD_ENVIRONMENT,		E2BIG     },  // 10
-        {ERROR_BAD_FORMAT,		ENOEXEC   },  // 11
-        {ERROR_INVALID_ACCESS,		EINVAL    },  // 12
-        {ERROR_INVALID_DATA,		EINVAL    },  // 13
+	{ERROR_INVALID_FUNCTION,	EINVAL    },  // 1
+	{ERROR_FILE_NOT_FOUND,		ENOENT    },  // 2
+	{ERROR_PATH_NOT_FOUND,		ENOENT    },  // 3
+	{ERROR_TOO_MANY_OPEN_FILES,	EMFILE    },  // 4
+	{ERROR_ACCESS_DENIED,		EACCES    },  // 5
+	{ERROR_INVALID_HANDLE,		EBADF     },  // 6
+	{ERROR_ARENA_TRASHED,		ENOMEM    },  // 7
+	{ERROR_NOT_ENOUGH_MEMORY,	ENOMEM    },  // 8
+	{ERROR_INVALID_BLOCK,		ENOMEM    },  // 9
+	{ERROR_BAD_ENVIRONMENT,		E2BIG     },  // 10
+	{ERROR_BAD_FORMAT,		ENOEXEC   },  // 11
+	{ERROR_INVALID_ACCESS,		EINVAL    },  // 12
+	{ERROR_INVALID_DATA,		EINVAL    },  // 13
 	{ERROR_OUTOFMEMORY,		ENOMEM    },  // 14
-        {ERROR_INVALID_DRIVE,		ENOENT    },  // 15
-        {ERROR_CURRENT_DIRECTORY,	EACCES    },  // 16
-        {ERROR_NOT_SAME_DEVICE,		EXDEV     },  // 17
-        {ERROR_NO_MORE_FILES,		ENOENT    },  // 18
+	{ERROR_INVALID_DRIVE,		ENOENT    },  // 15
+	{ERROR_CURRENT_DIRECTORY,	EACCES    },  // 16
+	{ERROR_NOT_SAME_DEVICE,		EXDEV     },  // 17
+	{ERROR_NO_MORE_FILES,		ENOENT    },  // 18
 	{ERROR_WRITE_PROTECT,		EROFS     },  // 19
 	{ERROR_BAD_UNIT,		ENODEV    },  // 20
 	{ERROR_WRITE_FAULT,		EIO       },  // 29
@@ -46,42 +46,42 @@ static const errmap w32_to_posix[] = {
 	// ETXTBSY is not defined in MinGW-w64 4.0.6.
 	{ERROR_SHARING_VIOLATION,	ETXTBSY   },  // 32 (TODO)
 #endif
-        {ERROR_LOCK_VIOLATION,		EACCES    },  // BAD33
+	{ERROR_LOCK_VIOLATION,		EACCES    },  // BAD33
 	{ERROR_HANDLE_DISK_FULL,	ENOSPC    },  // 39
 	{ERROR_NOT_SUPPORTED,		ENOTSUP   },  // 50
 #ifdef ENOTUNIQ /* MSVC 2015 doesn't have ENOTUNIQ. */
 	{ERROR_DUP_NAME,		ENOTUNIQ  },  // 52
 #endif
-        {ERROR_BAD_NETPATH,		ENOENT    },  // 53
+	{ERROR_BAD_NETPATH,		ENOENT    },  // 53
 	{ERROR_DEV_NOT_EXIST,		ENODEV    },  // 55
-        {ERROR_NETWORK_ACCESS_DENIED,	EACCES    },  // 65
-        {ERROR_BAD_NET_NAME,		ENOENT    },  // 67
-        {ERROR_FILE_EXISTS,		EEXIST    },  // 80
-        {ERROR_CANNOT_MAKE,		EACCES    },  // 82
-        {ERROR_FAIL_I24,		EACCES    },  // 83
-        {ERROR_INVALID_PARAMETER,	EINVAL    },  // 87
-        {ERROR_NO_PROC_SLOTS,		EAGAIN    },  // 89
-        {ERROR_DRIVE_LOCKED,		EACCES    },  // 108
-        {ERROR_BROKEN_PIPE,		EPIPE     },  // 109
+	{ERROR_NETWORK_ACCESS_DENIED,	EACCES    },  // 65
+	{ERROR_BAD_NET_NAME,		ENOENT    },  // 67
+	{ERROR_FILE_EXISTS,		EEXIST    },  // 80
+	{ERROR_CANNOT_MAKE,		EACCES    },  // 82
+	{ERROR_FAIL_I24,		EACCES    },  // 83
+	{ERROR_INVALID_PARAMETER,	EINVAL    },  // 87
+	{ERROR_NO_PROC_SLOTS,		EAGAIN    },  // 89
+	{ERROR_DRIVE_LOCKED,		EACCES    },  // 108
+	{ERROR_BROKEN_PIPE,		EPIPE     },  // 109
 	{ERROR_OPEN_FAILED,		EIO       },  // 110
 	{ERROR_BUFFER_OVERFLOW,		ENAMETOOLONG}, // 111
-        {ERROR_DISK_FULL,		ENOSPC    },  // 112
-        {ERROR_INVALID_TARGET_HANDLE,	EBADF     },  // 114
+	{ERROR_DISK_FULL,		ENOSPC    },  // 112
+	{ERROR_INVALID_TARGET_HANDLE,	EBADF     },  // 114
 	{ERROR_CALL_NOT_IMPLEMENTED,	ENOSYS    },  // 120
-        {ERROR_INVALID_HANDLE,		EINVAL    },  // 124
-        {ERROR_WAIT_NO_CHILDREN,	ECHILD    },  // 128
-        {ERROR_CHILD_NOT_COMPLETE,	ECHILD    },  // 129
-        {ERROR_DIRECT_ACCESS_HANDLE,	EBADF     },  // 130
-        {ERROR_NEGATIVE_SEEK,		EINVAL    },  // 131
-        {ERROR_SEEK_ON_DEVICE,		EACCES    },  // 132
-        {ERROR_DIR_NOT_EMPTY,		ENOTEMPTY },  // 145
-        {ERROR_NOT_LOCKED,		EACCES    },  // 158
-        {ERROR_BAD_PATHNAME,		ENOENT    },  // 161
-        {ERROR_MAX_THRDS_REACHED,	EAGAIN    },  // 164
-        {ERROR_LOCK_FAILED,		EACCES    },  // 167
-        {ERROR_ALREADY_EXISTS,		EEXIST    },  // 183
-        {ERROR_FILENAME_EXCED_RANGE,	ENOENT    },  // 206
-        {ERROR_NESTING_NOT_ALLOWED,	EAGAIN    },  // 215
+	{ERROR_INVALID_LEVEL,		EINVAL    },  // 124
+	{ERROR_WAIT_NO_CHILDREN,	ECHILD    },  // 128
+	{ERROR_CHILD_NOT_COMPLETE,	ECHILD    },  // 129
+	{ERROR_DIRECT_ACCESS_HANDLE,	EBADF     },  // 130
+	{ERROR_NEGATIVE_SEEK,		EINVAL    },  // 131
+	{ERROR_SEEK_ON_DEVICE,		EACCES    },  // 132
+	{ERROR_DIR_NOT_EMPTY,		ENOTEMPTY },  // 145
+	{ERROR_NOT_LOCKED,		EACCES    },  // 158
+	{ERROR_BAD_PATHNAME,		ENOENT    },  // 161
+	{ERROR_MAX_THRDS_REACHED,	EAGAIN    },  // 164
+	{ERROR_LOCK_FAILED,		EACCES    },  // 167
+	{ERROR_ALREADY_EXISTS,		EEXIST    },  // 183
+	{ERROR_FILENAME_EXCED_RANGE,	ENOENT    },  // 206
+	{ERROR_NESTING_NOT_ALLOWED,	EAGAIN    },  // 215
 	{ERROR_EXE_MACHINE_TYPE_MISMATCH, ENOEXEC },  // 216
 #ifdef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT
 	// ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT is not defined in MinGW-w64 4.0.6.
@@ -92,7 +92,8 @@ static const errmap w32_to_posix[] = {
 	{ERROR_DISK_RESOURCES_EXHAUSTED, ENOSPC   },  // 314
 #endif
 	{ERROR_INVALID_ADDRESS,		EFAULT    },  // 487
-        {ERROR_NOT_ENOUGH_QUOTA,	ENOMEM    }   // 1816
+	{ERROR_IO_DEVICE,		EIO       },  // 1117
+	{ERROR_NOT_ENOUGH_QUOTA,	ENOMEM    }   // 1816
 };
 
 /* The following two constants must be the minimum and maximum
@@ -122,7 +123,7 @@ static const errmap w32_to_posix[] = {
 static int RP_C_API errmap_compar(const void *a, const void *b)
 {
 	const DWORD err1 = ((const errmap*)a)->w32;
-	const DWORD err2 = ((const errmap*)a)->w32;
+	const DWORD err2 = ((const errmap*)b)->w32;
 	if (err1 < err2) return -1;
 	if (err1 > err2) return 1;
 	return 0;
