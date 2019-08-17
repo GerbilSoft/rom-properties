@@ -138,7 +138,7 @@ int RpFilePrivate::reOpenFile(void)
 			"\x08" "/dev/scd",
 			"\x0A" "/dev/disk/",
 			"\x0B" "/dev/block/",
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
 			"\x07" "/dev/cd",
 #else
 # define NO_PATTERNS_FOR_THIS_OS 1
