@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * vtf_structs.h: Valve VTF texture format data structures.                *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_VTF_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_VTF_STRUCTS_H__
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VTF_STRUCTS_H__
+#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VTF_STRUCTS_H__
 
 #include "librpbase/common.h"
 #include <stdint.h>
@@ -104,4 +104,4 @@ typedef enum {
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_VTF_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VTF_STRUCTS_H__ */
