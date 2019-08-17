@@ -105,10 +105,11 @@ SET(librpbase_SRCS
 	RomMetaData.cpp
 	SystemRegion.cpp
 	file/IRpFile.cpp
-	file/RpFile_Kreon.cpp
 	file/RpMemFile.cpp
 	file/FileSystem_common.cpp
 	file/RelatedFile.cpp
+	file/scsi/RpFile_Kreon.cpp
+	file/scsi/RpFile_scsi.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/rp_image_ops.cpp

@@ -83,7 +83,7 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
  * @param direction	[in] Data direction
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
-int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	void *data, size_t data_len,
 	ScsiDirection direction)
 {
@@ -121,8 +121,7 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	sg_io.dxferp = data;
 	sg_io.dxfer_len = data_len;
 
-	RP_D(RpFile);
-	if (ioctl(fileno(d->file), SG_IO, &sg_io) != 0) {
+	if (ioctl(fileno(file), SG_IO, &sg_io) != 0) {
 		// ioctl failed.
 		return -errno;
 	}

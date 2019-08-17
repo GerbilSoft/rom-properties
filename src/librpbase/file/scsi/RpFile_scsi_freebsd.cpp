@@ -95,7 +95,7 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
  * @param direction	[in] Data direction
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
-int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	void *data, size_t data_len,
 	ScsiDirection direction)
 {
@@ -104,11 +104,10 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	union ccb ccb;
 	memset(&ccb, 0, sizeof(ccb));
 
-	RP_D(RpFile);
-	struct cam_device *cam = d->devInfo->cam;
+	struct cam_device *cam = devInfo->cam;
 	if (!cam) {
 		// Get the device name for CAM.
-		const int fd = fileno(d->file);
+		const int fd = fileno(file);
 		if (ioctl(fd, CDIOCALLOW) == -1) {
 			// CDIOCALLOW failed.
 			return -errno;
@@ -127,7 +126,7 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 		}
 
 		// Save the CAM device for later.
-		d->devInfo->cam = cam;
+		devInfo->cam = cam;
 	}
 
 	// Create the command.

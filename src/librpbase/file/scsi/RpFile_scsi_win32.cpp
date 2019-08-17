@@ -132,7 +132,7 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
  * @param direction	[in] Data direction
  * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
  */
-int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	void *data, size_t data_len,
 	ScsiDirection direction)
 {
@@ -180,10 +180,9 @@ int RpFile::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	srb.p.SenseInfoOffset = offsetof(srb_t, sense.s);
 	srb.p.TimeOutValue = 5; // 5-second timeout.
 
-	RP_D(RpFile);
 	DWORD dwBytesReturned;
 	BOOL bRet = DeviceIoControl(
-		d->file, IOCTL_SCSI_PASS_THROUGH_DIRECT,
+		file, IOCTL_SCSI_PASS_THROUGH_DIRECT,
 		(LPVOID)&srb.p, sizeof(srb.p),
 		(LPVOID)&srb, sizeof(srb),
 		&dwBytesReturned, nullptr);

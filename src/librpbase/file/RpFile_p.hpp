@@ -203,6 +203,7 @@ class RpFilePrivate
 		 */
 		int reOpenFile(void);
 
+	public:
 		/**
 		 * Read one sector into the sector cache.
 		 * @param lba LBA to read.
@@ -218,6 +219,44 @@ class RpFilePrivate
 		 * @return Number of bytes read.
 		 */
 		size_t readUsingBlocks(void *ptr, size_t size);
+
+	public:
+		enum ScsiDirection {
+			SCSI_DIR_NONE,
+			SCSI_DIR_IN,
+			SCSI_DIR_OUT,
+		};
+
+		/**
+		 * Send a SCSI command to the device.
+		 * @param cdb		[in] SCSI command descriptor block
+		 * @param cdb_len	[in] Length of cdb
+		 * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
+		 * @param data_len	[in] Length of data
+		 * @param direction	[in] Data direction
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+			void *data, size_t data_len,
+			ScsiDirection direction);
+
+		/**
+		 * Get the capacity of the device using SCSI commands.
+		 * @param pDeviceSize	[out] Retrieves the device size, in bytes.
+		 * @param pSectorSize	[out,opt] If not NULL, retrieves the sector size, in bytes.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSize = nullptr);
+
+		/**
+		 * Read data from a device using SCSI commands.
+		 * @param lbaStart	[in] Starting LBA of the data to read.
+		 * @param lbaCount	[in] Number of LBAs to read.
+		 * @param pBuf		[out] Output buffer.
+		 * @param bufLen	[in] Output buffer length.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf, size_t bufLen);
 };
 
 }
