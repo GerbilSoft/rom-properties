@@ -19,6 +19,12 @@
 #include <string.h>
 #include <unistd.h>
 
+// OpenBSD 6.5 doesn't have the static_assert() macro,
+// even though it *does* use LLVM/Clang 7.0.1.
+#ifndef static_assert
+# define static_assert _Static_assert
+#endif
+
 // Supported rom-properties frontends.
 typedef enum {
 	RP_FE_KDE4,
