@@ -48,7 +48,7 @@ using namespace LibRpTexture;
 #ifdef ENABLE_GL
 #include "Texture/KhronosKTX.hpp"
 #endif /* ENABLE_GL */
-#include "Texture/ValveVTF.hpp"
+#include "Other/RpTextureWrapper.hpp"
 #include "Texture/ValveVTF3.hpp"
 
 // ROM images. Used for console-specific image formats.
@@ -442,8 +442,9 @@ void ImageDecoderTest::decodeTest_internal(void)
 		m_romData = new ValveVTF3(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
+		// NOTE: Using RpTextureWrapper.
 		filetype = "VTF";
-		m_romData = new ValveVTF(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (mode.dds_gz_filename.size() >= 8U &&
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
@@ -544,7 +545,8 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		fn_ctor = [](IRpFile *file) { return new ValveVTF3(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
-		fn_ctor = [](IRpFile *file) { return new ValveVTF(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (mode.dds_gz_filename.size() >= 8U &&
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{

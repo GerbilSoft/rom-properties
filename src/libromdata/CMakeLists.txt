@@ -42,7 +42,6 @@ SET(libromdata_SRCS
 
 	Texture/DirectDrawSurface.cpp
 	Texture/SegaPVR.cpp
-	Texture/ValveVTF.cpp
 	Texture/ValveVTF3.cpp
 
 	Audio/ADX.cpp
@@ -181,12 +180,10 @@ SET(libromdata_H
 
 	Texture/DirectDrawSurface.hpp
 	Texture/SegaPVR.hpp
-	Texture/ValveVTF.hpp
 	Texture/ValveVTF3.hpp
 
 	Texture/dds_structs.h
 	Texture/pvr_structs.h
-	Texture/vtf_structs.h
 	Texture/vtf3_structs.h
 
 	Audio/ADX.hpp

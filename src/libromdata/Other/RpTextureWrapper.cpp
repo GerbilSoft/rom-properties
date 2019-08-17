@@ -22,6 +22,7 @@ using namespace LibRpBase;
 // librptexture
 #include "librptexture/fileformat/FileFormat.hpp"
 #include "librptexture/fileformat/XboxXPR.hpp"	// TEMPORARY
+#include "librptexture/fileformat/ValveVTF.hpp"	// TEMPORARY
 using LibRpTexture::rp_image;
 using LibRpTexture::FileFormat;
 
@@ -105,17 +106,20 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 		return;
 	}
 
-	// TODO: This is currently only used for XboxXPR.
-	// Create a factory class similar to RomDataFactory.
-	if (magic != cpu_to_be32('XPR0')) {
+	// TODO: Create a factory class similar to RomDataFactory.
+	if (magic == cpu_to_be32('XPR0')) {
+		// XboxXPR
+		d->texture = new LibRpTexture::XboxXPR(d->file);
+	} else if (magic == cpu_to_be32('VTF\0')) {
+		// ValveVTF
+		d->texture = new LibRpTexture::ValveVTF(d->file);
+	} else {
 		// Not supported.
 		d->file->unref();
 		d->file = nullptr;
 		return;
 	}
 
-	// Create the texture.
-	d->texture = new LibRpTexture::XboxXPR(d->file);
 	if (!d->texture->isValid()) {
 		// Not a valid texture.
 		d->texture->unref();
@@ -147,16 +151,17 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// TODO: This is currently only used for XboxXPR.
-	// Create a factory class similar to RomDataFactory.
+	// TODO: Create a factory class similar to RomDataFactory.
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
-	if (pData32[0] != cpu_to_be32('XPR0')) {
-		// Not supported.
-		return -1;
+	if (pData32[0] == cpu_to_be32('XPR0') ||
+	    pData32[0] == cpu_to_be32('VTF\0'))
+	{
+		// Supported!
+		return 0;
 	}
 
-	// Supported.
-	return 0;
+	// Not supported.
+	return -1;
 }
 
 /**
@@ -191,7 +196,12 @@ const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const exts[] = {
+		// XboxXPR
 		".xbx", ".xpr",
+
+		// ValveVTF
+		".vtf",
+		//".vtx",	// TODO: Some files might use the ".vtx" extension.
 
 		nullptr
 	};
@@ -212,10 +222,22 @@ const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const mimeTypes[] = {
+		/** XboxXPR **/
+
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
 		// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
 		"image/x-xbox-xpr0",
+
+		/** ValveVTF **/
+
+		// Vendor-specific MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/vnd.valve.source.texture",
+
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/x-vtf",
 
 		nullptr
 	};
@@ -316,6 +338,12 @@ int RpTextureWrapper::loadFieldData(void)
 
 	// Pixel format
 	d->fields->addField_string(C_("RpTextureWrapper", "Pixel Format"), texture->pixelFormat());
+
+	// Mipmap count
+	int mipmapCount = texture->mipmapCount();
+	if (mipmapCount >= 0) {
+		d->fields->addField_string_numeric(C_("RpTextureWrapper", "Mipmap Count"), mipmapCount);
+	}
 
 	// TODO: Format-specific fields. (before or after generic fields?)
 	// - XPR: Type. (XPR0, XPR1, XPR2)
