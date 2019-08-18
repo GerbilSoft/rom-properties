@@ -35,11 +35,24 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		return -ENODEV;
 	}
 
+	// FIXME: On NetBSD and OpenBSD, the one-sector cache causes weird reading
+	// shenanigans with PNG images. (duplicated header and data from other parts
+	// of the XDBF file.) I couldn't figure out any way to fix it without simply
+	// disabling the cache on those systems... (Works fine on Linux and Windows.)
+	//
+	// Also, the Kreon feature list command is failing with EPERM, even as root.
+	// (Note that /dev/cd1c or /dev/rcd1c must be used; the 'a' partition fails.)
+	// Therefore, we end up using OSAPI instead of SCSI READ, though Kreon
+	// functionality *seems* to work in some cases...
+	//
+	// TODO: Not sure about NetBSD...
+#if !defined(__NetBSD__) && !defined(__OpenBSD__)
 	if (lba == devInfo->lba_cache) {
 		// This LBA is already cached.
 		// TODO: Special case for ~0U?
 		return 0;
 	}
+#endif /* !__NetBSD__ && !__OpenBSD__ */
 
 	// Read the first block.
 	RP_Q(RpFile);
@@ -56,6 +69,7 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 	} else {
 		// Not a Kreon drive. Use the OS API.
 		// TODO: Call RpFile::read()?
+		// TODO: Seek here?
 #ifdef _WIN32
 		DWORD bytesRead;
 		BOOL bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
@@ -239,6 +253,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 #endif /* _WIN32 */
 
 		devInfo->device_pos += contig_size;
+		lba_cur += lba_count;
 		size -= contig_size;
 		ptr8 += contig_size;
 		ret += contig_size;
