@@ -945,6 +945,7 @@ int WiiWAD::loadFieldData(void)
 	}
 
 	// Console ID.
+	// TODO: Hide the "0x" prefix?
 	d->fields->addField_string_numeric(C_("WiiWAD", "Console ID"),
 		be32_to_cpu(d->ticket.console_id), RomFields::FB_HEX, 8,
 		RomFields::STRF_MONOSPACE);
