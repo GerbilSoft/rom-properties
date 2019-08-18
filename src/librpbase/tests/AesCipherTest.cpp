@@ -173,7 +173,6 @@ void AesCipherTest::CompareByteArrays(
 				s_actual += '\n';
 			}
 
-			// TODO: Print a 64-bit value.
 			snprintf(printf_buf, sizeof(printf_buf), "%04X: ", static_cast<unsigned int>(i));
 			s_expected += printf_buf;
 			s_actual += printf_buf;

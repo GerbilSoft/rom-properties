@@ -398,7 +398,6 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 	// NOTE: Need to manually initialize the char16_t[] array
 	// due to the way _RP() is implemented for versions of
 	// MSVC older than 2015.
-	// TODO: Hex and/or _RP_CHR()?
 	static const char16_t utf16_out[] = {
 		'C',':','\\','W','i','n','d','o',
 		'w','s','\\','S','y','s','t','e',

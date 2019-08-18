@@ -323,11 +323,10 @@ const string &getConfigDirectory(void)
  */
 int set_mtime(const string &filename, time_t mtime)
 {
-	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
-#error 32-bit time_t is not supported. Get a newer compiler.
+# error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 	const tstring tfilename = makeWinPath(filename);
 
@@ -352,11 +351,10 @@ int get_mtime(const string &filename, time_t *pMtime)
 	}
 	const tstring tfilename = makeWinPath(filename);
 
-	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
-#error 32-bit time_t is not supported. Get a newer compiler.
+# error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 	// Use GetFileTime() instead of _stati64().
 	HANDLE hFile = CreateFile(tfilename.c_str(),

@@ -215,9 +215,12 @@ void RpFile::init(void)
 {
 	RP_D(RpFile);
 
+#ifndef NDEBUG
 	// Cannot use decompression with writing.
-	// FIXME: Proper assert statement...
-	//assert((d->mode & FM_MODE_MASK != RpFile::FM_READ) || (d->mode & RpFile::FM_GZIP_DECOMPRESS));
+	if (d->mode & RpFile::FM_GZIP_DECOMPRESS) {
+		assert((d->mode & FM_MODE_MASK) != RpFile::FM_WRITE);
+	}
+#endif /* NDEBUG */
 
 	// Open the file.
 	if (d->reOpenFile() != 0) {

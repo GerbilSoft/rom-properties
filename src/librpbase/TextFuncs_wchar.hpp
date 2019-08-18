@@ -29,7 +29,7 @@
 #ifdef _WIN32
 # include <tchar.h>
 # if defined(__cplusplus) && !defined(tstring)
-// FIXME: Would be better to use typedef, but oh well.
+// NOTE: Can't use typedef due to std:: namespace.
 #  ifdef _UNICODE
 #   define tstring wstring
 #  else /* !_UNICODE */
@@ -39,7 +39,7 @@
 #endif /* _WIN32 */
 
 #ifndef RP_WIS16
-#error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
+# error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
 #endif /* RP_WIS16 */
 
 /** wchar_t (Unicode) **/
@@ -172,10 +172,6 @@ static inline std::string W2A(const std::wstring &wcs)
 }
 
 /** TCHAR **/
-
-// TODO: Check for UNICODE or _UNICODE?
-// We're using Windows functions, not libc functions,
-// for text conversion, so UNICODE makes more sense.
 
 #ifdef _WIN32
 #ifdef UNICODE
