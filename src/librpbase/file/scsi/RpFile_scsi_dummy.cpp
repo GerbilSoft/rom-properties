@@ -7,7 +7,9 @@
  ***************************************************************************/
 
 #include "../RpFile.hpp"
-#include "../RpFile_p.hpp"
+
+// C includes. (C++ namespace)
+#include <cerrno>
 
 namespace LibRpBase {
 
