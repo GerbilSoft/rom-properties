@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// Partially based on libcdio-2.1.0's freebsd_cam.c.
-
 #if !defined(__FreeBSD__) && !defined(__DragonFly__)
 # error RpFile_scsi_freebsd.cpp is for FreeBSD and DragonFly BSD ONLY.
 #endif /* !__FreeBSD__ && !__DragonFly__ */
@@ -99,6 +97,13 @@ int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	void *data, size_t data_len,
 	ScsiDirection direction)
 {
+	// Partially based on libcdio-2.1.0's freebsd_cam.c.
+
+	assert(cdb_len >= 6);
+	if (cdb_len < 6) {
+		return -EINVAL;
+	}
+
 #ifdef RP_OS_SCSI_SUPPORTED
 	// SCSI command buffer.
 	union ccb ccb;

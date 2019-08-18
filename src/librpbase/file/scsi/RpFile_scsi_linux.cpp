@@ -87,6 +87,11 @@ int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	void *data, size_t data_len,
 	ScsiDirection direction)
 {
+	assert(cdb_len >= 6);
+	if (cdb_len < 6) {
+		return -EINVAL;
+	}
+
 	// SCSI command buffers.
 	struct sg_io_hdr sg_io;
 	union {

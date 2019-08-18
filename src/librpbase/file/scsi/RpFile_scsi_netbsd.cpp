@@ -109,6 +109,10 @@ int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
 	ScsiDirection direction)
 {
 	// Partially based on libcdio-2.1.0's run_scsi_cmd_netbsd().
+	assert(cdb_len >= 6);
+	if (cdb_len < 6) {
+		return -EINVAL;
+	}
 
 	// SCSI command buffers.
 	// TODO: Sense data?
