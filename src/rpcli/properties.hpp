@@ -15,14 +15,14 @@ namespace LibRpBase {
 }
 
 class ROMOutput {
-	const LibRpBase::RomData *romdata;
+	const LibRpBase::RomData *const romdata;
 public:
 	explicit ROMOutput(const LibRpBase::RomData *romdata);
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
 class JSONROMOutput {
-	const LibRpBase::RomData *romdata;
+	const LibRpBase::RomData *const romdata;
 public:
 	explicit JSONROMOutput(const LibRpBase::RomData *romdata);
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);

@@ -31,8 +31,8 @@
  * - https://en.wikipedia.org/wiki/Key_Code_Qualifier
  */
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_PROTOCOL_H__
-#define __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_PROTOCOL_H__
+#ifndef __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_PROTOCOL_H__
+#define __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_PROTOCOL_H__
 
 #include <stdint.h>
 
@@ -347,7 +347,7 @@ typedef struct PACKED _SCSI_RESP_INQUIRY_STD {
 	char vendor_id[8];
 	char product_id[16];
 	char product_revision_level[4];
-	uint8_t VendorSpecific[20];
+	char VendorSpecific[20];
 	uint8_t Reserved2[40];
 } SCSI_RESP_INQUIRY_STD;
 
@@ -694,4 +694,4 @@ typedef struct PACKED _SCSI_CDB_READ_CD_MSF {
 
 #pragma pack()
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_PROTOCOL_H__ */
+#endif /* __ROMPROPERTIES_LIBRPBASE_FILE_SCSI_SCSI_PROTOCOL_H__ */

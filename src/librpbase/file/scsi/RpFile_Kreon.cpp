@@ -46,15 +46,8 @@ bool RpFile::isKreonDriveModel(void)
 
 #ifdef RP_OS_SCSI_SUPPORTED
 	// SCSI INQUIRY command.
-	SCSI_CDB_INQUIRY cdb;
-	cdb.OpCode = SCSI_OP_INQUIRY;
-	cdb.EVPD = 0;
-	cdb.PageCode = 0;
-	cdb.AllocLen = cpu_to_be16(sizeof(SCSI_RESP_INQUIRY_STD));
-	cdb.Control = 0;
-
 	SCSI_RESP_INQUIRY_STD resp;
-	int ret = d->scsi_send_cdb(&cdb, sizeof(cdb), &resp, sizeof(resp), RpFilePrivate::SCSI_DIR_IN);
+	int ret = scsi_inquiry(&resp);
 	if (ret != 0) {
 		// SCSI command failed.
 		return false;

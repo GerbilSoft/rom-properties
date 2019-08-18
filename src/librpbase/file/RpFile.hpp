@@ -15,6 +15,9 @@
 #include <memory>
 #include <vector>
 
+// from scsi_protocol.h
+struct _SCSI_RESP_INQUIRY_STD;
+
 namespace LibRpBase {
 
 class RpFilePrivate;
@@ -150,6 +153,16 @@ class RpFile : public IRpFile
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
 		int rereadDeviceSizeScsi(int64_t *pDeviceSize = nullptr, uint32_t *pSectorSize = nullptr);
+
+	public:
+		/** Public SCSI command wrapper functions **/
+
+		/**
+		 * SCSI INQUIRY command.
+		 * @param pResp Response buffer.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int scsi_inquiry(struct _SCSI_RESP_INQUIRY_STD *pResp);
 
 	public:
 		/**

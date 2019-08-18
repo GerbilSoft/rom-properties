@@ -23,9 +23,11 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_
 SET(rom-properties-rpcli_SRCS
 	rpcli.cpp
 	properties.cpp
+	device.cpp
 	)
 SET(rom-properties-rpcli_H
 	properties.hpp
+	device.hpp
 	)
 
 IF(WIN32)

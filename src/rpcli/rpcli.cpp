@@ -3,7 +3,7 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,6 +36,7 @@ using namespace LibRomData;
 #ifdef ENABLE_DECRYPTION
 # include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
+#include "device.hpp"
 
 // C includes.
 #include <stdlib.h>
@@ -139,14 +140,15 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 }
 
 /**
-* Shows info about file
-* @param filename ROM filename
-* @param json Is program running in json mode?
-* @param extract Vector of image extraction parameters
-*/
-static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract){
+ * Shows info about file
+ * @param filename ROM filename
+ * @param json Is program running in json mode?
+ * @param extract Vector of image extraction parameters
+ */
+static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract)
+{
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
-	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
 		RomData *romData = RomDataFactory::create(file);
 		if (romData && romData->isValid()) {
@@ -210,6 +212,36 @@ static void PrintSystemRegion(void)
 	cout << endl;
 }
 
+/**
+ * Run a SCSI INQUIRY command on a device.
+ * @param filename Device filename
+ * @param json Is program running in json mode?
+ */
+static void DoScsiInquiry(const char *filename, bool json)
+{
+	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
+	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	if (file->isOpen()) {
+		// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
+		if (file->isDevice()) {
+			if (json) {
+				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
+				// TODO: JSONScsiInquiry
+				//cout << JSONScsiInquiry(file) << endl;
+			} else {
+				cout << ScsiInquiry(file) << endl;
+			}
+		} else {
+			cerr << "-- " << C_("rpcli", "Not a device file") << endl;
+			if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
+		}
+	} else {
+		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
+		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
+	}
+	file->unref();
+}
+
 int RP_C_API main(int argc, char *argv[])
 {
 #ifdef _WIN32
@@ -251,6 +283,10 @@ int RP_C_API main(int argc, char *argv[])
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
 		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
 		cerr << endl;
+		// TODO: Check if a SCSI implementation is available for this OS?
+		cerr << "Special options for devices:" << endl;
+		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << endl;
+		cerr << endl;
 		cerr << C_("rpcli", "Examples:") << endl;
 		cerr << "* rpcli s3.gen" << endl;
 		cerr << "\t " << C_("rpcli", "displays info about s3.gen") << endl;
@@ -269,10 +305,11 @@ int RP_C_API main(int argc, char *argv[])
 		}
 	}
 	if (json) cout << "[\n";
+	bool inq_scsi = false;
 	bool first = true;
 	int ret = 0;
-	for(int i=1;i<argc;i++){
-		if(argv[i][0] == '-'){
+	for (int i = 1; i < argc; i++){
+		if (argv[i][0] == '-'){
 			switch (argv[i][1]) {
 #ifdef ENABLE_DECRYPTION
 			case 'k': {
@@ -311,6 +348,14 @@ int RP_C_API main(int argc, char *argv[])
 			}
 			case 'j': // do nothing
 				break;
+			case 'i':
+				// TODO: Check if a SCSI implementation is available for this OS?
+				if (argv[i][2] == 's') {
+					// SCSI INQUIRY command.
+					// This takes precedence over the usual rpcli functionality.
+					inq_scsi = true;
+				}
+				break;
 			default:
 				cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]) << endl;
 				break;
@@ -319,7 +364,17 @@ int RP_C_API main(int argc, char *argv[])
 		else{
 			if (first) first = false;
 			else if (json) cout << "," << endl;
-			DoFile(argv[i], json, extract);
+
+			// TODO: Return codes?
+			if (inq_scsi) {
+				// SCSI INQUIRY command.
+				DoScsiInquiry(argv[i], json);
+				inq_scsi = false;
+			} else {
+				// Regular file.
+				DoFile(argv[i], json, extract);
+			}
+
 			extract.clear();
 		}
 	}

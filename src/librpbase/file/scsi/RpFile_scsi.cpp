@@ -468,4 +468,24 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 #endif /* RP_OS_SCSI_SUPPORTED */
 }
 
+/** RpFile: Public SCSI command wrapper functions **/
+
+/**
+ * SCSI INQUIRY command.
+ * @param pResp Response buffer.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::scsi_inquiry(SCSI_RESP_INQUIRY_STD *pResp)
+{
+	SCSI_CDB_INQUIRY cdb;
+	cdb.OpCode = SCSI_OP_INQUIRY;
+	cdb.EVPD = 0;
+	cdb.PageCode = 0;
+	cdb.AllocLen = cpu_to_be16(sizeof(SCSI_RESP_INQUIRY_STD));
+	cdb.Control = 0;
+
+	RP_D(RpFile);
+	return d->scsi_send_cdb(&cdb, sizeof(cdb), pResp, sizeof(*pResp), RpFilePrivate::SCSI_DIR_IN);
+}
+
 }
