@@ -12,9 +12,14 @@
 #include "config.rpcli.h"
 
 // _POSIX_C_SOURCE is required for *_r() on MinGW-w64.
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 1
-#endif
+// However, this breaks snprintf() on FreeBSD when using clang/libc++,
+// so only define it on Windows.
+// Reference: https://github.com/pocoproject/poco/issues/1045#issuecomment-245987081
+#ifdef _WIN32
+# ifndef _POSIX_C_SOURCE
+#  define _POSIX_C_SOURCE 1
+# endif
+#endif /* _WIN32 */
 #include <time.h>
 
 #ifndef HAVE_GMTIME_R

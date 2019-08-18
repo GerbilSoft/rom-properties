@@ -11,15 +11,10 @@
 
 // Time functions, with workaround for systems
 // that don't have reentrant versions.
-// NOTE: This defines _POSIX_C_SOURCE, which is
-// required for *_r() functions on MinGW-w64,
-// so it needs to be before other includes.
-// However, this breaks snprintf() on FreeBSD when using clang/libc++,
-// so only include it on Windows.
-// Reference: https://github.com/pocoproject/poco/issues/1045#issuecomment-245987081
-#ifdef _WIN32
-# include "time_r.h"
-#endif
+// NOTE: On Windows, this defines _POSIX_C_SOURCE, which is
+// required for *_r() functions on MinGW-w64, so it needs to
+// be included before anything else.
+#include "time_r.h"
 
 #ifdef __cplusplus
 // C includes.

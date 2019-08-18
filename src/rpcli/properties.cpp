@@ -8,8 +8,6 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "librpbase/config.librpbase.h"
-#include "config.rpcli.h"
 #include "properties.hpp"
 
 // C includes. (C++ namespace)
