@@ -38,10 +38,10 @@ ENDIF()
 IF(SPLIT_OK)
 	# If the linker doesn't support --compress-debug-sections=zlib,
 	# check if objcopy supports --compress-debug-sections.
-	IF(HAS_LD_COMPRESS_DEBUG_SECTIONS)
+	IF(LDFLAG_--compress-debug-sections)
 		# ld supports --compress-debug-sections=zlib.
 		SET(OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM "" CACHE INTERNAL "objcopy parameter to compress debug sections.")
-	ELSEIF(NOT HAS_LD_COMPRESS_DEBUG_SECTIONS AND NOT DEFINED OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM)
+	ELSEIF(NOT LDFLAG_--compress-debug-sections AND NOT DEFINED OBJCOPY_COMPRESS_DEBUG_SECTIONS_PARAM)
 		# Check for objcopy --compress-debug-sections.
 		MESSAGE(STATUS "Checking if objcopy supports --compress-debug-sections")
 		EXECUTE_PROCESS(COMMAND ${CMAKE_OBJCOPY} --help
