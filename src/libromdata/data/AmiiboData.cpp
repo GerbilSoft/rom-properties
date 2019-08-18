@@ -235,8 +235,11 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 
 	nullptr, nullptr, nullptr, nullptr,	// 0x1C0
 
-	"Special Pok\xC3\xA9mon",		// 0x1D0
-	nullptr, nullptr, nullptr,		// 0x1D4
+	// Pokémon (special characters) (0x1D0 - 0x1D4)
+	"Pok\xC3\xA9mon",			// 0x1D0
+	"Pok\xC3\xA9mon",			// 0x1D4
+
+	nullptr, nullptr,			// 0x1D8
 	nullptr, nullptr, nullptr, nullptr,	// 0x1E0
 	"Kirby",				// 0x1F0
 	nullptr, nullptr, nullptr,		// 0x1F4
@@ -432,7 +435,6 @@ MSS_VARIANT_ARRAY_DEF("Pink Gold Peach", pink_gold_peach);
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_isabelle_variants[] = {
 	{0x00, "Isabelle (Summer Outfit)"},
 	{0x01, "Isabelle (Autumn Outfit)"},
-	// TODO: How are these ones different?
 	{0x03, "Isabelle (Series 4)"},
 };
 
@@ -443,44 +445,37 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_kk_slider_variants
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_tom_nook_variants[] = {
 	{0x00, "Tom Nook"},
-	// TODO: Variant description.
 	{0x01, "Tom Nook (Series 3)"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_timmy_variants[] = {
-	// TODO: Variant descriptions.
 	{0x00, "Timmy"},
 	{0x02, "Timmy (Series 3)"},
 	{0x04, "Timmy (Series 4)"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_tommy_variants[] = {
-	// TODO: Variant descriptions.
 	{0x01, "Tommy (Series 2)"},
 	{0x03, "Tommy (Series 4)"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_digby_variants[] = {
 	{0x00, "Digby"},
-	// TODO: Variant description.
 	{0x01, "Digby (Series 3)"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_resetti_variants[] = {
 	{0x00, "Resetti"},
-	// TODO: Variant description.
 	{0x01, "Resetti (Series 4)"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_don_resetti_variants[] = {
-	// TODO: Variant descriptions.
 	{0x00, "Don Resetti (Series 2)"},
 	{0x01, "Don Resetti (Series 3)"},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_redd_variants[] = {
 	{0x00, "Redd"},
-	// TODO: Variant description.
 	{0x01, "Redd (Series 4)"},
 };
 
@@ -491,7 +486,6 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_dr_shrunk_variants
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_lottie_variants[] = {
 	{0x00, "Lottie"},
-	// TODO: Variant description.
 	{0x01, "Lottie (Series 4)"},
 };
 
@@ -1110,12 +1104,14 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x1900+ 25, "Pikachu"),
 	AMIIBO_CHAR_ID_ONE(0x1900+ 39, "Jigglypuff"),
 	AMIIBO_CHAR_ID_ONE(0x1900+150, "Mewtwo"),
+	AMIIBO_CHAR_ID_ONE(0x1900+172, "Pichu"),
 	AMIIBO_CHAR_ID_ONE(0x1900+448, "Lucario"),
 	AMIIBO_CHAR_ID_ONE(0x1900+658, "Greninja"),
 
-	// Special Pokémon (character series = 0x1D0)
+	// Pokémon (special characters) (character series = 0x1D0 - 0x1D4)
 	AMIIBO_CHAR_ID_ONE(0x1D00, "Shadow Mewtwo"),
 	AMIIBO_CHAR_ID_ONE(0x1D01, "Detective Pikachu"),
+	AMIIBO_CHAR_ID_ONE(0x1D40, "Pok\xC3\xA9mon Trainer"),
 
 	// Kirby (character series = 0x1F0)
 	AMIIBO_CHAR_ID_ONE(0x1F00, "Kirby"),
@@ -1165,6 +1161,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Street Fighter (character series = 0x34C)
 	AMIIBO_CHAR_ID_ONE(0x34C0, "Ryu"),
+	AMIIBO_CHAR_ID_ONE(0x34C1, "Ken"),
 
 	// Monster Hunter (character series = 0x350)
 	AMIIBO_CHAR_ID_VAR(0x3500, "One-Eyed Rathalos and Rider", mh_rathalos_variants),
@@ -2187,14 +2184,15 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Mega Man [0x0379]
 	{  0, 0, "Mega Man"},			// 0x0379
 
-	// Unused [0x037A]
-	{  0, 0, nullptr},			// 0x037A
+	// SSBU: Wave 13 [0x037A]
+	{ 69, 13, "Daisy"},			// 0x037A
 
 	// SSBU: Wave 12 [0x037B]
 	{ 66, 12, "King K. Rool"},		// 0x037B
 
-	// Unused [0x037C-0x037D]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x037C,0x037D
+	// SSBU: Wave 13 [0x037C-0x037D]
+	{ 73, 13, "Young Link"},		// 0x037C
+	{ 70, 13, "Isabelle"},			// 0x037D
 
 	// SSBU: Wave 11 [0x037E-0x037F]
 	{ 65, 11, "Wolf"},			// 0x037E
@@ -2209,13 +2207,28 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// SSBU: Wave 11 [0x0382]
 	{ 63, 11, "Inkling"},			// 0x0382
 
-	// Unused [0x0383-0x038C]
+	// Unused [0x0383-0x0384]
 	{  0, 0, nullptr},			// 0x0383
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0384,0x0385
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0386,0x0387
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0388,0x0389
+	{  0, 0, nullptr},			// 0x0384
+
+	// SSBU: Wave 13 [0x0385]
+	{ 71, 13, "Pichu"},			// 0x0385
+
+	// Unused [0x0386]
+	{  0, 0, nullptr},			// 0x0386
+
+	// SSBU: Wave 13 [0x0387]
+	{ 74, 13, "Pok\xC3\xA9mon Trainer"},	// 0x0387
+
+	// Unused [0x0388]
+	{  0, 0, nullptr},			// 0x0388
+
+	// SSBU: Wave 13 [0x0389]
+	{ 72, 13, "Ken"},			// 0x0389
+
+	// Unused [0x038A-0x038C]
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x038A,0x038B
-	{  0, 0, nullptr},
+	{  0, 0, nullptr},			// 0x038C
 
 	// SSBU: Wave 12 [0x038D]
 	{ 68, 12, "Piranha Plant"},		// 0x038D
