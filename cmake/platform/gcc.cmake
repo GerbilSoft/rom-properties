@@ -142,7 +142,13 @@ UNSET(FLAG_TEST)
 SET(FLAG_TEST "--compress-debug-sections")
 	IF(NOT DEFINED LDFLAG_${FLAG_TEST})
 		MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST}")
-		IF(_ld_out MATCHES "${FLAG_TEST}")
+		IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+			# FIXME: Do an actual runtime test.
+			# NetBSD/OpenBSD ld has the option, but it fails at runtime:
+			# ld: error: --compress-debug-sections: zlib is not available
+			MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST} - yes, but not usable")
+			SET(LDFLAG_${FLAG_TEST} "" CACHE INTERNAL "Linker supports ${FLAG_TEST}")
+		ELSEIF(_ld_out MATCHES "${FLAG_TEST}")
 			MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST} - yes")
 			SET(LDFLAG_${FLAG_TEST} 1 CACHE INTERNAL "Linker supports ${FLAG_TEST}")
 		ELSE()
