@@ -121,7 +121,7 @@ typedef enum {
  * All fields are in big-endian.
  */
 #define IQUE_PLAYER_BBTICKETHEAD_ADDRESS 0x29AC
-typedef struct PACKED _iQuePlayer_BBTicketHead {
+typedef struct PACKED _iQuePlayer_BbTicketHead {
 	uint32_t bbId;			// [0x29AC] Console ID.
 	uint16_t tid;			// [0x29B0] Ticket ID. (if bit 15 is set, this is a trial ticket)
 	uint16_t code;			// [0x29B2] Trial limitation. (See IQUE_PLAYER_TrialLimitation_e.)
@@ -133,8 +133,8 @@ typedef struct PACKED _iQuePlayer_BBTicketHead {
 	uint8_t serverKey[64];		// [0x29CC] ECC public key used to derive unique title key encryption key
 	char issuer[64];		// [0x2A0C] Certificate used to sign the ticket.
 	uint8_t ticketSign[256];	// [0x2A4C] RSA-2048 signature over CMD *and* above ticket data.
-} iQuePlayer_BBTicketHead;
-ASSERT_STRUCT(iQuePlayer_BBTicketHead, 0x2B4C - IQUE_PLAYER_BBTICKETHEAD_ADDRESS);
+} iQuePlayer_BbTicketHead;
+ASSERT_STRUCT(iQuePlayer_BbTicketHead, 0x2B4C - IQUE_PLAYER_BBTICKETHEAD_ADDRESS);
 
 /**
  * Trial limitations.

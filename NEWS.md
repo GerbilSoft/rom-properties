@@ -12,6 +12,10 @@
     reads for certain things instead of one giant read.
     * FIXME: Need to make use of the cache in the "contiguous" read section.
 
+* New parser features:
+  * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
+    0x00000000 for system titles and unlicensed copies.
+
 * Bug fixes:
   * In some cases, the SCSI handlers for both Linux and Windows weren't working
     properly. In particular, on Linux, attempting to read "too much" data at

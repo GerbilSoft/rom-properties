@@ -105,7 +105,7 @@ typedef struct PACKED _RVL_Ticket {
 	uint8_t enc_title_key[0x10];	// [0x1BF] Encrypted title key.
 	uint8_t unknown1;		// [0x1CF] Unknown.
 	uint8_t ticket_id[0x08];	// [0x1D0] Ticket ID. (IV for title key decryption for console-specific titles.)
-	uint8_t console_id[4];		// [0x1D8] Console ID.
+	uint32_t console_id;		// [0x1D8] Console ID.
 	RVL_TitleID_t title_id;		// [0x1DC] Title ID. (IV used for AES-CBC encryption.)
 	uint8_t unknown2[2];		// [0x1E4] Unknown, mostly 0xFFFF.
 	uint8_t ticket_version[2];	// [0x1E6] Ticket version.

@@ -82,7 +82,7 @@ class iQuePlayerPrivate : public RomDataPrivate
 		// .cmd structs.
 		iQuePlayer_contentDesc contentDesc;
 		iQuePlayer_BbContentMetaDataHead bbContentMetaDataHead;
-		iQuePlayer_BBTicketHead bbTicketHead;
+		iQuePlayer_BbTicketHead bbTicketHead;
 
 		// Internal images.
 		rp_image *img_thumbnail;	// handled as icon
@@ -672,7 +672,7 @@ int iQuePlayer::loadFieldData(void)
 	}
 
 	const iQuePlayer_BbContentMetaDataHead *const bbContentMetaDataHead = &d->bbContentMetaDataHead;
-	d->fields->reserve(4);	// Maximum of 4 fields. (TODO: Add more.)
+	d->fields->reserve(5);	// Maximum of 5 fields. (TODO: Add more.)
 
 	// Get the title and ISBN.
 	// TODO: Trim trailing newlines?
@@ -697,6 +697,16 @@ int iQuePlayer::loadFieldData(void)
 	d->fields->addField_string(C_("iQuePlayer", "Content ID"),
 		rp_sprintf("%08X", be32_to_cpu(bbContentMetaDataHead->content_id)),
 		RomFields::STRF_MONOSPACE);
+
+	if (d->fileType == iQuePlayerPrivate::FT_IQUE_DAT) {
+		// Ticket-specific fields.
+		const iQuePlayer_BbTicketHead *const bbTicketHead = &d->bbTicketHead;
+
+		// Console ID.
+		d->fields->addField_string_numeric(C_("iQuePlayer", "Console ID"),
+			be32_to_cpu(bbTicketHead->bbId), RomFields::FB_HEX, 8,
+			RomFields::STRF_MONOSPACE);
+	}
 
 	// Hardware access rights.
 	// TODO: Localization?

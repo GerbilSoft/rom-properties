@@ -702,7 +702,7 @@ int WiiWAD::loadFieldData(void)
 
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-	d->fields->reserve(11);	// Maximum of 11 fields.
+	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	if (d->key_status != KeyManager::VERIFY_OK) {
 		// Unable to get the decryption key.
@@ -943,6 +943,11 @@ int WiiWAD::loadFieldData(void)
 			d->fields->addField_string(C_("WiiWAD", "Game Info"), gameInfo);
 		}
 	}
+
+	// Console ID.
+	d->fields->addField_string_numeric(C_("WiiWAD", "Console ID"),
+		be32_to_cpu(d->ticket.console_id), RomFields::FB_HEX, 8,
+		RomFields::STRF_MONOSPACE);
 
 	// TODO: Decrypt content.bin to get the actual data.
 

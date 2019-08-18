@@ -1906,6 +1906,7 @@ int Nintendo3DS::loadFieldData(void)
 
 	// Maximum of 20 fields.
 	// Tested with several CCI, CIA, and NCCH files.
+	// TODO: Add one for ticket console ID?
 	d->fields->reserve(20);
 
 	// Reserve at least 4 tabs:
@@ -2344,6 +2345,13 @@ int Nintendo3DS::loadFieldData(void)
 			d->fields->addField_string_numeric(C_("Nintendo3DS", "Demo Use Limit"),
 				be32_to_cpu(d->mxh.ticket.limits[1]));
 		}
+
+		// Console ID.
+		// NOTE: Technically part of the ticket.
+		// NOTE: Not including the "0x" hex prefix.
+		d->fields->addField_string(C_("Nintendo3DS", "Console ID"),
+			rp_sprintf("%08X", be32_to_cpu(d->mxh.ticket.console_id)),
+			RomFields::STRF_MONOSPACE);
 
 		// Contents table.
 		auto vv_contents = new vector<vector<string> >();

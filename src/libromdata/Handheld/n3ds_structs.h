@@ -907,7 +907,7 @@ typedef struct PACKED _N3DS_Ticket_t {
 	uint8_t title_key[0x10];	// [0x07F] Title key. (encrypted)
 	uint8_t reserved1;		// [0x08F]
 	uint64_t ticket_id;		// [0x090]
-	uint32_t console_id;		// [0x098]
+	uint32_t console_id;		// [0x098] Console ID.
 	N3DS_TitleID_BE_t title_id;	// [0x09C] Title ID.
 	uint8_t reserved2[2];		// [0x0A4]
 	uint16_t title_version;		// [0x0A6] ticket title version.
