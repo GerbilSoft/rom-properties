@@ -394,9 +394,10 @@ int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf
 	}
 
 #ifdef RP_OS_SCSI_SUPPORTED
-	// FIXME: d->sector_size is only in the Windows-specific class right now.
-	assert(bufLen >= (int64_t)lbaCount * (int64_t)devInfo->sector_size);
-	if (bufLen < (int64_t)lbaCount * (int64_t)devInfo->sector_size) {
+	const size_t req_buf_size = static_cast<size_t>(
+		static_cast<int64_t>(lbaCount) * static_cast<int64_t>(devInfo->sector_size));
+	assert(bufLen >= req_buf_size);
+	if (bufLen < req_buf_size) {
 		// TODO: Better error code?
 		return -EIO;
 	}
@@ -415,7 +416,7 @@ int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf
 	cdb10.TransferLen = cpu_to_be16(lbaCount);
 	cdb10.Control = 0;
 
-	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, bufLen, SCSI_DIR_IN);
+	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, req_buf_size, SCSI_DIR_IN);
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
 	return -ENOSYS;
