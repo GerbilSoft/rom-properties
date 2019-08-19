@@ -340,8 +340,8 @@ int RpFilePrivate::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSiz
 		if (pSectorSize) {
 			*pSectorSize = sector_size;
 		}
-		*pDeviceSize = static_cast<int64_t>(be32_to_cpu(resp10.LBA) + 1) *
-			       static_cast<int64_t>(sector_size);
+		*pDeviceSize = (static_cast<int64_t>(be32_to_cpu(resp10.LBA)) + 1) *
+				static_cast<int64_t>(sector_size);
 		return 0;
 	}
 
@@ -365,8 +365,8 @@ int RpFilePrivate::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSiz
 	if (pSectorSize) {
 		*pSectorSize = sector_size;
 	}
-	*pDeviceSize = static_cast<int64_t>(be64_to_cpu(resp16.LBA) + 1) *
-		       static_cast<int64_t>(sector_size);
+	*pDeviceSize = (static_cast<int64_t>(be64_to_cpu(resp16.LBA)) + 1) *
+			static_cast<int64_t>(sector_size);
 	return 0;
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
