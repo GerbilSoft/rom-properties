@@ -751,7 +751,6 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 		return;
 	}
 
-	Q_Q(RomDataView);
 	QDateTime dateTime;
 	dateTime.setTimeSpec(
 		(field->desc.flags & RomFields::RFT_DATETIME_IS_UTC)
