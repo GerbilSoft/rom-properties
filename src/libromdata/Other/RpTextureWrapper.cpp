@@ -21,8 +21,9 @@ using namespace LibRpBase;
 
 // librptexture
 #include "librptexture/fileformat/FileFormat.hpp"
-#include "librptexture/fileformat/XboxXPR.hpp"	// TEMPORARY
-#include "librptexture/fileformat/ValveVTF.hpp"	// TEMPORARY
+#include "librptexture/fileformat/XboxXPR.hpp"		// TEMPORARY
+#include "librptexture/fileformat/ValveVTF.hpp"		// TEMPORARY
+#include "librptexture/fileformat/ValveVTF3.hpp"	// TEMPORARY
 using LibRpTexture::rp_image;
 using LibRpTexture::FileFormat;
 
@@ -113,6 +114,9 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	} else if (magic == cpu_to_be32('VTF\0')) {
 		// ValveVTF
 		d->texture = new LibRpTexture::ValveVTF(d->file);
+	} else if (magic == cpu_to_be32('VTF3')) {
+		// ValveVTF3
+		d->texture = new LibRpTexture::ValveVTF3(d->file);
 	} else {
 		// Not supported.
 		d->file->unref();
@@ -154,7 +158,8 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 	// TODO: Create a factory class similar to RomDataFactory.
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
 	if (pData32[0] == cpu_to_be32('XPR0') ||
-	    pData32[0] == cpu_to_be32('VTF\0'))
+	    pData32[0] == cpu_to_be32('VTF\0') ||
+	    pData32[0] == cpu_to_be32('VTF3'))
 	{
 		// Supported!
 		return 0;

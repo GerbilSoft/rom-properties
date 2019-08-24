@@ -700,7 +700,7 @@ ValveVTF::ValveVTF(IRpFile *file)
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Header is stored in little-endian, so it always
 	// needs to be byteswapped on big-endian.
-	d->vtfHeader.signature		= le32_to_cpu(d->vtfHeader.signature);
+	// NOTE: Signature is *not* byteswapped.
 	d->vtfHeader.version[0]		= le32_to_cpu(d->vtfHeader.version[0]);
 	d->vtfHeader.version[1]		= le32_to_cpu(d->vtfHeader.version[1]);
 	d->vtfHeader.headerSize		= le32_to_cpu(d->vtfHeader.headerSize);
