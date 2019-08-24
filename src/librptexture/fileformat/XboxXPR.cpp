@@ -15,8 +15,11 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/aligned_malloc.h"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using LibRpBase::IRpFile;
+using LibRpBase::rp_sprintf;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -706,6 +709,44 @@ int XboxXPR::mipmapCount(void) const
 	// TODO: Does XPR0 support mipmaps?
 	return -1;
 }
+
+#ifdef ENABLE_LIBRPBASE_ROMFIELDS
+/**
+ * Get property fields for rom-properties.
+ * @param fields RomFields object to which fields should be added.
+ * @return Number of fields added, or 0 on error.
+ */
+int XboxXPR::getFields(LibRpBase::RomFields *fields) const
+{
+	// TODO: Localization.
+#define C_(ctx, str) str
+#define NOP_C_(ctx, str) str
+
+	assert(fields != nullptr);
+	if (!fields)
+		return 0;
+
+	RP_D(XboxXPR);
+	const int initial_count = fields->count();
+	fields->reserve(initial_count + 1);	// Maximum of 1 field. (TODO)
+
+	// Type
+	static const char type_tbl[][8] = {
+		"XPR0", "XPR1", "XPR2"
+	};
+	if (d->xprType > XboxXPRPrivate::XPR_TYPE_UNKNOWN &&
+	    d->xprType < ARRAY_SIZE(type_tbl))
+	{
+		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[d->xprType]);
+	} else {
+		fields->addField_string(C_("XboxXPR", "Type"),
+			rp_sprintf(C_("RomData", "Unknown (%d)"), d->xprType));
+	}
+
+	// Finished reading the field data.
+	return (fields->count() - initial_count);
+}
+#endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
 /**
  * Get the image.

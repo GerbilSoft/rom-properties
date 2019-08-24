@@ -21,6 +21,8 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/bitstuff.h"
 #include "librpbase/aligned_malloc.h"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
@@ -35,11 +37,11 @@ using namespace LibRpBase;
 
 // C++ includes.
 //#include <memory>
-//#include <string>
-//#include <vector>
-//using std::string;
+#include <string>
+#include <vector>
+using std::string;
 //using std::unique_ptr;
-//using std::vector;
+using std::vector;
 
 namespace LibRpTexture {
 
@@ -704,15 +706,35 @@ const char *ValveVTF::pixelFormat(void) const
 	return d->invalid_pixel_format;
 }
 
-// FIXME: RpTextureWrapper needs to show non-standard fields.
-#if 0
 /**
- * Load field data.
- * Called by RomData::fields() if the field data hasn't been loaded yet.
- * @return Number of fields read on success; negative POSIX error code on error.
+ * Get the mipmap count.
+ * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
  */
-int ValveVTF::loadFieldData(void)
+int ValveVTF::mipmapCount(void) const
 {
+	RP_D(const ValveVTF);
+	if (!d->isValid)
+		return -1;
+
+	return d->vtfHeader.mipmapCount;
+}
+
+#ifdef ENABLE_LIBRPBASE_ROMFIELDS
+/**
+ * Get property fields for rom-properties.
+ * @param fields RomFields object to which fields should be added.
+ * @return Number of fields added, or 0 on error.
+ */
+int ValveVTF::getFields(LibRpBase::RomFields *fields) const
+{
+	// TODO: Localization.
+#define C_(ctx, str) str
+#define NOP_C_(ctx, str) str
+
+	assert(fields != nullptr);
+	if (!fields)
+		return 0;
+
 	// TODO: Move to RomFields?
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
@@ -723,23 +745,14 @@ int ValveVTF::loadFieldData(void)
 #endif
 
 	RP_D(ValveVTF);
-	if (!d->fields->empty()) {
-		// Field data *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
-		// Unknown file type.
-		return -EIO;
-	}
+	const int initial_count = fields->count();
+	fields->reserve(initial_count + 1);	// Maximum of 12 fields.
 
 	// VTF header.
 	const VTFHEADER *const vtfHeader = &d->vtfHeader;
-	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	// VTF version.
-	d->fields->addField_string(C_("ValveVTF", "VTF Version"),
+	fields->addField_string(C_("ValveVTF", "VTF Version"),
 		rp_sprintf("%u.%u", vtfHeader->version[0], vtfHeader->version[1]));
 
 	// Flags.
@@ -786,11 +799,16 @@ int ValveVTF::loadFieldData(void)
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
-	auto vv_flags = new vector<vector<string> >(ARRAY_SIZE(flags_names));
-	for (int i = ARRAY_SIZE(flags_names)-1; i >= 0; i--) {
-		auto &data_row = vv_flags->at(i);
+	auto vv_flags = new vector<vector<string> >();
+	vv_flags->reserve(ARRAY_SIZE(flags_names));
+	for (size_t i = 0; i < ARRAY_SIZE(flags_names); i++) {
 		if (flags_names[i]) {
-			data_row.push_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", flags_names[i]));
+			size_t j = vv_flags->size()+1;
+			vv_flags->resize(j);
+			auto &data_row = vv_flags->at(j-1);
+			// TODO: Localization.
+			//data_row.push_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", flags_names[i]));
+			data_row.push_back(flags_names[i]);
 		}
 	}
 
@@ -798,43 +816,44 @@ int ValveVTF::loadFieldData(void)
 	params.headers = nullptr;
 	params.list_data = vv_flags;
 	params.mxd.checkboxes = vtfHeader->flags;
-	d->fields->addField_listData(C_("ValveVTF", "Flags"), &params);
+	fields->addField_listData(C_("ValveVTF", "Flags"), &params);
 
 	// Number of frames.
-	d->fields->addField_string_numeric(C_("ValveVTF", "# of Frames"), vtfHeader->frames);
+	fields->addField_string_numeric(C_("ValveVTF", "# of Frames"), vtfHeader->frames);
 	if (vtfHeader->frames > 1) {
-		d->fields->addField_string_numeric(C_("ValveVTF", "First Frame"), vtfHeader->firstFrame);
+		fields->addField_string_numeric(C_("ValveVTF", "First Frame"), vtfHeader->firstFrame);
 	}
 
 	// Reflectivity vector.
-	d->fields->addField_string(C_("ValveVTF", "Reflectivity Vector"),
+	fields->addField_string(C_("ValveVTF", "Reflectivity Vector"),
 		rp_sprintf("(%0.1f, %0.1f, %0.1f)",
 			vtfHeader->reflectivity[0],
 			vtfHeader->reflectivity[1],
 			vtfHeader->reflectivity[2]));
 
 	// Bumpmap scale.
-	d->fields->addField_string(C_("ValveVTF", "Bumpmap Scale"),
+	fields->addField_string(C_("ValveVTF", "Bumpmap Scale"),
 		rp_sprintf("%0.1f", vtfHeader->bumpmapScale));
 
 	// Low-resolution image format.
-	const char *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
-	img_format = nullptr;
-	if (vtfHeader->lowResImageFormat < ARRAY_SIZE(img_format_tbl)) {
-		img_format = img_format_tbl[vtfHeader->lowResImageFormat];
+	const char *img_format = nullptr;
+	if (vtfHeader->lowResImageFormat < ARRAY_SIZE(d->img_format_tbl)) {
+		img_format = d->img_format_tbl[vtfHeader->lowResImageFormat];
 	} else if (vtfHeader->lowResImageFormat == static_cast<unsigned int>(-1)) {
 		img_format = NOP_C_("ValveVTF|ImageFormat", "None");
 	}
 
+	const char *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
 	if (img_format) {
-		d->fields->addField_string(low_res_image_format_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
+		// TODO: Localization.
+		fields->addField_string(low_res_image_format_title, img_format);
+			//dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
 		// Low-res image size.
-		d->fields->addField_dimensions(C_("ValveVTF", "Low-Res Size"),
+		fields->addField_dimensions(C_("ValveVTF", "Low-Res Size"),
 			vtfHeader->lowResImageWidth,
 			vtfHeader->lowResImageHeight);
 	} else {
-		d->fields->addField_string(low_res_image_format_title,
+		fields->addField_string(low_res_image_format_title,
 			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->highResImageFormat));
 	}
 
@@ -843,27 +862,14 @@ int ValveVTF::loadFieldData(void)
 	{
 		// 7.3+: Resources.
 		// TODO: Display the resources as RFT_LISTDATA?
-		d->fields->addField_string_numeric(C_("ValveVTF", "# of Resources"),
+		fields->addField_string_numeric(C_("ValveVTF", "# of Resources"),
 			vtfHeader->numResources);
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return (fields->count() - initial_count);
 }
-#endif
-
-/**
- * Get the mipmap count.
- * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
- */
-int ValveVTF::mipmapCount(void) const
-{
-	RP_D(const ValveVTF);
-	if (!d->isValid)
-		return -1;
-
-	return d->vtfHeader.mipmapCount;
-}
+#endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
 /**
  * Get the image.
