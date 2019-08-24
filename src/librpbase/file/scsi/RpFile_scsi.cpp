@@ -35,27 +35,43 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		return -ENODEV;
 	}
 
-	// FIXME: On NetBSD and OpenBSD, the one-sector cache causes weird reading
-	// shenanigans with PNG images. (duplicated header and data from other parts
-	// of the XDBF file.) I couldn't figure out any way to fix it without simply
-	// disabling the cache on those systems... (Works fine on Linux and Windows.)
+	// FIXME: On NetBSD and OpenBSD, the Kreon feature list command is failing
+	// with EPERM, even as root. (Note that /dev/cd1c or /dev/rcd1c must be used;
+	// the 'a' partition fails.)
 	//
-	// Also, the Kreon feature list command is failing with EPERM, even as root.
-	// (Note that /dev/cd1c or /dev/rcd1c must be used; the 'a' partition fails.)
 	// Therefore, we end up using OSAPI instead of SCSI READ, though Kreon
 	// functionality *seems* to work in some cases...
 	//
 	// TODO: Not sure about NetBSD...
-#if !defined(__NetBSD__) && !defined(__OpenBSD__)
+	RP_Q(RpFile);
 	if (lba == devInfo->lba_cache) {
 		// This LBA is already cached.
 		// TODO: Special case for ~0U?
+		if (!devInfo->isKreonUnlocked) {
+			// OSAPI: Seek to the next sector.
+			const int64_t seek_pos = (lba+1) * devInfo->sector_size;
+#ifdef _WIN32
+			LARGE_INTEGER liSeekPos;
+			liSeekPos.QuadPart = seek_pos;
+			BOOL bRet = SetFilePointerEx(file, liSeekPos, nullptr, FILE_BEGIN);
+			if (!bRet) {
+				// Seek error.
+				q->m_lastError = w32err_to_posix(GetLastError());
+				return -q->m_lastError;
+			}
+#else /* !_WIN32 */
+			int ret = fseeko(file, seek_pos, SEEK_SET);
+			if (ret != 0) {
+				// Seek error.
+				q->m_lastError = errno;
+				return -q->m_lastError;
+			}
+#endif /* !_WIN32 */
+		}
 		return 0;
 	}
-#endif /* !__NetBSD__ && !__OpenBSD__ */
 
 	// Read the first block.
-	RP_Q(RpFile);
 	if (devInfo->isKreonUnlocked) {
 		// Kreon drive. Use SCSI commands.
 		int sret = scsi_read(lba, 1, devInfo->sector_cache, devInfo->sector_size);
@@ -68,9 +84,17 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 		}
 	} else {
 		// Not a Kreon drive. Use the OS API.
-		// TODO: Call RpFile::read()?
-		// TODO: Seek here?
+		const int64_t seek_pos = lba * devInfo->sector_size;
 #ifdef _WIN32
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = seek_pos;
+		BOOL bRet = SetFilePointerEx(file, liSeekPos, nullptr, FILE_BEGIN);
+		if (!bRet) {
+			// Seek error.
+			devInfo->lba_cache = ~0U;
+			q->m_lastError = w32err_to_posix(GetLastError());
+			return -q->m_lastError;
+		}
 		DWORD bytesRead;
 		BOOL bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != devInfo->sector_size) {
@@ -80,6 +104,13 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 			return -q->m_lastError;
 		}
 #else /* !_WIN32 */
+		int ret = fseeko(file, seek_pos, SEEK_SET);
+		if (ret != 0) {
+			// Seek error.
+			devInfo->lba_cache = ~0U;
+			q->m_lastError = errno;
+			return -q->m_lastError;
+		}
 		size_t bytesRead = fread(devInfo->sector_cache, 1, devInfo->sector_size, file);
 		if (ferror(file) || bytesRead != devInfo->sector_size) {
 			// Read error.
@@ -136,33 +167,10 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		size = static_cast<size_t>(devInfo->device_size - devInfo->device_pos);
 	}
 
-	// Seek to the beginning of the first block.
-	// NOTE: sector_size must be a power of two.
+	// sector_size must be a power of two.
 	assert(isPow2(devInfo->sector_size));
 	// TODO: 64-bit LBAs?
 	uint32_t lba_cur = static_cast<uint32_t>(devInfo->device_pos / devInfo->sector_size);
-	if (!devInfo->isKreonUnlocked) {
-		// Not a Kreon drive. Use the OS API.
-		// TODO: Call RpFile::seek()?
-		const int64_t seek_pos = lba_cur * devInfo->sector_size;
-#ifdef _WIN32
-		LARGE_INTEGER liSeekPos;
-		liSeekPos.QuadPart = seek_pos;
-		BOOL bRet = SetFilePointerEx(file, liSeekPos, nullptr, FILE_BEGIN);
-		if (bRet == 0) {
-			// Seek error.
-			q->m_lastError = w32err_to_posix(GetLastError());
-			return 0;
-		}
-#else /* !_WIN32 */
-		int iret = fseeko(file, seek_pos, SEEK_SET);
-		if (iret != 0) {
-			// Seek error.
-			q->m_lastError = errno;
-			return 0;
-		}
-#endif /* _WIN32 */
-	}
 
 	// Make sure the sector cache is allocated.
 	devInfo->alloc_sector_cache();
@@ -233,9 +241,21 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		}
 	} else {
 		// Not a Kreon drive. Use the OS API.
-		// TODO: Call RpFile::read()?
 		// TODO: Use the sector cache for the first LBA if possible.
+
+		// Make sure we're at the correct address. The initial seek may
+		// have been skipped if we started at the beginning of a block
+		// or if the partial block was cached.
+		const int64_t seek_pos = lba_cur * devInfo->sector_size;
 #ifdef _WIN32
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = seek_pos;
+		BOOL bRet = SetFilePointerEx(file, liSeekPos, nullptr, FILE_BEGIN);
+		if (!bRet) {
+			// Seek error.
+			q->m_lastError = w32err_to_posix(GetLastError());
+			return ret;
+		}
 		DWORD bytesRead;
 		BOOL bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != contig_size) {
@@ -244,13 +264,19 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 			return ret + bytesRead;
 		}
 #else /* !_WIN32 */
+		int sret = fseeko(file, seek_pos, SEEK_SET);
+		if (sret != 0) {
+			// Seek error.
+			q->m_lastError = errno;
+			return ret;
+		}
 		size_t bytesRead = fread(ptr8, 1, contig_size, file);
 		if (ferror(file) || bytesRead != contig_size) {
 			// Read error.
 			q->m_lastError = errno;
 			return ret + bytesRead;
 		}
-#endif /* _WIN32 */
+#endif /* !_WIN32 */
 
 		devInfo->device_pos += contig_size;
 		lba_cur += lba_count;
