@@ -772,13 +772,13 @@ const rp_image *XboxXPR::image(void) const
 /**
  * Get the image for the specified mipmap.
  * Mipmap 0 is the largest image.
- * @param num Mipmap number.
+ * @param mip Mipmap number.
  * @return Image, or nullptr on error.
  */
-const rp_image *XboxXPR::mipmap(int num) const
+const rp_image *XboxXPR::mipmap(int mip) const
 {
 	// Allowing mipmap 0 for compatibility.
-	if (num == 0) {
+	if (mip == 0) {
 		return image();
 	}
 	return nullptr;
