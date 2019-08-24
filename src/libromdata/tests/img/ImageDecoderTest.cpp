@@ -49,7 +49,6 @@ using namespace LibRpTexture;
 #include "Texture/KhronosKTX.hpp"
 #endif /* ENABLE_GL */
 #include "Other/RpTextureWrapper.hpp"
-#include "Texture/ValveVTF3.hpp"
 
 // ROM images. Used for console-specific image formats.
 #include "Console/DreamcastSave.hpp"
@@ -438,8 +437,9 @@ void ImageDecoderTest::decodeTest_internal(void)
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
+		// NOTE: Using RpTextureWrapper.
 		filetype = "VTF3";
-		m_romData = new ValveVTF3(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
 		// NOTE: Using RpTextureWrapper.
@@ -542,7 +542,8 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
-		fn_ctor = [](IRpFile *file) { return new ValveVTF3(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
 		// NOTE: Using RpTextureWrapper.
