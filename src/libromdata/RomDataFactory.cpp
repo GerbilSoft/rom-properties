@@ -241,6 +241,7 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 #define ATTR_HAS_DPOVERLAY	RomDataFactory::RDA_HAS_DPOVERLAY
 #define ATTR_HAS_METADATA	RomDataFactory::RDA_HAS_METADATA
 #define ATTR_CHECK_ISO		RomDataFactory::RDA_CHECK_ISO
+#define ATTR_SUPPORTS_DEVICES	RomDataFactory::RDA_SUPPORTS_DEVICES
 
 // RomData subclasses that use a header at 0 and
 // definitely have a 32-bit magic number in the header.
@@ -299,19 +300,19 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 // placed at the end of this array.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	// Consoles
-	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns(Dreamcast, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(DreamcastSave, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	GetRomDataFns(GameCube, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(iQuePlayer, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
-	GetRomDataFns(MegaDrive, ATTR_NONE),
+	GetRomDataFns(MegaDrive, ATTR_SUPPORTS_DEVICES),	// ATTR_SUPPORTS_DEVICES for Sega CD
 	GetRomDataFns(N64, ATTR_NONE | ATTR_HAS_METADATA),
 	GetRomDataFns(NES, ATTR_NONE),
 	GetRomDataFns(SNES, ATTR_NONE),
-	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA),
+	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(WiiU, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Handhelds
@@ -351,7 +352,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// that don't have an identifying boot sector at 0x0000.
 	// NOTE: Keeping the same address, since ISO only checks the file extension.
 	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
-	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_CHECK_ISO, 0x40000, 0x20),
+	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
 
 	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
@@ -538,6 +539,8 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	if (file->isDevice()) {
 		// Device file. Assume it's a CD-ROM.
 		info.ext = ".iso";
+		// Subclass must support devices.
+		attrs |= ATTR_SUPPORTS_DEVICES;
 	} else {
 		// Get the actual file extension.
 		const string filename = file->filename();

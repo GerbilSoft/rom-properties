@@ -46,6 +46,11 @@ class RomDataFactory
 			// RomData subclass has metadata.
 			RDA_HAS_METADATA	= (1 << 2),
 
+			// RomData subclass may be present on devices.
+			// If not set, this subclass will be skipped if
+			// checking a device node.
+			RDA_SUPPORTS_DEVICES	= (1 << 3),
+
 			// Check for game-specific disc file systems.
 			// (For internal RomDataFactory use only.)
 			RDA_CHECK_ISO		= (1 << 8),
