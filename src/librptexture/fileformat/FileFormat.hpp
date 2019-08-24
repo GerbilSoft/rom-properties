@@ -9,8 +9,16 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 
+#include "librptexture/config.librptexture.h"
+
 // TODO: Move to librpfile or similar?
 #include "librpbase/common.h"
+
+#ifdef ENABLE_LIBRPBASE_ROMFIELDS
+namespace LibRpBase {
+	class RomFields;
+}
+#endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
 namespace LibRpTexture {
 
@@ -108,6 +116,16 @@ class FileFormat
 		 * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
 		 */
 		virtual int mipmapCount(void) const = 0;
+
+#ifdef ENABLE_LIBRPBASE_ROMFIELDS
+	public:
+		/**
+		 * Get property fields for rom-properties.
+		 * @param fields RomFields object to which fields should be added.
+		 * @return Number of fields added, or 0 on error.
+		 */
+		virtual int getFields(LibRpBase::RomFields *fields) const = 0;
+#endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
 	public:
 		/** Image accessors **/
