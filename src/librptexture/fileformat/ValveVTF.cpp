@@ -370,10 +370,12 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	}
 
 	// Low-resolution image size.
-	texDataStartAddr_adj += calcImageSize(
-		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.lowResImageFormat),
-		vtfHeader.lowResImageWidth,
-		(vtfHeader.lowResImageHeight > 0 ? vtfHeader.lowResImageHeight : 1));
+	if (vtfHeader.lowResImageFormat >= 0) {
+		texDataStartAddr_adj += calcImageSize(
+			static_cast<VTF_IMAGE_FORMAT>(vtfHeader.lowResImageFormat),
+			vtfHeader.lowResImageWidth,
+			(vtfHeader.lowResImageHeight > 0 ? vtfHeader.lowResImageHeight : 1));
+	}
 
 	// Verify file size.
 	if (texDataStartAddr_adj + expected_size > file_sz) {
@@ -688,20 +690,23 @@ const char *ValveVTF::pixelFormat(void) const
 	if (!d->isValid)
 		return nullptr;
 
-	const unsigned int fmt = d->vtfHeader.highResImageFormat;
+	const int fmt = d->vtfHeader.highResImageFormat;
 
-	if (fmt < ARRAY_SIZE(d->img_format_tbl)) {
+	if (fmt >= 0 && fmt < ARRAY_SIZE(d->img_format_tbl)) {
 		return d->img_format_tbl[fmt];
-	} else if (fmt == static_cast<unsigned int>(-1)) {
+	} else if (fmt < 0) {
+		// Negative == none (usually -1)
 		// TODO: Localization?
+		//return C_("ValveVTF|ImageFormat", "None");
 		return "None";
 	}
 
 	// Invalid pixel format.
 	if (d->invalid_pixel_format[0] == '\0') {
+		// TODO: Localization?
 		snprintf(const_cast<ValveVTFPrivate*>(d)->invalid_pixel_format,
 			sizeof(d->invalid_pixel_format),
-			"Unknown (%u)", fmt);
+			"Unknown (%d)", fmt);
 	}
 	return d->invalid_pixel_format;
 }
@@ -836,11 +841,17 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 		rp_sprintf("%0.1f", vtfHeader->bumpmapScale));
 
 	// Low-resolution image format.
-	const char *img_format = nullptr;
-	if (vtfHeader->lowResImageFormat < ARRAY_SIZE(d->img_format_tbl)) {
+	const char *img_format;
+	if (vtfHeader->lowResImageFormat >= 0 &&
+	    vtfHeader->lowResImageFormat < ARRAY_SIZE(d->img_format_tbl))
+	{
 		img_format = d->img_format_tbl[vtfHeader->lowResImageFormat];
-	} else if (vtfHeader->lowResImageFormat == static_cast<unsigned int>(-1)) {
+	} else if (vtfHeader->lowResImageFormat < 0) {
+		// Negative == none (usually -1)
 		img_format = NOP_C_("ValveVTF|ImageFormat", "None");
+	} else {
+		// Unknown format.
+		img_format = nullptr;
 	}
 
 	const char *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
@@ -854,7 +865,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 			vtfHeader->lowResImageHeight);
 	} else {
 		fields->addField_string(low_res_image_format_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->highResImageFormat));
+			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->lowResImageFormat));
 	}
 
 	if (vtfHeader->version[0] > 7 ||
