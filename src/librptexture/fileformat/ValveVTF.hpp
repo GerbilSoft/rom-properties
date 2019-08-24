@@ -50,6 +50,16 @@ class ValveVTF : public FileFormat
 		 */
 		int mipmapCount(void) const final;
 
+#ifdef ENABLE_LIBRPBASE_ROMFIELDS
+	public:
+		/**
+		 * Get property fields for rom-properties.
+		 * @param fields RomFields object to which fields should be added.
+		 * @return Number of fields added, or 0 on error.
+		 */
+		int getFields(LibRpBase::RomFields *fields) const final;
+#endif /* ENABLE_LIBRPBASE_ROMFIELDS */
+
 	public:
 		/** Image accessors **/
 

@@ -345,23 +345,8 @@ int RpTextureWrapper::loadFieldData(void)
 		d->fields->addField_string_numeric(C_("RpTextureWrapper", "Mipmap Count"), mipmapCount);
 	}
 
-	// TODO: Format-specific fields. (before or after generic fields?)
-	// - XPR: Type. (XPR0, XPR1, XPR2)
-
-#if 0
-	// Type
-	static const char type_tbl[][8] = {
-		"XPR0", "XPR1", "XPR2"
-	};
-	if (d->xprType > RpTextureWrapperPrivate::XPR_TYPE_UNKNOWN &&
-	    d->xprType < ARRAY_SIZE(type_tbl))
-	{
-		d->fields->addField_string(C_("RpTextureWrapper", "Type"), type_tbl[d->xprType]);
-	} else {
-		d->fields->addField_string(C_("RpTextureWrapper", "Type"),
-			rp_sprintf(C_("RomData", "Unknown (%d)"), d->xprType));
-	}
-#endif
+	// Texture-specific fields.
+	texture->getFields(d->fields);
 
 	// TODO: More fields.
 
