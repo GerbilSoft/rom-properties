@@ -44,12 +44,12 @@ typedef struct PACKED _VTFHEADER {
 	float reflectivity[3];		// [0x020] reflectivity vector
 	uint8_t padding1[4];		// [0x02C] reflectivity padding (8-byte packing)
 
-	float bumpmapScale;			// [0x030] Bumpmap scale.
-	unsigned int highResImageFormat;	// [0x034] High resolution image format.
-	uint8_t mipmapCount;			// [0x038] Number of mipmaps.
-	unsigned int lowResImageFormat;		// [0x039] Low resolution image format. (always DXT1)
-	uint8_t lowResImageWidth;		// [0x03D] Low resolution image width.
-	uint8_t lowResImageHeight;		// [0x03E] Low resolution image height.
+	float bumpmapScale;		// [0x030] Bumpmap scale.
+	int highResImageFormat;		// [0x034] High resolution image format.
+	uint8_t mipmapCount;		// [0x038] Number of mipmaps.
+	int lowResImageFormat;		// [0x039] Low resolution image format. (usually DXT1; -1 for none)
+	uint8_t lowResImageWidth;	// [0x03D] Low resolution image width.
+	uint8_t lowResImageHeight;	// [0x03E] Low resolution image height.
 
 	// 7.2+
 	uint16_t depth;			// [0x03F] Depth of largest mipmap. Must be a power of 2.
