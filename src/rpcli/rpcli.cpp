@@ -11,6 +11,7 @@
 #include "config.rpcli.h"
 
 // librpbase
+#include "librpbase/config.librpbase.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
@@ -212,6 +213,7 @@ static void PrintSystemRegion(void)
 	cout << endl;
 }
 
+#ifdef RP_OS_SCSI_SUPPORTED
 /**
  * Run a SCSI INQUIRY command on a device.
  * @param filename Device filename
@@ -271,6 +273,7 @@ static void DoAtaIdentifyDevice(const char *filename, bool json)
 	}
 	file->unref();
 }
+#endif /* RP_OS_SCSI_SUPPORTED */
 
 int RP_C_API main(int argc, char *argv[])
 {
@@ -313,11 +316,12 @@ int RP_C_API main(int argc, char *argv[])
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << endl;
 		cerr << "  -a:   " << C_("rpcli", "Extract the animated icon to outfile in APNG format.") << endl;
 		cerr << endl;
-		// TODO: Check if a SCSI implementation is available for this OS?
+#ifdef RP_OS_SCSI_SUPPORTED
 		cerr << "Special options for devices:" << endl;
 		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << endl;
 		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << endl;
 		cerr << endl;
+#endif /* RP_OS_SCSI_SUPPORTED */
 		cerr << C_("rpcli", "Examples:") << endl;
 		cerr << "* rpcli s3.gen" << endl;
 		cerr << "\t " << C_("rpcli", "displays info about s3.gen") << endl;
@@ -336,8 +340,11 @@ int RP_C_API main(int argc, char *argv[])
 		}
 	}
 	if (json) cout << "[\n";
+
+#ifdef RP_OS_SCSI_SUPPORTED
 	bool inq_scsi = false;
 	bool inq_ata = false;
+#endif /* RP_OS_SCSI_SUPPORTED */
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
@@ -380,6 +387,7 @@ int RP_C_API main(int argc, char *argv[])
 			}
 			case 'j': // do nothing
 				break;
+#ifdef RP_OS_SCSI_SUPPORTED
 			case 'i':
 				// TODO: Check if a SCSI implementation is available for this OS?
 				// These commands take precedence over the usual rpcli functionality.
@@ -391,6 +399,7 @@ int RP_C_API main(int argc, char *argv[])
 					inq_ata = true;
 				}
 				break;
+#endif /* RP_OS_SCSI_SUPPORTED */
 			default:
 				cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]) << endl;
 				break;
@@ -401,19 +410,24 @@ int RP_C_API main(int argc, char *argv[])
 			else if (json) cout << "," << endl;
 
 			// TODO: Return codes?
+#ifdef RP_OS_SCSI_SUPPORTED
 			if (inq_scsi) {
 				// SCSI INQUIRY command.
 				DoScsiInquiry(argv[i], json);
 			} else if (inq_ata) {
 				// ATA IDENTIFY DEVICE command.
 				DoAtaIdentifyDevice(argv[i], json);
-			} else {
+			} else
+#endif /* RP_OS_SCSI_SUPPORTED */
+			{
 				// Regular file.
 				DoFile(argv[i], json, extract);
 			}
 
+#ifdef RP_OS_SCSI_SUPPORTED
 			inq_scsi = false;
 			inq_ata = false;
+#endif /* RP_OS_SCSI_SUPPORTED */
 			extract.clear();
 		}
 	}

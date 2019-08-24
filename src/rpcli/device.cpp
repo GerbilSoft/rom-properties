@@ -10,6 +10,10 @@
 #include "stdafx.h"
 #include "device.hpp"
 
+// NOTE: We can't check in CMake beacuse RP_OS_SCSI_SUPPORTED
+// is checked in librpbase, not rpcli.
+#ifdef RP_OS_SCSI_SUPPORTED
+
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
@@ -181,3 +185,5 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 	os << "Integrity word:        " << rp_sprintf("%04X", resp.integrity) << endl;
 	return os;
 }
+
+#endif /* RP_OS_SCSI_SUPPORTED */
