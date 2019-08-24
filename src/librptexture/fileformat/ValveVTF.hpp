@@ -74,10 +74,10 @@ class ValveVTF : public FileFormat
 		/**
 		 * Get the image for the specified mipmap.
 		 * Mipmap 0 is the largest image.
-		 * @param num Mipmap number.
+		 * @param mip Mipmap number.
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *mipmap(int num) const final;
+		const rp_image *mipmap(int mip) const final;
 };
 
 }
