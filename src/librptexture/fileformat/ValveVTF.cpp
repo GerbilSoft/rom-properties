@@ -60,10 +60,22 @@ class ValveVTFPrivate : public FileFormatPrivate
 		VTFHEADER vtfHeader;
 
 		// Texture data start address.
-		unsigned int texDataStartAddr;
+		uint32_t texDataStartAddr;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded mipmaps.
+		// Mipmap 0 is the full image.
+		vector<rp_image*> mipmaps;
+
+		// Mipmap sizes and start addresses.
+		struct mipmap_data_t {
+			uint32_t addr;		// start address
+			uint32_t size;		// in bytes
+			uint16_t width;		// width
+			uint16_t height;	// height
+
+			uint16_t row_width;	// Row width. (must be a power of 2)
+		};
+		vector<mipmap_data_t> mipmap_data;
 
 		// Invalid pixel format message.
 		char invalid_pixel_format[24];
@@ -90,10 +102,16 @@ class ValveVTFPrivate : public FileFormatPrivate
 		static unsigned int getMinBlockSize(VTF_IMAGE_FORMAT format);
 
 		/**
+		 * Get mipmap information.
+		 */
+		void getMipmapInfo(void);
+
+		/**
 		 * Load the image.
+		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		const rp_image *loadImage(int mip);
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		/**
@@ -154,7 +172,6 @@ static_assert(ARRAY_SIZE(ValveVTFPrivate::img_format_tbl)-1 == VTF_IMAGE_FORMAT_
 ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
 	: super(q, file)
 	, texDataStartAddr(0)
-	, img(nullptr)
 {
 	// Clear the structs and arrays.
 	memset(&vtfHeader, 0, sizeof(vtfHeader));
@@ -163,7 +180,9 @@ ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
 
 ValveVTFPrivate::~ValveVTFPrivate()
 {
-	delete img;
+	for (auto iter = mipmaps.begin(); iter != mipmaps.end(); ++iter) {
+		delete *iter;
+	}
 }
 
 /**
@@ -293,16 +312,119 @@ unsigned int ValveVTFPrivate::getMinBlockSize(VTF_IMAGE_FORMAT format)
 }
 
 /**
+ * Get mipmap information.
+ */
+void ValveVTFPrivate::getMipmapInfo(void)
+{
+	if (!mipmaps.empty()) {
+		// Mipmap info was already obtained.
+		return;
+	}
+
+	// Resize based on mipmap count.
+	unsigned int mipmapCount = vtfHeader.mipmapCount;
+	if (mipmapCount == 0) {
+		// No mipmaps == one image.
+		mipmapCount = 1;
+	}
+
+	// Starting address.
+	uint32_t addr = texDataStartAddr;
+
+	// Skip the low-resolution image.
+	if (vtfHeader.lowResImageFormat >= 0) {
+		addr += calcImageSize(
+			static_cast<VTF_IMAGE_FORMAT>(vtfHeader.lowResImageFormat),
+			vtfHeader.lowResImageWidth,
+			(vtfHeader.lowResImageHeight > 0 ? vtfHeader.lowResImageHeight : 1));
+	}
+
+	// Handle a 1D texture as a "width x 1" 2D texture.
+	// NOTE: Handling a 3D texture as a single 2D texture.
+	const int height = (vtfHeader.height > 0 ? vtfHeader.height : 1);
+
+	// NOTE: VTF specifications say the image size must be a power of two.
+	// Some malformed images may have a smaller width in the header,
+	// so calculate the row width here.
+	int row_width = vtfHeader.width;
+	if (!isPow2(row_width)) {
+		// Adjust to the next power of two.
+		// We need to calculate the actual stride in order to
+		// prevent crashes in the SSE2 code.
+		row_width = 1 << (uilog2(row_width) + 1);
+	}
+
+	// Calculate the size of the full image.
+	unsigned int mipmap_size = calcImageSize(
+		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat),
+		row_width, height);
+	if (mipmap_size == 0) {
+		// Invalid image size.
+		return;
+	}
+
+	// Set up mipmap arrays.
+	mipmaps.resize(mipmapCount);
+	mipmap_data.resize(mipmapCount);
+
+	const unsigned int minBlockSize = getMinBlockSize(
+		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat));
+
+	// Mipmaps are stored from smallest to largest.
+	// Calculate mipmap sizes and width/height first.
+	int w = vtfHeader.width, h = height;
+	int rw = row_width;
+	for (unsigned int mip = 0; mip < mipmapCount; mip++) {
+		auto &mdata = mipmap_data[mip];
+		mdata.size = mipmap_size;
+		mdata.width = w;
+		mdata.height = h;
+		mdata.row_width = rw;
+
+		// Next mipmap is half the size.
+		mipmap_size /= 4;
+		w /= 2;
+		h /= 2;
+		rw /= 2;
+		if (mipmap_size < minBlockSize) {
+			// Mipmap is smaller than the minimum block size for this format.
+			// NOTE: This might be an error...
+			mipmap_size = minBlockSize;
+		}
+	}
+
+	// Calculate the addresses.
+	for (int mip = mipmapCount-1; mip >= 0; mip--) {
+		auto &mdata = mipmap_data[mip];
+		mdata.addr = addr;
+		addr += mdata.size;
+	}
+}
+
+/**
  * Load the image.
+ * @param mip Mipmap number. (0 == full image)
  * @return Image, or nullptr on error.
  */
-const rp_image *ValveVTFPrivate::loadImage(void)
+const rp_image *ValveVTFPrivate::loadImage(int mip)
 {
 	// TODO: Option to load the low-res image instead?
+	int mipmapCount = vtfHeader.mipmapCount;
+	if (mipmapCount <= 0) {
+		// No mipmaps == one image.
+		mipmapCount = 1;
+	}
 
-	if (img) {
+	assert(mip >= 0);
+	assert(mip < mipmapCount);
+	if (mip < 0 || mip >= mipmapCount) {
+		// Invalid mipmap number.
+		return nullptr;
+	}
+
+	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return img;
+		return mipmaps[mip];
 	} else if (!this->file || !this->isValid) {
 		// Can't load the image.
 		return nullptr;
@@ -326,185 +448,137 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 	}
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
-	// Handle a 1D texture as a "width x 1" 2D texture.
-	// NOTE: Handling a 3D texture as a single 2D texture.
-	const int height = (vtfHeader.height > 0 ? vtfHeader.height : 1);
-
-	// NOTE: VTF specifications say the image size must be a power of two.
-	// Some malformed images may have a smaller width in the header,
-	// so calculate the row width here.
-	int row_width = vtfHeader.width;
-	if (!isPow2(row_width)) {
-		// Adjust to the next power of two.
-		// We need to calculate the actual stride in order to
-		// prevent crashes in the SSE2 code.
-		row_width = 1 << (uilog2(row_width) + 1);
-	}
-
-	// Calculate the expected size.
-	unsigned int expected_size = calcImageSize(
-		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat),
-		row_width, height);
-	if (expected_size == 0) {
-		// Invalid image size.
-		return nullptr;
-	}
+	// Make sure we have the mipmap info.
+	getMipmapInfo();
+	const auto &mdata = mipmap_data[mip];
 
 	// TODO: Handle environment maps (6-faced cube map) and volumetric textures.
 
-	// Adjust for the number of mipmaps.
-	// NOTE: Dimensions must be powers of two.
-	unsigned int texDataStartAddr_adj = texDataStartAddr;
-	unsigned int mipmap_size = expected_size;
-	const unsigned int minBlockSize = getMinBlockSize(
-		static_cast<VTF_IMAGE_FORMAT>(vtfHeader.highResImageFormat));
-	for (unsigned int mipmapLevel = vtfHeader.mipmapCount; mipmapLevel > 1; mipmapLevel--) {
-		mipmap_size /= 4;
-		if (mipmap_size >= minBlockSize) {
-			texDataStartAddr_adj += mipmap_size;
-		} else {
-			// Mipmap is smaller than the minimum block size
-			// for this format.
-			texDataStartAddr_adj += minBlockSize;
-		}
-	}
-
-	// Low-resolution image size.
-	if (vtfHeader.lowResImageFormat >= 0) {
-		texDataStartAddr_adj += calcImageSize(
-			static_cast<VTF_IMAGE_FORMAT>(vtfHeader.lowResImageFormat),
-			vtfHeader.lowResImageWidth,
-			(vtfHeader.lowResImageHeight > 0 ? vtfHeader.lowResImageHeight : 1));
-	}
-
 	// Verify file size.
-	if (texDataStartAddr_adj + expected_size > file_sz) {
+	if (mdata.addr + mdata.size > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
 
 	// Texture cannot start inside of the VTF header.
-	assert(texDataStartAddr_adj >= sizeof(vtfHeader));
-	if (texDataStartAddr_adj < sizeof(vtfHeader)) {
+	assert(mdata.addr >= sizeof(vtfHeader));
+	if (mdata.addr < sizeof(vtfHeader)) {
 		// Invalid texture data start address.
 		return nullptr;
 	}
 
-	// Seek to the start of the texture data.
-	int ret = file->seek(texDataStartAddr_adj);
-	if (ret != 0) {
-		// Seek error.
-		return nullptr;
-	}
-
 	// Read the texture data.
-	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->read(buf.get(), expected_size);
-	if (size != expected_size) {
+	auto buf = aligned_uptr<uint8_t>(16, mdata.size);
+	size_t size = file->seekAndRead(mdata.addr, buf.get(), mdata.size);
+	if (size != mdata.size) {
 		// Read error.
 		return nullptr;
 	}
+
+	// FIXME: Smaller mipmaps have read errors if encoded with e.g. DXTn,
+	// since the width is smaller than 4.
 
 	// Decode the image.
 	// NOTE: VTF channel ordering does NOT match ImageDecoder channel ordering.
 	// (The channels appear to be backwards.)
 	// TODO: Lookup table to convert to PXF constants?
 	// TODO: Verify on big-endian?
+	rp_image *img = nullptr;
 	switch (vtfHeader.highResImageFormat) {
 		/* 32-bit */
 		case VTF_IMAGE_FORMAT_RGBA8888:
 		case VTF_IMAGE_FORMAT_UVWQ8888:	// handling as RGBA8888
 		case VTF_IMAGE_FORMAT_UVLX8888:	// handling as RGBA8888
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ABGR8888,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint32_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint32_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint32_t));
 			break;
 		case VTF_IMAGE_FORMAT_ABGR8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGBA8888,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint32_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint32_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint32_t));
 			break;
 		case VTF_IMAGE_FORMAT_ARGB8888:
 			// This is stored as RAGB for some reason...
 			// FIXME: May be a bug in VTFEdit. (Tested versions: 1.2.5, 1.3.3)
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RABG8888,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint32_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint32_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint32_t));
 			break;
 		case VTF_IMAGE_FORMAT_BGRA8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_ARGB8888,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint32_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint32_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint32_t));
 			break;
 		case VTF_IMAGE_FORMAT_BGRx8888:
 			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_xRGB8888,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint32_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint32_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint32_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint32_t));
 			break;
 
 		/* 24-bit */
 		case VTF_IMAGE_FORMAT_RGB888:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
-				vtfHeader.width, height,
-				buf.get(), expected_size,
-				row_width * 3);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
+				mdata.row_width * 3);
 			break;
 		case VTF_IMAGE_FORMAT_BGR888:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_RGB888,
-				vtfHeader.width, height,
-				buf.get(), expected_size,
-				row_width * 3);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
+				mdata.row_width * 3);
 			break;
 		case VTF_IMAGE_FORMAT_RGB888_BLUESCREEN:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_BGR888,
-				vtfHeader.width, height,
-				buf.get(), expected_size,
-				row_width * 3);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
+				mdata.row_width * 3);
 			img->apply_chroma_key(0xFF0000FF);
 			break;
 		case VTF_IMAGE_FORMAT_BGR888_BLUESCREEN:
 			img = ImageDecoder::fromLinear24(ImageDecoder::PXF_RGB888,
-				vtfHeader.width, height,
-				buf.get(), expected_size,
-				row_width * 3);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
+				mdata.row_width * 3);
 			img->apply_chroma_key(0xFF0000FF);
 			break;
 
 		/* 16-bit */
 		case VTF_IMAGE_FORMAT_RGB565:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_BGR565,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint16_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint16_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint16_t));
 			break;
 		case VTF_IMAGE_FORMAT_BGR565:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint16_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint16_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint16_t));
 			break;
 		case VTF_IMAGE_FORMAT_BGRx5551:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB555,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint16_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint16_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint16_t));
 			break;
 		case VTF_IMAGE_FORMAT_BGRA4444:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint16_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint16_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint16_t));
 			break;
 		case VTF_IMAGE_FORMAT_BGRA5551:
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB1555,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint16_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint16_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint16_t));
 			break;
 		case VTF_IMAGE_FORMAT_IA88:
 			// FIXME: I8 might have the alpha channel set to the I channel,
@@ -514,16 +588,16 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 			// (Channels are backwards.)
 			// TODO: Add ImageDecoder::fromLinear16() support for IA8 later.
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_A8L8,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint16_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint16_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint16_t));
 			break;
 		case VTF_IMAGE_FORMAT_UV88:
 			// We're handling this as a GR88 texture.
 			img = ImageDecoder::fromLinear16(ImageDecoder::PXF_GR88,
-				vtfHeader.width, height,
-				reinterpret_cast<const uint16_t*>(buf.get()), expected_size,
-				row_width * sizeof(uint16_t));
+				mdata.width, mdata.height,
+				reinterpret_cast<const uint16_t*>(buf.get()), mdata.size,
+				mdata.row_width * sizeof(uint16_t));
 			break;
 
 		/* 8-bit */
@@ -532,37 +606,37 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 			// whereas L8 has A=1.0.
 			// https://www.opengl.org/discussion_boards/showthread.php/151701-GL_LUMINANCE-vs-GL_INTENSITY
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
-				vtfHeader.width, height,
-				buf.get(), expected_size,
-				row_width);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
+				mdata.row_width);
 			break;
 		case VTF_IMAGE_FORMAT_A8:
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_A8,
-				vtfHeader.width, height,
-				buf.get(), expected_size,
-				row_width);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size,
+				mdata.row_width);
 			break;
 
 		/* Compressed */
 		case VTF_IMAGE_FORMAT_DXT1:
 			img = ImageDecoder::fromDXT1(
-				vtfHeader.width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case VTF_IMAGE_FORMAT_DXT1_ONEBITALPHA:
 			img = ImageDecoder::fromDXT1_A1(
-				vtfHeader.width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case VTF_IMAGE_FORMAT_DXT3:
 			img = ImageDecoder::fromDXT3(
-				vtfHeader.width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 		case VTF_IMAGE_FORMAT_DXT5:
 			img = ImageDecoder::fromDXT5(
-				vtfHeader.width, height,
-				buf.get(), expected_size);
+				mdata.width, mdata.height,
+				buf.get(), mdata.size);
 			break;
 
 		case VTF_IMAGE_FORMAT_P8:
@@ -573,6 +647,7 @@ const rp_image *ValveVTFPrivate::loadImage(void)
 			break;
 	}
 
+	mipmaps[mip] = img;
 	return img;
 }
 
@@ -890,6 +965,18 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
  */
 const rp_image *ValveVTF::image(void) const
 {
+	// The full image is mipmap 0.
+	return this->mipmap(0);
+}
+
+/**
+ * Get the image for the specified mipmap.
+ * Mipmap 0 is the largest image.
+ * @param mip Mipmap number.
+ * @return Image, or nullptr on error.
+ */
+const rp_image *ValveVTF::mipmap(int mip) const
+{
 	RP_D(const ValveVTF);
 	if (!d->file) {
 		// File isn't open.
@@ -900,23 +987,7 @@ const rp_image *ValveVTF::image(void) const
 	}
 
 	// Load the image.
-	return const_cast<ValveVTFPrivate*>(d)->loadImage();
-}
-
-/**
- * Get the image for the specified mipmap.
- * Mipmap 0 is the largest image.
- * @param num Mipmap number.
- * @return Image, or nullptr on error.
- */
-const rp_image *ValveVTF::mipmap(int num) const
-{
-	// TODO: Actually implement this!
-	// For now, acting like we don't have any mipmaps.
-	if (num == 0) {
-		return image();
-	}
-	return nullptr;
+	return const_cast<ValveVTFPrivate*>(d)->loadImage(mip);
 }
 
 }

@@ -141,10 +141,10 @@ class FileFormat
 		/**
 		 * Get the image for the specified mipmap.
 		 * Mipmap 0 is the largest image.
-		 * @param num Mipmap number.
+		 * @param mip Mipmap number.
 		 * @return Image, or nullptr on error.
 		 */
-		virtual const rp_image *mipmap(int num) const = 0;
+		virtual const rp_image *mipmap(int mip) const = 0;
 };
 
 }
