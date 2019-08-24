@@ -111,7 +111,7 @@ extern "C" {
 #define SCSI_OP_WRITE_LONG_10			0x3F
 #define SCSI_OP_WRITE_SAME_10			0x41
 #define SCSI_OP_RELEASE_10			0x57	/* SPC-2 */
-#define SCSI_OP_ATA_PASSTHROUGH_16		0x85
+#define SCSI_OP_ATA_PASS_THROUGH_16		0x85
 #define SCSI_OP_READ_16				0x88
 #define SCSI_OP_WRITE_16			0x8A
 #define SCSI_OP_WRITE_AND_VERIFY_16		0x8E
@@ -120,7 +120,7 @@ extern "C" {
 #define SCSI_OP_SYNCHRONIZE_CACHE_16		0x91
 #define SCSI_OP_LOCK_UNLOCK_CACHE_16		0x92	/* SBC */
 #define SCSI_OP_WRITE_SAME_16			0x93
-#define SCSI_OP_ATA_PASSTHROUGH_12		0xA1	/* clashes with MMC BLANK */
+#define SCSI_OP_ATA_PASS_THROUGH_12		0xA1	/* clashes with MMC BLANK */
 #define SCSI_OP_READ_12				0xA8
 #define SCSI_OP_WRITE_12			0xAA
 #define SCSI_OP_SET_LIMITS_12			0xB3	/* SBC */
@@ -417,8 +417,7 @@ typedef struct PACKED _SCSI_CDB_READ_CAPACITY_16 {
 } SCSI_CDB_READ_CAPACITY_16;
 
 /* READ CAPACITY(16) response. */
-typedef struct PACKED _SCSI_RESP_READ_CAPACITY_16
-{
+typedef struct PACKED _SCSI_RESP_READ_CAPACITY_16 {
 	uint64_t LBA;		/* (BE64) Highest LBA number. */
 	uint32_t BlockLen;	/* (BE32) Block length, in bytes. */
 	uint8_t Flags;		/* Bit 1 == RTO_EN; Bit 0 == PROT_EN */

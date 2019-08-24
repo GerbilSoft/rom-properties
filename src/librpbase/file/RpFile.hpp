@@ -17,6 +17,8 @@
 
 // from scsi_protocol.h
 struct _SCSI_RESP_INQUIRY_STD;
+// from ata_protocol.h
+struct _ATA_RESP_IDENTIFY_DEVICE;
 
 namespace LibRpBase {
 
@@ -163,6 +165,13 @@ class RpFile : public IRpFile
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
 		int scsi_inquiry(struct _SCSI_RESP_INQUIRY_STD *pResp);
+
+		/**
+		 * ATA IDENTIFY DEVICE command. (via SCSI-ATA pass-through)
+		 * @param pResp Response buffer.
+		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+		 */
+		int ata_identify_device(struct _ATA_RESP_IDENTIFY_DEVICE *pResp);
 
 	public:
 		/**

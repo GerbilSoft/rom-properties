@@ -22,4 +22,11 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si);
 };
 
+class AtaIdentifyDevice {
+	LibRpBase::RpFile *const file;
+public:
+	explicit AtaIdentifyDevice(LibRpBase::RpFile *file);
+	friend std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si);
+};
+
 #endif /* __ROMPROPERTIES_RPCLI_DEVICE_HPP__ */

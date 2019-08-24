@@ -242,6 +242,36 @@ static void DoScsiInquiry(const char *filename, bool json)
 	file->unref();
 }
 
+/**
+ * Run an ATA IDENTIFY DEVICE command on a device.
+ * @param filename Device filename
+ * @param json Is program running in json mode?
+ */
+static void DoAtaIdentifyDevice(const char *filename, bool json)
+{
+	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
+	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	if (file->isOpen()) {
+		// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
+		if (file->isDevice()) {
+			if (json) {
+				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
+				// TODO: JSONAtaIdentifyDevice
+				//cout << JSONAtaIdentifyDevice(file) << endl;
+			} else {
+				cout << AtaIdentifyDevice(file) << endl;
+			}
+		} else {
+			cerr << "-- " << C_("rpcli", "Not a device file") << endl;
+			if (json) cout << "{\"error\":\"Not a device file\"}" << endl;
+		}
+	} else {
+		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
+		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
+	}
+	file->unref();
+}
+
 int RP_C_API main(int argc, char *argv[])
 {
 #ifdef _WIN32
@@ -286,6 +316,7 @@ int RP_C_API main(int argc, char *argv[])
 		// TODO: Check if a SCSI implementation is available for this OS?
 		cerr << "Special options for devices:" << endl;
 		cerr << "  -is:   " << C_("rpcli", "Run a SCSI INQUIRY command.") << endl;
+		cerr << "  -ia:   " << C_("rpcli", "Run an ATA IDENTIFY DEVICE command.") << endl;
 		cerr << endl;
 		cerr << C_("rpcli", "Examples:") << endl;
 		cerr << "* rpcli s3.gen" << endl;
@@ -306,6 +337,7 @@ int RP_C_API main(int argc, char *argv[])
 	}
 	if (json) cout << "[\n";
 	bool inq_scsi = false;
+	bool inq_ata = false;
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
@@ -350,10 +382,13 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 			case 'i':
 				// TODO: Check if a SCSI implementation is available for this OS?
+				// These commands take precedence over the usual rpcli functionality.
 				if (argv[i][2] == 's') {
 					// SCSI INQUIRY command.
-					// This takes precedence over the usual rpcli functionality.
 					inq_scsi = true;
+				} else if (argv[i][2] == 'a') {
+					// ATA IDENTIFY DEVICE command.
+					inq_ata = true;
 				}
 				break;
 			default:
@@ -369,12 +404,16 @@ int RP_C_API main(int argc, char *argv[])
 			if (inq_scsi) {
 				// SCSI INQUIRY command.
 				DoScsiInquiry(argv[i], json);
-				inq_scsi = false;
+			} else if (inq_ata) {
+				// ATA IDENTIFY DEVICE command.
+				DoAtaIdentifyDevice(argv[i], json);
 			} else {
 				// Regular file.
 				DoFile(argv[i], json, extract);
 			}
 
+			inq_scsi = false;
+			inq_ata = false;
 			extract.clear();
 		}
 	}

@@ -161,7 +161,9 @@ SET(librpbase_H
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
 	file/RelatedFile.hpp
+	file/scsi/ata_protocol.h
 	file/scsi/scsi_protocol.h
+	file/scsi/scsi_ata_cmds.h
 	img/rp_image.hpp
 	img/rp_image_p.hpp
 	img/rp_image_backend.hpp

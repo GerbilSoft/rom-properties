@@ -13,6 +13,9 @@
 #endif
 
 #include "scsi_protocol.h"
+#include "ata_protocol.h"
+#include "scsi_ata_cmds.h"
+
 #include "../../byteswap.h"
 #include "../../bitstuff.h"
 
@@ -340,6 +343,11 @@ int RpFilePrivate::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSiz
 		SCSI_RESP_READ_CAPACITY_10 resp10;
 		SCSI_RESP_READ_CAPACITY_16 resp16;
 	};
+	ASSERT_STRUCT(SCSI_CDB_READ_CAPACITY_10, 10);
+	ASSERT_STRUCT(SCSI_CDB_READ_CAPACITY_16, 16);
+	// TODO: Define these somewhere in scsi_protocol.h.
+	ASSERT_STRUCT(SCSI_RESP_READ_CAPACITY_10, 8);
+	ASSERT_STRUCT(SCSI_RESP_READ_CAPACITY_16, 32);
 
 	// NOTE: The returned LBA is the *last* LBA,
 	// not the total number of LBAs. Hence, we'll
@@ -433,6 +441,7 @@ int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf
 	// READ(6) has 21-bit LBA and 8-bit transfer length.
 	// TODO: May need to use READ(32) for large devices.
 	SCSI_CDB_READ_10 cdb10;
+	ASSERT_STRUCT(SCSI_CDB_READ_10, 10);
 
 	// SCSI READ(10)
 	cdb10.OpCode = SCSI_OP_READ_10;
@@ -505,6 +514,7 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 int RpFile::scsi_inquiry(SCSI_RESP_INQUIRY_STD *pResp)
 {
 	SCSI_CDB_INQUIRY cdb;
+	ASSERT_STRUCT(SCSI_CDB_INQUIRY, 6);
 	cdb.OpCode = SCSI_OP_INQUIRY;
 	cdb.EVPD = 0;
 	cdb.PageCode = 0;
@@ -513,6 +523,73 @@ int RpFile::scsi_inquiry(SCSI_RESP_INQUIRY_STD *pResp)
 
 	RP_D(RpFile);
 	return d->scsi_send_cdb(&cdb, sizeof(cdb), pResp, sizeof(*pResp), RpFilePrivate::SCSI_DIR_IN);
+}
+
+/**
+ * ATA IDENTIFY DEVICE command. (via SCSI-ATA pass-through)
+ * @param pResp Response buffer.
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFile::ata_identify_device(ATA_RESP_IDENTIFY_DEVICE *pResp)
+{
+	// NOTE: Using ATA PASS THROUGH(16) instead of ATA PASS THROUGH(12)
+	// because the 12-byte version has the same OpCode as MMC BLANK.
+	SCSI_CDB_ATA_PASS_THROUGH_16 cdb;
+	ASSERT_STRUCT(SCSI_CDB_ATA_PASS_THROUGH_16, 16);
+	// TODO: Define this somewhere in ata_protocol.h.
+	ASSERT_STRUCT(ATA_RESP_IDENTIFY_DEVICE, 512);
+
+	cdb.OpCode = SCSI_OP_ATA_PASS_THROUGH_16;
+	cdb.ATA_Flags0 = ATA_FLAGS0(0, ATA_PROTO_IDENTIFY_DEVICE, 0);
+	cdb.ATA_Flags1 = ATA_FLAGS1(0, T_DIR_IN, LEN_BLOCKS, T_LENGTH_SECTOR_COUNT);
+	cdb.ata.Feature = 0;
+	cdb.ata.Sector_Count = cpu_to_be16(1);
+	cdb.ata.LBA_low = 0;
+	cdb.ata.LBA_mid = 0;
+	cdb.ata.LBA_high = 0;
+	cdb.ata.Device = 0;
+	cdb.ata.Command = ATA_CMD_IDENTIFY_DEVICE;
+	cdb.Control = 0;
+
+	RP_D(RpFile);
+	int ret = d->scsi_send_cdb(&cdb, sizeof(cdb), pResp, sizeof(*pResp), RpFilePrivate::SCSI_DIR_IN);
+	if (ret != 0) {
+		// SCSI/ATA error.
+		return ret;
+	}
+
+	// Validate the checksum.
+	uint8_t checksum = 0;
+	const uint8_t *p = reinterpret_cast<const uint8_t*>(pResp);
+	const uint8_t *const p_end = p + sizeof(*pResp);
+	for (; p < p_end; p++) {
+		checksum += *p;
+	}
+	if (checksum != 0) {
+		// Invalid checksum.
+		return -EIO;
+	}
+
+#if SYS_BYTE_ORDER == SYS_BIG_ENDIAN
+	// All ATA IDENTIFY DEVICE fields are in little-endian,
+	// so byteswap the whole thing. This will also handle
+	// byteswapping the string fields.
+	// TODO: NAA/OUI/WWN and other >16-bit fields.
+	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp), sizeof(*pResp));
+#else /* SYS_BYTE_ORDER == SYS_LIL_ENDIAN */
+	// String fields are always "swapped" regardless of
+	// host endian, so we'll have to unswap those.
+	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->serial_number),
+		sizeof(pResp->serial_number));
+	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->firmware_revision),
+		sizeof(pResp->firmware_revision));
+	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->model_number),
+		sizeof(pResp->model_number));
+	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->media_serial_number),
+		sizeof(pResp->media_serial_number));
+#endif
+
+	return ret;
 }
 
 }

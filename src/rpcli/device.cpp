@@ -13,9 +13,12 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "librpbase/file/scsi/scsi_protocol.h"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// SCSI and ATA protocols.
+#include "librpbase/file/scsi/scsi_protocol.h"
+#include "librpbase/file/scsi/ata_protocol.h"
 
 // C++ includes.
 #include <iomanip>
@@ -47,6 +50,8 @@ public:
 	}
 };
 
+/** ScsiInquiry **/
+
 ScsiInquiry::ScsiInquiry(RpFile *file)
 	: file(file)
 { }
@@ -62,7 +67,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	}
 
 	// SCSI device information.
-	// TODO: Decode numeric values.
+	// TODO: Trim spaces?
 	// TODO: i18n?
 	StreamStateSaver state(os);
 	os << "-- SCSI INQUIRY data for: " << si.file->filename() << endl;
@@ -141,5 +146,38 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 
 	// TODO: Check supported media types for CD/DVD/BD-ROM drives?
 	// That's a bit more than an INQUIRY command...
+	return os;
+}
+
+/** AtaIdentifyDevice **/
+
+AtaIdentifyDevice::AtaIdentifyDevice(RpFile *file)
+	: file(file)
+{ }
+
+std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
+{
+	ATA_RESP_IDENTIFY_DEVICE resp;
+	int ret = si.file->ata_identify_device(&resp);
+	if (ret != 0) {
+		// TODO: Decode the error.
+		os << "-- " << rp_sprintf(C_("rpcli", "ATA IDENTIFY DEVICE failed: %08X"), ret) << endl;
+		return os;
+	}
+
+	// ATA device information.
+	// TODO: Decode numeric values.
+	// TODO: Trim spaces?
+	// TODO: i18n?
+	StreamStateSaver state(os);
+	os << "-- ATA IDENTIFY DEVICE data for: " << si.file->filename() << endl;
+	os << "Model number:          " << latin1_to_utf8(resp.model_number, sizeof(resp.model_number)) << endl;
+	os << "Firmware version:      " << latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)) << endl;
+	os << "Serial number:         " << latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)) << endl;
+	os << "Media serial number:   " << latin1_to_utf8(resp.media_serial_number, sizeof(resp.media_serial_number)) << endl;
+	// TODO: Byte count.
+	os << "Sector count (28-bit): " << resp.total_sectors << endl;
+	os << "Sector count (48-bit): " << resp.total_sectors_48 << endl;
+	os << "Integrity word:        " << rp_sprintf("%04X", resp.integrity) << endl;
 	return os;
 }
