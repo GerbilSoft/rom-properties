@@ -196,6 +196,7 @@ int RpFile::setKreonErrorSkipState(bool skip)
 	return d->scsi_send_cdb(cdb, sizeof(cdb), nullptr, 0, RpFilePrivate::SCSI_DIR_IN);
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
+	RP_UNUSED(skip);
 	return -ENOSYS;
 #endif /* _WIN32 */
 }
@@ -225,6 +226,7 @@ int RpFile::setKreonLockState(KreonLockState lockState)
 	return ret;
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
+	RP_UNUSED(lockState);
 	return -ENOSYS;
 #endif /* _WIN32 */
 }

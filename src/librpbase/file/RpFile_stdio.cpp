@@ -165,6 +165,8 @@ int RpFilePrivate::reOpenFile(void)
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
+#else
+		RP_UNUSED(fileNamePatterns);
 #endif /* NO_PATTERNS_FOR_THIS_OS */
 
 		// Allocate devInfo.
