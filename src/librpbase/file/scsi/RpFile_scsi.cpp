@@ -98,8 +98,9 @@ int RpFilePrivate::readOneLBA(uint32_t lba)
 			q->m_lastError = w32err_to_posix(GetLastError());
 			return -q->m_lastError;
 		}
+
 		DWORD bytesRead;
-		BOOL bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
+		bRet = ReadFile(file, devInfo->sector_cache, devInfo->sector_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != devInfo->sector_size) {
 			// Read error.
 			devInfo->lba_cache = ~0U;
@@ -259,8 +260,9 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 			q->m_lastError = w32err_to_posix(GetLastError());
 			return ret;
 		}
+
 		DWORD bytesRead;
-		BOOL bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
+		bRet = ReadFile(file, ptr8, contig_size, &bytesRead, nullptr);
 		if (bRet == 0 || bytesRead != contig_size) {
 			// Read error.
 			q->m_lastError = w32err_to_posix(GetLastError());
