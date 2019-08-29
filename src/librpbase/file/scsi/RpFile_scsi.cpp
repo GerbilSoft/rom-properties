@@ -406,6 +406,7 @@ int RpFilePrivate::scsi_read_capacity(int64_t *pDeviceSize, uint32_t *pSectorSiz
 	return 0;
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
+	RP_UNUSED(pSectorSize);
 	return -ENOSYS;
 #endif /* RP_OS_SCSI_SUPPORTED */
 }
@@ -456,6 +457,9 @@ int RpFilePrivate::scsi_read(uint32_t lbaStart, uint16_t lbaCount, uint8_t *pBuf
 	return scsi_send_cdb(&cdb10, sizeof(cdb10), pBuf, req_buf_size, SCSI_DIR_IN);
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
+	RP_UNUSED(lbaStart);
+	RP_UNUSED(lbaCount);
+	RP_UNUSED(bufLen);
 	return -ENOSYS;
 #endif /* RP_OS_SCSI_SUPPORTED */
 }
@@ -502,6 +506,8 @@ int RpFile::rereadDeviceSizeScsi(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	return 0;
 #else /* !RP_OS_SCSI_SUPPORTED */
 	// No SCSI implementation for this OS.
+	RP_UNUSED(pDeviceSize);
+	RP_UNUSED(pSectorSize);
 	return -ENOSYS;
 #endif /* RP_OS_SCSI_SUPPORTED */
 }

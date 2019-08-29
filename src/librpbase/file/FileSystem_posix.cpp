@@ -387,6 +387,8 @@ bool isOnBadFS(const char *filename, bool netFS)
 	}
 #else
 # warning TODO: Implement "badfs" support for non-Linux systems.
+	RP_UNUSED(filename);
+	RP_UNUSED(netFS);
 #endif
 
 	return bRet;

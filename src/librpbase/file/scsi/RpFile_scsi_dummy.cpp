@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "../RpFile.hpp"
+#include "../RpFile_p.hpp"
 
 // C includes. (C++ namespace)
 #include <cerrno>
@@ -24,6 +25,28 @@ int RpFile::rereadDeviceSizeOS(int64_t *pDeviceSize, uint32_t *pSectorSize)
 	// Not supported on this OS.
 	RP_UNUSED(pDeviceSize);
 	RP_UNUSED(pSectorSize);
+	return -ENOSYS;
+}
+
+/**
+ * Send a SCSI command to the device.
+ * @param cdb		[in] SCSI command descriptor block
+ * @param cdb_len	[in] Length of cdb
+ * @param data		[in/out] Data buffer, or nullptr for SCSI_DIR_NONE operations
+ * @param data_len	[in] Length of data
+ * @param direction	[in] Data direction
+ * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
+ */
+int RpFilePrivate::scsi_send_cdb(const void *cdb, uint8_t cdb_len,
+	void *data, size_t data_len,
+	ScsiDirection direction)
+{
+	// Not supported on this OS.
+	RP_UNUSED(cdb);
+	RP_UNUSED(cdb_len);
+	RP_UNUSED(data);
+	RP_UNUSED(data_len);
+	RP_UNUSED(direction);
 	return -ENOSYS;
 }
 
