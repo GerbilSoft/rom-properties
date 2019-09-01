@@ -129,6 +129,7 @@ install(TARGETS tinyxml2
 	#ARCHIVE 
 	#	DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	#	COMPONENT tinyxml2_libraries)
+	)
 ENDIF(WIN32)
 
 # rom-properties: Split debug functionality; Windows subsystem.
