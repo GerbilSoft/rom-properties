@@ -34,7 +34,7 @@ ENDIF(0) # rom-properties
 ################################
 # set lib version here
 
-set(GENERIC_LIB_VERSION "7.0.1")
+set(GENERIC_LIB_VERSION "7.1.0")
 set(GENERIC_LIB_SOVERSION "7")
 
 ################################
@@ -118,12 +118,17 @@ ENDIF(0) # rom-properties
 # - Use the correct RUNTIME destination.
 # - Install PDB files.
 IF(WIN32)
-	install(TARGETS tinyxml2
-		#EXPORT ${CMAKE_PROJECT_NAME}Targets
-		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-		#LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		#ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		)
+install(TARGETS tinyxml2
+	#EXPORT ${CMAKE_PROJECT_NAME}Targets
+	RUNTIME 
+		DESTINATION ${CMAKE_INSTALL_BINDIR}
+		COMPONENT tinyxml2_runtime
+	#LIBRARY 
+	#	DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	#	COMPONENT tinyxml2_libraries
+	#ARCHIVE 
+	#	DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	#	COMPONENT tinyxml2_libraries)
 ENDIF(WIN32)
 
 # rom-properties: Split debug functionality; Windows subsystem.
@@ -163,10 +168,10 @@ if(BUILD_TESTING AND BUILD_TESTS)
   add_test(NAME xmltest COMMAND xmltest WORKING_DIRECTORY $<TARGET_FILE_DIR:xmltest>)
 endif()
 
-install(FILES tinyxml2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES tinyxml2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT tinyxml2_headers)
 
 configure_file(tinyxml2.pc.in tinyxml2.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tinyxml2.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tinyxml2.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT tinyxml2_config)
 
 # uninstall target
 if(NOT TARGET uninstall)
@@ -186,10 +191,18 @@ configure_package_config_file(
   "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake"
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}"
 )
+write_basic_package_version_file(
+  "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
+  VERSION ${GENERIC_LIB_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
 install(FILES
         ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
+	${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
+	COMPONENT tinyxml2_config)
 
 install(EXPORT ${CMAKE_PROJECT_NAME}Targets NAMESPACE tinyxml2::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
+	COMPONENT tinyxml2_config)
 ENDIF(0) # rom-properties
