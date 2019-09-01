@@ -145,7 +145,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 
 		// Temporary configuration filename.
 		// Set by saveStart(); cleared by saveFinish().
-		TCHAR *tmp_conf_filename;
+		tstring tmp_conf_filename;
 };
 
 // Control base ID.
@@ -157,7 +157,6 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, cboImageType_lastAdded(nullptr)
-	, tmp_conf_filename(nullptr)
 {
 	// Clear the grid parameters.
 	pt_cboImageType.x = 0;
@@ -173,10 +172,9 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	// (Cleared by finishComboBoxes().)
 	assert(cboImageType_lastAdded == nullptr);
 
-	// tmp_conf_filename should be nullptr,
+	// tmp_conf_filename should be empty,
 	// since it's only used when saving.
-	assert(tmp_conf_filename == nullptr);
-	free(tmp_conf_filename);
+	assert(tmp_conf_filename.empty());
 }
 
 // Property for "D pointer".
@@ -455,12 +453,8 @@ int ImageTypesTabPrivate::saveStart(void)
 	}
 
 	// Store the configuration filename.
-	assert(tmp_conf_filename == nullptr);
-	if (tmp_conf_filename) {
-		// Shouldn't be set here...
-		free(tmp_conf_filename);
-	}
-	tmp_conf_filename = _tcsdup(U82T_s(filename));
+	assert(tmp_conf_filename.empty());
+	tmp_conf_filename = U82T_s(filename);
 	return 0;
 }
 
@@ -472,11 +466,11 @@ int ImageTypesTabPrivate::saveStart(void)
  */
 int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
 {
-	assert(tmp_conf_filename != nullptr);
-	if (!tmp_conf_filename) {
+	assert(!tmp_conf_filename.empty());
+	if (tmp_conf_filename.empty()) {
 		return -ENOENT;
 	}
-	WritePrivateProfileString(_T("ImageTypes"), U82T_c(sysName), U82T_c(imageTypeList), tmp_conf_filename);
+	WritePrivateProfileString(_T("ImageTypes"), U82T_c(sysName), U82T_c(imageTypeList), tmp_conf_filename.c_str());
 	return 0;
 }
 
@@ -489,12 +483,11 @@ int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageT
 int ImageTypesTabPrivate::saveFinish(void)
 {
 	// Clear the configuration filename.
-	assert(tmp_conf_filename != nullptr);
-	if (!tmp_conf_filename) {
+	assert(!tmp_conf_filename.empty());
+	if (tmp_conf_filename.empty()) {
 		return -ENOENT;
 	}
-	free(tmp_conf_filename);
-	tmp_conf_filename = nullptr;
+	tmp_conf_filename.clear();
 	return 0;
 }
 
