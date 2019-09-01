@@ -1,4 +1,9 @@
-This copy of tinyxml2-7.0.1 is a modified version of the original.
+This copy of tinyxml2-7.1.0 is a modified version of the original.
+
+commit ff61650517cc32d524689366f977716e73d4f924
+Merge branch 'master' of github.com:leethomason/tinyxml2
+
+Tag: 7.1.0 (+1 commit)
 
 The following changes have been made to the original:
 
@@ -12,5 +17,5 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
-To obtain the original tinyxml2-7.0.1, visit:
+To obtain the original tinyxml2-7.1.0, visit:
 https://github.com/leethomason/tinyxml2
