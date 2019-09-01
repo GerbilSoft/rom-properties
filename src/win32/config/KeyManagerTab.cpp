@@ -619,6 +619,7 @@ void KeyManagerTabPrivate::save(void)
 	}
 
 	// Save the keys.
+	const tstring tfilename = U82T_c(filename);
 	const int totalKeyCount = keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
 		const KeyStoreWin32::Key *const pKey = keyStore->getKey(i);
@@ -627,7 +628,7 @@ void KeyManagerTabPrivate::save(void)
 			continue;
 
 		// Save this key.
-		WritePrivateProfileString(_T("Keys"), U82T_s(pKey->name), U82T_s(pKey->value), U82T_c(filename));
+		WritePrivateProfileString(_T("Keys"), U82T_s(pKey->name), U82T_s(pKey->value), tfilename.c_str());
 	}
 
 	// Clear the modified status.
