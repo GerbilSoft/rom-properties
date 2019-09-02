@@ -543,6 +543,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 	}
 
 	if (wereKeysImported) {
+		this->changed = true;
 		emit q->modified_int();
 	}
 	iret.status = (wereKeysImported
