@@ -1,8 +1,17 @@
+rom-properties (1.4.1-1ppa2~disco1) disco; urgency=medium
+
+  * Build for Ubuntu 19.04 "Disco" Dingo.
+
+    This version enables XFCE (GTK+ 3.x) and MATE, and disables
+    XFCE (GTK+ 2.x).
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 07 Sep 2019 14:40:00 -0400
+
 rom-properties (1.4.1-1ppa2~bionic2) bionic; urgency=medium
 
   * Fix rom-properties-gnome.so path.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 07 Sep 2019 02:14:15 -0400
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 07 Sep 2019 14:14:15 -0400
 
 rom-properties (1.4.1-1ppa2~bionic1) bionic; urgency=medium
 
@@ -10,7 +19,7 @@ rom-properties (1.4.1-1ppa2~bionic1) bionic; urgency=medium
 
     PPA version bumped to ensure it updates from previous versions.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 07 Sep 2019 01:55:00 -0400
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 07 Sep 2019 13:55:00 -0400
 
 rom-properties (1.4.1-1ppa1~xenial1) xenial; urgency=medium
 
