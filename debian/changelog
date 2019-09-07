@@ -1,3 +1,9 @@
+rom-properties (1.4.1-1ppa2~bionic2) bionic; urgency=medium
+
+  * Fix rom-properties-gnome.so path.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 07 Sep 2019 02:14:15 -0400
+
 rom-properties (1.4.1-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
