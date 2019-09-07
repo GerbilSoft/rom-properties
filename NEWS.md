@@ -16,12 +16,21 @@
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
 
+## v1.4.1 (released 2019/09/07)
+
+* New parser features:
+  * amiibo: Updated the internal database to be current as of 2019/08/18.
+
 * Bug fixes:
   * In some cases, the SCSI handlers for both Linux and Windows weren't working
     properly. In particular, on Linux, attempting to read "too much" data at
     once resulted in getting nothing, and on both systems, in some cases,
     passing a buffer larger than the number of requested sectors results in
     the sectors being loaded at the *end* of the buffer, not the beginning.
+  * rp-config: If keys were imported from a supported key database file and
+    settings saved, those keys wouldn't actually be saved, since the import
+    function did not set the "changed" flag. As a workaround, modifying any key
+    manually before saving would set the "changed" flag.
 
 ## v1.4 (released 2019/08/04)
 
