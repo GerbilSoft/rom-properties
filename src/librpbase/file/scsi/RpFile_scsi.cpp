@@ -217,8 +217,8 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 	assert(devInfo->device_pos % devInfo->sector_size == 0);
 
 	// Read contiguous blocks.
-	int64_t lba_count = size / devInfo->sector_size;
-	size_t contig_size = lba_count * devInfo->sector_size;
+	uint32_t lba_count = static_cast<uint32_t>(size / devInfo->sector_size);
+	size_t contig_size = static_cast<int64_t>(lba_count) * devInfo->sector_size;
 	if (devInfo->isKreonUnlocked) {
 		// Kreon drive. Use SCSI commands.
 		// NOTE: Reading up to 65535 LBAs at a time due to READ(10) limitations.
