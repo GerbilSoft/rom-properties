@@ -27,14 +27,12 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * Nintendo 3DS SMDH title struct.
  * All fields are UTF-16LE.
  * NOTE: Strings may not be NULL-terminated!
  */
-typedef struct PACKED _N3DS_SMDH_Title_t {
+typedef struct _N3DS_SMDH_Title_t {
 	char16_t desc_short[64];
 	char16_t desc_long[128];
 	char16_t publisher[64];
@@ -45,7 +43,7 @@ ASSERT_STRUCT(N3DS_SMDH_Title_t, 512);
  * Nintendo 3DS SMDH settings struct.
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_SMDH_Settings_t {
+typedef struct _N3DS_SMDH_Settings_t {
 	uint8_t ratings[16];	// Region-specific age ratings.
 	uint32_t region_code;	// Region code. (bitfield)
 	uint32_t match_maker_id;
@@ -113,7 +111,7 @@ typedef enum {
  * NOTE: Strings may not be NULL-terminated!
  */
 #define N3DS_SMDH_HEADER_MAGIC 'SMDH'
-typedef struct PACKED _N3DS_SMDH_Header_t {
+typedef struct _N3DS_SMDH_Header_t {
 	uint32_t magic;			// [0x0000] 'SMDH' (0x48444D53)
 	uint16_t version;		// [0x0004] SMDH version.
 	uint8_t reserved1[2];		// [0x0006]
@@ -159,7 +157,7 @@ typedef enum {
 #define N3DS_SMDH_ICON_SMALL_H 24
 #define N3DS_SMDH_ICON_LARGE_W 48
 #define N3DS_SMDH_ICON_LARGE_H 48
-typedef struct PACKED _N3DS_SMDH_Icon_t {
+typedef struct _N3DS_SMDH_Icon_t {
 	uint16_t small[N3DS_SMDH_ICON_SMALL_W * N3DS_SMDH_ICON_SMALL_H];
 	uint16_t large[N3DS_SMDH_ICON_LARGE_W * N3DS_SMDH_ICON_LARGE_H];
 } N3DS_SMDH_Icon_t;
@@ -175,7 +173,7 @@ ASSERT_STRUCT(N3DS_SMDH_Icon_t, 0x1680);
 #define N3DS_3DSX_HEADER_MAGIC '3DSX'
 #define N3DS_3DSX_STANDARD_HEADER_SIZE 32
 #define N3DS_3DSX_EXTENDED_HEADER_SIZE 44
-typedef struct PACKED _N3DS_3DSX_Header_t {
+typedef struct _N3DS_3DSX_Header_t {
 	// Standard header.
 	uint32_t magic; 		// [0x000] '3DSX' (big-endian)
 	uint16_t header_size;		// [0x004] Header size.
@@ -203,7 +201,7 @@ ASSERT_STRUCT(N3DS_3DSX_Header_t, 44);
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_CIA_Header_t {
+typedef struct _N3DS_CIA_Header_t {
 	uint32_t header_size;	// Usually 0x2020.
 	uint16_t type;
 	uint16_t version;
@@ -228,7 +226,7 @@ ASSERT_STRUCT(N3DS_CIA_Header_t, 0x2020);
  * CIA: Meta section header.
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_CIA_Meta_Header_t {
+typedef struct _N3DS_CIA_Meta_Header_t {
 	uint64_t tid_dep_list[48];	// Title ID dependency list.
 	uint8_t reserved1[0x180];
 	uint32_t core_version;
@@ -242,7 +240,7 @@ ASSERT_STRUCT(N3DS_CIA_Meta_Header_t, 0x400);
  * Title ID struct/union. (little-endian version)
  * TODO: Verify operation on big-endian systems.
  */
-typedef union PACKED _N3DS_TitleID_LE_t {
+typedef union _N3DS_TitleID_LE_t {
 	uint64_t id;
 	struct {
 		uint32_t lo;
@@ -255,7 +253,7 @@ ASSERT_STRUCT(N3DS_TitleID_LE_t, 8);
  * Title ID struct/union. (big-endian version)
  * TODO: Verify operation on big-endian systems.
  */
-typedef union PACKED _N3DS_TitleID_BE_t {
+typedef union _N3DS_TitleID_BE_t {
 	uint64_t id;
 	struct {
 		uint32_t hi;
@@ -274,7 +272,7 @@ ASSERT_STRUCT(N3DS_TitleID_BE_t, 8);
  */
 #define N3DS_NCSD_HEADER_MAGIC 'NCSD'
 #define N3DS_NCSD_NOSIG_HEADER_ADDRESS 0x100
-typedef struct PACKED _N3DS_NCSD_Header_NoSig_t {
+typedef struct _N3DS_NCSD_Header_NoSig_t {
 	// [0x100]
 	uint32_t magic;			// [0x100] 'NCSD' (big-endian)
 	uint32_t image_size;		// [0x104] Image size, in media units. (1 media unit = 512 bytes)
@@ -319,7 +317,7 @@ ASSERT_STRUCT(N3DS_NCSD_Header_NoSig_t, 256);
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_NCSD_Header_t {
+typedef struct _N3DS_NCSD_Header_t {
 	uint8_t signature[0x100];		// [0x000] RSA-2048 SHA-256 signature
 	N3DS_NCSD_Header_NoSig_t hdr;		// [0x100] NCSD header
 } N3DS_NCSD_Header_t;
@@ -377,7 +375,7 @@ typedef enum {
  * All fields are little-endian.
  */
 #define N3DS_NCSD_CARD_INFO_HEADER_ADDRESS 0x200
-typedef struct PACKED _N3DS_NCSD_Card_Info_Header_t {
+typedef struct _N3DS_NCSD_Card_Info_Header_t {
 	uint32_t card2_writable_address;	// CARD2: Writable address, in media units. (CARD1: Always 0xFFFFFFFF)
 	uint32_t card_info_bitmask;
 	uint8_t reserved1[0x108];
@@ -403,7 +401,7 @@ ASSERT_STRUCT(N3DS_NCSD_Card_Info_Header_t, 0xF00);
  * except for the magic number.
  */
 #define N3DS_NCCH_HEADER_MAGIC 'NCCH'
-typedef struct PACKED _N3DS_NCCH_Header_NoSig_t {
+typedef struct _N3DS_NCCH_Header_NoSig_t {
 	// NOTE: Addresses are relative to the version *with* a signature.
 	uint32_t magic;				// [0x100] 'NCCH' (big-endian)
 	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
@@ -449,7 +447,7 @@ ASSERT_STRUCT(N3DS_NCCH_Header_NoSig_t, 256);
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_NCCH_Header_t {
+typedef struct _N3DS_NCCH_Header_t {
 	uint8_t signature[0x100];		// [0x000] RSA-2048 SHA-256 signature
 	N3DS_NCCH_Header_NoSig_t hdr;		// [0x100] NCCH header
 } N3DS_NCCH_Header_t;
@@ -526,7 +524,7 @@ typedef enum {
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_ExeFS_File_Header_t {
+typedef struct _N3DS_ExeFS_File_Header_t {
 	char name[8];
 	uint32_t offset;
 	uint32_t size;
@@ -539,7 +537,7 @@ ASSERT_STRUCT(N3DS_ExeFS_File_Header_t, 16);
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_ExeFS_Header_t {
+typedef struct _N3DS_ExeFS_Header_t {
 	N3DS_ExeFS_File_Header_t files[10];
 	uint8_t reserved[0x20];
 	uint8_t hashes[10][32];	// SHA-256 hashes of each file.
@@ -572,6 +570,7 @@ typedef enum {
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
  */
+#pragma pack(1)
 typedef struct PACKED _N3DS_TMD_Header_t {
 	char signature_issuer[0x40];	// [0x00] Signature issuer.
 	uint8_t tmd_version;		// [0x40]
@@ -595,6 +594,7 @@ typedef struct PACKED _N3DS_TMD_Header_t {
 	uint8_t content_info_sha256[0x20];	// [0xA4] SHA-256 hash of content info records.
 } N3DS_TMD_Header_t;
 ASSERT_STRUCT(N3DS_TMD_Header_t, 0xC4);
+#pragma pack()
 
 /**
  * Nintendo 3DS: Content Info Record.
@@ -603,7 +603,7 @@ ASSERT_STRUCT(N3DS_TMD_Header_t, 0xC4);
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
  */
-typedef struct PACKED _N3DS_Content_Info_Record_t {
+typedef struct _N3DS_Content_Info_Record_t {
 	uint16_t content_index_offset;
 	uint16_t content_command_count;	// [k]
 	uint8_t sha256_next[0x20];	// SHA-256 hash of the next [k] content records.
@@ -617,7 +617,7 @@ ASSERT_STRUCT(N3DS_Content_Info_Record_t, 0x24);
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
  */
-typedef struct PACKED _N3DS_Content_Chunk_Record_t {
+typedef struct _N3DS_Content_Chunk_Record_t {
 	uint32_t id;		// [0x00]
 	uint16_t index;		// [0x04] Content index. (Used for CIA title key encryption.)
 	uint16_t type;		// [0x06] See N3DS_Content_Chunk_Type_Flags.
@@ -647,11 +647,13 @@ typedef enum {
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
  */
+#pragma pack(1)
 typedef struct PACKED _N3DS_TMD_t {
 	N3DS_TMD_Header_t header;			// [0x00] TMD header.
 	N3DS_Content_Info_Record_t cinfo_records[64];	// [0xA4] Content info records.
 } N3DS_TMD_t;
 ASSERT_STRUCT(N3DS_TMD_t, 0xC4+(0x24*64));
+#pragma pack()
 
 /**
  * Nintendo 3DS: NCCH Extended Header: Code Set Info.
@@ -659,7 +661,7 @@ ASSERT_STRUCT(N3DS_TMD_t, 0xC4+(0x24*64));
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_NCCH_ExHeader_CodeSet_t {
+typedef struct _N3DS_NCCH_ExHeader_CodeSet_t {
 	uint32_t address;
 	uint32_t physical_region_size;	// in page multiples
 	uint32_t size;			// in bytes
@@ -672,7 +674,7 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_CodeSet_t, 12);
  *
  * All fields are little-endian.
  */
-typedef struct PACKED _N3DS_NCCH_ExHeader_SCI_t {
+typedef struct _N3DS_NCCH_ExHeader_SCI_t {
 	char title[8];		// Application title. (default is "CtrApp")
 	uint8_t reserved1[5];
 	uint8_t flags;		// See N3DS_NCCH_ExHeader_SCI_Flags.
@@ -710,7 +712,7 @@ typedef enum {
  */
 #define N3DS_SERVICE_MAX 34
 #define N3DS_SERVICE_LEN 8
-typedef struct PACKED _N3DS_NCCH_ExHeader_ACI_t {
+typedef struct _N3DS_NCCH_ExHeader_ACI_t {
 	// [0x000]
 	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM11_Local_System_Capabilities
 	struct {
@@ -876,7 +878,7 @@ typedef enum {
 // NOTE: FBI.3ds only has SCI and ACI.
 // It doesn't have any signatures or the second ACI.
 #define N3DS_NCCH_EXHEADER_MIN_SIZE (sizeof(N3DS_NCCH_ExHeader_SCI_t) + sizeof(N3DS_NCCH_ExHeader_ACI_t))
-typedef struct PACKED _N3DS_NCCH_ExHeader_t {
+typedef struct _N3DS_NCCH_ExHeader_t {
 	N3DS_NCCH_ExHeader_SCI_t sci;
 	N3DS_NCCH_ExHeader_ACI_t aci;
 	uint8_t signature_accessdesc[0x100];	// RSA-2048 SHA256
@@ -898,6 +900,7 @@ ASSERT_STRUCT(N3DS_NCCH_ExHeader_t, 0x800);
  * All fields are BIG-endian due to its
  * roots in the Wii ticket format.
  */
+#pragma pack(1)
 typedef struct PACKED _N3DS_Ticket_t {
 	char issuer[0x40];		// [0x000] Ticket issuer. Can be used to distinguish debug vs. retail.
 	uint8_t ecc_public_key[0x3C];	// [0x040] ECC public key.
@@ -923,6 +926,7 @@ typedef struct PACKED _N3DS_Ticket_t {
 	uint8_t content_index[0xAC];	// [0x164] Content index.
 } N3DS_Ticket_t;
 ASSERT_STRUCT(N3DS_Ticket_t, 528);
+#pragma pack()
 
 /**
  * Ticket common key index for title key encryption.
@@ -943,8 +947,6 @@ typedef enum {
 	// - 2-5: Unknown
 	N3DS_TICKET_TITLEKEY_KEYY_INDEX_MASK	= (7 << 2),
 } N3DS_Ticket_TitleKey_KeyY;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }
