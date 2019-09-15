@@ -1,3 +1,9 @@
+rom-properties (1.4.1-1ppa2~disco3) disco; urgency=medium
+
+  * Fix rom-properties-xfce3.so filename.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 14 Sep 2019 23:01:32 -0400
+
 rom-properties (1.4.1-1ppa2~disco2) disco; urgency=medium
 
   * Missing XFCE (GTK+ 3.x) and MATE install/docs files.
