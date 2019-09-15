@@ -252,7 +252,7 @@ public:
 
 		// Column names
 		unique_ptr<size_t[]> colSize(new size_t[col_count]());
-		unsigned int totalWidth = col_count + 1;
+		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
 			for (auto it = listDataDesc.names->cbegin(); it != listDataDesc.names->cend(); ++it, ++i) {
