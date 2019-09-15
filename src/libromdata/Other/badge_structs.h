@@ -23,8 +23,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 // Badge dimensions.
 #define BADGE_SIZE_SMALL_W 32
 #define BADGE_SIZE_SMALL_H 32
@@ -44,6 +42,7 @@ extern "C" {
  * except for the magic number.
  */
 #define BADGE_PRBS_MAGIC 'PRBS'
+#pragma pack(1)
 typedef struct PACKED _Badge_PRBS_Header {
 	uint32_t magic;		// [0x000] 'PRBS' (big-endian)
 	uint8_t reserved1[56];	// [0x004] Unknown
@@ -67,6 +66,7 @@ typedef struct PACKED _Badge_PRBS_Header {
 	char16_t name[16][128];	// [0x0E0] Badge names. (UTF-16LE)
 } Badge_PRBS_Header;
 ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
+#pragma pack()
 
 /**
  * CABS: Badge set file.
@@ -79,7 +79,7 @@ ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
  * except for the magic number.
  */
 #define BADGE_CABS_MAGIC 'CABS'
-typedef struct PACKED _Badge_CABS_Header {
+typedef struct _Badge_CABS_Header {
 	uint32_t magic;		// [0x000] 'CABS'
 	uint8_t reserved1[32];	// [0x004] Unknown
 	uint32_t set_id;	// [0x024] Set ID.
@@ -89,8 +89,6 @@ typedef struct PACKED _Badge_CABS_Header {
 	char16_t name[16][128];	// [0x068] Set names. (UTF-16LE)
 } Badge_CABS_Header;
 ASSERT_STRUCT(Badge_CABS_Header, 0x1068);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }
