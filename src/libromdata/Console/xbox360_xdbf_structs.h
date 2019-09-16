@@ -253,7 +253,8 @@ typedef struct PACKED _XDBF_XGAA_Entry {
 	uint32_t unk_0x000;		// [0x000] ???
 	uint16_t avatar_award_id;	// [0x004] Avatar award ID
 	uint16_t unk_0x006;		// [0x006] ???
-	uint8_t unk_0x008[8];		// [0x008] ???
+	uint8_t unk_0x008[4];		// [0x008] ???
+	XDBF_Title_ID title_id;		// [0x00C] Title ID
 	uint16_t name_id;		// [0x010] Name ID (string table)
 	uint16_t unlocked_desc_id;	// [0x012] Unlocked description ID (string table)
 	uint16_t locked_desc_id;	// [0x014] Locked description ID (string table)
