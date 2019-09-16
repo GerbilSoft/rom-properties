@@ -821,17 +821,17 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		// actually have any avatar awards. This game was
 		// built with a newer SDK that supports it, but no
 		// avatar awards were created.
-		//return 0;
+		return 4;
 	} else if (length < XGAA_MIN_SIZE || length > XGAA_MAX_SIZE) {
 		// Size is out of range.
-		return 4;
+		return 5;
 	}
 
 	unique_ptr<uint8_t[]> xgaa_buf(new uint8_t[length]);
 	size_t size = file->seekAndRead(addr, xgaa_buf.get(), length);
 	if (size != length) {
 		// Seek and/or read error.
-		return 5;
+		return 6;
 	}
 
 	// XGAA header.
@@ -843,14 +843,14 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	{
 		// Magic is invalid.
 		// TODO: Report an error?
-		return 6;
+		return 7;
 	}
 
 	// Validate the entry count.
 	unsigned int xgaa_count = be16_to_cpu(hdr->xgaa_count);
 	if (unlikely(xgaa_count == 0)) {
 		// No entries...
-		return 0;
+		return 8;
 	} else if (xgaa_count > XGAA_MAX_COUNT) {
 		// Too many entries.
 		// Reduce it to XGAA_MAX_COUNT.
