@@ -814,11 +814,17 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	// - Size must be at least sizeof(XDBF_XGAA_Header).
 	// - Size must be a maximum of sizeof(XDBF_XGAA_Header) + (sizeof(XDBF_XGAA_Entry) * 16).
 	static const unsigned int XGAA_MAX_COUNT = 16;
-	static const uint32_t XGAA_MIN_SIZE = (uint32_t)sizeof(XDBF_XACH_Header);
-	static const uint32_t XGAA_MAX_SIZE = XGAA_MIN_SIZE + (uint32_t)(sizeof(XDBF_XACH_Entry) * XGAA_MAX_COUNT);
-	assert(length > XGAA_MIN_SIZE);
+	static const uint32_t XGAA_MIN_SIZE = (uint32_t)sizeof(XDBF_XGAA_Header);
+	static const uint32_t XGAA_MAX_SIZE = XGAA_MIN_SIZE + (uint32_t)(sizeof(XDBF_XGAA_Entry) * XGAA_MAX_COUNT);
+	assert(length >= XGAA_MIN_SIZE);
 	assert(length <= XGAA_MAX_SIZE);
-	if (length < XGAA_MIN_SIZE || length > XGAA_MAX_SIZE) {
+	if (unlikely(length == XGAA_MIN_SIZE)) {
+		// Minimum size, which means this section doesn't
+		// actually have any avatar awards. This game was
+		// built with a newer SDK that supports it, but no
+		// avatar awards were created.
+		//return 0;
+	} else if (length < XGAA_MIN_SIZE || length > XGAA_MAX_SIZE) {
 		// Size is out of range.
 		return 4;
 	}
@@ -844,7 +850,10 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 
 	// Validate the entry count.
 	unsigned int xgaa_count = be16_to_cpu(hdr->xgaa_count);
-	if (xgaa_count > XGAA_MAX_COUNT) {
+	if (unlikely(xgaa_count == 0)) {
+		// No entries...
+		return 0;
+	} else if (xgaa_count > XGAA_MAX_COUNT) {
 		// Too many entries.
 		// Reduce it to XGAA_MAX_COUNT.
 		xgaa_count = XGAA_MAX_COUNT;
