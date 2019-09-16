@@ -7,8 +7,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "config.librpbase.h"
-
 #include "Xbox360_XDBF.hpp"
 #include "librpbase/RomData_p.hpp"
 
@@ -880,29 +878,12 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	vector<string> *const v_xgaa_col_names = RomFields::strArrayToVector_i18n(
 		"Xbox360_XDBF|AvatarAwards", xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
 
-	// NOTE: Sonic Generations has two entries for each avatar award.
-	// The entries are *not* identical; the string IDs are the same,
-	// but other unknown values are not.
-	// TODO: Figure out the unknown values.
-	std::unordered_set<uint16_t> xgaa_ids;
-#ifdef HAVE_UNORDERED_SET_RESERVE
-	xgaa_ids.reserve(xgaa_count);
-#endif /* HAVE_UNORDERED_SET_RESERVE */
-
 	// Vectors.
 	auto vv_xgaa = new vector<vector<string> >(xgaa_count);
 	auto vv_icons = new vector<const rp_image*>(xgaa_count);
 	auto xgaa_iter = vv_xgaa->begin();
 	auto icon_iter = vv_icons->begin();
-	for (; p < p_end && xgaa_iter != vv_xgaa->end(); p++)
-	{
-		const uint16_t avatar_award_id = be16_to_cpu(p->avatar_award_id);
-		if (xgaa_ids.find(avatar_award_id) != xgaa_ids.end()) {
-			// Duplicate entry.
-			continue;
-		}
-		xgaa_ids.insert(avatar_award_id);
-
+	for (; p < p_end && xgaa_iter != vv_xgaa->end(); p++, ++xgaa_iter, ++icon_iter) {
 		// String data row
 		auto &data_row = *xgaa_iter;
 
@@ -910,7 +891,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
 		// Avatar award ID
-		data_row.push_back(rp_sprintf("%04X", avatar_award_id));
+		data_row.push_back(rp_sprintf("%04X", be16_to_cpu(p->avatar_award_id)));
 
 		// Title and locked description
 		// TODO: Unlocked description?
@@ -946,15 +927,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 					be16_to_cpu(p->locked_desc_id),
 					be16_to_cpu(p->unlocked_desc_id)));
 		}
-
-		// Next avatar award.
-		++xgaa_iter;
-		++icon_iter;
 	}
-
-	// Resize the data vectors in case there were duplicates.
-	vv_xgaa->resize(xgaa_ids.size());
-	vv_icons->resize(xgaa_ids.size());
 
 	// Add the list data.
 	// TODO: Improve the display? On KDE, it seems to be limited to
