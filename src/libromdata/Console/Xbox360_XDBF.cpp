@@ -894,7 +894,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 	auto vv_icons = new vector<const rp_image*>(xgaa_count);
 	auto xgaa_iter = vv_xgaa->begin();
 	auto icon_iter = vv_icons->begin();
-	for (; p < p_end && xgaa_iter != vv_xgaa->end(); p++, ++icon_iter)
+	for (; p < p_end && xgaa_iter != vv_xgaa->end(); p++)
 	{
 		const uint16_t avatar_award_id = be16_to_cpu(p->avatar_award_id);
 		if (xgaa_ids.find(avatar_award_id) != xgaa_ids.end()) {
@@ -909,8 +909,8 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 		// Icon
 		*icon_iter = loadImage(be32_to_cpu(p->image_id));
 
-		// Achievement ID
-		data_row.push_back(rp_sprintf("%u", avatar_award_id));
+		// Avatar award ID
+		data_row.push_back(rp_sprintf("%04X", avatar_award_id));
 
 		// Title and locked description
 		// TODO: Unlocked description?
@@ -949,10 +949,12 @@ int Xbox360_XDBF_Private::addFields_avatarAwards(void)
 
 		// Next avatar award.
 		++xgaa_iter;
+		++icon_iter;
 	}
 
-	// Resize the data vector in case there were duplicates.
+	// Resize the data vectors in case there were duplicates.
 	vv_xgaa->resize(xgaa_ids.size());
+	vv_icons->resize(xgaa_ids.size());
 
 	// Add the list data.
 	// TODO: Improve the display? On KDE, it seems to be limited to
