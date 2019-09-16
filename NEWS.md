@@ -16,6 +16,11 @@
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
 
+* Bug fixes:
+  * Xbox360_XDBF: Improved avatar award handling:
+    * Fixed an assertion (debug builds only) if an empty XGAA table is present.
+    * Show all avatar awards, even if they have duplicate IDs.
+
 ## v1.4.1 (released 2019/09/07)
 
 * New parser features:
