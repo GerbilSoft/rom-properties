@@ -518,7 +518,7 @@ int GameCubeBNR::loadMetaData(void)
 				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
 		} else if (comment->gamename[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Title,
-				cp1252_sjis_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+				cp1252_sjis_to_utf8(comment->gamename, sizeof(comment->gamename)));
 		}
 
 		// Company.
@@ -547,7 +547,7 @@ int GameCubeBNR::loadMetaData(void)
 				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
 		} else if (comment->gamename[0] != '\0') {
 			d->metaData->addMetaData_string(Property::Title,
-				cp1252_to_utf8(comment->gamename_full, sizeof(comment->gamename_full)));
+				cp1252_to_utf8(comment->gamename, sizeof(comment->gamename)));
 		}
 
 		// Company.
