@@ -118,7 +118,11 @@ const void *RpQImageBackend::data(void) const
 
 size_t RpQImageBackend::data_len(void) const
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5,10,0)
+	return m_qImage.sizeInBytes();
+#else /* QT_VERSION < QT_VERSION_CHECK(5,10,0) */
 	return m_qImage.byteCount();
+#endif
 }
 
 uint32_t *RpQImageBackend::palette(void)
