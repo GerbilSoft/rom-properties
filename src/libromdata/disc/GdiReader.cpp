@@ -303,7 +303,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	RP_Q(GdiReader);
 	const int64_t fileSize = file->size();
 	if (fileSize <= 0) {
-		// Empty or invalid flie...
+		// Empty or invalid file...
 		file->unref();
 		return -EIO;
 	}
