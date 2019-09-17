@@ -506,6 +506,8 @@ int GameCubeBNR::loadMetaData(void)
 
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
+	// FIXME: Prince of Persia: The Sands of Time has a full game name in
+	// company_full[], and an empty gamename_full[].
 
 	if (d->bannerType == GameCubeBNRPrivate::BANNER_BNR1) {
 		// BNR1: Assuming Shift-JIS with cp1252 fallback.
