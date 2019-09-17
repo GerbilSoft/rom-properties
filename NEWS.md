@@ -12,7 +12,7 @@
     * Handle nullptr strings gracefully instead of crashing.
       https://github.com/GerbilSoft/rom-properties/issues/195
 
-## v1.4.1 (released 2019/09/02)
+## v1.4.1 (released 2019/09/07)
 
 * New parser features:
   * amiibo: Updated the internal database to be current as of 2019/08/18.
