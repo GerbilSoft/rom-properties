@@ -69,7 +69,7 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 			uint16_t sectorSize;		// 2048 or 2352
 			uint8_t trackNumber;		// 01 through 99
 			uint8_t reserved;
-			// TODO: Mode1/Mode2 designation?
+			// TODO: Mode1/Mode2 designation? (bool to indicate 2352?)
 			// TODO: Data vs. audio?
 			string filename;		// Relative to the .gdi file. Cleared on error.
 			IRpFile *file;
@@ -568,9 +568,12 @@ int GdiReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	}
 
 	// Go to the block.
-	// FIXME: Read the whole block so we can determine if this is Mode1 or Mode2.
-	// Mode1 data starts at byte 16; Mode2 data starts at byte 24.
-	const int64_t phys_pos = (static_cast<int64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + 16 + pos;
+	int64_t phys_pos = (static_cast<int64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize) + pos;
+	if (blockRange->sectorSize == 2352) {
+		// FIXME: Read the whole block so we can determine if this is Mode 1 or Mode 2.
+		// Mode 1 data starts at byte 16; Mode 2 data starts at byte 24.
+		phys_pos += 16;
+	}
 	size_t sz_read = blockRange->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = blockRange->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);
