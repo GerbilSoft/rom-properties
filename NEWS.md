@@ -1,5 +1,13 @@
 # Changes
 
+## v1.4.3 (released 2019/09/16)
+
+* Bug fixes:
+  * GdiReader:
+    * Fixed pointer confusion that caused crashes.
+      This bug was reported by @HyperPolygon64.
+    * Added support for GDI+ISO (2048-byte sectors).
+
 ## v1.4.2 (released 2019/09/16)
 
 * Bug fixes:
