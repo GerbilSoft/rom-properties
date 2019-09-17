@@ -1,5 +1,17 @@
 # Changes
 
+## v1.4.2 (released 2019/09/16)
+
+* Bug fixes:
+  * Xbox360_XDBF: Improved avatar award handling:
+    * Fixed an assertion (debug builds only) if an empty XGAA table is present.
+    * Show all avatar awards, even if they have duplicate IDs.
+  * GameCubeBNR:
+    * Metadata: Fixed gamename vs. gamename_full copy/paste error.
+  * RomMetaData:
+    * Handle nullptr strings gracefully instead of crashing.
+      https://github.com/GerbilSoft/rom-properties/issues/195
+
 ## v1.4.1 (released 2019/09/02)
 
 * New parser features:
