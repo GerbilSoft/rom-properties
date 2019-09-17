@@ -157,8 +157,10 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 
 			case LibRpBase::PropertyType::String: {
 				const string *str = prop->data.str;
-				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
-					QString::fromUtf8(str->data(), static_cast<int>(str->size())));
+				if (str) {
+					result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+						QString::fromUtf8(str->data(), static_cast<int>(str->size())));
+				}
 				break;
 			}
 

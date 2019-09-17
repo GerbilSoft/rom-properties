@@ -306,7 +306,9 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 				metaData.data.uvalue = src->data.uvalue;
 				break;
 			case PropertyType::String:
-				metaData.data.str = new string(*src->data.str);
+				// TODO: Don't add a property if the string value is nullptr?
+				assert(src->data.str != nullptr);
+				metaData.data.str = (src->data.str ? new string(*src->data.str) : nullptr);
 				break;
 			case PropertyType::Timestamp:
 				metaData.data.timestamp = src->data.timestamp;
