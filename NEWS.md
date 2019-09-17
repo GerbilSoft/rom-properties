@@ -16,6 +16,16 @@
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
 
+## v1.4.3 (released 2019/09/16)
+
+* Bug fixes:
+  * GdiReader:
+    * Fixed pointer confusion that caused crashes.
+      This bug was reported by @HyperPolygon64.
+    * Added support for GDI+ISO (2048-byte sectors).
+
+## v1.4.2 (released 2019/09/16)
+
 * Bug fixes:
   * Xbox360_XDBF: Improved avatar award handling:
     * Fixed an assertion (debug builds only) if an empty XGAA table is present.
@@ -24,6 +34,7 @@
     * Metadata: Fixed gamename vs. gamename_full copy/paste error.
   * RomMetaData:
     * Handle nullptr strings gracefully instead of crashing.
+      https://github.com/GerbilSoft/rom-properties/issues/195
 
 ## v1.4.1 (released 2019/09/07)
 
