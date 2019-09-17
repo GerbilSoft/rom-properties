@@ -301,17 +301,17 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 
 	// File opened. Get its size and calculate the end block.
 	RP_Q(GdiReader);
-	const int64_t fileSize = q->m_file->size();
+	const int64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid flie...
-		q->m_file->unref();
+		file->unref();
 		return -EIO;
 	}
 
 	// Is the file a multiple of the sector size?
 	if (fileSize % blockRange->sectorSize != 0) {
 		// Not a multiple of the sector size.
-		q->m_file->unref();
+		file->unref();
 		return -EIO;
 	}
 

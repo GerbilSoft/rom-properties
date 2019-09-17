@@ -320,7 +320,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	IRpFile *const file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		file->unref();

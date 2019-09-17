@@ -27,10 +27,7 @@ SparseDiscReaderPrivate::SparseDiscReaderPrivate(SparseDiscReader *q)
 	, pos(-1)
 	, block_size(0)
 {
-	if (!q->m_file) {
-		q->m_lastError = EBADF;
-		return;
-	}
+	// NOTE: Can't check q->m_file here.
 
 	// disc_size, pos, and block_size must be
 	// set by the subclass.
