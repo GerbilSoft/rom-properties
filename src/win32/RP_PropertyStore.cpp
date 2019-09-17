@@ -399,11 +399,11 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::String);
 				if (prop->type != PropertyType::String)
 					continue;
-				InitPropVariantFromString(
-					prop->data.str ? U82W_s(*prop->data.str) : L"",
-					&prop_var);
-				d->prop_key.push_back(conv.pkey);
-				d->prop_val.push_back(prop_var);
+				if (prop->data.str) {
+					InitPropVariantFromString(U82W_s(*prop->data.str), &prop_var);
+					d->prop_key.push_back(conv.pkey);
+					d->prop_val.push_back(prop_var);
+				}
 				break;
 
 			case VT_VECTOR|VT_BSTR: {
