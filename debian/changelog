@@ -1,3 +1,9 @@
+rom-properties (1.4.3-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.4.3 release. (1.4.2 packaging was skipped due to a last-minute bug.)
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 17 Sep 2019 21:30:00 -0400
+
 rom-properties (1.4.1-1ppa1~xenial1) xenial; urgency=medium
 
   * 1.4.1 release.
