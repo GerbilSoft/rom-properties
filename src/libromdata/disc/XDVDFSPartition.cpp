@@ -22,7 +22,9 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <string>
+#include <unordered_map>
 using std::string;
+using std::unordered_map;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
@@ -51,16 +53,28 @@ class XDVDFSPartitionPrivate
 		// All fields are byteswapped in the constructor.
 		XDVDFS_Header xdvdfsHeader;
 
-		// Root directory.
+		// Cached directories.
+		// - Key: Directory. ("/" for root)
+		// - Value: Raw directory table from the disc.
 		// NOTE: Directory entries are variable-length, so this
 		// is a byte array, not an ISO_DirEntry array.
-		ao::uvector<uint8_t> rootDir_data;
+		unordered_map<std::string, ao::uvector<uint8_t> > dirTables;
 
 		/**
-		 * Load the root directory.
-		 * @return 0 on success; negative POSIX error code on error.
+		 * Get an entry within a specified directory table.
+		 * @param dirTable Directory table.
+		 * @param filename Filename to find, without subdirectories.
+		 * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
 		 */
-		int loadRootDirectory(void);
+		const XDVDFS_DirEntry *getDirEntry(const ao::uvector<uint8_t> *dirTable, const char *filename);
+
+		/**
+		 * Get the specified directory.
+		 * This should *only* be the directory, not a filename.
+		 * @param path Directory path.
+		 * @return Pointer to directory table (ao::uvector), or nullptr if not found.
+		 */
+		const ao::uvector<uint8_t> *getDirectory(const char *path);
 
 		/**
 		 * XDVDFS strcasecmp() implementation.
@@ -95,7 +109,8 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	}
 
 	// Load the XDVDFS header.
-	size_t size = q->m_discReader->seekAndRead(partition_offset + (XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE),
+	size_t size = q->m_discReader->seekAndRead(
+		partition_offset + (XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE),
 		&xdvdfsHeader, sizeof(xdvdfsHeader));
 	if (size != sizeof(xdvdfsHeader)) {
 		// Seek and/or read error.
@@ -122,7 +137,7 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Load the root directory.
-	loadRootDirectory();
+	getDirectory("/");
 }
 
 XDVDFSPartitionPrivate::~XDVDFSPartitionPrivate()
@@ -157,52 +172,164 @@ int XDVDFSPartitionPrivate::xdvdfs_strcasecmp(const char *s1, const char *s2)
 }
 
 /**
- * Load the root directory.
- * @return 0 on success; negative POSIX error code on error.
+ * Get an entry within a specified directory table.
+ * @param dirTable Directory table.
+ * @param filename Filename to find, without subdirectories.
+ * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
  */
-int XDVDFSPartitionPrivate::loadRootDirectory(void)
+const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uint8_t> *dirTable, const char *filename)
+{
+	assert(dirTable != nullptr);
+	assert(filename != nullptr);
+	if (unlikely(!dirTable || !filename)) {
+		RP_Q(XDVDFSPartition);
+		q->m_lastError = EINVAL;
+		return nullptr;
+	}
+
+	// Convert the filename portion to cp1252 before searching.
+	const string s_filename = utf8_to_cp1252(filename, -1);
+
+	// Find the file in the specified directory.
+	// NOTE: Filenames are case-insensitive.
+	const XDVDFS_DirEntry *dirEntry_found = nullptr;
+	const uint8_t *const p_start = dirTable->data();
+	const uint8_t *const p_end = p_start + dirTable->size();
+	const uint8_t *p = p_start;
+	string s_entry_filename;	// Temporary for NULL termination.
+	while (p < p_end) {
+		const XDVDFS_DirEntry *dirEntry = reinterpret_cast<const XDVDFS_DirEntry*>(p);
+		const char *entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
+		if (entry_filename + dirEntry->name_length > reinterpret_cast<const char*>(p_end)) {
+			// Filename is out of bounds.
+			break;
+		}
+
+		// NOTE: Filename might not be NULL-terminated.
+		// Temporarily cache the filename.
+		s_entry_filename.assign(entry_filename, dirEntry->name_length);
+
+		// Check the filename.
+		// TODO: Use non-locale-specific case-insensitive check? (only letters)
+		uint16_t subtree_offset = 0;
+		int cmp = xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
+		if (cmp == 0) {
+			// Found it!
+			dirEntry_found = dirEntry;
+			break;
+		} else if (cmp < 0) {
+			// Left subtree.
+			subtree_offset = le16_to_cpu(dirEntry->left_offset);
+		} else if (cmp > 0) {
+			// Right subtree.
+			subtree_offset = le16_to_cpu(dirEntry->right_offset);
+		}
+
+		if (subtree_offset == 0 || subtree_offset == 0xFFFF) {
+			// End of directory.
+			break;
+		}
+		p = p_start + (subtree_offset * sizeof(uint32_t));
+	}
+
+	if (!dirEntry_found) {
+		// Not found.
+		return nullptr;
+	}
+
+	// Make sure the file is in bounds.
+	const uint32_t file_size = le32_to_cpu(dirEntry_found->file_size);
+	const int64_t file_addr = static_cast<int64_t>(
+		le32_to_cpu(dirEntry_found->start_sector)) * XDVDFS_BLOCK_SIZE;
+	if (file_addr >= (this->partition_size + this->partition_offset) ||
+	    file_addr > (this->partition_size + this->partition_offset - file_size))
+	{
+		// File is out of bounds.
+		RP_Q(XDVDFSPartition);
+		q->m_lastError = EIO;
+		return nullptr;
+	}
+
+	// Return the directory entry.
+	return dirEntry_found;
+}
+
+/**
+ * Get the specified directory.
+ * This should *only* be the directory, not a filename.
+ * @param path Directory path.
+ * @return Pointer to directory table (ao::uvector), or nullptr if not found.
+ */
+const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *path)
 {
 	RP_Q(XDVDFSPartition);
-	if (unlikely(!rootDir_data.empty())) {
-		// Root directory is already loaded.
-		return 0;
-	} else if (unlikely(!q->m_discReader)) {
-		// DiscReader isn't open.
-		q->m_lastError = EIO;
-		return -q->m_lastError;
+	if (unlikely(!path || path[0] != '/')) {
+		// Invalid path.
+		q->m_lastError = EINVAL;
+		return nullptr;
 	} else if (unlikely(xdvdfsHeader.magic[0] == '\0')) {
 		// XDVDFS isn't loaded.
 		q->m_lastError = EIO;
-		return -q->m_lastError;
+		return nullptr;
 	}
 
-	// Root directory size should be less than 16 MB.
-	if (xdvdfsHeader.root_dir_size > 16*1024*1024) {
-		// Root directory is too big.
+	// TODO: Remove unnecessary leading and trailing slashes.
+
+	// Is this directory table already loaded?
+	auto iter = dirTables.find(path);
+	if (iter != dirTables.end()) {
+		// Directory table is already loaded.
+		return &(iter->second);
+	}
+
+	// DiscReader must be available now.
+	if (unlikely(!q->m_discReader)) {
+		// DiscReader isn't open.
 		q->m_lastError = EIO;
-		return -q->m_lastError;
+		return nullptr;
 	}
 
-	// Load the root directory.
-	// NOTE: Due to variable-length entries, we need to load
-	// the entire root directory all at once.
-	rootDir_data.resize(xdvdfsHeader.root_dir_size);
-	const int64_t rootDir_addr = partition_offset +
-		static_cast<int64_t>(xdvdfsHeader.root_dir_sector) *
-		XDVDFS_BLOCK_SIZE;
-	size_t size = q->m_discReader->seekAndRead(rootDir_addr, rootDir_data.data(), rootDir_data.size());
-	if (size != rootDir_data.size()) {
+	// Directory table address and size.
+	int64_t dir_addr = 0;
+	uint32_t dir_size = 0;
+
+	if (!strcmp(path, "/")) {
+		// Special handling for the root directory.
+
+		// Root directory size should be less than 16 MB.
+		if (xdvdfsHeader.root_dir_size > 16*1024*1024) {
+			// Root directory is too big.
+			q->m_lastError = EIO;
+			return nullptr;
+		}
+
+		// Root directory offsets.
+		dir_addr = partition_offset + (
+			static_cast<int64_t>(xdvdfsHeader.root_dir_sector) * XDVDFS_BLOCK_SIZE);
+		dir_size = xdvdfsHeader.root_dir_size;
+	} else {
+		// Get the parent directory.
+		// TODO
+		return nullptr;
+	}
+
+	// Read the directory.
+	ao::uvector<uint8_t> dirTable(dir_size);
+	size_t size = q->m_discReader->seekAndRead(dir_addr, dirTable.data(), dirTable.size());
+	if (size != dirTable.size()) {
 		// Seek and/or read error.
-		rootDir_data.clear();
 		q->m_lastError = q->m_discReader->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		return -q->m_lastError;
+		return nullptr;
 	}
 
+	// Save the directory table for later.
+	auto ins_iter = dirTables.insert(std::make_pair(path, std::move(dirTable)));
+
 	// Root directory loaded.
-	return 0;
+	return &(ins_iter.first->second);
 }
 
 /** XDVDFSPartition **/
@@ -409,8 +536,11 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 
 	// TODO: Support subdirectories.
 
-	if (!filename || filename[0] == 0) {
-		// No filename.
+	// Filename must be valid, and must start with a slash.
+	// Only absolute paths are supported.
+	if (!filename || filename[0] == 0 || filename[0] != '/') {
+		// No filename and/or does not start with a slash.
+		// TODO: Prepend a slash like GcnFst, or remove slash prepending from GcnFst?
 		m_lastError = EINVAL;
 		return nullptr;
 	}
@@ -424,85 +554,34 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 		return nullptr;
 	}
 
-	// TODO: Which encoding?
-	// Assuming cp1252...
-	string s_filename = utf8_to_cp1252(filename, -1);
-
+	// TODO: Handle subdirectories.
+	// For now, assuming the file is in the root directory.
 	RP_D(XDVDFSPartition);
-	if (d->rootDir_data.empty()) {
-		// Root directory isn't loaded.
-		if (d->loadRootDirectory() != 0) {
-			// Root directory load failed.
-			m_lastError = EIO;
-			return nullptr;
-		}
+	const ao::uvector<uint8_t> *const dirTable = d->getDirectory("/");
+	if (!dirTable) {
+		// Directory not found.
+		// getDirectory() has already set m_lastError.
+		return nullptr;
 	}
 
 	// Find the file in the root directory.
-	// NOTE: Filenames are case-insensitive.
-	const XDVDFS_DirEntry *dirEntry_found = nullptr;
-	const uint8_t *const p_start = d->rootDir_data.data();
-	const uint8_t *const p_end = p_start + d->rootDir_data.size();
-	const uint8_t *p = p_start;
-	string s_entry_filename;	// Temporary for NULL termination.
-	while (p < p_end) {
-		const XDVDFS_DirEntry *dirEntry = reinterpret_cast<const XDVDFS_DirEntry*>(p);
-		const char *entry_filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
-		if (entry_filename + dirEntry->name_length > reinterpret_cast<const char*>(p_end)) {
-			// Filename is out of bounds.
-			break;
-		}
-
-		// NOTE: Filename might not be NULL-terminated.
-		// Temporarily cache the filename.
-		s_entry_filename.assign(entry_filename, dirEntry->name_length);
-
-		// Check the filename.
-		// TODO: Use non-locale-specific case-insensitive check? (only letters)
-		uint16_t subtree_offset = 0;
-		int cmp = d->xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
-		if (cmp == 0) {
-			// Found it!
-			dirEntry_found = dirEntry;
-			break;
-		} else if (cmp < 0) {
-			// Left subtree.
-			subtree_offset = le16_to_cpu(dirEntry->left_offset);
-		} else if (cmp > 0) {
-			// Right subtree.
-			subtree_offset = le16_to_cpu(dirEntry->right_offset);
-		}
-
-		if (subtree_offset == 0 || subtree_offset == 0xFFFF) {
-			// End of directory.
-			break;
-		}
-		p = p_start + (subtree_offset * sizeof(uint32_t));
-	}
-
-	if (!dirEntry_found) {
-		// Not found.
+	const XDVDFS_DirEntry *const dirEntry = d->getDirEntry(dirTable, filename);
+	if (!dirEntry) {
+		// File not found.
+		// getDirEntry() has already set m_lastError.
 		return nullptr;
 	}
 
 	// Make sure this is a regular file.
 	// TODO: Check for XDVDFS_ATTR_NORMAL?
-	if (dirEntry_found->attributes & XDVDFS_ATTR_DIRECTORY) {
+	if (dirEntry->attributes & XDVDFS_ATTR_DIRECTORY) {
 		// Not a regular file.
 		m_lastError = EISDIR;
 		return nullptr;
 	}
 
-	// Make sure the file is in bounds.
-	const uint32_t file_size = le32_to_cpu(dirEntry_found->file_size);
-	const int64_t file_addr = static_cast<int64_t>(le32_to_cpu(dirEntry_found->start_sector)) * XDVDFS_BLOCK_SIZE;
-	if (file_addr >= d->partition_size + d->partition_offset ||
-	    file_addr > d->partition_size + d->partition_offset - file_size)
-	{
-		// File is out of bounds.
-		m_lastError = EIO;
-		return nullptr;
-	}
+	const uint32_t file_size = le32_to_cpu(dirEntry->file_size);
+	const int64_t file_addr = static_cast<int64_t>(le32_to_cpu(dirEntry->start_sector)) * XDVDFS_BLOCK_SIZE;
 
 	// Create the PartitionFile.
 	// This is an IRpFile implementation that uses an
