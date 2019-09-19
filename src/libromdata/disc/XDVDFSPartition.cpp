@@ -464,6 +464,7 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 		if (cmp == 0) {
 			// Found it!
 			dirEntry_found = dirEntry;
+			break;
 		} else if (cmp < 0) {
 			// Left subtree.
 			subtree_offset = le16_to_cpu(dirEntry->left_offset);
