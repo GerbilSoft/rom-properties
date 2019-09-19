@@ -50,10 +50,12 @@ using namespace LibRpBase;
 #include <memory>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
+using std::unordered_map;
 using std::vector;
 
 // Uninitialized vector class.
@@ -111,8 +113,10 @@ class Xbox360_XEX_Private : public RomDataPrivate
 
 		// Resource information. (XEX2_OPTHDR_RESOURCE_INFO)
 		// Initialized by getXdbfResInfo().
-		// NOTE: This struct **IS** byteswapped.
-		XEX2_Resource_Info resInfo;
+		// NOTE: These structs **ARE** byteswapped.
+		// - Key: Resource ID. (Title ID for normal resources; "HASHSEC" for SHA-1 hashes.)
+		// - Value: XEX2_Resource_Info
+		unordered_map<std::string, XEX2_Resource_Info> mapResInfo;
 
 		// File format info. (XEX2_OPTHDR_FILE_FORMAT_INFO)
 		// Initialized by initPeReader().
@@ -181,9 +185,10 @@ class Xbox360_XEX_Private : public RomDataPrivate
 
 		/**
 		 * Get the resource information.
+		 * @param resource_id Resource ID. (If not specified, use the title ID.)
 		 * @return Resource information, or nullptr on error.
 		 */
-		const XEX2_Resource_Info *getXdbfResInfo(void);
+		const XEX2_Resource_Info *getXdbfResInfo(const char *resource_id = nullptr);
 
 		/**
 		 * Format a media ID or disc profile ID.
@@ -281,7 +286,6 @@ Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
 	memset(&xex2Header, 0, sizeof(xex2Header));
 	memset(&secInfo, 0, sizeof(secInfo));
 	memset(&executionID, 0, sizeof(executionID));
-	memset(&resInfo, 0, sizeof(resInfo));
 	memset(&fileFormatInfo, 0, sizeof(fileFormatInfo));
 }
 
@@ -438,24 +442,31 @@ size_t Xbox360_XEX_Private::getOptHdrData(uint32_t header_id, ao::uvector<uint8_
 
 /**
  * Get the resource information.
+ * @param resource_id Resource ID. (If not specified, use the title ID.)
  * @return Resource information, or nullptr on error.
  */
-const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
+const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resource_id)
 {
-	if (resInfo.vaddr != 0) {
-		// Already loaded.
-		return &resInfo;
-	}
-
 	if (xexType < 0) {
 		// Invalid XEX type.
 		return nullptr;
 	}
 
-	// Get the execution ID.
+	// General data buffer for loading optional headers.
 	ao::uvector<uint8_t> u8_data;
-	size_t size = getOptHdrData(XEX2_OPTHDR_EXECUTION_ID, u8_data);
-	if (size == sizeof(XEX2_Execution_ID)) {
+
+	// Title ID is part of the execution ID, so load it if it
+	// hasn't been loaded already.
+	// Note that this is loaded even if we don't need the title ID,
+	// since other functions may need the execution ID.
+	if (!isExecutionIDLoaded) {
+		size_t size = getOptHdrData(XEX2_OPTHDR_EXECUTION_ID, u8_data);
+		if (size != sizeof(XEX2_Execution_ID)) {
+			// Unable to read the execution ID...
+			// Can't get the title ID.
+			return nullptr;
+		}
+
 		const XEX2_Execution_ID *const pLdExecutionId =
 			reinterpret_cast<const XEX2_Execution_ID*>(u8_data.data());
 		executionID.media_id		= be32_to_cpu(pLdExecutionId->media_id);
@@ -465,61 +476,67 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(void)
 		executionID.title_id		= pLdExecutionId->title_id;
 		executionID.savegame_id		= be32_to_cpu(pLdExecutionId->savegame_id);
 		isExecutionIDLoaded = true;
-	} else {
-		// Unable to read the execution ID...
-		// Can't get the title ID.
-		isExecutionIDLoaded = false;
-		resInfo.vaddr = 0;
-		return nullptr;
+	}
+
+	char title_id[9];
+	if (!resource_id) {
+		// No resource ID specified. Use the title ID.
+		snprintf(title_id, sizeof(title_id), "%08X", be32_to_cpu(executionID.title_id.u32));
+		resource_id = title_id;
+	}
+
+	// Check if the resource information is already loaded.
+	auto iter = mapResInfo.find(resource_id);
+	if (iter != mapResInfo.end()) {
+		// Resource information is already loaded.
+		return &(iter->second);
 	}
 
 	// Get the resource information.
-	size = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO, u8_data);
-	if (size < sizeof(uint32_t) + sizeof(resInfo)) {
+	size_t size = getOptHdrData(XEX2_OPTHDR_RESOURCE_INFO, u8_data);
+	if (size < sizeof(uint32_t) + sizeof(XEX2_Resource_Info)) {
 		// No resource information.
-		resInfo.vaddr = 0;
 		return nullptr;
 	}
 
-	// Search the resource table for the title ID.
+	// Search the resource table for the specified resource ID.
 	unsigned int res_count = static_cast<unsigned int>(
 		(size - sizeof(uint32_t)) / sizeof(XEX2_Resource_Info));
 	if (res_count == 0) {
 		// No resource information...
-		resInfo.vaddr = 0;
 		return nullptr;
 	}
 
-	// ASCII title ID.
-	char title_id[9];
-	snprintf(title_id, sizeof(title_id), "%08X", be32_to_cpu(executionID.title_id.u32));
-
+	XEX2_Resource_Info res;
+	res.vaddr = 0;
 	const XEX2_Resource_Info *p =
 		reinterpret_cast<const XEX2_Resource_Info*>(u8_data.data() + sizeof(uint32_t));
 	for (unsigned int i = 0; i < res_count; i++, p++) {
-		if (!memcmp(title_id, p->resource_id, sizeof(p->resource_id))) {
+		// Using a string comparison, since the resource ID might not
+		// be the full 8 characters.
+		if (!strncmp(resource_id, p->resource_id, sizeof(p->resource_id))) {
 			// Found a match!
-			memcpy(resInfo.resource_id, p->resource_id, sizeof(p->resource_id));
-			resInfo.vaddr	= be32_to_cpu(p->vaddr);
-			resInfo.size	= be32_to_cpu(p->size);
+			memcpy(res.resource_id, p->resource_id, sizeof(p->resource_id));
+			res.vaddr = be32_to_cpu(p->vaddr);
+			res.size  = be32_to_cpu(p->size);
 			break;
 		}
 	}
 
-	if (resInfo.vaddr == 0) {
+	if (res.vaddr == 0) {
 		// Not found.
 		return nullptr;
 	}
 
 	// Sanity check: Resource_size should be 2 MB or less.
-	assert(resInfo.size <= 2*1024*1024);
-	if (resInfo.size > 2*1024*1024) {
+	assert(res.size <= 2*1024*1024);
+	if (res.size > 2*1024*1024) {
 		// That's too much!
-		resInfo.vaddr = 0;
 		return nullptr;
 	}
 
-	return &resInfo;
+	auto ins_iter = mapResInfo.insert(std::make_pair(resource_id, res));
+	return &(ins_iter.first->second);
 }
 
 /**
