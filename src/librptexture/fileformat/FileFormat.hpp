@@ -14,6 +14,9 @@
 // TODO: Move to librpfile or similar?
 #include "librpbase/common.h"
 
+// Common declarations.
+#include "FileFormat_decl.hpp"
+
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 namespace LibRpBase {
 	class RomFields;

@@ -37,6 +37,7 @@ SET(librptexture_H
 
 	fileformat/FileFormat.hpp
 	fileformat/FileFormat_p.hpp
+	fileformat/FileFormat_decl.hpp
 	fileformat/ValveVTF.hpp
 	fileformat/ValveVTF3.hpp
 	fileformat/XboxXPR.hpp
