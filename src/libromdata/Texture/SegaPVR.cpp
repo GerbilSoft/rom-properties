@@ -1473,7 +1473,7 @@ int SegaPVR::loadFieldData(void)
 			if (img_data_type >= SVR_IMG_MIN && img_data_type <= SVR_IMG_MAX) {
 				idt = idt_tbl_svr[img_data_type - SVR_IMG_MIN];
 			}
-		} else if (d->pvrType != SegaPVRPrivate::PVR_TYPE_GVR) {
+		} else {
 			// Other image data type.
 			if (img_data_type < idt_tbl_sz) {
 				idt = p_idt_tbl[img_data_type];
