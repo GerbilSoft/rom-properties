@@ -41,7 +41,6 @@ SET(libromdata_SRCS
 	Handheld/VirtualBoy.cpp
 
 	Texture/DirectDrawSurface.cpp
-	Texture/SegaPVR.cpp
 
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
@@ -178,10 +177,8 @@ SET(libromdata_H
 	Handheld/vb_structs.h
 
 	Texture/DirectDrawSurface.hpp
-	Texture/SegaPVR.hpp
 
 	Texture/dds_structs.h
-	Texture/pvr_structs.h
 
 	Audio/ADX.hpp
 	Audio/BCSTM.hpp

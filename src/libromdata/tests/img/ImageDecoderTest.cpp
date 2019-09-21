@@ -44,7 +44,6 @@ using namespace LibRpTexture;
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
 #include "Texture/DirectDrawSurface.hpp"
-#include "Texture/SegaPVR.hpp"
 #ifdef ENABLE_GL
 #include "Texture/KhronosKTX.hpp"
 #endif /* ENABLE_GL */
@@ -425,8 +424,9 @@ void ImageDecoderTest::decodeTest_internal(void)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
+		// NOTE: Using RpTextureWrapper.
 		filetype = "PVR";
-		m_romData = new SegaPVR(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
@@ -533,7 +533,8 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
-		fn_ctor = [](IRpFile *file) { return new SegaPVR(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image

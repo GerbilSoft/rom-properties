@@ -16,6 +16,14 @@
 
 /** Macros for FileFormat subclasses. **/
 
+namespace LibRpBase {
+	class IRpFile;
+}
+
+namespace LibRpTexture {
+	class rp_image;
+}
+
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 # define FILEFORMAT_GETFIELDS_FUNCTION \
 	public: \
@@ -134,7 +142,7 @@ class klass : public LibRpTexture::FileFormat { \
 		 * The image is owned by this object. \
 		 * @return Image, or nullptr on error. \
 		 */ \
-		const rp_image *image(void) const final; \
+		const LibRpTexture::rp_image *image(void) const final; \
 		\
 		/** \
 		 * Get the image for the specified mipmap. \
@@ -142,7 +150,7 @@ class klass : public LibRpTexture::FileFormat { \
 		 * @param mip Mipmap number. \
 		 * @return Image, or nullptr on error. \
 		 */ \
-		const rp_image *mipmap(int mip) const final;
+		const LibRpTexture::rp_image *mipmap(int mip) const final;
 
 /**
  * FileFormat subclass function declaration for closing the internal file handle.

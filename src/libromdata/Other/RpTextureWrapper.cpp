@@ -21,9 +21,11 @@ using namespace LibRpBase;
 
 // librptexture
 #include "librptexture/fileformat/FileFormat.hpp"
-#include "librptexture/fileformat/XboxXPR.hpp"		// TEMPORARY
-#include "librptexture/fileformat/ValveVTF.hpp"		// TEMPORARY
-#include "librptexture/fileformat/ValveVTF3.hpp"	// TEMPORARY
+// TEMPORARY: Switch to FileFormatFactory once it's available.
+#include "librptexture/fileformat/SegaPVR.hpp"
+#include "librptexture/fileformat/ValveVTF.hpp"
+#include "librptexture/fileformat/ValveVTF3.hpp"
+#include "librptexture/fileformat/XboxXPR.hpp"
 using LibRpTexture::rp_image;
 using LibRpTexture::FileFormat;
 
@@ -108,20 +110,29 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 	}
 
 	// TODO: Create a factory class similar to RomDataFactory.
-	if (magic == cpu_to_be32('XPR0')) {
-		// XboxXPR
-		d->texture = new LibRpTexture::XboxXPR(d->file);
-	} else if (magic == cpu_to_be32('VTF\0')) {
-		// ValveVTF
-		d->texture = new LibRpTexture::ValveVTF(d->file);
-	} else if (magic == cpu_to_be32('VTF3')) {
-		// ValveVTF3
-		d->texture = new LibRpTexture::ValveVTF3(d->file);
-	} else {
-		// Not supported.
-		d->file->unref();
-		d->file = nullptr;
-		return;
+	switch (be32_to_cpu(magic)) {
+		case 'PVRT': case 'GVRT': case 'PVRX':
+		case 'GBIX': case 'GCIX':
+			// SegaPVR
+			d->texture = new LibRpTexture::SegaPVR(d->file);
+			break;
+		case 'VTF\0':
+			// ValveVTF
+			d->texture = new LibRpTexture::ValveVTF(d->file);
+			break;
+		case 'VTF3':
+			// ValveVTF3
+			d->texture = new LibRpTexture::ValveVTF3(d->file);
+			break;
+		case 'XPR0':
+			// XboxXPR
+			d->texture = new LibRpTexture::XboxXPR(d->file);
+			break;
+		default:
+			// Not supported.
+			d->file->unref();
+			d->file = nullptr;
+			return;
 	}
 
 	if (!d->texture->isValid()) {
@@ -157,12 +168,22 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 
 	// TODO: Create a factory class similar to RomDataFactory.
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
-	if (pData32[0] == cpu_to_be32('XPR0') ||
-	    pData32[0] == cpu_to_be32('VTF\0') ||
-	    pData32[0] == cpu_to_be32('VTF3'))
-	{
-		// Supported!
-		return 0;
+	switch (be32_to_cpu(pData32[0])) {
+		case 'PVRT': case 'GVRT': case 'PVRX':
+		case 'GBIX': case 'GCIX':
+			// SegaPVR
+		case 'VTF\0':
+			// ValveVTF
+		case 'VTF3':
+			// ValveVTF3
+		case 'XPR0':
+			// XboxXPR
+
+			// Supported!
+			return 0;
+
+		default:
+			break;
 	}
 
 	// Not supported.
@@ -201,12 +222,15 @@ const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const exts[] = {
-		// XboxXPR
-		".xbx", ".xpr",
+		// SegaPVR
+		".pvr", ".gvr", ".svr",
 
 		// ValveVTF
 		".vtf",
 		//".vtx",	// TODO: Some files might use the ".vtx" extension.
+
+		// XboxXPR
+		".xbx", ".xpr",
 
 		nullptr
 	};

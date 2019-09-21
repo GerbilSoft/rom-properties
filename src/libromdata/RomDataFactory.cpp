@@ -80,7 +80,6 @@ using std::vector;
 #ifdef ENABLE_GL
 #include "Texture/KhronosKTX.hpp"
 #endif /* ENABLE_GL */
-#include "Texture/SegaPVR.hpp"
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
@@ -271,13 +270,13 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 #ifdef ENABLE_GL
 	GetRomDataFns_addr(KhronosKTX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
 #endif /* ENABLE_GL */
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRT'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GVRT'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GBIX'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
 
 	// RpTextureWrapper
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRT'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GVRT'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GBIX'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF3'),
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
