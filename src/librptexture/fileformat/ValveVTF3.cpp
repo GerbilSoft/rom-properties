@@ -31,6 +31,8 @@ using namespace LibRpBase;
 
 namespace LibRpTexture {
 
+FILEFORMAT_IMPL(ValveVTF3)
+
 class ValveVTF3Private : public FileFormatPrivate
 {
 	public:
@@ -241,7 +243,54 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	d->dimensions[1] = d->vtf3Header.height;
 }
 
-/** Propety accessors **/
+/** Class-specific functions that can be used even if isValid() is false. **/
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *ValveVTF3::supportedFileExtensions_static(void)
+{
+	static const char *const exts[] = {
+		".vtf",
+		//".vtx",	// TODO: Some files might use the ".vtx" extension.
+		nullptr
+	};
+	return exts;
+}
+
+/**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *ValveVTF3::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/x-vtf3",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/** Property accessors **/
 
 /**
  * Get the texture format name.

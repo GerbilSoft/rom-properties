@@ -45,6 +45,8 @@ using std::vector;
 
 namespace LibRpTexture {
 
+FILEFORMAT_IMPL(ValveVTF)
+
 class ValveVTFPrivate : public FileFormatPrivate
 {
 	public:
@@ -740,7 +742,58 @@ ValveVTF::ValveVTF(IRpFile *file)
 	}
 }
 
-/** Propety accessors **/
+/** Class-specific functions that can be used even if isValid() is false. **/
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *ValveVTF::supportedFileExtensions_static(void)
+{
+	static const char *const exts[] = {
+		".vtf",
+		//".vtx",	// TODO: Some files might use the ".vtx" extension.
+		nullptr
+	};
+	return exts;
+}
+
+/**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *ValveVTF::supportedMimeTypes_static(void)
+{
+	static const char *const mimeTypes[] = {
+		// Vendor-specific MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/vnd.valve.source.texture",
+
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		"image/x-vtf",
+
+		nullptr
+	};
+	return mimeTypes;
+}
+
+/** Property accessors **/
 
 /**
  * Get the texture format name.

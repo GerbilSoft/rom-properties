@@ -46,7 +46,64 @@ class klass : public LibRpTexture::FileFormat { \
 		RP_DISABLE_COPY(klass); \
 	\
 	public: \
-		/** Propety accessors **/ \
+		/** Class-specific functions that can be used even if isValid() is false. **/ \
+		\
+		/** \
+		 * Get a list of all supported file extensions. \
+		 * This is to be used for file type registration; \
+		 * subclasses don't explicitly check the extension. \
+		 * \
+		 * NOTE: The extensions include the leading dot, \
+		 * e.g. ".bin" instead of "bin". \
+		 * \
+		 * NOTE 2: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		static const char *const *supportedFileExtensions_static(void); \
+		\
+		/** \
+		 * Get a list of all supported file extensions. \
+		 * This is to be used for file type registration; \
+		 * subclasses don't explicitly check the extension. \
+		 * \
+		 * NOTE: The extensions include the leading dot, \
+		 * e.g. ".bin" instead of "bin". \
+		 * \
+		 * NOTE 2: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		const char *const *supportedFileExtensions(void) const final; \
+		\
+		/** \
+		 * Get a list of all supported MIME types. \
+		 * This is to be used for metadata extractors that \
+		 * must indicate which MIME types they support. \
+		 * \
+		 * NOTE: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		static const char *const *supportedMimeTypes_static(void); \
+		\
+		/** \
+		 * Get a list of all supported MIME types. \
+		 * This is to be used for metadata extractors that \
+		 * must indicate which MIME types they support. \
+		 * \
+		 * NOTE: The array and the strings in the array should \
+		 * *not* be freed by the caller. \
+		 * \
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 */ \
+		const char *const *supportedMimeTypes(void) const final; \
+	\
+	public: \
+		/** Property accessors **/ \
 		\
 		/** \
 		 * Get the texture format name. \

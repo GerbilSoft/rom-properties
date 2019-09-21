@@ -121,7 +121,7 @@ void FileFormat::close(void)
 	}
 }
 
-/** Propety accessors **/
+/** Property accessors **/
 
 /**
  * Get the image width.
