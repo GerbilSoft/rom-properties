@@ -11,10 +11,6 @@
 
 #include "FileFormat.hpp"
 
-namespace LibRpBase {
-	class IRpFile;
-}
-
 namespace LibRpTexture {
 
 FILEFORMAT_DECL_BEGIN(XboxXPR)

@@ -341,11 +341,22 @@ int ValveVTF3::mipmapCount(void) const
  */
 int ValveVTF3::getFields(LibRpBase::RomFields *fields) const
 {
+	assert(fields != nullptr);
+	if (!fields)
+		return 0;
+
+	RP_D(ValveVTF3);
+	if (d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
 	// TODO: Add fields?
-	RP_UNUSED(fields);
 	return 0;
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
+
+/** Image accessors **/
 
 /**
  * Get the image.

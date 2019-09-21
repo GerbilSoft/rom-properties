@@ -868,6 +868,12 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	if (!fields)
 		return 0;
 
+	RP_D(ValveVTF);
+	if (d->isValid) {
+		// Unknown file type.
+		return -EIO;
+	}
+
 	// TODO: Move to RomFields?
 #ifdef _WIN32
 	// Windows: 6 visible rows per RFT_LISTDATA.
@@ -877,7 +883,6 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	static const int rows_visible = 4;
 #endif
 
-	RP_D(ValveVTF);
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 1);	// Maximum of 12 fields.
 
@@ -1009,6 +1014,8 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	return (fields->count() - initial_count);
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
+
+/** Image accessors **/
 
 /**
  * Get the image.

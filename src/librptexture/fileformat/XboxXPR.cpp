@@ -777,6 +777,11 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 		return 0;
 
 	RP_D(XboxXPR);
+	if (!d->isValid || d->xprType < 0) {
+		// Unknown XPR image type.
+		return -EIO;
+	}
+
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 1);	// Maximum of 1 field. (TODO)
 
@@ -797,6 +802,8 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 	return (fields->count() - initial_count);
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
+
+/** Image accessors **/
 
 /**
  * Get the image.
