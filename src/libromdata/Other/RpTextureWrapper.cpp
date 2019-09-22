@@ -251,12 +251,14 @@ const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const mimeTypes[] = {
-		/** XboxXPR **/
+		/** SegaPVR **/
 
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
-		// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
-		"image/x-xbox-xpr0",
+		"image/x-sega-pvr",
+		"image/x-sega-gvr",
+		"image/x-sega-pvrx",
+		"image/x-sega-svr",
 
 		/** ValveVTF **/
 
@@ -267,6 +269,13 @@ const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
 		// Unofficial MIME types.
 		// TODO: Get these upstreamed on FreeDesktop.org.
 		"image/x-vtf",
+
+		/** XboxXPR **/
+
+		// Unofficial MIME types.
+		// TODO: Get these upstreamed on FreeDesktop.org.
+		// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
+		"image/x-xbox-xpr0",
 
 		nullptr
 	};
