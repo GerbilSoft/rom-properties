@@ -75,7 +75,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 	if (ncch_header.hdr.magic != cpu_to_be32(N3DS_NCCH_HEADER_MAGIC)) {
 		// NCCH magic number is incorrect.
 		// Check for non-NCCH types.
-		if (ncch_header.hdr.magic != cpu_to_be32('NDHT')) {
+		if (ncch_header.hdr.magic == cpu_to_be32('NDHT')) {
 			// NDHT. (DS Whitelist)
 			// 0004800F-484E4841
 			verifyResult = KeyManager::VERIFY_OK;
