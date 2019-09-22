@@ -814,10 +814,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 const rp_image *XboxXPR::image(void) const
 {
 	RP_D(const XboxXPR);
-	if (!d->file) {
-		// File isn't open.
-		return nullptr;
-	} else if (!d->isValid || d->xprType < 0) {
+	if (!d->isValid || d->xprType < 0) {
 		// Unknown file type.
 		return nullptr;
 	}

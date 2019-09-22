@@ -1572,10 +1572,7 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 const rp_image *SegaPVR::image(void) const
 {
 	RP_D(const SegaPVR);
-	if (!d->file) {
-		// File isn't open.
-		return nullptr;
-	} else if (!d->isValid) {
+	if (!d->isValid) {
 		// Unknown file type.
 		return nullptr;
 	}

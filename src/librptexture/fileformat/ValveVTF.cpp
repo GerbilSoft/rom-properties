@@ -1038,10 +1038,7 @@ const rp_image *ValveVTF::image(void) const
 const rp_image *ValveVTF::mipmap(int mip) const
 {
 	RP_D(const ValveVTF);
-	if (!d->file) {
-		// File isn't open.
-		return nullptr;
-	} else if (!d->isValid) {
+	if (!d->isValid) {
 		// Unknown file type.
 		return nullptr;
 	}

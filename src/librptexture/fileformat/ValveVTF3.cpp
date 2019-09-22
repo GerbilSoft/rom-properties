@@ -365,10 +365,7 @@ int ValveVTF3::getFields(LibRpBase::RomFields *fields) const
 const rp_image *ValveVTF3::image(void) const
 {
 	RP_D(const ValveVTF3);
-	if (!d->file) {
-		// File isn't open.
-		return nullptr;
-	} else if (!d->isValid) {
+	if (!d->isValid) {
 		// Unknown file type.
 		return nullptr;
 	}
