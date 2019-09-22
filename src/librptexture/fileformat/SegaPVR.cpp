@@ -1571,9 +1571,26 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
  */
 const rp_image *SegaPVR::image(void) const
 {
+	// The full image is mipmap 0.
+	return this->mipmap(0);
+}
+
+/**
+ * Get the image for the specified mipmap.
+ * Mipmap 0 is the largest image.
+ * @param mip Mipmap number.
+ * @return Image, or nullptr on error.
+ */
+const rp_image *SegaPVR::mipmap(int mip) const
+{
 	RP_D(const SegaPVR);
 	if (!d->isValid) {
 		// Unknown file type.
+		return nullptr;
+	}
+
+	// FIXME: Support decoding mipmaps.
+	if (mip != 0) {
 		return nullptr;
 	}
 
@@ -1593,21 +1610,6 @@ const rp_image *SegaPVR::image(void) const
 	}
 
 	return img;
-}
-
-/**
- * Get the image for the specified mipmap.
- * Mipmap 0 is the largest image.
- * @param mip Mipmap number.
- * @return Image, or nullptr on error.
- */
-const rp_image *SegaPVR::mipmap(int mip) const
-{
-	// FIXME: Support decoding mipmaps.
-	if (mip == 0) {
-		return image();
-	}
-	return nullptr;
 }
 
 }
