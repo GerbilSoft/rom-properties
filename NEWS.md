@@ -16,6 +16,9 @@
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
 
+* Bug fixes:
+  * Fixed misdetection of NCCH sections if keys are missing.
+
 ## v1.4.3 (released 2019/09/16)
 
 * Bug fixes:
