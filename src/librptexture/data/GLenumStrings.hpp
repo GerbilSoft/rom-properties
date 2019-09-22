@@ -1,17 +1,17 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * GLenumStrings.hpp: OpenGL string tables.                                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_GLENUMSTRINGS_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_GLENUMSTRINGS_HPP__
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_DATA_GLENUMSTRINGS_HPP__
+#define __ROMPROPERTIES_LIBRPTEXTURE_DATA_GLENUMSTRINGS_HPP__
 
 #include "librpbase/common.h"
 
-namespace LibRomData {
+namespace LibRpTexture {
 
 class GLenumStrings
 {
@@ -32,4 +32,4 @@ class GLenumStrings
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_GLENUMSTRINGS_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_DATA_GLENUMSTRINGS_HPP__ */

@@ -262,18 +262,6 @@ SET(libromdata_H
 	utils/SuperMagicDrive.hpp
 	)
 
-IF(ENABLE_GL)
-	SET(libromdata_GL_SRCS
-		Texture/KhronosKTX.cpp
-		data/GLenumStrings.cpp
-		)
-	SET(libromdata_GL_H
-		Texture/KhronosKTX.hpp
-		Texture/ktx_structs.h
-		data/GLenumStrings.hpp
-		)
-ENDIF(ENABLE_GL)
-
 IF(ENABLE_XML)
 	SET(libromdata_SRCS ${libromdata_SRCS} Other/EXE_manifest.cpp)
 	IF(MSVC AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
@@ -355,7 +343,6 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_GL_SRCS} ${libromdata_GL_H}
 	${libromdata_IFUNC_SRCS}
 	${libromdata_MMX_SRCS}
 	${libromdata_SSE2_SRCS}
@@ -364,7 +351,7 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(romdata)
 
 # TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(romdata PUBLIC rpbase)
+TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
 ENDIF(ENABLE_NLS)

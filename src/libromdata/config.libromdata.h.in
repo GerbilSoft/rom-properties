@@ -9,9 +9,6 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
 
-/* Define to 1 if OpenGL support is enabled. */
-#cmakedefine ENABLE_GL 1
-
 /* Define to 1 if UnICE68 is enabled. */
 #cmakedefine ENABLE_UNICE68 1
 

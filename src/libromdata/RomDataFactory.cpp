@@ -8,6 +8,8 @@
 
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
+// TODO: Remove after adding FileFormatFactory.
+#include "librptexture/config.librptexture.h"
 
 #include "RomDataFactory.hpp"
 
@@ -77,9 +79,6 @@ using std::vector;
 
 // RomData subclasses: Textures
 #include "Texture/DirectDrawSurface.hpp"
-#ifdef ENABLE_GL
-#include "Texture/KhronosKTX.hpp"
-#endif /* ENABLE_GL */
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
@@ -267,11 +266,11 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 
 	// Textures
 	GetRomDataFns_addr(DirectDrawSurface, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'DDS '),
-#ifdef ENABLE_GL
-	GetRomDataFns_addr(KhronosKTX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
-#endif /* ENABLE_GL */
 
 	// RpTextureWrapper
+#ifdef ENABLE_GL
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
+#endif /* ENABLE_GL */
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRT'),
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GVRT'),
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),

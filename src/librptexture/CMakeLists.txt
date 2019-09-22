@@ -50,6 +50,19 @@ SET(librptexture_H
 	fileformat/xbox_xpr_structs.h
 	)
 
+IF(ENABLE_GL)
+	SET(librptexture_GL_SRCS
+		fileformat/KhronosKTX.cpp
+		data/GLenumStrings.cpp
+		)
+	SET(librptexture_GL_H
+		fileformat/KhronosKTX.hpp
+		fileformat/ktx_structs.h
+		fileformat/gl_defs.h
+		data/GLenumStrings.hpp
+		)
+ENDIF(ENABLE_GL)
+
 IF(WIN32)
 	SET(librptexture_OS_SRCS
 		img/GdiplusHelper.cpp
@@ -148,6 +161,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librptexture.h.in" "${CMAKE_C
 ADD_LIBRARY(rptexture STATIC
 	${librptexture_SRCS} ${librptexture_H}
 	${librptexture_OS_SRCS} ${librptexture_OS_H}
+	${librptexture_GL_SRCS} ${librptexture_GL_H}
 	${librptexture_IFUNC_SRCS}
 	${librptexture_MMX_SRCS}
 	${librptexture_SSE2_SRCS}

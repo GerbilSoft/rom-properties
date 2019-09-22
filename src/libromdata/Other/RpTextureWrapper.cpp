@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librptexture.h"
+
 #include "RpTextureWrapper.hpp"
 #include "librpbase/RomData_p.hpp"
 
@@ -22,6 +24,9 @@ using namespace LibRpBase;
 // librptexture
 #include "librptexture/fileformat/FileFormat.hpp"
 // TEMPORARY: Switch to FileFormatFactory once it's available.
+#ifdef ENABLE_GL
+# include "librptexture/fileformat/KhronosKTX.hpp"
+#endif /* ENABLE_GL */
 #include "librptexture/fileformat/SegaPVR.hpp"
 #include "librptexture/fileformat/ValveVTF.hpp"
 #include "librptexture/fileformat/ValveVTF3.hpp"
@@ -111,6 +116,12 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 
 	// TODO: Create a factory class similar to RomDataFactory.
 	switch (be32_to_cpu(magic)) {
+#ifdef ENABLE_GL
+		case (uint32_t)'\xABKTX':
+			// KhronosKTX
+			d->texture = new LibRpTexture::KhronosKTX(d->file);
+			break;
+#endif /* ENABLE_GL */
 		case 'PVRT': case 'GVRT': case 'PVRX':
 		case 'GBIX': case 'GCIX':
 			// SegaPVR
@@ -169,6 +180,10 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 	// TODO: Create a factory class similar to RomDataFactory.
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
 	switch (be32_to_cpu(pData32[0])) {
+#ifdef ENABLE_GL
+		case (uint32_t)'\xABKTX':
+			// KhronosKTX
+#endif /* ENABLE_GL */
 		case 'PVRT': case 'GVRT': case 'PVRX':
 		case 'GBIX': case 'GCIX':
 			// SegaPVR
@@ -222,6 +237,9 @@ const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const exts[] = {
+		// KhronosKTX
+		".ktx",
+
 		// SegaPVR
 		".pvr", ".gvr", ".svr",
 
@@ -251,6 +269,11 @@ const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const mimeTypes[] = {
+		/** KhronosKTX **/
+
+		// Official MIME types.
+		"image/ktx",
+
 		/** SegaPVR **/
 
 		// Unofficial MIME types.

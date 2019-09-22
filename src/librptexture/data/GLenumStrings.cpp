@@ -1,18 +1,18 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * GLenumStrings.cpp: OpenGL string tables.                                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "GLenumStrings.hpp"
-#include "Texture/gl_defs.h"
+#include "fileformat/gl_defs.h"
 
 // C includes.
 #include <stdlib.h>
 
-namespace LibRomData {
+namespace LibRpTexture {
 
 class GLenumStringsPrivate
 {

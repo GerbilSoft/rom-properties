@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
  * Copyright (c) 2017-2019 by David Korth.                                 *
@@ -12,7 +12,7 @@
  */
 
 #include "KhronosKTX.hpp"
-#include "librpbase/RomData_p.hpp"
+#include "FileFormat_p.hpp"
 
 #include "ktx_structs.h"
 #include "data/GLenumStrings.hpp"
@@ -21,16 +21,15 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/aligned_malloc.h"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-
-#include "libi18n/i18n.h"
-using namespace LibRpBase;
+using LibRpBase::IRpFile;
+using LibRpBase::RomFields;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
-using namespace LibRpTexture;
+#include "img/rp_image.hpp"
+#include "decoder/ImageDecoder.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -47,19 +46,18 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-namespace LibRomData {
+namespace LibRpTexture {
 
-ROMDATA_IMPL(KhronosKTX)
-ROMDATA_IMPL_IMG_TYPES(KhronosKTX)
+FILEFORMAT_IMPL(KhronosKTX)
 
-class KhronosKTXPrivate : public RomDataPrivate
+class KhronosKTXPrivate : public FileFormatPrivate
 {
 	public:
 		KhronosKTXPrivate(KhronosKTX *q, IRpFile *file);
 		~KhronosKTXPrivate();
 
 	private:
-		typedef RomDataPrivate super;
+		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(KhronosKTXPrivate)
 
 	public:
@@ -87,6 +85,9 @@ class KhronosKTXPrivate : public RomDataPrivate
 
 		// Decoded image.
 		rp_image *img;
+
+		// Invalid pixel format message.
+		char invalid_pixel_format[24];
 
 		// Key/Value data.
 		// NOTE: Stored as vector<vector<string> > instead of
@@ -568,10 +569,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 KhronosKTX::KhronosKTX(IRpFile *file)
 	: super(new KhronosKTXPrivate(this, file))
 {
-	// This class handles texture files.
 	RP_D(KhronosKTX);
-	d->className = "KhronosKTX";
-	d->fileType = FTYPE_TEXTURE_FILE;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -632,6 +630,13 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	// This function also checks for KTXorientation
 	// and sets the HFlip/VFlip values as necessary.
 	d->loadKeyValueData();
+
+	// Cache the dimensions for the FileFormat base class.
+	d->dimensions[0] = d->ktxHeader.pixelWidth;
+	d->dimensions[1] = d->ktxHeader.pixelHeight;
+	if (d->ktxHeader.pixelDepth > 1) {
+		d->dimensions[2] = d->ktxHeader.pixelDepth;
+	}
 }
 
 /**
@@ -672,29 +677,7 @@ int KhronosKTX::isRomSupported_static(const DetectInfo *info)
 	return -1;
 }
 
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *KhronosKTX::systemName(unsigned int type) const
-{
-	RP_D(const KhronosKTX);
-	if (!d->isValid || !isSystemNameTypeValid(type))
-		return nullptr;
-
-	// Khronos KTX has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"KhronosKTX::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Khronos KTX Texture", "Khronos KTX", "KTX", nullptr
-	};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
-}
+/** Class-specific functions that can be used even if isValid() is false. **/
 
 /**
  * Get a list of all supported file extensions.
@@ -739,92 +722,87 @@ const char *const *KhronosKTX::supportedMimeTypes_static(void)
 	return mimeTypes;
 }
 
+/** Property accessors **/
+
 /**
- * Get a bitfield of image types this class can retrieve.
- * @return Bitfield of supported image types. (ImageTypesBF)
+ * Get the texture format name.
+ * @return Texture format name, or nullptr on error.
  */
-uint32_t KhronosKTX::supportedImageTypes_static(void)
+const char *KhronosKTX::textureFormatName(void) const
 {
-	return IMGBF_INT_IMAGE;
+	RP_D(const KhronosKTX);
+	if (!d->isValid)
+		return nullptr;
+
+	return "Khronos KTX";
 }
 
 /**
- * Get a list of all available image sizes for the specified image type.
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
+ * Get the pixel format, e.g. "RGB888" or "DXT1".
+ * @return Pixel format, or nullptr if unavailable.
  */
-vector<RomData::ImageSizeDef> KhronosKTX::supportedImageSizes(ImageType imageType) const
+const char *KhronosKTX::pixelFormat(void) const
 {
-	ASSERT_supportedImageSizes(imageType);
-
 	RP_D(const KhronosKTX);
-	if (!d->isValid || imageType != IMG_INT_IMAGE) {
-		return vector<ImageSizeDef>();
+	if (!d->isValid)
+		return nullptr;
+
+	// Using glInternalFormat.
+	const char *glInternalFormat_str = GLenumStrings::lookup_glEnum(d->ktxHeader.glInternalFormat);
+	if (glInternalFormat_str) {
+		return glInternalFormat_str;
 	}
 
-	// Return the image's size.
-	const ImageSizeDef imgsz[] = {{nullptr,
-		static_cast<uint16_t>(d->ktxHeader.pixelWidth),
-		static_cast<uint16_t>(d->ktxHeader.pixelHeight), 0}};
-	return vector<ImageSizeDef>(imgsz, imgsz + 1);
+	// Invalid pixel format.
+	if (d->invalid_pixel_format[0] == '\0') {
+		// TODO: Localization?
+		snprintf(const_cast<KhronosKTXPrivate*>(d)->invalid_pixel_format,
+			sizeof(d->invalid_pixel_format),
+			"Unknown (0x%04X)", d->ktxHeader.glInternalFormat);
+	}
+	return d->invalid_pixel_format;
 }
 
 /**
- * Get image processing flags.
- *
- * These specify post-processing operations for images,
- * e.g. applying transparency masks.
- *
- * @param imageType Image type.
- * @return Bitfield of ImageProcessingBF operations to perform.
+ * Get the mipmap count.
+ * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
  */
-uint32_t KhronosKTX::imgpf(ImageType imageType) const
+int KhronosKTX::mipmapCount(void) const
 {
-	ASSERT_imgpf(imageType);
-
 	RP_D(const KhronosKTX);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by DDS.
+	if (!d->isValid)
+		return -1;
+
+	return d->ktxHeader.numberOfMipmapLevels;
+}
+
+#ifdef ENABLE_LIBRPBASE_ROMFIELDS
+/**
+ * Get property fields for rom-properties.
+ * @param fields RomFields object to which fields should be added.
+ * @return Number of fields added, or 0 on error.
+ */
+int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
+{
+	// TODO: Localization.
+#define C_(ctx, str) str
+#define NOP_C_(ctx, str) str
+
+	assert(fields != nullptr);
+	if (!fields)
 		return 0;
-	}
 
-	// If both dimensions of the texture are 64 or less,
-	// specify nearest-neighbor scaling.
-	uint32_t ret = 0;
-	if (d->ktxHeader.pixelWidth <= 64 && d->ktxHeader.pixelHeight <= 64) {
-		// 64x64 or smaller.
-		ret = IMGPF_RESCALE_NEAREST;
-	}
-	return ret;
-}
-
-/**
- * Load field data.
- * Called by RomData::fields() if the field data hasn't been loaded yet.
- * @return Number of fields read on success; negative POSIX error code on error.
- */
-int KhronosKTX::loadFieldData(void)
-{
 	RP_D(KhronosKTX);
-	if (!d->fields->empty()) {
-		// Field data *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
+	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;
 	}
 
+	const int initial_count = fields->count();
+	fields->reserve(initial_count + 8);	// Maximum of 8 fields.
+
 	// KTX header.
 	const KTX_Header *const ktxHeader = &d->ktxHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
-
-	// Texture size.
-	d->fields->addField_dimensions(C_("KhronosKTX", "Texture Size"),
-		ktxHeader->pixelWidth, ktxHeader->pixelHeight,
-		ktxHeader->pixelDepth);
 
 	// Endianness.
 	// TODO: Save big vs. little in the constructor instead of just "needs byteswapping"?
@@ -832,44 +810,44 @@ int KhronosKTX::loadFieldData(void)
 	if (ktxHeader->endianness == KTX_ENDIAN_MAGIC) {
 		// Matches host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("RomData", "Little-Endian");
+		endian_str = C_("FileFormat", "Little-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("RomData", "Big-Endian");
+		endian_str = C_("FileFormat", "Big-Endian");
 #endif
 	} else {
 		// Does not match host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		endian_str = C_("RomData", "Big-Endian");
+		endian_str = C_("FileFormat", "Big-Endian");
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		endian_str = C_("RomData", "Little-Endian");
+		endian_str = C_("FileFormat", "Little-Endian");
 #endif
 	}
-	d->fields->addField_string(C_("RomData", "Endianness"), endian_str);
+	fields->addField_string(C_("FileFormat", "Endianness"), endian_str);
 
 	// NOTE: GL field names should not be localized.
 
 	// glType
 	const char *glType_str = GLenumStrings::lookup_glEnum(ktxHeader->glType);
 	if (glType_str) {
-		d->fields->addField_string("glType", glType_str);
+		fields->addField_string("glType", glType_str);
 	} else {
-		d->fields->addField_string_numeric("glType", ktxHeader->glType, RomFields::FB_HEX);
+		fields->addField_string_numeric("glType", ktxHeader->glType, RomFields::FB_HEX);
 	}
 
 	// glFormat
 	const char *glFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glFormat);
 	if (glFormat_str) {
-		d->fields->addField_string("glFormat", glFormat_str);
+		fields->addField_string("glFormat", glFormat_str);
 	} else {
-		d->fields->addField_string_numeric("glFormat", ktxHeader->glFormat, RomFields::FB_HEX);
+		fields->addField_string_numeric("glFormat", ktxHeader->glFormat, RomFields::FB_HEX);
 	}
 
 	// glInternalFormat
 	const char *glInternalFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glInternalFormat);
 	if (glInternalFormat_str) {
-		d->fields->addField_string("glInternalFormat", glInternalFormat_str);
+		fields->addField_string("glInternalFormat", glInternalFormat_str);
 	} else {
-		d->fields->addField_string_numeric("glInternalFormat",
+		fields->addField_string_numeric("glInternalFormat",
 			ktxHeader->glInternalFormat, RomFields::FB_HEX);
 	}
 
@@ -878,28 +856,24 @@ int KhronosKTX::loadFieldData(void)
 		const char *glBaseInternalFormat_str =
 			GLenumStrings::lookup_glEnum(ktxHeader->glBaseInternalFormat);
 		if (glBaseInternalFormat_str) {
-			d->fields->addField_string("glBaseInternalFormat", glBaseInternalFormat_str);
+			fields->addField_string("glBaseInternalFormat", glBaseInternalFormat_str);
 		} else {
-			d->fields->addField_string_numeric("glBaseInternalFormat",
+			fields->addField_string_numeric("glBaseInternalFormat",
 				ktxHeader->glBaseInternalFormat, RomFields::FB_HEX);
 		}
 	}
 
 	// # of array elements (for texture arrays)
 	if (ktxHeader->numberOfArrayElements > 0) {
-		d->fields->addField_string_numeric(C_("KhronosKTX", "# of Array Elements"),
+		fields->addField_string_numeric(C_("KhronosKTX", "# of Array Elements"),
 			ktxHeader->numberOfArrayElements);
 	}
 
 	// # of faces (for cubemaps)
 	if (ktxHeader->numberOfFaces > 1) {
-		d->fields->addField_string_numeric(C_("KhronosKTX", "# of Faces"),
+		fields->addField_string_numeric(C_("KhronosKTX", "# of Faces"),
 			ktxHeader->numberOfFaces);
 	}
-
-	// # of mipmap levels
-	d->fields->addField_string_numeric(C_("KhronosKTX", "# of Mipmap Levels"),
-		ktxHeader->numberOfMipmapLevels);
 
 	// Key/Value data.
 	d->loadKeyValueData();
@@ -917,77 +891,47 @@ int KhronosKTX::loadFieldData(void)
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_kv_field_names;
 		params.list_data = p_kv_data;
-		d->fields->addField_listData(C_("KhronosKTX", "Key/Value Data"), &params);
+		fields->addField_listData(C_("KhronosKTX", "Key/Value Data"), &params);
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(fields->count());
+}
+#endif /* ENABLE_LIBRPBASE_ROMFIELDS */
+
+/** Image accessors **/
+
+/**
+ * Get the image.
+ * For textures with mipmaps, this is the largest mipmap.
+ * The image is owned by this object.
+ * @return Image, or nullptr on error.
+ */
+const rp_image *KhronosKTX::image(void) const
+{
+	// The full image is mipmap 0.
+	return this->mipmap(0);
 }
 
 /**
- * Load metadata properties.
- * Called by RomData::metaData() if the field data hasn't been loaded yet.
- * @return Number of metadata properties read on success; negative POSIX error code on error.
+ * Get the image for the specified mipmap.
+ * Mipmap 0 is the largest image.
+ * @param mip Mipmap number.
+ * @return Image, or nullptr on error.
  */
-int KhronosKTX::loadMetaData(void)
+const rp_image *KhronosKTX::mipmap(int mip) const
 {
-	RP_D(KhronosKTX);
-	if (d->metaData != nullptr) {
-		// Metadata *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
+	RP_D(const KhronosKTX);
+	if (!d->isValid) {
 		// Unknown file type.
-		return -EIO;
+		return nullptr;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
-	// KTX header.
-	const KTX_Header *const ktxHeader = &d->ktxHeader;
-
-	// Dimensions.
-	// TODO: Don't add pixelHeight for 1D textures?
-	d->metaData->addMetaData_integer(Property::Width, ktxHeader->pixelWidth);
-	d->metaData->addMetaData_integer(Property::Height, ktxHeader->pixelHeight);
-
-	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
-}
-
-/**
- * Load an internal image.
- * Called by RomData::image().
- * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
- * @return 0 on success; negative POSIX error code on error.
- */
-int KhronosKTX::loadInternalImage(ImageType imageType, const rp_image **pImage)
-{
-	ASSERT_loadInternalImage(imageType, pImage);
-
-	RP_D(KhronosKTX);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by DDS.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid) {
-		// DDS texture isn't valid.
-		*pImage = nullptr;
-		return -EIO;
+	// FIXME: Support decoding mipmaps.
+	if (mip == 0) {
+		return const_cast<KhronosKTXPrivate*>(d)->loadImage();
 	}
-
-	// Load the image.
-	*pImage = d->loadImage();
-	return (*pImage != nullptr ? 0 : -EIO);
+	return nullptr;
 }
 
 }
