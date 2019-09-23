@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #include "DirectDrawSurface.hpp"
-#include "librpbase/RomData_p.hpp"
+#include "FileFormat_p.hpp"
 
 #include "dds_structs.h"
 #include "data/DX10Formats.hpp"
@@ -16,16 +16,16 @@
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/aligned_malloc.h"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-
-#include "libi18n/i18n.h"
-using namespace LibRpBase;
+using LibRpBase::IRpFile;
+using LibRpBase::rp_sprintf;
+using LibRpBase::RomFields;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
-using namespace LibRpTexture;
+#include "img/rp_image.hpp"
+#include "decoder/ImageDecoder.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -37,19 +37,18 @@ using namespace LibRpTexture;
 using std::string;
 using std::vector;
 
-namespace LibRomData {
+namespace LibRpTexture {
 
-ROMDATA_IMPL(DirectDrawSurface)
-ROMDATA_IMPL_IMG_TYPES(DirectDrawSurface)
+FILEFORMAT_IMPL(DirectDrawSurface)
 
-class DirectDrawSurfacePrivate : public RomDataPrivate
+class DirectDrawSurfacePrivate : public FileFormatPrivate
 {
 	public:
 		DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file);
 		~DirectDrawSurfacePrivate();
 
 	private:
-		typedef RomDataPrivate super;
+		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(DirectDrawSurfacePrivate)
 
 	public:
@@ -63,6 +62,11 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 
 		// Decoded image.
 		rp_image *img;
+
+		// Pixel format message.
+		// NOTE: Used for both valid and invalid pixel formats
+		// due to various bit specifications.
+		char pixel_format[32];
 
 		/**
 		 * Load the image.
@@ -480,6 +484,7 @@ DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile
 	memset(&ddsHeader, 0, sizeof(ddsHeader));
 	memset(&dxt10Header, 0, sizeof(dxt10Header));
 	memset(&xb1Header, 0, sizeof(xb1Header));
+	memset(pixel_format, 0, sizeof(pixel_format));
 }
 
 DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
@@ -779,10 +784,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	: super(new DirectDrawSurfacePrivate(this, file))
 {
-	// This class handles texture files.
 	RP_D(DirectDrawSurface);
-	d->className = "DirectDrawSurface";
-	d->fileType = FTYPE_TEXTURE_FILE;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -901,6 +903,13 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 
 	// Update the pixel format.
 	d->updatePixelFormat();
+
+	// Cache the dimensions for the FileFormat base class.
+	d->dimensions[0] = d->ddsHeader.dwWidth;
+	d->dimensions[1] = d->ddsHeader.dwHeight;
+	if (d->ddsHeader.dwFlags & DDSD_DEPTH) {
+		d->dimensions[2] = d->ddsHeader.dwDepth;
+	}
 }
 
 /**
@@ -942,29 +951,7 @@ int DirectDrawSurface::isRomSupported_static(const DetectInfo *info)
 	return -1;
 }
 
-/**
- * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
- * @return System name, or nullptr if type is invalid.
- */
-const char *DirectDrawSurface::systemName(unsigned int type) const
-{
-	RP_D(const DirectDrawSurface);
-	if (!d->isValid || !isSystemNameTypeValid(type))
-		return nullptr;
-
-	// DirectDraw Surface has the same name worldwide, so we can
-	// ignore the region selection.
-	static_assert(SYSNAME_TYPE_MASK == 3,
-		"DirectDrawSurface::systemName() array index optimization needs to be updated.");
-
-	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"DirectDraw Surface", "DirectDraw Surface", "DDS", nullptr
-	};
-
-	return sysNames[type & SYSNAME_TYPE_MASK];
-}
+/** Class-specific functions that can be used even if isValid() is false. **/
 
 /**
  * Get a list of all supported file extensions.
@@ -1009,171 +996,162 @@ const char *const *DirectDrawSurface::supportedMimeTypes_static(void)
 	return mimeTypes;
 }
 
+/** Property accessors **/
+
 /**
- * Get a bitfield of image types this class can retrieve.
- * @return Bitfield of supported image types. (ImageTypesBF)
+ * Get the texture format name.
+ * @return Texture format name, or nullptr on error.
  */
-uint32_t DirectDrawSurface::supportedImageTypes_static(void)
+const char *DirectDrawSurface::textureFormatName(void) const
 {
-	return IMGBF_INT_IMAGE;
+	RP_D(const DirectDrawSurface);
+	if (!d->isValid)
+		return nullptr;
+
+	return "DirectDraw Surface";
 }
 
 /**
- * Get a list of all available image sizes for the specified image type.
- * @param imageType Image type.
- * @return Vector of available image sizes, or empty vector if no images are available.
+ * Get the pixel format, e.g. "RGB888" or "DXT1".
+ * @return Pixel format, or nullptr if unavailable.
  */
-vector<RomData::ImageSizeDef> DirectDrawSurface::supportedImageSizes(ImageType imageType) const
+const char *DirectDrawSurface::pixelFormat(void) const
 {
-	ASSERT_supportedImageSizes(imageType);
+	// TODO: Localization.
+#define C_(ctx, str) str
+#define NOP_C_(ctx, str) str
 
 	RP_D(const DirectDrawSurface);
-	if (!d->isValid || imageType != IMG_INT_IMAGE) {
-		return vector<ImageSizeDef>();
+	if (!d->isValid)
+		return nullptr;
+
+	if (d->pixel_format[0] != '\0') {
+		// We already determined the pixel format.
+		return d->pixel_format;
 	}
 
-	// Return the image's size.
-	const ImageSizeDef imgsz[] = {{nullptr, (uint16_t)d->ddsHeader.dwWidth, (uint16_t)d->ddsHeader.dwHeight, 0}};
-	return vector<ImageSizeDef>(imgsz, imgsz + 1);
+	char *const pixel_format = const_cast<char*>(d->pixel_format);
+
+	// Pixel format.
+	const DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
+	if (ddspf.dwFlags & DDPF_FOURCC) {
+		// Compressed RGB data.
+		pixel_format[0] = (ddspf.dwFourCC >> 24) & 0xFF;
+		pixel_format[1] = (ddspf.dwFourCC >> 16) & 0xFF;
+		pixel_format[2] = (ddspf.dwFourCC >>  8) & 0xFF;
+		pixel_format[3] =  ddspf.dwFourCC        & 0xFF;
+		pixel_format[4] = '\0';
+	} else if (ddspf.dwFlags & DDPF_RGB) {
+		// Uncompressed RGB data.
+		const char *const pxfmt = d->getPixelFormatName(ddspf);
+		if (pxfmt) {
+			snprintf(pixel_format, sizeof(d->pixel_format), "%s", pxfmt);
+		} else {
+			snprintf(pixel_format, sizeof(d->pixel_format),
+				 "RGB (%u-bit)", ddspf.dwRGBBitCount);
+		}
+	} else if (ddspf.dwFlags & DDPF_ALPHA) {
+		// Alpha channel.
+		const char *const pxfmt = d->getPixelFormatName(ddspf);
+		if (pxfmt) {
+			snprintf(pixel_format, sizeof(d->pixel_format), "%s", pxfmt);
+		} else {
+			snprintf(pixel_format, sizeof(d->pixel_format),
+				C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
+		}
+	} else if (ddspf.dwFlags & DDPF_YUV) {
+		// YUV. (TODO: Determine the format.)
+		snprintf(pixel_format, sizeof(d->pixel_format),
+			C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount);
+	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
+		// Luminance.
+		const char *const pxfmt = d->getPixelFormatName(ddspf);
+		if (pxfmt) {
+			snprintf(pixel_format, sizeof(d->pixel_format), "%s", pxfmt);
+		} else {
+			if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
+				snprintf(pixel_format, sizeof(d->pixel_format),
+					C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
+					ddspf.dwRGBBitCount);
+			} else {
+				snprintf(pixel_format, sizeof(d->pixel_format),
+					C_("DirectDrawSurface", "Luminance (%u-bit)"),
+					ddspf.dwRGBBitCount);
+			}
+		}
+	} else {
+		// Unknown pixel format.
+		snprintf(pixel_format, sizeof(d->pixel_format), C_("FileFormat", "Unknown"));
+	}
+
+	return d->pixel_format;
 }
 
 /**
- * Get image processing flags.
- *
- * These specify post-processing operations for images,
- * e.g. applying transparency masks.
- *
- * @param imageType Image type.
- * @return Bitfield of ImageProcessingBF operations to perform.
+ * Get the mipmap count.
+ * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps)
  */
-uint32_t DirectDrawSurface::imgpf(ImageType imageType) const
+int DirectDrawSurface::mipmapCount(void) const
 {
-	ASSERT_imgpf(imageType);
-
 	RP_D(const DirectDrawSurface);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by DDS.
+	if (!d->isValid)
+		return -1;
+
+	// Mipmap count.
+	// NOTE: DDSD_MIPMAPCOUNT might not be accurate, so ignore it.
+	return d->ddsHeader.dwMipMapCount;
+}
+
+#ifdef ENABLE_LIBRPBASE_ROMFIELDS
+/**
+ * Get property fields for rom-properties.
+ * @param fields RomFields object to which fields should be added.
+ * @return Number of fields added, or 0 on error.
+ */
+int DirectDrawSurface::getFields(LibRpBase::RomFields *fields) const
+{
+	// TODO: Localization.
+#define C_(ctx, str) str
+#define NOP_C_(ctx, str) str
+
+	assert(fields != nullptr);
+	if (!fields)
 		return 0;
-	}
 
-	// If both dimensions of the texture are 64 or less,
-	// specify nearest-neighbor scaling.
-	uint32_t ret = 0;
-	if (d->ddsHeader.dwWidth <= 64 && d->ddsHeader.dwHeight <= 64) {
-		// 64x64 or smaller.
-		ret = IMGPF_RESCALE_NEAREST;
-	}
-	return ret;
-}
-
-/**
- * Load field data.
- * Called by RomData::fields() if the field data hasn't been loaded yet.
- * @return Number of fields read on success; negative POSIX error code on error.
- */
-int DirectDrawSurface::loadFieldData(void)
-{
 	RP_D(DirectDrawSurface);
-	if (!d->fields->empty()) {
-		// Field data *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
+	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;
 	}
 
+	const int initial_count = fields->count();
+	fields->reserve(initial_count + 10);	// Maximum of 10 fields.
+
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->fields->reserve(13);	// Maximum of 13 fields.
-
-	// Texture size.
-	d->fields->addField_dimensions(C_("DirectDrawSurface", "Texture Size"),
-		ddsHeader->dwWidth, ddsHeader->dwHeight,
-		(ddsHeader->dwFlags & DDSD_DEPTH) ? ddsHeader->dwDepth : 0);
 
 	// Pitch (uncompressed)
 	// Linear size (compressed)
 	const char *const pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE)
 		? C_("DirectDrawSurface", "Linear Size")
 		: C_("DirectDrawSurface", "Pitch");
-	d->fields->addField_string_numeric(
-		dpgettext_expr(RP_I18N_DOMAIN, "DirectDrawSurface", pitch_name),
+	fields->addField_string_numeric(
+		/*dpgettext_expr(RP_I18N_DOMAIN, "DirectDrawSurface", pitch_name),*/
+		pitch_name,
 		ddsHeader->dwPitchOrLinearSize, RomFields::FB_DEC, 0);
-
-	// Mipmap count.
-	// NOTE: DDSD_MIPMAPCOUNT might not be accurate, so ignore it.
-	d->fields->addField_string_numeric(C_("DirectDrawSurface", "Mipmap Count"),
-		ddsHeader->dwMipMapCount, RomFields::FB_DEC, 0);
-
-	// Pixel format.
-	const DDS_PIXELFORMAT &ddspf = ddsHeader->ddspf;
-	const char *const pixel_format_title = C_("DirectDrawSurface", "Pixel Format");
-	if (ddspf.dwFlags & DDPF_FOURCC) {
-		// Compressed RGB data.
-		char cFourCC[5];
-		cFourCC[0] = (ddspf.dwFourCC >> 24) & 0xFF;
-		cFourCC[1] = (ddspf.dwFourCC >> 16) & 0xFF;
-		cFourCC[2] = (ddspf.dwFourCC >>  8) & 0xFF;
-		cFourCC[3] =  ddspf.dwFourCC        & 0xFF;
-		cFourCC[4] = '\0';
-		d->fields->addField_string(pixel_format_title, cFourCC);
-	} else if (ddspf.dwFlags & DDPF_RGB) {
-		// Uncompressed RGB data.
-		const char *pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			d->fields->addField_string(pixel_format_title, pxfmt);
-		} else {
-			d->fields->addField_string(pixel_format_title,
-				rp_sprintf("RGB (%u-bit)", ddspf.dwRGBBitCount));
-		}
-	} else if (ddspf.dwFlags & DDPF_ALPHA) {
-		// Alpha channel.
-		const char *pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			d->fields->addField_string(pixel_format_title, pxfmt);
-		} else {
-			d->fields->addField_string(pixel_format_title,
-				rp_sprintf(C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount));
-		}
-	} else if (ddspf.dwFlags & DDPF_YUV) {
-		// YUV. (TODO: Determine the format.)
-		d->fields->addField_string(pixel_format_title,
-			rp_sprintf(C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount));
-	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
-		// Luminance.
-		const char *pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			d->fields->addField_string(pixel_format_title, pxfmt);
-		} else {
-			d->fields->addField_string(pixel_format_title,
-				// tr: %1$s == pixel format name; %2$u == bits per pixel
-				rp_sprintf_p(C_("DirectDrawSurface", "%1$s (%2$u-bit)"),
-					((ddspf.dwFlags & DDPF_ALPHAPIXELS)
-						? C_("DirectDrawSurface", "Luminance + Alpha")
-						: C_("DirectDrawSurface", "Luminance")),
-					ddspf.dwRGBBitCount));
-		}
-	} else {
-		// Unknown pixel format.
-		d->fields->addField_string(pixel_format_title,
-			C_("RomData", "Unknown"));
-	}
 
 	if (d->dxgi_format != 0) {
 		// DX10 texture format.
 		const char *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
-		d->fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
+		fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
 			(texFormat ? texFormat :
-				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->dxgi_format)));
+				rp_sprintf(C_("FileFormat", "Unknown (0x%08X)"), d->dxgi_format)));
 	}
 
 	// nVidia Texture Tools header
 	if (ddsHeader->nvtt.dwNvttMagic == cpu_to_be32(NVTT_MAGIC)) {
 		const uint32_t nvtt_version = le32_to_cpu(ddsHeader->nvtt.dwNvttVersion);
-		d->fields->addField_string(C_("DirectDrawSurface", "NVTT Version"),
+		fields->addField_string(C_("DirectDrawSurface", "NVTT Version"),
 			rp_sprintf(C_("DirectDrawSurface", "%u.%u.%u"),
 				   (nvtt_version >> 16) & 0xFF,
 				   (nvtt_version >>  8) & 0xFF,
@@ -1205,7 +1183,7 @@ int DirectDrawSurface::loadFieldData(void)
 	};
 	vector<string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n(
 		"DirectDrawSurface|dwFlags", dwFlags_names, ARRAY_SIZE(dwFlags_names));
-	d->fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
+	fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
 
 	// dwCaps
@@ -1228,7 +1206,7 @@ int DirectDrawSurface::loadFieldData(void)
 	};
 	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n(
 		"DirectDrawSurface|dwFlags", dwCaps_names, ARRAY_SIZE(dwCaps_names));
-	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
+	fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 
 	// dwCaps2
@@ -1255,90 +1233,60 @@ int DirectDrawSurface::loadFieldData(void)
 	};
 	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n(
 		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
-	d->fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
+	fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, ddsHeader->dwCaps2);
 
-	if (ddspf.dwFourCC == DDPF_FOURCC_XBOX) {
+	if (ddsHeader->ddspf.dwFourCC == DDPF_FOURCC_XBOX) {
 		// Xbox One texture.
 		const DDS_HEADER_XBOX *const xb1Header = &d->xb1Header;
 
-		d->fields->addField_string_numeric(C_("DirectDrawSurface", "Tile Mode"), xb1Header->tileMode);
-		d->fields->addField_string_numeric(C_("DirectDrawSurface", "Base Alignment"), xb1Header->baseAlignment);
+		fields->addField_string_numeric(C_("DirectDrawSurface", "Tile Mode"), xb1Header->tileMode);
+		fields->addField_string_numeric(C_("DirectDrawSurface", "Base Alignment"), xb1Header->baseAlignment);
 		// TODO: Not needed?
-		d->fields->addField_string_numeric(C_("DirectDrawSurface", "Data Size"), xb1Header->dataSize);
+		fields->addField_string_numeric(C_("DirectDrawSurface", "Data Size"), xb1Header->dataSize);
 		// TODO: Parse this.
-		d->fields->addField_string_numeric(C_("DirectDrawSurface", "XDK Version"),
+		fields->addField_string_numeric(C_("DirectDrawSurface", "XDK Version"),
 			xb1Header->xdkVer, RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return (fields->count() - initial_count);
+}
+#endif /* ENABLE_LIBRPBASE_ROMFIELDS */
+
+/** Image accessors **/
+
+/**
+ * Get the image.
+ * For textures with mipmaps, this is the largest mipmap.
+ * The image is owned by this object.
+ * @return Image, or nullptr on error.
+ */
+const rp_image *DirectDrawSurface::image(void) const
+{
+	// The full image is mipmap 0.
+	return this->mipmap(0);
 }
 
 /**
- * Load metadata properties.
- * Called by RomData::metaData() if the field data hasn't been loaded yet.
- * @return Number of metadata properties read on success; negative POSIX error code on error.
+ * Get the image for the specified mipmap.
+ * Mipmap 0 is the largest image.
+ * @param mip Mipmap number.
+ * @return Image, or nullptr on error.
  */
-int DirectDrawSurface::loadMetaData(void)
+const rp_image *DirectDrawSurface::mipmap(int mip) const
 {
-	RP_D(DirectDrawSurface);
-	if (d->metaData != nullptr) {
-		// Metadata *has* been loaded...
-		return 0;
-	} else if (!d->file) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!d->isValid) {
+	RP_D(const DirectDrawSurface);
+	if (!d->isValid) {
 		// Unknown file type.
-		return -EIO;
+		return nullptr;
 	}
 
-	// Create the metadata object.
-	d->metaData = new RomMetaData();
-	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
-
-	// DDS header.
-	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-
-	// Dimensions.
-	// TODO: Don't add dwHeight for 1D textures?
-	d->metaData->addMetaData_integer(Property::Width, ddsHeader->dwWidth);
-	d->metaData->addMetaData_integer(Property::Height, ddsHeader->dwHeight);
-
-	// Finished reading the metadata.
-	return static_cast<int>(d->metaData->count());
-}
-
-/**
- * Load an internal image.
- * Called by RomData::image().
- * @param imageType	[in] Image type to load.
- * @param pImage	[out] Pointer to const rp_image* to store the image in.
- * @return 0 on success; negative POSIX error code on error.
- */
-int DirectDrawSurface::loadInternalImage(ImageType imageType, const rp_image **pImage)
-{
-	ASSERT_loadInternalImage(imageType, pImage);
-
-	RP_D(DirectDrawSurface);
-	if (imageType != IMG_INT_IMAGE) {
-		// Only IMG_INT_IMAGE is supported by DDS.
-		*pImage = nullptr;
-		return -ENOENT;
-	} else if (!d->file) {
-		// File isn't open.
-		*pImage = nullptr;
-		return -EBADF;
-	} else if (!d->isValid) {
-		// DDS texture isn't valid.
-		*pImage = nullptr;
-		return -EIO;
+	// FIXME: Support decoding mipmaps.
+	if (mip == 0) {
+		return const_cast<DirectDrawSurfacePrivate*>(d)->loadImage();
 	}
-
-	// Load the image.
-	*pImage = d->loadImage();
-	return (*pImage != nullptr ? 0 : -EIO);
+	return nullptr;
 }
 
 }

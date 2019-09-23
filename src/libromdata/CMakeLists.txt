@@ -40,8 +40,6 @@ SET(libromdata_SRCS
 	Handheld/NGPC.cpp
 	Handheld/VirtualBoy.cpp
 
-	Texture/DirectDrawSurface.cpp
-
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
 	Audio/BRSTM.cpp
@@ -65,7 +63,6 @@ SET(libromdata_SRCS
 	Other/RpTextureWrapper.cpp
 
 	data/AmiiboData.cpp
-	data/DX10Formats.cpp
 	data/ELFData.cpp
 	data/EXEData.cpp
 	data/MachOData.cpp
@@ -176,10 +173,6 @@ SET(libromdata_H
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h
 
-	Texture/DirectDrawSurface.hpp
-
-	Texture/dds_structs.h
-
 	Audio/ADX.hpp
 	Audio/BCSTM.hpp
 	Audio/BRSTM.hpp
@@ -218,7 +211,6 @@ SET(libromdata_H
 	Other/nfp_structs.h
 
 	data/AmiiboData.hpp
-	data/DX10Formats.hpp
 	data/ELFData.hpp
 	data/EXEData.hpp
 	data/MachOData.hpp

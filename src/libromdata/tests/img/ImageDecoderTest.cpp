@@ -43,10 +43,6 @@ using namespace LibRpTexture;
 
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
-#include "Texture/DirectDrawSurface.hpp"
-#ifdef ENABLE_GL
-#include "Texture/KhronosKTX.hpp"
-#endif /* ENABLE_GL */
 #include "Other/RpTextureWrapper.hpp"
 
 // ROM images. Used for console-specific image formats.
@@ -56,9 +52,6 @@ using namespace LibRpTexture;
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Other/NintendoBadge.hpp"
-
-// DirectDraw Surface structs.
-#include "Texture/dds_structs.h"
 
 // C includes.
 #include <stdint.h>
@@ -418,8 +411,9 @@ void ImageDecoderTest::decodeTest_internal(void)
 	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
 	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
 		// DDS image
+		// NOTE: Using RpTextureWrapper.
 		filetype = "DDS";
-		m_romData = new DirectDrawSurface(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
@@ -528,7 +522,8 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
 	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
 		// DDS image
-		fn_ctor = [](IRpFile *file) { return new DirectDrawSurface(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {

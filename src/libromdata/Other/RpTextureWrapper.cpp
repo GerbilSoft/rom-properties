@@ -24,6 +24,7 @@ using namespace LibRpBase;
 // librptexture
 #include "librptexture/fileformat/FileFormat.hpp"
 // TEMPORARY: Switch to FileFormatFactory once it's available.
+#include "librptexture/fileformat/DirectDrawSurface.hpp"
 #ifdef ENABLE_GL
 # include "librptexture/fileformat/KhronosKTX.hpp"
 #endif /* ENABLE_GL */
@@ -116,6 +117,10 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 
 	// TODO: Create a factory class similar to RomDataFactory.
 	switch (be32_to_cpu(magic)) {
+		case 'DDS ':
+			// DirectDrawSurface
+			d->texture = new LibRpTexture::DirectDrawSurface(d->file);
+			break;
 #ifdef ENABLE_GL
 		case (uint32_t)'\xABKTX':
 			// KhronosKTX
@@ -180,6 +185,8 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 	// TODO: Create a factory class similar to RomDataFactory.
 	const uint32_t *const pData32 = reinterpret_cast<const uint32_t*>(info->header.pData);
 	switch (be32_to_cpu(pData32[0])) {
+		case 'DDS ':
+			// DirectDrawSurface
 #ifdef ENABLE_GL
 		case (uint32_t)'\xABKTX':
 			// KhronosKTX
@@ -237,6 +244,9 @@ const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const exts[] = {
+		// DirectDrawSurface
+		".dds",
+
 		// KhronosKTX
 		".ktx",
 
@@ -269,6 +279,11 @@ const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
 {
 	// TODO: LibRpTexture::FileFormatFactory.
 	static const char *const mimeTypes[] = {
+		/** DirectDrawSurface **/
+
+		// Unofficial MIME types from FreeDesktop.org.
+		"image/x-dds",
+
 		/** KhronosKTX **/
 
 		// Official MIME types.

@@ -77,9 +77,6 @@ using std::vector;
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
-// RomData subclasses: Textures
-#include "Texture/DirectDrawSurface.hpp"
-
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
 #include "Audio/BCSTM.hpp"
@@ -264,10 +261,8 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 
-	// Textures
-	GetRomDataFns_addr(DirectDrawSurface, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'DDS '),
-
 	// RpTextureWrapper
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'DDS '),
 #ifdef ENABLE_GL
 	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
 #endif /* ENABLE_GL */

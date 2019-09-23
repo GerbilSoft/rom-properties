@@ -21,10 +21,13 @@ SET(librptexture_SRCS
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
+	fileformat/DirectDrawSurface.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/ValveVTF.cpp
 	fileformat/ValveVTF3.cpp
 	fileformat/XboxXPR.cpp
+
+	data/DX10Formats.cpp
 	)
 # Headers.
 SET(librptexture_H
@@ -39,15 +42,19 @@ SET(librptexture_H
 	fileformat/FileFormat.hpp
 	fileformat/FileFormat_p.hpp
 	fileformat/FileFormat_decl.hpp
+	fileformat/DirectDrawSurface.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/ValveVTF.hpp
 	fileformat/ValveVTF3.hpp
 	fileformat/XboxXPR.hpp
 
+	fileformat/dds_structs.h
 	fileformat/pvr_structs.h
 	fileformat/vtf_structs.h
 	fileformat/vtf3_structs.h
 	fileformat/xbox_xpr_structs.h
+
+	data/DX10Formats.hpp
 	)
 
 IF(ENABLE_GL)

@@ -1,15 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * DX10Formats.cpp: DirectX 10 formats.                                    *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "DX10Formats.hpp"
-#include "Texture/dds_structs.h"
+#include "fileformat/dds_structs.h"
 
-namespace LibRomData {
+namespace LibRpTexture {
 
 class DX10FormatsPrivate
 {
