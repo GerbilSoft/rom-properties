@@ -8,6 +8,7 @@
 
 #include "config.librpbase.h"
 #include "config.libromdata.h"
+#include "config.librptexture.h"
 
 // Google Test
 #include "gtest/gtest.h"
@@ -425,9 +426,9 @@ void ImageDecoderTest::decodeTest_internal(void)
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
-		// Needs GzFile, a gzip-decompressing IRpFile subclass.
+		// NOTE: Using RpTextureWrapper.
 		filetype = "KTX";
-		m_romData = new KhronosKTX(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
@@ -534,7 +535,8 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
-		fn_ctor = [](IRpFile *file) { return new KhronosKTX(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
