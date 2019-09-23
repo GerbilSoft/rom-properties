@@ -27,6 +27,8 @@
     didn't cause too many problems.
   * Xbox XPR0 texture decoder: Fix a NULL pointer dereference that might
     happen if the texture format is swizzled but texture decoding fails.
+  * SegaPVR: Added the .svr extension. Without this, SVR decoding doesn't
+    work on Windows because it doesn't get registered for .svr files.
 
 ## v1.4.3 (released 2019/09/16)
 
