@@ -118,6 +118,7 @@ KhronosKTXPrivate::KhronosKTXPrivate(KhronosKTX *q, IRpFile *file)
 {
 	// Clear the KTX header struct.
 	memset(&ktxHeader, 0, sizeof(ktxHeader));
+	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
 KhronosKTXPrivate::~KhronosKTXPrivate()
