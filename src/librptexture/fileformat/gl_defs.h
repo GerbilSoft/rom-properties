@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * gl_defs.h: OpenGL definitions.                                          *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_GL_DEFS_H__
-#define __ROMPROPERTIES_LIBROMDATA_GL_DEFS_H__
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_GL_DEFS_H__
+#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_GL_DEFS_H__
 
 // Windows requires windows.h.
 // NOTE: May conflict with exe_structs.h.
@@ -608,4 +608,4 @@
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR 0x93DD
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_GL_DEFS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_GL_DEFS_H__ */
