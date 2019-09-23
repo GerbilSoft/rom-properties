@@ -896,7 +896,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(fields->count());
+	return (fields->count() - initial_count);
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
