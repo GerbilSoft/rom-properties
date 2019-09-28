@@ -139,9 +139,9 @@ static int lzxd_read_lens(struct lzxd_stream *lzx, unsigned char *lens,
                           unsigned int first, unsigned int last)
 {
   /* bit buffer and huffman symbol decode variables */
-  unsigned int bit_buffer;
-  int bits_left, i;
-  unsigned short sym;
+  register unsigned int bit_buffer;
+  register int bits_left, i;
+  register unsigned short sym;
   unsigned char *i_ptr, *i_end;
 
   unsigned int x, y;
@@ -393,10 +393,10 @@ void lzxd_set_output_length(struct lzxd_stream *lzx, off_t out_bytes) {
 
 int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
   /* bitstream and huffman reading variables */
-  unsigned int bit_buffer;
-  int bits_left, i=0;
+  register unsigned int bit_buffer;
+  register int bits_left, i=0;
   unsigned char *i_ptr, *i_end;
-  unsigned short sym;
+  register unsigned short sym;
 
   int match_length, length_footer, extra, verbatim_bits, bytes_todo;
   int this_run, main_element, aligned_bits, j, warned = 0;
@@ -409,7 +409,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
   if (lzx->error) return lzx->error;
 
   /* flush out any stored-up bytes before we begin */
-  i = (int)(lzx->o_end - lzx->o_ptr);
+  i = lzx->o_end - lzx->o_ptr;
   if ((off_t) i > out_bytes) i = (int) out_bytes;
   if (i) {
     if (lzx->sys->write(lzx->output, lzx->o_ptr, i) != i) {
@@ -618,7 +618,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
             i = match_length;
             /* does match offset wrap the window? */
             if (match_offset > window_posn) {
-              if ((off_t)match_offset > lzx->offset &&
+              if (match_offset > lzx->offset &&
                   (match_offset - window_posn) > lzx->ref_data_size)
               {
                 D(("match offset beyond LZX stream"))
@@ -742,7 +742,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
             i = match_length;
             /* does match offset wrap the window? */
             if (match_offset > window_posn) {
-              if ((off_t)match_offset > lzx->offset &&
+              if (match_offset > lzx->offset &&
                   (match_offset - window_posn) > lzx->ref_data_size)
               {
                 D(("match offset beyond LZX stream"))
@@ -779,7 +779,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
         rundest = &window[window_posn];
         window_posn += this_run;
         while (this_run > 0) {
-          if ((i = (int)(i_end - i_ptr)) == 0) {
+          if ((i = i_end - i_ptr) == 0) {
             READ_IF_NEEDED;
           }
           else {

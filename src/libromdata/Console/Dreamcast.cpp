@@ -18,9 +18,16 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
-#include "librpbase/img/rp_image.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// libi18n
+#include "libi18n/i18n.h"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/fileformat/SegaPVR.hpp"
+using LibRpTexture::rp_image;
+using LibRpTexture::SegaPVR;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
@@ -30,7 +37,6 @@ using namespace LibRpBase;
 #include "disc/GdiReader.hpp"
 
 // Other RomData subclasses
-#include "Texture/SegaPVR.hpp"
 #include "Other/ISO.hpp"
 
 // C includes. (C++ namespace)
@@ -177,7 +183,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 {
 	if (pvrData) {
 		// Image has already been loaded.
-		return pvrData->image(RomData::IMG_INT_IMAGE);
+		return pvrData->image();
 	} else if (!this->file || !this->discReader) {
 		// Can't load the image.
 		return nullptr;
@@ -221,7 +227,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	if (pvrData_tmp->isValid()) {
 		// PVR is valid. Save it.
 		this->pvrData = pvrData_tmp;
-		return pvrData->image(RomData::IMG_INT_IMAGE);
+		return pvrData->image();
 	}
 
 	// PVR is invalid.

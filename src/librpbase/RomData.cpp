@@ -27,6 +27,8 @@
 using std::string;
 using std::vector;
 
+using LibRpTexture::rp_image;
+
 namespace LibRpBase {
 
 /** RomDataPrivate **/
@@ -50,11 +52,10 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	// Initialize i18n.
 	rp_i18n_init();
 
-	if (!file)
-		return;
-
-	// Reference the file.
-	this->file = file->ref();
+	if (file) {
+		// Reference the file.
+		this->file = file->ref();
+	}
 }
 
 RomDataPrivate::~RomDataPrivate()

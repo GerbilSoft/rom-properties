@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpImageLoader.hpp: Image loader class.                                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,9 +11,12 @@
 
 #include "common.h"
 
+namespace LibRpTexture {
+	class rp_image;
+}
+
 namespace LibRpBase {
 
-class rp_image;
 class IRpFile;
 
 class RpImageLoader
@@ -34,7 +37,7 @@ class RpImageLoader
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static rp_image *loadUnchecked(IRpFile *file);
+		static LibRpTexture::rp_image *loadUnchecked(IRpFile *file);
 
 		/**
 		 * Load an image from an IRpFile.
@@ -45,7 +48,7 @@ class RpImageLoader
 		 * @param file IRpFile to load from.
 		 * @return rp_image*, or nullptr on error.
 		 */
-		static rp_image *load(IRpFile *file);
+		static LibRpTexture::rp_image *load(IRpFile *file);
 };
 
 }

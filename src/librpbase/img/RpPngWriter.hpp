@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPPNGWRITER_HPP__
 
 #include "../common.h"
-#include "rp_image.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 // C++ includes.
 #include <string>
@@ -42,7 +42,7 @@ class RpPngWriter
 		 * @param height 	[in] Image height.
 		 * @param format 	[in] Image format.
 		 */
-		RpPngWriter(const char *filename, int width, int height, rp_image::Format format);
+		RpPngWriter(const char *filename, int width, int height, LibRpTexture::rp_image::Format format);
 
 		/**
 		 * Write a raw image to a PNG file.
@@ -62,7 +62,7 @@ class RpPngWriter
 		 * @param height 	[in] Image height.
 		 * @param format 	[in] Image format.
 		 */
-		RpPngWriter(IRpFile *file, int width, int height, rp_image::Format format);
+		RpPngWriter(IRpFile *file, int width, int height, LibRpTexture::rp_image::Format format);
 
 		/**
 		 * Write an image to a PNG file.
@@ -79,7 +79,7 @@ class RpPngWriter
 		 * @param filename	[in] Filename.
 		 * @param img		[in] rp_image.
 		 */
-		RpPngWriter(const char *filename, const rp_image *img);
+		RpPngWriter(const char *filename, const LibRpTexture::rp_image *img);
 
 		/**
 		 * Write an image to a PNG file.
@@ -97,7 +97,7 @@ class RpPngWriter
 		 * @param file	[in] IRpFile open for writing.
 		 * @param img	[in] rp_image.
 		 */
-		RpPngWriter(IRpFile *file, const rp_image *img);
+		RpPngWriter(IRpFile *file, const LibRpTexture::rp_image *img);
 
 		/**
 		 * Write an animated image to an APNG file.
@@ -189,7 +189,7 @@ class RpPngWriter
 		 * @param palette_len	[in,opt] Number of entries in `palette`.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette = nullptr, int palette_len = 0);
+		int write_IHDR(const LibRpTexture::rp_image::sBIT_t *sBIT, const uint32_t *palette = nullptr, int palette_len = 0);
 
 		// Key/value pair.
 		// - Key: Must be Latin-1.

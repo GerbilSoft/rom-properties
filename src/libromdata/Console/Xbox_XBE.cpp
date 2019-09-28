@@ -16,23 +16,25 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 
 // libi18n
 #include "libi18n/i18n.h"
 
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/fileformat/XboxXPR.hpp"
+using LibRpTexture::rp_image;
+using LibRpTexture::XboxXPR;
+
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
 
 // Other RomData subclasses
-#include "Texture/XboxXPR.hpp"
 #include "Other/EXE.hpp"
 
-// for XPR0 magic
-#include "Texture/xbox_xpr_structs.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -139,9 +141,7 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 	if (xtImage.isInit) {
 		if (!xtImage.isPng) {
 			// XPR0 image
-			if (xtImage.xpr0) {
-				xtImage.xpr0->unref();
-			}
+			xtImage.xpr0->unref();
 		} else {
 			// PNG image
 			delete xtImage.png;
@@ -295,7 +295,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		}
 		ptFile->rewind();
 
-		if (magic == cpu_to_be32(XBOX_XPR0_MAGIC)) {
+		if (magic == cpu_to_be32('XPR0')) {
 			XboxXPR *const xpr0 = new XboxXPR(ptFile);
 			if (xpr0->isOpen()) {
 				// XPR0 image opened.
@@ -474,13 +474,13 @@ void Xbox_XBE::close(void)
 		d->xtImage.isInit = false;
 		if (!d->xtImage.isPng) {
 			// XPR0 image
-			if (d->xtImage.xpr0) {
-				d->xtImage.xpr0->unref();
-			}
+			d->xtImage.xpr0->unref();
+			d->xtImage.xpr0 = nullptr;
 		} else {
 			// PNG image
 			d->xtImage.isPng = false;
 			delete d->xtImage.png;
+			d->xtImage.png = nullptr;
 		}
 	}
 
@@ -629,14 +629,24 @@ vector<RomData::ImageSizeDef> Xbox_XBE::supportedImageSizes(ImageType imageType)
 	if (d->xtImage.isInit) {
 		if (!d->xtImage.isPng) {
 			// XPR0 image
-			return d->xtImage.xpr0->supportedImageSizes(IMG_INT_IMAGE);
+			const ImageSizeDef sz_INT_ICON_XPR0[] = {{
+				nullptr,
+				static_cast<uint16_t>(d->xtImage.xpr0->width()),
+				static_cast<uint16_t>(d->xtImage.xpr0->height()),
+				0
+			}};
+			return vector<ImageSizeDef>(sz_INT_ICON_XPR0,
+				sz_INT_ICON_XPR0 + ARRAY_SIZE(sz_INT_ICON_XPR0));
 		} else {
 			// PNG image
-			const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, (uint16_t)d->xtImage.png->width(), (uint16_t)d->xtImage.png->height(), 0},
-			};
-			return vector<ImageSizeDef>(sz_INT_ICON,
-				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+			const ImageSizeDef sz_INT_ICON_PNG[] = {{
+				nullptr,
+				static_cast<uint16_t>(d->xtImage.png->width()),
+				static_cast<uint16_t>(d->xtImage.png->height()),
+				0
+			}};
+			return vector<ImageSizeDef>(sz_INT_ICON_PNG,
+				sz_INT_ICON_PNG + ARRAY_SIZE(sz_INT_ICON_PNG));
 		}
 	}
 
@@ -669,13 +679,16 @@ uint32_t Xbox_XBE::imgpf(ImageType imageType) const
 
 	uint32_t ret = 0;
 	if (d->xtImage.isInit) {
+		// If both dimensions of the texture are 64 or less,
+		// specify nearest-neighbor scaling.
 		if (!d->xtImage.isPng) {
 			// XPR0 image
-			return d->xtImage.xpr0->imgpf(IMG_INT_IMAGE);
+			if (d->xtImage.xpr0->width() <= 64 && d->xtImage.xpr0->height() <= 64) {
+				// 64x64 or smaller.
+				ret = IMGPF_RESCALE_NEAREST;
+			}
 		} else {
 			// PNG image
-			// If both dimensions of the texture are 64 or less,
-			// specify nearest-neighbor scaling.
 			if (d->xtImage.png->width() <= 64 && d->xtImage.png->height() <= 64) {
 				// 64x64 or smaller.
 				ret = IMGPF_RESCALE_NEAREST;
@@ -931,18 +944,18 @@ int Xbox_XBE::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	if (!d->xtImage.isInit) {
-		const_cast<Xbox_XBE_Private*>(d)->initXPR0_xtImage();
+		d->initXPR0_xtImage();
 	}
 
 	if (!d->xtImage.isPng) {
 		// XPR0 image
-		return const_cast<XboxXPR*>(d->xtImage.xpr0)->loadInternalImage(IMG_INT_IMAGE, pImage);
+		*pImage = d->xtImage.xpr0->image();
 	} else {
 		// PNG image
 		*pImage = d->xtImage.png;
 	}
 
-	return 0;
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }

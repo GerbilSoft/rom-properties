@@ -7,6 +7,9 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
+#include "libromdata/config.libromdata.h"
+// TODO: Remove after adding FileFormatFactory.
+#include "librptexture/config.librptexture.h"
 
 #include "RomDataFactory.hpp"
 
@@ -74,16 +77,6 @@ using std::vector;
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
-// RomData subclasses: Textures
-#include "Texture/DirectDrawSurface.hpp"
-#ifdef ENABLE_GL
-#include "Texture/KhronosKTX.hpp"
-#endif /* ENABLE_GL */
-#include "Texture/SegaPVR.hpp"
-#include "Texture/ValveVTF.hpp"
-#include "Texture/ValveVTF3.hpp"
-#include "Texture/XboxXPR.hpp"
-
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
 #include "Audio/BCSTM.hpp"
@@ -104,6 +97,7 @@ using std::vector;
 #include "Other/ISO.hpp"
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
+#include "Other/RpTextureWrapper.hpp"
 
 // Special case for Dreamcast save files.
 #include "Console/dc_structs.h"
@@ -267,20 +261,19 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(Nintendo3DSFirm, ATTR_NONE, 0, 'FIRM'),
 	GetRomDataFns_addr(Nintendo3DS_SMDH, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'SMDH'),
 
-	// Textures
-	GetRomDataFns_addr(DirectDrawSurface, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'DDS '),
+	// RpTextureWrapper
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'DDS '),
 #ifdef ENABLE_GL
-	GetRomDataFns_addr(KhronosKTX, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, (uint32_t)'\xABKTX'),
 #endif /* ENABLE_GL */
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRT'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GVRT'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GBIX'),
-	GetRomDataFns_addr(SegaPVR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
-	GetRomDataFns_addr(ValveVTF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
-	GetRomDataFns_addr(ValveVTF3, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF3'),
-	// TODO: XPR1/XPR2
-	GetRomDataFns_addr(XboxXPR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRT'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GVRT'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PVRX'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GBIX'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'GCIX'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF\0'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VTF3'),
+	GetRomDataFns_addr(RpTextureWrapper, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XPR0'),
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),

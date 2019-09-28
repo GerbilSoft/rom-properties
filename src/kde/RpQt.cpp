@@ -10,8 +10,8 @@
 #include "RpQImageBackend.hpp"
 
 // librpbase
-#include "librpbase/img/rp_image.hpp"
-using LibRpBase::rp_image;
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // C includes. (C++ namespace)
 #include <cassert>

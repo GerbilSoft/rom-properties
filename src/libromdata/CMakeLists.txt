@@ -40,12 +40,6 @@ SET(libromdata_SRCS
 	Handheld/NGPC.cpp
 	Handheld/VirtualBoy.cpp
 
-	Texture/DirectDrawSurface.cpp
-	Texture/SegaPVR.cpp
-	Texture/ValveVTF.cpp
-	Texture/ValveVTF3.cpp
-	Texture/XboxXPR.cpp
-
 	Audio/ADX.cpp
 	Audio/BCSTM.cpp
 	Audio/BRSTM.cpp
@@ -66,9 +60,9 @@ SET(libromdata_SRCS
 	Other/ISO.cpp
 	Other/MachO.cpp
 	Other/NintendoBadge.cpp
+	Other/RpTextureWrapper.cpp
 
 	data/AmiiboData.cpp
-	data/DX10Formats.cpp
 	data/ELFData.cpp
 	data/EXEData.cpp
 	data/MachOData.cpp
@@ -179,18 +173,6 @@ SET(libromdata_H
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h
 
-	Texture/DirectDrawSurface.hpp
-	Texture/SegaPVR.hpp
-	Texture/ValveVTF.hpp
-	Texture/ValveVTF3.hpp
-	Texture/XboxXPR.cpp
-
-	Texture/dds_structs.h
-	Texture/pvr_structs.h
-	Texture/vtf_structs.h
-	Texture/vtf3_structs.h
-	Texture/xbox_xpr_structs.h
-
 	Audio/ADX.hpp
 	Audio/BCSTM.hpp
 	Audio/BRSTM.hpp
@@ -220,6 +202,7 @@ SET(libromdata_H
 	Other/ISO.hpp
 	Other/MachO.hpp
 	Other/NintendoBadge.hpp
+	Other/RpTextureWrapper.hpp
 
 	Other/badge_structs.h
 	Other/elf_structs.h
@@ -228,7 +211,6 @@ SET(libromdata_H
 	Other/nfp_structs.h
 
 	data/AmiiboData.hpp
-	data/DX10Formats.hpp
 	data/ELFData.hpp
 	data/EXEData.hpp
 	data/MachOData.hpp
@@ -271,18 +253,6 @@ SET(libromdata_H
 	img/TCreateThumbnail.hpp
 	utils/SuperMagicDrive.hpp
 	)
-
-IF(ENABLE_GL)
-	SET(libromdata_GL_SRCS
-		Texture/KhronosKTX.cpp
-		data/GLenumStrings.cpp
-		)
-	SET(libromdata_GL_H
-		Texture/KhronosKTX.hpp
-		Texture/ktx_structs.h
-		data/GLenumStrings.hpp
-		)
-ENDIF(ENABLE_GL)
 
 IF(ENABLE_XML)
 	SET(libromdata_SRCS ${libromdata_SRCS} Other/EXE_manifest.cpp)
@@ -365,7 +335,6 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_GL_SRCS} ${libromdata_GL_H}
 	${libromdata_IFUNC_SRCS}
 	${libromdata_MMX_SRCS}
 	${libromdata_SSE2_SRCS}
@@ -374,7 +343,7 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(romdata)
 
 # TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(romdata PUBLIC rpbase)
+TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpbase)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
 ENDIF(ENABLE_NLS)

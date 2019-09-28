@@ -19,9 +19,11 @@
 #include <array>
 #include <cstdio>
 
-namespace LibRpBase {
+namespace LibRpTexture {
+	class rp_image;
+}
 
-class rp_image;
+namespace LibRpBase {
 
 struct IconAnimData
 {
@@ -54,7 +56,7 @@ struct IconAnimData
 	// how many frames are actually here.
 	// NOTE: Frames may be nullptr, in which case
 	// the previous frame should be used.
-	std::array<const rp_image*, MAX_FRAMES> frames;
+	std::array<const LibRpTexture::rp_image*, MAX_FRAMES> frames;
 
 	IconAnimData()
 		: count(0)

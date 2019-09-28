@@ -25,7 +25,11 @@
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
+// libi18n
 #include "libi18n/i18n.h"
+
+// librptexture
+using LibRpTexture::rp_image;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"

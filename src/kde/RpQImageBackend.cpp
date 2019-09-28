@@ -19,9 +19,11 @@
 
 // librpbase
 #include "librpbase/aligned_malloc.h"
-#include "librpbase/img/rp_image.hpp"
-using LibRpBase::rp_image;
-using LibRpBase::rp_image_backend;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
+using LibRpTexture::rp_image_backend;
 
 RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)

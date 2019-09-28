@@ -26,6 +26,12 @@
 #include "librpbase/file/RpMemFile.hpp"
 using namespace LibRpBase;
 
+// libi18n
+#include "libi18n/i18n.h"
+
+// librptexture
+using LibRpTexture::rp_image;
+
 #ifdef ENABLE_DECRYPTION
 # include "librpbase/crypto/IAesCipher.hpp"
 # include "librpbase/crypto/AesCipherFactory.hpp"
@@ -36,9 +42,6 @@ using namespace LibRpBase;
 # include "mspack.h"
 # include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

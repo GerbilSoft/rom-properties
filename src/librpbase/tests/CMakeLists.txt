@@ -92,28 +92,6 @@ DO_SPLIT_DEBUG(TextFuncsTest)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
 ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
 
-# ImageDecoderLinear test.
-# TODO: Move to libromdata, or move libromdata stuff here?
-ADD_EXECUTABLE(ImageDecoderLinearTest
-	../../librpbase/tests/gtest_init.cpp
-	img/ImageDecoderLinearTest.cpp
-	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE romdata)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE gtest ${ZLIB_LIBRARY})
-TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${ZLIB_INCLUDE_DIRS})
-TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${ZLIB_DEFINITIONS})
-IF(PNG_LIBRARY)
-	TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE ${PNG_LIBRARY})
-	TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${PNG_INCLUDE_DIRS})
-	TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${PNG_DEFINITIONS})
-ENDIF(PNG_LIBRARY)
-DO_SPLIT_DEBUG(ImageDecoderLinearTest)
-SET_WINDOWS_SUBSYSTEM(ImageDecoderLinearTest CONSOLE)
-ADD_TEST(NAME ImageDecoderLinearTest COMMAND ImageDecoderLinearTest "--gtest_filter=-*benchmark*")
-
 # ByteswapTest.
 ADD_EXECUTABLE(ByteswapTest
 	gtest_init.cpp
@@ -128,17 +106,3 @@ TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
 ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest "--gtest_filter=-*benchmark*")
-
-# UnPremultiplyTest.
-ADD_EXECUTABLE(UnPremultiplyTest
-	gtest_init.cpp
-	img/UnPremultiplyTest.cpp
-	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rpbase)
-TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE gtest)
-DO_SPLIT_DEBUG(UnPremultiplyTest)
-SET_WINDOWS_SUBSYSTEM(UnPremultiplyTest CONSOLE)
-ADD_TEST(NAME UnPremultiplyTest COMMAND UnPremultiplyTest "--gtest_filter=-*benchmark*")

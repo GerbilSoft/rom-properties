@@ -10,9 +10,10 @@
 #include "CreateThumbnail.hpp"
 #include "RpImageWin32.hpp"
 
-#include "librpbase/img/rp_image.hpp"
-#include "librpbase/img/RpGdiplusBackend.hpp"
-using namespace LibRpBase;
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/img/RpGdiplusBackend.hpp"
+using namespace LibRpTexture;
 
 // libwin32common
 #include "libwin32common/WinUI.hpp"

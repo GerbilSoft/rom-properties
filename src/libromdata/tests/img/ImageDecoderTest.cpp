@@ -8,6 +8,7 @@
 
 #include "config.librpbase.h"
 #include "config.libromdata.h"
+#include "config.librptexture.h"
 
 // Google Test
 #include "gtest/gtest.h"
@@ -33,20 +34,17 @@
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/RpMemFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
-#include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
-#include "librpbase/img/ImageDecoder.hpp"
 using namespace LibRpBase;
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+#include "librptexture/decoder/ImageDecoder.hpp"
+using namespace LibRpTexture;
 
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
-#include "Texture/DirectDrawSurface.hpp"
-#include "Texture/SegaPVR.hpp"
-#ifdef ENABLE_GL
-#include "Texture/KhronosKTX.hpp"
-#endif /* ENABLE_GL */
-#include "Texture/ValveVTF.hpp"
-#include "Texture/ValveVTF3.hpp"
+#include "Other/RpTextureWrapper.hpp"
 
 // ROM images. Used for console-specific image formats.
 #include "Console/DreamcastSave.hpp"
@@ -55,9 +53,6 @@ using namespace LibRpBase;
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Other/NintendoBadge.hpp"
-
-// DirectDraw Surface structs.
-#include "Texture/dds_structs.h"
 
 // C includes.
 #include <stdint.h>
@@ -417,30 +412,34 @@ void ImageDecoderTest::decodeTest_internal(void)
 	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
 	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
 		// DDS image
+		// NOTE: Using RpTextureWrapper.
 		filetype = "DDS";
-		m_romData = new DirectDrawSurface(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
+		// NOTE: Using RpTextureWrapper.
 		filetype = "PVR";
-		m_romData = new SegaPVR(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
-		// Needs GzFile, a gzip-decompressing IRpFile subclass.
+		// NOTE: Using RpTextureWrapper.
 		filetype = "KTX";
-		m_romData = new KhronosKTX(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
+		// NOTE: Using RpTextureWrapper.
 		filetype = "VTF3";
-		m_romData = new ValveVTF3(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
+		// NOTE: Using RpTextureWrapper.
 		filetype = "VTF";
-		m_romData = new ValveVTF(m_f_dds);
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (mode.dds_gz_filename.size() >= 8U &&
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
@@ -524,24 +523,29 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
 	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
 		// DDS image
-		fn_ctor = [](IRpFile *file) { return new DirectDrawSurface(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
-		fn_ctor = [](IRpFile *file) { return new SegaPVR(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 #ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
-		fn_ctor = [](IRpFile *file) { return new KhronosKTX(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 #endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
-		fn_ctor = [](IRpFile *file) { return new ValveVTF3(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
 		// Valve Texture File
-		fn_ctor = [](IRpFile *file) { return new ValveVTF(file); };
+		// NOTE: Using RpTextureWrapper.
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (mode.dds_gz_filename.size() >= 8U &&
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
@@ -1476,7 +1480,7 @@ INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
 
 /**
  * Test suite main function.
- * Called by gtest_init.c.
+ * Called by gtest_init.cpp.
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {

@@ -11,6 +11,8 @@
     performance in many cases, since the various RomData subclasses do small
     reads for certain things instead of one giant read.
     * FIXME: Need to make use of the cache in the "contiguous" read section.
+  * Image handling has been split from librpbase to librptexture. This will
+    allow the texture decoding functionality to be used by other programs.
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
@@ -18,6 +20,22 @@
 
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.
+  * GameCube I8 image decoder: The palette was being generated incorrectly.
+    This has been fixed, though since I8 images are uncommon, this probably
+    didn't cause too many problems.
+  * GameCube I8 image decoder: The palette was being generated incorrectly.
+    This has been fixed, though since I8 images are uncommon, this probably
+    didn't cause too many problems.
+  * Xbox XPR0 texture decoder: Fix a NULL pointer dereference that might
+    happen if the texture format is swizzled but texture decoding fails.
+  * SegaPVR: Added the .svr extension. Without this, SVR decoding doesn't
+    work on Windows because it doesn't get registered for .svr files.
+
+* Other changes:
+  * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
+    used for JPEG decoding. This setup was used before for PNG, but we now
+    use more PNG functionality than is available from gdiplus, so libpng
+    is staying put.
 
 ## v1.4.3 (released 2019/09/16)
 

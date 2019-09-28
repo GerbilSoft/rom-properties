@@ -11,7 +11,7 @@
 
 #include <gtk/gtk.h>
 
-#include "librpbase/img/rp_image.hpp"
+#include "librptexture/img/rp_image.hpp"
 
 // NOTE: GTK+ 3.x earlier than 3.10 is not supported.
 #if GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(3,10,0)
@@ -40,7 +40,7 @@ typedef GdkPixbuf *PIMGTYPE;
 
 #ifdef __cplusplus
 // rp_image_to_PIMGTYPE wrapper function.
-static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpBase::rp_image *img)
+static inline PIMGTYPE rp_image_to_PIMGTYPE(const LibRpTexture::rp_image *img)
 {
 #ifdef RP_GTK_USE_CAIRO
 	return CairoImageConv::rp_image_to_cairo_surface_t(img);

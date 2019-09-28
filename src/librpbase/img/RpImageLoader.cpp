@@ -11,6 +11,10 @@
 #include "RpImageLoader.hpp"
 #include "../file/IRpFile.hpp"
 
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
+
 // Image loaders.
 #include "RpPng.hpp"
 #ifdef HAVE_JPEG

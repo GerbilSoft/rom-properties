@@ -10,7 +10,9 @@
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_P_HPP__
 
 #include "../common.h"
-#include "rp_image.hpp"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
 
 // jpeglib.h needs stdio included first.
 #include <cstdio>
@@ -128,7 +130,7 @@ class RpJpegPrivate
 		 * @param cinfo		[in/out] JPEG decompression struct.
 		 * @param buffer 	[in/out] Line buffer. (Must be 16-byte aligned!)
 		 */
-		static void decodeBGRtoARGB(LibRpBase::rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer);
+		static void decodeBGRtoARGB(LibRpTexture::rp_image *RESTRICT img, jpeg_decompress_struct *RESTRICT cinfo, JSAMPARRAY buffer);
 #endif /* RPJPEG_HAS_SSSE3 */
 };
 

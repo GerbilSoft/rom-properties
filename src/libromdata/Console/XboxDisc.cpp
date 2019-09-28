@@ -15,8 +15,13 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// libi18n
+#include "libi18n/i18n.h"
+
+// libtexture
+using LibRpTexture::rp_image;
 
 // XDVDFSPartition
 #include "librpbase/disc/DiscReader.hpp"

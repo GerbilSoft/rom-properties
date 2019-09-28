@@ -25,6 +25,8 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+using LibRpTexture::rp_image;
+
 namespace LibRpBase {
 
 class RomFieldsPrivate

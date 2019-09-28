@@ -1,0 +1,18 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (librptexture)                     *
+ * config.librptexture.h.in: LibRpTexture configuration. (source file)     *
+ *                                                                         *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
+#define __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
+
+/* Define to 1 if OpenGL support should be enabled. */
+#cmakedefine ENABLE_GL 1
+
+/* Define to 1 if librpbase RomFields support should be enabled. */
+#define ENABLE_LIBRPBASE_ROMFIELDS 1
+
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__ */

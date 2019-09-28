@@ -36,8 +36,11 @@
 #include "file/RpFile.hpp"
 #include "file/RpMemFile.hpp"
 #include "file/FileSystem.hpp"
-#include "img/rp_image.hpp"
 #include "img/RpImageLoader.hpp"
+
+// librptexture
+#include "librptexture/img/rp_image.hpp"
+using LibRpTexture::rp_image;
 
 // C includes.
 #include <stdint.h>

@@ -3,14 +3,17 @@
  * RpJpeg.cpp: JPEG image handler.                                         *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "RpJpeg_p.hpp"
 
 #include "../common.h"
-using LibRpBase::rp_image;
+
+// librptexture
+using LibRpTexture::rp_image;
+using LibRpTexture::argb32_t;
 
 // C includes. (C++ namespace)
 #include <cassert>
