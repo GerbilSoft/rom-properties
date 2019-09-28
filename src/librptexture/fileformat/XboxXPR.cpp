@@ -621,7 +621,7 @@ XboxXPR::XboxXPR(IRpFile *file)
 const char *const *XboxXPR::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
-		".xbx", "xpr",
+		".xbx", ".xpr",
 
 		nullptr
 	};
