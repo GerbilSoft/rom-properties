@@ -808,7 +808,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
 	vector<const char*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
 	std::for_each(vec_exts_fileFormat.cbegin(), vec_exts_fileFormat.cend(),
-		[&](const char *ext) {
+		[&map_exts](const char *ext) {
 			auto iter = map_exts.find(ext);
 			if (iter != map_exts.end()) {
 				// We already had this extension.
@@ -891,7 +891,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	// Get MIME types from FileFormatFactory.
 	vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
 	std::for_each(vec_mimeTypes_fileFormat.cbegin(), vec_mimeTypes_fileFormat.cend(),
-		[&](const char *mimeType) {
+		[&set_mimeTypes](const char *mimeType) {
 			auto iter = set_mimeTypes.find(mimeType);
 			if (iter == set_mimeTypes.end()) {
 				set_mimeTypes.insert(mimeType);
