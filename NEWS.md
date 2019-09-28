@@ -30,6 +30,12 @@
   * SegaPVR: Added the .svr extension. Without this, SVR decoding doesn't
     work on Windows because it doesn't get registered for .svr files.
 
+* Other changes:
+  * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
+    used for JPEG decoding. This setup was used before for PNG, but we now
+    use more PNG functionality than is available from gdiplus, so libpng
+    is staying put.
+
 ## v1.4.3 (released 2019/09/16)
 
 * Bug fixes:
