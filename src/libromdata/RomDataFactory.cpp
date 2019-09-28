@@ -566,7 +566,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		// Not a .VMI+.VMS pair.
 	}
 
-	// Check RomData subclasses that take a header at 0x0000
+	// Check RomData subclasses that take a header at 0
 	// and definitely have a 32-bit magic number in the header.
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_magic[0];
@@ -758,7 +758,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 {
 	// In order to handle multiple RomData subclasses
 	// that support the same extensions, we're using
-	// an unordered_map<string, bool>. If any of the
+	// an unordered_map<string, unsigned int>. If any of the
 	// handlers for a given extension support thumbnails,
 	// then the thumbnail handlers will be registered.
 	//
@@ -772,7 +772,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	vec_exts.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_MAP_RESERVE
 	map_exts.reserve(reserve_size);
-#endif
+#endif /* HAVE_UNORDERED_MAP_RESERVE */
 
 	for (const RomDataFns *const *tblptr = &romDataFns_tbl[0];
 	     *tblptr != nullptr; tblptr++)
@@ -838,12 +838,13 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	unordered_set<string> set_mimeTypes;
 
 	static const size_t reserve_size =
-		(ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_header) +
-		 ARRAY_SIZE(RomDataFactoryPrivate::romDataFns_footer)) * 2;
+		(ARRAY_SIZE(romDataFns_magic) +
+		 ARRAY_SIZE(romDataFns_header) +
+		 ARRAY_SIZE(romDataFns_footer)) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
-#endif
+#endif /* HAVE_UNORDERED_SET_RESERVE */
 
 	for (const RomDataFns *const *tblptr = &romDataFns_tbl[0];
 	     *tblptr != nullptr; tblptr++)
