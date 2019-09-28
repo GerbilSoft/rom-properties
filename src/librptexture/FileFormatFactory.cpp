@@ -17,7 +17,6 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
-#include "librpbase/threads/pthread_once.h"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
@@ -89,43 +88,9 @@ class FileFormatFactoryPrivate
 		// FileFormat subclasses that use a header at 0 and
 		// definitely have a 32-bit magic number at address 0.
 		static const FileFormatFns FileFormatFns_magic[];
-
-		// Vectors for file extensions and MIME types.
-		// We want to collect them once per session instead of
-		// repeatedly collecting them, since the caller might
-		// not cache them.
-		// pthread_once() control variable.
-		static vector<const char*> vec_exts;
-		static vector<const char*> vec_mimeTypes;
-		static pthread_once_t once_exts;
-		static pthread_once_t once_mimeTypes;
-
-		/**
-		 * Initialize the vector of supported file extensions.
-		 * Used for Win32 COM registration.
-		 *
-		 * Internal function; must be called using pthread_once().
-		 *
-		 * NOTE: The return value is a struct that includes a flag
-		 * indicating if the file type handler supports thumbnails.
-		 */
-		static void init_supportedFileExtensions(void);
-
-		/**
-		 * Initialize the vector of supported MIME types.
-		 * Used for KFileMetaData.
-		 *
-		 * Internal function; must be called using pthread_once().
-		 */
-		static void init_supportedMimeTypes(void);
 };
 
 /** FileFormatFactoryPrivate **/
-
-vector<const char*> FileFormatFactoryPrivate::vec_exts;
-vector<const char*> FileFormatFactoryPrivate::vec_mimeTypes;
-pthread_once_t FileFormatFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
-pthread_once_t FileFormatFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 
 // FileFormat subclasses that use a header at 0 and
 // definitely have a 32-bit magic number at address 0.
@@ -222,30 +187,29 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 }
 
 /**
- * Initialize the vector of supported file extensions.
+ * Get all supported file extensions.
  * Used for Win32 COM registration.
  *
- * Internal function; must be called using pthread_once().
- *
- * NOTE: The return value is a struct that includes a flag
- * indicating if the file type handler supports thumbnails.
+ * @return All supported file extensions, including the leading dot.
  */
-void FileFormatFactoryPrivate::init_supportedFileExtensions(void)
+vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 {
 	// In order to handle multiple FileFormat subclasses
 	// that support the same extensions, we're using
 	// an unordered_set<string>.
 	//
 	// The actual data is stored in the vector<const char*>.
+	vector<const char*> vec_exts;
 	unordered_set<string> set_exts;
 
-	static const size_t reserve_size = ARRAY_SIZE(FileFormatFns_magic);
+	static const size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic);
 	vec_exts.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_exts.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	const FileFormatFns *fns = &FileFormatFactoryPrivate::FileFormatFns_magic[0];
+	const FileFormatFactoryPrivate::FileFormatFns *fns =
+		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		const char *const *sys_exts = fns->supportedFileExtensions();
 		if (!sys_exts)
@@ -259,31 +223,17 @@ void FileFormatFactoryPrivate::init_supportedFileExtensions(void)
 			}
 		}
 	}
+
+	return vec_exts;
 }
 
 /**
- * Get all supported file extensions.
- * Used for Win32 COM registration.
- *
- * NOTE: The return value is a struct that includes a flag
- * indicating if the file type handler supports thumbnails
- * and/or may have "dangerous" permissions.
- *
- * @return All supported file extensions, including the leading dot.
- */
-const vector<const char*> &FileFormatFactory::supportedFileExtensions(void)
-{
-	pthread_once(&FileFormatFactoryPrivate::once_exts, FileFormatFactoryPrivate::init_supportedFileExtensions);
-	return FileFormatFactoryPrivate::vec_exts;
-}
-
-/**
- * Initialize the vector of supported MIME types.
+ * Get all supported MIME types.
  * Used for KFileMetaData.
  *
- * Internal function; must be called using pthread_once().
+ * @return All supported MIME types.
  */
-void FileFormatFactoryPrivate::init_supportedMimeTypes(void)
+vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 {
 	// TODO: Add generic types, e.g. application/octet-stream?
 
@@ -291,15 +241,17 @@ void FileFormatFactoryPrivate::init_supportedMimeTypes(void)
 	// that support the same MIME types, we're using
 	// an unordered_set<string>. The actual data
 	// is stored in the vector<const char*>.
+	vector<const char*> vec_mimeTypes;
 	unordered_set<string> set_mimeTypes;
 
-	static const size_t reserve_size = ARRAY_SIZE(FileFormatFns_magic) * 2;
+	static const size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic) * 2;
 	vec_mimeTypes.reserve(reserve_size);
 #ifdef HAVE_UNORDERED_SET_RESERVE
 	set_mimeTypes.reserve(reserve_size);
 #endif /* HAVE_UNORDERED_SET_RESERVE */
 
-	const FileFormatFns *fns = &FileFormatFactoryPrivate::FileFormatFns_magic[0];
+	const FileFormatFactoryPrivate::FileFormatFns *fns =
+		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		const char *const *sys_mimeTypes = fns->supportedMimeTypes();
 		if (!sys_mimeTypes)
@@ -313,18 +265,8 @@ void FileFormatFactoryPrivate::init_supportedMimeTypes(void)
 			}
 		}
 	}
-}
 
-/**
- * Get all supported MIME types.
- * Used for KFileMetaData.
- *
- * @return All supported MIME types.
- */
-const vector<const char*> &FileFormatFactory::supportedMimeTypes(void)
-{
-	pthread_once(&FileFormatFactoryPrivate::once_mimeTypes, FileFormatFactoryPrivate::init_supportedMimeTypes);
-	return FileFormatFactoryPrivate::vec_mimeTypes;
+	return vec_mimeTypes;
 }
 
 }

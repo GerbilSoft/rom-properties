@@ -53,7 +53,7 @@ class FileFormatFactory
 		 *
 		 * @return All supported file extensions, including the leading dot.
 		 */
-		static const std::vector<const char*> &supportedFileExtensions(void);
+		static std::vector<const char*> supportedFileExtensions(void);
 
 		/**
 		 * Get all supported MIME types.
@@ -61,7 +61,7 @@ class FileFormatFactory
 		 *
 		 * @return All supported MIME types.
 		 */
-		static const std::vector<const char*> &supportedMimeTypes(void);
+		static std::vector<const char*> supportedMimeTypes(void);
 };
 
 }
