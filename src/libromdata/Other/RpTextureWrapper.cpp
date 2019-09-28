@@ -242,26 +242,9 @@ const char *RpTextureWrapper::systemName(unsigned int type) const
  */
 const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
 {
-	// TODO: LibRpTexture::FileFormatFactory.
-	static const char *const exts[] = {
-		// DirectDrawSurface
-		".dds",
-
-		// KhronosKTX
-		".ktx",
-
-		// SegaPVR
-		".pvr", ".gvr", ".svr",
-
-		// ValveVTF
-		".vtf",
-		//".vtx",	// TODO: Some files might use the ".vtx" extension.
-
-		// XboxXPR
-		".xbx", ".xpr",
-
-		nullptr
-	};
+	// Not used anymore.
+	// RomDataFactory queries extensions from FileFormatFactory directly.
+	static const char *const exts[] = { nullptr };
 	return exts;
 }
 
@@ -277,46 +260,9 @@ const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
  */
 const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
 {
-	// TODO: LibRpTexture::FileFormatFactory.
-	static const char *const mimeTypes[] = {
-		/** DirectDrawSurface **/
-
-		// Unofficial MIME types from FreeDesktop.org.
-		"image/x-dds",
-
-		/** KhronosKTX **/
-
-		// Official MIME types.
-		"image/ktx",
-
-		/** SegaPVR **/
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-sega-pvr",
-		"image/x-sega-gvr",
-		"image/x-sega-pvrx",
-		"image/x-sega-svr",
-
-		/** ValveVTF **/
-
-		// Vendor-specific MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/vnd.valve.source.texture",
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-vtf",
-
-		/** XboxXPR **/
-
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
-		"image/x-xbox-xpr0",
-
-		nullptr
-	};
+	// Not used anymore.
+	// RomDataFactory queries MIME types from FileFormatFactory directly.
+	static const char *const mimeTypes[] = { nullptr };
 	return mimeTypes;
 }
 

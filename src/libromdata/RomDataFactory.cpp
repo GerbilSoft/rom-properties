@@ -23,6 +23,10 @@
 #include "librpbase/threads/pthread_once.h"
 using namespace LibRpBase;
 
+// librptexture
+#include "librptexture/FileFormatFactory.hpp"
+using LibRpTexture::FileFormatFactory;
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstring>
@@ -799,6 +803,24 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 		}
 	}
 
+	// Get file extensions from FileFormatFactory.
+	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
+	vector<const char*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
+	for (auto iter = vec_exts_fileFormat.cbegin();
+	     iter != vec_exts_fileFormat.cend(); ++iter)
+	{
+		auto iter2 = map_exts.find(*iter);
+		if (iter2 != map_exts.end()) {
+			// We already had this extension.
+			// Update its attributes.
+			iter2->second |= FFF_ATTRS;
+		} else {
+			// First time encountering this extension.
+			map_exts[*iter] = FFF_ATTRS;
+			vec_exts.push_back(RomDataFactory::ExtInfo(*iter, FFF_ATTRS));
+		}
+	}
+
 	// Make sure the vector's attributes fields are up to date.
 	for (auto iter = vec_exts.begin(); iter != vec_exts.end(); ++iter) {
 		iter->attrs = map_exts[iter->ext];
@@ -862,6 +884,18 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 					vec_mimeTypes.push_back(*sys_mimeTypes);
 				}
 			}
+		}
+	}
+
+	// Get MIME types from FileFormatFactory.
+	vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
+	for (auto iter = vec_mimeTypes_fileFormat.cbegin();
+	     iter != vec_mimeTypes_fileFormat.cend(); ++iter)
+	{
+		auto iter2 = set_mimeTypes.find(*iter);
+		if (iter2 == set_mimeTypes.end()) {
+			set_mimeTypes.insert(*iter);
+			vec_mimeTypes.push_back(*iter);
 		}
 	}
 }
