@@ -32,6 +32,7 @@ using LibRpTexture::FileFormatFactory;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -806,20 +807,20 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	// Get file extensions from FileFormatFactory.
 	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
 	vector<const char*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
-	for (auto iter = vec_exts_fileFormat.cbegin();
-	     iter != vec_exts_fileFormat.cend(); ++iter)
-	{
-		auto iter2 = map_exts.find(*iter);
-		if (iter2 != map_exts.end()) {
-			// We already had this extension.
-			// Update its attributes.
-			iter2->second |= FFF_ATTRS;
-		} else {
-			// First time encountering this extension.
-			map_exts[*iter] = FFF_ATTRS;
-			vec_exts.push_back(RomDataFactory::ExtInfo(*iter, FFF_ATTRS));
+	std::for_each(vec_exts_fileFormat.cbegin(), vec_exts_fileFormat.cend(),
+		[&](const char *ext) {
+			auto iter = map_exts.find(ext);
+			if (iter != map_exts.end()) {
+				// We already had this extension.
+				// Update its attributes.
+				iter->second |= FFF_ATTRS;
+			} else {
+				// First time encountering this extension.
+				map_exts[ext] = FFF_ATTRS;
+				vec_exts.push_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
+			}
 		}
-	}
+	);
 
 	// Make sure the vector's attributes fields are up to date.
 	for (auto iter = vec_exts.begin(); iter != vec_exts.end(); ++iter) {
@@ -889,15 +890,15 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 
 	// Get MIME types from FileFormatFactory.
 	vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
-	for (auto iter = vec_mimeTypes_fileFormat.cbegin();
-	     iter != vec_mimeTypes_fileFormat.cend(); ++iter)
-	{
-		auto iter2 = set_mimeTypes.find(*iter);
-		if (iter2 == set_mimeTypes.end()) {
-			set_mimeTypes.insert(*iter);
-			vec_mimeTypes.push_back(*iter);
+	std::for_each(vec_mimeTypes_fileFormat.cbegin(), vec_mimeTypes_fileFormat.cend(),
+		[&](const char *mimeType) {
+			auto iter = set_mimeTypes.find(mimeType);
+			if (iter == set_mimeTypes.end()) {
+				set_mimeTypes.insert(mimeType);
+				vec_mimeTypes.push_back(mimeType);
+			}
 		}
-	}
+	);
 }
 
 /**
