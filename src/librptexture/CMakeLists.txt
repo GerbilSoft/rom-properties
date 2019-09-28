@@ -5,6 +5,8 @@ FIND_PACKAGE(Threads REQUIRED)
 
 # Sources.
 SET(librptexture_SRCS
+	FileFormatFactory.cpp
+
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/rp_image_ops.cpp
@@ -31,6 +33,8 @@ SET(librptexture_SRCS
 	)
 # Headers.
 SET(librptexture_H
+	FileFormatFactory.hpp
+
 	img/rp_image.hpp
 	img/rp_image_p.hpp
 	img/rp_image_backend.hpp
