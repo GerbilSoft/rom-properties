@@ -300,7 +300,6 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// File opened. Get its size and calculate the end block.
-	RP_Q(GdiReader);
 	const int64_t fileSize = file->size();
 	if (fileSize <= 0) {
 		// Empty or invalid file...
