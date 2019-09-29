@@ -77,6 +77,7 @@ using LibRpTexture::argb32_t;
 #include <csetjmp>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -1386,18 +1387,14 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	// WARNING: Do NOT initialize any C++ objects past this point!
 	if (setjmp(png_jmpbuf(d->png_ptr))) {
 		// PNG write failed.
-		for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
-			free(*iter);
-		}
+		std::for_each(vU8toL1.begin(), vU8toL1.end(), ::free);
 		d->lastError = EIO;
 		return -d->lastError;
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
 	png_set_text(d->png_ptr, d->info_ptr, text.get(), static_cast<int>(kv.size()));
-	for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
-		free(*iter);
-	}
+	std::for_each(vU8toL1.begin(), vU8toL1.end(), ::free);
 	return 0;
 }
 

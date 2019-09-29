@@ -29,6 +29,7 @@ using LibRomData::RomDataFactory;
 #include <cassert>
 
 // C++ includes.
+#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;
@@ -79,9 +80,11 @@ QStringList RpExtractorPlugin::mimetypes(void) const
 	// Convert to QStringList.
 	QStringList mimeTypes;
 	mimeTypes.reserve(static_cast<int>(vec_mimeTypes.size()));
-	for (auto iter = vec_mimeTypes.cbegin(); iter != vec_mimeTypes.cend(); ++iter) {
-		mimeTypes += QString::fromUtf8(*iter);
-	}
+	std::for_each(vec_mimeTypes.cbegin(), vec_mimeTypes.cend(),
+		[&mimeTypes](const char *mimeType) {
+			mimeTypes += QString::fromUtf8(mimeType);
+		}
+	);
 	return mimeTypes;
 }
 

@@ -138,20 +138,18 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// Find the .rsrc section.
 	// .rsrc is usually closer to the end of the section list,
 	// so search back to front.
-	const IMAGE_SECTION_HEADER *rsrc = nullptr;
-	for (auto iter = pe_sections.crbegin(); iter != pe_sections.crend(); ++iter) {
-		const IMAGE_SECTION_HEADER *section = &(*iter);
-		if (!strcmp(section->Name, ".rsrc")) {
-			// Found the .rsrc section.
-			rsrc = section;
-			break;
+	auto iter = std::find_if(pe_sections.crbegin(), pe_sections.crend(),
+		[](const IMAGE_SECTION_HEADER &section) -> bool {
+			return !strcmp(section.Name, ".rsrc");
 		}
-	}
+	);
 
-	if (!rsrc) {
+	if (iter == pe_sections.crend()) {
 		// No .rsrc section.
 		return -ENOENT;
 	}
+
+	const IMAGE_SECTION_HEADER *rsrc = &(*iter);
 
 	// Load the resources using PEResourceReader.
 	// NOTE: .rsrc address and size are validated by PEResourceReader.

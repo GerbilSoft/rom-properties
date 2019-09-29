@@ -35,6 +35,7 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -119,11 +120,13 @@ GdiReaderPrivate::~GdiReaderPrivate()
  */
 void GdiReaderPrivate::close(void)
 {
-	for (auto iter = blockRanges.begin(); iter != blockRanges.end(); ++iter) {
-		if (iter->file) {
-			iter->file->unref();
+	std::for_each(blockRanges.begin(), blockRanges.end(),
+		[](BlockRange &blockRange) {
+			if (blockRange.file) {
+				blockRange.file->unref();
+			}
 		}
-	}
+	);
 	blockRanges.clear();
 	trackMappings.clear();
 
@@ -383,14 +386,15 @@ GdiReader::GdiReader(IRpFile *file)
 	// Find the last data track.
 	// NOTE: Searching in reverse order.
 	int lastDataTrack = 0;	// 1-based; 0 is invalid.
-	for (auto iter = d->trackMappings.crbegin(); iter != d->trackMappings.crend(); ++iter) {
-		const GdiReaderPrivate::BlockRange *blockRange = *iter;
-		if (blockRange) {
-			if (static_cast<int>(blockRange->trackNumber) > lastDataTrack) {
-				lastDataTrack = blockRange->trackNumber;
+	std::for_each(d->trackMappings.crbegin(), d->trackMappings.crend(),
+		[&lastDataTrack](const GdiReaderPrivate::BlockRange *blockRange) {
+			if (blockRange) {
+				if (static_cast<int>(blockRange->trackNumber) > lastDataTrack) {
+					lastDataTrack = blockRange->trackNumber;
+				}
 			}
 		}
-	}
+	);
 
 	if (lastDataTrack > 0 && lastDataTrack != 3) {
 		ret = d->openTrack(lastDataTrack);

@@ -30,7 +30,9 @@ using namespace LibRomData;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <vector>
 using std::string;
@@ -876,10 +878,11 @@ int KeyStoreUI::keyCount(int sectIdx) const
 int KeyStoreUI::totalKeyCount(void) const
 {
 	RP_D(const KeyStoreUI);
-	int ret = 0;
-	for (auto iter = d->sections.cbegin(); iter != d->sections.cend(); ++iter) {
-		ret += iter->keyCount;
-	}
+	int ret = std::accumulate(d->sections.cbegin(), d->sections.cend(), 0,
+		[](int a, const KeyStoreUIPrivate::Section &section) -> int {
+			return a + section.keyCount;
+		}
+	);
 	return ret;
 }
 
@@ -1056,9 +1059,11 @@ int KeyStoreUI::setKey(int idx, const string &value)
 void KeyStoreUI::allKeysSaved(void)
 {
 	RP_D(KeyStoreUI);
-	for (auto iter = d->keys.begin(); iter != d->keys.end(); ++iter) {
-		iter->modified = false;
-	}
+	std::for_each(d->keys.begin(), d->keys.end(),
+		[](KeyStoreUI::Key &key) {
+			key.modified = false;
+		}
+	);
 
 	// KeyStore is no longer changed.
 	// NOTE: Not emitting modified() here.

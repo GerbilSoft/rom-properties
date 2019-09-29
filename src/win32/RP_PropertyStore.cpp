@@ -40,6 +40,7 @@ using LibRomData::RomDataFactory;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <string>
 using std::wstring;
 
@@ -184,9 +185,9 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 	}
 
 	// Clear property variants.
-	for (auto iter = prop_val.begin(); iter != prop_val.end(); ++iter) {
-		PropVariantClear(&(*iter));
-	}
+	std::for_each(prop_val.begin(), prop_val.end(),
+		[](PROPVARIANT &pv) { PropVariantClear(&pv); }
+	);
 }
 
 /** RP_PropertyStore **/

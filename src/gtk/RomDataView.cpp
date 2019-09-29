@@ -34,6 +34,7 @@ using LibRomData::RomDataFactory;
 #include <cassert>
 
 // C++ includes.
+#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;
@@ -581,11 +582,11 @@ rom_data_view_desc_format_type_changed(RpDescFormatType	desc_format_type,
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 
-	for (auto iter = page->vecDescLabels->cbegin();
-	     iter != page->vecDescLabels->cend(); ++iter)
-	{
-		set_label_format_type(GTK_LABEL(*iter), desc_format_type);
-	}
+	std::for_each(page->vecDescLabels->cbegin(), page->vecDescLabels->cend(),
+		[desc_format_type](GtkWidget *label) {
+			set_label_format_type(GTK_LABEL(label), desc_format_type);
+		}
+	);
 }
 
 static void
@@ -994,10 +995,13 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			}
 
 			int col = col_start;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
-				gtk_list_store_set(listStore, &treeIter,
-					col, iter->c_str(), -1);
-			}
+			std::for_each(data_row.cbegin(), data_row.cend(),
+				[listStore, &treeIter, &col](const string &str) {
+					gtk_list_store_set(listStore, &treeIter,
+						col, str.c_str(), -1);
+					col++;
+				}
+			);
 		}
 	}
 
@@ -1543,18 +1547,19 @@ rom_data_view_delete_tabs(RomDataView *page)
 	assert(page->vecDescLabels != nullptr);
 
 	// Delete the tab contents.
-	for (auto iter = page->tabs->begin(); iter != page->tabs->end(); ++iter) {
-		auto &tab = *iter;
-		if (tab.lblCredits) {
-			gtk_widget_destroy(tab.lblCredits);
+	std::for_each(page->tabs->begin(), page->tabs->end(),
+		[page](_RomDataView::tab &tab) {
+			if (tab.lblCredits) {
+				gtk_widget_destroy(tab.lblCredits);
+			}
+			if (tab.table) {
+				gtk_widget_destroy(tab.table);
+			}
+			if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
+				gtk_widget_destroy(tab.vbox);
+			}
 		}
-		if (tab.table) {
-			gtk_widget_destroy(tab.table);
-		}
-		if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
-			gtk_widget_destroy(tab.vbox);
-		}
-	}
+	);
 	page->tabs->clear();
 
 	if (page->tabWidget) {

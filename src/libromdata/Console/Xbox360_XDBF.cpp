@@ -35,6 +35,7 @@ using LibRpTexture::rp_image;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -194,9 +195,11 @@ Xbox360_XDBF_Private::~Xbox360_XDBF_Private()
 	}
 
 	// Delete any loaded images.
-	for (auto iter = map_images.begin(); iter != map_images.end(); ++iter) {
-		delete iter->second;
-	}
+	std::for_each(map_images.begin(), map_images.end(),
+		[](unordered_map<uint64_t, rp_image*>::value_type &iter) {
+			delete iter.second;
+		}
+	);
 }
 
 /**
@@ -218,18 +221,14 @@ const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint
 	resource_id  = cpu_to_be64(resource_id);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
-	for (auto iter = entryTable.cbegin(); iter != entryTable.cend(); ++iter) {
-		const XDBF_Entry *p = &(*iter);
-		if (p->namespace_id == namespace_id &&
-		    p->resource_id == resource_id)
-		{
-			// Found a match!
-			return p;
+	auto iter = std::find_if(entryTable.cbegin(), entryTable.cend(),
+		[namespace_id, resource_id](const XDBF_Entry &p) {
+			return (p.namespace_id == namespace_id &&
+				p.resource_id == resource_id);
 		}
-	}
+	);
 
-	// No match.
-	return nullptr;
+	return (iter != entryTable.cend() ? &(*iter) : nullptr);
 }
 
 /**

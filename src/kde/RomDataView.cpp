@@ -29,6 +29,7 @@ using LibRpTexture::rp_image;
 #include <cassert>
 
 // C++ includes.
+#include <algorithm>
 #include <array>
 #include <string>
 #include <vector>
@@ -667,10 +668,14 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 
 			int col = 0;
 			uint32_t align = listDataDesc.alignment.data;
-			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col, align >>= 2) {
-				treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(*iter));
-				treeWidgetItem->setTextAlignment(col, align_tbl[align & 3]);
-			}
+			std::for_each(data_row.cbegin(), data_row.cend(),
+				[treeWidgetItem, &col, &align](const string &str) {
+					treeWidgetItem->setData(col, Qt::DisplayRole, U82Q(str));
+					treeWidgetItem->setTextAlignment(col, align_tbl[align & 3]);
+					col++;
+					align >>= 2;
+				}
+			);
 		}
 	}
 
@@ -884,20 +889,21 @@ void RomDataViewPrivate::initDimensions(QLabel *lblDesc, const RomFields::Field 
 void RomDataViewPrivate::initDisplayWidgets(void)
 {
 	// Clear the tabs.
-	for (auto iter = tabs.begin(); iter != tabs.end(); ++iter) {
-		auto &tab = *iter;
-		// Delete the credits label if it's present.
-		delete tab.lblCredits;
-		// Delete the QFormLayout if it's present.
-		if (tab.formLayout) {
-			clearLayout(tab.formLayout);
-			delete tab.formLayout;
+	std::for_each(tabs.begin(), tabs.end(),
+		[this](RomDataViewPrivate::tab &tab) {
+			// Delete the credits label if it's present.
+			delete tab.lblCredits;
+			// Delete the QFormLayout if it's present.
+			if (tab.formLayout) {
+				clearLayout(tab.formLayout);
+				delete tab.formLayout;
+			}
+			// Delete the QVBoxLayout.
+			if (tab.vboxLayout != ui.vboxLayout) {
+				delete tab.vboxLayout;
+			}
 		}
-		// Delete the QVBoxLayout.
-		if (tab.vboxLayout != ui.vboxLayout) {
-			delete tab.vboxLayout;
-		}
-	}
+	);
 	tabs.clear();
 	ui.tabWidget->clear();
 	ui.tabWidget->hide();

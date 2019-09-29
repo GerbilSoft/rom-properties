@@ -932,11 +932,13 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		if (ret != 0 || extURLs.empty())
 			continue;
 
-		for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
-			os << "-- " <<
-				RomData::getImageTypeName((RomData::ImageType)i) << ": " << iter->url <<
-				" (cache_key: " << iter->cache_key << ')' << endl;
-		}
+		std::for_each(extURLs.cbegin(), extURLs.cend(),
+			[i, &os](const RomData::ExtURL &extURL) {
+				os << "-- " <<
+					RomData::getImageTypeName((RomData::ImageType)i) << ": " << extURL.url <<
+					" (cache_key: " << extURL.cache_key << ')' << endl;
+			}
+		);
 	}
 	return os;
 }

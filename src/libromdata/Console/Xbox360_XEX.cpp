@@ -324,15 +324,13 @@ const XEX2_Optional_Header_Tbl *Xbox360_XEX_Private::getOptHdrTblEntry(uint32_t 
 	// Search for the header.
 	// TODO: Can we assume that the optional headers are sorted
 	// and use a binary search?
-	for (auto iter = optHdrTbl.cbegin(); iter != optHdrTbl.cend(); ++iter) {
-		if (iter->header_id == header_id) {
-			// Found the header.
-			return &(*iter);
+	auto iter = std::find_if(optHdrTbl.cbegin(), optHdrTbl.cend(),
+		[header_id](const XEX2_Optional_Header_Tbl &tbl) -> bool {
+			return (tbl.header_id == header_id);
 		}
-	}
+	);
 
-	// Not found.
-	return nullptr;
+	return (iter != optHdrTbl.cend() ? &(*iter) : nullptr);
 }
 
 /**

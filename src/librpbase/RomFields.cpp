@@ -17,6 +17,7 @@
 #include <cassert>
 
 // C++ includes.
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>
@@ -72,42 +73,43 @@ RomFieldsPrivate::~RomFieldsPrivate()
 void RomFieldsPrivate::delete_data(void)
 {
 	// Delete all of the allocated objects in this->fields.
-	for (auto iter = fields.begin(); iter != fields.end(); ++iter) {
-		RomFields::Field &field = *iter;
-		if (!field.isValid) {
-			// No data here.
-			continue;
-		}
-
-		switch (field.type) {
-			case RomFields::RFT_INVALID:
-			case RomFields::RFT_DATETIME:
-			case RomFields::RFT_DIMENSIONS:
+	std::for_each(fields.begin(), fields.end(),
+		[](RomFields::Field &field) {
+			if (!field.isValid) {
 				// No data here.
-				break;
+				return;
+			}
 
-			case RomFields::RFT_STRING:
-				delete const_cast<string*>(field.data.str);
-				break;
-			case RomFields::RFT_BITFIELD:
-				delete const_cast<vector<string>*>(field.desc.bitfield.names);
-				break;
-			case RomFields::RFT_LISTDATA:
-				delete const_cast<vector<string>*>(field.desc.list_data.names);
-				delete const_cast<vector<vector<string> >*>(field.data.list_data.data);
-				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
-					delete const_cast<vector<const rp_image*>*>(field.data.list_data.mxd.icons);
-				}
-				break;
-			case RomFields::RFT_AGE_RATINGS:
-				delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
-				break;
-			default:
-				// ERROR!
-				assert(!"Unsupported RomFields::RomFieldsType.");
-				break;
+			switch (field.type) {
+				case RomFields::RFT_INVALID:
+				case RomFields::RFT_DATETIME:
+				case RomFields::RFT_DIMENSIONS:
+					// No data here.
+					break;
+
+				case RomFields::RFT_STRING:
+					delete const_cast<string*>(field.data.str);
+					break;
+				case RomFields::RFT_BITFIELD:
+					delete const_cast<vector<string>*>(field.desc.bitfield.names);
+					break;
+				case RomFields::RFT_LISTDATA:
+					delete const_cast<vector<string>*>(field.desc.list_data.names);
+					delete const_cast<vector<vector<string> >*>(field.data.list_data.data);
+					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
+						delete const_cast<vector<const rp_image*>*>(field.data.list_data.mxd.icons);
+					}
+					break;
+				case RomFields::RFT_AGE_RATINGS:
+					delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
+					break;
+				default:
+					// ERROR!
+					assert(!"Unsupported RomFields::RomFieldsType.");
+					break;
+			}
 		}
-	}
+	);
 
 	// Clear the fields vector.
 	this->fields.clear();

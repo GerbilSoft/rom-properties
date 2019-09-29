@@ -31,6 +31,7 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <memory>
+#include <numeric>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -791,10 +792,11 @@ int SAP::loadMetaData(void)
 	d->metaData->addMetaData_integer(Property::Channels, (tags.stereo ? 2 : 1));
 
 	// NOTE: Including all songs in the duration.
-	uint32_t duration = 0;
-	for (auto iter = tags.durations.cbegin(); iter != tags.durations.cend(); ++iter) {
-		duration += iter->first;
-	}
+	uint32_t duration = std::accumulate(tags.durations.cbegin(), tags.durations.cend(), 0U,
+		[](uint32_t a, const pair<uint32_t, bool> &tag_duration) -> uint32_t {
+			return a + tag_duration.first;
+		}
+	);
 	if (duration > 0) {
 		d->metaData->addMetaData_integer(Property::Duration, (int)duration);
 	}

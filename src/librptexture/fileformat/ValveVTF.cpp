@@ -36,7 +36,7 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
-//#include <memory>
+#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;
@@ -182,9 +182,7 @@ ValveVTFPrivate::ValveVTFPrivate(ValveVTF *q, IRpFile *file)
 
 ValveVTFPrivate::~ValveVTFPrivate()
 {
-	for (auto iter = mipmaps.begin(); iter != mipmaps.end(); ++iter) {
-		delete *iter;
-	}
+	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { delete img; });
 }
 
 /**

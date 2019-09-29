@@ -246,9 +246,9 @@ GameCubePrivate::~GameCubePrivate()
 	gamePartition = nullptr;
 
 	// Clear the existing partition table vector.
-	for (auto iter = wiiPtbl.cbegin(); iter != wiiPtbl.cend(); ++iter) {
-		delete iter->partition;
-	}
+	std::for_each(wiiPtbl.begin(), wiiPtbl.end(),
+		[](WiiPartEntry &entry) { delete entry.partition; }
+	);
 	wiiPtbl.clear();
 
 	if (discType > DISC_UNKNOWN) {
@@ -290,9 +290,9 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Clear the existing partition table vector.
-	for (auto iter = wiiPtbl.cbegin(); iter != wiiPtbl.cend(); ++iter) {
-		delete iter->partition;
-	}
+	std::for_each(wiiPtbl.begin(), wiiPtbl.end(),
+		[](WiiPartEntry &entry) { delete entry.partition; }
+	);
 	wiiPtbl.clear();
 
 	// Assuming a maximum of 128 partitions per table.

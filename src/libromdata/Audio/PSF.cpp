@@ -169,9 +169,11 @@ unordered_map<string, string> PSFPrivate::parseTags(int64_t tag_addr)
 
 	// If we're not using UTF-8, convert the values.
 	if (!isUtf8) {
-		for (auto iter = kv.begin(); iter != kv.end(); ++iter) {
-			iter->second = cp1252_sjis_to_utf8(iter->second);
-		}
+		std::for_each(kv.begin(), kv.end(),
+			[](unordered_map<string, string>::value_type &p) {
+				p.second = cp1252_sjis_to_utf8(p.second);
+			}
+		);
 	}
 
 	return kv;

@@ -53,6 +53,7 @@ using LibRomData::RomDataFactory;
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -446,11 +447,9 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (hbmpBanner) {
 		DeleteObject(hbmpBanner);
 	}
-	for (auto iter = hbmpIconFrames.begin(); iter != hbmpIconFrames.end(); ++iter) {
-		if (*iter) {
-			DeleteObject(*iter);
-		}
-	}
+	std::for_each(hbmpIconFrames.begin(), hbmpIconFrames.end(),
+		[](HBITMAP hbmp) { if (hbmp) { DeleteObject(hbmp); } }
+	);
 
 	// Delete the fonts.
 	if (hFontBold) {
@@ -566,12 +565,14 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Delete the old icons.
-		for (auto iter = hbmpIconFrames.begin(); iter != hbmpIconFrames.end(); ++iter) {
-			if (*iter) {
-				DeleteObject(*iter);
-				*iter = nullptr;
+		std::for_each(hbmpIconFrames.begin(), hbmpIconFrames.end(),
+			[](HBITMAP &hbmp) {
+				if (hbmp) {
+					DeleteObject(hbmp);
+					hbmp = nullptr;
+				}
 			}
-		}
+		);
 
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
@@ -1002,17 +1003,16 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	// native Windows encoding once.
 	vector<tstring> tnames;
 	tnames.reserve(count);
-	for (auto iter = bitfieldDesc.names->cbegin();
-	     iter != bitfieldDesc.names->cend(); ++iter)
-	{
-		const string &name = *iter;
-		if (name.empty()) {
-			// Skip U82T_s() for empty strings.
-			tnames.push_back(tstring());
-		} else {
-			tnames.push_back(U82T_s(name));
+	std::for_each(bitfieldDesc.names->cbegin(), bitfieldDesc.names->cend(),
+		[&tnames](const string &name) {
+			if (name.empty()) {
+				// Skip U82T_s() for empty strings.
+				tnames.push_back(tstring());
+			} else {
+				tnames.push_back(U82T_s(name));
+			}
 		}
-	}
+	);
 
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
@@ -1055,10 +1055,8 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			}
 
 			// Add up the widths.
-			int total_width = 0;
-			for (auto iter = col_widths.cbegin(); iter != col_widths.cend(); ++iter) {
-				total_width += *iter;
-			}
+			const int total_width = std::accumulate(col_widths.cbegin(), col_widths.cend(), 0);
+
 			// TODO: "DLL" on Windows executables is forced to the next line.
 			// Add 7x7 DLU margins?
 			if (total_width <= max_width) {
@@ -1829,9 +1827,9 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 	}
 
 	// Update all existing monospaced controls.
-	for (auto iter = hwndMonoControls.cbegin(); iter != hwndMonoControls.cend(); ++iter) {
-		SetWindowFont(*iter, hFontMonoNew, false);
-	}
+	std::for_each(hwndMonoControls.cbegin(), hwndMonoControls.cend(),
+		[hFontMonoNew](HWND hWnd) { SetWindowFont(hWnd, hFontMonoNew, false); }
+	);
 
 	// Delete the old font and save the new one.
 	HFONT hFontMonoOld = hFontMono;
@@ -2889,22 +2887,22 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// If console (or RemoteFX) was connected, enable ListView double-buffering.
 			switch (wParam) {
 				case WTS_CONSOLE_CONNECT:
-					for (auto iter = d->hwndListViewControls.cbegin();
-					     iter != d->hwndListViewControls.cend(); ++iter)
-					{
-						DWORD dwExStyle = ListView_GetExtendedListViewStyle(*iter);
-						dwExStyle |= LVS_EX_DOUBLEBUFFER;
-						ListView_SetExtendedListViewStyle(*iter, dwExStyle);
-					}
+					std::for_each(d->hwndListViewControls.cbegin(), d->hwndListViewControls.cend(),
+						[](HWND hWnd) {
+							DWORD dwExStyle = ListView_GetExtendedListViewStyle(hWnd);
+							dwExStyle |= LVS_EX_DOUBLEBUFFER;
+							ListView_SetExtendedListViewStyle(hWnd, dwExStyle);
+						}
+					);
 					break;
 				case WTS_REMOTE_CONNECT:
-					for (auto iter = d->hwndListViewControls.cbegin();
-					     iter != d->hwndListViewControls.cend(); ++iter)
-					{
-						DWORD dwExStyle = ListView_GetExtendedListViewStyle(*iter);
-						dwExStyle &= ~LVS_EX_DOUBLEBUFFER;
-						ListView_SetExtendedListViewStyle(*iter, dwExStyle);
-					}
+					std::for_each(d->hwndListViewControls.cbegin(), d->hwndListViewControls.cend(),
+						[](HWND hWnd) {
+							DWORD dwExStyle = ListView_GetExtendedListViewStyle(hWnd);
+							dwExStyle &= ~LVS_EX_DOUBLEBUFFER;
+							ListView_SetExtendedListViewStyle(hWnd, dwExStyle);
+						}
+					);
 					break;
 				default:
 					break;

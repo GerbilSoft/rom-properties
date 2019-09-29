@@ -265,20 +265,21 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(u
 	}
 
 	// Not cached. Find the type in the root directory.
+	auto iter = std::find_if(res_types.cbegin(), res_types.cend(),
+		[type](const ResDirEntry &entry) -> bool {
+			return (entry.id == type);
+		}
+	);
+
 	uint32_t type_addr = 0;
-	for (auto iter_root = res_types.cbegin();
-	     iter_root != res_types.cend(); ++iter_root)
-	{
-		if (iter_root->id == type) {
-			// Found the type.
-			if (!(iter_root->addr & 0x80000000)) {
-				// Not a subdirectory.
-				return nullptr;
-			}
-			type_addr = (iter_root->addr & ~0x80000000);
-			break;
+	if (iter != res_types.cend()) {
+		// Make sure this type is a subdirectory.
+		if (iter->addr & 0x80000000) {
+			// This is a subdirectory.
+			type_addr = (iter->addr & ~0x80000000);
 		}
 	}
+
 	if (type_addr == 0) {
 		// Not found.
 		return nullptr;
@@ -319,20 +320,21 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir
 	}
 
 	// Find the ID in the type directory.
+	auto iter = std::find_if(type_dir->cbegin(), type_dir->cend(),
+		[id](const ResDirEntry &entry) -> bool {
+			return (entry.id == id);
+		}
+	);
+
 	uint32_t id_addr = 0;
-	for (auto iter_type = type_dir->cbegin();
-	     iter_type != type_dir->cend(); ++iter_type)
-	{
-		if (iter_type->id == id) {
-			// Found the ID.
-			if (!(iter_type->addr & 0x80000000)) {
-				// Not a subdirectory.
-				return nullptr;
-			}
-			id_addr = (iter_type->addr & ~0x80000000);
-			break;
+	if (iter != type_dir->cend()) {
+		// Make sure this ID is a subdirectory.
+		if (iter->addr & 0x80000000) {
+			// This is a subdirectory.
+			id_addr = (iter->addr & ~0x80000000);
 		}
 	}
+
 	if (id_addr == 0) {
 		// Not found.
 		return nullptr;
@@ -733,20 +735,19 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 		dirEntry = &type_id_dir->at(0);
 	} else {
 		// Find the specified language ID.
-		for (auto iter = type_id_dir->cbegin();
-		     iter != type_id_dir->cend(); ++iter)
-		{
-			if (iter->id == static_cast<uint16_t>(lang)) {
-				// Found the language ID.
-				dirEntry = &(*iter);
-				break;
+		auto iter = std::find_if(type_id_dir->cbegin(), type_id_dir->cend(),
+			[lang](const PEResourceReaderPrivate::ResDirEntry &entry) -> bool {
+				return (entry.id == static_cast<uint16_t>(lang));
 			}
-		}
+		);
 
-		if (!dirEntry) {
+		if (iter == type_id_dir->cend()) {
 			// Not found.
 			return nullptr;
 		}
+
+		// Found the language ID.
+		dirEntry = &(*iter);
 	}
 
 	// Make sure this is a file.
