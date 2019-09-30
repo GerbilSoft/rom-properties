@@ -419,12 +419,15 @@ void XboxDisc::close(void)
 	if (d->defaultExeData) {
 		d->defaultExeData->close();
 	}
+#if 0
+	// TODO: Add close() functions?
 	if (d->xdvdfsPartition) {
 		d->xdvdfsPartition->close();
 	}
 	if (d->discReader) {
 		d->discReader->close();
 	}
+#endif
 
 	// Call the superclass function.
 	super::close();
