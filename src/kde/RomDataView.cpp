@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RomDataView.hpp: RomData viewer.                                        *
+ * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -182,6 +182,14 @@ class RomDataViewPrivate
 		 * @return QPixmap.
 		 */
 		QPixmap imgToPixmap(const QImage &img);
+
+		/**
+		 * Set the label's pixmap using an rp_image source.
+		 * @param label QLabel.
+		 * @param img rp_image. (If nullptr, returns an error; use clear() to clear it.)
+		 * @return True on success; false on error.
+		 */
+		bool setPixmapFromRpImage(QLabel *label, const rp_image *img);
 };
 
 /** RomDataViewPrivate **/
@@ -243,6 +251,32 @@ QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
 }
 
 /**
+ * Set the label's pixmap using an rp_image source.
+ * @param label QLabel.
+ * @param img rp_image. (If nullptr, returns an error; use clear() to clear it.)
+ * @return True on success; false on error.
+ */
+bool RomDataViewPrivate::setPixmapFromRpImage(QLabel *label, const rp_image *img)
+{
+	assert(img != nullptr);
+	if (!img || !img->isValid()) {
+		// No image, or image is not valid.
+		return false;
+	}
+
+	// Convert the rp_image to a QImage.
+	QImage qImg = rpToQImage(img);
+	if (qImg.isNull()) {
+		// Unable to convert the image.
+		return false;
+	}
+
+	// Image converted successfully.
+	label->setPixmap(imgToPixmap(qImg));
+	return true;
+}
+
+/**
  * Initialize the header row widgets.
  * The widgets must have already been created by ui.setupUi().
  */
@@ -283,20 +317,8 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
-		if (banner && banner->isValid()) {
-			QImage img = rpToQImage(banner);
-			if (!img.isNull()) {
-				ui.lblBanner->setPixmap(imgToPixmap(img));
-				ui.lblBanner->show();
-			} else {
-				// Invalid banner.
-				ui.lblBanner->hide();
-			}
-		} else {
-			// No banner.
-			ui.lblBanner->hide();
-		}
+		bool ok = setPixmapFromRpImage(ui.lblBanner, romData->image(RomData::IMG_INT_BANNER));
+		ui.lblBanner->setVisible(ok);
 	} else {
 		// No banner.
 		ui.lblBanner->hide();
@@ -305,7 +327,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
 			const IconAnimData *const iconAnimData = romData->iconAnimData();
@@ -343,14 +365,8 @@ void RomDataViewPrivate::initHeaderRow(void)
 			} else {
 				// Not an animated icon.
 				last_frame_number = 0;
-				QImage img = rpToQImage(icon);
-				if (!img.isNull()) {
-					iconFrames[0] = imgToPixmap(img);
-					ui.lblIcon->setPixmap(iconFrames[0]);
-					ui.lblIcon->show();
-				} else {
-					ui.lblIcon->hide();
-				}
+				bool ok = setPixmapFromRpImage(ui.lblIcon, icon);
+				ui.lblIcon->setVisible(ok);
 			}
 		} else {
 			// No icon.
