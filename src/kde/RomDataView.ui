@@ -46,10 +46,10 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lblBanner"/>
+      <widget class="DragImageLabel" name="lblBanner"/>
      </item>
      <item>
-      <widget class="QLabel" name="lblIcon"/>
+      <widget class="DragImageLabel" name="lblIcon"/>
      </item>
      <item>
       <spacer name="hspcHeader2">
@@ -75,6 +75,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DragImageLabel</class>
+   <extends>QLabel</extends>
+   <header>DragImageLabel.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
