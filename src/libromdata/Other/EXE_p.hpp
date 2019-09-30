@@ -109,9 +109,11 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 		 * Find the runtime DLL. (NE version)
 		 * @param refDesc String to store the description.
 		 * @param refLink String to store the download link.
+		 * @param refHasKernel Set to true if KERNEL is present in the import table.
+		 *                     Used to distinguish between old Windows and OS/2 executables.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int findNERuntimeDLL(std::string &refDesc, std::string &refLink);
+		int findNERuntimeDLL(std::string &refDesc, std::string &refLink, bool &refHasKernel);
 
 		/**
 		 * Add fields for NE executables.

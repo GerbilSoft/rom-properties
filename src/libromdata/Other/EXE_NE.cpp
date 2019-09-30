@@ -116,12 +116,15 @@ int EXEPrivate::loadNEResourceTable(void)
  * Find the runtime DLL. (NE version)
  * @param refDesc String to store the description.
  * @param refLink String to store the download link.
+ * @param refHasKernel Set to true if KERNEL is present in the import table.
+ *                     Used to distinguish between old Windows and OS/2 executables.
  * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink)
+int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasKernel)
 {
 	refDesc.clear();
 	refLink.clear();
+	refHasKernel = false;
 
 	if (!file || !file->isOpen()) {
 		// File isn't open.
@@ -226,29 +229,44 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink)
 
 		// Check the DLL name.
 		// TODO: More checks.
-		// TODO: Indicate if "KERNEL" was found; needed to distinguish between
-		// OS/2 and really old Windows executables.
-		// https://github.com/wine-mirror/wine/blob/ba9f3dc198dfc81bb40159077b73b797006bb73c/dlls/kernel32/module.c#L262
 		// NOTE: There's only four 16-bit versions of Visual Basic,
 		// so we're hard-coding everything.
-		if (count == 8) {
+		// NOTE 2: Not breaking immediately on success, since we also want to
+		// check if KERNEL is present. If we already found KERNEL, *then* we'll
+		// break on success.
+		if (count == 6) {
+			// If KERNEL is imported, this is a Windows executable.
+			// This is needed in order to distinguish between really old
+			// OS/2 and Windows executables target OS == 0.
+			// Reference: https://github.com/wine-mirror/wine/blob/ba9f3dc198dfc81bb40159077b73b797006bb73c/dlls/kernel32/module.c#L262
+			if (!strncmp(pDllName, "KERNEL", 6)) {
+				// Found KERNEL.
+				refHasKernel = true;
+				if (!refDesc.empty())
+					break;
+			}
+		} else if (count == 8) {
 			// FIXME: Is it VBRUN400 or VBRUN416 for 16-bit?
 			if (!strncmp(pDllName, "VBRUN400", 8) || !strncmp(pDllName, "VBRUN416", 8)) {
 				refDesc = rp_sprintf(
 					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
-				break;
+				if (refHasKernel)
+					break;
 			} else if (!strncmp(pDllName, "VBRUN300", 8)) {
 				refDesc = rp_sprintf(
 					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "3.0");
-				break;
+				if (refHasKernel)
+					break;
 			} else if (!strncmp(pDllName, "VBRUN200", 8)) {
 				refDesc = rp_sprintf(
 					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "2.0");
-				break;
+				if (refHasKernel)
+					break;
 			} else if (!strncmp(pDllName, "VBRUN100", 8)) {
 				refDesc = rp_sprintf(
 					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "1.0");
-				break;
+				if (refHasKernel)
+					break;
 			}
 		}
 	}
@@ -268,10 +286,26 @@ void EXEPrivate::addFields_NE(void)
 	fields->setTabName(0, "NE");
 	fields->setTabIndex(0);
 
+	// Get the runtime DLL and if KERNEL is imported.
+	string runtime_dll, runtime_link;
+	bool hasKernel = false;
+	int ret = findNERuntimeDLL(runtime_dll, runtime_link, hasKernel);
+	if (ret != 0) {
+		// Unable to get the runtime DLL.
+		// NOTE: Assuming KERNEL is present.
+		runtime_dll.clear();
+		runtime_link.clear();
+		hasKernel = true;
+	}
+
 	// Target OS.
-	const char *targetOS = (hdr.ne.targOS < ARRAY_SIZE(NE_TargetOSes))
-					? NE_TargetOSes[hdr.ne.targOS]
-					: nullptr;
+	const char *targetOS = nullptr;
+	if (hdr.ne.targOS == NE_OS_UNKNOWN) {
+		// Either old OS/2 or Windows 1.x/2.x.
+		targetOS = (hasKernel ? "Windows 1.x/2.x" : "Old OS/2");
+	} else if (hdr.ne.targOS < ARRAY_SIZE(NE_TargetOSes)) {
+		targetOS = NE_TargetOSes[hdr.ne.targOS];
+	}
 	if (!targetOS) {
 		// Check for Phar Lap extenders.
 		if (hdr.ne.targOS == NE_OS_PHARLAP_286_OS2) {
@@ -378,9 +412,8 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// Runtime DLL.
-	string runtime_dll, runtime_link;
-	int ret = findNERuntimeDLL(runtime_dll, runtime_link);
-	if (ret == 0 && !runtime_dll.empty()) {
+	// NOTE: Strings were obtained earlier.
+	if (hdr.ne.targOS == NE_OS_WIN) {
 		// TODO: Show the link?
 		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
