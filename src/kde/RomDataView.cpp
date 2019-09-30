@@ -555,13 +555,16 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 		treeWidget->setDefaultDropAction(Qt::CopyAction);
 		treeWidget->setDragDropMode(QAbstractItemView::InternalMove);
 		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+		// TODO: Get multi-image drag & drop working.
+		//treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 	} else {
 		treeWidget = new QTreeWidget(q);
 		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 	}
 	treeWidget->setRootIsDecorated(false);
 	treeWidget->setAlternatingRowColors(true);
-	treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
 	// DISABLED uniform row heights.
 	// Some Xbox 360 achievements take up two lines,
