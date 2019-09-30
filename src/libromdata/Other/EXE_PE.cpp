@@ -453,7 +453,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "5.0");
 			refLink = "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe";
 			break;
-		} else if (!strcmp(dll_name, "vbrun400.dll")) {
+		} else if (!strcmp(dll_name, "vbrun400.dll") || !strcmp(dll_name, "vbrun432.dll")) {
+			// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
 			// TODO: Find a download link.
