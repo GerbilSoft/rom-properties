@@ -265,6 +265,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			} else if (!strncmp(pDllName, "VBRUN100", 8)) {
 				refDesc = rp_sprintf(
 					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "1.0");
+				refLink = "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe";
 				if (refHasKernel)
 					break;
 			}
