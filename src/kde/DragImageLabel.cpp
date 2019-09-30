@@ -322,6 +322,8 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 		pngWriter = new RpPngWriter(pngData, m_anim->iconAnimData);
 	} else if (m_img) {
 		// Standard icon.
+		// NOTE: Using the source image because we want the original
+		// size, not the resized version.
 		pngWriter = new RpPngWriter(pngData, m_img);
 	} else {
 		// No icon...
