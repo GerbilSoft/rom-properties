@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+// Reference: https://doc.qt.io/qt-5/dnd.html
+
 #include "DragImageLabel.hpp"
 #include "RpQt.hpp"
 #include "RpQByteArrayFile.hpp"
