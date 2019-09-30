@@ -35,6 +35,7 @@ using std::array;
 using std::string;
 using std::vector;
 
+// Qt includes.
 #include <QtCore/QDateTime>
 #include <QtCore/QEvent>
 #include <QtCore/QTimer>
@@ -48,6 +49,9 @@ using std::vector;
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
+
+// Custom Qt widgets.
+#include "DragImageTreeWidget.hpp"
 
 #include "ui_RomDataView.h"
 class RomDataViewPrivate
@@ -542,9 +546,22 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	Q_Q(RomDataView);
-	QTreeWidget *const treeWidget = new QTreeWidget(q);
+	QTreeWidget *treeWidget;
+	printf("hasIcons: %d\n", hasIcons);
+	Qt::ItemFlags itemFlags;
+	if (hasIcons) {
+		treeWidget = new DragImageTreeWidget(q);
+		treeWidget->setDragEnabled(true);
+		treeWidget->setDefaultDropAction(Qt::CopyAction);
+		treeWidget->setDragDropMode(QAbstractItemView::InternalMove);
+		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+	} else {
+		treeWidget = new QTreeWidget(q);
+		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	}
 	treeWidget->setRootIsDecorated(false);
 	treeWidget->setAlternatingRowColors(true);
+	treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
 	// DISABLED uniform row heights.
 	// Some Xbox 360 achievements take up two lines,
@@ -623,11 +640,13 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 				if (icon) {
 					treeWidgetItem->setIcon(0, QIcon(
 						QPixmap::fromImage(rpToQImage(icon))));
+					treeWidgetItem->setData(0, DragImageTreeWidget::RpImageRole,
+						QVariant::fromValue((void*)icon));
 				}
 			}
 
-			// Disable user checkability.
-			treeWidgetItem->setFlags(treeWidgetItem->flags() & ~Qt::ItemIsUserCheckable);
+			// Set item flags.
+			treeWidgetItem->setFlags(itemFlags);
 
 			int col = 0;
 			uint32_t align = listDataDesc.alignment.data;
