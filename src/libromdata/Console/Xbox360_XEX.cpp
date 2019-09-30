@@ -1371,9 +1371,12 @@ void Xbox360_XEX::close(void)
 	if (d->pe_exe) {
 		d->pe_exe->close();
 	}
+#if 0
+	// TODO: Add CBCReader::close()?
 	if (d->peReader) {
 		d->peReader->close();
 	}
+#endif
 
 #ifdef ENABLE_LIBMSPACK
 	d->lzx_peHeader.clear();
