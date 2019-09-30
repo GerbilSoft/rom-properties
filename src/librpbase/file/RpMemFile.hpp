@@ -85,7 +85,7 @@ class RpMemFile : public IRpFile
 		int truncate(int64_t size = 0) final;
 
 	public:
-		/** File properties. **/
+		/** File properties **/
 
 		/**
 		 * Get the file size.
