@@ -71,8 +71,10 @@ size_t RpMemFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	// Convert the const void* to a const uint8_t*.
-	const uint8_t *buf = static_cast<const uint8_t*>(m_buf);
+	if (unlikely(size == 0)) {
+		// Not reading anything...
+		return 0;
+	}
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.
@@ -82,12 +84,10 @@ size_t RpMemFile::read(void *ptr, size_t size)
 		size = m_size - m_pos;
 	}
 
-	if (size > 0) {
-		// Copy the data.
-		memcpy(ptr, &buf[m_pos], size);
-		m_pos += size;
-	}
-
+	// Copy the data.
+	const uint8_t *const buf = static_cast<const uint8_t*>(m_buf);
+	memcpy(ptr, &buf[m_pos], size);
+	m_pos += size;
 	return size;
 }
 
@@ -160,7 +160,7 @@ int RpMemFile::truncate(int64_t size)
 	return -1;
 }
 
-/** File properties. **/
+/** File properties **/
 
 /**
  * Get the file size.
