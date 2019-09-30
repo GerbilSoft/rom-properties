@@ -317,7 +317,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		bool ok = setPixmapFromRpImage(ui.lblBanner, romData->image(RomData::IMG_INT_BANNER));
+		bool ok = ui.lblBanner->setPixmapFromRpImage(romData->image(RomData::IMG_INT_BANNER));
 		ui.lblBanner->setVisible(ok);
 	} else {
 		// No banner.
@@ -365,7 +365,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 			} else {
 				// Not an animated icon.
 				last_frame_number = 0;
-				bool ok = setPixmapFromRpImage(ui.lblIcon, icon);
+				bool ok = ui.lblIcon->setPixmapFromRpImage(icon);
 				ui.lblIcon->setVisible(ok);
 			}
 		} else {
