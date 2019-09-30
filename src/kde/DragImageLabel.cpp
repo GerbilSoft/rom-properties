@@ -8,16 +8,25 @@
 
 #include "DragImageLabel.hpp"
 #include "RpQt.hpp"
+#include "RpQByteArrayFile.hpp"
 
 // librpbase
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
+#include "librpbase/img/RpPngWriter.hpp"
 using LibRpBase::IconAnimData;
 using LibRpBase::IconAnimHelper;
+using LibRpBase::RpPngWriter;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
+
+// Qt includes.
+#include <QApplication>
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
 
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)
@@ -289,12 +298,66 @@ void DragImageLabel::tmrIconAnim_timeout(void)
 
 void DragImageLabel::mousePressEvent(QMouseEvent *event)
 {
-	// TODO
-	Q_UNUSED(event)
+	if (event->button() == Qt::LeftButton)
+		m_dragStartPos = event->pos();
+
+	return super::mousePressEvent(event);
 }
 
 void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 {
-	// TODO
-	Q_UNUSED(event)
+	if (!(event->buttons() & Qt::LeftButton))
+		return;
+	if ((event->pos() - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
+		return;
+
+	const bool isAnimated = (m_anim && m_anim->iconAnimData && m_anim->iconAnimHelper.isAnimated());
+
+	RpQByteArrayFile *const pngData = new RpQByteArrayFile();
+	RpPngWriter *pngWriter;
+	if (isAnimated) {
+		// Animated icon.
+		pngWriter = new RpPngWriter(pngData, m_anim->iconAnimData);
+	} else if (m_img) {
+		// Standard icon.
+		pngWriter = new RpPngWriter(pngData, m_img);
+	} else {
+		// No icon...
+		pngData->unref();
+		return;
+	}
+
+	if (!pngWriter->isOpen()) {
+		// Unable to open the PNG writer.
+		pngData->unref();
+		return;
+	}
+
+	// TODO: Add text fields indicating the source game.
+
+	int pwRet = pngWriter->write_IHDR();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		pngData->unref();
+		return;
+	}
+	pwRet = pngWriter->write_IDAT();
+	if (pwRet != 0) {
+		// Error writing the PNG image...
+		pngData->unref();
+		return;
+	}
+
+	// RpPngWriter will finalize the PNG on delete.
+	delete pngWriter;
+
+	QDrag *const drag = new QDrag(this);
+	QMimeData *const mimeData = new QMimeData;
+
+	QByteArray ba = pngData->qByteArray();
+	mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
+	drag->setMimeData(mimeData);
+
+	drag->exec(Qt::CopyAction);
+	pngData->unref();
 }
