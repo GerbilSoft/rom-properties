@@ -88,7 +88,6 @@ size_t RpQByteArrayFile::write(const void *ptr, size_t size)
 		return 0;
 	}
 
-	printf("WRITE: cur size == %d, pos == %lld, writing %zu bytes\n", m_byteArray.size(), m_pos, size);
 	// Do we need to expand the QByteArray?
 	int64_t req_size = static_cast<int64_t>(m_byteArray.size()) + size;
 	if (req_size < 0) {
@@ -98,7 +97,6 @@ size_t RpQByteArrayFile::write(const void *ptr, size_t size)
 		// Need to expand the QByteArray.
 		m_byteArray.resize(req_size);
 	}
-	printf("WRITE: new size == %lld\n", req_size);
 
 	// Copy the data to the buffer.
 	char *const buf = m_byteArray.data();
