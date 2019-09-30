@@ -151,9 +151,11 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 
 		/**
 		 * Find the runtime DLL. (PE version)
-		 * @return Runtime DLL description, or empty string if not found.
+		 * @param refDesc String to store the description.
+		 * @param refLink String to store the download link.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		std::string findPERuntimeDLL(void);
+		int findPERuntimeDLL(std::string &refDesc, std::string &refLink);
 
 		/**
 		 * Add fields for PE and PE32+ executables.

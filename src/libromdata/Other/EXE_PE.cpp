@@ -204,47 +204,51 @@ int EXEPrivate::loadPEResourceTypes(void)
 
 /**
  * Find the runtime DLL. (PE version)
- * TODO: Include a download link if available.
- * @return Runtime DLL description, or empty string if not found.
+ * @param refDesc String to store the description.
+ * @param refLink String to store the download link.
+ * @return 0 on success; negative POSIX error code on error.
  */
-string EXEPrivate::findPERuntimeDLL(void)
+int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 {
-	string dll_name_ret;
+	refDesc.clear();
+	refLink.clear();
 
 	if (!file || !file->isOpen()) {
 		// File isn't open.
-		return dll_name_ret;
+		return -EBADF;
 	} else if (!isValid) {
 		// Unknown executable type.
-		return dll_name_ret;
+		return -EIO;
 	}
 
 	// Check the import table.
 	// NOTE: dataDir is 8 bytes, so we'll just copy it
 	// instead of using a pointer.
 	IMAGE_DATA_DIRECTORY dataDir;
+	bool is64 = false;
 	switch (exeType) {
 		case EXE_TYPE_PE:
 			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
 			break;
 		case EXE_TYPE_PE32PLUS:
 			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
+			is64 = true;
 			break;
 		default:
 			// Not a PE executable.
-			return dll_name_ret;
+			return -ENOTSUP;
 	}
 
 	if (dataDir.VirtualAddress == 0 || dataDir.Size == 0) {
 		// No import table.
-		return dll_name_ret;
+		return -ENOENT;
 	}
 
 	// Get the import table's physical address.
 	uint32_t imptbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
 	if (imptbl_paddr == 0) {
 		// Not found.
-		return dll_name_ret;
+		return -ENOENT;
 	}
 
 	// Found the section.
@@ -260,13 +264,13 @@ string EXEPrivate::findPERuntimeDLL(void)
 	impDirTbl.resize(dataDir.Size / sizeof(IMAGE_IMPORT_DIRECTORY));
 	if (impDirTbl.empty()) {
 		// Effectively empty?
-		return dll_name_ret;
+		return -ENOENT;
 	}
 	const size_t impDirTbl_size_bytes = impDirTbl.size() * sizeof(IMAGE_IMPORT_DIRECTORY);
 	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), impDirTbl_size_bytes);
 	if (size != impDirTbl_size_bytes) {
 		// Seek and/or read error.
-		return dll_name_ret;
+		return -EIO;
 	}
 
 	// Set containing all of the DLL name VAs.
@@ -297,7 +301,7 @@ string EXEPrivate::findPERuntimeDLL(void)
 	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
 	if (dll_paddr == 0) {
 		// Invalid VAs...
-		return dll_name_ret;
+		return -ENOENT;
 	}
 
 	const size_t dll_size_max = dll_size_min + 260;	// MAX_PATH
@@ -305,7 +309,7 @@ string EXEPrivate::findPERuntimeDLL(void)
 	size_t dll_size_read = file->seekAndRead(dll_paddr, reinterpret_cast<uint8_t*>(dll_name_data.get()), dll_size_max);
 	if (dll_size_read < dll_size_min || dll_size_read > dll_size_max) {
 		// Seek and/or read error.
-		return dll_name_ret;
+		return -EIO;
 	}
 	// Ensure the end of the buffer is NULL-terminated.
 	dll_name_data[dll_size_max-1] = '\0';
@@ -320,26 +324,29 @@ string EXEPrivate::findPERuntimeDLL(void)
 
 	// MSVC runtime DLL version to display version table.
 	// Reference: https://matthew-brett.github.io/pydagogue/python_msvc.html
+	// NOTE: MSVC debug runtimes are NOT redistributable.
 	// TODO: Move somewhere else?
 	static const struct {
 		unsigned int dll_name_version;	// e.g. 140, 120
 		const char display_version[8];
+		const char *url_i386;	// i386 download link
+		const char *url_amd64;	// amd64 download link
 	} msvc_dll_tbl[] = {
-		{120,	"2013"},
-		{110,	"2012"},
-		{100,	"2010"},
-		{ 90,	"2008"},
-		{ 80,	"2005"},
-		{ 71,	"2003"},
-		{ 70,	"2002"},
-		{ 60,	"6.0"},	// NOTE: MSVC 6.0 uses "msvcrt.dll".
-		{ 50,	"5.0"},
-		{ 42,	"4.2"},
-		{ 40,	"4.0"},
-		{ 20,	"2.0"},
-		{ 10,	"1.0"},
+		{120,	"2013", "https://aka.ms/highdpimfc2013x86enu", "https://aka.ms/highdpimfc2013x64enu"},
+		{110,	"2012", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe"},
+		{100,	"2010", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"},
+		{ 90,	"2008", "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe", "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe"},
+		{ 80,	"2005", "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE", "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x64.EXE"},
+		{ 71,	"2003", nullptr, nullptr},
+		{ 70,	"2002", nullptr, nullptr},
+		{ 60,	 "6.0", nullptr, nullptr},	// NOTE: MSVC 6.0 uses "msvcrt.dll".
+		{ 50,	 "5.0", nullptr, nullptr},
+		{ 42,	 "4.2", nullptr, nullptr},
+		{ 40,	 "4.0", nullptr, nullptr},
+		{ 20,	 "2.0", nullptr, nullptr},
+		{ 10,	 "1.0", nullptr, nullptr},
 
-		{  0,	""}
+		{  0,	    "", nullptr, nullptr}
 	};
 
 	// Check all of the DLL names.
@@ -353,15 +360,21 @@ string EXEPrivate::findPERuntimeDLL(void)
 			break;
 		}
 
+		// Current DLL name from the import table.
 		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
 
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
 		if (!strcmp(dll_name, "vcruntime140.dll")) {
-			dll_name_ret = rp_sprintf(
+			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2019");
+			if (is64) {
+				refLink = "https://aka.ms/vs/16/release/vc_redist.x64.exe";
+			} else {
+				refLink = "https://aka.ms/vs/16/release/vc_redist.x86.exe";
+			}
 			break;
 		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
-			dll_name_ret = rp_sprintf(
+			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2019");
 			break;
 		}
@@ -381,7 +394,7 @@ string EXEPrivate::findPERuntimeDLL(void)
 			for (const auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
 				if (p->dll_name_version == dll_name_version) {
 					// Found a matching version.
-					dll_name_ret = rp_sprintf(
+					refDesc = rp_sprintf(
 						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), p->display_version);
 					found = true;
 					break;
@@ -398,8 +411,17 @@ string EXEPrivate::findPERuntimeDLL(void)
 			for (auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
 				if (p->dll_name_version == dll_name_version) {
 					// Found a matching version.
-					dll_name_ret = rp_sprintf(
+					refDesc = rp_sprintf(
 						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), p->display_version);
+					if (is64) {
+						if (p->url_amd64) {
+							refLink = p->url_amd64;
+						}
+					} else {
+						if (p->url_i386) {
+							refLink = p->url_i386;
+						}
+					}
 					found = true;
 					break;
 				}
@@ -409,17 +431,17 @@ string EXEPrivate::findPERuntimeDLL(void)
 		// Check for MSVCRT.DLL.
 		if (!strcmp(dll_name, "msvcrt.dll")) {
 			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
-			// TODO: Other heuristics to figure this out.
-			dll_name_ret = C_("EXE|Runtime", "Microsoft System C++ Runtime");
+			// TODO: Other heuristics to figure this out. (Check for msvcp60.dll?)
+			refDesc = C_("EXE|Runtime", "Microsoft System C++ Runtime");
 			break;
 		} else if (!strcmp(dll_name, "msvcrtd.dll")) {
-			dll_name_ret = rp_sprintf(
+			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "6.0");
 			break;
 		}
 	}
 
-	return dll_name_ret;
+	return (!refDesc.empty() ? 0 : -ENOENT);
 }
 
 /**
@@ -574,14 +596,15 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// Runtime DLL.
-	// TODO: Show a link to download if available?
-	string runtime_dll = findPERuntimeDLL();
-	if (!runtime_dll.empty()) {
+	string runtime_dll, runtime_link;
+	int ret = findPERuntimeDLL(runtime_dll, runtime_link);
+	if (ret == 0 && !runtime_dll.empty()) {
+		// TODO: Show the link?
 		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
 	// Load resources.
-	int ret = loadPEResourceTypes();
+	ret = loadPEResourceTypes();
 	if (ret != 0 || !rsrcReader) {
 		// Unable to load resources.
 		// We're done here.
