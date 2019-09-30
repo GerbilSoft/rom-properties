@@ -36,6 +36,8 @@
     used for JPEG decoding. This setup was used before for PNG, but we now
     use more PNG functionality than is available from gdiplus, so libpng
     is staying put.
+  * Xbox360_XEX: A warning is now shown if a required encryption key isn't
+    available.
 
 ## v1.4.3 (released 2019/09/16)
 

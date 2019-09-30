@@ -1595,10 +1595,30 @@ int Xbox360_XEX::loadFieldData(void)
 	// NOTE: The magic number is NOT byteswapped in the constructor.
 	const XEX2_Header *const xex2Header = &d->xex2Header;
 
-	// Maximum of 13 fields, not including RomData subclasses.
-	d->fields->reserve(13);
-	d->fields->setTabName(0,
-		d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1 ? "XEX2" : "XEX1");
+	// Maximum of 14 fields, not including RomData subclasses.
+	const char *const s_xexType = (d->xexType != Xbox360_XEX_Private::XEX_TYPE_XEX1 ? "XEX2" : "XEX1");
+	d->fields->reserve(14);
+	d->fields->setTabName(0, s_xexType);
+
+	// Is the encryption key available?
+	bool noKeyAvailable = false;
+	if (d->initPeReader() != nullptr) {
+		if (d->keyInUse < 0 &&
+		    d->fileFormatInfo.encryption_type != cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE))
+		{
+			// Key not available.
+			noKeyAvailable = true;
+		}
+	} else {
+		// Unable to initialize the PE reader.
+		// Assume the key is not available.
+		noKeyAvailable = true;
+	}
+	if (noKeyAvailable) {
+		d->fields->addField_string(C_("RomData", "Warning"),
+			rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexType),
+			RomFields::STRF_WARNING);
+	}
 
 	// XDBF fields
 	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
