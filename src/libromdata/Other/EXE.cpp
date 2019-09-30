@@ -837,10 +837,10 @@ int EXE::loadFieldData(void)
 
 	// Maximum number of fields:
 	// - NE: 6
-	// - PE: 7
+	// - PE: 8
 	//   - PE Version: +6
 	//   - PE Manifest: +12
-	d->fields->reserve(25);
+	d->fields->reserve(26);
 
 	// Executable type.
 	// NOTE: Not translatable.

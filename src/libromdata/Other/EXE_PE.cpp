@@ -26,9 +26,13 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 using std::string;
+using std::unique_ptr;
+using std::unordered_set;
 using std::vector;
 
 namespace LibRomData {
@@ -91,7 +95,7 @@ int EXEPrivate::loadPESectionTable(void)
 	// Not all sections may be in use.
 	// Find the first section header with an empty name.
 	int ret = 0;
-	for (unsigned int i = 0; i < static_cast<unsigned int>(pe_sections.size()); i++) {
+	for (size_t i = 0; i < pe_sections.size(); i++) {
 		if (pe_sections[i].Name[0] == 0) {
 			// Found the first empty section.
 			pe_sections.resize(i);
@@ -101,6 +105,36 @@ int EXEPrivate::loadPESectionTable(void)
 
 	// Section headers have been read.
 	return ret;
+}
+
+/**
+ * Convert a PE virtual address to a physical address.
+ * pe_sections must be loaded.
+ * @param vaddr Virtual address.
+ * @param size Size of the virtual section.
+ * @return Physical address, or 0 if not mappable.
+ */
+uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
+{
+	// Make sure the PE section table is loaded.
+	if (pe_sections.empty()) {
+		if (loadPESectionTable() != 0) {
+			// Error loading the PE section table.
+			return 0;
+		}
+	}
+
+	for (auto iter = pe_sections.cbegin(); iter != pe_sections.cend(); ++iter) {
+		if (iter->VirtualAddress <= vaddr) {
+			if ((iter->VirtualAddress + iter->SizeOfRawData) >= (vaddr+size)) {
+				// Found the section. Adjust the address.
+				return (vaddr - iter->VirtualAddress) + iter->PointerToRawData;
+			}
+		}
+	}
+
+	// Not mappable.
+	return 0;
 }
 
 /**
@@ -143,7 +177,6 @@ int EXEPrivate::loadPEResourceTypes(void)
 			return !strcmp(section.Name, ".rsrc");
 		}
 	);
-
 	if (iter == pe_sections.crend()) {
 		// No .rsrc section.
 		return -ENOENT;
@@ -167,6 +200,226 @@ int EXEPrivate::loadPEResourceTypes(void)
 
 	// .rsrc section loaded.
 	return 0;
+}
+
+/**
+ * Find the runtime DLL. (PE version)
+ * TODO: Include a download link if available.
+ * @return Runtime DLL description, or empty string if not found.
+ */
+string EXEPrivate::findPERuntimeDLL(void)
+{
+	string dll_name_ret;
+
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return dll_name_ret;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return dll_name_ret;
+	}
+
+	// Check the import table.
+	// NOTE: dataDir is 8 bytes, so we'll just copy it
+	// instead of using a pointer.
+	IMAGE_DATA_DIRECTORY dataDir;
+	switch (exeType) {
+		case EXE_TYPE_PE:
+			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
+			break;
+		case EXE_TYPE_PE32PLUS:
+			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
+			break;
+		default:
+			// Not a PE executable.
+			return dll_name_ret;
+	}
+
+	if (dataDir.VirtualAddress == 0 || dataDir.Size == 0) {
+		// No import table.
+		return dll_name_ret;
+	}
+
+	// Get the import table's physical address.
+	uint32_t imptbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
+	if (imptbl_paddr == 0) {
+		// Not found.
+		return dll_name_ret;
+	}
+
+	// Found the section.
+	// NOTE: There appears to be two copies of the DLL listing.
+	// There's one in the file header before any sections, and
+	// one in the import directory table area. This code uses
+	// the import directory table area, though it might be
+	// easier to use the first copy...
+
+	// Load the import directory table.
+	ao::uvector<IMAGE_IMPORT_DIRECTORY> impDirTbl;
+	assert(dataDir.Size % sizeof(IMAGE_IMPORT_DIRECTORY) == 0);
+	impDirTbl.resize(dataDir.Size / sizeof(IMAGE_IMPORT_DIRECTORY));
+	if (impDirTbl.empty()) {
+		// Effectively empty?
+		return dll_name_ret;
+	}
+	const size_t impDirTbl_size_bytes = impDirTbl.size() * sizeof(IMAGE_IMPORT_DIRECTORY);
+	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), impDirTbl_size_bytes);
+	if (size != impDirTbl_size_bytes) {
+		// Seek and/or read error.
+		return dll_name_ret;
+	}
+
+	// Set containing all of the DLL name VAs.
+	unordered_set<uint32_t> set_dll_vaddrs;
+
+	// Find the lowest and highest DLL name VAs in the import directory table.
+	uint32_t dll_vaddr_low = ~0U;
+	uint32_t dll_vaddr_high = 0U;
+	for (auto iter = impDirTbl.cbegin(); iter != impDirTbl.cend(); ++iter) {
+		if (iter->rvaImportLookupTable == 0 || iter->rvaModuleName == 0) {
+			// End of table.
+			break;
+		}
+
+		set_dll_vaddrs.insert(iter->rvaModuleName);
+		if (iter->rvaModuleName < dll_vaddr_low) {
+			dll_vaddr_low = iter->rvaModuleName;
+		}
+		if (iter->rvaModuleName > dll_vaddr_high) {
+			dll_vaddr_high = iter->rvaModuleName;
+		}
+	}
+
+	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
+	// with the last one. It's unlikely that it'll be at EOF, but we'll
+	// allow for 'short reads'.
+	const size_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
+	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
+	if (dll_paddr == 0) {
+		// Invalid VAs...
+		return dll_name_ret;
+	}
+
+	const size_t dll_size_max = dll_size_min + 260;	// MAX_PATH
+	unique_ptr<char[]> dll_name_data(new char[dll_size_max]);
+	size_t dll_size_read = file->seekAndRead(dll_paddr, reinterpret_cast<uint8_t*>(dll_name_data.get()), dll_size_max);
+	if (dll_size_read < dll_size_min || dll_size_read > dll_size_max) {
+		// Seek and/or read error.
+		return dll_name_ret;
+	}
+	// Ensure the end of the buffer is NULL-terminated.
+	dll_name_data[dll_size_max-1] = '\0';
+
+	// Convert the entire buffer to lowercase. (ASCII characters only)
+	{
+		char *const p_end = &dll_name_data[dll_size_max];
+		for (char *p = dll_name_data.get(); p < p_end; p++) {
+			if (*p >= 'A' && *p <= 'Z') *p |= 0x20;
+		}
+	}
+
+	// MSVC runtime DLL version to display version table.
+	// Reference: https://matthew-brett.github.io/pydagogue/python_msvc.html
+	// TODO: Move somewhere else?
+	static const struct {
+		unsigned int dll_name_version;	// e.g. 140, 120
+		const char display_version[8];
+	} msvc_dll_tbl[] = {
+		{120,	"2013"},
+		{110,	"2012"},
+		{100,	"2010"},
+		{ 90,	"2008"},
+		{ 80,	"2005"},
+		{ 71,	"2003"},
+		{ 70,	"2002"},
+		{ 60,	"6.0"},	// NOTE: MSVC 6.0 uses "msvcrt.dll".
+		{ 50,	"5.0"},
+		{ 42,	"4.2"},
+		{ 40,	"4.0"},
+		{ 20,	"2.0"},
+		{ 10,	"1.0"},
+
+		{  0,	""}
+	};
+
+	// Check all of the DLL names.
+	bool found = false;
+	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs.cend() && !found; ++iter) {
+		uint32_t vaddr = *iter;
+		assert(vaddr >= dll_vaddr_low);
+		assert(vaddr <= dll_vaddr_high);
+		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
+			// Out of bounds? This shouldn't have happened...
+			break;
+		}
+
+		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
+
+		// Check for MSVC 2015-2019. (vcruntime140.dll)
+		if (!strcmp(dll_name, "vcruntime140.dll")) {
+			dll_name_ret = rp_sprintf(
+				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2019");
+			break;
+		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
+			dll_name_ret = rp_sprintf(
+				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2019");
+			break;
+		}
+
+		// NOTE: MSVCP*.dll is usually listed first in executables
+		// that use C++, so check for both P and R.
+
+		// Check for MSVCR debug build patterns.
+		unsigned int dll_name_version = 0;
+		char c_or_cpp = '\0';
+		char is_debug = '\0';
+		char last_char = '\0';
+		int n = sscanf(dll_name, "msvc%c%u%c.dl%c",
+			&c_or_cpp, &dll_name_version, &is_debug, &last_char);
+		if (n == 4 && (c_or_cpp == 'p' || c_or_cpp == 'r') && is_debug == 'd' && last_char == 'l') {
+			// Found an MSVC debug DLL.
+			for (const auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
+				if (p->dll_name_version == dll_name_version) {
+					// Found a matching version.
+					dll_name_ret = rp_sprintf(
+						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), p->display_version);
+					found = true;
+					break;
+				}
+			}
+		}
+		if (found)
+			break;
+
+		// Check for MSVCR release build patterns.
+		n = sscanf(dll_name, "msvc%c%u.dl%c", &c_or_cpp, &dll_name_version, &last_char);
+		if (n == 3 && (c_or_cpp == 'p' || c_or_cpp == 'r') && last_char == 'l') {
+			// Found an MSVC release DLL.
+			for (auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
+				if (p->dll_name_version == dll_name_version) {
+					// Found a matching version.
+					dll_name_ret = rp_sprintf(
+						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), p->display_version);
+					found = true;
+					break;
+				}
+			}
+		}
+
+		// Check for MSVCRT.DLL.
+		if (!strcmp(dll_name, "msvcrt.dll")) {
+			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
+			// TODO: Other heuristics to figure this out.
+			dll_name_ret = C_("EXE|Runtime", "Microsoft System C++ Runtime");
+			break;
+		} else if (!strcmp(dll_name, "msvcrtd.dll")) {
+			dll_name_ret = rp_sprintf(
+				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "6.0");
+			break;
+		}
+	}
+
+	return dll_name_ret;
 }
 
 /**
@@ -318,6 +571,13 @@ void EXEPrivate::addFields_PE(void)
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
 		fields->addField_string(timestamp_title, C_("EXE", "Not set"));
+	}
+
+	// Runtime DLL.
+	// TODO: Show a link to download if available?
+	string runtime_dll = findPERuntimeDLL();
+	if (!runtime_dll.empty()) {
+		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
 	// Load resources.

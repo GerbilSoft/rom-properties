@@ -12,6 +12,7 @@
 // - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winver.h
 // - http://www.brokenthorn.com/Resources/OSDevPE.html
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648009(v=vs.85).aspx
+// - http://sandsprite.com/CodeStuff/Understanding_imports.html
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
@@ -331,6 +332,24 @@ typedef struct _IMAGE_SECTION_HEADER {
 	uint32_t Characteristics;
 } IMAGE_SECTION_HEADER;
 ASSERT_STRUCT(IMAGE_SECTION_HEADER, IMAGE_SIZEOF_SECTION_HEADER);
+
+/** Import table. **/
+// Reference: http://sandsprite.com/CodeStuff/Understanding_imports.html
+
+/**
+ * Import directory.
+ */
+typedef struct _IMAGE_IMPORT_DIRECTORY {
+	uint32_t rvaImportLookupTable;	// RVA of the import lookup table
+	uint32_t TimeDateStamp;		// UNIX timestamp
+	uint32_t ForwarderChain;
+	uint32_t rvaModuleName;		// RVA of the DLL filename
+	uint32_t rvaImportAddressTable;	// RVA of the thunk table
+} IMAGE_IMPORT_DIRECTORY;
+ASSERT_STRUCT(IMAGE_IMPORT_DIRECTORY, 5*sizeof(uint32_t));
+
+// Import lookup table consists of 32-bit values which are either
+// RVAs to the function name or, if the low(?) bit is set, an ordinal.
 
 /** Win32 resources. **/
 

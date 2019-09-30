@@ -136,10 +136,24 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 		int loadPESectionTable(void);
 
 		/**
+		 * Convert a PE virtual address to a physical address.
+		 * @param vaddr Virtual address.
+		 * @param size Size of the virtual section.
+		 * @return Physical address, or 0 if not mappable.
+		 */
+		uint32_t pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size);
+
+		/**
 		 * Load the top-level PE resource directory.
 		 * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
 		 */
 		int loadPEResourceTypes(void);
+
+		/**
+		 * Find the runtime DLL. (PE version)
+		 * @return Runtime DLL description, or empty string if not found.
+		 */
+		std::string findPERuntimeDLL(void);
 
 		/**
 		 * Add fields for PE and PE32+ executables.
