@@ -542,7 +542,8 @@ typedef struct PACKED _NE_Header {
 	uint16_t ResTableOffset;	// Offset of resources table
 	uint16_t ResidNamTable;		// Offset of resident names table
 	uint16_t ModRefTable;		// Offset of module reference table
-	uint16_t ImportNameTable;	// Offset of imported names table (array of counted strings, terminated with string of length 00h)
+					// (points to entries in ImportNameTable)
+	uint16_t ImportNameTable;	// Offset of imported names table (array of counted strings)
 	uint32_t OffStartNonResTab;	// Offset from start of file to non-resident names table
 	// 0x30
 	uint16_t MovEntryCount;		// Count of moveable entry point listed in entry table

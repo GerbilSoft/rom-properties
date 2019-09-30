@@ -19,12 +19,15 @@
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cerrno>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -107,6 +110,150 @@ int EXEPrivate::loadNEResourceTable(void)
 
 	// Resource table loaded.
 	return 0;
+}
+
+/**
+ * Find the runtime DLL. (NE version)
+ * @param refDesc String to store the description.
+ * @param refLink String to store the download link.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink)
+{
+	refDesc.clear();
+	refLink.clear();
+
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	}
+
+	// Offsets in the NE header are relative to the start of the header.
+	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
+
+	// Load the module references and imported names tables.
+	// NOTE: Imported names table has counted strings, and
+	// since Win3.1 used 8.3 filenames (and extensions are
+	// not present here), there's a maximum of 9*ModRefs
+	// bytes to be read.
+	// NOTE 2: There might be some extra empty strings at
+	// the beginning, so read some extra data in case.
+	const unsigned int modRefs = le16_to_cpu(hdr.ne.ModRefs);
+	const unsigned int modRefTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ModRefTable);
+	const unsigned int importNameTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ImportNameTable);
+
+	if (modRefs == 0) {
+		// No module references.
+		return -ENOENT;
+	} else if (modRefTable_addr < ne_hdr_addr || importNameTable_addr < ne_hdr_addr) {
+		// One of the addresses is out of range.
+		return -EIO;
+	}
+
+	// TODO: Check for overlapping tables?
+
+	// Determine the low address.
+	// ModRefTable is usually first, but we can't be certain.
+	uint32_t read_low_addr;
+	size_t read_size;
+	size_t nameTable_size;
+	if (modRefTable_addr < importNameTable_addr) {
+		// ModRefTable is first.
+		read_low_addr = modRefTable_addr;
+		nameTable_size = (9 * (static_cast<uint32_t>(modRefs) + 2));
+		read_size = (importNameTable_addr - modRefTable_addr) + nameTable_size;
+	} else {
+		// ImportNameTable is first.
+		read_low_addr = importNameTable_addr;
+		nameTable_size = (modRefTable_addr - importNameTable_addr);
+		read_size = nameTable_size + (modRefs * sizeof(uint16_t));
+	}
+
+	unique_ptr<uint8_t[]> tbls(new uint8_t[read_size]);
+	size_t size = file->seekAndRead(read_low_addr, tbls.get(), read_size);
+	if (size != read_size) {
+		// Error reading the tables.
+		// NOTE: Even with the extra padding, this shouldn't happen,
+		// since there's executable code afterwards...
+		return -EIO;
+	}
+
+	const uint16_t *pModRefTable;
+	char *pNameTable;
+	if (modRefTable_addr < importNameTable_addr) {
+		// ModRefTable is first.
+		pModRefTable = reinterpret_cast<const uint16_t*>(tbls.get());
+		pNameTable = reinterpret_cast<char*>(&tbls[importNameTable_addr - modRefTable_addr]);
+	} else {
+		// ImportNameTable is first.
+		pNameTable = reinterpret_cast<char*>(tbls.get());
+		pModRefTable = reinterpret_cast<const uint16_t*>(&tbls[modRefTable_addr - importNameTable_addr]);
+	}
+
+	// Convert the name table to uppercase for comparison purposes.
+	// NOTE: Uppercase due to DOS/Win16 conventions. PE uses lowercase.
+	{
+		char *const p_end = &pNameTable[nameTable_size];
+		for (char *p = pNameTable; p < p_end; p++) {
+			if (*p >= 'a' && *p <= 'z') *p &= ~0x20;
+		}
+	}
+
+	// FIXME: Alignment?
+	const uint16_t *pModRef = reinterpret_cast<const uint16_t*>(tbls.get());
+	const uint16_t *const pModRefEnd = &pModRef[modRefs];
+	for (; pModRef < pModRefEnd; pModRef++) {
+		const unsigned int nameOffset = le16_to_cpu(*pModRef);
+		assert(nameOffset < nameTable_size);
+		if (nameOffset >= nameTable_size) {
+			// Out of range.
+			// TODO: Return an error?
+			break;
+		}
+
+		const uint8_t count = pNameTable[nameOffset];
+		assert(nameOffset + 1 + count < nameTable_size);
+		if (nameOffset + 1 + count >= nameTable_size) {
+			// Out of range.
+			// TODO: Return an error?
+			break;
+		}
+
+		const char *const pDllName = reinterpret_cast<const char*>(&pNameTable[nameOffset + 1]);
+
+		// Check the DLL name.
+		// TODO: More checks.
+		// TODO: Indicate if "KERNEL" was found; needed to distinguish between
+		// OS/2 and really old Windows executables.
+		// https://github.com/wine-mirror/wine/blob/ba9f3dc198dfc81bb40159077b73b797006bb73c/dlls/kernel32/module.c#L262
+		// NOTE: There's only four 16-bit versions of Visual Basic,
+		// so we're hard-coding everything.
+		if (count == 8) {
+			// FIXME: Is it VBRUN400 or VBRUN416 for 16-bit?
+			if (!strncmp(pDllName, "VBRUN400", 8) || !strncmp(pDllName, "VBRUN416", 8)) {
+				refDesc = rp_sprintf(
+					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
+				break;
+			} else if (!strncmp(pDllName, "VBRUN300", 8)) {
+				refDesc = rp_sprintf(
+					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "3.0");
+				break;
+			} else if (!strncmp(pDllName, "VBRUN200", 8)) {
+				refDesc = rp_sprintf(
+					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "2.0");
+				break;
+			} else if (!strncmp(pDllName, "VBRUN100", 8)) {
+				refDesc = rp_sprintf(
+					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "1.0");
+				break;
+			}
+		}
+	}
+
+	return (!refDesc.empty() ? 0 : -ENOENT);
 }
 
 /**
@@ -230,8 +377,16 @@ void EXEPrivate::addFields_NE(void)
 			rp_sprintf("%u.%u", hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
+	// Runtime DLL.
+	string runtime_dll, runtime_link;
+	int ret = findNERuntimeDLL(runtime_dll, runtime_link);
+	if (ret == 0 && !runtime_dll.empty()) {
+		// TODO: Show the link?
+		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
+	}
+
 	// Load resources.
-	int ret = loadNEResourceTable();
+	ret = loadNEResourceTable();
 	if (ret != 0 || !rsrcReader) {
 		// Unable to load resources.
 		// We're done here.

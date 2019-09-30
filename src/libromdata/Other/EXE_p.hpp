@@ -106,6 +106,14 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 		int loadNEResourceTable(void);
 
 		/**
+		 * Find the runtime DLL. (NE version)
+		 * @param refDesc String to store the description.
+		 * @param refLink String to store the download link.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int findNERuntimeDLL(std::string &refDesc, std::string &refLink);
+
+		/**
 		 * Add fields for NE executables.
 		 */
 		void addFields_NE(void);
