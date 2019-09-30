@@ -11,6 +11,7 @@ SET(rom-properties-kde_SRCS
 	RpQImageBackend.cpp
 	DragImageLabel.cpp
 	RpQByteArrayFile.cpp
+	DragImageTreeWidget.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -27,6 +28,7 @@ SET(rom-properties-kde_H
 	QImageData_qt4.hpp
 	DragImageLabel.hpp
 	RpQByteArrayFile.hpp
+	DragImageTreeWidget.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
