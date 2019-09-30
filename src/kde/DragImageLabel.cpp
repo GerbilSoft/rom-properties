@@ -24,6 +24,9 @@ using LibRpBase::RpPngWriter;
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // Qt includes.
 #include <QApplication>
 #include <QDrag>
