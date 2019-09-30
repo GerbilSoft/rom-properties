@@ -203,7 +203,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink)
 	}
 
 	// FIXME: Alignment?
-	const uint16_t *pModRef = reinterpret_cast<const uint16_t*>(tbls.get());
+	const uint16_t *pModRef = pModRefTable;
 	const uint16_t *const pModRefEnd = &pModRef[modRefs];
 	for (; pModRef < pModRefEnd; pModRef++) {
 		const unsigned int nameOffset = le16_to_cpu(*pModRef);
