@@ -439,6 +439,26 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "6.0");
 			break;
 		}
+
+		// Check for Visual Basic DLLs.
+		// NOTE: There's only three 32-bit versions of Visual Basic,
+		// and .NET versions don't count.
+		if (!strcmp(dll_name, "msvbvm60.dll")) {
+			refDesc = rp_sprintf(
+				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "6.0");
+			refLink = "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe";
+			break;
+		} else if (!strcmp(dll_name, "msvbvm50.dll")) {
+			refDesc = rp_sprintf(
+				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "5.0");
+			refLink = "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe";
+			break;
+		} else if (!strcmp(dll_name, "vbrun400.dll")) {
+			refDesc = rp_sprintf(
+				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
+			// TODO: Find a download link.
+			break;
+		}
 	}
 
 	return (!refDesc.empty() ? 0 : -ENOENT);
