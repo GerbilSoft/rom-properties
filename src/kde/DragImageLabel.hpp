@@ -15,7 +15,16 @@ namespace LibRpTexture {
 	class rp_image;
 }
 
+// librpbase
+#include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/img/IconAnimHelper.hpp"
+
+// C++ includes.
+#include <array>
+
+// Qt includes.
 #include <QLabel>
+#include <QTimer>
 
 class DragImageLabel : public QLabel
 {
@@ -23,11 +32,13 @@ class DragImageLabel : public QLabel
 
 	Q_PROPERTY(QSize minimumImageSize READ minimumImageSize WRITE setMinimumImageSize)
 
+	// TODO: Adjust minimum image size based on DPI.
+#define DIL_MIN_IMAGE_SIZE 32
+
 	public:
-		explicit DragImageLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags())
-			: super(text, parent, f) { }
-		explicit DragImageLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags())
-			: super(parent, f) { }
+		explicit DragImageLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+		explicit DragImageLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+		~DragImageLabel();
 
 	private:
 		typedef QLabel super;
@@ -43,21 +54,45 @@ class DragImageLabel : public QLabel
 		{
 			if (m_minimumImageSize != minimumImageSize) {
 				m_minimumImageSize = minimumImageSize;
-				updatePixmapFromRpImage();
+				updatePixmaps();
 			}
 		}
 
 		/**
-		 * Set the pixmap from the specified rp_image.
+		 * Set the rp_image for this label.
 		 *
 		 * NOTE: The rp_image pointer is stored and used if necessary.
 		 * Make sure to call this function with nullptr before deleting
 		 * the rp_image object.
 		 *
+		 * NOTE 2: If animated icon data is specified, that supercedes
+		 * the individual rp_image.
+		 *
 		 * @param img rp_image, or nullptr to clear.
 		 * @return True on success; false on error or if clearing.
 		 */
-		bool setPixmapFromRpImage(const LibRpTexture::rp_image *img);
+		bool setRpImage(const LibRpTexture::rp_image *img);
+
+		/**
+		 * Set the icon animation data for this label.
+		 *
+		 * NOTE: The iconAnimData pointer is stored and used if necessary.
+		 * Make sure to call this function with nullptr before deleting
+		 * the IconAnimData object.
+		 *
+		 * NOTE 2: If animated icon data is specified, that supercedes
+		 * the individual rp_image.
+		 *
+		 * @param iconAnimData IconAnimData, or nullptr to clear.
+		 * @return True on success; false on error or if clearing.
+		 */
+		bool setIconAnimData(const LibRpBase::IconAnimData *iconAnimData);
+
+		/**
+		 * Clear the rp_image and iconAnimData.
+		 * This will stop the animation timer if it's running.
+		 */
+		void clearRp(void);
 
 	protected:
 		/**
@@ -70,10 +105,47 @@ class DragImageLabel : public QLabel
 		QPixmap imgToPixmap(const QImage &img) const;
 
 		/**
-		 * Update the pixmap using the rp_image.
+		 * Update the pixmap(s).
 		 * @return True on success; false on error.
 		 */
-		bool updatePixmapFromRpImage();
+		bool updatePixmaps(void);
+
+	public:
+		/**
+		 * Start the animation timer.
+		 */
+		void startAnimTimer(void);
+
+		/**
+		 * Stop the animation timer.
+		 */
+		void stopAnimTimer(void);
+
+		/**
+		 * Is the animation timer running?
+		 * @return True if running; false if not.
+		 */
+		bool isAnimTimerRunning(void) const
+		{
+			return (m_anim && m_anim->anim_running);
+		}
+
+		/**
+		 * Reset the animation frame.
+		 * This does NOT update the animation frame.
+		 */
+		void resetAnimFrame(void)
+		{
+			if (m_anim) {
+				m_anim->last_frame_number = 0;
+			}
+		}
+
+	protected slots:
+		/**
+		 * Animated icon timer.
+		 */
+		void tmrIconAnim_timeout(void);
 
 	protected:
 		/** Overridden QWidget functions **/
@@ -84,7 +156,25 @@ class DragImageLabel : public QLabel
 		QSize m_minimumImageSize;
 		QPoint m_dragStartPos;
 
-		const LibRpTexture::rp_image *m_img;	// NOTE: Not owned by this object.
+		// rp_image. (NOTE: Not owned by this object.)
+		const LibRpTexture::rp_image *m_img;
+
+		// Animated icon data.
+		struct anim_vars {
+			const LibRpBase::IconAnimData *iconAnimData;
+			QTimer *tmrIconAnim;
+			std::array<QPixmap, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
+			LibRpBase::IconAnimHelper iconAnimHelper;
+			int last_frame_number;		// Last frame number.
+			bool anim_running;		// Animation is running.
+
+			anim_vars()
+				: tmrIconAnim(nullptr)
+				, last_frame_number(0)
+				, anim_running(false) { }
+			~anim_vars() { delete tmrIconAnim; }
+		};
+		anim_vars *m_anim;
 };
 
 #endif /* __ROMPROPERTIES_KDE_DRAGIMAGELABEL_HPP__ */
