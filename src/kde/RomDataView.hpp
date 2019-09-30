@@ -66,14 +66,9 @@ class RomDataView : public QWidget
 		 */
 		void bitfield_toggled_slot(bool checked);
 
-		/**
-		 * Animated icon timer.
-		 */
-		void tmrIconAnim_timeout(void);
-
+	public:
 		/** Properties. **/
 
-	public:
 		/**
 		 * Get the current RomData object.
 		 * @return RomData object.

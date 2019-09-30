@@ -14,8 +14,6 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 
 // libi18n
@@ -77,13 +75,6 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
-
-		// Animated icon data.
-		QTimer *tmrIconAnim;
-		array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
-		IconAnimHelper iconAnimHelper;
-		bool anim_running;		// Animation is running.
-		int last_frame_number;		// Last frame number.
 
 		/**
 		 * Initialize the header row widgets.
@@ -165,16 +156,6 @@ class RomDataViewPrivate
 		void initDisplayWidgets(void);
 
 		/**
-		 * Start the animation timer.
-		 */
-		void startAnimTimer(void);
-
-		/**
-		 * Stop the animation timer.
-		 */
-		void stopAnimTimer(void);
-
-		/**
 		 * Convert a QImage to QPixmap.
 		 * Automatically resizes the QImage if it's smaller
 		 * than the minimum size.
@@ -197,9 +178,6 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData->ref())
-	, tmrIconAnim(nullptr)
-	, anim_running(false)
-	, last_frame_number(0)
 {
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -208,8 +186,8 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 
 RomDataViewPrivate::~RomDataViewPrivate()
 {
-	stopAnimTimer();
-	iconAnimHelper.setIconAnimData(nullptr);
+	ui.lblIcon->clearRp();
+	ui.lblBanner->clearRp();
 	if (romData) {
 		romData->unref();
 	}
@@ -317,7 +295,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		bool ok = ui.lblBanner->setPixmapFromRpImage(romData->image(RomData::IMG_INT_BANNER));
+		bool ok = ui.lblBanner->setRpImage(romData->image(RomData::IMG_INT_BANNER));
 		ui.lblBanner->setVisible(ok);
 	} else {
 		// No banner.
@@ -330,44 +308,13 @@ void RomDataViewPrivate::initHeaderRow(void)
 		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
-			const IconAnimData *const iconAnimData = romData->iconAnimData();
-			if (iconAnimData) {
-				// Convert the icons to QPixmaps.
-				for (int i = iconAnimData->count-1; i >= 0; i--) {
-					const rp_image *const frame = iconAnimData->frames[i];
-					if (frame && frame->isValid()) {
-						QImage img = rpToQImage(frame);
-						if (!img.isNull()) {
-							iconFrames[i] = imgToPixmap(img);
-						}
-					}
-				}
-
-				// Set up the IconAnimHelper.
-				iconAnimHelper.setIconAnimData(iconAnimData);
-				if (iconAnimHelper.isAnimated()) {
-					// Initialize the animation.
-					last_frame_number = iconAnimHelper.frameNumber();
-					// Create the animation timer.
-					if (!tmrIconAnim) {
-						tmrIconAnim = new QTimer(q);
-						tmrIconAnim->setSingleShot(true);
-						QObject::connect(tmrIconAnim, SIGNAL(timeout()),
-								q, SLOT(tmrIconAnim_timeout()));
-					}
-				}
-
-				// Show the first frame.
-				ui.lblIcon->setPixmap(iconFrames[iconAnimHelper.frameNumber()]);
-				ui.lblIcon->show();
-
-				// Icon animation timer is set in startAnimTimer().
-			} else {
-				// Not an animated icon.
-				last_frame_number = 0;
-				bool ok = ui.lblIcon->setPixmapFromRpImage(icon);
-				ui.lblIcon->setVisible(ok);
+			bool ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());
+			if (!ok) {
+				// Not an animated icon, or invalid icon data.
+				// Set the static icon.
+				ok = ui.lblIcon->setRpImage(icon);
 			}
+			ui.lblIcon->setVisible(ok);
 		} else {
 			// No icon.
 			ui.lblIcon->hide();
@@ -1070,45 +1017,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	romData->close();
 }
 
-/**
- * Start the animation timer.
- */
-void RomDataViewPrivate::startAnimTimer(void)
-{
-	if (!iconAnimHelper.isAnimated()) {
-		// Not an animated icon.
-		return;
-	}
-
-	// Sanity check: If these aren't set, something's wrong.
-	assert(tmrIconAnim != nullptr);
-	assert(ui.lblIcon != nullptr);
-
-	// Get the current frame information.
-	last_frame_number = iconAnimHelper.frameNumber();
-	const int delay = iconAnimHelper.frameDelay();
-	assert(delay > 0);
-	if (delay <= 0) {
-		// Invalid delay value.
-		return;
-	}
-
-	// Set a single-shot timer for the current frame.
-	anim_running = true;
-	tmrIconAnim->start(delay);
-}
-
-/**
- * Stop the animation timer.
- */
-void RomDataViewPrivate::stopAnimTimer(void)
-{
-	if (tmrIconAnim) {
-		anim_running = false;
-		tmrIconAnim->stop();
-	}
-}
-
 /** RomDataView **/
 
 RomDataView::RomDataView(QWidget *parent)
@@ -1148,7 +1056,7 @@ void RomDataView::showEvent(QShowEvent *event)
 {
 	// Start the icon animation.
 	Q_D(RomDataView);
-	d->startAnimTimer();
+	d->ui.lblIcon->startAnimTimer();
 
 	// Pass the event to the superclass.
 	super::showEvent(event);
@@ -1163,7 +1071,7 @@ void RomDataView::hideEvent(QHideEvent *event)
 {
 	// Stop the icon animation.
 	Q_D(RomDataView);
-	d->stopAnimTimer();
+	d->ui.lblIcon->stopAnimTimer();
 
 	// Pass the event to the superclass.
 	super::hideEvent(event);
@@ -1258,34 +1166,6 @@ void RomDataView::bitfield_toggled_slot(bool checked)
 	}
 }
 
-/**
- * Animated icon timer.
- */
-void RomDataView::tmrIconAnim_timeout(void)
-{
-	Q_D(RomDataView);
-
-	// Next frame.
-	int delay = 0;
-	int frame = d->iconAnimHelper.nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
-		// Invalid frame...
-		return;
-	}
-
-	if (frame != d->last_frame_number) {
-		// New frame number.
-		// Update the icon.
-		d->ui.lblIcon->setPixmap(d->iconFrames[frame]);
-		d->last_frame_number = frame;
-	}
-
-	// Set the single-shot timer.
-	if (d->anim_running) {
-		d->tmrIconAnim->start(delay);
-	}
-}
-
 /** Properties. **/
 
 /**
@@ -1310,12 +1190,12 @@ void RomDataView::setRomData(RomData *romData)
 	if (d->romData == romData)
 		return;
 
-	bool prevAnimTimerRunning = d->anim_running;
+	bool prevAnimTimerRunning = d->ui.lblIcon->isAnimTimerRunning();
 	if (prevAnimTimerRunning) {
 		// Animation is running.
 		// Stop it temporarily and reset the frame number.
-		d->stopAnimTimer();
-		d->last_frame_number = 0;
+		d->ui.lblIcon->stopAnimTimer();
+		d->ui.lblIcon->resetAnimFrame();
 	}
 
 	if (d->romData) {
@@ -1326,7 +1206,8 @@ void RomDataView::setRomData(RomData *romData)
 
 	if (romData != nullptr && prevAnimTimerRunning) {
 		// Restart the animation timer.
-		d->startAnimTimer();
+		// FIXME: Ensure frame 0 is drawn?
+		d->ui.lblIcon->startAnimTimer();
 	}
 
 	emit romDataChanged(romData);
