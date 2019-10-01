@@ -547,7 +547,6 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 
 	Q_Q(RomDataView);
 	QTreeWidget *treeWidget;
-	printf("hasIcons: %d\n", hasIcons);
 	Qt::ItemFlags itemFlags;
 	if (hasIcons) {
 		treeWidget = new DragImageTreeWidget(q);
