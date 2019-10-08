@@ -185,7 +185,7 @@ class GameCubePrivate : public RomDataPrivate
 		 * @param partition Partition to check.
 		 * @return nullptr if partition is readable; error message if not.
 		 */
-		const char *wii_getCryptoStatus(const WiiPartition *partition);
+		const char *wii_getCryptoStatus(WiiPartition *partition);
 };
 
 /** GameCubePrivate **/
@@ -684,7 +684,7 @@ string GameCubePrivate::wii_getBannerName(void) const
  * @param partition Partition to check.
  * @return nullptr if partition is readable; error message if not.
  */
-const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
+const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
@@ -692,6 +692,24 @@ const char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
 			// Invalid key index.
 			return C_("GameCube", "ERROR: Invalid common key index.");
+		}
+	}
+
+	if (res == KeyManager::VERIFY_OK) {
+		// Debug discs may have incrementing values instead of a
+		// valid update partition.
+		static const uint8_t incr_vals[32] = {
+			0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x04,
+			0x00,0x00,0x00,0x08, 0x00,0x00,0x00,0x0C,
+			0x00,0x00,0x00,0x10, 0x00,0x00,0x00,0x14,
+			0x00,0x00,0x00,0x18, 0x00,0x00,0x00,0x1C,
+		};
+
+		uint8_t data[32];
+		size_t size = partition->seekAndRead(0, data, sizeof(data));
+		if (size == sizeof(incr_vals) && !memcmp(data, incr_vals, sizeof(data))) {
+			// Found incrementing values.
+			return C_("GameCube", "Incrementing values");
 		}
 	}
 
