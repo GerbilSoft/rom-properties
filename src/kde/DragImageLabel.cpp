@@ -358,12 +358,16 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 	// RpPngWriter will finalize the PNG on delete.
 	delete pngWriter;
 
-	QDrag *const drag = new QDrag(this);
 	QMimeData *const mimeData = new QMimeData;
-
 	QByteArray ba = pngData->qByteArray();
 	mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
+
+	QDrag *const drag = new QDrag(this);
 	drag->setMimeData(mimeData);
+	const QPixmap *qpxm = this->pixmap();
+	if (qpxm) {
+		drag->setPixmap(*qpxm);
+	}
 
 	drag->exec(Qt::CopyAction);
 	pngData->unref();
