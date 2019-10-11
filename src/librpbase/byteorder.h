@@ -32,7 +32,7 @@
     defined(__hppa__) || defined(__HPPA__) || \
     defined(__m68k__) || defined(__MC68K__) || defined(_M_M68K) || \
     defined(mc68000) || defined(M68000) || \
-    ((defined(__mips) || defined(__mips__) || defined(__mips) || defined(__MIPS__)) && \
+    ((defined(__mips) || defined(__mips__) || defined(__MIPS) || defined(__MIPS__)) && \
      (defined(__mipseb) || defined(__mipseb__) || defined(__MIPSEB) || defined(__MIPSEB__))) || \
     defined(__powerpc__) || defined(__POWERPC__) || \
     defined(__ppc__) || defined(__PPC__) || defined(_M_PPC) || \
