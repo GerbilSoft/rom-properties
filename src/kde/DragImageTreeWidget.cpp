@@ -101,5 +101,18 @@ void DragImageTreeWidget::startDrag(Qt::DropActions supportedActions)
 	QDrag *const drag = new QDrag(this);
 	drag->setMimeData(mimeData);
 
+	// TODO: Ideal icon size?
+	// Using 32x32 for now.
+	// TODO: Make the icon size accessible to the QTreeWidgetItem.
+	// It's currently set in the QTreeWidget in RomDataView.
+	QPixmap qpxm;
+	const QIcon icon = item->icon(0);
+	if (!icon.isNull()) {
+		qpxm = icon.pixmap(QSize(32, 32));
+	}
+	if (!qpxm.isNull()) {
+		drag->setPixmap(qpxm);
+	}
+
 	drag->exec(Qt::CopyAction);
 }
