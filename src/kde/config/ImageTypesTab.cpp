@@ -12,7 +12,9 @@
 // Qt includes.
 #include <QComboBox>
 #include <QLabel>
-#include <QSignalMapper>
+#if !QT_VERSION_CHECK(5,0,0)
+# include <QSignalMapper>
+#endif
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -105,12 +107,14 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		// tab order for the credits label.
 		QComboBox *cboImageType_lastAdded;
 
-		// QSignalMapper for the QComboBoxes.
-		QSignalMapper *mapperCboImageType;
-
 		// Temporary QSettings object.
 		// Set and cleared by ImageTypesTab::save();
 		QSettings *pSettings;
+
+#if !QT_VERSION_CHECK(5,0,0)
+		// QSignalMapper for the QComboBoxes.
+		QSignalMapper *mapperCboImageType;
+#endif
 };
 
 /** ImageTypesTabPrivate **/
@@ -118,12 +122,16 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
 	, cboImageType_lastAdded(nullptr)
-	, mapperCboImageType(new QSignalMapper(q))
 	, pSettings(nullptr)
+#if !QT_VERSION_CHECK(5,0,0)
+	, mapperCboImageType(new QSignalMapper(q))
+#endif
 {
+#if !QT_VERSION_CHECK(5,0,0)
 	// Connect the QSignalMapper to the ImageTypesTab.
 	QObject::connect(mapperCboImageType, SIGNAL(mapped(int)),
 		q, SLOT(cboImageType_currentIndexChanged(int)));
+#endif
 }
 
 ImageTypesTabPrivate::~ImageTypesTabPrivate()
@@ -198,10 +206,17 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
 	cboImageType[sys][imageType] = cbo;
 
+#if QT_VERSION_CHECK(5,0,0)
+	// Connect the signal to the slot with the appropriate value.
+	QObject::connect(cbo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+		[q, cbid] { q->cboImageType_currentIndexChanged(cbid); }
+	);
+#else /* !QT_VERSION_CHECK(5,0,0) */
 	// Connect the signal to the QSignalMapper.
 	QObject::connect(cbo, SIGNAL(currentIndexChanged(int)),
 		mapperCboImageType, SLOT(map()));
 	mapperCboImageType->setMapping(cbo, (int)cbid);
+#endif /* QT_VERSION_CHECK(5,0,0) */
 
 	// Adjust the tab order.
 	if (cboImageType_lastAdded) {
