@@ -364,9 +364,19 @@ void DragImageLabel::mouseMoveEvent(QMouseEvent *event)
 
 	QDrag *const drag = new QDrag(this);
 	drag->setMimeData(mimeData);
-	const QPixmap *qpxm = this->pixmap();
-	if (qpxm) {
-		drag->setPixmap(*qpxm);
+
+	// Get the first frame and use it for the drag pixmap.
+	if (m_anim && m_anim->iconAnimHelper.isAnimated()) {
+		const int frame = m_anim->iconAnimData->seq_index[0];
+		if (!m_anim->iconFrames[frame].isNull()) {
+			drag->setPixmap(m_anim->iconFrames[frame]);
+		}
+	} else {
+		// Not animated. Use the QLabel pixmap directly.
+		const QPixmap *const qpxm = this->pixmap();
+		if (qpxm) {
+			drag->setPixmap(*qpxm);
+		}
 	}
 
 	drag->exec(Qt::CopyAction);
