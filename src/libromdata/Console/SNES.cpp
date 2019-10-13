@@ -470,6 +470,13 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 				}
 			}
 		}
+
+		// Extra check for ".ic1", used by MAME for Nintendo Super System.
+		if (!strcasecmp(info->ext, ".ic1")) {
+			// File extension is supported.
+			// TODO: Special handling for NSS?
+			return SNESPrivate::ROM_SNES;
+		}
 	}
 
 	// TODO: BS-X heuristics.
@@ -609,6 +616,9 @@ const char *const *SNES::supportedFileExtensions_static(void)
 
 		// BS-X
 		".bs", ".bsx",
+
+		// Nintendo Super System (MAME) (TODO)
+		//".ic1",
 
 		nullptr
 	};
