@@ -410,9 +410,7 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (hbmpBanner) {
 		DeleteObject(hbmpBanner);
 	}
-	if (lblIcon) {
-		delete lblIcon;
-	}
+	delete lblIcon;
 
 	// Unreference the RomData object.
 	if (romData) {
@@ -494,10 +492,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	}
 
 	// Icon.
-	if (!lblIcon) {
-		lblIcon = new DragImageLabel(hDlgSheet);
-	}
-
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
@@ -509,6 +503,10 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				static const SIZE req_szIcon = {32, 32};
 				// TODO: Port to DragImageLabel.
 				//nearest_icon = rescaleImage(req_szIcon, szIcon);
+			}
+
+			if (!lblIcon) {
+				lblIcon = new DragImageLabel(hDlgSheet);
 			}
 
 			// Is this an animated icon?
@@ -2573,7 +2571,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 {
-	HBITMAP hbmpIcon = lblIcon->currentFrame();
+	HBITMAP hbmpIcon = (lblIcon ? lblIcon->currentFrame() : nullptr);
 
 	if (!hbmpBanner && !hbmpIcon) {
 		// Nothing to draw...
@@ -2689,7 +2687,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			d->romData->close();
 
 			// Start the icon animation timer.
-			d->lblIcon->startAnimTimer();
+			if (d->lblIcon) {
+				d->lblIcon->startAnimTimer();
+			}
 
 			// Continue normal processing.
 			break;
