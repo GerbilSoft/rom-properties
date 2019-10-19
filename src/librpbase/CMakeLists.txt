@@ -273,26 +273,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 		PROPERTIES COMPILE_FLAGS "-Wno-unused")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
-# Find the system threading library.
-FIND_PACKAGE(Threads REQUIRED)
-# Threading implementation.
-SET(librpbase_THREAD_H
-	threads/Atomics.h
-	threads/Semaphore.hpp
-	threads/Mutex.hpp
-	threads/pthread_once.h
-	)
-IF(CMAKE_USE_WIN32_THREADS_INIT)
-	SET(HAVE_WIN32_THREADS 1)
-	SET(librpbase_THREAD_SRCS
-		threads/pthread_once.c
-		)
-ELSEIF(CMAKE_USE_PTHREADS_INIT)
-	SET(HAVE_PTHREADS 1)
-ELSE()
-	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
-ENDIF()
-
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
@@ -398,7 +378,6 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
-	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
 	${librpbase_IFUNC_SRCS}
 	${librpbase_MMX_SRCS}
@@ -440,7 +419,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
@@ -478,9 +457,6 @@ IF(SCSI_LIBRARY)
 	# An extra library is needed for SCSI support.
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${SCSI_LIBRARY})
 ENDIF(SCSI_LIBRARY)
-IF(CMAKE_THREAD_LIBS_INIT)
-	TARGET_LINK_LIBRARIES(rpbase PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-ENDIF(CMAKE_THREAD_LIBS_INIT)
 
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE i18n)

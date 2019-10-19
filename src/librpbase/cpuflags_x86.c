@@ -12,7 +12,9 @@
 #endif
 
 #include "cpuflags_x86.h"
-#include "threads/pthread_once.h"
+
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #include <intrin.h>

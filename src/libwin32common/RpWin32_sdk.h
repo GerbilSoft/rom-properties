@@ -111,7 +111,7 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 # define __out_opt
 #endif
 
-// SAL 2.0 annotations not supported by MSVC 2010.
+// SAL 2.0 annotations not supported by Windows SDK 7.1A. (MSVC 2010)
 #ifndef _COM_Outptr_
 # define _COM_Outptr_
 #endif
@@ -119,10 +119,10 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 # define _Outptr_
 #endif
 #ifndef _Acquires_lock_
-# define _Acquires_lock_(var)
+# define _Acquires_lock_(lock)
 #endif
 #ifndef _Releases_lock_
-# define _Releases_lock_(var)
+# define _Releases_lock_(lock)
 #endif
 #ifndef _Out_writes_
 # define _Out_writes_(var)

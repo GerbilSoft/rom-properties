@@ -9,8 +9,8 @@
 #include "SystemRegion.hpp"
 #include "librpbase/common.h"
 
-// One-time initialization.
-#include "threads/pthread_once.h"
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 // C includes.
 #include <stdlib.h>

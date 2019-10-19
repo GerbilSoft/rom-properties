@@ -10,12 +10,13 @@
 
 #include "APNG_dlopen.h"
 
+// librpthreads
+#include "librpthreads/Atomics.h"
+
 // C includes.
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>	/* MSVC _countof() */
-
-#include "threads/Atomics.h"
 
 #ifndef _WIN32
 // Unix dlopen()

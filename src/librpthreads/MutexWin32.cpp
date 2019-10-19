@@ -1,17 +1,27 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpthreads)                     *
  * MutexWin32.cpp: Win32 mutex implementation.                             *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "Mutex.hpp"
-#include "libwin32common/RpWin32_sdk.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+
+#ifndef WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
+
+// SAL 2.0 annotations not supported by Windows SDK 7.1A. (MSVC 2010)
+#ifndef _Acquires_lock_
+# define _Acquires_lock_(lock)
+#endif
+#ifndef _Releases_lock_
+# define _Releases_lock_(lock)
+#endif
 
 namespace LibRpBase {
 
@@ -30,7 +40,13 @@ class Mutex
 		inline ~Mutex();
 
 	private:
-		RP_DISABLE_COPY(Mutex)
+#if __cplusplus >= 201103L
+		Mutex(const Mutex &) = delete; \
+		Mutex &operator=(const Mutex &) = delete;
+#else /* __cplusplus < 201103L */
+		Mutex(const Mutex &); \
+		Mutex &operator=(const Mutex &);
+#endif /* __cplusplus */
 
 	public:
 		/**

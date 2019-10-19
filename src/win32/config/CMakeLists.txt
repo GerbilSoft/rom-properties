@@ -13,7 +13,7 @@ SET_WINDOWS_NO_MANIFEST(rp-config)
 # so use WinMain for rp-config.exe.
 SET_WINDOWS_ENTRYPOINT(rp-config WinMain OFF)
 
-TARGET_LINK_LIBRARIES(rp-config win32common)
+TARGET_LINK_LIBRARIES(rp-config PRIVATE win32common)
 TARGET_INCLUDE_DIRECTORIES(rp-config
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# build/src

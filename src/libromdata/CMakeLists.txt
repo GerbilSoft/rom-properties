@@ -344,6 +344,7 @@ SET_MSVC_DEBUG_PATH(romdata)
 
 # TODO: More public/private library stuff.
 TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpbase)
+TARGET_LINK_LIBRARIES(romdata PRIVATE rpthreads)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
 ENDIF(ENABLE_NLS)

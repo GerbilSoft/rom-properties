@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpthreads)                     *
  * Atomics.h: Atomic function macros.                                      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_THREADS_ATOMICS_H__
-#define __ROMPROPERTIES_LIBRPBASE_THREADS_ATOMICS_H__
+#ifndef __ROMPROPERTIES_LIBRPTHREADS_ATOMICS_H__
+#define __ROMPROPERTIES_LIBRPTHREADS_ATOMICS_H__
 
 // REINTERPRET_CAST() macro that matches shlwapi.h's STATIC_CAST().
 #ifndef REINTERPRET_CAST
@@ -61,24 +61,23 @@
 # endif
 #elif defined(_MSC_VER)
 # include <intrin.h>
-# include "common.h"
-static FORCEINLINE int ATOMIC_INC_FETCH(volatile int *ptr)
+static __inline int ATOMIC_INC_FETCH(volatile int *ptr)
 {
 	return _InterlockedIncrement(REINTERPRET_CAST(volatile long*)(ptr));
 }
-static FORCEINLINE int ATOMIC_DEC_FETCH(volatile int *ptr)
+static __inline int ATOMIC_DEC_FETCH(volatile int *ptr)
 {
 	return _InterlockedDecrement(REINTERPRET_CAST(volatile long*)(ptr));
 }
-static FORCEINLINE int ATOMIC_OR_FETCH(volatile int *ptr, int val)
+static __inline int ATOMIC_OR_FETCH(volatile int *ptr, int val)
 {
 	return _InterlockedOr(REINTERPRET_CAST(volatile long*)(ptr), val);
 }
-static FORCEINLINE int ATOMIC_CMPXCHG(volatile int *ptr, int cmp, int xchg)
+static __inline int ATOMIC_CMPXCHG(volatile int *ptr, int cmp, int xchg)
 {
 	return _InterlockedCompareExchange(REINTERPRET_CAST(volatile long*)(ptr), xchg, cmp);
 }
-static FORCEINLINE int ATOMIC_EXCHANGE(volatile int *ptr, int val)
+static __inline int ATOMIC_EXCHANGE(volatile int *ptr, int val)
 {
 	return _InterlockedExchange(REINTERPRET_CAST(volatile long*)(ptr), val);
 }
@@ -86,4 +85,4 @@ static FORCEINLINE int ATOMIC_EXCHANGE(volatile int *ptr, int val)
 # error Atomic functions not defined for this compiler.
 #endif
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_THREADS_ATOMICS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPTHREADS_ATOMICS_H__ */

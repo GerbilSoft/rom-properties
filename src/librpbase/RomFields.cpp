@@ -10,8 +10,10 @@
 
 #include "common.h"
 #include "TextFuncs.hpp"
-#include "threads/Atomics.h"
 #include "libi18n/i18n.h"
+
+// librpthreads
+#include "librpthreads/Atomics.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

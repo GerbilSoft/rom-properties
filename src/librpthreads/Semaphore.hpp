@@ -1,15 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpthreads)                     *
  * Semaphore.hpp: System-specific semaphore implementation.                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_SEMAPHORE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_SEMAPHORE_HPP__
-
-#include "common.h"
+#ifndef __ROMPROPERTIES_LIBRPTHREADS_SEMAPHORE_HPP__
+#define __ROMPROPERTIES_LIBRPTHREADS_SEMAPHORE_HPP__
 
 // NOTE: The .cpp files are #included here in order to inline the functions.
 // Do NOT compile them separately!
@@ -46,7 +44,13 @@ class SemaphoreLocker
 		}
 
 	private:
-		RP_DISABLE_COPY(SemaphoreLocker)
+#if __cplusplus >= 201103L
+		SemaphoreLocker(const SemaphoreLocker &) = delete; \
+		SemaphoreLocker &operator=(const SemaphoreLocker &) = delete;
+#else /* __cplusplus < 201103L */
+		SemaphoreLocker(const SemaphoreLocker &); \
+		SemaphoreLocker &operator=(const SemaphoreLocker &);
+#endif /* __cplusplus */
 
 	private:
 		Semaphore &m_sem;
@@ -54,4 +58,4 @@ class SemaphoreLocker
 
 }
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_SEMAPHORE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPTHREADS_SEMAPHORE_HPP__ */

@@ -11,8 +11,10 @@
 
 // librpbase
 #include "librpbase/file/IRpFile.hpp"
-#include "librpbase/threads/Atomics.h"
 using LibRpBase::IRpFile;
+
+// librpthreads
+#include "librpthreads/Atomics.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

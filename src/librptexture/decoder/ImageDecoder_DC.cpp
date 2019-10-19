@@ -19,7 +19,7 @@ using namespace LibRpTexture::PixelConversion;
 using std::unique_ptr;
 
 // One-time initialization.
-#include "threads/pthread_once.h"
+#include "librpthreads/pthread_once.h"
 
 namespace LibRpTexture { namespace ImageDecoder {
 

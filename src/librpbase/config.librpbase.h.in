@@ -106,14 +106,6 @@
 /* Define to 1 if iconv() is defined in libiconv. */
 #cmakedefine HAVE_ICONV_LIBICONV 1
 
-/** Threading model **/
-
-/* Define to 1 if the system uses Win32 threads. */
-#cmakedefine HAVE_WIN32_THREADS 1
-
-/* Define to 1 if the system uses POSIX threads. */
-#cmakedefine HAVE_PTHREADS 1
-
 /** putenv() and related **/
 
 /* Define to 1 if you have the `putenv` function. */

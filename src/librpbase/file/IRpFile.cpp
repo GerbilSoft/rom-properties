@@ -7,7 +7,9 @@
  ***************************************************************************/
 
 #include "IRpFile.hpp"
-#include "threads/Atomics.h"
+
+// librpthreads
+#include "librpthreads/Atomics.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

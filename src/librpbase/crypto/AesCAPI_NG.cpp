@@ -16,8 +16,8 @@
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 
-// Atomic reference counter.
-#include "../threads/Atomics.h"
+// librpthreads
+#include "librpthreads/Atomics.h"
 
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/aa376234%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396

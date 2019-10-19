@@ -12,8 +12,8 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
-// load() mutex.
-#include "../threads/Mutex.hpp"
+// librpthreads
+#include "librpthreads/Mutex.hpp"
 
 // INI parser.
 #include "ini.h"

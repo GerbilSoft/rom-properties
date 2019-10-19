@@ -1,17 +1,22 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * SemaphorePosix.cpp: POSIX semaphore implementation.                     *
+ * ROM Properties Page shell extension. (librpthreads)                     *
+ * SemaphoreMac.cpp: Mac OS X semaphore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "Semaphore.hpp"
-#include <semaphore.h>
+#include <mach/mach.h>
+#include <mach/mach_traps.h>
+#include <mach/semaphore.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+
+// References:
+// - https://developer.apple.com/library/content/documentation/Darwin/Conceptual/KernelProgramming/synchronization/synchronization.html
+// - https://gist.github.com/kazupon/3843288
 
 namespace LibRpBase {
 
@@ -31,7 +36,13 @@ class Semaphore
 		inline ~Semaphore();
 
 	private:
-		RP_DISABLE_COPY(Semaphore)
+#if __cplusplus >= 201103L
+		Semaphore(const Semaphore &) = delete; \
+		Semaphore &operator=(const Semaphore &) = delete;
+#else /* __cplusplus < 201103L */
+		Semaphore(const Semaphore &); \
+		Semaphore &operator=(const Semaphore &);
+#endif /* __cplusplus */
 
 	public:
 		/**
@@ -49,8 +60,7 @@ class Semaphore
 		inline int release(void);
 
 	private:
-		sem_t m_sem;
-		bool m_isInit;
+		semaphore_t m_sem;
 };
 
 /**
@@ -58,15 +68,12 @@ class Semaphore
  * @param count Number of times the semaphore can be obtained before blocking.
  */
 inline Semaphore::Semaphore(int count)
-	: m_isInit(false)
+	: m_sem(0)
 {
-	int ret = sem_init(&m_sem, 0, count);
-	assert(ret == 0);
-	if (ret == 0) {
-		m_isInit = true;
-	} else {
-		// FIXME: Do something if an error occurred here...
-	}
+	kern_return_t ret = semaphore_create(mach_task_self(), &m_sem, SYNC_POLICY_FIFO, count);
+	assert(ret == KERN_SUCCESS);
+	assert(m_sem != 0);
+	// FIXME: Do something if an error occurred here...
 }
 
 /**
@@ -75,9 +82,8 @@ inline Semaphore::Semaphore(int count)
  */
 inline Semaphore::~Semaphore()
 {
-	if (m_isInit) {
-		// TODO: Error checking.
-		sem_destroy(&m_sem);
+	if (m_sem != 0) {
+		semaphore_destroy(mach_task_self(), m_sem);
 	}
 }
 
@@ -89,11 +95,10 @@ inline Semaphore::~Semaphore()
  */
 inline int Semaphore::obtain(void)
 {
-	if (!m_isInit)
+	if (m_sem != 0)
 		return -EBADF;
 
-	// TODO: What error to return?
-	return sem_wait(&m_sem);
+	return semaphore_wait(m_sem);
 }
 
 /**
@@ -102,11 +107,11 @@ inline int Semaphore::obtain(void)
  */
 inline int Semaphore::release(void)
 {
-	if (!m_isInit)
+	if (m_sem != 0)
 		return -EBADF;
 
 	// TODO: What error to return?
-	return sem_post(&m_sem);
+	return semaphore_signal(m_sem);
 }
 
 }

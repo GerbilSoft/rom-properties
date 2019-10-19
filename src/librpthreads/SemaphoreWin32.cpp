@@ -1,13 +1,15 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpthreads)                     *
  * SemaphoreWin32.cpp: Win32 semaphore implementation.                     *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "Semaphore.hpp"
-#include "libwin32common/RpWin32_sdk.h"
+#ifndef WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -31,7 +33,13 @@ class Semaphore
 		inline ~Semaphore();
 
 	private:
-		RP_DISABLE_COPY(Semaphore)
+#if __cplusplus >= 201103L
+		Semaphore(const Semaphore &) = delete; \
+		Semaphore &operator=(const Semaphore &) = delete;
+#else /* __cplusplus < 201103L */
+		Semaphore(const Semaphore &); \
+		Semaphore &operator=(const Semaphore &);
+#endif /* __cplusplus */
 
 	public:
 		/**

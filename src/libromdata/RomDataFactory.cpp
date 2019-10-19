@@ -20,8 +20,10 @@
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RelatedFile.hpp"
-#include "librpbase/threads/pthread_once.h"
 using namespace LibRpBase;
+
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 // librptexture
 #include "librptexture/FileFormatFactory.hpp"

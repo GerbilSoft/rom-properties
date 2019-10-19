@@ -1,19 +1,19 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librpthreads)                     *
  * pthread_once.h: pthread_once() implementation for systems that don't    *
  * support pthreads natively.                                              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Based on the InitOnceExecuteOnce() implementation from Chromium:
 // - https://chromium.googlesource.com/chromium/src.git/+/18ad5f3a40ceab583961ca5dc064e01900514c57%5E%21/#F0
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_THREADS_PTHREAD_ONCE_H__
-#define __ROMPROPERTIES_LIBRPBASE_THREADS_PTHREAD_ONCE_H__
+#ifndef __ROMPROPERTIES_LIBRPTHREADS_PTHREAD_ONCE_H__
+#define __ROMPROPERTIES_LIBRPTHREADS_PTHREAD_ONCE_H__
 
-#include "config.librpbase.h"
+#include "config.librpthreads.h"
 
 #ifdef HAVE_PTHREADS
 // System has pthreads. Use it directly.
@@ -44,4 +44,4 @@ int pthread_once(pthread_once_t *once_control, void (*init_routine)(void));
 
 #endif /* HAVE_PTHREADS */
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_THREADS_PTHREAD_ONCE_H__ */
+#endif /* __ROMPROPERTIES_LIBRPTHREADS_PTHREAD_ONCE_H__ */
