@@ -18,6 +18,8 @@ IF(NOT HAVE_STDINT_H)
 ENDIF(NOT HAVE_STDINT_H)
 
 # CPU architecture.
+# TODO: Verify cross-compile functionality.
+# TODO: ARM/ARM64 is untested.
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	IF(CMAKE_CL_64 OR ("${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
@@ -25,8 +27,12 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	ELSE()
 		SET(CPU_i386 1)
 	ENDIF()
-ELSEIF(arch MATCHES "^ia64$")
+ELSEIF(arch STREQUAL "ia64")
 	SET(CPU_ia64 1)
+ELSEIF(arch STREQUAL "arm")
+	SET(CPU_arm 1)
+ELSEIF(arch STREQUAL "aarch64")
+	SET(CPU_arm64 1)
 ENDIF()
 UNSET(arch)
 
