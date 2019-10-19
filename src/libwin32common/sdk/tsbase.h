@@ -18,6 +18,14 @@
 #include "../RpWin32_sdk.h"
 #include <windows.h>
 
+// NOTE: MinGW's __forceinline macro has an extra 'extern' when compiling as C code.
+// This breaks "static FORCEINLINE".
+// Reference: https://sourceforge.net/p/mingw-w64/mailman/message/32882927/
+#if !defined(__cplusplus) && defined(__forceinline) && defined(__GNUC__) && defined(_WIN32)
+# undef __forceinline
+# define __forceinline inline __attribute__((always_inline,__gnu_inline__))
+#endif
+
 // Force inline attribute.
 #if !defined(FORCEINLINE)
 # if (!defined(_DEBUG) || defined(NDEBUG))

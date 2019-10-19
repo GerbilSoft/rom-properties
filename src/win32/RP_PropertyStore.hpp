@@ -91,8 +91,8 @@ RP_PropertyStore : public LibWin32Common::ComBase3<IInitializeWithStream, IPrope
 };
 
 #ifdef __CRT_UUID_DECL
-// Required for MinGw-w64 __uuidof() emulation.
-__CRT_UUID_DECL(RP_PropertyStore, 0x4a1e3510, 0x50bd, 0x4b03, 0xa8, 0x01, 0xe4, 0xc9, 0x54, 0xf4, 0x3b, 0x96)
+// Required for MinGW-w64 __uuidof() emulation.
+__CRT_UUID_DECL(RP_PropertyStore, __MSABI_LONG(0x4a1e3510), 0x50bd, 0x4b03, 0xa8,0x01, 0xe4, 0xc9, 0x54, 0xf4, 0x3b, 0x96)
 #endif
 
 #endif /* __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_HPP__ */

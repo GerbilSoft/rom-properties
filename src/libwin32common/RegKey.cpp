@@ -633,8 +633,21 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 	if (!hkcr_InprocServer32.isOpen())
 		return hkcr_InprocServer32.lOpenRes();
 	// Set the default value to the DLL filename.
-	extern TCHAR dll_filename[MAX_PATH];
-	if (dll_filename[0] != 0) {
+	// TODO: Get this once and save it?
+	// TODO: Duplicated from win32/. Consolidate the two?
+	TCHAR dll_filename[MAX_PATH];
+	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+		dll_filename, sizeof(dll_filename)/sizeof(dll_filename[0]));
+	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+		// Cannot get the DLL filename.
+		// TODO: Windows XP doesn't SetLastError() if the
+		// filename is too big for the buffer.
+		lResult = GetLastError();
+		if (lResult == ERROR_SUCCESS) {
+			lResult = ERROR_INSUFFICIENT_BUFFER;
+		}
+		return lResult;
+	} else {
 		lResult = hkcr_InprocServer32.write(nullptr, dll_filename);
 		if (lResult != ERROR_SUCCESS)
 			return lResult;

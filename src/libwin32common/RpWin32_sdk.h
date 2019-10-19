@@ -128,6 +128,15 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 # define _Out_writes_(var)
 #endif
 
+// FIXME: _Check_return_ on MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1) fails:
+// "error: expected unqualified-id before string constant"
+#if defined(__GNUC__)
+# ifdef _Check_return_
+#  undef _Check_return_
+# endif
+# define _Check_return_
+#endif
+
 // Current image instance.
 // This is filled in by the linker.
 // Reference: https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483

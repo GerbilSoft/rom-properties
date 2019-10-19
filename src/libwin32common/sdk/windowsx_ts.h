@@ -19,7 +19,7 @@
 /****** GDI Macro APIs *******************************************************/
 
 #undef DeletePen
-static FORCEINLINE BOOL DeleteObject(_In_ HPEN hPen)
+static FORCEINLINE BOOL DeletePen(_In_ HPEN hPen)
 	{ return DeleteObject(STATIC_CAST(HGDIOBJ)(hPen)); }
 #undef SelectPen
 static FORCEINLINE HPEN SelectPen(_In_ HDC hDC, _In_ HPEN hPen)

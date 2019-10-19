@@ -101,8 +101,14 @@ RP_ExtractIcon : public LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IE
 };
 
 #ifdef __CRT_UUID_DECL
-// Required for MinGw-w64 __uuidof() emulation.
-__CRT_UUID_DECL(RP_ExtractIcon, 0xe51bc107, 0xe491, 0x4b29, 0xa6, 0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02)
+// Required for MinGW-w64 __uuidof() emulation.
+__CRT_UUID_DECL(RP_ExtractIcon, __MSABI_LONG(0xe51bc107), 0xe491, 0x4b29, 0xa6,0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02)
+
+// FIXME: MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1)
+// doesn't declare the UUID for either IExtractIconW or IExtractIconA for
+// __uuidof() emulation.
+__CRT_UUID_DECL(IExtractIconA, __MSABI_LONG(0x000214eb), 0, 0, 0xc0,0, 0, 0, 0, 0, 0, 0x46)
+__CRT_UUID_DECL(IExtractIconW, __MSABI_LONG(0x000214fa), 0, 0, 0xc0,0, 0, 0, 0, 0, 0, 0x46)
 #endif
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__ */

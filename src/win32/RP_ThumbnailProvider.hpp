@@ -16,7 +16,7 @@
 #include "libwin32common/ComBase.hpp"
 
 // IThumbnailProvider
-#include "thumbcache.h"
+#include "thumbcache-wrapper.hpp"
 
 // CLSID
 extern "C" {
@@ -90,7 +90,7 @@ RP_ThumbnailProvider : public LibWin32Common::ComBase2<IInitializeWithStream, IT
 
 #ifdef __CRT_UUID_DECL
 // Required for MinGW-w64 __uuidof() emulation.
-__CRT_UUID_DECL(RP_ThumbnailProvider, 0x4723df58, 0x463e, 0x4590, 0x8f, 0x4a, 0x8d, 0x9d, 0xd4, 0xf4, 0x35, 0x5a)
+__CRT_UUID_DECL(RP_ThumbnailProvider, __MSABI_LONG(0x4723df58), 0x463e, 0x4590, 0x8f,0x4a, 0x8d, 0x9d, 0xd4, 0xf4, 0x35, 0x5a)
 #endif
 
 #endif /* __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__ */

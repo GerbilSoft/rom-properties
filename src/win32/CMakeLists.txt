@@ -1,11 +1,30 @@
 PROJECT(rom-properties-win32)
 
+# Check for Windows SDK headers and symbols.
+INCLUDE(CheckIncludeFiles)
+INCLUDE(CheckSymbolExists)
+INCLUDE(CheckCXXSymbolExists)
+# IThumbnailProvider
+CHECK_INCLUDE_FILES("thumbcache.h" HAVE_THUMBCACHE_H)
+# Property key symbols and functions for RP_PropertyStore
+CHECK_SYMBOL_EXISTS(PKEY_Music_Conductor "windows.h;propvarutil.h;propkey.h" HAVE_PKEY_MUSIC_CONDUCTOR)
+CHECK_CXX_SYMBOL_EXISTS(InitPropVariantFromUInt16 "windows.h;propvarutil.h" HAVE_INITPROPVARIANTFROMUINT16)
+IF(HAVE_PKEY_MUSIC_CONDUCTOR AND HAVE_INITPROPVARIANTFROMUINT16)
+	SET(HAVE_RP_PROPERTYSTORE_DEPS 1)
+ELSE()
+	MESSAGE(WARNING "Windows SDK is missing required IPropertyStore symbols.\nIPropertyStore functionality will not be available.")
+ENDIF()
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.win32.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.win32.h")
+
 # Create the manifest file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/res/rom-properties.dll.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/res/rom-properties.dll.manifest" @ONLY)
 
 # Sources and headers.
 SET(rom-properties-win32_SRCS
 	DllMain.cpp
+	com-iids.c
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
@@ -19,8 +38,6 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
-	RP_PropertyStore.cpp
-	RP_PropertyStore_Register.cpp
 	RP_ShellIconOverlayIdentifier.cpp
 	RP_ShellIconOverlayIdentifier_Register.cpp
 	CreateThumbnail.cpp
@@ -42,10 +59,9 @@ SET(rom-properties-win32_H
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
 	RpFile_IStream.hpp
+	thumbcache-wrapper.hpp
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp
-	RP_PropertyStore.hpp
-	RP_PropertyStore_p.hpp
 	RP_ShellIconOverlayIdentifier.hpp
 	RP_ShellIconOverlayIdentifier_p.hpp
 	CreateThumbnail.hpp
@@ -64,6 +80,17 @@ SET(rom-properties-win32_RC
 	res/rp-en_US.rc
 	res/rp-pt_BR.rc
 	)
+
+IF(HAVE_RP_PROPERTYSTORE_DEPS)
+	SET(rom-properties-win32-PropKey_SRCS
+		RP_PropertyStore.cpp
+		RP_PropertyStore_Register.cpp
+		)
+	SET(rom-properties-win32-PropKey_H
+		RP_PropertyStore.hpp
+		RP_PropertyStore_p.hpp
+		)
+ENDIF(HAVE_RP_PROPERTYSTORE_DEPS)
 
 IF(ENABLE_DECRYPTION)
 	SET(rom-properties-win32_CRYPTO_SRCS
@@ -119,6 +146,7 @@ ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_PCH_SRC} ${rom-properties-win32_PCH_H}
 	${rom-properties-win32-DELAY_LOAD_SRC} ${rom-properties-win32-DELAY_LOAD_H}
 	${rom-properties-win32_SRCS} ${rom-properties-win32_H}
+	${rom-properties-win32-PropKey_SRCS} ${rom-properties-win32-PropKey_H}
 	${rom-properties-win32_CRYPTO_SRCS} ${rom-properties-win32_CRYPTO_H}
 	${rom-properties-win32_RC}
 	)
@@ -148,10 +176,13 @@ TARGET_LINK_LIBRARIES(rom-properties PRIVATE cachemgr romdata rpbase rpthreads w
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 propsys shell32)
-# Required by InitPropVariantFromString().
-# TODO: Write our own version that doesn't use SHStrDupW()?
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE shlwapi)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 shell32)
+IF(HAVE_RP_PROPERTYSTORE_DEPS)
+	TARGET_LINK_LIBRARIES(rom-properties PRIVATE propsys)
+	# Required by InitPropVariantFromString().
+	# TODO: Write our own version that doesn't use SHStrDupW()?
+	TARGET_LINK_LIBRARIES(rom-properties PRIVATE shlwapi)
+ENDIF(HAVE_RP_PROPERTYSTORE_DEPS)
 
 # Add zlib, png, and tinyxml2 directories for the About tab.
 IF(HAVE_ZLIB)

@@ -44,4 +44,10 @@ class RP_EmptyVolumeCacheCallback : public LibWin32Common::ComBase<IEmptyVolumeC
 		unsigned int m_baseProgress;	// Base progress value.
 };
 
+#ifdef __CRT_UUID_DECL
+// FIXME: MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1)
+// doesn't declare the UUID for IEmptyVolumeCacheCallBack for __uuidof() emulation.
+__CRT_UUID_DECL(IEmptyVolumeCacheCallBack, __MSABI_LONG(0x6e793361), 0x73c6, 0x11d0, 0x84,0x69, 0x00, 0xaa, 0x00, 0x44, 0x29, 0x01)
+#endif
+
 #endif /* __ROMPROPERTIES_WIN32_CONFIG_RP_EMPTYVOLUMECACHECALLBACK_HPP */

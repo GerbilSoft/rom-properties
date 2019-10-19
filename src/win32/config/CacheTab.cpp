@@ -32,6 +32,12 @@ using LibWin32Common::RegKey;
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
+#ifdef __CRT_UUID_DECL
+// FIXME: MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1)
+// doesn't declare the UUID for IEmptyVolumeCacheCallBack for __uuidof() emulation.
+__CRT_UUID_DECL(IEmptyVolumeCache, __MSABI_LONG(0x8fce5227), 0x04da, 0x11d1, 0xa0,0x04, 0x00, 0x80, 0x5f, 0x8a, 0xbe, 0x06)
+#endif
+
 // C includes. (C++ namespace)
 #include <cassert>
 

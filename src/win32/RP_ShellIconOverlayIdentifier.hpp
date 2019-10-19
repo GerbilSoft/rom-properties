@@ -67,8 +67,12 @@ RP_ShellIconOverlayIdentifier : public LibWin32Common::ComBase<IShellIconOverlay
 };
 
 #ifdef __CRT_UUID_DECL
-// Required for MinGw-w64 __uuidof() emulation.
-__CRT_UUID_DECL(RP_ShellIconOverlayIdentifier, 0x02c6Af01, 0x3c99, 0x497d, 0xb3, 0xfc, 0xe3, 0x8c, 0xe5, 0x26, 0x78, 0x6b);
+// Required for MinGW-w64 __uuidof() emulation.
+__CRT_UUID_DECL(RP_ShellIconOverlayIdentifier, __MSABI_LONG(0x02c6af01), 0x3c99, 0x497d, 0xb3,0xfc, 0xe3, 0x8c, 0xe5, 0x26, 0x78, 0x6b);
+
+// FIXME: MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1)
+// doesn't declare the UUID for IShellIconOverlayIdentifier for __uuidof() emulation.
+__CRT_UUID_DECL(IShellIconOverlayIdentifier, __MSABI_LONG(0x0c6c4200), 0xc589, 0x11d0, 0x99,0x9a, 0x00, 0xc0, 0x4f, 0xd6, 0x55, 0xe1)
 #endif
 
 #endif /* __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_HPP__ */
