@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension installer. (svrplus)                *
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
- * Copyright (c) 2017-2018 by Egor.                                        *
+ * Copyright (c) 2017-2019 by Egor.                                        *
  * Copyright (c) 2017-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -362,14 +362,13 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 /**
  * Tries to (un)install the COM Server DLL, displays errors in message boxes.
  *
- * @param hWnd		[in] owner window of message boxes
  * @param isUninstall	[in] when true, uninstalls the DLL, instead of installing it.
  * @param is64		[in] when true, installs 64-bit version
  * @param sErrBuf	[out,opt] error message buffer
  * @param cchErrBuf	[in,opt] size of sErrBuf, in characters
  * @return InstallServerResult
  */
-static InstallServerResult TryInstallServer(HWND hWnd,
+static InstallServerResult TryInstallServer(
 	bool isUninstall, bool is64,
 	TCHAR *sErrBuf, size_t cchErrBuf)
 {
@@ -457,11 +456,11 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 
 	// Try to (un)install the 64-bit version.
 	if (g_is64bit) {
-		res64 = TryInstallServer(params->hWnd, params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+		res64 = TryInstallServer(params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
 	}
 
 	// Try to (un)install the 32-bit version.
-	res32 = TryInstallServer(params->hWnd, params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+	res32 = TryInstallServer(params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
 
 	if (res32 == ISR_OK && res64 == ISR_OK) {
 		// DLL(s) registered successfully.
