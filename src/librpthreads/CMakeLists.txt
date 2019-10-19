@@ -2,7 +2,16 @@
 PROJECT(libi18n CXX)
 
 # Find the system threading library.
-FIND_PACKAGE(Threads REQUIRED)
+# NOTE: If using Windows, always assume we're using Windows threads.
+# CMake attempts to find pthreads, which causes conflicts if building
+# with MSYS2/MinGW-w64.
+IF(WIN32)
+	SET(CMAKE_USE_WIN32_THREADS_INIT 1)
+	SET(Threads_FOUND TRUE)
+ELSE(WIN32)
+	FIND_PACKAGE(Threads REQUIRED)
+ENDIF(WIN32)
+
 # Threading implementation.
 SET(librpthreads_SRCS dummy.cpp)
 SET(librpthreads_H

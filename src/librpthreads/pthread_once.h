@@ -26,7 +26,14 @@
 extern "C" {
 #endif
 
+#ifdef _MSC_VER
+// Using `int` on MSVC for compatibility with atomic functions.
 typedef int pthread_once_t;
+#else /* !_MSC_VER */
+// Using `long` elsewhere for compatibility with pthread_once().
+typedef long pthread_once_t;
+#endif
+
 #define PTHREAD_ONCE_INIT 0
 
 /**
