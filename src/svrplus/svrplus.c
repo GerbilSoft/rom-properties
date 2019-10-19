@@ -736,7 +736,8 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case IDCANCEL:
 					// User pressed Escape.
 					if (!g_inProgress) {
-						EndDialog(hDlg, 0);
+						DestroyWindow(hDlg);
+						PostQuitMessage(0);
 					}
 					return TRUE;
 
@@ -785,7 +786,8 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 		case WM_CLOSE:
 			if (!g_inProgress) {
-				EndDialog(hDlg, 0);
+				DestroyWindow(hDlg);
+				PostQuitMessage(0);
 			}
 			return TRUE;
 
@@ -794,6 +796,33 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 	}
 
 	return FALSE;
+}
+
+/**
+ * Dialog message loop
+ */
+INT_PTR DialogLoop(HINSTANCE hInstance, LPCTSTR lpTemplateName, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam)
+{
+	MSG msg;
+	BOOL bRet;
+	HWND hDlg;
+
+	if (!(hDlg = CreateDialogParam(hInstance, lpTemplateName, hWndParent, lpDialogFunc, dwInitParam))) {
+		return -1;
+	}
+
+	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {
+		if (bRet == -1) {
+			break;
+		} else if (!IsWindow(hDlg) || !IsDialogMessage(hDlg, &msg)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+	if (bRet == 0) {
+		return msg.wParam;
+	}
+	return -1;
 }
 
 /**
@@ -867,7 +896,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	// Run the dialog.
 	// FIXME: SysLink controls won't work in ANSI builds.
-	DialogBox(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), NULL, DialogProc);
+	DialogLoop(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), NULL, DialogProc, 0L);
 
 	// Delete the icons.
 	if (hIconDialog) {
