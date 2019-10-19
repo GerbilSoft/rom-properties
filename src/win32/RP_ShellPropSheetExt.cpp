@@ -16,6 +16,8 @@
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
 
+#include "DragImageLabel.hpp"
+
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
 #include "libwin32common/WinUI.hpp"
@@ -78,10 +80,6 @@ namespace Gdiplus {
 #include <gdiplus.h>
 #include "librptexture/img/GdiplusHelper.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
-
-// Icon animation.
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
@@ -153,8 +151,6 @@ class RP_ShellPropSheetExt_Private
 		// Header row widgets.
 		HWND lblSysInfo;
 
-		// Window background color.
-		COLORREF colorWinBg;
 		// XP theming.
 		typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
 		HMODULE hUxTheme_dll;
@@ -198,6 +194,11 @@ class RP_ShellPropSheetExt_Private
 		SIZE szBanner;
 		bool nearest_banner;
 
+		// Icon.
+		RECT rectIcon;
+		SIZE szIcon;
+		DragImageLabel *lblIcon;
+
 		// Tab layout.
 		HWND hTabWidget;
 		struct tab {
@@ -206,25 +207,6 @@ class RP_ShellPropSheetExt_Private
 		};
 		vector<tab> tabs;
 		int curTabIndex;
-
-		// Animated icon data.
-		array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
-		RECT rectIcon;
-		SIZE szIcon;
-		bool nearest_icon;
-		IconAnimHelper iconAnimHelper;
-		UINT_PTR animTimerID;		// Animation timer ID. (non-zero == running)
-		int last_frame_number;		// Last frame number.
-
-		/**
-		 * Start the animation timer.
-		 */
-		void startAnimTimer(void);
-
-		/**
-		 * Stop the animation timer.
-		 */
-		void stopAnimTimer(void);
 
 	public:
 		/**
@@ -375,15 +357,6 @@ class RP_ShellPropSheetExt_Private
 		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
 		/**
-		 * Animated icon timer.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param idEvent
-		 * @param dwTime
-		 */
-		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
-		/**
 		 * Dialog procedure for subtabs.
 		 * @param hDlg
 		 * @param uMsg
@@ -408,21 +381,17 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontMono(nullptr)
 	, bPrevIsClearType(nullptr)
 	, lblSysInfo(nullptr)
-	, colorWinBg(0)
 	, hUxTheme_dll(nullptr)
 	, pfnIsThemeActive(nullptr)
 	, colorAltRow(0)
 	, isFullyInit(false)
 	, hbmpBanner(nullptr)
 	, nearest_banner(true)
+	, lblIcon(nullptr)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
-	, nearest_icon(true)
-	, animTimerID(0)
-	, last_frame_number(0)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
-	hbmpIconFrames.fill(nullptr);
 	memset(&ptBanner, 0, sizeof(ptBanner));
 	memset(&szBanner, 0, sizeof(szBanner));
 	memset(&rectIcon, 0, sizeof(rectIcon));
@@ -442,19 +411,18 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 {
-	stopAnimTimer();
-	iconAnimHelper.setIconAnimData(nullptr);
-	if (romData) {
-		romData->unref();
-	}
-
 	// Delete the banner and icon frames.
 	if (hbmpBanner) {
 		DeleteObject(hbmpBanner);
 	}
-	std::for_each(hbmpIconFrames.begin(), hbmpIconFrames.end(),
-		[](HBITMAP hbmp) { if (hbmp) { DeleteObject(hbmp); } }
-	);
+	if (lblIcon) {
+		delete lblIcon;
+	}
+
+	// Unreference the RomData object.
+	if (romData) {
+		romData->unref();
+	}
 
 	// Delete the fonts.
 	if (hFontBold) {
@@ -467,43 +435,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	// Close DLLs.
 	if (hUxTheme_dll) {
 		FreeLibrary(hUxTheme_dll);
-	}
-}
-
-/**
- * Start the animation timer.
- */
-void RP_ShellPropSheetExt_Private::startAnimTimer(void)
-{
-	if (!iconAnimHelper.isAnimated()) {
-		// Not an animated icon.
-		return;
-	}
-
-	// Get the current frame information.
-	last_frame_number = iconAnimHelper.frameNumber();
-	const int delay = iconAnimHelper.frameDelay();
-	assert(delay > 0);
-	if (delay <= 0) {
-		// Invalid delay value.
-		return;
-	}
-
-	// Set a timer for the current frame.
-	// We're using the 'd' pointer as nIDEvent.
-	animTimerID = SetTimer(hDlgSheet,
-		reinterpret_cast<UINT_PTR>(this),
-		delay, AnimTimerProc);
-}
-
-/**
- * Stop the animation timer.
- */
-void RP_ShellPropSheetExt_Private::stopAnimTimer(void)
-{
-	if (animTimerID) {
-		KillTimer(hDlgSheet, animTimerID);
-		animTimerID = 0;
 	}
 }
 
@@ -568,17 +499,11 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 	}
 
 	// Icon.
-	if (imgbf & RomData::IMGBF_INT_ICON) {
-		// Delete the old icons.
-		std::for_each(hbmpIconFrames.begin(), hbmpIconFrames.end(),
-			[](HBITMAP &hbmp) {
-				if (hbmp) {
-					DeleteObject(hbmp);
-					hbmp = nullptr;
-				}
-			}
-		);
+	if (!lblIcon) {
+		lblIcon = new DragImageLabel(hDlgSheet);
+	}
 
+	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
@@ -587,32 +512,22 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				szIcon.cx = icon->width();
 				szIcon.cy = icon->height();
 				static const SIZE req_szIcon = {32, 32};
-				nearest_icon = rescaleImage(req_szIcon, szIcon);
+				// TODO: Port to DragImageLabel.
+				//nearest_icon = rescaleImage(req_szIcon, szIcon);
 			}
 
-			// Get the animated icon data.
-			const IconAnimData *const iconAnimData = romData->iconAnimData();
-			if (iconAnimData) {
-				// Convert the icons to GDI+ bitmaps.
-				for (int i = iconAnimData->count-1; i >= 0; i--) {
-					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						// Convert to HBITMAP using the window background color.
-						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor, szIcon, nearest_icon);
-					}
-				}
+			// Is this an animated icon?
+			bool ok = lblIcon->setIconAnimData(romData->iconAnimData());
+			if (!ok) {
+				// Not an animated icon, or invalid icon data.
+				// Set the static icon.
+				ok = lblIcon->setRpImage(icon);
+			}
 
-				// Set up the IconAnimHelper.
-				iconAnimHelper.setIconAnimData(iconAnimData);
-				last_frame_number = iconAnimHelper.frameNumber();
-
-				// Icon animation timer is set in startAnimTimer().
-			} else {
-				// Not an animated icon.
-				last_frame_number = 0;
-				iconAnimHelper.setIconAnimData(nullptr);
-
-				// Convert to HBITMAP using the window background color.
-				hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, nearest_icon);
+			if (!ok) {
+				// Unable to load the icon...
+				szIcon.cx = 0;
+				szIcon.cy = 0;
 			}
 		}
 	}
@@ -2567,11 +2482,15 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 
 	switch (pHdr->code) {
 		case PSN_SETACTIVE:
-			startAnimTimer();
+			if (lblIcon) {
+				lblIcon->startAnimTimer();
+			}
 			break;
 
 		case PSN_KILLACTIVE:
-			stopAnimTimer();
+			if (lblIcon) {
+				lblIcon->stopAnimTimer();
+			}
 			break;
 
 #ifdef UNICODE
@@ -2659,7 +2578,9 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 {
-	if (!hbmpBanner && !hbmpIconFrames[0]) {
+	HBITMAP hbmpIcon = lblIcon->currentFrame();
+
+	if (!hbmpBanner && !hbmpIcon) {
 		// Nothing to draw...
 		return false;
 	}
@@ -2679,8 +2600,8 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	}
 
 	// Draw the icon.
-	if (hbmpIconFrames[last_frame_number]) {
-		SelectBitmap(hdcMem, hbmpIconFrames[last_frame_number]);
+	if (hbmpIcon) {
+		SelectBitmap(hdcMem, hbmpIcon);
 		BitBlt(hdc, rectIcon.left, rectIcon.top,
 			szIcon.cx, szIcon.cy,
 			hdcMem, 0, 0, SRCCOPY);
@@ -2772,8 +2693,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// We can close the RomData's underlying IRpFile now.
 			d->romData->close();
 
-			// Start the animation timer.
-			d->startAnimTimer();
+			// Start the icon animation timer.
+			d->lblIcon->startAnimTimer();
 
 			// Continue normal processing.
 			break;
@@ -2782,9 +2703,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 		case WM_DESTROY: {
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
-			if (d) {
+			if (d && d->lblIcon) {
 				// Stop the animation timer.
-				d->stopAnimTimer();
+				d->lblIcon->stopAnimTimer();
 			}
 
 			// FIXME: Remove D_PTR_PROP from child windows.
@@ -2960,47 +2881,6 @@ UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, L
 	}
 
 	return false;
-}
-
-/**
- * Animated icon timer.
- * @param hWnd
- * @param uMsg
- * @param idEvent
- * @param dwTime
- */
-void CALLBACK RP_ShellPropSheetExt_Private::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-	if (hWnd == nullptr || idEvent == 0) {
-		// Not a valid timer procedure call...
-		// - hWnd should not be nullptr.
-		// - idEvent should be the 'd' pointer.
-		return;
-	}
-
-	RP_ShellPropSheetExt_Private *d =
-		reinterpret_cast<RP_ShellPropSheetExt_Private*>(idEvent);
-
-	// Next frame.
-	int delay = 0;
-	int frame = d->iconAnimHelper.nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
-		// Invalid frame...
-		KillTimer(hWnd, idEvent);
-		d->animTimerID = 0;
-		return;
-	}
-
-	if (frame != d->last_frame_number) {
-		// New frame number.
-		// Update the icon.
-		d->last_frame_number = frame;
-		InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
-	}
-
-	// Update the timer.
-	// TODO: Verify that this affects the next callback.
-	SetTimer(hWnd, idEvent, delay, AnimTimerProc);
 }
 
 /**
