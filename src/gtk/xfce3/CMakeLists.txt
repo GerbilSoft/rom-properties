@@ -33,6 +33,12 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3_IFUNC_SRCS "${rom-properties-gtk3_IFUNC_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3_SSSE3_SRCS "${rom-properties-gtk3_SSSE3_SRCS}")
 
+	# Disable LTO on the IFUNC files if LTO is known to be broken.
+	IF(GCC_5xx_LTO_ISSUES)
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-xfce3_IFUNC_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
+	ENDIF(GCC_5xx_LTO_ISSUES)
+
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
@@ -40,10 +46,8 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${rom-properties-xfce3_SSSE3_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH(ssse3_file ${rom-properties-xfce3_SSSE3_SRCS})
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-xfce3_SSSE3_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)

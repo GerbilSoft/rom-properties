@@ -285,10 +285,8 @@ IF(CPU_i386 OR CPU_amd64)
 		SET(libromdata_IFUNC_SRCS utils/SuperMagicDrive_ifunc.cpp)
 		# Disable LTO on the IFUNC files if LTO is known to be broken.
 		IF(GCC_5xx_LTO_ISSUES)
-			FOREACH(ifunc_file ${libromdata_IFUNC_SRCS})
-				SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
-					APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-			ENDFOREACH()
+			SET_SOURCE_FILES_PROPERTIES(${libromdata_IFUNC_SRCS}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(UNIX AND NOT APPLE)
 

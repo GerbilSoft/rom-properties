@@ -35,10 +35,8 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 
 	# Disable LTO on the IFUNC files if LTO is known to be broken.
 	IF(GCC_5xx_LTO_ISSUES)
-		FOREACH(ifunc_file ${rom-properties-mate_IFUNC_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ifunc_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-		ENDFOREACH()
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-mate_IFUNC_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
 	ENDIF(GCC_5xx_LTO_ISSUES)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
@@ -48,10 +46,8 @@ IF(rom-properties-gtk3_SSSE3_SRCS)
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		FOREACH(ssse3_file ${rom-properties-mate_SSSE3_SRCS})
-			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
-		ENDFOREACH(ssse3_file ${rom-properties-mate_SSSE3_SRCS})
+		SET_SOURCE_FILES_PROPERTIES(${rom-properties-mate_SSSE3_SRCS}
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
