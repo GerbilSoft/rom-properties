@@ -29,6 +29,10 @@ using LibRpTexture::rp_image;
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <algorithm>
+#include <array>
+
 // Gdiplus for image drawing.
 // NOTE: Gdiplus requires min/max.
 #include <algorithm>
@@ -38,132 +42,117 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 
-DragImageLabel::DragImageLabel(HWND hwndParent)
-	: m_hwndParent(hwndParent)
-	, m_useNearestNeighbor(false)
-	, m_img(nullptr)
-	, m_hbmpImg(nullptr)
-	, m_anim(nullptr)
+class DragImageLabelPrivate
+{
+	public:
+		explicit DragImageLabelPrivate(HWND hwndParent);
+		~DragImageLabelPrivate();
+
+	private:
+		RP_DISABLE_COPY(DragImageLabelPrivate)
+
+	public:
+		HWND hwndParent;
+		bool useNearestNeighbor;
+
+		// Position.
+		POINT position;
+
+		// Icon sizes.
+		SIZE requiredSize;	// Required size.
+		SIZE actualSize;	// Actual size.
+
+		// Calculated RECT based on position and size.
+		RECT rect;
+
+		// rp_image. (NOTE: Not owned by this object.)
+		const LibRpTexture::rp_image *img;
+		HBITMAP hbmpImg;	// for non-animated only
+
+		// Animated icon data.
+		struct anim_vars {
+			HWND m_hwndParent;
+			const LibRpBase::IconAnimData *iconAnimData;
+			UINT_PTR animTimerID;
+			std::array<HBITMAP, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
+			LibRpBase::IconAnimHelper iconAnimHelper;
+			int last_frame_number;		// Last frame number.
+
+			anim_vars(HWND hwndParent)
+				: m_hwndParent(hwndParent)
+				, animTimerID(0)
+				, last_frame_number(0) { }
+			~anim_vars()
+			{
+				if (animTimerID) {
+					KillTimer(m_hwndParent, animTimerID);
+				}
+				std::for_each(iconFrames.cbegin(), iconFrames.cend(),
+					[](HBITMAP hbmp) { if (hbmp) { DeleteObject(hbmp); } }
+				);
+			}
+		};
+		anim_vars *anim;
+
+	public:
+		/**
+		 * Rescale an image to be as close to the required size as possible.
+		 * @param req_sz	[in] Required size.
+		 * @param sz		[in/out] Image size.
+		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
+		 */
+		static bool rescaleImage(const SIZE &req_sz, SIZE &sz);
+
+		/**
+		 * Update the bitmap(s).
+		 * @return True on success; false on error.
+		 */
+		bool updateBitmaps(void);
+
+		/**
+		 * Update the bitmap rect.
+		 * Called when position and/or size changes.
+		 */
+		void updateRect(void);
+
+		/**
+		 * Animated icon timer.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param idEvent
+		 * @param dwTime
+		 */
+		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+};
+
+/** DragImageLabelPrivate **/
+
+DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
+	: hwndParent(hwndParent)
+	, useNearestNeighbor(false)
+	, img(nullptr)
+	, hbmpImg(nullptr)
+	, anim(nullptr)
 {
 	// TODO: Set rect/size as parameters?
-	m_requiredSize.cx = DIL_REQ_IMAGE_SIZE;
-	m_requiredSize.cy = DIL_REQ_IMAGE_SIZE;
-	m_actualSize = m_requiredSize;
+	requiredSize.cx = DIL_REQ_IMAGE_SIZE;
+	requiredSize.cy = DIL_REQ_IMAGE_SIZE;
+	actualSize = requiredSize;
 
-	m_position.x = 0;
-	m_position.y = 0;
+	position.x = 0;
+	position.y = 0;
 
-	m_rect.left = 0;
-	m_rect.right = m_actualSize.cx;
-	m_rect.top = 0;
-	m_rect.bottom = m_actualSize.cy;
+	rect.left = 0;
+	rect.right = actualSize.cx;
+	rect.top = 0;
+	rect.bottom = actualSize.cy;
 }
 
-DragImageLabel::~DragImageLabel()
+DragImageLabelPrivate::~DragImageLabelPrivate()
 {
-	delete m_anim;
-	if (m_hbmpImg) {
-		DeleteObject(m_hbmpImg);
-	}
-}
-
-/**
- * Set the rp_image for this label.
- *
- * NOTE: The rp_image pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the rp_image object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
- * the individual rp_image.
- *
- * @param img rp_image, or nullptr to clear.
- * @return True on success; false on error or if clearing.
- */
-bool DragImageLabel::setRpImage(const rp_image *img)
-{
-	if (!img) {
-		m_img = nullptr;
-		if (m_hbmpImg) {
-			DeleteBitmap(m_hbmpImg);
-			m_hbmpImg = nullptr;
-		}
-
-		if (m_anim && m_anim->iconAnimData) {
-			return updateBitmaps();
-		}
-		return false;
-	}
-
-	// Don't check if the image pointer matches the
-	// previously stored image, since the underlying
-	// image may have changed.
-	m_img = img;
-	return updateBitmaps();
-}
-
-/**
- * Set the icon animation data for this label.
- *
- * NOTE: The iconAnimData pointer is stored and used if necessary.
- * Make sure to call this function with nullptr before deleting
- * the IconAnimData object.
- *
- * NOTE 2: If animated icon data is specified, that supercedes
- * the individual rp_image.
- *
- * @param iconAnimData IconAnimData, or nullptr to clear.
- * @return True on success; false on error or if clearing.
- */
-bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
-{
-	if (!m_anim) {
-		m_anim = new anim_vars(m_hwndParent);
-	}
-
-	if (!iconAnimData) {
-		if (m_anim->animTimerID) {
-			KillTimer(m_hwndParent, m_anim->animTimerID);
-			m_anim->animTimerID = 0;
-		}
-		m_anim->iconAnimData = nullptr;
-
-		if (!m_img) {
-			if (m_hbmpImg) {
-				DeleteBitmap(m_hbmpImg);
-				m_hbmpImg = nullptr;
-			}
-		} else {
-			return updateBitmaps();
-		}
-		return false;
-	}
-
-	// Don't check if the data pointer matches the
-	// previously stored data, since the underlying
-	// data may have changed.
-	m_anim->iconAnimData = iconAnimData;
-	return updateBitmaps();
-}
-
-/**
- * Clear the rp_image and iconAnimData.
- * This will stop the animation timer if it's running.
- */
-void DragImageLabel::clearRp(void)
-{
-	if (m_anim) {
-		if (m_anim->animTimerID) {
-			KillTimer(m_hwndParent, m_anim->animTimerID);
-			m_anim->animTimerID = 0;
-		}
-		m_anim->iconAnimData = nullptr;
-	}
-
-	m_img = nullptr;
-	if (m_hbmpImg) {
-		DeleteBitmap(m_hbmpImg);
-		m_hbmpImg = nullptr;
+	delete anim;
+	if (hbmpImg) {
+		DeleteObject(hbmpImg);
 	}
 }
 
@@ -173,7 +162,7 @@ void DragImageLabel::clearRp(void)
  * @param sz		[in/out] Image size.
  * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
  */
-bool DragImageLabel::rescaleImage(const SIZE &req_sz, SIZE &sz)
+bool DragImageLabelPrivate::rescaleImage(const SIZE &req_sz, SIZE &sz)
 {
 	// TODO: Adjust req_sz for DPI.
 	if (sz.cx == req_sz.cx && sz.cy == req_sz.cy) {
@@ -212,10 +201,10 @@ bool DragImageLabel::rescaleImage(const SIZE &req_sz, SIZE &sz)
 }
 
 /**
- * Update the pixmap(s).
+ * Update the bitmap(s).
  * @return True on success; false on error.
  */
-bool DragImageLabel::updateBitmaps(void)
+bool DragImageLabelPrivate::updateBitmaps(void)
 {
 	// Window background color.
 	// Static controls don't support alpha transparency (?? test),
@@ -239,33 +228,33 @@ bool DragImageLabel::updateBitmaps(void)
 	bool bRet = false;
 
 	// Clear cx so we know if we got a valid icon size.
-	m_actualSize.cx = 0;
+	actualSize.cx = 0;
 
-	if (m_anim && m_anim->iconAnimData) {
-		const IconAnimData *const iconAnimData = m_anim->iconAnimData;
+	if (anim && anim->iconAnimData) {
+		const IconAnimData *const iconAnimData = anim->iconAnimData;
 
 		// Convert the icons to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			const rp_image *const frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
-				if (m_actualSize.cx == 0) {
+				if (actualSize.cx == 0) {
 					// Get the icon size and rescale it, if necessary.
-					m_actualSize.cx = frame->width();
-					m_actualSize.cy = frame->height();
-					m_useNearestNeighbor = rescaleImage(m_requiredSize, m_actualSize);
+					actualSize.cx = frame->width();
+					actualSize.cy = frame->height();
+					useNearestNeighbor = rescaleImage(requiredSize, actualSize);
 				}
 
 				// NOTE: Allowing NULL frames here...
-				m_anim->iconFrames[i] = RpImageWin32::toHBITMAP(frame, gdipBgColor, m_actualSize, m_useNearestNeighbor);
+				anim->iconFrames[i] = RpImageWin32::toHBITMAP(frame, gdipBgColor, actualSize, useNearestNeighbor);
 			}
 		}
 
 		// Set up the IconAnimHelper.
-		m_anim->iconAnimHelper.setIconAnimData(iconAnimData);
-		if (m_anim->iconAnimHelper.isAnimated()) {
+		anim->iconAnimHelper.setIconAnimData(iconAnimData);
+		if (anim->iconAnimHelper.isAnimated()) {
 			// Initialize the animation.
-			m_anim->last_frame_number = m_anim->iconAnimHelper.frameNumber();
+			anim->last_frame_number = anim->iconAnimHelper.frameNumber();
 
 			// Icon animation timer is set in startAnimTimer().
 		}
@@ -273,28 +262,276 @@ bool DragImageLabel::updateBitmaps(void)
 		// Image data is valid.
 		updateRect();
 		bRet = true;
-	} else if (m_img && m_img->isValid()) {
+	} else if (img && img->isValid()) {
 		// Single image.
 		// Convert to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
-		if (m_hbmpImg) {
-			DeleteObject(m_hbmpImg);
+		if (hbmpImg) {
+			DeleteObject(hbmpImg);
 		}
 
 		// Get the icon size and rescale it, if necessary.
-		m_actualSize.cx = m_img->width();
-		m_actualSize.cy = m_img->height();
-		m_useNearestNeighbor = rescaleImage(m_requiredSize, m_actualSize);
+		actualSize.cx = img->width();
+		actualSize.cy = img->height();
+		useNearestNeighbor = rescaleImage(requiredSize, actualSize);
 
-		m_hbmpImg = RpImageWin32::toHBITMAP(m_img, gdipBgColor, m_actualSize, m_useNearestNeighbor);
+		hbmpImg = RpImageWin32::toHBITMAP(img, gdipBgColor, actualSize, useNearestNeighbor);
 
 		// Image data is valid.
 		updateRect();
 		bRet = true;
 	}
 
-	// TODO: InvalidateRect()?
 	return bRet;
+}
+
+/**
+ * Update the bitmap rect.
+ * Called when position and/or size changes.
+ */
+void DragImageLabelPrivate::updateRect(void)
+{
+	// TODO: Add a bErase parameter to this function?
+
+	// Invalidate the old rect.
+	// TODO: Not if the new one completely overlaps the old one?
+	InvalidateRect(hwndParent, &rect, false);
+
+	// TODO: Optimize by not invalidating if it didn't change.
+	rect.left   = position.x;
+	rect.right  = position.x + actualSize.cx;
+	rect.top    = position.y;
+	rect.bottom = position.y + actualSize.cy;
+	InvalidateRect(hwndParent, &rect, false);
+}
+
+/**
+ * Animated icon timer.
+ * @param hWnd
+ * @param uMsg
+ * @param idEvent
+ * @param dwTime
+ */
+void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	if (hWnd == nullptr || idEvent == 0) {
+		// Not a valid timer procedure call...
+		// - hWnd should not be nullptr.
+		// - idEvent should be the 'this' pointer.
+		return;
+	}
+
+	DragImageLabelPrivate *const d =
+		reinterpret_cast<DragImageLabelPrivate*>(idEvent);
+
+	// Sanity checks.
+	assert(d->hwndParent == hWnd);
+
+	assert(d->anim != nullptr);
+	if (!d->anim) {
+		// Should not happen...
+		return;
+	}
+
+	// Next frame.
+	int delay = 0;
+	int frame = d->anim->iconAnimHelper.nextFrame(&delay);
+	if (delay <= 0 || frame < 0) {
+		// Invalid frame...
+		KillTimer(hWnd, idEvent);
+		d->anim->animTimerID = 0;
+		return;
+	}
+
+	if (frame != d->anim->last_frame_number) {
+		// New frame number.
+		// Update the icon.
+		d->anim->last_frame_number = frame;
+		InvalidateRect(hWnd, &d->rect, false);
+	}
+
+	// Update the timer.
+	// TODO: Verify that this affects the next callback.
+	SetTimer(hWnd, idEvent, delay, AnimTimerProc);
+}
+
+/** DragImageLabel **/
+
+DragImageLabel::DragImageLabel(HWND hwndParent)
+	: d_ptr(new DragImageLabelPrivate(hwndParent))
+{ }
+
+DragImageLabel::~DragImageLabel()
+{
+	delete d_ptr;
+}
+
+SIZE DragImageLabel::requiredSize(void) const
+{
+	RP_D(const DragImageLabel);
+	return d->requiredSize;
+}
+
+void DragImageLabel::setRequiredSize(const SIZE &requiredSize)
+{
+	RP_D(DragImageLabel);
+	if (d->requiredSize.cx != requiredSize.cx ||
+	    d->requiredSize.cy != requiredSize.cy)
+	{
+		d->requiredSize = requiredSize;
+		d->updateBitmaps();
+	}
+}
+
+void DragImageLabel::setRequiredSize(int width, int height)
+{
+	RP_D(DragImageLabel);
+	if (d->requiredSize.cx != width ||
+	    d->requiredSize.cy != height)
+	{
+		d->requiredSize.cx = width;
+		d->requiredSize.cy = height;
+		d->updateBitmaps();
+	}
+}
+
+SIZE DragImageLabel::actualSize(void) const
+{
+	RP_D(const DragImageLabel);
+	return d->actualSize;
+}
+
+POINT DragImageLabel::position(void) const
+{
+	RP_D(const DragImageLabel);
+	return d->position;
+}
+
+void DragImageLabel::setPosition(const POINT &position)
+{
+	RP_D(DragImageLabel);
+	if (d->position.x != position.x ||
+	    d->position.y != position.y)
+	{
+		d->position = position;
+		d->updateRect();
+	}
+}
+
+void DragImageLabel::setPosition(int x, int y)
+{
+	RP_D(DragImageLabel);
+	if (d->position.x != x ||
+	    d->position.y != y)
+	{
+		d->position.x = x;
+		d->position.y = y;
+		d->updateRect();
+	}
+}
+
+/**
+ * Set the rp_image for this label.
+ *
+ * NOTE: The rp_image pointer is stored and used if necessary.
+ * Make sure to call this function with nullptr before deleting
+ * the rp_image object.
+ *
+ * NOTE 2: If animated icon data is specified, that supercedes
+ * the individual rp_image.
+ *
+ * @param img rp_image, or nullptr to clear.
+ * @return True on success; false on error or if clearing.
+ */
+bool DragImageLabel::setRpImage(const rp_image *img)
+{
+	RP_D(DragImageLabel);
+
+	if (!img) {
+		d->img = nullptr;
+		if (d->hbmpImg) {
+			DeleteBitmap(d->hbmpImg);
+			d->hbmpImg = nullptr;
+		}
+
+		if (d->anim && d->anim->iconAnimData) {
+			return d->updateBitmaps();
+		}
+		return false;
+	}
+
+	// Don't check if the image pointer matches the
+	// previously stored image, since the underlying
+	// image may have changed.
+	d->img = img;
+	return d->updateBitmaps();
+}
+
+/**
+ * Set the icon animation data for this label.
+ *
+ * NOTE: The iconAnimData pointer is stored and used if necessary.
+ * Make sure to call this function with nullptr before deleting
+ * the IconAnimData object.
+ *
+ * NOTE 2: If animated icon data is specified, that supercedes
+ * the individual rp_image.
+ *
+ * @param iconAnimData IconAnimData, or nullptr to clear.
+ * @return True on success; false on error or if clearing.
+ */
+bool DragImageLabel::setIconAnimData(const IconAnimData *iconAnimData)
+{
+	RP_D(DragImageLabel);
+	if (!d->anim) {
+		d->anim = new DragImageLabelPrivate::anim_vars(d->hwndParent);
+	}
+
+	if (!iconAnimData) {
+		if (d->anim->animTimerID) {
+			KillTimer(d->hwndParent, d->anim->animTimerID);
+			d->anim->animTimerID = 0;
+		}
+		d->anim->iconAnimData = nullptr;
+
+		if (!d->img) {
+			if (d->hbmpImg) {
+				DeleteBitmap(d->hbmpImg);
+				d->hbmpImg = nullptr;
+			}
+		} else {
+			return d->updateBitmaps();
+		}
+		return false;
+	}
+
+	// Don't check if the data pointer matches the
+	// previously stored data, since the underlying
+	// data may have changed.
+	d->anim->iconAnimData = iconAnimData;
+	return d->updateBitmaps();
+}
+
+/**
+ * Clear the rp_image and iconAnimData.
+ * This will stop the animation timer if it's running.
+ */
+void DragImageLabel::clearRp(void)
+{
+	RP_D(DragImageLabel);
+	if (d->anim) {
+		if (d->anim->animTimerID) {
+			KillTimer(d->hwndParent, d->anim->animTimerID);
+			d->anim->animTimerID = 0;
+		}
+		d->anim->iconAnimData = nullptr;
+	}
+
+	d->img = nullptr;
+	if (d->hbmpImg) {
+		DeleteBitmap(d->hbmpImg);
+		d->hbmpImg = nullptr;
+	}
 }
 
 /**
@@ -302,19 +539,20 @@ bool DragImageLabel::updateBitmaps(void)
  */
 void DragImageLabel::startAnimTimer(void)
 {
-	if (!m_anim || !m_anim->iconAnimHelper.isAnimated()) {
+	RP_D(DragImageLabel);
+	if (!d->anim || !d->anim->iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
 
-	if (m_anim->animTimerID) {
+	if (d->anim->animTimerID) {
 		// Timer is already running.
 		return;
 	}
 
 	// Get the current frame information.
-	m_anim->last_frame_number = m_anim->iconAnimHelper.frameNumber();
-	const int delay = m_anim->iconAnimHelper.frameDelay();
+	d->anim->last_frame_number = d->anim->iconAnimHelper.frameNumber();
+	const int delay = d->anim->iconAnimHelper.frameDelay();
 	assert(delay > 0);
 	if (delay <= 0) {
 		// Invalid delay value.
@@ -322,10 +560,10 @@ void DragImageLabel::startAnimTimer(void)
 	}
 
 	// Set a timer for the current frame.
-	// We're using the 'this' pointer as nIDEvent.
-	m_anim->animTimerID = SetTimer(m_hwndParent,
-		reinterpret_cast<UINT_PTR>(this),
-		delay, AnimTimerProc);
+	// We're using the 'd' pointer as nIDEvent.
+	d->anim->animTimerID = SetTimer(d->hwndParent,
+		reinterpret_cast<UINT_PTR>(d),
+		delay, d->AnimTimerProc);
 }
 
 /**
@@ -333,10 +571,46 @@ void DragImageLabel::startAnimTimer(void)
  */
 void DragImageLabel::stopAnimTimer(void)
 {
-	if (m_anim && m_anim->animTimerID) {
-		KillTimer(m_hwndParent, m_anim->animTimerID);
-		m_anim->animTimerID = 0;
+	RP_D(DragImageLabel);
+	if (d->anim && d->anim->animTimerID) {
+		KillTimer(d->hwndParent, d->anim->animTimerID);
+		d->anim->animTimerID = 0;
 	}
+}
+
+/**
+ * Is the animation timer running?
+ * @return True if running; false if not.
+ */
+bool DragImageLabel::isAnimTimerRunning(void) const
+{
+	RP_D(const DragImageLabel);
+	return (d->anim && d->anim->animTimerID);
+}
+
+/**
+ * Reset the animation frame.
+ * This does NOT update the animation frame.
+ */
+void DragImageLabel::resetAnimFrame(void)
+{
+	RP_D(DragImageLabel);
+	if (d->anim) {
+		d->anim->last_frame_number = 0;
+	}
+}
+
+/**
+ * Get the current bitmap frame.
+ * @return HBITMAP.
+ */
+HBITMAP DragImageLabel::currentFrame(void) const
+{
+	RP_D(const DragImageLabel);
+	if (d->anim && d->anim->iconAnimData) {
+		return d->anim->iconFrames[d->anim->last_frame_number];
+	}
+	return d->hbmpImg;
 }
 
 /**
@@ -354,9 +628,10 @@ void DragImageLabel::draw(HDC hdc)
 	// Memory DC for BitBlt.
 	HDC hdcMem = CreateCompatibleDC(hdc);
 
+	RP_D(DragImageLabel);
 	SelectBitmap(hdcMem, hbmp);
-	BitBlt(hdc, m_position.x, m_position.y,
-		m_actualSize.cx, m_actualSize.cy,
+	BitBlt(hdc, d->position.x, d->position.y,
+		d->actualSize.cx, d->actualSize.cy,
 		hdcMem, 0, 0, SRCCOPY);
 
 	DeleteDC(hdcMem);
@@ -368,75 +643,6 @@ void DragImageLabel::draw(HDC hdc)
  */
 void DragImageLabel::invalidateRect(bool bErase)
 {
-	InvalidateRect(m_hwndParent, &m_rect, bErase);
-}
-
-/**
- * Update the bitmap rect.
- * Called when position and/or size changes.
- */
-void DragImageLabel::updateRect(void)
-{
-	// TODO: Add a bErase parameter to this function?
-
-	// Invalidate the old rect.
-	// TODO: Not if the new one completely overlaps the old one?
-	InvalidateRect(m_hwndParent, &m_rect, false);
-
-	// TODO: Optimize by not invalidating if it didn't change.
-	m_rect.left   = m_position.x;
-	m_rect.right  = m_position.x + m_actualSize.cx;
-	m_rect.top    = m_position.y;
-	m_rect.bottom = m_position.y + m_actualSize.cy;
-	InvalidateRect(m_hwndParent, &m_rect, false);
-}
-
-/**
- * Animated icon timer.
- * @param hWnd
- * @param uMsg
- * @param idEvent
- * @param dwTime
- */
-void CALLBACK DragImageLabel::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-	if (hWnd == nullptr || idEvent == 0) {
-		// Not a valid timer procedure call...
-		// - hWnd should not be nullptr.
-		// - idEvent should be the 'this' pointer.
-		return;
-	}
-
-	DragImageLabel *const q =
-		reinterpret_cast<DragImageLabel*>(idEvent);
-
-	// Sanity checks.
-	assert(q->m_hwndParent == hWnd);
-
-	assert(q->m_anim != nullptr);
-	if (!q->m_anim) {
-		// Should not happen...
-		return;
-	}
-
-	// Next frame.
-	int delay = 0;
-	int frame = q->m_anim->iconAnimHelper.nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
-		// Invalid frame...
-		KillTimer(hWnd, idEvent);
-		q->m_anim->animTimerID = 0;
-		return;
-	}
-
-	if (frame != q->m_anim->last_frame_number) {
-		// New frame number.
-		// Update the icon.
-		q->m_anim->last_frame_number = frame;
-		InvalidateRect(hWnd, &q->m_rect, false);
-	}
-
-	// Update the timer.
-	// TODO: Verify that this affects the next callback.
-	SetTimer(hWnd, idEvent, delay, AnimTimerProc);
+	RP_D(DragImageLabel);
+	InvalidateRect(d->hwndParent, &d->rect, bErase);
 }
