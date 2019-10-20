@@ -51,6 +51,14 @@ DragImageLabel::DragImageLabel(HWND hwndParent)
 	m_requiredSize.cy = DIL_REQ_IMAGE_SIZE;
 	m_actualSize = m_requiredSize;
 
+	m_position.x = 0;
+	m_position.y = 0;
+
+	m_rect.left = 0;
+	m_rect.right = m_actualSize.cx;
+	m_rect.top = 0;
+	m_rect.bottom = m_actualSize.cy;
+
 	// Attempt to get IsThemeActive() from uxtheme.dll.
 	// TODO: Only do this once? (in ComBase)
 	m_hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
@@ -276,6 +284,7 @@ bool DragImageLabel::updateBitmaps(void)
 		}
 
 		// Image data is valid.
+		updateRect();
 		bRet = true;
 	} else if (m_img && m_img->isValid()) {
 		// Single image.
@@ -293,6 +302,7 @@ bool DragImageLabel::updateBitmaps(void)
 		m_hbmpImg = RpImageWin32::toHBITMAP(m_img, gdipBgColor, m_actualSize, m_useNearestNeighbor);
 
 		// Image data is valid.
+		updateRect();
 		bRet = true;
 	}
 
@@ -356,6 +366,58 @@ HBITMAP DragImageLabel::currentFrame(void) const
 }
 
 /**
+ * Draw the image.
+ * @param hdc Device context of the parent window.
+ */
+void DragImageLabel::draw(HDC hdc)
+{
+	HBITMAP hbmp = currentFrame();
+	if (!hbmp) {
+		// Nothing to draw...
+		return;
+	}
+
+	// Memory DC for BitBlt.
+	HDC hdcMem = CreateCompatibleDC(hdc);
+
+	SelectBitmap(hdcMem, hbmp);
+	BitBlt(hdc, m_position.x, m_position.y,
+		m_actualSize.cx, m_actualSize.cy,
+		hdcMem, 0, 0, SRCCOPY);
+
+	DeleteDC(hdcMem);
+}
+
+/**
+ * Invalidate the bitmap rect.
+ * @param bErase Erase the background.
+ */
+void DragImageLabel::invalidateRect(bool bErase)
+{
+	InvalidateRect(m_hwndParent, &m_rect, bErase);
+}
+
+/**
+ * Update the bitmap rect.
+ * Called when position and/or size changes.
+ */
+void DragImageLabel::updateRect(void)
+{
+	// TODO: Add a bErase parameter to this function?
+
+	// Invalidate the old rect.
+	// TODO: Not if the new one completely overlaps the old one?
+	InvalidateRect(m_hwndParent, &m_rect, false);
+
+	// TODO: Optimize by not invalidating if it didn't change.
+	m_rect.left   = m_position.x;
+	m_rect.right  = m_position.x + m_actualSize.cx;
+	m_rect.top    = m_position.y;
+	m_rect.bottom = m_position.y + m_actualSize.cy;
+	InvalidateRect(m_hwndParent, &m_rect, false);
+}
+
+/**
  * Animated icon timer.
  * @param hWnd
  * @param uMsg
@@ -397,8 +459,7 @@ void CALLBACK DragImageLabel::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEve
 		// New frame number.
 		// Update the icon.
 		q->m_anim->last_frame_number = frame;
-		// FIXME: InvalidateRect() on rectIcon ONLY.
-		InvalidateRect(hWnd, nullptr, false);
+		InvalidateRect(hWnd, &q->m_rect, false);
 	}
 
 	// Update the timer.
