@@ -74,9 +74,10 @@ bool g_is64bit = false;			/**< true if running on 64-bit system */
 bool g_inProgress = false;		/**< true if currently (un)installing the DLLs */
 
 // Custom messages
-#define WM_APP_ENDTASK WM_APP
-#define WM_APP_SIGNAL (WM_APP+1)
-#define WM_APP_WAIT (WM_APP+2)
+enum {
+	WM_APP_SIGNAL = WM_APP,
+	WM_APP_WAIT
+};
 
 // Icons. (NOTE: These MUST be deleted after use!)
 static HICON hIconDialog = NULL;
@@ -165,6 +166,14 @@ static inline void EnableButtons(HWND hDlg, bool enable)
 {
 	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
 	EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), enable);
+}
+
+/**
+ * Changes the cursor depending on wether installation is in progress.
+ */
+static inline void DlgUpdateCursor(void)
+{
+	SetCursor(LoadCursor(NULL, g_inProgress ? IDC_WAIT : IDC_ARROW));
 }
 
 /**
@@ -477,10 +486,27 @@ static void InstallProcEnd(struct InstallParams *p);
 
 static void InstallProc64(struct InstallParams *p)
 {
+	const TCHAR *msg;
+
 	p->state = 0;
 	p->res32 = p->res64 = ISR_OK;
 	p->errorCode32 = p->errorCode64 = 0;
 	p->hProcess32 = p->hProcess64 = NULL;
+
+	if (g_is64bit) {
+		msg = (p->isUninstall
+			? _T("\n\nUnregistering DLLs...")
+			: _T("\n\nRegistering DLLs..."));
+	} else {
+		msg = (p->isUninstall
+			? _T("\n\nUnregistering DLL...")
+			: _T("\n\nRegistering DLL..."));
+	}
+	ShowStatusMessage(p->hWnd, msg, _T(""), 0);
+
+	EnableButtons(p->hWnd, false);
+	g_inProgress = true;
+	DlgUpdateCursor();
 
 	// Try to (un)install the 64-bit version.
 	if (g_is64bit) {
@@ -573,16 +599,10 @@ static void InstallProcEnd(struct InstallParams *p)
 		MessageBeep(MB_ICONSTOP);
 	}
 
-	SendMessage(p->hWnd, WM_APP_ENDTASK, 0, 0);
+	g_inProgress = false;
+	EnableButtons(p->hWnd, true);
+	DlgUpdateCursor();
 	free(p);
-}
-
-/**
- * Changes the cursor depending on wether installation is in progress.
- */
-static inline void DlgUpdateCursor(void)
-{
-	SetCursor(LoadCursor(NULL, g_inProgress ? IDC_WAIT : IDC_ARROW));
 }
 
 /**
@@ -725,12 +745,6 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			DlgUpdateCursor();
 			return TRUE;
 
-		case WM_APP_ENDTASK:
-			g_inProgress = false;
-			EnableButtons(hDlg, true);
-			DlgUpdateCursor();
-			return TRUE;
-
 		case WM_APP_SIGNAL:
 			assert(g_inProgress);
 			if (g_inProgress) {
@@ -755,38 +769,20 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case IDC_BUTTON_INSTALL:
 				case IDC_BUTTON_UNINSTALL: {
 					struct InstallParams *params;
-					const TCHAR *msg;
-					bool isUninstall;
 
 					if (g_inProgress) {
 						// Already (un)installing...
 						return TRUE;
 					}
 
-					isUninstall = (LOWORD(wParam) == IDC_BUTTON_UNINSTALL);
 					params = malloc(sizeof(*params));
 					if (!params) {
 						// Could not allocate memory.
 						return TRUE;
 					}
 
-					if (g_is64bit) {
-						msg = (isUninstall
-							? _T("\n\nUnregistering DLLs...")
-							: _T("\n\nRegistering DLLs..."));
-					} else {
-						msg = (isUninstall
-							? _T("\n\nUnregistering DLL...")
-							: _T("\n\nRegistering DLL..."));
-					}
-					ShowStatusMessage(hDlg, msg, _T(""), 0);
-
-					EnableButtons(hDlg, false);
-					g_inProgress = true;
-					DlgUpdateCursor();
-
 					params->hWnd = hDlg;
-					params->isUninstall = isUninstall;
+					params->isUninstall = (LOWORD(wParam) == IDC_BUTTON_UNINSTALL);
 					InstallProc64(params);
 					return TRUE;
 				}
