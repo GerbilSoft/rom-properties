@@ -273,12 +273,13 @@ typedef enum {
 /**
  * (Un)installs the COM Server DLL.
  *
- * @param isUninstall	[in] When true, uninstalls the DLL, instead of installing it.
- * @param is64		[in] When true, installs 64-bit version.
- * @param pErrorCode	[out,opt] Additional error code.
+ * @param isUninstall [in] When true, uninstalls the DLL, instead of installing it.
+ * @param is64        [in] When true, installs 64-bit version.
+ * @param pHandle     [out,opt] Process handle.
+ * @param pErrorCode  [out,opt] Additional error code.
  * @return InstallServerResult
  */
-static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pErrorCode)
+static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pHandle, DWORD *pErrorCode)
 {
 	TCHAR regsvr32_path[MAX_PATH];
 	TCHAR args[14 + MAX_PATH + 4 + 3 + ARRAY_SIZE(str_rp64path)] = _T("regsvr32.exe \"");
@@ -287,7 +288,6 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
-	DWORD status;
 
 	// Determine the REGSVR32 path.
 	int ret = GetSystemDirFilePath(regsvr32_path, ARRAY_SIZE(regsvr32_path), _T("regsvr32.exe"), is64);
@@ -335,11 +335,31 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 		return ISR_CREATEPROCESS_FAILED;
 	}
 
-	// Wait for the process to exit.
-	WaitForSingleObject(pi.hProcess, INFINITE);
-	GetExitCodeProcess(pi.hProcess, &status);
-	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
+
+	*pHandle = pi.hProcess;
+
+	// The calles should wait for the process to exit.
+	return ISR_OK;
+}
+
+/**
+ * (Un)installs the COM Server DLL.
+ *
+ * @param handle     [in] Process handle from InstallServer
+ * @param pErrorCode [out,opt] Additional error code.
+ * @return InstallServerResult
+ */
+static InstallServerResult InstallServerEnd(HANDLE handle, DWORD *pErrorCode)
+{
+	DWORD status;
+
+	if (!handle) {
+		return ISR_FATAL_ERROR;
+	}
+
+	GetExitCodeProcess(handle, &status);
+	CloseHandle(handle);
 
 	switch (status) {
 		case STILL_ACTIVE:
@@ -456,17 +476,26 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 	TCHAR msg32[256], msg64[256];
 	InstallServerResult res32 = ISR_OK, res64 = ISR_OK;
 	DWORD errorCode = 0;
+	HANDLE hProcess;
 
 	ThreadParams *const params = (ThreadParams*)lpParameter;
 
 	// Try to (un)install the 64-bit version.
 	if (g_is64bit) {
-		res64 = InstallServer(params->isUninstall, true, &errorCode);
+		res64 = InstallServer(params->isUninstall, true, &hProcess, &errorCode);
+		if (res64 == ISR_OK) {
+			WaitForSingleObject(hProcess, INFINITE);
+			res64 = InstallServerEnd(hProcess, &errorCode);
+		}
 		InstallServerErrorMsg(res64, errorCode, params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
 	}
 
 	// Try to (un)install the 32-bit version.
-	res32 = InstallServer(params->isUninstall, false, &errorCode);
+	res32 = InstallServer(params->isUninstall, false, &hProcess, &errorCode);
+	if (res32 == ISR_OK) {
+		WaitForSingleObject(hProcess, INFINITE);
+		res32 = InstallServerEnd(hProcess, &errorCode);
+	}
 	InstallServerErrorMsg(res32, errorCode, params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
 
 	if (res32 == ISR_OK && res64 == ISR_OK) {
