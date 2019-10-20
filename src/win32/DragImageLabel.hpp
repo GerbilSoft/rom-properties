@@ -49,6 +49,17 @@ class DragImageLabel
 			}
 		}
 
+		void setRequiredSize(int width, int height)
+		{
+			if (m_requiredSize.cx != width ||
+			    m_requiredSize.cy != height)
+			{
+				m_requiredSize.cx = width;
+				m_requiredSize.cy = height;
+				updateBitmaps();
+			}
+		}
+
 		SIZE actualSize(void) const
 		{
 			return m_actualSize;

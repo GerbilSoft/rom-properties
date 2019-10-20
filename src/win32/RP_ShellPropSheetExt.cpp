@@ -189,10 +189,8 @@ class RP_ShellPropSheetExt_Private
 		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
 		// Banner.
-		HBITMAP hbmpBanner;
 		POINT ptBanner;
-		SIZE szBanner;
-		bool nearest_banner;
+		DragImageLabel *lblBanner;
 
 		// Icon.
 		RECT rectIcon;
@@ -384,15 +382,13 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, pfnIsThemeActive(nullptr)
 	, colorAltRow(0)
 	, isFullyInit(false)
-	, hbmpBanner(nullptr)
-	, nearest_banner(true)
+	, lblBanner(nullptr)
 	, lblIcon(nullptr)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 	memset(&ptBanner, 0, sizeof(ptBanner));
-	memset(&szBanner, 0, sizeof(szBanner));
 	memset(&rectIcon, 0, sizeof(rectIcon));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
@@ -410,9 +406,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 {
 	// Delete the banner and icon frames.
-	if (hbmpBanner) {
-		DeleteObject(hbmpBanner);
-	}
+	delete lblBanner;
 	delete lblIcon;
 
 	// Unreference the RomData object.
@@ -468,30 +462,30 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
-		// Delete the old banner.
-		if (hbmpBanner != nullptr) {
-			DeleteObject(hbmpBanner);
-			hbmpBanner = nullptr;
-		}
-
 		// Get the banner.
 		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
-			// Save the banner size.
-			if (szBanner.cx == 0) {
-				szBanner.cx = banner->width();
-				szBanner.cy = banner->height();
-				// FIXME: Uncomment once proper aspect ratio scaling has been implemented.
-				// All banners are 96x32 right now.
-				//static const SIZE req_szBanner = {96, 32};
-				//nearest = rescaleImage(req_szBanner, szBanner);
-				nearest_banner = true;
+			if (!lblBanner) {
+				lblBanner = new DragImageLabel(hDlgSheet);
+				// TODO: Required size? For now, disabling scaling.
+				lblBanner->setRequiredSize(0, 0);
 			}
 
-			// Convert to HBITMAP using the window background color.
-			// TODO: Redo if the window background color changes.
-			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor, szBanner, nearest_banner);
+			bool ok = lblBanner->setRpImage(banner);
+			if (!ok) {
+				// Unable to load the banner...
+				delete lblBanner;
+				lblBanner = nullptr;
+			}
+		} else {
+			// Delete the icon if it was created previously.
+			delete lblBanner;
+			lblBanner = nullptr;
 		}
+	} else {
+		// Delete the icon if it was created previously.
+		delete lblBanner;
+		lblBanner = nullptr;
 	}
 
 	// Icon.
@@ -631,22 +625,16 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// Banner.
 	// TODO: Spacing between banner and text?
 	// Doesn't seem to be needed with Dreamcast saves...
-	total_widget_width += szBanner.cx;
+	const int banner_width = (lblBanner ? lblBanner->actualSize().cx : 0);
+	total_widget_width += banner_width;
 
 	// Icon.
-	SIZE szIcon;
-	if (lblIcon) {
-		szIcon = lblIcon->actualSize();
-	} else {
-		szIcon.cx = 0;
-		szIcon.cy = 0;
-	}
-
-	if (szIcon.cx > 0) {
+	const int icon_width = (lblIcon ? lblIcon->actualSize().cx : 0);
+	if (icon_width > 0) {
 		if (total_widget_width > 0) {
 			total_widget_width += pt_start.x;
 		}
-		total_widget_width += szIcon.cx;
+		total_widget_width += icon_width;
 	}
 
 	// Starting point.
@@ -668,16 +656,17 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	}
 
 	// Banner.
-	if (szBanner.cx > 0) {
+	if (banner_width > 0) {
 		ptBanner = curPt;
-		curPt.x += szBanner.cx + pt_start.x;
+		curPt.x += banner_width + pt_start.x;
 	}
 
 	// Icon.
-	if (szIcon.cx > 0) {
+	if (icon_width > 0) {
+		// TODO: Get rid of lblIcon->actualSize() here.
 		SetRect(&rectIcon, curPt.x, curPt.y,
-			curPt.x + szIcon.cx, curPt.y + szIcon.cy);
-		curPt.x += szIcon.cx + pt_start.x;
+			curPt.x + icon_width, curPt.y + lblIcon->actualSize().cy);
+		curPt.x += icon_width + pt_start.x;
 	}
 
 	// Return the label height and some extra padding.
@@ -2581,7 +2570,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 {
-	if (!hbmpBanner && !lblIcon) {
+	if (!lblBanner && !lblIcon) {
 		// Nothing to draw...
 		return false;
 	}
@@ -2593,7 +2582,10 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	HDC hdcMem = CreateCompatibleDC(hdc);
 
 	// Draw the banner.
-	if (hbmpBanner) {
+	if (lblBanner) {
+		HBITMAP hbmpBanner = lblBanner->currentFrame();
+		SIZE szBanner = lblBanner->actualSize();
+
 		SelectBitmap(hdcMem, hbmpBanner);
 		BitBlt(hdc, ptBanner.x, ptBanner.y,
 			szBanner.cx, szBanner.cy,
@@ -2762,13 +2754,15 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Reinitialize the alternate row color.
 			d->colorAltRow = LibWin32Common::getAltRowColor();
 			// Invalidate the banner and icon rectangles.
-			if (d->hbmpBanner) {
-				const RECT rectBitmap = {
+			// TODO: Call an invalidate function in the DragImageLabel objects?
+			if (d->lblBanner) {
+				const SIZE szBanner = d->lblBanner->actualSize();
+				const RECT rectBanner = {
 					d->ptBanner.x, d->ptBanner.y,
-					d->ptBanner.x + d->szBanner.cx,
-					d->ptBanner.y + d->szBanner.cy,
+					d->ptBanner.x + szBanner.cx,
+					d->ptBanner.y + szBanner.cy,
 				};
-				InvalidateRect(d->hDlgSheet, &rectBitmap, false);
+				InvalidateRect(d->hDlgSheet, &rectBanner, false);
 			}
 			if (d->lblIcon) {
 				InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
