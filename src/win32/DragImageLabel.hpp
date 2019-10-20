@@ -229,11 +229,6 @@ class DragImageLabel
 		// Calculated RECT based on position and size.
 		RECT m_rect;
 
-		// XP theming.
-		typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
-		HMODULE m_hUxTheme_dll;
-		PFNISTHEMEACTIVE m_pfnIsThemeActive;
-
 		// rp_image. (NOTE: Not owned by this object.)
 		const LibRpTexture::rp_image *m_img;
 		HBITMAP m_hbmpImg;	// for non-animated only
