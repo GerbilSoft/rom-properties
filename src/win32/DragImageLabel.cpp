@@ -353,19 +353,6 @@ void DragImageLabel::stopAnimTimer(void)
 }
 
 /**
- * Get the current bitmap frame.
- * @return HBITMAP.
- */
-HBITMAP DragImageLabel::currentFrame(void) const
-{
-	if (m_anim && m_anim->iconAnimData) {
-		return m_anim->iconFrames[m_anim->last_frame_number];
-	}
-
-	return m_hbmpImg;
-}
-
-/**
  * Draw the image.
  * @param hdc Device context of the parent window.
  */
