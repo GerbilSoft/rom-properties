@@ -13,6 +13,7 @@
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wchar.h>
 // MSVCRT-specific
 #include <process.h>
@@ -74,6 +75,8 @@ bool g_inProgress = false;		/**< true if currently (un)installing the DLLs */
 
 // Custom messages
 #define WM_APP_ENDTASK WM_APP
+#define WM_APP_SIGNAL (WM_APP+1)
+#define WM_APP_WAIT (WM_APP+2)
 
 // Icons. (NOTE: These MUST be deleted after use!)
 static HICON hIconDialog = NULL;
@@ -798,6 +801,59 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
+struct MsgObjState {
+	HWND hWnd; /**< Window that should receive SIGNAL messages */
+	DWORD count; /**< Count of objects to wait on */
+	WPARAM params[MAXIMUM_WAIT_OBJECTS-1]; /**< wParams corresponding to objects */
+	HANDLE handles[MAXIMUM_WAIT_OBJECTS-1]; /**< Objects to wait on */
+};
+
+/**
+ * Get messages and wait for objects
+ *
+ * To wait for an object, post WM_APP_WAIT to the thread message queue with
+ * lParam=handle. When an object is signaled, the main window (state->hWnd)
+ * receives WM_APP_SIGNAL, with the same parameters as the WAIT message (thus
+ * WPARAM can be used to store additional state info).
+ * Both WAIT and SIGNAL messages imply transfer of handle ownership.
+ *
+ * @param msg same as GetMessage
+ * @param state state that should persist between calls
+ * @return same as GetMessage
+ */
+BOOL GetMessageObjects(MSG *msg, struct MsgObjState *state)
+{
+	BOOL bRet;
+	for (;;) {
+		DWORD ev = MsgWaitForMultipleObjects(state->count, state->handles, FALSE, INFINITE, QS_ALLINPUT);
+		if (ev == WAIT_OBJECT_0 + state->count) { // Message
+			if ((bRet = GetMessage(msg, NULL, 0, 0)) > 0 && msg->message == WM_APP_WAIT) {
+				if (state->count < MAXIMUM_WAIT_OBJECTS-1) {
+					// Add event
+					state->params[state->count] = msg->wParam;
+					state->handles[state->count] = (HANDLE)msg->lParam;
+					state->count++;
+				}
+			} else {
+				if (bRet == 0) { // Quitting
+					for (DWORD i = 0; i < state->count; i++) {
+						CloseHandle(state->handles[i]);
+					}
+					state->count = 0;
+				}
+				return bRet;
+			}
+		} else if (ev >= WAIT_OBJECT_0 && ev < WAIT_OBJECT_0 + state->count) { // Object
+			ev -= WAIT_OBJECT_0;
+			PostMessage(state->hWnd, WM_APP_SIGNAL, state->params[ev], (LPARAM)state->handles[ev]);
+			// Remove event
+			memmove(&state->params[ev], &state->params[ev+1], (state->count-(ev+1))*sizeof(WPARAM));
+			memmove(&state->handles[ev], &state->handles[ev+1], (state->count-(ev+1))*sizeof(HANDLE));
+			state->count--;
+		}
+		// FIXME: handle WAIT_FAILED and others?
+	}
+}
 /**
  * Dialog message loop
  */
@@ -811,7 +867,9 @@ INT_PTR DialogLoop(HINSTANCE hInstance, LPCTSTR lpTemplateName, HWND hWndParent,
 		return -1;
 	}
 
-	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {
+	struct MsgObjState state = { hDlg };
+
+	while ((bRet = GetMessageObjects(&msg, &state)) != 0) {
 		if (bRet == -1) {
 			break;
 		} else if (!IsWindow(hDlg) || !IsDialogMessage(hDlg, &msg)) {
