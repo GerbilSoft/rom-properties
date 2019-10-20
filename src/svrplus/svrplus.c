@@ -363,25 +363,26 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 }
 
 /**
- * Tries to (un)install the COM Server DLL, displays errors in message boxes.
+ * Converts error codes from InstallServer into a string.
  *
- * @param isUninstall	[in] when true, uninstalls the DLL, instead of installing it.
- * @param is64		[in] when true, installs 64-bit version
- * @param sErrBuf	[out,opt] error message buffer
- * @param cchErrBuf	[in,opt] size of sErrBuf, in characters
+ * @param res         [in] InstallServerResult as returned from InstallServer
+ * @param errorCode   [in] additional error code
+ * @param isUninstall [in] same as given to InstallServer
+ * @param is64        [in] same as given to InstallServer
+ * @param sErrBuf     [out,opt] error message buffer
+ * @param cchErrBuf   [in,opt] size of sErrBuf, in characters
  * @return InstallServerResult
  */
-static InstallServerResult TryInstallServer(
+static void InstallServerErrorMsg(
+	InstallServerResult res, DWORD errorCode,
 	bool isUninstall, bool is64,
 	TCHAR *sErrBuf, size_t cchErrBuf)
 {
 	const TCHAR *dll_path, *entry_point;
-	DWORD errorCode;
-	InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
 
 	if (!sErrBuf) {
 		// No error message buffer specified.
-		return res;
+		return;
 	}
 
 	dll_path = (is64 ? str_rp64path : str_rp32path);
@@ -437,7 +438,7 @@ static InstallServerResult TryInstallServer(
 			break;
 	}
 
-	return res;
+	return;
 }
 
 typedef struct _ThreadParams {
@@ -454,16 +455,19 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 {
 	TCHAR msg32[256], msg64[256];
 	InstallServerResult res32 = ISR_OK, res64 = ISR_OK;
+	DWORD errorCode = 0;
 
 	ThreadParams *const params = (ThreadParams*)lpParameter;
 
 	// Try to (un)install the 64-bit version.
 	if (g_is64bit) {
-		res64 = TryInstallServer(params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+		res64 = InstallServer(params->isUninstall, true, &errorCode);
+		InstallServerErrorMsg(res64, errorCode, params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
 	}
 
 	// Try to (un)install the 32-bit version.
-	res32 = TryInstallServer(params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+	res32 = InstallServer(params->isUninstall, false, &errorCode);
+	InstallServerErrorMsg(res32, errorCode, params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
 
 	if (res32 == ISR_OK && res64 == ISR_OK) {
 		// DLL(s) registered successfully.
