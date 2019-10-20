@@ -461,15 +461,11 @@ static void InstallServerErrorMsg(
 	return;
 }
 
-typedef struct _ThreadParams {
-	HWND hWnd;		/**< Window that created the thread */
-	bool isUninstall;	/**< true if uninstalling */
-} ThreadParams;
-
 struct InstallParams {
 	HWND hWnd;        /**< Dialog window */
 	bool isUninstall; /**< true if uninstalling */
 	/* State */
+	int state;
 	InstallServerResult res32, res64;
 	DWORD errorCode32, errorCode64;
 	HANDLE hProcess32, hProcess64;
@@ -481,6 +477,7 @@ static void InstallProcEnd(struct InstallParams *p);
 
 static void InstallProc64(struct InstallParams *p)
 {
+	p->state = 0;
 	p->res32 = p->res64 = ISR_OK;
 	p->errorCode32 = p->errorCode64 = 0;
 	p->hProcess32 = p->hProcess64 = NULL;
@@ -489,8 +486,9 @@ static void InstallProc64(struct InstallParams *p)
 	if (g_is64bit) {
 		p->res64 = InstallServer(p->isUninstall, true, &p->hProcess64, &p->errorCode64);
 		if (p->res64 == ISR_OK) {
-			//PostMessage(p->hWnd, WM_APP_WAIT, 1, (LPARAM)p->hProcess64);
-			//return;
+			p->state = 1;
+			PostMessage(NULL, WM_APP_WAIT, (WPARAM)p, (LPARAM)p->hProcess64);
+			return;
 		}
 	}
 	InstallProc32(p);
@@ -499,15 +497,15 @@ static void InstallProc64(struct InstallParams *p)
 static void InstallProc32(struct InstallParams *p)
 {
 	if (g_is64bit && p->res64 == ISR_OK) {
-		WaitForSingleObject(p->hProcess64, INFINITE); // XXX
 		p->res64 = InstallServerEnd(p->hProcess64, &p->errorCode64);
 	}
 
 	// Try to (un)install the 32-bit version.
 	p->res32 = InstallServer(p->isUninstall, false, &p->hProcess32, &p->errorCode32);
 	if (p->res32 == ISR_OK) {
-		//PostMessage(p->hWnd, WM_APP_WAIT, 2, (LPARAM)p->hProcess32);
-		//return;
+		p->state = 2;
+		PostMessage(NULL, WM_APP_WAIT, (WPARAM)p, (LPARAM)p->hProcess32);
+		return;
 	}
 	InstallProcEnd(p);
 }
@@ -517,7 +515,6 @@ static void InstallProcEnd(struct InstallParams *p)
 	TCHAR msg32[256], msg64[256];
 
 	if (p->res32 == ISR_OK) {
-		WaitForSingleObject(p->hProcess32, INFINITE); // XXX
 		p->res32 = InstallServerEnd(p->hProcess32, &p->errorCode32);
 	}
 
@@ -577,22 +574,7 @@ static void InstallProcEnd(struct InstallParams *p)
 	}
 
 	SendMessage(p->hWnd, WM_APP_ENDTASK, 0, 0);
-}
-
-/**
- * Worker thread procedure.
- *
- * @param lpParameter ptr to parameters of type ThreadPrams. Owned by this thread.
- */
-static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
-{
-	ThreadParams *const params = (ThreadParams*)lpParameter;
-
-	struct InstallParams p = { params->hWnd, params->isUninstall };
-	InstallProc64(&p);
-
-	free(params);
-	return 0;
+	free(p);
 }
 
 /**
@@ -749,12 +731,30 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			DlgUpdateCursor();
 			return TRUE;
 
+		case WM_APP_SIGNAL:
+			assert(g_inProgress);
+			if (g_inProgress) {
+				struct InstallParams *params = (struct InstallParams*)wParam;
+				assert(params);
+				if (params) {
+					assert(params->state == 1 || params->state == 2);
+					switch (params->state) {
+					case 1:
+						InstallProc32(params);
+						break;
+					case 2:
+						InstallProcEnd(params);
+						break;
+					}
+				}
+			}
+			return TRUE;
+
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_BUTTON_INSTALL:
 				case IDC_BUTTON_UNINSTALL: {
-					ThreadParams *params;
-					HANDLE hThread;
+					struct InstallParams *params;
 					const TCHAR *msg;
 					bool isUninstall;
 
@@ -785,26 +785,9 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					g_inProgress = true;
 					DlgUpdateCursor();
 
-					// The installation is done on a separate thread so that we don't lock the message loop
 					params->hWnd = hDlg;
 					params->isUninstall = isUninstall;
-					hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, params, 0, NULL);
-					if (!hThread) {
-						// Couldn't start the worker thread.
-						TCHAR threadErr[128];
-						_sntprintf(threadErr, ARRAY_SIZE(threadErr),
-							BULLET _T(" Win32 error code: %u"), GetLastError());
-						ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
-						MessageBeep(MB_ICONSTOP);
-						EnableButtons(hDlg, true);
-						g_inProgress = false;
-						DlgUpdateCursor();
-						free(params);
-						return TRUE;
-					} else {
-						// We don't need to keep the thread handle open.
-						CloseHandle(hThread);
-					}
+					InstallProc64(params);
 					return TRUE;
 				}
 
