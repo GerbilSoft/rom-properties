@@ -191,7 +191,6 @@ class RP_ShellPropSheetExt_Private
 
 		// Icon.
 		RECT rectIcon;
-		SIZE szIcon;
 		DragImageLabel *lblIcon;
 
 		// Tab layout.
@@ -390,7 +389,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	memset(&ptBanner, 0, sizeof(ptBanner));
 	memset(&szBanner, 0, sizeof(szBanner));
 	memset(&rectIcon, 0, sizeof(rectIcon));
-	memset(&szIcon, 0, sizeof(szIcon));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
 	// TODO: Move this to RP_ComBase so we don't have to look it up
@@ -496,15 +494,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
-			// Save the icon size.
-			if (szIcon.cx == 0) {
-				szIcon.cx = icon->width();
-				szIcon.cy = icon->height();
-				static const SIZE req_szIcon = {32, 32};
-				// TODO: Port to DragImageLabel.
-				//nearest_icon = rescaleImage(req_szIcon, szIcon);
-			}
-
 			if (!lblIcon) {
 				lblIcon = new DragImageLabel(hDlgSheet);
 			}
@@ -519,8 +508,8 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 
 			if (!ok) {
 				// Unable to load the icon...
-				szIcon.cx = 0;
-				szIcon.cy = 0;
+				delete lblIcon;
+				lblIcon = nullptr;
 			}
 		}
 	}
@@ -632,6 +621,14 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	total_widget_width += szBanner.cx;
 
 	// Icon.
+	SIZE szIcon;
+	if (lblIcon) {
+		szIcon = lblIcon->actualSize();
+	} else {
+		szIcon.cx = 0;
+		szIcon.cy = 0;
+	}
+
 	if (szIcon.cx > 0) {
 		if (total_widget_width > 0) {
 			total_widget_width += pt_start.x;
@@ -2571,9 +2568,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
  */
 INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 {
-	HBITMAP hbmpIcon = (lblIcon ? lblIcon->currentFrame() : nullptr);
-
-	if (!hbmpBanner && !hbmpIcon) {
+	if (!hbmpBanner && !lblIcon) {
 		// Nothing to draw...
 		return false;
 	}
@@ -2593,7 +2588,11 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	}
 
 	// Draw the icon.
-	if (hbmpIcon) {
+	// TODO: Have lblIcon draw it directly.
+	if (lblIcon) {
+		HBITMAP hbmpIcon = lblIcon->currentFrame();
+		SIZE szIcon = lblIcon->actualSize();
+
 		SelectBitmap(hdcMem, hbmpIcon);
 		BitBlt(hdc, rectIcon.left, rectIcon.top,
 			szIcon.cx, szIcon.cy,
@@ -2758,7 +2757,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				};
 				InvalidateRect(d->hDlgSheet, &rectBitmap, false);
 			}
-			if (d->szIcon.cx > 0) {
+			if (d->lblIcon) {
 				InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
 			}
 			break;
