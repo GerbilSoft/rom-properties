@@ -178,7 +178,14 @@ class DragImageLabel
 		 * Get the current bitmap frame.
 		 * @return HBITMAP.
 		 */
-		HBITMAP currentFrame(void) const;
+		HBITMAP currentFrame(void) const
+		{
+			if (m_anim && m_anim->iconAnimData) {
+				return m_anim->iconFrames[m_anim->last_frame_number];
+			}
+
+			return m_hbmpImg;
+		}
 
 		/**
 		 * Draw the image.
