@@ -474,7 +474,7 @@ struct InstallParams {
 	HWND hWnd;        /**< Dialog window */
 	bool isUninstall; /**< true if uninstalling */
 	/* State */
-	int state;
+	int state; /**< Determines which continuation to call next */
 	InstallServerResult res32, res64;
 	DWORD errorCode32, errorCode64;
 	HANDLE hProcess32, hProcess64;
@@ -484,6 +484,15 @@ static void InstallProc64(struct InstallParams *p);
 static void InstallProc32(struct InstallParams *p);
 static void InstallProcEnd(struct InstallParams *p);
 
+/**
+ * Tries to (un)install the COM Server DLL, for both 32- and 64-bit
+ * architectures. Displays progress and errors.
+ *
+ * This function, as well as InstallProc32 and InstallProcEnd form a single
+ * unit.
+ *
+ * @param p parameters
+ */
 static void InstallProc64(struct InstallParams *p)
 {
 	const TCHAR *msg;
@@ -520,6 +529,7 @@ static void InstallProc64(struct InstallParams *p)
 	InstallProc32(p);
 }
 
+/** continuation of InstallProc64 */
 static void InstallProc32(struct InstallParams *p)
 {
 	if (g_is64bit && p->res64 == ISR_OK) {
@@ -536,6 +546,7 @@ static void InstallProc32(struct InstallParams *p)
 	InstallProcEnd(p);
 }
 
+/** continuation of InstallProc32 */
 static void InstallProcEnd(struct InstallParams *p)
 {
 	TCHAR msg32[256], msg64[256];
