@@ -86,7 +86,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(REFIID riid, LPVOID
 		{ 0, 0 }
 	};
 #pragma warning(pop)
-	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IShellIconOverlayIdentifier **/

@@ -22,8 +22,12 @@
 
 namespace LibWin32Common {
 
-// QISearch() function pointer.
-extern PFNQISEARCH pQISearch;
+// QISearch() [shlwapi.dll]
+extern PFNQISEARCH pfnQISearch;
+
+// IsThemeActive() [uxtheme.dll]
+typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
+extern PFNISTHEMEACTIVE pfnIsThemeActive;
 
 // References of all objects.
 extern volatile ULONG RP_ulTotalRefCount;
@@ -89,4 +93,4 @@ class ComBase3 : public I1, public I2, public I3
 
 }
 
-#endif /* __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_COMBASE_HPP__ */
