@@ -39,6 +39,7 @@ namespace Gdiplus {
 
 DragImageLabel::DragImageLabel(HWND hwndParent)
 	: m_hwndParent(hwndParent)
+	, m_useNearestNeighbor(false)
 	, m_hUxTheme_dll(nullptr)
 	, m_pfnIsThemeActive(nullptr)
 	, m_img(nullptr)
@@ -46,8 +47,9 @@ DragImageLabel::DragImageLabel(HWND hwndParent)
 	, m_anim(nullptr)
 {
 	// TODO: Set rect/size as parameters?
-	m_requiredImageSize.cx = DIL_REQ_IMAGE_SIZE;
-	m_requiredImageSize.cy = DIL_REQ_IMAGE_SIZE;
+	m_requiredSize.cx = DIL_REQ_IMAGE_SIZE;
+	m_requiredSize.cy = DIL_REQ_IMAGE_SIZE;
+	m_actualSize = m_requiredSize;
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
 	// TODO: Only do this once? (in ComBase)
@@ -171,6 +173,50 @@ void DragImageLabel::clearRp(void)
 }
 
 /**
+ * Rescale an image to be as close to the required size as possible.
+ * @param req_sz	[in] Required size.
+ * @param sz		[in/out] Image size.
+ * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
+ */
+bool DragImageLabel::rescaleImage(const SIZE &req_sz, SIZE &sz)
+{
+	// TODO: Adjust req_sz for DPI.
+	if (sz.cx == req_sz.cx && sz.cy == req_sz.cy) {
+		// No resize necessary.
+		return true;
+	} else if (req_sz.cx == 0 || req_sz.cy == 0) {
+		// Required size is 0, which means no rescaling.
+		return true;
+	} else if (sz.cx == 0 || sz.cy == 0) {
+		// Image size is 0, which shouldn't happen...
+		assert(!"Zero image size...");
+		return true;
+	}
+
+	// Check if the image is too big.
+	if (sz.cx >= req_sz.cx || sz.cy >= req_sz.cy) {
+		// Image is too big. Shrink it.
+		// FIXME: Assuming the icon is always a power of two.
+		// Move TCreateThumbnail::rescale_aspect() into another file
+		// and make use of that.
+		sz = req_sz;
+		return false;
+	}
+
+	// Image is too small.
+	// TODO: Ensure dimensions don't exceed req_img_size.
+	SIZE orig_sz = sz;
+	do {
+		// Increase by integer multiples until
+		// the icon is at least 32x32.
+		// TODO: Constrain to 32x32?
+		sz.cx += orig_sz.cx;
+		sz.cy += orig_sz.cy;
+	} while (sz.cx < req_sz.cx && sz.cy < req_sz.cy);
+	return true;
+}
+
+/**
  * Update the pixmap(s).
  * @return True on success; false on error.
  */
@@ -194,6 +240,12 @@ bool DragImageLabel::updateBitmaps(void)
 	}
 	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
 
+	// Return value.
+	bool bRet = false;
+
+	// Clear cx so we know if we got a valid icon size.
+	m_actualSize.cx = 0;
+
 	if (m_anim && m_anim->iconAnimData) {
 		const IconAnimData *const iconAnimData = m_anim->iconAnimData;
 
@@ -202,8 +254,15 @@ bool DragImageLabel::updateBitmaps(void)
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			const rp_image *const frame = iconAnimData->frames[i];
 			if (frame && frame->isValid()) {
+				if (m_actualSize.cx == 0) {
+					// Get the icon size and rescale it, if necessary.
+					m_actualSize.cx = frame->width();
+					m_actualSize.cy = frame->height();
+					m_useNearestNeighbor = rescaleImage(m_requiredSize, m_actualSize);
+				}
+
 				// NOTE: Allowing NULL frames here...
-				m_anim->iconFrames[i] = RpImageWin32::toHBITMAP(frame, gdipBgColor, m_requiredImageSize, true);
+				m_anim->iconFrames[i] = RpImageWin32::toHBITMAP(frame, gdipBgColor, m_actualSize, m_useNearestNeighbor);
 			}
 		}
 
@@ -216,23 +275,29 @@ bool DragImageLabel::updateBitmaps(void)
 			// Icon animation timer is set in startAnimTimer().
 		}
 
-		// TODO: InvalidateRect()?
-		return true;
-	}
-
-	if (m_img && m_img->isValid()) {
+		// Image data is valid.
+		bRet = true;
+	} else if (m_img && m_img->isValid()) {
 		// Single image.
 		// Convert to HBITMAP using the window background color.
 		// TODO: Rescale the icon. (port rescaleImage())
 		if (m_hbmpImg) {
 			DeleteObject(m_hbmpImg);
 		}
-		m_hbmpImg = RpImageWin32::toHBITMAP(m_img, gdipBgColor, m_requiredImageSize, true);
-		return true;
+
+		// Get the icon size and rescale it, if necessary.
+		m_actualSize.cx = m_img->width();
+		m_actualSize.cy = m_img->height();
+		m_useNearestNeighbor = rescaleImage(m_requiredSize, m_actualSize);
+
+		m_hbmpImg = RpImageWin32::toHBITMAP(m_img, gdipBgColor, m_actualSize, m_useNearestNeighbor);
+
+		// Image data is valid.
+		bRet = true;
 	}
 
-	// No image or animated icon data.
-	return false;
+	// TODO: InvalidateRect()?
+	return bRet;
 }
 
 /**

@@ -34,19 +34,24 @@ class DragImageLabel
 		RP_DISABLE_COPY(DragImageLabel)
 
 	public:
-		SIZE requiredImageSize(void) const
+		SIZE requiredSize(void) const
 		{
-			return m_requiredImageSize;
+			return m_requiredSize;
 		}
 
-		void setRequiredImageSize(const SIZE &requiredImageSize)
+		void setRequiredSize(const SIZE &requiredSize)
 		{
-			if (m_requiredImageSize.cx != requiredImageSize.cx ||
-			    m_requiredImageSize.cy != requiredImageSize.cy)
+			if (m_requiredSize.cx != requiredSize.cx ||
+			    m_requiredSize.cy != requiredSize.cy)
 			{
-				m_requiredImageSize = requiredImageSize;
+				m_requiredSize = requiredSize;
 				updateBitmaps();
 			}
+		}
+
+		SIZE actualSize(void) const
+		{
+			return m_actualSize;
 		}
 
 		/**
@@ -86,6 +91,14 @@ class DragImageLabel
 		void clearRp(void);
 
 	protected:
+		/**
+		 * Rescale an image to be as close to the required size as possible.
+		 * @param req_sz	[in] Required size.
+		 * @param sz		[in/out] Image size.
+		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
+		 */
+		static bool rescaleImage(const SIZE &req_sz, SIZE &sz);
+
 		/**
 		 * Update the bitmap(s).
 		 * @return True on success; false on error.
@@ -142,7 +155,11 @@ class DragImageLabel
 
 	private:
 		HWND m_hwndParent;
-		SIZE m_requiredImageSize;
+		bool m_useNearestNeighbor;
+
+		// Icon sizes.
+		SIZE m_requiredSize;	// Required size.
+		SIZE m_actualSize;	// Actual size.
 
 		// XP theming.
 		typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
