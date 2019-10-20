@@ -183,12 +183,8 @@ class RP_ShellPropSheetExt_Private
 		 */
 		inline int ListView_CustomDraw(NMLVCUSTOMDRAW *plvcd);
 
-		// Banner.
-		POINT ptBanner;
+		// Banner and icon.
 		DragImageLabel *lblBanner;
-
-		// Icon.
-		RECT rectIcon;
 		DragImageLabel *lblIcon;
 
 		// Tab layout.
@@ -383,8 +379,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, curTabIndex(0)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
-	memset(&ptBanner, 0, sizeof(ptBanner));
-	memset(&rectIcon, 0, sizeof(rectIcon));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
 	// TODO: Move this to RP_ComBase so we don't have to look it up
@@ -652,15 +646,13 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// Banner.
 	if (banner_width > 0) {
-		ptBanner = curPt;
+		lblBanner->setPosition(curPt);
 		curPt.x += banner_width + pt_start.x;
 	}
 
 	// Icon.
 	if (icon_width > 0) {
-		// TODO: Get rid of lblIcon->actualSize() here.
-		SetRect(&rectIcon, curPt.x, curPt.y,
-			curPt.x + icon_width, curPt.y + lblIcon->actualSize().cy);
+		lblIcon->setPosition(curPt);
 		curPt.x += icon_width + pt_start.x;
 	}
 
@@ -2573,35 +2565,20 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_PAINT(HWND hDlg)
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hDlg, &ps);
 
-	// Memory DC for BitBlt.
-	HDC hdcMem = CreateCompatibleDC(hdc);
+	// TODO: Check paint rectangles?
+	// TODO: Share the memory DC between lblBanner and lblIcon?
 
 	// Draw the banner.
 	if (lblBanner) {
-		HBITMAP hbmpBanner = lblBanner->currentFrame();
-		SIZE szBanner = lblBanner->actualSize();
-
-		SelectBitmap(hdcMem, hbmpBanner);
-		BitBlt(hdc, ptBanner.x, ptBanner.y,
-			szBanner.cx, szBanner.cy,
-			hdcMem, 0, 0, SRCCOPY);
+		lblBanner->draw(hdc);
 	}
 
 	// Draw the icon.
-	// TODO: Have lblIcon draw it directly.
 	if (lblIcon) {
-		HBITMAP hbmpIcon = lblIcon->currentFrame();
-		SIZE szIcon = lblIcon->actualSize();
-
-		SelectBitmap(hdcMem, hbmpIcon);
-		BitBlt(hdc, rectIcon.left, rectIcon.top,
-			szIcon.cx, szIcon.cy,
-			hdcMem, 0, 0, SRCCOPY);
+		lblIcon->draw(hdc);
 	}
 
-	DeleteDC(hdcMem);
 	EndPaint(hDlg, &ps);
-
 	return true;
 }
 
@@ -2749,18 +2726,11 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Reinitialize the alternate row color.
 			d->colorAltRow = LibWin32Common::getAltRowColor();
 			// Invalidate the banner and icon rectangles.
-			// TODO: Call an invalidate function in the DragImageLabel objects?
 			if (d->lblBanner) {
-				const SIZE szBanner = d->lblBanner->actualSize();
-				const RECT rectBanner = {
-					d->ptBanner.x, d->ptBanner.y,
-					d->ptBanner.x + szBanner.cx,
-					d->ptBanner.y + szBanner.cy,
-				};
-				InvalidateRect(d->hDlgSheet, &rectBanner, false);
+				d->lblBanner->invalidateRect();
 			}
 			if (d->lblIcon) {
-				InvalidateRect(d->hDlgSheet, &d->rectIcon, false);
+				d->lblIcon->invalidateRect();
 			}
 			break;
 		}
