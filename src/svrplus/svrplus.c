@@ -466,51 +466,81 @@ typedef struct _ThreadParams {
 	bool isUninstall;	/**< true if uninstalling */
 } ThreadParams;
 
-/**
- * Worker thread procedure.
- *
- * @param lpParameter ptr to parameters of type ThreadPrams. Owned by this thread.
- */
-static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
-{
-	TCHAR msg32[256], msg64[256];
-	InstallServerResult res32 = ISR_OK, res64 = ISR_OK;
-	DWORD errorCode = 0;
-	HANDLE hProcess;
+struct InstallParams {
+	HWND hWnd;        /**< Dialog window */
+	bool isUninstall; /**< true if uninstalling */
+	/* State */
+	InstallServerResult res32, res64;
+	DWORD errorCode32, errorCode64;
+	HANDLE hProcess32, hProcess64;
+};
 
-	ThreadParams *const params = (ThreadParams*)lpParameter;
+static void InstallProc64(struct InstallParams *p);
+static void InstallProc32(struct InstallParams *p);
+static void InstallProcEnd(struct InstallParams *p);
+
+static void InstallProc64(struct InstallParams *p)
+{
+	p->res32 = p->res64 = ISR_OK;
+	p->errorCode32 = p->errorCode64 = 0;
+	p->hProcess32 = p->hProcess64 = NULL;
 
 	// Try to (un)install the 64-bit version.
 	if (g_is64bit) {
-		res64 = InstallServer(params->isUninstall, true, &hProcess, &errorCode);
-		if (res64 == ISR_OK) {
-			WaitForSingleObject(hProcess, INFINITE);
-			res64 = InstallServerEnd(hProcess, &errorCode);
+		p->res64 = InstallServer(p->isUninstall, true, &p->hProcess64, &p->errorCode64);
+		if (p->res64 == ISR_OK) {
+			//PostMessage(p->hWnd, WM_APP_WAIT, 1, (LPARAM)p->hProcess64);
+			//return;
 		}
-		InstallServerErrorMsg(res64, errorCode, params->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+	}
+	InstallProc32(p);
+}
+
+static void InstallProc32(struct InstallParams *p)
+{
+	if (g_is64bit && p->res64 == ISR_OK) {
+		WaitForSingleObject(p->hProcess64, INFINITE); // XXX
+		p->res64 = InstallServerEnd(p->hProcess64, &p->errorCode64);
 	}
 
 	// Try to (un)install the 32-bit version.
-	res32 = InstallServer(params->isUninstall, false, &hProcess, &errorCode);
-	if (res32 == ISR_OK) {
-		WaitForSingleObject(hProcess, INFINITE);
-		res32 = InstallServerEnd(hProcess, &errorCode);
+	p->res32 = InstallServer(p->isUninstall, false, &p->hProcess32, &p->errorCode32);
+	if (p->res32 == ISR_OK) {
+		//PostMessage(p->hWnd, WM_APP_WAIT, 2, (LPARAM)p->hProcess32);
+		//return;
 	}
-	InstallServerErrorMsg(res32, errorCode, params->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+	InstallProcEnd(p);
+}
 
-	if (res32 == ISR_OK && res64 == ISR_OK) {
+static void InstallProcEnd(struct InstallParams *p)
+{
+	TCHAR msg32[256], msg64[256];
+
+	if (p->res32 == ISR_OK) {
+		WaitForSingleObject(p->hProcess32, INFINITE); // XXX
+		p->res32 = InstallServerEnd(p->hProcess32, &p->errorCode32);
+	}
+
+	if (g_is64bit) {
+		InstallServerErrorMsg(p->res64, p->errorCode64,
+				p->isUninstall, true, msg64, ARRAY_SIZE(msg64));
+	}
+	InstallServerErrorMsg(p->res32, p->errorCode32,
+			p->isUninstall, false, msg32, ARRAY_SIZE(msg32));
+
+	if (p->res32 == ISR_OK && p->res64 == ISR_OK) {
 		// DLL(s) registered successfully.
 		const TCHAR *msg;
 		if (g_is64bit) {
-			msg = (params->isUninstall
+			msg = (p->isUninstall
 				? _T("DLLs unregistered successfully.")
 				: _T("DLLs registered successfully."));
 		} else {
-			msg = (params->isUninstall
+			msg = (p->isUninstall
 				? _T("DLL unregistered successfully.")
 				: _T("DLL registered successfully."));
 		}
-		ShowStatusMessage(params->hWnd, msg, _T(""), MB_ICONINFORMATION);
+		ShowStatusMessage(p->hWnd, msg, _T(""), MB_ICONINFORMATION);
 		MessageBeep(MB_ICONINFORMATION);
 	} else {
 		// At least one of the DLLs failed to register.
@@ -519,22 +549,22 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 		msg2[0] = _T('\0');
 
 		if (g_is64bit) {
-			msg1 = (params->isUninstall
+			msg1 = (p->isUninstall
 				? _T("An error occurred while unregistering the DLLs:")
 				: _T("An error occurred while registering the DLLs:"));
 		} else {
-			msg1 = (params->isUninstall
+			msg1 = (p->isUninstall
 				? _T("An error occurred while unregistering the DLL:")
 				: _T("An error occurred while registering the DLL:"));
 		}
 
-		if (res32 != ISR_OK) {
+		if (p->res32 != ISR_OK) {
 			if (g_is64bit) {
 				_tcscpy_s(msg2, ARRAY_SIZE(msg2), BULLET _T(" 32-bit: "));
 			}
 			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg32);
 		}
-		if (res64 != ISR_OK) {
+		if (p->res64 != ISR_OK) {
 			if (msg2[0] != _T('\0')) {
 				_tcscat_s(msg2, ARRAY_SIZE(msg2), _T("\n"));
 			}
@@ -542,11 +572,25 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 			_tcscat_s(msg2, ARRAY_SIZE(msg2), msg64);
 		}
 
-		ShowStatusMessage(params->hWnd, msg1, msg2, MB_ICONSTOP);
+		ShowStatusMessage(p->hWnd, msg1, msg2, MB_ICONSTOP);
 		MessageBeep(MB_ICONSTOP);
 	}
 
-	SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
+	SendMessage(p->hWnd, WM_APP_ENDTASK, 0, 0);
+}
+
+/**
+ * Worker thread procedure.
+ *
+ * @param lpParameter ptr to parameters of type ThreadPrams. Owned by this thread.
+ */
+static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
+{
+	ThreadParams *const params = (ThreadParams*)lpParameter;
+
+	struct InstallParams p = { params->hWnd, params->isUninstall };
+	InstallProc64(&p);
+
 	free(params);
 	return 0;
 }
