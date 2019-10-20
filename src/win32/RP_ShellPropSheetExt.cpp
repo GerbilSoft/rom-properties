@@ -516,7 +516,15 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				delete lblIcon;
 				lblIcon = nullptr;
 			}
+		} else {
+			// Delete the icon if it was created previously.
+			delete lblIcon;
+			lblIcon = nullptr;
 		}
+	} else {
+		// Delete the icon if it was created previously.
+		delete lblIcon;
+		lblIcon = nullptr;
 	}
 }
 
