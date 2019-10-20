@@ -11,6 +11,7 @@
 #include "RpImageWin32.hpp"
 
 // libwin32common
+#include "libwin32common/ComBase.hpp"
 #include "libwin32common/WinUI.hpp"
 
 // librpbase
@@ -40,8 +41,6 @@ namespace Gdiplus {
 DragImageLabel::DragImageLabel(HWND hwndParent)
 	: m_hwndParent(hwndParent)
 	, m_useNearestNeighbor(false)
-	, m_hUxTheme_dll(nullptr)
-	, m_pfnIsThemeActive(nullptr)
 	, m_img(nullptr)
 	, m_hbmpImg(nullptr)
 	, m_anim(nullptr)
@@ -58,13 +57,6 @@ DragImageLabel::DragImageLabel(HWND hwndParent)
 	m_rect.right = m_actualSize.cx;
 	m_rect.top = 0;
 	m_rect.bottom = m_actualSize.cy;
-
-	// Attempt to get IsThemeActive() from uxtheme.dll.
-	// TODO: Only do this once? (in ComBase)
-	m_hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
-	if (m_hUxTheme_dll) {
-		m_pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(m_hUxTheme_dll, "IsThemeActive");
-	}
 }
 
 DragImageLabel::~DragImageLabel()
@@ -72,11 +64,6 @@ DragImageLabel::~DragImageLabel()
 	delete m_anim;
 	if (m_hbmpImg) {
 		DeleteObject(m_hbmpImg);
-	}
-
-	// Close uxtheme.dll.
-	if (m_hUxTheme_dll) {
-		FreeLibrary(m_hUxTheme_dll);
 	}
 }
 
@@ -239,7 +226,7 @@ bool DragImageLabel::updateBitmaps(void)
 	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
 	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
 	int colorIndex;
-	if (m_pfnIsThemeActive && m_pfnIsThemeActive()) {
+	if (LibWin32Common::pfnIsThemeActive && LibWin32Common::pfnIsThemeActive()) {
 		// Theme is active.
 		colorIndex = COLOR_WINDOW;
 	} else {

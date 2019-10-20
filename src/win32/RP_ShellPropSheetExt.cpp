@@ -149,11 +149,6 @@ class RP_ShellPropSheetExt_Private
 		// Header row widgets.
 		HWND lblSysInfo;
 
-		// XP theming.
-		typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
-		HMODULE hUxTheme_dll;
-		PFNISTHEMEACTIVE pfnIsThemeActive;
-
 		// Alternate row color.
 		COLORREF colorAltRow;
 		bool isFullyInit;		// True if the window is fully initialized.
@@ -369,8 +364,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontMono(nullptr)
 	, bPrevIsClearType(nullptr)
 	, lblSysInfo(nullptr)
-	, hUxTheme_dll(nullptr)
-	, pfnIsThemeActive(nullptr)
 	, colorAltRow(0)
 	, isFullyInit(false)
 	, lblBanner(nullptr)
@@ -379,14 +372,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, curTabIndex(0)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
-
-	// Attempt to get IsThemeActive() from uxtheme.dll.
-	// TODO: Move this to RP_ComBase so we don't have to look it up
-	// every time the property dialog is loaded?
-	hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
-	if (hUxTheme_dll) {
-		pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(hUxTheme_dll, "IsThemeActive");
-	}
 
 	// Initialize the alternate row color.
 	colorAltRow = LibWin32Common::getAltRowColor();
@@ -410,11 +395,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (hFontMono) {
 		DeleteFont(hFontMono);
 	}
-
-	// Close uxtheme.dll.
-	if (hUxTheme_dll) {
-		FreeLibrary(hUxTheme_dll);
-	}
 }
 
 /**
@@ -428,24 +408,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
  */
 void RP_ShellPropSheetExt_Private::loadImages(void)
 {
-	// Window background color.
-	// Static controls don't support alpha transparency (?? test),
-	// so we have to fake it.
-	// TODO: Get the actual background color of the window.
-	// TODO: Use DrawThemeBackground:
-	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
-	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
-	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
-	int colorIndex;
-	if (pfnIsThemeActive && pfnIsThemeActive()) {
-		// Theme is active.
-		colorIndex = COLOR_WINDOW;
-	} else {
-		// Theme is not active.
-		colorIndex = COLOR_3DFACE;
-	}
-	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
-
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 
@@ -2149,7 +2111,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		{ 0 }
 	};
 #pragma warning(pop)
-	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pfnQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IShellExtInit **/
