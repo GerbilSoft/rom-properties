@@ -65,6 +65,32 @@ class DragImageLabel
 			return m_actualSize;
 		}
 
+		POINT position(void) const
+		{
+			return m_position;
+		}
+
+		void setPosition(const POINT &position)
+		{
+			if (m_position.x != position.x ||
+			    m_position.y != position.y)
+			{
+				m_position = position;
+				updateRect();
+			}
+		}
+
+		void setPosition(int x, int y)
+		{
+			if (m_position.x != x ||
+			    m_position.y != y)
+			{
+				m_position.x = x;
+				m_position.y = y;
+				updateRect();
+			}
+		}
+
 		/**
 		 * Set the rp_image for this label.
 		 *
@@ -154,7 +180,25 @@ class DragImageLabel
 		 */
 		HBITMAP currentFrame(void) const;
 
+		/**
+		 * Draw the image.
+		 * @param hdc Device context of the parent window.
+		 */
+		void draw(HDC hdc);
+
+		/**
+		 * Invalidate the bitmap rect.
+		 * @param bErase Erase the background.
+		 */
+		void invalidateRect(bool bErase = false);
+
 	protected:
+		/**
+		 * Update the bitmap rect.
+		 * Called when position and/or size changes.
+		 */
+		void updateRect(void);
+
 		/**
 		 * Animated icon timer.
 		 * @param hWnd
@@ -168,9 +212,15 @@ class DragImageLabel
 		HWND m_hwndParent;
 		bool m_useNearestNeighbor;
 
+		// Position.
+		POINT m_position;
+
 		// Icon sizes.
 		SIZE m_requiredSize;	// Required size.
 		SIZE m_actualSize;	// Actual size.
+
+		// Calculated RECT based on position and size.
+		RECT m_rect;
 
 		// XP theming.
 		typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
