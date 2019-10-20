@@ -9,18 +9,18 @@
 #ifndef __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__
 #define __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__
 
+#include "libwin32common/RpWin32_sdk.h"
+#include "librpbase/common.h"
+
+namespace LibRpBase {
+	struct IconAnimData;
+}
+
 namespace LibRpTexture {
 	class rp_image;
 }
 
-// librpbase
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
-
-// C++ includes.
-#include <algorithm>
-#include <array>
-
+class DragImageLabelPrivate;
 class DragImageLabel
 {
 	// TODO: Adjust image size based on DPI.
@@ -31,65 +31,19 @@ class DragImageLabel
 		~DragImageLabel();
 
 	private:
+		DragImageLabelPrivate *const d_ptr;
 		RP_DISABLE_COPY(DragImageLabel)
 
 	public:
-		SIZE requiredSize(void) const
-		{
-			return m_requiredSize;
-		}
+		SIZE requiredSize(void) const;
+		void setRequiredSize(const SIZE &requiredSize);
+		void setRequiredSize(int width, int height);
 
-		void setRequiredSize(const SIZE &requiredSize)
-		{
-			if (m_requiredSize.cx != requiredSize.cx ||
-			    m_requiredSize.cy != requiredSize.cy)
-			{
-				m_requiredSize = requiredSize;
-				updateBitmaps();
-			}
-		}
+		SIZE actualSize(void) const;
 
-		void setRequiredSize(int width, int height)
-		{
-			if (m_requiredSize.cx != width ||
-			    m_requiredSize.cy != height)
-			{
-				m_requiredSize.cx = width;
-				m_requiredSize.cy = height;
-				updateBitmaps();
-			}
-		}
-
-		SIZE actualSize(void) const
-		{
-			return m_actualSize;
-		}
-
-		POINT position(void) const
-		{
-			return m_position;
-		}
-
-		void setPosition(const POINT &position)
-		{
-			if (m_position.x != position.x ||
-			    m_position.y != position.y)
-			{
-				m_position = position;
-				updateRect();
-			}
-		}
-
-		void setPosition(int x, int y)
-		{
-			if (m_position.x != x ||
-			    m_position.y != y)
-			{
-				m_position.x = x;
-				m_position.y = y;
-				updateRect();
-			}
-		}
+		POINT position(void) const;
+		void setPosition(const POINT &position);
+		void setPosition(int x, int y);
 
 		/**
 		 * Set the rp_image for this label.
@@ -127,21 +81,6 @@ class DragImageLabel
 		 */
 		void clearRp(void);
 
-	protected:
-		/**
-		 * Rescale an image to be as close to the required size as possible.
-		 * @param req_sz	[in] Required size.
-		 * @param sz		[in/out] Image size.
-		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
-		 */
-		static bool rescaleImage(const SIZE &req_sz, SIZE &sz);
-
-		/**
-		 * Update the bitmap(s).
-		 * @return True on success; false on error.
-		 */
-		bool updateBitmaps(void);
-
 	public:
 		/**
 		 * Start the animation timer.
@@ -157,35 +96,20 @@ class DragImageLabel
 		 * Is the animation timer running?
 		 * @return True if running; false if not.
 		 */
-		bool isAnimTimerRunning(void) const
-		{
-			return (m_anim && m_anim->animTimerID);
-		}
+		bool isAnimTimerRunning(void) const;
 
 		/**
 		 * Reset the animation frame.
 		 * This does NOT update the animation frame.
 		 */
-		void resetAnimFrame(void)
-		{
-			if (m_anim) {
-				m_anim->last_frame_number = 0;
-			}
-		}
+		void resetAnimFrame(void);
 
 	public:
 		/**
 		 * Get the current bitmap frame.
 		 * @return HBITMAP.
 		 */
-		HBITMAP currentFrame(void) const
-		{
-			if (m_anim && m_anim->iconAnimData) {
-				return m_anim->iconFrames[m_anim->last_frame_number];
-			}
-
-			return m_hbmpImg;
-		}
+		HBITMAP currentFrame(void) const;
 
 		/**
 		 * Draw the image.
@@ -198,65 +122,6 @@ class DragImageLabel
 		 * @param bErase Erase the background.
 		 */
 		void invalidateRect(bool bErase = false);
-
-	protected:
-		/**
-		 * Update the bitmap rect.
-		 * Called when position and/or size changes.
-		 */
-		void updateRect(void);
-
-		/**
-		 * Animated icon timer.
-		 * @param hWnd
-		 * @param uMsg
-		 * @param idEvent
-		 * @param dwTime
-		 */
-		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
-	private:
-		HWND m_hwndParent;
-		bool m_useNearestNeighbor;
-
-		// Position.
-		POINT m_position;
-
-		// Icon sizes.
-		SIZE m_requiredSize;	// Required size.
-		SIZE m_actualSize;	// Actual size.
-
-		// Calculated RECT based on position and size.
-		RECT m_rect;
-
-		// rp_image. (NOTE: Not owned by this object.)
-		const LibRpTexture::rp_image *m_img;
-		HBITMAP m_hbmpImg;	// for non-animated only
-
-		// Animated icon data.
-		struct anim_vars {
-			HWND m_hwndParent;
-			const LibRpBase::IconAnimData *iconAnimData;
-			UINT_PTR animTimerID;
-			std::array<HBITMAP, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
-			LibRpBase::IconAnimHelper iconAnimHelper;
-			int last_frame_number;		// Last frame number.
-
-			anim_vars(HWND hwndParent)
-				: m_hwndParent(hwndParent)
-				, animTimerID(0)
-				, last_frame_number(0) { }
-			~anim_vars()
-			{
-				if (animTimerID) {
-					KillTimer(m_hwndParent, animTimerID);
-				}
-				std::for_each(iconFrames.cbegin(), iconFrames.cend(),
-					[](HBITMAP hbmp) { if (hbmp) { DeleteObject(hbmp); } }
-				);
-			}
-		};
-		anim_vars *m_anim;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__ */
