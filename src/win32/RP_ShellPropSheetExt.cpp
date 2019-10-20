@@ -68,16 +68,8 @@ using std::string;
 using std::wstring;
 using std::vector;
 
-// Gdiplus for image drawing.
-// NOTE: Gdiplus requires min/max.
-#include <algorithm>
-namespace Gdiplus {
-	using std::min;
-	using std::max;
-}
-#include <gdiplus.h>
+// GDI+ scoped token.
 #include "librptexture/img/GdiplusHelper.hpp"
-#include "librptexture/img/RpGdiplusBackend.hpp"
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
