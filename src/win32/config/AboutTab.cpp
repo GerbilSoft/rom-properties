@@ -545,7 +545,22 @@ void AboutTabPrivate::initProgramTitleText(void)
 			s_version += AboutTabText::git_describe;
 		}
 	}
-	SetWindowText(hStaticVersion, U82T_s(s_version));
+	const tstring st_version = U82T_s(s_version);
+	SetWindowText(hStaticVersion, st_version.c_str());
+
+	// Reduce the vertical size of hStaticVersion to fit the text.
+	// High DPI (e.g. 150% on 1920x1080) can cause the label to
+	// overlap the tab control.
+	// FIXME: If we have too many lines of text, this might still cause problems.
+	SIZE sz_hStaticVersion;
+	int ret = LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, st_version.c_str(), &sz_hStaticVersion);
+	if (ret == 0) {
+		RECT rectStaticVersion;
+		GetWindowRect(hStaticVersion, &rectStaticVersion);
+		SetWindowPos(hStaticVersion, 0, 0, 0,
+			rectStaticVersion.right - rectStaticVersion.left, sz_hStaticVersion.cy,
+			SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE);
+	}
 
 	// Set the icon.
 	HICON hIcon = PropSheetIcon::get96Icon();
