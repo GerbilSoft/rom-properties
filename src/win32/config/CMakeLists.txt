@@ -13,6 +13,11 @@ SET_WINDOWS_NO_MANIFEST(rp-config)
 # so use WinMain for rp-config.exe.
 SET_WINDOWS_ENTRYPOINT(rp-config WinMain OFF)
 
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(rp-config git_version)
+ENDIF(TARGET git_version)
+
 TARGET_LINK_LIBRARIES(rp-config PRIVATE win32common)
 TARGET_INCLUDE_DIRECTORIES(rp-config
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src

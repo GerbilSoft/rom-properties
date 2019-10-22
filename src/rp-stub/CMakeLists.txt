@@ -13,7 +13,7 @@ TARGET_INCLUDE_DIRECTORIES(rp-stub
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
-	ADD_DEPENDENCIES(rpbase git_version)
+	ADD_DEPENDENCIES(rp-stub git_version)
 ENDIF(TARGET git_version)
 
 # dll-search.c is in libunixcommon.
