@@ -12,7 +12,7 @@
 // Qt includes.
 #include <QComboBox>
 #include <QLabel>
-#if !QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 # include <QSignalMapper>
 #endif
 
@@ -111,10 +111,10 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		// Set and cleared by ImageTypesTab::save();
 		QSettings *pSettings;
 
-#if !QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 		// QSignalMapper for the QComboBoxes.
 		QSignalMapper *mapperCboImageType;
-#endif
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 };
 
 /** ImageTypesTabPrivate **/
@@ -123,15 +123,15 @@ ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
 	, cboImageType_lastAdded(nullptr)
 	, pSettings(nullptr)
-#if !QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 	, mapperCboImageType(new QSignalMapper(q))
-#endif
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 {
-#if !QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 	// Connect the QSignalMapper to the ImageTypesTab.
 	QObject::connect(mapperCboImageType, SIGNAL(mapped(int)),
 		q, SLOT(cboImageType_currentIndexChanged(int)));
-#endif
+#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 }
 
 ImageTypesTabPrivate::~ImageTypesTabPrivate()
@@ -206,17 +206,17 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
 	cboImageType[sys][imageType] = cbo;
 
-#if QT_VERSION_CHECK(5,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// Connect the signal to the slot with the appropriate value.
 	QObject::connect(cbo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		[q, cbid] { q->cboImageType_currentIndexChanged(cbid); }
 	);
-#else /* !QT_VERSION_CHECK(5,0,0) */
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	// Connect the signal to the QSignalMapper.
 	QObject::connect(cbo, SIGNAL(currentIndexChanged(int)),
 		mapperCboImageType, SLOT(map()));
 	mapperCboImageType->setMapping(cbo, (int)cbid);
-#endif /* QT_VERSION_CHECK(5,0,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 	// Adjust the tab order.
 	if (cboImageType_lastAdded) {
