@@ -12,13 +12,16 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// librpthreads
+#include "librpthreads/pthread_once.h"
+
 namespace LibWin32Common {
 
 // References of all objects.
 volatile ULONG RP_ulTotalRefCount = 0;
 
 /** Dynamically loaded common functions **/
-volatile int pfn_init_status = 0;	// sort-of pthread_once() implementation
+static volatile pthread_once_t once_control = PTHREAD_ONCE_INIT;
 
 // QISearch()
 static HMODULE hShlwapi_dll = nullptr;
@@ -28,27 +31,8 @@ PFNQISEARCH pfnQISearch = nullptr;
 static HMODULE hUxTheme_dll = nullptr;
 PFNISTHEMEACTIVE pfnIsThemeActive = nullptr;
 
-void incRpGlobalRefCount(void)
+static void initFnPtrs(void)
 {
-	ULONG ulRefCount = InterlockedIncrement(&RP_ulTotalRefCount);
-	if (ulRefCount != 1) {
-		// Not the first initialization.
-		// Check if the functions have been loaded yet.
-		while (pfn_init_status != 1) {
-			SwitchToThread();
-		}
-		return;
-	}
-
-	// First initialization.
-	// Make sure pfn_init_status is 0, just in case
-	// something tries initializing a component while
-	// the last component was being uninitialized.
-	while (pfn_init_status != 0) {
-		SwitchToThread();
-	}
-	pfn_init_status = 2;	// NOTE: Not atomic, but that shouldn't be needed.
-
 	// SHLWAPI.DLL!QISearch
 	hShlwapi_dll = LoadLibrary(_T("shlwapi.dll"));
 	assert(hShlwapi_dll != nullptr);
@@ -71,9 +55,14 @@ void incRpGlobalRefCount(void)
 			hUxTheme_dll = nullptr;
 		}
 	}
+}
 
-	// Initialized.
-	pfn_init_status = 1;
+void incRpGlobalRefCount(void)
+{
+	ULONG ulRefCount = InterlockedIncrement(&RP_ulTotalRefCount);
+
+	// Make sure the function pointers are initialized.
+	pthread_once((pthread_once_t*)&once_control, initFnPtrs);
 }
 
 void decRpGlobalRefCount(void)
@@ -83,9 +72,10 @@ void decRpGlobalRefCount(void)
 		return;
 
 	// Last Release(). Unload the function pointers.
-	// NOTE: pfn_init_status should not be 0 here.
-	assert(pfn_init_status != 0);
-	while (pfn_init_status != 1) {
+	// NOTE: once_control should not be PTHREAD_ONCE_INIT here.
+	assert(once_control != PTHREAD_ONCE_INIT);
+	// This is always correct for our pthread_once() implementation.
+	while (once_control != 1) {
 		SwitchToThread();
 	}
 
@@ -101,7 +91,7 @@ void decRpGlobalRefCount(void)
 	}
 
 	// Finished unloading function pointers.
-	pfn_init_status = 0;
+	once_control = PTHREAD_ONCE_INIT;
 }
 
 }
