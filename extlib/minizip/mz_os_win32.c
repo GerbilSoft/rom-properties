@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.8.9, July 4, 2019
+   Version 2.9.0, September 18, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -15,13 +15,6 @@
 #include "mz_strm_os.h"
 
 #include <windows.h>
-
-// rom-properties: Needs Windows 2000 or later for FSCTL_GET_REPARSE_POINT.
-// Define it ourselves if it isn't available.
-#ifndef FSCTL_GET_REPARSE_POINT
-# include <winioctl.h>
-# define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#endif
 
 /***************************************************************************/
 

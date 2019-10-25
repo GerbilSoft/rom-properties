@@ -20,6 +20,7 @@ option(MZ_WZAES "Enables WinZIP AES encryption" ON)
 option(MZ_LIBCOMP "Enables Apple compression" OFF)
 option(MZ_OPENSSL "Enables OpenSSL for encryption" OFF)
 option(MZ_BRG "Enables Brian Gladman's encryption library" OFF)
+option(MZ_SIGNING "Enables zip signing support" ON)
 option(MZ_COMPRESS_ONLY "Only support compression" OFF)
 option(MZ_DECOMPRESS_ONLY "Only support decompression" OFF)
 option(MZ_BUILD_TEST "Builds minizip test executable" OFF)
@@ -41,7 +42,7 @@ endif()
 enable_language(C)
 
 # Minizip library version
-set(VERSION "2.8.9")
+set(VERSION "2.9.0")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -250,6 +251,10 @@ if(NOT MZ_PKCRYPT AND NOT MZ_WZAES)
     add_definitions(-DMZ_ZIP_NO_ENCRYPTION)
 endif()
 
+if(MZ_SIGNING)
+    add_definitions(-DMZ_ZIP_SIGNING)
+endif()
+
 # Windows specific
 if(WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
@@ -374,8 +379,6 @@ endif()
 # Include BRG
 if(MZ_BRG)
     list(APPEND MINIZIP_SRC "mz_crypt_brg.c")
-
-    add_definitions(-DMZ_ZIP_NO_SIGNING)
 
     set(BRG_SRC
         lib/brg/aescrypt.c
@@ -603,9 +606,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                         VERSION ${VERSION}
                         SOVERSION ${SOVERSION}
                         LINKER_LANGUAGE C
-                        DEFINE_SYMBOL "MZ_EXPORTS"
-                        POSITION_INDEPENDENT_CODE 1)
+                        DEFINE_SYMBOL "MZ_EXPORTS")
 
+if(NOT RISCOS)
+    set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE 1)
+endif()
 if(MZ_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 endif()

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'Minizip'
-  s.version  = '2.8.9'
+  s.version  = '2.9.0'
   s.license  = 'zlib'
   s.summary  = 'Minizip contrib in zlib with the latest bug fixes and advanced features'
   s.description = <<-DESC
@@ -34,14 +34,14 @@ DESC
     sp.dependency 'Minizip/Core'
     sp.source_files = 'mz_strm_wzaes.{c,h}', 'mz_crypt_apple.c'
     sp.framework = 'Security'
-    sp.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'HAVE_WZAES MZ_ZIP_NO_SIGNING' }
+    sp.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'HAVE_WZAES' }
   end
 
   s.subspec 'WZAES_BRG' do |sp|
     # Enables Brian Gladman's encryption library for AES
     sp.dependency 'Minizip/Core'
     sp.source_files = 'lib/brg/*.{c,h}', 'mz_strm_wzaes.{c,h}', 'mz_crypt_brg.c'
-    sp.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'HAVE_ARC4RANDOM_BUF HAVE_WZAES MZ_ZIP_NO_SIGNING' }
+    sp.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'HAVE_ARC4RANDOM_BUF HAVE_WZAES' }
   end
 
   s.subspec 'BZIP2' do |sp|

@@ -1,5 +1,5 @@
 /* mz_crypt_brg.c -- Crypto/hash functions using Brian Gladman's library
-   Version 2.8.9, July 4, 2019
+   Version 2.9.0, September 18, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -417,7 +417,7 @@ void mz_crypt_hmac_delete(void **handle)
 
 /***************************************************************************/
 
-#if !defined(MZ_ZIP_NO_SIGNING)
+#if defined(MZ_ZIP_SIGNING)
 int32_t mz_crypt_sign(uint8_t *message, int32_t message_size, uint8_t *cert_data, int32_t cert_data_size,
     const char *cert_pwd, uint8_t **signature, int32_t *signature_size)
 {

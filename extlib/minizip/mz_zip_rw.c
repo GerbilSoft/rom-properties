@@ -1,5 +1,5 @@
 /* mz_zip_rw.c -- Zip reader/writer
-   Version 2.8.9, July 4, 2019
+   Version 2.9.0, September 18, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -421,7 +421,7 @@ int32_t mz_zip_reader_entry_open(void *handle)
 
         if (err == MZ_OK)
             mz_crypt_sha_begin(reader->hash);
-#ifndef MZ_ZIP_NO_SIGNING
+#ifdef MZ_ZIP_SIGNING
         if (err == MZ_OK)
         {
             if (mz_zip_reader_entry_has_sign(handle) == MZ_OK)
@@ -498,7 +498,7 @@ int32_t mz_zip_reader_entry_has_sign(void *handle)
         reader->file_info->extrafield_size, MZ_ZIP_EXTENSION_SIGN, NULL);
 }
 
-#if !defined(MZ_ZIP_NO_ENCRYPTION) && !defined(MZ_ZIP_NO_SIGNING)
+#if !defined(MZ_ZIP_NO_ENCRYPTION) && defined(MZ_ZIP_SIGNING)
 int32_t mz_zip_reader_entry_sign_verify(void *handle)
 {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
@@ -1425,7 +1425,7 @@ int32_t mz_zip_writer_entry_close(void *handle)
                 err = MZ_WRITE_ERROR;
         }
 
-#ifndef MZ_ZIP_NO_SIGNING
+#ifdef MZ_ZIP_SIGNING
         if ((err == MZ_OK) && (writer->cert_data != NULL) && (writer->cert_data_size > 0))
         {
             /* Sign entry if not zipping cd or if it is cd being zipped */
@@ -1473,7 +1473,7 @@ int32_t mz_zip_writer_entry_write(void *handle, const void *buf, int32_t len)
     return written;
 }
 
-#if !defined(MZ_ZIP_NO_ENCRYPTION) && !defined(MZ_ZIP_NO_SIGNING)
+#if !defined(MZ_ZIP_NO_ENCRYPTION) && defined(MZ_ZIP_SIGNING)
 int32_t mz_zip_writer_entry_sign(void *handle, uint8_t *message, int32_t message_size,
     uint8_t *cert_data, int32_t cert_data_size, const char *cert_pwd)
 {
