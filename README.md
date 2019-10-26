@@ -129,6 +129,19 @@ button.
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
 
+#### Texture Codecs
+* Assorted linear RGB formats, including 15-bit, 16-bit, 24-bit and 32-bit per pixel.
+  * Most of these formats have SSE2 and/or SSSE3-optimized decoders.
+* Dreamcast: Twiddled and Vector-Quantized
+* Nintendo DS: Tiled CI8 with BGR555 palette
+* Nintendo 3DS: Tiled and twiddled RGB565
+* GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
+* S3TC: DXT1, DXT2, DXT3, DXT4, and DXT5 codecs.
+  * Supported file formats: DDS, KTX, VTF, VTF3, XPR
+  * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
+* BC7: Supported in DDS texture files.
+  * The implementation is somewhat slow. Contributions welcome.
+
 ### Audio Formats
 
 |             System            | Properties Tab | Metadata | Internal Images | External Scans |
@@ -151,7 +164,7 @@ button.
 |             System             | Properties Tab | Metadata | Internal Images | External Scans |
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
-| ISO-9660 Disc Images           |       Yes      |    No    |        No       |
+| ISO-9660 Disc Images           |       Yes      |    No    |        No       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |
