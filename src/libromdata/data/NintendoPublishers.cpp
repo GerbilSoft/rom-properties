@@ -483,6 +483,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'YF',	"O2 Games"},
 	{'YM',	"Bergsala Lightweight"},
 	{'YT',	"Valcon Games"},
+	{'Z1',	"Barunson Creative"},
 	{'Z4',	"Ntreev Soft"},
 	{'ZA',	"WBA Interactive"},
 	{'ZH',	"Internal Engine"},
