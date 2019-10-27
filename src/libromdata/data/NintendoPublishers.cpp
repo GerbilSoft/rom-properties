@@ -268,6 +268,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'8F',	"I'Max"},
 	{'8G',	"Saurus"},
 	{'8J',	"General Entertainment"},
+	{'8M',	"Cyberfront Korea"},
 	{'8N',	"Success"},
 	{'8P',	"Sega Japan"},
 	{'90',	"Takara Amusement"},
