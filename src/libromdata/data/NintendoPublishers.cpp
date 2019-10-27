@@ -407,7 +407,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
 	{'FQ',	"iQue"},
 	{'FR',	"Digital Tainment Pool"},
 	{'FS',	"XS Games / Jack Of All Games"},
-	{'FT',	"Daiwon"},
+	{'FT',	"Daewon Media"},
 	{'G0',	"Alpha Unit"},
 	{'G1',	"PCCW Japan"},
 	{'G2',	"Yuke's Media Creations"},
