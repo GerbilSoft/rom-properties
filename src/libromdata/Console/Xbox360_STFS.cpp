@@ -166,22 +166,76 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 		return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
 	}
 
+	Xbox360_STFS_Private::StfsType stfsType = Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+
 	// Check for STFS.
 	const STFS_Package_Header *const stfsHeader =
 		reinterpret_cast<const STFS_Package_Header*>(info->header.pData);
 	if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_CON)) {
 		// We have a console-signed STFS package.
-		return Xbox360_STFS_Private::STFS_TYPE_CON;
+		stfsType = Xbox360_STFS_Private::STFS_TYPE_CON;
 	} else if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_PIRS)) {
 		// We have an MS-signed STFS package. (non-Xbox Live)
-		return Xbox360_STFS_Private::STFS_TYPE_PIRS;
+		stfsType = Xbox360_STFS_Private::STFS_TYPE_PIRS;
 	} else if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_LIVE)) {
 		// We have an MS-signed STFS package. (Xbox Live)
-		return Xbox360_STFS_Private::STFS_TYPE_LIVE;
+		stfsType = Xbox360_STFS_Private::STFS_TYPE_LIVE;
 	}
 
-	// Not supported.
-	return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+	if (stfsType == Xbox360_STFS_Private::STFS_TYPE_UNKNOWN) {
+		// Not supported.
+		return stfsType;
+	}
+
+	// Check certain fields to prevent conflicts with the
+	// Nintendo DS ROM image "Live On Card Live-R DS".
+	switch (stfsType) {
+		default:
+			assert(!"Invalid STFS type...");
+			return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+
+		case Xbox360_STFS_Private::STFS_TYPE_CON:
+			// Console-signed.
+			// Check a few things.
+
+			// Console type: 1 == debug, 2 == retail
+			// On Nintendo DS, this is the "autostart" flag. (0 == no, 2 == autostart)
+			// This will very rarely conflict.
+			switch (stfsHeader->console.console_type) {
+				case 1:
+				case 2:
+					break;
+				default:
+					// Invalid value.
+					return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+			}
+
+			// TODO: Check that the datestamp field is all ASCII.
+			// On Nintendo DS, this field is the ARM9 ROM offset and entry address.
+			// Need to verify this on an actual STFS package first.
+			break;
+
+		case Xbox360_STFS_Private::STFS_TYPE_PIRS:
+		case Xbox360_STFS_Private::STFS_TYPE_LIVE: {
+			// MS-signed package.
+			// Make sure the padding is empty.
+			// This area overlaps the Nintendo DS logo section,
+			// which is *never* empty.
+			// TODO: Vectorize this?
+			const uint8_t *pPadding = stfsHeader->ms.padding;
+			const uint8_t *const pPadding_end = pPadding + sizeof(stfsHeader->ms.padding);
+			for (; pPadding < pPadding_end; pPadding++) {
+				if (*pPadding != 0) {
+					// Not empty.
+					// This is not padding.
+					return Xbox360_STFS_Private::STFS_TYPE_UNKNOWN;
+				}
+			}
+			break;
+		}
+	}
+
+	return stfsType;
 }
 
 /**
