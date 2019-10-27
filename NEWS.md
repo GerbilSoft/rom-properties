@@ -30,8 +30,8 @@
     happen if the texture format is swizzled but texture decoding fails.
   * SegaPVR: Added the .svr extension. Without this, SVR decoding doesn't
     work on Windows because it doesn't get registered for .svr files.
-  * Fixed conflict that caused the Nintendo DS ROM image "Live On Card
-    Live-R DS" to be detected as an Xbox 360 STFS package. Reported by
+  * Fixed detection issues that caused the Nintendo DS ROM image "Live On
+    Card Live-R DS" to be detected as an Xbox 360 STFS package. Reported by
     @Whovian9369.
 
 * Other changes:
