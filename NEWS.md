@@ -13,6 +13,7 @@
     * FIXME: Need to make use of the cache in the "contiguous" read section.
   * Image handling has been split from librpbase to librptexture. This will
     allow the texture decoding functionality to be used by other programs.
+  * Key Manager: Import the Korean key from Wii keys.bin if it's present.
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually

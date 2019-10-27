@@ -1125,12 +1125,12 @@ KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const char *filename)
 	}
 
 	// TODO:
-	// - rvl-korean may be in keys.bin files dumped from Korean systems.
 	// - SD keys are not present in keys.bin.
 
 	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
 		{0x114, WiiPartition::Key_Rvl_Common},
 		{0x114, WiiPartition::Key_Rvt_Debug},
+		{0x274, WiiPartition::Key_Rvl_Korean},
 
 		{0, -1}
 	};
