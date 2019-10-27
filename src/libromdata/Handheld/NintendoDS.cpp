@@ -815,7 +815,7 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Not supported.
-	return -1;
+	return NintendoDSPrivate::ROM_UNKNOWN;
 }
 
 /**
