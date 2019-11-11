@@ -697,14 +697,32 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		}
 
 		// Check for other MD-based cartridge formats.
+		int sysId = MegaDrivePrivate::ROM_UNKNOWN;
 		for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
 			if (!memcmp(&pHeader[0x100], cart_magic[i].sys_name, cart_magic[i].sys_name_len_100h) ||
 			    !memcmp(&pHeader[0x101], cart_magic[i].sys_name, cart_magic[i].sys_name_len_101h))
 			{
 				// Found a matching system name.
-				return MegaDrivePrivate::ROM_FORMAT_CART_BIN | cart_magic[i].system_id;
+				sysId = cart_magic[i].system_id;
+				break;
 			}
 		}
+
+		if (sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
+			// Verify the 32X security program if possible.
+			if (info->header.size >= __32X_SecurityProgram_UserHeader_ADDRESS + sizeof(_32X_SecurityProgram_UserHeader)) {
+				const _32X_SecurityProgram_UserHeader *const _32Xsec =
+					reinterpret_cast<const _32X_SecurityProgram_UserHeader*>(&pHeader[__32X_SecurityProgram_UserHeader_ADDRESS]);
+				if (memcmp(_32Xsec->module_name, __32X_SecurityProgram_UserHeader_MODULE_NAME, sizeof(_32Xsec->module_name)) != 0) {
+					// Module name is incorrect.
+					// This ROM cannot activate 32X mode.
+					// TODO: Check other parts of the security program?
+					sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
+				}
+			}
+		}
+
+		return MegaDrivePrivate::ROM_FORMAT_CART_BIN | sysId;
 	}
 
 	// Not supported.
