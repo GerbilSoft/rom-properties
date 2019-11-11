@@ -518,10 +518,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Seek to the beginning of the file.
 	d->file->rewind();
 
-	// Read the ROM header. [0x400 bytes]
-	uint8_t header[0x400];
+	// Read the ROM header. [0x800 bytes; minimum 0x400]
+	uint8_t header[0x800];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
+	if (size < 0x400) {
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -530,7 +530,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Check if this ROM is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(header);
+	info.header.size = size;
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
@@ -710,11 +710,11 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 		if (sysId == MegaDrivePrivate::ROM_SYSTEM_MD || sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
 			// Verify the 32X security program if possible.
-			if (info->header.size >= __32X_SecurityProgram_UserHeader_ADDRESS + sizeof(_32X_SecurityProgram_UserHeader)) {
+			static const uint32_t secprgaddr = 0x512;
+			static const char secprgdesc[] = "MARS Initial & Security Program";
+			if (info->header.size >= secprgaddr + sizeof(secprgdesc) - 1) {
 				// TODO: Check other parts of the security program?
-				const _32X_SecurityProgram_UserHeader *const _32Xsec =
-					reinterpret_cast<const _32X_SecurityProgram_UserHeader*>(&pHeader[__32X_SecurityProgram_UserHeader_ADDRESS]);
-				if (!memcmp(_32Xsec->module_name, __32X_SecurityProgram_UserHeader_MODULE_NAME, sizeof(_32Xsec->module_name))) {
+				if (!memcmp(&pHeader[secprgaddr], secprgdesc, sizeof(secprgdesc)-1)) {
 					// Module name is correct.
 					// TODO: Does the ROM header have to say "SEGA 32X"?
 					sysId = MegaDrivePrivate::ROM_SYSTEM_32X;
@@ -726,6 +726,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			}
 		}
 
+		printf("sysId == %d\n", sysId);
 		return MegaDrivePrivate::ROM_FORMAT_CART_BIN | sysId;
 	}
 
