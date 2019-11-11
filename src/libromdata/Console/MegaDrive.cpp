@@ -708,15 +708,19 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			}
 		}
 
-		if (sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
+		if (sysId == MegaDrivePrivate::ROM_SYSTEM_MD || sysId == MegaDrivePrivate::ROM_SYSTEM_32X) {
 			// Verify the 32X security program if possible.
 			if (info->header.size >= __32X_SecurityProgram_UserHeader_ADDRESS + sizeof(_32X_SecurityProgram_UserHeader)) {
+				// TODO: Check other parts of the security program?
 				const _32X_SecurityProgram_UserHeader *const _32Xsec =
 					reinterpret_cast<const _32X_SecurityProgram_UserHeader*>(&pHeader[__32X_SecurityProgram_UserHeader_ADDRESS]);
-				if (memcmp(_32Xsec->module_name, __32X_SecurityProgram_UserHeader_MODULE_NAME, sizeof(_32Xsec->module_name)) != 0) {
+				if (!memcmp(_32Xsec->module_name, __32X_SecurityProgram_UserHeader_MODULE_NAME, sizeof(_32Xsec->module_name))) {
+					// Module name is correct.
+					// TODO: Does the ROM header have to say "SEGA 32X"?
+					sysId = MegaDrivePrivate::ROM_SYSTEM_32X;
+				} else {
 					// Module name is incorrect.
 					// This ROM cannot activate 32X mode.
-					// TODO: Check other parts of the security program?
 					sysId = MegaDrivePrivate::ROM_SYSTEM_MD;
 				}
 			}
