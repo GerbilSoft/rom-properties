@@ -42,6 +42,8 @@
     is staying put.
   * Xbox360_XEX: A warning is now shown if a required encryption key isn't
     available.
+  * MegaDrive: Do a quick check of the 32X security code to verify that a
+    32X ROM is in fact for 32X.
 
 ## v1.4.3 (released 2019/09/16)
 
