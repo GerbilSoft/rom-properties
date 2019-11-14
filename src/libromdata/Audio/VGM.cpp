@@ -176,7 +176,9 @@ VGMPrivate::gd3_tags_t *VGMPrivate::loadGD3(unsigned int addr)
 		// Check for a NULL.
 		if (*p == 0) {
 			// Found a NULL!
-			(*gd3_tags)[tag_idx] = utf16le_to_utf8(start, (int)(p-start));
+			if (p != start) {
+				(*gd3_tags)[tag_idx] = utf16le_to_utf8(start, (int)(p-start));
+			}
 			// Next string.
 			start = p + 1;
 			tag_idx++;
