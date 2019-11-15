@@ -12,20 +12,19 @@ IF(NOT PACKAGE_NAME)
 ENDIF(NOT PACKAGE_NAME)
 
 # Architecture name for arch-specific paths.
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
-	# i386/amd64. Check sizeof(void*) for the actual architecture,
-	# since building 32-bit on 64-bit isn't considered "cross-compiling",
-	# so CMAKE_SYSTEM_PROCESSOR might not be accurate.
-	# NOTE: Checking CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
-	IF(MSVC AND CMAKE_CL_64)
-		SET(arch "amd64")
-	ELSEIF(NOT MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-		SET(arch "amd64")
-	ELSE()
-		SET(arch "i386")
-	ENDIF()
-ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+IF(CPU_amd64)
+	SET(arch "amd64")
+ELSEIF(CPU_i386)
+	SET(arch "i386")
+ELSEIF(CPU_ia64)
+	SET(arch "ia64")
+ELSEIF(CPU_arm)
+	SET(arch "arm")
+ELSEIF(CPU_arm64)
+	SET(arch "arm64")
+ELSE()
+	MESSAGE(FATAL_ERROR "Unsupported CPU architecture, please fix!")
+ENDIF()
 
 INCLUDE(GNUInstallDirs)
 IF(UNIX AND NOT APPLE)
