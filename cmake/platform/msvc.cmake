@@ -67,7 +67,7 @@ ENDIF()
 # NOTE 2: We need to cache this in order to prevent random build failures
 # caused by an empty string being cached instead.
 SET(CMAKE_ASM_MASM_FLAGS "/W0 /safeseh" CACHE STRING
-     "Flags used by the assembler during all build types.")
+	"Flags used by the assembler during all build types.")
 
 # Check if CMAKE_SIZEOF_VOID_P is set correctly.
 IF(NOT CMAKE_SIZEOF_VOID_P)
