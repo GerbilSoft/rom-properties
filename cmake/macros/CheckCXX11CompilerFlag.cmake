@@ -19,8 +19,8 @@ INCLUDE(CheckCXXSourceCompiles)
 
 MACRO(CHECK_CXX11_COMPILER_FLAG _RESULT)
 	UNSET(${_RESULT})
-	
-	# MSVC doesn't allow setting the C standard.
+
+	# MSVC doesn't allow setting the C++ standard.
 	IF(NOT MSVC)
 	# Check if C++ 2011 is present without any flags.
 	# g++-5.1 uses C++ 1998 by default, but this may change
