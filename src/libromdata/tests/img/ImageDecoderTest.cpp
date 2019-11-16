@@ -477,6 +477,11 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const rp_image *const img_dds = m_romData->image(mode.imgType);
 	ASSERT_TRUE(img_dds != nullptr) << "Could not load the " << filetype << " image as rp_image.";
 
+	// Get the image again.
+	// The pointer should be identical to the first one.
+	const rp_image *const img_dds_2 = m_romData->image(mode.imgType);
+	EXPECT_EQ(img_dds, img_dds_2) << "Retrieving the image twice resulted in a different rp_image object.";
+
 	// Compare the image data.
 	ASSERT_NO_FATAL_FAILURE(Compare_RpImage(img_png.get(), img_dds));
 }
