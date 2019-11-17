@@ -29,12 +29,36 @@ namespace LibRpBase {
  */
 static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 {
-	len = check_NULL_terminator(str, len);
-
 	string s_utf8;
-	s_utf8.reserve(len + 8);
 
-	for (; *str != '\0' && len > 0; str++, len--) {
+	// NOTE: We can't use check_NULL_terminator here because
+	// 0x00 may be a valid character in some cases.
+	if (len < 0) {
+		// Implicit length. We'll use strlen().
+		len = static_cast<int>(strlen(str));
+	} else if (unlikely(len == 0)) {
+		// Shouldn't happen...
+		return s_utf8;
+	} else {
+		// Explicit length.
+		// Search for NULLs starting at the end of the string.
+		// This allows us to trim strings while preserving any
+		// embedded NULLs that might be graphics characters.
+		const char *end = str + len - 1;
+		for (; end > str; end--) {
+			if (*end != 0x00)
+				break;
+		}
+		len = static_cast<int>(end - str + 1);
+	}
+
+	if (len <= 0) {
+		// Nothing to do...
+		return string();
+	}
+
+	s_utf8.reserve(len + 8);
+	for (; len > 0; str++, len--) {
 		// NOTE: The (uint8_t) cast is required.
 		// Otherwise, *str is interpreted as a signed char,
 		// which causes all sorts of shenanigans.
@@ -146,8 +170,8 @@ string atascii_to_utf8(const char *str, int len)
 	// Wikipedia has listed for symbols and duplicate the ASCII area.
 	static const char16_t atascii_lkup[256] = {
 		// 0x00
-		0x2665, 0x251C, 0xFFFD, 0x2518, 0x2524, 0x2510, 0x2571, 0x2572,
-		0x25E2, 0x2597, 0x25E3, 0x259D, 0x2598, 0xFFFD, 0x2582, 0x2596,
+		0x2665, 0x251C, 0x2590, 0x2518, 0x2524, 0x2510, 0x2571, 0x2572,
+		0x25E2, 0x2597, 0x25E3, 0x259D, 0x2598, 0x2580, 0x2582, 0x2596,
 		// 0x10
 		0x2663, 0x250C, 0x2500, 0x253C, 0x25CF, 0x2584, 0x258E, 0x252C,
 		0x2534, 0x258C, 0x2514, 0x001B, 0x2191, 0x2193, 0x2190, 0x2192,
@@ -181,7 +205,7 @@ string atascii_to_utf8(const char *str, int len)
 		// 0xE0
 		0xFFFD, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
 		// 0xF0
-		'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 0xFFFD, '|', 0xFFFD, 0xFFFD, 0xFFFD,
+		'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD,
 	};
 
 	return str8_to_utf8(atascii_lkup, str, len);
