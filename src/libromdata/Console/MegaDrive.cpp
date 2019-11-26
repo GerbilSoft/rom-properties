@@ -726,7 +726,6 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			}
 		}
 
-		printf("sysId == %d\n", sysId);
 		return MegaDrivePrivate::ROM_FORMAT_CART_BIN | sysId;
 	}
 
