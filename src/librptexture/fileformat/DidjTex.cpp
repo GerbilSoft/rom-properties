@@ -164,12 +164,12 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 	// Decode the image.
 	rp_image *imgtmp = nullptr;
-	const unsigned int width_pow2 = le32_to_cpu(texHeader.width_pow2);
-	const unsigned int height_pow2 = le32_to_cpu(texHeader.height_pow2);
+	const unsigned int width = le32_to_cpu(texHeader.width);
+	const unsigned int height = le32_to_cpu(texHeader.height);
 	switch (le32_to_cpu(texHeader.px_format)) {
 		case DIDJ_PIXEL_FORMAT_RGB565: {
 			// RGB565
-			const int img_siz = width_pow2 * height_pow2 * sizeof(uint16_t);
+			const int img_siz = width * height * sizeof(uint16_t);
 			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
 			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
 				// Incorrect size.
@@ -177,15 +177,32 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			}
 
 			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
-				width_pow2, height_pow2,
+				width, height,
 				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
 			break;
 		}
 
-		case DIDJ_PIXEL_FORMAT_8BPP_RGB565: {
-			// 8bpp with RGB565 palette.
+		case DIDJ_PIXEL_FORMAT_UNK16: {
+			// Unknown 16-bit pixel format
+			// TODO: Has weird dithering...
+			const int img_siz = width * height * sizeof(uint16_t);
+			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
+			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
+				// Incorrect size.
+				return nullptr;
+			}
+
+			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
+				width, height,
+				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
+			break;
+		}
+
+		case DIDJ_PIXEL_FORMAT_8BPP_UNK16: {
+			// 8bpp with unknown 16-bit palette.
+			// TODO: Has weird dithering...
 			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
-			const int img_siz = width_pow2 * height_pow2;
+			const int img_siz = width * height;
 			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
 			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
 				// Incorrect size.
@@ -195,15 +212,16 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data[pal_siz];
 			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGB565,
-				width_pow2, height_pow2,
+				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
 
-		case DIDJ_PIXEL_FORMAT_4BPP_RGB565: {
-			// 4bpp with RGB565 palette.
+		case DIDJ_PIXEL_FORMAT_4BPP_UNK16: {
+			// 4bpp with unknown 16-bit palette.
+			// TODO: Has weird dithering...
 			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
-			const int img_siz = (width_pow2 * height_pow2) / 2;
+			const int img_siz = (width * height) / 2;
 			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
 			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
 				// Incorrect size.
@@ -213,7 +231,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data[pal_siz];
 			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, false,
-				width_pow2, height_pow2,
+				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
 		}
@@ -222,8 +240,6 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			//assert(!"Format not supported.");
 			return nullptr;
 	}
-
-	// TODO: Truncate the image if the pow2 size doesn't match the real size?
 
 	img = imgtmp;
 	return img;
@@ -372,13 +388,13 @@ const char *DidjTex::pixelFormat(void) const
 	// TODO: Verify other formats.
 	static const char *const pxfmt_tbl[] = {
 		// 0x00
-		nullptr, nullptr, nullptr, "RGB565",
+		nullptr, "RGB565", nullptr, "UNK16",
 		nullptr, nullptr,
-		"8bpp with RGB565 palette",
+		"8bpp with UNK16 palette",
 		nullptr,
 
 		// 0x08
-		nullptr, "4bpp with RGB565 palette",
+		nullptr, "4bpp with UNK16 palette",
 	};
 
 	if (d->texHeader.px_format < ARRAY_SIZE(pxfmt_tbl) &&
@@ -435,8 +451,8 @@ int DidjTex::getFields(LibRpBase::RomFields *fields) const
 
 	// Internal dimensions.
 	// Usually a power of two.
-	fields->addField_dimensions(C_("DidjTex", "Internal Dimensions"),
-		le32_to_cpu(d->texHeader.width_pow2), le32_to_cpu(d->texHeader.height_pow2), 0);
+	fields->addField_dimensions(C_("DidjTex", "Display Size"),
+		le32_to_cpu(d->texHeader.width_disp), le32_to_cpu(d->texHeader.height_disp), 0);
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);

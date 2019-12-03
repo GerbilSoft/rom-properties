@@ -22,18 +22,19 @@ extern "C" {
  * Leapster Didj .tex: File header.
  * Reverse-engineered from Didj .tex files.
  *
- * NOTE: The "real" image dimensions are always a power of two.
- * The "used" size may be smaller.
+ * NOTE: The actual image size is usually a power of two.
+ * It should be rescaled to the display size when rendering.
+ * rom-properties will use the actual size.
  *
  * All fields are in little-endian.
  */
 #define DIDJ_TEX_HEADER_MAGIC 3
 typedef struct PACKED _Didj_Tex_Header {
 	uint32_t magic;		// [0x000] Magic number? (always 3)
-	uint32_t width;		// [0x004] Width [used size]
-	uint32_t height;	// [0x008] Height [used size]
-	uint32_t width_pow2;	// [0x00C] Width (pow2) [physical size]
-	uint32_t height_pow2;	// [0x010] Height (pow2) [physical size]
+	uint32_t width_disp;	// [0x004] Width [display size]
+	uint32_t height_disp;	// [0x008] Height [display size]
+	uint32_t width;		// [0x00C] Width [actual size]
+	uint32_t height;	// [0x010] Height [actual size]
 	uint32_t uncompr_size;	// [0x014] Uncompressed data size, including palette
 	uint32_t px_format;	// [0x018] Pixel format (see Didj_Pixel_Format_e)
 	uint32_t num_images;	// [0x01C] Number of images? (always 1)
@@ -45,9 +46,10 @@ ASSERT_STRUCT(Didj_Tex_Header, 36);
  * Pixel format.
  */
 typedef enum {
-	DIDJ_PIXEL_FORMAT_RGB565	= 3,	// RGB565
-	DIDJ_PIXEL_FORMAT_8BPP_RGB565	= 6,	// 8bpp; palette is RGB565 [TODO: Transparency?]
-	DIDJ_PIXEL_FORMAT_4BPP_RGB565	= 9,	// 4bpp; palette is RGB565 [TODO: Transparency?]
+	DIDJ_PIXEL_FORMAT_RGB565	= 1,	// RGB565
+	DIDJ_PIXEL_FORMAT_UNK16		= 3,	// Unknown 16-bit format
+	DIDJ_PIXEL_FORMAT_8BPP_UNK16	= 6,	// 8bpp; palette is unknown 16-bit [TODO: Transparency?]
+	DIDJ_PIXEL_FORMAT_4BPP_UNK16	= 9,	// 4bpp; palette is unknown 16-bit [TODO: Transparency?]
 } Didj_Pixel_Format_e;
 
 #pragma pack()
