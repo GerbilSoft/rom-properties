@@ -193,6 +193,12 @@ ENDIF(MSVC)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(rptexture PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
+# zlib
+IF(NOT ZLIB_LIBRARY)
+	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
+ENDIF(NOT ZLIB_LIBRARY)
+TARGET_LINK_LIBRARIES(rptexture PRIVATE ${ZLIB_LIBRARY})
+
 # Other libraries.
 IF(WIN32)
 	# libwin32common

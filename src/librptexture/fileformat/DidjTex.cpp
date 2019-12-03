@@ -25,10 +25,17 @@ using LibRpBase::rp_sprintf;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
 
+// zlib
+#include <zlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
 
 namespace LibRpTexture {
 
@@ -91,13 +98,102 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 		return nullptr;
 	}
 
-	// Sanity check: .tex files shouldn't be more than 64 KB.
-	if (file->size() > 64*1024) {
+	// Sanity checks:
+	// - .tex files shouldn't be more than 128 KB.
+	// - Uncompressed size shouldn't be more than 1 MB.
+	const unsigned int uncompr_size = le32_to_cpu(texHeader.uncompr_size);
+	assert(file->size() <= 128*1024);
+	assert(uncompr_size <= 1*1024*1024);
+	if (file->size() > 128*1024 || uncompr_size > 1*1024*1024) {
 		return nullptr;
 	}
 
-	// TODO
-	return nullptr;
+	// Load the compressed data.
+	// NOTE: Compressed size is validated in the constructor.
+	const unsigned int compr_size = le32_to_cpu(texHeader.compr_size);
+	unique_ptr<uint8_t[]> compr_data(new uint8_t[compr_size]);
+	size_t size = file->seekAndRead(sizeof(texHeader), compr_data.get(), compr_size);
+	if (size != compr_size) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Decompress the data.
+	unique_ptr<uint8_t[]> uncompr_data(new uint8_t[uncompr_size]);
+
+	// Initialize zlib.
+	z_stream strm;
+	memset(&strm, 0, sizeof(strm));
+	int ret = inflateInit(&strm);
+	if (ret != Z_OK) {
+		// Error initializing inflate.
+		return nullptr;
+	}
+
+	strm.avail_in = compr_size;
+	strm.next_in = compr_data.get();
+	strm.avail_out = uncompr_size;
+	strm.next_out = uncompr_data.get();
+	do {
+		ret = inflate(&strm, Z_NO_FLUSH);
+		switch (ret) {
+			case Z_OK:
+			case Z_STREAM_END:
+				break;
+
+			case Z_NEED_DICT:
+			case Z_DATA_ERROR:
+			case Z_MEM_ERROR:	// TODO: Handle this?
+				// Error decompressing...
+				inflateEnd(&strm);
+				return nullptr;
+		}
+	} while (strm.avail_out > 0 && ret != Z_STREAM_END);
+
+	// Buffer should be full and we should be at the end of the stream.
+	assert(strm.avail_out == 0);
+	assert(ret == Z_STREAM_END);
+	if (strm.avail_out != 0 || ret != Z_STREAM_END) {
+		// Error decompressing...
+		inflateEnd(&strm);
+		return nullptr;
+	}
+
+	// Finished decompressing.
+	inflateEnd(&strm);
+
+	// Decode the image.
+	rp_image *imgtmp = nullptr;
+	const unsigned int width_pow2 = le32_to_cpu(texHeader.width_pow2);
+	const unsigned int height_pow2 = le32_to_cpu(texHeader.height_pow2);
+	switch (le32_to_cpu(texHeader.px_format)) {
+		case DIDJ_PIXEL_FORMAT_4BPP_RGB565: {
+			// 4bpp with RGB565 palette.
+			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
+			const int img_siz = (width_pow2 * height_pow2) / 2;
+			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
+			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+				// Incorrect size.
+				return nullptr;
+			}
+
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
+			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, false,
+				width_pow2, height_pow2,
+				img_buf, img_siz, pal_buf, pal_siz);
+			break;
+		}
+
+		default:
+			//assert(!"Format not supported.");
+			return nullptr;
+	}
+
+	// TODO: Truncate the image if the pow2 size doesn't match the real size?
+
+	img = imgtmp;
+	return img;
 }
 
 /** DidjTex **/

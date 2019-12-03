@@ -22,15 +22,18 @@ extern "C" {
  * Leapster Didj .tex: File header.
  * Reverse-engineered from Didj .tex files.
  *
+ * NOTE: The "real" image dimensions are always a power of two.
+ * The "used" size may be smaller.
+ *
  * All fields are in little-endian.
  */
 #define DIDJ_TEX_HEADER_MAGIC 3
 typedef struct PACKED _Didj_Tex_Header {
 	uint32_t magic;		// [0x000] Magic number? (always 3)
-	uint32_t width;		// [0x004] Width
-	uint32_t height;	// [0x008] Height
-	uint32_t width_pow2;	// [0x00C] Width (pow2)
-	uint32_t height_pow2;	// [0x010] Height (pow2)
+	uint32_t width;		// [0x004] Width [used size]
+	uint32_t height;	// [0x008] Height [used size]
+	uint32_t width_pow2;	// [0x00C] Width (pow2) [physical size]
+	uint32_t height_pow2;	// [0x010] Height (pow2) [physical size]
 	uint32_t uncompr_size;	// [0x014] Uncompressed data size, including palette
 	uint32_t px_format;	// [0x018] Pixel format (see Didj_Pixel_Format_e)
 	uint32_t num_images;	// [0x01C] Number of images? (always 1)
