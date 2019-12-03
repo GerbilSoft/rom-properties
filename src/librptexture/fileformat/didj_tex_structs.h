@@ -45,6 +45,7 @@ ASSERT_STRUCT(Didj_Tex_Header, 36);
  * Pixel format.
  */
 typedef enum {
+	DIDJ_PIXEL_FORMAT_RGB565	= 3,	// RGB565
 	DIDJ_PIXEL_FORMAT_8BPP_RGB565	= 6,	// 8bpp; palette is RGB565 [TODO: Transparency?]
 	DIDJ_PIXEL_FORMAT_4BPP_RGB565	= 9,	// 4bpp; palette is RGB565 [TODO: Transparency?]
 } Didj_Pixel_Format_e;

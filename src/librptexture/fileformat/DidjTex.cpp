@@ -167,6 +167,21 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	const unsigned int width_pow2 = le32_to_cpu(texHeader.width_pow2);
 	const unsigned int height_pow2 = le32_to_cpu(texHeader.height_pow2);
 	switch (le32_to_cpu(texHeader.px_format)) {
+		case DIDJ_PIXEL_FORMAT_RGB565: {
+			// RGB565
+			const int img_siz = width_pow2 * height_pow2 * sizeof(uint16_t);
+			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
+			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
+				// Incorrect size.
+				return nullptr;
+			}
+
+			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
+				width_pow2, height_pow2,
+				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
+			break;
+		}
+
 		case DIDJ_PIXEL_FORMAT_8BPP_RGB565: {
 			// 8bpp with RGB565 palette.
 			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
@@ -357,7 +372,7 @@ const char *DidjTex::pixelFormat(void) const
 	// TODO: Verify other formats.
 	static const char *const pxfmt_tbl[] = {
 		// 0x00
-		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, "RGB565",
 		nullptr, nullptr,
 		"8bpp with RGB565 palette",
 		nullptr,
