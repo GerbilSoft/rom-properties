@@ -252,9 +252,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			break;
 		}
 
-		case DIDJ_PIXEL_FORMAT_4BPP_UNK16: {
-			// 4bpp with unknown 16-bit palette.
-			// TODO: Has weird dithering...
+		case DIDJ_PIXEL_FORMAT_4BPP_RGBA4444: {
+			// 4bpp with RGBA4444 palette.
 			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
 			const int img_siz = (width * height) / 2;
 			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
@@ -265,7 +264,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, false,
+			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGBA4444, true,
 				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
@@ -426,7 +425,7 @@ const char *DidjTex::pixelFormat(void) const
 
 		"RGB565", nullptr, "UNK16",
 		"8bpp with RGB565 palette", nullptr, "8bpp with RGBA4444 palette",
-		"4bpp with RGB565 palette", nullptr, "4bpp with UNK16 palette",
+		"4bpp with RGB565 palette", nullptr, "4bpp with RGBA4444 palette",
 	};
 
 	if (d->texHeader.px_format < ARRAY_SIZE(pxfmt_tbl) &&
