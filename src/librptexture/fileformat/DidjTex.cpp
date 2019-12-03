@@ -28,6 +28,10 @@ using LibRpBase::rp_sprintf;
 
 // zlib
 #include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+# include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -43,6 +47,11 @@ using std::unique_ptr;
 namespace LibRpTexture {
 
 FILEFORMAT_IMPL(DidjTex)
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+#endif /* _MSC_VER */
 
 class DidjTexPrivate : public FileFormatPrivate
 {
@@ -122,6 +131,16 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	if (file->size() > 128*1024 || uncompr_size > 1*1024*1024) {
 		return nullptr;
 	}
+
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlibVersion() != 0) {
+		// Delay load failed.
+		// Can't decompress the thumbnail image.
+		return nullptr;
+	}
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Load the compressed data.
 	// NOTE: Compressed size is validated in the constructor.
