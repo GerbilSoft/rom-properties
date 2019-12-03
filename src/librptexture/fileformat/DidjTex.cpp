@@ -198,6 +198,24 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			break;
 		}
 
+		case DIDJ_PIXEL_FORMAT_8BPP_RGB565: {
+			// 8bpp with RGB565 palette.
+			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
+			const int img_siz = width * height;
+			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
+			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+				// Incorrect size.
+				return nullptr;
+			}
+
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
+			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGB565,
+				width, height,
+				img_buf, img_siz, pal_buf, pal_siz);
+			break;
+		}
+
 		case DIDJ_PIXEL_FORMAT_8BPP_UNK16: {
 			// 8bpp with unknown 16-bit palette.
 			// TODO: Has weird dithering...
@@ -212,6 +230,24 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data[pal_siz];
 			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGB565,
+				width, height,
+				img_buf, img_siz, pal_buf, pal_siz);
+			break;
+		}
+
+		case DIDJ_PIXEL_FORMAT_4BPP_RGB565: {
+			// 4bpp with RGB565 palette.
+			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
+			const int img_siz = (width * height) / 2;
+			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
+			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+				// Incorrect size.
+				return nullptr;
+			}
+
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
+			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, false,
 				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
@@ -387,14 +423,11 @@ const char *DidjTex::pixelFormat(void) const
 
 	// TODO: Verify other formats.
 	static const char *const pxfmt_tbl[] = {
-		// 0x00
-		nullptr, "RGB565", nullptr, "UNK16",
-		nullptr, nullptr,
-		"8bpp with UNK16 palette",
 		nullptr,
 
-		// 0x08
-		nullptr, "4bpp with UNK16 palette",
+		"RGB565", nullptr, "UNK16",
+		"8bpp with RGB565 palette", nullptr, "8bpp with UNK16 palette",
+		"4bpp with RGB565 palette", nullptr, "4bpp with UNK16 palette",
 	};
 
 	if (d->texHeader.px_format < ARRAY_SIZE(pxfmt_tbl) &&
