@@ -50,7 +50,7 @@ typedef enum {
 	DIDJ_PIXEL_FORMAT_UNK16		= 3,	// Unknown 16-bit format
 
 	DIDJ_PIXEL_FORMAT_8BPP_RGB565	= 4,	// 8bpp; palette is RGB565
-	DIDJ_PIXEL_FORMAT_8BPP_UNK16	= 6,	// 8bpp; palette is unknown 16-bit [TODO: Transparency?]
+	DIDJ_PIXEL_FORMAT_8BPP_RGBA4444	= 6,	// 8bpp; palette is RGBA4444
 
 	DIDJ_PIXEL_FORMAT_4BPP_RGB565	= 7,	// 4bpp; palette is RGB565
 	DIDJ_PIXEL_FORMAT_4BPP_UNK16	= 9,	// 4bpp; palette is unknown 16-bit [TODO: Transparency?]
