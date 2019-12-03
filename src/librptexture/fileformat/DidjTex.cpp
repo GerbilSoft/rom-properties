@@ -285,7 +285,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 		}
 
 		default:
-			//assert(!"Format not supported.");
+			assert(!"Format not supported.");
 			return nullptr;
 	}
 
