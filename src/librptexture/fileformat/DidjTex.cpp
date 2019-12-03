@@ -167,6 +167,24 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	const unsigned int width_pow2 = le32_to_cpu(texHeader.width_pow2);
 	const unsigned int height_pow2 = le32_to_cpu(texHeader.height_pow2);
 	switch (le32_to_cpu(texHeader.px_format)) {
+		case DIDJ_PIXEL_FORMAT_8BPP_RGB565: {
+			// 8bpp with RGB565 palette.
+			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
+			const int img_siz = width_pow2 * height_pow2;
+			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
+			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+				// Incorrect size.
+				return nullptr;
+			}
+
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
+			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGB565,
+				width_pow2, height_pow2,
+				img_buf, img_siz, pal_buf, pal_siz);
+			break;
+		}
+
 		case DIDJ_PIXEL_FORMAT_4BPP_RGB565: {
 			// 4bpp with RGB565 palette.
 			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
@@ -340,7 +358,9 @@ const char *DidjTex::pixelFormat(void) const
 	static const char *const pxfmt_tbl[] = {
 		// 0x00
 		nullptr, nullptr, nullptr, nullptr,
-		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr,
+		"8bpp with RGB565 palette",
+		nullptr,
 
 		// 0x08
 		nullptr, "4bpp with RGB565 palette",
