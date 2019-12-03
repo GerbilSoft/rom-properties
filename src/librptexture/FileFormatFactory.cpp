@@ -186,16 +186,18 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// Check for file formats that don't have well-defined
 	// magic numbers, but do have a known file extension.
 	// TODO: Make an array.
-	if (!strcasecmp(pExt, ".tex")) {
-		FileFormat *const fileFormat = new DidjTex(file);
-		if (fileFormat->isValid()) {
-			// FileFormat subclass obtained.
-			return fileFormat;
+	if (pExt) {
+		if (!strcasecmp(pExt, ".tex") || !strcasecmp(pExt, ".texs")) {
+			FileFormat *const fileFormat = new DidjTex(file);
+			if (fileFormat->isValid()) {
+				// FileFormat subclass obtained.
+				return fileFormat;
 
+			}
+
+			// Not actually supported.
+			fileFormat->unref();
 		}
-
-		// Not actually supported.
-		fileFormat->unref();
 	}
 
 	// Not supported.

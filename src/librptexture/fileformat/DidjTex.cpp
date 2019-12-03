@@ -18,6 +18,7 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::rp_sprintf;
 
@@ -35,6 +36,8 @@ using LibRpBase::rp_sprintf;
 
 // C++ includes.
 #include <memory>
+#include <string>
+using std::string;
 using std::unique_ptr;
 
 namespace LibRpTexture {
@@ -52,6 +55,17 @@ class DidjTexPrivate : public FileFormatPrivate
 		RP_DISABLE_COPY(DidjTexPrivate)
 
 	public:
+		enum TexType {
+			TEX_TYPE_UNKNOWN	= -1,	// Unknown image type.
+			TEX_TYPE_TEX		= 0,	// .tex
+			TEX_TYPE_TEXS		= 1,	// .texs (multiple .tex, concatenated)
+
+			TEX_TYPE_MAX
+		};
+
+		// .tex type.
+		int texType;
+
 		// .tex header.
 		Didj_Tex_Header texHeader;
 
@@ -72,6 +86,7 @@ class DidjTexPrivate : public FileFormatPrivate
 
 DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
 	: super(q, file)
+	, texType(TEX_TYPE_UNKNOWN)
 	, img(nullptr)
 {
 	// Clear the structs and arrays.
@@ -325,14 +340,37 @@ DidjTex::DidjTex(IRpFile *file)
 		return;
 	}
 
-	// Verify compressed filesize.
+	// NOTE: If this is a .texs, then multiple textures are present,
+	// stored as concatenated .tex files.
+	// We're only reading the first texture right now.
 	const int64_t filesize = d->file->size();
-	if (static_cast<int64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader)) != filesize) {
-		// Incorrect compressed filesize.
-		d->isValid = false;
-		d->file->unref();
-		d->file = nullptr;
-		return;
+	const string filename = file->filename();
+	const char *pExt = nullptr;
+	if (!filename.empty()) {
+		pExt = LibRpBase::FileSystem::file_ext(filename);
+	}
+
+	const int64_t our_size = static_cast<int64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
+	if (pExt && !strcasecmp(pExt, ".texs")) {
+		// .texs - allow the total filesize to be larger than the compressed size.
+		if (our_size > filesize) {
+			// Incorrect compressed filesize.
+			d->isValid = false;
+			d->file->unref();
+			d->file = nullptr;
+			return;
+		}
+		d->texType = DidjTexPrivate::TEX_TYPE_TEXS;
+	} else {
+		// .tex - total filesize must be equal to compressed size plus header size.
+		if (our_size != filesize) {
+			// Incorrect compressed filesize.
+			d->isValid = false;
+			d->file->unref();
+			d->file = nullptr;
+			return;
+		}
+		d->texType = DidjTexPrivate::TEX_TYPE_TEX;
 	}
 
 	// Looks like it's valid.
@@ -363,6 +401,7 @@ const char *const *DidjTex::supportedFileExtensions_static(void)
 {
 	static const char *const exts[] = {
 		".tex",		// NOTE: Too generic...
+		".texs",	// NOTE: Has multiple textures.
 
 		nullptr
 	};
@@ -400,10 +439,13 @@ const char *const *DidjTex::supportedMimeTypes_static(void)
 const char *DidjTex::textureFormatName(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid)
+	if (!d->isValid || d->texType < 0)
 		return nullptr;
 
-	return "Leapster Didj .tex";
+	// TODO: Use an array?
+	return (d->texType == DidjTexPrivate::TEX_TYPE_TEXS
+		? "Leapster Didj .texs"
+		: "Leapster Didj .tex");
 }
 
 /**
@@ -413,7 +455,7 @@ const char *DidjTex::textureFormatName(void) const
 const char *DidjTex::pixelFormat(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid) {
+	if (!d->isValid || d->texType < 0) {
 		// Not supported.
 		return nullptr;
 	}
@@ -471,7 +513,7 @@ int DidjTex::getFields(LibRpBase::RomFields *fields) const
 		return 0;
 
 	RP_D(DidjTex);
-	if (!d->isValid) {
+	if (!d->isValid || d->texType < 0) {
 		// Not valid.
 		return -EIO;
 	}
@@ -500,8 +542,8 @@ int DidjTex::getFields(LibRpBase::RomFields *fields) const
 const rp_image *DidjTex::image(void) const
 {
 	RP_D(const DidjTex);
-	if (!d->isValid) {
-		// Not valid.
+	if (!d->isValid || d->texType < 0) {
+		// Unknown file type.
 		return nullptr;
 	}
 
