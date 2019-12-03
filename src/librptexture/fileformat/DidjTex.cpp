@@ -182,9 +182,8 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			break;
 		}
 
-		case DIDJ_PIXEL_FORMAT_UNK16: {
-			// Unknown 16-bit pixel format
-			// TODO: Has weird dithering...
+		case DIDJ_PIXEL_FORMAT_RGBA4444: {
+			// RGBA4444
 			const int img_siz = width * height * sizeof(uint16_t);
 			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
 			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
@@ -192,7 +191,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 				return nullptr;
 			}
 
-			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGB565,
+			imgtmp = ImageDecoder::fromLinear16(ImageDecoder::PXF_RGBA4444,
 				width, height,
 				reinterpret_cast<const uint16_t*>(uncompr_data.get()), img_siz);
 			break;
