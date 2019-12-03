@@ -246,7 +246,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
 			const uint8_t *const img_buf = &uncompr_data[pal_siz];
-			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, false,
+			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, true,
 				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
