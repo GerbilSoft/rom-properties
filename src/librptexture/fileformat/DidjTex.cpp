@@ -483,7 +483,7 @@ const char *DidjTex::pixelFormat(void) const
 	static const char *const pxfmt_tbl[] = {
 		nullptr,
 
-		"RGB565", nullptr, "UNK16",
+		"RGB565", nullptr, "RGBA4444",
 		"8bpp with RGB565 palette", nullptr, "8bpp with RGBA4444 palette",
 		"4bpp with RGB565 palette", nullptr, "4bpp with RGBA4444 palette",
 	};
