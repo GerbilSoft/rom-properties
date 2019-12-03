@@ -32,6 +32,7 @@ using std::unordered_set;
 using std::vector;
 
 // FileFormat subclasses.
+#include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/KhronosKTX.hpp"
 #include "fileformat/SegaPVR.hpp"
@@ -182,6 +183,21 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		}
 	}
 
+	// Check for file formats that don't have well-defined
+	// magic numbers, but do have a known file extension.
+	// TODO: Make an array.
+	if (!strcasecmp(pExt, ".tex")) {
+		FileFormat *const fileFormat = new DidjTex(file);
+		if (fileFormat->isValid()) {
+			// FileFormat subclass obtained.
+			return fileFormat;
+
+		}
+
+		// Not actually supported.
+		fileFormat->unref();
+	}
+
 	// Not supported.
 	return nullptr;
 }
@@ -224,6 +240,18 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 		}
 	}
 
+	// TODO: Make an array for extension-only types.
+	const char *const *sys_exts = DidjTex::supportedFileExtensions_static();
+	if (sys_exts) {
+		for (; *sys_exts != nullptr; sys_exts++) {
+			auto iter = set_exts.find(*sys_exts);
+			if (iter == set_exts.end()) {
+				set_exts.insert(*sys_exts);
+				vec_exts.push_back(*sys_exts);
+			}
+		}
+	}
+
 	return vec_exts;
 }
 
@@ -257,6 +285,18 @@ vector<const char*> FileFormatFactory::supportedMimeTypes(void)
 		if (!sys_mimeTypes)
 			continue;
 
+		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
+			auto iter = set_mimeTypes.find(*sys_mimeTypes);
+			if (iter == set_mimeTypes.end()) {
+				set_mimeTypes.insert(*sys_mimeTypes);
+				vec_mimeTypes.push_back(*sys_mimeTypes);
+			}
+		}
+	}
+
+	// TODO: Make an array for extension-only types.
+	const char *const *sys_mimeTypes = DidjTex::supportedMimeTypes_static();
+	if (sys_mimeTypes) {
 		for (; *sys_mimeTypes != nullptr; sys_mimeTypes++) {
 			auto iter = set_mimeTypes.find(*sys_mimeTypes);
 			if (iter == set_mimeTypes.end()) {
