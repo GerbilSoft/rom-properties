@@ -123,12 +123,13 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	}
 
 	// Sanity checks:
-	// - .tex files shouldn't be more than 128 KB.
-	// - Uncompressed size shouldn't be more than 1 MB.
+	// - .tex/.texs files shouldn't be more than 1 MB.
+	// - Uncompressed size shouldn't be more than 4 MB.
+	// TODO: Reduce back to 128 KB / 1 MB once full .texs support is implemented.
 	const unsigned int uncompr_size = le32_to_cpu(texHeader.uncompr_size);
-	assert(file->size() <= 128*1024);
-	assert(uncompr_size <= 1*1024*1024);
-	if (file->size() > 128*1024 || uncompr_size > 1*1024*1024) {
+	assert(file->size() <= 1*1024*1024);
+	assert(uncompr_size <= 4*1024*1024);
+	if (file->size() > 1*1024*1024 || uncompr_size > 4*1024*1024) {
 		return nullptr;
 	}
 
