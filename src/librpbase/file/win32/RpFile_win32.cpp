@@ -350,8 +350,10 @@ void RpFile::init(void)
 					uint32_t uncomp_sz;
 					bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
 					uncomp_sz = le32_to_cpu(uncomp_sz);
-					if (bRet && bytesRead == sizeof(uncomp_sz) && uncomp_sz >= liFileSize.QuadPart-(10+8)) {
-						// Uncompressed size looks valid.
+					if (bRet && bytesRead == sizeof(uncomp_sz) /*&& uncomp_sz >= liFileSize.QuadPart-(10+8)*/) {
+						// NOTE: Uncompressed size might be smaller than the real filesize
+						// in cases where gzip doesn't help much.
+						// TODO: Add better verification heuristics?
 						d->gzsz = (int64_t)uncomp_sz;
 
 						liSeekPos.QuadPart = 0;

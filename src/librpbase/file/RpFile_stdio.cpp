@@ -247,8 +247,10 @@ void RpFile::init(void)
 					uint32_t uncomp_sz;
 					size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
 					uncomp_sz = le32_to_cpu(uncomp_sz);
-					if (size == sizeof(uncomp_sz) && uncomp_sz >= real_sz-(10+8)) {
-						// Uncompressed size looks valid.
+					if (size == sizeof(uncomp_sz) /*&& uncomp_sz >= real_sz-(10+8)*/) {
+						// NOTE: Uncompressed size might be smaller than the real filesize
+						// in cases where gzip doesn't help much.
+						// TODO: Add better verification heuristics?
 						d->gzsz = (int64_t)uncomp_sz;
 
 						// Make sure the CRC32 table is initialized.
