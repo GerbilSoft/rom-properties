@@ -15,6 +15,10 @@
     allow the texture decoding functionality to be used by other programs.
   * Key Manager: Import the Korean key from Wii keys.bin if it's present.
 
+* New parsers:
+  * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
+    only the first texture of the archive is supported.
+
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
@@ -34,6 +38,8 @@
   * Fixed detection issues that caused the Nintendo DS ROM image "Live On
     Card Live-R DS" to be detected as an Xbox 360 STFS package. Reported by
     @Whovian9369.
+  * Fixed transparent gzip decompression for files where the gzipped version
+    is actually larger than the uncompressed version.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
