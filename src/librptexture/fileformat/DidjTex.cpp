@@ -154,7 +154,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	}
 
 	// Decompress the data.
-	unique_ptr<uint8_t[]> uncompr_data(new uint8_t[uncompr_size]);
+	auto uncompr_data = aligned_uptr<uint8_t>(16, uncompr_size);
 
 	// Initialize zlib.
 	z_stream strm;
@@ -243,7 +243,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
-			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
 			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGB565,
 				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
@@ -261,7 +261,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
-			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
 			imgtmp = ImageDecoder::fromLinearCI8(ImageDecoder::PXF_RGBA4444,
 				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
@@ -279,7 +279,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
-			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
 			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGB565, true,
 				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
@@ -297,7 +297,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 			}
 
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(uncompr_data.get());
-			const uint8_t *const img_buf = &uncompr_data[pal_siz];
+			const uint8_t *const img_buf = &uncompr_data.get()[pal_siz];
 			imgtmp = ImageDecoder::fromLinearCI4(ImageDecoder::PXF_RGBA4444, true,
 				width, height,
 				img_buf, img_siz, pal_buf, pal_siz);
