@@ -111,7 +111,7 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 	GetFileFormatFns(XboxXPR, 'XPR0'),
 
 	// Less common formats.
-	GetFileFormatFns(DidjTex, (uint32_t)'\x03\x00\x00\x00'),
+	GetFileFormatFns(DidjTex, (uint32_t)0x03000000),
 
 	{nullptr, nullptr, nullptr, 0}
 };
