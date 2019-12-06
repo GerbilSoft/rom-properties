@@ -312,6 +312,7 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	}
 
 	// Sanity check: XPR0 files shouldn't be more than 16 MB.
+	assert(file->size() <= 16*1024*1024);
 	if (file->size() > 16*1024*1024) {
 		return nullptr;
 	}

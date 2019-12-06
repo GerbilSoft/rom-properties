@@ -126,6 +126,21 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 			break;
 		}
 
+		case PXF_RGBA4444: {
+			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 16; i++, pal_buf16++) {
+				palette[i] = RGBA4444_to_ARGB32(le16_to_cpu(*pal_buf16));
+				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i);
+				}
+			}
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
 		case PXF_BGR555: {
 			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
 			for (unsigned int i = 0; i < 16; i++, pal_buf16++) {
@@ -344,6 +359,26 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 					tr_idx = static_cast<int>(i+0);
 				}
 				palette[i+1] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf16[1]));
+				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+1);
+				}
+			}
+			// Set the sBIT metadata.
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			img->set_sBIT(&sBIT);
+			break;
+		}
+
+		case PXF_RGBA4444: {
+			const uint16_t *pal_buf16 = reinterpret_cast<const uint16_t*>(pal_buf);
+			for (unsigned int i = 0; i < 256; i += 2, pal_buf16 += 2) {
+				palette[i+0] = RGBA4444_to_ARGB32(le16_to_cpu(pal_buf16[0]));
+				if (tr_idx < 0 && ((palette[i+0] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = static_cast<int>(i+0);
+				}
+				palette[i+1] = RGBA4444_to_ARGB32(le16_to_cpu(pal_buf16[1]));
 				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
 					// Found the transparent color.
 					tr_idx = static_cast<int>(i+1);

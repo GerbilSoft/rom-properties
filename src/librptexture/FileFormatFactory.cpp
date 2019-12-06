@@ -32,6 +32,7 @@ using std::unordered_set;
 using std::vector;
 
 // FileFormat subclasses.
+#include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/KhronosKTX.hpp"
 #include "fileformat/SegaPVR.hpp"
@@ -109,6 +110,9 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 	GetFileFormatFns(ValveVTF3, 'VTF3'),
 	GetFileFormatFns(XboxXPR, 'XPR0'),
 
+	// Less common formats.
+	GetFileFormatFns(DidjTex, (uint32_t)'\x03\x00\x00\x00'),
+
 	{nullptr, nullptr, nullptr, 0}
 };
 
@@ -152,13 +156,6 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// Magic number needs to be in host-endian.
 	magic = be32_to_cpu(magic);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-
-	// Get the file extension.
-	const string filename = file->filename();
-	const char *pExt = nullptr;
-	if (!filename.empty()) {
-		pExt = FileSystem::file_ext(filename);
-	}
 
 	// Check FileFormat subclasses that take a header at 0
 	// and definitely have a 32-bit magic number at address 0.

@@ -467,6 +467,11 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// Nintendo Badge Arcade texture
 		filetype = "NintendoBadge";
 		m_romData = new NintendoBadge(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
+		// Leapster Didj texture
+		// NOTE: Using RpTextureWrapper.
+		filetype = "DidjTex";
+		m_romData = new RpTextureWrapper(m_f_dds);
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -584,6 +589,12 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
 		fn_ctor = [](IRpFile *file) { return new NintendoBadge(file); };
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
+		// Leapster Didj texture
+		// NOTE: Increased iterations due to smaller files.
+		// NOTE: Using RpTextureWrapper.
+		max_iterations *= 10;
+		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else {
 		ASSERT_TRUE(false) << "Unknown image type.";
 	}
@@ -1479,6 +1490,21 @@ INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
 		SVR_IMAGE_TEST("trt_g00_lawn00small"),
 		SVR_IMAGE_TEST("trt_g00_river01"),
 		SVR_IMAGE_TEST("trt_g00_river02"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// NOTE: DidjTex files aren't gzipped because the texture data is
+// internally compressed using zlib.
+#define DidjTex_ICON_TEST(file) ImageDecoderTest_mode( \
+			"DidjTex/" file ".tex", \
+			"DidjTex/" file ".png")
+INSTANTIATE_TEST_CASE_P(DidjTex, ImageDecoderTest,
+	::testing::Values(
+		DidjTex_ICON_TEST("LeftArrow"),
+		DidjTex_ICON_TEST("LightOff"),
+		DidjTex_ICON_TEST("Slider"),
+		DidjTex_ICON_TEST("StaticTVImage"),
+		DidjTex_ICON_TEST("Zone1Act1Icon_Alpha"),
+		DidjTex_ICON_TEST("Zone1Act1Icon"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }

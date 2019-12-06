@@ -122,12 +122,13 @@ button.
 
 |             System            | Properties Tab | Metadata | Internal Images | External Scans |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
+| Leapster Didj .tex textures   |       Yes      |    Yes   |      Image      |       N/A      |
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
+| Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
 
 #### Texture Codecs
 * Assorted linear RGB formats, including 15-bit, 16-bit, 24-bit and 32-bit per pixel.

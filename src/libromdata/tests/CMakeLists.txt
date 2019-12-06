@@ -98,7 +98,7 @@ ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*Benchm
 # NOTE: Although the test executable is in bin/, CTest still
 # uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
 # Hence, we have to copy the files to both places.
-FOREACH(test_dir Alpha ARGB Luma RGB S3TC BC7 PVR GVR KTX VTF VTF3 tctest)
+FOREACH(test_dir Alpha ARGB Luma RGB S3TC BC7 PVR GVR KTX VTF VTF3 tctest DidjTex)
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E make_directory
@@ -115,6 +115,7 @@ FILE(GLOB_RECURSE ImageDecoderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/
 	img/ImageDecoder_data/*.png
 	img/ImageDecoder_data/*.gz
 	img/ImageDecoder_data/*.dds
+	img/ImageDecoder_data/*.tex
 	)
 FOREACH(test_image ${ImageDecoderTest_images})
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
