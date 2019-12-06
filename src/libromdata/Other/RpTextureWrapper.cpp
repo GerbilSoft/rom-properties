@@ -98,16 +98,6 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 		return;
 	}
 
-	// Read the texture's magic number.
-	uint32_t magic;
-	d->file->rewind();
-	size_t size = d->file->read(&magic, sizeof(magic));
-	if (size != sizeof(magic)) {
-		d->file->unref();
-		d->file = nullptr;
-		return;
-	}
-
 	// Create a FileFormat instance.
 	d->texture = FileFormatFactory::create(d->file);
 	if (!d->texture) {
