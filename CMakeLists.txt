@@ -57,7 +57,7 @@ SET(VERSION_STRING_WIN32 "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${V
 
 # Split Debug function.
 # Also sets the image version for Windows builds.
-INCLUDE(Win32ImageVersionLinkerFlags)
+# TODO: Move to SplitDebugInformation.cmake?
 FUNCTION(DO_SPLIT_DEBUG _target)
 	GET_TARGET_PROPERTY(_target_type ${_target} TYPE)
 	IF(TARGET ${_target} AND NOT _target_type STREQUAL "STATIC_LIBRARY")
@@ -68,11 +68,14 @@ FUNCTION(DO_SPLIT_DEBUG _target)
 			INCLUDE(SplitDebugInformation)
 			SPLIT_DEBUG_INFORMATION(${_target})
 		ENDIF(SPLIT_DEBUG)
-		# Set image version.
-		# Subprojects can override ${VERSION_MAJOR} and ${VERSION_MINOR}.
-		# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
-		# so "1.3" will actually be "1.03".
-		WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
+		IF(WIN32)
+			# Set image version.
+			# Subprojects can override ${VERSION_MAJOR} and ${VERSION_MINOR}.
+			# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
+			# so "1.3" will actually be "1.03".
+			INCLUDE(Win32ImageVersionLinkerFlags)
+			WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
+		ENDIF(WIN32)
 	ENDIF(TARGET ${_target} AND NOT _target_type STREQUAL "STATIC_LIBRARY")
 ENDFUNCTION(DO_SPLIT_DEBUG)
 
