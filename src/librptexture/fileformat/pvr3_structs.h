@@ -60,14 +60,14 @@ typedef struct _PowerVR3_Header {
 ASSERT_STRUCT(PowerVR3_Header, 52);
 
 /**
- * PVR3 flags.
+ * PowerVR3 flags.
  */
 typedef enum {
 	PVR3_FLAG_PREMULTIPLIED		= 0x02,	// Pre-multiplied alpha.
-} PVR3_Flags_t;
+} PowerVR3_Flags_t;
 
 /**
- * PVR3 pixel formats.
+ * PowerVR3 pixel formats.
  */
 typedef enum {
 	PVR3_PXF_PVRTC_2bpp_RGB		= 0,
@@ -133,20 +133,20 @@ typedef enum {
 	PVR3_PXF_ASTC_6x6x6		= 50,
 
 	PVR3_PXF_MAX
-} PVR3_Pixel_Format_t;
+} PowerVR3_Pixel_Format_t;
 
 /**
- * PVR3 color space.
+ * PowerVR3 color space.
  */
 typedef enum {
 	PVR3_COLOR_SPACE_RGB	= 0,	// Linear RGB
 	PVR3_COLOR_SPACE_sRGB	= 1,	// sRGB
 
 	PVR3_COLOR_SPACE_MAX
-} PVR3_Color_Space_t;
+} PowerVR3_Color_Space_t;
 
 /**
- * PVR3 channel type.
+ * PowerVR3 channel type.
  */
 typedef enum {
 	PVR3_CHTYPE_UBYTE_NORM	= 0,
@@ -164,7 +164,37 @@ typedef enum {
 	PVR3_CHTYPE_FLOAT	= 12,
 
 	PVR3_CHTYPE_MAX
-} PVR3_Channel_Type_t;
+} PowerVR3_Channel_Type_t;
+
+/**
+ * Metadata block header.
+ */
+typedef struct PACKED _PowerVR3_Metadata_Block_Header_t {
+	uint32_t fourCC;
+	uint32_t key;
+	uint32_t size;
+} PowerVR3_Metadata_Block_Header_t;
+
+/**
+ * Metadata keys for PowerVR3 fourCC.
+ */
+typedef enum {
+	PVR3_META_TEXTURE_ATLAS		= 0,
+	PVR3_META_NORMAL_MAP		= 1,
+	PVR3_META_CUBE_MAP		= 2,
+	PVR3_META_ORIENTATION		= 3,
+	PVR3_META_BORDER		= 4,
+	PVR3_META_PADDING		= 5,
+} PVR3_Metadata_Keys_t;
+
+/**
+ * PowerVR3 Metadata: Orientation struct.
+ */
+typedef struct PACKED _PowerVR3_Metadata_Orientation_t {
+	uint8_t x;	// 0 == increases to the right; 1 == increases to the left
+	uint8_t y;	// 0 == increases downwards; 1 == increases upwards
+	uint8_t z;	// 0 == increases inwards; 1 == increases outwards
+} PowerVR3_Metadata_Orientation;
 
 #ifdef __cplusplus
 }
