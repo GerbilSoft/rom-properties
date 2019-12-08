@@ -180,7 +180,7 @@ int GcnPartitionPrivate::loadFst(void)
 	free(fstData);	// TODO: Eliminate the extra copy?
 	if (gcnFst->hasErrors()) {
 		// FST has errors.
-		delete fst;
+		delete gcnFst;
 		q->m_lastError = EIO;
 		return -EIO;
 	}
