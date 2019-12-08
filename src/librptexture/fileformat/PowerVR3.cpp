@@ -31,6 +31,7 @@ using namespace LibRpBase;
 // C includes. (C++ namespace)
 #include "librpbase/ctypex.h"
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 namespace LibRpTexture {
@@ -61,7 +62,21 @@ class PowerVR3Private : public FileFormatPrivate
 		// (PVR3 file has the opposite endianness.)
 		bool isByteswapNeeded;
 
-		// TODO: Metadata.
+		// Is HFlip/VFlip needed?
+		// Some textures may be stored upside-down due to
+		// the way GL texture coordinates are interpreted.
+		// Default without orientation metadata is HFlip=false, VFlip=false
+		uint8_t isFlipNeeded;
+		enum FlipBits : uint8_t {
+			FLIP_NONE	= 0,
+			FLIP_V		= (1 << 0),
+			FLIP_H		= (1 << 1),
+			FLIP_HV		= FLIP_H | FLIP_V,
+		};
+
+		// Metadata.
+		bool orientation_valid;
+		PowerVR3_Metadata_Orientation orientation;
 
 		// Texture data start address.
 		unsigned int texDataStartAddr;
@@ -72,6 +87,12 @@ class PowerVR3Private : public FileFormatPrivate
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadImage(int mip);
+
+		/**
+		 * Load PowerVR3 metadata.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadPvr3Metadata(void);
 };
 
 /** PowerVR3Private **/
@@ -80,10 +101,13 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 	: super(q, file)
 	, img(nullptr)
 	, isByteswapNeeded(false)
+	, isFlipNeeded(FLIP_NONE)
+	, orientation_valid(false)
 	, texDataStartAddr(0)
 {
 	// Clear the PowerVR3 header struct.
 	memset(&pvr3Header, 0, sizeof(pvr3Header));
+	memset(&orientation, 0, sizeof(orientation));
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
 }
 
@@ -155,6 +179,100 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	return nullptr;
 }
 
+/**
+ * Load PowerVR3 metadata.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int PowerVR3Private::loadPvr3Metadata(void)
+{
+	if (pvr3Header.metadata_size == 0) {
+		// No metadata.
+		return 0;
+	} else if (pvr3Header.metadata_size <= sizeof(PowerVR3_Metadata_Block_Header_t)) {
+		// Metadata is present, but it's too small...
+		return -EIO;
+	}
+
+	// Parse the additional metadata.
+	int ret = 0;
+	int sz_left = static_cast<int>(pvr3Header.metadata_size);
+	file->seek(sizeof(pvr3Header));
+	PowerVR3_Metadata_Block_Header_t meta_header;
+	while (sz_left > 0) {
+		size_t size = file->read(&meta_header, sizeof(meta_header));
+		if (size != sizeof(meta_header)) {
+			// Read error.
+			ret = -file->lastError();
+			if (ret == 0) {
+				ret = -EIO;
+			}
+			break;
+		}
+		sz_left -= (int)size;
+
+		// Byteswap the header, if necessary.
+		if (isByteswapNeeded) {
+			meta_header.fourCC = __swab32(meta_header.fourCC);
+			meta_header.key    = __swab32(meta_header.key);
+			meta_header.size   = __swab32(meta_header.size);
+		}
+
+		// Check the fourCC.
+		if (meta_header.fourCC != PVR3_VERSION_HOST) {
+			// Not supported.
+			sz_left -= (int)meta_header.size;
+			file->seek(file->tell() + meta_header.size);
+			continue;
+		}
+
+		// Check the key.
+		switch (meta_header.key) {
+			case PVR3_META_ORIENTATION: {
+				// Logical orientation.
+				orientation_valid = false;
+				size = file->read(&orientation, sizeof(orientation));
+				if (size == sizeof(orientation)) {
+					// Read successfully.
+					orientation_valid = true;
+					sz_left -= (int)size;
+
+					// Set the flip bits.
+					// TODO: Z flip?
+					isFlipNeeded = 0;
+					if (orientation.x != 0) {
+						isFlipNeeded |= FLIP_H;
+					}
+					if (orientation.y != 0) {
+						isFlipNeeded |= FLIP_V;
+					}
+				} else {
+					// Read error.
+					sz_left = 0;
+				}
+				break;
+			}
+
+			default:
+			case PVR3_META_TEXTURE_ATLAS:
+			case PVR3_META_NORMAL_MAP:
+			case PVR3_META_CUBE_MAP:
+			case PVR3_META_BORDER:
+			case PVR3_META_PADDING:
+				// TODO: Not supported.
+				sz_left -= (int)meta_header.size;
+				ret = file->seek(file->tell() + meta_header.size);
+				if (ret != 0) {
+					// Seek error.
+					sz_left = 0;
+				}
+				break;
+		}
+	}
+
+	// Metadata parsed.
+	return ret;
+}
+
 /** PowerVR3 **/
 
 /**
@@ -190,7 +308,6 @@ PowerVR3::PowerVR3(IRpFile *file)
 	}
 
 	// Verify the PVR3 magic/version.
-	printf("ver: %08X, host: %08X\n", d->pvr3Header.version, PVR3_VERSION_HOST);
 	if (d->pvr3Header.version == PVR3_VERSION_HOST) {
 		// Host-endian. Byteswapping is not needed.
 		d->isByteswapNeeded = false;
@@ -232,6 +349,11 @@ PowerVR3::PowerVR3(IRpFile *file)
 
 	// Texture data start address.
 	d->texDataStartAddr = sizeof(d->pvr3Header) + d->pvr3Header.metadata_size;
+
+	// Load PowerVR metadata.
+	// This function checks for the orientation block
+	// and sets the HFlip/VFlip values as necessary.
+	d->loadPvr3Metadata();
 
 	// Cache the dimensions for the FileFormat base class.
 	d->dimensions[0] = d->pvr3Header.width;
@@ -505,87 +627,28 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	fields->addField_string_numeric(C_("PowerVR3", "# of Faces"),
 		pvr3Header->num_faces);
 
-	if (pvr3Header->metadata_size > sizeof(PowerVR3_Metadata_Block_Header_t)) {
-		// Parse the additional metadata.
-		int sz_left = static_cast<int>(pvr3Header->metadata_size);
-		d->file->seek(sizeof(*pvr3Header));
-		PowerVR3_Metadata_Block_Header_t meta_header;
-		while (sz_left > 0) {
-			size_t size = d->file->read(&meta_header, sizeof(meta_header));
-			if (size != sizeof(meta_header)) {
-				// Read error.
-				break;
-			}
-			sz_left -= (int)size;
-
-			// Byteswap the header, if necessary.
-			if (d->isByteswapNeeded) {
-				meta_header.fourCC = __swab32(meta_header.fourCC);
-				meta_header.key    = __swab32(meta_header.key);
-				meta_header.size   = __swab32(meta_header.size);
-			}
-
-			// Check the fourCC.
-			if (meta_header.fourCC != PVR3_VERSION_HOST) {
-				// Not supported.
-				sz_left -= (int)meta_header.size;
-				d->file->seek(d->file->tell() + meta_header.size);
-				continue;
-			}
-
-			// Check the key.
-			switch (meta_header.key) {
-				case PVR3_META_ORIENTATION: {
-					// Logical orientation.
-					// TODO: This should be checked in the constructor
-					// like KTXorientation for KTX.
-					PowerVR3_Metadata_Orientation orientation;
-					size = d->file->read(&orientation, sizeof(orientation));
-					if (size != sizeof(orientation)) {
-						// Read error.
-						sz_left = 0;
-					}
-					sz_left -= (int)size;
-
-					// Using KTX-style formatting.
-					// TODO: Is 1D set using height or width?
-					char str[16];
-					if (pvr3Header->depth > 1) {
-						snprintf(str, sizeof(str), "S=%c,T=%c,R=%c",
-							(orientation.x != 0 ? 'l' : 'r'),
-							(orientation.y != 0 ? 'u' : 'd'),
-							(orientation.z != 0 ? 'o' : 'i'));
-					} else if (pvr3Header->height > 1) {
-						snprintf(str, sizeof(str), "S=%c,T=%c",
-							(orientation.x != 0 ? 'l' : 'r'),
-							(orientation.y != 0 ? 'u' : 'd'));
-					} else {
-						snprintf(str, sizeof(str), "S=%c",
-							(orientation.x != 0 ? 'l' : 'r'));
-					}
-					fields->addField_string(C_("PVR3", "Orientation"), str);
-					break;
-				}
-
-				default:
-				case PVR3_META_TEXTURE_ATLAS:
-				case PVR3_META_NORMAL_MAP:
-				case PVR3_META_CUBE_MAP:
-				case PVR3_META_BORDER:
-				case PVR3_META_PADDING:
-					// TODO: Not supported.
-					sz_left -= (int)meta_header.size;
-					int ret = d->file->seek(d->file->tell() + meta_header.size);
-					if (ret != 0) {
-						// Seek error.
-						sz_left = 0;
-					}
-					break;
-			}
+	// Orientation.
+	if (d->orientation_valid) {
+		// Using KTX-style formatting.
+		// TODO: Is 1D set using height or width?
+		char str[16];
+		if (pvr3Header->depth > 1) {
+			snprintf(str, sizeof(str), "S=%c,T=%c,R=%c",
+				(d->orientation.x != 0 ? 'l' : 'r'),
+				(d->orientation.y != 0 ? 'u' : 'd'),
+				(d->orientation.z != 0 ? 'o' : 'i'));
+		} else if (pvr3Header->height > 1) {
+			snprintf(str, sizeof(str), "S=%c,T=%c",
+				(d->orientation.x != 0 ? 'l' : 'r'),
+				(d->orientation.y != 0 ? 'u' : 'd'));
+		} else {
+			snprintf(str, sizeof(str), "S=%c",
+				(d->orientation.x != 0 ? 'l' : 'r'));
 		}
+		fields->addField_string(C_("PowerVR3", "Orientation"), str);
 	}
 
-	// TODO: Additional metadata.
+	// TODO: Additional fields.
 
 	// Finished reading the field data.
 	return (fields->count() - initial_count);
