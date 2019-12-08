@@ -29,8 +29,8 @@ using namespace LibRpBase;
 #include "decoder/ImageDecoder.hpp"
 
 // C includes. (C++ namespace)
+#include "librpbase/ctypex.h"
 #include <cassert>
-#include <cerrno>
 #include <cstring>
 
 namespace LibRpTexture {
@@ -202,10 +202,10 @@ PowerVR3::PowerVR3(IRpFile *file)
 
 		// Pixel format is technically 64-bit, so we have to
 		// byteswap *and* swap both DWORDs.
-		const uint32_t channel_order	= __swab32(d->pvr3Header.pixel_format);
-		const uint32_t pixel_format	= __swab32(d->pvr3Header.channel_order);
+		const uint32_t channel_depth	= __swab32(d->pvr3Header.pixel_format);
+		const uint32_t pixel_format	= __swab32(d->pvr3Header.channel_depth);
 		d->pvr3Header.pixel_format	= pixel_format;
-		d->pvr3Header.channel_order	= channel_order;
+		d->pvr3Header.channel_depth	= channel_depth;
 
 		d->pvr3Header.color_space	= __swab32(d->pvr3Header.color_space);
 		d->pvr3Header.channel_type	= __swab32(d->pvr3Header.channel_type);
@@ -306,6 +306,10 @@ const char *PowerVR3::textureFormatName(void) const
  */
 const char *PowerVR3::pixelFormat(void) const
 {
+	// TODO: Localization.
+#define C_(ctx, str) str
+#define NOP_C_(ctx, str) str
+
 	RP_D(const PowerVR3);
 	if (!d->isValid)
 		return nullptr;
@@ -315,7 +319,7 @@ const char *PowerVR3::pixelFormat(void) const
 	}
 
 	// TODO: Localization?
-	if (d->pvr3Header.channel_order == 0) {
+	if (d->pvr3Header.channel_depth == 0) {
 		// Compressed texture format.
 		static const char *const pvr3PxFmt_tbl[] = {
 			// 0
@@ -356,10 +360,38 @@ const char *PowerVR3::pixelFormat(void) const
 		return d->invalid_pixel_format;
 	}
 
-	// TODO: Parse the uncompressed pixel format.
-	snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
-		 sizeof(d->invalid_pixel_format),
-		"Uncompressed: 0x%08X 0x%08X", d->pvr3Header.pixel_format, d->pvr3Header.channel_order);
+	// Uncompressed pixel formats.
+	// These are literal channel identifiers, e.g. 'rgba',
+	// followed by a color depth value for each channel.
+
+	// NOTE: Pixel formats are stored in literal order in
+	// little-endian files, so the low byte is the first channel.
+	// TODO: Verify big-endian.
+
+	char s_pxf[8], s_chcnt[16];
+	char *p_pxf = s_pxf;
+	char *p_chcnt = s_chcnt;
+
+	uint32_t pixel_format = d->pvr3Header.pixel_format;
+	uint32_t channel_depth = d->pvr3Header.channel_depth;
+	for (unsigned int i = 0; i < 4; i++, pixel_format >>= 8, channel_depth >>= 8) {
+		uint8_t pxf = (pixel_format & 0xFF);
+		if (pxf == 0)
+			break;
+
+		*p_pxf++ = TOUPPER(pxf);
+		p_chcnt += sprintf(p_chcnt, "%u", channel_depth & 0xFF);
+	}
+	*p_pxf = '\0';
+	*p_chcnt = '\0';
+
+	if (s_pxf[0] != '\0') {
+		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
+			 sizeof(d->invalid_pixel_format),
+			 "%s%s", s_pxf, s_chcnt);
+	} else {
+		strcpy(const_cast<PowerVR3Private*>(d)->invalid_pixel_format, C_("RomData", "Unknown"));
+	}
 	return d->invalid_pixel_format;
 }
 
