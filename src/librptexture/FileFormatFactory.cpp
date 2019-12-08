@@ -35,6 +35,7 @@ using std::vector;
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/KhronosKTX.hpp"
+#include "fileformat/PowerVR3.hpp"
 #include "fileformat/SegaPVR.hpp"
 #include "fileformat/ValveVTF.hpp"
 #include "fileformat/ValveVTF3.hpp"
@@ -101,6 +102,8 @@ const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileForm
 #ifdef ENABLE_GL
 	GetFileFormatFns(KhronosKTX, (uint32_t)'\xABKTX'),
 #endif /* ENABLE_GL */
+	GetFileFormatFns(PowerVR3, 'PVR\x03'),
+	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),
 	GetFileFormatFns(SegaPVR, 'GVRT'),
 	GetFileFormatFns(SegaPVR, 'PVRX'),
