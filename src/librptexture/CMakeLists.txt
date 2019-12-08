@@ -22,6 +22,7 @@ SET(librptexture_SRCS
 	fileformat/FileFormat.cpp
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
+	fileformat/PowerVR3.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/ValveVTF.cpp
 	fileformat/ValveVTF3.cpp
@@ -46,6 +47,7 @@ SET(librptexture_H
 	fileformat/FileFormat_decl.hpp
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
+	fileformat/PowerVR3.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/ValveVTF.hpp
 	fileformat/ValveVTF3.hpp
@@ -54,6 +56,7 @@ SET(librptexture_H
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
 	fileformat/pvr_structs.h
+	fileformat/pvr3_structs.h
 	fileformat/vtf_structs.h
 	fileformat/vtf3_structs.h
 	fileformat/xbox_xpr_structs.h
