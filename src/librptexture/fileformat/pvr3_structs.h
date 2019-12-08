@@ -41,11 +41,11 @@ typedef struct _PowerVR3_Header {
 	// Pixel format is split into two 32-bit values.
 	// If the Hi DWORD is 0, the Lo DWORD contains a
 	// PVR3_Pixel_Format_t value.
-	// Otherwise, the Hi DWORD contains the characters
+	// Otherwise, the Lo DWORD contains the characters
 	// 'r','g','b','a','\0' arranged in channel order,
-	// and the Lo DWORD has corresponding channel bit counts.
+	// and the Hi DWORD has corresponding channel bit counts.
 	uint32_t pixel_format;	// See PVR3_Pixel_Format_t.
-	uint32_t channel_order;	// If non-zero, this is linear RGB.
+	uint32_t channel_depth;	// If non-zero, this is linear RGB.
 
 	uint32_t color_space;	// See PVR3_Color_Space_t.
 	uint32_t channel_type;	// See PVR3_Channel_Type_t.
