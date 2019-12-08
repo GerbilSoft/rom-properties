@@ -74,7 +74,7 @@ class KeyStoreUIPrivate
 
 		// Sections.
 		struct Section {
-			string name;
+			//string name;		// NOTE: Not actually used...
 			int keyIdxStart;	// Starting index in keys.
 			int keyCount;		// Number of keys.
 		};
@@ -961,7 +961,9 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 			}
 			new_value = convKey;
 		}
-	} else {
+	}
+
+	if (new_value.empty()) {
 		// Hexadecimal only.
 		// TODO: Validate it here? We're already
 		// using a validator in the UI...
@@ -1409,7 +1411,6 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const char *filename)
 
 			case 0x3D:
 				// KeyX, KeyY, and KeyNormal are available.
-				// TODO: Optimize Y/N cases by setting an array pointer?
 				switch (aesKey->type) {
 					case 'X': {
 						static const uint8_t keys_Slot0x3DKeyX[] = {
