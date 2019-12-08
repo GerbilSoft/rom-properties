@@ -434,6 +434,7 @@ typedef enum {
 	VS_FF_SPECIALBUILD = 32,
 } VS_FileFlags;
 
+// updated from: https://source.winehq.org/git/wine.git/blob/7d77d330a5b60be918dbf17d9d9ca357d93bff29:/include/verrsrc.h
 typedef enum {
 	VOS_UNKNOWN		= 0,
 
