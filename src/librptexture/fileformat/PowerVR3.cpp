@@ -433,7 +433,7 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 
 	const PowerVR3_Header *const pvr3Header = &d->pvr3Header;
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 6);	// Maximum of 6 fields. (TODO)
+	fields->reserve(initial_count + 7);	// Maximum of 7 fields. (TODO)
 
 	// TODO: Handle PVR 1.0 and 2.0 headers.
 	fields->addField_string(C_("PowerVR3", "Version"), "3.0.0");
