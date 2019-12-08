@@ -505,6 +505,86 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	fields->addField_string_numeric(C_("PowerVR3", "# of Faces"),
 		pvr3Header->num_faces);
 
+	if (pvr3Header->metadata_size > sizeof(PowerVR3_Metadata_Block_Header_t)) {
+		// Parse the additional metadata.
+		int sz_left = static_cast<int>(pvr3Header->metadata_size);
+		d->file->seek(sizeof(*pvr3Header));
+		PowerVR3_Metadata_Block_Header_t meta_header;
+		while (sz_left > 0) {
+			size_t size = d->file->read(&meta_header, sizeof(meta_header));
+			if (size != sizeof(meta_header)) {
+				// Read error.
+				break;
+			}
+			sz_left -= (int)size;
+
+			// Byteswap the header, if necessary.
+			if (d->isByteswapNeeded) {
+				meta_header.fourCC = __swab32(meta_header.fourCC);
+				meta_header.key    = __swab32(meta_header.key);
+				meta_header.size   = __swab32(meta_header.size);
+			}
+
+			// Check the fourCC.
+			if (meta_header.fourCC != PVR3_VERSION_HOST) {
+				// Not supported.
+				sz_left -= (int)meta_header.size;
+				d->file->seek(d->file->tell() + meta_header.size);
+				continue;
+			}
+
+			// Check the key.
+			switch (meta_header.key) {
+				case PVR3_META_ORIENTATION: {
+					// Logical orientation.
+					// TODO: This should be checked in the constructor
+					// like KTXorientation for KTX.
+					PowerVR3_Metadata_Orientation orientation;
+					size = d->file->read(&orientation, sizeof(orientation));
+					if (size != sizeof(orientation)) {
+						// Read error.
+						sz_left = 0;
+					}
+					sz_left -= (int)size;
+
+					// Using KTX-style formatting.
+					// TODO: Is 1D set using height or width?
+					char str[16];
+					if (pvr3Header->depth > 1) {
+						snprintf(str, sizeof(str), "S=%c,T=%c,R=%c",
+							(orientation.x != 0 ? 'l' : 'r'),
+							(orientation.y != 0 ? 'u' : 'd'),
+							(orientation.z != 0 ? 'o' : 'i'));
+					} else if (pvr3Header->height > 1) {
+						snprintf(str, sizeof(str), "S=%c,T=%c",
+							(orientation.x != 0 ? 'l' : 'r'),
+							(orientation.y != 0 ? 'u' : 'd'));
+					} else {
+						snprintf(str, sizeof(str), "S=%c",
+							(orientation.x != 0 ? 'l' : 'r'));
+					}
+					fields->addField_string(C_("PVR3", "Orientation"), str);
+					break;
+				}
+
+				default:
+				case PVR3_META_TEXTURE_ATLAS:
+				case PVR3_META_NORMAL_MAP:
+				case PVR3_META_CUBE_MAP:
+				case PVR3_META_BORDER:
+				case PVR3_META_PADDING:
+					// TODO: Not supported.
+					sz_left -= (int)meta_header.size;
+					int ret = d->file->seek(d->file->tell() + meta_header.size);
+					if (ret != 0) {
+						// Seek error.
+						sz_left = 0;
+					}
+					break;
+			}
+		}
+	}
+
 	// TODO: Additional metadata.
 
 	// Finished reading the field data.
