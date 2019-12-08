@@ -348,7 +348,7 @@ bool isOnBadFS(const char *filename, bool netFS)
 		return false;
 	}
 
-	switch (sfbuf.f_type) {
+	switch (static_cast<uint32_t>(sfbuf.f_type)) {
 		case DEBUGFS_MAGIC:
 		case DEVPTS_SUPER_MAGIC:
 		case EFIVARFS_MAGIC:
