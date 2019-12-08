@@ -151,9 +151,19 @@ int NintendoLanguage::getN3DSLanguage(void)
 		case 'es':
 			return N3DS_LANG_SPANISH;
 		case 'zh':
-			// TODO: Simplified vs. Traditional?
-			// May need to check the country code.
-			return N3DS_LANG_CHINESE_SIMP;
+			// Check the country code for simplified vs. traditional.
+			// NOTE: Defaulting to traditional if country code isn't available,
+			// since Nintendo products more commonly have traditional Chinese
+			// translations compared to simplified Chinese.
+			switch (SystemRegion::getCountryCode()) {
+				case 'CN':
+				case 'SG':
+					return N3DS_LANG_CHINESE_SIMP;
+				case 'TW':
+				case 'HK':
+				default:
+					return N3DS_LANG_CHINESE_TRAD;
+			}
 		case 'ko':
 			return N3DS_LANG_KOREAN;
 		case 'nl':
