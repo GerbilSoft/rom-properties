@@ -34,6 +34,10 @@ using namespace LibRpBase;
 #include <cerrno>
 #include <cstring>
 
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
+
 namespace LibRpTexture {
 
 FILEFORMAT_IMPL(PowerVR3)
@@ -193,61 +197,65 @@ int PowerVR3Private::loadPvr3Metadata(void)
 		return -EIO;
 	}
 
+	// Sanity check: Metadata shouldn't be more than 128 KB.
+	assert(pvr3Header.metadata_size <= 128*1024);
+	if (pvr3Header.metadata_size > 128*1024) {
+		return -ENOMEM;
+	}
+
 	// Parse the additional metadata.
 	int ret = 0;
-	int sz_left = static_cast<int>(pvr3Header.metadata_size);
-	file->seek(sizeof(pvr3Header));
-	PowerVR3_Metadata_Block_Header_t meta_header;
-	while (sz_left > 0) {
-		size_t size = file->read(&meta_header, sizeof(meta_header));
-		if (size != sizeof(meta_header)) {
-			// Read error.
-			ret = -file->lastError();
-			if (ret == 0) {
-				ret = -EIO;
-			}
-			break;
-		}
-		sz_left -= (int)size;
+	unique_ptr<uint8_t[]> buf(new uint8_t[pvr3Header.metadata_size]);
+	size_t size = file->seekAndRead(sizeof(pvr3Header), buf.get(), pvr3Header.metadata_size);
+	if (size != pvr3Header.metadata_size) {
+		return -EIO;
+	}
+
+	uint8_t *p = buf.get();
+	uint8_t *const p_end = p + pvr3Header.metadata_size;
+	// FIXME: Might overflow...
+	while (p + sizeof(PowerVR3_Metadata_Block_Header_t) < p_end) {
+		PowerVR3_Metadata_Block_Header_t *const pHdr =
+			reinterpret_cast<PowerVR3_Metadata_Block_Header_t*>(p);
+		p += sizeof(*pHdr);
 
 		// Byteswap the header, if necessary.
 		if (isByteswapNeeded) {
-			meta_header.fourCC = __swab32(meta_header.fourCC);
-			meta_header.key    = __swab32(meta_header.key);
-			meta_header.size   = __swab32(meta_header.size);
+			pHdr->fourCC = __swab32(pHdr->fourCC);
+			pHdr->key    = __swab32(pHdr->key);
+			pHdr->size   = __swab32(pHdr->size);
 		}
 
 		// Check the fourCC.
-		if (meta_header.fourCC != PVR3_VERSION_HOST) {
+		if (pHdr->fourCC != PVR3_VERSION_HOST) {
 			// Not supported.
-			sz_left -= (int)meta_header.size;
-			file->seek(file->tell() + meta_header.size);
+			p += pHdr->size;
 			continue;
 		}
 
 		// Check the key.
-		switch (meta_header.key) {
+		switch (pHdr->key) {
 			case PVR3_META_ORIENTATION: {
 				// Logical orientation.
-				orientation_valid = false;
-				size = file->read(&orientation, sizeof(orientation));
-				if (size == sizeof(orientation)) {
-					// Read successfully.
-					orientation_valid = true;
-					sz_left -= (int)size;
+				if (p + sizeof(orientation) > p_end) {
+					// Out of bounds...
+					p = p_end;
+					break;
+				}
 
-					// Set the flip bits.
-					// TODO: Z flip?
-					isFlipNeeded = 0;
-					if (orientation.x != 0) {
-						isFlipNeeded |= FLIP_H;
-					}
-					if (orientation.y != 0) {
-						isFlipNeeded |= FLIP_V;
-					}
-				} else {
-					// Read error.
-					sz_left = 0;
+				// Copy the orientation bytes.
+				memcpy(&orientation, p, sizeof(orientation));
+				orientation_valid = true;
+				p += sizeof(orientation);
+
+				// Set the flip bits.
+				// TODO: Z flip?
+				isFlipNeeded = 0;
+				if (orientation.x != 0) {
+					isFlipNeeded |= FLIP_H;
+				}
+				if (orientation.y != 0) {
+					isFlipNeeded |= FLIP_V;
 				}
 				break;
 			}
@@ -259,12 +267,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
 			case PVR3_META_BORDER:
 			case PVR3_META_PADDING:
 				// TODO: Not supported.
-				sz_left -= (int)meta_header.size;
-				ret = file->seek(file->tell() + meta_header.size);
-				if (ret != 0) {
-					// Seek error.
-					sz_left = 0;
-				}
+				p += pHdr->size;
 				break;
 		}
 	}
