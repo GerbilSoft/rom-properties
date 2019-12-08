@@ -55,11 +55,12 @@ IF(VERSION_DEVEL)
 ENDIF(VERSION_DEVEL)
 SET(VERSION_STRING_WIN32 "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${VERSION_DEVEL}")
 
-# Split Debug macro.
+# Split Debug function.
 # Also sets the image version for Windows builds.
 INCLUDE(Win32ImageVersionLinkerFlags)
-MACRO(DO_SPLIT_DEBUG _target)
-	IF(TARGET ${_target})
+FUNCTION(DO_SPLIT_DEBUG _target)
+	GET_TARGET_PROPERTY(_target_type ${_target} TYPE)
+	IF(TARGET ${_target} AND NOT _target_type STREQUAL "STATIC_LIBRARY")
 		# Split debug information.
 		INCLUDE(SetMSVCDebugPath)
 		SET_MSVC_DEBUG_PATH(${_target})
@@ -72,8 +73,8 @@ MACRO(DO_SPLIT_DEBUG _target)
 		# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
 		# so "1.3" will actually be "1.03".
 		WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
-	ENDIF(TARGET ${_target})
-ENDMACRO(DO_SPLIT_DEBUG)
+	ENDIF(TARGET ${_target} AND NOT _target_type STREQUAL "STATIC_LIBRARY")
+ENDFUNCTION(DO_SPLIT_DEBUG)
 
 # Git version information.
 FIND_PROGRAM(POSIX_SH sh)
