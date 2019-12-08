@@ -8,7 +8,6 @@
 
 #include "config.librpbase.h"
 #include "config.libromdata.h"
-#include "config.librptexture.h"
 
 // Google Test
 #include "gtest/gtest.h"
@@ -422,14 +421,12 @@ void ImageDecoderTest::decodeTest_internal(void)
 		// NOTE: Using RpTextureWrapper.
 		filetype = "PVR";
 		m_romData = new RpTextureWrapper(m_f_dds);
-#ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// NOTE: Using RpTextureWrapper.
 		filetype = "KTX";
 		m_romData = new RpTextureWrapper(m_f_dds);
-#endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
 		// NOTE: Using RpTextureWrapper.
@@ -541,13 +538,11 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// PVR/GVR/SVR image
 		// NOTE: Using RpTextureWrapper.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-#ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
 		// NOTE: Using RpTextureWrapper.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-#endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
 		// NOTE: Using RpTextureWrapper.
@@ -854,7 +849,6 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 			"GVR/weeklytitle.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-#ifdef ENABLE_GL
 // KTX tests.
 INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 	::testing::Values(
@@ -914,7 +908,6 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 			"KTX/rgba.png"))
 
 	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_GL */
 
 // Valve VTF tests. (all formats)
 INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
@@ -1022,7 +1015,6 @@ INSTANTIATE_TEST_CASE_P(VTF3_S3TC, ImageDecoderTest,
 			"VTF3/elevator_screen_colour.ps3.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-#ifdef ENABLE_GL
 // Test images from texture-compressor.
 // Reference: https://github.com/TimvanScherpenzeel/texture-compressor
 INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
@@ -1034,7 +1026,6 @@ INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
 			"tctest/example-etc2.ktx.gz",
 			"tctest/example-etc2.ktx.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_GL */
 
 // texture-compressor tests. (S3TC)
 INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,

@@ -74,9 +74,6 @@ ENDIF(WIN32)
 # TODO: Tri-state like UI frontends.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
-# Enable OpenGL for Khronos KTX support.
-OPTION(ENABLE_GL "Enable OpenGL for Khronos KTX support." ON)
-
 # Enable UnICE68 for Atari ST SNDH files. (GPLv3)
 OPTION(ENABLE_UNICE68 "Enable UnICE68 for Atari ST SNDH files. (GPLv3)" ON)
 

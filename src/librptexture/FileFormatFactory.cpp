@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
-#include "librptexture/config.librptexture.h"
 
 #include "FileFormatFactory.hpp"
 #include "fileformat/FileFormat.hpp"
@@ -99,9 +98,7 @@ class FileFormatFactoryPrivate
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
-#ifdef ENABLE_GL
 	GetFileFormatFns(KhronosKTX, (uint32_t)'\xABKTX'),
-#endif /* ENABLE_GL */
 	GetFileFormatFns(PowerVR3, 'PVR\x03'),
 	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),
