@@ -37,7 +37,9 @@ using namespace LibRpBase;
 // C++ includes.
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::vector;
 
@@ -922,7 +924,7 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 
 	const PowerVR3_Header *const pvr3Header = &d->pvr3Header;
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 7);	// Maximum of 7 fields. (TODO)
+	fields->reserve(initial_count + 8);	// Maximum of 8 fields.
 
 	// TODO: Handle PVR 1.0 and 2.0 headers.
 	fields->addField_string(C_("PowerVR3", "Version"), "3.0.0");
@@ -946,6 +948,17 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 #endif
 	}
 	fields->addField_string(C_("PowerVR3", "Endianness"), endian_str);
+
+	// Flags.
+	static const char *const flags_names[] = {
+		nullptr,
+		NOP_C_("PowerVR3|Flags", "Premultipled Alpha"),
+	};
+	// TODO: i18n
+	vector<string> *const v_flags_names = RomFields::strArrayToVector(
+		/*"PowerVR3|Flags",*/ flags_names, ARRAY_SIZE(flags_names));
+	fields->addField_bitfield(C_("PowerVR", "Flags"),
+		v_flags_names, 3, pvr3Header->flags);
 
 	// Color space.
 	static const char *const pvr3_colorspace_tbl[] = {
