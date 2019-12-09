@@ -323,9 +323,13 @@ void ValveVTFPrivate::getMipmapInfo(void)
 
 	// Resize based on mipmap count.
 	unsigned int mipmapCount = vtfHeader.mipmapCount;
+	assert(mipmapCount <= 128);
 	if (mipmapCount == 0) {
 		// No mipmaps == one image.
 		mipmapCount = 1;
+	} else if (mipmapCount > 128) {
+		// Too many mipmaps...
+		return;
 	}
 
 	// Starting address.
