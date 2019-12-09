@@ -131,6 +131,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl[] = {
 	//{'\0\0\0i', 0x00000008, ImageDecoder::PXF_I8,		8},
 	//{'\0\0\0r', 0x00000008, ImageDecoder::PXF_R8,		8},
 	{'\0\0\0a', 0x00000008, ImageDecoder::PXF_A8,		8},
+	{ '\0\0al', 0x00000808, ImageDecoder::PXF_A8L8,		16},
 	{ '\0\0gr', 0x00000808, ImageDecoder::PXF_GR88,		16},
 	{  '\0bgr', 0x00080808, ImageDecoder::PXF_BGR888,	24},
 	{   'abgr', 0x08080808, ImageDecoder::PXF_ABGR8888,	32},
