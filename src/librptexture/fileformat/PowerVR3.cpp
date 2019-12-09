@@ -35,8 +35,11 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
+#include <vector>
 using std::unique_ptr;
+using std::vector;
 
 namespace LibRpTexture {
 
@@ -56,8 +59,9 @@ class PowerVR3Private : public FileFormatPrivate
 		// PVR3 header.
 		PowerVR3_Header pvr3Header;
 
-		// Decoded image.
-		rp_image *img;
+		// Decoded mipmaps.
+		// Mipmap 0 is the full image.
+		vector<rp_image*> mipmaps;
 
 		// Invalid pixel format message.
 		char invalid_pixel_format[40];
@@ -171,7 +175,6 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl[] = {
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 	: super(q, file)
-	, img(nullptr)
 	, isByteswapNeeded(false)
 	, isFlipNeeded(FLIP_NONE)
 	, orientation_valid(false)
@@ -185,7 +188,7 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 
 PowerVR3Private::~PowerVR3Private()
 {
-	delete img;
+	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { delete img; });
 }
 
 /**
@@ -195,9 +198,22 @@ PowerVR3Private::~PowerVR3Private()
  */
 const rp_image *PowerVR3Private::loadImage(int mip)
 {
-	if (img) {
+	int mipmapCount = pvr3Header.mipmap_count;
+	if (mipmapCount <= 0) {
+		// No mipmaps == one image.
+		mipmapCount = 1;
+	}
+
+	assert(mip >= 0);
+	assert(mip < mipmapCount);
+	if (mip < 0 || mip >= mipmapCount) {
+		// Invalid mipmap number.
+		return nullptr;
+	}
+
+	if (!mipmaps.empty() && mipmaps[mip] != nullptr) {
 		// Image has already been loaded.
-		return img;
+		return mipmaps[mip];
 	} else if (!this->file || !this->isValid) {
 		// Can't load the image.
 		return nullptr;
@@ -241,17 +257,10 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		return nullptr;
 	}
 
-	// NOTE: Mipmaps are stored *after* the main image.
-	// Hence, no mipmap processing is necessary.
-
-	// TODO: Support mipmaps.
-	if (mip != 0) {
-		return nullptr;
-	}
-
 	// Handle a 1D texture as a "width x 1" 2D texture.
 	// NOTE: Handling a 3D texture as a single 2D texture.
-	const int height = (pvr3Header.height > 0 ? pvr3Header.height : 1);
+	int width = pvr3Header.width;
+	int height = (pvr3Header.height > 0 ? pvr3Header.height : 1);
 
 	// Calculate the expected size.
 	uint32_t expected_size;
@@ -284,21 +293,40 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		return nullptr;
 	}
 
+	// If we're requesting a mipmap level higher than 0 (full image),
+	// adjust the start address, expected size, and dimensions.
+	unsigned int start_addr = texDataStartAddr;
+	for (; mip > 0; mip--) {
+		width /= 2;
+		height /= 2;
+
+		assert(width > 0);
+		assert(height > 0);
+		if (width <= 0 || height <= 0) {
+			// Mipmap size calculation error...
+			return nullptr;
+		}
+
+		start_addr += expected_size;
+		expected_size /= 4;
+	}
+
 	// Verify file size.
-	if ((texDataStartAddr + expected_size) > file_sz) {
+	if ((start_addr + expected_size) > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
 
 	// Read the texture data.
 	auto buf = aligned_uptr<uint8_t>(16, expected_size);
-	size_t size = file->seekAndRead(texDataStartAddr, buf.get(), expected_size);
+	size_t size = file->seekAndRead(start_addr, buf.get(), expected_size);
 	if (size != expected_size) {
 		// Seek and/or read error.
 		return nullptr;
 	}
 
 	// Decode the image.
+	rp_image *img = nullptr;
 	if (pvr3Header.channel_depth != 0) {
 		// Uncompressed format.
 		assert(fmtLkup != nullptr);
@@ -313,7 +341,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// 8-bit
 				img = ImageDecoder::fromLinear8(
 					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
-					pvr3Header.width, height,
+					width, height,
 					buf.get(), expected_size);
 				break;
 
@@ -322,7 +350,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// 15/16-bit
 				img = ImageDecoder::fromLinear16(
 					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
-					pvr3Header.width, height,
+					width, height,
 					reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
 				break;
 
@@ -330,7 +358,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// 24-bit
 				img = ImageDecoder::fromLinear24(
 					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
-					pvr3Header.width, height,
+					width, height,
 					buf.get(), expected_size);
 				break;
 
@@ -338,7 +366,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// 32-bit
 				img = ImageDecoder::fromLinear32(
 					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
-					pvr3Header.width, height,
+					width, height,
 					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 				break;
 
@@ -353,9 +381,14 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		return nullptr;
 	}
 
+	if (!img) {
+		// No image...
+		return nullptr;
+	}
+
 	// Post-processing: Check if VFlip is needed.
 	// TODO: Handle HFlip too?
-	if (img && (isFlipNeeded & FLIP_V) && height > 1) {
+	if ((isFlipNeeded & FLIP_V) && height > 1) {
 		// TODO: Assert that img dimensions match ktxHeader?
 		rp_image *flipimg = img->vflip();
 		if (flipimg) {
@@ -366,6 +399,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		}
 	}
 
+	mipmaps[mip] = img;
 	return img;
 }
 
@@ -535,6 +569,19 @@ PowerVR3::PowerVR3(IRpFile *file)
 
 	// File is valid.
 	d->isValid = true;
+
+	// Initialize the mipmap vector.
+	assert(d->pvr3Header.mipmap_count <= 128);
+	unsigned int mipmapCount = d->pvr3Header.mipmap_count;
+	if (mipmapCount == 0) {
+		mipmapCount = 1;
+	} else if (mipmapCount > 128) {
+		// Too many mipmaps...
+		// NOTE: PowerVR3 stores mipmaps in descending order,
+		// so clamp it to 128 mipmaps.
+		mipmapCount = 128;
+	}
+	d->mipmaps.resize(mipmapCount);
 
 	// Texture data start address.
 	d->texDataStartAddr = sizeof(d->pvr3Header) + d->pvr3Header.metadata_size;
