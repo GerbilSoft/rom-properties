@@ -240,6 +240,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SIGNED_RG_RGTC2:
 				case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
 				case GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT:
+				case GL_COMPRESSED_RGBA_BPTC_UNORM:
+				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 					// 16 pixels compressed into 128 bits. (8bpp)
 					expected_size = ktxHeader.pixelWidth * height;
 					break;
@@ -416,6 +418,14 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						buf.get(), expected_size);
 					// TODO: If this fails, return it anyway or return nullptr?
 					ImageDecoder::fromRG8ToLA8(img);
+					break;
+
+				case GL_COMPRESSED_RGBA_BPTC_UNORM:
+				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
+					// BPTC-compressed RGBA texture. (BC7)
+					img = ImageDecoder::fromBC7(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size);
 					break;
 
 				default:
