@@ -51,7 +51,9 @@ RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
 {
 	// pstream is owned by file,
 	// so don't Release() it here.
-	file->unref();
+	if (file) {
+		file->unref();
+	}
 }
 
 /** RP_ThumbnailProvider **/
