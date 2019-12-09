@@ -290,8 +290,45 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		expected_size = pvr3Header.width * height * bytes;
 	} else {
 		// Compressed format.
-		// TODO
-		return nullptr;
+		switch (pvr3Header.pixel_format) {
+			case PVR3_PXF_PVRTC_2bpp_RGB:
+			case PVR3_PXF_PVRTC_2bpp_RGBA:
+			case PVR3_PXF_PVRTCII_2bpp:
+				// 2bpp formats
+				expected_size = width * height / 4;
+				break;
+
+			case PVR3_PXF_PVRTC_4bpp_RGB:
+			case PVR3_PXF_PVRTC_4bpp_RGBA:
+			case PVR3_PXF_PVRTCII_4bpp:
+			case PVR3_PXF_ETC1:
+			case PVR3_PXF_DXT1:
+			case PVR3_PXF_BC4:
+			case PVR3_PXF_ETC2_RGB:
+			case PVR3_PXF_ETC2_RGB_A1:
+			case PVR3_PXF_EAC_R11:
+				// 4bpp formats
+				expected_size = width * height / 2;
+				break;
+
+			case PVR3_PXF_DXT2:
+			case PVR3_PXF_DXT3:
+			case PVR3_PXF_DXT4:
+			case PVR3_PXF_DXT5:
+			case PVR3_PXF_BC5:
+			case PVR3_PXF_BC6:
+			case PVR3_PXF_BC7:
+			case PVR3_PXF_ETC2_RGBA:
+			case PVR3_PXF_EAC_RG11:
+				// 8bpp formats
+				expected_size = width * height;
+				break;
+
+			default:
+				// TODO: ASTC, other formats that aren't actually compressed.
+				assert(!"Unsupported PowerVR3 compressed format.");
+				return nullptr;
+		}
 	}
 
 	// If we're requesting a mipmap level higher than 0 (full image),
@@ -378,14 +415,107 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		}
 	} else {
 		// Compressed format.
-		// TODO
-		return nullptr;
+		switch (pvr3Header.pixel_format) {
+			case PVR3_PXF_ETC1:
+				// ETC1-compressed texture.
+				img = ImageDecoder::fromETC1(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_ETC2_RGB:
+				// ETC2-compressed RGB texture.
+				img = ImageDecoder::fromETC2_RGB(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_ETC2_RGB_A1:
+				// ETC2-compressed RGB texture
+				// with punchthrough alpha.
+				img = ImageDecoder::fromETC2_RGB_A1(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_ETC2_RGBA:
+				// ETC2-compressed RGB texture
+				// with EAC-compressed alpha channel.
+				img = ImageDecoder::fromETC2_RGBA(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_DXT1:
+				// DXT1-compressed texture.
+				img = ImageDecoder::fromDXT1(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_DXT2:
+				// DXT2-compressed texture.
+				img = ImageDecoder::fromDXT2(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_DXT3:
+				// DXT3-compressed texture.
+				img = ImageDecoder::fromDXT3(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_DXT4:
+				// DXT4-compressed texture.
+				img = ImageDecoder::fromDXT4(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_DXT5:
+				// DXT2-compressed texture.
+				img = ImageDecoder::fromDXT5(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_BC4:
+				// RGTC, one component. (BC4)
+				img = ImageDecoder::fromBC4(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_BC5:
+				// RGTC, two components. (BC5)
+				img = ImageDecoder::fromBC5(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_BC7:
+				// BC7-compressed texture.
+				img = ImageDecoder::fromBC7(
+					width, height,
+					buf.get(), expected_size);
+				break;
+
+			default:
+				// TODO: ASTC, other formats that aren't actually compressed.
+				assert(!"Unsupported PowerVR3 compressed format.");
+				return nullptr;
+		}
 	}
 
 	if (!img) {
 		// No image...
 		return nullptr;
 	}
+
+	// TODO: Handle sRGB.
+	// TODO: Handle premultiplied alpha, aside from DXT2 and DXT4.
 
 	// Post-processing: Check if VFlip is needed.
 	// TODO: Handle HFlip too?

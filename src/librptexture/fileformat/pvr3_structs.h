@@ -74,8 +74,8 @@ typedef enum {
 	PVR3_PXF_PVRTC_2bpp_RGBA	= 1,
 	PVR3_PXF_PVRTC_4bpp_RGB		= 2,
 	PVR3_PXF_PVRTC_4bpp_RGBA	= 3,
-	PVR3_PXF_PVRTC2_2bpp		= 4,
-	PVR3_PXF_PVRTC2_4bpp		= 5,
+	PVR3_PXF_PVRTCII_2bpp		= 4,
+	PVR3_PXF_PVRTCII_4bpp		= 5,
 
 	PVR3_PXF_ETC1			= 6,
 	PVR3_PXF_DXT1			= 7,
