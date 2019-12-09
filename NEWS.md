@@ -18,10 +18,13 @@
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
     only the first texture of the archive is supported.
+  * PowerVR3: PowerVR 3.0.0 textures. Used mainly by iOS applications. Not
+    related to Sega Dreamcast PVR format.
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
+  * KhronosKTX: Added support for BPTC (BC7) texture compression.
 
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.

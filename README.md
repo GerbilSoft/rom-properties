@@ -126,6 +126,7 @@ button.
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
+| PowerVR 3.0.0 Textures        |       Yes      |    Yes   |      Image      |       N/A      |
 | Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
@@ -137,10 +138,10 @@ button.
 * Nintendo DS: Tiled CI8 with BGR555 palette
 * Nintendo 3DS: Tiled and twiddled RGB565
 * GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
-* S3TC: DXT1, DXT2, DXT3, DXT4, and DXT5 codecs.
+* S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
   * Supported file formats: DDS, KTX, VTF, VTF3, XPR
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
-* BC7: Supported in DDS texture files.
+* BC7: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
   * The implementation is somewhat slow. Contributions welcome.
 
 ### Audio Formats
