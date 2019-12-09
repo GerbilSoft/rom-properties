@@ -86,6 +86,21 @@ class PowerVR3Private : public FileFormatPrivate
 		unsigned int texDataStartAddr;
 
 		/**
+		 * Uncompressed format lookup table.
+		 * NOTE: pixel_format is byteswapped because trailing '\0'
+		 * isn't supported by MSVC, so e.g. 'rgba' is 'abgr', and
+		 * 'i\0\0\0' is '\0\0\0i'.
+		 * Channel depth uses the logical format, e.g. 0x00000008 or 0x00080808.
+		 */
+		struct FmtLkup_t {
+			uint32_t pixel_format;
+			uint32_t channel_depth;
+			uint8_t pxfmt;
+			uint8_t bits;	// 8, 15, 16, 24, 32
+		};
+		static const struct FmtLkup_t fmtLkup_tbl[];
+
+		/**
 		 * Load the image.
 		 * @param mip Mipmap number. (0 == full image)
 		 * @return Image, or nullptr on error.
@@ -100,6 +115,58 @@ class PowerVR3Private : public FileFormatPrivate
 };
 
 /** PowerVR3Private **/
+
+/**
+ * Uncompressed format lookup table.
+ * NOTE: pixel_format is byteswapped because trailing '\0'
+ * isn't supported by MSVC, so e.g. 'rgba' is 'abgr', and
+ * 'i\0\0\0' is '\0\0\0i'.
+ * Channel depth uses the logical format, e.g. 0x00000008 or 0x00080808.
+ */
+const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl[] = {
+	//{'\0\0\0i', 0x00000008, ImageDecoder::PXF_I8,		8},
+	//{'\0\0\0r', 0x00000008, ImageDecoder::PXF_R8,		8},
+	{ '\0\0gr', 0x00000808, ImageDecoder::PXF_RG88,		16},
+	{  '\0bgr', 0x00080808, ImageDecoder::PXF_RGB888,	24},
+	{   'abgr', 0x08080808, ImageDecoder::PXF_RGBA8888,	32},
+	{   'rgba', 0x08080808, ImageDecoder::PXF_ABGR8888,	32},
+	//{'\0\0\0r', 0x00000010, ImageDecoder::PXF_R16,		16},
+	//{ '\0\0gr', 0x00001010, ImageDecoder::PXF_R16G16,	32},
+	//{'\0\0\0r', 0x00000020, ImageDecoder::PXF_R32,		32},
+	//{ '\0\0gr', 0x00002020, ImageDecoder::PXF_R32G32,	32},
+	//{  '\0bgr', 0x00202020, ImageDecoder::PXF_R32G32B32,	32},
+	//{   'abgr', 0x20202020, ImageDecoder::PXF_R32G32B32A32,	32},
+	{  '\0bgr', 0x00050605, ImageDecoder::PXF_RGB565,	16},
+	{   'abgr', 0x04040404, ImageDecoder::PXF_RGBA4444,	16},
+	{   'abgr', 0x01050505, ImageDecoder::PXF_RGBA5551,	16},
+	{  '\0rgb', 0x00080808, ImageDecoder::PXF_BGR888,	24},
+	{   'argb', 0x08080808, ImageDecoder::PXF_BGRA8888,	32},
+#if 0
+	// TODO: Depth/stencil formats.
+	{'\0\0\0d', 0x00000008},
+	{'\0\0\0d', 0x00000010},
+	{'\0\0\0d', 0x00000018},
+	{'\0\0\0d', 0x00000020},
+	{ '\0\0sd', 0x00000810},
+	{ '\0\0sd', 0x00000818},
+	{ '\0\0sd', 0x00000820},
+	{'\0\0\0s', 0x00000008},
+#endif
+#if 0
+	// TODO: High-bit-depth luminance.
+	{'\0\0\0l', 0x00000020, ImageDecoder::PXF_L32,		32},
+	{ '\0\0al', 0x00001010, ImageDecoder::PXF_L16A16,	32},
+	{ '\0\0al', 0x00002020, ImageDecoder::PXF_L32A32,	32},
+#endif
+#if 0
+	// TODO: "Weird" formats.
+	{   'abgr', 0x10101010, ImageDecoder::PXF_R16G16B16A16,	64},
+	{  '\0bgr', 0x00101010, ImageDecoder::PXF_R16G16B16,	48},
+	{  '\0rgb', 0x000B0B0A, ImageDecoder::PXF_B11G11R10,	32},
+#endif
+
+	{0, 0, 0, 0}
+};
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 	: super(q, file)
@@ -132,6 +199,12 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		return img;
 	} else if (!this->file || !this->isValid) {
 		// Can't load the image.
+		return nullptr;
+	}
+
+	// TODO: Support >1 surface and face? (read the first one)
+	if (pvr3Header.num_surfaces != 1 || pvr3Header.num_faces != 1) {
+		// Not supported.
 		return nullptr;
 	}
 
@@ -179,8 +252,100 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	// NOTE: Handling a 3D texture as a single 2D texture.
 	const int height = (pvr3Header.height > 0 ? pvr3Header.height : 1);
 
-	// TODO
-	return nullptr;
+	// Calculate the expected size.
+	uint32_t expected_size;
+	const FmtLkup_t *fmtLkup = nullptr;
+	if (pvr3Header.channel_depth != 0) {
+		// Uncompressed format.
+		// Find a supported format that matches.
+
+		// NOTE: FmtLkup_t is byteswapped compared to on-disk.
+		const uint32_t pxswap = __swab32(pvr3Header.pixel_format);
+		for (const FmtLkup_t *p = fmtLkup_tbl; p->pixel_format != 0; p++) {
+			if (p->pixel_format == pxswap && p->channel_depth == pvr3Header.channel_depth) {
+				fmtLkup = p;
+				break;
+			}
+		}
+		if (!fmtLkup) {
+			// Not found.
+			return nullptr;
+		}
+
+		// Convert to bytes, rounding up.
+		unsigned int bytes = ((fmtLkup->bits + 7) & ~8) / 8;
+
+		// TODO: Minimum row width?
+		// TODO: Does 'rgb' use 24-bit or 32-bit?
+		expected_size = pvr3Header.width * height * bytes;
+	} else {
+		// Compressed format.
+		// TODO
+		return nullptr;
+	}
+
+	// Verify file size.
+	if ((texDataStartAddr + expected_size) > file_sz) {
+		// File is too small.
+		return nullptr;
+	}
+
+	// Read the texture data.
+	auto buf = aligned_uptr<uint8_t>(16, expected_size);
+	size_t size = file->seekAndRead(texDataStartAddr, buf.get(), expected_size);
+	if (size != expected_size) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Decode the image.
+	if (pvr3Header.channel_depth != 0) {
+		// Uncompressed format.
+		assert(fmtLkup != nullptr);
+		if (!fmtLkup) {
+			// Shouldn't happen...
+			return nullptr;
+		}
+
+		// TODO: Is the row stride required to be a specific multiple?
+		switch (fmtLkup->bits) {
+			case 15:
+			case 16:
+				// 15/16-bit
+				img = ImageDecoder::fromLinear16(
+					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
+					pvr3Header.width, height,
+					reinterpret_cast<const uint16_t*>(buf.get()), expected_size);
+				break;
+
+			case 24:
+				// 24-bit
+				img = ImageDecoder::fromLinear24(
+					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
+					pvr3Header.width, height,
+					buf.get(), expected_size);
+				break;
+
+			case 32:
+				// 32-bit
+				img = ImageDecoder::fromLinear32(
+					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
+					pvr3Header.width, height,
+					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+				break;
+
+			default:
+				// Not supported...
+				assert(!"Unsupported PowerVR3 uncompressed format.");
+				return nullptr;
+		}
+	} else {
+		// Compressed format.
+		// TODO
+		return nullptr;
+	}
+
+	return img;
 }
 
 /**
