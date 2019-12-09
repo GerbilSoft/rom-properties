@@ -147,6 +147,13 @@
 #define GL_STENCIL_INDEX8 0x8D48
 #define GL_STENCIL_INDEX16 0x8D49
 
+// GL_IMG_texture_compression_pvrtc
+// https://www.khronos.org/registry/OpenGL/extensions/IMG/IMG_texture_compression_pvrtc.txt
+#define GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG                   0x8C00
+#define GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG                   0x8C01
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG                  0x8C02
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG                  0x8C03
+
 // GL_VERSION_2_1
 #define GL_SRGB 0x8C40
 #define GL_SRGB8 0x8C41
@@ -235,6 +242,20 @@
 
 // GL_ARB_texture_rgb10_a2ui (later GL 3.3)
 #define GL_RGB10_A2UI 0x906F
+
+// GL_IMG_texture_compresion_pvrtc2
+// https://www.khronos.org/registry/OpenGL/extensions/IMG/IMG_texture_compression_pvrtc2.txt
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG 0x9137
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG 0x9138
+
+// GL_EXT_pvrtc_sRGB
+// https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_pvrtc_sRGB.txt
+#define GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT 0x8A54
+#define GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT 0x8A55
+#define GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT 0x8A56
+#define GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT 0x8A57
+#define GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG 0x93F0
+#define GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG 0x93F1
 
 // GL_ARB_ES3_compatibility
 #define GL_COMPRESSED_R11_EAC 0x9270
