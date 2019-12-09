@@ -345,6 +345,19 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		return nullptr;
 	}
 
+	// Post-processing: Check if VFlip is needed.
+	// TODO: Handle HFlip too?
+	if (img && (isFlipNeeded & FLIP_V) && height > 1) {
+		// TODO: Assert that img dimensions match ktxHeader?
+		rp_image *flipimg = img->vflip();
+		if (flipimg) {
+			// Swap the images.
+			std::swap(img, flipimg);
+			// Delete the original image.
+			delete flipimg;
+		}
+	}
+
 	return img;
 }
 
