@@ -16,6 +16,7 @@ SET(librptexture_SRCS
 	decoder/ImageDecoder_S3TC.cpp
 	decoder/ImageDecoder_DC.cpp
 	decoder/ImageDecoder_ETC1.cpp
+	decoder/ImageDecoder_PVRTC.cpp
 	decoder/ImageDecoder_BC7.cpp
 	decoder/PixelConversion.cpp
 
