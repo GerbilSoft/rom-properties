@@ -381,8 +381,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// 8-bit
 				img = ImageDecoder::fromLinear8(
 					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
-					width, height,
-					buf.get(), expected_size);
+					width, height, buf.get(), expected_size);
 				break;
 
 			case 15:
@@ -398,8 +397,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// 24-bit
 				img = ImageDecoder::fromLinear24(
 					static_cast<ImageDecoder::PixelFormat>(fmtLkup->pxfmt),
-					width, height,
-					buf.get(), expected_size);
+					width, height, buf.get(), expected_size);
 				break;
 
 			case 32:
@@ -420,88 +418,64 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		switch (pvr3Header.pixel_format) {
 			case PVR3_PXF_ETC1:
 				// ETC1-compressed texture.
-				img = ImageDecoder::fromETC1(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromETC1(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_ETC2_RGB:
 				// ETC2-compressed RGB texture.
-				img = ImageDecoder::fromETC2_RGB(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromETC2_RGB(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_ETC2_RGB_A1:
 				// ETC2-compressed RGB texture
 				// with punchthrough alpha.
-				img = ImageDecoder::fromETC2_RGB_A1(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromETC2_RGB_A1(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_ETC2_RGBA:
 				// ETC2-compressed RGB texture
 				// with EAC-compressed alpha channel.
-				img = ImageDecoder::fromETC2_RGBA(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromETC2_RGBA(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_DXT1:
 				// DXT1-compressed texture.
-				img = ImageDecoder::fromDXT1(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromDXT1(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_DXT2:
 				// DXT2-compressed texture.
-				img = ImageDecoder::fromDXT2(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromDXT2(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_DXT3:
 				// DXT3-compressed texture.
-				img = ImageDecoder::fromDXT3(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromDXT3(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_DXT4:
 				// DXT4-compressed texture.
-				img = ImageDecoder::fromDXT4(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromDXT4(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_DXT5:
 				// DXT2-compressed texture.
-				img = ImageDecoder::fromDXT5(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromDXT5(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_BC4:
 				// RGTC, one component. (BC4)
-				img = ImageDecoder::fromBC4(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromBC4(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_BC5:
 				// RGTC, two components. (BC5)
-				img = ImageDecoder::fromBC5(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromBC5(width, height, buf.get(), expected_size);
 				break;
 
 			case PVR3_PXF_BC7:
 				// BC7-compressed texture.
-				img = ImageDecoder::fromBC7(
-					width, height,
-					buf.get(), expected_size);
+				img = ImageDecoder::fromBC7(width, height, buf.get(), expected_size);
 				break;
 
 			default:
