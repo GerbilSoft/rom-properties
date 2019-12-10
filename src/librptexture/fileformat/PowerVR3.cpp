@@ -424,6 +424,14 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				img = ImageDecoder::fromPVRTC_2bpp(width, height, buf.get(), expected_size);
 				break;
 
+			case PVR3_PXF_PVRTC_4bpp_RGB:
+			case PVR3_PXF_PVRTC_4bpp_RGBA:
+				// PVRTC, 4bpp.
+				// NOTE: RGB and RGBA use the same data format.
+				// TODO: Mask out the alpha channel for RGB?
+				img = ImageDecoder::fromPVRTC_4bpp(width, height, buf.get(), expected_size);
+				break;
+
 			case PVR3_PXF_ETC1:
 				// ETC1-compressed texture.
 				img = ImageDecoder::fromETC1(width, height, buf.get(), expected_size);

@@ -680,6 +680,17 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 rp_image *fromPVRTC_2bpp(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
+/**
+ * Convert a PVRTC 2bpp image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf PVRTC image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *fromPVRTC_4bpp(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz);
+
 /* BC7 */
 
 /**

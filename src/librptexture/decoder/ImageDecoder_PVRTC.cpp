@@ -142,6 +142,72 @@ static inline uint32_t clamp_ColorRGBA(const ColorRGBA &color)
 }
 
 /**
+ * Mode 0 color interpolation.
+ * @param colors Array containing two ARGB32 colors.
+ * @param mod_data 2-bit modulation data.
+ * @return Interpolated color.
+ */
+static inline uint32_t interp_colors_mode0(const uint32_t color[2], unsigned int mod_data)
+{
+	if (mod_data == 0) {
+		// No modulation.
+		return color[0];
+	}
+
+	// TODO: Optimize using SSE.
+	argb32_t argb[2];
+	argb[0].u32 = color[0];
+	argb[1].u32 = color[1];
+
+	// Interpolation formula: Output = A + Mod*(B - A)
+	ColorRGBA rgba;
+	rgba.B = argb[1].b - argb[0].b;
+	rgba.G = argb[1].g - argb[0].g;
+	rgba.R = argb[1].r - argb[0].r;
+	switch (mod_data) {
+		default:
+			assert(!"Unhandled modulation data.");
+			return color[0];
+
+		case 1:
+			// Weight: 4/8
+			rgba.B = rgba.B / 2;
+			rgba.G = rgba.G / 2;
+			rgba.R = rgba.R / 2;
+
+			rgba.A = argb[1].a - argb[0].a;
+			rgba.A = rgba.A / 2;
+			break;
+
+		case 2:
+			// Weight: 4/8, punch-through alpha
+			// NOTE: Color values are kept as-is,
+			// even though A=0.
+			rgba.B = rgba.B / 2;
+			rgba.G = rgba.G / 2;
+			rgba.R = rgba.R / 2;
+			rgba.A = 0;
+			break;
+
+		case 3:
+			// Weight: 1
+			rgba.A = argb[1].a - argb[0].a;
+			break;
+	}
+
+	rgba.B += argb[0].b;
+	rgba.G += argb[0].g;
+	rgba.R += argb[0].r;
+	if (mod_data != 2) {
+		// TODO: Move into the switch/case?
+		rgba.A += argb[0].a;
+	}
+
+	// Clamp the color components.
+	return clamp_ColorRGBA(rgba);
+}
+
+/**
  * Mode 1 color interpolation.
  * @param colors Array containing two ARGB32 colors.
  * @param mod_data 2-bit modulation data.
@@ -284,6 +350,87 @@ rp_image *fromPVRTC_2bpp(int width, int height,
 
 		// Blit the tile to the main image buffer.
 		ImageDecoderPrivate::BlitTile<uint32_t, 8, 4>(img, tileBuf, x, y);
+	} }
+
+	// Set the sBIT metadata.
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
+	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a PVRTC 4bpp image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ETC1 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *fromPVRTC_4bpp(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 2))
+	{
+		return nullptr;
+	}
+
+	// PVRTC 4bpp uses 4x4 tiles.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// NOTE: PVRTC block indexes are twiddled.
+	const pvrtc_block *const pvrtc_src = reinterpret_cast<const pvrtc_block*>(img_buf);
+
+	// Temporary tile buffer.
+	uint32_t tileBuf[4*4];
+
+	for (unsigned int y = 0; y < tilesY; y++) {
+	for (unsigned int x = 0; x < tilesX; x++) {
+		// TODO: Endianness conversion?
+		const pvrtc_block *src = &pvrtc_src[TWIDOUT(x, y)];
+
+		// Get the two color values.
+		uint32_t color[2];
+		color[0] = colorAtoARGB32(src->colorA);
+		color[1] = colorBtoARGB32(src->colorB);
+
+		uint32_t mod_data = src->mod_data;
+		if (!(src->colorB & 0x01)) {
+			// Modulation mode 0.
+			for (unsigned int i = 0; i < 16; i++, mod_data >>= 2) {
+				tileBuf[i] = interp_colors_mode0(color, mod_data & 3);
+			}
+		} else {
+			// Modulation mode 1.
+			for (unsigned int i = 0; i < 16; i++, mod_data >>= 2) {
+				tileBuf[i] = interp_colors_mode1(color, mod_data & 3);
+			}
+		}
+
+		// Blit the tile to the main image buffer.
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 	} }
 
 	// Set the sBIT metadata.
