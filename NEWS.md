@@ -145,7 +145,7 @@
       the ISO-9660 PVD using the new ISO-9660 parser.
   * XboxDisc: Xbox and Xbox 360 disc image parser.
     * Reads default.xbe and/or default.xex from the XDVDFS partition and
-      calls the appropriate parser to handle thise files.
+      calls the appropriate parser to handle these files.
     * Supports reading original discs if a supported DVD-ROM drive with Kreon
       firmware is connected.
   * Xbox_XBE: Original Xbox executables.
