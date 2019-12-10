@@ -412,7 +412,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 
 			default:
 				// Not supported...
-				assert(!"Unsupported PowerVR3 uncompressed format.");
+				//assert(!"Unsupported PowerVR3 uncompressed format.");
 				return nullptr;
 		}
 	} else {
@@ -506,7 +506,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 
 			default:
 				// TODO: ASTC, other formats that aren't actually compressed.
-				assert(!"Unsupported PowerVR3 compressed format.");
+				//assert(!"Unsupported PowerVR3 compressed format.");
 				return nullptr;
 		}
 	}
