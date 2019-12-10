@@ -222,11 +222,27 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		return nullptr;
 	}
 
-	// TODO: Support >1 surface and face? (read the first one)
-	if (pvr3Header.num_surfaces != 1 || pvr3Header.num_faces != 1) {
-		// Not supported.
+	// NOTE: Only the first surface/face is supported at the moment,
+	// but we need to ensure we skip all of them when selecting a
+	// mipmap level other than 0.
+	unsigned int num_surfaces = pvr3Header.num_surfaces;
+	assert(num_surfaces <= 128);
+	if (num_surfaces == 0) {
+		num_surfaces = 1;
+	} else if (num_surfaces > 128) {
+		// Too many surfaces.
 		return nullptr;
 	}
+	unsigned int num_faces = pvr3Header.num_faces;
+	assert(num_faces <= 128);
+	if (num_faces == 0) {
+		num_faces = 1;
+	} else if (num_faces > 128) {
+		// Too many faces.
+		return nullptr;
+	}
+	// TODO: Skip the multiply if both surfaces and faces are 1?
+	const unsigned int prod_surfaces_faces = num_surfaces * num_faces;
 
 	// Sanity check: Maximum image dimensions of 32768x32768.
 	// NOTE: `height == 0` is allowed here. (1D texture)
@@ -347,7 +363,8 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			return nullptr;
 		}
 
-		start_addr += expected_size;
+		// TODO: Skip the multiply if both surfaces and faces are 1?
+		start_addr += (expected_size * prod_surfaces_faces);
 		expected_size /= 4;
 	}
 
