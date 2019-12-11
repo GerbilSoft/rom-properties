@@ -7,7 +7,7 @@
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_PVR3_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_PVR3_STRUCTS_H__
+#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_PVR3_STRUCTS_H__
 
 #include "librpbase/common.h"
 #include <stdint.h>
@@ -201,4 +201,4 @@ typedef struct PACKED _PowerVR3_Metadata_Orientation_t {
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_PVR3_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_PVR3_STRUCTS_H__ */
