@@ -672,18 +672,30 @@ rp_image *fromETC2_RGB_A1(int width, int height,
 #ifdef ENABLE_PVRTC
 /* PVRTC */
 
+enum PVRTC_Mode_e {
+	// bpp
+	PVRTC_4BPP		= (0 << 0),
+	PVRTC_2BPP		= (1 << 0),
+	PVRTC_BPP_MASK		= (1 << 0),
+
+	// Alpha channel
+	PVRTC_ALPHA_NONE	= (0 << 1),
+	PVRTC_ALPHA_YES		= (1 << 1),
+	PVRTC_ALPHA_MASK	= (1 << 1),
+};
+
 /**
  * Convert a PVRTC 2bpp or 4bpp image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf PVRTC image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/4]
- * @param do2bitMode True for 2bpp; false for 4bpp.
+ * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromPVRTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
-	bool do2bitMode);
+	uint8_t mode);
 #endif /* ENABLE_PVRTC */
 
 /* BC7 */

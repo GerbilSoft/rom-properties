@@ -443,19 +443,27 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		switch (pvr3Header.pixel_format) {
 #ifdef ENABLE_PVRTC
 			case PVR3_PXF_PVRTC_2bpp_RGB:
+				// PVRTC, 2bpp, no alpha.
+				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size,
+					ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+				break;
+
 			case PVR3_PXF_PVRTC_2bpp_RGBA:
-				// PVRTC, 2bpp.
-				// NOTE: RGB and RGBA use the same data format.
-				// TODO: Mask out the alpha channel for RGB?
-				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size, true);
+				// PVRTC, 2bpp, has alpha.
+				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size,
+					ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
 				break;
 
 			case PVR3_PXF_PVRTC_4bpp_RGB:
+				// PVRTC, 4bpp, no alpha.
+				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size,
+					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+				break;
+
 			case PVR3_PXF_PVRTC_4bpp_RGBA:
-				// PVRTC, 4bpp.
-				// NOTE: RGB and RGBA use the same data format.
-				// TODO: Mask out the alpha channel for RGB?
-				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size, false);
+				// PVRTC, 4bpp, has alpha.
+				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size,
+					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 				break;
 #endif /* ENABLE_PVRTC */
 

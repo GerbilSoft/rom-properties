@@ -30,12 +30,12 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @param height Image height.
  * @param img_buf PVRTC image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/4]
- * @param do2bitMode True for 2bpp; false for 4bpp.
+ * @param mode Mode bitfield. (See PVRTC_Mode_e.)
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromPVRTC(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz,
-	bool do2bitMode)
+	uint8_t mode)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -43,7 +43,8 @@ rp_image *fromPVRTC(int width, int height,
 	assert(height > 0);
 
 	// Expected size to be read by the PowerVR Native SDK.
-	const uint32_t expected_size_in = ((width * height) / (do2bitMode ? 4 : 2));
+	const uint32_t expected_size_in = ((width * height) /
+		(((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) ? 4 : 2));
 
 	assert(img_siz >= static_cast<int>(expected_size_in));
 	if (!img_buf || width <= 0 || height <= 0 ||
@@ -54,7 +55,7 @@ rp_image *fromPVRTC(int width, int height,
 
 	// PVRTC 2bpp uses 8x4 tiles.
 	// PVRTC 4bpp uses 8x4 tiles.
-	if (do2bitMode) {
+	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
 		// PVRTC 2bpp
 		assert(width % 8 == 0);
 		assert(height % 4 == 0);
@@ -79,7 +80,7 @@ rp_image *fromPVRTC(int width, int height,
 	// Use the PowerVR Native SDK to decompress the texture.
 	// Return value is the size of the *input* data that was decompressed.
 	// TODO: Row padding?
-	uint32_t size = pvr::PVRTDecompressPVRTC(img_buf, do2bitMode, width, height,
+	uint32_t size = pvr::PVRTDecompressPVRTC(img_buf, ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP), width, height,
 		static_cast<uint8_t*>(img->bits()));
 	assert(size == expected_size_in);
 	if (size != expected_size_in) {
@@ -88,10 +89,12 @@ rp_image *fromPVRTC(int width, int height,
 		return nullptr;
 	}
 
+	// TODO: If !has_alpha, make sure the alpha channel is all 0xFF.
+
 	// Set the sBIT metadata.
-	// TODO: Check for alpha?
-	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
-	img->set_sBIT(&sBIT);
+	static const rp_image::sBIT_t sBIT_alpha  = {8,8,8,0,8};
+	static const rp_image::sBIT_t sBIT_opaque = {8,8,8,0,0};
+	img->set_sBIT(((mode & PVRTC_ALPHA_MASK) == PVRTC_ALPHA_YES) ? &sBIT_alpha : &sBIT_opaque);
 
 	// Image has been converted.
 	return img;
