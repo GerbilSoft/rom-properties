@@ -289,6 +289,16 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	if (pvr3Header.channel_depth != 0) {
 		// Uncompressed format.
 		// Find a supported format that matches.
+
+		// Only unsigned byte formats are supported right now.
+		// TODO: How do we handle "normalized" versions?
+		if (pvr3Header.channel_type != PVR3_CHTYPE_UBYTE &&
+		    pvr3Header.channel_type != PVR3_CHTYPE_UBYTE_NORM)
+		{
+			// Not unsigned byte.
+			return nullptr;
+		}
+
 		for (const FmtLkup_t *p = fmtLkup_tbl; p->pixel_format != 0; p++) {
 			if (p->pixel_format == pvr3Header.pixel_format &&
 			    p->channel_depth == pvr3Header.channel_depth)
