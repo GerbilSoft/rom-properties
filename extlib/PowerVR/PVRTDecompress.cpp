@@ -19,7 +19,11 @@
 namespace pvr {
 struct Pixel32
 {
+#ifdef PVRTC_SWAP_R_B_CHANNELS
+	uint8_t blue, green, red, alpha;
+#else /* !PVRTC_SWAP_R_B_CHANNELS */
 	uint8_t red, green, blue, alpha;
+#endif /* PVRTC_SWAP_R_B_CHANNELS */
 };
 
 struct Pixel128S

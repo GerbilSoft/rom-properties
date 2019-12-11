@@ -8,6 +8,9 @@
 #include <stdint.h>
 namespace pvr {
 
+// rom-properties: Swap R and B channels.
+#define PVRTC_SWAP_R_B_CHANNELS 1
+
 /// <summary>Decompresses PVRTC to RGBA 8888.</summary>
 /// <param name="compressedData">The PVRTC texture data to decompress</param>
 /// <param name="do2bitMode">Signifies whether the data is PVRTC2 or PVRTC4</param>

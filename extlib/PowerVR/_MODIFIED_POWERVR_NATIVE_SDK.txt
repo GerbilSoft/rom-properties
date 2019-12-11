@@ -9,5 +9,8 @@ The following changes have been made to the original:
 
 - Only the PVRTC decompressor is included.
 
+- The Red and Blue channels in the destination images are swapped to
+  match rom-properties' ARGB32 format.
+
 To obtain the original PowerVR Native SDK, see the GitHub repository:
 - https://github.com/powervr-graphics/Native_SDK
