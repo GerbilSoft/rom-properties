@@ -10,6 +10,8 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_HPP__
 
 #include "config.librpbase.h"
+#include "config.librptexture.h"
+
 #include "common.h"
 #include "cpu_dispatch.h"
 
@@ -667,29 +669,22 @@ rp_image *fromETC2_RGBA(int width, int height,
 rp_image *fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
 
+#ifdef ENABLE_PVRTC
 /* PVRTC */
 
 /**
- * Convert a PVRTC 2bpp image to rp_image.
+ * Convert a PVRTC 2bpp or 4bpp image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf PVRTC image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/4]
+ * @param do2bitMode True for 2bpp; false for 4bpp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *fromPVRTC_2bpp(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
-
-/**
- * Convert a PVRTC 2bpp image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf PVRTC image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/2]
- * @return rp_image, or nullptr on error.
- */
-rp_image *fromPVRTC_4bpp(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+rp_image *fromPVRTC(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	bool do2bitMode);
+#endif /* ENABLE_PVRTC */
 
 /* BC7 */
 

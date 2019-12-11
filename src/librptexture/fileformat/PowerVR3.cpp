@@ -11,6 +11,8 @@
  * - http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
  */
 
+#include "config.librptexture.h"
+
 #include "PowerVR3.hpp"
 #include "FileFormat_p.hpp"
 
@@ -309,16 +311,22 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	} else {
 		// Compressed format.
 		switch (pvr3Header.pixel_format) {
+#ifdef ENABLE_PVRTC
 			case PVR3_PXF_PVRTC_2bpp_RGB:
 			case PVR3_PXF_PVRTC_2bpp_RGBA:
 			case PVR3_PXF_PVRTCII_2bpp:
-				// 2bpp formats
+				// 2bpp formats (PVRTC)
 				expected_size = width * height / 4;
 				break;
 
 			case PVR3_PXF_PVRTC_4bpp_RGB:
 			case PVR3_PXF_PVRTC_4bpp_RGBA:
 			case PVR3_PXF_PVRTCII_4bpp:
+				// 4bpp formats (PVRTC)
+				expected_size = width * height / 2;
+				break;
+#endif /* ENABLE_PVRTC */
+
 			case PVR3_PXF_ETC1:
 			case PVR3_PXF_DXT1:
 			case PVR3_PXF_BC4:
@@ -344,7 +352,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 
 			default:
 				// TODO: ASTC, other formats that aren't actually compressed.
-				assert(!"Unsupported PowerVR3 compressed format.");
+				//assert(!"Unsupported PowerVR3 compressed format.");
 				return nullptr;
 		}
 	}
@@ -433,12 +441,13 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	} else {
 		// Compressed format.
 		switch (pvr3Header.pixel_format) {
+#ifdef ENABLE_PVRTC
 			case PVR3_PXF_PVRTC_2bpp_RGB:
 			case PVR3_PXF_PVRTC_2bpp_RGBA:
 				// PVRTC, 2bpp.
 				// NOTE: RGB and RGBA use the same data format.
 				// TODO: Mask out the alpha channel for RGB?
-				img = ImageDecoder::fromPVRTC_2bpp(width, height, buf.get(), expected_size);
+				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size, true);
 				break;
 
 			case PVR3_PXF_PVRTC_4bpp_RGB:
@@ -446,8 +455,9 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// PVRTC, 4bpp.
 				// NOTE: RGB and RGBA use the same data format.
 				// TODO: Mask out the alpha channel for RGB?
-				img = ImageDecoder::fromPVRTC_4bpp(width, height, buf.get(), expected_size);
+				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size, false);
 				break;
+#endif /* ENABLE_PVRTC */
 
 			case PVR3_PXF_ETC1:
 				// ETC1-compressed texture.

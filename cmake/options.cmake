@@ -80,6 +80,9 @@ OPTION(ENABLE_UNICE68 "Enable UnICE68 for Atari ST SNDH files. (GPLv3)" ON)
 # Enable libmspack-xenia for Xbox 360 executables.
 OPTION(ENABLE_LIBMSPACK "Enable libmspack-xenia for Xbox 360 executables." ON)
 
+# Enable the PowerVR Native SDK subset for PVRTC decompression.
+OPTION(ENABLE_PVRTC "Enable the PowerVR Native SDK subset for PVRTC decompression." ON)
+
 # Link-time optimization.
 # FIXME: Not working in clang builds and Ubuntu's gcc...
 IF(MSVC)

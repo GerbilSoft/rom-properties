@@ -12,4 +12,7 @@
 /* Define to 1 if librpbase RomFields support should be enabled. */
 #define ENABLE_LIBRPBASE_ROMFIELDS 1
 
+/* Define to 1 if PVRTC decompression should be enabled. */
+#define ENABLE_PVRTC 1
+
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__ */
