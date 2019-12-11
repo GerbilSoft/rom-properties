@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "config.librptexture.h"
+
 #include "DirectDrawSurface.hpp"
 #include "FileFormat_p.hpp"
 
@@ -325,6 +327,10 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			{DDPF_FOURCC_ATI2, DXGI_FORMAT_BC5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_BC5U, DXGI_FORMAT_BC5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 
+			// TODO: PVRTC no-alpha formats?
+			{DDPF_FOURCC_PTC2, DXGI_FORMAT_FAKE_PVRTC_2bpp, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_PTC4, DXGI_FORMAT_FAKE_PVRTC_4bpp, DDS_ALPHA_MODE_STRAIGHT},
+
 			{0, 0, 0}
 		};
 
@@ -554,12 +560,22 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		// Calculate the expected size.
 		uint32_t expected_size;
 		switch (dxgi_format) {
+#ifdef ENABLE_PVRTC
+			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
+				// 32 pixels compressed into 64 bits. (2bpp)
+				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 4;
+				break;
+#endif /* ENABLE_PVRTC */
+
 			case DXGI_FORMAT_BC1_TYPELESS:
 			case DXGI_FORMAT_BC1_UNORM:
 			case DXGI_FORMAT_BC1_UNORM_SRGB:
 			case DXGI_FORMAT_BC4_TYPELESS:
 			case DXGI_FORMAT_BC4_UNORM:
 			case DXGI_FORMAT_BC4_SNORM:
+#ifdef ENABLE_PVRTC
+			case DXGI_FORMAT_FAKE_PVRTC_4bpp:
+#endif /* ENABLE_PVRTC */
 				// 16 pixels compressed into 64 bits. (4bpp)
 				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
 				break;
@@ -672,6 +688,24 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
+
+#ifdef ENABLE_PVRTC
+			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
+				// PVRTC, 2bpp, has alpha.
+				img = ImageDecoder::fromPVRTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size,
+					ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+				break;
+
+			case DXGI_FORMAT_FAKE_PVRTC_4bpp:
+				// PVRTC, 4bpp, has alpha.
+				img = ImageDecoder::fromPVRTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size,
+					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+				break;
+#endif /* ENABLE_PVRTC */
 
 			default:
 				// Not supported.
@@ -861,6 +895,20 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 			d->xb1Header.xdkVer		= le32_to_cpu(d->xb1Header.xdkVer);
 		}
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+		// Make sure the dxgiFormat is not one of our "fake" formats.
+		// If it is, assume the texture isn't supported for now.
+		assert(d->dxt10Header.dxgiFormat < DXGI_FORMAT_FAKE_START ||
+		       d->dxt10Header.dxgiFormat > DXGI_FORMAT_FAKE_END);
+		if (d->dxt10Header.dxgiFormat >= DXGI_FORMAT_FAKE_START &&
+		    d->dxt10Header.dxgiFormat <= DXGI_FORMAT_FAKE_END)
+		{
+			// "Fake" format...
+			d->file->unref();
+			d->file = nullptr;
+			d->isValid = false;
+			return;
+		}
 
 		// Texture data start address.
 		d->texDataStartAddr = headerSize;
