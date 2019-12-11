@@ -106,7 +106,10 @@ class PowerVR3Private : public FileFormatPrivate
 			uint8_t pxfmt;
 			uint8_t bits;	// 8, 15, 16, 24, 32
 		};
-		static const struct FmtLkup_t fmtLkup_tbl[];
+
+		static const struct FmtLkup_t fmtLkup_tbl_U8[];
+		static const struct FmtLkup_t fmtLkup_tbl_U16[];
+		static const struct FmtLkup_t fmtLkup_tbl_U32[];
 
 		/**
 		 * Load the image.
@@ -124,14 +127,8 @@ class PowerVR3Private : public FileFormatPrivate
 
 /** PowerVR3Private **/
 
-/**
- * Uncompressed format lookup table.
- * NOTE: pixel_format appears byteswapped here because trailing '\0'
- * isn't supported by MSVC, so e.g. 'rgba' is 'abgr', and
- * 'i\0\0\0' is '\0\0\0i'. This *does* match the LE format, though.
- * Channel depth uses the logical format, e.g. 0x00000008 or 0x00080808.
- */
-const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl[] = {
+// Uncompressed format lookup table. (UBYTE, UBYTE_NORM)
+const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
 	//{'\0\0\0i', 0x00000008, ImageDecoder::PXF_I8,		8},
 	//{'\0\0\0r', 0x00000008, ImageDecoder::PXF_R8,		8},
 	{'\0\0\0a', 0x00000008, ImageDecoder::PXF_A8,		8},
@@ -140,12 +137,6 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl[] = {
 	{  '\0bgr', 0x00080808, ImageDecoder::PXF_BGR888,	24},
 	{   'abgr', 0x08080808, ImageDecoder::PXF_ABGR8888,	32},
 	{   'rgba', 0x08080808, ImageDecoder::PXF_RGBA8888,	32},
-	//{'\0\0\0r', 0x00000010, ImageDecoder::PXF_R16,		16},
-	{ '\0\0gr', 0x00001010, ImageDecoder::PXF_G16R16,	32},
-	//{'\0\0\0r', 0x00000020, ImageDecoder::PXF_R32,		32},
-	//{ '\0\0gr', 0x00002020, ImageDecoder::PXF_G32R32,	32},
-	//{  '\0bgr', 0x00202020, ImageDecoder::PXF_B32G32R32,	32},
-	//{   'abgr', 0x20202020, ImageDecoder::PXF_A32B32G32R32,	32},
 	{  '\0bgr', 0x00050605, ImageDecoder::PXF_BGR565,	16},
 	{   'abgr', 0x04040404, ImageDecoder::PXF_ABGR4444,	16},
 	{   'abgr', 0x01050505, ImageDecoder::PXF_ABGR1555,	16},
@@ -163,16 +154,37 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl[] = {
 	{'\0\0\0s', 0x00000008},
 #endif
 #if 0
-	// TODO: High-bit-depth luminance.
-	{'\0\0\0l', 0x00000020, ImageDecoder::PXF_L32,		32},
-	{ '\0\0al', 0x00001010, ImageDecoder::PXF_A16L16,	32},
-	{ '\0\0al', 0x00002020, ImageDecoder::PXF_A32L32,	32},
-#endif
-#if 0
 	// TODO: "Weird" formats.
 	{   'abgr', 0x10101010, ImageDecoder::PXF_A16B16G16R16,	64},
 	{  '\0bgr', 0x00101010, ImageDecoder::PXF_B16G16R16,	48},
 	{  '\0rgb', 0x000B0B0A, ImageDecoder::PXF_R11G11B10,	32},
+#endif
+
+	{0, 0, 0, 0}
+};
+
+// Uncompressed format lookup table. (USHORT, USHORT_NORM)
+const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U16[] = {
+	//{'\0\0\0r', 0x00000010, ImageDecoder::PXF_R16,		16},
+	{ '\0\0gr', 0x00001010, ImageDecoder::PXF_G16R16,	32},
+#if 0
+	// TODO: High-bit-depth luminance.
+	{ '\0\0al', 0x00001010, ImageDecoder::PXF_A16L16,	32},
+#endif
+
+	{0, 0, 0, 0}
+};
+
+// Uncompressed format lookup table. (UINT, UINT_NORM)
+const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
+	//{'\0\0\0r', 0x00000020, ImageDecoder::PXF_R32,		32},
+	//{ '\0\0gr', 0x00002020, ImageDecoder::PXF_G32R32,	32},
+	//{  '\0bgr', 0x00202020, ImageDecoder::PXF_B32G32R32,	32},
+	//{   'abgr', 0x20202020, ImageDecoder::PXF_A32B32G32R32,	32},
+#if 0
+	// TODO: High-bit-depth luminance.
+	{'\0\0\0l', 0x00000020, ImageDecoder::PXF_L32,		32},
+	{ '\0\0al', 0x00002020, ImageDecoder::PXF_A32L32,	32},
 #endif
 
 	{0, 0, 0, 0}
@@ -299,7 +311,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			return nullptr;
 		}
 
-		for (const FmtLkup_t *p = fmtLkup_tbl; p->pixel_format != 0; p++) {
+		for (const FmtLkup_t *p = fmtLkup_tbl_U8; p->pixel_format != 0; p++) {
 			if (p->pixel_format == pvr3Header.pixel_format &&
 			    p->channel_depth == pvr3Header.channel_depth)
 			{
