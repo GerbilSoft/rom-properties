@@ -63,7 +63,8 @@ ASSERT_STRUCT(PowerVR3_Header, 52);
  * PowerVR3 flags.
  */
 typedef enum {
-	PVR3_FLAG_PREMULTIPLIED		= 0x02,	// Pre-multiplied alpha.
+	PVR3_FLAG_COMPRESSED		= (1 << 0),	// File is compressed.
+	PVR3_FLAG_PREMULTIPLIED		= (1 << 1),	// Pre-multiplied alpha.
 } PowerVR3_Flags_t;
 
 /**

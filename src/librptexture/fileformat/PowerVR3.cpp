@@ -975,8 +975,10 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	fields->addField_string(C_("PowerVR3", "Endianness"), endian_str);
 
 	// Flags.
+	// NOTE: "Compressed" is listed in the PowerVR Native SDK,
+	// but I'm not sure what it's used for...
 	static const char *const flags_names[] = {
-		nullptr,
+		NOP_C_("PowerVR3|Flags", "Compressed"),
 		NOP_C_("PowerVR3|Flags", "Premultipled Alpha"),
 	};
 	// TODO: i18n
