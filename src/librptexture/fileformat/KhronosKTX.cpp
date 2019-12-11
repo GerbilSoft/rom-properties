@@ -575,7 +575,9 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 
 		// Check if this is KTXorientation.
 		// NOTE: Only the first instance is used.
-		if (!hasKTXorientation && !strcmp(p, "KTXorientation")) {
+		// NOTE 2: Specification says it's case-sensitive, but some files
+		// have "KTXOrientation", so use a case-insensitive comparison.
+		if (!hasKTXorientation && !strcasecmp(p, "KTXorientation")) {
 			hasKTXorientation = true;
 			// Check for known values.
 			// NOTE: Ignoring the R component.

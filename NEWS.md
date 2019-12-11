@@ -43,6 +43,8 @@
     @Whovian9369.
   * Fixed transparent gzip decompression for files where the gzipped version
     is actually larger than the uncompressed version.
+  * KhronosKTX: The metadata keys should be treated as case-insensitive, since
+    some programs write "KTXOrientation" instead of "KTXorientation".
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
