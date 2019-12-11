@@ -26,6 +26,11 @@
     0x00000000 for system titles and unlicensed copies.
   * KhronosKTX: Added support for BPTC (BC7) texture compression.
 
+* New compressed texture formats:
+  * PowerVR Texture Compression. Supports PVRTC-I 2bpp and 4bpp in PowerVR
+    3.0.0, Khronos KTX, and DirectDraw Surface texture files. Uses code from
+    the PowerVR Native SDK, which is redistributable under the MIT License.
+
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.
   * GameCube I8 image decoder: The palette was being generated incorrectly.
