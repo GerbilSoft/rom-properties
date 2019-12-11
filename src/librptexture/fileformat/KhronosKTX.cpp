@@ -11,6 +11,8 @@
  * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
  */
 
+#include "config.librptexture.h"
+
 #include "KhronosKTX.hpp"
 #include "FileFormat_p.hpp"
 
@@ -207,6 +209,15 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// May be a compressed format.
 			// TODO: Stride calculations?
 			switch (ktxHeader.glInternalFormat) {
+#ifdef ENABLE_PVRTC
+				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+					// 32 pixels compressed into 64 bits. (2bpp)
+					expected_size = (ktxHeader.pixelWidth * height) / 4;
+					break;
+#endif /* ENABLE_PVRTC */
+
 				case GL_RGB_S3TC:
 				case GL_RGB4_S3TC:
 				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -222,6 +233,11 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SIGNED_RED_RGTC1:
 				case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
 				case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
+#ifdef ENABLE_PVRTC
+				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+#endif /* ENABLE_PVRTC */
 					// 16 pixels compressed into 64 bits. (4bpp)
 					expected_size = (ktxHeader.pixelWidth * height) / 2;
 					break;
@@ -427,6 +443,36 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						ktxHeader.pixelWidth, height,
 						buf.get(), expected_size);
 					break;
+
+#ifdef ENABLE_PVRTC
+				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+					// PVRTC, 2bpp, no alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+					// PVRTC, 2bpp, has alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
+
+				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+					// PVRTC, 4bpp, no alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+					// PVRTC, 4bpp, has alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
+#endif /* ENABLE_PVRTC */
 
 				default:
 					// Not supported.
