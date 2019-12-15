@@ -14,6 +14,8 @@
   * Image handling has been split from librpbase to librptexture. This will
     allow the texture decoding functionality to be used by other programs.
   * Key Manager: Import the Korean key from Wii keys.bin if it's present.
+  * Added a UI frontend for the Cinnamon Desktop Environment using the Nemo
+    file browser.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
