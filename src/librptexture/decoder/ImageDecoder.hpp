@@ -10,6 +10,8 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_HPP__
 
 #include "config.librpbase.h"
+#include "config.librptexture.h"
+
 #include "common.h"
 #include "cpu_dispatch.h"
 
@@ -91,6 +93,7 @@ enum PixelFormat {
 	PXF_G16R16,
 	PXF_A2R10G10B10,
 	PXF_A2B10G10R10,
+	PXF_RGB9_E5,
 
 	// Uncommon 16-bit formats.
 	PXF_RG88,
@@ -666,6 +669,48 @@ rp_image *fromETC2_RGBA(int width, int height,
  */
 rp_image *fromETC2_RGB_A1(int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz);
+
+#ifdef ENABLE_PVRTC
+/* PVRTC */
+
+enum PVRTC_Mode_e {
+	// bpp
+	PVRTC_4BPP		= (0 << 0),
+	PVRTC_2BPP		= (1 << 0),
+	PVRTC_BPP_MASK		= (1 << 0),
+
+	// Alpha channel (PVRTC-I only)
+	PVRTC_ALPHA_NONE	= (0 << 1),
+	PVRTC_ALPHA_YES		= (1 << 1),
+	PVRTC_ALPHA_MASK	= (1 << 1),
+};
+
+/**
+ * Convert a PVRTC 2bpp or 4bpp image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf PVRTC image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/4]
+ * @param mode Mode bitfield. (See PVRTC_Mode_e.)
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *fromPVRTC(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	uint8_t mode);
+
+/**
+ * Convert a PVRTC-II 2bpp or 4bpp image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf PVRTC image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/4]
+ * @param mode Mode bitfield. (See PVRTC_Mode_e.)
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *fromPVRTCII(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	uint8_t mode);
+#endif /* ENABLE_PVRTC */
 
 /* BC7 */
 

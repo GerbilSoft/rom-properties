@@ -16,18 +16,22 @@ SET(librptexture_SRCS
 	decoder/ImageDecoder_S3TC.cpp
 	decoder/ImageDecoder_DC.cpp
 	decoder/ImageDecoder_ETC1.cpp
+	decoder/ImageDecoder_PVRTC.cpp
 	decoder/ImageDecoder_BC7.cpp
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
 	fileformat/DidjTex.cpp
 	fileformat/DirectDrawSurface.cpp
+	fileformat/KhronosKTX.cpp
+	fileformat/PowerVR3.cpp
 	fileformat/SegaPVR.cpp
 	fileformat/ValveVTF.cpp
 	fileformat/ValveVTF3.cpp
 	fileformat/XboxXPR.cpp
 
 	data/DX10Formats.cpp
+	data/GLenumStrings.cpp
 	)
 # Headers.
 SET(librptexture_H
@@ -46,6 +50,8 @@ SET(librptexture_H
 	fileformat/FileFormat_decl.hpp
 	fileformat/DidjTex.hpp
 	fileformat/DirectDrawSurface.hpp
+	fileformat/KhronosKTX.hpp
+	fileformat/PowerVR3.hpp
 	fileformat/SegaPVR.hpp
 	fileformat/ValveVTF.hpp
 	fileformat/ValveVTF3.hpp
@@ -53,26 +59,18 @@ SET(librptexture_H
 
 	fileformat/dds_structs.h
 	fileformat/didj_tex_structs.h
+	fileformat/ktx_structs.h
 	fileformat/pvr_structs.h
+	fileformat/pvr3_structs.h
 	fileformat/vtf_structs.h
 	fileformat/vtf3_structs.h
 	fileformat/xbox_xpr_structs.h
 
-	data/DX10Formats.hpp
-	)
+	fileformat/gl_defs.h
 
-IF(ENABLE_GL)
-	SET(librptexture_GL_SRCS
-		fileformat/KhronosKTX.cpp
-		data/GLenumStrings.cpp
-		)
-	SET(librptexture_GL_H
-		fileformat/KhronosKTX.hpp
-		fileformat/ktx_structs.h
-		fileformat/gl_defs.h
-		data/GLenumStrings.hpp
-		)
-ENDIF(ENABLE_GL)
+	data/DX10Formats.hpp
+	data/GLenumStrings.hpp
+	)
 
 IF(WIN32)
 	SET(librptexture_OS_SRCS
@@ -198,6 +196,11 @@ IF(NOT ZLIB_LIBRARY)
 	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
 ENDIF(NOT ZLIB_LIBRARY)
 TARGET_LINK_LIBRARIES(rptexture PRIVATE ${ZLIB_LIBRARY})
+
+# PowerVR Native SDK
+IF(ENABLE_PVRTC)
+	TARGET_LINK_LIBRARIES(rptexture PRIVATE pvrtc)
+ENDIF(ENABLE_PVRTC)
 
 # Other libraries.
 IF(WIN32)

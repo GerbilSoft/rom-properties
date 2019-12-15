@@ -8,7 +8,6 @@
 
 #include "config.librpbase.h"
 #include "config.libromdata.h"
-#include "config.librptexture.h"
 
 // Google Test
 #include "gtest/gtest.h"
@@ -420,16 +419,15 @@ void ImageDecoderTest::decodeTest_internal(void)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
 		// NOTE: Using RpTextureWrapper.
+		// NOTE: May be PowerVR3.
 		filetype = "PVR";
 		m_romData = new RpTextureWrapper(m_f_dds);
-#ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz.
 		// NOTE: Using RpTextureWrapper.
 		filetype = "KTX";
 		m_romData = new RpTextureWrapper(m_f_dds);
-#endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
 		// NOTE: Using RpTextureWrapper.
@@ -541,13 +539,12 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// PVR/GVR/SVR image
 		// NOTE: Using RpTextureWrapper.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-#ifdef ENABLE_GL
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
 		// NOTE: Using RpTextureWrapper.
+		// NOTE: May be PowerVR3.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-#endif /* ENABLE_GL */
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
 		// NOTE: Using RpTextureWrapper.
@@ -854,7 +851,6 @@ INSTANTIATE_TEST_CASE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 			"GVR/weeklytitle.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-#ifdef ENABLE_GL
 // KTX tests.
 INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 	::testing::Values(
@@ -914,7 +910,6 @@ INSTANTIATE_TEST_CASE_P(KTX, ImageDecoderTest,
 			"KTX/rgba.png"))
 
 	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_GL */
 
 // Valve VTF tests. (all formats)
 INSTANTIATE_TEST_CASE_P(VTF, ImageDecoderTest,
@@ -1022,7 +1017,6 @@ INSTANTIATE_TEST_CASE_P(VTF3_S3TC, ImageDecoderTest,
 			"VTF3/elevator_screen_colour.ps3.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-#ifdef ENABLE_GL
 // Test images from texture-compressor.
 // Reference: https://github.com/TimvanScherpenzeel/texture-compressor
 INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
@@ -1034,7 +1028,6 @@ INSTANTIATE_TEST_CASE_P(TCtest, ImageDecoderTest,
 			"tctest/example-etc2.ktx.gz",
 			"tctest/example-etc2.ktx.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
-#endif /* ENABLE_GL */
 
 // texture-compressor tests. (S3TC)
 INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
@@ -1048,6 +1041,20 @@ INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"tctest/example-dxt5.dds.gz",
 			"tctest/example-dxt5.s3tc.dds.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// texture-compressor tests. (PVRTC)
+INSTANTIATE_TEST_CASE_P(TCtest_PVRTC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"tctest/example-pvrtc1.pvr.gz",
+			"tctest/example-pvrtc1.pvr.png"),
+		ImageDecoderTest_mode(
+			"tctest/example-pvrtc2-2bpp.pvr.gz",
+			"tctest/example-pvrtc2-2bpp.pvr.png"),
+		ImageDecoderTest_mode(
+			"tctest/example-pvrtc2-4bpp.pvr.gz",
+			"tctest/example-pvrtc2-4bpp.pvr.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 
@@ -1494,17 +1501,32 @@ INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
 
 // NOTE: DidjTex files aren't gzipped because the texture data is
 // internally compressed using zlib.
-#define DidjTex_ICON_TEST(file) ImageDecoderTest_mode( \
+#define DidjTex_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"DidjTex/" file ".tex", \
 			"DidjTex/" file ".png")
 INSTANTIATE_TEST_CASE_P(DidjTex, ImageDecoderTest,
 	::testing::Values(
-		DidjTex_ICON_TEST("LeftArrow"),
-		DidjTex_ICON_TEST("LightOff"),
-		DidjTex_ICON_TEST("Slider"),
-		DidjTex_ICON_TEST("StaticTVImage"),
-		DidjTex_ICON_TEST("Zone1Act1Icon_Alpha"),
-		DidjTex_ICON_TEST("Zone1Act1Icon"))
+		DidjTex_IMAGE_TEST("LeftArrow"),
+		DidjTex_IMAGE_TEST("LightOff"),
+		DidjTex_IMAGE_TEST("Slider"),
+		DidjTex_IMAGE_TEST("StaticTVImage"),
+		DidjTex_IMAGE_TEST("Zone1Act1Icon_Alpha"),
+		DidjTex_IMAGE_TEST("Zone1Act1Icon"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// PowerVR3 tests.
+#define PowerVR3_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"PowerVR3/" file ".pvr.gz", \
+			"PowerVR3/" file ".pvr.png")
+INSTANTIATE_TEST_CASE_P(PowerVR3, ImageDecoderTest,
+	::testing::Values(
+		//PowerVR3_IMAGE_TEST("brdfLUT"),				// TODO: R16fG16f
+		//PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture"),	// FIXME: Failing (PVRTC-I 4bpp RGB)
+		//PowerVR3_IMAGE_TEST("GnomeHorde-fern"),			// FIXME: Failing (PVRTC-I 4bpp RGBA)
+		PowerVR3_IMAGE_TEST("Navigation3D-font")
+		//PowerVR3_IMAGE_TEST("Navigation3D-Road"),			// FIXME: Failing (LA88)
+		//PowerVR3_IMAGE_TEST("Satyr-Table"))				// FIXME: Failing (RGBA8888)
+		)
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }

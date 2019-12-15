@@ -11,6 +11,8 @@
  * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
  */
 
+#include "config.librptexture.h"
+
 #include "KhronosKTX.hpp"
 #include "FileFormat_p.hpp"
 
@@ -202,11 +204,27 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
+		case GL_RGB9_E5:
+			// Uncompressed "special" 32bpp formats.
+			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+			stride = ktxHeader.pixelWidth * 4;
+			expected_size = static_cast<unsigned int>(stride * height);
+			break;
+
 		case 0:
 		default:
 			// May be a compressed format.
 			// TODO: Stride calculations?
 			switch (ktxHeader.glInternalFormat) {
+#ifdef ENABLE_PVRTC
+				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+					// 32 pixels compressed into 64 bits. (2bpp)
+					expected_size = (ktxHeader.pixelWidth * height) / 4;
+					break;
+#endif /* ENABLE_PVRTC */
+
 				case GL_RGB_S3TC:
 				case GL_RGB4_S3TC:
 				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -222,6 +240,11 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SIGNED_RED_RGTC1:
 				case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
 				case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
+#ifdef ENABLE_PVRTC
+				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+#endif /* ENABLE_PVRTC */
 					// 16 pixels compressed into 64 bits. (4bpp)
 					expected_size = (ktxHeader.pixelWidth * height) / 2;
 					break;
@@ -240,8 +263,16 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SIGNED_RG_RGTC2:
 				case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
 				case GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT:
+				case GL_COMPRESSED_RGBA_BPTC_UNORM:
+				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 					// 16 pixels compressed into 128 bits. (8bpp)
 					expected_size = ktxHeader.pixelWidth * height;
+					break;
+
+				case GL_RGB9_E5:
+					// Uncompressed "special" 32bpp formats.
+					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+					expected_size = ktxHeader.pixelWidth * height * 4;
 					break;
 
 				default:
@@ -303,6 +334,14 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
 				ktxHeader.pixelWidth, height,
 				buf.get(), expected_size, stride);
+			break;
+
+		case GL_RGB9_E5:
+			// Uncompressed "special" 32bpp formats.
+			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
+				ktxHeader.pixelWidth, height,
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
 		case 0:
@@ -418,6 +457,68 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					ImageDecoder::fromRG8ToLA8(img);
 					break;
 
+				case GL_COMPRESSED_RGBA_BPTC_UNORM:
+				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
+					// BPTC-compressed RGBA texture. (BC7)
+					img = ImageDecoder::fromBC7(
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size);
+					break;
+
+#ifdef ENABLE_PVRTC
+				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+					// PVRTC, 2bpp, no alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+					// PVRTC, 2bpp, has alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
+
+				case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+					// PVRTC, 4bpp, no alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+					// PVRTC, 4bpp, has alpha.
+					img = ImageDecoder::fromPVRTC(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+					// PVRTC-II, 2bpp.
+					// NOTE: Assuming this has alpha.
+					img = ImageDecoder::fromPVRTCII(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+					// PVRTC-II, 4bpp.
+					// NOTE: Assuming this has alpha.
+					img = ImageDecoder::fromPVRTCII(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
+#endif /* ENABLE_PVRTC */
+
+				case GL_RGB9_E5:
+					// Uncompressed "special" 32bpp formats.
+					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+					img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
+						ktxHeader.pixelWidth, height,
+						reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+					break;
+
 				default:
 					// Not supported.
 					break;
@@ -519,7 +620,9 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 
 		// Check if this is KTXorientation.
 		// NOTE: Only the first instance is used.
-		if (!hasKTXorientation && !strcmp(p, "KTXorientation")) {
+		// NOTE 2: Specification says it's case-sensitive, but some files
+		// have "KTXOrientation", so use a case-insensitive comparison.
+		if (!hasKTXorientation && !strcasecmp(p, "KTXorientation")) {
 			hasKTXorientation = true;
 			// Check for known values.
 			// NOTE: Ignoring the R component.

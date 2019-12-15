@@ -74,14 +74,14 @@ ENDIF(WIN32)
 # TODO: Tri-state like UI frontends.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
-# Enable OpenGL for Khronos KTX support.
-OPTION(ENABLE_GL "Enable OpenGL for Khronos KTX support." ON)
-
 # Enable UnICE68 for Atari ST SNDH files. (GPLv3)
 OPTION(ENABLE_UNICE68 "Enable UnICE68 for Atari ST SNDH files. (GPLv3)" ON)
 
 # Enable libmspack-xenia for Xbox 360 executables.
 OPTION(ENABLE_LIBMSPACK "Enable libmspack-xenia for Xbox 360 executables." ON)
+
+# Enable the PowerVR Native SDK subset for PVRTC decompression.
+OPTION(ENABLE_PVRTC "Enable the PowerVR Native SDK subset for PVRTC decompression." ON)
 
 # Link-time optimization.
 # FIXME: Not working in clang builds and Ubuntu's gcc...

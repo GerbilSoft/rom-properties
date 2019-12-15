@@ -182,6 +182,14 @@ IF(ENABLE_LIBMSPACK)
 	SET_EXTLIB_PROPERTIES(libmspack)
 ENDIF(ENABLE_LIBMSPACK)
 
+# PowerVR texture decompression.
+IF(ENABLE_PVRTC)
+	SET(BUILD_STATIC_LIBS ON)
+	SET(BUILD_SHARED_LIBS OFF)
+	ADD_SUBDIRECTORY(PowerVR)
+	SET_EXTLIB_PROPERTIES(pvrtc)
+ENDIF(ENABLE_PVRTC)
+
 # Google Test
 IF(BUILD_TESTING)
 	# Reference: http://stackoverflow.com/questions/12540970/how-to-make-gtest-build-mdd-instead-of-mtd-by-default-using-cmake

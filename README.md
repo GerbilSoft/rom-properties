@@ -126,6 +126,7 @@ button.
 | Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
 | Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
+| PowerVR 3.0.0 Textures        |       Yes      |    Yes   |      Image      |       N/A      |
 | Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
 | Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
@@ -133,15 +134,20 @@ button.
 #### Texture Codecs
 * Assorted linear RGB formats, including 15-bit, 16-bit, 24-bit and 32-bit per pixel.
   * Most of these formats have SSE2 and/or SSSE3-optimized decoders.
+  * RGB9_E5 is supported, though it is currently converted to ARGB32 for
+    display purposes. The decoder is also slow. (Contributions welcome.)
 * Dreamcast: Twiddled and Vector-Quantized
 * Nintendo DS: Tiled CI8 with BGR555 palette
 * Nintendo 3DS: Tiled and twiddled RGB565
 * GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
-* S3TC: DXT1, DXT2, DXT3, DXT4, and DXT5 codecs.
+* S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
   * Supported file formats: DDS, KTX, VTF, VTF3, XPR
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
-* BC7: Supported in DDS texture files.
-  * The implementation is somewhat slow. Contributions welcome.
+* BC7: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+  * The implementation is somewhat slow. (Contributions welcome.)
+* PVRTC: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+  * PVRTC-II: Partially supported. The hard transition flag and images
+    that aren't a multiple of the tile size are not supported.
 
 ### Audio Formats
 

@@ -77,6 +77,10 @@ typedef enum {
 	DDPF_FOURCC_BC5U	= 'BC5U',
 	DDPF_FOURCC_BC5S	= 'BC5S',	// TODO: BC5 with signed values?
 
+	// PVRTC
+	DDPF_FOURCC_PTC2	= 'PTC2',	// PVRTC 2bpp (RGBA)
+	DDPF_FOURCC_PTC4	= 'PTC4',	// PVRTC 4bpp (RGBA)
+
 	DDPF_FOURCC_DX10	= 'DX10',
 	DDPF_FOURCC_XBOX	= 'XBOX',
 } DDS_PIXELFORMAT_FOURCC;
@@ -301,6 +305,14 @@ typedef enum {
 	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
 	XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM	= 189,
 	XBOX_DXGI_FORMAT_R4G4_UNORM			= 190,
+
+	// NOTE: These are NOT actual DXGI format values.
+	// These are here because DirectDrawSurface converts FourCC to DXGI_FORMAT,
+	// so we need fake DXGI values for PVRTC.
+	DXGI_FORMAT_FAKE_START			= 248,
+	DXGI_FORMAT_FAKE_PVRTC_2bpp		= DXGI_FORMAT_FAKE_START + 1,
+	DXGI_FORMAT_FAKE_PVRTC_4bpp		= DXGI_FORMAT_FAKE_START + 2,
+	DXGI_FORMAT_FAKE_END			= DXGI_FORMAT_FAKE_PVRTC_4bpp,
 } DXGI_FORMAT;
 
 /**

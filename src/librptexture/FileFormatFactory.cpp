@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
-#include "librptexture/config.librptexture.h"
 
 #include "FileFormatFactory.hpp"
 #include "fileformat/FileFormat.hpp"
@@ -35,6 +34,7 @@ using std::vector;
 #include "fileformat/DidjTex.hpp"
 #include "fileformat/DirectDrawSurface.hpp"
 #include "fileformat/KhronosKTX.hpp"
+#include "fileformat/PowerVR3.hpp"
 #include "fileformat/SegaPVR.hpp"
 #include "fileformat/ValveVTF.hpp"
 #include "fileformat/ValveVTF3.hpp"
@@ -98,9 +98,9 @@ class FileFormatFactoryPrivate
 // TODO: Add support for multiple magic numbers per class.
 const FileFormatFactoryPrivate::FileFormatFns FileFormatFactoryPrivate::FileFormatFns_magic[] = {
 	GetFileFormatFns(DirectDrawSurface, 'DDS '),
-#ifdef ENABLE_GL
 	GetFileFormatFns(KhronosKTX, (uint32_t)'\xABKTX'),
-#endif /* ENABLE_GL */
+	GetFileFormatFns(PowerVR3, 'PVR\x03'),
+	GetFileFormatFns(PowerVR3, '\x03RVP'),
 	GetFileFormatFns(SegaPVR, 'PVRT'),
 	GetFileFormatFns(SegaPVR, 'GVRT'),
 	GetFileFormatFns(SegaPVR, 'PVRX'),

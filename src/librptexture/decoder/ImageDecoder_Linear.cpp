@@ -1187,6 +1187,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 		// For now, truncating it to ARGB32.
 		fromLinear32_convert(A2R10G10B10, 8,8,8,0,2);
 		fromLinear32_convert(A2B10G10R10, 8,8,8,0,2);
+		fromLinear32_convert(RGB9_E5, 8,8,8,0,0);
 
 		// PS2's wacky 32-bit format.
 		fromLinear32_convert(BGR888_ABGR7888, 8,8,8,0,8);

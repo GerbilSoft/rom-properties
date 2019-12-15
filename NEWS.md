@@ -18,10 +18,25 @@
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
     only the first texture of the archive is supported.
+  * PowerVR3: PowerVR 3.0.0 textures. Used mainly by iOS applications. Not
+    related to Sega Dreamcast PVR format.
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
+  * KhronosKTX: Added support for BPTC (BC7) texture compression.
+
+* New compressed texture formats:
+  * PowerVR Texture Compression. Supports PVRTC-I 2bpp and 4bpp in PowerVR
+    3.0.0, Khronos KTX, and DirectDraw Surface texture files. Uses code from
+    the PowerVR Native SDK, which is redistributable under the MIT License.
+  * PVRTC-II is partially supported.
+    * TODO: Hard transition flag, images that aren't a multiple of the
+      tile size.
+  * RGB9_E5 is now supported in PowerVR 3.0, KTX, and DDS textures.
+    * KTX and DDS are untested and may need adjustments.
+    * RGB9_E5 is an HDR format, but rom-properties currently converts it
+      to ARGB32 (LDR) for display purposes.
 
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.
@@ -40,6 +55,8 @@
     @Whovian9369.
   * Fixed transparent gzip decompression for files where the gzipped version
     is actually larger than the uncompressed version.
+  * KhronosKTX: The metadata keys should be treated as case-insensitive, since
+    some programs write "KTXOrientation" instead of "KTXorientation".
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
