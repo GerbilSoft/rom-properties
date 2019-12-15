@@ -30,6 +30,9 @@
   * PowerVR Texture Compression. Supports PVRTC-I 2bpp and 4bpp in PowerVR
     3.0.0, Khronos KTX, and DirectDraw Surface texture files. Uses code from
     the PowerVR Native SDK, which is redistributable under the MIT License.
+  * PVRTC-II is partially supported.
+    * TODO: Hard transition flag, images that aren't a multiple of the
+      tile size.
 
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.

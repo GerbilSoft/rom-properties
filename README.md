@@ -143,6 +143,9 @@ button.
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
 * BC7: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
   * The implementation is somewhat slow. Contributions welcome.
+* PVRTC: Supported in DDS, KTX, and PowerVR 3.0.0 texture files.
+  * PVRTC-II: Partially supported. The hard transition flag and images
+    that aren't a multiple of the tile size are not supported.
 
 ### Audio Formats
 
