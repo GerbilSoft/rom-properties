@@ -129,19 +129,19 @@ class PowerVR3Private : public FileFormatPrivate
 
 // Uncompressed format lookup table. (UBYTE, UBYTE_NORM)
 const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
-	//{'\0\0\0i', 0x00000008, ImageDecoder::PXF_I8,		8},
-	//{'\0\0\0r', 0x00000008, ImageDecoder::PXF_R8,		8},
-	{'\0\0\0a', 0x00000008, ImageDecoder::PXF_A8,		8},
-	{ '\0\0al', 0x00000808, ImageDecoder::PXF_A8L8,		16},
-	{ '\0\0gr', 0x00000808, ImageDecoder::PXF_GR88,		16},
-	{  '\0bgr', 0x00080808, ImageDecoder::PXF_BGR888,	24},
-	{   'abgr', 0x08080808, ImageDecoder::PXF_ABGR8888,	32},
-	{   'rgba', 0x08080808, ImageDecoder::PXF_RGBA8888,	32},
-	{  '\0bgr', 0x00050605, ImageDecoder::PXF_BGR565,	16},
-	{   'abgr', 0x04040404, ImageDecoder::PXF_ABGR4444,	16},
-	{   'abgr', 0x01050505, ImageDecoder::PXF_ABGR1555,	16},
-	{  '\0rgb', 0x00080808, ImageDecoder::PXF_RGB888,	24},
-	{   'argb', 0x08080808, ImageDecoder::PXF_ARGB8888,	32},
+	//{   'i', 0x00000008, ImageDecoder::PXF_I8,			 8},
+	//{   'r', 0x00000008, ImageDecoder::PXF_R8,			 8},
+	{   'a', 0x00000008, ImageDecoder::PXF_A8,			 8},
+	{  'al', 0x00000808, ImageDecoder::PXF_A8L8,		16},
+	{  'gr', 0x00000808, ImageDecoder::PXF_GR88,		16},
+	{ 'bgr', 0x00080808, ImageDecoder::PXF_BGR888,		24},
+	{'abgr', 0x08080808, ImageDecoder::PXF_ABGR8888,	32},
+	{'rgba', 0x08080808, ImageDecoder::PXF_RGBA8888,	32},
+	{ 'bgr', 0x00050605, ImageDecoder::PXF_BGR565,		16},
+	{'abgr', 0x04040404, ImageDecoder::PXF_ABGR4444,	16},
+	{'abgr', 0x01050505, ImageDecoder::PXF_ABGR1555,	16},
+	{ 'rgb', 0x00080808, ImageDecoder::PXF_RGB888,		24},
+	{'argb', 0x08080808, ImageDecoder::PXF_ARGB8888,	32},
 #if 0
 	// TODO: Depth/stencil formats.
 	{'\0\0\0d', 0x00000008},
