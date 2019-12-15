@@ -33,6 +33,7 @@ typedef enum {
 	RP_FE_XFCE3,
 	RP_FE_GNOME,
 	RP_FE_MATE,
+	RP_FE_CINNAMON,
 
 	RP_FE_MAX
 } RP_Frontend;
@@ -69,18 +70,24 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
+#ifdef LibNemoExtension_EXTENSION_DIR
+	LibNemoExtension_EXTENSION_DIR "/rom-properties-cinnamon.so",
+#else
+	NULL,
+#endif
 };
 
 // Plugin priority order.
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
-static const uint8_t plugin_prio[6][6] = {
-	{RP_FE_KDE4, RP_FE_KDE5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_MATE},	// RP_FE_KDE4
-	{RP_FE_KDE5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE},	// RP_FE_KDE4
-	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE
-	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_MATE, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE3
-	{RP_FE_GNOME, RP_FE_MATE, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_GNOME
-	{RP_FE_MATE, RP_FE_MATE, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_MATE
+static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
+	{RP_FE_KDE4, RP_FE_KDE5, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KDE4
+	{RP_FE_KDE5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON},	// RP_FE_KDE4
+	{RP_FE_XFCE, RP_FE_XFCE3, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE
+	{RP_FE_XFCE3, RP_FE_XFCE, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE3
+	{RP_FE_GNOME, RP_FE_MATE, RP_FE_CINNAMON, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_GNOME
+	{RP_FE_MATE, RP_FE_CINNAMON, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_MATE
+	{RP_FE_CINNAMON, RP_FE_MATE, RP_FE_GNOME, RP_FE_XFCE3, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_CINNAMON
 };
 
 /**
@@ -152,6 +159,14 @@ static RP_Frontend walk_proc_tree(void)
 					ret = RP_FE_MATE;
 					ppid = 0;
 					break;
+				} else if ((len == 14 && !strncmp(s_value, "cinnamon-panel", 14)) ||
+					   (len == 16 && !strncmp(s_value, "cinnamon-session", 16)))
+				{
+					// Cinnamon session.
+					// TODO: Verify the process names.
+					ret = RP_FE_CINNAMON;
+					ppid = 0;
+					break;
 				}
 				// NOTE: Unity and XFCE don't have unique
 				// parent processes.
@@ -199,8 +214,7 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		}
 		return ret;
 	} else if (!strcasecmp(name, "GNOME") ||
-		   !strcasecmp(name, "Unity") ||
-		   !strcasecmp(name, "X-Cinnamon"))
+		   !strcasecmp(name, "Unity"))
 	{
 		// GTK3-based desktop environment.
 		return RP_FE_GNOME;
@@ -212,6 +226,11 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	} else if (!strcasecmp(name, "MATE")) {
 		// MATE desktop.
 		return RP_FE_MATE;
+	} else if (!strcasecmp(name, "X-Cinnamon") ||
+		   !strcasecmp(name, "Cinnamon"))
+	{
+		// Cinnamon desktop.
+		return RP_FE_CINNAMON;
 	}
 
 	// NOTE: "KDE4" and "KDE5" are not actually used.
@@ -304,7 +323,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		static const char *const de_name_tbl[] = {
 			"KDE4", "KDE5",
 			"XFCE (GTK+ 2.x)", "XFCE (GTK+ 3.x)",
-			"GNOME", "MATE"
+			"GNOME", "MATE", "Cinnamon"
 		};
 		static_assert(sizeof(de_name_tbl)/sizeof(de_name_tbl[0]) == RP_FE_MAX,
 			"de_name_tbl[] needs to be updated.");
