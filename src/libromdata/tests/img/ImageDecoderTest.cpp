@@ -419,6 +419,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
 		// PVR/GVR/SVR image
 		// NOTE: Using RpTextureWrapper.
+		// NOTE: May be PowerVR3.
 		filetype = "PVR";
 		m_romData = new RpTextureWrapper(m_f_dds);
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
@@ -542,6 +543,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// Khronos KTX image
 		// TODO: Use .zktx format instead of .ktx.gz?
 		// NOTE: Using RpTextureWrapper.
+		// NOTE: May be PowerVR3.
 		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
 		// Valve Texture File (PS3)
@@ -1039,6 +1041,14 @@ INSTANTIATE_TEST_CASE_P(TCtest_S3TC, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			"tctest/example-dxt5.dds.gz",
 			"tctest/example-dxt5.s3tc.dds.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// texture-compressor tests. (PVRTC)
+INSTANTIATE_TEST_CASE_P(TCtest_PVRTC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"tctest/example-pvrtc1.pvr.gz",
+			"tctest/example-pvrtc1.pvr.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 
