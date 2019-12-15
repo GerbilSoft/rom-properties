@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'Minizip'
-  s.version  = '2.9.0'
+  s.version  = '2.9.1'
   s.license  = 'zlib'
   s.summary  = 'Minizip contrib in zlib with the latest bug fixes and advanced features'
   s.description = <<-DESC
@@ -18,7 +18,7 @@ DESC
   s.default_subspecs = 'Core', 'PKCRYPT', 'WZAES_APPLE', 'BZIP2'
 
   s.subspec 'Core' do |sp|
-    sp.source_files = '{mz,mz_os,mz_os_posix,mz_compat,mz_crypt,mz_strm,mz_strm_mem,mz_strm_buf,mz_strm_crypt,mz_strm_os_posix,mz_strm_zlib,mz_zip}.{c,h}'
+    sp.source_files = '{mz,mz_os,mz_os_posix,mz_compat,mz_crypt,mz_strm,mz_strm_mem,mz_strm_buf,mz_strm_crypt,mz_strm_os_posix,mz_strm_zlib,mz_zip,mz_zip_rw,mz_strm_split}.{c,h}'
     sp.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'HAVE_INTTYPES_H HAVE_STDINT_H HAVE_ZLIB' }
   end
 
@@ -48,6 +48,14 @@ DESC
     # Enables BZIP2 compression
     sp.dependency 'Minizip/Core'
     sp.source_files = 'lib/bzip2/*.{c,h}', 'mz_strm_bzip.{c,h}'
+    sp.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'HAVE_BZIP2' }
+  end
+
+  s.subspec 'BZIP2_SYSTEM' do |sp|
+    # Enables system library BZIP2 compression
+    sp.dependency 'Minizip/Core'
+    sp.source_files = 'mz_strm_bzip.{c,h}'
+    sp.libraries = 'bz2'
     sp.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'HAVE_BZIP2' }
   end
 

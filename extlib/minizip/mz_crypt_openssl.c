@@ -1,5 +1,5 @@
 /* mz_crypt_openssl.c -- Crypto/hash functions for OpenSSL
-   Version 2.9.0, September 18, 2019
+   Version 2.9.1, November 15, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -348,6 +348,7 @@ void mz_crypt_hmac_reset(void *handle)
     mz_crypt_hmac *hmac = (mz_crypt_hmac *)handle;
 
     HMAC_CTX_free(hmac->ctx);
+
     hmac->ctx = NULL;
     hmac->error = 0;
 

@@ -1,5 +1,5 @@
 /* minizip.c
-   Version 2.9.0, September 18, 2019
+   Version 2.9.1, November 15, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -757,7 +757,6 @@ int main(int argc, const char *argv[])
         /* Add files to archive */
         err = minizip_add(path, password, &options, argc - (path_arg + 1), &argv[path_arg + 1]);
     }
-
 
     return err;
 }

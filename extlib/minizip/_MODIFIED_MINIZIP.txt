@@ -1,10 +1,10 @@
 This copy of minizip is based on the updated version maintained
 by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
 
-commit 10ac291d91d061d4ed52ba2e9ce878d1180e2eaf
-Version 2.9.0.
+commit 370ab036f391a8742e5139a3c9a66e1303145b6e
+Version 2.9.1.
 
-Tag: 2.9.0
+Tag: 2.9.1
 
 The following changes have been made to the original:
 
@@ -14,6 +14,8 @@ The following changes have been made to the original:
 - Certain compile definitions are exported as part of the libminizip
   target, since they're needed in order to prevent build errors in
   other projects.
+
+- mz_os_win32.c: #define FSCTL_GET_REPARSE_POINT if it isn't defined.
 
 - Some other functionality not needed by rom-properties has been disabled.
 

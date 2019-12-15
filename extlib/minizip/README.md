@@ -1,4 +1,4 @@
-# minizip 2.9.0
+# minizip 2.9.1
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux.
 
@@ -6,6 +6,7 @@ minizip is a zip manipulation library written in C that is supported on Windows,
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/minizip.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:minizip)
 [![CodeFactor](https://www.codefactor.io/repository/github/nmoinvaz/minizip/badge)](https://www.codefactor.io/repository/github/nmoinvaz/minizip)
 [![License: Zlib](https://img.shields.io/badge/license-zlib-lightgrey.svg)](https://github.com/nmoinvaz/minizip/blob/master/LICENSE)
+[![codecov.io](https://codecov.io/github/nmoinvaz/minizip/coverage.svg?branch=dev)](https://codecov.io/github/nmoinvaz/minizip/)
 
 Maintained by Nathan Moinvaziri.
 
@@ -57,7 +58,7 @@ the library as version 2 because it had become difficult to maintain and code re
 
 To generate project files for your platform:
 
-1. [Download and install](https://cmake.org/install/) cmake.
+1. [Download and install](https://cmake.org/install/) cmake (version 3.11 or later recommended).
 2. Run cmake in the minizip directory.
 
 ```
@@ -84,6 +85,7 @@ cmake --build .
 | MZ_BUILD_TEST | Builds minizip test executable | OFF |
 | MZ_BUILD_UNIT_TEST | Builds minizip unit test project | OFF |
 | MZ_BUILD_FUZZ_TEST | Builds minizip fuzz executables | OFF |
+| MZ_CODE_COVERAGE | Build with code coverage flags | OFF |
 
 ## Contents
 
