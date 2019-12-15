@@ -1501,17 +1501,32 @@ INSTANTIATE_TEST_CASE_P(SVR_3, ImageDecoderTest,
 
 // NOTE: DidjTex files aren't gzipped because the texture data is
 // internally compressed using zlib.
-#define DidjTex_ICON_TEST(file) ImageDecoderTest_mode( \
+#define DidjTex_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"DidjTex/" file ".tex", \
 			"DidjTex/" file ".png")
 INSTANTIATE_TEST_CASE_P(DidjTex, ImageDecoderTest,
 	::testing::Values(
-		DidjTex_ICON_TEST("LeftArrow"),
-		DidjTex_ICON_TEST("LightOff"),
-		DidjTex_ICON_TEST("Slider"),
-		DidjTex_ICON_TEST("StaticTVImage"),
-		DidjTex_ICON_TEST("Zone1Act1Icon_Alpha"),
-		DidjTex_ICON_TEST("Zone1Act1Icon"))
+		DidjTex_IMAGE_TEST("LeftArrow"),
+		DidjTex_IMAGE_TEST("LightOff"),
+		DidjTex_IMAGE_TEST("Slider"),
+		DidjTex_IMAGE_TEST("StaticTVImage"),
+		DidjTex_IMAGE_TEST("Zone1Act1Icon_Alpha"),
+		DidjTex_IMAGE_TEST("Zone1Act1Icon"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// PowerVR3 tests.
+#define PowerVR3_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"PowerVR3/" file ".pvr.gz", \
+			"PowerVR3/" file ".pvr.png")
+INSTANTIATE_TEST_CASE_P(PowerVR3, ImageDecoderTest,
+	::testing::Values(
+		//PowerVR3_IMAGE_TEST("brdfLUT"),				// TODO: R16fG16f
+		//PowerVR3_IMAGE_TEST("GnomeHorde-bigMushroom_texture"),	// FIXME: Failing (PVRTC-I 4bpp RGB)
+		//PowerVR3_IMAGE_TEST("GnomeHorde-fern"),			// FIXME: Failing (PVRTC-I 4bpp RGBA)
+		PowerVR3_IMAGE_TEST("Navigation3D-font")
+		//PowerVR3_IMAGE_TEST("Navigation3D-Road"),			// FIXME: Failing (LA88)
+		//PowerVR3_IMAGE_TEST("Satyr-Table"))				// FIXME: Failing (RGBA8888)
+		)
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
