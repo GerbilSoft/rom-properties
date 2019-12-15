@@ -787,8 +787,12 @@ PowerVR3::PowerVR3(IRpFile *file)
 
 	// Cache the dimensions for the FileFormat base class.
 	d->dimensions[0] = d->pvr3Header.width;
-	d->dimensions[1] = d->pvr3Header.height;
-	d->dimensions[2] = d->pvr3Header.depth;
+	if (d->pvr3Header.height > 1) {
+		d->dimensions[1] = d->pvr3Header.height;
+		if (d->pvr3Header.depth > 1) {
+			d->dimensions[2] = d->pvr3Header.depth;
+		}
+	}
 }
 
 /** Class-specific functions that can be used even if isValid() is false. **/
