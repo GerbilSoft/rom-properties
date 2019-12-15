@@ -331,7 +331,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 		mipmapCount = 1;
 	} else if (mipmapCount > 128) {
 		// Too many mipmaps...
-		return;
+		return -ENOMEM;
 	}
 
 	// Starting address.
