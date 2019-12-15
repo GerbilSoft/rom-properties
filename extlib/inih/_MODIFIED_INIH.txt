@@ -1,9 +1,9 @@
-This copy of inih-r46 is a modified version of the original.
+This copy of inih-r47 is a modified version of the original.
 
-commit 0a87bf16693e35ed172ce8738404d9acd9545a5a
-Fix possible int overflow in reader cb (#88)
+commit 75fe6b1a03d99a9728b9924f9af30729e51357c2
+Make INIReader not crash when INI_CALL_HANDLER_ON_NEW_SECTION enabled (name NULL)
 
-Tag: r46 (+1 commit)
+Tag: r47 (+1 commit)
 
 The following changes have been made to the original:
 
@@ -13,5 +13,5 @@ The following changes have been made to the original:
   they work properly if compiling with 32-bit MSVC using /Gz.
   (default stdcall)
 
-To obtain the original inih-r46, visit:
+To obtain the original inih-r47, visit:
 https://github.com/benhoyt/inih

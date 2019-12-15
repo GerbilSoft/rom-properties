@@ -22,6 +22,12 @@ INIReader::INIReader(const string& filename)
     _error = ini_parse(filename.c_str(), ValueHandler, this);
 }
 
+INIReader::INIReader(const char *buffer, size_t buffer_size)
+{
+  string content(buffer, buffer_size);
+  _error = ini_parse_string(content.c_str(), ValueHandler, this);
+}
+
 int INIReader::ParseError() const
 {
     return _error;
@@ -99,10 +105,12 @@ string INIReader::MakeKey(const string& section, const string& name)
 int INIReader::ValueHandler(void* user, const char* section, const char* name,
                             const char* value)
 {
+    if (!name)  // Happens when INI_CALL_HANDLER_ON_NEW_SECTION enabled
+        return 1;
     INIReader* reader = static_cast<INIReader*>(user);
     string key = MakeKey(section, name);
     if (reader->_values[key].size() > 0)
         reader->_values[key] += "\n";
-    reader->_values[key] += value;
+    reader->_values[key] += value ? value : "";
     return 1;
 }
