@@ -400,13 +400,24 @@ static void pvrtcGetDecompressedPixels(const PVRTCWord& P, const PVRTCWord& Q, c
 			}
 
 			Pixel128S result;
-			result.red = (upscaledColorA[y * wordWidth + x].red * (8 - mod) + upscaledColorB[y * wordWidth + x].red * mod) / 8;
-			result.green = (upscaledColorA[y * wordWidth + x].green * (8 - mod) + upscaledColorB[y * wordWidth + x].green * mod) / 8;
-			result.blue = (upscaledColorA[y * wordWidth + x].blue * (8 - mod) + upscaledColorB[y * wordWidth + x].blue * mod) / 8;
-			if (punchthroughAlpha) { result.alpha = 0; }
+			if (PVRTCII && punchthroughAlpha)
+			{
+				// PVRTC-II: Punch-through alpha sets the RGB values to 0.
+				result.red = 0;
+				result.green = 0;
+				result.blue = 0;
+				result.alpha = 0;
+			}
 			else
 			{
-				result.alpha = (upscaledColorA[y * wordWidth + x].alpha * (8 - mod) + upscaledColorB[y * wordWidth + x].alpha * mod) / 8;
+				result.red = (upscaledColorA[y * wordWidth + x].red * (8 - mod) + upscaledColorB[y * wordWidth + x].red * mod) / 8;
+				result.green = (upscaledColorA[y * wordWidth + x].green * (8 - mod) + upscaledColorB[y * wordWidth + x].green * mod) / 8;
+				result.blue = (upscaledColorA[y * wordWidth + x].blue * (8 - mod) + upscaledColorB[y * wordWidth + x].blue * mod) / 8;
+				if (punchthroughAlpha) { result.alpha = 0; }
+				else
+				{
+					result.alpha = (upscaledColorA[y * wordWidth + x].alpha * (8 - mod) + upscaledColorB[y * wordWidth + x].alpha * mod) / 8;
+				}
 			}
 
 			// Convert the 32bit precision Result to 8 bit per channel color.
@@ -611,6 +622,6 @@ uint32_t PVRTDecompressPVRTC(const void* pCompressedData, uint32_t Do2bitMode, u
 uint32_t PVRTDecompressPVRTCII(const void* pCompressedData, uint32_t Do2bitMode, uint32_t XDim, uint32_t YDim, uint8_t* pResultImage)
 {
 	return PVRTDecompressPVRTC_int<true>(pCompressedData, Do2bitMode, XDim, YDim, pResultImage);
-}
+}	
 } // namespace pvr
 //!\endcond
