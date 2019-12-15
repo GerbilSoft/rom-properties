@@ -222,9 +222,10 @@ NES::NES(IRpFile *file)
 	d->file->rewind();
 
 	// Read the ROM header. [128 bytes]
+	// NOTE: Allowing smaller headers for certain types.
 	uint8_t header[128];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
+	if (size < 16) {
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -256,12 +257,24 @@ NES::NES(IRpFile *file)
 
 		case NESPrivate::ROM_FORMAT_FDS:
 			// FDS disk image.
+			if (size < sizeof(FDS_DiskHeader)) {
+				// Not enough data for an FDS image.
+				d->file->unref();
+				d->file = nullptr;
+				return;
+			}
 			d->fileType = FTYPE_DISK_IMAGE;
 			memcpy(&d->header.fds, header, sizeof(d->header.fds));
 			break;
 
 		case NESPrivate::ROM_FORMAT_FDS_FWNES:
 			// FDS disk image, with fwNES header.
+			if (size < (sizeof(FDS_DiskHeader) + sizeof(FDS_DiskHeader_fwNES))) {
+				// Not enough data for an FDS image with fwNES header.
+				d->file->unref();
+				d->file = nullptr;
+				return;
+			}
 			d->fileType = FTYPE_DISK_IMAGE;
 			memcpy(&d->header.fds_fwNES, header, sizeof(d->header.fds_fwNES));
 			memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));

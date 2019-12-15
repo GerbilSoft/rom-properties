@@ -518,10 +518,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Seek to the beginning of the file.
 	d->file->rewind();
 
-	// Read the ROM header. [0x800 bytes; minimum 0x400]
+	// Read the ROM header. [0x800 bytes; minimum 0x200]
 	uint8_t header[0x800];
 	size_t size = d->file->read(header, sizeof(header));
-	if (size < 0x400) {
+	if (size < 0x200) {
 		d->file->unref();
 		d->file = nullptr;
 		return;
@@ -586,8 +586,14 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
-				d->fileType = FTYPE_DISC_IMAGE;
+				if (size < 0x210) {
+					// Not enough data for a 2352-byte sector disc image.
+					d->file->unref();
+					d->file = nullptr;
+					return;
+				}
 
+				d->fileType = FTYPE_DISC_IMAGE;
 				// MCD-specific header is at 0x10. [TODO]
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
