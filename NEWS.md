@@ -59,6 +59,8 @@
     is actually larger than the uncompressed version.
   * KhronosKTX: The metadata keys should be treated as case-insensitive, since
     some programs write "KTXOrientation" instead of "KTXorientation".
+  * dll-search.c: The Mate Desktop check incorrectly had two entries for MATE
+    and lacked an entry for GNOME.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
