@@ -472,6 +472,22 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						buf.get(), expected_size,
 						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+					// PVRTC-II, 2bpp.
+					// NOTE: Assuming this has alpha.
+					img = ImageDecoder::fromPVRTCII(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
+
+				case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+					// PVRTC-II, 4bpp.
+					// NOTE: Assuming this has alpha.
+					img = ImageDecoder::fromPVRTCII(ktxHeader.pixelWidth, height,
+						buf.get(), expected_size,
+						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+					break;
 #endif /* ENABLE_PVRTC */
 
 				default:

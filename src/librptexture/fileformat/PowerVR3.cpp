@@ -487,6 +487,20 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				img = ImageDecoder::fromPVRTC(width, height, buf.get(), expected_size,
 					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 				break;
+
+			case PVR3_PXF_PVRTCII_2bpp:
+				// PVRTC-II, 2bpp.
+				// NOTE: Assuming this has alpha.
+				img = ImageDecoder::fromPVRTCII(width, height, buf.get(), expected_size,
+					ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+				break;
+
+			case PVR3_PXF_PVRTCII_4bpp:
+				// PVRTC-II, 4bpp.
+				// NOTE: Assuming this has alpha.
+				img = ImageDecoder::fromPVRTCII(width, height, buf.get(), expected_size,
+					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+				break;
 #endif /* ENABLE_PVRTC */
 
 			case PVR3_PXF_ETC1:

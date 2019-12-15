@@ -100,4 +100,85 @@ rp_image *fromPVRTC(int width, int height,
 	return img;
 }
 
+/**
+ * Convert a PVRTC 2bpp or 4bpp image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf PVRTC image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/4]
+ * @param mode Mode bitfield. (See PVRTC_Mode_e.)
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *fromPVRTCII(int width, int height,
+	const uint8_t *RESTRICT img_buf, int img_siz,
+	uint8_t mode)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+
+	// Expected size to be read by the PowerVR Native SDK.
+	const uint32_t expected_size_in = ((width * height) /
+		(((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) ? 4 : 2));
+
+	assert(img_siz >= static_cast<int>(expected_size_in));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < static_cast<int>(expected_size_in))
+	{
+		return nullptr;
+	}
+
+	// FIXME: PVRTC-II supports non-power-of-two textures,
+	// including sizes that aren't a multiple of the tile size,
+	// in which case, we'll need to adjust it. For now, we'll
+	// keep the assertion in here.
+
+	// PVRTC-II 2bpp uses 8x4 tiles.
+	// PVRTC-II 4bpp uses 4x4 tiles.
+	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
+		// PVRTC 2bpp
+		assert(width % 8 == 0);
+		assert(height % 4 == 0);
+		if (width % 8 != 0 || height % 4 != 0)
+			return nullptr;
+	} else {
+		// PVRTC 4bpp
+		assert(width % 4 == 0);
+		assert(height % 4 == 0);
+		if (width % 4 != 0 || height % 4 != 0)
+			return nullptr;
+	}
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// Use the PowerVR Native SDK to decompress the texture.
+	// Return value is the size of the *input* data that was decompressed.
+	// TODO: Row padding?
+	uint32_t size = pvr::PVRTDecompressPVRTCII(img_buf, ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP), width, height,
+		static_cast<uint8_t*>(img->bits()));
+	assert(size == expected_size_in);
+	if (size != expected_size_in) {
+		// Read error...
+		delete img;
+		return nullptr;
+	}
+
+	// TODO: If !has_alpha, make sure the alpha channel is all 0xFF.
+
+	// Set the sBIT metadata.
+	// NOTE: Assuming PVRTC-II always has alpha for now.
+	static const rp_image::sBIT_t sBIT  = {8,8,8,0,8};
+	img->set_sBIT(&sBIT);
+
+	// Image has been converted.
+	return img;
+}
+
 } }

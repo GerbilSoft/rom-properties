@@ -1048,7 +1048,13 @@ INSTANTIATE_TEST_CASE_P(TCtest_PVRTC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			"tctest/example-pvrtc1.pvr.gz",
-			"tctest/example-pvrtc1.pvr.png"))
+			"tctest/example-pvrtc1.pvr.png"),
+		ImageDecoderTest_mode(
+			"tctest/example-pvrtc2-2bpp.pvr.gz",
+			"tctest/example-pvrtc2-2bpp.pvr.png"),
+		ImageDecoderTest_mode(
+			"tctest/example-pvrtc2-4bpp.pvr.gz",
+			"tctest/example-pvrtc2-4bpp.pvr.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 

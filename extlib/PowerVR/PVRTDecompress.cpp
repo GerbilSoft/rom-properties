@@ -42,12 +42,14 @@ struct PVRTCWordIndices
 	int P[2], Q[2], R[2], S[2];
 };
 
+template<bool PVRTCII>
 static Pixel32 getColorA(uint32_t colorData)
 {
 	Pixel32 color;
 
 	// Opaque Color Mode - RGB 554
-	if ((colorData & 0x8000) != 0)
+	const uint32_t opaque_flag = (PVRTCII ? 0x80000000 : 0x8000);
+	if ((colorData & opaque_flag) != 0)
 	{
 		color.red = static_cast<uint8_t>((colorData & 0x7c00) >> 10); // 5->5 bits
 		color.green = static_cast<uint8_t>((colorData & 0x3e0) >> 5); // 5->5 bits
@@ -66,6 +68,7 @@ static Pixel32 getColorA(uint32_t colorData)
 	return color;
 }
 
+template<bool PVRTCII>
 static Pixel32 getColorB(uint32_t colorData)
 {
 	Pixel32 color;
@@ -85,6 +88,10 @@ static Pixel32 getColorB(uint32_t colorData)
 		color.green = static_cast<uint8_t>(((colorData & 0xf00000) >> 19) | ((colorData & 0xf00000) >> 23)); // 4->5 bits
 		color.blue = static_cast<uint8_t>(((colorData & 0xf0000) >> 15) | ((colorData & 0xf0000) >> 19)); // 4->5 bits
 		color.alpha = static_cast<uint8_t>((colorData & 0x70000000) >> 27); // 3->4 bits - note 0 at right
+		if (PVRTCII) {
+			// PVRTC-II sets the low alpha bit of Color B to 1, not 0.
+			color.alpha |= 1;
+		}
 	}
 
 	return color;
@@ -353,6 +360,7 @@ static int32_t getModulationValues(int32_t modulationValues[16][8], int32_t modu
 	return 0;
 }
 
+template<bool PVRTCII>
 static void pvrtcGetDecompressedPixels(const PVRTCWord& P, const PVRTCWord& Q, const PVRTCWord& R, const PVRTCWord& S, Pixel32* pColorData, uint8_t bpp)
 {
 	// 4bpp only needs 8*8 values, but 2bpp needs 16*8, so rather than wasting processor time we just statically allocate 16*8.
@@ -374,8 +382,10 @@ static void pvrtcGetDecompressedPixels(const PVRTCWord& P, const PVRTCWord& Q, c
 	unpackModulations(S, wordWidth, wordHeight, modulationValues, modulationModes, bpp);
 
 	// Bilinear upscale image data from 2x2 -> 4x4
-	interpolateColors(getColorA(P.colorData), getColorA(Q.colorData), getColorA(R.colorData), getColorA(S.colorData), upscaledColorA, bpp);
-	interpolateColors(getColorB(P.colorData), getColorB(Q.colorData), getColorB(R.colorData), getColorB(S.colorData), upscaledColorB, bpp);
+	interpolateColors(getColorA<PVRTCII>(P.colorData), getColorA<PVRTCII>(Q.colorData),
+		getColorA<PVRTCII>(R.colorData), getColorA<PVRTCII>(S.colorData), upscaledColorA, bpp);
+	interpolateColors(getColorB<PVRTCII>(P.colorData), getColorB<PVRTCII>(Q.colorData),
+		getColorB<PVRTCII>(R.colorData), getColorB<PVRTCII>(S.colorData), upscaledColorB, bpp);
 
 	for (uint32_t y = 0; y < wordHeight; y++)
 	{
@@ -430,46 +440,52 @@ static bool isPowerOf2(uint32_t input)
 	return ((input | minus1) == (input ^ minus1));
 }
 
+template<bool PVRTCII>
 static uint32_t TwiddleUV(uint32_t XSize, uint32_t YSize, uint32_t XPos, uint32_t YPos)
 {
-	// Initially assume X is the larger size.
-	uint32_t MinDimension = XSize;
-	uint32_t MaxValue = YPos;
-	uint32_t Twiddled = 0;
-	uint32_t SrcBitPos = 1;
-	uint32_t DstBitPos = 1;
-	int ShiftCount = 0;
-
 	// Check the sizes are valid.
 	assert(YPos < YSize);
 	assert(XPos < XSize);
 	assert(isPowerOf2(YSize));
 	assert(isPowerOf2(XSize));
 
-	// If Y is the larger dimension - switch the min/max values.
-	if (YSize < XSize)
-	{
-		MinDimension = YSize;
-		MaxValue = XPos;
+	if (PVRTCII) {
+		// PVRTC-II uses linear order, not Morton order.
+		return (YPos * XSize) + XPos;
+	} else {
+		// Initially assume X is the larger size.
+		uint32_t MinDimension = XSize;
+		uint32_t MaxValue = YPos;
+		uint32_t Twiddled = 0;
+		uint32_t SrcBitPos = 1;
+		uint32_t DstBitPos = 1;
+		int ShiftCount = 0;
+
+		// If Y is the larger dimension - switch the min/max values.
+		if (YSize < XSize)
+		{
+			MinDimension = YSize;
+			MaxValue = XPos;
+		}
+
+		// Step through all the bits in the "minimum" dimension
+		while (SrcBitPos < MinDimension)
+		{
+			if (YPos & SrcBitPos) { Twiddled |= DstBitPos; }
+
+			if (XPos & SrcBitPos) { Twiddled |= (DstBitPos << 1); }
+
+			SrcBitPos <<= 1;
+			DstBitPos <<= 2;
+			ShiftCount += 1;
+		}
+
+		// Prepend any unused bits
+		MaxValue >>= ShiftCount;
+		Twiddled |= (MaxValue << (2 * ShiftCount));
+
+		return Twiddled;
 	}
-
-	// Step through all the bits in the "minimum" dimension
-	while (SrcBitPos < MinDimension)
-	{
-		if (YPos & SrcBitPos) { Twiddled |= DstBitPos; }
-
-		if (XPos & SrcBitPos) { Twiddled |= (DstBitPos << 1); }
-
-		SrcBitPos <<= 1;
-		DstBitPos <<= 2;
-		ShiftCount += 1;
-	}
-
-	// Prepend any unused bits
-	MaxValue >>= ShiftCount;
-	Twiddled |= (MaxValue << (2 * ShiftCount));
-
-	return Twiddled;
 }
 
 static void mapDecompressedData(Pixel32* pOutput, uint32_t width, const Pixel32* pWord, const PVRTCWordIndices& words, uint8_t bpp)
@@ -492,6 +508,7 @@ static void mapDecompressedData(Pixel32* pOutput, uint32_t width, const Pixel32*
 		}
 	}
 }
+template<bool PVRTCII>
 static uint32_t pvrtcDecompress(uint8_t* pCompressedData, Pixel32* pDecompressedData, uint32_t width, uint32_t height, uint8_t bpp)
 {
 	uint32_t wordWidth = 4;
@@ -526,10 +543,10 @@ static uint32_t pvrtcDecompress(uint8_t* pCompressedData, Pixel32* pDecompressed
 
 			// Work out the offsets into the twiddle structs, multiply by two as there are two members per word.
 			uint32_t WordOffsets[4] = {
-				TwiddleUV(i32NumXWords, i32NumYWords, indices.P[0], indices.P[1]) * 2,
-				TwiddleUV(i32NumXWords, i32NumYWords, indices.Q[0], indices.Q[1]) * 2,
-				TwiddleUV(i32NumXWords, i32NumYWords, indices.R[0], indices.R[1]) * 2,
-				TwiddleUV(i32NumXWords, i32NumYWords, indices.S[0], indices.S[1]) * 2,
+				TwiddleUV<PVRTCII>(i32NumXWords, i32NumYWords, indices.P[0], indices.P[1]) * 2,
+				TwiddleUV<PVRTCII>(i32NumXWords, i32NumYWords, indices.Q[0], indices.Q[1]) * 2,
+				TwiddleUV<PVRTCII>(i32NumXWords, i32NumYWords, indices.R[0], indices.R[1]) * 2,
+				TwiddleUV<PVRTCII>(i32NumXWords, i32NumYWords, indices.S[0], indices.S[1]) * 2,
 			};
 
 			// Access individual elements to fill out PVRTCWord
@@ -544,7 +561,7 @@ static uint32_t pvrtcDecompress(uint8_t* pCompressedData, Pixel32* pDecompressed
 			S.modulationData = static_cast<uint32_t>(pWordMembers[WordOffsets[3]]);
 
 			// assemble 4 words into struct to get decompressed pixels from
-			pvrtcGetDecompressedPixels(P, Q, R, S, pPixels.data(), bpp);
+			pvrtcGetDecompressedPixels<PVRTCII>(P, Q, R, S, pPixels.data(), bpp);
 			mapDecompressedData(pOutData, width, pPixels.data(), indices, bpp);
 
 		} // for each word
@@ -554,7 +571,8 @@ static uint32_t pvrtcDecompress(uint8_t* pCompressedData, Pixel32* pDecompressed
 	return width * height / static_cast<uint32_t>((wordWidth / 2));
 }
 
-uint32_t PVRTDecompressPVRTC(const void* pCompressedData, uint32_t Do2bitMode, uint32_t XDim, uint32_t YDim, uint8_t* pResultImage)
+template<bool PVRTCII>
+static uint32_t PVRTDecompressPVRTC_int(const void* pCompressedData, uint32_t Do2bitMode, uint32_t XDim, uint32_t YDim, uint8_t* pResultImage)
 {
 	// Cast the output buffer to a Pixel32 pointer.
 	Pixel32* pDecompressedData = (Pixel32*)pResultImage;
@@ -567,7 +585,8 @@ uint32_t PVRTDecompressPVRTC(const void* pCompressedData, uint32_t Do2bitMode, u
 	if (XTrueDim != XDim || YTrueDim != YDim) { pDecompressedData = new Pixel32[XTrueDim * YTrueDim]; }
 
 	// Decompress the surface.
-	uint32_t retval = pvrtcDecompress((uint8_t*)pCompressedData, pDecompressedData, XTrueDim, YTrueDim, uint8_t(Do2bitMode == 1 ? 2 : 4));
+	uint32_t retval = pvrtcDecompress<PVRTCII>((uint8_t*)pCompressedData,
+		pDecompressedData, XTrueDim, YTrueDim, uint8_t(Do2bitMode == 1 ? 2 : 4));
 
 	// If the dimensions were too small, then copy the new buffer back into the output buffer.
 	if (XTrueDim != XDim || YTrueDim != YDim)
@@ -582,6 +601,16 @@ uint32_t PVRTDecompressPVRTC(const void* pCompressedData, uint32_t Do2bitMode, u
 		delete[] pDecompressedData;
 	}
 	return retval;
+}
+
+uint32_t PVRTDecompressPVRTC(const void* pCompressedData, uint32_t Do2bitMode, uint32_t XDim, uint32_t YDim, uint8_t* pResultImage)
+{
+	return PVRTDecompressPVRTC_int<false>(pCompressedData, Do2bitMode, XDim, YDim, pResultImage);
+}
+
+uint32_t PVRTDecompressPVRTCII(const void* pCompressedData, uint32_t Do2bitMode, uint32_t XDim, uint32_t YDim, uint8_t* pResultImage)
+{
+	return PVRTDecompressPVRTC_int<true>(pCompressedData, Do2bitMode, XDim, YDim, pResultImage);
 }
 } // namespace pvr
 //!\endcond
