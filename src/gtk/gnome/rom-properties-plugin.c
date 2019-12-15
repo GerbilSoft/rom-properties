@@ -26,6 +26,11 @@ static GType type_list[1];
 # define nautilus_module_initialize	caja_module_initialize
 # define nautilus_module_shutdown	caja_module_shutdown
 # define nautilus_module_list_types	caja_module_list_types
+#elif defined(RP_UI_GTK3_CINNAMON)
+// Cinnamon desktop
+# define nautilus_module_initialize	nemo_module_initialize
+# define nautilus_module_shutdown	nemo_module_shutdown
+# define nautilus_module_list_types	nemo_module_list_types
 #else
 # error GTK3 desktop environment not set and/or supported.
 #endif

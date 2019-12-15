@@ -43,6 +43,16 @@ typedef CajaPropertyPage				NautilusPropertyPage;
 # define NAUTILUS_IS_FILE_INFO(obj)			CAJA_IS_FILE_INFO(obj)
 # define nautilus_file_info_get_uri(file)		caja_file_info_get_uri(file)
 # define nautilus_property_page_new(name, label, page)	caja_property_page_new((name), (label), (page))
+#elif defined(RP_UI_GTK3_CINNAMON)
+// Cinnamon desktop
+typedef NemoPropertyPageProviderIface			NautilusPropertyPageProviderIface;
+typedef NemoPropertyPageProvider			NautilusPropertyPageProvider;
+typedef NemoPropertyPage				NautilusPropertyPage;
+# define NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER		NEMO_TYPE_PROPERTY_PAGE_PROVIDER
+# define NAUTILUS_FILE_INFO(obj)			NEMO_FILE_INFO(obj)
+# define NAUTILUS_IS_FILE_INFO(obj)			NEMO_IS_FILE_INFO(obj)
+# define nautilus_file_info_get_uri(file)		nemo_file_info_get_uri(file)
+# define nautilus_property_page_new(name, label, page)	nemo_property_page_new((name), (label), (page))
 #else
 # error GTK3 desktop environment not set and/or supported.
 #endif

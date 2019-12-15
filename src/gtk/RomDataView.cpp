@@ -270,7 +270,7 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			break;
 
 		case RP_DFT_GNOME:
-			// GNOME style. (Also used for MATE.)
+			// GNOME style. (Also used for MATE and Cinnamon.)
 			// TODO: Changes for GNOME 2.
 
 			// Text alignment: Left
