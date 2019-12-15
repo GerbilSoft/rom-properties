@@ -372,6 +372,11 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				expected_size = width * height;
 				break;
 
+			case PVR3_PXF_R9G9B9E5:
+				// Uncompressed "special" 32bpp formats.
+				expected_size = width * height * 4;
+				break;
+
 			default:
 				// TODO: ASTC, other formats that aren't actually compressed.
 				//assert(!"Unsupported PowerVR3 compressed format.");
@@ -563,6 +568,13 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			case PVR3_PXF_BC7:
 				// BC7-compressed texture.
 				img = ImageDecoder::fromBC7(width, height, buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_R9G9B9E5:
+				// RGB9_E5 (technically uncompressed...)
+				img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
+					width, height,
+					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 				break;
 
 			default:

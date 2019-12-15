@@ -380,6 +380,9 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				{DXGI_FORMAT_R8G8_SINT,			ImageDecoder::PXF_GR88, 2},
 
 				{DXGI_FORMAT_A8_UNORM,			ImageDecoder::PXF_A8, 1},
+
+				{DXGI_FORMAT_R9G9B9E5_SHAREDEXP,	ImageDecoder::PXF_RGB9_E5, 4},
+
 				{DXGI_FORMAT_B5G6R5_UNORM,		ImageDecoder::PXF_RGB565, 2},
 				{DXGI_FORMAT_B5G5R5A1_UNORM,		ImageDecoder::PXF_ARGB1555, 2},
 
@@ -596,6 +599,11 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
 				break;
 
+			case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
+				// Uncompressed "special" 32bpp formats.
+				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight * 4;
+				break;
+
 			default:
 				// Not supported.
 				return nullptr;
@@ -706,6 +714,15 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 				break;
 #endif /* ENABLE_PVRTC */
+
+			case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
+				// RGB9_E5 (technically uncompressed...)
+				img = ImageDecoder::fromLinear32(
+					ImageDecoder::PXF_RGB9_E5,
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					reinterpret_cast<const uint32_t*>(buf.get()),
+					expected_size);
+				break;
 
 			default:
 				// Not supported.

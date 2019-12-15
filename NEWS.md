@@ -33,6 +33,10 @@
   * PVRTC-II is partially supported.
     * TODO: Hard transition flag, images that aren't a multiple of the
       tile size.
+  * RGB9_E5 is now supported in PowerVR 3.0, KTX, and DDS textures.
+    * KTX and DDS are untested and may need adjustments.
+    * RGB9_E5 is an HDR format, but rom-properties currently converts it
+      to ARGB32 (LDR) for display purposes.
 
 * Bug fixes:
   * Fixed misdetection of NCCH sections if keys are missing.

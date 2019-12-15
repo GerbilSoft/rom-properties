@@ -93,6 +93,7 @@ enum PixelFormat {
 	PXF_G16R16,
 	PXF_A2R10G10B10,
 	PXF_A2B10G10R10,
+	PXF_RGB9_E5,
 
 	// Uncommon 16-bit formats.
 	PXF_RG88,

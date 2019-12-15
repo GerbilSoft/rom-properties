@@ -204,6 +204,13 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
+		case GL_RGB9_E5:
+			// Uncompressed "special" 32bpp formats.
+			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+			stride = ktxHeader.pixelWidth * 4;
+			expected_size = static_cast<unsigned int>(stride * height);
+			break;
+
 		case 0:
 		default:
 			// May be a compressed format.
@@ -260,6 +267,12 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 					// 16 pixels compressed into 128 bits. (8bpp)
 					expected_size = ktxHeader.pixelWidth * height;
+					break;
+
+				case GL_RGB9_E5:
+					// Uncompressed "special" 32bpp formats.
+					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+					expected_size = ktxHeader.pixelWidth * height * 4;
 					break;
 
 				default:
@@ -321,6 +334,14 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			img = ImageDecoder::fromLinear8(ImageDecoder::PXF_L8,
 				ktxHeader.pixelWidth, height,
 				buf.get(), expected_size, stride);
+			break;
+
+		case GL_RGB9_E5:
+			// Uncompressed "special" 32bpp formats.
+			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+			img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
+				ktxHeader.pixelWidth, height,
+				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
 			break;
 
 		case 0:
@@ -489,6 +510,14 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
 					break;
 #endif /* ENABLE_PVRTC */
+
+				case GL_RGB9_E5:
+					// Uncompressed "special" 32bpp formats.
+					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
+					img = ImageDecoder::fromLinear32(ImageDecoder::PXF_RGB9_E5,
+						ktxHeader.pixelWidth, height,
+						reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
+					break;
 
 				default:
 					// Not supported.
