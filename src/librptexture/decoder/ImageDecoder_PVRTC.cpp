@@ -54,7 +54,7 @@ rp_image *fromPVRTC(int width, int height,
 	}
 
 	// PVRTC 2bpp uses 8x4 tiles.
-	// PVRTC 4bpp uses 8x4 tiles.
+	// PVRTC 4bpp uses 4x4 tiles.
 	if ((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) {
 		// PVRTC 2bpp
 		assert(width % 8 == 0);
