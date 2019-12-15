@@ -332,6 +332,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		expected_size = pvr3Header.width * height * bytes;
 	} else {
 		// Compressed format.
+		int8_t fmts[2] = {PVR3_CHTYPE_UBYTE_NORM, PVR3_CHTYPE_UBYTE};
 		switch (pvr3Header.pixel_format) {
 #ifdef ENABLE_PVRTC
 			case PVR3_PXF_PVRTC_2bpp_RGB:
@@ -374,6 +375,9 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 
 			case PVR3_PXF_R9G9B9E5:
 				// Uncompressed "special" 32bpp formats.
+				// NOTE: This is a floating-point format.
+				fmts[0] = PVR3_CHTYPE_FLOAT;
+				fmts[1] = -1;
 				expected_size = width * height * 4;
 				break;
 
@@ -381,6 +385,24 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// TODO: ASTC, other formats that aren't actually compressed.
 				//assert(!"Unsupported PowerVR3 compressed format.");
 				return nullptr;
+		}
+
+		// Make sure the channel type is correct.
+		bool isOK = false;
+		for (unsigned int i = 0; i < ARRAY_SIZE(fmts); i++) {
+			if (fmts[i] < 0)
+				break;
+
+			if (pvr3Header.channel_type == (uint8_t)fmts[i]) {
+				// Found a match.
+				isOK = true;
+				break;
+			}
+		}
+
+		if (!isOK) {
+			// Channel type is incorrect.
+			return nullptr;
 		}
 	}
 
