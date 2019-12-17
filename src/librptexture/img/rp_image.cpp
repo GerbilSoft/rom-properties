@@ -6,17 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "rp_image.hpp"
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
-
-#include "common.h"
-#include "aligned_malloc.h"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private

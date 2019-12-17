@@ -11,6 +11,7 @@
  * - https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
  */
 
+#include "stdafx.h"
 #include "config.librptexture.h"
 
 #include "KhronosKTX.hpp"
@@ -20,12 +21,6 @@
 #include "data/GLenumStrings.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::RomFields;
 
@@ -33,17 +28,7 @@ using LibRpBase::RomFields;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

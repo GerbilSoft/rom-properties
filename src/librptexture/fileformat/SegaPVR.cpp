@@ -6,34 +6,22 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "SegaPVR.hpp"
 #include "FileFormat_p.hpp"
 
 #include "pvr_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
 #include "librpbase/bitstuff.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using LibRpBase::IRpFile;
-using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <vector>
+// C++ STL classes.
 using std::unique_ptr;
 using std::vector;
 

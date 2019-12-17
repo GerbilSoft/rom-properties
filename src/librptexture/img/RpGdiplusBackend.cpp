@@ -9,17 +9,11 @@
 // NOTE: This class is located in librptexture, not Win32,
 // since gtest_init.cpp uses the backend directly.
 
+#include "stdafx.h"
 #include "RpGdiplusBackend.hpp"
 #include "librpbase/aligned_malloc.h"
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <memory>
+// C++ STL classes.
 using std::unique_ptr;
 
 #include "img/rp_image.hpp"

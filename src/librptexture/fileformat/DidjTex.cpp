@@ -6,21 +6,16 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "DidjTex.hpp"
 #include "FileFormat_p.hpp"
 
 #include "didj_tex_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::rp_sprintf;
+using LibRpBase::RomFields;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -33,14 +28,7 @@ using LibRpBase::rp_sprintf;
 # include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 
@@ -522,7 +510,7 @@ int DidjTex::mipmapCount(void) const
  * @param fields RomFields object to which fields should be added.
  * @return Number of fields added, or 0 on error.
  */
-int DidjTex::getFields(LibRpBase::RomFields *fields) const
+int DidjTex::getFields(RomFields *fields) const
 {
 	// TODO: Localization.
 #define C_(ctx, str) str

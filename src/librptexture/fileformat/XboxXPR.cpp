@@ -6,29 +6,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "XboxXPR.hpp"
 #include "FileFormat_p.hpp"
 
 #include "xbox_xpr_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::rp_sprintf;
 
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-#include <cstring>
 
 namespace LibRpTexture {
 

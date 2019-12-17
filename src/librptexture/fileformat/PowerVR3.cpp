@@ -11,6 +11,7 @@
  * - http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
  */
 
+#include "stdafx.h"
 #include "config.librptexture.h"
 
 #include "PowerVR3.hpp"
@@ -19,28 +20,14 @@
 #include "pvr3_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/file/IRpFile.hpp"
-using namespace LibRpBase;
+using LibRpBase::IRpFile;
+using LibRpBase::RomFields;
 
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

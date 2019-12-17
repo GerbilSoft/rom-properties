@@ -11,36 +11,24 @@
  * - https://developer.valvesoftware.com/wiki/Valve_Texture_Format
  */
 
+#include "stdafx.h"
 #include "ValveVTF.hpp"
 #include "FileFormat_p.hpp"
 
 #include "vtf_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
 #include "librpbase/bitstuff.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-using namespace LibRpBase;
+using LibRpBase::IRpFile;
+using LibRpBase::rp_sprintf;
+using LibRpBase::RomFields;
 
 // librptexture
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
-//using std::unique_ptr;
 using std::vector;
 
 namespace LibRpTexture {

@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librptexture.h"
 
 #include "DirectDrawSurface.hpp"
@@ -15,12 +16,6 @@
 #include "data/DX10Formats.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using LibRpBase::IRpFile;
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
@@ -29,13 +24,7 @@ using LibRpBase::RomFields;
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 
@@ -1173,7 +1162,7 @@ int DirectDrawSurface::mipmapCount(void) const
  * @param fields RomFields object to which fields should be added.
  * @return Number of fields added, or 0 on error.
  */
-int DirectDrawSurface::getFields(LibRpBase::RomFields *fields) const
+int DirectDrawSurface::getFields(RomFields *fields) const
 {
 	// TODO: Localization.
 #define C_(ctx, str) str

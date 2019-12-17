@@ -8,14 +8,14 @@
 
 // Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs
 
+#include "stdafx.h"
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// C++ includes.
-#include <memory>
+// C++ STL classes.
 using std::unique_ptr;
 
 // One-time initialization.

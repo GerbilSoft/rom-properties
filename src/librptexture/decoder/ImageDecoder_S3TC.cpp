@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "ImageDecoder.hpp"
@@ -13,9 +14,6 @@
 
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
-
-// C includes. (C++ namespace)
-#include <cerrno>
 
 // References:
 // - http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/

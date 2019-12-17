@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "DX10Formats.hpp"
 #include "../fileformat/dds_structs.h"
 

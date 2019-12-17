@@ -6,15 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
-
-#include "common.h"
-
-// C++ includes.
-#include <algorithm>
 
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/hh308953(v=vs.85).aspx

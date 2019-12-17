@@ -6,20 +6,15 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "FileFormat.hpp"
 #include "FileFormat_p.hpp"
 
 // librpbase
-#include "librpbase/file/IRpFile.hpp"
 using LibRpBase::IRpFile;
 
 // librpthreads
 #include "librpthreads/Atomics.h"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRpTexture {
 

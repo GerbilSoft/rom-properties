@@ -1,31 +1,21 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libFileFormat)                    *
+ * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "FileFormatFactory.hpp"
 #include "fileformat/FileFormat.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <string>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unordered_set;
 using std::vector;
