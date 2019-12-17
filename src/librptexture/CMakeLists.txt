@@ -16,7 +16,6 @@ SET(librptexture_SRCS
 	decoder/ImageDecoder_S3TC.cpp
 	decoder/ImageDecoder_DC.cpp
 	decoder/ImageDecoder_ETC1.cpp
-	decoder/ImageDecoder_PVRTC.cpp
 	decoder/ImageDecoder_BC7.cpp
 	decoder/PixelConversion.cpp
 
@@ -82,6 +81,10 @@ IF(WIN32)
 		img/RpGdiplusBackend.hpp
 		)
 ENDIF(WIN32)
+
+IF(ENABLE_PVRTC)
+	SET(librptexture_PVRTC_SRCS decoder/ImageDecoder_PVRTC.cpp)
+ENDIF(ENABLE_PVRTC)
 
 # CPU-specific and optimized sources.
 IF(CPU_i386 OR CPU_amd64)
@@ -160,7 +163,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librptexture.h.in" "${CMAKE_C
 ADD_LIBRARY(rptexture STATIC
 	${librptexture_SRCS} ${librptexture_H}
 	${librptexture_OS_SRCS} ${librptexture_OS_H}
-	${librptexture_GL_SRCS} ${librptexture_GL_H}
+	${librptexture_PVRTC_SRCS}
 	${librptexture_IFUNC_SRCS}
 	${librptexture_MMX_SRCS}
 	${librptexture_SSE2_SRCS}

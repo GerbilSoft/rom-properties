@@ -11,9 +11,7 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
-#ifdef ENABLE_PVRTC
-# include "PVRTDecompress.h"
-#endif /* ENABLE_PVRTC */
+#include "PVRTDecompress.h"
 
 // References:
 // - https://www.khronos.org/registry/OpenGL/extensions/IMG/IMG_texture_compression_pvrtc.txt
