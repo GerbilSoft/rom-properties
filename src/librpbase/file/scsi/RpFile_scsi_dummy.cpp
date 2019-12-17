@@ -6,11 +6,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
-
-// C includes. (C++ namespace)
-#include <cerrno>
 
 namespace LibRpBase {
 

@@ -2,9 +2,12 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
+
+#include "stdafx.h"
+#include "byteswap.h"
 
 #if !defined(__i386__) && !defined(__amd64__) && !defined(__x86_64__) && \
     !defined(_M_IX86) && !defined(_M_X64)
@@ -17,7 +20,7 @@
 #include "librpthreads/pthread_once.h"
 
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-#include <intrin.h>
+# include <intrin.h>
 #endif
 
 // IA32 CPU flags

@@ -10,6 +10,7 @@
 # error RpFile_scsi_linux.cpp is for Windows ONLY.
 #endif /* _WIN32 */
 
+#include "stdafx.h"
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 
@@ -28,11 +29,6 @@
 # include <winioctl.h>
 # include <ntddscsi.h>
 #endif
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRpBase {
 

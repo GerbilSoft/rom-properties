@@ -2,15 +2,13 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * byteswap_ifunc.c: Byteswapping functions. (IFUNC)                       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "cpu_dispatch.h"
+#include "stdafx.h"
 
 #ifdef RP_HAS_IFUNC
-
-#include "byteswap.h"
 
 /**
  * IFUNC resolver function for __byte_swap_16_array().

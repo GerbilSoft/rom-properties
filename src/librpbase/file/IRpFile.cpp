@@ -6,14 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "IRpFile.hpp"
 
 // librpthreads
 #include "librpthreads/Atomics.h"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
 
 namespace LibRpBase {
 

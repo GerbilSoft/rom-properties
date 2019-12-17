@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.cpp: Text encoding functions. (specialized conversions)       *
  *                                                                         *
- * Copyright (c) 2009-2018 by David Korth.                                 *
+ * Copyright (c) 2009-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "TextFuncs.hpp"
 #include "TextFuncs_NULL.hpp"
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 
 // The specialized code page conversions in this file aren't supported by

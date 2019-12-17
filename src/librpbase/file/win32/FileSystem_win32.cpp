@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "../FileSystem.hpp"
 
 // librpbase
@@ -19,13 +20,7 @@
 #include <sys/stat.h>
 #include <sys/utime.h>
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cstring>
-#include <ctime>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::u16string;
 using std::wstring;

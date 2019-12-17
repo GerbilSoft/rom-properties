@@ -6,23 +6,18 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "SystemRegion.hpp"
-#include "librpbase/common.h"
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C includes.
-#include <stdlib.h>
-
 // C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
 #include <clocale>
-#include <cstring>
 
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
-#endif
+#endif /* _WIN32 */
 
 namespace LibRpBase {
 

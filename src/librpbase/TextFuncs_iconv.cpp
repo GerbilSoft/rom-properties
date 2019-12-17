@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 #include "TextFuncs.hpp"
 #include "TextFuncs_NULL.hpp"
@@ -37,16 +38,7 @@
 # include <iconv.h>
 #endif
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-
-// C++ includes.
-#include <string>
-using std::basic_string;
+// C++ STL classes.
 using std::string;
 using std::u16string;
 

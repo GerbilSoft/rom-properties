@@ -2,26 +2,17 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.cpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "stdafx.h"
+#include "config.librpbase.h"
 
 #include "Config.hpp"
 #include "ConfReader_p.hpp"
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <utility>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;

@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "../RpFile.hpp"
@@ -23,13 +24,7 @@
 // C includes.
 #include <fcntl.h>
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::wstring;

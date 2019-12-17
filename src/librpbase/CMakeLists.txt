@@ -361,11 +361,20 @@ ENDIF(NOT MSVC)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.byteswap.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.byteswap.h")
 
+# Precompiled headers.
+# NOTE: Only enabling PCH for MSVC builds.
+INCLUDE(PrecompiledHeader)
+SET(librpbase_PCH_C stdafx.c)
+SET(librpbase_PCH_CXX stdafx.cpp)
+SET(librpbase_PCH_SRC ${librpbase_PCH_C} ${librpbase_PCH_CXX})
+SET(librpbase_PCH_H stdafx.h)
+
 ######################
 # Build the library. #
 ######################
 
 ADD_LIBRARY(rpbase STATIC
+	${librpbase_PCH_SRC} ${librpbase_PCH_H}
 	${librpbase_SRCS} ${librpbase_H}
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
@@ -375,6 +384,10 @@ ADD_LIBRARY(rpbase STATIC
 	${librpbase_MMX_SRCS}
 	${librpbase_SSE2_SRCS}
 	${librpbase_SSSE3_SRCS}
+	)
+ADD_PRECOMPILED_HEADER(rpbase ${librpbase_PCH_H}
+	SOURCE_C ${librpbase_PCH_C}
+	SOURCE_CXX ${librpbase_PCH_CXX}
 	)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rpbase)

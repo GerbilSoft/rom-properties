@@ -6,18 +6,16 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "FileSystem.hpp"
 
 // libunixcommon
 #include "libunixcommon/userdirs.hpp"
-// librpbase
-#include "common.h"
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
 // C includes.
-#include <stdlib.h>
 #include <sys/stat.h>
 #include <utime.h>
 #include <unistd.h>
@@ -47,12 +45,7 @@
 # endif /* OCFS2_SUPER_MAGIC */
 #endif /* __linux__ */
 
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <ctime>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::u16string;
 

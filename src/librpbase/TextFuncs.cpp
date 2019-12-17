@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 #include "TextFuncs.hpp"
 #include "byteswap.h"
@@ -14,7 +15,6 @@
 #include "libi18n/i18n.h"
 
 // C includes.
-#include <stdlib.h>
 #ifdef HAVE_NL_LANGINFO
 # include <langinfo.h>
 #else /* !HAVE_NL_LANGINFO */
@@ -22,20 +22,13 @@
 #endif /* HAVE_NL_LANGINFO */
 
 // C includes. (C++ namespace)
-#include <cassert>
 #include <cstdarg>
-#include <cstdio>
-#include <cstring>
 #include <cwctype>
 
 // for strnlen() if it's not available in <string.h>
-#include "librpbase/TextFuncs_libc.h"
+#include "TextFuncs_libc.h"
 
-// C++ includes.
-#include <iomanip>
-#include <memory>
-#include <sstream>
-#include <string>
+// C++ STL classes.
 using std::ostringstream;
 using std::string;
 using std::u16string;

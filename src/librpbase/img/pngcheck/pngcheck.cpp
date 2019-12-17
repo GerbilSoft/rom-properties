@@ -34,7 +34,7 @@
  *===========================================================================*/
 /* SPDX-License-Identifier: libpng-2.0 */
 
-#define VERSION "2.3.0 of 7 July 2007"
+#define PNGCHECK_VERSION "2.3.0 of 7 July 2007"
 
 /*
  * NOTE:  current MNG support is informational; error-checking is MINIMAL!
@@ -131,13 +131,12 @@
  * rom-properties: Modified to be usable as a library for IRpFile*
  * instead of as a standalone program.
  */
+#include "stdafx.h"
 #include "pngcheck.hpp"
 #include "../../file/IRpFile.hpp"
 using LibRpBase::IRpFile;
 
-#include <memory>
-using std::unique_ptr;
-
+#if 0
 // C includes.
 #include <stdlib.h>
 
@@ -145,6 +144,13 @@ using std::unique_ptr;
 #include <cstdio>
 #include <cctype>
 #include <cstring>
+
+// C++ includes.
+#include <memory>
+#endif
+
+// C++ STL classes.
+using std::unique_ptr;
 
 // rom-properties: Uncomment this to enable printf() output.
 //#define RP_PRINTF_ENABLED 1
@@ -875,7 +881,7 @@ int main(int argc, char *argv[])
 /* GRR 20061203 */
 static void usage(FILE *fpMsg)
 {
-  fprintf(fpMsg, "PNGcheck, version %s,\n", VERSION);
+  fprintf(fpMsg, "PNGcheck, version %s,\n", PNGCHECK_VERSION);
   fprintf(fpMsg, "   by Alexander Lehmann, Andreas Dilger and Greg Roelofs.\n");
 #ifdef USE_ZLIB
   fprintf(fpMsg, "   Compiled with zlib %s; using zlib %s.\n",

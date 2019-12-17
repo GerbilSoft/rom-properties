@@ -3,14 +3,12 @@
  * TextFuncs_libc.c: Reimplementations of libc functions that aren't       *
  * present on this system.                                                 *
  *                                                                         *
- * Copyright (c) 2009-2018 by David Korth.                                 *
+ * Copyright (c) 2009-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "TextFuncs_libc.h"
-
-// C includes.
-#include <string.h>
 
 /** Reimplementations of libc functions that aren't present on this system. **/
 

@@ -6,14 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "IStreamWrapper.hpp"
 
 // Text conversion functions and macros.
 #include "../../TextFuncs.hpp"
 #include "../../TextFuncs_wchar.hpp"
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::wstring;
 
 namespace LibRpBase {

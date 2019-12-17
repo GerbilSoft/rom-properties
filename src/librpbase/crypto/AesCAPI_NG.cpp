@@ -6,12 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "AesCAPI_NG.hpp"
-#include "../common.h"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"

@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "RpFile.hpp"
 #include "RpFile_p.hpp"
 
@@ -13,16 +14,9 @@
 # error RpFile_stdio is not supported on Windows, use RpFile_win32.
 #endif /* _WIN32 */
 
-// librpbase
-#include "byteswap.h"
-
 // C includes.
 #include <sys/stat.h>
 #include <unistd.h>	// ftruncate()
-
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cstring>
 
 namespace LibRpBase {
 

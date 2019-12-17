@@ -6,7 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "stdafx.h"
+#include "config.librpbase.h"
 #include "CBCReader.hpp"
 
 // librpbase
@@ -16,14 +17,6 @@
 # include "crypto/IAesCipher.hpp"
 # include "crypto/KeyManager.hpp"
 #endif
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ namespace.
-#include <algorithm>
 
 namespace LibRpBase {
 
