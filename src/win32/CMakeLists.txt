@@ -110,15 +110,16 @@ IF(ENABLE_DECRYPTION)
 	ENDIF(MSVC)
 ENDIF(ENABLE_DECRYPTION)
 
-IF(MSVC)
+IF(ENABLE_PCH)
 	# Precompiled headers.
-	# NOTE: Only enabling PCH for MSVC builds.
 	INCLUDE(PrecompiledHeader)
 	SET(rom-properties-win32_PCH_C stdafx.c)
 	SET(rom-properties-win32_PCH_CXX stdafx.cpp)
 	SET(rom-properties-win32_PCH_SRC ${rom-properties-win32_PCH_C} ${rom-properties-win32_PCH_CXX})
 	SET(rom-properties-win32_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
 
+IF(MSVC)
 	# Delay-load sources.
 	SET(rom-properties-win32-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.c)
 	SET(rom-properties-win32-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.h)
@@ -150,13 +151,12 @@ ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_CRYPTO_SRCS} ${rom-properties-win32_CRYPTO_H}
 	${rom-properties-win32_RC}
 	)
-# NOTE: Only enabling PCH for MSVC.
-IF(MSVC)
+IF(ENABLE_PCH)
 	ADD_PRECOMPILED_HEADER(rom-properties ${rom-properties-win32_PCH_H}
 		SOURCE_C ${rom-properties-win32_PCH_C}
 		SOURCE_CXX ${rom-properties-win32_PCH_CXX}
 		)
-ENDIF(MSVC)
+ENDIF(ENABLE_PCH)
 SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)

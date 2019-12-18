@@ -157,11 +157,12 @@ UNSET(arch)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librptexture.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librptexture.h")
 
 # Precompiled headers.
-# NOTE: Only enabling PCH for MSVC builds.
-INCLUDE(PrecompiledHeader)
-SET(librptexture_PCH_CXX stdafx.cpp)
-SET(librptexture_PCH_SRC ${librptexture_PCH_CXX})
-SET(librptexture_PCH_H stdafx.h)
+IF(ENABLE_PCH)
+	INCLUDE(PrecompiledHeader)
+	SET(librptexture_PCH_CXX stdafx.cpp)
+	SET(librptexture_PCH_SRC ${librptexture_PCH_CXX})
+	SET(librptexture_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
 
 ######################
 # Build the library. #
@@ -178,9 +179,11 @@ ADD_LIBRARY(rptexture STATIC
 	${librptexture_SSSE3_SRCS}
 	${librptexture_SSE41_SRCS}
 	)
-ADD_PRECOMPILED_HEADER(rptexture ${librptexture_PCH_H}
-	SOURCE_CXX ${librptexture_PCH_CXX}
-	)
+IF(ENABLE_PCH)
+	ADD_PRECOMPILED_HEADER(rptexture ${librptexture_PCH_H}
+		SOURCE_CXX ${librptexture_PCH_CXX}
+		)
+ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptexture)
 

@@ -11,6 +11,7 @@ case "$OSTYPE" in
 		cmake .. \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DSPLIT_DEBUG=OFF \
+			-DENABLE_PCH=OFF \
 			-DENABLE_LTO=OFF \
 			-DBUILD_TESTING=ON \
 			-DENABLE_JPEG=ON \
