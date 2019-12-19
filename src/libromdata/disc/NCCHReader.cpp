@@ -62,16 +62,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// NOTE: readFromROM() sets q->m_lastError.
 		// TODO: Better verifyResult?
 		verifyResult = KeyManager::VERIFY_WRONG_KEY;
-		if (q->m_hasDiscReader) {
-			// Delete the IDiscReader, since it's
-			// most likely a temporary CIAReader.
-			// TODO: Use reference counting?
-			delete q->m_discReader;
-			q->m_discReader = nullptr;
-		} else {
-			q->m_file->unref();
-			q->m_file = nullptr;
-		}
+		closeFileOrDiscReader();
 		return;
 	}
 
@@ -84,16 +75,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// 0004800F-484E4841
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NDHT;
-			if (q->m_hasDiscReader) {
-				// Delete the IDiscReader, since it's
-				// most likely a temporary CIAReader.
-				// TODO: Use reference counting?
-				delete q->m_discReader;
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
-			}
+			closeFileOrDiscReader();
 			return;
 		}
 
@@ -103,34 +85,15 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// 0004800F-484E4C41
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NARC;
-			if (q->m_hasDiscReader) {
-				// Delete the IDiscReader, since it's
-				// most likely a temporary CIAReader.
-				// TODO: Use reference counting?
-				delete q->m_discReader;
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
+		} else {
+			// TODO: Better verifyResult? (May be DSiWare...)
+			verifyResult = KeyManager::VERIFY_WRONG_KEY;
+			if (q->m_lastError == 0) {
+				q->m_lastError = EIO;
 			}
-			return;
 		}
 
-		// TODO: Better verifyResult? (May be DSiWare...)
-		verifyResult = KeyManager::VERIFY_WRONG_KEY;
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		if (q->m_hasDiscReader) {
-			// Delete the IDiscReader, since it's
-			// most likely a temporary CIAReader.
-			// TODO: Use reference counting?
-			delete q->m_discReader;
-			q->m_discReader = nullptr;
-		} else {
-			q->m_file->unref();
-			q->m_file = nullptr;
-		}
+		closeFileOrDiscReader();
 		return;
 	}
 	headers_loaded |= HEADER_NCCH;
@@ -153,16 +116,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// Zero out the keys.
 			memset(ncch_keys, 0, sizeof(ncch_keys));
 			q->m_lastError = EIO;
-			if (q->m_hasDiscReader) {
-				// Delete the IDiscReader, since it's
-				// most likely a temporary CIAReader.
-				// TODO: Use reference counting?
-				delete q->m_discReader;
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
-			}
+			closeFileOrDiscReader();
 			return;
 		}
 		// Debug keys worked.
@@ -174,16 +128,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// Unsupported.
 		verifyResult = KeyManager::VERIFY_NO_SUPPORT;
 		q->m_lastError = EIO;
-		if (q->m_hasDiscReader) {
-			// Delete the IDiscReader, since it's
-			// most likely a temporary CIAReader.
-			// TODO: Use reference counting?
-			delete q->m_discReader;
-			q->m_discReader = nullptr;
-		} else {
-			q->m_file->unref();
-			q->m_file = nullptr;
-		}
+		closeFileOrDiscReader();
 		return;
 	}
 	// No decryption is required.
@@ -201,16 +146,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		if (size != sizeof(exefs_header)) {
 			// Read error.
 			// NOTE: readFromROM() sets q->m_lastError.
-			if (q->m_hasDiscReader) {
-				// Delete the IDiscReader, since it's
-				// most likely a temporary CIAReader.
-				// TODO: Use reference counting?
-				delete q->m_discReader;
-				q->m_discReader = nullptr;
-			} else {
-				q->m_file->unref();
-				q->m_file = nullptr;
-			}
+			closeFileOrDiscReader();
 			return;
 		}
 
@@ -242,16 +178,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					q->m_lastError = EIO;
 					delete cipher;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						// Delete the IDiscReader, since it's
-						// most likely a temporary CIAReader.
-						// TODO: Use reference counting?
-						delete q->m_discReader;
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
@@ -267,16 +194,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					q->m_lastError = EIO;
 					delete cipher;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						// Delete the IDiscReader, since it's
-						// most likely a temporary CIAReader.
-						// TODO: Use reference counting?
-						delete q->m_discReader;
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
@@ -287,16 +205,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					// NOTE: readFromROM() sets q->m_lastError.
 					delete cipher;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						// Delete the IDiscReader, since it's
-						// most likely a temporary CIAReader.
-						// TODO: Use reference counting?
-						delete q->m_discReader;
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
@@ -313,16 +222,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					delete cipher;
 					q->m_lastError = EIO;
 					cipher = nullptr;
-					if (q->m_hasDiscReader) {
-						// Delete the IDiscReader, since it's
-						// most likely a temporary CIAReader.
-						// TODO: Use reference counting?
-						delete q->m_discReader;
-						q->m_discReader = nullptr;
-					} else {
-						q->m_file->unref();
-						q->m_file = nullptr;
-					}
+					closeFileOrDiscReader();
 					return;
 				}
 
