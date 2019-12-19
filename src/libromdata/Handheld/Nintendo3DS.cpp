@@ -602,6 +602,11 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 		if (ticket) {
 			// Create a CIAReader.
 			ciaReader = new CIAReader(file, offset, length, ticket, idx);
+			if (!ciaReader->isOpen()) {
+				// Unable to open the CIAReader.
+				delete ciaReader;
+				ciaReader = nullptr;
+			}
 		}
 	}
 

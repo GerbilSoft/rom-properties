@@ -63,6 +63,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		// TODO: Better verifyResult?
 		verifyResult = KeyManager::VERIFY_WRONG_KEY;
 		if (q->m_hasDiscReader) {
+			// Delete the IDiscReader, since it's
+			// most likely a temporary CIAReader.
+			// TODO: Use reference counting?
+			delete q->m_discReader;
 			q->m_discReader = nullptr;
 		} else {
 			q->m_file->unref();
@@ -81,6 +85,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NDHT;
 			if (q->m_hasDiscReader) {
+				// Delete the IDiscReader, since it's
+				// most likely a temporary CIAReader.
+				// TODO: Use reference counting?
+				delete q->m_discReader;
 				q->m_discReader = nullptr;
 			} else {
 				q->m_file->unref();
@@ -96,6 +104,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			verifyResult = KeyManager::VERIFY_OK;
 			nonNcchContentType = NONCCH_NARC;
 			if (q->m_hasDiscReader) {
+				// Delete the IDiscReader, since it's
+				// most likely a temporary CIAReader.
+				// TODO: Use reference counting?
+				delete q->m_discReader;
 				q->m_discReader = nullptr;
 			} else {
 				q->m_file->unref();
@@ -110,6 +122,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			q->m_lastError = EIO;
 		}
 		if (q->m_hasDiscReader) {
+			// Delete the IDiscReader, since it's
+			// most likely a temporary CIAReader.
+			// TODO: Use reference counting?
+			delete q->m_discReader;
 			q->m_discReader = nullptr;
 		} else {
 			q->m_file->unref();
@@ -138,6 +154,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			memset(ncch_keys, 0, sizeof(ncch_keys));
 			q->m_lastError = EIO;
 			if (q->m_hasDiscReader) {
+				// Delete the IDiscReader, since it's
+				// most likely a temporary CIAReader.
+				// TODO: Use reference counting?
+				delete q->m_discReader;
 				q->m_discReader = nullptr;
 			} else {
 				q->m_file->unref();
@@ -155,6 +175,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 		verifyResult = KeyManager::VERIFY_NO_SUPPORT;
 		q->m_lastError = EIO;
 		if (q->m_hasDiscReader) {
+			// Delete the IDiscReader, since it's
+			// most likely a temporary CIAReader.
+			// TODO: Use reference counting?
+			delete q->m_discReader;
 			q->m_discReader = nullptr;
 		} else {
 			q->m_file->unref();
@@ -178,6 +202,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			// Read error.
 			// NOTE: readFromROM() sets q->m_lastError.
 			if (q->m_hasDiscReader) {
+				// Delete the IDiscReader, since it's
+				// most likely a temporary CIAReader.
+				// TODO: Use reference counting?
+				delete q->m_discReader;
 				q->m_discReader = nullptr;
 			} else {
 				q->m_file->unref();
@@ -215,6 +243,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					delete cipher;
 					cipher = nullptr;
 					if (q->m_hasDiscReader) {
+						// Delete the IDiscReader, since it's
+						// most likely a temporary CIAReader.
+						// TODO: Use reference counting?
+						delete q->m_discReader;
 						q->m_discReader = nullptr;
 					} else {
 						q->m_file->unref();
@@ -236,6 +268,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					delete cipher;
 					cipher = nullptr;
 					if (q->m_hasDiscReader) {
+						// Delete the IDiscReader, since it's
+						// most likely a temporary CIAReader.
+						// TODO: Use reference counting?
+						delete q->m_discReader;
 						q->m_discReader = nullptr;
 					} else {
 						q->m_file->unref();
@@ -252,6 +288,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					delete cipher;
 					cipher = nullptr;
 					if (q->m_hasDiscReader) {
+						// Delete the IDiscReader, since it's
+						// most likely a temporary CIAReader.
+						// TODO: Use reference counting?
+						delete q->m_discReader;
 						q->m_discReader = nullptr;
 					} else {
 						q->m_file->unref();
@@ -274,6 +314,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 					q->m_lastError = EIO;
 					cipher = nullptr;
 					if (q->m_hasDiscReader) {
+						// Delete the IDiscReader, since it's
+						// most likely a temporary CIAReader.
+						// TODO: Use reference counting?
+						delete q->m_discReader;
 						q->m_discReader = nullptr;
 					} else {
 						q->m_file->unref();
