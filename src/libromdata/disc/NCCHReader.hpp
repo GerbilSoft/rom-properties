@@ -17,10 +17,11 @@
 
 namespace LibRpBase {
 	class IRpFile;
-	class IDiscReader;
 }
 
 namespace LibRomData {
+
+class CIAReader;
 
 class NCCHReaderPrivate;
 class NCCHReader : public LibRpBase::IPartition
@@ -42,18 +43,18 @@ class NCCHReader : public LibRpBase::IPartition
 			int64_t ncch_offset, uint32_t ncch_length);
 
 		/**
-		 * Construct an NCCHReader with the specified IDiscReader.
+		 * Construct an NCCHReader with the specified CIAReader.
 		 *
-		 * NOTE: The NCCHReader *takes ownership* of the IDiscReader.
+		 * NOTE: The NCCHReader *takes ownership* of the CIAReader.
 		 * This makes it easier to create a temporary CIAReader
 		 * without worrying about keeping track of it.
 		 *
-		 * @param discReader		[in] IDiscReader. (for CCIs or CIAs)
+		 * @param ciaReader		[in] CIAReader. (for CIAs only)
 		 * @param media_unit_shift	[in] Media unit shift.
 		 * @param ncch_offset		[in] NCCH start offset, in bytes.
 		 * @param ncch_length		[in] NCCH length, in bytes.
 		 */
-		NCCHReader(LibRpBase::IDiscReader *discReader,
+		NCCHReader(CIAReader *ciaReader,
 			uint8_t media_unit_shift,
 			int64_t ncch_offset, uint32_t ncch_length);
 		virtual ~NCCHReader();
