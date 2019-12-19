@@ -61,6 +61,8 @@
     some programs write "KTXOrientation" instead of "KTXorientation".
   * dll-search.c: The Mate Desktop check incorrectly had two entries for MATE
     and lacked an entry for GNOME.
+  * Nintendo3DS: Fixed NCCH detection for CFAs with an "icon" file but no
+    ".code" file, which is usually the case for DLC CIAs.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
