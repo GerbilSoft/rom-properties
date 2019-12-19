@@ -103,6 +103,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 
 #ifdef ENABLE_DECRYPTION
 	// Byteswap the title ID. (It's used for the AES counter.)
+	// FIXME: Verify this on big-endian.
 	tid_be = __swab64(ncch_header.hdr.program_id.id);
 
 	// Determine the keyset to use.
@@ -172,8 +173,27 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			cipher->setIV(ctr.u8, sizeof(ctr.u8));
 			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 
-			// First file should be ".code".
-			if (strcmp(exefs_header.files[0].name, ".code") != 0) {
+			// For CXI: First file should be ".code".
+			// For CFA: First file should be "icon".
+			const char *filename_chk = nullptr;
+			const uint8_t ctype_flag = ncch_header.hdr.flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
+			if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Executable) {
+				filename_chk = ".code";
+			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Data) {
+				filename_chk = "icon";
+			}
+			if (!filename_chk) {
+				// No filename to check...
+				memset(ncch_keys, 0, sizeof(ncch_keys));
+				q->m_lastError = EIO;
+				delete cipher;
+				cipher = nullptr;
+				closeFileOrDiscReader();
+				return;
+			}
+
+			// Check the first filename.
+			if (strcmp(exefs_header.files[0].name, filename_chk) != 0) {
 				if (isDebug) {
 					// We already tried both sets.
 					// Zero out the keys.
@@ -219,8 +239,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				cipher->setIV(ctr.u8, sizeof(ctr.u8));
 				cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 
-				// First file should be ".code".
-				if (strcmp(exefs_header.files[0].name, ".code") != 0) {
+				// Check the first filename, again.
+				if (strcmp(exefs_header.files[0].name, filename_chk) != 0) {
 					// Still not usable.
 					delete cipher;
 					q->m_lastError = EIO;
