@@ -9,10 +9,6 @@
 #ifndef __ROMPROPERTIES_WIN32_STDAFX_H__
 #define __ROMPROPERTIES_WIN32_STDAFX_H__
 
-#ifndef _WIN32
-#error stdafx.h is Windows only.
-#endif
-
 // Make sure STRICT is defined for better type safety.
 #ifndef STRICT
 #define STRICT
@@ -29,6 +25,9 @@
 // Typesafe inline function wrappers for some Windows headers.
 #include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32common/sdk/commctrl_ts.h"
+
+// Subclass functions for compatibility with older Windows.
+#include "libwin32common/SubclassWindow.h"
 
 // Additional Windows headers.
 #include <olectl.h>

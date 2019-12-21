@@ -6,6 +6,9 @@ PROJECT(libwin32common)
 # since MSVC will trim the object file. Compile it in the
 # executable target directly.
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libwin32common.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libwin32common.h")
+
 # Sources and headers.
 SET(libwin32common_SRCS
 	wmain.c
@@ -51,3 +54,9 @@ INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(win32common)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(win32common PROPERTIES EXCLUDE_FROM_ALL TRUE)
+# Include paths:
+# - Public: Current source and binary directories.
+TARGET_INCLUDE_DIRECTORIES(rom-properties
+	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	)
