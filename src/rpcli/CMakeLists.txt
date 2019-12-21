@@ -104,11 +104,16 @@ IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rpcli PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(rpbase git_version)
+ENDIF(TARGET git_version)
+
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_SOURCE_DIR}/..\"")
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
-	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_BINARY_DIR}\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
 ENDIF(MINGW)
 
 # Delay-load some Windows system libraries.

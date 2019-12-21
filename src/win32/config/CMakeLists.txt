@@ -13,11 +13,6 @@ SET_WINDOWS_NO_MANIFEST(rp-config)
 # so use WinMain for rp-config.exe.
 SET_WINDOWS_ENTRYPOINT(rp-config WinMain OFF)
 
-# Make sure git_version.h is created before compiling this target.
-IF(TARGET git_version)
-	ADD_DEPENDENCIES(rp-config git_version)
-ENDIF(TARGET git_version)
-
 TARGET_LINK_LIBRARIES(rp-config PRIVATE win32common)
 TARGET_INCLUDE_DIRECTORIES(rp-config
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
@@ -25,6 +20,18 @@ TARGET_INCLUDE_DIRECTORIES(rp-config
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# build/src/win32
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
 	)
+
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(rp-config git_version)
+ENDIF(TARGET git_version)
+
+# CMake-3.7.2 doesn't add include paths to windres.
+IF(MINGW)
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_SOURCE_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
+ENDIF(MINGW)
 
 #################
 # Installation. #

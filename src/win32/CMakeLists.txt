@@ -195,19 +195,24 @@ IF(HAVE_XML)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties PRIVATE ${TinyXML2_INCLUDE_DIR})
 ENDIF(HAVE_XML)
 
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(rpbase git_version)
+ENDIF(TARGET git_version)
+
+# CMake-3.7.2 doesn't add include paths to windres.
+IF(MINGW)
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_SOURCE_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
+ENDIF(MINGW)
+
 # Delay-load some Windows system libraries.
 # TODO: MinGW delay-load?
 IF(MSVC)
 	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE delayimp)
 ENDIF(MSVC)
-
-# CMake-3.7.2 doesn't add include paths to windres.
-IF(MINGW)
-	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_SOURCE_DIR}/..\"")
-	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
-	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_BINARY_DIR}\"")
-ENDIF(MINGW)
 
 # Use the .def file for DLL exports.
 # Also add delay-load flags here. (TODO: MinGW?)
