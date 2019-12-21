@@ -132,7 +132,6 @@ class CacheTabPrivate
 
 		// Function pointer for SHGetImageList.
 		// This function is not exported by name prior to Windows XP.
-		#define SHGetImageList_ordinal MAKEINTRESOURCEA(727)
 		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
 
 		// Image list for the XP drive list.
@@ -220,7 +219,7 @@ void CacheTabPrivate::initDialog(void)
 	assert(hShell32_dll != nullptr);
 	if (hShell32_dll) {
 		// Get SHGetImageList() by ordinal.
-		PFNSHGETIMAGELIST pfnSHGetImageList = (PFNSHGETIMAGELIST)GetProcAddress(hShell32_dll, SHGetImageList_ordinal);
+		PFNSHGETIMAGELIST pfnSHGetImageList = (PFNSHGETIMAGELIST)GetProcAddress(hShell32_dll, MAKEINTRESOURCEA(727));
 		if (pfnSHGetImageList) {
 			// Initialize the ListView image list.
 			// NOTE: HIMAGELIST and IImageList are compatible.
