@@ -181,11 +181,12 @@ ELSE(ENABLE_XML)
 	SET(ENABLE_XML_MSG "Disabled")
 ENDIF(ENABLE_XML)
 
-IF(ENABLE_GL)
-	SET(ENABLE_KTX_MSG "Enabled")
-ELSE(ENABLE_GL)
-	SET(ENABLE_KTX_MSG "Disabled")
-ENDIF(ENABLE_GL)
+IF(ENABLE_PVRTC)
+	SET(ENABLE_PVRTC_MSG "Enabled")
+ELSE(ENABLE_PVRTC)
+	SET(ENABLE_PVRTC_MSG "Disabled")
+ENDIF(ENABLE_PVRTC)
+
 
 UNSET(EXTLIB_BUILD)
 IF(USE_INTERNAL_ZLIB)
@@ -213,7 +214,7 @@ MESSAGE("
 - Building command-line frontend: ${CLI_BUILD_MSG}
 - Decryption functionality: ${ENABLE_DECRYPTION_MSG}
 - XML parsing: ${ENABLE_XML_MSG}
-- KTX textures: ${ENABLE_KTX_MSG}
+- PVRTC decoder: ${ENABLE_PVRTC_MSG}
 
 - Building these third-party libraries from extlib:
 ${EXTLIB_BUILD}")
