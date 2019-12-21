@@ -29,6 +29,7 @@ SET(libwin32common_H
 	w32time.h
 	ComBase.hpp
 	propsys_xp.h
+	WTSSessionNotification.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

@@ -46,9 +46,6 @@
 // IEmptyVolumeCache and related.
 #include <emptyvc.h>
 
-// Windows Terminal Services. (Remote Desktop)
-#include <wtsapi32.h>
-
 // Common Controls COM declarations.
 #include <commoncontrols.h>
 

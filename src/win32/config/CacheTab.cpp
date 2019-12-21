@@ -20,9 +20,12 @@ using namespace LibRpBase;
 
 // libwin32common
 #include "libwin32common/RegKey.hpp"
+#include "libwin32common/WTSSessionNotification.hpp"
 #include "libwin32common/sdk/commctrl_ts.h"
 #include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
+using LibWin32Common::WTSSessionNotification;
+
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
 // Windows: WM_DEVICECHANGE structs.
@@ -142,8 +145,7 @@ class CacheTabPrivate
 		bool isVista;
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
-		HMODULE hWtsApi32_dll;
-		typedef BOOL (WINAPI *PFNWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
+		WTSSessionNotification wts;
 };
 
 /** CacheTabPrivate **/
@@ -154,7 +156,6 @@ CacheTabPrivate::CacheTabPrivate()
 	, pImageList(nullptr)
 	, dwUnitmaskXP(0)
 	, isVista(false)
-	, hWtsApi32_dll(nullptr)
 {
 	// Determine which dialog we should use.
 	RegKey hKey(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache"), KEY_READ, false);
@@ -177,11 +178,6 @@ CacheTabPrivate::~CacheTabPrivate()
 {
 	if (pImageList) {
 		pImageList->Release();
-	}
-
-	// Close DLLs.
-	if (hWtsApi32_dll) {
-		FreeLibrary(hWtsApi32_dll);
 	}
 }
 
@@ -243,18 +239,7 @@ void CacheTabPrivate::initDialog(void)
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
-	if (!hWtsApi32_dll) {
-		// Open the DLL.
-		hWtsApi32_dll = LoadLibrary(_T("wtsapi32.dll"));
-	}
-	if (hWtsApi32_dll) {
-		// Register for WTS session notifications.
-		PFNWTSREGISTERSESSIONNOTIFICATION pfnWTSRegisterSessionNotification =
-			(PFNWTSREGISTERSESSIONNOTIFICATION)GetProcAddress(hWtsApi32_dll, "WTSRegisterSessionNotification");
-		if (pfnWTSRegisterSessionNotification) {
-			pfnWTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
-		}
-	}
+	wts.registerSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
 
 	// Enumerate the drives.
 	enumDrivesXP();
