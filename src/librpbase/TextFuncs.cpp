@@ -201,16 +201,19 @@ string rp_sprintf(const char *fmt, ...)
 	return (len == len2 ? string(buf.get(), len) : string());
 }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 /**
  * sprintf()-style function for std::string.
  * This version supports positional format string arguments.
+ *
+ * MSVCRT doesn't support positional arguments in the standard
+ * printf() functions. Instead, it has printf_p().
  *
  * @param fmt Format string.
  * @param ... Arguments.
  * @return std::string
  */
-std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
+std::string rp_sprintf_p(const char *fmt, ...)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
@@ -241,7 +244,7 @@ std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2)
 	assert(len == len2);
 	return (len == len2 ? string(buf.get(), len) : string());
 }
-#endif /* _MSC_VER */
+#endif /* _MSC_VER || __MINGW32__ */
 
 /** Other useful text functions **/
 

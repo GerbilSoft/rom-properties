@@ -579,21 +579,24 @@ std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
  */
 std::string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 /**
  * sprintf()-style function for std::string.
  * This version supports positional format string arguments.
+ *
+ * MSVCRT doesn't support positional arguments in the standard
+ * printf() functions. Instead, it has printf_p().
  *
  * @param fmt Format string.
  * @param ... Arguments.
  * @return std::string.
  */
 std::string rp_sprintf_p(const char *fmt, ...) ATTR_PRINTF(1, 2);
-#else
+#else /* !_MSC_VER && !__MINGW32__ */
 // glibc supports positional format string arguments
 // in the standard printf() functions.
 #define rp_sprintf_p(fmt, ...) rp_sprintf(fmt, ##__VA_ARGS__)
-#endif
+#endif /* _MSC_VER && __MINGW32__ */
 
 /** Other useful text functions **/
 
