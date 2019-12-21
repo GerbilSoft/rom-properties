@@ -258,23 +258,69 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// the import directory table area, though it might be
 	// easier to use the first copy...
 
-	if (dataDir.Size < sizeof(IMAGE_IMPORT_DIRECTORY)) {
-		// Not enough space for the import table...
+	// Load the import directory table.
+	ao::uvector<IMAGE_IMPORT_DIRECTORY> impDirTbl;
+	assert(dataDir.Size % sizeof(IMAGE_IMPORT_DIRECTORY) == 0);
+	impDirTbl.resize(dataDir.Size / sizeof(IMAGE_IMPORT_DIRECTORY));
+	if (impDirTbl.empty()) {
+		// Effectively empty?
 		return -ENOENT;
 	}
-
-	// Load the import directory table.
-	// NOTE: The import directory table includes the directory entries
-	// *and* the DLL filenames.
-	ao::uvector<uint8_t> impDirTbl;
-	impDirTbl.resize(dataDir.Size+1);
-	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), dataDir.Size);
-	if (size != dataDir.Size) {
+	const size_t impDirTbl_size_bytes = impDirTbl.size() * sizeof(IMAGE_IMPORT_DIRECTORY);
+	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), impDirTbl_size_bytes);
+	if (size != impDirTbl_size_bytes) {
 		// Seek and/or read error.
 		return -EIO;
 	}
-	// Make sure the table is NULL-terminated.
-	impDirTbl[impDirTbl.size()-1] = 0;
+
+	// Set containing all of the DLL name VAs.
+	unordered_set<uint32_t> set_dll_vaddrs;
+
+	// Find the lowest and highest DLL name VAs in the import directory table.
+	uint32_t dll_vaddr_low = ~0U;
+	uint32_t dll_vaddr_high = 0U;
+	for (auto iter = impDirTbl.cbegin(); iter != impDirTbl.cend(); ++iter) {
+		if (iter->rvaImportLookupTable == 0 || iter->rvaModuleName == 0) {
+			// End of table.
+			break;
+		}
+
+		set_dll_vaddrs.insert(iter->rvaModuleName);
+		if (iter->rvaModuleName < dll_vaddr_low) {
+			dll_vaddr_low = iter->rvaModuleName;
+		}
+		if (iter->rvaModuleName > dll_vaddr_high) {
+			dll_vaddr_high = iter->rvaModuleName;
+		}
+	}
+
+	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
+	// with the last one. It's unlikely that it'll be at EOF, but we'll
+	// allow for 'short reads'.
+	const size_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
+	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
+	if (dll_paddr == 0) {
+		// Invalid VAs...
+		return -ENOENT;
+	}
+
+	const size_t dll_size_max = dll_size_min + 260;	// MAX_PATH
+	unique_ptr<char[]> dll_name_data(new char[dll_size_max]);
+	size_t dll_size_read = file->seekAndRead(dll_paddr, reinterpret_cast<uint8_t*>(dll_name_data.get()), dll_size_max);
+	if (dll_size_read < dll_size_min || dll_size_read > dll_size_max) {
+		// Seek and/or read error.
+		return -EIO;
+	}
+	// Ensure the end of the buffer is NULL-terminated.
+	dll_name_data[dll_size_max-1] = '\0';
+
+	// Convert the entire buffer to lowercase. (ASCII characters only)
+	{
+		char *const p_end = &dll_name_data[dll_size_max];
+		for (char *p = dll_name_data.get(); p < p_end; p++) {
+			if (*p >= 'A' && *p <= 'Z') *p |= 0x20;
+		}
+	}
 
 	// MSVC runtime DLL version to display version table.
 	// Reference: https://matthew-brett.github.io/pydagogue/python_msvc.html
@@ -303,32 +349,19 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		{  0,	    "", nullptr, nullptr}
 	};
 
-	// IMAGE_IMPORT_DIRECTORY pointers.
-	const IMAGE_IMPORT_DIRECTORY *pImpDir = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
-	const IMAGE_IMPORT_DIRECTORY *const pImpDirEnd = pImpDir + (impDirTbl.size() / sizeof(IMAGE_IMPORT_DIRECTORY));
-
 	// Check all of the DLL names.
 	bool found = false;
-	for (; pImpDir < pImpDirEnd; pImpDir++) {
-		// Convert the DLL name RVA to be relative to the start of the import table directory.
-		// COMMIT NOTE: Byteswap wasn't done before; assuming LE... [may need adjustment for 360?]
-		const uint32_t dll_name_rva = le32_to_cpu(pImpDir->rvaModuleName);
-		if (dll_name_rva == 0) {
-			// End of import table.
+	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs.cend() && !found; ++iter) {
+		uint32_t vaddr = *iter;
+		assert(vaddr >= dll_vaddr_low);
+		assert(vaddr <= dll_vaddr_high);
+		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
+			// Out of bounds? This shouldn't have happened...
 			break;
 		}
 
-		assert(dll_name_rva >= dataDir.VirtualAddress);
-		assert(dll_name_rva < dataDir.VirtualAddress + dataDir.Size);
-		if (dll_name_rva < dataDir.VirtualAddress ||
-		    dll_name_rva >= dataDir.VirtualAddress + dataDir.Size)
-		{
-			// RVA is out of bounds.
-			continue;
-		}
-
 		// Current DLL name from the import table.
-		const char *const dll_name = reinterpret_cast<const char*>(&impDirTbl[dll_name_rva - dataDir.VirtualAddress]);
+		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
 
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
 		if (!strcmp(dll_name, "vcruntime140.dll")) {
