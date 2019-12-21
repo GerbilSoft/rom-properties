@@ -34,6 +34,7 @@
  *===========================================================================*/
 /* SPDX-License-Identifier: libpng-2.0 */
 
+#include "stdafx.h"
 #define PNGCHECK_VERSION "2.3.0 of 7 July 2007"
 
 /*
@@ -131,7 +132,6 @@
  * rom-properties: Modified to be usable as a library for IRpFile*
  * instead of as a standalone program.
  */
-#include "stdafx.h"
 #include "pngcheck.hpp"
 #include "../../file/IRpFile.hpp"
 using LibRpBase::IRpFile;
