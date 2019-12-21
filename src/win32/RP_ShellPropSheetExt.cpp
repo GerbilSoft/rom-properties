@@ -158,6 +158,10 @@ class RP_ShellPropSheetExt_Private
 		HMODULE hUxTheme_dll;
 		PFNISTHEMEACTIVE pfnIsThemeActive;
 
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		HMODULE hWtsApi32_dll;
+		typedef BOOL (WINAPI *PFNWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
+
 		// Alternate row color.
 		COLORREF colorAltRow;
 		bool isFullyInit;		// True if the window is fully initialized.
@@ -406,6 +410,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, colorWinBg(0)
 	, hUxTheme_dll(nullptr)
 	, pfnIsThemeActive(nullptr)
+	, hWtsApi32_dll(nullptr)
 	, colorAltRow(0)
 	, isFullyInit(false)
 	, hbmpBanner(nullptr)
@@ -459,7 +464,10 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 		DeleteFont(hFontMono);
 	}
 
-	// Close uxtheme.dll.
+	// Close DLLs.
+	if (hWtsApi32_dll) {
+		FreeLibrary(hWtsApi32_dll);
+	}
 	if (hUxTheme_dll) {
 		FreeLibrary(hUxTheme_dll);
 	}
@@ -2215,7 +2223,18 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
-	WTSRegisterSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
+	if (!hWtsApi32_dll) {
+		// Open the DLL.
+		hWtsApi32_dll = LoadLibrary(_T("wtsapi32.dll"));
+	}
+	if (hWtsApi32_dll) {
+		// Register for WTS session notifications.
+		PFNWTSREGISTERSESSIONNOTIFICATION pfnWTSRegisterSessionNotification =
+			(PFNWTSREGISTERSESSIONNOTIFICATION)GetProcAddress(hWtsApi32_dll, "WTSRegisterSessionNotification");
+		if (pfnWTSRegisterSessionNotification) {
+			pfnWTSRegisterSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
+		}
+	}
 
 	// Window is fully initialized.
 	isFullyInit = true;

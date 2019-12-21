@@ -176,7 +176,7 @@ TARGET_LINK_LIBRARIES(rom-properties PRIVATE cachemgr romdata rpbase rpthreads w
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 wtsapi32 shell32)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE comctl32 advapi32 shell32)
 IF(HAVE_RP_PROPERTYSTORE_DEPS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE propsys)
 	# Required by InitPropVariantFromString().

@@ -127,6 +127,11 @@ class CacheTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
+		// Function pointer for SHGetImageList.
+		// This function is not exported by name prior to Windows XP.
+		#define SHGetImageList_ordinal MAKEINTRESOURCEA(727)
+		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
+
 		// Image list for the XP drive list.
 		IImageList *pImageList;
 
@@ -135,6 +140,10 @@ class CacheTabPrivate
 
 		// Is this Windows Vista or later?
 		bool isVista;
+
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		HMODULE hWtsApi32_dll;
+		typedef BOOL (WINAPI *PFNWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
 };
 
 /** CacheTabPrivate **/
@@ -145,6 +154,7 @@ CacheTabPrivate::CacheTabPrivate()
 	, pImageList(nullptr)
 	, dwUnitmaskXP(0)
 	, isVista(false)
+	, hWtsApi32_dll(nullptr)
 {
 	// Determine which dialog we should use.
 	RegKey hKey(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache"), KEY_READ, false);
@@ -167,6 +177,11 @@ CacheTabPrivate::~CacheTabPrivate()
 {
 	if (pImageList) {
 		pImageList->Release();
+	}
+
+	// Close DLLs.
+	if (hWtsApi32_dll) {
+		FreeLibrary(hWtsApi32_dll);
 	}
 }
 
@@ -203,13 +218,23 @@ void CacheTabPrivate::initDialog(void)
 	if (!hListView)
 		return;
 
-	// Initialize the ListView image list.
-	// NOTE: HIMAGELIST and IImageList are compatible.
-	// Since this is a system image list, we should *not*
-	// release/destroy it when we're done using it.
-	HRESULT hr = SHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
-	if (SUCCEEDED(hr)) {
-		ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
+	// NOTE: CacheTab, DllMain, and others call SHELL32 functions
+	// directly, so we can assume SHELL32.DLL is loaded.
+	HMODULE hShell32_dll = GetModuleHandle(_T("shell32"));
+	assert(hShell32_dll != nullptr);
+	if (hShell32_dll) {
+		// Get SHGetImageList() by ordinal.
+		PFNSHGETIMAGELIST pfnSHGetImageList = (PFNSHGETIMAGELIST)GetProcAddress(hShell32_dll, SHGetImageList_ordinal);
+		if (pfnSHGetImageList) {
+			// Initialize the ListView image list.
+			// NOTE: HIMAGELIST and IImageList are compatible.
+			// Since this is a system image list, we should *not*
+			// release/destroy it when we're done using it.
+			HRESULT hr = pfnSHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
+			if (SUCCEEDED(hr)) {
+				ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
+			}
+		}
 	}
 
 	// Enable double-buffering if not using RDP.
@@ -218,7 +243,18 @@ void CacheTabPrivate::initDialog(void)
 	}
 
 	// Register for WTS session notifications. (Remote Desktop)
-	WTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+	if (!hWtsApi32_dll) {
+		// Open the DLL.
+		hWtsApi32_dll = LoadLibrary(_T("wtsapi32.dll"));
+	}
+	if (hWtsApi32_dll) {
+		// Register for WTS session notifications.
+		PFNWTSREGISTERSESSIONNOTIFICATION pfnWTSRegisterSessionNotification =
+			(PFNWTSREGISTERSESSIONNOTIFICATION)GetProcAddress(hWtsApi32_dll, "WTSRegisterSessionNotification");
+		if (pfnWTSRegisterSessionNotification) {
+			pfnWTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+		}
+	}
 
 	// Enumerate the drives.
 	enumDrivesXP();

@@ -161,6 +161,10 @@ class KeyManagerTabPrivate
 		// Is this COMCTL32.dll v6.10 or later?
 		bool isComCtl32_610;
 
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		HMODULE hWtsApi32_dll;
+		typedef BOOL (WINAPI *PFNWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
+
 		// Icons for the "Valid?" column.
 		// NOTE: "?" and "X" are copies from User32.
 		// Checkmark is a PNG image loaded from a resource.
@@ -315,6 +319,11 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 	// Alternate row color.
 	if (hbrAltRow) {
 		DeleteBrush(hbrAltRow);
+	}
+
+	// Close DLLs.
+	if (hWtsApi32_dll) {
+		FreeLibrary(hWtsApi32_dll);
 	}
 }
 
@@ -515,7 +524,18 @@ void KeyManagerTabPrivate::initUI(void)
 	keyStore->setHWnd(hWndPropSheet);
 
 	// Register for WTS session notifications. (Remote Desktop)
-	WTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+	if (!hWtsApi32_dll) {
+		// Open the DLL.
+		hWtsApi32_dll = LoadLibrary(_T("wtsapi32.dll"));
+	}
+	if (hWtsApi32_dll) {
+		// Register for WTS session notifications.
+		PFNWTSREGISTERSESSIONNOTIFICATION pfnWTSRegisterSessionNotification =
+			(PFNWTSREGISTERSESSIONNOTIFICATION)GetProcAddress(hWtsApi32_dll, "WTSRegisterSessionNotification");
+		if (pfnWTSRegisterSessionNotification) {
+			pfnWTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
+		}
+	}
 }
 
 /**
