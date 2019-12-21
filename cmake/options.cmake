@@ -117,3 +117,10 @@ OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)
 
 # Enable NLS. (internationalization)
 OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
+
+IF(WIN32 AND MSVC)
+	# Enable compatibility with older Windows.
+	OPTION(ENABLE_OLDWINCOMPAT "Enable compatibility with Windows 2000 with MSVC 2010+. (forces static CRT)" OFF)
+ELSE(WIN32 AND MSVC)
+	SET(ENABLE_OLDWINCOMPAT OFF)
+ENDIF(WIN32 AND MSVC)
