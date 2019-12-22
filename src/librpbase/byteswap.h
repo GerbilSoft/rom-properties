@@ -122,7 +122,7 @@ extern "C" {
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array_c(uint16_t *ptr, unsigned int n);
+void __byte_swap_16_array_c(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -130,7 +130,7 @@ void __byte_swap_16_array_c(uint16_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array_c(uint32_t *ptr, unsigned int n);
+void __byte_swap_32_array_c(uint32_t *ptr, size_t n);
 
 #ifdef BYTESWAP_HAS_MMX
 /**
@@ -139,7 +139,7 @@ void __byte_swap_32_array_c(uint32_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array_mmx(uint16_t *ptr, unsigned int n);
+void __byte_swap_16_array_mmx(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -147,7 +147,7 @@ void __byte_swap_16_array_mmx(uint16_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array_mmx(uint32_t *ptr, unsigned int n);
+void __byte_swap_32_array_mmx(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_MMX */
 
 #ifdef BYTESWAP_HAS_SSE2
@@ -157,7 +157,7 @@ void __byte_swap_32_array_mmx(uint32_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n);
+void __byte_swap_16_array_sse2(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -165,7 +165,7 @@ void __byte_swap_16_array_sse2(uint16_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array_sse2(uint32_t *ptr, unsigned int n);
+void __byte_swap_32_array_sse2(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSE2 */
 
 #ifdef BYTESWAP_HAS_SSSE3
@@ -175,7 +175,7 @@ void __byte_swap_32_array_sse2(uint32_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n);
+void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -183,7 +183,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array_ssse3(uint32_t *ptr, unsigned int n);
+void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSSE3 */
 
 #if defined(RP_HAS_IFUNC)
@@ -194,14 +194,14 @@ void __byte_swap_32_array_ssse3(uint32_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array(uint16_t *ptr, unsigned int n);
+void __byte_swap_16_array(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array(uint32_t *ptr, unsigned int n);
+void __byte_swap_32_array(uint32_t *ptr, size_t n);
 
 #else /* !RP_HAS_IFUNC */
 /* System does not have IFUNC. Use inline dispatch functions. */
@@ -211,7 +211,7 @@ void __byte_swap_32_array(uint32_t *ptr, unsigned int n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-static inline void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
+static inline void __byte_swap_16_array(uint16_t *ptr, size_t n)
 {
 # ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
@@ -245,7 +245,7 @@ static inline void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-static inline void __byte_swap_32_array(uint32_t *ptr, unsigned int n)
+static inline void __byte_swap_32_array(uint32_t *ptr, size_t n)
 {
 # ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {

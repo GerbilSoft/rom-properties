@@ -76,9 +76,9 @@ static __typeof__(&__byte_swap_32_array_c) __byte_swap_32_array_resolve(void)
 #endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
-void __byte_swap_16_array(uint16_t *ptr, unsigned int n)
+void __byte_swap_16_array(uint16_t *ptr, size_t n)
 	IFUNC_ATTR(__byte_swap_16_array_resolve);
-void __byte_swap_32_array(uint32_t *ptr, unsigned int n)
+void __byte_swap_32_array(uint32_t *ptr, size_t n)
 	IFUNC_ATTR(__byte_swap_32_array_resolve);
 
 #endif /* RP_HAS_IFUNC */
