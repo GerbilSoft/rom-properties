@@ -63,6 +63,7 @@
     and lacked an entry for GNOME.
   * Nintendo3DS: Fixed NCCH detection for CFAs with an "icon" file but no
     ".code" file, which is usually the case for DLC CIAs.
+  * GameCube: Fixed the GameTDB region code for Italy.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

@@ -259,7 +259,7 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					ret.push_back("NL");
 					break;
 				case 'I':	// Italy
-					ret.push_back("NL");
+					ret.push_back("IT");
 					break;
 				case 'R':	// Russia
 					ret.push_back("RU");
@@ -368,7 +368,7 @@ vector<const char*> GameCubeRegions::gcnRegionToGameTDB(unsigned int gcnRegion, 
 					addEN = true;
 					break;
 				case 'I':	// Italy
-					ret.push_back("NL");
+					ret.push_back("IT");
 					addEN = true;
 					break;
 				case 'R':	// Russia
