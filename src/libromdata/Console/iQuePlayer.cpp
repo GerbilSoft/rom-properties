@@ -447,6 +447,7 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 		d->isValid = false;
 		d->file->unref();
 		d->file = nullptr;
+		return;
 	}
 
 	// If this is a ticket, read the BBTicketHead.
