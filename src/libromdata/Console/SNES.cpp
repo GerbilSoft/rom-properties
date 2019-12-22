@@ -176,7 +176,7 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 			if (ISALNUM(romHeader->snes.ext.id4[i])) {
 				// Alphanumeric character.
 				continue;
-			} else if (romHeader->snes.ext.id4[i] == ' ' && i >= 2) {
+			} else if (i >= 2 && romHeader->snes.ext.id4[i] == ' ') {
 				// Some game IDs are two characters,
 				// and the remaining characters are spaces.
 				continue;
