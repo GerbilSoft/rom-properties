@@ -21,10 +21,6 @@ using std::unordered_map;
 #include "IAesCipher.hpp"
 #include "AesCipherFactory.hpp"
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "../uvector.h"
-
 namespace LibRpBase {
 
 class KeyManagerPrivate : public ConfReaderPrivate

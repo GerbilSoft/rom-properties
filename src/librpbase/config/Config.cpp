@@ -19,10 +19,6 @@ using std::unordered_map;
 
 #include "RomData.hpp"
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
-
 namespace LibRpBase {
 
 class ConfigPrivate : public ConfReaderPrivate

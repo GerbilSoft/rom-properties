@@ -68,9 +68,12 @@
 
 // librpbase C++ headers
 #ifdef __cplusplus
-#include "uvector.h"
 #include "TextFuncs.hpp"
 #include "file/RpFile.hpp"
+
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
 #endif /* !__cplusplus */
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_STDAFX_H__ */
