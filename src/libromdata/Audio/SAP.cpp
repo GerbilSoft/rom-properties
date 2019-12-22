@@ -9,33 +9,13 @@
 // Reference: http://asap.sourceforge.net/sap-format.html
 // NOTE: The header format is plaintext, so we don't have a structs file.
 
+#include "stdafx.h"
 #include "SAP.hpp"
-#include "librpbase/RomData_p.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-
-// C++ includes.
-#include <memory>
-#include <numeric>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+// C++ STL classes.
 using std::pair;
 using std::string;
 using std::unique_ptr;

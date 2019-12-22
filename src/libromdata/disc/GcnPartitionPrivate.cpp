@@ -6,22 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GcnPartitionPrivate.hpp"
-#include "librpbase/byteswap.h"
 
 #include "GcnFst.hpp"
 #include "GcnPartition.hpp"
 
 // librpbase
-#include "librpbase/disc/IDiscReader.hpp"
 using LibRpBase::IDiscReader;
-
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cstring>
 
 namespace LibRomData {
 

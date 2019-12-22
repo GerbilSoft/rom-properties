@@ -6,29 +6,16 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "XDVDFSPartition.hpp"
-
 #include "xdvdfs_structs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-
-// C++ includes.
-#include <string>
-#include <unordered_map>
+// C++ STL classes.
 using std::string;
 using std::unordered_map;
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRomData {
 

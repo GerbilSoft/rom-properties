@@ -6,15 +6,14 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "KeyStoreUI.hpp"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/file/RpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // libromdata
@@ -24,17 +23,7 @@ using namespace LibRpBase;
 #include "../Console/Xbox360_XEX.hpp"
 using namespace LibRomData;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <numeric>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::u16string;
 using std::unique_ptr;

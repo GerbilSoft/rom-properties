@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GdiReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 
@@ -13,32 +14,13 @@
 #include "IsoPartition.hpp"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/RelatedFile.hpp"
 using namespace LibRpBase;
-
-// DiscReader
-#include "librpbase/disc/PartitionFile.hpp"
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

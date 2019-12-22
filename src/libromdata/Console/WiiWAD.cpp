@@ -6,11 +6,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 
 #include "WiiWAD.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "gcn_structs.h"
 #include "wii_structs.h"
 #include "wii_wad.h"
@@ -19,17 +18,8 @@
 #include "data/WiiSystemMenuVersion.hpp"
 #include "GameCubeRegions.hpp"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// librptexture
 using LibRpTexture::rp_image;
 
 
@@ -45,17 +35,7 @@ using LibRpTexture::rp_image;
 # include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
 
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

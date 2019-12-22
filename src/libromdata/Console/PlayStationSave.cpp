@@ -11,34 +11,15 @@
 // - http://www.psdevwiki.com/ps3/Game_Saves#Game_Saves_PS1
 // - http://problemkaputt.de/psx-spx.htm
 
+#include "stdafx.h"
 #include "PlayStationSave.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "ps1_structs.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/img/IconAnimData.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
 using namespace LibRpTexture;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <vector>
+// C++ STL classes.
 using std::vector;
 
 namespace LibRomData {

@@ -2,19 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NESMappers.cpp: NES mapper data.                                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "NESMappers.hpp"
-
-// C includes.
-#include <stdint.h>
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
 
 namespace LibRomData {
 

@@ -10,23 +10,13 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.cpp
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.h
 
+#include "stdafx.h"
 #include "NASOSReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "nasos_gcn.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRomData {
 

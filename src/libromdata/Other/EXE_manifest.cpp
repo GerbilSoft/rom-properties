@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "EXE_p.hpp"
 
 #ifndef ENABLE_XML
@@ -13,22 +14,13 @@
 #endif
 
 // librpbase
-#include "librpbase/file/IRpFile.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // TinyXML2
 #include "tinyxml2.h"
 using namespace tinyxml2;
 
-// C includes. (C++ namespace)
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

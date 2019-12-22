@@ -12,22 +12,13 @@
  * - https://github.com/Karlson2k/libcdio-k2k/blob/master/include/cdio/sector.h
  */
 
+#include "stdafx.h"
 #include "Cdrom2352Reader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "../cdrom_structs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
-
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRomData {
 

@@ -325,11 +325,20 @@ ENDIF()
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
+IF(ENABLE_PCH)
+	# Precompiled headers.
+	INCLUDE(PrecompiledHeader)
+	SET(libromdata_PCH_CXX stdafx.cpp)
+	SET(libromdata_PCH_SRC ${libromdata_PCH_CXX})
+	SET(libromdata_PCH_H stdafx.h)
+ENDIF(ENABLE_PCH)
+
 ######################
 # Build the library. #
 ######################
 
 ADD_LIBRARY(romdata STATIC
+	${libromdata_PCH_SRC} ${libromdata_PCH_H}
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
@@ -337,6 +346,11 @@ ADD_LIBRARY(romdata STATIC
 	${libromdata_MMX_SRCS}
 	${libromdata_SSE2_SRCS}
 	)
+IF(ENABLE_PCH)
+	ADD_PRECOMPILED_HEADER(romdata ${libromdata_PCH_H}
+		SOURCE_CXX ${libromdata_PCH_CXX}
+		)
+ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(romdata)
 

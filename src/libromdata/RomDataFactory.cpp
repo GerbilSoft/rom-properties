@@ -6,17 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
 
 #include "RomDataFactory.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/RomData.hpp"
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/file/FileSystem.hpp"
 #include "librpbase/file/RelatedFile.hpp"
 using namespace LibRpBase;
 
@@ -27,16 +23,7 @@ using namespace LibRpBase;
 #include "librptexture/FileFormatFactory.hpp"
 using LibRpTexture::FileFormatFactory;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unordered_map;
 using std::unordered_set;

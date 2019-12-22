@@ -2,17 +2,15 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeRegions.hpp: Nintendo GameCube/Wii region code detection.       *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "GameCubeRegions.hpp"
 #include "gcn_structs.h"
 
-#include "libi18n/i18n.h"
-
-// C++ includes.
-#include <vector>
+// C++ STL classes.
 using std::vector;
 
 namespace LibRomData {

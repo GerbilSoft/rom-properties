@@ -6,22 +6,13 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "WbfsReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "libwbfs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
-
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 namespace LibRomData {
 

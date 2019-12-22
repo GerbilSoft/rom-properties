@@ -6,28 +6,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
 
 #include "Xbox360_XEX.hpp"
 #include "Xbox360_XDBF.hpp"
 #include "../Other/EXE.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "xbox360_xex_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/disc/CBCReader.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
-#include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/RpMemFile.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // librptexture
 using LibRpTexture::rp_image;
@@ -43,27 +34,12 @@ using LibRpTexture::rp_image;
 # include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <vector>
+// C++ STL classes.
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRomData {
 

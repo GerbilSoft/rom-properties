@@ -6,47 +6,23 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "Xbox_XBE.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "xbox_xbe_structs.h"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 #include "librptexture/fileformat/XboxXPR.hpp"
 using LibRpTexture::rp_image;
 using LibRpTexture::XboxXPR;
 
-// DiscReader
-#include "librpbase/disc/DiscReader.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
-
 // Other RomData subclasses
 #include "Other/EXE.hpp"
 
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <sstream>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;

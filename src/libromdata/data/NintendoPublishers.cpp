@@ -2,14 +2,12 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoPublishers.cpp: Nintendo third-party publishers list.           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "NintendoPublishers.hpp"
-
-// C includes.
-#include <stdlib.h>
 
 namespace LibRomData {
 

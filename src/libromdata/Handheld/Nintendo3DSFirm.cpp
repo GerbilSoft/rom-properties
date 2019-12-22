@@ -6,34 +6,18 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "Nintendo3DSFirm.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "n3ds_firm_structs.h"
 #include "data/Nintendo3DSFirmData.hpp"
 
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
+// librpbase
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstring>
 
 // for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::vector;

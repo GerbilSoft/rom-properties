@@ -6,12 +6,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "librpbase/config.librpbase.h"
+
 #include "NCCHReader.hpp"
 
 // librpbase
-#include "librpbase/file/IRpFile.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
 #ifdef ENABLE_DECRYPTION
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
@@ -20,14 +20,6 @@ using namespace LibRpBase;
 
 // CIA Reader.
 #include "disc/CIAReader.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {

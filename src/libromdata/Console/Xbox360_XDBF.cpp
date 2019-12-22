@@ -7,49 +7,25 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "Xbox360_XDBF.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "xbox360_xdbf_structs.h"
 #include "data/XboxLanguage.hpp"
 
 // librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/RpMemFile.hpp"
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 
-// libi18n
-#include "libi18n/i18n.h"
-
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRomData {
 

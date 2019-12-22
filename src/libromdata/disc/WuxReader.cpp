@@ -9,28 +9,16 @@
 // References:
 // - https://gbatemp.net/threads/wii-u-image-wud-compression-tool.397901/
 
+#include "stdafx.h"
 #include "WuxReader.hpp"
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "wux_structs.h"
 
 // librpbase
-#include "librpbase/byteswap.h"
-#include "librpbase/bitstuff.h"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-
-// C++ includes.
-#include <array>
+// C++ STL classes.
 using std::array;
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 namespace LibRomData {
 

@@ -6,43 +6,20 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "config.librpbase.h"
 
 #include "iQuePlayer.hpp"
-#include "librpbase/RomData_p.hpp"
-
 #include "ique_player_structs.h"
 
-// librpbase
-#include "librpbase/common.h"
-#include "librpbase/byteswap.h"
-#include "librpbase/aligned_malloc.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/file/IRpFile.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
-
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
 using namespace LibRpTexture;
-
-// C includes. (C++ namespace)
-#include "librpbase/ctypex.h"
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
 
 // for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
+// C++ STL classes.
 using std::string;
 using std::vector;
 

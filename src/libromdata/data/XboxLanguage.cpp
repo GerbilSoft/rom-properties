@@ -6,12 +6,11 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "XboxLanguage.hpp"
+
 #include "librpbase/SystemRegion.hpp"
 using LibRpBase::SystemRegion;
-
-// C includes. (C++ namespace)
-#include <cassert>
 
 // Microsoft Xbox system structs.
 #include "Console/xbox360_xdbf_structs.h"
