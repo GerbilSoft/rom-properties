@@ -62,6 +62,7 @@
 // librpbase common headers
 #include "common.h"
 #include "byteswap.h"
+#include "bitstuff.h"
 #include "aligned_malloc.h"
 #include "cpu_dispatch.h"
 #include "ctypex.h"

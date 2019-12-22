@@ -13,9 +13,6 @@
 #include "../RpFile_p.hpp"
 
 // librpbase
-#include "bitstuff.h"
-#include "byteswap.h"
-#include "TextFuncs.hpp"
 #include "TextFuncs_wchar.hpp"
 
 // libwin32common

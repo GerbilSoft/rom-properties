@@ -17,9 +17,6 @@
 #include "ata_protocol.h"
 #include "scsi_ata_cmds.h"
 
-#include "../../byteswap.h"
-#include "../../bitstuff.h"
-
 namespace LibRpBase {
 
 /**
