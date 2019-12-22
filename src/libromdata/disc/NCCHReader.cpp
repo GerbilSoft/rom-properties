@@ -167,25 +167,12 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 
 			// For CXI: First file should be ".code".
 			// For CFA: First file should be "icon".
-			const char *filename_chk = nullptr;
-			const uint8_t ctype_flag = ncch_header.hdr.flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
-			if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Executable) {
-				filename_chk = ".code";
-			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Data) {
-				filename_chk = "icon";
-			}
-			if (!filename_chk) {
-				// No filename to check...
-				memset(ncch_keys, 0, sizeof(ncch_keys));
-				q->m_lastError = EIO;
-				delete cipher;
-				cipher = nullptr;
-				closeFileOrDiscReader();
-				return;
-			}
+			// Checking for both just in case there's an exception.
 
 			// Check the first filename.
-			if (strcmp(exefs_header.files[0].name, filename_chk) != 0) {
+			if (strcmp(exefs_header.files[0].name, ".code") != 0 &&
+			    strcmp(exefs_header.files[0].name, "icon") != 0)
+			{
 				if (isDebug) {
 					// We already tried both sets.
 					// Zero out the keys.
@@ -232,7 +219,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 
 				// Check the first filename, again.
-				if (strcmp(exefs_header.files[0].name, filename_chk) != 0) {
+				if (strcmp(exefs_header.files[0].name, ".code") != 0 &&
+				    strcmp(exefs_header.files[0].name, "icon") != 0)
+				{
 					// Still not usable.
 					delete cipher;
 					q->m_lastError = EIO;
