@@ -65,12 +65,6 @@
     ".code" file, which is usually the case for DLC CIAs.
     https://github.com/GerbilSoft/rom-properties/issues/208
   * GameCube: Fixed the GameTDB region code for Italy.
-  * GameCube: Fixed partition type dection for standalone Wii partitions
-    in MSVC builds. [BEFORE COMMITTING: TEST THIS!]
-V1039 Character escape is used in multicharacter literal. This causes implementation-defined behavior. Inspect expression: ''\0UPD''. GameCube.cpp 885
-V1039 Character escape is used in multicharacter literal. This causes implementation-defined behavior. Inspect expression: ''\0UPE''. GameCube.cpp 885
-V1039 Character escape is used in multicharacter literal. This causes implementation-defined behavior. Inspect expression: ''\0INS''. GameCube.cpp 889
-[also check Wii U NES]
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
