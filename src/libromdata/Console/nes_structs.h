@@ -48,7 +48,7 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #define INES_MAGIC		'NES\x1A'
-#define INES_MAGIC_WIIU_VC	'NES\x00'
+#define INES_MAGIC_WIIU_VC	0x4E455300	// 'NES\x00'
 typedef struct PACKED _INES_RomHeader {
 	uint32_t magic;		// [0x000] 'NES\x1A' (big-endian)
 	uint8_t prg_banks;	// [0x004] # of 16 KB PRG ROM banks.

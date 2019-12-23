@@ -861,11 +861,11 @@ GameCube::GameCube(IRpFile *file)
 		pt.pt = 0;
 		pt.partition = new WiiPartition(d->discReader, pt.start, pt.size);
 
-		if (title_id.lo == be32_to_cpu('\0UPD') || title_id.lo == be32_to_cpu('\0UPE')) {
+		if (title_id.lo == be32_to_cpu('UPD') || title_id.lo == be32_to_cpu('UPE')) {
 			// Update partition.
 			pt.type = RVL_PT_UPDATE;
 			d->updatePartition = pt.partition;
-		} else if (title_id.lo == be32_to_cpu('\0INS')) {
+		} else if (title_id.lo == be32_to_cpu('INS')) {
 			// Channel partition.
 			pt.type = RVL_PT_CHANNEL;
 		} else {
