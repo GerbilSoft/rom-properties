@@ -35,8 +35,10 @@ using LibRomData::RomDataFactory;
 
 // C++ includes.
 #include <algorithm>
+#include <array>
 #include <string>
 #include <vector>
+using std::array;
 using std::string;
 using std::vector;
 
@@ -113,22 +115,24 @@ static void	start_anim_timer(RomDataView *page);
 static void	stop_anim_timer (RomDataView *page);
 static gboolean	anim_timer_func (RomDataView *page);
 
+#if GTK_CHECK_VERSION(3,0,0)
+typedef GtkBoxClass superclass;
+typedef GtkBox super;
+#define GTK_TYPE_SUPER GTK_TYPE_BOX
+#else
+typedef GtkVBoxClass superclass;
+typedef GtkVBox super;
+#define GTK_TYPE_SUPER GTK_TYPE_VBOX
+#endif
+
 // XFCE property page class.
 struct _RomDataViewClass {
-#if GTK_CHECK_VERSION(3,0,0)
-	GtkBoxClass __parent__;
-#else
-	GtkVBoxClass __parent__;
-#endif
+	superclass __parent__;
 };
 
 // XFCE property page.
 struct _RomDataView {
-#if GTK_CHECK_VERSION(3,0,0)
-	GtkBox __parent__;
-#else
-	GtkVBox __parent__;
-#endif
+	super __parent__;
 
 	/* Timeouts */
 	guint		changed_idle;
@@ -146,8 +150,7 @@ struct _RomDataView {
 	RomData		*romData;
 
 	// Animated icon data.
-	// TODO: Use std::array<>?
-	PIMGTYPE	iconFrames[IconAnimData::MAX_FRAMES];
+	array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 	IconAnimHelper	*iconAnimHelper;
 	int		last_frame_number;	// Last frame number.
 
@@ -162,24 +165,18 @@ struct _RomDataView {
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 		GtkWidget	*lblCredits;
 	};
-	vector<tab> *tabs;
+	vector<tab>	*tabs;
 
 	// Description labels.
-	RpDescFormatType		desc_format_type;
-	vector<GtkWidget*>		*vecDescLabels;
+	RpDescFormatType	desc_format_type;
+	vector<GtkWidget*>	*vecDescLabels;
 };
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-#if GTK_CHECK_VERSION(3,0,0)
-//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_BOX);
+//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_SUPER);
 G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
-	GTK_TYPE_BOX, static_cast<GTypeFlags>(0), {});
-#else
-//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_VBOX);
-G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
-	GTK_TYPE_VBOX, static_cast<GTypeFlags>(0), {});
-#endif
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static GParamSpec *properties[PROP_LAST];
 
@@ -241,6 +238,8 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	}
 
 	// Check for DE-specific formatting.
+	GtkJustification justify;
+	float xalign, yalign;
 	switch (desc_format_type) {
 		case RP_DFT_XFCE:
 		default:
@@ -248,19 +247,9 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			// NOTE: No changes between GTK+ 2.x and 3.x.
 
 			// Text alignment: Right
-			gtk_label_set_justify(label, GTK_JUSTIFY_RIGHT);
-#if GTK_CHECK_VERSION(3,16,0)
-			// NOTE: gtk_widget_set_?align() doesn't work properly
-			// when using a GtkSizeGroup on GTK+ 3.x.
-			// gtk_label_set_?align() was introduced in GTK+ 3.16.
-			gtk_label_set_xalign(label, 1.0);
-			gtk_label_set_yalign(label, 0.0);
-#else
-			// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
-			// needed for proper text alignment when using
-			// GtkSizeGroup prior to GTK+ 3.16.
-			gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.0f);
-#endif
+			justify = GTK_JUSTIFY_RIGHT;
+			xalign = 1.0f;
+			yalign = 0.0f;
 
 			if (!is_warning) {
 				// Text style: Bold
@@ -274,23 +263,28 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			// TODO: Changes for GNOME 2.
 
 			// Text alignment: Left
-			gtk_label_set_justify(label, GTK_JUSTIFY_LEFT);
-#if GTK_CHECK_VERSION(3,16,0)
-			// NOTE: gtk_widget_set_?align() doesn't work properly
-			// when using a GtkSizeGroup on GTK+ 3.x.
-			// gtk_label_set_?align() was introduced in GTK+ 3.16.
-			gtk_label_set_xalign(label, 0.0);
-			gtk_label_set_yalign(label, 0.0);
-#else
-			// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
-			// needed for proper text alignment when using
-			// GtkSizeGroup prior to GTK+ 3.16.
-			gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.0f);
-#endif
+			justify = GTK_JUSTIFY_LEFT;
+			xalign = 0.0f;
+			yalign = 0.0f;
 
 			// Text style: Normal (no Pango attributes)
 			break;
 	}
+
+	gtk_label_set_justify(label, justify);
+
+#if GTK_CHECK_VERSION(3,16,0)
+	// NOTE: gtk_widget_set_?align() doesn't work properly
+	// when using a GtkSizeGroup on GTK+ 3.x.
+	// gtk_label_set_?align() was introduced in GTK+ 3.16.
+	gtk_label_set_xalign(label, xalign);
+	gtk_label_set_yalign(label, yalign);
+#else
+	// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
+	// needed for proper text alignment when using
+	// GtkSizeGroup prior to GTK+ 3.16.
+	gtk_misc_set_alignment(GTK_MISC(label), xalign, yalign);
+#endif
 
 	gtk_label_set_attributes(label, attr_lst);
 	pango_attr_list_unref(attr_lst);
@@ -1145,7 +1139,7 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	assert(format != nullptr);
 	GtkWidget *widget = nullptr;
 	if (format) {
-		gchar *str = g_date_time_format(dateTime, format);
+		gchar *const str = g_date_time_format(dateTime, format);
 		if (str) {
 			widget = rom_data_view_init_string(page, field, str);
 			g_free(str);
@@ -1166,7 +1160,7 @@ static GtkWidget*
 rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// Age ratings.
-	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
+	const RomFields::age_ratings_t *const age_ratings = field->data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
@@ -1223,7 +1217,7 @@ rom_data_view_update_display(RomDataView *page)
 	}
 
 	// Get the fields.
-	const RomFields *fields = page->romData->fields();
+	const RomFields *const fields = page->romData->fields();
 	if (!fields) {
 		// No fields.
 		// TODO: Show an error?
@@ -1372,7 +1366,7 @@ rom_data_view_update_display(RomDataView *page)
 			auto &tab = page->tabs->at(tabIdx);
 
 			// tr: Field description label.
-			string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
+			const string txt = rp_sprintf(desc_label_fmt, field->name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
@@ -1572,7 +1566,7 @@ rom_data_view_delete_tabs(RomDataView *page)
 	page->vecDescLabels->clear();
 
 	// Delete the icon frames.
-	for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
+	for (int i = page->iconFrames.size()-1; i >= 0; i--) {
 		if (page->iconFrames[i]) {
 			PIMGTYPE_destroy(page->iconFrames[i]);
 			page->iconFrames[i] = nullptr;
@@ -1778,12 +1772,13 @@ static gboolean anim_timer_func(RomDataView *page)
 		page->last_frame_number = frame;
 	}
 
-	// Set a new timer and unset the current one.
 	if (page->last_delay != delay) {
+		// Set a new timer and unset the current one.
 		page->last_delay = delay;
 		page->tmrIconAnim = g_timeout_add(delay,
 			reinterpret_cast<GSourceFunc>(anim_timer_func), page);
 		return false;
 	}
+	// Keep the current timer running.
 	return true;
 }
