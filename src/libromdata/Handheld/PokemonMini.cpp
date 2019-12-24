@@ -297,12 +297,16 @@ int PokemonMini::loadFieldData(void)
 	// Vector format: CE C4 00 F3 nn nn
 	// - MOV U, #00
 	// - JMPW #ssss
+	// NOTE: JMPW is a RELATIVE jump.
+	// Offset: PC = PC + #ssss - 1
+	// Reference: https://github.com/OpenEmu/PokeMini-Core/blob/master/PokeMini/pokemini-code/doc/PM_Opc_JMP.html
 	static const uint8_t vec_prefix[4]   = {0xCE, 0xC4, 0x00, 0xF3};
 	static const uint8_t vec_empty_ff[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 	static const uint8_t vec_empty_00[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	auto vv_vectors = new vector<vector<string> >(ARRAY_SIZE(vectors_names));
-	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++) {
+	uint32_t pc = 0x2100 + offsetof(PokemonMini_RomHeader, irqs);
+	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++, pc += 6) {
 		auto &data_row = vv_vectors->at(i);
 		data_row.reserve(3);
 
@@ -316,11 +320,15 @@ int PokemonMini::loadFieldData(void)
 		string address;
 		if (!memcmp(&romHeader->irqs[i][0], vec_prefix, sizeof(vec_prefix))) {
 			// Standard vector jump opcode.
-			address = rp_sprintf("0x%02X%02X", romHeader->irqs[i][5], romHeader->irqs[i][4]);
+			uint32_t offset = (romHeader->irqs[i][5] << 8) | romHeader->irqs[i][4];
+			offset += pc + 3 - 1;
+			address = rp_sprintf("0x%04X", offset);
 		} else if (romHeader->irqs[i][0] == 0xF3) {
 			// JMPW without MOV U.
 			// Seen in some homebrew.
-			address = rp_sprintf("0x%02X%02X", romHeader->irqs[i][2], romHeader->irqs[i][1]);
+			uint32_t offset = (romHeader->irqs[i][2] << 8) | romHeader->irqs[i][1];
+			offset += pc - 1;
+			address = rp_sprintf("0x%04X", offset);
 		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff, sizeof(vec_empty_ff)) ||
 			   !memcmp(&romHeader->irqs[i][0], vec_empty_00, sizeof(vec_empty_00))) {
 			// Empty vector.
