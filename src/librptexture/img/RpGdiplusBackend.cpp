@@ -119,6 +119,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	, m_isLocked(false)
 	, m_bytesppShift(0)
 	, m_gdipFmt(0)
+	, m_pImgBuf(nullptr)
 	, m_pGdipPalette(nullptr)
 {
 	assert(pGdipBmp != nullptr);
