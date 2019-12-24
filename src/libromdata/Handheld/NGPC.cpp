@@ -259,7 +259,8 @@ int NGPC::loadFieldData(void)
 	// Title
 	// NOTE: It's listed as ASCII. We'll use Latin-1.
 	d->fields->addField_string(C_("RomData", "Title"),
-		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
+		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
+		RomFields::STRF_TRIM_END);
 
 	// Product ID
 	d->fields->addField_string(C_("RomData", "Product ID"),
