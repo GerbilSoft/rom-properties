@@ -249,7 +249,7 @@ int PokemonMini::loadFieldData(void)
 	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(2);	// Maximum of 2 fields.
 
-	// Game title.
+	// Title.
 	string title;
 	if (romHeader->game_id[3] == 'J') {
 		// Japanese title. Assume it's Shift-JIS.
@@ -259,7 +259,7 @@ int PokemonMini::loadFieldData(void)
 		// Assume other regions are cp1252.
 		title = cp1252_to_utf8(romHeader->title, sizeof(romHeader->title));
 	}
-	d->fields->addField_string(C_("RomData", "Title"), title);
+	d->fields->addField_string(C_("RomData", "Title"), title, RomFields::STRF_TRIM_END);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -276,6 +276,48 @@ int PokemonMini::loadFieldData(void)
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
+}
+
+/**
+ * Load metadata properties.
+ * Called by RomData::metaData() if the field data hasn't been loaded yet.
+ * @return Number of metadata properties read on success; negative POSIX error code on error.
+ */
+int PokemonMini::loadMetaData(void)
+{
+	RP_D(PokemonMini);
+	if (d->metaData != nullptr) {
+		// Metadata *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Unknown ROM image type.
+		return -EIO;
+	}
+
+	// Create the metadata object.
+	d->metaData = new RomMetaData();
+	d->metaData->reserve(1);	// Maximum of 1 metadata property.
+
+	// Pokémon Mini ROM header.
+	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
+
+	// Title.
+	string title;
+	if (romHeader->game_id[3] == 'J') {
+		// Japanese title. Assume it's Shift-JIS.
+		// TODO: Also Korea?
+		title = cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title));
+	} else {
+		// Assume other regions are cp1252.
+		title = cp1252_to_utf8(romHeader->title, sizeof(romHeader->title));
+	}
+	d->metaData->addMetaData_string(Property::Title, title, RomMetaData::STRF_TRIM_END);
+
+	// Finished reading the metadata.
+	return static_cast<int>(d->metaData->count());
 }
 
 }
