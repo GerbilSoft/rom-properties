@@ -117,6 +117,7 @@ button.
 | Nintendo Game Boy Advance     |       Yes      |    No    |       N/A       |       No       |
 | Nintendo DS(i)                |       Yes      |    Yes   |       Icon      |  Covers, Box   |
 | Nintendo 3DS                  |       Yes      |    Yes   |       Icon      |  Covers, Box   |
+| Pokémon Mini                  |       Yes      |    Yes   |       N/A       |       No       |
 | Tiger game.com                |       Yes      |    Yes   |       Icon      |       No       |
 
 ### Texture Formats

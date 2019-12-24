@@ -22,6 +22,7 @@
     only the first texture of the archive is supported.
   * PowerVR3: PowerVR 3.0.0 textures. Used mainly by iOS applications. Not
     related to Sega Dreamcast PVR format.
+  * PokemonMini: Pokémon Mini ROM images.
 
 * New parser features:
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually

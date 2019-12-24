@@ -441,6 +441,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		// TODO: Add a mapping table when skipping some.
 		// TODO: Use an iterator?
 		auto &data_row = vv_vectors->at(i);
+		data_row.reserve(3);
 
 		// Actual vector number.
 		const uint8_t vector_index = vectors_map[i];
