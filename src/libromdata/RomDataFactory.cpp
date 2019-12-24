@@ -67,6 +67,7 @@ using std::vector;
 #include "Handheld/Nintendo3DSFirm.hpp"
 #include "Handheld/Nintendo3DS_SMDH.hpp"
 #include "Handheld/NintendoDS.hpp"
+#include "Handheld/PokemonMini.hpp"
 #include "Handheld/VirtualBoy.hpp"
 
 // RomData subclasses: Audio
@@ -319,6 +320,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 
 	// Headers with non-zero addresses.
 	GetRomDataFns_addr(Sega8Bit, ATTR_HAS_METADATA, 0x7FE0, 0x20),
+	GetRomDataFns_addr(PokemonMini, 0, 0x2100, 0xD0),
 	// NOTE: game.com may be at either 0 or 0x40000.
 	// The 0 address is checked above.
 	GetRomDataFns_addr(GameCom, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0x40000, 0x20),

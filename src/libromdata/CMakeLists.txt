@@ -33,11 +33,12 @@ SET(libromdata_SRCS
 	Handheld/GameBoyAdvance.cpp
 	Handheld/GameCom.cpp
 	Handheld/Lynx.cpp
+	Handheld/NGPC.cpp
 	Handheld/Nintendo3DS.cpp
 	Handheld/Nintendo3DSFirm.cpp
 	Handheld/Nintendo3DS_SMDH.cpp
 	Handheld/NintendoDS.cpp
-	Handheld/NGPC.cpp
+	Handheld/PokemonMini.cpp
 	Handheld/VirtualBoy.cpp
 
 	Audio/ADX.cpp
@@ -162,6 +163,7 @@ SET(libromdata_H
 	Handheld/Nintendo3DSFirm.hpp
 	Handheld/Nintendo3DS_SMDH.hpp
 	Handheld/NintendoDS.hpp
+	Handheld/PokemonMini.hpp
 	Handheld/VirtualBoy.hpp
 
 	Handheld/dmg_structs.h
@@ -170,6 +172,7 @@ SET(libromdata_H
 	Handheld/n3ds_structs.h
 	Handheld/nds_structs.h
 	Handheld/ngpc_structs.h
+	Handheld/pkmnmini_structs.h
 	Handheld/lnx_structs.h
 	Handheld/vb_structs.h
 
