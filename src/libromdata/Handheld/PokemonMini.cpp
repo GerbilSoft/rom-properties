@@ -250,8 +250,16 @@ int PokemonMini::loadFieldData(void)
 	d->fields->reserve(2);	// Maximum of 2 fields.
 
 	// Game title.
-	d->fields->addField_string(C_("RomData", "Title"),
-		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)));
+	string title;
+	if (romHeader->game_id[3] == 'J') {
+		// Japanese title. Assume it's Shift-JIS.
+		// TODO: Also Korea?
+		title = cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title));
+	} else {
+		// Assume other regions are cp1252.
+		title = cp1252_to_utf8(romHeader->title, sizeof(romHeader->title));
+	}
+	d->fields->addField_string(C_("RomData", "Title"), title);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
