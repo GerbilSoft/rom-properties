@@ -58,7 +58,7 @@ typedef enum {
 	PokemonMini_IRQ_Timer1_Underflow_Hi	= 5,
 	PokemonMini_IRQ_Timer1_Underflow_Lo	= 6,
 	PokemonMini_IRQ_Timer3_Underflow_Hi	= 7,
-	PokemonMini_IRQ_Timer3_Underflow_Lo	= 8,
+	PokemonMini_IRQ_Timer3_Comparator	= 8,
 	PokemonMini_IRQ_Timer_32Hz		= 9,
 	PokemonMini_IRQ_Timer_8Hz		= 10,
 	PokemonMini_IRQ_Timer_2Hz		= 11,
@@ -74,6 +74,8 @@ typedef enum {
 	PokemonMini_IRQ_KBD_B			= 21,
 	PokemonMini_IRQ_KBD_A			= 22,
 	PokemonMini_IRQ_Cartridge		= 26,
+
+	PokemonMini_IRQ_MAX			= 27
 } PokemonMini_IRQ_e;
 
 #pragma pack()

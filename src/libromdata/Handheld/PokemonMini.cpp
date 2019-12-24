@@ -231,7 +231,7 @@ int PokemonMini::loadFieldData(void)
 
 	// Pokémon Mini ROM header.
 	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields->reserve(3);	// Maximum of 3 fields.
 
 	// Title.
 	string title;
@@ -256,7 +256,99 @@ int PokemonMini::loadFieldData(void)
 	id4[4] = 0;
 	d->fields->addField_string(C_("PokemonMini", "Game ID"), latin1_to_utf8(id4, 4));
 
-	// TODO: IRQs.
+	// Vector table.
+	static const char *const vectors_names[PokemonMini_IRQ_MAX] = {
+		// 0
+		"Reset",
+		"PRC Frame Copy",
+		"PRC Render",
+		"Timer 2 Underflow (upper)",
+		"Timer 2 Underflow (lower)",
+		"Timer 1 Underflow (upper)",
+		"Timer 1 Underflow (lower)",
+		"Timer 3 Underflow (upper)",
+
+		// 8
+		"Timer 3 Comparator",
+		"32 Hz Timer",
+		"8 Hz Timer",
+		"2 Hz Timer",
+		"1 Hz Timer",
+		"IR Receiver",
+		"Shake Sensor",
+		"Power Key",
+
+		// 16
+		"Right Key",
+		"Left Key",
+		"Down Key",
+		"Up Key",
+		"C Key",
+		"B Key",
+		"A Key",
+		"Vector #23",	// undefined
+
+		// 24
+		"Vector #24",	// undefined
+		"Vector #25",	// undefined
+		"Cartridge",
+	};
+
+	// Vector format: CE C4 00 F3 nn nn
+	// - MOV U, #00
+	// - JMPW #ssss
+	static const uint8_t vec_prefix[4]   = {0xCE, 0xC4, 0x00, 0xF3};
+	static const uint8_t vec_empty_ff[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	static const uint8_t vec_empty_00[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+	auto vv_vectors = new vector<vector<string> >(ARRAY_SIZE(vectors_names));
+	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++) {
+		auto &data_row = vv_vectors->at(i);
+		data_row.reserve(3);
+
+		// # (decimal)
+		data_row.push_back(rp_sprintf("%u", i));
+
+		// Vector name
+		data_row.push_back(vectors_names[i]);
+
+		// Address
+		string address;
+		if (!memcmp(&romHeader->irqs[i][0], vec_prefix, sizeof(vec_prefix))) {
+			// Standard vector jump opcode.
+			address = rp_sprintf("0x%02X%02X", romHeader->irqs[i][5], romHeader->irqs[i][4]);
+		} else if (romHeader->irqs[i][0] == 0xF3) {
+			// JMPW without MOV U.
+			// Seen in some homebrew.
+			address = rp_sprintf("0x%02X%02X", romHeader->irqs[i][2], romHeader->irqs[i][1]);
+		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff, sizeof(vec_empty_ff)) ||
+			   !memcmp(&romHeader->irqs[i][0], vec_empty_00, sizeof(vec_empty_00))) {
+			// Empty vector.
+			address = C_("PokemonMini|VectorTable", "None");
+		} else {
+			// Not a standard jump opcode.
+			// Show the hexdump.
+			// TODO: Use something other than rp_sprintf()?
+			address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
+				romHeader->irqs[i][0], romHeader->irqs[i][1],
+				romHeader->irqs[i][2], romHeader->irqs[i][3],
+				romHeader->irqs[i][4], romHeader->irqs[i][5]);
+		}
+		data_row.push_back(address);
+	}
+
+	static const char *const vectors_headers[] = {
+		NOP_C_("PokemonMini|VectorTable", "#"),
+		NOP_C_("PokemonMini|VectorTable", "Vector"),
+		NOP_C_("PokemonMini|VectorTable", "Address"),
+	};
+	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
+		"PokemonMini|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+
+	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
+	params.headers = v_vectors_headers;
+	params.list_data = vv_vectors;
+	d->fields->addField_listData(C_("PokemonMini", "Vector Table"), &params);
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
