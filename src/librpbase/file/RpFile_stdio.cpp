@@ -499,7 +499,7 @@ int RpFile::truncate(int64_t size)
 	}
 
 	// Truncate the file.
-	fflush(d->file);
+	::fflush(d->file);
 	int ret = ftruncate(fileno(d->file), size);
 	if (ret != 0) {
 		m_lastError = errno;
@@ -652,7 +652,7 @@ int RpFile::setOriginInfo(const std::string &url, time_t mtime)
 
 		// Flush the file before setting the times to ensure
 		// that libc doesn't write anything afterwards.
-		fflush(d->file);
+		::fflush(d->file);
 
 		// Set the times.
 		errno = 0;
