@@ -16,6 +16,8 @@
   * Key Manager: Import the Korean key from Wii keys.bin if it's present.
   * Added a UI frontend for the Cinnamon Desktop Environment using the Nemo
     file browser.
+  * Cached files now contain origin information indicating the URL they were
+    downloaded from. This can be disabled in rp-config if it isn't wanted.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently

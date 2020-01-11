@@ -81,6 +81,9 @@ class ConfigPrivate : public ConfReaderPrivate
 		bool extImgDownloadEnabled;
 		bool useIntIconForSmallSizes;
 		bool downloadHighResScans;
+		bool storeFileOriginInfo;
+
+		// Other options.
 		bool showDangerousPermissionsOverlayIcon;
 		bool enableThumbnailOnNetworkFS;
 };
@@ -116,6 +119,7 @@ ConfigPrivate::ConfigPrivate()
 	, extImgDownloadEnabled(true)
 	, useIntIconForSmallSizes(true)
 	, downloadHighResScans(true)
+	, storeFileOriginInfo(true)
 	/* Overlay icon */
 	, showDangerousPermissionsOverlayIcon(true)
 	/* Enable thumbnailing and metadata on network FS */
@@ -144,6 +148,7 @@ void ConfigPrivate::reset(void)
 	extImgDownloadEnabled = true;
 	useIntIconForSmallSizes = true;
 	downloadHighResScans = true;
+	storeFileOriginInfo = true;
 	// Overlay icon
 	showDangerousPermissionsOverlayIcon = true;
 	// Enable thumbnail and metadata on network FS
@@ -182,6 +187,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			param = &useIntIconForSmallSizes;
 		} else if (!strcasecmp(name, "DownloadHighResScans")) {
 			param = &downloadHighResScans;
+		} else if (!strcasecmp(name, "StoreFileOriginInfo")) {
+			param = &storeFileOriginInfo;
 		} else {
 			// Invalid option.
 			return 1;
@@ -500,6 +507,17 @@ bool Config::downloadHighResScans(void) const
 }
 
 /**
+ * Store file origin information?
+ * NOTE: Call load() before using this function.
+ * @return True if we should; false if not.
+ */
+bool Config::storeFileOriginInfo(void) const
+{
+	RP_D(const Config);
+	return d->storeFileOriginInfo;
+}
+
+/**
  * Show an overlay icon for "dangerous" permissions?
  * NOTE: Call load() before using this function.
  * @return True if we should show the overlay icon; false if not.
@@ -512,6 +530,7 @@ bool Config::showDangerousPermissionsOverlayIcon(void) const
 
 /**
  * Enable thumbnailing and metadata on network filesystems?
+ * NOTE: Call load() before using this function.
  * @return True if we should enable; false if not.
  */
 bool Config::enableThumbnailOnNetworkFS(void) const
