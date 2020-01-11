@@ -706,6 +706,21 @@ string RpFile::filename(void) const
 	return d->filename;
 }
 
+/** File properties (NON-VIRTUAL) **/
+
+/**
+ * Set the file origin info.
+ * This uses xattrs on Linux and ADS on Windows.
+ * @param url Origin URL.
+ * @param mtime If >= 0, this value is set as the mtime.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpFile::setOriginInfo(const std::string &url, time_t mtime)
+{
+	// TODO
+	return -ENOSYS;
+}
+
 /** Device file functions **/
 
 /**

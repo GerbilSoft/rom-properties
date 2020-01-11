@@ -120,6 +120,15 @@
 /* Define to 1 if you have the `_wputenv_s` function. */
 #cmakedefine HAVE__WPUTENV_S 1
 
+/* Define to 1 if you have the Linux `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_LINUX 1
+
+/* Define to 1 if you have the Mac OS X `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_MAC 1
+
+/* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
+#cmakedefine HAVE_EXTATTR_SET_FD 1
+
 /** C++ standard library **/
 
 /* Define to 1 if you have the `unordered_map::reserve` function. */
