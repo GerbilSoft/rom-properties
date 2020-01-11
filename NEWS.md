@@ -68,6 +68,9 @@
     ".code" file, which is usually the case for DLC CIAs.
     https://github.com/GerbilSoft/rom-properties/issues/208
   * GameCube: Fixed the GameTDB region code for Italy.
+  * CurlDownloader: Use a case-insensitive check for HTTP headers.
+    cURL provides headers in lowercase when accessing an HTTP/2 server.
+    This fixes handling of mtimes and content length.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
