@@ -45,13 +45,14 @@ using std::unique_ptr;
 
 // Qt includes.
 #include <QtCore/QDateTime>
+#include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-#include <QtCore/QMimeDatabase>
+# include <QtCore/QMimeDatabase>
 #else
-#include <kmimetype.h>
+# include <kmimetype.h>
 #endif
 
 // KDE protocol manager.
@@ -313,6 +314,32 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
 
+	// Check if the source filename is a URI.
+	// TODO: Add KIO support. For now, only support local filenames.
+	QUrl url(QString::fromUtf8(source_file));
+	QFileInfo fi_src;
+	QString qs_source_filename;
+	if (url.scheme().isEmpty()) {
+		// No scheme. This is a plain old filename.
+		fi_src = QFileInfo(QString::fromUtf8(source_file));
+		qs_source_filename = fi_src.absoluteFilePath();
+		url = QUrl::fromLocalFile(qs_source_filename);
+	} else if (url.isLocalFile()) {
+		// "file://" scheme. This is a local file.
+		qs_source_filename = url.toLocalFile();
+		fi_src = QFileInfo(qs_source_filename);
+		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
+	} else {
+		// Has a scheme that isn't "file://".
+		// Not supported right now.
+		return RPCT_SOURCE_FILE_ERROR;
+	}
+
+	if (!url.isValid() || url.isEmpty()) {
+		// Empty URL...
+		return RPCT_SOURCE_FILE_ERROR;
+	}
+
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
 	if (FileSystem::isOnBadFS(source_file, config->enableThumbnailOnNetworkFS())) {
@@ -321,9 +348,11 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// Attempt to open the ROM file.
-	// TODO: RpQFile wrapper.
+	// TODO: RpFileKio wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(source_file, RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(
+		QDir::toNativeSeparators(url.toLocalFile()).toUtf8().constData(),
+		RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		file->unref();
@@ -397,14 +426,13 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	kv.push_back(std::make_pair("Software", sw));
 
 	// Modification time.
-	const QString qs_source_file = U82Q(source_file);
-	QFileInfo fi_src(qs_source_file);
 	int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 	if (mtime > 0) {
 		kv.push_back(std::make_pair("Thumb::Size", rp_sprintf("%" PRId64, mtime)));
 	}
 
 	// MIME type.
+	// TODO: KIO support.
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// Use QMimeDatabase for Qt5.
 	QMimeDatabase mimeDatabase;
@@ -413,7 +441,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 		string(mimeType.name().toUtf8().constData())));
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	// Use KMimeType for Qt4.
-	KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_file, 0, true);
+	KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_filename, 0, true);
 	if (mimeType) {
 		kv.push_back(std::make_pair("Thumb::Mimetype",
 			string(mimeType->name().toUtf8().constData())));
@@ -429,11 +457,8 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// URI.
 	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
 	// GTK+ desktops do urlencode spaces and non-ASCII characters.
-	QUrl url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
-	if (url.isValid() && !url.isEmpty()) {
-		kv.push_back(std::make_pair("Thumb::URI",
-			string(url.toString().toUtf8().constData())));
-	}
+	kv.push_back(std::make_pair("Thumb::URI",
+		string(url.toString().toUtf8().constData())));
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);
