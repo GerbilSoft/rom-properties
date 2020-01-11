@@ -73,6 +73,8 @@
   * CurlDownloader: Use a case-insensitive check for HTTP headers.
     cURL provides headers in lowercase when accessing an HTTP/2 server.
     This fixes handling of mtimes and content length.
+  * UrlmonDownloader: Handle ERROR_INSUFFICIENT_BUFFER for the cache info
+    entry correctly. Otherwise, we won't get the mtime.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now
