@@ -17,6 +17,7 @@
 
 // libwin32common
 #include "libwin32common/w32err.h"
+#include "libwin32common/w32time.h"
 
 // C includes.
 #include <fcntl.h>
@@ -717,8 +718,33 @@ string RpFile::filename(void) const
  */
 int RpFile::setOriginInfo(const std::string &url, time_t mtime)
 {
-	// TODO
-	return -ENOSYS;
+	RP_D(RpFile);
+
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+#if _USE_32BIT_TIME_T
+# error 32-bit time_t is not supported. Get a newer compiler.
+#endif
+
+	// TODO: Flush the file?
+	char buf[256];
+	snprintf(buf, sizeof(buf), "mtime: %u", (unsigned int)mtime);
+	MessageBoxA(NULL, buf, buf, 0);
+	if (mtime >= 0) {
+		// Convert to FILETIME.
+		FILETIME ft_mtime;
+		UnixTimeToFileTime(mtime, &ft_mtime);
+
+		// Set the mtime.
+		BOOL bRet = SetFileTime(d->file, nullptr, nullptr, &ft_mtime);
+		if (!bRet) {
+			m_lastError = w32err_to_posix(GetLastError());
+			return -m_lastError;
+		}
+	}
+
+	// We're done here.
+	return 0;
 }
 
 /** Device file functions **/

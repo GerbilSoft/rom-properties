@@ -80,9 +80,12 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Get the cache information.
+	// NOTE: GetUrlCacheEntryInfo() might fail with lastError == ERROR_INSUFFICIENT_BUFFER.
+	// FIXME: amiibo.life downloads aren't found here. (CDN redirection issues?)
 	DWORD cbCacheEntryInfo = 0;
 	BOOL bRet = GetUrlCacheEntryInfo(t_url.c_str(), nullptr, &cbCacheEntryInfo);
-	if (bRet) {
+	DWORD dwLastError = GetLastError();
+	if (bRet || dwLastError == ERROR_INSUFFICIENT_BUFFER) {
 		uint8_t *pCacheEntryInfoBuf =
 			static_cast<uint8_t*>(malloc(cbCacheEntryInfo));
 		if (!pCacheEntryInfoBuf) {
