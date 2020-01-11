@@ -726,14 +726,14 @@ int RpFile::setOriginInfo(const std::string &url, time_t mtime)
 # error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
-	// TODO: Flush the file?
-	char buf[256];
-	snprintf(buf, sizeof(buf), "mtime: %u", (unsigned int)mtime);
-	MessageBoxA(NULL, buf, buf, 0);
 	if (mtime >= 0) {
 		// Convert to FILETIME.
 		FILETIME ft_mtime;
 		UnixTimeToFileTime(mtime, &ft_mtime);
+
+		// Flush the file before setting the times to ensure
+		// that Windows doesn't write anything afterwards.
+		FlushFileBuffers(d->file);
 
 		// Set the mtime.
 		BOOL bRet = SetFileTime(d->file, nullptr, nullptr, &ft_mtime);
