@@ -28,6 +28,8 @@
   * WiiWAD, iQuePlayer: Display the console IDs from tickets. This is usually
     0x00000000 for system titles and unlicensed copies.
   * KhronosKTX: Added support for BPTC (BC7) texture compression.
+  * amiibo: Updated the internal database to be current as of 2020/01/11.
+    Added some missing entries and fixed a few incorrect entries.
 
 * New compressed texture formats:
   * PowerVR Texture Compression. Supports PVRTC-I 2bpp and 4bpp in PowerVR
