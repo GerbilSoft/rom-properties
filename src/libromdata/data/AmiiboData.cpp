@@ -240,7 +240,8 @@ const char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr, nullptr,			// 0x1D8
 	nullptr, nullptr, nullptr, nullptr,	// 0x1E0
 	"Kirby",				// 0x1F0
-	nullptr, nullptr, nullptr,		// 0x1F4
+	"BoxBoy!",				// 0x1F4
+	nullptr, nullptr,			// 0x1F8
 	nullptr, nullptr, nullptr, nullptr,	// 0x200
 	"Fire Emblem",				// 0x210
 	nullptr, nullptr, nullptr,		// 0x214
@@ -433,6 +434,7 @@ MSS_VARIANT_ARRAY_DEF("Pink Gold Peach", pink_gold_peach);
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_isabelle_variants[] = {
 	{0x00, "Isabelle (Summer Outfit)"},
 	{0x01, "Isabelle (Autumn Outfit)"},
+	{0x02, "Isabelle (Series 3)"},
 	{0x03, "Isabelle (Series 4)"},
 };
 
@@ -573,13 +575,13 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x0106, "Urbosa"),
 	AMIIBO_CHAR_ID_ONE(0x0107, "Mipha"),
 	AMIIBO_CHAR_ID_ONE(0x0108, "Revali"),
-	// The Legend of Zelda (character series = 0x014)
+	// The Legend of Zelda [enemies] (character series = 0x014)
+	AMIIBO_CHAR_ID_ONE(0x0140, "Guardian"),
 	AMIIBO_CHAR_ID_ONE(0x0141, "Bokoblin"),
 
 	// Animal Crossing (character series = 0x018)
 	AMIIBO_CHAR_ID_ONE(0x0180, "Villager"),
 	AMIIBO_CHAR_ID_VAR(0x0181, "Isabelle", ac_isabelle_variants),
-	AMIIBO_CHAR_ID_ONE(0x0182, "DJ KK"),
 	AMIIBO_CHAR_ID_VAR(0x0182, "K.K. Slider", ac_kk_slider_variants),
 	AMIIBO_CHAR_ID_VAR(0x0183, "Tom Nook", ac_tom_nook_variants),
 	AMIIBO_CHAR_ID_ONE(0x0184, "Timmy & Tommy"),
@@ -1064,8 +1066,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	AMIIBO_CHAR_ID_ONE(0x0780, "Mr. Game & Watch"),
 	AMIIBO_CHAR_ID_ONE(0x0781, "R.O.B."),	// NES/Famicom variant is in Page 22, amiibo series.
 	AMIIBO_CHAR_ID_ONE(0x0782, "Duck Hunt"),
-	// TODO: 0x0783?
-	AMIIBO_CHAR_ID_ONE(0x0784, "Ice Climbers"),
+	AMIIBO_CHAR_ID_ONE(0x078F, "Ice Climbers"),
 
 	// Mii (character series = 0x07C)
 	AMIIBO_CHAR_ID_VAR(0x07C0, "Mii Brawler", mii_variants),
@@ -1344,7 +1345,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Animal Crossing Cards: Series 1 [0x0044-0x00A7]
 	{  1, 1, "Isabelle"},		// 0x0044
 	{  2, 1, "Tom Nook"},		// 0x0045
-	{  3, 1, "DJ KK"},		// 0x0046
+	{  3, 1, "DJ K.K."},		// 0x0046
 	{  4, 1, "Sable"},		// 0x0047
 	{  5, 1, "Kapp'n"},		// 0x0048
 	{  6, 1, "Resetti"},		// 0x0049
