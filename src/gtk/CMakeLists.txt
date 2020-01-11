@@ -37,12 +37,14 @@ SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
 	CreateThumbnail.cpp
 	rp-gtk-enums.c
+	RpFile_gio.cpp
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
 	GdkImageConv.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
+	RpFile_gio.hpp
 	)
 
 # GTK2 sources and headers.

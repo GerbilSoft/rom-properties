@@ -37,9 +37,9 @@ void		rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
 GtkWidget	*rom_data_view_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
-const gchar	*rom_data_view_get_filename	(RomDataView	*page) G_GNUC_INTERNAL;
-void		rom_data_view_set_filename	(RomDataView	*page,
-						 const gchar	*filename) G_GNUC_INTERNAL;
+const gchar	*rom_data_view_get_uri		(RomDataView	*page) G_GNUC_INTERNAL;
+void		rom_data_view_set_uri		(RomDataView	*page,
+						 const gchar	*uri) G_GNUC_INTERNAL;
 
 RpDescFormatType rom_data_view_get_desc_format_type(RomDataView *page) G_GNUC_INTERNAL;
 void		rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_format_type);

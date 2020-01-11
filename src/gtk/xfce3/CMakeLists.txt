@@ -5,10 +5,11 @@ PROJECT(rom-properties-xfce3)
 # Find packages.
 FIND_PACKAGE(GLib2 ${REQUIRE_XFCE3} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_XFCE3} 2.26.0)
+FIND_PACKAGE(GIO ${REQUIRE_XFCE3} 2.26.0)
 FIND_PACKAGE(Cairo)
 # GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_XFCE3})
-IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# Find the ThunarX 3 library.
 	FIND_PACKAGE(ThunarX3 ${REQUIRE_XFCE3})
 	IF(NOT ThunarX3_FOUND)
@@ -16,11 +17,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 		# Disable the XFCE frontend.
 		SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
 	ENDIF(NOT ThunarX3_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
 	SET(BUILD_XFCE3 OFF CACHE INTERNAL "Build the XFCE (GTK+ 3.x) plugin. (Thunar 1.8 and later)" FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce3_SRCS  "${rom-properties-gtk_SRCS}")
@@ -89,7 +90,7 @@ IF(BUILD_XFCE3)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PUBLIC Xfce::thunarx-3)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PRIVATE Cairo::cairo)
-	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PUBLIC Gtk3::gtk3 GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce3
 		PRIVATE G_LOG_DOMAIN=\"rom-properties-xfce3\"
 		)

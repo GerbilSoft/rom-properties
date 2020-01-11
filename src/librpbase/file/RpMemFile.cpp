@@ -144,6 +144,7 @@ int64_t RpMemFile::tell(void)
 
 /**
  * Truncate the file.
+ * (NOTE: Not valid for RpMemFile; this will always return -1.)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */

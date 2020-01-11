@@ -1,38 +1,39 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * RpMemFile.hpp: IRpFile implementation using a memory buffer.            *
+ * ROM Properties Page shell extension. (GTK+ common)                      *
+ * RpFile_gio.hpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_RPMEMFILE_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_RPMEMFILE_HPP__
+#ifndef __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
+#define __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__
 
-#include "IRpFile.hpp"
+// librpbase
+#include "librpbase/file/IRpFile.hpp"
 
-namespace LibRpBase {
-
-class RpMemFile : public IRpFile
+class RpFileGioPrivate;
+class RpFileGio : public LibRpBase::IRpFile
 {
 	public:
 		/**
-		 * Open an IRpFile backed by memory.
-		 * The resulting IRpFile is read-only.
-		 *
-		 * NOTE: The memory buffer is NOT copied; it must remain
-		 * valid as long as this object is still open.
-		 *
-		 * @param buf Memory buffer.
-		 * @param size Size of memory buffer.
+		 * Open a file.
+		 * NOTE: Files are always opened as read-only in binary mode.
+		 * @param uri GVfs URI.
 		 */
-		RpMemFile(const void *buf, size_t size);
+		RpFileGio(const char *uri);
+		RpFileGio(const std::string &uri);
+	private:
+		void init(void);
 	protected:
-		virtual ~RpMemFile() { }	// call unref() instead
+		virtual ~RpFileGio();	// call unref() instead
 
 	private:
-		typedef IRpFile super;
-		RP_DISABLE_COPY(RpMemFile)
+		typedef LibRpBase::IRpFile super;
+		RP_DISABLE_COPY(RpFileGio)
+	protected:
+		friend class RpFileGioPrivate;
+		RpFileGioPrivate *const d_ptr;
 
 	public:
 		/**
@@ -57,7 +58,7 @@ class RpMemFile : public IRpFile
 
 		/**
 		 * Write data to the file.
-		 * (NOTE: Not valid for RpMemFile; this will always return 0.)
+		 * (NOTE: Not valid for RpFileGio; this will always return 0.)
 		 * @param ptr Input data buffer.
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
@@ -79,14 +80,14 @@ class RpMemFile : public IRpFile
 
 		/**
 		 * Truncate the file.
-		 * (NOTE: Not valid for RpMemFile; this will always return -1.)
+		 * (NOTE: Not valid for RpFileGio; this will always return -1.)
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
 		int truncate(int64_t size = 0) final;
 
 	public:
-		/** File properties. **/
+		/** File properties **/
 
 		/**
 		 * Get the file size.
@@ -96,16 +97,10 @@ class RpMemFile : public IRpFile
 
 		/**
 		 * Get the filename.
+		 * NOTE: For RpFileGio, this returns a GVfs URI.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
 		std::string filename(void) const final;
-
-	protected:
-		const void *m_buf;	// Memory buffer.
-		size_t m_size;		// Size of memory buffer.
-		size_t m_pos;		// Current position.
 };
 
-}
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_IRPFILE_HPP__ */
+#endif /* __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__ */

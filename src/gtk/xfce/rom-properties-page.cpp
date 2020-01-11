@@ -259,7 +259,7 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 			G_CALLBACK(rom_properties_page_file_changed), page);
 	} else {
 		// Clear the file.
-		rom_data_view_set_filename(ROM_DATA_VIEW(page->romDataView), nullptr);
+		rom_data_view_set_uri(ROM_DATA_VIEW(page->romDataView), nullptr);
 	}
 
 	// File has been changed.
@@ -274,14 +274,12 @@ rom_properties_page_file_changed(ThunarxFileInfo	*file,
 	g_return_if_fail(IS_ROM_PROPERTIES_PAGE(page));
 	g_return_if_fail(page->file == file);
 
-	// Get the filename.
-	gchar *uri = thunarx_file_info_get_uri(page->file);
-	gchar *filename = g_filename_from_uri(uri, nullptr, nullptr);
-	g_free(uri);
+	// Get the URI.
+	gchar *const uri = thunarx_file_info_get_uri(page->file);
 
 	// FIXME: This only works on initial load.
 	// Need to update it to reload the ROM on file change.
 	// Also, ThunarxFileInfo emits 'changed' *twice* for file changes...
-	rom_data_view_set_filename(ROM_DATA_VIEW(page->romDataView), filename);
-	g_free(filename);
+	rom_data_view_set_uri(ROM_DATA_VIEW(page->romDataView), uri);
+	g_free(uri);
 }

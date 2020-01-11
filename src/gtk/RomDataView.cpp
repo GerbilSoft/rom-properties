@@ -19,6 +19,9 @@
 #include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 
+// RpFileGio
+#include "RpFile_gio.hpp"
+
 // libi18n
 #include "libi18n/i18n.h"
 
@@ -74,7 +77,7 @@ static inline GtkWidget *gtk_tree_view_column_get_button(GtkTreeViewColumn *tree
 /* Property identifiers */
 enum {
 	PROP_0,
-	PROP_FILENAME,
+	PROP_URI,
 	PROP_DESC_FORMAT_TYPE,
 	PROP_LAST
 };
@@ -90,7 +93,7 @@ static void	rom_data_view_set_property	(GObject	*object,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
 // TODO: Make 'page' the first argument?
-static void	rom_data_view_filename_changed	(const gchar 	*filename,
+static void	rom_data_view_uri_changed	(const gchar 	*uri,
 						 RomDataView	*page);
 static void	rom_data_view_desc_format_type_changed(RpDescFormatType desc_format_type,
 						 RomDataView	*page);
@@ -143,8 +146,8 @@ struct _RomDataView {
 	GtkWidget	*imgIcon;
 	GtkWidget	*imgBanner;
 
-	// Filename.
-	gchar		*filename;
+	// URI. (GVfs)
+	gchar		*uri;
 
 	// ROM data.
 	RomData		*romData;
@@ -190,12 +193,12 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	gobject_class->set_property = rom_data_view_set_property;
 
 	/**
-	 * RomDataView:filename:
+	 * RomDataView:uri:
 	 *
-	 * The name of the file being displayed on this page.
+	 * The URI of the file being displayed on this page.
 	 **/
-	properties[PROP_FILENAME] = g_param_spec_string(
-		"filename", "Filename", "Filename of the ROM image being displayed.",
+	properties[PROP_URI] = g_param_spec_string(
+		"uri", "URI", "URI of the ROM image being displayed.",
 		nullptr,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
@@ -212,7 +215,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
-	g_object_class_install_property(gobject_class, PROP_FILENAME, properties[PROP_FILENAME]);
+	g_object_class_install_property(gobject_class, PROP_URI, properties[PROP_URI]);
 	g_object_class_install_property(gobject_class, PROP_DESC_FORMAT_TYPE, properties[PROP_DESC_FORMAT_TYPE]);
 }
 
@@ -294,7 +297,7 @@ static void
 rom_data_view_init(RomDataView *page)
 {
 	// No ROM data initially.
-	page->filename = nullptr;
+	page->uri = nullptr;
 	page->romData = nullptr;
 	page->last_frame_number = 0;
 	page->iconAnimHelper = new IconAnimHelper();
@@ -398,8 +401,8 @@ rom_data_view_finalize(GObject *object)
 {
 	RomDataView *page = ROM_DATA_VIEW(object);
 
-	// Free the filename.
-	g_free(page->filename);
+	// Free the URI.
+	g_free(page->uri);
 
 	// Delete the C++ objects.
 	delete page->iconAnimHelper;
@@ -430,8 +433,8 @@ rom_data_view_get_property(GObject	*object,
 	RomDataView *page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FILENAME:
-			g_value_set_string(value, page->filename);
+		case PROP_URI:
+			g_value_set_string(value, page->uri);
 			break;
 
 		case PROP_DESC_FORMAT_TYPE:
@@ -453,8 +456,8 @@ rom_data_view_set_property(GObject	*object,
 	RomDataView *page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FILENAME:
-			rom_data_view_set_filename(page, g_value_get_string(value));
+		case PROP_URI:
+			rom_data_view_set_uri(page, g_value_get_string(value));
 			break;
 
 		case PROP_DESC_FORMAT_TYPE:
@@ -469,41 +472,41 @@ rom_data_view_set_property(GObject	*object,
 }
 
 /**
- * rom_data_view_get_filename:
+ * rom_data_view_get_uri:
  * @page : a #RomDataView.
  *
- * Returns the current filename for the @page.
+ * Returns the current URI for the @page.
  *
  * Return value: the file associated with this property page.
  **/
 const gchar*
-rom_data_view_get_filename(RomDataView *page)
+rom_data_view_get_uri(RomDataView *page)
 {
 	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), nullptr);
-	return page->filename;
+	return page->uri;
 }
 
 /**
- * rom_data_view_set_filename:
+ * rom_data_view_set_uri:
  * @page : a #RomDataView.
- * @filename : a filename.
+ * @uri : a URI.
  *
- * Sets the filename for this @page.
+ * Sets the URI for this @page.
  **/
 void
-rom_data_view_set_filename(RomDataView	*page,
-			   const gchar	*filename)
+rom_data_view_set_uri(RomDataView	*page,
+		      const gchar	*uri)
 {
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 
 	/* Check if we already use this file */
-	if (G_UNLIKELY(!g_strcmp0(page->filename, filename)))
+	if (G_UNLIKELY(!g_strcmp0(page->uri, uri)))
 		return;
 
 	/* Disconnect from the previous file (if any) */
-	if (G_LIKELY(page->filename != nullptr)) {
-		g_free(page->filename);
-		page->filename = nullptr;
+	if (G_LIKELY(page->uri != nullptr)) {
+		g_free(page->uri);
+		page->uri = nullptr;
 
 		// Unreference the existing RomData object.
 		if (page->romData) {
@@ -516,11 +519,11 @@ rom_data_view_set_filename(RomDataView	*page,
 	}
 
 	/* Assign the value */
-	page->filename = g_strdup(filename);
+	page->uri = g_strdup(uri);
 
 	/* Connect to the new file (if any) */
-	if (G_LIKELY(page->filename != nullptr)) {
-		rom_data_view_filename_changed(page->filename, page);
+	if (G_LIKELY(page->uri != nullptr)) {
+		rom_data_view_uri_changed(page->uri, page);
 	} else {
 		// Hide the header row
 		if (page->hboxHeaderRow) {
@@ -528,17 +531,17 @@ rom_data_view_set_filename(RomDataView	*page,
 		}
 	}
 
-	// Filename has been changed.
-	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_FILENAME]);
+	// URI has been changed.
+	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_URI]);
 }
 
 static void
-rom_data_view_filename_changed(const gchar	*filename,
-			       RomDataView	*page)
+rom_data_view_uri_changed(const gchar	*uri,
+			  RomDataView	*page)
 {
-	g_return_if_fail(filename != nullptr);
+	g_return_if_fail(uri != nullptr);
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
-	g_return_if_fail(!g_strcmp0(page->filename, filename));
+	g_return_if_fail(!g_strcmp0(page->uri, uri));
 
 	if (page->changed_idle == 0) {
 		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
@@ -1496,30 +1499,42 @@ rom_data_view_load_rom_data(gpointer data)
 {
 	RomDataView *page = ROM_DATA_VIEW(data);
 	g_return_val_if_fail(page != nullptr || IS_ROM_DATA_VIEW(page), false);
-	g_return_val_if_fail(page->filename != nullptr, false);
+	g_return_val_if_fail(page->uri != nullptr, false);
 
-	// Open the ROM file.
-	// TODO: gvfs support.
-	if (G_LIKELY(page->filename != nullptr)) {
-		// Open the ROM file.
-		RpFile *const file = new RpFile(page->filename, RpFile::FM_OPEN_READ_GZ);
-		if (file->isOpen()) {
-			// Create the RomData object.
-			// file is ref()'d by RomData.
-			page->romData = RomDataFactory::create(file);
-
-			// Update the display widgets.
-			rom_data_view_update_display(page);
-
-			// Make sure the underlying file handle is closed,
-			// since we don't need it once the RomData has been
-			// loaded by RomDataView.
-			if (page->romData) {
-				page->romData->close();
-			}
-		}
-		file->unref();
+	if (G_UNLIKELY(page->uri == nullptr)) {
+		// No URI.
+		page->changed_idle = 0;
+		return false;
 	}
+
+	// Check if the URI maps to a local file.
+	IRpFile *file = nullptr;
+	gchar *const filename = g_filename_from_uri(page->uri, nullptr, nullptr);
+	if (filename) {
+		// Local file. Use RpFile.
+		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		g_free(filename);
+	} else {
+		// Not a local file. Use RpFileGio.
+		file = new RpFileGio(page->uri);
+	}
+
+	if (file->isOpen()) {
+		// Create the RomData object.
+		// file is ref()'d by RomData.
+		page->romData = RomDataFactory::create(file);
+
+		// Update the display widgets.
+		rom_data_view_update_display(page);
+
+		// Make sure the underlying file handle is closed,
+		// since we don't need it once the RomData has been
+		// loaded by RomDataView.
+		if (page->romData) {
+			page->romData->close();
+		}
+	}
+	file->unref();
 
 	// Animation timer will be started when the page
 	// receives the "map" signal.

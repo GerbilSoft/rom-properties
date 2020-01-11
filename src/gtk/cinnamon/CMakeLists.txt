@@ -3,10 +3,11 @@ PROJECT(rom-properties-cinnamon)
 # Cinnamon (Nemo) frontend for rom-properties.
 FIND_PACKAGE(GLib2 ${REQUIRE_CINNAMON} 2.26.0)
 FIND_PACKAGE(GObject2 ${REQUIRE_CINNAMON} 2.26.0)
+FIND_PACKAGE(GIO ${REQUIRE_CINNAMON} 2.26.0)
 FIND_PACKAGE(Cairo)
 # GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
 FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_CINNAMON})
-IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# Find the Nemo extension library.
 	# Nemo was forked from Nautilus 3.x, so all versions of Nemo
 	# use GTK+ 3.x.
@@ -16,11 +17,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 		# Disable the Cinnamon frontend.
 		SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
 	ENDIF(NOT LibNemoExtension_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the Cinnamon frontend.
 	SET(BUILD_CINNAMON OFF CACHE INTERNAL "Build the Cinnamon (GTK+ 3.x) plugin." FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND Cairo_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND Cairo_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-cinnamon_SRCS  "${rom-properties-gtk_SRCS}")
@@ -85,7 +86,7 @@ IF(BUILD_CINNAMON)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PUBLIC Cinnamon::libnemo-extension)
 	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PRIVATE Cairo::cairo)
-	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PUBLIC Gtk3::gtk3 GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rom-properties-cinnamon PUBLIC Gtk3::gtk3 GLib2::gio GLib2::gobject GLib2::glib)
 	TARGET_COMPILE_DEFINITIONS(rom-properties-cinnamon
 		PRIVATE G_LOG_DOMAIN=\"rom-properties-cinnamon\"
 			RP_UI_GTK3_CINNAMON

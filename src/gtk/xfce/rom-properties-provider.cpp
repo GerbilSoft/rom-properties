@@ -14,6 +14,9 @@
 #include "librpbase/RomData.hpp"
 using namespace LibRpBase;
 
+// RpFileGio
+#include "RpFile_gio.hpp"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -105,24 +108,31 @@ rom_properties_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GL
 gboolean
 rom_properties_get_file_supported(ThunarxFileInfo *info)
 {
-	gchar *uri;
-	gchar *filename;
 	gboolean supported = false;
-
 	g_return_val_if_fail(info != nullptr || THUNARX_IS_FILE_INFO (info), false);
 
-	// TODO: Support for gvfs.
-	uri = thunarx_file_info_get_uri(info);
-	filename = g_filename_from_uri(uri, nullptr, nullptr);
-	g_free(uri);
-
-	if (G_UNLIKELY(filename == nullptr))
+	gchar *const uri = thunarx_file_info_get_uri(info);
+	if (G_UNLIKELY(uri == nullptr)) {
+		// No URI...
 		return false;
+	}
 
 	// TODO: Check file extensions and/or MIME types?
 
+	// Check if the URI maps to a local file.
+	IRpFile *file = nullptr;
+	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
+	if (filename) {
+		// Local file. Use RpFile.
+		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		g_free(filename);
+	} else {
+		// Not a local file. Use RpFileGio.
+		file = new RpFileGio(uri);
+	}
+	g_free(uri);
+
 	// Open the ROM file.
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
 		// Is this ROM file supported?
 		// NOTE: We have to create an instance here in order to
@@ -136,6 +146,5 @@ rom_properties_get_file_supported(ThunarxFileInfo *info)
 	}
 	file->unref();
 
-	g_free(filename);
 	return supported;
 }

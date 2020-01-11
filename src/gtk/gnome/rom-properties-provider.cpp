@@ -22,6 +22,9 @@
 #include "librpbase/RomData.hpp"
 using namespace LibRpBase;
 
+// RpFileGio
+#include "RpFile_gio.hpp"
+
 // libi18n
 #include "libi18n/i18n.h"
 
@@ -138,12 +141,17 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 		return nullptr;
 
 	info = NAUTILUS_FILE_INFO(file->data);
+	gchar *const uri = nautilus_file_info_get_uri(info);
+	if (G_UNLIKELY(uri == nullptr)) {
+		// No URI...
+		return nullptr;
+	}
 
+	// TODO: Do we have to keep rom_properties_get_file_supported()
+	// as a separate function that takes a NautilusFileInfo*?
 	if (G_LIKELY(rom_properties_get_file_supported(info))) {
-		// Get the filename.
-		gchar *uri = nautilus_file_info_get_uri(info);
-		gchar *filename = g_filename_from_uri(uri, nullptr, nullptr);
-		g_free(uri);
+		// Get the URI.
+		gchar *const uri = nautilus_file_info_get_uri(info);
 
 		// Create the RomDataView.
 		// NOTE: Unlike the Xfce/Thunar (GTK+ 2.x) version, we don't
@@ -153,9 +161,9 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 		GtkWidget *romDataView = static_cast<GtkWidget*>(
 			g_object_new(rom_data_view_get_type(), nullptr));
 		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_GNOME);
-		rom_data_view_set_filename(ROM_DATA_VIEW(romDataView), filename);
+		rom_data_view_set_uri(ROM_DATA_VIEW(romDataView), uri);
 		gtk_widget_show(romDataView);
-		g_free(filename);
+		g_free(uri);
 
 		// tr: Tab title.
 		const char *const tabTitle = C_("RomDataView", "ROM Properties");
@@ -175,24 +183,30 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 gboolean
 rom_properties_get_file_supported(NautilusFileInfo *info)
 {
-	gchar *uri;
-	gchar *filename;
 	gboolean supported = false;
-
 	g_return_val_if_fail(info != nullptr || NAUTILUS_IS_FILE_INFO(info), false);
 
-	// TODO: Support for gvfs.
-	uri = nautilus_file_info_get_uri(info);
-	filename = g_filename_from_uri(uri, nullptr, nullptr);
-	g_free(uri);
-
-	if (G_UNLIKELY(filename == nullptr))
+	gchar *const uri = nautilus_file_info_get_uri(info);
+	if (G_UNLIKELY(uri == nullptr)) {
+		// No URI...
 		return false;
+	}
 
 	// TODO: Check file extensions and/or MIME types?
 
-	// Open the ROM file.
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+	// Check if the URI maps to a local file.
+	IRpFile *file = nullptr;
+	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
+	if (filename) {
+		// Local file. Use RpFile.
+		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		g_free(filename);
+	} else {
+		// Not a local file. Use RpFileGio.
+		file = new RpFileGio(uri);
+	}
+	g_free(uri);
+
 	if (file->isOpen()) {
 		// Is this ROM file supported?
 		// NOTE: We have to create an instance here in order to
@@ -206,6 +220,5 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 	}
 	file->unref();
 
-	g_free(filename);
 	return supported;
 }
