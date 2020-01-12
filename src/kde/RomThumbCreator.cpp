@@ -50,8 +50,10 @@ using std::unique_ptr;
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
+#include <QtCore/QStandardPaths>
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
+
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 # include <QtCore/QMimeDatabase>
 #else
@@ -265,19 +267,64 @@ RomThumbCreator::~RomThumbCreator()
 bool RomThumbCreator::create(const QString &path, int width, int height, QImage &img)
 {
 	Q_UNUSED(height);
-	const QByteArray u8path = path.toUtf8();
 
-	// Check for "bad" file systems.
-	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(u8path.constData(), config->enableThumbnailOnNetworkFS())) {
-		// This file is on a "bad" file system.
+	// Check if the source filename is a URI.
+	QUrl url(path);
+	QFileInfo fi_src;
+	QString qs_source_filename;
+	if (url.scheme().isEmpty()) {
+		// No scheme. This is a plain old filename.
+		fi_src = QFileInfo(path);
+		qs_source_filename = fi_src.absoluteFilePath();
+		url = QUrl::fromLocalFile(qs_source_filename);
+	} else if (url.isLocalFile()) {
+		// "file://" scheme. This is a local file.
+		qs_source_filename = url.toLocalFile();
+		fi_src = QFileInfo(qs_source_filename);
+		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
+	} else if (url.scheme() == QLatin1String("desktop")) {
+		// Desktop folder.
+		// KFileItem::localPath() isn't working for "desktop:/" here,
+		// so handle it manually.
+		// TODO: Also handle "trash:/"?
+		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
+		fi_src = QFileInfo(qs_source_filename);
+		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
+	} else {
+		// Has a scheme that isn't "file://".
+		// This is probably a remote file.
+	}
+
+	if (!qs_source_filename.isEmpty()) {
+		// Check for "bad" file systems.
+		const Config *const config = Config::instance();
+		if (FileSystem::isOnBadFS(qs_source_filename.toUtf8().constData(), config->enableThumbnailOnNetworkFS())) {
+			// This file is on a "bad" file system.
+			return false;
+		}
+	}
+
+	// Attempt to open the ROM file.
+	IRpFile *file = nullptr;
+	if (!qs_source_filename.isEmpty()) {
+		// Local file. Use RpFile.
+		file = new RpFile(
+			QDir::toNativeSeparators(qs_source_filename).toUtf8().constData(),
+			RpFile::FM_OPEN_READ_GZ);
+	} else {
+#ifdef HAVE_RPFILE_KIO
+		// Not a local file. Use RpFileKio.
+		file = new RpFileKio(url);
+#else /* !HAVE_RPFILE_KIO */
+		// RpFileKio is not available.
 		return false;
+#endif /* HAVE_RPFILE_KIO */
 	}
 
 	// Assuming width and height are the same.
 	// TODO: What if they aren't?
 	Q_D(RomThumbCreator);
-	int ret = d->getThumbnail(u8path.constData(), width, img);
+	int ret = d->getThumbnail(file, width, img);
 	return (ret == 0);
 }
 
@@ -331,10 +378,17 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 		qs_source_filename = url.toLocalFile();
 		fi_src = QFileInfo(qs_source_filename);
 		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
+	} else if (url.scheme() == QLatin1String("desktop")) {
+		// Desktop folder.
+		// KFileItem::localPath() isn't working for "desktop:/" here,
+		// so handle it manually.
+		// TODO: Also handle "trash:/"?
+		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
+		fi_src = QFileInfo(qs_source_filename);
+		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
 	} else {
 		// Has a scheme that isn't "file://".
-		// Not supported right now.
-		return RPCT_SOURCE_FILE_ERROR;
+		// This is probably a remote file.
 	}
 
 	if (!url.isValid() || url.isEmpty()) {
@@ -343,15 +397,15 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// Check for "bad" file systems.
-	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(source_file, config->enableThumbnailOnNetworkFS())) {
-		// This file is on a "bad" file system.
-		return RPCT_SOURCE_FILE_BAD_FS;
+	if (!qs_source_filename.isEmpty()) {
+		const Config *const config = Config::instance();
+		if (FileSystem::isOnBadFS(source_file, config->enableThumbnailOnNetworkFS())) {
+			// This file is on a "bad" file system.
+			return RPCT_SOURCE_FILE_BAD_FS;
+		}
 	}
 
 	// Attempt to open the ROM file.
-	// TODO: RpFileKio wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
 	IRpFile *file = nullptr;
 	if (!qs_source_filename.isEmpty()) {
 		// Local file. Use RpFile.
@@ -457,7 +511,6 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 		string(mimeType.name().toUtf8().constData())));
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	// Use KMimeType for Qt4.
-	// FIXME: Handle KIO.
 	if (!qs_source_filename.isEmpty()) {
 		KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_filename, 0, true);
 		if (mimeType) {
