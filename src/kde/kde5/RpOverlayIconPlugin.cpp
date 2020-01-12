@@ -20,6 +20,9 @@
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
+// RpFileKio
+#include "../RpFile_kio.hpp"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -84,43 +87,47 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 		return sl;
 	}
 
-	// FIXME: KFileItem's localPath() isn't working here for some reason.
-	// We'll handle desktop:/ manually.
-	QString filename = item.toLocalFile();
-	if (filename.isEmpty()) {
-		// Unable to convert it directly.
-		// Check for "desktop:/".
-		const QString scheme = item.scheme();
-		if (scheme == QLatin1String("desktop")) {
-			// Desktop folder.
-			// TODO: Remove leading '/' from item.path()?
-			filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, item.path());
-		} else {
-			// Unsupported scheme.
+	// Check if the source URL is a local file.
+	QString qs_source_filename;
+	if (item.isLocalFile()) {
+		// "file://" scheme. This is a local file.
+		qs_source_filename = item.toLocalFile();
+	} else if (item.scheme() == QLatin1String("desktop")) {
+		// Desktop folder.
+		// KFileItem::localPath() isn't working for "desktop:/" here,
+		// so handle it manually.
+		// TODO: Also handle "trash:/"?
+		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, item.path());
+	} else {
+		// Has a scheme that isn't "file://".
+		// This is probably a remote file.
+	}
+
+	if (!qs_source_filename.isEmpty()) {
+		// Check for "bad" file systems.
+		if (FileSystem::isOnBadFS(qs_source_filename.toUtf8().constData(), config->enableThumbnailOnNetworkFS())) {
+			// This file is on a "bad" file system.
 			return sl;
 		}
 	}
 
-	if (filename.isEmpty()) {
-		// No filename.
+	// Attempt to open the ROM file.
+	IRpFile *file = nullptr;
+	if (!qs_source_filename.isEmpty()) {
+		// Local file. Use RpFile.
+		file = new RpFile(qs_source_filename.toUtf8().constData(), RpFile::FM_OPEN_READ_GZ);
+	} else {
+#ifdef HAVE_RPFILE_KIO
+		// Not a local file. Use RpFileKio.
+		file = new RpFileKio(item);
+#else /* !HAVE_RPFILE_KIO */
+		// RpFileKio is not available.
 		return sl;
+#endif /* HAVE_RPFILE_KIO */
 	}
 
-	// Single file, and it's local.
-	const QByteArray u8filename = filename.toUtf8();
-
-	// Check for "bad" file systems.
-	if (FileSystem::isOnBadFS(u8filename.constData(), config->enableThumbnailOnNetworkFS())) {
-		// This file is on a "bad" file system.
-		return sl;
-	}
-
-	// TODO: RpQFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(u8filename.constData(), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
-		file->unref();
 		return sl;
 	}
 
