@@ -21,6 +21,9 @@
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
 
+// RpFileKio
+#include "../RpFile_kio.hpp"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
@@ -37,6 +40,7 @@ using std::vector;
 
 // Qt includes.
 #include <QtCore/QDateTime>
+#include <QtCore/QFileInfo>
 
 // KDE includes.
 #include <kfilemetadata/extractorplugin.h>
@@ -90,25 +94,51 @@ QStringList RpExtractorPlugin::mimetypes(void) const
 
 void RpExtractorPlugin::extract(ExtractionResult *result)
 {
-	// TODO: Check if the input URL has a scheme.
-	// In testing, it seems to only be local paths.
-	QString filename = result->inputUrl();
-	if (filename.isEmpty())
-		return;
-
-	// Single file, and it's local.
-	const QByteArray u8filename = filename.toUtf8();
-
-	// Check for "bad" file systems.
-	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(u8filename.constData(), config->enableThumbnailOnNetworkFS())) {
-		// This file is on a "bad" file system.
-		return;
+	// Check if the source filename is a URI.
+	// FIXME: Use KFileItem to handle "desktop:/" as a local file.
+	const QString source_file = result->inputUrl();
+	QUrl url(source_file);
+	QFileInfo fi_src;
+	QString qs_source_filename;
+	if (url.scheme().isEmpty()) {
+		// No scheme. This is a plain old filename.
+		fi_src = QFileInfo(source_file);
+		qs_source_filename = fi_src.absoluteFilePath();
+		url = QUrl::fromLocalFile(qs_source_filename);
+	} else if (url.isLocalFile()) {
+		// "file://" scheme. This is a local file.
+		qs_source_filename = url.toLocalFile();
+		fi_src = QFileInfo(qs_source_filename);
+		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
+	} else {
+		// Has a scheme that isn't "file://".
+		// This is a remote file.
 	}
 
-	// TODO: RpQFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(u8filename.constData(), RpFile::FM_OPEN_READ_GZ);
+	if (!qs_source_filename.isEmpty()) {
+		// Check for "bad" file systems.
+		const Config *const config = Config::instance();
+		if (FileSystem::isOnBadFS(qs_source_filename.toUtf8().constData(), config->enableThumbnailOnNetworkFS())) {
+			// This file is on a "bad" file system.
+			return;
+		}
+	}
+
+	// Attempt to open the ROM file.
+	IRpFile *file = nullptr;
+	if (!qs_source_filename.isEmpty()) {
+		// Local file. Use RpFile.
+		file = new RpFile(qs_source_filename.toUtf8().constData(), RpFile::FM_OPEN_READ_GZ);
+	} else {
+#ifdef HAVE_RPFILE_KIO
+		// Not a local file. Use RpFileKio.
+		file = new RpFileKio(url);
+#else /* !HAVE_RPFILE_KIO */
+		// RpFileKio is not available.
+		return;
+#endif /* HAVE_RPFILE_KIO */
+	}
+
 	if (!file->isOpen()) {
 		// Could not open the file.
 		return;
