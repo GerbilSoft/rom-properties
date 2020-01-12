@@ -96,7 +96,6 @@ QStringList RpExtractorPlugin::mimetypes(void) const
 void RpExtractorPlugin::extract(ExtractionResult *result)
 {
 	// Check if the source filename is a URI.
-	// FIXME: Use KFileItem to handle "desktop:/" as a local file.
 	const QString source_file = result->inputUrl();
 	QUrl url(source_file);
 	QFileInfo fi_src;
@@ -120,6 +119,11 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 	} else {
 		// Has a scheme that isn't "file://".
 		// This is probably a remote file.
+	}
+
+	if (!url.isValid() || url.isEmpty()) {
+		// Invalid or empty URL.
+		return;
 	}
 
 	if (!qs_source_filename.isEmpty()) {

@@ -103,6 +103,11 @@ QStringList RpOverlayIconPlugin::getOverlays(const QUrl &item)
 		// This is probably a remote file.
 	}
 
+	if (!item.isValid() || item.isEmpty()) {
+		// Invalid or empty URL.
+		return sl;
+	}
+
 	if (!qs_source_filename.isEmpty()) {
 		// Check for "bad" file systems.
 		if (FileSystem::isOnBadFS(qs_source_filename.toUtf8().constData(), config->enableThumbnailOnNetworkFS())) {
