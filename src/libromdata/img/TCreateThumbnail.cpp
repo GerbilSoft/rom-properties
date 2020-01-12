@@ -441,7 +441,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int req_size,
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
 	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ);
+	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Could not open the file.
 		if (sBIT) {
