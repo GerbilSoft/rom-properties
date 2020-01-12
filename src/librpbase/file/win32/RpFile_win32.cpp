@@ -763,7 +763,7 @@ int RpFile::setOriginInfo(const std::string &url, time_t mtime)
 			// NOTE: Assuming UTF-8 encoding.
 			// FIXME: Chromium has some shenanigans for Windows 10.
 			// Reference: https://github.com/chromium/chromium/blob/55f44515cd0b9e7739b434d1c62f4b7e321cd530/components/services/quarantine/quarantine_win.cc
-			static const char zoneID_hdr = "[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=";
+			static const char zoneID_hdr[] = "[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=";
 			std::string s_zoneID;
 			s_zoneID.reserve(sizeof(zoneID_hdr) + url.size() + 2);
 			s_zoneID = zoneID_hdr;
