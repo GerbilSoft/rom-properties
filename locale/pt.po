@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.3.3+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2019-12-21 21:40-0500\n"
+"POT-Creation-Date: 2020-01-12 02:54-0500\n"
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
@@ -111,24 +111,24 @@ msgctxt "KeyManagerTab"
 msgid "I&mport"
 msgstr "I&mportar"
 
-#: ../build/src/kde/kde5/ui_OptionsTab.h:100
+#: ../build/src/kde/kde5/ui_OptionsTab.h:107
 msgctxt "OptionsTab"
 msgid "&Downloads"
 msgstr "&Recebimentos"
 
-#: ../build/src/kde/kde5/ui_OptionsTab.h:101
+#: ../build/src/kde/kde5/ui_OptionsTab.h:108
 #, fuzzy
 msgctxt "OptionsTab"
 msgid "Enable external image downloads."
 msgstr "Habilitar recebimentos de imagem externa."
 
-#: ../build/src/kde/kde5/ui_OptionsTab.h:102
+#: ../build/src/kde/kde5/ui_OptionsTab.h:109
 #, fuzzy
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
 msgstr "Sempre utilizar o ícone interno (se presente) para tamanhos pequenos."
 
-#: ../build/src/kde/kde5/ui_OptionsTab.h:103
+#: ../build/src/kde/kde5/ui_OptionsTab.h:110
 #, fuzzy
 msgctxt "OptionsTab"
 msgid ""
@@ -138,48 +138,55 @@ msgstr ""
 "Recber arte de alta qualidade com miniaturas grandes.\n"
 "Isto pode aumentar a utilização de largura de banda."
 
-#: ../build/src/kde/kde5/ui_OptionsTab.h:105
+#: ../build/src/kde/kde5/ui_OptionsTab.h:112
 msgctxt "OptionsTab"
 msgid ""
-"Enable thumbnailing and metadata extraction on network\n"
-"file systems. This may slow down file browsing."
+"Store cached file origin information using extended attributes.\n"
+"This helps to identify where cached files were downloaded from."
 msgstr ""
 
-#: ../build/src/kde/kde5/ui_OptionsTab.h:107
+#: ../build/src/kde/kde5/ui_OptionsTab.h:114
 msgctxt "OptionsTab"
 msgid "&Options"
 msgstr ""
 
-#: ../build/src/kde/kde5/ui_OptionsTab.h:108
+#: ../build/src/kde/kde5/ui_OptionsTab.h:115
 msgctxt "OptionsTab"
 msgid ""
 "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
 msgstr ""
 
+#: ../build/src/kde/kde5/ui_OptionsTab.h:117
+msgctxt "OptionsTab"
+msgid ""
+"Enable thumbnailing and metadata extraction on network\n"
+"file systems. This may slow down file browsing."
+msgstr ""
+
 #. tr: Tab title.
-#: ../src/gtk/gnome/rom-properties-provider.cpp:161
+#: ../src/gtk/gnome/rom-properties-provider.cpp:169
 #: ../src/gtk/xfce/rom-properties-page.cpp:159
-#: ../src/kde/RomPropertiesDialogPlugin.cpp:91
+#: ../src/kde/RomPropertiesDialogPlugin.cpp:100
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2394
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr "Propriedades de ROM"
 
-#: ../src/gtk/RomDataView.cpp:615 ../src/kde/RomDataView.cpp:268
+#: ../src/gtk/RomDataView.cpp:612 ../src/kde/RomDataView.cpp:268
 #: ../src/win32/RP_ShellPropSheetExt.cpp:691
 msgctxt "RomDataView"
 msgid "(unknown system)"
 msgstr ""
 
-#: ../src/gtk/RomDataView.cpp:618 ../src/kde/RomDataView.cpp:271
+#: ../src/gtk/RomDataView.cpp:615 ../src/kde/RomDataView.cpp:271
 #: ../src/win32/RP_ShellPropSheetExt.cpp:694
 msgctxt "RomDataView"
 msgid "(unknown filetype)"
 msgstr ""
 
 #. tr: %1$s == system name, %2$s == file type
-#: ../src/gtk/RomDataView.cpp:623 ../src/kde/RomDataView.cpp:276
+#: ../src/gtk/RomDataView.cpp:620 ../src/kde/RomDataView.cpp:276
 #: ../src/win32/RP_ShellPropSheetExt.cpp:700
 #, c-format
 msgctxt "RomDataView"
@@ -191,21 +198,21 @@ msgstr ""
 "%2$s"
 
 #. tr: Invalid date/time.
-#: ../src/gtk/RomDataView.cpp:1121 ../src/kde/RomDataView.cpp:758
+#: ../src/gtk/RomDataView.cpp:1118 ../src/kde/RomDataView.cpp:758
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1590
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr "ERRO"
 
 #. tr: No age ratings data.
-#: ../src/gtk/RomDataView.cpp:1173 ../src/kde/RomDataView.cpp:838
+#: ../src/gtk/RomDataView.cpp:1170 ../src/kde/RomDataView.cpp:838
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1705
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr "ERRO"
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1318 ../src/kde/RomDataView.cpp:976
+#: ../src/gtk/RomDataView.cpp:1315 ../src/kde/RomDataView.cpp:976
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1901
 #, c-format
 msgctxt "RomDataView"
@@ -996,7 +1003,7 @@ msgstr "Sistema"
 #: ../src/libromdata/Console/SNES.cpp:865
 #: ../src/libromdata/Console/WiiWAD.cpp:824
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1887
-#: ../src/libromdata/Handheld/NGPC.cpp:303
+#: ../src/libromdata/Handheld/NGPC.cpp:304
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2133
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1225
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:399
@@ -2106,7 +2113,7 @@ msgstr "Código de jogo"
 #: ../src/libromdata/Console/N64.cpp:307 ../src/libromdata/Console/NES.cpp:891
 #: ../src/libromdata/Handheld/DMG.cpp:813
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:305
-#: ../src/libromdata/Handheld/NGPC.cpp:269
+#: ../src/libromdata/Handheld/NGPC.cpp:270
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1105
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:379
 msgctxt "RomData"
@@ -2566,33 +2573,33 @@ msgctxt "Region"
 msgid "Asia"
 msgstr "Ásia"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:460
+#: ../src/libromdata/Console/MegaDrive.cpp:461
 msgctxt "MegaDrive|VectorTable"
 msgid "#"
 msgstr "Nº"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:461
+#: ../src/libromdata/Console/MegaDrive.cpp:462
 msgctxt "MegaDrive|VectorTable"
 msgid "Vector"
 msgstr "Vetor"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:462
+#: ../src/libromdata/Console/MegaDrive.cpp:463
 msgctxt "MegaDrive|VectorTable"
 msgid "Address"
 msgstr "Endereço"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:470
-#: ../src/libromdata/Console/MegaDrive.cpp:924
+#: ../src/libromdata/Console/MegaDrive.cpp:471
+#: ../src/libromdata/Console/MegaDrive.cpp:925
 msgctxt "MegaDrive"
 msgid "Vector Table"
 msgstr "Tabela de vetores"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:919
+#: ../src/libromdata/Console/MegaDrive.cpp:920
 msgctxt "MegaDrive"
 msgid "ROM Header"
 msgstr "Cabeçalho da ROM"
 
-#: ../src/libromdata/Console/MegaDrive.cpp:967
+#: ../src/libromdata/Console/MegaDrive.cpp:968
 msgctxt "MegaDrive"
 msgid "Locked-On ROM Header"
 msgstr "Cabeçalho da ROM combinada"
@@ -4365,34 +4372,34 @@ msgctxt "Lynx"
 msgid "Bank 1 Size"
 msgstr "Tamanho de Banco 1"
 
-#: ../src/libromdata/Handheld/NGPC.cpp:265
+#: ../src/libromdata/Handheld/NGPC.cpp:266
 #, fuzzy
 msgctxt "RomData"
 msgid "Product ID"
 msgstr "Nº de produto"
 
-#: ../src/libromdata/Handheld/NGPC.cpp:278
+#: ../src/libromdata/Handheld/NGPC.cpp:279
 msgctxt "NGPC"
 msgid "System"
 msgstr "Sistema"
 
-#: ../src/libromdata/Handheld/NGPC.cpp:284
+#: ../src/libromdata/Handheld/NGPC.cpp:285
 msgctxt "NGPC"
 msgid "Entry Point"
 msgstr "Ponto de entrada"
 
-#: ../src/libromdata/Handheld/NGPC.cpp:291
+#: ../src/libromdata/Handheld/NGPC.cpp:292
 msgctxt "NGPC|DebugMode"
 msgid "Off"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NGPC.cpp:294
+#: ../src/libromdata/Handheld/NGPC.cpp:295
 msgctxt "NGPC|DebugMode"
 msgid "On"
 msgstr ""
 
-#: ../src/libromdata/Handheld/NGPC.cpp:300
-#: ../src/libromdata/Handheld/NGPC.cpp:302
+#: ../src/libromdata/Handheld/NGPC.cpp:301
+#: ../src/libromdata/Handheld/NGPC.cpp:303
 msgctxt "NGPC"
 msgid "Debug Mode"
 msgstr ""
@@ -7840,7 +7847,7 @@ msgid "Key Manager"
 msgstr "&Gestor de chaves"
 
 #. tr: Tab title.
-#: ../src/win32/config/OptionsTab.cpp:412
+#: ../src/win32/config/OptionsTab.cpp:423
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr ""
