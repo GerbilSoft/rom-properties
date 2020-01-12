@@ -41,6 +41,7 @@ using std::vector;
 // Qt includes.
 #include <QtCore/QDateTime>
 #include <QtCore/QFileInfo>
+#include <QtCore/QStandardPaths>
 
 // KDE includes.
 #include <kfilemetadata/extractorplugin.h>
@@ -110,10 +111,15 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 		qs_source_filename = url.toLocalFile();
 		fi_src = QFileInfo(qs_source_filename);
 		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
+	} else if (url.scheme() == QLatin1String("desktop")) {
+		// Desktop folder.
+		// KFileItem::localPath() isn't working for "desktop:/" here,
+		// so handle it manually.
+		// TODO: Also handle "trash:/"?
+		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
 	} else {
 		// Has a scheme that isn't "file://".
-		// This may be a remote file.
-		// FIXME: KFileItem::localPath() isn't working for "desktop:/" here...
+		// This is probably a remote file.
 	}
 
 	if (!qs_source_filename.isEmpty()) {
