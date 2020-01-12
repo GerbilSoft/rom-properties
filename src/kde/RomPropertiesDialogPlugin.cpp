@@ -71,8 +71,13 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		// Got a local path. Use RpFile.
 		file = new RpFile(Q2U8(filename), RpFile::FM_OPEN_READ_GZ);
 	} else {
-		// Unable to get a local path. Use RpFileKio.
+#ifdef HAVE_RPFILE_KIO
+		// Not a local file. Use RpFileKio.
 		file = new RpFileKio(fileItem.url());
+#else /* !HAVE_RPFILE_KIO */
+		// RpFileKio is not available.
+		return;
+#endif /* HAVE_RPFILE_KIO */
 	}
 
 	if (!file->isOpen()) {

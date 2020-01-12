@@ -9,7 +9,6 @@ SET(rom-properties-kde_SRCS
 	RomThumbCreator.cpp
 	RpQt.cpp
 	RpQImageBackend.cpp
-	RpFile_kio.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -64,6 +63,10 @@ IF(ENABLE_NLS)
 	SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} GettextTranslator.cpp)
 	SET(rom-properties-kde_H    ${rom-properties-kde_H}    GettextTranslator.hpp)
 ENDIF(ENABLE_NLS)
+
+# RpFile_kio requires KDE Frameworks 5.
+SET(rom-properties-kio_SRCS RpFile_kio.cpp)
+SET(rom-properties-kio_H RpFile_kio.hpp)
 
 # NOTE: RpExtractorPlugin cannot use common source because
 # Qt's moc doesn't support preprocessor directores like #ifdef.

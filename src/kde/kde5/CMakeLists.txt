@@ -84,15 +84,20 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_SRCS "${rom-properti
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_H    "${rom-properties-kde_H}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_UIS  "${rom-properties-kde_UIS}")
 
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_SRCS "${rom-properties-kio_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_H    "${rom-properties-kio_H}")
+
 # Sources and headers. (KDE5-specific)
 SET(rom-properties-kde5_SRCS
 	${rom-properties-kde5_SRCS}
+	${rom-properties-kio5_SRCS}
 	RpExtractorPlugin.cpp
 	RpOverlayIconPlugin.cpp
 	RomPropertiesDialogPluginFactoryKDE5.cpp
 	)
 SET(rom-properties-kde5_H
 	${rom-properties-kde5_H}
+	${rom-properties-kio5_H}
 	RpExtractorPlugin.hpp
 	RpOverlayIconPlugin.hpp
 	)

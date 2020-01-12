@@ -17,6 +17,9 @@
 #include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
 
+// RpFileKio
+#include "RpFile_kio.hpp"
+
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
@@ -315,7 +318,6 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
 
 	// Check if the source filename is a URI.
-	// TODO: Add KIO support. For now, only support local filenames.
 	QUrl url(QString::fromUtf8(source_file));
 	QFileInfo fi_src;
 	QString qs_source_filename;
@@ -350,9 +352,22 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	// Attempt to open the ROM file.
 	// TODO: RpFileKio wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	RpFile *const file = new RpFile(
-		QDir::toNativeSeparators(url.toLocalFile()).toUtf8().constData(),
-		RpFile::FM_OPEN_READ_GZ);
+	IRpFile *file = nullptr;
+	if (!qs_source_filename.isEmpty()) {
+		// Local file. Use RpFile.
+		file = new RpFile(
+			QDir::toNativeSeparators(qs_source_filename).toUtf8().constData(),
+			RpFile::FM_OPEN_READ_GZ);
+	} else {
+#ifdef HAVE_RPFILE_KIO
+		// Not a local file. Use RpFileKio.
+		file = new RpFileKio(url);
+#else /* !HAVE_RPFILE_KIO */
+		// RpFileKio is not available.
+		return RPCT_SOURCE_FILE_ERROR;
+#endif /* HAVE_RPFILE_KIO */
+	}
+
 	if (!file->isOpen()) {
 		// Could not open the file.
 		file->unref();
@@ -432,19 +447,23 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// MIME type.
-	// TODO: KIO support.
+	// TODO: If using RpFileKio, use KIO::FileJob::mimetype().
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// Use QMimeDatabase for Qt5.
+	// TODO: Verify if KIO works.
 	QMimeDatabase mimeDatabase;
-	QMimeType mimeType = mimeDatabase.mimeTypeForFile(fi_src);
+	QMimeType mimeType = mimeDatabase.mimeTypeForUrl(url);
 	kv.push_back(std::make_pair("Thumb::Mimetype",
 		string(mimeType.name().toUtf8().constData())));
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	// Use KMimeType for Qt4.
-	KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_filename, 0, true);
-	if (mimeType) {
-		kv.push_back(std::make_pair("Thumb::Mimetype",
-			string(mimeType->name().toUtf8().constData())));
+	// FIXME: Handle KIO.
+	if (!qs_source_filename.isEmpty()) {
+		KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_filename, 0, true);
+		if (mimeType) {
+			kv.push_back(std::make_pair("Thumb::Mimetype",
+				string(mimeType->name().toUtf8().constData())));
+		}
 	}
 #endif
 

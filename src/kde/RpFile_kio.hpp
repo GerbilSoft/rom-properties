@@ -9,11 +9,17 @@
 #ifndef __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__
 #define __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__
 
+// NOTE: Only available for KDE Frameworks 5.
+// KDE 4.x's KIO doesn't have KIO::open().
+#include <QtCore/qglobal.h>
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#define HAVE_RPFILE_KIO 1
+
 // librpbase
 #include "librpbase/file/IRpFile.hpp"
 
 // Qt includes.
-// TODO: KUrl for Qt4.
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
 
@@ -115,5 +121,7 @@ class RpFileKio : public QObject, public LibRpBase::IRpFile
 		// Reference: https://github.com/KDE/kio/blob/master/autotests/jobremotetest.cpp
 		void exitLoop(void);
 };
+
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 #endif /* __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__ */
