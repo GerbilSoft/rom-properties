@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -105,8 +105,9 @@ class AboutTabPrivate
 /** AboutTabPrivate **/
 
 // Useful strings.
-const char AboutTabPrivate::br[] = "<br/>\n";
-const char AboutTabPrivate::brbr[] = "<br/>\n<br/>\n";
+#define BR "<br/>\n"
+const char AboutTabPrivate::br[] = BR;
+const char AboutTabPrivate::brbr[] = BR BR;
 const char AboutTabPrivate::b_start[] = "<b>";
 const char AboutTabPrivate::b_end[] = "</b>";
 const char AboutTabPrivate::sIndent[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -138,8 +139,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	sPrgTitle.reserve(1024);
 	// tr: Uses Qt's HTML subset for formatting.
 	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b><br>Shell Extension");
-	sPrgTitle += br;
-	sPrgTitle += br;
+	sPrgTitle += brbr;
 	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"),
 		AboutTabText::prg_version);
 	if (AboutTabText::git_version[0] != 0) {
@@ -167,7 +167,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	string sCredits;
 	sCredits.reserve(4096);
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2019 by David Korth.<br/>";
+	sCredits += "Copyright (c) 2016-2020 by David Korth." BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
 		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
@@ -263,7 +263,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	// Included libraries string.
 	string sLibraries;
-	sLibraries.reserve(4096);
+	sLibraries.reserve(8192);
 
 	/** Qt **/
 	string qtVersion = "Qt ";
@@ -274,16 +274,13 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sCompiledWith, "Qt " QT_VERSION_STR) + br;
 	sLibraries += rp_sprintf(sUsingDll, qtVersion.c_str());
 #endif /* QT_IS_STATIC */
-	sLibraries += br;
-	sLibraries += "Copyright (C) 1995-2017 The Qt Company Ltd. and/or its subsidiaries.";
-	sLibraries += br;
-	sLibraries += "<a href='https://www.qt.io/'>https://www.qt.io/</a>";
+	sLibraries += BR
+		"Copyright (C) 1995-2019 The Qt Company Ltd. and/or its subsidiaries." BR
+		"<a href='https://www.qt.io/'>https://www.qt.io/</a>" BR;
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
-	sLibraries += br;
 	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v2.1+, GNU GPL v2+");
 #else
-	sLibraries += br;
 	sLibraries += rp_sprintf(sLicense, "GNU GPL v2+");
 #endif /* QT_VERSION */
 
@@ -292,11 +289,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// NOTE: Can't obtain the runtime version for KDE5 easily...
 	sLibraries += rp_sprintf(sCompiledWith, "KDE Frameworks " KIO_VERSION_STRING);
-	sLibraries += br;
-	sLibraries += "Copyright (C) 1996-2017 KDE contributors.";
-	sLibraries += br;
-	sLibraries += "<a href='https://www.kde.org/'>https://www.kde.org/</a>";
-	sLibraries += br;
+	sLibraries += BR
+		"Copyright (C) 1996-2020 KDE contributors." BR
+		"<a href='https://www.kde.org/'>https://www.kde.org/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 	string kdeVersion = "KDE Libraries ";
@@ -304,9 +299,8 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sCompiledWith, "KDE Libraries " KDE_VERSION_STRING);
 	sLibraries += br;
 	sLibraries += rp_sprintf(sUsingDll, kdeVersion.c_str());
-	sLibraries += br;
-	sLibraries += "Copyright (C) 1996-2017 KDE contributors.";
-	sLibraries += br;
+	sLibraries += BR;
+		"Copyright (C) 1996-2017 KDE contributors." BR;
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
@@ -323,11 +317,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += br;
 	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
 #endif
-	sLibraries += br;
-	sLibraries += "Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler.";
-	sLibraries += br;
-	sLibraries += "<a href='https://zlib.net/'>https://zlib.net/</a>";
-	sLibraries += br;
+	sLibraries += BR
+		"Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler." BR
+		"<a href='https://zlib.net/'>https://zlib.net/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* HAVE_ZLIB */
 
@@ -342,24 +334,16 @@ void AboutTabPrivate::initLibrariesTab(void)
 	}
 
 	const uint32_t png_version_number = png_access_version_number();
-	char pngVersion[32];
-	snprintf(pngVersion, sizeof(pngVersion), "libpng %u.%u.%u",
+	char pngVersion[48];
+	snprintf(pngVersion, sizeof(pngVersion), "libpng %u.%u.%u%s",
 		png_version_number / 10000,
 		(png_version_number / 100) % 100,
-		png_version_number % 100);
-
-	string fullPngVersion;
-	if (APNG_is_supported) {
-		// PNG version, with APNG support.
-		fullPngVersion = rp_sprintf("%s + APNG", pngVersion);
-	} else {
-		// PNG version, without APNG support.
-		fullPngVersion = rp_sprintf("%s (No APNG support)", pngVersion);
-	}
+		png_version_number % 100,
+		(APNG_is_supported ? " + APNG" : " (No APNG support)"));
 
 	sLibraries += brbr;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += rp_sprintf(sIntCopyOf, fullPngVersion.c_str());
+	sLibraries += rp_sprintf(sIntCopyOf, pngVersion);
 #else
 	// NOTE: Gentoo's libpng has "+apng" at the end of
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
@@ -384,7 +368,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str());
 	sLibraries += br;
-	sLibraries += rp_sprintf(sUsingDll, fullPngVersion.c_str());
+	sLibraries += rp_sprintf(sUsingDll, pngVersion);
 #endif
 
 	/**
@@ -408,13 +392,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 		png_copyright.replace(QChar(L'\n'), qs_br);
 	}
 	sLibraries += png_copyright.toUtf8().constData();
-	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>";
-	sLibraries += br;
+	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>" BR;
 	if (APNG_is_supported) {
 		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
-		sLibraries += ' ';
-		sLibraries += "<a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>";
-		sLibraries += br;
+		sLibraries += " <a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>" BR;
 	}
 	sLibraries += rp_sprintf(sLicense, "libpng license");
 #endif /* HAVE_PNG */
@@ -434,28 +415,22 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += br;
 	sLibraries += rp_sprintf(sUsingDll, nettle_runtime_version);
 #  endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
-	sLibraries += br;
-	sLibraries += "Copyright (C) 2001-2016 Niels Möller.";
-	sLibraries += br;
-	sLibraries += "<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>";
-	sLibraries += br;
+	sLibraries += BR
+		"Copyright (C) 2001-2020 Niels Möller." BR
+		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
 # else /* !HAVE_NETTLE_VERSION_H */
 #  ifdef HAVE_NETTLE_3
 	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 3.0");
-	sLibraries += br;
-	sLibraries += "Copyright (C) 2001-2014 Niels Möller.";
-	sLibraries += br;
-	sLibraries += "<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>";
-	sLibraries += br;
+	sLibraries += BR
+		"Copyright (C) 2001-2014 Niels Möller." BR
+		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
 #  else /* !HAVE_NETTLE_3 */
 	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 2.x");
-	sLibraries += br;
-	sLibraries += "Copyright (C) 2001-2013 Niels Möller.";
-	sLibraries += br;
-	sLibraries += "<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>";
-	sLibraries += br;
+	sLibraries += BR
+		"Copyright (C) 2001-2013 Niels Möller." BR
+		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #  endif /* HAVE_NETTLE_3 */
 # endif /* HAVE_NETTLE_VERSION_H */
@@ -475,11 +450,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// FIXME: Runtime version?
 	sLibraries += rp_sprintf(sCompiledWith, sXmlVersion);
 #endif
-	sLibraries += br;
-	sLibraries += "Copyright (C) 2000-2017 Lee Thomason";
-	sLibraries += br;
-	sLibraries += "<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>";
-	sLibraries += br;
+	sLibraries += BR
+		"Copyright (C) 2000-2019 Lee Thomason" BR
+		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* ENABLE_XML */
 
