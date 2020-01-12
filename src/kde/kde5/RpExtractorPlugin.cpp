@@ -112,7 +112,8 @@ void RpExtractorPlugin::extract(ExtractionResult *result)
 		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
 	} else {
 		// Has a scheme that isn't "file://".
-		// This is a remote file.
+		// This may be a remote file.
+		// FIXME: KFileItem::localPath() isn't working for "desktop:/" here...
 	}
 
 	if (!qs_source_filename.isEmpty()) {
