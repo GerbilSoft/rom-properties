@@ -851,19 +851,22 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
-	const char *region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
+	const char *const region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
 					? region_tbl[romHeader->snes.destination_code]
 					: nullptr);
 
 	switch (d->romType) {
 		case SNESPrivate::ROM_SNES: {
 			// Region
-			const char *const region = (region_lkup
-				? dpgettext_expr(RP_I18N_DOMAIN, "Region Code", region_lkup)
-				: nullptr);
-			d->fields->addField_string(C_("RomData", "Region Code"),
-				region ? region : rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
-					romHeader->snes.destination_code));
+			const char *const region_title = C_("RomData", "Region Code");
+			if (region_lkup) {
+				d->fields->addField_string(region_title,
+					dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup));
+			} else {
+				d->fields->addField_string(region_title,
+					rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+						romHeader->snes.destination_code));
+			}
 
 			// Revision
 			d->fields->addField_string_numeric(C_("SNES", "Revision"),
@@ -917,10 +920,10 @@ int SNES::loadFieldData(void)
 					program_type = "65c816";
 					break;
 				case SNES_BSX_PRG_SCRIPT:
-					program_type = C_("SNES", "BS-X Script");
+					program_type = C_("SNES|ProgramType", "BS-X Script");
 					break;
 				case SNES_BSX_PRG_SA_1:
-					program_type = C_("SNES", "SA-1");
+					program_type = C_("SNES|ProgramType", "SA-1");
 					break;
 				default:
 					program_type = nullptr;
@@ -928,7 +931,8 @@ int SNES::loadFieldData(void)
 			}
 			const char *const program_type_title = C_("SNES", "Program Type");
 			if (program_type) {
-				d->fields->addField_string(program_type_title, program_type);
+				d->fields->addField_string(program_type_title,
+					dpgettext_expr(RP_I18N_DOMAIN, "SNES|ProgramType", program_type));
 			} else {
 				d->fields->addField_string(program_type_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
