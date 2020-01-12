@@ -129,7 +129,7 @@ IF(BUILD_KDE5)
 		TARGET_LINK_LIBRARIES(rom-properties-kde5 PRIVATE i18n)
 	ENDIF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 PRIVATE ${ZLIB_LIBRARY})
-	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 
 	# Add zlib and png directories for the About tab.
