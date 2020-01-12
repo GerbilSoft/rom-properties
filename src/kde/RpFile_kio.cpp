@@ -148,7 +148,6 @@ void RpFileKio::init(void)
 	m_lastError = 0;
 	d->fileJob = KIO::open(d->uri, QIODevice::ReadOnly);
 	d->fileJob->setUiDelegate(nullptr);
-
 	/** Signals **/
 
 	// open(): File was opened.

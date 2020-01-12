@@ -65,8 +65,9 @@ IF(ENABLE_NLS)
 ENDIF(ENABLE_NLS)
 
 # RpFile_kio requires KDE Frameworks 5.
-SET(rom-properties-kio_SRCS RpFile_kio.cpp)
-SET(rom-properties-kio_H RpFile_kio.hpp)
+# FIXME: Dolphin ends up hanging for some reason...
+#SET(rom-properties-kio_SRCS RpFile_kio.cpp)
+#SET(rom-properties-kio_H RpFile_kio.hpp)
 
 # NOTE: RpExtractorPlugin cannot use common source because
 # Qt's moc doesn't support preprocessor directores like #ifdef.

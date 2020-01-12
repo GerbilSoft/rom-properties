@@ -8,7 +8,7 @@ ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
 X-KDE-Library=rom-properties-kde5
 X-KDE-ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
 X-KDE-Protocol=file
-X-KDE-Protocols=file,desktop,smb,sftp
+X-KDE-Protocols=file,desktop
 
 # NOTES:
 # - all/all doesn't work; use application/octet-stream.

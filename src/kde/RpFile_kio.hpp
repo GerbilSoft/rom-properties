@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__
 #define __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__
 
+// FIXME: Dolphin ends up hanging for some reason...
+#if 0
+
 // NOTE: Only available for KDE Frameworks 5.
 // KDE 4.x's KIO doesn't have KIO::open().
 #include <QtCore/qglobal.h>
@@ -123,5 +126,7 @@ class RpFileKio : public QObject, public LibRpBase::IRpFile
 };
 
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+
+#endif // FIXME: Dolphin ends up hanging for some reason...
 
 #endif /* __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__ */
