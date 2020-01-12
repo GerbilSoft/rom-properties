@@ -50,13 +50,14 @@ using std::unique_ptr;
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
-#include <QtCore/QStandardPaths>
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 # include <QtCore/QMimeDatabase>
+# include <QtCore/QStandardPaths>
 #else
+# include <QtGui/QDesktopServices>
 # include <kmimetype.h>
 #endif
 
@@ -287,7 +288,14 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		// KFileItem::localPath() isn't working for "desktop:/" here,
 		// so handle it manually.
 		// TODO: Also handle "trash:/"?
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		// TODO: Is the extra slash necessary?
+		qs_source_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+		qs_source_filename += QChar(L'/');
+		qs_source_filename += url.path();
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 		fi_src = QFileInfo(qs_source_filename);
 		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
 	} else {
@@ -383,7 +391,14 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 		// KFileItem::localPath() isn't working for "desktop:/" here,
 		// so handle it manually.
 		// TODO: Also handle "trash:/"?
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 		qs_source_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url.path());
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+		// TODO: Is the extra slash necessary?
+		qs_source_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+		qs_source_filename += QChar(L'/');
+		qs_source_filename += url.path();
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 		fi_src = QFileInfo(qs_source_filename);
 		url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
 	} else {
