@@ -236,20 +236,33 @@ size_t RpFileKio::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	d->fileJob->read(size);
-	d->enterLoop();
+	// NOTE: kioslaves don't necessarily return the requested
+	// amount of data. Keep reading until we get 0 bytes.
+	size_t sz_read_total = 0;
+	while (size > 0) {
+		d->fileJob->read(size);
+		d->enterLoop();
 
-	if (m_lastError != 0) {
-		// An error occurred.
-		return 0;
+		if (m_lastError != 0) {
+			// An error occurred.
+			return 0;
+		}
+
+		// Data is now in d->lastData.
+		if (d->lastData.isEmpty()) {
+			// No data read...
+			break;
+		}
+
+		size_t sz_read = std::min(size, static_cast<size_t>(d->lastData.size()));
+		if (sz_read > 0) {
+			memcpy(ptr, d->lastData.constData(), sz_read);
+			sz_read_total += sz_read;
+			size -= sz_read;
+		}
 	}
 
-	// Data is now in d->lastData.
-	size_t sz_read = std::min(size, static_cast<size_t>(d->lastData.size()));
-	if (sz_read > 0) {
-		memcpy(ptr, d->lastData.constData(), sz_read);
-	}
-	return sz_read;
+	return sz_read_total;
 }
 
 /**
