@@ -111,7 +111,6 @@ void RpFileGio::init(void)
 	g_object_unref(file);
 	if (!d->stream || err != nullptr) {
 		// An error occurred.
-		// TODO: GLib to POSIX error code conversion.
 		if (err) {
 			m_lastError = d->gioerr_to_posix(err->code);
 			g_error_free(err);
@@ -290,7 +289,6 @@ int64_t RpFileGio::size(void)
 		G_FILE_ATTRIBUTE_STANDARD_SIZE, nullptr, &err);
 	if (!fileInfo || err != nullptr) {
 		// An error occurred.
-		// TODO: GLib to POSIX error code conversion.
 		if (err) {
 			m_lastError = d->gioerr_to_posix(err->code);
 			g_error_free(err);

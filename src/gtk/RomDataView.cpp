@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1091,7 +1091,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	// Row height is recalculated when the window is first visible
 	// and/or the system theme is changed.
-	// TODO: Set an actual default number of rows, or let Qt handle it?
+	// TODO: Set an actual default number of rows, or let GTK+ handle it?
 	// (Windows uses 5.)
 	g_object_set_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible",
 		GINT_TO_POINTER(listDataDesc.rows_visible));

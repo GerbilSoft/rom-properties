@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.cpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2017 by David Korth.                                 *
+ * Copyright (c) 2012-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -381,7 +381,6 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 		return false;
 
 	// Edit the value.
-	// TODO: Make sure it's hexadecimal, and verify the key.
 	// KeyStoreQt::setKey() will emit a signal if the value changes,
 	// which will cause KeyStoreModel to emit dataChanged().
 	d->keyStore->setKey(LOWORD(id), HIWORD(id), Q2U8(value.toString()));

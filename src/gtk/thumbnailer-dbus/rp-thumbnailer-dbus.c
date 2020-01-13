@@ -89,8 +89,6 @@ static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThum
 
 struct _RpThumbnailerClass {
 	GObjectClass __parent__;
-
-	// TODO: Store signal_ids outside of the class?
 	guint signal_ids[SIGNAL_LAST];
 };
 
@@ -235,7 +233,6 @@ rp_thumbnailer_init(GTypeInstance *instance, gpointer g_class)
 	thumbnailer->idle_process = 0;
 	thumbnailer->last_handle = 0;
 	thumbnailer->request_queue = g_queue_new();
-	// TODO: Is there a GHashTable reserve function?
 
 	/** Properties. **/
 	thumbnailer->connection = NULL;

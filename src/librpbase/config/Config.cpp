@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.cpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -294,7 +294,6 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			}
 
 			// Check the image type.
-			// TODO: Hash comparison?
 			// First byte of 'name' is a length value for optimization purposes.
 			// NOTE: "\x08ExtMedia" is interpreted as a 0x8E byte by both
 			// MSVC 2015 and gcc-4.5.2. In order to get it to work correctly,
