@@ -1,6 +1,6 @@
 # Changes
 
-## v1.5 (released 2019/??/??)
+## v1.5 (released 2020/??/??)
 
 * New features:
   * Improved support for FreeBSD and DragonFly BSD:
@@ -19,6 +19,10 @@
   * Cached files now contain origin information indicating the URL they were
     downloaded from. This can be disabled in rp-config if it isn't wanted.
   * The GTK+ frontends now support GVfs for network transparency.
+  * KDE frontend: Icons can now be dragged and dropped from the property tab
+    to another file browser window to extract them. This includes the icon,
+    banner, and icons from ListView widgets.
+    * Drag & drop support for Win32 and GTK+ may be implemented before release.
 
 * New parsers:
   * DidjTex: Leapster Didj .tex and .texs texture files. For .texs, currently
