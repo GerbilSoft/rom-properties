@@ -374,6 +374,7 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 	TCHAR *sErrBuf, size_t cchErrBuf)
 {
 	const TCHAR *dll_path, *entry_point;
+	TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
 	DWORD errorCode;
 	InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
 
@@ -401,10 +402,14 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("An unknown fatal error occurred."));
 			break;
 		case ISR_FILE_NOT_FOUND:
-			_sntprintf(sErrBuf, cchErrBuf, _T("%s is missing."), dll_path);
+			_tcscpy_s(sErrBuf, cchErrBuf, dll_path);
+			_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing."));
 			break;
 		case ISR_CREATEPROCESS_FAILED:
-			_sntprintf(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:%u)"), errorCode);
+			_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+			_tcscpy_s(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:"));
+			_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
+			_tcscat_s(sErrBuf, cchErrBuf, _T(")"));
 			break;
 		case ISR_PROCESS_STILL_ACTIVE:
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("The REGSVR32 process never completed."));
@@ -418,18 +423,26 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: OleInitialize() failed."));
 					break;
 				case REGSVR32_FAIL_LOAD:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s is not a valid DLL."), dll_path);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
+					_tcscat_s(sErrBuf, cchErrBuf, dll_path);
+					_tcscat_s(sErrBuf, cchErrBuf, _T(" is not a valid DLL."));
 					break;
 				case REGSVR32_FAIL_ENTRY:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s is missing %s()."),
-						dll_path, entry_point);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
+					_tcscat_s(sErrBuf, cchErrBuf, dll_path);
+					_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing "));
+					_tcscat_s(sErrBuf, cchErrBuf, entry_point);
+					_tcscat_s(sErrBuf, cchErrBuf, _T("()."));
 					break;
 				case REGSVR32_FAIL_REG:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: %s() returned an error."),
-						entry_point);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
+					_tcscat_s(sErrBuf, cchErrBuf, entry_point);
+					_tcscat_s(sErrBuf, cchErrBuf, _T("() returned an error."));
 					break;
 				default:
-					_sntprintf(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code %u."), errorCode);
+					_ultot_s(errorCode, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code: "));
+					_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
 					break;
 			}
 			break;
@@ -438,10 +451,14 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 	return res;
 }
 
+// Thread parameters.
+// Statically allocated so we don't need to use malloc().
+// Only one thread can run at a time. (see g_inProgress)
 typedef struct _ThreadParams {
 	HWND hWnd;		/**< Window that created the thread */
 	bool isUninstall;	/**< true if uninstalling */
 } ThreadParams;
+static ThreadParams threadParams = {nullptr, false};
 
 /**
  * Worker thread procedure.
@@ -512,7 +529,6 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 	}
 
 	SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
-	free(params);
 	return 0;
 }
 
@@ -652,6 +668,66 @@ static void InitDialog(HWND hDlg)
 }
 
 /**
+ * IDC_BUTTON_INSTALL / IDC_BUTTON_UNINSTALL handler.
+ * @param hDlg Dialog handle.
+ * @param isUninstall True for uninstall; false for install.
+ */
+static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
+{
+	HANDLE hThread;
+	const TCHAR *msg;
+
+	if (g_inProgress) {
+		// Already (un)installing...
+		return;
+	}
+	g_inProgress = true;
+
+	if (g_is64bit) {
+		msg = (isUninstall
+			? _T("\n\nUnregistering DLLs...")
+			: _T("\n\nRegistering DLLs..."));
+	} else {
+		msg = (isUninstall
+			? _T("\n\nUnregistering DLL...")
+			: _T("\n\nRegistering DLL..."));
+	}
+	ShowStatusMessage(hDlg, msg, _T(""), 0);
+
+	EnableButtons(hDlg, false);
+	DlgUpdateCursor();
+
+	// The installation is done on a separate thread so that we don't lock the message loop
+	threadParams.hWnd = hDlg;
+	threadParams.isUninstall = isUninstall;
+	hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, &threadParams, 0, NULL);
+	if (!hThread) {
+		// Couldn't start the worker thread.
+		TCHAR threadErr[128];
+		TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
+
+		const DWORD lastError = GetLastError();
+		_ultot_s(lastError, ultot_buf, ARRAY_SIZE(ultot_buf), 10);
+		_tcscpy_s(threadErr, ARRAY_SIZE(threadErr), BULLET _T(" Win32 error code: "));
+		_tcscat_s(threadErr, ARRAY_SIZE(threadErr), ultot_buf);
+
+		ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
+		MessageBeep(MB_ICONSTOP);
+		EnableButtons(hDlg, true);
+		DlgUpdateCursor();
+
+		threadParams.hWnd = nullptr;
+		threadParams.isUninstall = false;
+		g_inProgress = false;
+	} else {
+		// Install/uninstall thread is running.
+		// We don't need to keep the thread handle open.
+		CloseHandle(hThread);
+	}
+	return;
+}
+
+/**
  * Main dialog message handler
  */
 static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -665,69 +741,23 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			return TRUE;
 
 		case WM_APP_ENDTASK:
-			g_inProgress = false;
+			// Install/uninstall thread has completed.
 			EnableButtons(hDlg, true);
 			DlgUpdateCursor();
+
+			g_inProgress = false;
+			threadParams.hWnd = nullptr;
+			threadParams.isUninstall = false;
 			return TRUE;
 
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_BUTTON_INSTALL:
-				case IDC_BUTTON_UNINSTALL: {
-					ThreadParams *params;
-					HANDLE hThread;
-					const TCHAR *msg;
-					bool isUninstall;
-
-					if (g_inProgress) {
-						// Already (un)installing...
-						return TRUE;
-					}
-
-					isUninstall = (LOWORD(wParam) == IDC_BUTTON_UNINSTALL);
-					params = malloc(sizeof(*params));
-					if (!params) {
-						// Could not allocate memory.
-						return TRUE;
-					}
-
-					if (g_is64bit) {
-						msg = (isUninstall
-							? _T("\n\nUnregistering DLLs...")
-							: _T("\n\nRegistering DLLs..."));
-					} else {
-						msg = (isUninstall
-							? _T("\n\nUnregistering DLL...")
-							: _T("\n\nRegistering DLL..."));
-					}
-					ShowStatusMessage(hDlg, msg, _T(""), 0);
-
-					EnableButtons(hDlg, false);
-					g_inProgress = true;
-					DlgUpdateCursor();
-
-					// The installation is done on a separate thread so that we don't lock the message loop
-					params->hWnd = hDlg;
-					params->isUninstall = isUninstall;
-					hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, params, 0, NULL);
-					if (!hThread) {
-						// Couldn't start the worker thread.
-						TCHAR threadErr[128];
-						_sntprintf(threadErr, ARRAY_SIZE(threadErr),
-							BULLET _T(" Win32 error code: %u"), GetLastError());
-						ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
-						MessageBeep(MB_ICONSTOP);
-						EnableButtons(hDlg, true);
-						g_inProgress = false;
-						DlgUpdateCursor();
-						free(params);
-						return TRUE;
-					} else {
-						// We don't need to keep the thread handle open.
-						CloseHandle(hThread);
-					}
-					return TRUE;
-				}
+					HandleInstallUninstall(hDlg, false);
+					break;
+				case IDC_BUTTON_UNINSTALL:
+					HandleInstallUninstall(hDlg, true);
+					break;
 
 				case IDOK:
 					// There's no "OK" button here...
@@ -769,9 +799,12 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					if (ret <= 32) {
 						// ShellExecute() failed.
 						TCHAR err[128];
-						_sntprintf(err, ARRAY_SIZE(err),
+						TCHAR itot_buf[_MAX_ITOSTR_BASE10_COUNT];
+						_itot_s(ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
+						_tcscpy_s(err, ARRAY_SIZE(err),
 							_T("Could not open the URL.\n\n")
-							_T("Win32 error code: %d"), ret);
+							_T("Win32 error code: "));
+						_tcscat_s(err, ARRAY_SIZE(err), itot_buf);
 						MessageBox(hDlg, err, _T("Could not open URL"), MB_ICONERROR);
 					}
 					return TRUE;
@@ -829,7 +862,9 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	}
 
 	// Set the C locale.
-	setlocale(LC_ALL, "");
+	// NOTE: svrplus doesn't use localization. Using setlocale()
+	// adds 28,672 bytes to the statically-linked executable
+	//setlocale(LC_ALL, "");
 
 #ifndef _WIN64
 	// Check if this is a 64-bit system. (Wow64)
