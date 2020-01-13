@@ -22,11 +22,7 @@ using namespace LibRpBase;
 // libi18n
 #include "libi18n/i18n.h"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 // TImageTypesConfig is a templated class,

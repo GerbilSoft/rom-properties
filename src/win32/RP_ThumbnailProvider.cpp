@@ -23,13 +23,7 @@ using LibRpTexture::rp_image;
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::wstring;
 
 // CLSID

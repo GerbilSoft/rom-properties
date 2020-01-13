@@ -22,9 +22,6 @@
 // CLSID
 extern const CLSID CLSID_RP_ShellIconOverlayIdentifier;
 
-// C++ includes.
-#include <vector>
-
 class RP_ShellIconOverlayIdentifier_Private
 {
 	public:

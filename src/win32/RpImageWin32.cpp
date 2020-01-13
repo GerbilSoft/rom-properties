@@ -15,13 +15,7 @@
 using LibRpTexture::rp_image;
 using LibRpTexture::RpGdiplusBackend;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <memory>
-#include <vector>
+// C++ STL classes.
 using std::unique_ptr;
 using std::vector;
 

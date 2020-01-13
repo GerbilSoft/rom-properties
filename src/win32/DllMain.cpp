@@ -54,11 +54,7 @@ using LibRpTexture::rp_image;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C++ includes.
-#include <memory>
-#include <string>
-#include <vector>
-#include <list>
+// C++ STL classes.
 using std::list;
 using std::string;
 using std::unique_ptr;

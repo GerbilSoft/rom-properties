@@ -48,4 +48,45 @@
 // Common Controls COM declarations.
 #include <commoncontrols.h>
 
+/** C/C++ headers **/
+
+#ifdef __cplusplus
+/** C++ **/
+
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+#include <stdlib.h>
+#include <stdint.h>
+/*
+#include <cerrno>
+#include <cstddef>
+#include <cstdio>
+#include <ctime>
+*/
+
+// C++ includes.
+#include <algorithm>
+#include <array>
+#include <list>
+#include <memory>
+#include <numeric>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
+#else /* !__cplusplus */
+/** C **/
+
+// C includes.
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#endif /* __cplusplus */
+
 #endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */

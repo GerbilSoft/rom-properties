@@ -22,9 +22,7 @@ using namespace LibRpBase;
 #include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
 
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::unique_ptr;
 using std::tstring;
 

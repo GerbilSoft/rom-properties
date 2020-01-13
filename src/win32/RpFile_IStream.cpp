@@ -18,9 +18,7 @@
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 

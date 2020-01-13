@@ -34,14 +34,7 @@ using LibRomData::RomDataFactory;
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
+// C++ STL classes.
 using std::wstring;
 
 // CLSID

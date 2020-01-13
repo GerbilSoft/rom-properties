@@ -18,9 +18,7 @@ using namespace LibRpTexture;
 // libwin32common
 #include "libwin32common/WinUI.hpp"
 
-// C++ includes.
-#include <memory>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::unique_ptr;
 

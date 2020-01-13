@@ -14,8 +14,7 @@
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 #define IID_IThumbnailProvider_String		TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")

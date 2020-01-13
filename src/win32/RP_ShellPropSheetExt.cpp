@@ -47,19 +47,7 @@ using LibRpTexture::rp_image;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cstring>
-
-// C++ includes.
-#include <algorithm>
-#include <array>
-#include <memory>
-#include <numeric>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
+// C++ STL classes.
 using std::array;
 using std::unique_ptr;
 using std::unordered_map;

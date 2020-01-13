@@ -24,14 +24,7 @@ using namespace LibRpBase;
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
 
-// C includes.
-#include <stdlib.h>
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <string>
+// C++ STL classes.
 using std::tstring;
 
 #include "libi18n/config.libi18n.h"

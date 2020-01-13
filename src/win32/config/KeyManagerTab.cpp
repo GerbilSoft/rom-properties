@@ -38,12 +38,7 @@ using namespace LibRpBase;
 #include "libromdata/crypto/N3DSVerifyKeys.hpp"
 using namespace LibRomData;
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <algorithm>
-#include <string>
+// C++ STL classes.
 using std::string;
 using std::wstring;
 
