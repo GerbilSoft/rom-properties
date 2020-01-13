@@ -10,10 +10,6 @@
 #include "DragImageLabel.hpp"
 #include "RpImageWin32.hpp"
 
-// libwin32common
-#include "libwin32common/ComBase.hpp"
-#include "libwin32common/WinUI.hpp"
-
 // librpbase
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
@@ -23,15 +19,7 @@ using LibRpBase::IconAnimHelper;
 using LibRpBase::RpPngWriter;
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
-
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-#include <algorithm>
-#include <array>
 
 // Gdiplus for image drawing.
 // NOTE: Gdiplus requires min/max.
