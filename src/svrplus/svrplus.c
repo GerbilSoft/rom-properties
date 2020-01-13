@@ -29,6 +29,15 @@
 // Application resources.
 #include "resource.h"
 
+// These were introduced in MSVC 2015 or 2017.
+// AppVeyor is set to MSVC 2013, so it fails there.
+#ifndef _MAX_ITOSTR_BASE10_COUNT
+#define _MAX_ITOSTR_BASE10_COUNT   (1 + 10 + 1)
+#endif
+#ifndef _MAX_ULTOSTR_BASE10_COUNT
+#define _MAX_ULTOSTR_BASE10_COUNT  (10 + 1)
+#endif
+
 /**
  * Number of elements in an array.
  * (from librpbase/common.h)
