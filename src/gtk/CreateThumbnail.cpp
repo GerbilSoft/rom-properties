@@ -48,6 +48,19 @@ using std::unique_ptr;
 // PIMGTYPE
 #include "PIMGTYPE.hpp"
 
+// GTK+ major version.
+// We can't simply use GTK_MAJOR_VERSION because
+// that has parentheses.
+#if GTK_CHECK_VERSION(4,0,0)
+# error Needs updating for GTK4.
+#elif GTK_CHECK_VERSION(3,0,0)
+# define GTK_MAJOR_STR "3"
+#elif GTK_CHECK_VERSION(2,0,0)
+# define GTK_MAJOR_STR "2"
+#else
+# error GTK+ is too old.
+#endif
+
 /** CreateThumbnailPrivate **/
 
 class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
@@ -305,8 +318,6 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// Attempt to open the ROM file.
-	// TODO: RpGVfsFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
 	IRpFile *file;
 	if (source_filename) {
 		// Local file. Use RpFile.
@@ -400,10 +411,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	kv.reserve(5);
 
 	// Software.
-	// TODO: Distinguish between GNOME and XFCE?
-	// TODO: Does gdk_pixbuf_savev() support zTXt?
-	// TODO: Set keys in the Qt one.
-	kv.push_back(std::make_pair("Software", "ROM Properties Page shell extension (GTK+)"));
+	kv.push_back(std::make_pair("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")"));
 
 	// Modification time and file size.
 	mtime_str[0] = 0;
