@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,9 +13,6 @@
 
 // librpbase
 #include "librpbase/byteswap.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
 // C++ STL classes.

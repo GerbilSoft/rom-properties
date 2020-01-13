@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpImageWin32.cpp: rp_image to Win32 conversion functions.               *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,6 @@
 #include "RpImageWin32.hpp"
 
 // librptexture
-#include "librptexture/img/rp_image.hpp"
 #include "librptexture/img/RpGdiplusBackend.hpp"
 using LibRpTexture::rp_image;
 using LibRpTexture::RpGdiplusBackend;

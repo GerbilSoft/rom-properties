@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,33 +18,16 @@
 
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
-#include "libwin32common/WinUI.hpp"
-#include "libwin32common/w32time.h"
-#include "libwin32common/WTSSessionNotification.hpp"
 using LibWin32Common::AutoGetDC;
 using LibWin32Common::WTSSessionNotification;
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/config/Config.hpp"
-using namespace LibRpBase;
-
-// libi18n
-// NOTE: Using "RomDataView" for the context, since that
+// NOTE: Using "RomDataView" for the libi18n context, since that
 // matches what's used for the KDE and GTK+ frontends.
-#include "libi18n/i18n.h"
 
-// librptexture
-#include "librptexture/img/rp_image.hpp"
+// librpbase, librptexture, libromdata
+#include "librpbase/RomFields.hpp"
+using namespace LibRpBase;
 using LibRpTexture::rp_image;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
 // C++ STL classes.

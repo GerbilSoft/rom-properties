@@ -12,17 +12,9 @@
 #include "AboutTab.hpp"
 #include "res/resource.h"
 
-// libwin32common
-#include "libwin32common/WinUI.hpp"
-
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.

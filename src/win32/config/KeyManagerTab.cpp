@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,19 +18,11 @@
 #include "KeyStore_OwnerDataCallback.hpp"
 
 // libwin32common
-#include "libwin32common/WinUI.hpp"
-#include "libwin32common/WTSSessionNotification.hpp"
 using LibWin32Common::WTSSessionNotification;
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/config/Config.hpp"
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;
-
-// libi18n
-#include "libi18n/i18n.h"
 
 // libromdata
 #include "libromdata/disc/WiiPartition.hpp"

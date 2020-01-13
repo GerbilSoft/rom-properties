@@ -10,8 +10,6 @@
 #include "KeyStoreWin32.hpp"
 #include "res/resource.h"
 
-#include "librpbase/common.h"
-
 /**
  * Create a new KeyStore object.
  * @param hWnd Parent window for messages.

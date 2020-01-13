@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,17 +11,8 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "res/resource.h"
 
-// librpbase
-#include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/RpFile.hpp"
-#include "librpbase/config/Config.hpp"
+// librpbase, libromdata
 using namespace LibRpBase;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
 // C++ STL classes.

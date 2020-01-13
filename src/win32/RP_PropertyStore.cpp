@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.cpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,21 +15,13 @@
 #include <propkey.h>
 #include <propvarutil.h>
 
-// librpbase
-#include "librpbase/RomData.hpp"
+// librpbase, libromdata
 #include "librpbase/RomMetaData.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/RpFile.hpp"
 using namespace LibRpBase;
-
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
 // libwin32common
 #include "libwin32common/propsys_xp.h"
-#include "libwin32common/w32time.h"
 
 // RpFile_IStream
 #include "RpFile_IStream.hpp"

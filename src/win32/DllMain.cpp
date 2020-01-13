@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,19 +36,12 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 
 // libwin32common
-#include "libwin32common/ComBase.hpp"
-#include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
 // rp_image backend registration.
 #include "librptexture/img/RpGdiplusBackend.hpp"
-#include "librptexture/img/rp_image.hpp"
 using LibRpTexture::RpGdiplusBackend;
 using LibRpTexture::rp_image;
-
-// Text conversion functions and macros.
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
 
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"

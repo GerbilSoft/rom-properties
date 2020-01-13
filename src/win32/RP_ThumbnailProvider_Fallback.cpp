@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_Fallback.cpp: IThumbnailProvider implementation.   *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,16 +11,8 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_ThumbnailProvider_p.hpp"
 
-// librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/FileSystem.hpp"
-#include "librpbase/file/IRpFile.hpp"
+// librpbase, libwin32common
 using namespace LibRpBase;
-
-// libwin32common
-#include "libwin32common/RegKey.hpp"
-#include "libwin32common/sdk/GUID_fn.h"
 using LibWin32Common::RegKey;
 
 // C++ STL classes.
