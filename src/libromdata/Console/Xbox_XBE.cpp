@@ -441,22 +441,16 @@ void Xbox_XBE::close(void)
 {
 	RP_D(Xbox_XBE);
 
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
 	if (d->pe_exe) {
-		d->pe_exe->unref();
-		d->pe_exe = nullptr;
+		d->pe_exe->close();
 	}
 
 	if (d->xtImage.isInit) {
-		d->xtImage.isInit = false;
 		if (!d->xtImage.isPng) {
 			// XPR0 image
-			d->xtImage.xpr0->unref();
-			d->xtImage.xpr0 = nullptr;
-		} else {
-			// PNG image
-			d->xtImage.isPng = false;
-			delete d->xtImage.png;
-			d->xtImage.png = nullptr;
+			d->xtImage.xpr0->close();
 		}
 	}
 

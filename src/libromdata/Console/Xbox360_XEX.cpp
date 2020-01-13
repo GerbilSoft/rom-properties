@@ -1364,17 +1364,20 @@ void Xbox360_XEX::close(void)
 {
 	RP_D(Xbox360_XEX);
 
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
 	if (d->pe_xdbf) {
-		d->pe_xdbf->unref();
-		d->pe_xdbf = nullptr;
+		d->pe_xdbf->close();
 	}
 	if (d->pe_exe) {
-		d->pe_exe->unref();
-		d->pe_exe = nullptr;
+		d->pe_exe->close();
 	}
-
-	delete d->peReader;
-	d->peReader = nullptr;
+#if 0
+	// TODO: Add CBCReader::close()?
+	if (d->peReader) {
+		d->peReader->close();
+	}
+#endif
 
 #ifdef ENABLE_LIBMSPACK
 	d->lzx_peHeader.clear();

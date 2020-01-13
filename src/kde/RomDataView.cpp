@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RomDataView.hpp: RomData viewer.                                        *
+ * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -14,8 +14,6 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRpBase;
 
 // libi18n
@@ -37,6 +35,7 @@ using std::array;
 using std::string;
 using std::vector;
 
+// Qt includes.
 #include <QtCore/QDateTime>
 #include <QtCore/QEvent>
 #include <QtCore/QTimer>
@@ -50,6 +49,9 @@ using std::vector;
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
+
+// Custom Qt widgets.
+#include "DragImageTreeWidget.hpp"
 
 #include "ui_RomDataView.h"
 class RomDataViewPrivate
@@ -77,13 +79,6 @@ class RomDataViewPrivate
 
 		// RomData object.
 		RomData *romData;
-
-		// Animated icon data.
-		QTimer *tmrIconAnim;
-		array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
-		IconAnimHelper iconAnimHelper;
-		bool anim_running;		// Animation is running.
-		int last_frame_number;		// Last frame number.
 
 		/**
 		 * Initialize the header row widgets.
@@ -165,16 +160,6 @@ class RomDataViewPrivate
 		void initDisplayWidgets(void);
 
 		/**
-		 * Start the animation timer.
-		 */
-		void startAnimTimer(void);
-
-		/**
-		 * Stop the animation timer.
-		 */
-		void stopAnimTimer(void);
-
-		/**
 		 * Convert a QImage to QPixmap.
 		 * Automatically resizes the QImage if it's smaller
 		 * than the minimum size.
@@ -182,6 +167,14 @@ class RomDataViewPrivate
 		 * @return QPixmap.
 		 */
 		QPixmap imgToPixmap(const QImage &img);
+
+		/**
+		 * Set the label's pixmap using an rp_image source.
+		 * @param label QLabel.
+		 * @param img rp_image. (If nullptr, returns an error; use clear() to clear it.)
+		 * @return True on success; false on error.
+		 */
+		bool setPixmapFromRpImage(QLabel *label, const rp_image *img);
 };
 
 /** RomDataViewPrivate **/
@@ -189,9 +182,6 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData->ref())
-	, tmrIconAnim(nullptr)
-	, anim_running(false)
-	, last_frame_number(0)
 {
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -200,8 +190,8 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 
 RomDataViewPrivate::~RomDataViewPrivate()
 {
-	stopAnimTimer();
-	iconAnimHelper.setIconAnimData(nullptr);
+	ui.lblIcon->clearRp();
+	ui.lblBanner->clearRp();
 	if (romData) {
 		romData->unref();
 	}
@@ -240,6 +230,32 @@ QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
 		 img_size.height() < min_img_size.height());
 
 	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
+}
+
+/**
+ * Set the label's pixmap using an rp_image source.
+ * @param label QLabel.
+ * @param img rp_image. (If nullptr, returns an error; use clear() to clear it.)
+ * @return True on success; false on error.
+ */
+bool RomDataViewPrivate::setPixmapFromRpImage(QLabel *label, const rp_image *img)
+{
+	assert(img != nullptr);
+	if (!img || !img->isValid()) {
+		// No image, or image is not valid.
+		return false;
+	}
+
+	// Convert the rp_image to a QImage.
+	QImage qImg = rpToQImage(img);
+	if (qImg.isNull()) {
+		// Unable to convert the image.
+		return false;
+	}
+
+	// Image converted successfully.
+	label->setPixmap(imgToPixmap(qImg));
+	return true;
 }
 
 /**
@@ -283,20 +299,8 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
-		if (banner && banner->isValid()) {
-			QImage img = rpToQImage(banner);
-			if (!img.isNull()) {
-				ui.lblBanner->setPixmap(imgToPixmap(img));
-				ui.lblBanner->show();
-			} else {
-				// Invalid banner.
-				ui.lblBanner->hide();
-			}
-		} else {
-			// No banner.
-			ui.lblBanner->hide();
-		}
+		bool ok = ui.lblBanner->setRpImage(romData->image(RomData::IMG_INT_BANNER));
+		ui.lblBanner->setVisible(ok);
 	} else {
 		// No banner.
 		ui.lblBanner->hide();
@@ -305,53 +309,16 @@ void RomDataViewPrivate::initHeaderRow(void)
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
-		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
-			const IconAnimData *const iconAnimData = romData->iconAnimData();
-			if (iconAnimData) {
-				// Convert the icons to QPixmaps.
-				for (int i = iconAnimData->count-1; i >= 0; i--) {
-					const rp_image *const frame = iconAnimData->frames[i];
-					if (frame && frame->isValid()) {
-						QImage img = rpToQImage(frame);
-						if (!img.isNull()) {
-							iconFrames[i] = imgToPixmap(img);
-						}
-					}
-				}
-
-				// Set up the IconAnimHelper.
-				iconAnimHelper.setIconAnimData(iconAnimData);
-				if (iconAnimHelper.isAnimated()) {
-					// Initialize the animation.
-					last_frame_number = iconAnimHelper.frameNumber();
-					// Create the animation timer.
-					if (!tmrIconAnim) {
-						tmrIconAnim = new QTimer(q);
-						tmrIconAnim->setSingleShot(true);
-						QObject::connect(tmrIconAnim, SIGNAL(timeout()),
-								q, SLOT(tmrIconAnim_timeout()));
-					}
-				}
-
-				// Show the first frame.
-				ui.lblIcon->setPixmap(iconFrames[iconAnimHelper.frameNumber()]);
-				ui.lblIcon->show();
-
-				// Icon animation timer is set in startAnimTimer().
-			} else {
-				// Not an animated icon.
-				last_frame_number = 0;
-				QImage img = rpToQImage(icon);
-				if (!img.isNull()) {
-					iconFrames[0] = imgToPixmap(img);
-					ui.lblIcon->setPixmap(iconFrames[0]);
-					ui.lblIcon->show();
-				} else {
-					ui.lblIcon->hide();
-				}
+			bool ok = ui.lblIcon->setIconAnimData(romData->iconAnimData());
+			if (!ok) {
+				// Not an animated icon, or invalid icon data.
+				// Set the static icon.
+				ok = ui.lblIcon->setRpImage(icon);
 			}
+			ui.lblIcon->setVisible(ok);
 		} else {
 			// No icon.
 			ui.lblIcon->hide();
@@ -579,7 +546,22 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	Q_Q(RomDataView);
-	QTreeWidget *const treeWidget = new QTreeWidget(q);
+	QTreeWidget *treeWidget;
+	Qt::ItemFlags itemFlags;
+	if (hasIcons) {
+		treeWidget = new DragImageTreeWidget(q);
+		treeWidget->setDragEnabled(true);
+		treeWidget->setDefaultDropAction(Qt::CopyAction);
+		treeWidget->setDragDropMode(QAbstractItemView::InternalMove);
+		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+		// TODO: Get multi-image drag & drop working.
+		//treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+	} else {
+		treeWidget = new QTreeWidget(q);
+		itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+		treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+	}
 	treeWidget->setRootIsDecorated(false);
 	treeWidget->setAlternatingRowColors(true);
 
@@ -660,11 +642,13 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 				if (icon) {
 					treeWidgetItem->setIcon(0, QIcon(
 						QPixmap::fromImage(rpToQImage(icon))));
+					treeWidgetItem->setData(0, DragImageTreeWidget::RpImageRole,
+						QVariant::fromValue((void*)icon));
 				}
 			}
 
-			// Disable user checkability.
-			treeWidgetItem->setFlags(treeWidgetItem->flags() & ~Qt::ItemIsUserCheckable);
+			// Set item flags.
+			treeWidgetItem->setFlags(itemFlags);
 
 			int col = 0;
 			uint32_t align = listDataDesc.alignment.data;
@@ -1054,45 +1038,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	romData->close();
 }
 
-/**
- * Start the animation timer.
- */
-void RomDataViewPrivate::startAnimTimer(void)
-{
-	if (!iconAnimHelper.isAnimated()) {
-		// Not an animated icon.
-		return;
-	}
-
-	// Sanity check: If these aren't set, something's wrong.
-	assert(tmrIconAnim != nullptr);
-	assert(ui.lblIcon != nullptr);
-
-	// Get the current frame information.
-	last_frame_number = iconAnimHelper.frameNumber();
-	const int delay = iconAnimHelper.frameDelay();
-	assert(delay > 0);
-	if (delay <= 0) {
-		// Invalid delay value.
-		return;
-	}
-
-	// Set a single-shot timer for the current frame.
-	anim_running = true;
-	tmrIconAnim->start(delay);
-}
-
-/**
- * Stop the animation timer.
- */
-void RomDataViewPrivate::stopAnimTimer(void)
-{
-	if (tmrIconAnim) {
-		anim_running = false;
-		tmrIconAnim->stop();
-	}
-}
-
 /** RomDataView **/
 
 RomDataView::RomDataView(QWidget *parent)
@@ -1132,7 +1077,7 @@ void RomDataView::showEvent(QShowEvent *event)
 {
 	// Start the icon animation.
 	Q_D(RomDataView);
-	d->startAnimTimer();
+	d->ui.lblIcon->startAnimTimer();
 
 	// Pass the event to the superclass.
 	super::showEvent(event);
@@ -1147,7 +1092,7 @@ void RomDataView::hideEvent(QHideEvent *event)
 {
 	// Stop the icon animation.
 	Q_D(RomDataView);
-	d->stopAnimTimer();
+	d->ui.lblIcon->stopAnimTimer();
 
 	// Pass the event to the superclass.
 	super::hideEvent(event);
@@ -1242,34 +1187,6 @@ void RomDataView::bitfield_toggled_slot(bool checked)
 	}
 }
 
-/**
- * Animated icon timer.
- */
-void RomDataView::tmrIconAnim_timeout(void)
-{
-	Q_D(RomDataView);
-
-	// Next frame.
-	int delay = 0;
-	int frame = d->iconAnimHelper.nextFrame(&delay);
-	if (delay <= 0 || frame < 0) {
-		// Invalid frame...
-		return;
-	}
-
-	if (frame != d->last_frame_number) {
-		// New frame number.
-		// Update the icon.
-		d->ui.lblIcon->setPixmap(d->iconFrames[frame]);
-		d->last_frame_number = frame;
-	}
-
-	// Set the single-shot timer.
-	if (d->anim_running) {
-		d->tmrIconAnim->start(delay);
-	}
-}
-
 /** Properties. **/
 
 /**
@@ -1294,12 +1211,12 @@ void RomDataView::setRomData(RomData *romData)
 	if (d->romData == romData)
 		return;
 
-	bool prevAnimTimerRunning = d->anim_running;
+	bool prevAnimTimerRunning = d->ui.lblIcon->isAnimTimerRunning();
 	if (prevAnimTimerRunning) {
 		// Animation is running.
 		// Stop it temporarily and reset the frame number.
-		d->stopAnimTimer();
-		d->last_frame_number = 0;
+		d->ui.lblIcon->stopAnimTimer();
+		d->ui.lblIcon->resetAnimFrame();
 	}
 
 	if (d->romData) {
@@ -1310,7 +1227,8 @@ void RomDataView::setRomData(RomData *romData)
 
 	if (romData != nullptr && prevAnimTimerRunning) {
 		// Restart the animation timer.
-		d->startAnimTimer();
+		// FIXME: Ensure frame 0 is drawn?
+		d->ui.lblIcon->startAnimTimer();
 	}
 
 	emit romDataChanged(romData);

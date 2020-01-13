@@ -396,15 +396,20 @@ void XboxDisc::close(void)
 {
 	RP_D(XboxDisc);
 
+	// NOTE: Don't delete these. They have rp_image objects
+	// that may be used by the UI later.
 	if (d->defaultExeData) {
-		d->defaultExeData->unref();
-		d->defaultExeData = nullptr;
+		d->defaultExeData->close();
 	}
-
-	delete d->xdvdfsPartition;
-	delete d->discReader;
-	d->xdvdfsPartition = nullptr;
-	d->discReader = nullptr;
+#if 0
+	// TODO: Add close() functions?
+	if (d->xdvdfsPartition) {
+		d->xdvdfsPartition->close();
+	}
+	if (d->discReader) {
+		d->discReader->close();
+	}
+#endif
 
 	// Call the superclass function.
 	super::close();

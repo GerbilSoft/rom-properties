@@ -1,39 +1,31 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
+ * RpQByteArrayFile.cpp: IRpFile implementation using a QByteArray.        *
  *                                                                         *
  * Copyright (c) 2016-2019 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "RpMemFile.hpp"
+#include "RpQByteArrayFile.hpp"
 
-// C++ STL classes.
+// C includes. (C++ namespace)
+#include <cerrno>
+#include <cstring>
+
+// C++ includes.
+#include <string>
 using std::string;
 
-namespace LibRpBase {
-
 /**
- * Open an IRpFile backed by memory.
- * The resulting IRpFile is read-only.
- *
- * NOTE: The memory buffer is NOT copied; it must remain
- * valid as long as this object is still open.
- *
- * @param buf Memory buffer.
- * @param size Size of memory buffer.
+ * Open an IRpFile backed by a QByteArray.
+ * The resulting IRpFile is writable.
  */
-RpMemFile::RpMemFile(const void *buf, size_t size)
+RpQByteArrayFile::RpQByteArrayFile()
 	: super()
-	, m_buf(buf)
-	, m_size(static_cast<int64_t>(size))
 	, m_pos(0)
 {
-	if (!buf) {
-		// No buffer specified.
-		m_lastError = EBADF;
-	}
+	// Reserve at least 16 KB.
+	m_byteArray.reserve(16*1024);
 }
 
 /**
@@ -41,17 +33,18 @@ RpMemFile::RpMemFile(const void *buf, size_t size)
  * This usually only returns false if an error occurred.
  * @return True if the file is open; false if it isn't.
  */
-bool RpMemFile::isOpen(void) const
+bool RpQByteArrayFile::isOpen(void) const
 {
-	return (m_buf != nullptr);
+	// RpQByteArrayFile is always open.
+	return true;
 }
 
 /**
  * Close the file.
  */
-void RpMemFile::close(void)
+void RpQByteArrayFile::close(void)
 {
-	m_buf = nullptr;
+	// Not really useful...
 }
 
 /**
@@ -60,13 +53,8 @@ void RpMemFile::close(void)
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes read.
  */
-size_t RpMemFile::read(void *ptr, size_t size)
+size_t RpQByteArrayFile::read(void *ptr, size_t size)
 {
-	if (!m_buf) {
-		m_lastError = EBADF;
-		return 0;
-	}
-
 	if (unlikely(size == 0)) {
 		// Not reading anything...
 		return 0;
@@ -74,14 +62,14 @@ size_t RpMemFile::read(void *ptr, size_t size)
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.
-	if (static_cast<int64_t>(m_pos) > (static_cast<int64_t>(m_size) - static_cast<int64_t>(size))) {
+	if (static_cast<int64_t>(m_pos) > (static_cast<int64_t>(m_byteArray.size()) - static_cast<int64_t>(size))) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
-		size = m_size - m_pos;
+		size = m_byteArray.size() - m_pos;
 	}
 
 	// Copy the data.
-	const uint8_t *const buf = static_cast<const uint8_t*>(m_buf);
+	const char *const buf = m_byteArray.constData();
 	memcpy(ptr, &buf[m_pos], size);
 	m_pos += size;
 	return size;
@@ -89,18 +77,32 @@ size_t RpMemFile::read(void *ptr, size_t size)
 
 /**
  * Write data to the file.
- * (NOTE: Not valid for RpMemFile; this will always return 0.)
  * @param ptr Input data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.
  */
-size_t RpMemFile::write(const void *ptr, size_t size)
+size_t RpQByteArrayFile::write(const void *ptr, size_t size)
 {
-	// Not a valid operation for RpMemFile.
-	RP_UNUSED(ptr);
-	RP_UNUSED(size);
-	m_lastError = EBADF;
-	return 0;
+	if (unlikely(size == 0)) {
+		// Not writing anything...
+		return 0;
+	}
+
+	// Do we need to expand the QByteArray?
+	int64_t req_size = static_cast<int64_t>(m_byteArray.size()) + size;
+	if (req_size < 0) {
+		// Overflow...
+		return 0;
+	} else if (req_size > m_byteArray.size()) {
+		// Need to expand the QByteArray.
+		m_byteArray.resize(req_size);
+	}
+
+	// Copy the data to the buffer.
+	char *const buf = m_byteArray.data();
+	memcpy(&buf[m_pos], ptr, size);
+	m_pos += size;
+	return size;
 }
 
 /**
@@ -108,19 +110,14 @@ size_t RpMemFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpMemFile::seek(int64_t pos)
+int RpQByteArrayFile::seek(int64_t pos)
 {
-	if (!m_buf) {
-		m_lastError = EBADF;
-		return -1;
-	}
-
 	// NOTE: m_pos is size_t, since it's referring to
 	// a position within a memory buffer.
 	if (pos <= 0) {
 		m_pos = 0;
-	} else if (static_cast<size_t>(pos) >= m_size) {
-		m_pos = m_size;
+	} else if (pos >= m_byteArray.size()) {
+		m_pos = m_byteArray.size();
 	} else {
 		m_pos = static_cast<size_t>(pos);
 	}
@@ -132,29 +129,20 @@ int RpMemFile::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpMemFile::tell(void)
+int64_t RpQByteArrayFile::tell(void)
 {
-	if (!m_buf) {
-		m_lastError = EBADF;
-		return 0;
-	}
-
 	return (int64_t)m_pos;
 }
 
 /**
  * Truncate the file.
- * (NOTE: Not valid for RpMemFile; this will always return -1.)
  * @param size New size. (default is 0)
  * @return 0 on success; -1 on error.
  */
-int RpMemFile::truncate(int64_t size)
+int RpQByteArrayFile::truncate(int64_t size)
 {
-	// Not supported.
-	// TODO: Writable RpMemFile?
-	RP_UNUSED(size);
-	m_lastError = ENOTSUP;
-	return -1;
+	m_byteArray.resize(size);
+	return 0;
 }
 
 /** File properties **/
@@ -163,24 +151,17 @@ int RpMemFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpMemFile::size(void)
+int64_t RpQByteArrayFile::size(void)
 {
-	if (!m_buf) {
-		m_lastError = EBADF;
-		return -1;
-	}
-
-	return m_size;
+	return m_byteArray.size();
 }
 
 /**
  * Get the filename.
  * @return Filename. (May be empty if the filename is not available.)
  */
-string RpMemFile::filename(void) const
+string RpQByteArrayFile::filename(void) const
 {
 	// TODO: Implement this?
 	return string();
-}
-
 }
