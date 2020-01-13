@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -209,6 +209,9 @@ int CurlDownloader::download(void)
 	// - Total timeout: 20 seconds.
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
+
+	// Set the User-Agent.
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());
 
 	// TODO: Set the User-Agent?
 	CURLcode res = curl_easy_perform(curl);
