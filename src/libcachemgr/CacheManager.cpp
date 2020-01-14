@@ -100,41 +100,6 @@ void CacheManager::setProxyUrl(const string &proxyUrl)
 }
 
 /**
- * Get a cache filename.
- * @param cache_key Cache key. (Will be filtered using LibCacheCommon::filterCacheKey().)
- * @return Cache filename, or empty string on error.
- */
-string CacheManager::getCacheFilename(const string &cache_key)
-{
-	// Filter invalid characters from the cache key.
-	if (cache_key.empty()) {
-		// No cache key.
-		return string();
-	}
-	string filtered_cache_key = cache_key;
-	int ret = LibCacheCommon::filterCacheKey(filtered_cache_key);
-	if (ret != 0) {
-		// Invalid cache key.
-		return string();
-	}
-
-	// Get the cache filename.
-	// This is the cache directory plus the cache key.
-	string cache_filename = getCacheDirectory();
-
-	if (cache_filename.empty())
-		return string();
-	if (cache_filename.at(cache_filename.size()-1) != DIR_SEP_CHR)
-		cache_filename += DIR_SEP_CHR;
-
-	// Append the filtered cache key.
-	cache_filename += filtered_cache_key;
-
-	// Cache filename created.
-	return cache_filename;
-}
-
-/**
  * Download a file.
  *
  * @param url URL.
@@ -154,7 +119,7 @@ string CacheManager::download(
 	const string &cache_key)
 {
 	// Check the main cache key.
-	string cache_filename = getCacheFilename(cache_key);
+	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
 		return string();
@@ -254,7 +219,7 @@ string CacheManager::download(
 string CacheManager::findInCache(const string &cache_key)
 {
 	// Get the cache key filename.
-	string cache_filename = getCacheFilename(cache_key);
+	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
 		return string();

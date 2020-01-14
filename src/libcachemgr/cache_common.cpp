@@ -10,16 +10,57 @@
 #include "cache_common.hpp"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cerrno>
 #include <stdint.h>
 
 // C++ STL classes.
 using std::string;
 
-// stdbool
-#include "stdboolx.h"
+// librpthreads
+#include "librpthreads/pthread_once.h"
+
+// OS-specific userdirs
+#ifdef _WIN32
+# include "libwin32common/userdirs.hpp"
+# define OS_NAMESPACE LibWin32Common
+# define DIR_SEP_CHR '\\'
+#else
+# include "libunixcommon/userdirs.hpp"
+# define OS_NAMESPACE LibUnixCommon
+# define DIR_SEP_CHR '/'
+#endif
 
 namespace LibCacheCommon {
+
+/** Configuration directories. **/
+// pthread_once() control variable.
+static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+// User's cache directory.
+static string cache_dir;
+
+/**
+ * Initialize the cache directory.
+ * Called by pthread_once().
+ */
+static void initCacheDirectory(void)
+{
+	// Uses LibUnixCommon or LibWin32Common, depending on platform.
+
+	cache_dir = OS_NAMESPACE::getCacheDirectory();
+	if (!cache_dir.empty()) {
+		// Add a trailing slash if necessary.
+		if (cache_dir.at(cache_dir.size()-1) != DIR_SEP_CHR)
+			cache_dir += DIR_SEP_CHR;
+#ifdef _WIN32
+		// Append "rom-properties\\cache".
+		cache_dir += "rom-properties\\cache";
+#else /* !_WIN32 */
+		// Append "rom-properties".
+		cache_dir += "rom-properties";
+#endif /* _WIN32 */
+	}
+}
 
 /**
  * Filter invalid characters from a cache key.
@@ -182,6 +223,48 @@ int filterCacheKey(string &cacheKey)
 
 	// Cache key has been filtered.
 	return 0;
+}
+
+/**
+ * Combine a cache key with the cache directory to get a cache filename.
+ * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
+ * @return Cache filename, or empty string on error.
+ */
+std::string getCacheFilename(const std::string &cacheKey)
+{
+	string cacheFilename;
+	assert(!cacheKey.empty());
+	if (cacheKey.empty()) {
+		// No cache key...
+		return cacheFilename;
+	}
+
+	// Make sure the cache directory is initialized.
+	pthread_once(&once_control, initCacheDirectory);
+	assert(!cache_dir.empty());
+	if (cache_dir.empty()) {
+		// Unable to get the cache directory.
+		return cacheFilename;
+	}
+
+	// Filter the cache key.
+	string filteredCacheKey = cacheKey;
+	int ret = filterCacheKey(filteredCacheKey);
+	if (ret != 0) {
+		// Invalid cache key.
+		return cacheFilename;
+	}
+
+	// Get the cache filename.
+	// This is the cache directory plus the cache key.
+	cacheFilename = cache_dir;
+	if (cacheFilename.at(cacheFilename.size()-1) != DIR_SEP_CHR) {
+		cacheFilename += DIR_SEP_CHR;
+	}
+
+	// Append the filtered cache key.
+	cacheFilename += filteredCacheKey;
+	return cacheFilename;
 }
 
 }

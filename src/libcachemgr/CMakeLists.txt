@@ -41,6 +41,12 @@ TARGET_INCLUDE_DIRECTORIES(cachecommon
 	)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(cachecommon PROPERTIES EXCLUDE_FROM_ALL TRUE)
+TARGET_LINK_LIBRARIES(cachecommon PRIVATE rpthreads)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(cachecommon PRIVATE win32common)
+ELSE(WIN32)
+	TARGET_LINK_LIBRARIES(cachecommon PRIVATE unixcommon)
+ENDIF(WIN32)
 
 # libcachemgr: rom-properties.dll cache interface.
 ADD_LIBRARY(cachemgr STATIC

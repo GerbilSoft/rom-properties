@@ -23,6 +23,13 @@ namespace LibCacheCommon {
  */
 int filterCacheKey(std::string &cacheKey);
 
+/**
+ * Get a cache filename.
+ * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
+ * @return Cache filename, or empty string on error.
+ */
+std::string getCacheFilename(const std::string &cacheKey);
+
 }
 
 #endif /* __ROMPROPERTIES_LIBCACHEMGR_CACHE_COMMON_HPP__ */

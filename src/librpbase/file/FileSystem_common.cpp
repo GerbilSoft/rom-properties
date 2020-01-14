@@ -30,6 +30,7 @@ namespace LibRpBase { namespace FileSystem {
 // pthread_once() control variable.
 static pthread_once_t once_control = PTHREAD_ONCE_INIT;
 // User's cache directory.
+// TODO: Use libcachecommon's cache_dir instead?
 static string cache_dir;
 // User's configuration directory.
 static string config_dir;

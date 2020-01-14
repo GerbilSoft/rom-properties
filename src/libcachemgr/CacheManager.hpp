@@ -53,14 +53,6 @@ class CacheManager
 		 */
 		void setProxyUrl(const std::string &proxyUrl);
 
-	protected:
-		/**
-		 * Get a cache filename.
-		 * @param cache_key Cache key. (Will be filtered using LibCacheCommon::filterCacheKey().)
-		 * @return Cache filename, or empty string on error.
-		 */
-		std::string getCacheFilename(const std::string &cache_key);
-
 	public:
 		/**
 		 * Download a file.
