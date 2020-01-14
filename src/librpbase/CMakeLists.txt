@@ -229,6 +229,7 @@ IF(WIN32)
 		TextFuncs_win32.cpp
 		file/win32/FileSystem_win32.cpp
 		file/win32/RpFile_win32.cpp
+		file/win32/RpFile_win32_origin.cpp
 		file/win32/IStreamWrapper.cpp
 		)
 	SET(librpbase_OS_H
@@ -240,6 +241,7 @@ ELSE(WIN32)
 		TextFuncs_iconv.cpp
 		file/FileSystem_posix.cpp
 		file/RpFile_stdio.cpp
+		file/RpFile_stdio_origin.cpp
 		)
 ENDIF(WIN32)
 
