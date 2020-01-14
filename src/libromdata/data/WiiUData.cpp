@@ -29,7 +29,7 @@ class WiiUDataPrivate {
 		 * These games have the same publisher in all regions.
 		 * ID4 region byte is 'x'. (Not '\0' due to MSVC issues.)
 		 *
-		 * Reference: http://www.gametdb.com/WiiU/List
+		 * Reference: https://www.gametdb.com/WiiU/List
 		 */
 		static const WiiUDiscPublisher disc_publishers_noregion[];
 
@@ -38,7 +38,7 @@ class WiiUDataPrivate {
 		 * These games have different publishers in different regions.
 		 * ID4 region byte is the original region.
 		 *
-		 * Reference: http://www.gametdb.com/WiiU/List
+		 * Reference: https://www.gametdb.com/WiiU/List
 		 */
 		static const WiiUDiscPublisher disc_publishers_region[];
 
@@ -58,7 +58,7 @@ class WiiUDataPrivate {
  * These games have the same publisher in all regions.
  * ID4 region byte is 'x'. (Not '\0' due to MSVC issues.)
  *
- * Reference: http://www.gametdb.com/WiiU/List
+ * Reference: https://www.gametdb.com/WiiU/List
  */
 const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregion[] = {
 	{'AAFx', '0001'},	// Bayonetta
@@ -269,7 +269,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
  * These games have different publishers in different regions.
  * ID4 region byte is the original region.
  *
- * Reference: http://www.gametdb.com/WiiU/List
+ * Reference: https://www.gametdb.com/WiiU/List
  */
 const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_region[] = {
 	{'ABEE', '00G9'},	// Ben 10: Omniverse (NTSC-U)
