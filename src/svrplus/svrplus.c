@@ -17,6 +17,9 @@
 // MSVCRT-specific
 #include <process.h>
 
+// stdbool
+#include "stdboolx.h"
+
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/secoptions.h"
@@ -49,17 +52,6 @@
 #define ARRAY_SIZE(x) \
 	((int)(((sizeof(x) / sizeof(x[0]))) / \
 		(size_t)(!(sizeof(x) % sizeof(x[0])))))
-
-// TODO: Move to our own stdboolx.h file.
-#ifndef __cplusplus
-# if defined(_MSC_VER) && _MSC_VER >= 1800
-#  include <stdbool.h>
-# else
-typedef unsigned char bool;
-#  define true 1
-#  define false 0
-# endif
-#endif /* __cplusplus */
 
 // File paths
 static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
