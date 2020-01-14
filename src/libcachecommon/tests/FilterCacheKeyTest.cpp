@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata/tests)                 *
+ * ROM Properties Page shell extension. (libcachecommon/tests)             *
  * FilterCacheKeyTest.cpp: CacheManager::filterCacheKey() test.            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -13,7 +13,7 @@
 #include "librpbase/TextFuncs.hpp"
 
 // libcachecommon
-#include "../cache_common.hpp"
+#include "../CacheKeys.hpp"
 
 // C++ includes.
 #include <string>
@@ -166,7 +166,7 @@ INSTANTIATE_TEST_CASE_P(CacheManagerTest, FilterCacheKeyTest,
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibCacheMgr test suite: CacheManager::filterCacheKey() tests.\n\n");
+	fprintf(stderr, "LibCacheMgr test suite: LibCacheCommon::filterCacheKey() tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

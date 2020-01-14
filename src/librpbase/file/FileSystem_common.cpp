@@ -22,7 +22,7 @@
 #include "librpthreads/pthread_once.h"
 
 // libcachecommon
-#include "libcachemgr/cache_common.hpp"
+#include "libcachecommon/CacheDir.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -42,9 +42,6 @@ static string config_dir;
 static void initConfigDirectories(void)
 {
 	// Uses LibUnixCommon or LibWin32Common, depending on platform.
-
-	// Cache directory. (Managed by libcachecommon.)
-	LibCacheCommon::getCacheDirectory();
 
 	// Config directory.
 	config_dir = OS_NAMESPACE::getConfigDirectory();

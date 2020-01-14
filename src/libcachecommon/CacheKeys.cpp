@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
- * cache_common.cpp: Common caching functions.                               *
- * Shared between libcachemgr and rp-download.                             *
+ * ROM Properties Page shell extension. (libcachecommon)                   *
+ * CacheKeys.cpp: Cache key handling functions.                            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "cache_common.hpp"
+#include "CacheKeys.hpp"
+#include "CacheDir.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -17,50 +17,14 @@
 // C++ STL classes.
 using std::string;
 
-// librpthreads
-#include "librpthreads/pthread_once.h"
-
-// OS-specific userdirs
+// OS-specific directory separator.
 #ifdef _WIN32
-# include "libwin32common/userdirs.hpp"
-# define OS_NAMESPACE LibWin32Common
 # define DIR_SEP_CHR '\\'
 #else
-# include "libunixcommon/userdirs.hpp"
-# define OS_NAMESPACE LibUnixCommon
 # define DIR_SEP_CHR '/'
 #endif
 
 namespace LibCacheCommon {
-
-/** Configuration directories. **/
-// pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-// User's cache directory.
-static string cache_dir;
-
-/**
- * Initialize the cache directory.
- * Called by pthread_once().
- */
-static void initCacheDirectory(void)
-{
-	// Uses LibUnixCommon or LibWin32Common, depending on platform.
-
-	cache_dir = OS_NAMESPACE::getCacheDirectory();
-	if (!cache_dir.empty()) {
-		// Add a trailing slash if necessary.
-		if (cache_dir.at(cache_dir.size()-1) != DIR_SEP_CHR)
-			cache_dir += DIR_SEP_CHR;
-#ifdef _WIN32
-		// Append "rom-properties\\cache".
-		cache_dir += "rom-properties\\cache";
-#else /* !_WIN32 */
-		// Append "rom-properties".
-		cache_dir += "rom-properties";
-#endif /* _WIN32 */
-	}
-}
 
 /**
  * Filter invalid characters from a cache key.
@@ -226,17 +190,6 @@ int filterCacheKey(string &cacheKey)
 }
 
 /**
- * Get the cache directory.
- * @return Cache directory, or empty string on error.
- */
-const std::string &getCacheDirectory(void)
-{
-	pthread_once(&once_control, initCacheDirectory);
-	assert(!cache_dir.empty());
-	return cache_dir;
-}
-
-/**
  * Combine a cache key with the cache directory to get a cache filename.
  * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
@@ -251,8 +204,7 @@ std::string getCacheFilename(const std::string &cacheKey)
 	}
 
 	// Make sure the cache directory is initialized.
-	pthread_once(&once_control, initCacheDirectory);
-	assert(!cache_dir.empty());
+	const string &cache_dir = getCacheDirectory();
 	if (cache_dir.empty()) {
 		// Unable to get the cache directory.
 		return cacheFilename;

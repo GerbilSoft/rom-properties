@@ -3,9 +3,6 @@ PROJECT(libcachemgr)
 # Downloading is handled using a separate executable, rp-download,
 # which can be sandboxed.
 
-SET(libcachecommon_SRCS cache_common.cpp)
-SET(libcachecommon_H cache_common.hpp)
-
 SET(libcachemgr_SRCS CacheManager.cpp IDownloader.cpp)
 SET(libcachemgr_H CacheManager.hpp IDownloader.hpp)
 
@@ -27,26 +24,6 @@ ENDIF(WIN32)
 ######################
 
 INCLUDE(SetMSVCDebugPath)
-
-# libcachecommon: Common library for libcachemgr and rp-download.
-ADD_LIBRARY(cachecommon STATIC
-	${libcachecommon_SRCS} ${libcachecommon_H}
-	)
-SET_MSVC_DEBUG_PATH(cachecommon)
-TARGET_INCLUDE_DIRECTORIES(cachecommon
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-	)
-# Exclude from ALL builds.
-SET_TARGET_PROPERTIES(cachecommon PROPERTIES EXCLUDE_FROM_ALL TRUE)
-TARGET_LINK_LIBRARIES(cachecommon PRIVATE rpthreads)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(cachecommon PRIVATE win32common)
-ELSE(WIN32)
-	TARGET_LINK_LIBRARIES(cachecommon PRIVATE unixcommon)
-ENDIF(WIN32)
 
 # libcachemgr: rom-properties.dll cache interface.
 ADD_LIBRARY(cachemgr STATIC
@@ -76,8 +53,3 @@ IF(UNIX AND NOT APPLE)
 	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
 	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
 ENDIF(UNIX AND NOT APPLE)
-
-# Test suite.
-IF(BUILD_TESTING)
-	ADD_SUBDIRECTORY(tests)
-ENDIF(BUILD_TESTING)

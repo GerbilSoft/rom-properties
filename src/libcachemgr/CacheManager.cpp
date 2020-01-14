@@ -18,7 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpBase::FileSystem;
 
 // libcachecommon
-#include "cache_common.hpp"
+#include "libcachecommon/CacheKeys.hpp"
 
 // Windows includes.
 #ifdef _WIN32

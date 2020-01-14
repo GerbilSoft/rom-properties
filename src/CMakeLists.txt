@@ -30,10 +30,11 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINA
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(libi18n)
 ADD_SUBDIRECTORY(librpthreads)
+ADD_SUBDIRECTORY(libcachecommon)
+ADD_SUBDIRECTORY(libcachemgr)
 ADD_SUBDIRECTORY(librpbase)
 ADD_SUBDIRECTORY(librptexture)
 ADD_SUBDIRECTORY(libromdata)
-ADD_SUBDIRECTORY(libcachemgr)
 
 IF(BUILD_CLI)
 	ADD_SUBDIRECTORY(rpcli)

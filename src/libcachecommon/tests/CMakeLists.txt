@@ -1,10 +1,10 @@
-PROJECT(libcachemgr-tests)
+PROJECT(libcachecommon-tests)
 
 # Top-level src directory.
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
-# CacheManager::filterCacheKey() test.
+# LibCacheCommon::filterCacheKey() test.
 ADD_EXECUTABLE(FilterCacheKeyTest
 	../../librpbase/tests/gtest_init.cpp
 	FilterCacheKeyTest.cpp

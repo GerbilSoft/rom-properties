@@ -1,14 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
- * cache_common.hpp: Common caching functions.                             *
- * Shared between libcachemgr and rp-download.                             *
+ * ROM Properties Page shell extension. (libcachecommon)                   *
+ * CacheKeys.cpp: Cache key handling functions.                            *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_CACHE_COMMON_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_CACHE_COMMON_HPP__
+#ifndef __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__
+#define __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__
 
 // C++ includes.
 #include <string>
@@ -24,12 +23,6 @@ namespace LibCacheCommon {
 int filterCacheKey(std::string &cacheKey);
 
 /**
- * Get the cache directory.
- * @return Cache directory, or empty string on error.
- */
-const std::string &getCacheDirectory(void);
-
-/**
  * Get a cache filename.
  * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
@@ -38,4 +31,4 @@ std::string getCacheFilename(const std::string &cacheKey);
 
 }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_CACHE_COMMON_HPP__ */
+#endif /* __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__ */
