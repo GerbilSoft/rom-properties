@@ -63,14 +63,6 @@ class CacheManager
 
 	public:
 		/**
-		 * Filter invalid characters from a cache key.
-		 * @param cache_key Cache key.
-		 * @return Filtered cache key.
-		 */
-		static std::string filterCacheKey(const std::string &cache_key);
-
-	public:
-		/**
 		 * Download a file.
 		 *
 		 * @param url URL.

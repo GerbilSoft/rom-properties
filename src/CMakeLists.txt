@@ -17,8 +17,15 @@ SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} ${RP_CXX11_COMPAT_HEADER}")
 INCLUDE(CheckHiddenVisibility)
 CHECK_HIDDEN_VISIBILITY()
 
+# Check for stdbool.h.
+INCLUDE(CheckIncludeFile)
+CHECK_INCLUDE_FILE("stdbool.h" HAVE_STDBOOL_H)
+
 # Write the version number to config.version.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.version.h")
+
+# Write stdbool.h.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(libi18n)

@@ -17,6 +17,9 @@
 using namespace LibRpBase;
 using namespace LibRpBase::FileSystem;
 
+// libcachecommon
+#include "cache_common.h"
+
 // Windows includes.
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
@@ -104,9 +107,15 @@ void CacheManager::setProxyUrl(const string &proxyUrl)
 string CacheManager::getCacheFilename(const string &cache_key)
 {
 	// Filter invalid characters from the cache key.
-	const string filtered_cache_key = filterCacheKey(cache_key);
-	if (filtered_cache_key.empty()) {
+	if (cache_key.empty()) {
+		// No cache key.
+		return string();
+	}
+	char *filtered_cache_key = strdup(cache_key.c_str());
+	int ret = filterCacheKey(filtered_cache_key);
+	if (ret != 0) {
 		// Invalid cache key.
+		free(filtered_cache_key);
 		return string();
 	}
 
@@ -121,172 +130,10 @@ string CacheManager::getCacheFilename(const string &cache_key)
 
 	// Append the filtered cache key.
 	cache_filename += filtered_cache_key;
+	free(filtered_cache_key);
 
 	// Cache filename created.
 	return cache_filename;
-}
-
-/**
- * Filter invalid characters from a cache key.
- * @param cache_key Cache key.
- * @return Filtered cache key.
- */
-string CacheManager::filterCacheKey(const string &cache_key)
-{
-	// Quick check: Ensure the cache key is not empty and
-	// that it doesn't start with a path separator.
-	if (cache_key.empty() ||
-	    cache_key[0] == '/' || cache_key[0] == '\\')
-	{
-		// Cache key is either empty or starts with
-		// a path separator.
-		return string();
-	}
-
-	string filtered_cache_key = cache_key;
-	bool foundSlash = true;
-	int dotCount = 0;
-	for (auto iter = filtered_cache_key.begin(); iter != filtered_cache_key.end(); ++iter) {
-		// Don't allow control characters, invalid FAT32 characters, or dots.
-		// '/' is allowed for cache hierarchy. (Converted to '\\' on Windows.)
-		// '.' is allowed for file extensions.
-		// (NOTE: '/' and '.' are allowed for extensions and cache hierarchy.)
-		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
-		// Values:
-		// - 0: Not allowed (converted to '_')
-		// - 1: Allowed
-		// - 2: Dot
-		// - 3: Slash
-		// - 4: Backslash or colon (error)
-		static const uint8_t valid_ascii_tbl[0x80] = {
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x00
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x10
-			1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 3, // 0x20 (", *, ., /)
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, // 0x50 (\\)
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
-		};
-		uint8_t chr = (uint8_t)*iter;
-		if (chr & 0x80) {
-			// Start of UTF-8 sequence.
-			// Verify that the sequence is valid.
-			// NOTE: Checking for 0x80 first because most cache keys
-			// will be ASCII, not UTF-8.
-
-			// TODO: Remove extra bytes?
-			// NOTE: NULL check isn't needed, since these tests will all
-			// fail if a NULL byte is encountered.
-			if (((chr     & 0xE0) == 0xC0) &&
-			    ((iter[1] & 0xC0) == 0x80))
-			{
-				// Two-byte sequence.
-				// Verify that it is not overlong.
-				const unsigned int uchr2 =
-					((chr     & 0x1F) <<  6) |
-					 (iter[1] & 0x3F);
-				if (uchr2 < 0x80) {
-					// Overlong sequence. Not allowed.
-					*iter = '_';
-					continue;
-				}
-
-				// Sequence is not overlong.
-				iter++;
-				continue;
-			}
-			else if (((chr     & 0xF0) == 0xE0) &&
-				 ((iter[1] & 0xC0) == 0x80) &&
-				 ((iter[2] & 0xC0) == 0x80))
-			{
-				// Three-byte sequence.
-				// Verify that it is not overlong.
-				const unsigned int uchr3 =
-					((chr     & 0x0F) << 12) |
-					((iter[1] & 0x3F) <<  6) |
-					 (iter[2] & 0x3F);
-				if (uchr3 < 0x800) {
-					// Overlong sequence. Not allowed.
-					*iter = '_';
-					continue;
-				}
-
-				// Sequence is not overlong.
-				iter += 2;
-				continue;
-			}
-			else if (((chr     & 0xF8) == 0xF0) &&
-				 ((iter[1] & 0xC0) == 0x80) &&
-				 ((iter[2] & 0xC0) == 0x80) &&
-				 ((iter[3] & 0xC0) == 0x80))
-			{
-				// Four-byte sequence.
-				// Verify that it is not overlong.
-				const unsigned int uchr4 =
-					((chr     & 0x07) << 18) |
-					((iter[1] & 0x3F) << 12) |
-					((iter[2] & 0x3F) <<  6) |
-					 (iter[3] & 0x3F);
-				if (uchr4 < 0x10000) {
-					// Overlong sequence. Not allowed.
-					*iter = '_';
-					continue;
-				}
-
-				// Sequence is not overlong.
-				iter += 3;
-				continue;
-			}
-
-			// Invalid UTF-8 sequence.
-			*iter = '_';
-			continue;
-		}
-
-		switch (valid_ascii_tbl[chr] & 7) {
-			case 0:
-			default:
-				// Invalid character.
-				*iter = '_';
-				foundSlash = false;
-				break;
-
-			case 1:
-				// Valid character.
-				foundSlash = false;
-				break;
-
-			case 2:
-				// Dot.
-				// Check for "../" (or ".." at the end of the cache key).
-				if (foundSlash) {
-					dotCount++;
-					if (dotCount >= 2) {
-						// Invalid cache key.
-						return string();
-					}
-				}
-				break;
-
-			case 3:
-				// Slash.
-#ifdef _WIN32
-				// Convert to backslash on Windows.
-				*iter = '\\';
-#endif /* _WIN32 */
-				foundSlash = true;
-				dotCount = 0;
-				break;
-
-			case 4:
-				// Backslash or colon.
-				// Not allowed at all.
-				return string();
-		}
-	}
-
-	return filtered_cache_key;
 }
 
 /**

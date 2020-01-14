@@ -18,6 +18,7 @@ SET(libwin32common_SRCS
 	w32err.c
 	ComBase.cpp
 	propsys_xp.c
+	userdirs.cpp
 	sdk/win_iid.c
 	sdk/GUID_fn.c
 	)
@@ -33,6 +34,7 @@ SET(libwin32common_H
 	ComBase.hpp
 	propsys_xp.h
 	WTSSessionNotification.hpp
+	userdirs.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

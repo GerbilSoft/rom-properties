@@ -31,20 +31,9 @@ using std::wstring;
 #include "libwin32common/w32time.h"
 
 // Windows includes.
-#include <shlobj.h>
 #include <direct.h>
 
 namespace LibRpBase { namespace FileSystem {
-
-// pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-
-// Configuration directories.
-
-// User's cache directory.
-static string cache_dir;
-// User's configuration directory.
-static string config_dir;
 
 #ifdef UNICODE
 /**
@@ -227,87 +216,6 @@ int64_t filesize(const string &filename)
 
 	// Return the file size.
 	return buf.st_size;
-}
-
-/**
- * Initialize the configuration directory paths.
- * Called by pthread_once().
- */
-static void initConfigDirectories(void)
-{
-	TCHAR path[MAX_PATH];
-	HRESULT hr;
-
-	/** Cache directory. **/
-
-	// Windows: Get CSIDL_LOCAL_APPDATA.
-	// - Windows XP: C:\Documents and Settings\username\Local Settings\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Local
-	hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr == S_OK) {
-		cache_dir = T2U8(path);
-		if (!cache_dir.empty()) {
-			// Add a trailing backslash if necessary.
-			if (cache_dir.at(cache_dir.size()-1) != '\\') {
-				cache_dir += '\\';
-			}
-
-			// Append "rom-properties\\cache".
-			cache_dir += "rom-properties\\cache";
-		}
-	}
-
-	/** Configuration directory. **/
-
-	// Windows: Get CSIDL_APPDATA.
-	// - Windows XP: C:\Documents and Settings\username\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Roaming
-	hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr == S_OK) {
-		config_dir = T2U8(path);
-		if (!config_dir.empty()) {
-			// Add a trailing backslash if necessary.
-			if (config_dir.at(config_dir.size()-1) != '\\') {
-				config_dir += '\\';
-			}
-
-			// Append "rom-properties".
-			config_dir += "rom-properties";
-		}
-	}
-}
-
-/**
- * Get the user's cache directory.
- * This is usually one of the following:
- * - Windows XP: %APPDATA%\Local Settings\rom-properties\cache
- * - Windows Vista: %LOCALAPPDATA%\rom-properties\cache
- * - Linux: ~/.cache/rom-properties
- *
- * @return User's rom-properties cache directory, or empty string on error.
- */
-const string &getCacheDirectory(void)
-{
-	// TODO: Handle errors.
-	pthread_once(&once_control, initConfigDirectories);
-	return cache_dir;
-}
-
-/**
- * Get the user's rom-properties configuration directory.
- * This is usually one of the following:
- * - Windows: %APPDATA%\rom-properties
- * - Linux: ~/.config/rom-properties
- *
- * @return User's rom-properties configuration directory, or empty string on error.
- */
-const string &getConfigDirectory(void)
-{
-	// TODO: Handle errors.
-	pthread_once(&once_control, initConfigDirectories);
-	return config_dir;
 }
 
 /**

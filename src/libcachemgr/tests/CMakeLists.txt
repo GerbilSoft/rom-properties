@@ -12,7 +12,7 @@ ADD_EXECUTABLE(FilterCacheKeyTest
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE rpbase cachemgr)
+TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE rpbase cachecommon)
 TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(FilterCacheKeyTest)
 SET_WINDOWS_SUBSYSTEM(FilterCacheKeyTest CONSOLE)

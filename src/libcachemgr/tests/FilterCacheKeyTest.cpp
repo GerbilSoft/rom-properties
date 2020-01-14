@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FilterCacheKeyTest.cpp: CacheManager::filterCacheKey() test.            *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,8 +12,8 @@
 // libromdata
 #include "librpbase/TextFuncs.hpp"
 
-// Cache Manager
-#include "../CacheManager.hpp"
+// libcachecommon
+#include "../cache_common.h"
 
 // C++ includes.
 #include <string>
@@ -67,12 +67,34 @@ TEST_P(FilterCacheKeyTest, filterCacheKey)
 {
 	const FilterCacheKeyTest_mode &mode = GetParam();
 
-	string keyFiltered = CacheManager::filterCacheKey(mode.keyOrig);
+	char *keyFiltered = strdup(mode.keyOrig);
+	int ret = filterCacheKey(keyFiltered);
+
+	// If it starts with certain invalid characters, we should expect -EINVAL.
+	// Otherwise, we'll expect 0.
+	if (mode.keyOrig[0] == '/' ||
+	    mode.keyOrig[0] == '\\' ||
+	    mode.keyOrig[0] == '.' ||
+	    mode.keyOrig[1] == ':')
+	{
+		EXPECT_EQ(-EINVAL, ret);
+		free(keyFiltered);
+		return;
+	}
+
+	// Expecting success.
+	EXPECT_EQ(0, ret);
+	if (ret != 0) {
+		free(keyFiltered);
+		return;
+	}
+
 #ifdef _WIN32
-	EXPECT_EQ(mode.keyFilteredWin32, keyFiltered);
+	EXPECT_STREQ(mode.keyFilteredWin32, keyFiltered);
 #else /* !_WIN32 */
-	EXPECT_EQ(mode.keyFilteredPosix, keyFiltered);
+	EXPECT_STREQ(mode.keyFilteredPosix, keyFiltered);
 #endif /* _WIN32 */
+	free(keyFiltered);
 }
 
 // TODO: Add more test cases.
