@@ -3,8 +3,8 @@ PROJECT(libcachemgr)
 # Downloading is handled using a separate executable, rp-download,
 # which can be sandboxed.
 
-SET(libcachecommon_SRCS cache_common.c)
-SET(libcachecommon_H cache_common.h)
+SET(libcachecommon_SRCS cache_common.cpp)
+SET(libcachecommon_H cache_common.hpp)
 
 SET(libcachemgr_SRCS CacheManager.cpp IDownloader.cpp)
 SET(libcachemgr_H CacheManager.hpp IDownloader.hpp)

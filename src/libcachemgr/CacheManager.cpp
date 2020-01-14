@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * CacheManager.cpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@ using namespace LibRpBase;
 using namespace LibRpBase::FileSystem;
 
 // libcachecommon
-#include "cache_common.h"
+#include "cache_common.hpp"
 
 // Windows includes.
 #ifdef _WIN32
@@ -101,7 +101,7 @@ void CacheManager::setProxyUrl(const string &proxyUrl)
 
 /**
  * Get a cache filename.
- * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
+ * @param cache_key Cache key. (Will be filtered using LibCacheCommon::filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
 string CacheManager::getCacheFilename(const string &cache_key)
@@ -111,11 +111,10 @@ string CacheManager::getCacheFilename(const string &cache_key)
 		// No cache key.
 		return string();
 	}
-	char *filtered_cache_key = strdup(cache_key.c_str());
-	int ret = filterCacheKey(filtered_cache_key);
+	string filtered_cache_key = cache_key;
+	int ret = LibCacheCommon::filterCacheKey(filtered_cache_key);
 	if (ret != 0) {
 		// Invalid cache key.
-		free(filtered_cache_key);
 		return string();
 	}
 
@@ -130,7 +129,6 @@ string CacheManager::getCacheFilename(const string &cache_key)
 
 	// Append the filtered cache key.
 	cache_filename += filtered_cache_key;
-	free(filtered_cache_key);
 
 	// Cache filename created.
 	return cache_filename;

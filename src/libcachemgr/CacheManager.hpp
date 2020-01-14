@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * CacheManager.hpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,7 +56,7 @@ class CacheManager
 	protected:
 		/**
 		 * Get a cache filename.
-		 * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
+		 * @param cache_key Cache key. (Will be filtered using LibCacheCommon::filterCacheKey().)
 		 * @return Cache filename, or empty string on error.
 		 */
 		std::string getCacheFilename(const std::string &cache_key);

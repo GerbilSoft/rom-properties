@@ -13,7 +13,7 @@
 #include "librpbase/TextFuncs.hpp"
 
 // libcachecommon
-#include "../cache_common.h"
+#include "../cache_common.hpp"
 
 // C++ includes.
 #include <string>
@@ -67,8 +67,8 @@ TEST_P(FilterCacheKeyTest, filterCacheKey)
 {
 	const FilterCacheKeyTest_mode &mode = GetParam();
 
-	char *keyFiltered = strdup(mode.keyOrig);
-	int ret = filterCacheKey(keyFiltered);
+	string keyFiltered = mode.keyOrig;
+	int ret = LibCacheCommon::filterCacheKey(keyFiltered);
 
 	// If it starts with certain invalid characters, we should expect -EINVAL.
 	// Otherwise, we'll expect 0.
@@ -78,23 +78,20 @@ TEST_P(FilterCacheKeyTest, filterCacheKey)
 	    mode.keyOrig[1] == ':')
 	{
 		EXPECT_EQ(-EINVAL, ret);
-		free(keyFiltered);
 		return;
 	}
 
 	// Expecting success.
 	EXPECT_EQ(0, ret);
 	if (ret != 0) {
-		free(keyFiltered);
 		return;
 	}
 
 #ifdef _WIN32
-	EXPECT_STREQ(mode.keyFilteredWin32, keyFiltered);
+	EXPECT_EQ(mode.keyFilteredWin32, keyFiltered);
 #else /* !_WIN32 */
-	EXPECT_STREQ(mode.keyFilteredPosix, keyFiltered);
+	EXPECT_EQ(mode.keyFilteredPosix, keyFiltered);
 #endif /* _WIN32 */
-	free(keyFiltered);
 }
 
 // TODO: Add more test cases.

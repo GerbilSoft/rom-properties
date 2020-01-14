@@ -1,43 +1,46 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libcachemgr)                      *
- * cache_common.c: Common caching functions.                               *
+ * cache_common.cpp: Common caching functions.                               *
  * Shared between libcachemgr and rp-download.                             *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "cache_common.h"
+#include "cache_common.hpp"
 
-// C includes.
-#include <errno.h>
+// C includes. (C++ namespace)
+#include <cerrno>
 #include <stdint.h>
+
+// C++ STL classes.
+using std::string;
 
 // stdbool
 #include "stdboolx.h"
 
+namespace LibCacheCommon {
+
 /**
  * Filter invalid characters from a cache key.
  * This updates the cache key in place.
- * @param pCacheKey Cache key. (Must be UTF-8, NULL-terminated.)
+ * @param cacheKey Cache key. (Must be UTF-8.)
  * @return 0 on success; -EINVAL if pCacheKey is invalid.
  */
-int filterCacheKey(char *pCacheKey)
+int filterCacheKey(string &cacheKey)
 {
 	bool foundSlash = true;
 	int dotCount = 0;
 
 	// Quick check: Ensure the cache key is not empty and
 	// that it doesn't start with a path separator.
-	if (!pCacheKey || pCacheKey[0] == '\0' ||
-	    pCacheKey[0] == '/' || pCacheKey[0] == '\\')
-	{
+	if (cacheKey.empty() || cacheKey[0] == '/' || cacheKey[0] == '\\') {
 		// Cache key is either empty or starts with
 		// a path separator.
 		return -EINVAL;
 	}
 
-	for (char *p = pCacheKey; *p != '\0'; p++) {
+	for (auto p = cacheKey.begin(); p != cacheKey.end(); ++p) {
 		// Don't allow control characters, invalid FAT32 characters, or dots.
 		// '/' is allowed for cache hierarchy. (Converted to '\\' on Windows.)
 		// '.' is allowed for file extensions.
@@ -179,4 +182,6 @@ int filterCacheKey(char *pCacheKey)
 
 	// Cache key has been filtered.
 	return 0;
+}
+
 }
