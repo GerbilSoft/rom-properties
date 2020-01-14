@@ -226,6 +226,17 @@ int filterCacheKey(string &cacheKey)
 }
 
 /**
+ * Get the cache directory.
+ * @return Cache directory, or empty string on error.
+ */
+const std::string &getCacheDirectory(void)
+{
+	pthread_once(&once_control, initCacheDirectory);
+	assert(!cache_dir.empty());
+	return cache_dir;
+}
+
+/**
  * Combine a cache key with the cache directory to get a cache filename.
  * @param cacheKey Cache key. (Must be UTF-8.) (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.

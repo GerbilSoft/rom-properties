@@ -21,6 +21,9 @@
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
+// libcachecommon
+#include "libcachemgr/cache_common.hpp"
+
 // C++ STL classes.
 using std::string;
 
@@ -29,9 +32,6 @@ namespace LibRpBase { namespace FileSystem {
 /** Configuration directories. **/
 // pthread_once() control variable.
 static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-// User's cache directory.
-// TODO: Use libcachecommon's cache_dir instead?
-static string cache_dir;
 // User's configuration directory.
 static string config_dir;
 
@@ -43,20 +43,8 @@ static void initConfigDirectories(void)
 {
 	// Uses LibUnixCommon or LibWin32Common, depending on platform.
 
-	// Cache directory.
-	cache_dir = OS_NAMESPACE::getCacheDirectory();
-	if (!cache_dir.empty()) {
-		// Add a trailing slash if necessary.
-		if (cache_dir.at(cache_dir.size()-1) != DIR_SEP_CHR)
-			cache_dir += DIR_SEP_CHR;
-#ifdef _WIN32
-		// Append "rom-properties\\cache".
-		cache_dir += "rom-properties\\cache";
-#else /* !_WIN32 */
-		// Append "rom-properties".
-		cache_dir += "rom-properties";
-#endif /* _WIN32 */
-	}
+	// Cache directory. (Managed by libcachecommon.)
+	LibCacheCommon::getCacheDirectory();
 
 	// Config directory.
 	config_dir = OS_NAMESPACE::getConfigDirectory();
@@ -83,8 +71,7 @@ static void initConfigDirectories(void)
 const string &getCacheDirectory(void)
 {
 	// TODO: Handle errors.
-	pthread_once(&once_control, initConfigDirectories);
-	return cache_dir;
+	return LibCacheCommon::getCacheDirectory();
 }
 
 /**

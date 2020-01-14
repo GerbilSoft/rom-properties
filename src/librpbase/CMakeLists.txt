@@ -434,7 +434,7 @@ IF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 ENDIF(librpbase_NEEDS_DL AND CMAKE_DL_LIBS)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads)
+TARGET_LINK_LIBRARIES(rpbase PRIVATE rptexture inih rpthreads cachecommon)
 IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
 	TARGET_LINK_LIBRARIES(rpbase PRIVATE Iconv::Iconv)
 ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
