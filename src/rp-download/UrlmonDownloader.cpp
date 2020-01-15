@@ -28,11 +28,6 @@ using std::wstring;
 #include <urlmon.h>
 #include <wininet.h>
 
-// TODO: tcharx.h?
-#ifndef _WIN32
-# define _tfopen fopen
-#endif /* !_WIN32 */
-
 namespace RpDownload {
 
 UrlmonDownloader::UrlmonDownloader()
@@ -72,8 +67,15 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Open the cached file.
-	FILE *f_cached = _tfopen(szFileName, _T("rb"));
-	if (!f_cached) {
+	HANDLE f_cached = CreateFile(
+		szFileName,				// lpFileName
+		GENERIC_READ,				// dwDesiredAccess
+		FILE_SHARE_READ | FILE_SHARE_WRITE,	// dwShareMode
+		nullptr,				// lpSecurityAttributes
+		OPEN_EXISTING,				// dwCreationDisposition
+		FILE_ATTRIBUTE_NORMAL,			// dwFlagsAndAttributes
+		nullptr);				// hTemplateFile
+	if (!f_cached || f_cached == INVALID_HANDLE_VALUE) {
 		// Unable to open the file.
 		return -1;
 	}
@@ -89,7 +91,7 @@ int UrlmonDownloader::download(void)
 			static_cast<uint8_t*>(malloc(cbCacheEntryInfo));
 		if (!pCacheEntryInfoBuf) {
 			// ENOMEM
-			fclose(f_cached);
+			CloseHandle(f_cached);
 			return -ENOMEM;
 		}
 		INTERNET_CACHE_ENTRY_INFO *pCacheEntryInfo =
@@ -103,21 +105,21 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Get the file size.
-	int ret = fseeko(f_cached, 0, SEEK_END);
-	if (ret != 0) {
-		// Seek error.
-		fclose(f_cached);
+	LARGE_INTEGER liFileSize;
+	if (!GetFileSizeEx(f_cached, &liFileSize)) {
+		// Unable to get the file size.
+		CloseHandle(f_cached);
 		return -2;
 	}
-	const int64_t fileSize = ftello(f_cached);
-	rewind(f_cached);
 
 	// Read the file into the data buffer.
 	// TODO: Max size limitation?
-	m_data.resize(static_cast<size_t>(fileSize));
-	size_t size = fread(m_data.data(), 1, static_cast<size_t>(fileSize), f_cached);
-	fclose(f_cached);
-	if (size != fileSize) {
+	DWORD dwNumberOfBytesRead = 0;
+	m_data.resize(static_cast<size_t>(liFileSize.QuadPart));
+	bRet = ReadFile(f_cached, m_data.data(), liFileSize.LowPart,
+		&dwNumberOfBytesRead, nullptr);
+	CloseHandle(f_cached);
+	if (!bRet || dwNumberOfBytesRead != liFileSize.LowPart) {
 		// Error reading the file.
 		m_data.clear();
 		m_data.shrink_to_fit();
