@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.cpp: Local cache manager.                                  *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -30,7 +30,7 @@ using namespace LibRpBase::FileSystem;
 #include <string>
 using std::string;
 
-namespace LibCacheMgr {
+namespace LibRomData {
 
 // Semaphore used to limit the number of simultaneous downloads.
 // TODO: Determine the best number of simultaneous downloads.

@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.hpp: Downloader interface.                                  *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *

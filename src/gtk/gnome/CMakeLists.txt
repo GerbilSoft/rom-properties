@@ -89,7 +89,7 @@ IF(BUILD_GNOME)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE cachemgr romdata rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE romdata rpbase)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-gnome PRIVATE i18n)
 	ENDIF(ENABLE_NLS)

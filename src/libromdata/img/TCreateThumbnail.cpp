@@ -11,9 +11,8 @@
 
 #include "TCreateThumbnail.hpp"
 
-// libcachemgr
-#include "libcachemgr/CacheManager.hpp"
-using LibCacheMgr::CacheManager;
+// Cache Manager
+#include "CacheManager.hpp"
 
 // librpbase
 #include "librpbase/RomData.hpp"

@@ -84,7 +84,7 @@ IF(BUILD_XFCE3)
 		)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce3 PUBLIC ${GTK3_INCLUDE_DIRS})
 
-	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PRIVATE cachemgr romdata rpbase)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce3 PRIVATE romdata rpbase)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(rom-properties-xfce3 PRIVATE i18n)
 	ENDIF(ENABLE_NLS)

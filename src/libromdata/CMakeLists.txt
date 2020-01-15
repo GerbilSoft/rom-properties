@@ -98,6 +98,7 @@ SET(libromdata_SRCS
 
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
+	img/CacheManager.cpp
 	utils/SuperMagicDrive.cpp
 	)
 # Headers.
@@ -254,6 +255,7 @@ SET(libromdata_H
 
 	config/TImageTypesConfig.hpp
 	img/TCreateThumbnail.hpp
+	img/CacheManager.hpp
 	utils/SuperMagicDrive.hpp
 	)
 
@@ -359,7 +361,7 @@ SET_MSVC_DEBUG_PATH(romdata)
 
 # TODO: More public/private library stuff.
 TARGET_LINK_LIBRARIES(romdata PUBLIC rptexture rpbase)
-TARGET_LINK_LIBRARIES(romdata PRIVATE rpthreads)
+TARGET_LINK_LIBRARIES(romdata PRIVATE rpthreads cachecommon)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(romdata PRIVATE i18n)
 ENDIF(ENABLE_NLS)

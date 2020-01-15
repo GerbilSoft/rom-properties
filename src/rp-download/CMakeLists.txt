@@ -1,10 +1,5 @@
-PROJECT(libcachemgr)
-# Cache Manager for downloading and caching external images.
-# Downloading is handled using a separate executable, rp-download,
-# which can be sandboxed.
-
-SET(libcachemgr_SRCS CacheManager.cpp)
-SET(libcachemgr_H CacheManager.hpp)
+PROJECT(rp-download)
+# Online downloader program for external images.
 
 SET(rp-download_SRCS rp-download.cpp IDownloader.cpp)
 SET(rp-download_H IDownloader.hpp)
@@ -22,30 +17,13 @@ ELSE(WIN32)
 	SET(rp-download_OS_H CurlDownloader.hpp)
 ENDIF(WIN32)
 
-######################
-# Build the library. #
-######################
+#########################
+# Build the executable. #
+#########################
 
 INCLUDE(SetMSVCDebugPath)
 
-# libcachemgr: rom-properties.dll cache interface.
-ADD_LIBRARY(cachemgr STATIC
-	${libcachemgr_SRCS} ${libcachemgr_H}
-	)
-SET_MSVC_DEBUG_PATH(cachemgr)
-TARGET_LINK_LIBRARIES(cachemgr PUBLIC rpbase)
-TARGET_LINK_LIBRARIES(cachemgr PRIVATE rpthreads cachecommon)
-TARGET_INCLUDE_DIRECTORIES(cachemgr
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-	)
-# Exclude from ALL builds.
-SET_TARGET_PROPERTIES(cachemgr PROPERTIES EXCLUDE_FROM_ALL TRUE)
-
 # rp-download: Cache downloader program. (Can be sandboxed.)
-# TODO: Don't add "-fpic -fPIC".
 ADD_EXECUTABLE(rp-download
 	${rp-download_SRCS} ${rp-download_H}
 	${rp-download_OS_SRCS} ${rp-download_OS_H}
@@ -69,9 +47,3 @@ IF(WIN32)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
-
-# Unix: Add -fpic/-fPIC in order to use these static libraries in plugins.
-IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
-ENDIF(UNIX AND NOT APPLE)

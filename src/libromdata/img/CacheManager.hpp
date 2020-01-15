@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.hpp: Local cache manager.                                  *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__
 
 // librpbase
 #include "librpbase/common.h"
@@ -18,7 +18,7 @@
 // C++ includes.
 #include <string>
 
-namespace LibCacheMgr {
+namespace LibRomData {
 
 class CacheManager
 {
@@ -87,4 +87,4 @@ class CacheManager
 
 }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_IMG_CACHEMANAGER_HPP__ */
