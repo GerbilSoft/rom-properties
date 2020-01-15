@@ -11,6 +11,7 @@
 #include "CacheManager.hpp"
 
 // librpbase
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
@@ -22,6 +23,7 @@ using namespace LibRpBase::FileSystem;
 // OS-specific includes.
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
+# include "librpbase/TextFuncs_wchar.hpp"
 #else /* !_WIN32 */
 # include <sys/types.h>
 # include <sys/wait.h>
@@ -37,6 +39,9 @@ using namespace LibRpBase::FileSystem;
 // C++ includes.
 #include <string>
 using std::string;
+#ifdef _WIN32
+using std::wstring;
+#endif /* _WIN32 */
 
 namespace LibRomData {
 
@@ -168,18 +173,82 @@ string CacheManager::download(const string &cache_key)
 		return string();
 	}
 
+	// TODO: Split into OS-specific .cpp files and functions.
 #if defined(_WIN32)
 	// Execute rp-download.
-	// Proxy handling isn't needed, since Urlmon uses the
-	// system proxy settings automatically.
-	// TODO
+	// The executable should be located in the DLL directory.
+	extern TCHAR dll_filename[];
+	tstring rp_download_exe = dll_filename;
+	tstring::size_type bs = rp_download_exe.rfind(_T('\\'));
+	if (bs == tstring::npos) {
+		// Backslash not found.
+		return string();
+	}
+	rp_download_exe.resize(bs+1);
+	rp_download_exe += _T("rp-download.exe");
+
+	// CreateProcessW() *can* modify the command line,
+	// so we'll store in a tstring.
+	// NOTE: Spaces are allowed in cache keys, so everything
+	// needs to be quoted properly.
+	tstring t_cache_key = U82T_s(cache_key);
+	tstring t_cmd_line;
+	t_cmd_line.reserve(rp_download_exe.size() + 5 + t_cache_key.size());
+	t_cmd_line += _T('"');
+	t_cmd_line += rp_download_exe;
+	t_cmd_line += _T("\" \"");
+	t_cmd_line += t_cache_key;
+	t_cmd_line += _T('"');
+
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	memset(&si, 0, sizeof(si));
+	memset(&pi, 0, sizeof(pi));
+	si.cb = sizeof(si);
+
+	BOOL bRet = CreateProcess(
+		rp_download_exe.c_str(),	// lpApplicationName
+		&t_cmd_line[0],			// lpCommandLine
+		nullptr,			// lpProcessAttributes
+		nullptr,			// lpThreadAttributes
+		false,				// bInheritHandles
+		CREATE_NO_WINDOW,		// dwCreationFlags
+		nullptr,			// lpEnvironment
+		nullptr,			// lpCurrentDirectory
+		&si,				// lpStartupInfo
+		&pi);				// lpProcessInformation
+	if (!bRet) {
+		// Error starting rp-download.exe.
+		// TODO: Try the architecture-specific subdirectory?
+		return string();
+	}
+
+	// Wait up to 10 seconds for the process to exit.
+	DWORD dwRet = WaitForSingleObject(pi.hProcess, 10*1000);
+	DWORD status = 0;
+	GetExitCodeProcess(pi.hProcess, &status);
+	if (dwRet != WAIT_OBJECT_0 || status == STILL_ACTIVE) {
+		// Process either timed out or failed.
+		TerminateProcess(pi.hProcess, EXIT_FAILURE);
+		CloseHandle(pi.hThread);
+		CloseHandle(pi.hProcess);
+		return string();
+	}
+
+	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+
+	if (status != 0) {
+		// rp-download failed for some reason.
+		return string();
+	}
 #elif defined(__APPLE__)
 	// TODO: Mac stuff.
 #elif defined(__linux__) || defined(__unix__)
 	// Parameters.
-#define RP_DOWNLOAD_FILENAME DIR_INSTALL_LIBEXEC "/rp-download"
+#define rp_download_exe DIR_INSTALL_LIBEXEC "/rp-download"
 	const char *const argv[3] = {
-		RP_DOWNLOAD_FILENAME,
+		rp_download_exe,
 		cache_key.c_str(),
 		nullptr
 	};
@@ -247,7 +316,7 @@ string CacheManager::download(const string &cache_key)
 #ifdef HAVE_POSIX_SPAWN
 	// posix_spawn()
 	pid_t pid;
-	ret = posix_spawn(&pid, RP_DOWNLOAD_FILENAME,
+	ret = posix_spawn(&pid, rp_download_exe,
 		nullptr,	// file_actions
 		nullptr,	// attrp
 		(char *const *)argv, (char *const *)envp);
