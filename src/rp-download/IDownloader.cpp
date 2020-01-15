@@ -154,7 +154,7 @@ void IDownloader::clear(void)
 void IDownloader::createUserAgent(void)
 {
 	m_userAgent.reserve(256);
-	m_userAgent = _T("rom-properties/" RP_VERSION_STRING);
+	m_userAgent = _T("rom-properties/") _T(RP_VERSION_STRING);
 
 	// CPU
 #if defined(_M_ARM64) || defined(__aarch64__)
