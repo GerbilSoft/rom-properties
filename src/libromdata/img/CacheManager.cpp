@@ -26,6 +26,9 @@ using namespace LibRpBase::FileSystem;
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <unistd.h>
+# ifdef HAVE_POSIX_SPAWN
+#  include <spawn.h>
+# endif /* HAVE_POSIX_SPAWN */
 #endif /* _WIN32 */
 
 // C includes. (C++ namespace)
@@ -240,8 +243,20 @@ string CacheManager::download(const string &cache_key)
 		}
 	}
 
+	// TODO: Maybe we should close file handles...
+#ifdef HAVE_POSIX_SPAWN
+	// posix_spawn()
+	pid_t pid;
+	ret = posix_spawn(&pid, RP_DOWNLOAD_FILENAME,
+		nullptr,	// file_actions
+		nullptr,	// attrp
+		(char *const *)argv, (char *const *)envp);
+	if (ret != 0) {
+		// Error creating the child process.
+		return string();
+	}
+#else /* !HAVE_POSIX_SPAWN */
 	// fork()/execve().
-	// TODO: posix_spawnp() if available.
 	pid_t pid = fork();
 	if (pid == 0) {
 		// Child process.
@@ -256,6 +271,7 @@ string CacheManager::download(const string &cache_key)
 		// fork() failed.
 		return string();
 	}
+#endif /* HAVE_POSIX_SPAWN */
 
 	// Parent process.
 	// Wait up to 10 seconds for the process to exit.

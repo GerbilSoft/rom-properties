@@ -12,6 +12,9 @@
 /* libexec path for rp-download */
 #define DIR_INSTALL_LIBEXEC "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_LIBEXEC@"
 
+/* Define to 1 if you have the `posix_spawn` function declared in <spawn.h>. */
+#cmakedefine HAVE_POSIX_SPAWN 1
+
 /* Define to 1 if UnICE68 is enabled. */
 #cmakedefine ENABLE_UNICE68 1
 

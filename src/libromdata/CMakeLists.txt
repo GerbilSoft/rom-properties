@@ -1,5 +1,9 @@
 PROJECT(libromdata)
 
+IF(NOT WIN32)
+	CHECK_SYMBOL_EXISTS(posix_spawn "spawn.h" HAVE_POSIX_SPAWN)
+ENDIF(NOT WIN32)
+
 # Sources.
 SET(libromdata_SRCS
 	RomDataFactory.cpp
