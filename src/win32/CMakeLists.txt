@@ -174,7 +174,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rom-properties PRIVATE cachemgr romdata rpbase rpthreads win32common)
+TARGET_LINK_LIBRARIES(rom-properties PRIVATE romdata rpbase rpthreads win32common)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE i18n)
 ENDIF(ENABLE_NLS)
