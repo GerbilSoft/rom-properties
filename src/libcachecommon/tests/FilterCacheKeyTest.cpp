@@ -19,7 +19,7 @@
 #include <string>
 using std::string;
 
-namespace LibCacheMgr { namespace Tests {
+namespace LibCacheCommon { namespace Tests {
 
 struct FilterCacheKeyTest_mode
 {
@@ -166,7 +166,7 @@ INSTANTIATE_TEST_CASE_P(CacheManagerTest, FilterCacheKeyTest,
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibCacheMgr test suite: LibCacheCommon::filterCacheKey() tests.\n\n");
+	fprintf(stderr, "LibCacheCommon test suite: LibCacheCommon::filterCacheKey() tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
