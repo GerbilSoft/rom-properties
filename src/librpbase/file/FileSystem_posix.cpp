@@ -115,21 +115,21 @@ int access(const string &pathname, int mode)
  */
 int64_t filesize(const string &filename)
 {
-	struct stat buf;
-	int ret = stat(filename.c_str(), &buf);
+	struct stat sb;
+	int ret = stat(filename.c_str(), &sb);
 	if (ret != 0) {
 		// stat() failed.
 		ret = -errno;
 		if (ret == 0) {
 			// Something happened...
-			ret = -EINVAL;
+			ret = -EIO;
 		}
 
 		return ret;
 	}
 
 	// Return the file size.
-	return buf.st_size;
+	return sb.st_size;
 }
 
 /**

@@ -47,15 +47,16 @@ static inline wstring makeWinPath(const char *filename)
 	if (unlikely(!filename || filename[0] == 0))
 		return wstring();
 
+	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
 	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
-		// Absolute path. Prepend "\\?\" to the path.
+		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
 		filenameW += U82W_c(filename);
 	} else {
-		// Not an absolute path, or "\\?\" is already
+		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
 		filenameW = U82W_c(filename);
 	}
@@ -73,6 +74,7 @@ static inline wstring makeWinPath(const string &filename)
 	if (filename.empty())
 		return wstring();
 
+	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
 	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
@@ -156,7 +158,7 @@ int rmkdir(const string &path)
 	size_t slash_pos = 4;
 	while ((slash_pos = tpath.find(static_cast<char16_t>(DIR_SEP_CHR), slash_pos)) != string::npos) {
 		// Temporarily NULL out this slash.
-		tpath[slash_pos] = 0;
+		tpath[slash_pos] = _T('\0');
 
 		// Attempt to create this directory.
 		if (::_tmkdir(tpath.c_str()) != 0) {
@@ -200,22 +202,22 @@ int access(const string &pathname, int mode)
 int64_t filesize(const string &filename)
 {
 	const tstring tfilename = makeWinPath(filename);
-	struct _stati64 buf;
-	int ret = ::_tstati64(tfilename.c_str(), &buf);
+	struct _stati64 sb;
+	int ret = ::_tstati64(tfilename.c_str(), &sb);
 
 	if (ret != 0) {
 		// stat() failed.
 		ret = -errno;
 		if (ret == 0) {
 			// Something happened...
-			ret = -EINVAL;
+			ret = -EIO;
 		}
 
 		return ret;
 	}
 
 	// Return the file size.
-	return buf.st_size;
+	return sb.st_size;
 }
 
 /**
