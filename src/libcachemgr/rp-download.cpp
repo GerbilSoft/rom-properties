@@ -32,14 +32,9 @@
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
-#ifdef _WIN32
-using std::wstring;
-# define tstring wstring
-#else
-using std::string;
-# define tstring string
-#endif /* _WIN32 */
+using std::unique_ptr;
 
 #ifdef _WIN32
 // libwin32common
@@ -54,7 +49,15 @@ using std::string;
 #include "librpbase/common.h"
 
 // TODO: tcharx.h?
-#ifndef _WIN32
+#ifdef _WIN32
+# ifdef _UNICODE
+using std::wstring;
+#  define tstring wstring
+# else /* !_UNICODE */
+#  define tstring string
+using std::string;
+# endif /* _UNICODE */
+#else /* !_WIN32 */
 # define TCHAR char
 # define _T(x) (x)
 # define _tmain main
@@ -62,6 +65,7 @@ using std::string;
 # define _tcscmp strcmp
 # define _tcserror strerror
 # define _tcsncmp strncmp
+# define _tfopen fopen
 # define _tmkdir mkdir
 # define _tremove remove
 # define _fputtc fputc
@@ -69,13 +73,15 @@ using std::string;
 # define _tprintf printf
 # define _sntprintf snprintf
 # define _vftprintf vfprintf
-#endif
+# define tstring string
+using std::string;
+#endif /* _WIN32 */
 
 #ifdef _WIN32
 # define _TMKDIR(dirname) _tmkdir(dirname)
-#else
+#else /* !_WIN32 */
 # define _TMKDIR(dirname) _tmkdir((dirname), 0777)
-#endif
+#endif /* _WIN32 */
 
 #ifndef _countof
 # define _countof(x) (sizeof(x)/sizeof(x[0]))
@@ -86,6 +92,14 @@ using std::string;
 #else /* !_WIN32 */
 # define DIR_SEP_CHR '/'
 #endif /* _WIN32 */
+
+// TODO: IDownloaderFactory?
+#ifdef _WIN32
+# include "UrlmonDownloader.hpp"
+#else
+# include "CurlDownloader.hpp"
+#endif
+using namespace RpDownload;
 
 static const TCHAR *argv0 = nullptr;
 static bool verbose = false;
@@ -361,7 +375,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
-	_tprintf(_T("URL: %s\n"), full_url);
+	if (verbose) {
+		_ftprintf(stderr, _T("URL: %s\n"), full_url);
+	}
 
 	// Get the cache filename.
 	tstring cache_filename = LibCacheCommon::getCacheFilename(cache_key);
@@ -373,7 +389,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 	cache_filename += ext;
-	_tprintf(_T("Cache Filename: %s\n"), cache_filename.c_str());
+	if (verbose) {
+		_ftprintf(stderr, _T("Cache Filename: %s\n"), cache_filename.c_str());
+	}
 
 	// If the cache_filename is >= 240 characters, prepend "\\\\?\\".
 	if (cache_filename.size() >= 240) {
@@ -421,6 +439,52 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			return EXIT_FAILURE;
 		}
 	}
+
+	// Attempt to download the file.
+	// TODO: IDownloaderFactory?
+#ifdef _WIN32
+	unique_ptr<IDownloader> m_downloader(new UrlmonDownloader());
+#else /* !_WIN32 */
+	unique_ptr<IDownloader> m_downloader(new CurlDownloader());
+#endif /* _WIN32 */
+
+	// TODO: Configure this somewhere?
+	m_downloader->setMaxSize(4*1024*1024);
+
+	m_downloader->setUrl(full_url);
+	int ret = m_downloader->download();
+	if (ret != 0) {
+		// Error downloading the file.
+		// TODO: HTTP error, cURL error, etc.
+		if (verbose) {
+			show_error(_T("Error downloading file: %d"), ret);
+		}
+		return EXIT_FAILURE;
+	}
+
+	if (m_downloader->dataSize() <= 0) {
+		// No data downloaded...
+		if (verbose) {
+			show_error(_T("Error downloading file: 0 bytes received"));
+		}
+		return EXIT_FAILURE;
+	}
+
+	// Write the file to the cache.
+	FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
+	if (!f_out) {
+		// Error opening the cache file.
+		if (verbose) {
+			show_error(_T("Error writing to cache file: %s"), _tcserror(errno));
+		}
+		return EXIT_FAILURE;
+	}
+
+	// TODO: Verify the size.
+	size_t size = fwrite(m_downloader->data(), 1, m_downloader->dataSize(), f_out);
+	fclose(f_out);
+
+	// TODO: Save origin information.
 
 	// Success.
 	return EXIT_SUCCESS;

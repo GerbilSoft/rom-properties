@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -22,17 +22,17 @@ using std::string;
 // cURL for network access.
 #include <curl/curl.h>
 
-namespace LibCacheMgr {
+namespace RpDownload {
 
 CurlDownloader::CurlDownloader()
 	: super()
 { }
 
-CurlDownloader::CurlDownloader(const char *url)
+CurlDownloader::CurlDownloader(const TCHAR *url)
 	: super(url)
 { }
 
-CurlDownloader::CurlDownloader(const string &url)
+CurlDownloader::CurlDownloader(const tstring &url)
 	: super(url)
 { }
 
@@ -177,10 +177,8 @@ int CurlDownloader::download(void)
 		return -1;	// TODO: Better error?
 	}
 
-	// Proxy settings.
-	if (!m_proxyUrl.empty()) {
-		curl_easy_setopt(curl, CURLOPT_PROXY, m_proxyUrl.c_str());
-	}
+	// Proxy settings should be set by the calling application
+	// in the http_proxy and https_proxy variables.
 
 	// TODO: Send a HEAD request first?
 

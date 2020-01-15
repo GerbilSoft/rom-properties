@@ -20,12 +20,11 @@
 
 namespace LibCacheMgr {
 
-class IDownloader;
 class CacheManager
 {
 	public:
-		CacheManager();
-		~CacheManager();
+		CacheManager() { }
+		~CacheManager() { }
 
 	private:
 		RP_DISABLE_COPY(CacheManager)
@@ -58,7 +57,8 @@ class CacheManager
 		 * Download a file.
 		 *
 		 * @param url URL.
-		 * @param cache_key Cache key.
+		 *
+		 * The URL will be determined based on the cache key.
 		 *
 		 * If the file is present in the cache, the cached version
 		 * will be retrieved. Otherwise, the file will be downloaded.
@@ -69,9 +69,7 @@ class CacheManager
 		 *
 		 * @return Absolute path to the cached file.
 		 */
-		std::string download(
-			const std::string &url,
-			const std::string &cache_key);
+		std::string download(const std::string &cache_key);
 
 		/**
 		 * Check if a file has already been cached.
@@ -82,7 +80,6 @@ class CacheManager
 
 	protected:
 		std::string m_proxyUrl;
-		IDownloader *m_downloader;
 
 		// Semaphore used to limit the number of simultaneous downloads.
 		static LibRpBase::Semaphore m_dlsem;

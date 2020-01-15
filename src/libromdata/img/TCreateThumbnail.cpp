@@ -166,7 +166,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		if (download) {
 			// Attempt to download the image if it isn't already
 			// present in the rom-properties cache.
-			cache_filename = cache.download(extURL.url, extURL.cache_key);
+			cache_filename = cache.download(extURL.cache_key);
 		} else {
 			// Don't attempt to download the image.
 			// Only check the rom-properties cache.

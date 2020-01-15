@@ -3,22 +3,23 @@ PROJECT(libcachemgr)
 # Downloading is handled using a separate executable, rp-download,
 # which can be sandboxed.
 
-SET(libcachemgr_SRCS CacheManager.cpp IDownloader.cpp)
+SET(libcachemgr_SRCS CacheManager.cpp)
 SET(libcachemgr_H CacheManager.hpp)
 
-SET(rp-download_SRCS rp-download.cpp)
+SET(rp-download_SRCS rp-download.cpp IDownloader.cpp)
+SET(rp-download_H IDownloader.hpp)
 
 IF(WIN32)
 	# Windows: Use Urlmon.
 	# TODO: Switch to WinInet?
-	SET(libcachemgr_OS_SRCS UrlmonDownloader.cpp)
-	SET(libcachemgr_OS_H UrlmonDownloader.hpp)
+	SET(rp-download_OS_SRCS UrlmonDownloader.cpp)
+	SET(rp-download_OS_H UrlmonDownloader.hpp)
 ELSE(WIN32)
 	# Non-Windows platforms: Use cURL.
 	FIND_PACKAGE(CURL REQUIRED)
 	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
-	SET(libcachemgr_OS_SRCS CurlDownloader.cpp)
-	SET(libcachemgr_OS_H CurlDownloader.hpp)
+	SET(rp-download_OS_SRCS CurlDownloader.cpp)
+	SET(rp-download_OS_H CurlDownloader.hpp)
 ENDIF(WIN32)
 
 ######################
@@ -30,7 +31,6 @@ INCLUDE(SetMSVCDebugPath)
 # libcachemgr: rom-properties.dll cache interface.
 ADD_LIBRARY(cachemgr STATIC
 	${libcachemgr_SRCS} ${libcachemgr_H}
-	${libcachemgr_OS_SRCS} ${libcachemgr_OS_H}
 	)
 SET_MSVC_DEBUG_PATH(cachemgr)
 TARGET_LINK_LIBRARIES(cachemgr PUBLIC rpbase)
@@ -43,17 +43,12 @@ TARGET_INCLUDE_DIRECTORIES(cachemgr
 	)
 # Exclude from ALL builds.
 SET_TARGET_PROPERTIES(cachemgr PROPERTIES EXCLUDE_FROM_ALL TRUE)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(cachemgr PRIVATE win32common)
-	TARGET_LINK_LIBRARIES(cachemgr PRIVATE urlmon wininet)
-ELSE(WIN32)
-	TARGET_LINK_LIBRARIES(cachemgr PRIVATE ${CURL_LIBRARIES})
-ENDIF(WIN32)
 
 # rp-download: Cache downloader program. (Can be sandboxed.)
 # TODO: Don't add "-fpic -fPIC".
 ADD_EXECUTABLE(rp-download
 	${rp-download_SRCS} ${rp-download_H}
+	${rp-download_OS_SRCS} ${rp-download_OS_H}
 	)
 SET_TARGET_PROPERTIES(rp-download PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rp-download)
@@ -70,6 +65,9 @@ TARGET_INCLUDE_DIRECTORIES(rp-download
 	)
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE win32common)
+	TARGET_LINK_LIBRARIES(rp-download PRIVATE urlmon wininet)
+ELSE(WIN32)
+	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
 
 # Unix: Add -fpic/-fPIC in order to use these static libraries in plugins.

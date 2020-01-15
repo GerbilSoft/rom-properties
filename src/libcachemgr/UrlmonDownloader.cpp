@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * UrlmonDownloader.cpp: urlmon-based file downloader.                     *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
@@ -15,11 +15,6 @@
 
 // librpbase
 #include "librpbase/common.h"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
-#include "librpbase/file/RpFile.hpp"
-using LibRpBase::IRpFile;
-using LibRpBase::RpFile;
 
 // C includes. (C++ namespace)
 #include <cstring>
@@ -33,17 +28,22 @@ using std::wstring;
 #include <urlmon.h>
 #include <wininet.h>
 
-namespace LibCacheMgr {
+// TODO: tcharx.h?
+#ifndef _WIN32
+# define _tfopen fopen
+#endif /* !_WIN32 */
+
+namespace RpDownload {
 
 UrlmonDownloader::UrlmonDownloader()
 	: super()
 { }
 
-UrlmonDownloader::UrlmonDownloader(const char *url)
+UrlmonDownloader::UrlmonDownloader(const TCHAR *url)
 	: super(url)
 { }
 
-UrlmonDownloader::UrlmonDownloader(const string &url)
+UrlmonDownloader::UrlmonDownloader(const tstring &url)
 	: super(url)
 { }
 
@@ -62,8 +62,7 @@ int UrlmonDownloader::download(void)
 	// Buffer for cache filename.
 	TCHAR szFileName[MAX_PATH];
 
-	const tstring t_url = U82T_s(m_url);
-	HRESULT hr = URLDownloadToCacheFile(nullptr, t_url.c_str(),
+	HRESULT hr = URLDownloadToCacheFile(nullptr, m_url.c_str(),
 		szFileName, ARRAY_SIZE(szFileName),
 		0, nullptr /* TODO */);
 
@@ -73,10 +72,9 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Open the cached file.
-	RpFile *const file = new RpFile(T2U8(szFileName), RpFile::FM_OPEN_READ);
-	if (!file->isOpen()) {
+	FILE *f_cached = _tfopen(szFileName, _T("rb"));
+	if (!f_cached) {
 		// Unable to open the file.
-		file->unref();
 		return -1;
 	}
 
@@ -84,19 +82,19 @@ int UrlmonDownloader::download(void)
 	// NOTE: GetUrlCacheEntryInfo() might fail with lastError == ERROR_INSUFFICIENT_BUFFER.
 	// FIXME: amiibo.life downloads aren't found here. (CDN redirection issues?)
 	DWORD cbCacheEntryInfo = 0;
-	BOOL bRet = GetUrlCacheEntryInfo(t_url.c_str(), nullptr, &cbCacheEntryInfo);
+	BOOL bRet = GetUrlCacheEntryInfo(m_url.c_str(), nullptr, &cbCacheEntryInfo);
 	DWORD dwLastError = GetLastError();
 	if (bRet || dwLastError == ERROR_INSUFFICIENT_BUFFER) {
 		uint8_t *pCacheEntryInfoBuf =
 			static_cast<uint8_t*>(malloc(cbCacheEntryInfo));
 		if (!pCacheEntryInfoBuf) {
 			// ENOMEM
-			file->unref();
+			fclose(f_cached);
 			return -ENOMEM;
 		}
 		INTERNET_CACHE_ENTRY_INFO *pCacheEntryInfo =
 			reinterpret_cast<INTERNET_CACHE_ENTRY_INFO*>(pCacheEntryInfoBuf);
-		bRet = GetUrlCacheEntryInfo(t_url.c_str(), pCacheEntryInfo, &cbCacheEntryInfo);
+		bRet = GetUrlCacheEntryInfo(m_url.c_str(), pCacheEntryInfo, &cbCacheEntryInfo);
 		if (bRet) {
 			// Convert from Win32 FILETIME to Unix time.
 			m_mtime = FileTimeToUnixTime(&pCacheEntryInfo->LastModifiedTime);
@@ -104,16 +102,26 @@ int UrlmonDownloader::download(void)
 		free(pCacheEntryInfoBuf);
 	}
 
+	// Get the file size.
+	int ret = fseeko(f_cached, 0, SEEK_END);
+	if (ret != 0) {
+		// Seek error.
+		fclose(f_cached);
+		return -2;
+	}
+	const int64_t fileSize = ftello(f_cached);
+	rewind(f_cached);
+
 	// Read the file into the data buffer.
-	const int64_t fileSize = file->size();
+	// TODO: Max size limitation?
 	m_data.resize(static_cast<size_t>(fileSize));
-	size_t ret = file->read(m_data.data(), static_cast<size_t>(fileSize));
-	file->unref();
-	if (ret != fileSize) {
+	size_t size = fread(m_data.data(), 1, static_cast<size_t>(fileSize), f_cached);
+	fclose(f_cached);
+	if (size != fileSize) {
 		// Error reading the file.
 		m_data.clear();
 		m_data.shrink_to_fit();
-		return -2;
+		return -3;
 	}
 
 	// Data loaded.

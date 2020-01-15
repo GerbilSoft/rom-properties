@@ -1,24 +1,24 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (rp-download)                      *
  * UrlmonDownloader.hpp: urlmon-based file downloader.                     *
  *                                                                         *
  * Copyright (c) 2016-2018 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__
+#ifndef __ROMPROPERTIES_RP_DOWNLOAD_URLMONDOWNLOADER_HPP__
+#define __ROMPROPERTIES_RP_DOWNLOAD_URLMONDOWNLOADER_HPP__
 
 #include "IDownloader.hpp"
 
-namespace LibCacheMgr {
+namespace RpDownload {
 
 class UrlmonDownloader : public IDownloader
 {
 	public:
 		UrlmonDownloader();
-		explicit UrlmonDownloader(const char *url);
-		explicit UrlmonDownloader(const std::string &url);
+		explicit UrlmonDownloader(const TCHAR *url);
+		explicit UrlmonDownloader(const std::tstring &url);
 
 	private:
 		typedef IDownloader super;
@@ -34,4 +34,4 @@ class UrlmonDownloader : public IDownloader
 
 }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__ */
+#endif /* __ROMPROPERTIES_RP_DOWNLOAD_URLMONDOWNLOADER_HPP__ */

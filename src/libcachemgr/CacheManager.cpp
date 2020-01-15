@@ -6,9 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifdef _WIN32
-# include "stdafx.h"
-#endif
+#include "stdafx.h"
 #include "CacheManager.hpp"
 
 // librpbase
@@ -32,37 +30,12 @@ using namespace LibRpBase::FileSystem;
 #include <string>
 using std::string;
 
-// TODO: DownloaderFactory?
-#ifdef _WIN32
-# include "UrlmonDownloader.hpp"
-#else
-# include "CurlDownloader.hpp"
-#endif
-
 namespace LibCacheMgr {
 
 // Semaphore used to limit the number of simultaneous downloads.
 // TODO: Determine the best number of simultaneous downloads.
 // TODO: Test this on XP with IEIFLAG_ASYNC.
 Semaphore CacheManager::m_dlsem(2);
-
-CacheManager::CacheManager()
-{
-	// TODO: DownloaderFactory?
-#ifdef _WIN32
-	m_downloader = new UrlmonDownloader();
-#else
-	m_downloader = new CurlDownloader();
-#endif
-
-	// TODO: Configure this somewhere?
-	m_downloader->setMaxSize(4*1024*1024);
-}
-
-CacheManager::~CacheManager()
-{
-	delete m_downloader;
-}
 
 /** Proxy server functions. **/
 // NOTE: This is only useful for downloaders that
@@ -102,8 +75,9 @@ void CacheManager::setProxyUrl(const string &proxyUrl)
 /**
  * Download a file.
  *
- * @param url URL.
  * @param cache_key Cache key.
+ *
+ * The URL will be determined based on the cache key.
  *
  * If the file is present in the cache, the cached version
  * will be retrieved. Otherwise, the file will be downloaded.
@@ -114,10 +88,13 @@ void CacheManager::setProxyUrl(const string &proxyUrl)
  *
  * @return Absolute path to the cached file.
  */
-string CacheManager::download(
-	const string &url,
-	const string &cache_key)
+string CacheManager::download(const string &cache_key)
 {
+	// TODO: Only filter the cache key once.
+	// Currently it's filtered twice:
+	// - getCacheFilename() filters it
+	// - We call filterCacheKey() before passing it to rp-download.
+
 	// Check the main cache key.
 	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
@@ -161,14 +138,10 @@ string CacheManager::download(
 		}
 	}
 
-	// Check if the URL is blank.
-	// This is allowed for some databases that are only available offline.
-	if (url.empty()) {
-		// Blank URL. Don't try to download anything.
-		// Don't mark the file as unavailable by creating a
-		// 0-byte dummy file, either.
-		return string();
-	}
+	// TODO: Add an option for "offline only".
+	// Previously this was done by checking for a blank URL.
+	// We don't have any offline-only databases right now, so
+	// this has been temporarily removed.
 
 	// Make sure the subdirectories exist.
 	// NOTE: The filename portion MUST be kept in cache_filename,
@@ -178,37 +151,94 @@ string CacheManager::download(
 		return string();
 	}
 
-	// TODO: Keep-alive cURL connections (one per server)?
-	m_downloader->setUrl(url);
-	m_downloader->setProxyUrl(m_proxyUrl);
-	int ret = m_downloader->download();
-
-	// Write the file to the cache.
-	RpFile *const file = new RpFile(cache_filename, RpFile::FM_CREATE_WRITE);
-	if (ret != 0 || !file->isOpen()) {
-		// Error downloading the file, or error opening
-		// the file in the local cache.
-		file->unref();
-
-		// TODO: Only keep a negative cache if it's a 404.
-		// Keep the cached file as a 0-byte file to indicate
-		// a "negative" hit, but return an empty filename.
+	// Filter the cache key before passing it to rp-download.
+	string filteredCacheKey = cache_key;
+	int ret = LibCacheCommon::filterCacheKey(filteredCacheKey);
+	assert(ret == 0);
+	if (ret != 0) {
+		// Shouldn't happen...
 		return string();
 	}
 
-	// Write the file.
-	file->write((void*)m_downloader->data(), m_downloader->dataSize());
+#if defined(_WIN32)
+	// Execute rp-download.
+	// Proxy handling isn't needed, since Urlmon uses the
+	// system proxy settings automatically.
+	// TODO
+#elif defined(__APPLE__)
+	// TODO: Mac stuff.
+#elif defined(__linux__) || defined(__unix__)
+	// Parameters.
+	const char *const argv[3] = {
+		"rp-download",
+		cache_key.c_str(),
+		nullptr
+	};
 
-	// Save the original URL as an extended attribute.
-	// This will also set the mtime if it's available.
-	file->setOriginInfo(url, m_downloader->mtime());
+	// Define a minimal environment for cURL.
+	// This will include http_proxy and https_proxy if the proxy URL is set.
+	// TODO: Separate proxies for http and https?
+	// TODO: Only build this once?
+	int pos[5] = {-1, -1, -1, -1, -1};
+	int count = 0;
+	std::string s_env;
+	s_env.reserve(1024);
 
-	// We're done here.
-	file->close();	// NOTE: May be redundant.
-	file->unref();
+	// We want the HOME and USER variables.
+	// If our proxy wasn't set, also get http_proxy and https_proxy
+	// if they're set in the environment.
+	const char *envtmp = getenv("HOME");
+	if (envtmp && envtmp[0] != '\0') {
+		pos[count++] = static_cast<int>(s_env.size());
+		s_env += "HOME=";
+		s_env += envtmp;
+		s_env += '\0';
+	}
+	envtmp = getenv("USER");
+	if (envtmp && envtmp[0] != '\0') {
+		pos[count++] = static_cast<int>(s_env.size());
+		s_env += "USER=";
+		s_env += envtmp;
+		s_env += '\0';
+	}
+	if (m_proxyUrl.empty()) {
+		// Proxy URL is empty. Get the URLs from the environment.
+		envtmp = getenv("http_proxy");
+		if (envtmp && envtmp[0] != '\0') {
+			pos[count++] = static_cast<int>(s_env.size());
+			s_env += "http_proxy=";
+			s_env += envtmp;
+			s_env += '\0';
+		}
+		envtmp = getenv("https_proxy");
+		if (envtmp && envtmp[0] != '\0') {
+			pos[count++] = static_cast<int>(s_env.size());
+			s_env += "https_proxy=";
+			s_env += envtmp;
+			s_env += '\0';
+		}
+	} else {
+		// Proxy URL is set. Use it.
+		pos[count++] = static_cast<int>(s_env.size());
+		s_env += "http_proxy=" + m_proxyUrl;
+		pos[count++] = static_cast<int>(s_env.size());
+		s_env += "https_proxy=" + m_proxyUrl;
+	}
 
-	// Return the cache filename.
-	return cache_filename;
+	// Build envp.
+	const char *envp[5] = {nullptr, nullptr, nullptr, nullptr, nullptr};
+	unsigned int envp_idx = 0;
+	for (unsigned int i = 0; i < 5; i++) {
+		if (pos[i] >= 0) {
+			envp[envp_idx++] = &s_env[pos[i]];
+		}
+	}
+
+	// TODO: fork()/execve(), or posix_spawnp() if available.
+	// TODO: Hard-code the full path?
+#endif
+
+	return string();
 }
 
 /**
