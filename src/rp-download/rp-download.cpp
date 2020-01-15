@@ -349,8 +349,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 		return EXIT_FAILURE;
 	}
-	if (_tcscmp(lastdot, ".png") != 0 &&
-	    _tcscmp(lastdot, ".jpg") != 0)
+	if (_tcscmp(lastdot, _T(".png")) != 0 &&
+	    _tcscmp(lastdot, _T(".jpg")) != 0)
 	{
 		// Not a supported file extension.
 		if (verbose) {
