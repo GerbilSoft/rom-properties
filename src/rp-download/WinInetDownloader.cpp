@@ -93,7 +93,23 @@ int WinInetDownloader::download(void)
 		return -err;
 	}
 
-	// TODO: Check file size and mtime.
+	// Get mtime if it's available.
+	SYSTEMTIME st_mtime;
+	DWORD dwBufferLength = static_cast<DWORD>(sizeof(st_mtime));
+	if (HttpQueryInfo(hURL,			// hRequest
+		HTTP_QUERY_LAST_MODIFIED | 
+		HTTP_QUERY_FLAG_SYSTEMTIME,	// dwInfoLevel
+		&st_mtime,			// lpBuffer
+		&dwBufferLength,		// lpdwBufferLength
+		0))				// lpdwIndex
+	{
+		// Received SYSTEMTIME.
+		if (dwBufferLength == static_cast<DWORD>(sizeof(st_mtime))) {
+			// Length is valid.
+			// FIXME: How to determine if the value is valid?
+			m_mtime = SystemTimeToUnixTime(&st_mtime);
+		}
+	}
 
 	// Read the file.
 	// TODO: Reserve based on content length.
