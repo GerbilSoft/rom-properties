@@ -204,9 +204,9 @@ int CurlDownloader::download(void)
 	// Set timeouts to ensure we don't take forever.
 	// TODO: User configuration?
 	// - Connect timeout: 2 seconds.
-	// - Total timeout: 20 seconds.
+	// - Total timeout: 10 seconds.
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
 
 	// Set the User-Agent.
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());

@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.libromdata.h"
 #include "CacheManager.hpp"
 
 // librpbase
@@ -18,9 +19,13 @@ using namespace LibRpBase::FileSystem;
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"
 
-// Windows includes.
+// OS-specific includes.
 #ifdef _WIN32
 # include "libwin32common/RpWin32_sdk.h"
+#else /* !_WIN32 */
+# include <sys/types.h>
+# include <sys/wait.h>
+# include <unistd.h>
 #endif /* _WIN32 */
 
 // C includes. (C++ namespace)
@@ -169,8 +174,9 @@ string CacheManager::download(const string &cache_key)
 	// TODO: Mac stuff.
 #elif defined(__linux__) || defined(__unix__)
 	// Parameters.
+#define RP_DOWNLOAD_FILENAME DIR_INSTALL_LIBEXEC "/rp-download"
 	const char *const argv[3] = {
-		"rp-download",
+		RP_DOWNLOAD_FILENAME,
 		cache_key.c_str(),
 		nullptr
 	};
@@ -234,11 +240,71 @@ string CacheManager::download(const string &cache_key)
 		}
 	}
 
-	// TODO: fork()/execve(), or posix_spawnp() if available.
-	// TODO: Hard-code the full path?
+	// fork()/execve().
+	// TODO: posix_spawnp() if available.
+	pid_t pid = fork();
+	if (pid == 0) {
+		// Child process.
+		int ret = execve(RP_DOWNLOAD_FILENAME, (char *const *)argv, (char *const *)envp);
+		if (ret != 0) {
+			// execve() failed.
+			exit(EXIT_FAILURE);
+		}
+		assert(!"Shouldn't get here...");
+		exit(EXIT_FAILURE);
+	} else if (pid == -1) {
+		// fork() failed.
+		return string();
+	}
+
+	// Parent process.
+	// Wait up to 10 seconds for the process to exit.
+	// TODO: User-configurable timeout?
+	// TODO: Report errors somewhere.
+	bool ok = false;	// rp-download terminated successfully.
+	bool waited = false;	// waitpid() was successful.
+	int wstatus = 0;
+	for (unsigned int i = 10*4; i > 0; i--) {
+		pid_t wpid = waitpid(pid, &wstatus, WNOHANG);
+		if (wpid == pid) {
+			// Process has changed state.
+			if (WIFEXITED(wstatus)) {
+				// Child process has exited.
+				// If the return status is non-zero, it failed.
+				if (WEXITSTATUS(wstatus) != 0) {
+					// Failure.
+					break;
+				}
+				// Success!
+				ok = true;
+				waited = true;
+				break;
+			} else if (WIFSIGNALED(wstatus)) {
+				// Child process terminated abnormally.
+				waited = true;
+				break;
+			}
+		}
+
+		// Wait 250ms before checking again.
+		usleep(250*1000);
+	}
+
+	if (!waited) {
+		// Process did not complete.
+		// TODO: Prevent race conditions by using waitid() instead of waitpid()?
+		kill(pid, SIGTERM);
+		return string();
+	}
+
+	if (!ok) {
+		// rp-download failed for some reason.
+		return string();
+	}
 #endif
 
-	return string();
+	// rp-download has successfully downloaded the file.
+	return cache_filename;
 }
 
 /**

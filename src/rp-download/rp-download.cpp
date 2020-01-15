@@ -65,6 +65,8 @@ using std::string;
 # define _tcscmp strcmp
 # define _tcserror strerror
 # define _tcsncmp strncmp
+# define _tcslen strlen
+# define _tcsrchr strrchr
 # define _tfopen fopen
 # define _tmkdir mkdir
 # define _tremove remove
@@ -251,7 +253,7 @@ int rmkdir(const tstring &path)
 
 /**
  * rp-download: Download an image from a supported online database.
- * @param cache_key Cache key, e.g. "ds/cover/US/ADAE"
+ * @param cache_key Cache key, e.g. "ds/cover/US/ADAE.png"
  * @return 0 on success; non-zero on error.
  *
  * TODO:
@@ -264,7 +266,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - Windows: UrlmonDownloader
 
 	// Syntax: rp-download cache_key
-	// Example: rp-download ds/coverM/US/ADAE
+	// Example: rp-download ds/coverM/US/ADAE.png
 
 	// If http_proxy or https_proxy are set, they will be used
 	// by the downloader code if supported.
@@ -338,35 +340,51 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// Cache key must include a lowercase file extension.
+	const TCHAR *const lastdot = _tcsrchr(cache_key, _T('.'));
+	if (!lastdot) {
+		// No dot...
+		if (verbose) {
+			show_error(_T("Cache key '%s' is invalid."), cache_key);
+		}
+		return EXIT_FAILURE;
+	}
+	if (_tcscmp(lastdot, ".png") != 0 &&
+	    _tcscmp(lastdot, ".jpg") != 0)
+	{
+		// Not a supported file extension.
+		if (verbose) {
+			show_error(_T("Cache key '%s' is invalid."), cache_key);
+		}
+		return EXIT_FAILURE;
+	}
+
 	// Determine the full URL based on the cache key.
 	TCHAR full_url[256];
-	const TCHAR *ext = _T(".png");	// default to PNG format
-	if (prefix_len == 3 && !_tcsncmp(cache_key, _T("wii"), 3)) {
-		// Wii
-		// All supported images are in PNG format.
-		ext = _T(".png");
-		_sntprintf(full_url, _countof(full_url),
-			_T("https://art.gametdb.com/%s%s"), cache_key, ext);
-	} else if ((prefix_len == 5 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
-	           (prefix_len == 3 && !_tcsncmp(cache_key, _T("3ds"), 3)) ||
-		       (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
+	if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("wii"), 3)) ||
+	    (prefix_len == 5 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
+	    (prefix_len == 3 && !_tcsncmp(cache_key, _T("3ds"), 3)) ||
+	    (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
 	{
-		// Wii U, Nintendo 3DS, Nintendo DS
-		// "cover" and "coverfull" are in JPEG format.
-		// All others are in PNG format.
-		if (!_tcsncmp(slash_pos, _T("/cover/"), 7) ||
-		    !_tcsncmp(slash_pos, _T("/coverfull/"), 11))
-		{
-			// JPEG format.
-			ext = _T(".jpg");
-		}
+		// Wii, Wii U, Nintendo 3DS, Nintendo DS
 		_sntprintf(full_url, _countof(full_url),
-			_T("https://art.gametdb.com/%s%s"), cache_key, ext);
+			_T("https://art.gametdb.com/%s"), cache_key);
 	} else if (prefix_len == 6 && !_tcsncmp(cache_key, _T("amiibo"), 6)) {
 		// amiibo.
-		// All files are in PNG format.
+		// NOTE: We need to remove the file extension.
+		size_t filename_len = _tcslen(slash_pos+1);
+		if (filename_len <= 4) {
+			// Can't remove the extension...
+			if (verbose) {
+				show_error(_T("Cache key '%s' is invalid."), cache_key);
+			}
+			return EXIT_FAILURE;
+		}
+		filename_len -= 4;
+
 		_sntprintf(full_url, _countof(full_url),
-			_T("https://amiibo.life/nfc/%s/image"), slash_pos+1);
+			_T("https://amiibo.life/nfc/%.*s/image"),
+			static_cast<int>(filename_len), slash_pos+1);
 	} else {
 		// Prefix is not supported.
 		if (verbose) {
@@ -388,7 +406,6 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 		return EXIT_FAILURE;
 	}
-	cache_filename += ext;
 	if (verbose) {
 		_ftprintf(stderr, _T("Cache Filename: %s\n"), cache_filename.c_str());
 	}

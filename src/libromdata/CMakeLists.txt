@@ -328,6 +328,7 @@ IF(CPU_i386 OR CPU_amd64)
 ENDIF()
 
 # Write the config.h file.
+INCLUDE(DirInstallPaths)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
 IF(ENABLE_PCH)

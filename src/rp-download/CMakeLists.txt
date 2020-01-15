@@ -47,3 +47,25 @@ IF(WIN32)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)
+
+###########################
+# Install the executable. #
+###########################
+
+INCLUDE(DirInstallPaths)
+INSTALL(TARGETS rp-download
+	RUNTIME DESTINATION "${DIR_INSTALL_LIBEXEC}"
+	COMPONENT "plugin"
+	)
+
+# Check if a split debug file should be installed.
+IF(INSTALL_DEBUG)
+	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+	GET_TARGET_PROPERTY(DEBUG_FILENAME rp-download PDB)
+	IF(DEBUG_FILENAME)
+		INSTALL(FILES "${DEBUG_FILENAME}"
+			DESTINATION "lib/debug/${DIR_INSTALL_LIBEXEC}"
+			COMPONENT "debug"
+			)
+	ENDIF(DEBUG_FILENAME)
+ENDIF(INSTALL_DEBUG)
