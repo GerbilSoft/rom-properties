@@ -149,7 +149,7 @@ int CreateThumbnail::getImgClassSize(const HBITMAP &imgClass, ImgSize *pOutSize)
  */
 string CreateThumbnail::proxyForUrl(const string &url) const
 {
-	// rp-download uses urlmon on Windows, which
+	// rp-download uses WinInet on Windows, which
 	// always uses the system proxy.
 	return string();
 }

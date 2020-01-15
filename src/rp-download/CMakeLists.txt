@@ -15,14 +15,13 @@ SET(rp-download_SRCS rp-download.cpp IDownloader.cpp)
 SET(rp-download_H IDownloader.hpp)
 
 IF(WIN32)
-	# Windows: Use Urlmon.
-	# TODO: Switch to WinInet?
+	# Windows: Use WinInet.
 	SET(rp-download_OS_SRCS
-		UrlmonDownloader.cpp
+		WinInetDownloader.cpp
 		SetFileOriginInfo_win32.cpp
 		)
 	SET(rp-download_OS_H
-		UrlmonDownloader.hpp
+		WinInetDownloader.hpp
 		)
 ELSE(WIN32)
 	# Non-Windows platforms: Use cURL.
@@ -63,7 +62,7 @@ TARGET_INCLUDE_DIRECTORIES(rp-download
 	)
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE win32common)
-	TARGET_LINK_LIBRARIES(rp-download PRIVATE urlmon wininet)
+	TARGET_LINK_LIBRARIES(rp-download PRIVATE wininet)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(rp-download PRIVATE ${CURL_LIBRARIES})
 ENDIF(WIN32)

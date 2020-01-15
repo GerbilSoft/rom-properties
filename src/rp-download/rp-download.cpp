@@ -65,7 +65,7 @@ using std::string;
 
 // TODO: IDownloaderFactory?
 #ifdef _WIN32
-# include "UrlmonDownloader.hpp"
+# include "WinInetDownloader.hpp"
 #else
 # include "CurlDownloader.hpp"
 #endif
@@ -232,7 +232,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 {
 	// Create a downloader based on OS:
 	// - Linux: CurlDownloader
-	// - Windows: UrlmonDownloader
+	// - Windows: WinInetDownloader
 
 	// Syntax: rp-download cache_key
 	// Example: rp-download ds/coverM/US/ADAE.png
@@ -429,7 +429,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Attempt to download the file.
 	// TODO: IDownloaderFactory?
 #ifdef _WIN32
-	unique_ptr<IDownloader> m_downloader(new UrlmonDownloader());
+	unique_ptr<IDownloader> m_downloader(new WinInetDownloader());
 #else /* !_WIN32 */
 	unique_ptr<IDownloader> m_downloader(new CurlDownloader());
 #endif /* _WIN32 */

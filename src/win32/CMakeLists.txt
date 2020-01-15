@@ -212,7 +212,7 @@ ENDIF(MINGW)
 # Delay-load some Windows system libraries.
 # TODO: MinGW delay-load?
 IF(MSVC)
-	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
+	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:wininet.dll")
 	TARGET_LINK_LIBRARIES(rom-properties PRIVATE delayimp)
 ENDIF(MSVC)
 

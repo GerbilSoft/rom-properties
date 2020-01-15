@@ -1,28 +1,28 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (rp-download)                      *
- * UrlmonDownloader.hpp: urlmon-based file downloader.                     *
+ * WinInetDownloader.hpp: WinInet-based file downloader.                   *
  *                                                                         *
  * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RP_DOWNLOAD_URLMONDOWNLOADER_HPP__
-#define __ROMPROPERTIES_RP_DOWNLOAD_URLMONDOWNLOADER_HPP__
+#ifndef __ROMPROPERTIES_RP_DOWNLOAD_WININETDOWNLOADER_HPP__
+#define __ROMPROPERTIES_RP_DOWNLOAD_WININETDOWNLOADER_HPP__
 
 #include "IDownloader.hpp"
 
 namespace RpDownload {
 
-class UrlmonDownloader : public IDownloader
+class WinInetDownloader : public IDownloader
 {
 	public:
-		UrlmonDownloader();
-		explicit UrlmonDownloader(const TCHAR *url);
-		explicit UrlmonDownloader(const std::tstring &url);
+		WinInetDownloader();
+		explicit WinInetDownloader(const TCHAR *url);
+		explicit WinInetDownloader(const std::tstring &url);
 
 	private:
 		typedef IDownloader super;
-		RP_DISABLE_COPY(UrlmonDownloader)
+		RP_DISABLE_COPY(WinInetDownloader)
 
 	public:
 		/**
@@ -34,4 +34,4 @@ class UrlmonDownloader : public IDownloader
 
 }
 
-#endif /* __ROMPROPERTIES_RP_DOWNLOAD_URLMONDOWNLOADER_HPP__ */
+#endif /* __ROMPROPERTIES_RP_DOWNLOAD_WININETDOWNLOADER_HPP__ */
