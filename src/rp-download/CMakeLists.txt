@@ -1,20 +1,40 @@
 PROJECT(rp-download)
 # Online downloader program for external images.
 
+IF(APPLE)
+	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
+ELSEIF(NOT WIN32)
+	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
+	CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
+ENDIF()
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rp-download.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rp-download.h")
+
 SET(rp-download_SRCS rp-download.cpp IDownloader.cpp)
 SET(rp-download_H IDownloader.hpp)
 
 IF(WIN32)
 	# Windows: Use Urlmon.
 	# TODO: Switch to WinInet?
-	SET(rp-download_OS_SRCS UrlmonDownloader.cpp)
-	SET(rp-download_OS_H UrlmonDownloader.hpp)
+	SET(rp-download_OS_SRCS
+		UrlmonDownloader.cpp
+		SetFileOriginInfo_win32.cpp
+		)
+	SET(rp-download_OS_H
+		UrlmonDownloader.hpp
+		)
 ELSE(WIN32)
 	# Non-Windows platforms: Use cURL.
 	FIND_PACKAGE(CURL REQUIRED)
 	INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
-	SET(rp-download_OS_SRCS CurlDownloader.cpp)
-	SET(rp-download_OS_H CurlDownloader.hpp)
+	SET(rp-download_OS_SRCS
+		CurlDownloader.cpp
+		SetFileOriginInfo_posix.cpp
+		)
+	SET(rp-download_OS_H
+		CurlDownloader.hpp
+		)
 ENDIF(WIN32)
 
 #########################

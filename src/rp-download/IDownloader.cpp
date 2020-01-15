@@ -16,11 +16,6 @@
 #include <string>
 using std::tstring;
 
-// TODO: tcharx.h?
-#ifndef _WIN32
-# define _T(x) (x)
-#endif /* !_WIN32 */
-
 namespace RpDownload {
 
 IDownloader::IDownloader()

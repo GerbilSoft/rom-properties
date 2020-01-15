@@ -1,28 +1,28 @@
-/***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * RpFile_stdio_origin.cpp: Standard file object. (stdio implementation)   *
- * setOriginInfo() function.                                               *
- *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
- * SPDX-License-Identifier: GPL-2.0-or-later                               *
- ***************************************************************************/
+/******************************************************************************
+ * ROM Properties Page shell extension. (rp-download)                         *
+ * SetFileOriginInfo_posix.cpp: setFileOriginInfo() function. (POSIX version) *
+ *                                                                            *
+ * Copyright (c) 2016-2020 by David Korth.                                    *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                  *
+ ******************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
+#include "config.rp-download.h"
+#include "SetFileOriginInfo.hpp"
 
 #ifdef _WIN32
-# error RpFile_stdio is not supported on Windows, use RpFile_win32.
+# error SetFileOriginInfo_posix.cpp is for POSIX systems, not Windows.
 #endif /* _WIN32 */
 
-#include "RpFile.hpp"
-#include "RpFile_p.hpp"
-
-// Config class (for storeFileOriginInfo)
-#include "../config/Config.hpp"
+// TODO: Read rom-properties.conf for storeFileOriginInfo.
+//#include "../config/Config.hpp"
 
 // C includes.
 #include <sys/time.h>
 #include <sys/types.h>
+
+// C includes. (C++ namespace)
+#include <cstring>
 
 // xattrs
 #if defined(HAVE_FSETXATTR_LINUX)
@@ -45,21 +45,21 @@ static inline int fsetxattr(int fd, const char *name, const void *value, size_t 
 // TODO: Define a Linux-compatible version.
 #endif /* HAVE_FSETXATTR_LINUX || HAVE_FSETXATTR_MAC*/
 
-namespace LibRpBase {
+namespace RpDownload {
 
 /** File properties (NON-VIRTUAL) **/
 
 /**
  * Set the file origin info.
  * This uses xattrs on Linux and ADS on Windows.
+ * @param file Open file. (Must be writable.)
  * @param url Origin URL.
  * @param mtime If >= 0, this value is set as the mtime.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpFile::setOriginInfo(const std::string &url, time_t mtime)
+int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 {
-	RP_D(RpFile);
-	const int fd = fileno(d->file);
+	const int fd = fileno(file);
 
 	// TODO: Use the origin website instead of "rom-properties"?
 	static const char xdg_publisher[] = "rom-properties";
@@ -71,9 +71,11 @@ int RpFile::setOriginInfo(const std::string &url, time_t mtime)
 
 	// xattr reference: https://github.com/pkg/xattr
 
-	// NOTE: This will force a configuration timestamp check.
-	const Config *const config = Config::instance();
-	const bool storeFileOriginInfo = config->storeFileOriginInfo();
+	// TODO: Read rom-properties.conf.
+	// For now, assuming "always enabled".
+	//const Config *const config = Config::instance();
+	//const bool storeFileOriginInfo = config->storeFileOriginInfo();
+	static const bool storeFileOriginInfo = true;
 	if (storeFileOriginInfo) {
 #if defined(HAVE_FSETXATTR_LINUX) || defined(HAVE_EXTATTR_SET_FD)
 		// fsetxattr() [Linux version]
@@ -81,7 +83,7 @@ int RpFile::setOriginInfo(const std::string &url, time_t mtime)
 
 		// Set the XDG origin attributes.
 		errno = 0;
-		int sxret = fsetxattr(fd, "user.xdg.origin.url", url.data(), url.size(), 0);
+		int sxret = fsetxattr(fd, "user.xdg.origin.url", url, _tcslen(url), 0);
 		if (sxret != 0 && err != 0) {
 			err = errno;
 			if (err == 0) {
@@ -131,7 +133,7 @@ int RpFile::setOriginInfo(const std::string &url, time_t mtime)
 
 		// Flush the file before setting the times to ensure
 		// that libc doesn't write anything afterwards.
-		::fflush(d->file);
+		::fflush(file);
 
 		// Set the times.
 		errno = 0;

@@ -48,52 +48,20 @@ using std::unique_ptr;
 // librpbase
 #include "librpbase/common.h"
 
-// TODO: tcharx.h?
-#ifdef _WIN32
-# ifdef _UNICODE
-using std::wstring;
-#  define tstring wstring
-# else /* !_UNICODE */
-#  define tstring string
-using std::string;
-# endif /* _UNICODE */
-#else /* !_WIN32 */
-# define TCHAR char
-# define _T(x) (x)
-# define _tmain main
-# define _tcschr strchr
-# define _tcscmp strcmp
-# define _tcserror strerror
-# define _tcsncmp strncmp
-# define _tcslen strlen
-# define _tcsrchr strrchr
-# define _tfopen fopen
-# define _tmkdir mkdir
-# define _tremove remove
-# define _fputtc fputc
-# define _ftprintf fprintf
-# define _tprintf printf
-# define _sntprintf snprintf
-# define _vftprintf vfprintf
-# define tstring string
-using std::string;
-#endif /* _WIN32 */
+// tcharx
+#include "tcharx.h"
 
 #ifdef _WIN32
 # define _TMKDIR(dirname) _tmkdir(dirname)
+using std::wstring;
 #else /* !_WIN32 */
 # define _TMKDIR(dirname) _tmkdir((dirname), 0777)
+using std::string;
 #endif /* _WIN32 */
 
 #ifndef _countof
 # define _countof(x) (sizeof(x)/sizeof(x[0]))
 #endif
-
-#ifdef _WIN32
-# define DIR_SEP_CHR _T('\\')
-#else /* !_WIN32 */
-# define DIR_SEP_CHR '/'
-#endif /* _WIN32 */
 
 // TODO: IDownloaderFactory?
 #ifdef _WIN32
@@ -101,6 +69,7 @@ using std::string;
 #else
 # include "CurlDownloader.hpp"
 #endif
+#include "SetFileOriginInfo.hpp"
 using namespace RpDownload;
 
 static const TCHAR *argv0 = nullptr;
@@ -499,9 +468,16 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// TODO: Verify the size.
 	size_t size = fwrite(m_downloader->data(), 1, m_downloader->dataSize(), f_out);
-	fclose(f_out);
 
-	// TODO: Save origin information.
+	// Save the file origin information.
+#ifdef _WIN32
+	// TODO: Figure out how to setFileOriginInfo() on Windows
+	// using an open file handle.
+	setFileOriginInfo(f_out, cache_filename.c_str(), full_url, m_downloader->mtime());
+#else /* !_WIN32 */
+	setFileOriginInfo(f_out, full_url, m_downloader->mtime());
+#endif /* _WIN32 */
+	fclose(f_out);
 
 	// Success.
 	return EXIT_SUCCESS;

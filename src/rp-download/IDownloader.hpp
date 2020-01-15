@@ -26,19 +26,8 @@
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
 
-#ifdef _WIN32
-# include <tchar.h>
-# ifndef tstring
-#  define tstring wstring
-# endif /* tstring */
-#else /* !_WIN32 */
-# ifndef TCHAR
-#  define TCHAR char
-# endif
-# ifndef tstring
-#  define tstring string
-# endif
-#endif /* _WIN32 */
+// tcharx
+#include "tcharx.h"
 
 namespace RpDownload {
 
