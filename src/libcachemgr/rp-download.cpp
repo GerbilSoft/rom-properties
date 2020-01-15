@@ -8,11 +8,28 @@
 
 #include "stdafx.h"
 
+// C includes.
+#include <stdlib.h>
+#include <sys/stat.h>
+#ifndef _WIN32
+# include <unistd.h>
+#endif /* _WIN32 */
+
+#ifndef __S_ISTYPE
+# define __S_ISTYPE(mode, mask) (((mode) & S_IFMT) == (mask))
+#endif
+#if defined(__S_IFDIR) && !defined(S_IFDIR)
+# define S_IFDIR __S_IFDIR
+#endif
+#ifndef S_ISDIR
+# define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
+#endif /* !S_ISTYPE */
+
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
-#include <stdlib.h>
 
 // C++ includes.
 #include <string>
@@ -26,8 +43,8 @@ using std::string;
 
 #ifdef _WIN32
 // libwin32common
-#include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/secoptions.h"
+# include "libwin32common/RpWin32_sdk.h"
+# include "libwin32common/secoptions.h"
 #endif /* _WIN32 */
 
 // libcachecommon
@@ -43,7 +60,10 @@ using std::string;
 # define _tmain main
 # define _tcschr strchr
 # define _tcscmp strcmp
+# define _tcserror strerror
 # define _tcsncmp strncmp
+# define _tmkdir mkdir
+# define _tremove remove
 # define _fputtc fputc
 # define _ftprintf fprintf
 # define _tprintf printf
@@ -51,9 +71,21 @@ using std::string;
 # define _vftprintf vfprintf
 #endif
 
+#ifdef _WIN32
+# define _TMKDIR(dirname) _tmkdir(dirname)
+#else
+# define _TMKDIR(dirname) _tmkdir((dirname), 0777)
+#endif
+
 #ifndef _countof
 # define _countof(x) (sizeof(x)/sizeof(x[0]))
 #endif
+
+#ifdef _WIN32
+# define DIR_SEP_CHR _T('\\')
+#else /* !_WIN32 */
+# define DIR_SEP_CHR '/'
+#endif /* _WIN32 */
 
 static const TCHAR *argv0 = nullptr;
 static bool verbose = false;
@@ -85,6 +117,122 @@ show_error(const TCHAR *format, ...)
 	_vftprintf(stderr, format, ap);
 	va_end(ap);
 	_fputtc(_T('\n'), stderr);
+}
+
+/**
+ * Check if the file exists.
+ * @param filename Filename.
+ * @return True if the file exists; false if not.
+ */
+static bool check_file_exists(const TCHAR *filename)
+{
+#ifdef _WIN32
+	return (GetFileAttributes(filename) != INVALID_FILE_ATTRIBUTES);
+#else /* !_WIN32 */
+	return (access(filename, F_OK) == 0);
+#endif /* _WIN32 */
+}
+
+/**
+ * Get a file's size.
+ * @param filename Filename.
+ * @return File size on success; negative POSIX error code on error.
+ */
+static int64_t get_file_size(const TCHAR *filename)
+{
+#ifdef _WIN32
+	struct _stati64 sb;
+	int ret = ::_tstati64(filename, &sb);
+#else /* _WIN32 */
+	struct stat sb;
+	int ret = stat(filename, &sb);
+#endif /* _WIN32 */
+
+	if (ret != 0) {
+		// An error occurred.
+		ret = -errno;
+		if (ret == 0) {
+			// No error?
+			ret = -EIO;
+		}
+		return ret;
+	}
+
+	// Make sure this is not a directory.
+	if (S_ISDIR(sb.st_mode)) {
+		// It's a directory.
+		return -EISDIR;
+	}
+
+	// Return the file size.
+	return sb.st_size;
+}
+
+/**
+ * Recursively mkdir() subdirectories.
+ * (Copied from librpbase's FileSystem_win32.cpp.)
+ *
+ * The last element in the path will be ignored, so if
+ * the entire pathname is a directory, a trailing slash
+ * must be included.
+ *
+ * NOTE: Only native separators ('\\' on Windows, '/' on everything else)
+ * are supported by this function.
+ *
+ * @param path Path to recursively mkdir. (last component is ignored)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rmkdir(const tstring &path)
+{
+#ifdef _WIN32
+	// Check if "\\\\?\\" is at the beginning of path.
+	tstring tpath;
+	if (path.size() >= 4 && !_tcsncmp(path.data(), _T("\\\\?\\"), 4)) {
+		// It's at the beginning of the path.
+		// We don't want to use it here, though.
+		tpath = path.substr(4);
+	} else {
+		// It's not at the beginning of the path.
+		tpath = path;
+	}
+#else /* !_WIN32 */
+	// Use the path as-is.
+	tstring tpath = path;
+#endif /* _WIN32 */
+
+	if (tpath.size() == 3) {
+		// 3 characters. Root directory is always present.
+		return 0;
+	} else if (tpath.size() < 3) {
+		// Less than 3 characters. Path isn't valid.
+		return -EINVAL;
+	}
+
+	// Find all backslashes and ensure the directory component exists.
+	// (Skip the drive letter and root backslash.)
+	size_t slash_pos = 4;
+	while ((slash_pos = tpath.find(DIR_SEP_CHR, slash_pos)) != tstring::npos) {
+		// Temporarily NULL out this slash.
+		tpath[slash_pos] = _T('\0');
+
+		// Attempt to create this directory.
+		if (::_TMKDIR(tpath.c_str()) != 0) {
+			// Could not create the directory.
+			// If it exists already, that's fine.
+			// Otherwise, something went wrong.
+			if (errno != EEXIST) {
+				// Something went wrong.
+				return -errno;
+			}
+		}
+
+		// Put the slash back in.
+		tpath[slash_pos] = DIR_SEP_CHR;
+		slash_pos++;
+	}
+
+	// rmkdir() succeeded.
+	return 0;
 }
 
 /**
@@ -226,6 +374,53 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	}
 	cache_filename += ext;
 	_tprintf(_T("Cache Filename: %s\n"), cache_filename.c_str());
+
+	// If the cache_filename is >= 240 characters, prepend "\\\\?\\".
+	if (cache_filename.size() >= 240) {
+		cache_filename.reserve(cache_filename.size() + 8);
+		cache_filename.insert(0, _T("\\\\?\\"));
+	}
+
+	// Does the cache file already exist?
+	// TODO: Open the file to prevent TOCTOU issues?
+	if (check_file_exists(cache_filename.c_str())) {
+		// Check if the file is 0 bytes.
+		// If it is, we'll redownload it.
+		// (TODO: Implement mtime check here or no?)
+		int64_t filesize = get_file_size(cache_filename.c_str());
+		if (filesize < 0) {
+			// Error obtaining the file size.
+			if (verbose) {
+				show_error(_T("Error checking cache file: %s"), _tcserror((int)-filesize));
+			}
+			return EXIT_FAILURE;
+		}
+
+		if (filesize > 0) {
+			// Filesize is non-zero. The file doesn't need to be downloaded.
+			if (verbose) {
+				show_error(_T("Cache file for '%s' is already downloaded."), cache_key);
+			}
+			return EXIT_SUCCESS;
+		}
+
+		// Delete the file and try to download it again.
+		if (_tremove(cache_filename.c_str()) != 0) {
+			if (verbose) {
+				show_error(_T("Error deleting 0-byte cache file: %s"), _tcserror(errno));
+			}
+			return EXIT_FAILURE;
+		}
+	} else {
+		// Make sure the path structure exists.
+		int ret = rmkdir(cache_filename.c_str());
+		if (ret != 0) {
+			if (verbose) {
+				show_error(_T("Error creating directory structure: %s"), _tcserror(errno));
+			}
+			return EXIT_FAILURE;
+		}
+	}
 
 	// Success.
 	return EXIT_SUCCESS;
