@@ -9,14 +9,13 @@
 #ifndef __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__
 #define __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__
 
-#ifndef _WIN32
-#error stdafx.h is Windows only.
-#endif
-
+#ifdef _WIN32
 // Windows SDK defines and includes.
 #include "libwin32common/RpWin32_sdk.h"
 
 // Additional Windows headers.
 #include <shlobj.h>
+#include <tchar.h>
+#endif /* _WIN32 */
 
 #endif /* __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__ */

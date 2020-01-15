@@ -4,7 +4,9 @@ PROJECT(libcachemgr)
 # which can be sandboxed.
 
 SET(libcachemgr_SRCS CacheManager.cpp IDownloader.cpp)
-SET(libcachemgr_H CacheManager.hpp IDownloader.hpp)
+SET(libcachemgr_H CacheManager.hpp)
+
+SET(rp-download_SRCS rp-download.cpp)
 
 IF(WIN32)
 	# Windows: Use Urlmon.
@@ -46,6 +48,28 @@ IF(WIN32)
 	TARGET_LINK_LIBRARIES(cachemgr PRIVATE urlmon wininet)
 ELSE(WIN32)
 	TARGET_LINK_LIBRARIES(cachemgr PRIVATE ${CURL_LIBRARIES})
+ENDIF(WIN32)
+
+# rp-download: Cache downloader program. (Can be sandboxed.)
+# TODO: Don't add "-fpic -fPIC".
+ADD_EXECUTABLE(rp-download
+	${rp-download_SRCS} ${rp-download_H}
+	)
+SET_TARGET_PROPERTIES(rp-download PROPERTIES PREFIX "")
+DO_SPLIT_DEBUG(rp-download)
+SET_WINDOWS_SUBSYSTEM(rp-download CONSOLE)
+#SET_WINDOWS_NO_MANIFEST(rp-download)
+SET_WINDOWS_ENTRYPOINT(rp-download wmain OFF)
+
+TARGET_LINK_LIBRARIES(rp-download PRIVATE rpbase cachecommon)
+TARGET_INCLUDE_DIRECTORIES(rp-download
+	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(rp-download PRIVATE win32common)
 ENDIF(WIN32)
 
 # Unix: Add -fpic/-fPIC in order to use these static libraries in plugins.
