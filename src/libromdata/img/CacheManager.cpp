@@ -226,8 +226,8 @@ string CacheManager::download(const string &cache_key)
 	// Wait up to 10 seconds for the process to exit.
 	DWORD dwRet = WaitForSingleObject(pi.hProcess, 10*1000);
 	DWORD status = 0;
-	GetExitCodeProcess(pi.hProcess, &status);
-	if (dwRet != WAIT_OBJECT_0 || status == STILL_ACTIVE) {
+	bRet = GetExitCodeProcess(pi.hProcess, &status);
+	if (dwRet != WAIT_OBJECT_0 || !bRet || status == STILL_ACTIVE) {
 		// Process either timed out or failed.
 		TerminateProcess(pi.hProcess, EXIT_FAILURE);
 		CloseHandle(pi.hThread);
