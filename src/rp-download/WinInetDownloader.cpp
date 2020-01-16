@@ -175,14 +175,30 @@ int WinInetDownloader::download(void)
 				// Read less than the buffer size increment.
 				m_data.resize(prev_size + dwNumberOfBytesRead);
 			}
+
+			// Make sure we haven't exceeded the maximum buffer size.
+			if (m_maxSize > 0) {
+				// Maximum buffer size is set.
+				if (m_data.size() > m_maxSize) {
+					// Out of memory.
+					m_data.clear();
+					m_data.shrink_to_fit();
+					InternetCloseHandle(hURL);
+					InternetCloseHandle(hConnection);
+					return -ENOSPC;
+				}
+			}
 		} else {
 			// Read failed.
-			// TODO: Get the error.
+			int err = w32err_to_posix(GetLastError());
+			if (err == 0) {
+				err = EIO;
+			}
 			InternetCloseHandle(hURL);
 			InternetCloseHandle(hConnection);
 			m_data.clear();
 			m_data.shrink_to_fit();
-			return 1;
+			return -err;
 		}
 
 		// Continue reading in BUF_SIZE_INCREMENT chunks.
