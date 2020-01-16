@@ -43,6 +43,7 @@ static IntegrityLevel get_integrity_level(void)
 	DWORD dwLengthNeeded;
 
 	// Process integrity levels are supported starting with Windows Vista.
+	// TODO: Use versionhelpers.h.
 	OSVERSIONINFO osvi;
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	if (!GetVersionEx(&osvi) || osvi.dwMajorVersion < 6) {
