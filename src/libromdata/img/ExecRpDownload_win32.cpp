@@ -11,11 +11,8 @@
 
 // Windows includes.
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/integrity_level.h"
 #include "librpbase/TextFuncs_wchar.hpp"
-#include <sddl.h>
-
-// librpthreads
-#include "librpthreads/pthread_once.h"
 
 // C++ includes.
 #include <string>
@@ -23,105 +20,6 @@ using std::string;
 using std::wstring;
 
 namespace LibRomData {
-
-// pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-// Are we running Windows Vista or later?
-static bool isVista = false;
-
-/**
- * Check if we're running Windows Vista or later.
- * Called by pthread_once().
- */
-static void initIsVista(void)
-{
-	// TODO: Use versionhelpers.h.
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	isVista = (GetVersionEx(&osvi) && osvi.dwMajorVersion >= 6);
-}
-
-/**
- * Create a low-integrity token.
- * This requires Windows Vista or later.
- *
- * Caller must call CloseHandle() on the token when done using it.
- *
- * @return Low-integrity token, or nullptr on error.
- */
-static HANDLE createLowIntegrityToken(void)
-{
-	// Are we running Windows Vista or later?
-	pthread_once(&once_control, initIsVista);
-	if (!isVista) {
-		// Not running Windows Vista or later.
-		// Can't create a low-integrity token.
-		return nullptr;
-	}
-
-	// Reference: https://docs.microsoft.com/en-us/previous-versions/dotnet/articles/bb625960(v=msdn.10)?redirectedfrom=MSDN
-
-	// Low-integrity SID
-	// NOTE: The MSDN example has an incorrect integrity value.
-	// References:
-	// - https://stackoverflow.com/questions/3139938/windows-7-x64-low-il-process-msdn-example-does-not-work
-	// - https://stackoverflow.com/a/3842990
-	TCHAR szIntegritySid[] = _T("S-1-16-4096");
-	PSID pIntegritySid = nullptr;
-
-	HANDLE hToken;
-	BOOL bRet = OpenProcessToken(
-		GetCurrentProcess(),	// ProcessHandle
-		TOKEN_DUPLICATE |
-		TOKEN_ADJUST_DEFAULT |
-		TOKEN_QUERY |
-		TOKEN_ASSIGN_PRIMARY,	// DesiredAccess
-		&hToken);		// TokenHandle
-	if (!bRet) {
-		// Unable to open the process token.
-		return nullptr;
-	}
-
-	// Duplicate the token.
-	HANDLE hNewToken;
-	bRet = DuplicateTokenEx(
-		hToken,			// hExistingToken
-		0,			// dwDesiredAccess
-		nullptr,		// lpTokenAttributes
-		SecurityImpersonation,	// ImpersonationLevel
-		TokenPrimary,		// TokenType
-		&hNewToken);		// phNewToken
-	CloseHandle(hToken);
-	if (!bRet) {
-		// Unable to duplicate the token.
-		return nullptr;
-	}
-
-	// Convert the string SID to a real SID.
-	if (!ConvertStringSidToSid(szIntegritySid, &pIntegritySid)) {
-		// Failed to convert the SID.
-		CloseHandle(hNewToken);
-		return nullptr;
-	}
-
-	// Token settings.
-	TOKEN_MANDATORY_LABEL til;
-	til.Label.Attributes = SE_GROUP_INTEGRITY;
-	til.Label.Sid = pIntegritySid;
-
-	// Set the process integrity level.
-	bRet = SetTokenInformation(hNewToken, TokenIntegrityLevel, &til,
-		sizeof(TOKEN_MANDATORY_LABEL) + GetLengthSid(pIntegritySid));
-	LocalFree(pIntegritySid);
-	if (!bRet) {
-		// Failed to set the process integrity level.
-		CloseHandle(hNewToken);
-		return nullptr;
-	}
-
-	// Low-integrity token created.
-	return hNewToken;
-}
 
 /**
  * Execute rp-download. (Win32 version)
@@ -163,7 +61,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 	si.cb = sizeof(si);
 
 	// Attempt to create a low-integrity token.
-	HANDLE hLowToken = createLowIntegrityToken();
+	HANDLE hLowToken = CreateLowIntegrityToken();
 	if (hLowToken) {
 		// Low-integrity token created. Create the process using this token.
 		bRet = CreateProcessAsUser(

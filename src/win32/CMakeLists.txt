@@ -138,7 +138,7 @@ ADD_SUBDIRECTORY(config)
 IF(MSVC)
 	# Delay-load extlibs.
 	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
-	SET_DELAY_LOAD_FLAGS()
+	SET_DELAY_LOAD_EXTLIB_FLAGS()
 ENDIF(MSVC)
 
 # FIXME: Build both Win32 and Win64 DLLs?

@@ -60,7 +60,7 @@ ENDIF(MSVC)
 IF(MSVC)
 	# Delay-load extlibs.
 	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
-	SET_DELAY_LOAD_FLAGS()
+	SET_DELAY_LOAD_EXTLIB_FLAGS()
 ENDIF(MSVC)
 
 ADD_EXECUTABLE(rpcli

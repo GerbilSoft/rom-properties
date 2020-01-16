@@ -76,11 +76,12 @@ typedef BOOL (WINAPI *PFNSETPROCESSMITIGATIONPOLICY)(_In_ PROCESS_MITIGATION_POL
  * This sets various security options.
  * Reference: http://msdn.microsoft.com/en-us/library/bb430720.aspx
  *
+ * @param bHighSec If non-zero, enable high security for unprivileged processes.
  * @return 0 on success; non-zero on error.
  */
 static INLINE int secoptions_init(void)
 {
-	BOOL bRet;
+	BOOL bHighSec = FALSE;	// TODO: Move back to a parameter.
 	HMODULE hKernel32;
 	PFNSETPROCESSMITIGATIONPOLICY pfnSetProcessMitigationPolicy;
 	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
@@ -94,9 +95,11 @@ static INLINE int secoptions_init(void)
 	call_count++;
 #endif /* NDEBUG */
 
-	// Using GetModuleHandleEx() to increase the refcount.
-	bRet = GetModuleHandleEx(0, _T("kernel32.dll"), &hKernel32);
-	if (!bRet || !hKernel32) {
+	// KERNEL32 is always loaded, so we don't need to use
+	// GetModuleHandleEx() here.
+	hKernel32 = GetModuleHandle(_T("kernel32.dll"));
+	assert(hKernel32 != nullptr);
+	if (!hKernel32) {
 		// Should never happen...
 		return GetLastError();
 	}
@@ -112,11 +115,11 @@ static INLINE int secoptions_init(void)
 			PROCESS_MITIGATION_ASLR_POLICY aslr;
 			PROCESS_MITIGATION_DYNAMIC_CODE_POLICY dynamic_code;
 			PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY strict_handle_check;
-			//PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable;
+			PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable;
 			PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable;
 			PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard;	// MSVC 2015+: /guard:cf
 			//PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY binary_signature;
-			//PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable;
+			PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable;
 			PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load;
 		} policy;
 		// Most of these are 4 bytes, except for
@@ -185,6 +188,26 @@ static INLINE int secoptions_init(void)
 		pfnSetProcessMitigationPolicy(ProcessControlFlowGuardPolicy,
 			&policy.control_flow_guard, sizeof(policy.control_flow_guard));
 #endif /* defined(_MSC_VER) && _MSC_VER >= 1900 */
+
+		if (bHighSec) {
+			// High-security options that are useful for
+			// non-GUI applications, e.g. rp-download.
+
+			// Disable direct Win32k system call access.
+			// This prevents direct access to NTUser/GDI system calls.
+			// This is NOT usable in GUI applications.
+			policy.flags = 0;
+			policy.system_call_disable.DisallowWin32kSystemCalls = 1;
+			pfnSetProcessMitigationPolicy(ProcessSystemCallDisablePolicy,
+				&policy.system_call_disable, sizeof(policy.system_call_disable));
+
+			// Disable loading non-system fonts.
+			policy.flags = 0;
+			policy.font_disable.DisableNonSystemFonts = 1;
+			policy.font_disable.AuditNonSystemFontLoading = 0;
+			pfnSetProcessMitigationPolicy(ProcessFontDisablePolicy,
+				&policy.font_disable, sizeof(policy.font_disable));
+		}
 	} else {
 		// Use the old functions if they're available.
 		PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
@@ -224,7 +247,6 @@ static INLINE int secoptions_init(void)
 		pfnHeapSetInformation(NULL, 1, NULL, 0);
 	}
 
-	FreeLibrary(hKernel32);
 	return 0;
 }
 
