@@ -80,6 +80,8 @@
     This fixes handling of mtimes and content length.
   * UrlmonDownloader: Handle ERROR_INSUFFICIENT_BUFFER for the cache info
     entry correctly. Otherwise, we won't get the mtime.
+  * Fixed some CBC decryption issues on Windows XP. This mostly affected
+    decrypting Xbox 360 executables.
 
 * Other changes:
   * Removed the internal copy of libjpeg-turbo. On Windows, gdiplus is now

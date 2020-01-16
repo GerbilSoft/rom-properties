@@ -319,9 +319,16 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 		return 0;
 	}
 
-	// FIXME: Nettle version doesn't do this, which allows
-	// calling decrypt() multiple times for CBC with large
-	// amounts of data.
+	if (size == 0) {
+		// Nothing to decrypt...
+		return 0;
+	}
+
+	assert(size % 16 == 0);
+	if (size % 16 != 0) {
+		// Not a multiple of the block size.
+		return 0;
+	}
 
 	// Temporarily duplicate the key so we don't overwrite
 	// the feedback register in the original key.
@@ -330,6 +337,13 @@ size_t AesCAPI::decrypt(uint8_t *RESTRICT pData, size_t size)
 	if (!CryptDuplicateKey(d->hKey, nullptr, 0, &hMyKey)) {
 		// Error duplicating the key.
 		return 0;
+	}
+
+	if (d->chainingMode == CM_CBC) {
+		// Ensure we have the correct IV afterwards.
+		// IV should be the last encrypted block.
+		// TODO: Optimize things so we don't have to do this...
+		setIV(&pData[size-16], 16);
 	}
 
 	// Decrypt the data.
