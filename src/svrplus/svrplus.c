@@ -50,8 +50,8 @@
  * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
  */
 #define ARRAY_SIZE(x) \
-	((int)(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0])))))
+	(((sizeof(x) / sizeof(x[0]))) / \
+		(size_t)(!(sizeof(x) % sizeof(x[0]))))
 
 // File paths
 static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
@@ -100,8 +100,8 @@ static RECT rectStatus1_icon;
 static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2, UINT uType)
 {
 	HICON hIcon;
-	int sw_status;
 	const RECT *rect;
+	int sw_status;
 
 	HWND const hStaticIcon = GetDlgItem(hDlg, IDC_STATIC_ICON);
 	HWND const hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
@@ -804,7 +804,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case NM_CLICK:
 				case NM_RETURN: {
 					const NMLINK *pNMLink;
-					int ret;
+					INT_PTR ret;
 
 					if (pHdr->idFrom != IDC_STATIC_STATUS2)
 						break;
@@ -815,12 +815,12 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153(v=vs.85).aspx
 					// - https://blogs.msdn.microsoft.com/oldnewthing/20061108-05/?p=29083
 					pNMLink = (const NMLINK*)pHdr;
-					ret = (int)(INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
+					ret = (INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
 					if (ret <= 32) {
 						// ShellExecute() failed.
 						TCHAR err[128];
 						TCHAR itot_buf[_MAX_ITOSTR_BASE10_COUNT];
-						_itot_s(ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
+						_itot_s((int)ret, itot_buf, ARRAY_SIZE(itot_buf), 10);
 						_tcscpy_s(err, ARRAY_SIZE(err),
 							_T("Could not open the URL.\n\n")
 							_T("Win32 error code: "));
@@ -904,6 +904,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	} else {
 		BOOL bWow;
 		if (!pfnIsWow64Process(GetCurrentProcess(), &bWow)) {
+			CloseHandle(hSingleInstanceMutex);
 			DebugBreak();
 			return EXIT_FAILURE;
 		}
