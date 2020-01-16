@@ -48,14 +48,17 @@ WinInetDownloader::WinInetDownloader(const tstring &url)
  */
 int WinInetDownloader::download(void)
 {
-	// Reference: https://msdn.microsoft.com/en-us/library/ms775122(v=vs.85).aspx
-	// TODO: IBindStatusCallback to enforce data size?
-	// TODO: Check Content-Length to prevent large files in the first place?
+	// References:
+	// - https://docs.microsoft.com/en-us/windows/win32/api/wininet/nf-wininet-internetopenw
+	// - https://docs.microsoft.com/en-us/windows/win32/api/wininet/nf-wininet-internetopenurlw
+	// - https://docs.microsoft.com/en-us/windows/win32/api/wininet/nf-wininet-httpqueryinfow
 
 	// Clear the previous download.
 	m_data.clear();
 	m_mtime = -1;
 
+	// Open up an Internet connection.
+	// This doesn't actually connect to anything yet.
 	HINTERNET hConnection = InternetOpen(
 		m_userAgent.c_str(),		// lpszAgent
 		INTERNET_OPEN_TYPE_PRECONFIG,	// dwAccessType
@@ -111,26 +114,64 @@ int WinInetDownloader::download(void)
 		}
 	}
 
+	// Get Content-Length.
+	DWORD dwContentLength = 0;
+	dwBufferLength = static_cast<DWORD>(sizeof(dwContentLength));
+	if (HttpQueryInfo(hURL,			// hRequest
+		HTTP_QUERY_CONTENT_LENGTH |
+		HTTP_QUERY_FLAG_NUMBER,		// dwInfoLevel
+		&dwContentLength,		// lpBuffer
+		&dwBufferLength,		// lpdwBufferLength
+		0))				// lpdwIndex
+	{
+		// Received DWORD.
+		if (dwBufferLength == static_cast<DWORD>(sizeof(dwContentLength))) {
+			// Length is valid.
+			// Check if it's 0 or >= max size.
+			if (dwContentLength == 0) {
+				// Zero-length file. Not valid.
+				InternetCloseHandle(hURL);
+				InternetCloseHandle(hConnection);
+				return -ENOENT;	// handling as if it doesn't exist
+			} else if (dwContentLength > m_maxSize) {
+				// File is too big.
+				InternetCloseHandle(hURL);
+				InternetCloseHandle(hConnection);
+				return -ENOSPC;	// or -ENOMEM?
+			}
+		}
+	}
+
 	// Read the file.
-	// TODO: Reserve based on content length.
 	static const DWORD BUF_SIZE_INCREMENT = 64*1024;
+	DWORD cur_increment;
 	m_data.clear();
-	m_data.reserve(1048576);
+	if (dwContentLength > 0) {
+		// Content-Length is known.
+		// Start with the full Content-Length.
+		m_data.reserve(dwContentLength + BUF_SIZE_INCREMENT);
+		cur_increment = dwContentLength;
+	} else {
+		// Content-Length is unknown.
+		// Start with 256 KB.
+		m_data.reserve((256*1024) + BUF_SIZE_INCREMENT);
+		cur_increment = BUF_SIZE_INCREMENT;
+	}
 	bool done = false;
 	do {
-		// Read up to 16 KB.
+		// Read the current buffer size increment.
 		size_t prev_size = m_data.size();
-		m_data.resize(prev_size + BUF_SIZE_INCREMENT);
+		m_data.resize(prev_size + cur_increment);
 
 		DWORD dwNumberOfBytesRead;
-		if (InternetReadFile(hURL, &m_data[prev_size], BUF_SIZE_INCREMENT, &dwNumberOfBytesRead)) {
+		if (InternetReadFile(hURL, &m_data[prev_size], cur_increment, &dwNumberOfBytesRead)) {
 			// Successful read.
 			if (dwNumberOfBytesRead == 0) {
 				// EOF.
 				m_data.resize(prev_size);
 				done = true;
 				break;
-			} else if (dwNumberOfBytesRead < BUF_SIZE_INCREMENT) {
+			} else if (dwNumberOfBytesRead < cur_increment) {
 				// Read less than the buffer size increment.
 				m_data.resize(prev_size + dwNumberOfBytesRead);
 			}
@@ -143,12 +184,16 @@ int WinInetDownloader::download(void)
 			m_data.shrink_to_fit();
 			return 1;
 		}
+
+		// Continue reading in BUF_SIZE_INCREMENT chunks.
+		cur_increment = BUF_SIZE_INCREMENT;
 	} while (!done);
 
 	// Finished downloading the file.
 	InternetCloseHandle(hURL);
 	InternetCloseHandle(hConnection);
-	return 0;
+	// Return an error if no data was received.
+	return (m_data.empty() ? -ENOENT : 0);
 }
 
 }
