@@ -286,6 +286,7 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	DWORD status;
+	BOOL bRet;
 
 	// Determine the REGSVR32 path.
 	int ret = GetSystemDirFilePath(regsvr32_path, ARRAY_SIZE(regsvr32_path), _T("regsvr32.exe"), is64);
@@ -326,7 +327,19 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	memset(&pi, 0, sizeof(pi));
 	si.cb = sizeof(si);
 
-	if (!CreateProcess(regsvr32_path, args, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+	bRet = CreateProcess(
+		regsvr32_path,		// lpApplicationName
+		args,			// lpCommandLine
+		NULL,			// lpProcessAttributes
+		NULL,			// lpThreadAttributes
+		FALSE,			// bInheritHandles
+		CREATE_NO_WINDOW,	// dwCreationFlags
+		NULL,			// lpEnvironment
+		NULL,			// lpCurrentDirectory
+		&si,			// lpStartupInfo
+		&pi);			// lpProcessInformation
+
+	if (!bRet) {
 		if (pErrorCode) {
 			*pErrorCode = GetLastError();
 		}
@@ -335,9 +348,15 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	// Wait for the process to exit.
 	WaitForSingleObject(pi.hProcess, INFINITE);
-	GetExitCodeProcess(pi.hProcess, &status);
-	CloseHandle(pi.hProcess);
+	bRet = GetExitCodeProcess(pi.hProcess, &status);
 	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+
+	if (!bRet) {
+		// GetExitCodeProcess() failed.
+		// Assume the process is still active.
+		return ISR_PROCESS_STILL_ACTIVE;
+	}
 
 	switch (status) {
 		case STILL_ACTIVE:
