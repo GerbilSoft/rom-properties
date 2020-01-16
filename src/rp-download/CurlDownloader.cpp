@@ -56,7 +56,6 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 
 	if (curlDL->m_maxSize > 0) {
 		// Maximum buffer size is set.
-		// TODO: Check Content-Length header before receiving anything?
 		if (vec->size() + len > curlDL->m_maxSize) {
 			// Out of memory.
 			return 0;
@@ -120,6 +119,9 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		// *endptr should be \0 or a whitespace character.
 		if (*endptr != '\0' && !ISSPACE(*endptr)) {
 			// Content-Length is invalid.
+			return 0;
+		} else if (fileSize <= 0) {
+			// Content-Length is too small.
 			return 0;
 		} else if (curlDL->m_maxSize > 0 &&
 			   fileSize > (int64_t)curlDL->m_maxSize)
