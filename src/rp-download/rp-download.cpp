@@ -8,6 +8,9 @@
 
 #include "stdafx.h"
 
+// OS-specific security options.
+#include "os-secure.h"
+
 // C includes.
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -39,7 +42,6 @@ using std::unique_ptr;
 #ifdef _WIN32
 // libwin32common
 # include "libwin32common/RpWin32_sdk.h"
-# include "libwin32common/secoptions.h"
 #endif /* _WIN32 */
 
 // libcachecommon
@@ -240,10 +242,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// If http_proxy or https_proxy are set, they will be used
 	// by the downloader code if supported.
 
-#ifdef _WIN32
-	// Set Win32 security options.
-	secoptions_init();
-#endif /* _WIN32 */
+	// Set OS-specific security options.
+	rp_download_os_secure();
 
 	// Store argv[0] globally.
 	argv0 = argv[0];
