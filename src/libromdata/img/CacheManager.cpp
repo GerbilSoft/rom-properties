@@ -329,7 +329,7 @@ string CacheManager::download(const string &cache_key)
 	pid_t pid = fork();
 	if (pid == 0) {
 		// Child process.
-		int ret = execve(RP_DOWNLOAD_FILENAME, (char *const *)argv, (char *const *)envp);
+		int ret = execve(rp_download_exe, (char *const *)argv, (char *const *)envp);
 		if (ret != 0) {
 			// execve() failed.
 			exit(EXIT_FAILURE);
