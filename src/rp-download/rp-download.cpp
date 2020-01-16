@@ -331,7 +331,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// Determine the full URL based on the cache key.
 	TCHAR full_url[256];
 	if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("wii"), 3)) ||
-	    (prefix_len == 5 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
+	    (prefix_len == 4 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
 	    (prefix_len == 3 && !_tcsncmp(cache_key, _T("3ds"), 3)) ||
 	    (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
 	{
