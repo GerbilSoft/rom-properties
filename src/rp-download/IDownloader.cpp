@@ -195,36 +195,36 @@ void IDownloader::createUserAgent(void)
 #  ifdef _WIN64
 	m_userAgent += _T("Win64; ");
 #  endif /* _WIN64 */
-	m_userAgent += _T(CPU ")");
+	m_userAgent += _T(CPU) _T(")");
 # endif /* !NO_CPU */
 
 #elif defined(__linux__)
 	// TODO: Kernel version and/or lsb_release?
-	m_userAgent += _T(" (Linux " CPU ")");
+	m_userAgent += _T(" (Linux ") _T(CPU) _T(")");
 #elif defined(__FreeBSD__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (FreeBSD " CPU ")");
+	m_userAgent += _T(" (FreeBSD ") _T(CPU) _T(")");
 #elif defined(__NetBSD__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (NetBSD " CPU ")");
+	m_userAgent += _T(" (NetBSD ") _T(CPU) _T(")");
 #elif defined(__OpenBSD__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (OpenBSD " CPU ")");
+	m_userAgent += _T(" (OpenBSD ") _T(CPU) _T(")");
 #elif defined(__bsdi__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (BSDi " CPU ")");
+	m_userAgent += _T(" (BSDi ") _T(CPU) _T(")");
 #elif defined(__DragonFly__)
 	// TODO: Distribution version?
-	m_userAgent += _T(" (DragonFlyBSD " CPU ")");
+	m_userAgent += _T(" (DragonFlyBSD ") _T(CPU) _T(")");
 #elif defined(__APPLE__)
 	// TODO: OS version?
-	m_userAgent += _T(" (Macintosh; " MAC_CPU " Mac OS X)");
+	m_userAgent += _T(" (Macintosh; ") _T(MAC_CPU) _T(" Mac OS X)");
 #elif defined(__unix__)
 	// Generic UNIX fallback.
-	m_userAgent += _T(" (Unix " CPU ")");
+	m_userAgent += _T(" (Unix ") _T(CPU) _T(")");
 #else
 	// Unknown OS...
-	m_userAgent += _T(" (Unknown " CPU ")");
+	m_userAgent += _T(" (Unknown ") _T(CPU) _T(")");
 #endif
 }
 
