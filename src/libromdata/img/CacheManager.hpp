@@ -79,6 +79,14 @@ class CacheManager
 		std::string findInCache(const std::string &cache_key);
 
 	protected:
+		/**
+		 * Execute rp-download.
+		 * @param filtered_cache_key Filtered cache key.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int execRpDownload(const std::string &filtered_cache_key);
+
+	protected:
 		std::string m_proxyUrl;
 
 		// Semaphore used to limit the number of simultaneous downloads.

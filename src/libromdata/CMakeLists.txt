@@ -283,6 +283,16 @@ IF(ENABLE_DECRYPTION)
 		)
 ENDIF(ENABLE_DECRYPTION)
 
+# OS-specific sources.
+IF(WIN32)
+	SET(libromdata_OS_SRCS img/ExecRpDownload_win32.cpp)
+ELSEIF(UNIX AND NOT APPLE)
+	SET(libromdata_OS_SRCS img/ExecRpDownload_posix.cpp)
+ELSE()
+	# Dummy implementation for unsupported systems.
+	SET(libromdata_OS_SRCS img/ExecRpDownload_dummy.cpp)
+ENDIF()
+
 # Optimized sources.
 IF(CPU_i386 OR CPU_amd64)
 	# IFUNC requires glibc.
