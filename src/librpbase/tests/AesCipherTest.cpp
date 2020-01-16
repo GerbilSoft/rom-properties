@@ -287,8 +287,7 @@ TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 	}
 
 	// Decrypt the data.
-	vector<uint8_t> buf(mode.cipherText_len);
-	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
 	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size()));
 
 	// Compare the buffer to the known plaintext.
@@ -330,9 +329,54 @@ TEST_P(AesCipherTest, decryptTest_chainingThenKey)
 	}
 
 	// Decrypt the data.
-	vector<uint8_t> buf(mode.cipherText_len);
-	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
 	EXPECT_EQ(buf.size(), m_cipher->decrypt(buf.data(), buf.size()));
+
+	// Compare the buffer to the known plaintext.
+	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
+		buf.data(), buf.size(), "plaintext data");
+}
+
+/**
+ * Run an AesCipher decryption test.
+ * This version is similar to chainingThenKey, but it decrypts
+ * one 16-byte block at a time in order to test IV chaining
+ * when using CBC and CTR.
+ */
+TEST_P(AesCipherTest, decryptTest_blockAtATime)
+{
+	const AesCipherTest_mode &mode = GetParam();
+	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	if (!mode.isRequired && !m_cipher->isInit()) {
+		return;
+	}
+
+	// Set the cipher settings.
+	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, mode.key_len));
+
+	switch (mode.chainingMode) {
+		case IAesCipher::CM_CBC:
+		case IAesCipher::CM_CTR:
+			// CBC requires an initialization vector.
+			// CTR requires an initial counter value.
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+
+		case IAesCipher::CM_ECB:
+		default:
+			// ECB doesn't use an initialization vector.
+			// setIV() should fail.
+			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+	}
+
+	// Decrypt one 16-byte block at a time.
+	vector<uint8_t> buf(mode.cipherText, mode.cipherText + mode.cipherText_len);
+	for (size_t i = 0; i < buf.size(); i += 16) {
+		EXPECT_EQ(16, m_cipher->decrypt(&buf[i], 16));
+	}
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
