@@ -35,8 +35,13 @@ int RP_C_API wmain(int argc, wchar_t *argv[])
 	// NOTE: Using WideCharToMultiByte() directly in order to
 	// avoid std::string overhead.
 	u8argv = malloc((argc+1)*sizeof(char*));
+	if (!u8argv) {
+		// Memory allocation failed.
+		return EXIT_FAILURE;
+	}
+
 	u8argv[argc] = NULL;
-	for (i = 0; i < argc; i++) {
+	for (i = argc-1; i >= 0; i--) {
 		int cbMbs = WideCharToMultiByte(CP_UTF8, 0, argv[i], -1, NULL, 0, NULL, NULL);
 		if (cbMbs <= 0) {
 			// Invalid string. Make it an empty string anyway.
