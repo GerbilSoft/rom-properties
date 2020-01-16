@@ -11,6 +11,7 @@
 #include "userdirs.hpp"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstring>
 
 // C++ includes.
@@ -24,12 +25,11 @@ using std::string;
 namespace LibWin32Common {
 
 /**
- * Internal T2U8() function.
+ * Internal W2U8() function.
  * @param wcs TCHAR string.
  * @return UTF-8 C++ string.
  */
-#ifdef UNICODE
-static inline string T2U8(const TCHAR *wcs)
+static inline string W2U8(const WCHAR *wcs)
 {
 	string s_ret;
 
@@ -46,6 +46,8 @@ static inline string T2U8(const TCHAR *wcs)
 	free(mbs);
 	return s_ret;
 }
+#ifdef UNICODE
+# define T2U8(wcs) W2U8(wcs)
 #else /* !UNICODE */
 // TODO: Convert ANSI to UTF-8?
 # define T2U8(mbs) (mbs)
@@ -94,21 +96,83 @@ string getHomeDirectory(void)
 string getCacheDirectory(void)
 {
 	string cache_dir;
-	TCHAR path[MAX_PATH];
-	HRESULT hr;
+	TCHAR szPath[MAX_PATH];
 
-	// Windows: Get CSIDL_LOCAL_APPDATA.
+	// shell32.dll might be delay-loaded to avoid a gdi32.dll penalty.
+	// Call SHGetFolderPath() with invalid parameters to load it into
+	// memory before using GetModuleHandle().
+	SHGetFolderPath(nullptr, 0, nullptr, 0, szPath);
+
+	// Windows: Get FOLDERID_LocalAppDataLow. (WinXP and earlier: CSIDL_LOCAL_APPDATA)
+	// LocalLow is preferred because it allows rp-download to run as a
+	// low-integrity process on Windows Vista and later.
 	// - Windows XP: C:\Documents and Settings\username\Local Settings\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Local
-	hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr == S_OK) {
-		cache_dir = T2U8(path);
-		if (!cache_dir.empty()) {
-			// Add a trailing backslash if necessary.
-			if (cache_dir.at(cache_dir.size()-1) != '\\') {
-				cache_dir += '\\';
+	// - Windows Vista: C:\Users\username\AppData\LocalLow
+	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
+	assert(hShell32_dll != nullptr);
+	if (!hShell32_dll) {
+		// Not possible. Both SHGetFolderPath() and
+		// SHGetKnownFolderPath() are in shell32.dll.
+		return cache_dir;
+	}
+
+	// Check for SHGetKnownFolderPath. (Windows Vista and later)
+	typedef HRESULT (WINAPI *PFNSHGETKNOWNFOLDERPATH)(
+		_In_ REFKNOWNFOLDERID rfid,
+		_In_ DWORD /* KNOWN_FOLDER_FLAG */ dwFlags,
+		_In_opt_ HANDLE hToken,
+		_Outptr_ PWSTR *ppszPath);
+	PFNSHGETKNOWNFOLDERPATH pfnSHGetKnownFolderPath =
+		(PFNSHGETKNOWNFOLDERPATH)GetProcAddress(hShell32_dll, "SHGetKnownFolderPath");
+	if (pfnSHGetKnownFolderPath) {
+		// We have SHGetKnownFolderPath. (NOTE: Unicode only!)
+		// TODO: Get LocalLow. For now, we'll get Local.
+		PWSTR pszPath = nullptr;	// free with CoTaskMemFree()
+		HRESULT hr = pfnSHGetKnownFolderPath(FOLDERID_LocalAppDataLow,
+			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
+		if (SUCCEEDED(hr) && pszPath != nullptr) {
+			// Path obtained.
+			cache_dir = W2U8(pszPath);
+		}
+		if (pszPath) {
+			CoTaskMemFree(pszPath);
+			pszPath = nullptr;
+		}
+
+		if (cache_dir.empty()) {
+			// SHGetKnownFolderPath(FOLDERID_LocalAppDataLow) failed.
+			// Try again with FOLDERID_LocalAppData.
+			// NOTE: This might cause problems if rp-download runs
+			// with a low integrity level.
+			hr = pfnSHGetKnownFolderPath(FOLDERID_LocalAppData,
+				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
+			if (SUCCEEDED(hr) && pszPath != nullptr) {
+				// Path obtained.
+				cache_dir = W2U8(pszPath);
 			}
+			if (pszPath) {
+				CoTaskMemFree(pszPath);
+				pszPath = nullptr;
+			}
+		}
+	}
+
+	if (cache_dir.empty()) {
+		// SHGetKnownFolderPath() either isn't available
+		// or failed. Fall back to SHGetFolderPath().
+		szPath[0] = _T('\0');
+		HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
+			nullptr, SHGFP_TYPE_CURRENT, szPath);
+		if (SUCCEEDED(hr)) {
+			cache_dir = T2U8(szPath);
+		}
+	}
+
+	// We're done trying to obtain the cache directory.
+	if (!cache_dir.empty()) {
+		// Add a trailing backslash if necessary.
+		if (cache_dir.at(cache_dir.size()-1) != '\\') {
+			cache_dir += '\\';
 		}
 	}
 
