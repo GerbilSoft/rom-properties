@@ -7,12 +7,36 @@
  ***************************************************************************/
 
 #include "secoptions.h"
-#include "sdkddkver.h"
 
 // C includes.
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// Windows includes.
+#include <sdkddkver.h>
+#include <winternl.h>
+
+#ifndef _WIN64
+
+// NtSetInformationProcess() (needed for DEP on XP SP2)
+typedef NTSTATUS (WINAPI *PFNNTSETINFORMATIONPROCESS)(
+	HANDLE ProcessHandle,
+	_In_ PROCESSINFOCLASS ProcessInformationClass,
+	_In_ PVOID ProcessInformation,
+	_In_ ULONG ProcessInformationLength);
+#ifndef MEM_EXECUTE_OPTION_DISABLE
+# define MEM_EXECUTE_OPTION_DISABLE 2
+#endif
+#ifndef MEM_EXECUTE_OPTION_ATL7_THUNK_EMULATION
+# define MEM_EXECUTE_OPTION_ATL7_THUNK_EMULATION 4
+#endif
+#ifndef MEM_EXECUTE_OPTION_PERMANENT
+# define MEM_EXECUTE_OPTION_PERMANENT 8
+#endif
+enum PROCESS_INFORMATION_CLASS {
+	ProcessExecuteFlags = 0x22,
+};
 
 // DEP policy. (Vista SP1; later backported to XP SP3)
 typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
@@ -22,6 +46,8 @@ typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
 #ifndef PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION
 #define PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION 0x2
 #endif
+
+#endif /* _WIN64 */
 
 // SetDllDirectory() (Win2003; later backported to XP SP1)
 typedef BOOL (WINAPI *PFNSETDLLDIRECTORYW)(_In_opt_ LPCWSTR lpPathName);
@@ -96,6 +122,10 @@ int rp_secoptions_init(BOOL bHighSec)
 	// If available, it supercedes many of these.
 	pfnSetProcessMitigationPolicy = (PFNSETPROCESSMITIGATIONPOLICY)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
 	if (pfnSetProcessMitigationPolicy) {
+#ifndef _WIN64
+		// DEP is always enabled on 64-bit for 64-bit programs.
+		// On 32-bit, we might have to enable it manually.
+
 		// Set DEP policy.
 		{
 			PROCESS_MITIGATION_DEP_POLICY dep = { 0 };
@@ -104,6 +134,7 @@ int rp_secoptions_init(BOOL bHighSec)
 			dep.Permanent = TRUE;
 			pfnSetProcessMitigationPolicy(ProcessDEPPolicy, &dep, sizeof(dep));
 		}
+#endif /* !_WIN64 */
 
 		// Set ASLR policy.
 		{
@@ -203,16 +234,40 @@ int rp_secoptions_init(BOOL bHighSec)
 		}
 	} else {
 		// Use the old functions if they're available.
+
+#ifndef _WIN64
+		// DEP is always enabled on 64-bit for 64-bit programs.
+		// On 32-bit, we might have to enable it manually.
 		PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
 
 		// Enable DEP/NX.
 		// NOTE: DEP/NX should be specified in the PE header
 		// using ld's --nxcompat, but we'll set it manually here,
 		// just in case the linker doesn't support it.
+
+		// SetProcessDEPPolicy() was added starting with Windows XP SP3.
 		pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
 		if (pfnSetProcessDEPPolicy) {
 			pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
+		} else {
+			// SetProcessDEPPolicy() was not found.
+			// On Windows XP SP2, we can use NtSetInformationProcess.
+			// Reference: http://www.uninformed.org/?v=2&a=4
+			// FIXME: Do SetDllDirectory() first if available?
+			HMODULE hNtdll = LoadLibrary(_T("ntdll.dll"));
+			if (hNtdll) {
+				PFNNTSETINFORMATIONPROCESS pfnNtSetInformationProcess =
+					(PFNNTSETINFORMATIONPROCESS)GetProcAddress(hNtdll, "NtSetInformationProcess");
+				if (pfnNtSetInformationProcess) {
+					ULONG dep = MEM_EXECUTE_OPTION_DISABLE |
+					            MEM_EXECUTE_OPTION_PERMANENT;
+					pfnNtSetInformationProcess(GetCurrentProcess(),
+						ProcessExecuteFlags, &dep, sizeof(dep));
+				}
+				FreeLibrary(hNtdll);
+			}
 		}
+#endif /* !_WIN64 */
 	}
 
 	// Remove the current directory from the DLL search path.
